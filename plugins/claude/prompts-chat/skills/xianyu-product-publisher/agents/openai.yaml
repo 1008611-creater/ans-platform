@@ -1,0 +1,4 @@
+interface:
+  display_name: "闲鱼商品发布助手"
+  short_description: "从竞品链接到原创图文再到闲鱼发布"
+  default_prompt: "Use $xianyu-product-publisher to turn this Goofish/Xianyu product link into a ready-to-publish listing with original images and publish it after confirmation."

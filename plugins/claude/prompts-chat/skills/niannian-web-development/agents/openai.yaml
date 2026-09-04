@@ -1,0 +1,4 @@
+interface:
+  display_name: "NianNian Web Delivery"
+  short_description: "Team workflow, quality gates, and safe releases"
+  default_prompt: "Use $niannian-web-development to implement and verify the next NianNian website change."

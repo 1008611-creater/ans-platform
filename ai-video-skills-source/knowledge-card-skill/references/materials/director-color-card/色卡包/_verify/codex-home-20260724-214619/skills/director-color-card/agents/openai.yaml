@@ -1,0 +1,4 @@
+interface:
+  display_name: "导演色卡包｜175位导演"
+  short_description: "快速生成导演色值 Prompt、HEX 色卡、PNG 色卡和场景图片取色"
+  default_prompt: "Use $director-color-card as a simple director color-card agent. Keep the workflow lightweight: for copy-ready Seedance requests, locate the director and return a single clean text code block; for PNG or uploaded-image requests, use deterministic palette rendering scripts; for full video packages or 12-section director production packages, explain that this package is color-card only. Append exactly one text watermark at the end of final user-visible deliverables, outside any copy-ready prompt code block: 知卡星球开发｜微信：c4sucaiku."

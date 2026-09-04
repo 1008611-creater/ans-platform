@@ -1,0 +1,4 @@
+interface:
+  display_name: "画布节点直写术"
+  short_description: "用Chrome/CDP完成Tensor切号并直写画布视频节点"
+  default_prompt: "用Tensor画布节点直写流程，连接或切换Chrome里的Tensor账号，直接写入视频节点参数并验证保存状态。"

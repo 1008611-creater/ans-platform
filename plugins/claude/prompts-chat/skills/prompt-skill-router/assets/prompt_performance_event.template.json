@@ -1,0 +1,43 @@
+{
+  "schema_version": "prompt_performance_event.v1",
+  "event_id": "__EVENT_ID__",
+  "recorded_at": "__ISO_8601_TIMESTAMP__",
+  "event_kind": "hypothesis",
+  "route": {
+    "production_class": "__PRODUCTION_CLASS__",
+    "task_type": "__TASK_TYPE__"
+  },
+  "prompt_contract": {
+    "path": "__EXACT_PROMPT_ROUTING_CONTRACT_PATH__",
+    "sha256": "__PROMPT_ROUTING_CONTRACT_SHA256__"
+  },
+  "method_card_ids": [],
+  "method_profile_id": "__METHOD_PROFILE_ID__",
+  "execution_observation": {
+    "channel": "",
+    "model": "",
+    "provider_task_id": null,
+    "stage": "prepared"
+  },
+  "execution_evidence": null,
+  "input_bundle": [],
+  "observed_output_bundle": [],
+  "evaluation_bundle": [],
+  "evaluation": {
+    "evidence_level": "synthetic",
+    "qa_status": "not_run",
+    "qa_evidence": null,
+    "user_feedback": null,
+    "failure_tags": [],
+    "adopted": false
+  },
+  "compounding": {
+    "promotion_eligible": false,
+    "candidate_note": "A performance event cannot upgrade a Skill by itself."
+  },
+  "comparison": {
+    "baseline_event_ids": [],
+    "same_input_proof": null
+  },
+  "source_grade_summary": {"tutorial_sources_remain_grade_c": true}
+}

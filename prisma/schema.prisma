@@ -1,0 +1,797 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                         String                 @id @default(cuid())
+  email                      String                 @unique
+  username                   String                 @unique
+  name                       String?
+  password                   String?
+  avatar                     String?
+  bio                        String?                @db.VarChar(250)
+  customLinks                Json? // Array of {type: string, url: string, label?: string}
+  role                       UserRole               @default(USER)
+  locale                     String                 @default("en")
+  emailVerified              DateTime?
+  createdAt                  DateTime               @default(now())
+  updatedAt                  DateTime               @updatedAt
+  verified                   Boolean                @default(false)
+  githubUsername             String?
+  apiKey                     String?                @unique
+  mcpPromptsPublicByDefault  Boolean                @default(false)
+  flagged                    Boolean                @default(false)
+  flaggedAt                  DateTime?
+  deletedAt                  DateTime?
+  flaggedReason              String?
+  dailyGenerationLimit       Int                    @default(3)
+  generationCreditsRemaining Int                    @default(3)
+  generationCreditsResetAt   DateTime?
+  accounts                   Account[]
+  subscriptions              CategorySubscription[]
+  changeRequests             ChangeRequest[]
+  pinnedPrompts              PinnedPrompt[]
+  reports                    PromptReport[]
+  promptVersions             PromptVersion[]
+  votes                      PromptVote[]
+  prompts                    Prompt[]               @relation("PromptAuthor")
+  sessions                   Session[]
+  contributions              Prompt[]               @relation("PromptContributors")
+  comments                   Comment[]              @relation("CommentAuthor")
+  commentVotes               CommentVote[]
+  notifications              Notification[]         @relation("NotificationRecipient")
+  notificationsActed         Notification[]         @relation("NotificationActor")
+  collections                Collection[]
+  userPromptExamples         UserPromptExample[]
+  auditLogs                  AuditLog[]             @relation("AuditActor")
+  adminPermissions           Json?
+
+  // ===== ANS 社区：等级 / 经验 / 额度 =====
+  xp                         Int                    @default(0) // 累计经验，只增不减（除管理员调整）
+  nickname                   String? // 匿名展示名，独立于 username
+  nicknameSetAt              DateTime? // 改昵称冷却起点（30 天一次）
+  lastCheckInAt              DateTime?
+  checkInStreak              Int                    @default(0)
+  quotaPoints                Int                    @default(0) // 个人可用算力点数
+  quotaClaimedAt             DateTime? // 免费额度池领取时间（每人一次）
+
+  // ===== ANS 社区：关系 =====
+  xpHistory                  XpLedger[]
+  checkIns                   CheckIn[]
+  createdInvites             InviteCode[]           @relation("InviteCreator")
+  redeemedInvites            InviteRedemption[]
+  templates                  Template[]
+  runs                       Run[]
+  ownedTeams                 Team[]                 @relation("TeamOwner")
+  teamMemberships            TeamMember[]
+  quotaLedgers               QuotaLedger[]
+
+  @@index([deletedAt])
+  @@index([xp])
+  @@index([quotaClaimedAt])
+  @@map("users")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  action       String
+  resourceType String
+  resourceId   String?
+  before       Json?
+  after        Json?
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  actor        User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@index([resourceType, resourceId])
+  @@map("audit_logs")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Prompt {
+  id                  String              @id @default(cuid())
+  title               String
+  titleZh             String?
+  titleEn             String?
+  slug                String?
+  description         String?
+  descriptionZh       String?
+  descriptionEn       String?
+  content             String
+  contentZh           String?
+  contentEn           String?
+  type                PromptType          @default(TEXT)
+  isPrivate           Boolean             @default(false)
+  mediaUrl            String?
+  viewCount           Int                 @default(0)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  authorId            String
+  categoryId          String?
+  embedding           Json?
+  requiredMediaCount  Int?
+  requiredMediaType   RequiredMediaType?
+  requiresMediaUpload Boolean             @default(false)
+  structuredFormat    StructuredFormat?
+  featuredAt          DateTime?
+  isFeatured          Boolean             @default(false)
+  isUnlisted          Boolean             @default(false)
+  unlistedAt          DateTime?
+  delistReason        DelistReason?
+  deletedAt           DateTime?
+  changeRequests      ChangeRequest[]
+  pinnedBy            PinnedPrompt[]
+  reports             PromptReport[]
+  tags                PromptTag[]
+  versions            PromptVersion[]
+  votes               PromptVote[]
+  comments            Comment[]
+  author              User                @relation("PromptAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  category            Category?           @relation(fields: [categoryId], references: [id])
+  contributors        User[]              @relation("PromptContributors")
+  outgoingConnections PromptConnection[]  @relation("ConnectionSource")
+  incomingConnections PromptConnection[]  @relation("ConnectionTarget")
+  collectedBy         Collection[]
+  userExamples        UserPromptExample[]
+  bestWithModels      String[] // Model slugs this prompt works best with (max 3), e.g. ["gpt-4o", "claude-3-5-sonnet"]
+  bestWithMCP         Json? // MCP configs array, e.g. [{command: "npx -y @mcp/server", tools: ["tool1"]}]
+  workflowLink        String? // URL to test/demo the workflow when prompt has previous/next connections
+
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([type])
+  @@index([isPrivate])
+  @@index([isFeatured])
+  @@index([isUnlisted])
+  @@index([slug])
+  @@index([isPrivate, isUnlisted, deletedAt, createdAt(sort: Desc)])
+  @@map("prompts")
+}
+
+model PromptVersion {
+  id         String   @id @default(cuid())
+  version    Int
+  content    String
+  changeNote String?
+  createdAt  DateTime @default(now())
+  promptId   String
+  createdBy  String
+  author     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  prompt     Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@unique([promptId, version])
+  @@index([promptId])
+  @@map("prompt_versions")
+}
+
+model ChangeRequest {
+  id              String              @id @default(cuid())
+  proposedContent String
+  proposedTitle   String?
+  reason          String?
+  status          ChangeRequestStatus @default(PENDING)
+  reviewNote      String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  promptId        String
+  authorId        String
+  originalContent String
+  originalTitle   String
+  author          User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  prompt          Prompt              @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@index([promptId])
+  @@index([authorId])
+  @@index([status])
+  @@map("change_requests")
+}
+
+model Category {
+  id          String                 @id @default(cuid())
+  name        String
+  slug        String                 @unique
+  description String?
+  icon        String?
+  order       Int                    @default(0)
+  pinned      Boolean                @default(false)
+  parentId    String?
+  parent      Category?              @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[]             @relation("CategoryHierarchy")
+  subscribers CategorySubscription[]
+  prompts     Prompt[]
+  templates   Template[]
+
+  @@index([parentId])
+  @@index([pinned])
+  @@map("categories")
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  name    String      @unique
+  slug    String      @unique
+  color   String      @default("#6366f1")
+  prompts PromptTag[]
+
+  @@map("tags")
+}
+
+model PromptTag {
+  promptId String
+  tagId    String
+  prompt   Prompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([promptId, tagId])
+  @@map("prompt_tags")
+}
+
+model CategorySubscription {
+  userId     String
+  categoryId String
+  createdAt  DateTime @default(now())
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, categoryId])
+  @@index([userId])
+  @@index([categoryId])
+  @@map("category_subscriptions")
+}
+
+model PromptVote {
+  userId    String
+  promptId  String
+  createdAt DateTime @default(now())
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, promptId])
+  @@index([userId])
+  @@index([promptId])
+  @@map("prompt_votes")
+}
+
+model PinnedPrompt {
+  userId    String
+  promptId  String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, promptId])
+  @@index([userId])
+  @@map("pinned_prompts")
+}
+
+model Collection {
+  userId    String
+  promptId  String
+  createdAt DateTime @default(now())
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, promptId])
+  @@index([userId])
+  @@index([promptId])
+  @@map("collections")
+}
+
+model UserPromptExample {
+  id        String   @id @default(cuid())
+  mediaUrl  String
+  comment   String?
+  createdAt DateTime @default(now())
+  promptId  String
+  userId    String
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([promptId])
+  @@index([userId])
+  @@map("user_prompt_examples")
+}
+
+model PromptReport {
+  id         String       @id @default(cuid())
+  reason     ReportReason
+  details    String?
+  status     ReportStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  promptId   String
+  reporterId String
+  prompt     Prompt       @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  reporter   User         @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([promptId])
+  @@index([reporterId])
+  @@index([status])
+  @@map("prompt_reports")
+}
+
+model WebhookConfig {
+  id        String         @id @default(cuid())
+  name      String
+  url       String
+  method    String         @default("POST")
+  headers   Json?
+  payload   String
+  events    WebhookEvent[]
+  isEnabled Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("webhook_configs")
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  content   String
+  score     Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  promptId  String
+  authorId  String
+  parentId  String?
+  flagged   Boolean       @default(false)
+  flaggedAt DateTime?
+  flaggedBy String?
+  deletedAt DateTime?
+  prompt    Prompt        @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  author    User          @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]     @relation("CommentReplies")
+  votes     CommentVote[]
+
+  @@index([promptId])
+  @@index([authorId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model CommentVote {
+  userId    String
+  commentId String
+  value     Int // 1 for upvote, -1 for downvote
+  createdAt DateTime @default(now())
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@index([userId])
+  @@index([commentId])
+  @@map("comment_votes")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  userId    String
+  actorId   String?
+  promptId  String?
+  commentId String?
+  user      User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+model PromptConnection {
+  id        String   @id @default(cuid())
+  sourceId  String
+  targetId  String
+  label     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  source    Prompt   @relation("ConnectionSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target    Prompt   @relation("ConnectionTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, targetId])
+  @@index([sourceId])
+  @@index([targetId])
+  @@map("prompt_connections")
+}
+
+enum NotificationType {
+  COMMENT
+  REPLY
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum PromptType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  STRUCTURED
+  SKILL
+  TASTE
+}
+
+enum StructuredFormat {
+  JSON
+  YAML
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RequiredMediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+enum ReportReason {
+  SPAM
+  INAPPROPRIATE
+  COPYRIGHT
+  MISLEADING
+  RELIST_REQUEST
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+
+enum WebhookEvent {
+  PROMPT_CREATED
+  PROMPT_UPDATED
+  PROMPT_DELETED
+}
+
+enum DelistReason {
+  TOO_SHORT
+  NOT_ENGLISH
+  LOW_QUALITY
+  NOT_LLM_INSTRUCTION
+  MANUAL
+  UNUSUAL_ACTIVITY
+}
+
+// ============================================================================
+// ANS 社区平台（v3.2 框架）
+// 等级经验 / 邀请码 / 模板 / 运行 / 团队 / 比赛 / 算力额度
+// ============================================================================
+
+enum XpReason {
+  CHECK_IN
+  PUBLISH_PROMPT
+  PUBLISH_TEMPLATE
+  COMMENT
+  RECEIVE_VOTE
+  RECEIVE_FAVORITE
+  FEATURED
+  TEMPLATE_APPROVED
+  RUN_COMPLETE
+  MANUAL_ADJUST
+}
+
+model XpLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    XpReason
+  refType   String? // "prompt" | "template" | "comment" | "run"
+  refId     String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, reason])
+  @@map("xp_ledger")
+}
+
+model CheckIn {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day       String   @db.VarChar(10) // YYYY-MM-DD
+  streak    Int      @default(1)
+  xpAwarded Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, day])
+  @@index([userId, createdAt])
+  @@map("check_ins")
+}
+
+model InviteCode {
+  id          String             @id @default(cuid())
+  code        String             @unique
+  creatorId   String
+  creator     User               @relation("InviteCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  maxUses     Int                @default(5)
+  usedCount   Int                @default(0)
+  expiresAt   DateTime?
+  createdAt   DateTime           @default(now())
+  redemptions InviteRedemption[]
+
+  @@index([creatorId])
+  @@map("invite_codes")
+}
+
+model InviteRedemption {
+  id       String     @id @default(cuid())
+  codeId   String
+  code     InviteCode @relation(fields: [codeId], references: [id], onDelete: Cascade)
+  usedById String
+  usedBy   User       @relation(fields: [usedById], references: [id], onDelete: Cascade)
+  usedAt   DateTime   @default(now())
+
+  @@unique([codeId, usedById])
+  @@index([usedById])
+  @@map("invite_redemptions")
+}
+
+enum TemplateStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum TemplateOutputType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
+model Template {
+  id            String             @id @default(cuid())
+  slug          String             @unique
+  title         String
+  summary       String?
+  description   String?            @db.Text
+  icon          String?
+  coverUrl      String?
+  categoryId    String?
+  category      Category?          @relation(fields: [categoryId], references: [id])
+  authorId      String
+  author        User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  formSchema    Json // 输入表单 [{ key, label, type, required, options, default, placeholder }]
+  promptBody    String             @db.Text // 含变量占位 {{key}}
+  modelKey      String? // OmniRoute 模型标识
+  params        Json? // temperature / topP 等
+  outputType    TemplateOutputType @default(TEXT)
+  estimatedCost Int                @default(1) // 预估消耗点数
+  status        TemplateStatus     @default(PENDING)
+  reviewScore   Json? // AI 审核三维打分 { compliance, quality, intent }
+  reviewNote    String?
+  reviewedAt    DateTime?
+  useCount      Int                @default(0)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  runs          Run[]
+
+  @@index([categoryId, status])
+  @@index([authorId])
+  @@index([status, createdAt])
+  @@map("templates")
+}
+
+enum RunStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+model Run {
+  id             String       @id @default(cuid())
+  templateId     String
+  template       Template     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId         String?
+  team           Team?        @relation(fields: [teamId], references: [id])
+  competitionId  String?
+  competition    Competition? @relation(fields: [competitionId], references: [id])
+  inputs         Json
+  status         RunStatus    @default(QUEUED)
+  outputText     String?      @db.Text
+  outputUrl      String?
+  error          String?
+  costPoints     Int          @default(0)
+  externalTaskId String? // 对接 /api/media-generate 的任务 ID
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([teamId])
+  @@map("runs")
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum MemberStatus {
+  PENDING
+  ACTIVE
+  LEFT
+}
+
+model Team {
+  id           String             @id @default(cuid())
+  name         String
+  slug         String             @unique
+  description  String?
+  avatar       String?
+  ownerId      String
+  owner        User               @relation("TeamOwner", fields: [ownerId], references: [id])
+  createdAt    DateTime           @default(now())
+  members      TeamMember[]
+  competitions TeamCompetition[]
+  runs         Run[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id             String       @id @default(cuid())
+  teamId         String
+  team           Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           TeamRole     @default(MEMBER)
+  status         MemberStatus @default(ACTIVE)
+  quotaAllowance Int          @default(0) // 队长队内分配的额度上限
+  quotaUsed      Int          @default(0)
+  joinedAt       DateTime     @default(now())
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@map("team_members")
+}
+
+enum CompetitionStatus {
+  UPCOMING
+  ONGOING
+  ENDED
+}
+
+model Competition {
+  id          String             @id @default(cuid())
+  title       String
+  organizer   String? // 外部赛事主办方
+  url         String?
+  description String?            @db.Text
+  status      CompetitionStatus  @default(UPCOMING)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  createdAt   DateTime           @default(now())
+  teams       TeamCompetition[]
+  runs        Run[]
+
+  @@index([status])
+  @@map("competitions")
+}
+
+model TeamCompetition {
+  id            String      @id @default(cuid())
+  teamId        String
+  team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  quotaGranted  Int         @default(0) // 管理员按比赛发的算力包
+  quotaUsed     Int         @default(0)
+  memberCap     Int         @default(0) // 单成员上限，防队长给自己无限额度
+  frozen        Boolean     @default(false) // 比赛结束冻结回收
+  createdAt     DateTime    @default(now())
+
+  @@unique([teamId, competitionId])
+  @@map("team_competitions")
+}
+
+model QuotaPool {
+  id            String   @id @default(cuid())
+  name          String   @unique // 如 public-free-2026Q4
+  totalPoints   BigInt   @default(0)
+  claimedPoints BigInt   @default(0)
+  perUserPoints Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@map("quota_pools")
+}
+
+enum QuotaReason {
+  CLAIM
+  GRANT
+  TEAM_GRANT
+  RUN_COST
+  REFUND
+  ADMIN_ADJUST
+}
+
+model QuotaLedger {
+  id           String      @id @default(cuid())
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  poolId       String?
+  amount       Int // 正=发放，负=消耗
+  balanceAfter Int?
+  reason       QuotaReason
+  refType      String? // "run" | "team" | "competition"
+  refId        String?
+  note         String?
+  createdAt    DateTime    @default(now())
+
+  @@index([userId, createdAt])
+  @@index([reason])
+  @@map("quota_ledgers")
+}

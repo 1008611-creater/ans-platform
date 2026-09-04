@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mikoto GPT Image 2"
+  short_description: "通过Mikoto兼容图片接口生成高质量二至四K资产图并安全落盘"
+  default_prompt: "Use $mikoto-gpt-image-2 to generate this approved image asset with the Mikoto gpt-image-2 endpoint."

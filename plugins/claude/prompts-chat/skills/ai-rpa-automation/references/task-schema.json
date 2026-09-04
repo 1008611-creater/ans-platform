@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI RPA Task",
+  "type": "object",
+  "required": ["task_id", "parameters", "reference_images", "requires_confirmation"],
+  "properties": {
+    "task_id": {"type": "string", "minLength": 1},
+    "prompt_zh": {"type": "string"},
+    "prompt_en": {"type": "string"},
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "version": {"type": "string"},
+        "aspect_ratio": {"type": "string"},
+        "stylize": {"type": ["integer", "string"]},
+        "chaos": {"type": ["integer", "string"]},
+        "raw": {"type": "boolean"},
+        "hd": {"type": "boolean"},
+        "sref": {"type": "string"},
+        "sw": {"type": ["integer", "string"]},
+        "oref": {"type": "string"},
+        "iw": {"type": ["number", "string"]}
+      },
+      "additionalProperties": true
+    },
+    "reference_images": {"type": "array", "items": {"type": "string"}},
+    "output_dir": {"type": "string"},
+    "requires_confirmation": {"type": "boolean"},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": false
+}

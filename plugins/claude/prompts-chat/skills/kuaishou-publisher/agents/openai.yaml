@@ -1,0 +1,4 @@
+interface:
+  display_name: "快手发布执行"
+  short_description: "Upload and prepare Kuaishou posts safely"
+  default_prompt: "Use $kuaishou-publisher to upload and prepare a video post on Kuaishou."

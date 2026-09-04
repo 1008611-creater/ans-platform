@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Automation"
+  short_description: "封装素材上传、任务队列与 Playwright 自动化接口"
+  default_prompt: "使用 $apiskill 设计或实现一个接收图片、提示词、音频、视频并通过 Playwright 自动化后返回输出视频的 API 服务。"

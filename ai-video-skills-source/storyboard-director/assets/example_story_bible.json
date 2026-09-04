@@ -1,0 +1,31 @@
+{
+  "title": "Rain Platform Farewell",
+  "premise_excerpt": "A woman prepares to leave by train, hears the man behind her call her name, and turns back before boarding.",
+  "scene_count": 1,
+  "characters": [
+    {
+      "name": "年轻女人",
+      "mentions": 5,
+      "scene_ids": ["S1"]
+    },
+    {
+      "name": "男人",
+      "mentions": 1,
+      "scene_ids": ["S1"]
+    }
+  ],
+  "locations": [
+    {
+      "name": "雨夜火车站台",
+      "scene_ids": ["S1"]
+    }
+  ],
+  "props": ["行李箱", "列车车门"],
+  "time_of_day": ["night"],
+  "theme_cues": ["离别", "犹豫", "情感回返"],
+  "continuity_risks": [
+    "雨夜与站台灯光必须保持一致",
+    "女人的风衣和行李箱必须跨镜头保持稳定",
+    "列车车门开闭状态不能跳变"
+  ]
+}

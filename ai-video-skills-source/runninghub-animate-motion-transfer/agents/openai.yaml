@@ -1,0 +1,4 @@
+interface:
+  display_name: "RunningHub 动作迁移"
+  short_description: "上传素材并以 Ultra 实例生成动作迁移视频"
+  default_prompt: "使用 $runninghub-animate-motion-transfer 上传动作视频和参考图片，以 Ultra 实例生成视频并回读 RH 币消耗。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "念念带货发布一致性"
+  short_description: "Prevent mixed assets, regressions, and false release acceptance."
+  default_prompt: "Use $niannian-commerce-release-integrity to prepare a safe Niannian commerce website release."

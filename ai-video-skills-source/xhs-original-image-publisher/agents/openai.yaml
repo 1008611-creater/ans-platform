@@ -1,0 +1,4 @@
+interface:
+  display_name: "小红书原图发布器"
+  short_description: "用 AitoEarn 发布核验过的原图小红书图文内容"
+  default_prompt: "使用 $xhs-original-image-publisher 检查这份原图小红书草稿，准备发布但不要提交。"

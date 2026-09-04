@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edit API - API Structure</title>
+    <meta
+      name="description"
+      content="Endpoint structure for Edit API, a FastAPI backend for video processing."
+    />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <header class="container">
+      <div class="hero">
+        <div class="hero-head">
+          <h1>API structure</h1>
+        </div>
+        <div class="cta">
+          <a class="btn" href="../">Edit API</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="api-list" aria-label="API endpoint structure">
+        <article class="endpoint">
+          <h2>GET /</h2>
+          <p>Health check. Returns service status and version.</p>
+          <p><span class="ink">Response:</span> status, version.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>POST /videos/upload</h2>
+          <p>Uploads a video file and stores probed metadata.</p>
+          <p><span class="ink">Request:</span> multipart file.</p>
+          <p>
+            <span class="ink">Response:</span> id, original filename, stored path, size,
+            duration, mime type, upload time.
+          </p>
+        </article>
+
+        <article class="endpoint">
+          <h2>GET /videos</h2>
+          <p>Lists uploaded videos with pagination.</p>
+          <p><span class="ink">Query:</span> page, page_size.</p>
+          <p><span class="ink">Response:</span> items, total, page, page_size, has_next, has_prev.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>POST /trim</h2>
+          <p>Creates a trim job from an uploaded video or source variant.</p>
+          <p><span class="ink">Request:</span> video_id, start, end, optional source_variant_id.</p>
+          <p><span class="ink">Response:</span> job_id.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>POST /overlays</h2>
+          <p>Creates an overlay job with text, image, video and optional watermark layers.</p>
+          <p>
+            <span class="ink">Request:</span> video_id, optional source_variant_id, overlays,
+            optional watermark.
+          </p>
+          <p><span class="ink">Response:</span> job_id.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>POST /overlays/watermark</h2>
+          <p>Creates a full-duration watermark job.</p>
+          <p><span class="ink">Request:</span> video_id, optional source_variant_id, watermark.</p>
+          <p><span class="ink">Response:</span> job_id.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>POST /variants/transcode/{video_id}</h2>
+          <p>Creates a multi-quality transcode job.</p>
+          <p><span class="ink">Request:</span> qualities such as 1080p, 720p, 480p.</p>
+          <p><span class="ink">Response:</span> job_id.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>GET /variants/videos/{video_id}/variants</h2>
+          <p>Lists all generated variants for a video with pagination.</p>
+          <p><span class="ink">Query:</span> page, page_size.</p>
+          <p><span class="ink">Response:</span> items, total, page, page_size, has_next, has_prev.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>GET /variants/{variant_id}/download</h2>
+          <p>Downloads a generated variant file.</p>
+          <p><span class="ink">Response:</span> file stream.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>GET /jobs/status/{job_id}</h2>
+          <p>Returns the current status and progress for a background job.</p>
+          <p><span class="ink">Response:</span> job_id, status, progress, error_message.</p>
+        </article>
+
+        <article class="endpoint">
+          <h2>GET /jobs/result/{job_id}</h2>
+          <p>Streams the completed job output when the job succeeded.</p>
+          <p><span class="ink">Response:</span> file stream or job state error.</p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="container foot">
+      <small>made by <a class="ink" href="https://github.com/iminoaru">Sarthak</a></small>
+    </footer>
+  </body>
+</html>

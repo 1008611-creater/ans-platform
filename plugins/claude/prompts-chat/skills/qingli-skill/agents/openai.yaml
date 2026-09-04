@@ -1,0 +1,4 @@
+interface:
+  display_name: "清理Skill"
+  short_description: "统一分析、预览、清理与迁移 Windows 磁盘空间"
+  default_prompt: "使用清理Skill先扫描我的 C 盘，分别运行四套清理后端的只读分析，汇总安全清理建议，先不要删除文件。"

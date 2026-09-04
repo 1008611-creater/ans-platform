@@ -1,0 +1,7 @@
+interface:
+  display_name: "飞书技能路由"
+  short_description: "按需路由飞书文档、账号与云端协作"
+  default_prompt: "使用 $feishu-skill-router 处理当前飞书任务，先识别账号与任务类型，再执行最窄路由并回读云端结果。"
+
+policy:
+  allow_implicit_invocation: false

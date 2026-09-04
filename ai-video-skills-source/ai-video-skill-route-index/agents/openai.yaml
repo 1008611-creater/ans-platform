@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI视频路由索引"
+  short_description: "统一登记、校验、审计AI视频Skill路由关系与冲突"
+  default_prompt: "Use $ai-video-skill-route-index to validate the current AI video skill route and report conflicts."

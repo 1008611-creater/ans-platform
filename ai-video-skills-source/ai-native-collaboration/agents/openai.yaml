@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Native Collaboration"
+  short_description: "Coordinate Codex and Hermes project handoffs"
+  default_prompt: "Use $ai-native-collaboration to coordinate Codex and Hermes for this project."

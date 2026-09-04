@@ -1,0 +1,62 @@
+version: '3.8'
+
+# ============================================================================
+# ANS 组织官网 / AI 原生社区平台（ans.cauai.fun）
+#
+# 与 prompts.cauai.fun 的关系：
+#   - 代码：独立仓库 1008611-creater/ans-platform（从 prompts-chat 复用而来）
+#   - 容器：独立容器 ans-platform-app，独立端口 3001
+#   - 镜像：独立镜像 ans-platform:latest（绝不复用 ghcr.io/f/prompts.chat:latest，
+#           否则构建新站时会覆盖旧站镜像，旧站下次 up -d 直接变成新代码）
+#   - 数据库：共享 prompts-chat-db 的 prompts_chat 库 —— 账号体系天然打通
+#   - 网络：复用 prompts-chat_default，与数据库容器同网，可用容器名互访
+#
+# 用法（务必带 -f，目录下另有构建用的 compose.yml）：
+#   构建：docker compose -f compose.yml build app      （约 20 分钟）
+#   启动：docker compose -f docker-compose.yml up -d app
+#   注意：build 完成 ≠ 上线，必须再跑一次 up -d 才会 Recreate 容器
+#
+# 敏感值从同目录 .env 读取（.env 不入库，已 gitignore）
+# ============================================================================
+
+services:
+  app:
+    image: ans-platform:latest
+    container_name: ans-platform-app
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: "postgresql://prompts:${DB_PASSWORD:-prompts123}@prompts-chat-db:5432/prompts_chat?schema=public"
+      DIRECT_URL: "postgresql://prompts:${DB_PASSWORD:-prompts123}@prompts-chat-db:5432/prompts_chat?schema=public"
+      AUTH_SECRET: "${AUTH_SECRET}"
+      # 生产鉴权靠 AUTH_URL 而不是 NEXTAUTH_URL。
+      # next-auth v5 取 AUTH_URL ?? NEXTAUTH_URL 覆盖请求 URL，配错会导致
+      # /api/auth/* 全部 UntrustedHost 500，表现为全站登录不上。
+      AUTH_URL: "https://ans.cauai.fun"
+      AUTH_TRUST_HOST: "true"
+      NODE_ENV: production
+
+      # ---- ANS 品牌与功能开关（PCHAT_* 为官方环境变量）----
+      PCHAT_NAME: "ANS"
+      PCHAT_DESCRIPTION: "让 AI 永不停转 · AI 原生社区与算力平台"
+      PCHAT_COLOR: "#6366f1"
+      PCHAT_AUTH_PROVIDERS: "credentials"
+      PCHAT_ALLOW_REGISTRATION: "true"
+      PCHAT_LOCALES: "zh,en"
+      PCHAT_DEFAULT_LOCALE: "zh"
+      PCHAT_FEATURE_PRIVATE_PROMPTS: "true"
+      PCHAT_FEATURE_CHANGE_REQUESTS: "true"
+      PCHAT_FEATURE_CATEGORIES: "true"
+      PCHAT_FEATURE_TAGS: "true"
+      PCHAT_FEATURE_AI_SEARCH: "false"
+      PCHAT_FEATURE_AI_GENERATION: "false"
+      PCHAT_FEATURE_MCP: "true"
+      PCHAT_FEATURE_COMMENTS: "true"
+    networks:
+      - prompts-chat-shared
+    restart: unless-stopped
+
+networks:
+  prompts-chat-shared:
+    external: true
+    name: prompts-chat_default

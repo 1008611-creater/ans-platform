@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commerce Web Acceleration"
+  short_description: "Measure, secure, and speed up commerce media delivery."
+  default_prompt: "Use $commerce-web-acceleration to measure and improve this commerce website media path."

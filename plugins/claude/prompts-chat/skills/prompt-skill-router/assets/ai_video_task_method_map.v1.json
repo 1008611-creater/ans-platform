@@ -1,0 +1,68 @@
+{
+  "schema_version": "ai_video_task_method_map.v1",
+  "library_id": "ai_video_task_method_map",
+  "policy": {
+    "status": "candidate",
+    "source_grade_constraints": "Method cards inherited from Grade-C tutorial sources require explicit local validation evidence before they can support ready_for_video_task_spec.",
+    "storyboard_explicit_only": true,
+    "does_not_select_channel": true
+  },
+  "task_types": [
+    {
+      "id": "redraw_dialogue_handoff",
+      "production_classes": ["redraw"],
+      "required_method_cards": ["space_master", "camera_relationship", "hand_prop_handoff", "text_policy"],
+      "required_authority_role_tokens": ["step02", "step04"],
+      "required_prompt_terms": [["机位", "景别"], ["递", "交给", "接过"], ["文字策略", "后期字幕", "模糊纹理"]]
+    },
+    {
+      "id": "script_only_character_establish",
+      "production_classes": ["script_only"],
+      "required_method_cards": ["asset_identity", "camera_relationship", "motivated_lighting"],
+      "required_authority_role_tokens": ["n03", "n04"],
+      "required_prompt_terms": [["身份", "外貌", "服装"], ["机位", "景别"], ["光源", "侧光", "窗光"]]
+    },
+    {
+      "id": "commerce_product_demo",
+      "production_classes": ["commerce_reference"],
+      "required_method_cards": ["product_evidence", "hand_prop_handoff", "motivated_lighting"],
+      "required_authority_role_tokens": ["product", "conversion", "usage"],
+      "required_prompt_terms": [["产品", "商品"], ["手", "拿", "使用"], ["材质", "卖点", "细节"]]
+    },
+    {
+      "id": "original_narrative_emotion",
+      "production_classes": ["original_narrative"],
+      "required_method_cards": ["asset_identity", "emotion_microreaction", "motivated_lighting", "layered_motion"],
+      "required_authority_role_tokens": ["story", "beat", "continuity", "shot"],
+      "required_prompt_terms": [["情绪", "眼神", "呼吸", "手指"], ["光源", "光线"], ["动作", "停顿", "转身"]]
+    },
+    {
+      "id": "confirmed_image_i2v_continuation",
+      "production_classes": ["confirmed_image_i2v"],
+      "required_method_cards": ["camera_relationship", "layered_motion", "continuity_handoff"],
+      "required_authority_role_tokens": ["image", "confirmed"],
+      "required_prompt_terms": [["首帧", "画面锚点"], ["动作", "开始", "结束"], ["连续", "承接", "尾帧"]]
+    },
+    {
+      "id": "first_person_interaction",
+      "production_classes": ["redraw", "script_only", "original_narrative", "confirmed_image_i2v"],
+      "required_method_cards": ["camera_relationship", "hand_prop_handoff"],
+      "required_authority_role_tokens": [],
+      "required_prompt_terms": [["第一视角", "POV"], ["手", "视线", "眼前"]]
+    },
+    {
+      "id": "screen_or_document",
+      "production_classes": ["redraw", "script_only", "commerce_reference", "original_narrative"],
+      "required_method_cards": ["space_master", "text_policy"],
+      "required_authority_role_tokens": [],
+      "required_prompt_terms": [["屏幕", "文件", "合同", "文档"], ["文字策略", "模糊", "留白", "后期"]]
+    },
+    {
+      "id": "story_insert",
+      "production_classes": ["redraw", "script_only", "original_narrative"],
+      "required_method_cards": ["story_insert", "motivated_lighting"],
+      "required_authority_role_tokens": [],
+      "required_prompt_terms": [["转场", "关系", "时间", "地点", "情绪"], ["动态", "移动", "闪烁", "雨", "风"]]
+    }
+  ]
+}

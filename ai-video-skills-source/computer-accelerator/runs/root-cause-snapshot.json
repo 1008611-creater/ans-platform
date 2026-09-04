@@ -1,0 +1,357 @@
+﻿{
+    "Schema":  "computer-accelerator.snapshot.v1",
+    "Mode":  "Snapshot",
+    "Timestamp":  "2026-08-03T00:54:10.0583625+08:00",
+    "Computer":  "DESKTOP-OMI2AR3",
+    "OS":  "Microsoft Windows 10 专业版",
+    "LastBoot":  "\/Date(1785423905500)\/",
+    "CpuLoadPercent":  28.886,
+    "CurrentClockMHz":  3500,
+    "MaxClockMHz":  3500,
+    "AvailableMemoryMB":  10981,
+    "Volumes":  [
+                    {
+                        "Volume":  "C:",
+                        "SizeGB":  447.8,
+                        "FreeGB":  88.6,
+                        "FreePercent":  19.8
+                    },
+                    {
+                        "Volume":  "D:",
+                        "SizeGB":  482.9,
+                        "FreeGB":  49.8,
+                        "FreePercent":  10.3
+                    },
+                    {
+                        "Volume":  "E:",
+                        "SizeGB":  953.9,
+                        "FreeGB":  104.9,
+                        "FreePercent":  11
+                    }
+                ],
+    "DiskCounters":  [
+                         {
+                             "Volume":  "c:",
+                             "Counter":  "current disk queue length",
+                             "Average":  0.5
+                         },
+                         {
+                             "Volume":  "d:",
+                             "Counter":  "current disk queue length",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "harddiskvolume5",
+                             "Counter":  "current disk queue length",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "e:",
+                             "Counter":  "current disk queue length",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "_total",
+                             "Counter":  "current disk queue length",
+                             "Average":  0.5
+                         },
+                         {
+                             "Volume":  "c:",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "d:",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "harddiskvolume5",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "e:",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "_total",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0
+                         }
+                     ],
+    "TopMemoryProcesses":  [
+                               {
+                                   "Name":  "vmmem",
+                                   "Id":  25720,
+                                   "MemoryMB":  1513,
+                                   "CpuSeconds":  0
+                               },
+                               {
+                                   "Name":  "msedgewebview2",
+                                   "Id":  30992,
+                                   "MemoryMB":  1009,
+                                   "CpuSeconds":  3778
+                               },
+                               {
+                                   "Name":  "ChatGPT",
+                                   "Id":  14428,
+                                   "MemoryMB":  836,
+                                   "CpuSeconds":  3271.1
+                               },
+                               {
+                                   "Name":  "MsMpEng",
+                                   "Id":  5224,
+                                   "MemoryMB":  574,
+                                   "CpuSeconds":  0
+                               },
+                               {
+                                   "Name":  "ChatGPT",
+                                   "Id":  3920,
+                                   "MemoryMB":  464,
+                                   "CpuSeconds":  995.9
+                               },
+                               {
+                                   "Name":  "Memory Compression",
+                                   "Id":  2056,
+                                   "MemoryMB":  377,
+                                   "CpuSeconds":  0
+                               },
+                               {
+                                   "Name":  "codex",
+                                   "Id":  4872,
+                                   "MemoryMB":  348,
+                                   "CpuSeconds":  1498.9
+                               },
+                               {
+                                   "Name":  "Weixin",
+                                   "Id":  39512,
+                                   "MemoryMB":  346,
+                                   "CpuSeconds":  2875
+                               },
+                               {
+                                   "Name":  "com.docker.backend",
+                                   "Id":  25268,
+                                   "MemoryMB":  300,
+                                   "CpuSeconds":  4672.1
+                               },
+                               {
+                                   "Name":  "msedge",
+                                   "Id":  21004,
+                                   "MemoryMB":  292,
+                                   "CpuSeconds":  870.9
+                               },
+                               {
+                                   "Name":  "WeChatAppEx",
+                                   "Id":  48456,
+                                   "MemoryMB":  267,
+                                   "CpuSeconds":  111.5
+                               },
+                               {
+                                   "Name":  "ChatGPT",
+                                   "Id":  47592,
+                                   "MemoryMB":  267,
+                                   "CpuSeconds":  6166
+                               },
+                               {
+                                   "Name":  "WeChatAppEx",
+                                   "Id":  2592,
+                                   "MemoryMB":  252,
+                                   "CpuSeconds":  86.2
+                               },
+                               {
+                                   "Name":  "ChatGPT",
+                                   "Id":  49272,
+                                   "MemoryMB":  238,
+                                   "CpuSeconds":  95.4
+                               },
+                               {
+                                   "Name":  "BitBrowser",
+                                   "Id":  26508,
+                                   "MemoryMB":  212,
+                                   "CpuSeconds":  776.1
+                               }
+                           ],
+    "TopIoProcesses":  [
+                           {
+                               "Name":  "ChatGPT#3",
+                               "Id":  47592,
+                               "DataMBps":  11.16,
+                               "ReadMBps":  11.12,
+                               "WriteMBps":  0.04,
+                               "CpuPercent":  30,
+                               "CommandLine":  "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe\" --type=gpu-process --no-pre-read-main-dll --start-stack-profiler --gpu-preferences=UAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAOAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAABgAAAAAAAAAGAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --metrics-shmem-handle=2064,i,7546511771805160816,13031394458205053246,262144 --field-trial-handle=2144,i,13264100209085866382,17533371194141693083,262144 --enable-features=OwlPermissions,OwlWebViewEnhancements --disable-features=DropInputEventsWhilePaintHolding --variations-seed-version --pseudonymization-salt-handle=2148,i,15911451953011017613,11763576607445813020,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=2140 /prefetch:2",
+                               "ParentProcessId":  3920
+                           },
+                           {
+                               "Name":  "ChatGPT#7",
+                               "Id":  14428,
+                               "DataMBps":  11.09,
+                               "ReadMBps":  0.04,
+                               "WriteMBps":  11.05,
+                               "CpuPercent":  25,
+                               "CommandLine":  "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe\" --type=renderer --standard-schemes=app,codex-sandbox --service-worker-schemes=codex-sandbox --secure-schemes=app,codex-sandbox,sentry-ipc --bypasscsp-schemes=sentry-ipc --fetch-schemes=app,codex-sandbox,sentry-ipc --cors-schemes=codex-sandbox,sentry-ipc --streaming-schemes=app,codex-sandbox --no-pre-read-main-dll --disable-blink-features=ReplacedNormalFlowStackingInlinePaint --video-capture-use-gpu-memory-buffer --lang=zh-CN --device-scale-factor=1 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=5 --time-ticks-at-unix-epoch=-1785423905318664 --launch-time-ticks=250223335621 --metrics-shmem-handle=4824,i,978456948448585045,18248633381738650963,2097152 --field-trial-handle=2144,i,13264100209085866382,17533371194141693083,262144 --enable-features=OwlPermissions,OwlWebViewEnhancements --disable-features=DropInputEventsWhilePaintHolding --variations-seed-version --pseudonymization-salt-handle=2148,i,15911451953011017613,11763576607445813020,4 --trace-process-track-uuid=3190708990997080739 --mojo-platform-channel-handle=4840 /prefetch:1",
+                               "ParentProcessId":  3920
+                           },
+                           {
+                               "Name":  "ChatGPT",
+                               "Id":  3920,
+                               "DataMBps":  0.76,
+                               "ReadMBps":  0.14,
+                               "WriteMBps":  0.62,
+                               "CpuPercent":  5,
+                               "CommandLine":  "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe\" ",
+                               "ParentProcessId":  51536
+                           },
+                           {
+                               "Name":  "clash-verge",
+                               "Id":  11676,
+                               "DataMBps":  0.32,
+                               "ReadMBps":  0.16,
+                               "WriteMBps":  0.16,
+                               "CpuPercent":  0,
+                               "CommandLine":  "\"C:\\Program Files\\Clash Verge\\clash-verge.exe\" ",
+                               "ParentProcessId":  11560
+                           }
+                       ],
+    "TopCpuProcesses":  [
+                            {
+                                "Name":  "pwsh#6",
+                                "Id":  18056,
+                                "CpuPercent":  90,
+                                "DataMBps":  0,
+                                "CommandLine":  "\"C:\\Users\\lsb\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe\" -Command \"try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\nGet-ChildItem -LiteralPath \u0027E:\\codex\\aisp\\aidaihuo\u0027 -Recurse -File -Include *.mp4,*.mov,*.webm,*.mkv -ErrorAction SilentlyContinue | Select-Object -First 5 FullName,Length\""
+                            },
+                            {
+                                "Name":  "ChatGPT#3",
+                                "Id":  47592,
+                                "CpuPercent":  55,
+                                "DataMBps":  11.36,
+                                "CommandLine":  "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe\" --type=gpu-process --no-pre-read-main-dll --start-stack-profiler --gpu-preferences=UAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAOAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAABgAAAAAAAAAGAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --metrics-shmem-handle=2064,i,7546511771805160816,13031394458205053246,262144 --field-trial-handle=2144,i,13264100209085866382,17533371194141693083,262144 --enable-features=OwlPermissions,OwlWebViewEnhancements --disable-features=DropInputEventsWhilePaintHolding --variations-seed-version --pseudonymization-salt-handle=2148,i,15911451953011017613,11763576607445813020,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=2140 /prefetch:2"
+                            },
+                            {
+                                "Name":  "figma_agent",
+                                "Id":  13484,
+                                "CpuPercent":  50,
+                                "DataMBps":  0,
+                                "CommandLine":  "\"C:\\Users\\lsb\\AppData\\Local\\FigmaAgent\\figma_agent.exe\" "
+                            },
+                            {
+                                "Name":  "WmiPrvSE#2",
+                                "Id":  12652,
+                                "CpuPercent":  45,
+                                "DataMBps":  0,
+                                "CommandLine":  ""
+                            },
+                            {
+                                "Name":  "Taskmgr",
+                                "Id":  37744,
+                                "CpuPercent":  20,
+                                "DataMBps":  0,
+                                "CommandLine":  ""
+                            },
+                            {
+                                "Name":  "WmiPrvSE#1",
+                                "Id":  48984,
+                                "CpuPercent":  15,
+                                "DataMBps":  0,
+                                "CommandLine":  ""
+                            },
+                            {
+                                "Name":  "pythonw",
+                                "Id":  8656,
+                                "CpuPercent":  15,
+                                "DataMBps":  0,
+                                "CommandLine":  "\"C:\\Users\\lsb\\anaconda3\\pythonw.exe\" \"E:\\codex\\aisp\\aidaihuo\\tools\\hide_automation_console_windows.py\" --poll-ms 75"
+                            },
+                            {
+                                "Name":  "python#2",
+                                "Id":  36368,
+                                "CpuPercent":  15,
+                                "DataMBps":  2.64,
+                                "CommandLine":  "\"C:\\Users\\lsb\\anaconda3\\python.exe\" E:\\codex\\aisp\\aidaihuo-handoff-control\\tools\\obsidian_compound_worker.py poll --max-tasks 1"
+                            },
+                            {
+                                "Name":  "wps#18",
+                                "Id":  2904,
+                                "CpuPercent":  10,
+                                "DataMBps":  0.08,
+                                "CommandLine":  "\"C:\\Users\\lsb\\AppData\\Local\\Kingsoft\\WPSOFF~1\\1210~1.280\\office6\\wps.exe\" Run /AppUserModelID=Kingsoft.Office.cefhomepage -Entry=CefRenderEntryPoint -EncodePathU8=QzpcVXNlcnNcbHNiXEFwcERhdGFcTG9jYWxcS2luZ3NvZnRcV1BTIE9mZmljZVwxMi4xLjAuMjgwNDNcb2ZmaWNlNlxrc29qc2NvcmUuZGxs -EncodePath QzpcVXNlcnNcbHNiXEFwcERhdGFcTG9jYWxcS2luZ3NvZnRcV1BTIE9mZmljZVwxMi4xLjAuMjgwNDNcb2ZmaWNlNlxrc29qc2NvcmUuZGxs -CefPluginPathU8=QzpcVXNlcnNcbHNiXEFwcERhdGFcTG9jYWxcS2luZ3NvZnRcV1BTIE9mZmljZVwxMi4xLjAuMjgwNDNcb2ZmaWNlNlxhZGRvbnNcY2Vm -CefPluginPath=QzpcVXNlcnNcbHNiXEFwcERhdGFcTG9jYWxcS2luZ3NvZnRcV1BTIE9mZmljZVwxMi4xLjAuMjgwNDNcb2ZmaWNlNlxhZGRvbnNcY2Vm -JSCefServicePath=QzpcVXNlcnNcbHNiXEFwcERhdGFcUm9hbWluZ1xLaW5nc29mdFx3cHNcYWRkb25zXHBvb2xcd2luLWkzODZca2NlZl8zLjEuMC4xMjY5NVxqc2NlZnNlcnZpY2UuZGxs -CefParentID=41072 \"C:/Users/lsb/AppData/Local/Kingsoft/WPS Office/12.1.0.28043/office6\\promecefpluginhost.exe\" --type=renderer --log-severity=disable --disable-pdf-extension --user-data-dir=\"C:\\Users\\lsb\\AppData\\Local\\CEF\\User Data\" --jbserver=browser.a3ba19ec797144349ea5dbc1b742aca1.28043.58b7eb5ebaa12a05.dpi1.pipe --no-sandbox --log-file=\"C:\\Users\\lsb\\AppData\\Local\\Kingsoft\\WPS Office\\12.1.0.28043\\office6\\debug.log\" --js-flags=--expose-gc --lang=zh-CN --no-zygote --device-scale-factor=1 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=20 --launch-time-ticks=247858734448 --mojo-platform-channel-handle=2356 --field-trial-handle=1928,i,2162376100280908259,17605975586050204153,131072 --disable-features=TSFImeSupport /prefetch:1"
+                            },
+                            {
+                                "Name":  "verge-mihomo",
+                                "Id":  15552,
+                                "CpuPercent":  10,
+                                "DataMBps":  0,
+                                "CommandLine":  ""
+                            },
+                            {
+                                "Name":  "powershell#8",
+                                "Id":  45720,
+                                "CpuPercent":  10,
+                                "DataMBps":  0.02,
+                                "CommandLine":  "powershell.exe -NoProfile -NonInteractive -Command \"$ErrorActionPreference = \u0027Stop\u0027; $cpuByPid = @{}; Get-CimInstance Win32_PerfFormattedData_PerfProc_Process | ForEach-Object { $cpuByPid[[int]$_.IDProcess] = [double]$_.PercentProcessorTime }; Get-CimInstance Win32_Process -Filter \\\"ProcessId = 2496 OR ProcessId = 2508 OR ProcessId = 2724 OR ProcessId = 2804 OR ProcessId = 4480 OR ProcessId = 4872 OR ProcessId = 7188 OR ProcessId = 12532 OR ProcessId = 13120 OR ProcessId = 13544 OR ProcessId = 14428 OR ProcessId = 14608 OR ProcessId = 14652 OR ProcessId = 15016 OR ProcessId = 15192 OR ProcessId = 15900 OR ProcessId = 16168 OR ProcessId = 16516 OR ProcessId = 18056 OR ProcessId = 20948 OR ProcessId = 29196 OR ProcessId = 30296 OR ProcessId = 30472 OR ProcessId = 31568 OR ProcessId = 33536 OR ProcessId = 33816 OR ProcessId = 34456 OR ProcessId = 36028 OR ProcessId = 36184 OR ProcessId = 37580 OR ProcessId = 38176 OR ProcessId = 38524 OR ProcessId = 39032 OR ProcessId = 40568 OR ProcessId = 41224 OR ProcessId = 41768 OR ProcessId = 41820 OR ProcessId = 42060 OR ProcessId = 42776 OR ProcessId = 44452 OR ProcessId = 44476 OR ProcessId = 45856 OR ProcessId = 46436 OR ProcessId = 47404 OR ProcessId = 47592 OR ProcessId = 47816 OR ProcessId = 48596 OR ProcessId = 48860 OR ProcessId = 49060 OR ProcessId = 49272 OR ProcessId = 49348 OR ProcessId = 50304 OR ProcessId = 50692 OR ProcessId = 50716 OR ProcessId = 50756 OR ProcessId = 50920 OR ProcessId = 50996 OR ProcessId = 51096 OR ProcessId = 51156 OR ProcessId = 51388 OR ProcessId = 51644 OR ProcessId = 51716 OR ProcessId = 52140 OR ProcessId = 52168 OR ProcessId = 52228 OR ProcessId = 52272 OR ProcessId = 52560 OR ProcessId = 52688 OR ProcessId = 53364 OR ProcessId = 54992 OR ProcessId = 55068 OR ProcessId = 56060 OR ProcessId = 56244 OR ProcessId = 56580 OR ProcessId = 56636 OR ProcessId = 56980 OR ProcessId = 57596 OR ProcessId = 57728 OR ProcessId = 57836\\\" | Select-Object ProcessId,ParentProcessId,CommandLine,WorkingSetSize,@{Name=\u0027CpuPercent\u0027;Expression={$cpuByPid[[int]$_.ProcessId]}},@{Name=\u0027AgeSeconds\u0027;Expression={[int]((Get-Date) - $_.CreationDate).TotalSeconds}} | ConvertTo-Json -Depth 2\""
+                            },
+                            {
+                                "Name":  "dwm",
+                                "Id":  2076,
+                                "CpuPercent":  10,
+                                "DataMBps":  0,
+                                "CommandLine":  ""
+                            },
+                            {
+                                "Name":  "ChatGPT#7",
+                                "Id":  14428,
+                                "CpuPercent":  5,
+                                "DataMBps":  11.3,
+                                "CommandLine":  "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe\" --type=renderer --standard-schemes=app,codex-sandbox --service-worker-schemes=codex-sandbox --secure-schemes=app,codex-sandbox,sentry-ipc --bypasscsp-schemes=sentry-ipc --fetch-schemes=app,codex-sandbox,sentry-ipc --cors-schemes=codex-sandbox,sentry-ipc --streaming-schemes=app,codex-sandbox --no-pre-read-main-dll --disable-blink-features=ReplacedNormalFlowStackingInlinePaint --video-capture-use-gpu-memory-buffer --lang=zh-CN --device-scale-factor=1 --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=5 --time-ticks-at-unix-epoch=-1785423905318664 --launch-time-ticks=250223335621 --metrics-shmem-handle=4824,i,978456948448585045,18248633381738650963,2097152 --field-trial-handle=2144,i,13264100209085866382,17533371194141693083,262144 --enable-features=OwlPermissions,OwlWebViewEnhancements --disable-features=DropInputEventsWhilePaintHolding --variations-seed-version --pseudonymization-salt-handle=2148,i,15911451953011017613,11763576607445813020,4 --trace-process-track-uuid=3190708990997080739 --mojo-platform-channel-handle=4840 /prefetch:1"
+                            },
+                            {
+                                "Name":  "svchost#35",
+                                "Id":  3708,
+                                "CpuPercent":  5,
+                                "DataMBps":  0,
+                                "CommandLine":  ""
+                            },
+                            {
+                                "Name":  "LibreHardwareMonitor",
+                                "Id":  55820,
+                                "CpuPercent":  5,
+                                "DataMBps":  0,
+                                "CommandLine":  ""
+                            }
+                        ],
+    "ReadonlyCodexScans":  [
+                               {
+                                   "ScanType":  "Codex recursive drive search",
+                                   "ProcessId":  18056,
+                                   "ParentProcessId":  4872,
+                                   "CommandLine":  "\"C:\\Users\\lsb\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe\" -Command \"try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\nGet-ChildItem -LiteralPath \u0027E:\\codex\\aisp\\aidaihuo\u0027 -Recurse -File -Include *.mp4,*.mov,*.webm,*.mkv -ErrorAction SilentlyContinue | Select-Object -First 5 FullName,Length\"",
+                                   "ParentCommandLine":  "\"C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe\" -c features.code_mode_host=true app-server --analytics-default-enabled"
+                               }
+                           ],
+    "ReadonlyRobocopyScans":  [
+
+                              ],
+    "ObservedDiskScanners":  [
+
+                             ],
+    "ToolStatus":  [
+                       {
+                           "Name":  "System Informer",
+                           "Available":  true,
+                           "Source":  "C:\\Program Files\\SystemInformer\\SystemInformer.exe"
+                       },
+                       {
+                           "Name":  "LibreHardwareMonitor",
+                           "Available":  true,
+                           "Source":  "C:\\Users\\lsb\\AppData\\Local\\ComputerAccelerator\\tools\\LibreHardwareMonitor\\LibreHardwareMonitor.exe"
+                       },
+                       {
+                           "Name":  "Mem Reduct",
+                           "Available":  true,
+                           "Source":  "C:\\Program Files\\Mem Reduct\\memreduct.exe"
+                       }
+                   ]
+}

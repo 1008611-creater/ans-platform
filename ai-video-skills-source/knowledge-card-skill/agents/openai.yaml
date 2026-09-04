@@ -1,0 +1,6 @@
+interface:
+  display_name: "知识卡冠军"
+  short_description: "从用户资料提取可验证规则，交给下一位冠军"
+  default_prompt: "使用 $knowledge-card-skill 从我提供的资料中提取本任务可用规则，并交给对应冠军。"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,13 @@
+interface:
+  display_name: "Codex Agent Mem"
+  short_description: "Local memory for Codex continuity"
+  default_prompt: "Use $codex-agent-mem to bootstrap context, guard scope, and check open work before completion."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "codex-agent-mem"
+      description: "Local codex-agent-mem MCP server configured in Codex Desktop."
+
+policy:
+  allow_implicit_invocation: true

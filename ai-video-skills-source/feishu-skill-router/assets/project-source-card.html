@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<title>项目真实来源卡</title>
+<style>
+  :root { --ink:#152b4f; --muted:#51647e; --paper:#f8fbff; --line:#bfd4e9; --yellow:#ffd24d; }
+  * { box-sizing:border-box; }
+  body { margin:0; color:var(--ink); font-family:"Microsoft YaHei","Segoe UI",sans-serif; }
+  .card { width:1080px; min-height:1500px; padding:58px 64px 54px; background:linear-gradient(rgba(44,136,211,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(44,136,211,.08) 1px,transparent 1px),var(--paper); background-size:42px 42px; }
+  .head { display:flex; justify-content:space-between; gap:16px; align-items:center; font-size:24px; font-weight:800; }
+  .badge { padding:10px 17px; border-radius:999px; color:#fff; background:var(--ink); font-size:18px; }
+  h1 { margin:22px 0 10px; font-family:Consolas,"Courier New",monospace; font-size:56px; }
+  .position { margin:0 0 24px; font-size:27px; font-weight:750; line-height:1.38; }
+  .source { padding:15px 18px; border-left:8px solid var(--yellow); border-radius:10px; background:#fff; font-size:19px; line-height:1.45; }
+  .capture-title { display:flex; justify-content:space-between; margin:32px 0 12px; font-size:20px; font-weight:800; }
+  .capture { padding:11px; border:2px solid var(--ink); border-radius:18px; background:var(--ink); }
+  .capture img { display:block; width:100%; height:auto; object-fit:contain; border-radius:8px; }
+  .boundary { margin:12px 2px 26px; color:var(--muted); font-size:17px; line-height:1.45; }
+  .uses { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; }
+  .use { min-height:164px; padding:18px; border:1px solid var(--line); border-radius:15px; background:#fff; }
+  .use b { display:block; margin-bottom:7px; font-size:22px; }
+  .use p { margin:0; color:var(--muted); font-size:17px; line-height:1.42; }
+  .value { margin-top:24px; padding:21px 24px; border-radius:15px; color:#fff; background:var(--ink); font-size:25px; font-weight:800; line-height:1.42; }
+</style>
+<main class="card">
+  <div class="head"><span>AI Skill 来源学习卡</span><span class="badge">{{来源类别}}</span></div>
+  <h1>{{Skill 名称}}</h1>
+  <p class="position">{{中文定位}}</p>
+  <section class="source"><b>{{来源网址}}</b><br>{{截图来源与可核实说明}}</section>
+  <div class="capture-title"><span>项目真实页面</span><span>完整嵌入 · 未裁切</span></div>
+  <section class="capture"><img src="{{本次真实首屏截图路径}}" alt="{{Skill 名称}} 的真实来源完整截图"></section>
+  <p class="boundary">图片只用于识别项目与学习导航；能力以本机 Skill、具体章节和真实执行验证为准。</p>
+  <section class="uses">
+    <article class="use"><b>{{实践一标题}}</b><p>{{实践一说明}}</p></article>
+    <article class="use"><b>{{实践二标题}}</b><p>{{实践二说明}}</p></article>
+    <article class="use"><b>{{实践三标题}}</b><p>{{实践三说明}}</p></article>
+  </section>
+  <div class="value">价值结论：{{一句话价值}}</div>
+</main>

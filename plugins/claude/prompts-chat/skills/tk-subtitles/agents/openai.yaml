@@ -1,0 +1,4 @@
+interface:
+  display_name: "TK Subtitles"
+  short_description: "TikTok-style key-highlight video captions"
+  default_prompt: "Use $tk-subtitles to add TikTok-style English captions with selected keyword highlights to this video."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "StoReel Seedance2 Canvas"
+  short_description: "Use StoReel Canvas to run Seedance2 video creation workflows."
+  default_prompt: "Use StoReel Canvas to log in, open or create a project canvas, prepare assets and prompts, and run the Seedance2 video generation workflow."

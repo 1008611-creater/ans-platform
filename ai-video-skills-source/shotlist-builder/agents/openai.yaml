@@ -1,0 +1,6 @@
+interface:
+  display_name: "拆镜冠军"
+  short_description: "把定稿剧本和关键资产拆成可生产的镜头表"
+  default_prompt: "使用 $shotlist-builder 基于已定稿剧本和资产清单输出可生产的中文分镜表。"
+policy:
+  allow_implicit_invocation: true

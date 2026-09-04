@@ -1,0 +1,4 @@
+interface:
+  display_name: "经验沉淀与技能路由"
+  short_description: "经用户许可沉淀高价值经验，并用 DAG 说明技能归属"
+  default_prompt: "识别当前对话中值得复用的经验；先用中文说明授权编号，并以 DAG 写明将沉淀到哪个 Skill 的哪个章节；获得用户许可后执行最小修改。"

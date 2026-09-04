@@ -1,0 +1,4 @@
+interface:
+  display_name: "自媒体 Skill 路由"
+  short_description: "把项目成果变成小红书和抖音内容并完成研究、包装、审核、发布与复盘"
+  default_prompt: "使用自媒体 Skill 路由，把这个项目或素材整理成可发布的小红书图文和抖音短视频方案；按路由选择已部署工具，先产出草稿并验证，再执行发布或数据复盘。"

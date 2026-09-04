@@ -1,0 +1,7 @@
+interface:
+  display_name: "电脑加速诊断"
+  short_description: "诊断并低风险缓解 Windows 性能与内存问题"
+  default_prompt: "使用 $computer-accelerator 的 Optimize 模式诊断 Windows 卡顿，按当前瓶颈执行低风险动作，并等待回稳后复测结果。"
+
+policy:
+  allow_implicit_invocation: true

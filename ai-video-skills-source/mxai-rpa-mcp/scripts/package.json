@@ -1,0 +1,38 @@
+{
+  "name": "ai-rpa-console",
+  "version": "1.5.0",
+  "private": true,
+  "description": "本地半自动抽卡控制台：批量导出可粘贴提示词、MXAI快捷打开、结果自动归档。",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "mcp": "node mxai_mcp_server.js",
+    "dev": "set AUTO_OPEN_BROWSER=1&& node server.js",
+    "test": "node test/protocol.test.js",
+    "build": "pkg . --targets node18-win-x64 --output dist/ai-rpa-console.exe",
+    "build:mac": "pkg . --targets node18-macos-x64 --output dist/ai-rpa-console",
+    "build:linux": "pkg . --targets node18-linux-x64 --output dist/ai-rpa-console"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "pkg": {
+    "scripts": [
+      "server.js"
+    ],
+    "assets": [
+      "index.html",
+      "app.js",
+      "styles.css"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "playwright": "^1.62.1"
+  }
+}

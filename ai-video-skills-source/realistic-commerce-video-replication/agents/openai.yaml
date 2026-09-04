@@ -1,0 +1,4 @@
+interface:
+  display_name: "Realistic Commerce Video Replication"
+  short_description: "Build natural commerce scripts and visuals"
+  default_prompt: "Use $realistic-commerce-video-replication to create realistic, natural commerce video images and a hook-driven short-video script."

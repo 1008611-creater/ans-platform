@@ -1,0 +1,4 @@
+interface:
+  display_name: "短剧转绘生产主控"
+  short_description: "面向多渠道原片短剧转绘并发生产与持续交付的智能执行主控系统"
+  default_prompt: "使用 $mx-shortdrama-production-harness 从原片开始持续完成本次转绘视频。"

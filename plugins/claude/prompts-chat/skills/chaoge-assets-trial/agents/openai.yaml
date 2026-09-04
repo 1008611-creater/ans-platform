@@ -1,0 +1,6 @@
+interface:
+  display_name: "导演前期资产冠军"
+  short_description: "从定稿剧本建立项目风格基准、角色与关键道具"
+  default_prompt: "使用 $chaoge-assets-trial 基于我的定稿剧本和已确认视觉类型，完成导演基准、角色和关键道具资产。"
+policy:
+  allow_implicit_invocation: true

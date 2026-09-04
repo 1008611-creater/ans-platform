@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ikun Image2"
+  short_description: "Generate images with Ikun NewAPI channel"
+  default_prompt: "Use Ikun Image2 to generate or edit an image through the Monkey Tools OpenAI-compatible image channel."

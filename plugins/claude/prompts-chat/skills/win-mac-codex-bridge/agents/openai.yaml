@@ -1,0 +1,4 @@
+interface:
+  display_name: "Three-Peer Codex Bridge"
+  short_description: "Route work across Windows, Mac, and server Codex"
+  default_prompt: "Use $win-mac-codex-bridge to coordinate one verified exchange across the Windows, Mac, or server Codex peers."

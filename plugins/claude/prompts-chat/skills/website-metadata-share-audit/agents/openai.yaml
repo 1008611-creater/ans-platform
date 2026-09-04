@@ -1,0 +1,7 @@
+interface:
+  display_name: "网站元数据与分享验收"
+  short_description: "只读审查公开分享元数据、规范地址与私有页面索引边界"
+  default_prompt: "使用 $website-metadata-share-audit 对这个网站做只读元数据与分享验收，并区分源码事实和真实 URL 待验证项。"
+
+policy:
+  allow_implicit_invocation: false

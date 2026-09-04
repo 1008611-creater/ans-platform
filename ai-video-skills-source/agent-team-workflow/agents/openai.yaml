@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Team Workflow"
+  short_description: "Split Codex work into spec, build, review"
+  default_prompt: "Use $agent-team-workflow to classify this task, write a numbered spec if needed, implement from it, and verify with evidence."

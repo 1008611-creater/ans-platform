@@ -1,0 +1,4 @@
+interface:
+  display_name: "网页视觉与动效总监"
+  short_description: "把网站目标、视觉、动效、素材和技术约束变成可验证的开发指令。"
+  default_prompt: "请为这个网站整理视觉、动效、素材和开发交接方案，并先给我一份可确认的需求稿。"

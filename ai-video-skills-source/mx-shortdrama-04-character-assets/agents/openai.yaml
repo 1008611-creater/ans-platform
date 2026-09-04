@@ -1,0 +1,4 @@
+interface:
+  display_name: "短剧人物资产图"
+  short_description: "从已确认人物证据生成定妆身份母图与完整角色设定卡提示词"
+  default_prompt: "使用 $mx-shortdrama-04-character-assets 从已确认人物证据生成定妆母图和角色设定卡提示词。"

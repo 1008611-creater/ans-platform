@@ -1,0 +1,146 @@
+{
+  "schema_version": "prompt_method_cards.v1",
+  "library_id": "ai_video_prompt_method_cards",
+  "source_policy": {
+    "primary_source": "references/superi-prompt-course-20260711.md",
+    "source_grade": "C",
+    "promotion_rule": "Tutorial-derived cards guide decomposition and QA only. They become default behavior only after current route evidence, real QA/user feedback, same-input comparison, and governed release review."
+  },
+  "card_defaults": {
+    "method_layer": "method",
+    "status": "candidate",
+    "default_enabled": false,
+    "requires_local_validation": true,
+    "source_refs": [
+      {
+        "source_id": "superi_prompt_course_20260711",
+        "source_grade": "C",
+        "path": "C:\\Users\\lsb\\.codex\\skills\\prompt-skill-router\\references\\superi-prompt-course-20260711.md",
+        "sha256": "E6A6CA73B224FC19CD2FB71969AE7B84AE8DB6FE8628DEC54D55DC69FDF40631"
+      }
+    ],
+    "non_goals": ["provider capability claim", "route fact creation", "submission authorization", "delivery assertion"]
+  },
+  "cards": [
+    {
+      "id": "asset_identity",
+      "lesson_ref": "Character design uses identity plus state",
+      "name_zh": "身份与状态分离",
+      "applies_to": ["character", "first_frame", "video"],
+      "required_facts": ["identity", "age_or_state", "wardrobe_or_material"],
+      "compiler_instruction": "把稳定身份与当前剧情状态分开写：脸部结构、年龄感、发型和身份归属保持稳定；服装、磨损、姿态和情绪体现当前状态。",
+      "lint_tags": ["identity_anchor", "wardrobe_state"],
+      "qa_checks": ["身份未漂移", "服装与剧情状态一致", "未借用真实人物身份"]
+    },
+    {
+      "id": "space_master",
+      "lesson_ref": "AI 视频场景不穿帮：4种保持环境一致的方法",
+      "name_zh": "空间母版与物理关系",
+      "applies_to": ["scene", "dialogue", "continuity"],
+      "required_facts": ["location", "landmarks", "subject_positions", "camera_side"],
+      "compiler_instruction": "先锁定房间稳定地标、人物相对位置和镜头所在侧，再写构图。屏幕、镜子和文件只能出现在摄影机实际可见的方向。",
+      "lint_tags": ["space_anchor", "screen_physics"],
+      "qa_checks": ["地理关系稳定", "屏幕方向物理正确", "人物左右位置未反转"]
+    },
+    {
+      "id": "camera_relationship",
+      "lesson_ref": "第六十六节：镜头角度",
+      "name_zh": "机位、景别与叙事关系",
+      "applies_to": ["dialogue", "emotion", "first_person", "product"],
+      "required_facts": ["camera_angle", "shot_scale", "image_center", "dramatic_purpose"],
+      "compiler_instruction": "把机位、景别、前中后景、焦段行为和叙事目的一起写。第一视角必须明确视线方向和可见的身体/手部线索，不能只写 POV。",
+      "lint_tags": ["camera_anchor", "viewpoint"],
+      "qa_checks": ["视角正确", "画面中心未漂移", "构图与戏剧目的匹配"]
+    },
+    {
+      "id": "motivated_lighting",
+      "lesson_ref": "Lighting must be motivated",
+      "name_zh": "有动机的光线",
+      "applies_to": ["scene", "emotion", "product"],
+      "required_facts": ["light_source", "light_direction", "contrast", "emotional_function"],
+      "compiler_instruction": "说明光从哪里来、照到谁、阴影如何保留、对比和色温为何服务当前情绪或产品材质。不要用电影感或高级光影替代光线逻辑。",
+      "lint_tags": ["light_source", "light_direction"],
+      "qa_checks": ["光源可信", "主体与背景可分离", "曝光和情绪一致"]
+    },
+    {
+      "id": "hand_prop_handoff",
+      "lesson_ref": "第六十二节：草图让 AI 看懂画面",
+      "name_zh": "手部动作与关键道具交接",
+      "applies_to": ["handoff", "document", "product_demo"],
+      "required_facts": ["giver", "receiver", "prop", "hand_action", "image_center"],
+      "compiler_instruction": "明确谁用哪只手把什么交给谁、对方如何接住、道具位于画面何处。关键文件或屏幕的文字策略必须单独说明。",
+      "lint_tags": ["handoff_action", "prop_anchor", "text_policy"],
+      "qa_checks": ["交接主体正确", "双手与道具可见", "道具未被替换", "文字策略执行"]
+    },
+    {
+      "id": "layered_motion",
+      "lesson_ref": "Motion is layered visible change",
+      "name_zh": "分层动作与时间节奏",
+      "applies_to": ["video", "emotion", "product_demo"],
+      "required_facts": ["primary_action", "action_path", "secondary_response", "micro_reaction"],
+      "compiler_instruction": "短镜头只保留一个主动作，并写出身体路径、衣发或道具的次级反应、微表情和环境/声音变化的顺序。",
+      "lint_tags": ["primary_action", "temporal_order"],
+      "qa_checks": ["动作符合要求", "没有无关多动作", "次级物理反应自然", "动作有开始和结束"]
+    },
+    {
+      "id": "emotion_microreaction",
+      "lesson_ref": "Motion is layered visible change",
+      "name_zh": "情绪基线与微反应",
+      "applies_to": ["emotion", "dialogue", "reaction"],
+      "required_facts": ["emotion_baseline", "emotion_change", "gaze_or_face_action"],
+      "compiler_instruction": "先写当前情绪基线，再写触发后的眼神、呼吸、嘴角、下颌、手指或肩部微变化。不能用抽象情绪词替代可见反应。",
+      "lint_tags": ["emotion_anchor", "micro_reaction"],
+      "qa_checks": ["表情与剧情事实一致", "没有反向情绪", "微反应清晰但不过度"]
+    },
+    {
+      "id": "dialogue_voice_timing",
+      "lesson_ref": "Voice is structured performance",
+      "name_zh": "台词、声音与停顿",
+      "applies_to": ["dialogue", "voice"],
+      "required_facts": ["speaker", "dialogue_visibility", "voice_duty", "timing"],
+      "compiler_instruction": "可见台词、画外音和后期字幕必须分开。需要原生声音时说明年龄感、音色、语速、情绪、重音和停顿；不支持时保留后期声音职责。",
+      "lint_tags": ["speaker_binding", "audio_boundary"],
+      "qa_checks": ["说话人正确", "非可见台词未变成画面人物", "字幕未提前烤入首帧"]
+    },
+    {
+      "id": "continuity_handoff",
+      "lesson_ref": "Long-video continuity is designed before generation",
+      "name_zh": "首尾帧与连续镜头承接",
+      "applies_to": ["continuity", "video"],
+      "required_facts": ["continuity_in", "continuity_out", "immutable_anchor", "next_shot_link"],
+      "compiler_instruction": "锁定进入镜头的外观、空间和动作起点；把动作完成点或可用尾帧交给下一镜头。静态尾帧只锚定外观，不代表速度或镜头运动连续。",
+      "lint_tags": ["continuity_in", "continuity_out"],
+      "qa_checks": ["身份/服装/道具连续", "空间连续", "尾帧未被误当动作证明"]
+    },
+    {
+      "id": "text_policy",
+      "lesson_ref": "Visual reference responsibilities are explicit",
+      "name_zh": "画面文字与后期策略",
+      "applies_to": ["document", "screen", "subtitle", "commerce"],
+      "required_facts": ["text_visibility", "language_policy", "postproduction_owner"],
+      "compiler_instruction": "逐项决定文字是可读短语、模糊纹理、留白、翻译后重做还是后期字幕。不要让模型生成长合同、聊天记录、价格表或密集 UI。",
+      "lint_tags": ["text_policy", "generated_text_risk"],
+      "qa_checks": ["无中文/汉字残留", "无乱码", "字幕职责正确", "可读文字与授权语言一致"]
+    },
+    {
+      "id": "product_evidence",
+      "lesson_ref": "Asset-first, not adjective-first",
+      "name_zh": "商品证据与真实使用",
+      "applies_to": ["product_demo", "commerce"],
+      "required_facts": ["product_identity", "usage_action", "claim_boundary", "proof_point"],
+      "compiler_instruction": "商品身份、材质、使用动作、可见卖点和主张边界必须来自确认资料。用真实手部接触和物理反馈展示，不编造价格、功效或购买信息。",
+      "lint_tags": ["product_anchor", "claim_boundary"],
+      "qa_checks": ["商品未变形替换", "动作真实", "卖点可见", "无未经授权主张"]
+    },
+    {
+      "id": "story_insert",
+      "lesson_ref": "第六十节：用空镜讲故事",
+      "name_zh": "空镜与信息性插入",
+      "applies_to": ["insert", "transition"],
+      "required_facts": ["story_function", "subject_state", "dynamic_detail", "transition_purpose"],
+      "compiler_instruction": "空镜或道具插入必须交代时间、地点、关系、情绪或转场中的至少一项，并保持一个具体动态细节。",
+      "lint_tags": ["story_function", "dynamic_detail"],
+      "qa_checks": ["插入镜头传递信息", "不只是装饰", "与前后镜头衔接"]
+    }
+  ]
+}

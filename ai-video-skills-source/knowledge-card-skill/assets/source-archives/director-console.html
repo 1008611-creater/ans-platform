@@ -1,0 +1,997 @@
+﻿<!DOCTYPE html>
+<html lang='zh-CN'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>知卡星球 · AI短剧与提示词导演控制台</title>
+  <script src='https://unpkg.com/lucide@latest'></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    :root {
+      --background: 224 71% 4%;
+      --foreground: 213 31% 91%;
+      --card: 224 71% 6%;
+      --card-foreground: 213 31% 91%;
+      --popover: 224 71% 6%;
+      --popover-foreground: 215 20.2% 65.1%;
+      --primary: 210 40% 98%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+      --secondary: 217.2 32.6% 12%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 217.2 32.6% 12%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --accent: 217.2 32.6% 14%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 217.2 32.6% 14%;
+      --input: 217.2 32.6% 14%;
+      --ring: 212.7 26.8% 83.9%;
+      --radius: 0.5rem;
+      --gold: #e2b857;
+    }
+    body.theme-light {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 215.4 16.3% 46.9%;
+      --primary: 222.2 47.4% 11.2%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96.1%;
+      --secondary-foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96.1%;
+      --accent-foreground: 222.2 47.4% 11.2%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 222.2 84% 4.9%;
+      --gold: #b48c14;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5; -webkit-font-smoothing: antialiased;
+      min-height: 100vh; transition: background-color 0.2s ease, color 0.2s ease;
+      display: flex; flex-direction: column;
+    }
+    header {
+      border-bottom: 1px solid hsl(var(--border));
+      padding: 14px 32px; display: flex; align-items: center; justify-content: space-between;
+      background: hsl(var(--background)); position: sticky; top: 0; z-index: 100;
+    }
+    .brand-group { display: flex; align-items: center; gap: 12px; }
+    .brand-title { font-size: 0.98rem; font-weight: 700; color: hsl(var(--foreground)); display: flex; align-items: center; gap: 8px; letter-spacing: -0.2px; }
+    .brand-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); font-weight: 600; }
+    .watermark-badge { font-size: 0.76rem; color: var(--gold); background: rgba(212, 175, 55, 0.1); padding: 4px 12px; border-radius: 9999px; border: 1px solid rgba(212, 175, 55, 0.2); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    nav { display: flex; background: hsl(var(--background)); border-bottom: 1px solid hsl(var(--border)); padding: 0 32px; gap: 6px; overflow-x: auto; }
+    .nav-tab { background: none; border: none; color: hsl(var(--muted-foreground)); padding: 12px 16px; font-size: 0.84rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s ease; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+    .nav-tab:hover { color: hsl(var(--foreground)); }
+    .nav-tab.active { color: hsl(var(--foreground)); border-bottom-color: hsl(var(--foreground)); }
+    main { flex: 1; padding: 24px 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+    .guide-banner {
+      background: hsl(var(--secondary)); border: 1px solid hsl(var(--border));
+      border-radius: var(--radius); padding: 14px 20px; margin-bottom: 22px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .guide-title { font-size: 0.86rem; font-weight: 700; color: hsl(var(--foreground)); display: flex; align-items: center; gap: 8px; }
+    .guide-steps { display: flex; gap: 20px; font-size: 0.8rem; color: hsl(var(--muted-foreground)); flex-wrap: wrap; }
+    .guide-step { display: flex; align-items: center; gap: 6px; }
+    .guide-step span.num { background: hsl(var(--foreground)); color: hsl(var(--background)); width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.15s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 1024px) { .grid-2 { grid-template-columns: 1fr; } }
+    .panel { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid hsl(var(--border)); }
+    .panel-title { font-size: 0.92rem; font-weight: 700; color: hsl(var(--card-foreground)); display: flex; align-items: center; gap: 8px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; font-weight: 600; color: hsl(var(--muted-foreground)); margin-bottom: 6px; }
+    label .hint { font-size: 0.72rem; color: hsl(var(--muted-foreground)); opacity: 0.75; font-weight: 400; }
+    input[type='text'], input[type='number'], select, textarea {
+      width: 100%; background: hsl(var(--input)); border: 1px solid hsl(var(--border));
+      color: hsl(var(--foreground)); padding: 9px 12px; border-radius: var(--radius); font-size: 0.88rem;
+      outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; font-family: inherit;
+    }
+    input[type='text']:focus, input[type='number']:focus, select:focus, textarea:focus { border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px rgba(255,255,255,0.05); }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .row-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .btn { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: 1px solid transparent; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; font-size: 0.84rem; cursor: pointer; transition: opacity 0.15s ease, background-color 0.15s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn:hover { opacity: 0.9; }
+    .btn-secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); border: 1px solid hsl(var(--border)); }
+    .btn-secondary:hover { background: hsl(var(--accent)); }
+    .btn-ghost { background: transparent; color: hsl(var(--muted-foreground)); border: 1px solid hsl(var(--border)); padding: 5px 10px; font-size: 0.76rem; border-radius: var(--radius); cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-ghost:hover { color: hsl(var(--foreground)); background: hsl(var(--accent)); border-color: hsl(var(--border)); }
+    .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 16px; }
+    .output-box { background: hsl(var(--input)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 16px; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.84rem; color: hsl(var(--foreground)); white-space: pre-wrap; word-break: break-all; min-height: 380px; max-height: 560px; overflow-y: auto; margin-bottom: 16px; line-height: 1.6; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .timeline-preview-bar { display: flex; height: 18px; border-radius: 4px; overflow: hidden; background: hsl(var(--input)); border: 1px solid hsl(var(--border)); margin-bottom: 18px; }
+    .timeline-segment { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.9); border-right: 1px solid rgba(0,0,0,0.4); }
+    .node-card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; transition: border-color 0.15s ease; }
+    .node-card:hover { border-color: hsl(var(--ring)); }
+    .node-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid hsl(var(--border)); }
+    .node-title-group { display: flex; align-items: center; gap: 10px; }
+    .node-index { font-size: 0.85rem; font-weight: 700; color: hsl(var(--foreground)); }
+    .node-time-badge { font-size: 0.72rem; color: hsl(var(--muted-foreground)); background: hsl(var(--muted)); padding: 2px 8px; border-radius: 9999px; border: 1px solid hsl(var(--border)); font-weight: 500; }
+    .duration-stepper { display: flex; align-items: center; gap: 4px; background: hsl(var(--input)); padding: 2px 6px; border-radius: var(--radius); border: 1px solid hsl(var(--border)); }
+    .duration-stepper input { width: 36px; text-align: center; border: none; background: transparent; padding: 2px; font-weight: 600; font-size: 0.82rem; color: hsl(var(--foreground)); }
+    .btn-step { background: transparent; border: none; color: hsl(var(--muted-foreground)); width: 20px; height: 20px; cursor: pointer; font-weight: 600; font-size: 0.85rem; border-radius: 3px; }
+    .btn-step:hover { color: hsl(var(--foreground)); background: hsl(var(--accent)); }
+    .vector-section { background: hsl(var(--input)); padding: 10px 14px; border-radius: var(--radius); border: 1px solid hsl(var(--border)); margin-top: 12px; }
+    .vector-bar { display: flex; align-items: center; gap: 8px; }
+    .vector-bar input { flex: 1; font-size: 0.84rem; padding: 6px 10px; background: transparent; border: none; }
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .chip { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: 0.74rem; padding: 3px 10px; border-radius: 9999px; cursor: pointer; transition: all 0.15s ease; user-select: none; font-weight: 500; }
+    .chip:hover { color: hsl(var(--foreground)); border-color: hsl(var(--ring)); }
+    .chip.selected { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-color: transparent; font-weight: 600; }
+    .drawer-box { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid hsl(var(--border)); }
+    .drawer-box.open { display: block; }
+    .drawer-label { font-size: 0.72rem; color: hsl(var(--muted-foreground)); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .director-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+    .director-card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; transition: border-color 0.15s ease; }
+    .director-card:hover { border-color: hsl(var(--ring)); }
+    .director-code { font-size: 0.72rem; font-weight: 700; color: hsl(var(--muted-foreground)); text-transform: uppercase; letter-spacing: 0.5px; }
+    .director-name { font-weight: 700; font-size: 0.98rem; color: hsl(var(--foreground)); margin: 2px 0 4px 0; }
+    .director-def { font-size: 0.78rem; color: hsl(var(--muted-foreground)); margin-bottom: 10px; line-height: 1.4; }
+    .swatch-bar { display: flex; height: 18px; border-radius: 4px; overflow: hidden; margin-bottom: 12px; border: 1px solid hsl(var(--border)); }
+    .swatch-item { flex: 1; height: 100%; }
+    .toast { position: fixed; bottom: 28px; right: 28px; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); padding: 10px 20px; border-radius: var(--radius); font-weight: 600; font-size: 0.82rem; box-shadow: 0 4px 20px rgba(0,0,0,0.25); display: none; z-index: 1000; }
+    .palette-box { background: hsl(var(--input)); padding: 16px; border-radius: var(--radius); border: 1px solid hsl(var(--border)); margin-bottom: 16px; }
+    .color-card { background: hsl(var(--card)); padding: 8px; border-radius: var(--radius); text-align: center; font-size: 0.72rem; color: hsl(var(--muted-foreground)); border: 1px solid hsl(var(--border)); }
+    .color-card input[type='color'] { height: 28px; border: none; border-radius: 4px; width: 100%; cursor: pointer; background: transparent; }
+    .slider-box { background: hsl(var(--input)); padding: 14px 16px; border-radius: var(--radius); border: 1px solid hsl(var(--border)); margin-bottom: 16px; }
+    .slider-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: hsl(var(--foreground)); margin-bottom: 8px; }
+    input[type='range'] { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: hsl(var(--border)); outline: none; }
+    input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: hsl(var(--foreground)); cursor: pointer; }
+    footer { border-top: 1px solid hsl(var(--border)); padding: 18px 32px; text-align: center; font-size: 0.78rem; color: hsl(var(--muted-foreground)); background: hsl(var(--background)); }
+    footer strong { color: hsl(var(--foreground)); font-weight: 600; }
+    footer .wx-tag { color: var(--gold); font-weight: 600; margin-left: 6px; }
+  </style>
+</head>
+<body class='theme-dark'>
+  <header>
+    <div class='brand-group'>
+      <div class='brand-title'>
+        <i data-lucide='clapperboard' style='width:18px; height:18px;'></i>
+        <span>知卡星球 · AI短剧与提示词导演控制台</span>
+      </div>
+      <span class='brand-badge'>Shadcn UI</span>
+    </div>
+    <div style='display:flex; align-items:center; gap:12px;'>
+      <button id='theme-btn' class='btn-ghost' onclick='toggleTheme()'><i data-lucide='sun' style='width:14px; height:14px;'></i> 浅色模式</button>
+      <div class='watermark-badge'>⛔ 禁止搬运售卖 | 微信：c4sucaiku</div>
+    </div>
+  </header>
+  <nav>
+    <button class='nav-tab active' onclick="switchTab('camera-studio', this)"><i data-lucide='video' style='width:15px; height:15px;'></i> 动态时序控镜</button>
+    <button class='nav-tab' onclick="switchTab('hybrid-studio', this)"><i data-lucide='sparkles' style='width:15px; height:15px;'></i> 导演视觉混血</button>
+    <button class='nav-tab' onclick="switchTab('palette-studio', this)"><i data-lucide='palette' style='width:15px; height:15px;'></i> HEX 色卡生成</button>
+    <button class='nav-tab' onclick="switchTab('directors', this)"><i data-lucide='book-open' style='width:15px; height:15px;'></i> 150 位名导美学库</button>
+  </nav>
+  <main>
+    <div id='guide-banner' class='guide-banner'>
+      <div class='guide-title'><i data-lucide='compass' style='width:16px; height:16px;'></i> 新手 3 秒极简上手指南：</div>
+      <div class='guide-steps'>
+        <div class='guide-step'><span class='num'>1</span> 在文本框写画面/角色动作（或点击【示例剧本】）</div>
+        <div class='guide-step'><span class='num'>2</span> 点击推荐运镜标签（如大特写/极缓推进）</div>
+        <div class='guide-step'><span class='num'>3</span> 点击右侧【复制 Prompt】直接粘贴到 AI 软件生图生视频即可</div>
+      </div>
+      <button class='btn-ghost' onclick="document.getElementById('guide-banner').style.display='none'">✕ 关闭提示</button>
+    </div>
+    <div id='tab-camera-studio' class='tab-content active'>
+      <div class='grid-2'>
+        <div class='panel'>
+          <div class='panel-header'>
+            <span class='panel-title'><i data-lucide='layers' style='width:16px; height:16px;'></i> 分镜节点控制 (Storyboard Sequence)</span>
+            <div style='display:flex; gap:6px;'>
+              <button class='btn btn-ghost' onclick='loadPresetScript("guzhuang")'>古装仙侠预设</button>
+              <button class='btn btn-ghost' onclick='loadPresetScript("dushi")'>现代都市预设</button>
+              <button class='btn btn-ghost' onclick='loadCameraExample()'>示例剧本</button>
+            </div>
+          </div>
+          <div id='timeline-preview-bar' class='timeline-preview-bar'></div>
+          <div id='timeline-nodes-container'></div>
+          <button class='btn btn-secondary' style='width: 100%; margin-bottom: 20px; border-style: dashed;' onclick='addTimelineNode()'>+ 添加下一个镜头节点</button>
+          <div class='row-2'>
+            <div class='form-group'><label>画面比例 (Aspect Ratio) <span class='hint'>短剧 9:16，电影 16:9</span></label><select id='cam-aspect' onchange='generateCameraStudioPrompt()'><option value='9:16' selected>9:16 竖屏 (短剧/抖音)</option><option value='16:9'>16:9 横屏 (电影/Sora)</option><option value='2.39:1'>2.39:1 宽银幕电影</option></select></div>
+            <div class='form-group'><label>Negative 画面风险排除 <span class='hint'>过滤画质瑕疵词</span></label><input type='text' id='cam-avoid' value='全局高饱和、爆白死黑、无动机摇晃、画面崩坏' oninput='generateCameraStudioPrompt()'></div>
+          </div>
+          <button class='btn' style='width: 100%; margin-top: 4px;' onclick='generateCameraStudioPrompt()'><i data-lucide='sparkles' style='width:15px; height:15px;'></i> 生成控镜 Prompt</button>
+        </div>
+        <div class='panel'>
+          <div class='panel-header'><span class='panel-title'><i data-lucide='file-text' style='width:16px; height:16px;'></i> 生成结果 (Prompt Output)</span></div>
+          <div id='camera-output' class='output-box'>生成中...</div>
+          <div class='actions'><button class='btn' onclick="copyOutput('camera-output')"><i data-lucide='copy' style='width:14px; height:14px;'></i> 复制 Prompt</button><button class='btn btn-secondary' onclick="exportAsTxt('camera-output', '时序控镜Prompt.txt')">导出 TXT</button></div>
+        </div>
+      </div>
+    </div>
+    <div id='tab-hybrid-studio' class='tab-content'>
+      <div class='grid-2'>
+        <div class='panel'>
+          <div class='panel-header'><span class='panel-title'><i data-lucide='sliders' style='width:16px; height:16px;'></i> 双导演风格混血 (Visual Style Hybrid)</span></div>
+          <div class='row-2'>
+            <div class='form-group'><label>主导视觉 A <span class='hint'>提供核心调色与光影</span></label><select id='hybrid-dir1' onchange='generateHybridPrompt()'></select></div>
+            <div class='form-group'><label>辅导运镜 B <span class='hint'>提供构图与运镜融合</span></label><select id='hybrid-dir2' onchange='generateHybridPrompt()'></select></div>
+          </div>
+          <div class='slider-box'>
+            <div class='slider-labels'>
+              <span id='label-dir1'>主导演: 70%</span>
+              <span id='label-dir2'>辅导演: 30%</span>
+            </div>
+            <input type='range' id='hybrid-ratio-slider' min='10' max='90' value='70' step='5' oninput='updateHybridRatio(this.value)'>
+          </div>
+          <div class='form-group'><label>画面比例</label><select id='hybrid-aspect' onchange='generateHybridPrompt()'><option value='9:16' selected>9:16 竖屏</option><option value='16:9'>16:9 横屏</option><option value='2.39:1'>2.39:1 宽银幕</option></select></div>
+          <div class='form-group'><label>单帧场景概念描述 <span class='hint'>输入你想要的单帧画面</span></label><textarea id='hybrid-scene' placeholder='例如：暗调暖阁内室，虞晚斜倚锦榻，手举血色丹珠至眼前...'>暗调暖阁内室，虞晚斜倚锦榻，手举血色丹珠至眼前，指尖缓缓旋动...</textarea></div>
+          <button class='btn' style='width: 100%; margin-top: 8px;' onclick='generateHybridPrompt()'><i data-lucide='sparkles' style='width:15px; height:15px;'></i> 生成混血视觉 Prompt</button>
+        </div>
+        <div class='panel'>
+          <div class='panel-header'><span class='panel-title'><i data-lucide='file-text' style='width:16px; height:16px;'></i> 混血输出</span></div>
+          <div id='hybrid-output' class='output-box'>选择导演后自动生成 Prompt...</div>
+          <div class='actions'><button class='btn' onclick="copyOutput('hybrid-output')"><i data-lucide='copy' style='width:14px; height:14px;'></i> 复制 Prompt</button><button class='btn btn-secondary' onclick="exportAsTxt('hybrid-output', '单帧混血Prompt.txt')">导出 TXT</button></div>
+        </div>
+      </div>
+    </div>
+    <div id='tab-palette-studio' class='tab-content'>
+      <div class='grid-2'>
+        <div class='panel'>
+          <div class='panel-header'>
+            <span class='panel-title'><i data-lucide='palette' style='width:16px; height:16px;'></i> HEX 色卡构建 (Color Palette Studio)</span>
+          </div>
+          <div style='margin-bottom: 12px;'><label>经典名导与流派美学预设 (点击一键填入)：</label></div>
+          <div class='preset-grid'>
+            <button class='btn-ghost' onclick='presetPalette("wong")'>王家卫红金</button>
+            <button class='btn-ghost' onclick='presetPalette("nolan")'>诺兰冷工业</button>
+            <button class='btn-ghost' onclick='presetPalette("wes")'>韦斯安德森粉蓝</button>
+            <button class='btn-ghost' onclick='presetPalette("park")'>朴赞郁血色漆黑</button>
+            <button class='btn-ghost' onclick='presetPalette("kuro")'>黑泽明水墨大地</button>
+            <button class='btn-ghost' onclick='presetPalette("cyber")'>赛博朋克霓虹</button>
+            <button class='btn-ghost' onclick='presetPalette("shinkai")'>新海诚梦幻蓝橙</button>
+            <button class='btn-ghost' onclick='presetPalette("darkfant")'>新中式玄幻墨绿</button>
+          </div>
+          <div class='palette-box'>
+            <div style='font-size:0.75rem; color:hsl(var(--muted-foreground)); margin-bottom:8px; font-weight:600;'>自定义 6 核心色 HEX 与占比：</div>
+            <div class='row-6'>
+              <div class='color-card'><div>主色 30%</div><input type='color' id='hex-1' value='#8B0000' onchange='renderCustomPalettePreview()'><input type='text' id='hex-1-val' value='#8B0000' style='font-size:0.7rem; padding:2px; text-align:center;'></div>
+              <div class='color-card'><div>次色 25%</div><input type='color' id='hex-2' value='#D4AF37' onchange='renderCustomPalettePreview()'><input type='text' id='hex-2-val' value='#D4AF37' style='font-size:0.7rem; padding:2px; text-align:center;'></div>
+              <div class='color-card'><div>辅色 18%</div><input type='color' id='hex-3' value='#214B3C' onchange='renderCustomPalettePreview()'><input type='text' id='hex-3-val' value='#214B3C' style='font-size:0.7rem; padding:2px; text-align:center;'></div>
+              <div class='color-card'><div>阴影 12%</div><input type='color' id='hex-4' value='#172A3A' onchange='renderCustomPalettePreview()'><input type='text' id='hex-4-val' value='#172A3A' style='font-size:0.7rem; padding:2px; text-align:center;'></div>
+              <div class='color-card'><div>环境 10%</div><input type='color' id='hex-5' value='#A58A3A' onchange='renderCustomPalettePreview()'><input type='text' id='hex-5-val' value='#A58A3A' style='font-size:0.7rem; padding:2px; text-align:center;'></div>
+              <div class='color-card'><div>强调 5%</div><input type='color' id='hex-6' value='#E0FFFF' onchange='renderCustomPalettePreview()'><input type='text' id='hex-6-val' value='#E0FFFF' style='font-size:0.7rem; padding:2px; text-align:center;'></div>
+            </div>
+            <div class='swatch-bar' id='custom-swatch-bar' style='margin-top: 12px;'></div>
+          </div>
+          <div class='form-group'><label>色彩载体与物理描述 <span class='hint'>定义各颜色具体出现在什么物品上</span></label><input type='text' id='palette-carrier' value='主色丝绒红纱与帷帐，次色金饰流苏，辅色墨绿墙面，阴影蓝黑'></div>
+          <div class='row-2'>
+            <div class='form-group'><label>场景氛围设定</label><input type='text' id='palette-mood' value='暗调暖光内室，高对比度低色温'></div>
+            <div class='form-group'><label>肤色保护与光影</label><select id='palette-skin'><option value='保持肤色自然可读，环境偏色不污染面部'>保持肤色自然 (推荐)</option><option value='极致高对比度硬质光影'>高对比度硬光</option><option value='柔和水彩漫射质感'>柔光漫射质感</option></select></div>
+          </div>
+          <button class='btn' style='width: 100%; margin-top: 6px;' onclick='generateCustomPalettePrompt()'><i data-lucide='sparkles' style='width:15px; height:15px;'></i> 生成 HEX 色卡 Prompt</button>
+        </div>
+        <div class='panel'>
+          <div class='panel-header'><span class='panel-title'><i data-lucide='file-text' style='width:16px; height:16px;'></i> 色卡 Prompt 输出</span></div>
+          <div id='palette-output' class='output-box'>Prompt 自动构建中...</div>
+          <div class='actions'><button class='btn' onclick="copyOutput('palette-output')"><i data-lucide='copy' style='width:14px; height:14px;'></i> 复制 Prompt</button><button class='btn btn-secondary' onclick="exportAsTxt('palette-output', 'HEX色卡Prompt.txt')">导出 TXT</button></div>
+        </div>
+      </div>
+    </div>
+    <div id='tab-directors' class='tab-content'>
+      <div class='panel' style='margin-bottom:16px;'>
+        <div class='row-2'>
+          <input type='text' id='director-search' placeholder='搜索导演 (如: D011, 王家卫, 诺兰, 朴赞郁, 黑泽明...)' oninput='filterDirectors()'>
+          <select id='director-filter-genre' onchange='filterDirectors()'>
+            <option value='all'>全部分类 (共 150 位导演)</option>
+            <option value='warm'>暖调复古 / 浓艳红金</option>
+            <option value='cool'>冷调悬疑 / 工业暗影</option>
+            <option value='nature'>自然生态 / 大地写实</option>
+          </select>
+        </div>
+      </div>
+      <div id='director-cards-container' class='director-grid'></div>
+    </div>
+  </main>
+  <footer>
+    <div><strong>【知卡星球】</strong> 独家出品 · 工业级导演提示词与控镜系统 | ⛔ <strong>禁止搬运售卖</strong></div>
+    <div style='margin-top:4px;'>获取后续更新可入群获取 <span class='wx-tag'>联系方式微信：c4sucaiku</span></div>
+  </footer>
+  <div id='toast' class='toast'>已复制到剪贴板</div>
+  <script>
+    const directorsData = [{"code":"D001","name":"D001 黑泽明 Akira Kurosawa","genre":"cool","colors":["#A52B22","#C58A2A","#244A68","#65733B","#171717"],"definition":"大地低饱和承托红黄蓝军团色，天气把秩序推向崩塌。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D001 黑泽明 Akira Kurosawa 综合色彩寄存器。固定六色色值与画面占比：铠甲朱红 #A52B22 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；军团赭黄 #C58A2A 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；武士靛蓝 #244A68 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；原野草绿 #65733B 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；漆器黑 #171717 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；烟尘灰 #8A847A 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。大地低饱和承托红黄蓝军团色，天气把秩序推向崩塌。色板：铠甲朱红#A52B22,军团赭黄#C58A2A,武士靛蓝#244A68,原野草绿#65733B,漆器黑#171717,烟尘灰#8A847A；光线：自然天气光，暮色冷暖分离；摄影：宽画幅中远景，横向群体调度；调色：阴影中性偏冷，阵营色局部高纯度。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D002","name":"D002 小津安二郎 Yasujirō Ozu","genre":"cool","colors":["#C7B58A","#77604A","#D8D2C2","#A44335","#3D5364"],"definition":"低机位静观家庭日常，茶褐、榻榻米与低纯度原色形成平静秩序。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D002 小津安二郎 Yasujirō Ozu 综合色彩寄存器。固定六色色值与画面占比：榻榻米米黄 #C7B58A 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；茶褐 #77604A 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；障子纸白 #D8D2C2 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；瓶罐朱红 #A44335 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；和服藏蓝 #3D5364 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；庭院苔绿 #6F7B55 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。低机位静观家庭日常，茶褐、榻榻米与低纯度原色形成平静秩序。色板：榻榻米米黄#C7B58A,茶褐#77604A,障子纸白#D8D2C2,瓶罐朱红#A44335,和服藏蓝#3D5364,庭院苔绿#6F7B55；光线：柔和侧窗光，均匀中间调；摄影：榻榻米高度固定机位，正面门框构图；调色：低对比、暖中性、原色只作小面积点缀。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D003","name":"D003 沟口健二 Kenji Mizoguchi","genre":"cool","colors":["#A8A39A","#D7D1C5","#20201F","#6C5645","#53636A"],"definition":"长镜头沿空间层次移动，以银灰、墨黑和雾白呈现克制悲剧。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D003 沟口健二 Kenji Mizoguchi 综合色彩寄存器。固定六色色值与画面占比：银雾灰 #A8A39A 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；和纸白 #D7D1C5 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；墨黑 #20201F 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；旧木褐 #6C5645 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；水墨青 #53636A 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；暗绛红 #6F3535 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。长镜头沿空间层次移动，以银灰、墨黑和雾白呈现克制悲剧。色板：银雾灰#A8A39A,和纸白#D7D1C5,墨黑#20201F,旧木褐#6C5645,水墨青#53636A,暗绛红#6F3535；光线：阴天或柔和顶侧光，黑白层次丰富；摄影：横向长镜与深景调度；调色：降低彩度，保留银灰和材质纹理。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D004","name":"D004 小林正树 Masaki Kobayashi","genre":"cool","colors":["#17181A","#D8D3C7","#64666A","#9D2E28","#33465D"],"definition":"几何秩序与仪式性颜色压迫人物，黑白极简可突然转入民俗浓彩。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D004 小林正树 Masaki Kobayashi 综合色彩寄存器。固定六色色值与画面占比：漆黑 #17181A 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；骨白 #D8D3C7 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；武士灰 #64666A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；血朱 #9D2E28 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；怪谈靛青 #33465D 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；幽火青绿 #4D7169 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。几何秩序与仪式性颜色压迫人物，黑白极简可突然转入民俗浓彩。色板：漆黑#17181A,骨白#D8D3C7,武士灰#64666A,血朱#9D2E28,怪谈靛青#33465D,幽火青绿#4D7169；光线：硬质侧光与舞台化色光并用；摄影：对称正面构图，缓慢横移；调色：黑位扎实，彩色段落提高局部纯度。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D005","name":"D005 铃木清顺 Seijun Suzuki","genre":"cool","colors":["#C52F2B","#E0B92E","#28649A","#9C5C88","#171717"],"definition":"平面化构图让红、黄、蓝像流行海报般互相撞击。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D005 铃木清顺 Seijun Suzuki 综合色彩寄存器。固定六色色值与画面占比：枪火红 #C52F2B 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；柠檬黄 #E0B92E 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；电气蓝 #28649A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；粉紫 #9C5C88 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；纯黑 #171717 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；冷白 #D8DCE0 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。平面化构图让红、黄、蓝像流行海报般互相撞击。色板：枪火红#C52F2B,柠檬黄#E0B92E,电气蓝#28649A,粉紫#9C5C88,纯黑#171717,冷白#D8DCE0；光线：硬光、彩色面光、轮廓分离；摄影：斜构图、突然变焦、平面横移；调色：高对比高纯度，颜色边界清楚。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D006","name":"D006 敕使河原宏 Hiroshi Teshigahara","genre":"cool","colors":["#B5A78F","#8B6650","#1C1B1A","#D9D5CB","#74624E"],"definition":"沙、皮肤与黑白颗粒共同制造触觉压迫。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D006 敕使河原宏 Hiroshi Teshigahara 综合色彩寄存器。固定六色色值与画面占比：砂砾米灰 #B5A78F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；皮肤棕 #8B6650 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；深穴黑 #1C1B1A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；烈日白 #D9D5CB 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；干草褐 #74624E 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；冷影灰 #596168 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。沙、皮肤与黑白颗粒共同制造触觉压迫。色板：砂砾米灰#B5A78F,皮肤棕#8B6650,深穴黑#1C1B1A,烈日白#D9D5CB,干草褐#74624E,冷影灰#596168；光线：强烈顶光或单向硬光；摄影：微距纹理、倾斜构图、受限空间运动；调色：高颗粒、高微反差、压低彩度。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D007","name":"D007 宫崎骏 Hayao Miyazaki","genre":"cool","colors":["#69A7C8","#477A4B","#87A95A","#8A6144","#E0C56B"],"definition":"天空蓝、森林绿和温暖土色构成可呼吸的生态奇幻。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D007 宫崎骏 Hayao Miyazaki 综合色彩寄存器。固定六色色值与画面占比：天空蓝 #69A7C8 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；森林绿 #477A4B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；草地嫩绿 #87A95A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；土壤赭褐 #8A6144 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；阳光奶黄 #E0C56B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；屋瓦暖红 #A85A46 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。天空蓝、森林绿和温暖土色构成可呼吸的生态奇幻。色板：天空蓝#69A7C8,森林绿#477A4B,草地嫩绿#87A95A,土壤赭褐#8A6144,阳光奶黄#E0C56B,屋瓦暖红#A85A46；光线：清澈漫射日光，云影可见；摄影：流畅飞行与横向运动，保持空间因果；调色：明亮但不过曝，阴影保留蓝绿空气感。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D008","name":"D008 今敏 Satoshi Kon","genre":"cool","colors":["#B52E3C","#765487","#315C7D","#4A8A8C","#C06C83"],"definition":"现实与幻觉用红蓝紫互穿，颜色在剪辑中承担身份错位。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D008 今敏 Satoshi Kon 综合色彩寄存器。固定六色色值与画面占比：警报红 #B52E3C 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；梦境紫 #765487 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；都市蓝 #315C7D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；屏幕青 #4A8A8C 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；舞台粉 #C06C83 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；深夜黑 #1C2230 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。现实与幻觉用红蓝紫互穿，颜色在剪辑中承担身份错位。色板：警报红#B52E3C,梦境紫#765487,都市蓝#315C7D,屏幕青#4A8A8C,舞台粉#C06C83,深夜黑#1C2230；光线：舞台光、屏幕光与现实中性光切换；摄影：主观视点、匹配剪辑、空间突然变形；调色：保持红紫纯度，现实段落偏冷中性。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D009","name":"D009 高畑勋 Isao Takahata","genre":"cool","colors":["#E2DDD0","#C8A760","#85664B","#718292","#C99B94"],"definition":"水彩留白、泥土暖色与季节光线让悲伤保持人性温度。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D009 高畑勋 Isao Takahata 综合色彩寄存器。固定六色色值与画面占比：水彩纸白 #E2DDD0 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；稻草黄 #C8A760 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；土褐 #85664B 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；灰蓝 #718292 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；浅樱粉 #C99B94 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；墨线黑 #34322F 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。水彩留白、泥土暖色与季节光线让悲伤保持人性温度。色板：水彩纸白#E2DDD0,稻草黄#C8A760,土褐#85664B,灰蓝#718292,浅樱粉#C99B94,墨线黑#34322F；光线：柔漫射自然光，避免亮面反射；摄影：观察式中景，动作完整发生；调色：低对比、轻纸感、颜色边缘柔和。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D010","name":"D010 是枝裕和 Hirokazu Kore-eda","genre":"cool","colors":["#C7BDAA","#806A55","#788894","#718064","#C49578"],"definition":"自然窗光和低饱和家居色保存普通人的细微情绪。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D010 是枝裕和 Hirokazu Kore-eda 综合色彩寄存器。固定六色色值与画面占比：亚麻米 #C7BDAA 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；木器褐 #806A55 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；阴天蓝灰 #788894 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；植物绿 #718064 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；肤色暖杏 #C49578 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；生活黑 #343536 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。自然窗光和低饱和家居色保存普通人的细微情绪。色板：亚麻米#C7BDAA,木器褐#806A55,阴天蓝灰#788894,植物绿#718064,肤色暖杏#C49578,生活黑#343536；光线：实景窗光、阴天光、室内暖灯；摄影：平视中景、轻微跟随、让表演完成；调色：温和低对比，肤色自然，黑位不压死。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D011","name":"D011 王家卫 Wong Kar-wai","genre":"cool","colors":["#7C2431","#214B3C","#C8873A","#172A3A","#4D8B78"],"definition":"酒红、墨绿和钨丝金包围人物，偏色与拖影把城市变成记忆。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D011 王家卫 Wong Kar-wai 综合色彩寄存器。固定六色色值与画面占比：丝绒酒红 #7C2431 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；潮湿墨绿 #214B3C 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；钨丝琥珀 #C8873A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；夜色蓝黑 #172A3A 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；荧光青绿 #4D8B78 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；旧墙芥黄 #A58A3A 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。酒红、墨绿和钨丝金包围人物，偏色与拖影把城市变成记忆。色板：丝绒酒红#7C2431,潮湿墨绿#214B3C,钨丝琥珀#C8873A,夜色蓝黑#172A3A,荧光青绿#4D8B78,旧墙芥黄#A58A3A；光线：低照度钨丝与绿色荧光混合；摄影：门框遮挡、缓慢横移、短暂拖影；调色：轻欠曝，高光晕染，阴影蓝绿。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D012","name":"D012 吴宇森 John Woo","genre":"cool","colors":["#294A66","#D06A2D","#C59A4A","#1B2026","#777E82"],"definition":"冷蓝夜景与爆裂暖火形成英雄动作的浪漫二极。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D012 吴宇森 John Woo 综合色彩寄存器。固定六色色值与画面占比：夜战钢蓝 #294A66 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；枪火橙 #D06A2D 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；教堂烛金 #C59A4A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；风衣黑 #1B2026 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；烟雾灰 #777E82 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；血色暗红 #7E292C 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。冷蓝夜景与爆裂暖火形成英雄动作的浪漫二极。色板：夜战钢蓝#294A66,枪火橙#D06A2D,教堂烛金#C59A4A,风衣黑#1B2026,烟雾灰#777E82,血色暗红#7E292C；光线：强逆光、烟雾体积光、暖火点光；摄影：慢动作横移、双人对峙、清晰动作轴线；调色：冷暖分离，火光不过曝，黑位保留轮廓。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D013","name":"D013 张艺谋 Zhang Yimou","genre":"cool","colors":["#A62C25","#C99B2E","#3C7770","#1C2022","#DDDCD5"],"definition":"一部电影锁定一套象征色，高纯度色块支配空间与人群。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D013 张艺谋 Zhang Yimou 综合色彩寄存器。固定六色色值与画面占比：宫墙朱红 #A62C25 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；帝王金 #C99B2E 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；玉石青 #3C7770 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；水墨黑 #1C2022 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；雪地白 #DDDCD5 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；丝绸蓝 #315A88 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。一部电影锁定一套象征色，高纯度色块支配空间与人群。色板：宫墙朱红#A62C25,帝王金#C99B2E,玉石青#3C7770,水墨黑#1C2022,雪地白#DDDCD5,丝绸蓝#315A88；光线：方向明确的自然光与仪式性顶光；摄影：对称大全景、舞蹈式群体调度；调色：主色纯度高，背景压低，材质丝绸化。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D014","name":"D014 陈凯歌 Chen Kaige","genre":"cool","colors":["#9D754C","#A72B31","#2F667E","#B18A47","#292726"],"definition":"土黄历史空间中以戏服红蓝和舞台金连接个人命运与时代。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D014 陈凯歌 Chen Kaige 综合色彩寄存器。固定六色色值与画面占比：黄土赭 #9D754C 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；戏服猩红 #A72B31 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；孔雀蓝 #2F667E 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；旧金 #B18A47 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；烟黑 #292726 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；粉墙灰 #B5A99A 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。土黄历史空间中以戏服红蓝和舞台金连接个人命运与时代。色板：黄土赭#9D754C,戏服猩红#A72B31,孔雀蓝#2F667E,旧金#B18A47,烟黑#292726,粉墙灰#B5A99A；光线：尘雾自然光与舞台暖光对照；摄影：纵深群像、舞台正面构图、克制推进；调色：暖土中间调，红蓝局部浓烈。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D015","name":"D015 贾樟柯 Jia Zhangke","genre":"cool","colors":["#7E807C","#60766E","#292B2A","#A7606A","#3C7D7C"],"definition":"工业灰、江水绿和县城霓虹记录现代化留下的痕迹。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D015 贾樟柯 Jia Zhangke 综合色彩寄存器。固定六色色值与画面占比：水泥灰 #7E807C 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；江水灰绿 #60766E 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；煤烟黑 #292B2A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；县城粉红 #A7606A 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；招牌青 #3C7D7C 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；土墙褐 #80654D 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。工业灰、江水绿和县城霓虹记录现代化留下的痕迹。色板：水泥灰#7E807C,江水灰绿#60766E,煤烟黑#292B2A,县城粉红#A7606A,招牌青#3C7D7C,土墙褐#80654D；光线：阴天漫射光与简陋实景灯；摄影：固定远观、缓慢横移、人物穿越真实空间；调色：低饱和、轻雾、保留脏色差。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D016","name":"D016 毕赣 Bi Gan","genre":"cool","colors":["#315E63","#253B5C","#8D3040","#B78343","#888D8B"],"definition":"潮湿青绿、夜蓝和暖红在长镜中把现实滑入梦境。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D016 毕赣 Bi Gan 综合色彩寄存器。固定六色色值与画面占比：雨夜青 #315E63 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；深海蓝 #253B5C 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；梦境红 #8D3040 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；钨丝金 #B78343 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；雾灰 #888D8B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；隧道黑 #1A2023 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。潮湿青绿、夜蓝和暖红在长镜中把现实滑入梦境。色板：雨夜青#315E63,深海蓝#253B5C,梦境红#8D3040,钨丝金#B78343,雾灰#888D8B,隧道黑#1A2023；光线：潮湿夜光、局部钨丝、雾中散射；摄影：长镜头环绕与空间折叠，运动缓慢；调色：阴影青蓝，高光暖金，红色作记忆钉点。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D017","name":"D017 侯孝贤 Hou Hsiao-hsien","genre":"cool","colors":["#9B7441","#7C3337","#384F43","#352C27","#536E63"],"definition":"室内暗金、丝绸花色和远景自然色形成历史的静谧层次。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D017 侯孝贤 Hou Hsiao-hsien 综合色彩寄存器。固定六色色值与画面占比：海上花暗金 #9B7441 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；丝绸绛红 #7C3337 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；灯影墨绿 #384F43 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；木器黑褐 #352C27 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；山林青 #536E63 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；雾白 #C8C7BC 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。室内暗金、丝绸花色和远景自然色形成历史的静谧层次。色板：海上花暗金#9B7441,丝绸绛红#7C3337,灯影墨绿#384F43,木器黑褐#352C27,山林青#536E63,雾白#C8C7BC；光线：油灯、窗光与林间漫射光；摄影：固定或极缓移动，深景多层调度；调色：低亮度暖金，彩色压在织物中。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D018","name":"D018 杨德昌 Edward Yang","genre":"cool","colors":["#647787","#5D8586","#B98A4E","#314A61","#7D3B45"],"definition":"冷静都市中用灰蓝玻璃、荧光绿和家庭暖黄区分公共与私人。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D018 杨德昌 Edward Yang 综合色彩寄存器。固定六色色值与画面占比：城市灰蓝 #647787 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；玻璃青 #5D8586 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；家庭暖黄 #B98A4E 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；制服藏蓝 #314A61 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；青春暗红 #7D3B45 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；墙面米灰 #B3AA9B 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。冷静都市中用灰蓝玻璃、荧光绿和家庭暖黄区分公共与私人。色板：城市灰蓝#647787,玻璃青#5D8586,家庭暖黄#B98A4E,制服藏蓝#314A61,青春暗红#7D3B45,墙面米灰#B3AA9B；光线：自然窗光与办公室荧光并存；摄影：建筑框架、平视中远景、多人空间关系；调色：中性低饱和，暖黄只留在亲密空间。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D019","name":"D019 蔡明亮 Tsai Ming-liang","genre":"cool","colors":["#566C59","#687276","#78906E","#9A825E","#6F373A"],"definition":"霉绿、积水灰和病态荧光让城市身体处于缓慢腐蚀。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D019 蔡明亮 Tsai Ming-liang 综合色彩寄存器。固定六色色值与画面占比：潮湿霉绿 #566C59 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；积水铅灰 #687276 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；荧光病绿 #78906E 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；墙皮土黄 #9A825E 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；暗红 #6F373A 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；深井黑 #202525 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。霉绿、积水灰和病态荧光让城市身体处于缓慢腐蚀。色板：潮湿霉绿#566C59,积水铅灰#687276,荧光病绿#78906E,墙皮土黄#9A825E,暗红#6F373A,深井黑#202525；光线：长时间实景荧光和阴湿自然光；摄影：固定长镜、空空间、人物缓慢进入离开；调色：压低亮度和彩度，保留潮湿反光。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D020","name":"D020 朴赞郁 Park Chan-wook","genre":"cool","colors":["#315F53","#7E2633","#171A1F","#A78143","#C9C8C1"],"definition":"宝石绿、深红与冷黑在精密构图中制造欲望和危险。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D020 朴赞郁 Park Chan-wook 综合色彩寄存器。固定六色色值与画面占比：宝石绿 #315F53 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；血酒红 #7E2633 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；漆黑 #171A1F 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；古金 #A78143 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；冷瓷白 #C9C8C1 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；午夜蓝 #243852 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。宝石绿、深红与冷黑在精密构图中制造欲望和危险。色板：宝石绿#315F53,血酒红#7E2633,漆黑#171A1F,古金#A78143,冷瓷白#C9C8C1,午夜蓝#243852；光线：雕刻感侧光、彩色实景光、深黑背景；摄影：对称与倾斜并用，精确推拉和揭示；调色：深色浓郁、肤色克制、红绿分区。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D021","name":"D021 奉俊昊 Bong Joon-ho","genre":"cool","colors":["#77776F","#6C8054","#C6BBA6","#242725","#8E3332"],"definition":"看似自然的家居色逐步被冷绿、地下灰和危险红污染。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D021 奉俊昊 Bong Joon-ho 综合色彩寄存器。固定六色色值与画面占比：半地下灰 #77776F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；庭院草绿 #6C8054 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；富宅米白 #C6BBA6 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；隧道黑 #242725 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；警示红 #8E3332 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；雨夜蓝 #405A68 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。看似自然的家居色逐步被冷绿、地下灰和危险红污染。色板：半地下灰#77776F,庭院草绿#6C8054,富宅米白#C6BBA6,隧道黑#242725,警示红#8E3332,雨夜蓝#405A68；光线：阶级空间采用不同曝光和色温；摄影：垂直层级构图、平滑跟移、突然类型转折；调色：自然起步，危机时压黑并偏绿。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D022","name":"D022 李沧东 Lee Chang-dong","genre":"cool","colors":["#77806B","#667583","#99745D","#B56D35","#252828"],"definition":"灰绿现实和微弱琥珀保存沉默，危险只以远处暖色慢慢靠近。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D022 李沧东 Lee Chang-dong 综合色彩寄存器。固定六色色值与画面占比：干草灰绿 #77806B 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；暮色蓝灰 #667583 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；肤色土褐 #99745D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；远火琥珀 #B56D35 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；阴影黑 #252828 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；雾白 #BBB9AE 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。灰绿现实和微弱琥珀保存沉默，危险只以远处暖色慢慢靠近。色板：干草灰绿#77806B,暮色蓝灰#667583,肤色土褐#99745D,远火琥珀#B56D35,阴影黑#252828,雾白#BBB9AE；光线：自然逆光、暮色、低照度室内；摄影：长焦观察、缓慢靠近、留出空白；调色：低饱和、柔反差、暖色稀少。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D023","name":"D023 金知云 Kim Jee-woon","genre":"cool","colors":["#29465C","#4D6658","#7A2428","#A8753E","#C6C4BB"],"definition":"冷蓝黑、病态绿和深红构成精致类型片的危险表面。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D023 金知云 Kim Jee-woon 综合色彩寄存器。固定六色色值与画面占比：钢铁蓝 #29465C 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；病态绿 #4D6658 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；深血红 #7A2428 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；室内琥珀 #A8753E 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；瓷白 #C6C4BB 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；乌黑 #171B20 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。冷蓝黑、病态绿和深红构成精致类型片的危险表面。色板：钢铁蓝#29465C,病态绿#4D6658,深血红#7A2428,室内琥珀#A8753E,瓷白#C6C4BB,乌黑#171B20；光线：硬边轮廓光与局部暖灯；摄影：精准跟拍、突然静止、动作清楚；调色：高对比冷影，红色局部饱和。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D024","name":"D024 阿彼察邦·韦拉斯哈古 Apichatpong Weerasethakul","genre":"cool","colors":["#335B42","#334D68","#78634D","#B66B35","#B9C0B6"],"definition":"热带森林绿、夜蓝和火光橙在静止时间中连接梦与现实。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D024 阿彼察邦·韦拉斯哈古 Apichatpong Weerasethakul 综合色彩寄存器。固定六色色值与画面占比：热带深绿 #335B42 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；月夜蓝 #334D68 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；泥土褐 #78634D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；火光橙 #B66B35 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；雾白 #B9C0B6 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；洞穴黑 #202724 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。热带森林绿、夜蓝和火光橙在静止时间中连接梦与现实。色板：热带深绿#335B42,月夜蓝#334D68,泥土褐#78634D,火光橙#B66B35,雾白#B9C0B6,洞穴黑#202724；光线：自然暮光、月光感、林间散射；摄影：固定长镜、缓慢横移、让环境先动；调色：低对比湿润绿蓝，暖火克制。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D025","name":"D025 萨蒂亚吉特·雷伊 Satyajit Ray","genre":"cool","colors":["#868B88","#6F7E57","#81654A","#D2CDC1","#AE7D3F"],"definition":"柔和黑白与孟加拉土色把人、季节和贫困保留在同一生命流中。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D025 萨蒂亚吉特·雷伊 Satyajit Ray 综合色彩寄存器。固定六色色值与画面占比：季风灰 #868B88 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；稻田绿 #6F7E57 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；泥土褐 #81654A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；棉布白 #D2CDC1 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；油灯金 #AE7D3F 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；墨黑 #272825 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。柔和黑白与孟加拉土色把人、季节和贫困保留在同一生命流中。色板：季风灰#868B88,稻田绿#6F7E57,泥土褐#81654A,棉布白#D2CDC1,油灯金#AE7D3F,墨黑#272825；光线：自然天光、油灯与季风阴天；摄影：人文中景、轨道缓移、环境细节；调色：温和灰阶或低饱和土色，保留肤色。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D026","name":"D026 古鲁·杜特 Guru Dutt","genre":"cool","colors":["#171719","#77777A","#D3D0C9","#E1CBA6","#743138"],"definition":"黑白光束切割歌舞空间，烟雾、白纱与深黑放大悲剧浪漫。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D026 古鲁·杜特 Guru Dutt 综合色彩寄存器。固定六色色值与画面占比：舞台黑 #171719 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；烟雾灰 #77777A 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；白纱银 #D3D0C9 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；聚光暖白 #E1CBA6 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；唇色暗红 #743138 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；布景褐 #655046 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。黑白光束切割歌舞空间，烟雾、白纱与深黑放大悲剧浪漫。色板：舞台黑#171719,烟雾灰#77777A,白纱银#D3D0C9,聚光暖白#E1CBA6,唇色暗红#743138,布景褐#655046；光线：强方向光、百叶光、烟雾光柱；摄影：舞台纵深、优雅轨道、面部特写；调色：黑白高反差，暖白保护肤色。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D027","name":"D027 曼尼·拉特纳姆 Mani Ratnam","genre":"cool","colors":["#416D82","#4F7652","#A73538","#C39436","#282E31"],"definition":"雨季蓝绿与饱满红黄把爱情和政治放进流动城市。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D027 曼尼·拉特纳姆 Mani Ratnam 综合色彩寄存器。固定六色色值与画面占比：季风蓝 #416D82 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；棕榈绿 #4F7652 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；婚礼红 #A73538 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；姜黄金 #C39436 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；湿路黑 #282E31 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；肤色暖褐 #A7785E 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。雨季蓝绿与饱满红黄把爱情和政治放进流动城市。色板：季风蓝#416D82,棕榈绿#4F7652,婚礼红#A73538,姜黄金#C39436,湿路黑#282E31,肤色暖褐#A7785E；光线：雨后漫射光、逆光水汽、室内暖灯；摄影：流动跟拍、歌曲段落大空间运动；调色：蓝绿环境与暖肤色分离，红黄点题。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D028","name":"D028 桑杰·里拉·彭萨里 Sanjay Leela Bhansali","genre":"cool","colors":["#9E2638","#185D70","#B78A31","#29654F","#201B20"],"definition":"宝石红、孔雀蓝、帝王金与深黑搭建歌剧化宫廷。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D028 桑杰·里拉·彭萨里 Sanjay Leela Bhansali 综合色彩寄存器。固定六色色值与画面占比：宝石绯红 #9E2638 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；孔雀蓝 #185D70 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；帝王金 #B78A31 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；翡翠绿 #29654F 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；宫墙黑 #201B20 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；象牙白 #D8CBB5 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。宝石红、孔雀蓝、帝王金与深黑搭建歌剧化宫廷。色板：宝石绯红#9E2638,孔雀蓝#185D70,帝王金#B78A31,翡翠绿#29654F,宫墙黑#201B20,象牙白#D8CBB5；光线：烛火、顶光和图案化色光；摄影：对称大全景、旋转舞蹈、慢速推进；调色：高饱和但分区清晰，金色控制高光。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D029","name":"D029 阿巴斯·基亚罗斯塔米 Abbas Kiarostami","genre":"cool","colors":["#B9A680","#77805F","#8EACBB","#737C7D","#85433A"],"definition":"道路、土墙、橄榄树和天空保持朴素，颜色服务真实时间与选择。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D029 阿巴斯·基亚罗斯塔米 Abbas Kiarostami 综合色彩寄存器。固定六色色值与画面占比：土墙米 #B9A680 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；橄榄绿 #77805F 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；天空淡蓝 #8EACBB 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；车窗灰 #737C7D 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；樱桃暗红 #85433A 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；柏油黑 #343638 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。道路、土墙、橄榄树和天空保持朴素，颜色服务真实时间与选择。色板：土墙米#B9A680,橄榄绿#77805F,天空淡蓝#8EACBB,车窗灰#737C7D,樱桃暗红#85433A,柏油黑#343638；光线：真实日光、车内反射光、黄昏；摄影：固定观察、车内对话、远景留白；调色：自然低对比，不做戏剧化偏色。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D030","name":"D030 阿斯哈·法哈蒂 Asghar Farhadi","genre":"cool","colors":["#74818A","#B2AA9C","#795F4B","#394E60","#9D755F"],"definition":"中性家居灰、冬日蓝和木色让伦理冲突保持现实压力。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D030 阿斯哈·法哈蒂 Asghar Farhadi 综合色彩寄存器。固定六色色值与画面占比：冬日灰蓝 #74818A 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；墙面米灰 #B2AA9C 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；木门褐 #795F4B 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；衣物藏蓝 #394E60 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；肤色暖褐 #9D755F 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；冲突暗红 #71363A 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。中性家居灰、冬日蓝和木色让伦理冲突保持现实压力。色板：冬日灰蓝#74818A,墙面米灰#B2AA9C,木门褐#795F4B,衣物藏蓝#394E60,肤色暖褐#9D755F,冲突暗红#71363A；光线：自然窗光与普通顶灯；摄影：手持贴近但克制，门框分隔关系；调色：中性写实、肤色稳定、避免情绪滤镜。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D031","name":"D031 阿尔弗雷德·希区柯克 Alfred Hitchcock","genre":"cool","colors":["#3E7A63","#A5232B","#3D4145","#A7AFAD","#B78348"],"definition":"优雅中性色被翠绿和警示红刺破，颜色成为欲望与危险的开关。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D031 阿尔弗雷德·希区柯克 Alfred Hitchcock 综合色彩寄存器。固定六色色值与画面占比：幽灵翠绿 #3E7A63 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；警示猩红 #A5232B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；绅士炭灰 #3D4145 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；冷雾灰 #A7AFAD 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；室内琥珀 #B78348 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；夜幕藏蓝 #22354C 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。优雅中性色被翠绿和警示红刺破，颜色成为欲望与危险的开关。色板：幽灵翠绿#3E7A63,警示猩红#A5232B,绅士炭灰#3D4145,冷雾灰#A7AFAD,室内琥珀#B78348,夜幕藏蓝#22354C；光线：古典布光加入动机明确的色光；摄影：空间—视线—目标—反应，精准推近；调色：中间调中性偏冷，红绿分场出现。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D032","name":"D032 斯坦利·库布里克 Stanley Kubrick","genre":"cool","colors":["#111318","#D8D9D4","#A52A2D","#B98B4C","#62684B"],"definition":"精密对称与单一场景色逻辑把人置于冷静而宏大的系统。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D032 斯坦利·库布里克 Stanley Kubrick 综合色彩寄存器。固定六色色值与画面占比：太空纯黑 #111318 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；舱体冷白 #D8D9D4 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；警报红 #A52A2D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；巴里烛金 #B98B4C 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；军服橄榄 #62684B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；酒店粉蓝 #7C8FA5 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。精密对称与单一场景色逻辑把人置于冷静而宏大的系统。色板：太空纯黑#111318,舱体冷白#D8D9D4,警报红#A52A2D,巴里烛金#B98B4C,军服橄榄#62684B,酒店粉蓝#7C8FA5；光线：动机光严格，烛光或人工光源可见；摄影：中央透视、对称推进、稳定广角；调色：高光受控、黑位干净、每场一套主色。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D033","name":"D033 英格玛·伯格曼 Ingmar Bergman","genre":"cool","colors":["#8B2529","#D0B6A0","#1E1F22","#8A8D8B","#B3834B"],"definition":"面孔、暗红房间和冷白沉默构成心理与肉身的剧场。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D033 英格玛·伯格曼 Ingmar Bergman 综合色彩寄存器。固定六色色值与画面占比：呼喊深红 #8B2529 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；皮肤象牙 #D0B6A0 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；教堂黑 #1E1F22 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；冬日灰 #8A8D8B 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；烛火金 #B3834B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；病室白 #C8C5BC 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。面孔、暗红房间和冷白沉默构成心理与肉身的剧场。色板：呼喊深红#8B2529,皮肤象牙#D0B6A0,教堂黑#1E1F22,冬日灰#8A8D8B,烛火金#B3834B,病室白#C8C5BC；光线：近距离侧光、窗光、烛光；摄影：面部特写、双人正面、静止压迫；调色：红色浓厚，肤色保留纹理，黑白可高反差。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D034","name":"D034 安德烈·塔可夫斯基 Andrei Tarkovsky","genre":"cool","colors":["#5D6B4F","#7B5A43","#7C8786","#B8B9B0","#A97B43"],"definition":"苔绿、锈褐、水银灰和雾白让时间沉积在水、墙与废墟上。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D034 安德烈·塔可夫斯基 Andrei Tarkovsky 综合色彩寄存器。固定六色色值与画面占比：苔藓绿 #5D6B4F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；铁锈褐 #7B5A43 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；水银灰 #7C8786 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；雾白 #B8B9B0 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；烛火金 #A97B43 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；深土黑 #252724 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。苔绿、锈褐、水银灰和雾白让时间沉积在水、墙与废墟上。色板：苔藓绿#5D6B4F,铁锈褐#7B5A43,水银灰#7C8786,雾白#B8B9B0,烛火金#A97B43,深土黑#252724；光线：漫射天光、火光、水面反射；摄影：缓慢长镜、前后景层次、物质运动；调色：低饱和、湿润中间调、轻颗粒。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D035","name":"D035 费德里科·费里尼 Federico Fellini","genre":"cool","colors":["#B83A35","#5E93AF","#DDD2B8","#202025","#A77A45"],"definition":"马戏红、海滨蓝、奶油白与夜色黑把现实推向华丽梦游。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D035 费德里科·费里尼 Federico Fellini 综合色彩寄存器。固定六色色值与画面占比：马戏朱红 #B83A35 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；海滨天蓝 #5E93AF 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；奶油白 #DDD2B8 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；礼服黑 #202025 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；旧城赭黄 #A77A45 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；梦境金 #C09A4C 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。马戏红、海滨蓝、奶油白与夜色黑把现实推向华丽梦游。色板：马戏朱红#B83A35,海滨天蓝#5E93AF,奶油白#DDD2B8,礼服黑#202025,旧城赭黄#A77A45,梦境金#C09A4C；光线：舞台光、日光与梦境柔光切换；摄影：流动群像、广角靠近、盛大调度；调色：暖调奶油色，红蓝作戏剧点。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D036","name":"D036 米开朗基罗·安东尼奥尼 Michelangelo Antonioni","genre":"cool","colors":["#7A7D78","#5E755D","#A23D38","#7891A0","#B9B3A8"],"definition":"工业灰与被人工染色的绿红暴露现代空间的情绪污染。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D036 米开朗基罗·安东尼奥尼 Michelangelo Antonioni 综合色彩寄存器。固定六色色值与画面占比：工业水泥灰 #7A7D78 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；污染绿 #5E755D 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；警戒红 #A23D38 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；天空冷蓝 #7891A0 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；墙面米白 #B9B3A8 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；焦油黑 #292D2F 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。工业灰与被人工染色的绿红暴露现代空间的情绪污染。色板：工业水泥灰#7A7D78,污染绿#5E755D,警戒红#A23D38,天空冷蓝#7891A0,墙面米白#B9B3A8,焦油黑#292D2F；光线：阴天光、工业雾、孤立色面；摄影：建筑远景、人物偏置、缓慢横移；调色：整体低饱和，单一人工色突显。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D037","name":"D037 贝纳尔多·贝托鲁奇 Bernardo Bertolucci","genre":"cool","colors":["#A47A45","#40566D","#743238","#85827A","#A4775D"],"definition":"金褐、法西斯冷蓝和斜向阴影组成奢华而危险的历史欲望。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D037 贝纳尔多·贝托鲁奇 Bernardo Bertolucci 综合色彩寄存器。固定六色色值与画面占比：同流者金褐 #A47A45 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；政权冷蓝 #40566D 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；丝绒暗红 #743238 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；石墙灰 #85827A 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；肤色蜜褐 #A4775D 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；阴影黑 #25262B 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。金褐、法西斯冷蓝和斜向阴影组成奢华而危险的历史欲望。色板：同流者金褐#A47A45,政权冷蓝#40566D,丝绒暗红#743238,石墙灰#85827A,肤色蜜褐#A4775D,阴影黑#25262B；光线：百叶硬光、窗光、浓雾；摄影：斜线构图、流畅轨道、镜面空间；调色：暖金与冷蓝对立，阴影有纹理。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D038","name":"D038 达里奥·阿基多 Dario Argento","genre":"cool","colors":["#B5222F","#235FA0","#3C8B60","#2A1833","#D5D5CF"],"definition":"红蓝绿三原色在黑暗中像舞台灯一样攻击感官。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D038 达里奥·阿基多 Dario Argento 综合色彩寄存器。固定六色色值与画面占比：血红 #B5222F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；妖蓝 #235FA0 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；毒绿 #3C8B60 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；紫黑 #2A1833 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；冷白 #D5D5CF 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；金黄 #C79A2B 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。红蓝绿三原色在黑暗中像舞台灯一样攻击感官。色板：血红#B5222F,妖蓝#235FA0,毒绿#3C8B60,紫黑#2A1833,冷白#D5D5CF,金黄#C79A2B；光线：非现实彩色硬光、背光、剪影；摄影：主观运动、建筑几何、突然逼近；调色：高纯度分区，黑位深，白色短促。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D039","name":"D039 保罗·索伦蒂诺 Paolo Sorrentino","genre":"cool","colors":["#C9C1AE","#8B3236","#B78A45","#4E8787","#1E2024"],"definition":"罗马奶油石色、教会红和夜宴金在宏大空间里展示华丽空虚。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D039 保罗·索伦蒂诺 Paolo Sorrentino 综合色彩寄存器。固定六色色值与画面占比：罗马石白 #C9C1AE 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；教会绛红 #8B3236 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；夜宴金 #B78A45 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；泳池青 #4E8787 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；礼服黑 #1E2024 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；植物深绿 #405E43 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。罗马奶油石色、教会红和夜宴金在宏大空间里展示华丽空虚。色板：罗马石白#C9C1AE,教会绛红#8B3236,夜宴金#B78A45,泳池青#4E8787,礼服黑#1E2024,植物深绿#405E43；光线：金色侧光、夜景点光、建筑日光；摄影：大型轨道、对称与离心群像；调色：暖白和金色高光，黑位优雅。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D040","name":"D040 让-吕克·戈达尔 Jean-Luc Godard","genre":"cool","colors":["#C93232","#2D5F9B","#D6B72D","#D9D7CF","#202124"],"definition":"红蓝黄原色、海报字色和自然日光共同制造观念性的跳跃。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D040 让-吕克·戈达尔 Jean-Luc Godard 综合色彩寄存器。固定六色色值与画面占比：戈达尔红 #C93232 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；戈达尔蓝 #2D5F9B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；柠檬黄 #D6B72D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；纸张白 #D9D7CF 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；印刷黑 #202124 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；地中海青 #4F8E9B 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。红蓝黄原色、海报字色和自然日光共同制造观念性的跳跃。色板：戈达尔红#C93232,戈达尔蓝#2D5F9B,柠檬黄#D6B72D,纸张白#D9D7CF,印刷黑#202124,地中海青#4F8E9B；光线：直接日光、实景光、偶尔平面色光；摄影：手持、跳切、正面凝视、图文插入；调色：原色干净，整体不过度电影化。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D041","name":"D041 阿涅斯·瓦尔达 Agnès Varda","genre":"cool","colors":["#D1B43B","#B83C43","#5D8FA8","#668457","#D8D2C4"],"definition":"明亮日光、花朵原色与纪录现实在同一画面中保持亲密和机智。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D041 阿涅斯·瓦尔达 Agnès Varda 综合色彩寄存器。固定六色色值与画面占比：幸福黄 #D1B43B 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；花朵红 #B83C43 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；海岸蓝 #5D8FA8 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；叶片绿 #668457 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；墙面白 #D8D2C4 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；胶片黑 #30302F 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。明亮日光、花朵原色与纪录现实在同一画面中保持亲密和机智。色板：幸福黄#D1B43B,花朵红#B83C43,海岸蓝#5D8FA8,叶片绿#668457,墙面白#D8D2C4,胶片黑#30302F；光线：自然日光、街头光、家庭窗光；摄影：轻便观察、正面肖像、随性移动；调色：明亮温暖、保留胶片颗粒和真实肤色。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D042","name":"D042 罗伯特·布列松 Robert Bresson","genre":"cool","colors":["#85847E","#C9C5BA","#725D49","#2C2D2D","#687780"],"definition":"朴素灰、泥土和皮肤让手、物件与行动承担精神重量。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D042 罗伯特·布列松 Robert Bresson 综合色彩寄存器。固定六色色值与画面占比：布列松灰 #85847E 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；墙面白 #C9C5BA 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；旧木褐 #725D49 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；衣物黑 #2C2D2D 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；冷蓝灰 #687780 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；肤色土褐 #9B7560 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。朴素灰、泥土和皮肤让手、物件与行动承担精神重量。色板：布列松灰#85847E,墙面白#C9C5BA,旧木褐#725D49,衣物黑#2C2D2D,冷蓝灰#687780,肤色土褐#9B7560；光线：无炫技自然光，方向清楚；摄影：手部特写、动作片段、克制固定镜；调色：低饱和低修饰，声音补全画外。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D043","name":"D043 让-皮埃尔·梅尔维尔 Jean-Pierre Melville","genre":"cool","colors":["#354D61","#45484B","#171B20","#7B8080","#A87B42"],"definition":"钢蓝、炭灰和极少暖色塑造孤独职业者的冷峻纪律。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D043 让-皮埃尔·梅尔维尔 Jean-Pierre Melville 综合色彩寄存器。固定六色色值与画面占比：独行钢蓝 #354D61 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；风衣炭灰 #45484B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；夜幕黑 #171B20 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；烟雾灰 #7B8080 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；室内钨金 #A87B42 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；血色暗红 #6E2A2C 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。钢蓝、炭灰和极少暖色塑造孤独职业者的冷峻纪律。色板：独行钢蓝#354D61,风衣炭灰#45484B,夜幕黑#171B20,烟雾灰#7B8080,室内钨金#A87B42,血色暗红#6E2A2C；光线：冷日光、夜景硬点光、低照度室内；摄影：几何构图、静止等待、精准横移；调色：冷灰主导，暖色只在室内短暂出现。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D044","name":"D044 雅克·塔蒂 Jacques Tati","genre":"cool","colors":["#B7B0A8","#7191A0","#B54C45","#718066","#C6A753"],"definition":"粉灰现代建筑被红绿蓝小色块激活，喜剧来自空间而非台词。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D044 雅克·塔蒂 Jacques Tati 综合色彩寄存器。固定六色色值与画面占比：建筑粉灰 #B7B0A8 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；玻璃蓝 #7191A0 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；座椅红 #B54C45 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；制服绿 #718066 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；灯光黄 #C6A753 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；线条黑 #343638 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。粉灰现代建筑被红绿蓝小色块激活，喜剧来自空间而非台词。色板：建筑粉灰#B7B0A8,玻璃蓝#7191A0,座椅红#B54C45,制服绿#718066,灯光黄#C6A753,线条黑#343638；光线：均匀现代建筑光、清洁日光；摄影：大全景、多点同时动作、固定观察；调色：低对比粉灰底，小色块清晰。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D045","name":"D045 克莱尔·德尼 Claire Denis","genre":"cool","colors":["#B19A78","#9B6F55","#676D4C","#2B455C","#D5CDBB"],"definition":"皮肤、汗、沙与深蓝夜色构成触觉性的身体电影。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D045 克莱尔·德尼 Claire Denis 综合色彩寄存器。固定六色色值与画面占比：晒褪沙色 #B19A78 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；皮肤暖褐 #9B6F55 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；军服橄榄 #676D4C 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；夜海深蓝 #2B455C 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；日光白 #D5CDBB 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；血土暗红 #743C36 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。皮肤、汗、沙与深蓝夜色构成触觉性的身体电影。色板：晒褪沙色#B19A78,皮肤暖褐#9B6F55,军服橄榄#676D4C,夜海深蓝#2B455C,日光白#D5CDBB,血土暗红#743C36；光线：强烈自然光、逆光汗液、低照度夜景；摄影：身体局部、群体动作、感官性近景；调色：暖肤色和晒褪环境，蓝夜克制。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D046","name":"D046 香特尔·阿克曼 Chantal Akerman","genre":"cool","colors":["#B3AA9C","#735C49","#66788A","#D0CCC1","#33312F"],"definition":"固定空间中的米灰、木褐和日常白让时间本身显形。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D046 香特尔·阿克曼 Chantal Akerman 综合色彩寄存器。固定六色色值与画面占比：墙面米灰 #B3AA9C 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；木桌褐 #735C49 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；围裙蓝灰 #66788A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；日常白 #D0CCC1 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；炉灶黑 #33312F 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；食物暗红 #7D493F 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。固定空间中的米灰、木褐和日常白让时间本身显形。色板：墙面米灰#B3AA9C,木桌褐#735C49,围裙蓝灰#66788A,日常白#D0CCC1,炉灶黑#33312F,食物暗红#7D493F；光线：恒定室内窗光与普通灯光；摄影：正面固定机位，动作完整重复；调色：中性低饱和，曝光稳定不煽情。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D047","name":"D047 迈克尔·哈内克 Michael Haneke","genre":"cool","colors":["#D2D0C8","#8A8D89","#292A2A","#6D7D84","#75614E"],"definition":"无菌白、冬日灰和压抑黑让观众无法逃离伦理现场。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D047 迈克尔·哈内克 Michael Haneke 综合色彩寄存器。固定六色色值与画面占比：无菌白 #D2D0C8 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；冬日灰 #8A8D89 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；煤黑 #292A2A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；冷墙蓝 #6D7D84 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；木色褐 #75614E 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；微弱血红 #753537 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。无菌白、冬日灰和压抑黑让观众无法逃离伦理现场。色板：无菌白#D2D0C8,冬日灰#8A8D89,煤黑#292A2A,冷墙蓝#6D7D84,木色褐#75614E,微弱血红#753537；光线：平直冷光、阴天、无装饰室内光；摄影：固定或冷静跟随，远距离观察；调色：去饱和、黑白清晰、拒绝美化。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D048","name":"D048 克日什托夫·基耶斯洛夫斯基 Krzysztof Kieślowski","genre":"cool","colors":["#315D8B","#D6D2C7","#A83B42","#658D91","#B68A48"],"definition":"蓝、白、红分别成为情绪结构，玻璃、反射和光斑连接偶然命运。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D048 克日什托夫·基耶斯洛夫斯基 Krzysztof Kieślowski 综合色彩寄存器。固定六色色值与画面占比：自由深蓝 #315D8B 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；平等乳白 #D6D2C7 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；博爱朱红 #A83B42 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；玻璃青 #658D91 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；路灯金 #B68A48 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；命运黑 #292B31 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。蓝、白、红分别成为情绪结构，玻璃、反射和光斑连接偶然命运。色板：自由深蓝#315D8B,平等乳白#D6D2C7,博爱朱红#A83B42,玻璃青#658D91,路灯金#B68A48,命运黑#292B31；光线：窗光、玻璃反射、夜景点光；摄影：特写物件、缓慢推近、偶然性匹配；调色：单片主色明确，其他色降低竞争。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D049","name":"D049 贝拉·塔尔 Béla Tarr","genre":"cool","colors":["#202122","#50514E","#898B86","#B7B5AC","#665E53"],"definition":"黑白长镜把泥、风、墙和人的疲惫压成末世质地。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D049 贝拉·塔尔 Béla Tarr 综合色彩寄存器。固定六色色值与画面占比：都灵煤黑 #202122 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；泥地深灰 #50514E 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；天空铅灰 #898B86 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；墙面灰白 #B7B5AC 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；旧木灰褐 #665E53 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；马鬃暗黑 #30302F 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。黑白长镜把泥、风、墙和人的疲惫压成末世质地。色板：都灵煤黑#202122,泥地深灰#50514E,天空铅灰#898B86,墙面灰白#B7B5AC,旧木灰褐#665E53,马鬃暗黑#30302F；光线：阴天漫射、低冬日光、风中变化；摄影：极慢长镜、重复路径、深景运动；调色：高质感黑白，灰阶分离，适度颗粒。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D050","name":"D050 沃纳·赫尔佐格 Werner Herzog","genre":"cool","colors":["#365A3F","#7D634A","#B8B9AE","#718593","#B66734"],"definition":"丛林绿、河泥褐和雾白把人类执念置于压倒性的自然中。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D050 沃纳·赫尔佐格 Werner Herzog 综合色彩寄存器。固定六色色值与画面占比：丛林深绿 #365A3F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；河泥褐 #7D634A 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；雾白 #B8B9AE 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；天空灰蓝 #718593 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；火光橙 #B66734 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；人影黑 #252923 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。丛林绿、河泥褐和雾白把人类执念置于压倒性的自然中。色板：丛林深绿#365A3F,河泥褐#7D634A,雾白#B8B9AE,天空灰蓝#718593,火光橙#B66734,人影黑#252923；光线：极端自然光、雾、火与水汽；摄影：壮阔远景、危险近距、真实环境运动；调色：自然色浓厚但不旅游化，保留湿热质地。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D051","name":"D051 赖纳·维尔纳·法斯宾德 Rainer Werner Fassbinder","genre":"cool","colors":["#69907A","#A73C42","#C5A33A","#4E718C","#BB7E86"],"definition":"糖果色室内、酸性原色和镜面反射包裹残酷社会关系。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D051 赖纳·维尔纳·法斯宾德 Rainer Werner Fassbinder 综合色彩寄存器。固定六色色值与画面占比：公寓薄荷绿 #69907A 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；情节剧红 #A73C42 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；塑料黄 #C5A33A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；镜面蓝 #4E718C 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；墙纸粉 #BB7E86 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；权力黑 #27262A 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。糖果色室内、酸性原色和镜面反射包裹残酷社会关系。色板：公寓薄荷绿#69907A,情节剧红#A73C42,塑料黄#C5A33A,镜面蓝#4E718C,墙纸粉#BB7E86,权力黑#27262A；光线：平面彩光、镜面光、舞台化室内光；摄影：正面群像、镜面分割、突然近景；调色：高纯度但略脏旧，肤色不美化。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D052","name":"D052 维姆·文德斯 Wim Wenders","genre":"cool","colors":["#5B87A2","#A83F38","#A5764B","#A65D78","#303438"],"definition":"公路天空、霓虹红和沙漠暖土把孤独放进广阔距离。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D052 维姆·文德斯 Wim Wenders 综合色彩寄存器。固定六色色值与画面占比：德州天空蓝 #5B87A2 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；汽车旅馆红 #A83F38 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；沙漠赭 #A5764B 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；霓虹粉 #A65D78 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；道路黑 #303438 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；柏林灰 #858A89 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。公路天空、霓虹红和沙漠暖土把孤独放进广阔距离。色板：德州天空蓝#5B87A2,汽车旅馆红#A83F38,沙漠赭#A5764B,霓虹粉#A65D78,道路黑#303438,柏林灰#858A89；光线：黄昏、夜霓虹、自然侧光；摄影：广阔远景、车窗框景、缓慢移动；调色：冷天空对暖土地，霓虹保持孤立。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D053","name":"D053 卡尔·西奥多·德莱叶 Carl Theodor Dreyer","genre":"cool","colors":["#D8D4C8","#232323","#8B8982","#B18A52","#C9AE97"],"definition":"乳白、黑与烛火灰构成接近雕塑的宗教纯度。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D053 卡尔·西奥多·德莱叶 Carl Theodor Dreyer 综合色彩寄存器。固定六色色值与画面占比：圣坛乳白 #D8D4C8 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；袍服黑 #232323 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；石墙灰 #8B8982 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；烛火金 #B18A52 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；肤色象牙 #C9AE97 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；血迹暗红 #6D3433 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。乳白、黑与烛火灰构成接近雕塑的宗教纯度。色板：圣坛乳白#D8D4C8,袍服黑#232323,石墙灰#8B8982,烛火金#B18A52,肤色象牙#C9AE97,血迹暗红#6D3433；光线：窗光、烛光、正面柔硬结合；摄影：正面特写、静止空间、缓慢仪式动作；调色：白色有层次，黑不堵，肤色苍白真实。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D054","name":"D054 拉斯·冯·提尔 Lars von Trier","genre":"cool","colors":["#304969","#4D694E","#868A86","#99715D","#772D35"],"definition":"冷蓝自然、病态绿与突发炽红把情绪推向极端。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D054 拉斯·冯·提尔 Lars von Trier 综合色彩寄存器。固定六色色值与画面占比：忧郁深蓝 #304969 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；森林病绿 #4D694E 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；末日灰 #868A86 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；身体肤褐 #99715D 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；创伤暗红 #772D35 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；雪白 #D5D4CE 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。冷蓝自然、病态绿与突发炽红把情绪推向极端。色板：忧郁深蓝#304969,森林病绿#4D694E,末日灰#868A86,身体肤褐#99715D,创伤暗红#772D35,雪白#D5D4CE；光线：手持自然光与高度风格化慢镜并置；摄影：贴身手持、极慢升格、冲突性切换；调色：冷蓝压低饱和，红色只在创伤节点。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D055","name":"D055 尼古拉斯·温丁·雷弗恩 Nicolas Winding Refn","genre":"cool","colors":["#B22F75","#2857A0","#B62C32","#141820","#68407F"],"definition":"霓虹洋红、钴蓝和深黑把暴力变成图腾化夜间仪式。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D055 尼古拉斯·温丁·雷弗恩 Nicolas Winding Refn 综合色彩寄存器。固定六色色值与画面占比：霓虹洋红 #B22F75 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；电光钴蓝 #2857A0 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；警示猩红 #B62C32 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；夜幕黑 #141820 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；紫罗兰 #68407F 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；钠灯金 #B87835 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。霓虹洋红、钴蓝和深黑把暴力变成图腾化夜间仪式。色板：霓虹洋红#B22F75,电光钴蓝#2857A0,警示猩红#B62C32,夜幕黑#141820,紫罗兰#68407F,钠灯金#B87835；光线：强彩色轮廓光、深黑背景；摄影：极慢推进、正面凝视、雕塑式动作；调色：高纯度冷暖分区，黑位干净。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D056","name":"D056 佩德罗·阿莫多瓦 Pedro Almodóvar","genre":"cool","colors":["#C23A3D","#2E6E8A","#D5AF36","#C45C78","#4F7D67"],"definition":"番茄红、孔雀蓝、柠檬黄与暖肤色让情感直接占领空间。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D056 佩德罗·阿莫多瓦 Pedro Almodóvar 综合色彩寄存器。固定六色色值与画面占比：阿莫多瓦红 #C23A3D 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；孔雀蓝 #2E6E8A 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；柠檬黄 #D5AF36 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；热粉 #C45C78 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；家居绿 #4F7D67 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；暖肤杏 #C08A6F 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。番茄红、孔雀蓝、柠檬黄与暖肤色让情感直接占领空间。色板：阿莫多瓦红#C23A3D,孔雀蓝#2E6E8A,柠檬黄#D5AF36,热粉#C45C78,家居绿#4F7D67,暖肤杏#C08A6F；光线：明亮室内光、阳光、彩色墙面反射；摄影：正面构图、流畅跟随、物件特写；调色：饱满暖色，肤色健康，黑位柔和。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D057","name":"D057 路易斯·布努埃尔 Luis Buñuel","genre":"cool","colors":["#B9AE9B","#242323","#80373B","#B48A4F","#7890A0"],"definition":"日常米灰被不合逻辑的黑、红与金色细节轻轻扭曲。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D057 路易斯·布努埃尔 Luis Buñuel 综合色彩寄存器。固定六色色值与画面占比：资产阶级米 #B9AE9B 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；教堂黑 #242323 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；欲望暗红 #80373B 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；沙漠金 #B48A4F 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；天空蓝灰 #7890A0 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；餐桌绿 #6C7C61 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。日常米灰被不合逻辑的黑、红与金色细节轻轻扭曲。色板：资产阶级米#B9AE9B,教堂黑#242323,欲望暗红#80373B,沙漠金#B48A4F,天空蓝灰#7890A0,餐桌绿#6C7C61；光线：看似自然的平光，梦境也不提示；摄影：稳定中景、突兀事件、冷静观察；调色：自然色中保留少量象征色。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D058","name":"D058 谢尔盖·帕拉杰诺夫 Sergei Parajanov","genre":"cool","colors":["#9A2631","#285583","#B0883F","#48684B","#D4CDBB"],"definition":"石榴红、矿物蓝、金色织物与黑色背景组成静止的民俗圣像。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D058 谢尔盖·帕拉杰诺夫 Sergei Parajanov 综合色彩寄存器。固定六色色值与画面占比：石榴红 #9A2631 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；青金石蓝 #285583 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；织物金 #B0883F 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；葡萄叶绿 #48684B 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；石灰白 #D4CDBB 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；圣像黑 #1D1C1E 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。石榴红、矿物蓝、金色织物与黑色背景组成静止的民俗圣像。色板：石榴红#9A2631,青金石蓝#285583,织物金#B0883F,葡萄叶绿#48684B,石灰白#D4CDBB,圣像黑#1D1C1E；光线：正面平面光、烛光、舞台色面；摄影：固定正面 tableaux、手势与物件运动；调色：高纯度矿物色，黑底衬托织物。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D059","name":"D059 彼得·格林纳威 Peter Greenaway","genre":"cool","colors":["#9D2933","#18191D","#35664F","#A77F3F","#654164"],"definition":"绘画式红绿金与黑暗室内把人物变成权力和欲望的陈列品。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D059 彼得·格林纳威 Peter Greenaway 综合色彩寄存器。固定六色色值与画面占比：厨师猩红 #9D2933 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；大盗墨黑 #18191D 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；餐桌翠绿 #35664F 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；巴洛克金 #A77F3F 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；腐败紫 #654164 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；皮肤象牙 #C7A990 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。绘画式红绿金与黑暗室内把人物变成权力和欲望的陈列品。色板：厨师猩红#9D2933,大盗墨黑#18191D,餐桌翠绿#35664F,巴洛克金#A77F3F,腐败紫#654164,皮肤象牙#C7A990；光线：顶光、烛光、画框式侧光；摄影：严格对称、横向 tableaux、重复构图；调色：深色华丽，金红绿分层，肤色雕塑化。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D060","name":"D060 雷德利·斯科特 Ridley Scott","genre":"cool","colors":["#315A67","#161B1E","#B66E32","#687176","#8F3030"],"definition":"工业青、烟雾黑与琥珀火光构成可触摸的未来废墟。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D060 雷德利·斯科特 Ridley Scott 综合色彩寄存器。固定六色色值与画面占比：工业青蓝 #315A67 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；烟雾黑 #161B1E 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；钠灯琥珀 #B66E32 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；机械灰 #687176 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；警报红 #8F3030 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；沙尘米 #A89470 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。工业青、烟雾黑与琥珀火光构成可触摸的未来废墟。色板：工业青蓝#315A67,烟雾黑#161B1E,钠灯琥珀#B66E32,机械灰#687176,警报红#8F3030,沙尘米#A89470；光线：逆光、体积烟、实景灯源；摄影：环境揭示、稳定跟随、规模化大全景；调色：冷青暗部对琥珀高光，材质微反差。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D061","name":"D061 奥逊·威尔斯 Orson Welles","genre":"cool","colors":["#171819","#D4D1C7","#55575A","#91918B","#6A594B"],"definition":"深焦黑白、硬光与巨大阴影把权力压进建筑空间。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D061 奥逊·威尔斯 Orson Welles 综合色彩寄存器。固定六色色值与画面占比：凯恩黑 #171819 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；新闻纸白 #D4D1C7 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；阴影灰 #55575A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；豪宅石灰 #91918B 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；烟草褐 #6A594B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；玫瑰暗红 #6F3435 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。深焦黑白、硬光与巨大阴影把权力压进建筑空间。色板：凯恩黑#171819,新闻纸白#D4D1C7,阴影灰#55575A,豪宅石灰#91918B,烟草褐#6A594B,玫瑰暗红#6F3435；光线：低角度硬光、深焦层次、轮廓阴影；摄影：低机位、深焦、复杂空间移动；调色：黑白高反差但中灰丰富。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D062","name":"D062 约翰·福特 John Ford","genre":"cool","colors":["#9A5A3D","#5F8CA7","#B99F78","#374F67","#694D3C"],"definition":"纪念碑谷赭红、天空蓝和尘土米色构成神话化西部。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D062 约翰·福特 John Ford 综合色彩寄存器。固定六色色值与画面占比：峡谷赭红 #9A5A3D 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；天空蓝 #5F8CA7 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；尘土米 #B99F78 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；骑兵藏蓝 #374F67 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；皮革褐 #694D3C 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；落日金 #C18B3E 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。纪念碑谷赭红、天空蓝和尘土米色构成神话化西部。色板：峡谷赭红#9A5A3D,天空蓝#5F8CA7,尘土米#B99F78,骑兵藏蓝#374F67,皮革褐#694D3C,落日金#C18B3E；光线：强烈日光、长阴影、黄昏；摄影：地平线大全景、门框框景、骑行横移；调色：暖土对冷天，肤色不橙化。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D063","name":"D063 比利·怀尔德 Billy Wilder","genre":"cool","colors":["#1C1D20","#D3D0C8","#747575","#4E616C","#713136"],"definition":"百叶阴影、烟灰黑白和都市夜色让欲望成为锋利陷阱。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D063 比利·怀尔德 Billy Wilder 综合色彩寄存器。固定六色色值与画面占比：保险黑 #1C1D20 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；百叶白 #D3D0C8 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；烟雾灰 #747575 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；夜街蓝灰 #4E616C 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；唇色暗红 #713136 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；办公室褐 #6F5A48 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。百叶阴影、烟灰黑白和都市夜色让欲望成为锋利陷阱。色板：保险黑#1C1D20,百叶白#D3D0C8,烟雾灰#747575,夜街蓝灰#4E616C,唇色暗红#713136,办公室褐#6F5A48；光线：硬侧光、百叶光、低调照明；摄影：黑色电影斜线、双人中景、证据特写；调色：高反差灰阶，彩色转译保持低纯度。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D064","name":"D064 道格拉斯·瑟克 Douglas Sirk","genre":"cool","colors":["#B53B3D","#3C735F","#B58A45","#6E97AD","#D8CFB8"],"definition":"天鹅绒红、孔雀绿与金色家居把情感困在完美表面。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D064 道格拉斯·瑟克 Douglas Sirk 综合色彩寄存器。固定六色色值与画面占比：瑟克朱红 #B53B3D 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；孔雀绿 #3C735F 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；家居金 #B58A45 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；郊区天蓝 #6E97AD 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；奶油白 #D8CFB8 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；阴影紫 #58445D 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。天鹅绒红、孔雀绿与金色家居把情感困在完美表面。色板：瑟克朱红#B53B3D,孔雀绿#3C735F,家居金#B58A45,郊区天蓝#6E97AD,奶油白#D8CFB8,阴影紫#58445D；光线：染色玻璃般彩光、柔和轮廓光；摄影：镜面、门框、前景遮挡的情节剧构图；调色：浓郁Technicolor感，肤色温暖。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D065","name":"D065 弗朗西斯·福特·科波拉 Francis Ford Coppola","genre":"cool","colors":["#A67135","#5D4737","#171719","#722D30","#3E5D43"],"definition":"教父琥珀、木褐与深黑包裹权力，战争段落转向火焰与丛林绿。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D065 弗朗西斯·福特·科波拉 Francis Ford Coppola 综合色彩寄存器。固定六色色值与画面占比：教父琥珀 #A67135 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；胡桃木褐 #5D4737 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；权力黑 #171719 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；血酒红 #722D30 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；丛林绿 #3E5D43 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；火焰橙 #C45F27 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。教父琥珀、木褐与深黑包裹权力，战争段落转向火焰与丛林绿。色板：教父琥珀#A67135,胡桃木褐#5D4737,权力黑#171719,血酒红#722D30,丛林绿#3E5D43,火焰橙#C45F27；光线：低调顶侧光、窗光、火光；摄影：稳定中景、门框权力构图、缓慢推近；调色：暖暗中间调，黑位浓厚但保留眼神。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D066","name":"D066 马丁·斯科塞斯 Martin Scorsese","genre":"cool","colors":["#C49C2F","#B7652E","#456453","#8D3031","#202529"],"definition":"钠灯黄、出租车黄绿与血红把都市焦虑推向躁动。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D066 马丁·斯科塞斯 Martin Scorsese 综合色彩寄存器。固定六色色值与画面占比：出租车黄 #C49C2F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；钠灯橙 #B7652E 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；夜街绿 #456453 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；罪恶红 #8D3031 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；沥青黑 #202529 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；烟雾灰 #747A78 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。钠灯黄、出租车黄绿与血红把都市焦虑推向躁动。色板：出租车黄#C49C2F,钠灯橙#B7652E,夜街绿#456453,罪恶红#8D3031,沥青黑#202529,烟雾灰#747A78；光线：实景夜灯、招牌反射、局部顶光；摄影：主观跟随、快速摇移、突然定格；调色：脏暖夜色对冷绿阴影，颗粒可见。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D067","name":"D067 史蒂文·斯皮尔伯格 Steven Spielberg","genre":"cool","colors":["#BD8743","#5F91AD","#263F58","#A33A34","#B39A75"],"definition":"清晰轮廓、暖家庭光与冷危险空间形成可读性极强的视觉叙事。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D067 史蒂文·斯皮尔伯格 Steven Spielberg 综合色彩寄存器。固定六色色值与画面占比：家庭琥珀 #BD8743 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；冒险天蓝 #5F91AD 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；危险深蓝 #263F58 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；警示红 #A33A34 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；沙土米 #B39A75 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；剪影黑 #222428 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。清晰轮廓、暖家庭光与冷危险空间形成可读性极强的视觉叙事。色板：家庭琥珀#BD8743,冒险天蓝#5F91AD,危险深蓝#263F58,警示红#A33A34,沙土米#B39A75,剪影黑#222428；光线：强逆光、轮廓光、烟雾光束；摄影：低机位儿童视角、清楚揭示、动机推镜；调色：暖家庭对冷冒险，高光有光晕。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D068","name":"D068 大卫·林奇 David Lynch","genre":"cool","colors":["#203E63","#A12634","#D6C8A7","#4F774D","#17171B"],"definition":"郊区奶油色下潜伏深蓝、猩红与黑，熟悉空间随时裂开梦魇。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D068 大卫·林奇 David Lynch 综合色彩寄存器。固定六色色值与画面占比：蓝丝绒深蓝 #203E63 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；梦魇猩红 #A12634 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；郊区奶油 #D6C8A7 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；草坪绿 #4F774D 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；舞台黑 #17171B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；肤色苍白 #C7A78F 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。郊区奶油色下潜伏深蓝、猩红与黑，熟悉空间随时裂开梦魇。色板：蓝丝绒深蓝#203E63,梦魇猩红#A12634,郊区奶油#D6C8A7,草坪绿#4F774D,舞台黑#17171B,肤色苍白#C7A78F；光线：表面明亮、夜间舞台化硬光；摄影：缓慢逼近、诡异静止、主观声画错位；调色：蓝红深厚，奶油日景略不真实。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D069","name":"D069 泰伦斯·马力克 Terrence Malick","genre":"cool","colors":["#C3A052","#6F8655","#86A9BA","#5F8180","#A67B60"],"definition":"金色逆光、草地绿和天空蓝让人物融入流动自然。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D069 泰伦斯·马力克 Terrence Malick 综合色彩寄存器。固定六色色值与画面占比：天堂麦金 #C3A052 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；草原绿 #6F8655 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；天空淡蓝 #86A9BA 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；河水青 #5F8180 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；肤色暖褐 #A67B60 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；暮影黑 #343834 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。金色逆光、草地绿和天空蓝让人物融入流动自然。色板：天堂麦金#C3A052,草原绿#6F8655,天空淡蓝#86A9BA,河水青#5F8180,肤色暖褐#A67B60,暮影黑#343834；光线：黄金时刻逆光、自然散射、镜头耀斑；摄影：漂浮跟随、低机位自然细节、广角远景；调色：高光金暖、阴影青绿、肤色自然。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D070","name":"D070 布莱恩·德·帕尔玛 Brian De Palma","genre":"cool","colors":["#A32631","#315A7B","#8E9698","#161B22","#AD7E3D"],"definition":"分屏、猩红、冷蓝与镜面反射把窥视和危险变成视觉机关。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D070 布莱恩·德·帕尔玛 Brian De Palma 综合色彩寄存器。固定六色色值与画面占比：惊悚猩红 #A32631 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；监视冷蓝 #315A7B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；镜面银灰 #8E9698 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；夜幕黑 #161B22 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；室内金 #AD7E3D 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；证据白 #D4D0C5 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。分屏、猩红、冷蓝与镜面反射把窥视和危险变成视觉机关。色板：惊悚猩红#A32631,监视冷蓝#315A7B,镜面银灰#8E9698,夜幕黑#161B22,室内金#AD7E3D,证据白#D4D0C5；光线：聚光、彩色危险区、镜面反射；摄影：分屏、长推镜、主观窥视、360度空间；调色：红蓝分区，高反差，证据白清楚。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D071","name":"D071 迈克尔·曼 Michael Mann","genre":"cool","colors":["#2E526A","#B97835","#171D22","#477982","#8E3034"],"definition":"钢蓝城市、钠灯金和数字夜色呈现职业者的孤独精度。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D071 迈克尔·曼 Michael Mann 综合色彩寄存器。固定六色色值与画面占比：迈阿密钢蓝 #2E526A 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；钠灯金 #B97835 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；枪械黑 #171D22 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；玻璃青 #477982 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；尾灯红 #8E3034 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；水泥灰 #70777A 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。钢蓝城市、钠灯金和数字夜色呈现职业者的孤独精度。色板：迈阿密钢蓝#2E526A,钠灯金#B97835,枪械黑#171D22,玻璃青#477982,尾灯红#8E3034,水泥灰#70777A；光线：实景夜灯、数字低照度、冷暖反射；摄影：长焦监视、精准跟拍、城市横移；调色：冷蓝阴影、暖金高光、保持夜色层次。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D072","name":"D072 斯派克·李 Spike Lee","genre":"cool","colors":["#D2AE36","#A94B3D","#3C6F91","#5F7E4E","#A7755A"],"definition":"烈日黄、砖墙红和服装原色让社会冲突在街区升温。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D072 斯派克·李 Spike Lee 综合色彩寄存器。固定六色色值与画面占比：热浪黄 #D2AE36 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；砖墙红 #A94B3D 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；街区蓝 #3C6F91 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；叶片绿 #5F7E4E 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；肤色暖褐 #A7755A 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；柏油黑 #2E3030 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。烈日黄、砖墙红和服装原色让社会冲突在街区升温。色板：热浪黄#D2AE36,砖墙红#A94B3D,街区蓝#3C6F91,叶片绿#5F7E4E,肤色暖褐#A7755A,柏油黑#2E3030；光线：正午硬光、热反射、彩色墙面；摄影：正面人物、广角街区、滑轨强调；调色：高饱和暖色但保留肤色多样性。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D073","name":"D073 科恩兄弟 Coen Brothers","genre":"cool","colors":["#D9DAD5","#778A95","#795D45","#7E2D31","#202429"],"definition":"雪地白、木褐、犯罪暗红与空旷黑让荒诞和暴力同时冷却。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D073 科恩兄弟 Coen Brothers 综合色彩寄存器。固定六色色值与画面占比：冰雪白 #D9DAD5 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；北地蓝灰 #778A95 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；木屋褐 #795D45 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；血迹暗红 #7E2D31 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；夜路黑 #202429 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；麦田黄 #B4954D 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。雪地白、木褐、犯罪暗红与空旷黑让荒诞和暴力同时冷却。色板：冰雪白#D9DAD5,北地蓝灰#778A95,木屋褐#795D45,血迹暗红#7E2D31,夜路黑#202429,麦田黄#B4954D；光线：阴天雪光、普通室内暖灯；摄影：空旷远景、冷静中景、突然暴力；调色：冷白干净，红色稀少而刺眼。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D074","name":"D074 昆汀·塔伦蒂诺 Quentin Tarantino","genre":"cool","colors":["#D5AE2F","#A92129","#191B1E","#8A6041","#355F82"],"definition":"复古黄、血红、漫画黑与类型片原色构成章节化暴力游戏。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D074 昆汀·塔伦蒂诺 Quentin Tarantino 综合色彩寄存器。固定六色色值与画面占比：杀手黄 #D5AE2F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；血浆红 #A92129 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；西装黑 #191B1E 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；复古棕 #8A6041 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；汽车蓝 #355F82 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；纸张白 #D6D1C5 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。复古黄、血红、漫画黑与类型片原色构成章节化暴力游戏。色板：杀手黄#D5AE2F,血浆红#A92129,西装黑#191B1E,复古棕#8A6041,汽车蓝#355F82,纸张白#D6D1C5；光线：硬光、复古实景光、舞台点光；摄影：低机位、快速推拉、章回式动作；调色：高对比类型色，颗粒与暖旧感。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D075","name":"D075 韦斯·安德森 Wes Anderson","genre":"cool","colors":["#C98286","#634D7A","#C6A13D","#5F8FA4","#567552"],"definition":"对称空间以粉、蓝、黄和红构成精确的童话式秩序。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D075 韦斯·安德森 Wes Anderson 综合色彩寄存器。固定六色色值与画面占比：饭店粉 #C98286 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；制服紫 #634D7A 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；芥末黄 #C6A13D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；湖水蓝 #5F8FA4 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；森林绿 #567552 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；奶油白 #DED1B7 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。对称空间以粉、蓝、黄和红构成精确的童话式秩序。色板：饭店粉#C98286,制服紫#634D7A,芥末黄#C6A13D,湖水蓝#5F8FA4,森林绿#567552,奶油白#DED1B7；光线：柔和均匀光、平面色块；摄影：严格对称、横向平移、俯拍物件；调色：粉彩中等饱和，阴影柔和，色块边界清楚。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D076","name":"D076 索菲亚·科波拉 Sofia Coppola","genre":"cool","colors":["#C595A0","#4E718C","#B69A6E","#DCCEB5","#7A8A67"],"definition":"雾粉、奶油白和城市淡蓝把青春孤独处理成轻盈空气。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D076 索菲亚·科波拉 Sofia Coppola 综合色彩寄存器。固定六色色值与画面占比：迷失淡粉 #C595A0 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；东京霓虹蓝 #4E718C 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；酒店米金 #B69A6E 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；绝代奶油 #DCCEB5 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；花园绿 #7A8A67 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；夜幕灰 #444B55 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。雾粉、奶油白和城市淡蓝把青春孤独处理成轻盈空气。色板：迷失淡粉#C595A0,东京霓虹蓝#4E718C,酒店米金#B69A6E,绝代奶油#DCCEB5,花园绿#7A8A67,夜幕灰#444B55；光线：柔窗光、城市散射光、轻晕高光；摄影：静观中近景、隔窗、缓慢跟随；调色：低对比粉雾，肤色柔和但不磨皮。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D077","name":"D077 巴里·詹金斯 Barry Jenkins","genre":"cool","colors":["#274A70","#3E727B","#A56F58","#865171","#B4823D"],"definition":"月夜蓝、紫黑与温暖肤色让亲密关系在暗处仍有触感。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D077 巴里·詹金斯 Barry Jenkins 综合色彩寄存器。固定六色色值与画面占比：月光深蓝 #274A70 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；海水青 #3E727B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；肤色暖褐 #A56F58 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；霓虹粉紫 #865171 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；路灯金 #B4823D 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；阴影黑 #1B2430 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。月夜蓝、紫黑与温暖肤色让亲密关系在暗处仍有触感。色板：月光深蓝#274A70,海水青#3E727B,肤色暖褐#A56F58,霓虹粉紫#865171,路灯金#B4823D,阴影黑#1B2430；光线：柔软侧光、彩色夜光、皮肤轮廓光；摄影：贴近面部、流动圆弧、触觉特写；调色：蓝色阴影丰富，肤色不被吞没。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D078","name":"D078 乔丹·皮尔 Jordan Peele","genre":"cool","colors":["#C8BCA6","#657D53","#171A1D","#983236","#446B7D"],"definition":"日常米白与郊区绿中植入深黑、警报红和不安蓝。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D078 乔丹·皮尔 Jordan Peele 综合色彩寄存器。固定六色色值与画面占比：郊区米白 #C8BCA6 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；草地绿 #657D53 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；深井黑 #171A1D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；警报红 #983236 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；手术蓝 #446B7D 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；肤色暖褐 #A6775E 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。日常米白与郊区绿中植入深黑、警报红和不安蓝。色板：郊区米白#C8BCA6,草地绿#657D53,深井黑#171A1D,警报红#983236,手术蓝#446B7D,肤色暖褐#A6775E；光线：表面自然光，危险区冷硬或过静；摄影：信息清楚的主客观切换、突然静止；调色：日常色真实，恐怖色只在机制启动时出现。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D079","name":"D079 大卫·柯南伯格 David Cronenberg","genre":"cool","colors":["#A56F60","#3F6B69","#727B7C","#76292E","#C8C2B5"],"definition":"肉色、金属灰和病态蓝绿让身体与机器互相污染。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D079 大卫·柯南伯格 David Cronenberg 综合色彩寄存器。固定六色色值与画面占比：身体肉褐 #A56F60 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；手术蓝绿 #3F6B69 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；金属灰 #727B7C 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；血暗红 #76292E 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；乳胶白 #C8C2B5 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；有机黑 #222326 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。肉色、金属灰和病态蓝绿让身体与机器互相污染。色板：身体肉褐#A56F60,手术蓝绿#3F6B69,金属灰#727B7C,血暗红#76292E,乳胶白#C8C2B5,有机黑#222326；光线：冷医疗光、湿润高光、低调侧光；摄影：临床近景、身体细节、冷静观察；调色：皮肤纹理与有机湿感突出，颜色不艳。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D080","name":"D080 丹尼斯·维伦纽瓦 Denis Villeneuve","genre":"cool","colors":["#B88745","#6E7270","#315B63","#B7B8AE","#B95C2C"],"definition":"沙金、巨构灰和深青蓝用单一主色控制宏大科幻世界。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D080 丹尼斯·维伦纽瓦 Denis Villeneuve 综合色彩寄存器。固定六色色值与画面占比：沙丘赭金 #B88745 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；巨构灰 #6E7270 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；深海青 #315B63 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；雾白 #B7B8AE 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；警示橙 #B95C2C 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；宇宙黑 #15191C 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。沙金、巨构灰和深青蓝用单一主色控制宏大科幻世界。色板：沙丘赭金#B88745,巨构灰#6E7270,深海青#315B63,雾白#B7B8AE,警示橙#B95C2C,宇宙黑#15191C；光线：强自然顶光、体积雾、建筑反射光；摄影：巨构大全景、缓慢推进、中心尺度对比；调色：每场单主色，低饱和，高光克制。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D081","name":"D081 詹姆斯·卡梅隆 James Cameron","genre":"cool","colors":["#174E72","#2B7F89","#D0642D","#69747A","#9D2E32"],"definition":"深海蓝、科技青和火焰橙支撑清楚有力的动作世界。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D081 詹姆斯·卡梅隆 James Cameron 综合色彩寄存器。固定六色色值与画面占比：深海蓝 #174E72 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；科技青 #2B7F89 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；火焰橙 #D0642D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；机械灰 #69747A 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；警报红 #9D2E32 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；纯黑 #14191D 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。深海蓝、科技青和火焰橙支撑清楚有力的动作世界。色板：深海蓝#174E72,科技青#2B7F89,火焰橙#D0642D,机械灰#69747A,警报红#9D2E32,纯黑#14191D；光线：高反差动机光、水下散射、火光；摄影：清晰动作轴、稳定推进、规模揭示；调色：蓝色层次丰富，橙红只作能量与危险。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D082","name":"D082 大卫·芬奇 David Fincher","genre":"cool","colors":["#5F6850","#6E777C","#A6773B","#702A2C","#1C2225"],"definition":"黄绿阴影、冷灰建筑和压抑钨光构成精密的犯罪病理。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D082 大卫·芬奇 David Fincher 综合色彩寄存器。固定六色色值与画面占比：七宗罪黄绿 #5F6850 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；档案冷灰 #6E777C 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；室内钨黄 #A6773B 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；血暗红 #702A2C 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；雨夜黑 #1C2225 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；皮肤灰褐 #8D6E5B 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。黄绿阴影、冷灰建筑和压抑钨光构成精密的犯罪病理。色板：七宗罪黄绿#5F6850,档案冷灰#6E777C,室内钨黄#A6773B,血暗红#702A2C,雨夜黑#1C2225,皮肤灰褐#8D6E5B；光线：低照度实景灯、顶光、雨反射；摄影：精确构图、稳定跟随、信息特写；调色：压低饱和，阴影黄绿，高光不过曝。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D083","name":"D083 克里斯托弗·诺兰 Christopher Nolan","genre":"cool","colors":["#40596D","#8D806D","#747B7C","#B26834","#1B1E23"],"definition":"冷钢蓝、沙褐和高反差黑白把时间与机械结构视觉化。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D083 克里斯托弗·诺兰 Christopher Nolan 综合色彩寄存器。固定六色色值与画面占比：诺兰钢蓝 #40596D 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；沙滩灰褐 #8D806D 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；城市水泥 #747B7C 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；警示橙 #B26834 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；正装黑 #1B1E23 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；云层白 #C3C5BF 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。冷钢蓝、沙褐和高反差黑白把时间与机械结构视觉化。色板：诺兰钢蓝#40596D,沙滩灰褐#8D806D,城市水泥#747B7C,警示橙#B26834,正装黑#1B1E23,云层白#C3C5BF；光线：大尺度自然光、实景火光、冷室内光；摄影：IMAX尺度远景、稳定推进、平行剪辑；调色：低饱和冷中性，暖色用于时间压力。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D084","name":"D084 吉尔莫·德尔·托罗 Guillermo del Toro","genre":"cool","colors":["#A47C3E","#365747","#7F2930","#3B7475","#7A7970"],"definition":"古金、血红、海洋青绿与潮湿黑让怪物童话既温暖又危险。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D084 吉尔莫·德尔·托罗 Guillermo del Toro 综合色彩寄存器。固定六色色值与画面占比：潘神古金 #A47C3E 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；迷宫墨绿 #365747 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；血色红 #7F2930 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；水形青 #3B7475 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；石墙灰 #7A7970 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；地下黑 #1B2020 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。古金、血红、海洋青绿与潮湿黑让怪物童话既温暖又危险。色板：潘神古金#A47C3E,迷宫墨绿#365747,血色红#7F2930,水形青#3B7475,石墙灰#7A7970,地下黑#1B2020；光线：烛光、月光、潮湿反射、体积光；摄影：童话对称、缓慢揭示、怪物细节；调色：暖金对冷青绿，材质湿润，红色克制。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D085","name":"D085 阿方索·卡隆 Alfonso Cuarón","genre":"cool","colors":["#B8B8B2","#737A7C","#9D755D","#4C6B7A","#B85F2C"],"definition":"长镜自然主义在灰白、土色与单一环境主色中保持现场感。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D085 阿方索·卡隆 Alfonso Cuarón 综合色彩寄存器。固定六色色值与画面占比：罗马灰白 #B8B8B2 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；城市水泥 #737A7C 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；肤色暖褐 #9D755D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；灾难冷蓝 #4C6B7A 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；火光橙 #B85F2C 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；夜色黑 #20262A 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。长镜自然主义在灰白、土色与单一环境主色中保持现场感。色板：罗马灰白#B8B8B2,城市水泥#737A7C,肤色暖褐#9D755D,灾难冷蓝#4C6B7A,火光橙#B85F2C,夜色黑#20262A；光线：自然光、实景光、长镜曝光连续；摄影：复杂长镜、人物与环境同步变化；调色：写实低饱和，主色随环境统一。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D086","name":"D086 亚历杭德罗·冈萨雷斯·伊纳里图 Alejandro G. Iñárritu","genre":"cool","colors":["#536C79","#858985","#B8793B","#715744","#742F30"],"definition":"自然金、寒冷蓝与泥土黑把肉身置于极端环境。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D086 亚历杭德罗·冈萨雷斯·伊纳里图 Alejandro G. Iñárritu 综合色彩寄存器。固定六色色值与画面占比：荒野冷蓝 #536C79 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；冬日灰 #858985 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；火光金 #B8793B 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；泥土褐 #715744 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；血暗红 #742F30 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；森林黑绿 #283B32 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。自然金、寒冷蓝与泥土黑把肉身置于极端环境。色板：荒野冷蓝#536C79,冬日灰#858985,火光金#B8793B,泥土褐#715744,血暗红#742F30,森林黑绿#283B32；光线：自然逆光、火光、低温环境光；摄影：贴身长镜、广角环境、连续移动；调色：低饱和冷环境，肤色和火光保留温度。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D087","name":"D087 卢奎西亚·马特尔 Lucrecia Martel","genre":"cool","colors":["#7B7D4E","#858077","#9B6D54","#496A69","#7E3E35"],"definition":"湿热黄绿、皮肤棕与昏暗室内让声音和画外空间持续发酵。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D087 卢奎西亚·马特尔 Lucrecia Martel 综合色彩寄存器。固定六色色值与画面占比：沼泽黄绿 #7B7D4E 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；湿墙灰 #858077 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；皮肤暖棕 #9B6D54 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；水面暗青 #496A69 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；腐果红 #7E3E35 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；阴影黑 #292A28 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。湿热黄绿、皮肤棕与昏暗室内让声音和画外空间持续发酵。色板：沼泽黄绿#7B7D4E,湿墙灰#858077,皮肤暖棕#9B6D54,水面暗青#496A69,腐果红#7E3E35,阴影黑#292A28；光线：闷热自然光、昏暗实景灯；摄影：局部身体、偏置构图、画外声驱动；调色：黄绿中间调，肤色保持湿热质感。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D088","name":"D088 格劳贝尔·罗恰 Glauber Rocha","genre":"cool","colors":["#D8D0B8","#9A7049","#252420","#A23631","#66704A"],"definition":"烈日白、旱土褐和旗帜黑红形成粗粝政治寓言。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D088 格劳贝尔·罗恰 Glauber Rocha 综合色彩寄存器。固定六色色值与画面占比：烈日白 #D8D0B8 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；旱土赭 #9A7049 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；抵抗黑 #252420 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；旗帜红 #A23631 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；灌木绿 #66704A 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；天空灰蓝 #788B96 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。烈日白、旱土褐和旗帜黑红形成粗粝政治寓言。色板：烈日白#D8D0B8,旱土赭#9A7049,抵抗黑#252420,旗帜红#A23631,灌木绿#66704A,天空灰蓝#788B96；光线：正午硬光、风沙、火光；摄影：粗粝手持、正面宣言、地景远景；调色：高反差晒褪色，红黑象征明确。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D089","name":"D089 帕布罗·拉雷恩 Pablo Larraín","genre":"cool","colors":["#B98791","#66786B","#6C7D87","#232328","#C2A28F"],"definition":"柔雾粉、冷绿和历史胶片色把公众形象变成幽灵般表面。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D089 帕布罗·拉雷恩 Pablo Larraín 综合色彩寄存器。固定六色色值与画面占比：杰奎琳粉 #B98791 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；官邸冷绿 #66786B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；新闻灰蓝 #6C7D87 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；礼服黑 #232328 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；肤色苍白 #C2A28F 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；闪光灯白 #D2D0C9 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。柔雾粉、冷绿和历史胶片色把公众形象变成幽灵般表面。色板：杰奎琳粉#B98791,官邸冷绿#66786B,新闻灰蓝#6C7D87,礼服黑#232328,肤色苍白#C2A28F,闪光灯白#D2D0C9；光线：柔光、闪光灯、电视与胶片光；摄影：贴身跟随、变焦、档案感构图；调色：低饱和柔雾，肤色略冷，保留胶片颗粒。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D090","name":"D090 亚历桑德罗·佐杜洛夫斯基 Alejandro Jodorowsky","genre":"cool","colors":["#B78B31","#9C2630","#D6C9AB","#191A1C","#47704B"],"definition":"炼金金、血红、沙漠白和宗教黑组成超现实仪式图谱。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D090 亚历桑德罗·佐杜洛夫斯基 Alejandro Jodorowsky 综合色彩寄存器。固定六色色值与画面占比：炼金金 #B78B31 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；祭祀血红 #9C2630 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；沙漠骨白 #D6C9AB 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；圣殿黑 #191A1C 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；毒绿 #47704B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；天启蓝 #35668A 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。炼金金、血红、沙漠白和宗教黑组成超现实仪式图谱。色板：炼金金#B78B31,祭祀血红#9C2630,沙漠骨白#D6C9AB,圣殿黑#191A1C,毒绿#47704B,天启蓝#35668A；光线：正面烈日、舞台色光、仪式火光；摄影：固定圣像、广角畸变、队列仪式；调色：高纯度象征色分块，质感粗粝。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D091","name":"D091 乌斯曼·塞姆班 Ousmane Sembène","genre":"cool","colors":["#B18B55","#4F8196","#A3423A","#627A4E","#CEC6B3"],"definition":"晒褪土色、海岸蓝和服饰原色直面劳动与社会结构。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D091 乌斯曼·塞姆班 Ousmane Sembène 综合色彩寄存器。固定六色色值与画面占比：塞内加尔土黄 #B18B55 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；海岸蓝 #4F8196 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；布料红 #A3423A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；叶片绿 #627A4E 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；墙面白 #CEC6B3 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；肤色深褐 #6F4938 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。晒褪土色、海岸蓝和服饰原色直面劳动与社会结构。色板：塞内加尔土黄#B18B55,海岸蓝#4F8196,布料红#A3423A,叶片绿#627A4E,墙面白#CEC6B3,肤色深褐#6F4938；光线：强自然日光、室内窗光；摄影：直接观察、社区群像、正面构图；调色：晒褪暖色，深肤色保留层次。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D092","name":"D092 吉布里尔·迪奥普·曼贝蒂 Djibril Diop Mambéty","genre":"cool","colors":["#B33B36","#397795","#D0A333","#4E8B83","#8A684B"],"definition":"都市涂绘色、海洋蓝与大胆红黄构成反殖民的跳跃寓言。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D092 吉布里尔·迪奥普·曼贝蒂 Djibril Diop Mambéty 综合色彩寄存器。固定六色色值与画面占比：图基布基红 #B33B36 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；达喀尔蓝 #397795 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；出租车黄 #D0A333 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；海岸青 #4E8B83 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；尘土褐 #8A684B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；剪影黑 #222525 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。都市涂绘色、海洋蓝与大胆红黄构成反殖民的跳跃寓言。色板：图基布基红#B33B36,达喀尔蓝#397795,出租车黄#D0A333,海岸青#4E8B83,尘土褐#8A684B,剪影黑#222525；光线：强日光、街头反射、拼贴色光；摄影：跳跃蒙太奇、摩托运动、正面符号；调色：原色鲜明但保留街道尘土质感。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D093","name":"D093 苏莱曼·西塞 Souleymane Cissé","genre":"cool","colors":["#B08A50","#36547B","#C3652D","#5E7551","#D1C7B0"],"definition":"萨赫勒金土、靛蓝与火光把社会现实提升为神话。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D093 苏莱曼·西塞 Souleymane Cissé 综合色彩寄存器。固定六色色值与画面占比：马里金土 #B08A50 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；靛蓝布 #36547B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；神话火橙 #C3652D 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；河谷绿 #5E7551 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；石灰白 #D1C7B0 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；夜幕黑 #222528 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。萨赫勒金土、靛蓝与火光把社会现实提升为神话。色板：马里金土#B08A50,靛蓝布#36547B,神话火橙#C3652D,河谷绿#5E7551,石灰白#D1C7B0,夜幕黑#222528；光线：烈日、火光、暮色和尘雾；摄影：地景远景、仪式群体、缓慢推进；调色：暖土主导，靛蓝和火色清晰。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D094","name":"D094 阿伯德拉马纳·希萨柯 Abderrahmane Sissako","genre":"cool","colors":["#B99B69","#52776B","#83A6B4","#D7D0BD","#715B48"],"definition":"沙漠米金、清真寺青绿与天空淡蓝在宁静中承载暴力阴影。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D094 阿伯德拉马纳·希萨柯 Abderrahmane Sissako 综合色彩寄存器。固定六色色值与画面占比：廷巴克图沙金 #B99B69 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；清真寺青绿 #52776B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；天空淡蓝 #83A6B4 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；长袍白 #D7D0BD 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；阴影褐 #715B48 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；警示暗红 #773637 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。沙漠米金、清真寺青绿与天空淡蓝在宁静中承载暴力阴影。色板：廷巴克图沙金#B99B69,清真寺青绿#52776B,天空淡蓝#83A6B4,长袍白#D7D0BD,阴影褐#715B48,警示暗红#773637；光线：沙漠漫射、晨昏长影、室内柔光；摄影：静观远景、缓慢横移、留出环境；调色：温柔低饱和，暴力不靠重色滤镜。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D095","name":"D095 海尔·格里玛 Haile Gerima","genre":"cool","colors":["#914E3C","#314F73","#252422","#C0AA85","#64724D"],"definition":"泥土红、靛蓝和炭黑把历史创伤与抵抗刻入身体和土地。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D095 海尔·格里玛 Haile Gerima 综合色彩寄存器。固定六色色值与画面占比：埃塞泥红 #914E3C 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；靛蓝 #314F73 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；炭黑 #252422 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；羊皮米 #C0AA85 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；草地绿 #64724D 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；火光金 #B27B38 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。泥土红、靛蓝和炭黑把历史创伤与抵抗刻入身体和土地。色板：埃塞泥红#914E3C,靛蓝#314F73,炭黑#252422,羊皮米#C0AA85,草地绿#64724D,火光金#B27B38；光线：烈日、火光、室内低照度；摄影：历史 tableaux、人物正面、土地远景；调色：土色高微反差，深肤色准确。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D096","name":"D096 乔治·米勒 George Miller","genre":"cool","colors":["#C5662F","#C1944B","#23647A","#1C2325","#8C9695"],"definition":"橙红荒漠与深青天空在超高对比中驱动持续动作。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D096 乔治·米勒 George Miller 综合色彩寄存器。固定六色色值与画面占比：狂暴荒漠橙 #C5662F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；沙尘金 #C1944B 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；天空深青 #23647A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；机械黑 #1C2325 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；铬银 #8C9695 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；警示红 #A82D2B 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。橙红荒漠与深青天空在超高对比中驱动持续动作。色板：狂暴荒漠橙#C5662F,沙尘金#C1944B,天空深青#23647A,机械黑#1C2325,铬银#8C9695,警示红#A82D2B；光线：强烈日光、沙尘、火焰、夜间冷光；摄影：中心化动作、快速但清晰的运动链；调色：橙青强分离但保持材质，黑位清楚。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D097","name":"D097 彼得·威尔 Peter Weir","genre":"cool","colors":["#B69B70","#66775A","#7999A7","#D6CDB8","#B8878E"],"definition":"澳洲日光、岩石米金和柔雾粉把自然景观变成神秘心理空间。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D097 彼得·威尔 Peter Weir 综合色彩寄存器。固定六色色值与画面占比：岩石米金 #B69B70 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；桉树绿 #66775A 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；天空雾蓝 #7999A7 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；维多利亚白 #D6CDB8 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；少女粉 #B8878E 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；阴影褐 #6D5948 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。澳洲日光、岩石米金和柔雾粉把自然景观变成神秘心理空间。色板：岩石米金#B69B70,桉树绿#66775A,天空雾蓝#7999A7,维多利亚白#D6CDB8,少女粉#B8878E,阴影褐#6D5948；光线：柔雾日光、强烈午后光、室内自然光；摄影：环境先于人物、缓慢观察、空间异常；调色：低对比雾感与温暖土色并存。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D098","name":"D098 简·坎皮恩 Jane Campion","genre":"cool","colors":["#1B1D1F","#4F644D","#858C8A","#705747","#C1A18B"],"definition":"潮湿黑、苔绿、钢琴褐与苍白皮肤构成压抑而触觉化的女性视角。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D098 简·坎皮恩 Jane Campion 综合色彩寄存器。固定六色色值与画面占比：钢琴黑 #1B1D1F 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；苔藓绿 #4F644D 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；海雾灰 #858C8A 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；泥土褐 #705747 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；肤色苍白 #C1A18B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；布料酒红 #763B40 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。潮湿黑、苔绿、钢琴褐与苍白皮肤构成压抑而触觉化的女性视角。色板：钢琴黑#1B1D1F,苔藓绿#4F644D,海雾灰#858C8A,泥土褐#705747,肤色苍白#C1A18B,布料酒红#763B40；光线：阴天海岸光、室内侧光、低照度；摄影：身体细节、环境压迫、缓慢跟随；调色：冷湿环境对暖皮肤，黑位保留材质。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D099","name":"D099 巴兹·鲁赫曼 Baz Luhrmann","genre":"cool","colors":["#B51F33","#D09A32","#2467A0","#D08B9C","#15171B"],"definition":"宝石红、舞台金、电光蓝与黑色把歌舞推成高速视觉盛宴。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D099 巴兹·鲁赫曼 Baz Luhrmann 综合色彩寄存器。固定六色色值与画面占比：红磨坊猩红 #B51F33 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；舞台金 #D09A32 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；电光蓝 #2467A0 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；香槟粉 #D08B9C 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；礼服黑 #15171B 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；聚光白 #E1D8C3 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。宝石红、舞台金、电光蓝与黑色把歌舞推成高速视觉盛宴。色板：红磨坊猩红#B51F33,舞台金#D09A32,电光蓝#2467A0,香槟粉#D08B9C,礼服黑#15171B,聚光白#E1D8C3；光线：舞台追光、彩灯、烟雾与闪光灯；摄影：快速推拉、旋转、蒙太奇、正面歌舞；调色：高饱和高对比，金红主导，蓝作反差。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D100","name":"D100 塔伊加·维迪提 Taika Waititi","genre":"cool","colors":["#C7858D","#5C7757","#D0AD48","#6E98AE","#80624A"],"definition":"粉彩制服、森林绿和温暖黄把悲剧包进手工感喜剧外壳。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D100 塔伊加·维迪提 Taika Waititi 综合色彩寄存器。固定六色色值与画面占比：制服粉 #C7858D 25%（载体：大面积环境与天空；叙事作用：建立主导世界色）；森林绿 #5C7757 20%（载体：建筑、服装或植被；叙事作用：形成第二空间层级）；阳光黄 #D0AD48 18%（载体：人物与核心道具；叙事作用：连接人物与主题）；天空蓝 #6E98AE 15%（载体：阴影、道路或室内背景；叙事作用：稳定明暗结构）；木屋褐 #80624A 12%（载体：光源、反射与局部材质；叙事作用：提供冷暖或材质变化）；喜剧黑 #2B2C2C 10%（载体：叙事转折的强调物；叙事作用：标记危险、欲望或转折）；比例合计100%。粉彩制服、森林绿和温暖黄把悲剧包进手工感喜剧外壳。色板：制服粉#C7858D,森林绿#5C7757,阳光黄#D0AD48,天空蓝#6E98AE,木屋褐#80624A,喜剧黑#2B2C2C；光线：柔和自然光、平面喜剧光；摄影：正面构图、突然静止、儿童视角；调色：粉彩中等饱和，肤色温暖，阴影轻。保持主辅色比例和肤色可读，强调色只在叙事转折出现，动作结束时停在可供下一镜承接的状态。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D101","name":"D101 爱丽丝·洛瓦赫 Alice Rohrwacher","genre":"cool","colors":["#65898C","#B3A48B","#A0B9B9","#4B5F4F","#8B9DA0"],"definition":"乡野现实与寓言交叠，旧时代质地中保留人物的顽强生命力。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D101 爱丽丝·洛瓦赫 Alice Rohrwacher 综合色彩寄存器。固定六色色值与画面占比：综合色1 #65898C 17.6%；综合色2 #B3A48B 17.4%；综合色3 #A0B9B9 16.9%；综合色4 #4B5F4F 16.3%；综合色5 #8B9DA0 15.9%；综合色6 #886A53 15.9%；比例合计100%。乡野现实与寓言交叠，旧时代质地中保留人物的顽强生命力。光线：以自然天光、烛火和阴天漫射光为主，夜景保持暖暗部。构图：宽幅群像与贴近人物的手持观察交替，让环境持续包围角色。调色：土黄、橄榄绿、旧木棕与褪色蓝，低对比并保留胶片颗粒。综合色比例：C1=#65898C 17.6%；C2=#B3A48B 17.4%；C3=#A0B9B9 16.9%；C4=#4B5F4F 16.3%；C5=#8B9DA0 15.9%；C6=#886A53 15.9%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D102","name":"D102 布鲁诺·杜蒙 Bruno Dumont","genre":"cool","colors":["#8FCFDD","#6D706C","#5D5958","#E4E7E2","#362A25"],"definition":"荒凉北法景观、身体喜剧与宗教式肃穆并置。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D102 布鲁诺·杜蒙 Bruno Dumont 综合色彩寄存器。固定六色色值与画面占比：综合色1 #8FCFDD 19.6%；综合色2 #6D706C 17.6%；综合色3 #5D5958 16.0%；综合色4 #E4E7E2 15.8%；综合色5 #362A25 15.8%；综合色6 #475448 15.2%；比例合计100%。荒凉北法景观、身体喜剧与宗教式肃穆并置。光线：阴天冷光、硬日光和室内低照度，肤色不美化。构图：固定远景压缩人物，突然切入笨拙近景，地平线承担戏剧。调色：灰绿、泥土褐、冷蓝和苍白肤色，压低饱和度。综合色比例：C1=#8FCFDD 19.6%；C2=#6D706C 17.6%；C3=#5D5958 16.0%；C4=#E4E7E2 15.8%；C5=#362A25 15.8%；C6=#475448 15.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D103","name":"D103 莱奥·卡拉克斯 Leos Carax","genre":"cool","colors":["#5F625F","#6D7771","#54514B","#9CA898","#83A79A"],"definition":"都市浪漫主义以霓虹、黑夜和肉身运动制造炽烈诗意。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D103 莱奥·卡拉克斯 Leos Carax 综合色彩寄存器。固定六色色值与画面占比：综合色1 #5F625F 20.7%；综合色2 #6D7771 18.4%；综合色3 #54514B 16.5%；综合色4 #9CA898 16.3%；综合色5 #83A79A 14.7%；综合色6 #3F3B34 13.4%；比例合计100%。都市浪漫主义以霓虹、黑夜和肉身运动制造炽烈诗意。光线：高反差夜景、彩色实景光和舞台追光，允许局部过曝。构图：广角贴身、横移奔跑与静止凝视交替，人物动作驱动镜头。调色：深黑、钴蓝、猩红与钠灯琥珀，颜色成块而非全局染色。综合色比例：C1=#5F625F 20.7%；C2=#6D7771 18.4%；C3=#54514B 16.5%；C4=#9CA898 16.3%；C5=#83A79A 14.7%；C6=#3F3B34 13.4%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D104","name":"D104 瑟琳·席安玛 Céline Sciamma","genre":"cool","colors":["#050505","#D6D8BE","#919377","#1F1B19","#B2AE97"],"definition":"以清晰色块和精确身体距离描写成长、欲望与凝视。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D104 瑟琳·席安玛 Céline Sciamma 综合色彩寄存器。固定六色色值与画面占比：综合色1 #050505 19.5%；综合色2 #D6D8BE 17.2%；综合色3 #919377 16.3%；综合色4 #1F1B19 16.0%；综合色5 #B2AE97 15.8%；综合色6 #5D5243 15.2%；比例合计100%。以清晰色块和精确身体距离描写成长、欲望与凝视。光线：柔和自然光，逆光与窗光保持肤色透明。构图：稳定中景、侧面双人和克制特写，视线轴线极精确。调色：海蓝、酒红、草绿与暖肤色，纯净但不过饱和。综合色比例：C1=#050505 19.5%；C2=#D6D8BE 17.2%；C3=#919377 16.3%；C4=#1F1B19 16.0%；C5=#B2AE97 15.8%；C6=#5D5243 15.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D105","name":"D105 米娅·汉森-洛夫 Mia Hansen-Løve","genre":"cool","colors":["#090A0C","#635342","#9AA3A2","#ECEEEC","#937964"],"definition":"日常时间流逝与情感迁徙被清淡自然色包裹。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D105 米娅·汉森-洛夫 Mia Hansen-Løve 综合色彩寄存器。固定六色色值与画面占比：综合色1 #090A0C 18.8%；综合色2 #635342 17.6%；综合色3 #9AA3A2 17.4%；综合色4 #ECEEEC 16.2%；综合色5 #937964 15.5%；综合色6 #6C6658 14.5%；比例合计100%。日常时间流逝与情感迁徙被清淡自然色包裹。光线：可用光与季节天光，室内保持真实色温混合。构图：轻盈手持与平静中远景，留出生活空间和偶然停顿。调色：低饱和米白、灰蓝、植物绿与柔和暖色，轻胶片感。综合色比例：C1=#090A0C 18.8%；C2=#635342 17.6%；C3=#9AA3A2 17.4%；C4=#ECEEEC 16.2%；C5=#937964 15.5%；C6=#6C6658 14.5%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D106","name":"D106 乔安娜·霍格 Joanna Hogg","genre":"cool","colors":["#C8B2A5","#42443E","#A79079","#A37E65","#050506"],"definition":"上层生活空间以建筑秩序和情感裂缝互相映照。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D106 乔安娜·霍格 Joanna Hogg 综合色彩寄存器。固定六色色值与画面占比：综合色1 #C8B2A5 19.2%；综合色2 #42443E 18.7%；综合色3 #A79079 17.6%；综合色4 #A37E65 15.4%；综合色5 #050506 14.9%；综合色6 #6F7367 14.2%；比例合计100%。上层生活空间以建筑秩序和情感裂缝互相映照。光线：自然窗光、阴天海光和室内实用灯，曝光克制。构图：固定或缓慢机位观察房间、门框和人物疏离关系。调色：米灰、海军蓝、木质褐和低饱和肤色，保留数码冷静感。综合色比例：C1=#C8B2A5 19.2%；C2=#42443E 18.7%；C3=#A79079 17.6%；C4=#A37E65 15.4%；C5=#050506 14.9%；C6=#6F7367 14.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D107","name":"D107 琳恩·拉姆塞 Lynne Ramsay","genre":"cool","colors":["#BB0505","#432C18","#B8AE9E","#C78A47","#9DA79B"],"definition":"碎片化感官、创伤记忆与强烈主观色彩形成诗性暴力。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D107 琳恩·拉姆塞 Lynne Ramsay 综合色彩寄存器。固定六色色值与画面占比：综合色1 #BB0505 19.2%；综合色2 #432C18 18.0%；综合色3 #B8AE9E 15.9%；综合色4 #C78A47 15.7%；综合色5 #9DA79B 15.6%；综合色6 #8A5E37 15.6%；比例合计100%。碎片化感官、创伤记忆与强烈主观色彩形成诗性暴力。光线：侧逆光、暗部局部光和高亮色源，允许曝光突变。构图：极端特写、跳切细节和主观运动，物件触发记忆。调色：深红、脏金、青绿与浓黑，颗粒粗粝、对比坚决。综合色比例：C1=#BB0505 19.2%；C2=#432C18 18.0%；C3=#B8AE9E 15.9%；C4=#C78A47 15.7%；C5=#9DA79B 15.6%；C6=#8A5E37 15.6%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D108","name":"D108 彼得·斯崔克兰德 Peter Strickland","genre":"cool","colors":["#6A5F49","#63BBA8","#644431","#916B4E","#0B0905"],"definition":"触觉物件、仪式空间和复古类型片色彩制造感官不安。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D108 彼得·斯崔克兰德 Peter Strickland 综合色彩寄存器。固定六色色值与画面占比：综合色1 #6A5F49 19.3%；综合色2 #63BBA8 17.7%；综合色3 #644431 16.1%；综合色4 #916B4E 15.8%；综合色5 #0B0905 15.7%；综合色6 #463729 15.4%；比例合计100%。触觉物件、仪式空间和复古类型片色彩制造感官不安。光线：钨丝灯、彩色暗房光和局部硬光，阴影富层次。构图：对称陈列、物件特写与缓慢窥视运动，构图强调纹理。调色：酒红、芥末黄、墨绿和紫黑，模拟染印与老胶片偏色。综合色比例：C1=#6A5F49 19.3%；C2=#63BBA8 17.7%；C3=#644431 16.1%；C4=#916B4E 15.8%；C5=#0B0905 15.7%；C6=#463729 15.4%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D109","name":"D109 罗伊·安德森 Roy Andersson","genre":"cool","colors":["#666E75","#131312","#332F2B","#A9ABB1","#59443D"],"definition":"苍白静止的社会舞台里，人物以微小荒诞暴露生存困境。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D109 罗伊·安德森 Roy Andersson 综合色彩寄存器。固定六色色值与画面占比：综合色1 #666E75 19.3%；综合色2 #131312 18.5%；综合色3 #332F2B 17.0%；综合色4 #A9ABB1 16.2%；综合色5 #59443D 14.9%；综合色6 #47423D 14.1%；比例合计100%。苍白静止的社会舞台里，人物以微小荒诞暴露生存困境。光线：无方向柔光覆盖整间布景，阴影极弱。构图：正面固定大全景、深焦层次和舞台式群体调度。调色：灰米、粉灰、烟绿和病态蓝，整体低饱和低反差。综合色比例：C1=#666E75 19.3%；C2=#131312 18.5%；C3=#332F2B 17.0%；C4=#A9ABB1 16.2%；C5=#59443D 14.9%；C6=#47423D 14.1%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D110","name":"D110 阿基·考里斯马基 Aki Kaurismäki","genre":"cool","colors":["#010101","#40474A","#5B5C5A","#938981","#6B7E82"],"definition":"工人阶层极简寓言以纯净原色和死板幽默成立。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D110 阿基·考里斯马基 Aki Kaurismäki 综合色彩寄存器。固定六色色值与画面占比：综合色1 #010101 29.8%；综合色2 #40474A 15.9%；综合色3 #5B5C5A 14.1%；综合色4 #938981 13.8%；综合色5 #6B7E82 13.2%；综合色6 #A0A8AA 13.2%；比例合计100%。工人阶层极简寓言以纯净原色和死板幽默成立。光线：硬质侧光、夜间霓虹与室内实用灯，明暗边界清楚。构图：固定中景、正面构图和简洁进出画，拒绝解释性覆盖。调色：钴蓝、番茄红、芥末黄与煤黑，原色点到为止。综合色比例：C1=#010101 29.8%；C2=#40474A 15.9%；C3=#5B5C5A 14.1%；C4=#938981 13.8%；C5=#6B7E82 13.2%；C6=#A0A8AA 13.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D111","name":"D111 克里斯蒂安·佩措尔德 Christian Petzold","genre":"cool","colors":["#382218","#BDCDD1","#030202","#66523B","#0C131B"],"definition":"现代德国空间中的幽灵感、身份错位与流动欲望。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D111 克里斯蒂安·佩措尔德 Christian Petzold 综合色彩寄存器。固定六色色值与画面占比：综合色1 #382218 18.1%；综合色2 #BDCDD1 17.5%；综合色3 #030202 16.4%；综合色4 #66523B 16.3%；综合色5 #0C131B 15.9%；综合色6 #848779 15.8%；比例合计100%。现代德国空间中的幽灵感、身份错位与流动欲望。光线：清洁自然光与城市夜色，水面和玻璃反射参与叙事。构图：精确中景、门窗框景和克制跟随，空间关系先于表情。调色：冷蓝、混凝土灰、暗红和水绿，肤色中性。综合色比例：C1=#382218 18.1%；C2=#BDCDD1 17.5%；C3=#030202 16.4%；C4=#66523B 16.3%；C5=#0C131B 15.9%；C6=#848779 15.8%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D112","name":"D112 安格拉·夏娜莱克 Angela Schanelec","genre":"cool","colors":["#51453A","#CFEEF2","#0D0B0D","#81B0B9","#63665B"],"definition":"省略叙事以身体、空白空间和时间断裂建立神秘性。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D112 安格拉·夏娜莱克 Angela Schanelec 综合色彩寄存器。固定六色色值与画面占比：综合色1 #51453A 17.0%；综合色2 #CFEEF2 16.9%；综合色3 #0D0B0D 16.8%；综合色4 #81B0B9 16.6%；综合色5 #63665B 16.5%；综合色6 #ECF3EF 16.2%；比例合计100%。省略叙事以身体、空白空间和时间断裂建立神秘性。光线：自然光或单一方向光，保留大片未解释阴影。构图：静止长镜、非常规留白和动作前后空场，人物不居中。调色：石灰灰、土褐、暗蓝和稀薄肤色，低饱和。综合色比例：C1=#51453A 17.0%；C2=#CFEEF2 16.9%；C3=#0D0B0D 16.8%；C4=#81B0B9 16.6%；C5=#63665B 16.5%；C6=#ECF3EF 16.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D113","name":"D113 拉杜·裘德 Radu Jude","genre":"warm","colors":["#010102","#292929","#6B6A5D","#ADB8BA","#F6F5F5"],"definition":"历史档案、当代街景与讽刺表演在多制式影像中碰撞。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D113 拉杜·裘德 Radu Jude 综合色彩寄存器。固定六色色值与画面占比：综合色1 #010102 20.1%；综合色2 #292929 19.0%；综合色3 #6B6A5D 15.5%；综合色4 #ADB8BA 15.4%；综合色5 #F6F5F5 15.4%；综合色6 #1A1B18 14.6%；比例合计100%。历史档案、当代街景与讽刺表演在多制式影像中碰撞。光线：按媒介逻辑使用自然光、新闻灯或粗糙闪光。构图：宽银幕观察、手机竖屏、固定辩论场等形式主动切换。调色：允许胶片、视频和数码色域差异，避免统一滤镜。综合色比例：C1=#010102 20.1%；C2=#292929 19.0%；C3=#6B6A5D 15.5%；C4=#ADB8BA 15.4%；C5=#F6F5F5 15.4%；C6=#1A1B18 14.6%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D114","name":"D114 克利斯提·普优 Cristi Puiu","genre":"cool","colors":["#A2C8CE","#221D17","#544F43","#D9E5EA","#9F8D74"],"definition":"封闭日常空间通过实时压力和群体行为显露制度失灵。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D114 克利斯提·普优 Cristi Puiu 综合色彩寄存器。固定六色色值与画面占比：综合色1 #A2C8CE 18.5%；综合色2 #221D17 18.1%；综合色3 #544F43 16.6%；综合色4 #D9E5EA 15.7%；综合色5 #9F8D74 15.6%；综合色6 #705F4D 15.5%；比例合计100%。封闭日常空间通过实时压力和群体行为显露制度失灵。光线：室内可用光、阴天窗光，暗部保留脏灰层次。构图：长时间手持跟随与拥挤群像，人物遮挡真实存在。调色：烟灰、褐绿、冷白与低饱和肤色，纪录片式综合色。综合色比例：C1=#A2C8CE 18.5%；C2=#221D17 18.1%；C3=#544F43 16.6%；C4=#D9E5EA 15.7%；C5=#9F8D74 15.6%；C6=#705F4D 15.5%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D115","name":"D115 谢尔盖·洛兹尼察 Sergei Loznitsa","genre":"cool","colors":["#161516","#41423D","#7C817E","#A7AAA5","#28292A"],"definition":"制度记忆与公共空间以冷静观察和漫长持续时间被审视。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D115 谢尔盖·洛兹尼察 Sergei Loznitsa 综合色彩寄存器。固定六色色值与画面占比：综合色1 #161516 19.9%；综合色2 #41423D 17.4%；综合色3 #7C817E 16.2%；综合色4 #A7AAA5 16.0%；综合色5 #28292A 15.9%；综合色6 #3D342F 14.6%；比例合计100%。制度记忆与公共空间以冷静观察和漫长持续时间被审视。光线：自然环境光、阴天和展览式均匀光，不煽情。构图：固定远景、缓慢横移和事件全貌，保持道德距离。调色：钢灰、军绿、冬季蓝和褪色棕，清晰但冷峻。综合色比例：C1=#161516 19.9%；C2=#41423D 17.4%；C3=#7C817E 16.2%；C4=#A7AAA5 16.0%；C5=#28292A 15.9%；C6=#3D342F 14.6%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D116","name":"D116 滨口龙介 Ryusuke Hamaguchi","genre":"cool","colors":["#120F0E","#FDFDFD","#473627","#7E9DA6","#67615C"],"definition":"对话、倾听与表演空间通过长时段镜头生成情感转向。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D116 滨口龙介 Ryusuke Hamaguchi 综合色彩寄存器。固定六色色值与画面占比：综合色1 #120F0E 22.5%；综合色2 #FDFDFD 17.2%；综合色3 #473627 17.0%；综合色4 #7E9DA6 15.1%；综合色5 #67615C 14.3%；综合色6 #776859 13.9%；比例合计100%。对话、倾听与表演空间通过长时段镜头生成情感转向。光线：自然窗光和室内可用光，夜景保持城市真实混色。构图：稳定双人中景、车内正反关系和缓慢重构图。调色：中性灰、木色、城市蓝和克制暖肤色，低饱和。综合色比例：C1=#120F0E 22.5%；C2=#FDFDFD 17.2%；C3=#473627 17.0%；C4=#7E9DA6 15.1%；C5=#67615C 14.3%；C6=#776859 13.9%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D117","name":"D117 黑泽清 Kiyoshi Kurosawa","genre":"cool","colors":["#635143","#F2F3EF","#7B877C","#020406","#292018"],"definition":"日常空间被空旷构图和无形威胁逐渐侵蚀。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D117 黑泽清 Kiyoshi Kurosawa 综合色彩寄存器。固定六色色值与画面占比：综合色1 #635143 18.3%；综合色2 #F2F3EF 18.2%；综合色3 #7B877C 16.9%；综合色4 #020406 16.2%；综合色5 #292018 15.4%；综合色6 #1B1E1D 15.0%；比例合计100%。日常空间被空旷构图和无形威胁逐渐侵蚀。光线：冷白日光、荧光灯与阴影深处的微弱层次。构图：广角固定镜头、长走廊和人物偏置，偶发缓慢逼近。调色：青灰、病绿、混凝土色与深黑，降低综合色温度。综合色比例：C1=#635143 18.3%；C2=#F2F3EF 18.2%；C3=#7B877C 16.9%；C4=#020406 16.2%；C5=#292018 15.4%；C6=#1B1E1D 15.0%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D118","name":"D118 冢本晋也 Shinya Tsukamoto","genre":"cool","colors":["#525257","#27120C","#E9E6D8","#666964","#070607"],"definition":"工业肉身、都市焦虑与黑白高反差形成冲撞能量。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D118 冢本晋也 Shinya Tsukamoto 综合色彩寄存器。固定六色色值与画面占比：综合色1 #525257 18.2%；综合色2 #27120C 17.5%；综合色3 #E9E6D8 16.7%；综合色4 #666964 16.6%；综合色5 #070607 15.8%；综合色6 #C0B5AA 15.2%；比例合计100%。工业肉身、都市焦虑与黑白高反差形成冲撞能量。光线：硬侧光、频闪、路灯和强烈反射，黑位锐利。构图：手持贴身、超广角畸变与爆发性剪切，身体主导。调色：金属灰、油黑、锈褐与冷蓝，粗颗粒高对比。综合色比例：C1=#525257 18.2%；C2=#27120C 17.5%；C3=#E9E6D8 16.7%；C4=#666964 16.6%；C5=#070607 15.8%；C6=#C0B5AA 15.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D119","name":"D119 大林宣彦 Nobuhiko Obayashi","genre":"warm","colors":["#372B27","#565A52","#787E70","#573E36","#191416"],"definition":"手工特效、拼贴色彩与青春幻想以主观逻辑自由跳跃。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D119 大林宣彦 Nobuhiko Obayashi 综合色彩寄存器。固定六色色值与画面占比：综合色1 #372B27 18.2%；综合色2 #565A52 17.5%；综合色3 #787E70 16.8%；综合色4 #573E36 16.7%；综合色5 #191416 15.6%；综合色6 #4A5641 15.2%；比例合计100%。手工特效、拼贴色彩与青春幻想以主观逻辑自由跳跃。光线：彩色舞台光、日光过曝和手作合成光并存。构图：广角正面、旋转推拉、分屏与定格大胆混用。调色：糖果原色、胶片偏色和视频噪点，保留时代媒介感。综合色比例：C1=#372B27 18.2%；C2=#565A52 17.5%；C3=#787E70 16.8%；C4=#573E36 16.7%；C5=#191416 15.6%；C6=#4A5641 15.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D120","name":"D120 河濑直美 Naomi Kawase","genre":"cool","colors":["#DCCAB7","#4C5543","#F3F2EE","#9CA691","#100F06"],"definition":"自然、记忆与女性经验以呼吸式观察融入地方景观。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D120 河濑直美 Naomi Kawase 综合色彩寄存器。固定六色色值与画面占比：综合色1 #DCCAB7 18.0%；综合色2 #4C5543 17.7%；综合色3 #F3F2EE 16.3%；综合色4 #9CA691 16.2%；综合色5 #100F06 16.0%；综合色6 #3C4539 15.8%；比例合计100%。自然、记忆与女性经验以呼吸式观察融入地方景观。光线：逆光、林间碎光、雨雾和自然暗部，容许曝光漂移。构图：贴近身体的手持、浅焦自然细节和缓慢凝视。调色：森林绿、湿土褐、雾白和暖肤色，柔软低对比。综合色比例：C1=#DCCAB7 18.0%；C2=#4C5543 17.7%；C3=#F3F2EE 16.3%；C4=#9CA691 16.2%；C5=#100F06 16.0%；C6=#3C4539 15.8%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D121","name":"D121 洪常秀 Hong Sang-soo","genre":"cool","colors":["#747F7C","#B6A89D","#ECF1F6","#D5CAC1","#B4C5D1"],"definition":"日常关系在重复变焦、饮酒场面和偶然对话中产生微妙变奏。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D121 洪常秀 Hong Sang-soo 综合色彩寄存器。固定六色色值与画面占比：综合色1 #747F7C 18.3%；综合色2 #B6A89D 17.2%；综合色3 #ECF1F6 16.6%；综合色4 #D5CAC1 16.1%；综合色5 #B4C5D1 16.0%；综合色6 #131719 15.8%；比例合计100%。日常关系在重复变焦、饮酒场面和偶然对话中产生微妙变奏。光线：平坦自然光或室内白光，拒绝戏剧化造型。构图：固定长镜配突然光学变焦，群体桌面调度清楚。调色：黑白或低饱和日常色，中性曝光、轻微数码质感。综合色比例：C1=#747F7C 18.3%；C2=#B6A89D 17.2%；C3=#ECF1F6 16.6%；C4=#D5CAC1 16.1%；C5=#B4C5D1 16.0%；C6=#131719 15.8%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D122","name":"D122 拉夫·迪亚兹 Lav Diaz","genre":"cool","colors":["#111211","#616864","#202621","#FFFFF2","#77726B"],"definition":"殖民历史与私人命运被极长时段和黑白地景承载。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D122 拉夫·迪亚兹 Lav Diaz 综合色彩寄存器。固定六色色值与画面占比：综合色1 #111211 18.3%；综合色2 #616864 16.9%；综合色3 #202621 16.7%；综合色4 #FFFFF2 16.6%；综合色5 #77726B 15.9%；综合色6 #A5A8A3 15.6%；比例合计100%。殖民历史与私人命运被极长时段和黑白地景承载。光线：自然光、深黑与高亮天空，允许低照度持续存在。构图：固定超长镜、远景群像和极少运动，让时间成为构图。调色：黑白银盐层次或极低饱和，保留雾气和湿度。综合色比例：C1=#111211 18.3%；C2=#616864 16.9%；C3=#202621 16.7%；C4=#FFFFF2 16.6%；C5=#77726B 15.9%；C6=#A5A8A3 15.6%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D123","name":"D123 深田晃司 Kōji Fukada","genre":"cool","colors":["#C09274","#CFCBB4","#8B6752","#FAFBFA","#6B6457"],"definition":"家庭与社区关系在冷静现实表面下逐步显出结构性裂缝。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D123 深田晃司 Kōji Fukada 综合色彩寄存器。固定六色色值与画面占比：综合色1 #C09274 19.6%；综合色2 #CFCBB4 18.5%；综合色3 #8B6752 16.7%；综合色4 #FAFBFA 16.3%；综合色5 #6B6457 15.5%；综合色6 #403125 13.4%；比例合计100%。家庭与社区关系在冷静现实表面下逐步显出结构性裂缝。光线：自然窗光、阴天与普通室内灯，色温真实。构图：稳定中景、群体空间和克制手持，动作完整发生。调色：灰蓝、木褐、暗绿和自然肤色，低对比数码综合色。综合色比例：C1=#C09274 19.6%；C2=#CFCBB4 18.5%；C3=#8B6752 16.7%；C4=#FAFBFA 16.3%；C5=#6B6457 15.5%；C6=#403125 13.4%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D124","name":"D124 陈果 Fruit Chan","genre":"cool","colors":["#000000","#B5AFA5","#EBE8E0","#494642","#605550"],"definition":"香港边缘地带以粗粝现实、潮湿霓虹和人物漂泊感呈现。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D124 陈果 Fruit Chan 综合色彩寄存器。固定六色色值与画面占比：综合色1 #000000 30.2%；综合色2 #B5AFA5 18.6%；综合色3 #EBE8E0 13.0%；综合色4 #494642 12.9%；综合色5 #605550 12.8%；综合色6 #1A1B1E 12.5%；比例合计100%。香港边缘地带以粗粝现实、潮湿霓虹和人物漂泊感呈现。光线：街头可用光、混合色温和硬日光，保留脏暗部。构图：游击手持、拥挤街景与近距离观察，城市不断侵入。调色：霉绿、钠橙、灰蓝与脏红，颗粒和偏色可见。综合色比例：C1=#000000 30.2%；C2=#B5AFA5 18.6%；C3=#EBE8E0 13.0%；C4=#494642 12.9%；C5=#605550 12.8%；C6=#1A1B1E 12.5%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D125","name":"D125 纳瓦彭·坦荣瓜塔纳利 Nawapol Thamrongrattanarit","genre":"cool","colors":["#252117","#805E3F","#4F3A2B","#3C291C","#DED0C2"],"definition":"泰国都市孤独与流行文化被轻盈图形感和温柔幽默组织。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D125 纳瓦彭·坦荣瓜塔纳利 Nawapol Thamrongrattanarit 综合色彩寄存器。固定六色色值与画面占比：综合色1 #252117 19.3%；综合色2 #805E3F 17.1%；综合色3 #4F3A2B 16.6%；综合色4 #3C291C 16.3%；综合色5 #DED0C2 15.6%；综合色6 #F1F4F4 15.1%；比例合计100%。泰国都市孤独与流行文化被轻盈图形感和温柔幽默组织。光线：明亮柔光、商场白光与夜间彩色实景光。构图：平面构图、精确物件插入和轻巧运动，节奏清晰。调色：粉蓝、薄荷绿、珊瑚橙与奶白，明快但控制饱和。综合色比例：C1=#252117 19.3%；C2=#805E3F 17.1%；C3=#4F3A2B 16.6%；C4=#3C291C 16.3%；C5=#DED0C2 15.6%；C6=#F1F4F4 15.1%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D126","name":"D126 娄烨 Lou Ye","genre":"cool","colors":["#563C2A","#969C8B","#121110","#F8EAC4","#28241F"],"definition":"摇晃都市、欲望与政治记忆在湿润近身影像中交错。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D126 娄烨 Lou Ye 综合色彩寄存器。固定六色色值与画面占比：综合色1 #563C2A 18.0%；综合色2 #969C8B 17.9%；综合色3 #121110 17.3%；综合色4 #F8EAC4 16.3%；综合色5 #28241F 15.3%；综合色6 #271914 15.2%；比例合计100%。摇晃都市、欲望与政治记忆在湿润近身影像中交错。光线：可用光、霓虹、雨夜和强反差逆光，曝光具有呼吸。构图：手持贴身、遮挡穿行和突然失焦，保持身体不稳定。调色：青绿、钠黄、酒红和潮湿黑，颗粒与综合色偏移。综合色比例：C1=#563C2A 18.0%；C2=#969C8B 17.9%；C3=#121110 17.3%；C4=#F8EAC4 16.3%；C5=#28241F 15.3%；C6=#271914 15.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D127","name":"D127 许鞍华 Ann Hui","genre":"cool","colors":["#EDEDD7","#414A50","#5D4C43","#9C7B66","#BCB39E"],"definition":"社会变迁与女性命运以细腻现实主义跨越阶层和年代。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D127 许鞍华 Ann Hui 综合色彩寄存器。固定六色色值与画面占比：综合色1 #EDEDD7 18.2%；综合色2 #414A50 17.4%；综合色3 #5D4C43 16.4%；综合色4 #9C7B66 16.1%；综合色5 #BCB39E 16.1%；综合色6 #7A6256 15.8%；比例合计100%。社会变迁与女性命运以细腻现实主义跨越阶层和年代。光线：自然光与实用灯优先，时期色温准确。构图：稳定群像、生活化近景和空间完整性，表演优先。调色：米灰、木褐、城市蓝与温暖肤色，综合色克制。综合色比例：C1=#EDEDD7 18.2%；C2=#414A50 17.4%；C3=#5D4C43 16.4%；C4=#9C7B66 16.1%；C5=#BCB39E 16.1%；C6=#7A6256 15.8%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D128","name":"D128 利桑德罗·阿隆索 Lisandro Alonso","genre":"cool","colors":["#444D3F","#EDEEE8","#31332A","#576150","#7A6D53"],"definition":"荒野劳动、男性沉默与旅程时间在极简地景中展开。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D128 利桑德罗·阿隆索 Lisandro Alonso 综合色彩寄存器。固定六色色值与画面占比：综合色1 #444D3F 20.8%；综合色2 #EDEEE8 18.3%；综合色3 #31332A 16.1%；综合色4 #576150 15.3%；综合色5 #7A6D53 14.9%；综合色6 #151311 14.6%；比例合计100%。荒野劳动、男性沉默与旅程时间在极简地景中展开。光线：自然硬光、暮色与夜间微光，地表质感清楚。构图：固定远景、缓慢跟随和超长停留，人物只是地景尺度。调色：土褐、枯草黄、天空灰蓝和深黑，低饱和。综合色比例：C1=#444D3F 20.8%；C2=#EDEEE8 18.3%；C3=#31332A 16.1%；C4=#576150 15.3%；C5=#7A6D53 14.9%；C6=#151311 14.6%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D129","name":"D129 沃尔特·塞勒斯 Walter Salles","genre":"cool","colors":["#CBCECE","#3C3C3C","#BEAE92","#6C6354","#3B261A"],"definition":"公路、家庭与拉丁美洲地景以人文写实连接私人历史。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D129 沃尔特·塞勒斯 Walter Salles 综合色彩寄存器。固定六色色值与画面占比：综合色1 #CBCECE 22.6%；综合色2 #3C3C3C 17.4%；综合色3 #BEAE92 15.7%；综合色4 #6C6354 15.5%；综合色5 #3B261A 14.7%；综合色6 #A4AAA7 14.1%；比例合计100%。公路、家庭与拉丁美洲地景以人文写实连接私人历史。光线：自然日光、车窗光与黄金时刻，避免过分唯美。构图：流动跟拍、车内关系和宽阔地景，运动有旅程方向。调色：尘土黄、植物绿、天蓝与暖肤色，胶片式柔和对比。综合色比例：C1=#CBCECE 22.6%；C2=#3C3C3C 17.4%；C3=#BEAE92 15.7%；C4=#6C6354 15.5%；C5=#3B261A 14.7%；C6=#A4AAA7 14.1%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D130","name":"D130 小克莱伯·门多萨 Kleber Mendonça Filho","genre":"cool","colors":["#C5C9B8","#0E0C0B","#725F51","#94887D","#E0D6BE"],"definition":"建筑、社区记忆与类型悬念在巴西城市空间里彼此渗透。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D130 小克莱伯·门多萨 Kleber Mendonça Filho 综合色彩寄存器。固定六色色值与画面占比：综合色1 #C5C9B8 17.3%；综合色2 #0E0C0B 17.1%；综合色3 #725F51 16.9%；综合色4 #94887D 16.5%；综合色5 #E0D6BE 16.5%；综合色6 #484640 15.7%；比例合计100%。建筑、社区记忆与类型悬念在巴西城市空间里彼此渗透。光线：强烈日光、室内阴影和夜间实用光并置。构图：宽幅建筑构图、缓慢横移与突然类型化主观镜头。调色：混凝土灰、热带绿、旧墙黄和深红，综合色有层次。综合色比例：C1=#C5C9B8 17.3%；C2=#0E0C0B 17.1%；C3=#725F51 16.9%；C4=#94887D 16.5%；C5=#E0D6BE 16.5%；C6=#484640 15.7%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D131","name":"D131 卡里姆·埃诺兹 Karim Aïnouz","genre":"cool","colors":["#010101","#E6BB62","#90A294","#A19076","#EAE7CE"],"definition":"迁徙、欲望与海岸气候以触觉肌理和流动身份呈现。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D131 卡里姆·埃诺兹 Karim Aïnouz 综合色彩寄存器。固定六色色值与画面占比：综合色1 #010101 28.0%；综合色2 #E6BB62 15.1%；综合色3 #90A294 15.0%；综合色4 #A19076 14.6%；综合色5 #EAE7CE 13.8%；综合色6 #5C4839 13.5%；比例合计100%。迁徙、欲望与海岸气候以触觉肌理和流动身份呈现。光线：热带自然光、夜色实景灯与潮湿反射。构图：亲密手持、身体近景和开阔海岸远景交替。调色：海蓝、沙黄、棕肤色与霓虹红，保留湿润颗粒。综合色比例：C1=#010101 28.0%；C2=#E6BB62 15.1%；C3=#90A294 15.0%；C4=#A19076 14.6%；C5=#EAE7CE 13.8%；C6=#5C4839 13.5%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D132","name":"D132 卡洛斯·雷加达斯 Carlos Reygadas","genre":"cool","colors":["#504B46","#D5D8D6","#FBF8EE","#99B2B7","#3A3637"],"definition":"宗教、欲望与自然秩序以长镜和强烈物质感形成形而上冲击。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D132 卡洛斯·雷加达斯 Carlos Reygadas 综合色彩寄存器。固定六色色值与画面占比：综合色1 #504B46 19.2%；综合色2 #D5D8D6 17.0%；综合色3 #FBF8EE 16.4%；综合色4 #99B2B7 16.1%；综合色5 #3A3637 15.9%；综合色6 #73685C 15.4%；比例合计100%。宗教、欲望与自然秩序以长镜和强烈物质感形成形而上冲击。光线：极端自然光、黎明暮色和深夜低照度，接受高反差。构图：宽银幕静观、缓慢横移和身体完整动作，地景具压迫性。调色：土灰、乳白、植物绿和血肉暖色，厚重胶片层次。综合色比例：C1=#504B46 19.2%；C2=#D5D8D6 17.0%；C3=#FBF8EE 16.4%；C4=#99B2B7 16.1%；C5=#3A3637 15.9%；C6=#73685C 15.4%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D133","name":"D133 埃克托·巴本科 Héctor Babenco","genre":"cool","colors":["#010101","#6D4932","#FAF6F2","#472B20","#3B4042"],"definition":"都市边缘、监禁与身体困境在浓烈现实主义中显露制度暴力。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D133 埃克托·巴本科 Héctor Babenco 综合色彩寄存器。固定六色色值与画面占比：综合色1 #010101 18.3%；综合色2 #6D4932 17.4%；综合色3 #FAF6F2 16.8%；综合色4 #472B20 16.0%；综合色5 #3B4042 15.9%；综合色6 #B4BDB5 15.6%；比例合计100%。都市边缘、监禁与身体困境在浓烈现实主义中显露制度暴力。光线：硬日光、钨丝暗部与城市夜光，保持粗粝。构图：贴近人物的手持、封闭空间和长焦观察，压迫感持续。调色：脏绿、砖红、烟灰与暗肤色，颗粒高、饱和受控。综合色比例：C1=#010101 18.3%；C2=#6D4932 17.4%；C3=#FAF6F2 16.8%；C4=#472B20 16.0%；C5=#3B4042 15.9%；C6=#B4BDB5 15.6%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D134","name":"D134 塞巴斯蒂安·莱里奥 Sebastián Lelio","genre":"cool","colors":["#3F3630","#2E2A1E","#6B4D3E","#ECF5F7","#A8937E"],"definition":"亲密关系与身份转变以表演中心的现代写实呈现。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D134 塞巴斯蒂安·莱里奥 Sebastián Lelio 综合色彩寄存器。固定六色色值与画面占比：综合色1 #3F3630 17.9%；综合色2 #2E2A1E 17.6%；综合色3 #6B4D3E 16.3%；综合色4 #ECF5F7 16.3%；综合色5 #A8937E 16.0%；综合色6 #504539 15.9%；比例合计100%。亲密关系与身份转变以表演中心的现代写实呈现。光线：柔和自然光、城市夜景与室内暖灯，肤色准确。构图：稳定近中景、双人空间和适度跟随，镜头尊重表演。调色：灰蓝、暖白、酒红与自然肤色，综合色清洁克制。综合色比例：C1=#3F3630 17.9%；C2=#2E2A1E 17.6%；C3=#6B4D3E 16.3%；C4=#ECF5F7 16.3%；C5=#A8937E 16.0%；C6=#504539 15.9%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D135","name":"D135 希罗·盖拉 Ciro Guerra","genre":"cool","colors":["#B9C7D2","#0A0909","#A7ACAE","#EDF1F7","#555451"],"definition":"殖民历史、神话与地景通过仪式性黑白或浓郁自然色展开。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D135 希罗·盖拉 Ciro Guerra 综合色彩寄存器。固定六色色值与画面占比：综合色1 #B9C7D2 19.5%；综合色2 #0A0909 18.2%；综合色3 #A7ACAE 17.1%；综合色4 #EDF1F7 15.4%；综合色5 #555451 15.1%；综合色6 #3D3E3F 14.7%；比例合计100%。殖民历史、神话与地景通过仪式性黑白或浓郁自然色展开。光线：硬日光、火光和丛林漫射光，强调气候。构图：河流纵深、远景行进与正面仪式构图，人物受自然支配。调色：黑白银盐或深绿、泥褐、烟白，综合色具有历史感。综合色比例：C1=#B9C7D2 19.5%；C2=#0A0909 18.2%；C3=#A7ACAE 17.1%；C4=#EDF1F7 15.4%；C5=#555451 15.1%；C6=#3D3E3F 14.7%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D136","name":"D136 尤瑟夫·夏因 Youssef Chahine","genre":"cool","colors":["#010101","#636666","#1A1919","#B1B5B3","#959694"],"definition":"埃及社会、音乐与政治激情以流动群像和舞台能量融合。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D136 尤瑟夫·夏因 Youssef Chahine 综合色彩寄存器。固定六色色值与画面占比：综合色1 #010101 34.3%；综合色2 #636666 13.9%；综合色3 #1A1919 13.9%；综合色4 #B1B5B3 13.8%；综合色5 #959694 12.1%；综合色6 #787B7A 12.0%；比例合计100%。埃及社会、音乐与政治激情以流动群像和舞台能量融合。光线：高反差日光、舞台灯和经典棚拍光，时代感明确。构图：大群体调度、横移摇镜与明星近景，场面层次丰富。调色：沙金、深红、地中海蓝与经典肤色，保留老胶片综合色。综合色比例：C1=#010101 34.3%；C2=#636666 13.9%；C3=#1A1919 13.9%；C4=#B1B5B3 13.8%；C5=#959694 12.1%；C6=#787B7A 12.0%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D137","name":"D137 纳比勒·阿尤什 Nabil Ayouch","genre":"cool","colors":["#2E2D21","#AD846E","#151317","#44597C","#7A4C38"],"definition":"摩洛哥城市青春、阶层与宗教冲突以直接街头现实呈现。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D137 纳比勒·阿尤什 Nabil Ayouch 综合色彩寄存器。固定六色色值与画面占比：综合色1 #2E2D21 20.1%；综合色2 #AD846E 16.7%；综合色3 #151317 16.2%；综合色4 #44597C 15.9%；综合色5 #7A4C38 15.8%；综合色6 #D3B6A1 15.3%；比例合计100%。摩洛哥城市青春、阶层与宗教冲突以直接街头现实呈现。光线：硬日光、街灯和室内混合色温，保持环境真实性。构图：手持跟随、群体街景和压迫性近景，行动推动镜头。调色：尘黄、砖红、夜蓝与低饱和肤色，粗粝但可读。综合色比例：C1=#2E2D21 20.1%；C2=#AD846E 16.7%；C3=#151317 16.2%；C4=#44597C 15.9%；C5=#7A4C38 15.8%；C6=#D3B6A1 15.3%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D138","name":"D138 奥利弗·赫曼纽斯 Oliver Hermanus","genre":"cool","colors":["#121E27","#130C06","#DFE2D7","#8F9B96","#3D3D34"],"definition":"南非社会压抑与男性欲望在精确构图和冷峻表演中显影。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D138 奥利弗·赫曼纽斯 Oliver Hermanus 综合色彩寄存器。固定六色色值与画面占比：综合色1 #121E27 17.7%；综合色2 #130C06 17.6%；综合色3 #DFE2D7 17.3%；综合色4 #8F9B96 16.6%；综合色5 #3D3D34 15.4%；综合色6 #251D13 15.4%；比例合计100%。南非社会压抑与男性欲望在精确构图和冷峻表演中显影。光线：冷自然光、室内硬侧光和受控夜景。构图：几何中景、孤立人物与缓慢靠近，建筑施加压力。调色：冷灰、海蓝、暗绿和克制肤色，对比清晰。综合色比例：C1=#121E27 17.7%；C2=#130C06 17.6%；C3=#DFE2D7 17.3%；C4=#8F9B96 16.6%；C5=#3D3D34 15.4%；C6=#251D13 15.4%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D139","name":"D139 伊利亚·苏雷曼 Elia Suleiman","genre":"cool","colors":["#010101","#BAC1C1","#785C4A","#474038","#F8FBF8"],"definition":"巴勒斯坦日常以正面静止构图和无声荒诞抵抗宏大叙事。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D139 伊利亚·苏雷曼 Elia Suleiman 综合色彩寄存器。固定六色色值与画面占比：综合色1 #010101 32.7%；综合色2 #BAC1C1 16.2%；综合色3 #785C4A 14.6%；综合色4 #474038 13.2%；综合色5 #F8FBF8 12.2%；综合色6 #A26956 11.1%；比例合计100%。巴勒斯坦日常以正面静止构图和无声荒诞抵抗宏大叙事。光线：平坦日光与自然室内光，画面清晰克制。构图：固定对称中远景、精确入画出画和反应镜头。调色：石灰白、橄榄绿、天空蓝与少量红，综合色干净。综合色比例：C1=#010101 32.7%；C2=#BAC1C1 16.2%；C3=#785C4A 14.6%；C4=#474038 13.2%；C5=#F8FBF8 12.2%；C6=#A26956 11.1%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D140","name":"D140 马基德·马基迪 Majid Majidi","genre":"cool","colors":["#5E5046","#D0BCAC","#7B766E","#EDEEEC","#433C35"],"definition":"儿童视角、贫困现实与精神希望以朴素人文主义连接。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D140 马基德·马基迪 Majid Majidi 综合色彩寄存器。固定六色色值与画面占比：综合色1 #5E5046 19.6%；综合色2 #D0BCAC 17.5%；综合色3 #7B766E 16.4%；综合色4 #EDEEEC 15.9%；综合色5 #433C35 15.5%；综合色6 #1F1712 15.1%；比例合计100%。儿童视角、贫困现实与精神希望以朴素人文主义连接。光线：自然日光、柔和逆光和室内可用光，肤色温暖真实。构图：低机位跟随、环境中景和克制特写，儿童动作自然。调色：尘土黄、天空蓝、旧布色和自然暖肤色，柔和对比。综合色比例：C1=#5E5046 19.6%；C2=#D0BCAC 17.5%；C3=#7B766E 16.4%；C4=#EDEEEC 15.9%；C5=#433C35 15.5%；C6=#1F1712 15.1%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D141","name":"D141 塔里克·萨利赫 Tarik Saleh","genre":"cool","colors":["#E4E3C6","#000101","#C6C6B5","#F0F0E9","#78523B"],"definition":"北非与欧洲政治惊悚以锐利城市空间和冷峻人物状态推进。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D141 塔里克·萨利赫 Tarik Saleh 综合色彩寄存器。固定六色色值与画面占比：综合色1 #E4E3C6 18.6%；综合色2 #000101 17.2%；综合色3 #C6C6B5 16.8%；综合色4 #F0F0E9 16.3%；综合色5 #78523B 15.9%；综合色6 #514E3B 15.2%；比例合计100%。北非与欧洲政治惊悚以锐利城市空间和冷峻人物状态推进。光线：冷白日光、荧光灯与夜间钠灯，反差硬朗。构图：宽银幕跟随、建筑纵深和突发手持，动作方向明确。调色：钢蓝、沙灰、橙褐与深黑，综合色现代克制。综合色比例：C1=#E4E3C6 18.6%；C2=#000101 17.2%；C3=#C6C6B5 16.8%；C4=#F0F0E9 16.3%；C5=#78523B 15.9%；C6=#514E3B 15.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D142","name":"D142 考塞尔·本·哈尼耶 Kaouther Ben Hania","genre":"cool","colors":["#583927","#B89466","#0A1417","#33201A","#F2E0BD"],"definition":"纪录与虚构边界通过女性主体、表演机制和媒介装置被拆解。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D142 考塞尔·本·哈尼耶 Kaouther Ben Hania 综合色彩寄存器。固定六色色值与画面占比：综合色1 #583927 17.7%；综合色2 #B89466 16.9%；综合色3 #0A1417 16.8%；综合色4 #33201A 16.8%；综合色5 #F2E0BD 16.4%；综合色6 #754C36 15.4%；比例合计100%。纪录与虚构边界通过女性主体、表演机制和媒介装置被拆解。光线：自然光、采访灯和屏幕光按叙事层级并存。构图：正面证言、监视式构图与戏剧化重演明确区分。调色：中性灰、屏幕蓝、室内暖色与局部红，媒介差异保留。综合色比例：C1=#583927 17.7%；C2=#B89466 16.9%；C3=#0A1417 16.8%；C4=#33201A 16.8%；C5=#F2E0BD 16.4%；C6=#754C36 15.4%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D143","name":"D143 凯莉·莱卡特 Kelly Reichardt","genre":"cool","colors":["#F0DECC","#655A4B","#292B29","#766047","#AD9E8B"],"definition":"美国西北部劳动、地景与沉默关系以微小动作积累情感。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D143 凯莉·莱卡特 Kelly Reichardt 综合色彩寄存器。固定六色色值与画面占比：综合色1 #F0DECC 18.0%；综合色2 #655A4B 17.0%；综合色3 #292B29 16.5%；综合色4 #766047 16.4%；综合色5 #AD9E8B 16.3%；综合色6 #534B40 15.8%；比例合计100%。美国西北部劳动、地景与沉默关系以微小动作积累情感。光线：阴天漫射光、林间自然光和室内低照度。构图：稳定中远景、侧面行走和手工劳动细节，节奏耐心。调色：苔绿、泥褐、雾蓝与旧布灰，低饱和胶片感。综合色比例：C1=#F0DECC 18.0%；C2=#655A4B 17.0%；C3=#292B29 16.5%；C4=#766047 16.4%；C5=#AD9E8B 16.3%；C6=#534B40 15.8%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D144","name":"D144 格雷格·阿拉基 Gregg Araki","genre":"cool","colors":["#1E1D1F","#F4F4F4","#7B7979","#3D3934","#BA9381"],"definition":"青春欲望、末世焦虑与流行色彩以朋克拼贴冲撞。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D144 格雷格·阿拉基 Gregg Araki 综合色彩寄存器。固定六色色值与画面占比：综合色1 #1E1D1F 18.3%；综合色2 #F4F4F4 18.3%；综合色3 #7B7979 17.3%；综合色4 #3D3934 15.6%；综合色5 #BA9381 15.4%；综合色6 #9C5B40 15.1%；比例合计100%。青春欲望、末世焦虑与流行色彩以朋克拼贴冲撞。光线：高饱和彩光、硬日光和夜店实景光。构图：广角近身、倾斜构图、快速横移与漫画式群像。调色：洋红、酸绿、钴蓝与纯黑，色块大胆、肤色仍可读。综合色比例：C1=#1E1D1F 18.3%；C2=#F4F4F4 18.3%；C3=#7B7979 17.3%；C4=#3D3934 15.6%；C5=#BA9381 15.4%；C6=#9C5B40 15.1%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D145","name":"D145 盖伊·马丁 Guy Maddin","genre":"cool","colors":["#010101","#1D1F1F","#485E59","#491802","#6D6C6A"],"definition":"伪默片、记忆剧场与手工影像以梦魇式怀旧不断变形。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D145 盖伊·马丁 Guy Maddin 综合色彩寄存器。固定六色色值与画面占比：综合色1 #010101 29.4%；综合色2 #1D1F1F 15.7%；综合色3 #485E59 15.6%；综合色4 #491802 14.3%；综合色5 #6D6C6A 13.1%；综合色6 #A09C98 11.9%；比例合计100%。伪默片、记忆剧场与手工影像以梦魇式怀旧不断变形。光线：舞台硬光、局部染色与黑白高反差，光源不必写实。构图：正面舞台构图、虹膜、叠化和夸张近景，运动带机械感。调色：银灰、硝酸片褐、血红与幽灵蓝，保留闪烁划痕。综合色比例：C1=#010101 29.4%；C2=#1D1F1F 15.7%；C3=#485E59 15.6%；C4=#491802 14.3%；C5=#6D6C6A 13.1%；C6=#A09C98 11.9%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D146","name":"D146 阿托姆·伊戈扬 Atom Egoyan","genre":"cool","colors":["#010104","#BB815F","#351F14","#280F0E","#E9E5D9"],"definition":"录像、监视与家庭创伤通过层叠媒介和冷静心理距离展开。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D146 阿托姆·伊戈扬 Atom Egoyan 综合色彩寄存器。固定六色色值与画面占比：综合色1 #010104 18.0%；综合色2 #BB815F 17.3%；综合色3 #351F14 17.2%；综合色4 #280F0E 17.0%；综合色5 #E9E5D9 16.0%；综合色6 #5C3726 14.5%；比例合计100%。录像、监视与家庭创伤通过层叠媒介和冷静心理距离展开。光线：室内实用灯、屏幕光和冷色窗光，阴影压抑。构图：玻璃反射、监视画面、固定中景与克制推近。调色：冷蓝、棕灰、暗红和录像偏绿，媒介色差保留。综合色比例：C1=#010104 18.0%；C2=#BB815F 17.3%；C3=#351F14 17.2%；C4=#280F0E 17.0%；C5=#E9E5D9 16.0%；C6=#5C3726 14.5%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D147","name":"D147 吉姆·贾木许 Jim Jarmusch","genre":"cool","colors":["#7C8184","#010101","#A16933","#171818","#3C3B3A"],"definition":"城市漂泊者以极简对白、音乐节奏和死板幽默构成酷感寓言。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D147 吉姆·贾木许 Jim Jarmusch 综合色彩寄存器。固定六色色值与画面占比：综合色1 #7C8184 19.2%；综合色2 #010101 18.6%；综合色3 #A16933 17.3%；综合色4 #171818 15.2%；综合色5 #3C3B3A 15.2%；综合色6 #BEBEBD 14.5%；比例合计100%。城市漂泊者以极简对白、音乐节奏和死板幽默构成酷感寓言。光线：自然光、夜间实景灯和黑白高反差，照明简洁。构图：固定横向构图、缓慢移动和人物并置，留白充足。调色：黑白银灰或烟蓝、暗红、夜绿，综合色低调。综合色比例：C1=#7C8184 19.2%；C2=#010101 18.6%；C3=#A16933 17.3%；C4=#171818 15.2%；C5=#3C3B3A 15.2%；C6=#BEBEBD 14.5%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D148","name":"D148 沃威克·桑顿 Warwick Thornton","genre":"cool","colors":["#EFCDB4","#0B0E13","#9EB8DD","#605344","#AAA292"],"definition":"澳洲原住民地景、殖民暴力与精神经验以强烈光色连接。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D148 沃威克·桑顿 Warwick Thornton 综合色彩寄存器。固定六色色值与画面占比：综合色1 #EFCDB4 18.6%；综合色2 #0B0E13 17.3%；综合色3 #9EB8DD 17.2%；综合色4 #605344 16.7%；综合色5 #AAA292 16.0%；综合色6 #C2CDDD 14.2%；比例合计100%。澳洲原住民地景、殖民暴力与精神经验以强烈光色连接。光线：沙漠硬光、深夜火光和饱和暮色，肤色保持深层次。构图：宽阔地景、低机位身体和克制跟随，空间具有祖灵感。调色：赭石红、沙金、夜蓝与炭黑，高反差但不剪影化。综合色比例：C1=#EFCDB4 18.6%；C2=#0B0E13 17.3%；C3=#9EB8DD 17.2%；C4=#605344 16.7%；C5=#AAA292 16.0%；C6=#C2CDDD 14.2%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D149","name":"D149 罗尔夫·德·希尔 Rolf de Heer","genre":"cool","colors":["#F5F8F9","#A68954","#CCAC91","#030A0F","#836C4E"],"definition":"澳洲边缘人物、文化冲突与自然生存以直接类型现实呈现。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D149 罗尔夫·德·希尔 Rolf de Heer 综合色彩寄存器。固定六色色值与画面占比：综合色1 #F5F8F9 19.3%；综合色2 #A68954 18.5%；综合色3 #CCAC91 17.4%；综合色4 #030A0F 15.7%；综合色5 #836C4E 14.7%；综合色6 #A98D7C 14.4%；比例合计100%。澳洲边缘人物、文化冲突与自然生存以直接类型现实呈现。光线：自然硬光、阴天和实用灯，气候感明确。构图：环境全景、朴素跟拍和表演中景，动作完整。调色：土褐、桉树绿、天空灰蓝与锈红，综合色粗粝。综合色比例：C1=#F5F8F9 19.3%；C2=#A68954 18.5%；C3=#CCAC91 17.4%；C4=#030A0F 15.7%；C5=#836C4E 14.7%；C6=#A98D7C 14.4%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"},
+{"code":"D150","name":"D150 贾斯汀·库泽尔 Justin Kurzel","genre":"cool","colors":["#FFFFFF","#BABCB6","#0C0504","#9CA6A5","#36241F"],"definition":"制度暴力与澳洲荒野在精确冷峻的类型画面中对撞。","prompt":"原创电影语言转译，适配 Seedance 2.0；不复制具体影片镜头、角色、台词、音乐或完整场景。调用 D150 贾斯汀·库泽尔 Justin Kurzel 综合色彩寄存器。固定六色色值与画面占比：综合色1 #FFFFFF 28.3%；综合色2 #BABCB6 15.2%；综合色3 #0C0504 14.5%；综合色4 #9CA6A5 14.3%；综合色5 #36241F 13.9%；综合色6 #475359 13.8%；比例合计100%。制度暴力与澳洲荒野在精确冷峻的类型画面中对撞。光线：硬日光、低色温夜景和强轮廓火光。构图：宽银幕几何构图、缓慢逼近和爆发性动作段落。调色：尘灰、枯黄、钢蓝与暗红，反差硬、饱和克制。综合色比例：C1=#FFFFFF 28.3%；C2=#BABCB6 15.2%；C3=#0C0504 14.5%；C4=#9CA6A5 14.3%；C5=#36241F 13.9%；C6=#475359 13.8%。真实材质承载色彩，肤色中性可读；镜头运动由人物动作与空间变化触发。 每个镜头必须明确起始状态、人物动作、环境响应、摄影机触发与停止、光线或强调色变化以及结束状态；颜色由真实场景、美术、服装、道具、反射与实景光源承担，肤色保持自然可读。本镜内容=[填写场景、人物与动作]；时长=[填写秒数]；画幅=[填写比例]。"}];
+
+    const BRAND_WATERMARK = '';
+
+    function toggleTheme() {
+      const body = document.body;
+      const btn = document.getElementById('theme-btn');
+      if (body.classList.contains('theme-dark')) {
+        body.classList.remove('theme-dark');
+        body.classList.add('theme-light');
+        btn.innerHTML = '<i data-lucide="moon" style="width:14px; height:14px;"></i> 深色模式';
+        localStorage.setItem('cinema_theme', 'light');
+      } else {
+        body.classList.remove('theme-light');
+        body.classList.add('theme-dark');
+        btn.innerHTML = '<i data-lucide="sun" style="width:14px; height:14px;"></i> 浅色模式';
+        localStorage.setItem('cinema_theme', 'dark');
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('cinema_theme');
+      const btn = document.getElementById('theme-btn');
+      if (savedTheme === 'light') {
+        document.body.classList.remove('theme-dark');
+        document.body.classList.add('theme-light');
+        if (btn) btn.innerHTML = '<i data-lucide="moon" style="width:14px; height:14px;"></i> 深色模式';
+      }
+    }
+
+    let timelineNodes = [
+      { id: 1, duration: 4, cameraVector: '特写 | 极缓推进', drawerOpen: false, content: '虞晚斜倚锦榻，手举血色丹珠至眼前，指尖缓缓旋动，珠内血丝如活物般游移。' },
+      { id: 2, duration: 4, cameraVector: '半身中景 | 360°环绕', drawerOpen: false, content: '她缓缓抬眸看向镜头前方，下颌微扬拉出颈侧弧线，唇角勾起一丝慵懒而得逞的微笑。' }
+    ];
+
+    const presetColors = ['#d4af37', '#4f80ff', '#e06c75', '#98c379', '#c678dd', '#d19a66'];
+
+    const shotTags = ['极特写', '大特写', '面部特写', '近景', '半身中景', '全景', '大远景', '鸟瞰视角', '过肩镜头', '第一人称POV'];
+    const motionTags = ['极缓推进', '缓慢拉远', '横向平移', '垂直升降', '俯仰摇镜', '360°环绕', '荷兰角倾斜', '手持跟随'];
+    const fxTags = ['希区柯克变焦', '快速甩镜', '前景偷拍', '变焦焦点切换', '低角度压迫', '高角度俯拍', '反射镜像'];
+
+    function renderTimelineNodes() {
+      const container = document.getElementById('timeline-nodes-container');
+      const previewBar = document.getElementById('timeline-preview-bar');
+      if (!container || !previewBar) return;
+
+      container.innerHTML = '';
+      previewBar.innerHTML = '';
+
+      let accumTime = 0;
+      let totalTime = timelineNodes.reduce(function(sum, n) { return sum + (parseInt(n.duration) || 1); }, 0);
+
+      timelineNodes.forEach(function(node, index) {
+        const dur = parseInt(node.duration) || 1;
+        const startSec = accumTime;
+        const endSec = accumTime + dur;
+        accumTime = endSec;
+
+        const color = presetColors[index % presetColors.length];
+
+        const percent = ((dur / totalTime) * 100).toFixed(1);
+        const seg = document.createElement('div');
+        seg.className = 'timeline-segment';
+        seg.style.width = percent + '%';
+        seg.style.background = color;
+        seg.innerText = 'C' + (index + 1) + ' (' + startSec + 's-' + endSec + 's)';
+        previewBar.appendChild(seg);
+
+        const div = document.createElement('div');
+        div.className = 'node-card';
+
+        let deleteBtn = timelineNodes.length > 1 ? ('<button class="btn-ghost" onclick="removeTimelineNode(' + node.id + ')">删除</button>') : '';
+
+        let shotHtml = shotTags.map(function(t) {
+          const active = (node.cameraVector || '').indexOf(t) !== -1 ? ' selected' : '';
+          return '<span class="chip' + active + '" onclick="toggleVectorTag(' + node.id + ', \'' + t + '\', \'shot\')">' + t + '</span>';
+        }).join('');
+
+        let motionHtml = motionTags.map(function(t) {
+          const active = (node.cameraVector || '').indexOf(t) !== -1 ? ' selected' : '';
+          return '<span class="chip' + active + '" onclick="toggleVectorTag(' + node.id + ', \'' + t + '\', \'motion\')">' + t + '</span>';
+        }).join('');
+
+        let fxHtml = fxTags.map(function(t) {
+          const active = (node.cameraVector || '').indexOf(t) !== -1 ? ' selected' : '';
+          return '<span class="chip' + active + '" onclick="toggleVectorTag(' + node.id + ', \'' + t + '\', \'fx\')">' + t + '</span>';
+        }).join('');
+
+        const drawerClass = node.drawerOpen ? 'drawer-box open' : 'drawer-box';
+        const drawerBtnText = node.drawerOpen ? '收起更多运镜' : '更多运镜...';
+
+        div.innerHTML = '<div class="node-card-header">'
+          + '<div class="node-title-group">'
+          + '<span class="node-index">镜头 ' + (index + 1) + '</span>'
+          + '<span class="node-time-badge">' + startSec + 's - ' + endSec + 's (持续 ' + dur + ' 秒)</span>'
+          + '</div>'
+          + '<div style="display:flex; align-items:center; gap:8px;">'
+          + '<div class="duration-stepper">'
+          + '<span style="font-size:0.72rem; color:hsl(var(--muted-foreground)); margin-right:2px;">时长:</span>'
+          + '<button class="btn-step" onclick="changeDuration(' + node.id + ', -1)">-</button>'
+          + '<input type="number" value="' + dur + '" min="1" max="60" onchange="changeDuration(' + node.id + ', 0, this.value)">'
+          + '<button class="btn-step" onclick="changeDuration(' + node.id + ', 1)">+</button>'
+          + '<span style="font-size:0.72rem; color:hsl(var(--muted-foreground));">秒</span>'
+          + '</div>'
+          + deleteBtn
+          + '</div>'
+          + '</div>'
+
+          + '<div style="margin-bottom: 10px;">'
+          + '<label>画面剧情与角色主体动作描述 <span class="hint">描述该镜头内发生的动作或细节</span></label>'
+          + '<textarea placeholder="例如：虞晚斜倚锦榻，手举血色丹珠至眼前，指尖缓缓旋动..." oninput="updateNodeContent(' + node.id + ', this.value)">' + node.content + '</textarea>'
+          + '</div>'
+
+          + '<div class="vector-section">'
+          + '<div class="vector-bar">'
+          + '<input type="text" id="cam-input-' + node.id + '" value="' + (node.cameraVector || '') + '" placeholder="选择下方推荐运镜，或直接在此输入..." oninput="updateNodeVector(' + node.id + ', this.value)">'
+          + '<button class="btn-ghost" onclick="toggleDrawer(' + node.id + ')">' + drawerBtnText + '</button>'
+          + '</div>'
+
+          + '<div class="chip-group">'
+          + '<span style="font-size:0.72rem; color:hsl(var(--muted-foreground)); opacity:0.7; align-self:center;">常用灵感:</span>'
+          + '<span class="chip' + ((node.cameraVector||'').indexOf('大特写')!==-1?' selected':'') + '" onclick="toggleVectorTag(' + node.id + ', \'大特写\', \'shot\')">大特写</span>'
+          + '<span class="chip' + ((node.cameraVector||'').indexOf('半身中景')!==-1?' selected':'') + '" onclick="toggleVectorTag(' + node.id + ', \'半身中景\', \'shot\')">半身中景</span>'
+          + '<span class="chip' + ((node.cameraVector||'').indexOf('极缓推进')!==-1?' selected':'') + '" onclick="toggleVectorTag(' + node.id + ', \'极缓推进\', \'motion\')">极缓推进</span>'
+          + '<span class="chip' + ((node.cameraVector||'').indexOf('360°环绕')!==-1?' selected':'') + '" onclick="toggleVectorTag(' + node.id + ', \'360°环绕\', \'motion\')">360°环绕</span>'
+          + '</div>'
+
+          + '<div class="' + drawerClass + '" id="drawer-' + node.id + '">'
+          + '<div class="drawer-label">景别 Shot Size (点击单选)</div>'
+          + '<div class="chip-group" style="margin-bottom:8px;">' + shotHtml + '</div>'
+
+          + '<div class="drawer-label">基础运镜 Trajectory (多选组合)</div>'
+          + '<div class="chip-group" style="margin-bottom:8px;">' + motionHtml + '</div>'
+
+          + '<div class="drawer-label">高阶视效 FX (多选组合)</div>'
+          + '<div class="chip-group">' + fxHtml + '</div>'
+          + '</div>'
+
+          + '</div>';
+
+        container.appendChild(div);
+      });
+
+      generateCameraStudioPrompt();
+    }
+
+    function toggleDrawer(id) {
+      const node = timelineNodes.find(function(n) { return n.id === id; });
+      if (node) {
+        node.drawerOpen = !node.drawerOpen;
+        renderTimelineNodes();
+      }
+    }
+
+    function toggleVectorTag(id, tag, cat) {
+      const node = timelineNodes.find(function(n) { return n.id === id; });
+      if (!node) return;
+
+      let currentVal = node.cameraVector || '';
+
+      if (cat === 'shot') {
+        if (currentVal.indexOf(tag) !== -1) {
+          currentVal = removeTagFromString(currentVal, tag);
+        } else {
+          shotTags.forEach(function(st) {
+            currentVal = removeTagFromString(currentVal, st);
+          });
+          currentVal = currentVal ? (tag + ' | ' + currentVal) : tag;
+        }
+      } else {
+        if (currentVal.indexOf(tag) !== -1) {
+          currentVal = removeTagFromString(currentVal, tag);
+        } else {
+          currentVal = currentVal ? (currentVal + ' | ' + tag) : tag;
+        }
+      }
+
+      node.cameraVector = cleanVectorString(currentVal);
+      renderTimelineNodes();
+    }
+
+    function removeTagFromString(str, tag) {
+      return str.replace(tag, '').replace(/\|\s*\|/g, '|').trim();
+    }
+
+    function cleanVectorString(str) {
+      return str.split('|').map(function(s) { return s.trim(); }).filter(Boolean).join(' | ');
+    }
+
+    function changeDuration(id, delta, directVal) {
+      if (directVal === undefined) directVal = null;
+      const node = timelineNodes.find(function(n) { return n.id === id; });
+      if (node) {
+        if (directVal !== null) {
+          node.duration = Math.max(1, parseInt(directVal) || 1);
+        } else {
+          node.duration = Math.max(1, (parseInt(node.duration) || 1) + delta);
+        }
+        renderTimelineNodes();
+      }
+    }
+
+    function addTimelineNode() {
+      const newId = Date.now();
+      timelineNodes.push({
+        id: newId,
+        duration: 4,
+        cameraVector: '半身中景 | 极缓推进',
+        drawerOpen: false,
+        content: ''
+      });
+      renderTimelineNodes();
+    }
+
+    function removeTimelineNode(id) {
+      timelineNodes = timelineNodes.filter(function(n) { return n.id !== id; });
+      renderTimelineNodes();
+    }
+
+    function updateNodeVector(id, val) {
+      const node = timelineNodes.find(function(n) { return n.id === id; });
+      if (node) {
+        node.cameraVector = val;
+        generateCameraStudioPrompt();
+      }
+    }
+
+    function updateNodeContent(id, val) {
+      const node = timelineNodes.find(function(n) { return n.id === id; });
+      if (node) {
+        node.content = val.trim();
+        generateCameraStudioPrompt();
+      }
+    }
+
+    function loadCameraExample() {
+      timelineNodes = [
+        { id: 1, duration: 4, cameraVector: '大特写 | 极缓推进', drawerOpen: false, content: '虞晚斜倚锦榻，手举血色丹珠至眼前，指尖缓缓旋动，珠内血丝如活物般游移。' },
+        { id: 2, duration: 4, cameraVector: '半身中景 | 360°环绕', drawerOpen: false, content: '她缓缓抬眸看向镜头前方，下颌微扬拉出颈侧弧线，唇角勾起一丝慵懒而得逞的微笑。' }
+      ];
+      renderTimelineNodes();
+    }
+
+    function loadPresetScript(type) {
+      if (type === 'guzhuang') {
+        timelineNodes = [
+          { id: 1, duration: 4, cameraVector: '大特写 | 极缓推进', drawerOpen: false, content: '女主角冷眼抬眸，指尖捏紧古剑剑柄，剑鞘泛出寒光冷意。' },
+          { id: 2, duration: 4, cameraVector: '半身中景 | 360°环绕', drawerOpen: false, content: '风起吹散高马尾发丝，她拔剑出鞘划出一道金色剑气，眼神凌厉压迫。' }
+        ];
+      } else if (type === 'dushi') {
+        timelineNodes = [
+          { id: 1, duration: 3, cameraVector: '近景 | 横向平移', drawerOpen: false, content: '男主角身穿深灰西装手提公文包步行在雨夜街头，霓虹倒影在湿滑路面。' },
+          { id: 2, duration: 5, cameraVector: '大特写 | 希区柯克变焦', drawerOpen: false, content: '他停下脚步掏出怀表看了一眼，转头看向镜头前方，后方大楼灯光迅速拉远。' }
+        ];
+      }
+      renderTimelineNodes();
+    }
+
+    function generateCameraStudioPrompt() {
+      const aspect = document.getElementById('cam-aspect').value;
+      const avoid = document.getElementById('cam-avoid').value;
+
+      let accumTime = 0;
+      let timelineTextArr = [];
+
+      timelineNodes.forEach(function(node, i) {
+        const dur = parseInt(node.duration) || 1;
+        const startSec = accumTime;
+        const endSec = accumTime + dur;
+        accumTime = endSec;
+
+        const vec = node.cameraVector || '常规视角';
+        const c = node.content || '角色保持运动状态';
+        timelineTextArr.push('- 镜头节点 ' + (i+1) + ' (' + startSec + 's - ' + endSec + 's, 持续' + dur + '秒) | 轨迹=[' + vec + '] | 画面: ' + c);
+      });
+
+      const firstAction = timelineNodes[0] ? (timelineNodes[0].content || '角色静态') : '角色静态';
+
+      const output = '【Seedance 2.0 工业级动态多节点控镜 Prompt】\n\n'
+        + '[GLOBAL_CONFIG] 视频总时长: ' + accumTime + '秒 | 画面画幅比例: ' + aspect + '\n'
+        + '[TIMELINE_SEQUENCE] 动态多阶段时序轨迹链：\n'
+        + timelineTextArr.join('\n') + '\n'
+        + '摄影机将顺滑串联上述运镜轨迹，捕捉画面细节与微表情，结尾停留在可承接下一镜的定格点。\n'
+        + '[NEGATIVE_CONSTRAINTS] Avoid 风险排除：' + avoid + '。\n\n'
+        + '本镜内容=[' + firstAction.slice(0, 30) + ']；时长=[' + accumTime + '秒]；画幅=[' + aspect + ']';
+
+      document.getElementById('camera-output').innerText = output;
+    }
+
+    function switchTab(tabId, btnEl) {
+      document.querySelectorAll('.nav-tab').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+      
+      if (btnEl) btnEl.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+
+      if (tabId === 'directors') renderDirectors(directorsData);
+    }
+
+    function initHybridSelects() {
+      const s1 = document.getElementById('hybrid-dir1');
+      const s2 = document.getElementById('hybrid-dir2');
+      if (!s1 || !s2) return;
+      s1.innerHTML = ''; s2.innerHTML = '';
+      directorsData.forEach(function(d) {
+        s1.appendChild(new Option(d.code + ' | ' + d.name, d.code));
+        s2.appendChild(new Option(d.code + ' | ' + d.name, d.code));
+      });
+      s1.value = 'D008'; // 今敏
+      s2.value = 'D032'; // 库布里克
+    }
+
+    function updateHybridRatio(val) {
+      const r1 = parseInt(val);
+      const r2 = 100 - r1;
+      const c1 = document.getElementById('hybrid-dir1').value;
+      const c2 = document.getElementById('hybrid-dir2').value;
+      const d1 = directorsData.find(function(d) { return d.code === c1; }) || { name: '主导演 A' };
+      const d2 = directorsData.find(function(d) { return d.code === c2; }) || { name: '辅导演 B' };
+
+      document.getElementById('label-dir1').innerText = (d1.name.split(' ')[1] || d1.name) + ': ' + r1 + '%';
+      document.getElementById('label-dir2').innerText = (d2.name.split(' ')[1] || d2.name) + ': ' + r2 + '%';
+
+      generateHybridPrompt();
+    }
+
+    function generateHybridPrompt() {
+      const c1 = document.getElementById('hybrid-dir1').value;
+      const c2 = document.getElementById('hybrid-dir2').value;
+      const r1 = document.getElementById('hybrid-ratio-slider').value;
+      const r2 = 100 - parseInt(r1);
+      const aspect = document.getElementById('hybrid-aspect').value || '9:16';
+
+      const d1 = directorsData.find(function(d) { return d.code === c1; }) || directorsData[0];
+      const d2 = directorsData.find(function(d) { return d.code === c2; }) || directorsData[1];
+      const scene = document.getElementById('hybrid-scene').value.trim() || '暗调暖阁内室，虞晚斜倚锦榻，手举血色丹珠至眼前，指尖缓缓旋动...';
+
+      document.getElementById('label-dir1').innerText = (d1.name.split(' ')[1] || d1.name) + ': ' + r1 + '%';
+      document.getElementById('label-dir2').innerText = (d2.name.split(' ')[1] || d2.name) + ': ' + r2 + '%';
+
+      const prompt = '【混血双导演视觉风格 Prompt (单帧场景测试 · 自定义权重: ' + r1 + '% ' + d1.name + ' + ' + r2 + '% ' + d2.name + ')】\n\n'
+        + '[HYBRID_STYLE_TRANSITION]\n'
+        + '- 主导视觉基调 (' + r1 + '% 权重): 参考《' + d1.name + '》——' + d1.definition + '。主色调 HEX 基准: ' + d1.colors.slice(0, 3).join(', ') + '。\n'
+        + '- 辅导运镜控制 (' + r2 + '% 权重): 融合《' + d2.name + '》——' + d2.definition + '。辅助色调 HEX 基准: ' + d2.colors.slice(0, 3).join(', ') + '。\n\n'
+        + '[SCENE_ACTION_EXECUTION]\n'
+        + '场景剧情内容：' + scene + '\n'
+        + '调色与光影融合要求：以 ' + d1.name + ' 的高对比度色彩占比为主，结合 ' + d2.name + ' 的硬朗几何空间与精准运镜，保持面部肤色可读自然。\n'
+        + 'Avoid 风险排除：全局极高过度饱和偏色、死黑爆白、无动机剧烈摇晃。\n\n'
+        + '本镜内容=[' + scene.slice(0, 35) + ']；画幅=[' + aspect + ']';
+
+      document.getElementById('hybrid-output').innerText = prompt;
+    }
+
+    function renderCustomPalettePreview() {
+      const h1 = document.getElementById('hex-1').value;
+      const h2 = document.getElementById('hex-2').value;
+      const h3 = document.getElementById('hex-3').value;
+      const h4 = document.getElementById('hex-4').value;
+      const h5 = document.getElementById('hex-5').value;
+      const h6 = document.getElementById('hex-6').value;
+
+      document.getElementById('hex-1-val').value = h1;
+      document.getElementById('hex-2-val').value = h2;
+      document.getElementById('hex-3-val').value = h3;
+      document.getElementById('hex-4-val').value = h4;
+      document.getElementById('hex-5-val').value = h5;
+      document.getElementById('hex-6-val').value = h6;
+
+      const sw = document.getElementById('custom-swatch-bar');
+      sw.innerHTML = `
+        <div class='swatch-item' style='background:` + h1 + `; flex:3.0;' title='主色 30% (` + h1 + `)'></div>
+        <div class='swatch-item' style='background:` + h2 + `; flex:2.5;' title='次色 25% (` + h2 + `)'></div>
+        <div class='swatch-item' style='background:` + h3 + `; flex:1.8;' title='辅色 18% (` + h3 + `)'></div>
+        <div class='swatch-item' style='background:` + h4 + `; flex:1.2;' title='阴影 12% (` + h4 + `)'></div>
+        <div class='swatch-item' style='background:` + h5 + `; flex:1.0;' title='环境 10% (` + h5 + `)'></div>
+        <div class='swatch-item' style='background:` + h6 + `; flex:0.5;' title='强调 5% (` + h6 + `)'></div>
+      `;
+    }
+
+    function presetPalette(type) {
+      if (type === 'wong') {
+        setColors('#8B0000', '#D4AF37', '#214B3C', '#172A3A', '#A58A3A', '#E0FFFF');
+        document.getElementById('palette-carrier').value = '主色丝绒红纱与帷帐，次色金饰流苏，辅色墨绿墙面，阴影蓝黑';
+        document.getElementById('palette-mood').value = '暗调暖光内室，高对比度低色温，复古华丽';
+      } else if (type === 'nolan') {
+        setColors('#1C2833', '#2C3E50', '#7F8C8D', '#17202A', '#D5D8DC', '#99A3A4');
+        document.getElementById('palette-carrier').value = '主色钢蓝建筑，次色深灰风衣，阴影冷黑，实景冷白光面';
+        document.getElementById('palette-mood').value = '冷硬工业质感，低饱和，清冷高对比';
+      } else if (type === 'wes') {
+        setColors('#F4A261', '#E9C46A', '#2A9D8F', '#E76F51', '#264653', '#F8F9FA');
+        document.getElementById('palette-carrier').value = '主色粉橙布景，次色淡黄墙面，辅色松石绿衣着，阴影深蓝灰';
+        document.getElementById('palette-mood').value = '马卡龙复古童话感，轴对称，高明度水彩质感';
+      } else if (type === 'park') {
+        setColors('#1A0A0A', '#800000', '#2E2E2E', '#0D0D0D', '#4A3B32', '#D4AF37');
+        document.getElementById('palette-carrier').value = '主色漆黑漆器与暗影，次色深血红缎面，阴影冷黑，金色微光';
+        document.getElementById('palette-mood').value = '黑暗悬疑，浓稠强对比，压抑华丽美学';
+      } else if (type === 'kuro') {
+        setColors('#2B2B2B', '#4A3B32', '#1C1C1C', '#0F0F0F', '#706C61', '#E8E5DA');
+        document.getElementById('palette-carrier').value = '主色泥土与墨黑战甲，次色枯草黄，阴影水墨黑，月白高光';
+        document.getElementById('palette-mood').value = '写实大地风雨，黑白水墨质感，沉重历史感';
+      } else if (type === 'cyber') {
+        setColors('#0D1117', '#FF0055', '#00F0FF', '#050814', '#2D124D', '#FFE600');
+        document.getElementById('palette-carrier').value = '主色雨夜黑色街道，次色霓虹粉红光，辅色青蓝反光，阴影暗紫';
+        document.getElementById('palette-mood').value = '赛博朋克高对比霓虹，湿滑路面光影反射';
+      } else if (type === 'shinkai') {
+        setColors('#1B4965', '#62B6CB', '#FF9F1C', '#0E2A38', '#BEE9E8', '#FFFFFF');
+        document.getElementById('palette-carrier').value = '主色深蓝天空，次色积雨云浅蓝，辅色夕阳橙光，高光纯白光斑';
+        document.getElementById('palette-mood').value = '清透梦幻，高明度晨曦，动漫唯美光影';
+      } else if (type === 'darkfant') {
+        setColors('#0F2027', '#203A43', '#C9A063', '#081015', '#2C5364', '#E6C875');
+        document.getElementById('palette-carrier').value = '主色玄黑道袍与幽绿古阁，次色鎏金符文纹路，阴影深海黑';
+        document.getElementById('palette-mood').value = '新中式东方玄幻，冷幽暗调与流金强调';
+      }
+      renderCustomPalettePreview();
+      generateCustomPalettePrompt();
+    }
+
+    function setColors(c1, c2, c3, c4, c5, c6) {
+      document.getElementById('hex-1').value = c1;
+      document.getElementById('hex-2').value = c2;
+      document.getElementById('hex-3').value = c3;
+      document.getElementById('hex-4').value = c4;
+      document.getElementById('hex-5').value = c5;
+      document.getElementById('hex-6').value = c6;
+    }
+
+    function generateCustomPalettePrompt() {
+      const h1 = document.getElementById('hex-1').value;
+      const h2 = document.getElementById('hex-2').value;
+      const h3 = document.getElementById('hex-3').value;
+      const h4 = document.getElementById('hex-4').value;
+      const h5 = document.getElementById('hex-5').value;
+      const h6 = document.getElementById('hex-6').value;
+      const carrier = document.getElementById('palette-carrier').value;
+      const mood = document.getElementById('palette-mood').value;
+      const skin = document.getElementById('palette-skin').value;
+
+      const prompt = '[COLOR_SCHEME] 固定六色 HEX 调色板与比例约束：\n'
+        + '- 主导色: ' + h1 + ' 30% (物理载体：主画面主体与大面积背景)\n'
+        + '- 辅助色: ' + h2 + ' 25% (物理载体：服装造型与核心道具)\n'
+        + '- 关联色: ' + h3 + ' 18% (物理载体：空间装饰与次要物体)\n'
+        + '- 阴影色: ' + h4 + ' 12% (物理载体：暗部边缘与角落暗影)\n'
+        + '- 环境色: ' + h5 + ' 10% (物理载体：自然或实景光源反光)\n'
+        + '- 强调色: ' + h6 + ' 5% (物理载体：叙事转折点强调物件)\n'
+        + '比例合计正好 100%。\n\n'
+        + '[PHYSICAL_CARRIERS & LIGHTING]\n'
+        + '色彩载体描述：' + carrier + '。\n'
+        + '画面美学氛围：' + mood + '。\n'
+        + '肤色与材质控制：' + skin + '，胶片颗粒感，高微反差清晰度。\n'
+        + ' Avoid 风险否定词：全局高饱和偏色、死黑爆白、无动机抖动、塑料感。';
+
+      document.getElementById('palette-output').innerText = prompt;
+    }
+
+    function renderDirectors(data) {
+      const container = document.getElementById('director-cards-container');
+      if (!container) return;
+      container.innerHTML = '';
+      data.forEach(function(d) {
+        const swatchesHtml = d.colors.map(function(c) { return '<div class="swatch-item" style="background:' + c + '" title="' + c + '"></div>'; }).join('');
+        const card = document.createElement('div');
+        card.className = 'director-card';
+        card.innerHTML = '<div>'
+          + '<div class="director-code">' + d.code + '</div>'
+          + '<div class="director-name">' + d.name + '</div>'
+          + '<div class="director-def">' + d.definition + '</div>'
+          + '<div class="swatch-bar">' + swatchesHtml + '</div>'
+          + '</div>'
+          + '<div style="display:flex; gap:6px; margin-top:8px;">'
+          + '<button class="btn" style="font-size:0.75rem; padding:4px 10px; flex:1;" onclick="copyDirectorPrompt(\'' + d.code + '\')">复制 Prompt</button>'
+          + '<button class="btn btn-secondary" style="font-size:0.75rem; padding:4px 10px;" onclick="applyDirectorToCamera(\'' + d.code + '\')">导入控镜</button>'
+          + '</div>';
+        container.appendChild(card);
+      });
+    }
+
+    function filterDirectors() {
+      const query = document.getElementById('director-search').value.toLowerCase().trim();
+      const genre = document.getElementById('director-filter-genre').value;
+      const filtered = directorsData.filter(function(d) {
+        const matchQuery = d.code.toLowerCase().indexOf(query) !== -1 || d.name.toLowerCase().indexOf(query) !== -1 || d.definition.indexOf(query) !== -1;
+        const matchGenre = genre === 'all' || d.genre === genre;
+        return matchGenre && matchQuery;
+      });
+      renderDirectors(filtered);
+    }
+
+    function copyDirectorPrompt(code) {
+      const dir = directorsData.find(function(d) { return d.code === code; });
+      if (dir) {
+        navigator.clipboard.writeText(dir.prompt).then(function() { showToast('已复制【' + dir.name + '】Prompt'); });
+      }
+    }
+
+    function applyDirectorToCamera(code) {
+      const dir = directorsData.find(function(d) { return d.code === code; });
+      if (dir) {
+        switchTab('camera-studio', document.querySelectorAll('.nav-tab')[0]);
+        if (timelineNodes.length > 0) {
+          timelineNodes[0].content = '角色处于《' + dir.name + '》视觉风格中，' + dir.definition;
+          renderTimelineNodes();
+        }
+        showToast('已导入【' + dir.name + '】到控镜');
+      }
+    }
+
+    function copyOutput(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(function() { showToast(); });
+    }
+
+    function exportAsTxt(elementId, filename) {
+      const text = document.getElementById(elementId).innerText;
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+
+    function showToast(msg) {
+      if (!msg) msg = '已复制到剪贴板';
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(function() { toast.style.display = 'none'; }, 2000);
+    }
+
+    window.onload = function() {
+      if (window.lucide) lucide.createIcons();
+      initTheme();
+      renderTimelineNodes();
+      renderCustomPalettePreview();
+      generateCustomPalettePrompt();
+      initHybridSelects();
+      generateHybridPrompt();
+      renderDirectors(directorsData);
+    };
+
+  </script>
+</body>
+</html>

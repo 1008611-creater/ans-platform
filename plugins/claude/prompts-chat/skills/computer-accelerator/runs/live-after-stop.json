@@ -1,0 +1,196 @@
+﻿{
+    "Schema":  "computer-accelerator.snapshot.v1",
+    "Mode":  "Verify",
+    "Timestamp":  "2026-08-03T00:15:28.6424021+08:00",
+    "Computer":  "DESKTOP-OMI2AR3",
+    "OS":  "Microsoft Windows 10 专业版",
+    "LastBoot":  "\/Date(1785423905500)\/",
+    "CpuLoadPercent":  17.476,
+    "CurrentClockMHz":  3500,
+    "MaxClockMHz":  3500,
+    "AvailableMemoryMB":  6773.5,
+    "Volumes":  [
+                    {
+                        "Volume":  "C:",
+                        "SizeGB":  447.8,
+                        "FreeGB":  88.7,
+                        "FreePercent":  19.8
+                    },
+                    {
+                        "Volume":  "D:",
+                        "SizeGB":  482.9,
+                        "FreeGB":  49.8,
+                        "FreePercent":  10.3
+                    },
+                    {
+                        "Volume":  "E:",
+                        "SizeGB":  953.9,
+                        "FreeGB":  105.3,
+                        "FreePercent":  11
+                    }
+                ],
+    "DiskCounters":  [
+                         {
+                             "Volume":  "c:",
+                             "Counter":  "current disk queue length",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "d:",
+                             "Counter":  "current disk queue length",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "harddiskvolume5",
+                             "Counter":  "current disk queue length",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "e:",
+                             "Counter":  "current disk queue length",
+                             "Average":  8
+                         },
+                         {
+                             "Volume":  "_total",
+                             "Counter":  "current disk queue length",
+                             "Average":  8
+                         },
+                         {
+                             "Volume":  "c:",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "d:",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "harddiskvolume5",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0
+                         },
+                         {
+                             "Volume":  "e:",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0.268
+                         },
+                         {
+                             "Volume":  "_total",
+                             "Counter":  "avg. disk sec/transfer",
+                             "Average":  0.012
+                         }
+                     ],
+    "TopMemoryProcesses":  [
+                               {
+                                   "Name":  "vmmem",
+                                   "Id":  25720,
+                                   "MemoryMB":  1665,
+                                   "CpuSeconds":  0
+                               },
+                               {
+                                   "Name":  "Memory Compression",
+                                   "Id":  2056,
+                                   "MemoryMB":  1523,
+                                   "CpuSeconds":  0
+                               },
+                               {
+                                   "Name":  "msedgewebview2",
+                                   "Id":  30992,
+                                   "MemoryMB":  1072,
+                                   "CpuSeconds":  3744.2
+                               },
+                               {
+                                   "Name":  "ChatGPT",
+                                   "Id":  14428,
+                                   "MemoryMB":  846,
+                                   "CpuSeconds":  2749.9
+                               },
+                               {
+                                   "Name":  "MsMpEng",
+                                   "Id":  5224,
+                                   "MemoryMB":  578,
+                                   "CpuSeconds":  0
+                               },
+                               {
+                                   "Name":  "codex",
+                                   "Id":  4872,
+                                   "MemoryMB":  499,
+                                   "CpuSeconds":  1168.2
+                               },
+                               {
+                                   "Name":  "ChatGPT",
+                                   "Id":  3920,
+                                   "MemoryMB":  407,
+                                   "CpuSeconds":  860.3
+                               },
+                               {
+                                   "Name":  "Weixin",
+                                   "Id":  39512,
+                                   "MemoryMB":  332,
+                                   "CpuSeconds":  2859.8
+                               },
+                               {
+                                   "Name":  "msedge",
+                                   "Id":  21004,
+                                   "MemoryMB":  279,
+                                   "CpuSeconds":  862.2
+                               },
+                               {
+                                   "Name":  "com.docker.backend",
+                                   "Id":  25268,
+                                   "MemoryMB":  267,
+                                   "CpuSeconds":  4632
+                               },
+                               {
+                                   "Name":  "WeChatAppEx",
+                                   "Id":  2592,
+                                   "MemoryMB":  252,
+                                   "CpuSeconds":  84.8
+                               },
+                               {
+                                   "Name":  "ChatGPT",
+                                   "Id":  47592,
+                                   "MemoryMB":  251,
+                                   "CpuSeconds":  5377.8
+                               },
+                               {
+                                   "Name":  "WeChatAppEx",
+                                   "Id":  26148,
+                                   "MemoryMB":  244,
+                                   "CpuSeconds":  18.1
+                               },
+                               {
+                                   "Name":  "ChatGPT",
+                                   "Id":  49272,
+                                   "MemoryMB":  230,
+                                   "CpuSeconds":  81.7
+                               },
+                               {
+                                   "Name":  "msedge",
+                                   "Id":  42472,
+                                   "MemoryMB":  225,
+                                   "CpuSeconds":  37.1
+                               }
+                           ],
+    "ReadonlyRobocopyScans":  [
+
+                              ],
+    "ToolStatus":  [
+                       {
+                           "Name":  "System Informer",
+                           "Available":  true,
+                           "Source":  "C:\\Program Files\\SystemInformer\\SystemInformer.exe"
+                       },
+                       {
+                           "Name":  "LibreHardwareMonitor",
+                           "Available":  true,
+                           "Source":  "C:\\Users\\lsb\\AppData\\Local\\ComputerAccelerator\\tools\\LibreHardwareMonitor\\LibreHardwareMonitor.exe"
+                       },
+                       {
+                           "Name":  "Mem Reduct",
+                           "Available":  true,
+                           "Source":  "C:\\Program Files\\Mem Reduct\\memreduct.exe"
+                       }
+                   ]
+}

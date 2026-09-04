@@ -1,0 +1,44 @@
+version: "v1"
+source: "novel-controller-v5.5"
+policies:
+  - id: IRON-001
+    gate: all
+    severity: P0
+    rule: "关键证据必须登记并可追溯。"
+  - id: IRON-002
+    gate: all
+    severity: P0
+    rule: "人物知识不得越界。"
+  - id: IRON-003
+    gate: all
+    severity: P0
+    rule: "时间、物件、能力和硬数字必须连续。"
+  - id: IRON-004
+    gate: write
+    severity: P1
+    rule: "P0/P1 未清零不得续写或提交。"
+  - id: IRON-005
+    gate: outline
+    severity: P1
+    rule: "主角目标、阻碍、反派触发和信息节奏必须闭合。"
+  - id: IRON-006
+    gate: chapter
+    severity: P1
+    rule: "关键推进以主角主动行动为主。"
+  - id: IRON-007
+    gate: chapter
+    severity: P1
+    rule: "行动、胜利和情感变化必须付出代价。"
+  - id: IRON-008
+    gate: milestone
+    severity: P1
+    rule: "每 3-5 章审查八类跨章模式。"
+  - id: IRON-009
+    gate: novel
+    severity: P1
+    rule: "简介承诺、伏笔回收、人物弧光和结局代价必须兑现。"
+  - id: IRON-010
+    gate: handoff
+    severity: P0
+    rule: "AI 视频改编只能消费已提交的事实和明确标记的 creative_fill。"
+

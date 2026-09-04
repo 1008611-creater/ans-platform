@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI视频一键资产生产"
+  short_description: "从剧本自动生成验收并登记可复用视频资产包的完整生产流程"
+  default_prompt: "Use $ai-video-asset-production to generate and validate the approved asset pack for this screenplay."

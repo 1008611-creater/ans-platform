@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.0",
+  "mode": "scene",
+  "title": "场景综合色彩分析卡",
+  "subtitle": "SCENE COLOR PALETTE · REAL-IMAGE SAMPLING",
+  "generated_at": "2026-07-24T21:45:42+08:00",
+  "scenes": [
+    {
+      "label": "场景 01 · sample-scene",
+      "source_path": "E:\\zhuomian\\色卡包\\_verify\\sample-scene.png",
+      "palette": [
+        {
+          "index": 1,
+          "hex": "#77604A",
+          "rgb": [
+            119,
+            96,
+            74
+          ],
+          "ratio": 33.9,
+          "luminance": 0.1278,
+          "saturation": 0.3782
+        },
+        {
+          "index": 2,
+          "hex": "#3D5364",
+          "rgb": [
+            61,
+            83,
+            100
+          ],
+          "ratio": 33.7,
+          "luminance": 0.081,
+          "saturation": 0.39
+        },
+        {
+          "index": 3,
+          "hex": "#D8D2C2",
+          "rgb": [
+            216,
+            210,
+            194
+          ],
+          "ratio": 29.7,
+          "luminance": 0.6459,
+          "saturation": 0.1019
+        },
+        {
+          "index": 4,
+          "hex": "#A44335",
+          "rgb": [
+            164,
+            67,
+            53
+          ],
+          "ratio": 2.7,
+          "luminance": 0.1216,
+          "saturation": 0.6768
+        },
+        {
+          "index": 5,
+          "hex": "#B97D6E",
+          "rgb": [
+            185,
+            125,
+            110
+          ],
+          "ratio": 0.0,
+          "luminance": 0.2611,
+          "saturation": 0.4054
+        },
+        {
+          "index": 6,
+          "hex": "#CDB4A5",
+          "rgb": [
+            205,
+            180,
+            165
+          ],
+          "ratio": 0.0,
+          "luminance": 0.4834,
+          "saturation": 0.1951
+        }
+      ]
+    }
+  ],
+  "template": "scene",
+  "canvas": {
+    "width": 2400,
+    "height": 1350
+  },
+  "render_boxes": [
+    {
+      "scene": 0,
+      "color": 0,
+      "hex": "#77604A",
+      "box": [
+        1166,
+        253,
+        572,
+        275
+      ]
+    },
+    {
+      "scene": 0,
+      "color": 1,
+      "hex": "#3D5364",
+      "box": [
+        1756,
+        253,
+        572,
+        275
+      ]
+    },
+    {
+      "scene": 0,
+      "color": 2,
+      "hex": "#D8D2C2",
+      "box": [
+        1166,
+        594,
+        572,
+        275
+      ]
+    },
+    {
+      "scene": 0,
+      "color": 3,
+      "hex": "#A44335",
+      "box": [
+        1756,
+        594,
+        572,
+        275
+      ]
+    },
+    {
+      "scene": 0,
+      "color": 4,
+      "hex": "#B97D6E",
+      "box": [
+        1166,
+        935,
+        572,
+        275
+      ]
+    },
+    {
+      "scene": 0,
+      "color": 5,
+      "hex": "#CDB4A5",
+      "box": [
+        1756,
+        935,
+        572,
+        275
+      ]
+    }
+  ]
+}

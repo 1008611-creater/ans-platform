@@ -1,0 +1,18 @@
+{
+  "schema_version": "prompt_failure_recovery.v1",
+  "library_id": "ai_video_prompt_failure_recovery",
+  "policy": "Each entry is a diagnosis and upstream recovery guide. It never authorizes local image editing, provider fallback, channel submission, or production promotion.",
+  "failures": [
+    {"id": "viewpoint_mismatch", "name_zh": "视角错误", "earliest_gate": "camera_relationship", "required_recovery": "回到权威事实卡，锁定机位、景别、可见手/视线和人物位置；整图或整段重做。", "qa_checks": ["第一/第三视角", "左右位置", "画面中心"]},
+    {"id": "screen_physics_mismatch", "name_zh": "屏幕或镜面物理错误", "earliest_gate": "space_master", "required_recovery": "重建空间地标和摄影机方向，删除不可能可见的屏幕内容；不得本地贴图修补。", "qa_checks": ["可见正面", "反射方向", "光源方向"]},
+    {"id": "emotion_mismatch", "name_zh": "情绪与剧情相反", "earliest_gate": "emotion_microreaction", "required_recovery": "从剧情情绪基线和触发事件重写可见反应，不增加泛化形容词。", "qa_checks": ["表情", "眼神", "姿态", "情绪转折"]},
+    {"id": "source_actor_identity_leak", "name_zh": "原片演员身份泄漏", "earliest_gate": "asset_identity", "required_recovery": "回到确认角色身份资产和中文职责，整图重做；历史原片人物不能继续作为生产参考。", "qa_checks": ["角色身份", "发型", "面部结构", "无原片演员特征"]},
+    {"id": "chinese_source_world_element", "name_zh": "中文或中国元素残留", "earliest_gate": "text_policy", "required_recovery": "明确本土化画面约束、文字策略和后期字幕职责，整图重做。", "qa_checks": ["无汉字", "无中文 UI", "环境本土化"]},
+    {"id": "text_strategy_mismatch", "name_zh": "文字策略错误或乱码", "earliest_gate": "text_policy", "required_recovery": "决定可读短语、模糊纹理、留白或后期叠字；不要要求模型生成长文案。", "qa_checks": ["可读性", "语言", "无乱码", "后期职责"]},
+    {"id": "hand_action_mismatch", "name_zh": "手部动作或交接错误", "earliest_gate": "hand_prop_handoff", "required_recovery": "重新绑定交付者、接收者、道具、手部路径和画面中心。", "qa_checks": ["谁给谁", "双手", "道具", "动作完成"]},
+    {"id": "prop_mismatch", "name_zh": "关键道具错误", "earliest_gate": "hand_prop_handoff", "required_recovery": "创建或确认独立关键道具职责，禁止仅靠一段 Prompt 假定模型会还原。", "qa_checks": ["道具身份", "材质", "位置", "连续性"]},
+    {"id": "continuity_break", "name_zh": "连续性断裂", "earliest_gate": "continuity_handoff", "required_recovery": "重建 continuity_in/out，使用已验收首帧或尾帧作为外观锚点，重新生成受影响镜头。", "qa_checks": ["身份", "服装", "空间", "道具", "动作承接"]},
+    {"id": "generic_ai_look", "name_zh": "泛化 AI 感", "earliest_gate": "asset_identity", "required_recovery": "补足可见身份、材质、光线、镜头和状态事实；不要叠加长负面词。", "qa_checks": ["材质", "皮肤/衣料", "光线动机", "镜头距离"]},
+    {"id": "wrong_reference_submission", "name_zh": "错参考图进入视频任务", "earliest_gate": "prompt_routing_contract", "required_recovery": "拒绝该输出，回到已确认路径/SHA/中文职责和 locked prompt，不得续写或交付错误输出。", "qa_checks": ["路径", "SHA", "参考职责", "prompt readback"]}
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Website Quality Router"
+  short_description: "Routes website quality audits to champion skills"
+  default_prompt: "Use $website-quality-router audit and improve this website with the right specialist skills."

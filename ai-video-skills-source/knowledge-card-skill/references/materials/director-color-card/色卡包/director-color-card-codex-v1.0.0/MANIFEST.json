@@ -1,0 +1,16 @@
+{
+  "package": "director-color-card-codex-v1.0.0",
+  "version": "1.0.0",
+  "skill_name": "director-color-card",
+  "built_at": "2026-07-24T21:45:00+08:00",
+  "director_cards": 175,
+  "seedance_prompts": 175,
+  "contains_film_stills": false,
+  "install_target": "$CODEX_HOME/skills/director-color-card or ~/.codex/skills/director-color-card",
+  "entrypoints": {
+    "codex": "$director-color-card 小津安二郎，只给我可直接复制到 Seedance 2.0 的色值 Prompt",
+    "prompt_library": "references/175位导演-Seedance2.0色值Prompt全集.md",
+    "master_prompt": "references/llm-director-color-card-master-prompt.md"
+  },
+  "protection_note": "Local Codex skills must expose usable instructions/data to the agent. Strong anti-scraping requires a remote API; this local package uses minimal data exposure and a final text watermark."
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Seedance2 Contest"
+  short_description: "Route an all-AI Seedance2 contest film workflow"
+  default_prompt: "Use $seedance2-a-contest-orchestrator to route the next stage of my all-AI Image2 plus Seedance2 contest film."

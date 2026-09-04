@@ -1,0 +1,4 @@
+interface:
+  display_name: "Krill Image2"
+  short_description: "Krill reference-image generation"
+  default_prompt: "Use $krill-image2 to create an Image2 result from a local reference image."

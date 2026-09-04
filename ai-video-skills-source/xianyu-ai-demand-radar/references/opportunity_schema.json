@@ -1,0 +1,34 @@
+{
+  "opportunities": [
+    {
+      "name": "Hermes Agent 1Panel/VPS deployment",
+      "target_buyer": "AI beginner who wants a personal agent but cannot deploy it",
+      "search_terms": ["Hermes Agent 部署", "赫妹 Agent", "AI Agent 远程安装"],
+      "evidence": [
+        {
+          "url": "https://example.com",
+          "platform": "example",
+          "date": "2026-05-21",
+          "signal": "views/comments/price/wants",
+          "pain": "Buyer cannot install or configure the tool"
+        }
+      ],
+      "scores": {
+        "heat": 5,
+        "pain": 5,
+        "asset_fit": 4,
+        "reuse": 4,
+        "price_power": 5,
+        "risk": 2
+      },
+      "offer_type": "remote_deployment",
+      "first_title": "赫妹Hermes Agent远程部署｜1Panel/VPS/Telegram配置",
+      "price_ladder": ["19 diagnosis", "99 basic setup", "199 workflow setup"],
+      "deliverables": ["environment check", "deployment", "model/API setup guide", "common issue sheet"],
+      "buyer_inputs": ["computer/VPS info", "tool account", "buyer-entered API key"],
+      "image_angles": ["cover hook", "setup flow", "before/after pain", "package ladder"],
+      "risk_wording": "API Key 由买家自行输入，不代管密钥；不同机器配置会影响体验。",
+      "next_asset_gap": "Need screenshots or mockups of setup process"
+    }
+  ]
+}

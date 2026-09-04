@@ -1,0 +1,5 @@
+interface:
+  display_name: "AI视频小说创作总控 v1"
+  short_description: "从小说立项、写章、续写与审查，到AI短剧改编前的事实交接总控"
+  default_prompt: "使用 $ai-video-novel-creation-v1 创建一部可持续续写并能进入AI视频改编的小说。"
+

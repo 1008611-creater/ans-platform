@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "purpose": "预先准备但尚未发布或运行验证的 MiniMax H3 多图+音频工作流候选；不得作为正式 API 路由。",
+  "evidence_policy": {
+    "status": "workflow_imported_pending_api_publish",
+    "required_before_routing": ["api_page", "dry_run", "runtime_verified"],
+    "billing": "only accept consumeCoins > 0 and consumeMoney empty or 0 after an explicitly authorized runtime task"
+  },
+  "candidates": [
+    {"capability":"MiniMax H3 六图+音频参考生视频","workflow_id":"2084717228196458497","workflow_url":"https://www.runninghub.cn/workflow/2084717228196458497?source=workspace","reference_images":6,"audio_inputs":1,"source":"四图+音频候选追加 2 条 H3 image-reference 链","status":"workflow_imported_pending_api_publish"},
+    {"capability":"MiniMax H3 七图+音频参考生视频","workflow_id":"2084717440163995649","workflow_url":"https://www.runninghub.cn/workflow/2084717440163995649?source=workspace","reference_images":7,"audio_inputs":1,"source":"四图+音频候选追加 3 条 H3 image-reference 链","status":"workflow_imported_pending_api_publish"},
+    {"capability":"MiniMax H3 八图+音频参考生视频","workflow_id":"2084717455028613121","workflow_url":"https://www.runninghub.cn/workflow/2084717455028613121?source=workspace","reference_images":8,"audio_inputs":1,"source":"四图+音频候选追加 4 条 H3 image-reference 链","status":"workflow_imported_pending_api_publish"},
+    {"capability":"MiniMax H3 九图+音频参考生视频","workflow_id":"2084717472632102913","workflow_url":"https://www.runninghub.cn/workflow/2084717472632102913?source=workspace","reference_images":9,"audio_inputs":1,"source":"四图+音频候选追加 5 条 H3 image-reference 链","status":"workflow_imported_pending_api_publish"}
+  ]
+}

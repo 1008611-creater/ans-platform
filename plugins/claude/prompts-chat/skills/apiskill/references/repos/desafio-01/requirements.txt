@@ -1,0 +1,11 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+playwright==1.49.1
+python-dotenv==1.0.1
+pyjwt[crypto]==2.10.1
+python-multipart==0.0.20
+# Parte 2 — Hyperautomation (Google Drive + Sheets)
+google-api-python-client==2.159.0
+google-auth==2.37.0
