@@ -28,7 +28,7 @@ interface StructuredDataProps {
 
 export async function StructuredData({ type, data }: StructuredDataProps) {
   const config = await getConfig();
-  const baseUrl = process.env.NEXTAUTH_URL || "https://prompts.chat";
+  const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun";
 
   const schemas: Record<string, object | null> = {
     organization: {
@@ -44,9 +44,7 @@ export async function StructuredData({ type, data }: StructuredDataProps) {
       },
       description: config.branding.description,
       sameAs: [
-        "https://github.com/f/prompts.chat",
-        "https://x.com/promptschat",
-        "https://x.com/fkadev",
+        "https://github.com/1008611-creater/ans-platform",
       ],
     },
     website: {

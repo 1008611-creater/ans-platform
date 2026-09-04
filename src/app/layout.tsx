@@ -107,7 +107,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: process.env.NEXTAUTH_URL || "https://prompts.chat",
+    canonical: process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun",
   },
 };
 
