@@ -1,0 +1,4 @@
+interface:
+  display_name: "Seedance2 Commerce Video"
+  short_description: "Seedance2 prompts for commerce IP videos"
+  default_prompt: "按 Seedance2 带货 IP 视频方法，基于我的参考图生成 15 秒视频脚本、参考图规划和可直接复制的提示词。"

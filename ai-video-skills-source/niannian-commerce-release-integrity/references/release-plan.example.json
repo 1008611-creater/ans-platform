@@ -1,0 +1,50 @@
+{
+  "target": {
+    "domain": "https://dh.cauai.fun",
+    "product": "niannian-commerce"
+  },
+  "onlineBaseline": {
+    "releaseId": "haika-web-20260804-107",
+    "sourceRoot": "C:\\verified-source\\dh-cauai-fun",
+    "publicUrl": "https://dh.cauai.fun",
+    "capturedAt": "2026-08-04T12:00:00+08:00",
+    "assets": [
+      {
+        "path": "/app/public/workspace-v206.js",
+        "url": "https://dh.cauai.fun/assets/workspace-v206.js?v=haika-web-20260804-107",
+        "sha256": "replace-with-real-sha256"
+      }
+    ]
+  },
+  "candidate": {
+    "id": "haika-template-copy-cleanup-20260804-108",
+    "parentReleaseId": "haika-web-20260804-107",
+    "sourceRoot": "C:\\verified-source\\dh-cauai-fun\\release-candidates\\haika-template-copy-cleanup-20260804-108",
+    "scope": "Remove two template-page explanation strings.",
+    "allowedPaths": [
+      "app.compat.js",
+      "Dockerfile",
+      "MANIFEST.json"
+    ],
+    "protectedSurfaces": [
+      "/workspace",
+      "/templates",
+      "/pricing",
+      "/billing"
+    ]
+  },
+  "deployment": {
+    "composeProject": "kidswear-haika",
+    "service": "web",
+    "image": "kidswear-studio-web:haika-template-copy-cleanup-20260804-108",
+    "forbidBindMounts": true
+  },
+  "verification": {
+    "desktop": "1280x720",
+    "mobile": "390x844",
+    "userFlows": [
+      "template-card-to-workbench",
+      "workbench-media-playback"
+    ]
+  }
+}

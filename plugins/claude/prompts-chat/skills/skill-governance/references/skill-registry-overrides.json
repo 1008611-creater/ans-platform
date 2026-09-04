@@ -1,0 +1,763 @@
+{
+  "schema_version": 2,
+  "status_definitions": {
+    "mandatory": "Required by an explicit system, user, project, plugin, or task-type rule.",
+    "user_designated": "Preferred by an explicit durable user decision; this does not imply broad empirical scoring.",
+    "evidence_backed_champion": "Meets the local promotion threshold with linked real-use records.",
+    "provisional_default": "Current default route pending enough real-use evidence for champion promotion.",
+    "primary": "Default active specialist for its family.",
+    "supporting": "Active only for a distinct supporting phase or artifact.",
+    "candidate": "Installed and available, but requires real-use scoring before promotion or demotion.",
+    "unassessed": "Discoverable but not yet deliberately evaluated for automatic routing; keep available for explicit or unmistakably narrow work.",
+    "explicit_only": "Use only when named or when its narrow method is unambiguously required.",
+    "archived": "Kept outside active discovery and available for reversible restoration.",
+    "unavailable_legacy": "Historical route with no currently discoverable implementation.",
+    "template_asset": "Factory source asset that must not be discovered as an active Skill.",
+    "example_fixture": "Validation fixture that must not be discovered as an active Skill."
+  },
+  "skills": {
+    "ai-briefing": { "family": "web-research", "status": "candidate", "notes": "External AI/content briefing method installed for explicit, source-backed digests and monitored-source briefs. It is a candidate complement to jina-search and WeChat extraction, not an automatic delivery, scheduling, Provider, MCP, or account-operation route." },
+    "i-have-adhd": { "family": "governance", "status": "explicit_only", "notes": "Global ADHD-friendly output-style Skill installed from the enabled i-have-adhd plugin. The global output contract applies across projects; invoke the Skill explicitly to keep its session-persistent mode active." },
+    "miora-seedance2-channel": { "family": "ai-video-channels", "status": "explicit_only", "notes": "Miora S2 Video provider execution route. Require a locked task specification, current channel authorization, real-time credit readback, explicit submission authorization, task-bound download, media probe, ledger, and content QA." },
+    "mx-shell-zombie-scavenger-research": { "family": "ai-video-production", "status": "explicit_only", "notes": "External-practice research route for explicit Mx-Shell/Zombie Scavenger study; not a default production executor." },
+    "Presentations": { "family": "presentations", "status": "candidate", "notes": "Enabled plugin presentation route retained as a candidate alongside ppt-master until real comparative deck work supports a default change." },
+    "realistic-commerce-video-replication": { "family": "commerce-video-method", "status": "primary", "notes": "Primary realistic commerce-video replication and quality method route, distinct from source-video redraw routing and provider execution." },
+    "template-creator": { "family": "governance", "status": "explicit_only", "notes": "Creates or updates reusable artifact-template Skills; require an explicit template/Skill modification request." },
+    "action-transfer-commerce-site": { "family": "project-specific-web", "status": "explicit_only", "notes": "Project-specific kidswear/action-transfer web system with deployment, billing, admin, and release paths. Require explicit project intent; deployment and external writes remain separately authorized." },
+    "ai-film-champion-method": { "family": "ai-video-production", "status": "supporting", "notes": "Narrative-film quality/direction method layer that complements the user-designated AI-video fundamentals method." },
+    "ai-production-system-factory": { "family": "production-governance", "status": "primary", "notes": "Reusable production-system architecture route. It does not authorize creating provider work, deploying systems, or mutating a project without explicit scope." },
+    "ai-video-client-outreach": { "family": "client-outreach", "status": "explicit_only", "notes": "Can lead to cold email, DM, or follow-up. Require explicit external outreach intent and preserve per-message confirmation." },
+    "ai-video-portfolio-site": { "family": "project-specific-web", "status": "candidate", "notes": "Narrow AI-video portfolio website route retained pending real-use evidence; use website production governance for general implementation and launch." },
+    "ai-video-storyboard": { "family": "ai-video-production", "status": "candidate", "notes": "Generic multi-shot planning route retained as a candidate behind the governed storyboard/AI-video routes." },
+    "automotive-commerce-redraw-video": { "family": "commerce-video-redraw", "status": "explicit_only", "notes": "Automated automotive redraw path can execute images, video channels, and account operations. Require an explicit project/execution request and selected provider contract." },
+    "cliproxy-residential-ip": { "family": "infrastructure-operations", "status": "archived", "notes": "No discoverable implementation or real-use evidence; proxy account/configuration route is retained only for explicit legacy recovery and is never an automatic provider workaround." },
+    "commerce-video-redraw-router": { "family": "commerce-video-redraw", "status": "primary", "notes": "Primary product-commerce redraw classification route. It binds product truth and hands off to selected execution/QA without submitting provider work itself." },
+    "director-story-audit": { "family": "ai-video-production", "status": "supporting", "notes": "Narrative story/beat audit before image or video production." },
+    "dongchedi-automotive-commerce-redraw": { "family": "commerce-video-redraw", "status": "supporting", "notes": "Dongchedi-specific routing specialization under the primary commerce-video redraw route." },
+    "dynamic-watermark-removal": { "family": "video-postproduction", "status": "explicit_only", "notes": "Authorized watermark-removal workflow; require explicit rights/ownership scope for the exact media before processing." },
+    "embedded-captions": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused with the HyperFrames family because the user rarely uses it. Keep installed and invoke only for an explicit HyperFrames caption request." },
+    "enhance-agent-prompts": { "family": "prompt-methods", "status": "supporting", "notes": "Agent prompt/frontmatter/tool-restriction improvement route, separate from end-user prompt compilation." },
+    "excel-live-control": { "family": "spreadsheets", "status": "explicit_only", "notes": "Controls an open live Excel session. Require an explicit live-workbook request; do not use for standalone files." },
+    "faceless-explainer": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused with the HyperFrames family. Invoke only when the user explicitly requests a HyperFrames faceless explainer." },
+    "general-video": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused as a HyperFrames-only fallback; it must not auto-route ordinary video work." },
+    "hyperframes": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused family entry. Keep installed for rollback and invoke only when the user explicitly names HyperFrames or requests an existing HyperFrames project." },
+    "hyperframes-animation": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused HyperFrames motion implementation reference; do not auto-load for ordinary UI or AI-video motion tasks." },
+    "hyperframes-cli": { "family": "hyperframes-video", "status": "explicit_only", "notes": "HyperFrames CLI can render, publish, deploy Lambda, or change project environment. Require explicit command/execution intent." },
+    "hyperframes-core": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused composition contract; invoke only inside an explicitly selected HyperFrames task." },
+    "hyperframes-creative": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused creative-direction layer; invoke only inside an explicitly selected HyperFrames task." },
+    "hyperframes-media": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused legacy route retained for rollback. Upstream retired it into media-use at v0.7.39; never auto-route or promote it. Provider/media generation remains separately authorized." },
+    "hyperframes-registry": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Installs or wires registry blocks/components into a project. Require explicit project modification intent." },
+    "ip-video-topic-selection": { "family": "ai-video-production", "status": "supporting", "notes": "Topic-selection phase for the user's information-gap AI video IP." },
+    "media-use": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused HyperFrames media layer. Invoke only inside an explicit HyperFrames composition; provider retrieval or generation remains separately authorized." },
+    "motion-graphics": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused HyperFrames motion-graphics workflow; it must not auto-route ordinary video or UI tasks." },
+    "music-to-video": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused HyperFrames beat-synced workflow; invoke only when the user explicitly requests this route." },
+    "navos-seedance2-channel": { "family": "ai-video-channels", "status": "explicit_only", "notes": "Navos provider execution with proxy/login/upload/generation/download; require explicit channel intent and provider authorization." },
+    "plugin-creator": { "family": "governance", "status": "explicit_only", "notes": "Creates or modifies Codex plugins and marketplace metadata; require explicit plugin-development intent." },
+    "post-coding-review": { "family": "governance", "status": "mandatory", "notes": "Mandatory review after code, script, Skill, automation, or pipeline modification." },
+    "ppt-master": { "family": "presentations", "status": "candidate", "notes": "Source-to-PPT generation route retained pending a real editable-PPTX delivery and open/render verification; it is not a default file route yet." },
+    "pr-to-video": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused HyperFrames PR-video workflow; invoke only when explicitly requested." },
+    "product-launch-video": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused HyperFrames launch-video workflow; it must not auto-route website, marketing, or AI-video project work." },
+    "relic-collector-ip-system": { "family": "ai-video-production", "status": "supporting", "notes": "Original-IP world/canon/project-memory route, separate from provider execution." },
+    "remotion-to-hyperframes": { "family": "hyperframes-video", "status": "explicit_only", "notes": "One-way Remotion-to-HyperFrames migration route; require an explicit migration request." },
+    "runninghub-fruit-commerce-video": { "family": "ai-video-channels", "status": "explicit_only", "notes": "RunningHub commerce-video provider workflow can execute remote generation; require explicit workflow and execution intent." },
+    "screenshot": { "family": "browser-verification", "status": "explicit_only", "notes": "OS-level screenshot capture route only when the user explicitly requests a desktop/system capture or browser tools cannot provide it." },
+    "security-best-practices": { "family": "security", "status": "explicit_only", "notes": "Security best-practices review route only for an explicit security request." },
+    "security-threat-model": { "family": "security", "status": "explicit_only", "notes": "Threat-model route only for an explicit repository/security modeling request." },
+    "seedance2-a-contest-orchestrator": { "family": "ai-video-production", "status": "candidate", "notes": "Contest-film orchestration route retained pending real-use evidence; provider execution stays separately authorized." },
+    "seedance2-commerce-video": { "family": "commerce-video-redraw", "status": "supporting", "notes": "Seedance2 commerce prompt/asset preparation layer; it does not submit a provider task." },
+    "skill-installer": { "family": "governance", "status": "explicit_only", "notes": "Installs external or curated Skills into the active environment; require explicit installation intent." },
+    "slideshow": { "family": "hyperframes-video", "status": "explicit_only", "notes": "HyperFrames slideshow route requires an explicit slideshow/deck authoring request." },
+    "storyboard-director": { "family": "ai-video-production", "status": "supporting", "notes": "Script-to-storyboard direction and audit phase before video generation." },
+    "system-prompts": { "family": "prompt-methods", "status": "supporting", "notes": "System prompt, tool-documentation, and agent-definition authoring route." },
+    "talking-head-recut": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused HyperFrames talking-head packaging workflow; invoke only when explicitly requested." },
+    "tensor-canvas-direct-node": { "family": "ai-video-channels", "status": "explicit_only", "notes": "Tensor Canvas execution can upload assets, write canvas state, and submit paid generation; require explicit channel/cost authorization." },
+    "tk-subtitles": { "family": "video-postproduction", "status": "primary", "notes": "Primary TikTok/CapCut-style burned-in subtitle production route." },
+    "tmlab-video-channel": { "family": "ai-video-channels", "status": "explicit_only", "notes": "TMLab provider execution can upload, generate, poll, and download; require explicit provider and execution intent." },
+    "ux-heuristics": { "family": "website-quality", "status": "supporting", "notes": "Usability/heuristic quality vertical selected by website-quality-router when usability is the problem." },
+    "ux-writing": { "family": "frontend-design", "status": "supporting", "notes": "Interface microcopy/accessibility-writing vertical, distinct from marketing copy." },
+    "visualize": { "family": "interactive-visualization", "status": "primary", "notes": "Primary interactive visualization/simulator tool route for explicit visualization requests." },
+    "website-to-video": { "family": "hyperframes-video", "status": "explicit_only", "notes": "Paused legacy website-tour route retained for rollback. Upstream folded it into product-launch-video at v0.7.59; never auto-route or promote it." },
+    "wizstar-bitbrowser": { "family": "infrastructure-operations", "status": "explicit_only", "notes": "Authenticated BitBrowser/Wizstar operation route. Require explicit account/browser operation intent." },
+    "ciwei-prompt-method": { "family": "prompt-methods", "status": "explicit_only", "notes": "Narrow Ciwei/super-i prompt-method reference; use only when explicitly requested or when its method is unambiguously selected." },
+    "copywriting": { "family": "marketing-copy", "status": "primary", "notes": "Primary persuasive website/product copy route after product facts and positioning are known." },
+    "customer-research": { "family": "product-marketing", "status": "supporting", "notes": "Customer-evidence research phase. Use when facts are missing; it does not replace positioning or copywriting." },
+    "free-tools": { "family": "product-marketing", "status": "candidate", "notes": "Narrow engineering-as-marketing route retained pending real-use evidence." },
+    "gpt-image": { "family": "image-generation", "status": "explicit_only", "notes": "Direct GPT Image generation/edit route. Require an explicit image-generation or image-edit request and obey image-asset authorization boundaries." },
+    "gpt-image-2": { "family": "image-generation", "status": "candidate", "notes": "Alternative GPT Image 2 execution route retained as a candidate pending real comparative tasks." },
+    "hermes-canvas-image2": { "family": "image-generation", "status": "explicit_only", "notes": "Hermes Canvas image execution can create cloud nodes, upload/import assets, and save cloud projects. Require explicit channel/execution intent." },
+    "image2-boundary-lab": { "family": "image-generation", "status": "candidate", "notes": "Capability research and taxonomy route, not an image-generation executor." },
+    "image2-narrative-firstframe": { "family": "ai-video-production", "status": "supporting", "notes": "Narrative first-frame/asset planning route. It does not authorize image or video provider submission." },
+    "imagegen": { "family": "image-generation", "status": "supporting", "notes": "System image generation/editing capability guidance. Choose a concrete approved generation path before creating an asset." },
+    "icon-resource-routing": { "family": "frontend-design", "status": "explicit_only", "notes": "Verified icon and low-frequency visual-resource selection route. Use only when a product or website needs a concrete resource decision; it does not own general UI implementation." },
+    "img2threejs": { "family": "game-development", "status": "explicit_only", "notes": "Image-to-procedural Three.js reconstruction route. Use only for an explicit 3D reconstruction or staged model-build request; it is not a generic image-generation route." },
+    "jobs-to-be-done": { "family": "product-marketing", "status": "supporting", "notes": "Jobs/switching-behavior research complement when that framing is materially needed." },
+    "krill-image2": { "family": "image-generation", "status": "explicit_only", "notes": "Krill remote Image2 API execution route; require explicit channel and image-generation/edit intent." },
+    "obviously-awesome": { "family": "positioning", "status": "primary", "notes": "Primary competitive-alternatives and category-positioning route." },
+    "oiioii-canvas-workflow": { "family": "image-generation", "status": "explicit_only", "notes": "OiiOii canvas/account/upload workflow; require explicit OiiOii operation intent and do not infer account actions." },
+    "oocimage2skill": { "family": "image-generation", "status": "explicit_only", "notes": "OOC relay/Image2 integration or execution route; require explicit OOC or project integration intent." },
+    "paywalls": { "family": "pricing", "status": "supporting", "notes": "In-product upgrade/paywall experience vertical after pricing and product constraints are known." },
+    "programmatic-seo": { "family": "website-quality", "status": "supporting", "notes": "SEO-at-scale planning/implementation vertical; use only for explicit templated page-scale work." },
+    "prompt-engineering": { "family": "prompt-methods", "status": "supporting", "notes": "Generic prompting-method reference. For AI video prompt compilation, prompt-skill-router consumes authoritative route facts first." },
+    "prompt-skill-router": { "family": "prompt-methods", "status": "primary", "notes": "Primary prompt-task router and AI-video prompt compiler. It compiles authority facts but never grants provider submission authorization." },
+    "runninghub-canvas-fallback": { "family": "image-generation", "status": "explicit_only", "notes": "Multi-channel image execution/fallback route; do not invoke from prompt drafting or treat fallback availability as submission authorization." },
+    "runninghub-image2-image": { "family": "image-generation", "status": "explicit_only", "notes": "RunningHub reference-image execution route that submits, polls, and downloads remote jobs." },
+    "runninghub-image2-text": { "family": "image-generation", "status": "explicit_only", "notes": "RunningHub text-to-image execution route that submits, polls, and downloads remote jobs." },
+    "stop-slop": { "family": "marketing-copy", "status": "supporting", "notes": "Prose de-slopping/editing pass; it does not establish product facts, positioning, or conversion strategy." },
+    "csv-pipeline": { "family": "files-data", "status": "supporting", "notes": "CSV/JSON transformation and analysis phase; use xlsx only when workbook-specific formatting or formulas matter." },
+    "doc": { "family": "documents", "status": "supporting", "notes": "Focused DOCX formatting/render-review route; use docx for advanced document editing and tracked changes." },
+    "documents": { "family": "documents", "status": "candidate", "notes": "Enabled plugin document artifact route retained as a candidate pending real comparative DOCX tasks." },
+    "docx": { "family": "documents", "status": "primary", "notes": "Primary advanced DOCX creation/editing route, including tracked changes and formatting preservation." },
+    "email-drafter": { "family": "correspondence", "status": "supporting", "notes": "Drafting-only email route. It does not send external email." },
+    "email-otp-auth": { "family": "web-auth", "status": "primary", "notes": "Email-code authentication implementation/audit route for web applications; mail delivery and production rollout remain separate authorization boundaries." },
+    "evidence-event-reducer": { "family": "production-governance", "status": "supporting", "notes": "Evidence-log and reducer governance for production pipelines; it does not create real provider, delivery, or acceptance evidence." },
+    "exam-cram-docx-router": { "family": "exam-documents", "status": "primary", "notes": "Specialized exam-prep document production route, separate from ordinary DOCX editing." },
+    "feishu-docx": { "family": "feishu-operations", "status": "explicit_only", "notes": "Cloud document, drive, wiki, sheet, and bitable operation route. Use only when the user explicitly names Feishu/Lark work; do not infer cloud writes from a local document request." },
+    "feishu-inout": { "family": "feishu-operations", "status": "explicit_only", "notes": "Can write cloud documents and send messages/manage meetings. Preserve an explicit user action and any tool-level confirmation for external writes." },
+    "hermes-codex-bridge": { "family": "cross-system-operations", "status": "archived", "notes": "Superseded by native thread/cross-device coordination paths; no discoverable implementation or real-use evidence; retained only for explicit legacy recovery." },
+    "hermes-employee-product-router": { "family": "hermes-productization", "status": "user_designated", "notes": "User-designated growth-first route: turn privacy-safe Hermes usage evidence into effect dashboards and unpublished Chinese Xiaohongshu case candidates, then deliver an isolated customer instance through one operator action plus one required QR/authorization step. Publication, credentials, pricing and protected external actions keep their own gates." },
+    "image-ocr": { "family": "files-data", "status": "supporting", "notes": "Read-only extraction phase for image-based text; use only when source text is rasterized." },
+    "json-canvas": { "family": "knowledge-base", "status": "primary", "notes": "Primary structured .canvas artifact route, separate from Markdown note editing." },
+    "master-control-router": { "family": "cross-project-governance", "status": "primary", "notes": "Cross-project status, priority, thread coordination, repeated-rework recovery, proportional gates, and evidence-led technical route selection. It does not expand authority for protected external actions." },
+    "portfolio-harness-router": { "family": "cross-project-governance", "status": "user_designated", "notes": "User-designated Harness entry for substantial NianNian website/video-workbench and Kidswear Studio tasks. It binds one owner, one primary route, at most one distinct support route, durable checkpoints, blockers, cost gates, and evidence-based completion without authorizing Provider, deployment, SSH, sending, or spend." },
+    "website-metadata-share-audit": { "family": "website-quality", "status": "supporting", "notes": "Read-only supporting route for explicit public release/share/metadata audits. One integrated runtime audit of ai.cauai.fun verified missing canonical/Open Graph fields and an invalid manifest response; it never authorizes production edits, deployment, login, or external sending." },
+    "postgres-query-index-audit": { "family": "production-governance", "status": "candidate", "notes": "Internal read-only candidate for matching real PostgreSQL/Prisma queries to indexes, pool budgets, and transaction boundaries. Require query-shape evidence and representative EXPLAIN evidence before claiming performance gains; it never authorizes database connections, migrations, DDL, index writes, or production changes." },
+    "fixing-accessibility": { "family": "website-quality", "status": "candidate", "notes": "External ui-skills accessibility repair candidate. Use only as a narrow supplement selected by website-quality-router; it must not replace the project component library or bypass browser evidence." },
+    "improve-ui": { "family": "frontend", "status": "candidate", "notes": "External ui-skills visual improvement candidate. Require rendered evidence and preserve project design identity; it is not a default replacement for frontend-design or impeccable." },
+    "ui-skills-root": { "family": "frontend", "status": "explicit_only", "notes": "External ui-skills package-level reference. Use only when explicitly reviewing or comparing that package; do not load it as an automatic production UI route." },
+    "gui-control-router": { "family": "live-gui-control", "status": "primary", "notes": "Primary live-interface surface selector. It chooses connector/API/CLI, Browser/Chrome, Playwright/Electron, Computer Use/UIA, then visual-coordinate fallback." },
+    "cdp-extension-router": { "family": "live-gui-control", "status": "supporting", "notes": "Narrow Chrome/Edge extension runtime, storage, download, and replay contract under the GUI/Chrome route." },
+    "control-chrome": { "family": "live-gui-control", "status": "supporting", "notes": "Official Chrome plugin route for named Chrome tasks, existing tabs, signed-in state, DOM/ARIA, and CDP." },
+    "computer-use": { "family": "live-gui-control", "status": "supporting", "notes": "Official Windows desktop route using UI Automation, window capture, and verified SendInput fallback." },
+    "commerce-production-harness": { "family": "cross-project-governance", "status": "user_designated", "notes": "User-designated commerce production Harness below portfolio-harness-router. It coordinates C00-C18 ownership, checkpoints, evidence, idempotency, recovery, and safe delegation across commerce projects without granting Provider submit, spend, deployment, or production authority." },
+    "kidswear-action-transfer-harness": { "family": "cross-project-governance", "status": "user_designated", "notes": "User-designated project Harness for Kidswear action-transfer K00-K18 coordination. It runs below portfolio-harness-router and above specialist implementation routes, preserving one owner, checkpoints, evidence, cost, Provider, deployment, and user-confirmation gates without authorizing external effects." },
+    "kidswear-firstframe-prompt-director": { "family": "kidswear-ai-video", "status": "primary", "notes": "Project-specific first-frame prompt direction route for kidswear production; provider submission remains separately authorized." },
+    "niannian-delivery-control": { "family": "niannian-production", "status": "primary", "notes": "NianNian delivery acceptance and evidence-control route; structural readiness does not imply real delivery." },
+    "niannian-redraw-harness": { "family": "niannian-production", "status": "explicit_only", "notes": "Project-local NianNian redraw control route. Keep it behind Portfolio Harness ownership, phase, evidence, Provider, and cost gates; do not auto-trigger it as a parallel owner." },
+    "obsidian-bases": { "family": "knowledge-base", "status": "supporting", "notes": "Obsidian Bases-specific view/formula route." },
+    "obsidian-cli": { "family": "knowledge-base", "status": "primary", "notes": "Primary Obsidian vault operation route when command-line vault interaction is explicitly requested." },
+    "obsidian-markdown": { "family": "knowledge-base", "status": "supporting", "notes": "Obsidian-flavored Markdown authoring/editing route." },
+    "obsidian-showcase-vault": { "family": "knowledge-base", "status": "candidate", "notes": "Narrow vault showcase/knowledge-base maintenance route pending real-use evidence." },
+    "server-fleet-ssh-router": { "family": "infrastructure-operations", "status": "explicit_only", "notes": "Server and SSH route may connect to and operate remote hosts. Require explicit server-operation intent and preserve host-specific confirmation boundaries." },
+    "Spreadsheets": { "family": "spreadsheets", "status": "candidate", "notes": "Enabled plugin workbook route retained as a candidate alongside the local xlsx primary until real comparative work supports a change." },
+    "web-scraper": { "family": "web-research", "status": "supporting", "notes": "Structured or dynamic-page extraction complement when Jina is insufficient; do not use as the generic first research route." },
+    "wechat-article-extractor": { "family": "web-research", "status": "supporting", "notes": "WeChat public-article extraction fallback for reading and evidence preservation; it does not send messages." },
+    "wechat-redraw-word-sender": { "family": "cross-system-operations", "status": "explicit_only", "notes": "External WeChat file/message delivery route. Require an explicit recipient/send request and verify the exact outgoing artifact." },
+    "win-mac-codex-bridge": { "family": "cross-system-operations", "status": "explicit_only", "notes": "Cross-device AppServer/SSH/relay operation route. Require explicit bridge or remote-dispatch intent." },
+    "xlsx": { "family": "spreadsheets", "status": "primary", "notes": "Primary local spreadsheet creation, editing, analysis, formula, and formatting route." },
+    "analytics": { "family": "website-quality", "status": "supporting", "notes": "Measurement and tracking vertical; it does not authorize third-party tracking changes without explicit implementation intent." },
+    "commercial-website-program-router": { "family": "website-production", "status": "supporting", "notes": "Program-level discovery, strategy, and controlled-launch gates for substantial commercial work; hands production implementation to website-product-router." },
+    "cro": { "family": "website-quality", "status": "primary", "notes": "Primary conversion-improvement vertical for an explicit CRO request; it does not replace general visual/product routing." },
+    "cro-methodology": { "family": "website-quality", "status": "supporting", "notes": "Experiment and evidence-design complement for explicit conversion diagnosis." },
+    "editorial-style-website": { "family": "frontend-design", "status": "candidate", "notes": "Narrow editorial visual-language route retained for explicit matching briefs pending real-use evidence." },
+    "figma": { "family": "figma-workflow", "status": "supporting", "notes": "Figma context and design-to-code support. Any use_figma tool call still requires figma-use first." },
+    "figma-product-mcp-router": { "family": "figma-workflow", "status": "user_designated", "notes": "User-designated global entry route for Figma Education Professional: official OAuth MCP first; route Make, Sites, Dev Mode, native Figma writes, design systems, design-to-code, and game UI through the narrow official specialist. Verify live availability before spending Make points or publishing Sites." },
+    "generate-project-plan": { "family": "figma-workflow", "status": "explicit_only", "notes": "Official Figma workflow skill for a PRD-to-FigJam project plan with per-section user confirmation. Use only when the user explicitly requests this interactive planning artifact; it is not a default UI-production route." },
+    "gamedev-project-router": { "family": "game-development", "status": "user_designated", "notes": "User-designated global entry route for AI-assisted game production. Keeps Figma, Image2, Blender, Godot, audio, Android, GitHub experiments, provenance, and delivery gates in one controlled chain." },
+    "gamedev-godot-router": { "family": "game-development", "status": "supporting", "notes": "Project-compatible Godot 4.7.1 adapter over the audited upstream Godot and game-development Skills. Use only for Godot implementation or validation phases." },
+    "gamedev-blender-asset-router": { "family": "game-development", "status": "supporting", "notes": "Formal Blender 5.2 LTS asset-source adapter. External AI asset pipelines remain isolated experiments until provenance, license, output, and Godot readback pass." },
+    "gamedev-audio-router": { "family": "game-development", "status": "supporting", "notes": "Routes AI music, short syllables, voice design, SFX, audio rights, and Godot audio integration. Provider generation is not a license or shipped artifact." },
+    "gamedev-quality-router": { "family": "game-development", "status": "supporting", "notes": "Quality and provenance gate for external repositories, generated assets, Blender/Godot outputs, audio, APK packaging, and post-coding review." },
+    "figma-create-design-system-rules": { "family": "figma-workflow", "status": "explicit_only", "notes": "Creates project-specific Figma/design-system rules; invoke only for an explicit request." },
+    "figma-create-new-file": {
+      "family": "figma-workflow",
+      "status": "explicit_only",
+      "source_of_truth_qualified_id": "figma:figma-create-new-file",
+      "entry_statuses": { "figma-create-new-file": "inactive", "figma:figma-create-new-file": "active" },
+      "notes": "Official enabled Figma plugin is the sole authority. The local duplicate is reversibly inactive; creating an external Figma/FigJam file still requires an explicit request."
+    },
+    "figma-generate-design": {
+      "family": "figma-workflow",
+      "status": "explicit_only",
+      "source_of_truth_qualified_id": "figma:figma-generate-design",
+      "entry_statuses": { "figma-generate-design": "inactive", "figma:figma-generate-design": "active" },
+      "notes": "Official enabled Figma plugin is the sole authority. The local duplicate is reversibly inactive; Figma writes still require explicit intent and figma-use."
+    },
+    "figma-generate-library": {
+      "family": "figma-workflow",
+      "status": "explicit_only",
+      "source_of_truth_qualified_id": "figma:figma-generate-library",
+      "entry_statuses": { "figma-generate-library": "inactive", "figma:figma-generate-library": "active" },
+      "notes": "Official enabled Figma plugin is the sole authority. The local duplicate is reversibly inactive; library creation or updates still require explicit intent."
+    },
+    "figma-implement-design": { "family": "figma-workflow", "status": "supporting", "notes": "Design-to-code implementation phase after an editable Figma source is selected." },
+    "figma-use": {
+      "family": "figma-workflow",
+      "status": "mandatory",
+      "source_of_truth_qualified_id": "figma:figma-use",
+      "entry_statuses": { "figma-use": "inactive", "figma:figma-use": "active" },
+      "notes": "Official enabled Figma plugin is the sole authority. The local duplicate is reversibly inactive. This remains mandatory before every use_figma tool call and is not a general website-design route."
+    },
+    "figma-code-connect": { "family": "figma-workflow", "status": "supporting", "notes": "Code Connect mapping phase; use only with an explicit Figma/code mapping objective and the mandatory Figma prerequisite." },
+    "figma-design-to-code": { "family": "figma-workflow", "status": "supporting", "notes": "Enabled plugin design-to-code route retained as a supporting implementation path under the mandatory Figma workflow." },
+    "figma-generate-diagram": { "family": "figma-workflow", "status": "explicit_only", "notes": "Creates or updates external FigJam diagram state and therefore requires explicit diagram-generation intent." },
+    "figma-implement-motion": { "family": "figma-workflow", "status": "supporting", "notes": "Motion implementation phase for an explicitly selected Figma motion source." },
+    "figma-swiftui": { "family": "figma-workflow", "status": "supporting", "notes": "SwiftUI-specific design implementation route; use only when the target project is SwiftUI." },
+    "figma-use-figjam": { "family": "figma-workflow", "status": "explicit_only", "notes": "FigJam external-state operation route; require explicit FigJam intent." },
+    "figma-use-motion": { "family": "figma-workflow", "status": "supporting", "notes": "Read/interpret Figma motion behavior for a distinct motion phase; it does not replace the mandatory base Figma route." },
+    "figma-use-slides": { "family": "figma-workflow", "status": "explicit_only", "notes": "Figma Slides external-state route; require explicit slide operation or creation intent." },
+    "frontend-product-design-router": { "family": "frontend-design", "status": "primary", "notes": "Tool and source-of-truth decision layer for frontend/product design; it does not replace website/miniapp production or code verification." },
+    "make-interfaces-feel-better": { "family": "frontend-design", "status": "supporting", "notes": "Fine visual and interaction polish phase; use alongside one chosen design/implementation route, not as a second broad authority." },
+    "miniapp-product-router": { "family": "miniapp-production", "status": "primary", "notes": "Primary WeChat mini-program route after top-level classification. Release and upload actions remain explicit external-state actions." },
+    "playwright-interactive": { "family": "browser-verification", "status": "supporting", "notes": "Persistent debugging complement for browser/Electron iteration; use only when stateful interaction is needed." },
+    "redesign-existing-projects": { "family": "frontend-design", "status": "supporting", "notes": "Existing-project redesign phase; inspect the repository and use one visual-quality route rather than stacking broad design Skills." },
+    "refactoring-ui": { "family": "frontend-design", "status": "supporting", "notes": "Targeted hierarchy, spacing, color, depth, and token repair vertical." },
+    "site-architecture": { "family": "website-production", "status": "supporting", "notes": "Information-architecture phase for explicit sitemap, navigation, URL, or internal-linking work." },
+    "top-design": { "family": "frontend-design", "status": "candidate", "notes": "Narrow immersive brand/portfolio route; do not use for ordinary product, admin, or operational UI without an explicit premium brief." },
+    "web-miniapp-product-router": { "family": "product-routing", "status": "primary", "notes": "Top-level classifier for website versus WeChat mini-program projects. It routes downstream work but does not implement, publish, or deploy." },
+    "web-typography": { "family": "frontend-design", "status": "supporting", "notes": "Typeface, readability, and font-performance vertical used only when typography is materially in scope." },
+    "web-motion-champion": { "family": "frontend-design", "status": "user_designated", "notes": "User-designated champion for website motion discovery, official-source and license checks, minimal source adaptation, implementation contract, and browser verification across MotionSites, React Bits, Uiverse, Anime.js, and Aceternity UI." },
+    "web-visual-motion-planner": { "family": "frontend-design", "status": "archived", "notes": "Superseded by the user-designated web-motion-champion and removed from automatic website routing; retain only as rollback evidence." },
+    "website-product-router": { "family": "website-production", "status": "primary", "notes": "Primary website-family production route after project classification. It owns stack and delivery orchestration; program strategy and quality verticals remain separate." },
+    "website-quality-router": { "family": "website-quality", "status": "primary", "notes": "Primary quality triage route for website issues. Select one vertical champion plus at most one complement and require browser evidence." },
+    "ai-image-video-channel-router": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Channel-selection and preflight layer may lead to real submission, costs, download, and external evidence. Invoke only for an explicit channel/model/preflight/execution request; it does not replace creative or quality routing."
+    },
+    "ai-video-channel-router": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Video-channel execution layer. Consume only a selected route and locked task specification; preserve separate authorization for submission, cost, download, and delivery."
+    },
+    "ai-video-firstframe-workflow": {
+      "family": "ai-video-production",
+      "status": "supporting",
+      "notes": "Frame and continuity planning/QC layer. It does not select a provider or authorize image/video submission."
+    },
+    "ai-video-production-router": {
+      "family": "ai-video-production",
+      "status": "primary",
+      "notes": "Parent classification and orchestration route. It selects one specialist path but never replaces that path's fact, quality, task-spec, or channel authorization gates."
+    },
+    "artflash-video-channel": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Provider execution route for locked redraw task specifications. Do not use as a general fallback or without the selected redraw contract and explicit submission authorization."
+    },
+    "douyin-caption-cover": {
+      "family": "douyin-operations",
+      "status": "supporting",
+      "notes": "Preparation-only publishing package. It does not authorize upload or publication."
+    },
+    "djpsd-video-channel": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Provider execution route for 画影AI/DJPSD; it can upload, create, poll, and download external tasks."
+    },
+    "dola-video-channel": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Provider execution route that can log in, upload, submit, and download. Preserve its explicit submission authorization and do not use it as an automatic fallback."
+    },
+    "douyin-fruit-commerce-strategy": {
+      "family": "douyin-operations",
+      "status": "candidate",
+      "notes": "Narrow account-strategy route; retain as a candidate pending real-use evidence."
+    },
+    "douyin-publish-operator": {
+      "family": "douyin-operations",
+      "status": "explicit_only",
+      "notes": "External-state execution route for Creator Center upload and publication preparation; require an explicit user request and preserve final confirmation."
+    },
+    "douyin-video-production": {
+      "family": "douyin-operations",
+      "status": "supporting",
+      "notes": "Production-planning phase; it does not authorize external publication."
+    },
+    "douyin-video-selection": {
+      "family": "douyin-operations",
+      "status": "supporting",
+      "notes": "Selection phase for the Douyin workflow."
+    },
+    "douyin-workflow-orchestrator": {
+      "family": "douyin-operations",
+      "status": "explicit_only",
+      "notes": "End-to-end route can reach upload and publish preparation. Do not invoke from a content-planning request without explicit execution intent."
+    },
+    "agent-team-workflow": {
+      "family": "workflow-separation",
+      "status": "provisional_default"
+    },
+    "ai-video-fundamentals-skill": {
+      "family": "ai-video",
+      "status": "user_designated",
+      "notes": "The user designated this as the top-priority AI-video and Image2-for-video method layer."
+    },
+    "chaoge-assets-trial": {
+      "family": "ai-video",
+      "status": "user_designated",
+      "notes": "The user designated this as the champion for finalized-script director analysis, realistic character assets, and key-prop assets. Its trial boundary ends after key props."
+    },
+    "codex-agent-mem": {
+      "family": "continuity",
+      "status": "provisional_default"
+    },
+    "control-in-app-browser": {
+      "family": "browser-verification",
+      "status": "provisional_default"
+    },
+    "design-taste-frontend": {
+      "family": "frontend",
+      "status": "candidate",
+      "source_of_truth_qualified_id": "design-taste-frontend",
+      "notes": "Active reinstalled version. Route only to landing pages, portfolios, and redesigns that match its own scope; collect real-use evidence before changing status."
+    },
+    "hallmark": {
+      "family": "frontend-design",
+      "status": "candidate",
+      "source_of_truth_qualified_id": "hallmark",
+      "notes": "Anti-template greenfield design and reference-study route; use explicitly for new visual directions, audits, redesigns, or study, and collect real-use evidence before promotion."
+    },
+    "excel-processor": {
+      "family": "spreadsheets",
+      "status": "archived"
+    },
+    "echoon-seedance2-film-workflow": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Echoon-specific execution route that can batch-submit approved assets. Use only when the user selects Echoon or explicitly asks for this execution path."
+    },
+    "goofish-publish-item": {
+      "family": "goofish-operations",
+      "status": "explicit_only",
+      "notes": "External listing-creation route. Its own confirmation and risk-check gates remain mandatory."
+    },
+    "hilight-video-channel": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Hi-light execution route that can use authenticated sessions, upload assets, submit, download, and run QA."
+    },
+    "goofish-reply-buyer": {
+      "family": "goofish-operations",
+      "status": "explicit_only",
+      "notes": "External messaging route. Its own human-confirmation and risk-check gates remain mandatory."
+    },
+    "goofish-risk-guard": {
+      "family": "goofish-operations",
+      "status": "supporting",
+      "notes": "Read-only risk and compliance check used before relevant listing or reply actions."
+    },
+    "goofish-shop-diagnosis": {
+      "family": "goofish-operations",
+      "status": "supporting",
+      "notes": "Read-only diagnostic phase; it does not authorize shop changes."
+    },
+    "frontend-design": {
+      "family": "frontend",
+      "status": "provisional_default"
+    },
+    "frontend-skill": {
+      "family": "frontend",
+      "status": "archived"
+    },
+    "gpt-image-2-style-library": {
+      "family": "image-generation",
+      "status": "provisional_default"
+    },
+    "gpt-taste": {
+      "family": "frontend",
+      "status": "archived"
+    },
+    "hundred-million-offers": {
+      "family": "pricing",
+      "status": "archived"
+    },
+    "ikun-image2": {
+      "family": "image-generation",
+      "status": "unavailable_legacy",
+      "notes": "No active, archived, or enabled-plugin implementation was present in the 2026-07-16 audit. Do not silently map this name to another provider."
+    },
+    "image2-storyboard-video": {
+      "family": "ai-video-production",
+      "status": "primary",
+      "notes": "Primary storyboard workflow when storyboard intent is explicit. For short-drama redraw, consume accepted material from mx-shortdrama-00-router rather than replacing its source-hygiene route."
+    },
+    "kuaishou-content-pipeline": {
+      "family": "kuaishou-operations",
+      "status": "explicit_only",
+      "notes": "End-to-end route can reach upload and publication. Do not invoke from a planning or content-production request without explicit execution intent."
+    },
+    "mimo-8001-video-channel": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Mimo provider execution route that can upload, generate, poll, and download. It requires explicit channel/execution intent and current account, credit, and QA readback."
+    },
+    "mx-shortdrama-00-router": {
+      "family": "mx-shortdrama-redraw",
+      "status": "evidence_backed_champion",
+      "notes": "Evidence-backed champion for Chinese short-drama redraw to Mexico: two independent local integration records cover EP001 evidence scheduling and conditional timing-evidence routing. It remains narrow: primary source-hygiene and step-chain routing only; it does not generate media or authorize a provider."
+    },
+    "mx-shortdrama-01-frame-extract": {
+      "family": "mx-shortdrama-redraw",
+      "status": "supporting",
+      "notes": "Step01 evidence-extraction phase. Run only after the parent route selects source-video redraw."
+    },
+    "mx-shortdrama-02-source-timeline": {
+      "family": "mx-shortdrama-redraw",
+      "status": "supporting",
+      "notes": "Step02 source-truth phase. It consumes validated Step01 evidence and precedes final production prompts."
+    },
+    "mx-shortdrama-03-mexico-localize": {
+      "family": "mx-shortdrama-redraw",
+      "status": "explicit_only",
+      "notes": "Separate localization review/export is explicitly optional; normal Step04 performs localization internally."
+    },
+    "mx-shortdrama-04-asset-prompts": {
+      "family": "mx-shortdrama-redraw",
+      "status": "supporting",
+      "notes": "Step04 production-prompt compiler. It consumes accepted upstream facts and does not authorize image or video execution."
+    },
+    "mx-shortdrama-05-asset-images": {
+      "family": "mx-shortdrama-redraw",
+      "status": "explicit_only",
+      "notes": "Step05 can execute generated support assets and first-frame candidates. Preserve the user authority gate before any video submission."
+    },
+    "mx-shortdrama-frame-anchor-addon": {
+      "family": "mx-shortdrama-redraw",
+      "status": "explicit_only",
+      "notes": "Optional escalation after Step04 for generated frame anchors; it is not part of the normal redraw package."
+    },
+    "mx-shortdrama-script-only-production": {
+      "family": "mx-shortdrama-redraw",
+      "status": "supporting",
+      "notes": "Script-only specialist path selected by mx-shortdrama-00-router when no source video exists."
+    },
+    "kuaishou-publish-packager": {
+      "family": "kuaishou-operations",
+      "status": "supporting",
+      "notes": "Preparation-only packaging phase; it does not authorize upload or publication."
+    },
+    "kuaishou-publisher": {
+      "family": "kuaishou-operations",
+      "status": "explicit_only",
+      "notes": "External-state execution route for creator-platform upload and publication preparation; preserve its final confirmation gate."
+    },
+    "kuaishou-video-maker": {
+      "family": "kuaishou-operations",
+      "status": "supporting",
+      "notes": "Production-planning phase; it does not authorize external publication."
+    },
+    "kuaishou-video-scout": {
+      "family": "kuaishou-operations",
+      "status": "supporting",
+      "notes": "Selection phase for the Kuaishou workflow."
+    },
+    "image2-direct": {
+      "family": "image-generation",
+      "status": "provisional_default"
+    },
+    "impeccable": {
+      "family": "frontend",
+      "status": "provisional_default"
+    },
+    "jina-search": {
+      "family": "web-research",
+      "status": "provisional_default"
+    },
+    "ogilvy-copywriting": {
+      "family": "copywriting",
+      "status": "archived"
+    },
+    "openai-docs": {
+      "family": "openai",
+      "status": "mandatory"
+    },
+    "page-cro": {
+      "family": "conversion",
+      "status": "archived"
+    },
+    "post-to-x": {
+      "family": "social-publishing",
+      "status": "explicit_only",
+      "notes": "External posting route; use only when the user explicitly asks to post."
+    },
+    "pdf": {
+      "family": "files-data",
+      "status": "provisional_default",
+      "source_of_truth_qualified_id": "pdf",
+      "entry_statuses": {
+        "pdf": "provisional_default",
+        "pdf:pdf": "candidate"
+      },
+      "notes": "Keep the prior .agents route as the provisional continuity default, not as an evidence-backed quality winner. Track the enabled primary-runtime plugin as qualified id pdf:pdf until real comparative tasks justify a change."
+    },
+    "pdf-render-review": {
+      "family": "files-data",
+      "status": "supporting"
+    },
+    "playwright": {
+      "family": "browser-verification",
+      "status": "provisional_default"
+    },
+    "skill-creator": {
+      "family": "governance",
+      "status": "mandatory"
+    },
+    "skill-governance": {
+      "family": "governance",
+      "status": "evidence_backed_champion",
+      "notes": "Evidence-backed governance champion. Separate JSONL records cover a Hermes production-governance task and the Skill learning/governance system; this cluster review adds a current registry-and-evidence decision trace."
+    },
+    "sd2-video-generation": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "One real StoReel/Seedance2 delivery record exists; retain as explicit-only until a second independent task is verified. This workflow can create nodes, submit generations, write back projects, and switch accounts, so preserve provider, cost, provenance, and user authorization gates."
+    },
+    "seedance2-narrative-shot-workflow": {
+      "family": "ai-video-production",
+      "status": "supporting",
+      "notes": "Narrative-shot execution preparation from approved assets. Channel submission remains a separate explicitly authorized phase."
+    },
+    "short-drama-remake-script": {
+      "family": "mx-shortdrama-redraw",
+      "status": "candidate",
+      "notes": "Archive candidate: overlaps mx-shortdrama-00-router's redraw package route and has no independent real-use evidence. Keep discoverable only for explicit or narrow use until a same-input comparison proves a distinct lower-cost artifact or lower rework."
+    },
+    "storeel-seedance2-canvas": {
+      "family": "ai-video-channels",
+      "status": "explicit_only",
+      "notes": "Low-level authenticated StoReel Canvas operation. Use only when the user explicitly asks to inspect or operate that canvas; sd2-video-generation owns end-to-end generation routing."
+    },
+    "storybrand-messaging": {
+      "family": "positioning",
+      "status": "archived"
+    },
+    "ui-ux-pro-max": {
+      "family": "frontend",
+      "status": "archived"
+    },
+    "web-design-guidelines": {
+      "family": "frontend",
+      "status": "archived"
+    },
+    "xhs-note-creator": {
+      "family": "xiaohongshu-operations",
+      "status": "explicit_only",
+      "notes": "Can produce a publishing package and publish. Require explicit execution intent; content drafting alone does not authorize publication."
+    },
+    "xhs-traffic-aesthetic-guard": {
+      "family": "xiaohongshu-operations",
+      "status": "supporting",
+      "notes": "Pre-publication quality guardrail; it does not publish or alter an account."
+    },
+    "xianyu-ai-demand-radar": {
+      "family": "goofish-operations",
+      "status": "candidate",
+      "notes": "Demand research route; retain as a candidate pending real-use evidence."
+    },
+    "xianyu-product-publisher": {
+      "family": "goofish-operations",
+      "status": "explicit_only",
+      "notes": "External listing-publication route; preserve its explicit final-confirmation requirement."
+    },
+    "xiaohongshu-ops": {
+      "family": "xiaohongshu-operations",
+      "status": "explicit_only",
+      "notes": "Broad platform route includes browsing, commenting, and publication. Do not invoke for generic content drafting without explicit platform-operation intent."
+    },
+    "godot-3d-essentials": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream Godot 3D reference skill. Use through gamedev-godot-router with Godot 4.7.1 project constraints and project-document gates."
+    },
+    "godot-animation": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream Godot animation reference skill. Use through gamedev-godot-router; verify AnimationPlayer/AnimationTree behavior in the actual project."
+    },
+    "godot-audio": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream Godot audio reference skill. Use through gamedev-audio-router and require Android playback evidence."
+    },
+    "godot-export": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream Godot export reference skill. Use through gamedev-godot-router; an export configuration is not an APK delivery."
+    },
+    "godot-ui-control": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream Godot UI reference skill. Use through gamedev-godot-router with Figma source-of-truth and touch-target gates."
+    },
+    "godot-gdscript": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream GDScript reference skill. Use through gamedev-godot-router and project test/review gates."
+    },
+    "godot-nodes-scenes": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream Godot scene architecture reference skill. Use through gamedev-godot-router; do not replace existing project structure without inspection."
+    },
+    "godot-resources": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream Godot resources reference skill. Use through gamedev-godot-router and validate serialized resources in the target project."
+    },
+    "game-ai": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream gameplay AI reference skill. Use only for an explicit gameplay-AI task and preserve deterministic/mobile performance constraints."
+    },
+    "camera-systems": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream camera reference skill. Use through gamedev-godot-router with the approved toy-house camera direction."
+    },
+    "audio-design": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream game audio design reference skill. Use through gamedev-audio-router; source and rights records remain mandatory."
+    },
+    "dialogue-systems": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream dialogue-system reference skill. Use for authored interaction/dialogue work without replacing the Island Folks event contract."
+    },
+    "game-ui-ux": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream game UI/UX reference skill. Use with the Figma MCP route and Android touch/readability checks."
+    },
+    "game-feel": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream game-feel reference skill. Use for interaction feedback and animation/audio polish after the core behavior is verified."
+    },
+    "save-systems": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream save-system reference skill. Use with Island Folks persistence rules and migration/restore tests."
+    },
+    "performance-optimization": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream performance reference skill. Use with Android profiling evidence; recommendations alone do not establish a performance pass."
+    },
+    "procedural-gen": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream procedural-generation reference skill. Use only where approved by the visual asset contract; procedural output cannot replace formal Blender assets."
+    },
+    "level-design": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream level-design reference skill. Use through gamedev-project-router after PRD and scene contracts are read."
+    },
+    "prototype-fast": {
+      "family": "game-development",
+      "status": "explicit_only",
+      "notes": "Upstream rapid-prototype reference skill. Prototype output must remain clearly separated from the formal visual and Android delivery chain."
+    },
+    "astorie-seedance2-channel": {"family": "ai-video-channels", "status": "explicit_only", "notes": "AStorie/Seedance2 channel execution; use only for an explicitly selected channel and locked task."},
+    "commerce-web-acceleration": {"family": "website-quality", "status": "supporting", "notes": "Commerce media delivery performance specialist; use after website-product routing when media transport, cache, playback, or download is the concrete problem."},
+    "computer-accelerator": {"family": "infrastructure-operations", "status": "explicit_only", "notes": "Windows host performance diagnosis; do not invoke for ordinary app or website work."},
+    "disk-cleaner": {"family": "infrastructure-operations", "status": "explicit_only", "notes": "Cross-platform disk cleanup reference; prefer qingli-skill for Windows-specific work and use this only when cross-platform scope is explicit."},
+    "frontend-taste-router": {"family": "frontend", "status": "supporting", "notes": "Persistent design-judgment router; use only for repeated visual-quality or anti-slop feedback, while frontend-design remains the implementation route."},
+    "insight-to-skill-compounding": {"family": "governance", "status": "supporting", "notes": "Ask-once durable insight proposal route; it does not authorize Skill edits without matching user approval."},
+    "mx-shortdrama-04-character-assets": {"family": "mx-shortdrama-redraw", "status": "supporting", "notes": "Character-asset subroute under mx-shortdrama-04-asset-prompts."},
+    "mx-shortdrama-production-harness": {"family": "mx-shortdrama-redraw", "status": "supporting", "notes": "Short-drama production harness; the parent mx-shortdrama-00-router remains the source-hygiene entry route."},
+    "mx-shortdrama-production-iteration": {"family": "mx-shortdrama-redraw", "status": "supporting", "notes": "Post-output quality and throughput iteration route; use after real provider/media evidence."},
+    "mx-shortdrama-visual-style": {"family": "mx-shortdrama-redraw", "status": "explicit_only", "notes": "Use only when the user explicitly requests a visual-style configuration or iteration."},
+    "niannian-ai-canvas": {"family": "niannian-production", "status": "primary", "notes": "NianNian AI canvas implementation and integration route; use for canvas/product work, with niannian-delivery-control handling delivery evidence."},
+    "niannian-logo-authority": {"family": "niannian-production", "status": "supporting", "notes": "NianNian brand asset authority; use only for logo, header, navigation, favicon, or brand work."},
+    "niannian-commerce-website": {"family": "project-specific-web", "status": "primary", "notes": "Project-boundary owner for ai.cauai.fun and dh.cauai.fun; select by exact domain before generic website or visual routes."},
+    "niannian-commerce-release-integrity": {"family": "project-specific-web", "status": "mandatory", "notes": "Mandatory release boundary for exact Niannian domains; verifies online baseline, candidate isolation, asset identity, browser evidence, and rollback before live writes."},
+    "github-selected-projects": {"family": "infrastructure-operations", "status": "supporting", "notes": "Local selected-project bundle operator; use only for its named repositories and verify real local health."},
+    "playwright-cli": {"family": "browser-verification", "status": "archived", "notes": "Nested Playwright package documentation, not a standalone top-level Skill; registry entry archived while the package dependency is preserved."},
+    "playwright-component-testing": {"family": "browser-verification", "status": "archived", "notes": "Nested Playwright package documentation, not a standalone top-level Skill; registry entry archived while the package dependency is preserved."},
+    "playwright-trace": {"family": "browser-verification", "status": "archived", "notes": "Nested Playwright package documentation, not a standalone top-level Skill; registry entry archived while the package dependency is preserved."},
+    "pricing": {"family": "pricing", "status": "provisional_default", "notes": "Provisional default for explicit pricing, packaging, and monetization decisions; no real-use evidence yet, and it must not replace product positioning or website implementation."},
+    "product-marketing": {"family": "product-marketing", "status": "provisional_default", "notes": "Provisional default for durable product, audience, and positioning context. One integrated real-use record exists; a second independent task is required before champion review."},
+    "self-media-skill-route": {"family": "social-publishing", "status": "provisional_default", "notes": "Provisional default for Chinese social-content drafting and publish-pack preparation. Keep actual platform publication authorization and readback separate."},
+    "qingli-skill": {"family": "infrastructure-operations", "status": "provisional_default", "notes": "Provisional default for Windows disk diagnosis and authorized cleanup. Keep read-only scan, cleanup preview, deletion authorization, and space readback as distinct stages; bundled backends are not competing top-level routes."},
+    "review-agent": {"family": "governance", "status": "supporting", "notes": "Read-only delegated code review route; post-coding-review remains the mandatory release review."},
+    "win-disk-cleaner": {"family": "infrastructure-operations", "status": "explicit_only", "notes": "Windows cleanup backend; route through qingli-skill unless the user explicitly selects this backend."},
+    "windows-disk-cleaner": {"family": "infrastructure-operations", "status": "explicit_only", "notes": "Windows cleanup backend; route through qingli-skill unless the user explicitly selects this backend."},
+    "windows-disk-cleanup": {"family": "infrastructure-operations", "status": "explicit_only", "notes": "Windows cleanup backend; route through qingli-skill unless the user explicitly selects this backend."}
+    ,"hyperframes-media": {"family": "hyperframes-video", "status": "archived", "notes": "Superseded by media-use in the upstream HyperFrames family; retained only for rollback or explicit legacy-project recovery."}
+    ,"website-to-video": {"family": "hyperframes-video", "status": "archived", "notes": "Superseded by product-launch-video in the upstream HyperFrames family; retained only for rollback or explicit legacy-project recovery."}
+    ,"ui-skills-root": {"family": "frontend", "status": "archived", "notes": "Superseded by frontend-taste-router and the authoritative auto-completing Skill prompt cards; retained only for rollback or explicit legacy recovery."}
+    ,"feishu-skill-router": {"family": "governance", "status": "evidence_backed_champion", "notes": "当前个人飞书文档沉淀、云端回读和真实来源视觉卡的主路由；已完成知识库与多维表格结构落地，以及集群①三条治理记录的逐条云端写入与回读。"}
+    ,"minimaxh3skill": {"family": "ai-video-channels", "status": "user_designated", "notes": "用户确认的 MiniMax H3/FL2VA 视频渠道优先路由；渠道实际结果仍应按任务记录。"}
+    ,"minimaxh3skill-use": {"family": "ai-video-production", "status": "supporting", "notes": "MiniMax H3 视频创作契约与结构化提示词准备层；由 minimaxh3skill 负责已授权的 RunningHub 渠道执行。"}
+    ,"runninghub-workflow-api": {"family": "ai-video-channels", "status": "explicit_only", "notes": "RunningHub/ComfyUI 工作流 API 定制与发布能力；只在用户明确要求修改或发布工作流 API 时使用。"}
+    ,"asset-import": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 媒体导入子能力；仅在用户明确使用 ChatCut 编辑项目时读取。"}
+    ,"chatcut-plugin-basics": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 插件基础能力；不作为通用视频生产默认路由。"}
+    ,"create-motion-graphics": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 动态图形子能力；仅在明确的 ChatCut 时间线编辑任务中使用。"}
+    ,"export": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 导出子能力；仅在用户明确要求该项目导出时使用。"}
+    ,"image-gen": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 图像生成子能力；不替代独立图片生成或 AI 视频资产路由。"}
+    ,"known-errors": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 故障排查子能力；仅在明确的 ChatCut 错误恢复中使用。"}
+    ,"music": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 音乐子能力；仅在明确的 ChatCut 项目音频编辑中使用。"}
+    ,"product-help": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 产品帮助子能力；不参与生产路由。"}
+    ,"shader-gen": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 着色器子能力；仅在明确的 ChatCut 视觉效果任务中使用。"}
+    ,"talking-head-guide": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 口播视频子能力；仅在明确的 ChatCut 项目中使用。"}
+    ,"transcription": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 转录子能力；仅在明确的 ChatCut 转录/字幕任务中使用。"}
+    ,"verification": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 验证子能力；仅为明确的 ChatCut 交付提供核验。"}
+    ,"video-gen": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 视频生成子能力；不替代 AI 视频主路由或渠道执行边界。"}
+    ,"voice": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 配音子能力；仅在明确的 ChatCut 时间线项目中使用。"}
+    ,"widget-forms": {"family": "video-postproduction", "status": "explicit_only", "notes": "ChatCut 小组件表单子能力；仅在明确的 ChatCut 项目交互配置中使用。"}
+  },
+  "learning_governance": {
+    "scope": "C:\\Users\\lsb\\.codex\\skills 的一级目录；排除 .system、备份和 skill_route_snapshots。",
+    "reviewed_at": "2026-08-05",
+    "clusters": [
+      {"id": "governance-feishu", "name_zh": "Skill 治理、知识沉淀与飞书协作", "boundary": "路由、提示词、来源证据、知识沉淀与飞书文档协作；不替代具体业务执行。", "members": ["feishu-skill-router", "github-selected-projects", "insight-to-skill-compounding", "prompt-skill-router", "skill-governance", "stop-slop"]},
+      {"id": "product-ui-web", "name_zh": "产品、UI/UX 与网站", "boundary": "网站与产品的结构、视觉、体验、实现和验收；不把泛用网页审计工具自动纳入默认路由。", "members": ["niannian-ai-canvas", "niannian-commerce-release-integrity", "niannian-commerce-website", "niannian-logo-authority", "icon-resource-routing", "prototype-fast", "redesign-existing-projects", "refactoring-ui", "site-architecture", "design-taste-frontend", "top-design", "ux-heuristics", "ux-writing", "web-miniapp-product-router", "web-motion-champion", "web-typography", "web-visual-motion-planner", "website-metadata-share-audit", "website-product-router", "website-quality-router"]},
+      {"id": "content-image-video-drama", "name_zh": "内容、图像、视频与短剧生产", "boundary": "从故事板、资产和提示词到图像/视频渠道执行、字幕与短剧转绘；渠道提交仍需按各 Skill 的授权边界。", "members": ["astorie-seedance2-channel", "image2-storyboard-video", "img2threejs", "krill-image2", "minimaxh3skill", "minimaxh3skill-use", "mx-shortdrama-00-router", "mx-shortdrama-04-character-assets", "mx-shortdrama-production-harness", "mx-shortdrama-production-iteration", "mx-shortdrama-visual-style", "realistic-commerce-video-replication", "relic-collector-ip-system", "runninghub-canvas-fallback", "runninghub-fruit-commerce-video", "runninghub-image2-image", "runninghub-image2-text", "runninghub-workflow-api", "sd2-video-generation", "seedance2-a-contest-orchestrator", "seedance2-commerce-video", "seedance2-narrative-shot-workflow", "short-drama-remake-script", "storeel-seedance2-canvas", "storyboard-director", "tensor-canvas-direct-node", "tk-subtitles", "tmlab-video-channel"]},
+      {"id": "growth-marketing-commerce", "name_zh": "增长、营销、社媒与电商运营", "boundary": "定位、定价、SEO、内容运营、需求研究与平台发布；研究/创作和真实发布必须分开。", "members": ["pricing", "product-marketing", "programmatic-seo", "self-media-skill-route", "wechat-article-extractor", "xhs-note-creator", "xhs-traffic-aesthetic-guard", "xianyu-ai-demand-radar", "xianyu-product-publisher", "xiaohongshu-ops"]},
+      {"id": "files-data-code-server-system", "name_zh": "文件、数据、代码、服务器与系统工具", "boundary": "文件产物、代码与服务器诊断、跨设备协作、系统性能与安全；外部发送、清理和部署按明确授权执行。", "members": ["commerce-web-acceleration", "computer-accelerator", "ppt-master", "procedural-gen", "qingli-skill", "save-systems", "screenshot", "security-best-practices", "security-threat-model", "server-fleet-ssh-router", "tools", "wechat-redraw-word-sender", "win-mac-codex-bridge", "wizstar-bitbrowser"]}
+    ],
+    "exclusions": [
+      {"path": "C:\\Users\\lsb\\.codex\\skills\\.system", "reason": "系统内置 Skill；不混入用户主 Skill 学习与默认路由。"},
+      {"path": "C:\\Users\\lsb\\.codex\\skills\\_backup_mx_shortdrama_20260622_135258", "reason": "历史备份；仅作恢复证据。"},
+      {"path": "C:\\Users\\lsb\\.codex\\skills\\_backup_mx_shortdrama_20260622_135916", "reason": "历史备份；仅作恢复证据。"},
+      {"path": "C:\\Users\\lsb\\.codex\\skills\\skill_route_snapshots", "reason": "路由快照；仅作历史证据。"}
+    ],
+    "folder_overrides": {
+      "skill-governance": {"key_sections": ["场景化 Skill 快速上手卡", "权威提示词模板：自动补全式场景卡", "评分循环"], "value_level": "冠军（证据型）", "route_mode": "默认", "duplicate_relationship": "集群①治理主路由；飞书负责云端投影，经验沉淀只负责授权边界。", "provenance_type": "本地自建或本地固化", "current_limitations": "冠军资格仅覆盖分类、证据、去重和路由决策；不替代任何业务领域的实际执行。"},
+      "feishu-skill-router": {"key_sections": ["知识库与多维表格治理", "内容整理与可视化", "最终回读"], "value_level": "冠军（证据型）", "route_mode": "默认", "duplicate_relationship": "飞书知识库和多维表格的唯一云端协作路由；不与本地治理事实来源竞争。", "provenance_type": "本地自建或本地固化", "current_limitations": "仅在飞书任务读取；必须通过可见页面回读，不能以本地草稿代替云端保存。"},
+      "github-selected-projects": {"key_sections": ["本地精选项目管理", "项目健康验证"], "value_level": "保留（本轮健康回读）", "route_mode": "默认候选", "duplicate_relationship": "仅管理其命名的五个本地精选项目；不取代通用服务器、代码或文档路由。", "provenance_type": "GitHub 上游", "current_limitations": "当前已验证五项目健康；冠军晋级仍需第二个独立的用户可用交付证据。"},
+      "insight-to-skill-compounding": {"key_sections": ["判断是否值得提议", "在自然边界提出一次询问", "执行授权边界"], "value_level": "按需（高复利）", "route_mode": "辅助", "duplicate_relationship": "只为治理或业务规则变更提供授权边界；不与 Skill 治理的主路由竞争。", "provenance_type": "本地自建或本地固化", "current_limitations": "没有明确沉淀授权时只能提议，不能修改其他 Skill 或规则。"},
+      "prompt-skill-router": {"key_sections": ["Routing Workflow", "Output Contract"], "value_level": "待验证", "route_mode": "明确指定才用", "duplicate_relationship": "在 Skill 学习卡和治理提示词场景没有独特产物；仍保留其图像与视频提示词编译边界。", "provenance_type": "本地自建或本地固化", "current_limitations": "本轮对照未证明它应成为治理主路由；仅在提示词密集且业务域明确时使用。"},
+      "stop-slop": {"key_sections": ["Core Rules", "Quick Checks", "Scoring"], "value_level": "按需", "route_mode": "辅助", "duplicate_relationship": "仅在事实已确认后的成稿清理阶段辅助；不参与治理判断或建立事实。", "provenance_type": "GitHub 上游", "current_limitations": "只用于文案成稿清理；需以第二次独立对外文本验证其可读性收益。"},
+      "runninghub-canvas-fallback": {"duplicate_relationship": "保留为渠道故障回退；不与 RunningHub 的具体图片/视频执行 Skill 并列自动路由。", "archival_reason": "若连续真实任务证明特定渠道已稳定覆盖其能力，可降级为归档候选。"},
+      "mx-shortdrama-00-router": {"duplicate_relationship": "短剧转绘主路由；其他 mx 子 Skill 只在其明确下游阶段读取。"},
+      "mx-shortdrama-production-harness": {"duplicate_relationship": "编排层；不得与 mx-shortdrama-00-router 争夺专业执行主路由。"},
+      "sd2-video-generation": {"duplicate_relationship": "StoReel/Seedance2 的端到端执行路由；storeel-seedance2-canvas 为低层辅助。"},
+      "storeel-seedance2-canvas": {"duplicate_relationship": "低层画布操作；默认由 sd2-video-generation 统筹。"},
+      "web-miniapp-product-router": {"duplicate_relationship": "网站/小程序的顶层分类；网站落地交给 website-product-router。"},
+      "website-product-router": {"duplicate_relationship": "网站生产主路由；website-quality-router 只处理质量诊断阶段。"},
+      "website-quality-router": {"duplicate_relationship": "网站质量垂类；不与网站生产主路由叠加为两个 owner。", "archival_reason": "本阶段不进入默认学习主线；只有真实证明能改善 Skill 系统呈现时才重新评估。"},
+      "redesign-existing-projects": {"duplicate_relationship": "既有项目改造；与 refactoring-ui、design-taste-frontend 按阶段区分。"},
+      "design-taste-frontend": {"duplicate_relationship": "高质感落地页/作品集风格候选；不自动覆盖常规产品 UI 路由。"},
+      "top-design": {"duplicate_relationship": "沉浸式品牌体验专用；普通后台或 SaaS 不自动读取。"},
+      "web-motion-champion": {"key_sections": ["固定工作流", "获取源码而不是复制外观", "验收真实页面"], "value_level": "用户指定冠军", "route_mode": "网站动效默认路由", "current_limitations": "高影响视觉方向、付费/登录资源和最终主观满意度仍需要用户参与；发布继续由网站生产路由负责。"},
+      "mx-shortdrama-visual-style": {"key_sections": ["视觉风格配置", "试运行与依据产物迭代"], "current_limitations": "仅在短剧转绘任务明确需要风格时读取，不作为全局审美路由。"},
+      "xianyu-product-publisher": {"current_limitations": "包含真实发布能力，必须与需求研究和文案创作分离，未经明确授权不得提交发布。"},
+      "xiaohongshu-ops": {"current_limitations": "包含平台操作能力；研究、创作和真实发布/评论需要明确区分。"},
+      "wechat-redraw-word-sender": {"current_limitations": "外部发送能力，仅在用户明确指定收件对象和文件后使用。"},
+      "qingli-skill": {"key_sections": ["只读分析", "安全清理", "四个后端的统一路由"], "value_level": "保留（已有真实诊断）", "route_mode": "默认候选", "current_limitations": "先分析、预览、用户确认后才清理；不把缓存一律视为垃圾。"},
+      "server-fleet-ssh-router": {"key_sections": ["服务器识别", "主机边界", "容量与服务回读"], "value_level": "保留（已有真实服务器盘点）", "route_mode": "默认候选", "current_limitations": "连接、部署、删除和密钥操作必须受当前任务的明确授权约束。"},
+      "win-mac-codex-bridge": {"value_level": "按需（已有真实协作证据）", "route_mode": "明确指定才用", "current_limitations": "仅在跨设备 Codex 协作明确命中时使用，不能替代单机正常执行。"},
+      "tools": {"provenance_type": "本地工具目录", "archival_reason": "一级目录未含 SKILL.md，已排除，不应被归档为 Skill。"}
+    }
+  },
+  "non_discoverable_assets": [
+    {
+      "name": "generated-production-system",
+      "status": "template_asset",
+      "owner": "ai-production-system-factory",
+      "source_path": "C:\\Users\\lsb\\.codex\\skills\\ai-production-system-factory\\assets\\system-template\\system_entry_skill\\SKILL.template.md",
+      "materialized_path": "system_entry_skill/SKILL.md"
+    },
+    {
+      "name": "ai-image-video-production-system",
+      "status": "example_fixture",
+      "owner": "ai-production-system-factory",
+      "source_path": "C:\\Users\\lsb\\.codex\\skills\\ai-production-system-factory\\assets\\example-systems\\ai-image-video-production-system\\system_entry_skill\\SKILL.template.md",
+      "materialized_path": "system_entry_skill/SKILL.md"
+    }
+  ]
+}

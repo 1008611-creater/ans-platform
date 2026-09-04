@@ -1,0 +1,312 @@
+{
+  "schema_version": 2,
+  "principle": "Route by project and artifact first, then domain, phase, one method route, one optional specialist, one execution channel, authorization, and evidence.",
+  "capability_envelope": {
+    "input_packet": [
+      {"field": "project_authority", "required": true, "meaning": "Owning project, owner, local rules, and Source of Truth."},
+      {"field": "objective", "required": true, "meaning": "The user's intended outcome stated as an observable result."},
+      {"field": "target_artifact", "required": true, "meaning": "The exact file, UI, media, message, deployment, decision, or other deliverable expected."},
+      {"field": "current_state", "required": true, "meaning": "Existing artifacts, implementation state, evidence, and known blockers."},
+      {"field": "constraints", "required": true, "meaning": "Quality, time, cost, privacy, tool, provider, and local policy constraints."},
+      {"field": "authorizations", "required": false, "meaning": "Explicit authority for external submission, cost, upload, publish, deploy, migration, messaging, remote writes, deletion, or local image editing."}
+    ],
+    "routing_decision": [
+      "Select exactly one business domain.",
+      "Identify the current phase and one primary capability route.",
+      "Add at most one specialist only when it produces a distinct downstream artifact or gate.",
+      "Select at most one execution tool or provider route for the current phase.",
+      "Stop at the authorization boundary when required authority is absent."
+    ],
+    "output_packet": [
+      {"field": "artifact", "required": true, "meaning": "The actual generated, changed, reviewed, or selected deliverable, with an exact local path or authoritative state reference when applicable."},
+      {"field": "decision", "required": true, "meaning": "The route selected, important alternatives rejected, and the reason."},
+      {"field": "state_change", "required": true, "meaning": "What local or external state actually changed; use none for read-only work."},
+      {"field": "evidence", "required": true, "meaning": "Direct verification and highest proven level: structural, integrated, real_delivery, or blocked."},
+      {"field": "remaining_gate", "required": true, "meaning": "The exact unmet authorization, quality, integration, delivery, or user-confirmation gate; use none only when proved complete."},
+      {"field": "provenance", "required": true, "meaning": "Authoritative inputs and route owners used, without credentials, temporary URLs, or task ids."}
+    ],
+    "invariants": [
+      "A routing decision is not the requested artifact.",
+      "A plan, prompt, script, candidate, local preview, or submitted provider task is not real delivery.",
+      "Every claimed output must be named in the selected domain capability contract.",
+      "Every completion claim must satisfy the selected domain completion gate.",
+      "A Skill may narrow, transform, verify, or execute capability, but must not silently expand authorization."
+    ]
+  },
+  "domains": [
+    {
+      "id": "product-web-miniapp",
+      "order": 1,
+      "label": "产品、网站与小程序",
+      "overlap_pressure": "high",
+      "selection_rule": "先由 web-miniapp-product-router 分类；网站先按精确项目域名选择项目边界 Skill（ai.cauai.fun / dh.cauai.fun），再进入 website-product-router；质量问题再由 website-quality-router 选择一个专项。",
+      "known_conflicts": ["顶层分类、商业项目门禁、实施路由和质量路由可能同时抢主导权。"],
+      "capability_contract": {
+        "input": ["产品目标或问题", "网站/小程序类型或待分类需求", "代码库与当前运行状态", "功能、数据、上线和回滚约束"],
+        "transform": "先完成产品类型与项目阶段分类，再选择实现或质量路线，最后通过构建、测试和浏览器证据收口。",
+        "output": ["产品/技术路线决策", "实现或修复后的代码与配置", "可验证的本地或已授权环境产物", "构建、测试、浏览器与回滚证据"],
+        "completion_gate": "目标功能在指定环境中可操作，相关构建/测试通过，用户可见路径与回滚边界有直接证据。",
+        "non_output": ["只有需求文档或计划", "只有未验证代码", "只有本地页面却声称已经上线"]
+      },
+      "entry_mode": "router",
+      "entry_routes": ["web-miniapp-product-router"],
+      "default_routes": ["website-product-router", "miniapp-product-router"],
+      "supporting_routes": ["commercial-website-program-router", "site-architecture", "website-quality-router", "niannian-commerce-website", "niannian-commerce-release-integrity", "cro", "analytics", "cro-methodology", "ux-heuristics", "email-otp-auth", "ai-production-system-factory", "evidence-event-reducer"],
+      "explicit_execution_routes": ["action-transfer-commerce-site"],
+      "candidate_routes": ["ai-video-portfolio-site", "website-metadata-share-audit", "postgres-query-index-audit"],
+      "families": ["product-routing", "website-production", "website-quality", "project-specific-web", "miniapp-production", "web-auth", "production-governance", "hermes-productization"]
+    },
+    {
+      "id": "ui-ux-figma",
+      "order": 2,
+      "label": "UI、UX、前端视觉与 Figma",
+      "overlap_pressure": "high",
+      "selection_rule": "先判断是否涉及 Figma；调用 Figma 前强制 figma-use，否则只选一个前端主路线和至多一个不同阶段的质量专项。",
+      "known_conflicts": ["Figma 用户版与插件版同名分叉。", "通用前端、审美、重设计、层级和 UX Skill 容易重复堆叠。"],
+      "capability_contract": {
+        "input": ["目标界面或 Figma 来源", "用户与工作流", "现有组件/设计系统", "品牌、响应式和可访问性约束"],
+        "transform": "判断 Figma 读取/写入、设计规划、代码实施或质量审计阶段，只选择一个视觉主权威和一个必要专项。",
+        "output": ["设计决策或 Figma 产物", "实现后的界面代码", "组件/样式规则", "跨视口视觉与交互验证证据"],
+        "completion_gate": "目标界面在真实运行态符合来源与约束，桌面/移动视口无明显错位、遮挡或功能回归。",
+        "non_output": ["只给审美建议却声称界面已改善", "只有 Figma 设计却声称代码已实现", "只有代码检查没有运行态证据"]
+      },
+      "entry_mode": "router",
+      "entry_routes": ["frontend-product-design-router"],
+      "default_routes": ["frontend-design"],
+      "supporting_routes": ["impeccable", "web-motion-champion", "refactoring-ui", "ux-writing", "visualize"],
+      "explicit_execution_routes": ["figma-create-new-file", "figma-generate-design", "figma-generate-library", "figma-generate-diagram", "figma-use-figjam", "figma-use-slides"],
+      "candidate_routes": ["design-taste-frontend", "top-design", "editorial-style-website"],
+      "families": ["frontend", "frontend-design", "figma-workflow", "interactive-visualization"]
+    },
+    {
+      "id": "research-knowledge",
+      "order": 3,
+      "label": "搜索、研究与知识获取",
+      "overlap_pressure": "low",
+      "selection_rule": "按信息来源直接分派：OpenAI 官方问题用 openai-docs，普通网页用 jina-search，动态抓取和微信文章只作窄域补充。",
+      "known_conflicts": ["研究结果不能自动升级为生产、发布或外部执行授权。"],
+      "capability_contract": {
+        "input": ["明确研究问题", "允许的信息来源", "时效与可信度要求", "需要支持的后续决策"],
+        "transform": "按来源选择官方文档、网页搜索、动态抓取或窄域提取，交叉验证后压缩成可追溯结论。",
+        "output": ["带来源的事实与结论", "不确定性和冲突说明", "可供下游消费的结构化研究摘要", "必要的本地证据路径"],
+        "completion_gate": "核心结论有可追溯直接来源，时效符合任务要求，事实、推断和未知项明确分开。",
+        "non_output": ["未经来源支持的猜测", "研究报告冒充生产产物", "研究完成自动授权外部操作"]
+      },
+      "entry_mode": "source_direct",
+      "entry_routes": ["jina-search"],
+      "default_routes": ["jina-search", "openai-docs"],
+      "supporting_routes": ["web-scraper", "wechat-article-extractor"],
+      "explicit_execution_routes": [],
+      "candidate_routes": [],
+      "families": ["web-research", "openai"]
+    },
+    {
+      "id": "documents-data-knowledgebase",
+      "order": 4,
+      "label": "文档、表格、数据与知识库",
+      "overlap_pressure": "high",
+      "selection_rule": "按最终文件格式或知识库操作直接分派；云文档、在线 Excel 和飞书操作保持独立外部写入边界。",
+      "known_conflicts": ["docx 与 documents 尚缺真实比较。", "xlsx 与 Spreadsheets 尚缺真实比较。", "pdf 与 pdf:pdf 内容分叉，当前仅是连续性默认。"],
+      "capability_contract": {
+        "input": ["源内容或现有文件", "目标文件格式", "结构、公式、版式和兼容性约束", "本地或云端操作边界"],
+        "transform": "按最终格式直接路由，保留原始结构与语义，必要时渲染或重新打开验证。",
+        "output": ["目标 DOCX/PDF/XLSX/PPTX/Markdown/Canvas 等文件", "结构化数据转换结果", "渲染或解析验证证据", "云端写入时的实际状态回读"],
+        "completion_gate": "目标文件真实存在、可解析或打开，关键内容/公式/版式通过对应验证；云端变化必须有回读。",
+        "non_output": ["只有文本草稿却声称文件已生成", "只有转换脚本没有目标文件", "未检查版式却声称视觉正确"]
+      },
+      "entry_mode": "artifact_direct",
+      "entry_routes": ["docx", "pdf", "xlsx", "ppt-master", "obsidian-cli"],
+      "default_routes": ["docx", "pdf", "xlsx", "ppt-master", "obsidian-cli"],
+      "supporting_routes": ["csv-pipeline", "image-ocr", "pdf-render-review", "obsidian-markdown", "obsidian-bases", "json-canvas"],
+      "explicit_execution_routes": ["excel-live-control", "feishu-inout", "feishu-docx"],
+      "candidate_routes": ["documents", "Spreadsheets", "Presentations", "obsidian-showcase-vault"],
+      "families": ["documents", "files-data", "spreadsheets", "presentations", "knowledge-base", "feishu-operations", "exam-documents"]
+    },
+    {
+      "id": "marketing-growth-monetization",
+      "order": 5,
+      "label": "产品营销、增长与商业化",
+      "overlap_pressure": "medium",
+      "selection_rule": "按产品事实与客户研究、定位、定价、文案、实施、Analytics/CRO 的阶段顺序选择，不并行加载整套营销 Skill。",
+      "known_conflicts": ["优化网站等宽泛意图容易同时触发定位、文案、定价、SEO、CRO 和 Analytics。"],
+      "capability_contract": {
+        "input": ["真实产品与受众事实", "商业目标", "客户/市场证据", "当前定位、价格、页面或漏斗状态"],
+        "transform": "按研究、定位、定价、文案、实施和测量顺序选择当前阶段，不让下游文案倒推虚构事实。",
+        "output": ["定位或客户洞察决策", "定价与包装方案", "可实施的营销文案/页面规格", "Analytics/CRO 测量方案与结果"],
+        "completion_gate": "产出由真实产品和客户证据支撑；实施型任务必须落到真实页面/系统并有测量或验证证据。",
+        "non_output": ["虚构产品证明或客户数据", "策略文档冒充页面已上线", "没有真实流量/实验却声称转化提升"]
+      },
+      "entry_mode": "router",
+      "entry_routes": ["product-marketing"],
+      "default_routes": ["product-marketing", "obviously-awesome", "pricing", "copywriting"],
+      "supporting_routes": ["customer-research", "jobs-to-be-done", "paywalls", "stop-slop", "email-drafter"],
+      "explicit_execution_routes": ["ai-video-client-outreach"],
+      "candidate_routes": ["free-tools"],
+      "families": ["product-marketing", "positioning", "marketing-copy", "copywriting", "conversion", "pricing", "client-outreach", "correspondence"]
+    },
+    {
+      "id": "image-generation-image2",
+      "order": 6,
+      "label": "图片生成与 Image2",
+      "overlap_pressure": "high",
+      "selection_rule": "先区分独立图片与 AI 视频资产；视频首帧、角色、产品和连续性资产先进入 AI 视频方法域，独立图片再选一个生成方法和一个明确授权的执行渠道。",
+      "known_conflicts": ["方法、风格库、Provider 和视频资产质量层边界重叠。", "本地修图不能替代认可的权威生成路线。"],
+      "capability_contract": {
+        "input": ["图片用途与目标", "文字/参考图/资产事实", "尺寸、风格、主体一致性和禁改约束", "明确的生成渠道与授权边界"],
+        "transform": "先区分独立图片与视频资产，锁定事实和质量方法，再选择一个获准生成渠道并验证结果。",
+        "output": ["提示词/资产合同", "经批准渠道生成的图片文件", "候选选择与淘汰理由", "尺寸、内容和用途适配的 QA 证据"],
+        "completion_gate": "真实图片文件已生成并可读，关键主体/文字/构图满足用途；生产图不依赖未经授权的本地像素修改。",
+        "non_output": ["只有提示词却声称图片已完成", "只有 Provider 任务已提交", "未经授权的本地修图产物冒充权威图"]
+      },
+      "entry_mode": "router",
+      "entry_routes": ["prompt-skill-router"],
+      "default_routes": ["image2-direct", "gpt-image-2-style-library"],
+      "supporting_routes": ["imagegen", "prompt-engineering", "system-prompts", "enhance-agent-prompts"],
+      "explicit_execution_routes": ["gpt-image", "krill-image2", "hermes-canvas-image2", "oiioii-canvas-workflow", "oocimage2skill", "runninghub-canvas-fallback", "runninghub-image2-image", "runninghub-image2-text"],
+      "candidate_routes": ["gpt-image-2", "image2-boundary-lab"],
+      "families": ["image-generation", "prompt-methods"]
+    },
+    {
+      "id": "ai-video-film-storyboard",
+      "order": 7,
+      "label": "AI 视频、电影与故事板生产",
+      "overlap_pressure": "high",
+      "selection_rule": "固定采用质量方法层、一个专项工作流、一个渠道执行、QA 与真实交付证据的顺序；故事板意图优先 image2-storyboard-video。",
+      "known_conflicts": ["方法层、生产路由和 14 个渠道 Skill 不能同时作为主路由。", "Provider 已提交不能记为 real_delivery。"],
+      "capability_contract": {
+        "input": ["创作/商业目标与脚本", "权威角色、产品、场景和参考资产", "镜头或故事板要求", "模型、渠道、成本和交付约束"],
+        "transform": "经过质量方法、一个专项工作流、一个渠道执行和 QA/交付四层，把输入事实转成可播放视频与证据链。",
+        "output": ["剧本/故事板/镜头任务合同", "首帧和连续性资产", "下载到本地的真实视频文件", "媒体探测、内容 QA、账本和交付证据"],
+        "completion_gate": "视频已真实生成并下载，可播放且媒体参数有效，内容通过任务专项 QA；real_delivery 还要求用户可访问的实际交付。",
+        "non_output": ["只有脚本、提示词或故事板", "只有候选首帧", "只有 Provider 任务已提交", "无用户可访问结果却声称 real_delivery"]
+      },
+      "entry_mode": "router",
+      "entry_routes": ["ai-video-production-router"],
+      "default_routes": ["ai-video-fundamentals-skill", "chaoge-assets-trial", "image2-storyboard-video", "commerce-video-redraw-router", "realistic-commerce-video-replication"],
+      "supporting_routes": ["ai-film-champion-method", "director-story-audit", "storyboard-director", "ai-video-firstframe-workflow", "seedance2-narrative-shot-workflow", "kidswear-firstframe-prompt-director", "niannian-delivery-control"],
+      "explicit_execution_routes": ["ai-image-video-channel-router", "ai-video-channel-router", "sd2-video-generation", "mimo-8001-video-channel", "tmlab-video-channel", "dola-video-channel", "artflash-video-channel", "djpsd-video-channel", "echoon-seedance2-film-workflow", "hilight-video-channel", "navos-seedance2-channel", "runninghub-fruit-commerce-video", "storeel-seedance2-canvas", "tensor-canvas-direct-node", "automotive-commerce-redraw-video"],
+      "candidate_routes": ["ai-video-storyboard", "seedance2-a-contest-orchestrator"],
+      "families": ["ai-video", "ai-video-production", "ai-video-channels", "commerce-video-method", "commerce-video-redraw", "kidswear-ai-video", "niannian-production"]
+    },
+    {
+      "id": "shortdrama-redraw-localization",
+      "order": 8,
+      "label": "短剧转绘、本土化与专项制作",
+      "overlap_pressure": "medium",
+      "selection_rule": "所有短剧转绘先经过 mx-shortdrama-00-router 的源材料与阶段选择；出现故事板意图时，下游强制调用 image2-storyboard-video。",
+      "known_conflicts": ["历史摘要、上一集文件、候选图和未接受产物不能成为当前权威输入。"],
+      "capability_contract": {
+        "input": ["当前集权威源视频或脚本", "已验证的时间线与角色/资产事实", "本土化规则", "当前 Step 的已接受上游产物"],
+        "transform": "由总路由选择源视频或纯脚本链，严格按 Step 契约消费上游，故事板意图单独进入全局故事板工作流。",
+        "output": ["当前集证据与源时间线", "本土化后的生产事实", "资产提示词/资产图/帧锚点", "当前集可验证交付包"],
+        "completion_gate": "每个 Step 的输入来自当前集已接受上游，产物路径与版本明确；媒体生成和交付必须分别满足对应证据门。",
+        "non_output": ["历史摘要冒充当前输入", "上一集或最新文件自动入选", "候选图冒充已接受生产资产"]
+      },
+      "entry_mode": "router",
+      "entry_routes": ["mx-shortdrama-00-router"],
+      "default_routes": ["mx-shortdrama-00-router"],
+      "supporting_routes": ["mx-shortdrama-01-frame-extract", "mx-shortdrama-02-source-timeline", "mx-shortdrama-04-asset-prompts", "mx-shortdrama-script-only-production"],
+      "explicit_execution_routes": ["mx-shortdrama-03-mexico-localize", "mx-shortdrama-05-asset-images", "mx-shortdrama-frame-anchor-addon"],
+      "candidate_routes": ["short-drama-remake-script"],
+      "families": ["mx-shortdrama-redraw"]
+    },
+    {
+      "id": "video-postproduction-programmatic-media",
+      "order": 9,
+      "label": "视频后期、字幕与程序化媒体",
+      "overlap_pressure": "high",
+      "selection_rule": "先按最终视频类型选择一个 HyperFrames 专项或后期 Skill；入口、创意、核心实现和 CLI 只在对应阶段加载。",
+      "known_conflicts": ["HyperFrames 总入口和 18 个子 Skill 容易被一次性堆叠。", "工程文件、计划或渲染命令不能冒充最终视频。"],
+      "capability_contract": {
+        "input": ["目标视频类型", "文本、网站、PR、音乐或现有视频等权威素材", "时长、比例、品牌和声音要求", "目标渲染/发布边界"],
+        "transform": "按最终视频类型选择一个专项工作流，依次完成创意规格、媒体冻结、组合实现、渲染和媒体 QA。",
+        "output": ["可复现的程序化视频工程", "冻结的媒体清单", "真实渲染视频文件", "字幕/音频/媒体探测和视觉检查结果"],
+        "completion_gate": "最终视频文件真实存在、可播放、参数正确且符合专项内容要求；发布或部署必须另有授权和回读。",
+        "non_output": ["只有设计规格或工程代码", "只有渲染命令", "扫描到旧视频却当作当前产物"]
+      },
+      "entry_mode": "router",
+      "entry_routes": ["hyperframes"],
+      "default_routes": ["hyperframes", "tk-subtitles"],
+      "supporting_routes": ["hyperframes-core", "hyperframes-creative", "hyperframes-animation", "hyperframes-media", "media-use", "embedded-captions", "general-video"],
+      "explicit_execution_routes": ["hyperframes-cli", "hyperframes-registry", "remotion-to-hyperframes", "slideshow", "dynamic-watermark-removal"],
+      "candidate_routes": [],
+      "families": ["hyperframes-video", "video-postproduction"]
+    },
+    {
+      "id": "social-commerce-platform-operations",
+      "order": 10,
+      "label": "内容平台、社交媒体与电商运营",
+      "overlap_pressure": "high",
+      "selection_rule": "先按平台直接分派，再按研究、选题、生产、包装、发布、发布后验证选择阶段 Skill；外部发布和回复必须明确授权。",
+      "known_conflicts": ["发布包、打开发布页和真实发布经常被混淆。", "跨平台 Skill 不得自动互为发布回退。"],
+      "capability_contract": {
+        "input": ["目标平台与账号边界", "待发布内容和素材", "标题/标签/商品/受众要求", "明确的上传、发布或回复授权"],
+        "transform": "先按平台分派，再按研究、选题、生产、包装、发布和发布后验证阶段执行；写操作前重新检查授权与风控。",
+        "output": ["平台适配内容或发布包", "真实上传/发布/回复状态", "平台回读、截图或列表验证证据", "风险与下一步运营记录"],
+        "completion_gate": "内容生产以文件/发布包为准；发布型任务必须从目标平台回读真实状态，不能依据按钮点击或页面打开判断成功。",
+        "non_output": ["发布包冒充已发布", "打开发布页冒充已上传", "点击按钮无回读却声称成功"]
+      },
+      "entry_mode": "platform_direct",
+      "entry_routes": ["douyin-workflow-orchestrator", "kuaishou-content-pipeline", "xiaohongshu-ops", "goofish-risk-guard", "post-to-x"],
+      "default_routes": ["douyin-workflow-orchestrator", "kuaishou-content-pipeline", "xiaohongshu-ops", "goofish-risk-guard", "post-to-x"],
+      "supporting_routes": ["douyin-video-selection", "douyin-video-production", "douyin-caption-cover", "kuaishou-video-scout", "kuaishou-video-maker", "kuaishou-publish-packager", "xhs-traffic-aesthetic-guard", "goofish-shop-diagnosis"],
+      "explicit_execution_routes": ["douyin-publish-operator", "kuaishou-publisher", "xhs-note-creator", "xiaohongshu-ops", "goofish-publish-item", "goofish-reply-buyer", "xianyu-product-publisher", "post-to-x"],
+      "candidate_routes": ["douyin-fruit-commerce-strategy", "xianyu-ai-demand-radar"],
+      "families": ["douyin-operations", "kuaishou-operations", "xiaohongshu-operations", "goofish-operations", "social-publishing"]
+    },
+    {
+      "id": "automation-browser-infrastructure",
+      "order": 11,
+      "label": "自动化、浏览器、GUI、服务器与跨系统操作",
+      "overlap_pressure": "high",
+      "selection_rule": "按治理、浏览器验证、GUI 控制、SSH 或跨设备意图直接选择一个语义控制面；远程写入、部署、迁移和发送保持独立授权。",
+      "known_conflicts": ["Browser、Chrome、Playwright、CDP、Computer Use 和截图坐标自动化不能同时作为主控制面。", "只读协调不能自动升级为远程执行。"],
+      "capability_contract": {
+        "input": ["目标系统/设备/浏览器/服务器", "明确操作意图", "当前连接、权限与运行状态", "允许的只读/写入/远程/部署边界"],
+        "transform": "选择一个最语义化的控制面，执行最小必要动作并回读状态；跨设备、远程写入和部署保持独立授权。",
+        "output": ["路由/治理决策", "浏览器或 GUI 验证结果", "本地/远程执行产物", "连接、命令、状态回读和回滚证据"],
+        "completion_gate": "目标系统实际状态与请求一致且有直接回读；只读任务没有隐含写入，远程/部署动作有明确授权和可逆边界。",
+        "non_output": ["截图坐标点击冒充语义成功", "命令已发送冒充远程结果", "部署计划冒充已部署"]
+      },
+      "entry_mode": "intent_direct",
+      "entry_routes": ["master-control-router", "skill-governance", "gui-control-router", "control-in-app-browser", "server-fleet-ssh-router"],
+      "default_routes": ["master-control-router", "skill-governance", "gui-control-router", "control-in-app-browser", "playwright", "codex-agent-mem", "agent-team-workflow"],
+      "supporting_routes": ["playwright-interactive", "cdp-extension-router", "control-chrome", "computer-use", "post-coding-review"],
+      "explicit_execution_routes": ["server-fleet-ssh-router", "win-mac-codex-bridge", "hermes-codex-bridge", "wechat-redraw-word-sender", "cliproxy-residential-ip", "wizstar-bitbrowser", "skill-installer", "plugin-creator", "template-creator"],
+      "candidate_routes": [],
+      "families": ["browser-verification", "live-gui-control", "infrastructure-operations", "cross-system-operations", "workflow-separation", "cross-project-governance", "governance", "continuity", "security"]
+    },
+    {
+      "id": "game-development",
+      "order": 12,
+      "label": "AI 游戏开发与实时资产生产",
+      "overlap_pressure": "high",
+      "selection_rule": "先读取项目 PRD、视觉合同和工具决策，再由 gamedev-project-router 选择 Godot、Blender、音频或质量子路由；上游 GitHub Skill 只能作为显式参考，不能绕过正式主链。",
+      "known_conflicts": ["快速原型、AI 资产生成和正式交付容易被误认为同一层。", "Blender 资产源、Godot 运行时、Figma 设计源和 Provider 候选必须保持边界。"],
+      "capability_contract": {
+        "input": ["项目文档、PRD 和当前工程状态", "目标平台、引擎和资产约束", "视觉、交互、音频和验收要求", "工具、账号、许可证和外部写入边界"],
+        "transform": "按项目阶段选择一个主生产子路由，隔离研究与实验能力，建立源文件、导出文件、回读、测试和交付证据链。",
+        "output": ["游戏实现或正式资产", "可回读的 Blender/Godot/Figma/Android 产物", "测试、审计、授权和真机验证证据", "明确的 prototype_verified、integrated 或 real_delivery 状态"],
+        "completion_gate": "正式产物必须经过项目文档门、工具回读门、运行时/平台验证门和 post-coding-review；计划、候选、截图、模型文件或 APK 元数据不能单独代表完成。",
+        "non_output": ["只有 GDD、提示词或 Figma 画板却声称游戏完成", "只有 Blender 模型或 Godot 工程却声称已集成", "Provider 任务成功、Windows 截图或 APK 元数据冒充真机交付", "未经审计的外部 Agent/MCP 直接覆盖正式工程"]
+      },
+      "entry_mode": "router",
+      "entry_routes": ["gamedev-project-router"],
+      "default_routes": ["gamedev-godot-router", "gamedev-blender-asset-router", "gamedev-audio-router", "gamedev-quality-router"],
+      "supporting_routes": [],
+      "explicit_execution_routes": [],
+      "candidate_routes": ["godot-3d-essentials", "godot-animation", "godot-audio", "godot-export", "godot-ui-control", "godot-gdscript", "godot-nodes-scenes", "godot-resources", "game-ai", "camera-systems", "audio-design", "dialogue-systems", "game-ui-ux", "game-feel", "save-systems", "performance-optimization", "procedural-gen", "level-design", "prototype-fast"],
+      "families": ["game-development"]
+    }
+  ],
+  "control_planes": [
+    {"id": "project-authority", "order": 1, "label": "项目、Owner 与 Source of Truth", "gate": "Identify the owning project and authoritative local sources before selecting a domain route."},
+    {"id": "intent-artifact", "order": 2, "label": "用户意图与最终产物", "gate": "Route by the requested final artifact and outcome, not by isolated keywords."},
+    {"id": "phase", "order": 3, "label": "当前工作阶段", "gate": "Select only Skills needed for research, planning, production, implementation, verification, packaging, external execution, delivery, or compounding."},
+    {"id": "priority-budget", "order": 4, "label": "路由优先级、依赖与 Skill 预算", "gate": "Apply mandatory prerequisites and keep the active set within the 0-3 Skill budget unless the task is a broad audit."},
+    {"id": "tool-provider", "order": 5, "label": "工具、控制面、模型与 Provider", "gate": "Separate method authority from the selected control surface, model, and provider adapter."},
+    {"id": "external-effects", "order": 6, "label": "外部副作用、费用与授权", "gate": "Require explicit authority for provider submission, cost, upload, publish, deploy, DNS, migration, messaging, remote writes, and deletion."},
+    {"id": "risk-privacy", "order": 7, "label": "风险、安全与隐私", "gate": "Protect credentials, private data, production state, rights, local-image-edit boundaries, reversibility, and rollback."},
+    {"id": "verification-evolution", "order": 8, "label": "验证、证据和路由进化", "gate": "Classify structural, integrated, real_delivery, or blocked evidence before promotion, restriction, merging, or archiving."}
+  ]
+}

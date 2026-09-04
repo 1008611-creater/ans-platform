@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MXAI 生图自动化（MCP 技能包）· 使用说明</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1d24; --fg:#e6e8ec; --muted:#9aa3b2; --accent:#5b8cff; --ok:#3ecf8e; --warn:#ffb454; --line:#2a2f3a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif; }
+  .wrap { max-width:860px; margin:0 auto; padding:40px 24px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:19px; margin:34px 0 12px; padding-left:10px; border-left:4px solid var(--accent); }
+  .sub { color:var(--muted); margin:0 0 8px; }
+  code, pre { font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace; }
+  code { background:#11141a; padding:2px 6px; border-radius:5px; font-size:13px; color:#ffd9a0; }
+  pre { background:#11141a; border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow:auto; font-size:13px; line-height:1.55; }
+  pre code { background:none; padding:0; color:#d7e0ff; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin:14px 0; }
+  .note { border-left:4px solid var(--warn); background:#241f12; padding:12px 16px; border-radius:8px; color:#ffe2b0; }
+  .tools { display:grid; grid-template-columns:1fr; gap:8px; }
+  .tool { background:#11141a; border:1px solid var(--line); border-radius:8px; padding:10px 14px; }
+  .tool b { color:var(--accent); }
+  .step { counter-reset:s; }
+  .step ol { padding-left:0; list-style:none; }
+  .step li { position:relative; padding:8px 0 8px 34px; border-bottom:1px dashed var(--line); }
+  .step li:before { counter-increment:s; content:counter(s); position:absolute; left:0; top:8px; width:22px; height:22px; background:var(--accent); color:#fff; border-radius:50%; text-align:center; font-size:12px; line-height:22px; }
+  .ok { color:var(--ok); }
+  table { width:100%; border-collapse:collapse; margin:8px 0; }
+  th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>MXAI 生图自动化 · MCP 技能包</h1>
+  <p class="sub">通过 MCP 工具驱动 MXAI（midjourney 中文镜像）生图：自动关广告弹窗、填提示词、生成、下载高清原图。供 WorkBuddy / Codex 等支持 MCP 的客户端直接调用。</p>
+
+  <div class="card">
+    <p><b>分发形态：各自在本机跑一份，各自登录自己的 mxai.cn 账号。</b>积分各自承担，登录态互不共享。浏览器默认 <code>headless:false</code>，需本机带桌面环境；首次在弹出的 Edge 窗口里手动登录一次。</p>
+  </div>
+
+  <h2>1. 本机安装（一次性）</h2>
+  <div class="step">
+    <ol>
+      <li>把本技能包目录（<code>mxai-rpa-mcp/</code>）放到本机任意位置。</li>
+      <li>进入 <code>mxai-rpa-mcp/scripts/</code> 执行安装：<pre><code>cd mxai-rpa-mcp/scripts
+npm install
+npx playwright install msedge</code></pre>（若本机已有 Edge 通道可跳过第二条；依赖为 <code>playwright</code>、<code>@modelcontextprotocol/sdk</code>、<code>zod</code>。）</li>
+      <li>在客户端登记 MCP server（见下方第 2 节）。</li>
+    </ol>
+  </div>
+
+  <h2>2. 在客户端登记 MCP server</h2>
+  <p>把下面配置加进所用客户端的 <code>mcpServers</code>（路径换成你本机的<strong>绝对路径</strong>，指到 <code>scripts/mxai_mcp_server.js</code>）：</p>
+  <pre><code>{
+  "mcpServers": {
+    "mxai": {
+      "command": "node",
+      "args": ["/绝对路径/mxai-rpa-mcp/scripts/mxai_mcp_server.js"],
+      "env": {
+        "MXAI_URL": "https://www.mxai.cn/home/?mp=mjdrawai&from=invite&invite_id=你的邀请ID#/mj"
+      }
+    }
+  }
+}</code></pre>
+  <ul>
+    <li><code>MXAI_URL</code> 可选：留默认即可；想用<strong>自己的邀请链接/账号</strong>就改成自己的。</li>
+    <li><code>MXAI_HEADLESS</code> 可选：<code>true</code> / <code>false</code>（默认 false，需桌面）。</li>
+    <li><code>MXAI_PROFILE</code> 可选：浏览器 profile 目录（默认 <code>scripts/.browser-profile</code>）。</li>
+  </ul>
+  <p>登记后重启客户端，确认 <code>mxai_*</code> 工具可见（如 <code>mxai_start</code>、<code>mxai_generate</code>、<code>mxai_download_latest</code>）。</p>
+
+  <h2>3. 工具清单</h2>
+  <div class="tools">
+    <div class="tool"><b>mxai_start</b> — 启动浏览器 + 进生图页 + 自动关弹窗，返回登录态</div>
+    <div class="tool"><b>mxai_status</b> — 返回 running / loggedIn</div>
+    <div class="tool"><b>mxai_generate</b> — 完整生图流程（含下载高清原图），<span class="ok">付费动作需用户授权</span></div>
+    <div class="tool"><b>mxai_download_latest</b> — 下载最新结果（高清整图 / 缩略图兜底）</div>
+    <div class="tool"><b>mxai_dismiss</b> — 主动关闭残留弹窗</div>
+    <div class="tool"><b>mxai_diag</b> — 输出页面 DOM 结构，排查页面改版</div>
+    <div class="tool"><b>mxai_close</b> — 关闭浏览器</div>
+  </div>
+
+  <h2>4. 典型用法</h2>
+  <pre><code>1) mxai_start            # 启动并进入生图页、自动关广告弹窗；首次弹出浏览器请手动登录
+2) mxai_generate          # 给提示词（可带 --v 8.2 --ar 9:16 --stylize 250），生图并下载高清原图到 .automation/results/
+3) mxai_download_latest   # 单独下载最新结果（via=button 取高清整图）
+4) mxai_close             # 用完关浏览器</code></pre>
+
+  <h2>5. 安全边界</h2>
+  <div class="note">
+    <ul style="margin:0;">
+      <li><b>本地只读自动化，不绕过验证码/风控/权限。</b>遇真人校验即停，提示用户手动处理。</li>
+      <li>生图消耗积分 = <b>付费动作</b>，Agent 调用 <code>mxai_generate</code> 前必须得到用户当次明确授权。</li>
+      <li>登录态/凭据只存本机 profile，<b>不外传、不共享账号</b>。</li>
+      <li>stdout 是 MCP 协议通道；适配器日志已重定向到 stderr，勿改回 <code>console.log</code>。</li>
+    </ul>
+  </div>
+
+  <h2>6. 本包文件</h2>
+  <table>
+    <tr><th>文件</th><th>作用</th></tr>
+    <tr><td><code>SKILL.md</code></td><td>Agent 使用说明</td></tr>
+    <tr><td><code>references/README.md</code></td><td>成员安装与配置详解</td></tr>
+    <tr><td><code>scripts/mxai_mcp_server.js</code></td><td>MCP stdio server 入口</td></tr>
+    <tr><td><code>scripts/mxai_adapter.js</code></td><td>Playwright 适配器（弹窗关闭/生图/下载）</td></tr>
+    <tr><td><code>scripts/package.json</code></td><td>依赖声明</td></tr>
+    <tr><td><code>scripts/test/</code></td><td>mcp_smoke.js / mcp_e2e.js 联调脚本</td></tr>
+  </table>
+  <p class="sub">注：本包不含 <code>node_modules</code>，安装后由 <code>npm install</code> 生成。下载全部文件到同一目录即可运行。</p>
+</div>
+</body>
+</html>

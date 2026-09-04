@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChromaFFmpeg — API Reference</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:    #07090F;
+      --bg-sidebar: #0B0E18;
+      --bg-panel:   #10141F;
+      --bg-card:    #13182A;
+      --bg-input:   #181E30;
+      --bg-hover:   #1C2438;
+      --border:        rgba(148,163,184,0.07);
+      --border-strong: rgba(148,163,184,0.11);
+      --accent:       #8B5CF6;
+      --accent-hover: #7C3AED;
+      --accent-dim:   rgba(139,92,246,0.12);
+      --text-primary:   #EEF2FF;
+      --text-secondary: #7A8CAD;
+      --text-muted:     #384660;
+      --success:        #34D399;
+      --success-dim:    rgba(52,211,153,0.09);
+      --error:          #F87171;
+      --r:    8px;
+      --r-lg: 12px;
+      --sidebar-w: 252px;
+    }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .brand {
+      padding: 18px 18px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      flex-shrink: 0;
+    }
+
+    .brand-mark {
+      width: 34px; height: 34px;
+      background: linear-gradient(145deg, #9B72FF, #6D28D9);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 3px 14px rgba(109,40,217,0.45);
+    }
+
+    .brand-text h1 { font-size: 14.5px; font-weight: 700; letter-spacing: -0.3px; }
+    .brand-text p  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .sidebar-back {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-back a {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.12s;
+    }
+
+    .sidebar-back a:hover { color: var(--accent); }
+
+    .nav { flex: 1; padding: 10px 0; overflow-y: auto; }
+
+    .nav-cap {
+      padding: 5px 16px;
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 16px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.12s, color 0.12s;
+      border-left: 2px solid transparent;
+    }
+
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .nav-item.active { color: #C4B5FD; background: var(--accent-dim); border-left-color: var(--accent); }
+
+    .method-badge {
+      font-size: 9px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 2px 6px; border-radius: 4px;
+      flex-shrink: 0; min-width: 36px; text-align: center;
+    }
+
+    .method-get    { background: rgba(52,211,153,0.12); color: #34D399; }
+    .method-post   { background: rgba(139,92,246,0.14); color: #A78BFA; }
+    .method-delete { background: rgba(248,113,113,0.12); color: #F87171; }
+
+    .nav-sep { height: 1px; background: var(--border); margin: 6px 0; }
+
+    .sidebar-footer {
+      padding: 11px 16px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer a {
+      font-size: 11px; color: var(--text-muted);
+      text-decoration: none;
+      font-family: ui-monospace, monospace;
+      display: block; margin-bottom: 4px;
+      transition: color 0.1s;
+    }
+
+    .sidebar-footer a:hover { color: var(--accent); }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 48px 64px;
+      max-width: 860px;
+    }
+
+    .doc-header {
+      margin-bottom: 48px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .doc-header h1 {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 10px;
+    }
+
+    .doc-header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 580px;
+    }
+
+    .auth-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r);
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .auth-note code {
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 12px;
+      color: #A78BFA;
+      background: rgba(139,92,246,0.1);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    /* Section */
+    .endpoint-section {
+      margin-bottom: 56px;
+      scroll-margin-top: 24px;
+    }
+
+    .endpoint-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .endpoint-heading h2 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+    }
+
+    .endpoint-desc {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+
+    /* Code blocks */
+    .code-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 14px;
+      background: var(--bg-input);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--text-muted);
+    }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border-strong);
+      border-radius: 5px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+    }
+
+    .copy-btn:hover { border-color: rgba(139,92,246,0.4); color: var(--accent); }
+    .copy-btn.copied { border-color: var(--success); color: var(--success); }
+
+    pre {
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: var(--text-primary);
+    }
+
+    .kw { color: #F87171; }         /* keywords: curl, -X, -H, -d, -F */
+    .meth { color: #34D399; }       /* GET POST DELETE */
+    .url { color: #A78BFA; }        /* URLs */
+    .str { color: #FCD34D; }        /* strings */
+    .key { color: #7DD3FC; }        /* JSON keys */
+    .num { color: #FB923C; }        /* numbers/booleans */
+    .cmt { color: var(--text-muted); font-style: italic; } /* comments */
+
+    /* Response block */
+    .response-block pre { color: #86EFAC; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      padding: 9px 14px;
+      background: var(--bg-input);
+      border-bottom: 1px solid var(--border-strong);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    td:first-child {
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 12px;
+      color: #A78BFA;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .table-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    /* Info note */
+    .note {
+      background: var(--accent-dim);
+      border: 1px solid rgba(139,92,246,0.18);
+      border-radius: var(--r);
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: #C4B5FD;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .warn {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: var(--r);
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: #FBBF24;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    /* Sub-heading */
+    .sub-h {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin: 20px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Pill list */
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 11.5px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+    }
+
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 48px 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="23 7 16 12 23 17 23 7"/>
+        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>ChromaFFmpeg</h1>
+      <p>API Reference</p>
+    </div>
+  </div>
+
+  <div class="sidebar-back">
+    <a href="/">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to UI
+    </a>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-cap">Auth</div>
+    <a class="nav-item" href="#auth">
+      <span class="method-badge method-get">KEY</span> Authentication
+    </a>
+
+    <div class="nav-sep"></div>
+    <div class="nav-cap">Processing</div>
+
+    <a class="nav-item" href="#merge">
+      <span class="method-badge method-post">POST</span> /merge
+    </a>
+    <a class="nav-item" href="#animate">
+      <span class="method-badge method-post">POST</span> /animate
+    </a>
+    <a class="nav-item" href="#combine">
+      <span class="method-badge method-post">POST</span> /combine
+    </a>
+    <a class="nav-item" href="#image-to-video">
+      <span class="method-badge method-post">POST</span> /image-to-video
+    </a>
+    <a class="nav-item" href="#loop">
+      <span class="method-badge method-post">POST</span> /loop
+    </a>
+    <a class="nav-item" href="#concat-transitions">
+      <span class="method-badge method-post">POST</span> /concat-transitions
+    </a>
+    <a class="nav-item" href="#metadata">
+      <span class="method-badge method-post">POST</span> /metadata
+    </a>
+
+    <div class="nav-sep"></div>
+    <div class="nav-cap">Storage</div>
+
+    <a class="nav-item" href="#upload">
+      <span class="method-badge method-post">POST</span> /upload
+    </a>
+    <a class="nav-item" href="#folders-get">
+      <span class="method-badge method-get">GET</span> /folders
+    </a>
+    <a class="nav-item" href="#folders-post">
+      <span class="method-badge method-post">POST</span> /folders
+    </a>
+    <a class="nav-item" href="#folders-name">
+      <span class="method-badge method-get">GET</span> /folders/{name}
+    </a>
+    <a class="nav-item" href="#folders-urls">
+      <span class="method-badge method-get">GET</span> /folders/{name}/urls
+    </a>
+    <a class="nav-item" href="#folders-delete">
+      <span class="method-badge method-delete">DEL</span> /folders/{name}
+    </a>
+    <a class="nav-item" href="#folders-file-delete">
+      <span class="method-badge method-delete">DEL</span> /folders/{name}/{file}
+    </a>
+
+    <div class="nav-sep"></div>
+    <div class="nav-cap">Jobs</div>
+
+    <a class="nav-item" href="#files-get">
+      <span class="method-badge method-get">GET</span> /files
+    </a>
+    <a class="nav-item" href="#files-delete">
+      <span class="method-badge method-delete">DEL</span> /files
+    </a>
+    <a class="nav-item" href="#files-job-delete">
+      <span class="method-badge method-delete">DEL</span> /files/{job_id}
+    </a>
+    <a class="nav-item" href="#health">
+      <span class="method-badge method-get">GET</span> /health
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/docs">swagger ui ↗</a>
+    <a href="/redoc">redoc ↗</a>
+    <a href="/">← app</a>
+  </div>
+</aside>
+
+<!-- ── Main Content ── -->
+<main class="main">
+
+  <div class="doc-header">
+    <h1>API Reference</h1>
+    <p>ChromaFFmpeg is a self-hosted FFmpeg API. Submit media URLs or upload binary files, process them server-side, and receive back a persistent URL.</p>
+    <div class="auth-note">
+      All endpoints require the header&nbsp;
+      <code>X-API-Key: your-secret-key</code>
+    </div>
+  </div>
+
+  <!-- ── Auth ── -->
+  <section class="endpoint-section" id="auth">
+    <div class="endpoint-heading">
+      <h2>Authentication</h2>
+    </div>
+    <p class="endpoint-desc">Every request must include your API key in the <code style="font-family:monospace;color:#A78BFA">X-API-Key</code> header. The key is set via the <code style="font-family:monospace;color:#A78BFA">API_KEY</code> environment variable on the server.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl http://localhost:9000/health \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>401</td><td>Missing or invalid API key</td></tr>
+          <tr><td>500</td><td>API_KEY is not configured on the server</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /merge ── -->
+  <section class="endpoint-section" id="merge">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/merge</h2>
+    </div>
+    <p class="endpoint-desc">Merge a video file and an audio file. The <code style="font-family:monospace;color:#A78BFA">strategy</code> field controls how a length mismatch is resolved.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>video_url</td><td>string</td><td>—</td><td>URL of the video file</td></tr>
+          <tr><td>audio_url</td><td>string</td><td>—</td><td>URL of the audio file</td></tr>
+          <tr><td>strategy</td><td>string</td><td>speed_match</td><td><code style="font-family:monospace;color:#A78BFA">trim_or_slow</code> · <code style="font-family:monospace;color:#A78BFA">speed_match</code> · <code style="font-family:monospace;color:#A78BFA">trim</code></td></tr>
+          <tr><td>folder</td><td>string</td><td>null</td><td>Optional named folder to save output into</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Strategy</th><th>Video longer than audio</th><th>Audio longer than video</th></tr></thead>
+        <tbody>
+          <tr><td>trim_or_slow</td><td>Trim video to audio length (stream copy)</td><td>Slow video down to fill audio duration</td></tr>
+          <tr><td>speed_match</td><td>Speed up video to match audio</td><td>Slow video down to match audio</td></tr>
+          <tr><td>trim</td><td>Cut at whichever stream ends first</td><td>Cut at whichever stream ends first</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — trim_or_slow</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/merge \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "video_url": "https://example.com/clip.mp4",
+    "audio_url": "https://example.com/track.mp3",
+    "strategy": "trim_or_slow"
+  }'</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — save to folder</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/merge \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "video_url": "https://example.com/clip.mp4",
+    "audio_url": "https://example.com/track.mp3",
+    "strategy": "trim_or_slow",
+    "folder": "MyProject"
+  }'</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header">
+        <span class="code-label">response</span>
+      </div>
+      <pre>{
+  <span class="key">"url"</span>: <span class="str">"http://localhost:9000/files/3f2a1b4c/output.mp4"</span>,
+  <span class="key">"filename"</span>: <span class="str">"output.mp4"</span>,
+  <span class="key">"job_id"</span>: <span class="str">"3f2a1b4c-5d6e-7f8a-9b0c-1d2e3f4a5b6c"</span>
+}</pre>
+    </div>
+
+    <div class="note">When duration cannot be detected for either file, the server falls back to <code style="font-family:monospace">-shortest</code> and adds a <code style="font-family:monospace">"warning"</code> key to the response.</div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /animate ── -->
+  <section class="endpoint-section" id="animate">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/animate</h2>
+    </div>
+    <p class="endpoint-desc">Apply a cinematic animation effect (Ken Burns, zoom, pan) to an image or video. CPU-intensive — a 6 s 1080p animation typically takes 30–90 s.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>media_url</td><td>string</td><td>—</td><td>URL of the source image or video</td></tr>
+          <tr><td>media_type</td><td>string</td><td>image</td><td><code style="font-family:monospace;color:#A78BFA">image</code> or <code style="font-family:monospace;color:#A78BFA">video</code></td></tr>
+          <tr><td>animation</td><td>string</td><td>zoom_in</td><td>See animation values below</td></tr>
+          <tr><td>duration</td><td>number</td><td>6.0</td><td>Output duration in seconds</td></tr>
+          <tr><td>fps</td><td>integer</td><td>25</td><td>Output frame rate</td></tr>
+          <tr><td>resolution</td><td>string</td><td>1920x1080</td><td>Output resolution e.g. <code style="font-family:monospace;color:#A78BFA">1280x720</code></td></tr>
+          <tr><td>folder</td><td>string</td><td>null</td><td>Optional named folder</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-h">Animation values</div>
+    <div class="pill-list">
+      <span class="pill">zoom_in</span>
+      <span class="pill">zoom_out</span>
+      <span class="pill">pan_left</span>
+      <span class="pill">pan_right</span>
+      <span class="pill">pan_zoom</span>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/animate \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "media_url": "https://example.com/photo.jpg",
+    "media_type": "image",
+    "animation": "zoom_in",
+    "duration": 6,
+    "fps": 25,
+    "resolution": "1920x1080"
+  }'</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"url"</span>: <span class="str">"http://localhost:9000/files/abc12345/output.mp4"</span>,
+  <span class="key">"filename"</span>: <span class="str">"output.mp4"</span>,
+  <span class="key">"job_id"</span>: <span class="str">"abc12345-0000-0000-0000-000000000001"</span>
+}</pre>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /combine ── -->
+  <section class="endpoint-section" id="combine">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/combine</h2>
+    </div>
+    <p class="endpoint-desc">Concatenate two or more video or audio files into a single output. Use <code style="font-family:monospace;color:#A78BFA">reencode: true</code> for mixed-codec sources.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>type</td><td>string</td><td>—</td><td><code style="font-family:monospace;color:#A78BFA">video</code> or <code style="font-family:monospace;color:#A78BFA">audio</code></td></tr>
+          <tr><td>urls</td><td>string[]</td><td>—</td><td>List of media URLs (minimum 2)</td></tr>
+          <tr><td>reencode</td><td>boolean</td><td>false</td><td>Re-encode for mixed codecs/resolutions (slower)</td></tr>
+          <tr><td>folder</td><td>string</td><td>null</td><td>Optional named folder</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — video (stream copy)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/combine \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "type": "video",
+    "urls": [
+      "https://example.com/clip1.mp4",
+      "https://example.com/clip2.mp4",
+      "https://example.com/clip3.mp4"
+    ],
+    "reencode": false
+  }'</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — audio</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/combine \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "type": "audio",
+    "urls": [
+      "https://example.com/part1.mp3",
+      "https://example.com/part2.mp3"
+    ],
+    "reencode": false
+  }'</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"url"</span>: <span class="str">"http://localhost:9000/files/abc12345/output.mp4"</span>,
+  <span class="key">"filename"</span>: <span class="str">"output.mp4"</span>,
+  <span class="key">"job_id"</span>: <span class="str">"abc12345-0000-0000-0000-000000000002"</span>
+}</pre>
+    </div>
+
+    <div class="warn">With <code style="font-family:monospace">reencode: false</code> (stream copy), all inputs must share the same codec, resolution, and sample rate. Use <code style="font-family:monospace">reencode: true</code> for mixed sources.</div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /image-to-video ── -->
+  <section class="endpoint-section" id="image-to-video">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/image-to-video</h2>
+    </div>
+    <p class="endpoint-desc">Convert a static image to an MP4 video with optional animation effect.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>image_url</td><td>string</td><td>—</td><td>URL of the source image</td></tr>
+          <tr><td>duration</td><td>number</td><td>8.0</td><td>Output duration in seconds</td></tr>
+          <tr><td>animation</td><td>string</td><td>none</td><td><code style="font-family:monospace;color:#A78BFA">none</code> · <code style="font-family:monospace;color:#A78BFA">zoom_in</code> · <code style="font-family:monospace;color:#A78BFA">zoom_out</code> · <code style="font-family:monospace;color:#A78BFA">pan_left</code> · <code style="font-family:monospace;color:#A78BFA">pan_right</code> · <code style="font-family:monospace;color:#A78BFA">pan_zoom</code></td></tr>
+          <tr><td>fps</td><td>integer</td><td>25</td><td>Output frame rate</td></tr>
+          <tr><td>resolution</td><td>string</td><td>1920x1080</td><td>Output resolution</td></tr>
+          <tr><td>folder</td><td>string</td><td>null</td><td>Optional named folder</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — static (no animation)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/image-to-video \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "image_url": "https://example.com/photo.png",
+    "duration": 8,
+    "animation": "none",
+    "fps": 25,
+    "resolution": "1920x1080"
+  }'</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — Ken Burns (pan_zoom)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/image-to-video \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "image_url": "https://example.com/landscape.jpg",
+    "duration": 10,
+    "animation": "pan_zoom",
+    "fps": 25,
+    "resolution": "1920x1080"
+  }'</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"url"</span>: <span class="str">"http://localhost:9000/files/abc12345/output.mp4"</span>,
+  <span class="key">"filename"</span>: <span class="str">"output.mp4"</span>,
+  <span class="key">"job_id"</span>: <span class="str">"abc12345-0000-0000-0000-000000000003"</span>
+}</pre>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /loop ── -->
+  <section class="endpoint-section" id="loop">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/loop</h2>
+    </div>
+    <p class="endpoint-desc">Repeat a video clip N times using the FFmpeg concat demuxer with stream copy — near-instant, no re-encoding regardless of loop count.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>video_url</td><td>string</td><td>—</td><td>URL of the video to loop</td></tr>
+          <tr><td>loop_count</td><td>integer</td><td>3</td><td>Number of repetitions (2–50)</td></tr>
+          <tr><td>folder</td><td>string</td><td>null</td><td>Optional named folder</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/loop \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "video_url": "https://example.com/intro.mp4",
+    "loop_count": 4
+  }'</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"url"</span>: <span class="str">"http://localhost:9000/files/abc12345/output.mp4"</span>,
+  <span class="key">"filename"</span>: <span class="str">"output.mp4"</span>,
+  <span class="key">"job_id"</span>: <span class="str">"abc12345-0000-0000-0000-000000000004"</span>
+}</pre>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /concat-transitions ── -->
+  <section class="endpoint-section" id="concat-transitions">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/concat-transitions</h2>
+    </div>
+    <p class="endpoint-desc">Concatenate video clips with smooth FFmpeg xfade transitions. If all clips have audio, acrossfade transitions are applied to audio automatically.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>urls</td><td>string[]</td><td>—</td><td>List of clip URLs (minimum 2)</td></tr>
+          <tr><td>transition</td><td>string</td><td>fade</td><td>Transition effect name (see below)</td></tr>
+          <tr><td>transition_duration</td><td>number</td><td>1.0</td><td>Duration of each transition in seconds</td></tr>
+          <tr><td>folder</td><td>string</td><td>null</td><td>Optional named folder</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub-h">Transition values</div>
+    <div class="pill-list">
+      <span class="pill">fade</span><span class="pill">fadeblack</span><span class="pill">fadewhite</span>
+      <span class="pill">dissolve</span><span class="pill">pixelize</span>
+      <span class="pill">wipeleft</span><span class="pill">wiperight</span><span class="pill">wipeup</span><span class="pill">wipedown</span>
+      <span class="pill">slideleft</span><span class="pill">slideright</span>
+      <span class="pill">smoothleft</span><span class="pill">smoothright</span>
+      <span class="pill">radial</span><span class="pill">circleopen</span><span class="pill">circleclose</span>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — fade between three clips</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/concat-transitions \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "urls": [
+      "https://example.com/scene1.mp4",
+      "https://example.com/scene2.mp4",
+      "https://example.com/scene3.mp4"
+    ],
+    "transition": "fade",
+    "transition_duration": 1.0
+  }'</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — wipe left, short transition</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/concat-transitions \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{
+    "urls": [
+      "https://example.com/clip1.mp4",
+      "https://example.com/clip2.mp4"
+    ],
+    "transition": "wipeleft",
+    "transition_duration": 0.5
+  }'</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"url"</span>: <span class="str">"http://localhost:9000/files/abc12345/output.mp4"</span>,
+  <span class="key">"filename"</span>: <span class="str">"output.mp4"</span>,
+  <span class="key">"job_id"</span>: <span class="str">"abc12345-0000-0000-0000-000000000005"</span>
+}</pre>
+    </div>
+
+    <div class="warn">All clips must share the same resolution and frame rate. Duration must be detectable for every clip — use <code style="font-family:monospace">POST /metadata</code> to verify beforehand.</div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /metadata ── -->
+  <section class="endpoint-section" id="metadata">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/metadata</h2>
+    </div>
+    <p class="endpoint-desc">Inspect any media URL — returns duration, format, resolution, fps, bitrate, and stream counts via ffprobe. No output file is created.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/metadata \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{"url": "https://example.com/video.mp4"}'</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"duration_seconds"</span>: <span class="num">47.32</span>,
+  <span class="key">"duration_formatted"</span>: <span class="str">"0:00:47"</span>,
+  <span class="key">"format"</span>: <span class="str">"mov,mp4,m4a,3gp,3g2,mj2"</span>,
+  <span class="key">"size_bytes"</span>: <span class="num">4823042</span>,
+  <span class="key">"video_streams"</span>: <span class="num">1</span>,
+  <span class="key">"audio_streams"</span>: <span class="num">1</span>,
+  <span class="key">"width"</span>: <span class="num">1920</span>,
+  <span class="key">"height"</span>: <span class="num">1080</span>,
+  <span class="key">"fps"</span>: <span class="num">25.0</span>,
+  <span class="key">"bitrate_kbps"</span>: <span class="num">2048</span>
+}</pre>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /upload ── -->
+  <section class="endpoint-section" id="upload">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/upload</h2>
+    </div>
+    <p class="endpoint-desc">Upload any binary file (video, audio, image) via multipart form data and receive a persistent URL. Maximum file size: <strong>500 MB</strong>. Accepts an optional <code style="font-family:monospace;color:#A78BFA">folder</code> form field — the folder is created automatically if it does not exist.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — general storage</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/upload \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -F <span class="str">"file=@/path/to/video.mp4"</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl — into a named folder</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/upload \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -F <span class="str">"file=@/path/to/photo.jpg"</span> \
+  -F <span class="str">"folder=my-project"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response (no folder)</span></div>
+      <pre>{
+  <span class="key">"url"</span>: <span class="str">"http://localhost:9000/files/abc12345/video.mp4"</span>,
+  <span class="key">"filename"</span>: <span class="str">"video.mp4"</span>,
+  <span class="key">"job_id"</span>: <span class="str">"abc12345-0000-0000-0000-000000000006"</span>,
+  <span class="key">"size_bytes"</span>: <span class="num">4823042</span>
+}</pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response (with folder)</span></div>
+      <pre>{
+  <span class="key">"url"</span>: <span class="str">"http://localhost:9000/store/my-project/photo.jpg"</span>,
+  <span class="key">"filename"</span>: <span class="str">"photo.jpg"</span>,
+  <span class="key">"folder"</span>: <span class="str">"my-project"</span>,
+  <span class="key">"size_bytes"</span>: <span class="num">204800</span>
+}</pre>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── Folders ── -->
+  <section class="endpoint-section" id="folders-get">
+    <div class="endpoint-heading">
+      <span class="method-badge method-get" style="font-size:12px;padding:4px 10px;">GET</span>
+      <h2>/folders</h2>
+    </div>
+    <p class="endpoint-desc">List all named folders with file counts and total sizes.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl http://localhost:9000/folders \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"folders"</span>: [
+    { <span class="key">"name"</span>: <span class="str">"my-project"</span>,   <span class="key">"file_count"</span>: <span class="num">3</span>, <span class="key">"total_size_bytes"</span>: <span class="num">1048576</span> },
+    { <span class="key">"name"</span>: <span class="str">"audio-assets"</span>, <span class="key">"file_count"</span>: <span class="num">7</span>, <span class="key">"total_size_bytes"</span>: <span class="num">8388608</span> }
+  ],
+  <span class="key">"count"</span>: <span class="num">2</span>
+}</pre>
+    </div>
+  </section>
+
+  <section class="endpoint-section" id="folders-post">
+    <div class="endpoint-heading">
+      <span class="method-badge method-post" style="font-size:12px;padding:4px 10px;">POST</span>
+      <h2>/folders</h2>
+    </div>
+    <p class="endpoint-desc">Create a named folder. Folder names are sanitized to alphanumeric characters, hyphens, and underscores (max 64 chars).</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X POST http://localhost:9000/folders \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span> \
+  -d <span class="str">'{"name": "my-project"}'</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{ <span class="key">"name"</span>: <span class="str">"my-project"</span>, <span class="key">"created"</span>: <span class="num">true</span> }</pre>
+    </div>
+  </section>
+
+  <section class="endpoint-section" id="folders-name">
+    <div class="endpoint-heading">
+      <span class="method-badge method-get" style="font-size:12px;padding:4px 10px;">GET</span>
+      <h2>/folders/{name}</h2>
+    </div>
+    <p class="endpoint-desc">List all files inside a specific folder.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl http://localhost:9000/folders/my-project \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"folder"</span>: <span class="str">"my-project"</span>,
+  <span class="key">"files"</span>: [
+    {
+      <span class="key">"filename"</span>: <span class="str">"photo.jpg"</span>,
+      <span class="key">"url"</span>: <span class="str">"http://localhost:9000/store/my-project/photo.jpg"</span>,
+      <span class="key">"size_bytes"</span>: <span class="num">204800</span>,
+      <span class="key">"created_at"</span>: <span class="str">"2026-03-13T12:00:00"</span>
+    }
+  ],
+  <span class="key">"count"</span>: <span class="num">1</span>,
+  <span class="key">"total_size_bytes"</span>: <span class="num">204800</span>
+}</pre>
+    </div>
+  </section>
+
+  <section class="endpoint-section" id="folders-urls">
+    <div class="endpoint-heading">
+      <span class="method-badge method-get" style="font-size:12px;padding:4px 10px;">GET</span>
+      <h2>/folders/{name}/urls</h2>
+    </div>
+    <p class="endpoint-desc">Returns all file URLs in a folder formatted as a ready-to-use body for <code style="font-family:monospace;color:#A78BFA">POST /combine</code>.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Query param</th><th>Values</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td>type</td><td>video · audio</td><td>video</td></tr>
+          <tr><td>reencode</td><td>true · false</td><td>false</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl <span class="str">"http://localhost:9000/folders/my-project/urls?type=video&amp;reencode=false"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"type"</span>: <span class="str">"video"</span>,
+  <span class="key">"urls"</span>: [
+    <span class="str">"http://localhost:9000/store/my-project/clip1.mp4"</span>,
+    <span class="str">"http://localhost:9000/store/my-project/clip2.mp4"</span>
+  ],
+  <span class="key">"reencode"</span>: <span class="num">false</span>,
+  <span class="key">"count"</span>: <span class="num">2</span>
+}</pre>
+    </div>
+  </section>
+
+  <section class="endpoint-section" id="folders-delete">
+    <div class="endpoint-heading">
+      <span class="method-badge method-delete" style="font-size:12px;padding:4px 10px;">DELETE</span>
+      <h2>/folders/{name}</h2>
+    </div>
+    <p class="endpoint-desc">Delete a folder and all files inside it permanently.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X DELETE http://localhost:9000/folders/my-project \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{ <span class="key">"deleted"</span>: <span class="str">"my-project"</span> }</pre>
+    </div>
+  </section>
+
+  <section class="endpoint-section" id="folders-file-delete">
+    <div class="endpoint-heading">
+      <span class="method-badge method-delete" style="font-size:12px;padding:4px 10px;">DELETE</span>
+      <h2>/folders/{name}/{filename}</h2>
+    </div>
+    <p class="endpoint-desc">Delete a single file from a folder without removing the folder itself.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X DELETE http://localhost:9000/folders/my-project/photo.jpg \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{ <span class="key">"deleted"</span>: <span class="str">"photo.jpg"</span>, <span class="key">"folder"</span>: <span class="str">"my-project"</span> }</pre>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── Files / Jobs ── -->
+  <section class="endpoint-section" id="files-get">
+    <div class="endpoint-heading">
+      <span class="method-badge method-get" style="font-size:12px;padding:4px 10px;">GET</span>
+      <h2>/files</h2>
+    </div>
+    <p class="endpoint-desc">List all stored job output files across all processing jobs.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl http://localhost:9000/files \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{
+  <span class="key">"files"</span>: [
+    {
+      <span class="key">"job_id"</span>: <span class="str">"3f2a1b4c-5d6e-7f8a-9b0c-1d2e3f4a5b6c"</span>,
+      <span class="key">"filename"</span>: <span class="str">"output.mp4"</span>,
+      <span class="key">"url"</span>: <span class="str">"http://localhost:9000/files/3f2a1b4c/output.mp4"</span>,
+      <span class="key">"size_bytes"</span>: <span class="num">4823042</span>,
+      <span class="key">"created_at"</span>: <span class="str">"2026-03-13T12:00:00"</span>
+    }
+  ],
+  <span class="key">"count"</span>: <span class="num">1</span>,
+  <span class="key">"total_size_bytes"</span>: <span class="num">4823042</span>
+}</pre>
+    </div>
+  </section>
+
+  <section class="endpoint-section" id="files-delete">
+    <div class="endpoint-heading">
+      <span class="method-badge method-delete" style="font-size:12px;padding:4px 10px;">DELETE</span>
+      <h2>/files</h2>
+    </div>
+    <p class="endpoint-desc">Purge all stored job output files in one request.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X DELETE http://localhost:9000/files \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{ <span class="key">"deleted_jobs"</span>: <span class="num">12</span>, <span class="key">"message"</span>: <span class="str">"Purged 12 job(s)"</span> }</pre>
+    </div>
+  </section>
+
+  <section class="endpoint-section" id="files-job-delete">
+    <div class="endpoint-heading">
+      <span class="method-badge method-delete" style="font-size:12px;padding:4px 10px;">DELETE</span>
+      <h2>/files/{job_id}</h2>
+    </div>
+    <p class="endpoint-desc">Delete a single job's output directory.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl -X DELETE <span class="str">"http://localhost:9000/files/3f2a1b4c-5d6e-7f8a-9b0c-1d2e3f4a5b6c"</span> \
+  -H <span class="str">"X-API-Key: your-secret-key"</span></pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{ <span class="key">"deleted"</span>: <span class="str">"3f2a1b4c-5d6e-7f8a-9b0c-1d2e3f4a5b6c"</span> }</pre>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── /health ── -->
+  <section class="endpoint-section" id="health">
+    <div class="endpoint-heading">
+      <span class="method-badge method-get" style="font-size:12px;padding:4px 10px;">GET</span>
+      <h2>/health</h2>
+    </div>
+    <p class="endpoint-desc">Health check. No authentication required.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">curl</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre>curl http://localhost:9000/health</pre>
+    </div>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">response</span></div>
+      <pre>{ <span class="key">"status"</span>: <span class="str">"ok"</span> }</pre>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── Error Handling ── -->
+  <section class="endpoint-section" id="errors">
+    <div class="endpoint-heading">
+      <h2 style="font-family:inherit;font-size:18px;">Error Handling</h2>
+    </div>
+    <p class="endpoint-desc">All errors return a consistent JSON body.</p>
+
+    <div class="code-block response-block">
+      <div class="code-header"><span class="code-label">error shape</span></div>
+      <pre>{
+  <span class="key">"detail"</span>: {
+    <span class="key">"error"</span>: <span class="str">"FFmpeg processing failed"</span>,
+    <span class="key">"detail"</span>: <span class="str">"...raw FFmpeg stderr output..."</span>
+  }
+}</pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>400</td><td>Bad request — invalid input or unreachable URL</td></tr>
+          <tr><td>401</td><td>Missing or invalid X-API-Key header</td></tr>
+          <tr><td>404</td><td>File or folder not found</td></tr>
+          <tr><td>413</td><td>Upload exceeds 500 MB limit</td></tr>
+          <tr><td>422</td><td>Request body validation failed</td></tr>
+          <tr><td>500</td><td>FFmpeg or server-side processing error</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>FFmpeg error</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>No such file or directory</td><td>Input URL unreachable</td><td>Verify the URL is publicly accessible</td></tr>
+          <tr><td>Invalid data found when processing input</td><td>Corrupted or unsupported container</td><td>Re-download or convert the source file</td></tr>
+          <tr><td>height not divisible by 2</td><td>Odd pixel dimensions</td><td>Use <code style="font-family:monospace;color:#A78BFA">scale=trunc(iw/2)*2:trunc(ih/2)*2</code></td></tr>
+          <tr><td>Encoder libx264 not found</td><td>FFmpeg binary missing codec</td><td>Use the full FFmpeg Docker image</td></tr>
+          <tr><td>Could not determine duration (xfade)</td><td>Clip has no duration metadata</td><td>Pre-process with <code style="font-family:monospace;color:#A78BFA">/metadata</code> or re-encode</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+
+// Highlight active nav item on scroll
+const sections = document.querySelectorAll('.endpoint-section[id]');
+const navItems = document.querySelectorAll('.nav-item[href^="#"]');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navItems.forEach(a => a.classList.remove('active'));
+      const match = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+      if (match) match.classList.add('active');
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-40px 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

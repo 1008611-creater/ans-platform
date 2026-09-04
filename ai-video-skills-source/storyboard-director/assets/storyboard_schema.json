@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Storyboard Director Plan",
+  "type": "object",
+  "required": ["project", "scenes"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["title", "prompt_language", "style_mode"],
+      "properties": {
+        "title": { "type": "string" },
+        "prompt_language": { "type": "string", "enum": ["zh", "en"] },
+        "output_mode": {
+          "type": "string",
+          "enum": ["storyboard_script", "prompt_only", "review"]
+        },
+        "style_mode": {
+          "type": "string",
+          "enum": ["script_inferred_style", "user_locked_style", "hybrid_style"]
+        },
+        "style_profile": {
+          "type": "object",
+          "properties": {
+            "medium": { "type": "string" },
+            "realism_level": { "type": "string" },
+            "palette": { "type": "string" },
+            "contrast": { "type": "string" },
+            "texture": { "type": "string" },
+            "lighting_bias": { "type": "string" },
+            "movement_energy": { "type": "string" },
+            "composition_density": { "type": "string" },
+            "rhythm": { "type": "string" },
+            "audience": { "type": "string" },
+            "prompt_tags": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "audio_profile": {
+          "type": "object",
+          "properties": {
+            "score_style": { "type": "string" },
+            "sonic_palette": { "type": "string" },
+            "ambience_bias": { "type": "string" },
+            "brand_mnemonic": { "type": "string" },
+            "dialogue_treatment": { "type": "string" }
+          }
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scene_id", "summary", "shots"],
+        "properties": {
+          "scene_id": { "type": "string" },
+          "summary": { "type": "string" },
+          "scene_objective": { "type": "string" },
+          "audience_must_understand": { "type": "string" },
+          "readability_risk": { "type": "string" },
+          "time_range_label": { "type": "string" },
+          "sequence_label": { "type": "string" },
+          "display_title": { "type": "string" },
+          "style_overrides": { "type": "object" },
+          "shots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "shot_id",
+                "narrative_purpose",
+                "audience_focus",
+                "subject",
+                "action",
+                "setting",
+                "mood",
+                "shot_size",
+                "angle",
+                "lens",
+                "lighting",
+                "camera_movement"
+              ],
+              "properties": {
+                "shot_id": { "type": "string" },
+                "style_mode": {
+                  "type": "string",
+                  "enum": [
+                    "script_inferred_style",
+                    "user_locked_style",
+                    "hybrid_style"
+                  ]
+                },
+                "style_rationale": { "type": "string" },
+                "style_overrides": { "type": "object" },
+                "narrative_purpose": { "type": "string" },
+                "audience_focus": { "type": "string" },
+                "director_decision": {
+                  "type": "object",
+                  "properties": {
+                    "blocking_plan": { "type": "string" },
+                    "composition_goal": { "type": "string" },
+                    "focus_shift": { "type": "string" },
+                    "movement_motivation": { "type": "string" },
+                    "tempo": { "type": "string" },
+                    "transition_reason": { "type": "string" }
+                  }
+                },
+                "expression_plan": {
+                  "type": "object",
+                  "properties": {
+                    "pre_action_expression": { "type": "string" },
+                    "during_action_expression": { "type": "string" },
+                    "post_result_expression": { "type": "string" },
+                    "expression_shift": { "type": "string" },
+                    "body_language": { "type": "string" }
+                  }
+                },
+                "action_timing_validation": {
+                  "type": "object",
+                  "properties": {
+                    "primary_action_chain": { "type": "string" },
+                    "secondary_action_chain": { "type": "string" },
+                    "setup_seconds": { "type": "number" },
+                    "execution_seconds": { "type": "number" },
+                    "result_seconds": { "type": "number" },
+                    "reaction_seconds": { "type": "number" },
+                    "available_seconds": { "type": "number" },
+                    "estimated_required_seconds": { "type": "number" },
+                    "timing_pressure": { "type": "string" },
+                    "readability_verdict": { "type": "string" },
+                    "adjustment": { "type": "string" }
+                  }
+                },
+                "object_state_control": {
+                  "type": "object",
+                  "properties": {
+                    "object": { "type": "string" },
+                    "required_state": { "type": "string" },
+                    "visible_markers": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "forbidden_markers": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "transition_gate": { "type": "string" }
+                  }
+                },
+                "subject": { "type": "string" },
+                "action": { "type": "string" },
+                "setting": { "type": "string" },
+                "mood": { "type": "string" },
+                "shot_size": { "type": "string" },
+                "angle": { "type": "string" },
+                "lens": { "type": "string" },
+                "display_labels": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "maxItems": 2
+                },
+                "foreground": { "type": "string" },
+                "composition": { "type": "string" },
+                "lighting": { "type": "string" },
+                "lighting_design": {
+                  "type": "object",
+                  "properties": {
+                    "key_light": { "type": "string" },
+                    "fill_light": { "type": "string" },
+                    "rim_light": { "type": "string" },
+                    "background_light": { "type": "string" },
+                    "color_relation": { "type": "string" },
+                    "motivated_source": { "type": "string" },
+                    "contrast": { "type": "string" },
+                    "material_response": { "type": "string" }
+                  }
+                },
+                "camera_movement": { "type": "string" },
+                "sound_design": {
+                  "type": "object",
+                  "properties": {
+                    "ambience": { "type": "string" },
+                    "foley": { "type": "string" },
+                    "character_vocalization": { "type": "string" },
+                    "magic_or_stylized_sfx": { "type": "string" },
+                    "music": { "type": "string" },
+                    "mix_focus": { "type": "string" },
+                    "brand_mnemonic": { "type": "string" },
+                    "audio_reference_hint": { "type": "string" }
+                  }
+                },
+                "critique_pass": {
+                  "type": "object",
+                  "properties": {
+                    "primary_risk": { "type": "string" },
+                    "why_it_can_fail": { "type": "string" },
+                    "correction": { "type": "string" },
+                    "verified_choice": { "type": "string" }
+                  }
+                },
+                "continuity_anchors": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "evaluation": {
+                  "type": "object",
+                  "properties": {
+                    "narrative_fidelity": { "type": "number" },
+                    "protagonist_priority": { "type": "number" },
+                    "blocking_clarity": { "type": "number" },
+                    "composition_logic": { "type": "number" },
+                    "camera_motivation": { "type": "number" },
+                    "rhythm_control": { "type": "number" },
+                    "action_timing_readability": { "type": "number" },
+                    "expression_readability": { "type": "number" },
+                    "object_state_control": { "type": "number" },
+                    "generation_controllability": { "type": "number" },
+                    "overall_score": { "type": "number" },
+                    "verdict": { "type": "string" },
+                    "notes": { "type": "string" }
+                  }
+                },
+                "timecoded_beats": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["start", "end", "description"],
+                    "properties": {
+                      "start": { "type": "number" },
+                      "end": { "type": "number" },
+                      "description": { "type": "string" }
+                    }
+                  }
+                },
+                "negative": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

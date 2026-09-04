@@ -1,0 +1,4 @@
+interface:
+  display_name: "Douyin Caption Cover"
+  short_description: "Write Douyin captions, tags, and covers."
+  default_prompt: "Use $douyin-caption-cover to create Douyin copy, hashtags, and cover options."

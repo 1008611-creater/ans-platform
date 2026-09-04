@@ -1,0 +1,4 @@
+interface:
+  display_name: "念念智剪"
+  short_description: "面向念念智剪的自动剪辑、字幕、配音、导出与公网发布"
+  default_prompt: "Use $niannian-zhijian to develop, deploy, or verify the 念念智剪 editor."

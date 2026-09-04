@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edit API - Video Processing Backend</title>
+    <meta
+      name="description"
+      content="A concise showcase for Edit API, a FastAPI backend for upload, trim, overlay, watermark, transcode, and background video jobs."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="container">
+      <div class="hero">
+        <div class="hero-head">
+          <h1>Edit API</h1>
+        </div>
+        <p class="tag">
+          Minimal <span class="ink">video processing backend</span> for uploads, trims,
+          overlays, watermarks and transcodes.
+          <br />
+          Built as a compact API layer for editor tools and media workflows.
+        </p>
+        <div class="cta">
+          <a class="btn" href="#tech">Tech used</a>
+          <a class="btn" href="api/">API structure</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="text-grid" id="tech" aria-label="Technology used">
+        <div class="text-block">
+          <h2>Tech used</h2>
+          <p><span class="ink">FastAPI</span> for the HTTP API and OpenAPI docs.</p>
+          <p><span class="ink">FFmpeg</span> for trim, overlay, watermark and transcode work.</p>
+          <p><span class="ink">Postgres</span> for videos, variants and job state.</p>
+          <p><span class="ink">SQLAlchemy</span> for database access.</p>
+          <p><span class="ink">Alembic</span> for schema migrations.</p>
+          <p><span class="ink">Docker</span> for the API, database and local services.</p>
+        </div>
+
+        <div class="text-block">
+          <h2>Project flow</h2>
+          <p>A client uploads a source video.</p>
+          <p>The API creates jobs for trim, overlay, watermark or transcode work.</p>
+          <p>Jobs move through pending, started, success and failure states.</p>
+          <p>Generated outputs are stored as variants and processed files.</p>
+          <p>The full endpoint list is on the <a class="inline-link" href="api/">API page</a>.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="container foot">
+      <small>made by <a class="ink" href="https://github.com/iminoaru">Sarthak</a></small>
+    </footer>
+  </body>
+</html>

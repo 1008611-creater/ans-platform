@@ -1,0 +1,6 @@
+interface:
+  display_name: "提示质控冠军"
+  short_description: "审计镜头连续性并编译稳定视频提示词"
+  default_prompt: "使用 $hell-grind 审计这份镜头表；目标为 Seedance 2.5 时，输出精确时间轴与最终视频提示词。"
+policy:
+  allow_implicit_invocation: true

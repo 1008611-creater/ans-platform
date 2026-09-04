@@ -1,0 +1,4 @@
+interface:
+  display_name: "Seedance 2.5 动作顺序提示词"
+  short_description: "按动作顺序生成 Seedance 2.5 双版本视频提示词"
+  default_prompt: "按 Seedance 2.5 动作顺序规则，把我的剧本拆成连续动作段，内部校验长度，但最终提示词不输出秒数、时间戳或帧号。"

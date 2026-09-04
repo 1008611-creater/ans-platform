@@ -1,0 +1,6 @@
+interface:
+  display_name: "BeeCode Image2"
+  short_description: "Generate Image2 art through BeeCode."
+  default_prompt: "Use $beecode-image2 to generate an image from this prompt:"
+policy:
+  allow_implicit_invocation: true

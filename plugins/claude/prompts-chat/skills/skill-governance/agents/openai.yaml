@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Governance"
+  short_description: "选择、评估并把已验证的第二遍修复沉淀为可复用技能规则与质量门"
+  default_prompt: "Use $skill-governance to 复核这次第二遍修复，将已验证经验沉淀到最窄的 skill、reference、test，或明确不晋级。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "MX Shortdrama 01 Frame Extract"
+  short_description: "Extract dense frames from short-drama episodes"
+  default_prompt: "Use -shortdrama-01-frame-extract to extract audit-ready frames from one Chinese short-drama episode."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "快手内容流水线"
+  short_description: "Coordinate Kuaishou content from idea to publish"
+  default_prompt: "Use $kuaishou-content-pipeline to run a Kuaishou video from idea selection through publishing."

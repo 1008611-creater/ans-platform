@@ -1,0 +1,4 @@
+interface:
+  display_name: "微信转绘产物发送"
+  short_description: "通过Hermes或Windows微信发送转绘Word/Zip产物"
+  default_prompt: "Use $wechat-redraw-word-sender to send generated redraw Word or Zip deliverables to WeChat, preferring the Hermes WSL Weixin route for unattended delivery."

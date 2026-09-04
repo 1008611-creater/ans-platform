@@ -1,0 +1,4 @@
+interface:
+  display_name: "提示词路由编译器"
+  short_description: "为 AI 视频锁定事实、Prompt、执行与质量门"
+  default_prompt: "使用 $prompt-skill-router：先选择专业路线，再把权威事实编译成可验证的提示词合同，最后才允许生成或进入视频任务规格。"

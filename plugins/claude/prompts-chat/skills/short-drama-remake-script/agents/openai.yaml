@@ -1,0 +1,4 @@
+interface:
+  display_name: "Short Drama Remake Script"
+  short_description: "Turn short dramas into redraw production packages."
+  default_prompt: "Use this skill to convert a Chinese short-drama episode video into a localized bilingual redraw production package with shot-level frame and video prompts."

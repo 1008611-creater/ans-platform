@@ -1,0 +1,4 @@
+interface:
+  display_name: "Image2 故事板视频提示词"
+  short_description: "单张电影制作板/视觉规划表"
+  default_prompt: "使用 Image2 故事板视频提示词 skill，生成一张 16:9 电影制作板/视觉规划表，并按需要配套中文 Seedance2/SD2 视频提示词。"

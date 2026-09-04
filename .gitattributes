@@ -1,0 +1,27 @@
+.github/workflows/*.lock.yml linguist-generated=true merge=ours
+
+# ---------------------------------------------------------------------------
+# 换行符：容器内执行的所有脚本必须保持 LF。
+# 若被 Git 转成 CRLF，Linux 容器会报
+#   exec ./entrypoint.sh: no such file or directory
+# 部署前务必确认 docker/*.sh 是 LF。
+# ---------------------------------------------------------------------------
+* text=auto eol=lf
+*.sh text eol=lf
+docker/** text eol=lf
+scripts/** text eol=lf
+*.sql text eol=lf
+
+# 二进制文件禁止任何换行转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.svg text eol=lf
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.mp4 binary
+*.pdf binary

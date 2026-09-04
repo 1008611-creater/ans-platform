@@ -1,0 +1,4 @@
+interface:
+  display_name: "Storyboard Director"
+  short_description: "Script-to-storyboard prompt workflow"
+  default_prompt: "Use $storyboard-director to turn this script into a professional storyboard shot list and detailed prompt set."

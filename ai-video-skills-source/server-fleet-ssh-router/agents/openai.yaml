@@ -1,0 +1,4 @@
+interface:
+  display_name: "Server Fleet SSH Router"
+  short_description: "Safely identify, connect to, and inventory the user's server fleet"
+  default_prompt: "Use $server-fleet-ssh-router to inspect the correct server safely over its recorded SSH route."

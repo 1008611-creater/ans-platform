@@ -1,0 +1,82 @@
+{
+  "schema_version": "prompt_routing_contract.v1",
+  "contract_id": "__CONTRACT_ID__",
+  "compile_status": "blocked",
+  "production_class": "__PRODUCTION_CLASS__",
+  "source_route": {
+    "skill": "__SPECIALIST_ROUTE_SKILL__",
+    "authority_contract": "__AUTHORITY_CONTRACT_ID__",
+    "path": "__AUTHORITY_CONTRACT_PATH__",
+    "sha256": "__AUTHORITY_CONTRACT_SHA256__"
+  },
+  "scope": {
+    "series_id": "",
+    "episode_id": "",
+    "shot_id": "",
+    "video_group_id": "",
+    "requested_output": "__ASSET_OR_VIDEO_TASK_HANDOFF__",
+    "task_type": "__TASK_TYPE_FROM_ai_video_task_method_map_v1__"
+  },
+  "authority_bundle": [],
+  "method_card_ids": [],
+  "method_validation_evidence": [],
+  "known_failure_tags": [],
+  "layers": {
+    "method": {
+      "skill": "__METHOD_SKILL__",
+      "responsibility": "__METHOD_RESPONSIBILITY__",
+      "input_boundary": "accepted authority facts only",
+      "output_boundary": "prompt sections only"
+    },
+    "execution": {
+      "skill": "__EXECUTION_SKILL__",
+      "responsibility": "__EXECUTION_RESPONSIBILITY__",
+      "input_boundary": "locked prompt-routing contract only",
+      "output_boundary": "downstream task-spec authoring or approved generation workflow",
+      "allowed_channels": []
+    },
+    "qa": {
+      "skill": "__QA_SKILL_OR_GATE__",
+      "responsibility": "__QA_RESPONSIBILITY__",
+      "input_boundary": "authority and prompt-contract evidence",
+      "output_boundary": "prompt-handoff decision only"
+    }
+  },
+  "references": [],
+  "locked_prompt": {
+    "path": "",
+    "sha256": "",
+    "format": "",
+    "required_sections": [],
+    "source_binding_hashes": []
+  },
+  "compatibility": {
+    "evidence_path": "",
+    "evidence_sha256": "",
+    "selected_channel": "",
+    "allowed_channels": [],
+    "channel_state": "unknown",
+    "model": "",
+    "duration_seconds": 0,
+    "aspect_ratio": "",
+    "resolution": "",
+    "required_reference_count": 0,
+    "audio_requirement": "",
+    "method_profile_id": "__METHOD_PROFILE_ID__",
+    "passed": false
+  },
+  "downstream": {
+    "video_task_spec_required": true,
+    "provider_submit_allowed": false
+  },
+  "blockers": [
+    {
+      "code": "awaiting_authority_or_prompt_lock",
+      "detail_zh": "提示词合同尚未具备权威输入或锁定条件。",
+      "earliest_broken_contract": "authority_bundle",
+      "affected_field": "authority_bundle",
+      "next_action": "补齐当前专业路线的精确权威产物与 SHA。"
+    }
+  ],
+  "next_action": "补齐事实后生成提示词候选。"
+}

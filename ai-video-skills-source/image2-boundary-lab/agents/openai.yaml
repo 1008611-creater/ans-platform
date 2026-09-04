@@ -1,0 +1,4 @@
+interface:
+  display_name: "Image2 Boundary Lab"
+  short_description: "Map Image2 abilities into recipes."
+  default_prompt: "Use $image2-boundary-lab to map an Image2 image type into a visual capability card with prompt recipe, scores, failure zones, and post copy."

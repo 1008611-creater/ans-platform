@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChromaFFmpeg</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/static/app.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:    #07090F;
+      --bg-sidebar: #0B0E18;
+      --bg-panel:   #10141F;
+      --bg-card:    #13182A;
+      --bg-input:   #181E30;
+      --bg-hover:   #1C2438;
+      --border:        rgba(148,163,184,0.07);
+      --border-strong: rgba(148,163,184,0.11);
+      --border-focus:  rgba(139,92,246,0.55);
+      --accent:       #8B5CF6;
+      --accent-hover: #7C3AED;
+      --accent-dim:   rgba(139,92,246,0.12);
+      --text-primary:   #EEF2FF;
+      --text-secondary: #7A8CAD;
+      --text-muted:     #384660;
+      --success:        #34D399;
+      --success-dim:    rgba(52,211,153,0.09);
+      --success-border: rgba(52,211,153,0.25);
+      --error:          #F87171;
+      --error-dim:      rgba(248,113,113,0.08);
+      --error-border:   rgba(248,113,113,0.28);
+      --r:    8px;
+      --r-lg: 12px;
+    }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ─── Sidebar ─── */
+    .sidebar {
+      width: 252px;
+      min-width: 252px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .brand {
+      padding: 18px 18px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-mark {
+      width: 34px; height: 34px;
+      background: linear-gradient(145deg, #9B72FF, #6D28D9);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 3px 14px rgba(109,40,217,0.45);
+    }
+
+    .brand-text h1 { font-size: 14.5px; font-weight: 700; letter-spacing: -0.3px; }
+    .brand-text p  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .api-section {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-section-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .section-cap {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .key-status {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .key-status .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%; background: var(--text-muted);
+      transition: all 0.3s;
+    }
+
+    .key-status.active { color: var(--success); }
+    .key-status.active .dot { background: var(--success); box-shadow: 0 0 7px var(--success); }
+
+    .api-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r);
+      color: var(--text-primary);
+      padding: 7px 10px;
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .api-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .api-input::placeholder { color: var(--text-muted); }
+
+    .nav { flex: 1; padding: 10px 0; }
+
+    .nav-cap {
+      padding: 5px 16px;
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 16px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 13px; font-weight: 500;
+      transition: background 0.12s, color 0.12s;
+      user-select: none;
+      position: relative;
+    }
+
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    .nav-item.active { color: #C4B5FD; background: var(--accent-dim); }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 2px; background: var(--accent);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .nav-icon { width: 19px; text-align: center; font-size: 14px; flex-shrink: 0; opacity: 0.75; }
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700;
+      padding: 1px 6px; border-radius: 99px; line-height: 1.7;
+    }
+
+    .nav-sep { height: 1px; background: var(--border); margin: 8px 0; }
+
+    .sidebar-footer {
+      padding: 11px 16px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 14px;
+    }
+
+    .sidebar-footer a {
+      font-size: 11px; color: var(--text-muted);
+      text-decoration: none;
+      font-family: ui-monospace, monospace;
+      transition: color 0.1s;
+    }
+
+    .sidebar-footer a:hover { color: var(--accent); }
+
+    /* ─── Main ─── */
+    .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    .content {
+      flex: 1;
+      padding: 40px 52px;
+      overflow-y: auto;
+      max-width: 760px;
+    }
+
+    .page-header { margin-bottom: 32px; }
+
+    .page-header-top {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 7px;
+    }
+
+    .page-icon {
+      width: 34px; height: 34px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(139,92,246,0.18);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+
+    .page-header h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .page-header p  { font-size: 13px; color: var(--text-secondary); line-height: 1.65; padding-left: 46px; }
+
+    /* Forms */
+    .form-group { margin-bottom: 20px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .field-label {
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 7px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r);
+      color: var(--text-primary);
+      padding: 10px 13px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-dim); }
+    input::placeholder { color: var(--text-muted); }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23384660' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      padding-right: 34px;
+      cursor: pointer;
+    }
+
+    .radio-group { display: flex; gap: 6px; }
+
+    .radio-pill {
+      flex: 1; padding: 9px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r);
+      cursor: pointer; text-align: center;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); background: var(--bg-input);
+      transition: all 0.13s; user-select: none;
+    }
+
+    .radio-pill:hover { border-color: rgba(139,92,246,0.35); color: var(--text-primary); }
+
+    .radio-pill.selected {
+      border-color: rgba(139,92,246,0.5);
+      background: var(--accent-dim);
+      color: #C4B5FD; font-weight: 600;
+    }
+
+    .check-label {
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; font-size: 13px;
+      color: var(--text-secondary); user-select: none;
+    }
+
+    .check-label input[type="checkbox"] {
+      width: 15px; height: 15px;
+      accent-color: var(--accent); cursor: pointer; flex-shrink: 0;
+    }
+
+    .url-list { display: flex; flex-direction: column; gap: 8px; }
+    .url-row { display: flex; gap: 8px; align-items: center; }
+    .url-row input { flex: 1; }
+
+    .btn-icon-rm {
+      width: 36px; height: 36px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+      transition: all 0.12s;
+    }
+
+    .btn-icon-rm:hover { border-color: var(--error); color: var(--error); background: var(--error-dim); }
+
+    .btn-add-url {
+      background: none;
+      border: 1px dashed rgba(148,163,184,0.14);
+      border-radius: var(--r);
+      color: var(--text-muted);
+      cursor: pointer; padding: 9px; width: 100%;
+      font-size: 13px; transition: all 0.13s;
+      margin-top: 4px; font-family: inherit;
+    }
+
+    .btn-add-url:hover { border-color: rgba(139,92,246,0.4); color: var(--accent); background: var(--accent-dim); }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #9B72FF 0%, #7C3AED 100%);
+      color: #fff; border: none;
+      border-radius: var(--r);
+      padding: 11px 26px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: opacity 0.15s, box-shadow 0.15s, transform 0.1s;
+      box-shadow: 0 2px 14px rgba(124,58,237,0.35);
+      font-family: inherit; letter-spacing: -0.1px;
+    }
+
+    .btn-primary:hover:not(:disabled) { opacity: 0.9; box-shadow: 0 4px 22px rgba(124,58,237,0.5); transform: translateY(-1px); }
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r);
+      color: var(--text-secondary);
+      padding: 8px 14px; font-size: 12px; font-weight: 500;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.12s; font-family: inherit;
+    }
+
+    .btn-ghost:hover { border-color: rgba(139,92,246,0.4); color: var(--accent); }
+
+    .btn-danger {
+      background: none;
+      border: 1px solid rgba(248,113,113,0.25);
+      color: var(--error); border-radius: var(--r);
+      padding: 8px 14px; font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.12s; font-family: inherit;
+    }
+
+    .btn-danger:hover:not(:disabled) { background: var(--error-dim); border-color: var(--error); }
+    .btn-danger:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-copy {
+      background: none;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px; color: var(--text-muted);
+      padding: 4px 10px; font-size: 11px; font-weight: 600;
+      cursor: pointer; flex-shrink: 0;
+      transition: all 0.12s; font-family: inherit;
+    }
+
+    .btn-copy:hover { border-color: rgba(139,92,246,0.4); color: var(--accent); }
+    .btn-copy.copied { border-color: var(--success); color: var(--success); }
+
+    /* Spinner */
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: rgba(255,255,255,0.85);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite; flex-shrink: 0;
+    }
+
+    .spinner-sm {
+      width: 11px; height: 11px; border-width: 1.5px;
+      border-top-color: var(--text-secondary);
+      border-color: var(--border-strong);
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error box */
+    .error-box {
+      background: var(--error-dim);
+      border: 1px solid var(--error-border);
+      border-radius: var(--r);
+      padding: 12px 14px; font-size: 13px;
+      color: var(--error);
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 12px;
+      margin-top: 16px;
+    }
+
+    .error-box-body { flex: 1; }
+
+    .error-box-msg { line-height: 1.5; }
+
+    .error-detail-toggle {
+      margin-top: 7px;
+      font-size: 11px;
+      color: rgba(248,113,113,0.65);
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .error-detail-toggle:hover { color: var(--error); }
+
+    .error-detail-log {
+      margin-top: 8px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(248,113,113,0.15);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 11px;
+      color: rgba(248,113,113,0.8);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 220px;
+      overflow-y: auto;
+      line-height: 1.55;
+    }
+
+    .error-close-btn {
+      background: none; border: none;
+      color: var(--error); cursor: pointer;
+      font-size: 16px; line-height: 1;
+      flex-shrink: 0; opacity: 0.5;
+      transition: opacity 0.1s; padding: 0;
+    }
+
+    .error-close-btn:hover { opacity: 1; }
+
+    /* Result panel */
+    .result-panel {
+      margin-top: 24px;
+      background: var(--bg-panel);
+      border: 1px solid var(--success-border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      box-shadow: 0 0 0 4px rgba(52,211,153,0.04), 0 8px 32px rgba(0,0,0,0.4);
+      animation: fadeUp 0.22s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--success-dim);
+    }
+
+    .result-badge { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--success); }
+    .result-dot { width: 7px; height: 7px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); }
+
+    .result-panel--warn { border-color: rgba(245,158,11,0.35); box-shadow: 0 0 0 4px rgba(245,158,11,0.04), 0 8px 32px rgba(0,0,0,0.4); }
+
+    .result-warning-row {
+      padding: 10px 16px;
+      background: rgba(245,158,11,0.07);
+      border-bottom: 1px solid rgba(245,158,11,0.2);
+      font-size: 12px;
+      color: #FBBF24;
+      line-height: 1.55;
+    }
+
+    .result-url-row {
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .result-url-row code {
+      flex: 1;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 11.5px; color: #A78BFA;
+      word-break: break-all; line-height: 1.5;
+    }
+
+    .result-media { padding: 16px; }
+
+    .result-media video,
+    .result-media audio { width: 100%; border-radius: var(--r); background: #000; }
+
+    /* Metadata grid */
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; }
+
+    .meta-cell {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    .meta-cell:nth-child(even) { border-right: none; }
+    .meta-cell:nth-last-child(-n+2) { border-bottom: none; }
+    .meta-key { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 4px; }
+    .meta-val { font-size: 14px; font-weight: 600; font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; }
+    .meta-val.null-val { color: var(--text-muted); font-style: italic; font-family: inherit; font-weight: 400; }
+
+    /* Curl hint block */
+    .curl-hint {
+      margin-top: 18px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+
+    .curl-hint-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 14px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .curl-hint-label {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.7px;
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 7px;
+    }
+
+    .curl-hint-label span.tag {
+      background: rgba(139,92,246,0.13);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 10px; letter-spacing: 0.4px;
+    }
+
+    .curl-hint-chevron {
+      font-size: 10px; color: var(--text-muted);
+      transition: transform 0.18s;
+    }
+
+    .curl-hint-chevron.open { transform: rotate(180deg); }
+
+    .curl-hint-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+    .curl-block { display: flex; flex-direction: column; gap: 5px; }
+
+    .curl-block-title {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase; color: var(--text-muted);
+    }
+
+    .curl-code {
+      background: #080B14;
+      border: 1px solid rgba(148,163,184,0.06);
+      border-radius: var(--r);
+      padding: 11px 13px;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 11.5px;
+      color: #CBD5E1;
+      white-space: pre;
+      overflow-x: auto;
+      line-height: 1.65;
+      position: relative;
+    }
+
+    .curl-code .ck  { color: #94A3B8; }   /* flag/key */
+    .curl-code .cv  { color: #A78BFA; }   /* value / url */
+    .curl-code .cj  { color: #6EE7B7; }   /* json field */
+    .curl-code .cmt { color: #374151; font-style: italic; }
+
+    .curl-copy-row { display: flex; justify-content: flex-end; }
+
+    /* Storage */
+    .storage-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .storage-stat { font-size: 13px; color: var(--text-secondary); }
+    .storage-stat strong { color: var(--text-primary); font-weight: 600; }
+    .storage-actions { display: flex; gap: 8px; }
+
+    .file-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .file-item { border-radius: var(--r); overflow: hidden; }
+
+    .file-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 13px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .file-item.previewing .file-card {
+      border-color: rgba(139,92,246,0.35);
+      background: var(--bg-hover);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .file-card:hover { border-color: var(--border-strong); background: var(--bg-hover); }
+
+    .file-type-icon {
+      width: 36px; height: 36px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-url  { font-family: ui-monospace, monospace; font-size: 11px; color: #A78BFA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .file-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+    .file-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+
+    .file-preview-panel {
+      background: #000;
+      border: 1px solid rgba(139,92,246,0.35);
+      border-top: none;
+      border-bottom-left-radius: var(--r);
+      border-bottom-right-radius: var(--r);
+      overflow: hidden;
+    }
+
+    .file-preview-panel video,
+    .file-preview-panel audio {
+      width: 100%;
+      display: block;
+    }
+
+    .file-preview-panel audio {
+      padding: 12px;
+      background: var(--bg-panel);
+    }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 64px 24px; color: var(--text-muted); }
+    .empty-icon  { font-size: 38px; margin-bottom: 12px; opacity: 0.45; }
+    .empty-state p { font-size: 14px; line-height: 1.7; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(5px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+
+    .modal {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-lg);
+      padding: 30px; max-width: 380px; width: 90%;
+      text-align: center;
+      animation: fadeUp 0.2s ease;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+
+    .modal-icon { font-size: 32px; margin-bottom: 12px; }
+    .modal h3   { font-size: 17px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+    .modal p    { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.65; }
+    .modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border-strong);
+      border-radius: var(--r-lg);
+      background: var(--bg-input);
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .drop-zone:hover,
+    .drop-zone--active { border-color: rgba(139,92,246,0.5); background: var(--accent-dim); }
+
+    .drop-zone--has-file { border-color: rgba(52,211,153,0.4); background: var(--success-dim); border-style: solid; }
+
+    .drop-zone-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.5; }
+
+    .drop-zone-label { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+
+    .drop-zone-link { color: var(--accent); text-decoration: underline; }
+
+    .drop-zone-hint { font-size: 12px; color: var(--text-muted); }
+
+    .drop-zone-file-name { font-size: 14px; font-weight: 600; color: var(--success); margin-bottom: 4px; word-break: break-all; }
+
+    .drop-zone-file-change { font-size: 11px; color: var(--text-muted); }
+
+    /* ── Folder cards ── */
+    .folder-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      transition: border-color 0.13s;
+    }
+
+    .folder-card:hover { border-color: var(--border-strong); }
+
+    .folder-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.12s;
+    }
+
+    .folder-header:hover { background: var(--bg-hover); }
+
+    .folder-icon { font-size: 20px; flex-shrink: 0; }
+
+    .folder-info { flex: 1; min-width: 0; }
+
+    .folder-name { font-size: 14px; font-weight: 600; }
+
+    .folder-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .folder-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+    .folder-chevron {
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .folder-chevron.open { transform: rotate(90deg); }
+
+    .folder-files {
+      border-top: 1px solid var(--border);
+      background: var(--bg-panel);
+    }
+
+    .folder-file-row {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .folder-file-row:last-child { border-bottom: none; }
+
+    .folder-file-row:hover,
+    .folder-file-row.active { background: var(--bg-hover); }
+
+    .folder-file-row.active { border-bottom: none; }
+
+    .folder-file-name { font-size: 13px; font-weight: 600; word-break: break-all; }
+
+    .folder-file-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Strategy picker */
+    .strategy-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r);
+      cursor: pointer;
+      transition: border-color 0.13s, background 0.13s;
+      user-select: none;
+    }
+
+    .strategy-option:hover { border-color: rgba(139,92,246,0.35); }
+
+    .strategy-option.active {
+      border-color: rgba(139,92,246,0.5);
+      background: var(--accent-dim);
+    }
+
+    .strategy-radio {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: border-color 0.13s, background 0.13s;
+      position: relative;
+    }
+
+    .strategy-radio.selected {
+      border-color: var(--accent);
+      background: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .strategy-radio.selected::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .strategy-title {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .strategy-badge {
+      font-size: 10px; font-weight: 700;
+      background: rgba(52,211,153,0.12);
+      color: var(--success);
+      border: 1px solid rgba(52,211,153,0.25);
+      padding: 1px 7px; border-radius: 99px;
+      letter-spacing: 0.2px;
+    }
+
+    .strategy-desc {
+      font-size: 12px; color: var(--text-secondary);
+      margin-top: 3px; line-height: 1.5;
+    }
+
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body x-data="chromaApp()" x-init="init()">
+
+  <!-- Purge confirm modal -->
+  <div class="modal-overlay" x-show="storage.confirmPurge" x-cloak @keydown.escape.window="storage.confirmPurge = false">
+    <div class="modal">
+      <div class="modal-icon">🗑</div>
+      <h3>Purge all files?</h3>
+      <p>This will permanently delete all <strong x-text="storage.files.length"></strong> stored output file(s). This cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn-ghost" @click="storage.confirmPurge = false">Cancel</button>
+        <button class="btn-danger" style="border-color:var(--error);background:var(--error-dim)" @click="purgeAll()" :disabled="storage.purging">
+          <span x-show="storage.purging" class="spinner" style="border-top-color:var(--error);border-color:var(--error-border)"></span>
+          <span x-text="storage.purging ? 'Purging…' : 'Yes, purge all'"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="1" y="4" width="16" height="10" rx="1.5" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/>
+          <rect x="1"    y="1.5" width="2.5" height="2.5" rx="0.5" fill="rgba(255,255,255,0.55)"/>
+          <rect x="14.5" y="1.5" width="2.5" height="2.5" rx="0.5" fill="rgba(255,255,255,0.55)"/>
+          <rect x="1"    y="14"  width="2.5" height="2.5" rx="0.5" fill="rgba(255,255,255,0.55)"/>
+          <rect x="14.5" y="14"  width="2.5" height="2.5" rx="0.5" fill="rgba(255,255,255,0.55)"/>
+          <path d="M7.5 7l4 2-4 2V7z" fill="white"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>ChromaFFmpeg</h1>
+        <p>FFmpeg API v1.0</p>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <div class="api-section-top">
+        <span class="section-cap">API Key</span>
+        <div class="key-status" :class="{ active: apiKey.length > 0 }">
+          <div class="dot"></div>
+          <span x-text="apiKey ? 'Set' : 'Not set'"></span>
+        </div>
+      </div>
+      <input class="api-input" type="password" placeholder="Enter X-API-Key…"
+             x-model="apiKey" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <nav class="nav">
+      <div class="nav-cap">Endpoints</div>
+
+      <template x-for="tab in processingTabs" :key="tab.id">
+        <div class="nav-item" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
+          <span class="nav-icon" x-text="tab.icon"></span>
+          <span x-text="tab.label"></span>
+        </div>
+      </template>
+
+      <div class="nav-sep"></div>
+      <div class="nav-cap">Manage</div>
+
+      <div class="nav-item" :class="{ active: activeTab === 'upload' }" @click="activeTab = 'upload'">
+        <span class="nav-icon">⬆</span>
+        <span>Upload</span>
+      </div>
+      <div class="nav-item" :class="{ active: activeTab === 'folders' }" @click="activeTab = 'folders'; loadFolders()">
+        <span class="nav-icon">⊡</span>
+        <span>Folders</span>
+        <span class="nav-badge" x-show="folders.list.length > 0" x-text="folders.list.length"></span>
+      </div>
+      <div class="nav-item" :class="{ active: activeTab === 'storage' }" @click="activeTab = 'storage'; loadFiles()">
+        <span class="nav-icon">🗄</span>
+        <span>Storage</span>
+        <span class="nav-badge" x-show="storage.files.length > 0" x-text="storage.files.length"></span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="/static/api.html">api reference</a>
+      <a href="/docs" target="_blank">swagger</a>
+      <a href="/health" target="_blank">/health</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="content">
+
+      <!-- ── Merge ── -->
+      <div x-show="activeTab === 'merge'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">⊕</div>
+            <h2>Merge Audio + Video</h2>
+          </div>
+          <p>Stretch or compress the video to exactly match the audio duration, then mux into a single MP4.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Video URL</label>
+          <input type="text" x-model="merge.videoUrl" placeholder="https://example.com/video.mp4" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Audio URL</label>
+          <input type="text" x-model="merge.audioUrl" placeholder="https://example.com/audio.mp3" />
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Length mismatch strategy</label>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label class="strategy-option" :class="{ active: merge.strategy === 'trim_or_slow' }" @click="merge.strategy = 'trim_or_slow'">
+              <div class="strategy-radio" :class="{ selected: merge.strategy === 'trim_or_slow' }"></div>
+              <div>
+                <div class="strategy-title">Trim or Slow <span class="strategy-badge">Recommended</span></div>
+                <div class="strategy-desc">If video is longer → trim to audio length. If audio is longer → slow video down to fill it.</div>
+              </div>
+            </label>
+            <label class="strategy-option" :class="{ active: merge.strategy === 'speed_match' }" @click="merge.strategy = 'speed_match'">
+              <div class="strategy-radio" :class="{ selected: merge.strategy === 'speed_match' }"></div>
+              <div>
+                <div class="strategy-title">Speed Match</div>
+                <div class="strategy-desc">Stretch or compress video playback speed to exactly match the audio duration.</div>
+              </div>
+            </label>
+            <label class="strategy-option" :class="{ active: merge.strategy === 'trim' }" @click="merge.strategy = 'trim'">
+              <div class="strategy-radio" :class="{ selected: merge.strategy === 'trim' }"></div>
+              <div>
+                <div class="strategy-title">Trim to Shortest</div>
+                <div class="strategy-desc">Cut at whichever stream ends first. No speed change, no re-encode.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Save to folder <span style="color:var(--text-muted);font-weight:400">(optional — must exist)</span></label>
+          <input type="text" x-model="merge.folder" placeholder="e.g. MyProject" />
+        </div>
+
+        <button class="btn-primary" @click="submitMerge()" :disabled="merge.loading">
+          <span x-show="merge.loading" class="spinner"></span>
+          <span x-text="merge.loading ? 'Processing…' : 'Merge'"></span>
+        </button>
+
+        <div class="error-box" x-show="merge.error" x-cloak>
+          <div class="error-box-body">
+            <div class="error-box-msg" x-text="merge.error"></div>
+            <template x-if="merge.errorDetail">
+              <div>
+                <div class="error-detail-toggle" @click="merge._showDetail = !merge._showDetail">
+                  <span x-text="merge._showDetail ? '▲ Hide log' : '▼ Show FFmpeg log'"></span>
+                </div>
+                <pre class="error-detail-log" x-show="merge._showDetail" x-text="merge.errorDetail"></pre>
+              </div>
+            </template>
+          </div>
+          <button class="error-close-btn" @click="merge.error = null; merge.errorDetail = null; merge._showDetail = false">✕</button>
+        </div>
+
+        <template x-if="merge.result">
+          <div class="result-panel" :class="{ 'result-panel--warn': merge.warning }">
+            <div class="result-header" :style="merge.warning ? 'background:rgba(245,158,11,0.08)' : ''">
+              <div class="result-badge" :style="merge.warning ? 'color:#FBBF24' : ''">
+                <div class="result-dot" :style="merge.warning ? 'background:#FBBF24;box-shadow:0 0 8px #FBBF24' : ''"></div>
+                <span x-text="merge.warning ? 'Done with warning' : 'Ready'"></span>
+              </div>
+              <a :href="merge.result.url" download="merged.mp4" style="text-decoration:none">
+                <button class="btn-ghost">↓ Download</button>
+              </a>
+            </div>
+            <div x-show="merge.warning" class="result-warning-row" x-text="merge.warning"></div>
+            <div class="result-url-row">
+              <code x-text="merge.result.url"></code>
+              <button class="btn-copy" @click="copyUrl(merge.result.url, $el)">Copy</button>
+            </div>
+            <div class="result-media"><video controls :src="merge.result.url"></video></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── Animate ── -->
+      <div x-show="activeTab === 'animate'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">✦</div>
+            <h2>Animate</h2>
+          </div>
+          <p>Apply Ken Burns zoom, pan, or combined motion effects to an image or video clip.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Media URL</label>
+          <input type="text" x-model="animate.mediaUrl" placeholder="https://example.com/photo.jpg" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Media Type</label>
+          <div class="radio-group">
+            <div class="radio-pill" :class="{ selected: animate.mediaType === 'image' }" @click="animate.mediaType = 'image'">Image</div>
+            <div class="radio-pill" :class="{ selected: animate.mediaType === 'video' }" @click="animate.mediaType = 'video'">Video</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Animation Style</label>
+          <select x-model="animate.animation">
+            <option value="zoom_in">Zoom In — slow zoom toward center</option>
+            <option value="zoom_out">Zoom Out — pull back from center</option>
+            <option value="pan_left">Pan Left → Right</option>
+            <option value="pan_right">Pan Right → Left</option>
+            <option value="pan_zoom">Ken Burns — pan + zoom combined</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label">Duration (seconds)</label>
+            <input type="number" x-model.number="animate.duration" min="1" max="300" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">FPS</label>
+            <input type="number" x-model.number="animate.fps" min="1" max="60" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Resolution</label>
+          <input type="text" x-model="animate.resolution" placeholder="1920x1080" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Save to folder <span style="color:var(--text-muted);font-weight:400">(optional — must exist)</span></label>
+          <input type="text" x-model="animate.folder" placeholder="e.g. MyProject" />
+        </div>
+
+        <button class="btn-primary" @click="submitAnimate()" :disabled="animate.loading">
+          <span x-show="animate.loading" class="spinner"></span>
+          <span x-text="animate.loading ? 'Processing…' : 'Animate'"></span>
+        </button>
+
+        <div class="error-box" x-show="animate.error" x-cloak>
+          <div class="error-box-body">
+            <div class="error-box-msg" x-text="animate.error"></div>
+            <template x-if="animate.errorDetail">
+              <div>
+                <div class="error-detail-toggle" @click="animate._showDetail = !animate._showDetail">
+                  <span x-text="animate._showDetail ? '▲ Hide log' : '▼ Show FFmpeg log'"></span>
+                </div>
+                <pre class="error-detail-log" x-show="animate._showDetail" x-text="animate.errorDetail"></pre>
+              </div>
+            </template>
+          </div>
+          <button class="error-close-btn" @click="animate.error = null; animate.errorDetail = null; animate._showDetail = false">✕</button>
+        </div>
+
+        <template x-if="animate.result">
+          <div class="result-panel">
+            <div class="result-header">
+              <div class="result-badge"><div class="result-dot"></div> Ready</div>
+              <a :href="animate.result.url" download="animated.mp4" style="text-decoration:none">
+                <button class="btn-ghost">↓ Download</button>
+              </a>
+            </div>
+            <div class="result-url-row">
+              <code x-text="animate.result.url"></code>
+              <button class="btn-copy" @click="copyUrl(animate.result.url, $el)">Copy</button>
+            </div>
+            <div class="result-media"><video controls :src="animate.result.url"></video></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── Combine ── -->
+      <div x-show="activeTab === 'combine'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">⊞</div>
+            <h2>Combine</h2>
+          </div>
+          <p>Concatenate multiple videos or audio files into one. Enable re-encode for mixed codec sources.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Type</label>
+          <div class="radio-group">
+            <div class="radio-pill" :class="{ selected: combine.type === 'video' }" @click="combine.type = 'video'">Video</div>
+            <div class="radio-pill" :class="{ selected: combine.type === 'audio' }" @click="combine.type = 'audio'">Audio</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="field-label">URLs</label>
+          <div class="url-list">
+            <template x-for="(url, i) in combine.urls" :key="i">
+              <div class="url-row">
+                <input type="text" :placeholder="`URL ${i + 1}`" x-model="combine.urls[i]" />
+                <button class="btn-icon-rm" @click="removeUrl(i)" x-show="combine.urls.length > 2" title="Remove">✕</button>
+              </div>
+            </template>
+          </div>
+          <button class="btn-add-url" @click="addUrl()">+ Add another URL</button>
+        </div>
+        <div class="form-group">
+          <label class="check-label">
+            <input type="checkbox" x-model="combine.reencode" />
+            Re-encode (fixes mixed codec sources, slower)
+          </label>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Save to folder <span style="color:var(--text-muted);font-weight:400">(optional — must exist)</span></label>
+          <input type="text" x-model="combine.folder" placeholder="e.g. MyProject" />
+        </div>
+
+        <button class="btn-primary" @click="submitCombine()" :disabled="combine.loading">
+          <span x-show="combine.loading" class="spinner"></span>
+          <span x-text="combine.loading ? 'Processing…' : 'Combine'"></span>
+        </button>
+
+        <div class="error-box" x-show="combine.error" x-cloak>
+          <div class="error-box-body">
+            <div class="error-box-msg" x-text="combine.error"></div>
+            <template x-if="combine.errorDetail">
+              <div>
+                <div class="error-detail-toggle" @click="combine._showDetail = !combine._showDetail">
+                  <span x-text="combine._showDetail ? '▲ Hide log' : '▼ Show FFmpeg log'"></span>
+                </div>
+                <pre class="error-detail-log" x-show="combine._showDetail" x-text="combine.errorDetail"></pre>
+              </div>
+            </template>
+          </div>
+          <button class="error-close-btn" @click="combine.error = null; combine.errorDetail = null; combine._showDetail = false">✕</button>
+        </div>
+
+        <template x-if="combine.result">
+          <div class="result-panel">
+            <div class="result-header">
+              <div class="result-badge"><div class="result-dot"></div> Ready</div>
+              <a :href="combine.result.url" :download="combine.type === 'video' ? 'combined.mp4' : 'combined.mp3'" style="text-decoration:none">
+                <button class="btn-ghost">↓ Download</button>
+              </a>
+            </div>
+            <div class="result-url-row">
+              <code x-text="combine.result.url"></code>
+              <button class="btn-copy" @click="copyUrl(combine.result.url, $el)">Copy</button>
+            </div>
+            <div class="result-media">
+              <video x-show="combine.type === 'video'" controls :src="combine.result.url"></video>
+              <audio x-show="combine.type === 'audio'" controls :src="combine.result.url"></audio>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── Image to Video ── -->
+      <div x-show="activeTab === 'imagetovideo'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">▶</div>
+            <h2>Image to Video</h2>
+          </div>
+          <p>Convert a static image into an MP4 video with an optional Ken Burns or motion effect.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Image URL</label>
+          <input type="text" x-model="imageToVideo.imageUrl" placeholder="https://example.com/photo.jpg" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Animation Style</label>
+          <select x-model="imageToVideo.animation">
+            <option value="none">None — static image</option>
+            <option value="zoom_in">Zoom In</option>
+            <option value="zoom_out">Zoom Out</option>
+            <option value="pan_left">Pan Left → Right</option>
+            <option value="pan_right">Pan Right → Left</option>
+            <option value="pan_zoom">Ken Burns — pan + zoom</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label">Duration (seconds)</label>
+            <input type="number" x-model.number="imageToVideo.duration" min="1" max="300" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">FPS</label>
+            <input type="number" x-model.number="imageToVideo.fps" min="1" max="60" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Resolution</label>
+          <input type="text" x-model="imageToVideo.resolution" placeholder="1920x1080" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Save to folder <span style="color:var(--text-muted);font-weight:400">(optional — must exist)</span></label>
+          <input type="text" x-model="imageToVideo.folder" placeholder="e.g. MyProject" />
+        </div>
+
+        <button class="btn-primary" @click="submitImageToVideo()" :disabled="imageToVideo.loading">
+          <span x-show="imageToVideo.loading" class="spinner"></span>
+          <span x-text="imageToVideo.loading ? 'Processing…' : 'Convert'"></span>
+        </button>
+
+        <div class="error-box" x-show="imageToVideo.error" x-cloak>
+          <div class="error-box-body">
+            <div class="error-box-msg" x-text="imageToVideo.error"></div>
+            <template x-if="imageToVideo.errorDetail">
+              <div>
+                <div class="error-detail-toggle" @click="imageToVideo._showDetail = !imageToVideo._showDetail">
+                  <span x-text="imageToVideo._showDetail ? '▲ Hide log' : '▼ Show FFmpeg log'"></span>
+                </div>
+                <pre class="error-detail-log" x-show="imageToVideo._showDetail" x-text="imageToVideo.errorDetail"></pre>
+              </div>
+            </template>
+          </div>
+          <button class="error-close-btn" @click="imageToVideo.error = null; imageToVideo.errorDetail = null; imageToVideo._showDetail = false">✕</button>
+        </div>
+
+        <template x-if="imageToVideo.result">
+          <div class="result-panel">
+            <div class="result-header">
+              <div class="result-badge"><div class="result-dot"></div> Ready</div>
+              <a :href="imageToVideo.result.url" download="image_video.mp4" style="text-decoration:none">
+                <button class="btn-ghost">↓ Download</button>
+              </a>
+            </div>
+            <div class="result-url-row">
+              <code x-text="imageToVideo.result.url"></code>
+              <button class="btn-copy" @click="copyUrl(imageToVideo.result.url, $el)">Copy</button>
+            </div>
+            <div class="result-media"><video controls :src="imageToVideo.result.url"></video></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── Loop ── -->
+      <div x-show="activeTab === 'loop'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">↺</div>
+            <h2>Loop</h2>
+          </div>
+          <p>Repeat a video clip N times by concatenating copies — stream-copy fast, no re-encoding.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Video URL</label>
+          <input type="text" x-model="loop.videoUrl" placeholder="https://example.com/clip.mp4" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Loop Count <span style="color:var(--text-muted);font-weight:400">(total plays, 2–50)</span></label>
+          <input type="number" x-model.number="loop.loopCount" min="2" max="50" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Save to folder <span style="color:var(--text-muted);font-weight:400">(optional — must exist)</span></label>
+          <input type="text" x-model="loop.folder" placeholder="e.g. MyProject" />
+        </div>
+
+        <button class="btn-primary" @click="submitLoop()" :disabled="loop.loading">
+          <span x-show="loop.loading" class="spinner"></span>
+          <span x-text="loop.loading ? 'Processing…' : 'Loop'"></span>
+        </button>
+
+        <div class="error-box" x-show="loop.error" x-cloak>
+          <div class="error-box-body">
+            <div class="error-box-msg" x-text="loop.error"></div>
+            <template x-if="loop.errorDetail">
+              <div>
+                <div class="error-detail-toggle" @click="loop._showDetail = !loop._showDetail">
+                  <span x-text="loop._showDetail ? '▲ Hide log' : '▼ Show FFmpeg log'"></span>
+                </div>
+                <pre class="error-detail-log" x-show="loop._showDetail" x-text="loop.errorDetail"></pre>
+              </div>
+            </template>
+          </div>
+          <button class="error-close-btn" @click="loop.error = null; loop.errorDetail = null; loop._showDetail = false">✕</button>
+        </div>
+
+        <template x-if="loop.result">
+          <div class="result-panel">
+            <div class="result-header">
+              <div class="result-badge"><div class="result-dot"></div> Ready</div>
+              <a :href="loop.result.url" download="looped.mp4" style="text-decoration:none">
+                <button class="btn-ghost">↓ Download</button>
+              </a>
+            </div>
+            <div class="result-url-row">
+              <code x-text="loop.result.url"></code>
+              <button class="btn-copy" @click="copyUrl(loop.result.url, $el)">Copy</button>
+            </div>
+            <div class="result-media"><video controls :src="loop.result.url"></video></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── Transitions ── -->
+      <div x-show="activeTab === 'transitions'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">⇉</div>
+            <h2>Transitions</h2>
+          </div>
+          <p>Concatenate clips with smooth FFmpeg xfade transitions. Clips must share the same resolution and fps.</p>
+        </div>
+
+        <!-- curl reference -->
+        <div class="curl-hint" x-data="{ open: false }">
+          <div class="curl-hint-header" @click="open = !open">
+            <div class="curl-hint-label">
+              <span>curl reference</span>
+              <span class="tag">POST /concat-transitions</span>
+            </div>
+            <span class="curl-hint-chevron" :class="{ open }">▼</span>
+          </div>
+          <div class="curl-hint-body" x-show="open" x-collapse>
+
+            <!-- Basic: two clips -->
+            <div class="curl-block">
+              <div class="curl-block-title">Concatenate two clips with fade transition</div>
+              <div class="curl-code" x-html="
+                'curl -X POST ' + (apiKey ? location.origin : 'http://YOUR_VPS:9000') + '/concat-transitions \\\n' +
+                '  -H <span class=&quot;ck&quot;>&quot;X-API-Key: ' + (apiKey || 'YOUR_API_KEY') + '&quot;</span> \\\n' +
+                '  -H <span class=&quot;ck&quot;>&quot;Content-Type: application/json&quot;</span> \\\n' +
+                '  -d &apos;{\n' +
+                '    <span class=&quot;cj&quot;>&quot;urls&quot;</span>: [\n' +
+                '      <span class=&quot;cv&quot;>&quot;https://example.com/clip1.mp4&quot;</span>,\n' +
+                '      <span class=&quot;cv&quot;>&quot;https://example.com/clip2.mp4&quot;</span>\n' +
+                '    ],\n' +
+                '    <span class=&quot;cj&quot;>&quot;transition&quot;</span>: <span class=&quot;cv&quot;>&quot;fade&quot;</span>,\n' +
+                '    <span class=&quot;cj&quot;>&quot;transition_duration&quot;</span>: <span class=&quot;cv&quot;>1.0</span>\n' +
+                '  }&apos;'
+              "></div>
+            </div>
+
+            <!-- Three clips + folder output -->
+            <div class="curl-block">
+              <div class="curl-block-title">Three clips → save to folder</div>
+              <div class="curl-code" x-html="
+                'curl -X POST ' + (apiKey ? location.origin : 'http://YOUR_VPS:9000') + '/concat-transitions \\\n' +
+                '  -H <span class=&quot;ck&quot;>&quot;X-API-Key: ' + (apiKey || 'YOUR_API_KEY') + '&quot;</span> \\\n' +
+                '  -H <span class=&quot;ck&quot;>&quot;Content-Type: application/json&quot;</span> \\\n' +
+                '  -d &apos;{\n' +
+                '    <span class=&quot;cj&quot;>&quot;urls&quot;</span>: [\n' +
+                '      <span class=&quot;cv&quot;>&quot;https://example.com/clip1.mp4&quot;</span>,\n' +
+                '      <span class=&quot;cv&quot;>&quot;https://example.com/clip2.mp4&quot;</span>,\n' +
+                '      <span class=&quot;cv&quot;>&quot;https://example.com/clip3.mp4&quot;</span>\n' +
+                '    ],\n' +
+                '    <span class=&quot;cj&quot;>&quot;transition&quot;</span>: <span class=&quot;cv&quot;>&quot;wipeleft&quot;</span>,\n' +
+                '    <span class=&quot;cj&quot;>&quot;transition_duration&quot;</span>: <span class=&quot;cv&quot;>0.8</span>,\n' +
+                '    <span class=&quot;cj&quot;>&quot;folder&quot;</span>: <span class=&quot;cv&quot;>&quot;MyProject&quot;</span>\n' +
+                '  }&apos;'
+              "></div>
+            </div>
+
+            <!-- Folder → concat-transitions pipeline -->
+            <div class="curl-block">
+              <div class="curl-block-title">Use all clips from a folder (pipe /folders/{name}/urls)</div>
+              <div class="curl-code" x-html="
+                '<span class=&quot;cmt&quot;># Step 1 — fetch the URL list from a folder</span>\n' +
+                'curl -s ' + (apiKey ? location.origin : 'http://YOUR_VPS:9000') + '/folders/<span class=&quot;cv&quot;>myclips</span>/urls?type=video \\\n' +
+                '  -H <span class=&quot;ck&quot;>&quot;X-API-Key: ' + (apiKey || 'YOUR_API_KEY') + '&quot;</span> \\\n' +
+                '| jq &apos;{ urls: .urls, transition: <span class=&quot;cv&quot;>&quot;fade&quot;</span>, transition_duration: <span class=&quot;cv&quot;>1.0</span> }&apos; \\\n' +
+                '<span class=&quot;cmt&quot;># Step 2 — pipe it straight into /concat-transitions</span>\n' +
+                '| curl -X POST ' + (apiKey ? location.origin : 'http://YOUR_VPS:9000') + '/concat-transitions \\\n' +
+                '    -H <span class=&quot;ck&quot;>&quot;X-API-Key: ' + (apiKey || 'YOUR_API_KEY') + '&quot;</span> \\\n' +
+                '    -H <span class=&quot;ck&quot;>&quot;Content-Type: application/json&quot;</span> \\\n' +
+                '    -d @-'
+              "></div>
+            </div>
+
+            <!-- Available transitions -->
+            <div class="curl-block">
+              <div class="curl-block-title">Available transition values</div>
+              <div class="curl-code" style="color:var(--text-secondary)">fade · fadeblack · fadewhite · dissolve · pixelize
+wipeleft · wiperight · wipeup · wipedown
+slideleft · slideright · smoothleft · smoothright
+radial · circleopen · circleclose</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:20px">
+          <label class="field-label">Clip URLs</label>
+          <div class="url-list">
+            <template x-for="(url, i) in transitions.urls" :key="i">
+              <div class="url-row">
+                <input type="text" :placeholder="`Clip ${i + 1} URL`" x-model="transitions.urls[i]" />
+                <button class="btn-icon-rm" @click="removeTransitionUrl(i)" x-show="transitions.urls.length > 2" title="Remove">✕</button>
+              </div>
+            </template>
+          </div>
+          <button class="btn-add-url" @click="addTransitionUrl()">+ Add another clip</button>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label">Transition Effect</label>
+            <select x-model="transitions.transition">
+              <option value="fade">Fade</option>
+              <option value="fadeblack">Fade through black</option>
+              <option value="fadewhite">Fade through white</option>
+              <option value="dissolve">Dissolve</option>
+              <option value="pixelize">Pixelize</option>
+              <option value="wipeleft">Wipe Left</option>
+              <option value="wiperight">Wipe Right</option>
+              <option value="wipeup">Wipe Up</option>
+              <option value="wipedown">Wipe Down</option>
+              <option value="slideleft">Slide Left</option>
+              <option value="slideright">Slide Right</option>
+              <option value="smoothleft">Smooth Left</option>
+              <option value="smoothright">Smooth Right</option>
+              <option value="radial">Radial</option>
+              <option value="circleopen">Circle Open</option>
+              <option value="circleclose">Circle Close</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Transition Duration (sec)</label>
+            <input type="number" x-model.number="transitions.transitionDuration" min="0.1" max="5" step="0.1" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Save to folder <span style="color:var(--text-muted);font-weight:400">(optional — must exist)</span></label>
+          <input type="text" x-model="transitions.folder" placeholder="e.g. MyProject" />
+        </div>
+
+        <button class="btn-primary" @click="submitTransitions()" :disabled="transitions.loading">
+          <span x-show="transitions.loading" class="spinner"></span>
+          <span x-text="transitions.loading ? 'Processing…' : 'Render'"></span>
+        </button>
+
+        <div class="error-box" x-show="transitions.error" x-cloak>
+          <div class="error-box-body">
+            <div class="error-box-msg" x-text="transitions.error"></div>
+            <template x-if="transitions.errorDetail">
+              <div>
+                <div class="error-detail-toggle" @click="transitions._showDetail = !transitions._showDetail">
+                  <span x-text="transitions._showDetail ? '▲ Hide log' : '▼ Show FFmpeg log'"></span>
+                </div>
+                <pre class="error-detail-log" x-show="transitions._showDetail" x-text="transitions.errorDetail"></pre>
+              </div>
+            </template>
+          </div>
+          <button class="error-close-btn" @click="transitions.error = null; transitions.errorDetail = null; transitions._showDetail = false">✕</button>
+        </div>
+
+        <template x-if="transitions.result">
+          <div class="result-panel">
+            <div class="result-header">
+              <div class="result-badge"><div class="result-dot"></div> Ready</div>
+              <a :href="transitions.result.url" download="transitions.mp4" style="text-decoration:none">
+                <button class="btn-ghost">↓ Download</button>
+              </a>
+            </div>
+            <div class="result-url-row">
+              <code x-text="transitions.result.url"></code>
+              <button class="btn-copy" @click="copyUrl(transitions.result.url, $el)">Copy</button>
+            </div>
+            <div class="result-media"><video controls :src="transitions.result.url"></video></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── Metadata ── -->
+      <div x-show="activeTab === 'metadata'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">ℹ</div>
+            <h2>Metadata</h2>
+          </div>
+          <p>Inspect duration, resolution, fps, bitrate, and stream info for any media URL via ffprobe.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Media URL</label>
+          <input type="text" x-model="metadata.url" placeholder="https://example.com/video.mp4" />
+        </div>
+
+        <button class="btn-primary" @click="submitMetadata()" :disabled="metadata.loading">
+          <span x-show="metadata.loading" class="spinner"></span>
+          <span x-text="metadata.loading ? 'Analyzing…' : 'Analyze'"></span>
+        </button>
+
+        <div class="error-box" x-show="metadata.error" x-cloak>
+          <div class="error-box-body">
+            <div class="error-box-msg" x-text="metadata.error"></div>
+            <template x-if="metadata.errorDetail">
+              <div>
+                <div class="error-detail-toggle" @click="metadata._showDetail = !metadata._showDetail">
+                  <span x-text="metadata._showDetail ? '▲ Hide log' : '▼ Show ffprobe log'"></span>
+                </div>
+                <pre class="error-detail-log" x-show="metadata._showDetail" x-text="metadata.errorDetail"></pre>
+              </div>
+            </template>
+          </div>
+          <button class="error-close-btn" @click="metadata.error = null; metadata.errorDetail = null; metadata._showDetail = false">✕</button>
+        </div>
+
+        <template x-if="metadata.result">
+          <div class="result-panel">
+            <div class="result-header">
+              <div class="result-badge"><div class="result-dot"></div> Media Info</div>
+            </div>
+            <div class="meta-grid">
+              <template x-for="[key, val] in Object.entries(metadata.result)" :key="key">
+                <div class="meta-cell">
+                  <div class="meta-key" x-text="key.replace(/_/g, ' ')"></div>
+                  <div class="meta-val" :class="{ 'null-val': val === null || val === undefined }"
+                    x-text="val !== null && val !== undefined ? val : '—'"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── Upload ── -->
+      <div x-show="activeTab === 'upload'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">⬆</div>
+            <h2>Upload</h2>
+          </div>
+          <p>Convert any binary file — video, audio, or image — into a persistent URL. Optionally save directly into a named folder.</p>
+        </div>
+
+        <!-- Drop zone -->
+        <div class="drop-zone"
+             :class="{ 'drop-zone--active': upload.dragging, 'drop-zone--has-file': upload.filename }"
+             @dragover.prevent="upload.dragging = true"
+             @dragleave.prevent="upload.dragging = false"
+             @drop.prevent="onFileDrop($event)"
+             @click="$refs.fileInput.click()">
+          <input type="file" x-ref="fileInput" style="display:none" @change="onFilePick($event)" />
+          <div x-show="!upload.filename" class="drop-zone-empty">
+            <div class="drop-zone-icon">⬆</div>
+            <div class="drop-zone-label">Drop a file here or <span class="drop-zone-link">click to browse</span></div>
+            <div class="drop-zone-hint">Video · Audio · Image · Any format — up to 500 MB</div>
+          </div>
+          <div x-show="upload.filename" class="drop-zone-file">
+            <div class="drop-zone-file-name" x-text="upload.filename"></div>
+            <div class="drop-zone-file-change">Click to change</div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:16px">
+          <label class="field-label">Save to folder <span style="color:var(--text-muted);font-weight:400">(optional — leave blank for general storage)</span></label>
+          <input type="text" x-model="upload.folder" placeholder="e.g. my-project" list="folder-datalist" />
+          <datalist id="folder-datalist">
+            <template x-for="f in folders.list" :key="f.name">
+              <option :value="f.name"></option>
+            </template>
+          </datalist>
+        </div>
+
+        <button class="btn-primary" @click="submitUpload()" :disabled="upload.loading || !upload.file">
+          <span x-show="upload.loading" class="spinner"></span>
+          <span x-text="upload.loading ? 'Uploading…' : 'Upload & Get URL'"></span>
+        </button>
+
+        <div class="error-box" x-show="upload.error" x-cloak>
+          <div class="error-box-body"><div class="error-box-msg" x-text="upload.error"></div></div>
+          <button class="error-close-btn" @click="upload.error = null">✕</button>
+        </div>
+
+        <template x-if="upload.result">
+          <div class="result-panel">
+            <div class="result-header">
+              <div class="result-badge"><div class="result-dot"></div> Ready</div>
+              <a :href="upload.result.url" :download="upload.result.filename" style="text-decoration:none">
+                <button class="btn-ghost">↓ Download</button>
+              </a>
+            </div>
+            <div x-show="upload.result.folder" class="result-warning-row"
+                 style="background:rgba(139,92,246,0.07);border-color:rgba(139,92,246,0.2);color:#C4B5FD">
+              Saved to folder: <strong x-text="upload.result.folder"></strong>
+            </div>
+            <div class="result-url-row">
+              <code x-text="upload.result.url"></code>
+              <button class="btn-copy" @click="copyUrl(upload.result.url, $el)">Copy</button>
+            </div>
+            <div class="result-media" x-show="upload.file">
+              <video x-show="upload.file && upload.file.type.startsWith('video')" controls :src="upload.result.url"></video>
+              <audio x-show="upload.file && upload.file.type.startsWith('audio')" controls :src="upload.result.url"></audio>
+              <img x-show="upload.file && upload.file.type.startsWith('image')"
+                   :src="upload.result.url" style="max-width:100%;border-radius:var(--r);display:block" />
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ── Folders ── -->
+      <div x-show="activeTab === 'folders'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">⊡</div>
+            <h2>Folders</h2>
+          </div>
+          <p>Named collections for organizing uploaded files. Create a folder here, then reference it by name in Upload or CURL.</p>
+        </div>
+
+        <!-- Create folder -->
+        <div style="display:flex;gap:8px;margin-bottom:24px">
+          <input type="text" x-model="folders.newName" placeholder="New folder name…"
+                 @keydown.enter="createFolder()"
+                 style="flex:1" />
+          <button class="btn-primary" style="white-space:nowrap" @click="createFolder()" :disabled="folders.creating || !folders.newName.trim()">
+            <span x-show="folders.creating" class="spinner"></span>
+            <span>Create</span>
+          </button>
+        </div>
+
+        <div class="error-box" x-show="folders.error" x-cloak>
+          <div class="error-box-body"><div class="error-box-msg" x-text="folders.error"></div></div>
+          <button class="error-close-btn" @click="folders.error = null">✕</button>
+        </div>
+
+        <!-- Folder confirm delete modal -->
+        <div class="modal-overlay" x-show="folders.confirmDelete" x-cloak>
+          <div class="modal">
+            <div class="modal-icon">🗑</div>
+            <h3>Delete folder?</h3>
+            <p>This will permanently delete the folder <strong x-text="'&quot;' + folders.confirmDelete + '&quot;'"></strong> and all files inside it.</p>
+            <div class="modal-actions">
+              <button class="btn-ghost" @click="folders.confirmDelete = null">Cancel</button>
+              <button class="btn-danger" style="border-color:var(--error);background:var(--error-dim)" @click="deleteFolder(folders.confirmDelete)">
+                Yes, delete
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Folder list -->
+        <div x-show="folders.list.length === 0 && !folders.loading" class="empty-state" x-cloak>
+          <div class="empty-icon">📁</div>
+          <p>No folders yet.<br>Create one above to start organizing your files.</p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <template x-for="f in folders.list" :key="f.name">
+            <div class="folder-card">
+              <!-- Folder header row -->
+              <div class="folder-header" @click="openFolder(f.name)">
+                <div class="folder-icon">
+                  <span x-text="folders.openFolder === f.name ? '📂' : '📁'"></span>
+                </div>
+                <div class="folder-info">
+                  <div class="folder-name" x-text="f.name"></div>
+                  <div class="folder-meta" x-text="f.file_count + ' file(s) · ' + formatBytes(f.total_size_bytes)"></div>
+                </div>
+                <div class="folder-actions" @click.stop>
+                  <button class="btn-copy" @click="copyUrl(location.origin + '/store/' + f.name + '/', $el)" title="Copy base URL">Copy URL</button>
+                  <button class="btn-icon-rm" style="width:30px;height:30px;font-size:13px"
+                          @click="folders.confirmDelete = f.name" title="Delete folder">✕</button>
+                </div>
+                <div class="folder-chevron" :class="{ open: folders.openFolder === f.name }">›</div>
+              </div>
+
+              <!-- Files inside folder -->
+              <div x-show="folders.openFolder === f.name" x-cloak class="folder-files">
+                <div x-show="folders.folderLoading" style="padding:16px;text-align:center;color:var(--text-muted)">
+                  <span class="spinner" style="border-top-color:var(--text-muted);border-color:var(--border-strong);margin:auto;display:block"></span>
+                </div>
+                <div x-show="!folders.folderLoading && folders.folderFiles.length === 0"
+                     style="padding:16px;text-align:center;font-size:13px;color:var(--text-muted)">
+                  No files in this folder yet.
+                </div>
+                <template x-for="file in folders.folderFiles" :key="file.filename">
+                  <div>
+                    <div class="folder-file-row"
+                         :class="{ active: folders.previewKey === f.name + file.filename }"
+                         @click="folders.previewKey = folders.previewKey === f.name + file.filename ? null : f.name + file.filename">
+                      <div class="folder-file-name" x-text="file.filename"></div>
+                      <div class="folder-file-meta" x-text="formatBytes(file.size_bytes) + ' · ' + formatDate(file.created_at)"></div>
+                      <div class="file-actions" style="margin-top:4px" @click.stop>
+                        <button class="btn-copy" @click="copyUrl(file.url, $el)">Copy URL</button>
+                        <a :href="file.url" :download="file.filename" style="text-decoration:none">
+                          <button class="btn-ghost" style="padding:4px 10px;font-size:11px">↓</button>
+                        </a>
+                        <button class="btn-icon-rm" style="width:28px;height:28px;font-size:12px"
+                                @click="deleteFolderFile(f.name, file.filename)" title="Delete">✕</button>
+                      </div>
+                    </div>
+                    <!-- Inline preview -->
+                    <div class="file-preview-panel" x-show="folders.previewKey === f.name + file.filename" x-cloak>
+                      <video x-show="!file.filename.match(/\.(mp3|wav|ogg|m4a)$/i)" controls :src="file.url" style="max-height:360px;object-fit:contain"></video>
+                      <audio x-show="file.filename.match(/\.(mp3|wav|ogg|m4a)$/i)" controls :src="file.url"></audio>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- ── Storage ── -->
+      <div x-show="activeTab === 'storage'">
+        <div class="page-header">
+          <div class="page-header-top">
+            <div class="page-icon">🗄</div>
+            <h2>Storage</h2>
+          </div>
+          <p>All processed output files. Click a file to preview it inline. Files persist until deleted or purged.</p>
+        </div>
+
+        <div class="storage-bar">
+          <div class="storage-stat" x-show="!storage.loading">
+            <span x-show="storage.files.length > 0">
+              <strong x-text="storage.files.length"></strong> file(s) ·
+              <strong x-text="formatBytes(storage.totalBytes)"></strong>
+            </span>
+            <span x-show="storage.files.length === 0" style="color:var(--text-muted)">No files stored</span>
+          </div>
+          <div class="storage-actions">
+            <button class="btn-ghost" @click="loadFiles()" :disabled="storage.loading">
+              <span x-show="storage.loading" class="spinner spinner-sm"></span>
+              <span>↺ Refresh</span>
+            </button>
+            <button class="btn-danger" @click="storage.confirmPurge = true" :disabled="storage.files.length === 0 || storage.purging">
+              🗑 Purge All
+            </button>
+          </div>
+        </div>
+
+        <div class="error-box" x-show="storage.error" x-cloak>
+          <div class="error-box-body">
+            <div class="error-box-msg" x-text="storage.error"></div>
+          </div>
+          <button class="error-close-btn" @click="storage.error = null">✕</button>
+        </div>
+
+        <div class="file-list" x-show="storage.files.length > 0">
+          <template x-for="file in storage.files" :key="file.job_id + file.filename">
+            <div class="file-item" :class="{ previewing: storage.previewKey === file.job_id + file.filename }">
+              <div class="file-card" @click="togglePreview(file.job_id + file.filename)">
+                <div class="file-type-icon" x-text="file.filename.endsWith('.mp3') ? '🎵' : '🎬'"></div>
+                <div class="file-info">
+                  <div class="file-name" x-text="file.filename"></div>
+                  <div class="file-url"  x-text="file.url"></div>
+                  <div class="file-meta" x-text="formatBytes(file.size_bytes) + ' · ' + formatDate(file.created_at)"></div>
+                </div>
+                <div class="file-actions" @click.stop>
+                  <button class="btn-copy" @click="copyUrl(file.url, $el)">Copy URL</button>
+                  <a :href="file.url" :download="file.filename" style="text-decoration:none">
+                    <button class="btn-ghost" style="padding:5px 10px;font-size:12px">↓</button>
+                  </a>
+                  <button class="btn-icon-rm" style="width:30px;height:30px;font-size:13px" @click="deleteJob(file.job_id)" title="Delete">✕</button>
+                </div>
+              </div>
+              <div class="file-preview-panel" x-show="storage.previewKey === file.job_id + file.filename" x-cloak>
+                <video x-show="!file.filename.endsWith('.mp3')" controls :src="file.url" style="max-height:400px;object-fit:contain"></video>
+                <audio x-show="file.filename.endsWith('.mp3')" controls :src="file.url"></audio>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="empty-state" x-show="storage.files.length === 0 && !storage.loading" x-cloak>
+          <div class="empty-icon">📭</div>
+          <p>No output files yet.<br>Process some media and they'll appear here.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

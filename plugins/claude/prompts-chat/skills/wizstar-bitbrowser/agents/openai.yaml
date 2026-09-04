@@ -1,0 +1,3 @@
+display_name: Wizstar BitBrowser
+short_description: Automate Wizstar in BitBrowser.
+default_prompt: Use BitBrowser window 9 to log into Wizstar with a stored local Google account and open the video generation page.

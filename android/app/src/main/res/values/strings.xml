@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">提示词与Skill库</string>
+    <string name="title_activity_main">提示词与Skill库</string>
+    <string name="package_name">fun.cauai.prompts</string>
+    <string name="custom_url_scheme">fun.cauai.prompts</string>
+</resources>

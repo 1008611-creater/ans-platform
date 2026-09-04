@@ -1,0 +1,4 @@
+interface:
+  display_name: "MX Shortdrama 02 Source Timeline"
+  short_description: "Match frames and rebuild source episode timeline"
+  default_prompt: "Use -shortdrama-02-source-timeline to match extracted frames to source timecodes and rebuild the original episode timeline."

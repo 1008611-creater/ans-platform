@@ -1,0 +1,4 @@
+interface:
+  display_name: "SD2 Video Generation"
+  short_description: "Seedance2/SD2 video workflow and account rotation"
+  default_prompt: "Use $sd2-video-generation to generate or continue a Seedance2 video on StoReel Canvas."

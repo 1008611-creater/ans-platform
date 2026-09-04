@@ -1,0 +1,4 @@
+interface:
+  display_name: "Douyin Fruit Commerce Strategy"
+  short_description: "Build a Douyin fruit-selling content system."
+  default_prompt: "Use $douyin-fruit-commerce-strategy to plan a Douyin fruit commerce account."

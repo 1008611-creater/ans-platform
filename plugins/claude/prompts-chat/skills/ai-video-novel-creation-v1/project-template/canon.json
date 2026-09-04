@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "title": "Untitled Project",
+    "genre": ["general"],
+    "logline": "Replace this with a concrete protagonist, goal, obstacle, and cost.",
+    "time_anchor": "Chapter 1"
+  },
+  "project_progress": {
+    "current_chapter": 0,
+    "last_milestone_chapter": 0,
+    "reader_emotion_curve": {}
+  },
+  "facts": {},
+  "characters": {},
+  "relationships": [],
+  "knowledge": {},
+  "objects": {},
+  "evidence": {},
+  "timeline": [],
+  "money": {"opening_balance": 0, "inflows": [], "outflows": [], "closing_balance": 0},
+  "open_issues": []
+}
+

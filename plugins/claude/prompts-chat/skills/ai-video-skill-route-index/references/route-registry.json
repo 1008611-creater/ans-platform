@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.1",
+  "updated_at": "2026-08-15",
+  "source_of_truth": "C:\\Users\\lsb\\.codex\\skills\\ai-video-skill-route-index\\references\\route-registry.json",
+  "router_path": "C:\\Users\\lsb\\.codex\\skills\\ai-video-fundamentals-skill\\SKILL.md",
+  "project_agents_path": "E:\\codex\\niannianai\\zhuanhuiyuangong\\AGENTS.md",
+  "directories": [
+    {"id": "01", "name": "01_Official_Chain", "purpose": "唯一正式的五冠军生产链", "skill_ids": ["knowledge-card-skill", "screenwriter", "chaoge-assets-trial", "shotlist-builder", "hell-grind"]},
+    {"id": "02", "name": "02_Narrative", "purpose": "经用户批准才可调用的小说与改编", "skill_ids": ["ai-video-novel-creation-v1", "ai-video-novel-to-script"]},
+    {"id": "03", "name": "03_Assets", "purpose": "经用户批准才可调用的资产生产", "skill_ids": ["ai-video-asset-prompts", "ai-video-asset-production", "mikoto-gpt-image-2", "mx-shortdrama-04-character-assets"]},
+    {"id": "04", "name": "04_Storyboard", "purpose": "经用户批准才可调用的故事板", "skill_ids": ["storyboard-director", "image2-storyboard-video"]},
+    {"id": "05", "name": "05_Video", "purpose": "视频续接补充流程与旧入口兼容", "skill_ids": ["sd2.5skill", "seedance2-narrative-shot-workflow"]},
+    {"id": "06", "name": "06_Redraw", "purpose": "经用户批准才可调用的短剧转绘", "skill_ids": ["mx-shortdrama-00-router", "mx-shortdrama-production-harness", "mx-shortdrama-production-iteration"]},
+    {"id": "07", "name": "07_Route_Guard", "purpose": "审批门与旧总路由兼容入口", "skill_ids": ["ai-video-fundamentals-skill"]},
+    {"id": "08A", "name": "08A_3D_Animation_Knowledge", "purpose": "经用户批准才可调用的三维国风漫剧视觉知识", "skill_ids": ["chinese-celestial-palace"]},
+    {"id": "09", "name": "09_Contracts", "purpose": "冠军跨节点统一交接", "skill_ids": ["ai-video-champion-handoff"]},
+    {"id": "90", "name": "90_Index", "purpose": "路由登记、校验和浏览页生成", "skill_ids": ["ai-video-skill-route-index"]}
+  ],
+  "skills": [
+    {"id": "screenwriter", "phase": "主链-故事", "summary": "创作电影或剧集剧本、节拍、对白和结构修订。", "path": "C:\\Users\\lsb\\.codex\\skills\\screenwriter\\SKILL.md", "route_status": "official_chain", "direct_route": true, "usage_records": []},
+    {"id": "chaoge-assets-trial", "phase": "主链-前期资产", "summary": "完成导演分析、写实角色和关键道具前期资产。", "path": "C:\\Users\\lsb\\.codex\\skills\\chaoge-assets-trial\\SKILL.md", "route_status": "official_chain", "direct_route": true, "usage_records": []},
+    {"id": "shotlist-builder", "phase": "主链-拆镜", "summary": "将剧本拆为可生产的电影级分镜表和提示词。", "path": "C:\\Users\\lsb\\.codex\\skills\\shotlist-builder\\SKILL.md", "route_status": "official_chain", "direct_route": true, "usage_records": []},
+    {"id": "hell-grind", "phase": "主链-质控与视频交付", "summary": "审查表演微动作、镜头运动、物理与提示词质量；编译 Seedance 2.5 精确时间轴交付。", "path": "C:\\Users\\lsb\\.codex\\skills\\hell-grind\\SKILL.md", "route_status": "official_chain", "direct_route": true, "usage_records": []},
+    {"id": "ai-video-novel-creation-v1", "phase": "下级-故事", "summary": "从零小说创作、续写、审计并交接短剧改编。", "path": "C:\\Users\\lsb\\.codex\\skills\\ai-video-novel-creation-v1\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": [{"time": "2026-08-15 01:20", "effect": "部署校验：8 项回归检查通过；非生产项目使用。"}]},
+    {"id": "ai-video-novel-to-script", "phase": "下级-故事", "summary": "将小说或大纲改编为可拍短剧剧本和资产需求。", "path": "C:\\Users\\lsb\\.codex\\skills\\ai-video-novel-to-script\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "ai-video-asset-prompts", "phase": "下级-资产", "summary": "编译角色、场景、道具、首帧和故事板资产提示词。", "path": "C:\\Users\\lsb\\.codex\\skills\\ai-video-asset-prompts\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "ai-video-asset-production", "phase": "下级-资产", "summary": "生产、下载、验收并登记原创资产。", "path": "C:\\Users\\lsb\\.codex\\skills\\ai-video-asset-production\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "mikoto-gpt-image-2", "phase": "下级-资产", "summary": "通过 Mikoto GPT Image 2 渠道生成原创文生图资产。", "path": "C:\\Users\\lsb\\.codex\\skills\\mikoto-gpt-image-2\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "mx-shortdrama-04-character-assets", "phase": "下级-资产", "summary": "依据原片证据生成角色设定卡和人物一致性合同。", "path": "C:\\Users\\lsb\\.codex\\skills\\mx-shortdrama-04-character-assets\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "storyboard-director", "phase": "下级-故事板", "summary": "规划镜头并校验动作、表情、物体状态和故事板计划。", "path": "C:\\Users\\lsb\\.codex\\skills\\storyboard-director\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "image2-storyboard-video", "phase": "下级-故事板", "summary": "生成正式 Image2 制作板并交接匹配的视频提示词。", "path": "C:\\Users\\lsb\\.codex\\skills\\image2-storyboard-video\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "sd2.5skill", "phase": "下级-兼容入口", "summary": "Seedance 2.5 旧入口；只转交 hell-grind 的精确计时交付工作段。", "path": "C:\\Users\\lsb\\.codex\\skills\\sd2.5skill\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "seedance2-narrative-shot-workflow", "phase": "下级-视频", "summary": "管理连续镜头、尾帧续接、状态锁和重抽规则。", "path": "C:\\Users\\lsb\\.codex\\skills\\seedance2-narrative-shot-workflow\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "mx-shortdrama-00-router", "phase": "下级-转绘", "summary": "管理短剧转绘到墨西哥本地化的事实源与阶段路由。", "path": "C:\\Users\\lsb\\.codex\\skills\\mx-shortdrama-00-router\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": [{"time": "2026-08-03 16:46", "effect": "8/10：验证自适应证据调度与版本化回退。"}, {"time": "2026-08-03 22:06", "effect": "9/10：条件式强制对齐获用户正向反馈。"}]},
+    {"id": "mx-shortdrama-production-harness", "phase": "下级-转绘", "summary": "编排转绘任务恢复、渠道执行和资产生命周期。", "path": "C:\\Users\\lsb\\.codex\\skills\\mx-shortdrama-production-harness\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "mx-shortdrama-production-iteration", "phase": "下级-转绘", "summary": "将生成结果与用户反馈转为单变量质量迭代。", "path": "C:\\Users\\lsb\\.codex\\skills\\mx-shortdrama-production-iteration\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": []},
+    {"id": "ai-video-fundamentals-skill", "phase": "下级-总门", "summary": "旧总路由兼容入口；只说明候选 Skill 并征询用户批准。", "path": "C:\\Users\\lsb\\.codex\\skills\\ai-video-fundamentals-skill\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": [{"time": "2026-06-13 20:24", "effect": "10/10：固化 Image2/Seedance2 经验优先级。"}, {"time": "2026-06-13 21:05", "effect": "10/10：加入电商图像与视频验证规则。"}]},
+    {"id": "knowledge-card-skill", "phase": "主链-知识", "summary": "按需检索用户提供资料并输出来源明确的知识简报，作为正式链路的知识入口。", "path": "C:\\Users\\lsb\\.codex\\skills\\knowledge-card-skill\\SKILL.md", "route_status": "official_chain", "direct_route": true, "usage_records": []},
+    {"id": "chinese-celestial-palace", "phase": "下级-三维国风漫剧美术知识", "summary": "为中式天宫场景提供建筑、云海、尺度、光线、构图和画面质检规则；只服务资产与分镜阶段。", "path": "C:\\Users\\lsb\\.codex\\skills\\chinese-celestial-palace\\SKILL.md", "route_status": "approval_required", "direct_route": false, "usage_records": [{"time": "2026-08-15", "effect": "已由用户授权安装、建立知识卡并登记路由；尚未用于生产。"}]},
+    {"id": "ai-video-champion-handoff", "phase": "契约", "summary": "定义五冠军项目、资产、连续性和已验收片段的统一交接字段。", "path": "C:\\Users\\lsb\\.codex\\skills\\ai-video-champion-handoff\\SKILL.md", "route_status": "contract", "direct_route": false, "usage_records": []},
+    {"id": "ai-video-skill-route-index", "phase": "索引", "summary": "登记、校验和渲染 AI 视频 Skill 路由。", "path": "C:\\Users\\lsb\\.codex\\skills\\ai-video-skill-route-index\\SKILL.md", "route_status": "index", "direct_route": false, "usage_records": []}
+  ],
+  "champion_contract": ["knowledge-card-skill", "screenwriter", "chaoge-assets-trial", "shotlist-builder", "hell-grind"],
+  "approval_required_skills": ["ai-video-fundamentals-skill", "ai-video-novel-creation-v1", "ai-video-novel-to-script", "ai-video-asset-prompts", "ai-video-asset-production", "mikoto-gpt-image-2", "mx-shortdrama-04-character-assets", "storyboard-director", "image2-storyboard-video", "sd2.5skill", "seedance2-narrative-shot-workflow", "mx-shortdrama-00-router", "mx-shortdrama-production-harness", "mx-shortdrama-production-iteration", "chinese-celestial-palace"],
+  "relationships": [
+    {"topic": "正式五冠军主链", "members": ["knowledge-card-skill", "screenwriter", "chaoge-assets-trial", "shotlist-builder", "hell-grind"], "flow": "知识简报 -> 剧本 -> 前期资产 -> 拆镜 -> 提示质控"},
+    {"topic": "批准后补充", "members": ["ai-video-novel-creation-v1", "ai-video-novel-to-script", "ai-video-asset-prompts", "ai-video-asset-production", "mikoto-gpt-image-2"], "flow": "先征询用户，再按批准范围调用"},
+    {"topic": "Seedance 2.5 交付与视频续接", "members": ["hell-grind", "sd2.5skill", "seedance2-narrative-shot-workflow"], "flow": "hell-grind 完成质控和 Seedance 2.5 编译；sd2.5skill 仅兼容转交；视频续接按批准范围调用"},
+    {"topic": "三维国风漫剧天界美术", "members": ["knowledge-card-skill", "chinese-celestial-palace", "chaoge-assets-trial", "shotlist-builder"], "flow": "天界题材先读取知识卡，再将已确认的空间与视觉约束交给资产和分镜冠军"},
+    {"topic": "转绘补充", "members": ["mx-shortdrama-00-router", "mx-shortdrama-04-character-assets", "mx-shortdrama-production-harness", "mx-shortdrama-production-iteration"], "flow": "先征询用户，再按批准范围调用"}
+  ],
+  "warnings": []
+}

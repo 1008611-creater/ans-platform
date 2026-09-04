@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web Miniapp Product Router"
+  short_description: "Route websites and miniapp production"
+  default_prompt: "Help me route this website or mini program project from idea to design, implementation, launch, and iteration."

@@ -1,0 +1,13 @@
+{
+  "schema_version": "prompt_lint_rules.v1",
+  "library_id": "ai_video_prompt_lint_rules",
+  "rules": [
+    {"id": "required_sections_present", "severity": "error", "description_zh": "锁定 Prompt 必须实际包含合同声明的段落。"},
+    {"id": "task_method_cards", "severity": "error", "description_zh": "任务类型必须装配指定的方法卡。"},
+    {"id": "task_authority_roles", "severity": "error", "description_zh": "任务类型必须具备对应的权威事实角色。"},
+    {"id": "task_prompt_terms", "severity": "error", "description_zh": "高风险任务必须写出可观察的画面/动作/文字策略锚点。"},
+    {"id": "abstract_style_without_camera", "severity": "warning", "tokens": ["电影感", "高级", "真实"], "description_zh": "抽象质感词需要机位、焦段、光线或材质等可见变量支撑。"},
+    {"id": "long_text_risk", "severity": "error", "tokens": ["完整合同", "聊天记录", "价格表", "密集 UI"], "description_zh": "长可读文字需要显式文字策略或后期职责，不能直接交给生成模型。"},
+    {"id": "reference_count_match", "severity": "error", "description_zh": "参考图数量必须与兼容性合同一致。"}
+  ]
+}

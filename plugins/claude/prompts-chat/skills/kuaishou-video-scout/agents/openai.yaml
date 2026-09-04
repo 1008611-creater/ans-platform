@@ -1,0 +1,4 @@
+interface:
+  display_name: "快手选题选素材"
+  short_description: "Score topics and source clips for Kuaishou"
+  default_prompt: "Use $kuaishou-video-scout to choose the best Kuaishou video topic and source material."

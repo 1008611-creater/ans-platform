@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Build outputs
+.next
+out
+dist
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.sentry-build-plugin
+
+# Docker
+compose.yml
+docker-compose*.yml
+
+# Development files
+.github
+.claude
+packages
+*.md
+!README.md
+
+# Test files
+coverage
+.nyc_output
+vitest.config.ts
+vitest.setup.ts
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Prisma
+prisma/migrations/**/migration_lock.toml

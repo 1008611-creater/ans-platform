@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔌</text></svg>" />
+    <title>Web2API Catalog</title>
+    <style>
+      :root {
+        --bg-1: #f6f2e7;
+        --bg-2: #ede3cf;
+        --paper: #fffdf6;
+        --ink: #1b2a2e;
+        --ink-dim: #5b6a72;
+        --teal-900: #114f55;
+        --teal-700: #1e6c74;
+        --teal-100: #d8eceb;
+        --amber: #f0aa2d;
+        --line: #d8cfbf;
+        --shadow-soft: 0 14px 30px rgba(20, 35, 40, 0.08);
+        --shadow-strong: 0 20px 40px rgba(20, 35, 40, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: "Gill Sans", "Trebuchet MS", "Lucida Sans Unicode", sans-serif;
+        background:
+          radial-gradient(circle at 0% 0%, rgba(240, 170, 45, 0.2), transparent 32%),
+          radial-gradient(circle at 100% 0%, rgba(17, 79, 85, 0.2), transparent 30%),
+          linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 1.5rem auto 2.7rem;
+      }
+
+      .hero {
+        border: 1px solid rgba(17, 79, 85, 0.2);
+        border-radius: 12px;
+        padding: 1.1rem;
+        background: linear-gradient(130deg, rgba(255, 253, 246, 0.94), rgba(239, 249, 248, 0.78));
+        box-shadow: var(--shadow-soft);
+        animation: lift-in 420ms ease both;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+        font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+      }
+
+      .subtitle {
+        margin: 0.45rem 0 0;
+        color: var(--ink-dim);
+        line-height: 1.5;
+        max-width: 76ch;
+      }
+
+      .subtitle code {
+        padding: 0.1rem 0.3rem;
+        border-radius: 0.35rem;
+        font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+        color: var(--teal-900);
+        background: rgba(17, 79, 85, 0.12);
+      }
+
+      .toolbar {
+        margin-top: 0.95rem;
+        display: grid;
+        grid-template-columns: minmax(240px, 1fr);
+        gap: 0.6rem;
+        align-items: center;
+      }
+
+      .filter {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 9px;
+        padding: 0.62rem 0.72rem;
+        font-size: 0.95rem;
+      }
+
+      .filter:focus {
+        outline: 2px solid rgba(30, 108, 116, 0.35);
+        outline-offset: 1px;
+        border-color: rgba(30, 108, 116, 0.45);
+      }
+
+      .summary {
+        margin-top: 0.65rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+
+      .auth-panel {
+        margin-top: 0.95rem;
+        border: 1px solid rgba(17, 79, 85, 0.18);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.82);
+        padding: 0.82rem;
+      }
+
+      .auth-row {
+        margin-top: 0.55rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        align-items: center;
+      }
+
+      .auth-input {
+        flex: 1 1 320px;
+      }
+
+      .auth-meta {
+        margin-top: 0.5rem;
+      }
+
+      .auth-input-wrap {
+        flex: 1 1 320px;
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .auth-input-wrap .filter {
+        width: 100%;
+        padding: 0.24rem 2.2rem 0.24rem 0.48rem;
+        font-size: 0.74rem;
+      }
+
+      .auth-toggle {
+        position: absolute;
+        right: 0.4rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--ink-dim);
+        font-size: 0.82rem;
+        padding: 0.1rem;
+        line-height: 1;
+        opacity: 0.6;
+        transition: opacity 150ms;
+      }
+
+      .auth-toggle:hover {
+        opacity: 1;
+      }
+
+      .auth-status-dot {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.82rem;
+        color: var(--ink-dim);
+      }
+
+      .auth-status-dot::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #94a3b8;
+        flex-shrink: 0;
+      }
+
+      .auth-status-dot.is-valid::before {
+        background: #22c55e;
+      }
+
+      .auth-status-dot.is-invalid::before {
+        background: #ef4444;
+      }
+
+      .auth-status-dot.is-checking::before {
+        background: #f59e0b;
+        animation: pulse-dot 1s ease infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+
+      .view-tabs {
+        margin-top: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0.24rem;
+        background: rgba(255, 255, 255, 0.84);
+      }
+
+      .view-tab {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: transparent;
+        color: #33444c;
+        font-size: 0.82rem;
+        padding: 0.34rem 0.72rem;
+        cursor: pointer;
+      }
+
+      .view-tab.is-active {
+        border-color: rgba(17, 79, 85, 0.28);
+        color: var(--teal-900);
+        background: rgba(17, 79, 85, 0.14);
+      }
+
+      .view-tab:focus-visible {
+        outline: 2px solid rgba(30, 108, 116, 0.45);
+        outline-offset: 1px;
+      }
+
+      .view-panel {
+        display: none;
+        margin-top: 0.9rem;
+      }
+
+      .view-panel.is-active {
+        display: block;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.18rem 0.5rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 0.79rem;
+        color: #34444b;
+        background: rgba(255, 255, 255, 0.84);
+      }
+
+      .pill strong {
+        color: var(--teal-900);
+      }
+
+      .catalog {
+        margin-top: 0;
+      }
+
+      .head {
+        display: grid;
+        grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1.2fr) minmax(300px, 1.7fr);
+        gap: 0.8rem;
+        align-items: center;
+        margin-bottom: 0.38rem;
+        padding: 0 0.52rem;
+      }
+
+      .head span {
+        color: #5f7078;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .row {
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: var(--paper);
+        box-shadow: 0 8px 18px rgba(20, 35, 40, 0.06);
+        padding: 0.74rem;
+        display: grid;
+        grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1.2fr) minmax(300px, 1.7fr);
+        gap: 0.8rem;
+        align-items: start;
+        margin-bottom: 0.54rem;
+        animation: lift-in 360ms ease both;
+        animation-delay: calc(var(--row-index, 0) * 42ms);
+      }
+
+      .row:hover {
+        border-color: rgba(17, 79, 85, 0.35);
+        box-shadow: var(--shadow-strong);
+        transform: translateX(2px);
+      }
+
+      .row.is-hidden {
+        display: none;
+      }
+
+      .site {
+        min-width: 0;
+      }
+
+      .site h2 {
+        margin: 0;
+        font-size: 1.12rem;
+        font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+      }
+
+      .slug {
+        display: inline-block;
+        margin-top: 0.25rem;
+        border: 1px solid rgba(17, 79, 85, 0.25);
+        border-radius: 0.4rem;
+        padding: 0.08rem 0.36rem;
+        font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+        font-size: 0.76rem;
+        color: var(--teal-900);
+        background: var(--teal-100);
+      }
+
+      .desc {
+        margin: 0.46rem 0 0;
+        color: var(--ink-dim);
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .endpoints,
+      .urls {
+        min-width: 0;
+        display: grid;
+        gap: 0.42rem;
+        align-content: start;
+      }
+
+      .endpoint-item {
+        min-width: 0;
+        display: grid;
+        gap: 0.28rem;
+        align-content: start;
+        border: 1px solid rgba(17, 79, 85, 0.15);
+        border-radius: 0.52rem;
+        padding: 0.34rem 0.45rem;
+        background: rgba(17, 79, 85, 0.04);
+      }
+
+      .endpoint-item.is-hidden,
+      .url-item.is-hidden {
+        display: none;
+      }
+
+      .endpoint-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.28rem 0.34rem;
+        min-width: 0;
+      }
+
+      .ep-name {
+        margin: 0;
+        font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+        font-size: 0.78rem;
+        color: var(--teal-900);
+      }
+
+      .q-badge {
+        border: 1px solid rgba(240, 170, 45, 0.45);
+        border-radius: 999px;
+        padding: 0.08rem 0.34rem;
+        font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+        font-size: 0.66rem;
+        color: #7b4a00;
+        background: rgba(240, 170, 45, 0.22);
+      }
+
+      .param-badge {
+        border: 1px solid rgba(17, 79, 85, 0.3);
+        border-radius: 999px;
+        padding: 0.08rem 0.34rem;
+        font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+        font-size: 0.66rem;
+        color: var(--teal-900);
+        background: rgba(17, 79, 85, 0.1);
+        cursor: default;
+      }
+
+      .param-badge.is-required {
+        border-color: rgba(240, 170, 45, 0.45);
+        color: #7b4a00;
+        background: rgba(240, 170, 45, 0.22);
+      }
+
+      .ep-desc {
+        margin: 0;
+        color: #5f7078;
+        font-size: 0.8rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .url-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.35rem;
+      }
+
+      .url {
+        display: block;
+        text-decoration: none;
+        border: 1px solid rgba(17, 79, 85, 0.2);
+        border-radius: 0.52rem;
+        background: rgba(17, 79, 85, 0.06);
+        color: #114b52;
+        font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+        font-size: 0.74rem;
+        padding: 0.36rem 0.42rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .url:hover {
+        background: rgba(17, 79, 85, 0.12);
+        border-color: rgba(17, 79, 85, 0.4);
+      }
+
+      .copy-btn {
+        border: 1px solid rgba(17, 79, 85, 0.28);
+        border-radius: 0.52rem;
+        background: #fff;
+        color: #24545a;
+        font-size: 0.74rem;
+        padding: 0.22rem 0.5rem;
+        cursor: pointer;
+      }
+
+      .copy-btn:hover {
+        border-color: rgba(17, 79, 85, 0.48);
+        background: rgba(17, 79, 85, 0.08);
+      }
+
+      .copy-btn:focus-visible {
+        outline: 2px solid rgba(30, 108, 116, 0.45);
+        outline-offset: 1px;
+      }
+
+      .empty {
+        margin-top: 0.9rem;
+        border: 1px dashed rgba(17, 79, 85, 0.35);
+        border-radius: 9px;
+        background: rgba(255, 255, 255, 0.66);
+        color: var(--ink-dim);
+        padding: 1rem;
+      }
+
+      .empty.is-hidden {
+        display: none;
+      }
+
+      .manager {
+        border: 1px solid rgba(17, 79, 85, 0.2);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: var(--shadow-soft);
+        padding: 0.82rem;
+      }
+
+      .manager-top {
+        display: grid;
+        gap: 0.5rem;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+      }
+
+      .manager h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+      }
+
+      .manager-meta {
+        margin: 0.2rem 0 0;
+        color: #4f5f67;
+        font-size: 0.84rem;
+        line-height: 1.4;
+      }
+
+      .manager-status {
+        margin-top: 0.4rem;
+        min-height: 1.2rem;
+        color: #34444b;
+        font-size: 0.84rem;
+      }
+
+      .manager-status.is-error {
+        color: #8f1f10;
+      }
+
+      .manager-list {
+        margin-top: 0.68rem;
+        display: grid;
+        gap: 0.48rem;
+      }
+
+      .manager-row {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 0.6rem;
+        display: grid;
+        gap: 0.42rem;
+      }
+
+      .manager-title {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+
+      .manager-name {
+        font-weight: 600;
+      }
+
+      .manager-slug {
+        border: 1px solid rgba(17, 79, 85, 0.22);
+        border-radius: 999px;
+        padding: 0.08rem 0.36rem;
+        font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+        font-size: 0.72rem;
+        color: #1a5860;
+        background: rgba(17, 79, 85, 0.1);
+      }
+
+      .manager-badge {
+        border-radius: 999px;
+        border: 1px solid rgba(17, 79, 85, 0.24);
+        padding: 0.08rem 0.34rem;
+        font-size: 0.69rem;
+        color: #2f4149;
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .manager-badge.active {
+        border-color: rgba(15, 120, 88, 0.35);
+        color: #11543f;
+        background: rgba(15, 120, 88, 0.12);
+      }
+
+      .manager-badge.disabled {
+        border-color: rgba(150, 100, 18, 0.4);
+        color: #70470b;
+        background: rgba(240, 170, 45, 0.2);
+      }
+
+      .manager-badge.warning {
+        border-color: rgba(179, 77, 0, 0.45);
+        color: #7d3700;
+        background: rgba(240, 170, 45, 0.22);
+      }
+
+      .manager-desc {
+        margin: 0;
+        color: #5a6b74;
+        font-size: 0.82rem;
+      }
+
+      .manager-note {
+        color: #6a4600;
+      }
+
+      .manager-link {
+        color: var(--teal-900);
+        text-decoration: underline;
+      }
+
+      .manager-link:hover {
+        color: #0f3f44;
+      }
+
+      .manager-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.34rem;
+        align-items: center;
+      }
+
+      .manager-btn {
+        border: 1px solid rgba(17, 79, 85, 0.3);
+        border-radius: 7px;
+        background: #fff;
+        color: #234f56;
+        padding: 0.24rem 0.48rem;
+        font-size: 0.74rem;
+        cursor: pointer;
+      }
+
+      .manager-btn:hover {
+        border-color: rgba(17, 79, 85, 0.5);
+        background: rgba(17, 79, 85, 0.1);
+      }
+
+      .manager-btn.danger {
+        border-color: rgba(160, 35, 20, 0.36);
+        color: #7f2114;
+        background: rgba(160, 35, 20, 0.08);
+      }
+
+      .manager-btn.danger:hover {
+        border-color: rgba(160, 35, 20, 0.55);
+        background: rgba(160, 35, 20, 0.14);
+      }
+
+      .manager-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      @media (max-width: 980px) {
+        .toolbar {
+          grid-template-columns: 1fr;
+        }
+
+        .head {
+          display: none;
+        }
+
+        .row {
+          grid-template-columns: 1fr;
+          gap: 0.62rem;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .page {
+          width: calc(100% - 1rem);
+          margin: 1rem auto 2rem;
+        }
+
+        .hero {
+          padding: 0.9rem;
+        }
+
+        .row {
+          padding: 0.64rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+
+      @keyframes lift-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <h1>Web2API Recipes</h1>
+        <p class="subtitle">
+          Browse installed API recipes, filter quickly, then open or copy ready URLs. Switch tabs
+          to install and manage recipes from the repository. Endpoints labeled <code>q</code>
+          require query input.
+        </p>
+
+        <div class="toolbar">
+          <label>
+            <input
+              class="filter"
+              id="filterInput"
+              type="search"
+              placeholder="Filter by site, slug, endpoint, or description"
+              autocomplete="off"
+            />
+          </label>
+        </div>
+
+        <div class="summary">
+          <span class="pill"><strong id="visibleSites">{{ sites|length }}</strong> visible sites</span>
+          <span class="pill"><strong id="visibleEndpoints">0</strong> visible endpoints</span>
+          <span class="pill">pattern /&lt;slug&gt;/&lt;endpoint&gt;</span>
+        </div>
+
+        {% if auth.enabled %}
+        <section class="auth-panel" aria-label="Protected access">
+          <div class="manager-top">
+            <div>
+              <span class="manager-name">Protected Surfaces</span>
+              <p class="manager-meta">
+                This server requires an access token for every route except the public paths shown below.
+              </p>
+            </div>
+          </div>
+          <div class="auth-row">
+            <div class="auth-input-wrap">
+              <input
+                class="filter"
+                id="authTokenInput"
+                type="password"
+                placeholder="Paste access token"
+                autocomplete="current-password"
+                spellcheck="false"
+              />
+              <button class="auth-toggle" id="authToggleVis" type="button" title="Show/hide token">👁</button>
+            </div>
+            <button class="manager-btn" id="authSave" type="button">Save</button>
+            <button class="manager-btn" id="authClear" type="button">Clear</button>
+            <span class="auth-status-dot" id="authDot"></span>
+          </div>
+          <p class="manager-meta auth-meta">
+            Send <code>{{ auth.header }}: {{ auth.scheme }} &lt;token&gt;</code> or
+            <code>{{ auth.alternate_header }}: &lt;token&gt;</code> for
+            {{ auth.protected_surfaces|join(", ") }}.
+            Public path patterns:
+            {% if auth.public_surfaces %}
+            {{ auth.public_surfaces|join(", ") }}
+            {% else %}
+            none
+            {% endif %}.
+            Configure extras with <code>{{ auth.public_paths_env }}</code>.
+          </p>
+          <p class="manager-status" id="authStatus"></p>
+        </section>
+        {% endif %}
+      </header>
+
+      <div class="view-tabs" role="tablist" aria-label="Recipe views">
+        <button
+          type="button"
+          id="tabInstalled"
+          class="view-tab is-active"
+          data-view-target="installed"
+          role="tab"
+          aria-selected="true"
+          aria-controls="installedPanel"
+        >
+          Installed APIs
+        </button>
+        <button
+          type="button"
+          id="tabRepository"
+          class="view-tab"
+          data-view-target="repository"
+          role="tab"
+          aria-selected="false"
+          aria-controls="repoManager"
+        >
+          Recipe Repository
+        </button>
+        <button
+          type="button"
+          id="tabMcp"
+          class="view-tab"
+          data-view-target="mcp"
+          role="tab"
+          aria-selected="false"
+          aria-controls="mcpPanel"
+        >
+          MCP Tools
+        </button>
+      </div>
+
+      <section
+        class="view-panel is-active"
+        id="installedPanel"
+        data-view-panel="installed"
+        role="tabpanel"
+        aria-labelledby="tabInstalled"
+      >
+        {% if sites %}
+        <section class="catalog" id="catalog">
+          <div class="head" aria-hidden="true">
+            <span>Site</span>
+            <span>Endpoints</span>
+            <span>Ready URLs</span>
+          </div>
+
+          {% for site in sites %}
+          <article
+            class="row"
+            style="--row-index: {{ loop.index0 }};"
+            data-site="{{ site.name|lower }} {{ site.slug|lower }} {{ site.description|default('', true)|lower }}"
+          >
+            <section class="site">
+              <h2>{{ site.name }}</h2>
+              <span class="slug">{{ site.slug }}</span>
+              <p class="desc">{{ site.description }}</p>
+            </section>
+
+            <section class="endpoints">
+              {% for ep in site.endpoints %}
+              <div
+                class="endpoint-item"
+                data-endpoint-text="{{ ep.name|lower }} {{ ep.description|default('', true)|lower }}"
+                data-requires-query="{% if ep.requires_query %}true{% else %}false{% endif %}"
+              >
+                <div class="endpoint-top">
+                  <p class="ep-name">{{ ep.name }}</p>
+                  {% if ep.requires_query %}
+                  <span class="q-badge">q</span>
+                  {% endif %}
+                  {% for param_name, param in ep.params.items() %}
+                  <span class="param-badge{% if param.required %} is-required{% endif %}" title="{{ param.description|default('', true) }}">{{ param_name }}</span>
+                  {% endfor %}
+                </div>
+                {% if ep.description %}
+                <p class="ep-desc">{{ ep.description }}</p>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </section>
+
+            <section class="urls">
+              {% for ep in site.endpoints %}
+              {% if ep.requires_query %}
+              {% set endpoint_url = ep.link ~ '?q=example' %}
+              {% else %}
+              {% set endpoint_url = ep.link ~ '?' %}
+              {% endif %}
+              {% for param_name, param in ep.params.items() %}
+              {% if param.example %}
+              {% set endpoint_url = endpoint_url ~ '&' ~ param_name ~ '=' ~ param.example %}
+              {% endif %}
+              {% endfor %}
+              {% if endpoint_url.endswith('?') %}
+              {% set endpoint_url = endpoint_url ~ 'page=1' %}
+              {% else %}
+              {% set endpoint_url = endpoint_url ~ '&page=1' %}
+              {% endif %}
+              <div
+                class="url-item"
+                data-endpoint-text="{{ ep.name|lower }} {{ ep.description|default('', true)|lower }}"
+                data-requires-query="{% if ep.requires_query %}true{% else %}false{% endif %}"
+              >
+                <a class="url" href="{{ endpoint_url }}">{{ endpoint_url }}</a>
+                <button class="copy-btn" type="button" data-url="{{ endpoint_url }}">copy</button>
+              </div>
+              {% endfor %}
+            </section>
+          </article>
+          {% endfor %}
+        </section>
+
+        <p class="empty is-hidden" id="noMatches">
+          No recipes match your current filters.
+        </p>
+        {% else %}
+        <div class="empty">
+          No recipe APIs are installed yet. Open the Recipe Repository tab to install one.
+        </div>
+        {% endif %}
+      </section>
+
+      <section
+        class="manager view-panel"
+        id="repoManager"
+        data-view-panel="repository"
+        role="tabpanel"
+        aria-labelledby="tabRepository"
+      >
+        <div class="manager-top">
+          <div>
+            <h2>Recipe Repository</h2>
+            <p class="manager-meta" id="managerSource">
+              Browse catalog recipes and manage installed ones.
+            </p>
+          </div>
+          <button class="manager-btn" id="managerReload" type="button">Refresh</button>
+        </div>
+        <p class="manager-status" id="managerStatus"></p>
+        <div class="manager-list" id="managerList"></div>
+      </section>
+      <section
+        class="manager view-panel"
+        id="mcpPanel"
+        data-view-panel="mcp"
+        role="tabpanel"
+        aria-labelledby="tabMcp"
+      >
+        <div class="manager-top">
+          <div>
+            <h2>MCP Tool Bridge</h2>
+            <p class="manager-meta">
+              Every recipe endpoint is automatically exposed as an
+              <a class="manager-link" href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a>
+              tool. Any MCP-compatible client can discover and call them.
+            </p>
+          </div>
+          <button class="manager-btn" id="mcpReload" type="button">Refresh</button>
+        </div>
+
+        <div style="margin-top:0.7rem;display:grid;gap:0.5rem;">
+          <div class="endpoint-item" style="display:grid;gap:0.3rem;">
+            <div class="endpoint-top">
+              <p class="ep-name" style="font-size:0.82rem;">Tools Endpoint</p>
+            </div>
+            <div class="url-item">
+              <span class="url" id="mcpBaseUrl">/mcp/tools</span>
+              <button class="copy-btn" type="button" id="mcpCopyBase">copy</button>
+            </div>
+          </div>
+
+          <div class="endpoint-item" style="display:grid;gap:0.3rem;">
+            <div class="endpoint-top">
+              <p class="ep-name" style="font-size:0.82rem;">Filtered Endpoints</p>
+              <span class="q-badge">path-based</span>
+            </div>
+            <p class="ep-desc">Use path filters to include or exclude recipes by slug:</p>
+            <div class="url-item">
+              <span class="url">/mcp/only/brave-search,deepl/tools</span>
+              <button class="copy-btn mcp-copy-filter" type="button" data-path="/mcp/only/brave-search,deepl/tools">copy</button>
+            </div>
+            <div class="url-item">
+              <span class="url">/mcp/exclude/allenai/tools</span>
+              <button class="copy-btn mcp-copy-filter" type="button" data-path="/mcp/exclude/allenai/tools">copy</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="manager-status" id="mcpStatus" style="margin-top:0.6rem;"></p>
+        <div class="manager-list" id="mcpList" style="margin-top:0.4rem;"></div>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const authConfig = {{ auth|tojson }};
+        const rows = Array.from(document.querySelectorAll(".row"));
+        const filterInput = document.getElementById("filterInput");
+        const visibleSites = document.getElementById("visibleSites");
+        const visibleEndpoints = document.getElementById("visibleEndpoints");
+        const noMatches = document.getElementById("noMatches");
+        if (rows.length > 0 && filterInput && visibleSites && visibleEndpoints && noMatches) {
+          const normalize = (value) => value.trim().toLowerCase();
+
+          const applyFilters = () => {
+            const term = normalize(filterInput.value || "");
+
+            let shownSites = 0;
+            let shownEndpoints = 0;
+
+            rows.forEach((row) => {
+              const siteText = row.dataset.site || "";
+              const siteMatches = term === "" || siteText.includes(term);
+
+              const endpointItems = Array.from(row.querySelectorAll(".endpoint-item"));
+              const urlItems = Array.from(row.querySelectorAll(".url-item"));
+
+              let rowVisibleCount = 0;
+
+              endpointItems.forEach((endpointItem, index) => {
+                const endpointText = endpointItem.dataset.endpointText || "";
+                const matchesTerm = term === "" || siteMatches || endpointText.includes(term);
+                const isVisible = matchesTerm;
+
+                endpointItem.classList.toggle("is-hidden", !isVisible);
+                if (urlItems[index]) {
+                  urlItems[index].classList.toggle("is-hidden", !isVisible);
+                }
+
+                if (isVisible) {
+                  rowVisibleCount += 1;
+                }
+              });
+
+              const rowVisible = rowVisibleCount > 0;
+              row.classList.toggle("is-hidden", !rowVisible);
+
+              if (rowVisible) {
+                shownSites += 1;
+                shownEndpoints += rowVisibleCount;
+              }
+            });
+
+            visibleSites.textContent = String(shownSites);
+            visibleEndpoints.textContent = String(shownEndpoints);
+            noMatches.classList.toggle("is-hidden", shownSites > 0);
+          };
+
+          filterInput.addEventListener("input", applyFilters);
+
+          document.querySelectorAll(".copy-btn").forEach((button) => {
+            button.addEventListener("click", async () => {
+              const relative = button.dataset.url || "";
+              const absolute = `${window.location.origin}${relative}`;
+
+              try {
+                await navigator.clipboard.writeText(absolute);
+                const original = button.textContent;
+                button.textContent = "copied";
+                window.setTimeout(() => {
+                  button.textContent = original;
+                }, 1100);
+              } catch (_error) {
+                button.textContent = "failed";
+                window.setTimeout(() => {
+                  button.textContent = "copy";
+                }, 1100);
+              }
+            });
+          });
+
+          applyFilters();
+        }
+
+        const viewTabs = Array.from(document.querySelectorAll("[data-view-target]"));
+        const viewPanels = Array.from(document.querySelectorAll("[data-view-panel]"));
+        if (viewTabs.length > 0 && viewPanels.length > 0) {
+          const activateView = (target) => {
+            viewTabs.forEach((tab) => {
+              const active = (tab.dataset.viewTarget || "") === target;
+              tab.classList.toggle("is-active", active);
+              tab.setAttribute("aria-selected", active ? "true" : "false");
+              tab.tabIndex = active ? 0 : -1;
+            });
+            viewPanels.forEach((panel) => {
+              const active = (panel.dataset.viewPanel || "") === target;
+              panel.classList.toggle("is-active", active);
+            });
+          };
+
+          viewTabs.forEach((tab, index) => {
+            tab.addEventListener("click", () => {
+              activateView(tab.dataset.viewTarget || "installed");
+            });
+            tab.addEventListener("keydown", (event) => {
+              if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+                return;
+              }
+              event.preventDefault();
+              const offset = event.key === "ArrowRight" ? 1 : -1;
+              const nextIndex = (index + offset + viewTabs.length) % viewTabs.length;
+              const nextTab = viewTabs[nextIndex];
+              if (!nextTab) {
+                return;
+              }
+              activateView(nextTab.dataset.viewTarget || "installed");
+              nextTab.focus();
+            });
+          });
+
+          const initialTab = viewTabs.find((tab) => tab.classList.contains("is-active")) || viewTabs[0];
+          activateView((initialTab && initialTab.dataset.viewTarget) || "installed");
+        }
+
+        const managerSource = document.getElementById("managerSource");
+        const managerStatus = document.getElementById("managerStatus");
+        const managerList = document.getElementById("managerList");
+        const managerReload = document.getElementById("managerReload");
+        const authTokenInput = document.getElementById("authTokenInput");
+        const authSave = document.getElementById("authSave");
+        const authClear = document.getElementById("authClear");
+        const authStatus = document.getElementById("authStatus");
+        if (!managerSource || !managerStatus || !managerList || !managerReload) {
+          return;
+        }
+
+        let busy = false;
+        let updateStatus = {};
+        let mcpLoaded = false;
+
+        const authStorageKey =
+          typeof authConfig.storage_key === "string" && authConfig.storage_key
+            ? authConfig.storage_key
+            : "web2api.access_token";
+
+        const setStatus = (message, { error = false } = {}) => {
+          managerStatus.textContent = message;
+          managerStatus.classList.toggle("is-error", error);
+        };
+
+        const setAuthStatus = (message, { error = false } = {}) => {
+          if (!authStatus) {
+            return;
+          }
+          authStatus.textContent = message;
+          authStatus.classList.toggle("is-error", error);
+        };
+
+        const getStoredToken = () => {
+          if (!authConfig.enabled) {
+            return "";
+          }
+          try {
+            return window.localStorage.getItem(authStorageKey) || "";
+          } catch (_error) {
+            return "";
+          }
+        };
+
+        const storeToken = (value) => {
+          try {
+            window.localStorage.setItem(authStorageKey, value);
+          } catch (_error) {}
+        };
+
+        const clearStoredToken = () => {
+          try {
+            window.localStorage.removeItem(authStorageKey);
+          } catch (_error) {}
+        };
+
+        const protectedHeaders = (headersInit) => {
+          const headers = new Headers(headersInit || {});
+          const token = getStoredToken().trim();
+          if (
+            token &&
+            !headers.has("Authorization") &&
+            !headers.has("X-Web2API-Key")
+          ) {
+            headers.set("Authorization", `Bearer ${token}`);
+          }
+          return headers;
+        };
+
+        const protectedFetch = (input, init = {}) =>
+          fetch(input, {
+            ...init,
+            headers: protectedHeaders(init.headers),
+          });
+
+        const clearProtectedViews = () => {
+          updateStatus = {};
+          managerList.replaceChildren();
+          const mcpList = document.getElementById("mcpList");
+          if (mcpList) {
+            mcpList.replaceChildren();
+          }
+        };
+
+        const requireToken = (setScopeStatus) => {
+          if (!authConfig.enabled) {
+            return true;
+          }
+          const token = getStoredToken().trim();
+          if (token) {
+            return true;
+          }
+          const message = "Access token required. Enter it above to use protected routes.";
+          if (typeof setScopeStatus === "function") {
+            setScopeStatus(message, { error: true });
+          }
+          setAuthStatus(message, { error: true });
+          return false;
+        };
+
+        const noteUnauthorized = () => {
+          if (!authConfig.enabled) {
+            return;
+          }
+          setAuthStatus("Stored access token was rejected by the server.", { error: true });
+        };
+
+        if (authTokenInput) {
+          authTokenInput.value = getStoredToken();
+        }
+        if (authConfig.enabled && !getStoredToken().trim()) {
+          setAuthStatus("Access token required for protected routes.");
+        }
+
+        const readError = async (response) => {
+          try {
+            const payload = await response.json();
+            if (typeof payload.detail === "string" && payload.detail) {
+              return payload.detail;
+            }
+            return JSON.stringify(payload);
+          } catch (_error) {
+            return `${response.status} ${response.statusText}`;
+          }
+        };
+
+        const actionButton = ({ label, onClick, danger = false }) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `manager-btn${danger ? " danger" : ""}`;
+          button.disabled = busy;
+          button.textContent = label;
+          button.addEventListener("click", onClick);
+          return button;
+        };
+
+        const toStringArray = (value) => {
+          if (!Array.isArray(value)) {
+            return [];
+          }
+          return value
+            .filter((item) => typeof item === "string")
+            .map((item) => item.trim())
+            .filter((item) => item !== "");
+        };
+
+        const getPluginBlock = (entry) => {
+          if (!entry || typeof entry !== "object") {
+            return null;
+          }
+          const plugin = entry.plugin;
+          if (!plugin || typeof plugin !== "object") {
+            return null;
+          }
+          return plugin;
+        };
+
+        const getMissingEnv = (entry) => {
+          const plugin = getPluginBlock(entry);
+          if (!plugin) {
+            return [];
+          }
+          const status = plugin.status;
+          if (!status || typeof status !== "object") {
+            return [];
+          }
+          const checks = status.checks;
+          if (!checks || typeof checks !== "object") {
+            return [];
+          }
+          const env = checks.env;
+          if (!env || typeof env !== "object") {
+            return [];
+          }
+          return toStringArray(env.missing);
+        };
+
+        const getDeclaredRequiredEnv = (entry) => {
+          const plugin = getPluginBlock(entry);
+          if (plugin) {
+            const fromPlugin = toStringArray(plugin.requires_env);
+            if (fromPlugin.length > 0) {
+              return fromPlugin;
+            }
+          }
+          return toStringArray(entry.requires_env);
+        };
+
+        const isHttpUrl = (value) => typeof value === "string" && /^https?:\/\//i.test(value);
+
+        const runAction = async ({ url, label }) => {
+          if (!requireToken(setStatus)) {
+            return;
+          }
+          if (busy) {
+            return;
+          }
+          busy = true;
+          setStatus(`${label}...`);
+          try {
+            const response = await protectedFetch(url, { method: "POST" });
+            if (!response.ok) {
+              if (response.status === 401) {
+                noteUnauthorized();
+              }
+              throw new Error(await readError(response));
+            }
+            setStatus(`${label} complete. Reloading...`);
+            window.location.reload();
+          } catch (error) {
+            const message = error instanceof Error ? error.message : "request failed";
+            setStatus(message, { error: true });
+            busy = false;
+          }
+        };
+
+        const renderCatalog = (payload) => {
+          managerList.replaceChildren();
+          const source = payload.catalog_source || {};
+          const sourceParts = [source.source || "-"];
+          if (source.ref) {
+            sourceParts.push(`ref: ${source.ref}`);
+          }
+          if (source.path) {
+            sourceParts.push(`path: ${source.path}`);
+          }
+          managerSource.textContent = `Source: ${sourceParts.join(" · ")}`;
+
+          if (payload.catalog_error) {
+            setStatus(`Catalog unavailable: ${payload.catalog_error}`, { error: true });
+          }
+
+          const catalog = Array.isArray(payload.catalog) ? payload.catalog : [];
+          const installed = Array.isArray(payload.installed) ? payload.installed : [];
+          const catalogSlugs = new Set(catalog.map((entry) => String(entry.slug || "")));
+
+          const localOnlyInstalled = installed.filter((entry) => {
+            const slug = String(entry.slug || "");
+            return Boolean(entry.has_recipe) && slug !== "" && !catalogSlugs.has(slug);
+          });
+
+          const renderRecipeRow = (entry, { catalogName = null } = {}) => {
+            const slugRaw = String(entry.slug || entry.name || "");
+            if (!slugRaw) {
+              return;
+            }
+            const installedValue = Boolean(entry.installed);
+            const managedValue = Boolean(entry.managed);
+            const enabledValue = Boolean(entry.enabled);
+            const originValue = String(entry.origin || (installedValue ? "unmanaged" : "catalog"));
+            const missingEnv = getMissingEnv(entry);
+            const requiredEnv = getDeclaredRequiredEnv(entry);
+            const docsUrlValue = typeof entry.docs_url === "string" ? entry.docs_url.trim() : "";
+
+            const row = document.createElement("article");
+            row.className = "manager-row";
+
+            const title = document.createElement("div");
+            title.className = "manager-title";
+
+            const name = document.createElement("span");
+            name.className = "manager-name";
+            name.textContent = String(catalogName || entry.name || slugRaw);
+            title.append(name);
+
+            const slug = document.createElement("span");
+            slug.className = "manager-slug";
+            slug.textContent = slugRaw;
+            title.append(slug);
+
+            const trustBadge = document.createElement("span");
+            trustBadge.className = "manager-badge";
+            trustBadge.textContent = entry.trusted ? "trusted" : "untrusted";
+            title.append(trustBadge);
+
+            const originBadge = document.createElement("span");
+            originBadge.className = "manager-badge";
+            originBadge.textContent = `origin:${originValue}`;
+            title.append(originBadge);
+
+            if (installedValue) {
+              const stateBadge = document.createElement("span");
+              stateBadge.className = `manager-badge ${enabledValue ? "active" : "disabled"}`;
+              stateBadge.textContent = enabledValue ? "installed" : "installed/disabled";
+              title.append(stateBadge);
+            }
+
+            if (missingEnv.length > 0 || (!installedValue && requiredEnv.length > 0)) {
+              const setupBadge = document.createElement("span");
+              setupBadge.className = "manager-badge warning";
+              setupBadge.textContent = "setup required";
+              title.append(setupBadge);
+            }
+
+            if (managedValue) {
+              const updateAvailable = updateStatus[slugRaw];
+              if (updateAvailable === true) {
+                const updateBadge = document.createElement("span");
+                updateBadge.className = "manager-badge warning";
+                updateBadge.textContent = "update available";
+                title.append(updateBadge);
+              } else if (updateAvailable === false) {
+                const uptodateBadge = document.createElement("span");
+                uptodateBadge.className = "manager-badge active";
+                uptodateBadge.textContent = "up to date";
+                title.append(uptodateBadge);
+              }
+            }
+
+            row.append(title);
+
+            const desc = document.createElement("p");
+            desc.className = "manager-desc";
+            desc.textContent = String(entry.description || "No description.");
+            row.append(desc);
+
+            if (missingEnv.length > 0) {
+              const missing = document.createElement("p");
+              missing.className = "manager-desc manager-note";
+              missing.textContent = `Missing environment variables: ${missingEnv.join(", ")}`;
+              row.append(missing);
+            } else if (!installedValue && requiredEnv.length > 0) {
+              const requires = document.createElement("p");
+              requires.className = "manager-desc manager-note";
+              requires.textContent = `Requires environment variables: ${requiredEnv.join(", ")}`;
+              row.append(requires);
+            }
+
+            if (isHttpUrl(docsUrlValue)) {
+              const docs = document.createElement("p");
+              docs.className = "manager-desc";
+              const link = document.createElement("a");
+              link.className = "manager-link";
+              link.href = docsUrlValue;
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+              link.textContent = "Recipe docs";
+              docs.append(link);
+              row.append(docs);
+            }
+
+            const actions = document.createElement("div");
+            actions.className = "manager-actions";
+            const slugValue = encodeURIComponent(slugRaw);
+            const nameValue = encodeURIComponent(String(catalogName || entry.name || ""));
+
+            if (!installedValue) {
+              actions.append(
+                actionButton({
+                  label: "Install",
+                  onClick: () =>
+                    runAction({
+                      url: `/api/recipes/manage/install/${nameValue}`,
+                      label: `Installing ${entry.slug || entry.name}`,
+                    }),
+                })
+              );
+            } else {
+              actions.append(
+                actionButton({
+                  label: enabledValue ? "Disable" : "Enable",
+                  onClick: () =>
+                    runAction({
+                      url: enabledValue
+                        ? `/api/recipes/manage/disable/${slugValue}`
+                        : `/api/recipes/manage/enable/${slugValue}`,
+                      label: `${enabledValue ? "Disabling" : "Enabling"} ${slugRaw}`,
+                    }),
+                })
+              );
+              if (managedValue && updateStatus[slugRaw] === true) {
+                actions.append(
+                  actionButton({
+                    label: "Update",
+                    onClick: () =>
+                      runAction({
+                        url: `/api/recipes/manage/update/${slugValue}`,
+                        label: `Updating ${slugRaw}`,
+                      }),
+                  })
+                );
+              }
+              actions.append(
+                actionButton({
+                  label: managedValue ? "Uninstall" : "Remove",
+                  danger: true,
+                  onClick: () =>
+                    runAction({
+                      url: managedValue
+                        ? `/api/recipes/manage/uninstall/${slugValue}`
+                        : `/api/recipes/manage/uninstall/${slugValue}?force=true`,
+                      label: `Uninstalling ${slugRaw}`,
+                    }),
+                })
+              );
+            }
+
+            row.append(actions);
+            managerList.append(row);
+          };
+
+          if (catalog.length === 0 && localOnlyInstalled.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "manager-desc";
+            empty.textContent = "No catalog recipes found and no local recipes installed.";
+            managerList.append(empty);
+            return;
+          }
+
+          if (!payload.catalog_error) {
+            setStatus(
+              `${catalog.length} catalog recipes loaded, ${localOnlyInstalled.length} local-only installed.`
+            );
+          }
+
+          catalog.forEach((entry) => {
+            renderRecipeRow(entry, { catalogName: entry.name });
+          });
+
+          localOnlyInstalled.forEach((entry) => {
+            renderRecipeRow(
+              {
+                name: entry.slug,
+                slug: entry.slug,
+                description: "Installed locally and not listed in current catalog source.",
+                trusted: entry.trusted,
+                installed: true,
+                enabled: entry.enabled,
+                managed: entry.managed,
+                origin: entry.origin,
+                plugin: entry.plugin,
+                requires_env:
+                  entry.plugin && typeof entry.plugin === "object" ? entry.plugin.requires_env : [],
+              },
+              { catalogName: null }
+            );
+          });
+        };
+
+        const loadCatalog = async () => {
+          if (!requireToken(setStatus)) {
+            clearProtectedViews();
+            return;
+          }
+          setStatus("Loading catalog...");
+          try {
+            const response = await protectedFetch("/api/recipes/manage");
+            if (!response.ok) {
+              if (response.status === 401) {
+                noteUnauthorized();
+              }
+              throw new Error(await readError(response));
+            }
+            const payload = await response.json();
+            renderCatalog(payload);
+
+            // Check for updates in the background.
+            protectedFetch("/api/recipes/manage/check-updates", { method: "POST" })
+              .then((r) => (r.ok ? r.json() : null))
+              .then((data) => {
+                if (data && typeof data.updates === "object" && data.updates !== null) {
+                  updateStatus = data.updates;
+                  renderCatalog(payload);
+                }
+              })
+              .catch(() => {});
+          } catch (error) {
+            const message = error instanceof Error ? error.message : "catalog load failed";
+            setStatus(message, { error: true });
+          }
+        };
+
+        managerReload.addEventListener("click", () => {
+          if (busy) {
+            return;
+          }
+          void loadCatalog();
+        });
+
+        void loadCatalog();
+
+        /* ── MCP Tools tab ──────────────────────────────────── */
+        const mcpStatus = document.getElementById("mcpStatus");
+        const mcpList = document.getElementById("mcpList");
+        const mcpReload = document.getElementById("mcpReload");
+        const mcpCopyBase = document.getElementById("mcpCopyBase");
+        const mcpBaseUrl = document.getElementById("mcpBaseUrl");
+        const setMcpStatus = (message, { error = false } = {}) => {
+          if (!mcpStatus) return;
+          mcpStatus.textContent = message;
+          mcpStatus.classList.toggle("is-error", error);
+        };
+
+        if (mcpCopyBase && mcpBaseUrl) {
+          mcpCopyBase.addEventListener("click", async () => {
+            const url = `${window.location.origin}/mcp/tools`;
+            try {
+              await navigator.clipboard.writeText(url);
+              mcpCopyBase.textContent = "copied";
+              setTimeout(() => { mcpCopyBase.textContent = "copy"; }, 1100);
+            } catch (_) {
+              mcpCopyBase.textContent = "failed";
+              setTimeout(() => { mcpCopyBase.textContent = "copy"; }, 1100);
+            }
+          });
+        }
+
+        document.querySelectorAll(".mcp-copy-filter").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const url = `${window.location.origin}${btn.dataset.path}`;
+            try {
+              await navigator.clipboard.writeText(url);
+              btn.textContent = "copied";
+              setTimeout(() => { btn.textContent = "copy"; }, 1100);
+            } catch (_) {
+              btn.textContent = "failed";
+              setTimeout(() => { btn.textContent = "copy"; }, 1100);
+            }
+          });
+        });
+
+        const renderMcpTools = (tools) => {
+          if (!mcpList) return;
+          mcpList.replaceChildren();
+
+          // Group by recipe slug (from API field, fallback to name prefix)
+          const grouped = {};
+          tools.forEach((tool) => {
+            const slug = tool.slug || (() => {
+              const sep = tool.name.indexOf("__");
+              return sep > -1 ? tool.name.substring(0, sep) : tool.name;
+            })();
+            if (!grouped[slug]) grouped[slug] = [];
+            grouped[slug].push(tool);
+          });
+
+          Object.entries(grouped).forEach(([slug, slugTools]) => {
+            const row = document.createElement("article");
+            row.className = "manager-row";
+
+            const title = document.createElement("div");
+            title.className = "manager-title";
+            const nameEl = document.createElement("span");
+            nameEl.className = "manager-name";
+            nameEl.textContent = slug;
+            title.append(nameEl);
+            const countBadge = document.createElement("span");
+            countBadge.className = "manager-badge active";
+            countBadge.textContent = `${slugTools.length} tool${slugTools.length > 1 ? "s" : ""}`;
+            title.append(countBadge);
+            row.append(title);
+
+            slugTools.forEach((tool) => {
+              const item = document.createElement("div");
+              item.className = "endpoint-item";
+              item.style.marginTop = "0.3rem";
+
+              const top = document.createElement("div");
+              top.className = "endpoint-top";
+              const tn = document.createElement("p");
+              tn.className = "ep-name";
+              tn.textContent = tool.name;
+              top.append(tn);
+
+              const params = tool.parameters;
+              if (params && params.properties) {
+                Object.entries(params.properties).forEach(([pname, pdef]) => {
+                  const badge = document.createElement("span");
+                  const isReq = (params.required || []).includes(pname);
+                  badge.className = `param-badge${isReq ? " is-required" : ""}`;
+                  badge.textContent = pname;
+                  badge.title = pdef.description || "";
+                  top.append(badge);
+                });
+              }
+              item.append(top);
+
+              // Extract description without the [SiteName] prefix for cleaner display
+              const desc = document.createElement("p");
+              desc.className = "ep-desc";
+              desc.textContent = tool.description || "";
+              item.append(desc);
+
+              // Copy tool name button
+              const urlRow = document.createElement("div");
+              urlRow.className = "url-item";
+              urlRow.style.marginTop = "0.25rem";
+              const urlEl = document.createElement("span");
+              urlEl.className = "url";
+              urlEl.textContent = `/mcp/tools/${tool.name}`;
+              urlRow.append(urlEl);
+              const copyBtn = document.createElement("button");
+              copyBtn.className = "copy-btn";
+              copyBtn.type = "button";
+              copyBtn.textContent = "copy";
+              copyBtn.addEventListener("click", async () => {
+                const fullUrl = `${window.location.origin}/mcp/tools/${tool.name}`;
+                try {
+                  await navigator.clipboard.writeText(fullUrl);
+                  copyBtn.textContent = "copied";
+                  setTimeout(() => { copyBtn.textContent = "copy"; }, 1100);
+                } catch (_) {
+                  copyBtn.textContent = "failed";
+                  setTimeout(() => { copyBtn.textContent = "copy"; }, 1100);
+                }
+              });
+              urlRow.append(copyBtn);
+              item.append(urlRow);
+
+              row.append(item);
+            });
+
+            mcpList.append(row);
+          });
+        };
+
+        const loadMcpTools = async () => {
+          if (!mcpStatus || !mcpList) return;
+          if (!requireToken(setMcpStatus)) {
+            mcpList.replaceChildren();
+            return;
+          }
+          setMcpStatus("Loading tools...");
+          try {
+            const resp = await protectedFetch("/mcp/tools");
+            if (!resp.ok) {
+              if (resp.status === 401) {
+                noteUnauthorized();
+              }
+              throw new Error(await readError(resp));
+            }
+            const tools = await resp.json();
+            setMcpStatus(`${tools.length} tools available across all recipes.`);
+            renderMcpTools(tools);
+          } catch (err) {
+            setMcpStatus(err.message || "Failed to load tools.", { error: true });
+          }
+        };
+
+        if (mcpReload) {
+          mcpReload.addEventListener("click", () => void loadMcpTools());
+        }
+
+        // Show/hide token toggle
+        const authToggle = document.getElementById("authToggleVis");
+        if (authToggle && authTokenInput) {
+          authToggle.addEventListener("click", () => {
+            const isPassword = authTokenInput.type === "password";
+            authTokenInput.type = isPassword ? "text" : "password";
+            authToggle.textContent = isPassword ? "🙈" : "👁";
+            authToggle.title = isPassword ? "Hide token" : "Show token";
+          });
+        }
+
+        // Auth status dot
+        const authDot = document.getElementById("authDot");
+        function setAuthDot(state, label) {
+          if (!authDot) return;
+          authDot.className = "auth-status-dot";
+          if (state) authDot.classList.add(state);
+          authDot.textContent = label || "";
+        }
+
+        async function verifyToken() {
+          const token = getStoredToken().trim();
+          if (!token) {
+            setAuthDot("", "No token");
+            return;
+          }
+          setAuthDot("is-checking", "Verifying…");
+          try {
+            const resp = await fetch("/api/recipes/manage", {
+              headers: { "Authorization": "Bearer " + token },
+            });
+            if (resp.ok) {
+              setAuthDot("is-valid", "Token valid");
+            } else if (resp.status === 401 || resp.status === 403) {
+              setAuthDot("is-invalid", "Token rejected");
+            } else {
+              setAuthDot("is-invalid", "Error " + resp.status);
+            }
+          } catch {
+            setAuthDot("is-invalid", "Connection error");
+          }
+        }
+
+        // Verify on page load if token exists
+        if (getStoredToken().trim()) {
+          void verifyToken();
+        } else {
+          setAuthDot("", "No token");
+        }
+
+        // Pre-fill input hint if token is stored
+        if (authTokenInput && getStoredToken().trim()) {
+          authTokenInput.placeholder = "••••••••  (token saved — enter new to replace)";
+        }
+
+        if (authSave) {
+          authSave.addEventListener("click", async () => {
+            if (!authTokenInput) {
+              return;
+            }
+            const value = authTokenInput.value.trim();
+            if (!value) {
+              setAuthStatus("Enter an access token before saving.", { error: true });
+              return;
+            }
+            storeToken(value);
+            authTokenInput.value = "";
+            authTokenInput.placeholder = "••••••••  (token saved — enter new to replace)";
+            setAuthStatus("Access token saved in this browser.");
+            await verifyToken();
+            void loadCatalog();
+            if (mcpLoaded) {
+              void loadMcpTools();
+            }
+          });
+        }
+
+        if (authClear) {
+          authClear.addEventListener("click", () => {
+            clearStoredToken();
+            if (authTokenInput) {
+              authTokenInput.value = "";
+              authTokenInput.placeholder = "Paste access token";
+            }
+            setAuthDot("", "No token");
+            clearProtectedViews();
+            setStatus("Access token cleared. Protected routes are disabled until you enter it again.", {
+              error: true,
+            });
+            setMcpStatus("Access token cleared. Enter it above to load MCP tools.", {
+              error: true,
+            });
+            setAuthStatus("Access token cleared from this browser.");
+          });
+        }
+
+        // Lazy-load MCP tools when tab is first activated
+        const mcpTab = document.getElementById("tabMcp");
+        if (mcpTab) {
+          mcpTab.addEventListener("click", () => {
+            if (!mcpLoaded) {
+              mcpLoaded = true;
+              void loadMcpTools();
+            }
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

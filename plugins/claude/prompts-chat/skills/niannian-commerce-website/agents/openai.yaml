@@ -1,0 +1,4 @@
+interface:
+  display_name: "念念带货网站"
+  short_description: "Build, repair, and verify Niannian commerce website flows."
+  default_prompt: "Use $niannian-commerce-website to build or improve the Niannian commerce website."

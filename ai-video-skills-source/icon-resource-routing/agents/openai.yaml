@@ -1,0 +1,4 @@
+interface:
+  display_name: "Icon Resource Routing"
+  short_description: "Choose AI brand marks and 3D visual assets for product UI."
+  default_prompt: "Choose appropriate icon resources for the current product and verify licensing and implementation boundaries."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Relic Collector IP"
+  short_description: "Run the Relic Collector original-IP system"
+  default_prompt: "Use $relic-collector-ip-system to build the next layer of the Relic Collector world, protagonist, and proof-shot package."

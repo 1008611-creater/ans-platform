@@ -1,0 +1,25 @@
+{
+  "director": {
+    "zh": "侯孝贤",
+    "en": "Hou Hsiao-hsien"
+  },
+  "films": [
+    {
+      "title_zh": "海上花",
+      "title_en": "Flowers of Shanghai",
+      "year": 1998,
+      "frames": [
+        "D:/project/frames/flowers-of-shanghai/01.jpg",
+        "D:/project/frames/flowers-of-shanghai/02.jpg",
+        "D:/project/frames/flowers-of-shanghai/03.jpg",
+        "D:/project/frames/flowers-of-shanghai/04.jpg"
+      ],
+      "sources": [
+        {
+          "label": "官方发行方或电影节素材页",
+          "url": "https://example.com/replace-with-real-source"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "model_channel_method_profiles.v1",
+  "library_id": "ai_video_method_boundary_profiles",
+  "policy": "These profiles guide prompt decomposition only. Job-local video_channel_capabilities.json and locked video_task_spec.json remain the authority for current model/channel availability, duration, resolution, reference limits, audio, cost, and submission.",
+  "profiles": [
+    {
+      "id": "image2_still",
+      "policy_state": "method_only_research_candidate",
+      "source_evidence": [{"source_grade": "B", "path": "C:\\Users\\lsb\\.codex\\skills\\prompt-skill-router\\references\\prompt-routing-contract.md", "sha256": "3AFB0D19E4C1B62971E733576CDB5EBC6A35E6C1799C5E9A697135EE414C1778"}],
+      "applies_to": ["asset", "first_frame", "storyboard"],
+      "strengths": ["single-frame composition", "identity/wardrobe anchors", "scene and prop duties"],
+      "do_not_assume": ["motion continuity", "dense readable text", "video-audio behavior"],
+      "compiler_focus": ["asset duty", "composition", "text policy", "reference separation"]
+    },
+    {
+      "id": "seedance2_narrative",
+      "policy_state": "method_only_research_candidate",
+      "source_evidence": [{"source_grade": "C", "path": "C:\\Users\\lsb\\.codex\\skills\\prompt-skill-router\\references\\superi-prompt-course-20260711.md", "sha256": "E6A6CA73B224FC19CD2FB71969AE7B84AE8DB6FE8628DEC54D55DC69FDF40631"}],
+      "applies_to": ["video", "continuation"],
+      "strengths": ["short ordered action", "camera movement", "first-frame-driven narrative motion"],
+      "do_not_assume": ["tail-frame proves velocity", "many simultaneous actions", "unverified native voice or reference capacity"],
+      "compiler_focus": ["one primary action", "temporal order", "continuity_in/out", "audio duty"]
+    },
+    {
+      "id": "generic_multimodal_i2v",
+      "policy_state": "method_only_research_candidate",
+      "source_evidence": [{"source_grade": "B", "path": "C:\\Users\\lsb\\.codex\\skills\\prompt-skill-router\\references\\benchmark-gates.md", "sha256": "ABC15B101B89B290D96578ACCAE086386FF0C742634AE7099689C6A1A9DA992B"}],
+      "applies_to": ["video", "product_demo"],
+      "strengths": ["confirmed visual anchors", "clear physical action", "simple camera intent"],
+      "do_not_assume": ["provider-specific parameter names", "multi-reference support", "policy acceptance", "text fidelity"],
+      "compiler_focus": ["reference duties", "physical action", "channel compatibility evidence"]
+    }
+  ]
+}

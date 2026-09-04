@@ -1,0 +1,7 @@
+interface:
+  display_name: "XHS Traffic Aesthetic Guard"
+  short_description: "Blocks AI-flavored and PPT-style XHS note drafts"
+  default_prompt: "Use $xhs-traffic-aesthetic-guard to review this Xiaohongshu image-note draft before I publish it."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,4 @@
+interface:
+  display_name: "画布可靠生图"
+  short_description: "可靠执行画布生图并完成结果回写、素材校验、预览验收"
+  default_prompt: "用可靠画布生图流程执行任务，逐步校验任务、素材回写和节点预览，失败时定位最早断点。"

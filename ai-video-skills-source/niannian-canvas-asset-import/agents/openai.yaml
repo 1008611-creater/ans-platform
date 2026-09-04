@@ -1,0 +1,4 @@
+interface:
+  display_name: "Niannian Asset Import"
+  short_description: "Import approved assets through the protected production path"
+  default_prompt: "Use the protected importer to add one approved local asset to the locked Niannian canvas project, then verify the asset and canvas-node receipt."

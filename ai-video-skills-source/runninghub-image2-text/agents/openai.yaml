@@ -1,0 +1,4 @@
+interface:
+  display_name: "RunningHub Image2 Text"
+  short_description: "Generate images from text with RunningHub Image G 2.0."
+  default_prompt: "Use RunningHub Image2 Text to create an image from a prompt."

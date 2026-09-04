@@ -1,0 +1,8 @@
+{
+  "name": "dola-desktop-api-worker",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright-core": "1.61.1"
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "编剧冠军"
+  short_description: "把创意、小说或大纲写成可拍剧本与故事圣经"
+  default_prompt: "使用 $screenwriter 把我的素材整理成可拍短剧剧本，并先说明还缺哪些故事事实。"
+policy:
+  allow_implicit_invocation: true

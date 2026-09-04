@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI视频资产图提示词"
+  short_description: "编译角色场景道具首帧的项目资产清单和独立生成提示词合同"
+  default_prompt: "Use $ai-video-asset-prompts to compile a reusable asset manifest from this approved screenplay."

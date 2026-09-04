@@ -1,0 +1,290 @@
+{
+  "project_id": "",
+  "project_name": "",
+  "created_at": "",
+  "updated_at": "",
+  "project_type": "",
+  "owner_goal": "",
+  "target_user": "",
+  "current_phase": "intake",
+  "route": {
+    "top_router": "web-miniapp-product-router",
+    "specialist_router": "",
+    "website_router": "",
+    "quality_router": "",
+    "design_router": "frontend-product-design-router",
+    "design_source_of_truth": "",
+    "implementation_route": ""
+  },
+  "source_repositories": [],
+  "source_application_records": [],
+  "website": {
+    "website_kind": "",
+    "runtime": "",
+    "source_of_truth": "",
+    "quality_verticals": [],
+    "visible_value_path": "",
+    "primary_conversion": "",
+    "form_destination": "",
+    "accessibility_standard": "WCAG 2.2 AA",
+    "performance_budget": {
+      "lcp": "",
+      "inp": "",
+      "cls": "",
+      "js_budget_kb": "",
+      "image_budget_kb": ""
+    },
+    "error_monitoring": {
+      "provider": "",
+      "dsn_configured": false,
+      "release_tracking": false,
+      "source_maps": false
+    },
+    "experimentation": {
+      "provider": "",
+      "active_tests": [],
+      "decision_metric": "",
+      "guardrail_metric": ""
+    },
+    "forms": {
+      "library": "",
+      "schema_validation": "",
+      "server_action_or_endpoint": "",
+      "spam_protection": "",
+      "destination_verified": false
+    },
+    "i18n": {
+      "locales": [],
+      "default_locale": "",
+      "library": "",
+      "localized_routes": false,
+      "localized_metadata": false
+    },
+    "security": {
+      "csp": "",
+      "env_leak_check": false,
+      "cookie_consent": "",
+      "third_party_scripts_reviewed": false,
+      "secrets_reviewed": false
+    },
+    "content": {
+      "cms": "",
+      "content_source": "",
+      "asset_optimization": "",
+      "image_strategy": "",
+      "video_strategy": ""
+    },
+    "component_system": {
+      "library": "",
+      "storybook": false,
+      "visual_regression": false,
+      "design_tokens": ""
+    },
+    "image_asset_policy": {
+      "framework_first_ui": true,
+      "fullscreen_screenshot_ui": false,
+      "allowed_targets": [
+        "hero",
+        "section_art",
+        "product_image",
+        "brand_visual",
+        "benefit_icon",
+        "empty_state",
+        "og_image",
+        "share_poster"
+      ],
+      "forbidden_targets": [
+        "full_page_runtime_ui",
+        "transparent_hotspot_navigation",
+        "generated_navbar",
+        "generated_form",
+        "generated_pricing_table",
+        "generated_dashboard",
+        "generated_admin_screen"
+      ]
+    },
+    "generated_assets": [],
+    "ui_quality": {
+      "reference_style_paths": [],
+      "design_source": "",
+      "component_first": true,
+      "latest_review_record": ""
+    },
+    "database": {
+      "provider": "",
+      "url_env": "",
+      "tables": [],
+      "migrations_path": "",
+      "security_rules_recorded": false
+    },
+    "backend_api": {
+      "base_url": "",
+      "auth_provider": "",
+      "upload_endpoint": "",
+      "payment_create_order": "",
+      "payment_notify_url": ""
+    },
+    "admin": {
+      "required": false,
+      "route": "",
+      "url": "",
+      "smoke_test_record": ""
+    },
+    "ci": {
+      "build": "",
+      "lint": "",
+      "typecheck": "",
+      "test": "",
+      "preview": ""
+    }
+  },
+  "miniapp": {
+    "appid": "",
+    "stack": "",
+    "component_system": "",
+    "devtools_project_path": "",
+    "miniprogram_root": "",
+    "base_lib_version": "",
+    "version": "",
+    "pages": [],
+    "tabbar_pages": [],
+    "subpackages": [],
+    "required_capabilities": [],
+    "legal_domains": {
+      "request": [],
+      "upload": [],
+      "download": [],
+      "socket": []
+    },
+    "backend_api": {
+      "login_endpoint": "",
+      "upload_endpoint": "",
+      "payment_create_order": "",
+      "payment_notify_url": ""
+    },
+    "wechat_pay": {
+      "mchid": "",
+      "merchant_cert_configured": false,
+      "sandbox_or_test_plan": "",
+      "notify_route_confirmed": false,
+      "payment_ready": false
+    },
+    "cloud": {
+      "provider": "",
+      "env_id": "",
+      "database": false,
+      "collections": [],
+      "cloud_functions": [],
+      "storage_bucket": "",
+      "security_rules_recorded": false
+    },
+    "admin": {
+      "required": false,
+      "route": "",
+      "url": "",
+      "api_base_url": "",
+      "smoke_test_record": ""
+    },
+    "privacy_required": false,
+    "preview_qr": "",
+    "experience_version": "",
+    "upload_record": "",
+    "review_status": "",
+    "image2_asset_policy": {
+      "framework_first_ui": true,
+      "fullscreen_screenshot_ui": false,
+      "runtime_toggle": "",
+      "allowed_targets": [
+        "hero",
+        "promo_banner",
+        "vip_card",
+        "product_image",
+        "benefit_icon",
+        "empty_state",
+        "share_poster"
+      ],
+      "forbidden_targets": [
+        "full_page_runtime_ui",
+        "transparent_hotspot_navigation",
+        "generated_tabbar"
+      ]
+    },
+    "generated_assets": [],
+    "ui_quality": {
+      "reference_style_paths": [],
+      "design_source": "",
+      "component_first": true,
+      "latest_review_record": ""
+    }
+  },
+  "deployment": {
+    "provider": "",
+    "preview_url": "",
+    "production_url": "",
+    "domain": "",
+    "build_command": "",
+    "output_directory": "",
+    "env_vars_required": []
+  },
+  "seo": {
+    "title": "",
+    "description": "",
+    "canonical": "",
+    "og_image": "",
+    "sitemap": "",
+    "robots": "",
+    "schema": []
+  },
+  "analytics": {
+    "provider": "",
+    "measurement_id": "",
+    "events": [],
+    "event_taxonomy": "",
+    "verified": false
+  },
+  "artifacts": {
+    "design_md": "DESIGN.md",
+    "sitemap": "",
+    "design_file": "",
+    "concept_images": [],
+    "code_root": "",
+    "preview_url": "",
+    "screenshots": [],
+    "latest_verified_artifact": "",
+    "artifact_hashes": {}
+  },
+  "verification_records": [],
+  "decision_history": [],
+  "approval_log": [],
+  "quality_gates": {
+    "website_quality_gate": "pending",
+    "aesthetic_gate": "pending",
+    "responsive_gate": "pending",
+    "accessibility_gate": "pending",
+    "performance_gate": "pending",
+    "analytics_gate": "pending",
+    "cro_gate": "pending",
+    "seo_gate": "pending",
+    "observability_gate": "pending",
+    "forms_gate": "pending",
+    "i18n_gate": "pending",
+    "security_gate": "pending",
+    "content_gate": "pending",
+    "database_gate": "pending",
+    "backend_api_gate": "pending",
+    "component_regression_gate": "pending",
+    "ci_gate": "pending",
+    "deployment_gate": "pending",
+    "playwright_visual_gate": "pending",
+    "miniapp_runtime_gate": "not_applicable",
+    "miniapp_ui_quality_gate": "pending",
+    "source_application_gate": "pending",
+    "cloud_database_gate": "pending",
+    "admin_gate": "pending",
+    "launch_gate": "pending"
+  },
+  "status": "active",
+  "last_verified_at": "",
+  "blocked_reason": "",
+  "not_done": []
+}

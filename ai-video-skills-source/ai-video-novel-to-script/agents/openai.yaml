@@ -1,0 +1,4 @@
+interface:
+  display_name: "小说转AI短剧剧本"
+  short_description: "把小说转为总纲细纲分集剧本镜头事实和完整资产生产需求表"
+  default_prompt: "Use $ai-video-novel-to-script to adapt this novel into a complete short-drama outline and shootable script."

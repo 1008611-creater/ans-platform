@@ -1,0 +1,4 @@
+interface:
+  display_name: "AStorie Seedance Channel"
+  short_description: "Run verified AStorie Seedance 2 video tasks safely."
+  default_prompt: "Use the AStorie Seedance channel for this locked video task."

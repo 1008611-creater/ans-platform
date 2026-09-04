@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI视频制作总路由"
+  short_description: "路由小说剧本资产视频转绘至可执行渠道与质量验证技能"
+  default_prompt: "Use $ai-video-fundamentals-skill to route this AI video project from source to verified assets and prompts."

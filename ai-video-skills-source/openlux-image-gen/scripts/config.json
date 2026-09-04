@@ -1,0 +1,7 @@
+{
+  "base_url": "https://api.openlux.ai",
+  "api_key": "sk-yE7vvTWxioQXtHFjmaULEmGd7ZPV2k4xGQHfyKBu7dbhdY13",
+  "default_model": "gpt-image-2-c",
+  "default_size": "1024x1024",
+  "notes": "生图优先级最高渠道。base_url/api_key 可被环境变量 OPENLUX_BASE_URL / OPENLUX_API_KEY 覆盖。"
+}

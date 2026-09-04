@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub 精选项目"
+  short_description: "Local control for GitHub selected projects"
+  default_prompt: "使用 GitHub 精选项目 Skill 检查、启动、停止或验证 WorldMonitor、DeepTutor 和 code-review-graph。"

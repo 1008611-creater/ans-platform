@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jina Search"
+  short_description: "Search and read web pages with Jina AI."
+  default_prompt: "Use Jina Search to search the web or read a URL."

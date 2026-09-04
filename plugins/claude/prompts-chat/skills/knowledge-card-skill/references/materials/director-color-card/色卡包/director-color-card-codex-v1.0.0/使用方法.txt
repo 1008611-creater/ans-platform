@@ -1,0 +1,37 @@
+【director-color-card 快速使用】
+
+一句话：
+
+$director-color-card 导演名 + 你要的结果
+
+最常用：
+
+1. 只要 Prompt
+
+$director-color-card 小津安二郎，只给我可直接复制到 Seedance 2.0 的色值 Prompt
+
+2. 生成 PNG 色卡
+
+$director-color-card 诺兰，生成 PNG 色卡和 Seedance 2.0 Prompt
+
+3. 上传图片取色
+
+$director-color-card 根据我上传的图片取色，生成 HEX 色卡和 Seedance 2.0 Prompt
+
+4. 全部 Prompt 库
+
+$director-color-card 给我 175 位导演全部 Seedance 色值 Prompt
+
+安装：
+
+1. 解压安装包
+2. 运行 install.ps1
+3. 重启 Codex 或新建任务
+4. 输入上面的命令使用
+
+说明：
+
+- 只要文字 Prompt：不需要额外软件
+- 生成 PNG 色卡：需要 Python 和 Pillow
+- 本包只做色卡，不做完整 AIGC 导演生产包
+- Skill 覆盖 175 位导演

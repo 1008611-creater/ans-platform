@@ -1,0 +1,4 @@
+interface:
+  display_name: "RunningHub Champion API"
+  short_description: "Route and run all verified RunningHub channels"
+  default_prompt: "Use $runninghub-workflow-api as the RunningHub champion to select the correct specialized channel, upload my local media safely, run the task with a consumer API key, return the result through my website, and verify RH-coin billing."

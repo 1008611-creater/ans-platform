@@ -1,0 +1,254 @@
+{
+  "project": {
+    "title": "Rain Platform Farewell",
+    "prompt_language": "zh",
+    "output_mode": "storyboard_script",
+    "style_mode": "script_inferred_style",
+    "style_profile": {
+      "medium": "cinematic live action",
+      "realism_level": "grounded",
+      "palette": "desaturated blue-gray with warm tungsten accents",
+      "contrast": "medium-high",
+      "texture": "wet surfaces, fine rain haze",
+      "lighting_bias": "motivated practical station lights",
+      "movement_energy": "restrained",
+      "composition_density": "layered but readable",
+      "rhythm": "measured emotional build",
+      "audience": "adult drama",
+      "prompt_tags": ["rainy night", "emotional realism", "station platform"]
+    },
+    "audio_profile": {
+      "score_style": "restrained piano and low warm strings",
+      "sonic_palette": "fine rain, platform hum, distant train air, breath-level intimacy",
+      "ambience_bias": "environment-first with gentle score support",
+      "brand_mnemonic": "",
+      "dialogue_treatment": "minimal dialogue, emotion carried by breath and silence"
+    }
+  },
+  "scenes": [
+    {
+      "scene_id": "S1",
+      "summary": "A woman decides not to board the train and turns back toward the man she was about to leave.",
+      "scene_objective": "Establish hesitation, then show emotional reversal.",
+      "audience_must_understand": "She chooses the relationship over departure.",
+      "readability_risk": "If the pause is rushed, the turn will feel melodramatic instead of earned.",
+      "time_range_label": "00-08s",
+      "sequence_label": "第一幕",
+      "display_title": "站台回身",
+      "shots": [
+        {
+          "shot_id": "S1_SH1",
+          "style_rationale": "Restraint and distance help emphasize hesitation before the emotional reversal.",
+          "narrative_purpose": "Establish the lonely emotional space before the decision.",
+          "audience_focus": "The woman isolated under rain and station light.",
+          "director_decision": {
+            "blocking_plan": "女人站在站台边缘基本不动，行李箱成为她与离开的选择之间的物理锚点，列车和车门停留在远处二级空间。",
+            "composition_goal": "让人物处于偏心位置，给车门和空白站台留出情绪压力空间。",
+            "focus_shift": "先看孤立人物，再让视线滑向远处车门，最后回到她缓慢转头的决定瞬间。",
+            "movement_motivation": "缓慢推进用于把观众带进她尚未说出口的决定，而不是制造表面动势。",
+            "tempo": "withheld, measured",
+            "transition_reason": "当她转头并开始做决定时，切到更近的表情镜头。"
+          },
+          "expression_plan": {
+            "pre_action_expression": "眼神压住情绪，身体僵住，嘴角没有放松",
+            "during_action_expression": "看向车门时仍然克制，转头时眼神开始松动",
+            "post_result_expression": "决定形成后，呼吸稍微放开",
+            "expression_shift": "从压抑犹豫转为缓慢坚定",
+            "body_language": "手握拉杆，肩线紧，转头后重心轻微回撤"
+          },
+          "action_timing_validation": {
+            "primary_action_chain": "女人停下、看向车门、缓慢转头做出决定",
+            "secondary_action_chain": "",
+            "setup_seconds": 2.5,
+            "execution_seconds": 2.0,
+            "result_seconds": 1.0,
+            "reaction_seconds": 1.5,
+            "available_seconds": 8.0,
+            "estimated_required_seconds": 7.0,
+            "timing_pressure": "moderate but readable",
+            "readability_verdict": "可读，停顿足够承载犹豫与决定",
+            "adjustment": "保留转头后的短暂停顿，不要让推进过快吞掉决定瞬间"
+          },
+          "object_state_control": {
+            "object": "行李箱与车门关系",
+            "required_state": "行李箱仍属于离开的选择，但人物尚未真正离开",
+            "visible_markers": ["手仍握拉杆", "车门仍开着", "人物尚未登车"],
+            "forbidden_markers": ["已经上车", "行李箱离手过早", "车门关闭"],
+            "transition_gate": "只有在决定形成后才允许松开拉杆"
+          },
+          "subject": "年轻女人拖着行李箱站在雨夜站台边缘",
+          "action": "她停下脚步，没有立刻上车，先看向列车门又缓慢转头",
+          "setting": "空旷火车站台，夜晚，小雨，远处列车车门敞开",
+          "mood": "克制，犹豫，压抑后的松动",
+          "shot_size": "wide",
+          "angle": "eye_level",
+          "lens": "neutral_standard",
+          "foreground": "前景有虚化雨滴和站台立柱",
+          "composition": "off_center, layered_depth, negative_space",
+          "lighting": "motivated_practical, backlit rain haze",
+          "lighting_design": {
+            "key_light": "站台暖色顶灯作为主光，照亮女人面部与风衣轮廓",
+            "fill_light": "湿润地面和站台环境反射形成低强度自然补光",
+            "rim_light": "背后列车与站台灯在雨丝和肩线形成逆光勾边",
+            "background_light": "远处车门和站台灯比主体略低半档，保留深度",
+            "color_relation": "暖色站台灯主体，冷蓝雨夜环境包围",
+            "motivated_source": "站台顶灯、列车车门灯、雨夜反射",
+            "contrast": "中等反差，阴影细节保持可读",
+            "material_response": "雨丝、湿地面和风衣面料要有干净反光"
+          },
+          "camera_movement": "slow_push_in",
+          "sound_design": {
+            "ambience": "细雨落在站台，远处列车低频轰鸣，空旷站台的微弱环境回响",
+            "foley": "行李箱轮子轻轻停住，风衣边角被风吹动",
+            "character_vocalization": "压住情绪的轻微呼吸和几乎听不见的叹气",
+            "magic_or_stylized_sfx": "",
+            "music": "克制的钢琴单音与很轻的弦乐铺底",
+            "mix_focus": "ambience_forward",
+            "brand_mnemonic": "",
+            "audio_reference_hint": ""
+          },
+          "critique_pass": {
+            "primary_risk": "如果推进过快，会把克制的犹豫拍成明显的煽情。",
+            "why_it_can_fail": "这一拍真正重要的是停顿和空间压力，不是运动本身。",
+            "correction": "把镜头运动控制为极慢推进，保留大量负空间，让转头成为主要变化。",
+            "verified_choice": "现在人物仍是绝对重心，镜头只在心理层面靠近，没有抢走表演。"
+          },
+          "continuity_anchors": [
+            "米色风衣",
+            "深蓝色行李箱",
+            "站台暖色顶灯",
+            "湿润反光地面"
+          ],
+          "evaluation": {
+            "narrative_fidelity": 4.6,
+            "protagonist_priority": 4.7,
+            "blocking_clarity": 4.4,
+            "composition_logic": 4.6,
+            "camera_motivation": 4.5,
+            "rhythm_control": 4.6,
+            "action_timing_readability": 4.6,
+            "expression_readability": 4.6,
+            "object_state_control": 4.5,
+            "generation_controllability": 4.7,
+            "overall_score": 4.58,
+            "verdict": "通过",
+            "notes": "空间孤立感和决定前停顿都清楚，但仍需防止推进过度。"
+          },
+          "timecoded_beats": [
+            { "start": 0.0, "end": 2.5, "description": "远景缓慢推进，女人停在站台边缘，雨丝在背光中清晰可见" },
+            { "start": 2.5, "end": 5.0, "description": "她看向车门，手握行李箱拉杆，呼吸压住情绪" },
+            { "start": 5.0, "end": 8.0, "description": "她缓慢转头，像是终于做出决定" }
+          ]
+        },
+        {
+          "shot_id": "S1_SH2",
+          "style_mode": "hybrid_style",
+          "style_rationale": "The global realism stays stable, but the emotional turn needs a closer and more intimate shot.",
+          "style_overrides": {
+            "movement_energy": "gentle",
+            "composition_density": "clean"
+          },
+          "narrative_purpose": "Reveal the emotional reversal when she chooses the relationship over departure.",
+          "audience_focus": "Her expression changing from control to vulnerability.",
+          "director_decision": {
+            "blocking_plan": "女人从静止到松开拉杆，再朝镜头外的人迈步，动作小但关系改变明确。",
+            "composition_goal": "让表情和眼神成为绝对中心，背景车灯退为柔和情绪支撑。",
+            "focus_shift": "从她压住情绪的眼神转到松开拉杆的动作，再回到她走向镜头外的决定。",
+            "movement_motivation": "跟随镜头只为贴住情绪转向，不让人物脱离观众注意力。",
+            "tempo": "gentle, suspended, then decisive",
+            "transition_reason": "在动作释放后，镜头应顺势进入关系回应或会合镜头。"
+          },
+          "expression_plan": {
+            "pre_action_expression": "眼眶泛红但仍在克制，嘴唇轻轻绷住",
+            "during_action_expression": "松开拉杆时表情由控制转为脆弱",
+            "post_result_expression": "迈步时眼神更坚定，但仍带湿润感",
+            "expression_shift": "从控制到释放",
+            "body_language": "手指松开拉杆，肩线放下，身体朝镜头外的人转过去"
+          },
+          "action_timing_validation": {
+            "primary_action_chain": "眼神松动、松开拉杆、迈步走向镜头外的人",
+            "secondary_action_chain": "",
+            "setup_seconds": 1.5,
+            "execution_seconds": 2.0,
+            "result_seconds": 1.0,
+            "reaction_seconds": 1.5,
+            "available_seconds": 7.0,
+            "estimated_required_seconds": 6.0,
+            "timing_pressure": "comfortable",
+            "readability_verdict": "可读，动作释放与情绪变化都留有余量",
+            "adjustment": "保持松开拉杆后的短停顿，避免直接把表情变化和起步压成一拍"
+          },
+          "object_state_control": {
+            "object": "行李箱拉杆状态",
+            "required_state": "先被抓住，后被松开",
+            "visible_markers": ["手仍在拉杆上", "松开动作清楚可见", "人物随后向镜头外迈步"],
+            "forbidden_markers": ["镜头开始时已经松手", "松手和迈步挤成同一瞬间"],
+            "transition_gate": "松手必须发生在情绪转向已经被读到之后"
+          },
+          "subject": "年轻女人的面部和肩部特写",
+          "action": "她眼眶泛红，嘴唇微颤，放开行李箱拉杆，朝镜头外的人走去",
+          "setting": "同一站台，近处雨声更明显，背景列车灯光虚化",
+          "mood": "释然，脆弱，真诚",
+          "shot_size": "close_up",
+          "angle": "slight_profile",
+          "lens": "intimate_portrait",
+          "foreground": "偶尔有雨滴掠过镜头边缘",
+          "composition": "off_center, clean_background",
+          "lighting": "soft_side_light with practical warm rim light",
+          "lighting_design": {
+            "key_light": "柔和侧向主光塑造面部体积和湿润眼眶",
+            "fill_light": "弱补光保留阴影，不把脆弱感抹平",
+            "rim_light": "背景列车暖灯形成细窄轮廓光，勾出发丝和肩线",
+            "background_light": "背景列车灯光保持虚化，但亮度稳定支撑层次",
+            "color_relation": "冷雨夜环境中保留暖色灯光包裹人物",
+            "motivated_source": "站台灯、列车窗灯、雨夜环境反射",
+            "contrast": "中低反差，面部细节优先",
+            "material_response": "皮肤和眼部高光柔和，湿地面反光不过曝"
+          },
+          "camera_movement": "follow",
+          "sound_design": {
+            "ambience": "近处雨声更清晰，背景列车与站台环境被轻轻压低",
+            "foley": "手松开拉杆的细小金属和塑料摩擦声，脚步落在湿地面上的轻响",
+            "character_vocalization": "吸气，轻颤的吐息",
+            "magic_or_stylized_sfx": "",
+            "music": "钢琴旋律抬起，弦乐变得更温暖",
+            "mix_focus": "character_reaction_forward",
+            "brand_mnemonic": "",
+            "audio_reference_hint": ""
+          },
+          "critique_pass": {
+            "primary_risk": "如果镜头过度贴脸或跟得太快，会把脆弱感拍成直白煽情。",
+            "why_it_can_fail": "这一拍需要观众自己读出她的释然，而不是被镜头催促。",
+            "correction": "保持轻柔跟随和稳定背景虚化，让动作变化小于情绪变化。",
+            "verified_choice": "镜头靠近但不过分逼迫，情绪释放主要来自表演和呼吸，而不是夸张机位。"
+          },
+          "continuity_anchors": [
+            "米色风衣",
+            "背景列车暖色灯光",
+            "雨夜站台"
+          ],
+          "evaluation": {
+            "narrative_fidelity": 4.7,
+            "protagonist_priority": 4.8,
+            "blocking_clarity": 4.4,
+            "composition_logic": 4.6,
+            "camera_motivation": 4.5,
+            "rhythm_control": 4.5,
+            "action_timing_readability": 4.5,
+            "expression_readability": 4.7,
+            "object_state_control": 4.5,
+            "generation_controllability": 4.6,
+            "overall_score": 4.58,
+            "verdict": "通过",
+            "notes": "更亲密的镜头选择合理，重点是控制住煽情程度。"
+          },
+          "timecoded_beats": [
+            { "start": 0.0, "end": 2.0, "description": "近景跟随，她缓慢吸气，眼神从压抑转为坚定" },
+            { "start": 2.0, "end": 4.5, "description": "她松开行李箱拉杆，镜头保持贴近，捕捉眼神变化" },
+            { "start": 4.5, "end": 7.0, "description": "她向镜头外的人走去，背景灯光轻微拉丝" }
+          ]
+        }
+      ]
+    }
+  ]
+}
