@@ -1,0 +1,20 @@
+# ============================================================================
+# ans.cauai.fun 的 Caddy 站点块
+#
+# 位置：追加到服务器 Caddyfile 末尾
+#   /srv/kidswear-data/staging/deeptutor-public-20260804-ui-hardening-01/deploy/public/Caddyfile
+#
+# 前置条件：
+#   - ans-platform-app 必须与 Caddy 同网（prompts-chat_default），
+#     否则 Caddy 解析不到上游主机名，reload 会失败
+#   - 必须先启动容器，再改 Caddy 并 reload（顺序反了上游不存在）
+#
+# 生效命令：
+#   docker exec deeptutor-public-caddy caddy reload --config /etc/caddy/Caddyfile
+#   修改前先备份：cp Caddyfile Caddyfile.bak-$(date +%Y%m%d-%H%M%S)
+# ============================================================================
+
+ans.cauai.fun {
+    encode gzip
+    reverse_proxy ans-platform-app:3000
+}
