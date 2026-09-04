@@ -64,7 +64,45 @@ docker compose -f docker-compose.yml up -d app
 
 ## 协作方式
 
-- `main` 分支为生产基线，受保护
-- 所有改动走 PR，合并前需确认构建通过
-- 动数据库前必须备份：
-  `docker exec prompts-chat-db pg_dump -U prompts -d prompts_chat -Fc -f /tmp/x.dump`
+- `main` 是生产基线，所有改动走 PR，不直接 push
+- 典型流程：从 `main` 切分支 → 提交 → 开 PR → 合并 → 服务器执行部署脚本
+
+```bash
+git switch -c feat/xxx
+# ...改动...
+git commit -m "feat: xxx"
+git push -u origin feat/xxx
+gh pr create --base main
+```
+
+合并后在服务器执行：
+
+```bash
+cd /srv/ans-platform && bash deploy/deploy.sh
+```
+
+`deploy/deploy.sh` 会依次完成「拉代码 → 构建 → 重启 → 冒烟」。
+只改了环境变量时用 `bash deploy/deploy.sh --no-build`，只看状态用 `--status`。
+
+> 注意：GitHub 免费计划的**私有仓库不支持分支保护规则**（会返回
+> "Upgrade to GitHub Pro or make this repository public"）。
+> 因此 `main` 的保护目前靠流程约定，不靠平台强制。
+> 若需要平台级强制（禁止直推、强制 review），需升级 Pro 或将仓库转为公开。
+
+## 部署相关文件
+
+| 文件 | 用途 |
+|---|---|
+| `compose.yml` | **构建用**（含 build 段）。构建必须用它，否则静默空转 |
+| `docker-compose.yml` | **运行用**（无 build 段）。上线用它 `up -d` |
+| `deploy/deploy.sh` | 一键部署：拉代码 → 构建 → 重启 → 冒烟 |
+| `deploy/Caddyfile.ans.snippet` | `ans.cauai.fun` 的反代配置片段 |
+| `.env.ans.example` | 环境变量样例，复制为 `.env` 后填真实值 |
+
+## 动数据库前必须备份
+
+新旧两站共享同一个库，误操作会同时影响两个站点：
+
+```bash
+docker exec prompts-chat-db pg_dump -U prompts -d prompts_chat -Fc -f /tmp/backup.dump
+```
