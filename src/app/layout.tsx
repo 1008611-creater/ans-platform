@@ -35,27 +35,28 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun"),
   title: {
-    default: "prompts.chat - AI Prompts Community",
-    template: "%s | prompts.chat",
+    default: "ANS · 让 AI 永不停转",
+    template: "%s | ANS",
   },
   description:
-    "Discover, collect, and share the best AI prompts for ChatGPT, Claude, Gemini, and more. Join the largest community of AI prompt engineers and creators.",
+    "ANS 是中国农业大学学生发起的 AI 原生社区与算力平台：提示词模板、工作台、团队与比赛，让 AI 永不停转。",
   keywords: [
-    "AI prompts",
-    "ChatGPT prompts",
-    "Claude prompts",
-    "prompt engineering",
-    "AI tools",
-    "prompt library",
-    "GPT prompts",
-    "AI assistant",
-    "prompt templates",
+    "ANS",
+    "AI 社区",
+    "提示词",
+    "AI 工具",
+    "算力平台",
+    "工作台",
+    "团队",
+    "比赛",
+    "中国农业",
+    "AI Never Stops",
   ],
-  authors: [{ name: "prompts.chat community" }],
-  creator: "prompts.chat",
-  publisher: "prompts.chat",
+  authors: [{ name: "ANS 社区" }],
+  creator: "ANS",
+  publisher: "ANS",
   icons: {
     icon: [
       { url: "/favicon/favicon.svg", type: "image/svg+xml" },
@@ -67,32 +68,32 @@ export const metadata: Metadata = {
   },
   manifest: "/favicon/site.webmanifest",
   other: {
-    "apple-mobile-web-app-title": "prompts.chat",
+    "apple-mobile-web-app-title": "ANS",
     "theme-color": "#0b0b0f",
   },
   openGraph: {
     type: "website",
-    locale: "en_US",
-    siteName: "prompts.chat",
-    title: "prompts.chat - AI Prompts Community",
+    locale: "zh_CN",
+    siteName: "ANS",
+    title: "ANS · 让 AI 永不停转",
     description:
-      "Discover, collect, and share the best AI prompts for ChatGPT, Claude, Gemini, and more. Join the largest community of AI prompt engineers.",
+      "ANS 是中国农业大学学生发起的 AI 原生社区与算力平台：提示词模板、工作台、团队与比赛，让 AI 永不停转。",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "prompts.chat - AI Prompts Community",
+        alt: "ANS · 让 AI 永不停转",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "prompts.chat - AI Prompts Community",
+    title: "ANS · 让 AI 永不停转",
     description:
-      "Discover, collect, and share the best AI prompts for ChatGPT, Claude, Gemini, and more.",
+      "ANS 是中国农业大学学生发起的 AI 原生社区与算力平台：提示词模板、工作台、团队与比赛，让 AI 永不停转。",
     images: ["/og.png"],
-    creator: "@promptschat",
+    creator: "ANS",
   },
   robots: {
     index: true,
