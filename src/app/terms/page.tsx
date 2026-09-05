@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Terms of Service - prompts.chat",
-  description: "Terms of Service for prompts.chat",
+  title: "Terms of Service - ANS",
+  description: "Terms of Service for ANS",
 };
 
 export default function TermsPage() {
@@ -18,7 +18,7 @@ export default function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Acceptance of Terms</h2>
           <p className="text-muted-foreground">
-            By accessing and using prompts.chat, you agree to be bound by these Terms of Service. 
+            By accessing and using ANS, you agree to be bound by these Terms of Service. 
             If you do not agree to these terms, please do not use the service.
           </p>
         </section>
@@ -26,7 +26,7 @@ export default function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Description of Service</h2>
           <p className="text-muted-foreground">
-            prompts.chat is an open-source platform for collecting, organizing, and sharing AI prompts. 
+            ANS is an open-source platform for collecting, organizing, and sharing AI prompts. 
             The service allows users to create, discover, and share prompts for use with AI language models.
           </p>
         </section>
@@ -138,7 +138,7 @@ export default function TermsPage() {
             <Link href="/docs/self-hosting" className="underline hover:text-foreground">
               deploy your own private instance
             </Link>{" "}
-            of prompts.chat. Self-hosted instances operate independently and are not subject to our content moderation policies.
+            of ANS. Self-hosted instances operate independently and are not subject to our content moderation policies.
           </p>
         </section>
 
@@ -175,7 +175,7 @@ export default function TermsPage() {
             While all content is released under CC0 (public domain), we strive to maintain accurate attribution for prompts. 
             If you believe the attribution on a prompt is incorrect (for example, if you are the original author but not credited), 
             please open an issue on our{" "}
-            <Link href="https://github.com/f/prompts.chat/issues" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+            <Link href="https://github.com/1008611-creater/ans-platform/issues" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
               GitHub repository
             </Link>{" "}
             or use the form on our{" "}
@@ -214,7 +214,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold">Open Source</h2>
           <p className="text-muted-foreground">
             This platform is open source and available at{" "}
-            <Link href="https://github.com/f/prompts.chat" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+            <Link href="https://github.com/1008611-creater/ans-platform" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
               GitHub
             </Link>. 
             You are free to self-host your own instance under the project&apos;s license.

@@ -202,7 +202,7 @@ export default function BrandAssetsPage() {
             >
               <Image
                 src="/logo.svg"
-                alt="prompts.chat logo"
+                alt="ANS logo"
                 width={80}
                 height={80}
                 className="h-20 w-auto"
@@ -219,7 +219,7 @@ export default function BrandAssetsPage() {
             >
               <Image
                 src="/logo-dark.svg"
-                alt="prompts.chat logo dark"
+                alt="ANS logo dark"
                 width={80}
                 height={80}
                 className="h-20 w-auto"
@@ -237,7 +237,7 @@ export default function BrandAssetsPage() {
               <div className="flex items-center gap-3">
                 <Image
                   src="/logo.svg"
-                  alt="prompts.chat logo"
+                  alt="ANS logo"
                   width={48}
                   height={48}
                   className="h-12 w-auto"
@@ -257,7 +257,7 @@ export default function BrandAssetsPage() {
               <div className="flex items-center gap-3">
                 <Image
                   src="/logo-dark.svg"
-                  alt="prompts.chat logo dark"
+                  alt="ANS logo dark"
                   width={48}
                   height={48}
                   className="h-12 w-auto"
@@ -271,7 +271,7 @@ export default function BrandAssetsPage() {
         {/* Promi Mascot Section */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Promi</h2>
-          <p className="text-sm text-muted-foreground mb-4">The pixel art mascot for prompts.chat Kids</p>
+          <p className="text-sm text-muted-foreground mb-4">The pixel art mascot for ANS Kids</p>
           <div className="grid md:grid-cols-2 gap-4">
             {/* Promi for light backgrounds */}
             <AssetCard
