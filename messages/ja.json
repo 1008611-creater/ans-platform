@@ -1146,8 +1146,8 @@
         "answer": "高度なAIモデルはカジュアルな質問をうまく処理できますが、プロンプトは以下の場合に重要になります：\n\n• アプリケーションでAPIを介してAIを使用する場合 — 多くの場合、一発勝負（「ワンショットプロンプティング」）で、やり取りの対話がない\n• より正確な指示が必要な小型で経済的なモデルで作業する場合\n• 一貫性と信頼性が重要な本番システムを構築する場合\n\n最適化されたプロンプトは、より良い結果を得て、トークン（とお金）を節約し、より信頼性の高いAI搭載アプリケーションを作成するのに役立ちます。"
       },
       "whatIsPromptschat": {
-        "question": "prompts.chatとは何ですか？",
-        "answer": "prompts.chatは、人々がAIプロンプトを共有、発見、収集するコミュニティ主導のプラットフォームです。4年以上にわたり、ユーザーはここでプロンプト最適化のテクニックを共有してきました。コミュニティはお互いにプロンプトを改善し、AIシステムとの作業の新しいアプローチを学ぶのを助け合っています。"
+        "question": "ANSとは何ですか？",
+        "answer": "ANSは、人々がAIプロンプトを共有、発見、収集するコミュニティ主導のプラットフォームです。4年以上にわたり、ユーザーはここでプロンプト最適化のテクニックを共有してきました。コミュニティはお互いにプロンプトを改善し、AIシステムとの作業の新しいアプローチを学ぶのを助け合っています。"
       },
       "howToUse": {
         "question": "このプラットフォームのプロンプトをどのように使用しますか？",
@@ -1155,11 +1155,11 @@
       },
       "license": {
         "question": "これらのプロンプトを商用利用できますか？",
-        "answer": "はい！prompts.chat上のすべてのプロンプトはCC0（Creative Commons Zero）ライセンスの下でリリースされており、パブリックドメインに属します。帰属表示なしで、商用利用を含むあらゆる目的で自由に使用、変更、配布できます。"
+        "answer": "はい！ANS上のすべてのプロンプトはCC0（Creative Commons Zero）ライセンスの下でリリースされており、パブリックドメインに属します。帰属表示なしで、商用利用を含むあらゆる目的で自由に使用、変更、配布できます。"
       },
       "selfHost": {
         "question": "このプラットフォームをセルフホストできますか？",
-        "answer": "もちろんです！prompts.chatは完全にオープンソースです。チームや組織のために独自のプライベートインスタンスをデプロイできます。セットアップ手順については、セルフホスティングのドキュメントをご確認ください。"
+        "answer": "もちろんです！ANSは完全にオープンソースです。チームや組織のために独自のプライベートインスタンスをデプロイできます。セットアップ手順については、セルフホスティングのドキュメントをご確認ください。"
       },
       "verification": {
         "question": "認証済みユーザーになるにはどうすればいいですか？",
@@ -1412,18 +1412,18 @@
     }
   },
   "appBanner": {
-    "message": "iPhone、iPad、Mac用のprompts.chatアプリを入手",
+    "message": "iPhone、iPad、Mac用のANSアプリを入手",
     "messageShort": "Appleデバイス用アプリを入手",
     "download": "ダウンロード",
     "dismiss": "閉じる"
   },
   "about": {
-    "title": "prompts.chatについて",
+    "title": "ANSについて",
     "description": "ChatGPT発表から2週間後に作られた、初のAIプロンプトライブラリの物語。",
     "releasedOn": "2022年12月5日",
     "storyTitle": "私たちの物語",
     "goalTitle": "私たちの目標",
-    "story1Rich": "prompts.chatは<repoLink>Awesome ChatGPT Prompts</repoLink>リポジトリのウェブ版です。ChatGPTの初期バージョンに履歴機能がなかった頃、<authorLink>@f</authorLink>がプロンプトを整理するために始めた個人プロジェクトでした。",
+    "story1Rich": "ANSは<repoLink>Awesome ChatGPT Prompts</repoLink>リポジトリのウェブ版です。ChatGPTの初期バージョンに履歴機能がなかった頃、<authorLink>@f</authorLink>がプロンプトを整理するために始めた個人プロジェクトでした。",
     "story2": "Awesome ChatGPT Promptsリポジトリは2022年12月5日、ChatGPTが世界に発表されてからわずか2週間後に作成されました。シンプルな解決策として始まったものが、数百万のAI愛好家のための主要なリソースとなりました。",
     "testimonialsRich": "AIパイオニアから愛されています。OpenAI共同創設者の<gregLink>Greg Brockman</gregLink>と<wojciechLink>Wojciech Zaremba</wojciechLink>も含まれます。",
     "openSource": "初日から完全に無料でオープンソース。",

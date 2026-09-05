@@ -1146,8 +1146,8 @@
         "answer": "Mentre i modelli di IA avanzati possono gestire bene le domande casuali, i prompt diventano critici quando:\n\n• Usi l'IA via API nelle applicazioni — spesso hai solo una possibilità (\"one-shot prompting\"), senza dialogo bidirezionale\n• Lavori con modelli più piccoli ed economici che necessitano di istruzioni più precise\n• Costruisci sistemi di produzione dove coerenza e affidabilità contano\n\nI prompt ottimizzati ti aiutano a ottenere risultati migliori, risparmiare token (e denaro), e creare applicazioni IA più affidabili."
       },
       "whatIsPromptschat": {
-        "question": "Cos'è prompts.chat?",
-        "answer": "prompts.chat è una piattaforma guidata dalla community dove le persone condividono, scoprono e raccolgono prompt IA. Da oltre 4 anni, gli utenti condividono qui le loro tecniche di ottimizzazione dei prompt. La community si aiuta a vicenda per migliorare i propri prompt e imparare nuovi approcci per lavorare con i sistemi di IA."
+        "question": "Cos'è ANS?",
+        "answer": "ANS è una piattaforma guidata dalla community dove le persone condividono, scoprono e raccolgono prompt IA. Da oltre 4 anni, gli utenti condividono qui le loro tecniche di ottimizzazione dei prompt. La community si aiuta a vicenda per migliorare i propri prompt e imparare nuovi approcci per lavorare con i sistemi di IA."
       },
       "howToUse": {
         "question": "Come uso i prompt da questa piattaforma?",
@@ -1155,11 +1155,11 @@
       },
       "license": {
         "question": "Posso usare questi prompt commercialmente?",
-        "answer": "Sì! Tutti i prompt su prompts.chat sono rilasciati sotto licenza CC0 (Creative Commons Zero), il che significa che sono di dominio pubblico. Puoi usarli, modificarli e distribuirli liberamente per qualsiasi scopo, incluso l'uso commerciale, senza attribuzione."
+        "answer": "Sì! Tutti i prompt su ANS sono rilasciati sotto licenza CC0 (Creative Commons Zero), il che significa che sono di dominio pubblico. Puoi usarli, modificarli e distribuirli liberamente per qualsiasi scopo, incluso l'uso commerciale, senza attribuzione."
       },
       "selfHost": {
         "question": "Posso auto-ospitare questa piattaforma?",
-        "answer": "Assolutamente! prompts.chat è completamente open source. Puoi distribuire la tua istanza privata per il tuo team o organizzazione. Consulta la nostra documentazione di self-hosting per le istruzioni di configurazione."
+        "answer": "Assolutamente! ANS è completamente open source. Puoi distribuire la tua istanza privata per il tuo team o organizzazione. Consulta la nostra documentazione di self-hosting per le istruzioni di configurazione."
       },
       "verification": {
         "question": "Come posso diventare un utente verificato?",
@@ -1412,18 +1412,18 @@
     }
   },
   "appBanner": {
-    "message": "Scarica l'app prompts.chat per iPhone, iPad e Mac",
+    "message": "Scarica l'app ANS per iPhone, iPad e Mac",
     "messageShort": "Scarica l'app per dispositivi Apple",
     "download": "Scarica",
     "dismiss": "Chiudi"
   },
   "about": {
-    "title": "Info su prompts.chat",
+    "title": "Info su ANS",
     "description": "La storia della prima libreria di prompt AI, creata 2 settimane dopo l'annuncio di ChatGPT.",
     "releasedOn": "5 dicembre 2022",
     "storyTitle": "La Nostra Storia",
     "goalTitle": "Il Nostro Obiettivo",
-    "story1Rich": "prompts.chat è la visualizzazione web del repository <repoLink>Awesome ChatGPT Prompts</repoLink>. È iniziato come progetto personale di <authorLink>@f</authorLink> per organizzare i prompt di ChatGPT, quando ChatGPT non aveva la funzione cronologia nella sua versione iniziale.",
+    "story1Rich": "ANS è la visualizzazione web del repository <repoLink>Awesome ChatGPT Prompts</repoLink>. È iniziato come progetto personale di <authorLink>@f</authorLink> per organizzare i prompt di ChatGPT, quando ChatGPT non aveva la funzione cronologia nella sua versione iniziale.",
     "story2": "Il repository Awesome ChatGPT Prompts è stato creato il 5 dicembre 2022, solo 2 settimane dopo l'annuncio di ChatGPT al mondo. Quello che è iniziato come una semplice soluzione è diventato la risorsa principale per milioni di appassionati di IA.",
     "testimonialsRich": "Amato dai pionieri dell'AI, inclusi i co-fondatori di OpenAI <gregLink>Greg Brockman</gregLink> e <wojciechLink>Wojciech Zaremba</wojciechLink>.",
     "openSource": "Completamente gratuito e open source dal primo giorno.",

@@ -44,7 +44,7 @@ interface McpServerPopupProps {
   initialTags?: string[];
   /** Base URL override */
   baseUrl?: string;
-  /** Show official prompts.chat branding (VS Code buttons, registry mention) */
+  /** Show official ANS branding (VS Code buttons, registry mention) */
   showOfficialBranding?: boolean;
 }
 

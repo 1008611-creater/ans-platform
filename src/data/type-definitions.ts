@@ -1,11 +1,11 @@
 /**
- * Auto-generated type definitions for prompts.chat
+ * Auto-generated type definitions for ANS
  * Generated from TypeScript source files via reflection
  * DO NOT EDIT MANUALLY - run `npm run docs:generate` to regenerate
  */
 
 export const TYPE_DEFINITIONS = `
-declare module 'prompts.chat' {
+declare module 'ANS' {
 
   // BUILDER TYPES
   export interface PromptVariable {

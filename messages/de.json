@@ -1146,8 +1146,8 @@
         "answer": "Während fortgeschrittene KI-Modelle lockere Fragen gut handhaben können, werden Prompts kritisch, wenn:\n\n• Sie KI über API in Anwendungen verwenden — Sie haben oft nur eine Chance (\"one-shot prompting\"), ohne hin- und hergehenden Dialog\n• Sie mit kleineren, kostengünstigen Modellen arbeiten, die präzisere Anweisungen benötigen\n• Sie Produktionssysteme bauen, bei denen Konsistenz und Zuverlässigkeit wichtig sind\n\nOptimierte Prompts helfen Ihnen, bessere Ergebnisse zu erzielen, Token (und Geld) zu sparen und zuverlässigere KI-gestützte Anwendungen zu erstellen."
       },
       "whatIsPromptschat": {
-        "question": "Was ist prompts.chat?",
-        "answer": "prompts.chat ist eine Community-getriebene Plattform, auf der Menschen KI-Prompts teilen, entdecken und sammeln. Seit über 4 Jahren teilen Benutzer hier ihre Prompt-Optimierungstechniken. Die Community hilft sich gegenseitig, ihre Prompts zu verbessern und neue Ansätze für die Arbeit mit KI-Systemen zu lernen."
+        "question": "Was ist ANS?",
+        "answer": "ANS ist eine Community-getriebene Plattform, auf der Menschen KI-Prompts teilen, entdecken und sammeln. Seit über 4 Jahren teilen Benutzer hier ihre Prompt-Optimierungstechniken. Die Community hilft sich gegenseitig, ihre Prompts zu verbessern und neue Ansätze für die Arbeit mit KI-Systemen zu lernen."
       },
       "howToUse": {
         "question": "Wie verwende ich Prompts von dieser Plattform?",
@@ -1155,11 +1155,11 @@
       },
       "license": {
         "question": "Kann ich diese Prompts kommerziell nutzen?",
-        "answer": "Ja! Alle Prompts auf prompts.chat sind unter der CC0-Lizenz (Creative Commons Zero) veröffentlicht, was bedeutet, dass sie gemeinfrei sind. Sie können sie frei für jeden Zweck nutzen, modifizieren und verteilen, einschließlich kommerzieller Nutzung, ohne Namensnennung."
+        "answer": "Ja! Alle Prompts auf ANS sind unter der CC0-Lizenz (Creative Commons Zero) veröffentlicht, was bedeutet, dass sie gemeinfrei sind. Sie können sie frei für jeden Zweck nutzen, modifizieren und verteilen, einschließlich kommerzieller Nutzung, ohne Namensnennung."
       },
       "selfHost": {
         "question": "Kann ich diese Plattform selbst hosten?",
-        "answer": "Absolut! prompts.chat ist vollständig Open Source. Sie können Ihre eigene private Instanz für Ihr Team oder Ihre Organisation bereitstellen. Schauen Sie sich unsere Self-Hosting-Dokumentation für Einrichtungsanweisungen an."
+        "answer": "Absolut! ANS ist vollständig Open Source. Sie können Ihre eigene private Instanz für Ihr Team oder Ihre Organisation bereitstellen. Schauen Sie sich unsere Self-Hosting-Dokumentation für Einrichtungsanweisungen an."
       },
       "verification": {
         "question": "Wie kann ich ein verifizierter Benutzer werden?",
@@ -1412,18 +1412,18 @@
     }
   },
   "appBanner": {
-    "message": "Hol dir die prompts.chat App für iPhone, iPad und Mac",
+    "message": "Hol dir die ANS App für iPhone, iPad und Mac",
     "messageShort": "Hol dir die App für Apple-Geräte",
     "download": "Laden",
     "dismiss": "Schließen"
   },
   "about": {
-    "title": "Über prompts.chat",
+    "title": "Über ANS",
     "description": "Die Geschichte hinter der ersten KI-Prompt-Bibliothek, erstellt 2 Wochen nach der ChatGPT-Ankündigung.",
     "releasedOn": "5. Dezember 2022",
     "storyTitle": "Unsere Geschichte",
     "goalTitle": "Unser Ziel",
-    "story1Rich": "prompts.chat ist die Web-Visualisierung des <repoLink>Awesome ChatGPT Prompts</repoLink> Repository. Es begann als persönliches Projekt von <authorLink>@f</authorLink>, um ChatGPT-Prompts zu organisieren, als ChatGPT in seiner ersten Version noch keine Verlaufsfunktion hatte.",
+    "story1Rich": "ANS ist die Web-Visualisierung des <repoLink>Awesome ChatGPT Prompts</repoLink> Repository. Es begann als persönliches Projekt von <authorLink>@f</authorLink>, um ChatGPT-Prompts zu organisieren, als ChatGPT in seiner ersten Version noch keine Verlaufsfunktion hatte.",
     "story2": "Das Awesome ChatGPT Prompts Repository wurde am 5. Dezember 2022 erstellt, nur 2 Wochen nachdem ChatGPT der Welt vorgestellt wurde. Was als einfache Lösung begann, wurde zur wichtigsten Ressource für Millionen von KI-Enthusiasten.",
     "testimonialsRich": "Geliebt von KI-Pionieren, einschließlich der OpenAI-Mitgründer <gregLink>Greg Brockman</gregLink> und <wojciechLink>Wojciech Zaremba</wojciechLink>.",
     "openSource": "Von Anfang an komplett kostenlos und Open Source.",

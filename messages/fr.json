@@ -1146,8 +1146,8 @@
         "answer": "Bien que les modèles d'IA avancés puissent bien gérer les questions occasionnelles, les prompts deviennent critiques quand :\n\n• Vous utilisez l'IA via API dans des applications — vous n'avez souvent qu'une seule chance (\"one-shot prompting\"), sans dialogue aller-retour\n• Vous travaillez avec des modèles plus petits et économiques qui nécessitent des instructions plus précises\n• Vous construisez des systèmes de production où la cohérence et la fiabilité comptent\n\nLes prompts optimisés vous aident à obtenir de meilleurs résultats, économiser des tokens (et de l'argent), et créer des applications IA plus fiables."
       },
       "whatIsPromptschat": {
-        "question": "Qu'est-ce que prompts.chat ?",
-        "answer": "prompts.chat est une plateforme communautaire où les gens partagent, découvrent et collectent des prompts IA. Depuis plus de 4 ans, les utilisateurs partagent leurs techniques d'optimisation de prompts ici. La communauté s'entraide pour améliorer leurs prompts et apprendre de nouvelles approches pour travailler avec les systèmes d'IA."
+        "question": "Qu'est-ce que ANS ?",
+        "answer": "ANS est une plateforme communautaire où les gens partagent, découvrent et collectent des prompts IA. Depuis plus de 4 ans, les utilisateurs partagent leurs techniques d'optimisation de prompts ici. La communauté s'entraide pour améliorer leurs prompts et apprendre de nouvelles approches pour travailler avec les systèmes d'IA."
       },
       "howToUse": {
         "question": "Comment utiliser les prompts de cette plateforme ?",
@@ -1155,11 +1155,11 @@
       },
       "license": {
         "question": "Puis-je utiliser ces prompts commercialement ?",
-        "answer": "Oui ! Tous les prompts sur prompts.chat sont publiés sous licence CC0 (Creative Commons Zero), ce qui signifie qu'ils sont dans le domaine public. Vous pouvez les utiliser, les modifier et les distribuer librement à n'importe quelle fin, y compris commerciale, sans attribution."
+        "answer": "Oui ! Tous les prompts sur ANS sont publiés sous licence CC0 (Creative Commons Zero), ce qui signifie qu'ils sont dans le domaine public. Vous pouvez les utiliser, les modifier et les distribuer librement à n'importe quelle fin, y compris commerciale, sans attribution."
       },
       "selfHost": {
         "question": "Puis-je auto-héberger cette plateforme ?",
-        "answer": "Absolument ! prompts.chat est entièrement open source. Vous pouvez déployer votre propre instance privée pour votre équipe ou organisation. Consultez notre documentation d'auto-hébergement pour les instructions de configuration."
+        "answer": "Absolument ! ANS est entièrement open source. Vous pouvez déployer votre propre instance privée pour votre équipe ou organisation. Consultez notre documentation d'auto-hébergement pour les instructions de configuration."
       },
       "verification": {
         "question": "Comment puis-je devenir un utilisateur vérifié ?",
@@ -1412,18 +1412,18 @@
     }
   },
   "appBanner": {
-    "message": "Téléchargez l'app prompts.chat pour iPhone, iPad et Mac",
+    "message": "Téléchargez l'app ANS pour iPhone, iPad et Mac",
     "messageShort": "Téléchargez l'app pour appareils Apple",
     "download": "Télécharger",
     "dismiss": "Fermer"
   },
   "about": {
-    "title": "À propos de prompts.chat",
+    "title": "À propos de ANS",
     "description": "L'histoire de la première bibliothèque de prompts IA, créée 2 semaines après l'annonce de ChatGPT.",
     "releasedOn": "5 décembre 2022",
     "storyTitle": "Notre Histoire",
     "goalTitle": "Notre Objectif",
-    "story1Rich": "prompts.chat est la visualisation web du dépôt <repoLink>Awesome ChatGPT Prompts</repoLink>. Cela a commencé comme un projet personnel de <authorLink>@f</authorLink> pour organiser les prompts ChatGPT, quand ChatGPT n'avait pas de fonction d'historique dans sa version initiale.",
+    "story1Rich": "ANS est la visualisation web du dépôt <repoLink>Awesome ChatGPT Prompts</repoLink>. Cela a commencé comme un projet personnel de <authorLink>@f</authorLink> pour organiser les prompts ChatGPT, quand ChatGPT n'avait pas de fonction d'historique dans sa version initiale.",
     "story2": "Le dépôt Awesome ChatGPT Prompts a été créé le 5 décembre 2022, seulement 2 semaines après l'annonce de ChatGPT au monde. Ce qui a commencé comme une solution simple est devenu la ressource incontournable pour des millions de passionnés d'IA.",
     "testimonialsRich": "Apprécié par les pionniers de l'IA, notamment les co-fondateurs d'OpenAI <gregLink>Greg Brockman</gregLink> et <wojciechLink>Wojciech Zaremba</wojciechLink>.",
     "openSource": "Entièrement gratuit et open source depuis le premier jour.",

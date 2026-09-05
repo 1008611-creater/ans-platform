@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/table";
 
 export const metadata = {
-  title: "Self-Hosting Guide - prompts.chat",
-  description: "Deploy your own prompts.chat instance with customizable branding, themes, and authentication",
+  title: "Self-Hosting Guide - ANS",
+  description: "Deploy your own ANS instance with customizable branding, themes, and authentication",
 };
 
 export default async function SelfHostingPage() {
@@ -25,7 +25,7 @@ export default async function SelfHostingPage() {
     <div className="container max-w-4xl py-10">
       <h1 className="text-2xl font-bold mb-2">Self-Hosting Guide</h1>
       <p className="text-muted-foreground mb-8">
-        Deploy your own prompts.chat instance with customizable branding, themes, and authentication.
+        Deploy your own ANS instance with customizable branding, themes, and authentication.
       </p>
 
       <div className="prose prose-neutral dark:prose-invert max-w-none space-y-10">
@@ -58,7 +58,7 @@ export default async function SelfHostingPage() {
               </h3>
               <p className="text-muted-foreground">
                 <Link 
-                  href="https://deepwiki.com/f/prompts.chat" 
+                  href="https://deepwiki.com/1008611-creater/ans-platform" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="underline hover:text-foreground"
@@ -83,7 +83,7 @@ export default async function SelfHostingPage() {
               </h3>
               <p className="text-muted-foreground">
                 <Link 
-                  href="https://context7.com/f/prompts.chat?tab=chat" 
+                  href="https://context7.com/1008611-creater/ans-platform?tab=chat" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="underline hover:text-foreground"
@@ -127,7 +127,7 @@ export default async function SelfHostingPage() {
             </h3>
             <div className="rounded-lg border p-4">
               <p className="text-muted-foreground">
-                prompts.chat requires a PostgreSQL database. Use any PostgreSQL provider or your own server.
+                ANS requires a PostgreSQL database. Use any PostgreSQL provider or your own server.
               </p>
             </div>
           </div>
@@ -137,8 +137,8 @@ export default async function SelfHostingPage() {
             <h3 className="text-lg font-semibold">Quick Start</h3>
           <div className="bg-muted rounded-lg p-4 font-mono text-sm space-y-1 overflow-x-auto">
             <p className="text-muted-foreground"># Clone the repository</p>
-            <p>git clone https://github.com/f/prompts.chat.git</p>
-            <p>cd prompts.chat</p>
+            <p>git clone https://github.com/1008611-creater/ans-platform.git</p>
+            <p>cd ANS</p>
             <p className="text-muted-foreground mt-3"># Install dependencies</p>
             <p>npm install</p>
             <p className="text-muted-foreground mt-3"># Configure environment</p>
@@ -579,7 +579,7 @@ export default async function SelfHostingPage() {
           <p className="text-muted-foreground">
             For issues and questions, please open a{" "}
             <Link 
-              href="https://github.com/f/prompts.chat/issues" 
+              href="https://github.com/1008611-creater/ans-platform/issues" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="underline hover:text-foreground"
@@ -588,7 +588,7 @@ export default async function SelfHostingPage() {
             </Link>
             . For the complete documentation, see the{" "}
             <Link 
-              href="https://github.com/f/prompts.chat/blob/main/SELF-HOSTING.md" 
+              href="https://github.com/1008611-creater/ans-platform/blob/main/SELF-HOSTING.md" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="underline hover:text-foreground"

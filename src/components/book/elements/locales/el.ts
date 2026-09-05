@@ -181,7 +181,7 @@ const el: LocaleData = {
     { number: 3, title: "Προχωρημένα", description: "Προτροπές συστήματος, αλυσίδωση, πολυτροπικό", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "Βέλτιστες Πρακτικές", description: "Συνηθισμένες παγίδες και συμβουλές βελτιστοποίησης", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "Περιπτώσεις Χρήσης", description: "Γράψιμο, κωδικοποίηση, εκπαίδευση, επιχειρήσεις", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "Χρήση και συνεισφορά στην πλατφόρμα", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "Χρήση και συνεισφορά στην πλατφόρμα", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "Εργαλεία Προγραμματιστών", description: "Prompt Builder, MCP, αναφορά API", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

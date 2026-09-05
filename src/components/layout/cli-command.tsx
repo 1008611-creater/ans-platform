@@ -10,7 +10,7 @@ export function CliCommand() {
   const [isHovered, setIsHovered] = useState(false);
   const [displayedText, setDisplayedText] = useState("");
   const [copied, setCopied] = useState(false);
-  const command = "npx prompts.chat";
+  const command = "npx ANS";
 
   useEffect(() => {
     if (isHovered) {

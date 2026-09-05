@@ -1146,8 +1146,8 @@
         "answer": "Gelişmiş yapay zeka modelleri günlük soruları iyi karşılayabilirken, promptlar şu durumlarda kritik hale gelir:\n\n• Uygulamalarda API üzerinden yapay zeka kullanırken — genellikle tek şansınız vardır (\"one-shot prompting\"), karşılıklı diyalog yoktur\n• Daha hassas talimatlar gerektiren küçük, ekonomik modellerle çalışırken\n• Tutarlılık ve güvenilirliğin önemli olduğu üretim sistemleri oluştururken\n\nOptimize edilmiş promptlar daha iyi sonuçlar almanıza, token (ve para) tasarrufu yapmanıza ve daha güvenilir yapay zeka destekli uygulamalar oluşturmanıza yardımcı olur."
       },
       "whatIsPromptschat": {
-        "question": "prompts.chat nedir?",
-        "answer": "prompts.chat, insanların yapay zeka promptlarını paylaştığı, keşfettiği ve topladığı topluluk odaklı bir platformdur. 4 yılı aşkın süredir kullanıcılar prompt optimizasyon tekniklerini burada paylaşmaktadır. Topluluk, promptlarını geliştirmek ve yapay zeka sistemleriyle çalışmanın yeni yaklaşımlarını öğrenmek için birbirine yardımcı olur."
+        "question": "ANS nedir?",
+        "answer": "ANS, insanların yapay zeka promptlarını paylaştığı, keşfettiği ve topladığı topluluk odaklı bir platformdur. 4 yılı aşkın süredir kullanıcılar prompt optimizasyon tekniklerini burada paylaşmaktadır. Topluluk, promptlarını geliştirmek ve yapay zeka sistemleriyle çalışmanın yeni yaklaşımlarını öğrenmek için birbirine yardımcı olur."
       },
       "howToUse": {
         "question": "Bu platformdaki promptları nasıl kullanırım?",
@@ -1155,11 +1155,11 @@
       },
       "license": {
         "question": "Bu promptları ticari olarak kullanabilir miyim?",
-        "answer": "Evet! prompts.chat'teki tüm promptlar CC0 (Creative Commons Zero) lisansı altında yayınlanmıştır, yani kamu malıdır. Ticari kullanım dahil herhangi bir amaç için atıf yapmadan özgürce kullanabilir, değiştirebilir ve dağıtabilirsiniz."
+        "answer": "Evet! ANS'teki tüm promptlar CC0 (Creative Commons Zero) lisansı altında yayınlanmıştır, yani kamu malıdır. Ticari kullanım dahil herhangi bir amaç için atıf yapmadan özgürce kullanabilir, değiştirebilir ve dağıtabilirsiniz."
       },
       "selfHost": {
         "question": "Bu platformu kendi sunucumda barındırabilir miyim?",
-        "answer": "Kesinlikle! prompts.chat tamamen açık kaynaklıdır. Ekibiniz veya kuruluşunuz için kendi özel örneğinizi dağıtabilirsiniz. Kurulum talimatları için self-hosting dokümantasyonumuza göz atın."
+        "answer": "Kesinlikle! ANS tamamen açık kaynaklıdır. Ekibiniz veya kuruluşunuz için kendi özel örneğinizi dağıtabilirsiniz. Kurulum talimatları için self-hosting dokümantasyonumuza göz atın."
       },
       "verification": {
         "question": "Doğrulanmış kullanıcı nasıl olabilirim?",
@@ -1412,18 +1412,18 @@
     }
   },
   "appBanner": {
-    "message": "iPhone, iPad ve Mac için prompts.chat uygulamasını indirin",
+    "message": "iPhone, iPad ve Mac için ANS uygulamasını indirin",
     "messageShort": "Apple cihazlar için uygulamayı indirin",
     "download": "İndir",
     "dismiss": "Kapat"
   },
   "about": {
-    "title": "prompts.chat Hakkında",
+    "title": "ANS Hakkında",
     "description": "ChatGPT duyurulduktan 2 hafta sonra oluşturulan ilk yapay zeka prompt kütüphanesinin hikayesi.",
     "releasedOn": "5 Aralık 2022",
     "storyTitle": "Hikayemiz",
     "goalTitle": "Hedefimiz",
-    "story1Rich": "prompts.chat, <repoLink>Awesome ChatGPT Prompts</repoLink> deposunun web görselleştirmesidir. ChatGPT'nin ilk sürümünde geçmiş özelliği yokken, <authorLink>@f</authorLink>'in ChatGPT promptlarını bir yerde düzenli tutmak için başlattığı kişisel bir proje olarak başladı.",
+    "story1Rich": "ANS, <repoLink>Awesome ChatGPT Prompts</repoLink> deposunun web görselleştirmesidir. ChatGPT'nin ilk sürümünde geçmiş özelliği yokken, <authorLink>@f</authorLink>'in ChatGPT promptlarını bir yerde düzenli tutmak için başlattığı kişisel bir proje olarak başladı.",
     "story2": "Awesome ChatGPT Prompts reposu, 5 Aralık 2022'de, ChatGPT dünyaya ilk kez duyurulduktan sadece 2 hafta sonra oluşturuldu. Basit bir çözüm olarak başlayan şey, milyonlarca yapay zeka meraklısı için başvuru kaynağı haline geldi.",
     "testimonialsRich": "<gregLink>Greg Brockman</gregLink> ve <wojciechLink>Wojciech Zaremba</wojciechLink> gibi OpenAI'ın kurucu ortaklarının da dahil olduğu yapay zeka öncüleri tarafından sevildi.",
     "openSource": "İlk günden beri tamamen ücretsiz ve açık kaynak.",

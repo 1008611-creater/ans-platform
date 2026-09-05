@@ -11,7 +11,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { RunPromptButton } from "@/components/prompts/run-prompt-button";
 
-// Import the actual prompts.chat library
+// Import the actual ANS library
 import {
   builder,
   fromPrompt,
@@ -81,13 +81,13 @@ export function PromptIde() {
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
   
-  // Check if code has imports other than 'prompts.chat'
+  // Check if code has imports other than 'ANS'
   const hasExternalImports = useCallback(() => {
     const importRegex = /^import\s+.*?from\s+['"](.+?)['"];?\s*$/gm;
     let match;
     while ((match = importRegex.exec(code)) !== null) {
       const importPath = match[1];
-      if (!importPath.startsWith('prompts.chat')) {
+      if (!importPath.startsWith('ANS')) {
         return true;
       }
     }
@@ -178,7 +178,7 @@ export function PromptIde() {
     try {
       // Transform code: strip imports and handle the module-style code
       let transformedCode = code
-        // Remove all import statements (prompts.chat imports are provided via function params)
+        // Remove all import statements (ANS imports are provided via function params)
         .replace(/^import\s+[\s\S]*?from\s+['"][^'"]+['"];?\s*$/gm, '')
         .replace(/^import\s+['"][^'"]+['"];?\s*$/gm, '') // side-effect imports
         // Remove other export statements but keep the content
@@ -215,7 +215,7 @@ export function PromptIde() {
         ${transformedCode}
       `;
 
-      // Execute the code with the actual prompts.chat library and mock console
+      // Execute the code with the actual ANS library and mock console
       const fn = new Function(
         'builder', 'fromPrompt', 'templates', 
         'video', 'audio', 'image', 'chat', 'chatPresets',
@@ -482,10 +482,10 @@ export function PromptIde() {
       });
     });
     
-    // Add custom type definitions for prompts.chat
+    // Add custom type definitions for ANS
     m.languages?.typescript?.typescriptDefaults?.addExtraLib(
       TYPE_DEFINITIONS,
-      'prompts.chat.d.ts'
+      'ANS.d.ts'
     );
 
     // Configure TypeScript compiler options for better autocomplete
@@ -947,7 +947,7 @@ export function PromptIde() {
                 {cannotEvaluate ? (
                   <>
                     <Code2 className="h-12 w-12 mb-4 opacity-20" />
-                    <p className="text-sm text-center px-4">{t("cannotEvaluate")}<br />{t("onlyPromptsChat", { library: "prompts.chat" })}</p>
+                    <p className="text-sm text-center px-4">{t("cannotEvaluate")}<br />{t("onlyPromptsChat", { library: "ANS" })}</p>
                   </>
                 ) : (
                   <>
@@ -967,7 +967,7 @@ export function PromptIde() {
               asChild
               className="gap-2"
             >
-              <a href="https://github.com/f/prompts.chat/blob/main/packages/prompts.chat/API.md" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/1008611-creater/ans-platform/blob/main/packages/ANS/API.md" target="_blank" rel="noopener noreferrer">
                 <FileText className="h-4 w-4" />
                 Docs
               </a>

@@ -176,7 +176,7 @@ const ko: LocaleData = {
     { number: 3, title: "고급", description: "시스템 프롬프트, 체이닝, 멀티모달", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "모범 사례", description: "일반적인 함정과 최적화 팁", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "사용 사례", description: "글쓰기, 코딩, 교육, 비즈니스", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "플랫폼 사용 및 기여", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "플랫폼 사용 및 기여", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "개발자 도구", description: "Prompt Builder, MCP, API 참조", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

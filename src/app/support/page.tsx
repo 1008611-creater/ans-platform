@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { ExternalLink, MessageCircleQuestion, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const GITHUB_ISSUE_BASE_URL = "https://github.com/f/prompts.chat/issues/new";
+const GITHUB_ISSUE_BASE_URL = "https://github.com/1008611-creater/ans-platform/issues/new";
 
 interface FAQItemProps {
   question: string;

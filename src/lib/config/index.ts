@@ -56,7 +56,7 @@ export interface Sponsor {
 }
 
 export interface HomepageConfig {
-  // Hide prompts.chat repo branding (achievements, GitHub links) and use clone's branding
+  // Hide ANS repo branding (achievements, GitHub links) and use clone's branding
   useCloneBranding?: boolean;
   achievements?: {
     enabled: boolean;
@@ -178,7 +178,7 @@ export async function getConfig(): Promise<PromptsConfig> {
     // Fallback to default config
     baseConfig = {
       branding: {
-        name: "prompts.chat",
+        name: "ANS",
         logo: "/logo.svg",
         logoDark: "/logo-dark.svg",
         favicon: "/favicon.ico",

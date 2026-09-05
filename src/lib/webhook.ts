@@ -221,7 +221,7 @@ function isPrivateUrl(urlString: string): boolean {
 export { isPrivateUrl };
 
 function replacePlaceholders(template: string, prompt: PromptData): string {
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://prompts.chat";
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ans.cauai.fun";
   const promptUrl = `${siteUrl}/prompts/${prompt.id}`;
   const defaultAvatar = `${siteUrl}/default-avatar.png`;
   const chatgptUrl = `https://chat.openai.com/?prompt=${encodeURIComponent(prompt.content)}`;

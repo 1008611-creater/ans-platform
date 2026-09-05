@@ -366,7 +366,7 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
           {!config.homepage?.useCloneBranding && (
             <>
               <Link 
-                href="https://deepwiki.com/f/prompts.chat" 
+                href="https://deepwiki.com/1008611-creater/ans-platform" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 prefetch={false}
@@ -400,7 +400,7 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
             </>
           )}
           <Link 
-            href="https://github.com/f/prompts.chat" 
+            href="https://github.com/1008611-creater/ans-platform" 
             target="_blank" 
             rel="noopener noreferrer"
             prefetch={false}

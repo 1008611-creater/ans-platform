@@ -40,15 +40,15 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     authors: [{ name: "Fatih Kadir Akın", url: "https://github.com/f" }],
     creator: "Fatih Kadir Akın",
-    publisher: "prompts.chat",
+    publisher: "ANS",
     openGraph: {
       title,
       description,
-      url: "https://prompts.chat/book",
-      siteName: "prompts.chat",
+      url: "https://ans.cauai.fun/book",
+      siteName: "ANS",
       images: [
         {
-          url: "https://prompts.chat/book-cover-photo.jpg",
+          url: "https://ans.cauai.fun/book-cover-photo.jpg",
           width: 1200,
           height: 630,
           alt: title,
@@ -61,11 +61,11 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title,
       description,
-      images: ["https://prompts.chat/book-cover-photo.jpg"],
+      images: ["https://ans.cauai.fun/book-cover-photo.jpg"],
       creator: "@fkadev",
     },
     alternates: {
-      canonical: "https://prompts.chat/book",
+      canonical: "https://ans.cauai.fun/book",
     },
     robots: {
       index: true,
@@ -95,11 +95,11 @@ const jsonLd = {
   },
   publisher: {
     "@type": "Organization",
-    name: "prompts.chat",
-    url: "https://prompts.chat",
+    name: "ANS",
+    url: "https://ans.cauai.fun",
   },
-  url: "https://prompts.chat/book",
-  image: "https://prompts.chat/book-cover-photo.jpg",
+  url: "https://ans.cauai.fun/book",
+  image: "https://ans.cauai.fun/book-cover-photo.jpg",
   inLanguage: "en",
   genre: ["Technology", "Education", "Artificial Intelligence"],
   about: {
@@ -166,7 +166,7 @@ export default async function BookHomePage() {
         <p>
           {t.rich("authorIntro", {
             author: (chunks) => <strong className="text-foreground">{chunks}</strong>,
-            repoLink: (chunks) => <a href="https://github.com/f/prompts.chat" className="text-primary hover:underline">{chunks}</a>,
+            repoLink: (chunks) => <a href="https://github.com/1008611-creater/ans-platform" className="text-primary hover:underline">{chunks}</a>,
             siteName: (chunks) => <strong className="text-foreground">{chunks}</strong>,
           })}
         </p>
@@ -217,7 +217,7 @@ export default async function BookHomePage() {
           </Link>
         </Button>
         <Button asChild variant="outline" size="lg">
-          <a href={`https://raw.githubusercontent.com/f/prompts.chat/refs/heads/main/public/book-pdf/book-${locale}-print.pdf`} download>
+          <a href={`https://ans.cauai.fun/book-pdf/book-${locale}-print.pdf`} download>
             <Download className="mr-2 h-4 w-4" />
             {t("downloadPdf")}
           </a>
@@ -260,7 +260,7 @@ export default async function BookHomePage() {
       <div className="mt-12 pt-6 border-t text-sm text-muted-foreground">
         <p>
           {t.rich("partOfProject", {
-            repoLink: (chunks) => <a href="https://github.com/f/prompts.chat" className="text-primary hover:underline">{chunks}</a>,
+            repoLink: (chunks) => <a href="https://github.com/1008611-creater/ans-platform" className="text-primary hover:underline">{chunks}</a>,
           })}
         </p>
       </div>

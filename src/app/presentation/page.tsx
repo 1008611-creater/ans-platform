@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Why prompts.chat? | Presentation",
+  title: "Why ANS? | Presentation",
   description: "Discover why prompts are more important than ever in the agentic era.",
 };
 
@@ -16,7 +16,7 @@ export default function PresentationPage() {
         <div className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mb-8 rotate-12 transition-transform hover:rotate-0 duration-500">
           <Sparkles className="w-12 h-12 text-primary" />
         </div>
-        <SlideTitle className="mb-6">Why prompts.chat?</SlideTitle>
+        <SlideTitle className="mb-6">Why ANS?</SlideTitle>
         <SlideContent className="max-w-3xl mb-12">Discover why prompts are more important than ever in the agentic era.</SlideContent>
         <p className="text-sm text-muted-foreground animate-pulse mt-8">
           Use arrow keys <MoveRight className="inline w-4 h-4 mx-1" /> or swipe to navigate
@@ -26,13 +26,13 @@ export default function PresentationPage() {
       {/* 2. The Genesis */}
       <div className="flex flex-col justify-center h-full">
         <Star className="w-12 h-12 text-yellow-500 mb-6" />
-        <SlideTitle>The History of prompts.chat</SlideTitle>
+        <SlideTitle>The History of ANS</SlideTitle>
         <SlideContent>
           From a simple repository to a full-fledged platform. We started as Awesome ChatGPT Prompts, and evolved to support the entire AI community with typed prompts, workflows, and skills.
         </SlideContent>
         <div className="mt-12 p-6 bg-muted/50 rounded-2xl border border-border max-w-2xl">
           <p className="text-lg text-foreground font-mono">
-            Awesome ChatGPT Prompts → <SlideHighlight>prompts.chat</SlideHighlight>
+            Awesome ChatGPT Prompts → <SlideHighlight>ANS</SlideHighlight>
           </p>
         </div>
       </div>
@@ -176,7 +176,7 @@ export default function PresentationPage() {
       <div className="flex flex-col justify-center h-full">
         <SlideTitle>For Developers</SlideTitle>
         <SlideContent>
-          prompts.chat isn't just for end-users. With features like Agent Skills, Typed Prompts, and API integrations, it's a vital tool for developers building the next generation of AI apps.
+          ANS isn't just for end-users. With features like Agent Skills, Typed Prompts, and API integrations, it's a vital tool for developers building the next generation of AI apps.
         </SlideContent>
       </div>
 
@@ -198,7 +198,7 @@ export default function PresentationPage() {
         <SlideContent>
           Your data, your platform.
           <br /><br />
-          prompts.chat is <SlideHighlight>100% open-source</SlideHighlight> and deployable to any server or cloud provider. Own your organization's prompt library securely.
+          ANS is <SlideHighlight>100% open-source</SlideHighlight> and deployable to any server or cloud provider. Own your organization's prompt library securely.
         </SlideContent>
       </div>
 
