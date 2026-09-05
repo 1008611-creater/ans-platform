@@ -1,4 +1,4 @@
-"""prompts.chat MCP 服务器 - 让 WorkBuddy 直接搜索和读取提示词库"""
+"""ANS MCP 服务器 - 让 WorkBuddy 直接搜索和读取提示词库"""
 import json
 import asyncio
 import random

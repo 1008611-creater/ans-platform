@@ -1,6 +1,6 @@
 # Owners
 
-This file lists the current maintainers and emeritus maintainers of prompts.chat.
+This file lists the current maintainers and emeritus maintainers of ANS.
 
 ## Project Lead
 

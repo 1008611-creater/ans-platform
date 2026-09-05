@@ -245,7 +245,7 @@ The linter is offline. It validates task-map fit, method-card source limits, loc
 After a later authorized production run, record only evidence-backed observations using `references/prompt-performance-ledger.md`. Synthetic hypotheses are useful for experiments but are excluded from aggregate performance claims and cannot promote a Skill.
 
 Read `references/champion-routes.md` when selecting the route. Read `references/prompt-contracts.md` when writing the final prompt shape. Read `references/research-ingestion.md` when improving this skill from GitHub, papers, official docs, or benchmarks. Read `references/source-bench.md` when comparing external prompt libraries.
-Read `references/source-utilization.md` when using external prompt bases such as YouMind, freestylefly, DAIR, or prompts.chat.
+Read `references/source-utilization.md` when using external prompt bases such as YouMind, freestylefly, DAIR, or ANS.
 Read `references/benchmark-gates.md` when turning GenEval/T2I-CompBench/VBench-style research into QA checks.
 Read `references/prompt-quality-rubric.md` before calling a prompt "best", "high quality", reusable, or production-ready.
 Read `references/prompt-routing-contract.md` whenever an AI-video prompt is newly authored, materially rewritten, locked, or handed to `video_task_spec.json`.

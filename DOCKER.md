@@ -1,6 +1,6 @@
 # Docker Deployment Guide
 
-Run your own prompts.chat instance using Docker Compose.
+Run your own ANS instance using Docker Compose.
 
 [`compose.yml`](/compose.yml) supports both the pre-built container image being fetched from ghcr.io, or being built locally.
 
@@ -9,8 +9,8 @@ Run your own prompts.chat instance using Docker Compose.
 ### To build locally
 
 ```bash
-git clone https://github.com/f/prompts.chat.git
-cd prompts.chat
+git clone https://github.com/1008611-creater/ans-platform.git
+cd ANS
 docker compose up -d --build
 ```
 
@@ -21,8 +21,8 @@ Open http://localhost:4444 in your browser.
 Simply remove the `--build` flag from the command:
 
 ```bash
-git clone https://github.com/f/prompts.chat.git
-cd prompts.chat
+git clone https://github.com/1008611-creater/ans-platform.git
+cd ANS
 docker compose up -d
 ```
 
@@ -44,13 +44,13 @@ Need a hosted PostgreSQL database? We recommend [Neon](https://get.neon.com/Vqfn
 </div>
 
 ```bash
-docker build -f docker/Dockerfile -t prompts.chat .
+docker build -f docker/Dockerfile -t ANS .
 docker run -d \
   --name prompts \
   -p 4444:3000 \
   -e DATABASE_URL="postgresql://user:pass@your-db-host:5432/prompts?schema=public" \
   -e AUTH_SECRET="$(openssl rand -base64 32)" \
-  prompts.chat
+  ANS
 ```
 
 Or if you simply want to use the pre-built image:
@@ -61,7 +61,7 @@ docker run -d \
   -p 4444:3000 \
   -e DATABASE_URL="postgresql://user:pass@your-db-host:5432/prompts?schema=public" \
   -e AUTH_SECRET="$(openssl rand -base64 32)" \
-  ghcr.io/f/prompts.chat:latest
+  ghcr.io/f/ANS:latest
 ```
 
 ## Custom Branding

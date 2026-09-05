@@ -19577,7 +19577,7 @@ Output: A well-researched and formatted essay that meets the specified requireme
 Contributed by [@burakuvan](https://github.com/burakuvan)
 
 ```md
-You are a senior front-end web developer with strong expertise in Base64 image encoding, HTML rendering, and UI/UX design. Create a single-page, fully client-side web application using pure HTML, CSS, and vanilla JavaScript only (preferably in one HTML file, no backend, no external libraries) with a modern, fully responsive, dark black theme. The site must correctly convert images (JPG/PNG/WEBP) to Base64 and ensure the output works in any HTML editor preview, meaning the app must provide both the raw Base64 Data URL and a ready-to-use HTML <img> tag output (e.g. <img src="data:image/jpeg;base64,..." />) so that pasting the HTML snippet into an editor visually renders the image instead of showing plain text. Include two main flows: Image to Base64 (upload or drag-and-drop image, instant in-app preview, correct MIME detection, copy buttons, optional download as .txt) and Base64 to Image Preview (users paste a Data URL or raw Base64, click a Preview button, and see the image rendered, with automatic MIME correction and clear validation errors). The header must display the title “Convert images ↔ Base64 with HTML-ready output”, and directly underneath it show “prompts.chat” in bold, phosphor green color, linking to https://promts.chat. The footer must replace any default text with “2026” in bold, phosphor green, linking to https://promts.chat . The overall UI should be dark black, while all primary buttons use a dark orange color with subtle glow/hover effects, smooth transitions, rounded cards, clear section separation (tabs or cards), accessible contrast, copy-success feedback, handling of very long Base64 strings without freezing, and perfect usability across desktop, tablet, and mobile.
+You are a senior front-end web developer with strong expertise in Base64 image encoding, HTML rendering, and UI/UX design. Create a single-page, fully client-side web application using pure HTML, CSS, and vanilla JavaScript only (preferably in one HTML file, no backend, no external libraries) with a modern, fully responsive, dark black theme. The site must correctly convert images (JPG/PNG/WEBP) to Base64 and ensure the output works in any HTML editor preview, meaning the app must provide both the raw Base64 Data URL and a ready-to-use HTML <img> tag output (e.g. <img src="data:image/jpeg;base64,..." />) so that pasting the HTML snippet into an editor visually renders the image instead of showing plain text. Include two main flows: Image to Base64 (upload or drag-and-drop image, instant in-app preview, correct MIME detection, copy buttons, optional download as .txt) and Base64 to Image Preview (users paste a Data URL or raw Base64, click a Preview button, and see the image rendered, with automatic MIME correction and clear validation errors). The header must display the title “Convert images ↔ Base64 with HTML-ready output”, and directly underneath it show “ANS” in bold, phosphor green color, linking to https://promts.chat. The footer must replace any default text with “2026” in bold, phosphor green, linking to https://promts.chat . The overall UI should be dark black, while all primary buttons use a dark orange color with subtle glow/hover effects, smooth transitions, rounded cards, clear section separation (tabs or cards), accessible contrast, copy-success feedback, handling of very long Base64 strings without freezing, and perfect usability across desktop, tablet, and mobile.
 ```
 
 </details>
@@ -52558,18 +52558,18 @@ Generate an image of the night sky that is highly detailed, realistic, and aesth
 </details>
 
 <details>
-<summary><strong>prompts.chat Promotional Video using Remotion</strong></summary>
+<summary><strong>ANS Promotional Video using Remotion</strong></summary>
 
-## prompts.chat Promotional Video using Remotion
+## ANS Promotional Video using Remotion
 
 Contributed by [@f](https://github.com/f)
 
 ```md
-Create a 30-second promotional video for prompts.chat                     
+Create a 30-second promotional video for ANS                     
                                                                               
 Required Assets                                                               
                                                                               
-- https://prompts.chat/logo.svg - Logo SVG   
+- https://ans.cauai.fun/logo.svg - Logo SVG   
 - https://raw.githubusercontent.com/flekschas/simple-world-map/refs/heads/master/world-map.svg - World map SVG for global community scene       
                                                                               
 Color Theme (Light)                                                           
@@ -52593,7 +52593,7 @@ Scene 1: Opening (5s)
                                                                               
 - Logo appears                           
 - Logo centered, scales in with spring animation                              
-- After animation: "prompts.chat" text reveals left-to-right below logo using 
+- After animation: "ANS" text reveals left-to-right below logo using 
 clip-path                                                                     
 - Tagline appears: "The Free Social Platform for AI Prompts"                  
                                                                               
@@ -52629,7 +52629,7 @@ Scene 5: Prompt Types (5s)
                                                                               
 - Title: "Prompts for every need"                                             
 - Browser-like frame (1400x800) with macOS traffic lights and URL bar showing 
-"prompts.chat"                                                                
+"ANS"                                                                
 - A masonry skeleton screenshot scrolls vertically with eased animation (cubic ease-in-out)      
 - 7 floating pill-shaped labels around edges with icons:                      
   - Text (purple), Image (pink), Video (amber), Audio (green), Workflows      
@@ -52654,7 +52654,7 @@ Scene 8: CTA (3.5s)
                                                                               
 - Background glow animation (pulsing radial gradient)                         
 - Title: "Start exploring today"                                              
-- Large button with logo + "prompts.chat" text (gradient background, subtle   
+- Large button with logo + "ANS" text (gradient background, subtle   
 pulse)                                                                        
 - Subtitle: "Free & Open Source"                                              
                                                                               
@@ -52680,7 +52680,7 @@ Animation Techniques Used
 Key Components                                                                
                                                                               
 - Custom SVG icon components for all icons (no emojis)                        
-- Logo component with prompts.chat "P" path                                   
+- Logo component with ANS "P" path                                   
 - FeatureCard reusable component                                              
 - TransitionSeries for scene management                                       
 ```
@@ -84069,9 +84069,9 @@ Act as a heating system expert. You are an authority on gas-fired pool heaters w
 </details>
 
 <details>
-<summary><strong>prompts.chat taste</strong></summary>
+<summary><strong>ANS taste</strong></summary>
 
-## prompts.chat taste
+## ANS taste
 
 Contributed by [@f](https://github.com/f)
 
@@ -84083,7 +84083,7 @@ Contributed by [@f](https://github.com/f)
 - Use Node.js version 24 in GitHub Actions workflows (not 20). Confidence: 0.65
 
 # project
-- This project is **prompts.chat** — a full-stack social platform for AI prompts (evolved from the "Awesome ChatGPT Prompts" GitHub repo). Confidence: 0.95
+- This project is **ANS** — a full-stack social platform for AI prompts (evolved from the "Awesome ChatGPT Prompts" GitHub repo). Confidence: 0.95
 - Package manager is npm (not pnpm or yarn). Confidence: 0.95
 
 # architecture

@@ -1,5 +1,5 @@
 #!/bin/bash
-# prompts.chat 本地启动脚本
+# ANS 本地启动脚本
 # 用法: bash start.sh
 
 set -e

@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-> Quick reference for Claude Code when working on prompts.chat
+> Quick reference for Claude Code when working on ANS
 
 ## Project Overview
 
-**prompts.chat** is a social platform for AI prompts built with Next.js 16 App Router, React 19, TypeScript, and PostgreSQL/Prisma. It allows users to share, discover, and collect prompts.
+**ANS** is a social platform for AI prompts built with Next.js 16 App Router, React 19, TypeScript, and PostgreSQL/Prisma. It allows users to share, discover, and collect prompts.
 
 For detailed agent guidelines, see [AGENTS.md](AGENTS.md).
 

@@ -29,6 +29,11 @@ PRESERVE_MARKERS = [
     'from "prompts.chat"',
     "huggingface.co/datasets/fka/prompts.chat",
     '"prompts.chat": "^',          # package.json 依赖声明
+    # 以下是「改了就 404 / 失效」的外链，必须整行保护
+    "raw.githubusercontent.com/f/",  # 上游公开仓库的静态资源（赞助商图等），
+                                     # ans-platform 是私有仓库，raw 需要鉴权会 404
+    "utm_source=prompts.chat",       # 赞助商带追踪参数的真实推广链接
+    "/plugin install",               # 插件市场安装命令 prompts.chat@prompts.chat
 ]
 
 # 有序替换（长 URL 在前，避免被短规则截断）
@@ -48,9 +53,12 @@ REPLACEMENTS = [
 EXCLUDE_DIRS = {"node_modules", ".next", ".git", "content", "backups"}
 
 
-def walk_src():
-    """src/ 下所有文件，排除 content/（帮助书 MDX 属汉化工程，单独排期）"""
-    for dp, dns, fns in os.walk(os.path.join(ROOT, "src")):
+def walk_src(target="src"):
+    """遍历目录下所有文件。
+    target="src" 时排除 content/（帮助书 MDX 属汉化工程，单独排期）。
+    ai-video-skills-source/ 是首页技能列表的数据源（src/data/ai-video-skill-route.ts
+    的 SKILL_SOURCE_ROOT），必须一起处理，否则首页会漏。"""
+    for dp, dns, fns in os.walk(os.path.join(ROOT, target)):
         dns[:] = [d for d in dns if d not in EXCLUDE_DIRS]
         for fn in fns:
             yield os.path.join(dp, fn)
@@ -104,17 +112,29 @@ def main():
     total_rep = total_pre = 0
     changed = []
 
-    print("=== A. src/（排除 content/ 帮助书）===")
-    for p in walk_src():
-        rep, pre = process_file(p)
-        if rep or pre:
-            total_rep += rep
-            total_pre += pre
-            rel = os.path.relpath(p, ROOT)
-            changed.append(rel)
-            if pre:
-                print(f"  [保留{pre:>2}] {rel}")
-    print(f"  小计：替换 {total_rep} 处，保留 {total_pre} 处，涉及 {len(changed)} 文件")
+    # 支持命令行传目录：python scripts/rebrand-src.py [dir1 dir2 ...]
+    # 默认 src + messages；新增目录时用 `... ai-video-skills-source`
+    targets = sys.argv[1:] or ["src"]
+
+    for tgt in targets:
+        print(f"=== A. {tgt} ===")
+        sub_rep = sub_pre = 0
+        n_files = 0
+        # 目录则遍历，文件则直接处理（根目录散落的 .md 文档用后者）
+        paths = [os.path.join(ROOT, tgt)] if os.path.isfile(os.path.join(ROOT, tgt)) else walk_src(tgt)
+        for p in paths:
+            rep, pre = process_file(p)
+            if rep or pre:
+                sub_rep += rep
+                sub_pre += pre
+                n_files += 1
+                rel = os.path.relpath(p, ROOT)
+                changed.append(rel)
+                if pre:
+                    print(f"  [保留{pre:>2}] {rel}")
+        print(f"  小计：替换 {sub_rep} 处，保留 {sub_pre} 处，涉及 {n_files} 文件")
+        total_rep += sub_rep
+        total_pre += sub_pre
 
     print("\n=== B. messages/*.json 全语言包（保护 authorIntro 署名行）===")
     msg_rep = msg_pre = 0

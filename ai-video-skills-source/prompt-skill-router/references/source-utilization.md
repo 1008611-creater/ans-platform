@@ -79,7 +79,7 @@ Extraction method:
 2. Choose a simple technique: role/context, examples, schema, checklist, eval rubric, or retrieval.
 3. Keep the final user-facing prompt short enough to execute.
 
-### `f/prompts.chat`
+### `f/ANS`
 
 Use as a community role and task prompt example bank.
 

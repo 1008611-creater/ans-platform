@@ -1,12 +1,12 @@
 <h1 align="center">
-  <a href="https://prompts.chat">
+  <a href="https://ans.cauai.fun">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://prompts.chat/logo-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://prompts.chat/logo.svg">
-      <img height="60" alt="prompts.chat" src="https://prompts.chat/logo.svg">
+      <source media="(prefers-color-scheme: dark)" srcset="https://ans.cauai.fun/logo-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://ans.cauai.fun/logo.svg">
+      <img height="60" alt="ANS" src="https://ans.cauai.fun/logo.svg">
     </picture>
     <br>
-    prompts.chat
+    ANS
   </a>
 </h1>
 
@@ -19,14 +19,14 @@
 </p>
 
 <p align="center">
-  <a href="https://prompts.chat"><img src="https://img.shields.io/badge/Website-prompts.chat-blue?style=flat-square" alt="Website"></a>
+  <a href="https://ans.cauai.fun"><img src="https://img.shields.io/badge/Website-ANS-blue?style=flat-square" alt="Website"></a>
   <a href="https://github.com/sindresorhus/awesome"><img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome"></a>
   <a href="https://huggingface.co/datasets/fka/prompts.chat"><img src="https://img.shields.io/badge/🤗-Hugging_Face-yellow?style=flat-square" alt="Hugging Face"></a>
-  <a href="https://deepwiki.com/f/prompts.chat"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+  <a href="https://deepwiki.com/1008611-creater/ans-platform"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
 <p align="center">
-  <a href="https://prompts.chat/prompts">🌐 Browse Prompts</a> •
+  <a href="https://ans.cauai.fun/prompts">🌐 Browse Prompts</a> •
   <a href="https://fka.gumroad.com/l/art-of-chatgpt-prompting">📖 Read the Book</a> •
   <a href="https://raw.githubusercontent.com/f/prompts.chat/main/PROMPTS.md">📄 View on GitHub</a> •
   <a href="#-self-hosting">🚀 Self-Host</a>
@@ -62,10 +62,10 @@ A curated collection of **prompts** for AI chat models. Originally created for C
 
 | Browse Prompts | Data Formats |
 |----------------|--------------|
-| [prompts.chat](https://prompts.chat/prompts) | [prompts.csv](prompts.csv) |
+| [ANS](https://ans.cauai.fun/prompts) | [prompts.csv](prompts.csv) |
 | [PROMPTS.md](https://raw.githubusercontent.com/f/prompts.chat/main/PROMPTS.md) | [Hugging Face Dataset](https://huggingface.co/datasets/fka/prompts.chat) |
 
-**Want to contribute?** Add prompts at [prompts.chat/prompts/new](https://prompts.chat/prompts/new) — they sync here automatically.
+**Want to contribute?** Add prompts at [ANS/prompts/new](https://ans.cauai.fun/prompts/new) — they sync here automatically.
 
 ---
 
@@ -73,25 +73,25 @@ A curated collection of **prompts** for AI chat models. Originally created for C
 
 Learn prompt engineering with our **free, interactive guide** — 25+ chapters covering everything from basics to advanced techniques like chain-of-thought reasoning, few-shot learning, and AI agents.
 
-**[Start Reading →](https://fka.gumroad.com/l/art-of-chatgpt-prompting)** (Source: https://github.com/f/prompts.chat/tree/main/src/content/book)
+**[Start Reading →](https://fka.gumroad.com/l/art-of-chatgpt-prompting)** (Source: https://github.com/1008611-creater/ans-platform/tree/main/src/content/book)
 
 ---
 
 ## 🎮 Prompting for Kids
 
 <p>
-  <a href="https://prompts.chat/kids">
+  <a href="https://ans.cauai.fun/kids">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://prompts.chat/promi-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://prompts.chat/promi.svg">
-      <img height="60" alt="Promi" src="https://prompts.chat/promi.svg" align="left">
+      <source media="(prefers-color-scheme: dark)" srcset="https://ans.cauai.fun/promi-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://ans.cauai.fun/promi.svg">
+      <img height="60" alt="Promi" src="https://ans.cauai.fun/promi.svg" align="left">
     </picture>
   </a>
 </p>
 
 An interactive, game-based adventure to teach children (ages 8-14) how to communicate with AI through fun puzzles and stories.
 
-**[Start Playing →](https://prompts.chat/kids)**
+**[Start Playing →](https://ans.cauai.fun/kids)**
 
 <br clear="left">
 
@@ -103,20 +103,20 @@ Deploy your own private prompt library with custom branding, themes, and authent
 
 **Quick Start:**
 ```bash
-npx prompts.chat new my-prompt-library
+npx ANS new my-prompt-library
 cd my-prompt-library
 ```
 
 **Manual Setup:**
 ```bash
-git clone https://github.com/f/prompts.chat.git
-cd prompts.chat
+git clone https://github.com/1008611-creater/ans-platform.git
+cd ANS
 npm install && npm run setup
 ```
 
 The setup wizard configures branding, theme, authentication (GitHub/Google/Azure AD), and features.
 
-**Recommended database:** prompts.chat uses PostgreSQL. For a hosted database, we recommend [Neon](https://get.neon.com/VqfnMo4).
+**Recommended database:** ANS uses PostgreSQL. For a hosted database, we recommend [Neon](https://get.neon.com/VqfnMo4).
 
 <div>
   <p>Sponsored by</p>
@@ -137,25 +137,25 @@ The setup wizard configures branding, theme, authentication (GitHub/Google/Azure
 
 ### CLI
 ```bash
-npx prompts.chat
+npx ANS
 ```
 
 ### Claude Code Plugin
 ```
-/plugin marketplace add f/prompts.chat
+/plugin marketplace add f/ANS
 /plugin install prompts.chat@prompts.chat
 ```
 📖 [Plugin Documentation](CLAUDE-PLUGIN.md)
 
 ### MCP Server
-Use prompts.chat as an MCP server in your AI tools.
+Use ANS as an MCP server in your AI tools.
 
 **Remote (recommended):**
 ```json
 {
   "mcpServers": {
-    "prompts.chat": {
-      "url": "https://prompts.chat/api/mcp"
+    "ANS": {
+      "url": "https://ans.cauai.fun/api/mcp"
     }
   }
 }
@@ -165,15 +165,15 @@ Use prompts.chat as an MCP server in your AI tools.
 ```json
 {
   "mcpServers": {
-    "prompts.chat": {
+    "ANS": {
       "command": "npx",
-      "args": ["-y", "prompts.chat", "mcp"]
+      "args": ["-y", "ANS", "mcp"]
     }
   }
 }
 ```
 
-📖 [MCP Documentation](https://prompts.chat/docs/api)
+📖 [MCP Documentation](https://ans.cauai.fun/docs/api)
 
 ---
 
@@ -251,8 +251,8 @@ Use prompts.chat as an MCP server in your AI tools.
 
 ## 👥 Contributors
 
-<a href="https://github.com/f/prompts.chat/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=f/prompts.chat" />
+<a href="https://github.com/1008611-creater/ans-platform/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=f/ANS" />
 </a>
 
 ---
