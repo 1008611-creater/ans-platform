@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { FileQuestion, Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
@@ -13,9 +14,16 @@ export default function NotFound() {
   return (
     <div className="container flex flex-col items-center justify-center min-h-[60vh] py-12">
       <div className="text-center space-y-6 max-w-md">
-        {/* Icon */}
-        <div className="mx-auto w-20 h-20 rounded-full bg-muted flex items-center justify-center">
-          <FileQuestion className="h-10 w-10 text-muted-foreground" />
+        {/* Mascot */}
+        <div className="mx-auto w-32 h-32 flex items-center justify-center">
+          <Image
+            src="/mascot/ans-mascot.png"
+            alt="ANS mascot"
+            width={128}
+            height={128}
+            className="h-32 w-32 object-contain"
+            priority
+          />
         </div>
 
         {/* Error Code */}
