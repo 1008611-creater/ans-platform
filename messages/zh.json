@@ -1152,8 +1152,8 @@
         "answer": "虽然高级AI模型可以很好地处理随意的问题，但在以下情况下提示词变得至关重要：\n\n• 在应用程序中通过API使用AI时——通常只有一次机会（\"一次性提示\"），没有来回对话\n• 使用需要更精确指令的较小、经济型模型时\n• 构建一致性和可靠性很重要的生产系统时\n\n优化的提示词帮助您获得更好的结果，节省令牌（和金钱），并创建更可靠的AI驱动应用程序。"
       },
       "whatIsPromptschat": {
-        "question": "prompts.chat是什么？",
-        "answer": "prompts.chat是一个社区驱动的平台，人们在这里分享、发现和收集AI提示词。四年多来，用户一直在这里分享他们的提示词优化技术。社区互相帮助改进提示词，学习与AI系统协作的新方法。"
+        "question": "ANS 是什么？",
+        "answer": "ANS 是一个社区驱动的平台，人们在这里分享、发现和收集AI提示词。四年多来，用户一直在这里分享他们的提示词优化技术。社区互相帮助改进提示词，学习与AI系统协作的新方法。"
       },
       "howToUse": {
         "question": "如何使用这个平台的提示词？",
@@ -1161,11 +1161,11 @@
       },
       "license": {
         "question": "我可以商业使用这些提示词吗？",
-        "answer": "是的！prompts.chat上的所有提示词都在CC0（Creative Commons Zero）许可证下发布，这意味着它们属于公共领域。您可以自由使用、修改和分发它们用于任何目的，包括商业用途，无需注明出处。"
+        "answer": "是的！ANS 上的所有提示词都在CC0（Creative Commons Zero）许可证下发布，这意味着它们属于公共领域。您可以自由使用、修改和分发它们用于任何目的，包括商业用途，无需注明出处。"
       },
       "selfHost": {
         "question": "我可以自托管这个平台吗？",
-        "answer": "当然可以！prompts.chat是完全开源的。您可以为您的团队或组织部署自己的私有实例。请查看我们的自托管文档了解设置说明。"
+        "answer": "当然可以！ANS 是完全开源的。您可以为您的团队或组织部署自己的私有实例。请查看我们的自托管文档了解设置说明。"
       },
       "verification": {
         "question": "如何成为认证用户？",
@@ -1418,18 +1418,18 @@
     }
   },
   "appBanner": {
-    "message": "下载适用于 iPhone、iPad 和 Mac 的 prompts.chat 应用",
+    "message": "下载适用于 iPhone、iPad 和 Mac 的 ANS 应用",
     "messageShort": "下载 Apple 设备应用",
     "download": "下载",
     "dismiss": "关闭"
   },
   "about": {
-    "title": "关于 prompts.chat",
+    "title": "关于 ANS",
     "description": "ChatGPT发布两周后创建的首个AI提示词库的故事。",
     "releasedOn": "2022年12月5日",
     "storyTitle": "我们的故事",
     "goalTitle": "我们的目标",
-    "story1Rich": "prompts.chat是<repoLink>Awesome ChatGPT Prompts</repoLink>仓库的网页可视化版本。它始于<authorLink>@f</authorLink>的个人项目，用于整理ChatGPT提示词，当时ChatGPT初版还没有历史记录功能。",
+    "story1Rich": "ANS 基于开源项目 <repoLink>Awesome ChatGPT Prompts</repoLink> 构建。该项目始于 <authorLink>@f</authorLink> 的个人项目，用于整理 ChatGPT 提示词，当时 ChatGPT 初版还没有历史记录功能。",
     "story2": "Awesome ChatGPT Prompts仓库创建于2022年12月5日，距离ChatGPT向世界宣布仅两周。最初只是一个简单的解决方案，现已成为数百万AI爱好者的首选资源。",
     "testimonialsRich": "深受AI先驱喜爱，包括OpenAI联合创始人<gregLink>Greg Brockman</gregLink>和<wojciechLink>Wojciech Zaremba</wojciechLink>。",
     "openSource": "从第一天起就完全免费开源。",

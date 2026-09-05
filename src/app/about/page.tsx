@@ -316,7 +316,7 @@ export default async function AboutPage() {
         <p className="text-muted-foreground">
           {t.rich("story1Rich", {
             repoLink: (chunks) => (
-              <Link href="https://github.com/f/prompts.chat" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+              <Link href="https://github.com/1008611-creater/ans-platform" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
                 {chunks}
               </Link>
             ),
@@ -444,7 +444,7 @@ export default async function AboutPage() {
               <li>
                 {t.rich("githubStars", {
                   link: (chunks) => (
-                    <Link href="https://github.com/f/prompts.chat" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                    <Link href="https://github.com/1008611-creater/ans-platform" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
                       {chunks}
                     </Link>
                   ),
@@ -748,7 +748,7 @@ export default async function AboutPage() {
             />
           ))}
           <Link
-            href="https://github.com/f/prompts.chat/graphs/contributors"
+            href="https://github.com/1008611-creater/ans-platform/graphs/contributors"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center w-8 h-8 rounded-full border border-dashed text-muted-foreground hover:text-primary hover:border-primary transition-colors text-xs"
@@ -759,7 +759,7 @@ export default async function AboutPage() {
         <p className="text-sm text-muted-foreground mt-3">
           {t("viewAllContributors")}{" "}
           <Link
-            href="https://github.com/f/prompts.chat/graphs/contributors"
+            href="https://github.com/1008611-creater/ans-platform/graphs/contributors"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-foreground"
