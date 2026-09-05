@@ -281,66 +281,42 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
           </SheetContent>
         </Sheet>
 
-        {/* Logo */}
-        {!branding.useCloneBranding ? (
-          <ContextMenu>
-            <ContextMenuTrigger asChild>
-              <Link href="/" className="flex gap-2">
-                {branding.logo && (
-                  <>
-                    <Image
-                      src={branding.logo}
-                      alt={branding.name}
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 dark:hidden"
-                    />
-                    <Image
-                      src={branding.logoDark || branding.logo}
-                      alt={branding.name}
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 hidden dark:block"
-                    />
-                  </>
-                )}
-                <span className="font-semibold leading-none mt-[2px]">{branding.name}</span>
-              </Link>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-              <ContextMenuItem onClick={handleCopyLogoSvg}>
-                <Copy className="mr-2 h-4 w-4" />
-                {t("brand.copyLogoSvg")}
-              </ContextMenuItem>
-              <ContextMenuItem onClick={() => router.push("/brand")}>
-                <ExternalLink className="mr-2 h-4 w-4" />
-                {t("brand.brandAssets")}
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu>
-        ) : (
-          <Link href="/" className="flex gap-2">
-            {branding.logo && (
-              <>
-                <Image
-                  src={branding.logo}
-                  alt={branding.name}
-                  width={20}
-                  height={20}
-                  className="h-5 w-5 dark:hidden"
-                />
-                <Image
-                  src={branding.logoDark || branding.logo}
-                  alt={branding.name}
-                  width={20}
-                  height={20}
-                  className="h-5 w-5 hidden dark:block"
-                />
-              </>
-            )}
-            <span className="font-semibold leading-none mt-[2px]">{branding.name}</span>
-          </Link>
-        )}
+        {/* Logo — 始终提供右键菜单（复制 SVG / 品牌资源），不受 useCloneBranding 影响 */}
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            <Link href="/" className="flex gap-2">
+              {branding.logo && (
+                <>
+                  <Image
+                    src={branding.logo}
+                    alt={branding.name}
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 dark:hidden"
+                  />
+                  <Image
+                    src={branding.logoDark || branding.logo}
+                    alt={branding.name}
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 hidden dark:block"
+                  />
+                </>
+              )}
+              <span className="font-semibold leading-none mt-[2px]">{branding.name}</span>
+            </Link>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onClick={handleCopyLogoSvg}>
+              <Copy className="mr-2 h-4 w-4" />
+              {t("brand.copyLogoSvg")}
+            </ContextMenuItem>
+            <ContextMenuItem onClick={() => router.push("/brand")}>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              {t("brand.brandAssets")}
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1 text-sm">
