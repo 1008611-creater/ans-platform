@@ -1,20 +1,20 @@
 # Governance
 
-This document describes the governance model for prompts.chat.
+This document describes the governance model for ANS.
 
 ## Overview
 
-prompts.chat is an open-source project that welcomes contributions from anyone. The project operates with a small group of maintainers who are responsible for the overall direction, code review, and release process. We aim to grow this group over time and welcome new maintainers who demonstrate sustained, quality contributions.
+ANS is an open-source project that welcomes contributions from anyone. The project operates with a small group of maintainers who are responsible for the overall direction, code review, and release process. We aim to grow this group over time and welcome new maintainers who demonstrate sustained, quality contributions.
 
 ## Roles
 
 ### Users
 
-Anyone who uses prompts.chat, whether by browsing the website, self-hosting the platform, using the CLI, or integrating with the MCP server. Users are encouraged to file issues, suggest features, and contribute prompts.
+Anyone who uses ANS, whether by browsing the website, self-hosting the platform, using the CLI, or integrating with the MCP server. Users are encouraged to file issues, suggest features, and contribute prompts.
 
 ### Contributors
 
-Anyone who contributes to the project. This includes submitting prompts through the web platform, opening pull requests, reporting bugs, improving documentation, or helping other users. All contributors are listed at https://github.com/f/prompts.chat/graphs/contributors.
+Anyone who contributes to the project. This includes submitting prompts through the web platform, opening pull requests, reporting bugs, improving documentation, or helping other users. All contributors are listed at https://github.com/1008611-creater/ans-platform/graphs/contributors.
 
 ### Maintainers
 

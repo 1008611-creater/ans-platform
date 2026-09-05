@@ -38,7 +38,7 @@ Use this matrix before importing a pattern:
 - YouMind-OpenLab `awesome-gpt-image-2`: very large GPT Image 2 prompt library with previews and multilingual coverage. Best as a case bank and inspiration source, not as a route controller.
 - freestylefly `awesome-gpt-image-2`: industrial template and reverse-engineered case approach; useful for local `gpt-image-2-style-library` because it already exposes templates, categories, examples, and pitfalls.
 - DAIR.AI `Prompt-Engineering-Guide`: strongest general LLM prompting reference for techniques, RAG, agents, prompt hubs, and factuality risks. Best for method education, not platform-native content production.
-- `f/prompts.chat`: huge community prompt library. Useful for role/prompt examples, but quality is uneven and should not override domain-specific local skills.
+- `f/ANS`: huge community prompt library. Useful for role/prompt examples, but quality is uneven and should not override domain-specific local skills.
 
 ## Weak Default Sources
 
@@ -74,5 +74,5 @@ For platform-native Xiaohongshu:
 For general prompting:
 1. local domain skill when one exists;
 2. DAIR.AI for technique selection and evaluation loops;
-3. prompts.chat for role/checklist examples only;
+3. ANS for role/checklist examples only;
 4. ad hoc prompting only for low-risk one-off tasks.

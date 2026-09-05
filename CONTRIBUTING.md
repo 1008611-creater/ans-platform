@@ -4,9 +4,9 @@ Thank you for your interest in contributing to Awesome ChatGPT Prompts!
 
 ## How to Contribute
 
-The easiest way to contribute is through **[prompts.chat](https://prompts.chat)**:
+The easiest way to contribute is through **[ANS](https://ans.cauai.fun)**:
 
-1. Visit [prompts.chat](https://prompts.chat)
+1. Visit [ANS](https://ans.cauai.fun)
 2. Sign in with your GitHub account
 3. Create and submit your prompt
 4. Your contribution will automatically sync to this repository

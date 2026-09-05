@@ -2,7 +2,7 @@
 
 > The Autonomic Nervous System for AI — 让 AI 永不停转
 
-ANS 组织官网 + AI 原生社区平台。代码从 [prompts.chat](https://github.com/f/awesome-chatgpt-prompts) 复用而来，
+ANS 组织官网 + AI 原生社区平台。代码从 [ANS](https://github.com/f/awesome-chatgpt-prompts) 复用而来，
 在保留其提示词库能力的基础上，改造为面向中国农业大学学生团队与开放社区的社区平台。
 
 ## 站点定位
@@ -18,10 +18,10 @@ ANS 组织官网 + AI 原生社区平台。代码从 [prompts.chat](https://gith
 |---|---|---|
 | 代码仓库 | 本地目录，无独立远端 | `1008611-creater/ans-platform` |
 | 容器 | `prompts-chat-app`（3000） | `ans-platform-app`（3001） |
-| 镜像 | `ghcr.io/f/prompts.chat:latest` | `ans-platform:latest` |
+| 镜像 | `ghcr.io/f/ANS:latest` | `ans-platform:latest` |
 | 数据库 | `prompts_chat` | 共享同一个库（账号体系打通） |
 
-> ⚠️ **镜像名必须保持独立**。若本仓库构建时打出 `ghcr.io/f/prompts.chat:latest`，
+> ⚠️ **镜像名必须保持独立**。若本仓库构建时打出 `ghcr.io/f/ANS:latest`，
 > 会覆盖旧站镜像，旧站下次重启就会跑到新代码上。
 
 ## 核心功能规划

@@ -15,7 +15,7 @@
 - **适用场景**: 长期积累，版本追溯
 - **本地适配**: 本项目 `prompts/` 目录参考其结构，分类调整为 ai-video/seedance-2.5/image-gen/general-work
 
-## 3. prompts.chat（自托管平台 - 搜索 UI + MCP）
+## 3. ANS（自托管平台 - 搜索 UI + MCP）
 
 - **仓库**: `f/awesome-chatgpt-prompts`（163k+ stars）
 - **本地路径**: `tools/prompts-chat-src/`

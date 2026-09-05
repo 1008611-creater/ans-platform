@@ -67,12 +67,9 @@ const nextConfig: NextConfig = {
         destination: "/embed",
         permanent: true,
       },
-      // Redirect book PDF downloads to GitHub raw to save Vercel edge bandwidth
-      {
-        source: "/book-pdf/:filename",
-        destination: "https://raw.githubusercontent.com/f/prompts.chat/refs/heads/main/public/book-pdf/:filename",
-        permanent: false,
-      },
+      // 原先把 /book-pdf/* 重定向到上游 GitHub raw（为省 Vercel 带宽）。
+      // ANS 自托管：public/book-pdf/ 已随镜像一起打包，直接本地提供，
+      // 不再依赖上游仓库（上游仓库若改名/删文件，下载会直接 404）。
     ];
   },
 };

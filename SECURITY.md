@@ -8,11 +8,11 @@
 
  ## Reporting a Vulnerability
 
- If you discover a security vulnerability in prompts.chat, please report it responsibly.
+ If you discover a security vulnerability in ANS, please report it responsibly.
 
  **Do NOT open a public GitHub issue for security vulnerabilities.**
 
- Instead, please report vulnerabilities by emailing **security@prompts.chat**.
+ Instead, please report vulnerabilities by emailing **security@ANS**.
 
  Include the following in your report:
 
@@ -43,5 +43,5 @@
 
  ## Thank You
 
- We appreciate the security research community's efforts in helping keep prompts.chat and its users
+ We appreciate the security research community's efforts in helping keep ANS and its users
  safe.
