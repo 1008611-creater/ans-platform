@@ -1,6 +1,6 @@
 {
-  "prompts.chat": {
+  "ANS": {
     "type": "http",
-    "url": "https://prompts.chat/api/mcp"
+    "url": "https://ans.cauai.fun/api/mcp"
   }
 }
