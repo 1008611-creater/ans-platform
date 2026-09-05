@@ -7,9 +7,9 @@ export default defineConfig({
   // Branding - customize for white-label
   branding: {
     name: "ANS",
-    logo: "/logo.svg",
-    logoDark: "/logo-dark.svg",
-    favicon: "/logo.svg",
+    logo: "/ans-logo-light.svg",
+    logoDark: "/ans-logo-dark.svg",
+    favicon: "/favicon/favicon.svg",
     description: "让 AI 永不停转 · AI 原生社区与算力平台",
   },
 
