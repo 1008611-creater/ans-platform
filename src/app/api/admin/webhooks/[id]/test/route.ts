@@ -26,7 +26,7 @@ export async function POST(
 
     // Replace placeholders with test values (must match WEBHOOK_PLACEHOLDERS)
     let payload = webhook.payload;
-    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://prompts.chat";
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ans.cauai.fun";
     const testData: Record<string, string> = {
       "{{PROMPT_ID}}": "test-prompt-id-12345",
       "{{PROMPT_TITLE}}": "Test Prompt Title",

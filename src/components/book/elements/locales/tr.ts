@@ -176,7 +176,7 @@ const tr: LocaleData = {
     { number: 3, title: "İleri Düzey", description: "Sistem promptları, zincirleme, çoklu ortam", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "En İyi Uygulamalar", description: "Yaygın hatalar ve optimizasyon ipuçları", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "Kullanım Alanları", description: "Yazarlık, kodlama, eğitim, iş", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "Platformu kullanma ve katkıda bulunma", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "Platformu kullanma ve katkıda bulunma", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "Geliştirici Araçları", description: "Prompt Builder, MCP, API referansı", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

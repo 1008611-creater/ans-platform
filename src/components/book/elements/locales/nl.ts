@@ -181,7 +181,7 @@ const nl: LocaleData = {
     { number: 3, title: "Gevorderd", description: "Systeemprompts, chaining, multimodaal", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "Best Practices", description: "Veelvoorkomende valkuilen en optimalisatietips", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "Toepassingen", description: "Schrijven, coderen, onderwijs, business", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "Gebruik en bijdragen aan het platform", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "Gebruik en bijdragen aan het platform", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "Dev Tools", description: "Prompt Builder, MCP, API-referentie", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

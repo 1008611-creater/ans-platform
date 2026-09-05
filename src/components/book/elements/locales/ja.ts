@@ -176,7 +176,7 @@ const ja: LocaleData = {
     { number: 3, title: "上級", description: "システムプロンプト、チェーン、マルチモーダル", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "ベストプラクティス", description: "よくある落とし穴と最適化のヒント", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "ユースケース", description: "ライティング、コーディング、教育、ビジネス", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "プラットフォームの使用と貢献", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "プラットフォームの使用と貢献", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "開発者ツール", description: "Prompt Builder、MCP、APIリファレンス", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

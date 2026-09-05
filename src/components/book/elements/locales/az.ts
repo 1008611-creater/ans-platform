@@ -176,7 +176,7 @@ const az: LocaleData = {
     { number: 3, title: "Qabaqcıl", description: "Sistem promptları, zəncirlənmə, çoxmodal", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "Ən Yaxşı Təcrübələr", description: "Ümumi səhvlər və optimallaşdırma məsləhətləri", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "İstifadə Sahələri", description: "Yazı, kodlaşdırma, təhsil, biznes", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "Platformadan istifadə və töhfə vermə", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "Platformadan istifadə və töhfə vermə", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "Developer Alətləri", description: "Prompt Builder, MCP, API arayışı", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

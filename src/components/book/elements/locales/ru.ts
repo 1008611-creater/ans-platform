@@ -171,7 +171,7 @@ const ru: LocaleData = {
     { number: 3, title: "Продвинутое", description: "Системные промпты, цепочки, мультимодальность", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "Лучшие практики", description: "Типичные ошибки и советы по оптимизации", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "Применения", description: "Письмо, код, образование, бизнес", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "Использование платформы и участие", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "Использование платформы и участие", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "Инструменты разработчика", description: "Prompt Builder, MCP, API-справочник", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

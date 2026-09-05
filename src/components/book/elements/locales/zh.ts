@@ -176,7 +176,7 @@ const zh: LocaleData = {
     { number: 3, title: "高级", description: "系统提示、链式调用、多模态", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "最佳实践", description: "常见陷阱和优化技巧", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "用例", description: "写作、编程、教育、商业", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "平台使用和贡献", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "平台使用和贡献", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "开发者工具", description: "Prompt Builder、MCP、API参考", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

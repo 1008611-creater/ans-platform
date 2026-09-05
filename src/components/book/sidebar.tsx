@@ -258,7 +258,7 @@ export function BookSidebar() {
         <div className="sticky top-20">
           {/* Download PDF button */}
           <a
-            href={`https://raw.githubusercontent.com/f/prompts.chat/refs/heads/main/public/book-pdf/book-${locale}-print.pdf`}
+            href={`https://ans.cauai.fun/book-pdf/book-${locale}-print.pdf`}
             download
             className="flex items-center justify-center gap-1.5 w-full mb-3 px-3 py-1.5 text-xs rounded-md border border-muted-foreground/20 bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >

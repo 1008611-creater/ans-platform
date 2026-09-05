@@ -171,7 +171,7 @@ const he: LocaleData = {
     { number: 3, title: "מתקדם", description: "פרומפטי מערכת, שרשור, מולטימודלי", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "שיטות עבודה מומלצות", description: "מלכודות נפוצות וטיפים לאופטימיזציה", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "מקרי שימוש", description: "כתיבה, תכנות, חינוך, עסקים", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "שימוש ותרומה לפלטפורמה", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "שימוש ותרומה לפלטפורמה", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "כלי מפתחים", description: "Prompt Builder, MCP, הפניית API", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

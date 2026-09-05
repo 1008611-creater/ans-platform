@@ -407,7 +407,7 @@ function MapDecorations({ mapWidth }: { mapWidth: number }) {
         <div className="w-1.5 h-8 bg-gray-500" />
       </div>
       <div style={{ animation: "engineVibrate 0.1s steps(2) infinite" }}>
-        <PixelVan text="prompts.chat" />
+        <PixelVan text="ANS" />
       </div>
     </div>
   );
@@ -456,7 +456,7 @@ function MapDecorations({ mapWidth }: { mapWidth: number }) {
       onMouseDown={() => setIsDragging(true)}
       onTouchStart={() => setIsDragging(true)}
     >
-      <PixelPlaneWithBanner bannerText="prompts.chat" />
+      <PixelPlaneWithBanner bannerText="ANS" />
     </div>
   );
 

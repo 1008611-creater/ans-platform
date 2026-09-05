@@ -21,7 +21,7 @@ interface McpConfigTabsProps {
   hideModeToggle?: boolean;
   /** API key for authenticated access */
   apiKey?: string | null;
-  /** Show official prompts.chat branding (VS Code buttons, registry mention) */
+  /** Show official ANS branding (VS Code buttons, registry mention) */
   showOfficialBranding?: boolean;
 }
 
@@ -52,7 +52,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
       if (mode === "remote") {
         const config: Record<string, unknown> = {
           mcpServers: {
-            "prompts.chat": {
+            "ANS": {
               url: mcpUrl,
               ...(apiKey && { headers: { "PROMPTS_API_KEY": apiKey } }),
             },
@@ -62,7 +62,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
       } else {
         const config: Record<string, unknown> = {
           mcpServers: {
-            "prompts.chat": {
+            "ANS": {
               command: "npx",
               args: ["-y", packageName],
               ...(localEnv && { env: localEnv }),
@@ -75,14 +75,14 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
     case "claude-code":
       if (mode === "remote") {
         if (apiKey) {
-          return `claude mcp add --transport http prompts.chat ${mcpUrl} --header "PROMPTS_API_KEY: ${apiKey}"`;
+          return `claude mcp add --transport http ANS ${mcpUrl} --header "PROMPTS_API_KEY: ${apiKey}"`;
         }
-        return `claude mcp add --transport http prompts.chat ${mcpUrl}`;
+        return `claude mcp add --transport http ANS ${mcpUrl}`;
       } else {
         const envPrefix = localEnv 
           ? Object.entries(localEnv).map(([k, v]) => `${k}="${v}"`).join(" ") + " "
           : "";
-        return `${envPrefix}claude mcp add prompts.chat -- npx -y ${packageName}`;
+        return `${envPrefix}claude mcp add ANS -- npx -y ${packageName}`;
       }
 
     case "vscode":
@@ -90,7 +90,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
         const config: Record<string, unknown> = {
           mcp: {
             servers: {
-              "prompts.chat": {
+              "ANS": {
                 type: "http",
                 url: mcpUrl,
                 ...(apiKey && { headers: { "PROMPTS_API_KEY": apiKey } }),
@@ -103,7 +103,7 @@ function getConfig(client: Client, mode: Mode, mcpUrl: string, apiKey?: string |
         const config: Record<string, unknown> = {
           mcp: {
             servers: {
-              "prompts.chat": {
+              "ANS": {
                 type: "stdio",
                 command: "npx",
                 args: ["-y", packageName],
@@ -143,7 +143,7 @@ args = ["-y", "${packageName}"]`;
       if (mode === "remote") {
         const config: Record<string, unknown> = {
           mcpServers: {
-            "prompts.chat": {
+            "ANS": {
               serverUrl: mcpUrl,
               ...(apiKey && { headers: { "PROMPTS_API_KEY": apiKey } }),
             },
@@ -153,7 +153,7 @@ args = ["-y", "${packageName}"]`;
       } else {
         const config: Record<string, unknown> = {
           mcpServers: {
-            "prompts.chat": {
+            "ANS": {
               command: "npx",
               args: ["-y", packageName],
               ...(localEnv && { env: localEnv }),
@@ -166,14 +166,14 @@ args = ["-y", "${packageName}"]`;
     case "gemini":
       if (mode === "remote") {
         if (apiKey) {
-          return `PROMPTS_API_KEY=${apiKey} gemini mcp add prompts.chat --transport sse ${mcpUrl}`;
+          return `PROMPTS_API_KEY=${apiKey} gemini mcp add ANS --transport sse ${mcpUrl}`;
         }
-        return `gemini mcp add prompts.chat --transport sse ${mcpUrl}`;
+        return `gemini mcp add ANS --transport sse ${mcpUrl}`;
       } else {
         const envPrefix = localEnv 
           ? Object.entries(localEnv).map(([k, v]) => `${k}="${v}"`).join(" ") + " "
           : "";
-        return `${envPrefix}gemini mcp add prompts.chat -- npx -y ${packageName}`;
+        return `${envPrefix}gemini mcp add ANS -- npx -y ${packageName}`;
       }
 
     default:
@@ -196,7 +196,7 @@ export function McpConfigTabs({ baseUrl, queryParams, className, mode, onModeCha
     }
   };
 
-  const base = baseUrl || (typeof window !== "undefined" ? window.location.origin : "https://prompts.chat");
+  const base = baseUrl || (typeof window !== "undefined" ? window.location.origin : "https://ans.cauai.fun");
   const mcpUrl = queryParams ? `${base}/api/mcp?${queryParams}` : `${base}/api/mcp`;
   
   // Full config with actual API key (for copying)
@@ -325,7 +325,7 @@ export function McpConfigTabs({ baseUrl, queryParams, className, mode, onModeCha
               const localEnv = buildLocalEnv(apiKey, queryParams);
               if (localEnv) cursorConfig.env = localEnv;
               const configBase64 = btoa(JSON.stringify(cursorConfig));
-              window.open(`cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("prompts.chat")}&config=${configBase64}`, "_self");
+              window.open(`cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent("ANS")}&config=${configBase64}`, "_self");
             }}
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -366,7 +366,7 @@ export function McpConfigTabs({ baseUrl, queryParams, className, mode, onModeCha
             </Button>
           </div>
           <p className="text-[10px] text-muted-foreground">
-            prompts.chat is in the official{" "}
+            ANS is in the official{" "}
             <a
               href="https://github.com/mcp"
               target="_blank"

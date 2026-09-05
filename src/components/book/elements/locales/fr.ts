@@ -181,7 +181,7 @@ const fr: LocaleData = {
     { number: 3, title: "Avancé", description: "Prompts système, chaînage, multimodal", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "Bonnes Pratiques", description: "Erreurs courantes et conseils d'optimisation", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "Cas d'Usage", description: "Écriture, codage, éducation, business", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "Utiliser et contribuer à la plateforme", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "Utiliser et contribuer à la plateforme", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "Outils Développeur", description: "Constructeur de Prompts, MCP, référence API", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

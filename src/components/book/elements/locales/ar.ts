@@ -171,7 +171,7 @@ const ar: LocaleData = {
     { number: 3, title: "متقدم", description: "موجهات النظام، التسلسل، متعدد الوسائط", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "أفضل الممارسات", description: "الأخطاء الشائعة ونصائح التحسين", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "حالات الاستخدام", description: "الكتابة، البرمجة، التعليم، الأعمال", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "استخدام والمساهمة في المنصة", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "استخدام والمساهمة في المنصة", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "أدوات المطور", description: "Prompt Builder، MCP، مرجع API", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

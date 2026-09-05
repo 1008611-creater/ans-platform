@@ -181,7 +181,7 @@ const es: LocaleData = {
     { number: 3, title: "Avanzado", description: "Prompts de sistema, encadenamiento, multimodal", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "Mejores Prácticas", description: "Errores comunes y consejos de optimización", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "Casos de Uso", description: "Escritura, programación, educación, negocios", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "Uso y contribución a la plataforma", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "Uso y contribución a la plataforma", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "Herramientas Dev", description: "Prompt Builder, MCP, referencia de API", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

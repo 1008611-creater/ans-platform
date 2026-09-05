@@ -14,13 +14,13 @@ import { McpConfigTabs } from "@/components/mcp/mcp-config-tabs";
 import config from "@/../prompts.config";
 
 export const metadata = {
-  title: "API Documentation - prompts.chat",
+  title: "API Documentation - ANS",
   description: "API for searching and discovering AI prompts programmatically",
 };
 
 export default async function ApiDocsPage() {
   const headersList = await headers();
-  const host = headersList.get("host") || "prompts.chat";
+  const host = headersList.get("host") || "ans.cauai.fun";
   const protocol = host.includes("localhost") ? "http" : "https";
   const baseUrl = `${protocol}://${host}`;
   return (
@@ -28,8 +28,8 @@ export default async function ApiDocsPage() {
       <h1 className="text-2xl font-bold mb-2">API Documentation</h1>
       <p className="text-muted-foreground mb-8">
         {config.features.mcp !== false 
-          ? "prompts.chat provides an MCP-first API for searching and discovering AI prompts programmatically. Use the MCP endpoint directly with any MCP-compatible client, or make standard HTTP requests."
-          : "prompts.chat provides an API for searching and discovering AI prompts programmatically."
+          ? "ANS provides an MCP-first API for searching and discovering AI prompts programmatically. Use the MCP endpoint directly with any MCP-compatible client, or make standard HTTP requests."
+          : "ANS provides an API for searching and discovering AI prompts programmatically."
         }
       </p>
 
@@ -68,11 +68,11 @@ export default async function ApiDocsPage() {
                 Using with MCP Clients
               </h2>
               <p className="text-muted-foreground">
-                Add prompts.chat to your MCP client configuration. Choose your client and connection type below:
+                Add ANS to your MCP client configuration. Choose your client and connection type below:
               </p>
               <McpConfigTabs baseUrl={baseUrl} className="[&_button]:text-sm [&_button]:px-3 [&_button]:py-1.5 [&_pre]:text-sm [&_pre]:p-4" />
               <p className="text-muted-foreground text-sm">
-                <strong>Remote</strong> connects directly to prompts.chat API. <strong>Local</strong> runs the MCP server locally via npx.
+                <strong>Remote</strong> connects directly to ANS API. <strong>Local</strong> runs the MCP server locally via npx.
               </p>
             </section>
 
@@ -132,7 +132,7 @@ curl -X POST ${baseUrl}/api/mcp \\
               </div>
 
               <p className="text-muted-foreground text-sm">
-                <strong>Remote (HTTP)</strong> sends requests to prompts.chat with the API key in headers. 
+                <strong>Remote (HTTP)</strong> sends requests to ANS with the API key in headers. 
                 <strong> Local (stdio)</strong> runs the MCP server locally via npx with the API key as an environment variable.
                 With authentication, you can use the <code className="bg-muted px-1.5 py-0.5 rounded">save_prompt</code> tool 
                 and search results will include your private prompts.
@@ -926,7 +926,7 @@ curl "${baseUrl}/api/prompts/{id}"`}</pre>
           <p className="text-muted-foreground">
             For issues and feature requests, please open a{" "}
             <Link
-              href="https://github.com/f/prompts.chat/issues"
+              href="https://github.com/1008611-creater/ans-platform/issues"
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-foreground"

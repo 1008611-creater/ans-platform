@@ -1146,8 +1146,8 @@
         "answer": "고급 AI 모델은 일상적인 질문을 잘 처리할 수 있지만, 다음과 같은 경우 프롬프트가 중요해집니다:\n\n• 애플리케이션에서 API를 통해 AI를 사용할 때 — 종종 한 번의 기회만 있고(\"원샷 프롬프팅\"), 주고받는 대화가 없습니다\n• 더 정확한 지시가 필요한 소형 경제적 모델로 작업할 때\n• 일관성과 신뢰성이 중요한 프로덕션 시스템을 구축할 때\n\n최적화된 프롬프트는 더 나은 결과를 얻고, 토큰(과 비용)을 절약하며, 더 신뢰할 수 있는 AI 기반 애플리케이션을 만드는 데 도움이 됩니다."
       },
       "whatIsPromptschat": {
-        "question": "prompts.chat은 무엇인가요?",
-        "answer": "prompts.chat은 사람들이 AI 프롬프트를 공유하고, 발견하고, 수집하는 커뮤니티 중심 플랫폼입니다. 4년 이상 사용자들이 여기서 프롬프트 최적화 기법을 공유해 왔습니다. 커뮤니티는 서로의 프롬프트를 개선하고 AI 시스템과 작업하는 새로운 접근 방식을 배우도록 돕습니다."
+        "question": "ANS은 무엇인가요?",
+        "answer": "ANS은 사람들이 AI 프롬프트를 공유하고, 발견하고, 수집하는 커뮤니티 중심 플랫폼입니다. 4년 이상 사용자들이 여기서 프롬프트 최적화 기법을 공유해 왔습니다. 커뮤니티는 서로의 프롬프트를 개선하고 AI 시스템과 작업하는 새로운 접근 방식을 배우도록 돕습니다."
       },
       "howToUse": {
         "question": "이 플랫폼의 프롬프트를 어떻게 사용하나요?",
@@ -1155,11 +1155,11 @@
       },
       "license": {
         "question": "이 프롬프트를 상업적으로 사용할 수 있나요?",
-        "answer": "네! prompts.chat의 모든 프롬프트는 CC0(Creative Commons Zero) 라이선스로 출시되어 퍼블릭 도메인에 속합니다. 저작자 표시 없이 상업적 용도를 포함한 모든 목적으로 자유롭게 사용, 수정, 배포할 수 있습니다."
+        "answer": "네! ANS의 모든 프롬프트는 CC0(Creative Commons Zero) 라이선스로 출시되어 퍼블릭 도메인에 속합니다. 저작자 표시 없이 상업적 용도를 포함한 모든 목적으로 자유롭게 사용, 수정, 배포할 수 있습니다."
       },
       "selfHost": {
         "question": "이 플랫폼을 셀프 호스팅할 수 있나요?",
-        "answer": "물론입니다! prompts.chat은 완전히 오픈 소스입니다. 팀이나 조직을 위해 자체 프라이빗 인스턴스를 배포할 수 있습니다. 설정 지침은 셀프 호스팅 문서를 확인하세요."
+        "answer": "물론입니다! ANS은 완전히 오픈 소스입니다. 팀이나 조직을 위해 자체 프라이빗 인스턴스를 배포할 수 있습니다. 설정 지침은 셀프 호스팅 문서를 확인하세요."
       },
       "verification": {
         "question": "인증된 사용자가 되려면 어떻게 해야 하나요?",
@@ -1412,18 +1412,18 @@
     }
   },
   "appBanner": {
-    "message": "iPhone, iPad, Mac용 prompts.chat 앱 다운로드",
+    "message": "iPhone, iPad, Mac용 ANS 앱 다운로드",
     "messageShort": "Apple 기기용 앱 다운로드",
     "download": "다운로드",
     "dismiss": "닫기"
   },
   "about": {
-    "title": "prompts.chat 소개",
+    "title": "ANS 소개",
     "description": "ChatGPT 발표 2주 후 만들어진 최초의 AI 프롬프트 라이브러리 이야기.",
     "releasedOn": "2022년 12월 5일",
     "storyTitle": "우리의 이야기",
     "goalTitle": "우리의 목표",
-    "story1Rich": "prompts.chat은 <repoLink>Awesome ChatGPT Prompts</repoLink> 저장소의 웹 시각화입니다. ChatGPT 초기 버전에 기록 기능이 없었을 때, <authorLink>@f</authorLink>가 프롬프트를 정리하기 위해 시작한 개인 프로젝트였습니다.",
+    "story1Rich": "ANS은 <repoLink>Awesome ChatGPT Prompts</repoLink> 저장소의 웹 시각화입니다. ChatGPT 초기 버전에 기록 기능이 없었을 때, <authorLink>@f</authorLink>가 프롬프트를 정리하기 위해 시작한 개인 프로젝트였습니다.",
     "story2": "Awesome ChatGPT Prompts 저장소는 2022년 12월 5일, ChatGPT가 세상에 발표된 지 불과 2주 만에 만들어졌습니다. 간단한 솔루션으로 시작한 것이 수백만 AI 애호가들의 필수 리소스가 되었습니다.",
     "testimonialsRich": "AI 선구자들의 사랑을 받고 있습니다. OpenAI 공동 창립자 <gregLink>Greg Brockman</gregLink>과 <wojciechLink>Wojciech Zaremba</wojciechLink>도 포함됩니다.",
     "openSource": "첫날부터 완전히 무료이고 오픈 소스입니다.",

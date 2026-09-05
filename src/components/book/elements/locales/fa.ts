@@ -171,7 +171,7 @@ const fa: LocaleData = {
     { number: 3, title: "پیشرفته", description: "پرامپت‌های سیستم، زنجیره‌سازی، چندوجهی", color: "amber", slug: "10-system-prompts-personas" },
     { number: 4, title: "بهترین شیوه‌ها", description: "دام‌های رایج و نکات بهینه‌سازی", color: "green", slug: "15-common-pitfalls" },
     { number: 5, title: "موارد استفاده", description: "نوشتن، کدنویسی، آموزش، کسب‌وکار", color: "rose", slug: "18-writing-content" },
-    { number: 6, title: "prompts.chat", description: "استفاده و مشارکت در پلتفرم", customIcon: true, color: "cyan", slug: "24-getting-started" },
+    { number: 6, title: "ANS", description: "استفاده و مشارکت در پلتفرم", customIcon: true, color: "cyan", slug: "24-getting-started" },
     { number: 7, title: "ابزارهای توسعه‌دهنده", description: "Prompt Builder، MCP، مرجع API", color: "indigo", slug: "27-prompt-builder-dsl" },
   ],
 

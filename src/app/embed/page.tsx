@@ -584,7 +584,7 @@ function EmbedContent() {
           </div>
           <div className="flex items-center gap-2">
             <a 
-              href="https://prompts.chat" 
+              href="https://ans.cauai.fun" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-[10px] font-medium transition-opacity hover:opacity-80"
@@ -592,10 +592,10 @@ function EmbedContent() {
             >
               <img 
                 src={isDark ? "/logo-dark.svg" : "/logo.svg"} 
-                alt="prompts.chat" 
+                alt="ANS" 
                 className="w-3.5 h-3.5"
               />
-              <span>prompts.chat</span>
+              <span>ANS</span>
             </a>
             {config.prompt && (
               <div className={isDark ? "dark" : ""}>

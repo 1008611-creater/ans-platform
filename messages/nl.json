@@ -1146,8 +1146,8 @@
         "answer": "Hoewel geavanceerde AI-modellen casual vragen goed aankunnen, worden prompts cruciaal wanneer:\n\n• AI gebruiken via API in applicaties — je krijgt vaak maar één kans om het goed te doen (\"one-shot prompting\"), zonder heen-en-weer dialoog\n• Werken met kleinere, kosteneffectieve modellen die preciezere instructies nodig hebben\n• Productiesystemen bouwen waar consistentie en betrouwbaarheid belangrijk zijn\n\nGeoptimaliseerde prompts helpen je betere resultaten te krijgen, tokens (en geld) te besparen, en betrouwbaardere AI-applicaties te maken."
       },
       "whatIsPromptschat": {
-        "question": "Wat is prompts.chat?",
-        "answer": "prompts.chat is een door de community aangedreven platform waar mensen AI-prompts delen, ontdekken en verzamelen. Al meer dan 4 jaar delen gebruikers hier hun promptoptimalisatietechnieken. De community helpt elkaar prompts te verbeteren en nieuwe benaderingen te leren voor het werken met AI-systemen."
+        "question": "Wat is ANS?",
+        "answer": "ANS is een door de community aangedreven platform waar mensen AI-prompts delen, ontdekken en verzamelen. Al meer dan 4 jaar delen gebruikers hier hun promptoptimalisatietechnieken. De community helpt elkaar prompts te verbeteren en nieuwe benaderingen te leren voor het werken met AI-systemen."
       },
       "howToUse": {
         "question": "Hoe gebruik ik prompts van dit platform?",
@@ -1155,11 +1155,11 @@
       },
       "license": {
         "question": "Kan ik deze prompts commercieel gebruiken?",
-        "answer": "Ja! Alle prompts op prompts.chat zijn uitgebracht onder de CC0 (Creative Commons Zero) licentie, wat betekent dat ze in het publieke domein zijn. Je kunt ze vrij gebruiken, aanpassen en verspreiden voor elk doel, inclusief commercieel gebruik, zonder naamsvermelding."
+        "answer": "Ja! Alle prompts op ANS zijn uitgebracht onder de CC0 (Creative Commons Zero) licentie, wat betekent dat ze in het publieke domein zijn. Je kunt ze vrij gebruiken, aanpassen en verspreiden voor elk doel, inclusief commercieel gebruik, zonder naamsvermelding."
       },
       "selfHost": {
         "question": "Kan ik dit platform zelf hosten?",
-        "answer": "Absoluut! prompts.chat is volledig open source. Je kunt je eigen privé-instantie deployen voor je team of organisatie. Bekijk onze self-hosting documentatie voor setup-instructies."
+        "answer": "Absoluut! ANS is volledig open source. Je kunt je eigen privé-instantie deployen voor je team of organisatie. Bekijk onze self-hosting documentatie voor setup-instructies."
       },
       "verification": {
         "question": "Hoe kan ik een geverifieerde gebruiker worden?",
@@ -1412,18 +1412,18 @@
     }
   },
   "appBanner": {
-    "message": "Download de prompts.chat app voor iPhone, iPad en Mac",
+    "message": "Download de ANS app voor iPhone, iPad en Mac",
     "messageShort": "Download de app voor Apple-apparaten",
     "download": "Downloaden",
     "dismiss": "Sluiten"
   },
   "about": {
-    "title": "Over prompts.chat",
+    "title": "Over ANS",
     "description": "Het verhaal achter de allereerste AI-promptbibliotheek, gemaakt 2 weken na de aankondiging van ChatGPT.",
     "releasedOn": "5 december 2022",
     "storyTitle": "Ons verhaal",
     "goalTitle": "Ons doel",
-    "story1Rich": "prompts.chat is de webvisualisatie van de <repoLink>Awesome ChatGPT Prompts</repoLink> repository. Het begon als een persoonlijk project van <authorLink>@f</authorLink> om ChatGPT-prompts georganiseerd te houden, toen ChatGPT nog geen geschiedenisfunctie had in de eerste versie.",
+    "story1Rich": "ANS is de webvisualisatie van de <repoLink>Awesome ChatGPT Prompts</repoLink> repository. Het begon als een persoonlijk project van <authorLink>@f</authorLink> om ChatGPT-prompts georganiseerd te houden, toen ChatGPT nog geen geschiedenisfunctie had in de eerste versie.",
     "story2": "De Awesome ChatGPT Prompts repository werd gemaakt op 5 december 2022, slechts 2 weken nadat ChatGPT voor het eerst aan de wereld werd aangekondigd. Wat begon als een simpele oplossing werd de go-to bron voor miljoenen AI-enthousiastelingen.",
     "testimonialsRich": "Geliefd bij AI-pioniers, waaronder OpenAI mede-oprichters <gregLink>Greg Brockman</gregLink> en <wojciechLink>Wojciech Zaremba</wojciechLink>.",
     "openSource": "Volledig gratis en open source vanaf dag één.",

@@ -1146,8 +1146,8 @@
         "answer": "Qabaqcıl AI modelləri sadə sualları yaxşı idarə etsə də, promptlar aşağıdakı hallarda kritik olur:\n\n• Tətbiqlərdə API vasitəsilə AI istifadə edərkən — çox vaxt düzgün nəticə almaq üçün yalnız bir şansınız olur (\"bir atışlıq prompting\"), geri-irəli dialoq olmadan\n• Daha dəqiq təlimatlara ehtiyacı olan daha kiçik, sərfəli modellərlə işləyərkən\n• Tutarlılıq və etibarlılığın vacib olduğu istehsal sistemləri qurarkən\n\nOptimallaşdırılmış promptlar daha yaxşı nəticələr əldə etməyə, tokenlər (və pul) qənaət etməyə və daha etibarlı AI ilə işləyən tətbiqlər yaratmağa kömək edir."
       },
       "whatIsPromptschat": {
-        "question": "prompts.chat nədir?",
-        "answer": "prompts.chat insanların AI promptlarını paylaşdığı, kəşf etdiyi və topladığı icma tərəfindən idarə olunan platformadır. 4 ildən artıqdır ki, istifadəçilər burada prompt optimallaşdırma texnikalarını paylaşırlar. İcma bir-birinə promptlarını yaxşılaşdırmağa və AI sistemləri ilə işləmək üçün yeni yanaşmalar öyrənməyə kömək edir."
+        "question": "ANS nədir?",
+        "answer": "ANS insanların AI promptlarını paylaşdığı, kəşf etdiyi və topladığı icma tərəfindən idarə olunan platformadır. 4 ildən artıqdır ki, istifadəçilər burada prompt optimallaşdırma texnikalarını paylaşırlar. İcma bir-birinə promptlarını yaxşılaşdırmağa və AI sistemləri ilə işləmək üçün yeni yanaşmalar öyrənməyə kömək edir."
       },
       "howToUse": {
         "question": "Bu platformadan promptları necə istifadə edim?",
@@ -1155,11 +1155,11 @@
       },
       "license": {
         "question": "Bu promptları kommersiya məqsədilə istifadə edə bilərəmmi?",
-        "answer": "Bəli! prompts.chat-dakı bütün promptlar CC0 (Creative Commons Zero) lisenziyası altında yayımlanır, bu da onların ictimai domendə olması deməkdir. Onları istənilən məqsəd üçün, o cümlədən kommersiya istifadəsi üçün, istinad olmadan sərbəst istifadə edə, dəyişdirə və paylaya bilərsiniz."
+        "answer": "Bəli! ANS-dakı bütün promptlar CC0 (Creative Commons Zero) lisenziyası altında yayımlanır, bu da onların ictimai domendə olması deməkdir. Onları istənilən məqsəd üçün, o cümlədən kommersiya istifadəsi üçün, istinad olmadan sərbəst istifadə edə, dəyişdirə və paylaya bilərsiniz."
       },
       "selfHost": {
         "question": "Bu platformanı öz serverimde qura bilərəmmi?",
-        "answer": "Əlbəttə! prompts.chat tam açıq mənbədir. Komandanız və ya təşkilatınız üçün öz şəxsi nümunənizi yerləşdirə bilərsiniz. Quraşdırma təlimatları üçün öz-özünə hosting sənədlərimizə baxın."
+        "answer": "Əlbəttə! ANS tam açıq mənbədir. Komandanız və ya təşkilatınız üçün öz şəxsi nümunənizi yerləşdirə bilərsiniz. Quraşdırma təlimatları üçün öz-özünə hosting sənədlərimizə baxın."
       },
       "verification": {
         "question": "Doğrulanmış istifadəçi necə ola bilərəm?",
@@ -1412,18 +1412,18 @@
     }
   },
   "appBanner": {
-    "message": "iPhone, iPad və Mac üçün prompts.chat tətbiqini yükləyin",
+    "message": "iPhone, iPad və Mac üçün ANS tətbiqini yükləyin",
     "messageShort": "Apple cihazları üçün tətbiqi yükləyin",
     "download": "Yüklə",
     "dismiss": "Bağla"
   },
   "about": {
-    "title": "prompts.chat haqqında",
+    "title": "ANS haqqında",
     "description": "ChatGPT elan edildikdən 2 həftə sonra yaradılan ilk AI prompt kitabxanasının hekayəsi.",
     "releasedOn": "5 Dekabr 2022",
     "storyTitle": "Hekayəmiz",
     "goalTitle": "Məqsədimiz",
-    "story1Rich": "prompts.chat <repoLink>Awesome ChatGPT Prompts</repoLink> deposunun veb görüntüsüdür. ChatGPT-nin ilk versiyasında tarix funksiyası olmadığı zaman <authorLink>@f</authorLink>-nin promptları təşkil etmək üçün başlatdığı şəxsi layihə kimi başladı.",
+    "story1Rich": "ANS <repoLink>Awesome ChatGPT Prompts</repoLink> deposunun veb görüntüsüdür. ChatGPT-nin ilk versiyasında tarix funksiyası olmadığı zaman <authorLink>@f</authorLink>-nin promptları təşkil etmək üçün başlatdığı şəxsi layihə kimi başladı.",
     "story2": "Awesome ChatGPT Prompts deposu 5 Dekabr 2022-də, ChatGPT dünyaya elan edildikdən cəmi 2 həftə sonra yaradıldı. Sadə bir həll olaraq başlayan şey milyonlarla AI həvəskarı üçün əsas resurs halına gəldi.",
     "testimonialsRich": "AI pionerləri tərəfindən sevilir, OpenAI-nin həmtəsisçiləri <gregLink>Greg Brockman</gregLink> və <wojciechLink>Wojciech Zaremba</wojciechLink> daxil olmaqla.",
     "openSource": "İlk gündən tamamilə pulsuz və açıq mənbə.",

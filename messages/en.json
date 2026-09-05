@@ -1152,8 +1152,8 @@
         "answer": "While advanced AI models can handle casual questions well, prompts become critical when:\n\n• Using AI via API in applications — you often get only one chance to get it right (\"one-shot prompting\"), with no back-and-forth dialogue\n• Working with smaller, cost-effective models that need more precise instructions\n• Building production systems where consistency and reliability matter\n\nOptimized prompts help you get better results, save tokens (and money), and create more reliable AI-powered applications."
       },
       "whatIsPromptschat": {
-        "question": "What is prompts.chat?",
-        "answer": "prompts.chat is a community-driven platform where people share, discover, and collect AI prompts. For over 4 years, users have been sharing their prompt optimization techniques here. The community helps each other improve their prompts and learn new approaches to working with AI systems."
+        "question": "What is ANS?",
+        "answer": "ANS is a community-driven platform where people share, discover, and collect AI prompts. For over 4 years, users have been sharing their prompt optimization techniques here. The community helps each other improve their prompts and learn new approaches to working with AI systems."
       },
       "howToUse": {
         "question": "How do I use prompts from this platform?",
@@ -1161,11 +1161,11 @@
       },
       "license": {
         "question": "Can I use these prompts commercially?",
-        "answer": "Yes! All prompts on prompts.chat are released under the CC0 (Creative Commons Zero) license, which means they are in the public domain. You can use, modify, and distribute them freely for any purpose, including commercial use, without attribution."
+        "answer": "Yes! All prompts on ANS are released under the CC0 (Creative Commons Zero) license, which means they are in the public domain. You can use, modify, and distribute them freely for any purpose, including commercial use, without attribution."
       },
       "selfHost": {
         "question": "Can I self-host this platform?",
-        "answer": "Absolutely! prompts.chat is fully open source. You can deploy your own private instance for your team or organization. Check out our self-hosting documentation for setup instructions."
+        "answer": "Absolutely! ANS is fully open source. You can deploy your own private instance for your team or organization. Check out our self-hosting documentation for setup instructions."
       },
       "verification": {
         "question": "How can I become a verified user?",
@@ -1418,18 +1418,18 @@
     }
   },
   "appBanner": {
-    "message": "Get the prompts.chat app for iPhone, iPad, and Mac",
+    "message": "Get the ANS app for iPhone, iPad, and Mac",
     "messageShort": "Get the app for Apple devices",
     "download": "Download",
     "dismiss": "Dismiss"
   },
   "about": {
-    "title": "About prompts.chat",
+    "title": "About ANS",
     "description": "The story behind the first-ever AI prompts library, created 2 weeks after ChatGPT was announced.",
     "releasedOn": "December 5, 2022",
     "storyTitle": "Our Story",
     "goalTitle": "Our Goal",
-    "story1Rich": "prompts.chat is the web visualization of the <repoLink>Awesome ChatGPT Prompts</repoLink> repository. It started as a personal project by <authorLink>@f</authorLink> to keep ChatGPT prompts organized, back when ChatGPT had no history feature in its initial version.",
+    "story1Rich": "ANS is the web visualization of the <repoLink>Awesome ChatGPT Prompts</repoLink> repository. It started as a personal project by <authorLink>@f</authorLink> to keep ChatGPT prompts organized, back when ChatGPT had no history feature in its initial version.",
     "story2": "The Awesome ChatGPT Prompts repository was created on December 5, 2022, just 2 weeks after ChatGPT was first announced to the world. What began as a simple solution became the go-to resource for millions of AI enthusiasts.",
     "testimonialsRich": "Loved by AI pioneers, including OpenAI co-founders <gregLink>Greg Brockman</gregLink> and <wojciechLink>Wojciech Zaremba</wojciechLink>.",
     "openSource": "Completely free and open source from day one.",
