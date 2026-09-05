@@ -6,7 +6,6 @@ import { Download, Copy, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useBranding } from "@/components/providers/branding-provider";
-import { notFound } from "next/navigation";
 
 interface AssetCardProps {
   title: string;
@@ -104,11 +103,6 @@ function isLight(color: string): boolean {
 export default function BrandAssetsPage() {
   const branding = useBranding();
   const t = useTranslations("brand");
-
-  // Redirect if using clone branding
-  if (branding.useCloneBranding) {
-    notFound();
-  }
 
   return (
     <div className="container max-w-4xl py-10">
@@ -235,36 +229,6 @@ export default function BrandAssetsPage() {
                 height={80}
                 className="h-20 w-auto"
               />
-            </AssetCard>
-          </div>
-        </section>
-
-        {/* Animated Logos Section */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">{t("animatedLogos")}</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Logo animated */}
-            <AssetCard
-              title={t("logo")}
-              description="Animated"
-              bgClass="bg-gray-100"
-              downloadUrl="/logo-animated.svg"
-              filename="logo-animated.svg"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-animated.svg" alt="Logo animated" className="h-20 w-auto" />
-            </AssetCard>
-
-            {/* Mascot */}
-            <AssetCard
-              title="Mascot"
-              description="PNG · 透明底"
-              bgClass="bg-gradient-to-br from-gray-100 to-gray-200"
-              downloadUrl="/mascot/ans-mascot.png"
-              filename="ans-mascot.png"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/mascot/ans-mascot.png" alt="ANS mascot" className="h-20 w-auto" />
             </AssetCard>
           </div>
         </section>
