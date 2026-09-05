@@ -1,4 +1,4 @@
-"""保存提示词到 prompts.chat 的命令行工具"""
+"""保存提示词到 ANS 的命令行工具"""
 import json
 import sys
 import os
@@ -58,7 +58,7 @@ def save_prompt(title, content, type="TEXT", description="", category_slug=""):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="保存提示词到 prompts.chat")
+    parser = argparse.ArgumentParser(description="保存提示词到 ANS")
     parser.add_argument("--title", "-t", required=True, help="提示词标题")
     parser.add_argument("--content", "-c", required=True, help="提示词内容")
     parser.add_argument("--type", "-T", default="TEXT", choices=["TEXT", "VIDEO", "STRUCTURED"], help="提示词类型")

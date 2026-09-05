@@ -1,7 +1,7 @@
 ---
 name: skill-lookup
 description: >
-  Search, retrieve, and install Agent Skills from the prompts.chat registry using MCP tools.
+  Search, retrieve, and install Agent Skills from the ANS registry using MCP tools.
   Use when the user asks to find skills, browse skill catalogs, install a skill for Claude,
   or extend Claude's capabilities with reusable AI agent components.
 license: MIT
@@ -24,7 +24,7 @@ get_skill({"id": "abc123"})
 
 ## Available Tools
 
-Use these prompts.chat MCP tools:
+Use these ANS MCP tools:
 
 - `search_skills` - Search for skills by keyword
 - `get_skill` - Get a specific skill by ID with all its files

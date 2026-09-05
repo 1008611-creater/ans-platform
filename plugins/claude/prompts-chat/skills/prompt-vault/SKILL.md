@@ -170,7 +170,7 @@ GitHub 源参考：`references/github-sources.md`
 |---|---|---|
 | PromptDex | 浏览器右键快速存 | `tools/PromptDex/` |
 | prompts/ 目录 | 长期积累 + Git 版本 | `prompts/` |
-| prompts.chat | 自托管搜索 UI + MCP | `tools/prompts-chat-src/` |
+| ANS | 自托管搜索 UI + MCP | `tools/prompts-chat-src/` |
 | prompt-vault.py | 索引 + 搜索 + 统计 | 本 Skill `scripts/` |
 | prompts MCP | WorkBuddy 直接搜索/保存 | 本 Skill `scripts/prompts_mcp_server.py` |
 
@@ -178,7 +178,7 @@ GitHub 源参考：`references/github-sources.md`
 
 ## 对话蒸馏（女娲式提取）
 
-自动从对话记录或外部来源中提取提示词、分类并保存到 prompts.chat。
+自动从对话记录或外部来源中提取提示词、分类并保存到 ANS。
 
 ### 触发
 

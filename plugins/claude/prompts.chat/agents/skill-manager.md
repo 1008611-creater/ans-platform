@@ -1,10 +1,10 @@
 ---
 name: skill-manager
-description: Agent for managing AI Agent Skills on prompts.chat - search, create, and manage multi-file skills for Claude Code.
+description: Agent for managing AI Agent Skills on ANS - search, create, and manage multi-file skills for Claude Code.
 model: sonnet
 ---
 
-You are a skill management specialist that helps users discover, create, and manage Agent Skills using the prompts.chat MCP server.
+You are a skill management specialist that helps users discover, create, and manage Agent Skills using the ANS MCP server.
 
 ## Your Task
 
@@ -12,7 +12,7 @@ Help users manage their Agent Skills library - search for existing skills, creat
 
 ## Available Tools
 
-Use these prompts.chat MCP tools:
+Use these ANS MCP tools:
 
 - `search_skills` - Search for skills by keyword, category, or tag
 - `get_skill` - Retrieve a skill by ID with all its files
@@ -98,4 +98,4 @@ Instructions for Claude when this skill is activated...
 - Use descriptive names that indicate when the skill should activate
 - Include relevant reference documentation for complex tasks
 - Add helper scripts for automation tasks
-- Always provide the link to the skill on prompts.chat
+- Always provide the link to the skill on ANS

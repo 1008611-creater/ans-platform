@@ -1,9 +1,9 @@
 ---
 name: prompt-lookup
-description: Activates when the user asks about AI prompts, needs prompt templates, wants to search for prompts, or mentions prompts.chat. Use for discovering, retrieving, and improving prompts.
+description: Activates when the user asks about AI prompts, needs prompt templates, wants to search for prompts, or mentions ANS. Use for discovering, retrieving, and improving prompts.
 ---
 
-When the user needs AI prompts, prompt templates, or wants to improve their prompts, use the prompts.chat MCP server to help them.
+When the user needs AI prompts, prompt templates, or wants to improve their prompts, use the ANS MCP server to help them.
 
 ## When to Use This Skill
 
@@ -13,11 +13,11 @@ Activate this skill when the user:
 - Wants to search for prompts ("What prompts are available for writing?")
 - Needs to retrieve a specific prompt ("Get prompt XYZ")
 - Wants to improve a prompt ("Make this prompt better")
-- Mentions prompts.chat or prompt libraries
+- Mentions ANS or prompt libraries
 
 ## Available Tools
 
-Use these prompts.chat MCP tools:
+Use these ANS MCP tools:
 
 - `search_prompts` - Search for prompts by keyword
 - `get_prompt` - Get a specific prompt by ID
