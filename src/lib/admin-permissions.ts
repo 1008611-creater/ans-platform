@@ -12,6 +12,7 @@ export const ADMIN_PERMISSIONS = [
   "WEBHOOKS_MANAGE",
   "AUDIT_VIEW",
   "RECYCLE_BIN_MANAGE",
+  "INVITES_MANAGE",
 ] as const;
 
 export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];

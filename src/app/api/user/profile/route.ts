@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { isUniqueConstraintViolation } from "@/lib/db-errors";
+import { assertNicknameChangeAllowed, assertValidNickname, DisplayNameError } from "@/lib/display-name";
 
 const customLinkSchema = z.object({
   type: z.enum(["website", "github", "twitter", "linkedin", "instagram", "youtube", "twitch", "discord", "mastodon", "bluesky", "sponsor"]),
@@ -20,6 +21,8 @@ const updateProfileSchema = z.object({
   avatar: z.string().url().optional().or(z.literal("")),
   bio: z.string().max(250).optional().or(z.literal("")),
   customLinks: z.array(customLinkSchema).max(5).optional(),
+  // 公开昵称：30 天可改一次（`nicknameSetAt` 冷却），与 username 解耦。
+  nickname: trimmed.pipe(z.string().min(2).max(40)).optional(),
 });
 
 export async function PATCH(request: NextRequest) {
@@ -42,7 +45,22 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const { name, username, avatar, bio, customLinks } = parsed.data;
+    const { name, username, avatar, bio, customLinks, nickname } = parsed.data;
+
+    // 昵称修改走 30 天冷却；显式传了 nickname 才查询并校验（避免无谓的读）。
+    let nicknameSetAt: Date | undefined;
+    if (nickname !== undefined) {
+      const current = await db.user.findUnique({
+        where: { id: session.user.id },
+        select: { nickname: true, nicknameSetAt: true },
+      });
+      const currentNick = current?.nickname?.trim() ?? undefined;
+      if (currentNick !== nickname) {
+        assertNicknameChangeAllowed(current?.nicknameSetAt, new Date());
+        assertValidNickname(nickname);
+        nicknameSetAt = new Date();
+      }
+    }
 
     // Atomic update — DB-level CI unique index prevents collisions
     try {
@@ -54,6 +72,7 @@ export async function PATCH(request: NextRequest) {
           avatar: avatar || null,
           bio: bio || null,
           customLinks: customLinks && customLinks.length > 0 ? customLinks : Prisma.DbNull,
+          ...(nicknameSetAt ? { nickname, nicknameSetAt } : {}),
         },
         select: {
           id: true,
@@ -63,6 +82,8 @@ export async function PATCH(request: NextRequest) {
           avatar: true,
           bio: true,
           customLinks: true,
+          nickname: true,
+          nicknameSetAt: true,
         },
       });
 
@@ -77,6 +98,12 @@ export async function PATCH(request: NextRequest) {
       throw error;
     }
   } catch (error) {
+    if (error instanceof DisplayNameError) {
+      return NextResponse.json(
+        { error: error.code, message: error.message },
+        { status: error.status, headers: error.retryAfter ? { "Retry-After": String(error.retryAfter) } : {} }
+      );
+    }
     console.error("Update profile error:", error);
     return NextResponse.json(
       { error: "server_error", message: "Something went wrong" },
@@ -105,6 +132,8 @@ export async function GET() {
         avatar: true,
         role: true,
         createdAt: true,
+        nickname: true,
+        nicknameSetAt: true,
       },
     });
 

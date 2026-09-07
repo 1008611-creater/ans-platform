@@ -7,6 +7,7 @@ import { getLevelProgress, formatLevel } from "@/lib/level";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DisplayNameEditor } from "@/components/workspace/display-name-editor";
 
 export const metadata = {
   title: "工作台 · ANS",
@@ -30,7 +31,7 @@ export default async function WorkspacePage() {
   const [user, runs, memberships] = await Promise.all([
     db.user.findUnique({
       where: { id: session.user.id },
-      select: { xp: true, quotaPoints: true, nickname: true, name: true },
+      select: { xp: true, quotaPoints: true, nickname: true },
     }),
     db.run.findMany({
       where: { userId: session.user.id },
@@ -57,7 +58,7 @@ export default async function WorkspacePage() {
 
   const xp = user?.xp ?? 0;
   const progress = getLevelProgress(xp);
-  const displayName = user?.nickname ?? user?.name ?? "匿名同学";
+  const displayName = user?.nickname?.trim() || "匿名同学";
 
   return (
     <div className="container py-10">
@@ -65,6 +66,7 @@ export default async function WorkspacePage() {
         <h1 className="text-3xl font-bold tracking-tight">工作台</h1>
         <p className="mt-2 text-muted-foreground">
           你好，{displayName} · {formatLevel(xp)}
+          <DisplayNameEditor current={displayName} />
         </p>
       </header>
 
@@ -104,6 +106,9 @@ export default async function WorkspacePage() {
                 ? `距${progress.nextLevel.nameZh}还需 ${progress.xpToNext.toLocaleString()} XP`
                 : "已达最高等级"}
             </p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link href="/community">社区签到 · 流水与贡献榜</Link>
+            </Button>
           </CardContent>
         </Card>
 
