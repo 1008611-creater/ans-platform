@@ -226,8 +226,20 @@ export default async function PromptPage({ params }: PromptPageProps) {
   });
 
   // Filter out private, unlisted, or deleted related prompts
+  // 输出边界：相关提示词作者只保留 id/username/name(映射昵称)/avatar，不透传 nickname 或原始身份
   const relatedPrompts = relatedConnections
-    .map((conn) => conn.target)
+    .map((conn) => {
+      const target = conn.target;
+      return {
+        ...target,
+        author: {
+          id: target.author.id,
+          username: target.author.username,
+          name: getPublicDisplayName(target.author),
+          avatar: target.author.avatar,
+        },
+      };
+    })
     .filter((p) => !p.isPrivate && !p.isUnlisted && !p.deletedAt);
 
   // Check if prompt has flow connections (previous/next, not "related")
@@ -280,6 +292,15 @@ export default async function PromptPage({ params }: PromptPageProps) {
 
   const pendingCount = changeRequests.filter((cr) => cr.status === "PENDING").length;
   const tChanges = await getTranslations("changeRequests");
+
+  // 版本比较 props 的作者只保留 username + 映射昵称（name），不透传 nickname/原始身份
+  const publicVersions = prompt.versions.map((version) => ({
+    ...version,
+    author: {
+      username: version.author.username,
+      name: getPublicDisplayName(version.author),
+    },
+  }));
 
   const statusColors = {
     PENDING: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20",
@@ -735,7 +756,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
               <h3 className="text-base font-semibold">{t("versionHistory")}</h3>
               <div className="flex items-center gap-2">
                 <VersionCompareModal 
-                  versions={prompt.versions} 
+                  versions={publicVersions} 
                   currentContent={prompt.content}
                   promptType={prompt.type}
                   structuredFormat={prompt.structuredFormat}
@@ -856,7 +877,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
                               {getPublicDisplayName(cr.author).charAt(0)}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="hidden sm:inline">@{cr.author.username}</span>
+                          <span className="hidden sm:inline">{getPublicDisplayName(cr.author)}</span>
                         </div>
                         <span className="text-xs text-muted-foreground hidden sm:inline">
                           {formatDistanceToNow(cr.createdAt, locale)}

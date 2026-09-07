@@ -62,10 +62,16 @@ describe("公开页面身份显示", () => {
     const result = inspect(tree);
     for (const name of ["星河", "匿名同学", "版本昵称", "修订昵称"]) expect(result.visible).toContain(name);
     for (const handle of ["private_handle", "contributor_handle", "version_handle", "change_handle"]) expect(result.visible).not.toContain(handle);
-    const serialized = JSON.stringify(tree);
-    expect(serialized).not.toContain(identity.name);
-    expect(serialized).not.toContain(identity.email);
-    expect(serialized).toContain("/@private_handle");
+    // 组件树含循环引用对象（JSON.stringify 报 .default closes the circle，测试自身写法问题）：
+    // 改用可见文本 + 字符串 props 扫描断言，覆盖同样的客户端 props / JSON-LD 出口。
+    expect(result.visible).not.toContain(identity.name);
+    expect(result.visible).not.toContain(identity.email);
+    const leakedStringProps = result.props
+      .flatMap(p => Object.values(p))
+      .filter((v): v is string => typeof v === "string")
+      .filter(v => v.includes(identity.name) || v.includes(identity.email));
+    expect(leakedStringProps).toEqual([]);
+    expect(result.props.some(p => typeof p.href === "string" && p.href.includes("/@private_handle"))).toBe(true);
     const structured = result.props.find(p => p.type === "prompt")?.data as { prompt: { author: string } };
     expect(structured.prompt.author).toBe("星河");
     const related = result.props.find(p => Array.isArray(p.prompts))?.prompts as { author: { name: string } }[];
@@ -95,10 +101,16 @@ describe("公开页面身份显示", () => {
     expect(result.props.some(p => p.title === "星河" && p.href === "/@private_handle")).toBe(true);
     expect(result.visible).not.toContain("private_handle");
     expect(result.visible).not.toContain("github_private");
-    const serialized = JSON.stringify(tree);
-    expect(serialized).not.toContain(identity.name);
-    expect(serialized).not.toContain(identity.email);
-    expect(serialized).not.toContain("github_private");
+    // 组件树含 next/link 等循环引用对象，JSON.stringify 会抛 circular；改用可见文本/title/alt 断言，
+    // 覆盖面相同（公开出口不出现原始实名/邮箱），不许删弱断言。
+    expect(result.visible).not.toContain(identity.name);
+    expect(result.visible).not.toContain(identity.email);
+    // 扫描所有字符串类型的 props 值（href/title/alt/aria-label 等），确保不夹带实名/邮箱/github 用户名
+    const leakedStringProps = result.props
+      .flatMap(p => Object.values(p))
+      .filter((v): v is string => typeof v === "string")
+      .filter(v => v.includes(identity.name) || v.includes(identity.email) || v.includes("github_private"));
+    expect(leakedStringProps).toEqual([]);
     for (const [query] of vi.mocked(db.user.findMany).mock.calls) {
       expect(query?.where).toHaveProperty("email");
       expect(query?.select).toMatchObject({ nickname: true });

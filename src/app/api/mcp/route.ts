@@ -437,6 +437,21 @@ function createServer(options: ServerOptions = {}) {
           };
         }
 
+        // 公开出口：剥离原始用户对象，只输出白名单字段（author 映射昵称，不夹带 name/email/username）
+        const publicPrompt = {
+          id: prompt.id,
+          slug: getPromptName(prompt),
+          title: prompt.title,
+          description: prompt.description,
+          content: prompt.content,
+          type: prompt.type,
+          structuredFormat: prompt.structuredFormat,
+          author: getPublicDisplayName(prompt.author),
+          category: prompt.category?.name || null,
+          tags: prompt.tags.map((t) => t.tag.name),
+          link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
+        };
+
         const variables = extractVariables(prompt.content);
 
         if (fill_variables && variables.length > 0) {
@@ -502,14 +517,10 @@ function createServer(options: ServerOptions = {}) {
                     {
                       type: "text" as const,
                       text: JSON.stringify({
-                          ...prompt,
+                          ...publicPrompt,
                           content: filledContent,
                           originalContent: prompt.content,
                           variables: elicitResult.content,
-                          author: getPublicDisplayName(prompt.author),
-                          category: prompt.category?.name || null,
-                          tags: prompt.tags.map((t) => t.tag.name),
-                          link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
                         }),
                     },
                   ],
@@ -520,13 +531,9 @@ function createServer(options: ServerOptions = {}) {
                     {
                       type: "text" as const,
                       text: JSON.stringify({
-                          ...prompt,
+                          ...publicPrompt,
                           variablesRequired: variables,
                           message: "User declined to provide variable values. Returning original prompt.",
-                          author: getPublicDisplayName(prompt.author),
-                          category: prompt.category?.name || null,
-                          tags: prompt.tags.map((t) => t.tag.name),
-                          link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
                         }),
                     },
                   ],
@@ -542,13 +549,9 @@ function createServer(options: ServerOptions = {}) {
                 {
                   type: "text" as const,
                   text: JSON.stringify({
-                      ...prompt,
+                      ...publicPrompt,
                       variablesRequired: variables,
                       message: "Elicitation not supported. Variables need to be filled manually.",
-                      author: getPublicDisplayName(prompt.author),
-                      category: prompt.category?.name || null,
-                      tags: prompt.tags.map((t) => t.tag.name),
-                      link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
                     }),
                 },
               ],
@@ -578,11 +581,7 @@ function createServer(options: ServerOptions = {}) {
             {
               type: "text" as const,
               text: JSON.stringify({
-                  ...prompt,
-                  author: getPublicDisplayName(prompt.author),
-                  category: prompt.category?.name || null,
-                  tags: prompt.tags.map((t) => t.tag.name),
-                  link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
+                  ...publicPrompt,
                 }),
             },
           ],
