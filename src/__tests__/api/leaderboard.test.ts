@@ -180,7 +180,9 @@ describe("GET /api/leaderboard", () => {
     vi.mocked(db.user.findMany).mockResolvedValue([
       {
         id: "user1",
-        name: "Test User",
+        name: "原始实名",
+        nickname: "  星河  ",
+        email: "private@example.test",
         username: "testuser",
         avatar: "https://example.com/avatar.png",
         _count: { prompts: 5 },
@@ -195,12 +197,30 @@ describe("GET /api/leaderboard", () => {
     expect(response.status).toBe(200);
     expect(data.leaderboard[0]).toMatchObject({
       id: "user1",
-      name: "Test User",
+      name: "星河",
       username: "testuser",
       avatar: "https://example.com/avatar.png",
       promptCount: 5,
       totalUpvotes: 10,
     });
+  });
+
+  it("补位查询也排除 deleted/flagged，空昵称匿名且不输出邮件", async () => {
+    vi.mocked(db.promptVote.groupBy).mockResolvedValue([]);
+    vi.mocked(db.prompt.findMany).mockResolvedValue([]);
+    vi.mocked(db.user.findMany).mockResolvedValueOnce([]).mockResolvedValueOnce([
+      { id: "fill", username: "private_handle", nickname: " \t ", name: "原始实名", email: "private@example.test", avatar: null, _count: { prompts: 1 } },
+    ] as never);
+    const data = await (await GET(new Request("http://localhost/api/leaderboard"))).json();
+    expect(data.leaderboard[0].name).toBe("匿名同学");
+    expect(JSON.stringify(data)).not.toContain("原始实名");
+    expect(JSON.stringify(data)).not.toContain("private@example.test");
+    for (const [query] of vi.mocked(db.user.findMany).mock.calls) {
+      expect(query?.where).toMatchObject({ deletedAt: null, flagged: false });
+      expect(query?.select).toMatchObject({ nickname: true });
+      expect(query?.select).not.toHaveProperty("name");
+      expect(query?.select).not.toHaveProperty("email");
+    }
   });
 
   it("should handle database errors gracefully", async () => {
@@ -236,7 +256,7 @@ describe("GET /api/leaderboard", () => {
     );
   });
 
-  it("should limit results to top 50 users", async () => {
+  it("公开榜仅返回前20位有效用户",  async () => {
     // Create 60 users with votes
     const voteData = Array.from({ length: 60 }, (_, i) => ({
       promptId: `prompt${i}`,
@@ -265,6 +285,16 @@ describe("GET /api/leaderboard", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.leaderboard.length).toBeLessThanOrEqual(50);
+    expect(data.leaderboard).toHaveLength(20);
+    expect(data.leaderboard[19].id).toBe("user19");
+    expect(db.prompt.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ author: { deletedAt: null, flagged: false } }),
+    }));
+    for (const [query] of vi.mocked(db.user.findMany).mock.calls) {
+      expect(query?.where).toMatchObject({ deletedAt: null, flagged: false });
+      expect(query?.select).toMatchObject({ nickname: true });
+      expect(query?.select).not.toHaveProperty("name");
+      expect(query?.select).not.toHaveProperty("email");
+    }
   });
 });

@@ -37,8 +37,8 @@ function matches(where: Record<string, unknown>) {
 beforeEach(() => {
   vi.resetAllMocks();
   record = { ...valid, id: "tpl1", slug: "test-template", authorId: "author", icon: null, coverUrl: null, modelKey: null, params: null, estimatedCost: 1, status: "DRAFT", reviewScore: null, reviewNote: null, reviewedAt: null, useCount: 0, createdAt: new Date("2026-01-01"), updatedAt: new Date("2026-01-01") } as Template;
-  mocks.auth.mockResolvedValue({ user: { id: "author", verified: true } });
-  mocks.db.user.findUnique.mockResolvedValue({ id: "author", verified: true, deletedAt: null, flagged: false, xp: 0 });
+  mocks.auth.mockResolvedValue({ user: { id: "author", verified: false } });
+  mocks.db.user.findUnique.mockResolvedValue({ id: "author", verified: false, emailVerified: new Date("2026-01-01"), deletedAt: null, flagged: false, xp: 0 });
   mocks.admin.mockResolvedValue({ userId: "admin" });
   mocks.db.category.findUnique.mockResolvedValue({ id: "scene", parentId: "domain" });
   mocks.db.category.findMany.mockResolvedValue([]);
@@ -61,24 +61,49 @@ beforeEach(() => {
 });
 
 describe("模板访问与字段边界", () => {
-  it.each([null, { id: "author", verified: false }, { id: "author", verified: true, deletedAt: new Date() }, { id: "author", verified: true, flagged: true }])("从数据库拒绝不合格作者 %#", async (user) => {
+  it.each([
+    null,
+    { id: "author", verified: true, emailVerified: null, deletedAt: null, flagged: false },
+    { id: "author", verified: false, emailVerified: new Date("2026-01-01"), deletedAt: new Date("2026-01-02"), flagged: false },
+    { id: "author", verified: false, emailVerified: new Date("2026-01-01"), deletedAt: null, flagged: true },
+  ])("从数据库拒绝不合格作者 %#", async (user) => {
     mocks.db.user.findUnique.mockResolvedValue(user);
     expect((await create(req(valid))).status).toBe(403);
     expect(mocks.db.template.create).not.toHaveBeenCalled();
   });
   it.each(["edit", "submit", "revise"])("账户被封禁后不能继续 %s", async (action) => {
-    mocks.db.user.findUnique.mockResolvedValue({ id: "author", verified: true, flagged: true, deletedAt: null });
+    mocks.db.user.findUnique.mockResolvedValue({ id: "author", verified: false, emailVerified: new Date("2026-01-01"), flagged: true, deletedAt: null });
     const response = action === "edit" ? await edit(req(valid), context) : action === "submit" ? await submit(req({}), context) : await revise(req({}), context);
     expect(response.status).toBe(403);
     expect(mocks.db.template.updateMany).not.toHaveBeenCalled();
     expect(mocks.db.template.create).not.toHaveBeenCalled();
   });
+  it.each(["mine", "edit", "submit", "revise"])("有徽章但邮箱未验证的用户不能继续 %s", async (action) => {
+    mocks.auth.mockResolvedValue({ user: { id: "author", verified: true } });
+    mocks.db.user.findUnique.mockResolvedValue({ id: "author", verified: true, emailVerified: null, deletedAt: null, flagged: false });
+    const response = action === "mine" ? await mine(req()) : action === "edit" ? await edit(req(valid), context) : action === "submit" ? await submit(req({}), context) : await revise(req({}), context);
+    expect(response.status).toBe(403);
+    expect(mocks.db.template.findMany).not.toHaveBeenCalled();
+    expect(mocks.db.template.updateMany).not.toHaveBeenCalled();
+    expect(mocks.db.template.create).not.toHaveBeenCalled();
+    expect(mocks.review).not.toHaveBeenCalled();
+    expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
+  });
+  it("无徽章但邮箱已验证的用户可以投稿并进入待审", async () => {
+    expect((await submit(req({}), context)).status).toBe(200);
+    expect(record.status).toBe("PENDING");
+    expect(mocks.review).toHaveBeenCalled();
+  });
   it("匿名不可创建", async () => {
     mocks.auth.mockResolvedValue(null);
     expect((await create(req(valid))).status).toBe(401);
   });
-  it("零经验已验证用户可以创建草稿，作者与状态由服务端设置且审计", async () => {
+  it("零经验、无徽章但邮箱已验证的用户可以创建草稿，作者与状态由服务端设置且审计", async () => {
     expect((await create(req(valid))).status).toBe(201);
+    expect(mocks.db.user.findUnique).toHaveBeenCalledWith({
+      where: { id: "author" },
+      select: { id: true, emailVerified: true, deletedAt: true, flagged: true },
+    });
     expect(mocks.db.template.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ authorId: "author", status: "DRAFT", estimatedCost: 1 }) }));
     expect(mocks.db.$transaction).toHaveBeenCalled();
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ action: "TEMPLATE_CREATED" }) }));

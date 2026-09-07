@@ -8,6 +8,7 @@ import { AnimatedDate } from "@/components/ui/animated-date";
 import { ShareDropdown } from "@/components/prompts/share-dropdown";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getPublicDisplayName } from "@/lib/public-identity";
 import { canViewPrompt } from "@/lib/prompt-access";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,7 +114,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
       author: {
         select: {
           id: true,
-          name: true,
+          nickname: true,
           username: true,
           avatar: true,
           verified: true,
@@ -139,7 +140,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
           createdAt: true,
           author: {
             select: {
-              name: true,
+              nickname: true,
               username: true,
             },
           },
@@ -152,7 +153,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
         select: {
           id: true,
           username: true,
-          name: true,
+          nickname: true,
           avatar: true,
         },
       },
@@ -204,7 +205,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
           author: {
             select: {
               id: true,
-              name: true,
+              nickname: true,
               username: true,
               avatar: true,
             },
@@ -269,7 +270,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
       author: {
         select: {
           id: true,
-          name: true,
+          nickname: true,
           username: true,
           avatar: true,
         },
@@ -311,7 +312,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
             name: prompt.title,
             description: prompt.description || `AI prompt: ${prompt.title}`,
             content: prompt.content,
-            author: prompt.author.name || prompt.author.username,
+            author: getPublicDisplayName(prompt.author),
             authorUrl: `${process.env.NEXTAUTH_URL || "https://ans.cauai.fun"}/@${prompt.author.username}`,
             datePublished: prompt.createdAt.toISOString(),
             dateModified: prompt.updatedAt.toISOString(),
@@ -397,17 +398,17 @@ export default async function PromptPage({ params }: PromptPageProps) {
       <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
         <div className="flex items-center gap-2">
           <div className="flex -space-x-2">
-            <Link href={`/@${prompt.author.username}`} title={`@${prompt.author.username}`}>
+            <Link href={`/@${prompt.author.username}`} title={getPublicDisplayName(prompt.author)}>
               <Avatar className="h-6 w-6 border-2 border-background">
                 <AvatarImage src={prompt.author.avatar || undefined} />
-                <AvatarFallback className="text-xs">{prompt.author.name?.charAt(0) || prompt.author.username.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-xs">{getPublicDisplayName(prompt.author).charAt(0)}</AvatarFallback>
               </Avatar>
             </Link>
             {prompt.contributors.map((contributor) => (
-              <Link key={contributor.id} href={`/@${contributor.username}`} title={`@${contributor.username}`}>
+              <Link key={contributor.id} href={`/@${contributor.username}`} title={getPublicDisplayName(contributor)}>
                 <Avatar className="h-6 w-6 border-2 border-background">
                   <AvatarImage src={contributor.avatar || undefined} />
-                  <AvatarFallback className="text-xs">{contributor.name?.charAt(0) || contributor.username.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-xs">{getPublicDisplayName(contributor).charAt(0)}</AvatarFallback>
                 </Avatar>
               </Link>
             ))}
@@ -416,7 +417,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="cursor-default">
-                  <Link href={`/@${prompt.author.username}`} className="hover:underline">@{prompt.author.username}</Link> +{prompt.contributors.length}
+                  <Link href={`/@${prompt.author.username}`} className="hover:underline">{getPublicDisplayName(prompt.author)}</Link> +{prompt.contributors.length}
                 </span>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="p-2">
@@ -431,17 +432,17 @@ export default async function PromptPage({ params }: PromptPageProps) {
                       <Avatar className="h-4 w-4">
                         <AvatarImage src={contributor.avatar || undefined} />
                         <AvatarFallback className="text-[8px]">
-                          {contributor.name?.charAt(0) || contributor.username.charAt(0)}
+                          {getPublicDisplayName(contributor).charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs">@{contributor.username}</span>
+                      <span className="text-xs">{getPublicDisplayName(contributor)}</span>
                     </Link>
                   ))}
                 </div>
               </TooltipContent>
             </Tooltip>
           ) : (
-            <Link href={`/@${prompt.author.username}`} className="hover:underline">@{prompt.author.username}</Link>
+            <Link href={`/@${prompt.author.username}`} className="hover:underline">{getPublicDisplayName(prompt.author)}</Link>
           )}
         </div>
         {prompt.contributors.length > 0 && (
@@ -767,7 +768,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
                             {formatDistanceToNow(version.createdAt, locale)}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            by @{version.author.username}
+                            by {getPublicDisplayName(version.author)}
                           </span>
                         </div>
                         {version.changeNote && (
@@ -852,7 +853,7 @@ export default async function PromptPage({ params }: PromptPageProps) {
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={cr.author.avatar || undefined} />
                             <AvatarFallback className="text-[9px]">
-                              {cr.author.name?.[0] || cr.author.username[0]}
+                              {getPublicDisplayName(cr.author).charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <span className="hidden sm:inline">@{cr.author.username}</span>

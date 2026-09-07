@@ -104,6 +104,9 @@ describe("社区上海日期与事务签到", () => {
     expect(ledger[0]).toMatchObject({ userId: "self", reason: "CHECK_IN", amount: XP_RULES.CHECK_IN.base, refId: checkIns[0].id });
     expect(mock.transaction).toHaveBeenCalledTimes(1);
     expect(tx.$queryRaw).toHaveBeenCalledTimes(1);
+    expect(tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(tx.user.findFirst.mock.invocationCallOrder[0]);
+    expect(tx.user.findFirst.mock.invocationCallOrder[0]).toBeLessThan(tx.checkIn.findUnique.mock.invocationCallOrder[0]);
+    expect(mock.transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "ReadCommitted" });
     expect(tx.user.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "self", ...activeWhere } }));
   });
 
@@ -146,6 +149,39 @@ describe("社区上海日期与事务签到", () => {
     vi.setSystemTime(new Date("2026-09-07T16:00:00Z"));
     expect((await checkIn("self")).checkIn.streak).toBe(2);
     expect(checkIns.map((c) => c.day)).toEqual(["2026-09-07", "2026-09-08"]);
+  });
+
+  it("等待行锁跨过午夜后使用获得锁时的上海日期", async () => {
+    vi.setSystemTime(new Date("2026-09-07T15:59:59Z"));
+    const original = tx.$queryRaw.getMockImplementation()!;
+    tx.$queryRaw.mockImplementationOnce(async (...args) => {
+      vi.setSystemTime(new Date("2026-09-07T16:00:01Z"));
+      return original(...args);
+    });
+    expect((await checkIn("self")).checkIn.day).toBe("2026-09-08");
+  });
+
+  it("跨年时昨日判断仍连续", async () => {
+    vi.setSystemTime(new Date("2026-12-31T16:00:00Z"));
+    users[0].lastCheckInAt = new Date("2026-12-30T16:00:01Z");
+    users[0].checkInStreak = 6;
+    expect((await checkIn("self")).checkIn).toMatchObject({ day: "2027-01-01", streak: 7, xpAwarded: 10 });
+  });
+
+  it("CheckIn唯一约束失败不能更新XP或写入流水", async () => {
+    tx.checkIn.create.mockRejectedValueOnce(Object.assign(new Error("唯一约束冲突"), { code: "P2002" }));
+    await expect(checkIn("self")).rejects.toMatchObject({ code: "P2002" });
+    expect(users[0].xp).toBe(0);
+    expect(tx.user.update).not.toHaveBeenCalled();
+    expect(tx.xpLedger.create).not.toHaveBeenCalled();
+  });
+
+  it("XP更新失败回滚已创建的签到", async () => {
+    tx.user.update.mockRejectedValueOnce(new Error("XP更新失败"));
+    await expect(checkIn("self")).rejects.toThrow("XP更新失败");
+    expect(checkIns).toHaveLength(0);
+    expect(ledger).toHaveLength(0);
+    expect(users[0].xp).toBe(0);
   });
 
   it("流水失败回滚XP和签到，再次重试可成功", async () => {

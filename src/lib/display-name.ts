@@ -35,9 +35,17 @@ export function assertNicknameChangeAllowed(setAt: Date | null | undefined, now:
 }
 
 export function assertValidNickname(value: string) {
+  // 在 trim 前检查，防止首尾控制符被静默消除；同时拒绝不可见格式控制符。
+  if (/[\p{Cc}\p{Cf}]/u.test(value)) {
+    throw new DisplayNameError(400, "validation_error", "昵称不能包含控制符");
+  }
   const name = value.trim();
-  if (name.length < NICKNAME_MIN || name.length > NICKNAME_MAX) {
+  const length = Array.from(name).length;
+  if (length < NICKNAME_MIN || length > NICKNAME_MAX) {
     throw new DisplayNameError(400, "validation_error", `昵称需为 ${NICKNAME_MIN}-${NICKNAME_MAX} 个字符`);
+  }
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(name)) {
+    throw new DisplayNameError(400, "validation_error", "昵称不能使用邮箱格式");
   }
   return name;
 }

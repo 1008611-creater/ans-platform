@@ -11,9 +11,9 @@ export async function requireTemplateAuthor() {
   if (!session?.user?.id) throw new TemplateError(401, "请先登录");
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, verified: true, deletedAt: true, flagged: true },
+    select: { id: true, emailVerified: true, deletedAt: true, flagged: true },
   });
-  if (!user || !user.verified || user.deletedAt || user.flagged) {
+  if (!user || !user.emailVerified || user.deletedAt || user.flagged) {
     throw new TemplateError(403, "仅已验证且状态正常的用户可以管理模板");
   }
   return user;

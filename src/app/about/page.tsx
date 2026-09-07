@@ -5,7 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Heart } from "lucide-react";
 import { db } from "@/lib/db";
-import { ContributorAvatar } from "./contributor-avatar";
+import { getPublicDisplayName } from "@/lib/public-identity";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import config from "@/../prompts.config";
 
 // Revalidate the page once per day (86400 seconds)
@@ -29,7 +30,8 @@ async function getContributors() {
     select: {
       id: true,
       username: true,
-      githubUsername: true,
+      nickname: true,
+      avatar: true,
       _count: {
         select: {
           prompts: true,
@@ -52,7 +54,8 @@ async function getContributors() {
     select: {
       id: true,
       username: true,
-      githubUsername: true,
+      nickname: true,
+      avatar: true,
       _count: {
         select: {
           prompts: true,
@@ -538,7 +541,7 @@ export default async function AboutPage() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm">
-                  {contributor.isAI ? contributor.displayName : `@${contributor.username}`}
+                  {contributor.isAI ? contributor.displayName : getPublicDisplayName({})}
                 </div>
                 <div className="text-xs text-muted-foreground">{contributor.role}</div>
               </div>
@@ -598,7 +601,7 @@ export default async function AboutPage() {
               />
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm">
-                  {contributor.displayName ?? `@${contributor.username}`}
+                  {getPublicDisplayName({})}
                 </div>
                 <div className="text-xs text-muted-foreground">{contributor.role}</div>
               </div>
@@ -651,7 +654,7 @@ export default async function AboutPage() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm">
-                  {contributor.isAI ? contributor.displayName : `@${contributor.username}`}
+                  {contributor.isAI ? contributor.displayName : getPublicDisplayName({})}
                 </div>
                 <div className="text-xs text-muted-foreground">{contributor.role}</div>
               </div>
@@ -706,7 +709,7 @@ export default async function AboutPage() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm">
-                  {contributor.isAI ? contributor.displayName : `@${contributor.username}`}
+                  {contributor.isAI ? contributor.displayName : getPublicDisplayName({})}
                 </div>
                 <div className="text-xs text-muted-foreground">{contributor.role}</div>
               </div>
@@ -742,10 +745,12 @@ export default async function AboutPage() {
         <h2 className="text-lg font-semibold mb-4">{t("communityContributorsTitle")}</h2>
         <div className="flex flex-wrap gap-1.5">
           {contributors.map((user) => (
-            <ContributorAvatar 
-              key={user.id} 
-              username={user.githubUsername || user.username} 
-            />
+            <Link key={user.id} href={`/@${user.username}`} title={getPublicDisplayName(user)}>
+              <Avatar className="h-8 w-8 hover:ring-2 hover:ring-primary transition-all">
+                <AvatarImage src={user.avatar || undefined} alt={getPublicDisplayName(user)} />
+                <AvatarFallback>{getPublicDisplayName(user).charAt(0)}</AvatarFallback>
+              </Avatar>
+            </Link>
           ))}
           <Link
             href="https://github.com/1008611-creater/ans-platform/graphs/contributors"

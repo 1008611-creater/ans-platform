@@ -16,26 +16,35 @@ const customLinkSchema = z.object({
 const trimmed = z.preprocess((v) => (typeof v === "string" ? v.trim() : v), z.string());
 
 const updateProfileSchema = z.object({
-  name: trimmed.pipe(z.string().min(1).max(100)),
+  // 保留原值，在确认需要改昵称时统一验证，兼容未变更的历史 name。
+  name: z.string().optional(),
   username: trimmed.pipe(z.string().min(1).max(30).regex(/^[a-z0-9_]+$/)),
   avatar: z.string().url().optional().or(z.literal("")),
   bio: z.string().max(250).optional().or(z.literal("")),
   customLinks: z.array(customLinkSchema).max(5).optional(),
   // 公开昵称：30 天可改一次（`nicknameSetAt` 冷却），与 username 解耦。
-  nickname: trimmed.pipe(z.string().min(2).max(40)).optional(),
+  nickname: z.string().optional(),
 });
 
 export async function PATCH(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "unauthorized", message: "You must be logged in" },
         { status: 401 }
       );
     }
 
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "validation_error", message: "Invalid JSON" },
+        { status: 400 }
+      );
+    }
     const parsed = updateProfileSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -47,45 +56,66 @@ export async function PATCH(request: NextRequest) {
 
     const { name, username, avatar, bio, customLinks, nickname } = parsed.data;
 
-    // 昵称修改走 30 天冷却；显式传了 nickname 才查询并校验（避免无谓的读）。
-    let nicknameSetAt: Date | undefined;
-    if (nickname !== undefined) {
-      const current = await db.user.findUnique({
-        where: { id: session.user.id },
-        select: { nickname: true, nicknameSetAt: true },
-      });
-      const currentNick = current?.nickname?.trim() ?? undefined;
-      if (currentNick !== nickname) {
-        assertNicknameChangeAllowed(current?.nicknameSetAt, new Date());
-        assertValidNickname(nickname);
-        nicknameSetAt = new Date();
-      }
-    }
-
-    // Atomic update — DB-level CI unique index prevents collisions
     try {
-      const user = await db.user.update({
-        where: { id: session.user.id },
-        data: {
-          name,
+      const user = await db.$transaction(async (tx) => {
+        // READ COMMITTED 下锁等待结束后读到最新行；检查和写入持有同一行锁。
+        const [current] = await tx.$queryRaw<Array<{
+          name: string | null;
+          nickname: string | null;
+          nicknameSetAt: Date | null;
+          deletedAt: Date | null;
+          flagged: boolean;
+        }>>`
+          SELECT "name", "nickname", "nicknameSetAt", "deletedAt", "flagged"
+          FROM "users" WHERE "id" = ${session.user.id} FOR UPDATE
+        `;
+        if (!current) {
+          throw new DisplayNameError(404, "not_found", "User not found");
+        }
+        if (current.deletedAt || current.flagged) {
+          throw new DisplayNameError(403, "forbidden", "Account unavailable");
+        }
+
+        const data: Prisma.UserUpdateInput = {
           username,
-          avatar: avatar || null,
-          bio: bio || null,
-          customLinks: customLinks && customLinks.length > 0 ? customLinks : Prisma.DbNull,
-          ...(nicknameSetAt ? { nickname, nicknameSetAt } : {}),
-        },
-        select: {
-          id: true,
-          name: true,
-          username: true,
-          email: true,
-          avatar: true,
-          bio: true,
-          customLinks: true,
-          nickname: true,
-          nicknameSetAt: true,
-        },
-      });
+          ...(avatar !== undefined ? { avatar: avatar || null } : {}),
+          ...(bio !== undefined ? { bio: bio || null } : {}),
+          ...(customLinks !== undefined ? {
+            customLinks: customLinks.length > 0 ? customLinks : Prisma.DbNull,
+          } : {}),
+        };
+        // 显式 nickname 优先；旧客户端原样回传 name 不视为改昵称。
+        const requestedNickname = nickname ?? (
+          name !== undefined && name.trim() !== current.name?.trim() ? name : undefined
+        );
+        if (requestedNickname !== undefined) {
+          const nextNickname = assertValidNickname(requestedNickname);
+          const currentNickname = current.nickname?.trim() || current.name?.trim();
+          if (nextNickname !== currentNickname) {
+            const now = new Date();
+            assertNicknameChangeAllowed(current.nicknameSetAt, now);
+            data.nicknameSetAt = now;
+          }
+          data.name = nextNickname;
+          data.nickname = nextNickname;
+        }
+
+        return tx.user.update({
+          where: { id: session.user.id },
+          data,
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            email: true,
+            avatar: true,
+            bio: true,
+            customLinks: true,
+            nickname: true,
+            nicknameSetAt: true,
+          },
+        });
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 
       return NextResponse.json(user);
     } catch (error) {
@@ -115,7 +145,7 @@ export async function PATCH(request: NextRequest) {
 export async function GET() {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "unauthorized", message: "You must be logged in" },
         { status: 401 }
@@ -134,6 +164,8 @@ export async function GET() {
         createdAt: true,
         nickname: true,
         nicknameSetAt: true,
+        deletedAt: true,
+        flagged: true,
       },
     });
 
@@ -144,7 +176,15 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(user);
+    const { deletedAt, flagged, ...profile } = user;
+    if (deletedAt || flagged) {
+      return NextResponse.json(
+        { error: "forbidden", message: "Account unavailable" },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json(profile);
   } catch (error) {
     console.error("Get profile error:", error);
     return NextResponse.json(
