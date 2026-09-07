@@ -1,106 +1,21 @@
-import NextAuth from "next-auth";
+import NextAuth, { type Account } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
-import { isUniqueConstraintViolation } from "@/lib/db-errors";
 import { getConfig } from "@/lib/config";
 import { initializePlugins, getAuthPlugin } from "@/lib/plugins";
-import type { Adapter, AdapterUser } from "next-auth/adapters";
+import type { Adapter } from "next-auth/adapters";
 
 // Initialize plugins before use
 initializePlugins();
 
-// Generate a candidate username from email or name (no DB check — uniqueness enforced at insert time)
-function generateBaseUsername(email: string, name?: string | null): string {
-  // Try to use the part before @ in email
-  let baseUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "");
-
-  // If too short, use name
-  if (baseUsername.length < 3 && name) {
-    baseUsername = name.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 15);
-  }
-
-  // Ensure minimum length
-  if (baseUsername.length < 3) {
-    baseUsername = "user";
-  }
-
-  return baseUsername;
-}
-
-// Custom adapter that wraps PrismaAdapter to add username
+// 注册仅允许走 /register 的验证码、Turnstile 与邀请码流程。
 function CustomPrismaAdapter(): Adapter {
   const prismaAdapter = PrismaAdapter(db);
-  
+
   return {
     ...prismaAdapter,
-    async createUser(data: AdapterUser & { username?: string; githubUsername?: string }) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const providedUsername = (data as any).username?.trim().toLowerCase() || null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const githubUsername = (data as any).githubUsername; // Immutable GitHub username
-      const normalizedEmail = data.email.trim().toLowerCase();
-
-      // If a username was provided, try to claim an unclaimed account first
-      if (providedUsername) {
-        const username = providedUsername;
-        const unclaimedEmail = `${username}@unclaimed.prompts.chat`;
-        const unclaimedUser = await db.user.findUnique({
-          where: { email: unclaimedEmail },
-        });
-
-        if (unclaimedUser) {
-          const claimedUser = await db.user.update({
-            where: { id: unclaimedUser.id },
-            data: {
-              name: data.name,
-              email: normalizedEmail,
-              avatar: data.image,
-              emailVerified: data.emailVerified,
-              githubUsername: githubUsername || undefined,
-            },
-          });
-
-          return {
-            ...claimedUser,
-            image: claimedUser.avatar,
-          } as AdapterUser;
-        }
-      }
-
-      // Atomic create with retry on username collision
-      const baseUsername = providedUsername
-        ? providedUsername
-        : generateBaseUsername(normalizedEmail, data.name);
-
-      let username = baseUsername;
-      let counter = 1;
-
-      while (true) {
-        try {
-          const user = await db.user.create({
-            data: {
-              name: data.name,
-              email: normalizedEmail,
-              avatar: data.image,
-              emailVerified: data.emailVerified,
-              username,
-              githubUsername: githubUsername || undefined,
-            },
-          });
-
-          return {
-            ...user,
-            image: user.avatar,
-          } as AdapterUser;
-        } catch (error) {
-          if (isUniqueConstraintViolation(error, "username")) {
-            username = `${baseUsername}${counter}`;
-            counter++;
-            continue;
-          }
-          throw error;
-        }
-      }
+    async createUser() {
+      throw new Error("ANS 禁止通过认证适配器创建或认领账号，请使用 /register 注册。");
     },
   };
 }
@@ -151,6 +66,24 @@ async function buildAuthConfig() {
       error: "/login",
     },
     callbacks: {
+      async signIn({ account }: { account?: Account | null }) {
+        // 密码登录沿用 provider 的 authorize 校验，不要求 OAuth 绑定。
+        if (account?.type === "credentials") return true;
+        if (!account?.provider || !account.providerAccountId) return false;
+
+        // 非密码登录只能使用既有绑定，不能凭邮箱自动链接或认领账号。
+        const linkedAccount = await db.account.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          },
+          select: { user: { select: { deletedAt: true, flagged: true } } },
+        });
+        const linkedUser = linkedAccount?.user;
+        return !!linkedUser && linkedUser.deletedAt === null && !linkedUser.flagged;
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async jwt({ token, user, trigger }: { token: any; user?: any; trigger?: string }) {
         // On sign in, look up the actual database user by email to ensure correct ID

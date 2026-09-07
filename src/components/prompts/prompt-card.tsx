@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { getPromptUrl } from "@/lib/urls";
+import { getPublicDisplayName } from "@/lib/public-identity";
 import { localizedSkillTitle, localizedSkillDescription, localizedSkillContent } from "@/lib/skill-bilingual";
 import { ArrowBigUp, Lock, Copy, ImageIcon, Download, Play, BadgeCheck, Volume2, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +95,8 @@ export interface PromptCardProps {
 }
 
 export function PromptCard({ prompt, showPinButton = false, isPinned = false }: PromptCardProps) {
+  // name 由公开出口安全映射，空值只回退匿名，不使用 username。
+  const authorDisplayName = prompt.author.name?.trim() || getPublicDisplayName({});
   const t = useTranslations("prompts");
   const tCommon = useTranslations("common");
   const locale = useLocale();
@@ -349,10 +352,10 @@ export function PromptCard({ prompt, showPinButton = false, isPinned = false }: 
           <div className="min-w-0 flex-1 flex items-center gap-1.5">
             <Link href={`/@${prompt.author.username}`} prefetch={false} className="min-w-0 max-w-full hover:text-foreground flex items-center gap-1.5 truncate">
               <Avatar className="h-4 w-4">
-                <AvatarImage src={prompt.author.avatar || undefined} alt={prompt.author.username} />
-                <AvatarFallback className="text-[8px]">{prompt.author.username[0]?.toUpperCase()}</AvatarFallback>
+                <AvatarImage src={prompt.author.avatar || undefined} alt={authorDisplayName} />
+                <AvatarFallback className="text-[8px]">{authorDisplayName.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="truncate">@{prompt.author.username}</span>
+              <span className="truncate">{authorDisplayName}</span>
               {prompt.author.verified && <BadgeCheck className="h-3 w-3 mt-0.5 text-primary shrink-0" />}
             </Link>
             {prompt.contributors && prompt.contributors.length > 0 ? (
@@ -373,10 +376,10 @@ export function PromptCard({ prompt, showPinButton = false, isPinned = false }: 
                         <Avatar className="h-4 w-4">
                           <AvatarImage src={contributor.avatar || undefined} />
                           <AvatarFallback className="text-[8px]">
-                            {contributor.name?.charAt(0) || contributor.username.charAt(0)}
+                            {(contributor.name?.trim() || getPublicDisplayName({})).charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-xs">@{contributor.username}</span>
+                        <span className="text-xs">{contributor.name?.trim() || getPublicDisplayName({})}</span>
                       </Link>
                     ))}
                   </div>

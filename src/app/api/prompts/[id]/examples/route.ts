@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getPublicDisplayName } from "@/lib/public-identity";
 import { z } from "zod";
 import { checkPromptAccess } from "@/lib/prompt-access";
 
@@ -36,14 +37,22 @@ export async function GET(
         select: {
           id: true,
           username: true,
-          name: true,
+          nickname: true,
           avatar: true,
         },
       },
     },
   });
 
-  return NextResponse.json({ examples });
+  return NextResponse.json({ examples: examples.map((example) => ({
+    ...example,
+    user: {
+      id: example.user.id,
+      username: example.user.username,
+      name: getPublicDisplayName(example.user),
+      avatar: example.user.avatar,
+    },
+  })) });
 }
 
 export async function POST(
@@ -93,14 +102,22 @@ export async function POST(
           select: {
             id: true,
             username: true,
-            name: true,
+            nickname: true,
             avatar: true,
           },
         },
       },
     });
 
-    return NextResponse.json({ example });
+    return NextResponse.json({ example: {
+      ...example,
+      user: {
+        id: example.user.id,
+        username: example.user.username,
+        name: getPublicDisplayName(example.user),
+        avatar: example.user.avatar,
+      },
+    } });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid input", details: error.issues }, { status: 400 });

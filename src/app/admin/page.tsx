@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
@@ -17,6 +18,7 @@ import { SkillsManagement } from "@/components/admin/skills-management";
 import { GovernanceManagement } from "@/components/admin/governance-management";
 import { isAISearchEnabled } from "@/lib/ai/embeddings";
 import { ADMIN_PERMISSIONS, hasAdminPermission } from "@/lib/admin-permissions";
+import { LayoutTemplate, KeyRound } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -191,6 +193,26 @@ export default async function AdminPage() {
             <div className="text-2xl font-bold">{tagCount}</div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* 管理工具：模板审核队列 / 邀请码（ANS P1/P0） */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {can("PROMPTS_MANAGE") && (
+          <Link
+            href="/admin/templates"
+            className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"
+          >
+            <LayoutTemplate className="h-4 w-4 text-muted-foreground" /> 模板审核队列
+          </Link>
+        )}
+        {can("INVITES_MANAGE") && (
+          <Link
+            href="/admin/invites"
+            className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"
+          >
+            <KeyRound className="h-4 w-4 text-muted-foreground" /> 邀请码管理
+          </Link>
+        )}
       </div>
 
       {/* Management Tabs */}

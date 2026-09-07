@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { CustomLink, CustomLinkType } from "@/components/user/profile-links";
 import { toast } from "sonner";
 import { analyticsProfile } from "@/lib/analytics";
+import { assertValidNickname } from "@/lib/display-name";
 
 const customLinkSchema = z.object({
   type: z.enum(["website", "github", "twitter", "linkedin", "instagram", "youtube", "twitch", "discord", "mastodon", "bluesky", "sponsor"]),
@@ -34,7 +35,13 @@ const customLinkSchema = z.object({
 });
 
 const profileSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
+  nickname: z.string().superRefine((value, ctx) => {
+    try {
+      assertValidNickname(value);
+    } catch (error) {
+      ctx.addIssue({ code: "custom", message: (error as Error).message });
+    }
+  }),
   username: z
     .string()
     .min(1, "Username is required")
@@ -80,17 +87,40 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
   const [isLoading, setIsLoading] = useState(false);
+  const [profileReady, setProfileReady] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user.name || "",
+      nickname: "",
       username: user.username,
       avatar: user.avatar || "",
       bio: user.bio || "",
       customLinks: (user.customLinks as CustomLink[]) || [],
     },
   });
+
+  const { setValue } = form;
+  useEffect(() => {
+    const controller = new AbortController();
+    setProfileReady(false);
+    // settings 页面只提供旧 name；从本人接口加载实际昵称，避免误触发改名。
+    async function loadNickname() {
+      try {
+        const response = await fetch("/api/user/profile", { signal: controller.signal });
+        if (!response.ok) throw new Error(tCommon("error"));
+        const profile = await response.json();
+        if (!controller.signal.aborted) {
+          setValue("nickname", profile.nickname ?? profile.name ?? "");
+          setProfileReady(true);
+        }
+      } catch {
+        if (!controller.signal.aborted) toast.error(tCommon("error"));
+      }
+    }
+    void loadNickname();
+    return () => controller.abort();
+  }, [user.id, setValue, tCommon]);
 
   const customLinks = form.watch("customLinks") || [];
   const bioValue = form.watch("bio") || "";
@@ -119,9 +149,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
   };
 
   const watchedAvatar = form.watch("avatar");
-  const watchedName = form.watch("name");
+  const watchedName = form.watch("nickname");
 
   async function onSubmit(data: ProfileFormValues) {
+    if (!profileReady) return;
     setIsLoading(true);
 
     try {
@@ -191,17 +222,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </div>
           </div>
 
-          {/* Name */}
+          {/* 公开昵称 */}
           <div className="space-y-2">
-            <Label htmlFor="name">{t("displayName")}</Label>
+            <Label htmlFor="nickname">昵称</Label>
             <Input
-              id="name"
+              id="nickname"
               placeholder={t("namePlaceholder")}
-              {...form.register("name")}
+              disabled={!profileReady}
+              aria-invalid={!!form.formState.errors.nickname}
+              {...form.register("nickname")}
             />
-            {form.formState.errors.name && (
+            <p className="text-xs text-muted-foreground">昵称每 30 天可修改一次，2–40 个字符，不能包含控制符或使用邮箱格式。</p>
+            {form.formState.errors.nickname && (
               <p className="text-xs text-destructive">
-                {form.formState.errors.name.message}
+                {form.formState.errors.nickname.message}
               </p>
             )}
           </div>
@@ -363,7 +397,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       </Card>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading || !profileReady}>
           {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {t("saveChanges")}
         </Button>

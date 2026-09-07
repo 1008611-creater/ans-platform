@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getPublicDisplayName, toPublicAuthor } from "@/lib/public-identity";
 import { triggerWebhooks } from "@/lib/webhook";
 import { generatePromptEmbedding, findAndSaveRelatedPrompts } from "@/lib/ai/embeddings";
 import { generatePromptSlug } from "@/lib/slug";
@@ -144,7 +145,7 @@ export async function POST(request: Request) {
           content: true,
           contentZh: true,
           contentEn: true,
-          author: { select: { username: true } } 
+          author: { select: { nickname: true } } 
         },
         orderBy: { createdAt: "desc" },
         take: 1000, // Check against last 1000 public prompts
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
             existingPromptId: similarPrompt.id,
             existingPromptSlug: similarPrompt.slug,
             existingPromptTitle: similarPrompt.title,
-            existingPromptAuthor: similarPrompt.author.username,
+            existingPromptAuthor: getPublicDisplayName(similarPrompt.author),
           },
           { status: 409 }
         );
@@ -212,7 +213,7 @@ export async function POST(request: Request) {
         author: {
           select: {
             id: true,
-            name: true,
+            nickname: true,
             username: true,
             avatar: true,
             verified: true,
@@ -252,7 +253,7 @@ export async function POST(request: Request) {
         type: prompt.type,
         mediaUrl: prompt.mediaUrl,
         isPrivate: prompt.isPrivate,
-        author: prompt.author,
+        author: toPublicAuthor(prompt.author),
         category: prompt.category,
         tags: prompt.tags,
       });
@@ -299,7 +300,7 @@ export async function POST(request: Request) {
     revalidateTag("categories", "max");
     revalidateTag("tags", "max");
 
-    return NextResponse.json(prompt);
+    return NextResponse.json({ ...prompt, author: toPublicAuthor(prompt.author) });
   } catch (error) {
     console.error("Create prompt error:", error);
     return NextResponse.json(
@@ -407,7 +408,7 @@ export async function GET(request: Request) {
           author: {
             select: {
               id: true,
-              name: true,
+              nickname: true,
               username: true,
               avatar: true,
               verified: true,
@@ -429,7 +430,7 @@ export async function GET(request: Request) {
             select: {
               id: true,
               username: true,
-              name: true,
+              nickname: true,
               avatar: true,
             },
           },
@@ -450,7 +451,7 @@ export async function GET(request: Request) {
               user: {
                 select: {
                   username: true,
-                  name: true,
+                  nickname: true,
                   avatar: true,
                 },
               },
@@ -467,7 +468,21 @@ export async function GET(request: Request) {
       voteCount: p._count.votes,
       // 双语字段随 API 返回，客户端列表按当前 locale 选择显示文本。
       contributorCount: p._count.contributors,
-      contributors: p.contributors,
+      author: toPublicAuthor(p.author),
+      contributors: p.contributors.map((contributor) => ({
+        id: contributor.id,
+        username: contributor.username,
+        name: getPublicDisplayName(contributor),
+        avatar: contributor.avatar,
+      })),
+      userExamples: p.userExamples.map((example) => ({
+        ...example,
+        user: {
+          username: example.user.username,
+          name: getPublicDisplayName(example.user),
+          avatar: example.user.avatar,
+        },
+      })),
     }));
 
     return NextResponse.json({
