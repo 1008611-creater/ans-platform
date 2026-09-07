@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
+import { getPublicDisplayName } from "@/lib/public-identity";
 
 // Cache leaderboard data for 1 hour (3600 seconds)
 const getLeaderboard = unstable_cache(
@@ -28,6 +29,7 @@ const getLeaderboard = unstable_cache(
     const promptAuthors = await db.prompt.findMany({
       where: {
         id: { in: votedPromptIds },
+        author: { deletedAt: null, flagged: false },
         isPrivate: false,
         deletedAt: null,
       },
@@ -48,18 +50,18 @@ const getLeaderboard = unstable_cache(
       }
     }
 
-    // Get top 50 users by vote count
+    // 有效用户按得票取前20名，过滤已在聚合前完成。
     const topAuthorIds = Array.from(authorVoteCounts.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 50)
+      .slice(0, 20)
       .map(([id]) => id);
 
     // Fetch user details and prompt counts for top users
     const topUsers = await db.user.findMany({
-      where: { id: { in: topAuthorIds } },
+      where: { id: { in: topAuthorIds }, deletedAt: null, flagged: false },
       select: {
         id: true,
-        name: true,
+        nickname: true,
         username: true,
         avatar: true,
         _count: {
@@ -79,13 +81,14 @@ const getLeaderboard = unstable_cache(
     let leaderboard = topUsers
       .map((user) => ({
         id: user.id,
-        name: user.name,
+        name: getPublicDisplayName(user),
         username: user.username,
         avatar: user.avatar,
         totalUpvotes: authorVoteCounts.get(user.id) || 0,
         promptCount: user._count.prompts,
       }))
-      .sort((a, b) => b.totalUpvotes - a.totalUpvotes);
+      .sort((a, b) => b.totalUpvotes - a.totalUpvotes)
+      .slice(0, 20);
 
     const MIN_USERS = 10;
 
@@ -96,6 +99,8 @@ const getLeaderboard = unstable_cache(
       const usersWithPrompts = await db.user.findMany({
         where: {
           id: { notIn: Array.from(existingUserIds) },
+          deletedAt: null,
+          flagged: false,
           prompts: {
             some: {
               isPrivate: false,
@@ -106,7 +111,7 @@ const getLeaderboard = unstable_cache(
         },
         select: {
           id: true,
-          name: true,
+          nickname: true,
           username: true,
           avatar: true,
           _count: {
@@ -131,7 +136,7 @@ const getLeaderboard = unstable_cache(
 
       const additionalUsers = usersWithPrompts.map((user) => ({
         id: user.id,
-        name: user.name,
+        name: getPublicDisplayName(user),
         username: user.username,
         avatar: user.avatar,
         totalUpvotes: 0,
@@ -143,7 +148,7 @@ const getLeaderboard = unstable_cache(
 
     return { period, leaderboard };
   },
-  ["leaderboard"],
+  ["leaderboard-public-identity-v2"],
   { tags: ["leaderboard"], revalidate: 3600 } // Cache for 1 hour
 );
 

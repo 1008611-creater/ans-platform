@@ -18,7 +18,7 @@ import { Masonry } from "@/components/ui/masonry";
 import { McpServerPopup } from "@/components/mcp/mcp-server-popup";
 import { PrivatePromptsNote } from "@/components/prompts/private-prompts-note";
 import { ActivityChartWrapper } from "@/components/user/activity-chart-wrapper";
-import { ProfileLinks, type CustomLink } from "@/components/user/profile-links";
+import { getPublicDisplayName, toPublicAuthor } from "@/lib/public-identity";
 
 interface UserProfilePageProps {
   params: Promise<{ username: string }>;
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: UserProfilePageProps): Promis
   const user = await db.user.findFirst({
     where: { username: { equals: username, mode: "insensitive" } },
     orderBy: { createdAt: "asc" },
-    select: { name: true, username: true },
+    select: { nickname: true, username: true },
   });
 
   if (!user) {
@@ -47,8 +47,8 @@ export async function generateMetadata({ params }: UserProfilePageProps): Promis
   }
 
   return {
-    title: `${user.name || user.username} (@${user.username})`,
-    description: `View ${user.name || user.username}'s prompts`,
+    title: `${getPublicDisplayName(user)} (@${user.username})`,
+    description: `View ${getPublicDisplayName(user)}'s prompts`,
   };
 }
 
@@ -76,15 +76,12 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     orderBy: { createdAt: "asc" },
     select: {
       id: true,
-      name: true,
+      nickname: true,
       username: true,
-      email: true,
       avatar: true,
       role: true,
       verified: true,
       createdAt: true,
-      bio: true,
-      customLinks: true,
       _count: {
         select: {
           prompts: true,
@@ -101,7 +98,6 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const page = Math.max(1, parseInt(pageParam || "1") || 1);
   const perPage = 24;
   const isOwner = session?.user?.id === user.id;
-  const isUnclaimed = user.email?.endsWith("@unclaimed.prompts.chat") ?? false;
 
   // Parse date filter for filtering prompts by day (validate YYYY-MM-DD format)
   const isValidDateFilter = dateFilter && /^\d{4}-\d{2}-\d{2}$/.test(dateFilter);
@@ -132,7 +128,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     author: {
       select: {
         id: true,
-        name: true,
+        nickname: true,
         username: true,
         avatar: true,
         verified: true,
@@ -286,6 +282,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   // Transform to include voteCount and contributorCount
   const prompts = promptsRaw.map((p) => ({
     ...p,
+    author: toPublicAuthor(p.author),
     voteCount: p._count?.votes ?? 0,
     contributorCount: p._count?.contributors ?? 0,
   }));
@@ -293,6 +290,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   // Transform contributions
   const contributions = contributionsRaw.map((p) => ({
     ...p,
+    author: toPublicAuthor(p.author),
     voteCount: p._count?.votes ?? 0,
     contributorCount: p._count?.contributors ?? 0,
   }));
@@ -300,6 +298,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   // Transform liked prompts
   const likedPrompts = likedPromptsRaw.map((p) => ({
     ...p,
+    author: toPublicAuthor(p.author),
     voteCount: p._count?.votes ?? 0,
     contributorCount: p._count?.contributors ?? 0,
   }));
@@ -308,6 +307,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   // Override mediaUrl with user's example mediaUrl
   const userExamples = userExamplesRaw.map((p) => ({
     ...p,
+    author: toPublicAuthor(p.author),
     mediaUrl: p.userExamples?.[0]?.mediaUrl ?? p.mediaUrl,
     userExamples: undefined, // Remove to avoid type conflict with PromptCard
     voteCount: p._count?.votes ?? 0,
@@ -338,6 +338,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     .filter((pp) => isOwner || !pp.prompt.isPrivate)
     .map((pp) => ({
       ...pp.prompt,
+      author: toPublicAuthor(pp.prompt.author),
       voteCount: pp.prompt._count?.votes ?? 0,
       contributorCount: pp.prompt._count?.contributors ?? 0,
     }));
@@ -364,10 +365,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
       include: {
         author: {
           select: {
-            id: true,
-            name: true,
-            username: true,
-            avatar: true,
+            nickname: true,
           },
         },
         prompt: {
@@ -377,9 +375,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
             title: true,
             author: {
               select: {
-                id: true,
-                name: true,
-                username: true,
+                nickname: true,
               },
             },
           },
@@ -400,10 +396,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
       include: {
         author: {
           select: {
-            id: true,
-            name: true,
-            username: true,
-            avatar: true,
+            nickname: true,
           },
         },
         prompt: {
@@ -413,9 +406,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
             title: true,
             author: {
               select: {
-                id: true,
-                name: true,
-                username: true,
+                nickname: true,
               },
             },
           },
@@ -455,12 +446,12 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           <Avatar className="h-16 w-16 md:h-20 md:w-20 shrink-0">
             <AvatarImage src={user.avatar || undefined} />
             <AvatarFallback className="text-xl md:text-2xl">
-              {user.name?.charAt(0) || user.username.charAt(0)}
+              {getPublicDisplayName(user).charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl md:text-2xl font-bold truncate">{user.name || user.username}</h1>
+              <h1 className="text-xl md:text-2xl font-bold truncate">{getPublicDisplayName(user)}</h1>
               {user.verified && (
                 <BadgeCheck className="h-5 w-5 text-blue-500 shrink-0" />
               )}
@@ -470,11 +461,6 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
             </div>
             <p className="text-muted-foreground text-sm flex items-center gap-2 flex-wrap">
               @{user.username}
-              {isUnclaimed && (
-                <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-500/30 bg-amber-500/10">
-                  {t("unclaimedUser")}
-                </Badge>
-              )}
             </p>
           </div>
           {/* Actions - desktop only */}
@@ -503,13 +489,6 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
             </Button>
           )}
         </div>
-
-        {/* Bio and Social Links */}
-        <ProfileLinks 
-          bio={user.bio} 
-          customLinks={user.customLinks as CustomLink[] | null}
-          className="mb-2"
-        />
 
         {/* Stats - stacked on mobile, inline on desktop */}
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-6 text-sm">
@@ -726,8 +705,8 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
                       <p className="text-sm font-medium truncate">{cr.prompt.title}</p>
                       <p className="text-xs text-muted-foreground">
                         {cr.type === "submitted" 
-                          ? tChanges("submittedTo", { author: cr.prompt.author?.name || cr.prompt.author?.username })
-                          : tChanges("receivedFrom", { author: cr.author.name || cr.author.username })
+                          ? tChanges("submittedTo", { author: getPublicDisplayName(cr.prompt.author) })
+                          : tChanges("receivedFrom", { author: getPublicDisplayName(cr.author) })
                         }
                         {" · "}
                         {formatDistanceToNow(cr.createdAt, locale)}

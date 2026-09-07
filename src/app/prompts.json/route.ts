@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import crypto from "crypto";
-
-function getUserIdentifier(user: {
-  username: string;
-  githubUsername: string | null;
-}): string {
-  return user.githubUsername || user.username;
-}
+import { getPublicDisplayName } from "@/lib/public-identity";
 
 const CONTENT_PREVIEW_LENGTH = 500;
 const DEFAULT_LIMIT = 50;
@@ -17,7 +11,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 function generateETag(count: number, latestUpdatedAt: Date | null): string {
-  const raw = `${count}-${latestUpdatedAt?.toISOString() ?? "none"}`;
+  // 隔离旧身份格式的缓存，避免 304 继续复用原始姓名或 GitHub 署名。
+  const raw = `public-identity-v1-${count}-${latestUpdatedAt?.toISOString() ?? "none"}`;
   const hash = crypto.createHash("md5").update(raw).digest("hex");
   return `"${hash}"`;
 }
@@ -96,18 +91,16 @@ export async function GET(request: NextRequest) {
       author: {
         select: {
           username: true,
-          name: true,
+          nickname: true,
           avatar: true,
-          githubUsername: true,
           verified: true,
         },
       },
       contributors: {
         select: {
           username: true,
-          name: true,
+          nickname: true,
           avatar: true,
-          githubUsername: true,
           verified: true,
         },
       },
@@ -186,16 +179,16 @@ export async function GET(request: NextRequest) {
           : null,
         author: {
           username: prompt.author.username,
-          name: prompt.author.name,
+          name: getPublicDisplayName(prompt.author),
           avatar: prompt.author.avatar,
-          identifier: getUserIdentifier(prompt.author),
+          identifier: prompt.author.username,
           verified: prompt.author.verified,
         },
-        contributors: prompt.contributors.map((c: { username: string; name: string | null; avatar: string | null; githubUsername: string | null; verified: boolean }) => ({
+        contributors: prompt.contributors.map((c: { username: string; nickname: string | null; avatar: string | null; verified: boolean }) => ({
           username: c.username,
-          name: c.name,
+          name: getPublicDisplayName(c),
           avatar: c.avatar,
-          identifier: getUserIdentifier(c),
+          identifier: c.username,
           verified: c.verified,
         })),
         tags: prompt.tags.map((pt: { tag: { id: string; name: string; slug: string; color: string | null } }) => ({

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Blocks, ExternalLink, Sparkles } from "lucide-react";
-import { db } from "@/lib/db";
+import { listPublishedTemplates, templateCategories } from "@/lib/template-service";
+import { TemplateFilters } from "@/components/templates/template-filters";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,33 +31,19 @@ const SITE_CLUSTER = [
 
 export const metadata = {
   title: "模板广场 · ANS",
-  description: "按领域组织的 AI 模板集群，点开即用，直接在工作台运行。",
+  description: "按领域与场景筛选已审核模板，查看并复制提示词。", 
 };
 
-export default async function TemplatesPage() {
+export const dynamic = "force-dynamic";
+export default async function TemplatesPage({ searchParams }: { searchParams: Promise<{ domain?: string; scene?: string; page?: string }> }) {
+  const filters = await searchParams;
+  const domain = typeof filters.domain === "string" ? filters.domain : undefined;
+  const scene = typeof filters.scene === "string" ? filters.scene : undefined;
+  const page = Math.max(1, Math.min(10000, Math.floor(Number(filters.page) || 1)));
   const [domains, templates] = await Promise.all([
-    db.category.findMany({
-      where: { parentId: null },
-      orderBy: { order: "asc" },
-      select: { id: true, name: true, slug: true, description: true, icon: true },
-    }),
-    db.template.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: { createdAt: "desc" },
-      take: 24,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        summary: true,
-        icon: true,
-        outputType: true,
-        estimatedCost: true,
-        useCount: true,
-        category: { select: { name: true, slug: true } },
-      },
-    }),
+    templateCategories(), listPublishedTemplates({ domain, scene, page }),
   ]);
+  const pageHref = (next: number) => `/templates?${new URLSearchParams({ ...(domain ? { domain } : {}), ...(scene ? { scene } : {}), page: String(next) })}`;
 
   return (
     <div className="container py-10">
@@ -67,13 +54,14 @@ export default async function TemplatesPage() {
         </div>
         <h1 className="mt-2 text-3xl font-bold tracking-tight">按领域找模板，点开就用</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          模板是提示词的「可执行外壳」——填好参数就能直接运行，产出会留在你的工作台里。
+          按父领域和子场景查找模板，打开详情即可复制提示词。在线运行将在 P2 开放。
         </p>
       </header>
 
       {/* 领域卡片墙 */}
       <section className="mb-12">
         <h2 className="mb-4 text-lg font-semibold">领域分类</h2>
+        <TemplateFilters key={`${domain ?? ""}/${scene ?? ""}`} domains={domains} initialDomain={domain} initialScene={scene} />
         {domains.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="py-8 text-center text-sm text-muted-foreground">
@@ -87,14 +75,9 @@ export default async function TemplatesPage() {
                 <Card className="h-full transition-colors hover:border-primary/50 hover:bg-accent/40">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <span aria-hidden>{d.icon ?? "📦"}</span>
                       {d.name}
                     </CardTitle>
-                    {d.description ? (
-                      <CardDescription className="line-clamp-2">
-                        {d.description}
-                      </CardDescription>
-                    ) : null}
+                    <CardDescription>{d.children.length} 个子场景</CardDescription>
                   </CardHeader>
                 </Card>
               </Link>
@@ -107,19 +90,17 @@ export default async function TemplatesPage() {
       <section className="mb-12">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">最新模板</h2>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/templates/new">
-              <Sparkles className="me-2 h-3.5 w-3.5" />
-              发布模板
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline" size="sm"><Link href="/templates/mine">我的模板</Link></Button>
+            <Button asChild size="sm"><Link href="/templates/new"><Sparkles className="me-2 h-3.5 w-3.5" />创建草稿</Link></Button>
+          </div>
         </div>
 
         {templates.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="py-10 text-center">
               <p className="text-sm text-muted-foreground">
-                还没有已上架的模板。发布后需通过 AI 审核才会出现在这里。
+                当前筛选没有已上架模板。模板须通过 AI 初审与管理员复核后才会公开。
               </p>
             </CardContent>
           </Card>
@@ -131,9 +112,7 @@ export default async function TemplatesPage() {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-base">{t.title}</CardTitle>
-                      <span aria-hidden className="text-xl">
-                        {t.icon ?? "🧩"}
-                      </span>
+                      <Blocks aria-hidden className="h-5 w-5 text-muted-foreground" />
                     </div>
                     {t.summary ? (
                       <CardDescription className="line-clamp-2">{t.summary}</CardDescription>
@@ -145,7 +124,7 @@ export default async function TemplatesPage() {
                       <Badge variant="outline">{t.category.name}</Badge>
                     ) : null}
                     <span className="text-xs text-muted-foreground">
-                      {t.estimatedCost} 点 / 已用 {t.useCount} 次
+                      查看并复制提示词
                     </span>
                   </CardContent>
                 </Card>
@@ -154,6 +133,12 @@ export default async function TemplatesPage() {
           </div>
         )}
       </section>
+
+      <nav aria-label="模板分页" className="mb-8 flex items-center gap-4">
+        {page > 1 && <Link href={pageHref(page - 1)} className="text-primary underline">上一页</Link>}
+        <span className="text-sm text-muted-foreground">第 {page} 页</span>
+        {templates.length === 24 && <Link href={pageHref(page + 1)} className="text-primary underline">下一页</Link>}
+      </nav>
 
       {/* 站群入口 */}
       <section>

@@ -8,6 +8,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { getPublicDisplayName } from "@/lib/public-identity";
 import { isValidApiKeyFormat, hashApiKey } from "@/lib/api-key";
 import { parseSkillFiles, serializeSkillFiles, sanitizeFilename, DEFAULT_SKILL_FILE } from "@/lib/skill-files";
 import appConfig from "@/../prompts.config";
@@ -354,7 +355,7 @@ function createServer(options: ServerOptions = {}) {
             content: true,
             type: true,
             createdAt: true,
-            author: { select: { username: true, name: true } },
+            author: { select: { nickname: true } },
             category: { select: { name: true, slug: true } },
             tags: { select: { tag: { select: { name: true, slug: true } } } },
             _count: { select: { votes: true } },
@@ -368,7 +369,7 @@ function createServer(options: ServerOptions = {}) {
           description: p.description,
           contentPreview: p.content.substring(0, 300) + (p.content.length > 300 ? '...' : ''),
           type: p.type,
-          author: p.author.name || p.author.username,
+          author: getPublicDisplayName(p.author),
           category: p.category?.name || null,
           tags: p.tags.map((t) => t.tag.name),
           votes: p._count.votes,
@@ -423,7 +424,7 @@ function createServer(options: ServerOptions = {}) {
             content: true,
             type: true,
             structuredFormat: true,
-            author: { select: { username: true, name: true } },
+            author: { select: { nickname: true } },
             category: { select: { name: true, slug: true } },
             tags: { select: { tag: { select: { name: true, slug: true } } } },
           },
@@ -435,6 +436,21 @@ function createServer(options: ServerOptions = {}) {
             isError: true,
           };
         }
+
+        // 公开出口：剥离原始用户对象，只输出白名单字段（author 映射昵称，不夹带 name/email/username）
+        const publicPrompt = {
+          id: prompt.id,
+          slug: getPromptName(prompt),
+          title: prompt.title,
+          description: prompt.description,
+          content: prompt.content,
+          type: prompt.type,
+          structuredFormat: prompt.structuredFormat,
+          author: getPublicDisplayName(prompt.author),
+          category: prompt.category?.name || null,
+          tags: prompt.tags.map((t) => t.tag.name),
+          link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
+        };
 
         const variables = extractVariables(prompt.content);
 
@@ -501,14 +517,10 @@ function createServer(options: ServerOptions = {}) {
                     {
                       type: "text" as const,
                       text: JSON.stringify({
-                          ...prompt,
+                          ...publicPrompt,
                           content: filledContent,
                           originalContent: prompt.content,
                           variables: elicitResult.content,
-                          author: prompt.author.name || prompt.author.username,
-                          category: prompt.category?.name || null,
-                          tags: prompt.tags.map((t) => t.tag.name),
-                          link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
                         }),
                     },
                   ],
@@ -519,13 +531,9 @@ function createServer(options: ServerOptions = {}) {
                     {
                       type: "text" as const,
                       text: JSON.stringify({
-                          ...prompt,
+                          ...publicPrompt,
                           variablesRequired: variables,
                           message: "User declined to provide variable values. Returning original prompt.",
-                          author: prompt.author.name || prompt.author.username,
-                          category: prompt.category?.name || null,
-                          tags: prompt.tags.map((t) => t.tag.name),
-                          link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
                         }),
                     },
                   ],
@@ -541,13 +549,9 @@ function createServer(options: ServerOptions = {}) {
                 {
                   type: "text" as const,
                   text: JSON.stringify({
-                      ...prompt,
+                      ...publicPrompt,
                       variablesRequired: variables,
                       message: "Elicitation not supported. Variables need to be filled manually.",
-                      author: prompt.author.name || prompt.author.username,
-                      category: prompt.category?.name || null,
-                      tags: prompt.tags.map((t) => t.tag.name),
-                      link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
                     }),
                 },
               ],
@@ -563,7 +567,7 @@ function createServer(options: ServerOptions = {}) {
               description: prompt.description,
               content: prompt.content,
               type: prompt.type,
-              author: prompt.author.name || prompt.author.username,
+              author: getPublicDisplayName(prompt.author),
               category: prompt.category?.name || null,
               tags: prompt.tags.map((t) => t.tag.name),
               variables: variables.map(v => ({ name: v.name, defaultValue: v.defaultValue })),
@@ -577,11 +581,7 @@ function createServer(options: ServerOptions = {}) {
             {
               type: "text" as const,
               text: JSON.stringify({
-                  ...prompt,
-                  author: prompt.author.name || prompt.author.username,
-                  category: prompt.category?.name || null,
-                  tags: prompt.tags.map((t) => t.tag.name),
-                  link: `https://ans.cauai.fun/prompts/${prompt.id}_${getPromptName(prompt)}`,
+                  ...publicPrompt,
                 }),
             },
           ],
@@ -1215,7 +1215,7 @@ function createServer(options: ServerOptions = {}) {
             isPrivate: true,
             createdAt: true,
             updatedAt: true,
-            author: { select: { username: true, name: true } },
+            author: { select: { nickname: true } },
             category: { select: { name: true, slug: true } },
             tags: { select: { tag: { select: { name: true, slug: true } } } },
             _count: { select: { votes: true } },
@@ -1241,7 +1241,7 @@ function createServer(options: ServerOptions = {}) {
                   slug: getPromptName(skill),
                   title: skill.title,
                   description: skill.description,
-                  author: skill.author.name || skill.author.username,
+                  author: getPublicDisplayName(skill.author),
                   category: skill.category?.name || null,
                   tags: skill.tags.map((t) => t.tag.name),
                   votes: skill._count.votes,
@@ -1327,7 +1327,7 @@ function createServer(options: ServerOptions = {}) {
             description: true,
             content: true,
             createdAt: true,
-            author: { select: { username: true, name: true } },
+            author: { select: { nickname: true } },
             category: { select: { name: true, slug: true } },
             tags: { select: { tag: { select: { name: true, slug: true } } } },
             _count: { select: { votes: true } },
@@ -1341,7 +1341,7 @@ function createServer(options: ServerOptions = {}) {
             slug: getPromptName(s),
             title: s.title,
             description: s.description,
-            author: s.author.name || s.author.username,
+            author: getPublicDisplayName(s.author),
             category: s.category?.name || null,
             tags: s.tags.map((t) => t.tag.name),
             votes: s._count.votes,

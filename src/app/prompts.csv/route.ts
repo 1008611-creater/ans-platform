@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getPublicDisplayName } from "@/lib/public-identity";
 
 function escapeCSVField(field: string): string {
   if (!field) return "";
@@ -12,15 +13,6 @@ function escapeCSVField(field: string): string {
   }
   
   return field;
-}
-
-function getUserIdentifier(user: { email: string; username: string; githubUsername: string | null }): string {
-  // Determine contributor identifier (immutable to prevent impersonation):
-  // 1. githubUsername if set (GitHub OAuth users)
-  // 2. username if email ends with @unclaimed.prompts.chat (imported GitHub contributors)
-  // 3. email for others (Google, credentials)
-  const isUnclaimedAccount = user.email.endsWith('@unclaimed.prompts.chat');
-  return user.githubUsername || (isUnclaimedAccount ? user.username : user.email);
 }
 
 export const revalidate = 3600;
@@ -44,16 +36,14 @@ export async function GET() {
         },
         author: {
           select: {
-            email: true,
-            username: true,
-            githubUsername: true,
+            id: true,
+            nickname: true,
           },
         },
         contributors: {
           select: {
-            email: true,
-            username: true,
-            githubUsername: true,
+            id: true,
+            nickname: true,
           },
         },
       },
@@ -67,14 +57,11 @@ export async function GET() {
       const forDevs = prompt.category?.slug === "coding" ? "TRUE" : "FALSE";
       const type = prompt.structuredFormat === "JSON" || prompt.structuredFormat === "YAML" ? "STRUCTURED" : "TEXT";
       
-      // Build contributor list: author first, then co-contributors
-      // Format: "@author,@contributor1,@contributor2" or just "@author"
-      const authorId = getUserIdentifier(prompt.author);
-      const contributorIds = prompt.contributors
-        .map((c: { email: string; username: string; githubUsername: string | null }) => getUserIdentifier(c))
-        .filter((id: string) => id !== authorId); // Exclude author from contributors list
-      
-      const allContributors = [authorId, ...contributorIds];
+      // 仅按用户 ID 排除作者本人，不能按昵称合并不同贡献者。
+      const contributorNames = prompt.contributors
+        .filter((contributor) => contributor.id !== prompt.author.id)
+        .map(getPublicDisplayName);
+      const allContributors = [getPublicDisplayName(prompt.author), ...contributorNames];
       const contributorField = escapeCSVField(allContributors.join(","));
       
       return [act, promptContent, forDevs, type, contributorField].join(",");

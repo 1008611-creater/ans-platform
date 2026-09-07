@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getPublicDisplayName } from "@/lib/public-identity";
 import { getConfig } from "@/lib/config";
 import { z } from "zod";
 
@@ -60,7 +61,7 @@ export async function GET(
         author: {
           select: {
             id: true,
-            name: true,
+            nickname: true,
             username: true,
             avatar: true,
             role: true,
@@ -101,7 +102,13 @@ export async function GET(
           parentId: comment.parentId,
           // Only admins see the flagged status
           flagged: isAdmin ? comment.flagged : false,
-          author: comment.author,
+          author: {
+            id: comment.author.id,
+            username: comment.author.username,
+            name: getPublicDisplayName(comment.author),
+            avatar: comment.author.avatar,
+            role: comment.author.role,
+          },
           score: comment.score,
           userVote,
           replyCount: comment._count.replies,
@@ -201,7 +208,7 @@ export async function POST(
         author: {
           select: {
             id: true,
-            name: true,
+            nickname: true,
             username: true,
             avatar: true,
             role: true,
@@ -254,7 +261,13 @@ export async function POST(
         updatedAt: comment.updatedAt,
         parentId: comment.parentId,
         flagged: false, // New comments are never flagged
-        author: comment.author,
+        author: {
+            id: comment.author.id,
+            username: comment.author.username,
+            name: getPublicDisplayName(comment.author),
+            avatar: comment.author.avatar,
+            role: comment.author.role,
+          },
         score: 0,
         userVote: 0,
         replyCount: 0,

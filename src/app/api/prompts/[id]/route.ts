@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getPublicDisplayName, toPublicAuthor } from "@/lib/public-identity";
 import { generatePromptEmbedding, findAndSaveRelatedPrompts } from "@/lib/ai/embeddings";
 import { generatePromptSlug } from "@/lib/slug";
 import { checkPromptQuality } from "@/lib/ai/quality-check";
@@ -44,7 +45,7 @@ export async function GET(
         author: {
           select: {
             id: true,
-            name: true,
+            nickname: true,
             username: true,
             avatar: true,
             verified: true,
@@ -104,6 +105,7 @@ export async function GET(
 
     return NextResponse.json({
       ...promptWithoutEmbedding,
+      author: toPublicAuthor(prompt.author),
       voteCount: prompt._count.votes,
       hasVoted,
     });
@@ -203,7 +205,7 @@ export async function PATCH(
         author: {
           select: {
             id: true,
-            name: true,
+            nickname: true,
             username: true,
           },
         },
@@ -339,7 +341,14 @@ export async function PATCH(
     revalidateTag("prompts", "max");
     revalidateTag("prompt-flow", "max");
 
-    return NextResponse.json(prompt);
+    return NextResponse.json({
+      ...prompt,
+      author: {
+        id: prompt.author.id,
+        username: prompt.author.username,
+        name: getPublicDisplayName(prompt.author),
+      },
+    });
   } catch (error) {
     console.error("Update prompt error:", error);
     return NextResponse.json(
