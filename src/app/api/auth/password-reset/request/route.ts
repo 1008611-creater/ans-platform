@@ -15,8 +15,9 @@ export async function POST(request: Request) {
     await db.verificationToken.create({ data: { identifier, token, expires: new Date(Date.now() + 15 * 60 * 1000) } });
     const base = process.env.AUTH_URL || "https://ans.cauai.fun";
     const key = process.env.RESEND_API_KEY?.trim(); const from = process.env.EMAIL_FROM?.trim();
-    if (key && from) await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [email], subject: "ANS å¯†ç é‡ç½®", text: `è¯·åœ¨ 15 åˆ†é’Ÿå†…æ‰“å¼€æ­¤é“¾æ¥é‡ç½®å¯†ç ï¼š${base}/reset-password?token=${raw}&email=${encodeURIComponent(email)}` }) });
+    if (key && from) await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [email], subject: "ANS å¯†ç é‡ç½®", text: `ÄãµÄ ANS ÃÜÂëÖØÖÃÑéÖ¤ÂëÊÇ£º${codeText}£¨15 ·ÖÖÓÓĞĞ§£©` }) });
   }
   return NextResponse.json({ message: "å¦‚æœé‚®ç®±å­˜åœ¨ï¼Œé‡ç½®é“¾æ¥å·²å‘é€? });
 }
+
 
