@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { analyticsAuth } from "@/lib/analytics";
+import Link from "next/link";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -101,6 +102,7 @@ export function LoginForm() {
           {isLoading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
           {t("login")}
         </Button>
+        <Link href="/reset-password" className="block text-center text-xs text-muted-foreground hover:underline">忘记密码？</Link>
       </form>
     </Form>
   );
