@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { CopyTemplatePrompt } from "@/components/templates/template-actions";
+import { TemplateRunForm } from "@/components/templates/template-run-form";
 import { getPublishedTemplate } from "@/lib/template-service";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +20,8 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
     {template.description && <section><h2 className="mb-3 text-lg font-semibold">使用说明</h2><p className="whitespace-pre-wrap break-words">{template.description}</p></section>}
     <section className="space-y-4"><h2 className="text-lg font-semibold">提示词正文</h2><CopyTemplatePrompt prompt={template.promptBody} />
       <pre className="whitespace-pre-wrap break-words rounded-lg border bg-muted/30 p-5 text-sm leading-7">{template.promptBody}</pre>
-      <p className="text-sm text-muted-foreground">复制后请自行替换变量占位。在线运行待 P2 开放，当前不会消耗点数。</p>
     </section>
+    {template.outputType === "TEXT" && <TemplateRunForm slug={template.slug} formSchema={template.formSchema as unknown as import("@/components/templates/template-run-form").RunFormField[]} estimatedCost={Math.max(1, template.estimatedCost)} />}
     <details className="rounded-lg border p-4"><summary className="cursor-pointer text-sm font-medium">查看输入字段定义</summary><pre className="mt-4 overflow-x-auto text-xs">{JSON.stringify(template.formSchema, null, 2)}</pre></details>
   </article>;
 }

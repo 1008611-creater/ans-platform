@@ -32,7 +32,7 @@ const passedReviewSchema = z.object({
 const privateInclude = { category: { select: { id: true, name: true, slug: true, parentId: true } } } as const;
 const publicSelect = {
   id: true, slug: true, title: true, summary: true, description: true,
-  promptBody: true, formSchema: true, outputType: true, createdAt: true,
+  promptBody: true, formSchema: true, outputType: true, estimatedCost: true, createdAt: true,
   category: { select: { name: true, slug: true, parent: { select: { name: true, slug: true } } } },
 } as const;
 
