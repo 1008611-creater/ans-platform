@@ -41,6 +41,8 @@ export default async function WorkspacePage() {
         id: true,
         status: true,
         costPoints: true,
+        outputText: true,
+        error: true,
         createdAt: true,
         template: { select: { title: true, slug: true } },
       },
@@ -166,6 +168,8 @@ export default async function WorkspacePage() {
                         <p className="text-xs text-muted-foreground">
                           {r.createdAt.toLocaleString("zh-CN")}
                         </p>
+                        {r.outputText && <details className="mt-2"><summary className="cursor-pointer text-sm">查看结果</summary><pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words text-sm">{r.outputText}</pre></details>}
+                        {r.error && <p className="mt-2 text-sm text-destructive">{r.error}</p>}
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <span className="text-xs text-muted-foreground">-{r.costPoints} 点</span>
