@@ -1,36 +1,3 @@
 "use client";
-
-import { FormEvent, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-export default function ResetPasswordPage() {
-  const params = useSearchParams();
-  const router = useRouter();
-  const token = params.get("token") || "";
-  const presetEmail = params.get("email") || "";
-  const [email, setEmail] = useState(presetEmail);
-  const [password, setPassword] = useState("");\n  const [code, setCode] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function submit(event: FormEvent) {
-    event.preventDefault(); setBusy(true); setError(""); setMessage("");
-    try {
-      const endpoint = token ? "/api/auth/password-reset/confirm" : "/api/auth/password-reset/request";
-      const body = token ? { email, token, password } : code ? { email, token: code, password } : { email };
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "æ“ä½œå¤±è´¥");
-      setMessage(data.message);
-      if (token) setTimeout(() => router.push("/login"), 1200);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "æ“ä½œå¤±è´¥"); }
-    finally { setBusy(false); }
-  }
-
-  return <main className="container flex min-h-[calc(100vh-6rem)] items-center justify-center py-8"><div className="w-full max-w-sm space-y-4"><div><h1 className="text-xl font-semibold">{token ? "è®¾ç½®æ–°å¯†ç ? : "æ‰¾å›å¯†ç "}</h1><p className="mt-2 text-sm text-muted-foreground">{token ? "è®¾ç½®åè¯·ä½¿ç”¨æ–°å¯†ç ç™»å½•ã€? : "è¾“å…¥è´¦å·é‚®ç®±ï¼Œæˆ‘ä»¬ä¼šå‘é€é‡ç½®é“¾æ¥ã€?}</p></div><form onSubmit={submit} className="space-y-3"><Input type="email" required placeholder="name@example.com" value={email} onChange={e => setEmail(e.target.value)} disabled={busy || Boolean(token)} />{!token && message && <Input inputMode="numeric" maxLength={4} placeholder="4Î»ÑéÖ¤Âë" value={code} onChange={e => setCode(e.target.value)} />} {token && <Input type="password" required minLength={6} maxLength={72} placeholder="æ–°å¯†ç ï¼ˆè‡³å°‘ 6 ä½ï¼‰" value={password} onChange={e => setPassword(e.target.value)} disabled={busy} />}<Button className="w-full" disabled={busy}>{busy ? "å¤„ç†ä¸­â€? : token ? "ä¿å­˜æ–°å¯†ç ? : "å‘é€é‡ç½®é“¾æ?}</Button></form>{message && <p role="status" className="text-sm text-green-600">{message}</p>}{error && <p role="alert" className="text-sm text-destructive">{error}</p>}<Link href="/login" className="block text-center text-sm text-muted-foreground hover:underline">è¿”å›ç™»å½•</Link></div></main>;
-}
-
+import {useState} from "react"; import {useRouter} from "next/navigation";
+export default function ResetPasswordPage(){const [email,setEmail]=useState("");const [code,setCode]=useState("");const [password,setPassword]=useState("");const [sent,setSent]=useState(false);const [msg,setMsg]=useState("");const router=useRouter();async function submit(e:any){e.preventDefault();const endpoint=sent?"/api/auth/password-reset/confirm":"/api/auth/password-reset/request";const body=sent?{email,token:code,password}:{email};const r=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const d=await r.json();setMsg(d.message||d.error||"");if(!sent&&r.ok)setSent(true);if(sent&&r.ok)router.push("/login");}return <main className="container mx-auto max-w-sm py-16"><h1 className="text-2xl font-bold mb-6">ÕÒ»ØÃÜÂë</h1><form onSubmit={submit} className="space-y-3"><input className="w-full border p-2 rounded" type="email" required placeholder="ÓÊÏä" value={email} onChange={e=>setEmail(e.target.value)} />{sent&&<><input className="w-full border p-2 rounded" inputMode="numeric" maxLength={4} required placeholder="4Î»ÑéÖ¤Âë" value={code} onChange={e=>setCode(e.target.value)} /><input className="w-full border p-2 rounded" type="password" minLength={6} required placeholder="ĞÂÃÜÂë" value={password} onChange={e=>setPassword(e.target.value)} /></>}<button className="w-full bg-blue-600 text-white p-2 rounded">{sent?"È·ÈÏĞŞ¸Ä":"·¢ËÍÑéÖ¤Âë"}</button></form>{msg&&<p className="mt-4">{msg}</p>}</main>}
