@@ -20,13 +20,13 @@ type Turnstile = {
 };
 const turnstile = () => (window as Window & { turnstile?: Turnstile }).turnstile;
 const registerSchema = z.object({
-  name: z.string().trim().min(2, "昵称至少 2 个字�?).max(40, "昵称最�?40 个字�?),
-  email: z.string().trim().max(254).email("请输入有效邮�?),
-  code: z.string().regex(/^\d{6}$/, "请输�?6 位邮箱验证码"),
+  name: z.string().trim().min(2, "昵称至少 2 个字符").max(40, "昵称最多 40 个字符"),
+  email: z.string().trim().max(254).email("请输入有效邮箱"),
+  code: z.string().regex(/^\d{6}$/, "请输入 6 位邮箱验证码"),
   inviteCode: z.string().trim().max(128),
-  password: z.string().min(6, "密码至少 6 �?).refine(value => new TextEncoder().encode(value).length <= 72, "密码不能超过 72 �?UTF-8 字节"),
+  password: z.string().min(6, "密码至少 6 位").refine(value => new TextEncoder().encode(value).length <= 72, "密码不能超过 72 个 UTF-8 字节"),
   confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, { message: "两次密码不一�?, path: ["confirmPassword"] })
+}).refine(data => data.password === data.confirmPassword, { message: "两次密码不一致", path: ["confirmPassword"] })
   .refine(data => data.email.toLowerCase().split("@")[1] === "cau.edu.cn" || Boolean(data.inviteCode), { message: "此邮箱需要邀请码", path: ["inviteCode"] });
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -70,7 +70,7 @@ export function RegisterForm() {
       widgetId.current = api.render(widgetNode.current, {
         sitekey: siteKey, action: "register", language: "zh-cn",
         callback: token => { if (active) { setChallenge(token); setChallengeError(""); } },
-        "expired-callback": () => invalidate("人机验证已过期，请重新验�?),
+        "expired-callback": () => invalidate("人机验证已过期，请重新验证"),
         "error-callback": () => invalidate("人机验证出错，请重新验证"),
         "timeout-callback": () => invalidate("人机验证超时，请重新验证"),
       });
@@ -78,7 +78,7 @@ export function RegisterForm() {
     return () => {
       active = false;
       if (widgetId.current !== undefined) {
-        try { api.remove(widgetId.current); } catch { /* 脚本已清�?widget 时无需重试�?*/ }
+        try { api.remove(widgetId.current); } catch { /* 脚本已清理 widget 时无需重试。 */ }
         widgetId.current = undefined;
       }
     };
@@ -111,11 +111,11 @@ export function RegisterForm() {
       const result = await response.json();
       const retry = Number(response.headers.get("Retry-After") || result.retryAfter);
       if (Number.isFinite(retry) && retry > 0) setCooldown(Math.min(600, Math.ceil(retry)));
-      if (!response.ok) { toast.error(result.message || "验证码发送失�?); return; }
+      if (!response.ok) { toast.error(result.message || "验证码发送失败"); return; }
       setCooldown(60);
       form.setValue("code", "");
       toast.success("验证码已发送，请查收邮箱并再次完成人机验证");
-    } catch { toast.error("验证码发送失败，请稍后重�?); }
+    } catch { toast.error("验证码发送失败，请稍后重试"); }
     finally { resetChallenge(); setSending(false); busy.current = false; }
   }
 
@@ -143,10 +143,10 @@ export function RegisterForm() {
 
   const disabled = isLoading || sending;
   const fields: { name: keyof RegisterFormValues; label: string; type?: string; placeholder?: string; autoComplete?: string; maxLength?: number }[] = [
-    { name: "name", label: "昵称", placeholder: "你希望大家如何称呼你（无需真实姓名�?, autoComplete: "nickname", maxLength: 40 },
+    { name: "name", label: "昵称", placeholder: "你希望大家如何称呼你（无需真实姓名）", autoComplete: "nickname", maxLength: 40 },
     { name: "email", label: "邮箱", type: "email", autoComplete: "email", maxLength: 254 },
-    { name: "code", label: "邮箱验证�?, placeholder: "6 位验证码�?0 分钟有效", autoComplete: "one-time-code", maxLength: 6 },
-    { name: "inviteCode", label: "邀请码（非 cau.edu.cn 邮箱必填�?, maxLength: 128 },
+    { name: "code", label: "邮箱验证码", placeholder: "6 位验证码，10 分钟有效", autoComplete: "one-time-code", maxLength: 6 },
+    { name: "inviteCode", label: "邀请码（非 cau.edu.cn 邮箱必填）", maxLength: 128 },
     { name: "password", label: "密码", type: "password", autoComplete: "new-password", maxLength: 72 },
     { name: "confirmPassword", label: "确认密码", type: "password", autoComplete: "new-password", maxLength: 72 },
   ];
@@ -158,13 +158,13 @@ export function RegisterForm() {
           <FormField key={name} control={form.control} name={name} render={({ field }) => (
             <FormItem className="space-y-1">
               <FormLabel className="text-xs">{label}</FormLabel>
-              <FormControl>{name === "password" || name === "confirmPassword" ? (<div className="relative"><Input {...props} {...field} type={(name === "password" ? showPassword : showConfirmPassword) ? "text" : "password"} className="h-8 pe-9 text-sm" disabled={disabled} /><button type="button" className="absolute inset-y-0 end-0 flex w-9 items-center justify-center text-muted-foreground" onClick={() => name === "password" ? setShowPassword(v => !v) : setShowConfirmPassword(v => !v)} aria-label={(name === "password" ? showPassword : showConfirmPassword) ? "��������" : "��ʾ����"}>{(name === "password" ? showPassword : showConfirmPassword) ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}</button></div>) : <Input {...props} {...field} inputMode={name === "code" ? "numeric" : undefined} className="h-8 text-sm" disabled={disabled} />}</FormControl>
+              <FormControl>{name === "password" || name === "confirmPassword" ? (<div className="relative"><Input {...props} {...field} type={(name === "password" ? showPassword : showConfirmPassword) ? "text" : "password"} className="h-8 pe-9 text-sm" disabled={disabled} /><button type="button" className="absolute inset-y-0 end-0 flex w-9 items-center justify-center text-muted-foreground" onClick={() => name === "password" ? setShowPassword(v => !v) : setShowConfirmPassword(v => !v)} aria-label={(name === "password" ? showPassword : showConfirmPassword) ? "隐藏密码" : "显示密码"}>{(name === "password" ? showPassword : showConfirmPassword) ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}</button></div>) : <Input {...props} {...field} inputMode={name === "code" ? "numeric" : undefined} className="h-8 text-sm" disabled={disabled} />}</FormControl>
               <FormMessage className="text-xs" />
-              {name === "code" && <Button type="button" variant="outline" className="h-8 text-xs" onClick={sendCode} disabled={disabled || !challenge || !siteKey || cooldown > 0}>{sending ? "正在发�? : cooldown ? `${cooldown} 秒后重发` : "发送验证码"}</Button>}
+              {name === "code" && <Button type="button" variant="outline" className="h-8 text-xs" onClick={sendCode} disabled={disabled || !challenge || !siteKey || cooldown > 0}>{sending ? "正在发送" : cooldown ? `${cooldown} 秒后重发` : "发送验证码"}</Button>}
             </FormItem>
           )} />
         ))}
-        <p className="text-xs text-muted-foreground">所有邮箱均需验证码验证。仅 cau.edu.cn 精确域名免邀请码；昵称用于公开展示，不收集真实姓名�?/p>
+        <p className="text-xs text-muted-foreground">所有邮箱均需验证码验证。仅 cau.edu.cn 精确域名免邀请码；昵称用于公开展示，不收集真实姓名。</p>
         <div ref={widgetNode} />
         {configError && <p role="alert" className="text-xs text-destructive">{configError}</p>}
         {challengeError && <p role="alert" className="text-xs text-destructive">{challengeError}</p>}
