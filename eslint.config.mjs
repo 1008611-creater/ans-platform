@@ -11,6 +11,12 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    ".next-vault/**",
+    // Archived skill bundles are data shipped for discovery, not application
+    // source; linting their generated examples produces thousands of noise
+    // errors and masks real ANS diagnostics.
+    "ai-video-skills-source/**",
+    "plugins/claude/**",
     "next-env.d.ts",
     // Compiled outputs
     "packages/*/dist/**",
