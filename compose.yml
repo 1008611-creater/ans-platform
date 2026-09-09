@@ -23,6 +23,9 @@ services:
     build:
        context: .
        dockerfile: docker/Dockerfile
+       # The production host has working outbound DNS on the host network,
+       # while isolated BuildKit networking intermittently resets npm fetches.
+       network: host
     restart: unless-stopped
     ports:
       - "${PORT:-4444}:3000"
