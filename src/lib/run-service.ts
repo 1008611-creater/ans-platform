@@ -84,6 +84,23 @@ function fillPrompt(promptBody: string, values: Record<string, string | number>)
   });
 }
 
+function parseStreamOutput(raw: string): string {
+  let output = "";
+  for (const line of raw.split(/\r?\n/)) {
+    if (!line.startsWith("data:")) continue;
+    const data = line.slice(5).trim();
+    if (!data || data === "[DONE]") continue;
+    try {
+      const delta = JSON.parse(data)?.choices?.[0]?.delta?.content;
+      if (typeof delta === "string") output += delta;
+    } catch {
+      // Ignore keep-alive or malformed SSE frames; a valid frame later can
+      // still provide the complete output.
+    }
+  }
+  return output;
+}
+
 export async function runTemplate(args: {
   userId: string;
   templateId: string;
@@ -191,6 +208,41 @@ export async function runTemplate(args: {
     });
     if (!response.ok) {
       error = `模型服务返回 ${response.status}`;
+      // OmniRoute may return a gateway timeout for non-streaming requests
+      // while its streaming fallback is healthy. Retry only those gateway
+      // errors and parse the SSE frames into the same plain-text result.
+      if ([502, 503, 504, 524].includes(response.status)) {
+        const fallbackController = new AbortController();
+        const fallbackTimeout = setTimeout(() => fallbackController.abort(), RUN_TIMEOUT_MS);
+        try {
+          const fallback = await fetch(url.toString(), {
+            method: "POST",
+            signal: fallbackController.signal,
+            redirect: "error",
+            cache: "no-store",
+            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: model.upstream,
+              stream: true,
+              messages: [
+                { role: "system", content: "你是一个可靠的 AI 助手，按模板要求完成任务，直接输出结果，不要解释过程。" },
+                { role: "user", content: prompt },
+              ],
+            }),
+          });
+          if (fallback.ok) {
+            const streamed = parseStreamOutput(await fallback.text());
+            if (streamed) {
+              outputText = streamed.length > MAX_OUTPUT ? streamed.slice(0, MAX_OUTPUT) : streamed;
+              error = null;
+            }
+          }
+        } catch {
+          // Keep the original gateway error and refund below.
+        } finally {
+          clearTimeout(fallbackTimeout);
+        }
+      }
     } else {
       const payload = await response.json();
       const content = payload?.choices?.[0]?.message?.content;
