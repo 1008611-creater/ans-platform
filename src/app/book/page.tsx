@@ -1,17 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Schoolbell } from "next/font/google";
 import { ArrowRight, BookOpen, Sparkles, Brain, Layers, Target, Lightbulb, Gamepad2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 import { PixelRobot } from "@/components/kids/elements/pixel-art";
 import { getTranslations, getLocale } from "next-intl/server";
 import { ContinueReadingButton } from "@/components/book/continue-reading";
-
-const kidsFont = Schoolbell({
-  subsets: ["latin"],
-  weight: "400",
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("book");
@@ -239,7 +233,7 @@ export default async function BookHomePage() {
             <p className="text-lg text-amber-800 dark:text-amber-200 mb-1">
               {t("kidsSection.question")}
             </p>
-            <h3 className={`text-2xl md:text-3xl font-bold text-amber-900 dark:text-amber-100 mb-3 pixel-text-shadow ${kidsFont.className}`}>
+            <h3 className="text-2xl md:text-3xl font-bold text-amber-900 dark:text-amber-100 mb-3 pixel-text-shadow font-kids">
               {t("kidsSection.title")}
             </h3>
             <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">

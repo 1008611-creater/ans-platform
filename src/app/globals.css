@@ -47,6 +47,11 @@
 }
 
 :root {
+  --font-inter: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-arabic: "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+  --font-playfair: Georgia, "Times New Roman", serif;
+  --font-kids: "Trebuchet MS", "Comic Sans MS", sans-serif;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -80,6 +85,8 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 }
+
+.font-kids { font-family: var(--font-kids); }
 
 .dark {
   --background: oklch(0.145 0 0);

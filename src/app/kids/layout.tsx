@@ -1,16 +1,9 @@
-import { Schoolbell } from "next/font/google";
 import { getLocale } from "next-intl/server";
 import { KidsHeader } from "@/components/kids/layout/kids-header";
 import { MusicProvider } from "@/components/kids/layout/background-music";
 import { LevelProvider } from "@/components/kids/providers/level-context";
 
 const RTL_LOCALES = ["ar", "he", "fa"];
-
-const kidsFont = Schoolbell({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-kids",
-});
 
 // Pixel art cloud component for background
 function PixelCloudBg({ className, style }: { className?: string; style?: React.CSSProperties }) {
@@ -42,7 +35,7 @@ export default async function KidsLayout({
     <LevelProvider>
     <MusicProvider>
     <div 
-      className={`fixed inset-0 flex flex-col text-xl light ${kidsFont.className}`} 
+      className="fixed inset-0 flex flex-col text-xl light font-kids"
       data-theme="light" 
       dir={isRtl ? "rtl" : "ltr"}
       style={{ colorScheme: "light" }}
