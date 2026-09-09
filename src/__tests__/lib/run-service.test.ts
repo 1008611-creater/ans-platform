@@ -35,7 +35,7 @@ const published = {
   estimatedCost: 3,
   authorId: "author",
   categoryId: "scene",
-} as any;
+};
 
 const user = { id: "user1", quotaPoints: 10, flagged: false, deletedAt: null };
 
@@ -47,7 +47,7 @@ beforeEach(() => {
   vi.stubEnv("RUN_BASE_URL", "https://run.example.test/v1");
   vi.stubEnv("RUN_API_KEY", "test-only");
   mocks.auth.mockResolvedValue({ user: { id: "user1" } });
-  mocks.db.template.findFirst.mockImplementation(async ({ where }: any) => {
+  mocks.db.template.findFirst.mockImplementation(async ({ where }: { where?: { status?: string } }) => {
     if (mocks.overrideTemplate) {
       const rec = { ...mocks.overrideTemplate };
       if (where?.status && rec.status !== where.status) return null;
@@ -64,7 +64,7 @@ beforeEach(() => {
   mocks.db.run.updateMany.mockResolvedValue({ count: 1 });
   mocks.db.run.create.mockImplementation(async ({ data }) => ({ id: "run1", ...data, status: "QUEUED" }));
   mocks.db.quotaLedger.create.mockResolvedValue({ id: "ledger1" });
-  mocks.db.$transaction.mockImplementation(async (fn: any) => fn(mocks.db));
+  mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
   mocks.fetch.mockResolvedValue({
     ok: true,
     json: async () => ({ choices: [{ message: { content: "生成好的内容" } }] }),
