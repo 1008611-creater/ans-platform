@@ -40,7 +40,9 @@ export function TemplateRunForm({
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(formSchema.map((f) => [f.key, String(f.default ?? "")]))
   );
-  const [modelKey, setModelKey] = useState(DEFAULT_RUN_MODEL);
+  // The Select component emits a string; the server validates it against the
+  // shared whitelist before making an upstream request.
+  const [modelKey, setModelKey] = useState<string>(DEFAULT_RUN_MODEL);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [output, setOutput] = useState<string | null>(null);
