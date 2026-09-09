@@ -73,7 +73,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
 
 # Install only Prisma CLI and its dependencies for runtime migrations
-RUN npm install --no-save prisma@6.19 dotenv
+# The production host's DNS currently resolves registry.npmjs.org only to an
+# unreachable IPv6 endpoint. Use the reachable npm mirror for these runtime
+# tools so image builds remain repeatable there.
+RUN npm install --no-save --registry=https://registry.npmmirror.com prisma@6.19 dotenv
 
 # Copy entrypoint script
 COPY --chown=nextjs:nodejs docker/entrypoint.sh ./entrypoint.sh
