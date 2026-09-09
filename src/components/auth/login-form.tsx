@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,7 +32,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const router = useRouter();
   const t = useTranslations("auth");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);`r`n  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -92,7 +92,7 @@ export function LoginForm() {
             <FormItem className="space-y-1">
               <FormLabel className="text-xs">{t("password")}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢" className="h-8 text-sm" disabled={isLoading} {...field} />
+                <div className="relative"><Input type={showPassword ? "text" : "password"} placeholder="‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä? className="h-8 text-sm" disabled={isLoading} {...field} /><button type="button" className="absolute inset-y-0 end-0 flex w-9 items-center justify-center text-muted-foreground" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? "“˛≤ÿ√‹¬Î" : "œ‘ æ√‹¬Î"}>{showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}</button></div>
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
@@ -102,7 +102,7 @@ export function LoginForm() {
           {isLoading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
           {t("login")}
         </Button>
-        <Link href="/reset-password" className="block text-center text-xs text-muted-foreground hover:underline">ÂøòËÆ∞ÂØÜÁ†ÅÔºü</Link>
+        <Link href="/reset-password" className="block text-center text-xs text-muted-foreground hover:underline">ÂøòËÆ∞ÂØÜÁ†ÅÔº?/Link>
       </form>
     </Form>
   );
