@@ -32,7 +32,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const router = useRouter();
   const t = useTranslations("auth");
-  const [isLoading, setIsLoading] = useState(false);`r`n  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
