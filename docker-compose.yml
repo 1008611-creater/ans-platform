@@ -36,6 +36,17 @@ services:
       AUTH_TRUST_HOST: "true"
       NODE_ENV: production
 
+      # Runtime integrations. Values are supplied by the server-side .env.
+      TURNSTILE_SECRET_KEY: "${TURNSTILE_SECRET_KEY}"
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "${NEXT_PUBLIC_TURNSTILE_SITE_KEY}"
+      RESEND_API_KEY: "${RESEND_API_KEY}"
+      EMAIL_FROM: "${EMAIL_FROM}"
+      TEMPLATE_REVIEW_BASE_URL: "${TEMPLATE_REVIEW_BASE_URL}"
+      TEMPLATE_REVIEW_API_KEY: "${TEMPLATE_REVIEW_API_KEY}"
+      TEMPLATE_REVIEW_MODEL: "${TEMPLATE_REVIEW_MODEL}"
+      RUN_BASE_URL: "${RUN_BASE_URL}"
+      RUN_API_KEY: "${RUN_API_KEY}"
+
       # ---- ANS 品牌与功能开关（PCHAT_* 为官方环境变量）----
       PCHAT_NAME: "ANS"
       PCHAT_DESCRIPTION: "让 AI 永不停转 · AI 原生社区与算力平台"

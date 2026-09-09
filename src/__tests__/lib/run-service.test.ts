@@ -149,16 +149,17 @@ describe("runTemplate", () => {
     expect(!result.ok && result.error).toBe("model_unavailable");
   });
 
-  it("模型白名单包含 terrra/sol/astra 与 tr 国模", async () => {
+  it("模型白名单包含 terra/sol/astra 与 TR 国模", async () => {
     const { RUN_MODEL_KEYS } = await import("@/lib/run-service");
     expect(RUN_MODEL_KEYS).toEqual(expect.arrayContaining([
+      "gpt-5.6-terra", "gpt-5.6-sol", "gpt-6-astra",
       "glm-5.2", "deepseek-v4-flash-0731", "qwen3.8-max", "kimi-k2.6",
     ]));
   });
 
-  it("默认模型为 glm-5.2", async () => {
+  it("默认模型为 gpt-5.6-terra", async () => {
     const { DEFAULT_RUN_MODEL } = await import("@/lib/run-service");
-    expect(DEFAULT_RUN_MODEL).toBe("glm-5.2");
+    expect(DEFAULT_RUN_MODEL).toBe("gpt-5.6-terra");
   });
 
   it("调用 OpenAI 兼容接口并回写结果", async () => {
@@ -168,7 +169,7 @@ describe("runTemplate", () => {
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: expect.stringContaining("Bearer ") }),
-        body: expect.stringContaining("glm-5.2"),
+        body: expect.stringContaining("openai/gpt-5.6-terra"),
       })
     );
     expect(mocks.db.run.update).toHaveBeenCalledWith(expect.objectContaining({

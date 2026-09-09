@@ -1,26 +1,19 @@
 ﻿import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { DEFAULT_RUN_MODEL, getRunModel, RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
+
+// Backwards-compatible export for callers that historically imported the
+// default model from this service module.
+export { DEFAULT_RUN_MODEL } from "@/lib/run-models";
 
 /**
  * P2 模板运行核心服务（文本模板 v1）
- * - 模型白名单：tr 渠道（tokenrhythm.studio/v1）上的重点模型
- *   默认 glm-5.2，另支持 gpt-5.6-sol / gpt-6-astra / tr 国模（deepseek-v4-flash 等）
+ * - 模型白名单：OmniRoute 上的 GPT-5.6/6 入口与 TR 国模入口
  * - 扣费规则：按模板 estimatedCost 扣算力点，失败自动退费（写 QuotaLedger 流水）
  */
 
-export const RUN_MODEL_KEYS = [
-  "glm-5.2",
-  "deepseek-v4-flash-0731",
-  "qwen3.8-max",
-  "kimi-k2.6",
-  "minimax-m2.7",
-  "glm-5.3",
-] as const;
-
-export type RunModelKey = (typeof RUN_MODEL_KEYS)[number];
-
-export const DEFAULT_RUN_MODEL: RunModelKey = "glm-5.2";
+export const RUN_MODEL_KEYS = RUN_MODEL_OPTIONS.map((model) => model.key) as readonly RunModelKey[];
 
 export const RUN_TIMEOUT_MS = 60_000;
 const MAX_OUTPUT = 60_000;
@@ -45,10 +38,6 @@ const formField = z.object({
   default: z.union([z.string().max(2000), z.number().finite()]).optional(),
   placeholder: z.string().max(200).optional(),
 }).strict();
-
-function isRunModelKey(value: string): value is RunModelKey {
-  return (RUN_MODEL_KEYS as readonly string[]).includes(value);
-}
 
 function parseInputs(
   formSchema: unknown,
@@ -102,7 +91,8 @@ export async function runTemplate(args: {
   modelKey?: string;
 }): Promise<RunResult> {
   const modelKey = args.modelKey && args.modelKey.trim() ? args.modelKey.trim() : DEFAULT_RUN_MODEL;
-  if (!isRunModelKey(modelKey)) {
+  const model = getRunModel(modelKey);
+  if (!model) {
     return { ok: false, error: "model_unavailable", message: "该模型暂未开放，可选择白名单内的模型" };
   }
 
@@ -167,7 +157,7 @@ export async function runTemplate(args: {
         reason: "RUN_COST",
         refType: "run",
         refId: run.id,
-        note: `运行模板「${template.title}」（${modelKey}）`,
+        note: `运行模板「${template.title}」（${model.key}）`,
       },
     });
     return { ok: true as const, runId: run.id };
@@ -191,7 +181,7 @@ export async function runTemplate(args: {
       cache: "no-store",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: modelKey,
+        model: model.upstream,
         messages: [
           { role: "system", content: "你是一个可靠的 AI 助手，按模板要求完成任务，直接输出结果，不要解释过程。" },
           { role: "user", content: prompt },
