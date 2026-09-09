@@ -30,7 +30,9 @@ COPY prisma.config.ts tsconfig.json ./
 # Dummy DATABASE_URL for prisma generate (no actual connection is made)
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
-RUN npm ci
+# The production host intermittently cannot reach registry.npmjs.org. Keep
+# dependency installation on the reachable mirror used by the runtime stage.
+RUN npm ci --registry=https://registry.npmmirror.com
 
 # ---- Stage 3: Builder ----
 FROM base AS builder
