@@ -42,7 +42,14 @@ export async function reviewTemplate(template: {
       method: "POST", signal: controller.signal, redirect: "error", cache: "no-store",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model, temperature: 0, max_tokens: 1000, response_format: { type: "json_object" },
+        model,
+        temperature: 0,
+        max_tokens: 1000,
+        response_format: { type: "json_object" },
+        // Some OpenAI-compatible gateways default to SSE when `stream` is
+        // omitted.  Review parsing expects one JSON document, so make the
+        // response mode explicit at the integration boundary.
+        stream: false,
         messages: [
           { role: "system", content: SYSTEM_RULES },
           { role: "user", content: JSON.stringify({ template: {

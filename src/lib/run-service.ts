@@ -182,6 +182,7 @@ export async function runTemplate(args: {
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: model.upstream,
+        stream: false,
         messages: [
           { role: "system", content: "你是一个可靠的 AI 助手，按模板要求完成任务，直接输出结果，不要解释过程。" },
           { role: "user", content: prompt },
