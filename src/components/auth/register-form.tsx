@@ -39,7 +39,9 @@ export function RegisterForm() {
   const [challenge, setChallenge] = useState("");
   const [challengeError, setChallengeError] = useState("");
   const [configError, setConfigError] = useState("");
-  const [cooldown, setCooldown] = useState(0);`r`n  const [showPassword, setShowPassword] = useState(false);`r`n  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const widgetNode = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | undefined>(undefined);
   const busy = useRef(false);
