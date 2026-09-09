@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Sparkles } from "lucide-react";
+import { DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS } from "@/lib/run-models";
 
 export type RunFormField = {
   key: string;
@@ -25,13 +26,6 @@ export type RunFormField = {
   default?: string | number;
   placeholder?: string;
 };
-
-const MODEL_OPTIONS = [
-  { key: "glm-5.2", label: "GPT-5.6 Terra（均衡）" },
-  { key: "kimi-k2.6-0731", label: "GPT-5.6 Sol（前沿）" },
-  { key: "qwen3.8-max", label: "GPT-6 Astra（旗舰）" },
-  { key: "kimi-k2.6", label: "DeepSeek V4 Flash（国模快）" },
-] as const;
 
 export function TemplateRunForm({
   slug,
@@ -46,7 +40,7 @@ export function TemplateRunForm({
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(formSchema.map((f) => [f.key, String(f.default ?? "")]))
   );
-  const [modelKey, setModelKey] = useState("glm-5.2");
+  const [modelKey, setModelKey] = useState(DEFAULT_RUN_MODEL);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [output, setOutput] = useState<string | null>(null);
@@ -133,7 +127,7 @@ export function TemplateRunForm({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {MODEL_OPTIONS.map((model) => (
+              {RUN_MODEL_OPTIONS.map((model) => (
                 <SelectItem key={model.key} value={model.key}>
                   {model.label}
                 </SelectItem>
