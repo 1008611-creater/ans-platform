@@ -2,13 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Schoolbell } from "next/font/google";
-
-const kidsFont = Schoolbell({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-kids",
-});
 
 // Mini Promi icon for header
 function MiniPromi({ className }: { className?: string }) {
@@ -260,7 +253,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     <a
                       href="/kids"
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors ${kidsFont.className}`}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors font-kids"
                     >
                       <MiniPromi className="h-5 w-4" />
                       <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
@@ -433,7 +426,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               </DropdownMenuItem>
               {!branding.useCloneBranding && (
                 <DropdownMenuItem asChild>
-                  <a href="/kids" className={kidsFont.className}>
+                  <a href="/kids" className="font-kids">
                     <MiniPromi className="mr-2 h-4 w-4" />
                     <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
                       {t("nav.forKids")}
@@ -461,7 +454,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
           {!branding.useCloneBranding && (
             <a 
               href="/kids" 
-              className={`hidden 2xl:flex items-center gap-1 px-2 py-1 rounded-md hover:bg-accent transition-colors ${kidsFont.className}`}
+              className="hidden 2xl:flex items-center gap-1 px-2 py-1 rounded-md hover:bg-accent transition-colors font-kids"
             >
               <MiniPromi className="h-5 w-4" />
               <span className="text-sm font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
