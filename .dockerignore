@@ -30,6 +30,16 @@ android/**/build
 .env.test.local
 .env.production.local
 .env.sentry-build-plugin
+.env.*
+
+# Production snapshots, local credentials and operational artifacts must never enter images.
+backups
+.workbuddy
+*.bak
+*.bak-*
+*.dump
+*.patch
+tmp-*
 
 # Docker
 compose.yml
