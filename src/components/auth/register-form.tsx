@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/auth/password-input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { analyticsAuth } from "@/lib/analytics";
@@ -40,8 +41,6 @@ export function RegisterForm() {
   const [challengeError, setChallengeError] = useState("");
   const [configError, setConfigError] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const widgetNode = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | undefined>(undefined);
   const busy = useRef(false);
@@ -158,7 +157,7 @@ export function RegisterForm() {
           <FormField key={name} control={form.control} name={name} render={({ field }) => (
             <FormItem className="space-y-1">
               <FormLabel className="text-xs">{label}</FormLabel>
-              <FormControl>{name === "password" || name === "confirmPassword" ? (<div className="relative"><Input {...props} {...field} type={(name === "password" ? showPassword : showConfirmPassword) ? "text" : "password"} className="h-8 pe-11 text-sm" disabled={disabled} /><button type="button" className="absolute inset-y-0 end-0 z-20 flex w-10 items-center justify-center bg-background text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => name === "password" ? setShowPassword(v => !v) : setShowConfirmPassword(v => !v)} aria-label={(name === "password" ? showPassword : showConfirmPassword) ? "隐藏密码" : "显示密码"}>{(name === "password" ? showPassword : showConfirmPassword) ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}</button></div>) : <Input {...props} {...field} inputMode={name === "code" ? "numeric" : undefined} className="h-8 text-sm" disabled={disabled} />}</FormControl>
+              <FormControl>{name === "password" || name === "confirmPassword" ? <PasswordInput {...props} {...field} className="h-8 text-sm" disabled={disabled} /> : <Input {...props} {...field} inputMode={name === "code" ? "numeric" : undefined} className="h-8 text-sm" disabled={disabled} />}</FormControl>
               <FormMessage className="text-xs" />
               {name === "code" && <Button type="button" variant="outline" className="h-8 text-xs" onClick={sendCode} disabled={disabled || !challenge || !siteKey || cooldown > 0}>{sending ? "正在发送" : cooldown ? `${cooldown} 秒后重发` : "发送验证码"}</Button>}
             </FormItem>

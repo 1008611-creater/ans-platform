@@ -498,6 +498,75 @@ async function main() {
     }
   });
 
+  const { POST: confirmReset } = await import("../src/app/api/auth/password-reset/confirm/route");
+  const { resetToken, withResetLock } = await import("../src/lib/password-reset");
+  const resetRequest = (email: string, token: string) => new Request("https://integration.example.test/api/auth/password-reset/confirm", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, token, password: "Integration-Reset-Only!" }),
+  });
+  const seedReset = (email: string, code: string) => db.verificationToken.create({ data: {
+    identifier: `password-reset:${email}`,
+    token: resetToken(email, code, process.env.AUTH_SECRET!),
+    expires: new Date(Date.now() + 15 * 60 * 1000),
+  } });
+
+  await scenario("密码重置：真实advisory锁竞争仅一次改密且不可重放", async () => {
+    const user = await fixtureUser("reset_race");
+    await seedReset(user.email!, "1234");
+    const ready = deferred<void>();
+    const release = deferred<void>();
+    const holder = withResetLock(user.email!, async () => { ready.resolve(); await release.promise; });
+    void holder.catch(error => ready.reject(error));
+    await deadline(ready.promise, "持有重置advisory锁");
+    const requests = Promise.all([confirmReset(resetRequest(user.email!, "1234")), confirmReset(resetRequest(user.email!, "1234"))]);
+    let waiting = 0;
+    try {
+      const until = Date.now() + 7000;
+      while (Date.now() < until) {
+        const [row] = await observer.$queryRaw<Array<{ waiting: number }>>`
+          SELECT count(*)::int AS waiting FROM pg_stat_activity
+          WHERE datname = 'ans_integration' AND application_name = ${prefix}
+            AND wait_event_type = 'Lock' AND query ILIKE '%pg_advisory_xact_lock%'
+        `;
+        waiting = row.waiting;
+        if (waiting >= 2) break;
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+      assert.ok(waiting >= 2, "必须观测到两个真实锁等待请求");
+    } finally { release.resolve(); await holder; }
+    const responses = await requests;
+    assert.deepEqual(responses.map(response => response.status).sort(), [200, 400]);
+    const after = await db.user.findUniqueOrThrow({ where: { id: user.id } });
+    const { default: bcrypt } = await import("bcryptjs");
+    assert.ok(await bcrypt.compare("Integration-Reset-Only!", after.password!));
+    assert.equal(await db.verificationToken.count({ where: { identifier: `password-reset:${user.email}` } }), 0);
+    assert.equal((await confirmReset(resetRequest(user.email!, "1234"))).status, 400);
+    return { waiting, statuses: responses.map(response => response.status), passwordChanged: true, replayRejected: true };
+  });
+
+  await scenario("密码重置：并发猜码五次封顶且正确码不能绕过锁定", async () => {
+    const user = await fixtureUser("reset_limit");
+    await seedReset(user.email!, "1234");
+    const responses = await Promise.all(Array.from({ length: 8 }, () => confirmReset(resetRequest(user.email!, "0000"))));
+    assert.equal(responses.filter(response => response.status === 400).length, 4);
+    assert.equal(responses.filter(response => response.status === 429).length, 4);
+    for (const response of responses.filter(response => response.status === 429)) {
+      assert.ok(Number(response.headers.get("Retry-After")) > 0);
+    }
+    assert.equal((await confirmReset(resetRequest(user.email!, "1234"))).status, 429);
+    assert.equal((await db.user.findUniqueOrThrow({ where: { id: user.id } })).password, null);
+    return { invalid: 4, limited: 4, validCodeAlsoLimited: true, passwordUnchanged: true };
+  });
+
+  await scenario("密码重置：真实用户更新失败回滚验证码消费", async () => {
+    const absentEmail = `${prefix}_reset_missing@example.test`;
+    const token = await seedReset(absentEmail, "1234");
+    assert.equal((await confirmReset(resetRequest(absentEmail, "1234"))).status, 500);
+    const retained = await db.verificationToken.findUnique({ where: { token: token.token } });
+    assert.deepEqual(retained, token);
+    return { updateFailed: true, tokenRestored: true };
+  });
+
   results.push({ scenario: "Profile 昵称锁", status: "SKIP", evidence: "路由依赖 NextAuth/Next.js 请求上下文；本轮不引入内部 auth mock，不将手写SQL等价测试冒充路由集成测试" });
   console.log("SKIP", "Profile 昵称锁：需完整认证请求上下文，本轮未覆盖");
   await scenario("隔离检查：无.env读取、无未声明外部请求、DB真实", async () => {

@@ -7,9 +7,10 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/auth/password-input";
 import {
   Form,
   FormControl,
@@ -33,7 +34,6 @@ export function LoginForm() {
   const router = useRouter();
   const t = useTranslations("auth");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -93,7 +93,7 @@ export function LoginForm() {
             <FormItem className="space-y-1">
               <FormLabel className="text-xs">{t("password")}</FormLabel>
               <FormControl>
-                <div className="relative"><Input type={showPassword ? "text" : "password"} placeholder="••••••••" className="h-8 pe-11 text-sm" disabled={isLoading} {...field} /><button type="button" className="absolute inset-y-0 end-0 z-20 flex w-10 items-center justify-center bg-background text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? "隐藏密码" : "显示密码"}>{showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}</button></div>
+                <PasswordInput placeholder="••••••••" autoComplete="current-password" className="h-8 text-sm" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
