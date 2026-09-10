@@ -80,7 +80,8 @@ function own(template: Template, authorId: string) {
   if (template.authorId !== authorId) throw new TemplateError(404, "模板不存在");
 }
 function editable(template: Template) {
-  if (template.status !== "DRAFT" && template.status !== "REJECTED") throw new TemplateError(409, "仅草稿或已驳回模板可编辑和提交；已发布模板请另建草稿");
+  const verdict = template.reviewScore && typeof template.reviewScore === "object" && !Array.isArray(template.reviewScore) ? (template.reviewScore as { verdict?: string }).verdict : undefined;
+  if (template.status !== "DRAFT" && template.status !== "REJECTED" && !(template.status === "PENDING" && verdict === "BLOCKED")) throw new TemplateError(409, "仅草稿、AI 未通过或已驳回模板可编辑和提交；已发布模板请另建草稿");
 }
 function pending(template: Template, adminId: string) {
   if (template.authorId === adminId) throw new TemplateError(403, "不能审核自己的模板");
