@@ -64,4 +64,23 @@ describe("注册表单人机验证生命周期", () => {
     expect(mocks.render).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "注册" })).toBeDisabled();
   });
+  it("两个密码控件都能切换并在失焦后保持状态，标签指向真实输入框", async () => {
+    await ready();
+    const password = screen.getByLabelText("密码");
+    const confirmation = screen.getByLabelText("确认密码");
+    expect(password).toHaveAttribute("type", "password");
+    expect(confirmation).toHaveAttribute("type", "password");
+    expect(password).toHaveAttribute("autocomplete", "new-password");
+    expect(screen.getByText("密码", { selector: "label" })).toHaveAttribute("for", password.getAttribute("id"));
+
+    fireEvent.click(screen.getAllByRole("button", { name: "显示密码" })[0]);
+    expect(password).toHaveAttribute("type", "text");
+    fireEvent.blur(password);
+    expect(password).toHaveAttribute("type", "text");
+    expect(screen.getAllByRole("button", { name: "隐藏密码" })).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "显示密码" }));
+    expect(confirmation).toHaveAttribute("type", "text");
+    expect(screen.getAllByRole("button", { name: "隐藏密码" })).toHaveLength(2);
+  });
 });
