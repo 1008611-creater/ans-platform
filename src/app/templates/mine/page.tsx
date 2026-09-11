@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { TemplateActions } from "@/components/templates/template-actions";
 import { TemplateReviewStatus } from "@/components/templates/template-review-status";
 import { requireTemplateAuthor, TemplateError } from "@/lib/template-access";
-import { listOwnTemplates } from "@/lib/template-service";
+import { canEditTemplate, listOwnTemplates } from "@/lib/template-service";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "我的模板 · ANS" };
@@ -22,7 +22,7 @@ export default async function MyTemplatesPage() {
     <div className="grid gap-5 lg:grid-cols-2">{templates.map((template) => <Card key={template.id}>
       <CardHeader><CardTitle className="text-lg"><Link href={`/templates/mine/${template.id}`}>{template.title}</Link></CardTitle></CardHeader>
       <CardContent className="space-y-4"><TemplateReviewStatus status={template.status} reviewScore={template.reviewScore} reviewNote={template.reviewNote} />
-        {(template.status === "DRAFT" || template.status === "REJECTED" || template.status === "PENDING") && <><Button asChild variant="outline"><Link href={`/templates/mine/${template.id}`}>编辑草稿</Link></Button><TemplateActions id={template.id} mode="submit" /></>}
+        {canEditTemplate(template) && <><Button asChild variant="outline"><Link href={`/templates/mine/${template.id}`}>编辑草稿</Link></Button><TemplateActions id={template.id} mode="submit" /></>}
         {template.status === "PUBLISHED" && <><Link href={`/templates/${template.slug}`} className="block text-sm text-primary">查看公开详情</Link><TemplateActions id={template.id} mode="revise" /></>}
       </CardContent>
     </Card>)}</div>

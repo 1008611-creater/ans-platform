@@ -79,6 +79,10 @@ async function load(id: string) {
 function own(template: Template, authorId: string) {
   if (template.authorId !== authorId) throw new TemplateError(404, "模板不存在");
 }
+export function canEditTemplate(template: Pick<Template, "status" | "reviewScore">) {
+  const verdict = template.reviewScore && typeof template.reviewScore === "object" && !Array.isArray(template.reviewScore) ? (template.reviewScore as { verdict?: string }).verdict : undefined;
+  return template.status === "DRAFT" || template.status === "REJECTED" || (template.status === "PENDING" && verdict === "BLOCKED");
+}
 function editable(template: Template) {
   const verdict = template.reviewScore && typeof template.reviewScore === "object" && !Array.isArray(template.reviewScore) ? (template.reviewScore as { verdict?: string }).verdict : undefined;
   if (template.status !== "DRAFT" && template.status !== "REJECTED" && !(template.status === "PENDING" && verdict === "BLOCKED")) throw new TemplateError(409, "仅草稿、AI 未通过或已驳回模板可编辑和提交；已发布模板请另建草稿");
