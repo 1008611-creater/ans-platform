@@ -125,6 +125,7 @@ describe("GET /api/prompts/[id]", () => {
       isPrivate: true,
       authorId: "owner",
       deletedAt: null,
+      author: { id: "owner", username: "owner", nickname: null, avatar: null, verified: false },
       _count: { votes: 0 },
     } as never);
     vi.mocked(db.promptVote.findUnique).mockResolvedValue(null);
@@ -202,6 +203,7 @@ describe("PATCH /api/prompts/[id]", () => {
       title: "Updated",
       isPrivate: false,
       isUnlisted: false,
+      author: { id: "other-user", username: "other-user", nickname: null },
     } as never);
 
     const request = new Request("http://localhost:3000/api/prompts/123", {
@@ -227,6 +229,7 @@ describe("PATCH /api/prompts/[id]", () => {
       content: "Updated content",
       isPrivate: false,
       isUnlisted: false,
+      author: { id: "user1", username: "user1", nickname: null },
     } as never);
     vi.mocked(db.promptVersion.findFirst).mockResolvedValue({ version: 1 } as never);
     vi.mocked(db.promptVersion.create).mockResolvedValue({} as never);

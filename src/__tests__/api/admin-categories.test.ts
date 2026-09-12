@@ -9,6 +9,9 @@ vi.mock("@/lib/db", () => ({
     category: {
       create: vi.fn(),
     },
+    user: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -23,6 +26,12 @@ vi.mock("next/cache", () => ({
 describe("POST /api/admin/categories", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(db.user.findUnique).mockResolvedValue({
+      id: "admin1",
+      role: "ADMIN",
+      adminPermissions: null,
+      deletedAt: null,
+    } as never);
   });
 
   it("should return 401 if not authenticated", async () => {
