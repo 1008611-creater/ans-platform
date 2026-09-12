@@ -69,6 +69,7 @@ describe("GET /api/prompts", () => {
         category: null,
         tags: [],
         contributors: [],
+        userExamples: [],
         _count: { votes: 5, contributors: 0 },
       },
     ];
