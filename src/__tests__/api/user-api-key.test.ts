@@ -20,6 +20,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/api-key", () => ({
   generateApiKey: vi.fn(),
+  hashApiKey: vi.fn((k: string) => "hashed:" + k),
 }));
 
 describe("GET /api/user/api-key", () => {
@@ -85,7 +86,7 @@ describe("GET /api/user/api-key", () => {
 
     expect(response.status).toBe(200);
     expect(data.hasApiKey).toBe(true);
-    expect(data.apiKey).toBe("pchat_abc123def456");
+    expect(data.apiKey).toBeNull();
   });
 
   it("should return mcpPromptsPublicByDefault setting", async () => {
@@ -139,7 +140,7 @@ describe("POST /api/user/api-key", () => {
 
     expect(db.user.update).toHaveBeenCalledWith({
       where: { id: "user1" },
-      data: { apiKey: "pchat_newkey123" },
+      data: { apiKey: "hashed:pchat_newkey123" },
     });
   });
 
