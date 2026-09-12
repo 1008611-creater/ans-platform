@@ -208,7 +208,7 @@ export default function ResetPasswordPage() {
             </Button>
           </div>
         ) : (
-          <Button type="button" className="w-full" onClick={sendCode} disabled={sending}>
+          <Button type="button" className="w-full" onClick={sendCode} disabled={sending || cooldown > 0}>
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
             {resendLabel}
           </Button>
