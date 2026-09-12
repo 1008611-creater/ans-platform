@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { NextApiRequest, NextApiResponse } from "next";
 
-// Mock all heavy dependencies before importing handler
+// Mock all heavy dependencies before importing the route handlers.
 vi.mock("@/lib/db", () => ({
   db: {
-    user: { findUnique: vi.fn() },
+    user: { findUnique: vi.fn(), update: vi.fn() },
     prompt: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn() },
     tag: { findUnique: vi.fn(), create: vi.fn() },
     $queryRaw: vi.fn(),
@@ -18,6 +17,10 @@ vi.mock("@/lib/rate-limit", () => ({
   mcpAiToolLimiter: { check: vi.fn().mockReturnValue({ allowed: true }) },
 }));
 
+vi.mock("@/lib/public-identity", () => ({
+  getPublicDisplayName: vi.fn((name: string) => name),
+}));
+
 vi.mock("@/../prompts.config", () => ({
   default: {
     features: { mcp: true },
@@ -26,6 +29,7 @@ vi.mock("@/../prompts.config", () => ({
 
 vi.mock("@/lib/api-key", () => ({
   isValidApiKeyFormat: vi.fn().mockReturnValue(false),
+  hashApiKey: vi.fn((key: string) => `hashed:${key}`),
 }));
 
 vi.mock("@/lib/skill-files", () => ({
@@ -35,79 +39,28 @@ vi.mock("@/lib/skill-files", () => ({
   DEFAULT_SKILL_FILE: "main.md",
 }));
 
-function createMockReq(method: string, overrides: Partial<NextApiRequest> = {}): NextApiRequest {
-  return {
-    method,
-    headers: {},
-    url: "/api/mcp",
-    socket: { remoteAddress: "127.0.0.1" },
-    ...overrides,
-  } as unknown as NextApiRequest;
-}
+// The MCP endpoint is an App Router route handler, so it exports Web-standard
+// Request/Response functions instead of a pages-router (req, res) handler.
+import * as mcpRoute from "@/app/api/mcp/route";
+import { GET, DELETE } from "@/app/api/mcp/route";
 
-function createMockRes(): NextApiResponse & {
-  _status: number;
-  _json: unknown;
-  _headers: Record<string, string>;
-  _ended: boolean;
-} {
-  const res = {
-    _status: 200,
-    _json: null,
-    _headers: {} as Record<string, string>,
-    _ended: false,
-    status(code: number) {
-      res._status = code;
-      return res;
-    },
-    json(data: unknown) {
-      res._json = data;
-      return res;
-    },
-    end() {
-      res._ended = true;
-      return res;
-    },
-    setHeader(key: string, value: string) {
-      res._headers[key] = value;
-      return res;
-    },
-    getHeader(key: string) {
-      return res._headers[key];
-    },
-    headersSent: false,
-    on: vi.fn(),
-  };
-  return res as unknown as NextApiResponse & typeof res;
-}
-
-describe("MCP API handler - HTTP method routing", () => {
-  let handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>;
-
-  beforeEach(async () => {
+describe("MCP API route - HTTP method routing", () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    // Dynamic import to pick up mocks
-    const mod = await import("@/pages/api/mcp");
-    handler = mod.default;
   });
 
   describe("GET requests", () => {
     it("should return 405 Method Not Allowed per MCP Streamable HTTP spec", async () => {
-      const req = createMockReq("GET");
-      const res = createMockRes();
+      const response = await GET();
 
-      await handler(req, res);
-
-      expect(res._status).toBe(405);
+      expect(response.status).toBe(405);
     });
 
     it("should return JSON-RPC error body", async () => {
-      const req = createMockReq("GET");
-      const res = createMockRes();
+      const response = await GET();
+      const data = await response.json();
 
-      await handler(req, res);
-
-      expect(res._json).toEqual({
+      expect(data).toEqual({
         jsonrpc: "2.0",
         error: expect.objectContaining({
           code: -32000,
@@ -118,70 +71,71 @@ describe("MCP API handler - HTTP method routing", () => {
     });
 
     it("should set Cache-Control: no-store to prevent caching stale 405s", async () => {
-      const req = createMockReq("GET");
-      const res = createMockRes();
+      const response = await GET();
 
-      await handler(req, res);
-
-      expect(res._headers["Cache-Control"]).toBe("no-store");
+      expect(response.headers.get("Cache-Control")).toBe("no-store");
     });
   });
 
   describe("DELETE requests", () => {
-    it("should return 204 No Content", async () => {
-      const req = createMockReq("DELETE");
-      const res = createMockRes();
+    it("should return 204 No Content with an empty body", async () => {
+      const response = await DELETE();
 
-      await handler(req, res);
-
-      expect(res._status).toBe(204);
-      expect(res._ended).toBe(true);
+      expect(response.status).toBe(204);
+      expect(await response.text()).toBe("");
     });
   });
 
   describe("unsupported methods", () => {
-    it("should return 405 for PUT", async () => {
-      const req = createMockReq("PUT");
-      const res = createMockRes();
-
-      await handler(req, res);
-
-      expect(res._status).toBe(405);
-    });
-
-    it("should return 405 for PATCH", async () => {
-      const req = createMockReq("PATCH");
-      const res = createMockRes();
-
-      await handler(req, res);
-
-      expect(res._status).toBe(405);
+    // The App Router only exposes handlers for the methods a route module
+    // exports. With no PUT/PATCH export, Next.js itself answers 405, so the
+    // regression guard is that these exports never appear.
+    it("should not export PUT or PATCH handlers", () => {
+      expect((mcpRoute as unknown as Record<string, unknown>).PUT).toBeUndefined();
+      expect((mcpRoute as unknown as Record<string, unknown>).PATCH).toBeUndefined();
     });
   });
 
   describe("MCP disabled", () => {
-    it("should return 404 when MCP feature is disabled", async () => {
-      // Re-mock config with mcp disabled
+    it("should return 404 from GET when MCP feature is disabled", async () => {
       vi.doMock("@/../prompts.config", () => ({
         default: { features: { mcp: false } },
       }));
-
-      // Re-import to get new mock
       vi.resetModules();
-      const mod = await import("@/pages/api/mcp");
-      const disabledHandler = mod.default;
 
-      const req = createMockReq("GET");
-      const res = createMockRes();
+      const mod = await import("@/app/api/mcp/route");
+      const response = await mod.GET();
 
-      await disabledHandler(req, res);
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: "MCP is not enabled" });
 
-      expect(res._status).toBe(404);
-
-      // Restore original mock
       vi.doMock("@/../prompts.config", () => ({
         default: { features: { mcp: true } },
       }));
+      vi.resetModules();
+    });
+
+    it("should return 404 from POST when MCP feature is disabled", async () => {
+      vi.doMock("@/../prompts.config", () => ({
+        default: { features: { mcp: false } },
+      }));
+      vi.resetModules();
+
+      const mod = await import("@/app/api/mcp/route");
+      const request = new Request("http://localhost/api/mcp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      });
+      const response = await mod.POST(request);
+
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: "MCP is not enabled" });
+
+      vi.doMock("@/../prompts.config", () => ({
+        default: { features: { mcp: true } },
+      }));
+      vi.resetModules();
     });
   });
 });
