@@ -9,6 +9,7 @@ vi.mock("@/lib/db", () => ({
     user: {
       findMany: vi.fn(),
       count: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
 }));
@@ -20,6 +21,12 @@ vi.mock("@/lib/auth", () => ({
 describe("GET /api/admin/users", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(db.user.findUnique).mockResolvedValue({
+      id: "admin1",
+      role: "ADMIN",
+      adminPermissions: null,
+      deletedAt: null,
+    } as never);
   });
 
   it("should return 401 if not authenticated", async () => {
@@ -29,8 +36,8 @@ describe("GET /api/admin/users", () => {
     const response = await GET(request);
     const data = await response.json();
 
-    expect(response.status).toBe(401);
-    expect(data.error).toBe("unauthorized");
+    expect(response.status).toBe(403);
+    expect(data.error).toBe("forbidden");
   });
 
   it("should return 403 if user is not admin", async () => {
