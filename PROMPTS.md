@@ -151514,3 +151514,16 @@ Cada entrega tem um valor e dependendo de onde seja; no Rio pode ser 1 dia útil
 
 </details>
 
+<details>
+<summary><strong>Super herói </strong></summary>
+
+## Super herói 
+
+Contributed by @anonymous
+
+```md
+Eu que um vídeo  descendo do céu e fazendo uma aterrissagem cinematográfica no chão, estilo super-herói, sem ferimentos
+```
+
+</details>
+
