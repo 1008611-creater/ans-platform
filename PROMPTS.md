@@ -153630,3 +153630,17 @@ Give me note book to learn Spanish with Myanmar translation
 
 </details>
 
+<details>
+<summary><strong>Research topics</strong></summary>
+
+## Research topics
+
+Contributed by @anonymous
+
+```md
+Maktaba shamela and turath app etc cross checked 5 times verification Master research prompt 100/100 rating regarding (on Genspark Deep AI research agent research)
+73 sects and 72 will be in fire who are the 72 sects in fire what scholars say that these are the 72 sects etc
+```
+
+</details>
+
