@@ -67,6 +67,7 @@ model User {
   checkIns                   CheckIn[]
   createdInvites             InviteCode[]           @relation("InviteCreator")
   redeemedInvites            InviteRedemption[]
+  sentInviteEmails           InviteEmailDelivery[]  @relation("InviteEmailActor")
   templates                  Template[]
   runs                       Run[]
   ownedTeams                 Team[]                 @relation("TeamOwner")
@@ -573,6 +574,7 @@ model InviteCode {
   expiresAt   DateTime?
   createdAt   DateTime           @default(now())
   redemptions InviteRedemption[]
+  emailDeliveries InviteEmailDelivery[]
 
   @@index([creatorId])
   @@map("invite_codes")
@@ -589,6 +591,20 @@ model InviteRedemption {
   @@unique([codeId, usedById])
   @@index([usedById])
   @@map("invite_redemptions")
+}
+
+model InviteEmailDelivery {
+  id        String     @id @default(cuid())
+  codeId    String
+  code      InviteCode @relation(fields: [codeId], references: [id], onDelete: Cascade)
+  actorId   String
+  actor     User       @relation("InviteEmailActor", fields: [actorId], references: [id], onDelete: Cascade)
+  email     String
+  createdAt DateTime   @default(now())
+
+  @@index([codeId, email, createdAt])
+  @@index([actorId])
+  @@map("invite_email_deliveries")
 }
 
 enum TemplateStatus {
