@@ -55,6 +55,12 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ email: target }),
       });
       const data = (await response.json().catch(() => null)) as ResetResponse;
+
+      if (response.status === 429 && data?.error === "daily_limit") {
+        setError(data?.message || "今日验证码发送次数已达上限，请明天再试");
+        return;
+      }
+
       const retry = readRetryAfter(response, data);
       if (retry) setCooldown(retry);
 
