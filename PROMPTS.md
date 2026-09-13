@@ -152930,3 +152930,254 @@ Contributed by @anonymous
 
 </details>
 
+<details>
+<summary><strong>Reorganizar projeto</strong></summary>
+
+## Reorganizar projeto
+
+Contributed by [@josevictorp](https://github.com/josevictorp)
+
+```md
+Reorganize este projeto para que Codex, Claude e eu consigamos compreender,
+localizar, retomar e desenvolver suas diferentes frentes com menos atrito.
+
+A convenção persistente do projeto deve orientar seu trabalho. Trate esta
+solicitação como uma combinação de diagnóstico, planejamento, reorganização,
+verificação e registro.
+
+OBJETIVO
+
+Quero uma estrutura coerente para um projeto de cliente que contém diferentes
+tipos de trabalho, como:
+
+- produto e desenvolvimento;
+- sites e landing pages;
+- copy;
+- aquisição e marketing;
+- medição e analytics;
+- CRM e automações;
+- infraestrutura;
+- reuniões e materiais para o cliente;
+- pesquisas;
+- documentação;
+- entregas concluídas;
+- arquivos operacionais.
+
+Não presuma que essas categorias precisam se tornar exatamente essas pastas.
+Primeiro descubra quais frentes realmente existem e como o repositório funciona.
+
+RESULTADO ESPERADO
+
+Ao terminar, deve ser fácil identificar:
+
+- o que é contexto geral do cliente;
+- quais produtos e iniciativas existem;
+- quais frentes estão ativas;
+- onde está a fonte canônica de cada entrega;
+- quais documentos são históricos;
+- quais planos ainda estão ativos;
+- quais artefatos pertencem a cada iniciativa;
+- quais arquivos são operacionais ou gerados;
+- o que está concluído;
+- o que está pendente;
+- como uma nova sessão deve começar;
+- como Codex e Claude evitam trabalhar sobre os mesmos arquivos;
+- quais comandos verificam que a reorganização não quebrou o projeto.
+
+AUTONOMIA
+
+Você pode autonomamente:
+
+- inspecionar todo o repositório;
+- analisar Git, branches e alterações locais;
+- mapear arquivos e dependências;
+- identificar duplicações;
+- criar um plano proporcional;
+- propor e aplicar uma taxonomia;
+- criar diretórios;
+- mover arquivos quando for seguro;
+- atualizar referências internas;
+- consolidar índices;
+- arquivar documentos obsoletos sem apagar o histórico;
+- adaptar AGENTS.md, CLAUDE.md e a convenção compartilhada;
+- criar uma branch ou worktree;
+- executar testes e builds;
+- criar commits locais coerentes e reversíveis quando permitido pelas regras do
+  repositório;
+- solicitar revisão de outro agente quando isso agregar segurança.
+
+Não precisa me consultar sobre nomes de pastas, organização interna ou outras
+decisões reversíveis, desde que preserve o conteúdo, a rastreabilidade e o
+funcionamento.
+
+Não faça push, merge, deploy, publicação, alteração de produção ou acesso a
+sistemas externos sem autorização aplicável.
+
+Não exclua arquivos materiais apenas porque parecem obsoletos. Prefira
+classificar, arquivar ou registrar uma recomendação de exclusão.
+
+PROCEDIMENTO
+
+1. Leia as instruções persistentes do projeto.
+
+2. Confirme a raiz correta do repositório.
+
+3. Inspecione:
+   - árvore de diretórios;
+   - arquivos de entrada;
+   - documentação;
+   - projetos e produtos;
+   - planos e handoffs;
+   - scripts;
+   - builds;
+   - configurações;
+   - arquivos gerados;
+   - Git;
+   - branches;
+   - alterações rastreadas e não rastreadas;
+   - histórico recente;
+   - referências entre arquivos.
+
+4. Identifique frentes independentes. Não misture, por conveniência:
+   - desenvolvimento de produto;
+   - landing pages;
+   - copy;
+   - aquisição;
+   - medição;
+   - CRM;
+   - automações;
+   - infraestrutura;
+   - materiais de reunião;
+   - trabalho operacional.
+
+5. Para cada frente, identifique:
+   - propósito;
+   - estado;
+   - fonte canônica;
+   - arquivos relacionados;
+   - dependências;
+   - documentação;
+   - trabalho ativo;
+   - artefatos históricos;
+   - riscos de movimentação.
+
+6. Detecte:
+   - arquivos duplicados;
+   - documentos concorrentes;
+   - nomes ambíguos;
+   - conteúdo desatualizado;
+   - referências quebradas;
+   - arquivos fora de contexto;
+   - pastas que misturam domínios;
+   - handoffs ainda tratados como estado atual;
+   - planos já concluídos;
+   - arquivos gerados ou temporários;
+   - alterações paralelas que precisam ser preservadas.
+
+7. Antes de mover arquivos, localize referências que possam quebrar:
+   - imports;
+   - scripts;
+   - configurações;
+   - comandos;
+   - links Markdown;
+   - caminhos de build;
+   - CI;
+   - deploy;
+   - documentação;
+   - automações;
+   - arquivos ignorados;
+   - referências externas conhecidas.
+
+8. Defina uma estrutura proporcional que:
+   - preserve produtos e iniciativas como unidades compreensíveis;
+   - separe contexto geral do cliente de entregas específicas;
+   - diferencie trabalho ativo de histórico;
+   - evite diretórios genéricos usados como depósito;
+   - evite profundidade excessiva;
+   - não replique a mesma informação;
+   - permita crescimento futuro;
+   - não seja específica demais para a fotografia atual do projeto.
+
+9. Crie um plano de migração antes das movimentações materiais.
+
+10. Se o plano estiver suficientemente sustentado pelo estado real e todas as
+    mudanças forem seguras e reversíveis, execute a reorganização sem esperar
+    uma confirmação intermediária.
+
+11. Se encontrar uma escolha que altere materialmente o significado, o escopo
+    ou a propriedade de uma frente, registre-a e solicite minha decisão.
+
+12. Durante a reorganização:
+    - preserve alterações não relacionadas;
+    - não sobrescreva trabalho ativo;
+    - mova arquivos preservando histórico quando possível;
+    - atualize todas as referências afetadas;
+    - faça mudanças em etapas verificáveis;
+    - evite reformular conteúdo apenas porque está movendo arquivos;
+    - não transforme reorganização em reescrita geral do projeto.
+
+13. Depois:
+    - procure referências aos caminhos antigos;
+    - execute builds e testes aplicáveis;
+    - valide links e scripts;
+    - verifique Git;
+    - - confirme que nenhum arquivo foi perdido;
+    - diferencie movimentação, alteração de conteúdo e arquivo novo;
+    - registre decisões estruturais que mereçam persistir;
+    - atualize os pontos de entrada do Codex e Claude;
+    - deixe explícito como uma nova sessão encontra cada frente.
+
+14. Renomeie esta sessão, quando possível, para:
+    Estrutura do repositório — reorganização
+
+CUIDADOS ESPECÍFICOS
+
+Este é um repositório com trabalhos paralelos e histórico importante.
+
+Não presuma que arquivos não rastreados são descartáveis.
+
+Não inclua alterações paralelas em commits da reorganização.
+
+Não altere produção, CRM, Meta, Kiwify, coletor, VPS ou outros sistemas externos
+para validar uma reorganização local.
+
+Não trate informações históricas sobre esses sistemas como confirmação do seu
+estado atual.
+
+Landing pages pages, medição, aquisição, copy, infraestrutura e automações podem
+compartilhar o mesmo cliente, mas não devem ser misturadas como se fossem uma
+única entrega.
+
+Se houver várias versões de um artefato, determine a fonte canônica com base em
+evidências. Não escolha somente pelo nome ou pela data do arquivo.
+
+RELATÓRIO FINAL
+
+Ao terminar, informe em português brasileiro:
+
+- diagnóstico inicial;
+- critérios usados para organizar;
+- estrutura anterior resumida;
+- estrutura final;
+- arquivos e diretórios movidos;
+- arquivos criados;
+- conteúdo alterado;
+- referências atualizadas;
+- documentos consolidados;
+- materiais arquivados;
+- duplicações preservadas por incerteza;
+- testes e verificações executados;
+- resultado das verificações;
+- alterações paralelas preservadas;
+- decisões tomadas;
+- decisões que ainda dependem de mim;
+- branch e commits;
+- ações externas não executadas;
+- limitações e próximos passos.
+
+Não declare a reorganização concluída se ainda existirem caminhos quebrados,
+arquivos perdidos ou fontes canônicas indefinidas.
+```
+
+</details>
+
