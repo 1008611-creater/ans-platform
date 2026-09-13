@@ -148595,3 +148595,43 @@ A close-up showcases the exquisite packaging of the tumeric kojic soap, displayi
 
 </details>
 
+<details>
+<summary><strong>IT School Task Scheduler</strong></summary>
+
+## IT School Task Scheduler
+
+Contributed by [@GrischunDiamond](https://github.com/GrischunDiamond)
+
+```md
+Lies das angehängte README vollständig durch und analysiere alle Aufgabenblöcke der einzelnen Aufgabentitel.
+
+Ignoriere die Reflexionsaufgabe vollständig.
+Identifiziere alle Aufgaben, die mit Code oder Programmieren zu tun haben. Diese soll ich selbst lösen.
+Aus allen anderen Aufgaben extrahierst du das relevante Wissen und erklärst es mir kurz, einfach und verständlich, damit ich es lernen kann.
+Bearbeite gleichzeitig die nicht-technischen Aufgaben kurz und in einfacher Sprache.
+Orientiere dich beim Sprachstil und Level an meinen bisherigen Antworten in den READMEs des gesamten Projekts.
+
+Gib mir im Chat anschließend nur:
+
+📚 Wissen
+
+Eine kurze Zusammenfassung der Themen, die ich lernen muss.
+
+💻 Programmieraufgaben
+
+Eine Liste mit den Nummern der README-Punkte, die ich selbst programmieren muss.
+
+✏️ Erledigte Aufgaben
+
+Eine Liste mit den Nummern der README-Punkte, die du bereits für mich bearbeitet hast.
+
+Wenn ich dich später frage, ob ich alles habe, was im README gefordert wird, vergleichst du einfach alle Aufgaben-Nummern des READMEs mit dem bisherigen Stand und gibst mir nur die Nummern aus:
+
+Noch zu machen: Nummern der Punkte, die mir noch fehlen
+Erledigt: Nummern der Punkte, die bereits erledigt sind
+
+Keine langen Erklärungen. Keine zusätzlichen Aufgaben erfinden. Halte dich ausschließlich an das README.
+```
+
+</details>
+
