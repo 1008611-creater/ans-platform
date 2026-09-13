@@ -1,4 +1,6 @@
 name: Update Contributors
+permissions:
+  contents: write
 
 on:
   schedule:
