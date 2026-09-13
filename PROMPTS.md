@@ -151229,3 +151229,16 @@ If that data model is correct, the rest of the application can evolve without ne
 
 </details>
 
+<details>
+<summary><strong>Change the attire</strong></summary>
+
+## Change the attire
+
+Contributed by @anonymous
+
+```md
+I want to change the attire of this image to something with good clothes and should change the background to some famous places
+```
+
+</details>
+
