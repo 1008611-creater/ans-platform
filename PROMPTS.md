@@ -153617,3 +153617,16 @@ Mein Agent du kannst Formulare ausfüllen Briefe schreiben Email schreiben kanns
 
 </details>
 
+<details>
+<summary><strong>Give me text book to learn Spanish with Myanmar language </strong></summary>
+
+## Give me text book to learn Spanish with Myanmar language 
+
+Contributed by @anonymous
+
+```md
+Give me note book to learn Spanish with Myanmar translation 
+```
+
+</details>
+
