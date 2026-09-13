@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { legacyResetToken, resetToken } from "@/lib/password-reset";
 
 type Row = { identifier: string; token: string; expires: Date };
-type User = { id: string; password: string };
+type User = { id: string; password: string; passwordChangedAt?: Date | null };
 type Where = Record<string, unknown>;
 type Args = { where: Where; data?: Record<string, unknown> };
 
@@ -37,6 +37,7 @@ const tx = {
       const user = users.get(String(where.email));
       if (!user) throw new Error("missing user");
       user.password = String(data?.password);
+      if (data?.passwordChangedAt) user.passwordChangedAt = data.passwordChangedAt as Date;
       if (state.updateFailure) throw new Error("update failed after mutation");
       return { count: 1 };
     }),
@@ -74,7 +75,7 @@ function deliveredCode() {
 describe("password reset security", () => {
   beforeEach(() => {
     vi.clearAllMocks(); vi.useFakeTimers(); vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
-    rows.clear(); users.clear(); users.set(email, { id: "u1", password: "old" }); state.updateFailure = false;
+    rows.clear(); users.clear(); users.set(email, { id: "u1", password: "old", passwordChangedAt: null }); state.updateFailure = false;
     vi.stubEnv("AUTH_SECRET", secret);
     vi.stubEnv("RESEND_API_KEY", "key");
     vi.stubEnv("EMAIL_FROM", "noreply@example.com");
@@ -157,5 +158,11 @@ describe("password reset security", () => {
     await requestCode(post({ email })); const code = deliveredCode(); state.updateFailure = true;
     expect((await confirmCode(post({ email, token: code, password: "newpass" }))).status).toBe(500);
     expect(users.get(email)?.password).toBe("old"); expect([...rows.values()].some(row => row.identifier === `password-reset:${email}`)).toBe(true);
+  });
+
+  it("records passwordChangedAt when a reset succeeds", async () => {
+    await requestCode(post({ email })); const code = deliveredCode();
+    expect((await confirmCode(post({ email, token: code, password: "newpass" }))).status).toBe(200);
+    expect(users.get(email)?.passwordChangedAt).toBeInstanceOf(Date);
   });
 });
