@@ -126841,3 +126841,18 @@ CAR:
 “YOU’VE BEEN HERE BEFORE.”
 GIRL:
 “I DON’T REMEMBER THIS PLACE.”",FALSE,TEXT,nm9259762@gmail.com
+Testing-skill,"---
+name: testing-skill
+description: Need a testing skill for testing web site
+1. Test user module
+
+---
+
+# টেস্টিং ওয়েব অ্যাপ্লিকেশন
+
+Describe what this skill does and how the agent should use it.
+
+## Instructions
+
+- Step 1: ...
+- Step 2: ...",FALSE,TEXT,giassuudin@gmail.com
