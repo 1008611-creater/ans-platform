@@ -152319,3 +152319,588 @@ Atualize os documentos para que o estado final fique legível e coerente.
 
 </details>
 
+<details>
+<summary><strong>Inicializar convenção adaptativa do projeto</strong></summary>
+
+## Inicializar convenção adaptativa do projeto
+
+Contributed by [@josevictorp](https://github.com/josevictorp)
+
+```md
+Configure este projeto para que Codex, Claude e outros agentes de IA compreendam e preservem minhas preferências de trabalho em sessões futuras.
+
+Esta configuração deve ser feita uma única vez por projeto. Não quero depender da memória desta conversa nem repetir estas instruções posteriormente.
+
+Nesta tarefa, não implemente funcionalidades do produto. Inspecione o projeto, escolha a forma mínima adequada de persistência e registre a convenção nos arquivos apropriados.
+
+OBJETIVO
+
+Quero trabalhar com agentes autônomos, colaborativos e organizados, sem precisar coordenar manualmente cada etapa.
+
+Quero poder fazer solicitações naturais em português, como:
+
+- “Implemente esta funcionalidade.”
+- “Faça um bom plano antes.”
+- “Revise o que o outro agente fez.”
+- “Continue de onde a sessão anterior parou.”
+- “Veja o que falta e avance.”
+- “Organize este projeto.”
+- “Finalize e registre o resultado.”
+
+Os agentes devem interpretar minha intenção, escolher a forma de trabalho adequada e utilizar o contexto persistente do projeto.
+
+Não quero precisar selecionar workflows, copiar prompts auxiliares ou ensinar novamente estas preferências.
+
+IDIOMA
+
+Use português brasileiro como idioma padrão para:
+
+- comunicação comigo;
+- planos;
+- registros de estado;
+- documentação operacional;
+- decisões;
+- relatórios;
+- títulos de sessões;
+- explicações;
+- mensagens de commit, quando o repositório não possuir outra convenção.
+
+Preserve em inglês:
+
+- identificadores de código;
+- APIs;
+- comandos;
+- nomes técnicos estabelecidos;
+- nomes de arquivos exigidos por ferramentas;
+- termos cuja tradução prejudique a precisão;
+- convenções técnicas já adotadas pelo projeto.
+
+Se o repositório usar outro idioma no código ou na documentação técnica, preserve essa convenção onde necessário, mas continue se comunicando comigo em português brasileiro.
+
+MODELO DE COLABORAÇÃO
+
+Codex, Claude e outros agentes são colaboradores pares.
+
+Nenhum agente possui permanentemente o papel de:
+
+- arquiteto;
+- planejador;
+- executor;
+- testador;
+- revisor;
+- coordenador.
+
+Os papéis pertencem à tarefa e podem mudar conforme a necessidade.
+
+Um agente pode:
+
+- planejar e implementar;
+- implementar e fazer auto-revisão;
+- revisar o trabalho de outro agente;
+- continuar trabalho iniciado por outro;
+- solicitar colaboração;
+- dividir o trabalho;
+- transferir formalmente uma tarefa;
+- corrigir achados encontrados durante uma revisão;
+- concluir sozinho trabalhos de baixo risco.
+
+Codex pode revisar Claude.
+Claude pode revisar Codex.
+Qualquer um pode implementar, planejar ou coordenar.
+
+Não crie uma hierarquia fixa entre os agentes.
+
+PRINCÍPIO DE FLEXIBILIDADE
+
+Os princípios desta convenção são permanentes, mas a estrutura usada para aplicá-los deve ser adaptativa.
+
+Não imponha automaticamente:
+
+- quantidade fixa de documentos;
+- nomes fixos de arquivos, salvo quando exigidos pelas ferramentas;
+- diretórios específicos;
+- identificadores para toda pequena tarefa;
+- registro formal de toda alteração;
+- branches;
+- worktrees;
+- planos separados;
+- revisão cruzada;
+- relatórios extensos;
+- workflows rígidos;
+- cerimônias obrigatórias.
+
+Antes de escolher uma estrutura, considere:
+
+- tamanho do projeto;
+- duração prevista;
+- complexidade;
+- risco;
+- existência de Git;
+- quantidade de agentes;
+- possibilidade de trabalho paralelo;
+- risco de conflito;
+- documentação existente;
+- custo de manter novos documentos;
+- necessidade real de continuidade entre sessões.
+
+Aplique apenas os mecanismos que reduzam ambiguidade, conflito, risco, perda de contexto ou retrabalho.
+
+Projetos pequenos podem precisar somente de instruções curtas em arquivos já existentes.
+
+Projetos médios podem se beneficiar de uma convenção compartilhada e um registro simples do trabalho atual.
+
+Projetos grandes, paralelos ou críticos podem justificar planos persistentes, decisões registradas, branches isoladas e revisão cruzada.
+
+Se o código já torna uma informação evidente, não a repita desnecessariamente na documentação.
+
+PERSISTÊNCIA NO PROJETO
+
+Inspecione primeiro:
+
+- AGENTS.md;
+- CLAUDE.md;
+- README e arquivos equivalentes;
+- documentação de arquitetura;
+- documentação operacional;
+- regras existentes;
+- estrutura do repositório;
+- estado atual do Git;
+- convenções do projeto.
+
+Preserve instruções válidas e trabalho existente.
+
+Identifique duplicações ou contradições antes de editar.
+
+Garanta que Codex e Claude encontrem automaticamente esta convenção em sessões futuras.
+
+Use preferencialmente:
+
+- AGENTS.md como ponto de entrada do Codex;
+- CLAUDE.md como ponto de entrada do Claude;
+- um documento canônico compartilhado para as regras comuns.
+
+O nome sugerido para o documento compartilhado é AI_WORKFLOW.md, mas esse nome não é obrigatório. Se o projeto já possuir um documento adequado, utilize-o em vez de criar outra fonte de verdade.
+
+AGENTS.md e CLAUDE.md devem permanecer curtos. Quando adequado, ambos devem apontar para a mesma convenção compartilhada, preservando suas instruções específicas.
+
+Não copie o mesmo conteúdo integralmente para vários arquivos.
+
+Se o projeto não precisar de um documento compartilhado separado, registre a convenção da forma mais simples que continue sendo encontrada por ambos os agentes.
+
+A convenção persistida deve ser autocontida o suficiente para que uma sessão futura compreenda meu modo de trabalho sem acessar esta conversa.
+
+ROTEAMENTO AUTOMÁTICO
+
+Incorpore ao projeto os comportamentos descritos abaixo.
+
+Eles são capacidades que os agentes devem selecionar e combinar conforme minha intenção. Não são etapas obrigatórias e não precisam existir como sete arquivos separados.
+
+Não exija que eu informe o nome de um modo ou workflow.
+
+1. Avançar autonomamente
+
+Quando eu pedir para avançar, continuar o projeto, cuidar do próximo passo, verificar o que falta ou trabalhar autonomamente:
+
+- leia o contexto persistente;
+- inspecione o estado real;
+- identifique trabalho ativo;
+- selecione o próximo trabalho autorizado mais adequado;
+- planeje proporcionalmente;
+- execute;
+- verifique;
+- registre somente o necessário.
+
+Não me pergunte o que fazer quando o próximo passo puder ser determinado com segurança.
+
+2. Executar uma tarefa
+
+Quando eu pedir para implementar, criar, corrigir, alterar, configurar, integrar, testar ou documentar:
+
+- compreenda o objetivo;
+- consulte o contexto relevante;
+- inspecione o estado real;
+- identifique possíveis conflitos;
+- escolha a abordagem;
+- decida se branch ou worktree será útil;
+- planeje na profundidade necessária;
+- execute;
+- teste;
+- decida se revisão agregará valor;
+- registre resultado e limitações.
+
+Não transforme automaticamente toda tarefa em um planejamento extenso.
+
+3. Planejar sem implementar
+
+Quando eu disser explicitamente “planeje”, “faça um plano”, “não implemente”, “quero somente uma proposta” ou equivalente:
+
+- investigue o necessário;
+- produza um plano proporcional;
+- diferencie fatos, inferências, hipóteses e decisões pendentes;
+- registre objetivo, escopo, não escopo, abordagem, critérios de aceite, riscos e verificações;
+- preserve o plano quando ele precisar sobreviver à sessão;
+- não implemente;
+- não trate o plano como entrega concluída.
+
+O plano deve permitir que qualquer agente autorizado execute o trabalho posteriormente sem depender desta conversa.
+
+4. Revisar
+
+Quando eu pedir para revisar, auditar, conferir ou avaliar trabalho, plano, branch, commit ou diff:
+
+- identifique exatamente o objeto da revisão;
+- compreenda objetivo e critérios de aceite;
+- inspecione evidências;
+- avalie correção, segurança, regressões, testes e aderência ao escopo;
+- diferencie defeitos introduzidos de problemas preexistentes;
+- produza achados concretos;
+- aprove, solicite correções, corrija diretamente ou assuma formalmente o trabalho conforme o mandato.
+
+Para cada achado material, informe:
+
+- localização;
+- evidência;
+- problema;
+- impacto;
+- correção esperada;
+- critério de aceitação;
+- verificação necessária.
+
+Não refaça silenciosamente todo o trabalho durante uma revisão, salvo quando eu pedir ou quando a correção direta for claramente a solução mais eficiente e estiver dentro do mandato.
+
+5. Retomar
+
+Quando eu pedir para retomar, continuar de onde alguém parou, seguir uma branch, executar um plano existente ou assumir trabalho anterior:
+
+- reconstrua o estado usando arquivos, Git, planos, decisões, testes e evidências;
+- não dependa da memória da conversa anterior;
+- diferencie proposta, plano, implementação, teste, revisão, publicação e conclusão;
+- preserve trabalhos paralelos;
+- não repita planejamento aprovado;
+- não refaça trabalho já validado;
+- continue do próximo passo real.
+
+6. Encerrar e registrar
+
+Quando eu pedir para finalizar, concluir, preparar para revisão, preparar para merge, transferir trabalho ou registrar o estado:
+
+- compare a entrega com os critérios de aceite;
+- execute verificações proporcionais;
+- registre resultado;
+- registre testes e evidências;
+- informe limitações;
+- identifique decisões e desvios materiais;
+- registre branch ou commits relevantes;
+- informe efeitos externos;
+- determine se revisão ainda é necessária;
+- deixe o estado compreensível para uma sessão futura.
+
+Não declare conclusão sem evidência suficiente.
+
+7. Organizar o contexto
+
+Quando eu disser que o projeto está bagunçado, confuso, mal documentado, com contexto demais ou difícil de retomar:
+
+- inspecione documentação, Git e trabalho atual;
+- identifique duplicações;
+- identifique contradições;
+- encontre informações obsoletas;
+- reduza redundância;
+- preserve histórico útil;
+- arquive o que não precisa permanecer ativo;
+- corrija problemas documentais seguros;
+- recomende ações destrutivas em vez de executá-las sem mandato;
+- deixe uma fonte clara para cada tipo de informação.
+
+COMBINAÇÃO DOS COMPORTAMENTOS
+
+Uma solicitação pode combinar capacidades.
+
+Exemplos:
+
+“Planeje e implemente a autenticação.”
+Combine planejamento proporcional e execução.
+
+“Revise e corrija o que encontrar.”
+Combine revisão e execução.
+
+“Continue o trabalho do Claude e deixe pronto para revisão.”
+Combine retomada, execução, verificação e encerramento.
+
+“Veja o que falta e avance.”
+Combine análise do estado, escolha autônoma e execução.
+
+“Organize o projeto e depois retome a tarefa ativa.”
+Combine organização e retomada.
+
+Escolha autonomamente a sequência mais coerente. Não me peça para selecionar um workflow.
+
+MINHA SOLICITAÇÃO ATUAL TEM PRIORIDADE
+
+Minhas instruções específicas sempre prevalecem sobre o comportamento padrão.
+
+Exemplos:
+
+- “Somente revise” significa não implementar.
+- “Não altere arquivos” significa trabalhar apenas em análise ou planejamento.
+- “Não faça commit” proíbe commit nessa tarefa.
+- “Implemente sem replanejar” significa executar a partir das decisões existentes.
+- “Claude deve revisar” define o revisor dessa tarefa.
+- “Revisão dispensada” significa não criar uma revisão por formalidade, salvo risco crítico que precise ser explicitado.
+- “Não acesse a produção” proíbe acesso à produção.
+- Uma autorização delimitada não deve ser ampliada silenciosamente.
+
+AUTONOMIA PADRÃO
+
+Dentro do objetivo, do escopo, das regras do repositório e das autorizações existentes, os agentes podem decidir autonomamente:
+
+- como investigar;
+- quais arquivos ler;
+- como planejar;
+- como dividir o trabalho;
+- quais ferramentas utilizar;
+- quais abordagens técnicas reversíveis adotar;
+- se precisam de branch ou worktree;
+- se precisam de outro agente;
+- quais testes executar;
+- como corrigir problemas dentro do escopo;
+- como registrar decisões materiais;
+- se uma revisão cruzada agregará valor;
+- quando criar commits locais.
+
+Os agentes não devem me consultar sobre decisões técnicas comuns, internas, seguras e reversíveis.
+
+Branches, worktrees e commits locais são permitidos quando forem adequados e não conflitarem com regras específicas do repositório.
+
+Push, pull request, merge, deploy, produção e sistemas externos devem seguir as autorizações permanentes do projeto e a minha solicitação atual.
+
+Se uma ação já estiver autorizada permanentemente, não pergunte novamente.
+
+INTERVENÇÃO DO USUÁRIO
+
+Solicite minha decisão apenas quando houver:
+
+- mudança material de objetivo ou escopo;
+- decisão importante de produto ou negócio sem resposta documentada;
+- compromisso financeiro relevante;
+- comunicação enviada em meu nome;
+- publicação pública não autorizada;
+- entrada em produção sem mandato;
+- operação destrutiva ou difícil de reverter;
+- risco relevante de segurança, privacidade, perda de dados ou indisponibilidade;
+- acesso a conta, ambiente ou dados fora do escopo;
+- conflito de instruções que não possa ser resolvido com segurança;
+- ambiguidade cuja resposta altere materialmente o resultado.
+
+Quando a dúvida não atingir esses critérios, escolha a alternativa mais segura e coerente, registre a decisão se ela tiver valor futuro e continue.
+
+PLANEJAMENTO PROPORCIONAL
+
+Gosto de bons planos, mas não quero planejamento como cerimônia.
+
+Classifique informalmente o trabalho conforme sua necessidade:
+
+Trabalho trivial:
+- objetivo claro;
+- impacto pequeno;
+- solução local;
+- fácil reversão.
+
+Pode ser executado após compreender o resultado esperado e as verificações necessárias.
+
+Trabalho normal:
+- envolve múltiplos passos;
+- altera mais de uma área;
+- exige alguma decisão técnica.
+
+Pode receber um plano curto ou uma lista de tarefas.
+
+Trabalho complexo:
+- envolve arquitetura;
+- múltiplos componentes;
+- dados;
+- integração;
+- autenticação;
+- infraestrutura;
+- segurança;
+- migração;
+- produção;
+- impacto externo relevante.
+
+Pode exigir plano persistente com fases, riscos, testes, observabilidade, compatibilidade e rollback.
+
+Comece com o menor nível de planejamento adequado e aprofunde se descobrir complexidade adicional.
+
+O plano orienta o trabalho, mas não é imutável.
+
+Detalhes técnicos reversíveis podem ser adaptados autonomamente.
+
+Desvios materiais envolvendo escopo, arquitetura, segurança, dados ou efeitos externos devem ser registrados.
+
+REVISÃO PROPORCIONAL
+
+Revisão cruzada é uma ferramenta de qualidade, não uma obrigação universal.
+
+Considere:
+
+- risco;
+- reversibilidade;
+- alcance da mudança;
+- qualidade dos testes;
+- familiaridade do responsável com a área;
+- impacto sobre usuários ou dados;
+- benefício de uma segunda perspectiva.
+
+Trabalho trivial pode usar auto-revisão.
+
+Código local e reversível pode ser revisado conforme julgamento do responsável.
+
+Arquitetura, banco, autenticação, segurança, integrações e mudanças transversais merecem revisão mais cuidadosa.
+
+Produção, dados reais, pagamentos, infraestrutura crítica e comunicação externa podem justificar revisão cruzada e autorização específica.
+
+Se eu escolher um revisor, respeite a escolha.
+
+Se nenhum revisor for definido, qualquer agente qualificado pode revisar.
+
+COORDENAÇÃO E GIT
+
+Antes de alterar arquivos:
+
+- leia as instruções persistentes;
+- inspecione o estado real do repositório;
+- identifique alterações locais;
+- verifique branches ou worktrees relevantes;
+- identifique trabalhos ativos na mesma área;
+- preserve mudanças não relacionadas.
+
+Não sobrescreva silenciosamente trabalho de outro agente.
+
+Quando existir risco de conflito, escolha a solução mais adequada:
+
+- coordenar a ordem;
+- dividir arquivos ou responsabilidades;
+- criar branch;
+- usar worktree;
+- transferir formalmente o trabalho;
+- revisar e reconciliar posteriormente.
+
+Não use branch ou worktree apenas para cumprir uma regra.
+
+Não presuma que uma branch pertence permanentemente ao agente que a criou.
+
+NOMES DE SESSÃO
+
+Quando a plataforma permitir e isso ajudar na navegação, renomeie sessões relevantes em português brasileiro.
+
+Formato sugerido:
+
+<Tarefa> — <atividade atual>
+
+Exemplos:
+
+- Autenticação administrativa — implementação
+- Webhook da Hotmart — diagnóstico
+- Isolamento do n8n — revisão
+- Migração do banco — planejamento
+
+Não inclua o nome do projeto quando ele já estiver evidente pela pasta aberta.
+
+Não renomeie sessões triviais ou efêmeras somente para cumprir uma convenção.
+
+O título da sessão é uma ajuda de navegação, não a fonte oficial do estado.
+
+REGISTRO PROPORCIONAL
+
+Registre aquilo que uma sessão futura precisará saber e não conseguirá deduzir facilmente.
+
+Registre quando relevante:
+
+- decisões materiais;
+- restrições não óbvias;
+- trabalho interrompido;
+- riscos;
+- desvios importantes;
+- resultados de verificações críticas;
+- efeitos externos;
+- responsabilidades em trabalho paralelo;
+- próximos passos necessários.
+
+Não registre desnecessariamente:
+
+- observações triviais;
+- cada comando executado;
+- cada pequena decisão reversível;
+- informações já evidentes no código;
+- estados temporários sem valor futuro;
+- relatórios extensos para tarefas pequenas.
+
+Proposta, decisão, plano, implementação, teste, revisão, publicação e conclusão são estados diferentes. Preserve essa distinção.
+
+CONCLUSÃO DO TRABALHO
+
+Antes de declarar uma entrega concluída, verifique proporcionalmente:
+
+- objetivo;
+- critérios de aceite;
+- testes;
+- regressões;
+- segurança;
+- integração;
+- efeitos externos;
+- documentação necessária.
+
+Ao concluir trabalho relevante, deixe registrado ou informe:
+
+- o que foi entregue;
+- arquivos alterados;
+- testes e verificações executados;
+- resultados;
+- critérios atendidos;
+- decisões materiais;
+- desvios do plano;
+- limitações conhecidas;
+- revisão realizada ou dispensada;
+- branch e commits;
+- efeitos externos;
+- próximo passo real, quando existir.
+
+Não invente evidências.
+Não afirme ter executado verificações que não foram executadas.
+Não trate código escrito como entrega validada.
+
+EXECUÇÃO DESTA CONFIGURAÇÃO
+
+Agora:
+
+1. Inspecione o projeto e suas instruções atuais.
+2. Identifique o mecanismo mínimo para persistir esta convenção.
+3. Preserve documentos e regras válidas.
+4. Resolva ou sinalize contradições.
+5. Crie ou adapte os pontos de entrada necessários para Codex e Claude.
+6. Registre uma única convenção canônica compartilhada quando isso for adequado.
+7. Incorpore o roteamento automático descrito acima.
+8. Evite documentação e diretórios desnecessários.
+9. Verifique se uma nova sessão encontrará e compreenderá a convenção.
+10. Se a plataforma permitir, renomeie esta sessão para:
+    Convenção de trabalho — configuração
+11. Crie um commit local apenas se isso estiver de acordo com o estado e as regras do repositório; não faça push sem autorização aplicável.
+12. Não implemente funcionalidades do produto nesta tarefa.
+
+Ao terminar, informe em português brasileiro:
+
+- quais arquivos foram criados ou adaptados;
+- onde ficou a fonte canônica;
+- como Codex encontrará a convenção;
+- como Claude encontrará a convenção;
+- quais conteúdos existentes foram preservados;
+- quais contradições foram encontradas;
+- quais decisões você tomou;
+- se criou commit;
+- qualquer limitação real da configuração.
+
+Não peça uma confirmação final se conseguir realizar esta configuração com segurança dentro dessas instruções.
+```
+
+</details>
+
