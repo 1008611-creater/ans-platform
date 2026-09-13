@@ -147468,3 +147468,16 @@ Hold that standard.
 
 </details>
 
+<details>
+<summary><strong>Abk</strong></summary>
+
+## Abk
+
+Contributed by @anonymous
+
+```md
+To help me Edith create image I want him to do and also help me in convincing some in business plan and also bring idea to make someone love my product or my idea 
+```
+
+</details>
+
