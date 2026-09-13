@@ -37,7 +37,7 @@ export async function POST(request: Request) {
             const consumed = await tx.verificationToken.deleteMany({ where: { identifier, token: row.token, expires: { gt: new Date() } } });
             if (consumed.count !== 1)
                 return { invalid: true };
-            const updated = await tx.user.updateMany({ where: { email }, data: { password: passwordHash } });
+            const updated = await tx.user.updateMany({ where: { email }, data: { password: passwordHash, passwordChangedAt: new Date() } });
             if (updated.count !== 1)
                 throw new Error("password reset user disappeared");
             await tx.verificationToken.deleteMany({ where: { identifier } });
