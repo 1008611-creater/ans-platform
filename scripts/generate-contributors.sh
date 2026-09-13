@@ -169,7 +169,7 @@ def generate_prompt_block(row):
         f'```{lang}\n'
         f'{prompt}\n'
         f'```\n\n'
-        f'</details>\n\n'
+        f'</details>\n\n'帮我
     )
 
 def init_prompts_md():
@@ -192,7 +192,9 @@ def update_prompt_in_md(row):
     with open(prompts_md_path, 'r', encoding='utf-8') as f:
         content = f.read()
     pattern = rf'<details>\n<summary><strong>{re.escape(act)}</strong></summary>.*?</details>\n\n'
-    new_content, count = re.subn(pattern, generate_prompt_block(row), content, flags=re.DOTALL)
+    # Function replacement: prompt bodies may contain backslashes (e.g. \d, \g<name>)
+    # which re.sub would parse as escapes and raise 'bad escape' on Python 3.13+.
+    new_content, count = re.subn(pattern, lambda _m: generate_prompt_block(row), content, flags=re.DOTALL)
     if count > 0:
         with open(prompts_md_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
@@ -339,3 +341,4 @@ echo ""
 echo "Review with: git log --oneline prompts.csv PROMPTS.md"
 echo ""
 echo "To push: git push origin main"
+能不能能不能
