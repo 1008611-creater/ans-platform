@@ -151346,3 +151346,16 @@ Want a hyper-detailed prompt as a woman wearing simple triangle bikini on beach 
 
 </details>
 
+<details>
+<summary><strong>Bhsh</strong></summary>
+
+## Bhsh
+
+Contributed by @anonymous
+
+```md
+A woman wearing a simple  type light green floral two-piece swimwear(modern  bra type), confidentl posing . Natural lighting, realistic skin texture, natural body proportions, relaxed knee and shoulder support pose, soft breeze, cinematic photography, high details , lifestyle fashion shoot.8k resolution,natural wrinkles on cloths
+```
+
+</details>
+
