@@ -152219,3 +152219,103 @@ Ao terminar, faça uma auto-revisão e informe se o plano está pronto para exec
 
 </details>
 
+<details>
+<summary><strong>07 — Manutenção periódica do projeto</strong></summary>
+
+## 07 — Manutenção periódica do projeto
+
+Contributed by [@josevictorp](https://github.com/josevictorp)
+
+```md
+Faça uma manutenção do sistema de contexto e coordenação deste projeto.
+
+Esta tarefa é de organização e reconciliação. Não altere funcionalidades do produto, salvo correções documentais ou operacionais necessárias para restaurar consistência.
+
+Antes de agir:
+
+1. Leia AGENTS.md, PROJECT.md, DECISIONS.md e WORK.md.
+2. Inspecione docs/plans/active e docs/plans/archive.
+3. Inspecione o estado real do Git.
+4. Identifique branches e worktrees relacionadas ao trabalho atual.
+5. Verifique documentação relevante e histórico recente.
+6. Preserve alterações do usuário e trabalhos em andamento.
+
+Audite:
+
+- tarefas sem responsável;
+- tarefas marcadas como ativas sem evidência recente;
+- tarefas concluídas ainda mantidas como ativas;
+- planos duplicados;
+- planos sem tarefa correspondente;
+- tarefas sem critérios de aceite;
+- decisões contraditórias;
+- decisões substituídas ainda tratadas como atuais;
+- documentação que diverge do código;
+- branches aparentemente abandonadas;
+- worktrees sem finalidade registrada;
+- alterações locais sem associação clara;
+- arquivos reservados por tarefas encerradas;
+- autorizações repetidamente solicitadas que poderiam virar mandato permanente;
+- instruções excessivas ou óbvias no AGENTS.md;
+- contexto importante ausente;
+- informações sensíveis indevidamente registradas;
+- próximos passos vagos;
+- afirmações de conclusão sem evidência.
+
+Pode executar autonomamente:
+
+- corrigir links e referências;
+- atualizar índices;
+- reconciliar estados claramente demonstrados;
+- arquivar planos concluídos;
+- remover reservas de arquivos encerradas;
+- compactar duplicações sem perder informação;
+- marcar documentação possivelmente obsoleta;
+- propor atualizações de mandato;
+- melhorar a clareza dos documentos canônicos.
+
+Não execute sem autorização aplicável:
+
+- exclusão destrutiva de branches;
+- descarte de alterações locais;
+- remoção irreversível de arquivos;
+- reescrita de histórico;
+- merge;
+- deploy;
+- alteração de produção.
+
+Ao terminar, entregue:
+
+## Estado geral
+
+Resumo factual da saúde operacional do projeto.
+
+## Correções realizadas
+
+Liste alterações documentais e de coordenação.
+
+## Inconsistências encontradas
+
+Explique evidência e impacto.
+
+## Itens que exigem decisão
+
+Inclua apenas decisões que realmente dependem do usuário.
+
+## Trabalhos ativos
+
+Liste tarefa, responsável, branch, risco e próximo passo.
+
+## Limpeza recomendada
+
+Separe ações seguras das destrutivas.
+
+## Qualidade do contexto
+
+Avalie se uma sessão nova conseguiria começar lendo AGENTS.md e os documentos canônicos.
+
+Atualize os documentos para que o estado final fique legível e coerente.
+```
+
+</details>
+
