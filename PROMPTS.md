@@ -154456,3 +154456,16 @@ Free to use.
 
 </details>
 
+<details>
+<summary><strong>Market plan</strong></summary>
+
+## Market plan
+
+Contributed by @anonymous
+
+```md
+Design and creation of a marketing plan on Social Media platforms to market Hayek Travel services and bicycles in Britain. The target segment is Gulf students and Arab tourists.
+```
+
+</details>
+
