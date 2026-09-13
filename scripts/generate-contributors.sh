@@ -169,7 +169,7 @@ def generate_prompt_block(row):
         f'```{lang}\n'
         f'{prompt}\n'
         f'```\n\n'
-        f'</details>\n\n'帮我
+        f'</details>\n\n'
     )
 
 def init_prompts_md():
@@ -341,4 +341,3 @@ echo ""
 echo "Review with: git log --oneline prompts.csv PROMPTS.md"
 echo ""
 echo "To push: git push origin main"
-能不能能不能
