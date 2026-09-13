@@ -153769,339 +153769,342 @@ Contributed by [@Ferrum-Sidereum](https://github.com/Ferrum-Sidereum)
 ```md
 ---
 name: herdr-multiagent
-description: Run several coding agents in parallel under Herdr: stage decomposition, one git worktree, isolated env, pane and file brief per
-agent, state monitoring, review, merge. Child kind is read from `herdr pane current` (.result.pane.agent) and matches the
-orchestrator (omp, opencode, claude, codex, kimi, ...). Requires HERDR_ENV=1.
+description: "Playbook for running several coding agents in parallel under Herdr: stage decomposition, one git worktree + isolated env + pane per agent, file-based briefs, state monitoring, review and merge. Agent-agnostic: the child kind comes from `herdr pane current` (.result.pane.agent) and matches the orchestrator (omp, opencode, claude, codex, kimi, ...). Use for multi-agent parallel work in separate worktrees. Requires HERDR_ENV=1."
 ---
 
-# Мультиагентная работа через Herdr
+# Multi-agent work through Herdr
 
-Плейбук: разложить задачи проекта на независимые этапы, посадить на каждый этап
-отдельный агент в своём git worktree и herdr-пейне, выдать файловый бриф,
-мониторить и принять результат.
+Playbook: split the project's remaining work into independent stages, put each stage
+on its own agent in its own git worktree and Herdr pane, hand it a file-based brief,
+monitor it, and accept the result.
 
-Скилл агент-независим: kind потомков = kind оркестратора. Запустил скилл из
-opencode — потомки будут opencode; из omp — omp; из claude — claude. Никогда не
-подставляй kind оркестратора по памяти и не выбирай «популярный» kind.
+This skill is agent-agnostic: the kind of the children equals the kind of the
+orchestrator. Launched from opencode, the children are opencode; from omp, they are
+omp; from claude, they are claude. Never hardcode the orchestrator's kind from
+memory and never pick a "popular" kind.
 
-## 0. Предусловия
+## 0. Preconditions
 
 ```bash
-test "${HERDR_ENV:-}" = 1   # без этого — стоп, мы не внутри Herdr
+test "${HERDR_ENV:-}" = 1   # if this fails, stop - we are not inside Herdr
 ```
 
-Если проверка не прошла — сказать пользователю, что сессия не под Herdr, и
-остановиться. Не управлять чужим Herdr снаружи.
+If the check fails, tell the user the session is not running under Herdr and stop.
+Do not drive someone else's Herdr from outside it.
 
-Базовые команды пейнов/агентов — в штатном скилле Herdr (`herdr --skill`).
-Установленный бинарник — авторитет по синтаксису; при сомнении читай
-`herdr agent`, `herdr pane`, `herdr integration`, а не гадай.
+The basic pane/agent commands live in Herdr's own skill (`herdr --skill`).
+The installed binary is the authority on syntax; when unsure read
+`herdr agent`, `herdr pane`, `herdr integration` instead of guessing.
 
-## 1. Определить свой kind — до любых действий
+## 1. Determine your own kind - before anything else
 
 ```bash
 herdr pane current --current
 ```
 
-Поле `.result.pane.agent` — это и есть kind оркестратора, он же значение для
-`--kind` у потомков:
+The `.result.pane.agent` field IS the orchestrator's kind, and the same value goes
+to `--kind` for the children:
 
 ```bash
 KIND=$(herdr pane current --current | jq -r '.result.pane.agent')
-# без jq:
+# without jq:
 KIND=$(herdr pane current --current | sed -E 's/.*"agent":"([^"]+)".*/\1/' | head -1)
 echo "$KIND"
 ```
 
-Пусто или `unknown` — спросить пользователя, каким kind запускать потомков.
-Дальше по тексту `$KIND` — это полученное значение, не литерал.
+Empty or `unknown` - ask the user which kind to start the children with.
+Below, `$KIND` always means this resolved value, never a literal.
 
-Проверить интеграцию Herdr ↔ этот kind (она даёт `agent list/wait/prompt`):
+Check the Herdr integration for this kind (it provides `agent list/wait/prompt`):
 
 ```bash
 herdr integration status | grep -i "$KIND"
 ```
 
-- `current` — ок.
-- `not installed` — `herdr integration install "$KIND"`. Интеграцию подхватывают
-  только **новые** сессии, поэтому ставить её ДО запуска потомков; сам
-  оркестратор останется невидимым для `agent list` — это нормально, его мониторить
-  не нужно.
-- kind отсутствует в списке `herdr integration install` (например `amp`, `cline`,
-  `kiro`, `maki`) — структурного мониторинга не будет, работаем по fallback §7
-  (`pane read` + git). Это не блокер.
+- `current` - good.
+- `not installed` - run `herdr integration install "$KIND"`. Only **new** sessions
+  pick the integration up, so install it BEFORE starting children; the orchestrator
+  itself stays invisible to `agent list`, which is fine - it needs no monitoring.
+- The kind is absent from `herdr integration install` (e.g. `amp`, `cline`, `kiro`,
+  `maki`) - there will be no structural monitoring, use the §7 fallback
+  (`pane read` + git). Not a blocker.
 
-Зафиксировать и объявить пользователю: «kind потомков = $KIND».
+State it explicitly to the user: "children kind = $KIND".
 
-## 2. Декомпозиция — главный шаг, не торопись
+## 2. Decomposition - the main step, do not rush
 
-- Прочитай план/спеку проекта и текущее состояние (`git log`, тесты,
+- Read the project plan/spec and the current state (`git log`, tests,
   `git worktree list`).
-- Разбей оставшуюся работу на этапы с **непересекающимися файловыми областями**.
-  Два агента над одним пакетом — только осознанно и с явным порядком
-  (после, не параллельно).
-- Аддитивные правки общих файлов (config, lock) допустимы — записать в брифы
-  «только аддитивно, без смены сигнатур»; мерж-конфликты разрулит оркестратор.
-- Зафиксируй матрицу «этап → файлы, которые МОЖНО / НЕЛЬЗЯ трогать».
+- Split the remaining work into stages with **non-overlapping file areas**.
+  Two agents on one package - only deliberately and with an explicit order
+  (afterwards, not in parallel).
+- Additive edits to shared files (config, lock) are acceptable - record in the briefs
+  "additive only, no signature changes"; the orchestrator resolves merge conflicts.
+- Write down the matrix "stage -> files it MAY / MUST NOT touch".
 
-Перед запуском: всё готовое в main закоммичено, дерево чистое.
+Before launch: everything finished in main is committed, the tree is clean.
 
-## 3. Worktree + изолированное окружение на агента
+## 3. Worktree + isolated environment per agent
 
 ```bash
 git worktree add ../<proj>-s<N> -b stage-<N>-<name>
 ```
 
-Ловушка Python-проектов: общий venv импортирует ЧУЖОЙ код (editable install
-основного репо). Каждому worktree — свой venv:
+Python trap: a shared venv imports SOMEONE ELSE's code (editable install of the main
+repo). Give each worktree its own venv:
 
 ```bash
 cd ../<proj>-s<N> && python -m venv .venv \
   && ./.venv/Scripts/python.exe -m pip install -q -e "./api[dev]"
 ```
 
-Несколько venv ставить последовательно одной фоновой командой (pip cache общий).
-JS-стек: свои `node_modules` в каждом worktree (`npm ci`).
+Install several venvs sequentially in one background command (the pip cache is shared).
+JS stack: its own `node_modules` per worktree (`npm ci`).
 
-Если у оркестратора есть хук-обёртка команд (rtk и подобные): относительный путь
-к интерпретатору (`../.venv/Scripts/python.exe`) в брифах через такой хук не
-резолвится («command not found»). В брифах и промптах — только АБСОЛЮТНЫЕ пути к
-python/npm нужного worktree.
+If the orchestrator has a command-wrapper hook (rtk and similar): a relative
+interpreter path (`../.venv/Scripts/python.exe`) in briefs does not resolve through
+such a hook ("command not found"). In briefs and prompts use only ABSOLUTE paths to
+the python/npm of that worktree.
 
-## 4. Брифы — файлами, не в командной строке
+## 4. Briefs - as files, not on the command line
 
-`<repo>/.briefs/stage-<N>.md` (untracked). Структура брифа:
+`<repo>/.briefs/stage-<N>.md` (untracked). Brief structure:
 
-- **контекст**: что читать первым (спека, контракт, ключевые файлы), что уже сделано;
-- **задача**: конкретные требования со ссылками на пункты спеки;
-- **границы**: файлы можно/нельзя, «не выходи из worktree», «push НЕ делать»;
-- **приёмка**: точные команды тестов/линтера (с абсолютным путём к интерпретатору
-  worktree), «старые тесты остаются зелёными», коммит в свою ветку, финальный отчёт.
+- **context**: what to read first (spec, contract, key files), what is already done;
+- **task**: concrete requirements referencing spec items;
+- **boundaries**: files allowed/forbidden, "do not leave the worktree", "do NOT push";
+- **acceptance**: exact test/linter commands (with the absolute interpreter path of
+  the worktree), "pre-existing tests stay green", commit to its own branch, final report.
 
-Бриф не должен предполагать конкретный kind агента: не пиши в него «запусти
-omp/skill/...» — пиши цель, границы и команды приёмки. Потомок сам решит, какими
-своими инструментами это сделать.
+A brief must not assume a particular agent kind: do not write "run omp/skill/..."
+into it - write the goal, the boundaries and the acceptance commands. The child
+decides which of its own tools to use.
 
-Промпт агенту короткий: «Прочитай файл <бриф> и выполни до конца».
+The prompt to the agent is short: "Read the file <brief> and complete it fully".
 
-## 5. Пейны: создать, СРАЗУ назвать
+## 5. Panes: create them, name them IMMEDIATELY
 
-Рекомендуемая раскладка — main-left: пейн оркестратора слева на всю высоту, все
-потомки колонкой справа друг под другом. Если у пользователя стоят плагины
-раскладок, рассчитанные на main-left, любая другая схема сломает ему обзор.
-Если пользователь явно просит другую раскладку — выполнять его.
+Recommended layout - main-left: the orchestrator pane on the left at full height, all
+children in a column on the right, one under another. If the user has layout plugins
+built around main-left, any other scheme breaks their view.
+If the user explicitly asks for a different layout, follow the user.
 
-Первый потомок — `split --current --direction right`, остальные —
-`split --pane <предыдущий потомок> --direction down` ВНУТРИ правой колонки.
-НЕ сплитить пейн оркестратора и не сплитить агентские пейны вправо — только
-down-цепочка в правой колонке.
+First child - `split --current --direction right`, the rest -
+`split --pane <previous child> --direction down` INSIDE the right column.
+Do NOT split the orchestrator pane, and do not split agent panes to the right - only
+the down-chain inside the right column.
 
 ```bash
 herdr pane split --current --direction right --cwd "<worktree1>" --no-focus
 herdr pane split --pane <agent1-pane> --direction down --cwd "<worktree2>" --no-focus
 ```
 
-ID нового пейна — из JSON `.result.pane.pane_id`. Фокус пользователя не трогать
-(`--no-focus`). Имя потомку даётся на шаге 6 через `agent start`, плюс для
-наглядности `herdr pane rename <pane_id> "s<N>-<name>"`.
+The new pane ID comes from JSON `.result.pane.pane_id`. Do not touch the user's focus
+(`--no-focus`). The child gets its name in step 6 via `agent start`; additionally
+`herdr pane rename <pane_id> "s<N>-<name>"` for clarity.
 
-## 6. Запуск потомка своего kind
+## 6. Starting a child of your own kind
 
-Штатный путь — `agent start`, он же валидирует, что в пейне поднялся именно
-ожидаемый агент:
+The standard path is `agent start`, which also validates that the expected agent
+actually came up in the pane:
 
 ```bash
-herdr agent start s1-<name> --kind "$KIND" --pane <pane_id> -- <флаги-автономности>
+herdr agent start s1-<name> --kind "$KIND" --pane <pane_id> -- <autonomy-flags>
 ```
 
-Имя должно матчить `[a-z][a-z0-9_-]{0,31}` и быть уникальным среди живых агентов.
+The name must match `[a-z][a-z0-9_-]{0,31}` and be unique among live agents.
 
-### Флаги автономности
+### Autonomy flags
 
-Потомок работает без человека, иначе встанет на аппруве. Флаг зависит от CLI, а
-не от Herdr. Подтверждённые:
+A child works unattended, otherwise it stops at an approval. The flag belongs to the
+CLI, not to Herdr. Confirmed ones:
 
-| kind | запуск |
+| kind | launch |
 |---|---|
 | `omp` | `-- --yolo` |
-| `claude` | `-- --dangerously-skip-permissions` (или `--permission-mode bypassPermissions`) |
+| `claude` | `-- --dangerously-skip-permissions` (or `--permission-mode bypassPermissions`) |
 | `opencode` | `-- --auto` |
 
-Для любого другого kind (codex, gemini, kimi, cursor, copilot, droid, kilo, grok,
-hermes, qodercli, mastracode, pi, …) — НЕ выдумывать флаг. Определить canonical
-исполняемый файл и прочитать его справку:
+For any other kind (codex, gemini, kimi, cursor, copilot, droid, kilo, grok, hermes,
+qodercli, mastracode, pi, ...) do NOT invent a flag. Resolve the canonical executable
+and read its help:
 
 ```bash
-herdr agent start --help        # в описании --kind указан canonical executable
+herdr agent start --help        # the --kind help text names the canonical executable
 <executable> --help | grep -iE "permission|approve|yolo|auto|dangerous|allow"
 ```
 
-Флаг не найден → проверить, есть ли режим автономности в конфиге CLI
-(например `~/.omp/agent/config.yml: tools.approvalMode: yolo`,
-`~/.claude/settings.json: permissions`, `opencode.json: permission`), и
-предупредить пользователя, что потомок может вставать на аппрувах — их видно как
-состояние `blocked` (§7).
+No flag found - check whether the CLI has an autonomy mode in its config
+(e.g. `~/.omp/agent/config.yml: tools.approvalMode: yolo`,
+`~/.claude/settings.json: permissions`, `opencode.json: permission`), and warn the
+user that the child may stop at approvals - those surface as the `blocked` state (§7).
 
-### Если `agent start` упал по таймауту
+### If `agent start` timed out
 
-Известный баг на Windows в PowerShell-пейнах: `agent start` шлёт искажённый
-`Start-Process` → таймаут. Обход — поднять CLI в пейне напрямую:
+Known bug on Windows in PowerShell panes: `agent start` sends a mangled
+`Start-Process` -> timeout. Workaround - launch the CLI in the pane directly:
 
 ```bash
-herdr pane run <pane_id> "<executable> <флаги-автономности>"
-sleep 3 && herdr pane read <pane_id> --lines 15   # ожидаем промпт CLI
-herdr agent rename <pane_id> s1-<name>            # если herdr распознал агента
+herdr pane run <pane_id> "<executable> <autonomy-flags>"
+sleep 3 && herdr pane read <pane_id> --lines 15   # expect the CLI prompt
+herdr agent rename <pane_id> s1-<name>            # if herdr recognized the agent
 ```
 
-Если после этого `herdr agent explain <pane_id>` не даёт распознанного агента —
-структурный мониторинг для этого пейна недоступен, работаем по fallback §7.
+If `herdr agent explain <pane_id>` still reports no recognized agent afterwards,
+structural monitoring is unavailable for that pane - use the §7 fallback.
 
-### Выдача брифа
+### Handing over the brief
 
-НЕ через `pane run`: Enter проглатывается, пока TUI рендерит вставку. В два шага
-с паузой:
+NOT via `pane run`: Enter gets swallowed while the TUI renders the paste. Two steps
+with a pause:
 
 ```bash
-herdr pane send-text <pane_id> "Прочитай файл <абсолютный путь к брифу> — это твой бриф. Выполни полностью до конца (код, тесты, линтер, коммит в свою ветку), затем дай финальный отчёт."
+herdr pane send-text <pane_id> "Read the file <absolute path to the brief> - that is your brief. Complete it fully (code, tests, linter, commit to your own branch), then give a final report."
 sleep 5 && herdr pane send-keys <pane_id> Enter
 ```
 
-Штатная альтернатива, когда интеграция стоит и `agent start` отработал:
+Standard alternative once the integration is installed and `agent start` succeeded:
 
 ```bash
-herdr agent prompt s1-<name> "Прочитай файл <бриф> и выполни до конца" --wait --timeout 300000
+herdr agent prompt s1-<name> "Read the file <brief> and complete it fully" --wait --timeout 300000
 ```
 
-Проверить по `pane read`, что бриф УШЁЛ: input пустой, агент работает.
+Verify with `pane read` that the brief actually WENT IN: input empty, agent working.
 
-## 7. Мониторинг — через интеграцию, НЕ cron
+## 7. Monitoring - through the integration, NOT cron
 
 ```bash
-herdr agent list                       # статусы всех потомков
+herdr agent list                       # states of all children
 herdr agent wait s1-<name> --until idle --timeout 1800000
-herdr agent prompt s1-<name> "<текст>" # докинуть инструкцию работающему
+herdr agent prompt s1-<name> "<text>"  # push an instruction to a working child
 herdr agent read s1-<name> --lines 40
 ```
 
-Семантика состояний: `idle` — готов к вводу и его таб видели в UI; `done` — тот
-же idle после невидимой фоновой работы (чтение через CLI не помечает таб
-увиденным); `blocked` — herdr распознал UI аппрува/вопроса, потомок ЖДЁТ
-человека; `unknown` — агент есть, но классификации нет, это НЕ признак завершения.
+State semantics: `idle` - ready for input and its tab has been seen in the UI;
+`done` - the same idle state after unseen background work (reading through the CLI
+does not mark the tab seen); `blocked` - Herdr recognized an approval/question UI,
+the child is WAITING for a human; `unknown` - an agent is present but cannot be
+classified, which is NOT evidence of completion.
 
-Цикл оркестратора: `agent wait` по очереди или по событию → приёмка (§8).
-`blocked` → `agent read`, понять вопрос, ответить через `agent prompt` или
-спросить пользователя. Подозрительная тишина → `pane read <pane_id>`.
+Orchestrator loop: `agent wait` in turn or on an event -> acceptance (§8).
+`blocked` -> `agent read`, understand the question, answer via `agent prompt` or ask
+the user. Suspicious silence -> `pane read <pane_id>`.
 
-Таймаут `wait` держать умеренным (~30 мин) и перевзводить по срабатыванию:
-очень большие значения уходят в «timed out».
+Keep the `wait` timeout moderate (~30 min) and re-arm it on each return: very large
+values end up as "timed out".
 
-Fallback, когда интеграция для `$KIND` недоступна или `agent explain` не
-распознал потомка: периодический `herdr pane read <pane_id> --lines 60` +
-`git log/status` в worktree. Cron — только крайний случай и обязательно удалить
-по завершении.
+Fallback when the integration for `$KIND` is unavailable or `agent explain` did not
+recognize the child: periodic `herdr pane read <pane_id> --lines 60` plus
+`git log/status` in the worktree. Cron only as a last resort, and always remove it
+when done.
 
-Обрыв сессии потомка: работа в worktree сохраняется. Перезапуск — тем же CLI с
-его флагом продолжения (проверить в `--help`): `omp --resume`,
-`claude --continue`, `opencode --continue`. Затем промпт: «Сессия прервана.
-Проверь git status, доведи бриф <файл> до конца».
+Child session dropped: the work in the worktree survives. Restart with the same CLI
+and its continue flag (check `--help`): `omp --resume`, `claude --continue`,
+`opencode --continue`. Then prompt: "Your session was interrupted. Check git status
+and finish the brief <file>".
 
-## 8. Приёмка и мерж
+## 8. Acceptance and merge
 
-- Каждая ветка: тесты + линтер в её worktree, ревизия `git diff main...<branch> --stat`.
-- Не принимать на веру финальный отчёт потомка — проверить команды приёмки самому.
-- Мерж в main — только с подтверждения пользователя; аддитивные пересечения
-  разруливать вручную.
-- После мержа: `git worktree remove`; ветки — по договорённости с пользователем.
-- Освободить пейны потомков, не трогая пейн пользователя.
+- Each branch: tests + linter in its own worktree, review `git diff main...<branch> --stat`.
+- Do not take the child's final report on faith - run the acceptance commands yourself.
+- Merge into main only with the user's confirmation; resolve additive overlaps manually.
+- After the merge: `git worktree remove`; branches as agreed with the user.
+- Release the children's panes without touching the user's pane.
+
 FILE:README.md
 # herdr-multiagent
 
-Скилл-плейбук для агента: как вести проект **несколькими агентами параллельно** через
-[Herdr](https://herdr.dev) (терминальный мультиплексер для кодинг-агентов) —
-по отдельному git worktree и пейну на каждый этап, с файловыми брифами, мониторингом
-состояний и приёмкой.
+An agent skill (playbook) for driving a project with **several coding agents in
+parallel** through [Herdr](https://herdr.dev), a terminal multiplexer for coding
+agents — one git worktree and one pane per stage, file-based briefs, state
+monitoring and acceptance.
 
-Скилл **агент-независим**: kind потомков определяется из Herdr и совпадает с kind
-оркестратора. Запустили из `opencode` — потомки будут `opencode`; из `omp` — `omp`;
-из `claude` — `claude`. Поддерживается любой kind из `herdr agent start --help`
-(pi, claude, codex, gemini, cursor, devin, agy, cline, omp, mastracode, opencode,
-copilot, kimi, kiro, droid, amp, grok, hermes, kilo, qodercli, maki).
+The skill is **agent-agnostic**: the kind of the children is resolved from Herdr and
+matches the kind of the orchestrator. Launched from `opencode`, the children are
+`opencode`; from `omp`, they are `omp`; from `claude`, they are `claude`. Any kind
+listed by `herdr agent start --help` works (pi, claude, codex, gemini, cursor, devin,
+agy, cline, omp, mastracode, opencode, copilot, kimi, kiro, droid, amp, grok, hermes,
+kilo, qodercli, maki).
 
-## Что даёт
+## What it covers
 
-- §1 определение своего kind и проверка интеграции Herdr ↔ этот kind;
-- §2 декомпозиция на этапы с непересекающимися файловыми областями;
-- §3 worktree + изолированное окружение (отдельный venv / node_modules — иначе агенты
-  импортируют чужой код через editable install основного репо);
-- §4 брифы файлами, а не в командной строке;
-- §5 раскладка пейнов main-left, `--no-focus` (фокус пользователя не трогается);
-- §6 запуск потомка, флаги автономности по kind, обход бага `agent start` на Windows,
-  корректная выдача брифа (Enter проглатывается при `pane run`);
-- §7 мониторинг через `herdr agent list/wait/prompt/read`, семантика
-  `idle/done/blocked/unknown`, fallback на `pane read` + git, восстановление оборванной сессии;
-- §8 приёмка и мерж только с подтверждения пользователя.
+- §1 resolve your own kind, verify the Herdr integration for it;
+- §2 decompose into stages with non-overlapping file areas;
+- §3 worktree + isolated environment (own venv / node_modules — otherwise agents
+  import someone else's code through the main repo's editable install);
+- §4 briefs as files, not on the command line;
+- §5 main-left pane layout, `--no-focus` (the user's focus is never taken);
+- §6 starting a child, autonomy flags per kind, the Windows `agent start` timeout
+  workaround, correct brief hand-over (Enter gets swallowed by `pane run`);
+- §7 monitoring via `herdr agent list/wait/prompt/read`, the semantics of
+  `idle/done/blocked/unknown`, fallback to `pane read` + git, recovering a dropped
+  child session;
+- §8 acceptance and merge only with the user's confirmation.
 
-## Требования
+## Requirements
 
-- Herdr, сессия запущена внутри его пейна (`HERDR_ENV=1`). Вне Herdr скилл останавливается.
-- Git (worktree).
-- Один из поддерживаемых агентских CLI в `PATH`.
-- Для структурного мониторинга: `herdr integration install <kind>`. Для kind без
-  интеграции скилл переключается на fallback — это не блокер.
-- Проверено на Windows (Git Bash + PowerShell-пейны); команды POSIX, пути — с явной
-  оговоркой про Windows-venv.
+- Herdr, with the session running inside one of its panes (`HERDR_ENV=1`). Outside
+  Herdr the skill stops.
+- Git (worktrees).
+- One supported agent CLI on `PATH`.
+- For structural monitoring: `herdr integration install <kind>`. Kinds without an
+  integration fall back to `pane read` + git — not a blocker.
+- Verified on Windows (Git Bash + PowerShell panes); the commands are POSIX, with an
+  explicit note where Windows venv paths differ.
 
-## Установка
+## Installation
 
-Скилл — это папка с `SKILL.md`. Положите её в каталог скиллов вашего агента:
+A skill is a directory containing `SKILL.md`. Put it into your agent's skills root:
 
-| Агент | путь (проверено на машине автора) |
+| Agent | path (verified on the author's machine) |
 |---|---|
 | omp, pi | `~/.agents/skills/herdr-multiagent/SKILL.md` |
 | Claude Code | `~/.claude/skills/herdr-multiagent/SKILL.md` |
 | opencode | `~/.config/opencode/skills/herdr-multiagent/SKILL.md` |
-| только в проекте | `<repo>/.agents/skills/herdr-multiagent/SKILL.md` |
+| project-local | `<repo>/.agents/skills/herdr-multiagent/SKILL.md` |
 
-Раскладка не рекурсивная: `<skills-root>/<имя-скилла>/SKILL.md`. Вложенность вида
-`skills/team/herdr-multiagent/SKILL.md` не обнаруживается.
+The layout is non-recursive: `<skills-root>/<skill-name>/SKILL.md`. A nested path
+like `skills/team/herdr-multiagent/SKILL.md` is not discovered.
 
-Точный путь для вашего CLI сверьте с его документацией — каталоги скиллов у агентов
-разные, а `SKILL.md` с frontmatter `name` + `description` читается одинаково.
+Check your own CLI's docs for the exact skills root — the directories differ per
+agent, while `SKILL.md` with `name` + `description` frontmatter is read the same way.
 
-## Использование
+## Usage
 
-Явно: попросите агента «работай по скиллу herdr-multiagent» или вызовите
-`/skill:herdr-multiagent` (в omp, если включены skill-команды).
+Explicitly: ask the agent to "work according to the herdr-multiagent skill", or
+invoke `/skill:herdr-multiagent` (in omp, when skill commands are enabled).
 
-Автоматически: скилл подхватится, когда задача звучит как «разработать это
-несколькими агентами параллельно» и агент запущен внутри Herdr.
+Automatically: the skill is picked up when the task reads like "build this with
+several agents in parallel" and the agent runs inside Herdr.
 
-Первое, что сделает агент — проверит `HERDR_ENV=1` и определит свой kind, затем
-предложит декомпозицию и спросит подтверждение перед запуском потомков.
+The first thing the agent does is check `HERDR_ENV=1` and resolve its own kind; then
+it proposes a decomposition and asks for confirmation before starting any child.
 
-## Структура
+## Layout
 
 ```
 herdr-multiagent/
-├─ SKILL.md      # тело скилла: frontmatter (name, description) + §0–§8
-└─ README.md     # этот файл, для человека; агенту не нужен
+├─ SKILL.md      # the skill body: frontmatter (name, description) + §0–§8
+└─ README.md     # this file, for humans; the agent does not need it
 ```
 
-Дополнительные ассеты (скрипты, шаблоны брифов, `references/*.md`) кладутся в ту же
-папку и читаются агентом через `skill://herdr-multiagent/<путь>`. Здесь их нет:
-плейбук помещается в один файл, а шаблоны брифов описаны текстом в §4.
+Extra assets (scripts, brief templates, `references/*.md`) go into the same directory
+and are read by the agent via `skill://herdr-multiagent/<path>`. There are none here:
+the playbook fits in a single file, and the brief template is described in prose in §4.
 
-## Безопасность
+## Safety
 
-Потомки запускаются в режиме автономности (`omp --yolo`, `claude
---dangerously-skip-permissions`, `opencode --auto`) — без запросов подтверждения.
-Это означает полный доступ к файловой системе и shell в пределах их worktree.
-Скилл ограничивает их брифом («не выходи из worktree», «push НЕ делать»), но это
-инструкция, а не изоляция. Мерж в main — только с явного подтверждения пользователя.
+Children run in an autonomy mode (`omp --yolo`, `claude
+--dangerously-skip-permissions`, `opencode --auto`) — without approval prompts. That
+means full filesystem and shell access inside their worktree. The skill constrains
+them through the brief ("do not leave the worktree", "do NOT push"), but that is an
+instruction, not isolation. Merging into main happens only on the user's explicit
+confirmation.
 
-## Лицензия
+## License
 
-Свободное использование.
+Free to use.
+
 ```
 
 </details>
@@ -154116,339 +154119,342 @@ Contributed by [@Ferrum-Sidereum](https://github.com/Ferrum-Sidereum)
 ```md
 ---
 name: herdr-multiagent
-description: Run several coding agents in parallel under Herdr: stage decomposition, one git worktree, isolated env, pane and file brief per
-agent, state monitoring, review, merge. Child kind is read from `herdr pane current` (.result.pane.agent) and matches the
-orchestrator (omp, opencode, claude, codex, kimi, ...). Requires HERDR_ENV=1.
+description: "Playbook for running several coding agents in parallel under Herdr: stage decomposition, one git worktree + isolated env + pane per agent, file-based briefs, state monitoring, review and merge. Agent-agnostic: the child kind comes from `herdr pane current` (.result.pane.agent) and matches the orchestrator (omp, opencode, claude, codex, kimi, ...). Use for multi-agent parallel work in separate worktrees. Requires HERDR_ENV=1."
 ---
 
-# Мультиагентная работа через Herdr
+# Multi-agent work through Herdr
 
-Плейбук: разложить задачи проекта на независимые этапы, посадить на каждый этап
-отдельный агент в своём git worktree и herdr-пейне, выдать файловый бриф,
-мониторить и принять результат.
+Playbook: split the project's remaining work into independent stages, put each stage
+on its own agent in its own git worktree and Herdr pane, hand it a file-based brief,
+monitor it, and accept the result.
 
-Скилл агент-независим: kind потомков = kind оркестратора. Запустил скилл из
-opencode — потомки будут opencode; из omp — omp; из claude — claude. Никогда не
-подставляй kind оркестратора по памяти и не выбирай «популярный» kind.
+This skill is agent-agnostic: the kind of the children equals the kind of the
+orchestrator. Launched from opencode, the children are opencode; from omp, they are
+omp; from claude, they are claude. Never hardcode the orchestrator's kind from
+memory and never pick a "popular" kind.
 
-## 0. Предусловия
+## 0. Preconditions
 
 ```bash
-test "${HERDR_ENV:-}" = 1   # без этого — стоп, мы не внутри Herdr
+test "${HERDR_ENV:-}" = 1   # if this fails, stop - we are not inside Herdr
 ```
 
-Если проверка не прошла — сказать пользователю, что сессия не под Herdr, и
-остановиться. Не управлять чужим Herdr снаружи.
+If the check fails, tell the user the session is not running under Herdr and stop.
+Do not drive someone else's Herdr from outside it.
 
-Базовые команды пейнов/агентов — в штатном скилле Herdr (`herdr --skill`).
-Установленный бинарник — авторитет по синтаксису; при сомнении читай
-`herdr agent`, `herdr pane`, `herdr integration`, а не гадай.
+The basic pane/agent commands live in Herdr's own skill (`herdr --skill`).
+The installed binary is the authority on syntax; when unsure read
+`herdr agent`, `herdr pane`, `herdr integration` instead of guessing.
 
-## 1. Определить свой kind — до любых действий
+## 1. Determine your own kind - before anything else
 
 ```bash
 herdr pane current --current
 ```
 
-Поле `.result.pane.agent` — это и есть kind оркестратора, он же значение для
-`--kind` у потомков:
+The `.result.pane.agent` field IS the orchestrator's kind, and the same value goes
+to `--kind` for the children:
 
 ```bash
 KIND=$(herdr pane current --current | jq -r '.result.pane.agent')
-# без jq:
+# without jq:
 KIND=$(herdr pane current --current | sed -E 's/.*"agent":"([^"]+)".*/\1/' | head -1)
 echo "$KIND"
 ```
 
-Пусто или `unknown` — спросить пользователя, каким kind запускать потомков.
-Дальше по тексту `$KIND` — это полученное значение, не литерал.
+Empty or `unknown` - ask the user which kind to start the children with.
+Below, `$KIND` always means this resolved value, never a literal.
 
-Проверить интеграцию Herdr ↔ этот kind (она даёт `agent list/wait/prompt`):
+Check the Herdr integration for this kind (it provides `agent list/wait/prompt`):
 
 ```bash
 herdr integration status | grep -i "$KIND"
 ```
 
-- `current` — ок.
-- `not installed` — `herdr integration install "$KIND"`. Интеграцию подхватывают
-  только **новые** сессии, поэтому ставить её ДО запуска потомков; сам
-  оркестратор останется невидимым для `agent list` — это нормально, его мониторить
-  не нужно.
-- kind отсутствует в списке `herdr integration install` (например `amp`, `cline`,
-  `kiro`, `maki`) — структурного мониторинга не будет, работаем по fallback §7
-  (`pane read` + git). Это не блокер.
+- `current` - good.
+- `not installed` - run `herdr integration install "$KIND"`. Only **new** sessions
+  pick the integration up, so install it BEFORE starting children; the orchestrator
+  itself stays invisible to `agent list`, which is fine - it needs no monitoring.
+- The kind is absent from `herdr integration install` (e.g. `amp`, `cline`, `kiro`,
+  `maki`) - there will be no structural monitoring, use the §7 fallback
+  (`pane read` + git). Not a blocker.
 
-Зафиксировать и объявить пользователю: «kind потомков = $KIND».
+State it explicitly to the user: "children kind = $KIND".
 
-## 2. Декомпозиция — главный шаг, не торопись
+## 2. Decomposition - the main step, do not rush
 
-- Прочитай план/спеку проекта и текущее состояние (`git log`, тесты,
+- Read the project plan/spec and the current state (`git log`, tests,
   `git worktree list`).
-- Разбей оставшуюся работу на этапы с **непересекающимися файловыми областями**.
-  Два агента над одним пакетом — только осознанно и с явным порядком
-  (после, не параллельно).
-- Аддитивные правки общих файлов (config, lock) допустимы — записать в брифы
-  «только аддитивно, без смены сигнатур»; мерж-конфликты разрулит оркестратор.
-- Зафиксируй матрицу «этап → файлы, которые МОЖНО / НЕЛЬЗЯ трогать».
+- Split the remaining work into stages with **non-overlapping file areas**.
+  Two agents on one package - only deliberately and with an explicit order
+  (afterwards, not in parallel).
+- Additive edits to shared files (config, lock) are acceptable - record in the briefs
+  "additive only, no signature changes"; the orchestrator resolves merge conflicts.
+- Write down the matrix "stage -> files it MAY / MUST NOT touch".
 
-Перед запуском: всё готовое в main закоммичено, дерево чистое.
+Before launch: everything finished in main is committed, the tree is clean.
 
-## 3. Worktree + изолированное окружение на агента
+## 3. Worktree + isolated environment per agent
 
 ```bash
 git worktree add ../<proj>-s<N> -b stage-<N>-<name>
 ```
 
-Ловушка Python-проектов: общий venv импортирует ЧУЖОЙ код (editable install
-основного репо). Каждому worktree — свой venv:
+Python trap: a shared venv imports SOMEONE ELSE's code (editable install of the main
+repo). Give each worktree its own venv:
 
 ```bash
 cd ../<proj>-s<N> && python -m venv .venv \
   && ./.venv/Scripts/python.exe -m pip install -q -e "./api[dev]"
 ```
 
-Несколько venv ставить последовательно одной фоновой командой (pip cache общий).
-JS-стек: свои `node_modules` в каждом worktree (`npm ci`).
+Install several venvs sequentially in one background command (the pip cache is shared).
+JS stack: its own `node_modules` per worktree (`npm ci`).
 
-Если у оркестратора есть хук-обёртка команд (rtk и подобные): относительный путь
-к интерпретатору (`../.venv/Scripts/python.exe`) в брифах через такой хук не
-резолвится («command not found»). В брифах и промптах — только АБСОЛЮТНЫЕ пути к
-python/npm нужного worktree.
+If the orchestrator has a command-wrapper hook (rtk and similar): a relative
+interpreter path (`../.venv/Scripts/python.exe`) in briefs does not resolve through
+such a hook ("command not found"). In briefs and prompts use only ABSOLUTE paths to
+the python/npm of that worktree.
 
-## 4. Брифы — файлами, не в командной строке
+## 4. Briefs - as files, not on the command line
 
-`<repo>/.briefs/stage-<N>.md` (untracked). Структура брифа:
+`<repo>/.briefs/stage-<N>.md` (untracked). Brief structure:
 
-- **контекст**: что читать первым (спека, контракт, ключевые файлы), что уже сделано;
-- **задача**: конкретные требования со ссылками на пункты спеки;
-- **границы**: файлы можно/нельзя, «не выходи из worktree», «push НЕ делать»;
-- **приёмка**: точные команды тестов/линтера (с абсолютным путём к интерпретатору
-  worktree), «старые тесты остаются зелёными», коммит в свою ветку, финальный отчёт.
+- **context**: what to read first (spec, contract, key files), what is already done;
+- **task**: concrete requirements referencing spec items;
+- **boundaries**: files allowed/forbidden, "do not leave the worktree", "do NOT push";
+- **acceptance**: exact test/linter commands (with the absolute interpreter path of
+  the worktree), "pre-existing tests stay green", commit to its own branch, final report.
 
-Бриф не должен предполагать конкретный kind агента: не пиши в него «запусти
-omp/skill/...» — пиши цель, границы и команды приёмки. Потомок сам решит, какими
-своими инструментами это сделать.
+A brief must not assume a particular agent kind: do not write "run omp/skill/..."
+into it - write the goal, the boundaries and the acceptance commands. The child
+decides which of its own tools to use.
 
-Промпт агенту короткий: «Прочитай файл <бриф> и выполни до конца».
+The prompt to the agent is short: "Read the file <brief> and complete it fully".
 
-## 5. Пейны: создать, СРАЗУ назвать
+## 5. Panes: create them, name them IMMEDIATELY
 
-Рекомендуемая раскладка — main-left: пейн оркестратора слева на всю высоту, все
-потомки колонкой справа друг под другом. Если у пользователя стоят плагины
-раскладок, рассчитанные на main-left, любая другая схема сломает ему обзор.
-Если пользователь явно просит другую раскладку — выполнять его.
+Recommended layout - main-left: the orchestrator pane on the left at full height, all
+children in a column on the right, one under another. If the user has layout plugins
+built around main-left, any other scheme breaks their view.
+If the user explicitly asks for a different layout, follow the user.
 
-Первый потомок — `split --current --direction right`, остальные —
-`split --pane <предыдущий потомок> --direction down` ВНУТРИ правой колонки.
-НЕ сплитить пейн оркестратора и не сплитить агентские пейны вправо — только
-down-цепочка в правой колонке.
+First child - `split --current --direction right`, the rest -
+`split --pane <previous child> --direction down` INSIDE the right column.
+Do NOT split the orchestrator pane, and do not split agent panes to the right - only
+the down-chain inside the right column.
 
 ```bash
 herdr pane split --current --direction right --cwd "<worktree1>" --no-focus
 herdr pane split --pane <agent1-pane> --direction down --cwd "<worktree2>" --no-focus
 ```
 
-ID нового пейна — из JSON `.result.pane.pane_id`. Фокус пользователя не трогать
-(`--no-focus`). Имя потомку даётся на шаге 6 через `agent start`, плюс для
-наглядности `herdr pane rename <pane_id> "s<N>-<name>"`.
+The new pane ID comes from JSON `.result.pane.pane_id`. Do not touch the user's focus
+(`--no-focus`). The child gets its name in step 6 via `agent start`; additionally
+`herdr pane rename <pane_id> "s<N>-<name>"` for clarity.
 
-## 6. Запуск потомка своего kind
+## 6. Starting a child of your own kind
 
-Штатный путь — `agent start`, он же валидирует, что в пейне поднялся именно
-ожидаемый агент:
+The standard path is `agent start`, which also validates that the expected agent
+actually came up in the pane:
 
 ```bash
-herdr agent start s1-<name> --kind "$KIND" --pane <pane_id> -- <флаги-автономности>
+herdr agent start s1-<name> --kind "$KIND" --pane <pane_id> -- <autonomy-flags>
 ```
 
-Имя должно матчить `[a-z][a-z0-9_-]{0,31}` и быть уникальным среди живых агентов.
+The name must match `[a-z][a-z0-9_-]{0,31}` and be unique among live agents.
 
-### Флаги автономности
+### Autonomy flags
 
-Потомок работает без человека, иначе встанет на аппруве. Флаг зависит от CLI, а
-не от Herdr. Подтверждённые:
+A child works unattended, otherwise it stops at an approval. The flag belongs to the
+CLI, not to Herdr. Confirmed ones:
 
-| kind | запуск |
+| kind | launch |
 |---|---|
 | `omp` | `-- --yolo` |
-| `claude` | `-- --dangerously-skip-permissions` (или `--permission-mode bypassPermissions`) |
+| `claude` | `-- --dangerously-skip-permissions` (or `--permission-mode bypassPermissions`) |
 | `opencode` | `-- --auto` |
 
-Для любого другого kind (codex, gemini, kimi, cursor, copilot, droid, kilo, grok,
-hermes, qodercli, mastracode, pi, …) — НЕ выдумывать флаг. Определить canonical
-исполняемый файл и прочитать его справку:
+For any other kind (codex, gemini, kimi, cursor, copilot, droid, kilo, grok, hermes,
+qodercli, mastracode, pi, ...) do NOT invent a flag. Resolve the canonical executable
+and read its help:
 
 ```bash
-herdr agent start --help        # в описании --kind указан canonical executable
+herdr agent start --help        # the --kind help text names the canonical executable
 <executable> --help | grep -iE "permission|approve|yolo|auto|dangerous|allow"
 ```
 
-Флаг не найден → проверить, есть ли режим автономности в конфиге CLI
-(например `~/.omp/agent/config.yml: tools.approvalMode: yolo`,
-`~/.claude/settings.json: permissions`, `opencode.json: permission`), и
-предупредить пользователя, что потомок может вставать на аппрувах — их видно как
-состояние `blocked` (§7).
+No flag found - check whether the CLI has an autonomy mode in its config
+(e.g. `~/.omp/agent/config.yml: tools.approvalMode: yolo`,
+`~/.claude/settings.json: permissions`, `opencode.json: permission`), and warn the
+user that the child may stop at approvals - those surface as the `blocked` state (§7).
 
-### Если `agent start` упал по таймауту
+### If `agent start` timed out
 
-Известный баг на Windows в PowerShell-пейнах: `agent start` шлёт искажённый
-`Start-Process` → таймаут. Обход — поднять CLI в пейне напрямую:
+Known bug on Windows in PowerShell panes: `agent start` sends a mangled
+`Start-Process` -> timeout. Workaround - launch the CLI in the pane directly:
 
 ```bash
-herdr pane run <pane_id> "<executable> <флаги-автономности>"
-sleep 3 && herdr pane read <pane_id> --lines 15   # ожидаем промпт CLI
-herdr agent rename <pane_id> s1-<name>            # если herdr распознал агента
+herdr pane run <pane_id> "<executable> <autonomy-flags>"
+sleep 3 && herdr pane read <pane_id> --lines 15   # expect the CLI prompt
+herdr agent rename <pane_id> s1-<name>            # if herdr recognized the agent
 ```
 
-Если после этого `herdr agent explain <pane_id>` не даёт распознанного агента —
-структурный мониторинг для этого пейна недоступен, работаем по fallback §7.
+If `herdr agent explain <pane_id>` still reports no recognized agent afterwards,
+structural monitoring is unavailable for that pane - use the §7 fallback.
 
-### Выдача брифа
+### Handing over the brief
 
-НЕ через `pane run`: Enter проглатывается, пока TUI рендерит вставку. В два шага
-с паузой:
+NOT via `pane run`: Enter gets swallowed while the TUI renders the paste. Two steps
+with a pause:
 
 ```bash
-herdr pane send-text <pane_id> "Прочитай файл <абсолютный путь к брифу> — это твой бриф. Выполни полностью до конца (код, тесты, линтер, коммит в свою ветку), затем дай финальный отчёт."
+herdr pane send-text <pane_id> "Read the file <absolute path to the brief> - that is your brief. Complete it fully (code, tests, linter, commit to your own branch), then give a final report."
 sleep 5 && herdr pane send-keys <pane_id> Enter
 ```
 
-Штатная альтернатива, когда интеграция стоит и `agent start` отработал:
+Standard alternative once the integration is installed and `agent start` succeeded:
 
 ```bash
-herdr agent prompt s1-<name> "Прочитай файл <бриф> и выполни до конца" --wait --timeout 300000
+herdr agent prompt s1-<name> "Read the file <brief> and complete it fully" --wait --timeout 300000
 ```
 
-Проверить по `pane read`, что бриф УШЁЛ: input пустой, агент работает.
+Verify with `pane read` that the brief actually WENT IN: input empty, agent working.
 
-## 7. Мониторинг — через интеграцию, НЕ cron
+## 7. Monitoring - through the integration, NOT cron
 
 ```bash
-herdr agent list                       # статусы всех потомков
+herdr agent list                       # states of all children
 herdr agent wait s1-<name> --until idle --timeout 1800000
-herdr agent prompt s1-<name> "<текст>" # докинуть инструкцию работающему
+herdr agent prompt s1-<name> "<text>"  # push an instruction to a working child
 herdr agent read s1-<name> --lines 40
 ```
 
-Семантика состояний: `idle` — готов к вводу и его таб видели в UI; `done` — тот
-же idle после невидимой фоновой работы (чтение через CLI не помечает таб
-увиденным); `blocked` — herdr распознал UI аппрува/вопроса, потомок ЖДЁТ
-человека; `unknown` — агент есть, но классификации нет, это НЕ признак завершения.
+State semantics: `idle` - ready for input and its tab has been seen in the UI;
+`done` - the same idle state after unseen background work (reading through the CLI
+does not mark the tab seen); `blocked` - Herdr recognized an approval/question UI,
+the child is WAITING for a human; `unknown` - an agent is present but cannot be
+classified, which is NOT evidence of completion.
 
-Цикл оркестратора: `agent wait` по очереди или по событию → приёмка (§8).
-`blocked` → `agent read`, понять вопрос, ответить через `agent prompt` или
-спросить пользователя. Подозрительная тишина → `pane read <pane_id>`.
+Orchestrator loop: `agent wait` in turn or on an event -> acceptance (§8).
+`blocked` -> `agent read`, understand the question, answer via `agent prompt` or ask
+the user. Suspicious silence -> `pane read <pane_id>`.
 
-Таймаут `wait` держать умеренным (~30 мин) и перевзводить по срабатыванию:
-очень большие значения уходят в «timed out».
+Keep the `wait` timeout moderate (~30 min) and re-arm it on each return: very large
+values end up as "timed out".
 
-Fallback, когда интеграция для `$KIND` недоступна или `agent explain` не
-распознал потомка: периодический `herdr pane read <pane_id> --lines 60` +
-`git log/status` в worktree. Cron — только крайний случай и обязательно удалить
-по завершении.
+Fallback when the integration for `$KIND` is unavailable or `agent explain` did not
+recognize the child: periodic `herdr pane read <pane_id> --lines 60` plus
+`git log/status` in the worktree. Cron only as a last resort, and always remove it
+when done.
 
-Обрыв сессии потомка: работа в worktree сохраняется. Перезапуск — тем же CLI с
-его флагом продолжения (проверить в `--help`): `omp --resume`,
-`claude --continue`, `opencode --continue`. Затем промпт: «Сессия прервана.
-Проверь git status, доведи бриф <файл> до конца».
+Child session dropped: the work in the worktree survives. Restart with the same CLI
+and its continue flag (check `--help`): `omp --resume`, `claude --continue`,
+`opencode --continue`. Then prompt: "Your session was interrupted. Check git status
+and finish the brief <file>".
 
-## 8. Приёмка и мерж
+## 8. Acceptance and merge
 
-- Каждая ветка: тесты + линтер в её worktree, ревизия `git diff main...<branch> --stat`.
-- Не принимать на веру финальный отчёт потомка — проверить команды приёмки самому.
-- Мерж в main — только с подтверждения пользователя; аддитивные пересечения
-  разруливать вручную.
-- После мержа: `git worktree remove`; ветки — по договорённости с пользователем.
-- Освободить пейны потомков, не трогая пейн пользователя.
+- Each branch: tests + linter in its own worktree, review `git diff main...<branch> --stat`.
+- Do not take the child's final report on faith - run the acceptance commands yourself.
+- Merge into main only with the user's confirmation; resolve additive overlaps manually.
+- After the merge: `git worktree remove`; branches as agreed with the user.
+- Release the children's panes without touching the user's pane.
+
 FILE:README.md
 # herdr-multiagent
 
-Скилл-плейбук для агента: как вести проект **несколькими агентами параллельно** через
-[Herdr](https://herdr.dev) (терминальный мультиплексер для кодинг-агентов) —
-по отдельному git worktree и пейну на каждый этап, с файловыми брифами, мониторингом
-состояний и приёмкой.
+An agent skill (playbook) for driving a project with **several coding agents in
+parallel** through [Herdr](https://herdr.dev), a terminal multiplexer for coding
+agents — one git worktree and one pane per stage, file-based briefs, state
+monitoring and acceptance.
 
-Скилл **агент-независим**: kind потомков определяется из Herdr и совпадает с kind
-оркестратора. Запустили из `opencode` — потомки будут `opencode`; из `omp` — `omp`;
-из `claude` — `claude`. Поддерживается любой kind из `herdr agent start --help`
-(pi, claude, codex, gemini, cursor, devin, agy, cline, omp, mastracode, opencode,
-copilot, kimi, kiro, droid, amp, grok, hermes, kilo, qodercli, maki).
+The skill is **agent-agnostic**: the kind of the children is resolved from Herdr and
+matches the kind of the orchestrator. Launched from `opencode`, the children are
+`opencode`; from `omp`, they are `omp`; from `claude`, they are `claude`. Any kind
+listed by `herdr agent start --help` works (pi, claude, codex, gemini, cursor, devin,
+agy, cline, omp, mastracode, opencode, copilot, kimi, kiro, droid, amp, grok, hermes,
+kilo, qodercli, maki).
 
-## Что даёт
+## What it covers
 
-- §1 определение своего kind и проверка интеграции Herdr ↔ этот kind;
-- §2 декомпозиция на этапы с непересекающимися файловыми областями;
-- §3 worktree + изолированное окружение (отдельный venv / node_modules — иначе агенты
-  импортируют чужой код через editable install основного репо);
-- §4 брифы файлами, а не в командной строке;
-- §5 раскладка пейнов main-left, `--no-focus` (фокус пользователя не трогается);
-- §6 запуск потомка, флаги автономности по kind, обход бага `agent start` на Windows,
-  корректная выдача брифа (Enter проглатывается при `pane run`);
-- §7 мониторинг через `herdr agent list/wait/prompt/read`, семантика
-  `idle/done/blocked/unknown`, fallback на `pane read` + git, восстановление оборванной сессии;
-- §8 приёмка и мерж только с подтверждения пользователя.
+- §1 resolve your own kind, verify the Herdr integration for it;
+- §2 decompose into stages with non-overlapping file areas;
+- §3 worktree + isolated environment (own venv / node_modules — otherwise agents
+  import someone else's code through the main repo's editable install);
+- §4 briefs as files, not on the command line;
+- §5 main-left pane layout, `--no-focus` (the user's focus is never taken);
+- §6 starting a child, autonomy flags per kind, the Windows `agent start` timeout
+  workaround, correct brief hand-over (Enter gets swallowed by `pane run`);
+- §7 monitoring via `herdr agent list/wait/prompt/read`, the semantics of
+  `idle/done/blocked/unknown`, fallback to `pane read` + git, recovering a dropped
+  child session;
+- §8 acceptance and merge only with the user's confirmation.
 
-## Требования
+## Requirements
 
-- Herdr, сессия запущена внутри его пейна (`HERDR_ENV=1`). Вне Herdr скилл останавливается.
-- Git (worktree).
-- Один из поддерживаемых агентских CLI в `PATH`.
-- Для структурного мониторинга: `herdr integration install <kind>`. Для kind без
-  интеграции скилл переключается на fallback — это не блокер.
-- Проверено на Windows (Git Bash + PowerShell-пейны); команды POSIX, пути — с явной
-  оговоркой про Windows-venv.
+- Herdr, with the session running inside one of its panes (`HERDR_ENV=1`). Outside
+  Herdr the skill stops.
+- Git (worktrees).
+- One supported agent CLI on `PATH`.
+- For structural monitoring: `herdr integration install <kind>`. Kinds without an
+  integration fall back to `pane read` + git — not a blocker.
+- Verified on Windows (Git Bash + PowerShell panes); the commands are POSIX, with an
+  explicit note where Windows venv paths differ.
 
-## Установка
+## Installation
 
-Скилл — это папка с `SKILL.md`. Положите её в каталог скиллов вашего агента:
+A skill is a directory containing `SKILL.md`. Put it into your agent's skills root:
 
-| Агент | путь (проверено на машине автора) |
+| Agent | path (verified on the author's machine) |
 |---|---|
 | omp, pi | `~/.agents/skills/herdr-multiagent/SKILL.md` |
 | Claude Code | `~/.claude/skills/herdr-multiagent/SKILL.md` |
 | opencode | `~/.config/opencode/skills/herdr-multiagent/SKILL.md` |
-| только в проекте | `<repo>/.agents/skills/herdr-multiagent/SKILL.md` |
+| project-local | `<repo>/.agents/skills/herdr-multiagent/SKILL.md` |
 
-Раскладка не рекурсивная: `<skills-root>/<имя-скилла>/SKILL.md`. Вложенность вида
-`skills/team/herdr-multiagent/SKILL.md` не обнаруживается.
+The layout is non-recursive: `<skills-root>/<skill-name>/SKILL.md`. A nested path
+like `skills/team/herdr-multiagent/SKILL.md` is not discovered.
 
-Точный путь для вашего CLI сверьте с его документацией — каталоги скиллов у агентов
-разные, а `SKILL.md` с frontmatter `name` + `description` читается одинаково.
+Check your own CLI's docs for the exact skills root — the directories differ per
+agent, while `SKILL.md` with `name` + `description` frontmatter is read the same way.
 
-## Использование
+## Usage
 
-Явно: попросите агента «работай по скиллу herdr-multiagent» или вызовите
-`/skill:herdr-multiagent` (в omp, если включены skill-команды).
+Explicitly: ask the agent to "work according to the herdr-multiagent skill", or
+invoke `/skill:herdr-multiagent` (in omp, when skill commands are enabled).
 
-Автоматически: скилл подхватится, когда задача звучит как «разработать это
-несколькими агентами параллельно» и агент запущен внутри Herdr.
+Automatically: the skill is picked up when the task reads like "build this with
+several agents in parallel" and the agent runs inside Herdr.
 
-Первое, что сделает агент — проверит `HERDR_ENV=1` и определит свой kind, затем
-предложит декомпозицию и спросит подтверждение перед запуском потомков.
+The first thing the agent does is check `HERDR_ENV=1` and resolve its own kind; then
+it proposes a decomposition and asks for confirmation before starting any child.
 
-## Структура
+## Layout
 
 ```
 herdr-multiagent/
-├─ SKILL.md      # тело скилла: frontmatter (name, description) + §0–§8
-└─ README.md     # этот файл, для человека; агенту не нужен
+├─ SKILL.md      # the skill body: frontmatter (name, description) + §0–§8
+└─ README.md     # this file, for humans; the agent does not need it
 ```
 
-Дополнительные ассеты (скрипты, шаблоны брифов, `references/*.md`) кладутся в ту же
-папку и читаются агентом через `skill://herdr-multiagent/<путь>`. Здесь их нет:
-плейбук помещается в один файл, а шаблоны брифов описаны текстом в §4.
+Extra assets (scripts, brief templates, `references/*.md`) go into the same directory
+and are read by the agent via `skill://herdr-multiagent/<path>`. There are none here:
+the playbook fits in a single file, and the brief template is described in prose in §4.
 
-## Безопасность
+## Safety
 
-Потомки запускаются в режиме автономности (`omp --yolo`, `claude
---dangerously-skip-permissions`, `opencode --auto`) — без запросов подтверждения.
-Это означает полный доступ к файловой системе и shell в пределах их worktree.
-Скилл ограничивает их брифом («не выходи из worktree», «push НЕ делать»), но это
-инструкция, а не изоляция. Мерж в main — только с явного подтверждения пользователя.
+Children run in an autonomy mode (`omp --yolo`, `claude
+--dangerously-skip-permissions`, `opencode --auto`) — without approval prompts. That
+means full filesystem and shell access inside their worktree. The skill constrains
+them through the brief ("do not leave the worktree", "do NOT push"), but that is an
+instruction, not isolation. Merging into main happens only on the user's explicit
+confirmation.
 
-## Лицензия
+## License
 
-Свободное использование.
+Free to use.
+
 ```
 
 </details>
