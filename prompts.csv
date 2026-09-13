@@ -122228,3 +122228,4 @@ If all green -> tag V1 DONE. If not, loop M1-M11 fixes, never ship red.
 - `improve_prompt` / `save_prompt` require API key (`Authentication required`). To publish: set `PROMPTS_CHAT_API_KEY` in env, then call `prompts-chat_save_prompt(title=""App-Builder Harness Autonomous Prompts"", content=<this file>)`. Local file is authoritative until then.
 - Suggested tags if publishing: `coding-agent, autonomous, python, harness, spec-driven, verification`.
 ",FALSE,TEXT,mahfuzahmed.og@gmail.com
+Limpieza de tapicería ,Crea un video de limpieza de tapicería de autos promocionando mi negocio ,FALSE,TEXT,juzniorcd22@gmail.com
