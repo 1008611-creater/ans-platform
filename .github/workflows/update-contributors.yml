@@ -10,6 +10,11 @@ on:
 jobs:
   update-contributors:
     runs-on: ubuntu-latest
+    env:
+      # Empty when the HF_API_TOKEN repository secret is not configured.
+      # Referenced via env (not secrets.*) in step conditions, because the
+      # secrets context is not available inside `if:` expressions.
+      HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
     
     steps:
       - name: Checkout repository
@@ -40,6 +45,7 @@ jobs:
           git push origin main --force-with-lease
 
       - name: Sync to Hugging Face
+        if: ${{ env.HF_API_TOKEN != '' }}
         env:
           HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
         run: |
