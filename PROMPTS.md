@@ -151496,3 +151496,21 @@ compliant vs. non-compliant sentence looks like before you draft the real thing.
 
 </details>
 
+<details>
+<summary><strong>Catálogo de perfume </strong></summary>
+
+## Catálogo de perfume 
+
+Contributed by @anonymous
+
+```md
+Precisava que me ajudasse a criar uma página de site de perfumes importados para meus Clintes ter acesso a as compras. No site gostaria que estivesse minha logo assim que acessar, um acesso para que a admin entre e coloque as fotos dos perfumes; alterações de preço e até mais opções de perfumes… 
+
+Pagamento diretamente pelo WhatsApp; opção de entrega para todo Brasil; pagamento em até 10x. 
+
+Cada entrega tem um valor e dependendo de onde seja; no Rio pode ser 1 dia útil pagamento responsável pelo cliente 
+
+```
+
+</details>
+
