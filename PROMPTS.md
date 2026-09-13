@@ -151294,3 +151294,16 @@ create me a proper documentation of this whole website that i have created in su
 
 </details>
 
+<details>
+<summary><strong>Campus life </strong></summary>
+
+## Campus life 
+
+Contributed by @anonymous
+
+```md
+I want you to act like the best AI video editor in the world while am working on campus life add a water map write up that says @campus life let the dialogue be very funny 
+```
+
+</details>
+
