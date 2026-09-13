@@ -151333,3 +151333,16 @@ A woman in her late 20s with naturally toned, realistic body proportions, wearin
 
 </details>
 
+<details>
+<summary><strong>A</strong></summary>
+
+## A
+
+Contributed by @anonymous
+
+```md
+Want a hyper-detailed prompt as a woman wearing simple triangle bikini on beach and giving pose
+```
+
+</details>
+
