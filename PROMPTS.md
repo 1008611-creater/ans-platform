@@ -151281,3 +151281,16 @@ give me a marketing video for spare parts slaes company
 
 </details>
 
+<details>
+<summary><strong>Documentation</strong></summary>
+
+## Documentation
+
+Contributed by @anonymous
+
+```md
+create me a proper documentation of this whole website that i have created in such a way that if s new person comes at my place so he/she can be able to understand what is happeing here and be able to use it efficiently 
+```
+
+</details>
+
