@@ -1,4 +1,4 @@
-import { randomInt } from "node:crypto";
+import { createHash, randomInt } from "node:crypto";
 import { NextResponse } from "next/server";
 import { incrementCounter, readCounter, resetToken, RESET_COOLDOWN_SECONDS, RESET_MAX_ATTEMPTS, RESET_TTL_MS, retryAfter, withResetLock } from "@/lib/password-reset";
 const GENERIC_MESSAGE = "如果该邮箱已注册，验证码已发送。";
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     } | null;
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     if (!email || !emailPattern.test(email))
-        return NextResponse.json({ error: "invalid_email", message: "请输入有效邮箱" }, { status: 400 });
+        return NextResponse.json({ error: "invalid_email", message: "请输入有效邮箱" }, { status: 400, headers: { "Cache-Control": "no-store" } });
     let reservation: {
         code: string;
         token: string;
@@ -54,9 +54,9 @@ export async function POST(request: Request) {
         return unavailable();
     }
     if (!reservation)
-        return NextResponse.json({ message: GENERIC_MESSAGE });
+        return NextResponse.json({ message: GENERIC_MESSAGE }, { headers: { "Cache-Control": "no-store" } });
     try {
-        const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [email], subject: "ANS 密码重置验证码", text: `你的 ANS 密码重置验证码是：${reservation.code}\n\n验证码 15 分钟内有效。如非本人操作，请忽略此邮件。` }), signal: AbortSignal.timeout(10000), cache: "no-store" });
+        const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json", "Idempotency-Key": `password-reset-${createHash("sha256").update(reservation.token).digest("hex").slice(0, 32)}` }, body: JSON.stringify({ from, to: [email], subject: "ANS 密码重置验证码", text: `你的 ANS 密码重置验证码是：${reservation.code}\n\n验证码 15 分钟内有效。如非本人操作，请忽略此邮件。` }), signal: AbortSignal.timeout(10000), cache: "no-store" });
         if (!response.ok)
             throw new Error("email delivery failed");
     }
