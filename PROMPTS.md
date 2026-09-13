@@ -151372,3 +151372,16 @@ i wanna make an indie game to be able to sell on steam. i first wanna understand
 
 </details>
 
+<details>
+<summary><strong>propfirm strategy</strong></summary>
+
+## propfirm strategy
+
+Contributed by @anonymous
+
+```md
+i want to create the best strategy which will take only winning trades and as many as possible in a day in propfirm challenges using ctrader which i will connect using mcp server of ctrader backtest it with the data available in the ctrader and create a strategy in c#
+```
+
+</details>
+
