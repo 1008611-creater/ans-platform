@@ -130,6 +130,40 @@ describe("password reset security", () => {
     expect((await confirmCode(post({ email, token: "1234", password: "newpass" }))).status).toBe(400);
   });
 
+  it("caps daily sends per email and reports a daily limit", async () => {
+    for (let i = 0; i < 10; i++) {
+      expect((await requestCode(post({ email }))).status).toBe(200);
+      vi.advanceTimersByTime(11 * 60_000);
+    }
+    const limited = await requestCode(post({ email }));
+    expect(limited.status).toBe(429);
+    const payload = (await limited.json()) as { error?: string };
+    expect(payload.error).toBe("daily_limit");
+    expect(Number(limited.headers.get("Retry-After"))).toBeGreaterThan(0);
+    vi.advanceTimersByTime(60 * 60_000);
+    expect((await requestCode(post({ email }))).status).toBe(429);
+  });
+
+  it("restores daily sends after twenty-four hours", async () => {
+    for (let i = 0; i < 10; i++) {
+      expect((await requestCode(post({ email }))).status).toBe(200);
+      vi.advanceTimersByTime(11 * 60_000);
+    }
+    expect((await requestCode(post({ email }))).status).toBe(429);
+    vi.advanceTimersByTime(24 * 60 * 60_000);
+    expect((await requestCode(post({ email }))).status).toBe(200);
+  });
+
+  it("keeps the ten-minute burst window independent from the daily cap", async () => {
+    for (let i = 0; i < 5; i++) {
+      expect((await requestCode(post({ email }))).status).toBe(200);
+      vi.advanceTimersByTime(60_000);
+    }
+    const burst = await requestCode(post({ email }));
+    expect(burst.status).toBe(429);
+    expect(((await burst.json()) as { error?: string }).error).toBe("rate_limited");
+  });
+
   it("applies the same cooldown to unknown accounts without sending email", async () => {
     const unknown = "unknown@example.com";
     expect((await requestCode(post({ email: unknown }))).status).toBe(200);
