@@ -154482,3 +154482,16 @@ Sahilde bir araba
 
 </details>
 
+<details>
+<summary><strong>diapositivas profesionales </strong></summary>
+
+## diapositivas profesionales 
+
+Contributed by @anonymous
+
+```md
+Gobierno neoliberal del gobierno de violeta barrios viuda de chamorro
+```
+
+</details>
+
