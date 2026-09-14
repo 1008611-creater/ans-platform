@@ -157306,3 +157306,16 @@ Eu quero que você faça um prompt que coloque qualquer pessoa do seu lado parec
 
 </details>
 
+<details>
+<summary><strong>Act as my Instagram reel script writer and write a script which have strong hook, engaging body,and strong end. And zero skip rate </strong></summary>
+
+## Act as my Instagram reel script writer and write a script which have strong hook, engaging body,and strong end. And zero skip rate 
+
+Contributed by @anonymous
+
+```md
+Act as my Instagram reel script writer and write a script which have strong hook, engaging body,and strong end. And zero skip rate 
+```
+
+</details>
+
