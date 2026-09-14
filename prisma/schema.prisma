@@ -70,6 +70,7 @@ model User {
   sentInviteEmails           InviteEmailDelivery[]  @relation("InviteEmailActor")
   templates                  Template[]
   runs                       Run[]
+  templateFavorites          TemplateFavorite[]
   ownedTeams                 Team[]                 @relation("TeamOwner")
   teamMemberships            TeamMember[]
   quotaLedgers               QuotaLedger[]
@@ -648,6 +649,7 @@ model Template {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   runs          Run[]
+  favorites     TemplateFavorite[]
 
   @@index([categoryId, status])
   @@index([authorId])
@@ -680,14 +682,30 @@ model Run {
   error          String?
   costPoints     Int          @default(0)
   externalTaskId String? // 对接 /api/media-generate 的任务 ID
+  idempotencyKey String? // 客户端幂等键，防重复提交重复扣费
   startedAt      DateTime?
   finishedAt     DateTime?
   createdAt      DateTime     @default(now())
 
+  @@unique([userId, idempotencyKey])
   @@index([userId, createdAt])
   @@index([status])
   @@index([teamId])
   @@map("runs")
+}
+
+
+model TemplateFavorite {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, templateId])
+  @@index([userId, createdAt])
+  @@index([templateId])
+  @@map("template_favorites")
 }
 
 enum TeamRole {
