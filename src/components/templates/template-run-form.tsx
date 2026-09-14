@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,13 @@ export type RunFormField = {
   placeholder?: string;
 };
 
+function makeIdempotencyKey() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return String(Date.now()) + "-" + Math.random().toString(36).slice(2);
+}
+
 export function TemplateRunForm({
   slug,
   formSchema = [],
@@ -40,31 +47,75 @@ export function TemplateRunForm({
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(formSchema.map((f) => [f.key, String(f.default ?? "")]))
   );
-  // The Select component emits a string; the server validates it against the
-  // shared whitelist before making an upstream request.
   const [modelKey, setModelKey] = useState<string>(DEFAULT_RUN_MODEL);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [output, setOutput] = useState<string | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
+  const [runStatus, setRunStatus] = useState<string | null>(null);
+  const pendingKey = useRef<string | null>(null);
+
+  async function waitForRun(id: string) {
+    for (let attempt = 0; attempt < 65; attempt += 1) {
+      const response = await fetch("/api/runs/" + encodeURIComponent(id), {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error("无法查询运行状态，请到工作台查看记录");
+      }
+      const data = await response.json();
+      const run = data.run;
+      setRunStatus(run.status);
+      if (run.status === "SUCCEEDED") {
+        setOutput(run.outputText ?? "");
+        return;
+      }
+      if (run.status === "FAILED" || run.status === "CANCELLED") {
+        const terminalError = new Error(run.error || "运行失败");
+        (terminalError as Error & { terminal?: boolean }).terminal = true;
+        throw terminalError;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    throw new Error("等待时间较长，请到工作台查看运行状态");
+  }
 
   async function run() {
+    const key = pendingKey.current ?? makeIdempotencyKey();
+    pendingKey.current = key;
     setBusy(true);
     setError("");
     setOutput(null);
     setRunId(null);
+    setRunStatus("QUEUED");
+    let clearKeyOnError = false;
     try {
-      const response = await fetch(`/api/templates/${slug}/run`, {
+      const response = await fetch("/api/templates/" + encodeURIComponent(slug) + "/run", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Idempotency-Key": key },
         body: JSON.stringify({ inputs: values, modelKey }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || data.error || "运行失败");
-      setRunId(data.runId);
-      setOutput(data.outputText ?? "");
+      if (!response.ok) {
+        clearKeyOnError = true;
+        throw new Error(data.message || data.error || "运行失败");
+      }
+      setRunId(data.runId ?? null);
+      setRunStatus(data.status ?? null);
+      if (data.status === "SUCCEEDED") {
+        setOutput(data.outputText ?? "");
+        pendingKey.current = null;
+      } else if (data.runId) {
+        await waitForRun(data.runId);
+        pendingKey.current = null;
+      } else {
+        clearKeyOnError = true;
+        throw new Error("运行记录缺少编号");
+      }
       router.refresh();
     } catch (cause) {
+      const terminal = cause instanceof Error && (cause as Error & { terminal?: boolean }).terminal;
+      if (clearKeyOnError || terminal) pendingKey.current = null;
       setError(cause instanceof Error ? cause.message : "运行失败，请稍后重试");
     } finally {
       setBusy(false);
@@ -141,9 +192,10 @@ export function TemplateRunForm({
         <div className="flex items-center gap-3">
           <Button disabled={busy} onClick={run}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {busy ? "运行中…" : `运行（${estimatedCost} 点）`}
+            {busy ? "运行中…" : "运行（" + estimatedCost + " 点）"}
           </Button>
           {runId && <span className="text-sm text-muted-foreground">记录 {runId.slice(0, 8)}…</span>}
+          {runStatus && busy && <span className="text-xs text-muted-foreground">{runStatus === "QUEUED" ? "排队中" : "处理中"}</span>}
         </div>
 
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
@@ -156,4 +208,3 @@ export function TemplateRunForm({
     </Card>
   );
 }
-
