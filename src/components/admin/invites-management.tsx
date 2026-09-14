@@ -54,6 +54,15 @@ function maskEmail(email: string) {
   return local.slice(0, 1) + "*".repeat(Math.max(1, local.length - 1)) + "@" + domain;
 }
 
+// 与后端 INVITE_EMAIL_COOLDOWN_SECONDS 保持一致：同一邀请码发给同一邮箱的最小间隔。
+const INVITE_EMAIL_COOLDOWN_SECONDS = 60;
+const MAX_INVITE_COOLDOWN_SECONDS = 600;
+
+/** 冷却键：邀请码 + 收件邮箱（与后端限流维度一致）。 */
+export function inviteCooldownKey(inviteId: string, email: string) {
+  return `${inviteId}|${email.trim().toLowerCase()}`;
+}
+
 export function InvitesManagement() {
   const [list, setList] = useState<ListResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +71,23 @@ export function InvitesManagement() {
   const [mailOpenId, setMailOpenId] = useState<string | null>(null);
   const [mailTo, setMailTo] = useState("");
   const [sendingId, setSendingId] = useState<string | null>(null);
+  // 每个「邀请码 + 收件邮箱」的剩余冷却秒数，避免 60 秒内重复投递。
+  const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
   const form = useForm<CreateValues, ResolverContext, CreateValues>({ resolver: createResolver, defaultValues: { maxUses: 5, expiresDays: 30 } });
+
+  useEffect(() => {
+    if (!Object.values(cooldowns).some((value) => value > 0)) return;
+    const timeout = window.setTimeout(() => {
+      setCooldowns((current) => {
+        const next: Record<string, number> = {};
+        for (const [key, value] of Object.entries(current)) {
+          if (value > 1) next[key] = value - 1;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => window.clearTimeout(timeout);
+  }, [cooldowns]);
 
   const load = useCallback(async (view: "invites" | "redemptions" = "invites", page = 1) => {
     setLoading(true);
@@ -115,10 +140,18 @@ export function InvitesManagement() {
     setMailTo("");
   }
 
+  const cooldownFor = (inviteId: string, email: string) => cooldowns[inviteCooldownKey(inviteId, email)] ?? 0;
+
   async function sendInvite(invite: InviteItem) {
-    const email = mailTo.trim();
+    const email = mailTo.trim().toLowerCase();
     if (!email) {
       toast.error("请输入收件邮箱");
+      return;
+    }
+    const cooldownKey = inviteCooldownKey(invite.id, email);
+    const remaining = cooldowns[cooldownKey] ?? 0;
+    if (remaining > 0) {
+      toast.error(`请 ${remaining} 秒后再重新发送`);
       return;
     }
     setSendingId(invite.id);
@@ -130,12 +163,20 @@ export function InvitesManagement() {
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
+        // 后端 429 会带 Retry-After，前端按剩余秒数继续禁用重发。
+        const retryAfter = Number(response.headers.get("Retry-After") || result.retryAfter);
+        if (response.status === 429) {
+          const seconds = Number.isFinite(retryAfter) && retryAfter > 0
+            ? Math.min(MAX_INVITE_COOLDOWN_SECONDS, Math.ceil(retryAfter))
+            : INVITE_EMAIL_COOLDOWN_SECONDS;
+          setCooldowns((current) => ({ ...current, [cooldownKey]: seconds }));
+        }
         toast.error(result.message || "邮件发送失败");
         return;
       }
       toast.success(`邀请码已发送至 ${email}`);
-      setMailOpenId(null);
-      setMailTo("");
+      // 保留输入面板并显示倒计时，管理员能直观看到 60 秒内不可重发。
+      setCooldowns((current) => ({ ...current, [cooldownKey]: INVITE_EMAIL_COOLDOWN_SECONDS }));
       void load("invites");
     } catch {
       toast.error("邮件发送失败，请重试");
@@ -223,8 +264,19 @@ export function InvitesManagement() {
                         placeholder="收件邮箱，如 student@cau.edu.cn"
                         className="h-8 min-w-[220px] flex-1 text-sm"
                       />
-                      <Button type="button" size="sm" className="h-8 text-xs" disabled={sendingId === invite.id} onClick={() => void sendInvite(invite)}>
-                        <Send className="mr-1 h-3 w-3" />{sendingId === invite.id ? "发送中…" : "发送"}
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8 text-xs"
+                        disabled={sendingId === invite.id || cooldownFor(invite.id, mailTo) > 0}
+                        onClick={() => void sendInvite(invite)}
+                      >
+                        <Send className="mr-1 h-3 w-3" />
+                        {sendingId === invite.id
+                          ? "发送中…"
+                          : cooldownFor(invite.id, mailTo) > 0
+                            ? `${cooldownFor(invite.id, mailTo)} 秒后重发`
+                            : "发送"}
                       </Button>
                     </div>
                   )}
