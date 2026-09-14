@@ -157293,3 +157293,16 @@ Tu primera tarea será evaluar críticamente el planteamiento actual de mi proye
 
 </details>
 
+<details>
+<summary><strong>Lado a lado</strong></summary>
+
+## Lado a lado
+
+Contributed by @anonymous
+
+```md
+Eu quero que você faça um prompt que coloque qualquer pessoa do seu lado parecendo 100% real
+```
+
+</details>
+
