@@ -157319,3 +157319,16 @@ Act as my Instagram reel script writer and write a script which have strong hook
 
 </details>
 
+<details>
+<summary><strong>search for clients </strong></summary>
+
+## search for clients 
+
+Contributed by [@engheshameletihad-stack](https://github.com/engheshameletihad-stack)
+
+```md
+Act as a ${role:sales engineer} creating documentation for ${posible clients}.
+```
+
+</details>
+
