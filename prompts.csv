@@ -128861,3 +128861,4 @@ SPECIFIC LOGIC REQUIREMENTS:
   - Include basic local caching (`chrome.storage.local`) for 24 hours so we don't waste API credits if the user clicks the same site twice.
 
 Please output the code for each file clearly labeled. Ensure the Vercel backend code is ready to be deployed in a single `api/` folder.",FALSE,TEXT,arixnetwork
+Prompt code comparaison des outils plateformes entre gratuit et payante ,المحتوى للبرومبت هو محتوى خاص بانشاء كود واحد html الخاص بهذا التطبيق الويب العربي بهذه التفاصيل للمقارنه بين ادوات المنصات الاربعه,FALSE,TEXT,"nadirlakhdarou20@gmail.com,nadcet@gmail.com"
