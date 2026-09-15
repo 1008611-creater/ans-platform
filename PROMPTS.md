@@ -156247,3 +156247,16 @@ Nothing else.
 
 </details>
 
+<details>
+<summary><strong>KRA for Business Dept</strong></summary>
+
+## KRA for Business Dept
+
+Contributed by @anonymous
+
+```md
+generate a instruction for project in claude where you need to review the kra and suggest the user any gaps or betterment ideas with specific reason. the intention is to develop the individual in his her role and result oriented
+```
+
+</details>
+
