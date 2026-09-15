@@ -156007,3 +156007,16 @@ Please output the code for each file clearly labeled. Ensure the Vercel backend 
 
 </details>
 
+<details>
+<summary><strong>Prompt code comparaison des outils plateformes entre gratuit et payante </strong></summary>
+
+## Prompt code comparaison des outils plateformes entre gratuit et payante 
+
+Contributed by @anonymous, @anonymous
+
+```md
+المحتوى للبرومبت هو محتوى خاص بانشاء كود واحد html الخاص بهذا التطبيق الويب العربي بهذه التفاصيل للمقارنه بين ادوات المنصات الاربعه
+```
+
+</details>
+
