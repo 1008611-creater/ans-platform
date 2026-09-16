@@ -160764,3 +160764,32 @@ Normas:
 
 </details>
 
+<details>
+<summary><strong>Electricite Mobtahij</strong></summary>
+
+## Electricite Mobtahij
+
+Contributed by @anonymous
+
+```md
+Votre prise électrique chauffe ? Ne l'ignorez pas.
+
+Une prise qui devient anormalement chaude peut être le signe d'une mauvaise connexion, d'une surcharge ou d'un problème dans le circuit électrique.
+
+Même si la prise fonctionne encore, le problème peut s'aggraver avec le temps.
+
+🔥 Une surchauffe électrique peut endommager l'installation et présenter un risque pour votre habitation.
+
+Faites contrôler l'installation dès l'apparition d'un signe anormal.
+
+🔧 Électricité Mobtahij Marrakech
+
+📞 06 98 94 27 51
+
+Inspection, diagnostic, réparation et maintenance électrique.
+
+📞 06 98 94 27 51
+```
+
+</details>
+
