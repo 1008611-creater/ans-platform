@@ -133227,3 +133227,36 @@ B. Tableau : Point audité | Constat | Gravité | Action concrète | Effort (10 
 C. Les trois actions à faire cette semaine, dans l'ordre, avec le résultat attendu pour chacune.
 
 Français de France. Vouvoiement. Aucun terme technique sans explication entre parenthèses.",FALSE,TEXT,c.talha@sf-creation.fr
+La bonne fiche Google n'apparaît pas : diagnostic et procédure de correction,"Tu es spécialiste des fiches d'établissement Google. Un professionnel constate que sa fiche n'apparaît pas, ou que Google affiche une fiche qui n'est pas la bonne. Établis le diagnostic, puis la procédure de correction adaptée.
+
+Établissement concerné : ${nom_etablissement}
+Adresse exacte : ${adresse}
+Activité : ${activite}
+Ce qui apparaît aujourd'hui dans Google : ${constat_actuel}
+Ce que le professionnel pense savoir de sa fiche : ${etat_suppose}
+
+Étape 1 — Diagnostic différentiel
+Passe en revue les causes possibles et dis laquelle correspond le plus probablement au constat, en justifiant :
+- aucune fiche n'a jamais été créée ;
+- une fiche existe mais n'est pas revendiquée par le professionnel ;
+- la fiche est revendiquée par un tiers (ancien prestataire, ancien associé, agence partie) ;
+- fiche en double, créée deux fois ;
+- homonymie ou confusion avec un établissement d'une autre commune ;
+- fiche suspendue (nom bourré de mots-clés, adresse non conforme, activité non éligible) ;
+- fiche fusionnée à tort avec un autre établissement ;
+- adresse mal géocodée, épingle mal placée sur la carte ;
+- établissement marqué définitivement fermé par erreur.
+
+Pour chaque hypothèse, indique le signe qui permet de la confirmer ou de l'écarter.
+
+Étape 2 — Vérifications à effectuer
+Liste les vérifications concrètes, dans l'ordre, avec où regarder : recherche du nom exact, recherche sur l'adresse, consultation de la carte, recherche du numéro de téléphone, test depuis un compte non connecté et depuis une autre localisation.
+
+Étape 3 — Procédure de correction
+Donne la procédure correspondant au diagnostic retenu, étape par étape : revendication, demande de transfert de propriété, signalement de doublon, suggestion de modification, demande de rétablissement après suspension. Précise à chaque fois les pièces justificatives à préparer et le délai habituel de traitement.
+
+Étape 4 — Après la correction
+Ce qu'il faut faire dans les deux semaines qui suivent pour que la fiche se stabilise et remonte.
+
+Ne présente jamais un contournement des règles Google comme une solution. Si une situation nécessite de passer par l'assistance Google, dis-le clairement.
+Français de France. Vouvoiement.",FALSE,TEXT,c.talha@sf-creation.fr
