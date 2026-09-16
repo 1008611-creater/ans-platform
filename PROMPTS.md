@@ -160639,3 +160639,27 @@ Attire: A tailored black suit jacket paired with matching black trousers, a shar
 
 </details>
 
+<details>
+<summary><strong>stealth ninja</strong></summary>
+
+## stealth ninja
+
+Contributed by @anonymous
+
+```md
+# Skill: Stealth Ninja
+
+## Purpose
+Enables the agent to execute web automation and data extraction without triggering anti-bot mechanisms (e.g., Cloudflare, Akamai, CAPTCHAs).
+
+## Instructions
+1. Randomize user-agent strings to mimic real, updated browser distributions.
+2. Emulate realistic human cursor movements, variable scroll speeds, and natural typing delays.
+3. Strip automation indicators by overriding `navigator.webdriver` to `undefined`.
+4. Manage and rotate proxies / residential IPs dynamically between requests.
+5. Accept and solve CAPTCHAs using third-party solving services if explicitly blocked.
+
+```
+
+</details>
+

@@ -133341,3 +133341,15 @@ Français de France. Vouvoiement.",FALSE,TEXT,c.talha@sf-creation.fr
 person wearing a black suit,"A crisp, minimalist studio portrait of an individual dressed in classic formal attire.
 
 Attire: A tailored black suit jacket paired with matching black trousers, a sharp white dress shirt buttoned to the collar, and a sleek black tie. Setting: A clean, neutral studio background—typically seamless grey, white, or deep black—offering high contrast and zero distractions. Lighting: Studio lighting casts soft shadows that highlight the clean lines and texture of the suit fabric, creating a polished, professional look. Pose: Typically a confident headshot or full-body pose, either facing forward with hands in pockets or angled slightly toward the light. ",FALSE,TEXT,hussienali1975@gmail.com
+stealth ninja,"# Skill: Stealth Ninja
+
+## Purpose
+Enables the agent to execute web automation and data extraction without triggering anti-bot mechanisms (e.g., Cloudflare, Akamai, CAPTCHAs).
+
+## Instructions
+1. Randomize user-agent strings to mimic real, updated browser distributions.
+2. Emulate realistic human cursor movements, variable scroll speeds, and natural typing delays.
+3. Strip automation indicators by overriding `navigator.webdriver` to `undefined`.
+4. Manage and rotate proxies / residential IPs dynamically between requests.
+5. Accept and solve CAPTCHAs using third-party solving services if explicitly blocked.
+",FALSE,TEXT,jonasmoody795@gmail.com
