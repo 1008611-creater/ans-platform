@@ -158752,3 +158752,27 @@ If the user asks to "just see an example idea", tell them the ideas come from th
 
 </details>
 
+<details>
+<summary><strong>Professional Image Enhancement & Print-Ready Specification</strong></summary>
+
+## Professional Image Enhancement & Print-Ready Specification
+
+Contributed by @anonymous
+
+```md
+Enhance the provided uploaded image by improving its sharpness, exposer, clarity, quality, and overall visual impact while preserving its core design elements. Ensure that the completed image is suitable for display in professional and digital contexts.
+
+Your task is to:
+- Arrangements need to be made to print the image in 4K resolution.
+
+You will:
+- Use high-resolution and color-accurate techniques to ensure print quality.
+- Tailor images to be engaging and marketable.
+
+Rules:
+- Maintain print resolution of at least 300 DPI.
+- Avoid overly complex designs that detract from the image focus.
+```
+
+</details>
+
