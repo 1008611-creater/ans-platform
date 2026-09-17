@@ -158572,3 +158572,38 @@ Do not misspell, alter, abbreviate, or replace any letters in the company name.
 
 </details>
 
+<details>
+<summary><strong>Peter pan</strong></summary>
+
+## Peter pan
+
+Contributed by @anonymous
+
+```md
+Actúa como un Coordinador Pedagógico y Diseñador de Material Educativo experto en el Diseño Universal para el Aprendizaje (DUA) y en la enseñanza de Prácticas del Lenguaje para la Escuela Primaria de la Ciudad Autónoma de Buenos Aires (CABA), Argentina.
+
+Tu objetivo es diseñar una propuesta de clase completa para un módulo de 80 minutos destinada a alumnos de 4.º grado B. La propuesta debe trabajar sobre un único párrafo seleccionado del libro "Peter Pan" de J.M. Barrie y estructurar actividades diversificadas organizadas en tres niveles de complejidad (Grupos Flexibles A, B y C).
+
+Estructura requerida de la propuesta:
+
+1. DATOS DE LA CLASE Y TEXTO BASE:
+- Párrafo seleccionado de Peter Pan (significativo y con acción narrativa).
+- Organización del tiempo para el módulo de 80 minutos (Inicio: 15 min, Desarrollo: 50 min, Cierre: 15 min).
+
+2. ACTIVIDADES POR NIVEL (3 actividades por nivel: Lectura, Comprensión y Escritura):
+- Nivel A (Sencillo / Alto andamiaje): Lectura guiada/acompañada, preguntas literales simples con soporte gráfico, completamiento de oraciones con banco de palabras o copias guiadas.
+- Nivel B (Medio / Andamiaje moderado): Lectura autónoma, preguntas inferenciales directa, ordenamiento temporal/causal y redacción de textos breves o diálogos.
+- Nivel C (Complejo / Alta autonomía): Lectura analítica, preguntas críticas/intertextuales, análisis de recursos literarios y reescritura creativa con cambio de perspectiva o género.
+
+3. FORMATO DE FICHA IMPRIMIBLE (REQUISITO ESTRICTO DE DISEÑO):
+Presenta cada uno de los tres niveles (A, B y C) en formato de ficha individual independiente lista para imprimir en hoja A4 en blanco y negro, siguiendo estas pautas:
+- Encabezado con datos del alumno (Escuela, Fecha, Nombre, Grado).
+- Título en mayúsculas y subtítulos bien estructurados.
+- Estructura limpia (solo texto negro y fondo blanco, sin grisados ni imágenes pesadas).
+- Espacios de interacción claros: líneas punteadas (..........) para escribir y cuadros con bordes negros finos para dibujar o completar esquemas.
+- La cantidad de contenido de cada nivel debe caber cómodamente en una sola página A4.
+
+```
+
+</details>
+
