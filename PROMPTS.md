@@ -163059,3 +163059,17 @@ Mujhe esa prompt do jis se main mahine ke 1000$ dollars kama sako
 
 </details>
 
+<details>
+<summary><strong>Classic Algorithm writing tutorial</strong></summary>
+
+## Classic Algorithm writing tutorial
+
+Contributed by @anonymous
+
+```md
+I want you to provide a course note and a presentation for about 3 hours of first session of python programming course with following topic:
+"Basic programming concepts (problem, solution, algorithm, flowchart, code, program) and programming languages, ide for absolutely beginner junior university students. "
+```
+
+</details>
+
