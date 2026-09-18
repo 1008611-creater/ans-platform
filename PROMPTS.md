@@ -163073,3 +163073,16 @@ I want you to provide a course note and a presentation for about 3 hours of firs
 
 </details>
 
+<details>
+<summary><strong>hr Manager interview planning</strong></summary>
+
+## hr Manager interview planning
+
+Contributed by @anonymous
+
+```md
+I have 5 years’ experience in UAE HR field. i have an hr interview in next week within 5 days. so accordingly, I can prepare this interview. I am work as an executive level works in new post is HR manager with indigently handling. as my knowledge the work is Strategic HR leadership, KPI in Workes etc…. give me the full Guidelines How to prepare this Interview. How I crack this interview easily
+```
+
+</details>
+
