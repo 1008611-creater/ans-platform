@@ -162326,3 +162326,16 @@ workflow. Frontmatter: `description` + `argument-hint`. Steps:
 
 </details>
 
+<details>
+<summary><strong>Ordenar mi lugar de trabajo</strong></summary>
+
+## Ordenar mi lugar de trabajo
+
+Contributed by @anonymous
+
+```md
+Ordenar mi lugar de trabajo según la foto que te estoy mostrando 
+```
+
+</details>
+
