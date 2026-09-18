@@ -163086,3 +163086,18 @@ I have 5 years’ experience in UAE HR field. i have an hr interview in next wee
 
 </details>
 
+<details>
+<summary><strong>dibujo</strong></summary>
+
+## dibujo
+
+Contributed by @anonymous
+
+```md
+tengo todos los planos constructivos de un edificio y quiero reporducir un 3d en rhino8, o quizás más fácil que chatgpt work lo haga, no sé qué es más fácil, ya que yo no sé usar esas herramientas, tambien tengo blender y estoy pensando en usar autocad, pero no sé si es bueno meter tanto programa en mi mac.
+
+Dime qué me aconsejas
+```
+
+</details>
+
