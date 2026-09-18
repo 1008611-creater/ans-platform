@@ -161334,3 +161334,16 @@ Rules:
 
 </details>
 
+<details>
+<summary><strong>ITF Trading Website</strong></summary>
+
+## ITF Trading Website
+
+Contributed by [@tahagunes057-dev](https://github.com/tahagunes057-dev)
+
+```md
+Analysiere das folgende ITF-Briefing und entwickle daraus einen außergewöhnlichen Base44-Masterprompt. Briefing = Leitplanken, kein Bauplan. Alex will meine eigene kreative Interpretation. ITF soll wie eine eigenständige Premium-Fintech/Investment/Education-Marke wirken: ruhig, präzise, technisch, erwachsen. Keine Guru-/Crypto-/Luxusoptik. Journey LEARN→PLAN→GET FUNDED→PROTECT→PAYOUT→SCALE visuell zentral. Alex = Vertrauensanker, ITF = System. Education, Handbook, Workbook, Content & Tools als Ökosystem. Eigene Ideen, Dramaturgie und starke Identität statt Standard-Cards.
+```
+
+</details>
+
