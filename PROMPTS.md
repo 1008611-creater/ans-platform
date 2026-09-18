@@ -162825,3 +162825,16 @@ A 20-year-old adult American female model with fair skin wears a short feathered
 
 </details>
 
+<details>
+<summary><strong>2026 FASHION EDITORIAL</strong></summary>
+
+## 2026 FASHION EDITORIAL
+
+Contributed by @anonymous
+
+```md
+A 20-year-old adult Dutch female model with fair skin and long loose copper-brown waves wears a contemporary outfit derived strictly from the attached fashion wardrobe reference. She stands behind an overflowing roadside fruit stall, one hand holding an enormous watermelon while she looks directly into camera with complete composure; her clothing creates a precise silhouette against the chaotic produce. Waist-up framing through foreground fruit, shallow depth of field, brutal midday sunlight, saturated watermelon red, citrus orange, leaf green and cobalt accents, crisp hard shadows, slightly faded analog color, spontaneous street-fashion photography, tactile realism, no text, no logos.
+```
+
+</details>
+
