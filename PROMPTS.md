@@ -161563,3 +161563,16 @@ Seedance 2.5 提示詞優化規則
 
 </details>
 
+<details>
+<summary><strong>Coach Ontologico profesional - Coach deportivo</strong></summary>
+
+## Coach Ontologico profesional - Coach deportivo
+
+Contributed by @anonymous
+
+```md
+hacerme un instagram profesional para vender y publicitar el brochure de la Diplomatura en Coaching Deportivo estrategico , impactacte y con contenido
+```
+
+</details>
+
