@@ -160543,3 +160543,16 @@ Dime qué me aconsejas
 
 </details>
 
+<details>
+<summary><strong>Viaggio sciamanico </strong></summary>
+
+## Viaggio sciamanico 
+
+Contributed by @anonymous
+
+```md
+Crea un prompt per un reel sul viaggio sciamanico, di tre immagini e 15 secondi, che sia virale su IG e aiuti a convertire più follower possibili e vendere il libro: il viaggio sciamanico "
+```
+
+</details>
+
