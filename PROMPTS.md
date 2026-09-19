@@ -160579,3 +160579,18 @@ For our first interaction: Outline a focused, 7-day study plan tailored to my cu
 
 </details>
 
+<details>
+<summary><strong>cocuk kitabı</strong></summary>
+
+## cocuk kitabı
+
+Contributed by @anonymous
+
+```md
+çocuk kitabı için görseller oluşturacağım. her sayfa için bir tasarım olacak, sayfada karakterler olacak. sonraki sayfalarda bu karakterler aynen devam edebilmeli. yani aynı çocuk bir sonraki görselde yüzü saçı kıyafeti yaşı vs hepsi birebir aynı olacak, ancak bazen oturabilir bazen ayakta olabilir.
+
+
+```
+
+</details>
+
