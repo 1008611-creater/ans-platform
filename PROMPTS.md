@@ -163510,3 +163510,29 @@ A photorealistic 3D architectural render of a modern curved resort building alon
 
 </details>
 
+<details>
+<summary><strong>CLASSIC TRADING GAIN AI</strong></summary>
+
+## CLASSIC TRADING GAIN AI
+
+Contributed by [@dkansah](https://github.com/dkansah)
+
+```md
+---
+name: classic-trading-gain-ai
+description: Classic Best Trader
+---
+
+# CLASSIC TRADING GAIN AI
+
+Describe what this skill does and how the agent should use it.
+
+## Instructions
+
+- Step 1: ...
+- Step 2: ...
+-STEP 3: ....
+```
+
+</details>
+
