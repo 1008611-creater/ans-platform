@@ -163672,3 +163672,19 @@ A candid spontaneous nighttime photograph of a young woman in her early 20s with
 
 </details>
 
+<details>
+<summary><strong>logo centre soins</strong></summary>
+
+## logo centre soins
+
+Contributed by @anonymous
+
+```md
+s'inspirant du logo de l'image propose un logo circulaire 8k de la gestion de centre de soins 
+avec le croissant en rouge  
+le texte en arabe  مركز العلاج إقبال  en haut 
+le texte en français en bat 
+```
+
+</details>
+
