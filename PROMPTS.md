@@ -163484,3 +163484,16 @@ A handsome young man sits casually atop a large rocky cliff overlooking a vast t
 
 </details>
 
+<details>
+<summary><strong>Dramatic Film Camera Portrait</strong></summary>
+
+## Dramatic Film Camera Portrait
+
+Contributed by @anonymous
+
+```md
+Retrato dinâmico em close-up de um homem, usando 100% do rosto da imagem anexa como referência com as mesmas características da imagem fornecida sem alterar nada. Ele veste uma camisa de linho branca desabotoada e reveladora, segurando uma câmera de filme em direção ao observador, obscurecendo parcialmente seu rosto. Ele olha diretamente para a camera com um olhar intenso e cativante. Foto tirada de um ângulo baixo, com forte luz natural proveniente de uma janela com ferragens do lado direito, criando sombras e realces dramáticos. Alto contraste e nitidez.5:8
+```
+
+</details>
+
