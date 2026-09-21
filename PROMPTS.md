@@ -161146,3 +161146,16 @@ My TMA should also have few references (in harvard style) but End reference and 
 
 </details>
 
+<details>
+<summary><strong>Afficher </strong></summary>
+
+## Afficher 
+
+Contributed by @anonymous
+
+```md
+Améliorer moi cette affiche quille soit pro comme si c'était fait à photoshop 
+```
+
+</details>
+
