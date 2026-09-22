@@ -161437,3 +161437,16 @@ Describe what this skill does and how the agent should use it.
 
 </details>
 
+<details>
+<summary><strong>Cafe</strong></summary>
+
+## Cafe
+
+Contributed by @anonymous
+
+```md
+قم بصنع تطبيق الكاشير ل الكافتيريا باسم Shilan Hospital Cafe
+```
+
+</details>
+
