@@ -161198,3 +161198,16 @@ Améliorer moi cette affiche quille soit pro comme si c'était fait à photoshop
 
 </details>
 
+<details>
+<summary><strong>Başlık</strong></summary>
+
+## Başlık
+
+Contributed by @anonymous
+
+```md
+ti ve kahiredeki otel kaldı aşkım benim aşkım benim haklısın ama bu paylaş Facebook Tweet ve fotoğrafları${aşkım}
+```
+
+</details>
+
