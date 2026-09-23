@@ -161748,3 +161748,17 @@ I want to create a video where I am standing in a dark corridor lined with doors
 
 </details>
 
+<details>
+<summary><strong>introduccion la llorona</strong></summary>
+
+## introduccion la llorona
+
+Contributed by @anonymous
+
+```md
+Créame esta escena. Escena 1.1: ⁠A dark, lonely rural dirt road at night, flanked by twisted, gnarled trees and a murky river under a pale moon. Dense fog floating close to the ground, cinematic lighting, spooky atmosphere, dark horror movie style, highly detailed, 8k --ar
+
+```
+
+</details>
+
