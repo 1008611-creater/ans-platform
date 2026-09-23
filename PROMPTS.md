@@ -161762,3 +161762,16 @@ Créame esta escena. Escena 1.1: ⁠A dark, lonely rural dirt road at night, fla
 
 </details>
 
+<details>
+<summary><strong>لخص لي </strong></summary>
+
+## لخص لي 
+
+Contributed by @anonymous
+
+```md
+المحاضرات تلخيص دراسي لكي افهم محتواها كوني لدي اختبار نهائي انا طالب جامعي بكالريوس سنه رابعة في كلية الزراعة والاغذية والبيئة قسم الانتاج الحيواني 
+```
+
+</details>
+
