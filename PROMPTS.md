@@ -162272,3 +162272,30 @@ Want me to also draft 3-4 alternate hook/title text options to test for the thum
 
 </details>
 
+<details>
+<summary><strong>Personnage comic</strong></summary>
+
+## Personnage comic
+
+Contributed by @anonymous
+
+```md
+---
+name: personnage-comic
+description: Anime comic cartoon
+---
+
+# Personnage comic
+
+Describe what this skill does and how the agent should use it.
+
+## Instructions
+
+- Step 1: ...
+- Step 2: ...
+FILE:README.md
+
+```
+
+</details>
+
