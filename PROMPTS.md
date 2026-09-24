@@ -161844,3 +161844,16 @@ in the footer shop location contact number and webside
 
 </details>
 
+<details>
+<summary><strong>want to learn spoken english grammar study plan </strong></summary>
+
+## want to learn spoken english grammar study plan 
+
+Contributed by @anonymous
+
+```md
+ive me a spoken english grammar road map I mean which are the important topics to learn when you have to speak english also make 30 days spoken english practice study plan in which i will have conversation with chat gpt assistent on given topic a audio conversation
+```
+
+</details>
+
