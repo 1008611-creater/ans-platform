@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Sparkles, Zap } from "lucide-react";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { getQuotaPoolBannerState } from "@/server/quota-pool/service";
 import { Button } from "@/components/ui/button";
 import { QuotaClaimButton } from "@/components/quota-claim-button";
 
@@ -13,34 +12,15 @@ function formatPoints(n: number): string {
 
 /**
  * 首页免费算力池横幅（引流钩子）
- * 数据来自 QuotaPool 表中 active 的池子；BigInt 在服务端即转 Number，避免序列化问题。
+ * 组件层不直接查库（见 CONSTRAINTS.md），数据由 server/quota-pool 提供；
+ * BigInt 已在服务层转成 Number，避免序列化问题。
  */
 export async function QuotaPoolBanner() {
-  const session = await auth();
+  const state = await getQuotaPoolBannerState();
 
-  const pool = await db.quotaPool.findFirst({
-    where: { active: true },
-    orderBy: { createdAt: "desc" },
-  });
+  if (!state) return null;
 
-  if (!pool) return null;
-
-  const total = Number(pool.totalPoints);
-  const claimed = Number(pool.claimedPoints);
-  const remaining = Math.max(0, total - claimed);
-  const percent = total > 0 ? Math.min(100, (claimed / total) * 100) : 0;
-  const exhausted = remaining <= 0;
-
-  let claimState: "anonymous" | "claimed" | "available" = "available";
-  if (!session?.user?.id) {
-    claimState = "anonymous";
-  } else {
-    const me = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { quotaClaimedAt: true, quotaPoints: true },
-    });
-    claimState = me?.quotaClaimedAt ? "claimed" : "available";
-  }
+  const { total, claimed, remaining, percent, perUserPoints, exhausted, claimState } = state;
 
   return (
     <section className="border-y bg-gradient-to-r from-primary/[0.06] via-primary/[0.03] to-transparent">
@@ -77,7 +57,7 @@ export async function QuotaPoolBanner() {
             <p className="mt-3 text-sm text-muted-foreground">
               注册即可领取{" "}
               <span className="font-medium text-foreground">
-                {formatPoints(pool.perUserPoints)} 点
+                {formatPoints(perUserPoints)} 点
               </span>{" "}
               算力，用于在模板广场直接运行 AI 任务。每人限领一次，领完即止。
             </p>
@@ -100,7 +80,7 @@ export async function QuotaPoolBanner() {
                 已领取
               </Button>
             ) : (
-              <QuotaClaimButton points={pool.perUserPoints} />
+              <QuotaClaimButton points={perUserPoints} />
             )}
           </div>
         </div>

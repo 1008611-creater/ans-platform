@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 import { GET, PATCH, DELETE } from "@/app/api/prompts/[id]/route";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
@@ -47,10 +48,10 @@ describe("GET /api/prompts/[id]", () => {
   });
 
   it("should return 404 for non-existent prompt", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
     vi.mocked(db.prompt.findUnique).mockResolvedValue(null);
 
-    const request = new Request("http://localhost:3000/api/prompts/non-existent");
+    const request = new NextRequest("http://localhost:3000/api/prompts/non-existent");
     const response = await GET(request, { params: Promise.resolve({ id: "non-existent" }) });
     const data = await response.json();
 
@@ -59,13 +60,13 @@ describe("GET /api/prompts/[id]", () => {
   });
 
   it("should return 404 for deleted prompt", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
     vi.mocked(db.prompt.findUnique).mockResolvedValue({
       id: "123",
       deletedAt: new Date(),
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123");
+    const request = new NextRequest("http://localhost:3000/api/prompts/123");
     const response = await GET(request, { params: Promise.resolve({ id: "123" }) });
     const data = await response.json();
 
@@ -83,7 +84,7 @@ describe("GET /api/prompts/[id]", () => {
       _count: { votes: 0 },
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123");
+    const request = new NextRequest("http://localhost:3000/api/prompts/123");
     const response = await GET(request, { params: Promise.resolve({ id: "123" }) });
     const data = await response.json();
 
@@ -108,7 +109,7 @@ describe("GET /api/prompts/[id]", () => {
     } as never);
     vi.mocked(db.promptVote.findUnique).mockResolvedValue({ id: "vote1" } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123");
+    const request = new NextRequest("http://localhost:3000/api/prompts/123");
     const response = await GET(request, { params: Promise.resolve({ id: "123" }) });
     const data = await response.json();
 
@@ -125,11 +126,12 @@ describe("GET /api/prompts/[id]", () => {
       isPrivate: true,
       authorId: "owner",
       deletedAt: null,
+      author: { id: "owner", username: "owner", nickname: null, avatar: null, verified: false },
       _count: { votes: 0 },
     } as never);
     vi.mocked(db.promptVote.findUnique).mockResolvedValue(null);
 
-    const request = new Request("http://localhost:3000/api/prompts/123");
+    const request = new NextRequest("http://localhost:3000/api/prompts/123");
     const response = await GET(request, { params: Promise.resolve({ id: "123" }) });
 
     expect(response.status).toBe(200);
@@ -142,9 +144,9 @@ describe("PATCH /api/prompts/[id]", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "PATCH",
       body: JSON.stringify({ title: "Updated" }),
     });
@@ -160,7 +162,7 @@ describe("PATCH /api/prompts/[id]", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.prompt.findUnique).mockResolvedValue(null);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "PATCH",
       body: JSON.stringify({ title: "Updated" }),
     });
@@ -179,7 +181,7 @@ describe("PATCH /api/prompts/[id]", () => {
       content: "original",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "PATCH",
       body: JSON.stringify({ title: "Updated" }),
     });
@@ -202,9 +204,10 @@ describe("PATCH /api/prompts/[id]", () => {
       title: "Updated",
       isPrivate: false,
       isUnlisted: false,
+      author: { id: "other-user", username: "other-user", nickname: null },
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "PATCH",
       body: JSON.stringify({ title: "Updated" }),
     });
@@ -227,11 +230,12 @@ describe("PATCH /api/prompts/[id]", () => {
       content: "Updated content",
       isPrivate: false,
       isUnlisted: false,
+      author: { id: "user1", username: "user1", nickname: null },
     } as never);
     vi.mocked(db.promptVersion.findFirst).mockResolvedValue({ version: 1 } as never);
     vi.mocked(db.promptVersion.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "PATCH",
       body: JSON.stringify({ title: "Updated Title", content: "Updated content" }),
     });
@@ -251,9 +255,9 @@ describe("DELETE /api/prompts/[id]", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "DELETE",
     });
 
@@ -268,7 +272,7 @@ describe("DELETE /api/prompts/[id]", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.prompt.findUnique).mockResolvedValue(null);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "DELETE",
     });
 
@@ -287,7 +291,7 @@ describe("DELETE /api/prompts/[id]", () => {
       deletedAt: new Date(),
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "DELETE",
     });
 
@@ -308,7 +312,7 @@ describe("DELETE /api/prompts/[id]", () => {
       delistReason: null,
     } as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "DELETE",
     });
 
@@ -329,7 +333,7 @@ describe("DELETE /api/prompts/[id]", () => {
     } as never);
     vi.mocked(db.prompt.update).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "DELETE",
     });
 
@@ -351,7 +355,7 @@ describe("DELETE /api/prompts/[id]", () => {
     } as never);
     vi.mocked(db.prompt.update).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/prompts/123", {
+    const request = new NextRequest("http://localhost:3000/api/prompts/123", {
       method: "DELETE",
     });
 

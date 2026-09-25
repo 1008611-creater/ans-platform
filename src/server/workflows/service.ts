@@ -1,0 +1,592 @@
+import { Prisma } from "@prisma/client";
+import { db } from "@/lib/db";
+import {
+  workflowCreateInputSchema,
+  workflowDefinitionSchema,
+  workflowVersionInputSchema,
+  workflowRunInputSchema,
+} from "@/contracts/workflow";
+import { validateWorkflow } from "@/domain/workflows/graph";
+import { debitQuota, QuotaError } from "@/server/quota/service";
+import { canPublishAfterReview, reviewWorkflowDefinition } from "@/server/workflows/review";
+
+/**
+ * 工作流领域服务。
+ *
+ * 规则：
+ * - 定义先过 Zod，再过 DAG 校验（无环、节点合法、上限内）。
+ * - 版本一经创建不可修改，只能追加新版本。
+ * - 发布、审核、运行都写审计日志。
+ * - 发布前必须有 AI 初审结论：PASS 才放行，BLOCKED 打回作者，
+ *   UNAVAILABLE 仅在本服务端从未配置初审时退回纯人工把关。
+ * - 运行先扣算力，失败在运行器中退费。
+ */
+
+export class WorkflowServiceError extends Error {
+  constructor(
+    message: string,
+    public readonly code = "WORKFLOW_ERROR",
+    public readonly status = 400,
+  ) {
+    super(message);
+    this.name = "WorkflowServiceError";
+  }
+}
+
+const authorSelect = { id: true, nickname: true, username: true, avatar: true } as const;
+
+function assertDefinition(definition: unknown) {
+  const parsed = workflowDefinitionSchema.safeParse(definition);
+  if (!parsed.success) {
+    throw new WorkflowServiceError("工作流定义格式不正确。", "INVALID_DEFINITION");
+  }
+  const validation = validateWorkflow(parsed.data);
+  if (!validation.ok) {
+    throw new WorkflowServiceError(
+      validation.issues.map((issue) => issue.message).join(" "),
+      "INVALID_GRAPH",
+    );
+  }
+  return parsed.data;
+}
+
+async function requireActor(actorId: string) {
+  const actor = await db.user.findUnique({
+    where: { id: actorId },
+    select: { id: true, role: true, emailVerified: true, deletedAt: true, flagged: true },
+  });
+  if (!actor || actor.deletedAt) throw new WorkflowServiceError("账号不可用。", "UNAUTHORIZED", 401);
+  if (actor.flagged) throw new WorkflowServiceError("账号受限，暂时无法创作。", "FORBIDDEN", 403);
+  return actor;
+}
+
+export async function createWorkflow(authorId: string, rawInput: unknown) {
+  const parsed = workflowCreateInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    throw new WorkflowServiceError("工作流信息不完整或格式不正确。", "INVALID_INPUT");
+  }
+  const input = parsed.data;
+  const definition = assertDefinition(input.definition);
+  await requireActor(authorId);
+
+  try {
+    return await db.$transaction(async (tx) => {
+      const workflow = await tx.workflow.create({
+        data: {
+          slug: input.slug,
+          title: input.title,
+          summary: input.summary ?? null,
+          description: input.description ?? null,
+          authorId,
+          estimatedCost: input.estimatedCost,
+          versions: {
+            create: {
+              version: 1,
+              definition: definition as Prisma.InputJsonValue,
+              createdById: authorId,
+            },
+          },
+        },
+        include: { versions: { orderBy: { version: "desc" } } },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorId: authorId,
+          action: "WORKFLOW_CREATED",
+          resourceType: "workflow",
+          resourceId: workflow.id,
+          after: { slug: workflow.slug, status: workflow.status, version: 1 },
+        },
+      });
+      return workflow;
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.toLowerCase().includes("unique")) {
+      throw new WorkflowServiceError("该工作流标识已经存在。", "SLUG_EXISTS", 409);
+    }
+    throw error;
+  }
+}
+
+/** 追加一个不可变版本；只有作者或管理员可以提交。 */
+export async function createWorkflowVersion(slug: string, actorId: string, rawInput: unknown) {
+  const parsed = workflowVersionInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    throw new WorkflowServiceError("工作流定义格式不正确。", "INVALID_DEFINITION");
+  }
+  const definition = assertDefinition(parsed.data.definition);
+  const workflow = await db.workflow.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      authorId: true,
+      status: true,
+      versions: { orderBy: { version: "desc" }, take: 1, select: { version: true } },
+    },
+  });
+  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  const actor = await requireActor(actorId);
+  if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
+    throw new WorkflowServiceError("没有编辑该工作流的权限。", "FORBIDDEN", 403);
+  }
+  const nextVersion = (workflow.versions[0]?.version ?? 0) + 1;
+
+  return db.$transaction(async (tx) => {
+    const version = await tx.workflowVersion.create({
+      data: {
+        workflowId: workflow.id,
+        version: nextVersion,
+        definition: definition as Prisma.InputJsonValue,
+        createdById: actorId,
+      },
+    });
+    const updated = await tx.workflow.update({
+      where: { id: workflow.id },
+      // 定义变了，旧的 AI 初审结论与人工复核理由都不再适用于新版本。
+      data: {
+        status: workflow.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
+        reviewScore: Prisma.DbNull,
+        reviewNote: null,
+        reviewedAt: null,
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "WORKFLOW_VERSION_CREATED",
+        resourceType: "workflow",
+        resourceId: workflow.id,
+        after: { version: nextVersion, status: updated.status },
+      },
+    });
+    return version;
+  });
+}
+
+export async function listPublishedWorkflows(options: { query?: string; take?: number } = {}) {
+  const query = options.query?.trim();
+  return db.workflow.findMany({
+    where: {
+      status: "PUBLISHED",
+      ...(query
+        ? {
+            OR: [
+              { title: { contains: query, mode: "insensitive" as const } },
+              { summary: { contains: query, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    },
+    orderBy: [{ useCount: "desc" }, { updatedAt: "desc" }],
+    take: Math.min(Math.max(options.take ?? 24, 1), 60),
+    include: {
+      author: { select: authorSelect },
+      versions: { orderBy: { version: "desc" }, take: 1, select: { version: true } },
+    },
+  });
+}
+
+export function listOwnWorkflows(authorId: string) {
+  return db.workflow.findMany({
+    where: { authorId },
+    orderBy: { updatedAt: "desc" },
+    take: 100,
+    include: { versions: { orderBy: { version: "desc" }, select: { version: true, createdAt: true } } },
+  });
+}
+
+export function listWorkflowQueue() {
+  return db.workflow.findMany({
+    where: { status: "PENDING" },
+    orderBy: { updatedAt: "asc" },
+    take: 100,
+    include: {
+      author: { select: { id: true, username: true, nickname: true } },
+      versions: { orderBy: { version: "desc" }, take: 1 },
+    },
+  });
+}
+
+/** 公开详情：只有已发布且存在发布版本的工作流可见。 */
+export async function getPublishedWorkflow(slug: string) {
+  const workflow = await db.workflow.findFirst({
+    where: { slug, status: "PUBLISHED", publishedVersion: { not: null } },
+    include: {
+      author: { select: authorSelect },
+      versions: { orderBy: { version: "desc" } },
+    },
+  });
+  if (!workflow) return null;
+  const published = workflow.versions.find((version) => version.version === workflow.publishedVersion);
+  return { ...workflow, publishedDefinition: published?.definition ?? null };
+}
+
+/** 作者视角详情：包含草稿与全部版本。 */
+export async function getWorkflowForEditor(slug: string, actorId: string) {
+  const workflow = await db.workflow.findUnique({
+    where: { slug },
+    include: {
+      author: { select: authorSelect },
+      versions: { orderBy: { version: "desc" } },
+    },
+  });
+  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  const actor = await requireActor(actorId);
+  if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
+    throw new WorkflowServiceError("没有查看该工作流的权限。", "FORBIDDEN", 403);
+  }
+  return workflow;
+}
+
+/**
+ * 作者/管理员发布指定版本。
+ *
+ * 仍然要过 AI 初审这道门：否则「作者直接发布」会成为绕过审核的捷径，
+ * 让审核队列形同虚设。需要重新初审时先走提交或管理员复查。
+ */
+export async function publishWorkflow(slug: string, actorId: string, version?: number) {
+  const workflow = await db.workflow.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      authorId: true,
+      status: true,
+      reviewScore: true,
+      versions: { orderBy: { version: "desc" } },
+    },
+  });
+  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  const actor = await requireActor(actorId);
+  if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
+    throw new WorkflowServiceError("没有发布该工作流的权限。", "FORBIDDEN", 403);
+  }
+  if (!canPublishAfterReview(workflow.reviewScore)) {
+    throw new WorkflowServiceError(
+      "AI 初审未通过或尚未完成，不能发布。",
+      "REVIEW_REQUIRED",
+      409,
+    );
+  }
+  if (workflow.versions.length === 0) {
+    throw new WorkflowServiceError("工作流还没有可发布的版本。", "NO_VERSION");
+  }
+  const target = version ?? workflow.versions[0].version;
+  const targetVersion = workflow.versions.find((item) => item.version === target);
+  if (!targetVersion) {
+    throw new WorkflowServiceError("指定的版本不存在。", "NO_VERSION", 404);
+  }
+  // 发布前再次校验，防止旧版本携带已失效的定义。
+  assertDefinition(targetVersion.definition);
+
+  return db.$transaction(async (tx) => {
+    const updated = await tx.workflow.update({
+      where: { id: workflow.id },
+      data: { status: "PUBLISHED", publishedVersion: targetVersion.version },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "WORKFLOW_PUBLISHED",
+        resourceType: "workflow",
+        resourceId: workflow.id,
+        before: { status: workflow.status },
+        after: { status: updated.status, publishedVersion: targetVersion.version },
+      },
+    });
+    return updated;
+  });
+}
+
+export async function submitWorkflowForReview(slug: string, actorId: string) {
+  const workflow = await db.workflow.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      authorId: true,
+      status: true,
+      title: true,
+      summary: true,
+      description: true,
+      versions: { orderBy: { version: "desc" }, take: 1 },
+    },
+  });
+  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  const actor = await requireActor(actorId);
+  if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
+    throw new WorkflowServiceError("没有提交该工作流的权限。", "FORBIDDEN", 403);
+  }
+  if (workflow.versions.length === 0) {
+    throw new WorkflowServiceError("工作流还没有可提交的版本。", "NO_VERSION");
+  }
+  const definition = assertDefinition(workflow.versions[0].definition);
+  const submitted = await db.$transaction(async (tx) => {
+    const updated = await tx.workflow.update({
+      where: { id: workflow.id },
+      data: { status: "PENDING" },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "WORKFLOW_SUBMITTED",
+        resourceType: "workflow",
+        resourceId: workflow.id,
+        before: { status: workflow.status },
+        after: { status: updated.status },
+      },
+    });
+    return updated;
+  });
+
+  // 提交后立刻跑一次 AI 初审，把结论落库供人工复核参考。
+  // 初审失败不影响提交本身，管理员仍可在队列里重新发起初审。
+  await runAndStoreReview(workflow.id, actorId, {
+    title: submitted.title,
+    summary: submitted.summary,
+    description: submitted.description,
+    definition,
+  });
+  return submitted;
+}
+
+/**
+ * 跑一次 AI 初审并把结论写进 workflow.reviewScore。
+ *
+ * 只更新 reviewScore，不改状态：状态流转始终由人工复核决定。
+ */
+async function runAndStoreReview(
+  workflowId: string,
+  actorId: string,
+  input: {
+    title: string;
+    summary: string | null;
+    description: string | null;
+    definition: Parameters<typeof reviewWorkflowDefinition>[0]["definition"];
+  },
+) {
+  const review = await reviewWorkflowDefinition(input);
+  await db.workflow.update({
+    where: { id: workflowId },
+    data: { reviewScore: review as unknown as Prisma.InputJsonValue },
+  });
+  await db.auditLog.create({
+    data: {
+      actorId,
+      action: "WORKFLOW_AI_REVIEWED",
+      resourceType: "workflow",
+      resourceId: workflowId,
+      after: {
+        verdict: review.verdict,
+        unavailableReason: review.unavailableReason ?? null,
+        scores: review.scores ?? null,
+        model: review.model ?? null,
+      },
+    },
+  });
+  return review;
+}
+
+/**
+ * 管理员重新发起 AI 初审。
+ *
+ * 先清空旧结论，避免「上一次 PASS 的旧结果」被拿来发布新定义；
+ * 状态必须仍为 PENDING，且不能由作者本人发起。
+ */
+export async function recheckWorkflowReview(slug: string, adminId: string) {
+  const workflow = await db.workflow.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      authorId: true,
+      status: true,
+      title: true,
+      summary: true,
+      description: true,
+      versions: { orderBy: { version: "desc" }, take: 1 },
+    },
+  });
+  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.authorId === adminId) {
+    throw new WorkflowServiceError("不能审核自己创建的工作流。", "FORBIDDEN", 403);
+  }
+  if (workflow.status !== "PENDING") {
+    throw new WorkflowServiceError("工作流不在待审状态，请刷新后重试。", "INVALID_STATE", 409);
+  }
+  const version = workflow.versions[0];
+  if (!version) throw new WorkflowServiceError("工作流还没有版本。", "NO_VERSION");
+  const definition = assertDefinition(version.definition);
+
+  await db.workflow.update({ where: { id: workflow.id }, data: { reviewScore: Prisma.DbNull } });
+  await db.auditLog.create({
+    data: {
+      actorId: adminId,
+      action: "WORKFLOW_AI_RECHECK_REQUESTED",
+      resourceType: "workflow",
+      resourceId: workflow.id,
+      after: { version: version.version },
+    },
+  });
+  const review = await runAndStoreReview(workflow.id, adminId, {
+    title: workflow.title,
+    summary: workflow.summary,
+    description: workflow.description,
+    definition,
+  });
+  return { workflowId: workflow.id, review };
+}
+
+export async function reviewWorkflow(
+  slug: string,
+  adminId: string,
+  input: { action: "publish" | "reject"; note: string },
+) {
+  if (!input?.note?.trim()) {
+    throw new WorkflowServiceError("请填写复核理由。", "INVALID_INPUT");
+  }
+  const workflow = await db.workflow.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      authorId: true,
+      status: true,
+      reviewScore: true,
+      versions: { orderBy: { version: "desc" }, take: 1 },
+    },
+  });
+  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.authorId === adminId) {
+    throw new WorkflowServiceError("不能审核自己创建的工作流。", "FORBIDDEN", 403);
+  }
+  if (workflow.status !== "PENDING") {
+    throw new WorkflowServiceError("工作流不在待审状态，请刷新后重试。", "INVALID_STATE", 409);
+  }
+  const version = workflow.versions[0];
+  if (!version) throw new WorkflowServiceError("工作流还没有版本。", "NO_VERSION");
+  assertDefinition(version.definition);
+  const published = input.action === "publish";
+  // 人工复核不能绕过 AI 初审：只有 PASS，或「本服务端从未配置初审」时才是纯人工把关。
+  if (published && !canPublishAfterReview(workflow.reviewScore)) {
+    throw new WorkflowServiceError(
+      "AI 初审未通过或尚未完成，请先重新发起 AI 初审或驳回给作者修改。",
+      "REVIEW_REQUIRED",
+      409,
+    );
+  }
+
+  return db.$transaction(async (tx) => {
+    const updated = await tx.workflow.update({
+      where: { id: workflow.id },
+      data: {
+        status: published ? "PUBLISHED" : "REJECTED",
+        ...(published ? { publishedVersion: version.version } : {}),
+        reviewNote: input.note.trim(),
+        reviewedAt: new Date(),
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: adminId,
+        action: published ? "WORKFLOW_APPROVED" : "WORKFLOW_REJECTED",
+        resourceType: "workflow",
+        resourceId: workflow.id,
+        before: { status: workflow.status },
+        after: { status: updated.status, note: input.note.trim() },
+      },
+    });
+    return updated;
+  });
+}
+
+/**
+ * 创建一次运行：先扣算力，再落运行记录与节点记录。
+ * 扣费与建单在同一事务内，避免出现“扣了钱没有记录”。
+ */
+export async function createWorkflowRun(slug: string, userId: string, rawInput: unknown) {
+  const parsed = workflowRunInputSchema.safeParse(rawInput ?? {});
+  if (!parsed.success) {
+    throw new WorkflowServiceError("运行参数格式不正确。", "INVALID_INPUT");
+  }
+  const workflow = await db.workflow.findFirst({
+    where: { slug, status: "PUBLISHED", publishedVersion: { not: null } },
+    select: {
+      id: true,
+      title: true,
+      estimatedCost: true,
+      publishedVersion: true,
+      versions: { orderBy: { version: "desc" } },
+    },
+  });
+  if (!workflow || workflow.publishedVersion === null) {
+    throw new WorkflowServiceError("工作流不存在或尚未发布。", "NOT_FOUND", 404);
+  }
+  const version = workflow.versions.find((item) => item.version === workflow.publishedVersion);
+  if (!version) throw new WorkflowServiceError("发布版本缺失，请联系管理员。", "NO_VERSION", 409);
+  const definition = assertDefinition(version.definition);
+  const costPoints = Math.max(1, workflow.estimatedCost || 1);
+
+  try {
+    return await db.$transaction(async (tx) => {
+      const run = await tx.workflowRun.create({
+        data: {
+          workflowId: workflow.id,
+          versionId: version.id,
+          userId,
+          input: parsed.data.input as Prisma.InputJsonValue,
+          status: "QUEUED",
+          costPoints,
+        },
+      });
+      await debitQuota(tx, {
+        userId,
+        costPoints,
+        ref: { type: "workflow_run", id: run.id },
+        note: `运行工作流「${workflow.title}」`,
+      });
+      await tx.workflowNodeRun.createMany({
+        data: definition.nodes.map((node) => ({
+          runId: run.id,
+          nodeId: node.id,
+          status: "QUEUED" as const,
+          input: parsed.data.input as Prisma.InputJsonValue,
+        })),
+      });
+      await tx.workflow.update({ where: { id: workflow.id }, data: { useCount: { increment: 1 } } });
+      await tx.auditLog.create({
+        data: {
+          actorId: userId,
+          action: "WORKFLOW_RUN_QUEUED",
+          resourceType: "workflow_run",
+          resourceId: run.id,
+          metadata: { slug, version: version.version, costPoints },
+        },
+      });
+      return tx.workflowRun.findUniqueOrThrow({
+        where: { id: run.id },
+        include: { nodeRuns: { orderBy: { nodeId: "asc" } } },
+      });
+    });
+  } catch (error) {
+    if (error instanceof QuotaError) {
+      throw new WorkflowServiceError(error.message, error.code, error.status);
+    }
+    throw error;
+  }
+}
+
+export function getWorkflowRun(runId: string, userId: string) {
+  return db.workflowRun.findFirst({
+    where: { id: runId, userId },
+    include: {
+      nodeRuns: { orderBy: { nodeId: "asc" } },
+      workflow: { select: { slug: true, title: true } },
+    },
+  });
+}
+
+export function listWorkflowRuns(userId: string, take = 50) {
+  return db.workflowRun.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: Math.min(Math.max(take, 1), 100),
+    include: { workflow: { select: { slug: true, title: true } } },
+  });
+}

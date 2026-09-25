@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { db } from "@/lib/db";
+import { countSlugStatus, listPromptsNeedingSlugs, setPromptSlug } from "@/server/admin/slugs";
 import { generatePromptSlug } from "@/lib/slug";
 
 export async function POST(request: Request) {
@@ -16,15 +16,7 @@ export async function POST(request: Request) {
     const { searchParams } = new URL(request.url);
     const regenerateAll = searchParams.get("regenerate") === "true";
 
-    // Get prompts that need slug generation
-    const whereClause = regenerateAll
-      ? { deletedAt: null }
-      : { slug: null, deletedAt: null };
-
-    const prompts = await db.prompt.findMany({
-      where: whereClause,
-      select: { id: true, title: true },
-    });
+    const prompts = await listPromptsNeedingSlugs(regenerateAll);
 
     if (prompts.length === 0) {
       return NextResponse.json({
@@ -47,10 +39,7 @@ export async function POST(request: Request) {
           try {
             const slug = await generatePromptSlug(prompt.title);
             
-            await db.prompt.update({
-              where: { id: prompt.id },
-              data: { slug },
-            });
+            await setPromptSlug(prompt.id, slug);
             
             success++;
           } catch (error) {
@@ -109,24 +98,8 @@ export async function GET() {
       );
     }
 
-    const [promptsWithoutSlugs, totalPrompts] = await Promise.all([
-      db.prompt.count({
-        where: {
-          slug: null,
-          deletedAt: null,
-        },
-      }),
-      db.prompt.count({
-        where: {
-          deletedAt: null,
-        },
-      }),
-    ]);
-
-    return NextResponse.json({
-      promptsWithoutSlugs,
-      totalPrompts,
-    });
+    const status = await countSlugStatus();
+    return NextResponse.json(status);
   } catch (error) {
     console.error("Get slug status error:", error);
     return NextResponse.json(

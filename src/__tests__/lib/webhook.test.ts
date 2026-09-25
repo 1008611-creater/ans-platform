@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { WEBHOOK_PLACEHOLDERS, SLACK_PRESET_PAYLOAD, triggerWebhooks } from "@/lib/webhook";
+import { WEBHOOK_PLACEHOLDERS, SLACK_PRESET_PAYLOAD } from "@/contracts/webhook";
+import { triggerWebhooks } from "@/lib/webhook";
 import { db } from "@/lib/db";
 
 // Mock the db module

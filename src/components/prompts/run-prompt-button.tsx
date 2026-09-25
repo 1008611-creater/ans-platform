@@ -471,7 +471,14 @@ export function RunPromptButton({
       {isMobile ? (
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
-            <Button variant={emphasized ? undefined : variant} size={size} className={emphasized ? `bg-green-600 hover:bg-green-700 text-white ${className || ""}` : className}>
+            {/* size="icon" 时按钮里只剩一个 Play 图标，没有可访问名（axe: button-name）。
+                有文字时 aria-label 与可见文字一致，不改变读屏结果。 */}
+            <Button
+              variant={emphasized ? undefined : variant}
+              size={size}
+              className={emphasized ? `bg-green-600 hover:bg-green-700 text-white ${className || ""}` : className}
+              aria-label={t("run")}
+            >
               <Play className="h-4 w-4" />
               {size !== "icon" && <span className="ml-1.5">{t("run")}</span>}
             </Button>
@@ -492,7 +499,12 @@ export function RunPromptButton({
         /* Desktop: Dropdown */
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={emphasized ? undefined : variant} size={size} className={emphasized ? `bg-green-600 hover:bg-green-700 text-white ${className || ""}` : className}>
+            <Button
+              variant={emphasized ? undefined : variant}
+              size={size}
+              className={emphasized ? `bg-green-600 hover:bg-green-700 text-white ${className || ""}` : className}
+              aria-label={t("run")}
+            >
               <Play className="h-4 w-4" />
               {size !== "icon" && <span className="ml-1.5">{t("run")}</span>}
             </Button>

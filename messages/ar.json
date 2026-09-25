@@ -56,6 +56,12 @@
     "forKids": "للأطفال",
     "more": "المزيد"
   },
+  "a11y": {
+    "mainNav": "التنقل الرئيسي",
+    "mobileNav": "التنقل للجوال",
+    "mobileTabBar": "شريط تبويبات الجوال",
+    "footerNav": "تنقل التذييل"
+  },
   "brand": {
     "copyLogoSvg": "نسخ شعار SVG",
     "brandAssets": "موارد العلامة التجارية",
@@ -111,6 +117,9 @@
     "createSkill": "إنشاء مهارة",
     "createTaste": "إنشاء Taste",
     "skillsDescription": "مهارات الوكيل هي أوامر متعددة الملفات تمنح وكلاء الذكاء الاصطناعي قدرات متخصصة. تتضمن تعليمات وإعدادات وملفات داعمة يمكن استخدامها مع Claude وCursor وWindsurf ومساعدي البرمجة الآخرين.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Tastes هي ملفات markdown مفردة تحدد أسلوب البرمجة وتفضيلاتك. تساعد وكلاء البرمجة بالذكاء الاصطناعي على تعلم طريقة كتابتك للكود، حتى يتمكنوا من مطابقة اصطلاحاتك وأنماطك وذوقك.",
     "createInfo": "هذه المنصة لا تقوم بتشغيل أو تنفيذ الأوامر — إنها مكتبة مجتمعية لمشاركة واكتشاف أوامر الذكاء الاصطناعي. أنشئ أمرك هنا، ويمكن للآخرين نسخه واستخدامه في أدوات الذكاء الاصطناعي المفضلة لديهم مثل ChatGPT و Claude و Gemini أو أي نموذج لغوي آخر. يمكن للمجتمع أيضاً التعليق على أوامرك واقتراح تحسينات من خلال طلبات التغيير.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "مسح",
     "found": "تم العثور على {count}",
     "aiSearch": "بحث الذكاء الاصطناعي",
-    "searchTags": "البحث عن العلامات..."
+    "searchTags": "البحث عن العلامات...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "الملف الشخصي",
@@ -924,6 +936,13 @@
     "heroFeature1": "مجاني ومفتوح المصدر",
     "heroFeature2": "استضافة ذاتية للخصوصية",
     "heroFeature3": "للفرق والمؤسسات",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "العملاء",
     "commandLine": "سطر الأوامر",
     "extension": "الإضافة",

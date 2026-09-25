@@ -59,7 +59,7 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -155,11 +155,14 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     />
                   </>
                 )}
-                <span className="text-lg font-semibold mt-2">{branding.name}</span>
+                {/* Radix 要求抽屉有可访问的标题与描述；标题直接用可见品牌名，
+                    描述对视觉隐藏，只供读屏使用。 */}
+                <SheetTitle className="text-lg font-semibold mt-2">{branding.name}</SheetTitle>
+                <SheetDescription className="sr-only">{t("nav.more")}</SheetDescription>
               </div>
 
               {/* Navigation */}
-              <nav className="flex-1 p-4">
+              <nav aria-label={t("a11y.mobileNav")} className="flex-1 p-4">
                 <div className="space-y-1">
                   {user && (
                     <>
@@ -207,6 +210,24 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                   >
                     {t("nav.workflows")}
                   </Link>
+                  {user && (
+                    <>
+                      <Link
+                        href="/workflows/mine"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 ps-6 pe-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        我的工作流
+                      </Link>
+                      <Link
+                        href="/workflows/runs"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 ps-6 pe-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        运行记录
+                      </Link>
+                    </>
+                  )}
                   <Link 
                     href="/categories" 
                     onClick={() => setMobileMenuOpen(false)}
@@ -280,16 +301,17 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
             <Link href="/" className="flex gap-2">
               {branding.logo && (
                 <>
+                  {/* 品牌名就在紧邻的文本节点里，图标重复朗读品牌名反而干扰读屏，故 alt 留空。 */}
                   <Image
                     src={branding.logo}
-                    alt={branding.name}
+                    alt=""
                     width={20}
                     height={20}
                     className="h-5 w-5 dark:hidden"
                   />
                   <Image
                     src={branding.logoDark || branding.logo}
-                    alt={branding.name}
+                    alt=""
                     width={20}
                     height={20}
                     className="h-5 w-5 hidden dark:block"
@@ -312,29 +334,42 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
         </ContextMenu>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-1 text-sm">
+        <nav aria-label={t("a11y.mainNav")} className="hidden lg:flex items-center gap-1 text-sm">
           {user && (
-            <>
-              <Link
-                href="/collection"
-                className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-              >
-                {t("nav.collection")}
-              </Link>
-              <Link
-                href="/feed"
-                className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-              >
-                {t("nav.feed")}
-              </Link>
-            </>
+            <Link
+              href="/collection"
+              className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+            >
+              {t("nav.collection")}
+            </Link>
           )}
+          {/* 主导航按「发现 → 运行 → 收藏 → 复用」闭环排列，三类内容对象各有一个入口。 */}
           <Link
             href="/prompts"
             className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
           >
             {t("nav.prompts")}
           </Link>
+          <Link
+            href="/templates"
+            className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+          >
+            模板
+          </Link>
+          <Link
+            href="/workflows"
+            className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+          >
+            {t("nav.workflows")}
+          </Link>
+          {user && (
+            <Link
+              href="/workflows/runs"
+              className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+            >
+              运行记录
+            </Link>
+          )}
           <Link
             href="/skills"
             className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
@@ -347,13 +382,15 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
           >
             {t("nav.taste")}
           </Link>
-          <Link
-            href="/workflows"
-            className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.workflows")}
-          </Link>
-          {/* Categories, Tags, Promptmasters - visible on lg+ screens */}
+          {user && (
+            <Link
+              href="/workflows/mine"
+              className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+            >
+              我的工作流
+            </Link>
+          )}
+          {/* 低频入口保留在 2xl 以上，窄屏收进「更多」 */}
           <Link
             href="/categories"
             className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
@@ -371,12 +408,6 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
             className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
           >
             {t("nav.promptmasters")}
-          </Link>
-          <Link
-            href="/templates"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            模板广场
           </Link>
           <Link
             href="/teams"
@@ -403,11 +434,16 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                   {t("nav.taste")}
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="xl:hidden">
-                <Link href="/workflows">
-                  {t("nav.workflows")}
-                </Link>
-              </DropdownMenuItem>
+              {user && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/workflows/mine">我的工作流</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/workflows/runs">运行记录</Link>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator className="xl:hidden" />
               <DropdownMenuItem asChild>
                 <Link href="/categories">
@@ -581,8 +617,8 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               {/* Language selector for non-logged in users */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Globe className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t("settings.language")}>
+                    <Globe className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

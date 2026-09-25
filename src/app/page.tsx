@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { ArrowRight, Code, Lock, Building2, LogIn } from "lucide-react";
+import { ArrowRight, Code, Lock, Building2, LogIn, Boxes, Workflow, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getConfig } from "@/lib/config";
 import { Button } from "@/components/ui/button";
@@ -74,10 +74,40 @@ export default async function HomePage() {
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl lg:text-5xl !text-2xl sm:!text-3xl md:!text-4xl lg:!text-5xl text-primary">
                   {config.branding.name}
                 </h1>
-                <p className="mt-6 text-muted-foreground text-lg max-w-xl">
-                  {config.branding.description}
-                </p>
-              </>
+            <p className="mt-6 text-muted-foreground text-lg max-w-xl">
+              {config.branding.description}
+            </p>
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+              {tHomepage("campusBadge")}
+            </div>
+            <div className="mt-6 grid max-w-xl grid-cols-3 gap-2">
+              <Link
+                href="/prompts"
+                className="group rounded-xl border bg-background/75 p-3 transition-colors hover:border-primary/50 hover:bg-primary/5"
+              >
+                <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+                <span className="mt-2 block text-sm font-medium">{tHomepage("capabilityPrompt")}</span>
+                <span className="mt-1 block text-xs text-muted-foreground">{tHomepage("capabilityPromptHint")}</span>
+              </Link>
+              <Link
+                href="/templates"
+                className="group rounded-xl border bg-background/75 p-3 transition-colors hover:border-primary/50 hover:bg-primary/5"
+              >
+                <Boxes className="h-4 w-4 text-primary" aria-hidden="true" />
+                <span className="mt-2 block text-sm font-medium">{tHomepage("capabilityTemplate")}</span>
+                <span className="mt-1 block text-xs text-muted-foreground">{tHomepage("capabilityTemplateHint")}</span>
+              </Link>
+              <Link
+                href="/workflows"
+                className="group rounded-xl border bg-background/75 p-3 transition-colors hover:border-primary/50 hover:bg-primary/5"
+              >
+                <Workflow className="h-4 w-4 text-primary" aria-hidden="true" />
+                <span className="mt-2 block text-sm font-medium">{tHomepage("capabilityWorkflow")}</span>
+                <span className="mt-1 block text-xs text-muted-foreground">{tHomepage("capabilityWorkflowHint")}</span>
+              </Link>
+            </div>
+          </>
             ) : (
               <>
                 <h1 className="space-y-0 overflow-visible">

@@ -249,7 +249,7 @@ export default function BrandAssetsPage() {
               description={t("background")}
             />
             <ColorCard
-              color="#6366f1"
+            color="#4f46e5"
               name="Accent"
               description={t("accent")}
             />

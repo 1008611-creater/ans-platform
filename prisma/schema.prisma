@@ -53,24 +53,29 @@ model User {
   adminPermissions           Json?
 
   // ===== ANS 社区：等级 / 经验 / 额度 =====
-  xp                         Int                    @default(0) // 累计经验，只增不减（除管理员调整）
-  nickname                   String? // 匿名展示名，独立于 username
-  nicknameSetAt              DateTime? // 改昵称冷却起点（30 天一次）
-  lastCheckInAt              DateTime?
-  checkInStreak              Int                    @default(0)
-  quotaPoints                Int                    @default(0) // 个人可用算力点数
-  quotaClaimedAt             DateTime? // 免费额度池领取时间（每人一次）
+  xp             Int       @default(0) // 累计经验，只增不减（除管理员调整）
+  nickname       String? // 匿名展示名，独立于 username
+  nicknameSetAt  DateTime? // 改昵称冷却起点（30 天一次）
+  lastCheckInAt  DateTime?
+  checkInStreak  Int       @default(0)
+  quotaPoints    Int       @default(0) // 个人可用算力点数
+  quotaClaimedAt DateTime? // 免费额度池领取时间（每人一次）
 
   // ===== ANS 社区：关系 =====
-  xpHistory                  XpLedger[]
-  checkIns                   CheckIn[]
-  createdInvites             InviteCode[]           @relation("InviteCreator")
-  redeemedInvites            InviteRedemption[]
-  templates                  Template[]
-  runs                       Run[]
-  ownedTeams                 Team[]                 @relation("TeamOwner")
-  teamMemberships            TeamMember[]
-  quotaLedgers               QuotaLedger[]
+  xpHistory        XpLedger[]
+  checkIns         CheckIn[]
+  createdInvites   InviteCode[]       @relation("InviteCreator")
+  redeemedInvites  InviteRedemption[]
+  templates        Template[]
+  runs             Run[]
+  ownedTeams       Team[]             @relation("TeamOwner")
+  teamMemberships  TeamMember[]
+  quotaLedgers     QuotaLedger[]
+  workflows        Workflow[]
+  workflowRuns     WorkflowRun[]
+  workflowVersions WorkflowVersion[]  @relation("WorkflowVersionCreator")
+  modelCredentials UserModelCredential[]
+  favorites        ContentFavorite[]
 
   @@index([deletedAt])
   @@index([xp])
@@ -673,6 +678,146 @@ model Run {
   @@map("runs")
 }
 
+enum WorkflowStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum WorkflowRunStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+model Workflow {
+  id               String            @id @default(cuid())
+  slug             String            @unique
+  title            String
+  summary          String?
+  description      String?           @db.Text
+  authorId         String
+  author           User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  status           WorkflowStatus    @default(DRAFT)
+  publishedVersion Int?
+  useCount         Int               @default(0)
+  estimatedCost    Int               @default(1)
+  reviewScore      Json? // AI 初审结果 { verdict, scores, reason, model, checkedAt }
+  reviewNote       String?           @db.Text // 人工复核理由
+  reviewedAt       DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  versions         WorkflowVersion[]
+  runs             WorkflowRun[]
+
+  @@index([authorId])
+  @@index([status, createdAt])
+  @@map("workflows")
+}
+
+model WorkflowVersion {
+  id          String        @id @default(cuid())
+  workflowId  String
+  workflow    Workflow      @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  version     Int
+  definition  Json
+  createdById String
+  createdBy   User          @relation("WorkflowVersionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime      @default(now())
+  runs        WorkflowRun[]
+
+  @@unique([workflowId, version])
+  @@index([createdById])
+  @@map("workflow_versions")
+}
+
+model WorkflowRun {
+  id         String            @id @default(cuid())
+  workflowId String
+  workflow   Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  versionId  String
+  version    WorkflowVersion   @relation(fields: [versionId], references: [id], onDelete: Restrict)
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  input      Json
+  output     Json?
+  status     WorkflowRunStatus @default(QUEUED)
+  error      String?
+  costPoints Int               @default(0)
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime          @default(now())
+  nodeRuns   WorkflowNodeRun[]
+
+  @@index([userId, createdAt])
+  @@index([workflowId, createdAt])
+  @@index([status])
+  @@map("workflow_runs")
+}
+
+model WorkflowNodeRun {
+  id         String            @id @default(cuid())
+  runId      String
+  run        WorkflowRun       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  nodeId     String
+  status     WorkflowRunStatus @default(RUNNING)
+  attempts   Int               @default(0)
+  input      Json?
+  output     Json?
+  error      String?
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  @@unique([runId, nodeId])
+  @@index([runId, status])
+  @@map("workflow_node_runs")
+}
+
+/// 用户自带模型凭证（BYOK）。明文 Key 使用服务端密钥加密后存储，
+/// 客户端和日志只允许出现掩码后的后四位。
+model UserModelCredential {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     String   @default("openai-compatible")
+  label        String
+  baseUrl      String
+  encryptedKey String   @db.Text
+  keyLast4     String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, label])
+  @@index([userId, active])
+  @@map("user_model_credentials")
+}
+
+/// 统一收藏：Prompt / 模板 / 工作流共用一张表，避免每个内容类型各建一套。
+enum FavoriteTargetType {
+  PROMPT
+  TEMPLATE
+  WORKFLOW
+}
+
+model ContentFavorite {
+  id         String             @id @default(cuid())
+  userId     String
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetType FavoriteTargetType
+  targetId   String
+  createdAt  DateTime           @default(now())
+
+  @@unique([userId, targetType, targetId])
+  @@index([userId, createdAt])
+  @@index([targetType, targetId])
+  @@map("content_favorites")
+}
+
 enum TeamRole {
   OWNER
   ADMIN
@@ -686,14 +831,14 @@ enum MemberStatus {
 }
 
 model Team {
-  id           String             @id @default(cuid())
+  id           String            @id @default(cuid())
   name         String
-  slug         String             @unique
+  slug         String            @unique
   description  String?
   avatar       String?
   ownerId      String
-  owner        User               @relation("TeamOwner", fields: [ownerId], references: [id])
-  createdAt    DateTime           @default(now())
+  owner        User              @relation("TeamOwner", fields: [ownerId], references: [id])
+  createdAt    DateTime          @default(now())
   members      TeamMember[]
   competitions TeamCompetition[]
   runs         Run[]
@@ -725,15 +870,15 @@ enum CompetitionStatus {
 }
 
 model Competition {
-  id          String             @id @default(cuid())
+  id          String            @id @default(cuid())
   title       String
   organizer   String? // 外部赛事主办方
   url         String?
-  description String?            @db.Text
-  status      CompetitionStatus  @default(UPCOMING)
+  description String?           @db.Text
+  status      CompetitionStatus @default(UPCOMING)
   startsAt    DateTime?
   endsAt      DateTime?
-  createdAt   DateTime           @default(now())
+  createdAt   DateTime          @default(now())
   teams       TeamCompetition[]
   runs        Run[]
 

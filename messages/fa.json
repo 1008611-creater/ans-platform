@@ -56,6 +56,12 @@
     "forKids": "برای کودکان",
     "more": "بیشتر"
   },
+  "a11y": {
+    "mainNav": "پیمایش اصلی",
+    "mobileNav": "پیمایش موبایل",
+    "mobileTabBar": "نوار برگه موبایل",
+    "footerNav": "پیمایش پانویس"
+  },
   "brand": {
     "copyLogoSvg": "کپی SVG لوگو",
     "brandAssets": "دارایی‌های برند",
@@ -111,6 +117,9 @@
     "createSkill": "ایجاد مهارت",
     "createTaste": "ایجاد Taste",
     "skillsDescription": "مهارت‌های عامل، پرامپت‌های چند فایلی هستند که به عامل‌های هوش مصنوعی قابلیت‌های تخصصی می‌دهند. شامل دستورالعمل‌ها، تنظیمات و فایل‌های پشتیبانی هستند که می‌توانند با Claude، Cursor، Windsurf و سایر دستیاران برنامه‌نویسی AI استفاده شوند.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Tastes فایل‌های تک markdown هستند که سبک و ترجیحات کدنویسی شما را تعریف می‌کنند. به عامل‌های کدنویسی AI کمک می‌کنند تا نحوه نوشتن کد شما را یاد بگیرند، تا بتوانند قراردادها، الگوها و سلیقه شما را مطابقت دهند.",
     "createInfo": "این پلتفرم پرامپت‌ها را اجرا نمی‌کند — این یک کتابخانه مبتنی بر جامعه برای اشتراک‌گذاری و کشف پرامپت‌های هوش مصنوعی است. پرامپت خود را اینجا بسازید و دیگران می‌توانند آن را در ابزارهای هوش مصنوعی مورد علاقه خود مانند ChatGPT، Claude، Gemini یا هر LLM دیگری کپی و استفاده کنند.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "پاک کردن",
     "found": "{count} یافت شد",
     "aiSearch": "جستجوی هوشمند",
-    "searchTags": "جستجوی برچسب‌ها..."
+    "searchTags": "جستجوی برچسب‌ها...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "پروفایل",
@@ -924,6 +936,13 @@
     "heroFeature1": "آزاد و متن‌باز",
     "heroFeature2": "میزبانی برای حریم خصوصی",
     "heroFeature3": "برای تیم‌ها و سازمان‌ها",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "کلاینت‌ها",
     "commandLine": "خط فرمان",
     "extension": "افزونه",

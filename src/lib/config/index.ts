@@ -189,7 +189,7 @@ export async function getConfig(): Promise<PromptsConfig> {
         variant: "flat",
         density: "compact",
         colors: {
-          primary: "#6366f1",
+      primary: "#4f46e5",
         },
       },
       auth: {

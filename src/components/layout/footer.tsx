@@ -10,6 +10,7 @@ import { analyticsExternal } from "@/lib/analytics";
 export function Footer() {
   const branding = useBranding();
   const t = useTranslations("footer");
+  const tA11y = useTranslations("a11y");
 
   return (
     <footer className="border-t shrink-0">
@@ -19,7 +20,7 @@ export function Footer() {
           <Link href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">CC0</Link>
           {" "}{new Date().getFullYear()} {branding.name}
         </span>
-        <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+        <nav aria-label={tA11y("footerNav")} className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           {!branding.useCloneBranding && (
             <>
               <Link href="https://deepwiki.com/1008611-creater/ans-platform" target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1" onClick={() => analyticsExternal.clickFooterLink("deepwiki")}>
