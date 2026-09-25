@@ -7,7 +7,7 @@ import type { PrismaClient } from "@prisma/client";
 import { test } from "vitest";
 
 // 独立执行，不加载全局 setup 或数据库 mock：
-// NODE_OPTIONS= "C:/Program Files/nodejs/node.exe" "C:/Users/lsb/.workbuddy/apps/ans-platform/node_modules/vitest/vitest.mjs" run --config "C:/Users/lsb/.workbuddy/apps/ans-platform/tests/ans-p0p1.vitest.config.ts"
+// NODE_OPTIONS= "C:/Program Files/nodejs/node.exe" "C:/Users/lsb/.workbuddy/apps/ans-platform/node_modules/vitest/vitest.mjs" run --config "C:/Users/lsb/.workbuddy/apps/ans-platform/tests/ans-p0p1.vitest.config.mts"
 // ANS_INTEGRATION_SAFETY_ONLY=1 只做只读校验；独立 Vitest 支持业务 auth 模块的顶层 await。
 // 仅 Turnstile、Resend、AI HTTP 边界 stub；所有业务函数、Prisma、事务、锁、约束均真实。
 // 仅创建本轮随机前缀数据，保留数据供核验，不清库、不操作 Docker、不生成报告文件。

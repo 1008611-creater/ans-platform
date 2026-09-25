@@ -55,8 +55,7 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ email: target }),
       });
       const data = (await response.json().catch(() => null)) as ResetResponse;
-
-      if (response.status === 429 && data?.error === "daily_limit") {
+if (response.status === 429 && data?.error === "daily_limit") {
         setError(data?.message || "今日验证码发送次数已达上限，请明天再试");
         return;
       }
@@ -65,11 +64,11 @@ export default function ResetPasswordPage() {
       if (retry) setCooldown(retry);
 
       if (response.status === 429) {
-        setError(retry ? `请求过于频繁，请 ${retry} 秒后重试` : "请求过于频繁，请稍后重试");
+        setError(retry ? `请求过于频繁，请 ${retry} 秒后重试` : "请求过于频繁，请稍后再试");
         return;
       }
       if (response.status === 503) {
-        setError(data?.message || "邮件服务暂不可用，请稍后重试");
+        setError(data?.message || "邮件服务暂不可用，请稍后再试");
         return;
       }
       if (!response.ok) {
@@ -214,7 +213,7 @@ export default function ResetPasswordPage() {
             </Button>
           </div>
         ) : (
-          <Button type="button" className="w-full" onClick={sendCode} disabled={sending || cooldown > 0}>
+<Button type="button" className="w-full" onClick={sendCode} disabled={sending || cooldown > 0}>
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
             {resendLabel}
           </Button>

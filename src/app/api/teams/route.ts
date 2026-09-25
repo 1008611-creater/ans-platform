@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { createTeam, listMyTeams } from "@/lib/team-service";
+import { createTeam, listMyTeams } from "@/server/teams/service";
 import { isCrossSite, readJson, teamFailure, teamJson } from "./response";
 
 export const runtime = "nodejs";

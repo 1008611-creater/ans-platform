@@ -104,7 +104,7 @@ export default async function OGImage({ params }: { params: Promise<{ username: 
     year: "numeric",
   }).format(user.createdAt);
 
-  const primaryColor = config.theme?.colors?.primary || "#6366f1";
+  const primaryColor = config.theme?.colors?.primary || "#4f46e5";
 
   return new ImageResponse(
     (

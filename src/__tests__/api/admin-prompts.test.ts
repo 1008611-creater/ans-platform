@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 import { GET } from "@/app/api/admin/prompts/route";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
@@ -32,9 +33,9 @@ describe("GET /api/admin/prompts", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts");
     const response = await GET(request);
     const data = await response.json();
 
@@ -45,7 +46,7 @@ describe("GET /api/admin/prompts", () => {
   it("should return 403 if user is not admin", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1", role: "USER" } } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts");
     const response = await GET(request);
     const data = await response.json();
 
@@ -75,7 +76,7 @@ describe("GET /api/admin/prompts", () => {
     ] as never);
     vi.mocked(db.prompt.count).mockResolvedValue(1);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts");
     const response = await GET(request);
     const data = await response.json();
 
@@ -89,7 +90,7 @@ describe("GET /api/admin/prompts", () => {
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
     vi.mocked(db.prompt.count).mockResolvedValue(0);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts?search=test");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts?search=test");
     await GET(request);
 
     expect(db.prompt.findMany).toHaveBeenCalledWith(
@@ -109,7 +110,7 @@ describe("GET /api/admin/prompts", () => {
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
     vi.mocked(db.prompt.count).mockResolvedValue(0);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts?filter=unlisted");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts?filter=unlisted");
     await GET(request);
 
     expect(db.prompt.findMany).toHaveBeenCalledWith(
@@ -124,7 +125,7 @@ describe("GET /api/admin/prompts", () => {
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
     vi.mocked(db.prompt.count).mockResolvedValue(0);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts?filter=private");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts?filter=private");
     await GET(request);
 
     expect(db.prompt.findMany).toHaveBeenCalledWith(
@@ -139,7 +140,7 @@ describe("GET /api/admin/prompts", () => {
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
     vi.mocked(db.prompt.count).mockResolvedValue(0);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts?filter=featured");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts?filter=featured");
     await GET(request);
 
     expect(db.prompt.findMany).toHaveBeenCalledWith(
@@ -154,7 +155,7 @@ describe("GET /api/admin/prompts", () => {
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
     vi.mocked(db.prompt.count).mockResolvedValue(50);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts?page=2&limit=10");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts?page=2&limit=10");
     const response = await GET(request);
     const data = await response.json();
 
@@ -174,7 +175,7 @@ describe("GET /api/admin/prompts", () => {
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
     vi.mocked(db.prompt.count).mockResolvedValue(0);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts?limit=500");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts?limit=500");
     await GET(request);
 
     expect(db.prompt.findMany).toHaveBeenCalledWith(
@@ -189,7 +190,7 @@ describe("GET /api/admin/prompts", () => {
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
     vi.mocked(db.prompt.count).mockResolvedValue(0);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts?sortBy=title&sortOrder=asc");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts?sortBy=title&sortOrder=asc");
     await GET(request);
 
     expect(db.prompt.findMany).toHaveBeenCalledWith(
@@ -204,7 +205,7 @@ describe("GET /api/admin/prompts", () => {
     vi.mocked(db.prompt.findMany).mockResolvedValue([]);
     vi.mocked(db.prompt.count).mockResolvedValue(0);
 
-    const request = new Request("http://localhost:3000/api/admin/prompts?sortBy=invalid");
+    const request = new NextRequest("http://localhost:3000/api/admin/prompts?sortBy=invalid");
     await GET(request);
 
     expect(db.prompt.findMany).toHaveBeenCalledWith(

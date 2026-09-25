@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { listRecentRunsForUser } from "@/server/runs/service";
 
 export const runtime = "nodejs";
 
@@ -25,35 +25,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [rows, user] = await Promise.all([
-      db.run.findMany({
-        where: { userId: session.user.id },
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-        take: limit + 1,
-        select: {
-          id: true,
-          status: true,
-          costPoints: true,
-          outputText: true,
-          error: true,
-          createdAt: true,
-          finishedAt: true,
-          template: { select: { slug: true, title: true } },
-        },
-      }),
-      db.user.findUnique({
-        where: { id: session.user.id },
-        select: { quotaPoints: true },
-      }),
-    ]);
-    const hasMore = rows.length > limit;
-    const runs = hasMore ? rows.slice(0, limit) : rows;
-    return NextResponse.json({
-      runs,
-      nextCursor: hasMore ? runs[runs.length - 1]?.id ?? null : null,
-      balance: user?.quotaPoints ?? 0,
-    });
+    const result = await listRecentRunsForUser(session.user.id, { limit, cursor });
+    return NextResponse.json(result);
   } catch {
     return NextResponse.json({ error: "invalid_cursor", message: "分页游标无效或已失效" }, { status: 400 });
   }

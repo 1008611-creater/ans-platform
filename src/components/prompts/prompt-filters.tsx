@@ -136,8 +136,10 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
             size="sm"
             className="h-8 px-2 relative shrink-0"
             onClick={() => setShowFilters(!showFilters)}
+            aria-label={t("search.filters")}
+            aria-expanded={showFilters}
           >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
             {activeFilterCount > 0 && (
               <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] text-primary-foreground flex items-center justify-center">
                 {activeFilterCount}
@@ -235,7 +237,7 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
             updateFilter("type", value === "all" ? null : value);
           }}
         >
-          <SelectTrigger className="h-8 text-sm w-full">
+          <SelectTrigger className="h-8 text-sm w-full" aria-label={t("prompts.promptType")}>
             <SelectValue placeholder={t("common.all")} />
           </SelectTrigger>
           <SelectContent>
@@ -260,7 +262,7 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
               updateFilter("category", value === "all" ? null : value);
             }}
           >
-            <SelectTrigger className="h-8 text-sm w-full">
+            <SelectTrigger className="h-8 text-sm w-full" aria-label={t("prompts.promptCategory")}>
               <SelectValue placeholder={t("common.all")} />
             </SelectTrigger>
             <SelectContent>
@@ -298,7 +300,7 @@ export function PromptFilters({ categories, tags, currentFilters, aiSearchEnable
             updateFilter("sort", value === "newest" ? null : value);
           }}
         >
-          <SelectTrigger className="h-8 text-sm w-full">
+          <SelectTrigger className="h-8 text-sm w-full" aria-label={t("search.sortBy")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

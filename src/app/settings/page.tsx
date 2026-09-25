@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import config from "@/../prompts.config";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { ApiKeySettings } from "@/components/settings/api-key-settings";
+import { ModelCredentials } from "@/components/settings/model-credentials";
+import { listCredentials } from "@/server/credentials/service";
 import type { CustomLink } from "@/components/user/profile-links";
 
 export default async function SettingsPage() {
@@ -64,6 +66,8 @@ export default async function SettingsPage() {
             initialPublicByDefault={user.mcpPromptsPublicByDefault}
           />
         )}
+
+        <ModelCredentials initialCredentials={await listCredentials(session.user.id)} />
       </div>
     </div>
   );

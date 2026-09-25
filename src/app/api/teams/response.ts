@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { TeamError } from "@/lib/team-service";
+import { TeamError } from "@/server/teams/service";
 
 // 团队接口统一响应：禁止缓存；错误码与 HTTP 状态分离，内部异常不落到响应体。
 export function teamJson(data: unknown, status = 200) {

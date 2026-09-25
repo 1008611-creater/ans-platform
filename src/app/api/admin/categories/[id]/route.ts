@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { deleteCategory, updateCategory } from "@/server/admin/categories";
 
 // Update category
 export async function PATCH(
@@ -18,17 +18,7 @@ export async function PATCH(
     const body = await request.json();
     const { name, slug, description, icon, parentId, pinned } = body;
 
-    const category = await db.category.update({
-      where: { id },
-      data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
-        description: description ?? undefined,
-        icon: icon ?? undefined,
-        parentId: parentId === null ? null : (parentId || undefined),
-        ...(typeof pinned === "boolean" && { pinned }),
-      },
-    });
+    const category = await updateCategory(id, { name, slug, description, icon, parentId, pinned });
 
     revalidateTag("categories", "max");
 
@@ -52,9 +42,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    await db.category.delete({
-      where: { id },
-    });
+    await deleteCategory(id);
 
     revalidateTag("categories", "max");
 

@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
-  db: { run: { findFirst: vi.fn() } },
+  getRunForViewer: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
-vi.mock("@/lib/db", () => ({ db: mocks.db }));
+vi.mock("@/server/runs/service", () => ({ getRunForViewer: mocks.getRunForViewer }));
 
 import { GET } from "@/app/api/runs/[id]/route";
 
@@ -26,7 +26,7 @@ const run = {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.auth.mockResolvedValue({ user: { id: "user1", role: "USER" } });
-  mocks.db.run.findFirst.mockResolvedValue(run);
+  mocks.getRunForViewer.mockResolvedValue(run);
 });
 
 describe("GET /api/runs/[id]", () => {
@@ -34,20 +34,18 @@ describe("GET /api/runs/[id]", () => {
     mocks.auth.mockResolvedValue(null);
     const response = await GET(new Request("http://localhost/api/runs/run1"), context);
     expect(response.status).toBe(401);
-    expect(mocks.db.run.findFirst).not.toHaveBeenCalled();
+    expect(mocks.getRunForViewer).not.toHaveBeenCalled();
   });
 
   it("本人可以读取运行结果", async () => {
     const response = await GET(new Request("http://localhost/api/runs/run1"), context);
     expect(response.status).toBe(200);
     expect((await response.json()).run.outputText).toBe("结果");
-    expect(mocks.db.run.findFirst).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: "run1", userId: "user1" },
-    }));
+    expect(mocks.getRunForViewer).toHaveBeenCalledWith("run1", { id: "user1", role: "USER" });
   });
 
   it("他人记录返回 404", async () => {
-    mocks.db.run.findFirst.mockResolvedValue(null);
+    mocks.getRunForViewer.mockResolvedValue(null);
     const response = await GET(new Request("http://localhost/api/runs/run1"), context);
     expect(response.status).toBe(404);
     expect((await response.json()).error).toBe("run_not_found");
@@ -57,8 +55,6 @@ describe("GET /api/runs/[id]", () => {
     mocks.auth.mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } });
     const response = await GET(new Request("http://localhost/api/runs/run1"), context);
     expect(response.status).toBe(200);
-    expect(mocks.db.run.findFirst).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: "run1" },
-    }));
+    expect(mocks.getRunForViewer).toHaveBeenCalledWith("run1", { id: "admin1", role: "ADMIN" });
   });
 });

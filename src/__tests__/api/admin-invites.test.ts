@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 import { GET, POST } from "@/app/api/admin/invites/route";
 import { db } from "@/lib/db";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { generateInviteCode, maskEmail, CODE_ALPHABET, CODE_LENGTH } from "@/lib/invite-admin";
+import { generateInviteCode, maskEmail, CODE_ALPHABET, CODE_LENGTH } from "@/server/identity/invites";
 
 vi.mock("@/lib/admin-permissions", () => ({
   requireAdminPermission: vi.fn(),
@@ -23,7 +24,7 @@ vi.mock("@/lib/db", () => ({
 }));
 
 function jsonRequest(body: unknown) {
-  return new Request("http://localhost:3000/api/admin/invites", {
+  return new NextRequest("http://localhost:3000/api/admin/invites", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -35,7 +36,7 @@ describe("GET /api/admin/invites", () => {
 
   it("should return 403 without INVITES_MANAGE permission", async () => {
     vi.mocked(requireAdminPermission).mockResolvedValue(null);
-    const response = await GET(new Request("http://localhost:3000/api/admin/invites"));
+    const response = await GET(new NextRequest("http://localhost:3000/api/admin/invites"));
     expect(response.status).toBe(403);
   });
 
@@ -44,7 +45,7 @@ describe("GET /api/admin/invites", () => {
     vi.mocked(db.inviteCode.findMany).mockResolvedValue([{ id: "i1", code: "ABC23456", usedCount: 2 }] as never);
     vi.mocked(db.inviteCode.count).mockResolvedValue(1);
 
-    const response = await GET(new Request("http://localhost:3000/api/admin/invites"));
+    const response = await GET(new NextRequest("http://localhost:3000/api/admin/invites"));
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -58,7 +59,7 @@ describe("GET /api/admin/invites", () => {
     vi.mocked(db.inviteRedemption.findMany).mockResolvedValue([{ id: "r1", usedAt: new Date() }] as never);
     vi.mocked(db.inviteRedemption.count).mockResolvedValue(1);
 
-    const response = await GET(new Request("http://localhost:3000/api/admin/invites?view=redemptions"));
+    const response = await GET(new NextRequest("http://localhost:3000/api/admin/invites?view=redemptions"));
     const data = await response.json();
 
     expect(response.status).toBe(200);

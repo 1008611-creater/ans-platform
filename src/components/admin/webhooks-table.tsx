@@ -13,10 +13,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Plus, MoreHorizontal, Pencil, Trash2, Slack, X, Play } from "lucide-react";
-import { SLACK_PRESET_PAYLOAD, WEBHOOK_PLACEHOLDERS } from "@/lib/webhook";
 import { CodeEditor } from "@/components/ui/code-editor";
 
-import type { JsonValue } from "@prisma/client/runtime/library";
+import { SLACK_PRESET_PAYLOAD, WEBHOOK_PLACEHOLDERS, type JsonValue } from "@/contracts/webhook";
 
 interface WebhookConfig {
   id: string;

@@ -98,8 +98,10 @@ export function NotificationBell() {
   if (totalCount === 0) {
     return (
       <Button variant="ghost" size="icon" className="h-8 w-8 relative" asChild>
-        <Link href={`/@${session.user.username}`}>
-          <Bell className="h-4 w-4" />
+        {/* 铃铛图标本身不构成可访问名，未读数徽标为零时按钮里没有任何文本，
+            读屏只会念出「链接」。这里显式补一个标签。 */}
+        <Link href={`/@${session.user.username}`} aria-label={t("title")}>
+          <Bell className="h-4 w-4" aria-hidden="true" />
         </Link>
       </Button>
     );
@@ -108,8 +110,8 @@ export function NotificationBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative">
-          <Bell className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="h-8 w-8 relative" aria-label={t("title")}>
+          <Bell className="h-4 w-4" aria-hidden="true" />
           <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-medium flex items-center justify-center">
             {totalCount > 9 ? "9+" : totalCount}
           </span>

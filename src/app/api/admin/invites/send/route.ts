@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { InviteError, sendInviteEmail } from "@/lib/invite-admin";
+import { InviteError, sendInviteEmail } from "@/server/identity/invites";
 
 export const runtime = "nodejs";
 

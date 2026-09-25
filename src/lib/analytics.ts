@@ -591,23 +591,25 @@ export const analyticsComment = {
 };
 
 // ============================================================================
-// Collection Events
+// Favorite Events（Prompt / 模板 / 工作流统一收藏）
 // ============================================================================
 
-export const analyticsCollection = {
-  add: (promptId: string) => {
+export const analyticsFavorite = {
+  add: (targetType: string, targetId: string) => {
     trackEvent({
-      action: "add_to_collection",
-      category: "collection",
-      prompt_id: promptId,
+      action: "add_to_favorites",
+      category: "favorites",
+      target_type: targetType,
+      target_id: targetId,
     });
   },
 
-  remove: (promptId: string) => {
+  remove: (targetType: string, targetId: string) => {
     trackEvent({
-      action: "remove_from_collection",
-      category: "collection",
-      prompt_id: promptId,
+      action: "remove_from_favorites",
+      category: "favorites",
+      target_type: targetType,
+      target_id: targetId,
     });
   },
 };

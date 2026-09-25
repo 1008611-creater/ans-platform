@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { TeamPermissions } from "@/lib/team-service";
+import type { TeamPermissions } from "@/contracts/teams";
 
 export type TeamMemberView = {
   id: string;

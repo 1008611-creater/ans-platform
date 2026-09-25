@@ -16,12 +16,13 @@ const mocks = vi.hoisted(() => ({
   allocateQuota: vi.fn(),
   removeMember: vi.fn(),
   grantTeamQuota: vi.fn(),
+  listTeamsForAdmin: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/admin-permissions", () => ({ requireAdminPermission: mocks.admin }));
-vi.mock("@/lib/team-service", async (original) => ({
-  ...(await original<typeof import("@/lib/team-service")>()),
+vi.mock("@/server/teams/service", async (original) => ({
+  ...(await original<typeof import("@/server/teams/service")>()),
   createTeam: mocks.createTeam,
   listMyTeams: mocks.listMyTeams,
   getTeamDetail: mocks.getTeamDetail,
@@ -35,6 +36,9 @@ vi.mock("@/lib/team-service", async (original) => ({
   removeMember: mocks.removeMember,
   grantTeamQuota: mocks.grantTeamQuota,
 }));
+vi.mock("@/server/teams/admin", () => ({
+  listTeamsForAdmin: mocks.listTeamsForAdmin,
+}));
 
 import { GET as listTeams, POST as createTeamRoute } from "@/app/api/teams/route";
 import { DELETE as deleteTeamRoute, GET as teamDetail } from "@/app/api/teams/[slug]/route";
@@ -45,7 +49,7 @@ import { POST as leaveRoute } from "@/app/api/teams/[slug]/leave/route";
 import { GET as ledgerRoute } from "@/app/api/teams/[slug]/ledger/route";
 import { GET as adminTeamsRoute } from "@/app/api/admin/teams/route";
 import { POST as adminQuotaRoute } from "@/app/api/admin/teams/[id]/quota/route";
-import { TeamError } from "@/lib/team-service";
+import { TeamError } from "@/server/teams/service";
 
 const slugContext = { params: Promise.resolve({ slug: "spark" }) };
 const memberContext = { params: Promise.resolve({ slug: "spark", memberId: "tm-1" }) };
@@ -75,6 +79,7 @@ beforeEach(() => {
   mocks.allocateQuota.mockResolvedValue({ quotaAllowance: 100 });
   mocks.removeMember.mockResolvedValue({ status: "LEFT" });
   mocks.grantTeamQuota.mockResolvedValue({ ledger: { amount: 100 }, team: { id: "team1" } });
+  mocks.listTeamsForAdmin.mockResolvedValue({ teams: [], pagination: { page: 1, limit: 30, total: 0, totalPages: 0 } });
 });
 
 const protectedHandlers = [
@@ -190,7 +195,14 @@ describe("管理端团队接口", () => {
   it("无权限返回 403", async () => {
     mocks.admin.mockResolvedValue(null);
     expect((await adminTeamsRoute(new Request("http://localhost/api/admin/teams"))).status).toBe(403);
+    expect(mocks.listTeamsForAdmin).not.toHaveBeenCalled();
     expect((await adminQuotaRoute(post({ amount: 100 }), adminContext)).status).toBe(403);
+  });
+
+  it("管理员可以读取团队总览", async () => {
+    const response = await adminTeamsRoute(new Request("http://localhost/api/admin/teams?q=spark&page=2&limit=10"));
+    expect(response.status).toBe(200);
+    expect(mocks.listTeamsForAdmin).toHaveBeenCalledWith("spark", 2, 10);
   });
 
   it("发放额度使用管理员身份并返回金额", async () => {

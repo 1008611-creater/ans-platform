@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { GET } from "@/app/api/leaderboard/route";
 
@@ -17,16 +18,16 @@ describe("榜单有效用户截断专属回归", () => {
       _count: { prompts: 1 },
     }));
     vi.mocked(db.promptVote.groupBy).mockResolvedValue(users.map((_, i) => ({ promptId: `prompt-${i}`, _count: { promptId: 100 - i } })) as never);
-    vi.mocked(db.prompt.findMany).mockImplementation(async args => {
+    vi.mocked(db.prompt.findMany).mockImplementation((async (args: { where?: { author?: unknown } } | undefined) => {
       const filter = args?.where?.author as { deletedAt?: unknown; flagged?: boolean } | undefined;
       return users.filter(user => (!filter || !("deletedAt" in filter) || user.deletedAt === filter.deletedAt) && (filter?.flagged === undefined || user.flagged === filter.flagged))
         .map(user => ({ id: user.id.replace("user", "prompt"), authorId: user.id })) as never;
-    });
-    vi.mocked(db.user.findMany).mockImplementation(async args => {
+    }) as never);
+    vi.mocked(db.user.findMany).mockImplementation((async (args: { where?: { id?: unknown; deletedAt?: unknown; flagged?: boolean } } | undefined) => {
       const ids = (args?.where?.id as { in: string[] }).in;
       return users.filter(user => ids.includes(user.id) && user.deletedAt === args?.where?.deletedAt && user.flagged === args?.where?.flagged) as never;
-    });
-    const response = await GET(new Request("http://localhost/api/leaderboard"));
+    }) as never);
+    const response = await GET(new NextRequest("http://localhost/api/leaderboard"));
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.leaderboard).toHaveLength(20);
@@ -48,7 +49,7 @@ describe("榜单有效用户截断专属回归", () => {
     vi.mocked(db.user.findMany).mockResolvedValueOnce([]).mockResolvedValueOnce([
       { id: "fill", username: "fill_handle", nickname: null, name: "原始姓名", email: "secret@example.test", avatar: null, _count: { prompts: 1 } },
     ] as never);
-    const response = await GET(new Request(`http://localhost/api/leaderboard?period=${period}`));
+    const response = await GET(new NextRequest(`http://localhost/api/leaderboard?period=${period}`));
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.leaderboard).toEqual([{ id: "fill", username: "fill_handle", name: "匿名同学", avatar: null, promptCount: 1, totalUpvotes: 0 }]);

@@ -7,25 +7,10 @@
  * 3. 高等级内部再分「年级」（大二 / 研二 / 博三），让升级颗粒度更细、更有上学的感觉
  */
 
-export type LevelKey =
-  | "KINDERGARTEN"
-  | "PRIMARY"
-  | "JUNIOR"
-  | "SENIOR"
-  | "UNDERGRAD"
-  | "MASTER"
-  | "PHD"
-  | "PROFESSOR";
+import type { LevelDef, LevelKey, LevelProgress } from "@/contracts/level";
 
-export interface LevelDef {
-  key: LevelKey;
-  index: number;
-  nameZh: string;
-  nameEn: string;
-  minXp: number;
-  /** 该等级内部的年级名（大学生=大一~大四）；为空则不分年级 */
-  grades?: string[];
-}
+// 类型定义统一放在 contracts 层，这里只做再导出，避免出现两份会漂移的定义。
+export type { LevelDef, LevelKey, LevelProgress };
 
 /** 阈值按「认真参与一学期能到大学生(1500)」标定 */
 export const LEVELS: LevelDef[] = [
@@ -40,18 +25,6 @@ export const LEVELS: LevelDef[] = [
 ];
 
 export const MAX_LEVEL_INDEX = LEVELS.length - 1;
-
-export interface LevelProgress {
-  level: LevelDef;
-  nextLevel: LevelDef | null;
-  /** 当前等级内进度 0~1（满级恒为 1） */
-  progress: number;
-  xpIntoLevel: number;
-  xpForLevel: number;
-  /** 等级内的年级显示，如「大二」「研一」；无年级则为 null */
-  gradeLabel: string | null;
-  xpToNext: number;
-}
 
 export function getLevelProgress(xp: number): LevelProgress {
   const safeXp = Math.max(0, xp);

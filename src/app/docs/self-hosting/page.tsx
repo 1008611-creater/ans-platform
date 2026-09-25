@@ -419,7 +419,7 @@ export default async function SelfHostingPage() {
                   <TableRow>
                     <TableCell className="font-mono text-xs">colors.primary</TableCell>
                     <TableCell className="text-muted-foreground text-xs">hex or oklch</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">Primary brand color (e.g., <code>#6366f1</code>)</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">Primary brand color (e.g., <code>#4f46e5</code>)</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>

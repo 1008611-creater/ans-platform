@@ -56,6 +56,12 @@
     "forKids": "Voor kinderen",
     "more": "Meer"
   },
+  "a11y": {
+    "mainNav": "Hoofdnavigatie",
+    "mobileNav": "Mobiele navigatie",
+    "mobileTabBar": "Mobiele tabbalk",
+    "footerNav": "Voettekstnavigatie"
+  },
   "brand": {
     "copyLogoSvg": "Logo SVG kopiëren",
     "brandAssets": "Merkitems",
@@ -111,6 +117,9 @@
     "createSkill": "Vaardigheid aanmaken",
     "createTaste": "Taste aanmaken",
     "skillsDescription": "Agent Vaardigheden zijn multi-bestand prompts die AI-agenten gespecialiseerde mogelijkheden geven. Ze bevatten instructies, configuraties en ondersteunende bestanden die kunnen worden gebruikt met Claude, Cursor, Windsurf en andere AI-coderingsassistenten.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Tastes zijn enkele markdown-bestanden die je codeerstijl en voorkeuren definiëren. Ze helpen AI-coderingsagenten te leren hoe je code schrijft, zodat ze je conventies, patronen en smaak kunnen overnemen.",
     "createInfo": "Dit platform voert geen prompts uit — het is een door de community beheerde bibliotheek voor het delen en ontdekken van AI-prompts. Maak hier je prompt aan, en anderen kunnen het kopiëren en gebruiken in hun favoriete AI-tools zoals ChatGPT, Claude, Gemini of andere LLM's. De community kan ook reageren op je prompts en verbeteringen voorstellen via wijzigingsverzoeken.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "Wissen",
     "found": "{count} gevonden",
     "aiSearch": "AI-zoeken",
-    "searchTags": "Tags zoeken..."
+    "searchTags": "Tags zoeken...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "Profiel",
@@ -924,6 +936,13 @@
     "heroFeature1": "Gratis & Open Source",
     "heroFeature2": "Self-host voor privacy",
     "heroFeature3": "Voor teams & organisaties",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "Clients",
     "commandLine": "Command Line",
     "extension": "Extensie",
