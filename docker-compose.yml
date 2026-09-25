@@ -34,6 +34,7 @@ services:
       # /api/auth/* 全部 UntrustedHost 500，表现为全站登录不上。
       AUTH_URL: "https://ans.cauai.fun"
       AUTH_TRUST_HOST: "true"
+      CRON_SECRET: "${CRON_SECRET}"
       NODE_ENV: production
 
       # Runtime integrations. Values are supplied by the server-side .env.

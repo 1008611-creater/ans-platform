@@ -1,11 +1,14 @@
-import { randomInt } from "node:crypto";
+import { createHash, randomInt } from "node:crypto";
 import { NextResponse } from "next/server";
-import { incrementCounter, readCounter, resetToken, RESET_COOLDOWN_SECONDS, RESET_MAX_ATTEMPTS, RESET_TTL_MS, retryAfter, withResetLock } from "@/lib/password-reset";
+import { incrementCounter, readCounter, resetToken, RESET_COOLDOWN_SECONDS, RESET_DAILY_WINDOW_MS, RESET_MAX_ATTEMPTS, RESET_MAX_DAILY_SENDS, RESET_TTL_MS, retryAfter, withResetLock } from "@/lib/password-reset";
 const GENERIC_MESSAGE = "如果该邮箱已注册，验证码已发送。";
 const emailPattern = /^\S+@\S+\.\S+$/;
 function unavailable() { return NextResponse.json({ error: "email_unavailable", message: "邮件服务暂不可用，请稍后重试" }, { status: 503, headers: { "Cache-Control": "no-store" } }); }
 class RateLimitError extends Error {
     constructor(public readonly retryAfter: number) { super("rate limited"); }
+}
+class DailyLimitError extends Error {
+    constructor(public readonly retryAfter: number) { super("daily limited"); }
 }
 export async function POST(request: Request) {
     const secret = process.env.AUTH_SECRET?.trim();
@@ -18,7 +21,7 @@ export async function POST(request: Request) {
     } | null;
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     if (!email || !emailPattern.test(email))
-        return NextResponse.json({ error: "invalid_email", message: "请输入有效邮箱" }, { status: 400 });
+        return NextResponse.json({ error: "invalid_email", message: "请输入有效邮箱" }, { status: 400, headers: { "Cache-Control": "no-store" } });
     let reservation: {
         code: string;
         token: string;
@@ -30,6 +33,9 @@ export async function POST(request: Request) {
             const sends = await readCounter(tx, "sends", email, now);
             if (sends.count >= RESET_MAX_ATTEMPTS)
                 throw new RateLimitError(retryAfter(sends.expires, now));
+            const daily = await readCounter(tx, "sends:daily", email, now, RESET_DAILY_WINDOW_MS);
+            if (daily.count >= RESET_MAX_DAILY_SENDS)
+                throw new DailyLimitError(retryAfter(daily.expires, now));
             const cooldownToken = `password-reset:cooldown:${email}`;
             const cooldown = await tx.verificationToken.findUnique({ where: { token: cooldownToken } });
             if (cooldown && cooldown.expires > now)
@@ -37,6 +43,7 @@ export async function POST(request: Request) {
             await tx.verificationToken.deleteMany({ where: { token: cooldownToken } });
             await tx.verificationToken.create({ data: { identifier: `password-reset:cooldown:${email}`, token: cooldownToken, expires: new Date(now.getTime() + RESET_COOLDOWN_SECONDS * 1000) } });
             await incrementCounter(tx, sends);
+            await incrementCounter(tx, daily);
             const user = await tx.user.findUnique({ where: { email }, select: { id: true } });
             if (!user)
                 return undefined;
@@ -49,14 +56,16 @@ export async function POST(request: Request) {
         });
     }
     catch (error) {
+        if (error instanceof DailyLimitError)
+            return NextResponse.json({ error: "daily_limit", message: "今日验证码发送次数已达上限，请明天再试" }, { status: 429, headers: { "Retry-After": String(error.retryAfter) } });
         if (error instanceof RateLimitError)
             return NextResponse.json({ error: "rate_limited", message: "请求过于频繁，请稍后重试" }, { status: 429, headers: { "Retry-After": String(error.retryAfter) } });
         return unavailable();
     }
     if (!reservation)
-        return NextResponse.json({ message: GENERIC_MESSAGE });
+        return NextResponse.json({ message: GENERIC_MESSAGE }, { headers: { "Cache-Control": "no-store" } });
     try {
-        const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [email], subject: "ANS 密码重置验证码", text: `你的 ANS 密码重置验证码是：${reservation.code}\n\n验证码 15 分钟内有效。如非本人操作，请忽略此邮件。` }), signal: AbortSignal.timeout(10000), cache: "no-store" });
+        const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json", "Idempotency-Key": `password-reset-${createHash("sha256").update(reservation.token).digest("hex").slice(0, 32)}` }, body: JSON.stringify({ from, to: [email], subject: "ANS 密码重置验证码", text: `你的 ANS 密码重置验证码是：${reservation.code}\n\n验证码 15 分钟内有效。如非本人操作，请忽略此邮件。` }), signal: AbortSignal.timeout(10000), cache: "no-store" });
         if (!response.ok)
             throw new Error("email delivery failed");
     }

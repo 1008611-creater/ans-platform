@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Copy, KeyRound, RefreshCw, Users } from "lucide-react";
+import { Copy, KeyRound, Mail, RefreshCw, Send, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -22,6 +22,7 @@ type ResolverContext = Record<string, unknown>;
 // zod v4 input/output 分离：显式声明 Resolver 输入输出均为 CreateValues。
 const createResolver = zodResolver(createSchema) as Resolver<CreateValues, ResolverContext, CreateValues>;
 
+type InviteEmailDelivery = { id: string; email: string; createdAt: string };
 type InviteItem = {
   id: string;
   code: string;
@@ -30,6 +31,7 @@ type InviteItem = {
   expiresAt: string | null;
   createdAt: string;
   creator?: { nickname?: string | null; username?: string | null; email?: string | null };
+  emailDeliveries?: InviteEmailDelivery[];
   redemptions?: { id: string; usedAt: string; usedBy?: { nickname?: string | null; username?: string | null; email?: string | null } }[];
 };
 type RedemptionItem = {
@@ -45,11 +47,47 @@ function displayName(item: { nickname?: string | null; username?: string | null;
   return item.nickname ?? item.username ?? item.email ?? "已注销";
 }
 
+/** 邮箱脱敏：s***@cau.edu.cn */
+function maskEmail(email: string) {
+  const [local, domain] = email.split("@");
+  if (!domain) return email;
+  return local.slice(0, 1) + "*".repeat(Math.max(1, local.length - 1)) + "@" + domain;
+}
+
+// 与后端 INVITE_EMAIL_COOLDOWN_SECONDS 保持一致：同一邀请码发给同一邮箱的最小间隔。
+const INVITE_EMAIL_COOLDOWN_SECONDS = 60;
+const MAX_INVITE_COOLDOWN_SECONDS = 600;
+
+/** 冷却键：邀请码 + 收件邮箱（与后端限流维度一致）。 */
+export function inviteCooldownKey(inviteId: string, email: string) {
+  return `${inviteId}|${email.trim().toLowerCase()}`;
+}
+
 export function InvitesManagement() {
   const [list, setList] = useState<ListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  // 当前展开邮件输入框的邀请码 id
+  const [mailOpenId, setMailOpenId] = useState<string | null>(null);
+  const [mailTo, setMailTo] = useState("");
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  // 每个「邀请码 + 收件邮箱」的剩余冷却秒数，避免 60 秒内重复投递。
+  const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
   const form = useForm<CreateValues, ResolverContext, CreateValues>({ resolver: createResolver, defaultValues: { maxUses: 5, expiresDays: 30 } });
+
+  useEffect(() => {
+    if (!Object.values(cooldowns).some((value) => value > 0)) return;
+    const timeout = window.setTimeout(() => {
+      setCooldowns((current) => {
+        const next: Record<string, number> = {};
+        for (const [key, value] of Object.entries(current)) {
+          if (value > 1) next[key] = value - 1;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => window.clearTimeout(timeout);
+  }, [cooldowns]);
 
   const load = useCallback(async (view: "invites" | "redemptions" = "invites", page = 1) => {
     setLoading(true);
@@ -94,6 +132,56 @@ export function InvitesManagement() {
       toast.success(`已复制 ${code}`);
     } catch {
       toast.error("复制失败，请手动复制");
+    }
+  }
+
+  function toggleMail(inviteId: string) {
+    setMailOpenId((current) => (current === inviteId ? null : inviteId));
+    setMailTo("");
+  }
+
+  const cooldownFor = (inviteId: string, email: string) => cooldowns[inviteCooldownKey(inviteId, email)] ?? 0;
+
+  async function sendInvite(invite: InviteItem) {
+    const email = mailTo.trim().toLowerCase();
+    if (!email) {
+      toast.error("请输入收件邮箱");
+      return;
+    }
+    const cooldownKey = inviteCooldownKey(invite.id, email);
+    const remaining = cooldowns[cooldownKey] ?? 0;
+    if (remaining > 0) {
+      toast.error(`请 ${remaining} 秒后再重新发送`);
+      return;
+    }
+    setSendingId(invite.id);
+    try {
+      const response = await fetch("/api/admin/invites/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inviteId: invite.id, email }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        // 后端 429 会带 Retry-After，前端按剩余秒数继续禁用重发。
+        const retryAfter = Number(response.headers.get("Retry-After") || result.retryAfter);
+        if (response.status === 429) {
+          const seconds = Number.isFinite(retryAfter) && retryAfter > 0
+            ? Math.min(MAX_INVITE_COOLDOWN_SECONDS, Math.ceil(retryAfter))
+            : INVITE_EMAIL_COOLDOWN_SECONDS;
+          setCooldowns((current) => ({ ...current, [cooldownKey]: seconds }));
+        }
+        toast.error(result.message || "邮件发送失败");
+        return;
+      }
+      toast.success(`邀请码已发送至 ${email}`);
+      // 保留输入面板并显示倒计时，管理员能直观看到 60 秒内不可重发。
+      setCooldowns((current) => ({ ...current, [cooldownKey]: INVITE_EMAIL_COOLDOWN_SECONDS }));
+      void load("invites");
+    } catch {
+      toast.error("邮件发送失败，请重试");
+    } finally {
+      setSendingId(null);
     }
   }
 
@@ -158,10 +246,52 @@ export function InvitesManagement() {
                     <span className="font-mono text-base font-semibold">{invite.code}</span>
                     <span className="text-xs text-muted-foreground">已用 {invite.usedCount}/{invite.maxUses} · {expiresText(invite.expiresAt)}</span>
                   </div>
-                  <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                     <span>创建：{displayName(invite.creator)}（{new Date(invite.createdAt).toLocaleString("zh-CN")}）</span>
-                    <Button type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={() => void copyCode(invite.code)}><Copy className="mr-1 h-3 w-3" />复制</Button>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={() => void copyCode(invite.code)}><Copy className="mr-1 h-3 w-3" />复制</Button>
+                      <Button type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={() => toggleMail(invite.id)}><Mail className="mr-1 h-3 w-3" />发送邮件</Button>
+                    </div>
                   </div>
+
+                  {mailOpenId === invite.id && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md bg-muted/50 p-2">
+                      <Input
+                        type="email"
+                        value={mailTo}
+                        onChange={(event) => setMailTo(event.target.value)}
+                        onKeyDown={(event) => { if (event.key === "Enter") void sendInvite(invite); }}
+                        placeholder="收件邮箱，如 student@cau.edu.cn"
+                        className="h-8 min-w-[220px] flex-1 text-sm"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8 text-xs"
+                        disabled={sendingId === invite.id || cooldownFor(invite.id, mailTo) > 0}
+                        onClick={() => void sendInvite(invite)}
+                      >
+                        <Send className="mr-1 h-3 w-3" />
+                        {sendingId === invite.id
+                          ? "发送中…"
+                          : cooldownFor(invite.id, mailTo) > 0
+                            ? `${cooldownFor(invite.id, mailTo)} 秒后重发`
+                            : "发送"}
+                      </Button>
+                    </div>
+                  )}
+
+                  {invite.emailDeliveries && invite.emailDeliveries.length > 0 && (
+                    <ul className="mt-2 space-y-1 border-t pt-2 text-xs text-muted-foreground">
+                      {invite.emailDeliveries.map((d) => (
+                        <li key={d.id} className="flex justify-between gap-2">
+                          <span>已发送：{maskEmail(d.email)}</span>
+                          <span>{new Date(d.createdAt).toLocaleString("zh-CN")}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
                   {invite.redemptions && invite.redemptions.length > 0 && (
                     <ul className="mt-2 space-y-1 border-t pt-2 text-xs">
                       {invite.redemptions.map((r) => (
