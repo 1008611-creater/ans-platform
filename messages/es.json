@@ -56,6 +56,12 @@
     "forKids": "Para Niños",
     "more": "Más"
   },
+  "a11y": {
+    "mainNav": "Navegación principal",
+    "mobileNav": "Navegación móvil",
+    "mobileTabBar": "Barra de pestañas móvil",
+    "footerNav": "Navegación del pie de página"
+  },
   "brand": {
     "copyLogoSvg": "Copiar Logo SVG",
     "brandAssets": "Recursos de Marca",
@@ -111,6 +117,9 @@
     "createSkill": "Crear Habilidad",
     "createTaste": "Crear Taste",
     "skillsDescription": "Las Habilidades de Agente son prompts de múltiples archivos que dan a los agentes de IA capacidades especializadas. Incluyen instrucciones, configuraciones y archivos de soporte que se pueden usar con Claude, Cursor, Windsurf y otros asistentes de codificación de IA.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Los Tastes son archivos markdown individuales que definen tu estilo de codificación y preferencias. Ayudan a los agentes de codificación de IA a aprender cómo escribes código, para que puedan adaptarse a tus convenciones, patrones y gusto.",
     "createInfo": "Esta plataforma no ejecuta prompts — es una biblioteca comunitaria para compartir y descubrir prompts de IA. Crea tu prompt aquí, y otros podrán copiarlo y usarlo en sus herramientas de IA favoritas como ChatGPT, Claude, Gemini o cualquier otro LLM. La comunidad también puede comentar tus prompts y sugerir mejoras a través de solicitudes de cambio.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "Limpiar",
     "found": "{count} encontrados",
     "aiSearch": "Búsqueda IA",
-    "searchTags": "Buscar etiquetas..."
+    "searchTags": "Buscar etiquetas...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "Perfil",
@@ -924,6 +936,13 @@
     "heroFeature1": "Gratis y Código Abierto",
     "heroFeature2": "Auto-hospeda para Privacidad",
     "heroFeature3": "Para Equipos y Organizaciones",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "Clientes",
     "commandLine": "Línea de Comandos",
     "extension": "Extensión",

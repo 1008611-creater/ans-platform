@@ -92,7 +92,7 @@ export function SkillFilters({ categories, tags, currentFilters }: SkillFiltersP
             value={currentFilters.category || "all"}
             onValueChange={(value) => updateFilter("category", value === "all" ? null : value)}
           >
-            <SelectTrigger className="h-8 text-sm w-full"><SelectValue placeholder={t("common.all")} /></SelectTrigger>
+            <SelectTrigger className="h-8 text-sm w-full" aria-label={t("prompts.promptCategory")}><SelectValue placeholder={t("common.all")} /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("common.all")}</SelectItem>
               {categories.filter((category) => !category.parentId).map((parent) => (
@@ -116,7 +116,7 @@ export function SkillFilters({ categories, tags, currentFilters }: SkillFiltersP
           value={currentFilters.sort || "newest"}
           onValueChange={(value) => updateFilter("sort", value === "newest" ? null : value)}
         >
-          <SelectTrigger className="h-8 text-sm w-full"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-8 text-sm w-full" aria-label={t("search.sortBy")}><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="newest">{t("search.newest")}</SelectItem>
             <SelectItem value="oldest">{t("search.oldest")}</SelectItem>

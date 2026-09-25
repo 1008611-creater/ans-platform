@@ -207,7 +207,7 @@ export default async function SkillsPage({ searchParams }: SkillsPageProps) {
               currentFilters={params}
             />
           </ResponsiveFilters>
-          <main className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
             <InfinitePromptList
               initialPrompts={skills}
               initialTotal={total}
@@ -220,7 +220,7 @@ export default async function SkillsPage({ searchParams }: SkillsPageProps) {
                 sort: params.sort,
               }}
             />
-          </main>
+      </div>
         </div>
       </FilterProvider>
     </div>

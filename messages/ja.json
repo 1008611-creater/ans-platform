@@ -56,6 +56,12 @@
     "forKids": "子ども向け",
     "more": "もっと見る"
   },
+  "a11y": {
+    "mainNav": "メインナビゲーション",
+    "mobileNav": "モバイルナビゲーション",
+    "mobileTabBar": "ボトムタブバー",
+    "footerNav": "フッターナビゲーション"
+  },
   "brand": {
     "copyLogoSvg": "ロゴSVGをコピー",
     "brandAssets": "ブランドアセット",
@@ -111,6 +117,9 @@
     "createSkill": "スキルを作成",
     "createTaste": "Tasteを作成",
     "skillsDescription": "エージェントスキルは、AIエージェントに専門的な機能を与えるマルチファイルプロンプトです。Claude、Cursor、Windsurf、その他のAIコーディングアシスタントで使用できる指示、設定、サポートファイルが含まれています。",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Tastesは、コーディングスタイルと好みを定義する単一のマークダウンファイルです。AIコーディングエージェントがあなたのコードの書き方を学習し、規約、パターン、テイストに合わせることができます。",
     "createInfo": "このプラットフォームはプロンプトを実行しません — AIプロンプトを共有・発見するためのコミュニティライブラリです。ここでプロンプトを作成すると、他のユーザーがChatGPT、Claude、Geminiなどのお気に入りのAIツールでコピーして使用できます。コミュニティはあなたのプロンプトにコメントしたり、変更リクエストを通じて改善を提案することもできます。",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "クリア",
     "found": "{count}件見つかりました",
     "aiSearch": "AI検索",
-    "searchTags": "タグを検索..."
+    "searchTags": "タグを検索...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "プロフィール",
@@ -924,6 +936,13 @@
     "heroFeature1": "無料 & オープンソース",
     "heroFeature2": "プライバシーのためセルフホスト",
     "heroFeature3": "チーム＆組織向け",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "クライアント",
     "commandLine": "コマンドライン",
     "extension": "拡張機能",

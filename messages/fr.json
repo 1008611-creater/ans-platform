@@ -56,6 +56,12 @@
     "forKids": "Pour Enfants",
     "more": "Plus"
   },
+  "a11y": {
+    "mainNav": "Navigation principale",
+    "mobileNav": "Navigation mobile",
+    "mobileTabBar": "Barre d'onglets mobile",
+    "footerNav": "Navigation de pied de page"
+  },
   "brand": {
     "copyLogoSvg": "Copier le logo SVG",
     "brandAssets": "Ressources de marque",
@@ -111,6 +117,9 @@
     "createSkill": "Créer une Compétence",
     "createTaste": "Créer un Taste",
     "skillsDescription": "Les Compétences d'Agent sont des prompts multi-fichiers qui donnent aux agents IA des capacités spécialisées. Ils comprennent des instructions, des configurations et des fichiers de support qui peuvent être utilisés avec Claude, Cursor, Windsurf et d'autres assistants de codage IA.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Les Tastes sont des fichiers markdown uniques qui définissent votre style de codage et vos préférences. Ils aident les agents de codage IA à apprendre comment vous écrivez du code, afin qu'ils puissent correspondre à vos conventions, modèles et goût.",
     "createInfo": "Cette plateforme n'exécute pas les prompts — c'est une bibliothèque communautaire pour partager et découvrir des prompts IA. Créez votre prompt ici, et d'autres pourront le copier et l'utiliser dans leurs outils IA préférés comme ChatGPT, Claude, Gemini ou tout autre LLM. La communauté peut également commenter vos prompts et suggérer des améliorations via des demandes de modification.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "Effacer",
     "found": "{count} trouvés",
     "aiSearch": "Recherche IA",
-    "searchTags": "Rechercher des tags..."
+    "searchTags": "Rechercher des tags...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "Profil",
@@ -924,6 +936,13 @@
     "heroFeature1": "Gratuit & Open Source",
     "heroFeature2": "Auto-hébergez pour la Confidentialité",
     "heroFeature3": "Pour Équipes & Organisations",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "Clients",
     "commandLine": "Ligne de Commande",
     "extension": "Extension",

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ArrowRight, Clock, Flame, RefreshCw, Star, Users } from "lucide-react";
-import { db } from "@/lib/db";
+import { getDiscoverySections } from "@/server/discovery/service";
 import { Button } from "@/components/ui/button";
 import { Masonry } from "@/components/ui/masonry";
 import { PromptCard } from "@/components/prompts/prompt-card";
@@ -16,119 +16,14 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
 
   const limit = isHomepage ? 9 : 15;
 
-  const promptInclude = {
-    author: {
-      select: { id: true, name: true, username: true, avatar: true, verified: true },
-    },
-    category: {
-      include: {
-        parent: {
-          select: { id: true, name: true, slug: true },
-        },
-      },
-    },
-    tags: {
-      include: { tag: true },
-    },
-    contributors: {
-      select: { id: true, username: true, name: true, avatar: true },
-    },
-    _count: {
-      select: {
-        votes: true,
-        contributors: true,
-        outgoingConnections: { where: { label: { not: "related" } } },
-        incomingConnections: { where: { label: { not: "related" } } },
-      },
-    },
-  };
-
-  // Get today's date at midnight for filtering today's votes
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const [featuredPromptsRaw, todaysMostUpvotedRaw, latestPromptsRaw, recentlyUpdatedRaw, mostContributedRaw] = await Promise.all([
-    db.prompt.findMany({
-      where: {
-        isPrivate: false,
-        isUnlisted: false,
-        deletedAt: null,
-        isFeatured: true,
-      },
-      orderBy: { featuredAt: "desc" },
-      take: limit,
-      include: promptInclude,
-    }),
-    // Today's most upvoted - prompts with votes from today, ordered by vote count
-    db.prompt.findMany({
-      where: {
-        isPrivate: false,
-        isUnlisted: false,
-        deletedAt: null,
-        votes: {
-          some: {
-            createdAt: {
-              gte: today,
-            },
-          },
-        },
-      },
-      orderBy: {
-        votes: {
-          _count: "desc",
-        },
-      },
-      take: limit,
-      include: promptInclude,
-    }),
-    db.prompt.findMany({
-      where: {
-        isPrivate: false,
-        isUnlisted: false,
-        deletedAt: null,
-      },
-      orderBy: { createdAt: "desc" },
-      take: limit,
-      include: promptInclude,
-    }),
-    db.prompt.findMany({
-      where: {
-        isPrivate: false,
-        isUnlisted: false,
-        deletedAt: null,
-      },
-      orderBy: { updatedAt: "desc" },
-      take: limit,
-      include: promptInclude,
-    }),
-    db.prompt.findMany({
-      where: {
-        isPrivate: false,
-        isUnlisted: false,
-        deletedAt: null,
-      },
-      orderBy: {
-        contributors: {
-          _count: "desc",
-        },
-      },
-      take: limit,
-      include: promptInclude,
-    }),
-  ]);
-
-  const mapPrompt = (p: typeof featuredPromptsRaw[0]) => ({
-    ...p,
-    voteCount: p._count?.votes ?? 0,
-    contributorCount: p._count?.contributors ?? 0,
-    contributors: p.contributors,
-  });
-
-  const featuredPrompts = featuredPromptsRaw.map(mapPrompt);
-  const todaysMostUpvoted = todaysMostUpvotedRaw.map(mapPrompt);
-  const latestPrompts = latestPromptsRaw.map(mapPrompt);
-  const recentlyUpdated = recentlyUpdatedRaw.map(mapPrompt);
-  const mostContributed = mostContributedRaw.map(mapPrompt);
+  // 组件层不直接查库（见 CONSTRAINTS.md），查询集中在 server/discovery。
+  const {
+    featuredPrompts,
+    todaysMostUpvoted,
+    latestPrompts,
+    recentlyUpdated,
+    mostContributed,
+  } = await getDiscoverySections(limit);
 
   return (
     <div className={isHomepage ? "flex flex-col" : "container py-6"}>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Home, FileText, Sparkles, Compass, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -57,6 +57,7 @@ const TABS: TabItem[] = [
 export function MobileTabBar() {
   const pathname = usePathname() ?? "/";
   const locale = useLocale();
+  const t = useTranslations();
   const isEnglish = locale === "en";
   const { data: session } = useSession();
   const user = session?.user;
@@ -66,6 +67,7 @@ export function MobileTabBar() {
 
   return (
     <nav
+      aria-label={t("a11y.mobileTabBar")}
       className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >

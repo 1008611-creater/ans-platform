@@ -56,6 +56,12 @@
     "forKids": "Uşaqlar Üçün",
     "more": "Daha çox"
   },
+  "a11y": {
+    "mainNav": "Əsas naviqasiya",
+    "mobileNav": "Mobil naviqasiya",
+    "mobileTabBar": "Mobil tab paneli",
+    "footerNav": "Alt bilgi naviqasiyası"
+  },
   "brand": {
     "copyLogoSvg": "Logo SVG-ni Kopyala",
     "brandAssets": "Brend Aktivləri",
@@ -111,6 +117,9 @@
     "createSkill": "Bacarıq Yarat",
     "createTaste": "Taste Yarat",
     "skillsDescription": "Agent Bacarıqları AI agentlərinə xüsusi qabiliyyətlər verən çox fayllı promptlardır. Claude, Cursor, Windsurf və digər AI kodlaşdırma köməkçiləri ilə istifadə edilə bilən təlimatlar, konfiqurasiyalar və dəstəkləyici fayllar daxildir.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Tastes kodlaşdırma tərzinizi və üstünlüklərinizi müəyyən edən tək markdown fayllarıdır. AI kodlaşdırma agentlərinə kodunuzu necə yazdığınızı öyrənməyə kömək edir, beləliklə onlar sizin konvensiyalarınızı, nümunələrinizi və zövqünüzü uyğunlaşdıra bilərlər.",
     "createInfo": "Bu platforma promptları işlətmir — süni intellekt promptlarını paylaşmaq və kəşf etmək üçün icma tərəfindən idarə olunan bir kitabxanadır. Promptunuzu burada yaradın və başqaları onu ChatGPT, Claude, Gemini və ya hər hansı digər LLM kimi üstünlük verdikləri AI alətlərində kopyalayıb istifadə edə bilərlər.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "Təmizlə",
     "found": "{count} tapıldı",
     "aiSearch": "AI Axtarış",
-    "searchTags": "Etiketləri axtar..."
+    "searchTags": "Etiketləri axtar...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "Profil",
@@ -924,6 +936,13 @@
     "heroFeature1": "Azad və Açıq Mənbə",
     "heroFeature2": "Məxfilik üçün Öz Serveriniz",
     "heroFeature3": "Komandalar və Təşkilatlar üçün",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "Müştərilər",
     "commandLine": "Komanda Sətri",
     "extension": "Uzantı",

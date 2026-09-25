@@ -329,7 +329,7 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
               aiSearchEnabled={aiSearchAvailable}
             />
           </ResponsiveFilters>
-          <main className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
             <InfinitePromptList
               initialPrompts={prompts}
               initialTotal={total}
@@ -342,7 +342,7 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
                 sort: params.sort,
               }}
             />
-          </main>
+      </div>
         </div>
       </FilterProvider>
     </div>

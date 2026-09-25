@@ -56,6 +56,7 @@ packages
 coverage
 .nyc_output
 vitest.config.ts
+vitest.config.mts
 vitest.setup.ts
 
 # OS files

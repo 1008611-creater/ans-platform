@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { isAdminUser, listPromptsWithEmbeddings } from "@/server/admin/related-prompts";
 import { findAndSaveRelatedPrompts } from "@/lib/ai/embeddings";
 import { getConfig } from "@/lib/config";
 
@@ -14,12 +13,7 @@ export async function POST() {
     }
 
     // Check if user is admin
-    const user = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (user?.role !== "ADMIN") {
+    if (!(await isAdminUser(session.user.id))) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -33,16 +27,7 @@ export async function POST() {
     }
 
     // Get all public prompts with embeddings
-    const prompts = await db.prompt.findMany({
-      where: {
-        isPrivate: false,
-        isUnlisted: false,
-        deletedAt: null,
-        embedding: { not: Prisma.DbNull },
-      },
-      select: { id: true },
-      orderBy: { createdAt: "desc" },
-    });
+    const prompts = await listPromptsWithEmbeddings();
 
     if (prompts.length === 0) {
       return NextResponse.json({ error: "No prompts to process" }, { status: 400 });

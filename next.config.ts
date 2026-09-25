@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import createNextIntlPlugin from "next-intl/plugin";
 import createMDX from "@next/mdx";
+
+// 仓库上层还有一个 package-lock.json，Next 会据此误判 workspace root 并打印警告。
+// 显式钉住本目录，既消除警告，也保证 Docker 里 `.next/standalone` 的依赖追踪范围正确。
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const withMDX = createMDX({
@@ -20,6 +26,7 @@ const nextConfig: NextConfig = {
   },
   // Enable standalone output for Docker（Dockerfile 依赖 .next/standalone）
   output: "standalone",
+  outputFileTracingRoot: projectRoot,
   // Experimental features
   experimental: {
     // Enable server actions

@@ -1,6 +1,11 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { checkInBonus, getLevelProgress, XP_RULES } from "@/lib/level";
+import type {
+  CommunityCheckInResult as CommunityCheckInResultContract,
+  CommunityContributions as CommunityContributionsContract,
+  CommunityMe as CommunityMeContract,
+} from "@/contracts/community";
 
 const eligibleUser = { deletedAt: null, flagged: false, emailVerified: { not: null } } as const;
 const checkInSelect = { id: true, day: true, streak: true, xpAwarded: true, createdAt: true } as const;
@@ -101,5 +106,48 @@ export async function getContributions(userId: string) {
   }, { isolationLevel: "RepeatableRead" });
 }
 
-export type CommunityMe = Awaited<ReturnType<typeof getCommunityMe>>;
-export type Contributions = Awaited<ReturnType<typeof getContributions>>;
+// ---------------------------------------------------------------------------
+// 线上契约（JSON 形状）
+// ---------------------------------------------------------------------------
+// 客户端组件（src/components/community/community-panel.tsx）必须能描述这些
+// 响应，但绝不能为了拿类型而 import 本模块——那会把 Prisma 拖进浏览器 bundle。
+// 因此类型定义放在 src/contracts/community.ts，这里只做再导出。
+export type {
+  CommunityCheckIn,
+  CommunityCheckInResult,
+  CommunityContribution,
+  CommunityContributions,
+  CommunityErrorBody,
+  CommunityLedgerEntry,
+  CommunityMe,
+} from "@/contracts/community";
+
+// ---------------------------------------------------------------------------
+// 契约一致性（编译期断言）
+// ---------------------------------------------------------------------------
+// 服务端返回 Date，JSON 序列化后是 ISO 字符串。这里按序列化规则转换一次，
+// 再与 contracts 层的契约比对：任一侧改名、改类型或漏字段都会编译失败，
+// 而不是等线上前端拿到 undefined 才发现。
+type Serialized<T> = T extends Date
+  ? string
+  : T extends readonly (infer U)[]
+    ? Serialized<U>[]
+    : T extends object
+      ? { [K in keyof T]: Serialized<T[K]> }
+      : T;
+
+type Assignable<From, To> = [From] extends [To] ? true : false;
+type Expect<T extends true> = T;
+
+type MeFromService = Serialized<Awaited<ReturnType<typeof getCommunityMe>>>;
+type BoardFromService = Serialized<Awaited<ReturnType<typeof getContributions>>>;
+type CheckInFromService = Serialized<Awaited<ReturnType<typeof checkIn>>>;
+
+// 这些别名只用于编译期断言，运行时不产生任何代码，因此「未被使用」是预期状态。
+/* eslint-disable @typescript-eslint/no-unused-vars */
+type _MeMatchesContract = Expect<Assignable<MeFromService, CommunityMeContract>>;
+type _MeHasNoExtraFields = Expect<Assignable<keyof MeFromService, keyof CommunityMeContract>>;
+type _BoardMatchesContract = Expect<Assignable<BoardFromService, CommunityContributionsContract>>;
+type _BoardHasNoExtraFields = Expect<Assignable<keyof BoardFromService, keyof CommunityContributionsContract>>;
+type _CheckInMatchesContract = Expect<Assignable<CheckInFromService, CommunityCheckInResultContract>>;
+/* eslint-enable @typescript-eslint/no-unused-vars */

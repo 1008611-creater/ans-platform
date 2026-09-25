@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 import { POST } from "@/app/api/admin/categories/route";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
@@ -8,6 +9,9 @@ vi.mock("@/lib/db", () => ({
   db: {
     category: {
       create: vi.fn(),
+    },
+    user: {
+      findUnique: vi.fn(),
     },
   },
 }));
@@ -23,12 +27,18 @@ vi.mock("next/cache", () => ({
 describe("POST /api/admin/categories", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(db.user.findUnique).mockResolvedValue({
+      id: "admin1",
+      role: "ADMIN",
+      adminPermissions: null,
+      deletedAt: null,
+    } as never);
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/admin/categories", {
+    const request = new NextRequest("http://localhost:3000/api/admin/categories", {
       method: "POST",
       body: JSON.stringify({ name: "Test", slug: "test" }),
     });
@@ -42,7 +52,7 @@ describe("POST /api/admin/categories", () => {
   it("should return 401 if user is not admin", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1", role: "USER" } } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/categories", {
+    const request = new NextRequest("http://localhost:3000/api/admin/categories", {
       method: "POST",
       body: JSON.stringify({ name: "Test", slug: "test" }),
     });
@@ -56,7 +66,7 @@ describe("POST /api/admin/categories", () => {
   it("should return 400 if name is missing", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/categories", {
+    const request = new NextRequest("http://localhost:3000/api/admin/categories", {
       method: "POST",
       body: JSON.stringify({ slug: "test" }),
     });
@@ -70,7 +80,7 @@ describe("POST /api/admin/categories", () => {
   it("should return 400 if slug is missing", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/categories", {
+    const request = new NextRequest("http://localhost:3000/api/admin/categories", {
       method: "POST",
       body: JSON.stringify({ name: "Test" }),
     });
@@ -93,7 +103,7 @@ describe("POST /api/admin/categories", () => {
       pinned: false,
     } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/categories", {
+    const request = new NextRequest("http://localhost:3000/api/admin/categories", {
       method: "POST",
       body: JSON.stringify({ name: "Test Category", slug: "test-category" }),
     });
@@ -117,7 +127,7 @@ describe("POST /api/admin/categories", () => {
       pinned: true,
     } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/categories", {
+    const request = new NextRequest("http://localhost:3000/api/admin/categories", {
       method: "POST",
       body: JSON.stringify({
         name: "Test Category",
@@ -141,7 +151,7 @@ describe("POST /api/admin/categories", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
     vi.mocked(db.category.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/admin/categories", {
+    const request = new NextRequest("http://localhost:3000/api/admin/categories", {
       method: "POST",
       body: JSON.stringify({
         name: "My Category",

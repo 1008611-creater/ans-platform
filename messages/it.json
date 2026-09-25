@@ -56,6 +56,12 @@
     "forKids": "Per Bambini",
     "more": "Altro"
   },
+  "a11y": {
+    "mainNav": "Navigazione principale",
+    "mobileNav": "Navigazione mobile",
+    "mobileTabBar": "Barra schede mobile",
+    "footerNav": "Navigazione del piè di pagina"
+  },
   "brand": {
     "copyLogoSvg": "Copia Logo SVG",
     "brandAssets": "Risorse del marchio",
@@ -111,6 +117,9 @@
     "createSkill": "Crea Competenza",
     "createTaste": "Crea Taste",
     "skillsDescription": "Le Competenze dell'Agente sono prompt multi-file che danno agli agenti AI capacità specializzate. Includono istruzioni, configurazioni e file di supporto che possono essere utilizzati con Claude, Cursor, Windsurf e altri assistenti di codifica AI.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "I Tastes sono singoli file markdown che definiscono il tuo stile di codifica e le tue preferenze. Aiutano gli agenti di codifica AI a imparare come scrivi codice, così possono adattarsi alle tue convenzioni, pattern e gusto.",
     "createInfo": "Questa piattaforma non esegue i prompt — è una libreria comunitaria per condividere e scoprire prompt AI. Crea il tuo prompt qui, e altri potranno copiarlo e usarlo nei loro strumenti AI preferiti come ChatGPT, Claude, Gemini o qualsiasi altro LLM. La community può anche commentare i tuoi prompt e suggerire miglioramenti tramite richieste di modifica.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "Cancella",
     "found": "{count} trovati",
     "aiSearch": "Ricerca AI",
-    "searchTags": "Cerca tag..."
+    "searchTags": "Cerca tag...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "Profilo",
@@ -924,6 +936,13 @@
     "heroFeature1": "Gratuito & Open Source",
     "heroFeature2": "Self-host per la Privacy",
     "heroFeature3": "Per Team & Organizzazioni",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "Client",
     "commandLine": "Riga di Comando",
     "extension": "Estensione",
