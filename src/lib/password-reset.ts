@@ -6,6 +6,8 @@ export const RESET_TTL_MS = 15 * 60 * 1000;
 export const RESET_WINDOW_MS = 10 * 60 * 1000;
 export const RESET_COOLDOWN_SECONDS = 60;
 export const RESET_MAX_ATTEMPTS = 5;
+export const RESET_MAX_DAILY_SENDS = 10;
+export const RESET_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 type Transaction = Prisma.TransactionClient;
 
@@ -55,6 +57,7 @@ export async function readCounter(
   kind: string,
   email: string,
   now: Date,
+  windowMs = RESET_WINDOW_MS,
 ) {
   const prefix = namespace(kind, email);
   const token = digest(prefix);
@@ -77,7 +80,7 @@ export async function readCounter(
     prefix,
     token,
     count: 0,
-    expires: new Date(now.getTime() + RESET_WINDOW_MS),
+    expires: new Date(now.getTime() + windowMs),
     exists: false,
   };
 }

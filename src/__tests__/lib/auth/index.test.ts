@@ -26,7 +26,7 @@ vi.mock("@/lib/plugins", () => ({
 const localUser = {
   id: "local-user", email: "member@example.test", name: "会员", image: null,
   avatar: null, emailVerified: null, username: "member", locale: "zh", role: "USER",
-  deletedAt: null, flagged: false,
+  deletedAt: null, flagged: false, passwordChangedAt: null,
 };
 const externalProviders = [
   ["github", "oauth"],
@@ -196,6 +196,27 @@ describe("ANS 现有 JWT 与 session 回归", () => {
       trigger,
     } as unknown as Parameters<typeof jwt>[0])).toEqual({
       id: "local-user", role: "USER", username: "member", locale: "zh", name: "会员", picture: null,
+    });
+  });
+
+  it("密码在令牌签发后被修改时使旧 JWT 失效", async () => {
+    const config = await loadConfig();
+    mocks.db.user.findFirst.mockResolvedValue({ ...localUser, passwordChangedAt: new Date("2026-02-02T00:00:00.000Z") });
+    const jwt = config.callbacks!.jwt!;
+    expect(await jwt({
+      token: { id: localUser.id, role: "USER", username: "member", locale: "zh", name: "会员", picture: null, pwdAt: new Date("2026-01-01T00:00:00.000Z").getTime() },
+    } as unknown as Parameters<typeof jwt>[0])).toBeNull();
+  });
+
+  it("密码未变更时保持会话有效", async () => {
+    const config = await loadConfig();
+    const pwdAt = new Date("2026-01-01T00:00:00.000Z").getTime();
+    mocks.db.user.findFirst.mockResolvedValue({ ...localUser, passwordChangedAt: new Date(pwdAt) });
+    const jwt = config.callbacks!.jwt!;
+    expect(await jwt({
+      token: { id: localUser.id, role: "USER", username: "member", locale: "zh", name: "会员", picture: null, pwdAt },
+    } as unknown as Parameters<typeof jwt>[0])).toEqual({
+      id: "local-user", role: "USER", username: "member", locale: "zh", name: "会员", picture: null, pwdAt,
     });
   });
 

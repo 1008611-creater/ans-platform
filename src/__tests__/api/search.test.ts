@@ -204,9 +204,9 @@ describe("GET /api/prompts/search", () => {
         select: {
           id: true,
           title: true,
-          slug: true,
-          titleEn: true,
           titleZh: true,
+          titleEn: true,
+          slug: true,
           author: {
             select: {
               username: true,

@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { GET, POST } from "@/app/api/admin/invites/route";
 import { db } from "@/lib/db";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { generateInviteCode, maskEmail, CODE_ALPHABET, CODE_LENGTH } from "@/lib/invite-admin";
+import { generateInviteCode, maskEmail, CODE_ALPHABET, CODE_LENGTH } from "@/server/identity/invites";
 
 vi.mock("@/lib/admin-permissions", () => ({
   requireAdminPermission: vi.fn(),

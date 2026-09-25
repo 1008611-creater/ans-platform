@@ -90,7 +90,7 @@ async function buildAuthConfig() {
         if (user && user.email) {
           const dbUser = await db.user.findFirst({
             where: { email: user.email, deletedAt: null },
-            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true },
+            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true, passwordChangedAt: true },
           });
 
           if (dbUser) {
@@ -100,6 +100,7 @@ async function buildAuthConfig() {
             token.locale = dbUser.locale;
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
+            token.pwdAt = dbUser.passwordChangedAt?.getTime() ?? 0;
           }
         }
 
@@ -107,11 +108,16 @@ async function buildAuthConfig() {
         if (token.id && !user) {
           const dbUser = await db.user.findFirst({
             where: { id: token.id as string, deletedAt: null },
-            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true },
+            select: { id: true, role: true, username: true, locale: true, name: true, avatar: true, passwordChangedAt: true },
           });
 
           // User no longer exists - invalidate token
           if (!dbUser) {
+            return null;
+          }
+
+          // Password changed after this token was issued - force re-authentication.
+          if ((token.pwdAt ?? 0) !== (dbUser.passwordChangedAt?.getTime() ?? 0)) {
             return null;
           }
 
@@ -174,5 +180,6 @@ declare module "@auth/core/jwt" {
     locale: string;
     name?: string | null;
     picture?: string | null;
+    pwdAt?: number;
   }
 }

@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -6,8 +6,9 @@ const mocks = vi.hoisted(() => ({
   db: {
     template: { findFirst: vi.fn(), update: vi.fn() },
     user: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), updateMany: vi.fn(), update: vi.fn() },
-    run: { create: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
+    run: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     quotaLedger: { create: vi.fn() },
+    auditLog: { create: vi.fn() },
     $transaction: vi.fn(),
   },
   fetch: vi.fn(),
@@ -61,7 +62,9 @@ beforeEach(() => {
   mocks.db.user.updateMany.mockResolvedValue({ count: 1 });
   mocks.db.user.findUniqueOrThrow.mockResolvedValue({ quotaPoints: 7 });
   mocks.db.user.update.mockResolvedValue({ quotaPoints: 10 });
+  mocks.db.run.findFirst.mockResolvedValue(null);
   mocks.db.run.updateMany.mockResolvedValue({ count: 1 });
+  mocks.db.auditLog.create.mockResolvedValue({ id: "audit1" });
   mocks.db.run.create.mockImplementation(async ({ data }) => ({ id: "run1", ...data, status: "QUEUED" }));
   mocks.db.quotaLedger.create.mockResolvedValue({ id: "ledger1" });
   mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
@@ -195,6 +198,62 @@ describe("runTemplate", () => {
     expect(result.ok).toBe(false);
     expect(!result.ok && result.error).toBe("output_type_unsupported");
   });
+
+  it("同一幂等键重放结果且不重复扣费", async () => {
+    const existing = {
+      id: "run1",
+      status: "SUCCEEDED",
+      outputText: "生成好的内容",
+      error: null,
+      costPoints: 3,
+      templateId: "tpl1",
+    };
+    mocks.db.run.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(existing);
+    const first = await runTemplate({
+      userId: "user1",
+      templateId: "tpl1",
+      inputs: { topic: "AI" },
+      idempotencyKey: "request-123",
+    });
+    const second = await runTemplate({
+      userId: "user1",
+      templateId: "tpl1",
+      inputs: { topic: "AI" },
+      idempotencyKey: "request-123",
+    });
+    expect(first.ok).toBe(true);
+    expect(second.ok && second.idempotentReplay).toBe(true);
+    expect(second.ok && second.outputText).toBe("生成好的内容");
+    expect(mocks.db.user.updateMany).toHaveBeenCalledTimes(1);
+    expect(mocks.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("模型响应超时会标记失败并退费", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.fetch.mockImplementation((_url: string, options: { signal: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          options.signal.addEventListener("abort", () => reject(new Error("aborted")));
+        })
+      );
+      const pending = runTemplate({
+        userId: "user1",
+        templateId: "tpl1",
+        inputs: { topic: "AI" },
+      });
+      await vi.advanceTimersByTimeAsync(60_000);
+      const result = await pending;
+      expect(result.ok).toBe(false);
+      expect(!result.ok && result.message).toBe("模型响应超时");
+      expect(mocks.db.run.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ status: "FAILED", error: "模型响应超时" }),
+      }));
+      expect(mocks.db.quotaLedger.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ amount: 3, reason: "REFUND" }),
+      }));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
 });
-
-
