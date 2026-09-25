@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { TeamError, grantTeamQuota } from "@/lib/team-service";
+import { TeamError, grantTeamQuota } from "@/server/teams/service";
 
 export const runtime = "nodejs";
 

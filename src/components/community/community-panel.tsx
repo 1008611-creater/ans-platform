@@ -2,15 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { CommunityMe, Contributions } from "@/lib/community";
+import type { CommunityContributions, CommunityMe } from "@/contracts/community";
 import { formatLevel, XP_RULES } from "@/lib/level";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
-type MeData = Omit<CommunityMe, "ledger" | "todayCheckIn"> & {
-  ledger: (Omit<CommunityMe["ledger"][number], "createdAt"> & { createdAt: string })[];
-  todayCheckIn: (Omit<NonNullable<CommunityMe["todayCheckIn"]>, "createdAt"> & { createdAt: string }) | null;
-};
 
 function errorMessage(status: number, fallback: string) {
   if (status === 401) return "请先登录后参与社区。";
@@ -19,8 +14,8 @@ function errorMessage(status: number, fallback: string) {
 }
 
 export function CommunityPanel() {
-  const [me, setMe] = useState<MeData | null>(null);
-  const [contributions, setContributions] = useState<Contributions | null>(null);
+  const [me, setMe] = useState<CommunityMe | null>(null);
+  const [contributions, setContributions] = useState<CommunityContributions | null>(null);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");

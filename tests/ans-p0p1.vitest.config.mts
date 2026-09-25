@@ -21,7 +21,8 @@ export default defineConfig({
     // 让 Vite 解析 NextAuth 的 next/server 无扩展名导入；不替换认证实现。
     server: { deps: { inline: ["next-auth"] } },
     pool: "forks",
-    poolOptions: { forks: { singleFork: true } },
+    // Vitest 4 移除 poolOptions；maxWorkers: 1 + fileParallelism: false 等价于原先的 singleFork。
+    maxWorkers: 1,
     fileParallelism: false,
     testTimeout: 120000,
     hookTimeout: 30000,

@@ -56,6 +56,12 @@
     "forKids": "Für Kinder",
     "more": "Mehr"
   },
+  "a11y": {
+    "mainNav": "Hauptnavigation",
+    "mobileNav": "Mobile Navigation",
+    "mobileTabBar": "Mobile Tab-Leiste",
+    "footerNav": "Fußzeilen-Navigation"
+  },
   "brand": {
     "copyLogoSvg": "Logo SVG kopieren",
     "brandAssets": "Markenressourcen",
@@ -111,6 +117,9 @@
     "createSkill": "Skill erstellen",
     "createTaste": "Taste erstellen",
     "skillsDescription": "Agent Skills sind Multi-Datei-Prompts, die KI-Agenten spezialisierte Fähigkeiten verleihen. Sie enthalten Anweisungen, Konfigurationen und unterstützende Dateien, die mit Claude, Cursor, Windsurf und anderen KI-Coding-Assistenten verwendet werden können.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Tastes sind einzelne Markdown-Dateien, die Ihren Codierstil und Ihre Vorlieben definieren. Sie helfen KI-Coding-Agenten zu lernen, wie Sie Code schreiben, damit sie Ihre Konventionen, Muster und Ihren Geschmack übernehmen können.",
     "createInfo": "Diese Plattform führt keine Prompts aus — sie ist eine community-gesteuerte Bibliothek zum Teilen und Entdecken von KI-Prompts. Erstellen Sie hier Ihren Prompt, und andere können ihn kopieren und in ihren bevorzugten KI-Tools wie ChatGPT, Claude, Gemini oder anderen LLMs verwenden. Die Community kann auch Ihre Prompts kommentieren und Verbesserungen durch Änderungsanfragen vorschlagen.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "Löschen",
     "found": "{count} gefunden",
     "aiSearch": "KI-Suche",
-    "searchTags": "Tags suchen..."
+    "searchTags": "Tags suchen...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "Profil",
@@ -924,6 +936,13 @@
     "heroFeature1": "Kostenlos & Open Source",
     "heroFeature2": "Selbst hosten für Privatsphäre",
     "heroFeature3": "Für Teams & Organisationen",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "Clients",
     "commandLine": "Befehlszeile",
     "extension": "Erweiterung",

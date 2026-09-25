@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Coins, Trophy, Users } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { TeamError, getTeamDetail } from "@/lib/team-service";
+import { TeamError, getTeamDetail } from "@/server/teams/service";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TeamMemberPanel } from "@/components/teams/team-member-panel";

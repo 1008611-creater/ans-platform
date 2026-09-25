@@ -100,28 +100,84 @@ const radiusValues = {
   lg: "0.75rem",
 };
 
+/**
+ * 解析 `#rrggbb`，返回 0–1 的 sRGB 三元组；不是十六进制则返回 null。
+ */
+function parseHex(hex: string): [number, number, number] | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
+  if (!result) return null;
+  return [
+    parseInt(result[1], 16) / 255,
+    parseInt(result[2], 16) / 255,
+    parseInt(result[3], 16) / 255,
+  ];
+}
+
+/** sRGB 传输函数（伽马解码）。 */
+function toLinear(channel: number): number {
+  return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+}
+
+/** WCAG 相对亮度，用于计算对比度。 */
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+/** WCAG 对比度，范围 1–21。 */
+function contrastRatio(a: [number, number, number], b: [number, number, number]): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * sRGB → OKLCH（Björn Ottosson 的 OKLab 矩阵）。
+ *
+ * 这里曾经用 HSL 的近似公式硬凑 OKLCH：拿加权亮度当 L、`(max-min)*0.4` 当 C、
+ * HSL 色相当 H。HSL 色相和 OKLCH 色相不是一回事（品牌色 #6366f1 的 HSL 色相是
+ * 239°，OKLCH 色相是 277°），换过去等于整体扭色：`--primary` 渲染成了 #0078e2
+ * 这种偏青的蓝，既不是品牌色，也把按钮对比度压到 4.13（低于 4.5 门槛）。
+ * 换成标准矩阵后 #6366f1 能原样往返，对比度问题也回到「配色本身」而不是「换算 bug」。
+ */
 function hexToOklch(hex: string): string {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return "oklch(0.5 0.2 260)";
-  
-  const r = parseInt(result[1], 16) / 255;
-  const g = parseInt(result[2], 16) / 255;
-  const b = parseInt(result[3], 16) / 255;
-  
-  const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const c = (max - min) * 0.4;
-  
-  let h = 0;
-  if (max !== min) {
-    if (max === r) h = ((g - b) / (max - min)) * 60;
-    else if (max === g) h = (2 + (b - r) / (max - min)) * 60;
-    else h = (4 + (r - g) / (max - min)) * 60;
-  }
-  if (h < 0) h += 360;
-  
-  return `oklch(${(l * 0.8 + 0.2).toFixed(3)} ${c.toFixed(3)} ${h.toFixed(1)})`;
+  const rgb = parseHex(hex);
+  if (!rgb) return "oklch(0.5 0.2 260)";
+
+  const [r, g, b] = rgb.map(toLinear) as [number, number, number];
+
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+
+  const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
+  const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+  const B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+
+  let hue = (Math.atan2(B, A) * 180) / Math.PI;
+  if (hue < 0) hue += 360;
+
+  return `oklch(${L.toFixed(3)} ${Math.hypot(A, B).toFixed(3)} ${hue.toFixed(1)})`;
+}
+
+/** `--primary-foreground` 的两个候选，取值与 globals.css 的明暗前景一致。 */
+const PRIMARY_FOREGROUND_LIGHT = "oklch(0.98 0 0)"; // ≈ #f8f8f8
+const PRIMARY_FOREGROUND_DARK = "oklch(0.2 0 0)"; // ≈ #161616
+
+/**
+ * 按 WCAG 对比度择优挑选前景色，而不是按「亮度是否大于 0.5」猜。
+ * 原先的阈值判断在中间明度区间会选错：品牌色 #4f46e5 的加权亮度只有 0.34，
+ * 阈值法恰好选对，但同类色只要再亮一点就会被判成「深色底」而配上深色文字。
+ * 直接算对比度不会有这种边界问题。
+ */
+function pickPrimaryForeground(primary: string): string {
+  const rgb = parseHex(primary);
+  if (!rgb) return PRIMARY_FOREGROUND_LIGHT;
+  const light: [number, number, number] = [0.973, 0.973, 0.973]; // #f8f8f8
+  const dark: [number, number, number] = [0.086, 0.086, 0.086]; // #161616
+  return contrastRatio(rgb, light) >= contrastRatio(rgb, dark)
+    ? PRIMARY_FOREGROUND_LIGHT
+    : PRIMARY_FOREGROUND_DARK;
 }
 
 export default async function RootLayout({
@@ -142,11 +198,7 @@ export default async function RootLayout({
   // Calculate theme values server-side
   const themeClasses = `theme-${config.theme.variant} density-${config.theme.density}`;
   const primaryOklch = hexToOklch(config.theme.colors.primary);
-  const rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(config.theme.colors.primary);
-  const lightness = rgb 
-    ? 0.2126 * (parseInt(rgb[1], 16) / 255) + 0.7152 * (parseInt(rgb[2], 16) / 255) + 0.0722 * (parseInt(rgb[3], 16) / 255)
-    : 0.5;
-  const foreground = lightness > 0.5 ? "oklch(0.2 0 0)" : "oklch(0.98 0 0)";
+  const foreground = pickPrimaryForeground(config.theme.colors.primary);
   
   const themeStyles = {
     "--radius": radiusValues[config.theme.radius],

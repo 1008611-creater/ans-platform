@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Trophy, Users } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { listMyTeams } from "@/lib/team-service";
+import { listMyTeams } from "@/server/teams/service";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

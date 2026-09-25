@@ -30,8 +30,9 @@ import { RestorePromptButton } from "@/components/prompts/restore-prompt-button"
 import { CommentSection } from "@/components/comments";
 import { PromptFlowSection } from "@/components/prompts/prompt-flow-section";
 import { RelatedPrompts } from "@/components/prompts/related-prompts";
-import { AddToCollectionButton } from "@/components/prompts/add-to-collection-button";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { getConfig } from "@/lib/config";
+import { isFavorited } from "@/server/favorites/service";
 import { StructuredData } from "@/components/seo/structured-data";
 import { AI_MODELS } from "@/lib/works-best-with";
 import { localizedSkillTitle, localizedSkillDescription, localizedSkillContent } from "@/lib/skill-bilingual";
@@ -172,18 +173,6 @@ export default async function PromptPage({ params }: PromptPageProps) {
       })
     : null;
 
-  // Check if user has this prompt in their collection
-  const userCollection = session?.user
-    ? await db.collection.findUnique({
-        where: {
-          userId_promptId: {
-            userId: session.user.id,
-            promptId: id,
-          },
-        },
-      })
-    : null;
-
   // Fetch related prompts (via PromptConnection with label "related")
   const relatedConnections = await db.promptConnection.findMany({
     where: {
@@ -272,7 +261,10 @@ export default async function PromptPage({ params }: PromptPageProps) {
   const displayDescription = prompt.type === "SKILL" ? localizedSkillDescription(prompt, locale) : prompt.description;
   const displayContent = prompt.type === "SKILL" ? localizedSkillContent(prompt, locale) : prompt.content;
   const hasVoted = !!userVote;
-  const inCollection = !!userCollection;
+  // 统一收藏：Prompt / 模板 / 工作流共用一张表，详情页只保留一个收藏入口。
+  const isFavoritedPrompt = session?.user
+    ? await isFavorited(session.user.id, "PROMPT", prompt.id)
+    : false;
 
   // Fetch change requests for this prompt
   const changeRequests = await db.changeRequest.findMany({
@@ -508,10 +500,10 @@ export default async function PromptPage({ params }: PromptPageProps) {
         <div className="flex flex-col gap-3 mb-4">
           {/* Action buttons - on top on mobile */}
           <div className="flex items-center justify-between gap-2 md:hidden">
-            <AddToCollectionButton
-              promptId={prompt.id}
-              initialInCollection={inCollection}
-              isLoggedIn={!!session?.user}
+            <FavoriteButton
+              targetType="PROMPT"
+              targetId={prompt.id}
+              initialFavorited={isFavoritedPrompt}
             />
             <div className="flex gap-2">
               {!isOwner && session?.user && (
@@ -556,10 +548,10 @@ export default async function PromptPage({ params }: PromptPageProps) {
             </TabsList>
             {/* Action buttons - inline on desktop */}
             <div className="hidden md:flex items-center gap-2">
-              <AddToCollectionButton
-                promptId={prompt.id}
-                initialInCollection={inCollection}
-                isLoggedIn={!!session?.user}
+              <FavoriteButton
+                targetType="PROMPT"
+                targetId={prompt.id}
+                initialFavorited={isFavoritedPrompt}
               />
               {!isOwner && session?.user && (
                 <Button asChild size="sm">

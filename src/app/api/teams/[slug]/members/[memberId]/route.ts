@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { allocateQuota, removeMember, updateMemberRole } from "@/lib/team-service";
+import { allocateQuota, removeMember, updateMemberRole } from "@/server/teams/service";
 import { isCrossSite, readJson, teamFailure, teamJson } from "../../../response";
 
 export const runtime = "nodejs";

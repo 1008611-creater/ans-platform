@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 import { POST } from "@/app/api/admin/invites/send/route";
 import { db } from "@/lib/db";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { inviteEmailIdempotencyKey, inviteEmailText, normalizeInviteEmail } from "@/lib/invite-admin";
+import { inviteEmailIdempotencyKey, inviteEmailText, normalizeInviteEmail } from "@/server/identity/invites";
 
 vi.mock("@/lib/admin-permissions", () => ({
   requireAdminPermission: vi.fn(),
@@ -24,7 +25,7 @@ const invite = {
 };
 
 function post(body: unknown) {
-  return new Request("http://localhost:3000/api/admin/invites/send", {
+  return new NextRequest("http://localhost:3000/api/admin/invites/send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

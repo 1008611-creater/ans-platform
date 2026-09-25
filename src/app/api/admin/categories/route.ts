@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { db } from "@/lib/db";
+import { createCategory } from "@/server/admin/categories";
 
 // Create category
 export async function POST(request: NextRequest) {
@@ -18,15 +18,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
     }
 
-    const category = await db.category.create({
-      data: {
-        name,
-        slug,
-        description: description || null,
-        icon: icon || null,
-        parentId: parentId || null,
-        pinned: pinned || false,
-      },
+    const category = await createCategory({
+      name,
+      slug,
+      description: description || null,
+      icon: icon || null,
+      parentId: parentId || null,
+      pinned: pinned || false,
     });
 
     revalidateTag("categories", "max");

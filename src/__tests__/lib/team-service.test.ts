@@ -24,7 +24,7 @@ import {
   teamPermissions,
   teamSlugify,
   updateMemberRole,
-} from "@/lib/team-service";
+} from "@/server/teams/service";
 
 let store: Row;
 let seq = 0;
@@ -532,8 +532,10 @@ describe("团队详情可见性", () => {
     const detail = await getTeamDetail("spark", "member");
     expect(detail.viewer.isMember).toBe(true);
     expect(detail.viewer.permissions.canInvite).toBe(false);
-    expect(detail.members.length).toBe(4);
-    expect(detail.quota.granted).toBe(0);
+    expect(detail.members).not.toBeNull();
+    expect(detail.quota).not.toBeNull();
+    expect(detail.members!.length).toBe(4);
+    expect(detail.quota!.granted).toBe(0);
   });
 
   it("团队不存在报 404", async () => {

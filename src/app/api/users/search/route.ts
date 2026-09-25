@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { searchUsers } from "@/server/identity/user-search";
 
 export async function GET(request: Request) {
   try {
@@ -20,23 +20,7 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    const users = await db.user.findMany({
-      where: {
-        OR: [
-          { username: { contains: query, mode: "insensitive" } },
-          { name: { contains: query, mode: "insensitive" } },
-        ],
-      },
-      select: {
-        id: true,
-        username: true,
-        name: true,
-        avatar: true,
-      },
-      take: 10,
-      orderBy: { username: "asc" },
-    });
-
+    const users = await searchUsers(query);
     return NextResponse.json(users);
   } catch (error) {
     console.error("User search error:", error);

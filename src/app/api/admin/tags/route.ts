@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { db } from "@/lib/db";
+import { createTag } from "@/server/admin/tags";
 
 // Create tag
 export async function POST(request: NextRequest) {
@@ -17,13 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
     }
 
-    const tag = await db.tag.create({
-      data: {
-        name,
-        slug,
-        color: color || "#6366f1",
-      },
-    });
+    const tag = await createTag({ name, slug, color: color || "#6366f1" });
 
     return NextResponse.json(tag);
   } catch (error) {

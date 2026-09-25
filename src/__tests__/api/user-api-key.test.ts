@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 import { GET, POST, DELETE, PATCH } from "@/app/api/user/api-key/route";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
@@ -20,7 +21,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/api-key", () => ({
   generateApiKey: vi.fn(),
-  hashApiKey: vi.fn((k: string) => "hashed:" + k),
+  hashApiKey: vi.fn((key: string) => `hashed:${key}`),
 }));
 
 describe("GET /api/user/api-key", () => {
@@ -29,7 +30,7 @@ describe("GET /api/user/api-key", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
     const response = await GET();
     const data = await response.json();
@@ -74,7 +75,7 @@ describe("GET /api/user/api-key", () => {
     expect(data.apiKey).toBeNull();
   });
 
-  it("should return hasApiKey: true and key when exists", async () => {
+  it("should return hasApiKey: true without exposing the stored key", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.user.findUnique).mockResolvedValue({
       apiKey: "pchat_abc123def456",
@@ -110,7 +111,7 @@ describe("POST /api/user/api-key", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
     const response = await POST();
     const data = await response.json();
@@ -161,7 +162,7 @@ describe("DELETE /api/user/api-key", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
     const response = await DELETE();
     const data = await response.json();
@@ -200,9 +201,9 @@ describe("PATCH /api/user/api-key", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/user/api-key", {
+    const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
       body: JSON.stringify({ mcpPromptsPublicByDefault: true }),
     });
@@ -216,7 +217,7 @@ describe("PATCH /api/user/api-key", () => {
   it("should return 400 for missing mcpPromptsPublicByDefault", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
 
-    const request = new Request("http://localhost:3000/api/user/api-key", {
+    const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
       body: JSON.stringify({}),
     });
@@ -230,7 +231,7 @@ describe("PATCH /api/user/api-key", () => {
   it("should return 400 for non-boolean value", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
 
-    const request = new Request("http://localhost:3000/api/user/api-key", {
+    const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
       body: JSON.stringify({ mcpPromptsPublicByDefault: "true" }),
     });
@@ -244,7 +245,7 @@ describe("PATCH /api/user/api-key", () => {
   it("should return 400 for number value", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
 
-    const request = new Request("http://localhost:3000/api/user/api-key", {
+    const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
       body: JSON.stringify({ mcpPromptsPublicByDefault: 1 }),
     });
@@ -259,7 +260,7 @@ describe("PATCH /api/user/api-key", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.user.update).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/user/api-key", {
+    const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
       body: JSON.stringify({ mcpPromptsPublicByDefault: true }),
     });
@@ -278,7 +279,7 @@ describe("PATCH /api/user/api-key", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.user.update).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/user/api-key", {
+    const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
       body: JSON.stringify({ mcpPromptsPublicByDefault: false }),
     });

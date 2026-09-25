@@ -21,10 +21,16 @@ vi.mock("@/lib/public-identity", () => ({
   getPublicDisplayName: vi.fn((name: string) => name),
 }));
 
+// 配置对象由测试直接改写，而不是用 `vi.doMock` + `vi.resetModules` 重新加载模块
+// 来切换 feature flag：模块注册表的失效时机与动态 import 存在竞态，会让同一个
+// 用例偶发拿到旧配置（表现为 404 变成 SDK 的 406）。路由在调用时才读取
+// `appConfig.features.mcp`，因此改写同一个对象即可确定性地覆盖两种分支。
+const { appConfigState } = vi.hoisted(() => ({
+  appConfigState: { features: { mcp: true } },
+}));
+
 vi.mock("@/../prompts.config", () => ({
-  default: {
-    features: { mcp: true },
-  },
+  default: appConfigState,
 }));
 
 vi.mock("@/lib/api-key", () => ({
@@ -98,44 +104,32 @@ describe("MCP API route - HTTP method routing", () => {
 
   describe("MCP disabled", () => {
     it("should return 404 from GET when MCP feature is disabled", async () => {
-      vi.doMock("@/../prompts.config", () => ({
-        default: { features: { mcp: false } },
-      }));
-      vi.resetModules();
+      appConfigState.features.mcp = false;
+      try {
+        const response = await mcpRoute.GET();
 
-      const mod = await import("@/app/api/mcp/route");
-      const response = await mod.GET();
-
-      expect(response.status).toBe(404);
-      expect(await response.json()).toEqual({ error: "MCP is not enabled" });
-
-      vi.doMock("@/../prompts.config", () => ({
-        default: { features: { mcp: true } },
-      }));
-      vi.resetModules();
+        expect(response.status).toBe(404);
+        expect(await response.json()).toEqual({ error: "MCP is not enabled" });
+      } finally {
+        appConfigState.features.mcp = true;
+      }
     });
 
     it("should return 404 from POST when MCP feature is disabled", async () => {
-      vi.doMock("@/../prompts.config", () => ({
-        default: { features: { mcp: false } },
-      }));
-      vi.resetModules();
+      appConfigState.features.mcp = false;
+      try {
+        const request = new Request("http://localhost/api/mcp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+        });
+        const response = await mcpRoute.POST(request);
 
-      const mod = await import("@/app/api/mcp/route");
-      const request = new Request("http://localhost/api/mcp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
-      });
-      const response = await mod.POST(request);
-
-      expect(response.status).toBe(404);
-      expect(await response.json()).toEqual({ error: "MCP is not enabled" });
-
-      vi.doMock("@/../prompts.config", () => ({
-        default: { features: { mcp: true } },
-      }));
-      vi.resetModules();
+        expect(response.status).toBe(404);
+        expect(await response.json()).toEqual({ error: "MCP is not enabled" });
+      } finally {
+        appConfigState.features.mcp = true;
+      }
     });
   });
 });

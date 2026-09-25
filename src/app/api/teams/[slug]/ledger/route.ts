@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { listTeamLedger } from "@/lib/team-service";
+import { listTeamLedger } from "@/server/teams/service";
 import { teamFailure, teamJson } from "../../response";
 
 export const runtime = "nodejs";

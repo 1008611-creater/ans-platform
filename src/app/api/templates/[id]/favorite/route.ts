@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { writeAuditLog } from "@/lib/audit";
+import {
+  favoriteTemplate,
+  getPublishedTemplateByKey,
+  isTemplateFavorited,
+  unfavoriteTemplate,
+} from "@/server/templates/favorites";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-async function getPublishedTemplate(key: string) {
-  return db.template.findFirst({
-    where: { status: "PUBLISHED", OR: [{ id: key }, { slug: key }] },
-    select: { id: true, slug: true, title: true },
-  });
-}
 
 function requestContext(request: Request) {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -21,76 +18,43 @@ function requestContext(request: Request) {
   };
 }
 
-export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
+async function requireUser() {
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "unauthorized", message: "请先登录" }, { status: 401 });
-  }
+  if (!session?.user?.id) return null;
+  return session.user;
+}
+
+export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
+  const user = await requireUser();
+  if (!user) return NextResponse.json({ error: "unauthorized", message: "请先登录" }, { status: 401 });
   const { id: key } = await context.params;
-  const template = await getPublishedTemplate(key);
+  const template = await getPublishedTemplateByKey(key);
   if (!template) {
     return NextResponse.json({ error: "template_unavailable", message: "模板不存在或未上架" }, { status: 404 });
   }
-  const favorite = await db.templateFavorite.findUnique({
-    where: { userId_templateId: { userId: session.user.id, templateId: template.id } },
-    select: { createdAt: true },
-  });
-  return NextResponse.json({ favorited: Boolean(favorite) });
+  return NextResponse.json({ favorited: await isTemplateFavorited(user.id, template.id) });
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "unauthorized", message: "请先登录" }, { status: 401 });
-  }
+  const user = await requireUser();
+  if (!user) return NextResponse.json({ error: "unauthorized", message: "请先登录" }, { status: 401 });
   const { id: key } = await context.params;
-  const template = await getPublishedTemplate(key);
+  const template = await getPublishedTemplateByKey(key);
   if (!template) {
     return NextResponse.json({ error: "template_unavailable", message: "模板不存在或未上架" }, { status: 404 });
   }
-  const favorite = await db.templateFavorite.upsert({
-    where: { userId_templateId: { userId: session.user.id, templateId: template.id } },
-    create: { userId: session.user.id, templateId: template.id },
-    update: {},
-  });
-  const contextData = requestContext(request);
-  await writeAuditLog({
-    actorId: session.user.id,
-    action: "TEMPLATE_FAVORITED",
-    resourceType: "template",
-    resourceId: template.id,
-    after: { favorited: true, createdAt: favorite.createdAt },
-    metadata: { templateId: template.id, templateSlug: template.slug },
-    ...contextData,
-  });
+  await favoriteTemplate(user.id, template, requestContext(request));
   return NextResponse.json({ favorited: true });
 }
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "unauthorized", message: "请先登录" }, { status: 401 });
-  }
+  const user = await requireUser();
+  if (!user) return NextResponse.json({ error: "unauthorized", message: "请先登录" }, { status: 401 });
   const { id: key } = await context.params;
-  const template = await getPublishedTemplate(key);
+  const template = await getPublishedTemplateByKey(key);
   if (!template) {
     return NextResponse.json({ error: "template_unavailable", message: "模板不存在或未上架" }, { status: 404 });
   }
-  const removed = await db.templateFavorite.deleteMany({
-    where: { userId: session.user.id, templateId: template.id },
-  });
-  if (removed.count > 0) {
-    const contextData = requestContext(request);
-    await writeAuditLog({
-      actorId: session.user.id,
-      action: "TEMPLATE_UNFAVORITED",
-      resourceType: "template",
-      resourceId: template.id,
-      before: { favorited: true },
-      after: { favorited: false },
-      metadata: { templateId: template.id, templateSlug: template.slug },
-      ...contextData,
-    });
-  }
+  await unfavoriteTemplate(user.id, template, requestContext(request));
   return NextResponse.json({ favorited: false });
 }

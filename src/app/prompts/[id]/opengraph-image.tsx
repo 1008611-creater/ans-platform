@@ -141,7 +141,7 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
         >
           {/* Left: Branding */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ fontSize: 24, fontWeight: 600, color: config.theme?.colors?.primary || "#6366f1" }}>
+            <span style={{ fontSize: 24, fontWeight: 600, color: config.theme?.colors?.primary || "#4f46e5" }}>
               {config.branding.name}
             </span>
           </div>
@@ -150,10 +150,10 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
           <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
             {/* Upvotes */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={config.theme?.colors?.primary || "#6366f1"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={config.theme?.colors?.primary || "#4f46e5"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m18 15-6-6-6 6" />
               </svg>
-              <span style={{ fontSize: 24, fontWeight: 600, color: config.theme?.colors?.primary || "#6366f1" }}>
+            <span style={{ fontSize: 24, fontWeight: 600, color: config.theme?.colors?.primary || "#4f46e5" }}>
                 {voteCount}
               </span>
             </div>
@@ -265,7 +265,7 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
                 backgroundColor: "#fafafa",
                 padding: "12px 14px",
                 borderRadius: radius,
-                border: `2px solid ${config.theme?.colors?.primary || "#6366f1"}20`,
+          border: `2px solid ${config.theme?.colors?.primary || "#4f46e5"}20`,
                 overflow: "hidden",
               }}
             >
@@ -280,7 +280,7 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
                     borderBottom: "1px solid #e4e4e7",
                   }}
                 >
-                  <span style={{ color: config.theme?.colors?.primary || "#6366f1", fontWeight: 600, fontSize: 14 }}>
+                <span style={{ color: config.theme?.colors?.primary || "#4f46e5", fontWeight: 600, fontSize: 14 }}>
                     {prompt.structuredFormat || "JSON"}
                   </span>
                 </div>

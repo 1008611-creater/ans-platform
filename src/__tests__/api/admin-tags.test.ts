@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 import { POST } from "@/app/api/admin/tags/route";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
@@ -31,9 +32,9 @@ describe("POST /api/admin/tags", () => {
   });
 
   it("should return 401 if not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as never);
 
-    const request = new Request("http://localhost:3000/api/admin/tags", {
+    const request = new NextRequest("http://localhost:3000/api/admin/tags", {
       method: "POST",
       body: JSON.stringify({ name: "Test", slug: "test" }),
     });
@@ -47,7 +48,7 @@ describe("POST /api/admin/tags", () => {
   it("should return 401 if user is not admin", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1", role: "USER" } } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/tags", {
+    const request = new NextRequest("http://localhost:3000/api/admin/tags", {
       method: "POST",
       body: JSON.stringify({ name: "Test", slug: "test" }),
     });
@@ -61,7 +62,7 @@ describe("POST /api/admin/tags", () => {
   it("should return 400 if name is missing", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/tags", {
+    const request = new NextRequest("http://localhost:3000/api/admin/tags", {
       method: "POST",
       body: JSON.stringify({ slug: "test" }),
     });
@@ -75,7 +76,7 @@ describe("POST /api/admin/tags", () => {
   it("should return 400 if slug is missing", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/tags", {
+    const request = new NextRequest("http://localhost:3000/api/admin/tags", {
       method: "POST",
       body: JSON.stringify({ name: "Test" }),
     });
@@ -95,7 +96,7 @@ describe("POST /api/admin/tags", () => {
       color: "#6366f1",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/tags", {
+    const request = new NextRequest("http://localhost:3000/api/admin/tags", {
       method: "POST",
       body: JSON.stringify({ name: "JavaScript", slug: "javascript" }),
     });
@@ -117,7 +118,7 @@ describe("POST /api/admin/tags", () => {
       color: "#3776ab",
     } as never);
 
-    const request = new Request("http://localhost:3000/api/admin/tags", {
+    const request = new NextRequest("http://localhost:3000/api/admin/tags", {
       method: "POST",
       body: JSON.stringify({ name: "Python", slug: "python", color: "#3776ab" }),
     });
@@ -132,7 +133,7 @@ describe("POST /api/admin/tags", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "admin1", role: "ADMIN" } } as never);
     vi.mocked(db.tag.create).mockResolvedValue({} as never);
 
-    const request = new Request("http://localhost:3000/api/admin/tags", {
+    const request = new NextRequest("http://localhost:3000/api/admin/tags", {
       method: "POST",
       body: JSON.stringify({ name: "Test", slug: "test" }),
     });

@@ -23,7 +23,10 @@ export default defineConfig({
     density: "default",
     // Colors (hex or oklch)
     colors: {
-      primary: "#6366f1", // Indigo
+  // Indigo 600。原先的 Indigo 500 (#6366f1) 在白色/浅色底上的对比度只有
+  // 4.21:1，达不到 WCAG AA 对正文级文字的 4.5:1 要求；同色系加深一档后
+  // 达到 5.92:1（浅色底）/ 6.29:1（纯白底），视觉上几乎不可分辨。
+  primary: "#4f46e5",
     },
   },
 

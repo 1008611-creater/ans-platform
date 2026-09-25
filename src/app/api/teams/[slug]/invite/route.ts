@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { respondToInvite } from "@/lib/team-service";
+import { respondToInvite } from "@/server/teams/service";
 import { isCrossSite, readJson, teamFailure, teamJson } from "../../response";
 
 export const runtime = "nodejs";

@@ -56,6 +56,12 @@
     "forKids": "Για Παιδιά",
     "more": "Περισσότερα"
   },
+  "a11y": {
+    "mainNav": "Κύρια πλοήγηση",
+    "mobileNav": "Πλοήγηση κινητού",
+    "mobileTabBar": "Γραμμή καρτελών κινητού",
+    "footerNav": "Πλοήγηση υποσέλιδου"
+  },
   "brand": {
     "copyLogoSvg": "Αντιγραφή Logo SVG",
     "brandAssets": "Πόροι μάρκας",
@@ -111,6 +117,9 @@
     "createSkill": "Δημιουργία Δεξιότητας",
     "createTaste": "Δημιουργία Taste",
     "skillsDescription": "Οι Δεξιότητες Πράκτορα είναι prompts πολλαπλών αρχείων που δίνουν στους AI πράκτορες εξειδικευμένες δυνατότητες. Περιλαμβάνουν οδηγίες, ρυθμίσεις και υποστηρικτικά αρχεία που μπορούν να χρησιμοποιηθούν με Claude, Cursor, Windsurf και άλλους βοηθούς προγραμματισμού AI.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Τα Tastes είναι μεμονωμένα αρχεία markdown που ορίζουν το στυλ κωδικοποίησης και τις προτιμήσεις σας. Βοηθούν τους πράκτορες κωδικοποίησης AI να μάθουν πώς γράφετε κώδικα, ώστε να ταιριάζουν τις συμβάσεις, τα μοτίβα και το γούστο σας.",
     "createInfo": "Αυτή η πλατφόρμα δεν εκτελεί prompts — είναι μια κοινοτική βιβλιοθήκη για την κοινοποίηση και ανακάλυψη AI prompts. Δημιουργήστε το prompt σας εδώ και άλλοι μπορούν να το αντιγράψουν και να το χρησιμοποιήσουν στα αγαπημένα τους εργαλεία AI όπως ChatGPT, Claude, Gemini ή οποιοδήποτε άλλο LLM. Η κοινότητα μπορεί επίσης να σχολιάσει τα prompts σας και να προτείνει βελτιώσεις μέσω αιτημάτων αλλαγής.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "Καθαρισμός",
     "found": "Βρέθηκαν {count}",
     "aiSearch": "Αναζήτηση AI",
-    "searchTags": "Αναζήτηση ετικετών..."
+    "searchTags": "Αναζήτηση ετικετών...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "Προφίλ",
@@ -924,6 +936,13 @@
     "heroFeature1": "Δωρεάν & Ανοιχτού κώδικα",
     "heroFeature2": "Φιλοξενήστε για ιδιωτικότητα",
     "heroFeature3": "Για ομάδες & οργανισμούς",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "Πελάτες",
     "commandLine": "Γραμμή Εντολών",
     "extension": "Επέκταση",

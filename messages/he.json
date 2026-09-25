@@ -56,6 +56,12 @@
     "forKids": "לילדים",
     "more": "עוד"
   },
+  "a11y": {
+    "mainNav": "ניווט ראשי",
+    "mobileNav": "ניווט לנייד",
+    "mobileTabBar": "סרגל לשוניות לנייד",
+    "footerNav": "ניווט בתחתית"
+  },
   "brand": {
     "copyLogoSvg": "העתק לוגו SVG",
     "brandAssets": "נכסי מותג",
@@ -111,6 +117,9 @@
     "createSkill": "יצירת מיומנות",
     "createTaste": "יצירת Taste",
     "skillsDescription": "מיומנויות סוכן הן פרומפטים מרובי קבצים שמעניקים לסוכני AI יכולות מתמחות. הן כוללות הוראות, הגדרות וקבצי תמיכה שניתן להשתמש בהם עם Claude, Cursor, Windsurf ועוזרי קידוד AI אחרים.",
+    "skillRouteMap": "Skill Route Map",
+    "openSkillFiles": "Open skill files",
+    "closeSkillFiles": "Close skill files",
     "tastesDescription": "Tastes הם קבצי markdown בודדים שמגדירים את סגנון הקידוד וההעדפות שלך. הם עוזרים לסוכני קידוד AI ללמוד איך אתה כותב קוד, כך שיוכלו להתאים למוסכמות, לדפוסים ולטעם שלך.",
     "createInfo": "פלטפורמה זו לא מריצה פרומפטים — היא ספרייה קהילתית לשיתוף וגילוי פרומפטים של AI. צור את הפרומפט שלך כאן, ואחרים יוכלו להעתיק ולהשתמש בו בכלי ה-AI המועדפים עליהם כמו ChatGPT, Claude, Gemini או כל LLM אחר. הקהילה יכולה גם להגיב על הפרומפטים שלך ולהציע שיפורים דרך בקשות שינוי.",
     "hfDataStudio": {
@@ -775,7 +784,10 @@
     "clear": "נקה",
     "found": "נמצאו {count}",
     "aiSearch": "חיפוש AI",
-    "searchTags": "חפש תגיות..."
+    "searchTags": "חפש תגיות...",
+    "filterSkills": "Filter Skills",
+    "filterPrompts": "Filter Prompts",
+    "viewResults": "View Results"
   },
   "user": {
     "profile": "פרופיל",
@@ -924,6 +936,13 @@
     "heroFeature1": "חינם וקוד פתוח",
     "heroFeature2": "ארח בשרתים שלך לפרטיות",
     "heroFeature3": "לצוותים וארגונים",
+    "campusBadge": "CAUHub sibling community · campus first",
+    "capabilityPrompt": "Prompts",
+    "capabilityPromptHint": "Find a useful starting point",
+    "capabilityTemplate": "Templates",
+    "capabilityTemplateHint": "Fill inputs and run",
+    "capabilityWorkflow": "Workflows",
+    "capabilityWorkflowHint": "Turn steps into capability",
     "clients": "לקוחות",
     "commandLine": "שורת פקודה",
     "extension": "תוסף",

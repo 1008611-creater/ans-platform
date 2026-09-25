@@ -65,13 +65,13 @@ export default function PromptsLoading() {
         </aside>
 
         {/* Main Content - Prompt Grid Skeleton */}
-        <main className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
               <PromptCardSkeleton key={i} />
             ))}
           </div>
-        </main>
+      </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { deleteTag, updateTag } from "@/server/admin/tags";
 
 // Update tag
 export async function PATCH(
@@ -17,14 +17,7 @@ export async function PATCH(
     const body = await request.json();
     const { name, slug, color } = body;
 
-    const tag = await db.tag.update({
-      where: { id },
-      data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
-        ...(color && { color }),
-      },
-    });
+    const tag = await updateTag(id, { name, slug, color });
 
     return NextResponse.json(tag);
   } catch (error) {
@@ -46,9 +39,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    await db.tag.delete({
-      where: { id },
-    });
+    await deleteTag(id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
