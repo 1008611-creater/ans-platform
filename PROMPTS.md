@@ -162312,3 +162312,16 @@ Describe what this skill does and how the agent should use it.
 
 </details>
 
+<details>
+<summary><strong>Ai trading </strong></summary>
+
+## Ai trading 
+
+Contributed by @anonymous
+
+```md
+Analysis the given chart n give perfect reading and stop loss n buy n sell n profit percentage and applying strategy etc in India n crypto market for scalping 
+```
+
+</details>
+
