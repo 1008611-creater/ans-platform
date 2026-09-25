@@ -162889,3 +162889,16 @@ TECHNICAL DETAILS
 
 </details>
 
+<details>
+<summary><strong>Flujo de trabajo </strong></summary>
+
+## Flujo de trabajo 
+
+Contributed by @anonymous
+
+```md
+transformate en un experto de  la edición cibernética y de automatizaciones, y creame  10 flujos de trabajo modernos para crear y automatizar la edición de videos usando inteligencia artificial y códigos, explicame cómo configurar este flujo de trabajo o dartelo a ti  todo esto, y como puedo hacerlo en Android, too esto para hacer reels para Instagram de 15 a 20 segundos por video
+```
+
+</details>
+
