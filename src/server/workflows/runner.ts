@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { workflowDefinitionSchema, type WorkflowDefinition } from "@/contracts/workflow";
 import {
@@ -148,6 +148,12 @@ type ModelUsageAudit = {
   tokenUsage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null };
 };
 
+function prismaJsonValue(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull | typeof Prisma.DbNull {
+  if (value === undefined) return Prisma.DbNull;
+  if (value === null) return Prisma.JsonNull;
+  return value as Prisma.InputJsonValue;
+}
+
 function createModelUsageTracker() {
   const models = new Set<string>();
   const responses: Array<ModelTokenUsage | null> = [];
@@ -182,6 +188,38 @@ function createModelUsageTracker() {
         },
       };
     },
+  };
+}
+
+const RUN_CANCELLATION_POLL_MS = 500;
+
+function watchRunCancellation(runId: string, userId: string, controller: AbortController) {
+  let stopped = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const check = async () => {
+    if (stopped || controller.signal.aborted) return;
+    try {
+      const current = await db.workflowRun.findFirst({
+        where: { id: runId, userId },
+        select: { status: true },
+      });
+      if (!current || current.status !== "RUNNING") {
+        controller.abort();
+        return;
+      }
+    } catch {
+      // A transient database read failure should not turn an active run into a failure.
+    }
+    if (!stopped && !controller.signal.aborted) {
+      timer = setTimeout(() => void check(), RUN_CANCELLATION_POLL_MS);
+    }
+  };
+
+  timer = setTimeout(() => void check(), RUN_CANCELLATION_POLL_MS);
+  return () => {
+    stopped = true;
+    if (timer) clearTimeout(timer);
   };
 }
 
@@ -247,13 +285,18 @@ export async function executePersistedWorkflow(
       onModelCall: (call) => modelUsage.complete(call),
     });
   let result: WorkflowExecutionResult;
+  const cancellationController = new AbortController();
+  const stopWatchingCancellation = watchRunCancellation(run.id, userId, cancellationController);
   try {
     result = await executeWorkflow(definition, run.input, {
       handlers,
       maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
+      signal: cancellationController.signal,
     });
   } catch (error) {
     return finalizeFailure(run, error instanceof Error ? error.message : "Workflow execution failed.", modelUsage.summary());
+  } finally {
+    stopWatchingCancellation();
   }
 
   try {
@@ -302,7 +345,7 @@ async function persistResult(
       where: { id: runId, userId, status: "RUNNING" },
       data: {
         status: succeeded ? "SUCCEEDED" : "FAILED",
-        output: (result.output ?? undefined) as Prisma.InputJsonValue | undefined,
+        output: succeeded ? prismaJsonValue(result.output) : Prisma.DbNull,
         error: result.error ?? null,
         finishedAt: new Date(),
       },
@@ -315,7 +358,7 @@ async function persistResult(
         data: {
           status: execution.status === "succeeded" ? "SUCCEEDED" : "FAILED",
           attempts: execution.attempts,
-          output: (execution.output ?? undefined) as Prisma.InputJsonValue | undefined,
+          output: execution.status === "succeeded" ? prismaJsonValue(execution.output) : Prisma.DbNull,
           error: execution.error ?? null,
           startedAt: new Date(execution.startedAt),
           finishedAt: new Date(execution.endedAt),

@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -100,6 +101,21 @@ describe("executePersistedWorkflow", () => {
     expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
   });
 
+  it("persists JSON null separately from a missing workflow output", async () => {
+    const result = await executePersistedWorkflow("run1", "user1", {
+      handlers: { prompt: () => "ok", output: () => null },
+    });
+
+    expect(result?.status).toBe("succeeded");
+    expect(result?.output).toBeNull();
+    expect(mocks.db.workflowRun.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ status: "RUNNING" }), data: expect.objectContaining({ status: "SUCCEEDED", output: Prisma.JsonNull }) }),
+    );
+    expect(mocks.db.workflowNodeRun.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { runId: "run1", nodeId: "final" }, data: expect.objectContaining({ output: Prisma.JsonNull }) }),
+    );
+  });
+
   it("finalizes and refunds when execution planning throws", async () => {
     mocks.db.workflowRun.findFirst.mockResolvedValue({
       ...run,
@@ -140,6 +156,12 @@ describe("executePersistedWorkflow", () => {
     expect(mocks.db.quotaLedger.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ amount: 3, reason: "REFUND" }) }),
     );
+    expect(mocks.db.workflowRun.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ status: "RUNNING" }), data: expect.objectContaining({ status: "FAILED", output: Prisma.DbNull }) }),
+    );
+    expect(mocks.db.workflowNodeRun.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: "FAILED", output: Prisma.DbNull }) }),
+    );
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ action: "WORKFLOW_RUN_FAILED" }) }),
     );
@@ -179,6 +201,42 @@ describe("executePersistedWorkflow", () => {
 
     expect(result).toBeNull();
     expect(onSucceeded).not.toHaveBeenCalled();
+    expect(mocks.db.workflowNodeRun.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("aborts an active model node when the persisted run is cancelled", async () => {
+    const modelDefinition = {
+      version: 1 as const,
+      maxNodes: 20,
+      nodes: [
+        { id: "draft", type: "model" as const, label: "Draft", config: { prompt: "Write" }, timeoutMs: 5000, maxRetries: 0 },
+        { id: "final", type: "output" as const, label: "Output", config: {}, timeoutMs: 1000, maxRetries: 0 },
+      ],
+      edges: [{ id: "draft-final", from: "draft", to: "final", mapping: {} }],
+    };
+    mocks.db.workflowRun.findFirst
+      .mockResolvedValueOnce({ ...run, version: { definition: modelDefinition } })
+      .mockResolvedValue({ status: "CANCELLED" });
+    mocks.db.workflowRun.updateMany.mockImplementation(
+      async ({ where }: { where: { status?: string } }) =>
+        where?.status === "QUEUED" ? { count: 1 } : { count: 0 },
+    );
+    let modelSignal: AbortSignal | undefined;
+
+    const execution = executePersistedWorkflow("run1", "user1", {
+      handlers: {
+        model: ({ signal }) => new Promise((_, reject) => {
+          modelSignal = signal;
+          signal.addEventListener("abort", () => reject(new Error("provider request aborted")), { once: true });
+        }),
+      },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 650));
+    const result = await execution;
+
+    expect(modelSignal?.aborted).toBe(true);
+    expect(result).toBeNull();
+    expect(mocks.db.user.update).not.toHaveBeenCalled();
     expect(mocks.db.workflowNodeRun.updateMany).not.toHaveBeenCalled();
   });
 
@@ -223,6 +281,50 @@ describe("executePersistedWorkflow", () => {
         }),
       }),
     }));
+  });
+
+  it("records BYOK provider and token usage in the workflow audit", async () => {
+    const modelDefinition = {
+      version: 1 as const,
+      maxNodes: 20,
+      nodes: [
+        { id: "draft", type: "model" as const, label: "Draft", config: { prompt: "Write {{input.topic}}" }, timeoutMs: 1000, maxRetries: 0 },
+        { id: "final", type: "output" as const, label: "Output", config: {}, timeoutMs: 1000, maxRetries: 0 },
+      ],
+      edges: [{ id: "draft-final", from: "draft", to: "final", mapping: {} }],
+    };
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { definition: modelDefinition } });
+    mocks.db.userModelCredential.findFirst.mockResolvedValue({
+      id: "cred1",
+      userId: "user1",
+      label: "Private gateway",
+      baseUrl: "https://byok.example.test/v1",
+      encryptedKey: encryptCredential(BYOK_KEY),
+      keyLast4: BYOK_KEY.slice(-4),
+      active: true,
+    });
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({
+      choices: [{ message: { content: "Generated with BYOK" } }],
+      usage: { prompt_tokens: 13, completion_tokens: 9, total_tokens: 22 },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await executePersistedWorkflow("run1", "user1", { credentialId: "cred1" });
+
+    expect(result?.status).toBe("succeeded");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe("https://byok.example.test/v1/chat/completions");
+    expect(new Headers(fetchMock.mock.calls[0][1]?.headers).get("Authorization")).toBe(`Bearer ${BYOK_KEY}`);
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        metadata: expect.objectContaining({
+          models: ["gpt-5.6-terra"],
+          modelCalls: 1,
+          tokenUsage: { inputTokens: 13, outputTokens: 9, totalTokens: 22 },
+        }),
+      }),
+    }));
+    expect(JSON.stringify(mocks.db.auditLog.create.mock.calls)).not.toContain(BYOK_KEY);
   });
 
   it("refuses a credential that belongs to someone else", async () => {

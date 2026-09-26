@@ -28,6 +28,7 @@ export type WorkflowNodeExecutor = (
 export type WorkflowExecutionOptions = {
   handlers: Partial<Record<WorkflowNodeType, WorkflowNodeExecutor>>;
   maxExecutionMs?: number;
+  signal?: AbortSignal;
   clock?: () => number;
 };
 
@@ -51,14 +52,26 @@ async function executeAttempt(
   node: WorkflowNode,
   context: WorkflowNodeContext,
   handler: WorkflowNodeExecutor,
+  signal?: AbortSignal,
 ): Promise<unknown> {
+  if (signal?.aborted) throw new Error("Workflow execution was cancelled.");
   const controller = new AbortController();
   const attemptContext = { ...context, signal: controller.signal };
   let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+  let abortListener: (() => void) | undefined;
+  const cancelled = new Promise<never>((_, reject) => {
+    abortListener = () => {
+      controller.abort();
+      reject(new Error("Workflow execution was cancelled."));
+    };
+    if (signal?.aborted) abortListener();
+    else signal?.addEventListener("abort", abortListener, { once: true });
+  });
 
   try {
     return await Promise.race([
       Promise.resolve(handler(attemptContext)),
+      cancelled,
       new Promise<never>((_, reject) => {
         timeoutHandle = setTimeout(() => {
           controller.abort();
@@ -68,6 +81,7 @@ async function executeAttempt(
     ]);
   } finally {
     if (timeoutHandle) clearTimeout(timeoutHandle);
+    if (signal && abortListener) signal.removeEventListener("abort", abortListener);
   }
 }
 
@@ -84,6 +98,14 @@ export async function executeWorkflow(
   const maxExecutionMs = options.maxExecutionMs ?? 120_000;
 
   for (const node of plan.nodes) {
+    if (options.signal?.aborted) {
+      return {
+        status: "failed",
+        error: "Workflow execution was cancelled.",
+        executions,
+        elapsedMs: clock() - startedAt,
+      };
+    }
     if (clock() - startedAt > maxExecutionMs) {
       const error = executionBudgetError(maxExecutionMs);
       return {
@@ -115,7 +137,7 @@ export async function executeWorkflow(
           dependencyOutputs,
           outputs,
           signal: new AbortController().signal,
-        }, handler);
+        }, handler, options.signal);
         outputs[node.id] = output;
         executions.push({
           nodeId: node.id,
