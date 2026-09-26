@@ -163073,3 +163073,16 @@ Made by ArtistVault (artistvault.co), Artist Manager on Autopilot for independen
 
 </details>
 
+<details>
+<summary><strong>Mağaza tanıtım </strong></summary>
+
+## Mağaza tanıtım 
+
+Contributed by @anonymous
+
+```md
+Hac malzemeleri ve dini hediyelik eşya sattığım mağazam için bir tanıtım ve reklam videosu 
+```
+
+</details>
+
