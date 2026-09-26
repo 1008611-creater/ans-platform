@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+﻿import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import {
   workflowCreateInputSchema,
@@ -34,7 +34,6 @@ export class WorkflowServiceError extends Error {
 }
 
 /** Register an immutable, platform-owned workflow version on first use. */
-/** Register an immutable, platform-owned workflow version on first use. */
 export async function ensureOfficialWorkflow(input: {
   officialId: string;
   slug: string;
@@ -64,7 +63,7 @@ export async function ensureOfficialWorkflow(input: {
       existing.slug !== input.slug ||
       existing.status !== "PUBLISHED" ||
       existing.publishedVersion !== 1 ||
-      existing.versions.length !== 1
+      existing.versions !== undefined && existing.versions.length !== 1
     ) {
       throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u6ce8\u518c\u72b6\u6001\u4e0d\u4e00\u81f4\uff0c\u8bf7\u8054\u7cfb\u7ba1\u7406\u5458\u3002", "OFFICIAL_WORKFLOW_INVALID", 409);
     }
@@ -73,7 +72,7 @@ export async function ensureOfficialWorkflow(input: {
 
   const slugOwner = await db.workflow.findUnique({
     where: { slug: input.slug },
-    select: { id: true, officialId: true },
+    select: { officialId: true },
   });
   if (slugOwner && slugOwner.officialId !== input.officialId) {
     throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u6807\u8bc6\u5df2\u88ab\u5360\u7528\uff0c\u8bf7\u8054\u7cfb\u7ba1\u7406\u5458\u3002", "OFFICIAL_WORKFLOW_SLUG_CONFLICT", 409);
@@ -105,9 +104,22 @@ export async function ensureOfficialWorkflow(input: {
       },
     },
     update: {},
-    select: { id: true, slug: true, isOfficial: true, status: true, publishedVersion: true },
+    select: {
+      id: true,
+      slug: true,
+      isOfficial: true,
+      status: true,
+      publishedVersion: true,
+      versions: { where: { version: 1 }, select: { id: true } },
+    },
   });
-  if (!workflow.isOfficial || workflow.slug !== input.slug || workflow.status !== "PUBLISHED" || workflow.publishedVersion !== 1) {
+  if (
+    !workflow.isOfficial ||
+    workflow.slug !== input.slug ||
+    workflow.status !== "PUBLISHED" ||
+    workflow.publishedVersion !== 1 ||
+    workflow.versions !== undefined && workflow.versions.length !== 1
+  ) {
     throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u6ce8\u518c\u72b6\u6001\u4e0d\u4e00\u81f4\uff0c\u8bf7\u8054\u7cfb\u7ba1\u7406\u5458\u3002", "OFFICIAL_WORKFLOW_INVALID", 409);
   }
   return { id: workflow.id, slug: workflow.slug };
@@ -729,3 +741,4 @@ export function listWorkflowRuns(userId: string, take = 50) {
     include: { workflow: { select: { slug: true, title: true } } },
   });
 }
+
