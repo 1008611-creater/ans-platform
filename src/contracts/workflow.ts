@@ -48,6 +48,7 @@ export const workflowVersionInputSchema = z.object({
 
 export const workflowRunInputSchema = z.object({
   input: z.record(z.string(), z.unknown()).default({}),
+  idempotencyKey: z.string().trim().min(8).max(160).optional(),
 });
 
 export type WorkflowNode = z.infer<typeof workflowNodeSchema>;

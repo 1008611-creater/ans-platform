@@ -79,6 +79,10 @@ model User {
   workflowVersions WorkflowVersion[]  @relation("WorkflowVersionCreator")
   modelCredentials UserModelCredential[]
   favorites        ContentFavorite[]
+  projects         Project[]
+  projectFacts     ProjectFact[]      @relation("ProjectFactEditor")
+  artifacts        Artifact[]         @relation("ArtifactCreator")
+  artifactVersions ArtifactVersion[]  @relation("ArtifactVersionAuthor")
 
 
   @@index([deletedAt])
@@ -728,6 +732,9 @@ model Workflow {
   publishedVersion Int?
   useCount         Int               @default(0)
   estimatedCost    Int               @default(1)
+  /// Platform-owned immutable workflow used by a product flow.
+  isOfficial       Boolean           @default(false)
+  officialId       String?           @unique
   reviewScore      Json? // AI 初审结果 { verdict, scores, reason, model, checkedAt }
   reviewNote       String?           @db.Text // 人工复核理由
   reviewedAt       DateTime?
@@ -765,6 +772,9 @@ model WorkflowRun {
   version    WorkflowVersion   @relation(fields: [versionId], references: [id], onDelete: Restrict)
   userId     String
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId  String?
+  project    Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  idempotencyKey String?
   input      Json
   output     Json?
   status     WorkflowRunStatus @default(QUEUED)
@@ -774,9 +784,12 @@ model WorkflowRun {
   finishedAt DateTime?
   createdAt  DateTime          @default(now())
   nodeRuns   WorkflowNodeRun[]
+  artifactVersions ArtifactVersion[]
 
+  @@unique([userId, idempotencyKey])
   @@index([userId, createdAt])
   @@index([workflowId, createdAt])
+  @@index([projectId])
   @@index([status])
   @@map("workflow_runs")
 }
@@ -877,6 +890,7 @@ model Team {
   members      TeamMember[]
   competitions TeamCompetition[]
   runs         Run[]
+  projects     Project[]
 
   @@map("teams")
 }
@@ -974,4 +988,121 @@ model QuotaLedger {
   @@index([userId, createdAt])
   @@index([reason])
   @@map("quota_ledgers")
+}
+
+enum ProjectGoal {
+  CAREER
+  CONTEST
+  PORTFOLIO
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProjectVisibility {
+  PRIVATE
+  TEAM
+  PUBLIC
+}
+
+enum FactConfirmation {
+  MISSING
+  UNCONFIRMED
+  CONFIRMED
+}
+
+enum ArtifactKind {
+  PROJECT_FACTS
+  RESUME_BULLETS
+  README_DRAFT
+  PROJECT_ONE_PAGER
+  CONTEST_MVP
+  PITCH_OUTLINE
+  DEFENSE_QA
+  PROJECT_RETROSPECTIVE
+}
+
+/// 学生项目包。默认私密，归档后不再接受新的生成。
+model Project {
+  id          String             @id @default(cuid())
+  ownerId     String
+  owner       User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  teamId      String?
+  team        Team?              @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  title       String
+  goal        ProjectGoal
+  status      ProjectStatus      @default(ACTIVE)
+  visibility  ProjectVisibility  @default(PRIVATE)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  facts       ProjectFact[]
+  artifacts   Artifact[]
+  workflowRuns WorkflowRun[]
+
+  @@index([ownerId, updatedAt])
+  @@index([teamId])
+  @@map("projects")
+}
+
+/// 项目事实。空白与“暂无”分开保存，确认状态决定能否进入导出之外的公开流程。
+model ProjectFact {
+  id           String           @id @default(cuid())
+  projectId    String
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  key          String
+  value        String           @db.Text
+  evidenceUrl  String?
+  confirmation FactConfirmation @default(UNCONFIRMED)
+  updatedById  String
+  updatedBy    User             @relation("ProjectFactEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([projectId, key])
+  @@index([updatedById])
+  @@map("project_facts")
+}
+
+/// 一次工作流产出的成果容器。正文只存在于不可变版本中。
+model Artifact {
+  id             String             @id @default(cuid())
+  projectId      String
+  project        Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workflowId     String
+  kind           ArtifactKind
+  title          String
+  visibility     ProjectVisibility  @default(PRIVATE)
+  currentVersion Int                @default(0)
+  createdById    String
+  createdBy      User               @relation("ArtifactCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  versions       ArtifactVersion[]
+
+  @@unique([projectId, workflowId])
+  @@index([createdById])
+  @@map("artifacts")
+}
+
+model ArtifactVersion {
+  id                String    @id @default(cuid())
+  artifactId        String
+  artifact          Artifact  @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  version           Int
+  contentJson       Json
+  contentMarkdown   String    @db.Text
+  factSnapshotHash  String
+  createdById       String
+  createdBy         User      @relation("ArtifactVersionAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt         DateTime  @default(now())
+  workflowRunId     String?
+  workflowRun       WorkflowRun? @relation(fields: [workflowRunId], references: [id], onDelete: SetNull)
+
+  @@unique([artifactId, version])
+  @@index([createdById])
+  @@index([workflowRunId])
+  @@map("artifact_versions")
 }
