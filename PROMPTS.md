@@ -163136,3 +163136,22 @@ Photorealistic close-up portrait of a young woman with long wavy hair, seated in
 
 </details>
 
+<details>
+<summary><strong>Tri-Panel Collage Portrait</strong></summary>
+
+## Tri-Panel Collage Portrait
+
+Contributed by @anonymous
+
+```md
+Create a vertical 9:16 collage with exactly 3 clearly separated equal panels stacked vertically. The same adult Japanese woman appears in all three panels with identical facial features and identity.
+
+TOP PANEL: close-up selfie, one eye winking.
+
+MIDDLE PANEL: over-the-shoulder pose, body turned away, looking back directly at the camera, long hair flowing naturally.
+
+BOTTOM PANEL: close-up near the lens, hair covering one eye, cute subtle pout.
+```
+
+</details>
+
