@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { workflowDefinitionSchema, type WorkflowDefinition } from "@/contracts/workflow";
 import {
@@ -7,7 +7,7 @@ import {
   type WorkflowNodeExecutor,
   type WorkflowExecutionResult,
 } from "@/domain/workflows/executor";
-import { callModelText, resolvePlatformModel, ModelClientError, type ModelTarget } from "@/server/integrations/model-client";
+import { callModelTextWithUsage, resolvePlatformModel, ModelClientError, type ModelTarget, type ModelTokenUsage } from "@/server/integrations/model-client";
 import {
   assertModelKeyAvailable,
   loadOwnedCredential,
@@ -67,6 +67,8 @@ export type WorkflowHandlerContext = {
   credentialId?: string;
   /** 允许测试注入模型调用，生产路径使用平台客户端。 */
   callModel?: (args: { target: ModelTarget; prompt: string; timeoutMs?: number; signal?: AbortSignal }) => Promise<string>;
+  onModelCallStart?: (model: string) => void;
+  onModelCall?: (call: { model: string; usage: ModelTokenUsage | null }) => void;
 };
 
 async function modelTargetFor(node: WorkflowNodeContext["node"], context: WorkflowHandlerContext): Promise<ModelTarget> {
@@ -87,8 +89,6 @@ async function modelTargetFor(node: WorkflowNodeContext["node"], context: Workfl
 }
 
 export function createWorkflowHandlers(context: WorkflowHandlerContext): Partial<Record<string, WorkflowNodeExecutor>> {
-  const call = context.callModel ?? callModelText;
-
   return {
     prompt: ({ node, ...rest }) => interpolate(nodeTemplate(node), { node, ...rest }),
     template: ({ node, ...rest }) => interpolate(nodeTemplate(node), { node, ...rest }),
@@ -108,12 +108,118 @@ export function createWorkflowHandlers(context: WorkflowHandlerContext): Partial
       if (!prompt.trim()) throw new Error(`模型节点「${node.label}」缺少输入内容。`);
       const target = await modelTargetFor(node, context);
       try {
-        return await call({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal });
+        context.onModelCallStart?.(target.upstream);
+        const result = context.callModel
+          ? { text: await context.callModel({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal }), usage: null }
+          : await callModelTextWithUsage({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal });
+        context.onModelCall?.({ model: target.upstream, usage: result.usage });
+        return result.text;
       } catch (error) {
         if (error instanceof ModelClientError) throw new Error(`${error.message}（${target.label}）`);
         throw error;
       }
     },
+  };
+}
+
+/**
+ * Execute a workflow definition that is owned by an application feature rather
+ * than by a published Workflow row.  This keeps the same node handlers,
+ * timeout budget, retry semantics, and model gateway as persisted workflows.
+ */
+export async function executeInlineWorkflow(
+  definition: WorkflowDefinition,
+  input: unknown,
+  context: Omit<WorkflowHandlerContext, "runId"> & { runId?: string },
+  options: { maxExecutionMs?: number } = {},
+): Promise<WorkflowExecutionResult> {
+  return executeWorkflow(definition, input, {
+    handlers: createWorkflowHandlers({
+      ...context,
+      runId: context.runId ?? "inline-workflow",
+    }),
+    maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
+  });
+}
+
+type ModelUsageAudit = {
+  models: string[];
+  modelCalls: number;
+  tokenUsage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null };
+};
+
+function prismaJsonValue(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull | typeof Prisma.DbNull {
+  if (value === undefined) return Prisma.DbNull;
+  if (value === null) return Prisma.JsonNull;
+  return value as Prisma.InputJsonValue;
+}
+
+function createModelUsageTracker() {
+  const models = new Set<string>();
+  const responses: Array<ModelTokenUsage | null> = [];
+  let modelCalls = 0;
+  return {
+    start(model: string) {
+      models.add(model);
+      modelCalls += 1;
+    },
+    complete(call: { model: string; usage: ModelTokenUsage | null }) {
+      models.add(call.model);
+      responses.push(call.usage);
+    },
+    summary(): ModelUsageAudit {
+      const sum = (key: keyof ModelTokenUsage) => {
+        if (modelCalls === 0 || responses.length !== modelCalls) return null;
+        let total = 0;
+        for (const response of responses) {
+          const value = response?.[key];
+          if (value === null || value === undefined) return null;
+          total += value;
+        }
+        return total;
+      };
+      return {
+        models: [...models],
+        modelCalls,
+        tokenUsage: {
+          inputTokens: sum("inputTokens"),
+          outputTokens: sum("outputTokens"),
+          totalTokens: sum("totalTokens"),
+        },
+      };
+    },
+  };
+}
+
+const RUN_CANCELLATION_POLL_MS = 500;
+
+function watchRunCancellation(runId: string, userId: string, controller: AbortController) {
+  let stopped = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const check = async () => {
+    if (stopped || controller.signal.aborted) return;
+    try {
+      const current = await db.workflowRun.findFirst({
+        where: { id: runId, userId },
+        select: { status: true },
+      });
+      if (!current || current.status !== "RUNNING") {
+        controller.abort();
+        return;
+      }
+    } catch {
+      // A transient database read failure should not turn an active run into a failure.
+    }
+    if (!stopped && !controller.signal.aborted) {
+      timer = setTimeout(() => void check(), RUN_CANCELLATION_POLL_MS);
+    }
+  };
+
+  timer = setTimeout(() => void check(), RUN_CANCELLATION_POLL_MS);
+  return () => {
+    stopped = true;
+    if (timer) clearTimeout(timer);
   };
 }
 
@@ -141,6 +247,7 @@ export async function executePersistedWorkflow(
     /** 本次运行的模型来源覆盖项；缺省时用平台模型池与节点默认值。 */
     modelKey?: string;
     credentialId?: string;
+    onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>;
   } = {},
 ): Promise<WorkflowExecutionResult | null> {
   const run = await loadRunnableRun(runId, userId);
@@ -166,6 +273,7 @@ export async function executePersistedWorkflow(
     return finalizeFailure(run, error instanceof Error ? error.message : "工作流定义已失效。");
   }
 
+  const modelUsage = createModelUsageTracker();
   const handlers =
     options.handlers ??
     createWorkflowHandlers({
@@ -173,28 +281,53 @@ export async function executePersistedWorkflow(
       runId: run.id,
       modelKey,
       credentialId: options.credentialId,
+      onModelCallStart: (model) => modelUsage.start(model),
+      onModelCall: (call) => modelUsage.complete(call),
     });
-  const result = await executeWorkflow(definition, run.input, {
-    handlers,
-    maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
-  });
+  let result: WorkflowExecutionResult;
+  const cancellationController = new AbortController();
+  const stopWatchingCancellation = watchRunCancellation(run.id, userId, cancellationController);
+  try {
+    result = await executeWorkflow(definition, run.input, {
+      handlers,
+      maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
+      signal: cancellationController.signal,
+    });
+  } catch (error) {
+    return finalizeFailure(run, error instanceof Error ? error.message : "Workflow execution failed.", modelUsage.summary());
+  } finally {
+    stopWatchingCancellation();
+  }
 
-  await persistResult(run.id, userId, run.costPoints, run.workflow.title, result);
-  return result;
+  try {
+    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, result, options.onSucceeded, modelUsage.summary());
+    return finalized ? result : null;
+  } catch (error) {
+    if (result.status !== "succeeded" || !options.onSucceeded) throw error;
+    const failed: WorkflowExecutionResult = {
+      ...result,
+      status: "failed",
+      output: undefined,
+      error: `成果保存失败：${error instanceof Error ? error.message : "数据库写入错误"}`,
+    };
+    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, failed, undefined, modelUsage.summary());
+    return finalized ? failed : null;
+  }
 }
 
 async function finalizeFailure(
   run: { id: string; userId: string; costPoints: number; workflow: { title: string } },
   message: string,
-): Promise<WorkflowExecutionResult> {
+  modelUsage?: ModelUsageAudit,
+): Promise<WorkflowExecutionResult | null> {
   const result: WorkflowExecutionResult = {
     status: "failed",
     error: message,
     executions: [],
     elapsedMs: 0,
   };
-  await persistResult(run.id, run.userId, run.costPoints, run.workflow.title, result);
-  return result;
+  const finalized = await persistResult(run.id, run.userId, run.costPoints, run.workflow.title, result, undefined, modelUsage);
+  return finalized ? result : null;
 }
 
 async function persistResult(
@@ -203,32 +336,36 @@ async function persistResult(
   costPoints: number,
   workflowTitle: string,
   result: WorkflowExecutionResult,
-) {
+  onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>,
+  modelUsage: ModelUsageAudit = { models: [], modelCalls: 0, tokenUsage: { inputTokens: null, outputTokens: null, totalTokens: null } },
+): Promise<boolean> {
   const succeeded = result.status === "succeeded";
-  await db.$transaction(async (tx) => {
+  return db.$transaction(async (tx) => {
+    const transitioned = await tx.workflowRun.updateMany({
+      where: { id: runId, userId, status: "RUNNING" },
+      data: {
+        status: succeeded ? "SUCCEEDED" : "FAILED",
+        output: succeeded ? prismaJsonValue(result.output) : Prisma.DbNull,
+        error: result.error ?? null,
+        finishedAt: new Date(),
+      },
+    });
+    if (transitioned.count !== 1) return false;
+
     for (const execution of result.executions) {
       await tx.workflowNodeRun.updateMany({
         where: { runId, nodeId: execution.nodeId },
         data: {
           status: execution.status === "succeeded" ? "SUCCEEDED" : "FAILED",
           attempts: execution.attempts,
-          output: (execution.output ?? undefined) as Prisma.InputJsonValue | undefined,
+          output: execution.status === "succeeded" ? prismaJsonValue(execution.output) : Prisma.DbNull,
           error: execution.error ?? null,
           startedAt: new Date(execution.startedAt),
           finishedAt: new Date(execution.endedAt),
         },
       });
     }
-    const transitioned = await tx.workflowRun.updateMany({
-      where: { id: runId, userId, status: "RUNNING" },
-      data: {
-        status: succeeded ? "SUCCEEDED" : "FAILED",
-        output: (result.output ?? undefined) as Prisma.InputJsonValue | undefined,
-        error: result.error ?? null,
-        finishedAt: new Date(),
-      },
-    });
-    if (transitioned.count !== 1) return;
+    if (succeeded && onSucceeded) await onSucceeded(tx, result);
 
     if (!succeeded && costPoints > 0) {
       await refundQuota(tx, {
@@ -244,9 +381,17 @@ async function persistResult(
         action: succeeded ? "WORKFLOW_RUN_SUCCEEDED" : "WORKFLOW_RUN_FAILED",
         resourceType: "workflow_run",
         resourceId: runId,
-        metadata: { elapsedMs: result.elapsedMs, error: result.error ?? null, costPoints },
+        metadata: {
+          elapsedMs: result.elapsedMs,
+          error: result.error ?? null,
+          costPoints,
+          models: modelUsage.models,
+          modelCalls: modelUsage.modelCalls,
+          tokenUsage: modelUsage.tokenUsage,
+        },
       },
     });
+    return true;
   });
 }
 

@@ -54,7 +54,8 @@
     "developers": "Разработчикам",
     "book": "Книга",
     "forKids": "Для детей",
-    "more": "Ещё"
+    "more": "Ещё",
+    "competitionHub": "AIGC Contest"
   },
   "a11y": {
     "mainNav": "Основная навигация",
@@ -2256,6 +2257,113 @@
       "nodeJs": "Node.js 24.x",
       "postgresql": "PostgreSQL database",
       "npm": "npm"
+    }
+  },
+  "aigcCompetition": {
+    "navLabel": "AIGC Contest",
+    "eyebrow": "AIGC CONTEST CLUSTER",
+    "title": "AIGC Contest Center",
+    "description": "A unified launchpad for contest teams: plan the work, run production, track evidence, and prepare the final submission from one ANS workspace.",
+    "createProject": "Create a contest project",
+    "openTeams": "Open teams & contests",
+    "statusTitle": "Cluster ready",
+    "statusDescription": "The three workspaces are connected as governed external entry points. Sign-in and data ownership remain with each service.",
+    "stats": {
+      "tools": "Tools",
+      "toolsValue": "3",
+      "entry": "Unified entry",
+      "entryValue": "1",
+      "phases": "Contest phases",
+      "phasesValue": "4",
+      "deliverables": "Core deliverables",
+      "deliverablesValue": "8"
+    },
+    "connectorsTitle": "Contest tool cluster",
+    "connectorsDescription": "Use ANS as the shared map and project boundary, then open the specialist workspace when you need to work inside it.",
+    "clusterSectionLabel": "01 / Cluster",
+    "openTool": "Open workspace",
+    "integrationLabel": "External workspace",
+    "backupLabel": "Backup / audit",
+    "productionLabel": "Production workspace",
+    "planningLabel": "Planning workspace",
+    "loginNote": "Uses the service's own sign-in",
+    "noIframeNote": "Opens in a new tab for security and compatibility",
+    "syncNote": "API sync is reserved for the next integration phase",
+    "connectors": {
+      "solara": {
+        "name": "Solara",
+        "host": "plan.cauai.fun",
+        "role": "Planning and task orchestration",
+        "description": "Turn the contest brief into milestones, owners, deadlines, and a visible execution plan.",
+        "status": "Login required",
+        "detail": "The service redirects to its own sign-in page. ANS keeps this as a governed launch point instead of storing credentials."
+      },
+      "plane": {
+        "name": "Plane",
+        "host": "plane.cauai.fun",
+        "role": "Backup project management and audit",
+        "description": "Keep a secondary issue board for traceability, handover, and audit when the competition needs it.",
+        "status": "Available as backup",
+        "detail": "Plane is not the default task source for this contest. Use it when a team needs a separate audit trail."
+      },
+      "toonflow": {
+        "name": "Toonflow",
+        "host": "toonflow.cauai.fun",
+        "role": "Creative production workspace",
+        "description": "Move from approved plan to generated assets, iterations, and production handoff.",
+        "status": "Production entry",
+        "detail": "Use this workspace for the making stage. The ANS page records the shared route and submission checklist."
+      }
+    },
+    "phasesTitle": "Four-stage contest playbook",
+    "phasesDescription": "Every team can follow the same path while choosing its own tools and creative method.",
+    "phases": {
+      "discover": {
+        "label": "01 · Brief",
+        "description": "Clarify the theme, scoring rules, audience, and constraints.",
+        "state": "Start here"
+      },
+      "plan": {
+        "label": "02 · Plan",
+        "description": "Break the idea into tasks, owners, deadlines, and review gates.",
+        "state": "Use Solara"
+      },
+      "produce": {
+        "label": "03 · Produce",
+        "description": "Create, review, version, and package the work with evidence.",
+        "state": "Use Toonflow"
+      },
+      "submit": {
+        "label": "04 · Submit",
+        "description": "Run the checklist, freeze the final version, and hand in the package.",
+        "state": "Verify in ANS"
+      }
+    },
+    "deliverablesTitle": "Submission checklist",
+    "deliverablesDescription": "Keep the evidence visible so a team can hand over the project without losing context.",
+    "deliverables": {
+      "brief": "Competition brief and interpretation",
+      "plan": "Milestones, owners, and review points",
+      "storyboard": "Storyboard or shot plan",
+      "source": "Prompt and source asset record",
+      "iterations": "Key iterations and review notes",
+      "final": "Final work and export settings",
+      "evidence": "Process evidence and attribution",
+      "package": "Submission package and final check"
+    },
+    "workflowTitle": "ANS workspace shortcuts",
+    "workflowDescription": "Keep the shared project record in ANS, then hand off to the right capability when the work changes stage.",
+    "openProjects": "Project packages",
+    "openWorkflows": "Workflows",
+    "openTemplates": "Templates",
+    "openSkills": "Skills",
+    "boundaryTitle": "What this first release does",
+    "boundaryDescription": "This release provides a reliable unified entry, shared contest structure, and clear ownership boundaries. It does not pretend that the three external systems already share one account or one live API.",
+    "boundaryItems": {
+      "entry": "One ANS entry point",
+      "links": "Verified external links",
+      "ownership": "Credentials stay with each system",
+      "next": "API sync can be added after the competition workflow is validated"
     }
   }
 }

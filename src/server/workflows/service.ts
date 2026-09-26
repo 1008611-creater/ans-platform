@@ -33,6 +33,98 @@ export class WorkflowServiceError extends Error {
   }
 }
 
+/** Register an immutable, platform-owned workflow version on first use. */
+export async function ensureOfficialWorkflow(input: {
+  officialId: string;
+  slug: string;
+  title: string;
+  summary: string;
+  estimatedCost: number;
+  definition: unknown;
+  actorId: string;
+}) {
+  const definition = assertDefinition(input.definition);
+  await requireActor(input.actorId);
+
+  const existing = await db.workflow.findUnique({
+    where: { officialId: input.officialId },
+    select: {
+      id: true,
+      slug: true,
+      isOfficial: true,
+      status: true,
+      publishedVersion: true,
+      versions: { where: { version: 1 }, select: { id: true } },
+    },
+  });
+  if (existing) {
+    if (
+      !existing.isOfficial ||
+      existing.slug !== input.slug ||
+      existing.status !== "PUBLISHED" ||
+      existing.publishedVersion !== 1 ||
+      existing.versions !== undefined && existing.versions.length !== 1
+    ) {
+      throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u6ce8\u518c\u72b6\u6001\u4e0d\u4e00\u81f4\uff0c\u8bf7\u8054\u7cfb\u7ba1\u7406\u5458\u3002", "OFFICIAL_WORKFLOW_INVALID", 409);
+    }
+    return { id: existing.id, slug: existing.slug };
+  }
+
+  const slugOwner = await db.workflow.findUnique({
+    where: { slug: input.slug },
+    select: { officialId: true },
+  });
+  if (slugOwner && slugOwner.officialId !== input.officialId) {
+    throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u6807\u8bc6\u5df2\u88ab\u5360\u7528\uff0c\u8bf7\u8054\u7cfb\u7ba1\u7406\u5458\u3002", "OFFICIAL_WORKFLOW_SLUG_CONFLICT", 409);
+  }
+
+  const owner = await db.user.findFirst({
+    where: { role: "ADMIN", deletedAt: null },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+  if (!owner) {
+    throw new WorkflowServiceError("\u5e73\u53f0\u5c1a\u672a\u914d\u7f6e\u7ba1\u7406\u5458\uff0c\u4e0d\u80fd\u6ce8\u518c\u5b98\u65b9\u5de5\u4f5c\u6d41\u3002", "OFFICIAL_WORKFLOW_OWNER_REQUIRED", 503);
+  }
+
+  const workflow = await db.workflow.upsert({
+    where: { officialId: input.officialId },
+    create: {
+      officialId: input.officialId,
+      isOfficial: true,
+      slug: input.slug,
+      title: input.title,
+      summary: input.summary,
+      estimatedCost: input.estimatedCost,
+      authorId: owner.id,
+      status: "PUBLISHED",
+      publishedVersion: 1,
+      versions: {
+        create: { version: 1, definition: definition as Prisma.InputJsonValue, createdById: owner.id },
+      },
+    },
+    update: {},
+    select: {
+      id: true,
+      slug: true,
+      isOfficial: true,
+      status: true,
+      publishedVersion: true,
+      versions: { where: { version: 1 }, select: { id: true } },
+    },
+  });
+  if (
+    !workflow.isOfficial ||
+    workflow.slug !== input.slug ||
+    workflow.status !== "PUBLISHED" ||
+    workflow.publishedVersion !== 1 ||
+    workflow.versions !== undefined && workflow.versions.length !== 1
+  ) {
+    throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u6ce8\u518c\u72b6\u6001\u4e0d\u4e00\u81f4\uff0c\u8bf7\u8054\u7cfb\u7ba1\u7406\u5458\u3002", "OFFICIAL_WORKFLOW_INVALID", 409);
+  }
+  return { id: workflow.id, slug: workflow.slug };
+}
+
 const authorSelect = { id: true, nickname: true, username: true, avatar: true } as const;
 
 function assertDefinition(definition: unknown) {
@@ -66,6 +158,9 @@ export async function createWorkflow(authorId: string, rawInput: unknown) {
     throw new WorkflowServiceError("工作流信息不完整或格式不正确。", "INVALID_INPUT");
   }
   const input = parsed.data;
+  if (input.slug.startsWith("ans-official-")) {
+    throw new WorkflowServiceError("该工作流标识由平台官方工作流保留。", "RESERVED_SLUG", 409);
+  }
   const definition = assertDefinition(input.definition);
   await requireActor(authorId);
 
@@ -120,11 +215,13 @@ export async function createWorkflowVersion(slug: string, actorId: string, rawIn
     select: {
       id: true,
       authorId: true,
+      isOfficial: true,
       status: true,
       versions: { orderBy: { version: "desc" }, take: 1, select: { version: true } },
     },
   });
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.isOfficial) throw new WorkflowServiceError("官方工作流版本由平台管理，不能通过此接口修改。", "OFFICIAL_WORKFLOW_LOCKED", 403);
   const actor = await requireActor(actorId);
   if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
     throw new WorkflowServiceError("没有编辑该工作流的权限。", "FORBIDDEN", 403);
@@ -168,6 +265,7 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
   return db.workflow.findMany({
     where: {
       status: "PUBLISHED",
+      isOfficial: false,
       ...(query
         ? {
             OR: [
@@ -188,7 +286,7 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
 
 export function listOwnWorkflows(authorId: string) {
   return db.workflow.findMany({
-    where: { authorId },
+    where: { authorId, isOfficial: false },
     orderBy: { updatedAt: "desc" },
     take: 100,
     include: { versions: { orderBy: { version: "desc" }, select: { version: true, createdAt: true } } },
@@ -197,7 +295,7 @@ export function listOwnWorkflows(authorId: string) {
 
 export function listWorkflowQueue() {
   return db.workflow.findMany({
-    where: { status: "PENDING" },
+    where: { status: "PENDING", isOfficial: false },
     orderBy: { updatedAt: "asc" },
     take: 100,
     include: {
@@ -210,7 +308,7 @@ export function listWorkflowQueue() {
 /** 公开详情：只有已发布且存在发布版本的工作流可见。 */
 export async function getPublishedWorkflow(slug: string) {
   const workflow = await db.workflow.findFirst({
-    where: { slug, status: "PUBLISHED", publishedVersion: { not: null } },
+    where: { slug, status: "PUBLISHED", publishedVersion: { not: null }, isOfficial: false },
     include: {
       author: { select: authorSelect },
       versions: { orderBy: { version: "desc" } },
@@ -231,6 +329,7 @@ export async function getWorkflowForEditor(slug: string, actorId: string) {
     },
   });
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.isOfficial) throw new WorkflowServiceError("官方工作流由平台管理。", "OFFICIAL_WORKFLOW_LOCKED", 403);
   const actor = await requireActor(actorId);
   if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
     throw new WorkflowServiceError("没有查看该工作流的权限。", "FORBIDDEN", 403);
@@ -250,12 +349,14 @@ export async function publishWorkflow(slug: string, actorId: string, version?: n
     select: {
       id: true,
       authorId: true,
+      isOfficial: true,
       status: true,
       reviewScore: true,
       versions: { orderBy: { version: "desc" } },
     },
   });
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.isOfficial) throw new WorkflowServiceError("官方工作流由平台管理。", "OFFICIAL_WORKFLOW_LOCKED", 403);
   const actor = await requireActor(actorId);
   if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
     throw new WorkflowServiceError("没有发布该工作流的权限。", "FORBIDDEN", 403);
@@ -304,6 +405,7 @@ export async function submitWorkflowForReview(slug: string, actorId: string) {
       id: true,
       authorId: true,
       status: true,
+      isOfficial: true,
       title: true,
       summary: true,
       description: true,
@@ -311,6 +413,9 @@ export async function submitWorkflowForReview(slug: string, actorId: string) {
     },
   });
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.isOfficial) {
+    throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
+  }
   const actor = await requireActor(actorId);
   if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
     throw new WorkflowServiceError("没有提交该工作流的权限。", "FORBIDDEN", 403);
@@ -398,6 +503,7 @@ export async function recheckWorkflowReview(slug: string, adminId: string) {
       id: true,
       authorId: true,
       status: true,
+      isOfficial: true,
       title: true,
       summary: true,
       description: true,
@@ -405,6 +511,9 @@ export async function recheckWorkflowReview(slug: string, adminId: string) {
     },
   });
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.isOfficial) {
+    throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
+  }
   if (workflow.authorId === adminId) {
     throw new WorkflowServiceError("不能审核自己创建的工作流。", "FORBIDDEN", 403);
   }
@@ -448,11 +557,15 @@ export async function reviewWorkflow(
       id: true,
       authorId: true,
       status: true,
+      isOfficial: true,
       reviewScore: true,
       versions: { orderBy: { version: "desc" }, take: 1 },
     },
   });
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.isOfficial) {
+    throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
+  }
   if (workflow.authorId === adminId) {
     throw new WorkflowServiceError("不能审核自己创建的工作流。", "FORBIDDEN", 403);
   }
@@ -500,7 +613,12 @@ export async function reviewWorkflow(
  * 创建一次运行：先扣算力，再落运行记录与节点记录。
  * 扣费与建单在同一事务内，避免出现“扣了钱没有记录”。
  */
-export async function createWorkflowRun(slug: string, userId: string, rawInput: unknown) {
+export async function createWorkflowRun(
+  slug: string,
+  userId: string,
+  rawInput: unknown,
+  options: { projectId?: string } = {},
+) {
   const parsed = workflowRunInputSchema.safeParse(rawInput ?? {});
   if (!parsed.success) {
     throw new WorkflowServiceError("运行参数格式不正确。", "INVALID_INPUT");
@@ -511,12 +629,36 @@ export async function createWorkflowRun(slug: string, userId: string, rawInput: 
       id: true,
       title: true,
       estimatedCost: true,
+      isOfficial: true,
       publishedVersion: true,
       versions: { orderBy: { version: "desc" } },
     },
   });
   if (!workflow || workflow.publishedVersion === null) {
     throw new WorkflowServiceError("工作流不存在或尚未发布。", "NOT_FOUND", 404);
+  }
+  if (workflow.isOfficial && !options.projectId) {
+    throw new WorkflowServiceError("官方项目工作流必须从所属项目启动。", "PROJECT_LINK_REQUIRED", 403);
+  }
+  if (options.projectId && !workflow.isOfficial) {
+    throw new WorkflowServiceError("项目只能运行平台注册的官方工作流。", "OFFICIAL_WORKFLOW_REQUIRED", 403);
+  }
+  if (options.projectId) {
+    const project = await db.project.findFirst({
+      where: { id: options.projectId, ownerId: userId, status: "ACTIVE" },
+      select: { id: true },
+    });
+    if (!project) throw new WorkflowServiceError("项目不存在、已归档或无权访问。", "NOT_FOUND", 404);
+  }
+  const idempotencyKey = parsed.data.idempotencyKey
+    ? `${options.projectId ? `project/${options.projectId}` : "workflow"}/${slug}/${parsed.data.idempotencyKey}`
+    : undefined;
+  if (idempotencyKey) {
+    const existing = await db.workflowRun.findFirst({
+      where: { userId, idempotencyKey },
+      include: { nodeRuns: { orderBy: { nodeId: "asc" } } },
+    });
+    if (existing) return existing;
   }
   const version = workflow.versions.find((item) => item.version === workflow.publishedVersion);
   if (!version) throw new WorkflowServiceError("发布版本缺失，请联系管理员。", "NO_VERSION", 409);
@@ -530,6 +672,8 @@ export async function createWorkflowRun(slug: string, userId: string, rawInput: 
           workflowId: workflow.id,
           versionId: version.id,
           userId,
+          ...(options.projectId ? { projectId: options.projectId } : {}),
+          ...(idempotencyKey ? { idempotencyKey } : {}),
           input: parsed.data.input as Prisma.InputJsonValue,
           status: "QUEUED",
           costPoints,
@@ -565,6 +709,13 @@ export async function createWorkflowRun(slug: string, userId: string, rawInput: 
       });
     });
   } catch (error) {
+    if (idempotencyKey && error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const existing = await db.workflowRun.findFirst({
+        where: { userId, idempotencyKey },
+        include: { nodeRuns: { orderBy: { nodeId: "asc" } } },
+      });
+      if (existing) return existing;
+    }
     if (error instanceof QuotaError) {
       throw new WorkflowServiceError(error.message, error.code, error.status);
     }
