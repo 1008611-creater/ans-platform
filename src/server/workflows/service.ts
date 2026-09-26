@@ -1,4 +1,4 @@
-﻿import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import {
   workflowCreateInputSchema,
@@ -741,4 +741,3 @@ export function listWorkflowRuns(userId: string, take = 50) {
     include: { workflow: { select: { slug: true, title: true } } },
   });
 }
-

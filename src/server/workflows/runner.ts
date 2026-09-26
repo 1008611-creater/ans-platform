@@ -7,7 +7,7 @@ import {
   type WorkflowNodeExecutor,
   type WorkflowExecutionResult,
 } from "@/domain/workflows/executor";
-import { callModelText, resolvePlatformModel, ModelClientError, type ModelTarget } from "@/server/integrations/model-client";
+import { callModelTextWithUsage, resolvePlatformModel, ModelClientError, type ModelTarget, type ModelTokenUsage } from "@/server/integrations/model-client";
 import {
   assertModelKeyAvailable,
   loadOwnedCredential,
@@ -67,6 +67,8 @@ export type WorkflowHandlerContext = {
   credentialId?: string;
   /** 允许测试注入模型调用，生产路径使用平台客户端。 */
   callModel?: (args: { target: ModelTarget; prompt: string; timeoutMs?: number; signal?: AbortSignal }) => Promise<string>;
+  onModelCallStart?: (model: string) => void;
+  onModelCall?: (call: { model: string; usage: ModelTokenUsage | null }) => void;
 };
 
 async function modelTargetFor(node: WorkflowNodeContext["node"], context: WorkflowHandlerContext): Promise<ModelTarget> {
@@ -87,8 +89,6 @@ async function modelTargetFor(node: WorkflowNodeContext["node"], context: Workfl
 }
 
 export function createWorkflowHandlers(context: WorkflowHandlerContext): Partial<Record<string, WorkflowNodeExecutor>> {
-  const call = context.callModel ?? callModelText;
-
   return {
     prompt: ({ node, ...rest }) => interpolate(nodeTemplate(node), { node, ...rest }),
     template: ({ node, ...rest }) => interpolate(nodeTemplate(node), { node, ...rest }),
@@ -108,7 +108,12 @@ export function createWorkflowHandlers(context: WorkflowHandlerContext): Partial
       if (!prompt.trim()) throw new Error(`模型节点「${node.label}」缺少输入内容。`);
       const target = await modelTargetFor(node, context);
       try {
-        return await call({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal });
+        context.onModelCallStart?.(target.upstream);
+        const result = context.callModel
+          ? { text: await context.callModel({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal }), usage: null }
+          : await callModelTextWithUsage({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal });
+        context.onModelCall?.({ model: target.upstream, usage: result.usage });
+        return result.text;
       } catch (error) {
         if (error instanceof ModelClientError) throw new Error(`${error.message}（${target.label}）`);
         throw error;
@@ -135,6 +140,49 @@ export async function executeInlineWorkflow(
     }),
     maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
   });
+}
+
+type ModelUsageAudit = {
+  models: string[];
+  modelCalls: number;
+  tokenUsage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null };
+};
+
+function createModelUsageTracker() {
+  const models = new Set<string>();
+  const responses: Array<ModelTokenUsage | null> = [];
+  let modelCalls = 0;
+  return {
+    start(model: string) {
+      models.add(model);
+      modelCalls += 1;
+    },
+    complete(call: { model: string; usage: ModelTokenUsage | null }) {
+      models.add(call.model);
+      responses.push(call.usage);
+    },
+    summary(): ModelUsageAudit {
+      const sum = (key: keyof ModelTokenUsage) => {
+        if (modelCalls === 0 || responses.length !== modelCalls) return null;
+        let total = 0;
+        for (const response of responses) {
+          const value = response?.[key];
+          if (value === null || value === undefined) return null;
+          total += value;
+        }
+        return total;
+      };
+      return {
+        models: [...models],
+        modelCalls,
+        tokenUsage: {
+          inputTokens: sum("inputTokens"),
+          outputTokens: sum("outputTokens"),
+          totalTokens: sum("totalTokens"),
+        },
+      };
+    },
+  };
 }
 
 async function loadRunnableRun(runId: string, userId: string) {
@@ -187,6 +235,7 @@ export async function executePersistedWorkflow(
     return finalizeFailure(run, error instanceof Error ? error.message : "工作流定义已失效。");
   }
 
+  const modelUsage = createModelUsageTracker();
   const handlers =
     options.handlers ??
     createWorkflowHandlers({
@@ -194,14 +243,21 @@ export async function executePersistedWorkflow(
       runId: run.id,
       modelKey,
       credentialId: options.credentialId,
+      onModelCallStart: (model) => modelUsage.start(model),
+      onModelCall: (call) => modelUsage.complete(call),
     });
-  const result = await executeWorkflow(definition, run.input, {
-    handlers,
-    maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
-  });
+  let result: WorkflowExecutionResult;
+  try {
+    result = await executeWorkflow(definition, run.input, {
+      handlers,
+      maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
+    });
+  } catch (error) {
+    return finalizeFailure(run, error instanceof Error ? error.message : "Workflow execution failed.", modelUsage.summary());
+  }
 
   try {
-    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, result, options.onSucceeded);
+    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, result, options.onSucceeded, modelUsage.summary());
     return finalized ? result : null;
   } catch (error) {
     if (result.status !== "succeeded" || !options.onSucceeded) throw error;
@@ -211,7 +267,7 @@ export async function executePersistedWorkflow(
       output: undefined,
       error: `成果保存失败：${error instanceof Error ? error.message : "数据库写入错误"}`,
     };
-    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, failed);
+    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, failed, undefined, modelUsage.summary());
     return finalized ? failed : null;
   }
 }
@@ -219,6 +275,7 @@ export async function executePersistedWorkflow(
 async function finalizeFailure(
   run: { id: string; userId: string; costPoints: number; workflow: { title: string } },
   message: string,
+  modelUsage?: ModelUsageAudit,
 ): Promise<WorkflowExecutionResult | null> {
   const result: WorkflowExecutionResult = {
     status: "failed",
@@ -226,7 +283,7 @@ async function finalizeFailure(
     executions: [],
     elapsedMs: 0,
   };
-  const finalized = await persistResult(run.id, run.userId, run.costPoints, run.workflow.title, result);
+  const finalized = await persistResult(run.id, run.userId, run.costPoints, run.workflow.title, result, undefined, modelUsage);
   return finalized ? result : null;
 }
 
@@ -237,6 +294,7 @@ async function persistResult(
   workflowTitle: string,
   result: WorkflowExecutionResult,
   onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>,
+  modelUsage: ModelUsageAudit = { models: [], modelCalls: 0, tokenUsage: { inputTokens: null, outputTokens: null, totalTokens: null } },
 ): Promise<boolean> {
   const succeeded = result.status === "succeeded";
   return db.$transaction(async (tx) => {
@@ -280,7 +338,14 @@ async function persistResult(
         action: succeeded ? "WORKFLOW_RUN_SUCCEEDED" : "WORKFLOW_RUN_FAILED",
         resourceType: "workflow_run",
         resourceId: runId,
-        metadata: { elapsedMs: result.elapsedMs, error: result.error ?? null, costPoints },
+        metadata: {
+          elapsedMs: result.elapsedMs,
+          error: result.error ?? null,
+          costPoints,
+          models: modelUsage.models,
+          modelCalls: modelUsage.modelCalls,
+          tokenUsage: modelUsage.tokenUsage,
+        },
       },
     });
     return true;

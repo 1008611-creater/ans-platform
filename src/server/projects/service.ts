@@ -4,9 +4,12 @@ import { db } from "@/lib/db";
 import {
   projectCreateSchema,
   projectFactsInputSchema,
+  projectPackRunInputSchema,
+  projectPackWorkflowIds,
   projectRunInputSchema,
   projectUpdateSchema,
   type FactKey,
+  type OfficialWorkflowId,
 } from "@/contracts/projects";
 import {
   FACT_FIELDS,
@@ -202,6 +205,7 @@ async function savedProjectRunResult(
   if (!version) throw new ProjectServiceError("运行已完成，但没有找到关联成果。", "ARTIFACT_MISSING", 500);
   const spec = workflowById(workflowId)!;
   return {
+    workflowRunId: runId,
     artifactVersionId: version.id,
     version: version.version,
     workflowId,
@@ -211,12 +215,8 @@ async function savedProjectRunResult(
   };
 }
 
-export async function runProjectWorkflow(projectId: string, userId: string, rawInput: unknown) {
-  const parsed = projectRunInputSchema.safeParse(rawInput);
-  if (!parsed.success) throw new ProjectServiceError("请选择一条官方工作流。", "INVALID_INPUT");
-  const project = await loadOwned(projectId, userId);
-  if (project.status === "ARCHIVED") throw new ProjectServiceError("已归档项目不能继续生成。", "ARCHIVED", 409);
-  const facts: FactRecord[] = FACT_FIELDS.map((field) => {
+function projectFacts(project: ProjectWithRelations): FactRecord[] {
+  return FACT_FIELDS.map((field) => {
     const stored = project.facts.find((item) => item.key === field.key);
     return {
       key: field.key,
@@ -225,35 +225,47 @@ export async function runProjectWorkflow(projectId: string, userId: string, rawI
       evidenceUrl: stored?.evidenceUrl,
     };
   });
+}
 
-  // Validate required facts before creating a paid run.
+function assertWorkflowFacts(workflowId: OfficialWorkflowId, projectTitle: string, facts: FactRecord[]) {
   try {
-    generateOfficialArtifact(parsed.data.workflowId, project.title, facts);
+    generateOfficialArtifact(workflowId, projectTitle, facts);
   } catch (error) {
     throw new ProjectServiceError(error instanceof Error ? error.message : "事实不足，不能生成。", "FACTS_INCOMPLETE");
   }
+}
 
-  const spec = workflowById(parsed.data.workflowId)!;
+async function runProjectWorkflowForProject(
+  project: ProjectWithRelations,
+  projectId: string,
+  userId: string,
+  input: { workflowId: OfficialWorkflowId; idempotencyKey?: string },
+) {
+  if (project.status === "ARCHIVED") throw new ProjectServiceError("已归档项目不能继续生成。", "ARCHIVED", 409);
+  const facts = projectFacts(project);
+  assertWorkflowFacts(input.workflowId, project.title, facts);
+
+  const spec = workflowById(input.workflowId)!;
   const registration = await ensureOfficialWorkflow({
-    officialId: parsed.data.workflowId,
-    slug: officialWorkflowSlug(parsed.data.workflowId),
+    officialId: input.workflowId,
+    slug: officialWorkflowSlug(input.workflowId),
     title: spec.title,
     summary: spec.summary,
     estimatedCost: PROJECT_WORKFLOW_COST_POINTS,
-    definition: officialWorkflowDefinition(parsed.data.workflowId),
+    definition: officialWorkflowDefinition(input.workflowId),
     actorId: userId,
   });
   const run = await createWorkflowRun(registration.slug, userId, {
     input: {
       projectTitle: project.title,
       facts,
-      prompt: buildArtifactGenerationPrompt(parsed.data.workflowId, project.title, facts),
+      prompt: buildArtifactGenerationPrompt(input.workflowId, project.title, facts),
     },
-    ...(parsed.data.idempotencyKey ? { idempotencyKey: parsed.data.idempotencyKey } : {}),
+    ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
   }, { projectId });
 
   if (run.status === "SUCCEEDED") {
-    return savedProjectRunResult(run.id, projectId, userId, parsed.data.workflowId, project.title);
+    return savedProjectRunResult(run.id, projectId, userId, input.workflowId, project.title);
   }
   if (run.status !== "QUEUED") {
     throw new ProjectServiceError(
@@ -267,13 +279,13 @@ export async function runProjectWorkflow(projectId: string, userId: string, rawI
   const execution = await executePersistedWorkflow(run.id, userId, {
     onSucceeded: async (tx, result) => {
       if (typeof result.output !== "string") throw new Error("工作流没有返回可用成果文本。");
-      const generated = generatedArtifactFromMarkdown(parsed.data.workflowId, project.title, facts, result.output);
+      const generated = generatedArtifactFromMarkdown(input.workflowId, project.title, facts, result.output);
       const artifact = await tx.artifact.upsert({
-        where: { projectId_workflowId: { projectId, workflowId: parsed.data.workflowId } },
+        where: { projectId_workflowId: { projectId, workflowId: input.workflowId } },
         create: {
           projectId,
-          workflowId: parsed.data.workflowId,
-          kind: KIND_BY_WORKFLOW[parsed.data.workflowId],
+          workflowId: input.workflowId,
+          kind: KIND_BY_WORKFLOW[input.workflowId],
           title: spec.title,
           createdById: userId,
           currentVersion: 1,
@@ -297,7 +309,7 @@ export async function runProjectWorkflow(projectId: string, userId: string, rawI
           action: "PROJECT_ARTIFACT_SAVED",
           resourceType: "artifact",
           resourceId: artifact.id,
-          metadata: { projectId, workflowId: parsed.data.workflowId, workflowRunId: run.id, version: version.version },
+          metadata: { projectId, workflowId: input.workflowId, workflowRunId: run.id, version: version.version },
         },
       });
     },
@@ -306,7 +318,7 @@ export async function runProjectWorkflow(projectId: string, userId: string, rawI
   if (!execution) {
     const current = await db.workflowRun.findFirst({ where: { id: run.id, userId }, select: { status: true, error: true } });
     if (current?.status === "SUCCEEDED") {
-      return savedProjectRunResult(run.id, projectId, userId, parsed.data.workflowId, project.title);
+      return savedProjectRunResult(run.id, projectId, userId, input.workflowId, project.title);
     }
     if (current?.status === "FAILED") {
       throw new ProjectServiceError("工作流运行失败，额度已退回。", "WORKFLOW_FAILED", 502);
@@ -319,19 +331,68 @@ export async function runProjectWorkflow(projectId: string, userId: string, rawI
   if (execution.status !== "succeeded") {
     throw new ProjectServiceError(execution.error ?? "工作流运行失败，额度已退回。", "WORKFLOW_FAILED", 502);
   }
-  return savedProjectRunResult(run.id, projectId, userId, parsed.data.workflowId, project.title);
+  return savedProjectRunResult(run.id, projectId, userId, input.workflowId, project.title);
+}
+
+export async function runProjectWorkflow(projectId: string, userId: string, rawInput: unknown) {
+  const parsed = projectRunInputSchema.safeParse(rawInput);
+  if (!parsed.success) throw new ProjectServiceError("请选择一条官方工作流。", "INVALID_INPUT");
+  const project = await loadOwned(projectId, userId);
+  return runProjectWorkflowForProject(project, projectId, userId, parsed.data);
+}
+
+export async function runProjectPack(projectId: string, userId: string, rawInput: unknown) {
+  const parsed = projectPackRunInputSchema.safeParse(rawInput ?? {});
+  if (!parsed.success) throw new ProjectServiceError("项目包运行参数不正确。", "INVALID_INPUT");
+  const project = await loadOwned(projectId, userId);
+  if (project.status === "ARCHIVED") throw new ProjectServiceError("已归档项目不能继续生成。", "ARCHIVED", 409);
+  const facts = projectFacts(project);
+  for (const workflowId of projectPackWorkflowIds) assertWorkflowFacts(workflowId, project.title, facts);
+
+  const results = await Promise.allSettled(projectPackWorkflowIds.map((workflowId) =>
+    runProjectWorkflowForProject(project, projectId, userId, {
+      workflowId,
+      ...(parsed.data.idempotencyKey ? { idempotencyKey: parsed.data.idempotencyKey } : {}),
+    }),
+  ));
+  const artifacts: Array<Awaited<ReturnType<typeof runProjectWorkflowForProject>>> = [];
+  const failures: Array<{ workflowId: OfficialWorkflowId; code: string; error: string }> = [];
+  results.forEach((result, index) => {
+    const workflowId = projectPackWorkflowIds[index];
+    if (result.status === "fulfilled") {
+      artifacts.push(result.value);
+      return;
+    }
+    const error = result.reason;
+    failures.push({
+      workflowId,
+      code: error instanceof ProjectServiceError ? error.code : "WORKFLOW_FAILED",
+      error: error instanceof Error ? error.message : "成果生成失败。",
+    });
+  });
+
+  return {
+    projectId,
+    status: failures.length === 0 ? "succeeded" as const : artifacts.length > 0 ? "partial" as const : "failed" as const,
+    estimatedCostPoints: PROJECT_WORKFLOW_COST_POINTS * projectPackWorkflowIds.length,
+    artifacts,
+    failures,
+  };
 }
 
 export async function exportProject(projectId: string, userId: string) {
   const project = await loadOwned(projectId, userId);
-  const versions = project.artifacts
-    .map((artifact) => artifact.versions.sort((a, b) => b.version - a.version)[0])
-    .filter((version): version is NonNullable<typeof version> => Boolean(version))
-    .map((version) => ({ title: version.contentMarkdown.split("\n")[0] ?? project.title, markdown: version.contentMarkdown, version: version.version }));
-  if (versions.length === 0) throw new ProjectServiceError("还没有可导出的成果。", "NOTHING_TO_EXPORT", 409);
+  const artifacts = project.artifacts.flatMap((artifact) => {
+    const latest = [...artifact.versions].sort((a, b) => b.version - a.version)[0];
+    return latest
+      ? [{ workflowId: artifact.workflowId, title: artifact.title, markdown: latest.contentMarkdown, version: latest.version }]
+      : [];
+  });
+  if (artifacts.length === 0) throw new ProjectServiceError("\u8fd8\u6ca1\u6709\u53ef\u5bfc\u51fa\u7684\u6210\u679c\u3002", "NOTHING_TO_EXPORT", 409);
   return {
     filename: `${project.title.replace(/[^\w\u4e00-\u9fa5-]+/g, "-").replace(/^-|-$/g, "") || "project"}.md`,
-    markdown: renderProjectExport({ title: project.title, goal: GOAL_FROM_DB[project.goal] }, versions),
+    markdown: renderProjectExport({ title: project.title, goal: GOAL_FROM_DB[project.goal] }, artifacts),
+    artifacts,
   };
 }
 

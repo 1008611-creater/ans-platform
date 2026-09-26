@@ -53,20 +53,49 @@ function chatCompletionsUrl(baseUrl: string): string {
   return url.toString();
 }
 
-function parseStreamOutput(raw: string): string {
-  let output = "";
+export type ModelTokenUsage = {
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
+};
+
+export type ModelTextResult = { text: string; usage: ModelTokenUsage | null };
+
+function tokenCount(value: unknown): number | null {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
+}
+
+function parseUsage(value: unknown): ModelTokenUsage | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const usage = {
+    inputTokens: tokenCount(raw.prompt_tokens ?? raw.input_tokens),
+    outputTokens: tokenCount(raw.completion_tokens ?? raw.output_tokens),
+    totalTokens: tokenCount(raw.total_tokens),
+  };
+  return Object.values(usage).some((count) => count !== null) ? usage : null;
+}
+
+function parseStreamOutput(raw: string): ModelTextResult {
+  let text = "";
+  let usage: ModelTokenUsage | null = null;
   for (const line of raw.split(/\r?\n/)) {
     if (!line.startsWith("data:")) continue;
     const data = line.slice(5).trim();
     if (!data || data === "[DONE]") continue;
     try {
-      const delta = JSON.parse(data)?.choices?.[0]?.delta?.content;
-      if (typeof delta === "string") output += delta;
+      const payload = JSON.parse(data) as {
+        choices?: { delta?: { content?: unknown } }[];
+        usage?: unknown;
+      };
+      const delta = payload.choices?.[0]?.delta?.content;
+      if (typeof delta === "string") text += delta;
+      usage = parseUsage(payload.usage) ?? usage;
     } catch {
-      // 忽略心跳或损坏的 SSE 帧；后续合法帧仍可补全结果。
+      // Ignore malformed SSE frames; later valid frames may still complete the response.
     }
   }
-  return output;
+  return { text, usage };
 }
 
 const SYSTEM_PROMPT = "你是一个可靠的 AI 助手，按任务要求完成工作，直接输出结果，不要解释过程。";
@@ -86,6 +115,7 @@ async function post(target: ModelTarget, prompt: string, stream: boolean, timeou
       body: JSON.stringify({
         model: target.upstream,
         stream,
+        ...(stream ? { stream_options: { include_usage: true } } : {}),
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: prompt },
@@ -99,17 +129,16 @@ async function post(target: ModelTarget, prompt: string, stream: boolean, timeou
 }
 
 /**
- * 调用一次对话补全并返回纯文本。
- *
- * 网关对非流式请求返回 502/503/504/524 时，会用流式请求重试一次，
- * 因为平台网关在超时场景下流式通道仍然健康。
+ * Call chat completions and preserve token usage reported by the gateway.
+ * Stream fallback requests usage in the final SSE frame when supported. Missing
+ * usage stays null; it is never replaced with an estimate.
  */
-export async function callModelText(args: {
+export async function callModelTextWithUsage(args: {
   target: ModelTarget;
   prompt: string;
   timeoutMs?: number;
   signal?: AbortSignal;
-}): Promise<string> {
+}): Promise<ModelTextResult> {
   const timeoutMs = args.timeoutMs ?? MODEL_TIMEOUT_MS;
   let response: Response;
   try {
@@ -125,11 +154,18 @@ export async function callModelText(args: {
     } catch {
       throw new ModelClientError("模型返回内容无法解析", "MODEL_BAD_RESPONSE");
     }
-    const content = (payload as { choices?: { message?: { content?: unknown } }[] })?.choices?.[0]?.message?.content;
+    const body = payload as {
+      choices?: { message?: { content?: unknown } }[];
+      usage?: unknown;
+    };
+    const content = body?.choices?.[0]?.message?.content;
     if (typeof content !== "string" || content.length === 0) {
       throw new ModelClientError("模型返回内容为空", "MODEL_EMPTY_OUTPUT");
     }
-    return content.length > MAX_MODEL_OUTPUT ? content.slice(0, MAX_MODEL_OUTPUT) : content;
+    return {
+      text: content.length > MAX_MODEL_OUTPUT ? content.slice(0, MAX_MODEL_OUTPUT) : content,
+      usage: parseUsage(body.usage),
+    };
   }
 
   if (GATEWAY_RETRY_STATUSES.includes(response.status)) {
@@ -137,12 +173,27 @@ export async function callModelText(args: {
       const fallback = await post(args.target, args.prompt, true, timeoutMs, args.signal);
       if (fallback.ok) {
         const streamed = parseStreamOutput(await fallback.text());
-        if (streamed) return streamed.length > MAX_MODEL_OUTPUT ? streamed.slice(0, MAX_MODEL_OUTPUT) : streamed;
+        if (streamed.text) {
+          return {
+            text: streamed.text.length > MAX_MODEL_OUTPUT ? streamed.text.slice(0, MAX_MODEL_OUTPUT) : streamed.text,
+            usage: streamed.usage,
+          };
+        }
       }
     } catch {
-      // 保留原始网关错误，交由调用方决定退费或重试。
+      // Preserve the original gateway error for the caller to handle.
     }
   }
 
   throw new ModelClientError(`模型服务返回 ${response.status}`, "MODEL_UPSTREAM_ERROR");
+}
+
+/** Keep the text-only helper for existing integrations. */
+export async function callModelText(args: {
+  target: ModelTarget;
+  prompt: string;
+  timeoutMs?: number;
+  signal?: AbortSignal;
+}): Promise<string> {
+  return (await callModelTextWithUsage(args)).text;
 }
