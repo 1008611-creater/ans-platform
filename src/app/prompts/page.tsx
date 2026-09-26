@@ -79,90 +79,95 @@ function getCachedPrompts(
 ) {
   // Create a stable cache key from the query parameters
   const cacheKey = JSON.stringify({ where, orderBy, perPage });
-  
-  return unstable_cache(
-    async () => {
-      const [promptsRaw, totalCount] = await Promise.all([
-        db.prompt.findMany({
-          where,
-          orderBy,
-          skip: 0,
-          take: perPage,
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-                avatar: true,
-                verified: true,
+  const load = async () => {
+    const [promptsRaw, totalCount] = await Promise.all([
+      db.prompt.findMany({
+        where,
+        orderBy,
+        skip: 0,
+        take: perPage,
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              avatar: true,
+              verified: true,
+            },
+          },
+          category: {
+            include: {
+              parent: {
+                select: { id: true, name: true, slug: true },
               },
             },
-            category: {
-              include: {
-                parent: {
-                  select: { id: true, name: true, slug: true },
-                },
-              },
+          },
+          tags: {
+            include: {
+              tag: true,
             },
-            tags: {
-              include: {
-                tag: true,
-              },
+          },
+          contributors: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              avatar: true,
             },
-            contributors: {
-              select: {
-                id: true,
-                username: true,
-                name: true,
-                avatar: true,
-              },
+          },
+          _count: {
+            select: {
+              votes: true,
+              contributors: true,
+              outgoingConnections: { where: { label: { not: "related" } } },
+              incomingConnections: { where: { label: { not: "related" } } },
             },
-            _count: {
-              select: {
-                votes: true,
-                contributors: true,
-                outgoingConnections: { where: { label: { not: "related" } } },
-                incomingConnections: { where: { label: { not: "related" } } },
-              },
-            },
-            userExamples: {
-              take: 5,
-              orderBy: { createdAt: "desc" },
-              select: {
-                id: true,
-                mediaUrl: true,
-                user: {
-                  select: {
-                    username: true,
-                    name: true,
-                    avatar: true,
-                  },
+          },
+          userExamples: {
+            take: 5,
+            orderBy: { createdAt: "desc" },
+            select: {
+              id: true,
+              mediaUrl: true,
+              user: {
+                select: {
+                  username: true,
+                  name: true,
+                  avatar: true,
                 },
               },
             },
           },
-        }),
-        db.prompt.count({ where }),
-      ]);
+        },
+      }),
+      db.prompt.count({ where }),
+    ]);
 
-      return {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        prompts: promptsRaw.map((p: any) => ({
-          ...p,
-          voteCount: p._count.votes,
-          contributorCount: p._count.contributors,
-          contributors: p.contributors,
-        })),
-        total: totalCount,
-      };
-    },
+    return {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prompts: promptsRaw.map((p: any) => ({
+        ...p,
+        voteCount: p._count.votes,
+        contributorCount: p._count.contributors,
+        contributors: p.contributors,
+      })),
+      total: totalCount,
+    };
+  };
+
+  // The accessibility gate seeds probe prompts after the preview server has
+  // already warmed this cache during smoke tests. Read through to the database
+  // in that mode so the gate validates the rendered fixture instead of stale data.
+  if (process.env.A11Y_MODE === "require") return load();
+
+  return unstable_cache(
+    load,
     ["prompts", cacheKey],
-    // 导入脚本在 Next 进程之外直接写库，无法调用 revalidateTag，
-    // 因此这里给一个兜底过期时间，保证数据最多滞后 5 分钟。
     { tags: ["prompts"], revalidate: 300 }
   )();
 }
+
 
 interface PromptsPageProps {
   searchParams: Promise<{

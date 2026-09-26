@@ -50,4 +50,23 @@ describe("model response usage", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ choices: [{ message: { content: "draft" } }] })));
     await expect(callModelTextWithUsage({ target, prompt: "write" })).resolves.toEqual({ text: "draft", usage: null });
   });
+
+  it("enforces request timeout while reading the response body", async () => {
+    let requestSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      requestSignal = init?.signal as AbortSignal;
+      const body = new ReadableStream<Uint8Array>({
+        start(controller) {
+          requestSignal?.addEventListener("abort", () => controller.error(new Error("aborted")), { once: true });
+        },
+      });
+      return new Response(body, { headers: { "Content-Type": "application/json" } });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(callModelTextWithUsage({ target, prompt: "write", timeoutMs: 10 })).rejects.toMatchObject({
+      code: "MODEL_TIMEOUT",
+    });
+    expect(requestSignal?.aborted).toBe(true);
+  });
 });

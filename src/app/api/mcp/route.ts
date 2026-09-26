@@ -1636,7 +1636,8 @@ export async function POST(req: Request) {
 
       const toolName = rpcBody.params?.name;
       if (toolName && AI_TOOLS.has(toolName)) {
-        const aiCheck = mcpAiToolLimiter.check(rateLimitId);
+        const aiWorkUnits = toolName === "run_project_pack" ? 3 : 1;
+        const aiCheck = mcpAiToolLimiter.check(rateLimitId, aiWorkUnits);
         if (!aiCheck.allowed) {
         teardown();
         return Response.json(

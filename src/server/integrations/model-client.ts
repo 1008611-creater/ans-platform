@@ -100,13 +100,21 @@ function parseStreamOutput(raw: string): ModelTextResult {
 
 const SYSTEM_PROMPT = "你是一个可靠的 AI 助手，按任务要求完成工作，直接输出结果，不要解释过程。";
 
-async function post(target: ModelTarget, prompt: string, stream: boolean, timeoutMs: number, signal?: AbortSignal) {
+async function post<T>(
+  target: ModelTarget,
+  prompt: string,
+  stream: boolean,
+  timeoutMs: number,
+  signal: AbortSignal | undefined,
+  consume: (response: Response) => Promise<T>,
+): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const abort = () => controller.abort();
-  signal?.addEventListener("abort", abort, { once: true });
+  if (signal?.aborted) abort();
+  else signal?.addEventListener("abort", abort, { once: true });
   try {
-    return await fetch(chatCompletionsUrl(target.baseUrl), {
+    const response = await fetch(chatCompletionsUrl(target.baseUrl), {
       method: "POST",
       signal: controller.signal,
       redirect: "error",
@@ -122,6 +130,10 @@ async function post(target: ModelTarget, prompt: string, stream: boolean, timeou
         ],
       }),
     });
+    return await consume(response);
+  } catch (error) {
+    if (error instanceof ModelClientError) throw error;
+    throw new ModelClientError("模型响应超时或网络不可用", "MODEL_TIMEOUT");
   } finally {
     clearTimeout(timeout);
     signal?.removeEventListener("abort", abort);
@@ -140,19 +152,14 @@ export async function callModelTextWithUsage(args: {
   signal?: AbortSignal;
 }): Promise<ModelTextResult> {
   const timeoutMs = args.timeoutMs ?? MODEL_TIMEOUT_MS;
-  let response: Response;
-  try {
-    response = await post(args.target, args.prompt, false, timeoutMs, args.signal);
-  } catch {
-    throw new ModelClientError("模型响应超时或网络不可用", "MODEL_TIMEOUT");
-  }
-
-  if (response.ok) {
+  const initial = await post(args.target, args.prompt, false, timeoutMs, args.signal, async (response) => {
+    if (!response.ok) return { kind: "http-error" as const, status: response.status };
     let payload: unknown;
     try {
       payload = await response.json();
-    } catch {
-      throw new ModelClientError("模型返回内容无法解析", "MODEL_BAD_RESPONSE");
+    } catch (error) {
+      if (error instanceof SyntaxError) throw new ModelClientError("模型返回内容无法解析", "MODEL_BAD_RESPONSE");
+      throw error;
     }
     const body = payload as {
       choices?: { message?: { content?: unknown } }[];
@@ -163,29 +170,33 @@ export async function callModelTextWithUsage(args: {
       throw new ModelClientError("模型返回内容为空", "MODEL_EMPTY_OUTPUT");
     }
     return {
-      text: content.length > MAX_MODEL_OUTPUT ? content.slice(0, MAX_MODEL_OUTPUT) : content,
-      usage: parseUsage(body.usage),
+      kind: "success" as const,
+      result: {
+        text: content.length > MAX_MODEL_OUTPUT ? content.slice(0, MAX_MODEL_OUTPUT) : content,
+        usage: parseUsage(body.usage),
+      },
     };
-  }
+  });
+  if (initial.kind === "success") return initial.result;
 
-  if (GATEWAY_RETRY_STATUSES.includes(response.status)) {
+  if (GATEWAY_RETRY_STATUSES.includes(initial.status)) {
     try {
-      const fallback = await post(args.target, args.prompt, true, timeoutMs, args.signal);
-      if (fallback.ok) {
-        const streamed = parseStreamOutput(await fallback.text());
-        if (streamed.text) {
-          return {
-            text: streamed.text.length > MAX_MODEL_OUTPUT ? streamed.text.slice(0, MAX_MODEL_OUTPUT) : streamed.text,
-            usage: streamed.usage,
-          };
-        }
-      }
+      const fallback = await post(args.target, args.prompt, true, timeoutMs, args.signal, async (response) => {
+        if (!response.ok) return null;
+        const streamed = parseStreamOutput(await response.text());
+        if (!streamed.text) return null;
+        return {
+          text: streamed.text.length > MAX_MODEL_OUTPUT ? streamed.text.slice(0, MAX_MODEL_OUTPUT) : streamed.text,
+          usage: streamed.usage,
+        };
+      });
+      if (fallback) return fallback;
     } catch {
       // Preserve the original gateway error for the caller to handle.
     }
   }
 
-  throw new ModelClientError(`模型服务返回 ${response.status}`, "MODEL_UPSTREAM_ERROR");
+  throw new ModelClientError(`模型服务返回 ${initial.status}`, "MODEL_UPSTREAM_ERROR");
 }
 
 /** Keep the text-only helper for existing integrations. */

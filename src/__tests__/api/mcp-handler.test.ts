@@ -57,6 +57,7 @@ import * as mcpRoute from "@/app/api/mcp/route";
 import { GET, DELETE } from "@/app/api/mcp/route";
 import { db } from "@/lib/db";
 import { isValidApiKeyFormat } from "@/lib/api-key";
+import { mcpAiToolLimiter } from "@/lib/rate-limit";
 
 describe("MCP API route - HTTP method routing", () => {
   beforeEach(() => {
@@ -181,10 +182,45 @@ describe("MCP API route - HTTP method routing", () => {
 
     expect(response.status).toBe(200);
     expect(projectServiceMocks.runProjectPack).toHaveBeenCalledWith("project-1", "user-1", { idempotencyKey: "pack-12345678" });
+    expect(mcpAiToolLimiter.check).toHaveBeenCalledWith(apiKey, 3);
     expect(result.status).toBe("succeeded");
     expect(result.artifacts).toHaveLength(3);
     expect(result.artifacts.map((artifact: { workflowRunId: string }) => artifact.workflowRunId)).toEqual(["run-1", "run-2", "run-3"]);
     expect(result.artifacts[0]).not.toHaveProperty("project");
+  });
+
+  it("rejects a project pack when its three-unit AI budget is exhausted", async () => {
+    const apiKey = "test-pack-key-rate-limit";
+    vi.mocked(isValidApiKeyFormat).mockReturnValue(true);
+    vi.mocked(db.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      username: "student",
+      mcpPromptsPublicByDefault: false,
+    } as never);
+    vi.mocked(mcpAiToolLimiter.check).mockReturnValueOnce({ allowed: false, retryAfterSeconds: 30 });
+
+    const request = new Request("http://localhost/api/mcp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json, text/event-stream",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/call",
+        params: { name: "run_project_pack", arguments: { projectId: "project-1" } },
+      }),
+    });
+
+    const response = await mcpRoute.POST(request);
+    const rpc = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(mcpAiToolLimiter.check).toHaveBeenCalledWith(apiKey, 3);
+    expect(rpc.error.message).toContain("AI tool rate limit exceeded");
+    expect(projectServiceMocks.runProjectPack).not.toHaveBeenCalled();
   });
 
 });
