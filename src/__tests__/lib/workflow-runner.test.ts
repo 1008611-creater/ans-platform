@@ -122,6 +122,43 @@ describe("executePersistedWorkflow", () => {
     );
   });
 
+  it("rolls back success and refunds quota when saving a successful workflow artifact fails", async () => {
+    const onSucceeded = vi.fn().mockRejectedValue(new Error("artifact write failed"));
+
+    const result = await executePersistedWorkflow("run1", "user1", {
+      handlers: { prompt: () => "ok", output: () => "ok" },
+      onSucceeded,
+    });
+
+    expect(result?.status).toBe("failed");
+    expect(result?.error).toContain("artifact write failed");
+    expect(onSucceeded).toHaveBeenCalledTimes(1);
+    expect(mocks.db.workflowRun.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: "FAILED" }) }),
+    );
+    expect(mocks.db.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { quotaPoints: { increment: 3 } } }),
+    );
+    expect(mocks.db.quotaLedger.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not report success or save an artifact after cancellation wins finalization", async () => {
+    mocks.db.workflowRun.updateMany.mockImplementation(
+      async ({ where }: { where: { status?: string } }) =>
+        where?.status === "QUEUED" ? { count: 1 } : { count: 0 },
+    );
+    const onSucceeded = vi.fn();
+
+    const result = await executePersistedWorkflow("run1", "user1", {
+      handlers: { prompt: () => "ok", output: () => "ok" },
+      onSucceeded,
+    });
+
+    expect(result).toBeNull();
+    expect(onSucceeded).not.toHaveBeenCalled();
+    expect(mocks.db.workflowNodeRun.updateMany).not.toHaveBeenCalled();
+  });
+
   it("does not refund when another worker already finalized the run", async () => {
     mocks.db.workflowRun.updateMany.mockImplementation(
       async ({ where }: { where: { status?: string } }) =>

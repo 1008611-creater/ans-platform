@@ -54,7 +54,8 @@
     "developers": "开发者",
     "book": "书籍",
     "forKids": "儿童版",
-    "more": "更多"
+    "more": "更多",
+    "competitionHub": "AIGC 比赛中心"
   },
   "a11y": {
     "mainNav": "主导航",
@@ -2259,6 +2260,113 @@
       "nodeJs": "Node.js 24.x",
       "postgresql": "PostgreSQL database",
       "npm": "npm"
+    }
+  },
+  "aigcCompetition": {
+    "navLabel": "AIGC 比赛中心",
+    "eyebrow": "AIGC CONTEST CLUSTER",
+    "title": "AIGC 比赛中心",
+    "description": "面向参赛团队的统一入口：在 ANS 里规划比赛、进入生产工作台、追踪过程证据，并准备最终提交物。",
+    "createProject": "创建比赛项目",
+    "openTeams": "进入团队与比赛",
+    "statusTitle": "集群入口已就绪",
+    "statusDescription": "三个工作台已经作为受控的外部入口接入。登录和数据所有权仍由各自系统负责。",
+    "stats": {
+      "tools": "工具",
+      "toolsValue": "3",
+      "entry": "统一入口",
+      "entryValue": "1",
+      "phases": "比赛阶段",
+      "phasesValue": "4",
+      "deliverables": "核心交付物",
+      "deliverablesValue": "8"
+    },
+    "connectorsTitle": "比赛工具集群",
+    "connectorsDescription": "把 ANS 作为共同地图和项目边界，需要进入专业工作台时再打开对应系统。",
+    "clusterSectionLabel": "01 / 工具集群",
+    "openTool": "打开工作台",
+    "integrationLabel": "外部工作台",
+    "backupLabel": "备用 / 审计",
+    "productionLabel": "生产工作台",
+    "planningLabel": "计划工作台",
+    "loginNote": "使用该系统自己的登录",
+    "noIframeNote": "为安全和兼容性在新标签页打开",
+    "syncNote": "API 同步留到下一阶段接入",
+    "connectors": {
+      "solara": {
+        "name": "Solara",
+        "host": "plan.cauai.fun",
+        "role": "计划与任务编排",
+        "description": "把比赛说明拆成里程碑、负责人、截止时间和可见的执行计划。",
+        "status": "需要登录",
+        "detail": "该服务会跳转到自己的登录页。ANS 只保留受控入口，不保存外部凭据。"
+      },
+      "plane": {
+        "name": "Plane",
+        "host": "plane.cauai.fun",
+        "role": "备用项目管理与审计",
+        "description": "需要追溯、交接或审计时，使用第二套事项看板保存上下文。",
+        "status": "可作为备用",
+        "detail": "Plane 不是本次比赛的默认任务源，需要独立审计轨迹时再使用。"
+      },
+      "toonflow": {
+        "name": "Toonflow",
+        "host": "toonflow.cauai.fun",
+        "role": "创意生产工作台",
+        "description": "从已确认的计划进入素材生成、迭代和生产交接。",
+        "status": "生产入口",
+        "detail": "制作阶段使用这个工作台。ANS 页面负责保留共同入口和提交检查清单。"
+      }
+    },
+    "phasesTitle": "四阶段比赛作战路径",
+    "phasesDescription": "所有团队都可以遵循同一条主路径，同时保留自己的工具和创作方法。",
+    "phases": {
+      "discover": {
+        "label": "01 · 读题",
+        "description": "明确主题、评分规则、受众和限制条件。",
+        "state": "从这里开始"
+      },
+      "plan": {
+        "label": "02 · 计划",
+        "description": "拆分任务、负责人、截止时间和评审节点。",
+        "state": "使用 Solara"
+      },
+      "produce": {
+        "label": "03 · 生产",
+        "description": "生成、评审、版本化并整理带证据的作品。",
+        "state": "使用 Toonflow"
+      },
+      "submit": {
+        "label": "04 · 提交",
+        "description": "执行检查清单、冻结最终版本并提交完整包。",
+        "state": "在 ANS 核验"
+      }
+    },
+    "deliverablesTitle": "提交检查清单",
+    "deliverablesDescription": "让过程证据始终可见，团队交接时不会丢失上下文。",
+    "deliverables": {
+      "brief": "比赛说明与题意理解",
+      "plan": "里程碑、负责人和评审节点",
+      "storyboard": "分镜或镜头计划",
+      "source": "提示词与源素材记录",
+      "iterations": "关键迭代与评审记录",
+      "final": "最终作品与导出设置",
+      "evidence": "过程证据与署名信息",
+      "package": "提交包与最终检查"
+    },
+    "workflowTitle": "ANS 工作区快捷入口",
+    "workflowDescription": "把共同项目记录留在 ANS，阶段变化时再交给对应能力模块。",
+    "openProjects": "项目包",
+    "openWorkflows": "工作流程",
+    "openTemplates": "模板广场",
+    "openSkills": "技能",
+    "boundaryTitle": "首版集成边界",
+    "boundaryDescription": "首版提供可靠的统一入口、共同比赛结构和清晰的责任边界，不假装三个外部系统已经共享账号或实时 API。",
+    "boundaryItems": {
+      "entry": "一个 ANS 入口",
+      "links": "已核验的外部链接",
+      "ownership": "凭据仍由各系统保管",
+      "next": "比赛流程验证后再增加 API 同步"
     }
   }
 }

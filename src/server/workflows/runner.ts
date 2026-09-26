@@ -117,6 +117,26 @@ export function createWorkflowHandlers(context: WorkflowHandlerContext): Partial
   };
 }
 
+/**
+ * Execute a workflow definition that is owned by an application feature rather
+ * than by a published Workflow row.  This keeps the same node handlers,
+ * timeout budget, retry semantics, and model gateway as persisted workflows.
+ */
+export async function executeInlineWorkflow(
+  definition: WorkflowDefinition,
+  input: unknown,
+  context: Omit<WorkflowHandlerContext, "runId"> & { runId?: string },
+  options: { maxExecutionMs?: number } = {},
+): Promise<WorkflowExecutionResult> {
+  return executeWorkflow(definition, input, {
+    handlers: createWorkflowHandlers({
+      ...context,
+      runId: context.runId ?? "inline-workflow",
+    }),
+    maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
+  });
+}
+
 async function loadRunnableRun(runId: string, userId: string) {
   return db.workflowRun.findFirst({
     where: { id: runId, userId },
@@ -141,6 +161,7 @@ export async function executePersistedWorkflow(
     /** 本次运行的模型来源覆盖项；缺省时用平台模型池与节点默认值。 */
     modelKey?: string;
     credentialId?: string;
+    onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>;
   } = {},
 ): Promise<WorkflowExecutionResult | null> {
   const run = await loadRunnableRun(runId, userId);
@@ -179,22 +200,34 @@ export async function executePersistedWorkflow(
     maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
   });
 
-  await persistResult(run.id, userId, run.costPoints, run.workflow.title, result);
-  return result;
+  try {
+    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, result, options.onSucceeded);
+    return finalized ? result : null;
+  } catch (error) {
+    if (result.status !== "succeeded" || !options.onSucceeded) throw error;
+    const failed: WorkflowExecutionResult = {
+      ...result,
+      status: "failed",
+      output: undefined,
+      error: `成果保存失败：${error instanceof Error ? error.message : "数据库写入错误"}`,
+    };
+    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, failed);
+    return finalized ? failed : null;
+  }
 }
 
 async function finalizeFailure(
   run: { id: string; userId: string; costPoints: number; workflow: { title: string } },
   message: string,
-): Promise<WorkflowExecutionResult> {
+): Promise<WorkflowExecutionResult | null> {
   const result: WorkflowExecutionResult = {
     status: "failed",
     error: message,
     executions: [],
     elapsedMs: 0,
   };
-  await persistResult(run.id, run.userId, run.costPoints, run.workflow.title, result);
-  return result;
+  const finalized = await persistResult(run.id, run.userId, run.costPoints, run.workflow.title, result);
+  return finalized ? result : null;
 }
 
 async function persistResult(
@@ -203,9 +236,21 @@ async function persistResult(
   costPoints: number,
   workflowTitle: string,
   result: WorkflowExecutionResult,
-) {
+  onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>,
+): Promise<boolean> {
   const succeeded = result.status === "succeeded";
-  await db.$transaction(async (tx) => {
+  return db.$transaction(async (tx) => {
+    const transitioned = await tx.workflowRun.updateMany({
+      where: { id: runId, userId, status: "RUNNING" },
+      data: {
+        status: succeeded ? "SUCCEEDED" : "FAILED",
+        output: (result.output ?? undefined) as Prisma.InputJsonValue | undefined,
+        error: result.error ?? null,
+        finishedAt: new Date(),
+      },
+    });
+    if (transitioned.count !== 1) return false;
+
     for (const execution of result.executions) {
       await tx.workflowNodeRun.updateMany({
         where: { runId, nodeId: execution.nodeId },
@@ -219,16 +264,7 @@ async function persistResult(
         },
       });
     }
-    const transitioned = await tx.workflowRun.updateMany({
-      where: { id: runId, userId, status: "RUNNING" },
-      data: {
-        status: succeeded ? "SUCCEEDED" : "FAILED",
-        output: (result.output ?? undefined) as Prisma.InputJsonValue | undefined,
-        error: result.error ?? null,
-        finishedAt: new Date(),
-      },
-    });
-    if (transitioned.count !== 1) return;
+    if (succeeded && onSucceeded) await onSucceeded(tx, result);
 
     if (!succeeded && costPoints > 0) {
       await refundQuota(tx, {
@@ -247,6 +283,7 @@ async function persistResult(
         metadata: { elapsedMs: result.elapsedMs, error: result.error ?? null, costPoints },
       },
     });
+    return true;
   });
 }
 
