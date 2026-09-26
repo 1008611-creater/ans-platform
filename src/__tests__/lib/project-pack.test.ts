@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { generateOfficialArtifact, normalizeFactValue, renderProjectExport, snapshotText, type FactRecord } from "@/domain/projects/pack";
 import { officialWorkflowIds } from "@/contracts/projects";
+import { officialWorkflowDefinition } from "@/domain/projects/pack";
+import { validateWorkflow } from "@/domain/workflows/graph";
 
 const facts: FactRecord[] = [
   { key: "problem", value: "校园二手教材流转慢", confirmation: "confirmed" },
@@ -27,6 +29,16 @@ describe("学生项目包", () => {
     for (const artifact of artifacts) {
       expect(artifact.markdown).toContain("待确认");
       expect(artifact.markdown).not.toMatch(/提升\s*\d+|用户\s*\d+|第\s*\d+\s*名/);
+    }
+  });
+
+  it("official DAGs validate and pass the generated text to the output node", () => {
+    for (const workflowId of officialWorkflowIds) {
+      const definition = officialWorkflowDefinition(workflowId);
+      expect(validateWorkflow(definition).ok).toBe(true);
+      expect(definition.nodes[0]).toMatchObject({ type: "model", config: { prompt: "{{input.prompt}}" } });
+      expect(definition.nodes[1].type).toBe("output");
+      expect(definition.edges).toEqual([{ id: "generate-output", from: "generate", to: "output", mapping: {} }]);
     }
   });
 

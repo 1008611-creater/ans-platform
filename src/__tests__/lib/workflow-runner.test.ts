@@ -68,6 +68,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe("executePersistedWorkflow", () => {
@@ -99,6 +100,28 @@ describe("executePersistedWorkflow", () => {
     expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
   });
 
+  it("finalizes and refunds when execution planning throws", async () => {
+    mocks.db.workflowRun.findFirst.mockResolvedValue({
+      ...run,
+      version: {
+        definition: {
+          ...definition,
+          edges: [{ id: "broken", from: "missing", to: "final", mapping: {} }],
+        },
+      },
+    });
+
+    const result = await executePersistedWorkflow("run1", "user1", {
+      handlers: { prompt: () => "ok", output: ({ dependencyOutputs }) => dependencyOutputs.draft },
+    });
+
+    expect(result?.status).toBe("failed");
+    expect(result?.error).toBe("Workflow definition is invalid.");
+    expect(mocks.db.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { quotaPoints: { increment: 3 } } }),
+    );
+    expect(mocks.db.quotaLedger.create).toHaveBeenCalledTimes(1);
+  });
   it("refunds exactly once when the workflow fails", async () => {
     const result = await executePersistedWorkflow("run1", "user1", {
       handlers: {
@@ -171,6 +194,35 @@ describe("executePersistedWorkflow", () => {
 
     expect(mocks.db.user.update).not.toHaveBeenCalled();
     expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
+  });
+
+  it("records provider model and token usage in the workflow audit", async () => {
+    const modelDefinition = {
+      version: 1 as const,
+      maxNodes: 20,
+      nodes: [
+        { id: "draft", type: "model" as const, label: "Draft", config: { prompt: "Write {{input.topic}}" }, timeoutMs: 1000, maxRetries: 0 },
+        { id: "final", type: "output" as const, label: "Output", config: {}, timeoutMs: 1000, maxRetries: 0 },
+      ],
+      edges: [{ id: "draft-final", from: "draft", to: "final", mapping: {} }],
+    };
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { definition: modelDefinition } });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
+      choices: [{ message: { content: "Generated draft" } }],
+      usage: { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 },
+    })));
+
+    const result = await executePersistedWorkflow("run1", "user1");
+
+    expect(result?.status).toBe("succeeded");
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        metadata: expect.objectContaining({
+          modelCalls: 1,
+          tokenUsage: { inputTokens: 11, outputTokens: 7, totalTokens: 18 },
+        }),
+      }),
+    }));
   });
 
   it("refuses a credential that belongs to someone else", async () => {

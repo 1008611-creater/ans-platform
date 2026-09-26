@@ -12,7 +12,7 @@ import { getPublicDisplayName } from "@/lib/public-identity";
 import { isValidApiKeyFormat, hashApiKey } from "@/lib/api-key";
 import { parseSkillFiles, serializeSkillFiles, sanitizeFilename, DEFAULT_SKILL_FILE } from "@/lib/skill-files";
 import { officialWorkflowIds } from "@/contracts/projects";
-import { runProjectWorkflow, ProjectServiceError } from "@/server/projects/service";
+import { runProjectPack, runProjectWorkflow, ProjectServiceError } from "@/server/projects/service";
 import appConfig from "@/../prompts.config";
 import {
   mcpGeneralLimiter,
@@ -1417,6 +1417,56 @@ function createServer(options: ServerOptions = {}) {
     },
   );
 
+  server.registerTool(
+    "run_project_pack",
+    {
+      title: "Run Project Pack",
+      description:
+        "Generate the three core private project artifacts: resume bullets, a README draft, and a one-page project introduction. The three runs cost up to 6 points total; failed runs are refunded. Reuse an idempotency key to safely retry.",
+      inputSchema: {
+        projectId: z.string().trim().min(1).max(80).describe("The private ANS project ID"),
+        idempotencyKey: z.string().trim().regex(/^[a-zA-Z0-9_-]{8,80}$/).optional(),
+      },
+    },
+    async ({ projectId, idempotencyKey }) => {
+      if (!authenticatedUser) {
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify({ error: "Authentication required" }) }],
+          isError: true,
+        };
+      }
+      try {
+        const result = await runProjectPack(projectId, authenticatedUser.id, { idempotencyKey });
+        return {
+          content: [{
+            type: "text" as const,
+            text: JSON.stringify({
+              projectId: result.projectId,
+              status: result.status,
+              estimatedCostPoints: result.estimatedCostPoints,
+              artifacts: result.artifacts.map((artifact) => ({
+                workflowRunId: artifact.workflowRunId,
+                artifactVersionId: artifact.artifactVersionId,
+                version: artifact.version,
+                workflowId: artifact.workflowId,
+                title: artifact.title,
+                markdown: artifact.markdown,
+              })),
+              failures: result.failures,
+            }),
+          }],
+          ...(result.artifacts.length === 0 ? { isError: true } : {}),
+        };
+      } catch (error) {
+        const message = error instanceof ProjectServiceError ? error.message : "Project pack generation failed";
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+          isError: true,
+        };
+      }
+    },
+  );
+
   return server;
 }
 
@@ -1567,7 +1617,7 @@ export async function POST(req: Request) {
 
     // Apply stricter limits for tool calls based on tool name
     const WRITE_TOOLS = new Set(["save_prompt", "save_skill", "add_file_to_skill", "update_skill_file", "remove_file_from_skill"]);
-    const AI_TOOLS = new Set(["improve_prompt", "run_project_workflow"]);
+    const AI_TOOLS = new Set(["improve_prompt", "run_project_workflow", "run_project_pack"]);
 
     const rpcBody = body as { method?: string; params?: { name?: string } };
     if (rpcBody?.method === "tools/call") {

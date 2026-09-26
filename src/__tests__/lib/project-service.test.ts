@@ -19,7 +19,7 @@ vi.mock("@/lib/db", () => ({ db: mocks.db }));
 vi.mock("@/server/workflows/service", () => mocks.workflowService);
 vi.mock("@/server/workflows/runner", () => mocks.workflowRunner);
 
-import { ProjectServiceError, createProject, exportProject, getProject, runProjectWorkflow, updateProject } from "@/server/projects/service";
+import { ProjectServiceError, createProject, exportProject, getProject, runProjectPack, runProjectWorkflow, updateProject } from "@/server/projects/service";
 
 const project = {
   id: "p1", ownerId: "u1", title: "教材流转", goal: "CAREER", status: "ACTIVE", visibility: "PRIVATE", updatedAt: new Date("2026-09-25T00:00:00Z"),
@@ -121,6 +121,93 @@ describe("项目服务", () => {
       code: "RUN_CANCELLED",
       status: 409,
     });
+  });
+
+  it("reports a concurrently cancelled run instead of waiting forever", async () => {
+    mocks.workflowRunner.executePersistedWorkflow.mockResolvedValue(null);
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ status: "CANCELLED" });
+
+    await expect(runProjectWorkflow("p1", "u1", { workflowId: "resume-bullets" })).rejects.toMatchObject({
+      code: "RUN_CANCELLED",
+      status: 409,
+    });
+  });
+
+  it("runs the three core artifacts from one project snapshot", async () => {
+    mocks.db.project.findFirst.mockResolvedValue({
+      ...project,
+      facts: [...project.facts, { key: "method", value: "form intake", confirmation: "CONFIRMED", evidenceUrl: null }],
+    });
+
+    const response = await runProjectPack("p1", "u1", { idempotencyKey: "pack-12345678" });
+
+    expect(response.status).toBe("succeeded");
+    expect(response.estimatedCostPoints).toBe(6);
+    expect(response.artifacts.map((artifact) => artifact.workflowId)).toEqual([
+      "resume-bullets",
+      "readme-draft",
+      "project-one-pager",
+    ]);
+    expect(mocks.workflowService.createWorkflowRun).toHaveBeenCalledTimes(3);
+    expect(mocks.workflowService.createWorkflowRun).toHaveBeenCalledWith(
+      expect.any(String),
+      "u1",
+      expect.objectContaining({ idempotencyKey: "pack-12345678" }),
+      { projectId: "p1" },
+    );
+    expect(mocks.workflowRunner.executePersistedWorkflow).toHaveBeenCalledTimes(3);
+    expect(response.artifacts.every((artifact) => artifact.workflowRunId === "run1")).toBe(true);
+  });
+
+  it("validates every core artifact before creating a paid run", async () => {
+    await expect(runProjectPack("p1", "u1", {})).rejects.toMatchObject({ code: "FACTS_INCOMPLETE" });
+    expect(mocks.workflowService.ensureOfficialWorkflow).not.toHaveBeenCalled();
+    expect(mocks.workflowService.createWorkflowRun).not.toHaveBeenCalled();
+  });
+
+  it("returns successful artifacts when one pack workflow fails", async () => {
+    mocks.db.project.findFirst.mockResolvedValue({
+      ...project,
+      facts: [...project.facts, { key: "method", value: "form intake", confirmation: "CONFIRMED", evidenceUrl: null }],
+    });
+    mocks.workflowService.ensureOfficialWorkflow.mockImplementation(async ({ officialId }: { officialId: string }) => ({
+      id: officialId,
+      slug: `ans-official-${officialId}`,
+    }));
+    mocks.workflowService.createWorkflowRun.mockImplementation(async (slug: string) => {
+      if (slug.endsWith("project-one-pager")) {
+        throw new ProjectServiceError("quota unavailable", "INSUFFICIENT_QUOTA", 402);
+      }
+      return { id: slug, status: "QUEUED" };
+    });
+
+    const response = await runProjectPack("p1", "u1", {});
+
+    expect(response.status).toBe("partial");
+    expect(response.artifacts).toHaveLength(2);
+    expect(response.failures).toEqual([
+      { workflowId: "project-one-pager", code: "INSUFFICIENT_QUOTA", error: "quota unavailable" },
+    ]);
+  });
+
+  it("exports the latest version and exposes files for zip packaging", async () => {
+    mocks.db.project.findFirst.mockResolvedValue({
+      ...project,
+      artifacts: [{
+        workflowId: "readme-draft",
+        title: "README draft",
+        versions: [
+          { version: 1, contentMarkdown: "# Old" },
+          { version: 2, contentMarkdown: "# Current" },
+        ],
+      }],
+    });
+
+    const result = await exportProject("p1", "u1");
+
+    expect(result.markdown).toContain("# Current");
+    expect(result.markdown).not.toContain("# Old");
+    expect(result.artifacts).toEqual([{ workflowId: "readme-draft", title: "README draft", markdown: "# Current", version: 2 }]);
   });
 
 });
