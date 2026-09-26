@@ -40,7 +40,10 @@ export class RateLimiter {
    * Check whether the given identifier is allowed to make a request.
    * Returns `{ allowed: true, remaining }` or `{ allowed: false, retryAfterSeconds }`.
    */
-  check(identifier: string): { allowed: true; remaining: number } | { allowed: false; retryAfterSeconds: number } {
+  check(identifier: string, cost = 1): { allowed: true; remaining: number } | { allowed: false; retryAfterSeconds: number } {
+    if (!Number.isSafeInteger(cost) || cost < 1 || cost > this.max) {
+      throw new RangeError("Rate limit cost must be a positive integer no greater than the configured maximum.");
+    }
     const now = Date.now();
     const windowStart = now - this.windowMs;
 
@@ -53,14 +56,14 @@ export class RateLimiter {
     // Drop timestamps outside the current window
     entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
 
-    if (entry.timestamps.length >= this.max) {
+    if (entry.timestamps.length + cost > this.max) {
       // Earliest timestamp that will leave the window
       const oldest = entry.timestamps[0];
       const retryAfterMs = oldest + this.windowMs - now;
       return { allowed: false, retryAfterSeconds: Math.ceil(retryAfterMs / 1000) };
     }
 
-    entry.timestamps.push(now);
+    for (let unit = 0; unit < cost; unit += 1) entry.timestamps.push(now);
     return { allowed: true, remaining: this.max - entry.timestamps.length };
   }
 
@@ -89,5 +92,5 @@ export const mcpToolCallLimiter = new RateLimiter({ max: 10, windowSeconds: 60 }
 /** Write-mutation tools – 5 req / min per identifier */
 export const mcpWriteToolLimiter = new RateLimiter({ max: 5, windowSeconds: 60 });
 
-/** AI-powered tools (improve_prompt) – 2 req / min per identifier */
-export const mcpAiToolLimiter = new RateLimiter({ max: 2, windowSeconds: 60 });
+/** AI-powered work budget: six model-work units per minute per identifier. */
+export const mcpAiToolLimiter = new RateLimiter({ max: 6, windowSeconds: 60 });

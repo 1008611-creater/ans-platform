@@ -25,12 +25,18 @@ vi.mock("@/lib/public-identity", () => ({
 // 来切换 feature flag：模块注册表的失效时机与动态 import 存在竞态，会让同一个
 // 用例偶发拿到旧配置（表现为 404 变成 SDK 的 406）。路由在调用时才读取
 // `appConfig.features.mcp`，因此改写同一个对象即可确定性地覆盖两种分支。
-const { appConfigState } = vi.hoisted(() => ({
+const { appConfigState, projectServiceMocks } = vi.hoisted(() => ({
   appConfigState: { features: { mcp: true } },
+  projectServiceMocks: { runProjectPack: vi.fn(), runProjectWorkflow: vi.fn() },
 }));
 
 vi.mock("@/../prompts.config", () => ({
   default: appConfigState,
+}));
+
+vi.mock("@/server/projects/service", () => ({
+  ...projectServiceMocks,
+  ProjectServiceError: class ProjectServiceError extends Error {},
 }));
 
 vi.mock("@/lib/api-key", () => ({
@@ -49,6 +55,9 @@ vi.mock("@/lib/skill-files", () => ({
 // Request/Response functions instead of a pages-router (req, res) handler.
 import * as mcpRoute from "@/app/api/mcp/route";
 import { GET, DELETE } from "@/app/api/mcp/route";
+import { db } from "@/lib/db";
+import { isValidApiKeyFormat } from "@/lib/api-key";
+import { mcpAiToolLimiter } from "@/lib/rate-limit";
 
 describe("MCP API route - HTTP method routing", () => {
   beforeEach(() => {
@@ -132,4 +141,86 @@ describe("MCP API route - HTTP method routing", () => {
       }
     });
   });
+  it("exposes the three-artifact project pack through an authenticated MCP call", async () => {
+    const apiKey = "test-pack-key-20260926";
+    vi.mocked(isValidApiKeyFormat).mockReturnValue(true);
+    vi.mocked(db.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      username: "student",
+      mcpPromptsPublicByDefault: false,
+    } as never);
+    projectServiceMocks.runProjectPack.mockResolvedValue({
+      projectId: "project-1",
+      status: "succeeded",
+      estimatedCostPoints: 6,
+      artifacts: [
+        { workflowRunId: "run-1", artifactVersionId: "version-1", version: 1, workflowId: "resume-bullets", title: "Resume", markdown: "Resume draft", project: { private: true } },
+        { workflowRunId: "run-2", artifactVersionId: "version-2", version: 1, workflowId: "readme-draft", title: "README", markdown: "README draft", project: { private: true } },
+        { workflowRunId: "run-3", artifactVersionId: "version-3", version: 1, workflowId: "project-one-pager", title: "One pager", markdown: "One pager draft", project: { private: true } },
+      ],
+      failures: [],
+    });
+
+    const request = new Request("http://localhost/api/mcp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json, text/event-stream",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: { name: "run_project_pack", arguments: { projectId: "project-1", idempotencyKey: "pack-12345678" } },
+      }),
+    });
+
+    const response = await mcpRoute.POST(request);
+    const rpc = await response.json();
+    const result = JSON.parse(rpc.result.content[0].text);
+
+    expect(response.status).toBe(200);
+    expect(projectServiceMocks.runProjectPack).toHaveBeenCalledWith("project-1", "user-1", { idempotencyKey: "pack-12345678" });
+    expect(mcpAiToolLimiter.check).toHaveBeenCalledWith(apiKey, 3);
+    expect(result.status).toBe("succeeded");
+    expect(result.artifacts).toHaveLength(3);
+    expect(result.artifacts.map((artifact: { workflowRunId: string }) => artifact.workflowRunId)).toEqual(["run-1", "run-2", "run-3"]);
+    expect(result.artifacts[0]).not.toHaveProperty("project");
+  });
+
+  it("rejects a project pack when its three-unit AI budget is exhausted", async () => {
+    const apiKey = "test-pack-key-rate-limit";
+    vi.mocked(isValidApiKeyFormat).mockReturnValue(true);
+    vi.mocked(db.user.findUnique).mockResolvedValue({
+      id: "user-1",
+      username: "student",
+      mcpPromptsPublicByDefault: false,
+    } as never);
+    vi.mocked(mcpAiToolLimiter.check).mockReturnValueOnce({ allowed: false, retryAfterSeconds: 30 });
+
+    const request = new Request("http://localhost/api/mcp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json, text/event-stream",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/call",
+        params: { name: "run_project_pack", arguments: { projectId: "project-1" } },
+      }),
+    });
+
+    const response = await mcpRoute.POST(request);
+    const rpc = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(mcpAiToolLimiter.check).toHaveBeenCalledWith(apiKey, 3);
+    expect(rpc.error.message).toContain("AI tool rate limit exceeded");
+    expect(projectServiceMocks.runProjectPack).not.toHaveBeenCalled();
+  });
+
 });

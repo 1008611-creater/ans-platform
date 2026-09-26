@@ -257,6 +257,13 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     {t("nav.promptmasters")}
                   </Link>
                   <Link
+                    href="/projects"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    项目包
+                  </Link>
+                  <Link
                     href="/templates"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -269,6 +276,13 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                   >
                     团队与比赛
+                  </Link>
+                  <Link
+                    href="/competitions/aigc"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-primary hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    {t("nav.competitionHub")}
                   </Link>
                   {!branding.useCloneBranding && (
                     <a
@@ -415,6 +429,12 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
           >
             团队与比赛
           </Link>
+          <Link
+            href="/competitions/aigc"
+            className="hidden 2xl:block px-3 py-1.5 rounded-md text-primary transition-colors hover:text-foreground hover:bg-accent"
+          >
+            {t("nav.competitionHub")}
+          </Link>
           {/* Three-dot dropdown for collapsed nav items */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -458,6 +478,11 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               <DropdownMenuItem asChild>
                 <Link href="/promptmasters">
                   {t("nav.promptmasters")}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/competitions/aigc">
+                  {t("nav.competitionHub")}
                 </Link>
               </DropdownMenuItem>
               {!branding.useCloneBranding && (

@@ -3,11 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   db: {
-    user: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), updateMany: vi.fn() },
-    workflow: { create: vi.fn(), findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), update: vi.fn() },
+    user: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), findFirst: vi.fn(), updateMany: vi.fn() },
+    workflow: { create: vi.fn(), upsert: vi.fn(), findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), update: vi.fn() },
     workflowVersion: { create: vi.fn() },
     workflowRun: { create: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), findUniqueOrThrow: vi.fn() },
     workflowNodeRun: { createMany: vi.fn() },
+    project: { findFirst: vi.fn() },
     quotaLedger: { create: vi.fn() },
     auditLog: { create: vi.fn() },
     $transaction: vi.fn(),
@@ -18,6 +19,7 @@ vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import {
   WorkflowServiceError,
+  ensureOfficialWorkflow,
   createWorkflow,
   createWorkflowVersion,
   createWorkflowRun,
@@ -73,6 +75,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
   mocks.db.user.findUnique.mockResolvedValue({ ...author });
+  mocks.db.user.findFirst.mockResolvedValue({ id: "admin1" });
   mocks.db.auditLog.create.mockResolvedValue({ id: "audit1" });
   mocks.db.workflow.create.mockResolvedValue({
     id: "w1",
@@ -715,6 +718,50 @@ describe("createWorkflowRun", () => {
     );
   });
 
+  it("requires official workflows to be launched from an owned active project", async () => {
+    mocks.db.workflow.findFirst.mockResolvedValue({ ...published, isOfficial: true });
+
+    await expect(createWorkflowRun("weekly", "user1", { input: {} })).rejects.toMatchObject({ code: "PROJECT_LINK_REQUIRED", status: 403 });
+    expect(mocks.db.workflowRun.create).not.toHaveBeenCalled();
+  });
+
+  it("links official project runs and scopes idempotency to the project and workflow", async () => {
+    mocks.db.workflow.findFirst.mockResolvedValue({ ...published, isOfficial: true });
+    mocks.db.project.findFirst.mockResolvedValue({ id: "project1" });
+
+    await createWorkflowRun("ans-official-resume-bullets", "user1", {
+      input: { projectTitle: "Portfolio", prompt: "Write" },
+      idempotencyKey: "resume-12345678",
+    }, { projectId: "project1" });
+
+    expect(mocks.db.workflowRun.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        projectId: "project1",
+        idempotencyKey: "project/project1/ans-official-resume-bullets/resume-12345678",
+      }),
+    }));
+  });
+
+  it("rejects a project run when the project is not owned and active", async () => {
+    mocks.db.workflow.findFirst.mockResolvedValue({ ...published, isOfficial: true });
+    mocks.db.project.findFirst.mockResolvedValue(null);
+
+    await expect(createWorkflowRun("ans-official-resume-bullets", "user1", { input: {} }, { projectId: "project1" }))
+      .rejects.toMatchObject({ code: "NOT_FOUND", status: 404 });
+    expect(mocks.db.workflowRun.create).not.toHaveBeenCalled();
+  });
+
+  it("returns an existing idempotent run without charging twice", async () => {
+    mocks.db.workflow.findFirst.mockResolvedValue(published);
+    const existing = { id: "run-existing", status: "SUCCEEDED", nodeRuns: [] };
+    mocks.db.workflowRun.findFirst.mockResolvedValue(existing);
+
+    await expect(createWorkflowRun("weekly", "user1", { input: {}, idempotencyKey: "weekly-12345678" }))
+      .resolves.toEqual(existing);
+    expect(mocks.db.workflowRun.create).not.toHaveBeenCalled();
+    expect(mocks.db.user.updateMany).not.toHaveBeenCalled();
+  });
+
   it("charges at least one point even when the estimate is zero", async () => {
     mocks.db.workflow.findFirst.mockResolvedValue({ ...published, estimatedCost: 0 });
 
@@ -768,5 +815,134 @@ describe("getPublishedWorkflow", () => {
     const workflow = await getPublishedWorkflow("weekly");
 
     expect(workflow?.publishedDefinition).toEqual(definition);
+  });
+});
+
+
+describe("ensureOfficialWorkflow", () => {
+  const input = {
+    officialId: "resume-bullets",
+    slug: "ans-official-resume-bullets",
+    title: "Resume bullets",
+    summary: "Create factual resume bullets",
+    estimatedCost: 2,
+    definition,
+    actorId: "user1",
+  };
+
+  it("registers a published platform-owned immutable version once", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue(null);
+    mocks.db.workflow.upsert.mockResolvedValue({
+      id: "official1",
+      slug: input.slug,
+      isOfficial: true,
+      status: "PUBLISHED",
+      publishedVersion: 1,
+      versions: [{ id: "v1" }],
+    });
+
+    const result = await ensureOfficialWorkflow(input);
+
+    expect(result).toEqual({ id: "official1", slug: input.slug });
+    expect(mocks.db.workflow.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      where: { officialId: input.officialId },
+      create: expect.objectContaining({
+        officialId: input.officialId,
+        isOfficial: true,
+        authorId: "admin1",
+        status: "PUBLISHED",
+        publishedVersion: 1,
+        versions: { create: expect.objectContaining({ version: 1 }) },
+      }),
+    }));
+  });
+
+  it("reuses a valid registration without rewriting its version", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue({
+      id: "official1",
+      slug: input.slug,
+      isOfficial: true,
+      status: "PUBLISHED",
+      publishedVersion: 1,
+      versions: [{ id: "v1" }],
+    });
+    mocks.db.user.findFirst.mockResolvedValue(null);
+
+    await expect(ensureOfficialWorkflow(input)).resolves.toEqual({ id: "official1", slug: input.slug });
+    expect(mocks.db.user.findFirst).not.toHaveBeenCalled();
+    expect(mocks.db.workflow.upsert).not.toHaveBeenCalled();
+  });
+
+
+  it("reports an occupied slug instead of leaking a database uniqueness error", async () => {
+    mocks.db.workflow.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ officialId: null });
+
+    await expect(ensureOfficialWorkflow(input)).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_SLUG_CONFLICT", status: 409 });
+    expect(mocks.db.workflow.upsert).not.toHaveBeenCalled();
+  });
+
+  it("requires a platform administrator for initial registration", async () => {
+    mocks.db.user.findFirst.mockResolvedValue(null);
+
+    await expect(ensureOfficialWorkflow(input)).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_OWNER_REQUIRED", status: 503 });
+    expect(mocks.db.workflow.upsert).not.toHaveBeenCalled();
+  });
+
+  it("reserves the official workflow slug namespace", async () => {
+    await expect(createWorkflow("author1", {
+      slug: "ans-official-resume-bullets",
+      title: "Reserved",
+      definition,
+    })).rejects.toMatchObject({ code: "RESERVED_SLUG", status: 409 });
+    expect(mocks.db.user.findUnique).not.toHaveBeenCalled();
+    expect(mocks.db.workflow.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("official workflow protection", () => {
+  const official = {
+    id: "official1",
+    slug: "ans-official-resume-bullets",
+    authorId: "admin1",
+    status: "PENDING",
+    isOfficial: true,
+    reviewScore: null,
+    title: "Official",
+    summary: null,
+    description: null,
+    versions: [{ version: 1, definition }],
+  };
+
+
+  it("cannot be edited through workflow versioning", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue(official);
+    await expect(createWorkflowVersion(official.slug, "admin1", { definition })).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_LOCKED", status: 403 });
+    expect(mocks.db.workflowVersion.create).not.toHaveBeenCalled();
+  });
+
+  it("cannot be published through the regular publishing endpoint", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue(official);
+    await expect(publishWorkflow(official.slug, "admin1")).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_LOCKED", status: 403 });
+    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
+  });
+
+  it("cannot be submitted for review", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue(official);
+    await expect(submitWorkflowForReview(official.slug, "admin1")).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_LOCKED", status: 403 });
+    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
+  });
+
+  it("cannot be rechecked by admins", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue(official);
+    await expect(recheckWorkflowReview(official.slug, "admin1")).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_LOCKED", status: 403 });
+    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
+  });
+
+  it("cannot be manually published or rejected through review", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue(official);
+    await expect(reviewWorkflow(official.slug, "admin1", { action: "reject", note: "test" })).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_LOCKED", status: 403 });
+    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
   });
 });
