@@ -1,19 +1,14 @@
-version: '3.8'
-
 # ============================================================================
 # ANS 组织官网 / AI 原生社区平台（ans.cauai.fun）
 #
-# 与 prompts.cauai.fun 的关系：
-#   - 代码：独立仓库 1008611-creater/ans-platform（从 prompts-chat 复用而来）
-#   - 容器：独立容器 ans-platform-app，独立端口 3001
-#   - 镜像：独立镜像 ans-platform:latest（绝不复用 ghcr.io/f/prompts.chat:latest，
-#           否则构建新站时会覆盖旧站镜像，旧站下次 up -d 直接变成新代码）
-#   - 数据库：共享 prompts-chat-db 的 prompts_chat 库 —— 账号体系天然打通
-#   - 网络：复用 prompts-chat_default，与数据库容器同网，可用容器名互访
+# 生产运行约束：
+#   - 镜像：独立镜像 ans-platform:latest，不复用旧站镜像
+#   - 数据库：使用独立的托管 PostgreSQL，由 .env 注入 DATABASE_URL/DIRECT_URL
+#   - 本文件不启动数据库，也不连接 localhost 或 Docker 内的 PostgreSQL
 #
 # 用法（务必带 -f，目录下另有构建用的 compose.yml）：
-#   构建：docker compose -f compose.yml build app      （约 20 分钟）
-#   启动：docker compose -f docker-compose.yml up -d app
+#   构建：docker compose --env-file .env -f compose.yml build app
+#   启动：docker compose --env-file .env -f docker-compose.yml up -d app
 #   注意：build 完成 ≠ 上线，必须再跑一次 up -d 才会 Recreate 容器
 #
 # 敏感值从同目录 .env 读取（.env 不入库，已 gitignore）
@@ -26,9 +21,9 @@ services:
     ports:
       - "3001:3000"
     environment:
-      DATABASE_URL: "postgresql://prompts:${DB_PASSWORD:-prompts123}@prompts-chat-db:5432/prompts_chat?schema=public"
-      DIRECT_URL: "postgresql://prompts:${DB_PASSWORD:-prompts123}@prompts-chat-db:5432/prompts_chat?schema=public"
-      AUTH_SECRET: "${AUTH_SECRET}"
+      DATABASE_URL: "${DATABASE_URL:?DATABASE_URL must point to a managed PostgreSQL database}"
+      DIRECT_URL: "${DIRECT_URL:?DIRECT_URL must point to a direct PostgreSQL connection}"
+      AUTH_SECRET: "${AUTH_SECRET:?AUTH_SECRET must be set in production}"
       # 生产鉴权靠 AUTH_URL 而不是 NEXTAUTH_URL。
       # next-auth v5 取 AUTH_URL ?? NEXTAUTH_URL 覆盖请求 URL，配错会导致
       # /api/auth/* 全部 UntrustedHost 500，表现为全站登录不上。
@@ -64,6 +59,7 @@ services:
       PCHAT_FEATURE_AI_GENERATION: "false"
       PCHAT_FEATURE_MCP: "true"
       PCHAT_FEATURE_COMMENTS: "true"
+    # Caddy resolves ans-platform-app through this existing Docker network.
     networks:
       - prompts-chat-shared
     restart: unless-stopped
