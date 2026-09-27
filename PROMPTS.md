@@ -163169,3 +163169,16 @@ A cinematic, high-quality video scene in a split-screen or retro-modern café se
 
 </details>
 
+<details>
+<summary><strong>تحويل الشعار أو النص إلي تصميم نسيج جميل </strong></summary>
+
+## تحويل الشعار أو النص إلي تصميم نسيج جميل 
+
+Contributed by @anonymous
+
+```md
+Create a highly detailed, textured logo for (Brand Name), made of thick yarn or wool. Each section of the logo should be in a different vibrant color (matching the reference image provided). The yarn should have a knitted texture with clearly visible fibers, giving a soft, dynamic 3D appearance. Ensure the logo has a three-dimensional effect with shading that makes it look like a knitted piece of fabric. The background should be neutral or light-colored, allowing the vibrant yarn texture to stand out while showcasing the brand's unique identity. Format 4:5
+```
+
+</details>
+
