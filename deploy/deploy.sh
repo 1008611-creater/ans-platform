@@ -23,6 +23,7 @@ SERVICE="app"
 IMAGE="ans-platform:latest"
 
 cd "$DEPLOY_DIR"
+ENV_FILE="${ENV_FILE:-.env}"
 
 if [[ "${1:-}" == "--status" ]]; then
     echo "=== git ==="
@@ -37,15 +38,37 @@ fi
 echo "[1/4] 拉取最新代码"
 git pull --ff-only origin main
 
+if [[ ! -f "$ENV_FILE" ]]; then
+    echo "错误：缺少 $ENV_FILE。生产部署必须提供托管 PostgreSQL 的 DATABASE_URL 和 DIRECT_URL。" >&2
+    exit 1
+fi
+
+# Compose 会在这里校验必填变量；不输出解析后的配置，避免把连接串写入日志。
+if ! docker compose --env-file "$ENV_FILE" -f "$RUN_COMPOSE" config --quiet; then
+    echo "错误：生产 compose 配置不完整，请检查 $ENV_FILE。" >&2
+    exit 1
+fi
+
+# 阻止把生产容器误接回本机或旧站数据库容器。
+if grep -Eiq '^DATABASE_URL=.*@(localhost|127\.0\.0\.1|\[::1\]|db|prompts-chat-db)(:|/)' "$ENV_FILE"; then
+    echo "错误：DATABASE_URL 必须指向独立托管 PostgreSQL，不能使用本机或 Docker 数据库服务。" >&2
+    exit 1
+fi
+if grep -Eiq '^DIRECT_URL=.*@(localhost|127\.0\.0\.1|\[::1\]|db|prompts-chat-db)(:|/)' "$ENV_FILE"; then
+    echo "错误：DIRECT_URL 必须指向独立托管 PostgreSQL，不能使用本机或 Docker 数据库服务。" >&2
+    exit 1
+fi
+
+
 if [[ "${1:-}" != "--no-build" ]]; then
     echo "[2/4] 构建镜像（约 20 分钟，可 Ctrl-C 中断后重跑，有缓存）"
-    docker compose -f "$BUILD_COMPOSE" build "$SERVICE"
+    docker compose --env-file "$ENV_FILE" -f "$BUILD_COMPOSE" build "$SERVICE"
 else
     echo "[2/4] 跳过构建（--no-build）"
 fi
 
 echo "[3/4] 重启容器（这一步才是真正上线）"
-docker compose -f "$RUN_COMPOSE" up -d "$SERVICE"
+docker compose --env-file "$ENV_FILE" -f "$RUN_COMPOSE" up -d "$SERVICE"
 
 echo "[4/4] 等待就绪"
 sleep 20

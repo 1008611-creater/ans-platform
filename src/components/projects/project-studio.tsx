@@ -63,7 +63,11 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
       return {
         key: fact.key,
         value: fact.value,
-        confirmation: !value ? "missing" : value === "暂无" || confirm ? "confirmed" : "unconfirmed",
+        confirmation: !value
+          ? "missing"
+          : value === "暂无" || confirm || fact.confirmation === "confirmed"
+            ? "confirmed"
+            : "unconfirmed",
       };
     });
   }
@@ -77,6 +81,12 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
     setError("");
     try {
       await postJson(`/api/projects/${project.id}/facts`, { facts: factPayload(confirm) });
+      if (confirm) {
+        setFacts((current) => current.map((fact) => ({
+          ...fact,
+          confirmation: fact.value.trim() ? "confirmed" : "missing",
+        })));
+      }
       setMessage(confirm ? "事实已确认。接下来生成的材料会使用这份已确认内容。" : "事实已保存。接下来生成的材料都会使用这份内容。");
       router.refresh();
     } catch (cause) {

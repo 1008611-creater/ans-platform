@@ -19,7 +19,7 @@ ANS 组织官网 + AI 原生社区平台。代码从 [ANS](https://github.com/f/
 | 代码仓库 | 本地目录，无独立远端 | `1008611-creater/ans-platform` |
 | 容器 | `prompts-chat-app`（3000） | `ans-platform-app`（3001） |
 | 镜像 | `ghcr.io/f/ANS:latest` | `ans-platform:latest` |
-| 数据库 | `prompts_chat` | 共享同一个库（账号体系打通） |
+| 数据库 | `prompts_chat` | 独立托管 PostgreSQL（迁移待执行） |
 
 > ⚠️ **镜像名必须保持独立**。若本仓库构建时打出 `ghcr.io/f/ANS:latest`，
 > 会覆盖旧站镜像，旧站下次重启就会跑到新代码上。
@@ -50,18 +50,19 @@ npm run dev
 
 ## 部署
 
-部署在自有服务器（Docker），Cloudflare 负责 DNS 与 CDN。
+应用部署在自有服务器（Docker），目标数据库是独立的托管 PostgreSQL，Cloudflare 负责 DNS 与 CDN。首次切换需先完成数据库 provision 和数据迁移。
+
+先在服务器同目录创建 `.env`，至少填写 `DATABASE_URL`、`DIRECT_URL` 和 `AUTH_SECRET`。数据库连接串必须指向托管 PostgreSQL，不能填写 `localhost`、`127.0.0.1` 或 Docker 服务名。
 
 ```bash
 # 构建（约 20 分钟）
-docker compose -f compose.yml build app
+docker compose --env-file .env -f compose.yml build app
 
 # 上线（构建完成必须再跑一次，否则旧容器照跑）
-docker compose -f docker-compose.yml up -d app
+docker compose --env-file .env -f docker-compose.yml up -d app
 ```
 
-敏感配置放同目录 `.env`（已 gitignore），参考 `.env.ans.example`。
-
+容器启动时会先等待远程数据库可达，再执行 `prisma migrate deploy`，最后启动应用。敏感配置参考 `.env.ans.example`，不要提交真实连接串。
 ## 协作方式
 
 - `main` 是生产基线，所有改动走 PR，不直接 push
@@ -99,10 +100,12 @@ cd /srv/ans-platform && bash deploy/deploy.sh
 | `deploy/Caddyfile.ans.snippet` | `ans.cauai.fun` 的反代配置片段 |
 | `.env.ans.example` | 环境变量样例，复制为 `.env` 后填真实值 |
 
-## 动数据库前必须备份
+## 切换数据库前必须备份
 
-新旧两站共享同一个库，误操作会同时影响两个站点：
+ANS 迁移到独立托管库前，先备份当前库，并在 staging 库验证迁移。不要直接把冒烟测试跑到生产库。
 
 ```bash
-docker exec prompts-chat-db pg_dump -U prompts -d prompts_chat -Fc -f /tmp/backup.dump
+pg_dump "$DIRECT_URL" --format=custom --file=ans-before-db-cutover.dump
 ```
+
+切换完成后，再用独立的 `SMOKE_DATABASE_URL` 做浏览器冒烟、无障碍和性能检查。
