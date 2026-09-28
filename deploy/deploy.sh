@@ -50,11 +50,11 @@ if ! docker compose --env-file "$ENV_FILE" -f "$RUN_COMPOSE" config --quiet; the
 fi
 
 # 阻止把生产容器误接回本机或旧站数据库容器。
-if grep -Eiq '^DATABASE_URL=.*(@|//)(localhost|127\.0\.0\.1|\[::1\]|db|prompts-chat-db)(:|/|[?\"]|$)' "$ENV_FILE"; then
+if grep -Eiq '^DATABASE_URL=.*@(localhost|127\.0\.0\.1|\[::1\]|db|prompts-chat-db)(:|/)' "$ENV_FILE"; then
     echo "错误：DATABASE_URL 必须指向独立托管 PostgreSQL，不能使用本机或 Docker 数据库服务。" >&2
     exit 1
 fi
-if grep -Eiq '^DIRECT_URL=.*(@|//)(localhost|127\.0\.0\.1|\[::1\]|db|prompts-chat-db)(:|/|[?\"]|$)' "$ENV_FILE"; then
+if grep -Eiq '^DIRECT_URL=.*@(localhost|127\.0\.0\.1|\[::1\]|db|prompts-chat-db)(:|/)' "$ENV_FILE"; then
     echo "错误：DIRECT_URL 必须指向独立托管 PostgreSQL，不能使用本机或 Docker 数据库服务。" >&2
     exit 1
 fi

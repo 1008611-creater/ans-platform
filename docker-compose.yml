@@ -59,12 +59,4 @@ services:
       PCHAT_FEATURE_AI_GENERATION: "false"
       PCHAT_FEATURE_MCP: "true"
       PCHAT_FEATURE_COMMENTS: "true"
-    # Caddy resolves ans-platform-app through this existing Docker network.
-    networks:
-      - prompts-chat-shared
     restart: unless-stopped
-
-networks:
-  prompts-chat-shared:
-    external: true
-    name: prompts-chat_default

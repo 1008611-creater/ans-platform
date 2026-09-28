@@ -1,20 +1,18 @@
 import { spawn } from "node:child_process";
 
-// 质量门只需要能解析 Prisma 配置和完成构建，不需要真实数据库连接。
-// 这里补齐缺省的构建期变量，避免 verify 依赖调用者手工导出环境变量。
-// 生产运行时仍使用部署环境里的真实取值，本文件不参与运行。
-const buildTimeDefaults = {
-  DATABASE_URL: "postgresql://verify:verify@127.0.0.1:5432/verify",
-  MODEL_CREDENTIAL_SECRET: "verify-only-secret",
-};
-
-for (const [key, value] of Object.entries(buildTimeDefaults)) {
-  if (!process.env[key]) {
-    process.env[key] = value;
-    console.log(`[verify] 使用缺省 ${key}（仅构建期，不连接数据库）`);
-  }
+// 完整 verify 必须明确连接隔离的 staging/CI 数据库。
+// 不把本机 PostgreSQL 或构建期占位连接串当作验证环境。
+if (!process.env.DATABASE_URL) {
+  console.error("[verify] 缺少 DATABASE_URL：完整验证必须提供隔离的 staging/CI PostgreSQL。");
+  process.exit(2);
 }
-
+if (!process.env.SMOKE_DATABASE_URL) {
+  console.error("[verify] 缺少 SMOKE_DATABASE_URL：浏览器、无障碍和性能验证必须使用独立测试库。");
+  process.exit(2);
+}
+if (!process.env.MODEL_CREDENTIAL_SECRET) {
+  process.env.MODEL_CREDENTIAL_SECRET = "verify-only-secret";
+}
 const steps = [
   ["typecheck", "npm", ["run", "typecheck"]],
   // `next build` 的 TypeScript 阶段会连同 src/__tests__ 一起检查，这里提前独立跑一次，
@@ -37,16 +35,11 @@ const steps = [
 // 把跳过转成失败，避免生产依赖漏洞在流水线里被静默忽略。
 if (!process.env.AUDIT_MODE) process.env.AUDIT_MODE = "auto";
 
-// 浏览器冒烟在缺浏览器、缺构建产物或数据库不可达时按「跳过」处理（退出码 0），
-// 因此本地没有 Docker 也能跑通整个门禁。CI 通过 SMOKE_MODE=require 把跳过转成
-// 失败，避免冒烟在流水线里被静默忽略。
+// 浏览器冒烟的数据库地址必须由调用者显式提供；缺少浏览器或构建产物时，
+// 仍可由 SMOKE_MODE / A11Y_MODE / PERF_MODE 决定是否把前置条件缺失视为失败。
 if (!process.env.SMOKE_MODE) process.env.SMOKE_MODE = "auto";
 
-// 冒烟默认复用 DATABASE_URL。用缺省值说明本次只跑公开页面（无法登录），
-// 想覆盖登录后的路径请显式提供 SMOKE_DATABASE_URL。
-if (!process.env.SMOKE_DATABASE_URL && process.env.DATABASE_URL === buildTimeDefaults.DATABASE_URL) {
-  console.log("[verify] 未提供 SMOKE_DATABASE_URL，冒烟将只覆盖未登录页面");
-}
+console.log("[verify] 使用显式 SMOKE_DATABASE_URL 执行浏览器、无障碍和性能验证");
 
 // 可访问性与性能同样在真实构建产物上跑浏览器，前置条件（浏览器、构建产物、
 // 可写冒烟库）与冒烟一致。默认 auto 跳过；CI 用 A11Y_MODE / PERF_MODE 把

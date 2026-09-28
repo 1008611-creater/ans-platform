@@ -19,7 +19,7 @@ ANS 组织官网 + AI 原生社区平台。代码从 [ANS](https://github.com/f/
 | 代码仓库 | 本地目录，无独立远端 | `1008611-creater/ans-platform` |
 | 容器 | `prompts-chat-app`（3000） | `ans-platform-app`（3001） |
 | 镜像 | `ghcr.io/f/ANS:latest` | `ans-platform:latest` |
-| 数据库 | `prompts_chat` | 独立 Supabase PostgreSQL；旧站数据不导入，新库业务表为空 |
+| 数据库 | `prompts_chat` | 独立托管 PostgreSQL（迁移待执行） |
 
 > ⚠️ **镜像名必须保持独立**。若本仓库构建时打出 `ghcr.io/f/ANS:latest`，
 > 会覆盖旧站镜像，旧站下次重启就会跑到新代码上。
@@ -50,7 +50,7 @@ npm run dev
 
 ## 部署
 
-应用部署在自有服务器（Docker），目标数据库是独立的托管 PostgreSQL，Cloudflare 负责 DNS 与 CDN。首次切换使用独立 Supabase production 数据库；按当前决定，旧站账号和内容不复制到新库。
+应用部署在自有服务器（Docker），目标数据库是独立的托管 PostgreSQL，Cloudflare 负责 DNS 与 CDN。首次切换需先完成数据库 provision 和数据迁移。
 
 先在服务器同目录创建 `.env`，至少填写 `DATABASE_URL`、`DIRECT_URL` 和 `AUTH_SECRET`。数据库连接串必须指向托管 PostgreSQL，不能填写 `localhost`、`127.0.0.1` 或 Docker 服务名。
 
@@ -100,8 +100,12 @@ cd /srv/ans-platform && bash deploy/deploy.sh
 | `deploy/Caddyfile.ans.snippet` | `ans.cauai.fun` 的反代配置片段 |
 | `.env.ans.example` | 环境变量样例，复制为 `.env` 后填真实值 |
 
-## 本次切换的数据决定
+## 切换数据库前必须备份
 
-本次部署不导入旧站账号、提示词或其他历史业务数据。新 Supabase production 已应用 Prisma schema migrations，业务表为空；旧站共享库保留原样，不删除也不覆盖。
+ANS 迁移到独立托管库前，先备份当前库，并在 staging 库验证迁移。不要直接把冒烟测试跑到生产库。
+
+```bash
+pg_dump "$DIRECT_URL" --format=custom --file=ans-before-db-cutover.dump
+```
 
 切换完成后，再用独立的 `SMOKE_DATABASE_URL` 做浏览器冒烟、无障碍和性能检查。

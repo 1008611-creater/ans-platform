@@ -56,3 +56,8 @@ tmp-*
 
 # WorkBuddy session/project data
 .workbuddy/
+
+# Local credentials and signing material (never commit)
+android/keystore.properties
+android/*.keystore
+ai-video-skills-source/agnes-video-gen/AGNES_API_KEY.txt
