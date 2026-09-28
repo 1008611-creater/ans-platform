@@ -11,7 +11,7 @@ import { listPublishedWorkflows } from "@/server/workflows/service";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "工作流广场 · ANS",
+  title: "工作流广场",
   description: "按节点编排的校园 AI 工作流，填好输入即可一次跑完。",
 };
 
