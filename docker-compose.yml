@@ -60,3 +60,10 @@ services:
       PCHAT_FEATURE_MCP: "true"
       PCHAT_FEATURE_COMMENTS: "true"
     restart: unless-stopped
+    networks:
+      - prompts-chat-shared
+
+networks:
+  prompts-chat-shared:
+    external: true
+    name: prompts-chat_default
