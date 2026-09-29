@@ -1,0 +1,11 @@
+﻿import Link from "next/link";
+import { listPublishedArtifacts } from "@/server/projects/publication";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+export const dynamic = "force-dynamic";
+
+export default async function ShowcasePage() {
+  const artifacts = await listPublishedArtifacts(48);
+  return <main className="container space-y-8 py-10"><header className="max-w-3xl space-y-3"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">ANS · COMMUNITY SHOWCASE</p><h1 className="text-4xl font-bold tracking-tight sm:text-5xl">作品，不该只留在文件夹里。</h1><p className="text-muted-foreground">这里展示经评审并获授权的具体作品版本。点赞、评论和收藏都跟随这个版本；作者撤回后，页面和互动会立刻失效。</p></header><div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{artifacts.map((artifact) => <Link key={artifact.id} href={`/showcase/${artifact.id}`} className="group"><Card className="h-full overflow-hidden transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl"><div className="h-36 bg-gradient-to-br from-indigo-500/20 via-fuchsia-500/15 to-amber-400/20 p-5"><div className="flex items-center justify-between"><Badge variant="secondary">评审通过 · v{artifact.version}</Badge><span className="text-xs text-muted-foreground">{artifact.counts.reactions} 赞 · {artifact.counts.comments} 评论</span></div><p className="mt-6 line-clamp-2 text-lg font-bold tracking-tight">{artifact.title}</p></div><CardContent className="space-y-4 p-5"><p className="line-clamp-4 min-h-24 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{artifact.markdown}</p><div className="flex items-center justify-between border-t pt-4 text-sm"><span>{artifact.author.nickname || artifact.author.username}{artifact.project.team ? ` · ${artifact.project.team.name}` : ""}</span><span className="font-medium text-primary group-hover:underline">打开作品 →</span></div><p className="text-xs text-muted-foreground">赛事 / 项目：{artifact.project.title}</p></CardContent></Card></Link>)}</div>{artifacts.length === 0 ? <Card className="border-dashed"><CardContent className="py-16 text-center"><p className="text-lg font-semibold">第一个公开作品，等你来发布</p><p className="mt-2 text-sm text-muted-foreground">完成项目、提交具体版本并通过评审后，作品会出现在这里。</p></CardContent></Card> : null}</main>;
+}

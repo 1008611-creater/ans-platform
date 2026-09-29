@@ -62,6 +62,7 @@ function present(project: ProjectWithRelations) {
   return {
     id: project.id,
     title: project.title,
+    teamId: project.teamId,
     goal: GOAL_FROM_DB[project.goal],
     status: project.status === "ARCHIVED" ? "archived" : "active",
     visibility: VISIBILITY_FROM_DB[project.visibility],
@@ -107,7 +108,13 @@ async function loadOwned(projectId: string, userId: string) {
 
 export async function listProjects(userId: string) {
   const projects = await db.project.findMany({
-    where: { ownerId: userId, status: { not: "ARCHIVED" } },
+    where: {
+      status: { not: "ARCHIVED" },
+      OR: [
+        { ownerId: userId },
+        { team: { members: { some: { userId, status: "ACTIVE" } } } },
+      ],
+    },
     orderBy: { updatedAt: "desc" },
     include: { facts: true, artifacts: { include: { versions: true } } },
   });
@@ -117,9 +124,17 @@ export async function listProjects(userId: string) {
 export async function createProject(userId: string, rawInput: unknown) {
   const parsed = projectCreateSchema.safeParse(rawInput);
   if (!parsed.success) throw new ProjectServiceError("项目信息不完整。", "INVALID_INPUT");
+  if (parsed.data.teamId) {
+    const membership = await db.teamMember.findFirst({
+      where: { teamId: parsed.data.teamId, userId, status: "ACTIVE" },
+      select: { id: true },
+    });
+    if (!membership) throw new ProjectServiceError("你不是该团队的有效成员，无法创建团队项目。", "TEAM_PERMISSION_REQUIRED", 403);
+  }
   const project = await db.project.create({
     data: {
       ownerId: userId,
+      teamId: parsed.data.teamId ?? null,
       title: parsed.data.title,
       goal: GOAL_TO_DB[parsed.data.goal],
       visibility: "PRIVATE",
