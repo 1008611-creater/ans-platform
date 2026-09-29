@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   db: {
     user: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), findFirst: vi.fn(), updateMany: vi.fn() },
-    workflow: { create: vi.fn(), upsert: vi.fn(), findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), update: vi.fn() },
+    workflow: { create: vi.fn(), upsert: vi.fn(), findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     workflowVersion: { create: vi.fn() },
     workflowRun: { create: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), findUniqueOrThrow: vi.fn() },
     workflowNodeRun: { createMany: vi.fn() },
@@ -92,6 +92,7 @@ beforeEach(() => {
     summary: null,
     description: null,
   });
+  mocks.db.workflow.updateMany.mockResolvedValue({ count: 1 });
   mocks.db.workflowVersion.create.mockResolvedValue({ id: "v2", version: 2 });
   mocks.db.workflowRun.create.mockResolvedValue({ id: "run1" });
   mocks.db.workflowRun.findUniqueOrThrow.mockResolvedValue({ id: "run1", nodeRuns: [] });
@@ -389,9 +390,10 @@ describe("submitWorkflowForReview", () => {
 
     await submitWorkflowForReview("weekly", "author1");
 
-    expect(mocks.db.workflow.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: "PENDING" } }),
-    );
+    expect(mocks.db.workflow.updateMany).toHaveBeenCalledWith({
+      where: { id: "w1", status: "DRAFT" },
+      data: { status: "PENDING" },
+    });
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ action: "WORKFLOW_SUBMITTED" }) }),
     );
@@ -411,6 +413,47 @@ describe("submitWorkflowForReview", () => {
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ action: "WORKFLOW_AI_REVIEWED" }) }),
     );
+  });
+
+  it("does not rerun AI review when a submission is already pending", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue({
+      id: "w1",
+      authorId: "author1",
+      status: "PENDING",
+      title: "test workflow",
+      summary: null,
+      description: null,
+      versions: [{ version: 1, definition }],
+    });
+
+    const submitted = await submitWorkflowForReview("weekly", "author1");
+
+    expect(submitted.status).toBe("PENDING");
+    expect(mocks.db.workflow.updateMany).not.toHaveBeenCalled();
+    expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
+    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
+  });
+
+  it("treats a concurrent submission as already accepted without running AI review twice", async () => {
+    mocks.db.workflow.findUnique
+      .mockResolvedValueOnce({
+        id: "w1",
+        authorId: "author1",
+        status: "DRAFT",
+        title: "test workflow",
+        summary: null,
+        description: null,
+        versions: [{ version: 1, definition }],
+      })
+      .mockResolvedValueOnce({ status: "PENDING" });
+    mocks.db.workflow.updateMany.mockResolvedValueOnce({ count: 0 });
+
+    const submitted = await submitWorkflowForReview("weekly", "author1");
+
+    expect(submitted.status).toBe("PENDING");
+    expect(mocks.db.workflow.updateMany).toHaveBeenCalledTimes(1);
+    expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
+    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
   });
 
   it("still submits when the AI reviewer is unreachable", async () => {
