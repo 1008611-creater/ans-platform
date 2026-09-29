@@ -87,6 +87,12 @@ model User {
   publicationReviews ArtifactPublication[] @relation("ArtifactPublicationReviewer")
   competitionReviews TeamCompetition[] @relation("CompetitionReviewer")
   competitionContributions TeamCompetitionContribution[]
+  authoredXpRewardRules XpRewardRule[] @relation("XpRewardRuleAuthor")
+  reviewedXpRewardAppeals XpRewardAppeal[] @relation("XpRewardAppealReviewer")
+  xpRewardAppeals XpRewardAppeal[] @relation("XpRewardAppealAuthor")
+  xpRewardGrants XpRewardGrant[]
+  openedXpRewardReviews XpRewardReviewCase[] @relation("XpRewardReviewOpener")
+  resolvedXpRewardReviews XpRewardReviewCase[] @relation("XpRewardReviewResolver")
   artifactReactions ArtifactReaction[]
   artifactComments ArtifactComment[]
   artifactReports ArtifactReport[] @relation("ArtifactReportAuthor")
@@ -551,6 +557,8 @@ enum XpReason {
   RUN_COMPLETE
   MANUAL_ADJUST
   COMPETITION_AWARD
+  COMMUNITY_REWARD
+  REWARD_REVERSAL
 }
 
 model XpLedger {
@@ -563,10 +571,100 @@ model XpLedger {
   refId     String?
   note      String?
   createdAt DateTime @default(now())
+  appeal XpRewardAppeal?
+  reviewCase XpRewardReviewCase?
+  rewardGrant XpRewardGrant?
 
   @@index([userId, createdAt])
   @@index([userId, reason])
   @@map("xp_ledger")
+}
+
+enum XpRewardAppealStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum XpRewardReviewStatus {
+  OPEN
+  CLEARED
+  REVERSED
+}
+
+model XpRewardRule {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  title       String
+  description String?  @db.VarChar(1000)
+  amount      Int
+  dailyLimit  Int      @default(1)
+  active      Boolean  @default(true)
+  createdById String
+  createdBy   User     @relation("XpRewardRuleAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  grants      XpRewardGrant[]
+
+  @@index([active, createdAt])
+  @@map("xp_reward_rules")
+}
+
+model XpRewardGrant {
+  id        String       @id @default(cuid())
+  ruleId    String
+  rule      XpRewardRule @relation(fields: [ruleId], references: [id], onDelete: Restrict)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceType String
+  sourceId  String
+  amount    Int
+  ledgerId  String       @unique
+  ledger    XpLedger     @relation(fields: [ledgerId], references: [id], onDelete: Restrict)
+  createdAt DateTime     @default(now())
+
+  @@unique([ruleId, userId, sourceType, sourceId])
+  @@index([userId, createdAt])
+  @@map("xp_reward_grants")
+}
+
+model XpRewardAppeal {
+  id           String                @id @default(cuid())
+  ledgerId     String                @unique
+  ledger       XpLedger              @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User                  @relation("XpRewardAppealAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  message      String                @db.VarChar(2000)
+  status       XpRewardAppealStatus  @default(PENDING)
+  reviewedById String?
+  reviewer     User?                 @relation("XpRewardAppealReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  resolution   String?               @db.VarChar(2000)
+  adjustment  Int                   @default(0)
+  createdAt    DateTime              @default(now())
+  reviewedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@map("xp_reward_appeals")
+}
+
+model XpRewardReviewCase {
+  id           String              @id @default(cuid())
+  ledgerId     String              @unique
+  ledger       XpLedger            @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
+  openedById   String
+  openedBy     User                @relation("XpRewardReviewOpener", fields: [openedById], references: [id], onDelete: Restrict)
+  reason       String              @db.VarChar(1000)
+  status       XpRewardReviewStatus @default(OPEN)
+  resolvedById String?
+  resolver     User?               @relation("XpRewardReviewResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolution   String?             @db.VarChar(2000)
+  reversalLedgerId String?         @unique
+  createdAt    DateTime            @default(now())
+  resolvedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@map("xp_reward_review_cases")
 }
 
 model CheckIn {

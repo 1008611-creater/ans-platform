@@ -201,6 +201,7 @@ export default async function AdminPage() {
         <Link href="/admin/competitions" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted">
           <Trophy className="h-4 w-4 text-muted-foreground" /> {navT("competitionHub")}
         </Link>
+        <Link href="/admin/rewards" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted">创作者奖励治理</Link>
         {can("PROMPTS_MANAGE") && (
           <Link
             href="/admin/templates"
