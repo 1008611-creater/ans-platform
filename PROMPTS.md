@@ -163618,3 +163618,16 @@ A professional, cinematic portrait featuring a {subject} in a stunning {dress} a
 
 </details>
 
+<details>
+<summary><strong>В Летящий самолет попадает молния</strong></summary>
+
+## В Летящий самолет попадает молния
+
+Contributed by @anonymous
+
+```md
+Создай короткий промт на 5-7 секунд как летящий самолет в небе попадает молния
+```
+
+</details>
+
