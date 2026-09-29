@@ -226,7 +226,7 @@ describe("本人数据与贡献榜隐私", () => {
     expect(result.ledger).toHaveLength(50);
     expect(result.ledger[0].id).toBe("l-59");
     expect(result.ledger[49].id).toBe("l-10");
-    expect(tx.xpLedger.findMany).toHaveBeenCalledWith({ where: { userId: "self" }, take: 50, orderBy: [{ createdAt: "desc" }, { id: "desc" }], select: { id: true, amount: true, reason: true, note: true, createdAt: true } });
+    expect(tx.xpLedger.findMany).toHaveBeenCalledWith({ where: { userId: "self" }, take: 50, orderBy: [{ createdAt: "desc" }, { id: "desc" }], select: { id: true, amount: true, reason: true, note: true, createdAt: true, appeal: { select: { status: true } } } });
     expect(JSON.stringify(result)).not.toMatch(/email|username|nickname|userId|refId|refType/);
   });
 
