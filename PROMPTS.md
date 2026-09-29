@@ -163696,3 +163696,16 @@ If nothing matches or the query is out of scope/nonsense, output:
 
 </details>
 
+<details>
+<summary><strong>Para el amor de mi vida</strong></summary>
+
+## Para el amor de mi vida
+
+Contributed by @anonymous
+
+```md
+Create a cute, futuristic, and bubbly graffiti text logo featuring the words “I love you Bris”. The top word is pearlescent white-silver and the bottom word is hot neon pink. Use a deep purple outline with glowing pink edges. Add holographic butterflies, pixel hearts, stars, bubbles, glitter particles, chrome droplets, and futuristic liquid splashes behind the text. Make the letters chunky, soft, inflated, and glossy with a luxurious chrome-gel appearance. Place it on a clean white background.
+```
+
+</details>
+
