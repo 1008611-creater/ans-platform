@@ -9,13 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 export function WorkflowActions({
   slug,
   mode,
-  selfReview = false,
   canPublish = false,
   version,
 }: {
   slug: string;
   mode: "submit" | "publish" | "review";
-  selfReview?: boolean;
   /** Whether the AI review currently allows an admin to publish. */
   canPublish?: boolean;
   version?: number;
@@ -97,10 +95,6 @@ export function WorkflowActions({
     } finally {
       setBusy(false);
     }
-  }
-
-  if (selfReview) {
-    return <p className="text-sm text-muted-foreground">{"这是你创建的工作流，不能自审，请其他管理员处理。"}</p>;
   }
 
   return (

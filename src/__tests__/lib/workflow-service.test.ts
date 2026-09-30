@@ -510,7 +510,7 @@ describe("reviewWorkflow", () => {
     expect(mocks.db.workflow.findUnique).not.toHaveBeenCalled();
   });
 
-  it("blocks self-review", async () => {
+  it("allows an admin to review their own workflow", async () => {
     mocks.db.workflow.findUnique.mockResolvedValue({
       id: "w1",
       authorId: "admin1",
@@ -519,10 +519,11 @@ describe("reviewWorkflow", () => {
       versions: [{ version: 1, definition }],
     });
 
-    const error = await reviewWorkflow("weekly", "admin1", { action: "publish", note: "通过" }).catch((thrown) => thrown);
+    await reviewWorkflow("weekly", "admin1", { action: "publish", note: "通过" });
 
-    expect((error as WorkflowServiceError).code).toBe("FORBIDDEN");
-    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
+    expect(mocks.db.workflow.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: "PUBLISHED" }) }),
+    );
   });
 
   it("refuses to review a workflow that is not pending", async () => {
@@ -676,7 +677,7 @@ describe("recheckWorkflowReview", () => {
     );
   });
 
-  it("blocks the author from rechecking their own workflow", async () => {
+  it("allows the author-admin to recheck their own workflow", async () => {
     mocks.db.workflow.findUnique.mockResolvedValue({
       id: "w1",
       authorId: "admin1",
@@ -687,10 +688,12 @@ describe("recheckWorkflowReview", () => {
       versions: [{ version: 3, definition }],
     });
 
-    const error = await recheckWorkflowReview("weekly", "admin1").catch((thrown) => thrown);
+    await recheckWorkflowReview("weekly", "admin1");
 
-    expect((error as WorkflowServiceError).code).toBe("FORBIDDEN");
-    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
+    expect(mocks.db.workflow.update).toHaveBeenCalledWith({
+      where: { id: "w1" },
+      data: { reviewScore: expect.anything() },
+    });
   });
 
   it("refuses to recheck a workflow that already left the queue", async () => {

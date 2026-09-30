@@ -58,6 +58,16 @@ describe("workflow submit reconciliation", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it("shows review controls for an admin reviewing their own workflow", () => {
+    render(<WorkflowActions slug="weekly" mode="review" canPublish />);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "验收通过" } });
+
+    expect(screen.getByRole("button", { name: "复核通过并发布" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "驳回" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "重新 AI 初审" })).toBeEnabled();
+    expect(screen.queryByText("这是你创建的工作流，不能自审，请其他管理员处理。")).not.toBeInTheDocument();
+  });
+
   it("reconciles a server error because the request may have committed before the error", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse(500, { ok: false }))
