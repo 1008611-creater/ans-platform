@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { writeAuditLog } from "@/lib/audit";
-import { getAdminAiConfig, normalizeModelList, saveAdminAiConfig, syncAdminAiModels, syncAdminAiModelsWithKey, validateAiBaseUrl } from "@/server/admin/ai-config";
+import { getAdminAiConfig, normalizeModelList, recordAdminAiModelsSync, saveAdminAiConfig, syncAdminAiModels, syncAdminAiModelsWithKey, validateAiBaseUrl } from "@/server/admin/ai-config";
 
 export async function POST(request: Request) {
   const context = await requireAdminPermission("PROMPTS_MANAGE");
@@ -29,7 +27,7 @@ export async function POST(request: Request) {
       timeoutMs: current.timeoutMs,
       enabled: current.enabled,
     }, context.userId);
-    await writeAuditLog({ actorId: context.userId, action: "ADMIN_AI_MODELS_SYNC", resourceType: "ADMIN_AI_CONFIG", resourceId: saved.id, after: { count: models.length, selectedModel } });
+    await recordAdminAiModelsSync({ id: saved.id, count: models.length, selectedModel }, context.userId);
     const { buildPublicAiConfig } = await import("@/server/admin/ai-config");
     return NextResponse.json({ data: buildPublicAiConfig(saved), count: models.length });
   } catch (error) {

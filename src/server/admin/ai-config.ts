@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { writeAuditLog } from "@/lib/audit";
 import { decryptCredential, encryptCredential, maskStoredCredential } from "@/server/integrations/credential-crypto";
 
 export const ADMIN_AI_CONFIG_ID = "default";
@@ -124,6 +125,30 @@ export async function saveAdminAiConfig(input: AdminAiConfigInput, updatedById: 
       enabled: input.enabled,
       updatedById,
     },
+  });
+}
+
+export async function saveAdminAiConfigWithAudit(input: AdminAiConfigInput, updatedById: string) {
+  const before = await getAdminAiConfig();
+  const saved = await saveAdminAiConfig(input, updatedById);
+  await writeAuditLog({
+    actorId: updatedById,
+    action: "ADMIN_AI_CONFIG_UPDATE",
+    resourceType: "ADMIN_AI_CONFIG",
+    resourceId: saved.id,
+    before: before ? { baseUrl: before.baseUrl, selectedModel: before.selectedModel, reasoningEffort: before.reasoningEffort, timeoutMs: before.timeoutMs, enabled: before.enabled } : null,
+    after: { baseUrl: saved.baseUrl, selectedModel: saved.selectedModel, reasoningEffort: saved.reasoningEffort, timeoutMs: saved.timeoutMs, enabled: saved.enabled },
+  });
+  return saved;
+}
+
+export async function recordAdminAiModelsSync(config: { id: string; count: number; selectedModel: string }, actorId: string) {
+  await writeAuditLog({
+    actorId,
+    action: "ADMIN_AI_MODELS_SYNC",
+    resourceType: "ADMIN_AI_CONFIG",
+    resourceId: config.id,
+    after: { count: config.count, selectedModel: config.selectedModel },
   });
 }
 

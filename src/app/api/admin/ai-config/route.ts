@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdminPermission } from "@/lib/admin-permissions";
-import { writeAuditLog } from "@/lib/audit";
 import {
   buildPublicAiConfig,
   getAdminAiConfig,
   normalizeModelList,
   REVIEW_REASONING_EFFORTS,
-  saveAdminAiConfig,
+  saveAdminAiConfigWithAudit,
 } from "@/server/admin/ai-config";
 
 const inputSchema = z.object({
@@ -32,19 +31,10 @@ export async function PATCH(request: Request) {
   if (!context) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   try {
     const body = inputSchema.parse(await request.json());
-    const before = await getAdminAiConfig();
-    const saved = await saveAdminAiConfig({
+    const saved = await saveAdminAiConfigWithAudit({
       ...body,
       availableModels: normalizeModelList(body.availableModels),
     }, context.userId);
-    await writeAuditLog({
-      actorId: context.userId,
-      action: "ADMIN_AI_CONFIG_UPDATE",
-      resourceType: "ADMIN_AI_CONFIG",
-      resourceId: saved.id,
-      before: before ? { baseUrl: before.baseUrl, selectedModel: before.selectedModel, reasoningEffort: before.reasoningEffort, timeoutMs: before.timeoutMs, enabled: before.enabled } : null,
-      after: { baseUrl: saved.baseUrl, selectedModel: saved.selectedModel, reasoningEffort: saved.reasoningEffort, timeoutMs: saved.timeoutMs, enabled: saved.enabled },
-    });
     return NextResponse.json({ data: buildPublicAiConfig(saved) });
   } catch (error) {
     const message = error instanceof z.ZodError ? "配置格式不正确" : error instanceof Error ? error.message : "保存失败";
