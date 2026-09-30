@@ -17,6 +17,7 @@ export type CommunityLedgerEntry = {
   reason: string;
   note: string | null;
   createdAt: string;
+  appeal: { status: "PENDING" | "APPROVED" | "REJECTED" } | null;
 };
 
 /** 签到记录。 */

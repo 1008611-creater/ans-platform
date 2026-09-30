@@ -83,6 +83,19 @@ model User {
   projectFacts     ProjectFact[]      @relation("ProjectFactEditor")
   artifacts        Artifact[]         @relation("ArtifactCreator")
   artifactVersions ArtifactVersion[]  @relation("ArtifactVersionAuthor")
+  publicationRequests ArtifactPublication[] @relation("ArtifactPublicationRequester")
+  publicationReviews ArtifactPublication[] @relation("ArtifactPublicationReviewer")
+  competitionReviews TeamCompetition[] @relation("CompetitionReviewer")
+  competitionContributions TeamCompetitionContribution[]
+  authoredXpRewardRules XpRewardRule[] @relation("XpRewardRuleAuthor")
+  reviewedXpRewardAppeals XpRewardAppeal[] @relation("XpRewardAppealReviewer")
+  xpRewardAppeals XpRewardAppeal[] @relation("XpRewardAppealAuthor")
+  xpRewardGrants XpRewardGrant[]
+  openedXpRewardReviews XpRewardReviewCase[] @relation("XpRewardReviewOpener")
+  resolvedXpRewardReviews XpRewardReviewCase[] @relation("XpRewardReviewResolver")
+  artifactReactions ArtifactReaction[]
+  artifactComments ArtifactComment[]
+  artifactReports ArtifactReport[] @relation("ArtifactReportAuthor")
 
 
   @@index([deletedAt])
@@ -543,6 +556,9 @@ enum XpReason {
   TEMPLATE_APPROVED
   RUN_COMPLETE
   MANUAL_ADJUST
+  COMPETITION_AWARD
+  COMMUNITY_REWARD
+  REWARD_REVERSAL
 }
 
 model XpLedger {
@@ -555,10 +571,100 @@ model XpLedger {
   refId     String?
   note      String?
   createdAt DateTime @default(now())
+  appeal XpRewardAppeal?
+  reviewCase XpRewardReviewCase?
+  rewardGrant XpRewardGrant?
 
   @@index([userId, createdAt])
   @@index([userId, reason])
   @@map("xp_ledger")
+}
+
+enum XpRewardAppealStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum XpRewardReviewStatus {
+  OPEN
+  CLEARED
+  REVERSED
+}
+
+model XpRewardRule {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  title       String
+  description String?  @db.VarChar(1000)
+  amount      Int
+  dailyLimit  Int      @default(1)
+  active      Boolean  @default(true)
+  createdById String
+  createdBy   User     @relation("XpRewardRuleAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  grants      XpRewardGrant[]
+
+  @@index([active, createdAt])
+  @@map("xp_reward_rules")
+}
+
+model XpRewardGrant {
+  id        String       @id @default(cuid())
+  ruleId    String
+  rule      XpRewardRule @relation(fields: [ruleId], references: [id], onDelete: Restrict)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceType String
+  sourceId  String
+  amount    Int
+  ledgerId  String       @unique
+  ledger    XpLedger     @relation(fields: [ledgerId], references: [id], onDelete: Restrict)
+  createdAt DateTime     @default(now())
+
+  @@unique([ruleId, userId, sourceType, sourceId])
+  @@index([userId, createdAt])
+  @@map("xp_reward_grants")
+}
+
+model XpRewardAppeal {
+  id           String                @id @default(cuid())
+  ledgerId     String                @unique
+  ledger       XpLedger              @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User                  @relation("XpRewardAppealAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  message      String                @db.VarChar(2000)
+  status       XpRewardAppealStatus  @default(PENDING)
+  reviewedById String?
+  reviewer     User?                 @relation("XpRewardAppealReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  resolution   String?               @db.VarChar(2000)
+  adjustment  Int                   @default(0)
+  createdAt    DateTime              @default(now())
+  reviewedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@map("xp_reward_appeals")
+}
+
+model XpRewardReviewCase {
+  id           String              @id @default(cuid())
+  ledgerId     String              @unique
+  ledger       XpLedger            @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
+  openedById   String
+  openedBy     User                @relation("XpRewardReviewOpener", fields: [openedById], references: [id], onDelete: Restrict)
+  reason       String              @db.VarChar(1000)
+  status       XpRewardReviewStatus @default(OPEN)
+  resolvedById String?
+  resolver     User?               @relation("XpRewardReviewResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolution   String?             @db.VarChar(2000)
+  reversalLedgerId String?         @unique
+  createdAt    DateTime            @default(now())
+  resolvedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@map("xp_reward_review_cases")
 }
 
 model CheckIn {
@@ -837,6 +943,7 @@ enum FavoriteTargetType {
   PROMPT
   TEMPLATE
   WORKFLOW
+  ARTIFACT_VERSION
 }
 
 model ContentFavorite {
@@ -918,6 +1025,26 @@ enum CompetitionStatus {
   ENDED
 }
 
+enum CompetitionEntryStatus {
+  REGISTERED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum ArtifactPublicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ArtifactReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+
 model Competition {
   id          String            @id @default(cuid())
   title       String
@@ -927,6 +1054,9 @@ model Competition {
   status      CompetitionStatus @default(UPCOMING)
   startsAt    DateTime?
   endsAt      DateTime?
+  rules       String?           @db.Text
+  maxTeams    Int?
+  rewardXp    Int               @default(0)
   createdAt   DateTime          @default(now())
   teams       TeamCompetition[]
   runs        Run[]
@@ -945,9 +1075,23 @@ model TeamCompetition {
   quotaUsed     Int         @default(0)
   memberCap     Int         @default(0) // 单成员上限，防队长给自己无限额度
   frozen        Boolean     @default(false) // 比赛结束冻结回收
+  entryStatus CompetitionEntryStatus @default(REGISTERED)
+  submissionVersionId String?
+  submissionVersion ArtifactVersion? @relation("CompetitionSubmissionVersion", fields: [submissionVersionId], references: [id], onDelete: SetNull)
+  submittedById String?
+  submittedAt DateTime?
+  submissionNote String? @db.Text
+  publicConsent Boolean @default(false)
+  reviewedAt DateTime?
+  reviewedById String?
+  reviewer User? @relation("CompetitionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote String? @db.Text
+  awardedXp Int @default(0)
+  contributions TeamCompetitionContribution[]
   createdAt     DateTime    @default(now())
 
   @@unique([teamId, competitionId])
+  @@index([competitionId, entryStatus])
   @@map("team_competitions")
 }
 
@@ -1104,5 +1248,82 @@ model ArtifactVersion {
   @@unique([artifactId, version])
   @@index([createdById])
   @@index([workflowRunId])
+  publication ArtifactPublication?
+  competitionSubmissions TeamCompetition[] @relation("CompetitionSubmissionVersion")
+  reactions ArtifactReaction[]
+  comments ArtifactComment[]
+  reports ArtifactReport[]
   @@map("artifact_versions")
+}
+
+model ArtifactPublication {
+  id String @id @default(cuid())
+  artifactVersionId String @unique
+  artifactVersion ArtifactVersion @relation(fields: [artifactVersionId], references: [id], onDelete: Cascade)
+  requestedById String
+  requestedBy User @relation("ArtifactPublicationRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  status ArtifactPublicationStatus @default(PENDING)
+  requestedAt DateTime @default(now())
+  reviewedById String?
+  reviewedBy User? @relation("ArtifactPublicationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt DateTime?
+  reviewNote String? @db.Text
+  withdrawnAt DateTime?
+  @@index([status, requestedAt])
+  @@map("artifact_publications")
+}
+
+model ArtifactReaction {
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artifactVersionId String
+  artifactVersion ArtifactVersion @relation(fields: [artifactVersionId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@id([userId, artifactVersionId])
+  @@index([artifactVersionId, createdAt])
+  @@map("artifact_reactions")
+}
+
+model ArtifactComment {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artifactVersionId String
+  artifactVersion ArtifactVersion @relation(fields: [artifactVersionId], references: [id], onDelete: Cascade)
+  content String @db.VarChar(2000)
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+  @@index([artifactVersionId, createdAt])
+  @@index([userId, createdAt])
+  @@map("artifact_comments")
+}
+
+model ArtifactReport {
+  id String @id @default(cuid())
+  reporterId String
+  reporter User @relation("ArtifactReportAuthor", fields: [reporterId], references: [id], onDelete: Cascade)
+  artifactVersionId String
+  artifactVersion ArtifactVersion @relation(fields: [artifactVersionId], references: [id], onDelete: Cascade)
+  reason String
+  details String? @db.VarChar(1000)
+  status ArtifactReportStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  @@index([reporterId, artifactVersionId, status])
+  @@unique([reporterId, artifactVersionId, status])
+  @@index([status, createdAt])
+  @@map("artifact_reports")
+}
+
+
+model TeamCompetitionContribution {
+  id String @id @default(cuid())
+  teamCompetitionId String
+  teamCompetition TeamCompetition @relation(fields: [teamCompetitionId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points Int @default(1)
+  capturedAt DateTime @default(now())
+  @@unique([teamCompetitionId, userId])
+  @@index([userId, capturedAt])
+  @@map("team_competition_contributions")
 }

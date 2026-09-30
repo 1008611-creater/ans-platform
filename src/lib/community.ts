@@ -75,7 +75,7 @@ export async function getCommunityMe(userId: string) {
     const ledger = await tx.xpLedger.findMany({
       where: { userId }, take: 50,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      select: { id: true, amount: true, reason: true, note: true, createdAt: true },
+      select: { id: true, amount: true, reason: true, note: true, createdAt: true, appeal: { select: { status: true } } },
     });
     const todayCheckIn = await tx.checkIn.findUnique({
       where: { userId_day: { userId, day: getCommunityDay(new Date()) } }, select: checkInSelect,

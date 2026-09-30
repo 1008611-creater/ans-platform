@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { OFFICIAL_WORKFLOWS } from "@/domain/projects/pack";
 import { Badge } from "@/components/ui/badge";
@@ -53,7 +53,18 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState("");
+  const [publications, setPublications] = useState<Record<string, { status: string; reviewNote: string | null }>>({});
+  const [selectedVersions, setSelectedVersions] = useState<Record<string, string>>({});
   const completed = project.artifacts.length;
+
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/projects/${project.id}/publication`).then((response) => response.json()).then((result) => {
+      if (!active || !result.ok) return;
+      setPublications(Object.fromEntries((result.data.publications ?? []).map((item: { artifactVersionId: string; status: string; reviewNote: string | null }) => [item.artifactVersionId, item])));
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, [project.id]);
   const recommended = useMemo(() => OFFICIAL_WORKFLOWS.filter((workflow) => ["resume-bullets", "readme-draft", "project-one-pager"].includes(workflow.id)), []);
   const more = OFFICIAL_WORKFLOWS.filter((workflow) => !recommended.some((item) => item.id === workflow.id));
 
@@ -91,6 +102,25 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "保存失败。");
+    } finally {
+      setPending("");
+    }
+  }
+
+  async function changePublication(artifactVersionId: string, status: string | undefined) {
+    setPending(`publication:${artifactVersionId}`);
+    setError("");
+    setMessage("");
+    try {
+      const response = status === "APPROVED" || status === "PENDING"
+        ? await fetch(`/api/projects/${project.id}/publication`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ artifactVersionId }) })
+        : await fetch(`/api/projects/${project.id}/publication`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ artifactVersionId, acknowledged: true }) });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error?.message ?? "?????????");
+      setPublications((current) => ({ ...current, [artifactVersionId]: { status: status === "APPROVED" || status === "PENDING" ? "WITHDRAWN" : "PENDING", reviewNote: null } }));
+      setMessage(status === "APPROVED" || status === "PENDING" ? "????????????" : "???????????????????");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "?????????");
     } finally {
       setPending("");
     }
@@ -174,6 +204,9 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         {project.artifacts.length === 0 ? <Card className="border-dashed"><CardContent className="py-8 text-sm text-muted-foreground">还没有材料。先填写左侧事实，再生成第一份简历条目、README 或项目介绍。</CardContent></Card> : project.artifacts.map((artifact) => {
           const version = artifact.versions[0];
+          const selectedVersionId = selectedVersions[artifact.id] ?? version?.id;
+          const selectedVersion = artifact.versions.find((item) => item.id === selectedVersionId) ?? version;
+          const publicationStatus = selectedVersion ? publications[selectedVersion.id]?.status : undefined;
           return version ? (
             <Card key={artifact.id}>
               <CardHeader>
@@ -184,7 +217,10 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
                 <CardDescription>历史版本保留在项目中，再次生成不会覆盖这一版。</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-4 text-sm leading-6">{version.markdown}</pre>
+                {artifact.versions.length > 1 ? <label className="flex flex-wrap items-center gap-2 text-sm"><span>??????</span><select className="h-9 rounded-md border bg-background px-2" value={selectedVersion?.id ?? ""} onChange={(event) => setSelectedVersions((current) => ({ ...current, [artifact.id]: event.target.value }))}>{artifact.versions.map((item) => <option key={item.id} value={item.id}>v{item.version} ? {new Date(item.createdAt).toLocaleDateString("zh-CN")}</option>)}</select></label> : null}
+                <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-4 text-sm leading-6">{selectedVersion?.markdown}</pre>
+                <div className="flex flex-wrap items-center gap-3 border-t pt-4"><Button disabled={Boolean(pending) || !selectedVersion} variant={publicationStatus === "APPROVED" || publicationStatus === "PENDING" ? "outline" : "default"} onClick={() => selectedVersion && changePublication(selectedVersion.id, publicationStatus)}>{pending === `publication:${selectedVersion?.id}` ? "????" : publicationStatus === "APPROVED" ? "??????" : publicationStatus === "PENDING" ? "??????" : publicationStatus === "REJECTED" ? "??????" : "???????"}</Button><span className="text-xs text-muted-foreground">{publicationStatus === "APPROVED" ? "?????????" : publicationStatus === "PENDING" ? "????" : publicationStatus === "REJECTED" ? "?????" : "?????????"}</span></div>
+                {publications[selectedVersion?.id ?? ""]?.reviewNote ? <p className="text-sm text-muted-foreground">?????{publications[selectedVersion?.id ?? ""]?.reviewNote}</p> : null}
               </CardContent>
             </Card>
           ) : null;

@@ -194,6 +194,8 @@ Authentication and storage use a plugin architecture:
 ## Boundaries
 
 ### Always Do
+- For every development task that changes tracked project files, create and submit a GitHub pull request by default after implementation, meaningful checks, and post-coding review. Target `main` unless the user specifies another base; keep unrelated changes out of the PR. If a blocking check remains, submit the PR as a draft and clearly state the failure and unverified areas. If GitHub prevents PR creation, report the concrete blocker.
+- Creating a PR does not authorize merging it or deploying to production; do those only when the user explicitly asks.
 - Run `npm run lint` before committing
 - Use existing UI components from `src/components/ui/`
 - Add translations for all user-facing text

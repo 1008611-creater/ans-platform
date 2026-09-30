@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { unstable_cache } from "next/cache";
@@ -5,6 +6,15 @@ import { FolderOpen, ChevronRight } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { SubscribeButton } from "@/components/categories/subscribe-button";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("categories");
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: { canonical: "/categories" },
+  };
+}
 
 // Visible prompt filter
 const visiblePromptFilter = {

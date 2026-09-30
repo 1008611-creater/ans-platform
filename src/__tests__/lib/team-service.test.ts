@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prisma } from "@prisma/client";
 
 // 测试替身刻意使用宽松类型，模拟 Prisma 的任意返回值形状。
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -422,6 +423,13 @@ describe("移除成员与退出", () => {
     await expect(removeMember("owner", "spark", "tm-owner")).rejects.toMatchObject({ code: "last_owner" });
   });
 
+  it("rejects removal if the target role changed concurrently", async () => {
+    const original = mocks.db.teamMember.updateMany;
+    mocks.db.teamMember.updateMany = vi.fn(async () => ({ count: 0 }));
+    await expect(removeMember("owner", "spark", "tm-member")).rejects.toMatchObject({ code: "member_stale" });
+    mocks.db.teamMember.updateMany = original;
+  });
+
   it("普通成员不能移除他人", async () => {
     await expect(removeMember("member", "spark", "tm-admin")).rejects.toMatchObject({ code: "forbidden" });
   });
@@ -434,6 +442,13 @@ describe("移除成员与退出", () => {
 
   it("队长必须先转让才能退出", async () => {
     await expect(leaveTeam("owner", "spark")).rejects.toMatchObject({ code: "owner_must_transfer" });
+  });
+
+  it("rejects leave if the member role changed concurrently", async () => {
+    const original = mocks.db.teamMember.updateMany;
+    mocks.db.teamMember.updateMany = vi.fn(async () => ({ count: 0 }));
+    await expect(leaveTeam("member", "spark")).rejects.toMatchObject({ code: "member_stale" });
+    mocks.db.teamMember.updateMany = original;
   });
 
   it("不在团队中的人退出报 404", async () => {
@@ -467,6 +482,32 @@ describe("团队额度", () => {
     expect(quota.allocated).toBe(100);
     expect(quota.available).toBe(200);
     expect(store.ledger.some((l: Row) => l.refType === "team_member" && l.amount === 100)).toBe(true);
+  });
+
+  it("uses serializable isolation for allocation checks", async () => {
+    await grantTeamQuota("admin", "team1", 300);
+    await allocateQuota("owner", "spark", "tm-member", 100);
+    const call = mocks.db.$transaction.mock.calls.at(-1);
+    expect(call?.[1]).toEqual({ isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  });
+
+  it("returns released quota to the available team balance", async () => {
+    await grantTeamQuota("admin", "team1", 300);
+    await allocateQuota("owner", "spark", "tm-member", 100);
+    const result = await allocateQuota("owner", "spark", "tm-member", 50);
+    expect(result.available).toBe(250);
+    expect((await getTeamQuota("team1")).available).toBe(250);
+  });
+
+  it("maps serialization conflicts to a retryable quota conflict", async () => {
+    mocks.db.$transaction.mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError("serialization conflict", {
+      code: "P2034",
+      clientVersion: "test",
+    }));
+    await expect(allocateQuota("owner", "spark", "tm-member", 100)).rejects.toMatchObject({
+      code: "quota_conflict",
+      status: 409,
+    });
   });
 
   it("不能给自己分配额度", async () => {

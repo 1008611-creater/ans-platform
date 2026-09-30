@@ -10,11 +10,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "学生项目包", description: "把真实项目事实整理成可保存、可导出的材料。" };
 const GOAL_LABEL = { career: "求职", contest: "比赛", portfolio: "作品" };
+type ProjectGoal = keyof typeof GOAL_LABEL;
 
-export default async function ProjectsPage() {
+function isProjectGoal(value: string | undefined): value is ProjectGoal {
+  return value === "career" || value === "contest" || value === "portfolio";
+}
+
+export default async function ProjectsPage({ searchParams }: { searchParams?: Promise<{ goal?: string | string[] }> }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=/projects");
   const projects = await listProjects(session.user.id);
+  const requestedGoal = (await searchParams)?.goal;
+  const goalValue = Array.isArray(requestedGoal) ? requestedGoal[0] : requestedGoal;
+  const initialGoal: ProjectGoal = isProjectGoal(goalValue) ? goalValue : "career";
   return (
     <div className="container space-y-8 py-10">
       <header className="max-w-3xl space-y-3">
@@ -29,7 +37,7 @@ export default async function ProjectsPage() {
         ].map(([title, description]) => <Card key={title}><CardHeader><CardTitle className="text-base">{title}</CardTitle><CardDescription>{description}</CardDescription></CardHeader></Card>)}
       </div>
       <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <Card><CardHeader><CardTitle>新建项目</CardTitle><CardDescription>选择这份材料的用途，项目默认只有自己可见。</CardDescription></CardHeader><CardContent><CreateProjectForm /></CardContent></Card>
+        <Card><CardHeader><CardTitle>新建项目</CardTitle><CardDescription>选择这份材料的用途，项目默认只有自己可见。</CardDescription></CardHeader><CardContent><CreateProjectForm key={initialGoal} initialGoal={initialGoal} /></CardContent></Card>
         <div className="space-y-3">{projects.length === 0 ? <Card className="border-dashed"><CardContent className="space-y-2 py-10"><p className="font-medium">从一份真实项目开始</p><p className="text-sm text-muted-foreground">例如课程作业、比赛作品或实习项目。创建后先填写五项事实。</p></CardContent></Card> : projects.map((project) => <Link key={project.id} href={`/projects/${project.id}`} className="block"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="text-base">{project.title}</CardTitle><Badge variant="secondary">{GOAL_LABEL[project.goal]}</Badge></div><CardDescription>已完成 {project.artifacts.length}/8 份材料</CardDescription></CardHeader></Card></Link>)}</div>
       </div>
     </div>

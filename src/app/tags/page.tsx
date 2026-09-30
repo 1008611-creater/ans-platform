@@ -1,8 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { unstable_cache } from "next/cache";
 import { Tag } from "lucide-react";
 import { db } from "@/lib/db";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("tags");
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: { canonical: "/tags" },
+  };
+}
 
 // Cached tags query
 const getTags = unstable_cache(

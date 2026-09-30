@@ -6,6 +6,7 @@ import type { CommunityContributions, CommunityMe } from "@/contracts/community"
 import { formatLevel, XP_RULES } from "@/lib/level";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 
 function errorMessage(status: number, fallback: string) {
   if (status === 401) return "请先登录后参与社区。";
@@ -20,6 +21,8 @@ export function CommunityPanel() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [appealLedgerId, setAppealLedgerId] = useState("");
+  const [appealMessage, setAppealMessage] = useState("");
   const submitting = useRef(false);
 
   const load = useCallback(async (signal?: AbortSignal) => {
@@ -51,6 +54,29 @@ export function CommunityPanel() {
     void load(controller.signal);
     return () => controller.abort();
   }, [load]);
+
+  async function submitRewardAppeal(ledgerId: string) {
+    setPending(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/rewards/appeals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ledgerId, message: appealMessage }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error?.message ?? "申诉提交失败。");
+      setAppealLedgerId("");
+      setAppealMessage("");
+      setNotice("申诉已提交，管理员处理后会更新状态。");
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "申诉提交失败。");
+    } finally {
+      setPending(false);
+    }
+  }
 
   async function submitCheckIn() {
     if (submitting.current) return;
@@ -115,7 +141,27 @@ export function CommunityPanel() {
                     <div className="min-w-0"><p className="break-words text-sm">{entry.note || (entry.reason in XP_RULES ? XP_RULES[entry.reason as keyof typeof XP_RULES].note : "经验调整")}</p>
                       <time dateTime={entry.createdAt} className="text-xs text-muted-foreground">{new Date(entry.createdAt).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })}</time>
                     </div>
-                    <span className="shrink-0 text-sm font-medium">{entry.amount > 0 ? "+" : ""}{entry.amount} XP</span>
+                    <div className="shrink-0 text-right"><span className="text-sm font-medium">{entry.amount > 0 ? "+" : ""}{entry.amount} XP</span>
+                      {["COMMUNITY_REWARD", "COMPETITION_AWARD"].includes(entry.reason) ? (
+                        <div className="mt-1">
+                          {entry.appeal ? (
+                            <span className="text-xs text-muted-foreground">
+                              {entry.appeal.status === "PENDING" ? "申诉处理中" : entry.appeal.status === "APPROVED" ? "申诉已通过" : "申诉未通过"}
+                            </span>
+                          ) : appealLedgerId === entry.id ? (
+                            <div className="mt-2 w-64 space-y-2 text-left">
+                              <Textarea aria-label="申诉说明" minLength={10} maxLength={2000} rows={3} value={appealMessage} onChange={(event) => setAppealMessage(event.target.value)} placeholder="说明你认为奖励需要复核的原因" />
+                              <div className="flex justify-end gap-2">
+                                <Button size="sm" variant="outline" onClick={() => setAppealLedgerId("")}>取消</Button>
+                                <Button size="sm" disabled={pending || appealMessage.trim().length < 10} onClick={() => void submitRewardAppeal(entry.id)}>提交</Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setAppealLedgerId(entry.id)}>申请复核</Button>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
                   </li>)}
                 </ul>}
             </CardContent>
