@@ -142,6 +142,22 @@ describe("团队接口跨站防护", () => {
     expect(mocks.createTeam).not.toHaveBeenCalled();
   });
 
+  it("same-origin Origin through reverse proxy is allowed", async () => {
+    const response = await createTeamRoute(
+      post(
+        { name: "spark-team" },
+        {
+          Origin: "https://ans.cauai.fun",
+          "Sec-Fetch-Site": "cross-site",
+          "X-Forwarded-Proto": "https",
+          "X-Forwarded-Host": "ans.cauai.fun",
+        },
+      ),
+    );
+    expect(response.status).toBe(201);
+    expect(mocks.createTeam).toHaveBeenCalledWith("user1", { name: "spark-team" });
+  });
+
   it("跨站解散团队被拒绝", async () => {
     const response = await deleteTeamRoute(
       post({ confirmName: "星火小队" }, { Origin: "https://evil.example", "Sec-Fetch-Site": "cross-site" }),
