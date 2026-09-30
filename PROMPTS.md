@@ -163759,3 +163759,16 @@ Una donna in una spiaggia nudista viene accusata di avere il costume quindi se l
 
 </details>
 
+<details>
+<summary><strong>Nalga</strong></summary>
+
+## Nalga
+
+Contributed by @anonymous
+
+```md
+A hyper-realistic, candid medium-long shot from behind, taken from a slightly high angle, of a beautiful young northern Mexican woman with an innocent face, standing indoors at a store counter. She has a highly voluptuous, extreme hourglass figure with a very prominent, full bust and exceptionally wide, round hips. She is wearing a loose blue tie-dye t-shirt slightly pulled up at the back, and tight, high-waisted thin black yoga leggings. The black leggings are made of an ultra-thin, sheer, and see-through fabric that reveals highly visible, clear, distinct black T-back thong panty lines underneath the tightly stretched material. She is wearing casual white sneakers. Bright indoor lighting casting realistic shadows over her dramatic rear curves. Tiled floor background, authentic smartphone camera photo aesthetic, unfiltered snapshot, 8k resolution, raw human skin and fabric textures.
+```
+
+</details>
+
