@@ -412,23 +412,34 @@ export async function submitWorkflowForReview(slug: string, actorId: string) {
       versions: { orderBy: { version: "desc" }, take: 1 },
     },
   });
-  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (!workflow) throw new WorkflowServiceError("\u5de5\u4f5c\u6d41\u4e0d\u5b58\u5728\u3002", "NOT_FOUND", 404);
   if (workflow.isOfficial) {
     throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
   }
   const actor = await requireActor(actorId);
   if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
-    throw new WorkflowServiceError("没有提交该工作流的权限。", "FORBIDDEN", 403);
+    throw new WorkflowServiceError("\u6ca1\u6709\u63d0\u4ea4\u8be5\u5de5\u4f5c\u6d41\u7684\u6743\u9650\u3002", "FORBIDDEN", 403);
+  }
+  if (workflow.status === "PENDING") return workflow;
+  if (workflow.status !== "DRAFT" && workflow.status !== "REJECTED") {
+    throw new WorkflowServiceError("\u5de5\u4f5c\u6d41\u5f53\u524d\u72b6\u6001\u65e0\u6cd5\u63d0\u4ea4\u5ba1\u6838\u3002", "INVALID_STATE", 409);
   }
   if (workflow.versions.length === 0) {
-    throw new WorkflowServiceError("工作流还没有可提交的版本。", "NO_VERSION");
+    throw new WorkflowServiceError("\u5de5\u4f5c\u6d41\u8fd8\u6ca1\u6709\u53ef\u63d0\u4ea4\u7684\u7248\u672c\u3002", "NO_VERSION");
   }
   const definition = assertDefinition(workflow.versions[0].definition);
-  const submitted = await db.$transaction(async (tx) => {
-    const updated = await tx.workflow.update({
-      where: { id: workflow.id },
+  const submission = await db.$transaction(async (tx) => {
+    const claimed = await tx.workflow.updateMany({
+      where: { id: workflow.id, status: workflow.status },
       data: { status: "PENDING" },
     });
+    if (claimed.count === 0) {
+      const current = await tx.workflow.findUnique({ where: { id: workflow.id }, select: { status: true } });
+      if (current?.status === "PENDING") {
+        return { workflow: { ...workflow, status: "PENDING" as const }, alreadyPending: true };
+      }
+      throw new WorkflowServiceError("\u5de5\u4f5c\u6d41\u72b6\u6001\u5df2\u53d8\u66f4\uff0c\u8bf7\u5237\u65b0\u9875\u9762\u540e\u91cd\u8bd5\u3002", "INVALID_STATE", 409);
+    }
     await tx.auditLog.create({
       data: {
         actorId,
@@ -436,21 +447,22 @@ export async function submitWorkflowForReview(slug: string, actorId: string) {
         resourceType: "workflow",
         resourceId: workflow.id,
         before: { status: workflow.status },
-        after: { status: updated.status },
+        after: { status: "PENDING" },
       },
     });
-    return updated;
+    return { workflow: { ...workflow, status: "PENDING" as const }, alreadyPending: false };
   });
 
-  // 提交后立刻跑一次 AI 初审，把结论落库供人工复核参考。
-  // 初审失败不影响提交本身，管理员仍可在队列里重新发起初审。
+  if (submission.alreadyPending) return submission.workflow;
+
+  // Submission is durable before the AI review. A review timeout never rolls back PENDING.
   await runAndStoreReview(workflow.id, actorId, {
-    title: submitted.title,
-    summary: submitted.summary,
-    description: submitted.description,
+    title: submission.workflow.title,
+    summary: submission.workflow.summary,
+    description: submission.workflow.description,
     definition,
   });
-  return submitted;
+  return submission.workflow;
 }
 
 /**
@@ -514,9 +526,6 @@ export async function recheckWorkflowReview(slug: string, adminId: string) {
   if (workflow.isOfficial) {
     throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
   }
-  if (workflow.authorId === adminId) {
-    throw new WorkflowServiceError("不能审核自己创建的工作流。", "FORBIDDEN", 403);
-  }
   if (workflow.status !== "PENDING") {
     throw new WorkflowServiceError("工作流不在待审状态，请刷新后重试。", "INVALID_STATE", 409);
   }
@@ -565,9 +574,6 @@ export async function reviewWorkflow(
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
   if (workflow.isOfficial) {
     throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
-  }
-  if (workflow.authorId === adminId) {
-    throw new WorkflowServiceError("不能审核自己创建的工作流。", "FORBIDDEN", 403);
   }
   if (workflow.status !== "PENDING") {
     throw new WorkflowServiceError("工作流不在待审状态，请刷新后重试。", "INVALID_STATE", 409);

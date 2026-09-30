@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 /**
  * 工作流审核队列。
  *
- * 与模板审核一致：先看定义和输入变量，再人工复核。管理员不能审核自己的作品。
+ * 与模板审核一致：先看定义和输入变量，再人工复核。所有具备内容管理权限的管理员都可审核。
  */
 export default async function WorkflowQueuePage() {
   const admin = await requireAdminPermission("PROMPTS_MANAGE");
@@ -97,7 +97,6 @@ export default async function WorkflowQueuePage() {
                 <WorkflowActions
                   slug={workflow.slug}
                   mode="review"
-                  selfReview={admin.userId === workflow.authorId}
                   canPublish={canPublishAfterReview(workflow.reviewScore)}
                 />
               </CardContent>

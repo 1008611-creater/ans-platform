@@ -18,7 +18,7 @@ import { SkillsManagement } from "@/components/admin/skills-management";
 import { GovernanceManagement } from "@/components/admin/governance-management";
 import { isAISearchEnabled } from "@/lib/ai/embeddings";
 import { ADMIN_PERMISSIONS, hasAdminPermission } from "@/lib/admin-permissions";
-import { LayoutTemplate, KeyRound, Workflow } from "lucide-react";
+import { LayoutTemplate, KeyRound, Workflow, Settings2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -216,6 +216,14 @@ export default async function AdminPage() {
             className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"
           >
             <Workflow className="h-4 w-4 text-muted-foreground" /> 工作流审核队列
+          </Link>
+        )}
+        {can("PROMPTS_MANAGE") && (
+          <Link
+            href="/admin/ai-config"
+            className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"
+          >
+            <Settings2 className="h-4 w-4 text-muted-foreground" /> AI 初审与模型配置
           </Link>
         )}
         {can("INVITES_MANAGE") && (
