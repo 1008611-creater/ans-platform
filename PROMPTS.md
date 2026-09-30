@@ -163846,3 +163846,16 @@ Contributed by [@liuhuxiang6-rgb](https://github.com/liuhuxiang6-rgb)
 
 </details>
 
+<details>
+<summary><strong>Design Apps</strong></summary>
+
+## Design Apps
+
+Contributed by @anonymous
+
+```md
+Ich würd egern einen Prompt haben, der die anweisung gibt, das die app modern designt sien soll. wenig leerflächen. übersichtlich. Dezente Farben. alles in einem design sytsem. also ordner wo alle designs drin sind und eigenen buttons usw liegen. keine billige oberfläche. alles Hoch qualitativ. kein einheitsbrei oder generischer mist.
+```
+
+</details>
+
