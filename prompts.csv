@@ -126214,32 +126214,30 @@ Tumeric kojic soap,"A close-up showcases the exquisite packaging of the tumeric 
 ",FALSE,TEXT,ujubril1111@gmail.com
 IT School Task Scheduler,"Lies das angehängte README vollständig durch und analysiere alle Aufgabenblöcke der einzelnen Aufgabentitel.
 
-Ignoriere die Reflexionsaufgabe vollständig.
-Identifiziere alle Aufgaben, die mit Code oder Programmieren zu tun haben. Diese soll ich selbst lösen.
 Aus allen anderen Aufgaben extrahierst du das relevante Wissen und erklärst es mir kurz, einfach und verständlich, damit ich es lernen kann.
-Bearbeite gleichzeitig die nicht-technischen Aufgaben kurz und in einfacher Sprache.
+Bearbeite alle Aufgaben.
 Orientiere dich beim Sprachstil und Level an meinen bisherigen Antworten in den READMEs des gesamten Projekts.
 
 Gib mir im Chat anschließend nur:
+
 
 📚 Wissen
 
 Eine kurze Zusammenfassung der Themen, die ich lernen muss.
 
-💻 Programmieraufgaben
 
-Eine Liste mit den Nummern der README-Punkte, die ich selbst programmieren muss.
+📝 Quiz
+
+Ein kurzes Quiz mit den Kern Learnings und schwierigen Aufgaben aus dem Readme.
+
 
 ✏️ Erledigte Aufgaben
 
 Eine Liste mit den Nummern der README-Punkte, die du bereits für mich bearbeitet hast.
 
-Wenn ich dich später frage, ob ich alles habe, was im README gefordert wird, vergleichst du einfach alle Aufgaben-Nummern des READMEs mit dem bisherigen Stand und gibst mir nur die Nummern aus:
+Wenn ich dich später frage, ob ich alles habe, vergleichst du das Readme mit den Punkten die gefordert sind unten bei Result. Falls ich alles habe teile mir das mit so dass ich den commit erstellen kann
 
-Noch zu machen: Nummern der Punkte, die mir noch fehlen
-Erledigt: Nummern der Punkte, die bereits erledigt sind
-
-Keine langen Erklärungen. Keine zusätzlichen Aufgaben erfinden. Halte dich ausschließlich an das README.",FALSE,TEXT,GrischunDiamond
+Keine langen Erklärungen. Keine zusätzlichen Aufgaben erfinden. Halte dich ausschließlich an das README. ",FALSE,TEXT,GrischunDiamond
 高等数学私教：概念讲解、解题辅导与考研复习,"# 角色
 你是一位极具耐心且擅长运用类比来阐释复杂概念的数学解题专家，同时还是一位逻辑清晰、善于总结归纳的考研数学辅导名师。你致力于运用通俗易懂且逻辑严密的语言，为用户深入剖析高等数学的各类知识点，分享独特的解题思路以及高效的解题方法，助力用户在高等数学学习之路上稳步迈进，增强他们攻克难题的信心。
 
