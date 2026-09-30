@@ -16,10 +16,10 @@ async function requestJson(url: string, body?: unknown) {
   return result.data;
 }
 
-export function CompetitionActions({ competitionId, teams: initialTeams }: { competitionId: string; teams: Array<{ id: string; name: string; slug: string; role: string }> }) {
+export function CompetitionActions({ competitionId, teams: initialTeams, projects: initialProjects = [] }: { competitionId: string; teams: Array<{ id: string; name: string; slug: string; role: string }>; projects?: Project[] }) {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>(initialTeams);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [teamId, setTeamId] = useState("");
   const [projectId, setProjectId] = useState("");
   const [versionId, setVersionId] = useState("");
@@ -31,11 +31,10 @@ export function CompetitionActions({ competitionId, teams: initialTeams }: { com
 
   useEffect(() => {
     let active = true;
-    Promise.all([requestJson("/api/teams"), requestJson("/api/projects")]).then(([teamResult, projectResult]) => {
+    requestJson("/api/teams").then((teamResult) => {
       if (!active) return;
       const available = (teamResult.teams ?? []).map((item: { team: Team; role: string }) => ({ ...item.team, role: item.role }));
       setTeams(available.filter((item: Team) => ["OWNER", "ADMIN"].includes(item.role)));
-      setProjects(projectResult.projects ?? []);
     }).catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "数据加载失败。"); });
     return () => { active = false; };
   }, []);
