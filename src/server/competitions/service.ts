@@ -321,7 +321,15 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
 
       await tx.auditLog.create({ data: { actorId: reviewerId, action: "COMPETITION_ENTRY_REVIEWED", resourceType: "team_competition", resourceId: entry.id, before: { status: "SUBMITTED" }, after: { status: nextStatus, awardedXp: award }, metadata: { note: input.note, artifactVersionId: entry.submissionVersion.id, contributorIds: entry.contributions.map((row) => row.userId) } } });
       return { id: entry.id, status: nextStatus, awardedXp: award, publishedArtifactVersionId: input.decision === "approve" && entry.publicConsent ? entry.submissionVersion.id : null };
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      // Production uses a remote PostgreSQL connection. Reviewing a submission
+      // performs the state transition, publication, ledger writes, and audit
+      // records in one transaction; the default 5s interactive timeout can
+      // expire before the final writes complete under normal network latency.
+      maxWait: 10000,
+      timeout: 20000,
+    });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
       throw new CompetitionError(409, "REVIEW_CONFLICT", "审核队列或奖励预算刚刚发生变化，请刷新后重试。");
