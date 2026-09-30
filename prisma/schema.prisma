@@ -78,6 +78,7 @@ model User {
   workflowRuns     WorkflowRun[]
   workflowVersions WorkflowVersion[]  @relation("WorkflowVersionCreator")
   modelCredentials UserModelCredential[]
+  aiConfigUpdates  AdminAiConfig[]        @relation("AdminAiConfigUpdater")
   favorites        ContentFavorite[]
   projects         Project[]
   projectFacts     ProjectFact[]      @relation("ProjectFactEditor")
@@ -830,6 +831,26 @@ model UserModelCredential {
   @@unique([userId, label])
   @@index([userId, active])
   @@map("user_model_credentials")
+}
+
+/// 平台管理员维护的 AI 初审供应商配置。API Key 只保存加密密文。
+model AdminAiConfig {
+  id              String   @id @default("default")
+  baseUrl         String
+  encryptedApiKey String   @db.Text
+  apiKeyLast4     String
+  selectedModel   String
+  availableModels Json
+  reasoningEffort String   @default("none")
+  timeoutMs       Int      @default(30000)
+  enabled         Boolean  @default(true)
+  updatedById     String?
+  updatedBy       User?    @relation("AdminAiConfigUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([updatedAt])
+  @@map("admin_ai_configs")
 }
 
 /// 统一收藏：Prompt / 模板 / 工作流共用一张表，避免每个内容类型各建一套。
