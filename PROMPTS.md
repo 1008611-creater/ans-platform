@@ -164443,3 +164443,36 @@ Bu beceri, ders planının dikkat çekme aşamasında (hook) kullanılarak öğr
 
 </details>
 
+<details>
+<summary><strong>disiplinlerarasi-etkinlik-tasarimi</strong></summary>
+
+## disiplinlerarasi-etkinlik-tasarimi
+
+Contributed by [@abdbali](https://github.com/abdbali)
+
+```md
+---
+name: disiplinlerarasi-etkinlik-tasarimi
+description: >-
+  Öğretmen, iki veya daha fazla dersi (örneğin Matematik ve Fen, Türkçe ve Tarih) ortak bir tema etrafında birleştiren proje ve etkinlik senaryoları üretmek istediğinde bu beceriyi kullan.
+---
+
+# Disiplinlerarası Etkinlik Tasarımı
+
+Bu beceri, öğrencilerin farklı disiplinlerdeki bilgileri entegre ederek karmaşık problemleri çözmelerini sağlayan STEM veya tematik yaklaşımlı etkinlikler hazırlamak için kullanılır.
+
+## Yönergeler
+
+1.  **Hedeflerin Belirlenmesi:**
+    *   Öğretmenden birleştirilecek dersleri (disiplinleri) ve bu derslere ait kesişen konu/kazanımları (veya ortak temayı) alın.
+2.  **Senaryo Kurgusu (Otantik Görev):**
+    *   Öğrencilerin bir problemi çözmek için her iki disiplinin bilgi ve becerilerini kullanmak zorunda kalacağı gerçek hayat odaklı bir görev senaryosu yazın. (Örn: Mars'ta koloni kurmak için hem Fen (iklim) hem Matematik (geometri) kullanmak)
+3.  **Etkinlik Adımları:**
+    *   Öğrencilerin gruplar halinde veya bireysel olarak izleyeceği adım adım yönergeleri (araştırma, tasarım, üretim, sunum) belirleyin.
+4.  **Değerlendirme Kriterleri:**
+    *   Her bir disiplin için ayrı ayrı (veya bütünleşik) değerlendirme kriterleri (ürünün matematiği nasıl, fen kısmı nasıl) önerin.
+
+```
+
+</details>
+
