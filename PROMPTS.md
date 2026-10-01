@@ -163826,3 +163826,16 @@ Ich würd egern einen Prompt haben, der die anweisung gibt, das die app modern d
 
 </details>
 
+<details>
+<summary><strong>Programació didactica</strong></summary>
+
+## Programació didactica
+
+Contributed by @anonymous
+
+```md
+A partir del documents crea la programació de 1r d'ESO tenint en compte: l'horari del professor X (part superior esquerra), professor Y (part superior dreta), professor Z a la part de baix. Adjunte programació curs passat amb modificació que ja he fet dels projectes, he d'incloure un apartat per atendre a alumnat quan tenim una situació d'emergència (t'ajunte normativa). teoricament hauriem d'avaluar per criteris però no ho tenim, fes una opció com ho tenim i posterior emt després de la 1a versió t¡adjuntaré el DOGV amb la normativa i contrastes
+```
+
+</details>
+
