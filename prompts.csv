@@ -135191,3 +135191,25 @@ Bu beceri, öğretmenlerin danışmanlığını yürüttüğü öğrenci kulüpl
 4.  **Çıktı Formatı:**
     *   Aylar (Ekim, Kasım...), Yapılacak Etkinlik, ve Sorumlu Öğrenciler/Görevliler sütunlarını içeren bir Markdown tablosu (Yıllık Plan Şablonu) sunun.
 ",FALSE,TEXT,abdbali
+ters-yuz-sinif-icerigi,"---
+name: ters-yuz-sinif-icerigi
+description: >-
+  Öğretmen, öğrencilerin derse gelmeden önce evde izlemesi veya okuması için özet kılavuzlar ve ön hazırlık soruları (Flipped Classroom) yazmak istediğinde bu beceriyi kullan.
+---
+
+# Ters Yüz Sınıf (Flipped Classroom) İçerik Tasarımı
+
+Bu beceri, bilgi aktarımını ders öncesine taşıyarak; sınıftaki değerli zamanı tartışma, uygulama ve üst düzey düşünme becerilerine ayırmak için ön çalışma materyalleri kurgulamak amacıyla kullanılır.
+
+## Yönergeler
+
+1.  **Konu Belirleme:**
+    *   Öğretmenden ters yüz edilecek konuyu ve öğrencilerin yaş seviyesini alın.
+2.  **Evde Çalışma Materyali (Asenkron Görev):**
+    *   Konuyu en anlaşılır şekilde özetleyen, kavramsal temelleri anlatan kısa ve ilgi çekici bir ""Okuma/İzleme Kılavuzu"" metni yazın.
+    *   Eğer öğretmen video kullanacaksa, video izlenirken doldurulacak bir ""Video Not Alma Rehberi"" taslağı çıkarın.
+3.  **Anlama Kontrolü (Bilet Soruları):**
+    *   Öğrencinin metni okuyup okumadığını / videoyu izleyip izlemediğini kontrol edecek 2-3 adet temel seviye kontrol sorusu yazın. (Öğrenci derse gelirken bunları cevaplayarak gelmelidir.)
+4.  **Sınıf İçi Etkinlik Önerisi:**
+    *   Öğretmene, öğrenciler ön bilgiyi alarak geldikten sonra sınıfta yapabileceği 1 adet ""Derinleştirme/Uygulama"" etkinlik fikri sunun.
+",FALSE,TEXT,abdbali
