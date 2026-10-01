@@ -164152,3 +164152,16 @@ Build a production-ready, full-stack URL shortening service with a modern, acces
 
 </details>
 
+<details>
+<summary><strong>Create a bank website with a lot of functions  naming it FATE BANK </strong></summary>
+
+## Create a bank website with a lot of functions  naming it FATE BANK 
+
+Contributed by @anonymous
+
+```md
+I want a bank app prompt and I want it professional and better. I want it to be name FATE BANK 
+```
+
+</details>
+
