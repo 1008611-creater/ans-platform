@@ -134905,3 +134905,24 @@ Bu beceri, özel gereksinimli öğrencilerin mevcut performans düzeylerine uygu
 4.  **Çıktı Formatı:**
     *   Mevcut Performans, Standart Kazanım, BEP Hedefi ve Sınıf İçi Uyarlamalar başlıklarını içeren bir plan şablonu oluşturun.
 ",FALSE,TEXT,abdbali
+bireysel-calisma-programi,"---
+name: bireysel-calisma-programi
+description: >-
+  Öğretmen, öğrencinin okul/dershane saatleri, eksik konuları ve hedeflerine göre dengeli bir haftalık etüt ve bireysel çalışma çizelgesi çıkarmak istediğinde bu beceriyi kullan.
+---
+
+# Bireysel Öğrenci Çalışma Programı Tasarımı
+
+Bu beceri, LGS/YKS hazırlık sürecinde veya genel ders çalışma rutininde, öğrencinin biyolojik saatine, okul yoğunluğuna ve dikkat süresine uygun, sürdürülebilir haftalık ders çalışma programları hazırlamak için kullanılır.
+
+## Yönergeler
+
+1.  **Öğrenci Verileri:**
+    *   Öğretmenden öğrencinin sınıf seviyesini, okul/kurs geliş-gidiş saatlerini, günde ortalama kaç saat çalışabileceğini ve en zayıf/güçlü olduğu dersleri alın.
+2.  **Programlama İlkeleri:**
+    *   Sayısal ve sözel dersleri zihni dinlendirecek şekilde peş peşe serpiştirin (Örn: Matematik ardından İnkılap Tarihi).
+    *   Pomodoro (25 dk çalışma + 5 dk mola) veya benzeri zaman blokları önerin.
+    *   Programda mutlaka ""Haftalık Tekrar"", ""Deneme/Soru Çözümü"" ve ""Serbest Zaman (Dinlenme/Hobiler)"" boşlukları bırakın. Sadece ders çalışan robotik bir plan yapmaktan kaçının.
+3.  **Çıktı Formatı:**
+    *   Pazartesiden Pazara kadar uzanan, günün saat dilimlerine bölünmüş (Örn: 17.00 - 18.00: Okul dönüşü ve dinlenme) Markdown tablosu formatında detaylı bir haftalık program sunun.
+",FALSE,TEXT,abdbali
