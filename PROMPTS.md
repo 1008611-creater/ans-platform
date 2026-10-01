@@ -164271,3 +164271,39 @@ Bu beceri, bilgi basamağını aşıp öğrencilerin okuduğunu anlama, grafik/t
 
 </details>
 
+<details>
+<summary><strong>bep-planlamasi</strong></summary>
+
+## bep-planlamasi
+
+Contributed by [@abdbali](https://github.com/abdbali)
+
+```md
+---
+name: bep-planlamasi
+description: >-
+  Öğretmen, sınıftaki kaynaştırma öğrencisinin RAM (Rehberlik ve Araştırma Merkezi) raporundaki eğitsel tanısına uygun, bireyselleştirilmiş haftalık kazanım ve uyarlama çizelgesi çıkarmak istediğinde bu beceriyi kullan.
+---
+
+# Bireyselleştirilmiş Eğitim Programı (BEP) Planlaması
+
+Bu beceri, özel gereksinimli öğrencilerin mevcut performans düzeylerine uygun kısa dönemli hedefler belirlemek ve sınıf içi fiziksel/materyal uyarlamalarını planlamak için kullanılır.
+
+## Yönergeler
+
+1.  **Öğrenci Profili:**
+    *   Öğretmenden kaynaştırma öğrencisinin tanısını (Hafif Zihinsel Yetersizlik, Otizm, İşitme Kaybı vb.), sınıf seviyesini ve mevcut performans düzeyini (neleri yapabildiğini) alın.
+2.  **Kazanım Seyreltme ve Hedef Belirleme:**
+    *   O haftanın standart ders kazanımını, öğrencinin tanısına ve yapabildiklerine göre seyreltin veya alt basamaklara bölün.
+    *   Ulaşılabilir, ölçülebilir 1 adet "Kısa Dönemli Hedef" belirleyin.
+3.  **Uyarlama Stratejileri:**
+    *   Bu hedefe ulaşması için öğretmenin yapması gerekenleri listeleyin:
+        *   **Fiziksel / Ortam Uyarlamaları:** (Örn: Işığı arkasına alma, tahtaya yakın oturma)
+        *   **Materyal / Süreç Uyarlamaları:** (Örn: Yazı yerine görsel eşleştirme kullanma, süreyi %30 uzatma)
+4.  **Çıktı Formatı:**
+    *   Mevcut Performans, Standart Kazanım, BEP Hedefi ve Sınıf İçi Uyarlamalar başlıklarını içeren bir plan şablonu oluşturun.
+
+```
+
+</details>
+
