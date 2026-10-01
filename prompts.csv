@@ -135059,3 +135059,24 @@ Bu beceri, sınıftaki hazırbulunuşluk ve öğrenme hızı farklılıklarını
 3.  **Çıktı Formatı:**
     *   Her üç seviye için okuma metnini (veya etkinlik yönergesini) ve o seviyeye özel 2 adet değerlendirme sorusunu ayrı ayrı sunun.
 ",FALSE,TEXT,abdbali
+karne-gorusu-metinleri,"---
+name: karne-gorusu-metinleri
+description: >-
+  Öğretmen, öğrencilere gelişim odaklı, klişelerden uzak, onların somut güçlü yanlarını ve gelişmeye açık alanlarını belirten kişiselleştirilmiş karne görüşü notları yazmak istediğinde bu beceriyi kullan.
+---
+
+# Gelişim Odaklı Karne Görüşü Metinleri
+
+Bu beceri, e-Okul sistemine girilecek veya doğrudan öğrenciye verilecek karne görüşlerini; ""Daha çok çalışmalısın"" gibi yıkıcı/sıradan kalıplar yerine, Sandviç Metodu (Olumlu-Gelişim Alanı-Olumlu) ile pedagojik bir dille formüle etmek için kullanılır.
+
+## Yönergeler
+
+1.  **Öğrenci Tipi/Profili:**
+    *   Öğretmenden öğrencinin genel durumunu tarif etmesini isteyin (Örn: Akademik olarak çok iyi ama içine kapanık, Notları düşük ama çok gayretli ve saygılı, vb.).
+2.  **Görüş Yazımı (Sandviç Metodu):**
+    *   **1. Cümle (Güçlü Yan):** Öğrencinin çabasını, karakterini veya iyi olduğu bir alanı takdir ederek başlayın. (Örn: ""Dönem boyunca sınıf içi tartışmalara sunduğun farklı bakış açıları çok değerliydi."")
+    *   **2. Cümle (Gelişim Alanı / Tavsiye):** Eksik olduğu noktayı ""yapamadın"" diliyle değil, ""yaparsan çok daha iyi olur"" (büyüme zihniyeti) diliyle ifade edin. (Örn: ""Önümüzdeki dönem planlı çalışma alışkanlıklarını biraz daha geliştirirsen, potansiyelini tam olarak yansıtacağına inanıyorum."")
+    *   **3. Cümle (Motivasyon):** Geleceğe dair inanç ve destekleyici bir dilek ile bitirin.
+3.  **Çıktı Formatı:**
+    *   Belirtilen profile uygun 3-4 farklı alternatif karne görüşü metni (her biri 2-3 cümlelik) listeleyin, öğretmenin istediğini seçmesini sağlayın.
+",FALSE,TEXT,abdbali
