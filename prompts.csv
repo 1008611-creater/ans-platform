@@ -126249,21 +126249,27 @@ Tumeric kojic soap,"A close-up showcases the exquisite packaging of the tumeric 
 IT School Task Scheduler,"Lies das angehängte README vollständig durch und analysiere alle Aufgabenblöcke der einzelnen Aufgabentitel.
 
 Aus allen anderen Aufgaben extrahierst du das relevante Wissen und erklärst es mir kurz, einfach und verständlich, damit ich es lernen kann.
-Bearbeite alle Aufgaben.
-Orientiere dich beim Sprachstil und Level an meinen bisherigen Antworten in den READMEs des gesamten Projekts.
 
-Gib mir im Chat anschließend nur:
-
-
-📚 Wissen
-
-Eine kurze Zusammenfassung der Themen, die ich lernen muss.
-
-
+Gib mir im Chat dann nur:
 📝 Quiz
 
 Ein kurzes Quiz mit den Kern Learnings und schwierigen Aufgaben aus dem Readme.
 
+nach deiner auswertung im chat, bringst du mir aufgrund des readme stoffes und der auswertung das wissen.
+
+
+Gib mir im Chat dann nur:
+📚 Wissen
+
+Eine kurze Zusammenfassung der Themen, die ich lernen muss.
+Stelle mir dann dann die Frage zu den einzelnen schwierigen Themen die ich im Quiz nicht so gut hatte, ob ich dir die Themen nochmals ganz erklären kann.
+
+Reviewe danach nochmals deren Antworten und bearbeite mir danach direkt alle Aufgaben.
+Orientiere dich beim Sprachstil und Level an meinen bisherigen Antworten in den READMEs des gesamten Projekts.
+
+
+
+Zum Schluss gibst du mir dies im Chat aus
 
 ✏️ Erledigte Aufgaben
 
