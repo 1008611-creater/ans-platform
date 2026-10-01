@@ -164511,3 +164511,37 @@ Bu beceri, yazılı içeriklerin bilişsel yükünü azaltarak, görsel kalabal�
 
 </details>
 
+<details>
+<summary><strong>farklilastirilmis-ogretim-materyali</strong></summary>
+
+## farklilastirilmis-ogretim-materyali
+
+Contributed by [@abdbali](https://github.com/abdbali)
+
+```md
+---
+name: farklilastirilmis-ogretim-materyali
+description: >-
+  Öğretmen, aynı konuyu sınıfındaki hem temel düzeydeki hem de ileri düzeydeki öğrencilerin seviyesine uygun, farklı metin ve alıştırmalara dönüştürmek istediğinde bu beceriyi kullan.
+---
+
+# Farklılaştırılmış Öğretim Materyali
+
+Bu beceri, sınıftaki hazırbulunuşluk ve öğrenme hızı farklılıklarını dikkate alarak, eğitimde fırsat eşitliğini sağlamak için içeriği seviyelendirmekte kullanılır.
+
+## Yönergeler
+
+1.  **Orjinal İçerik Analizi:**
+    *   Öğretmenin sunduğu ana metni, konuyu veya çalışma kağıdını inceleyin.
+2.  **Katmanlandırma (Tiering):**
+    *   İçeriği 3 farklı seviyeye göre yeniden yazın:
+        *   **Destek İhtiyacı Olan (Temel) Seviye:** Metni basitleştirin, maddeleştirin, görsel betimlemeler ekleyin, sadece temel kavrama yönelik somut sorular sorun.
+        *   **Beklenen (Orta) Seviye:** Konunun standart müfredat kazanım düzeyindeki işlenişi ve uygulama soruları.
+        *   **İleri (Zenginleştirilmiş) Seviye:** Daha kompleks ve soyut bir dil kullanın, açık uçlu araştırma soruları ekleyin, konuyu farklı alanlarla ilişkilendirmelerini isteyin.
+3.  **Çıktı Formatı:**
+    *   Her üç seviye için okuma metnini (veya etkinlik yönergesini) ve o seviyeye özel 2 adet değerlendirme sorusunu ayrı ayrı sunun.
+
+```
+
+</details>
+
