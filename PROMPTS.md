@@ -164613,3 +164613,38 @@ Bu beceri, sosyo-bilimsel konular, etik ikilemler veya edebi/tarihi kararlar üz
 
 </details>
 
+<details>
+<summary><strong>oyunlastirma-senaryolari</strong></summary>
+
+## oyunlastirma-senaryolari
+
+Contributed by [@abdbali](https://github.com/abdbali)
+
+```md
+---
+name: oyunlastirma-senaryolari
+description: >-
+  Öğretmen, ders konularını Kahoot, Quizizz veya sınıf içi fiziksel kutu oyunlarına dönüştürecek kurallar ve oyun senaryoları tasarlamak istediğinde bu beceriyi kullan.
+---
+
+# Gamification (Oyunlaştırma) ve Simülasyon Senaryoları
+
+Bu beceri, öğrencilerin içsel motivasyonlarını artırmak için ders içeriklerine oyun mekanikleri (puan, seviye, liderlik tablosu, rozet, hikaye) entegre etmek amacıyla kullanılır.
+
+## Yönergeler
+
+1.  **Oyun Türü ve Konu:**
+    *   Öğretmenden dijital bir bilgi yarışması mı (Kahoot vb.) yoksa sınıf içi fiziksel bir rol yapma/kutu oyunu mu istediğini ve konuyu öğrenin.
+2.  **Oyun Mekaniği Tasarımı (Fiziksel Oyunlar için):**
+    *   **Hikaye/Tema:** Eğitici içeriği bir hikayeye sarın. (Örn: Zaman makinesi bozulan ajanlar, kayıp kıtayı arayan kaşifler)
+    *   **Kurallar:** Oyunun nasıl kazanılacağı, grupların nasıl yarışacağı ve kuralların ihlali durumunda ne olacağını net şekilde yazın.
+    *   **Ödül Sistemi:** Puan, rozet veya sınıf içi ayrıcalık (örn: bir sonraki derste dj olma hakkı) kurgulayın.
+3.  **Soru/Görev Üretimi (Dijital Platformlar için):**
+    *   Kahoot vb. bir platform isteniyorsa, heyecanı yüksek tutacak, süre kısıtlamasına uygun ve giderek zorlaşan 10 soruluk bir set (soru + 4 seçenek + doğru cevap) oluşturun.
+4.  **Çıktı Formatı:**
+    *   Oyunun adını, hikayesini, kurallarını ve materyallerini (sorular, görevler) içeren bir Oyun Tasarım Dokümanı (GDD) özeti halinde sunun.
+
+```
+
+</details>
+
