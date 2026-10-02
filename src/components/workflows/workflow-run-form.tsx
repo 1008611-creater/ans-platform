@@ -29,10 +29,34 @@ type NodeRunSummary = {
   output?: unknown;
 };
 
+type PersistedRunSummary = {
+  id: string;
+  status: string;
+  output?: unknown;
+  error?: string | null;
+  nodeRuns?: NodeRunSummary[];
+};
+
 function outputText(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "string") return value;
   return JSON.stringify(value, null, 2);
+}
+
+async function fetchRunDetail(id: string): Promise<PersistedRunSummary | null> {
+  const response = await fetch(`/api/workflows/runs/${id}`, { cache: "no-store" });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) return null;
+  return (body?.data?.run ?? null) as PersistedRunSummary | null;
+}
+
+async function waitForRunCompletion(id: string, maxPolls = 150): Promise<PersistedRunSummary | null> {
+  for (let attempt = 0; attempt < maxPolls; attempt += 1) {
+    const run = await fetchRunDetail(id).catch(() => null);
+    if (run && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(run.status)) return run;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return null;
 }
 
 /**
@@ -73,6 +97,7 @@ export function WorkflowRunForm({
     setError("");
     setOutput(null);
     setNodeRuns([]);
+    let createdRunId: string | null = null;
     try {
       const created = await fetch(`/api/workflows/${slug}/run`, {
         method: "POST",
@@ -85,6 +110,7 @@ export function WorkflowRunForm({
       }
       const id: string = createdBody?.data?.run?.id;
       if (!id) throw new Error("服务端未返回运行编号。");
+      createdRunId = id;
       setRunId(id);
 
       // 模型与额度来源随执行请求一起提交；服务端会再次校验凭证归属。
@@ -110,7 +136,20 @@ export function WorkflowRunForm({
       setNodeRuns((detail?.data?.run?.nodeRuns ?? []) as NodeRunSummary[]);
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "运行失败，请稍后重试");
+      const completed = createdRunId ? await waitForRunCompletion(createdRunId) : null;
+      if (completed) {
+        setNodeRuns(completed.nodeRuns ?? []);
+        if (completed.status === "SUCCEEDED") {
+          setError("");
+          setOutput(outputText(completed.output));
+        } else {
+          setOutput(null);
+          setError(completed.error ?? "Workflow execution failed; quota refunded.");
+        }
+        router.refresh();
+      } else {
+        setError(cause instanceof Error ? cause.message : "Run failed; please retry.");
+      }
     } finally {
       setBusy(false);
     }

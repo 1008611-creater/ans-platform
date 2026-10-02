@@ -526,6 +526,9 @@ export async function recheckWorkflowReview(slug: string, adminId: string) {
   if (workflow.isOfficial) {
     throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
   }
+  if (workflow.authorId === adminId) {
+    throw new WorkflowServiceError("作者不能审核自己的工作流。", "SELF_REVIEW_FORBIDDEN", 403);
+  }
   if (workflow.status !== "PENDING") {
     throw new WorkflowServiceError("工作流不在待审状态，请刷新后重试。", "INVALID_STATE", 409);
   }
@@ -574,6 +577,9 @@ export async function reviewWorkflow(
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
   if (workflow.isOfficial) {
     throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
+  }
+  if (workflow.authorId === adminId) {
+    throw new WorkflowServiceError("作者不能审核自己的工作流。", "SELF_REVIEW_FORBIDDEN", 403);
   }
   if (workflow.status !== "PENDING") {
     throw new WorkflowServiceError("工作流不在待审状态，请刷新后重试。", "INVALID_STATE", 409);
