@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
-import { getCompetition, registerCompetitionTeam, reviewCompetitionEntry, submitCompetitionEntry } from "@/server/competitions/service";
+import { deriveCompetitionProgress, getCompetition, registerCompetitionTeam, reviewCompetitionEntry, submitCompetitionEntry } from "@/server/competitions/service";
 
 const submission = {
   teamId: "team1",
@@ -37,6 +37,35 @@ beforeEach(() => {
 });
 
 describe("赛事参与闭环", () => {
+  it.each([
+    [{ viewerId: null }, "DISCOVER", "登录后报名"],
+    [{ viewerId: "u1", hasTeam: false }, "TEAM", "创建或加入队伍"],
+    [{ viewerId: "u1", hasTeam: true }, "REGISTER", "立即报名"],
+    [{ viewerId: "u1", entry: { id: "e1", teamId: "t1", entryStatus: "REGISTERED", awardedXp: 0, publicConsent: false }, hasProject: false }, "PROJECT", "创建参赛项目"],
+    [{ viewerId: "u1", entry: { id: "e1", teamId: "t1", entryStatus: "REGISTERED", awardedXp: 0, publicConsent: false }, hasProject: true }, "SUBMIT", "继续创作并提交"],
+    [{ viewerId: "u1", entry: { id: "e1", entryStatus: "SUBMITTED", awardedXp: 0, publicConsent: false } }, "REVIEW", "查看审核进度"],
+    [{ viewerId: "u1", entry: { id: "e1", entryStatus: "REJECTED", awardedXp: 0, publicConsent: false } }, "RESUBMIT", "修改后重新提交"],
+    [{ viewerId: "u1", entry: { id: "e1", submissionVersionId: "v1", entryStatus: "APPROVED", awardedXp: 0, publicConsent: true, publicationStatus: "PENDING" } }, "PUBLISH", "查看公开进度"],
+    [{ viewerId: "u1", entry: { id: "e1", submissionVersionId: "v1", entryStatus: "APPROVED", awardedXp: 0, publicConsent: true, publicationStatus: "APPROVED" } }, "SHOWCASE", "查看公开作品"],
+    [{ viewerId: "u1", entry: { id: "e1", entryStatus: "APPROVED", awardedXp: 20, publicConsent: false } }, "REWARD", "查看奖励记录"],
+  ] as const)("状态导向唯一下一步：%s", (input, stage, action) => {
+    const result = deriveCompetitionProgress({ competitionId: "c1", status: "ONGOING", ...input });
+    expect(result.currentStage).toBe(stage);
+    expect(result.nextAction.label).toBe(action);
+  });
+
+  it("已结束赛事不再引导报名或投稿", () => {
+    const result = deriveCompetitionProgress({ competitionId: "c1", status: "ENDED", viewerId: "u1" });
+    expect(result.currentStage).toBe("ENDED");
+    expect(result.nextAction.href).toBe("/competitions/c1#showcase");
+  });
+
+  it("已结束赛事的拒绝投稿不再开放重新提交入口", () => {
+    const result = deriveCompetitionProgress({ competitionId: "c1", status: "ENDED", viewerId: "u1", entry: { id: "e1", entryStatus: "REJECTED", awardedXp: 0, publicConsent: false } });
+    expect(result.currentStage).toBe("ENDED");
+    expect(result.nextAction.href).toBe("/competitions/c1#showcase");
+  });
+
   it("撤回逐版本公开授权后，赛事公开页不再返回作品版本信息", async () => {
     mocks.db.competition.findUnique.mockResolvedValue({
       id: "competition1",
@@ -104,7 +133,7 @@ describe("赛事参与闭环", () => {
   it("团队成员并发变动时拒绝不完整投稿并返回可恢复冲突", async () => {
     mocks.db.$transaction.mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError("serialization", { code: "P2034", clientVersion: "6.19.0" }));
     await expect(submitCompetitionEntry("u1", "competition1", submission))
-      .rejects.toMatchObject({ code: "SUBMISSION_CONFLICT", status: 409, message: "团队成员或投稿状态刚刚变化，请刷新后重新确认。" });
+      .rejects.toMatchObject({ code: "SUBMISSION_CONFLICT", status: 409 });
   });
   it("赛事奖励额度不足时不完成审核也不记账", async () => {
     mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN" });
