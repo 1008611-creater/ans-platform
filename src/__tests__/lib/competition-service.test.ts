@@ -126,7 +126,12 @@ describe("赛事参与闭环", () => {
       data: [{ teamCompetitionId: "entry1", userId: "u1", points: 1 }, { teamCompetitionId: "entry1", userId: "u2", points: 1 }],
     });
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ action: "COMPETITION_ENTRY_SUBMITTED" }),
+      data: expect.objectContaining({
+        action: "COMPETITION_ENTRY_SUBMITTED",
+        before: { status: "REGISTERED", artifactVersionId: null },
+        after: { status: "SUBMITTED", artifactVersionId: "version1" },
+        metadata: expect.objectContaining({ competitionId: "competition1", artifactVersionId: "version1" }),
+      }),
     }));
   });
 
@@ -153,4 +158,22 @@ describe("赛事参与闭环", () => {
     expect(mocks.db.teamCompetition.updateMany).not.toHaveBeenCalled();
     expect(mocks.db.xpLedger.create).not.toHaveBeenCalled();
   });
+  it("registration audit captures state transition and competition", async () => {
+    mocks.db.teamMember.findFirst.mockResolvedValue({ role: "OWNER" });
+    mocks.db.competition.findUnique.mockResolvedValue({ status: "ONGOING", startsAt: null, endsAt: null, maxTeams: null });
+    mocks.db.teamCompetition.findUnique.mockResolvedValue(null);
+    mocks.db.teamCompetition.create.mockResolvedValue({ id: "entry1", entryStatus: "REGISTERED" });
+
+    await registerCompetitionTeam("u1", "competition1", { teamId: "team1" });
+
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "COMPETITION_TEAM_REGISTERED",
+        before: { status: null },
+        after: { status: "REGISTERED" },
+        metadata: { competitionId: "competition1", teamId: "team1", artifactVersionId: null },
+      }),
+    });
+  });
+
 });
