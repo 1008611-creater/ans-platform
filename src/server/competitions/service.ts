@@ -175,7 +175,17 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
           where: { id: existing.id },
           data: { entryStatus: "REGISTERED", submissionVersionId: null, submittedById: null, submittedAt: null, submissionNote: null, publicConsent: false, reviewedAt: null, reviewedById: null, reviewNote: null, awardedXp: 0 },
         });
-        await tx.auditLog.create({ data: { actorId, action: "COMPETITION_TEAM_REREGISTERED", resourceType: "team_competition", resourceId: reset.id, metadata: { competitionId, teamId } } });
+        await tx.auditLog.create({
+          data: {
+            actorId,
+            action: "COMPETITION_TEAM_REREGISTERED",
+            resourceType: "team_competition",
+            resourceId: reset.id,
+            before: { status: "REJECTED" },
+            after: { status: "REGISTERED" },
+            metadata: { competitionId, teamId, artifactVersionId: null },
+          },
+        });
         return { entry: reset, created: true };
       }
       if (competition.maxTeams !== null) {
@@ -183,7 +193,17 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
         if (count >= competition.maxTeams) throw new CompetitionError(409, "COMPETITION_FULL", "璧涗簨闃熶紞鍚嶉宸叉弧銆");
       }
       const entry = await tx.teamCompetition.create({ data: { teamId, competitionId, entryStatus: "REGISTERED" } });
-      await tx.auditLog.create({ data: { actorId, action: "COMPETITION_TEAM_REGISTERED", resourceType: "team_competition", resourceId: entry.id, metadata: { competitionId, teamId } } });
+      await tx.auditLog.create({
+        data: {
+          actorId,
+          action: "COMPETITION_TEAM_REGISTERED",
+          resourceType: "team_competition",
+          resourceId: entry.id,
+          before: { status: null },
+          after: { status: "REGISTERED" },
+          metadata: { competitionId, teamId, artifactVersionId: null },
+        },
+      });
       return { entry, created: true };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
@@ -244,7 +264,24 @@ export async function submitCompetitionEntry(actorId: string, competitionId: str
     if (updated.count !== 1) throw new CompetitionError(409, "SUBMISSION_CONFLICT", "鎶曠鐘舵€佸垰鍒氬彂鐢熷彉鍖栵紝璇峰埛鏂拌禌浜嬮〉闈㈠悗纭褰撳墠鐘舵€併€");
     await tx.teamCompetitionContribution.deleteMany({ where: { teamCompetitionId: entry.id } });
     await tx.teamCompetitionContribution.createMany({ data: activeMembers.map((member) => ({ teamCompetitionId: entry.id, userId: member.userId, points: 1 })) });
-    await tx.auditLog.create({ data: { actorId, action: "COMPETITION_ENTRY_SUBMITTED", resourceType: "team_competition", resourceId: entry.id, metadata: { competitionId, teamId: input.teamId, projectId: input.projectId, artifactVersionId: version.id, publicConsent: input.publicConsent, contributorIds: activeMembers.map((member) => member.userId) } } });
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "COMPETITION_ENTRY_SUBMITTED",
+        resourceType: "team_competition",
+        resourceId: entry.id,
+        before: { status: entry.entryStatus, artifactVersionId: entry.submissionVersionId ?? null },
+        after: { status: "SUBMITTED", artifactVersionId: version.id },
+        metadata: {
+          competitionId,
+          teamId: input.teamId,
+          projectId: input.projectId,
+          artifactVersionId: version.id,
+          publicConsent: input.publicConsent,
+          contributorIds: activeMembers.map((member) => member.userId),
+        },
+      },
+    });
     return { id: entry.id, status: "SUBMITTED", artifactVersionId: version.id, contributors: activeMembers.length };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
@@ -295,12 +332,16 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
       if (changed.count !== 1) throw new CompetitionError(409, "REVIEW_CONFLICT", "鍙︿竴浣嶇鐞嗗憳鍒氬垰澶勭悊浜嗚鎶曠锛岃鍒锋柊瀹℃牳闃熷垪銆");
 
       if (input.decision === "approve" && entry.publicConsent && entry.submittedById) {
+        const publicationBefore = await tx.artifactPublication.findUnique({
+          where: { artifactVersionId: entry.submissionVersion.id },
+          select: { status: true },
+        });
         await tx.artifactPublication.upsert({
           where: { artifactVersionId: entry.submissionVersion.id },
           create: { artifactVersionId: entry.submissionVersion.id, requestedById: entry.submittedById, status: "APPROVED", reviewedById: reviewerId, reviewedAt: new Date(), reviewNote: input.note },
           update: { status: "APPROVED", reviewedById: reviewerId, reviewedAt: new Date(), reviewNote: input.note, withdrawnAt: null },
         });
-        await tx.auditLog.create({ data: { actorId: reviewerId, action: "PROJECT_PUBLICATION_APPROVED", resourceType: "artifact_version", resourceId: entry.submissionVersion.id, metadata: { projectId: entry.submissionVersion.artifact.projectId, source: "competition_review", teamCompetitionId: entry.id, note: input.note } } });
+        await tx.auditLog.create({ data: { actorId: reviewerId, action: "PROJECT_PUBLICATION_APPROVED", resourceType: "artifact_version", resourceId: entry.submissionVersion.id, before: { status: publicationBefore?.status ?? null }, after: { status: "APPROVED" }, metadata: { competitionId: entry.competitionId, projectId: entry.submissionVersion.artifact.projectId, artifactVersionId: entry.submissionVersion.id, source: "competition_review", teamCompetitionId: entry.id, note: input.note } } });
       }
 
       if (award > 0) {
@@ -319,7 +360,7 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
         }
       }
 
-      await tx.auditLog.create({ data: { actorId: reviewerId, action: "COMPETITION_ENTRY_REVIEWED", resourceType: "team_competition", resourceId: entry.id, before: { status: "SUBMITTED" }, after: { status: nextStatus, awardedXp: award }, metadata: { note: input.note, artifactVersionId: entry.submissionVersion.id, contributorIds: entry.contributions.map((row) => row.userId) } } });
+      await tx.auditLog.create({ data: { actorId: reviewerId, action: "COMPETITION_ENTRY_REVIEWED", resourceType: "team_competition", resourceId: entry.id, before: { status: "SUBMITTED", awardedXp: 0 }, after: { status: nextStatus, awardedXp: award }, metadata: { competitionId: entry.competitionId, note: input.note, artifactVersionId: entry.submissionVersion.id, contributorIds: entry.contributions.map((row) => row.userId) } } });
       return { id: entry.id, status: nextStatus, awardedXp: award, publishedArtifactVersionId: input.decision === "approve" && entry.publicConsent ? entry.submissionVersion.id : null };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
