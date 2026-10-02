@@ -332,12 +332,16 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
       if (changed.count !== 1) throw new CompetitionError(409, "REVIEW_CONFLICT", "鍙︿竴浣嶇鐞嗗憳鍒氬垰澶勭悊浜嗚鎶曠锛岃鍒锋柊瀹℃牳闃熷垪銆");
 
       if (input.decision === "approve" && entry.publicConsent && entry.submittedById) {
+        const publicationBefore = await tx.artifactPublication.findUnique({
+          where: { artifactVersionId: entry.submissionVersion.id },
+          select: { status: true },
+        });
         await tx.artifactPublication.upsert({
           where: { artifactVersionId: entry.submissionVersion.id },
           create: { artifactVersionId: entry.submissionVersion.id, requestedById: entry.submittedById, status: "APPROVED", reviewedById: reviewerId, reviewedAt: new Date(), reviewNote: input.note },
           update: { status: "APPROVED", reviewedById: reviewerId, reviewedAt: new Date(), reviewNote: input.note, withdrawnAt: null },
         });
-        await tx.auditLog.create({ data: { actorId: reviewerId, action: "PROJECT_PUBLICATION_APPROVED", resourceType: "artifact_version", resourceId: entry.submissionVersion.id, before: { status: "PENDING" }, after: { status: "APPROVED" }, metadata: { competitionId: entry.competitionId, projectId: entry.submissionVersion.artifact.projectId, artifactVersionId: entry.submissionVersion.id, source: "competition_review", teamCompetitionId: entry.id, note: input.note } } });
+        await tx.auditLog.create({ data: { actorId: reviewerId, action: "PROJECT_PUBLICATION_APPROVED", resourceType: "artifact_version", resourceId: entry.submissionVersion.id, before: { status: publicationBefore?.status ?? null }, after: { status: "APPROVED" }, metadata: { competitionId: entry.competitionId, projectId: entry.submissionVersion.artifact.projectId, artifactVersionId: entry.submissionVersion.id, source: "competition_review", teamCompetitionId: entry.id, note: input.note } } });
       }
 
       if (award > 0) {

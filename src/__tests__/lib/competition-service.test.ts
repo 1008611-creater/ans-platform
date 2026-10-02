@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
     teamCompetitionContribution: { deleteMany: vi.fn(), createMany: vi.fn() },
     project: { findFirst: vi.fn() },
     artifactVersion: { findFirst: vi.fn() },
-    artifactPublication: { upsert: vi.fn() },
+    artifactPublication: { findUnique: vi.fn(), upsert: vi.fn() },
     xpLedger: { create: vi.fn() },
     auditLog: { create: vi.fn() },
     $transaction: vi.fn(),
