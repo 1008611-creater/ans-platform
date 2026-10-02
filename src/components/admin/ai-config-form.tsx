@@ -30,7 +30,7 @@ export function AiConfigForm({ initialConfig }: { initialConfig: Config | null }
   const [reasoningEffort, setReasoningEffort] = useState<Config["reasoningEffort"]>(initialConfig?.reasoningEffort ?? "none");
   const [timeoutSeconds, setTimeoutSeconds] = useState(String(Math.round((initialConfig?.timeoutMs ?? 30_000) / 1000)));
   const [enabled, setEnabled] = useState(initialConfig?.enabled ?? true);
-  const [busy, setBusy] = useState<"save" | "sync" | null>(null);
+  const [busy, setBusy] = useState<"save" | "sync" | "rollback" | null>(null);
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   const models = useMemo(() => [...new Set(modelsText.split(/[\n,]/).map((item) => item.trim()).filter(Boolean))], [modelsText]);
@@ -81,6 +81,30 @@ export function AiConfigForm({ initialConfig }: { initialConfig: Config | null }
       setMessage({ kind: "success", text: `已同步 ${body.count} 个上游模型，可继续手动删改后保存` });
     } catch (error) {
       setMessage({ kind: "error", text: error instanceof Error ? error.message : "模型同步失败" });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function rollback() {
+    setBusy("rollback");
+    setMessage(null);
+    try {
+      const response = await fetch("/api/admin/ai-config/rollback", { method: "POST" });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || !body.data) throw new Error(body.message || "恢复失败");
+      const next = body.data as Config;
+      setBaseUrl(next.baseUrl);
+      setSelectedModel(next.selectedModel);
+      setModelsText(next.availableModels.join("\n"));
+      setReasoningEffort(next.reasoningEffort);
+      setTimeoutSeconds(String(Math.round(next.timeoutMs / 1000)));
+      setEnabled(next.enabled);
+      setApiKey("");
+      setMessage({ kind: "success", text: "已恢复上一版配置" });
+      router.refresh();
+    } catch (error) {
+      setMessage({ kind: "error", text: error instanceof Error ? error.message : "恢复失败" });
     } finally {
       setBusy(null);
     }
@@ -143,7 +167,10 @@ export function AiConfigForm({ initialConfig }: { initialConfig: Config | null }
           </div>
 
           {message && <div className={`flex items-center gap-2 rounded-md border p-3 text-sm ${message.kind === "success" ? "text-emerald-700" : "text-destructive"}`}>{message.kind === "success" ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}{message.text}</div>}
-          <Button onClick={save} disabled={busy !== null} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{busy === "save" ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />保存中</> : "保存初审配置"}</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={save} disabled={busy !== null}><Save className="mr-2 h-4 w-4" />{busy === "save" ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />保存中</> : "保存初审配置"}</Button>
+            {initialConfig && <Button type="button" variant="outline" onClick={rollback} disabled={busy !== null}><RefreshCw className={`mr-2 h-4 w-4 ${busy === "rollback" ? "animate-spin" : ""}`} />{busy === "rollback" ? "恢复中" : "恢复上一版"}</Button>}
+          </div>
         </CardContent>
       </Card>
     </div>
