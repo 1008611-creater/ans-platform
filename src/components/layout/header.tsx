@@ -98,7 +98,6 @@ interface HeaderProps {
 }
 
 export function Header({ authProvider = "credentials", allowRegistration = true }: HeaderProps) {
-  const isOAuth = authProvider !== "credentials";
   const { data: session } = useSession();
   const t = useTranslations();
   const { theme, setTheme } = useTheme();
@@ -285,7 +284,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     {t("nav.competitionHub")}
                   </Link>
                   {!branding.useCloneBranding && (
-                    <a
+                    <Link
                       href="/kids"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors font-kids"
@@ -294,7 +293,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                       <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
                         {t("nav.forKids")}
                       </span>
-                    </a>
+                    </Link>
                   )}
                 </div>
               </nav>
@@ -347,160 +346,42 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
           </ContextMenuContent>
         </ContextMenu>
 
-        {/* Desktop nav */}
-        <nav aria-label={t("a11y.mainNav")} className="hidden lg:flex items-center gap-1 text-sm">
-          {user && (
+        {/* Primary desktop nav: keep the main job paths visible and move low-frequency destinations into More. */}
+        <nav aria-label={t("a11y.mainNav")} className="hidden min-w-0 flex-1 items-center gap-1 text-sm lg:flex">
+          {[
+            { href: "/prompts", label: t("nav.prompts") },
+            { href: "/templates", label: t("homepageNext.templates") },
+            { href: "/workflows", label: t("nav.workflows") },
+            { href: "/competitions/aigc", label: t("nav.competitionHub"), emphasis: true },
+          ].map(({ href, label, emphasis }) => (
             <Link
-              href="/collection"
-              className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
+              key={href}
+              href={href}
+              className={`shrink-0 rounded-md px-3 py-1.5 transition-colors hover:bg-accent hover:text-foreground ${emphasis ? "font-medium text-primary" : "text-muted-foreground"}`}
             >
-              {t("nav.collection")}
+              {label}
             </Link>
-          )}
-          {/* 主导航按「发现 → 运行 → 收藏 → 复用」闭环排列，三类内容对象各有一个入口。 */}
-          <Link
-            href="/prompts"
-            className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.prompts")}
-          </Link>
-          <Link
-            href="/templates"
-            className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            模板
-          </Link>
-          <Link
-            href="/workflows"
-            className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.workflows")}
-          </Link>
-          {user && (
-            <Link
-              href="/workflows/runs"
-              className="px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-            >
-              运行记录
-            </Link>
-          )}
-          <Link
-            href="/skills"
-            className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.skills")}
-          </Link>
-          <Link
-            href="/taste"
-            className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.taste")}
-          </Link>
-          {user && (
-            <Link
-              href="/workflows/mine"
-              className="hidden xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-            >
-              我的工作流
-            </Link>
-          )}
-          {/* 低频入口保留在 2xl 以上，窄屏收进「更多」 */}
-          <Link
-            href="/categories"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.categories")}
-          </Link>
-          <Link
-            href="/tags"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.tags")}
-          </Link>
-          <Link
-            href="/promptmasters"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.promptmasters")}
-          </Link>
-          <Link
-            href="/teams"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent"
-          >
-            团队与比赛
-          </Link>
-          <Link
-            href="/competitions/aigc"
-            className="hidden 2xl:block px-3 py-1.5 rounded-md text-primary transition-colors hover:text-foreground hover:bg-accent"
-          >
-            {t("nav.competitionHub")}
-          </Link>
-          {/* Three-dot dropdown for collapsed nav items */}
+          ))}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="2xl:hidden h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1 px-2 text-muted-foreground hover:text-foreground">
+                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                <span>{t("nav.more")}</span>
                 <span className="sr-only">{t("nav.more")}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              <DropdownMenuItem asChild className="xl:hidden">
-                <Link href="/skills">
-                  {t("nav.skills")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="xl:hidden">
-                <Link href="/taste">
-                  {t("nav.taste")}
-                </Link>
-              </DropdownMenuItem>
-              {user && (
-                <>
-                  <DropdownMenuItem asChild>
-                    <Link href="/workflows/mine">我的工作流</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/workflows/runs">运行记录</Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuSeparator className="xl:hidden" />
-              <DropdownMenuItem asChild>
-                <Link href="/categories">
-                  {t("nav.categories")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/tags">
-                  {t("nav.tags")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/promptmasters">
-                  {t("nav.promptmasters")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/competitions/aigc">
-                  {t("nav.competitionHub")}
-                </Link>
-              </DropdownMenuItem>
-              {!branding.useCloneBranding && (
-                <DropdownMenuItem asChild>
-                  <a href="/kids" className="font-kids">
-                    <MiniPromi className="mr-2 h-4 w-4" />
-                    <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
-                      {t("nav.forKids")}
-                    </span>
-                  </a>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem asChild>
-                <Link href="/developers">
-                  <Hammer className="mr-2 h-4 w-4" />
-                  {t("nav.developers")}
-                </Link>
-              </DropdownMenuItem>
+              {user && <DropdownMenuItem asChild><Link href="/workspace">{t("homepageNext.workspace")}</Link></DropdownMenuItem>}
+              {user && <DropdownMenuItem asChild><Link href="/collection">{t("nav.collection")}</Link></DropdownMenuItem>}
+              {user && <DropdownMenuItem asChild><Link href="/workflows/runs">{t("homepageNext.runHistory")}</Link></DropdownMenuItem>}
+              <DropdownMenuItem asChild><Link href="/discover">{t("feed.discover")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/categories">{t("nav.categories")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/tags">{t("nav.tags")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/skills">{t("nav.skills")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/taste">{t("nav.taste")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/promptmasters">{t("nav.promptmasters")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/developers"><Hammer className="mr-2 h-4 w-4" aria-hidden="true" />{t("nav.developers")}</Link></DropdownMenuItem>
+              {!branding.useCloneBranding && <DropdownMenuItem asChild><Link href="/kids" className="font-kids"><MiniPromi className="mr-2 h-4 w-4" />{t("nav.forKids")}</Link></DropdownMenuItem>}
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
@@ -513,7 +394,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
           <BilingualToggle />
           {/* For Kids link */}
           {!branding.useCloneBranding && (
-            <a 
+            <Link
               href="/kids" 
               className="hidden 2xl:flex items-center gap-1 px-2 py-1 rounded-md hover:bg-accent transition-colors font-kids"
             >
@@ -521,7 +402,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               <span className="text-sm font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
                 {t("nav.forKids")}
               </span>
-            </a>
+            </Link>
           )}
 
           {/* Developers link */}
@@ -556,8 +437,8 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               setTheme(newTheme);
             }}
           >
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-[transform,opacity] dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-[transform,opacity] dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
           </Button>
 
