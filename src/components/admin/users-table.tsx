@@ -81,6 +81,7 @@ export function UsersTable() {
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [newCreditLimit, setNewCreditLimit] = useState("");
   const [loading, setLoading] = useState(false);
+  const [roleChangingUserId, setRoleChangingUserId] = useState<string | null>(null);
 
   // Pagination and search state
   const [users, setUsers] = useState<UserData[]>([]);
@@ -103,7 +104,7 @@ export function UsersTable() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to fetch users");
+        throw new Error(data?.message || data?.error || "Failed to fetch users");
       }
 
       setUsers(data.users);
@@ -131,6 +132,8 @@ export function UsersTable() {
   };
 
   const handleRoleChange = async (userId: string, newRole: "ADMIN" | "USER") => {
+    if (roleChangingUserId) return;
+    setRoleChangingUserId(userId);
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
@@ -138,12 +141,18 @@ export function UsersTable() {
         body: JSON.stringify({ role: newRole }),
       });
 
-      if (!res.ok) throw new Error("Failed to update role");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || data?.error || "Failed to update role");
+      }
 
       toast.success(t("roleUpdated"));
+      await fetchUsers(currentPage, searchQuery, userFilter);
       router.refresh();
-    } catch {
-      toast.error(t("roleUpdateFailed"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("roleUpdateFailed"));
+    } finally {
+      setRoleChangingUserId(null);
     }
   };
 
@@ -344,14 +353,14 @@ export function UsersTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       {user.role === "USER" ? (
-                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, "ADMIN")}>
+                        <DropdownMenuItem disabled={roleChangingUserId === user.id} onClick={() => handleRoleChange(user.id, "ADMIN")}>
                           <Shield className="h-4 w-4 mr-2" />
-                          {t("makeAdmin")}
+                          {roleChangingUserId === user.id ? tCommon("loading") : t("makeAdmin")}
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, "USER")}>
+                        <DropdownMenuItem disabled={roleChangingUserId === user.id} onClick={() => handleRoleChange(user.id, "USER")}>
                           <User className="h-4 w-4 mr-2" />
-                          {t("removeAdmin")}
+                          {roleChangingUserId === user.id ? tCommon("loading") : t("removeAdmin")}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={() => handleVerifyToggle(user.id, !user.verified)}>
@@ -450,14 +459,14 @@ export function UsersTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       {user.role === "USER" ? (
-                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, "ADMIN")}>
+                        <DropdownMenuItem disabled={roleChangingUserId === user.id} onClick={() => handleRoleChange(user.id, "ADMIN")}>
                           <Shield className="h-4 w-4 mr-2" />
-                          {t("makeAdmin")}
+                          {roleChangingUserId === user.id ? tCommon("loading") : t("makeAdmin")}
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, "USER")}>
+                        <DropdownMenuItem disabled={roleChangingUserId === user.id} onClick={() => handleRoleChange(user.id, "USER")}>
                           <User className="h-4 w-4 mr-2" />
-                          {t("removeAdmin")}
+                          {roleChangingUserId === user.id ? tCommon("loading") : t("removeAdmin")}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={() => handleVerifyToggle(user.id, !user.verified)}>

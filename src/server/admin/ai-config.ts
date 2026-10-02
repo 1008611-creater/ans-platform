@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { writeAuditLog } from "@/lib/audit";
+import { Prisma } from "@prisma/client";
 import { decryptCredential, encryptCredential, maskStoredCredential } from "@/server/integrations/credential-crypto";
 
 export const ADMIN_AI_CONFIG_ID = "default";
@@ -100,32 +101,115 @@ export async function saveAdminAiConfig(input: AdminAiConfigInput, updatedById: 
   const apiKeyLast4 = apiKey ? apiKey.slice(-4) : existing?.apiKeyLast4;
   if (!encryptedApiKey || !apiKeyLast4) throw new Error("请填写 API Key");
 
-  return db.adminAiConfig.upsert({
-    where: { id: ADMIN_AI_CONFIG_ID },
-    create: {
-      id: ADMIN_AI_CONFIG_ID,
-      baseUrl,
-      encryptedApiKey,
-      apiKeyLast4,
-      selectedModel,
-      availableModels: models,
-      reasoningEffort: input.reasoningEffort,
-      timeoutMs: input.timeoutMs,
-      enabled: input.enabled,
-      updatedById,
-    },
-    update: {
-      baseUrl,
-      encryptedApiKey,
-      apiKeyLast4,
-      selectedModel,
-      availableModels: models,
-      reasoningEffort: input.reasoningEffort,
-      timeoutMs: input.timeoutMs,
-      enabled: input.enabled,
-      updatedById,
-    },
+  return db.$transaction(async (tx) => {
+    const saved = await tx.adminAiConfig.upsert({
+      where: { id: ADMIN_AI_CONFIG_ID },
+      create: {
+        id: ADMIN_AI_CONFIG_ID,
+        baseUrl,
+        encryptedApiKey,
+        apiKeyLast4,
+        selectedModel,
+        availableModels: models,
+        reasoningEffort: input.reasoningEffort,
+        timeoutMs: input.timeoutMs,
+        enabled: input.enabled,
+        updatedById,
+      },
+      update: {
+        baseUrl,
+        encryptedApiKey,
+        apiKeyLast4,
+        selectedModel,
+        availableModels: models,
+        reasoningEffort: input.reasoningEffort,
+        timeoutMs: input.timeoutMs,
+        enabled: input.enabled,
+        updatedById,
+      },
+    });
+    const latest = await tx.adminAiConfigVersion.aggregate({
+      where: { configId: saved.id },
+      _max: { version: true },
+    });
+    await tx.adminAiConfigVersion.create({
+      data: {
+        configId: saved.id,
+        version: (latest._max.version ?? 0) + 1,
+        baseUrl: saved.baseUrl,
+        encryptedApiKey: saved.encryptedApiKey,
+        apiKeyLast4: saved.apiKeyLast4,
+        selectedModel: saved.selectedModel,
+        availableModels: saved.availableModels as Prisma.InputJsonValue,
+        reasoningEffort: saved.reasoningEffort,
+        timeoutMs: saved.timeoutMs,
+        enabled: saved.enabled,
+        updatedById,
+      },
+    });
+    return saved;
   });
+}
+
+export async function rollbackAdminAiConfig(updatedById: string) {
+  return db.$transaction(async (tx) => {
+    const current = await tx.adminAiConfig.findUnique({ where: { id: ADMIN_AI_CONFIG_ID } });
+    if (!current) throw new Error("暂无可恢复的 AI 配置");
+    const latest = await tx.adminAiConfigVersion.findFirst({
+      where: { configId: current.id },
+      orderBy: { version: "desc" },
+    });
+    if (!latest) throw new Error("暂无可恢复的配置版本");
+    const previous = await tx.adminAiConfigVersion.findFirst({
+      where: { configId: current.id, version: { lt: latest.version } },
+      orderBy: { version: "desc" },
+    });
+    if (!previous) throw new Error("暂无上一版配置");
+    const saved = await tx.adminAiConfig.update({
+      where: { id: current.id },
+      data: {
+        baseUrl: previous.baseUrl,
+        encryptedApiKey: previous.encryptedApiKey,
+        apiKeyLast4: previous.apiKeyLast4,
+        selectedModel: previous.selectedModel,
+        availableModels: previous.availableModels as Prisma.InputJsonValue,
+        reasoningEffort: previous.reasoningEffort,
+        timeoutMs: previous.timeoutMs,
+        enabled: previous.enabled,
+        updatedById,
+      },
+    });
+    await tx.adminAiConfigVersion.create({
+      data: {
+        configId: saved.id,
+        version: latest.version + 1,
+        baseUrl: saved.baseUrl,
+        encryptedApiKey: saved.encryptedApiKey,
+        apiKeyLast4: saved.apiKeyLast4,
+        selectedModel: saved.selectedModel,
+        availableModels: saved.availableModels as Prisma.InputJsonValue,
+        reasoningEffort: saved.reasoningEffort,
+        timeoutMs: saved.timeoutMs,
+        enabled: saved.enabled,
+        updatedById,
+      },
+    });
+    return saved;
+  });
+}
+
+export async function rollbackAdminAiConfigWithAudit(updatedById: string) {
+  const before = await getAdminAiConfig();
+  const saved = await rollbackAdminAiConfig(updatedById);
+  await writeAuditLog({
+    actorId: updatedById,
+    action: "ADMIN_AI_CONFIG_ROLLBACK",
+    resourceType: "ADMIN_AI_CONFIG",
+    resourceId: saved.id,
+    before: before ? { baseUrl: before.baseUrl, selectedModel: before.selectedModel, reasoningEffort: before.reasoningEffort, timeoutMs: before.timeoutMs, enabled: before.enabled } : null,
+    after: { baseUrl: saved.baseUrl, selectedModel: saved.selectedModel, reasoningEffort: saved.reasoningEffort, timeoutMs: saved.timeoutMs, enabled: saved.enabled },
+  });
+  return saved;
 }
 
 export async function saveAdminAiConfigWithAudit(input: AdminAiConfigInput, updatedById: string) {

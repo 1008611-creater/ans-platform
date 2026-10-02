@@ -20,7 +20,8 @@ export async function POST(request: Request) {
     if (!current) return NextResponse.json({ data: { availableModels: models, selectedModel: models[0] }, count: models.length });
     const selectedModel = models.includes(current.selectedModel) ? current.selectedModel : models[0];
     const saved = await saveAdminAiConfig({
-      baseUrl: current.baseUrl,
+      baseUrl: requestBaseUrl || current.baseUrl,
+      ...(requestApiKey ? { apiKey: requestApiKey } : {}),
       selectedModel,
       availableModels: models,
       reasoningEffort: current.reasoningEffort as "none" | "low" | "medium" | "high",
