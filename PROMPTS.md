@@ -164835,3 +164835,398 @@ Generate a prompt that I can use to write the civil service job applications whi
 
 </details>
 
+<details>
+<summary><strong>KELİME OYUNU </strong></summary>
+
+## KELİME OYUNU 
+
+Contributed by @anonymous
+
+```md
+evcut web sitem bir öğrenci bilgi yarışması / yarışma platformu. Mevcut tasarım fazla sıradan ve jenerik görünüyor. Siteye giren kişi bunun bir yarışma sitesi olduğunu ilk birkaç saniyede hissetmeli.
+
+Sadece renkleri veya birkaç butonu değiştirme. Mevcut tasarım dilini baştan ele al ve siteyi profesyonel bir yarışma platformuna dönüştür.
+
+ANA HEDEF
+
+Site şu hissi vermeli:
+
+“Birazdan yarışma başlayacak.”
+
+Öğrencide:
+
+heyecan
+merak
+rekabet
+eğlence
+prestij
+
+hissi oluşturmalı.
+
+Fakat çocukça veya ucuz görünmemeli. Modern, enerjik ve profesyonel olmalı.
+
+Klasik:
+“AI tarafından yapılmış dashboard + yuvarlak kartlar + mor gradient”
+görünümünden kesinlikle uzaklaş.
+
+TASARIM DİLİ
+
+Tasarımı modern yarışma programlarından, e-spor turnuvalarından ve profesyonel quiz platformlarından ilham alarak oluştur.
+
+Ancak herhangi bir sitenin tasarımını birebir kopyalama.
+
+Site kendine özgü bir marka kimliğine sahip olsun.
+
+Kullanılabilecek görsel yaklaşım:
+güçlü tipografi
+büyük başlıklar
+dinamik geometrik şekiller
+yarışma temalı görsel detaylar
+kontrollü glow
+hafif depth / 3D hissi
+hareketli arka plan detayları
+modern panel tasarımları
+canlı ama dengeli renkler
+güçlü kontrast
+kaliteli mikro animasyonlar
+
+Her şey animasyonlu olmak zorunda değil.
+
+Ama kullanıcı siteyle etkileşime girdiğinde site “canlı” hissettirmeli.
+
+ANA SAYFA
+
+Ana sayfa en önemli bölüm.
+
+Hero alanı klasik:
+
+“Yapay zekanın gücüyle...”
+“Geleceğin platformu...”
+
+gibi jenerik bir SaaS hero'su OLMASIN.
+
+Bunun yerine doğrudan yarışma atmosferi oluştur.
+
+Örneğin görsel hiyerarşi şu mantıkta olabilir:
+
+YARIŞMA ADI
+
+BÜYÜK BAŞLIK
+
+“Kendini Test Et.
+Takımını Zirveye Taşı.”
+
+Kısa açıklama
+
+[ YARIŞMAYA KATIL ]
+
+[ NASIL OYNANIR? ]
+
+Arka planda yarışma atmosferini destekleyen görsel/animasyonlar.
+
+Hero alanı çok boş ve sıradan görünmesin.
+
+YARIŞMA DURUMU
+
+Ana sayfada yarışmanın durumunu çok güçlü şekilde göster.
+
+Örneğin:
+
+🔴 CANLI
+
+veya
+
+⏳ YARIŞMAYA KALAN
+
+00 : 24 : 36
+
+gibi.
+
+Countdown varsa gerçekten dikkat çekici olsun.
+
+Yarışma başlamışsa canlı durum görsel olarak anlaşılmalı.
+
+LİDERLİK TABLOSU
+
+Leaderboard sıradan bir tablo gibi görünmemeli.
+
+İlk 3 sırayı görsel olarak öne çıkar.
+
+Örneğin:
+
+🥇 1
+🥈 2
+🥉 3
+
+Ancak emojiye bağımlı bir tasarım yapma.
+
+İlk üç için daha profesyonel podium / ranking tasarımı oluştur.
+
+Diğer sıralar daha kompakt olabilir.
+
+Kullanıcı kendi sırasını kolayca görebilmeli.
+
+YARIŞMA EKRANI
+
+Eğer mevcut sitede soru cevaplama ekranı varsa burası çok önemli.
+
+Kullanıcı soru ekranına girdiğinde gerçekten yarışıyormuş hissine kapılmalı.
+
+Ekranda:
+
+SORU 07 / 20
+
+Kalan süre:
+
+00:18
+
+gibi net bir bilgi olmalı.
+
+Soru alanı güçlü ve okunaklı olmalı.
+
+Cevap seçenekleri sıradan HTML butonları gibi görünmemeli.
+
+Örneğin:
+
+A
+B
+C
+D
+
+seçenekleri büyük, rahat tıklanabilir ve modern tasarlanmalı.
+
+Seçim yapıldığında:
+
+hover
+selected
+correct
+wrong
+disabled
+
+durumları farklı görsel feedback vermeli.
+
+ZAMANLAYICI
+
+Timer yarışmanın önemli bir parçası.
+
+Sadece küçük bir “18 saniye” yazısı yapma.
+
+Kalan süre azaldıkça görsel olarak gerilim oluşturabilir.
+
+Örneğin:
+
+20 → normal
+
+10 → daha dikkat çekici
+
+5 → kritik
+
+gibi.
+
+Ancak yanıp sönen ve rahatsız edici animasyonları abartma.
+
+TAKIMLAR
+
+Eğer yarışmada takımlar varsa takımları çok daha güçlü göster.
+
+Her takımın:
+
+takım adı
+logo/amblem
+puanı
+sıralaması
+oyuncuları
+
+olabilir.
+
+Takımlar birbirinden görsel olarak kolay ayırt edilebilmeli.
+
+Takım kartlarını birbirinin kopyası yapma.
+
+PUAN SİSTEMİ
+
+Puan değiştiğinde kullanıcı bunu hissetmeli.
+
+Örneğin:
+
++100
+
+gibi küçük animasyonlar kullanılabilir.
+
+Puan artışı için mikro animasyonlar ekle.
+
+Ama performansı düşürecek ağır animasyonlardan kaçın.
+
+SONUÇ EKRANI
+
+Yarışma bittikten sonra:
+
+“Yarışma Tamamlandı”
+
+gibi sıradan bir ekran yerine başarı hissi oluştur.
+
+Kullanıcıya:
+
+🏆 Sıralaman
+⭐ Puanın
+🎯 Doğru cevapların
+⏱ Ortalama cevap süren
+
+gibi bilgileri güzel bir sonuç ekranında göster.
+
+Kullanıcı isterse sonuçlarını paylaşabilecek şekilde tasarım hazırlanabilir.
+
+NAVBAR
+
+Navbar klasik SaaS navbarı gibi olmasın.
+
+Logo + yarışma adı güçlü şekilde görünmeli.
+
+Örneğin:
+
+LOGO
+Yarışma
+Takımlar
+Sıralama
+Kurallar
+
+sağ tarafta:
+
+Profil
+veya
+Yarışmaya Katıl
+
+olabilir.
+
+Scroll sırasında navbar'ın davranışını modern hale getir.
+
+RENKLER
+
+Renk paleti yarışma atmosferine uygun olsun.
+
+Ancak her şeyi neon yapma.
+
+Ana renk + yardımcı renk + koyu/açık nötr renklerden profesyonel bir sistem oluştur.
+
+Özellikle:
+
+yarışma
+aktif
+başarı
+hata
+kritik süre
+
+durumları için ayrı renk sistemi oluştur.
+
+Renkleri CSS variables/design tokens ile yönet.
+
+ANİMASYON
+
+Site statik bir web sayfası gibi hissettirmemeli.
+
+Ancak animasyon bombardımanı da istemiyorum.
+
+Kullan:
+
+page transitions
+hover animations
+button feedback
+countdown animation
+score animation
+leaderboard transitions
+subtle background motion
+scroll reveal
+
+Animasyonların tamamı hızlı ve profesyonel olsun.
+
+MOBİL
+
+Bu site öğrenciler tarafından telefondan da kullanılabilir.
+
+Mobil deneyimi özellikle önemse.
+
+Mobilde:
+
+sorular
+cevap seçenekleri
+timer
+puan
+leaderboard
+takım bilgileri
+
+çok rahat kullanılmalı.
+
+Dokunma alanlarını yeterince büyük yap.
+
+Desktop tasarımını sadece küçültüp mobil yapma; mobil için ayrı layout mantığı oluştur.
+
+TASARIMDA KAÇINILACAKLAR
+
+KESİNLİKLE:
+
+❌ Jenerik AI dashboard görünümü
+❌ Her yerde mor gradient
+❌ Her şeyi yuvarlak karta koymak
+❌ Gereksiz glassmorphism
+❌ Fazla neon
+❌ Çocukça tasarım
+❌ Rastgele emoji kullanımı
+❌ Hazır template hissi
+❌ Her bölümün aynı görünmesi
+❌ Gereksiz animasyon
+❌ Küçük ve okunması zor yazılar
+
+İSTEDİĞİM:
+
+✅ Profesyonel yarışma atmosferi
+✅ Öğrenciyi heyecanlandıran tasarım
+✅ Modern UI
+✅ Güçlü typography
+✅ Özgün görsel kimlik
+✅ Akıcı mikro animasyonlar
+✅ Güçlü leaderboard
+✅ Etkileyici soru ekranı
+✅ Mobil uyumluluk
+✅ Gerçek bir yarışma platformu hissi
+
+TEKNİK KURAL
+
+Mevcut işlevleri ve backend bağlantılarını bozma.
+
+Önce mevcut projeyi incele.
+
+Mevcut özellikleri koruyarak UI/UX'i yeniden tasarla.
+
+Component yapısını temizle.
+
+Tekrarlanan kodları azalt.
+
+Design token sistemi oluştur.
+
+Responsive davranışları kontrol et.
+
+Erişilebilirliği koru.
+
+Performansı gereksiz animasyonlarla bozma.
+
+Son olarak bütün sayfaları birbirleriyle görsel olarak tutarlı hale getir.
+
+SON HEDEF
+
+Ortaya çıkan siteye baktığımda:
+
+“Bu bir AI'ın hazırladığı sıradan web sitesi.”
+
+dememeliyim.
+
+Şunu hissetmeliyim:
+
+“Bu, öğrencilerin katıldığı gerçek ve profesyonel bir yarışmanın resmi web platformu.”
+
+Tasarımı buna göre baştan sona yeniden ele al ve gerekli kod değişikliklerini doğrudan uygula.
+
+
+```
+
+</details>
+
