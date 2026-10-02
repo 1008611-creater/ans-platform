@@ -1,4 +1,4 @@
-﻿import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { fail, ok, readJson, respondWithError } from "@/server/http/respond";
 import { listProjectPublications, requestArtifactPublication, withdrawArtifactPublication } from "@/server/projects/publication";
 
@@ -9,7 +9,7 @@ type Context = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: Context) {
   const session = await auth();
-  if (!session?.user?.id) return fail("UNAUTHORIZED", "?????", { status: 401 });
+  if (!session?.user?.id) return fail("UNAUTHORIZED", "请先登录。", { status: 401 });
   const { id } = await params;
   try { return ok({ publications: await listProjectPublications(id, session.user.id) }); }
   catch (error) { return respondWithError(error); }

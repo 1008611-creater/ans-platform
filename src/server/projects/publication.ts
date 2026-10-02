@@ -36,7 +36,7 @@ function factsOf(project: { facts: Array<{ key: string; value: string; confirmat
 
 export async function requestArtifactPublication(projectId: string, userId: string, rawInput: unknown) {
   const parsed = artifactReviewRequestSchema.safeParse(rawInput);
-  if (!parsed.success) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "INVALID_INPUT");
+  if (!parsed.success) throw new ProjectServiceError("请选择要公开的作品版本并提交。", "INVALID_INPUT");
   const { project, version } = await loadOwnedVersion(projectId, parsed.data.artifactVersionId, userId);
   const blockers = publicReviewBlockers(factsOf(project), version.contentMarkdown);
   if (blockers.length > 0) throw new ProjectServiceError(blockers.join(""), "PUBLICATION_BLOCKED", 409);
@@ -70,15 +70,15 @@ export async function requestArtifactPublication(projectId: string, userId: stri
 
 export async function decideArtifactPublication(reviewerId: string, rawInput: unknown) {
   const reviewer = await db.user.findUnique({ where: { id: reviewerId }, select: { role: true } });
-  if (reviewer?.role !== "ADMIN") throw new ProjectServiceError("请求未能完成，请刷新后重试。", "FORBIDDEN", 403);
+  if (reviewer?.role !== "ADMIN") throw new ProjectServiceError("仅管理员可以审核公开申请。", "FORBIDDEN", 403);
   const parsed = artifactReviewDecisionInputSchema.safeParse(rawInput);
-  if (!parsed.success) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "INVALID_INPUT");
+  if (!parsed.success) throw new ProjectServiceError("审核决定或说明格式无效。", "INVALID_INPUT");
   const version = await db.artifactVersion.findUnique({
     where: { id: parsed.data.artifactVersionId },
     include: { artifact: { include: { project: true } } },
   });
-  if (!version) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "NOT_FOUND", 404);
-  if (version.artifact.project.ownerId === reviewerId) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "SELF_REVIEW", 403);
+  if (!version) throw new ProjectServiceError("作品版本不存在。", "NOT_FOUND", 404);
+  if (version.artifact.project.ownerId === reviewerId) throw new ProjectServiceError("不能审核自己的作品。", "SELF_REVIEW", 403);
   const approved = parsed.data.decision === "approve";
   return db.$transaction(async (tx) => {
     const updated = await tx.artifactPublication.updateMany({
@@ -91,7 +91,7 @@ export async function decideArtifactPublication(reviewerId: string, rawInput: un
       },
     });
     if (updated.count !== 1) {
-      throw new ProjectServiceError("请求未能完成，请刷新后重试。", "REVIEW_NOT_PENDING", 409);
+      throw new ProjectServiceError("申请已被处理或已撤回,请刷新。", "REVIEW_NOT_PENDING", 409);
     }
     await tx.auditLog.create({
       data: {
@@ -157,7 +157,7 @@ export async function listProjectPublications(projectId: string, userId: string)
     },
     select: { id: true },
   });
-  if (!project) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "NOT_FOUND", 404);
+  if (!project) throw new ProjectServiceError("项目不存在或无权查看其公开申请。", "NOT_FOUND", 404);
   return db.artifactPublication.findMany({
     where: { artifactVersion: { artifact: { projectId } } },
     orderBy: { requestedAt: "desc" },
@@ -218,7 +218,7 @@ export async function getPublishedArtifact(artifactVersionId: string, viewerId?:
       },
     },
   });
-  if (!publication) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "NOT_FOUND", 404);
+  if (!publication) throw new ProjectServiceError("作品未公开或授权已撤回。", "NOT_FOUND", 404);
   const version = publication.artifactVersion;
   const [favoriteCount, favorite] = await Promise.all([
     db.contentFavorite.count({ where: { targetType: "ARTIFACT_VERSION", targetId: version.id } }),
@@ -245,7 +245,7 @@ export async function getPublishedArtifact(artifactVersionId: string, viewerId?:
 export async function toggleArtifactReaction(userId: string, artifactVersionId: string) {
   return db.$transaction(async (tx) => {
     const publication = await tx.artifactPublication.findFirst({ where: { artifactVersionId, status: "APPROVED" }, select: { id: true } });
-    if (!publication) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "NOT_FOUND", 404);
+    if (!publication) throw new ProjectServiceError("作品未公开或授权已撤回。", "NOT_FOUND", 404);
     const existing = await tx.artifactReaction.findUnique({ where: { userId_artifactVersionId: { userId, artifactVersionId } } });
     if (existing) {
       await tx.artifactReaction.delete({ where: { userId_artifactVersionId: { userId, artifactVersionId } } });
@@ -263,7 +263,7 @@ export async function addArtifactComment(userId: string, artifactVersionId: stri
   if (!input.success) throw new ProjectServiceError("评论长度须为 2 到 2000 个字符。", "INVALID_INPUT");
   return db.$transaction(async (tx) => {
     const publication = await tx.artifactPublication.findFirst({ where: { artifactVersionId, status: "APPROVED" }, select: { id: true } });
-    if (!publication) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "NOT_FOUND", 404);
+    if (!publication) throw new ProjectServiceError("作品未公开或授权已撤回。", "NOT_FOUND", 404);
     const comment = await tx.artifactComment.create({ data: { userId, artifactVersionId, content: input.data.content }, include: { user: { select: { id: true, username: true, nickname: true, avatar: true } } } });
     await tx.auditLog.create({ data: { actorId: userId, action: "ARTIFACT_COMMENTED", resourceType: "artifact_comment", resourceId: comment.id, metadata: { artifactVersionId } } });
     return comment;
@@ -272,12 +272,12 @@ export async function addArtifactComment(userId: string, artifactVersionId: stri
 
 export async function reportArtifact(userId: string, artifactVersionId: string, rawInput: unknown) {
   const input = z.object({ reason: z.enum(["SPAM", "INAPPROPRIATE", "COPYRIGHT", "MISLEADING", "OTHER"]), details: z.string().trim().max(1000).optional() }).safeParse(rawInput);
-  if (!input.success) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "INVALID_INPUT");
+  if (!input.success) throw new ProjectServiceError("举报原因或补充说明格式无效。", "INVALID_INPUT");
   const version = await db.artifactVersion.findUnique({ where: { id: artifactVersionId }, include: { artifact: { include: { project: { select: { ownerId: true } } } } } });
   if (!version || !(await db.artifactPublication.findFirst({ where: { artifactVersionId, status: "APPROVED" }, select: { id: true } }))) {
-    throw new ProjectServiceError("请求未能完成，请刷新后重试。", "NOT_FOUND", 404);
+    throw new ProjectServiceError("作品未公开或授权已撤回。", "NOT_FOUND", 404);
   }
-  if (version.artifact.project.ownerId === userId) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "SELF_REPORT", 403);
+  if (version.artifact.project.ownerId === userId) throw new ProjectServiceError("不能举报自己的作品。", "SELF_REPORT", 403);
   const pending = await db.artifactReport.findFirst({ where: { reporterId: userId, artifactVersionId, status: "PENDING" }, select: { id: true } });
   if (pending) return { created: false, id: pending.id };
   try {
@@ -300,7 +300,7 @@ export type { SensitiveFinding };
 export async function toggleArtifactFavorite(userId: string, artifactVersionId: string) {
   return db.$transaction(async (tx) => {
     const publication = await tx.artifactPublication.findFirst({ where: { artifactVersionId, status: "APPROVED" }, select: { id: true } });
-    if (!publication) throw new ProjectServiceError("请求未能完成，请刷新后重试。", "NOT_FOUND", 404);
+    if (!publication) throw new ProjectServiceError("作品未公开或授权已撤回。", "NOT_FOUND", 404);
     const existing = await tx.contentFavorite.findFirst({ where: { userId, targetType: "ARTIFACT_VERSION", targetId: artifactVersionId }, select: { id: true } });
     if (existing) {
       await tx.contentFavorite.delete({ where: { id: existing.id } });

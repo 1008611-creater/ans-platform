@@ -17,4 +17,3 @@ export async function POST(request: Request) {
   try { return ok({ review: await reviewCompetitionEntry(session.user.id, await readJson(request)) }); }
   catch (error) { return respondWithError(error); }
 }
-

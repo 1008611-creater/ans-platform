@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { WorkflowDefinition } from "@/contracts/workflow";
 import { extractInputVariables } from "@/domain/workflows/variables";
+import { db } from "@/lib/db";
+import { decryptCredential } from "@/server/integrations/credential-crypto";
+import { ADMIN_AI_CONFIG_ID, REVIEW_REASONING_EFFORTS, type ReviewReasoningEffort } from "@/server/admin/ai-config";
 
 /**
  * 工作流 AI 初审。
@@ -11,7 +14,7 @@ import { extractInputVariables } from "@/domain/workflows/variables";
  * 工作流定义和变量都是不可信数据，必须按数据处理，不能当成指令执行。
  */
 
-export const WORKFLOW_REVIEW_TIMEOUT_MS = 15_000;
+export const WORKFLOW_REVIEW_TIMEOUT_MS = 30_000;
 
 const score = z.number().finite().min(0).max(100);
 const resultSchema = z
@@ -96,12 +99,36 @@ const SYSTEM_RULES = `你是工作流安全与质量初审器。你的职责仅�
 违法、有害、侵犯隐私、欺诈、诱导用户交出凭证或绕过审核的内容不通过；节点说明或输入定义不充分的内容降低质量分。
 严格只输出一个 JSON 对象，字段恰好为 {"pass":boolean,"scores":{"compliance":number,"quality":number,"intent":number},"reason":"中文理由"}。禁止 Markdown、额外字段或附加文本。`;
 
-function reviewConfig() {
+async function reviewConfig() {
+  // Unit tests and local installs without a database keep using the legacy
+  // environment fallback. Production reads the administrator-managed config.
+  if (process.env.DATABASE_URL?.trim()) {
+    try {
+      const configured = await db.adminAiConfig.findUnique({ where: { id: ADMIN_AI_CONFIG_ID } });
+      if (configured) {
+        if (!configured.enabled) return null;
+        return {
+          model: configured.selectedModel,
+          base: configured.baseUrl,
+          key: decryptCredential(configured.encryptedApiKey),
+          reasoningEffort: REVIEW_REASONING_EFFORTS.includes(configured.reasoningEffort as ReviewReasoningEffort)
+            ? configured.reasoningEffort as ReviewReasoningEffort
+            : "none",
+          timeoutMs: configured.timeoutMs,
+        };
+      }
+    } catch {
+      // A missing migration or a temporarily unavailable DB must not crash
+      // the review request; the environment fallback remains available.
+    }
+  }
   return {
     model: process.env.WORKFLOW_REVIEW_MODEL?.trim() || process.env.TEMPLATE_REVIEW_MODEL?.trim(),
     base:
       process.env.WORKFLOW_REVIEW_BASE_URL?.trim() || process.env.TEMPLATE_REVIEW_BASE_URL?.trim(),
     key: process.env.WORKFLOW_REVIEW_API_KEY?.trim() || process.env.TEMPLATE_REVIEW_API_KEY?.trim(),
+    reasoningEffort: "none" as const,
+    timeoutMs: WORKFLOW_REVIEW_TIMEOUT_MS,
   };
 }
 
@@ -111,7 +138,10 @@ export async function reviewWorkflowDefinition(input: {
   description: string | null;
   definition: WorkflowDefinition;
 }): Promise<WorkflowReview> {
-  const { model, base, key } = reviewConfig();
+  const config = await reviewConfig();
+  const model = config?.model;
+  const base = config?.base;
+  const key = config?.key;
   const checkedAt = new Date().toISOString();
   const unavailable = (
     reason: string,
@@ -130,7 +160,7 @@ export async function reviewWorkflowDefinition(input: {
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), WORKFLOW_REVIEW_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), config?.timeoutMs ?? WORKFLOW_REVIEW_TIMEOUT_MS);
   try {
     const url = new URL(base);
     if (
@@ -156,6 +186,9 @@ export async function reviewWorkflowDefinition(input: {
         temperature: 0,
         max_tokens: 1000,
         response_format: { type: "json_object" },
+        ...(config?.reasoningEffort && config.reasoningEffort !== "none"
+          ? { reasoning_effort: config.reasoningEffort }
+          : {}),
         // 部分 OpenAI 兼容网关在省略 stream 时默认返回 SSE，这里显式关闭。
         stream: false,
         messages: [

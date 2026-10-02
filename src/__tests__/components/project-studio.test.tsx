@@ -22,10 +22,12 @@ const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
 beforeEach(() => {
   requests.length = 0;
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    requests.push({
-      url: String(input),
-      body: JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>,
-    });
+    if (init?.method === "POST") {
+      requests.push({
+        url: String(input),
+        body: JSON.parse(String(init.body ?? "{}")) as Record<string, unknown>,
+      });
+    }
     return {
       ok: true,
       json: async () => ({ ok: true, data: {} }),

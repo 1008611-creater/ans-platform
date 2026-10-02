@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FolderTree, Tags, FileText } from "lucide-react";
+import { Users, FolderTree, Tags, FileText, Trophy } from "lucide-react";
 import { AdminTabs } from "@/components/admin/admin-tabs";
 import { UsersTable } from "@/components/admin/users-table";
 import { CategoriesTable } from "@/components/admin/categories-table";
@@ -18,7 +18,7 @@ import { SkillsManagement } from "@/components/admin/skills-management";
 import { GovernanceManagement } from "@/components/admin/governance-management";
 import { isAISearchEnabled } from "@/lib/ai/embeddings";
 import { ADMIN_PERMISSIONS, hasAdminPermission } from "@/lib/admin-permissions";
-import { LayoutTemplate, KeyRound, Workflow } from "lucide-react";
+import { LayoutTemplate, KeyRound, Workflow, Settings2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -28,6 +28,7 @@ export const metadata: Metadata = {
 export default async function AdminPage() {
   const session = await auth();
   const t = await getTranslations("admin");
+  const navT = await getTranslations("nav");
 
   // Check if user is admin
   if (!session?.user || session.user.role !== "ADMIN") {
@@ -197,6 +198,10 @@ export default async function AdminPage() {
 
       {/* 管理工具：模板与工作流审核队列 / 邀请码（ANS P1/P0） */}
       <div className="mb-4 flex flex-wrap gap-2">
+        <Link href="/admin/competitions" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted">
+          <Trophy className="h-4 w-4 text-muted-foreground" /> {navT("competitionHub")}
+        </Link>
+        <Link href="/admin/rewards" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted">创作者奖励治理</Link>
         {can("PROMPTS_MANAGE") && (
           <Link
             href="/admin/templates"
@@ -211,6 +216,14 @@ export default async function AdminPage() {
             className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"
           >
             <Workflow className="h-4 w-4 text-muted-foreground" /> 工作流审核队列
+          </Link>
+        )}
+        {can("PROMPTS_MANAGE") && (
+          <Link
+            href="/admin/ai-config"
+            className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"
+          >
+            <Settings2 className="h-4 w-4 text-muted-foreground" /> AI 初审与模型配置
           </Link>
         )}
         {can("INVITES_MANAGE") && (

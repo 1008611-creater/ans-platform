@@ -10,4 +10,3 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try { return ok({ competition: await getCompetition(id, session?.user?.id) }); }
   catch (error) { return respondWithError(error); }
 }
-

@@ -19,6 +19,7 @@ import { McpServerPopup } from "@/components/mcp/mcp-server-popup";
 import { PrivatePromptsNote } from "@/components/prompts/private-prompts-note";
 import { ActivityChartWrapper } from "@/components/user/activity-chart-wrapper";
 import { getPublicDisplayName, toPublicAuthor } from "@/lib/public-identity";
+import { listPublishedArtifacts } from "@/server/projects/publication";
 
 interface UserProfilePageProps {
   params: Promise<{ username: string }>;
@@ -431,6 +432,8 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     REJECTED: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
   };
 
+  const publicArtifacts = await listPublishedArtifacts(12, user.id);
+
   const statusIcons = {
     PENDING: Clock,
     APPROVED: Check,
@@ -514,6 +517,8 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
         </div>
 
         </div>
+
+      {publicArtifacts.length > 0 ? <section className="mb-7 space-y-4" aria-labelledby="public-works-heading"><div className="flex items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">ANS SHOWCASE</p><h2 id="public-works-heading" className="mt-1 text-xl font-bold">公开作品</h2></div><Link href="/showcase" className="text-sm text-primary hover:underline">浏览作品广场 →</Link></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{publicArtifacts.map((artifact) => <Link key={artifact.id} href={`/showcase/${artifact.id}`} className="group rounded-2xl border bg-card p-4 transition hover:border-primary/40 hover:shadow-md"><div className="flex items-center justify-between gap-2"><Badge variant="secondary">参赛作品 · v{artifact.version}</Badge><span className="text-xs text-muted-foreground">? {artifact.counts.reactions}</span></div><h3 className="mt-4 line-clamp-2 font-semibold group-hover:text-primary">{artifact.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-5 text-muted-foreground">{artifact.markdown}</p><p className="mt-4 border-t pt-3 text-xs text-muted-foreground">{artifact.project.title}</p></Link>)}</div></section> : null}
 
       {/* Activity Chart - above tabs */}
       <div className="mb-6">

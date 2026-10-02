@@ -523,7 +523,7 @@ export async function removeMember(actorId: string, slug: string, memberId: stri
 
   return db.$transaction(async (tx) => {
     const updated = await tx.teamMember.updateMany({
-      where: { id: target.id, status: ACTIVE },
+      where: { id: target.id, status: ACTIVE, role: target.role },
       data: { status: "LEFT" },
     });
     if (updated.count !== 1) throw new TeamError(409, "member_stale", "成员状态已变化，请刷新");
@@ -552,7 +552,7 @@ export async function leaveTeam(userId: string, slug: string) {
 
   return db.$transaction(async (tx) => {
     const updated = await tx.teamMember.updateMany({
-      where: { id: membership.id, status: ACTIVE },
+      where: { id: membership.id, status: ACTIVE, role: membership.role },
       data: { status: "LEFT" },
     });
     if (updated.count !== 1) throw new TeamError(409, "member_stale", "成员状态已变化，请刷新");
@@ -578,60 +578,90 @@ export async function allocateQuota(
 ) {
   const allowance = parseQuota(allowanceInput);
   const { team, membership } = await requireTeamActor(slug, actorId, "canAllocateQuota");
-  const target = await db.teamMember.findFirst({
-    where: { id: memberId, teamId: team.id, status: ACTIVE },
-    select: { id: true, userId: true, role: true, quotaAllowance: true, quotaUsed: true },
-  });
-  if (!target) throw new TeamError(404, "member_not_found", "成员不存在");
-  if (target.userId === actorId) {
-    throw new TeamError(403, "self_allocation", "不能给自己分配团队额度");
-  }
-  if (membership.role === "ADMIN" && target.role !== "MEMBER") {
-    throw new TeamError(403, "forbidden", "只有队长可以调整管理员或队长的额度");
-  }
-  if (allowance < target.quotaUsed) {
-    throw new TeamError(409, "below_used", "该成员已消耗 " + target.quotaUsed + " 点，额度不能低于已用量");
-  }
 
-  const quota = await getTeamQuota(team.id);
-  const delta = allowance - target.quotaAllowance;
-  if (delta > quota.available) {
-    throw new TeamError(409, "insufficient_team_quota", "团队可用额度不足，当前可分配 " + quota.available + " 点");
-  }
+  try {
+    return await db.$transaction(async (tx) => {
+      const currentActor = await tx.teamMember.findFirst({
+        where: { teamId: team.id, userId: actorId, status: ACTIVE },
+        select: { role: true },
+      });
+      if (!currentActor || currentActor.role !== membership.role || !teamPermissions(currentActor.role).canAllocateQuota) {
+        throw new TeamError(403, "forbidden", "没有权限执行该操作");
+      }
 
-  return db.$transaction(async (tx) => {
-    // 条件更新：额度未被他人改动时才写入，避免并发重复分配导致超额。
-    const updated = await tx.teamMember.updateMany({
-      where: { id: target.id, status: ACTIVE, quotaAllowance: target.quotaAllowance },
-      data: { quotaAllowance: allowance },
-    });
-    if (updated.count !== 1) throw new TeamError(409, "member_stale", "成员额度已被其他人修改，请刷新");
-    if (delta !== 0) {
-      await tx.quotaLedger.create({
+      const target = await tx.teamMember.findFirst({
+        where: { id: memberId, teamId: team.id, status: ACTIVE },
+        select: { id: true, userId: true, role: true, quotaAllowance: true, quotaUsed: true },
+      });
+      if (!target) throw new TeamError(404, "member_not_found", "成员不存在");
+      if (target.userId === actorId) {
+        throw new TeamError(403, "self_allocation", "不能给自己分配团队额度");
+      }
+      if (currentActor.role === "ADMIN" && target.role !== "MEMBER") {
+        throw new TeamError(403, "forbidden", "只有队长可以调整管理员或队长的额度");
+      }
+      if (allowance < target.quotaUsed) {
+        throw new TeamError(409, "below_used", "该成员已消耗 " + target.quotaUsed + " 点，额度不能低于已用量");
+      }
+
+      const [granted, memberTotals] = await Promise.all([
+        tx.quotaLedger.aggregate({
+          where: { refType: "team", refId: team.id, reason: { in: ["TEAM_GRANT", "ADMIN_ADJUST"] } },
+          _sum: { amount: true },
+        }),
+        tx.teamMember.aggregate({
+          where: { teamId: team.id, status: ACTIVE },
+          _sum: { quotaAllowance: true, quotaUsed: true },
+        }),
+      ]);
+      const available = Math.max(0, (granted._sum.amount ?? 0) - (memberTotals._sum.quotaAllowance ?? 0));
+      const delta = allowance - target.quotaAllowance;
+      if (delta > available) {
+        throw new TeamError(409, "insufficient_team_quota", "团队可用额度不足，当前可分配 " + available + " 点");
+      }
+
+      const updated = await tx.teamMember.updateMany({
+        where: {
+          id: target.id,
+          status: ACTIVE,
+          role: target.role,
+          quotaAllowance: target.quotaAllowance,
+        },
+        data: { quotaAllowance: allowance },
+      });
+      if (updated.count !== 1) throw new TeamError(409, "member_stale", "成员额度或角色已变化，请刷新");
+      if (delta !== 0) {
+        await tx.quotaLedger.create({
+          data: {
+            userId: target.userId,
+            amount: delta,
+            balanceAfter: allowance - target.quotaUsed,
+            reason: "TEAM_GRANT",
+            refType: "team_member",
+            refId: team.id,
+            note: delta > 0 ? "团队「" + team.name + "」分配额度" : "团队「" + team.name + "」回收额度",
+          },
+        });
+      }
+      await tx.auditLog.create({
         data: {
-          userId: target.userId,
-          amount: delta,
-          balanceAfter: allowance - target.quotaUsed,
-          reason: "TEAM_GRANT",
-          refType: "team_member",
-          refId: team.id,
-          note: delta > 0 ? "团队「" + team.name + "」分配额度" : "团队「" + team.name + "」回收额度",
+          actorId,
+          action: "TEAM_QUOTA_ALLOCATED",
+          resourceType: "team_member",
+          resourceId: target.id,
+          before: { quotaAllowance: target.quotaAllowance },
+          after: { quotaAllowance: allowance },
+          metadata: { teamId: team.id, teamSlug: team.slug, targetUserId: target.userId, delta },
         },
       });
+      return { quotaAllowance: allowance, delta, available: available - delta };
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
+      throw new TeamError(409, "quota_conflict", "团队额度刚被其他操作修改，请刷新后重试");
     }
-    await tx.auditLog.create({
-      data: {
-        actorId,
-        action: "TEAM_QUOTA_ALLOCATED",
-        resourceType: "team_member",
-        resourceId: target.id,
-        before: { quotaAllowance: target.quotaAllowance },
-        after: { quotaAllowance: allowance },
-        metadata: { teamId: team.id, teamSlug: team.slug, targetUserId: target.userId, delta },
-      },
-    });
-    return { quotaAllowance: allowance, delta, available: quota.available - Math.max(0, delta) };
-  });
+    throw error;
+  }
 }
 
 export async function deleteTeam(actorId: string, slug: string, confirmName: unknown) {

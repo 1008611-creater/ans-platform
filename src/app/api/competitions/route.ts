@@ -7,4 +7,3 @@ export async function GET() {
   try { return ok({ competitions: await listCompetitions() }); }
   catch (error) { return respondWithError(error); }
 }
-

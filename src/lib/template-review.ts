@@ -1,6 +1,9 @@
 import { z } from "zod";
+import { db } from "@/lib/db";
+import { decryptCredential } from "@/server/integrations/credential-crypto";
+import { ADMIN_AI_CONFIG_ID, REVIEW_REASONING_EFFORTS, type ReviewReasoningEffort } from "@/server/admin/ai-config";
 
-export const REVIEW_TIMEOUT_MS = 15_000;
+export const REVIEW_TIMEOUT_MS = 30_000;
 const score = z.number().finite().min(0).max(100);
 const resultSchema = z.object({
   pass: z.boolean(),
@@ -26,13 +29,44 @@ export async function reviewTemplate(template: {
   title: string; summary: string | null; description: string | null;
   promptBody: string; formSchema: unknown; outputType: string;
 }): Promise<TemplateReview> {
-  const model = process.env.TEMPLATE_REVIEW_MODEL?.trim();
-  const base = process.env.TEMPLATE_REVIEW_BASE_URL?.trim();
-  const key = process.env.TEMPLATE_REVIEW_API_KEY?.trim();
+  let config: { model?: string; base?: string; key?: string; reasoningEffort: ReviewReasoningEffort; timeoutMs: number } | null = null;
+  let hasStoredConfig = false;
+  if (process.env.DATABASE_URL?.trim()) {
+    try {
+      const configured = await db.adminAiConfig.findUnique({ where: { id: ADMIN_AI_CONFIG_ID } });
+      if (configured) {
+        hasStoredConfig = true;
+        if (!configured.enabled) config = null;
+        else config = {
+          model: configured.selectedModel,
+          base: configured.baseUrl,
+          key: decryptCredential(configured.encryptedApiKey),
+          reasoningEffort: REVIEW_REASONING_EFFORTS.includes(configured.reasoningEffort as ReviewReasoningEffort)
+            ? configured.reasoningEffort as ReviewReasoningEffort
+            : "none",
+          timeoutMs: configured.timeoutMs,
+        };
+      }
+    } catch {
+      // Keep the environment fallback available while a local database is not ready.
+    }
+  }
+  if (!config && !hasStoredConfig) {
+    config = {
+      model: process.env.TEMPLATE_REVIEW_MODEL?.trim(),
+      base: process.env.TEMPLATE_REVIEW_BASE_URL?.trim(),
+      key: process.env.TEMPLATE_REVIEW_API_KEY?.trim(),
+      reasoningEffort: "none",
+      timeoutMs: REVIEW_TIMEOUT_MS,
+    };
+  }
+  const model = config?.model;
+  const base = config?.base;
+  const key = config?.key;
   const unavailable = (reason: string): TemplateReview => ({ verdict: "UNAVAILABLE", reason, source: "AI", ...(model ? { model } : {}), checkedAt: new Date().toISOString() });
   if (!base || !key || !model) return unavailable("AI 初审未配置，保持待审，不能发布");
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REVIEW_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), config?.timeoutMs ?? REVIEW_TIMEOUT_MS);
   try {
     const url = new URL(base);
     if (!["https:", "http:"].includes(url.protocol) || url.username || url.password || url.search || url.hash) return unavailable("AI 初审地址配置无效");
@@ -46,6 +80,9 @@ export async function reviewTemplate(template: {
         temperature: 0,
         max_tokens: 1000,
         response_format: { type: "json_object" },
+        ...(config?.reasoningEffort && config.reasoningEffort !== "none"
+          ? { reasoning_effort: config.reasoningEffort }
+          : {}),
         // Some OpenAI-compatible gateways default to SSE when `stream` is
         // omitted.  Review parsing expects one JSON document, so make the
         // response mode explicit at the integration boundary.
