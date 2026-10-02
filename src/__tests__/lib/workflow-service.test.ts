@@ -510,7 +510,7 @@ describe("reviewWorkflow", () => {
     expect(mocks.db.workflow.findUnique).not.toHaveBeenCalled();
   });
 
-  it("allows an admin to review their own workflow", async () => {
+  it("refuses to let the author review their own workflow", async () => {
     mocks.db.workflow.findUnique.mockResolvedValue({
       id: "w1",
       authorId: "admin1",
@@ -519,11 +519,12 @@ describe("reviewWorkflow", () => {
       versions: [{ version: 1, definition }],
     });
 
-    await reviewWorkflow("weekly", "admin1", { action: "publish", note: "通过" });
 
-    expect(mocks.db.workflow.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: "PUBLISHED" }) }),
-    );
+    const error = await reviewWorkflow("weekly", "admin1", { action: "publish", note: "通过" }).catch((thrown) => thrown);
+
+    expect((error as WorkflowServiceError).code).toBe("SELF_REVIEW_FORBIDDEN");
+    expect((error as WorkflowServiceError).status).toBe(403);
+    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
   });
 
   it("refuses to review a workflow that is not pending", async () => {
@@ -677,7 +678,7 @@ describe("recheckWorkflowReview", () => {
     );
   });
 
-  it("allows the author-admin to recheck their own workflow", async () => {
+  it("refuses to let the author-admin recheck their own workflow", async () => {
     mocks.db.workflow.findUnique.mockResolvedValue({
       id: "w1",
       authorId: "admin1",
@@ -688,12 +689,11 @@ describe("recheckWorkflowReview", () => {
       versions: [{ version: 3, definition }],
     });
 
-    await recheckWorkflowReview("weekly", "admin1");
+    const error = await recheckWorkflowReview("weekly", "admin1").catch((thrown) => thrown);
 
-    expect(mocks.db.workflow.update).toHaveBeenCalledWith({
-      where: { id: "w1" },
-      data: { reviewScore: expect.anything() },
-    });
+    expect((error as WorkflowServiceError).code).toBe("SELF_REVIEW_FORBIDDEN");
+    expect((error as WorkflowServiceError).status).toBe(403);
+    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
   });
 
   it("refuses to recheck a workflow that already left the queue", async () => {
