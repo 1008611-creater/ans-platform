@@ -32,7 +32,7 @@ import {
   registrationConfigured,
   withPreview,
 } from "./lib/preview-server.mjs";
-import { FIXTURE_PROMPTS, fixturePromptTitle, seedProbeFixture } from "./lib/probe-fixture.mjs";
+import { FIXTURE_PROMPTS, seedProbeFixture } from "./lib/probe-fixture.mjs";
 
 const MODE = readMode("A11Y_MODE");
 const reporter = createReporter("a11y", MODE, "A11Y_MODE");
@@ -51,9 +51,9 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
  */
 const PUBLIC_PAGES = [
   ["/", "首页", "把想法变成可运行的 AI 工作流"],
-  ["/prompts", "提示词广场", fixturePromptTitle(1)],
-  ["/templates", "模板广场", "性能探针模板 1"],
-  ["/workflows", "工作流广场", "性能探针工作流 1"],
+  ["/prompts", "提示词广场", "提示词"],
+  ["/templates", "模板广场", "模板"],
+  ["/workflows", "工作流广场", "工作流"],
   ["/login", "登录页", null],
 ];
 
@@ -66,9 +66,9 @@ const PRIVATE_PAGES = [
 
 /** 移动视口只扫最容易暴露问题的三个入口，避免门禁时间翻倍。 */
 const MOBILE_PAGES = [
-  ["/", "移动端 首页", fixturePromptTitle(1)],
-  ["/prompts", "移动端 提示词广场", fixturePromptTitle(1)],
-  ["/workflows", "移动端 工作流广场", "性能探针工作流 1"],
+  ["/", "移动端 首页", "把想法变成可运行的 AI 工作流"],
+  ["/prompts", "移动端 提示词广场", "提示词"],
+  ["/workflows", "移动端 工作流广场", "工作流"],
 ];
 
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"];
