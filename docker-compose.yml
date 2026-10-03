@@ -30,7 +30,7 @@ services:
       AUTH_URL: "https://ans.cauai.fun"
       AUTH_TRUST_HOST: "true"
       CRON_SECRET: "${CRON_SECRET}"
-      APIC_STATUS_INGEST_SECRET: "${APIC_STATUS_INGEST_SECRET:-}"
+      APIC_STATUS_INGEST_SECRET: "${APIC_STATUS_INGEST_SECRET:?APIC status ingest secret must be set}"
       NODE_ENV: production
 
       # Runtime integrations. Values are supplied by the server-side .env.
