@@ -55,7 +55,8 @@
     "book": "本",
     "forKids": "子ども向け",
     "more": "もっと見る",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "稼働状況"
   },
   "a11y": {
     "mainNav": "メインナビゲーション",
@@ -2419,5 +2420,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "サービス状況",
+    "title": "モデル・チャネルの稼働状況",
+    "description": "公開されたモデル経路の監視データ、応答時間、可用性を確認できます。",
+    "sourceLabel": "監視データソース",
+    "sourceConnected": "データソースに接続できます",
+    "sourceUnavailable": "データソースを利用できません",
+    "monitoredModels": "監視中のモデル",
+    "latency": "応答時間",
+    "availability": "可用性",
+    "notReported": "データなし",
+    "recentChecks": "最近のチェック",
+    "checksDescription": "監視元が公開したステータス履歴です。",
+    "notConfiguredTitle": "監視はまだ設定されていません",
+    "notConfiguredDescription": "公開監視エンドポイントには接続できますが、モデル情報はありません。このページからモデルリクエストは送信しません。",
+    "unavailableTitle": "監視データを一時的に取得できません",
+    "unavailableDescription": "ANS から監視元に接続できません。しばらくしてから再読み込みしてください。",
+    "feedFormatPending": "{count} 件の記録がありますが、表示形式には未対応です。",
+    "measurementNote": "監視元が公開したデータのみ表示します。測定なしにモデルの稼働を示すことはありません。",
+    "refresh": "更新"
   }
 }

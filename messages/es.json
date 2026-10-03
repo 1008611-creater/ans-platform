@@ -55,7 +55,8 @@
     "book": "Libro",
     "forKids": "Para Niños",
     "more": "Más",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Estado"
   },
   "a11y": {
     "mainNav": "Navegación principal",
@@ -2434,5 +2435,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "ESTADO DEL SERVICIO",
+    "title": "Estado de modelos y canales",
+    "description": "Consulta los datos publicados de supervisión de rutas, latencia y disponibilidad.",
+    "sourceLabel": "Fuente de supervisión",
+    "sourceConnected": "Fuente accesible",
+    "sourceUnavailable": "Fuente no disponible",
+    "monitoredModels": "Modelos supervisados",
+    "latency": "Latencia",
+    "availability": "Disponibilidad",
+    "notReported": "Sin datos",
+    "recentChecks": "Comprobaciones recientes",
+    "checksDescription": "Registros publicados por la fuente de supervisión.",
+    "notConfiguredTitle": "La supervisión aún no está configurada",
+    "notConfiguredDescription": "El endpoint público responde, pero no publica modelos supervisados. Esta página no envía solicitudes a modelos.",
+    "unavailableTitle": "Datos de supervisión no disponibles",
+    "unavailableDescription": "ANS no puede acceder temporalmente a la fuente. Inténtalo de nuevo.",
+    "feedFormatPending": "Hay {count} registros, pero aún no se admite su formato.",
+    "measurementNote": "Solo se muestran datos publicados por la fuente; no se envían solicitudes ni se afirma disponibilidad sin mediciones.",
+    "refresh": "Actualizar"
   }
 }

@@ -55,7 +55,8 @@
     "book": "Kitap",
     "forKids": "Çocuklar İçin",
     "more": "Daha Fazla",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Durum"
   },
   "a11y": {
     "mainNav": "Ana gezinme",
@@ -2430,5 +2431,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "HİZMET DURUMU",
+    "title": "Model ve kanal durumu",
+    "description": "Yayınlanan model rotası izleme, gecikme ve kullanılabilirlik verilerini görüntüleyin.",
+    "sourceLabel": "İzleme kaynağı",
+    "sourceConnected": "Kaynağa erişilebiliyor",
+    "sourceUnavailable": "Kaynak kullanılamıyor",
+    "monitoredModels": "İzlenen modeller",
+    "latency": "Gecikme",
+    "availability": "Kullanılabilirlik",
+    "notReported": "Veri yok",
+    "recentChecks": "Son kontroller",
+    "checksDescription": "İzleme kaynağının yayımladığı durum kayıtları.",
+    "notConfiguredTitle": "İzleme henüz yapılandırılmadı",
+    "notConfiguredDescription": "Herkese açık izleme uç noktasına erişiliyor ancak izlenen model yok. Bu sayfa model isteği göndermez.",
+    "unavailableTitle": "İzleme verileri geçici olarak kullanılamıyor",
+    "unavailableDescription": "ANS izleme kaynağına ulaşamıyor. Daha sonra yenileyin.",
+    "feedFormatPending": "{count} kayıt var ancak biçimleri henüz desteklenmiyor.",
+    "measurementNote": "Yalnızca kaynağın yayımladığı veriler gösterilir; ölçüm olmadan kullanılabilirlik iddia edilmez.",
+    "refresh": "Yenile"
   }
 }

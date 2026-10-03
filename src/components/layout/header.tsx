@@ -227,6 +227,13 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                       </Link>
                     </>
                   )}
+                  <Link
+                    href="/status"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    {t("nav.status")}
+                  </Link>
                   <Link 
                     href="/categories" 
                     onClick={() => setMobileMenuOpen(false)}
@@ -374,6 +381,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               {user && <DropdownMenuItem asChild><Link href="/workspace">{t("homepageNext.workspace")}</Link></DropdownMenuItem>}
               {user && <DropdownMenuItem asChild><Link href="/collection">{t("nav.collection")}</Link></DropdownMenuItem>}
               {user && <DropdownMenuItem asChild><Link href="/workflows/runs">{t("homepageNext.runHistory")}</Link></DropdownMenuItem>}
+              <DropdownMenuItem asChild><Link href="/status">{t("nav.status")}</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/discover">{t("feed.discover")}</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/categories">{t("nav.categories")}</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/tags">{t("nav.tags")}</Link></DropdownMenuItem>

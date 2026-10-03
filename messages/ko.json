@@ -55,7 +55,8 @@
     "book": "책",
     "forKids": "어린이용",
     "more": "더 보기",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "상태"
   },
   "a11y": {
     "mainNav": "주요 내비게이션",
@@ -2419,5 +2420,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "서비스 상태",
+    "title": "모델 및 채널 상태",
+    "description": "공개된 모델 경로 모니터링, 지연 시간 및 가용성 데이터를 확인하세요.",
+    "sourceLabel": "모니터링 데이터 소스",
+    "sourceConnected": "소스 연결 가능",
+    "sourceUnavailable": "소스를 사용할 수 없음",
+    "monitoredModels": "모니터링 모델",
+    "latency": "지연 시간",
+    "availability": "가용성",
+    "notReported": "데이터 없음",
+    "recentChecks": "최근 검사",
+    "checksDescription": "모니터링 소스가 공개한 상태 기록입니다.",
+    "notConfiguredTitle": "모니터링이 아직 구성되지 않았습니다",
+    "notConfiguredDescription": "공개 모니터링 엔드포인트에는 연결되지만 모델 항목이 없습니다. 이 페이지는 모델 요청을 보내지 않습니다.",
+    "unavailableTitle": "모니터링 데이터를 일시적으로 사용할 수 없습니다",
+    "unavailableDescription": "ANS가 모니터링 소스에 연결할 수 없습니다. 잠시 후 새로고침하세요.",
+    "feedFormatPending": "기록 {count}개가 있지만 아직 표시 형식을 지원하지 않습니다.",
+    "measurementNote": "공개된 모니터링 데이터만 표시하며 측정 없이 모델 가용성을 주장하지 않습니다.",
+    "refresh": "새로고침"
   }
 }

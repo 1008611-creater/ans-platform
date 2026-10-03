@@ -55,7 +55,8 @@
     "book": "Livre",
     "forKids": "Pour Enfants",
     "more": "Plus",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "État"
   },
   "a11y": {
     "mainNav": "Navigation principale",
@@ -2434,5 +2435,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "ÉTAT DU SERVICE",
+    "title": "État des modèles et des canaux",
+    "description": "Consultez les données publiées sur les routes, la latence et la disponibilité.",
+    "sourceLabel": "Source de surveillance",
+    "sourceConnected": "Source accessible",
+    "sourceUnavailable": "Source indisponible",
+    "monitoredModels": "Modèles surveillés",
+    "latency": "Latence",
+    "availability": "Disponibilité",
+    "notReported": "Aucune donnée",
+    "recentChecks": "Vérifications récentes",
+    "checksDescription": "Historique publié par la source de surveillance.",
+    "notConfiguredTitle": "Surveillance non configurée",
+    "notConfiguredDescription": "Le point de terminaison public répond, mais aucun modèle n’est publié. Cette page n’envoie aucune requête aux modèles.",
+    "unavailableTitle": "Données temporairement indisponibles",
+    "unavailableDescription": "ANS ne peut pas joindre la source. Réessayez plus tard.",
+    "feedFormatPending": "{count} enregistrements reçus, mais leur format ne peut pas encore être affiché.",
+    "measurementNote": "Cette page affiche uniquement les données publiées. Aucune requête de modèle ni disponibilité non mesurée.",
+    "refresh": "Actualiser"
   }
 }

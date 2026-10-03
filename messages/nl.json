@@ -55,7 +55,8 @@
     "book": "Boek",
     "forKids": "Voor kinderen",
     "more": "Meer",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Status"
   },
   "a11y": {
     "mainNav": "Hoofdnavigatie",
@@ -2422,5 +2423,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "SERVICESTATUS",
+    "title": "Status van modellen en kanalen",
+    "description": "Bekijk gepubliceerde monitoringgegevens over modelroutes, latentie en beschikbaarheid.",
+    "sourceLabel": "Monitoringsbron",
+    "sourceConnected": "Bron bereikbaar",
+    "sourceUnavailable": "Bron niet beschikbaar",
+    "monitoredModels": "Gemonitorde modellen",
+    "latency": "Latentie",
+    "availability": "Beschikbaarheid",
+    "notReported": "Geen gegevens",
+    "recentChecks": "Recente controles",
+    "checksDescription": "Statusgegevens gepubliceerd door de monitoringsbron.",
+    "notConfiguredTitle": "Monitoring is nog niet ingesteld",
+    "notConfiguredDescription": "Het openbare monitoringendpoint is bereikbaar, maar publiceert geen modellen. Deze pagina verstuurt geen modelverzoeken.",
+    "unavailableTitle": "Monitoringgegevens tijdelijk niet beschikbaar",
+    "unavailableDescription": "ANS kan de bron niet bereiken. Probeer het later opnieuw.",
+    "feedFormatPending": "Er zijn {count} records, maar het formaat wordt nog niet ondersteund.",
+    "measurementNote": "Deze pagina toont alleen gepubliceerde gegevens en verstuurt geen modelverzoeken.",
+    "refresh": "Vernieuwen"
   }
 }

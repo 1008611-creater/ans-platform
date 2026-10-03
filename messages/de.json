@@ -55,7 +55,8 @@
     "book": "Buch",
     "forKids": "Für Kinder",
     "more": "Mehr",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Status"
   },
   "a11y": {
     "mainNav": "Hauptnavigation",
@@ -2431,5 +2432,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "DIENSTSTATUS",
+    "title": "Modell- und Kanalstatus",
+    "description": "Veröffentlichte Überwachungsdaten zu Modellrouten, Latenz und Verfügbarkeit ansehen.",
+    "sourceLabel": "Überwachungsquelle",
+    "sourceConnected": "Quelle erreichbar",
+    "sourceUnavailable": "Quelle nicht verfügbar",
+    "monitoredModels": "Überwachte Modelle",
+    "latency": "Latenz",
+    "availability": "Verfügbarkeit",
+    "notReported": "Keine Daten",
+    "recentChecks": "Letzte Prüfungen",
+    "checksDescription": "Von der Quelle veröffentlichte Statusdaten.",
+    "notConfiguredTitle": "Überwachung ist noch nicht eingerichtet",
+    "notConfiguredDescription": "Der öffentliche Endpunkt ist erreichbar, meldet aber keine überwachten Modelle. Diese Seite sendet keine Modellanfragen.",
+    "unavailableTitle": "Überwachungsdaten sind vorübergehend nicht verfügbar",
+    "unavailableDescription": "ANS erreicht die Quelle momentan nicht. Bitte später erneut laden.",
+    "feedFormatPending": "{count} Datensätze sind vorhanden, ihr Format wird noch nicht unterstützt.",
+    "measurementNote": "Es werden nur veröffentlichte Messwerte angezeigt. Diese Seite sendet keine Modellanfragen.",
+    "refresh": "Aktualisieren"
   }
 }
