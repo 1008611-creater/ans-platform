@@ -55,7 +55,8 @@
     "book": "کتاب",
     "forKids": "برای کودکان",
     "more": "بیشتر",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "وضعیت"
   },
   "a11y": {
     "mainNav": "پیمایش اصلی",
@@ -2415,5 +2416,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "وضعیت سرویس",
+    "title": "وضعیت مدل‌ها و کانال‌ها",
+    "description": "داده‌های منتشرشدهٔ پایش مسیر مدل، تأخیر و دسترس‌پذیری را ببینید.",
+    "sourceLabel": "منبع پایش",
+    "sourceConnected": "منبع در دسترس است",
+    "sourceUnavailable": "منبع در دسترس نیست",
+    "monitoredModels": "مدل‌های پایش‌شده",
+    "latency": "تأخیر",
+    "availability": "دسترس‌پذیری",
+    "notReported": "بدون داده",
+    "recentChecks": "بررسی‌های اخیر",
+    "checksDescription": "سوابق منتشرشده از منبع پایش.",
+    "notConfiguredTitle": "پایش هنوز پیکربندی نشده است",
+    "notConfiguredDescription": "نقطهٔ پایش عمومی در دسترس است اما مدلی منتشر نمی‌کند. این صفحه درخواستی به مدل‌ها نمی‌فرستد.",
+    "unavailableTitle": "داده‌های پایش موقتاً در دسترس نیستند",
+    "unavailableDescription": "ANS به منبع دسترسی ندارد. کمی بعد دوباره بارگیری کنید.",
+    "feedFormatPending": "{count} رکورد دریافت شده اما قالب آن‌ها هنوز پشتیبانی نمی‌شود.",
+    "measurementNote": "فقط داده‌های منتشرشده نمایش داده می‌شوند و هیچ درخواست مدلی ارسال نمی‌شود.",
+    "refresh": "تازه‌سازی"
   }
 }

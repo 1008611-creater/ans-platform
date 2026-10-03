@@ -55,7 +55,8 @@
     "book": "Βιβλίο",
     "forKids": "Για Παιδιά",
     "more": "Περισσότερα",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Κατάσταση"
   },
   "a11y": {
     "mainNav": "Κύρια πλοήγηση",
@@ -2422,5 +2423,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "ΚΑΤΑΣΤΑΣΗ ΥΠΗΡΕΣΙΑΣ",
+    "title": "Κατάσταση μοντέλων και καναλιών",
+    "description": "Δείτε τα δημοσιευμένα δεδομένα παρακολούθησης διαδρομών μοντέλων, καθυστέρησης και διαθεσιμότητας.",
+    "sourceLabel": "Πηγή παρακολούθησης",
+    "sourceConnected": "Η πηγή είναι προσβάσιμη",
+    "sourceUnavailable": "Η πηγή δεν είναι διαθέσιμη",
+    "monitoredModels": "Παρακολουθούμενα μοντέλα",
+    "latency": "Καθυστέρηση",
+    "availability": "Διαθεσιμότητα",
+    "notReported": "Χωρίς δεδομένα",
+    "recentChecks": "Πρόσφατοι έλεγχοι",
+    "checksDescription": "Καταγραφές που δημοσιεύονται από την πηγή παρακολούθησης.",
+    "notConfiguredTitle": "Η παρακολούθηση δεν έχει ρυθμιστεί",
+    "notConfiguredDescription": "Το δημόσιο endpoint είναι προσβάσιμο, αλλά δεν δημοσιεύει μοντέλα. Αυτή η σελίδα δεν στέλνει αιτήματα μοντέλων.",
+    "unavailableTitle": "Τα δεδομένα παρακολούθησης δεν είναι προσωρινά διαθέσιμα",
+    "unavailableDescription": "Το ANS δεν μπορεί να συνδεθεί στην πηγή. Δοκιμάστε ξανά αργότερα.",
+    "feedFormatPending": "Υπάρχουν {count} εγγραφές, αλλά η μορφή τους δεν υποστηρίζεται ακόμη.",
+    "measurementNote": "Εμφανίζονται μόνο δημοσιευμένα δεδομένα και δεν αποστέλλονται αιτήματα μοντέλων.",
+    "refresh": "Ανανέωση"
   }
 }

@@ -55,7 +55,8 @@
     "book": "ספר",
     "forKids": "לילדים",
     "more": "עוד",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "סטטוס"
   },
   "a11y": {
     "mainNav": "ניווט ראשי",
@@ -2415,5 +2416,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "מצב השירות",
+    "title": "מצב מודלים וערוצים",
+    "description": "צפו בנתוני ניטור שפורסמו לגבי נתיבי מודלים, זמן תגובה וזמינות.",
+    "sourceLabel": "מקור הניטור",
+    "sourceConnected": "המקור נגיש",
+    "sourceUnavailable": "המקור אינו זמין",
+    "monitoredModels": "מודלים במעקב",
+    "latency": "זמן תגובה",
+    "availability": "זמינות",
+    "notReported": "אין נתונים",
+    "recentChecks": "בדיקות אחרונות",
+    "checksDescription": "רשומות מצב שפורסמו על ידי מקור הניטור.",
+    "notConfiguredTitle": "הניטור עדיין לא הוגדר",
+    "notConfiguredDescription": "נקודת הניטור הציבורית נגישה אך לא מפרסמת מודלים. הדף הזה לא שולח בקשות למודלים.",
+    "unavailableTitle": "נתוני הניטור אינם זמינים זמנית",
+    "unavailableDescription": "ANS לא מצליח להתחבר למקור. נסו לרענן מאוחר יותר.",
+    "feedFormatPending": "יש {count} רשומות אך הפורמט עדיין אינו נתמך לתצוגה.",
+    "measurementNote": "הדף מציג רק נתונים שפורסמו ואינו שולח בקשות למודלים.",
+    "refresh": "רענון"
   }
 }

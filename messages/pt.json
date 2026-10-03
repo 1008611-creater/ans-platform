@@ -55,7 +55,8 @@
     "book": "Livro",
     "forKids": "Para Crianças",
     "more": "Mais",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Status"
   },
   "a11y": {
     "mainNav": "Navegação principal",
@@ -2433,5 +2434,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "STATUS DO SERVIÇO",
+    "title": "Status de modelos e canais",
+    "description": "Consulte os dados publicados de monitoramento de rotas, latência e disponibilidade.",
+    "sourceLabel": "Fonte de monitoramento",
+    "sourceConnected": "Fonte acessível",
+    "sourceUnavailable": "Fonte indisponível",
+    "monitoredModels": "Modelos monitorados",
+    "latency": "Latência",
+    "availability": "Disponibilidade",
+    "notReported": "Sem dados",
+    "recentChecks": "Verificações recentes",
+    "checksDescription": "Registros publicados pela fonte de monitoramento.",
+    "notConfiguredTitle": "Monitoramento ainda não configurado",
+    "notConfiguredDescription": "O endpoint público está acessível, mas não publica modelos monitorados. Esta página não envia solicitações aos modelos.",
+    "unavailableTitle": "Dados de monitoramento temporariamente indisponíveis",
+    "unavailableDescription": "O ANS não consegue acessar a fonte agora. Tente atualizar mais tarde.",
+    "feedFormatPending": "Há {count} registros, mas o formato ainda não é compatível.",
+    "measurementNote": "Esta página exibe apenas dados publicados pela fonte e não envia solicitações a modelos.",
+    "refresh": "Atualizar"
   }
 }

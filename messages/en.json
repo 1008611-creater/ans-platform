@@ -55,7 +55,8 @@
     "book": "Book",
     "forKids": "For Kids",
     "more": "More",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Status"
   },
   "a11y": {
     "mainNav": "Main navigation",
@@ -2435,5 +2436,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "SERVICE STATUS",
+    "title": "Model and channel status",
+    "description": "Check the published monitoring data for model routes, response times, and availability.",
+    "sourceLabel": "Monitoring source",
+    "sourceConnected": "Source reachable",
+    "sourceUnavailable": "Source unavailable",
+    "monitoredModels": "Monitored models",
+    "latency": "Latency",
+    "availability": "Availability",
+    "notReported": "Not reported",
+    "recentChecks": "Recent checks",
+    "checksDescription": "Status history reported by the monitoring source.",
+    "notConfiguredTitle": "Monitoring is not configured yet",
+    "notConfiguredDescription": "The public monitoring endpoint is reachable, but it currently reports no monitored models. No model requests are being sent from this page.",
+    "unavailableTitle": "Monitoring data is temporarily unavailable",
+    "unavailableDescription": "ANS could not reach the public monitoring endpoint. Try refreshing in a moment.",
+    "feedFormatPending": "{count} monitoring records are available, but their fields are not yet supported for display.",
+    "measurementNote": "This page only displays data published by the monitoring source. It does not send model requests or claim model availability without measurements.",
+    "refresh": "Refresh"
   }
 }

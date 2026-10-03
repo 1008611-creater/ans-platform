@@ -55,7 +55,8 @@
     "book": "كتاب",
     "forKids": "للأطفال",
     "more": "المزيد",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "الحالة"
   },
   "a11y": {
     "mainNav": "التنقل الرئيسي",
@@ -2417,5 +2418,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "حالة الخدمة",
+    "title": "حالة النماذج والقنوات",
+    "description": "اطّلع على بيانات المراقبة المنشورة لمسارات النماذج وزمن الاستجابة والتوافر.",
+    "sourceLabel": "مصدر المراقبة",
+    "sourceConnected": "المصدر متاح",
+    "sourceUnavailable": "المصدر غير متاح",
+    "monitoredModels": "النماذج المراقبة",
+    "latency": "زمن الاستجابة",
+    "availability": "التوافر",
+    "notReported": "لا توجد بيانات",
+    "recentChecks": "الفحوصات الأخيرة",
+    "checksDescription": "سجل الحالة المنشور من مصدر المراقبة.",
+    "notConfiguredTitle": "لم تتم تهيئة المراقبة بعد",
+    "notConfiguredDescription": "نقطة المراقبة العامة متاحة لكنها لا تعرض نماذج مراقبة. لا ترسل هذه الصفحة طلبات إلى النماذج.",
+    "unavailableTitle": "بيانات المراقبة غير متاحة مؤقتًا",
+    "unavailableDescription": "تعذر على ANS الوصول إلى المصدر. حاول التحديث لاحقًا.",
+    "feedFormatPending": "تتوفر {count} سجلات لكن تنسيقها غير مدعوم للعرض بعد.",
+    "measurementNote": "تعرض الصفحة البيانات المنشورة فقط ولا ترسل طلبات للنماذج.",
+    "refresh": "تحديث"
   }
 }

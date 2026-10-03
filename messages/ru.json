@@ -55,7 +55,8 @@
     "book": "Книга",
     "forKids": "Для детей",
     "more": "Ещё",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Статус"
   },
   "a11y": {
     "mainNav": "Основная навигация",
@@ -2416,5 +2417,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "СТАТУС СЕРВИСА",
+    "title": "Статус моделей и каналов",
+    "description": "Просматривайте опубликованные данные мониторинга маршрутов, задержки и доступности.",
+    "sourceLabel": "Источник мониторинга",
+    "sourceConnected": "Источник доступен",
+    "sourceUnavailable": "Источник недоступен",
+    "monitoredModels": "Моделей под наблюдением",
+    "latency": "Задержка",
+    "availability": "Доступность",
+    "notReported": "Нет данных",
+    "recentChecks": "Недавние проверки",
+    "checksDescription": "Статусные записи, опубликованные источником мониторинга.",
+    "notConfiguredTitle": "Мониторинг ещё не настроен",
+    "notConfiguredDescription": "Публичная точка мониторинга доступна, но модели не опубликованы. Эта страница не отправляет запросы к моделям.",
+    "unavailableTitle": "Данные мониторинга временно недоступны",
+    "unavailableDescription": "ANS не может связаться с источником. Попробуйте обновить страницу позже.",
+    "feedFormatPending": "Получено записей: {count}, но их формат пока не поддерживается.",
+    "measurementNote": "Отображаются только опубликованные данные; запросы к моделям не отправляются.",
+    "refresh": "Обновить"
   }
 }

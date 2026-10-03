@@ -55,7 +55,8 @@
     "book": "Kitab",
     "forKids": "Uşaqlar Üçün",
     "more": "Daha çox",
-    "competitionHub": "AIGC Contest"
+    "competitionHub": "AIGC Contest",
+    "status": "Status"
   },
   "a11y": {
     "mainNav": "Əsas naviqasiya",
@@ -2431,5 +2432,26 @@
       "computeUnavailable":  "Compute availability is temporarily unavailable.",
       "computeClaimError":  "Could not claim points. Please try again.",
       "computeClaimNetworkError":  "Network error. Please try again."
+  },
+  "serviceStatus": {
+    "eyebrow": "XİDMƏTİN STATUSU",
+    "title": "Model və kanal statusu",
+    "description": "Dərc edilmiş model marşrutu monitorinqi, gecikmə və əlçatanlıq məlumatlarına baxın.",
+    "sourceLabel": "Monitorinq mənbəyi",
+    "sourceConnected": "Mənbəyə çatmaq mümkündür",
+    "sourceUnavailable": "Mənbə əlçatan deyil",
+    "monitoredModels": "Monitorinq olunan modellər",
+    "latency": "Gecikmə",
+    "availability": "Əlçatanlıq",
+    "notReported": "Məlumat yoxdur",
+    "recentChecks": "Son yoxlamalar",
+    "checksDescription": "Monitorinq mənbəyinin dərc etdiyi status qeydləri.",
+    "notConfiguredTitle": "Monitorinq hələ qurulmayıb",
+    "notConfiguredDescription": "İctimai monitorinq son nöqtəsi əlçatandır, lakin model məlumatı dərc etmir. Bu səhifə model sorğuları göndərmir.",
+    "unavailableTitle": "Monitorinq məlumatı müvəqqəti əlçatan deyil",
+    "unavailableDescription": "ANS mənbəyə qoşula bilmir. Bir az sonra yeniləyin.",
+    "feedFormatPending": "{count} qeyd var, lakin formatı hələ göstərilmir.",
+    "measurementNote": "Yalnız mənbənin dərc etdiyi məlumat göstərilir; model sorğusu göndərilmir.",
+    "refresh": "Yenilə"
   }
 }

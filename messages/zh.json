@@ -55,7 +55,8 @@
     "book": "书籍",
     "forKids": "儿童版",
     "more": "更多",
-    "competitionHub": "AIGC 比赛中心"
+    "competitionHub": "AIGC 比赛中心",
+    "status": "服务状态"
   },
   "a11y": {
     "mainNav": "主导航",
@@ -2419,5 +2420,26 @@
       "computeUnavailable":  "算力状态暂时不可用。",
       "computeClaimError":  "领取失败，请稍后重试。",
       "computeClaimNetworkError":  "网络异常，请稍后重试。"
+  },
+  "serviceStatus": {
+    "eyebrow": "服务状态",
+    "title": "模型与渠道状态",
+    "description": "查看已公开的模型路由监控数据、响应延迟和可用率。",
+    "sourceLabel": "监控数据源",
+    "sourceConnected": "数据源可连接",
+    "sourceUnavailable": "数据源暂不可用",
+    "monitoredModels": "监控模型数",
+    "latency": "响应延迟",
+    "availability": "可用率",
+    "notReported": "暂无数据",
+    "recentChecks": "近期检测",
+    "checksDescription": "展示监控数据源已发布的状态记录。",
+    "notConfiguredTitle": "监控尚未配置",
+    "notConfiguredDescription": "公开监控接口可以访问，但目前没有发布任何模型监控项。本页面不会发送模型请求。",
+    "unavailableTitle": "监控数据暂时不可用",
+    "unavailableDescription": "ANS 暂时无法连接公开监控接口，请稍后刷新。",
+    "feedFormatPending": "数据源返回了 {count} 条记录，但当前尚未支持其字段格式。",
+    "measurementNote": "本页面只展示监控数据源公开发布的数据；没有实际测量时，不会声称模型可用，也不会发送模型请求。",
+    "refresh": "刷新"
   }
 }
