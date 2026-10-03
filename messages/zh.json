@@ -2440,6 +2440,15 @@
     "unavailableDescription": "ANS 暂时无法连接公开监控接口，请稍后刷新。",
     "feedFormatPending": "数据源返回了 {count} 条记录，但当前尚未支持其字段格式。",
     "measurementNote": "本页面只展示监控数据源公开发布的数据；没有实际测量时，不会声称模型可用，也不会发送模型请求。",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "averageLatency": "平均延迟",
+    "availability24hAverage": "24 小时平均可用率",
+    "availability24h": "24 小时可用率",
+    "lastChecked": "最近检测",
+    "updatedAt": "更新时间",
+    "statusOperational": "正常",
+    "statusDegraded": "降级",
+    "statusFailed": "不可用",
+    "statusError": "错误"
   }
 }

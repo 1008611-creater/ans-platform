@@ -2436,6 +2436,15 @@
     "unavailableDescription": "ANS לא מצליח להתחבר למקור. נסו לרענן מאוחר יותר.",
     "feedFormatPending": "יש {count} רשומות אך הפורמט עדיין אינו נתמך לתצוגה.",
     "measurementNote": "הדף מציג רק נתונים שפורסמו ואינו שולח בקשות למודלים.",
-    "refresh": "רענון"
+    "refresh": "רענון",
+    "averageLatency": "השהיה ממוצעת",
+    "availability24hAverage": "זמינות ממוצעת ב־24 שעות",
+    "availability24h": "זמינות ב־24 שעות",
+    "lastChecked": "נבדק לאחרונה",
+    "updatedAt": "עודכן",
+    "statusOperational": "תקין",
+    "statusDegraded": "פגיעה בביצועים",
+    "statusFailed": "לא זמין",
+    "statusError": "שגיאה"
   }
 }

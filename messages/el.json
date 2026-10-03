@@ -2443,6 +2443,15 @@
     "unavailableDescription": "Το ANS δεν μπορεί να συνδεθεί στην πηγή. Δοκιμάστε ξανά αργότερα.",
     "feedFormatPending": "Υπάρχουν {count} εγγραφές, αλλά η μορφή τους δεν υποστηρίζεται ακόμη.",
     "measurementNote": "Εμφανίζονται μόνο δημοσιευμένα δεδομένα και δεν αποστέλλονται αιτήματα μοντέλων.",
-    "refresh": "Ανανέωση"
+    "refresh": "Ανανέωση",
+    "averageLatency": "Μέση καθυστέρηση",
+    "availability24hAverage": "Μέση διαθεσιμότητα 24 ωρών",
+    "availability24h": "Διαθεσιμότητα 24 ωρών",
+    "lastChecked": "Τελευταίος έλεγχος",
+    "updatedAt": "Τελευταία ενημέρωση",
+    "statusOperational": "Σε λειτουργία",
+    "statusDegraded": "Υποβαθμισμένο",
+    "statusFailed": "Μη διαθέσιμο",
+    "statusError": "Σφάλμα"
   }
 }

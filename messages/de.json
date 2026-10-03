@@ -2452,6 +2452,15 @@
     "unavailableDescription": "ANS erreicht die Quelle momentan nicht. Bitte später erneut laden.",
     "feedFormatPending": "{count} Datensätze sind vorhanden, ihr Format wird noch nicht unterstützt.",
     "measurementNote": "Es werden nur veröffentlichte Messwerte angezeigt. Diese Seite sendet keine Modellanfragen.",
-    "refresh": "Aktualisieren"
+    "refresh": "Aktualisieren",
+    "averageLatency": "Durchschnittliche Latenz",
+    "availability24hAverage": "Durchschnittliche Verfügbarkeit (24 Std.)",
+    "availability24h": "Verfügbarkeit (24 Std.)",
+    "lastChecked": "Zuletzt geprüft",
+    "updatedAt": "Zuletzt aktualisiert",
+    "statusOperational": "Betriebsbereit",
+    "statusDegraded": "Beeinträchtigt",
+    "statusFailed": "Ausgefallen",
+    "statusError": "Fehler"
   }
 }

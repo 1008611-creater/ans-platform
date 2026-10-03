@@ -2454,6 +2454,15 @@
     "unavailableDescription": "O ANS não consegue acessar a fonte agora. Tente atualizar mais tarde.",
     "feedFormatPending": "Há {count} registros, mas o formato ainda não é compatível.",
     "measurementNote": "Esta página exibe apenas dados publicados pela fonte e não envia solicitações a modelos.",
-    "refresh": "Atualizar"
+    "refresh": "Atualizar",
+    "averageLatency": "Latência média",
+    "availability24hAverage": "Disponibilidade média em 24 h",
+    "availability24h": "Disponibilidade em 24 h",
+    "lastChecked": "Última verificação",
+    "updatedAt": "Atualizado em",
+    "statusOperational": "Operacional",
+    "statusDegraded": "Degradado",
+    "statusFailed": "Indisponível",
+    "statusError": "Erro"
   }
 }

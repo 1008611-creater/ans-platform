@@ -2438,6 +2438,15 @@
     "unavailableDescription": "تعذر على ANS الوصول إلى المصدر. حاول التحديث لاحقًا.",
     "feedFormatPending": "تتوفر {count} سجلات لكن تنسيقها غير مدعوم للعرض بعد.",
     "measurementNote": "تعرض الصفحة البيانات المنشورة فقط ولا ترسل طلبات للنماذج.",
-    "refresh": "تحديث"
+    "refresh": "تحديث",
+    "averageLatency": "متوسط زمن الاستجابة",
+    "availability24hAverage": "متوسط التوافر خلال 24 ساعة",
+    "availability24h": "التوافر خلال 24 ساعة",
+    "lastChecked": "آخر فحص",
+    "updatedAt": "آخر تحديث",
+    "statusOperational": "يعمل",
+    "statusDegraded": "متدهور",
+    "statusFailed": "متعذر",
+    "statusError": "خطأ"
   }
 }

@@ -2456,6 +2456,15 @@
     "unavailableDescription": "ANS could not reach the public monitoring endpoint. Try refreshing in a moment.",
     "feedFormatPending": "{count} monitoring records are available, but their fields are not yet supported for display.",
     "measurementNote": "This page only displays data published by the monitoring source. It does not send model requests or claim model availability without measurements.",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "averageLatency": "Average latency",
+    "availability24hAverage": "24-hour average availability",
+    "availability24h": "24-hour availability",
+    "lastChecked": "Last checked",
+    "updatedAt": "Updated at",
+    "statusOperational": "Operational",
+    "statusDegraded": "Degraded",
+    "statusFailed": "Unavailable",
+    "statusError": "Error"
   }
 }
