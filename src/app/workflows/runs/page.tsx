@@ -110,6 +110,9 @@ export default async function WorkflowRunsPage() {
                     {tokenText(run.audit?.tokenUsage.totalTokens ?? null) && (
                       <span>· Token {tokenText(run.audit?.tokenUsage.totalTokens ?? null)}</span>
                     )}
+                    {run.audit?.reasoningEffort && run.audit.reasoningEffort !== "none" ? (
+                      <span>· 思考强度 {run.audit.reasoningEffort}</span>
+                    ) : null}
                     <span>· 耗时 {elapsedText(run.startedAt, run.finishedAt)}</span>
                     <span>· 消耗 {run.costPoints} 点</span>
                     <span>· 编号 {run.id.slice(0, 8)}…</span>

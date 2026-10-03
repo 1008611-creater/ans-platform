@@ -27,6 +27,19 @@ describe("model response usage", () => {
     });
   });
 
+  it("sends the selected reasoning effort and omits it when disabled", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Response.json({
+      choices: [{ message: { content: "deep draft" } }],
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await callModelTextWithUsage({ target, prompt: "write", reasoningEffort: "high" });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string).reasoning_effort).toBe("high");
+
+    await callModelTextWithUsage({ target, prompt: "write", reasoningEffort: "none" });
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body as string)).not.toHaveProperty("reasoning_effort");
+  });
+
   it("reads token usage from the final SSE frame after gateway fallback", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response("", { status: 503 }))

@@ -1014,6 +1014,7 @@ describe("workflow run audit metadata", () => {
         models: ["openai/gpt-5.6-terra"],
         modelCalls: 2,
         tokenUsage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+        reasoningEffort: "high",
       },
     });
 
@@ -1024,6 +1025,7 @@ describe("workflow run audit metadata", () => {
         models: ["openai/gpt-5.6-terra"],
         modelCalls: 2,
         tokenUsage: { totalTokens: 30 },
+        reasoningEffort: "high",
       },
     });
   });
@@ -1039,7 +1041,7 @@ describe("workflow run audit metadata", () => {
     ]);
 
     await expect(listWorkflowRuns("user1")).resolves.toMatchObject([
-      { id: "run1", audit: { models: ["openai/gpt-5.6-terra"], modelCalls: 1, tokenUsage: { totalTokens: 7 } } },
+      { id: "run1", audit: { models: ["openai/gpt-5.6-terra"], modelCalls: 1, tokenUsage: { totalTokens: 7 }, reasoningEffort: null } },
     ]);
   });
 });

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { fail, ok, respondWithError } from "@/server/http/respond";
 import { executePersistedWorkflow } from "@/server/workflows/runner";
 import { z } from "zod";
+import { RUN_REASONING_EFFORTS } from "@/lib/run-models";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -14,6 +15,7 @@ const executeOptionsSchema = z
   .object({
     modelKey: z.string().trim().min(1).max(80).optional(),
     credentialId: z.string().trim().min(1).max(80).optional(),
+    reasoningEffort: z.enum(RUN_REASONING_EFFORTS).optional(),
   })
   .strict();
 

@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS } from "@/lib/run-models";
+import { DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS, RUN_REASONING_EFFORTS, RUN_REASONING_EFFORT_LABELS, type RunReasoningEffort } from "@/lib/run-models";
 import type { WorkflowInputVariable } from "@/domain/workflows/variables";
 
 type CredentialOption = { id: string; label: string; keyMasked: string };
@@ -82,6 +82,7 @@ export function WorkflowRunForm({
   );
   const [modelKey, setModelKey] = useState(defaultModelKey);
   const [credentialId, setCredentialId] = useState("platform");
+  const [reasoningEffort, setReasoningEffort] = useState<RunReasoningEffort>("none");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [output, setOutput] = useState<string | null>(null);
@@ -119,6 +120,7 @@ export function WorkflowRunForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           modelKey,
+          reasoningEffort,
           ...(credentialId === "platform" ? {} : { credentialId }),
         }),
       });
@@ -200,7 +202,7 @@ export function WorkflowRunForm({
           ))
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="workflow-run-model">模型</Label>
             <Select value={modelKey} onValueChange={setModelKey}>
@@ -211,6 +213,21 @@ export function WorkflowRunForm({
                 {RUN_MODEL_OPTIONS.map((model) => (
                   <SelectItem key={model.key} value={model.key}>
                     {model.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="workflow-run-reasoning">思考强度</Label>
+            <Select value={reasoningEffort} onValueChange={(value) => setReasoningEffort(value as RunReasoningEffort)}>
+              <SelectTrigger id="workflow-run-reasoning" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RUN_REASONING_EFFORTS.map((effort) => (
+                  <SelectItem key={effort} value={effort}>
+                    {RUN_REASONING_EFFORT_LABELS[effort]}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -9,6 +9,7 @@ import {
 import { validateWorkflow } from "@/domain/workflows/graph";
 import { debitQuota, QuotaError } from "@/server/quota/service";
 import { canPublishAfterReview, reviewWorkflowDefinition } from "@/server/workflows/review";
+import { RUN_REASONING_EFFORTS, type RunReasoningEffort } from "@/lib/run-models";
 
 /**
  * 工作流领域服务。
@@ -756,6 +757,7 @@ type WorkflowRunAudit = {
     outputTokens: number | null;
     totalTokens: number | null;
   };
+  reasoningEffort: RunReasoningEffort | null;
 };
 
 function parseWorkflowRunAudit(value: Prisma.JsonValue, action: string): WorkflowRunAudit | null {
@@ -773,7 +775,10 @@ function parseWorkflowRunAudit(value: Prisma.JsonValue, action: string): Workflo
     : {};
   const readTokenCount = (key: string) =>
     typeof tokenUsage[key] === "number" && Number.isSafeInteger(tokenUsage[key]) ? tokenUsage[key] as number : null;
-  if (models.length === 0 && modelCalls === 0 && rawTokenUsage === undefined) return null;
+  const reasoningEffort = RUN_REASONING_EFFORTS.includes(metadata.reasoningEffort as RunReasoningEffort)
+    ? metadata.reasoningEffort as RunReasoningEffort
+    : null;
+  if (models.length === 0 && modelCalls === 0 && rawTokenUsage === undefined && reasoningEffort === null) return null;
   return {
     action,
     models,
@@ -783,6 +788,7 @@ function parseWorkflowRunAudit(value: Prisma.JsonValue, action: string): Workflo
       outputTokens: readTokenCount("outputTokens"),
       totalTokens: readTokenCount("totalTokens"),
     },
+    reasoningEffort,
   };
 }
 
