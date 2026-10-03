@@ -30,6 +30,9 @@ COPY prisma.config.ts tsconfig.json ./
 # Dummy DATABASE_URL for prisma generate (no actual connection is made)
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
+# Production images do not run Puppeteer; avoid downloading a browser in the dependency layer.
+ENV PUPPETEER_SKIP_DOWNLOAD="true"
+
 # The production host intermittently cannot reach registry.npmjs.org. Keep
 # dependency installation on the reachable mirror used by the runtime stage.
 RUN npm ci --registry=https://registry.npmmirror.com
