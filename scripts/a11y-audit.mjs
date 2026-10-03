@@ -50,7 +50,7 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
  * 什么都没测到」。扫描前会写入固定规模的探针数据，这里再确认它确实上了屏。
  */
 const PUBLIC_PAGES = [
-  ["/", "首页", fixturePromptTitle(1)],
+  ["/", "首页", "把想法变成可运行的 AI 工作流"],
   ["/prompts", "提示词广场", fixturePromptTitle(1)],
   ["/templates", "模板广场", "性能探针模板 1"],
   ["/workflows", "工作流广场", "性能探针工作流 1"],
