@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
     workflowNodeRun: { createMany: vi.fn() },
     project: { findFirst: vi.fn() },
     quotaLedger: { create: vi.fn() },
-    auditLog: { create: vi.fn() },
+    auditLog: { create: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
@@ -23,6 +23,8 @@ import {
   createWorkflow,
   createWorkflowVersion,
   createWorkflowRun,
+  getWorkflowRun,
+  listWorkflowRuns,
   getPublishedWorkflow,
   publishWorkflow,
   recheckWorkflowReview,
@@ -990,5 +992,54 @@ describe("official workflow protection", () => {
     mocks.db.workflow.findUnique.mockResolvedValue(official);
     await expect(reviewWorkflow(official.slug, "admin1", { action: "reject", note: "test" })).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_LOCKED", status: 403 });
     expect(mocks.db.workflow.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("workflow run audit metadata", () => {
+  const run = {
+    id: "run1",
+    workflow: { slug: "acceptance", title: "Acceptance" },
+    nodeRuns: [],
+    output: "done",
+    error: null,
+    status: "SUCCEEDED",
+    costPoints: 1,
+  };
+
+  it("exposes model usage from the completion audit log", async () => {
+    mocks.db.workflowRun.findFirst.mockResolvedValue(run);
+    mocks.db.auditLog.findFirst.mockResolvedValue({
+      action: "WORKFLOW_RUN_SUCCEEDED",
+      metadata: {
+        models: ["openai/gpt-5.6-terra"],
+        modelCalls: 2,
+        tokenUsage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+      },
+    });
+
+    await expect(getWorkflowRun("run1", "user1")).resolves.toMatchObject({
+      id: "run1",
+      audit: {
+        action: "WORKFLOW_RUN_SUCCEEDED",
+        models: ["openai/gpt-5.6-terra"],
+        modelCalls: 2,
+        tokenUsage: { totalTokens: 30 },
+      },
+    });
+  });
+
+  it("joins audit metadata for the run history in one query", async () => {
+    mocks.db.workflowRun.findMany.mockResolvedValue([run]);
+    mocks.db.auditLog.findMany.mockResolvedValue([
+      {
+        resourceId: "run1",
+        action: "WORKFLOW_RUN_SUCCEEDED",
+        metadata: { models: ["openai/gpt-5.6-terra"], modelCalls: 1, tokenUsage: { totalTokens: 7 } },
+      },
+    ]);
+
+    await expect(listWorkflowRuns("user1")).resolves.toMatchObject([
+      { id: "run1", audit: { models: ["openai/gpt-5.6-terra"], modelCalls: 1, tokenUsage: { totalTokens: 7 } } },
+    ]);
   });
 });
