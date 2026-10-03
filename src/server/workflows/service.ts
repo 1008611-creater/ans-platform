@@ -736,20 +736,96 @@ export async function createWorkflowRun(
 }
 
 export function getWorkflowRun(runId: string, userId: string) {
-  return db.workflowRun.findFirst({
-    where: { id: runId, userId },
-    include: {
-      nodeRuns: { orderBy: { nodeId: "asc" } },
-      workflow: { select: { slug: true, title: true } },
-    },
-  });
+  return loadWorkflowRunWithAudit(
+    db.workflowRun.findFirst({
+      where: { id: runId, userId },
+      include: {
+        nodeRuns: { orderBy: { nodeId: "asc" } },
+        workflow: { select: { slug: true, title: true } },
+      },
+    }),
+  );
 }
 
-export function listWorkflowRuns(userId: string, take = 50) {
-  return db.workflowRun.findMany({
+type WorkflowRunAudit = {
+  action: string;
+  models: string[];
+  modelCalls: number;
+  tokenUsage: {
+    inputTokens: number | null;
+    outputTokens: number | null;
+    totalTokens: number | null;
+  };
+};
+
+function parseWorkflowRunAudit(value: Prisma.JsonValue, action: string): WorkflowRunAudit | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const metadata = value as Record<string, unknown>;
+  const models = Array.isArray(metadata.models)
+    ? metadata.models.filter((model): model is string => typeof model === "string")
+    : [];
+  const modelCalls = typeof metadata.modelCalls === "number" && Number.isSafeInteger(metadata.modelCalls)
+    ? metadata.modelCalls
+    : 0;
+  const rawTokenUsage = metadata.tokenUsage;
+  const tokenUsage = rawTokenUsage && typeof rawTokenUsage === "object" && !Array.isArray(rawTokenUsage)
+    ? rawTokenUsage as Record<string, unknown>
+    : {};
+  const readTokenCount = (key: string) =>
+    typeof tokenUsage[key] === "number" && Number.isSafeInteger(tokenUsage[key]) ? tokenUsage[key] as number : null;
+  if (models.length === 0 && modelCalls === 0 && rawTokenUsage === undefined) return null;
+  return {
+    action,
+    models,
+    modelCalls,
+    tokenUsage: {
+      inputTokens: readTokenCount("inputTokens"),
+      outputTokens: readTokenCount("outputTokens"),
+      totalTokens: readTokenCount("totalTokens"),
+    },
+  };
+}
+
+async function loadWorkflowRunWithAudit<T extends { id: string } | null>(runPromise: Promise<T>) {
+  const run = await runPromise;
+  if (!run) return null;
+  const audit = await db.auditLog.findFirst({
+    where: {
+      resourceType: "workflow_run",
+      resourceId: run.id,
+      action: { in: ["WORKFLOW_RUN_SUCCEEDED", "WORKFLOW_RUN_FAILED", "WORKFLOW_RUN_CANCELLED"] },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { action: true, metadata: true },
+  });
+  return {
+    ...run,
+    audit: audit ? parseWorkflowRunAudit(audit.metadata, audit.action) : null,
+  };
+}
+
+export async function listWorkflowRuns(userId: string, take = 50) {
+  const runs = await db.workflowRun.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: Math.min(Math.max(take, 1), 100),
     include: { workflow: { select: { slug: true, title: true } } },
   });
+  if (runs.length === 0) return runs.map((run) => ({ ...run, audit: null }));
+  const audits = await db.auditLog.findMany({
+    where: {
+      resourceType: "workflow_run",
+      resourceId: { in: runs.map((run) => run.id) },
+      action: { in: ["WORKFLOW_RUN_SUCCEEDED", "WORKFLOW_RUN_FAILED", "WORKFLOW_RUN_CANCELLED"] },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { resourceId: true, action: true, metadata: true },
+  });
+  const auditByRun = new Map<string, WorkflowRunAudit>();
+  for (const audit of audits) {
+    if (!audit.resourceId || auditByRun.has(audit.resourceId)) continue;
+    const parsed = parseWorkflowRunAudit(audit.metadata, audit.action);
+    if (parsed) auditByRun.set(audit.resourceId, parsed);
+  }
+  return runs.map((run) => ({ ...run, audit: auditByRun.get(run.id) ?? null }));
 }

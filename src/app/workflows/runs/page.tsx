@@ -42,6 +42,10 @@ function elapsedText(startedAt: Date | null, finishedAt: Date | null): string {
  * 每条记录都能一键回到对应工作流再跑一次，这是「发现 → 运行 → 收藏 → 复用」里
  * 复用环节最短的路径。
  */
+function tokenText(value: number | null): string | null {
+  return value === null ? null : value.toLocaleString("zh-CN");
+}
+
 export default async function WorkflowRunsPage() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -101,6 +105,11 @@ export default async function WorkflowRunsPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span>{run.createdAt.toISOString().slice(0, 19).replace("T", " ")} UTC</span>
+                    {run.audit?.models.length ? <span>· 模型 {run.audit.models.join(", ")}</span> : null}
+                    {run.audit?.modelCalls ? <span>· 模型调用 {run.audit.modelCalls} 次</span> : null}
+                    {tokenText(run.audit?.tokenUsage.totalTokens ?? null) && (
+                      <span>· Token {tokenText(run.audit?.tokenUsage.totalTokens ?? null)}</span>
+                    )}
                     <span>· 耗时 {elapsedText(run.startedAt, run.finishedAt)}</span>
                     <span>· 消耗 {run.costPoints} 点</span>
                     <span>· 编号 {run.id.slice(0, 8)}…</span>
