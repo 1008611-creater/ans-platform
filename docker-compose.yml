@@ -23,6 +23,16 @@ services:
     environment:
       DATABASE_URL: "${DATABASE_URL:?DATABASE_URL must point to a managed PostgreSQL database}"
       DIRECT_URL: "${DIRECT_URL:?DIRECT_URL must point to a direct PostgreSQL connection}"
+      # Optional ANS OIDC identity provider for Toonflow; secrets are injected from the host .env.
+      OIDC_ISSUER: "${OIDC_ISSUER:-}"
+      OIDC_TOONFLOW_CLIENT_ID: "${OIDC_TOONFLOW_CLIENT_ID:-}"
+      OIDC_TOONFLOW_CLIENT_SECRET: "${OIDC_TOONFLOW_CLIENT_SECRET:-}"
+      OIDC_TOONFLOW_REDIRECT_URI: "${OIDC_TOONFLOW_REDIRECT_URI:-}"
+      OIDC_SIGNING_KEY_ID: "${OIDC_SIGNING_KEY_ID:-}"
+      OIDC_SIGNING_PRIVATE_KEY: "${OIDC_SIGNING_PRIVATE_KEY:-}"
+      OIDC_SIGNING_PUBLIC_KEY: "${OIDC_SIGNING_PUBLIC_KEY:-}"
+      OIDC_PREVIOUS_KEY_ID: "${OIDC_PREVIOUS_KEY_ID:-}"
+      OIDC_PREVIOUS_PUBLIC_KEY: "${OIDC_PREVIOUS_PUBLIC_KEY:-}"
       AUTH_SECRET: "${AUTH_SECRET:?AUTH_SECRET must be set in production}"
       # 生产鉴权靠 AUTH_URL 而不是 NEXTAUTH_URL。
       # next-auth v5 取 AUTH_URL ?? NEXTAUTH_URL 覆盖请求 URL，配错会导致

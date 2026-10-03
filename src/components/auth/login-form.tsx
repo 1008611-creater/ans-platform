@@ -30,7 +30,11 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
+interface LoginFormProps {
+  callbackUrl?: string;
+}
+
+export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
   const router = useRouter();
   const t = useTranslations("auth");
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +65,7 @@ export function LoginForm() {
 
       analyticsAuth.login("credentials");
       toast.success(t("loginSuccess"));
-      router.push("/");
+      router.push(callbackUrl);
       router.refresh();
     } catch {
       toast.error(t("invalidCredentials"));

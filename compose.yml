@@ -32,6 +32,16 @@ services:
     environment:
       DATABASE_URL: "postgresql://prompts:${POSTGRES_PASSWORD:-prompts}@db:5432/prompts?schema=public"
       DIRECT_URL: "postgresql://prompts:${POSTGRES_PASSWORD:-prompts}@db:5432/prompts?schema=public"
+      # Optional ANS OIDC identity provider for Toonflow; secrets are injected from the host .env.
+      OIDC_ISSUER: "${OIDC_ISSUER:-}"
+      OIDC_TOONFLOW_CLIENT_ID: "${OIDC_TOONFLOW_CLIENT_ID:-}"
+      OIDC_TOONFLOW_CLIENT_SECRET: "${OIDC_TOONFLOW_CLIENT_SECRET:-}"
+      OIDC_TOONFLOW_REDIRECT_URI: "${OIDC_TOONFLOW_REDIRECT_URI:-}"
+      OIDC_SIGNING_KEY_ID: "${OIDC_SIGNING_KEY_ID:-}"
+      OIDC_SIGNING_PRIVATE_KEY: "${OIDC_SIGNING_PRIVATE_KEY:-}"
+      OIDC_SIGNING_PUBLIC_KEY: "${OIDC_SIGNING_PUBLIC_KEY:-}"
+      OIDC_PREVIOUS_KEY_ID: "${OIDC_PREVIOUS_KEY_ID:-}"
+      OIDC_PREVIOUS_PUBLIC_KEY: "${OIDC_PREVIOUS_PUBLIC_KEY:-}"
       AUTH_SECRET: "${AUTH_SECRET:-}"
       NODE_ENV: production
       # Branding (all optional — set any PCHAT_* variable to customize at runtime)
