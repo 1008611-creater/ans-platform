@@ -2440,6 +2440,15 @@
     "unavailableDescription": "ANS가 모니터링 소스에 연결할 수 없습니다. 잠시 후 새로고침하세요.",
     "feedFormatPending": "기록 {count}개가 있지만 아직 표시 형식을 지원하지 않습니다.",
     "measurementNote": "공개된 모니터링 데이터만 표시하며 측정 없이 모델 가용성을 주장하지 않습니다.",
-    "refresh": "새로고침"
+    "refresh": "새로고침",
+    "averageLatency": "평균 지연 시간",
+    "availability24hAverage": "24시간 평균 가용률",
+    "availability24h": "24시간 가용률",
+    "lastChecked": "마지막 확인",
+    "updatedAt": "업데이트 시간",
+    "statusOperational": "정상 운영",
+    "statusDegraded": "성능 저하",
+    "statusFailed": "사용 불가",
+    "statusError": "오류"
   }
 }

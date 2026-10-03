@@ -2452,6 +2452,15 @@
     "unavailableDescription": "ANS mənbəyə qoşula bilmir. Bir az sonra yeniləyin.",
     "feedFormatPending": "{count} qeyd var, lakin formatı hələ göstərilmir.",
     "measurementNote": "Yalnız mənbənin dərc etdiyi məlumat göstərilir; model sorğusu göndərilmir.",
-    "refresh": "Yenilə"
+    "refresh": "Yenilə",
+    "averageLatency": "Orta gecikmə",
+    "availability24hAverage": "24 saatlıq orta əlçatanlıq",
+    "availability24h": "24 saatlıq əlçatanlıq",
+    "lastChecked": "Son yoxlama",
+    "updatedAt": "Son yenilənmə",
+    "statusOperational": "İşləyir",
+    "statusDegraded": "Zəifləyib",
+    "statusFailed": "Əlçatan deyil",
+    "statusError": "Xəta"
   }
 }

@@ -2451,6 +2451,15 @@
     "unavailableDescription": "ANS izleme kaynağına ulaşamıyor. Daha sonra yenileyin.",
     "feedFormatPending": "{count} kayıt var ancak biçimleri henüz desteklenmiyor.",
     "measurementNote": "Yalnızca kaynağın yayımladığı veriler gösterilir; ölçüm olmadan kullanılabilirlik iddia edilmez.",
-    "refresh": "Yenile"
+    "refresh": "Yenile",
+    "averageLatency": "Ortalama gecikme",
+    "availability24hAverage": "24 saatlik ortalama kullanılabilirlik",
+    "availability24h": "24 saatlik kullanılabilirlik",
+    "lastChecked": "Son kontrol",
+    "updatedAt": "Güncelleme zamanı",
+    "statusOperational": "Çalışıyor",
+    "statusDegraded": "Performans düşüşü",
+    "statusFailed": "Kullanılamıyor",
+    "statusError": "Hata"
   }
 }

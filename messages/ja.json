@@ -2440,6 +2440,15 @@
     "unavailableDescription": "ANS から監視元に接続できません。しばらくしてから再読み込みしてください。",
     "feedFormatPending": "{count} 件の記録がありますが、表示形式には未対応です。",
     "measurementNote": "監視元が公開したデータのみ表示します。測定なしにモデルの稼働を示すことはありません。",
-    "refresh": "更新"
+    "refresh": "更新",
+    "averageLatency": "平均応答時間",
+    "availability24hAverage": "24時間平均稼働率",
+    "availability24h": "24時間稼働率",
+    "lastChecked": "最終確認",
+    "updatedAt": "最終更新",
+    "statusOperational": "稼働中",
+    "statusDegraded": "低下",
+    "statusFailed": "利用不可",
+    "statusError": "エラー"
   }
 }

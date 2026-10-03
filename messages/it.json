@@ -2458,6 +2458,15 @@
     "unavailableDescription": "ANS non riesce a raggiungere la fonte. Riprova più tardi.",
     "feedFormatPending": "Sono presenti {count} record, ma il loro formato non è ancora supportato.",
     "measurementNote": "La pagina mostra solo dati pubblicati e non invia richieste ai modelli.",
-    "refresh": "Aggiorna"
+    "refresh": "Aggiorna",
+    "averageLatency": "Latenza media",
+    "availability24hAverage": "Disponibilità media 24 ore",
+    "availability24h": "Disponibilità 24 ore",
+    "lastChecked": "Ultimo controllo",
+    "updatedAt": "Aggiornato",
+    "statusOperational": "Operativo",
+    "statusDegraded": "Degradato",
+    "statusFailed": "Non disponibile",
+    "statusError": "Errore"
   }
 }

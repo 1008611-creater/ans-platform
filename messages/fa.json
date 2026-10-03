@@ -2436,6 +2436,15 @@
     "unavailableDescription": "ANS به منبع دسترسی ندارد. کمی بعد دوباره بارگیری کنید.",
     "feedFormatPending": "{count} رکورد دریافت شده اما قالب آن‌ها هنوز پشتیبانی نمی‌شود.",
     "measurementNote": "فقط داده‌های منتشرشده نمایش داده می‌شوند و هیچ درخواست مدلی ارسال نمی‌شود.",
-    "refresh": "تازه‌سازی"
+    "refresh": "تازه‌سازی",
+    "averageLatency": "میانگین تأخیر",
+    "availability24hAverage": "میانگین دسترس‌پذیری ۲۴ ساعته",
+    "availability24h": "دسترس‌پذیری ۲۴ ساعته",
+    "lastChecked": "آخرین بررسی",
+    "updatedAt": "آخرین به‌روزرسانی",
+    "statusOperational": "عملیاتی",
+    "statusDegraded": "دارای اختلال",
+    "statusFailed": "در دسترس نیست",
+    "statusError": "خطا"
   }
 }

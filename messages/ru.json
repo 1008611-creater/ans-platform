@@ -2437,6 +2437,15 @@
     "unavailableDescription": "ANS не может связаться с источником. Попробуйте обновить страницу позже.",
     "feedFormatPending": "Получено записей: {count}, но их формат пока не поддерживается.",
     "measurementNote": "Отображаются только опубликованные данные; запросы к моделям не отправляются.",
-    "refresh": "Обновить"
+    "refresh": "Обновить",
+    "averageLatency": "Средняя задержка",
+    "availability24hAverage": "Средняя доступность за 24 часа",
+    "availability24h": "Доступность за 24 часа",
+    "lastChecked": "Последняя проверка",
+    "updatedAt": "Обновлено",
+    "statusOperational": "Работает",
+    "statusDegraded": "Работает с перебоями",
+    "statusFailed": "Недоступно",
+    "statusError": "Ошибка"
   }
 }

@@ -2443,6 +2443,15 @@
     "unavailableDescription": "ANS kan de bron niet bereiken. Probeer het later opnieuw.",
     "feedFormatPending": "Er zijn {count} records, maar het formaat wordt nog niet ondersteund.",
     "measurementNote": "Deze pagina toont alleen gepubliceerde gegevens en verstuurt geen modelverzoeken.",
-    "refresh": "Vernieuwen"
+    "refresh": "Vernieuwen",
+    "averageLatency": "Gemiddelde latentie",
+    "availability24hAverage": "Gemiddelde beschikbaarheid (24 uur)",
+    "availability24h": "Beschikbaarheid (24 uur)",
+    "lastChecked": "Laatst gecontroleerd",
+    "updatedAt": "Bijgewerkt op",
+    "statusOperational": "Operationeel",
+    "statusDegraded": "Verminderde werking",
+    "statusFailed": "Niet beschikbaar",
+    "statusError": "Fout"
   }
 }

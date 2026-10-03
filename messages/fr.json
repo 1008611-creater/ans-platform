@@ -2455,6 +2455,15 @@
     "unavailableDescription": "ANS ne peut pas joindre la source. Réessayez plus tard.",
     "feedFormatPending": "{count} enregistrements reçus, mais leur format ne peut pas encore être affiché.",
     "measurementNote": "Cette page affiche uniquement les données publiées. Aucune requête de modèle ni disponibilité non mesurée.",
-    "refresh": "Actualiser"
+    "refresh": "Actualiser",
+    "averageLatency": "Latence moyenne",
+    "availability24hAverage": "Disponibilité moyenne sur 24 h",
+    "availability24h": "Disponibilité sur 24 h",
+    "lastChecked": "Dernière vérification",
+    "updatedAt": "Mis à jour",
+    "statusOperational": "Opérationnel",
+    "statusDegraded": "Dégradé",
+    "statusFailed": "Indisponible",
+    "statusError": "Erreur"
   }
 }
