@@ -53,7 +53,7 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
       )}
 
       {/* Today's Most Upvoted Section */}
-      {todaysMostUpvoted.length > 0 && (
+      {!isHomepage && todaysMostUpvoted.length > 0 && (
         <section className={isHomepage ? "py-12 border-b" : "pb-8 mb-8 border-b"}>
           <div className={isHomepage ? "container" : ""}>
             <div className="flex items-center justify-between mb-6">
@@ -103,7 +103,7 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
       )}
 
       {/* Recently Updated Section */}
-      {recentlyUpdated.length > 0 && (
+      {!isHomepage && recentlyUpdated.length > 0 && (
         <section className={isHomepage ? "py-12 border-b" : "pb-8 mb-8 border-b"}>
           <div className={isHomepage ? "container" : ""}>
             <div className="flex items-center justify-between mb-6">
@@ -128,7 +128,7 @@ export async function DiscoveryPrompts({ isHomepage = false }: DiscoveryPromptsP
       )}
 
       {/* Most Contributed Section */}
-      {mostContributed.length > 0 && (
+      {!isHomepage && mostContributed.length > 0 && (
         <section className={isHomepage ? "py-12 border-b" : "pb-8"}>
           <div className={isHomepage ? "container" : ""}>
             <div className="flex items-center justify-between mb-6">

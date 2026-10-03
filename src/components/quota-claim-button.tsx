@@ -3,9 +3,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Zap } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 export function QuotaClaimButton({ points }: { points: number }) {
+  const t = useTranslations("homepageNext");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -16,12 +19,12 @@ export function QuotaClaimButton({ points }: { points: number }) {
       const res = await fetch("/api/quota/claim", { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.message ?? "领取失败，请稍后重试");
+        setError(data?.message ?? t("computeClaimError"));
         return;
       }
       startTransition(() => router.refresh());
     } catch {
-      setError("网络异常，请稍后重试");
+      setError(t("computeClaimNetworkError"));
     }
   }
 
@@ -33,7 +36,7 @@ export function QuotaClaimButton({ points }: { points: number }) {
         ) : (
           <Zap className="me-2 h-4 w-4" />
         )}
-        领取 {points.toLocaleString()} 点
+        {t("computeClaimAction", { points: points.toLocaleString(locale) })}
       </Button>
       {error ? <span className="text-xs text-destructive">{error}</span> : null}
     </div>
