@@ -11,6 +11,7 @@ interface OAuthButtonProps {
   provider: string;
   providerName: string;
   iconUrl?: string;
+  callbackUrl?: string;
 }
 
 const providerIcons: Record<string, React.ReactNode> = {
@@ -39,7 +40,7 @@ const providerIcons: Record<string, React.ReactNode> = {
   ),
 };
 
-export function OAuthButton({ provider, providerName, iconUrl }: OAuthButtonProps) {
+export function OAuthButton({ provider, providerName, iconUrl, callbackUrl = "/" }: OAuthButtonProps) {
   const t = useTranslations("auth");
   const [isLoading, setIsLoading] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -48,7 +49,7 @@ export function OAuthButton({ provider, providerName, iconUrl }: OAuthButtonProp
     setIsLoading(true);
     analyticsAuth.oauthStart(provider);
     try {
-      await signIn(provider, { callbackUrl: "/" });
+      await signIn(provider, { callbackUrl });
     } catch (error) {
       console.error("Sign in error:", error);
       setIsLoading(false);

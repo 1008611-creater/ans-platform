@@ -4,13 +4,20 @@ import { getTranslations } from "next-intl/server";
 import { getConfig } from "@/lib/config";
 import { getConfiguredProviderIds, getProviderMetadata } from "@/lib/auth/provider-metadata";
 import { AuthContent } from "@/components/auth/auth-content";
+import { safeCallbackUrl } from "@/lib/auth/safe-callback-url";
 
 export const metadata: Metadata = {
   title: "Login",
   description: "Login to your account",
 };
 
-export default async function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{ callbackUrl?: string | string[] }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const callbackUrl = safeCallbackUrl(params.callbackUrl);
   const t = await getTranslations("auth");
   const config = await getConfig();
   const providers = getConfiguredProviderIds(config);
@@ -29,7 +36,7 @@ export default async function LoginPage() {
           </p>
         </div>
         <div className="border rounded-lg p-4">
-          <AuthContent providers={providers} mode="login" useCloneBranding={useCloneBranding} providerDisplayNames={displayNames} providerLogos={logos} />
+          <AuthContent providers={providers} mode="login" callbackUrl={callbackUrl} useCloneBranding={useCloneBranding} providerDisplayNames={displayNames} providerLogos={logos} />
         </div>
         {hasCredentials && (
           <p className="text-center text-xs text-muted-foreground">
