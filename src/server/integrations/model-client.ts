@@ -1,4 +1,4 @@
-import { DEFAULT_RUN_MODEL, getRunModel } from "@/lib/run-models";
+import { DEFAULT_RUN_MODEL, getRunModel, type RunReasoningEffort } from "@/lib/run-models";
 
 /**
  * 统一的模型调用客户端。
@@ -106,6 +106,7 @@ async function post<T>(
   stream: boolean,
   timeoutMs: number,
   signal: AbortSignal | undefined,
+  reasoningEffort: RunReasoningEffort | undefined,
   consume: (response: Response) => Promise<T>,
 ): Promise<T> {
   const controller = new AbortController();
@@ -123,6 +124,7 @@ async function post<T>(
       body: JSON.stringify({
         model: target.upstream,
         stream,
+        ...(reasoningEffort && reasoningEffort !== "none" ? { reasoning_effort: reasoningEffort } : {}),
         ...(stream ? { stream_options: { include_usage: true } } : {}),
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
@@ -150,9 +152,10 @@ export async function callModelTextWithUsage(args: {
   prompt: string;
   timeoutMs?: number;
   signal?: AbortSignal;
+  reasoningEffort?: RunReasoningEffort;
 }): Promise<ModelTextResult> {
   const timeoutMs = args.timeoutMs ?? MODEL_TIMEOUT_MS;
-  const initial = await post(args.target, args.prompt, false, timeoutMs, args.signal, async (response) => {
+  const initial = await post(args.target, args.prompt, false, timeoutMs, args.signal, args.reasoningEffort, async (response) => {
     if (!response.ok) return { kind: "http-error" as const, status: response.status };
     let payload: unknown;
     try {
@@ -181,7 +184,7 @@ export async function callModelTextWithUsage(args: {
 
   if (GATEWAY_RETRY_STATUSES.includes(initial.status)) {
     try {
-      const fallback = await post(args.target, args.prompt, true, timeoutMs, args.signal, async (response) => {
+      const fallback = await post(args.target, args.prompt, true, timeoutMs, args.signal, args.reasoningEffort, async (response) => {
         if (!response.ok) return null;
         const streamed = parseStreamOutput(await response.text());
         if (!streamed.text) return null;
@@ -205,6 +208,7 @@ export async function callModelText(args: {
   prompt: string;
   timeoutMs?: number;
   signal?: AbortSignal;
+  reasoningEffort?: RunReasoningEffort;
 }): Promise<string> {
   return (await callModelTextWithUsage(args)).text;
 }

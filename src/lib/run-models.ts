@@ -107,6 +107,17 @@ export const RUN_MODEL_OPTIONS = [
 export type RunModelKey = (typeof RUN_MODEL_OPTIONS)[number]["key"];
 export type RunModelOption = (typeof RUN_MODEL_OPTIONS)[number];
 
+/** Runtime thinking controls accepted by OpenAI-compatible upstreams. */
+export const RUN_REASONING_EFFORTS = ["none", "low", "medium", "high"] as const;
+export type RunReasoningEffort = (typeof RUN_REASONING_EFFORTS)[number];
+
+export const RUN_REASONING_EFFORT_LABELS: Record<RunReasoningEffort, string> = {
+  none: "关闭",
+  low: "低",
+  medium: "中",
+  high: "高",
+};
+
 export const DEFAULT_RUN_MODEL: RunModelKey = "gpt-5.6-terra";
 
 export function getRunModel(key: string): RunModelOption | undefined {

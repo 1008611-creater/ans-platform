@@ -14,6 +14,7 @@ import {
   resolveCredentialForRun,
 } from "@/server/credentials/service";
 import { refundQuota } from "@/server/quota/service";
+import { RUN_REASONING_EFFORTS, type RunReasoningEffort } from "@/lib/run-models";
 
 /**
  * 工作流运行器：把不可变版本定义翻译成一次可审计的执行。
@@ -65,8 +66,9 @@ export type WorkflowHandlerContext = {
    */
   modelKey?: string;
   credentialId?: string;
+  reasoningEffort?: RunReasoningEffort;
   /** 允许测试注入模型调用，生产路径使用平台客户端。 */
-  callModel?: (args: { target: ModelTarget; prompt: string; timeoutMs?: number; signal?: AbortSignal }) => Promise<string>;
+  callModel?: (args: { target: ModelTarget; prompt: string; timeoutMs?: number; signal?: AbortSignal; reasoningEffort?: RunReasoningEffort }) => Promise<string>;
   onModelCallStart?: (model: string) => void;
   onModelCall?: (call: { model: string; usage: ModelTokenUsage | null }) => void;
 };
@@ -109,9 +111,12 @@ export function createWorkflowHandlers(context: WorkflowHandlerContext): Partial
       const target = await modelTargetFor(node, context);
       try {
         context.onModelCallStart?.(target.upstream);
+        const reasoning = context.reasoningEffort && RUN_REASONING_EFFORTS.includes(context.reasoningEffort)
+          ? context.reasoningEffort
+          : "none";
         const result = context.callModel
-          ? { text: await context.callModel({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal }), usage: null }
-          : await callModelTextWithUsage({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal });
+          ? { text: await context.callModel({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal, ...(reasoning !== "none" ? { reasoningEffort: reasoning } : {}) }), usage: null }
+          : await callModelTextWithUsage({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal, reasoningEffort: reasoning });
         context.onModelCall?.({ model: target.upstream, usage: result.usage });
         return result.text;
       } catch (error) {
@@ -146,6 +151,7 @@ type ModelUsageAudit = {
   models: string[];
   modelCalls: number;
   tokenUsage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null };
+  reasoningEffort: RunReasoningEffort;
 };
 
 function prismaJsonValue(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull | typeof Prisma.DbNull {
@@ -154,7 +160,7 @@ function prismaJsonValue(value: unknown): Prisma.InputJsonValue | typeof Prisma.
   return value as Prisma.InputJsonValue;
 }
 
-function createModelUsageTracker() {
+function createModelUsageTracker(reasoningEffort: RunReasoningEffort) {
   const models = new Set<string>();
   const responses: Array<ModelTokenUsage | null> = [];
   let modelCalls = 0;
@@ -186,6 +192,7 @@ function createModelUsageTracker() {
           outputTokens: sum("outputTokens"),
           totalTokens: sum("totalTokens"),
         },
+        reasoningEffort,
       };
     },
   };
@@ -247,6 +254,7 @@ export async function executePersistedWorkflow(
     /** 本次运行的模型来源覆盖项；缺省时用平台模型池与节点默认值。 */
     modelKey?: string;
     credentialId?: string;
+    reasoningEffort?: RunReasoningEffort;
     onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>;
   } = {},
 ): Promise<WorkflowExecutionResult | null> {
@@ -273,7 +281,10 @@ export async function executePersistedWorkflow(
     return finalizeFailure(run, error instanceof Error ? error.message : "工作流定义已失效。");
   }
 
-  const modelUsage = createModelUsageTracker();
+  const reasoningEffort = options.reasoningEffort && RUN_REASONING_EFFORTS.includes(options.reasoningEffort)
+    ? options.reasoningEffort
+    : "none";
+  const modelUsage = createModelUsageTracker(reasoningEffort);
   const handlers =
     options.handlers ??
     createWorkflowHandlers({
@@ -281,6 +292,7 @@ export async function executePersistedWorkflow(
       runId: run.id,
       modelKey,
       credentialId: options.credentialId,
+      reasoningEffort,
       onModelCallStart: (model) => modelUsage.start(model),
       onModelCall: (call) => modelUsage.complete(call),
     });
@@ -337,7 +349,7 @@ async function persistResult(
   workflowTitle: string,
   result: WorkflowExecutionResult,
   onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>,
-  modelUsage: ModelUsageAudit = { models: [], modelCalls: 0, tokenUsage: { inputTokens: null, outputTokens: null, totalTokens: null } },
+  modelUsage: ModelUsageAudit = { models: [], modelCalls: 0, tokenUsage: { inputTokens: null, outputTokens: null, totalTokens: null }, reasoningEffort: "none" },
 ): Promise<boolean> {
   const succeeded = result.status === "succeeded";
   return db.$transaction(async (tx) => {
@@ -388,6 +400,7 @@ async function persistResult(
           models: modelUsage.models,
           modelCalls: modelUsage.modelCalls,
           tokenUsage: modelUsage.tokenUsage,
+          reasoningEffort: modelUsage.reasoningEffort,
         },
       },
     });

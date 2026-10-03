@@ -283,6 +283,29 @@ describe("executePersistedWorkflow", () => {
     }));
   });
 
+  it("forwards and audits the selected reasoning effort", async () => {
+    const modelDefinition = {
+      version: 1 as const,
+      maxNodes: 20,
+      nodes: [
+        { id: "draft", type: "model" as const, label: "Draft", config: { prompt: "Write {{input.topic}}" }, timeoutMs: 1000, maxRetries: 0 },
+        { id: "final", type: "output" as const, label: "Output", config: {}, timeoutMs: 1000, maxRetries: 0 },
+      ],
+      edges: [{ id: "draft-final", from: "draft", to: "final", mapping: {} }],
+    };
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { definition: modelDefinition } });
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({ choices: [{ message: { content: "Generated" } }] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await executePersistedWorkflow("run1", "user1", { reasoningEffort: "high" });
+
+    expect(result?.status).toBe("succeeded");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string).reasoning_effort).toBe("high");
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ metadata: expect.objectContaining({ reasoningEffort: "high" }) }),
+    }));
+  });
+
   it("records BYOK provider and token usage in the workflow audit", async () => {
     const modelDefinition = {
       version: 1 as const,

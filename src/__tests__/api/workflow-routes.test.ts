@@ -198,7 +198,7 @@ describe("POST /api/workflows/runs/[id]/execute", () => {
     mocks.runner.executePersistedWorkflow.mockResolvedValue({ status: "succeeded", output: "ok", executions: [], elapsedMs: 5 });
 
     const response = await executeRun(
-      json({ modelKey: "glm-5.2", credentialId: "cred1" }),
+      json({ modelKey: "glm-5.2", credentialId: "cred1", reasoningEffort: "medium" }),
       params({ id: "run1" }),
     );
 
@@ -206,6 +206,7 @@ describe("POST /api/workflows/runs/[id]/execute", () => {
     expect(mocks.runner.executePersistedWorkflow).toHaveBeenCalledWith("run1", "user1", {
       modelKey: "glm-5.2",
       credentialId: "cred1",
+      reasoningEffort: "medium",
     });
   });
 
