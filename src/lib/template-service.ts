@@ -45,9 +45,28 @@ export function templatePublishedWhere(filters: { domain?: string; scene?: strin
   ] };
   return { status: "PUBLISHED" };
 }
-export async function listPublishedTemplates(filters: { domain?: string; scene?: string; page?: number }) {
+function publishedTemplateFilters(filters: { domain?: string; scene?: string; query?: string }): Prisma.TemplateWhereInput {
+  const baseWhere = templatePublishedWhere(filters);
+  const query = filters.query?.trim();
+  if (!query) return baseWhere;
+
+  return {
+    AND: [
+      baseWhere,
+      { OR: [
+        { title: { contains: query, mode: "insensitive" } },
+        { summary: { contains: query, mode: "insensitive" } },
+        { promptBody: { contains: query, mode: "insensitive" } },
+      ] },
+    ],
+  };
+}
+export async function listPublishedTemplates(filters: { domain?: string; scene?: string; page?: number; query?: string }) {
   const page = Math.max(1, Math.min(10000, Math.floor(filters.page || 1)));
-  return db.template.findMany({ where: templatePublishedWhere(filters), orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 24, skip: (page - 1) * 24, select: { id: true, slug: true, title: true, summary: true, outputType: true, category: { select: { name: true, slug: true } } } });
+  return db.template.findMany({ where: publishedTemplateFilters(filters), orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 24, skip: (page - 1) * 24, select: { id: true, slug: true, title: true, summary: true, outputType: true, formSchema: true, category: { select: { name: true, slug: true } } } });
+}
+export async function countPublishedTemplates(filters: { domain?: string; scene?: string; query?: string }) {
+  return db.template.count({ where: publishedTemplateFilters(filters) });
 }
 export async function getPublishedTemplate(key: string, bySlug = false) {
   return db.template.findFirst({ where: { ...(bySlug ? { slug: key } : { id: key }), status: "PUBLISHED" }, select: publicSelect });

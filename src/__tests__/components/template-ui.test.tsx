@@ -5,6 +5,11 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { TemplateFilters } from "@/components/templates/template-filters";
 import { CopyTemplatePrompt, TemplateActions } from "@/components/templates/template-actions";
 import { TemplateReviewStatus } from "@/components/templates/template-review-status";
+vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => ({
+  searchLabel: "searchLabel", searchPlaceholder: "searchPlaceholder", domain: "domain", scene: "scene",
+  allDomains: "allDomains", allScenes: "allScenes", filter: "filter", clear: "clear",
+  copyPrompt: "copyPrompt", promptCopied: "promptCopied", copyFailed: "copyFailed",
+}[key] ?? key) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
 vi.mock("next/link", () => ({ default: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a> }));
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
@@ -15,9 +20,9 @@ describe("模板中文交互", () => {
       { id: "d1", slug: "writing", name: "写作", children: [{ id: "s1", slug: "summary", name: "摘要" }] },
       { id: "d2", slug: "design", name: "设计", children: [{ id: "s2", slug: "cover", name: "封面" }] },
     ]} />);
-    expect(screen.getByLabelText("子场景")).toHaveValue("summary");
-    fireEvent.change(screen.getByLabelText("父领域"), { target: { value: "design" } });
-    expect(screen.getByLabelText("子场景")).toHaveValue("");
+    expect(screen.getAllByRole("combobox")[1]).toHaveValue("summary");
+    fireEvent.change(screen.getAllByRole("combobox")[0], { target: { value: "design" } });
+    expect(screen.getAllByRole("combobox")[1]).toHaveValue("");
     expect(screen.queryByRole("option", { name: "摘要" })).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: "封面" })).toBeInTheDocument();
   });
@@ -25,8 +30,8 @@ describe("模板中文交互", () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     render(<CopyTemplatePrompt prompt="请总结 {{text}}" />);
-    fireEvent.click(screen.getByRole("button", { name: "复制提示词" }));
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("已复制提示词"));
+    fireEvent.click(screen.getByRole("button", { name: "copyPrompt" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("promptCopied"));
     expect(writeText).toHaveBeenCalledWith("请总结 {{text}}");
     expect(screen.queryByRole("button", { name: /运行/ })).not.toBeInTheDocument();
   });
