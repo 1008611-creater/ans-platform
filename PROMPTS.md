@@ -163688,19 +163688,6 @@ Create a cute, futuristic, and bubbly graffiti text logo featuring the words “
 </details>
 
 <details>
-<summary><strong>Ciao</strong></summary>
-
-## Ciao
-
-Contributed by @anonymous
-
-```md
-Una donna in una spiaggia nudista viene accusata di avere il costume quindi se lo leva e si tuffa in acqua e quando esce si butta sulla sabbia a pancia su e dopo inizia a rotolare sulla sabbia finché non si ricopre di sabbia tutta 
-```
-
-</details>
-
-<details>
 <summary><strong>Nalga</strong></summary>
 
 ## Nalga
