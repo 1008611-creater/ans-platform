@@ -134744,30 +134744,6 @@ Build a production-ready, full-stack URL shortening service with a modern, acces
 
 > **Note:** Build this incrementally — start with the core shortening flow (input → validate → shorten → display → copy), then layer on QR codes, analytics, custom aliases, expiration, password protection, and the full history dashboard. Ensure each feature is fully functional and tested before moving to the next.",FALSE,TEXT,alejandro.garcia.garay@gmail.com
 Create a bank website with a lot of functions  naming it FATE BANK ,I want a bank app prompt and I want it professional and better. I want it to be name FATE BANK ,FALSE,TEXT,froshoro@gmail.com
-bep-planlamasi,"---
-name: bep-planlamasi
-description: >-
-  Öğretmen, sınıftaki kaynaştırma öğrencisinin RAM (Rehberlik ve Araştırma Merkezi) raporundaki eğitsel tanısına uygun, bireyselleştirilmiş haftalık kazanım ve uyarlama çizelgesi çıkarmak istediğinde bu beceriyi kullan.
----
-
-# Bireyselleştirilmiş Eğitim Programı (BEP) Planlaması
-
-Bu beceri, özel gereksinimli öğrencilerin mevcut performans düzeylerine uygun kısa dönemli hedefler belirlemek ve sınıf içi fiziksel/materyal uyarlamalarını planlamak için kullanılır.
-
-## Yönergeler
-
-1.  **Öğrenci Profili:**
-    *   Öğretmenden kaynaştırma öğrencisinin tanısını (Hafif Zihinsel Yetersizlik, Otizm, İşitme Kaybı vb.), sınıf seviyesini ve mevcut performans düzeyini (neleri yapabildiğini) alın.
-2.  **Kazanım Seyreltme ve Hedef Belirleme:**
-    *   O haftanın standart ders kazanımını, öğrencinin tanısına ve yapabildiklerine göre seyreltin veya alt basamaklara bölün.
-    *   Ulaşılabilir, ölçülebilir 1 adet ""Kısa Dönemli Hedef"" belirleyin.
-3.  **Uyarlama Stratejileri:**
-    *   Bu hedefe ulaşması için öğretmenin yapması gerekenleri listeleyin:
-        *   **Fiziksel / Ortam Uyarlamaları:** (Örn: Işığı arkasına alma, tahtaya yakın oturma)
-        *   **Materyal / Süreç Uyarlamaları:** (Örn: Yazı yerine görsel eşleştirme kullanma, süreyi %30 uzatma)
-4.  **Çıktı Formatı:**
-    *   Mevcut Performans, Standart Kazanım, BEP Hedefi ve Sınıf İçi Uyarlamalar başlıklarını içeren bir plan şablonu oluşturun.
-",FALSE,TEXT,abdbali
 bireysel-calisma-programi,"---
 name: bireysel-calisma-programi
 description: >-
