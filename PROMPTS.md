@@ -164027,41 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>disleksi-uyumlu-metin-formatlama</strong></summary>
-
-## disleksi-uyumlu-metin-formatlama
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: disleksi-uyumlu-metin-formatlama
-description: >-
-  Öğretmen, okuma parçalarını veya sınav kağıtlarını, disleksi (özel öğrenme güçlüğü) ve dikkat eksikliği olan öğrenciler için görsel olarak uygun formata getirmek istediğinde bu beceriyi kullan.
----
-
-# Disleksi ve Dikkat Güçlüğü Uyumlu Metin Formatlama
-
-Bu beceri, yazılı içeriklerin bilişsel yükünü azaltarak, görsel kalabalığı önlemek ve okuma güçlüğü çeken öğrencilerin okuma/anlama performansını artırmak için kullanılır.
-
-## Yönergeler
-
-1.  **Metni Alma:**
-    *   Öğretmenden formatlanacak orijinal metni veya sınav sorularını alın.
-2.  **Bilişsel ve Görsel Formatlama Kuralları:**
-    *   **Cümle Yapısı:** Uzun, birleşik ve karmaşık cümleleri, tek yargı bildiren kısa ve net cümlelere bölün. Edilgen yapıları etken hale getirin.
-    *   **Görsel Boşluklar (White Space):** Paragrafları çok kısa tutun. Paragraflar ve satırlar arasına ekstra boşluklar ekleyin.
-    *   **Vurgulama:** Anahtar kelimeleri ve yönerge köklerini (örn: bulunuz, değildir) **kalın (bold)** yaparak belirginleştirin. *İtalik* veya tamamı BÜYÜK HARF kullanmaktan kaçının.
-    *   **Maddeleme:** Ardışık işlemleri veya liste halindeki bilgileri mutlaka madde imleri (bullet points) ile alt alta verin.
-3.  **Çıktı Formatı:**
-    *   Orijinal metnin, disleksi uyumlu kurallara göre tamamen yeniden yazılmış ve Markdown ile formatlanmış (bold, maddeleme, boşluklu yapı) halini sunun.
-    *   Öğretmene font tercihi notu düşün. (Örn: "Çıktı alırken Arial, Comic Sans veya OpenDyslexic gibi sans-serif, tırnaksız fontlar kullanınız ve en az 12-14 punto tercih ediniz.")
-
-```
-
-</details>
-
-<details>
 <summary><strong>farklilastirilmis-ogretim-materyali</strong></summary>
 
 ## farklilastirilmis-ogretim-materyali
