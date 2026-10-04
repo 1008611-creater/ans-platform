@@ -164027,38 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>resmi-dilekce-yazimi</strong></summary>
-
-## resmi-dilekce-yazimi
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: resmi-dilekce-yazimi
-description: >-
-  Öğretmen; idareye, ilçe milli eğitime veya kurumlara verilecek resmi dilekçe ve üst yazı formatlarını mevzuata uygun yazmak istediğinde bu beceriyi kullan.
----
-
-# Resmi Yazışma ve Dilekçe Metinleri
-
-Bu beceri, öğretmenlerin tayin, mazeret, derece kademe ilerlemesi, nöbet muafiyeti veya okul içi talepler gibi idari konularda "Resmi Yazışmalarda Uygulanacak Usul ve Esaslar Hakkında Yönetmelik" kurallarına uygun belgeler hazırlaması için kullanılır.
-
-## Yönergeler
-
-1.  **Talep ve Kurum:**
-    *   Öğretmenden dilekçenin yazılacağı makamı (Örn: X Anadolu Lisesi Müdürlüğüne) ve talebin ne olduğunu (Örn: Süt izni kullanımı, yüksek lisans mazereti) alın.
-2.  **Yazışma Kuralları:**
-    *   Üst makama yazılıyorsa "Arz ederim", alt makama yazılıyorsa "Rica ederim", eş değer veya birden fazla makama yazılıyorsa "Arz ve rica ederim" ifadelerini kullanın.
-    *   Kısa, net ve duygudan arındırılmış resmi bir dil kullanın. İlgi tutulacak bir yasa veya yönetmelik varsa (Örn: 657 Sayılı Kanun'un ilgili maddesi) belirtin.
-3.  **Çıktı Formatı:**
-    *   Makama hitap ile başlayan, metin kısmı, bitiş ifadesi (arz/rica), tarih, imza bloku, isim soyisim ve adres/iletişim bilgilerini (sağ veya sol alta uygun şekilde) barındıran tam bir dilekçe formu sunun.
-
-```
-
-</details>
-
-<details>
 <summary><strong>rol-yapma-metinleri</strong></summary>
 
 ## rol-yapma-metinleri
