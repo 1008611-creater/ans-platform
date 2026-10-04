@@ -164027,41 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>akran-arabuluculugu-rehberi</strong></summary>
-
-## akran-arabuluculugu-rehberi
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: akran-arabuluculugu-rehberi
-description: >-
-  Öğretmen, sınıfta yaşanan akran anlaşmazlıklarını ve çatışmaları şiddetsiz iletişim yoluyla çözmek için adım adım rehberlik eden diyalog modelleri oluşturmak istediğinde bu beceriyi kullan.
----
-
-# Öğrenci Akran Arabuluculuğu ve Çatışma Çözümü Rehberi
-
-Bu beceri, öğretmenlerin (veya arabulucu öğrencilerin) iki öğrenci arasındaki tartışma veya zorbalık durumlarını yönetirken; taraf tutmadan, onarıcı adalet (restorative justice) prensiplerine göre kullanacakları soru kalıpları ve adımları tasarlamak için kullanılır.
-
-## Yönergeler
-
-1.  **Çatışma Durumu:**
-    *   Öğretmenden çatışmanın türünü alın (Örn: Sırada öne geçme kavgası, sosyal medyada dışlanma, dedikodu).
-2.  **Onarıcı Görüşme Adımları (Diyalog Modeli):**
-    *   Sorunu çözmek için öğretmenin her iki öğrenciyle bir aradayken sırasıyla izleyeceği 4 adımı diyalog kalıplarıyla yazın:
-        *   **Adım 1: Sakinleştirme ve Kurallar:** ("Burada kimseyi suçlamaya değil, sorunu çözmeye geldik...")
-        *   **Adım 2: Olayı Dinleme (Sen Dili yerine Ben Dili):** ("X, olay olurken ne hissettin?", "Y, X böyle söylerken sence ne demek istedi?")
-        *   **Adım 3: Etkileri Konuşma:** ("Bu tartışma sınıfımızı ve ikinizin arkadaşlığını nasıl etkiledi?")
-        *   **Adım 4: Çözüm Üretme:** ("Bu durumu düzeltmek için şu an birbirinizden ne bekliyorsunuz?")
-3.  **Çıktı Formatı:**
-    *   Doğrudan öğretmenin okuyup uygulayabileceği "Çatışma Çözüm Rehberi" formatında, tırnak içinde örnek cümleler barındıran pratik bir yönerge kağıdı sunun.
-
-```
-
-</details>
-
-<details>
 <summary><strong>ayrintili-rubrik-olusturma</strong></summary>
 
 ## ayrintili-rubrik-olusturma
