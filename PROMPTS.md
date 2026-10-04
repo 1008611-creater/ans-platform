@@ -163623,19 +163623,6 @@ A professional, cinematic portrait featuring a {subject} in a stunning {dress} a
 </details>
 
 <details>
-<summary><strong>حوادث المرور والوقاية منها</strong></summary>
-
-## حوادث المرور والوقاية منها
-
-Contributed by @anonymous
-
-```md
-اريد غلاف كتاب العنوان حوداث المرور ووالوقاية منها وجه امامي وخلفي شعار مع اعداد واشراف ونبذة عن الكتاب تكون في الجه الخلفي
-```
-
-</details>
-
-<details>
 <summary><strong>OSINT Navigator</strong></summary>
 
 ## OSINT Navigator
