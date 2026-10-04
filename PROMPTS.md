@@ -164027,42 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>ayrintili-rubrik-olusturma</strong></summary>
-
-## ayrintili-rubrik-olusturma
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: ayrintili-rubrik-olusturma
-description: >-
-  Öğretmen; açık uçlu yazılılar, performans görevleri ve proje ödevleri için analitik veya bütüncül dereceli puanlama anahtarı (rubrik) oluşturmak istediğinde bu beceriyi kullan.
----
-
-# Ayrıntılı Puanlama Anahtarı (Rubrik) Oluşturma
-
-Bu beceri, öğrencilerin açık uçlu yanıtlarını, performanslarını veya proje ödevlerini objektif, adil ve şeffaf bir şekilde değerlendirmek için rubrikler tasarlamakta kullanılır.
-
-## Yönergeler
-
-1.  **Görev Analizi:**
-    *   Öğretmenden değerlendirilecek görevin (proje, açık uçlu soru, sunum vb.) içeriğini ve öğrencilerden beklenen çıktıları alın.
-    *   Öğretmenin analitik (kriter bazlı detaylı) mi yoksa bütüncül (genel izlenim) rubrik mi istediğini belirleyin.
-2.  **Kriterlerin Belirlenmesi:**
-    *   Göreve uygun 3 ila 5 ana değerlendirme kriteri belirleyin (Örn: İçerik doğruluğu, yaratıcılık, dil bilgisi, zaman yönetimi).
-3.  **Seviyelendirme (Derecelendirme):**
-    *   Her kriter için genellikle 3 veya 4 performans seviyesi tanımlayın (Örn: Geliştirilmeli (1), Yeterli (2), İyi (3), Mükemmel (4)).
-    *   Her hücreye, öğrencinin o puanı alması için göstermesi gereken davranışı veya ürün özelliğini *somut ve gözlenebilir* ifadelerle yazın.
-4.  **Çıktı Formatı:**
-    *   Rubriği temiz bir Markdown tablosu (Markdown Table) formatında sunun.
-    *   Tablonun altına toplam puanın nasıl hesaplanacağına dair kısa bir yönerge ekleyin.
-
-```
-
-</details>
-
-<details>
 <summary><strong>beceri-temelli-soru-yazimi</strong></summary>
 
 ## beceri-temelli-soru-yazimi
