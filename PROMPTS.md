@@ -164027,42 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>celdirici-ve-yanilgi-analizi</strong></summary>
-
-## celdirici-ve-yanilgi-analizi
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: celdirici-ve-yanilgi-analizi
-description: >-
-  Öğretmen, çoktan seçmeli sorular için öğrencinin en sık düşebileceği kavram yanılgılarını içeren mantıklı ve güçlü çeldiriciler (yanlış seçenekler) kurgulamak istediğinde bu beceriyi kullan.
----
-
-# Kazanım Odaklı Yanılgı ve Çeldirici Analizi
-
-Bu beceri, çoktan seçmeli sorularda rastgele yanlış seçenekler yazmak yerine, öğrencinin bilişsel süreçlerindeki hata kalıplarını ve kavram yanılgılarını yakalayan nitelikli çeldiriciler üretmek için kullanılır.
-
-## Yönergeler
-
-1.  **Soru ve Kazanım Analizi:**
-    *   Öğretmenden sorunun kökünü, doğru cevabını, ilgili olduğu kazanımı ve yaş grubunu alın.
-2.  **Kavram Yanılgısı (Misconception) Tespiti:**
-    *   Bu kazanımla ilgili öğrencilerin yaş grubuna özgü en yaygın kavram yanılgılarını, işlem hatalarını veya eksik okuma kalıplarını belirleyin.
-3.  **Çeldirici Kurgulama:**
-    *   Her bir kavram yanılgısına karşılık gelecek şekilde 3 adet mantıklı çeldirici (A, B, C, D veya E seçenekleri için) tasarlayın.
-    *   Hiçbir çeldirici "uydurma" veya "açıkça yanlış" olmamalıdır; belirli bir mantık hatasının sonucu olarak bulunabilmelidir.
-4.  **Çıktı Formatı:**
-    *   **Seçenek:** (A, B, vs.)
-    *   **İçerik:** (Seçeneğin metni/değeri)
-    *   **Çeldirici Analizi:** Bu seçeneği işaretleyen bir öğrencinin hangi kavram yanılgısına sahip olduğunu veya nerede hata yaptığını açıklayan pedagojik not.
-
-```
-
-</details>
-
-<details>
 <summary><strong>cikis-karti-hazirlama</strong></summary>
 
 ## cikis-karti-hazirlama

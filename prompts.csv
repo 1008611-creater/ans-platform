@@ -134744,30 +134744,6 @@ Build a production-ready, full-stack URL shortening service with a modern, acces
 
 > **Note:** Build this incrementally — start with the core shortening flow (input → validate → shorten → display → copy), then layer on QR codes, analytics, custom aliases, expiration, password protection, and the full history dashboard. Ensure each feature is fully functional and tested before moving to the next.",FALSE,TEXT,alejandro.garcia.garay@gmail.com
 Create a bank website with a lot of functions  naming it FATE BANK ,I want a bank app prompt and I want it professional and better. I want it to be name FATE BANK ,FALSE,TEXT,froshoro@gmail.com
-celdirici-ve-yanilgi-analizi,"---
-name: celdirici-ve-yanilgi-analizi
-description: >-
-  Öğretmen, çoktan seçmeli sorular için öğrencinin en sık düşebileceği kavram yanılgılarını içeren mantıklı ve güçlü çeldiriciler (yanlış seçenekler) kurgulamak istediğinde bu beceriyi kullan.
----
-
-# Kazanım Odaklı Yanılgı ve Çeldirici Analizi
-
-Bu beceri, çoktan seçmeli sorularda rastgele yanlış seçenekler yazmak yerine, öğrencinin bilişsel süreçlerindeki hata kalıplarını ve kavram yanılgılarını yakalayan nitelikli çeldiriciler üretmek için kullanılır.
-
-## Yönergeler
-
-1.  **Soru ve Kazanım Analizi:**
-    *   Öğretmenden sorunun kökünü, doğru cevabını, ilgili olduğu kazanımı ve yaş grubunu alın.
-2.  **Kavram Yanılgısı (Misconception) Tespiti:**
-    *   Bu kazanımla ilgili öğrencilerin yaş grubuna özgü en yaygın kavram yanılgılarını, işlem hatalarını veya eksik okuma kalıplarını belirleyin.
-3.  **Çeldirici Kurgulama:**
-    *   Her bir kavram yanılgısına karşılık gelecek şekilde 3 adet mantıklı çeldirici (A, B, C, D veya E seçenekleri için) tasarlayın.
-    *   Hiçbir çeldirici ""uydurma"" veya ""açıkça yanlış"" olmamalıdır; belirli bir mantık hatasının sonucu olarak bulunabilmelidir.
-4.  **Çıktı Formatı:**
-    *   **Seçenek:** (A, B, vs.)
-    *   **İçerik:** (Seçeneğin metni/değeri)
-    *   **Çeldirici Analizi:** Bu seçeneği işaretleyen bir öğrencinin hangi kavram yanılgısına sahip olduğunu veya nerede hata yaptığını açıklayan pedagojik not.
-",FALSE,TEXT,abdbali
 cikis-karti-hazirlama,"---
 name: cikis-karti-hazirlama
 description: >-
