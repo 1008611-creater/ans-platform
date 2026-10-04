@@ -164027,41 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>munazara-tezleri-gelistirme</strong></summary>
-
-## munazara-tezleri-gelistirme
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: munazara-tezleri-gelistirme
-description: >-
-  Öğretmen, öğrencilerin eleştirel düşünmesini tetikleyecek "Hükümet" (Kabul) ve "Muhalefet" (Ret) savlarını içeren sınıf içi münazara argümanları ve tartışma konuları hazırlamak istediğinde bu beceriyi kullan.
----
-
-# Münazara ve Tartışma Tezleri Geliştirme
-
-Bu beceri, sosyo-bilimsel konular, etik ikilemler veya edebi/tarihi kararlar üzerinde öğrencilerin argüman üretme, çürütme ve hitabet becerilerini geliştirecek materyaller tasarlamak için kullanılır.
-
-## Yönergeler
-
-1.  **Konu Seçimi:**
-    *   Öğretmenin belirttiği konudan, tek bir doğru cevabı olmayan, gri alanları bol, iki tarafın da güçlü argümanlar üretebileceği bir "Münazara Tezi" cümlesi çıkarın. (Örn: "Yapay zeka etiği", "Tarihte devrimlerin haklılığı").
-2.  **Hükümet (Savunan) Tarafı:**
-    *   Tezi savunan taraf için, bilimsel/mantıksal kanıtlara dayanan 3 adet güçlü ana argüman (sav) yazın.
-    *   Bu argümanları savunurken kullanabilecekleri 2 adet "istatistik, vaka veya örneklem" fikri önerin.
-3.  **Muhalefet (Karşı Çıkan) Tarafı:**
-    *   Teze karşı çıkan taraf için, etik/sosyal veya alternatif sonuçlara odaklanan 3 adet güçlü ana argüman yazın.
-    *   Hükümetin argümanlarını nasıl çürütebileceklerine dair 2 adet "çürütme/anti-tez" ipucu ekleyin.
-4.  **Çıktı Formatı:**
-    *   Çıktıyı, öğrencilere doğrudan dağıtılabilecek "Hükümet Hazırlık Kartı" ve "Muhalefet Hazırlık Kartı" şablonları şeklinde oluşturun.
-
-```
-
-</details>
-
-<details>
 <summary><strong>oyunlastirma-senaryolari</strong></summary>
 
 ## oyunlastirma-senaryolari
