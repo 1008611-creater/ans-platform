@@ -164027,41 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>rol-yapma-metinleri</strong></summary>
-
-## rol-yapma-metinleri
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: rol-yapma-metinleri
-description: >-
-  Öğretmen, tarihi kişilikler, bilim insanları veya edebi karakterler üzerinden sınıf içi kısa tiyatro, mülakat veya canlandırma (rol yapma) metinleri çıkarmak istediğinde bu beceriyi kullan.
----
-
-# Edebi ve Tarihi Canlandırma (Rol Yapma) Metinleri
-
-Bu beceri, öğrencilerin empati kurma becerilerini geliştirmek ve soyut/geçmiş olayları sınıf ortamında canlandırarak somutlaştırmak için diyalog ve senaryolar yazmak amacıyla kullanılır.
-
-## Yönergeler
-
-1.  **Karakterler ve Olay:**
-    *   Öğretmenden canlandırılacak konuyu veya karakterleri alın (Örn: Einstein ile Newton'un kurgusal buluşması, İstanbul'un fethinde bir yeniçeri ile bir sivil, vb.).
-2.  **Senaryo ve Diyalog Yazımı:**
-    *   2 veya 3 öğrencinin katılabileceği, ortalama 3-5 dakika sürecek, akıcı bir tiyatro metni (diyalog) yazın.
-    *   Metnin içine, o karakterlerin veya dönemin özelliklerini (bilimsel buluşlar, tarihi gerçekler, edebi üslup) ustaca yerleştirin.
-    *   Diyalogların arasına, öğrencilerin jest ve mimiklerini yönlendirecek [Parantez içi sahne yönnergeleri] ekleyin (Örn: *[Kızgınca elindeki haritayı masaya vurur]*).
-3.  **Sınıf İçi Tartışma Sorusu:**
-    *   Canlandırma bittikten sonra, izleyen sınıfa yöneltmek üzere, canlandırmanın ana fikrini sorgulayan 1 adet "Değerlendirme Sorusu" ekleyin.
-4.  **Çıktı Formatı:**
-    *   Tiyatro metni formatında (Karakter Adı: Replik) ve okunaklı bir şekilde sunun.
-
-```
-
-</details>
-
-<details>
 <summary><strong>sosyal-kulup-plani</strong></summary>
 
 ## sosyal-kulup-plani
