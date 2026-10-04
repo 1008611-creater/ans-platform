@@ -164027,40 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>cikis-karti-hazirlama</strong></summary>
-
-## cikis-karti-hazirlama
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: cikis-karti-hazirlama
-description: >-
-  Öğretmen, dersin son 5 dakikasında öğrenmeyi hızlıca test etmek ve dönüt almak için 2-3 soruluk pratik "çıkış kartı" (exit ticket) formları oluşturmak istediğinde bu beceriyi kullan.
----
-
-# Mikro Öğrenme ve Çıkış Kartı (Exit Ticket) Hazırlama
-
-Bu beceri, formatif (biçimlendirici) değerlendirme yapmak ve bir sonraki dersin planlamasına veri sağlamak için dersin kapanışında kullanılan çok kısa değerlendirme araçları üretmekte kullanılır.
-
-## Yönergeler
-
-1.  **Ders İçeriği:**
-    *   Öğretmenden o gün işlenen konunun ana fikrini ve en kritik kazanımını alın.
-2.  **Soru Tasarımı:**
-    *   Öğrencinin 2-3 dakika içinde cevaplayabileceği kısa, net 3 soru hazırlayın:
-        *   *Soru 1 (Hatırlama/Kavrama):* O günkü dersin ana kavramını sorgulayan temel soru.
-        *   *Soru 2 (Yansıtma/Uygulama):* Öğrencinin bunu kendi cümleleriyle açıklaması veya bir örnek vermesi istenen soru.
-        *   *Soru 3 (Duyuşsal/Özdeğerlendirme):* "Bugün anlamakta en çok zorlandığım yer..." veya "Hala aklımı kurcalayan bir soru..." gibi açık uçlu bir özdeğerlendirme cümlesi.
-3.  **Çıktı Formatı:**
-    *   Çıktıyı, küçük kağıtlara (A5 veya daha küçük) kolayca basılabilecek ve kopyalanabilecek bir şablon formatında verin.
-
-```
-
-</details>
-
-<details>
 <summary><strong>derse-giris-kanca-metinleri</strong></summary>
 
 ## derse-giris-kanca-metinleri
