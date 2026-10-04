@@ -164027,39 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>derse-giris-kanca-metinleri</strong></summary>
-
-## derse-giris-kanca-metinleri
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: derse-giris-kanca-metinleri
-description: >-
-  Öğretmen, dersin girişinde (ilk 5 dakika) öğrencilerin konuya merak uyandırmasını sağlamak amacıyla gerçek yaşamla bağlantılı vaka ve düşündürücü senaryolar kurgulamak istediğinde bu beceriyi kullan.
----
-
-# Derse Giriş için Düşündürücü Problem Durumları (Kanca Metinler)
-
-Bu beceri, ders planının dikkat çekme aşamasında (hook) kullanılarak öğrencilerin "Bu konuyu neden öğreniyorum?" sorusuna yanıt bulmasını sağlayan ilgi çekici bağlamlar oluşturur.
-
-## Yönergeler
-
-1.  **Ders ve Konu Analizi:**
-    *   Öğretmenden işlenecek soyut veya akademik konuyu alın. (Örn: Hücre bölünmesi, Kesirlerde toplama, Tanzimat fermanı).
-2.  **Kanca (Hook) Tasarımı:**
-    *   Bu soyut konuyu öğrencilerin günlük hayatında karşılaşabileceği bir probleme, güncel bir olaya, şaşırtıcı bir istatistiğe veya merak uyandıran bir gizeme bağlayan 1-2 paragraflık bir "Kanca Metni" yazın.
-3.  **Açık Uçlu Giriş Sorusu:**
-    *   Metnin hemen ardına, doğrudan konuyu öğretmeden öğrencilerin tahmin yürütmesini, tartışmasını veya beyin fırtınası yapmasını sağlayacak bir "Tetikleyici Soru" ekleyin. (Örn: "Sizce böyle bir durumda şirket iflas etmekten nasıl kurtulmuştur?", "Elinizde sadece bu malzemeler varken suyu nasıl taşırdınız?")
-4.  **Bağlama:**
-    *   Tetikleyici sorudan asıl ders konusuna (kazanıma) geçiş yapmak için öğretmenin kullanacağı bir geçiş cümlesi / köprü ifade yazın.
-
-```
-
-</details>
-
-<details>
 <summary><strong>disiplinlerarasi-etkinlik-tasarimi</strong></summary>
 
 ## disiplinlerarasi-etkinlik-tasarimi
