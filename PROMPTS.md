@@ -164027,41 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>beceri-temelli-soru-yazimi</strong></summary>
-
-## beceri-temelli-soru-yazimi
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: beceri-temelli-soru-yazimi
-description: >-
-  Öğretmen, LGS veya YKS tarzında, öğrencilerin analiz, sentez ve değerlendirme gibi üst düzey bilişsel becerilerini ölçen yeni nesil / beceri temelli sorular yazdırmak istediğinde bu beceriyi kullan.
----
-
-# LGS / YKS Tarzı Beceri Temelli Soru Yazımı
-
-Bu beceri, bilgi basamağını aşıp öğrencilerin okuduğunu anlama, grafik/tablo yorumlama, problem çözme ve çıkarım yapma becerilerini ölçecek sorular tasarlamak için kullanılır.
-
-## Yönergeler
-
-1.  **Soru Gereksinimleri:**
-    *   Öğretmenden sınıf seviyesi, ders, konu ve ölçülmek istenen spesifik kazanımı alın. LGS mi yoksa YKS (TYT/AYT) mi belirtilmesini isteyin.
-2.  **Bağlam ve Uyarıcı Tasarımı:**
-    *   Yeni nesil sorular geniş bir uyarıcı ile başlar. Günlük hayattan bir problem, bilimsel bir metin, istatistiksel bir tablo, infografik veya deney kurgusu tasarlayın.
-3.  **Soru Kökü Kurgulama:**
-    *   Soru kökünü uyarıcıdaki bilgilerin analiz edilmesini gerektirecek şekilde yazın. (Örn: "Buna göre aşağıdaki çıkarımlardan hangisi yapılamaz?", "Verilen bilgilere dayanarak problemin çözümü için en uygun adım hangisidir?")
-4.  **Seçenekler (Çeldirici Tasarımı):**
-    *   Doğru cevabın (Anahtar) yanı sıra, güçlü çeldiriciler oluşturun. Çeldiriciler, öğrencinin uyarıcıyı yanlış yorumlaması veya işlem hatası yapması durumunda ulaşacağı sonuçlar olmalıdır.
-5.  **Çözüm Adımları:**
-    *   Sorunun altına, öğrencinin bu soruyu çözerken izlemesi gereken üst düzey bilişsel adımları (analiz, ilişkilendirme) anlatan detaylı bir "Çözüm ve Pedagojik Açıklama" ekleyin.
-
-```
-
-</details>
-
-<details>
 <summary><strong>bep-planlamasi</strong></summary>
 
 ## bep-planlamasi
