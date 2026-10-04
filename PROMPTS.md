@@ -164027,40 +164027,6 @@ I want a bank app prompt and I want it professional and better. I want it to be 
 </details>
 
 <details>
-<summary><strong>sosyal-kulup-plani</strong></summary>
-
-## sosyal-kulup-plani
-
-Contributed by [@abdbali](https://github.com/abdbali)
-
-```md
----
-name: sosyal-kulup-plani
-description: >-
-  Öğretmen, rehberliğini yaptığı kulüp için Belirli Gün ve Haftaları içeren, MEB Sosyal Etkinlikler Yönetmeliği'ne uygun haftalık/aylık sosyal kulüp faaliyet çalışma planları çıkarmak istediğinde bu beceriyi kullan.
----
-
-# Kulüp ve Sosyal Etkinlik Yıllık Çalışma Planları
-
-Bu beceri, öğretmenlerin danışmanlığını yürüttüğü öğrenci kulüpleri için (Kızılay, Kütüphanecilik, Çevre vb.) eğitim öğretim yılına yayılmış, rasyonel ve uygulanabilir faaliyet çizelgeleri oluşturmak amacıyla kullanılır.
-
-## Yönergeler
-
-1.  **Kulüp Bilgisi:**
-    *   Öğretmenden kulübün adını, eğitim seviyesini ve özellikle odaklanmak istediği etkinlik türlerini alın.
-2.  **Belirli Gün ve Haftalar Entegrasyonu:**
-    *   O kulübün temasına uygun MEB Belirli Gün ve Haftalar'ı (Örn: Çevre kulübü için Orman Haftası, Çevre Günü vb.) aylara göre dağıtın.
-3.  **Faaliyet Planlama:**
-    *   Ekim'den Haziran'a kadar her ay için 1 veya 2 uygulanabilir etkinlik yazın (Örn: Pano hazırlama, atık pil toplama kampanyası, yazar söyleşisi, kitap ayracı tasarımı).
-    *   Etkinliklerin okul imkanlarıyla yapılabilir, öğrenciyi aktif kılan eylemler olmasına dikkat edin.
-4.  **Çıktı Formatı:**
-    *   Aylar (Ekim, Kasım...), Yapılacak Etkinlik, ve Sorumlu Öğrenciler/Görevliler sütunlarını içeren bir Markdown tablosu (Yıllık Plan Şablonu) sunun.
-
-```
-
-</details>
-
-<details>
 <summary><strong>ters-yuz-sinif-icerigi</strong></summary>
 
 ## ters-yuz-sinif-icerigi
