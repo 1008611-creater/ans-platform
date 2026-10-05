@@ -55,7 +55,7 @@
     "book": "Livro",
     "forKids": "Para Crianças",
     "more": "Mais",
-    "competitionHub": "AIGC Contest",
+    "competitionHub": "Competições",
     "status": "Status"
   },
   "a11y": {
@@ -2464,5 +2464,224 @@
     "statusDegraded": "Degradado",
     "statusFailed": "Indisponível",
     "statusError": "Erro"
+  },
+  "competitionsHub": {
+    "eyebrow": "COMPETIÇÕES",
+    "title": "Central de competições",
+    "description": "O ponto de entrada das competições na ANS. Escolha o concurso em que vai participar e abra o regulamento, as trilhas e a lista de verificação de entrega.",
+    "openLabel": "Abrir",
+    "items": {
+      "aigc": {
+        "name": "Cluster de competições AIGC",
+        "tagline": "Um conjunto de espaços de trabalho para equipes de produção AIGC",
+        "description": "A ANS continua sendo o mapa compartilhado, e cada espaço profissional abre no próprio sistema: planejamento, produção e auditoria.",
+        "status": "Aberto",
+        "highlights": [
+          "3 espaços externos",
+          "4 fases da competição",
+          "8 verificações de entrega"
+        ],
+        "cta": "Abrir a competição AIGC"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon",
+        "tagline": "O primeiro hackathon de interesse público de IA para agricultura",
+        "description": "48 horas de desenvolvimento intenso, três trilhas, 80 % de avaliação profissional e 20 % de voto popular, e um Demo Day que classifica as 10 equipes finalistas.",
+        "status": "Em preparação",
+        "highlights": [
+          "3 trilhas",
+          "60–80 participantes presenciais",
+          "Orçamento de 5.000 CNY"
+        ],
+        "cta": "Ler o regulamento do AgriHackathon"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "AgriHackathon",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon",
+    "description": "Um hackathon de interesse público organizado pela equipe estudantil da China Agricultural University em conjunto com a comunidade aberta. 48 horas de desenvolvimento no primeiro fim de semana, uma semana de avaliação e votação e, em seguida, um Demo Day em que as 10 equipes finalistas se apresentam.",
+    "createProject": "Criar um projeto de competição",
+    "openTeams": "Abrir equipes e competições",
+    "backToHub": "Voltar à central de competições",
+    "statusTitle": "Primeira edição em preparação",
+    "statusDescription": "As três trilhas, a ficha de cinco dimensões e os prêmios estão definidos. Datas, local e formulário de inscrição serão publicados aqui assim que forem confirmados.",
+    "stats": {
+      "tracks": "Trilhas",
+      "tracksValue": "3",
+      "scale": "Participantes presenciais",
+      "scaleValue": "60-80",
+      "phases": "Fases",
+      "phasesValue": "4",
+      "deliverables": "Verificações de entrega",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "Três trilhas",
+    "tracksDescription": "Cada projeto escolhe uma trilha. O júri avalia cinco dimensões: inovação, profundidade técnica, completude do produto, problema real e aderência à trilha.",
+    "tracksSectionLabel": "01 / TRILHAS",
+    "rulesSectionLabel": "03 / REGULAMENTO",
+    "openTrack": "Ver a trilha",
+    "trackLabel": "Trilha",
+    "tracks": {
+      "people": {
+        "name": "IA para as pessoas",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "Usar a IA para melhorar uma situação real de um grupo concreto de pessoas",
+        "description": "Crie uma ferramenta ou um serviço útil para uma necessidade verificável na agricultura, no meio rural ou na produção cotidiana.",
+        "status": "Publicada",
+        "detail": "O júri avalia se o problema é real, quem são os usuários e se é possível chegar a uma versão mínima funcional em 48 horas."
+      },
+      "discovery": {
+        "name": "IA para a descoberta",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "Usar a IA para ajudar as pessoas a entender um problema complexo",
+        "description": "Transforme dados agrícolas, artigos científicos ou experiência de campo em conhecimento consultável e explicável.",
+        "status": "Publicada",
+        "detail": "O júri avalia se as fontes de dados são conformes, se o raciocínio é explicável e se outras pessoas conseguem reproduzir o resultado."
+      },
+      "action": {
+        "name": "IA para a ação",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "Usar a IA para levar uma ação concreta à prática",
+        "description": "Mire uma etapa real do plantio, do cultivo, da distribuição ou da governança rural e construa algo que se encaixe no fluxo de trabalho existente.",
+        "status": "Publicada",
+        "detail": "O júri avalia se o plano é executável em campo, se o custo é controlável e se outras pessoas conseguem assumir os entregáveis."
+      }
+    },
+    "phasesTitle": "Percurso em quatro fases",
+    "phasesDescription": "Todas as equipes seguem o mesmo caminho: inscrever-se e formar a equipe, desenvolver, passar por avaliação e votação e, por fim, apresentar presencialmente.",
+    "phases": {
+      "discover": {
+        "label": "01 · Inscrição e formação de equipe",
+        "description": "Envie o nome do projeto, os membros da equipe e a trilha escolhida, e confirme a elegibilidade e o regulamento.",
+        "state": "Não iniciado"
+      },
+      "plan": {
+        "label": "02 · 48 horas de desenvolvimento",
+        "description": "Desenvolva ao longo do primeiro fim de semana até uma versão mínima funcional e mantenha os principais registros de iteração.",
+        "state": "Não iniciado"
+      },
+      "produce": {
+        "label": "03 · Avaliação e votação",
+        "description": "Na semana seguinte, a avaliação profissional vale 80 % e o voto popular vale 20 %.",
+        "state": "Não iniciado"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "Apresente no segundo fim de semana: 5 minutos de demonstração e 3 minutos de perguntas, com pontuação ao vivo de 7 jurados.",
+        "state": "Não iniciado"
+      }
+    },
+    "deliverablesTitle": "Lista de verificação de entrega",
+    "deliverablesDescription": "Confira cada item antes de entregar: o trabalho precisa funcionar, as fontes devem ser rastreáveis e outras pessoas devem conseguir dar continuidade.",
+    "deliverables": {
+      "brief": "Nome do projeto, equipe, trilha e resumo",
+      "plan": "Papéis na equipe e plano de desenvolvimento",
+      "storyboard": "Abordagem técnica e arquitetura",
+      "source": "Fontes de dados e autorizações",
+      "iterations": "Iterações principais e registros de avaliação",
+      "final": "Demonstração funcional e vídeo ou link da demo",
+      "evidence": "Repositório público no GitHub com licença",
+      "package": "Pacote de entrega e verificação final"
+    },
+    "scoringTitle": "Ficha de cinco dimensões",
+    "scoringDescription": "O júri avalia cinco dimensões, num total de 100 pontos.",
+    "scoringSectionLabel": "02 / PONTUAÇÃO",
+    "scoring": {
+      "innovation": {
+        "label": "Inovação",
+        "weight": "30",
+        "description": "Se a formulação do problema ou o caminho de solução são novos."
+      },
+      "technical": {
+        "label": "Profundidade técnica",
+        "weight": "25",
+        "description": "Escolhas tecnológicas, qualidade da implementação e completude de engenharia."
+      },
+      "completeness": {
+        "label": "Completude do produto",
+        "weight": "20",
+        "description": "Se a demonstração funciona e o fluxo se fecha de ponta a ponta."
+      },
+      "problem": {
+        "label": "Problema real",
+        "weight": "15",
+        "description": "Se a necessidade vem de um cenário real e de usuários reais."
+      },
+      "fit": {
+        "label": "Aderência à trilha",
+        "weight": "10",
+        "description": "O quanto o trabalho corresponde à trilha escolhida."
+      }
+    },
+    "advanceTitle": "Regras de classificação e avaliação",
+    "advanceDescription": "A fase preliminar designa jurados de um grupo; a final é pontuada ao vivo por um painel fixo.",
+    "advanceNote": "O voto popular e a nota do júri usam escalas diferentes. O método de normalização e as medidas antifraude serão publicados antes da abertura das inscrições.",
+    "advanceItems": {
+      "professional": "Avaliação profissional 80 %, voto popular 20 %",
+      "pool": "Um grupo de 8 a 12 jurados, 3 designados aleatoriamente por projeto",
+      "panel": "A final é pontuada ao vivo por 7 jurados",
+      "review": "Uma diferença acima de 20 pontos entre jurados aciona uma revisão manual"
+    },
+    "awardsTitle": "Prêmios",
+    "awardsDescription": "3.300 CNY em prêmios em dinheiro para a primeira edição, além de três distinções honoríficas.",
+    "awards": {
+      "first": {
+        "label": "Primeiro prêmio",
+        "amount": "1.500 CNY",
+        "description": "Maior pontuação geral"
+      },
+      "second": {
+        "label": "Segundo prêmio",
+        "amount": "1.000 CNY",
+        "description": "Segunda maior pontuação geral"
+      },
+      "third": {
+        "label": "Terceiro prêmio",
+        "amount": "800 CNY",
+        "description": "Terceira maior pontuação geral"
+      },
+      "tech": {
+        "label": "Melhor implementação técnica",
+        "amount": "Distinção",
+        "description": "Maior pontuação em profundidade técnica"
+      },
+      "innovation": {
+        "label": "Melhor inovação",
+        "amount": "Distinção",
+        "description": "Maior pontuação em inovação"
+      },
+      "popular": {
+        "label": "Mais popular",
+        "amount": "Distinção",
+        "description": "Maior número de votos populares"
+      }
+    },
+    "rulesTitle": "Regras e conformidade",
+    "rulesDescription": "Estas condições são confirmadas na inscrição; descumpri-las exclui a equipe dos prêmios.",
+    "rules": {
+      "opensource": "As entregas devem ser de código aberto e indicar uma licença no repositório",
+      "data": "As fontes de dados e as autorizações devem ser declaradas; dados sem autorização não são permitidos",
+      "originality": "O trabalho deve ser feito durante o evento; projetos anteriores ou de terceiros não são aceitos",
+      "team": "1 a 5 membros por equipe; uma pessoa não pode entrar em várias equipes",
+      "demo": "A final exige uma demonstração funcional ao vivo, não apenas um vídeo",
+      "conduct": "Respeite o júri e os demais participantes; sem manipulação de votos ou interferência na avaliação"
+    },
+    "workflowTitle": "Atalhos do espaço de trabalho da ANS",
+    "workflowDescription": "Mantenha os registros do projeto na ANS; inscrição, avaliação e publicação virão nas fases seguintes.",
+    "openProjects": "Projetos",
+    "openWorkflows": "Fluxos de trabalho",
+    "openTemplates": "Modelos",
+    "openSkills": "Habilidades",
+    "boundaryTitle": "Limites da primeira edição",
+    "boundaryDescription": "Esta primeira versão traz o regulamento, a estrutura das trilhas e a lista de verificação de entrega. Inscrição, votação popular e publicação de resultados ainda não estão conectadas.",
+    "boundaryItems": {
+      "entry": "Um único ponto de entrada na ANS",
+      "links": "Trilhas, pontuação e prêmios estão definidos",
+      "ownership": "As equipes declaram o próprio trabalho e as autorizações de dados",
+      "next": "Inscrição e votação virão assim que datas e local forem definidos"
+    },
+    "syncNote": "A primeira edição tem um orçamento de cerca de 5.000 CNY (3.300 CNY de prêmios, 800 CNY de materiais e 900 CNY de alimentação). Inscrição, votação popular e publicação de resultados virão assim que as datas forem definidas."
   }
 }

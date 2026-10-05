@@ -55,7 +55,7 @@
     "book": "本",
     "forKids": "子ども向け",
     "more": "もっと見る",
-    "competitionHub": "AIGC Contest",
+    "competitionHub": "コンペティション",
     "status": "稼働状況"
   },
   "a11y": {
@@ -2450,5 +2450,224 @@
     "statusDegraded": "低下",
     "statusFailed": "利用不可",
     "statusError": "エラー"
+  },
+  "competitionsHub": {
+    "eyebrow": "コンペティション",
+    "title": "コンペティション一覧",
+    "description": "ANS のコンペティション入口です。参加するコンペティションを選び、ルール・トラック・提出チェックリストを確認できます。",
+    "openLabel": "開く",
+    "items": {
+      "aigc": {
+        "name": "AIGC コンテストクラスター",
+        "tagline": "AIGC 制作チーム向けのワークスペース群",
+        "description": "ANS は共通の地図として使います。専門ワークスペースは企画・制作・監査それぞれのシステムで開きます。",
+        "status": "公開中",
+        "highlights": [
+          "外部ワークスペース 3 件",
+          "コンペティションのフェーズ 4 段階",
+          "提出チェック 8 項目"
+        ],
+        "cta": "AIGC コンテストを開く"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon",
+        "tagline": "農業 AI の公益ハッカソン、第一回",
+        "description": "48 時間の集中開発、3 つのトラック、プロ審査 80% と一般投票 20%、そして 10 チームが順位を競う Demo Day。",
+        "status": "準備中",
+        "highlights": [
+          "3 トラック",
+          "現地参加 60-80 名",
+          "予算 CNY 5,000"
+        ],
+        "cta": "AgriHackathon のルールを見る"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "AgriHackathon",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon",
+    "description": "中国農業大学の学生チームとオープンコミュニティが共同で主催する公益ハッカソンです。最初の週末に 48 時間の開発、続く 1 週間で審査と投票、そして 10 チームが登壇する Demo Day を行います。",
+    "createProject": "コンペティション用プロジェクトを作成",
+    "openTeams": "チームとコンペティションを開く",
+    "backToHub": "コンペティション一覧に戻る",
+    "statusTitle": "第 1 回は準備中",
+    "statusDescription": "3 つのトラック、5 項目の評価基準、賞金は確定しています。日程・会場・参加登録フォームは確定次第ここで公開します。",
+    "stats": {
+      "tracks": "トラック",
+      "tracksValue": "3",
+      "scale": "現地参加者",
+      "scaleValue": "60-80",
+      "phases": "フェーズ",
+      "phasesValue": "4",
+      "deliverables": "提出チェック",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "3 つのトラック",
+    "tracksDescription": "各プロジェクトは 1 つのトラックを選びます。審査員はイノベーション、技術的深度、プロダクト完成度、実課題、トラック適合性の 5 項目で評価します。",
+    "tracksSectionLabel": "01 / トラック",
+    "rulesSectionLabel": "03 / ルール",
+    "openTrack": "トラックの詳細を見る",
+    "trackLabel": "トラック",
+    "tracks": {
+      "people": {
+        "name": "人々のための AI",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "実際に暮らす人々の状況を AI で改善する",
+        "description": "農業・農村・日々の生産現場にある確かな課題に向けて、実際に使えるツールやサービスを作ります。",
+        "status": "公開済み",
+        "detail": "課題が実在するか、利用者は誰か、48 時間で動く最小構成に到達できるかを審査します。"
+      },
+      "discovery": {
+        "name": "知のための AI",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "複雑な課題の理解を AI で支える",
+        "description": "農業データ・研究論文・現場の経験を、検索して説明できる知識に変えます。",
+        "status": "公開済み",
+        "detail": "データの出所が適切か、推論が説明可能か、他者が結果を再現できるかを審査します。"
+      },
+      "action": {
+        "name": "行動のための AI",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "具体的な行動を AI で実践に移す",
+        "description": "栽培・飼養・流通・農村ガバナンスの実際の工程を対象に、既存の業務フローに組み込める仕組みを作ります。",
+        "status": "公開済み",
+        "detail": "現場で実行できるか、コストを抑えられるか、成果物を他者が引き継げるかを審査します。"
+      }
+    },
+    "phasesTitle": "4 段階の参加ステップ",
+    "phasesDescription": "全チーム共通の流れです。登録とチーム編成、開発、審査と投票、そして会場での発表へ進みます。",
+    "phases": {
+      "discover": {
+        "label": "01 · 登録とチーム編成",
+        "description": "プロジェクト名・メンバー・選択したトラックを提出し、参加資格とルールを確認します。",
+        "state": "未開始"
+      },
+      "plan": {
+        "label": "02 · 48 時間の開発",
+        "description": "最初の週末に集中して開発し、動く最小構成まで仕上げ、主要な試行錯誤の記録を残します。",
+        "state": "未開始"
+      },
+      "produce": {
+        "label": "03 · 審査と投票",
+        "description": "翌週にプロ審査 80%、一般投票 20% の比率で評価します。",
+        "state": "未開始"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "2 週目の週末に発表します。5 分のデモと 3 分の質疑応答を、7 名の審査員がその場で採点します。",
+        "state": "未開始"
+      }
+    },
+    "deliverablesTitle": "提出チェックリスト",
+    "deliverablesDescription": "提出前に全項目を確認し、作品が動くこと、出典がたどれること、他者が引き継げることを確かめます。",
+    "deliverables": {
+      "brief": "プロジェクト名・チーム・トラック・概要",
+      "plan": "チームの役割分担と開発計画",
+      "storyboard": "技術方針とアーキテクチャ",
+      "source": "データの出所と許諾の記録",
+      "iterations": "主要な試行錯誤と審査記録",
+      "final": "動作するデモとデモ動画またはリンク",
+      "evidence": "ライセンス付きの公開 GitHub リポジトリ",
+      "package": "提出パッケージと最終確認"
+    },
+    "scoringTitle": "5 項目の評価表",
+    "scoringDescription": "審査員が 5 つの項目を採点し、合計 100 点です。",
+    "scoringSectionLabel": "02 / 評価",
+    "scoring": {
+      "innovation": {
+        "label": "イノベーション",
+        "weight": "30",
+        "description": "課題設定や解決の筋道が新しいか。"
+      },
+      "technical": {
+        "label": "技術的深度",
+        "weight": "25",
+        "description": "技術選定、実装の質、エンジニアリングとしての完成度。"
+      },
+      "completeness": {
+        "label": "プロダクト完成度",
+        "weight": "20",
+        "description": "デモが動作し、体験が最後まで一通りつながるか。"
+      },
+      "problem": {
+        "label": "実課題",
+        "weight": "15",
+        "description": "ニーズが実際の現場と利用者から来ているか。"
+      },
+      "fit": {
+        "label": "トラック適合性",
+        "weight": "10",
+        "description": "作品が選択したトラックにどれだけ合っているか。"
+      }
+    },
+    "advanceTitle": "通過と審査のルール",
+    "advanceDescription": "予選は審査員プールから担当を割り当て、決勝は固定の審査員がその場で採点します。",
+    "advanceNote": "一般投票と審査員の点数は尺度が異なります。正規化の方法と不正対策は、参加登録の開始前に公開します。",
+    "advanceItems": {
+      "professional": "プロ審査 80%、一般投票 20%",
+      "pool": "8〜12 名の審査員プールから、各プロジェクトに 3 名をランダムに割り当て",
+      "panel": "決勝は 7 名の審査員がその場で採点",
+      "review": "審査員間の点差が 20 点を超えると人的確認を実施"
+    },
+    "awardsTitle": "賞金と賞",
+    "awardsDescription": "第 1 回の現金賞金は合計 CNY 3,300、ほかに 3 つの特別賞を用意しています。",
+    "awards": {
+      "first": {
+        "label": "1 位",
+        "amount": "CNY 1,500",
+        "description": "総合得点が最も高い"
+      },
+      "second": {
+        "label": "2 位",
+        "amount": "CNY 1,000",
+        "description": "総合得点が 2 番目に高い"
+      },
+      "third": {
+        "label": "3 位",
+        "amount": "CNY 800",
+        "description": "総合得点が 3 番目に高い"
+      },
+      "tech": {
+        "label": "最優秀技術賞",
+        "amount": "特別賞",
+        "description": "技術的深度の評価が最も高い"
+      },
+      "innovation": {
+        "label": "最優秀イノベーション賞",
+        "amount": "特別賞",
+        "description": "イノベーションの評価が最も高い"
+      },
+      "popular": {
+        "label": "人気賞",
+        "amount": "特別賞",
+        "description": "一般投票が最も多い"
+      }
+    },
+    "rulesTitle": "参加ルールと遵守事項",
+    "rulesDescription": "以下の条件は登録時に確認します。違反したチームは表彰対象外となります。",
+    "rules": {
+      "opensource": "作品はオープンソースで公開し、リポジトリにライセンスを明記すること",
+      "data": "データの出所と許諾を明示すること。未許諾のデータは使用できません",
+      "originality": "作品は大会期間中に制作すること。過去の作品や第三者の作品は受け付けません",
+      "team": "1 チーム 1〜5 名。同一人物が複数のチームに所属することはできません",
+      "demo": "決勝では実際に動作するデモが必要です。動画のみは認められません",
+      "conduct": "審査員と他の参加者を尊重すること。票の操作や審査への干渉は禁止です"
+    },
+    "workflowTitle": "ANS ワークスペースへのショートカット",
+    "workflowDescription": "プロジェクトの記録は ANS に残します。登録・審査・公開は後続のフェーズで接続します。",
+    "openProjects": "プロジェクト",
+    "openWorkflows": "ワークフロー",
+    "openTemplates": "テンプレート",
+    "openSkills": "スキル",
+    "boundaryTitle": "第 1 回の対応範囲",
+    "boundaryDescription": "この初版では、ルール・トラック構成・提出チェックリストを提供します。参加登録、一般投票、結果公開はまだ接続していません。",
+    "boundaryItems": {
+      "entry": "ANS の入口は 1 つ",
+      "links": "トラック・評価・賞金は確定済み",
+      "ownership": "作品とデータの許諾はチームが説明",
+      "next": "日程と会場が決まり次第、登録と投票を接続"
+    },
+    "syncNote": "第 1 回の現金予算は約 CNY 5,000（賞金 3,300、備品 800、食事 900）。参加登録・一般投票・結果公開は、日程が確定した後に接続します。"
   }
 }

@@ -55,7 +55,7 @@
     "book": "书籍",
     "forKids": "儿童版",
     "more": "更多",
-    "competitionHub": "AIGC 比赛中心",
+    "competitionHub": "比赛中心",
     "status": "服务状态"
   },
   "a11y": {
@@ -2450,5 +2450,172 @@
     "statusDegraded": "降级",
     "statusFailed": "不可用",
     "statusError": "错误"
+  },
+  "competitionsHub": {
+    "eyebrow": "比赛",
+    "title": "比赛中心",
+    "description": "ANS 的比赛入口。先在这里选赛事，再进入对应页面查看赛道、赛制与提交要求。",
+    "openLabel": "进入",
+    "items": {
+      "aigc": {
+        "name": "AIGC 比赛集群",
+        "tagline": "面向 AIGC 创作团队的比赛工作台",
+        "description": "以 ANS 作为共同地图，需要专业能力时再打开对应系统：计划、生产与审计各用各的工作台。",
+        "status": "已开放",
+        "highlights": ["3 个外部工作台", "4 个比赛阶段", "8 项提交检查"],
+        "cta": "进入 AIGC 比赛中心"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon 农客松",
+        "tagline": "首届农业 AI 公益黑客松",
+        "description": "首个周末 48 小时集中开发，三大赛道，专业评审占 80%、大众投票占 20%，次周末 Demo Day 决出 10 支决赛队伍。",
+        "status": "筹备中",
+        "highlights": ["3 条赛道", "线下 60–80 人", "预算 5000 元"],
+        "cta": "查看农客松赛制"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "农客松比赛",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon 农客松",
+    "description": "中国农业大学学生团队与开放社区共同发起的公益黑客松。首个周末 48 小时集中开发，中间一周完成评审与投票，次周末 Demo Day 由 10 支决赛队伍现场展示。",
+    "createProject": "创建参赛项目",
+    "openTeams": "进入团队与比赛",
+    "backToHub": "返回比赛中心",
+    "statusTitle": "首届赛事筹备中",
+    "statusDescription": "三大赛道、五维评分与奖项设置已经明确。具体日期、场地与报名入口确定后在此更新。",
+    "stats": {
+      "tracks": "赛道",
+      "tracksValue": "3",
+      "scale": "线下规模（人）",
+      "scaleValue": "60–80",
+      "phases": "比赛阶段",
+      "phasesValue": "4",
+      "deliverables": "提交检查项",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "三大赛道",
+    "tracksDescription": "每个项目选择一条赛道。评审按创新性、技术深度、产品完成度、真实问题与赛道契合度五个维度打分。",
+    "tracksSectionLabel": "01 / 赛道",
+    "rulesSectionLabel": "03 / 规则",
+    "openTrack": "查看赛道详情",
+    "trackLabel": "赛道",
+    "tracks": {
+      "people": {
+        "name": "AI 为人",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "用 AI 改善具体人群的真实处境",
+        "description": "面向农业、乡村与日常生产生活中可被验证的需求，做出一个真实可用的工具或服务。",
+        "status": "赛道已公布",
+        "detail": "评审关注问题是否真实、使用者是否明确，以及方案能否在 48 小时内做出可运行的最小版本。"
+      },
+      "discovery": {
+        "name": "AI 为知",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "用 AI 帮助人理解复杂问题",
+        "description": "把农业数据、科研文献或现场经验整理成可查询、可解释的知识，让判断有依据。",
+        "status": "赛道已公布",
+        "detail": "评审关注数据来源是否合规、推理过程是否可解释，以及结论能否被他人复现。"
+      },
+      "action": {
+        "name": "AI 为行",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "用 AI 推动一个具体行动落地",
+        "description": "面向种植、养殖、流通或乡村治理中的实际环节，做出能嵌入现有流程的方案。",
+        "status": "赛道已公布",
+        "detail": "评审关注方案能否在真实场景里被执行、成本是否可控，以及交付物是否方便他人接手。"
+      }
+    },
+    "phasesTitle": "四阶段参赛路径",
+    "phasesDescription": "所有团队遵循同一条主路径：报名组队、集中开发、评审投票、现场展示。",
+    "phases": {
+      "discover": {
+        "label": "01 · 报名与组队",
+        "description": "提交项目名、团队成员与所选赛道，确认参赛资格与赛事规则。",
+        "state": "待开始"
+      },
+      "plan": {
+        "label": "02 · 48 小时开发",
+        "description": "首个周末集中开发，做出可运行的最小可用版本，并保留关键迭代记录。",
+        "state": "待开始"
+      },
+      "produce": {
+        "label": "03 · 评审与投票",
+        "description": "中间一周完成专业评审与大众投票，专业评审占 80%、大众投票占 20%。",
+        "state": "待开始"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "次周末现场展示，每队 5 分钟演示加 3 分钟问答，由 7 位评委现场评审。",
+        "state": "待开始"
+      }
+    },
+    "deliverablesTitle": "提交检查清单",
+    "deliverablesDescription": "提交前逐项核对，确保作品可运行、来源可追溯、他人可接手。",
+    "deliverables": {
+      "brief": "项目名、团队、赛道与项目简介",
+      "plan": "团队分工与开发计划",
+      "storyboard": "技术方案与架构说明",
+      "source": "数据来源与授权说明",
+      "iterations": "关键迭代与评审记录",
+      "final": "可运行 Demo 与演示视频或链接",
+      "evidence": "公开 GitHub 仓库（含许可证）",
+      "package": "提交包与最终检查"
+    },
+    "scoringTitle": "五维评分表",
+    "scoringDescription": "评委按五个维度打分，合计满分 100 分。",
+    "scoringSectionLabel": "02 / 评分",
+    "scoring": {
+      "innovation": { "label": "创新性", "weight": "30", "description": "问题定义或解决路径是否有新意。" },
+      "technical": { "label": "技术深度", "weight": "25", "description": "技术选型、实现质量与工程完整度。" },
+      "completeness": { "label": "产品完成度", "weight": "20", "description": "Demo 是否可运行、流程是否闭环。" },
+      "problem": { "label": "真实问题", "weight": "15", "description": "需求是否来自真实场景与真实使用者。" },
+      "fit": { "label": "赛道契合", "weight": "10", "description": "作品与所选赛道的匹配程度。" }
+    },
+    "advanceTitle": "晋级与评审规则",
+    "advanceDescription": "初赛由评委池随机分配评审，决赛由固定评委现场打分。",
+    "advanceNote": "大众投票与评委评分的量纲不同，归一化方式与防刷票方案将在报名开放前公布。",
+    "advanceItems": {
+      "professional": "专业评审占 80%，大众投票占 20%",
+      "pool": "初赛评委池 8–12 人，每个项目随机 3 人评审",
+      "panel": "决赛由 7 位评委现场评审",
+      "review": "评委分差超过 20 分触发人工复核"
+    },
+    "awardsTitle": "奖项设置",
+    "awardsDescription": "首届现金奖金共 3300 元，另设三项荣誉奖。",
+    "awards": {
+      "first": { "label": "一等奖", "amount": "1500 元", "description": "综合得分第一名" },
+      "second": { "label": "二等奖", "amount": "1000 元", "description": "综合得分第二名" },
+      "third": { "label": "三等奖", "amount": "800 元", "description": "综合得分第三名" },
+      "tech": { "label": "最佳技术实现", "amount": "荣誉奖", "description": "技术深度维度表现突出" },
+      "innovation": { "label": "最佳创新", "amount": "荣誉奖", "description": "创新性维度表现突出" },
+      "popular": { "label": "最佳人气", "amount": "荣誉奖", "description": "大众投票得票最高" }
+    },
+    "rulesTitle": "参赛规则与合规红线",
+    "rulesDescription": "以下条款在报名时确认，违反将取消评奖资格。",
+    "rules": {
+      "opensource": "参赛作品必须开源，并在仓库中写明许可证",
+      "data": "必须说明数据来源与授权，不得使用未授权数据",
+      "originality": "作品须在比赛期间完成，不得提交往届或他人成果",
+      "team": "每队 1–5 人，同一人不得加入多支参赛队伍",
+      "demo": "决赛必须现场演示可运行版本，不接受只播放视频",
+      "conduct": "尊重评委与其他参赛者，不得刷票或干扰评审"
+    },
+    "workflowTitle": "ANS 工作区快捷入口",
+    "workflowDescription": "把项目记录留在 ANS，报名、评审与公示在后续阶段接入。",
+    "openProjects": "项目包",
+    "openWorkflows": "工作流程",
+    "openTemplates": "模板广场",
+    "openSkills": "技能",
+    "boundaryTitle": "首届集成边界",
+    "boundaryDescription": "首版提供赛制说明、赛道结构与提交清单；报名入口、大众投票与结果公示尚未接入。",
+    "boundaryItems": {
+      "entry": "一个 ANS 入口",
+      "links": "赛道、评分与奖项设置已明确",
+      "ownership": "作品与数据授权由参赛团队说明",
+      "next": "日期与场地确定后接入报名与投票"
+    },
+    "syncNote": "首届现金预算约 5000 元（奖金 3300、物料 800、餐饮 900）。报名入口、大众投票与结果公示将在赛事日期确定后接入。"
   }
 }

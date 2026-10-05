@@ -291,7 +291,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     团队与比赛
                   </Link>
                   <Link
-                    href="/competitions/aigc"
+                    href="/competitions"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-primary hover:text-foreground hover:bg-accent transition-colors"
                   >
@@ -364,6 +364,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
         {/* Primary desktop nav: keep the main job paths visible and move low-frequency destinations into More. */}
         <nav aria-label={t("a11y.mainNav")} className="hidden min-w-0 flex-1 items-center gap-1 text-sm lg:flex">
           {learningLinks.map(({ href, label }) => (
+
             <Link
               key={href}
               href={href}
@@ -383,7 +384,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               <DropdownMenuItem asChild><Link href="/prompts">{t("nav.prompts")}</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/templates">{t("learning.templates")}</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/workflows">{t("nav.workflows")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/competitions/aigc">{t("nav.competitionHub")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/competitions">{t("nav.competitionHub")}</Link></DropdownMenuItem>
               {user && <DropdownMenuItem asChild><Link href="/workspace">{t("homepageNext.workspace")}</Link></DropdownMenuItem>}
               {user && <DropdownMenuItem asChild><Link href="/collection">{t("nav.collection")}</Link></DropdownMenuItem>}
               {user && <DropdownMenuItem asChild><Link href="/workflows/runs">{t("homepageNext.runHistory")}</Link></DropdownMenuItem>}

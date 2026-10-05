@@ -55,7 +55,7 @@
     "book": "책",
     "forKids": "어린이용",
     "more": "더 보기",
-    "competitionHub": "AIGC Contest",
+    "competitionHub": "대회",
     "status": "상태"
   },
   "a11y": {
@@ -2450,5 +2450,224 @@
     "statusDegraded": "성능 저하",
     "statusFailed": "사용 불가",
     "statusError": "오류"
+  },
+  "competitionsHub": {
+    "eyebrow": "대회",
+    "title": "대회 허브",
+    "description": "ANS의 대회 진입점입니다. 참가할 대회를 고르고 규칙, 트랙, 제출 체크리스트를 확인하세요.",
+    "openLabel": "열기",
+    "items": {
+      "aigc": {
+        "name": "AIGC 콘테스트 클러스터",
+        "tagline": "AIGC 제작 팀을 위한 워크스페이스 모음",
+        "description": "ANS는 공통 지도로 두고, 전문 워크스페이스는 기획·제작·감사 각각의 시스템에서 엽니다.",
+        "status": "공개",
+        "highlights": [
+          "외부 워크스페이스 3개",
+          "대회 단계 4개",
+          "제출 점검 8개"
+        ],
+        "cta": "AIGC 콘테스트 열기"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon",
+        "tagline": "첫 번째 농업 AI 공익 해커톤",
+        "description": "48시간 집중 개발, 3개 트랙, 전문 심사 80%와 대중 투표 20%, 그리고 10개 팀이 순위를 겨루는 Demo Day.",
+        "status": "준비 중",
+        "highlights": [
+          "트랙 3개",
+          "오프라인 참가 60-80명",
+          "예산 CNY 5,000"
+        ],
+        "cta": "AgriHackathon 규칙 보기"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "AgriHackathon",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon",
+    "description": "중국농업대학교 학생 팀과 오픈 커뮤니티가 함께 여는 공익 해커톤입니다. 첫 주말 48시간 개발, 이어지는 한 주의 심사와 투표, 그리고 10개 팀이 발표하는 Demo Day로 진행됩니다.",
+    "createProject": "대회 프로젝트 만들기",
+    "openTeams": "팀과 대회 열기",
+    "backToHub": "대회 허브로 돌아가기",
+    "statusTitle": "1회 대회 준비 중",
+    "statusDescription": "3개 트랙, 5개 항목 평가표, 상금은 확정되었습니다. 일정과 장소, 참가 신청서는 확정되는 대로 이곳에 공개합니다.",
+    "stats": {
+      "tracks": "트랙",
+      "tracksValue": "3",
+      "scale": "오프라인 참가자",
+      "scaleValue": "60-80",
+      "phases": "단계",
+      "phasesValue": "4",
+      "deliverables": "제출 점검",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "세 개의 트랙",
+    "tracksDescription": "모든 프로젝트는 트랙 하나를 선택합니다. 심사위원은 혁신성, 기술적 깊이, 제품 완성도, 실제 문제, 트랙 적합성 다섯 항목으로 평가합니다.",
+    "tracksSectionLabel": "01 / 트랙",
+    "rulesSectionLabel": "03 / 규칙",
+    "openTrack": "트랙 자세히 보기",
+    "trackLabel": "트랙",
+    "tracks": {
+      "people": {
+        "name": "사람을 위한 AI",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "실제 사람들의 상황을 AI로 개선하기",
+        "description": "농업, 농촌, 일상 생산 현장에서 확인 가능한 필요를 위해 실제로 쓸 수 있는 도구나 서비스를 만듭니다.",
+        "status": "공개됨",
+        "detail": "문제가 실제로 존재하는지, 사용자가 누구인지, 48시간 안에 실행 가능한 최소 버전을 만들 수 있는지 심사합니다."
+      },
+      "discovery": {
+        "name": "지식을 위한 AI",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "복잡한 문제를 사람이 이해하도록 AI로 돕기",
+        "description": "농업 데이터, 연구 논문, 현장 경험을 검색하고 설명할 수 있는 지식으로 바꿉니다.",
+        "status": "공개됨",
+        "detail": "데이터 출처가 적절한지, 추론 과정이 설명 가능한지, 다른 사람이 결과를 재현할 수 있는지 심사합니다."
+      },
+      "action": {
+        "name": "행동을 위한 AI",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "구체적인 행동 하나를 AI로 실무에 옮기기",
+        "description": "재배, 사육, 유통, 농촌 거버넌스의 실제 단계를 대상으로 기존 업무 흐름에 맞는 결과물을 만듭니다.",
+        "status": "공개됨",
+        "detail": "현장에서 실행할 수 있는지, 비용을 통제할 수 있는지, 다른 사람이 결과물을 이어받을 수 있는지 심사합니다."
+      }
+    },
+    "phasesTitle": "4단계 참가 경로",
+    "phasesDescription": "모든 팀이 같은 경로를 따릅니다. 신청과 팀 구성, 개발, 심사와 투표, 그리고 현장 발표 순서입니다.",
+    "phases": {
+      "discover": {
+        "label": "01 · 신청과 팀 구성",
+        "description": "프로젝트 이름, 팀원, 선택한 트랙을 제출하고 참가 자격과 규칙을 확인합니다.",
+        "state": "시작 전"
+      },
+      "plan": {
+        "label": "02 · 48시간 개발",
+        "description": "첫 주말 동안 개발해 실행 가능한 최소 버전을 만들고 주요 반복 기록을 남깁니다.",
+        "state": "시작 전"
+      },
+      "produce": {
+        "label": "03 · 심사와 투표",
+        "description": "다음 한 주 동안 전문 심사 80%, 대중 투표 20%로 평가합니다.",
+        "state": "시작 전"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "둘째 주말에 발표합니다. 5분 데모와 3분 질의응답을 7명의 심사위원이 현장에서 채점합니다.",
+        "state": "시작 전"
+      }
+    },
+    "deliverablesTitle": "제출 체크리스트",
+    "deliverablesDescription": "제출 전에 모든 항목을 확인해 작품이 실행되고, 출처를 추적할 수 있으며, 다른 사람이 이어받을 수 있게 합니다.",
+    "deliverables": {
+      "brief": "프로젝트 이름, 팀, 트랙, 요약",
+      "plan": "팀 역할과 개발 계획",
+      "storyboard": "기술 접근 방식과 아키텍처",
+      "source": "데이터 출처와 이용 허가 기록",
+      "iterations": "주요 반복과 심사 기록",
+      "final": "실행 가능한 데모와 데모 영상 또는 링크",
+      "evidence": "라이선스가 있는 공개 GitHub 저장소",
+      "package": "제출 패키지와 최종 점검"
+    },
+    "scoringTitle": "5개 항목 평가표",
+    "scoringDescription": "심사위원이 다섯 항목을 평가하며 총점은 100점입니다.",
+    "scoringSectionLabel": "02 / 평가",
+    "scoring": {
+      "innovation": {
+        "label": "혁신성",
+        "weight": "30",
+        "description": "문제 정의나 해결 경로가 새로운지."
+      },
+      "technical": {
+        "label": "기술적 깊이",
+        "weight": "25",
+        "description": "기술 선택, 구현 품질, 엔지니어링 완성도."
+      },
+      "completeness": {
+        "label": "제품 완성도",
+        "weight": "20",
+        "description": "데모가 실행되고 흐름이 끝까지 이어지는지."
+      },
+      "problem": {
+        "label": "실제 문제",
+        "weight": "15",
+        "description": "필요가 실제 현장과 실제 사용자에게서 나왔는지."
+      },
+      "fit": {
+        "label": "트랙 적합성",
+        "weight": "10",
+        "description": "작품이 선택한 트랙과 얼마나 잘 맞는지."
+      }
+    },
+    "advanceTitle": "진출과 심사 규칙",
+    "advanceDescription": "예선은 심사위원 풀에서 배정해 평가하고, 결선은 고정 심사위원이 현장에서 채점합니다.",
+    "advanceNote": "대중 투표와 심사위원 점수는 척도가 다릅니다. 정규화 방식과 부정 방지 대책은 참가 신청이 열리기 전에 공개합니다.",
+    "advanceItems": {
+      "professional": "전문 심사 80%, 대중 투표 20%",
+      "pool": "심사위원 풀 8-12명, 프로젝트마다 3명 무작위 배정",
+      "panel": "결선은 심사위원 7명이 현장에서 채점",
+      "review": "심사위원 간 점수 차가 20점을 넘으면 수동 검토"
+    },
+    "awardsTitle": "상금과 상",
+    "awardsDescription": "1회 대회의 현금 상금은 모두 CNY 3,300이며, 3개의 특별상도 함께 수여합니다.",
+    "awards": {
+      "first": {
+        "label": "대상",
+        "amount": "CNY 1,500",
+        "description": "종합 점수 1위"
+      },
+      "second": {
+        "label": "최우수상",
+        "amount": "CNY 1,000",
+        "description": "종합 점수 2위"
+      },
+      "third": {
+        "label": "우수상",
+        "amount": "CNY 800",
+        "description": "종합 점수 3위"
+      },
+      "tech": {
+        "label": "최고 기술 구현상",
+        "amount": "특별상",
+        "description": "기술적 깊이 부문 최고"
+      },
+      "innovation": {
+        "label": "최고 혁신상",
+        "amount": "특별상",
+        "description": "혁신성 부문 최고"
+      },
+      "popular": {
+        "label": "인기상",
+        "amount": "특별상",
+        "description": "대중 투표 최다 득표"
+      }
+    },
+    "rulesTitle": "규칙과 준수 사항",
+    "rulesDescription": "다음 조건은 신청 시 확인하며, 위반하면 수상 대상에서 제외됩니다.",
+    "rules": {
+      "opensource": "제출물은 오픈소스로 공개하고 저장소에 라이선스를 명시해야 합니다",
+      "data": "데이터 출처와 이용 허가를 밝혀야 하며, 허가되지 않은 데이터는 사용할 수 없습니다",
+      "originality": "작품은 대회 기간에 직접 만들어야 하며, 이전 작품이나 타인의 작품은 인정되지 않습니다",
+      "team": "팀당 1-5명이며, 한 사람이 여러 팀에 참가할 수 없습니다",
+      "demo": "결선에서는 실제로 실행되는 데모가 필요하며, 영상만으로는 안 됩니다",
+      "conduct": "심사위원과 다른 참가자를 존중하고, 투표 조작이나 심사 방해를 하지 않습니다"
+    },
+    "workflowTitle": "ANS 워크스페이스 바로가기",
+    "workflowDescription": "프로젝트 기록은 ANS에 남기고, 신청·심사·공개는 이후 단계에서 연결합니다.",
+    "openProjects": "프로젝트",
+    "openWorkflows": "워크플로우",
+    "openTemplates": "템플릿",
+    "openSkills": "스킬",
+    "boundaryTitle": "1회 대회의 범위",
+    "boundaryDescription": "이번 첫 버전은 규칙, 트랙 구조, 제출 체크리스트를 제공합니다. 참가 신청, 대중 투표, 결과 공개는 아직 연결되어 있지 않습니다.",
+    "boundaryItems": {
+      "entry": "ANS 진입점 하나",
+      "links": "트랙·평가·상금 확정",
+      "ownership": "작품과 데이터 허가는 팀이 직접 밝힘",
+      "next": "일정과 장소가 정해지면 신청과 투표 연결"
+    },
+    "syncNote": "1회 대회의 현금 예산은 약 CNY 5,000입니다(상금 3,300, 물품 800, 식사 900). 참가 신청, 대중 투표, 결과 공개는 일정이 확정된 뒤 연결합니다."
   }
 }

@@ -55,7 +55,7 @@
     "book": "Boek",
     "forKids": "Voor kinderen",
     "more": "Meer",
-    "competitionHub": "AIGC Contest",
+    "competitionHub": "Wedstrijden",
     "status": "Status"
   },
   "a11y": {
@@ -2453,5 +2453,224 @@
     "statusDegraded": "Verminderde werking",
     "statusFailed": "Niet beschikbaar",
     "statusError": "Fout"
+  },
+  "competitionsHub": {
+    "eyebrow": "WEDSTRIJDEN",
+    "title": "Wedstrijdcentrum",
+    "description": "Het startpunt voor wedstrijden op ANS. Kies de wedstrijd waaraan je meedoet en open de regels, de tracks en de checklist voor je inzending.",
+    "openLabel": "Openen",
+    "items": {
+      "aigc": {
+        "name": "AIGC-wedstrijdcluster",
+        "tagline": "Een cluster van werkruimtes voor AIGC-productieteams",
+        "description": "ANS blijft de gedeelde kaart en elke professionele werkruimte opent in een eigen systeem: planning, productie en audit.",
+        "status": "Geopend",
+        "highlights": [
+          "3 externe werkruimtes",
+          "4 wedstrijdfases",
+          "8 controles bij je inzending"
+        ],
+        "cta": "AIGC-wedstrijd openen"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon",
+        "tagline": "De eerste maatschappelijke AI-hackathon voor de landbouw",
+        "description": "48 uur gericht bouwen, drie tracks, 80% professionele beoordeling plus 20% publieksstemmen en een Demo Day waarop de 10 finalisten worden gerangschikt.",
+        "status": "In voorbereiding",
+        "highlights": [
+          "3 tracks",
+          "60-80 deelnemers op locatie",
+          "budget van 5.000 CNY"
+        ],
+        "cta": "Lees de regels van de AgriHackathon"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "AgriHackathon",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon",
+    "description": "Een hackathon met een maatschappelijk doel, georganiseerd door het studententeam van de China Agricultural University samen met de open community. 48 uur bouwen in het eerste weekend, een week van beoordeling en stemmen en daarna een Demo Day waarop de 10 finalisten presenteren.",
+    "createProject": "Een wedstrijdproject aanmaken",
+    "openTeams": "Teams en wedstrijden openen",
+    "backToHub": "Terug naar het wedstrijdcentrum",
+    "statusTitle": "Eerste editie in voorbereiding",
+    "statusDescription": "De drie tracks, de scorekaart met vijf dimensies en de prijzen staan vast. Datums, locatie en het inschrijfformulier worden hier gepubliceerd zodra ze bevestigd zijn.",
+    "stats": {
+      "tracks": "Tracks",
+      "tracksValue": "3",
+      "scale": "Deelnemers op locatie",
+      "scaleValue": "60-80",
+      "phases": "Fasen",
+      "phasesValue": "4",
+      "deliverables": "Controles bij inzending",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "Drie tracks",
+    "tracksDescription": "Elk project kiest één track. De jury beoordeelt vijf dimensies: innovatie, technische diepgang, productvolledigheid, een echt probleem en de aansluiting op de track.",
+    "tracksSectionLabel": "01 / TRACKS",
+    "rulesSectionLabel": "03 / REGELS",
+    "openTrack": "Track bekijken",
+    "trackLabel": "Track",
+    "tracks": {
+      "people": {
+        "name": "AI voor mensen",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "AI inzetten om de situatie van een echte groep mensen te verbeteren",
+        "description": "Bouw een bruikbaar hulpmiddel of een dienst voor een aantoonbare behoefte in de landbouw, op het platteland of in de dagelijkse productie.",
+        "status": "Gepubliceerd",
+        "detail": "De jury kijkt of het probleem echt is, wie de gebruikers zijn en of een werkende minimumversie binnen 48 uur haalbaar is."
+      },
+      "discovery": {
+        "name": "AI voor ontdekking",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "AI inzetten om mensen een complex probleem te laten begrijpen",
+        "description": "Zet landbouwdata, onderzoeksartikelen of praktijkervaring om in kennis die opvraagbaar en uitlegbaar is.",
+        "status": "Gepubliceerd",
+        "detail": "De jury kijkt of de databronnen toegestaan zijn, of de redenering uitlegbaar is en of anderen het resultaat kunnen reproduceren."
+      },
+      "action": {
+        "name": "AI voor actie",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "AI inzetten om één concrete actie in de praktijk te brengen",
+        "description": "Richt je op een echte stap in teelt, bedrijfsvoering, distributie of landelijk bestuur en bouw iets dat past bij de bestaande werkwijze.",
+        "status": "Gepubliceerd",
+        "detail": "De jury kijkt of het plan in het veld uitvoerbaar is, of de kosten beheersbaar zijn en of anderen het werk kunnen overnemen."
+      }
+    },
+    "phasesTitle": "Traject in vier fasen",
+    "phasesDescription": "Elk team volgt hetzelfde traject: inschrijven en een team vormen, bouwen, laten beoordelen en stemmen en daarna op locatie presenteren.",
+    "phases": {
+      "discover": {
+        "label": "01 · Inschrijven en team vormen",
+        "description": "Dien de projectnaam, de teamleden en de gekozen track in en bevestig de voorwaarden en de regels.",
+        "state": "Nog niet gestart"
+      },
+      "plan": {
+        "label": "02 · 48 uur bouwen",
+        "description": "Bouw in het eerste weekend naar een werkende minimumversie en leg de belangrijkste iteraties vast.",
+        "state": "Nog niet gestart"
+      },
+      "produce": {
+        "label": "03 · Beoordeling en stemmen",
+        "description": "In de week daarna telt de professionele beoordeling voor 80% en de publieksstem voor 20%.",
+        "state": "Nog niet gestart"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "Presenteer in het tweede weekend: 5 minuten demo plus 3 minuten vragen, live beoordeeld door 7 juryleden.",
+        "state": "Nog niet gestart"
+      }
+    },
+    "deliverablesTitle": "Checklist voor je inzending",
+    "deliverablesDescription": "Loop elk punt na voordat je inzendt, zodat het werk werkt, de bronnen traceerbaar zijn en anderen het kunnen overnemen.",
+    "deliverables": {
+      "brief": "Projectnaam, team, track en samenvatting",
+      "plan": "Teamrollen en ontwikkelplan",
+      "storyboard": "Technische aanpak en architectuur",
+      "source": "Databronnen en toestemming voor gebruik",
+      "iterations": "Belangrijkste iteraties en beoordelingsverslagen",
+      "final": "Werkende demo en demo-video of link",
+      "evidence": "Openbare GitHub-repository met een licentie",
+      "package": "Inzendpakket en laatste controle"
+    },
+    "scoringTitle": "Scorekaart met vijf dimensies",
+    "scoringDescription": "De jury beoordeelt vijf dimensies, samen 100 punten.",
+    "scoringSectionLabel": "02 / SCORING",
+    "scoring": {
+      "innovation": {
+        "label": "Innovatie",
+        "weight": "30",
+        "description": "Of de probleemstelling of de oplossingsroute nieuw is."
+      },
+      "technical": {
+        "label": "Technische diepgang",
+        "weight": "25",
+        "description": "Technologiekeuzes, kwaliteit van de uitvoering en technische volledigheid."
+      },
+      "completeness": {
+        "label": "Productvolledigheid",
+        "weight": "20",
+        "description": "Of de demo werkt en de flow van begin tot eind sluit."
+      },
+      "problem": {
+        "label": "Echt probleem",
+        "weight": "15",
+        "description": "Of de behoefte uit een echte situatie en van echte gebruikers komt."
+      },
+      "fit": {
+        "label": "Aansluiting op de track",
+        "weight": "10",
+        "description": "Hoe goed het werk past bij de gekozen track."
+      }
+    },
+    "advanceTitle": "Regels voor doorstroom en beoordeling",
+    "advanceDescription": "In de voorronde worden juryleden uit een pool toegewezen; de finale wordt live beoordeeld door een vaste jury.",
+    "advanceNote": "De publieksstem en de juryscore gebruiken verschillende schalen. De normalisatiemethode en maatregelen tegen fraude worden gepubliceerd voordat de inschrijving opent.",
+    "advanceItems": {
+      "professional": "Professionele beoordeling 80%, publieksstem 20%",
+      "pool": "Een pool van 8-12 juryleden, per project worden willekeurig 3 juryleden toegewezen",
+      "panel": "De finale wordt live beoordeeld door 7 juryleden",
+      "review": "Een verschil van meer dan 20 punten tussen juryleden leidt tot handmatige controle"
+    },
+    "awardsTitle": "Prijzen",
+    "awardsDescription": "3.300 CNY aan geldprijzen voor de eerste editie, plus drie eervolle vermeldingen.",
+    "awards": {
+      "first": {
+        "label": "Eerste prijs",
+        "amount": "1.500 CNY",
+        "description": "Hoogste totaalscore"
+      },
+      "second": {
+        "label": "Tweede prijs",
+        "amount": "1.000 CNY",
+        "description": "Op een na hoogste totaalscore"
+      },
+      "third": {
+        "label": "Derde prijs",
+        "amount": "800 CNY",
+        "description": "Derde hoogste totaalscore"
+      },
+      "tech": {
+        "label": "Beste technische uitvoering",
+        "amount": "Eervolle vermelding",
+        "description": "Sterkste op technische diepgang"
+      },
+      "innovation": {
+        "label": "Beste innovatie",
+        "amount": "Eervolle vermelding",
+        "description": "Sterkste op innovatie"
+      },
+      "popular": {
+        "label": "Meest populair",
+        "amount": "Eervolle vermelding",
+        "description": "Hoogste publieksstem"
+      }
+    },
+    "rulesTitle": "Regels en naleving",
+    "rulesDescription": "Deze voorwaarden bevestig je bij de inschrijving; een overtreding sluit een team uit van de prijzen.",
+    "rules": {
+      "opensource": "Inzendingen moeten open source zijn en een licentie in de repository vermelden",
+      "data": "Databronnen en toestemming moeten worden aangegeven; ongeoorloofde data is niet toegestaan",
+      "originality": "Het werk moet tijdens het evenement worden gebouwd; eerdere of andermans projecten worden niet geaccepteerd",
+      "team": "1-5 leden per team; één persoon mag niet in meerdere teams zitten",
+      "demo": "In de finale is een live werkende demo vereist, niet alleen een video",
+      "conduct": "Respect voor de jury en andere deelnemers; geen stemmanipulatie of beïnvloeding van de beoordeling"
+    },
+    "workflowTitle": "Snelkoppelingen in de ANS-werkruimte",
+    "workflowDescription": "Houd projectgegevens bij op ANS; inschrijving, beoordeling en publicatie volgen in latere fasen.",
+    "openProjects": "Projecten",
+    "openWorkflows": "Workflows",
+    "openTemplates": "Templates",
+    "openSkills": "Vaardigheden",
+    "boundaryTitle": "Grenzen van de eerste editie",
+    "boundaryDescription": "Deze eerste versie biedt de regels, de trackstructuur en de checklist voor je inzending. Inschrijving, publieksstemming en het publiceren van resultaten zijn nog niet aangesloten.",
+    "boundaryItems": {
+      "entry": "Eén ingang op ANS",
+      "links": "Tracks, scoring en prijzen staan vast",
+      "ownership": "Teams verklaren hun eigen werk en datatoestemming",
+      "next": "Inschrijving en stemming volgen zodra datums en locatie vaststaan"
+    },
+    "syncNote": "De eerste editie heeft een geldbudget van ongeveer 5.000 CNY (3.300 CNY prijzen, 800 CNY materiaal, 900 CNY catering). Inschrijving, publieksstemming en het publiceren van resultaten volgen zodra de datums vaststaan."
   }
 }
