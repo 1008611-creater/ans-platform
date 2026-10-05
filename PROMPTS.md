@@ -165762,3 +165762,16 @@ J'ai ma societe et le site en ligne je veux avoir une stragerie pour avoir des c
 
 </details>
 
+<details>
+<summary><strong>Crear imagen perfil linkedin</strong></summary>
+
+## Crear imagen perfil linkedin
+
+Contributed by @anonymous
+
+```md
+quiero generar una imagen de perfil para linkedin a partir de una imagen mia que adjunto, quiero que la foto sea profesional, me dedico al mundo inmobiliario, por lo que me gustaría que represente algo que se muestre relacionado, quiero que se vea mi imagen pero no cercana, que no se reconozca a la persona, que se vea en la distancia, elegante y profesional pero con estilo elegante
+```
+
+</details>
+
