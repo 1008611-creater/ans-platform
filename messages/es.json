@@ -55,7 +55,7 @@
     "book": "Libro",
     "forKids": "Para Niños",
     "more": "Más",
-    "competitionHub": "AIGC Contest",
+    "competitionHub": "Concursos",
     "status": "Estado"
   },
   "a11y": {
@@ -2465,5 +2465,224 @@
     "statusDegraded": "Degradado",
     "statusFailed": "No disponible",
     "statusError": "Error"
+  },
+  "competitionsHub": {
+    "eyebrow": "CONCURSOS",
+    "title": "Centro de concursos",
+    "description": "El punto de entrada a los concursos en ANS. Elige el concurso en el que participas y abre sus bases, sus categorías y la lista de comprobación de entrega.",
+    "openLabel": "Abrir",
+    "items": {
+      "aigc": {
+        "name": "Clúster de concursos AIGC",
+        "tagline": "Un conjunto de espacios de trabajo para equipos de producción AIGC",
+        "description": "ANS sigue siendo el mapa compartido, y cada espacio profesional se abre en su propio sistema: planificación, producción y auditoría.",
+        "status": "Abierto",
+        "highlights": [
+          "3 espacios externos",
+          "4 fases del concurso",
+          "8 controles de entrega"
+        ],
+        "cta": "Abrir el concurso AIGC"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon",
+        "tagline": "El primer hackathon de interés público sobre IA agrícola",
+        "description": "48 horas de desarrollo intensivo, tres categorías, 80 % de evaluación profesional y 20 % de voto del público, y un Demo Day que clasifica a los 10 equipos finalistas.",
+        "status": "En preparación",
+        "highlights": [
+          "3 categorías",
+          "60–80 participantes presenciales",
+          "Presupuesto de 5.000 CNY"
+        ],
+        "cta": "Leer las bases del AgriHackathon"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "AgriHackathon",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon",
+    "description": "Un hackathon de interés público organizado por el equipo estudiantil de la China Agricultural University junto con la comunidad abierta. 48 horas de desarrollo el primer fin de semana, una semana de evaluación y votación, y un Demo Day en el que presentan los 10 equipos finalistas.",
+    "createProject": "Crear un proyecto de concurso",
+    "openTeams": "Abrir equipos y concursos",
+    "backToHub": "Volver al centro de concursos",
+    "statusTitle": "Primera edición en preparación",
+    "statusDescription": "Las tres categorías, la tarjeta de cinco dimensiones y los premios están definidos. Las fechas, la sede y el formulario de inscripción se publicarán aquí cuando se confirmen.",
+    "stats": {
+      "tracks": "Categorías",
+      "tracksValue": "3",
+      "scale": "Participantes presenciales",
+      "scaleValue": "60-80",
+      "phases": "Fases",
+      "phasesValue": "4",
+      "deliverables": "Controles de entrega",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "Tres categorías",
+    "tracksDescription": "Cada proyecto elige una categoría. El jurado puntúa cinco dimensiones: innovación, profundidad técnica, completitud del producto, problema real y encaje con la categoría.",
+    "tracksSectionLabel": "01 / CATEGORÍAS",
+    "rulesSectionLabel": "03 / BASES",
+    "openTrack": "Ver la categoría",
+    "trackLabel": "Categoría",
+    "tracks": {
+      "people": {
+        "name": "IA para las personas",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "Usar la IA para mejorar una situación real de un grupo concreto de personas",
+        "description": "Crea una herramienta o un servicio útil para una necesidad verificable en la agricultura, el medio rural o la producción cotidiana.",
+        "status": "Publicada",
+        "detail": "El jurado valora si el problema es real, quiénes son los usuarios y si es posible lograr una versión mínima funcional en 48 horas."
+      },
+      "discovery": {
+        "name": "IA para el descubrimiento",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "Usar la IA para ayudar a comprender un problema complejo",
+        "description": "Convierte datos agrícolas, artículos científicos o experiencia de campo en conocimiento que se pueda consultar y explicar.",
+        "status": "Publicada",
+        "detail": "El jurado valora si las fuentes de datos son conformes, si el razonamiento es explicable y si otras personas pueden reproducir el resultado."
+      },
+      "action": {
+        "name": "IA para la acción",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "Usar la IA para llevar una acción concreta a la práctica",
+        "description": "Apunta a un paso real de la siembra, el cultivo, la distribución o la gobernanza rural y crea algo que encaje en el flujo de trabajo existente.",
+        "status": "Publicada",
+        "detail": "El jurado valora si el plan se puede ejecutar sobre el terreno, si el coste es controlable y si otras personas pueden hacerse cargo de los entregables."
+      }
+    },
+    "phasesTitle": "Itinerario en cuatro fases",
+    "phasesDescription": "Todos los equipos siguen el mismo camino principal: inscribirse y formar equipo, desarrollar, pasar por evaluación y votación, y presentar en directo.",
+    "phases": {
+      "discover": {
+        "label": "01 · Inscripción y formación de equipo",
+        "description": "Envía el nombre del proyecto, los miembros del equipo y la categoría elegida, y confirma la elegibilidad y las bases.",
+        "state": "Sin empezar"
+      },
+      "plan": {
+        "label": "02 · 48 horas de desarrollo",
+        "description": "Desarrolla durante el primer fin de semana hasta una versión mínima funcional y conserva los registros clave de iteración.",
+        "state": "Sin empezar"
+      },
+      "produce": {
+        "label": "03 · Evaluación y votación",
+        "description": "Durante la semana siguiente, la evaluación profesional cuenta un 80 % y el voto del público un 20 %.",
+        "state": "Sin empezar"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "Presenta el segundo fin de semana: 5 minutos de demo y 3 minutos de preguntas, puntuados en directo por 7 jueces.",
+        "state": "Sin empezar"
+      }
+    },
+    "deliverablesTitle": "Lista de comprobación de entrega",
+    "deliverablesDescription": "Revisa cada punto antes de entregar para que el trabajo funcione, las fuentes sean trazables y otras personas puedan continuarlo.",
+    "deliverables": {
+      "brief": "Nombre del proyecto, equipo, categoría y resumen",
+      "plan": "Roles del equipo y plan de desarrollo",
+      "storyboard": "Enfoque técnico y arquitectura",
+      "source": "Fuentes de datos y autorizaciones",
+      "iterations": "Iteraciones clave y registros de evaluación",
+      "final": "Demo funcional y vídeo o enlace de la demo",
+      "evidence": "Repositorio público de GitHub con licencia",
+      "package": "Paquete de entrega y revisión final"
+    },
+    "scoringTitle": "Tarjeta de cinco dimensiones",
+    "scoringDescription": "El jurado puntúa cinco dimensiones, 100 puntos en total.",
+    "scoringSectionLabel": "02 / PUNTUACIÓN",
+    "scoring": {
+      "innovation": {
+        "label": "Innovación",
+        "weight": "30",
+        "description": "Si el planteamiento del problema o la vía de solución son nuevos."
+      },
+      "technical": {
+        "label": "Profundidad técnica",
+        "weight": "25",
+        "description": "Elección de tecnologías, calidad de la implementación y completitud de ingeniería."
+      },
+      "completeness": {
+        "label": "Completitud del producto",
+        "weight": "20",
+        "description": "Si la demo funciona y el flujo se cierra de principio a fin."
+      },
+      "problem": {
+        "label": "Problema real",
+        "weight": "15",
+        "description": "Si la necesidad proviene de un escenario real y de usuarios reales."
+      },
+      "fit": {
+        "label": "Encaje con la categoría",
+        "weight": "10",
+        "description": "En qué medida el trabajo se ajusta a la categoría elegida."
+      }
+    },
+    "advanceTitle": "Reglas de clasificación y evaluación",
+    "advanceDescription": "La ronda preliminar asigna jueces de un grupo; la final la puntúa en directo un panel fijo.",
+    "advanceNote": "El voto del público y la puntuación del jurado usan escalas distintas. El método de normalización y las medidas antifraude se publicarán antes de que se abra la inscripción.",
+    "advanceItems": {
+      "professional": "Evaluación profesional 80 %, voto del público 20 %",
+      "pool": "Un grupo de 8-12 jueces; 3 asignados al azar por proyecto",
+      "panel": "La final la puntúan en directo 7 jueces",
+      "review": "Una diferencia superior a 20 puntos entre jueces activa una revisión manual"
+    },
+    "awardsTitle": "Premios",
+    "awardsDescription": "3.300 CNY en premios en metálico para la primera edición, más tres distinciones honoríficas.",
+    "awards": {
+      "first": {
+        "label": "Primer premio",
+        "amount": "1.500 CNY",
+        "description": "Mayor puntuación global"
+      },
+      "second": {
+        "label": "Segundo premio",
+        "amount": "1.000 CNY",
+        "description": "Segunda mayor puntuación global"
+      },
+      "third": {
+        "label": "Tercer premio",
+        "amount": "800 CNY",
+        "description": "Tercera mayor puntuación global"
+      },
+      "tech": {
+        "label": "Mejor implementación técnica",
+        "amount": "Distinción",
+        "description": "Mayor puntuación en profundidad técnica"
+      },
+      "innovation": {
+        "label": "Mejor innovación",
+        "amount": "Distinción",
+        "description": "Mayor puntuación en innovación"
+      },
+      "popular": {
+        "label": "Más popular",
+        "amount": "Distinción",
+        "description": "Mayor número de votos del público"
+      }
+    },
+    "rulesTitle": "Bases y cumplimiento",
+    "rulesDescription": "Estas condiciones se confirman en la inscripción; incumplirlas deja a un equipo fuera de los premios.",
+    "rules": {
+      "opensource": "Las entregas deben ser de código abierto e indicar una licencia en el repositorio",
+      "data": "Hay que declarar las fuentes de datos y las autorizaciones; no se permiten datos sin autorización",
+      "originality": "El trabajo debe realizarse durante el evento; no se aceptan proyectos previos ni de terceros",
+      "team": "1-5 miembros por equipo; una persona no puede unirse a varios equipos",
+      "demo": "La final exige una demo funcional en directo, no solo un vídeo",
+      "conduct": "Respeta al jurado y a los demás participantes; no se permite manipular votos ni interferir en la evaluación"
+    },
+    "workflowTitle": "Atajos del espacio de trabajo de ANS",
+    "workflowDescription": "Mantén los registros del proyecto en ANS; la inscripción, la evaluación y la publicación llegarán en fases posteriores.",
+    "openProjects": "Proyectos",
+    "openWorkflows": "Flujos de trabajo",
+    "openTemplates": "Plantillas",
+    "openSkills": "Habilidades",
+    "boundaryTitle": "Límites de la primera edición",
+    "boundaryDescription": "Esta primera versión ofrece las bases, la estructura de categorías y la lista de comprobación de entrega. La inscripción, la votación pública y la publicación de resultados aún no están conectadas.",
+    "boundaryItems": {
+      "entry": "Un único punto de entrada en ANS",
+      "links": "Categorías, puntuación y premios están definidos",
+      "ownership": "Los equipos declaran su propio trabajo y las autorizaciones de datos",
+      "next": "La inscripción y la votación llegarán cuando se fijen las fechas y la sede"
+    },
+    "syncNote": "La primera edición cuenta con un presupuesto de unos 5.000 CNY (3.300 CNY de premios, 800 CNY de materiales y 900 CNY de restauración). La inscripción, la votación pública y la publicación de resultados llegarán cuando se fijen las fechas."
   }
 }

@@ -55,7 +55,7 @@
     "book": "Kitap",
     "forKids": "Çocuklar İçin",
     "more": "Daha Fazla",
-    "competitionHub": "AIGC Contest",
+    "competitionHub": "Yarışmalar",
     "status": "Durum"
   },
   "a11y": {
@@ -2461,5 +2461,224 @@
     "statusDegraded": "Performans düşüşü",
     "statusFailed": "Kullanılamıyor",
     "statusError": "Hata"
+  },
+  "competitionsHub": {
+    "eyebrow": "YARIŞMALAR",
+    "title": "Yarışma merkezi",
+    "description": "ANS üzerindeki yarışma giriş noktası. Katılacağınız yarışmayı seçin; kuralları, kategorileri ve teslim kontrol listesini açın.",
+    "openLabel": "Aç",
+    "items": {
+      "aigc": {
+        "name": "AIGC Yarışma Kümesi",
+        "tagline": "AIGC üretim ekipleri için bir çalışma alanı kümesi",
+        "description": "ANS ortak harita olarak kalır ve her profesyonel çalışma alanı kendi sisteminde açılır: planlama, üretim ve denetim.",
+        "status": "Açık",
+        "highlights": [
+          "3 harici çalışma alanı",
+          "4 yarışma aşaması",
+          "8 teslim kontrolü"
+        ],
+        "cta": "AIGC yarışmasını aç"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon",
+        "tagline": "Tarımda yapay zekâ için ilk kamu yararına hackathon",
+        "description": "48 saat odaklı geliştirme, üç kategori, %80 profesyonel değerlendirme ve %20 halk oylaması ile 10 finalist takımı sıralayan bir Demo Day.",
+        "status": "Hazırlık aşamasında",
+        "highlights": [
+          "3 kategori",
+          "60-80 yerinde katılımcı",
+          "5.000 CNY bütçe"
+        ],
+        "cta": "AgriHackathon kurallarını okuyun"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "AgriHackathon",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon",
+    "description": "China Agricultural University öğrenci ekibi ve açık topluluk tarafından düzenlenen kamu yararına bir hackathon. İlk hafta sonu 48 saat geliştirme, bir hafta değerlendirme ve oylama, ardından 10 finalist takımın sunum yaptığı bir Demo Day.",
+    "createProject": "Yarışma projesi oluştur",
+    "openTeams": "Takımları ve yarışmaları aç",
+    "backToHub": "Yarışma merkezine dön",
+    "statusTitle": "İlk sezon hazırlanıyor",
+    "statusDescription": "Üç kategori, beş boyutlu puan kartı ve ödüller kesinleşti. Tarihler, mekân ve kayıt formu onaylandığında burada yayımlanacak.",
+    "stats": {
+      "tracks": "Kategoriler",
+      "tracksValue": "3",
+      "scale": "Yerinde katılımcı",
+      "scaleValue": "60-80",
+      "phases": "Aşamalar",
+      "phasesValue": "4",
+      "deliverables": "Teslim kontrolü",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "Üç kategori",
+    "tracksDescription": "Her proje bir kategori seçer. Jüri beş boyutu puanlar: yenilikçilik, teknik derinlik, ürün bütünlüğü, gerçek problem ve kategori uyumu.",
+    "tracksSectionLabel": "01 / KATEGORİLER",
+    "rulesSectionLabel": "03 / KURALLAR",
+    "openTrack": "Kategoriyi incele",
+    "trackLabel": "Kategori",
+    "tracks": {
+      "people": {
+        "name": "İnsanlar için Yapay Zekâ",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "Gerçek bir insan grubunun durumunu iyileştirmek için yapay zekâyı kullanmak",
+        "description": "Tarım, kırsal alanlar veya günlük üretimde doğrulanabilir bir ihtiyaç için kullanılabilir bir araç ya da hizmet geliştirin.",
+        "status": "Yayımlandı",
+        "detail": "Jüri problemin gerçek olup olmadığına, kullanıcıların kim olduğuna ve 48 saat içinde çalışan bir minimum sürümün mümkün olup olmadığına bakar."
+      },
+      "discovery": {
+        "name": "Keşif için Yapay Zekâ",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "Karmaşık bir problemi anlamalarına yardımcı olmak için yapay zekâyı kullanmak",
+        "description": "Tarımsal verileri, araştırma makalelerini veya saha deneyimini sorgulanabilir ve açıklanabilir bilgiye dönüştürün.",
+        "status": "Yayımlandı",
+        "detail": "Jüri veri kaynaklarının uygun olup olmadığına, akıl yürütmenin açıklanabilir olup olmadığına ve başkalarının sonucu yeniden üretip üretemeyeceğine bakar."
+      },
+      "action": {
+        "name": "Eylem için Yapay Zekâ",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "Somut bir eylemi uygulamaya geçirmek için yapay zekâyı kullanmak",
+        "description": "Ekim, çiftçilik, dağıtım veya kırsal yönetimde gerçek bir adımı hedefleyin ve mevcut iş akışına uyan bir çözüm geliştirin.",
+        "status": "Yayımlandı",
+        "detail": "Jüri planın sahada uygulanabilir olup olmadığına, maliyetin kontrol edilebilir olup olmadığına ve başkalarının çıktıları devralıp alamayacağına bakar."
+      }
+    },
+    "phasesTitle": "Dört aşamalı yol",
+    "phasesDescription": "Her takım aynı ana yolu izler: kaydolun ve takım kurun, geliştirin, değerlendirme ve oylama alın, ardından yerinde sunum yapın.",
+    "phases": {
+      "discover": {
+        "label": "01 · Kayıt ve takım kurma",
+        "description": "Proje adını, takım üyelerini ve seçtiğiniz kategoriyi gönderin; katılım koşullarını ve kuralları onaylayın.",
+        "state": "Başlamadı"
+      },
+      "plan": {
+        "label": "02 · 48 saat geliştirme",
+        "description": "İlk hafta sonu boyunca çalışan bir minimum sürüme ulaşın ve önemli yineleme kayıtlarını tutun.",
+        "state": "Başlamadı"
+      },
+      "produce": {
+        "label": "03 · Değerlendirme ve oylama",
+        "description": "Sonraki hafta profesyonel değerlendirme %80, halk oylaması %20 ağırlığa sahiptir.",
+        "state": "Başlamadı"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "İkinci hafta sonu sunum yapın: 5 dakika demo ve 3 dakika soru-cevap, 7 jüri üyesi tarafından canlı puanlanır.",
+        "state": "Başlamadı"
+      }
+    },
+    "deliverablesTitle": "Teslim kontrol listesi",
+    "deliverablesDescription": "Teslim etmeden önce her maddeyi kontrol edin; böylece iş çalışır, kaynaklar izlenebilir olur ve başkaları devralabilir.",
+    "deliverables": {
+      "brief": "Proje adı, takım, kategori ve özet",
+      "plan": "Takım rolleri ve geliştirme planı",
+      "storyboard": "Teknik yaklaşım ve mimari",
+      "source": "Veri kaynakları ve izin notları",
+      "iterations": "Önemli yinelemeler ve değerlendirme kayıtları",
+      "final": "Çalışan demo ve demo videosu veya bağlantı",
+      "evidence": "Lisansı olan herkese açık GitHub deposu",
+      "package": "Teslim paketi ve son kontrol"
+    },
+    "scoringTitle": "Beş boyutlu puan kartı",
+    "scoringDescription": "Jüri beş boyutu puanlar, toplam 100 puan.",
+    "scoringSectionLabel": "02 / PUANLAMA",
+    "scoring": {
+      "innovation": {
+        "label": "Yenilikçilik",
+        "weight": "30",
+        "description": "Problemin ele alınışının veya çözüm yolunun yeni olup olmadığı."
+      },
+      "technical": {
+        "label": "Teknik derinlik",
+        "weight": "25",
+        "description": "Teknoloji seçimleri, uygulama kalitesi ve mühendislik bütünlüğü."
+      },
+      "completeness": {
+        "label": "Ürün bütünlüğü",
+        "weight": "20",
+        "description": "Demonun çalışıp çalışmadığı ve akışın uçtan uca tamamlanıp tamamlanmadığı."
+      },
+      "problem": {
+        "label": "Gerçek problem",
+        "weight": "15",
+        "description": "İhtiyacın gerçek bir senaryodan ve gerçek kullanıcılardan gelip gelmediği."
+      },
+      "fit": {
+        "label": "Kategori uyumu",
+        "weight": "10",
+        "description": "Çalışmanın seçilen kategoriye ne kadar uyduğu."
+      }
+    },
+    "advanceTitle": "Üst tura geçiş ve değerlendirme kuralları",
+    "advanceDescription": "Ön eleme turunda jüri üyeleri bir havuzdan atanır; final, sabit bir jüri heyeti tarafından canlı puanlanır.",
+    "advanceNote": "Halk oylaması ile jüri puanı farklı ölçekler kullanır. Normalizasyon yöntemi ve usulsüzlük önlemleri kayıtlar açılmadan önce yayımlanacak.",
+    "advanceItems": {
+      "professional": "Profesyonel değerlendirme %80, halk oylaması %20",
+      "pool": "8-12 jüri üyesinden oluşan bir havuz; her projeye rastgele 3 kişi atanır",
+      "panel": "Final, 7 jüri üyesi tarafından canlı puanlanır",
+      "review": "Jüri üyeleri arasındaki 20 puanı aşan fark manuel incelemeyi tetikler"
+    },
+    "awardsTitle": "Ödüller",
+    "awardsDescription": "İlk sezon için 3.300 CNY nakit ödül ve üç onur ödülü.",
+    "awards": {
+      "first": {
+        "label": "Birincilik ödülü",
+        "amount": "1.500 CNY",
+        "description": "En yüksek genel puan"
+      },
+      "second": {
+        "label": "İkincilik ödülü",
+        "amount": "1.000 CNY",
+        "description": "İkinci en yüksek genel puan"
+      },
+      "third": {
+        "label": "Üçüncülük ödülü",
+        "amount": "800 CNY",
+        "description": "Üçüncü en yüksek genel puan"
+      },
+      "tech": {
+        "label": "En iyi teknik uygulama",
+        "amount": "Onur ödülü",
+        "description": "Teknik derinlikte en güçlü"
+      },
+      "innovation": {
+        "label": "En iyi yenilik",
+        "amount": "Onur ödülü",
+        "description": "Yenilikçilikte en güçlü"
+      },
+      "popular": {
+        "label": "En popüler",
+        "amount": "Onur ödülü",
+        "description": "En yüksek halk oyu"
+      }
+    },
+    "rulesTitle": "Kurallar ve uyum",
+    "rulesDescription": "Bu koşullar kayıt sırasında onaylanır; ihlal eden takım ödüllerden çıkarılır.",
+    "rules": {
+      "opensource": "Teslimler açık kaynak olmalı ve depoda bir lisans belirtilmelidir",
+      "data": "Veri kaynakları ve izinler bildirilmelidir; izinsiz veri kullanılamaz",
+      "originality": "Çalışma etkinlik sırasında geliştirilmelidir; önceki veya başkalarına ait projeler kabul edilmez",
+      "team": "Takım başına 1-5 üye; bir kişi birden fazla takımda yer alamaz",
+      "demo": "Finalde yalnızca video değil, canlı çalışan bir demo gerekir",
+      "conduct": "Jüriye ve diğer katılımcılara saygı gösterin; oy manipülasyonu veya değerlendirmeye müdahale yok"
+    },
+    "workflowTitle": "ANS çalışma alanı kısayolları",
+    "workflowDescription": "Proje kayıtlarını ANS üzerinde tutun; kayıt, değerlendirme ve yayımlama sonraki aşamalarda gelir.",
+    "openProjects": "Projeler",
+    "openWorkflows": "Akışlar",
+    "openTemplates": "Şablonlar",
+    "openSkills": "Yetenekler",
+    "boundaryTitle": "İlk sezonun sınırları",
+    "boundaryDescription": "Bu ilk sürüm kuralları, kategori yapısını ve teslim kontrol listesini sunar. Kayıt, halk oylaması ve sonuçların yayımlanması henüz bağlı değil.",
+    "boundaryItems": {
+      "entry": "Tek bir ANS giriş noktası",
+      "links": "Kategoriler, puanlama ve ödüller kesinleşti",
+      "ownership": "Takımlar kendi çalışmalarını ve veri izinlerini beyan eder",
+      "next": "Tarihler ve mekân kesinleştiğinde kayıt ve oylama başlar"
+    },
+    "syncNote": "İlk sezonun nakit bütçesi yaklaşık 5.000 CNY (3.300 CNY ödüller, 800 CNY malzeme, 900 CNY ikram). Kayıt, halk oylaması ve sonuçların yayımlanması tarihler kesinleştiğinde başlar."
   }
 }

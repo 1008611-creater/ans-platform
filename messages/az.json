@@ -55,7 +55,7 @@
     "book": "Kitab",
     "forKids": "Uşaqlar Üçün",
     "more": "Daha çox",
-    "competitionHub": "AIGC Contest",
+    "competitionHub": "Yarışlar",
     "status": "Status"
   },
   "a11y": {
@@ -2462,5 +2462,224 @@
     "statusDegraded": "Zəifləyib",
     "statusFailed": "Əlçatan deyil",
     "statusError": "Xəta"
+  },
+  "competitionsHub": {
+    "eyebrow": "YARIŞLAR",
+    "title": "Yarış mərkəzi",
+    "description": "ANS-da yarışlara giriş nöqtəsi. Qoşulduğunuz müsabiqəni seçin və onun qaydalarını, istiqamətlərini və təqdimat yoxlama siyahısını açın.",
+    "openLabel": "Aç",
+    "items": {
+      "aigc": {
+        "name": "AIGC müsabiqə klasteri",
+        "tagline": "AIGC istehsal komandaları üçün iş məkanı klasteri",
+        "description": "ANS ümumi xəritə olaraq qalır, hər peşəkar iş məkanı isə öz sistemində açılır: planlama, istehsal və audit.",
+        "status": "Açıqdır",
+        "highlights": [
+          "3 xarici iş məkanı",
+          "4 müsabiqə mərhələsi",
+          "8 təqdimat yoxlaması"
+        ],
+        "cta": "AIGC müsabiqəsini aç"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon",
+        "tagline": "Kənd təsərrüfatında süni intellekt üzrə ilk ictimai fayda hakatonu",
+        "description": "48 saat fokuslanmış işləmə, üç istiqamət, 80% peşəkar qiymətləndirmə və 20% ictimai səsvermə, həmçinin finala çıxan 10 komandanı sıralayan Demo Day.",
+        "status": "Hazırlanır",
+        "highlights": [
+          "3 istiqamət",
+          "60-80 oflayn iştirakçı",
+          "CNY 5,000 büdcə"
+        ],
+        "cta": "AgriHackathon qaydalarını oxu"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "AgriHackathon",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon",
+    "description": "Çin Kənd Təsərrüfatı Universitetinin tələbə komandası və açıq icma tərəfindən təşkil olunan ictimai fayda hakatonu. İlk həftəsonu 48 saat işləmə, bir həftə qiymətləndirmə və səsvermə, sonra finala çıxan 10 komandanın çıxış etdiyi Demo Day.",
+    "createProject": "Yarış layihəsi yarat",
+    "openTeams": "Komandaları və yarışları aç",
+    "backToHub": "Yarış mərkəzinə qayıt",
+    "statusTitle": "İlk buraxılış hazırlanır",
+    "statusDescription": "Üç istiqamət, beş ölçülü qiymətləndirmə cədvəli və mükafatlar müəyyən edilib. Tarixlər, məkan və qeydiyyat forması təsdiqləndikdən sonra burada yayımlanacaq.",
+    "stats": {
+      "tracks": "İstiqamətlər",
+      "tracksValue": "3",
+      "scale": "Oflayn iştirakçılar",
+      "scaleValue": "60-80",
+      "phases": "Mərhələlər",
+      "phasesValue": "4",
+      "deliverables": "Təqdimat yoxlamaları",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "Üç istiqamət",
+    "tracksDescription": "Hər layihə bir istiqamət seçir. Münsiflər beş ölçü üzrə bal verir: innovasiya, texniki dərinlik, məhsul tamlığı, real problem və istiqamətə uyğunluq.",
+    "tracksSectionLabel": "01 / İSTİQAMƏTLƏR",
+    "rulesSectionLabel": "03 / QAYDALAR",
+    "openTrack": "İstiqaməti oxu",
+    "trackLabel": "İstiqamət",
+    "tracks": {
+      "people": {
+        "name": "İnsanlar üçün süni intellekt",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "Süni intellektlə real bir insan qrupunun real vəziyyətini yaxşılaşdırın",
+        "description": "Kənd təsərrüfatında, kənd yerlərində və ya gündəlik istehsalda təsdiqlənə bilən ehtiyac üçün istifadə edilə bilən alət və ya xidmət qurun.",
+        "status": "Dərc edilib",
+        "detail": "Münsiflər problemin real olub-olmadığına, istifadəçilərin kim olduğuna və 48 saat ərzində işlək minimum versiyanın əldə edilib-edilməyəcəyinə baxır."
+      },
+      "discovery": {
+        "name": "Kəşf üçün süni intellekt",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "Süni intellektlə insanların mürəkkəb problemi anlamasına kömək edin",
+        "description": "Kənd təsərrüfatı məlumatlarını, tədqiqat məqalələrini və ya sahə təcrübəsini soruşula və izah edilə bilən biliyə çevirin.",
+        "status": "Dərc edilib",
+        "detail": "Münsiflər məlumat mənbələrinin uyğun olub-olmadığına, əsaslandırmanın izah edilə bilməsinə və başqalarının nəticəni təkrarlaya bilməsinə baxır."
+      },
+      "action": {
+        "name": "Fəaliyyət üçün süni intellekt",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "Süni intellektlə konkret bir addımı praktikaya keçirin",
+        "description": "Əkinçilik, fermerlik, paylama və ya kənd idarəçiliyində real bir addımı hədəfləyin və mövcud iş axınına uyğun bir şey qurun.",
+        "status": "Dərc edilib",
+        "detail": "Münsiflər planın sahədə icra oluna bilməsinə, xərclərin nəzarət edilə bilməsinə və başqalarının nəticələri davam etdirə bilməsinə baxır."
+      }
+    },
+    "phasesTitle": "Dörd mərhələli yol",
+    "phasesDescription": "Hər komanda eyni əsas yolu keçir: qeydiyyat və komanda yaratma, inkişaf, qiymətləndirmə və səsvermə, sonra yerində təqdimat.",
+    "phases": {
+      "discover": {
+        "label": "01 · Qeydiyyat və komanda yaratma",
+        "description": "Layihənin adını, komanda üzvlərini və seçilmiş istiqaməti təqdim edin, uyğunluğu və qaydaları təsdiqləyin.",
+        "state": "Başlamayıb"
+      },
+      "plan": {
+        "label": "02 · 48 saatlıq işləmə",
+        "description": "İlk həftəsonu ərzində işlək minimum versiyaya çatın və əsas iterasiya qeydlərini saxlayın.",
+        "state": "Başlamayıb"
+      },
+      "produce": {
+        "label": "03 · Qiymətləndirmə və səsvermə",
+        "description": "Növbəti həftə ərzində peşəkar qiymətləndirmə 80%, ictimai səsvermə isə 20% təşkil edir.",
+        "state": "Başlamayıb"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "İkinci həftəsonu təqdimat: 5 dəqiqə demo və 3 dəqiqə sual-cavab, 7 münsif tərəfindən canlı qiymətləndirilir.",
+        "state": "Başlamayıb"
+      }
+    },
+    "deliverablesTitle": "Təqdimat yoxlama siyahısı",
+    "deliverablesDescription": "Təqdim etməzdən əvvəl hər bəndi yoxlayın ki, iş işləsin, mənbələr izlənə bilsin və başqaları davam edə bilsin.",
+    "deliverables": {
+      "brief": "Layihənin adı, komanda, istiqamət və xülasə",
+      "plan": "Komanda rolları və inkişaf planı",
+      "storyboard": "Texniki yanaşma və arxitektura",
+      "source": "Məlumat mənbələri və icazə qeydləri",
+      "iterations": "Əsas iterasiyalar və yoxlama qeydləri",
+      "final": "İşlək demo və demo videosu və ya keçidi",
+      "evidence": "Lisenziyalı ictimai GitHub repozitoriyası",
+      "package": "Təqdimat paketi və son yoxlama"
+    },
+    "scoringTitle": "Beş ölçülü qiymətləndirmə cədvəli",
+    "scoringDescription": "Münsiflər beş ölçü üzrə bal verir, cəmi 100 bal.",
+    "scoringSectionLabel": "02 / QİYMƏTLƏNDİRMƏ",
+    "scoring": {
+      "innovation": {
+        "label": "İnnovasiya",
+        "weight": "30",
+        "description": "Problemin qoyuluşunun və ya həll yolunun yeni olub-olmaması."
+      },
+      "technical": {
+        "label": "Texniki dərinlik",
+        "weight": "25",
+        "description": "Texnologiya seçimləri, tətbiq keyfiyyəti və mühəndislik tamlığı."
+      },
+      "completeness": {
+        "label": "Məhsul tamlığı",
+        "weight": "20",
+        "description": "Demonun işləməsi və axının başdan sona tamamlanması."
+      },
+      "problem": {
+        "label": "Həqiqi problem",
+        "weight": "15",
+        "description": "Ehtiyacın real ssenaridən və real istifadəçilərdən gəlib-gəlməməsi."
+      },
+      "fit": {
+        "label": "İstiqamətə uyğunluq",
+        "weight": "10",
+        "description": "İşin seçilmiş istiqamətə nə dərəcədə uyğun olması."
+      }
+    },
+    "advanceTitle": "İrəliləmə və yoxlama qaydaları",
+    "advanceDescription": "İlkin mərhələdə münsiflər hovuzdan təyin edilir; final mərhələsi sabit panel tərəfindən canlı qiymətləndirilir.",
+    "advanceNote": "İctimai səsvermə və münsif balı fərqli şkalalardan istifadə edir. Normallaşdırma üsulu və saxtakarlığa qarşı tədbirlər qeydiyyat açılmadan əvvəl yayımlanacaq.",
+    "advanceItems": {
+      "professional": "Peşəkar qiymətləndirmə 80%, ictimai səsvermə 20%",
+      "pool": "8-12 münsifdən ibarət hovuz, hər layihəyə təsadüfi 3 nəfər təyin edilir",
+      "panel": "Final 7 münsif tərəfindən canlı qiymətləndirilir",
+      "review": "Münsiflər arasında 20 baldan çox fərq əl ilə yoxlama tələb edir"
+    },
+    "awardsTitle": "Mükafatlar",
+    "awardsDescription": "İlk buraxılış üçün CNY 3,300 pul mükafatı və üç fəxri mükafat.",
+    "awards": {
+      "first": {
+        "label": "Birinci yer",
+        "amount": "CNY 1,500",
+        "description": "Ən yüksək ümumi bal"
+      },
+      "second": {
+        "label": "İkinci yer",
+        "amount": "CNY 1,000",
+        "description": "İkinci ən yüksək ümumi bal"
+      },
+      "third": {
+        "label": "Üçüncü yer",
+        "amount": "CNY 800",
+        "description": "Üçüncü ən yüksək ümumi bal"
+      },
+      "tech": {
+        "label": "Ən yaxşı texniki tətbiq",
+        "amount": "Fəxri",
+        "description": "Texniki dərinlikdə ən güclü"
+      },
+      "innovation": {
+        "label": "Ən yaxşı innovasiya",
+        "amount": "Fəxri",
+        "description": "İnnovasiyada ən güclü"
+      },
+      "popular": {
+        "label": "Ən populyar",
+        "amount": "Fəxri",
+        "description": "Ən çox ictimai səs"
+      }
+    },
+    "rulesTitle": "Qaydalar və uyğunluq",
+    "rulesDescription": "Bu şərtlər qeydiyyat zamanı təsdiqlənir; onları pozan komanda mükafatlardan kənarlaşdırılır.",
+    "rules": {
+      "opensource": "Təqdimatlar açıq mənbəli olmalı və repozitoriyada lisenziya göstərməlidir",
+      "data": "Məlumat mənbələri və icazələr bəyan edilməlidir; icazəsiz məlumatlara yol verilmir",
+      "originality": "İş tədbir zamanı hazırlanmalıdır; əvvəlki və ya üçüncü tərəf layihələri qəbul edilmir",
+      "team": "Hər komandada 1-5 üzv; bir şəxs bir neçə komandada ola bilməz",
+      "demo": "Finalda canlı işlək demo tələb olunur, yalnız video kifayət etmir",
+      "conduct": "Münsiflərə və digər iştirakçılara hörmət edin; səsvermə manipulyasiyası və yoxlamaya müdaxilə qadağandır"
+    },
+    "workflowTitle": "ANS iş məkanı qısayolları",
+    "workflowDescription": "Layihə qeydlərini ANS-da saxlayın; qeydiyyat, qiymətləndirmə və yayım sonrakı mərhələlərdə olacaq.",
+    "openProjects": "Layihələr",
+    "openWorkflows": "İş axınları",
+    "openTemplates": "Şablonlar",
+    "openSkills": "Bacarıqlar",
+    "boundaryTitle": "İlk buraxılışın sərhədləri",
+    "boundaryDescription": "Bu ilk versiya qaydaları, istiqamət strukturunu və təqdimat yoxlama siyahısını təqdim edir. Qeydiyyat, ictimai səsvermə və nəticələrin yayımı hələ qoşulmayıb.",
+    "boundaryItems": {
+      "entry": "Bir ANS giriş nöqtəsi",
+      "links": "İstiqamətlər, qiymətləndirmə və mükafatlar müəyyən edilib",
+      "ownership": "Komandalar öz işlərini və məlumat icazələrini bəyan edir",
+      "next": "Tarix və məkan müəyyən edildikdən sonra qeydiyyat və səsvermə başlayır"
+    },
+    "syncNote": "İlk buraxılışın pul büdcəsi təxminən CNY 5,000-dir (CNY 3,300 mükafatlar, CNY 800 materiallar, CNY 900 iaşə). Tarixlər müəyyən edildikdən sonra qeydiyyat, ictimai səsvermə və nəticələrin yayımı başlayır."
   }
 }

@@ -284,7 +284,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     团队与比赛
                   </Link>
                   <Link
-                    href="/competitions/aigc"
+                    href="/competitions"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-primary hover:text-foreground hover:bg-accent transition-colors"
                   >
@@ -359,7 +359,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
             { href: "/prompts", label: t("nav.prompts") },
             { href: "/templates", label: t("homepageNext.templates") },
             { href: "/workflows", label: t("nav.workflows") },
-            { href: "/competitions/aigc", label: t("nav.competitionHub"), emphasis: true },
+            { href: "/competitions", label: t("nav.competitionHub"), emphasis: true },
           ].map(({ href, label, emphasis }) => (
             <Link
               key={href}

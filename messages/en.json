@@ -55,7 +55,7 @@
     "book": "Book",
     "forKids": "For Kids",
     "more": "More",
-    "competitionHub": "AIGC Contest",
+    "competitionHub": "Competitions",
     "status": "Status"
   },
   "a11y": {
@@ -2466,5 +2466,172 @@
     "statusDegraded": "Degraded",
     "statusFailed": "Unavailable",
     "statusError": "Error"
+  },
+  "competitionsHub": {
+    "eyebrow": "COMPETITIONS",
+    "title": "Competition hub",
+    "description": "The competition entry point on ANS. Pick the contest you are joining and open its rules, tracks and submission checklist.",
+    "openLabel": "Open",
+    "items": {
+      "aigc": {
+        "name": "AIGC Contest Cluster",
+        "tagline": "A workspace cluster for AIGC production teams",
+        "description": "ANS stays the shared map, and each professional workspace opens in its own system: planning, production and audit.",
+        "status": "Open",
+        "highlights": ["3 external workspaces", "4 competition phases", "8 submission checks"],
+        "cta": "Open the AIGC contest"
+      },
+      "agrihackathon": {
+        "name": "AgriHackathon",
+        "tagline": "The first agriculture AI public-interest hackathon",
+        "description": "48 hours of focused building, three tracks, 80% professional review plus 20% public vote, and a Demo Day that ranks the 10 finalist teams.",
+        "status": "In preparation",
+        "highlights": ["3 tracks", "60-80 offline participants", "CNY 5,000 budget"],
+        "cta": "Read the AgriHackathon rules"
+      }
+    }
+  },
+  "agriHackathon": {
+    "navLabel": "AgriHackathon",
+    "eyebrow": "AGRIHACKATHON",
+    "title": "AgriHackathon",
+    "description": "A public-interest hackathon organised by the student team of China Agricultural University together with the open community. 48 hours of building on the first weekend, a week of review and voting, then a Demo Day where the 10 finalist teams present.",
+    "createProject": "Create a competition project",
+    "openTeams": "Open teams and competitions",
+    "backToHub": "Back to the competition hub",
+    "statusTitle": "First edition in preparation",
+    "statusDescription": "The three tracks, the five-dimension scorecard and the prizes are settled. Dates, venue and the registration form will be published here once confirmed.",
+    "stats": {
+      "tracks": "Tracks",
+      "tracksValue": "3",
+      "scale": "Offline participants",
+      "scaleValue": "60-80",
+      "phases": "Phases",
+      "phasesValue": "4",
+      "deliverables": "Submission checks",
+      "deliverablesValue": "8"
+    },
+    "tracksTitle": "Three tracks",
+    "tracksDescription": "Every project picks one track. Judges score five dimensions: innovation, technical depth, product completeness, real problem and track fit.",
+    "tracksSectionLabel": "01 / TRACKS",
+    "rulesSectionLabel": "03 / RULES",
+    "openTrack": "Read the track",
+    "trackLabel": "Track",
+    "tracks": {
+      "people": {
+        "name": "AI for People",
+        "code": "TRACK 01 · AI FOR PEOPLE",
+        "role": "Use AI to improve a real situation for a real group of people",
+        "description": "Build a usable tool or service for a verifiable need in agriculture, rural areas or everyday production.",
+        "status": "Published",
+        "detail": "Judges look at whether the problem is real, who the users are, and whether a runnable minimum version is achievable in 48 hours."
+      },
+      "discovery": {
+        "name": "AI for Discovery",
+        "code": "TRACK 02 · AI FOR DISCOVERY",
+        "role": "Use AI to help people understand a complex problem",
+        "description": "Turn agricultural data, research papers or field experience into knowledge that can be queried and explained.",
+        "status": "Published",
+        "detail": "Judges look at whether data sources are compliant, whether the reasoning is explainable, and whether others can reproduce the result."
+      },
+      "action": {
+        "name": "AI for Action",
+        "code": "TRACK 03 · AI FOR ACTION",
+        "role": "Use AI to push one concrete action into practice",
+        "description": "Target a real step in planting, farming, distribution or rural governance and build something that fits the existing workflow.",
+        "status": "Published",
+        "detail": "Judges look at whether the plan can be executed in the field, whether the cost is controllable, and whether others can take over the deliverables."
+      }
+    },
+    "phasesTitle": "Four-phase path",
+    "phasesDescription": "Every team follows the same main path: register and form a team, build, get reviewed and voted on, then present on site.",
+    "phases": {
+      "discover": {
+        "label": "01 · Register and team up",
+        "description": "Submit the project name, team members and chosen track, and confirm eligibility and rules.",
+        "state": "Not started"
+      },
+      "plan": {
+        "label": "02 · 48 hours of building",
+        "description": "Build through the first weekend to a runnable minimum version and keep the key iteration records.",
+        "state": "Not started"
+      },
+      "produce": {
+        "label": "03 · Review and vote",
+        "description": "During the following week, professional review counts 80% and the public vote counts 20%.",
+        "state": "Not started"
+      },
+      "submit": {
+        "label": "04 · Demo Day",
+        "description": "Present on the second weekend: 5 minutes of demo plus 3 minutes of questions, scored live by 7 judges.",
+        "state": "Not started"
+      }
+    },
+    "deliverablesTitle": "Submission checklist",
+    "deliverablesDescription": "Check every item before submitting so the work runs, the sources are traceable and others can take over.",
+    "deliverables": {
+      "brief": "Project name, team, track and summary",
+      "plan": "Team roles and development plan",
+      "storyboard": "Technical approach and architecture",
+      "source": "Data sources and authorisation notes",
+      "iterations": "Key iterations and review records",
+      "final": "Runnable demo and demo video or link",
+      "evidence": "Public GitHub repository with a licence",
+      "package": "Submission package and final check"
+    },
+    "scoringTitle": "Five-dimension scorecard",
+    "scoringDescription": "Judges score five dimensions, 100 points in total.",
+    "scoringSectionLabel": "02 / SCORING",
+    "scoring": {
+      "innovation": { "label": "Innovation", "weight": "30", "description": "Whether the problem framing or the solution path is new." },
+      "technical": { "label": "Technical depth", "weight": "25", "description": "Technology choices, implementation quality and engineering completeness." },
+      "completeness": { "label": "Product completeness", "weight": "20", "description": "Whether the demo runs and the flow closes end to end." },
+      "problem": { "label": "Real problem", "weight": "15", "description": "Whether the need comes from a real scenario and real users." },
+      "fit": { "label": "Track fit", "weight": "10", "description": "How well the work matches the chosen track." }
+    },
+    "advanceTitle": "Advancement and review rules",
+    "advanceDescription": "The preliminary round assigns judges from a pool; the final round is scored live by a fixed panel.",
+    "advanceNote": "The public vote and the judge score use different scales. The normalisation method and anti-fraud measures will be published before registration opens.",
+    "advanceItems": {
+      "professional": "Professional review 80%, public vote 20%",
+      "pool": "A pool of 8-12 judges, 3 assigned randomly per project",
+      "panel": "The final is scored live by 7 judges",
+      "review": "A gap above 20 points between judges triggers manual review"
+    },
+    "awardsTitle": "Prizes",
+    "awardsDescription": "CNY 3,300 in cash prizes for the first edition, plus three honorary awards.",
+    "awards": {
+      "first": { "label": "First prize", "amount": "CNY 1,500", "description": "Highest overall score" },
+      "second": { "label": "Second prize", "amount": "CNY 1,000", "description": "Second highest overall score" },
+      "third": { "label": "Third prize", "amount": "CNY 800", "description": "Third highest overall score" },
+      "tech": { "label": "Best technical implementation", "amount": "Honorary", "description": "Strongest on technical depth" },
+      "innovation": { "label": "Best innovation", "amount": "Honorary", "description": "Strongest on innovation" },
+      "popular": { "label": "Most popular", "amount": "Honorary", "description": "Highest public vote" }
+    },
+    "rulesTitle": "Rules and compliance",
+    "rulesDescription": "These terms are confirmed at registration; breaking them removes a team from the awards.",
+    "rules": {
+      "opensource": "Submissions must be open source and state a licence in the repository",
+      "data": "Data sources and authorisation must be declared; unauthorised data is not allowed",
+      "originality": "Work must be built during the event; previous or third-party projects are not accepted",
+      "team": "1-5 members per team; one person may not join multiple teams",
+      "demo": "The final requires a live runnable demo, not a video only",
+      "conduct": "Respect judges and other participants; no vote manipulation or review interference"
+    },
+    "workflowTitle": "ANS workspace shortcuts",
+    "workflowDescription": "Keep project records on ANS; registration, review and publication follow in later phases.",
+    "openProjects": "Projects",
+    "openWorkflows": "Workflows",
+    "openTemplates": "Templates",
+    "openSkills": "Skills",
+    "boundaryTitle": "First edition boundaries",
+    "boundaryDescription": "This first version provides the rules, the track structure and the submission checklist. Registration, public voting and result publication are not connected yet.",
+    "boundaryItems": {
+      "entry": "One ANS entry point",
+      "links": "Tracks, scoring and prizes are settled",
+      "ownership": "Teams declare their own work and data authorisation",
+      "next": "Registration and voting follow once dates and venue are fixed"
+    },
+    "syncNote": "The first edition has a cash budget of about CNY 5,000 (CNY 3,300 prizes, CNY 800 materials, CNY 900 catering). Registration, public voting and result publication follow once the dates are fixed."
   }
 }
