@@ -16,7 +16,7 @@
 # ============================================================================
 set -euo pipefail
 
-DEPLOY_DIR="${DEPLOY_DIR:-/srv/ans-platform}"
+DEPLOY_DIR="${DEPLOY_DIR:-/srv/ans-platform-authoritative-main}"
 BUILD_COMPOSE="compose.yml"
 RUN_COMPOSE="docker-compose.yml"
 SERVICE="app"
@@ -61,7 +61,17 @@ fi
 
 
 if [[ "${1:-}" != "--no-build" ]]; then
-    echo "[2/4] 构建镜像（约 20 分钟，可 Ctrl-C 中断后重跑，有缓存）"
+    echo "[2/4] 记录回滚点（当前镜像与提交）"
+CURRENT_IMAGE_ID="$(docker inspect ans-platform-app --format '{{.Image}}' 2>/dev/null || true)"
+PREV_COMMIT="$(git rev-parse HEAD)"
+if [[ -n "$CURRENT_IMAGE_ID" ]]; then
+    docker tag "$CURRENT_IMAGE_ID" "ans-platform:rollback-$(date +%Y%m%d%H%M%S)"
+    echo "  当前镜像：$CURRENT_IMAGE_ID（已打回滚标签）"
+fi
+echo "  当前提交：$PREV_COMMIT"
+echo "  回滚方法：docker tag <回滚标签> ans-platform:latest && docker compose --env-file .env -f docker-compose.yml up -d app"
+
+echo "[2/4] 构建镜像（约 20 分钟，可 Ctrl-C 中断后重跑，有缓存）"
     docker compose --env-file "$ENV_FILE" -f "$BUILD_COMPOSE" build "$SERVICE"
 else
     echo "[2/4] 跳过构建（--no-build）"
@@ -76,10 +86,13 @@ docker ps --filter name=ans-platform-app --format "{{.Names}} {{.Status}}"
 
 echo
 echo "=== 冒烟检查 ==="
-for p in / /templates /workspace /teams /api/auth/session; do
+for p in / /projects /templates /api/health; do
     printf "%-22s -> " "$p"
     curl -s -o /dev/null -w "%{http_code}\n" -m 20 -L "https://ans.cauai.fun$p" || echo "请求失败"
 done
+
+printf "%-22s -> " "首页权威入口"
+if curl -s -m 20 -L "https://ans.cauai.fun/" | grep -q "first-lesson"; then echo "OK"; else echo "缺失（可能仍是旧版）"; fi
 
 echo
 echo "部署完成。查看日志：docker logs -f ans-platform-app"

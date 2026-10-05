@@ -155,7 +155,7 @@ async function main() {
   await expectThrows(
     "审核者不能审核自己创建的内容",
     () => reviewWorkflow(slug, author.id, { action: "publish", note: "自审" }),
-    "FORBIDDEN",
+    "SELF_REVIEW_FORBIDDEN",
   );
   const published = await reviewWorkflow(slug, reviewer.id, { action: "publish", note: "内容合规" });
   check("审核通过后发布并钉住版本", published.status === "PUBLISHED" && published.publishedVersion === 1);
@@ -229,7 +229,7 @@ async function main() {
   await expectThrows(
     "管理员不能复审自己创建的工作流",
     () => recheckWorkflowReview(gatedSlug, author.id),
-    "FORBIDDEN",
+    "SELF_REVIEW_FORBIDDEN",
   );
 
   const recheckSlug = `acceptance-recheck-${suffix}`;

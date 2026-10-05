@@ -754,7 +754,7 @@ model Template {
   author        User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
   formSchema    Json // 输入表单 [{ key, label, type, required, options, default, placeholder }]
   promptBody    String             @db.Text // 含变量占位 {{key}}
-  modelKey      String? // OmniRoute 模型标识
+  modelKey      String? // ANS 模型白名单稳定标识（见 src/lib/run-models.ts）
   params        Json? // temperature / topP 等
   outputType    TemplateOutputType @default(TEXT)
   estimatedCost Int                @default(1) // 预估消耗点数

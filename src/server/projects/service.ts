@@ -3,6 +3,8 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import {
   projectCreateSchema,
+  projectArtifactEditSchema,
+  PROJECT_WORKFLOW_COST_POINTS,
   projectFactsInputSchema,
   projectPackRunInputSchema,
   projectPackWorkflowIds,
@@ -110,10 +112,7 @@ export async function listProjects(userId: string) {
   const projects = await db.project.findMany({
     where: {
       status: { not: "ARCHIVED" },
-      OR: [
-        { ownerId: userId },
-        { team: { members: { some: { userId, status: "ACTIVE" } } } },
-      ],
+      ownerId: userId,
     },
     orderBy: { updatedAt: "desc" },
     include: { facts: true, artifacts: { include: { versions: true } } },
@@ -195,7 +194,7 @@ export async function saveProjectFacts(projectId: string, userId: string, rawInp
         update: {
           value: normalized.value,
           confirmation,
-          evidenceUrl: fact.evidenceUrl || null,
+          ...(fact.evidenceUrl === undefined ? {} : { evidenceUrl: fact.evidenceUrl || null }),
           updatedById: userId,
         },
       });
@@ -204,7 +203,40 @@ export async function saveProjectFacts(projectId: string, userId: string, rawInp
   return getProject(projectId, userId);
 }
 
-const PROJECT_WORKFLOW_COST_POINTS = 2;
+/** Manual revisions append a version without overwriting generation provenance. */
+export async function saveProjectArtifact(projectId: string, userId: string, rawInput: unknown) {
+  const parsed = projectArtifactEditSchema.safeParse(rawInput);
+  if (!parsed.success) throw new ProjectServiceError("修改内容格式不正确。", "INVALID_INPUT");
+  const project = await loadOwned(projectId, userId);
+  if (project.status === "ARCHIVED") throw new ProjectServiceError("已归档项目不能修改成果。", "ARCHIVED", 409);
+  const { baseVersionId, expectedVersion, markdown } = parsed.data;
+  return db.$transaction(async (tx) => {
+    const source = await tx.artifactVersion.findFirst({
+      where: { id: baseVersionId, artifact: { projectId, project: { ownerId: userId } } },
+    });
+    if (!source) throw new ProjectServiceError("成果版本不存在。", "NOT_FOUND", 404);
+    const changed = await tx.artifact.updateMany({
+      where: { id: source.artifactId, currentVersion: expectedVersion, project: { ownerId: userId, status: "ACTIVE" } },
+      data: { currentVersion: { increment: 1 } },
+    });
+    if (changed.count !== 1) throw new ProjectServiceError("已有新版本或项目已归档，请刷新后再保存。你的修改仍保留在编辑框中。", "VERSION_CONFLICT", 409);
+    const sourceJson = source.contentJson && typeof source.contentJson === "object" && !Array.isArray(source.contentJson) ? source.contentJson : {};
+    const version = await tx.artifactVersion.create({
+      data: {
+        artifactId: source.artifactId,
+        version: expectedVersion + 1,
+        contentMarkdown: markdown,
+        contentJson: { ...sourceJson, sections: [{ heading: "人工修改", body: markdown }], editKind: "manual", baseVersionId, sourceWorkflowRunId: source.workflowRunId ?? sourceJson.sourceWorkflowRunId ?? null } as Prisma.InputJsonValue,
+        factSnapshotHash: source.factSnapshotHash,
+        createdById: userId,
+        workflowRunId: null,
+      },
+      select: { id: true, version: true },
+    });
+    await tx.auditLog.create({ data: { actorId: userId, action: "PROJECT_ARTIFACT_EDITED", resourceType: "artifact", resourceId: source.artifactId, metadata: { projectId, baseVersionId, version: version.version } } });
+    return version;
+  });
+}
 
 async function savedProjectRunResult(
   runId: string,

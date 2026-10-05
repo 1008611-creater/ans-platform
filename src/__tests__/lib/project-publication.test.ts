@@ -24,6 +24,7 @@ import {
   decideArtifactPublication,
   getPublishedArtifact,
   listPublishedArtifacts,
+  listProjectPublications,
   reportArtifact,
   requestArtifactPublication,
   toggleArtifactReaction,
@@ -45,6 +46,21 @@ beforeEach(() => {
 });
 
 describe("成果版本公开与社区互动", () => {
+  it("requires the project owner for publication requests and private status lists", async () => {
+    mocks.db.project.findFirst.mockResolvedValue(null);
+    await expect(requestArtifactPublication("p1", "member", { artifactVersionId: "v1", acknowledged: true })).rejects.toMatchObject({ status: 404 });
+    await expect(listProjectPublications("p1", "member")).rejects.toMatchObject({ status: 404 });
+    for (const [query] of mocks.db.project.findFirst.mock.calls) expect(query.where).toEqual({ id: "p1", ownerId: "member" });
+    expect(mocks.db.artifactPublication.upsert).not.toHaveBeenCalled();
+    expect(mocks.db.artifactPublication.findMany).not.toHaveBeenCalled();
+  });
+
+  it("team membership alone cannot withdraw another person's publication", async () => {
+    mocks.db.artifactVersion.findFirst.mockResolvedValue({ id: "v1", createdById: "author", publication: { requestedById: "author" }, artifact: { project: { ownerId: "owner", team: { members: [{ id: "member" }] } } } });
+    await expect(withdrawArtifactPublication("p1", "member", "v1")).rejects.toMatchObject({ status: 403 });
+    expect(mocks.db.artifactPublication.updateMany).not.toHaveBeenCalled();
+  });
+
   it("敏感内容不能申请公开", async () => {
     mocks.db.project.findFirst.mockResolvedValue({
       ...project,

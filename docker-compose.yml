@@ -34,6 +34,9 @@ services:
       OIDC_PREVIOUS_KEY_ID: "${OIDC_PREVIOUS_KEY_ID:-}"
       OIDC_PREVIOUS_PUBLIC_KEY: "${OIDC_PREVIOUS_PUBLIC_KEY:-}"
       AUTH_SECRET: "${AUTH_SECRET:?AUTH_SECRET must be set in production}"
+      # BYOK credential encryption key. Falls back to AUTH_SECRET when unset; set it
+      # explicitly so rotating AUTH_SECRET does not invalidate stored user keys.
+      MODEL_CREDENTIAL_SECRET: "${MODEL_CREDENTIAL_SECRET:-}"
       # 生产鉴权靠 AUTH_URL 而不是 NEXTAUTH_URL。
       # next-auth v5 取 AUTH_URL ?? NEXTAUTH_URL 覆盖请求 URL，配错会导致
       # /api/auth/* 全部 UntrustedHost 500，表现为全站登录不上。

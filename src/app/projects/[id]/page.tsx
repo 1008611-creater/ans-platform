@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -6,12 +6,16 @@ import { ProjectServiceError, getProject } from "@/server/projects/service";
 import { ProjectStudio } from "@/components/projects/project-studio";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "项目事实与成果" };
+export async function generateMetadata() {
+  const t = await getTranslations("learning");
+  return { title: t("studioTitle") };
+}
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
   const { id } = await params;
+  if (!session?.user?.id) redirect(`/login?callbackUrl=${encodeURIComponent(`/projects/${id}`)}`);
+  const t = await getTranslations("learning");
   let project;
   try {
     project = await getProject(id, session.user.id);
@@ -19,5 +23,5 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     if (error instanceof ProjectServiceError && error.status === 404) notFound();
     throw error;
   }
-  return <div className="container space-y-6 py-10"><Link href="/projects" className="text-sm text-muted-foreground">返回项目列表</Link><ProjectStudio project={project} /></div>;
+  return <div className="container space-y-6 py-10"><Link href="/projects" className="text-sm text-muted-foreground">{t("back")}</Link><ProjectStudio project={project} /></div>;
 }

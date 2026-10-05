@@ -9,7 +9,7 @@ import { writeAuditLog } from "@/lib/audit";
 export { DEFAULT_RUN_MODEL } from "@/lib/run-models";
 
 // P2 模板运行核心服务（文本模板 v1）
-// - 模型白名单：OmniRoute 上的 GPT-5.6/6 入口与 TR 国模入口
+// - 模型白名单：生产文本网关（McGrox）实测可用的 GPT-5.6 / GPT-6 入口
 // - 扣费规则：按模板 estimatedCost 扣算力点，失败自动退费（写 QuotaLedger 流水）
 // - 幂等：客户端可传 Idempotency-Key，重复提交重放同一运行而不重复扣费
 // - 审计：运行开始 / 成功 / 失败写 AuditLog，便于追溯与对账
@@ -322,9 +322,8 @@ export async function runTemplate(args: {
     });
     if (!response.ok) {
       error = `模型服务返回 ${response.status}`;
-      // OmniRoute may return a gateway timeout for non-streaming requests
-      // while its streaming fallback is healthy. Retry only those gateway
-      // errors and parse the SSE frames into the same plain-text result.
+      // 网关可能对非流式请求返回超时，而其流式回退是健康的。只对这几类网关
+      // 错误重试，并把 SSE 帧解析成同样的纯文本结果。
       if ([502, 503, 504, 524].includes(response.status)) {
         const fallbackController = new AbortController();
         const fallbackTimeout = setTimeout(() => fallbackController.abort(), RUN_TIMEOUT_MS);

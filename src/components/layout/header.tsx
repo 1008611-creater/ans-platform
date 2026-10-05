@@ -108,6 +108,11 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
   const user = session?.user;
   const isAdmin = user?.role === "ADMIN";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const learningLinks = [
+    { href: "/#first-lesson", label: t("learning.navLearn") },
+    { href: "/projects#new-project", label: t("learning.navPractice") },
+    { href: "/projects", label: t("learning.navProjects") },
+  ];
 
   const handleCopyLogoSvg = async () => {
     try {
@@ -123,7 +128,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
 
   return (
     <header className="sticky top-[0px] z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className={`flex h-12 items-center gap-4 ${pathname === "/developers" ? "px-4" : "container"}`}>
+      <div className={`flex h-12 items-center gap-1 sm:gap-4 ${pathname === "/developers" ? "px-4" : "container"}`}>
         {/* Mobile menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild className="lg:hidden">
@@ -161,7 +166,9 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               </div>
 
               {/* Navigation */}
-              <nav aria-label={t("a11y.mobileNav")} className="flex-1 p-4">
+              <nav aria-label={t("a11y.mobileNav")} className="flex-1 overflow-y-auto p-4">
+                <div className="mb-3 space-y-1 border-b pb-3">{learningLinks.map(({ href, label }) => <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)} className="block rounded-md px-3 py-2.5 text-sm font-medium text-primary hover:bg-accent">{label}</Link>)}</div>
+                <details><summary className="cursor-pointer px-3 py-2 text-sm text-muted-foreground">{t("nav.more")}</summary>
                 <div className="space-y-1">
                   {user && (
                     <>
@@ -267,7 +274,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                   >
-                    项目包
+                    {t("learning.navProjects")}
                   </Link>
                   <Link
                     href="/templates"
@@ -303,6 +310,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     </Link>
                   )}
                 </div>
+                </details>
               </nav>
 
               {/* Footer */}
@@ -355,16 +363,11 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
 
         {/* Primary desktop nav: keep the main job paths visible and move low-frequency destinations into More. */}
         <nav aria-label={t("a11y.mainNav")} className="hidden min-w-0 flex-1 items-center gap-1 text-sm lg:flex">
-          {[
-            { href: "/prompts", label: t("nav.prompts") },
-            { href: "/templates", label: t("homepageNext.templates") },
-            { href: "/workflows", label: t("nav.workflows") },
-            { href: "/competitions/aigc", label: t("nav.competitionHub"), emphasis: true },
-          ].map(({ href, label, emphasis }) => (
+          {learningLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className={`shrink-0 rounded-md px-3 py-1.5 transition-colors hover:bg-accent hover:text-foreground ${emphasis ? "font-medium text-primary" : "text-muted-foreground"}`}
+              className="shrink-0 rounded-md px-3 py-1.5 font-medium text-primary transition-colors hover:bg-accent hover:text-foreground"
             >
               {label}
             </Link>
@@ -374,10 +377,13 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               <Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1 px-2 text-muted-foreground hover:text-foreground">
                 <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                 <span>{t("nav.more")}</span>
-                <span className="sr-only">{t("nav.more")}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
+              <DropdownMenuItem asChild><Link href="/prompts">{t("nav.prompts")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/templates">{t("learning.templates")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/workflows">{t("nav.workflows")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/competitions/aigc">{t("nav.competitionHub")}</Link></DropdownMenuItem>
               {user && <DropdownMenuItem asChild><Link href="/workspace">{t("homepageNext.workspace")}</Link></DropdownMenuItem>}
               {user && <DropdownMenuItem asChild><Link href="/collection">{t("nav.collection")}</Link></DropdownMenuItem>}
               {user && <DropdownMenuItem asChild><Link href="/workflows/runs">{t("homepageNext.runHistory")}</Link></DropdownMenuItem>}
@@ -421,12 +427,12 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
             </Link>
           </Button>
 
-          {/* Create prompt button */}
+          {/* Primary creation action follows the learning project flow. */}
           {user && (
             <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-              <Link href="/prompts/new">
+              <Link href="/projects#new-project">
                 <Plus className="h-4 w-4" />
-                <span className="sr-only">{t("prompts.create")}</span>
+                <span className="sr-only">{t("learning.newProject")}</span>
               </Link>
             </Button>
           )}

@@ -18,6 +18,12 @@ export const officialWorkflowIds = [
 export const officialWorkflowIdSchema = z.enum(officialWorkflowIds);
 
 export const projectPackWorkflowIds = ["resume-bullets", "readme-draft", "project-one-pager"] as const;
+export const PROJECT_WORKFLOW_COST_POINTS = 2;
+export const projectArtifactEditSchema = z.object({
+  baseVersionId: z.string().trim().min(1).max(100),
+  expectedVersion: z.number().int().positive(),
+  markdown: z.string().trim().min(1).max(100_000),
+}).strict();
 export const projectPackRunInputSchema = z.object({
   idempotencyKey: z.string().trim().regex(/^[a-zA-Z0-9_-]{8,80}$/).optional(),
 });

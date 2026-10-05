@@ -12,10 +12,7 @@ async function loadOwnedVersion(projectId: string, artifactVersionId: string, us
   const project = await db.project.findFirst({
     where: {
       id: projectId,
-      OR: [
-        { ownerId: userId },
-        { team: { members: { some: { userId, status: "ACTIVE" } } } },
-      ],
+      ownerId: userId,
     },
     include: { facts: true, artifacts: { include: { versions: true } } },
   });
@@ -119,7 +116,6 @@ export async function withdrawArtifactPublication(projectId: string, userId: str
           project: {
             select: {
               ownerId: true,
-              team: { select: { members: { where: { userId, status: "ACTIVE" }, select: { id: true } } } },
             },
           },
         },
@@ -127,12 +123,10 @@ export async function withdrawArtifactPublication(projectId: string, userId: str
     },
   });
   if (!version) throw new ProjectServiceError("作品版本不存在。", "NOT_FOUND", 404);
-  const isTeamMember = Boolean(version.artifact.project.team?.members.length);
   const isAuthorized = version.artifact.project.ownerId === userId
     || version.createdById === userId
-    || version.publication?.requestedById === userId
-    || isTeamMember;
-  if (!isAuthorized) throw new ProjectServiceError("只有作品作者或所属团队成员可以撤回公开授权。", "FORBIDDEN", 403);
+    || version.publication?.requestedById === userId;
+  if (!isAuthorized) throw new ProjectServiceError("只有项目所有者、作品作者或原申请人可以撤回公开授权。", "FORBIDDEN", 403);
 
   return db.$transaction(async (tx) => {
     const changed = await tx.artifactPublication.updateMany({
@@ -150,10 +144,7 @@ export async function listProjectPublications(projectId: string, userId: string)
   const project = await db.project.findFirst({
     where: {
       id: projectId,
-      OR: [
-        { ownerId: userId },
-        { team: { members: { some: { userId, status: "ACTIVE" } } } },
-      ],
+      ownerId: userId,
     },
     select: { id: true },
   });

@@ -162,7 +162,7 @@ export function AiConfigForm({ initialConfig }: { initialConfig: Config | null }
 
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3"><Label htmlFor="ai-models">上游模型列表</Label><Button type="button" variant="outline" size="sm" onClick={syncModels} disabled={busy !== null}><RefreshCw className={`mr-2 h-4 w-4 ${busy === "sync" ? "animate-spin" : ""}`} />同步上游模型</Button></div>
-            <textarea id="ai-models" value={modelsText} onChange={(event) => setModelsText(event.target.value)} rows={8} className="border-input bg-background w-full rounded-md border px-3 py-2 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="每行一个模型 ID，例如：\nzzzz/deepseek-v4-pro" />
+            <textarea id="ai-models" value={modelsText} onChange={(event) => setModelsText(event.target.value)} rows={8} className="border-input bg-background w-full rounded-md border px-3 py-2 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="每行一个模型 ID，例如：\ngpt-5.6-terra" />
             <p className="text-xs text-muted-foreground">同步后仍可手动增删模型；默认模型必须在列表中，保存时会自动补入。</p>
           </div>
 

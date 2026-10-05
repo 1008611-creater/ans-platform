@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { getMessages, getLocale } from "next-intl/server";
+import { getMessages, getLocale, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -10,27 +10,18 @@ import { getConfig } from "@/lib/config";
 import { isRtlLocale } from "@/lib/i18n/config";
 import "./globals.css";
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("learning");
+  const locale = await getLocale();
+  return {
   metadataBase: new URL(process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun"),
   title: {
-    default: "ANS · 让 AI 永不停转",
+    default: t("siteTitle"),
     template: "%s | ANS",
   },
-  description:
-    "ANS 是中国农业大学学生发起的 AI 原生社区与算力平台：提示词模板、工作台、团队与比赛，让 AI 永不停转。",
-  keywords: [
-    "ANS",
-    "AI 社区",
-    "提示词",
-    "AI 工具",
-    "算力平台",
-    "工作台",
-    "团队",
-    "比赛",
-    "中国农业",
-    "AI Never Stops",
-  ],
-  authors: [{ name: "ANS 社区" }],
+  description: t("siteDescription"),
+  keywords: ["ANS", ...t("siteKeywords").split(",")],
+  authors: [{ name: "ANS" }],
   creator: "ANS",
   publisher: "ANS",
   icons: {
@@ -49,11 +40,10 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "zh_CN",
+    locale: locale === "zh" ? "zh_CN" : "en_US",
     siteName: "ANS",
-    title: "ANS · 让 AI 永不停转",
-    description:
-      "ANS 是中国农业大学学生发起的 AI 原生社区与算力平台：提示词模板、工作台、团队与比赛，让 AI 永不停转。",
+    title: t("siteTitle"),
+    description: t("siteDescription"),
     images: [
       {
         url: "/og.png",
@@ -65,9 +55,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ANS · 让 AI 永不停转",
-    description:
-      "ANS 是中国农业大学学生发起的 AI 原生社区与算力平台：提示词模板、工作台、团队与比赛，让 AI 永不停转。",
+    title: t("siteTitle"),
+    description: t("siteDescription"),
     images: ["/og.png"],
     creator: "ANS",
   },
@@ -85,7 +74,8 @@ export const metadata: Metadata = {
   alternates: {
     canonical: process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun",
   },
-};
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

@@ -198,13 +198,13 @@ describe("POST /api/workflows/runs/[id]/execute", () => {
     mocks.runner.executePersistedWorkflow.mockResolvedValue({ status: "succeeded", output: "ok", executions: [], elapsedMs: 5 });
 
     const response = await executeRun(
-      json({ modelKey: "glm-5.2", credentialId: "cred1", reasoningEffort: "medium" }),
+      json({ modelKey: "gpt-5.6-sol", credentialId: "cred1", reasoningEffort: "medium" }),
       params({ id: "run1" }),
     );
 
     expect(response.status).toBe(200);
     expect(mocks.runner.executePersistedWorkflow).toHaveBeenCalledWith("run1", "user1", {
-      modelKey: "glm-5.2",
+      modelKey: "gpt-5.6-sol",
       credentialId: "cred1",
       reasoningEffort: "medium",
     });
@@ -220,7 +220,7 @@ describe("POST /api/workflows/runs/[id]/execute", () => {
   });
 
   it("rejects unknown fields instead of silently ignoring them", async () => {
-    const response = await executeRun(json({ modelKey: "glm-5.2", admin: true }), params({ id: "run1" }));
+    const response = await executeRun(json({ modelKey: "gpt-5.6-sol", admin: true }), params({ id: "run1" }));
     const body = await response.json();
 
     expect(response.status).toBe(400);

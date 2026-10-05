@@ -1,5 +1,7 @@
 # ANS Platform（ans.cauai.fun）
 
+> 历史品牌与站点说明。当前定位以 [2026-10-05 权威总纲](./docs/ANS平台方向与落地路线图.md) 为准：AI 小白的成果型学习平台。下文校园社区、纯公益、只做中文等不是当前开发或商业决策约束；本期不启用支付。
+
 > The Autonomic Nervous System for AI — 让 AI 永不停转
 
 ANS 组织官网 + AI 原生社区平台。代码从 [ANS](https://github.com/f/awesome-chatgpt-prompts) 复用而来，

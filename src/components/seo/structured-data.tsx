@@ -1,4 +1,5 @@
 import { getConfig } from "@/lib/config";
+import { getTranslations } from "next-intl/server";
 
 interface StructuredDataProps {
   type: "website" | "organization" | "breadcrumb" | "prompt" | "softwareApp" | "itemList";
@@ -28,6 +29,7 @@ interface StructuredDataProps {
 
 export async function StructuredData({ type, data }: StructuredDataProps) {
   const config = await getConfig();
+  const t = await getTranslations("learning");
   const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun";
 
   const schemas: Record<string, object | null> = {
@@ -42,7 +44,7 @@ export async function StructuredData({ type, data }: StructuredDataProps) {
         width: 512,
         height: 512,
       },
-      description: config.branding.description,
+      description: t("siteDescription"),
       sameAs: [
         "https://github.com/1008611-creater/ans-platform",
       ],
@@ -52,7 +54,7 @@ export async function StructuredData({ type, data }: StructuredDataProps) {
       "@type": "WebSite",
       name: config.branding.name,
       url: baseUrl,
-      description: config.branding.description,
+      description: t("siteDescription"),
       potentialAction: {
         "@type": "SearchAction",
         target: {
@@ -153,24 +155,12 @@ export async function StructuredData({ type, data }: StructuredDataProps) {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       name: config.branding.name,
-      description: config.branding.description,
+      description: t("siteDescription"),
       url: baseUrl,
-      applicationCategory: "UtilitiesApplication",
+      applicationCategory: "EducationalApplication",
       browserRequirements: "Requires JavaScript. Requires HTML5.",
       softwareVersion: "1.0",
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD",
-        availability: "https://schema.org/InStock",
-      },
-      featureList: [
-        "AI prompt library",
-        "Prompt sharing and discovery",
-        "Community contributions",
-        "Version history",
-        "Categories and tags",
-      ],
+      featureList: [t("step1Title"), t("step2Title"), t("step3Title"), t("versionHistory")],
       screenshot: `${baseUrl}/og.png`,
     },
     itemList: data?.items

@@ -40,9 +40,8 @@ export function officialWorkflowSlug(id: OfficialWorkflowId): string {
 }
 
 /**
- * Built-in workflows deliberately have a small, auditable DAG. The artifact
- * node delegates to the same pure composer used by the domain tests; the
- * workflow engine still owns the run, node status, timeout and audit trail.
+ * Built-in workflows use a model → output DAG. The engine owns execution,
+ * quota, timeout and audit; the pure composer below validates required facts.
  */
 export function officialWorkflowDefinition(id: OfficialWorkflowId) {
   const spec = workflowById(id);
@@ -353,7 +352,7 @@ export function generatedArtifactFromMarkdown(
     "",
     "## 使用边界",
     "",
-    "本草稿只根据项目中已记录的事实生成。没有证据的数字、排名、收益和未发生的经历不会被自动补写。",
+    "这是 AI 草稿，不代表事实已被核实。请逐项核对贡献、数字、技术和证据；删除模型可能补写的内容，确认后再使用。",
   ].join("\n");
   return {
     title: `${spec.title}：${projectTitle}`,

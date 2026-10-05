@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   db: {
     project: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     projectFact: { upsert: vi.fn() },
-    artifact: { upsert: vi.fn() },
+    artifact: { upsert: vi.fn(), updateMany: vi.fn() },
     artifactVersion: { create: vi.fn(), findFirst: vi.fn() },
     workflowRun: { findFirst: vi.fn() },
     auditLog: { create: vi.fn() },
@@ -19,7 +19,7 @@ vi.mock("@/lib/db", () => ({ db: mocks.db }));
 vi.mock("@/server/workflows/service", () => mocks.workflowService);
 vi.mock("@/server/workflows/runner", () => mocks.workflowRunner);
 
-import { ProjectServiceError, createProject, exportProject, getProject, runProjectPack, runProjectWorkflow, updateProject } from "@/server/projects/service";
+import { ProjectServiceError, createProject, exportProject, getProject, listProjects, saveProjectFacts, saveProjectArtifact, runProjectPack, runProjectWorkflow, updateProject } from "@/server/projects/service";
 
 const project = {
   id: "p1", ownerId: "u1", title: "教材流转", goal: "CAREER", status: "ACTIVE", visibility: "PRIVATE", updatedAt: new Date("2026-09-25T00:00:00Z"),
@@ -49,6 +49,63 @@ beforeEach(() => {
 });
 
 describe("项目服务", () => {
+  it("lists owner-only projects even when users share a team", async () => {
+    mocks.db.project.findMany.mockResolvedValue([]);
+    await listProjects("u2");
+    expect(mocks.db.project.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { ownerId: "u2", status: { not: "ARCHIVED" } } }));
+  });
+
+  it("does not erase evidence URLs when an older client omits them", async () => {
+    await saveProjectFacts("p1", "u1", { facts: [{ key: "problem", value: "A problem", confirmation: "confirmed" }] });
+    const update = mocks.db.projectFact.upsert.mock.calls[0][0].update;
+    expect(update).not.toHaveProperty("evidenceUrl");
+  });
+
+  it("supports explicitly clearing an evidence URL", async () => {
+    await saveProjectFacts("p1", "u1", { facts: [{ key: "problem", value: "A problem", confirmation: "confirmed", evidenceUrl: "" }] });
+    expect(mocks.db.projectFact.upsert.mock.calls[0][0].update.evidenceUrl).toBeNull();
+  });
+
+  it("appends manual edits with original provenance and no model charge", async () => {
+    mocks.db.artifactVersion.findFirst.mockResolvedValue({ id: "v1", artifactId: "a1", contentJson: { facts: ["original facts"] }, factSnapshotHash: "hash1", workflowRunId: "run1" });
+    mocks.db.artifact.updateMany.mockResolvedValue({ count: 1 });
+    await saveProjectArtifact("p1", "u1", { baseVersionId: "v1", expectedVersion: 2, markdown: "# My edit" });
+    expect(mocks.db.artifactVersion.findFirst).toHaveBeenCalledWith({ where: { id: "v1", artifact: { projectId: "p1", project: { ownerId: "u1" } } } });
+    expect(mocks.db.artifact.updateMany).toHaveBeenCalledWith({ where: { id: "a1", currentVersion: 2, project: { ownerId: "u1", status: "ACTIVE" } }, data: { currentVersion: { increment: 1 } } });
+    expect(mocks.db.artifactVersion.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ version: 3, contentMarkdown: "# My edit", workflowRunId: null, factSnapshotHash: "hash1", contentJson: expect.objectContaining({ facts: ["original facts"], sourceWorkflowRunId: "run1", editKind: "manual", baseVersionId: "v1" }) }) }));
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ action: "PROJECT_ARTIFACT_EDITED" }) }));
+    expect(mocks.workflowService.createWorkflowRun).not.toHaveBeenCalled();
+  });
+
+  it("rejects concurrent edits without creating another version", async () => {
+    mocks.db.artifactVersion.findFirst.mockResolvedValue({ id: "v1", artifactId: "a1" });
+    mocks.db.artifact.updateMany.mockResolvedValue({ count: 0 });
+    await expect(saveProjectArtifact("p1", "u1", { baseVersionId: "v1", expectedVersion: 1, markdown: "My edit" })).rejects.toMatchObject({ code: "VERSION_CONFLICT", status: 409 });
+    expect(mocks.db.artifactVersion.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a version from another project", async () => {
+    mocks.db.artifactVersion.findFirst.mockResolvedValue(null);
+    await expect(saveProjectArtifact("p1", "u1", { baseVersionId: "foreign", expectedVersion: 1, markdown: "My edit" })).rejects.toMatchObject({ status: 404 });
+    expect(mocks.db.artifact.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects edits by a non-owner", async () => {
+    mocks.db.project.findFirst.mockResolvedValue(null);
+    await expect(saveProjectArtifact("p1", "u2", { baseVersionId: "v1", expectedVersion: 1, markdown: "My edit" })).rejects.toMatchObject({ status: 404 });
+    expect(mocks.db.artifactVersion.create).not.toHaveBeenCalled();
+  });
+
+  it.each(["", " ", "x".repeat(100_001)])("rejects empty or oversized edits", async (markdown) => {
+    await expect(saveProjectArtifact("p1", "u1", { baseVersionId: "v1", expectedVersion: 1, markdown })).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    expect(mocks.db.artifactVersion.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects edits to archived projects", async () => {
+    mocks.db.project.findFirst.mockResolvedValue({ ...project, status: "ARCHIVED" });
+    await expect(saveProjectArtifact("p1", "u1", { baseVersionId: "v1", expectedVersion: 1, markdown: "My edit" })).rejects.toMatchObject({ code: "ARCHIVED" });
+  });
+
   it("只创建私密项目", async () => {
     mocks.db.project.create.mockResolvedValue({ ...project, facts: [], artifacts: [] });
     const created = await createProject("u1", { title: "教材流转", goal: "career" });

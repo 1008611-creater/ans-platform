@@ -1011,7 +1011,7 @@ describe("workflow run audit metadata", () => {
     mocks.db.auditLog.findFirst.mockResolvedValue({
       action: "WORKFLOW_RUN_SUCCEEDED",
       metadata: {
-        models: ["openai/gpt-5.6-terra"],
+        models: ["gpt-5.6-terra"],
         modelCalls: 2,
         tokenUsage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
         reasoningEffort: "high",
@@ -1022,7 +1022,7 @@ describe("workflow run audit metadata", () => {
       id: "run1",
       audit: {
         action: "WORKFLOW_RUN_SUCCEEDED",
-        models: ["openai/gpt-5.6-terra"],
+        models: ["gpt-5.6-terra"],
         modelCalls: 2,
         tokenUsage: { totalTokens: 30 },
         reasoningEffort: "high",
@@ -1036,12 +1036,12 @@ describe("workflow run audit metadata", () => {
       {
         resourceId: "run1",
         action: "WORKFLOW_RUN_SUCCEEDED",
-        metadata: { models: ["openai/gpt-5.6-terra"], modelCalls: 1, tokenUsage: { totalTokens: 7 } },
+        metadata: { models: ["gpt-5.6-terra"], modelCalls: 1, tokenUsage: { totalTokens: 7 } },
       },
     ]);
 
     await expect(listWorkflowRuns("user1")).resolves.toMatchObject([
-      { id: "run1", audit: { models: ["openai/gpt-5.6-terra"], modelCalls: 1, tokenUsage: { totalTokens: 7 }, reasoningEffort: null } },
+      { id: "run1", audit: { models: ["gpt-5.6-terra"], modelCalls: 1, tokenUsage: { totalTokens: 7 }, reasoningEffort: null } },
     ]);
   });
 });

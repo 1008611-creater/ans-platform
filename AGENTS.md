@@ -1,5 +1,7 @@
 # AGENTS.md
 
+> Product authority: read [the confirmed ANS baseline](docs/ANS平台方向与落地路线图.md) first. It supersedes the historical social-prompt-platform overview below. Keep the first release focused on guided learning → private project facts → generated drafts → manual revision → saved versions/export. Do not expand scope without the user's confirmation.
+
 > Guidelines for AI coding agents working on this project.
 
 ## Project Overview
@@ -194,7 +196,7 @@ Authentication and storage use a plugin architecture:
 ## Boundaries
 
 ### Always Do
-- For every development task that changes tracked project files, create and submit a GitHub pull request by default after implementation, meaningful checks, and post-coding review. Target `main` unless the user specifies another base; keep unrelated changes out of the PR. If a blocking check remains, submit the PR as a draft and clearly state the failure and unverified areas. If GitHub prevents PR creation, report the concrete blocker.
+- Implement and verify authorized local changes, then report completed work and remaining limits. Commits, pushes, GitHub pull requests, publication and deployment require the user's explicit authorization for the current operation; do not infer it from implementation approval.
 - Creating a PR does not authorize merging it or deploying to production; do those only when the user explicitly asks.
 - Run `npm run lint` before committing
 - Use existing UI components from `src/components/ui/`
@@ -241,7 +243,7 @@ OPENAI_API_KEY=         # For AI-powered semantic search
 
 ## Testing
 
-Currently no automated tests. When implementing:
+Automated tests use Vitest under `src/__tests__`; run relevant tests and type checks. When implementing:
 - Place tests adjacent to source files or in `__tests__/` directories
 - Use descriptive test names
 - Mock external services (database, OAuth)
@@ -268,3 +270,13 @@ Currently no automated tests. When implementing:
 1. Update `prisma/schema.prisma`
 2. Run `npm run db:migrate` to create migration
 3. Update related TypeScript types if needed
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

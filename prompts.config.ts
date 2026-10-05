@@ -10,7 +10,7 @@ export default defineConfig({
     logo: "/ans-logo-light.svg",
     logoDark: "/ans-logo-dark.svg",
     favicon: "/favicon/favicon.svg",
-    description: "让 AI 永不停转 · AI 原生社区与算力平台",
+    description: "学 AI，做出自己的成果 · 面向 AI 小白的成果型学习平台",
   },
 
   // Theme - design system configuration

@@ -185,7 +185,9 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
       hrefs: [...bar.querySelectorAll("a")].map(a => new URL(a.href).pathname),
     };
   });
-  const tabOk = tabs.found && tabs.hrefs.length === 5;
+  // 权威架构（docs/ANS平台方向与落地路线图.md）：移动端底部常驻三项主入口
+  // 「开始学习 / 动手实践 / 我的成果」+ 账户入口，共 4 个链接。
+  const tabOk = tabs.found && tabs.hrefs.length === 4;
   checks.push({ label: "移动端底部 Tab 栏", pathname: "/", status: 200, matched: tabOk, newProblems: 0 });
   if (!tabOk) pageProblems.push(`移动端底部 Tab 栏异常（可见=${tabs.found}，链接=${tabs.hrefs.join(",") || "无"}）`);
 

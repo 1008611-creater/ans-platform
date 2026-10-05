@@ -152,12 +152,12 @@ describe("runTemplate", () => {
     expect(!result.ok && result.error).toBe("model_unavailable");
   });
 
-  it("模型白名单包含 terra/sol/astra 与 TR 国模", async () => {
+  it("模型白名单只包含生产网关实测可用的三个模型", async () => {
     const { RUN_MODEL_KEYS } = await import("@/lib/run-service");
-    expect(RUN_MODEL_KEYS).toEqual(expect.arrayContaining([
-      "gpt-5.6-terra", "gpt-5.6-sol", "gpt-6-astra",
-      "glm-5.2", "deepseek-v4-flash-0731", "qwen3.8-max", "kimi-k2.6",
-    ]));
+    expect(RUN_MODEL_KEYS).toEqual(["gpt-5.6-terra", "gpt-5.6-sol", "gpt-6-astra"]);
+    // 2026-10-05 网关探测：TR 国模全部 404，不得留在白名单里让用户选中后必然失败。
+    expect(RUN_MODEL_KEYS).not.toContain("glm-5.2");
+    expect(RUN_MODEL_KEYS).not.toContain("deepseek-v4-pro");
   });
 
   it("默认模型为 gpt-5.6-terra", async () => {
@@ -172,7 +172,7 @@ describe("runTemplate", () => {
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: expect.stringContaining("Bearer ") }),
-        body: expect.stringContaining("openai/gpt-5.6-terra"),
+        body: expect.stringContaining("gpt-5.6-terra"),
       })
     );
     expect(mocks.db.run.update).toHaveBeenCalledWith(expect.objectContaining({

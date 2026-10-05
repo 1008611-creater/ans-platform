@@ -394,7 +394,7 @@ describe("createWorkflowHandlers", () => {
     expect(callModel).toHaveBeenCalledWith(
       expect.objectContaining({
         prompt: "关于 社团招新 的一段话",
-        target: expect.objectContaining({ apiKey: "platform-key", upstream: "openai/gpt-5.6-terra" }),
+        target: expect.objectContaining({ apiKey: "platform-key", upstream: "gpt-5.6-terra" }),
       }),
     );
   });
@@ -404,19 +404,19 @@ describe("createWorkflowHandlers", () => {
     const handlers = createWorkflowHandlers({
       userId: "user1",
       runId: "run1",
-      modelKey: "glm-5.2",
+      modelKey: "gpt-5.6-sol",
       callModel,
     });
 
     await handlers.model!(context());
-    expect(callModel.mock.calls[0][0].target.upstream).toBe("zzzz/glm-5.2");
+    expect(callModel.mock.calls[0][0].target.upstream).toBe("gpt-5.6-sol");
 
     await handlers.model!(
       context({
-        node: { ...context().node, config: { prompt: "hi", modelKey: "deepseek-v4-pro" } },
+        node: { ...context().node, config: { prompt: "hi", modelKey: "gpt-6-astra" } },
       }),
     );
-    expect(callModel.mock.calls[1][0].target.upstream).toBe("zzzz/deepseek-v4-pro");
+    expect(callModel.mock.calls[1][0].target.upstream).toBe("gpt-6-astra");
   });
 
   it("uses the decrypted user key for BYOK runs and only exposes a mask", async () => {

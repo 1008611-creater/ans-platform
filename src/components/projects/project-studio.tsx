@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { PROJECT_WORKFLOW_COST_POINTS, projectPackWorkflowIds } from "@/contracts/projects";
 import { OFFICIAL_WORKFLOWS } from "@/domain/projects/pack";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,29 +35,41 @@ export type ProjectView = {
   artifacts: Artifact[];
 };
 
-const GOAL_LABEL = { career: "求职项目", contest: "比赛项目", portfolio: "作品展示" };
-const STATUS_LABEL = { missing: "未填写", unconfirmed: "待确认", confirmed: "已确认" };
+const FACT_KEYS = { problem: "Problem", contribution: "Contribution", method: "Method", result: "Result", evidence: "Evidence" } as const;
 
-async function postJson(url: string, body: unknown) {
+async function postJson(url: string, body: unknown, fallback: string) {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   const payload = await response.json();
-  if (!response.ok || !payload.ok) throw new Error(payload.error?.message ?? "操作失败，请稍后重试。");
+  if (!response.ok || !payload.ok) throw new Error(payload.error?.message ?? fallback);
   return payload.data;
 }
 
 export function ProjectStudio({ project }: { project: ProjectView }) {
   const router = useRouter();
+  const t = useTranslations("learning");
+  const locale = useLocale();
   const [facts, setFacts] = useState(project.facts);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState("");
   const [publications, setPublications] = useState<Record<string, { status: string; reviewNote: string | null }>>({});
   const [selectedVersions, setSelectedVersions] = useState<Record<string, string>>({});
-  const completed = project.artifacts.length;
+  const [acknowledged, setAcknowledged] = useState<Record<string, boolean>>({});
+  const [editing, setEditing] = useState<{ artifactId: string; baseVersionId: string; expectedVersion: number; markdown: string } | null>(null);
+  const [savedVersions, setSavedVersions] = useState<Record<string, Artifact["versions"][number]>>({});
+  const completed = projectPackWorkflowIds.filter((id) => project.artifacts.some((artifact) => artifact.workflowId === id && artifact.versions.length > 0)).length;
+  const locked = Boolean(pending) || Boolean(editing);
+
+  useEffect(() => {
+    if (!editing) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [editing]);
 
   useEffect(() => {
     let active = true;
@@ -65,7 +79,7 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
     }).catch(() => undefined);
     return () => { active = false; };
   }, [project.id]);
-  const recommended = useMemo(() => OFFICIAL_WORKFLOWS.filter((workflow) => ["resume-bullets", "readme-draft", "project-one-pager"].includes(workflow.id)), []);
+  const recommended = useMemo(() => projectPackWorkflowIds.map((id) => OFFICIAL_WORKFLOWS.find((workflow) => workflow.id === id)!), []);
   const more = OFFICIAL_WORKFLOWS.filter((workflow) => !recommended.some((item) => item.id === workflow.id));
 
   function factPayload(confirm: boolean) {
@@ -74,6 +88,7 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
       return {
         key: fact.key,
         value: fact.value,
+        evidenceUrl: fact.evidenceUrl,
         confirmation: !value
           ? "missing"
           : value === "暂无" || confirm || fact.confirmation === "confirmed"
@@ -90,18 +105,19 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
   async function saveFacts(confirm = false) {
     setPending(confirm ? "confirm" : "save");
     setError("");
+    setMessage("");
     try {
-      await postJson(`/api/projects/${project.id}/facts`, { facts: factPayload(confirm) });
+      await postJson(`/api/projects/${project.id}/facts`, { facts: factPayload(confirm) }, t("operationFailed"));
       if (confirm) {
         setFacts((current) => current.map((fact) => ({
           ...fact,
           confirmation: fact.value.trim() ? "confirmed" : "missing",
         })));
       }
-      setMessage(confirm ? "事实已确认。接下来生成的材料会使用这份已确认内容。" : "事实已保存。接下来生成的材料都会使用这份内容。");
+      setMessage(t(confirm ? "factsConfirmed" : "factsSaved"));
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "保存失败。");
+      setError(cause instanceof Error ? cause.message : t("operationFailed"));
     } finally {
       setPending("");
     }
@@ -116,11 +132,12 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
         ? await fetch(`/api/projects/${project.id}/publication`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ artifactVersionId }) })
         : await fetch(`/api/projects/${project.id}/publication`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ artifactVersionId, acknowledged: true }) });
       const result = await response.json();
-      if (!response.ok || !result.ok) throw new Error(result.error?.message ?? "?????????");
+      if (!response.ok || !result.ok) throw new Error(result.error?.message ?? t("operationFailed"));
       setPublications((current) => ({ ...current, [artifactVersionId]: { status: status === "APPROVED" || status === "PENDING" ? "WITHDRAWN" : "PENDING", reviewNote: null } }));
-      setMessage(status === "APPROVED" || status === "PENDING" ? "????????????" : "???????????????????");
+      setMessage(t(status === "APPROVED" || status === "PENDING" ? "shareWithdrawn" : "shareSubmitted"));
+      setAcknowledged((current) => ({ ...current, [artifactVersionId]: false }));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "?????????");
+      setError(cause instanceof Error ? cause.message : t("operationFailed"));
     } finally {
       setPending("");
     }
@@ -129,80 +146,108 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
   async function runWorkflow(workflowId: string) {
     setPending(workflowId);
     setError("");
+    setMessage("");
     try {
-      await postJson(`/api/projects/${project.id}/facts`, { facts: factPayload(false) });
+      await postJson(`/api/projects/${project.id}/facts`, { facts: factPayload(false) }, t("operationFailed"));
       await postJson(`/api/projects/${project.id}/runs`, {
         workflowId,
         idempotencyKey: `${workflowId}-${Date.now().toString(36)}`,
-      });
-      setMessage("新版本已保存。可以继续生成其他材料，已填写的事实会自动复用。");
+      }, t("operationFailed"));
+      setSelectedVersions({});
+      setMessage(t("generated"));
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "生成失败。");
+      setError(cause instanceof Error ? cause.message : t("operationFailed"));
     } finally {
       setPending("");
     }
   }
 
+  async function saveEdit() {
+    if (!editing) return;
+    setPending("edit");
+    setMessage("");
+    setError("");
+    try {
+      const version = await postJson(`/api/projects/${project.id}/artifacts`, {
+        baseVersionId: editing.baseVersionId, expectedVersion: editing.expectedVersion, markdown: editing.markdown,
+      }, t("operationFailed"));
+      setSavedVersions((current) => ({ ...current, [editing.artifactId]: { id: version.id, version: version.version, markdown: editing.markdown.trim(), createdAt: new Date().toISOString() } }));
+      setSelectedVersions((current) => ({ ...current, [editing.artifactId]: version.id }));
+      setEditing(null);
+      setMessage(t("editSaved"));
+      router.refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t("operationFailed"));
+    } finally { setPending(""); }
+  }
+
   function WorkflowButton({ workflow }: { workflow: (typeof OFFICIAL_WORKFLOWS)[number] }) {
     const artifact = project.artifacts.find((item) => item.workflowId === workflow.id);
     return (
-      <button className="rounded-lg border p-4 text-left transition hover:border-primary disabled:opacity-50" disabled={Boolean(pending)} onClick={() => runWorkflow(workflow.id)}>
+      <button className="rounded-lg border p-4 text-left transition hover:border-primary disabled:opacity-50" disabled={locked} onClick={() => runWorkflow(workflow.id)}>
         <span className="flex items-center justify-between gap-3">
           <span className="text-sm font-medium">{workflow.title}</span>
-          {artifact ? <Badge variant="secondary">v{artifact.currentVersion}</Badge> : <Badge variant="outline">未生成</Badge>}
+          {artifact ? <Badge variant="secondary">v{artifact.currentVersion}</Badge> : <Badge variant="outline">{t("notGenerated")}</Badge>}
         </span>
         <span className="mt-2 block text-xs leading-5 text-muted-foreground">{workflow.summary}</span>
-        <span className="mt-3 block text-xs text-muted-foreground">约 {workflow.minutes} 分钟 · {pending === workflow.id ? "正在生成" : artifact ? "再次生成会保存为新版本" : "使用左侧事实生成"}</span>
+        <span className="mt-3 block text-xs text-muted-foreground">{t(pending === workflow.id ? "generating" : artifact ? "regenerate" : "generate")}</span>
       </button>
     );
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-      <Card>
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <Card className="min-w-0">
         <CardHeader>
-          <CardTitle>项目事实</CardTitle>
-          <CardDescription>一份事实可以生成多份材料。没有的内容写“暂无”，不会被补成经历或成绩。</CardDescription>
+          <CardTitle>{t("factsTitle")}</CardTitle>
+          <CardDescription>{t("factsHint")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {facts.map((fact) => (
             <label key={fact.key} className="block space-y-2">
-              <span className="flex items-center justify-between gap-3 text-sm font-medium">{fact.label}<Badge variant="outline">{STATUS_LABEL[fact.confirmation]}</Badge></span>
-              <Textarea value={fact.value} onChange={(event) => updateFact(fact.key, event.target.value)} placeholder={fact.hint} rows={3} />
+              <span className="flex items-center justify-between gap-3 text-sm font-medium">{t(`fact${FACT_KEYS[fact.key]}`)}<Badge variant="outline">{t(fact.confirmation)}</Badge></span>
+              <Textarea disabled={locked} value={fact.value} onChange={(event) => updateFact(fact.key, event.target.value)} placeholder={t(`hint${FACT_KEYS[fact.key]}`)} rows={3} />
             </label>
           ))}
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => saveFacts(false)} disabled={Boolean(pending)}>保存事实</Button>
-            <Button variant="outline" onClick={() => saveFacts(true)} disabled={Boolean(pending)}>确认事实</Button>
+            <Button onClick={() => saveFacts(false)} disabled={locked}>{t("saveFacts")}</Button>
+            <Button variant="outline" onClick={() => saveFacts(true)} disabled={locked}>{t("confirmFacts")}</Button>
           </div>
         </CardContent>
       </Card>
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <CardTitle>{project.title}</CardTitle>
-                <CardDescription>{GOAL_LABEL[project.goal]} · 已完成 {completed}/8 份材料 · 默认仅自己可见</CardDescription>
+                <CardTitle className="break-words">{project.title}</CardTitle>
+                <CardDescription>{t(project.goal)} · {t("progress", { count: completed })}</CardDescription>
+                <p className="mt-2 text-xs text-muted-foreground">{t("privateHint")}</p>
               </div>
-              <Button asChild variant="outline"><a href={`/api/projects/${project.id}/export`}>导出全部材料</a></Button>
+              {project.artifacts.some((artifact) => artifact.versions.length > 0) ? <Button asChild variant="outline"><a href={`/api/projects/${project.id}/export`}>{t("export")}</a></Button> : null}
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
+            <p className="text-sm text-muted-foreground">{t("cost", { points: PROJECT_WORKFLOW_COST_POINTS })}</p>
             <div>
-              <h2 className="mb-3 text-sm font-medium">先完成这三份</h2>
+              <h2 className="mb-3 text-sm font-medium">{t("coreTitle")}</h2>
               <div className="grid gap-3 sm:grid-cols-3">{recommended.map((workflow) => <WorkflowButton key={workflow.id} workflow={workflow} />)}</div>
             </div>
-            <div>
-              <h2 className="mb-3 text-sm font-medium">继续补充</h2>
+            <details>
+              <summary className="mb-3 cursor-pointer text-sm font-medium">{t("moreWorkflows")}</summary>
               <div className="grid gap-3 sm:grid-cols-2">{more.map((workflow) => <WorkflowButton key={workflow.id} workflow={workflow} />)}</div>
-            </div>
+            </details>
           </CardContent>
         </Card>
-        {message ? <p className="text-sm text-primary">{message}</p> : null}
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        {project.artifacts.length === 0 ? <Card className="border-dashed"><CardContent className="py-8 text-sm text-muted-foreground">还没有材料。先填写左侧事实，再生成第一份简历条目、README 或项目介绍。</CardContent></Card> : project.artifacts.map((artifact) => {
+        {message ? <p role="status" className="text-sm text-primary">{message}</p> : null}
+        {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+        <p className="rounded-lg border p-4 text-sm leading-6 text-muted-foreground">{t("draftWarning")}</p>
+        {project.artifacts.length === 0 ? <Card className="border-dashed"><CardContent className="py-8 text-sm text-muted-foreground">{t("noArtifacts")}</CardContent></Card> : project.artifacts.map((artifact) => {
+          const saved = savedVersions[artifact.id];
+          if (saved && !artifact.versions.some((item) => item.id === saved.id)) {
+            artifact = { ...artifact, currentVersion: Math.max(artifact.currentVersion, saved.version), versions: [...artifact.versions, saved].sort((a, b) => b.version - a.version) };
+          }
           const version = artifact.versions[0];
           const selectedVersionId = selectedVersions[artifact.id] ?? version?.id;
           const selectedVersion = artifact.versions.find((item) => item.id === selectedVersionId) ?? version;
@@ -212,15 +257,23 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <CardTitle className="text-base">{artifact.title}</CardTitle>
-                  <Badge variant="secondary">最新版本 v{version.version}</Badge>
+                  <Badge variant="secondary">v{selectedVersion?.version}</Badge>
                 </div>
-                <CardDescription>历史版本保留在项目中，再次生成不会覆盖这一版。</CardDescription>
+                <CardDescription>{t("versionHint")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {artifact.versions.length > 1 ? <label className="flex flex-wrap items-center gap-2 text-sm"><span>??????</span><select className="h-9 rounded-md border bg-background px-2" value={selectedVersion?.id ?? ""} onChange={(event) => setSelectedVersions((current) => ({ ...current, [artifact.id]: event.target.value }))}>{artifact.versions.map((item) => <option key={item.id} value={item.id}>v{item.version} ? {new Date(item.createdAt).toLocaleDateString("zh-CN")}</option>)}</select></label> : null}
-                <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-4 text-sm leading-6">{selectedVersion?.markdown}</pre>
-                <div className="flex flex-wrap items-center gap-3 border-t pt-4"><Button disabled={Boolean(pending) || !selectedVersion} variant={publicationStatus === "APPROVED" || publicationStatus === "PENDING" ? "outline" : "default"} onClick={() => selectedVersion && changePublication(selectedVersion.id, publicationStatus)}>{pending === `publication:${selectedVersion?.id}` ? "????" : publicationStatus === "APPROVED" ? "??????" : publicationStatus === "PENDING" ? "??????" : publicationStatus === "REJECTED" ? "??????" : "???????"}</Button><span className="text-xs text-muted-foreground">{publicationStatus === "APPROVED" ? "?????????" : publicationStatus === "PENDING" ? "????" : publicationStatus === "REJECTED" ? "?????" : "?????????"}</span></div>
-                {publications[selectedVersion?.id ?? ""]?.reviewNote ? <p className="text-sm text-muted-foreground">?????{publications[selectedVersion?.id ?? ""]?.reviewNote}</p> : null}
+                {artifact.versions.length > 1 ? <label className="flex flex-wrap items-center gap-2 text-sm"><span>{t("versionHistory")}</span><select disabled={locked} className="h-9 rounded-md border bg-background px-2" value={selectedVersion?.id ?? ""} onChange={(event) => setSelectedVersions((current) => ({ ...current, [artifact.id]: event.target.value }))}>{artifact.versions.map((item) => <option key={item.id} value={item.id}>v{item.version} · {new Date(item.createdAt).toLocaleDateString(locale)}</option>)}</select></label> : null}
+                {editing?.artifactId === artifact.id ? <div className="space-y-3">
+                  <label className="block space-y-2"><span className="text-sm">{t("editLabel")}</span><Textarea rows={16} value={editing.markdown} disabled={Boolean(pending)} onChange={(event) => setEditing({ ...editing, markdown: event.target.value })} /></label>
+                  <div className="flex flex-wrap gap-2"><Button disabled={Boolean(pending) || !editing.markdown.trim()} onClick={saveEdit}>{t("saveEdit")}</Button><Button variant="outline" disabled={Boolean(pending)} onClick={() => setEditing(null)}>{t("cancelEdit")}</Button></div>
+                </div> : <><pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-4 text-sm leading-6">{selectedVersion?.markdown}</pre><Button variant="outline" disabled={locked || !selectedVersion} onClick={() => selectedVersion && setEditing({ artifactId: artifact.id, baseVersionId: selectedVersion.id, expectedVersion: artifact.currentVersion, markdown: selectedVersion.markdown })}>{t("edit")}</Button></>}
+                <details className="border-t pt-4">
+                  <summary className="cursor-pointer text-sm">{t("sharing")} · {t(publicationStatus === "APPROVED" ? "shareApproved" : publicationStatus === "PENDING" ? "sharePending" : publicationStatus === "REJECTED" ? "shareRejected" : "sharePrivate")}</summary>
+                  <p className="my-3 text-xs leading-5 text-muted-foreground">{t("sharingHint")}</p>
+                  {publicationStatus !== "APPROVED" && publicationStatus !== "PENDING" && selectedVersion ? <label className="mb-3 flex items-start gap-2 text-sm"><input type="checkbox" disabled={locked} checked={acknowledged[selectedVersion.id] ?? false} onChange={(event) => setAcknowledged((current) => ({ ...current, [selectedVersion.id]: event.target.checked }))} />{t("shareAck")}</label> : null}
+                  <Button variant="outline" disabled={locked || !selectedVersion || (publicationStatus !== "APPROVED" && publicationStatus !== "PENDING" && !acknowledged[selectedVersion.id])} onClick={() => selectedVersion && changePublication(selectedVersion.id, publicationStatus)}>{t(pending === `publication:${selectedVersion?.id}` ? "busy" : publicationStatus === "APPROVED" || publicationStatus === "PENDING" ? "shareWithdraw" : "shareRequest")}</Button>
+                  {publications[selectedVersion?.id ?? ""]?.reviewNote ? <p className="mt-2 text-sm text-muted-foreground">{t("reviewNote", { note: publications[selectedVersion?.id ?? ""].reviewNote! })}</p> : null}
+                </details>
               </CardContent>
             </Card>
           ) : null;
