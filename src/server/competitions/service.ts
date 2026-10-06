@@ -97,6 +97,28 @@ export async function listCompetitions() {
   });
 }
 
+/**
+ * 农客松板块用：查这条赛事在赛事系统里有没有记录。
+ *
+ * 约定：标题含「农客松」即视为已接入。找不到返回 null，页面自动退回
+ * 「报名尚未接入」的形态 —— 所以管理员在 /admin/competitions 建好赛事后，
+ * 板块页的报名入口会自动出现，不需要改代码。
+ *
+ * 查询失败不抛错：板块页不该因为数据库不可用而整页 500。
+ */
+export async function findAgriHackathonCompetition() {
+  try {
+    return await db.competition.findFirst({
+      where: { title: { contains: "农客松" } },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, status: true, startsAt: true, endsAt: true },
+    });
+  } catch (error) {
+    console.error("competition: 农客松赛事记录查询失败，板块页退回未接入形态", error);
+    return null;
+  }
+}
+
 export async function getCompetition(competitionId: string, viewerId?: string | null) {
   const competition = await db.competition.findUnique({
     where: { id: competitionId },

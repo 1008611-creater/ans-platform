@@ -2476,6 +2476,9 @@
     }
   },
   "agriHackathon": {
+    "boundaryNextOpen": "报名与提交已接入；大众投票与结果公示待接入",
+    "enterWorkbench": "进入报名与提交工作台",
+    "boundaryDescriptionOpen": "赛制说明、赛道结构与提交清单已就位；报名与提交已接入 ANS 赛事工作台。大众投票与结果公示尚未接入。",
     "navLabel": "农客松比赛",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon 农客松",
