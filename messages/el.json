@@ -2487,15 +2487,18 @@
     }
   },
   "agriHackathon": {
+    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "enterWorkbench": "Open the registration workbench",
+    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "Ένα κοινωφελές hackathon που διοργανώνει η φοιτητική ομάδα του Κινεζικού Γεωργικού Πανεπιστημίου μαζί με την ανοιχτή κοινότητα. 48 ώρες ανάπτυξης το πρώτο Σαββατοκύριακο, μία εβδομάδα αξιολόγησης και ψηφοφορίας και μετά ένα Demo Day όπου παρουσιάζουν οι 10 ομάδες των τελικών.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "Δημιούργησε έργο διαγωνισμού",
     "openTeams": "Άνοιξε ομάδες και διαγωνισμούς",
     "backToHub": "Πίσω στο κέντρο διαγωνισμών",
     "statusTitle": "Η πρώτη διοργάνωση προετοιμάζεται",
-    "statusDescription": "Οι τρεις κατηγορίες, το δελτίο βαθμολογίας πέντε διαστάσεων και τα βραβεία έχουν οριστεί. Ημερομηνίες, χώρος και φόρμα εγγραφής θα ανακοινωθούν εδώ μόλις επιβεβαιωθούν.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "Κατηγορίες",
       "tracksValue": "3",
@@ -2539,7 +2542,7 @@
       }
     },
     "phasesTitle": "Διαδρομή τεσσάρων φάσεων",
-    "phasesDescription": "Κάθε ομάδα ακολουθεί την ίδια βασική διαδρομή: εγγραφή και συγκρότηση ομάδας, ανάπτυξη, αξιολόγηση και ψηφοφορία, και τέλος παρουσίαση στον χώρο.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · Εγγραφή και συγκρότηση ομάδας",
@@ -2548,17 +2551,17 @@
       },
       "plan": {
         "label": "02 · 48 ώρες ανάπτυξης",
-        "description": "Δούλεψε το πρώτο Σαββατοκύριακο μέχρι μια λειτουργική ελάχιστη έκδοση και κράτησε τα βασικά αρχεία επαναλήψεων.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "Δεν έχει ξεκινήσει"
       },
       "produce": {
-        "label": "03 · Αξιολόγηση και ψηφοφορία",
-        "description": "Την επόμενη εβδομάδα, η αξιολόγηση από ειδικούς μετράει 80% και η ψήφος του κοινού 20%.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "Δεν έχει ξεκινήσει"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "Παρουσίαση το δεύτερο Σαββατοκύριακο: 5 λεπτά επίδειξης και 3 λεπτά ερωτήσεων, με ζωντανή βαθμολόγηση από 7 κριτές.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Δεν έχει ξεκινήσει"
       }
     },
@@ -2574,8 +2577,8 @@
       "evidence": "Δημόσιο αποθετήριο GitHub με άδεια χρήσης",
       "package": "Πακέτο υποβολής και τελικός έλεγχος"
     },
-    "scoringTitle": "Δελτίο βαθμολογίας πέντε διαστάσεων",
-    "scoringDescription": "Οι κριτές βαθμολογούν πέντε διαστάσεις, συνολικά 100 βαθμοί.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / ΒΑΘΜΟΛΟΓΙΑ",
     "scoring": {
       "innovation": {
@@ -2605,12 +2608,12 @@
       }
     },
     "advanceTitle": "Κανόνες πρόκρισης και αξιολόγησης",
-    "advanceDescription": "Ο προκριματικός γύρος αναθέτει κριτές από μια δεξαμενή· ο τελικός βαθμολογείται ζωντανά από σταθερή επιτροπή.",
-    "advanceNote": "Η ψήφος του κοινού και η βαθμολογία των κριτών χρησιμοποιούν διαφορετικές κλίμακες. Η μέθοδος κανονικοποίησης και τα μέτρα κατά της νοθείας θα ανακοινωθούν πριν ανοίξει η εγγραφή.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "Αξιολόγηση ειδικών 80%, ψήφος κοινού 20%",
-      "pool": "Δεξαμενή 8-12 κριτών, 3 ανατίθενται τυχαία σε κάθε έργο",
-      "panel": "Ο τελικός βαθμολογείται ζωντανά από 7 κριτές",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "Διαφορά άνω των 20 βαθμών μεταξύ κριτών ενεργοποιεί χειροκίνητο έλεγχο"
     },
     "awardsTitle": "Βραβεία",
@@ -2671,6 +2674,6 @@
       "ownership": "Οι ομάδες δηλώνουν τη δική τους εργασία και τις άδειες δεδομένων",
       "next": "Η εγγραφή και η ψηφοφορία ακολουθούν μόλις οριστούν ημερομηνίες και χώρος"
     },
-    "syncNote": "Η πρώτη διοργάνωση έχει προϋπολογισμό περίπου CNY 5,000 (CNY 3,300 βραβεία, CNY 800 υλικά, CNY 900 τροφοδοσία). Η εγγραφή, η ψηφοφορία του κοινού και η δημοσίευση αποτελεσμάτων ακολουθούν μόλις οριστούν οι ημερομηνίες."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

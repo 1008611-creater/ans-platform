@@ -35,6 +35,15 @@ import {
   AGRI_PHASES,
   AGRI_TRACKS,
 } from "@/lib/agrihackathon/cluster";
+import { findAgriHackathonCompetition } from "@/server/competitions/service";
+
+/**
+ * 页面要判断「农客松在赛事系统里有没有记录」，所以必须动态渲染。
+ * 分层规矩：app 层不碰数据库，查询走 @/server 的服务函数。
+ * 数据库不可用时不能整页 500 —— 服务层会吞掉异常返回 null，
+ * 页面退回「报名尚未接入」的形态照常渲染。
+ */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("agriHackathon");
@@ -44,8 +53,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/** 评分维度顺序固定，权重与文案都在 agriHackathon.scoring 里。 */
-const SCORING_KEYS = ["innovation", "technical", "completeness", "problem", "fit"] as const;
+/**
+ * 评分维度顺序固定。报批版只给维度（作品完成度 / 创新程度 / 主题契合），
+ * 不给权重，所以这里不再有 weight，卡片也不展示分值。
+ */
+const SCORING_KEYS = ["completeness", "innovation", "fit"] as const;
 
 const trackStyles = {
   people: {
@@ -67,6 +79,7 @@ const trackStyles = {
 
 export default async function AgriHackathonPage() {
   const t = await getTranslations("agriHackathon");
+  const competition = await findAgriHackathonCompetition();
 
   const tracks = AGRI_TRACKS.map((track) => {
     const copy = t.raw(`tracks.${track.id}`) as {
@@ -98,7 +111,6 @@ export default async function AgriHackathonPage() {
     id: key,
     ...(t.raw(`scoring.${key}`) as {
       label: string;
-      weight: string;
       description: string;
     }),
   }));
@@ -138,12 +150,21 @@ export default async function AgriHackathonPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <Link href="/projects">
-                  <Rocket className="h-4 w-4" />
-                  {t("createProject")}
-                </Link>
-              </Button>
+              {competition ? (
+                <Button asChild size="lg">
+                  <Link href={`/competitions/${competition.id}`}>
+                    <Rocket className="h-4 w-4" />
+                    {t("enterWorkbench")}
+                  </Link>
+                </Button>
+              ) : (
+                <Button asChild size="lg">
+                  <Link href="/projects">
+                    <Rocket className="h-4 w-4" />
+                    {t("createProject")}
+                  </Link>
+                </Button>
+              )}
               <Button asChild variant="outline" size="lg">
                 <Link href="/teams">
                   <Boxes className="h-4 w-4" />
@@ -244,14 +265,11 @@ export default async function AgriHackathonPage() {
             </div>
             <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-right">{t("scoringDescription")}</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {scoring.map((item) => (
               <Card key={item.id} className="border-border/80 bg-background/80">
                 <CardHeader className="gap-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <CardTitle className="text-base">{item.label}</CardTitle>
-                    <span className="text-2xl font-semibold tracking-tight text-primary">{item.weight}</span>
-                  </div>
+                  <CardTitle className="text-base">{item.label}</CardTitle>
                   <CardDescription className="leading-6">{item.description}</CardDescription>
                 </CardHeader>
               </Card>
@@ -399,13 +417,17 @@ export default async function AgriHackathonPage() {
           <Card className="border-amber-500/25 bg-amber-500/[0.035]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-amber-600 dark:text-amber-300" />{t("boundaryTitle")}</CardTitle>
-              <CardDescription className="leading-6">{t("boundaryDescription")}</CardDescription>
+              <CardDescription className="leading-6">
+                {competition ? t("boundaryDescriptionOpen") : t("boundaryDescription")}
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 sm:grid-cols-2">
               {(["entry", "links", "ownership", "next"] as const).map((item) => (
                 <div key={item} className="flex gap-2 text-sm leading-6">
                   <BadgeCheck className="mt-1 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
-                  <span>{t(`boundaryItems.${item}`)}</span>
+                  <span>
+                    {item === "next" && competition ? t("boundaryNextOpen") : t(`boundaryItems.${item}`)}
+                  </span>
                 </div>
               ))}
             </CardContent>

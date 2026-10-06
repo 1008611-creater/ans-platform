@@ -2480,15 +2480,18 @@
     }
   },
   "agriHackathon": {
+    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "enterWorkbench": "Open the registration workbench",
+    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "האקתון למען הציבור בהובלת צוות סטודנטים מהאוניברסיטה החקלאית של סין יחד עם הקהילה הפתוחה. 48 שעות בנייה בסוף השבוע הראשון, שבוע של שיפוט והצבעה, ואחריו Demo Day שבו מציגות עשר הקבוצות שעלו לגמר.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "צרו פרויקט לתחרות",
     "openTeams": "פתחו קבוצות ותחרויות",
     "backToHub": "חזרה למרכז התחרויות",
     "statusTitle": "המהדורה הראשונה בהכנה",
-    "statusDescription": "שלושת המסלולים, כרטיס הניקוד בן חמשת הממדים והפרסים כבר סגורים. תאריכים, מקום וטופס ההרשמה יפורסמו כאן לאחר אישורם.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "מסלולים",
       "tracksValue": "3",
@@ -2532,7 +2535,7 @@
       }
     },
     "phasesTitle": "מסלול בן ארבעה שלבים",
-    "phasesDescription": "כל הקבוצות הולכות באותו מסלול ראשי: הרשמה והקמת צוות, בנייה, שיפוט והצבעה, ואז הצגה במקום.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · הרשמה והקמת צוות",
@@ -2541,17 +2544,17 @@
       },
       "plan": {
         "label": "02 · 48 שעות של בנייה",
-        "description": "עבדו לאורך סוף השבוע הראשון עד לגרסה מינימלית פועלת ושמרו את תיעוד האיטרציות המרכזי.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "טרם החל"
       },
       "produce": {
-        "label": "03 · שיפוט והצבעה",
-        "description": "בשבוע שלאחר מכן, השיפוט המקצועי נחשב ל-80% והצבעת הקהל ל-20%.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "טרם החל"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "הצגה בסוף השבוע השני: 5 דקות דמו ו-3 דקות שאלות, עם ניקוד חי של 7 שופטים.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "טרם החל"
       }
     },
@@ -2567,8 +2570,8 @@
       "evidence": "מאגר GitHub ציבורי עם רישיון",
       "package": "חבילת הגשה ובדיקה סופית"
     },
-    "scoringTitle": "כרטיס ניקוד בן חמישה ממדים",
-    "scoringDescription": "השופטים מדרגים חמישה ממדים, 100 נקודות בסך הכול.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / ניקוד",
     "scoring": {
       "innovation": {
@@ -2598,12 +2601,12 @@
       }
     },
     "advanceTitle": "כללי העפלה וביקורת",
-    "advanceDescription": "בסיבוב המקדים משובצים שופטים ממאגר; הסיבוב הסופי מנוקד באופן חי בידי פאנל קבוע.",
-    "advanceNote": "הצבעת הקהל וניקוד השופטים משתמשים בסקאלות שונות. שיטת הנרמול ואמצעי מניעת ההונאה יפורסמו לפני פתיחת ההרשמה.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "שיפוט מקצועי 80%, הצבעת קהל 20%",
-      "pool": "מאגר של 8-12 שופטים, 3 משובצים באקראי לכל פרויקט",
-      "panel": "הגמר מנוקד באופן חי בידי 7 שופטים",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "פער של יותר מ-20 נקודות בין שופטים מפעיל ביקורת ידנית"
     },
     "awardsTitle": "פרסים",
@@ -2664,6 +2667,6 @@
       "ownership": "הקבוצות מצהירות על העבודה ועל הרשאות הנתונים שלהן",
       "next": "הרשמה והצבעה ייפתחו לאחר קביעת תאריכים ומקום"
     },
-    "syncNote": "תקציב המזומן של המהדורה הראשונה עומד על כ-CNY 5,000 (CNY 3,300 פרסים, CNY 800 חומרים, CNY 900 הסעדה). הרשמה, הצבעה ציבורית ופרסום תוצאות ייפתחו לאחר קביעת התאריכים."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

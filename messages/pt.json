@@ -2498,15 +2498,18 @@
     }
   },
   "agriHackathon": {
+    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "enterWorkbench": "Open the registration workbench",
+    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "Um hackathon de interesse público organizado pela equipe estudantil da China Agricultural University em conjunto com a comunidade aberta. 48 horas de desenvolvimento no primeiro fim de semana, uma semana de avaliação e votação e, em seguida, um Demo Day em que as 10 equipes finalistas se apresentam.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "Criar um projeto de competição",
     "openTeams": "Abrir equipes e competições",
     "backToHub": "Voltar à central de competições",
     "statusTitle": "Primeira edição em preparação",
-    "statusDescription": "As três trilhas, a ficha de cinco dimensões e os prêmios estão definidos. Datas, local e formulário de inscrição serão publicados aqui assim que forem confirmados.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "Trilhas",
       "tracksValue": "3",
@@ -2550,7 +2553,7 @@
       }
     },
     "phasesTitle": "Percurso em quatro fases",
-    "phasesDescription": "Todas as equipes seguem o mesmo caminho: inscrever-se e formar a equipe, desenvolver, passar por avaliação e votação e, por fim, apresentar presencialmente.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · Inscrição e formação de equipe",
@@ -2559,17 +2562,17 @@
       },
       "plan": {
         "label": "02 · 48 horas de desenvolvimento",
-        "description": "Desenvolva ao longo do primeiro fim de semana até uma versão mínima funcional e mantenha os principais registros de iteração.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "Não iniciado"
       },
       "produce": {
-        "label": "03 · Avaliação e votação",
-        "description": "Na semana seguinte, a avaliação profissional vale 80 % e o voto popular vale 20 %.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "Não iniciado"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "Apresente no segundo fim de semana: 5 minutos de demonstração e 3 minutos de perguntas, com pontuação ao vivo de 7 jurados.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Não iniciado"
       }
     },
@@ -2585,8 +2588,8 @@
       "evidence": "Repositório público no GitHub com licença",
       "package": "Pacote de entrega e verificação final"
     },
-    "scoringTitle": "Ficha de cinco dimensões",
-    "scoringDescription": "O júri avalia cinco dimensões, num total de 100 pontos.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / PONTUAÇÃO",
     "scoring": {
       "innovation": {
@@ -2616,12 +2619,12 @@
       }
     },
     "advanceTitle": "Regras de classificação e avaliação",
-    "advanceDescription": "A fase preliminar designa jurados de um grupo; a final é pontuada ao vivo por um painel fixo.",
-    "advanceNote": "O voto popular e a nota do júri usam escalas diferentes. O método de normalização e as medidas antifraude serão publicados antes da abertura das inscrições.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "Avaliação profissional 80 %, voto popular 20 %",
-      "pool": "Um grupo de 8 a 12 jurados, 3 designados aleatoriamente por projeto",
-      "panel": "A final é pontuada ao vivo por 7 jurados",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "Uma diferença acima de 20 pontos entre jurados aciona uma revisão manual"
     },
     "awardsTitle": "Prêmios",
@@ -2682,6 +2685,6 @@
       "ownership": "As equipes declaram o próprio trabalho e as autorizações de dados",
       "next": "Inscrição e votação virão assim que datas e local forem definidos"
     },
-    "syncNote": "A primeira edição tem um orçamento de cerca de 5.000 CNY (3.300 CNY de prêmios, 800 CNY de materiais e 900 CNY de alimentação). Inscrição, votação popular e publicação de resultados virão assim que as datas forem definidas."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

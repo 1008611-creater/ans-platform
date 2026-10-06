@@ -2484,15 +2484,18 @@
     }
   },
   "agriHackathon": {
+    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "enterWorkbench": "Open the registration workbench",
+    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "中国農業大学の学生チームとオープンコミュニティが共同で主催する公益ハッカソンです。最初の週末に 48 時間の開発、続く 1 週間で審査と投票、そして 10 チームが登壇する Demo Day を行います。",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "コンペティション用プロジェクトを作成",
     "openTeams": "チームとコンペティションを開く",
     "backToHub": "コンペティション一覧に戻る",
     "statusTitle": "第 1 回は準備中",
-    "statusDescription": "3 つのトラック、5 項目の評価基準、賞金は確定しています。日程・会場・参加登録フォームは確定次第ここで公開します。",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "トラック",
       "tracksValue": "3",
@@ -2536,7 +2539,7 @@
       }
     },
     "phasesTitle": "4 段階の参加ステップ",
-    "phasesDescription": "全チーム共通の流れです。登録とチーム編成、開発、審査と投票、そして会場での発表へ進みます。",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · 登録とチーム編成",
@@ -2545,17 +2548,17 @@
       },
       "plan": {
         "label": "02 · 48 時間の開発",
-        "description": "最初の週末に集中して開発し、動く最小構成まで仕上げ、主要な試行錯誤の記録を残します。",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "未開始"
       },
       "produce": {
-        "label": "03 · 審査と投票",
-        "description": "翌週にプロ審査 80%、一般投票 20% の比率で評価します。",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "未開始"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "2 週目の週末に発表します。5 分のデモと 3 分の質疑応答を、7 名の審査員がその場で採点します。",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "未開始"
       }
     },
@@ -2571,8 +2574,8 @@
       "evidence": "ライセンス付きの公開 GitHub リポジトリ",
       "package": "提出パッケージと最終確認"
     },
-    "scoringTitle": "5 項目の評価表",
-    "scoringDescription": "審査員が 5 つの項目を採点し、合計 100 点です。",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / 評価",
     "scoring": {
       "innovation": {
@@ -2602,12 +2605,12 @@
       }
     },
     "advanceTitle": "通過と審査のルール",
-    "advanceDescription": "予選は審査員プールから担当を割り当て、決勝は固定の審査員がその場で採点します。",
-    "advanceNote": "一般投票と審査員の点数は尺度が異なります。正規化の方法と不正対策は、参加登録の開始前に公開します。",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "プロ審査 80%、一般投票 20%",
-      "pool": "8〜12 名の審査員プールから、各プロジェクトに 3 名をランダムに割り当て",
-      "panel": "決勝は 7 名の審査員がその場で採点",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "審査員間の点差が 20 点を超えると人的確認を実施"
     },
     "awardsTitle": "賞金と賞",
@@ -2668,6 +2671,6 @@
       "ownership": "作品とデータの許諾はチームが説明",
       "next": "日程と会場が決まり次第、登録と投票を接続"
     },
-    "syncNote": "第 1 回の現金予算は約 CNY 5,000（賞金 3,300、備品 800、食事 900）。参加登録・一般投票・結果公開は、日程が確定した後に接続します。"
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

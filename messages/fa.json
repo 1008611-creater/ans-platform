@@ -2480,15 +2480,18 @@
     }
   },
   "agriHackathon": {
+    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "enterWorkbench": "Open the registration workbench",
+    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "هکاتونی با منافع عمومی که تیم دانشجویی دانشگاه کشاورزی چین همراه با جامعه باز برگزار می‌کند. 48 ساعت ساخت در نخستین آخر هفته، یک هفته داوری و رأی‌گیری، و سپس Demo Day که 10 تیم راه‌یافته در آن ارائه می‌دهند.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "ایجاد پروژه مسابقه",
     "openTeams": "باز کردن تیم‌ها و مسابقات",
     "backToHub": "بازگشت به مرکز مسابقات",
     "statusTitle": "نسخه نخست در حال آماده‌سازی است",
-    "statusDescription": "سه مسیر، کارنامه پنج‌بُعدی و جوایز نهایی شده‌اند. تاریخ، مکان و فرم ثبت‌نام پس از تأیید در همین‌جا منتشر می‌شود.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "مسیرها",
       "tracksValue": "3",
@@ -2532,7 +2535,7 @@
       }
     },
     "phasesTitle": "مسیر چهارمرحله‌ای",
-    "phasesDescription": "همه تیم‌ها مسیر اصلی یکسانی را طی می‌کنند: ثبت‌نام و تشکیل تیم، ساخت، داوری و رأی‌گیری، و در پایان ارائه حضوری.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · ثبت‌نام و تشکیل تیم",
@@ -2541,17 +2544,17 @@
       },
       "plan": {
         "label": "02 · 48 ساعت ساخت",
-        "description": "در نخستین آخر هفته تا رسیدن به یک نسخه حداقلی قابل اجرا بسازید و سوابق کلیدی تکرارها را نگه دارید.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "شروع نشده"
       },
       "produce": {
-        "label": "03 · داوری و رأی‌گیری",
-        "description": "در هفته بعد، داوری حرفه‌ای 80% و رأی عمومی 20% وزن دارد.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "شروع نشده"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "ارائه در آخر هفته دوم: 5 دقیقه دمو و 3 دقیقه پرسش و پاسخ، با امتیازدهی زنده 7 داور.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "شروع نشده"
       }
     },
@@ -2567,8 +2570,8 @@
       "evidence": "مخزن عمومی GitHub همراه با مجوز",
       "package": "بسته ارسال و بررسی نهایی"
     },
-    "scoringTitle": "کارنامه پنج‌بُعدی",
-    "scoringDescription": "داوران پنج بُعد را امتیاز می‌دهند، در مجموع 100 امتیاز.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / امتیازدهی",
     "scoring": {
       "innovation": {
@@ -2598,12 +2601,12 @@
       }
     },
     "advanceTitle": "قواعد صعود و بازبینی",
-    "advanceDescription": "مرحله مقدماتی داوران را از یک استخر تعیین می‌کند؛ مرحله نهایی به‌صورت زنده توسط هیئت ثابت امتیازدهی می‌شود.",
-    "advanceNote": "رأی عمومی و امتیاز داوران از دو مقیاس متفاوت استفاده می‌کنند. روش نرمال‌سازی و اقدامات ضدتقلب پیش از باز شدن ثبت‌نام منتشر می‌شود.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "داوری حرفه‌ای 80%، رأی عمومی 20%",
-      "pool": "استخری از 8 تا 12 داور که برای هر پروژه 3 نفر تصادفی تعیین می‌شوند",
-      "panel": "مرحله نهایی به‌صورت زنده توسط 7 داور امتیازدهی می‌شود",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "اختلاف بیش از 20 امتیاز میان داوران بازبینی دستی را فعال می‌کند"
     },
     "awardsTitle": "جوایز",
@@ -2664,6 +2667,6 @@
       "ownership": "تیم‌ها خودشان کار و مجوز داده‌هایشان را اعلام می‌کنند",
       "next": "ثبت‌نام و رأی‌گیری پس از تعیین تاریخ و مکان آغاز می‌شود"
     },
-    "syncNote": "بودجه نقدی نسخه نخست حدود CNY 5,000 است (CNY 3,300 جوایز، CNY 800 مواد، CNY 900 پذیرایی). ثبت‌نام، رأی عمومی و انتشار نتایج پس از تعیین تاریخ‌ها آغاز می‌شود."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

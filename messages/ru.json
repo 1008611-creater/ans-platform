@@ -2481,15 +2481,18 @@
     }
   },
   "agriHackathon": {
+    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "enterWorkbench": "Open the registration workbench",
+    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "Социальный хакатон, который проводят студенческая команда Китайского сельскохозяйственного университета и открытое сообщество. 48 часов разработки в первые выходные, неделя судейства и голосования, затем Demo Day, где выступают 10 команд-финалистов.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "Создать проект конкурса",
     "openTeams": "Открыть команды и конкурсы",
     "backToHub": "Назад в центр конкурсов",
     "statusTitle": "Первый сезон готовится",
-    "statusDescription": "Три трека, система оценки из пяти критериев и призы уже определены. Даты, площадка и форма регистрации появятся здесь, как только их подтвердят.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "Треки",
       "tracksValue": "3",
@@ -2533,7 +2536,7 @@
       }
     },
     "phasesTitle": "Путь из четырёх этапов",
-    "phasesDescription": "Все команды идут по одному маршруту: регистрация и сбор команды, разработка, судейство и голосование, затем очная презентация.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · Регистрация и сбор команды",
@@ -2542,17 +2545,17 @@
       },
       "plan": {
         "label": "02 · 48 часов разработки",
-        "description": "За первые выходные доведите проект до работающей минимальной версии и сохраните ключевые записи об итерациях.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "Не начат"
       },
       "produce": {
-        "label": "03 · Судейство и голосование",
-        "description": "В течение следующей недели профессиональное судейство даёт 80%, а открытое голосование — 20%.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "Не начат"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "Презентация во вторые выходные: 5 минут демо и 3 минуты вопросов, 7 судей оценивают вживую.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Не начат"
       }
     },
@@ -2568,8 +2571,8 @@
       "evidence": "Публичный репозиторий GitHub с лицензией",
       "package": "Пакет подачи и финальная проверка"
     },
-    "scoringTitle": "Оценка по пяти критериям",
-    "scoringDescription": "Жюри оценивает пять критериев, всего 100 баллов.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / ОЦЕНКА",
     "scoring": {
       "innovation": {
@@ -2599,12 +2602,12 @@
       }
     },
     "advanceTitle": "Правила отбора и судейства",
-    "advanceDescription": "В отборочном туре судей назначают из пула, финал оценивает постоянная панель вживую.",
-    "advanceNote": "Открытое голосование и оценки жюри используют разные шкалы. Метод нормализации и меры против накрутки опубликуют до открытия регистрации.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "Профессиональное судейство 80%, открытое голосование 20%",
-      "pool": "Пул из 8-12 судей, на каждый проект случайно назначают 3",
-      "panel": "Финал оценивают вживую 7 судей",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "Разница между оценками судей больше 20 баллов запускает ручную проверку"
     },
     "awardsTitle": "Призы",
@@ -2665,6 +2668,6 @@
       "ownership": "Команды сами заявляют права на работу и данные",
       "next": "Регистрация и голосование появятся, когда определят даты и площадку"
     },
-    "syncNote": "Денежный бюджет первого сезона — около CNY 5 000 (CNY 3 300 на призы, CNY 800 на материалы, CNY 900 на питание). Регистрация, открытое голосование и публикация результатов появятся, когда определят даты."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }
