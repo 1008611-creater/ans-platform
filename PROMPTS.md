@@ -165936,3 +165936,16 @@ Rainy Tokyo alley at night, neon signs in Japanese reflected in a shallow koi po
 
 </details>
 
+<details>
+<summary><strong>Clockwork Hummingbird Drinking From a Brass Flower</strong></summary>
+
+## Clockwork Hummingbird Drinking From a Brass Flower
+
+Contributed by [@f](https://github.com/f)
+
+```md
+Macro photograph of a delicate clockwork hummingbird made of brass and enamel, sipping nectar from a blooming brass orchid, tiny gears and sapphire eyes visible, soft studio lighting, shallow depth of field, ultra-detailed metal textures, elegant steampunk aesthetic
+```
+
+</details>
+
