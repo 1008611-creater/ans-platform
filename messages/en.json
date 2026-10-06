@@ -1378,6 +1378,7 @@
   },
   "developers": {
     "title": "Developers",
+    "description": "Build AI tools with the prompt enhancer, tokenizer, builder, and embed designer.",
     "promptBuilder": "Typed-Prompts IDE",
     "promptEnhancer": "Prompt Enhancer",
     "desktopOnly": "Desktop Only",

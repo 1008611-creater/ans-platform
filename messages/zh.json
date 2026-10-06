@@ -1378,6 +1378,7 @@
   },
   "developers": {
     "title": "开发者",
+    "description": "使用提示词优化器、分词器、构建器和嵌入设计器开发 AI 工具。",
     "promptBuilder": "Typed-Prompts IDE",
     "promptEnhancer": "提示词优化器",
     "desktopOnly": "仅限桌面端",
