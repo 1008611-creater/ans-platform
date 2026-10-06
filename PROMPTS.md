@@ -165910,3 +165910,16 @@ Assume the reader knows spreadsheets but not SQL. Do not rewrite the query unles
 
 </details>
 
+<details>
+<summary><strong>Glass Greenhouse Library Overlooking Alpine Fog</strong></summary>
+
+## Glass Greenhouse Library Overlooking Alpine Fog
+
+Contributed by [@f](https://github.com/f)
+
+```md
+A vast Victorian glass greenhouse perched on a cliff above alpine fog, interior filled with floor-to-ceiling wooden bookshelves and hanging plants, soft morning light refracting through condensation on the panes, a reading chair and telescope by the window, mossy stone floor, cinematic wide shot, ultra-detailed, volumetric light, peaceful atmosphere
+```
+
+</details>
+
