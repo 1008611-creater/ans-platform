@@ -1,6 +1,5 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
-import { listCompetitions } from "@/server/competitions/service";
 import { getTranslations } from "next-intl/server";
 import {
   ArrowRight,
@@ -51,15 +50,6 @@ const hubEntries = [
 
 export default async function CompetitionsPage() {
   const t = await getTranslations("competitionsHub");
-
-  let competitions: Awaited<ReturnType<typeof listCompetitions>> = [];
-  let listUnavailable = false;
-  try {
-    competitions = await listCompetitions();
-  } catch (error) {
-    listUnavailable = true;
-    console.error("competition hub: list failed", error);
-  }
 
   const entries = hubEntries.map((entry) => ({
     ...entry,
@@ -135,58 +125,6 @@ export default async function CompetitionsPage() {
             );
           })}
         </section>
-        <section className="space-y-5">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-semibold tracking-tight">全部赛事</h2>
-              <p className="text-sm text-muted-foreground">
-                平台上已创建的赛事。点进任一赛事，可以报名、组队、提交作品并跟踪评审进度。
-              </p>
-            </div>
-            <Button asChild variant="outline">
-              <Link href="/teams">团队与比赛</Link>
-            </Button>
-          </div>
-          {competitions.length ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {competitions.map((competition) => (
-                <Link key={competition.id} href={`/competitions/${competition.id}`} className="group">
-                  <Card className="h-full overflow-hidden transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
-                    <div className="h-1.5 bg-gradient-to-r from-primary via-fuchsia-500 to-amber-400" />
-                    <CardHeader className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Badge variant={competition.status === "ENDED" ? "secondary" : "default"}>
-                          {competition.status === "ENDED" ? "已结束" : competition.status === "ONGOING" ? "进行中" : "即将开始"}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{competition._count.teams} 支队伍</span>
-                      </div>
-                      <CardTitle className="text-xl leading-snug group-hover:text-primary">{competition.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="line-clamp-3 min-h-[4.5rem] text-sm leading-6 text-muted-foreground">
-                        {competition.description || "用团队协作完成一个 AI 原生作品，提交指定版本参与评审。"}
-                      </p>
-                      <div className="flex items-center justify-between border-t pt-4 text-sm">
-                        <span>{competition.organizer || "ANS 创作者社区"}</span>
-                        <span className="font-semibold text-primary">{competition.rewardXp} XP 激励</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <Card className="border-dashed">
-              <CardContent className="py-12 text-center">
-                <p className="font-semibold">{listUnavailable ? "赛事列表暂时不可用" : "新赛事正在准备中"}</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {listUnavailable ? "比赛中心仍可正常使用，请稍后刷新查看已创建赛事。" : "稍后再来，或先创建项目并邀请队友。"}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </section>
-
       </div>
     </div>
   );
