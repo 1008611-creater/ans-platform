@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> Product authority: read [the confirmed ANS baseline](docs/ANS平台方向与落地路线图.md) first. It supersedes the historical social-prompt-platform overview below. Keep the first release focused on guided learning → private project facts → generated drafts → manual revision → saved versions/export. Do not expand scope without the user's confirmation.
+> Product authority: read [the confirmed ANS baseline](docs/ANS权威产品与架构总纲.md) first. It supersedes the historical social-prompt-platform overview below. Keep the first release focused on guided learning → private project facts → generated drafts → manual revision → saved versions/export. Do not expand scope without the user's confirmation.
 
 > Guidelines for AI coding agents working on this project.
 
