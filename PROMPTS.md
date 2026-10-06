@@ -165776,3 +165776,17 @@ Ultra-realistic natural smartphone footage, natural daylight, realistic macaque 
 
 </details>
 
+<details>
+<summary><strong>vidoe </strong></summary>
+
+## vidoe 
+
+Contributed by @anonymous
+
+```md
+https://vt.tiktok.com/ZSbQrYHAw/ generate a prompt i can use to make such vidoes
+
+```
+
+</details>
+
