@@ -115697,7 +115697,7 @@ Contributed by [@ahmadawais](https://github.com/ahmadawais)
 
 ## Claude Opus as SEO Auditor
 
-Contributed by [@musatoktas](https://github.com/musatoktas)
+Contributed by [@musatoktas](https://github.com/musatoktas), @anonymous
 
 ```md
 
@@ -115721,7 +115721,7 @@ IMPORTANT RULES
    - possible issue that needs manual confirmation
 7. If a page is inaccessible, broken, or inconsistent, say so clearly.
 8. Use a strict, auditor-style tone. No fluff.
-9. Output the report in TURKISH.
+9. Output the report in ${your language}.
 10. Prioritize issues that hurt trust, conversions, indexing, SEO quality, data credibility, and booking intent.
 
 MISSION
@@ -115744,7 +115744,7 @@ Use this process:
 2. Extract all major navigation, footer, and homepage-linked URLs.
 3. Check robots.txt and sitemap.xml if available.
 4. Use internal links to discover more URLs.
-5. Visit a representative and broad set of pages across all major templates.
+5. Visit a representative, broad set of pages across all major templates.
 6. Go deep enough to identify both:
    - isolated mistakes
    - repeating template/system issues
