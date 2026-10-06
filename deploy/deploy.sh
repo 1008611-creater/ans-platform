@@ -7,7 +7,7 @@
 #   bash deploy/deploy.sh --no-build   # 只拉取并重启（改了环境变量时用）
 #   bash deploy/deploy.sh --status     # 只看状态，不做任何变更
 #
-# 可覆盖的环境变量：DEPLOY_DIR / PROJECT / ENV_FILE
+# 可覆盖的环境变量：DEPLOY_DIR / PROJECT / ENV_FILE / LOCK_FILE / LOCK_WAIT
 #
 # 铁律（踩过坑，别改）：
 #   1. 构建和启动用不同的 compose 文件：compose.yml 才有 build 段，
@@ -22,6 +22,9 @@
 #      up -d 会因容器名冲突失败 —— 但旧容器仍 healthy、镜像已构建成功、
 #      日志里没有「失败」字样。这就是「静默假成功」：你以为上线了，其实没上。
 #   5. 上线前必须先留回滚点（旧镜像打标签），否则出问题只能靠重构建。
+#   6. 这台服务器是**共享生产**：至少两条线程（比赛版 / 学习版）共用同一个
+#      部署目录和同一个镜像 tag。必须用 flock 串行化，否则并发部署会互相踩：
+#      git 抢 index.lock、同 tag 并发构建、up -d 抢容器 —— 而且两边都不会报错。
 # ============================================================================
 set -euo pipefail
 
@@ -62,6 +65,17 @@ if [[ "${1:-}" == "--status" ]]; then
     fi
     exit 0
 fi
+
+# 串行化并发部署。放在 --status 之后：只读查询不该被锁挡住。
+# 后到的部署排队等待（默认最多 30 分钟），而不是并行互相破坏。
+LOCK_FILE="${LOCK_FILE:-/var/lock/ans-platform-deploy.lock}"
+exec 9>"$LOCK_FILE"
+if ! flock -w "${LOCK_WAIT:-1800}" 9; then
+    echo "错误：等待部署锁超时（$LOCK_FILE）。可能有另一个部署仍在进行。" >&2
+    echo "  查占用者：fuser -v $LOCK_FILE  或  pgrep -af 'deploy.sh|docker compose'" >&2
+    exit 1
+fi
+echo "已取得部署锁：$LOCK_FILE"
 
 echo "[1/4] 拉取最新代码"
 git pull --ff-only origin main
