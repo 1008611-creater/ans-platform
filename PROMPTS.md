@@ -165923,3 +165923,16 @@ A vast Victorian glass greenhouse perched on a cliff above alpine fog, interior 
 
 </details>
 
+<details>
+<summary><strong>Neon Koi Pond Under a Rainy Tokyo Alley</strong></summary>
+
+## Neon Koi Pond Under a Rainy Tokyo Alley
+
+Contributed by [@f](https://github.com/f)
+
+```md
+Rainy Tokyo alley at night, neon signs in Japanese reflected in a shallow koi pond built into the street, orange and teal neon, wet asphalt, umbrellas, gentle rain streaks, cinematic still, shallow depth of field, ultra-detailed reflections, moody atmosphere
+```
+
+</details>
+
