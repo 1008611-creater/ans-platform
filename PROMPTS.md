@@ -166111,3 +166111,16 @@ If notes conflict, pick the higher severity and mark confidence as low.
 
 </details>
 
+<details>
+<summary><strong>Paper Lantern Harbor at Dusk</strong></summary>
+
+## Paper Lantern Harbor at Dusk
+
+Contributed by [@f](https://github.com/f)
+
+```md
+A quiet wooden harbor at dusk, hundreds of warm paper lanterns hanging from boats and piers, calm water reflecting orange and rose light, soft fog, cinematic wide shot, ultra-detailed, peaceful atmosphere, no people in foreground
+```
+
+</details>
+
