@@ -165715,19 +165715,6 @@ Rules:
 </details>
 
 <details>
-<summary><strong>Dev Evoluer</strong></summary>
-
-## Dev Evoluer
-
-Contributed by @anonymous
-
-```md
-J'ai ma societe et le site en ligne je veux avoir une stragerie pour avoir des clients et prospection 
-```
-
-</details>
-
-<details>
 <summary><strong>Crear imagen perfil linkedin</strong></summary>
 
 ## Crear imagen perfil linkedin
