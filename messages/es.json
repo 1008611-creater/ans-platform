@@ -2505,12 +2505,12 @@
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "Un hackathon de interés público organizado por el equipo estudiantil de la China Agricultural University junto con la comunidad abierta. 48 horas de desarrollo el primer fin de semana, una semana de evaluación y votación, y un Demo Day en el que presentan los 10 equipos finalistas.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "Crear un proyecto de concurso",
     "openTeams": "Abrir equipos y concursos",
     "backToHub": "Volver al centro de concursos",
     "statusTitle": "Primera edición en preparación",
-    "statusDescription": "Las tres categorías, la tarjeta de cinco dimensiones y los premios están definidos. Las fechas, la sede y el formulario de inscripción se publicarán aquí cuando se confirmen.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "Categorías",
       "tracksValue": "3",
@@ -2554,7 +2554,7 @@
       }
     },
     "phasesTitle": "Itinerario en cuatro fases",
-    "phasesDescription": "Todos los equipos siguen el mismo camino principal: inscribirse y formar equipo, desarrollar, pasar por evaluación y votación, y presentar en directo.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · Inscripción y formación de equipo",
@@ -2563,17 +2563,17 @@
       },
       "plan": {
         "label": "02 · 48 horas de desarrollo",
-        "description": "Desarrolla durante el primer fin de semana hasta una versión mínima funcional y conserva los registros clave de iteración.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "Sin empezar"
       },
       "produce": {
-        "label": "03 · Evaluación y votación",
-        "description": "Durante la semana siguiente, la evaluación profesional cuenta un 80 % y el voto del público un 20 %.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "Sin empezar"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "Presenta el segundo fin de semana: 5 minutos de demo y 3 minutos de preguntas, puntuados en directo por 7 jueces.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Sin empezar"
       }
     },
@@ -2589,8 +2589,8 @@
       "evidence": "Repositorio público de GitHub con licencia",
       "package": "Paquete de entrega y revisión final"
     },
-    "scoringTitle": "Tarjeta de cinco dimensiones",
-    "scoringDescription": "El jurado puntúa cinco dimensiones, 100 puntos en total.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / PUNTUACIÓN",
     "scoring": {
       "innovation": {
@@ -2620,12 +2620,12 @@
       }
     },
     "advanceTitle": "Reglas de clasificación y evaluación",
-    "advanceDescription": "La ronda preliminar asigna jueces de un grupo; la final la puntúa en directo un panel fijo.",
-    "advanceNote": "El voto del público y la puntuación del jurado usan escalas distintas. El método de normalización y las medidas antifraude se publicarán antes de que se abra la inscripción.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "Evaluación profesional 80 %, voto del público 20 %",
-      "pool": "Un grupo de 8-12 jueces; 3 asignados al azar por proyecto",
-      "panel": "La final la puntúan en directo 7 jueces",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "Una diferencia superior a 20 puntos entre jueces activa una revisión manual"
     },
     "awardsTitle": "Premios",
@@ -2686,6 +2686,6 @@
       "ownership": "Los equipos declaran su propio trabajo y las autorizaciones de datos",
       "next": "La inscripción y la votación llegarán cuando se fijen las fechas y la sede"
     },
-    "syncNote": "La primera edición cuenta con un presupuesto de unos 5.000 CNY (3.300 CNY de premios, 800 CNY de materiales y 900 CNY de restauración). La inscripción, la votación pública y la publicación de resultados llegarán cuando se fijen las fechas."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

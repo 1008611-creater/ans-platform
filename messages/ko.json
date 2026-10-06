@@ -2490,12 +2490,12 @@
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "중국농업대학교 학생 팀과 오픈 커뮤니티가 함께 여는 공익 해커톤입니다. 첫 주말 48시간 개발, 이어지는 한 주의 심사와 투표, 그리고 10개 팀이 발표하는 Demo Day로 진행됩니다.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "대회 프로젝트 만들기",
     "openTeams": "팀과 대회 열기",
     "backToHub": "대회 허브로 돌아가기",
     "statusTitle": "1회 대회 준비 중",
-    "statusDescription": "3개 트랙, 5개 항목 평가표, 상금은 확정되었습니다. 일정과 장소, 참가 신청서는 확정되는 대로 이곳에 공개합니다.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "트랙",
       "tracksValue": "3",
@@ -2539,7 +2539,7 @@
       }
     },
     "phasesTitle": "4단계 참가 경로",
-    "phasesDescription": "모든 팀이 같은 경로를 따릅니다. 신청과 팀 구성, 개발, 심사와 투표, 그리고 현장 발표 순서입니다.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · 신청과 팀 구성",
@@ -2548,17 +2548,17 @@
       },
       "plan": {
         "label": "02 · 48시간 개발",
-        "description": "첫 주말 동안 개발해 실행 가능한 최소 버전을 만들고 주요 반복 기록을 남깁니다.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "시작 전"
       },
       "produce": {
-        "label": "03 · 심사와 투표",
-        "description": "다음 한 주 동안 전문 심사 80%, 대중 투표 20%로 평가합니다.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "시작 전"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "둘째 주말에 발표합니다. 5분 데모와 3분 질의응답을 7명의 심사위원이 현장에서 채점합니다.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "시작 전"
       }
     },
@@ -2574,8 +2574,8 @@
       "evidence": "라이선스가 있는 공개 GitHub 저장소",
       "package": "제출 패키지와 최종 점검"
     },
-    "scoringTitle": "5개 항목 평가표",
-    "scoringDescription": "심사위원이 다섯 항목을 평가하며 총점은 100점입니다.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / 평가",
     "scoring": {
       "innovation": {
@@ -2605,12 +2605,12 @@
       }
     },
     "advanceTitle": "진출과 심사 규칙",
-    "advanceDescription": "예선은 심사위원 풀에서 배정해 평가하고, 결선은 고정 심사위원이 현장에서 채점합니다.",
-    "advanceNote": "대중 투표와 심사위원 점수는 척도가 다릅니다. 정규화 방식과 부정 방지 대책은 참가 신청이 열리기 전에 공개합니다.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "전문 심사 80%, 대중 투표 20%",
-      "pool": "심사위원 풀 8-12명, 프로젝트마다 3명 무작위 배정",
-      "panel": "결선은 심사위원 7명이 현장에서 채점",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "심사위원 간 점수 차가 20점을 넘으면 수동 검토"
     },
     "awardsTitle": "상금과 상",
@@ -2671,6 +2671,6 @@
       "ownership": "작품과 데이터 허가는 팀이 직접 밝힘",
       "next": "일정과 장소가 정해지면 신청과 투표 연결"
     },
-    "syncNote": "1회 대회의 현금 예산은 약 CNY 5,000입니다(상금 3,300, 물품 800, 식사 900). 참가 신청, 대중 투표, 결과 공개는 일정이 확정된 뒤 연결합니다."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

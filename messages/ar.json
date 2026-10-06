@@ -2488,12 +2488,12 @@
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "هاكاثون ذو نفع عام تنظّمه فرقة طلابية من جامعة الزراعة الصينية بالتعاون مع المجتمع المفتوح. 48 ساعة من البناء في نهاية الأسبوع الأولى، ثم أسبوع من التقييم والتصويت، ثم يوم Demo Day تعرض فيه الفرق العشرة المتأهلة أعمالها.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "أنشئ مشروع مسابقة",
     "openTeams": "افتح الفرق والمسابقات",
     "backToHub": "العودة إلى مركز المسابقات",
     "statusTitle": "النسخة الأولى قيد التحضير",
-    "statusDescription": "المسارات الثلاثة وبطاقة التقييم الخماسية والجوائز محسومة. سيُنشر هنا الموعد والمكان واستمارة التسجيل بعد تأكيدها.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "المسارات",
       "tracksValue": "3",
@@ -2537,7 +2537,7 @@
       }
     },
     "phasesTitle": "مسار من أربع مراحل",
-    "phasesDescription": "تسير كل الفرق في المسار الرئيسي نفسه: التسجيل وتكوين الفريق، ثم البناء، ثم التقييم والتصويت، ثم العرض في الموقع.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · التسجيل وتكوين الفريق",
@@ -2546,17 +2546,17 @@
       },
       "plan": {
         "label": "02 · 48 ساعة من البناء",
-        "description": "اعمل خلال نهاية الأسبوع الأولى حتى تصل إلى نسخة أولية قابلة للتشغيل، واحفظ سجلات التكرار الأساسية.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "لم تبدأ"
       },
       "produce": {
-        "label": "03 · التقييم والتصويت",
-        "description": "خلال الأسبوع التالي، يُحتسب التقييم الاحترافي بنسبة 80% وتصويت الجمهور بنسبة 20%.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "لم تبدأ"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "العرض في نهاية الأسبوع الثانية: 5 دقائق عرض تجريبي و3 دقائق أسئلة، بتقييم مباشر من 7 حكام.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "لم تبدأ"
       }
     },
@@ -2572,8 +2572,8 @@
       "evidence": "مستودع GitHub عام مع ترخيص",
       "package": "حزمة التقديم والفحص النهائي"
     },
-    "scoringTitle": "بطاقة تقييم بخمسة أبعاد",
-    "scoringDescription": "يقيّم الحكام خمسة أبعاد بمجموع 100 نقطة.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / التقييم",
     "scoring": {
       "innovation": {
@@ -2603,12 +2603,12 @@
       }
     },
     "advanceTitle": "قواعد التأهل والمراجعة",
-    "advanceDescription": "توزّع الجولة التمهيدية حكاماً من مجموعة؛ أما الجولة النهائية فيقيّمها مباشرةً فريق ثابت.",
-    "advanceNote": "يستخدم تصويت الجمهور ودرجات الحكام مقياسين مختلفين. ستُنشر طريقة المعايرة وإجراءات مكافحة التلاعب قبل فتح التسجيل.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "تقييم احترافي 80%، تصويت جمهور 20%",
-      "pool": "مجموعة من 8 إلى 12 حكماً، يُعيَّن 3 منهم عشوائياً لكل مشروع",
-      "panel": "يقيّم النهائي مباشرةً 7 حكام",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "فارق يتجاوز 20 نقطة بين الحكام يستدعي مراجعة يدوية"
     },
     "awardsTitle": "الجوائز",
@@ -2669,6 +2669,6 @@
       "ownership": "تصرّح الفرق بعملها وبتراخيص بياناتها",
       "next": "يأتي التسجيل والتصويت بعد تحديد المواعيد والمكان"
     },
-    "syncNote": "تبلغ الميزانية النقدية للنسخة الأولى نحو CNY 5,000 (CNY 3,300 للجوائز، وCNY 800 للمواد، وCNY 900 للضيافة). ويأتي التسجيل وتصويت الجمهور ونشر النتائج بعد تحديد المواعيد."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

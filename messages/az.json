@@ -2502,12 +2502,12 @@
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
-    "description": "Çin Kənd Təsərrüfatı Universitetinin tələbə komandası və açıq icma tərəfindən təşkil olunan ictimai fayda hakatonu. İlk həftəsonu 48 saat işləmə, bir həftə qiymətləndirmə və səsvermə, sonra finala çıxan 10 komandanın çıxış etdiyi Demo Day.",
+    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
     "createProject": "Yarış layihəsi yarat",
     "openTeams": "Komandaları və yarışları aç",
     "backToHub": "Yarış mərkəzinə qayıt",
     "statusTitle": "İlk buraxılış hazırlanır",
-    "statusDescription": "Üç istiqamət, beş ölçülü qiymətləndirmə cədvəli və mükafatlar müəyyən edilib. Tarixlər, məkan və qeydiyyat forması təsdiqləndikdən sonra burada yayımlanacaq.",
+    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
     "stats": {
       "tracks": "İstiqamətlər",
       "tracksValue": "3",
@@ -2551,7 +2551,7 @@
       }
     },
     "phasesTitle": "Dörd mərhələli yol",
-    "phasesDescription": "Hər komanda eyni əsas yolu keçir: qeydiyyat və komanda yaratma, inkişaf, qiymətləndirmə və səsvermə, sonra yerində təqdimat.",
+    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
     "phases": {
       "discover": {
         "label": "01 · Qeydiyyat və komanda yaratma",
@@ -2560,17 +2560,17 @@
       },
       "plan": {
         "label": "02 · 48 saatlıq işləmə",
-        "description": "İlk həftəsonu ərzində işlək minimum versiyaya çatın və əsas iterasiya qeydlərini saxlayın.",
+        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
         "state": "Başlamayıb"
       },
       "produce": {
-        "label": "03 · Qiymətləndirmə və səsvermə",
-        "description": "Növbəti həftə ərzində peşəkar qiymətləndirmə 80%, ictimai səsvermə isə 20% təşkil edir.",
+        "label": "03 · Preliminary judging and preparation",
+        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
         "state": "Başlamayıb"
       },
       "submit": {
         "label": "04 · Demo Day",
-        "description": "İkinci həftəsonu təqdimat: 5 dəqiqə demo və 3 dəqiqə sual-cavab, 7 münsif tərəfindən canlı qiymətləndirilir.",
+        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Başlamayıb"
       }
     },
@@ -2586,8 +2586,8 @@
       "evidence": "Lisenziyalı ictimai GitHub repozitoriyası",
       "package": "Təqdimat paketi və son yoxlama"
     },
-    "scoringTitle": "Beş ölçülü qiymətləndirmə cədvəli",
-    "scoringDescription": "Münsiflər beş ölçü üzrə bal verir, cəmi 100 bal.",
+    "scoringTitle": "Scoring dimensions",
+    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
     "scoringSectionLabel": "02 / QİYMƏTLƏNDİRMƏ",
     "scoring": {
       "innovation": {
@@ -2617,12 +2617,12 @@
       }
     },
     "advanceTitle": "İrəliləmə və yoxlama qaydaları",
-    "advanceDescription": "İlkin mərhələdə münsiflər hovuzdan təyin edilir; final mərhələsi sabit panel tərəfindən canlı qiymətləndirilir.",
-    "advanceNote": "İctimai səsvermə və münsif balı fərqli şkalalardan istifadə edir. Normallaşdırma üsulu və saxtakarlığa qarşı tədbirlər qeydiyyat açılmadan əvvəl yayımlanacaq.",
+    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
+    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
     "advanceItems": {
-      "professional": "Peşəkar qiymətləndirmə 80%, ictimai səsvermə 20%",
-      "pool": "8-12 münsifdən ibarət hovuz, hər layihəyə təsadüfi 3 nəfər təyin edilir",
-      "panel": "Final 7 münsif tərəfindən canlı qiymətləndirilir",
+      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
+      "pool": "Judges score on completeness, innovation and fit with the event theme",
+      "panel": "A one-day on-site final, with about 10 teams selected to advance",
       "review": "Münsiflər arasında 20 baldan çox fərq əl ilə yoxlama tələb edir"
     },
     "awardsTitle": "Mükafatlar",
@@ -2683,6 +2683,6 @@
       "ownership": "Komandalar öz işlərini və məlumat icazələrini bəyan edir",
       "next": "Tarix və məkan müəyyən edildikdən sonra qeydiyyat və səsvermə başlayır"
     },
-    "syncNote": "İlk buraxılışın pul büdcəsi təxminən CNY 5,000-dir (CNY 3,300 mükafatlar, CNY 800 materiallar, CNY 900 iaşə). Tarixlər müəyyən edildikdən sonra qeydiyyat, ictimai səsvermə və nəticələrin yayımı başlayır."
+    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
   }
 }

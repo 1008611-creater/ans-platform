@@ -53,8 +53,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/** 评分维度顺序固定，权重与文案都在 agriHackathon.scoring 里。 */
-const SCORING_KEYS = ["innovation", "technical", "completeness", "problem", "fit"] as const;
+/**
+ * 评分维度顺序固定。报批版只给维度（作品完成度 / 创新程度 / 主题契合），
+ * 不给权重，所以这里不再有 weight，卡片也不展示分值。
+ */
+const SCORING_KEYS = ["completeness", "innovation", "fit"] as const;
 
 const trackStyles = {
   people: {
@@ -108,7 +111,6 @@ export default async function AgriHackathonPage() {
     id: key,
     ...(t.raw(`scoring.${key}`) as {
       label: string;
-      weight: string;
       description: string;
     }),
   }));
@@ -263,14 +265,11 @@ export default async function AgriHackathonPage() {
             </div>
             <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-right">{t("scoringDescription")}</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {scoring.map((item) => (
               <Card key={item.id} className="border-border/80 bg-background/80">
                 <CardHeader className="gap-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <CardTitle className="text-base">{item.label}</CardTitle>
-                    <span className="text-2xl font-semibold tracking-tight text-primary">{item.weight}</span>
-                  </div>
+                  <CardTitle className="text-base">{item.label}</CardTitle>
                   <CardDescription className="leading-6">{item.description}</CardDescription>
                 </CardHeader>
               </Card>
