@@ -2472,7 +2472,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "農業 AI の公益ハッカソン、第一回",
-        "description": "48 時間の集中開発、3 つのトラック、プロ審査 80% と一般投票 20%、そして 10 チームが順位を競う Demo Day。",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "準備中",
         "highlights": [
           "3 トラック",
@@ -2557,7 +2557,7 @@
         "state": "未開始"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "未開始"
       }

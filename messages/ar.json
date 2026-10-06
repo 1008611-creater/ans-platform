@@ -2470,7 +2470,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "أول هاكاثون للذكاء الاصطناعي الزراعي ذي نفع عام",
-        "description": "48 ساعة من العمل المركّز، وثلاثة مسارات، وتقييم احترافي بنسبة 80% وتصويت جمهور بنسبة 20%، ويوم Demo Day يرتّب الفرق العشرة المتأهلة.",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "قيد التحضير",
         "highlights": [
           "3 مسارات",
@@ -2555,7 +2555,7 @@
         "state": "لم تبدأ"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "لم تبدأ"
       }

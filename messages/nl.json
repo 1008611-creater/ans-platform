@@ -2475,7 +2475,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "De eerste maatschappelijke AI-hackathon voor de landbouw",
-        "description": "48 uur gericht bouwen, drie tracks, 80% professionele beoordeling plus 20% publieksstemmen en een Demo Day waarop de 10 finalisten worden gerangschikt.",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "In voorbereiding",
         "highlights": [
           "3 tracks",
@@ -2560,7 +2560,7 @@
         "state": "Nog niet gestart"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Nog niet gestart"
       }

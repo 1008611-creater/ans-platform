@@ -139,13 +139,47 @@ echo "镜像一致：$running_id"
 
 echo
 echo "=== 冒烟检查 ==="
+# 容器刚 Recreate，Next.js 冷启动可能几秒到几十秒。
+# 旧版只 sleep 20 就逐个 curl，命中冷启动会打出 000「请求失败」的假警报，
+# 而且失败也不影响退出码 —— 于是一个好部署看起来像坏的，得靠人工复验才能确认。
+# 2026-10-06 实测：一次正常部署里 /、/projects、/competitions 三个路径报 000，
+# 手工复验全部 200。
+# 现在：每个路径最多重试 SMOKE_RETRIES 次（默认 6，退避 5/10/15/20/25/30 秒），
+# 只有始终拿不到 200 才判失败，并让脚本以退出码 1 结束。
+SMOKE_RETRIES="${SMOKE_RETRIES:-6}"
+smoke_failed=""
+
 for p in / /projects /templates /api/health /competitions /competitions/agrihackathon /api/auth/session; do
-    printf "%-28s -> " "$p"
-    curl -s -o /dev/null -w "%{http_code}\n" -m 20 -L "https://ans.cauai.fun$p" || echo "请求失败"
+    code=""
+    attempt=1
+    while [ "$attempt" -le "$SMOKE_RETRIES" ]; do
+        code="$(curl -s -o /dev/null -w '%{http_code}' -m 20 -L "https://ans.cauai.fun$p" || echo 000)"
+        [ "$code" = "200" ] && break
+        sleep $(( attempt * 5 ))
+        attempt=$(( attempt + 1 ))
+    done
+    if [ "$code" = "200" ]; then
+        printf "%-28s -> %s\n" "$p" "$code"
+    else
+        printf "%-28s -> %s  （重试 %s 次仍失败）\n" "$p" "$code" "$SMOKE_RETRIES"
+        smoke_failed="$smoke_failed $p"
+    fi
 done
 
 printf "%-28s -> " "首页权威入口"
-if curl -s -m 20 -L "https://ans.cauai.fun/" | grep -q "first-lesson"; then echo "OK"; else echo "缺失（可能仍是旧版）"; fi
+if curl -s -m 20 -L "https://ans.cauai.fun/" | grep -q "first-lesson"; then
+    echo "OK"
+else
+    echo "缺失（可能仍是旧版）"
+    smoke_failed="$smoke_failed 首页权威入口"
+fi
+
+if [ -n "$smoke_failed" ]; then
+    echo >&2
+    echo "错误：冒烟检查未通过 ——$smoke_failed" >&2
+    echo "  排查：直连容器绕开 Cloudflare —— curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3001<路径>" >&2
+    exit 1
+fi
 
 echo
-echo "部署完成。查看日志：docker logs -f $CONTAINER"
+echo "冒烟全部通过。部署完成。查看日志：docker logs -f $CONTAINER"

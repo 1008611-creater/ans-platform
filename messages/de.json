@@ -2484,7 +2484,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "Der erste gemeinnützige Hackathon für KI in der Landwirtschaft",
-        "description": "48 Stunden konzentrierte Entwicklung, drei Tracks, 80 % Fachjury und 20 % Publikumsvoting sowie ein Demo Day, an dem die 10 Finalteams bewertet werden.",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "In Vorbereitung",
         "highlights": [
           "3 Tracks",
@@ -2569,7 +2569,7 @@
         "state": "Noch nicht begonnen"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Noch nicht begonnen"
       }

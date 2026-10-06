@@ -2475,7 +2475,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "Το πρώτο hackathon τεχνητής νοημοσύνης στη γεωργία με κοινωφελή σκοπό",
-        "description": "48 ώρες εντατικής ανάπτυξης, τρεις κατηγορίες, 80% αξιολόγηση από ειδικούς και 20% ψήφος κοινού, και ένα Demo Day που κατατάσσει τις 10 ομάδες των τελικών.",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "Σε προετοιμασία",
         "highlights": [
           "3 κατηγορίες",
@@ -2560,7 +2560,7 @@
         "state": "Δεν έχει ξεκινήσει"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Δεν έχει ξεκινήσει"
       }

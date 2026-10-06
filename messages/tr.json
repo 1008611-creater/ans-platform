@@ -2483,7 +2483,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "Tarımda yapay zekâ için ilk kamu yararına hackathon",
-        "description": "48 saat odaklı geliştirme, üç kategori, %80 profesyonel değerlendirme ve %20 halk oylaması ile 10 finalist takımı sıralayan bir Demo Day.",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "Hazırlık aşamasında",
         "highlights": [
           "3 kategori",
@@ -2568,7 +2568,7 @@
         "state": "Başlamadı"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Başlamadı"
       }
