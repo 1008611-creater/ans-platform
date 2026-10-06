@@ -2490,7 +2490,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "Il primo hackathon di interesse pubblico sull'IA in agricoltura",
-        "description": "48 ore di sviluppo intenso, tre percorsi, 80 % di valutazione professionale e 20 % di voto del pubblico, e un Demo Day che classifica i 10 team finalisti.",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "In preparazione",
         "highlights": [
           "3 percorsi",
@@ -2575,7 +2575,7 @@
         "state": "Non iniziato"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Non iniziato"
       }

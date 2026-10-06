@@ -2468,7 +2468,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "نخستین هکاتون هوش مصنوعی کشاورزی با منافع عمومی",
-        "description": "48 ساعت ساخت متمرکز، سه مسیر، 80% داوری حرفه‌ای و 20% رأی عمومی، و یک Demo Day که 10 تیم راه‌یافته را رتبه‌بندی می‌کند.",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "در حال آماده‌سازی",
         "highlights": [
           "3 مسیر",
@@ -2553,7 +2553,7 @@
         "state": "شروع نشده"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "شروع نشده"
       }
