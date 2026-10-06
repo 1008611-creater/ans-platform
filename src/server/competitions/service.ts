@@ -31,18 +31,18 @@ function asFacts(facts: Array<{ key: string; value: string; confirmation: keyof 
 
 function ensureEntryOpen(competition: { status: string; startsAt: Date | null; endsAt: Date | null }, now = new Date()) {
   if (competition.status === "UPCOMING" || (competition.startsAt && competition.startsAt > now)) {
-    throw new CompetitionError(409, "COMPETITION_NOT_STARTED", "璧涗簨灏氭湭寮€濮嬶紝寮€濮嬪悗鍗冲彲鎶ュ悕鎴栨姇绋裤€");
+    throw new CompetitionError(409, "COMPETITION_NOT_STARTED", "赛事尚未开始，开始后即可报名或投稿。");
   }
   if (competition.status === "ENDED" || (competition.endsAt && competition.endsAt < now)) {
-    throw new CompetitionError(409, "COMPETITION_CLOSED", "璧涗簨宸茬粨鏉燂紝褰撳墠涓嶆帴鍙楁搷浣溿€");
+    throw new CompetitionError(409, "COMPETITION_CLOSED", "赛事已结束，当前不接受操作。");
   }
 }
 
 export async function createCompetition(actorId: string, rawInput: unknown) {
   const parsed = competitionCreateSchema.safeParse(rawInput);
-  if (!parsed.success) throw new CompetitionError(400, "INVALID_INPUT", "璧涗簨淇℃伅涓嶅畬鏁存垨鏍煎紡鏃犳晥銆");
+  if (!parsed.success) throw new CompetitionError(400, "INVALID_INPUT", "赛事信息不完整或格式无效。");
   const actor = await db.user.findUnique({ where: { id: actorId }, select: { role: true } });
-  if (actor?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "鍙湁绠＄悊鍛樺彲浠ュ垱寤鸿禌浜嬨€");
+  if (actor?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "只有管理员可以创建赛事。");
   const input = parsed.data;
   return db.competition.create({
     data: {
@@ -62,9 +62,9 @@ export async function createCompetition(actorId: string, rawInput: unknown) {
 
 export async function updateCompetition(actorId: string, competitionId: string, rawInput: unknown) {
   const parsed = competitionUpdateSchema.safeParse(rawInput);
-  if (!parsed.success) throw new CompetitionError(400, "INVALID_INPUT", "璇锋鏌ヨ淇敼鐨勮禌浜嬪瓧娈靛拰鏃ユ湡鑼冨洿銆");
+  if (!parsed.success) throw new CompetitionError(400, "INVALID_INPUT", "请检查要修改的赛事字段和日期范围。");
   const actor = await db.user.findUnique({ where: { id: actorId }, select: { role: true } });
-  if (actor?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "鍙湁绠＄悊鍛樺彲浠ラ厤缃禌浜嬨€");
+  if (actor?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "只有管理员可以配置赛事。");
   const input = parsed.data;
   try {
     return await db.competition.update({
@@ -84,7 +84,7 @@ export async function updateCompetition(actorId: string, competitionId: string, 
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      throw new CompetitionError(404, "NOT_FOUND", "娌℃湁鎵惧埌杩欏満璧涗簨銆");
+      throw new CompetitionError(404, "NOT_FOUND", "没有找到这场赛事。");
     }
     throw error;
   }
@@ -113,7 +113,7 @@ export async function getCompetition(competitionId: string, viewerId?: string | 
       },
     },
   });
-  if (!competition) throw new CompetitionError(404, "NOT_FOUND", "璧涗簨涓嶅瓨鍦ㄣ€");
+  if (!competition) throw new CompetitionError(404, "NOT_FOUND", "赛事不存在。");
   const viewerTeamIds = viewerId
     ? await db.teamMember.findMany({
       where: { userId: viewerId, status: "ACTIVE", teamId: { in: competition.teams.map((entry) => entry.team.id) } },
@@ -148,7 +148,7 @@ export async function listTeamsForCompetition(userId: string) {
 
 export async function registerCompetitionTeam(actorId: string, competitionId: string, rawInput: unknown) {
   const parsed = competitionRegisterSchema.safeParse(rawInput);
-  if (!parsed.success) throw new CompetitionError(400, "INVALID_INPUT", "璇烽€夋嫨瑕佹姤鍚嶇殑鍥㈤槦銆");
+  if (!parsed.success) throw new CompetitionError(400, "INVALID_INPUT", "请选择要报名的团队。");
   const teamId = parsed.data.teamId;
 
   try {
@@ -158,9 +158,9 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
         tx.competition.findUnique({ where: { id: competitionId } }),
       ]);
       if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
-        throw new CompetitionError(403, "TEAM_PERMISSION_REQUIRED", "闇€瑕侀槦闀挎垨鍥㈤槦绠＄悊鍛樻姤鍚嶃€");
+        throw new CompetitionError(403, "TEAM_PERMISSION_REQUIRED", "需要队长或团队管理员报名。");
       }
-      if (!competition) throw new CompetitionError(404, "NOT_FOUND", "璧涗簨涓嶅瓨鍦ㄣ€");
+      if (!competition) throw new CompetitionError(404, "NOT_FOUND", "赛事不存在。");
       ensureEntryOpen(competition);
       const existing = await tx.teamCompetition.findUnique({
         where: { teamId_competitionId: { teamId, competitionId } },
@@ -169,7 +169,7 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
         if (existing.entryStatus !== "REJECTED") return { entry: existing, created: false };
         if (competition.maxTeams !== null) {
           const count = await tx.teamCompetition.count({ where: { competitionId, entryStatus: { not: "REJECTED" } } });
-          if (count >= competition.maxTeams) throw new CompetitionError(409, "COMPETITION_FULL", "璧涗簨闃熶紞鍚嶉宸叉弧锛屾殏鏃舵棤娉曢噸鏂版姤鍚嶃€");
+          if (count >= competition.maxTeams) throw new CompetitionError(409, "COMPETITION_FULL", "赛事队伍名额已满，暂时无法重新报名。");
         }
         const reset = await tx.teamCompetition.update({
           where: { id: existing.id },
@@ -190,7 +190,7 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
       }
       if (competition.maxTeams !== null) {
         const count = await tx.teamCompetition.count({ where: { competitionId, entryStatus: { not: "REJECTED" } } });
-        if (count >= competition.maxTeams) throw new CompetitionError(409, "COMPETITION_FULL", "璧涗簨闃熶紞鍚嶉宸叉弧銆");
+        if (count >= competition.maxTeams) throw new CompetitionError(409, "COMPETITION_FULL", "赛事队伍名额已满。");
       }
       const entry = await tx.teamCompetition.create({ data: { teamId, competitionId, entryStatus: "REGISTERED" } });
       await tx.auditLog.create({
@@ -208,7 +208,7 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
-      throw new CompetitionError(409, "REGISTRATION_CONFLICT", "鍚嶉鍒氳鍏朵粬闃熶紞鍗犵敤锛岃鍒锋柊鍚庨噸璇曘€");
+      throw new CompetitionError(409, "REGISTRATION_CONFLICT", "名额刚被其他队伍占用，请刷新后重试。");
     }
     throw error;
   }
@@ -240,12 +240,12 @@ export async function submitCompetitionEntry(actorId: string, competitionId: str
       tx.teamCompetition.findUnique({ where: { teamId_competitionId: { teamId: input.teamId, competitionId } } }),
     ]);
     if (!membership) throw new CompetitionError(403, "TEAM_PERMISSION_REQUIRED", "浣犱笉鏄鍥㈤槦鐨勬湁鏁堟垚鍛橈紝鏃犳硶浠ｈ〃鍥㈤槦鎶曠銆");
-    if (!competition) throw new CompetitionError(404, "NOT_FOUND", "娌℃湁鎵惧埌杩欏満璧涗簨銆");
+    if (!competition) throw new CompetitionError(404, "NOT_FOUND", "没有找到这场赛事。");
     ensureEntryOpen(competition);
-    if (!project || !version) throw new CompetitionError(404, "PROJECT_VERSION_NOT_FOUND", "鎵句笉鍒拌鍥㈤槦椤圭洰鎴栨寚瀹氫綔鍝佺増鏈€");
-    if (!entry) throw new CompetitionError(409, "TEAM_NOT_REGISTERED", "璇峰厛涓鸿鍥㈤槦瀹屾垚璧涗簨鎶ュ悕銆");
-    if (!activeMembers.some((member) => member.userId === actorId)) throw new CompetitionError(403, "TEAM_PERMISSION_REQUIRED", "浣犲綋鍓嶄笉鏄鍥㈤槦鐨勬湁鏁堟垚鍛樸€");
-    if (!["REGISTERED", "REJECTED"].includes(entry.entryStatus)) throw new CompetitionError(409, "SUBMISSION_LOCKED", "璇ヨ禌浜嬫姇绋垮凡鎻愪氦鎴栧凡閫氳繃瀹℃牳锛屼笉鑳介噸澶嶆彁浜ゃ€");
+    if (!project || !version) throw new CompetitionError(404, "PROJECT_VERSION_NOT_FOUND", "找不到该团队项目或指定作品版本。");
+    if (!entry) throw new CompetitionError(409, "TEAM_NOT_REGISTERED", "请先为该团队完成赛事报名。");
+    if (!activeMembers.some((member) => member.userId === actorId)) throw new CompetitionError(403, "TEAM_PERMISSION_REQUIRED", "你当前不是该团队的有效成员。");
+    if (!["REGISTERED", "REJECTED"].includes(entry.entryStatus)) throw new CompetitionError(409, "SUBMISSION_LOCKED", "该赛事投稿已提交或已通过审核，不能重复提交。");
     const updated = await tx.teamCompetition.updateMany({
       where: { id: entry.id, entryStatus: entry.entryStatus },
       data: {
@@ -286,7 +286,7 @@ export async function submitCompetitionEntry(actorId: string, competitionId: str
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
-      throw new CompetitionError(409, "SUBMISSION_CONFLICT", "鍥㈤槦鎴愬憳鎴栨姇绋跨姸鎬佸垰鍒氬彉鍖栵紝璇峰埛鏂板悗閲嶆柊纭銆");
+      throw new CompetitionError(409, "SUBMISSION_CONFLICT", "团队成员或投稿状态刚刚变化，请刷新后重新确认。");
     }
     throw error;
   }
@@ -294,10 +294,10 @@ export async function submitCompetitionEntry(actorId: string, competitionId: str
 
 export async function reviewCompetitionEntry(reviewerId: string, rawInput: unknown) {
   const parsed = competitionReviewSchema.safeParse(rawInput);
-  if (!parsed.success) throw new CompetitionError(400, "INVALID_INPUT", "璇锋鏌ュ鏍哥粨璁恒€佽鏄庡拰濂栧姳棰濆害銆");
+  if (!parsed.success) throw new CompetitionError(400, "INVALID_INPUT", "请检查审核结论、说明和奖励额度。");
   const input = parsed.data;
   const reviewer = await db.user.findUnique({ where: { id: reviewerId }, select: { role: true } });
-  if (reviewer?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "鍙湁绠＄悊鍛樺彲浠ュ鏍歌禌浜嬫姇绋裤€");
+  if (reviewer?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "只有管理员可以审核赛事投稿。");
 
   try {
     return await db.$transaction(async (tx) => {
@@ -309,7 +309,7 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
           submissionVersion: { include: { artifact: { include: { project: { include: { facts: true } } } } } },
         },
       });
-      if (!entry || entry.entryStatus !== "SUBMITTED" || !entry.submissionVersion) throw new CompetitionError(409, "REVIEW_NOT_PENDING", "璇ユ姇绋垮凡琚鐞嗘垨浣滃搧鐗堟湰宸蹭笉瀛樺湪锛岃鍒锋柊瀹℃牳闃熷垪銆");
+      if (!entry || entry.entryStatus !== "SUBMITTED" || !entry.submissionVersion) throw new CompetitionError(409, "REVIEW_NOT_PENDING", "该投稿已被处理或作品版本已不存在，请刷新审核队列。");
       if (input.decision === "approve" && entry.publicConsent) {
         const blockers = publicReviewBlockers(asFacts(entry.submissionVersion.artifact.project.facts), entry.submissionVersion.contentMarkdown);
         if (blockers.length) throw new CompetitionError(409, "PUBLICATION_BLOCKED", blockers.join(" "));
@@ -365,7 +365,7 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
-      throw new CompetitionError(409, "REVIEW_CONFLICT", "瀹℃牳闃熷垪鎴栧鍔遍绠楀垰鍒氬彂鐢熷彉鍖栵紝璇峰埛鏂板悗閲嶈瘯銆");
+      throw new CompetitionError(409, "REVIEW_CONFLICT", "审核队列或奖励预算刚刚发生变化，请刷新后重试。");
     }
     throw error;
   }
@@ -373,7 +373,7 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
 
 export async function getCompetitionAdminOverview(reviewerId: string) {
   const reviewer = await db.user.findUnique({ where: { id: reviewerId }, select: { role: true } });
-  if (reviewer?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "鍙湁绠＄悊鍛樺彲浠ユ煡鐪嬭禌浜嬬鐞嗘暟鎹€");
+  if (reviewer?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "只有管理员可以查看赛事管理数据。");
   const [competitions, reviewQueue] = await Promise.all([
     db.competition.findMany({ orderBy: { createdAt: "desc" }, include: { _count: { select: { teams: true } } } }),
     db.teamCompetition.findMany({
@@ -390,7 +390,7 @@ export async function getCompetitionAdminOverview(reviewerId: string) {
 }
 export async function listPendingCompetitionEntries(reviewerId: string) {
   const reviewer = await db.user.findUnique({ where: { id: reviewerId }, select: { role: true } });
-  if (reviewer?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "鍙湁绠＄悊鍛樺彲浠ュ鏍歌禌浜嬫姇绋裤€");
+  if (reviewer?.role !== "ADMIN") throw new CompetitionError(403, "FORBIDDEN", "只有管理员可以审核赛事投稿。");
   return db.teamCompetition.findMany({
     where: { entryStatus: "SUBMITTED" },
     orderBy: { submittedAt: "asc" },
