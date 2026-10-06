@@ -135816,3 +135816,16 @@ Produce:
 4) Closing that invites one concrete reply
 
 Rules: Never promise refunds/credits not allowed by policy. Never invent tracking numbers or dates. Keep under 180 words unless the user asks for detail.",FALSE,TEXT,f
+SQL Query Explainer for Non-Engineers,"Explain this SQL for a non-engineer stakeholder.
+
+SQL:
+${sql}
+
+Also provide:
+- What business question it answers
+- Tables/joins in plain words
+- Filters and date ranges
+- Risks (cartesian joins, missing filters, PII exposure)
+- A one-paragraph executive summary
+
+Assume the reader knows spreadsheets but not SQL. Do not rewrite the query unless asked.",FALSE,TEXT,f
