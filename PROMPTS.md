@@ -169101,3 +169101,16 @@ Keep the whole brief practical and specific. If a game detail is missing or vagu
 
 </details>
 
+<details>
+<summary><strong>Sky Orchard Merchants Board Game Box Cover</strong></summary>
+
+## Sky Orchard Merchants Board Game Box Cover
+
+Contributed by [@f](https://github.com/f)
+
+```md
+Painterly board game box cover illustration for a cozy cooperative trading game about airship merchants. Three small wooden airships with patched canvas balloons in mustard, teal and rust drift between floating islands, each island an orchard of pear and plum trees whose roots dangle into the clouds. Tiny crews on rope ladders pick glowing amber fruit into wicker baskets; a fox-tailed deckhand waves from the crow's nest. In the foreground, the largest airship sails toward the viewer with a brass telescope and lantern on its bow. Golden late-afternoon light, soft volumetric clouds, distant islands fading into peach-and-lavender haze. Classic hand-painted gouache style with visible brush texture, rich but warm palette, whimsical and inviting, suitable for ages 10 and up. Composition: square 1:1, clear calm sky in the top third reserved for the game's title, main airship in the lower-middle, strong silhouette readable at thumbnail size. No text, no letters, no logos, no borders.
+```
+
+</details>
+
