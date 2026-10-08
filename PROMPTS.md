@@ -150730,19 +150730,6 @@ cinematic_lighting.safetensors (Weight: 0.5)
 </details>
 
 <details>
-<summary><strong>Mujhe esa prompt do jo mujhe machine ke 1000$ de sake</strong></summary>
-
-## Mujhe esa prompt do jo mujhe machine ke 1000$ de sake
-
-Contributed by @anonymous
-
-```md
-Mujhe esa prompt do jis se main mahine ke 1000$ dollars kama sako
-```
-
-</details>
-
-<details>
 <summary><strong>Classic Algorithm writing tutorial</strong></summary>
 
 ## Classic Algorithm writing tutorial
