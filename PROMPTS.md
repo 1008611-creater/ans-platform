@@ -125157,19 +125157,6 @@ Rules:
 </details>
 
 <details>
-<summary><strong>Oh</strong></summary>
-
-## Oh
-
-Contributed by @anonymous
-
-```md
-Remove original background and put in realistic basketball court on a sunny day. Put in the name OGMELLY in background as graffiti. Only keep body features the sa,e with digital illustration 
-```
-
-</details>
-
-<details>
 <summary><strong>Apple Store ASO Expert Guide</strong></summary>
 
 ## Apple Store ASO Expert Guide
