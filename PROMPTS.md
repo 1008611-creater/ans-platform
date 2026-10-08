@@ -163869,3 +163869,17 @@ Create a cute, futuristic, and bubbly graffiti text logo featuring the words “
 
 </details>
 
+<details>
+<summary><strong>TikTok Video Style Prompt Generator</strong></summary>
+
+## TikTok Video Style Prompt Generator
+
+Contributed by @anonymous
+
+```md
+https://vt.tiktok.com/ZSbQrYHAw/ generate a prompt i can use to make such vidoes
+
+```
+
+</details>
+
