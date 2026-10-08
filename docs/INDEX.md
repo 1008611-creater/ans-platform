@@ -26,6 +26,7 @@
 
 - [ADR 0001：工作流采用有限 DAG](./adr/0001-workflow-dag.md)
 - [ADR 0002：工作流采用「AI 初审 + 人工复核」双层把关](./adr/0002-workflow-ai-review.md)
+- [ADR 0003：农客松技术工作区、阶段提交和最小权限](./adr/0003-agrihackathon-technical-workspace.md)：分阶段设计与实施记录；当前生产 P2 和未启用范围见权威总纲。
 
 架构和数据模型的重大变化记录在 `docs/adr/`。
 
@@ -57,3 +58,15 @@
 ## 平台愿景与路线
 
 - [ANS 权威产品与架构总纲](./ANS权威产品与架构总纲.md)：当前固定基线，不是可选建议。
+
+## Current production status (2026-10-08)
+
+- Current release: `ans-product-e37c465603270fa1`
+- Deployment time: `2026-10-08T18:06:44.406420+00:00Z`
+- Linux BUILD_ID: `GgUFsIX68BdfT86LECCpj`
+- Historical baseline: `ans-product-c89b31a564b6e794`
+- Public-schema backup SHA-256: `0df818a52807b29e297fe2030c69f3ad3482219618bedebce010e4c346fa5a47`
+- All 60 migrations finished; 60-to-60 no-op, 107-table schema/data preservation, six deferred guards, production pages, and onsite targeted-message acceptance are recorded
+- Toonflow production embed remains disabled; e37 parent transfer is incomplete, and c89/9c68 recovery evidence does not prove a new e37 preview
+
+See [production release and recovery gates](./agent-team/production-release.md) and [ADR 0003](./adr/0003-agrihackathon-technical-workspace.md).
