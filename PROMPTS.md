@@ -151125,19 +151125,6 @@ A handsome young man sits casually atop a large rocky cliff overlooking a vast t
 </details>
 
 <details>
-<summary><strong>1. منظور الممشى والمطاعم النهرية (Boardwalk View):</strong></summary>
-
-## 1. منظور الممشى والمطاعم النهرية (Boardwalk View):
-
-Contributed by @anonymous
-
-```md
-A photorealistic 3D architectural render of a modern curved resort building along a river boardwalk. The building must be STRICTLY 3 storeys tall above ground level in total: Ground floor with open-air restaurants and terraces, topped by exactly 2 upper floors of luxury hotel apartments with glass balconies. Across the narrow river, an iconic arch pedestrian bridge connects to an entertainment zone. Golden hour sunlight, highly detailed 8k render.
-```
-
-</details>
-
-<details>
 <summary><strong>CLASSIC TRADING GAIN AI</strong></summary>
 
 ## CLASSIC TRADING GAIN AI
