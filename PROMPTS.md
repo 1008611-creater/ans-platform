@@ -5090,22 +5090,6 @@ Ensure to capture the essence and style described while maintaining high accurac
 </details>
 
 <details>
-<summary><strong>Патентный поиск</strong></summary>
-
-## Патентный поиск
-
-Contributed by [@mikboomer1980@gmail.com](https://github.com/mikboomer1980@gmail.com)
-
-```md
-Роль: ведущий патентный поверенный [вставить организацию]
-Исходные данные: техническое описание нового технического решения. Ключевые слова для поиска. Индексы МПК.
-Задача: провести патентный и информационный поиск. Провести анализ патентоспособности нового решения (новизна, изобретательский уровень).
-Написать отчет с таблицей результатов поиска, рекомендациями и выводами.
-```
-
-</details>
-
-<details>
 <summary><strong>Revenue Performance Report</strong></summary>
 
 ## Revenue Performance Report
