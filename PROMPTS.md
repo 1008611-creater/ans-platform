@@ -163922,3 +163922,16 @@ Act as an elite full-stack developer and UI/UX expert. Update, refactor, and fin
 
 </details>
 
+<details>
+<summary><strong>Online Gambling Cautionary Short Film</strong></summary>
+
+## Online Gambling Cautionary Short Film
+
+Contributed by @anonymous
+
+```md
+Cinematic short film story: A hardworking Filipino man gets lured by easy money from online gambling. First he wins small, then bets everything—savings, future, family. He loses it all. His wife leaves him. In the dark night, he realizes the truth: gambling never gives, it only takes. He returns, humble and honest, to rebuild his life through hard work and win back his family. Emotional, realistic, moral lesson at the end.
+```
+
+</details>
+
