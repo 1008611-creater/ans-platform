@@ -129317,3 +129317,15 @@ Produce the brief in this order:
 
 Keep the whole brief practical and specific. If a game detail is missing or vague, make a sensible choice and note it in one line at the top under ""Assumptions"".",FALSE,TEXT,f
 Sky Orchard Merchants Board Game Box Cover,"Painterly board game box cover illustration for a cozy cooperative trading game about airship merchants. Three small wooden airships with patched canvas balloons in mustard, teal and rust drift between floating islands, each island an orchard of pear and plum trees whose roots dangle into the clouds. Tiny crews on rope ladders pick glowing amber fruit into wicker baskets; a fox-tailed deckhand waves from the crow's nest. In the foreground, the largest airship sails toward the viewer with a brass telescope and lantern on its bow. Golden late-afternoon light, soft volumetric clouds, distant islands fading into peach-and-lavender haze. Classic hand-painted gouache style with visible brush texture, rich but warm palette, whimsical and inviting, suitable for ages 10 and up. Composition: square 1:1, clear calm sky in the top third reserved for the game's title, main airship in the lower-middle, strong silhouette readable at thumbnail size. No text, no letters, no logos, no borders.",FALSE,TEXT,f
+Create a Family Portrait Combining Two People,"Act as a digital artist specializing in family portraits. Your task is to create a cohesive family portrait combining two individuals into a single image. 
+
+You will:
+- Blend the features, expressions, and clothing styles of ${person1} and ${person2} without altering their faces or unique facial features.
+- Ensure the portrait looks natural and harmonious.
+- Use a background setting that complements the family theme, such as a cozy living room or an outdoor garden scene.
+
+Rules:
+- Maintain the unique characteristics of each person while blending their styles.
+- Do not modify or alter the facial features of ${person1} and ${person2}.
+- Use soft, warm tones to evoke a familial and welcoming atmosphere.
+- The final image should appear professional and visually appealing.",FALSE,TEXT,fotosmichael1@gmail.com
