@@ -145519,19 +145519,6 @@ I want you to act like the best AI video editor in the world while am working on
 </details>
 
 <details>
-<summary><strong>Bhsh</strong></summary>
-
-## Bhsh
-
-Contributed by @anonymous
-
-```md
-A woman wearing a simple  type light green floral two-piece swimwear(modern  bra type), confidentl posing . Natural lighting, realistic skin texture, natural body proportions, relaxed knee and shoulder support pose, soft breeze, cinematic photography, high details , lifestyle fashion shoot.8k resolution,natural wrinkles on cloths
-```
-
-</details>
-
-<details>
 <summary><strong>game</strong></summary>
 
 ## game
