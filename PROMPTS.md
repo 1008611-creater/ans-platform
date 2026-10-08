@@ -79354,19 +79354,6 @@ Contributed by [@ayoubelouardi3710@gmail.com](https://github.com/ayoubelouardi37
 </details>
 
 <details>
-<summary><strong>Xh</strong></summary>
-
-## Xh
-
-Contributed by [@xachikhambaryan107@gmail.com](https://github.com/xachikhambaryan107@gmail.com)
-
-```md
-Create a movie website that will have menu navigation, beautiful selectors, and more.
-```
-
-</details>
-
-<details>
 <summary><strong>Train Waiter</strong></summary>
 
 ## Train Waiter
