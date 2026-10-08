@@ -148888,44 +148888,6 @@ generate a instruction for project in claude where you need to review the kra an
 </details>
 
 <details>
-<summary><strong>Pourquoi une entreprise n'apparaît pas dans le pack local Google</strong></summary>
-
-## Pourquoi une entreprise n'apparaît pas dans le pack local Google
-
-Contributed by @anonymous
-
-```md
-Tu es expert du classement local Google. Un professionnel n'apparaît pas dans les trois résultats locaux (le « pack local ») sur les requêtes qui compteraient pour lui. Analyse pourquoi et hiérarchise les leviers.
-
-Établissement : ${nom_etablissement}
-Adresse : ${adresse}
-Activité : ${activite}
-Requêtes visées : ${requetes}
-Zone à couvrir : ${zone_visee}
-Positions constatées, si connues : ${positions_constatees}
-Concurrents qui apparaissent à sa place : ${concurrents_visibles}
-
-Analyse selon les trois facteurs du classement local, sans les mélanger :
-1. Pertinence — l'adéquation entre la fiche, le site et la requête : catégorie, description, services, contenu du site sur cette prestation, page dédiée à la ville ou au quartier.
-2. Distance — l'écart entre l'adresse et le point de recherche de l'internaute. Explique pourquoi la visibilité décroît avec l'éloignement et jusqu'où il est réaliste de viser. Dis clairement ce qui n'est pas atteignable depuis cette adresse.
-3. Notoriété — avis, citations et mentions dans les annuaires, cohérence des informations, autorité du site, liens locaux.
-
-Pour chaque requête visée, indique le facteur limitant principal. Ne propose pas dix actions : désigne le verrou.
-
-Compare ensuite avec les concurrents visibles : qu'ont-ils que ce professionnel n'a pas, en distinguant ce qui est rattrapable en quelques semaines de ce qui demande des mois.
-
-Sortie :
-- tableau : Requête | Facteur limitant | Action | Délai réaliste
-- trois actions prioritaires, dans l'ordre
-- une phrase honnête sur ce qui ne sera pas atteignable, et pourquoi
-
-N'invente aucune position ni aucun chiffre. Si une donnée manque, dis laquelle et comment l'obtenir.
-Français de France.
-```
-
-</details>
-
-<details>
 <summary><strong>Avis Google : stratégie de collecte et réponses type</strong></summary>
 
 ## Avis Google : stratégie de collecte et réponses type
