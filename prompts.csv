@@ -36995,10 +36995,6 @@ The realistic car remains clearly visible beneath the annotations at all times.C
 Place the title “${object_name}” inside a hand-drawn technical annotation box in one corner of the image.
 
 Visual style: museum exhibit / engineering infographicColor palette: white background, black annotation lines and text only (no other colors)Output: ultra-crisp, high detail, social-media optimized square compositionAspect ratio: 1:1 (1080×1080)No watermark, no logo, no UI, no decorative illustration style",FALSE,TEXT,akykaan
-My-Skills,"Yazılacak kod aşağıdaki yeteneklerde olacak.
-
-1. kullanıcı girişi olacak ve kullanıcı şifresi veritabanında salt ve diğer güçlü şifre korumaları ile tutulacak.
-2. backend ve frontend güçlü güvenlik sıkılaştırmalarına sahip olacak.",TRUE,TEXT,ikavak@gmail.com
 Cyber Security Character Workflow,"{
   ""name"": ""Cyber Security Character"",
   ""steps"": [
