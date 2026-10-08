@@ -152374,22 +152374,6 @@ Analysis the given chart n give perfect reading and stop loss n buy n sell n pro
 </details>
 
 <details>
-<summary><strong>vb</strong></summary>
-
-## vb
-
-Contributed by @anonymous
-
-```md
-I want to create a transparent background image for a SVG file to print on my Cricut so I can apply permanent vinyl to a car.
-
-What I want is "text" to say - Look Pretty Play Dirty
-A Skull & sunflowers,  something that will look good with Black and Pink Vinyl
-```
-
-</details>
-
-<details>
 <summary><strong>Cozy Minimalist Kitchen Portrait</strong></summary>
 
 ## Cozy Minimalist Kitchen Portrait
