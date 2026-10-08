@@ -122276,7 +122276,6 @@ SPECIFIC LOGIC REQUIREMENTS:
   - Include basic local caching (`chrome.storage.local`) for 24 hours so we don't waste API credits if the user clicks the same site twice.
 
 Please output the code for each file clearly labeled. Ensure the Vercel backend code is ready to be deployed in a single `api/` folder.",FALSE,TEXT,arixnetwork
-Dr Althea,وصف جذاب و مناسب لمنتج العناية بالبشرة Dr Althea 345,FALSE,TEXT,zizou260397@gmail.com
 wwww,"# MVP Phase 1 — Foundation
 
 ## Objective
