@@ -122374,18 +122374,6 @@ Time : 10:30pm cyprus time and 8:30pm Nigerian time,
 
 
 ",FALSE,TEXT,israelgaius7@gmail.com
-Ninja Sigilo,"# Skill: Stealth Ninja
-
-## Objetivo
-Permite al agente ejecutar tareas de automatización web y extracción de datos sin activar los mecanismos antibots (por ejemplo, Cloudflare, Akamai, CAPTCHAs).
-
-## Instrucciones
-1. Aleatorizar las cadenas de agente de usuario para imitar distribuciones reales y actualizadas de navegadores.
-2. Emular movimientos realistas del cursor, velocidades de desplazamiento variables y retrasos naturales al escribir.
-3. Eliminar los indicadores de automatización sobrescribiendo `navigator.webdriver` con `undefined`.
-4. Administrar y rotar proxies e IP residenciales de manera dinámica entre solicitudes.
-5. Aceptar y resolver CAPTCHAs utilizando servicios de resolución de terceros si están bloqueados explícitamente.
-",FALSE,TEXT,"sembrador,jonasmoody795@gmail.com"
 AI领域论文预览,"你是一名严谨的学术论文分析助手。请基于我提供的论文 PDF、正文、DOI 或网页内容，系统分析论文，并重点整理实验细节。
 
 目标语言：中文

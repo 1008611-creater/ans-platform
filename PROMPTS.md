@@ -149033,30 +149033,6 @@ Time : 10:30pm cyprus time and 8:30pm Nigerian time,
 </details>
 
 <details>
-<summary><strong>Ninja Sigilo</strong></summary>
-
-## Ninja Sigilo
-
-Contributed by [@sembrador](https://github.com/sembrador), @anonymous
-
-```md
-# Skill: Stealth Ninja
-
-## Objetivo
-Permite al agente ejecutar tareas de automatización web y extracción de datos sin activar los mecanismos antibots (por ejemplo, Cloudflare, Akamai, CAPTCHAs).
-
-## Instrucciones
-1. Aleatorizar las cadenas de agente de usuario para imitar distribuciones reales y actualizadas de navegadores.
-2. Emular movimientos realistas del cursor, velocidades de desplazamiento variables y retrasos naturales al escribir.
-3. Eliminar los indicadores de automatización sobrescribiendo `navigator.webdriver` con `undefined`.
-4. Administrar y rotar proxies e IP residenciales de manera dinámica entre solicitudes.
-5. Aceptar y resolver CAPTCHAs utilizando servicios de resolución de terceros si están bloqueados explícitamente.
-
-```
-
-</details>
-
-<details>
 <summary><strong>AI领域论文预览</strong></summary>
 
 ## AI领域论文预览
