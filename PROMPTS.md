@@ -145519,19 +145519,6 @@ I want you to act like the best AI video editor in the world while am working on
 </details>
 
 <details>
-<summary><strong>Ww</strong></summary>
-
-## Ww
-
-Contributed by @anonymous
-
-```md
-A woman wearing a loose-fitting, lived-in light maroon floral two-piece swimwear (classic bra style), the fabric visibly soft and draping with relaxed wrinkles- garment-washed cotton with a gently rumpled texture, no crispness or shine, looking comfortably worn like a favorite 3-4 year old piece. She poses confidently on a beach with wet sand and gentle waves. Her posture is relaxed, torso leaning subtly left from the waist creating a gentle curve, left hand hanging loosely at her side, right hand lifting gracefully toward her hair, fingers gently tousling strands in the soft breeze. Natural sunlight, realistic skin texture with visible pores and natural imperfections, soft natural body curves with relaxed core. Cinematic photography style, deep depth of field keeping background in focus, 8k resolution, smartphone photography aesthetic with natural grain, no artificial smoothing or glossy skin. Soft breeze moving through fabric and hair, lifestyle fashion shoot vibe, high detail.
-```
-
-</details>
-
-<details>
 <summary><strong>Aa</strong></summary>
 
 ## Aa
