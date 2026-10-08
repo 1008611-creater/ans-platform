@@ -149000,34 +149000,6 @@ To guarantee structure never breaks or degrades across long conversations:
 </details>
 
 <details>
-<summary><strong>Pagina "Acerca de Mí"</strong></summary>
-
-## Pagina "Acerca de Mí"
-
-Contributed by [@sembrador](https://github.com/sembrador)
-
-```md
-Actúa como diseñador web. Tu tarea consiste en crear una página «Acerca de mí» que resulte visualmente atractiva y funcional. Tu página debe seguir los principios de diseño del «Glassmorphism» con una paleta de colores oscuros y cálidos, que recuerde al estilo del papel y el lápiz. Asegúrate de que la página sea adaptativa y funcione a la perfección tanto en computadores de escritorio como en dispositivos móviles.
-
-Tu página incluirá:
-- Una sección de presentación personal con secciones personalizables para ir actualizándola progresivamente.
-- Opciones de integración para añadir enlaces a canales de Telegram.
-- Funciones adicionales orientadas al público para mejorar la participación de los usuarios.
-
-Tus tareas serán:
-- Diseñar un panel de administración que facilite la gestión de contenidos y permita realizar actualizaciones sin necesidad de que el usuario inicie sesión.
-- Utilizar fuentes persas aptas para la web y adecuadas para el diseño web.
-- Asegurarte de que el diseño sea limpio, atractivo y llamativo.
-
-Normas:
-- No se permiten funciones de inicio de sesión para los usuarios.
-- Mantener la simplicidad sin renunciar a una estética de diseño avanzada.
-
-```
-
-</details>
-
-<details>
 <summary><strong>Electricite Mobtahij</strong></summary>
 
 ## Electricite Mobtahij
