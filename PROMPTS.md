@@ -146619,19 +146619,6 @@ Create a point and click game with the theme and mechanic of the AI choice, make
 </details>
 
 <details>
-<summary><strong>churrasqueira goumet</strong></summary>
-
-## churrasqueira goumet
-
-Contributed by @anonymous
-
-```md
-crie um prompt para criar do zero atraves de uma fotografia um ambiente em uma churrasqueira gourmet 
-```
-
-</details>
-
-<details>
 <summary><strong>Kamal</strong></summary>
 
 ## Kamal
