@@ -153202,19 +153202,6 @@ Create a highly detailed, textured logo for (Brand Name), made of thick yarn or 
 </details>
 
 <details>
-<summary><strong>استخراج البرومت من الصوره بكل تفاصلها</strong></summary>
-
-## استخراج البرومت من الصوره بكل تفاصلها
-
-Contributed by @anonymous
-
-```md
-استخرج لى البرومبت Prompt حق الصوره بكل التفاصيل والخطوط والمقاس يكون نص كامل انسخه واستخدمه منتج اخر وشركة اخري  في  كانفا  حتي النص يكون بالعربية ويشمل المقاس واللوان والخلفية يكون 100%
-```
-
-</details>
-
-<details>
 <summary><strong>Cozy Cyber Gamer Girl Portrait</strong></summary>
 
 ## Cozy Cyber Gamer Girl Portrait
