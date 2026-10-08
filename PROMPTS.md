@@ -141228,37 +141228,6 @@ FIRST COMPLETE PHASE 0 ONLY."
 </details>
 
 <details>
-<summary><strong>GLP</strong></summary>
-
-## GLP
-
-Contributed by @anonymous
-
-```md
-احتاج prompt تصميم عرض عن GLP: Good Laboratory practice لتدريب موظفي مختبر تحليل الاغذية ،
- العرض يشمل الاتي: 
-مفاهيم 
-الاهمية 
-المخاطر
-الانظمة 
-التعليمات 
-السلامة 
-الجودة
-الموظفين 
-ادوات السلامة 
-ادوات و اجهزة التحليل 
-المنشاءة و المختبر 
-وغيرها 
- امثلة وتطبيقات 
-صورة تعبيرية  (رسوم ، كركتر)
- وفي النهائية لابدد من ان يشمل المصادر ، العرض يجب ان يكون بالعربي  ، عدد الشرائح لا يقل عن 50 
-انشاء العرض 
-
-```
-
-</details>
-
-<details>
 <summary><strong>Identify</strong></summary>
 
 ## Identify
