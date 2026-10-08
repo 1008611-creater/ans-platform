@@ -147379,19 +147379,6 @@ Design and creation of a marketing plan on Social Media platforms to market Haye
 </details>
 
 <details>
-<summary><strong>Jdjsj</strong></summary>
-
-## Jdjsj
-
-Contributed by @anonymous
-
-```md
-Sahilde bir araba
-```
-
-</details>
-
-<details>
 <summary><strong>diapositivas profesionales </strong></summary>
 
 ## diapositivas profesionales 
