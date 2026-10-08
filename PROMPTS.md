@@ -153377,19 +153377,6 @@ Contributed by @anonymous
 </details>
 
 <details>
-<summary><strong>image</strong></summary>
-
-## image
-
-Contributed by @anonymous
-
-```md
-create full project html css as well as this image 100%
-```
-
-</details>
-
-<details>
 <summary><strong>gebnerations</strong></summary>
 
 ## gebnerations
