@@ -146088,54 +146088,6 @@ If yes, the whitepaper is doing its job.
 </details>
 
 <details>
-<summary><strong>01 — Iniciar trabalho autônomo</strong></summary>
-
-## 01 — Iniciar trabalho autônomo
-
-Contributed by [@josevictorp](https://github.com/josevictorp)
-
-```md
-Leia AGENTS.md e siga o protocolo do projeto.
-
-Depois:
-
-1. Leia PROJECT.md e WORK.md.
-2. Consulte DECISIONS.md e planos ativos somente quando relevantes.
-3. Inspecione o estado real do repositório, incluindo Git, alterações locais, branches e testes relevantes.
-4. Identifique tarefas ativas, bloqueios, arquivos reservados e o próximo passo legítimo.
-5. Verifique se existe uma tarefa autorizada que possa avançar sem uma decisão minha.
-6. Assuma ou retome a tarefa mais adequada e registre sua responsabilidade em WORK.md.
-7. Classifique a tarefa como trivial, normal ou complexa e como R0, R1, R2 ou R3.
-8. Planeje apenas na profundidade proporcional ao trabalho.
-9. Renomeie a sessão, quando a plataforma permitir, usando:
-   ${identificador_opcional} ${tarefa_curta} — ${atividade_atual}
-10. Escolha livremente entre trabalhar na branch atual, criar branch ou usar worktree, conforme risco de conflito e política do projeto.
-11. Execute autonomamente todas as ações cobertas pelo mandato.
-12. Verifique o resultado com testes e evidências proporcionais ao risco.
-13. Decida se revisão cruzada é necessária.
-14. Atualize WORK.md e os documentos canônicos afetados.
-15. Encerre com o contrato de conclusão do projeto.
-
-Não me peça para escolher detalhes técnicos reversíveis.
-
-Não replaneje decisões já aprovadas sem evidência nova.
-
-Não crie documentação duplicada.
-
-Não execute efeitos externos restritos sem mandato.
-
-Interrompa somente se:
-
-- não existir trabalho autorizado;
-- houver conflito irresolveável;
-- uma decisão ultrapassar o mandato;
-- houver risco material que dependa de mim;
-- ou todo trabalho aplicável estiver concluído.
-```
-
-</details>
-
-<details>
 <summary><strong>02 — Executar tarefa específica</strong></summary>
 
 ## 02 — Executar tarefa específica
