@@ -151488,19 +151488,6 @@ Help me write a professional prompt for building a streaming platform like Onlyf
 </details>
 
 <details>
-<summary><strong>Cafe</strong></summary>
-
-## Cafe
-
-Contributed by @anonymous
-
-```md
-قم بصنع تطبيق الكاشير ل الكافتيريا باسم Shilan Hospital Cafe
-```
-
-</details>
-
-<details>
 <summary><strong>ISSAP Exam prompt</strong></summary>
 
 ## ISSAP Exam prompt
