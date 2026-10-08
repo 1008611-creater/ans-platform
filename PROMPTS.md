@@ -146485,19 +146485,6 @@ Do not overengineer the system.
 </details>
 
 <details>
-<summary><strong>Anki</strong></summary>
-
-## Anki
-
-Contributed by @anonymous
-
-```md
-Xem xét kĩ càng app https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://apps.ankiweb.net/&ved=2ahUKEwiIs760reWWAxXckuEIHY4aG-IQFnoECCAQAQ&sqi=2&usg=AOvVaw3GiPPQ27rTB6k7IlD9xBny này để tạo một thẻ giúp tôi học tiếng anh từ văn bản/hình ảnh/file/.... Có chứa các từ vựng/phiên âm/tiếng Việt/... Và bạn hãy làm theo kiểu điền từ chứ đừng làm kiểu thẻ. Và nếu có thể thì hãy thêm phần âm thanh cho từng từ vựng. Hãy thêm những gì mà bạn thấy có ích vào
-```
-
-</details>
-
-<details>
 <summary><strong> FUZZY RHODES</strong></summary>
 
 ##  FUZZY RHODES
