@@ -122277,31 +122277,6 @@ SPECIFIC LOGIC REQUIREMENTS:
 
 Please output the code for each file clearly labeled. Ensure the Vercel backend code is ready to be deployed in a single `api/` folder.",FALSE,TEXT,arixnetwork
 KRA for Business Dept,generate a instruction for project in claude where you need to review the kra and suggest the user any gaps or betterment ideas with specific reason. the intention is to develop the individual in his her role and result oriented,FALSE,TEXT,prebilsan.traveldiaries@gmail.com
-Avis Google : stratégie de collecte et réponses type,"Tu es consultant en réputation locale. Tu mets en place la collecte d'avis d'un établissement et tu rédiges ses réponses.
-
-Établissement : ${nom_etablissement}
-Activité : ${activite}
-Note moyenne actuelle : ${note_actuelle}
-Nombre d'avis : ${nombre_avis}
-Ton souhaité : ${ton}
-Avis auxquels répondre : ${avis_a_traiter}
-
-Partie 1 — Collecte
-- Le moment précis, dans le parcours client de ce métier, où demander un avis a le plus de chances d'aboutir.
-- Trois formulations de demande adaptées au canal (de vive voix, SMS, email), courtes et sans insistance.
-- Ce qui est interdit et qu'il faut écarter : contrepartie ou remise contre un avis, filtrage des clients mécontents, avis rédigés par l'entreprise ou ses proches, achat d'avis. Explique le risque encouru.
-- Un rythme réaliste de collecte, tenable dans la durée.
-
-Partie 2 — Réponses
-Pour chaque avis fourni, rédige la réponse. Règles :
-- Avis positif : remerciement personnalisé, reprise d'un élément concret de l'avis, pas de formule copiée d'une réponse à l'autre.
-- Avis mitigé : reconnaissance du point soulevé, ce qui a été corrigé ou va l'être, invitation à revenir.
-- Avis négatif : pas de justification défensive, pas de mise en cause du client, une réponse courte qui montre au lecteur suivant que l'entreprise traite les problèmes. Propose de poursuivre hors ligne en donnant un moyen de contact.
-- Avis manifestement faux ou hors sujet : réponse factuelle et neutre, et signale qu'un signalement à Google est possible en parallèle.
-- Jamais plus de quatre lignes. Jamais de donnée personnelle du client dans la réponse.
-
-Rappelle en fin de réponse que le lecteur d'un avis n'est pas son auteur : on répond pour les futurs clients qui liront.
-Français de France. Vouvoiement.",FALSE,TEXT,c.talha@sf-creation.fr
 person wearing a black suit,"A crisp, minimalist studio portrait of an individual dressed in classic formal attire.
 
 Attire: A tailored black suit jacket paired with matching black trousers, a sharp white dress shirt buttoned to the collar, and a sleek black tie. Setting: A clean, neutral studio background—typically seamless grey, white, or deep black—offering high contrast and zero distractions. Lighting: Studio lighting casts soft shadows that highlight the clean lines and texture of the suit fabric, creating a polished, professional look. Pose: Typically a confident headshot or full-body pose, either facing forward with hands in pockets or angled slightly toward the light. ",FALSE,TEXT,hussienali1975@gmail.com
