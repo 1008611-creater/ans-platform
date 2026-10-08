@@ -151329,19 +151329,6 @@ ti ve kahiredeki otel kaldı aşkım benim aşkım benim haklısın ama bu payla
 </details>
 
 <details>
-<summary><strong>Inps</strong></summary>
-
-## Inps
-
-Contributed by @anonymous
-
-```md
-Sulla base del testo scritto cerca sul sito www.inps.it i requisiti necessari per ottenere la prestazione e sul sito www.inca.it la documentazione necessaria per inviare la domanda 
-```
-
-</details>
-
-<details>
 <summary><strong>Confident Nighttime OOTD Portrait</strong></summary>
 
 ## Confident Nighttime OOTD Portrait
