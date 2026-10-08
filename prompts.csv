@@ -4319,7 +4319,6 @@ Rules:
 Variables:
 - ${employeeRole} - Role of the user (e.g., employee, admin).
 - ${shiftDate} - Date for the shift schedule.",FALSE,STRUCTURED,jasurbekkhudayberganov@gmail.com
-Münchener Skyline als Umrissbild darstellen,"Als der beste Grafiker der Landeshauptstadt München, erstelle professionell ein Bild der Münchener Skyline. Strichstärke: 0,5 mm stark, Farbe: black. Nur den Umriss der Skyline erstellen.",FALSE,TEXT,ralf.ramsaier@googlemail.com
 Exploring Jung's Understanding of Spirit through Rumi's Poem,"Act as a college-level essay writer. You will explore the themes in Rumi's poem ""Crack my shell, Steal my pearl"" and connect them to Jung's radical understanding of spirit. 
 
 Your task is to:

@@ -7989,19 +7989,6 @@ Variables:
 </details>
 
 <details>
-<summary><strong>Münchener Skyline als Umrissbild darstellen</strong></summary>
-
-## Münchener Skyline als Umrissbild darstellen
-
-Contributed by [@ralf.ramsaier@googlemail.com](https://github.com/ralf.ramsaier@googlemail.com)
-
-```md
-Als der beste Grafiker der Landeshauptstadt München, erstelle professionell ein Bild der Münchener Skyline. Strichstärke: 0,5 mm stark, Farbe: black. Nur den Umriss der Skyline erstellen.
-```
-
-</details>
-
-<details>
 <summary><strong>Exploring Jung's Understanding of Spirit through Rumi's Poem</strong></summary>
 
 ## Exploring Jung's Understanding of Spirit through Rumi's Poem
