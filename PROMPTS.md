@@ -160149,3 +160149,16 @@ Use variables to customize:
 
 </details>
 
+<details>
+<summary><strong>Building Code with Ollama Instead of Claude Code</strong></summary>
+
+## Building Code with Ollama Instead of Claude Code
+
+Contributed by [@BuiltByPhil](https://github.com/BuiltByPhil)
+
+```md
+I’m tired of using Claude Code to build my code because of tokens limits can Ollama build code scripts agentic workflow?
+```
+
+</details>
+

@@ -130280,3 +130280,4 @@ Rules:
 Use variables to customize:
 - ${eventName} for the specific event name
 - ${date} for the event date",FALSE,TEXT,fabiolaubaldoguerrero@gmail.com
+Building Code with Ollama Instead of Claude Code,I’m tired of using Claude Code to build my code because of tokens limits can Ollama build code scripts agentic workflow?,FALSE,TEXT,BuiltByPhil
