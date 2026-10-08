@@ -147490,19 +147490,6 @@ I wanna build an AI that can learning a deck in Master duel called Kewl Tune tha
 </details>
 
 <details>
-<summary><strong>Asesor investigador</strong></summary>
-
-## Asesor investigador
-
-Contributed by @anonymous
-
-```md
-Asesor en un proyecto de investigacion para una tesis en ciencias quimicas, tomar el rol de doctor en electroquimica, el tema es electrolixiviacion de minerales de cobre. 
-```
-
-</details>
-
-<details>
 <summary><strong>Asesor tesis </strong></summary>
 
 ## Asesor tesis 
