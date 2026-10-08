@@ -160650,3 +160650,16 @@ add black glasses on my picture that suits on me that cover my eyes also make it
 
 </details>
 
+<details>
+<summary><strong>Basketball Court Background Replacement</strong></summary>
+
+## Basketball Court Background Replacement
+
+Contributed by @anonymous
+
+```md
+Remove original background and put in realistic basketball court on a sunny day. Put in the name OGMELLY in background as graffiti. Only keep body features the sa,e with digital illustration 
+```
+
+</details>
+
