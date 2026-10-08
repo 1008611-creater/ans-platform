@@ -133882,34 +133882,6 @@ Keep everything exactly the same. Only improve image quality
 </details>
 
 <details>
-<summary><strong>Video Cinematográfico IA | Agente Celestial Designs</strong></summary>
-
-## Video Cinematográfico IA | Agente Celestial Designs
-
-Contributed by @anonymous
-
-```md
-Genera un video cinematico de calidad profesional con movimiento fluido.
-
-ESTILO VISUAL: Cinematografia con iluminacion volumetrica y paleta de colores frio-calido
-MOVIMIENTO DE CAMARA: Dolly lento hacia adelante con estabilizacion perfecta
-DURACION: 5-8 segundos
-RESOLUCION: 1080p a 24fps (look cinematico)
-TRANSICIONES: Fundido natural, sin cortes bruscos
-AMBIENTE: Atmosfera inmersiva con profundidad de campo
-
-ELEMENTOS CLAVE:
-- Sujeto o elemento principal con nitidez absoluta
-- Fondo con desenfoque gradual (tilt-shift sutil)
-- Particulas o elementos ambientales en movimiento (polvo, luz, humo)
-- Sin texto ni overlays
-
-El resultado debe verse como un clip extraido directamente de una pelicula de alto presupuesto.
-```
-
-</details>
-
-<details>
 <summary><strong>Produccion Musical IA Electronic | Agente Celestial Designs</strong></summary>
 
 ## Produccion Musical IA Electronic | Agente Celestial Designs
