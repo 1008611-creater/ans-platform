@@ -15485,26 +15485,6 @@ Task 2: Dielectric Nanoparticles
 </details>
 
 <details>
-<summary><strong>Secteur Bancaire - Vérification de conformité de texte</strong></summary>
-
-## Secteur Bancaire - Vérification de conformité de texte
-
-Contributed by [@elmehdibenyoussef@gmail.com](https://github.com/elmehdibenyoussef@gmail.com)
-
-```md
-Vérifie le texte suivant selon trois critères : neutralité, précision, et conformité à un ton réglementaire bancaire.
-Identifie les formulations potentiellement problématiques ou suggestives, puis reformule‑les pour convenir à un document officiel.
-
-Texte à analyser :
-${texte a analyser}
-
-Présente ta réponse sous deux colonnes :
-– Texte original / Texte reformulé
-```
-
-</details>
-
-<details>
 <summary><strong>Professional Website Design Consultant</strong></summary>
 
 ## Professional Website Design Consultant
