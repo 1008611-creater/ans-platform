@@ -152374,19 +152374,6 @@ Analysis the given chart n give perfect reading and stop loss n buy n sell n pro
 </details>
 
 <details>
-<summary><strong>Swift Helper</strong></summary>
-
-## Swift Helper
-
-Contributed by @anonymous
-
-```md
-"أريد كود بلغة Swift يقوم بإرسال طلب HTTP POST (أو GET) إلى رابط API الخاص بـ PUBG Mobile (مثال: للتحقق من بيانات اللاعب عبر الـ Character ID أو تسجيل الدخول). أريد من الكود أن:يستخدم مكتبة URLSession الأساسية في Swift.يقوم بإرسال الـ Headers المطلوبة (مثل Content-Type و Authorization إن وجدت).يستقبل الـ HTTP Response Code (مثل 200 OK، 400 Bad Request، 404 Not Found).يطبع الـ Response Code في الـ Console، وإذا كانت الاستجابة ناجحة (200)، يقوم بعمل Parsing لبيانات الـ JSON المستلمة."
-```
-
-</details>
-
-<details>
 <summary><strong>vb</strong></summary>
 
 ## vb
