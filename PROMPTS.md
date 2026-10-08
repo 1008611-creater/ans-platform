@@ -163670,3 +163670,16 @@ Ultra-realistic, high-quality, sharp 8K photo, captured on an iPhone 16 Pro Max.
 
 </details>
 
+<details>
+<summary><strong>Riverside Boardwalk and Restaurants View</strong></summary>
+
+## Riverside Boardwalk and Restaurants View
+
+Contributed by @anonymous
+
+```md
+A photorealistic 3D architectural render of a modern curved resort building along a river boardwalk. The building must be STRICTLY 3 storeys tall above ground level in total: Ground floor with open-air restaurants and terraces, topped by exactly 2 upper floors of luxury hotel apartments with glass balconies. Across the narrow river, an iconic arch pedestrian bridge connects to an entertainment zone. Golden hour sunlight, highly detailed 8k render.
+```
+
+</details>
+
