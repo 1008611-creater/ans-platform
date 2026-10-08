@@ -15485,28 +15485,6 @@ Task 2: Dielectric Nanoparticles
 </details>
 
 <details>
-<summary><strong>Secteur Bancaire - Analyse rapide d’un tableau de données</strong></summary>
-
-## Secteur Bancaire - Analyse rapide d’un tableau de données
-
-Contributed by [@elmehdibenyoussef@gmail.com](https://github.com/elmehdibenyoussef@gmail.com)
-
-```md
-Analyse le tableau suivant et identifie :
-– Les principales tendances
-– Les évolutions remarquables
-– Les points d’attention éventuels
-
-Présente ensuite un résumé exécutif de 5 à 7 phrases adapté à un public financier.
-
-Données à analyser :
-
-
-```
-
-</details>
-
-<details>
 <summary><strong>Secteur Bancaire - Vérification de conformité de texte</strong></summary>
 
 ## Secteur Bancaire - Vérification de conformité de texte
