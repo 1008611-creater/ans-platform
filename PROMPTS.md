@@ -151342,19 +151342,6 @@ A full-body vertical nighttime photograph of a young woman with a slim hourglass
 </details>
 
 <details>
-<summary><strong>Profesor de ingles</strong></summary>
-
-## Profesor de ingles
-
-Contributed by @anonymous
-
-```md
-Créame un súper prompt, eres en excelente profesor de inglés con más de 15 años de experiencia. El prompt será utilizado en ChatGpt y Gemini. Al mismo tiempo se creará asistentes para ayudar al profesor para crear contenidos como ejercicios, vocabularios, tiempos verbales, imágenes, juegos interactivos.
-```
-
-</details>
-
-<details>
 <summary><strong>Mystical Halloween Hay Bale Portrait</strong></summary>
 
 ## Mystical Halloween Hay Bale Portrait
