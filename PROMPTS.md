@@ -146088,54 +146088,6 @@ If yes, the whitepaper is doing its job.
 </details>
 
 <details>
-<summary><strong>03 — Planejar uma entrega</strong></summary>
-
-## 03 — Planejar uma entrega
-
-Contributed by [@josevictorp](https://github.com/josevictorp)
-
-```md
-Leia as instruções persistentes, decisões existentes e o estado real deste projeto.
-
-Planeje esta entrega:
-
-${entrega}
-
-Nesta sessão, produza o plano; não implemente a entrega sem uma solicitação posterior.
-
-Escolha a profundidade proporcional à complexidade e ao risco. O plano deve ser executável por outro agente sem depender desta conversa.
-
-Inclua apenas o que for relevante:
-
-- contexto e estado atual;
-- objetivo;
-- escopo e não escopo;
-- critérios de aceite;
-- abordagem recomendada;
-- alternativas materiais;
-- componentes afetados;
-- fases ou tarefas;
-- testes e evidências;
-- riscos;
-- segurança;
-- observabilidade;
-- compatibilidade;
-- rollback;
-- decisões pendentes;
-- necessidade de revisão.
-
-Não duplique documentação canônica. Faça referências aos arquivos existentes.
-
-Salve o plano no local mais adequado segundo a convenção e a estrutura atual do projeto. Se já existir um plano para essa entrega, atualize-o em vez de criar um concorrente.
-
-Renomeie a sessão conforme a convenção, quando possível.
-
-Ao terminar, faça uma auto-revisão e informe se o plano está pronto para execução ou se existe uma decisão que depende de mim.
-```
-
-</details>
-
-<details>
 <summary><strong>07 — Manutenção periódica do projeto</strong></summary>
 
 ## 07 — Manutenção periódica do projeto
