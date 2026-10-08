@@ -163814,3 +163814,19 @@ Créame esta escena. Escena 1.1: ⁠A dark, lonely rural dirt road at night, fla
 
 </details>
 
+<details>
+<summary><strong>Transparent SVG Image for Cricut Printing</strong></summary>
+
+## Transparent SVG Image for Cricut Printing
+
+Contributed by @anonymous
+
+```md
+I want to create a transparent background image for a SVG file to print on my Cricut so I can apply permanent vinyl to a car.
+
+What I want is "text" to say - Look Pretty Play Dirty
+A Skull & sunflowers,  something that will look good with Black and Pink Vinyl
+```
+
+</details>
+
