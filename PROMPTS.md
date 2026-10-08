@@ -163800,3 +163800,17 @@ Match method: uses any 3 of the 4 CSV must
 
 </details>
 
+<details>
+<summary><strong>La Llorona Intro Scene</strong></summary>
+
+## La Llorona Intro Scene
+
+Contributed by @anonymous
+
+```md
+Créame esta escena. Escena 1.1: ⁠A dark, lonely rural dirt road at night, flanked by twisted, gnarled trees and a murky river under a pale moon. Dense fog floating close to the ground, cinematic lighting, spooky atmosphere, dark horror movie style, highly detailed, 8k --ar
+
+```
+
+</details>
+
