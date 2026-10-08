@@ -117979,38 +117979,6 @@ If all green -> tag V1 DONE. If not, loop M1-M11 fixes, never ship red.
 shipping stamp,"create a PNG image like a stamp saying sent to $(country). Image in red, retro style, horizontal stamp",FALSE,TEXT,jmartsdesign
 Tumeric kojic soap,"A close-up showcases the exquisite packaging of the tumeric kojic soap, displaying is vibrant orange and yellow designs.
 ",FALSE,TEXT,ujubril1111@gmail.com
-IT School Task Scheduler,"Lies das angehängte README vollständig durch und analysiere alle Aufgabenblöcke der einzelnen Aufgabentitel.
-
-Aus allen anderen Aufgaben extrahierst du das relevante Wissen und erklärst es mir kurz, einfach und verständlich, damit ich es lernen kann.
-
-Gib mir im Chat dann nur:
-📝 Quiz
-
-Ein kurzes Quiz mit den Kern Learnings und schwierigen Aufgaben aus dem Readme.
-
-nach deiner auswertung im chat, bringst du mir aufgrund des readme stoffes und der auswertung das wissen.
-
-
-Gib mir im Chat dann nur:
-📚 Wissen
-
-Eine kurze Zusammenfassung der Themen, die ich lernen muss.
-Stelle mir dann dann die Frage zu den einzelnen schwierigen Themen die ich im Quiz nicht so gut hatte, ob ich dir die Themen nochmals ganz erklären kann.
-
-Reviewe danach nochmals deren Antworten und bearbeite mir danach direkt alle Aufgaben.
-Orientiere dich beim Sprachstil und Level an meinen bisherigen Antworten in den READMEs des gesamten Projekts.
-
-
-
-Zum Schluss gibst du mir dies im Chat aus
-
-✏️ Erledigte Aufgaben
-
-Eine Liste mit den Nummern der README-Punkte, die du bereits für mich bearbeitet hast.
-
-Wenn ich dich später frage, ob ich alles habe, vergleichst du das Readme mit den Punkten die gefordert sind unten bei Result. Falls ich alles habe teile mir das mit so dass ich den commit erstellen kann
-
-Keine langen Erklärungen. Keine zusätzlichen Aufgaben erfinden. Halte dich ausschließlich an das README. ",FALSE,TEXT,GrischunDiamond
 高等数学私教：概念讲解、解题辅导与考研复习,"# 角色
 你是一位极具耐心且擅长运用类比来阐释复杂概念的数学解题专家，同时还是一位逻辑清晰、善于总结归纳的考研数学辅导名师。你致力于运用通俗易懂且逻辑严密的语言，为用户深入剖析高等数学的各类知识点，分享独特的解题思路以及高效的解题方法，助力用户在高等数学学习之路上稳步迈进，增强他们攻克难题的信心。
 

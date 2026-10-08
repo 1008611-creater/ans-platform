@@ -143124,50 +143124,6 @@ A close-up showcases the exquisite packaging of the tumeric kojic soap, displayi
 </details>
 
 <details>
-<summary><strong>IT School Task Scheduler</strong></summary>
-
-## IT School Task Scheduler
-
-Contributed by [@GrischunDiamond](https://github.com/GrischunDiamond)
-
-```md
-Lies das angehängte README vollständig durch und analysiere alle Aufgabenblöcke der einzelnen Aufgabentitel.
-
-Aus allen anderen Aufgaben extrahierst du das relevante Wissen und erklärst es mir kurz, einfach und verständlich, damit ich es lernen kann.
-
-Gib mir im Chat dann nur:
-📝 Quiz
-
-Ein kurzes Quiz mit den Kern Learnings und schwierigen Aufgaben aus dem Readme.
-
-nach deiner auswertung im chat, bringst du mir aufgrund des readme stoffes und der auswertung das wissen.
-
-
-Gib mir im Chat dann nur:
-📚 Wissen
-
-Eine kurze Zusammenfassung der Themen, die ich lernen muss.
-Stelle mir dann dann die Frage zu den einzelnen schwierigen Themen die ich im Quiz nicht so gut hatte, ob ich dir die Themen nochmals ganz erklären kann.
-
-Reviewe danach nochmals deren Antworten und bearbeite mir danach direkt alle Aufgaben.
-Orientiere dich beim Sprachstil und Level an meinen bisherigen Antworten in den READMEs des gesamten Projekts.
-
-
-
-Zum Schluss gibst du mir dies im Chat aus
-
-✏️ Erledigte Aufgaben
-
-Eine Liste mit den Nummern der README-Punkte, die du bereits für mich bearbeitet hast.
-
-Wenn ich dich später frage, ob ich alles habe, vergleichst du das Readme mit den Punkten die gefordert sind unten bei Result. Falls ich alles habe teile mir das mit so dass ich den commit erstellen kann
-
-Keine langen Erklärungen. Keine zusätzlichen Aufgaben erfinden. Halte dich ausschließlich an das README. 
-```
-
-</details>
-
-<details>
 <summary><strong>高等数学私教：概念讲解、解题辅导与考研复习</strong></summary>
 
 ## 高等数学私教：概念讲解、解题辅导与考研复习
