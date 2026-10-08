@@ -24774,19 +24774,6 @@ Variables:
 </details>
 
 <details>
-<summary><strong>Yağlı boya tablona bak</strong></summary>
-
-## Yağlı boya tablona bak
-
-Contributed by [@fitzgpt](https://github.com/fitzgpt)
-
-```md
-ekteki kişi bir sanat galerisinde kendinin yağlı boya tablosuna bakıyor.
-```
-
-</details>
-
-<details>
 <summary><strong>Avant-Garde Portrait with Ghost Duplicate in Ochre Studio</strong></summary>
 
 ## Avant-Garde Portrait with Ghost Duplicate in Ochre Studio
