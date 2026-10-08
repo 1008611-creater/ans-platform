@@ -151488,47 +151488,6 @@ Help me write a professional prompt for building a streaming platform like Onlyf
 </details>
 
 <details>
-<summary><strong>Bu tavir resimfotoğraf</strong></summary>
-
-## Bu tavir resimfotoğraf
-
-Contributed by @anonymous
-
-```md
----
-name: bu-tavir-resimfotograf
-description: Bu mu emin olun bu şekilde uyumayı tercih ediyosn kirmiyosn inadını
----
-
-# My Skill
-
-Describe what this skill does and how the agent should use it.
-
-## Instructions
-
-- Step 1: ...
-- Step 2: ...
-FILE:README.md
-
-FILE:config.json
-
-FILE:schema.json
-
-FILE:template.md
-
-FILE:example.ts
-
-FILE:utils.ts
-
-FILE:types.ts
-
-FILE:constants.ts
-
-```
-
-</details>
-
-<details>
 <summary><strong>Cafe</strong></summary>
 
 ## Cafe
