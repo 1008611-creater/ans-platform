@@ -135411,3 +135411,4 @@ If no date is known, use [unknown] instead.
 ## Output:
 - Wrap the entire export in a single code block for easy copying.
 - After the code block, state whether this is the complete set or if more remain.",FALSE,TEXT,DLN-India
+Learn your way,"I want to create a prompt that help me design a prompt to help learn things in a certain fashion whatever hte topic may be. Some folks learn through visual, some by examples, some by step by step and in a detailed manner.",FALSE,TEXT,karunya.isukapalli@gmail.com

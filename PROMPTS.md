@@ -166216,3 +166216,16 @@ If no date is known, use [unknown] instead.
 
 </details>
 
+<details>
+<summary><strong>Learn your way</strong></summary>
+
+## Learn your way
+
+Contributed by @anonymous
+
+```md
+I want to create a prompt that help me design a prompt to help learn things in a certain fashion whatever hte topic may be. Some folks learn through visual, some by examples, some by step by step and in a detailed manner.
+```
+
+</details>
+
