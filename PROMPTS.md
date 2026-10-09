@@ -165695,3 +165695,16 @@ ${The fox}If you don't have photos yet, I can create a 10-second educational-sty
 
 </details>
 
+<details>
+<summary><strong>Sheet Metal Fabrication Marketing Video</strong></summary>
+
+## Sheet Metal Fabrication Marketing Video
+
+Contributed by @anonymous
+
+```md
+Sheet metal fabrication with hames laser as well as energy mission press break make a video for metacarve Fab tech marketing campaign 
+```
+
+</details>
+
