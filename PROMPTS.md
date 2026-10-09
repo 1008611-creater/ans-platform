@@ -166254,3 +166254,16 @@ Describe what this skill does and how the agent should use it.
 
 </details>
 
+<details>
+<summary><strong>PARALLEL 17 R&D</strong></summary>
+
+## PARALLEL 17 R&D
+
+Contributed by @anonymous
+
+```md
+PARALLEL 17 R&D — Pacific Research & Development is a Tahiti-based technology company designing intelligent physical systems for ocean, human performance, live experiences and resilient infrastructure
+```
+
+</details>
+
