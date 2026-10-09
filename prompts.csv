@@ -135127,3 +135127,14 @@ Rags to Riches Young Man Character Sheet,"    Young Black man, 23 years old
 * Calm, determined facial expression
 * Poor version: faded dark-brown hoodie, worn blue jeans, old black sneakers, brown canvas shoulder bag",FALSE,TEXT,couragebillon@gmail.com
 Ancient Roman Coin Identifier and Auction Listing Writer,Identify and catalog ancient Roman coins from submitted images and text. Write a complete auction listing with descriptions and references used.,FALSE,TEXT,jerrysteifle@gmail.com
+Text to Concise Tweets Converter,"Convert the following text into one or more tweets.
+
+No emojis allowed.
+
+Use truncations (e.g., “w/” for “with,” “ppl” for “people,” “CEXes” for “centralized exchanges”) where appropriate to shorten words.
+
+Keep each tweet concise, punchy, and under 280 characters.
+
+Preserve the original tone and intent.
+
+Output only the tweet(s), no commentary.",FALSE,TEXT,kennynah85@gmail.com
