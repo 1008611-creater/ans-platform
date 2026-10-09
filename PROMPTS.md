@@ -165739,3 +165739,29 @@ i wanna make an indie game to be able to sell on steam. i first wanna understand
 
 </details>
 
+<details>
+<summary><strong>Blank Agent Skill Template</strong></summary>
+
+## Blank Agent Skill Template
+
+Contributed by @anonymous
+
+```md
+---
+name: my-skill-name
+description: A clear description of what this skill does and when to use it
+---
+
+# My Skill
+
+Describe what this skill does and how the agent should use it.
+
+## Instructions
+
+- Step 1: ...
+- Step 2: ...
+
+```
+
+</details>
+

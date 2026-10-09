@@ -135174,3 +135174,17 @@ Real-Time Airfare Price Index Landing Page,"create the landing page the i want b
 ### Mini prompt for creating the AeroCPI landing page
 ",FALSE,TEXT,rahulharsha3131@gmail.com
 Solo Indie Steam Game Feasibility Planner,i wanna make an indie game to be able to sell on steam. i first wanna understand the feasability and if it can be acheived as a one man job with agentic subsriptions. I also dont have a game idea yet so i wanna give this as a prompt,FALSE,TEXT,rigoy-ship-it
+Blank Agent Skill Template,"---
+name: my-skill-name
+description: A clear description of what this skill does and when to use it
+---
+
+# My Skill
+
+Describe what this skill does and how the agent should use it.
+
+## Instructions
+
+- Step 1: ...
+- Step 2: ...
+",FALSE,TEXT,melemaliki1963@gmail.com
