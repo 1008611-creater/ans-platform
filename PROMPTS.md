@@ -165682,3 +165682,16 @@ Maximum Word limit 500 words- excluding reference list.
 
 </details>
 
+<details>
+<summary><strong>Flipbook Photo Animation Video Concept</strong></summary>
+
+## Flipbook Photo Animation Video Concept
+
+Contributed by @anonymous
+
+```md
+${The fox}If you don't have photos yet, I can create a 10-second educational-style video concept showing a sequence of still photographs rapidly flipping through a stack, gradually creating the illusion of smooth motion—like a flipbook.
+```
+
+</details>
+
