@@ -165860,3 +165860,17 @@ End with a cinematic close-up of 2–3 fluffy chicks eating together. One chick 
 
 </details>
 
+<details>
+<summary><strong>Streaming Platform for Traders Prompt Builder</strong></summary>
+
+## Streaming Platform for Traders Prompt Builder
+
+Contributed by @anonymous
+
+```md
+Help me write a professional prompt for building a streaming platform like Onlyfans and Twitch joined together but for Traders only (My Audience).
+
+```
+
+</details>
+
