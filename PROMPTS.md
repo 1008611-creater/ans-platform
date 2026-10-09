@@ -141046,19 +141046,6 @@ FIRST COMPLETE PHASE 0 ONLY."
 </details>
 
 <details>
-<summary><strong>Identify</strong></summary>
-
-## Identify
-
-Contributed by @anonymous
-
-```md
-Identify and catalog ancient Roman coins from submitted images and text. Write a complete auction listing with descriptions and references used.
-```
-
-</details>
-
-<details>
 <summary><strong>tweetwat</strong></summary>
 
 ## tweetwat
