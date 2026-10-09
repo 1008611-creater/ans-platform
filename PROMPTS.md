@@ -152931,19 +152931,6 @@ Contributed by @anonymous
 </details>
 
 <details>
-<summary><strong>gebnerations</strong></summary>
-
-## gebnerations
-
-Contributed by @anonymous
-
-```md
-i want to extract best  prompt for generating the pdf , excel or powerpoint 
-```
-
-</details>
-
-<details>
 <summary><strong>Camera Shot</strong></summary>
 
 ## Camera Shot
