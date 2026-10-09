@@ -165985,3 +165985,16 @@ Describe what this skill does and how the agent should use it.
 
 </details>
 
+<details>
+<summary><strong>Chart Analysis for Scalping in Indian and Crypto Markets</strong></summary>
+
+## Chart Analysis for Scalping in Indian and Crypto Markets
+
+Contributed by @anonymous
+
+```md
+Analysis the given chart n give perfect reading and stop loss n buy n sell n profit percentage and applying strategy etc in India n crypto market for scalping 
+```
+
+</details>
+
