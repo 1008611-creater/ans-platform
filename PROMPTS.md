@@ -165560,3 +165560,18 @@ I want to Create an app where i can store information about all anime and and al
 
 </details>
 
+<details>
+<summary><strong>Rags to Riches Motivational Short Video</strong></summary>
+
+## Rags to Riches Motivational Short Video
+
+Contributed by @anonymous
+
+```md
+Scene 1 — 0–5 sec
+A poor young man stands outside a luxury building while people laugh at him.
+Text: “They laughed when he said he would become rich…”
+```
+
+</details>
+
