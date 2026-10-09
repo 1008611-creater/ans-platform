@@ -151863,33 +151863,6 @@ When completing the transfer, provide:
 </details>
 
 <details>
-<summary><strong>Personnage comic</strong></summary>
-
-## Personnage comic
-
-Contributed by @anonymous
-
-```md
----
-name: personnage-comic
-description: Anime comic cartoon
----
-
-# Personnage comic
-
-Describe what this skill does and how the agent should use it.
-
-## Instructions
-
-- Step 1: ...
-- Step 2: ...
-FILE:README.md
-
-```
-
-</details>
-
-<details>
 <summary><strong>Time management and calculating for my employees to be signed in by email </strong></summary>
 
 ## Time management and calculating for my employees to be signed in by email 
