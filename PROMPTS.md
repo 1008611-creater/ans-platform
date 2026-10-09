@@ -165726,3 +165726,16 @@ create the landing page the i want build and this my project topic name :Develop
 
 </details>
 
+<details>
+<summary><strong>Solo Indie Steam Game Feasibility Planner</strong></summary>
+
+## Solo Indie Steam Game Feasibility Planner
+
+Contributed by [@rigoy-ship-it](https://github.com/rigoy-ship-it)
+
+```md
+i wanna make an indie game to be able to sell on steam. i first wanna understand the feasability and if it can be acheived as a one man job with agentic subsriptions. I also dont have a game idea yet so i wanna give this as a prompt
+```
+
+</details>
+
