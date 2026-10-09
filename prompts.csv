@@ -100370,7 +100370,6 @@ The style should resemble casual social media commentary.
 
 11. After every period ""."", insert a line break.
 This should visually resemble common reading habits on social platforms.",FALSE,TEXT,Wiiarewe333
-Anime,I want to Create an app where i can store information about all anime and and all anime latest news and information ,FALSE,TEXT,oncehumsn0@gmail.com
 Prompt 101 (full),"# Task context
 
 You will be acting as ${role}. The context is ${context}. Your goal is ${goal}, to achieve ${sucess_criteria}.
