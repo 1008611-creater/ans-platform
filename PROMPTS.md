@@ -166092,3 +166092,16 @@ Contributed by @anonymous
 
 </details>
 
+<details>
+<summary><strong>Prompt Builder for PDF, Excel and PowerPoint Generation</strong></summary>
+
+## Prompt Builder for PDF, Excel and PowerPoint Generation
+
+Contributed by @anonymous
+
+```md
+i want to extract best  prompt for generating the pdf , excel or powerpoint 
+```
+
+</details>
+
