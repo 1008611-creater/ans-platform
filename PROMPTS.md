@@ -165765,3 +165765,16 @@ Describe what this skill does and how the agent should use it.
 
 </details>
 
+<details>
+<summary><strong>Surprise Point-and-Click Game Generator</strong></summary>
+
+## Surprise Point-and-Click Game Generator
+
+Contributed by @anonymous
+
+```md
+Create a point and click game with the theme and mechanic of the AI choice, make me surprise
+```
+
+</details>
+
