@@ -46,7 +46,7 @@
     "pronounce": "Hear the pronunciation",
     "save": "Save term",
     "savedTerm": "Saved",
-    "saveError": "Account sync failed; saved on this device.",
+    "saveError": "Account sync failed. Your changes are saved on this device and will retry when connected.",
     "copied": "Copied",
     "copy": "Copy for Agent",
     "copyMarkdown": "Copy as Markdown",
@@ -153,7 +153,12 @@
     "authorContributions": "Author and contributions",
     "red": "RED",
     "email": "Email",
-    "suggestTerm": "Suggest a term"
+    "suggestTerm": "Suggest a term",
+    "syncingFavorites": "Syncing favorites…",
+    "syncedToAccount": "Saved to your ANS account",
+    "storedOnDevice": "Saved on this device · Sign in to sync",
+    "signInToSync": "Sign in to sync",
+    "retrySync": "Retry sync"
   },
   "zh": {
     "terms": "术语图鉴",
@@ -202,7 +207,7 @@
     "pronounce": "播放发音",
     "save": "收藏词条",
     "savedTerm": "已收藏",
-    "saveError": "账号同步失败，已保存在本设备。",
+    "saveError": "账号同步未完成，改动已保存在当前设备，联网后会重试。",
     "copied": "已复制",
     "copy": "复制给 Agent",
     "copyMarkdown": "复制 Markdown",
@@ -309,6 +314,11 @@
     "authorContributions": "作者与贡献",
     "red": "小红书",
     "email": "邮件",
-    "suggestTerm": "补充词条"
+    "suggestTerm": "补充词条",
+    "syncingFavorites": "正在同步收藏…",
+    "syncedToAccount": "已同步到 ANS 账号",
+    "storedOnDevice": "已保存在当前设备 · 登录后同步",
+    "signInToSync": "登录同步收藏",
+    "retrySync": "重试同步"
   }
 }

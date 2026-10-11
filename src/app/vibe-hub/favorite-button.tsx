@@ -1,100 +1,136 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
+import terms from "@/data/vibehub/terms.json";
 
-const key = "vibehub:favorites";
-const datesKey = "vibehub:favorite-dates";
 const targetType = "VIBEHUB_TERM";
-type FavoriteState = { ids: string[]; loading: boolean; busy: string[]; error: string; toggle: (slug: string) => Promise<void> };
+const validIds = new Set(terms.map(term => term.slug));
+type Operation = { saved: boolean; at: number; token: string };
+type StoredFavorites = { ids: string[]; dates: Record<string, number>; pending: Record<string, Operation> };
+type FavoriteState = { ids: string[]; loading: boolean; busy: string[]; error: string; syncing: boolean; accountId: string | null; retry: () => void; toggle: (slug: string) => Promise<void> };
 const Context = createContext<FavoriteState | null>(null);
-function readLocal(): string[] {
-  try { const value: unknown = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(value) ? Array.from(new Set(value.filter((item): item is string => typeof item === "string"))) : []; }
-  catch { return []; }
+const storageKey = (accountId: string | null) => `vibehub:favorites:v2:${accountId ? `account:${accountId}` : "guest"}`;
+function readStored(accountId: string | null): StoredFavorites {
+  const empty: StoredFavorites = { ids: [], dates: {}, pending: {} };
+  try {
+    const raw = localStorage.getItem(storageKey(accountId));
+    if (!raw && accountId === null) {
+      const legacy: unknown = JSON.parse(localStorage.getItem("vibehub:favorites") || "[]");
+      empty.ids = Array.isArray(legacy) ? [...new Set(legacy.filter((id): id is string => typeof id === "string" && validIds.has(id)))] : [];
+      const dates: unknown = JSON.parse(localStorage.getItem("vibehub:favorite-dates") || "{}");
+      if (dates && typeof dates === "object") for (const [id, at] of Object.entries(dates)) if (validIds.has(id) && typeof at === "number" && Number.isFinite(at)) empty.dates[id] = at;
+      return empty;
+    }
+    const value: unknown = JSON.parse(raw || "{}");
+    if (!value || typeof value !== "object") return empty;
+    const data = value as Partial<StoredFavorites>;
+    empty.ids = Array.isArray(data.ids) ? [...new Set(data.ids.filter(id => typeof id === "string" && validIds.has(id)))] : [];
+    if (data.dates && typeof data.dates === "object") for (const [id, at] of Object.entries(data.dates)) if (validIds.has(id) && typeof at === "number" && Number.isFinite(at)) empty.dates[id] = at;
+    if (data.pending && typeof data.pending === "object") for (const [id, op] of Object.entries(data.pending)) if (validIds.has(id) && op && typeof op.saved === "boolean" && typeof op.at === "number" && Number.isFinite(op.at) && typeof op.token === "string") empty.pending[id] = op;
+  } catch { /* Storage may be unavailable; current-session favorites still work. */ }
+  return empty;
 }
-function readDates(): Record<string, number> {
-  try { const value: unknown = JSON.parse(localStorage.getItem(datesKey) || "{}"); return value && typeof value === "object" && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).filter(([,date]) => typeof date === "number" && Number.isFinite(date))) : {}; }
-  catch { return {}; }
+function persist(accountId: string | null, value: StoredFavorites) {
+  try { localStorage.setItem(storageKey(accountId), JSON.stringify(value)); } catch { /* Keep the current-session copy. */ }
 }
-function writeLocal(ids: string[], dates: Record<string, number>) { try { localStorage.setItem(key, JSON.stringify(ids)); localStorage.setItem(datesKey, JSON.stringify(dates)); } catch { /* In-memory favorites remain available. */ } }
-
-export function VibeFavoritesProvider({ children }: { children: React.ReactNode }) {
-  const [ids, setIds] = useState<string[]>([]); const currentIds = useRef<string[]>([]); const dates = useRef<Record<string,number>>({});
-  const [loading, setLoading] = useState(true); const remote = useRef(false);
-  const changedWhileLoading = useRef(new Map<string, boolean>());
-  const [busy, setBusy] = useState<string[]>([]); const pending = useRef(new Set<string>());
-  const [error, setError] = useState(""); const t = useTranslations("vibehub");
-  const update = useCallback((value: string[]) => { const ordered = [...value].sort((a,b) => (dates.current[a] || 0) - (dates.current[b] || 0)); currentIds.current = ordered; setIds(ordered); writeLocal(ordered, dates.current); }, []);
+function ordered(value: StoredFavorites) {
+  value.ids = [...new Set(value.ids)].sort((a, b) => (value.dates[a] || 0) - (value.dates[b] || 0));
+  return value;
+}
+function applyPending(value: StoredFavorites) {
+  const ids = new Set(value.ids);
+  for (const [id, op] of Object.entries(value.pending)) {
+    if (op.saved) { ids.add(id); value.dates[id] = op.at; } else ids.delete(id);
+  }
+  value.ids = [...ids]; return ordered(value);
+}
+function FavoriteStore({ children, accountId, sessionLoading }: { children: React.ReactNode; accountId: string | null; sessionLoading: boolean }) {
+  const t = useTranslations("vibehub");
+  const [state, setState] = useState<StoredFavorites>({ ids: [], dates: {}, pending: {} });
+  const current = useRef(state); const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false); const [error, setError] = useState("");
+  const synchronize = useRef<() => void>(() => {});
+  const update = useCallback((value: StoredFavorites) => { current.current = ordered(value); setState({ ...current.current }); persist(accountId, current.current); }, [accountId]);
   useEffect(() => {
-    let active = true; const syncing = new Set<string>();
-    const controller = new AbortController(); remote.current = false; changedWhileLoading.current.clear(); dates.current = readDates(); update(readLocal());
-    // Visitor storage is ready immediately; account availability cannot block local saves.
-    queueMicrotask(() => { if (active) setLoading(false); });
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    void (async () => {
+    if (sessionLoading) return;
+    let active = true; let running = false; let repeat = false;
+    const controller = new AbortController(); const guestImports = new Set<string>();
+    update(applyPending(readStored(accountId))); setLoading(false);
+    const consumeGuest = (id: string) => {
+      const guest = readStored(null); guest.ids = guest.ids.filter(item => item !== id); delete guest.dates[id]; persist(null, guest);
+    };
+    const request = (url: string, options: RequestInit = {}) => fetch(url, { ...options, cache: "no-store", headers: { "x-vibehub-account-id": accountId || "", ...options.headers }, signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) });
+    const refresh = async () => {
+      if (!accountId || !active) return;
+      if (running) { repeat = true; return; }
+      running = true; setSyncing(true); setError("");
       try {
-        const response = await fetch(`/api/favorites?targetType=${targetType}&take=360`, { cache: "no-store", signal: controller.signal });
-        if (!response.ok || !active) return;
+        const response = await request(`/api/favorites?targetType=${targetType}&take=360`);
+        if (!response.ok) throw new Error("sync");
         const payload = await response.json(); if (!active) return;
-        const favorites: { targetType: string; targetId: string; favoritedAt?: string }[] = payload?.data?.favorites || [];
-        for (const item of favorites) {
-          if (item.targetType !== targetType || !item.favoritedAt) continue;
-          const savedAt = Date.parse(item.favoritedAt);
-          if (Number.isFinite(savedAt)) dates.current[item.targetId] = Math.max(dates.current[item.targetId] || 0, savedAt);
+        if (!Array.isArray(payload?.data?.favorites)) throw new Error("sync");
+        const remoteIds: string[] = []; const dates: Record<string, number> = {};
+        for (const item of payload.data.favorites) {
+          if (item?.targetType !== targetType || !validIds.has(item.targetId)) continue;
+          remoteIds.push(item.targetId); const at = Date.parse(item.favoritedAt);
+          if (Number.isFinite(at)) dates[item.targetId] = at;
         }
-        // The API is newest first; the local storage contract is oldest first.
-        const remoteIds = favorites.filter(item => item.targetType === targetType).map(item => item.targetId).reverse();
-        const local = currentIds.current; const missing = local.filter(slug => !remoteIds.includes(slug));
-        const removed = remoteIds.filter(slug => changedWhileLoading.current.get(slug) === false);
-        // Serialize initial account imports with normal toggle actions for the same term.
-        [...missing, ...removed].forEach(slug => { syncing.add(slug); pending.current.add(slug); });
-        setBusy([...pending.current]);
-        update(Array.from(new Set([...local, ...remoteIds.filter(slug => !removed.includes(slug))]))); remote.current = true;
-        for (const slug of removed) {
-          const result = await fetch(`/api/favorites?targetType=${targetType}&targetId=${encodeURIComponent(slug)}`, {method: "DELETE", signal: controller.signal});
-          if (!result.ok && active) setError(t("saveError"));
+        // Import only guest choices. Account caches never resurrect server deletions.
+        const pending = { ...current.current.pending }; const guest = readStored(null);
+        for (const id of guest.ids) {
+          if (remoteIds.includes(id)) { consumeGuest(id); continue; }
+          if (!pending[id]) pending[id] = { saved: true, at: guest.dates[id] || Date.now(), token: crypto.randomUUID() };
+          if (pending[id].saved) guestImports.add(id); else consumeGuest(id);
         }
-        // Bound concurrency when importing visitor favorites into the account.
-        let index = 0;
-        await Promise.all(Array.from({ length: Math.min(4, missing.length) }, async () => {
-          while (index < missing.length && active) {
-            const slug = missing[index++];
-            const result = await fetch("/api/favorites", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ targetType, targetId: slug }), signal: controller.signal });
-            if (!result.ok && active) setError(t("saveError"));
+        update(applyPending({ ids: remoteIds.reverse(), dates, pending }));
+        const operations = Object.entries(current.current.pending); let index = 0;
+        const outcomes = await Promise.allSettled(Array.from({ length: Math.min(4, operations.length) }, async () => {
+          while (index < operations.length && active) {
+            const [id, op] = operations[index++];
+            const result = op.saved
+              ? await request("/api/favorites", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ targetType, targetId: id }) })
+              : await request(`/api/favorites?targetType=${targetType}&targetId=${encodeURIComponent(id)}`, { method: "DELETE" });
+            if (!active) return;
+            if (!result.ok) { setError(t("saveError")); continue; }
+            if (current.current.pending[id]?.token === op.token) {
+              const next = { ...current.current, pending: { ...current.current.pending } }; delete next.pending[id]; update(next);
+            }
+            if (op.saved && guestImports.has(id)) { consumeGuest(id); guestImports.delete(id); }
           }
         }));
-      } catch { if (active && remote.current) setError(t("saveError")); }
-      finally { clearTimeout(timeout); syncing.forEach(slug => pending.current.delete(slug)); if (active) setBusy([...pending.current]); }
-    })();
-    const synchronize = (event: StorageEvent) => { if (event.key === key || event.key === datesKey || event.key === null) { dates.current = readDates(); currentIds.current = readLocal().sort((a,b) => (dates.current[a] || 0) - (dates.current[b] || 0)); setIds(currentIds.current); } };
-    window.addEventListener("storage", synchronize);
-    return () => { active = false; clearTimeout(timeout); controller.abort(); window.removeEventListener("storage", synchronize); };
-  }, [update, t]);
-
-  const toggle = useCallback(async (slug: string) => {
-    if (loading || pending.current.has(slug)) return;
-    const next = !currentIds.current.includes(slug);
-    if (next) dates.current[slug] = Date.now();
-    update(next ? [...currentIds.current, slug] : currentIds.current.filter(item => item !== slug));
-    setError(""); changedWhileLoading.current.set(slug, next);
-    if (!remote.current) return;
-    pending.current.add(slug); setBusy([...pending.current]);
-    try {
-      const response = next
-        ? await fetch("/api/favorites", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ targetType, targetId: slug }), signal: AbortSignal.timeout(8000) })
-        : await fetch(`/api/favorites?targetType=${targetType}&targetId=${encodeURIComponent(slug)}`, { method: "DELETE", signal: AbortSignal.timeout(8000) });
-      if (response.ok) remote.current = true;
-      else if (response.status === 401) remote.current = false;
-      else if (remote.current && response.status !== 401) {
-        if (!next) update(Array.from(new Set([...currentIds.current, slug])));
-        setError(t("saveError"));
+        if (active && outcomes.some(result => result.status === "rejected")) setError(t("saveError"));
+      } catch { if (active) setError(t("saveError")); }
+      finally {
+        running = false;
+        if (active) { setSyncing(false); if (repeat) { repeat = false; void refresh(); } }
       }
-    } catch { if (remote.current) { if (!next) update(Array.from(new Set([...currentIds.current, slug]))); setError(t("saveError")); } }
-    finally { pending.current.delete(slug); setBusy([...pending.current]); }
-  }, [loading, update, t]);
-
-  return <Context.Provider value={{ ids, loading, busy, error, toggle }}>{children}</Context.Provider>;
+    };
+    synchronize.current = () => { void refresh(); };
+    const storage = (event: StorageEvent) => {
+      if (event.key === storageKey(accountId) || event.key === null) { update(applyPending(readStored(accountId))); void refresh(); }
+    };
+    const visible = () => { if (document.visibilityState === "visible") void refresh(); };
+    window.addEventListener("storage", storage); window.addEventListener("online", synchronize.current); window.addEventListener("focus", synchronize.current); document.addEventListener("visibilitychange", visible);
+    void refresh();
+    return () => {
+      active = false; controller.abort(); window.removeEventListener("storage", storage); window.removeEventListener("online", synchronize.current); window.removeEventListener("focus", synchronize.current); document.removeEventListener("visibilitychange", visible); synchronize.current = () => {};
+    };
+  }, [accountId, sessionLoading, update, t]);
+  const toggle = useCallback(async (slug: string) => {
+    if (loading || !validIds.has(slug)) return;
+    const saved = !current.current.ids.includes(slug); const at = Date.now();
+    const value = { ids: saved ? [...current.current.ids, slug] : current.current.ids.filter(id => id !== slug), dates: { ...current.current.dates, [slug]: at }, pending: { ...current.current.pending } };
+    if (accountId) value.pending[slug] = { saved, at, token: crypto.randomUUID() };
+    update(value); if (accountId) synchronize.current();
+  }, [accountId, loading, update]);
+  return <Context.Provider value={{ ids: state.ids, loading, busy: [], error, syncing, accountId, retry: () => synchronize.current(), toggle }}>{children}</Context.Provider>;
+}
+export function VibeFavoritesProvider({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession(); const accountId = status === "authenticated" ? session.user?.id || null : null;
+  return <FavoriteStore key={status === "loading" ? "loading" : accountId || "guest"} accountId={accountId} sessionLoading={status === "loading"}>{children}</FavoriteStore>;
 }
 export function useVibeFavorites() { const value = useContext(Context); if (!value) throw new Error("VibeFavoritesProvider is required"); return value; }
 export function FavoriteButton({ slug, compact = false, official = false }: { slug: string; compact?: boolean; official?: boolean }) {

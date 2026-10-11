@@ -126,13 +126,9 @@ export async function addFavorite(userId: string, targetType: unknown, targetId:
   const target = await assertTargetVisible(targetType, id);
 
   return db.$transaction(async (tx) => {
-    const existing = await tx.contentFavorite.findUnique({
-      where: { userId_targetType_targetId: { userId, targetType, targetId: id } },
-      select: { id: true },
-    });
-    if (existing) return { favorited: true, created: false };
+    const inserted = await tx.contentFavorite.createMany({ data: [{ userId, targetType, targetId: id }], skipDuplicates: true });
+    if (inserted.count === 0) return { favorited: true, created: false };
 
-    await tx.contentFavorite.create({ data: { userId, targetType, targetId: id } });
     await tx.auditLog.create({
       data: {
         actorId: userId,
