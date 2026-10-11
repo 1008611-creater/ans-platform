@@ -1,5 +1,17 @@
 # ANS 生产发布与恢复门禁
 
+## 2026-10-11：ANS VibeHub 品牌发布（北京时间 20:51）
+
+正式站 VibeHub 页头、ANS 首页入口、页脚展示与 Agent manifest 使用 ANS VibeHub；复用 ANS 深浅色 SVG、favicon、Apple 图标和分享图，保留原站作者及内容来源。窄桌面导航在 1050px 以下收起，手机与桌面品牌完整显示。
+
+当前发布源提交 `89a7753bde184771b70a4f0f4f5d7c5f42220472`，镜像 `sha256:e892b2c5532f3cb580e96018bf7307effd7b3b24cd6d6be5d8b79e5ed0463e64`，BUILD_ID `iY2X1ve1gDQxaG2RWpIyX`，冻结源 SHA-256 `7b20408846eec45f3ed9ff27e3bc6a86d920fcffdbfece69e63669db1f379674`。服务器权威冻结目录 `/srv/ans-releases/ans-vibehub-branding-89a7753-20261011/source`，4770 文件。源保留 vouchers-v2 的线上未提交增量，镜像明确标记 local-modifications；Git 提交仅覆盖本任务品牌及导航改动，不能用 Git 的旧应用源覆盖当前兑换券等功能。后续 ANS 集成发布交由主控统一，本任务没有剩余应用改动。
+
+Linux 应用/测试类型检查、依赖边界检查、lint 与最终构建通过；lint 369 项存量 warning、0 error。首轮本地 lint 通过，后续两次本地重跑因系统内存不足失败，Linux 结果作为发布验证。最终只改 CSS 的补丁复用同一源码检查缓存，并重新完成 Next.js 编译、类型检查与构建。候选与正式各 11 个页面/资源 HTTP200，实际使用的 scoped.css 及两张 ANS SVG 哈希一致。发布前因首页继承 ANS 主站标题而被过严规则拦截，确认实际标题“前端 VibeCoding 术语 | ANS”后修正检查；栏目标题使用 ANS VibeHub。未将首次失败记作通过。
+
+共享发布锁下核对容器和镜像，保留全部环境及挂载、既有 72 项迁移，未执行迁移或用户数据修改。正式数据库连接正常；收藏 1 条保留，浏览器刷新后恢复“收藏1”。已核对 1280×720 深色、390×844 浅色及 774px 窄桌面；深浅色 Logo 正确、无文档横向溢出、窄窗口菜单展开/关闭可用，临时视口和主题已恢复。首次窄窗口样式改到未引用文件的问题已在实际 scoped.css 修复并重新上线。浏览器历史日志曾有发布期间会话 fetch 失败，最终刷新能读取收藏；不将历史日志清空或声称全程零错误。
+
+证据：本任务 `outputs/vibehub-branding-release/` 的 deployment.json、source-validation.json、source-manifest.json、browser-proof.json 和 ans-vibehub-final.jpg；服务器同名发布目录保留构建、候选检查及私有回滚配置，私有配置未入 Git。
+
 当前运行配置以本次发布记录及实际容器检查为准；以下历史记录用于追溯。
 
 ## 当前发布：VibeHub 完整内容与账号收藏（2026-10-11）
