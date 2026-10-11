@@ -22,7 +22,7 @@ function ArchivePanel({ actorId, submissionId, invalidate }: { actorId: string; 
   useEffect(() => { alive.current = true; return () => { alive.current = false; cancel(); }; }, [cancel]);
   const remember = (command: AgriArchiveCommand | null) => { setPending(command); writeAgriArchivePending(actorId, submissionId, command); };
   const message = (code: string) => t.has("errors." + code) ? t("errors." + code) : t("errors.INTERNAL_ERROR");
-  const at = (value: string) => new Intl.DateTimeFormat(locale === "zh" · "zh-CN" : "en-GB", { timeZone: "Asia/Shanghai", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  const at = (value: string) => new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-GB", { timeZone: "Asia/Shanghai", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
   async function request(url: string, init: RequestInit = {}) {
     cancel(); const epoch = generation.current, abort = new AbortController(); controller.current = abort; setBusy(true); setError("");
     const timer = setTimeout(() => abort.abort(), 15000);
