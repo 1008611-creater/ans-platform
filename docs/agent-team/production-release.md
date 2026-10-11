@@ -96,3 +96,12 @@ The current production release is `ans-product-e37c465603270fa1`, deployed at `2
 Post-release evidence records a 60-to-60 no-op migration check, preservation checks for schema and existing data across 107 public tables, six deferred guards, three function definitions, and production page plus signed-in onsite targeted-message acceptance. The public-schema backup SHA-256 is `0df818a52807b29e297fe2030c69f3ad3482219618bedebce010e4c346fa5a47`.
 
 The historical baseline `ans-product-c89b31a564b6e794` is retained. Toonflow production embed remains disabled and e37 parent transfer is incomplete; c89/9c68 recovery evidence cannot replace e37 preview acceptance.
+
+
+### 2026-10-11：同步真实正式站源码到主分支
+
+本次合并从已正式部署的 growth-unified-20261011-v3 冻结源同步应用代码、数据库迁移、GitGlow 封面及生成器来源、当前线上小恐龙挂载源码和公开个人页传输代理。44 张 GitGlow 封面已逐张核对：真实公开请求 HTTP200，图片 SHA-256 与冻结源和正式容器一致。真实账号签到记录为 5 XP、连续 1 天，签到、成长事件、XP 流水各一条。
+
+采用三方合并保留 origin/main 的 VibeHub API、页面、数据、收藏枚举及入口；主页保持正式站项目发现布局，保留全局时区和移动导航。生产私有环境、数据库凭据、回滚私有配置均不进入 Git。第三方 Three.js 原始包与许可保留，ESLint 排除 vendor 目录。
+
+此前正式镜像 sha256:993853abaf131dd7df9eee512d86850191f9c22b2f0934851e38a42c90feef9b，源 SHA-256 89a8da0129f7ba024470b11612da2244d04a555c260e0f0f3ef8484c9f682a69；仅调整 Supabase transaction pooler connection_limit 2→8，其他运行配置与全部 OIDC clients 保留。未来发布须保留这些真实线上功能，不能用旧源码覆盖。公开核对证据见 C:/Users/lsb/.workbuddy/evidence/ans-growth-20261011/gitglow-current-verification.json。高级成长奖励未用虚构经验触发验收。

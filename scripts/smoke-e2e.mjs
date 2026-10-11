@@ -185,8 +185,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
       hrefs: [...bar.querySelectorAll("a")].map(a => new URL(a.href).pathname),
     };
   });
-  // 权威架构（docs/ANS平台方向与落地路线图.md）：移动端底部常驻三项主入口
-  // 「开始学习 / 动手实践 / 我的成果」+ 账户入口，共 4 个链接。
+  // 当前权威总纲：发现项目、工作流、工作台 + 账户入口，共 4 个链接。
   const tabOk = tabs.found && tabs.hrefs.length === 4;
   checks.push({ label: "移动端底部 Tab 栏", pathname: "/", status: 200, matched: tabOk, newProblems: 0 });
   if (!tabOk) pageProblems.push(`移动端底部 Tab 栏异常（可见=${tabs.found}，链接=${tabs.hrefs.join(",") || "无"}）`);
@@ -199,7 +198,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
 
   const opened = await page.evaluate(() => {
     const trigger = [...document.querySelectorAll("header button")]
-      .find(button => button.textContent?.includes("Toggle menu") || button.getAttribute("aria-label")?.includes("menu"));
+      .find(button => button.getAttribute("data-testid") === "mobile-menu-trigger");
     if (!trigger) return false;
     trigger.click();
     return true;
@@ -210,7 +209,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
     drawerHrefs = await page.evaluate(() =>
       [...document.querySelectorAll("[role=dialog] a")].map(a => new URL(a.href).pathname));
   }
-  const reachable = ["/templates", "/workflows", "/prompts"].every(href => drawerHrefs.includes(href));
+  const reachable = ["/explore", "/workflows", "/community", "/competitions", "/workspace"].every(href => drawerHrefs.includes(href));
   checks.push({ label: "移动端 抽屉菜单可达核心入口", pathname: "/", status: 200, matched: opened && reachable, newProblems: 0 });
   if (!opened) pageProblems.push("移动端未找到抽屉菜单触发按钮");
   else if (!reachable) pageProblems.push(`移动端抽屉菜单缺少核心入口（实际：${drawerHrefs.join(",") || "无"}）`);

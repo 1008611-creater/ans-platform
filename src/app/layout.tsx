@@ -102,6 +102,7 @@ export default async function RootLayout({
   const pathname = headersList.get("x-pathname") || headersList.get("x-invoke-path") || "";
   const isEmbedRoute = pathname.startsWith("/embed");
   const isKidsRoute = pathname.startsWith("/kids");
+  const isVibeHubRoute = pathname.startsWith("/vibe-hub");
   
   const locale = await getLocale();
   const messages = await getMessages();
@@ -130,7 +131,7 @@ export default async function RootLayout({
       </head>
       <body className={`${fontClasses} antialiased`}>
         <Providers locale={locale} timeZone={timeZone} messages={messages} theme={config.theme} branding={{ ...config.branding, useCloneBranding: config.homepage?.useCloneBranding }}>
-          {isEmbedRoute || isKidsRoute ? (
+          {isEmbedRoute || isKidsRoute || isVibeHubRoute ? (
             children
           ) : (
             <>

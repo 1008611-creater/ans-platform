@@ -37,6 +37,11 @@ const nextConfig: NextConfig = {
   // Enable standalone output for Docker（Dockerfile 依赖 .next/standalone）
   output: "standalone",
   outputFileTracingRoot: projectRoot,
+  outputFileTracingIncludes: {
+    "/vibe-hub/**/*": ["./src/data/vibehub/**/*"],
+    "/vibe-hub": ["./src/data/vibehub/**/*"],
+    "/api/vibe-hub/**/*": ["./src/data/vibehub/**/*"],
+  },
   // Experimental features
   experimental: {
     // Enable server actions

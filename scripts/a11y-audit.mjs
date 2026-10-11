@@ -50,7 +50,10 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
  * 什么都没测到」。扫描前会写入固定规模的探针数据，这里再确认它确实上了屏。
  */
 const PUBLIC_PAGES = [
-  ["/", "首页", "学会一个 AI 方法，做出一份自己的成果"],
+  ["/", "首页", "你的下一个作品"],
+  ["/explore", "项目发现", "发现，值得你开工的项目"],
+  ["/explore/resume-story", "项目详情", "把你的项目，写成有说服力的经历"],
+  ["/workflows/toonflow", "视频工作流", "Toonflow"],
   ["/prompts", "提示词广场", "提示词"],
   ["/templates", "模板广场", "模板"],
   ["/workflows", "工作流广场", "工作流"],
@@ -66,7 +69,8 @@ const PRIVATE_PAGES = [
 
 /** 移动视口只扫最容易暴露问题的三个入口，避免门禁时间翻倍。 */
 const MOBILE_PAGES = [
-  ["/", "移动端 首页", "学会一个 AI 方法，做出一份自己的成果"],
+  ["/", "移动端 首页", "你的下一个作品"],
+  ["/explore", "移动端 项目发现", "发现，值得你开工的项目"],
   ["/prompts", "移动端 提示词广场", "提示词"],
   ["/workflows", "移动端 工作流广场", "工作流"],
 ];

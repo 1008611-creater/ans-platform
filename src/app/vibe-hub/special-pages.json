@@ -1,0 +1,102 @@
+[
+  {
+    "slug": "vibehub-skill",
+    "path": "/vibehub-skill",
+    "enTitle": "VibeHub Skill | Learn Vibe Coding Terms with Any Agent",
+    "enDescription": "Install VibeHub Skill to help your agent identify terms from a description, teach a topic, and practice in your current project. It covers 360 visual terms and project…",
+    "enSections": [],
+    "zhTitle": "VibeHub Skill｜用任何 Agent 学懂 Vibe Coding 术语",
+    "zhDescription": "安装 VibeHub Skill 后，Agent 可帮你：描述效果找术语、学习具体主题、结合当前项目练习，不知道学什么时主动推荐下一步。覆盖 360 个可视化术语与多条项目学习路线。",
+    "zhSections": []
+  },
+  {
+    "slug": "practice",
+    "path": "/practice",
+    "enTitle": "Vibe Coding Term Practice | VibeHub",
+    "enDescription": "Practice frontend, backend, product, testing, tech stack, AI, and Git terms through real scenarios, immediate feedback, and complete term guides.",
+    "enSections": [],
+    "zhTitle": "Vibe Coding 术语判断练习｜VibeHub",
+    "zhDescription": "通过真实场景练习前端、后端、产品、测试、技术栈、AI 与 Git 术语：先作出判断，再用即时反馈和完整术语详情理解对应概念。",
+    "zhSections": []
+  },
+  {
+    "slug": "anti-ai-flavor",
+    "path": "/anti-ai-flavor",
+    "enTitle": "Avoid AI Slop in UI and Copy | VibeHub",
+    "enDescription": "Browse recurring Chinese writing tells, English AI slop, and UI defaults with examples, valid boundaries, revision rules, and agent requests.",
+    "enSections": [],
+    "zhTitle": "防止 AI 味儿｜看懂 AI slop 并学会修改 · VibeHub",
+    "zhDescription": "像查术语一样浏览中文口癖、英文 AI slop 和 UI 模板感，查看完整例子、正常边界、具体改法和 Agent 请求。",
+    "zhSections": []
+  },
+  {
+    "slug": "topics/backend",
+    "path": "/topics/backend",
+    "enTitle": "Backend Terms | Visual Vibe Coding Guide · VibeHub",
+    "enDescription": "73 backend terms explained with visual examples, real use cases, and clear boundaries for people building with vibe coding.",
+    "enSections": [],
+    "zhTitle": "后端术语有哪些｜Vibe Coding 可视化图解 · VibeHub",
+    "zhDescription": "VibeHub「后端」分类共 73 个术语：面向所有 Vibe Coding 用户的可视化图解，讲清常见概念、使用场景与边界，帮你用大白话搜到准确名称，更清楚向 AI 表达需求。",
+    "zhSections": []
+  },
+  {
+    "slug": "topics/product",
+    "path": "/topics/product",
+    "enTitle": "Product Terms | Visual Vibe Coding Guide · VibeHub",
+    "enDescription": "25 product terms explained with visual examples, real use cases, and clear boundaries for people building with vibe coding.",
+    "enSections": [],
+    "zhTitle": "产品术语有哪些｜Vibe Coding 可视化图解 · VibeHub",
+    "zhDescription": "VibeHub「产品」分类共 25 个术语：面向所有 Vibe Coding 用户的可视化图解，讲清常见概念、使用场景与边界，帮你用大白话搜到准确名称，更清楚向 AI 表达需求。",
+    "zhSections": []
+  },
+  {
+    "slug": "topics/testing",
+    "path": "/topics/testing",
+    "enTitle": "Testing Terms | Visual Vibe Coding Guide · VibeHub",
+    "enDescription": "14 testing terms explained with visual examples, real use cases, and clear boundaries for people building with vibe coding.",
+    "enSections": [],
+    "zhTitle": "测试术语有哪些｜Vibe Coding 可视化图解 · VibeHub",
+    "zhDescription": "VibeHub「测试」分类共 14 个术语：面向所有 Vibe Coding 用户的可视化图解，讲清常见概念、使用场景与边界，帮你用大白话搜到准确名称，更清楚向 AI 表达需求。",
+    "zhSections": []
+  },
+  {
+    "slug": "topics/technology",
+    "path": "/topics/technology",
+    "enTitle": "Tech Stack Terms | Visual Vibe Coding Guide · VibeHub",
+    "enDescription": "20 tech stack terms explained with visual examples, real use cases, and clear boundaries for people building with vibe coding.",
+    "enSections": [],
+    "zhTitle": "技术栈术语有哪些｜Vibe Coding 可视化图解 · VibeHub",
+    "zhDescription": "VibeHub「技术栈」分类共 20 个术语：面向所有 Vibe Coding 用户的可视化图解，讲清常见概念、使用场景与边界，帮你用大白话搜到准确名称，更清楚向 AI 表达需求。",
+    "zhSections": []
+  },
+  {
+    "slug": "topics/ai",
+    "path": "/topics/ai",
+    "enTitle": "AI Terms | Visual Vibe Coding Guide · VibeHub",
+    "enDescription": "43 ai terms explained with visual examples, real use cases, and clear boundaries for people building with vibe coding.",
+    "enSections": [],
+    "zhTitle": "AI术语有哪些｜Vibe Coding 可视化图解 · VibeHub",
+    "zhDescription": "VibeHub「AI」分类共 43 个术语：面向所有 Vibe Coding 用户的可视化图解，讲清常见概念、使用场景与边界，帮你用大白话搜到准确名称，更清楚向 AI 表达需求。",
+    "zhSections": []
+  },
+  {
+    "slug": "topics/git",
+    "path": "/topics/git",
+    "enTitle": "Git Terms | Visual Vibe Coding Guide · VibeHub",
+    "enDescription": "15 git terms explained with visual examples, real use cases, and clear boundaries for people building with vibe coding.",
+    "enSections": [],
+    "zhTitle": "Git术语有哪些｜Vibe Coding 可视化图解 · VibeHub",
+    "zhDescription": "VibeHub「Git」分类共 15 个术语：面向所有 Vibe Coding 用户的可视化图解，讲清常见概念、使用场景与边界，帮你用大白话搜到准确名称，更清楚向 AI 表达需求。",
+    "zhSections": []
+  },
+  {
+    "slug": "topics/design",
+    "path": "/topics/design",
+    "enTitle": "Design Styles Terms | Visual Vibe Coding Guide · VibeHub",
+    "enDescription": "24 design styles terms explained with visual examples, real use cases, and clear boundaries for people building with vibe coding.",
+    "enSections": [],
+    "zhTitle": "设计风格术语有哪些｜Vibe Coding 可视化图解 · VibeHub",
+    "zhDescription": "VibeHub「设计风格」分类共 24 个术语：面向所有 Vibe Coding 用户的可视化图解，讲清常见概念、使用场景与边界，帮你用大白话搜到准确名称，更清楚向 AI 表达需求。",
+    "zhSections": []
+  }
+]

@@ -1,0 +1,30 @@
+const { execFileSync, spawnSync, spawn } = require("node:child_process");
+const fs = require("node:fs");
+const { randomBytes } = require("node:crypto");
+const info = JSON.parse(execFileSync("docker", ["inspect", "ans-audit3-db"], { encoding: "utf8", windowsHide: true }))[0];
+const binding = info.NetworkSettings.Ports["5432/tcp"];
+if (!binding?.some(x => x.HostIp === "127.0.0.1" && x.HostPort === "55438")) throw new Error("Expected local isolated PostgreSQL binding unavailable");
+const pg = Object.fromEntries(info.Config.Env.map(entry => { const i = entry.indexOf("="); return [entry.slice(0, i), entry.slice(i + 1)]; }));
+const user = pg.POSTGRES_USER || "postgres", password = pg.POSTGRES_PASSWORD;
+if (!password || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(user)) throw new Error("Isolated credentials unavailable");
+const env = { ...process.env };
+for (const key of Object.keys(env)) if (/(?:API_KEY|SMTP_|TURNSTILE|SECRET|OIDC_|SENTRY|BASE_URL|COMPUTE_POLICY)/.test(key)) env[key] = "";
+const name = "ans_product_verify_compute_history_r1";
+const url = "postgresql://" + encodeURIComponent(user) + ":" + encodeURIComponent(password) + "@127.0.0.1:55438/" + name + "?schema=public";
+Object.assign(env, { DATABASE_URL: url, DIRECT_URL: url, AUTH_SECRET: randomBytes(32).toString("hex"), ANS_PROJECT_WORKER_DISABLED: "true", ANS_TOONFLOW_COMPUTE_ENABLED: "0", NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1", ANS_LOCAL_DIST_DIR: ".next-compute-history", AUTH_TRUST_HOST: "true", AUTH_URL: "http://127.0.0.1:3171", NEXTAUTH_URL: "http://127.0.0.1:3171", ANS_TOONFLOW_EMBED_ENABLED: "0" });
+const exists = execFileSync("docker", ["exec", "ans-audit3-db", "psql", "-U", user, "-d", "postgres", "-Atc", "SELECT 1 FROM pg_database WHERE datname='" + name + "'"], { encoding: "utf8", windowsHide: true }).trim();
+if (!exists) execFileSync("docker", ["exec", "ans-audit3-db", "psql", "-U", user, "-d", "postgres", "-c", "CREATE DATABASE " + name], { stdio: "ignore", windowsHide: true });
+const migration = spawnSync(process.execPath, ["node_modules/prisma/build/index.js", "migrate", "deploy"], { env, stdio: "pipe", windowsHide: true });
+if (migration.status !== 0) { console.error("[compute-history] isolated migration failed (diagnostics withheld)"); process.exit(1); }
+console.log("[compute-history] dedicated isolated migrations deployed");
+fs.mkdirSync(".workbuddy/evidence/compute-member-history", { recursive: true });
+const mode = process.argv[2] ?? "integration";
+if (!["integration", "build", "http"].includes(mode)) throw new Error("Unsupported isolated history check");
+const args = mode === "build" ? ["node_modules/next/dist/bin/next", "build", "--webpack"]
+  : ["node_modules/tsx/dist/cli.mjs", mode === "http" ? "scripts/compute-member-history-http-check.ts" : "scripts/compute-member-history-integration.ts"];
+const logPath = ".workbuddy/evidence/compute-member-history/" + mode + ".log";
+if (fs.existsSync(logPath)) fs.copyFileSync(logPath, logPath + ".previous-" + Date.now());
+const log = fs.createWriteStream(logPath);
+const child = spawn(process.execPath, args, { env, stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
+for (const stream of [child.stdout, child.stderr]) stream.on("data", data => { const text = data.toString().replaceAll(url, "[isolated-database]").replaceAll(password, "[redacted]").replaceAll(env.AUTH_SECRET, "[fixture-secret]"); log.write(text); process.stdout.write(text); });
+child.on("exit", code => { log.end(); fs.writeFileSync(".workbuddy/evidence/compute-member-history/" + mode + "-exit.json", JSON.stringify({ exitCode: code, isolatedPostgres: true, database: name, providerCalls: 0, realFunds: false, remoteCredentialsRead: false }) + "\n"); process.exitCode = code === 0 ? 0 : code || 1; });

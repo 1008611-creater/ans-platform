@@ -15,8 +15,8 @@ if (!process.env.MODEL_CREDENTIAL_SECRET) {
 }
 const steps = [
   ["typecheck", "npm", ["run", "typecheck"]],
-  // `next build` 的 TypeScript 阶段会连同 src/__tests__ 一起检查，这里提前独立跑一次，
-  // 让测试文件的类型错误在门禁前段就暴露，而不是拖到最后一步的构建。
+  // Production builds check application sources using tsconfig.typecheck.json.
+  // Keep all test and tool types checked independently as a required gate.
   ["typecheck (tests)", "npm", ["run", "typecheck:tests"]],
   ["lint", "npm", ["run", "lint"]],
   ["docs", "npm", ["run", "docs:check"]],
@@ -53,13 +53,15 @@ function run(label, command, args) {
     // Windows 上 npm 是 `npm.cmd`，Node 直接 spawn 会报 EINVAL，因此经 cmd.exe 执行。
     // 不传 `shell: true`：那会把参数拼进命令行（Node DEP0190）。这里命令与参数都是
     // 本文件的字面量，不存在外部输入，也不做任何转义拼接。
+    // React production omits act(); test processes need their own environment.
+    const stepEnv = label === "unit tests" ? { ...process.env, NODE_ENV: "test" } : process.env;
     const child =
       process.platform === "win32"
         ? spawn("cmd.exe", ["/d", "/s", "/c", command, ...args], {
             stdio: "inherit",
-            env: process.env,
+            env: stepEnv,
           })
-        : spawn(command, args, { stdio: "inherit", env: process.env });
+        : spawn(command, args, { stdio: "inherit", env: stepEnv });
     child.on("error", reject);
     child.on("exit", (code, signal) => {
       if (code === 0) resolve();
