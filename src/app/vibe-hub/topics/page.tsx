@@ -1,0 +1,6 @@
+﻿"use client";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import terms from "../terms.json";
+import topics from "../topics.json";
+export default function Topics(){const [topic,setTopic]=useState("backend"); const list=useMemo(()=>terms.filter(t=>t.name.toLowerCase().includes(topic)||t.description.toLowerCase().includes(topic)).slice(0,24),[topic]); return <main className="min-h-screen bg-[#fbfaf8] p-8 text-[#272522]"><div className="mx-auto max-w-6xl"><Link href="/vibe-hub" className="text-sm text-[#716d66]">← VibeHub</Link><h1 className="mt-16 text-5xl font-semibold">Topics</h1><p className="mt-5 text-lg text-[#716d66]">Browse the vocabulary by the context where you use it.</p><div className="mt-8 flex flex-wrap gap-2">{topics.map(t=><button key={t.slug} onClick={()=>setTopic(t.slug)} className={`rounded-full border px-4 py-2 text-sm ${topic===t.slug?"border-[#8274d9] bg-[#8274d9] text-white":"border-[#ded8cf] bg-white"}`}>{t.name}</button>)}</div><div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{list.map(t=><Link href={`/vibe-hub/${t.slug}`} key={t.slug} className="rounded-2xl border border-[#e9e4dc] bg-white p-5 hover:border-[#8274d9]"><h2 className="text-xl font-medium">{t.name}</h2><p className="mt-2 text-sm leading-6 text-[#716d66]">{t.description}</p></Link>)}</div></div></main>}
