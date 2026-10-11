@@ -26,37 +26,42 @@ const handlers = [
 describe.each(handlers)("社区接口 $label", ({ label, handle, service, method }) => {
   it("未登录返回401且不查业务数据", async () => {
     mocks.auth.mockResolvedValue(null);
-    const response = await handle(new Request(`http://localhost/api/community/${label}`, { method }));
+    const response = await handle(new Request(`http://localhost:3000/api/community/${label}`, { method, headers: { Origin: "http://localhost:3000", "Sec-Fetch-Site": "same-origin" } }));
     expect(response.status).toBe(401);
     expect(service).not.toHaveBeenCalled();
     expect(response.headers.get("cache-control")).toContain("no-store");
   });
   it("仅使用会话本人ID，忽略参数和伪造body；返回禁止缓存", async () => {
-    const response = await handle(new Request(`http://localhost/api/community/${label}?userId=victim&take=999`, { method, ...(method === "POST" ? { body: JSON.stringify({ userId: "victim", xp: 999, day: "2030-01-01" }) } : {}) }));
+    const response = await handle(new Request(`http://localhost:3000/api/community/${label}?userId=victim&take=999`, { method, headers: { Origin: "http://localhost:3000", "Sec-Fetch-Site": "same-origin" }, ...(method === "POST" ? { body: JSON.stringify({ userId: "victim", xp: 999, day: "2030-01-01" }) } : {}) }));
     expect(response.status).toBe(200);
     expect(service).toHaveBeenCalledWith("self");
     expect(response.headers.get("cache-control")).toContain("no-store");
   });
   it("账号资格拒绝返回403", async () => {
     service.mockRejectedValue(new CommunityError(403, "COMMUNITY_INELIGIBLE"));
-    expect((await handle(new Request(`http://localhost/api/community/${label}`, { method }))).status).toBe(403);
+    expect((await handle(new Request(`http://localhost:3000/api/community/${label}`, { method, headers: { Origin: "http://localhost:3000", "Sec-Fetch-Site": "same-origin" } }))).status).toBe(403);
   });
   it("内部错误不泄露数据库或用户信息", async () => {
     service.mockRejectedValue(new Error("email=private@example.test SQL secret"));
-    const response = await handle(new Request(`http://localhost/api/community/${label}`, { method }));
+    const response = await handle(new Request(`http://localhost:3000/api/community/${label}`, { method, headers: { Origin: "http://localhost:3000", "Sec-Fetch-Site": "same-origin" } }));
     expect(response.status).toBe(500);
     expect(await response.text()).not.toMatch(/SQL|secret|private@example/);
   });
 });
 
 it("跨站签到请求拒绝", async () => {
-  const response = await checkIn(new Request("http://localhost/api/community/check-in", { method: "POST", headers: { Origin: "https://untrusted.example", "Sec-Fetch-Site": "cross-site" } }));
+  const response = await checkIn(new Request("http://localhost:3000/api/community/check-in", { method: "POST", headers: { Origin: "https://untrusted.example", "Sec-Fetch-Site": "cross-site" } }));
   expect(response.status).toBe(403);
   expect(mocks.checkIn).not.toHaveBeenCalled();
 });
 it("同源签到正常且重复签到仍为200", async () => {
   mocks.checkIn.mockResolvedValue({ alreadyCheckedIn: true, checkIn: { id: "existing" } });
-  const response = await checkIn(new Request("http://localhost/api/community/check-in", { method: "POST", headers: { Origin: "http://localhost", "Sec-Fetch-Site": "same-origin" } }));
+  const response = await checkIn(new Request("http://localhost:3000/api/community/check-in", { method: "POST", headers: { Origin: "http://localhost:3000", "Sec-Fetch-Site": "same-origin" } }));
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ alreadyCheckedIn: true, checkIn: { id: "existing" } });
+});
+
+it("rejects a browser write with no verifiable same-origin context", async () => {
+  const response = await checkIn(new Request("http://localhost:3000/api/community/check-in", { method: "POST" }));
+  expect(response.status).toBe(403); expect(mocks.checkIn).not.toHaveBeenCalled();
 });

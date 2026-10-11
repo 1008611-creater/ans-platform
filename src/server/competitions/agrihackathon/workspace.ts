@@ -1,9 +1,8 @@
 import type { DbTransaction } from "@/lib/db";
 import { createHash, randomUUID } from "node:crypto";
-import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { agriWorkspaceScopeSchema, type AgriWorkspaceScope } from "@/contracts/agrihackathon";
-import { agriRulesDraftSchema, agriWorkspaceCommandSchema, agriGrantCommandSchema, AgriWorkspaceError, type AgriRulesDraft } from "@/contracts/agri-workspace";
+import { agriRulesDraftSchema, agriWorkspaceCommandSchema, agriGrantCommandSchema, AgriWorkspaceError, type AgriRulesDraft, type AgriGrantManagementView } from "@/contracts/agri-workspace";
 import { agriSubmissionRequirementsSchema } from "@/contracts/agri-submissions";
 
 type Tx = DbTransaction;
@@ -219,5 +218,31 @@ export async function executeAgriGrantCommand(actorId: string, raw: unknown) {
     await audit(tx, ctx, command.action, id, next); await recordReceipt(tx, ctx, command, id, next, now);
     await assertAgriAuthorityCurrent(tx, manager, source, command.action === "delegateScope" && command.expiresAt ? { expiresAt: new Date(command.expiresAt) } : null);
     return { resourceId: id, appliedRevision: next, duplicate: false };
+  }, { timeout: 15000 });
+}
+/** Explicit account-ID lookup only; never enumerates names, emails or the user directory. */
+export async function readAgriGrantManagement(actorId: string, recipientId?: string): Promise<AgriGrantManagementView> {
+  if (recipientId !== undefined && (!recipientId.trim() || recipientId.length > 80 || recipientId !== recipientId.trim())) return fail("INVALID_INPUT", 400);
+  return db.$transaction(async tx => {
+    const ctx = await lockAgriWorkspace(tx, actorId);
+    const manager = await requireAgriScope(tx, ctx, "ACCESS_MANAGE");
+    const authorities = [manager];
+    const delegableScopes: AgriWorkspaceScope[] = [];
+    for (const scope of agriWorkspaceScopeSchema.options) {
+      if (scope === "ACCESS_MANAGE") continue;
+      try {
+        const source = await requireAgriScope(tx, ctx, scope);
+        authorities.push(source);
+        if (source.delegable) delegableScopes.push(scope);
+      } catch (error) {
+        if (!(error instanceof AgriWorkspaceError) || error.code !== "AGRI_SCOPE_REQUIRED") throw error;
+      }
+    }
+    const rows = recipientId ? await tx.$queryRaw<GrantRow[]>`SELECT * FROM agri_access_grants
+      WHERE "competitionId"=${ctx.workspace.competitionId} AND "userId"=${recipientId} ORDER BY scope` : [];
+    await assertAgriAuthorityCurrent(tx, ...authorities);
+    return { competitionId: ctx.workspace.competitionId, recipientId: recipientId ?? null, delegableScopes,
+      grants: rows.map(row => ({ id: row.id, userId: row.userId, scope: agriWorkspaceScopeSchema.parse(row.scope), revision: row.revision,
+        delegable: row.delegable, expiresAt: row.expiresAt?.toISOString() ?? null, revokedAt: row.revokedAt?.toISOString() ?? null })) };
   }, { timeout: 15000 });
 }

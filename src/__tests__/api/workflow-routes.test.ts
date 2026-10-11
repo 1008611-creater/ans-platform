@@ -277,7 +277,7 @@ describe("workflow detail and review routes", () => {
     mocks.service.reviewWorkflow.mockResolvedValue({ id: "w1", status: "PUBLISHED" });
 
     const response = await adminReviewRoute(
-      json({ action: "publish", note: "  内容合规  " }),
+      json({ action: "publish", note: "  内容合规  ", expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001" }),
       params({ slug: "weekly" }),
     );
 
@@ -285,6 +285,7 @@ describe("workflow detail and review routes", () => {
     expect(mocks.service.reviewWorkflow).toHaveBeenCalledWith("weekly", "admin1", {
       action: "publish",
       note: "内容合规",
+      expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001",
     });
   });
 

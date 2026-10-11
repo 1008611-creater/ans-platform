@@ -20,6 +20,12 @@ describe("official catalog content", () => {
     expect(drafts).toHaveLength(CATALOG_PROJECTS.length);
     drafts.forEach(entry => expect(catalogEntrySchema.safeParse(entry).success).toBe(true));
   });
+  it("accepts versioned GitGlow paths and rejects local path traversal", () => {
+    expect(catalogEntrySchema.safeParse({ ...draft, coverUrl: "/catalog/gitglow-v1/liu-resume.webp" }).success).toBe(true);
+    for (const coverUrl of ["/catalog/../secrets.png", "/catalog/gitglow-v1/../../secrets.png", "/catalog/%2e%2e/secrets.png", "//evil.test/x.webp", "/catalog/file.txt"]) {
+      expect(catalogEntrySchema.safeParse({ ...draft, coverUrl }).success).toBe(false);
+    }
+  });
   it("has every supported workflow label in both languages", () => {
     for (const id of catalogWorkflowIdSchema.options) {
       expect(zh.catalogAdmin.workflows).toHaveProperty(id);

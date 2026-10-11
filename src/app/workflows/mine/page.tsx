@@ -136,8 +136,8 @@ export default async function MyWorkflowsPage() {
                     )}
                   </div>
 
-                  {(workflow.status === "DRAFT" || workflow.status === "REJECTED") && (
-                    <WorkflowActions slug={workflow.slug} mode="submit" />
+                  {(workflow.status === "DRAFT" || workflow.status === "REJECTED" || workflow.status === "PUBLISHED" && latestVersion > (workflow.publishedVersion ?? 0)) && (
+                    <WorkflowActions slug={workflow.slug} mode="submit" version={latestVersion} />
                   )}
                 </CardContent>
               </Card>

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import type { Lesson, SourcePage } from "../source-data";
+import type { Lesson, SourcePage } from "@/contracts/vibehub-content";
 import type { OfficialEntry } from "../official/types";
 type PracticeContent = { content: SourcePage; detail: OfficialEntry | null };
 import { useVibeLanguage } from "../use-vibe-language";

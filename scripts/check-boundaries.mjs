@@ -159,7 +159,7 @@ function infoOf(file) {
 function violationChain(file, opts, trail = []) {
   // 用路径判断环，而不是全局 seen：共享 seen 会让兄弟分支互相遮蔽，
   // 从而漏掉真正的违规链。
-  if (trail.includes(file)) return null;
+  if (trail.includes(relOf(file))) return null;
   const info = infoOf(file);
   const chain = [...trail, info.rel];
 

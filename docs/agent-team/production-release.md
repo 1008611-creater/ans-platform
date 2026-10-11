@@ -2,6 +2,16 @@
 
 实际运行目录为 `/srv/ans-platform-authoritative-main`，应用容器为 `ans-platform-app`，Compose 项目名为 `ans-platform-authoritative`。ANS 使用 Supabase Session pooler 与 PostgreSQL 17；共享服务器上的 `prompts-chat-db` 是另一业务，不能作为 ANS 的备份目标。
 
+## 2026-10-11 main 同步与本轮候选
+
+当前正式容器 `ans-platform-app`，Compose 项目 `ans-platform-header`；源码 release `/srv/ans-releases/ans-main-sync-20261011/source`，已部署 Git revision `e1dd01944a871cc5d36703f7e5add17dd4ba7d52`。以实际运行容器检查的配置、项目名和挂载为准，下文早期目录为历史记录。数据库运行使用 Supabase transaction pooler/6543；一致备份和迁移使用已有 `DIRECT_URL` session pooler/5432。
+
+44 张 GitGlow 封面已合并 main 且上线，公开 HTTPS 请求 44/44 HTTP200，与 main 源码哈希相同。证据在本机 `.workbuddy/evidence/ans-main-sync-20261011/gitglow-recheck-20261011.json`。个人主页、签到、XP/等级、装饰与奖励系统已包含在当前部署版本；本轮继续修复并发奖励扣回、公开身份、工作流审核版本、持久任务恢复、市场明确拒绝后重试与农客松阶段决定/更正管理。
+
+候选 release `ans-audit-20261011`：类型检查通过；全量 lint 0 errors，313 既有 warnings；184 个文件、2391 项单元验证通过，10 项 skipped；六类分层与113文档链接检查通过。全71项迁移在新建隔离库执行成功，11类真实 SQL 约束验证通过且事务回滚后业务表为空。此记录不代表候选已上线；正式部署以 release `deployment.json` 和运行容器版本为准。
+
+未完成：新版的五轮生产闭环审计、农客松正式赛事绑定与独立报名窗口接入、阶段档案公开授权、AIGC 工作台真实内嵌/视频统一收费、现金支付适配与真实结算。无真实赛事绑定时不开报，不虚构赛事日期、规则或名单，不用生产付费调用或测试数据验收。这些缺口不能用按钮、模拟或旧证据称已完成。
+
 ## 发布前
 
 1. 使用已核验的 SSH known_hosts 与指定密钥，保持 `StrictHostKeyChecking=yes`。当前 SSH 可用；不得关闭主机校验或把凭证写入日志。

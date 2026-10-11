@@ -10,14 +10,14 @@ const mocks = vi.hoisted(() => ({
     userModelCredential: { findFirst: vi.fn() },
     user: { update: vi.fn() },
     quotaLedger: { create: vi.fn() },
-    auditLog: { create: vi.fn() },
+    auditLog: { create: vi.fn(), findFirst: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
 
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
-import { executePersistedWorkflow, interpolate, createWorkflowHandlers } from "@/server/workflows/runner";
+import { executePersistedWorkflow, interpolate, createWorkflowHandlers, recoverInterruptedWorkflowRun, cancelWorkflowRun } from "@/server/workflows/runner";
 import { encryptCredential } from "@/server/integrations/credential-crypto";
 import { CredentialServiceError } from "@/server/credentials/service";
 import type { WorkflowNodeContext } from "@/domain/workflows/executor";
@@ -92,7 +92,7 @@ describe("executePersistedWorkflow", () => {
 
     expect(result?.status).toBe("succeeded");
     expect(result?.output).toBe("草稿:{\"topic\":\"校园 AI\"}");
-    expect(mocks.db.workflowNodeRun.updateMany).toHaveBeenCalledTimes(2);
+    expect(mocks.db.workflowNodeRun.updateMany).toHaveBeenCalledTimes(6);
     expect(mocks.db.workflowRun.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: "SUCCEEDED", error: null }) }),
     );
@@ -236,9 +236,10 @@ describe("executePersistedWorkflow", () => {
     mocks.db.workflowRun.findFirst
       .mockResolvedValueOnce({ ...run, version: { definition: modelDefinition } })
       .mockResolvedValue({ status: "CANCELLED" });
+    let runningWrites = 0;
     mocks.db.workflowRun.updateMany.mockImplementation(
       async ({ where }: { where: { status?: string } }) =>
-        where?.status === "QUEUED" ? { count: 1 } : { count: 0 },
+        where?.status === "QUEUED" || (where?.status === "RUNNING" && runningWrites++ === 0) ? { count: 1 } : { count: 0 },
     );
     let modelSignal: AbortSignal | undefined;
 
@@ -256,7 +257,7 @@ describe("executePersistedWorkflow", () => {
     expect(modelSignal?.aborted).toBe(true);
     expect(result).toBeNull();
     expect(mocks.db.user.update).not.toHaveBeenCalled();
-    expect(mocks.db.workflowNodeRun.updateMany).not.toHaveBeenCalled();
+    expect(mocks.db.workflowNodeRun.updateMany).toHaveBeenCalledTimes(1);
   });
 
   it("does not refund when another worker already finalized the run", async () => {
@@ -270,7 +271,8 @@ describe("executePersistedWorkflow", () => {
     });
 
     expect(mocks.db.user.update).not.toHaveBeenCalled();
-    expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
+    expect(mocks.db.auditLog.create).toHaveBeenCalledTimes(1);
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ action: "WORKFLOW_RUN_STARTED" }) }));
   });
 
   it("records provider model and token usage in the workflow audit", async () => {
@@ -532,4 +534,77 @@ describe("durable unified workflow charges", () => {
     expect(mocks.db.user.update).not.toHaveBeenCalled(); expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
     expect(mocks.db.workflowRun.update).toHaveBeenCalledWith({ where: { id: "run1" }, data: { costPoints: expect.closeTo(0.12, 6) } });
   });
+});
+
+
+describe("durable execution recovery", () => {
+  const lease = new Date("2026-10-11T00:00:00Z");
+  const modelDefinition = { ...definition, nodes: [{ ...definition.nodes[0], type: "model" as const }, definition.nodes[1]] };
+  function interrupted(nodeRuns: unknown[]) {
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, status: "RUNNING", startedAt: lease, version: { definition: modelDefinition }, nodeRuns });
+    mocks.db.auditLog.findFirst.mockResolvedValue({ metadata: { leaseStartedAt: lease.toISOString() } });
+  }
+  it("requeues a durable paid response without debit or refund", async () => {
+    interrupted([{ nodeId: "draft", status: "SUCCEEDED", output: "saved response", attempts: 1 }]);
+    await expect(recoverInterruptedWorkflowRun("run1", new Date("2026-10-11T00:03:00Z"))).resolves.toBe(true);
+    expect(mocks.db.workflowRun.updateMany).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "run1", status: "RUNNING", startedAt: lease }, data: expect.objectContaining({ status: "QUEUED" }) }));
+    expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
+  });
+  it("never resends an in-flight model with no durable response", async () => {
+    interrupted([{ nodeId: "draft", status: "RUNNING" }]);
+    await recoverInterruptedWorkflowRun("run1", new Date("2026-10-11T00:03:00Z"));
+    expect(mocks.db.workflowRun.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: "FAILED" }) }));
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ metadata: expect.objectContaining({ code: "EXECUTION_INTERRUPTED" }) }) }));
+    expect(mocks.db.workflowNodeRun.updateMany).toHaveBeenCalledWith({ where: { runId: "run1", status: "RUNNING" }, data: expect.objectContaining({ status: "FAILED", error: "EXECUTION_INTERRUPTED" }) });
+  });
+  it("retains an uncertain legacy APIC hold until receipt reconciliation", async () => {
+    vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
+    interrupted([{ nodeId: "draft", status: "RUNNING" }]);
+    await recoverInterruptedWorkflowRun("run1", new Date("2026-10-11T00:03:00Z"));
+    expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
+  });
+  it("does not replay pre-checkpoint legacy executions", async () => {
+    interrupted([]);
+    mocks.db.auditLog.findFirst.mockResolvedValue(null);
+    await recoverInterruptedWorkflowRun("run1", new Date("2026-10-11T00:03:00Z"));
+    expect(mocks.db.workflowRun.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: "FAILED" }) }));
+  });
+  it("a stale lease cannot finalize or refund a newer execution", async () => {
+    interrupted([{ nodeId: "draft", status: "RUNNING" }]);
+    mocks.db.workflowRun.updateMany.mockResolvedValue({ count: 0 });
+    await expect(recoverInterruptedWorkflowRun("run1", new Date("2026-10-11T00:03:00Z"))).resolves.toBeNull();
+    expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
+    expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
+  });
+  it("reuses a persisted model output and executes only the unfinished output node", async () => {
+    const model = vi.fn();
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { definition: modelDefinition }, nodeRuns: [{ nodeId: "draft", status: "SUCCEEDED", output: "saved response", attempts: 1, startedAt: lease, finishedAt: lease }] });
+    const result = await executePersistedWorkflow("run1", "user1", { handlers: { model, output: ({ dependencyOutputs }) => dependencyOutputs.draft } });
+    expect(result?.output).toBe("saved response");
+    expect(model).not.toHaveBeenCalled();
+  });
+});
+
+
+it("settles a resumed paid response from the durable usage checkpoint", async () => {
+  vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
+  const model = vi.fn();
+  const paidDefinition = { ...definition, nodes: [{ ...definition.nodes[0], type: "model" as const }, definition.nodes[1]] };
+  mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, costPoints: 0.25, version: { definition: paidDefinition }, nodeRuns: [{ nodeId: "draft", status: "SUCCEEDED", output: "saved response", attempts: 1 }] });
+  mocks.db.auditLog.findFirst.mockResolvedValue({ metadata: { modelUsage: { models: ["gpt-6.1-sol"], modelCalls: 1, tokenUsage: { inputTokens: 1000, outputTokens: 1000, totalTokens: 2000 }, reasoningEffort: "none", apicCharges: [{ requestId: "request0001", quota: 960, points: 0.00192 }] } } });
+  const result = await executePersistedWorkflow("run1", "user1", { handlers: { model, output: ({ dependencyOutputs }) => dependencyOutputs.draft } });
+  expect(result?.status).toBe("succeeded");
+  expect(model).not.toHaveBeenCalled();
+  expect(mocks.db.workflowRun.update).toHaveBeenCalledWith({ where: { id: "run1" }, data: { costPoints: 0.00192 } });
+  expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({ data: { quotaPoints: { increment: 0.24808 } } }));
+});
+
+
+it("cancellation retains actual settled and uncertain unified usage", async () => {
+  vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1");
+  mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, status: "RUNNING", costPoints: 0 });
+  mocks.db.apiComputeRequest.findMany.mockResolvedValue([{ state: "SETTLED", settledPoints: 0.02, authorizedPoints: 0.1 }, { state: "UNCERTAIN", settledPoints: null, authorizedPoints: 0.1 }]);
+  await cancelWorkflowRun("run1", "user1");
+  expect(mocks.db.workflowRun.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: "CANCELLED", costPoints: 0.12 }) }));
+  expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
 });

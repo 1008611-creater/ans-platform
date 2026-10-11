@@ -77,6 +77,12 @@ const definition = {
   ],
 };
 
+function reviewBinding(score: unknown) {
+  if (!score || typeof score !== "object" || !("reviewVersion" in score) || !("reviewRequestId" in score)
+    || typeof score.reviewVersion !== "number" || typeof score.reviewRequestId !== "string") throw new Error("Review binding missing from acceptance fixture");
+  return { expectedVersion: score.reviewVersion, expectedReviewRequestId: score.reviewRequestId };
+}
+
 async function main() {
   console.log("== 0. 准备账号 ==");
   const author = await db.user.create({
@@ -145,19 +151,20 @@ async function main() {
   console.log("\n== 2. 审核与发布 ==");
   await expectThrows(
     "未提交的工作流不能直接发布",
-    () => reviewWorkflow(slug, reviewer.id, { action: "publish", note: "越权尝试" }),
+    () => reviewWorkflow(slug, reviewer.id, { action: "publish", note: "越权尝试", expectedVersion: 1, expectedReviewRequestId: randomUUID() }),
     "INVALID_STATE",
   );
   await submitWorkflowForReview(slug, author.id);
   const submitted = await db.workflow.findUniqueOrThrow({ where: { slug } });
   check("提交审核后状态为 PENDING", submitted.status === "PENDING");
+  const submittedBinding = reviewBinding(submitted.reviewScore);
 
   await expectThrows(
     "审核者不能审核自己创建的内容",
-    () => reviewWorkflow(slug, author.id, { action: "publish", note: "自审" }),
+    () => reviewWorkflow(slug, author.id, { ...submittedBinding, action: "publish", note: "自审" }),
     "SELF_REVIEW_FORBIDDEN",
   );
-  const published = await reviewWorkflow(slug, reviewer.id, { action: "publish", note: "内容合规" });
+  const published = await reviewWorkflow(slug, reviewer.id, { ...submittedBinding, action: "publish", note: "内容合规" });
   check("审核通过后发布并钉住版本", published.status === "PUBLISHED" && published.publishedVersion === 1);
 
   console.log("\n== 2.5 AI 初审把关 ==");
@@ -179,11 +186,14 @@ async function main() {
     `${submittedScore?.verdict ?? "无"}/${submittedScore?.unavailableReason ?? "无"}`,
   );
 
+  const gatedBinding = reviewBinding((await db.workflow.findUniqueOrThrow({ where: { id: gated.id } })).reviewScore);
+
   // 未配置初审时人工把关是唯一兜底，所以这里应当放行；把结论换成 BLOCKED 就必须拦住。
   await db.workflow.update({
     where: { id: gated.id },
     data: {
       reviewScore: {
+        reviewVersion: gatedBinding.expectedVersion, reviewRequestId: gatedBinding.expectedReviewRequestId, reviewPending: true,
         verdict: "BLOCKED",
         source: "AI",
         pass: false,
@@ -196,7 +206,7 @@ async function main() {
   });
   await expectThrows(
     "AI 初审未通过时人工不能发布",
-    () => reviewWorkflow(gatedSlug, reviewer.id, { action: "publish", note: "试图放行" }),
+    () => reviewWorkflow(gatedSlug, reviewer.id, { ...gatedBinding, action: "publish", note: "试图放行" }),
     "REVIEW_REQUIRED",
   );
 
@@ -215,6 +225,7 @@ async function main() {
     },
   });
   const gatedPublished = await reviewWorkflow(gatedSlug, reviewer.id, {
+    ...gatedBinding,
     action: "publish",
     note: "初审通过后放行",
   });

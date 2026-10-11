@@ -30,6 +30,10 @@ export type WorkflowExecutionOptions = {
   maxExecutionMs?: number;
   signal?: AbortSignal;
   clock?: () => number;
+  /** Durable successes are replayed locally, without calling their executor again. */
+  checkpoints?: readonly WorkflowNodeExecution[];
+  onNodeStarted?: (node: WorkflowNode, startedAt: number) => Promise<void>;
+  onNodeFinished?: (execution: WorkflowNodeExecution) => Promise<void>;
 };
 
 export type WorkflowExecutionResult = {
@@ -98,6 +102,12 @@ export async function executeWorkflow(
   const maxExecutionMs = options.maxExecutionMs ?? 120_000;
 
   for (const node of plan.nodes) {
+    const checkpoint = options.checkpoints?.find(item => item.nodeId === node.id && item.status === "succeeded");
+    if (checkpoint) {
+      outputs[node.id] = checkpoint.output;
+      executions.push(checkpoint);
+      continue;
+    }
     if (options.signal?.aborted) {
       return {
         status: "failed",
@@ -123,6 +133,7 @@ export async function executeWorkflow(
         .map((edge) => [edge.from, outputs[edge.from]]),
     );
     const nodeStartedAt = clock();
+    await options.onNodeStarted?.(node, nodeStartedAt);
     let lastError: Error | undefined;
     let attempts = 0;
 
@@ -131,7 +142,9 @@ export async function executeWorkflow(
         if (!handler) {
           throw new Error(`No executor is registered for node type '${node.type}'.`);
         }
-        const output = await executeAttempt(node, {
+        const budgetRemaining = maxExecutionMs - (clock() - startedAt);
+        if (budgetRemaining <= 0) throw executionBudgetError(maxExecutionMs);
+        const output = await executeAttempt({ ...node, timeoutMs: Math.min(node.timeoutMs, budgetRemaining) }, {
           node,
           input,
           dependencyOutputs,
@@ -139,30 +152,33 @@ export async function executeWorkflow(
           signal: new AbortController().signal,
         }, handler, options.signal);
         outputs[node.id] = output;
-        executions.push({
+        const execution: WorkflowNodeExecution = {
           nodeId: node.id,
           status: "succeeded",
           attempts,
           startedAt: nodeStartedAt,
           endedAt: clock(),
           output,
-        });
+        };
+        executions.push(execution);
         lastError = undefined;
         break;
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
+        lastError = clock() - startedAt >= maxExecutionMs ? executionBudgetError(maxExecutionMs) : error instanceof Error ? error : new Error(String(error));
       }
     }
 
     if (lastError) {
-      executions.push({
+      const execution: WorkflowNodeExecution = {
         nodeId: node.id,
         status: "failed",
         attempts: Math.min(attempts, node.maxRetries + 1),
         startedAt: nodeStartedAt,
         endedAt: clock(),
         error: lastError.message,
-      });
+      };
+      await options.onNodeFinished?.(execution);
+      executions.push(execution);
       return {
         status: "failed",
         error: lastError.message,
@@ -171,6 +187,7 @@ export async function executeWorkflow(
       };
     }
 
+    await options.onNodeFinished?.(executions[executions.length - 1]);
     if (clock() - startedAt > maxExecutionMs) {
       const error = executionBudgetError(maxExecutionMs);
       return {

@@ -49,8 +49,15 @@ export type WorkflowReview = {
 };
 
 /** 判定「已通过 AI 初审」的严格形状，人工发布前必须满足。 */
+const reviewBindingShape = {
+  reviewVersion: z.number().int().positive().optional(),
+  reviewRequestId: z.string().uuid().optional(),
+  reviewPending: z.boolean().optional(),
+};
+
 export const passedWorkflowReviewSchema = z
   .object({
+    ...reviewBindingShape,
     verdict: z.literal("PASS"),
     source: z.literal("AI"),
     pass: z.literal(true),
@@ -70,6 +77,7 @@ export const passedWorkflowReviewSchema = z
 /** 判定「AI 初审未产出结论」的形状，用于区分配置缺失与临时故障。 */
 export const unavailableReviewSchema = z
   .object({
+    ...reviewBindingShape,
     verdict: z.literal("UNAVAILABLE"),
     source: z.literal("AI"),
     reason: z.string().trim().min(1).max(2000),
@@ -87,7 +95,11 @@ export const unavailableReviewSchema = z
  * - AI 初审 UNAVAILABLE：只有「服务端从未配置 AI 初审」时才退回纯人工把关，
  *   其余情况（超时、网关失败、返回格式异常）一律保持待审，避免故障期间放开审核。
  */
-export function canPublishAfterReview(reviewScore: unknown): boolean {
+export function canPublishAfterReview(reviewScore: unknown, version?: number): boolean {
+  if (version !== undefined) {
+    const binding = z.object({ reviewVersion: z.literal(version), reviewRequestId: z.string().uuid(), reviewPending: z.literal(true) }).safeParse(reviewScore);
+    if (!binding.success) return false;
+  }
   if (passedWorkflowReviewSchema.safeParse(reviewScore).success) return true;
   const parsed = unavailableReviewSchema.safeParse(reviewScore);
   return parsed.success && parsed.data.unavailableReason === "NOT_CONFIGURED";

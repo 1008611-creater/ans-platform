@@ -78,13 +78,13 @@ export async function grantCommunityReward(actorId: string, rawInput: unknown) {
       ]);
       if (!rule?.active) throw new RewardError(404, "RULE_UNAVAILABLE", "奖励规则不存在或已停用。");
       if (!user || user.deletedAt) throw new RewardError(404, "USER_UNAVAILABLE", "找不到可发奖的用户。");
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
       const now = new Date();
       const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
       const dailyCount = await tx.xpRewardGrant.count({ where: { ruleId: rule.id, userId: user.id, createdAt: { gte: dayStart } } });
       if (dailyCount >= rule.dailyLimit) throw new RewardError(409, "DAILY_LIMIT_REACHED", "该用户今天已达到此奖励规则的发放次数上限。");
       const ledger = await tx.xpLedger.create({ data: { userId: user.id, amount: rule.amount, reason: "COMMUNITY_REWARD", refType: input.sourceType, refId: input.sourceId, note: input.note ?? rule.title } });
       const grant = await tx.xpRewardGrant.create({ data: { ruleId: rule.id, userId: user.id, sourceType: input.sourceType, sourceId: input.sourceId, amount: rule.amount, ledgerId: ledger.id } });
-      await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
       const current = await tx.user.findUniqueOrThrow({ where: { id: user.id }, select: { xp: true } });
       const levelPoints = await grantReachedLevelRewards(tx, user.id, current.xp + rule.amount);
       await tx.user.update({ where: { id: user.id }, data: { xp: { increment: rule.amount }, communityPoints: { increment: levelPoints } } });
@@ -126,6 +126,9 @@ export async function reviewRewardAppeal(actorId: string, rawInput: unknown) {
     const appeal = await tx.xpRewardAppeal.findUnique({ where: { id: input.appealId }, include: { ledger: true } });
     if (!appeal || appeal.status !== "PENDING") throw new RewardError(409, "APPEAL_ALREADY_HANDLED", "申诉已处理或不存在。");
     if (input.adjustment < 0 && appeal.ledger.amount + input.adjustment < 0) throw new RewardError(400, "INVALID_ADJUSTMENT", "\u8c03\u6574\u540e\u5956\u52b1\u4e0d\u80fd\u4f4e\u4e8e\u96f6\u3002");
+    if (input.decision === "approve" && input.adjustment !== 0) {
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${appeal.userId} FOR UPDATE`;
+    }
     if (input.decision === "approve" && input.adjustment < 0) {
       const user = await tx.user.findUnique({ where: { id: appeal.userId }, select: { xp: true } });
       if (!user || user.xp < Math.abs(input.adjustment)) throw new RewardError(409, "XP_BALANCE_TOO_LOW", "\u5f53\u524d XP \u4f59\u989d\u4e0d\u8db3\uff0c\u4e0d\u80fd\u6267\u884c\u8fd9\u9879\u8d1f\u5411\u8c03\u6574\u3002");
@@ -134,7 +137,6 @@ export async function reviewRewardAppeal(actorId: string, rawInput: unknown) {
     const changed = await tx.xpRewardAppeal.updateMany({ where: { id: appeal.id, status: "PENDING" }, data: { status, reviewedById: actorId, reviewedAt: new Date(), resolution: input.resolution, adjustment: input.adjustment } });
     if (changed.count !== 1) throw new RewardError(409, "APPEAL_ALREADY_HANDLED", "申诉刚刚被其他管理员处理。");
     if (status === "APPROVED" && input.adjustment !== 0) {
-      await tx.$queryRaw`SELECT id FROM users WHERE id = ${appeal.userId} FOR UPDATE`;
       const current = await tx.user.findUniqueOrThrow({ where: { id: appeal.userId }, select: { xp: true } });
       const levelPoints = input.adjustment > 0 ? await grantReachedLevelRewards(tx, appeal.userId, current.xp + input.adjustment) : 0;
       await tx.user.update({ where: { id: appeal.userId }, data: { xp: { increment: input.adjustment }, communityPoints: { increment: levelPoints } } });
@@ -174,6 +176,7 @@ export async function resolveRewardReviewCase(actorId: string, rawInput: unknown
     const changed = await tx.xpRewardReviewCase.updateMany({ where: { id: reviewCase.id, status: "OPEN" }, data: { status, resolvedById: actorId, resolvedAt: new Date(), resolution: input.resolution } });
     if (changed.count !== 1) throw new RewardError(409, "REVIEW_ALREADY_HANDLED", "复核案件刚刚被其他管理员处理。");
     if (status === "REVERSED") {
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${reviewCase.ledger.userId} FOR UPDATE`;
       const user = await tx.user.findUnique({ where: { id: reviewCase.ledger.userId }, select: { xp: true } });
       if (!user || user.xp < reviewCase.ledger.amount) throw new RewardError(409, "XP_BALANCE_TOO_LOW", "\u5f53\u524d XP \u4f59\u989d\u4e0d\u8db3\uff0c\u6848\u4ef6\u4fdd\u6301\u5f85\u5904\u7406\uff0c\u8bf7\u5148\u5b8c\u6210\u4eba\u5de5 XP \u8c03\u6574\u540e\u518d\u89e3\u51b3\u3002");
       const reversal = await tx.xpLedger.create({ data: { userId: reviewCase.ledger.userId, amount: -reviewCase.ledger.amount, reason: "REWARD_REVERSAL", refType: "xp_reward_review", refId: reviewCase.id, note: input.resolution } });

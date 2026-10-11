@@ -33,7 +33,7 @@ async function request<T>(url: string, actorId: string, command?: unknown): Prom
 }
 const accountErrors = new Set(["ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE", "UNAUTHORIZED"]);
 // On retries only a rejection after receipt lookup establishes that the original write did not commit.
-const receiptRejections = new Set(["AGRI_REVISION_CONFLICT", "AGRI_IDEMPOTENCY_CONFLICT", "AGRI_WORKSPACE_DISABLED", "AGRI_PROJECT_UNAVAILABLE", "AGRI_ARTIFACT_UNAVAILABLE", "AGRI_FROZEN", "AGRI_RULES_UNPUBLISHED", "AGRI_RULE_VERSION_CONFLICT", "AGRI_RULES_PENDING", "AGRI_NOT_OPEN", "AGRI_CLOSED", "AGRI_FINAL_ELIGIBILITY_REQUIRED", "AGRI_MATERIAL_REQUIRED", "AGRI_MATERIAL_KIND_MISMATCH", "AGRI_UNRECOGNIZED_MATERIAL", "AGRI_INVALID", "AGRI_REPOSITORY_REQUIRED", "AGRI_REPOSITORY_REF_REQUIRED", "AGRI_DEMO_REQUIRED"]);
+const receiptRejections = new Set(["AGRI_REVISION_CONFLICT", "AGRI_IDEMPOTENCY_CONFLICT", "AGRI_WORKSPACE_DISABLED", "AGRI_PROJECT_UNAVAILABLE", "AGRI_ARTIFACT_UNAVAILABLE", "AGRI_FROZEN", "AGRI_RULES_UNPUBLISHED", "AGRI_RULE_VERSION_CONFLICT", "AGRI_RULES_PENDING", "AGRI_NOT_OPEN", "AGRI_CLOSED", "AGRI_FINAL_ELIGIBILITY_REQUIRED", "AGRI_MATERIAL_REQUIRED", "AGRI_MATERIAL_KIND_MISMATCH", "AGRI_UNRECOGNIZED_MATERIAL", "AGRI_INVALID", "AGRI_REPOSITORY_REQUIRED", "AGRI_REPOSITORY_REF_REQUIRED", "AGRI_DEMO_REQUIRED", "AGRI_PERMIT_MISMATCH", "AGRI_PERMIT_NOT_FOUND", "AGRI_PERMIT_INACTIVE", "AGRI_FIELD_NOT_ALLOWED", "AGRI_PROJECT_CHANGE_FORBIDDEN", "AGRI_NO_CHANGE"]);
 const selectClass = "w-full min-w-0 rounded-md border bg-background p-2 text-sm";
 function Field({ label, children }: { label: string; children: (id: string) => ReactNode }) {
   const id = useId(); return <div className="min-w-0 space-y-2"><label className="text-sm font-medium" htmlFor={id}>{label}</label>{children(id)}</div>;
@@ -103,6 +103,9 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
   const [baseline, setBaseline] = useState(saved?.baseline ?? JSON.stringify(draft));
   const [pending, setPending] = useState<AgriStageSubmissionCommand | null>(saved?.pending ?? null);
   const pendingRef = useRef(pending); const flight = useRef(false); const alive = useRef(true);
+  const [permitId, setPermitId] = useState("");
+  const permit = detail.correctionPermits?.find(row => row.id === permitId);
+  const correcting = !!permit;
   const [conflict, setConflict] = useState(saved?.conflict ?? false); const [ack, setAck] = useState(false);
   const [confirmed, setConfirmed] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [note, setNote] = useState("");
   const [stale, setStale] = useState(false); const [choices, setChoices] = useState<AgriSubmissionVersionChoice[]>([]); const [cursor, setCursor] = useState<string | null>(null); const [choiceError, setChoiceError] = useState(false); const [versionsLoading, setVersionsLoading] = useState(true);
@@ -121,7 +124,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
       setLeaveOpen(true);
     });
   }, [navigation, dirty, pending]);
-  const locked = busy || !!pending || conflict || stale || !manager || !detail.workspaceEnabled || !!detail.frozenSubmissionId;
+  const locked = busy || !!pending || conflict || stale || !manager || !detail.workspaceEnabled || (!!detail.frozenSubmissionId && !correcting);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   useEffect(() => { writeSubmissionRecovery(actorId, initial.id, dirty || pending || conflict || stale ? { detail, draft, baseline, pending, conflict: conflict || stale } : null); }, [actorId, initial.id, detail, draft, baseline, pending, conflict, dirty, stale]);
   useEffect(() => { if (!dirty && !pending) return; const guard = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; }; window.addEventListener("beforeunload", guard); return () => window.removeEventListener("beforeunload", guard); }, [dirty, pending]);
@@ -142,24 +145,24 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     } catch (e) { handleError(e); } finally { if (alive.current) setBusy(false); }
   }
   function edit(next: AgriStageDraft) { setDraft(next); setConfirmed(false); setNote(""); }
-  async function mutate(action: "saveDraft" | "submit") {
+  async function mutate(action: "saveDraft" | "submit" | "correctSubmission") {
     if (flight.current || (!pendingRef.current && locked)) return;
     const retry = !!pendingRef.current;
     const parsed = agriStageSubmissionCommandSchema.safeParse(pendingRef.current ?? { action, idempotencyKey: crypto.randomUUID(), entryStageId: detail.id, expectedRevision: detail.revision,
-      ...(action === "saveDraft" ? { draft } : { content: draft, expectedRuleVersionId: detail.publishedRule?.id }) });
+      ...(action === "saveDraft" ? { draft } : { content: draft, expectedRuleVersionId: action === "correctSubmission" ? permit?.ruleVersionId : detail.publishedRule?.id, ...(action === "correctSubmission" ? { previousSubmissionId: detail.current?.id, correctionPermitId: permit?.id } : {}) }) });
     if (!parsed.success) { setError("INVALID_INPUT"); return; }
     const command = parsed.data; flight.current = true; pendingRef.current = command; setPending(command); setBusy(true); setError("");
     // Save the exact command before awaiting the network, including navigation away during a write.
     writeSubmissionRecovery(actorId, initial.id, { detail, draft, baseline, pending: command, conflict });
     try { const result = await request<{ appliedRevision: number }>(api, actorId, command); if (!alive.current) return;
-      pendingRef.current = null; setPending(null); setDetail(old => ({ ...old, revision: result.appliedRevision })); setBaseline(JSON.stringify(draft)); setConfirmed(false); setStale(true); setNote(t(command.action === "submit" ? "submitted" : "saved"));
+      pendingRef.current = null; setPending(null); setDetail(old => ({ ...old, revision: result.appliedRevision })); setBaseline(JSON.stringify(draft)); setConfirmed(false); setStale(true); setNote(t(command.action === "saveDraft" ? "saved" : "submitted"));
       try { const next = await request<AgriStageDetail>(api + "/" + encodeURIComponent(initial.id), actorId); if (alive.current) { setDetail(next); setStale(false); } } catch (e) { handleError(e); }
     } catch (e) { if (!alive.current) return; if (e instanceof SubmissionError && !e.uncertain && (!retry || receiptRejections.has(e.code))) { pendingRef.current = null; setPending(null); if (["AGRI_REVISION_CONFLICT", "AGRI_RULE_VERSION_CONFLICT"].includes(e.code)) setConflict(true); } handleError(e); }
     finally { flight.current = false; if (alive.current) setBusy(false); }
   }
-  const rule = detail.publishedRule; const requirements = rule?.requirements;
+  const rule = correcting ? detail.correctionRule : detail.publishedRule; const requirements = rule?.requirements;
   const issues = requirements ? getAgriSubmissionMaterialIssues(requirements, draft) : [];
-  const canSubmit = !locked && detail.windowState === "OPEN" && detail.stage !== "FINAL" && !!rule && confirmed && !!draft.artifactVersionId && !!draft.summary.trim() && !issues.length;
+  const canSubmit = !locked && (correcting || (detail.windowState === "OPEN" && (detail.stage !== "FINAL" || detail.finalEligibility?.state === "ELIGIBLE"))) && !!rule && confirmed && !!draft.artifactVersionId && !!draft.summary.trim() && !issues.length;
   const ruleWindow = rule?.window;
   const message = (code: string) => t.has("errors." + code) ? t("errors." + code) : t("errors.INTERNAL_ERROR");
   function material(key: string, kind: "TEXT" | "LINK" | "ARTIFACT", value: string) {
@@ -185,12 +188,13 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
       <p>{t("window." + (detail.windowState === "INVALID" ? "RULES_PENDING" : detail.windowState))}</p>{ruleWindow?.state === "CONFIRMED" && <><p>{t("dates", { opens: time(ruleWindow.opensAt, locale), closes: time(ruleWindow.closesAt, locale) })}</p><p>{t(ruleWindow.includesDeadline ? "inclusive" : "exclusive")}</p></>}
       {rule?.guidanceMarkdown && <p className="whitespace-pre-wrap break-words">{rule.guidanceMarkdown}</p>}
       {rule && <p className="break-all text-muted-foreground">{t("ruleVersion", { id: rule.id })}</p>}
-      {detail.stage === "FINAL" && <p>{t("finalPending")}</p>}{detail.frozenSubmissionId && <p>{t("frozen")}</p>}<p>{t("serverTime")}</p>
+      {detail.stage === "FINAL" && detail.finalEligibility?.state !== "ELIGIBLE" && <p>{t("finalPending")}</p>}{detail.frozenSubmissionId && <p>{t("frozen")}</p>}<p>{t("serverTime")}</p>
     </CardContent></Card>
     {error && <p role="alert">{message(error)}</p>}{note && <p role="status">{note}</p>}
-    {pending && <div className="space-y-3 rounded-xl border p-4"><p role="alert">{t("pending")}</p><Button disabled={busy} onClick={() => void mutate(pending.action === "submit" ? "submit" : "saveDraft")}>{t("retry")}</Button></div>}
+    {pending && <div className="space-y-3 rounded-xl border p-4"><p role="alert">{t("pending")}</p><Button disabled={busy} onClick={() => void mutate(pending.action)}>{t("retry")}</Button></div>}
     {stale && !pending && <div className="space-y-3 rounded-xl border p-4"><p role="status">{t("stale")}</p><Button disabled={busy} onClick={() => void reload(true)}>{t("refresh")}</Button></div>}
     {conflict && !pending && <div className="space-y-3 rounded-xl border p-4"><p role="alert">{t("conflict")}</p><label className="flex items-start gap-2"><input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} /><span>{t("adoptRevision")}</span></label><Button disabled={busy || !ack} onClick={() => void reload(true)}>{t("reloadPreserve")}</Button></div>}
+    {manager && !!detail.correctionPermits?.length && <Card><CardHeader><CardTitle>{t("correctionTitle")}</CardTitle></CardHeader><CardContent className="space-y-3"><p className="text-sm leading-6 text-muted-foreground">{t("correctionHelp")}</p><Field label={t("correctionPermit")}>{id => <select id={id} className={selectClass} disabled={busy || !!pending || conflict || stale} value={permitId} onChange={e => { setPermitId(e.target.value); setConfirmed(false); }}><option value="">{t("normalSubmission")}</option>{(detail.correctionPermits ?? []).map(row => <option key={row.id} value={row.id}>{row.reason} · {time(row.expiresAt, locale)}</option>)}</select>}</Field>{permit && <p className="text-sm">{t("allowedFields")}: {permit.allowedFields.map(field => t("correctable." + field)).join(" · ")}</p>}</CardContent></Card>}
     <Card><CardHeader><CardTitle>{t("materials")}</CardTitle></CardHeader><CardContent className="space-y-5">
       <p className="text-sm text-muted-foreground">{t(manager ? "ownVersions" : "readOnlyMaterials")}</p>{choiceError && <Button variant="outline" disabled={busy} onClick={() => void versions()}>{t("retryVersions")}</Button>}
       <Field label={t("version")}>{id => <select id={id} value={draft.artifactVersionId ?? ""} disabled={locked} className={selectClass} onChange={e => { const choice = choices.find(row => row.id === e.target.value); if (choice) edit({ ...draft, projectId: choice.projectId, artifactVersionId: choice.id }); }}><option value="">{t("selectVersion")}</option>{draft.artifactVersionId && !choices.some(row => row.id === draft.artifactVersionId) && <option value={draft.artifactVersionId}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>}</Field>
@@ -207,11 +211,11 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
       })}
       {requirements && draft.materials.items.filter(item => !requirements.materials.some(requirement => requirement.key === item.key && requirement.kind === item.kind)).map(item => <div key={item.key} className="space-y-2 rounded-xl border p-3"><p className="break-words text-sm">{t("obsoleteMaterial", { key: item.key })}</p><Button variant="outline" disabled={locked} onClick={() => edit({ ...draft, materials: { schemaVersion: 1, items: draft.materials.items.filter(row => row.key !== item.key) } })}>{t("removeMaterial", { key: item.key })}</Button></div>)}
       {!!issues.length && <p role="status">{t("missingMaterials")}</p>}
-      <div className="space-y-3 rounded-xl border bg-muted/30 p-4"><label className="flex items-start gap-2"><input type="checkbox" disabled={locked} checked={confirmed} onChange={e => setConfirmed(e.target.checked)} /><span className="text-sm leading-6">{t("confirm")}</span></label><div className="flex flex-wrap gap-3"><Button variant="outline" disabled={locked || !draft.projectId} onClick={() => void mutate("saveDraft")}>{t("save")}</Button><Button disabled={!canSubmit} onClick={() => void mutate("submit")}>{t("submit")}</Button></div><p className="text-sm text-muted-foreground">{t("draftHint")}</p></div>
+      <div className="space-y-3 rounded-xl border bg-muted/30 p-4"><label className="flex items-start gap-2"><input type="checkbox" disabled={locked} checked={confirmed} onChange={e => setConfirmed(e.target.checked)} /><span className="text-sm leading-6">{t("confirm")}</span></label><div className="flex flex-wrap gap-3"><Button variant="outline" disabled={locked || correcting || !draft.projectId} onClick={() => void mutate("saveDraft")}>{t("save")}</Button><Button disabled={!canSubmit} onClick={() => void mutate(correcting ? "correctSubmission" : "submit")}>{t(correcting ? "correctSubmit" : "submit")}</Button></div><p className="text-sm text-muted-foreground">{t(correcting ? "correctionSaveHint" : "draftHint")}</p></div>
     </CardContent></Card>
     {detail.current && <><AgriReviews actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /><AgriIssues actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /><AgriDemoChecks actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /></>}
     <Card><CardHeader><CardTitle>{t("history")}</CardTitle></CardHeader><CardContent className="space-y-4">
-      {!detail.history.length && <p>{t("noHistory")}</p>}{detail.history.map(row => <div key={row.id} className="space-y-2 rounded-xl border p-4 text-sm"><p className="font-medium">{t("submissionNumber", { number: row.sequence })} · {time(row.acceptedAt, locale)}</p><p className="break-all text-muted-foreground">{t("ruleVersion", { id: row.ruleVersionId })}</p>{row.content && <><p className="whitespace-pre-wrap break-words">{row.content.summary}</p><p className="break-all">{t("versionId", { id: row.content.artifactVersionId })}</p>{row.content.repository && <p className="break-all">{t("repository")}: {row.content.repository.url} {row.content.repository.ref?.value}</p>}{row.content.demoUrl && <p className="break-all">{t("demo")}: {row.content.demoUrl}</p>}</>}</div>)}
+      {!detail.history.length && <p>{t("noHistory")}</p>}{detail.history.map(row => <div key={row.id} className="space-y-2 rounded-xl border p-4 text-sm">{row.correction && <p className="whitespace-pre-wrap break-words">{t("correctedFrom", { id: row.correction.previousSubmissionId, reason: row.correction.reason })}</p>}<p className="font-medium">{t("submissionNumber", { number: row.sequence })} · {time(row.acceptedAt, locale)}</p><p className="break-all text-muted-foreground">{t("ruleVersion", { id: row.ruleVersionId })}</p>{row.content && <><p className="whitespace-pre-wrap break-words">{row.content.summary}</p><p className="break-all">{t("versionId", { id: row.content.artifactVersionId })}</p>{row.content.repository && <p className="break-all">{t("repository")}: {row.content.repository.url} {row.content.repository.ref?.value}</p>}{row.content.demoUrl && <p className="break-all">{t("demo")}: {row.content.demoUrl}</p>}</>}</div>)}
       {detail.nextBeforeSequence && <Button variant="outline" disabled={busy} onClick={() => void reload(true, detail.nextBeforeSequence!)}>{t("moreHistory")}</Button>}
     </CardContent></Card>
   </div>;

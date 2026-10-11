@@ -167,3 +167,18 @@ describe("成果版本公开与社区互动", () => {
     expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
   });
 });
+
+
+describe("publication moderation authority", () => {
+  it.each([{ role: "USER" }, { role: "ADMIN", adminPermissions: ["USERS_VIEW"] }, { role: "ADMIN", adminPermissions: [] }, { role: "ADMIN", flagged: true }, { role: "ADMIN", deletedAt: new Date() }])("rejects restricted moderator %j before reading private artifacts", async reviewer => {
+    mocks.db.user.findUnique.mockResolvedValue(reviewer);
+    await expect(decideArtifactPublication("limited-admin", { artifactVersionId: "v1", decision: "approve", note: "verified" })).rejects.toMatchObject({ code: "FORBIDDEN", status: 403 });
+    expect(mocks.db.artifactVersion.findUnique).not.toHaveBeenCalled(); expect(mocks.db.artifactPublication.updateMany).not.toHaveBeenCalled();
+  });
+  it("accepts an active moderator with explicit content permission", async () => {
+    mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN", adminPermissions: ["PROMPTS_MANAGE"], flagged: false, deletedAt: null });
+    mocks.db.artifactVersion.findUnique.mockResolvedValue({ id: "v1", artifact: { projectId: "p1", project: { ownerId: "u1" } } });
+    mocks.db.artifactPublication.updateMany.mockResolvedValue({ count: 1 });
+    await expect(decideArtifactPublication("moderator", { artifactVersionId: "v1", decision: "reject", note: "verified" })).resolves.toMatchObject({ status: "rejected" });
+  });
+});

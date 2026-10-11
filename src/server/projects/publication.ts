@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { hasAdminPermission } from "@/lib/admin-permission-values";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { artifactReviewDecisionInputSchema, artifactReviewRequestSchema } from "@/contracts/project-review";
@@ -67,8 +68,8 @@ export async function requestArtifactPublication(projectId: string, userId: stri
 }
 
 export async function decideArtifactPublication(reviewerId: string, rawInput: unknown) {
-  const reviewer = await db.user.findUnique({ where: { id: reviewerId }, select: { role: true } });
-  if (reviewer?.role !== "ADMIN") throw new ProjectServiceError("仅管理员可以审核公开申请。", "FORBIDDEN", 403);
+  const reviewer = await db.user.findUnique({ where: { id: reviewerId }, select: { role: true, deletedAt: true, flagged: true, adminPermissions: true } });
+  if (reviewer?.role !== "ADMIN" || reviewer.deletedAt || reviewer.flagged || !hasAdminPermission(reviewer.adminPermissions, "PROMPTS_MANAGE")) throw new ProjectServiceError("仅管理员可以审核公开申请。", "FORBIDDEN", 403);
   const parsed = artifactReviewDecisionInputSchema.safeParse(rawInput);
   if (!parsed.success) throw new ProjectServiceError("审核决定或说明格式无效。", "INVALID_INPUT");
   const version = await db.artifactVersion.findUnique({

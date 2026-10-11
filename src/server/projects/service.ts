@@ -9,6 +9,8 @@ import {
   projectPackRunInputSchema,
   projectPackWorkflowIds,
   projectRunInputSchema,
+  officialWorkflowIdSchema,
+  officialWorkflowIds,
   projectUpdateSchema,
   type FactKey,
   type OfficialWorkflowId,
@@ -26,7 +28,7 @@ import {
   workflowById,
   type FactRecord,
 } from "@/domain/projects/pack";
-import { executePersistedWorkflow } from "@/server/workflows/runner";
+import { cancelWorkflowRun, executePersistedWorkflow } from "@/server/workflows/runner";
 import { createWorkflowRun, ensureOfficialWorkflow } from "@/server/workflows/service";
 
 export class ProjectServiceError extends Error {
@@ -285,57 +287,31 @@ function assertWorkflowFacts(workflowId: OfficialWorkflowId, projectTitle: strin
   }
 }
 
-async function runProjectWorkflowForProject(
-  project: ProjectWithRelations,
+/** The HTTP request and restartable worker share the same immutable run snapshot. */
+async function executeProjectDocumentSnapshot(
+  runId: string,
   projectId: string,
   userId: string,
-  input: { workflowId: OfficialWorkflowId; idempotencyKey?: string },
+  workflowId: OfficialWorkflowId,
+  projectTitle: string,
+  facts: FactRecord[],
+  handlers?: Partial<Record<string, import("@/domain/workflows/executor").WorkflowNodeExecutor>>,
 ) {
-  if (project.status === "ARCHIVED") throw new ProjectServiceError("已归档项目不能继续生成。", "ARCHIVED", 409);
-  const facts = projectFacts(project);
-  assertWorkflowFacts(input.workflowId, project.title, facts);
-
-  const spec = workflowById(input.workflowId)!;
-  const registration = await ensureOfficialWorkflow({
-    officialId: input.workflowId,
-    slug: officialWorkflowSlug(input.workflowId),
-    title: spec.title,
-    summary: spec.summary,
-    estimatedCost: PROJECT_WORKFLOW_COST_POINTS,
-    definition: officialWorkflowDefinition(input.workflowId),
-    actorId: userId,
-  });
-  const run = await createWorkflowRun(registration.slug, userId, {
-    input: {
-      projectTitle: project.title,
-      facts,
-      prompt: buildArtifactGenerationPrompt(input.workflowId, project.title, facts),
-    },
-    ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
-  }, { projectId });
-
-  if (run.status === "SUCCEEDED") {
-    return savedProjectRunResult(run.id, projectId, userId, input.workflowId, project.title);
-  }
-  if (run.status !== "QUEUED") {
-    throw new ProjectServiceError(
-      run.status === "FAILED" ? "工作流运行失败，请稍后重试。" : "该请求已在处理中，请稍后刷新项目。",
-      run.status === "FAILED" ? "WORKFLOW_FAILED" : "RUN_IN_PROGRESS",
-      409,
-    );
-  }
-
+  const spec = workflowById(workflowId)!;
   const hash = createHash("sha256").update(snapshotText(facts)).digest("hex");
-  const execution = await executePersistedWorkflow(run.id, userId, {
+  return executePersistedWorkflow(runId, userId, {
+    ...(handlers ? { handlers } : {}),
     onSucceeded: async (tx, result) => {
+      const editable = await tx.project.updateMany({ where: { id: projectId, ownerId: userId, status: "ACTIVE", owner: { deletedAt: null, flagged: false } }, data: { updatedAt: new Date() } });
+      if (editable.count !== 1) throw new ProjectServiceError("\u9879\u76ee\u5df2\u5f52\u6863\u6216\u65e0\u6743\u8bbf\u95ee\u3002", "ARCHIVED", 409);
       if (typeof result.output !== "string") throw new Error("工作流没有返回可用成果文本。");
-      const generated = generatedArtifactFromMarkdown(input.workflowId, project.title, facts, result.output);
+      const generated = generatedArtifactFromMarkdown(workflowId, projectTitle, facts, result.output);
       const artifact = await tx.artifact.upsert({
-        where: { projectId_workflowId: { projectId, workflowId: input.workflowId } },
+        where: { projectId_workflowId: { projectId, workflowId: workflowId } },
         create: {
           projectId,
-          workflowId: input.workflowId,
-          kind: KIND_BY_WORKFLOW[input.workflowId],
+          workflowId: workflowId,
+          kind: KIND_BY_WORKFLOW[workflowId],
           title: spec.title,
           createdById: userId,
           currentVersion: 1,
@@ -350,7 +326,7 @@ async function runProjectWorkflowForProject(
           contentMarkdown: generated.markdown,
           factSnapshotHash: hash,
           createdById: userId,
-          workflowRunId: run.id,
+          workflowRunId: runId,
         },
       });
       await tx.auditLog.create({
@@ -359,11 +335,85 @@ async function runProjectWorkflowForProject(
           action: "PROJECT_ARTIFACT_SAVED",
           resourceType: "artifact",
           resourceId: artifact.id,
-          metadata: { projectId, workflowId: input.workflowId, workflowRunId: run.id, version: version.version },
+          metadata: { projectId, workflowId: workflowId, workflowRunId: runId, version: version.version },
         },
       });
     },
   });
+}
+
+export async function executeProjectDocumentRun(runId: string, userId: string) {
+  const run = await db.workflowRun.findFirst({
+    where: { id: runId, userId },
+    select: { id: true, projectId: true, input: true, status: true, workflow: { select: { officialId: true } } },
+  });
+  if (!run?.projectId || run.status !== "QUEUED") return null;
+  const workflowId = officialWorkflowIdSchema.safeParse(run.workflow.officialId);
+  if (!workflowId.success) return null;
+  const project = await db.project.findFirst({
+    where: { id: run.projectId, ownerId: userId, status: "ACTIVE", owner: { deletedAt: null, flagged: false } },
+    select: { id: true },
+  });
+  if (!project) return cancelWorkflowRun(runId, userId);
+  const snapshot = run.input && typeof run.input === "object" && !Array.isArray(run.input) ? run.input : {};
+  const rawFacts = Array.isArray(snapshot.facts) ? snapshot.facts.map(fact =>
+    fact && typeof fact === "object" && !Array.isArray(fact) ? { ...fact, evidenceUrl: fact.evidenceUrl ?? undefined } : fact,
+  ) : [];
+  const parsed = projectFactsInputSchema.safeParse({ facts: rawFacts });
+  // Invalid legacy snapshots fail through the runner, releasing their reservation once.
+  if (!parsed.success || typeof snapshot.projectTitle !== "string") {
+    return executePersistedWorkflow(runId, userId, { handlers: { model: () => { throw new Error("PROJECT_SNAPSHOT_INVALID"); } }, onSucceeded: async () => { throw new Error("PROJECT_SNAPSHOT_INVALID"); } });
+  }
+  return executeProjectDocumentSnapshot(runId, run.projectId, userId, workflowId.data, snapshot.projectTitle, parsed.data.facts);
+}
+
+async function runProjectWorkflowForProject(project: ProjectWithRelations, projectId: string, userId: string, input: { workflowId: OfficialWorkflowId; idempotencyKey?: string }, enqueueOnly: true): Promise<{ workflowRunId: string; workflowId: OfficialWorkflowId; status: string; accepted: true }>;
+async function runProjectWorkflowForProject(project: ProjectWithRelations, projectId: string, userId: string, input: { workflowId: OfficialWorkflowId; idempotencyKey?: string }, enqueueOnly?: false): Promise<Awaited<ReturnType<typeof savedProjectRunResult>>>;
+async function runProjectWorkflowForProject(
+  project: ProjectWithRelations,
+  projectId: string,
+  userId: string,
+  input: { workflowId: OfficialWorkflowId; idempotencyKey?: string },
+  enqueueOnly = false,
+): Promise<Awaited<ReturnType<typeof savedProjectRunResult>> | { workflowRunId: string; workflowId: OfficialWorkflowId; status: string; accepted: true }> {
+  if (project.status === "ARCHIVED") throw new ProjectServiceError("已归档项目不能继续生成。", "ARCHIVED", 409);
+  const facts = projectFacts(project);
+  assertWorkflowFacts(input.workflowId, project.title, facts);
+
+  const spec = workflowById(input.workflowId)!;
+  const registration = await ensureOfficialWorkflow({
+    officialId: input.workflowId,
+    slug: officialWorkflowSlug(input.workflowId),
+    title: spec.title,
+    summary: spec.summary,
+    estimatedCost: PROJECT_WORKFLOW_COST_POINTS,
+    definition: officialWorkflowDefinition(input.workflowId),
+    actorId: userId,
+  });
+  if (enqueueOnly && process.env.ANS_PROJECT_WORKER_DISABLED === "true") throw new ProjectServiceError("\u540e\u53f0\u5de5\u4f5c\u6d41\u6682\u4e0d\u53ef\u7528\uff0c\u8bf7\u7a0d\u540e\u518d\u8bd5\u3002", "WORKER_UNAVAILABLE", 503);
+  const run = await createWorkflowRun(registration.slug, userId, {
+    input: {
+      projectTitle: project.title,
+      facts,
+      prompt: buildArtifactGenerationPrompt(input.workflowId, project.title, facts),
+    },
+    ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
+  }, { projectId });
+
+  if (enqueueOnly) return { workflowRunId: run.id, workflowId: input.workflowId, status: run.status, accepted: true as const };
+
+  if (run.status === "SUCCEEDED") {
+    return savedProjectRunResult(run.id, projectId, userId, input.workflowId, project.title);
+  }
+  if (run.status !== "QUEUED") {
+    throw new ProjectServiceError(
+      run.status === "FAILED" ? "工作流运行失败，请稍后重试。" : "该请求已在处理中，请稍后刷新项目。",
+      run.status === "FAILED" ? "WORKFLOW_FAILED" : "RUN_IN_PROGRESS",
+      409,
+    );
+  }
+
+  const execution = await executeProjectDocumentSnapshot(run.id, projectId, userId, input.workflowId, project.title, facts);
 
   if (!execution) {
     const current = await db.workflowRun.findFirst({ where: { id: run.id, userId }, select: { status: true, error: true } });
@@ -371,10 +421,10 @@ async function runProjectWorkflowForProject(
       return savedProjectRunResult(run.id, projectId, userId, input.workflowId, project.title);
     }
     if (current?.status === "FAILED") {
-      throw new ProjectServiceError("工作流运行失败，额度已退回。", "WORKFLOW_FAILED", 502);
+      throw new ProjectServiceError("\u5de5\u4f5c\u6d41\u672a\u5b8c\u6210\uff0c\u8bf7\u67e5\u770b\u8fd0\u884c\u8bb0\u5f55\u548c\u7b97\u529b\u8d26\u5355\u3002", "WORKFLOW_FAILED", 502);
     }
     if (current?.status === "CANCELLED") {
-      throw new ProjectServiceError("工作流已取消，额度已退回。", "RUN_CANCELLED", 409);
+      throw new ProjectServiceError("\u5de5\u4f5c\u6d41\u5df2\u53d6\u6d88\uff0c\u7b97\u529b\u6d88\u8017\u4ee5\u8d26\u5355\u4e3a\u51c6\u3002", "RUN_CANCELLED", 409);
     }
     throw new ProjectServiceError("该请求已在处理中，请稍后刷新项目。", "RUN_IN_PROGRESS", 409);
   }
@@ -389,6 +439,25 @@ export async function runProjectWorkflow(projectId: string, userId: string, rawI
   if (!parsed.success) throw new ProjectServiceError("请选择一条官方工作流。", "INVALID_INPUT");
   const project = await loadOwned(projectId, userId);
   return runProjectWorkflowForProject(project, projectId, userId, parsed.data);
+}
+
+export async function enqueueProjectWorkflow(projectId: string, userId: string, rawInput: unknown) {
+  const parsed = projectRunInputSchema.safeParse(rawInput);
+  if (!parsed.success) throw new ProjectServiceError("\u8bf7\u9009\u62e9\u4e00\u6761\u5b98\u65b9\u5de5\u4f5c\u6d41\u3002", "INVALID_INPUT");
+  return runProjectWorkflowForProject(await loadOwned(projectId, userId), projectId, userId, parsed.data, true);
+}
+
+export async function listProjectWorkflowRuns(projectId: string, userId: string) {
+  await loadOwned(projectId, userId);
+  const runs = await db.workflowRun.findMany({ where: { projectId, userId, workflow: { officialId: { in: [...officialWorkflowIds] } } }, orderBy: { createdAt: "desc" }, take: 20,
+    select: { id: true, status: true, error: true, costPoints: true, idempotencyKey: true, createdAt: true, finishedAt: true, workflow: { select: { officialId: true } } } });
+  const audits = runs.length ? await db.auditLog.findMany({ where: { action: "WORKFLOW_RUN_FAILED", resourceType: "workflow_run", resourceId: { in: runs.map(run => run.id) } }, orderBy: { createdAt: "desc" }, select: { resourceId: true, metadata: true } }) : [];
+  return runs.map(run => {
+    const audit = audits.find(item => item.resourceId === run.id)?.metadata;
+    const interrupted = audit && typeof audit === "object" && !Array.isArray(audit) && audit.code === "EXECUTION_INTERRUPTED";
+    return { id: run.id, requestKey: run.idempotencyKey?.split("/").at(-1) ?? null, workflowId: run.workflow.officialId, status: run.status,
+      error: run.error ? (interrupted ? "EXECUTION_INTERRUPTED" : "WORKFLOW_FAILED") : null, costPoints: run.costPoints, createdAt: run.createdAt.toISOString(), finishedAt: run.finishedAt?.toISOString() ?? null };
+  });
 }
 
 export async function runProjectPack(projectId: string, userId: string, rawInput: unknown) {

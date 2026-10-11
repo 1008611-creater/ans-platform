@@ -1,5 +1,4 @@
 import type { DbTransaction } from "@/lib/db";
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
@@ -14,6 +13,7 @@ interface SubmissionRow {
   id: string; competitionId: string; teamCompetitionId: string; teamName: string; entryStageId: string;
   stage: "PRELIMINARY" | "FINAL"; sequence: number; artifactVersionId: string; artifactVersion: number;
   ruleVersionId: string; acceptedAt: Date; currentSubmissionId: string | null; frozenSubmissionId: string | null;
+  correctionPreviousId?: string | null; correctionPermitId?: string | null; correctionReason?: string | null; correctionAuthorizedById?: string | null; correctionAuthorizedAt?: Date | null;
   content: unknown; ruleVersion: number; ruleConfirmedAt: Date;
 }
 interface FeedbackRow { feedbackSequence: number | null; feedbackAction: string | null; feedbackBody: string | null; feedbackAt: Date | null }
@@ -28,7 +28,8 @@ function bounded<T>(rows: T[]): T[] {
 function submissionView(row: SubmissionRow): AgriSummarySubmission {
   return { id: row.id, entryStageId: row.entryStageId, stage: row.stage, sequence: row.sequence,
     artifactVersionId: row.artifactVersionId, artifactVersion: row.artifactVersion, ruleVersionId: row.ruleVersionId,
-    acceptedAt: row.acceptedAt.toISOString(), isCurrent: row.currentSubmissionId === row.id, isFrozen: row.frozenSubmissionId === row.id };
+    acceptedAt: row.acceptedAt.toISOString(), isCurrent: row.currentSubmissionId === row.id, isFrozen: row.frozenSubmissionId === row.id,
+    ...(row.correctionPreviousId && row.correctionPermitId && row.correctionReason && row.correctionAuthorizedById && row.correctionAuthorizedAt ? { correction: { previousSubmissionId: row.correctionPreviousId, permitId: row.correctionPermitId, reason: row.correctionReason, authorizedById: row.correctionAuthorizedById, authorizedAt: row.correctionAuthorizedAt.toISOString() } } : {}) };
 }
 function feedbackView(row: FeedbackRow, includeBody: boolean): AgriSummaryFeedback | null {
   if (row.feedbackAction !== "PUBLISH" || !row.feedbackAt || row.feedbackSequence === null) return null;
@@ -37,11 +38,12 @@ function feedbackView(row: FeedbackRow, includeBody: boolean): AgriSummaryFeedba
 }
 async function submissions(tx: Tx, competitionId: string, submissionId: string): Promise<SubmissionRow | undefined> {
   const [row] = await tx.$queryRaw<SubmissionRow[]>`SELECT s.id,s."competitionId",s."entryStageId",s.sequence,s."artifactVersionId",av.version AS "artifactVersion",s."ruleVersionId",s."acceptedAt",
-    es.stage,es."currentSubmissionId",es."frozenSubmissionId",tc.id AS "teamCompetitionId",t.name AS "teamName",r.version AS "ruleVersion",r."confirmedAt" AS "ruleConfirmedAt",NULL::jsonb AS content
+    es.stage,es."currentSubmissionId",es."frozenSubmissionId",tc.id AS "teamCompetitionId",t.name AS "teamName",r.version AS "ruleVersion",r."confirmedAt" AS "ruleConfirmedAt",NULL::jsonb AS content,c."previousSubmissionId" AS "correctionPreviousId",c."permitId" AS "correctionPermitId",p.reason AS "correctionReason",p."authorizedById" AS "correctionAuthorizedById",p."authorizedAt" AS "correctionAuthorizedAt"
     FROM agri_stage_submissions s JOIN agri_entry_stages es ON es.id=s."entryStageId" AND es."competitionId"=s."competitionId"
     JOIN team_competitions tc ON tc.id=es."teamCompetitionId" AND tc."competitionId"=s."competitionId"
     JOIN teams t ON t.id=tc."teamId" JOIN artifact_versions av ON av.id=s."artifactVersionId"
     JOIN agri_rule_versions r ON r.id=s."ruleVersionId" AND r."competitionId"=s."competitionId"
+    LEFT JOIN agri_submission_corrections c ON c."submissionId"=s.id LEFT JOIN agri_correction_permits p ON p.id=c."permitId"
     WHERE s.id=${submissionId} AND s."competitionId"=${competitionId} FOR SHARE OF s,es,tc,t,av,r`;
   return row;
 }
@@ -50,9 +52,10 @@ async function submissions(tx: Tx, competitionId: string, submissionId: string):
 export async function collectAgriRecordSummary(tx: Tx, ctx: AgriWorkspaceContext, submissionId: string, query: Pick<AgriRecordSummaryQuery, "includePrivate" | "includeInternal">): Promise<AgriRecordSummary> {
   const item = await submissions(tx, ctx.workspace.competitionId, submissionId);
   if (!item) throw new AgriWorkspaceError("AGRI_SUBMISSION_NOT_FOUND", 404);
-  const history = bounded(await tx.$queryRaw<SubmissionRow[]>`SELECT s.id,s."entryStageId",s.sequence,s."artifactVersionId",av.version AS "artifactVersion",s."ruleVersionId",s."acceptedAt",es.stage,es."currentSubmissionId",es."frozenSubmissionId"
+  const history = bounded(await tx.$queryRaw<SubmissionRow[]>`SELECT s.id,s."entryStageId",s.sequence,s."artifactVersionId",av.version AS "artifactVersion",s."ruleVersionId",s."acceptedAt",es.stage,es."currentSubmissionId",es."frozenSubmissionId",c."previousSubmissionId" AS "correctionPreviousId",c."permitId" AS "correctionPermitId",p.reason AS "correctionReason",p."authorizedById" AS "correctionAuthorizedById",p."authorizedAt" AS "correctionAuthorizedAt"
     FROM agri_stage_submissions s JOIN agri_entry_stages es ON es.id=s."entryStageId" AND es."competitionId"=s."competitionId"
     JOIN artifact_versions av ON av.id=s."artifactVersionId"
+    LEFT JOIN agri_submission_corrections c ON c."submissionId"=s.id LEFT JOIN agri_correction_permits p ON p.id=c."permitId"
     WHERE es."teamCompetitionId"=${item.teamCompetitionId} AND s."competitionId"=${item.competitionId}
     ORDER BY es.stage,s.sequence DESC,s.id DESC LIMIT 101`);
   const checks = bounded(await tx.$queryRaw<CheckRow[]>`SELECT c.id,c.basis,c.result,c."checkedAt",

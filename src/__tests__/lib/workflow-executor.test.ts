@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { executeWorkflow } from "@/domain/workflows/executor";
 
-const node = (id: string, type: "prompt" | "output" = "prompt", overrides = {}) => ({
+const node = (id: string, type: "prompt" | "output" | "model" = "prompt", overrides = {}) => ({
   id,
   type,
   label: id,
@@ -85,7 +85,7 @@ describe("workflow executor", () => {
     expect(result.executions[0]?.error).toContain("exceeded");
   });
 
-  it("enforces the workflow execution budget after a node completes", async () => {
+  it("aborts a node at the total execution budget", async () => {
     const result = await executeWorkflow(
       {
         version: 1,
@@ -103,6 +103,15 @@ describe("workflow executor", () => {
 
     expect(result.status).toBe("failed");
     expect(result.error).toContain("execution budget");
-    expect(result.executions[0]?.status).toBe("succeeded");
+    expect(result.executions[0]?.status).toBe("failed");
   });
+});
+
+
+it("checkpoint persistence failure never retries a paid node", async () => {
+  const paidCall = vi.fn().mockResolvedValue("paid response");
+  await expect(executeWorkflow({ version: 1, nodes: [node("paid", "model", { maxRetries: 3 })], edges: [] }, {}, {
+    handlers: { model: paidCall }, onNodeFinished: async () => { throw new Error("DB_UNAVAILABLE"); },
+  })).rejects.toThrow("DB_UNAVAILABLE");
+  expect(paidCall).toHaveBeenCalledTimes(1);
 });

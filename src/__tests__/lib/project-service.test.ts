@@ -1,9 +1,9 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   db: {
-    project: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    project: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     projectFact: { upsert: vi.fn() },
     artifact: { upsert: vi.fn(), updateMany: vi.fn() },
     artifactVersion: { create: vi.fn(), findFirst: vi.fn() },
@@ -19,7 +19,7 @@ vi.mock("@/lib/db", () => ({ db: mocks.db }));
 vi.mock("@/server/workflows/service", () => mocks.workflowService);
 vi.mock("@/server/workflows/runner", () => mocks.workflowRunner);
 
-import { ProjectServiceError, createProject, exportProject, getProject, listProjects, saveProjectFacts, saveProjectArtifact, runProjectPack, runProjectWorkflow, updateProject } from "@/server/projects/service";
+import { ProjectServiceError, createProject, exportProject, getProject, listProjects, saveProjectFacts, saveProjectArtifact, runProjectPack, runProjectWorkflow, enqueueProjectWorkflow, executeProjectDocumentRun, updateProject } from "@/server/projects/service";
 
 const project = {
   id: "p1", ownerId: "u1", title: "教材流转", goal: "CAREER", status: "ACTIVE", visibility: "PRIVATE", updatedAt: new Date("2026-09-25T00:00:00Z"),
@@ -35,6 +35,7 @@ beforeEach(() => {
   mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
   mocks.db.auditLog.create.mockResolvedValue({ id: "a1" });
   mocks.db.project.findFirst.mockResolvedValue(project);
+  mocks.db.project.updateMany.mockResolvedValue({ count: 1 });
   mocks.workflowService.ensureOfficialWorkflow.mockResolvedValue({ id: "official1", slug: "ans-official-resume-bullets" });
   mocks.workflowService.createWorkflowRun.mockResolvedValue({ id: "run1", status: "QUEUED" });
   mocks.workflowRunner.executePersistedWorkflow.mockResolvedValue({
@@ -300,4 +301,31 @@ describe("项目服务", () => {
     expect(result.artifacts).toEqual([{ workflowId: "readme-draft", title: "README draft", markdown: "# Current", version: 2 }]);
   });
 
+});
+
+
+describe("document worker acceptance and snapshots", () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it("accepts a persistent run without invoking a model in the HTTP request", async () => {
+    vi.stubEnv("ANS_PROJECT_WORKER_DISABLED", "false");
+    const accepted = await enqueueProjectWorkflow("p1", "u1", { workflowId: "resume-bullets", idempotencyKey: "accepted-12345" });
+    expect(accepted).toEqual({ workflowRunId: "run1", workflowId: "resume-bullets", status: "QUEUED", accepted: true });
+    expect(mocks.workflowRunner.executePersistedWorkflow).not.toHaveBeenCalled();
+  });
+  it("the worker saves the accepted fact snapshot even if the live project changed", async () => {
+    const acceptedFacts = [{ key: "problem", value: "Original problem", confirmation: "confirmed" }, { key: "contribution", value: "Original contribution", confirmation: "confirmed" }];
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ id: "run1", projectId: "p1", status: "QUEUED", workflow: { officialId: "resume-bullets" }, input: { projectTitle: "Original title", facts: acceptedFacts } });
+    const result = { status: "succeeded" as const, output: "Saved response", executions: [], elapsedMs: 1 };
+    mocks.workflowRunner.executePersistedWorkflow.mockImplementation(async (_runId: string, _userId: string, options: { onSucceeded: (tx: never, value: typeof result) => Promise<void> }) => { await options.onSucceeded(mocks.db as never, result); return result; });
+    await executeProjectDocumentRun("run1", "u1");
+    expect(mocks.db.artifactVersion.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ contentJson: expect.objectContaining({ facts: expect.arrayContaining(acceptedFacts) }), contentMarkdown: expect.stringContaining("Original title"), workflowRunId: "run1" }) }));
+  });
+});
+
+
+it("rejects acceptance while the background worker is disabled", async () => {
+  vi.stubEnv("ANS_PROJECT_WORKER_DISABLED", "true");
+  try { await expect(enqueueProjectWorkflow("p1", "u1", { workflowId: "resume-bullets" })).rejects.toMatchObject({ code: "WORKER_UNAVAILABLE", status: 503 }); }
+  finally { vi.unstubAllEnvs(); }
+  expect(mocks.workflowService.createWorkflowRun).not.toHaveBeenCalled();
 });

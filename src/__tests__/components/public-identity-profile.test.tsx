@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: {
+  $queryRaw: vi.fn(),
   user: { findFirst: vi.fn() },
   prompt: { findMany: vi.fn(), count: vi.fn() },
   promptVote: { count: vi.fn(), findMany: vi.fn() },
@@ -35,6 +36,7 @@ const rawIdentity = {
   name: "原始实名甲", email: "private-a@example.test", githubUsername: "private-github-a",
   bio: "原始实名甲 private-a@example.test https://private.example.test/me",
   customLinks: [{ type: "website", url: "https://private.example.test/me", label: "原始实名甲" }],
+  xp: 125, communityPoints: 20, checkInStreak: 2, lastCheckInAt: null, avatarFrameKey: "mint", chatBubbleKey: "default",
   avatar: null, role: "USER", verified: true, createdAt: new Date("2026-01-01"),
   _count: { prompts: 8, contributions: 3 },
 };
@@ -57,6 +59,17 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(auth).mockResolvedValue(null as never);
   vi.mocked(db.user.findFirst).mockResolvedValue(rawIdentity as never);
+  vi.mocked(db.$queryRaw).mockImplementation((async (query: unknown) => {
+    const sql = (query as TemplateStringsArray).join("?");
+    if (sql.includes('FROM users u')) return [{
+      id: rawIdentity.id, xp: rawIdentity.xp, communityPoints: rawIdentity.communityPoints,
+      checkInStreak: rawIdentity.checkInStreak, lastCheckInAt: rawIdentity.lastCheckInAt,
+      avatarFrameKey: rawIdentity.avatarFrameKey, chatBubbleKey: rawIdentity.chatBubbleKey,
+      recentEvents: [], checkIns: [],
+    }];
+    expect(sql).toContain("date_trunc('day'");
+    return [];
+  }) as never);
   vi.mocked(db.prompt.findMany).mockImplementation((query) => Promise.resolve(
     query?.select && "createdAt" in query.select && !query.select.author
       ? [] : [{ ...prompt, ...(query?.include && "userExamples" in query.include ? { userExamples: [{ mediaUrl: "/example.png" }] } : {}) }]
@@ -81,15 +94,17 @@ describe("profile metadata 公开身份", () => {
     const metadata = await generateMetadata(props());
     const label = nickname?.trim() || "匿名同学";
     expect(metadata.title).toBe(`${label} (@${rawIdentity.username})`);
-    expect(metadata.description).toBe(`View ${label}'s prompts`);
-    expect(vi.mocked(db.user.findFirst).mock.calls[0][0]?.select).toEqual({ nickname: true, username: true });
+    expect(metadata.description).toBe(`profile · ${label}`);
+    const selection = vi.mocked(db.user.findFirst).mock.calls[0][0]?.select;
+    expect(selection).toMatchObject({ nickname: true, username: true });
+    for (const field of ["name", "email", "githubUsername", "bio", "customLinks"]) expect(selection).not.toHaveProperty(field);
   });
 
   it("不存在及非 @ 路由不改变原有处理", async () => {
-    expect(await generateMetadata({ ...props(), params: Promise.resolve({ username: "plain" }) })).toEqual({ title: "User Not Found" });
+    expect(await generateMetadata({ ...props(), params: Promise.resolve({ username: "plain" }) })).toEqual({ title: "notFound" });
     expect(db.user.findFirst).not.toHaveBeenCalled();
     vi.mocked(db.user.findFirst).mockResolvedValue(null);
-    expect(await generateMetadata(props())).toEqual({ title: "User Not Found" });
+    expect(await generateMetadata(props())).toEqual({ title: "notFound" });
     await expect(UserProfilePage(props())).rejects.toThrow("NOT_FOUND");
   });
 });
@@ -97,18 +112,20 @@ describe("profile metadata 公开身份", () => {
 describe("profile 服务端到 client 的身份边界", () => {
   it.each([false, true])("owner=%s：页面与所有 client props 都不携带原始身份、bio 或自定义链接", async owner => {
     if (owner) vi.mocked(auth).mockResolvedValue({ user: { id: rawIdentity.id } } as never);
-    const tree = await UserProfilePage(props());
-    const serialized = JSON.stringify(tree, (_key, value) => isValidElement(value) ? value.props : value);
+    const trees = await Promise.all(["prompts", "contributions", "likes", "examples", "changes"].map(tab =>
+      UserProfilePage({ ...props(), searchParams: Promise.resolve({ tab }) })
+    ));
+    const serialized = JSON.stringify(trees, (_key, value) => isValidElement(value) ? value.props : value);
     for (const secret of [rawIdentity.name, rawIdentity.email, rawIdentity.githubUsername, "https://private.example.test/me", '"email"', '"customLinks"', '"bio"']) {
       expect(serialized).not.toContain(secret);
     }
     expect(serialized).toContain("星河");
     expect(serialized).toContain("匿名同学");
     const cards: Array<Record<string, unknown>> = [];
-    walk(tree, props => {
+    trees.forEach(tree => walk(tree, props => {
       if (props.prompt) cards.push(props.prompt as Record<string, unknown>);
       if (props.prompts) cards.push(...props.prompts as Array<Record<string, unknown>>);
-    });
+    }));
     expect(cards).toHaveLength(5);
     for (const card of cards) {
       expect(card.author).toEqual({ id: rawIdentity.id, username: rawIdentity.username, name: "星河", avatar: null, verified: true });
@@ -124,7 +141,8 @@ describe("profile 服务端到 client 的身份边界", () => {
     await UserProfilePage(props());
     expect(vi.mocked(db.user.findFirst).mock.calls[0][0]?.select).toEqual({
       id: true, nickname: true, username: true, avatar: true, role: true, verified: true, createdAt: true,
-      _count: { select: { prompts: true, contributions: true } },
+      xp: true, communityPoints: true, checkInStreak: true, lastCheckInAt: true, avatarFrameKey: true, chatBubbleKey: true,
+      _count: { select: { prompts: { where: { deletedAt: null, isPrivate: false } }, contributions: { where: { deletedAt: null, isPrivate: false } } } },
     });
     const queries = [
       ...vi.mocked(db.prompt.findMany).mock.calls,

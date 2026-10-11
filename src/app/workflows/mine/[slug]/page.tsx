@@ -132,7 +132,7 @@ export default async function EditWorkflowPage({
         initialVersion={latest?.version ?? 0}
       />
 
-      {(workflow.status === "DRAFT" || workflow.status === "REJECTED") && isOwner && (
+      {(workflow.status === "DRAFT" || workflow.status === "REJECTED" || workflow.status === "PUBLISHED" && (latest?.version ?? 0) > (workflow.publishedVersion ?? 0)) && isOwner && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">提交审核</CardTitle>
@@ -141,7 +141,7 @@ export default async function EditWorkflowPage({
             <p className="text-sm text-muted-foreground">
               提交的是当前最新版本。管理员复核通过后，工作流才会出现在工作流广场。
             </p>
-            <WorkflowActions slug={workflow.slug} mode="submit" />
+            <WorkflowActions slug={workflow.slug} mode="submit" version={latest?.version} />
           </CardContent>
         </Card>
       )}

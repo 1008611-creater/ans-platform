@@ -40,3 +40,21 @@ export const agriGrantCommandSchema = z.discriminatedUnion("action", [
 export class AgriWorkspaceError extends Error {
   constructor(public readonly code: string, public readonly status = 409) { super(code); this.name = "AgriWorkspaceError"; }
 }
+export type AgriWorkspaceCommand = z.infer<typeof agriWorkspaceCommandSchema>;
+export type AgriGrantCommand = z.infer<typeof agriGrantCommandSchema>;
+export interface AgriWorkspaceRuleView {
+  id: string; version: number; requirements: AgriRulesDraft["requirements"]; guidanceMarkdown: string; confirmedAt: string;
+  windows: Array<{ stage: "REGISTRATION" | "PRELIMINARY" | "FINAL"; state: "PENDING" | "CONFIRMED"; opensAt: string | null; closesAt: string | null; includesDeadline: boolean | null }>;
+}
+export interface AgriWorkspaceRulesView {
+  competitionId: string; enabled: boolean; revision: number; draft: AgriRulesDraft | null;
+  confirmedRule: AgriWorkspaceRuleView | null; publishedRule: AgriWorkspaceRuleView | null;
+}
+export interface AgriGrantView {
+  id: string; userId: string; scope: z.infer<typeof agriWorkspaceScopeSchema>; revision: number;
+  delegable: boolean; expiresAt: string | null; revokedAt: string | null;
+}
+export interface AgriGrantManagementView {
+  competitionId: string; recipientId: string | null; delegableScopes: Array<z.infer<typeof agriWorkspaceScopeSchema>>;
+  grants: AgriGrantView[];
+}

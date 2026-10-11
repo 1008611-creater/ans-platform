@@ -97,7 +97,9 @@ export default async function WorkflowQueuePage() {
                 <WorkflowActions
                   slug={workflow.slug}
                   mode="review"
-                  canPublish={canPublishAfterReview(workflow.reviewScore)}
+                  version={version?.version}
+                  reviewRequestId={workflow.reviewScore && typeof workflow.reviewScore === "object" && !Array.isArray(workflow.reviewScore) && typeof workflow.reviewScore.reviewRequestId === "string" ? workflow.reviewScore.reviewRequestId : undefined}
+                  canPublish={canPublishAfterReview(workflow.reviewScore, version?.version ?? 0)}
                 />
               </CardContent>
             </Card>

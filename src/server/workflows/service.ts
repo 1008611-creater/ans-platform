@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { unifiedModelBilling } from "@/server/integrations/metered-cost";
 import type { DbTransaction } from "@/lib/db";
@@ -207,6 +208,24 @@ export async function createWorkflow(authorId: string, rawInput: unknown) {
   }
 }
 
+/** Serialize version and moderation writes, then reject stale snapshots. */
+async function guardWorkflowSnapshot(tx: DbTransaction, snapshot: { id: string; status: string; reviewScore?: unknown; versions: Array<{ version: number }> }) {
+  await tx.$queryRaw`SELECT id FROM workflows WHERE id = ${snapshot.id} FOR UPDATE`;
+  const current = await tx.workflow.findUnique({ where: { id: snapshot.id }, select: { status: true, reviewScore: true, versions: { orderBy: { version: "desc" }, take: 1, select: { version: true } } } });
+  if (!current || current.status !== snapshot.status || current.versions[0]?.version !== snapshot.versions[0]?.version
+    || JSON.stringify(current.reviewScore ?? null) !== JSON.stringify(snapshot.reviewScore ?? null)) {
+    throw new WorkflowServiceError("工作流状态已变更，请刷新后重试。", "INVALID_STATE", 409);
+  }
+}
+
+function reviewIsPending(score: unknown): boolean {
+  return !!score && typeof score === "object" && !Array.isArray(score) && "reviewPending" in score && score.reviewPending === true;
+}
+
+function reviewRequest(version: number) {
+  return { reviewVersion: version, reviewRequestId: randomUUID(), reviewPending: true };
+}
+
 /** 追加一个不可变版本；只有作者或管理员可以提交。 */
 export async function createWorkflowVersion(slug: string, actorId: string, rawInput: unknown) {
   const parsed = workflowVersionInputSchema.safeParse(rawInput);
@@ -221,6 +240,7 @@ export async function createWorkflowVersion(slug: string, actorId: string, rawIn
       authorId: true,
       isOfficial: true,
       status: true,
+      reviewScore: true,
       versions: { orderBy: { version: "desc" }, take: 1, select: { version: true } },
     },
   });
@@ -233,6 +253,7 @@ export async function createWorkflowVersion(slug: string, actorId: string, rawIn
   const nextVersion = (workflow.versions[0]?.version ?? 0) + 1;
 
   return db.$transaction(async (tx) => {
+    await guardWorkflowSnapshot(tx, workflow);
     const version = await tx.workflowVersion.create({
       data: {
         workflowId: workflow.id,
@@ -310,7 +331,7 @@ export function listOwnWorkflows(authorId: string) {
 
 export function listWorkflowQueue() {
   return db.workflow.findMany({
-    where: { status: "PENDING", isOfficial: false },
+    where: { isOfficial: false, OR: [{ status: "PENDING" }, { status: "PUBLISHED", reviewScore: { path: ["reviewPending"], equals: true } }] },
     orderBy: { updatedAt: "asc" },
     take: 100,
     include: {
@@ -405,13 +426,6 @@ export async function publishWorkflow(slug: string, actorId: string, version?: n
   if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
     throw new WorkflowServiceError("没有发布该工作流的权限。", "FORBIDDEN", 403);
   }
-  if (!canPublishAfterReview(workflow.reviewScore)) {
-    throw new WorkflowServiceError(
-      "AI 初审未通过或尚未完成，不能发布。",
-      "REVIEW_REQUIRED",
-      409,
-    );
-  }
   if (workflow.versions.length === 0) {
     throw new WorkflowServiceError("工作流还没有可发布的版本。", "NO_VERSION");
   }
@@ -420,13 +434,17 @@ export async function publishWorkflow(slug: string, actorId: string, version?: n
   if (!targetVersion) {
     throw new WorkflowServiceError("指定的版本不存在。", "NO_VERSION", 404);
   }
+  if (!canPublishAfterReview(workflow.reviewScore, targetVersion.version)) {
+    throw new WorkflowServiceError("AI 初审未通过或审核版本不匹配，不能发布。", "REVIEW_REQUIRED", 409);
+  }
   // 发布前再次校验，防止旧版本携带已失效的定义。
   assertDefinition(targetVersion.definition);
 
   return db.$transaction(async (tx) => {
+    await guardWorkflowSnapshot(tx, workflow);
     const updated = await tx.workflow.update({
       where: { id: workflow.id },
-      data: { status: "PUBLISHED", publishedVersion: targetVersion.version },
+      data: { status: "PUBLISHED", publishedVersion: targetVersion.version, reviewScore: { ...(workflow.reviewScore as Prisma.InputJsonObject), reviewPending: false } },
     });
     await tx.auditLog.create({
       data: {
@@ -448,104 +466,54 @@ export async function publishWorkflow(slug: string, actorId: string, version?: n
 export async function submitWorkflowForReview(slug: string, actorId: string) {
   const workflow = await db.workflow.findUnique({
     where: { slug },
-    select: {
-      id: true,
-      authorId: true,
-      status: true,
-      isOfficial: true,
-      title: true,
-      summary: true,
-      description: true,
-      versions: { orderBy: { version: "desc" }, take: 1 },
-    },
+    select: { id: true, authorId: true, status: true, isOfficial: true, title: true, summary: true, description: true, publishedVersion: true, reviewScore: true, versions: { orderBy: { version: "desc" }, take: 1 } },
   });
-  if (!workflow) throw new WorkflowServiceError("\u5de5\u4f5c\u6d41\u4e0d\u5b58\u5728\u3002", "NOT_FOUND", 404);
-  if (workflow.isOfficial) {
-    throw new WorkflowServiceError("\u5b98\u65b9\u5de5\u4f5c\u6d41\u7531\u5e73\u53f0\u7ba1\u7406\u3002", "OFFICIAL_WORKFLOW_LOCKED", 403);
-  }
+  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
+  if (workflow.isOfficial) throw new WorkflowServiceError("官方工作流由平台管理。", "OFFICIAL_WORKFLOW_LOCKED", 403);
   const actor = await requireActor(actorId);
-  if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
-    throw new WorkflowServiceError("\u6ca1\u6709\u63d0\u4ea4\u8be5\u5de5\u4f5c\u6d41\u7684\u6743\u9650\u3002", "FORBIDDEN", 403);
-  }
-  if (workflow.status === "PENDING") return workflow;
-  if (workflow.status !== "DRAFT" && workflow.status !== "REJECTED") {
-    throw new WorkflowServiceError("\u5de5\u4f5c\u6d41\u5f53\u524d\u72b6\u6001\u65e0\u6cd5\u63d0\u4ea4\u5ba1\u6838\u3002", "INVALID_STATE", 409);
-  }
-  if (workflow.versions.length === 0) {
-    throw new WorkflowServiceError("\u5de5\u4f5c\u6d41\u8fd8\u6ca1\u6709\u53ef\u63d0\u4ea4\u7684\u7248\u672c\u3002", "NO_VERSION");
-  }
-  const definition = assertDefinition(workflow.versions[0].definition);
+  if (workflow.authorId !== actorId && actor.role !== "ADMIN") throw new WorkflowServiceError("没有提交该工作流的权限。", "FORBIDDEN", 403);
+  if (workflow.status === "PENDING" || workflow.status === "PUBLISHED" && reviewIsPending(workflow.reviewScore)) return workflow;
+  const version = workflow.versions[0];
+  if (!version) throw new WorkflowServiceError("工作流还没有可提交的版本。", "NO_VERSION");
+  const publishedUpdate = workflow.status === "PUBLISHED" && version.version > (workflow.publishedVersion ?? 0);
+  if (!["DRAFT", "REJECTED"].includes(workflow.status) && !publishedUpdate) throw new WorkflowServiceError("工作流当前状态无法提交审核。", "INVALID_STATE", 409);
+  const definition = assertDefinition(version.definition);
+  const binding = reviewRequest(version.version);
+  const status = publishedUpdate ? "PUBLISHED" : "PENDING";
   const submission = await db.$transaction(async (tx) => {
+    await guardWorkflowSnapshot(tx, workflow);
     const claimed = await tx.workflow.updateMany({
       where: { id: workflow.id, status: workflow.status },
-      data: { status: "PENDING" },
+      data: { status, reviewScore: { verdict: "PENDING", ...binding }, reviewNote: null, reviewedAt: null },
     });
-    if (claimed.count === 0) {
-      const current = await tx.workflow.findUnique({ where: { id: workflow.id }, select: { status: true } });
-      if (current?.status === "PENDING") {
-        return { workflow: { ...workflow, status: "PENDING" as const }, alreadyPending: true };
-      }
-      throw new WorkflowServiceError("\u5de5\u4f5c\u6d41\u72b6\u6001\u5df2\u53d8\u66f4\uff0c\u8bf7\u5237\u65b0\u9875\u9762\u540e\u91cd\u8bd5\u3002", "INVALID_STATE", 409);
-    }
-    await tx.auditLog.create({
-      data: {
-        actorId,
-        action: "WORKFLOW_SUBMITTED",
-        resourceType: "workflow",
-        resourceId: workflow.id,
-        before: { status: workflow.status },
-        after: { status: "PENDING" },
-      },
-    });
-    return { workflow: { ...workflow, status: "PENDING" as const }, alreadyPending: false };
+    if (claimed.count !== 1) throw new WorkflowServiceError("工作流状态已变更，请刷新后重试。", "INVALID_STATE", 409);
+    await tx.auditLog.create({ data: { actorId, action: "WORKFLOW_SUBMITTED", resourceType: "workflow", resourceId: workflow.id, before: { status: workflow.status }, after: { status, ...binding } } });
+    return { ...workflow, status };
   });
-
-  if (submission.alreadyPending) return submission.workflow;
-
-  // Submission is durable before the AI review. A review timeout never rolls back PENDING.
-  await runAndStoreReview(workflow.id, actorId, {
-    title: submission.workflow.title,
-    summary: submission.workflow.summary,
-    description: submission.workflow.description,
-    definition,
-  });
-  return submission.workflow;
+  // Only the matching durable request may store a result. Old published versions stay online.
+  await runAndStoreReview(workflow.id, actorId, { title: workflow.title, summary: workflow.summary, description: workflow.description, definition }, binding);
+  return submission;
 }
 
-/**
- * 跑一次 AI 初审并把结论写进 workflow.reviewScore。
- *
- * 只更新 reviewScore，不改状态：状态流转始终由人工复核决定。
- */
 async function runAndStoreReview(
   workflowId: string,
   actorId: string,
-  input: {
-    title: string;
-    summary: string | null;
-    description: string | null;
-    definition: Parameters<typeof reviewWorkflowDefinition>[0]["definition"];
-  },
+  input: { title: string; summary: string | null; description: string | null; definition: Parameters<typeof reviewWorkflowDefinition>[0]["definition"] },
+  binding: ReturnType<typeof reviewRequest>,
 ) {
   const review = await reviewWorkflowDefinition(input);
-  await db.workflow.update({
-    where: { id: workflowId },
-    data: { reviewScore: review as unknown as Prisma.InputJsonValue },
+  const stored = await db.$transaction(async (tx) => {
+    // Version creation uses this same row lock before changing the review request.
+    await tx.$queryRaw`SELECT id FROM workflows WHERE id = ${workflowId} FOR UPDATE`;
+    const changed = await tx.workflow.updateMany({
+      where: { id: workflowId, status: { in: ["PENDING", "PUBLISHED"] }, AND: [{ reviewScore: { path: ["reviewRequestId"], equals: binding.reviewRequestId } }, { reviewScore: { path: ["reviewPending"], equals: true } }], versions: { none: { version: { gt: binding.reviewVersion } } } },
+      data: { reviewScore: { ...review, ...binding } as Prisma.InputJsonValue },
+    });
+    if (changed.count !== 1) return false;
+    await tx.auditLog.create({ data: { actorId, action: "WORKFLOW_AI_REVIEWED", resourceType: "workflow", resourceId: workflowId, after: { verdict: review.verdict, unavailableReason: review.unavailableReason ?? null, scores: review.scores ?? null, model: review.model ?? null, ...binding } } });
+    return true;
   });
-  await db.auditLog.create({
-    data: {
-      actorId,
-      action: "WORKFLOW_AI_REVIEWED",
-      resourceType: "workflow",
-      resourceId: workflowId,
-      after: {
-        verdict: review.verdict,
-        unavailableReason: review.unavailableReason ?? null,
-        scores: review.scores ?? null,
-        model: review.model ?? null,
-      },
-    },
-  });
+  if (!stored) throw new WorkflowServiceError("审核对象已变更，请刷新后重新提交。", "INVALID_STATE", 409);
   return review;
 }
 
@@ -566,6 +534,7 @@ export async function recheckWorkflowReview(slug: string, adminId: string) {
       title: true,
       summary: true,
       description: true,
+      reviewScore: true,
       versions: { orderBy: { version: "desc" }, take: 1 },
     },
   });
@@ -576,36 +545,32 @@ export async function recheckWorkflowReview(slug: string, adminId: string) {
   if (workflow.authorId === adminId) {
     throw new WorkflowServiceError("作者不能审核自己的工作流。", "SELF_REVIEW_FORBIDDEN", 403);
   }
-  if (workflow.status !== "PENDING") {
+  if (workflow.status !== "PENDING" && !(workflow.status === "PUBLISHED" && reviewIsPending(workflow.reviewScore))) {
     throw new WorkflowServiceError("工作流不在待审状态，请刷新后重试。", "INVALID_STATE", 409);
   }
   const version = workflow.versions[0];
   if (!version) throw new WorkflowServiceError("工作流还没有版本。", "NO_VERSION");
   const definition = assertDefinition(version.definition);
 
-  await db.workflow.update({ where: { id: workflow.id }, data: { reviewScore: Prisma.DbNull } });
-  await db.auditLog.create({
-    data: {
-      actorId: adminId,
-      action: "WORKFLOW_AI_RECHECK_REQUESTED",
-      resourceType: "workflow",
-      resourceId: workflow.id,
-      after: { version: version.version },
-    },
+  const binding = reviewRequest(version.version);
+  await db.$transaction(async (tx) => {
+    await guardWorkflowSnapshot(tx, workflow);
+    await tx.workflow.update({ where: { id: workflow.id }, data: { reviewScore: { verdict: "PENDING", ...binding } } });
+    await tx.auditLog.create({ data: { actorId: adminId, action: "WORKFLOW_AI_RECHECK_REQUESTED", resourceType: "workflow", resourceId: workflow.id, after: binding } });
   });
   const review = await runAndStoreReview(workflow.id, adminId, {
     title: workflow.title,
     summary: workflow.summary,
     description: workflow.description,
     definition,
-  });
+  }, binding);
   return { workflowId: workflow.id, review };
 }
 
 export async function reviewWorkflow(
   slug: string,
   adminId: string,
-  input: { action: "publish" | "reject"; note: string },
+  input: { action: "publish" | "reject"; note: string; expectedVersion: number; expectedReviewRequestId: string },
 ) {
   if (!input?.note?.trim()) {
     throw new WorkflowServiceError("请填写复核理由。", "INVALID_INPUT");
@@ -628,7 +593,7 @@ export async function reviewWorkflow(
   if (workflow.authorId === adminId) {
     throw new WorkflowServiceError("作者不能审核自己的工作流。", "SELF_REVIEW_FORBIDDEN", 403);
   }
-  if (workflow.status !== "PENDING") {
+  if (workflow.status !== "PENDING" && !(workflow.status === "PUBLISHED" && reviewIsPending(workflow.reviewScore))) {
     throw new WorkflowServiceError("工作流不在待审状态，请刷新后重试。", "INVALID_STATE", 409);
   }
   const version = workflow.versions[0];
@@ -636,7 +601,7 @@ export async function reviewWorkflow(
   assertDefinition(version.definition);
   const published = input.action === "publish";
   // 人工复核不能绕过 AI 初审：只有 PASS，或「本服务端从未配置初审」时才是纯人工把关。
-  if (published && !canPublishAfterReview(workflow.reviewScore)) {
+  if (published && !canPublishAfterReview(workflow.reviewScore, version.version)) {
     throw new WorkflowServiceError(
       "AI 初审未通过或尚未完成，请先重新发起 AI 初审或驳回给作者修改。",
       "REVIEW_REQUIRED",
@@ -644,11 +609,17 @@ export async function reviewWorkflow(
     );
   }
 
+  if (version.version !== input.expectedVersion || !workflow.reviewScore || typeof workflow.reviewScore !== "object" || Array.isArray(workflow.reviewScore)
+    || workflow.reviewScore.reviewRequestId !== input.expectedReviewRequestId) {
+    throw new WorkflowServiceError("审核对象已变更，请刷新后重新核对。", "INVALID_STATE", 409);
+  }
   return db.$transaction(async (tx) => {
+    await guardWorkflowSnapshot(tx, workflow);
     const updated = await tx.workflow.update({
       where: { id: workflow.id },
       data: {
-        status: published ? "PUBLISHED" : "REJECTED",
+        status: published || workflow.status === "PUBLISHED" ? "PUBLISHED" : "REJECTED",
+        ...(workflow.reviewScore && typeof workflow.reviewScore === "object" && !Array.isArray(workflow.reviewScore) ? { reviewScore: { ...workflow.reviewScore, reviewPending: false } as Prisma.InputJsonValue } : {}),
         ...(published ? { publishedVersion: version.version } : {}),
         reviewNote: input.note.trim(),
         reviewedAt: new Date(),
@@ -666,7 +637,7 @@ export async function reviewWorkflow(
     });
     return updated;
   }).then(async (updated) => {
-    if (updated.status === "PUBLISHED") await safeAwardGrowthEvent({ userId: updated.authorId, type: "PUBLISH_TEMPLATE", reason: "PUBLISH_TEMPLATE", sourceType: "workflow", sourceId: updated.id });
+    if (published && updated.status === "PUBLISHED") await safeAwardGrowthEvent({ userId: updated.authorId, type: "PUBLISH_TEMPLATE", reason: "PUBLISH_TEMPLATE", sourceType: "workflow", sourceId: updated.id });
     return updated;
   });
 }

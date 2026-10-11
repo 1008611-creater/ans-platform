@@ -72,7 +72,8 @@ def main():
     os.chmod(backup, 0o700)
     info = json.loads(run(["docker", "inspect", APP]))[0]
     values = dict(item.split("=", 1) for item in info["Config"]["Env"] if "=" in item)
-    url = urlparse(values["DATABASE_URL"])
+    snapshot_url = values.get("DIRECT_URL") or values["DATABASE_URL"]
+    url = urlparse(snapshot_url)
     if not url.hostname or not url.hostname.endswith(".pooler.supabase.com") or url.port != 5432:
         raise RuntimeError("Expected the verified Supabase session connection")
     pg_env = os.environ.copy()
@@ -100,8 +101,9 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
  await new Promise(resolve=>{process.stdin.once('data',resolve);process.stdin.resume();});
  },{isolationLevel:'RepeatableRead',timeout:600000,maxWait:15000});await db.$disconnect();})().catch(()=>{console.error('Snapshot operation failed');process.exitCode=1;});
 """.replace("CONSTRAINT_SQL", json.dumps(CONSTRAINT_SQL)).replace("INDEX_SQL", json.dumps(INDEX_SQL)).replace("MIGRATION_SQL", json.dumps(MIGRATION_SQL))
-        holder = subprocess.Popen(["docker", "exec", "-i", APP, "node", "-e", js], stdin=subprocess.PIPE,
-                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        snapshot_env = {**os.environ, "DATABASE_URL": snapshot_url}
+        holder = subprocess.Popen(["docker", "exec", "-i", "-e", "DATABASE_URL", APP, "node", "-e", js], stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=snapshot_env)
         if not select.select([holder.stdout], [], [], 90)[0]:
             raise RuntimeError("Snapshot did not become ready")
         source = json.loads(holder.stdout.readline())

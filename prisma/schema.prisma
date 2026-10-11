@@ -67,6 +67,10 @@ model User {
   agriAccessGrants AgriAccessGrant[] @relation("AgriGrantRecipient")
   agriGrantedScopes AgriAccessGrant[] @relation("AgriGrantActor")
   agriWorkspaceEvents AgriWorkspaceEvent[] @relation("AgriWorkspaceEventActor")
+  agriFinalDecisions AgriFinalDecision[]
+  agriCorrectionPermits AgriCorrectionPermit[]
+  agriPermitEvents AgriCorrectionPermitEvent[]
+  agriDecisionReceipts AgriDecisionReceipt[]
   agriCommandReceipts AgriCommandReceipt[] @relation("AgriCommandActor")
   agriPersonalTasks           AgriPersonalTask[] @relation("AgriTaskOwner")
   agriTaskEvents              AgriTaskEvent[] @relation("AgriTaskEventActor")
@@ -1183,6 +1187,7 @@ model TeamCompetition {
   reviewer User? @relation("CompetitionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
   reviewNote String? @db.Text
   awardedXp Int @default(0)
+  agriFinalDecisions AgriFinalDecision[]
   agriStages AgriEntryStage[]
   contributions TeamCompetitionContribution[]
   createdAt     DateTime    @default(now())
@@ -1912,6 +1917,8 @@ model AgriWorkspace {
   rules AgriRuleVersion[] @relation("AgriWorkspaceRules")
   grants AgriAccessGrant[]
   events AgriWorkspaceEvent[]
+  finalDecisions AgriFinalDecision[]
+  decisionReceipts AgriDecisionReceipt[]
   receipts AgriCommandReceipt[]
   updatedById String?
   updatedBy User? @relation("AgriWorkspaceUpdater", fields: [updatedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
@@ -1935,6 +1942,7 @@ model AgriRuleVersion {
   publishedWorkspaces AgriWorkspace[] @relation("AgriPublishedRule")
   submissions AgriStageSubmission[]
   recordArchives AgriRecordArchive[]
+  correctionPermits AgriCorrectionPermit[]
   workspaceEvents AgriWorkspaceEvent[]
   @@unique([competitionId, version])
   @@unique([id, competitionId])
@@ -2023,6 +2031,7 @@ model AgriEntryStage {
   currentSubmission AgriStageSubmission? @relation("AgriStageCurrent", fields: [currentSubmissionId, id, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction, map: "agri_stage_current_same_entry")
   frozenSubmissionId String?
   frozenSubmission AgriStageSubmission? @relation("AgriStageFrozen", fields: [frozenSubmissionId, id, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction, map: "agri_stage_frozen_same_entry")
+  correctionPermits AgriCorrectionPermit[]
   submissions AgriStageSubmission[] @relation("AgriStageHistory")
   events AgriSubmissionEvent[]
   receipts AgriSubmissionReceipt[]
@@ -2061,6 +2070,10 @@ model AgriStageSubmission {
   materialRefs AgriSubmissionMaterialRef[]
   events AgriSubmissionEvent[]
   receipts AgriSubmissionReceipt[]
+  correctionPermits AgriCorrectionPermit[]
+  corrections AgriSubmissionCorrection[] @relation("AgriCorrectionPrevious")
+  correction AgriSubmissionCorrection? @relation("AgriCorrectionNew")
+  permitUses AgriCorrectionPermitEvent[]
   taskReferences AgriTaskReference[]
   @@unique([entryStageId, sequence])
   @@unique([id, entryStageId, competitionId])
@@ -2512,4 +2525,85 @@ model GrowthEvent {
   @@index([userId, createdAt])
   @@index([type, createdAt])
   @@map("growth_events")
+}
+
+// Independent operator decisions; technical checks cannot produce these records.
+model AgriFinalDecision {
+  id String @id @default(cuid())
+  competitionId String
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  teamCompetitionId String
+  entry TeamCompetition @relation(fields: [teamCompetitionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  sequence Int
+  state String @db.VarChar(16)
+  reason String
+  sourceReference String
+  actorId String
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decidedAt DateTime @db.Timestamptz(3)
+  @@unique([teamCompetitionId, sequence])
+  @@map("agri_final_decisions")
+}
+model AgriCorrectionPermit {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  entryStage AgriEntryStage @relation(fields: [entryStageId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  previousSubmissionId String
+  previousSubmission AgriStageSubmission @relation(fields: [previousSubmissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  ruleVersionId String
+  rule AgriRuleVersion @relation(fields: [ruleVersionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  allowedFields String[]
+  reason String
+  authorizedById String
+  authorizedBy User @relation(fields: [authorizedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  authorizedAt DateTime @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  event AgriCorrectionPermitEvent?
+  correction AgriSubmissionCorrection?
+  @@unique([id, entryStageId, competitionId])
+  @@map("agri_correction_permits")
+}
+model AgriCorrectionPermitEvent {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  permitId String @unique
+  permit AgriCorrectionPermit @relation(fields: [permitId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  action String @db.VarChar(16)
+  submissionId String?
+  submission AgriStageSubmission? @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  reason String
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([permitId, entryStageId, competitionId])
+  @@map("agri_correction_permit_events")
+}
+model AgriSubmissionCorrection {
+  submissionId String @id
+  competitionId String
+  entryStageId String
+  submission AgriStageSubmission @relation("AgriCorrectionNew", fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  previousSubmissionId String
+  previousSubmission AgriStageSubmission @relation("AgriCorrectionPrevious", fields: [previousSubmissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  permitId String @unique
+  permit AgriCorrectionPermit @relation(fields: [permitId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  @@unique([submissionId, entryStageId, competitionId])
+  @@unique([permitId, entryStageId, competitionId])
+  @@map("agri_submission_corrections")
+}
+model AgriDecisionReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  operation String @db.VarChar(32)
+  idempotencyKey String @db.VarChar(36)
+  requestHash String @db.VarChar(64)
+  resourceId String
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, actorId, operation, idempotencyKey])
+  @@map("agri_decision_receipts")
 }

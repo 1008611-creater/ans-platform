@@ -46,7 +46,7 @@ describe("product discovery entry points", () => {
     expect(screen.getByRole("link", { name: "workflowAction" })).toHaveAttribute("href", "/workflows");
     expect(screen.getByRole("link", { name: "communityAction" })).toHaveAttribute("href", "/community");
     expect(screen.getByRole("link", { name: "categories.aigc" })).toHaveAttribute("href", "/explore?category=aigc");
-    expect(screen.getByRole("link", { name: "resume-website" })).toHaveAttribute("href", "/explore/resume-website");
+    expect(screen.getByRole("link", { name: "liu-resume" })).toHaveAttribute("href", "/explore/liu-resume");
   });
 
   it("keeps Chinese and English learning keys and placeholders aligned", () => {

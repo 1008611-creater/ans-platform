@@ -352,8 +352,14 @@ describe("ANS OIDC HTTP flow", () => {
 
 describe("second registered client preserves Toonflow",()=>{
  const secondId="vibephoto-test",secondSecret="vibephoto-fixture-secret-over-thirty-two-bytes",secondRedirect="https://zsm.example.test/studio-next/api/shoot/auth/callback";
- beforeEach(()=>{process.env.OIDC_VIBEPHOTO_CLIENT_ID=secondId;process.env.OIDC_VIBEPHOTO_CLIENT_SECRET=secondSecret;process.env.OIDC_VIBEPHOTO_REDIRECT_URI=secondRedirect;});
- afterAll(()=>{for(const k of ["OIDC_VIBEPHOTO_CLIENT_ID","OIDC_VIBEPHOTO_CLIENT_SECRET","OIDC_VIBEPHOTO_REDIRECT_URI"])delete process.env[k];});
+ beforeEach(()=>{
+  delete process.env.OIDC_TOONFLOW_CLIENT_ID; delete process.env.OIDC_TOONFLOW_CLIENT_SECRET; delete process.env.OIDC_TOONFLOW_REDIRECT_URI;
+  process.env.OIDC_CLIENTS_JSON=JSON.stringify([
+   {clientId,clientSecret,redirectUri,scopes:["openid","profile","email"]},
+   {clientId:secondId,clientSecret:secondSecret,redirectUri:secondRedirect,scopes:["openid","profile"]},
+  ]);
+ });
+ afterAll(()=>{delete process.env.OIDC_CLIENTS_JSON;});
  async function secondCode(verifier:string){const params=new URLSearchParams(authorizationUrl({challenge:hash(verifier)}).split('?')[1]);params.set('client_id',secondId);params.set('redirect_uri',secondRedirect);params.set('scope','openid profile');const response=await http('/api/oidc/authorize?'+params);expect(response.status).toBe(302);return new URL(response.headers.get('location')!).searchParams.get('code')!;}
  async function secondExchange(code:string,verifier:string,redirect=secondRedirect){return http('/api/oidc/token',{method:'POST',headers:{authorization:'Basic '+Buffer.from(secondId+':'+secondSecret).toString('base64'),'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',code,code_verifier:verifier,redirect_uri:redirect})});}
  it('completes second-client PKCE, audience and userinfo without email scope',async()=>{const verifier=randomBytes(32).toString('base64url'),code=await secondCode(verifier),tokens=await(await secondExchange(code,verifier)).json();const claims=JSON.parse(Buffer.from(tokens.id_token.split('.')[1],'base64url').toString());expect(claims.aud).toBe(secondId);expect(claims.email).toBeUndefined();const userinfo=await http('/api/oidc/userinfo',{headers:{authorization:'Bearer '+tokens.access_token}});expect(userinfo.status).toBe(200);expect((await userinfo.json()).email).toBeUndefined();});

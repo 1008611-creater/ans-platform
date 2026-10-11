@@ -59,7 +59,7 @@ describe("workflow submit reconciliation", () => {
   });
 
   it("shows review controls for an admin reviewing their own workflow", () => {
-    render(<WorkflowActions slug="weekly" mode="review" canPublish />);
+    render(<WorkflowActions slug="weekly" mode="review" canPublish version={2} reviewRequestId="00000000-0000-4000-8000-000000000001" />);
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "验收通过" } });
 
     expect(screen.getByRole("button", { name: "复核通过并发布" })).toBeEnabled();
@@ -79,5 +79,31 @@ describe("workflow submit reconciliation", () => {
 
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("PENDING"));
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+
+describe("workflow review snapshot and published update recovery", () => {
+  it("posts the displayed version and review request with the moderation decision", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { ok: true })); vi.stubGlobal("fetch", fetchMock);
+    render(<WorkflowActions slug="weekly" mode="review" canPublish version={2} reviewRequestId="00000000-0000-4000-8000-000000000001" />);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "verified" } });
+    fireEvent.click(screen.getByRole("button", { name: "复核通过并发布" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ action: "publish", note: "verified", expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001" });
+  });
+  it("does not confuse the old published version with a lost new submission", async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError("network failed")).mockResolvedValueOnce(jsonResponse(200, { ok: true, data: { workflow: { status: "PUBLISHED", publishedVersion: 1, reviewScore: null } } }));
+    vi.stubGlobal("fetch", fetchMock); render(<WorkflowActions slug="weekly" mode="submit" version={2} />);
+    fireEvent.click(screen.getByRole("button", { name: "提交审核" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("尚未提交"));
+    expect(screen.getByRole("button", { name: "提交审核" })).toBeEnabled();
+  });
+  it("confirms the matching new review while the old version stays published", async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError("network failed")).mockResolvedValueOnce(jsonResponse(200, { ok: true, data: { workflow: { status: "PUBLISHED", publishedVersion: 1, reviewScore: { reviewVersion: 2, reviewPending: true } } } }));
+    vi.stubGlobal("fetch", fetchMock); render(<WorkflowActions slug="weekly" mode="submit" version={2} />);
+    fireEvent.click(screen.getByRole("button", { name: "提交审核" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("已确认提交成功"));
+    expect(screen.getByRole("button", { name: "提交审核" })).toBeDisabled();
   });
 });

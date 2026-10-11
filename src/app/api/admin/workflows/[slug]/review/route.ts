@@ -9,6 +9,8 @@ const reviewSchema = z
   .object({
     action: z.enum(["publish", "reject"]),
     note: z.string().trim().min(1).max(2000),
+    expectedVersion: z.number().int().positive(),
+    expectedReviewRequestId: z.string().uuid(),
   })
   .strict();
 

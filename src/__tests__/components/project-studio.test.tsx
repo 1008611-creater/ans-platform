@@ -27,6 +27,7 @@ const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
 
 beforeEach(() => {
   requests.length = 0;
+  sessionStorage.clear();
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     if (init?.method === "POST") {
       requests.push({
@@ -36,7 +37,7 @@ beforeEach(() => {
     }
     return {
       ok: true,
-      json: async () => ({ ok: true, data: { id: "v3", version: 3 } }),
+      json: async () => ({ ok: true, data: String(input).endsWith("/runs") ? (init?.method === "POST" ? { workflowRunId: "accepted-run", status: "QUEUED" } : { runs: [] }) : { id: "v3", version: 3 } }),
     } as Response;
   }));
 });
@@ -50,7 +51,7 @@ describe("ProjectStudio", () => {
   it("focuses progress on three drafts, states the cost and collapses extra tools", () => {
     const { container } = render(<ProjectStudio project={withArtifact} />);
     expect(screen.getByText(/核心草稿已生成 1\/3/)).toBeInTheDocument();
-    expect(screen.getByText(/每次生成消耗 2 点/)).toBeInTheDocument();
+    expect(screen.getByText(messages.cost.replace("{points}", "2"))).toBeInTheDocument();
     expect(container.querySelector("details")).not.toHaveAttribute("open");
     expect(container.textContent).not.toContain("????");
   });

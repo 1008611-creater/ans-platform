@@ -11,12 +11,14 @@ export function WorkflowActions({
   mode,
   canPublish = false,
   version,
+  reviewRequestId,
 }: {
   slug: string;
   mode: "submit" | "publish" | "review";
   /** Whether the AI review currently allows an admin to publish. */
   canPublish?: boolean;
   version?: number;
+  reviewRequestId?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -30,15 +32,18 @@ export function WorkflowActions({
       const response = await fetch("/api/workflows/" + encodeURIComponent(slug) + "?scope=mine", { cache: "no-store" });
       const body = await response.json().catch(() => null);
       if (!response.ok) throw new Error("status lookup failed");
-      const status = body?.data?.workflow?.status ?? body?.workflow?.status;
-      if (status === "PENDING" || status === "PUBLISHED") {
+      const saved = body?.data?.workflow ?? body?.workflow;
+      const status = saved?.status;
+      const versionAccepted = version === undefined || saved?.publishedVersion >= version
+        || saved?.reviewScore?.reviewVersion === version && saved?.reviewScore?.reviewPending === true;
+      if ((status === "PENDING" || status === "PUBLISHED") && versionAccepted) {
         setSubmitUncertain(false);
         setSubmissionAccepted(true);
         setMessage("已确认提交成功，工作流状态：" + status + "。管理员复核通过后才能运行。");
         router.refresh();
         return;
       }
-      if (status === "DRAFT" || status === "REJECTED") {
+      if (status === "DRAFT" || status === "REJECTED" || status === "PUBLISHED" && !versionAccepted) {
         setSubmitUncertain(false);
         setMessage("服务端显示尚未提交（" + status + "），现在可以安全重试。");
         return;
@@ -64,7 +69,7 @@ export function WorkflowActions({
         response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(isReview ? { action, note } : version === undefined ? {} : { version }),
+          body: JSON.stringify(mode === "review" && isReview ? { action, note, expectedVersion: version, expectedReviewRequestId: reviewRequestId } : version === undefined ? {} : { version }),
         });
       } catch (error) {
         if (action !== "submit") throw error;
@@ -121,10 +126,10 @@ export function WorkflowActions({
         {mode === "publish" && <Button disabled={busy} onClick={() => act("publish")}>{busy ? "正在发布…" : "直接发布"}</Button>}
         {mode === "review" && (
           <>
-            <Button disabled={busy || !canPublish || !note.trim()} onClick={() => act("publish")}>
+            <Button disabled={busy || !canPublish || !note.trim() || !version || !reviewRequestId} onClick={() => act("publish")}>
               {"复核通过并发布"}
             </Button>
-            <Button variant="destructive" disabled={busy || !note.trim()} onClick={() => act("reject")}>
+            <Button variant="destructive" disabled={busy || !note.trim() || !version || !reviewRequestId} onClick={() => act("reject")}>
               {"驳回"}
             </Button>
             <Button variant="outline" disabled={busy} onClick={() => act("recheck")}>

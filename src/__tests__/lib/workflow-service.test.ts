@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
     quotaLedger: { create: vi.fn() },
     auditLog: { create: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
     $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
   },
 }));
 
@@ -25,6 +26,7 @@ import {
   createWorkflowRun,
   getWorkflowRun,
   listWorkflowRuns,
+  listWorkflowQueue,
   getPublishedWorkflow,
   publishWorkflow,
   recheckWorkflowReview,
@@ -54,6 +56,7 @@ const author = { id: "author1", role: "USER", emailVerified: new Date(), deleted
 const admin = { id: "admin1", role: "ADMIN", emailVerified: new Date(), deletedAt: null, flagged: false };
 
 const passReview = {
+  reviewVersion: 1, reviewRequestId: "00000000-0000-4000-8000-000000000001", reviewPending: true,
   verdict: "PASS",
   source: "AI",
   pass: true,
@@ -66,6 +69,7 @@ const passReview = {
 const blockedReview = { ...passReview, verdict: "BLOCKED", pass: false, reason: "存在诱导交出凭证的内容。" };
 
 const unavailableReview = {
+  reviewVersion: 1, reviewRequestId: "00000000-0000-4000-8000-000000000001", reviewPending: true,
   verdict: "UNAVAILABLE",
   source: "AI",
   reason: "AI 初审未配置，保持待审，不能发布",
@@ -309,7 +313,7 @@ describe("publishWorkflow", () => {
     await publishWorkflow("weekly", "author1");
 
     expect(mocks.db.workflow.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: "PUBLISHED", publishedVersion: 1 } }),
+      expect.objectContaining({ data: expect.objectContaining({ status: "PUBLISHED", publishedVersion: 1 }) }),
     );
   });
 
@@ -332,7 +336,7 @@ describe("publishWorkflow", () => {
       id: "w1",
       authorId: "author1",
       status: "PENDING",
-      reviewScore: passReview,
+      reviewScore: { ...passReview, reviewVersion: 2 },
       versions: [
         { version: 3, definition },
         { version: 2, definition },
@@ -342,7 +346,7 @@ describe("publishWorkflow", () => {
     await publishWorkflow("weekly", "author1", 2);
 
     expect(mocks.db.workflow.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: "PUBLISHED", publishedVersion: 2 } }),
+      expect.objectContaining({ data: expect.objectContaining({ status: "PUBLISHED", publishedVersion: 2 }) }),
     );
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -394,16 +398,16 @@ describe("submitWorkflowForReview", () => {
 
     expect(mocks.db.workflow.updateMany).toHaveBeenCalledWith({
       where: { id: "w1", status: "DRAFT" },
-      data: { status: "PENDING" },
+      data: expect.objectContaining({ status: "PENDING", reviewScore: expect.objectContaining({ reviewVersion: 1, reviewPending: true }) }),
     });
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ action: "WORKFLOW_SUBMITTED" }) }),
     );
     // 未配置 WORKFLOW_REVIEW_* / TEMPLATE_REVIEW_* 时应落到 NOT_CONFIGURED，
     // 而不是抛错或静默留下空结论。
-    expect(mocks.db.workflow.update).toHaveBeenCalledWith(
+    expect(mocks.db.workflow.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "w1" },
+        where: expect.objectContaining({ id: "w1" }),
         data: {
           reviewScore: expect.objectContaining({
             verdict: "UNAVAILABLE",
@@ -436,26 +440,11 @@ describe("submitWorkflowForReview", () => {
     expect(mocks.db.workflow.update).not.toHaveBeenCalled();
   });
 
-  it("treats a concurrent submission as already accepted without running AI review twice", async () => {
-    mocks.db.workflow.findUnique
-      .mockResolvedValueOnce({
-        id: "w1",
-        authorId: "author1",
-        status: "DRAFT",
-        title: "test workflow",
-        summary: null,
-        description: null,
-        versions: [{ version: 1, definition }],
-      })
-      .mockResolvedValueOnce({ status: "PENDING" });
-    mocks.db.workflow.updateMany.mockResolvedValueOnce({ count: 0 });
-
-    const submitted = await submitWorkflowForReview("weekly", "author1");
-
-    expect(submitted.status).toBe("PENDING");
-    expect(mocks.db.workflow.updateMany).toHaveBeenCalledTimes(1);
+  it("rejects a stale submission snapshot without running AI review twice", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValueOnce({ id: "w1", authorId: "author1", status: "DRAFT", title: "test workflow", summary: null, description: null, versions: [{ version: 1, definition }] }).mockResolvedValueOnce({ status: "PENDING", versions: [{ version: 1 }] });
+    await expect(submitWorkflowForReview("weekly", "author1")).rejects.toMatchObject({ code: "INVALID_STATE", status: 409 });
+    expect(mocks.db.workflow.updateMany).not.toHaveBeenCalled();
     expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
-    expect(mocks.db.workflow.update).not.toHaveBeenCalled();
   });
 
   it("still submits when the AI reviewer is unreachable", async () => {
@@ -485,7 +474,7 @@ describe("submitWorkflowForReview", () => {
       const submitted = await submitWorkflowForReview("weekly", "author1");
 
       expect(submitted.status).toBe("PENDING");
-      expect(mocks.db.workflow.update).toHaveBeenCalledWith(
+      expect(mocks.db.workflow.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
           data: {
             reviewScore: expect.objectContaining({
@@ -506,7 +495,7 @@ describe("submitWorkflowForReview", () => {
 
 describe("reviewWorkflow", () => {
   it("requires a review note", async () => {
-    const error = await reviewWorkflow("weekly", "admin1", { action: "publish", note: "  " }).catch((thrown) => thrown);
+    const error = await reviewWorkflow("weekly", "admin1", { expectedVersion: 1, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "publish", note: "  " }).catch((thrown) => thrown);
 
     expect((error as WorkflowServiceError).code).toBe("INVALID_INPUT");
     expect(mocks.db.workflow.findUnique).not.toHaveBeenCalled();
@@ -522,7 +511,7 @@ describe("reviewWorkflow", () => {
     });
 
 
-    const error = await reviewWorkflow("weekly", "admin1", { action: "publish", note: "通过" }).catch((thrown) => thrown);
+    const error = await reviewWorkflow("weekly", "admin1", { expectedVersion: 1, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "publish", note: "通过" }).catch((thrown) => thrown);
 
     expect((error as WorkflowServiceError).code).toBe("SELF_REVIEW_FORBIDDEN");
     expect((error as WorkflowServiceError).status).toBe(403);
@@ -538,7 +527,7 @@ describe("reviewWorkflow", () => {
       versions: [{ version: 1, definition }],
     });
 
-    const error = await reviewWorkflow("weekly", "admin1", { action: "publish", note: "通过" }).catch((thrown) => thrown);
+    const error = await reviewWorkflow("weekly", "admin1", { expectedVersion: 1, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "publish", note: "通过" }).catch((thrown) => thrown);
 
     expect((error as WorkflowServiceError).code).toBe("INVALID_STATE");
     expect((error as WorkflowServiceError).status).toBe(409);
@@ -549,11 +538,11 @@ describe("reviewWorkflow", () => {
       id: "w1",
       authorId: "author1",
       status: "PENDING",
-      reviewScore: passReview,
+      reviewScore: { ...passReview, reviewVersion: 2 },
       versions: [{ version: 2, definition }],
     });
 
-    await reviewWorkflow("weekly", "admin1", { action: "publish", note: "内容合规" });
+    await reviewWorkflow("weekly", "admin1", { expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "publish", note: "内容合规" });
 
     expect(mocks.db.workflow.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -579,7 +568,7 @@ describe("reviewWorkflow", () => {
       versions: [{ version: 2, definition }],
     });
 
-    const error = await reviewWorkflow("weekly", "admin1", { action: "publish", note: "先发布" }).catch((thrown) => thrown);
+    const error = await reviewWorkflow("weekly", "admin1", { expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "publish", note: "先发布" }).catch((thrown) => thrown);
 
     expect((error as WorkflowServiceError).code).toBe("REVIEW_REQUIRED");
     expect((error as WorkflowServiceError).status).toBe(409);
@@ -595,7 +584,7 @@ describe("reviewWorkflow", () => {
       versions: [{ version: 2, definition }],
     });
 
-    const error = await reviewWorkflow("weekly", "admin1", { action: "publish", note: "放行" }).catch((thrown) => thrown);
+    const error = await reviewWorkflow("weekly", "admin1", { expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "publish", note: "放行" }).catch((thrown) => thrown);
 
     expect((error as WorkflowServiceError).code).toBe("REVIEW_REQUIRED");
   });
@@ -609,7 +598,7 @@ describe("reviewWorkflow", () => {
       versions: [{ version: 2, definition }],
     });
 
-    const error = await reviewWorkflow("weekly", "admin1", { action: "publish", note: "放行" }).catch((thrown) => thrown);
+    const error = await reviewWorkflow("weekly", "admin1", { expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "publish", note: "放行" }).catch((thrown) => thrown);
 
     expect((error as WorkflowServiceError).code).toBe("REVIEW_REQUIRED");
   });
@@ -619,11 +608,11 @@ describe("reviewWorkflow", () => {
       id: "w1",
       authorId: "author1",
       status: "PENDING",
-      reviewScore: unavailableReview,
+      reviewScore: { ...unavailableReview, reviewVersion: 2 },
       versions: [{ version: 2, definition }],
     });
 
-    await reviewWorkflow("weekly", "admin1", { action: "publish", note: "人工把关" });
+    await reviewWorkflow("weekly", "admin1", { expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "publish", note: "人工把关" });
 
     expect(mocks.db.workflow.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -641,7 +630,7 @@ describe("reviewWorkflow", () => {
       versions: [{ version: 2, definition }],
     });
 
-    await reviewWorkflow("weekly", "admin1", { action: "reject", note: "缺少来源说明" });
+    await reviewWorkflow("weekly", "admin1", { expectedVersion: 2, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "reject", note: "缺少来源说明" });
 
     expect(mocks.db.workflow.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -990,7 +979,7 @@ describe("official workflow protection", () => {
 
   it("cannot be manually published or rejected through review", async () => {
     mocks.db.workflow.findUnique.mockResolvedValue(official);
-    await expect(reviewWorkflow(official.slug, "admin1", { action: "reject", note: "test" })).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_LOCKED", status: 403 });
+    await expect(reviewWorkflow(official.slug, "admin1", { expectedVersion: 1, expectedReviewRequestId: "00000000-0000-4000-8000-000000000001", action: "reject", note: "test" })).rejects.toMatchObject({ code: "OFFICIAL_WORKFLOW_LOCKED", status: 403 });
     expect(mocks.db.workflow.update).not.toHaveBeenCalled();
   });
 });
@@ -1043,5 +1032,17 @@ describe("workflow run audit metadata", () => {
     await expect(listWorkflowRuns("user1")).resolves.toMatchObject([
       { id: "run1", audit: { models: ["deepseek-v4.1-flash"], modelCalls: 1, tokenUsage: { totalTokens: 7 }, reasoningEffort: null } },
     ]);
+  });
+});
+
+
+describe("published workflow update queue", () => {
+  it("includes separately pending updates without exposing their draft as a public version", async () => {
+    mocks.db.workflow.findMany.mockResolvedValue([]);
+    await listWorkflowQueue();
+    expect(mocks.db.workflow.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { isOfficial: false, OR: [{ status: "PENDING" }, { status: "PUBLISHED", reviewScore: { path: ["reviewPending"], equals: true } }] } }));
+    mocks.db.workflow.findFirst.mockResolvedValue({ id: "w1", slug: "weekly", title: "Weekly", summary: null, description: null, status: "PUBLISHED", publishedVersion: 1, isOfficial: false, versions: [{ version: 2, definition: { ...definition, nodes: [] } }, { version: 1, definition }] });
+    const published = await getPublishedWorkflow("weekly");
+    expect(published?.versions).toEqual([{ version: 1 }]); expect(published?.publishedDefinition).toEqual(definition);
   });
 });

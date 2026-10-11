@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { AgriCorrectionPermitView } from "./agri-decisions";
 import { agriSubmissionWindowSchema } from "./agrihackathon";
 
 // Draft and normal submission commands have a stage persistence service; corrections remain closed.
@@ -174,6 +175,7 @@ export interface AgriSubmissionVersionChoice {
 }
 export interface AgriSubmissionHistoryItem {
   id: string; entryStageId: string; sequence: number; ruleVersionId: string; acceptedAt: string;
+  correction?: { previousSubmissionId: string; permitId: string; reason: string };
   submittedById?: string; content?: AgriStageSubmissionContent;
 }
 export interface AgriStageDetail {
@@ -182,6 +184,9 @@ export interface AgriStageDetail {
   draft: AgriStageDraft | null; current: AgriSubmissionHistoryItem | null; history: AgriSubmissionHistoryItem[];
   nextBeforeSequence: number | null;
   publishedRule: { id: string; guidanceMarkdown: string; requirements: AgriSubmissionRequirements; window: z.infer<typeof agriSubmissionWindowSchema> } | null;
+  finalEligibility?: { state: "UNKNOWN" } | { state: "ELIGIBLE" | "INELIGIBLE"; sourceId: string };
+  correctionPermits?: AgriCorrectionPermitView[];
+  correctionRule?: AgriStageDetail["publishedRule"];
   windowState: "RULES_PENDING" | "NOT_OPEN" | "OPEN" | "CLOSED" | "INVALID"; serverNow: string;
 }
 export interface AgriSubmissionEntries {

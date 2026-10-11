@@ -17,7 +17,7 @@ import {
   loadOwnedCredential,
   resolveCredentialForRun,
 } from "@/server/credentials/service";
-import { refundQuota } from "@/server/quota/service";
+import { normalizeQuotaAmount, refundQuota } from "@/server/quota/service";
 import { DEFAULT_RUN_MODEL, RUN_REASONING_EFFORTS, type RunReasoningEffort } from "@/lib/run-models";
 
 /**
@@ -166,11 +166,11 @@ function prismaJsonValue(value: unknown): Prisma.InputJsonValue | typeof Prisma.
   return value as Prisma.InputJsonValue;
 }
 
-function createModelUsageTracker(reasoningEffort: RunReasoningEffort) {
-  const models = new Set<string>();
+function createModelUsageTracker(reasoningEffort: RunReasoningEffort, baseline?: ModelUsageAudit) {
+  const models = new Set<string>(baseline?.models ?? []);
   const responses: Array<ModelTokenUsage | null> = [];
-  let modelCalls = 0;
-  const charges: NonNullable<ModelUsageAudit["apicCharges"]> = [];
+  let modelCalls = baseline?.modelCalls ?? 0;
+  const charges: NonNullable<ModelUsageAudit["apicCharges"]> = [...baseline?.apicCharges ?? []];
   return {
     start(model: string) {
       models.add(model);
@@ -183,8 +183,9 @@ function createModelUsageTracker(reasoningEffort: RunReasoningEffort) {
     },
     summary(): ModelUsageAudit {
       const sum = (key: keyof ModelTokenUsage) => {
-        if (modelCalls === 0 || responses.length !== modelCalls) return null;
-        let total = 0;
+        if (modelCalls === 0 || responses.length !== modelCalls - (baseline?.modelCalls ?? 0)) return null;
+        if (baseline && baseline.modelCalls > 0 && baseline.tokenUsage[key] === null) return null;
+        let total = baseline?.tokenUsage[key] ?? 0;
         for (const response of responses) {
           const value = response?.[key];
           if (value === null || value === undefined) return null;
@@ -209,7 +210,7 @@ function createModelUsageTracker(reasoningEffort: RunReasoningEffort) {
 
 const RUN_CANCELLATION_POLL_MS = 500;
 
-function watchRunCancellation(runId: string, userId: string, controller: AbortController) {
+function watchRunCancellation(runId: string, userId: string, startedAt: Date, controller: AbortController) {
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -218,9 +219,9 @@ function watchRunCancellation(runId: string, userId: string, controller: AbortCo
     try {
       const current = await db.workflowRun.findFirst({
         where: { id: runId, userId },
-        select: { status: true },
+        select: { status: true, startedAt: true },
       });
-      if (!current || current.status !== "RUNNING") {
+      if (!current || current.status !== "RUNNING" || (current.startedAt && current.startedAt.getTime() !== startedAt.getTime())) {
         controller.abort();
         return;
       }
@@ -281,23 +282,28 @@ export async function executePersistedWorkflow(
   const modelKey = assertModelKeyAvailable(options.modelKey);
 
   // 条件更新保证同一运行不会被两个请求同时执行。
-  const claimed = await db.workflowRun.updateMany({
-    where: { id: run.id, userId, status: "QUEUED" },
-    data: { status: "RUNNING", startedAt: new Date() },
+  const leaseStartedAt = new Date();
+  const claimed = await db.$transaction(async (tx) => {
+    const claimed = await tx.workflowRun.updateMany({ where: { id: run.id, userId, status: "QUEUED" }, data: { status: "RUNNING", startedAt: leaseStartedAt, finishedAt: null, error: null } });
+    if (claimed.count !== 1) return false;
+    await tx.auditLog.create({ data: { actorId: userId, action: "WORKFLOW_RUN_STARTED", resourceType: "workflow_run", resourceId: run.id,
+      metadata: { leaseStartedAt: leaseStartedAt.toISOString(), ...(options.modelKey ? { modelKey: options.modelKey } : {}), ...(options.credentialId ? { credentialId: options.credentialId } : {}), ...(options.reasoningEffort ? { reasoningEffort: options.reasoningEffort } : {}) } } });
+    return true;
   });
-  if (claimed.count !== 1) return null;
+  if (!claimed) return null;
 
   let definition: WorkflowDefinition;
   try {
     definition = definitionOf(run);
   } catch (error) {
-    return finalizeFailure(run, error instanceof Error ? error.message : "工作流定义已失效。");
+    return finalizeFailure({ ...run, startedAt: leaseStartedAt }, error instanceof Error ? error.message : "工作流定义已失效。");
   }
 
   const reasoningEffort = options.reasoningEffort && RUN_REASONING_EFFORTS.includes(options.reasoningEffort)
     ? options.reasoningEffort
     : "none";
-  const modelUsage = createModelUsageTracker(reasoningEffort);
+  const usageCheckpoint = await db.auditLog.findFirst({ where: { resourceType: "workflow_run", resourceId: run.id, action: "WORKFLOW_NODE_CHECKPOINTED" }, orderBy: { createdAt: "desc" }, select: { metadata: true } });
+  const modelUsage = createModelUsageTracker(reasoningEffort, parseModelUsageCheckpoint(usageCheckpoint?.metadata));
   const handlers =
     options.handlers ??
     createWorkflowHandlers({
@@ -311,15 +317,27 @@ export async function executePersistedWorkflow(
     });
   let result: WorkflowExecutionResult;
   const cancellationController = new AbortController();
-  const stopWatchingCancellation = watchRunCancellation(run.id, userId, cancellationController);
+  const stopWatchingCancellation = watchRunCancellation(run.id, userId, leaseStartedAt, cancellationController);
   try {
     result = await executeWorkflow(definition, run.input, {
       handlers,
-      maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
+      maxExecutionMs: Math.min(options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS, MAX_WORKFLOW_EXECUTION_MS),
       signal: cancellationController.signal,
+      checkpoints: run.nodeRuns.flatMap(node => node.status === "SUCCEEDED" ? [{ nodeId: node.nodeId, status: "succeeded" as const, attempts: node.attempts,
+        startedAt: node.startedAt?.getTime() ?? leaseStartedAt.getTime(), endedAt: node.finishedAt?.getTime() ?? leaseStartedAt.getTime(), output: node.output }] : []),
+      onNodeStarted: async (node, startedAt) => {
+        await persistNodeCheckpoint(run.id, userId, leaseStartedAt, node.id, { status: "RUNNING", startedAt: new Date(startedAt), finishedAt: null });
+      },
+      onNodeFinished: async (execution) => {
+        await persistNodeCheckpoint(run.id, userId, leaseStartedAt, execution.nodeId, {
+          status: execution.status === "succeeded" ? "SUCCEEDED" : "FAILED", attempts: execution.attempts,
+          output: execution.status === "succeeded" ? prismaJsonValue(execution.output) : Prisma.DbNull,
+          error: execution.error ?? null, startedAt: new Date(execution.startedAt), finishedAt: new Date(execution.endedAt),
+        }, modelUsage.summary());
+      },
     });
   } catch (error) {
-    return finalizeFailure(run, error instanceof Error ? error.message : "Workflow execution failed.", modelUsage.summary());
+    return finalizeFailure({ ...run, startedAt: leaseStartedAt }, error instanceof Error ? error.message : "Workflow execution failed.", modelUsage.summary());
   } finally {
     stopWatchingCancellation();
   }
@@ -328,7 +346,7 @@ export async function executePersistedWorkflow(
     result = { ...result, error: "PROJECT_EXECUTION_FAILED", executions: result.executions.map((execution) => execution.error ? { ...execution, error: "PROJECT_NODE_FAILED" } : execution) };
   }
   try {
-    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, result, options.onSucceeded, modelUsage.summary());
+    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, result, options.onSucceeded, modelUsage.summary(), leaseStartedAt);
     return finalized ? result : null;
   } catch (error) {
     if (result.status !== "succeeded" || !options.onSucceeded) throw error;
@@ -338,15 +356,73 @@ export async function executePersistedWorkflow(
       output: undefined,
       error: run.projectId ? "ARTIFACT_SAVE_FAILED" : `成果保存失败：${error instanceof Error ? error.message : "数据库写入错误"}`,
     };
-    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, failed, undefined, modelUsage.summary());
+    const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, failed, undefined, modelUsage.summary(), leaseStartedAt);
     return finalized ? failed : null;
   }
 }
 
+function parseModelUsageCheckpoint(metadata: Prisma.JsonValue | undefined): ModelUsageAudit | undefined {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return;
+  const raw = metadata.modelUsage;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw) || !Array.isArray(raw.models) || typeof raw.modelCalls !== "number" || !Number.isSafeInteger(raw.modelCalls) || raw.modelCalls < 0) return;
+  const tokens = raw.tokenUsage;
+  if (!tokens || typeof tokens !== "object" || Array.isArray(tokens)) return;
+  const count = (key: string) => typeof tokens[key] === "number" && Number.isSafeInteger(tokens[key]) && tokens[key] >= 0 ? tokens[key] as number : null;
+  return {
+    models: raw.models.filter((model): model is string => typeof model === "string"), modelCalls: raw.modelCalls,
+    tokenUsage: { inputTokens: count("inputTokens"), outputTokens: count("outputTokens"), totalTokens: count("totalTokens") },
+    reasoningEffort: RUN_REASONING_EFFORTS.includes(raw.reasoningEffort as RunReasoningEffort) ? raw.reasoningEffort as RunReasoningEffort : "none",
+    apicCharges: Array.isArray(raw.apicCharges) ? raw.apicCharges.flatMap(charge => {
+      if (!charge || typeof charge !== "object" || Array.isArray(charge) || typeof charge.requestId !== "string" || typeof charge.quota !== "number" || !Number.isFinite(charge.quota) || charge.quota < 0 || typeof charge.points !== "number" || !Number.isFinite(charge.points) || charge.points < 0) return [];
+      return [{ requestId: charge.requestId, quota: charge.quota, points: charge.points }];
+    }) : [],
+  };
+}
+
+async function persistNodeCheckpoint(
+  runId: string, userId: string, leaseStartedAt: Date, nodeId: string,
+  data: Prisma.WorkflowNodeRunUpdateManyMutationInput,
+  modelUsage?: ModelUsageAudit,
+) {
+  await db.$transaction(async (tx) => {
+    const lease = await tx.workflowRun.updateMany({ where: { id: runId, userId, status: "RUNNING", startedAt: leaseStartedAt }, data: { status: "RUNNING" } });
+    if (lease.count !== 1) throw new Error("WORKFLOW_LEASE_LOST");
+    const saved = await tx.workflowNodeRun.updateMany({ where: { runId, nodeId }, data });
+    if (saved.count !== 1) throw new Error("WORKFLOW_NODE_MISSING");
+    if (modelUsage) await tx.auditLog.create({ data: { actorId: userId, action: "WORKFLOW_NODE_CHECKPOINTED", resourceType: "workflow_run", resourceId: runId,
+      metadata: { nodeId, leaseStartedAt: leaseStartedAt.toISOString(), modelUsage } } });
+  });
+}
+
+/** A started model without a durable response is ambiguous and must never be called twice. */
+export async function recoverInterruptedWorkflowRun(runId: string, cutoff: Date) {
+  const run = await loadRunnableRunForRecovery(runId, cutoff);
+  if (!run || !run.startedAt) return false;
+  let definition: WorkflowDefinition;
+  try { definition = definitionOf(run); }
+  catch { return finalizeFailure({ ...run, startedAt: run.startedAt }, "WORKFLOW_DEFINITION_INVALID"); }
+  const started = await db.auditLog.findFirst({ where: { resourceType: "workflow_run", resourceId: run.id, action: "WORKFLOW_RUN_STARTED" }, orderBy: { createdAt: "desc" }, select: { metadata: true } });
+  const checkpointedLease = started?.metadata && typeof started.metadata === "object" && !Array.isArray(started.metadata) && started.metadata.leaseStartedAt === run.startedAt.toISOString();
+  const uncertain = !checkpointedLease || definition.nodes.some(node => node.type === "model" && run.nodeRuns.some(saved => saved.nodeId === node.id && saved.status !== "QUEUED" && saved.status !== "SUCCEEDED"));
+  // Recover deterministic nodes and durable responses; upstream calls with unknown outcomes terminate visibly.
+  if (uncertain) return finalizeFailure({ ...run, startedAt: run.startedAt }, "EXECUTION_INTERRUPTED", undefined, true);
+  return db.$transaction(async (tx) => {
+    const changed = await tx.workflowRun.updateMany({ where: { id: run.id, status: "RUNNING", startedAt: run.startedAt }, data: { status: "QUEUED", startedAt: null, finishedAt: null, error: null } });
+    if (changed.count !== 1) return false;
+    await tx.auditLog.create({ data: { actorId: run.userId, action: "WORKFLOW_RUN_RECOVERED", resourceType: "workflow_run", resourceId: run.id, metadata: { previousLease: run.startedAt!.toISOString(), preservedNodes: run.nodeRuns.filter(node => node.status === "SUCCEEDED").length } } });
+    return true;
+  });
+}
+
+function loadRunnableRunForRecovery(runId: string, cutoff: Date) {
+  return db.workflowRun.findFirst({ where: { id: runId, status: "RUNNING", startedAt: { lt: cutoff } }, include: { version: true, nodeRuns: true, workflow: { select: { title: true } } } });
+}
+
 async function finalizeFailure(
-  run: { id: string; userId: string; costPoints: number; projectId?: string | null; workflow: { title: string } },
+  run: { id: string; userId: string; costPoints: number; startedAt?: Date; projectId?: string | null; workflow: { title: string } },
   message: string,
   modelUsage?: ModelUsageAudit,
+  uncertainModelOutcome = false,
 ): Promise<WorkflowExecutionResult | null> {
   const result: WorkflowExecutionResult = {
     status: "failed",
@@ -354,7 +430,7 @@ async function finalizeFailure(
     executions: [],
     elapsedMs: 0,
   };
-  const finalized = await persistResult(run.id, run.userId, run.costPoints, run.workflow.title, result, undefined, modelUsage);
+  const finalized = await persistResult(run.id, run.userId, run.costPoints, run.workflow.title, result, undefined, modelUsage, run.startedAt, uncertainModelOutcome);
   return finalized ? result : null;
 }
 
@@ -366,11 +442,13 @@ async function persistResult(
   result: WorkflowExecutionResult,
   onSucceeded?: (tx: DbTransaction, result: WorkflowExecutionResult) => Promise<void>,
   modelUsage: ModelUsageAudit = { models: [], modelCalls: 0, tokenUsage: { inputTokens: null, outputTokens: null, totalTokens: null }, reasoningEffort: "none" },
+  leaseStartedAt?: Date,
+  uncertainModelOutcome = false,
 ): Promise<boolean> {
   const succeeded = result.status === "succeeded";
   return db.$transaction(async (tx) => {
     const transitioned = await tx.workflowRun.updateMany({
-      where: { id: runId, userId, status: "RUNNING" },
+      where: { id: runId, userId, status: "RUNNING", ...(leaseStartedAt ? { startedAt: leaseStartedAt } : {}) },
       data: {
         status: succeeded ? "SUCCEEDED" : "FAILED",
         output: succeeded ? prismaJsonValue(result.output) : Prisma.DbNull,
@@ -393,11 +471,15 @@ async function persistResult(
         },
       });
     }
+    if (!succeeded) {
+      await tx.workflowNodeRun.updateMany({ where: { runId, status: "RUNNING" }, data: { status: "FAILED", error: uncertainModelOutcome ? "EXECUTION_INTERRUPTED" : result.error ?? "WORKFLOW_EXECUTION_FAILED", finishedAt: new Date() } });
+      await tx.workflowNodeRun.updateMany({ where: { runId, status: "QUEUED" }, data: { status: "CANCELLED", error: "DEPENDENCY_NOT_COMPLETED", finishedAt: new Date() } });
+    }
     if (succeeded && onSucceeded) await onSucceeded(tx, result);
     let settledCostPoints = costPoints;
     if (unifiedModelBilling()) {
       const billing = await readMeteredRunCost(tx, userId, { type: "workflow_run", id: runId });
-      settledCostPoints = billing.settledPoints + billing.pendingPoints;
+      settledCostPoints = normalizeQuotaAmount(billing.settledPoints + billing.pendingPoints);
       // Release only a legacy outer reservation. Model-request holds have their own state machine.
       if (costPoints > 0) await refundQuota(tx, { userId, costPoints, ref: { type: "workflow_run", id: runId }, note: "Legacy workflow reservation transferred to unified model billing" });
       await tx.workflowRun.update({ where: { id: runId }, data: { costPoints: settledCostPoints } });
@@ -411,7 +493,7 @@ async function persistResult(
       await tx.workflowRun.update({ where: { id: runId }, data: { costPoints: settledCostPoints } });
     }
 
-    if (!succeeded && costPoints > 0 && !unifiedModelBilling()) {
+    if (!succeeded && costPoints > 0 && !unifiedModelBilling() && !(uncertainModelOutcome && process.env.ANS_APIC_BILLING_ENABLED === "1")) {
       await refundQuota(tx, {
         userId,
         costPoints,
@@ -434,6 +516,7 @@ async function persistResult(
           modelCalls: modelUsage.modelCalls,
           tokenUsage: modelUsage.tokenUsage,
           reasoningEffort: modelUsage.reasoningEffort,
+          ...(uncertainModelOutcome ? { code: "EXECUTION_INTERRUPTED", billingOutcome: "PENDING_RECONCILIATION" } : {}),
         },
       },
     });
@@ -452,11 +535,13 @@ export async function cancelWorkflowRun(runId: string, userId: string) {
       select: { id: true, status: true, costPoints: true, workflow: { select: { title: true } } },
     });
     if (!run) return null;
+    const billing = unifiedModelBilling() ? await readMeteredRunCost(tx, userId, { type: "workflow_run", id: runId }) : null;
     const cancelled = await tx.workflowRun.updateMany({
       where: { id: runId, userId, status: { in: ["QUEUED", "RUNNING"] } },
-      data: { status: "CANCELLED", finishedAt: new Date(), error: "用户取消" },
+      data: { status: "CANCELLED", finishedAt: new Date(), error: "用户取消", ...(billing ? { costPoints: normalizeQuotaAmount(billing.settledPoints + billing.pendingPoints) } : {}) },
     });
     if (cancelled.count !== 1) return null;
+    await tx.workflowNodeRun.updateMany({ where: { runId, status: { in: ["QUEUED", "RUNNING"] } }, data: { status: "CANCELLED", error: "USER_CANCELLED", finishedAt: new Date() } });
     if (run.costPoints > 0) {
       await refundQuota(tx, {
         userId,

@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { SourceContent } from "../source-content";
 import { LessonQuiz } from "../lesson-quiz";
 import { hasNativeDemo, TermDemo } from "../term-demo";
-import type { SourcePage, Lesson } from "../source-data";
+import type { SourcePage, Lesson } from "@/contracts/vibehub-content";
 import type { OfficialEntry } from "../official/types";
 type Payload = {content:SourcePage; lesson:Lesson | null; detail:OfficialEntry | null};
 export function EmbeddedCourseTerm({ termId, locale, onReady, className }: {termId:string; locale:"en" | "zh"; onReady:(id:string)=>void; className?:string}) {

@@ -7,10 +7,11 @@ import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { agriPrepareStageSchema, agriStageDraftSchema, agriStageSubmissionCommandSchema,
   agriStageSubmissionContentSchema, agriSubmissionListQuerySchema, agriWorksExportQuerySchema, agriSubmissionRequirementsSchema, agriSubmissionVersionsQuerySchema } from "@/contracts/agri-submissions";
 import { agriSubmissionWindowSchema } from "@/contracts/agrihackathon";
-import { getAgriSubmissionLifecycleDecision, getAgriSubmissionMaterialIssues } from "@/domain/competitions/agri-submissions";
+import { getAgriSubmissionLifecycleDecision, getAgriSubmissionMaterialIssues, getAgriCorrectionDecision } from "@/domain/competitions/agri-submissions";
 import { agriCsv } from "@/domain/competitions/agri-works-export";
 import { getAgriWindowState } from "@/domain/competitions/agrihackathon";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent, agriDatabaseClock, type AgriWorkspaceContext } from "./workspace";
+import { finalEligibility, correctionPermit, activeCorrectionPermits, type PermitRow } from "./decisions";
 
 type Tx = DbTransaction;
 type StageName = "PRELIMINARY" | "FINAL";
@@ -34,14 +35,14 @@ async function member(tx: Tx, teamId: string, actorId: string, write: boolean) {
   if (!row || row.status !== "ACTIVE") return fail("AGRI_TEAM_PERMISSION_REQUIRED", 403);
   if (write && !["OWNER", "ADMIN"].includes(row.role)) return fail("AGRI_TEAM_MANAGER_REQUIRED", 403);
 }
-async function audit(tx: Tx, ctx: AgriWorkspaceContext, action: string, id: string, revision: number) {
+async function audit(tx: Tx, ctx: AgriWorkspaceContext, action: string, id: string, revision: number, finalDecisionId?: string) {
   await tx.auditLog.create({ data: { actorId: ctx.actorId, action: "AGRI_" + action.toUpperCase(),
-    resourceType: "agri_entry_stage", resourceId: id, metadata: { competitionId: ctx.workspace.competitionId, revision } } });
+    resourceType: "agri_entry_stage", resourceId: id, metadata: { competitionId: ctx.workspace.competitionId, revision, ...(finalDecisionId ? { finalDecisionId } : {}) } } });
 }
-async function event(tx: Tx, ctx: AgriWorkspaceContext, stage: Stage, action: string, submissionId: string | null, at: Date) {
+async function event(tx: Tx, ctx: AgriWorkspaceContext, stage: Stage, action: string, submissionId: string | null, at: Date, finalDecisionId?: string) {
   await tx.$executeRaw`INSERT INTO agri_submission_events (id,"competitionId","entryStageId",revision,action,"submissionId","actorId","createdAt")
     VALUES (${randomUUID()},${stage.competitionId},${stage.id},${stage.revision},${action},${submissionId},${ctx.actorId},${at})`;
-  await audit(tx, ctx, action, stage.id, stage.revision);
+  await audit(tx, ctx, action, stage.id, stage.revision, finalDecisionId);
 }
 /** Locks are always workspace -> actor/grants -> entry -> stage -> membership -> project/artifact/version. */
 async function lockTarget(tx: Tx, ctx: AgriWorkspaceContext, id: string, write: boolean) {
@@ -135,7 +136,6 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
   return db.$transaction(async tx => {
     const ctx = await lockAgriWorkspace(tx, actorId);
     const target = await lockTarget(tx, ctx, command.entryStageId, true), stage = target.stage;
-    if (command.action === "correctSubmission") return fail("AGRI_CORRECTION_PERMIT_REQUIRED");
     const [receipt] = await tx.$queryRaw<Receipt[]>`SELECT "entryStageId","requestHash","submissionId","appliedRevision" FROM agri_submission_receipts
       WHERE "competitionId"=${ctx.workspace.competitionId} AND "actorId"=${actorId} AND operation=${command.action} AND "idempotencyKey"=${command.idempotencyKey}`;
     if (receipt) {
@@ -148,19 +148,37 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
     await validateVersions(tx, ctx, target.entry, content);
     const priorStage = { ...stage };
     const now = await agriDatabaseClock(tx);
-    if (await priorClosed(tx, stage, now)) return fail("AGRI_FROZEN");
+    if (command.action !== "correctSubmission" && await priorClosed(tx, stage, now)) return fail("AGRI_FROZEN");
+    const eligibility = await finalEligibility(tx, stage.competitionId, target.entry.id);
+    let permit: PermitRow | undefined;
+    let previousContent: unknown;
+    if (command.action === "correctSubmission") {
+      permit = await correctionPermit(tx, stage.competitionId, command.correctionPermitId);
+      if (!permit || permit.previousSubmissionId !== stage.currentSubmissionId || command.previousSubmissionId !== stage.currentSubmissionId) return fail("AGRI_PERMIT_MISMATCH");
+      const [previous] = await tx.$queryRaw<Submission[]>`SELECT * FROM agri_stage_submissions WHERE id=${command.previousSubmissionId} AND "entryStageId"=${stage.id} AND "competitionId"=${stage.competitionId}`;
+      if (!previous) return fail("AGRI_SUBMISSION_NOT_FOUND", 404);
+      previousContent = { projectId: previous.projectId, artifactVersionId: previous.artifactVersionId, repository: previous.repository, demoUrl: previous.demoUrl, summary: previous.summary, materials: previous.materials };
+      if (command.expectedRuleVersionId !== previous.ruleVersionId || permit.ruleVersionId !== previous.ruleVersionId) return fail("AGRI_RULE_VERSION_CONFLICT");
+    }
     let adopted: Awaited<ReturnType<typeof rule>> | null = null;
     const decision = (at: Date) => {
+      if (command.action === "correctSubmission") {
+        if (!permit) return fail("AGRI_PERMIT_NOT_FOUND", 404);
+        const result = getAgriCorrectionDecision({ id: permit.id, competitionId: permit.competitionId, entryStageId: permit.entryStageId, previousSubmissionId: permit.previousSubmissionId, reason: permit.reason, authorizedById: permit.authorizedById, usedBySubmissionId: permit.usedBySubmissionId, authorizedAt: permit.authorizedAt.toISOString(), expiresAt: permit.expiresAt.toISOString(), revokedAt: permit.revokedAt?.toISOString() ?? null,
+          allowedFields: permit.allowedFields }, { competitionId: stage.competitionId, entryStageId: stage.id, previousSubmissionId: command.previousSubmissionId, permitId: command.correctionPermitId }, previousContent, command.content, at);
+        if (!result.allowed) return fail("AGRI_" + result.reason);
+        return;
+      }
       if (!adopted || command.action !== "submit") return;
       const result = getAgriSubmissionLifecycleDecision({ competitionId: stage.competitionId, workspaceEnabled: ctx.workspace.enabled,
         entry: { id: stage.id, competitionId: stage.competitionId, stage: stage.stage, revision: command.expectedRevision, frozenSubmissionId: stage.frozenSubmissionId },
         publishedRuleVersionId: ctx.workspace.publishedRuleVersionId, rule: { id: adopted.id, competitionId: stage.competitionId, window: adopted.window },
-        finalEligibility: { state: "UNKNOWN" } }, command, at);
+        finalEligibility: eligibility }, command, at);
       if (result !== "ALLOW") return fail("AGRI_" + result);
     };
     let submissionId: string | null = null;
-    if (command.action === "submit") {
-      adopted = await rule(tx, stage.competitionId, ctx.workspace.publishedRuleVersionId, stage.stage);
+    if (command.action !== "saveDraft") {
+      adopted = await rule(tx, stage.competitionId, command.action === "correctSubmission" ? permit!.ruleVersionId : ctx.workspace.publishedRuleVersionId, stage.stage);
       decision(now);
       const issues = getAgriSubmissionMaterialIssues(adopted.requirements, command.content);
       if (issues.length) return fail("AGRI_" + issues[0].code, 422);
@@ -173,17 +191,22 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
         await tx.$executeRaw`INSERT INTO agri_submission_material_refs (id,"competitionId","entryStageId","submissionId",key,"artifactVersionId")
           VALUES (${randomUUID()},${stage.competitionId},${stage.id},${submissionId},${material.key},${material.artifactVersionId})`;
       }
+      if (command.action === "correctSubmission") {
+        await tx.$executeRaw`INSERT INTO agri_submission_corrections("submissionId","competitionId","entryStageId","previousSubmissionId","permitId") VALUES(${submissionId},${stage.competitionId},${stage.id},${command.previousSubmissionId},${command.correctionPermitId})`;
+        await tx.$executeRaw`INSERT INTO agri_correction_permit_events(id,"competitionId","entryStageId","permitId",action,"submissionId","actorId",reason,"createdAt") VALUES(${randomUUID()},${stage.competitionId},${stage.id},${command.correctionPermitId},'USE',${submissionId},${actorId},${permit!.reason},${now})`;
+        stage.frozenSubmissionId ??= stage.currentSubmissionId;
+      }
       stage.currentSubmissionId = submissionId;
     }
     stage.revision++;
     await tx.$executeRaw`UPDATE agri_entry_stages SET draft=${command.action === "saveDraft" ? JSON.stringify(content) : null}::jsonb,
-      "currentSubmissionId"=${stage.currentSubmissionId},revision=${stage.revision},"updatedAt"=${now} WHERE id=${stage.id}`;
-    await event(tx, ctx, stage, command.action, submissionId, now);
+      "currentSubmissionId"=${stage.currentSubmissionId},"frozenSubmissionId"=${stage.frozenSubmissionId},revision=${stage.revision},"updatedAt"=${now} WHERE id=${stage.id}`;
+    await event(tx, ctx, stage, command.action, submissionId, now, command.action === "submit" && stage.stage === "FINAL" && eligibility.state === "ELIGIBLE" ? eligibility.sourceId : undefined);
     await tx.$executeRaw`INSERT INTO agri_submission_receipts (id,"competitionId","entryStageId","actorId",operation,"idempotencyKey","requestHash","submissionId","appliedRevision","createdAt")
       VALUES (${randomUUID()},${stage.competitionId},${stage.id},${actorId},${command.action},${command.idempotencyKey},${hash(command)},${submissionId},${stage.revision},${now})`;
     // Time can advance while writing, even with account and row locks held.
     const end = await agriDatabaseClock(tx); decision(end);
-    if (await priorClosed(tx, priorStage, end)) return fail("AGRI_FROZEN");
+    if (command.action !== "correctSubmission" && await priorClosed(tx, priorStage, end)) return fail("AGRI_FROZEN");
     if (command.action === "saveDraft" && await priorClosed(tx, stage, end)) return fail("AGRI_FROZEN");
     return { entryStageId: stage.id, submissionId, appliedRevision: stage.revision, duplicate: false };
   }, { timeout: 15000 });
@@ -202,15 +225,20 @@ export async function readAgriStage(actorId: string, rawId: string, rawQuery: un
     const rows = await tx.$queryRaw<Submission[]>`SELECT * FROM agri_stage_submissions WHERE "entryStageId"=${id} AND "competitionId"=${stage.competitionId}
       AND (${query.beforeSequence ?? null}::integer IS NULL OR sequence < ${query.beforeSequence ?? null}::integer) ORDER BY sequence DESC LIMIT 31`;
     const [current] = stage.currentSubmissionId ? await tx.$queryRaw<Submission[]>`SELECT * FROM agri_stage_submissions WHERE id=${stage.currentSubmissionId} AND "entryStageId"=${id}` : [];
+    const permits = target.teamMember ? await activeCorrectionPermits(tx, stage.competitionId, stage.id, stage.currentSubmissionId, await agriDatabaseClock(tx)) : [];
+    const correctionRule = permits[0] ? await rule(tx, stage.competitionId, permits[0].ruleVersionId, stage.stage) : null;
+    const eligibility = await finalEligibility(tx, stage.competitionId, target.entry.id);
     const publishedRule = ctx.workspace.publishedRuleVersionId ? await rule(tx, stage.competitionId, ctx.workspace.publishedRuleVersionId, stage.stage) : null;
+    const corrections = await tx.$queryRaw<Array<{ submissionId: string; previousSubmissionId: string; permitId: string; reason: string }>>`SELECT c."submissionId",c."previousSubmissionId",c."permitId",p.reason FROM agri_submission_corrections c JOIN agri_correction_permits p ON p.id=c."permitId" WHERE c."entryStageId"=${stage.id} AND c."competitionId"=${stage.competitionId} AND c."submissionId"=ANY(${[...new Set([...rows.map(row => row.id), ...(current ? [current.id] : [])])]}::text[])`;
+    const project = (row: Submission) => { const correction = corrections.find(item => item.submissionId === row.id); return { ...projectSubmission(row, target.privateMaterials), ...(correction ? { correction: { previousSubmissionId: correction.previousSubmissionId, permitId: correction.permitId, reason: correction.reason } } : {}) }; };
     const serverNow = await agriDatabaseClock(tx);
     await assertAgriAuthorityCurrent(tx, ...target.authorities);
     return { competitionId: stage.competitionId, id, teamCompetitionId: stage.teamCompetitionId, stage: stage.stage, revision: stage.revision,
       frozenSubmissionId: stage.frozenSubmissionId, workspaceEnabled: ctx.workspace.enabled, hasPrivateMaterials: target.privateMaterials,
       draft: target.teamMember && stage.draft !== null ? agriStageDraftSchema.parse(stage.draft) : null,
-      current: current ? projectSubmission(current, target.privateMaterials) : null,
-      history: rows.slice(0, 30).map(row => projectSubmission(row, target.privateMaterials)),
-      nextBeforeSequence: rows.length > 30 ? rows[29].sequence : null, publishedRule,
+      current: current ? project(current) : null,
+      history: rows.slice(0, 30).map(project),
+      nextBeforeSequence: rows.length > 30 ? rows[29].sequence : null, publishedRule, correctionPermits: permits, correctionRule, finalEligibility: eligibility,
       windowState: publishedRule ? getAgriWindowState(publishedRule.window, serverNow) : "RULES_PENDING", serverNow: serverNow.toISOString() };
   }, { timeout: 15000 });
 }

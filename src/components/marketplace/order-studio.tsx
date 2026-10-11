@@ -10,7 +10,7 @@ import remarkGfm from "remark-gfm";
 import type { MarketOrderView } from "@/contracts/marketplace-view";
 import { availableMarketActions, marketPrice } from "@/domain/marketplace/presentation";
 import { PointsPayment } from "./points-payment";
-import { marketRequest } from "./request";
+import { MarketRequestRejection, marketRequest } from "./request";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 type PendingOrderCommand = { url: string; form: HTMLFormElement } & (
@@ -65,7 +65,14 @@ function OrderStudioSession({ order, userId }: { order: MarketOrderView; userId:
     } catch (caught) {
       // A missing response can follow a committed write. Retain the exact
       // command and forbid another write until this one is acknowledged.
-      if (alive.current && pendingRef.current === command) showError(caught);
+      if (alive.current && pendingRef.current === command) {
+        showError(caught);
+        if (caught instanceof MarketRequestRejection) {
+          // A validated 4xx rejection confirms that this command did not commit.
+          // Preserve the form draft while refreshing stale order state.
+          pendingRef.current = null; setPending(null); router.refresh();
+        }
+      }
     } finally {
       inFlight.current = false;
       if (alive.current) setBusy(false);

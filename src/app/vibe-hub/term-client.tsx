@@ -9,7 +9,7 @@ import { CopyTermButton } from "./copy-term-button";
 import { FavoriteButton } from "./favorite-button";
 import { LessonQuiz } from "./lesson-quiz";
 import { useVibeLanguage } from "./use-vibe-language";
-import type { SourcePage, Lesson } from "./source-data";
+import type { SourcePage, Lesson } from "@/contracts/vibehub-content";
 type Adjacent = { slug: string; name: string; zhName: string };
 
 export default function VibeHubTermClient({ slug, content, lesson, detail, previous, next }: { slug: string; content: SourcePage; detail: OfficialEntry | null; lesson: Lesson | null; previous: Adjacent; next: Adjacent }) {

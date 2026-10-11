@@ -9,9 +9,8 @@ import {
 } from "@/contracts/resume-website";
 import { buildResumeWebsitePrompt, parseResumeWebsiteCopy, renderResumeWebsite, resumeWebsiteMarkdown } from "@/domain/projects/resume-website";
 import { createWorkflowRun, ensureOfficialWorkflow } from "@/server/workflows/service";
-import { cancelWorkflowRun, executePersistedWorkflow } from "@/server/workflows/runner";
+import { cancelWorkflowRun, executePersistedWorkflow, recoverInterruptedWorkflowRun } from "@/server/workflows/runner";
 import type { WorkflowNodeExecutor } from "@/domain/workflows/executor";
-import { refundQuota } from "@/server/quota/service";
 
 export class ResumeWebsiteError extends Error {
   constructor(public readonly code: string, public readonly status: number) { super(code); this.name = "ResumeWebsiteError"; }
@@ -171,15 +170,7 @@ export async function downloadResumeWebsite(projectId: string, userId: string, v
 
 /** Interrupted work fails visibly and refunds exactly once; it never silently repeats a paid upstream call. */
 export async function expireResumeWebsiteRun(runId: string, cutoff: Date) {
-  return db.$transaction(async (tx) => {
-    const run = await tx.workflowRun.findFirst({ where: { id: runId, status: "RUNNING", startedAt: { lt: cutoff }, workflow: { officialId: recipeId } }, select: { id: true, userId: true, startedAt: true, costPoints: true } });
-    if (!run) return false;
-    const changed = await tx.workflowRun.updateMany({ where: { id: run.id, status: "RUNNING", startedAt: run.startedAt }, data: { status: "FAILED", error: "EXECUTION_INTERRUPTED", finishedAt: new Date() } });
-    if (changed.count !== 1) return false;
-    await refundQuota(tx, { userId: run.userId, costPoints: run.costPoints, ref: { type: "workflow_run", id: run.id }, note: "Interrupted resume website run refund" });
-    await tx.auditLog.create({ data: { actorId: run.userId, action: "WORKFLOW_RUN_FAILED", resourceType: "workflow_run", resourceId: run.id, metadata: { code: "EXECUTION_INTERRUPTED", costPoints: run.costPoints, recipeId } } });
-    return true;
-  });
+  return recoverInterruptedWorkflowRun(runId, cutoff);
 }
 
 

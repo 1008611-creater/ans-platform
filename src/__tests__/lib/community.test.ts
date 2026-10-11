@@ -6,57 +6,82 @@ import { checkInBonus, XP_RULES } from "@/lib/level";
 const mock = vi.hoisted(() => ({ transaction: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { $transaction: mock.transaction } }));
 
-type Member = Pick<User, "id" | "xp" | "nickname" | "emailVerified" | "flagged" | "deletedAt" | "lastCheckInAt" | "checkInStreak" | "verified">;
+type Member = Pick<User, "id" | "xp" | "nickname" | "emailVerified" | "flagged" | "deletedAt" | "lastCheckInAt" | "checkInStreak" | "verified" | "communityPoints" | "avatarFrameKey" | "chatBubbleKey">;
 let users: Member[];
 let checkIns: CheckIn[];
 let ledger: XpLedger[];
 let failLedger: boolean;
+let failCheckIn: boolean;
+let failXp: boolean;
+let growthEvents: Array<{ userId: string; type: string; sourceId: string; xp: number; points: number }>;
 let tx: ReturnType<typeof transactionClient>;
 
 function eligible(user: Member) {
   return !user.deletedAt && !user.flagged && user.emailVerified !== null;
 }
 
+function publicCheckIn(record: CheckIn) {
+  const { id, day, streak, xpAwarded, createdAt } = record;
+  return { id, day, streak, xpAwarded, createdAt };
+}
+
 function transactionClient() {
   let locked = false;
+  // Model both SQL statements and their atomic effects without connecting to a database.
   return {
     $queryRaw: vi.fn(async (sql: TemplateStringsArray, ...values: unknown[]) => {
-      expect(sql.join("?")).toMatch(/SELECT[\s\S]*FROM "users"[\s\S]*FOR UPDATE/);
-      expect(values).toEqual(["self"]);
-      locked = true;
-      return users.filter((u) => u.id === values[0]).map((u) => ({ id: u.id }));
+      const statement = sql.join("?");
+      if (statement.includes("FOR UPDATE")) {
+        expect(statement).toMatch(/SELECT[\s\S]*FROM users[\s\S]*FOR UPDATE/);
+        expect(statement).toContain('"deletedAt" IS NULL AND flagged = false AND "emailVerified" IS NOT NULL');
+        expect(values).toEqual(["self"]);
+        locked = true;
+        return users.filter((u) => u.id === values[0] && eligible(u)).map((u) => ({ ...u }));
+      }
+      expect(locked).toBe(true);
+      expect(statement).toMatch(/WITH inserted AS[\s\S]*ON CONFLICT \("userId", day\) DO NOTHING/);
+      expect(statement).toContain('ON CONFLICT ("userId", type, "sourceType", "sourceId") DO NOTHING');
+      expect(statement).toContain('WHERE id = ? AND EXISTS (SELECT 1 FROM inserted)');
+      expect(statement).toContain("'CHECK_IN', 'check_in'");
+      expect(statement).toContain("'CHECK_IN'::\"XpReason\"");
+      expect(statement).toContain('NOT EXISTS (SELECT 1 FROM inserted)');
+      const [id, userId, day, streak, xpAwarded, createdAt] = values as [string, string, string, number, number, Date];
+      expect([values[6], values[13], values[15], values[19], values[23]]).toEqual(Array(5).fill(userId));
+      const prior = checkIns.find((record) => record.userId === userId && record.day === day);
+      if (prior) {
+        return [{ ...publicCheckIn(prior), alreadyCheckedIn: true }];
+      }
+      if (failCheckIn) throw new Error("签到写入失败");
+      const record = { id, userId, day, streak, xpAwarded, createdAt };
+      checkIns.push(record);
+      const user = users.find((u) => u.id === userId)!;
+      const rewards = JSON.parse(values[8] as string) as Array<{ sourceId: string; points: number }>;
+      for (const reward of rewards) {
+        if (!growthEvents.some((event) => event.userId === userId && event.type === "LEVEL_REWARD" && event.sourceId === reward.sourceId)) {
+          growthEvents.push({ userId, type: "LEVEL_REWARD", sourceId: reward.sourceId, xp: 0, points: reward.points });
+          user.communityPoints += reward.points;
+        }
+      }
+      if (failXp) throw new Error("XP更新失败");
+      user.xp += xpAwarded;
+      user.checkInStreak = streak;
+      user.lastCheckInAt = createdAt;
+      growthEvents.push({ userId, type: "CHECK_IN", sourceId: id, xp: xpAwarded, points: 0 });
+      if (failLedger) throw new Error("流水写入失败");
+      ledger.push({ id: values[18] as string, userId, amount: xpAwarded, reason: "CHECK_IN", refType: "checkIn", refId: id, note: values[21] as string, createdAt });
+      return [{ ...publicCheckIn(record), alreadyCheckedIn: false }];
     }),
     user: {
       findFirst: vi.fn(async ({ where }: { where: { id: string } }) => users.find((u) => u.id === where.id && eligible(u)) ?? null),
       findMany: vi.fn(async ({ take }: { take: number }) => users.filter(eligible).sort((a, b) => b.xp - a.xp || a.id.localeCompare(b.id)).slice(0, take)),
       count: vi.fn(async ({ where }: { where: { xp: { gt: number } } }) => users.filter((u) => eligible(u) && u.xp > where.xp.gt).length),
-      update: vi.fn(async ({ where, data }: { where: { id: string }; data: { xp: { increment: number }; checkInStreak: number; lastCheckInAt: Date } }) => {
-        expect(locked).toBe(true);
-        const user = users.find((u) => u.id === where.id)!;
-        user.xp += data.xp.increment;
-        user.checkInStreak = data.checkInStreak;
-        user.lastCheckInAt = data.lastCheckInAt;
-        return user;
-      }),
+
     },
     checkIn: {
       findUnique: vi.fn(async ({ where }: { where: { userId_day: { userId: string; day: string } } }) => checkIns.find((c) => c.userId === where.userId_day.userId && c.day === where.userId_day.day) ?? null),
-      create: vi.fn(async ({ data }: { data: Omit<CheckIn, "id" | "createdAt"> & { createdAt?: Date } }) => {
-        expect(locked).toBe(true);
-        if (checkIns.some((c) => c.userId === data.userId && c.day === data.day)) throw Object.assign(new Error("唯一约束冲突"), { code: "P2002" });
-        const record = { id: `check-${checkIns.length}`, createdAt: new Date(), ...data };
-        checkIns.push(record);
-        return record;
-      }),
+
     },
     xpLedger: {
-      create: vi.fn(async ({ data }: { data: Pick<XpLedger, "userId" | "amount" | "reason"> & Partial<XpLedger> }) => {
-        expect(locked).toBe(true);
-        if (failLedger) throw new Error("流水写入失败");
-        const record = { id: `ledger-${ledger.length}`, createdAt: new Date(), note: null, refId: null, refType: null, ...data };
-        ledger.push(record);
-        return record;
-      }),
       findMany: vi.fn(async ({ where, take }: { where: { userId: string }; take: number }) => ledger.filter((l) => l.userId === where.userId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id)).slice(0, take).map(({ id, amount, reason, note, createdAt }) => ({ id, amount, reason, note, createdAt }))),
     },
   };
@@ -65,17 +90,20 @@ function transactionClient() {
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-09-07T16:00:00Z"));
-  users = [{ id: "self", xp: 0, nickname: null, emailVerified: new Date(), flagged: false, deletedAt: null, lastCheckInAt: null, checkInStreak: 0, verified: false }];
+  users = [{ id: "self", xp: 0, nickname: null, emailVerified: new Date(), flagged: false, deletedAt: null, lastCheckInAt: null, checkInStreak: 0, verified: false, communityPoints: 0, avatarFrameKey: "default", chatBubbleKey: "default" }];
   checkIns = [];
   ledger = [];
   failLedger = false;
+  failCheckIn = false;
+  failXp = false;
+  growthEvents = [];
   tx = transactionClient();
   let queue = Promise.resolve();
   mock.transaction.mockReset().mockImplementation((work: (client: typeof tx) => Promise<unknown>) => {
     const result = queue.then(async () => {
-      const snapshot = structuredClone({ users, checkIns, ledger });
+      const snapshot = structuredClone({ users, checkIns, ledger, growthEvents });
       try { return await work(tx); } catch (error) {
-        users = snapshot.users; checkIns = snapshot.checkIns; ledger = snapshot.ledger;
+        users = snapshot.users; checkIns = snapshot.checkIns; ledger = snapshot.ledger; growthEvents = snapshot.growthEvents;
         throw error;
       }
     });
@@ -95,7 +123,7 @@ describe("社区上海日期与事务签到", () => {
     ["2028-02-29T15:59:59Z", "2028-02-29"],
   ])("%s 按上海日期归属 %s", (instant, day) => expect(getCommunityDay(new Date(instant))).toBe(day));
 
-  it("零级、无认证徽章但邮箱已验证的用户可签到，三个写入同事务", async () => {
+  it("零级、无认证徽章但邮箱已验证的用户可签到，所有写入同事务", async () => {
     const result = await checkIn("self");
     expect(result.alreadyCheckedIn).toBe(false);
     expect(result.checkIn).toMatchObject({ day: "2026-09-08", streak: 1, xpAwarded: XP_RULES.CHECK_IN.base });
@@ -103,11 +131,11 @@ describe("社区上海日期与事务签到", () => {
     expect(ledger).toHaveLength(1);
     expect(ledger[0]).toMatchObject({ userId: "self", reason: "CHECK_IN", amount: XP_RULES.CHECK_IN.base, refId: checkIns[0].id });
     expect(mock.transaction).toHaveBeenCalledTimes(1);
-    expect(tx.$queryRaw).toHaveBeenCalledTimes(1);
-    expect(tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(tx.user.findFirst.mock.invocationCallOrder[0]);
-    expect(tx.user.findFirst.mock.invocationCallOrder[0]).toBeLessThan(tx.checkIn.findUnique.mock.invocationCallOrder[0]);
-    expect(mock.transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "ReadCommitted" });
-    expect(tx.user.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "self", ...activeWhere } }));
+    expect(tx.$queryRaw).toHaveBeenCalledTimes(2);
+    expect(tx.$queryRaw.mock.calls[0][0].join("?")).toContain("FOR UPDATE");
+    expect(tx.$queryRaw.mock.calls[1][0].join("?")).toContain("WITH inserted AS");
+    expect(mock.transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "ReadCommitted", timeout: 20000, maxWait: 10000 });
+    expect(growthEvents).toEqual([{ userId: "self", type: "CHECK_IN", sourceId: checkIns[0].id, xp: XP_RULES.CHECK_IN.base, points: 0 }]);
   });
 
   it("重复签到返回已有记录，不再修改XP、streak或流水", async () => {
@@ -117,7 +145,30 @@ describe("社区上海日期与事务签到", () => {
     expect(second.checkIn).toEqual(first.checkIn);
     expect(checkIns).toHaveLength(1);
     expect(ledger).toHaveLength(1);
-    expect(tx.user.update).toHaveBeenCalledTimes(1);
+    expect(users[0].xp).toBe(XP_RULES.CHECK_IN.base);
+    expect(growthEvents.filter((event) => event.type === "CHECK_IN")).toHaveLength(1);
+  });
+
+  it("达到等级奖励只发一次，重复签到和次日签到不能重发", async () => {
+    users[0].xp = 98;
+    await checkIn("self");
+    expect(users[0].communityPoints).toBe(20);
+    expect(growthEvents.filter((event) => event.type === "LEVEL_REWARD")).toHaveLength(1);
+    await checkIn("self");
+    vi.setSystemTime(new Date("2026-09-08T16:00:00Z"));
+    await checkIn("self");
+    expect(users[0].communityPoints).toBe(20);
+    expect(growthEvents.filter((event) => event.type === "LEVEL_REWARD")).toHaveLength(1);
+    expect(growthEvents.filter((event) => event.type === "CHECK_IN")).toHaveLength(2);
+  });
+
+  it("等级积分、成长记录与签到流水一起回滚", async () => {
+    users[0].xp = 98;
+    failLedger = true;
+    await expect(checkIn("self")).rejects.toThrow("流水写入失败");
+    expect(users[0]).toMatchObject({ xp: 98, communityPoints: 0, checkInStreak: 0, lastCheckInAt: null });
+    expect(growthEvents).toHaveLength(0);
+    expect(checkIns).toHaveLength(0);
   });
 
   it("20个并发签到请求只计分一次（事务串行模拟）", async () => {
@@ -168,20 +219,22 @@ describe("社区上海日期与事务签到", () => {
     expect((await checkIn("self")).checkIn).toMatchObject({ day: "2027-01-01", streak: 7, xpAwarded: 10 });
   });
 
-  it("CheckIn唯一约束失败不能更新XP或写入流水", async () => {
-    tx.checkIn.create.mockRejectedValueOnce(Object.assign(new Error("唯一约束冲突"), { code: "P2002" }));
-    await expect(checkIn("self")).rejects.toMatchObject({ code: "P2002" });
+  it("签到写入失败不能更新XP或写入流水", async () => {
+    failCheckIn = true;
+    await expect(checkIn("self")).rejects.toThrow("签到写入失败");
     expect(users[0].xp).toBe(0);
-    expect(tx.user.update).not.toHaveBeenCalled();
-    expect(tx.xpLedger.create).not.toHaveBeenCalled();
+    expect(checkIns).toHaveLength(0);
+    expect(ledger).toHaveLength(0);
+    expect(growthEvents).toHaveLength(0);
   });
 
   it("XP更新失败回滚已创建的签到", async () => {
-    tx.user.update.mockRejectedValueOnce(new Error("XP更新失败"));
+    failXp = true;
     await expect(checkIn("self")).rejects.toThrow("XP更新失败");
     expect(checkIns).toHaveLength(0);
     expect(ledger).toHaveLength(0);
     expect(users[0].xp).toBe(0);
+    expect(growthEvents).toHaveLength(0);
   });
 
   it("流水失败回滚XP和签到，再次重试可成功", async () => {
@@ -191,6 +244,7 @@ describe("社区上海日期与事务签到", () => {
     expect(users[0].lastCheckInAt).toBeNull();
     expect(checkIns).toHaveLength(0);
     expect(ledger).toHaveLength(0);
+    expect(growthEvents).toHaveLength(0);
     failLedger = false;
     expect((await checkIn("self")).alreadyCheckedIn).toBe(false);
   });
@@ -200,8 +254,9 @@ describe("社区上海日期与事务签到", () => {
   ])("数据库账号不合格则拒绝（%j）", async (patch) => {
     Object.assign(users[0], patch);
     await expect(checkIn("self")).rejects.toMatchObject({ status: 403 });
-    expect(tx.user.update).not.toHaveBeenCalled();
-    expect(tx.checkIn.create).not.toHaveBeenCalled();
+    expect(checkIns).toHaveLength(0);
+    expect(ledger).toHaveLength(0);
+    expect(growthEvents).toHaveLength(0);
   });
 
   it("不存在的用户不能签到", async () => {

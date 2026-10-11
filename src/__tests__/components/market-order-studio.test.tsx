@@ -4,7 +4,8 @@ import type { MarketOrderView } from "@/contracts/marketplace-view";
 import { OrderStudio } from "@/components/marketplace/order-studio";
 
 const mocks = vi.hoisted(() => ({ request: vi.fn(), refresh: vi.fn() }));
-vi.mock("@/components/marketplace/request", () => ({ marketRequest: mocks.request }));
+vi.mock("@/components/marketplace/request", async importOriginal => ({ ...await importOriginal<typeof import("@/components/marketplace/request")>(), marketRequest: mocks.request }));
+import { MarketRequestRejection } from "@/components/marketplace/request";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
 vi.mock("next-intl", () => ({ useTranslations: () => Object.assign((key: string) => key, { has: () => false }) }));
 
@@ -164,4 +165,21 @@ describe("market order write recovery", () => {
     await waitFor(() => expect(mocks.refresh).toHaveBeenCalledTimes(1));
   });
 
+});
+
+
+describe("confirmed order rejections", () => {
+  it("keeps the delivery draft and unlocks after a confirmed stale revision", async () => {
+    mocks.request.mockRejectedValueOnce(new MarketRequestRejection("VERSION_CONFLICT", 409)).mockResolvedValueOnce({ order: { ...order(), revision: 5, status: "DELIVERED" } });
+    const view = render(<OrderStudio order={order()} userId="seller-1" />);
+    const input = screen.getByRole("textbox", { name: "actionMessage" }); fireEvent.change(input, { target: { value: "Retain this delivery" } });
+    await act(async () => { fireEvent.submit(formOf(input)); });
+    expect(input).not.toBeDisabled(); expect(input).toHaveValue("Retain this delivery"); expect(mocks.refresh).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: "recoverRequest" })).not.toBeInTheDocument();
+    const oldKey = mocks.request.mock.calls[0][2].idempotencyKey;
+    view.rerender(<OrderStudio order={order({ revision: 4 })} userId="seller-1" />);
+    await act(async () => { fireEvent.submit(formOf(input)); });
+    expect(mocks.request.mock.calls[1][2]).toMatchObject({ expectedRevision: 4, message: "Retain this delivery" });
+    expect(mocks.request.mock.calls[1][2].idempotencyKey).not.toBe(oldKey);
+  });
 });

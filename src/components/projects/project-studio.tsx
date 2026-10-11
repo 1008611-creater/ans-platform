@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { PROJECT_WORKFLOW_COST_POINTS, projectPackWorkflowIds, type OfficialWorkflowId } from "@/contracts/projects";
@@ -58,13 +58,55 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState("");
+  const [runs, setRuns] = useState<Array<{ id: string; workflowId: string; status: string; requestKey: string | null; error?: string | null }>>([]);
+  const [runReadError, setRunReadError] = useState(false);
+  const [runsLoaded, setRunsLoaded] = useState(false);
+  const requestKeys = useRef(new Map<string, string>());
+  const uiCallbacks = useRef({ router, t });
+  useEffect(() => { uiCallbacks.current = { router, t }; }, [router, t]);
+  const observedRuns = useRef(new Map<string, string>());
+  const activeRuns = runs.filter(run => ["QUEUED", "RUNNING"].includes(run.status));
+  const isZh = locale.startsWith("zh");
   const [publications, setPublications] = useState<Record<string, { status: string; reviewNote: string | null }>>({});
   const [selectedVersions, setSelectedVersions] = useState<Record<string, string>>({});
   const [acknowledged, setAcknowledged] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<{ artifactId: string; baseVersionId: string; expectedVersion: number; markdown: string } | null>(null);
   const [savedVersions, setSavedVersions] = useState<Record<string, Artifact["versions"][number]>>({});
   const completed = projectPackWorkflowIds.filter((id) => project.artifacts.some((artifact) => artifact.workflowId === id && artifact.versions.length > 0)).length;
-  const locked = Boolean(pending) || Boolean(editing);
+  const locked = Boolean(pending) || Boolean(editing) || activeRuns.length > 0;
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const refreshRuns = async () => {
+      try {
+        const response = await fetch(`/api/projects/${project.id}/runs`, { cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok || !Array.isArray(payload.data?.runs)) throw new Error("RUN_STATUS_UNAVAILABLE");
+        if (cancelled) return;
+        const current = payload.data.runs as typeof runs;
+        setRuns(current);
+        setRunReadError(false);
+        setRunsLoaded(true);
+        for (const run of current) {
+          const previous = observedRuns.current.get(run.id);
+          if (previous && ["QUEUED", "RUNNING"].includes(previous) && !["QUEUED", "RUNNING"].includes(run.status)) {
+            uiCallbacks.current.router.refresh();
+            if (run.status === "SUCCEEDED") { setSelectedVersions({}); setMessage(uiCallbacks.current.t("generated")); }
+            else setError(isZh ? "\u4efb\u52a1\u672a\u5b8c\u6210\uff0c\u8bf7\u67e5\u770b\u8fd0\u884c\u8bb0\u5f55\u540e\u91cd\u8bd5\u3002\u5df2\u786e\u8ba4\u7684\u5b9e\u9645\u7b97\u529b\u6d88\u8017\u4ecd\u4f1a\u8bb0\u8d26\u3002" : "Task did not complete. Check the run history before retrying. Confirmed compute usage remains billed.");
+          }
+          observedRuns.current.set(run.id, run.status);
+          if (!["QUEUED", "RUNNING"].includes(run.status)) {
+            if (requestKeys.current.get(run.workflowId) === run.requestKey) requestKeys.current.delete(run.workflowId);
+            try { const key = `ans:document:${project.id}:${run.workflowId}`; if (sessionStorage.getItem(key) === run.requestKey) sessionStorage.removeItem(key); } catch {}
+          }
+        }
+      } catch { if (!cancelled) setRunReadError(true); }
+      if (!cancelled) timer = setTimeout(() => void refreshRuns(), 3000);
+    };
+    void refreshRuns();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [project.id, isZh]);
 
   useEffect(() => {
     if (!editing) return;
@@ -152,12 +194,18 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
     setMessage("");
     try {
       await postJson(`/api/projects/${project.id}/facts`, { facts: factPayload(false) }, t("operationFailed"));
-      await postJson(`/api/projects/${project.id}/runs`, {
-        workflowId,
-        idempotencyKey: `${workflowId}-${Date.now().toString(36)}`,
-      }, t("operationFailed"));
-      setSelectedVersions({});
-      setMessage(t("generated"));
+      const requestStorageKey = `ans:document:${project.id}:${workflowId}`;
+      let idempotencyKey: string;
+      try {
+        idempotencyKey = requestKeys.current.get(workflowId) ?? sessionStorage.getItem(requestStorageKey) ?? `${workflowId}-${crypto.randomUUID()}`;
+        sessionStorage.setItem(requestStorageKey, idempotencyKey);
+      } catch { idempotencyKey = requestKeys.current.get(workflowId) ?? `${workflowId}-${crypto.randomUUID()}`; }
+      requestKeys.current.set(workflowId, idempotencyKey);
+      const accepted = await postJson(`/api/projects/${project.id}/runs`, { workflowId, idempotencyKey }, t("operationFailed"));
+      if (typeof accepted.workflowRunId !== "string" || typeof accepted.status !== "string") throw new Error(isZh ? "\u4efb\u52a1\u63d0\u4ea4\u7ed3\u679c\u672a\u786e\u8ba4\uff0c\u8bf7\u7a0d\u540e\u67e5\u770b\u8fd0\u884c\u8bb0\u5f55\u3002" : "Task receipt is unconfirmed. Check the run history shortly.");
+      observedRuns.current.set(accepted.workflowRunId, accepted.status);
+      setRuns(current => [{ id: accepted.workflowRunId, workflowId, status: accepted.status, requestKey: idempotencyKey }, ...current.filter(run => run.id !== accepted.workflowRunId)]);
+      setMessage(isZh ? "\u4efb\u52a1\u5df2\u63d0\u4ea4\uff0c\u540e\u53f0\u4f1a\u7ee7\u7eed\u5904\u7406\u3002\u53ef\u4ee5\u79bb\u5f00\u9875\u9762\uff0c\u7a0d\u540e\u56de\u6765\u67e5\u770b\u6210\u679c\u3002" : "Task submitted. Processing continues in the background; return later to view the result.");
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t("operationFailed"));
@@ -188,7 +236,7 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
   function WorkflowButton({ workflow }: { workflow: (typeof OFFICIAL_WORKFLOWS)[number] }) {
     const artifact = project.artifacts.find((item) => item.workflowId === workflow.id);
     return (
-      <button className="rounded-lg border p-4 text-left transition hover:border-primary disabled:opacity-50" disabled={locked} onClick={() => runWorkflow(workflow.id)}>
+      <button className="rounded-lg border p-4 text-left transition hover:border-primary disabled:opacity-50" disabled={locked || !runsLoaded || runReadError} onClick={() => runWorkflow(workflow.id)}>
         <span className="flex items-center justify-between gap-3">
           <span className="text-sm font-medium">{workflow.title}</span>
           {artifact ? <Badge variant="secondary">v{artifact.currentVersion}</Badge> : <Badge variant="outline">{t("notGenerated")}</Badge>}
@@ -220,6 +268,8 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
         </CardContent>
       </Card>
       <div className="min-w-0 space-y-4">
+        {activeRuns.length > 0 && <p role="status" className="rounded-xl border bg-muted/40 p-3 text-sm">{isZh ? "\u540e\u53f0\u6b63\u5728\u751f\u6210\u6210\u679c\uff0c\u5173\u95ed\u9875\u9762\u4e0d\u4f1a\u53d6\u6d88\u4efb\u52a1\u3002" : "Generating in the background. Closing this page will not cancel the task."}</p>}
+        {runReadError && <p role="status" className="text-sm text-muted-foreground">{isZh ? "\u4efb\u52a1\u72b6\u6001\u6682\u65f6\u65e0\u6cd5\u8bfb\u53d6\uff0c\u6b63\u5728\u91cd\u65b0\u8fde\u63a5\u3002\u8bf7\u5148\u4e0d\u8981\u91cd\u590d\u63d0\u4ea4\u3002" : "Reconnecting to task status. Please avoid submitting again."}</p>}
         <Button asChild variant="outline"><Link href={`/projects/${project.id}/website`}>{product("website.openStudio")}</Link></Button>
         {selectedWorkflow && <Card id="selected-workflow" className="scroll-mt-24 border-primary/40"><CardHeader><CardTitle className="text-base">{product("selectedWorkflow")}</CardTitle><CardDescription>{product("selectedWorkflowHint")}</CardDescription></CardHeader><CardContent className="grid"><WorkflowButton workflow={selectedWorkflow} /></CardContent></Card>}
         <Card>
@@ -245,6 +295,13 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
             </details>
           </CardContent>
         </Card>
+        {runs.length > 0 && <div className="rounded-xl border px-4 py-3 text-sm" aria-label={isZh ? "\u8fd0\u884c\u8bb0\u5f55" : "Run history"}>
+          {runs.slice(0, 4).map(run => <div key={run.id} className="flex flex-wrap items-center justify-between gap-2 py-1.5">
+            <span>{OFFICIAL_WORKFLOWS.find(workflow => workflow.id === run.workflowId)?.title ?? run.workflowId}</span>
+            <Link href="/workflows/runs" className="text-xs text-muted-foreground underline-offset-4 hover:underline">{run.status === "SUCCEEDED" ? (isZh ? "\u5df2\u5b8c\u6210" : "Completed") : run.status === "FAILED" ? (isZh ? "\u672a\u5b8c\u6210" : "Not completed") : run.status === "CANCELLED" ? (isZh ? "\u5df2\u53d6\u6d88" : "Cancelled") : run.status === "RUNNING" ? (isZh ? "\u751f\u6210\u4e2d" : "Processing") : (isZh ? "\u6392\u961f\u4e2d" : "Queued")}</Link>
+            {run.error === "EXECUTION_INTERRUPTED" && <p className="w-full text-xs text-muted-foreground">{isZh ? "\u6267\u884c\u4e2d\u65ad\uff0c\u6a21\u578b\u7ed3\u679c\u672a\u80fd\u786e\u8ba4\u3002\u5df2\u505c\u6b62\u81ea\u52a8\u91cd\u8bd5\uff0c\u5b9e\u9645\u7b97\u529b\u6d88\u8017\u4ee5\u8d26\u5355\u4e3a\u51c6\u3002" : "Execution was interrupted and the model outcome is unknown. Automatic retry stopped; your statement reflects actual usage."}</p>}
+          </div>)}
+        </div>}
         {message ? <p role="status" className="text-sm text-primary">{message}</p> : null}
         {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
         <p className="rounded-lg border p-4 text-sm leading-6 text-muted-foreground">{t("draftWarning")}</p>

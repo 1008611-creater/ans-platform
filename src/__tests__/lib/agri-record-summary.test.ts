@@ -21,6 +21,14 @@ beforeEach(() => { vi.clearAllMocks(); tx.$queryRaw.mockReset(); vi.mocked(db.$t
   vi.mocked(requireAgriScope).mockImplementation(async (_tx, _ctx, scope) => ({ id: scope, expiresAt: null } as never));
 });
 describe("staff live summary boundaries", () => {
+  it("retains the before/after permit and operator provenance in authorized summaries", async () => {
+    tx.$queryRaw.mockResolvedValueOnce([{ ...source, correctionPreviousId: "original", correctionPermitId: "permit", correctionReason: "Approved correction", correctionAuthorizedById: "manager", correctionAuthorizedAt: at }]);
+    tx.$queryRaw.mockResolvedValueOnce([{ ...source, correctionPreviousId: "original", correctionPermitId: "permit", correctionReason: "Approved correction", correctionAuthorizedById: "manager", correctionAuthorizedAt: at }]);
+    for (let i = 0; i < 4; i++) tx.$queryRaw.mockResolvedValueOnce([]);
+    const view = await readAgriRecordSummary("staff", "old-submission");
+    expect(view.submission.correction).toEqual({ previousSubmissionId: "original", permitId: "permit", reason: "Approved correction", authorizedById: "manager", authorizedAt: at.toISOString() });
+    expect(view.stageHistory[0].correction).toEqual(view.submission.correction);
+  });
   it("parses explicit true/false only and rejects forged modes/scopes/selection", () => {
     expect(agriRecordSummaryQuerySchema.parse({})).toEqual({ includePrivate: false, includeInternal: false, mode: "view" });
     expect(agriRecordSummaryQuerySchema.parse({ includePrivate: "false", includeInternal: "true" })).toEqual({ includePrivate: false, includeInternal: true, mode: "view" });

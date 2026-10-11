@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -35,6 +35,7 @@ import {
   AGRI_PHASES,
   AGRI_TRACKS,
 } from "@/lib/agrihackathon/cluster";
+import { readAgriPublicGuide } from "@/server/competitions/agrihackathon/workspace";
 import { findAgriHackathonCompetition } from "@/server/competitions/service";
 
 /**
@@ -79,12 +80,16 @@ const trackStyles = {
 
 export default async function AgriHackathonPage() {
   const t = await getTranslations("agriHackathon");
+  const locale = await getLocale();
+  const formatDate = (value: string) => new Intl.DateTimeFormat(locale, { timeZone: "Asia/Shanghai", dateStyle: "medium", timeStyle: "medium" }).format(new Date(value));
   const pending = await getTranslations("product.agrihackathon");
   const tasks = await getTranslations("product.agriTasks");
   const submissions = await getTranslations("product.agriSubmissions");
   const works = await getTranslations("product.agriWorks");
   const onsite = await getTranslations("product.agriOnsite");
+  const management = await getTranslations("product.agriWorkspace");
   const competition = await findAgriHackathonCompetition();
+  const guide = await readAgriPublicGuide().catch(() => null);
 
   const tracks = AGRI_TRACKS.map((track) => {
     const copy = t.raw(`tracks.${track.id}`) as {
@@ -136,8 +141,8 @@ export default async function AgriHackathonPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(circle_at_20%_0%,rgba(16,185,129,0.16),transparent_45%),radial-gradient(circle_at_82%_12%,rgba(245,158,11,0.14),transparent_38%)]" />
       <div className="container space-y-12 py-10 md:py-14">
         <aside aria-labelledby="agri-rules-pending" className="rounded-2xl border bg-muted/40 p-5">
-          <h2 id="agri-rules-pending" className="font-semibold">{pending("rulesPendingTitle")}</h2>
-          <p className="mt-2 text-sm leading-7 text-muted-foreground">{pending("rulesPendingBody")}</p>
+          <h2 id="agri-rules-pending" className="font-semibold">{guide ? management("rulesTitle") : pending("rulesPendingTitle")}</h2>
+          {guide ? <><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7">{guide.rule.guidanceMarkdown}</p><p className="mt-3 text-sm text-muted-foreground">{management("publishedVersion")}: {guide.rule.version}</p><ul className="mt-3 space-y-2 text-sm">{guide.rule.windows.map(window => <li key={window.stage}><span className="font-medium">{management("stage." + window.stage)}</span>{" · "}{window.state === "CONFIRMED" && window.opensAt && window.closesAt ? <>{submissions("dates", { opens: formatDate(window.opensAt), closes: formatDate(window.closesAt) })}{" · "}{submissions(window.includesDeadline ? "inclusive" : "exclusive")}</> : management("windowPending")}</li>)}</ul></> : <p className="mt-2 text-sm leading-7 text-muted-foreground">{pending("rulesPendingBody")}</p>}
         </aside>
         <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-6">
@@ -177,6 +182,7 @@ export default async function AgriHackathonPage() {
               <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/submissions"><FileCheck2 className="h-4 w-4" />{submissions("title")}</Link></Button>
               <Button asChild size="lg" variant="outline"><Link href="/competitions/agrihackathon/works"><ClipboardCheck className="h-4 w-4" />{works("title")}</Link></Button>
               <Button asChild size="lg" variant="outline"><Link href="/competitions/agrihackathon/onsite"><ClipboardCheck className="h-4 w-4" />{onsite("title")}</Link></Button>
+              <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/manage"><ShieldCheck className="h-4 w-4" />{management("title")}</Link></Button>
               <Button asChild variant="outline" size="lg">
                 <Link href="/competitions/agrihackathon/tasks">
                   <ListChecks className="h-4 w-4" />

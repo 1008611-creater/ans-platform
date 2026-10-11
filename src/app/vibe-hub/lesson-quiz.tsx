@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import type { Lesson } from "./source-data";
+import type { Lesson } from "@/contracts/vibehub-content";
 export function LessonQuiz({ practice, id, onAnswer, onSelect }: { practice: NonNullable<Lesson["lessonPractice"]>; id: string; onAnswer?: (correct: boolean) => void; onSelect?: (correct: boolean) => void }) {
   const [answer, setAnswer] = useState<number | null>(null); const t = useTranslations("vibehub");
   const selected = answer === null ? null : practice.options[answer];

@@ -43,7 +43,6 @@ const getProfileUser = cache((username: string) => db.user.findFirst({
       avatar: true,
       role: true,
       verified: true,
-      bio: true,
       xp: true,
       communityPoints: true,
       checkInStreak: true,
@@ -445,7 +444,6 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
               )}
             </div>
             <p className="text-muted-foreground text-sm flex items-center gap-2 flex-wrap">@{user.username}<span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">{tGrowth(`levels.${getLevelProgress(user.xp).level.key}.name`)}</span></p>
-            {user.bio && <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{user.bio}</p>}
           </div>
           {/* Actions - desktop only */}
           <div className="hidden md:flex items-center gap-2 shrink-0">
