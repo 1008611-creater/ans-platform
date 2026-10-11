@@ -4,10 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { CreditsCenter } from "@/components/workspace/credits-center";
 import { VoucherPanel } from "@/components/admin/voucher-panel";
 import { VibePlan } from "@/components/workspace/vibeplan";
+import { getPlanSalesReadiness } from "@/server/billing/plan-readiness";
 import { getCreditProducts } from "@/lib/credits-catalog";
 const mocks = vi.hoisted(() => ({ fetch: vi.fn(), refresh: vi.fn(), t: (key: string) => key, session: { data: { user: { id: "actor" } }, status: "authenticated" } }));
 vi.mock("next-auth/react", () => ({ useSession: () => mocks.session }));
-vi.mock("next-intl", () => ({ useTranslations: () => mocks.t }));
+vi.mock("next-intl", () => ({ useLocale: () => "en-US", useTranslations: () => Object.assign(mocks.t, { has: () => true }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
 const billing = { rechargeYuanPerPoint: .1, usdQuotaPerPoint: 1, gptConsumptionMultiplier: .16, deepseekConsumptionMultiplier: 1, rechargeEnabled: false };
 beforeEach(() => { vi.clearAllMocks(); vi.stubGlobal("fetch", mocks.fetch); });
@@ -55,15 +56,17 @@ describe("voucher catalog purchase and account boundaries", () => {
 describe("VibePlan preview", () => {
   it("supports all three periods without payment, invented entitlements or automatic renewal", async () => {
     const user = userEvent.setup();
-    render(<VibePlan />);
+    render(<VibePlan readiness={getPlanSalesReadiness()} />);
     expect(screen.getByRole("tab", { name: "periods.month.label" })).toHaveAttribute("aria-selected", "true");
     await user.click(screen.getByRole("tab", { name: "periods.week.label" }));
     expect(screen.getByRole("tab", { name: "periods.week.label" })).toHaveAttribute("aria-selected", "true");
     await user.click(screen.getByRole("tab", { name: "periods.quarter.label" }));
     expect(screen.getByRole("tab", { name: "periods.quarter.label" })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("button", { name: "notAvailable" })).toBeDisabled();
-    expect(screen.getByText("previewNote")).toBeVisible();
-    expect(screen.getAllByText("notFinalized")).toHaveLength(4);
+    expect(screen.getAllByRole("button", { name: "notAvailable" })).toHaveLength(2);
+    for (const button of screen.getAllByRole("button", { name: "notAvailable" })) expect(button).toBeDisabled();
+    expect(screen.getAllByText("previewNote")).toHaveLength(2);
+    expect(screen.queryByText("notFinalized")).toBeNull();
+    expect(screen.queryByRole("link", { name: "notAvailable" })).toBeNull();
     expect(screen.getByRole("link", { name: "voucherAction" })).toHaveAttribute("href", "/workspace/credits");
     expect(mocks.fetch).not.toHaveBeenCalled();
   });

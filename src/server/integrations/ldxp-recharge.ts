@@ -1,4 +1,5 @@
-﻿import { Prisma } from "@prisma/client";
+﻿import { CENTS_PER_POINT } from "@/lib/credits-pricing";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { createHash } from "node:crypto";
 
@@ -112,7 +113,7 @@ export async function createLdxpWechatRecharge(userId: string, amountCents: numb
   const rawPayUrl = stringField(result, ["payurl", "payUrl", "pay_url", "qr_code", "qrcode"]);
   if (!tradeNo || !rawPayUrl) throw new LdxpRechargeError("LDXP_INVALID_RECHARGE_RESPONSE", 502);
   const payUrl = validatePayUrl(rawPayUrl);
-  return db.ldxpRechargeOrder.create({ data: { userId, requestKey, tradeNo, amountCents, points: amountCents / 100, channelId: WECHAT_CHANNEL_ID, payUrl, status: "PENDING", providerPayload: result as Prisma.InputJsonValue }, select: { id: true, tradeNo: true, amountCents: true, points: true, payUrl: true, status: true, createdAt: true } });
+  return db.ldxpRechargeOrder.create({ data: { userId, requestKey, tradeNo, amountCents, points: amountCents / CENTS_PER_POINT, channelId: WECHAT_CHANNEL_ID, payUrl, status: "PENDING", providerPayload: result as Prisma.InputJsonValue }, select: { id: true, tradeNo: true, amountCents: true, points: true, payUrl: true, status: true, createdAt: true } });
 }
 
 async function settlePaidOrder(orderId: string, providerPayload: unknown) {

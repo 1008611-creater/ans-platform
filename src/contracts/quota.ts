@@ -5,6 +5,7 @@ export type QuotaAdminOverview = {
  uncertain: { id: string; userId: string; modelId: string; authorizedPoints: number }[];
  mismatchCount: number;
  pending: number;
+ examPending?: { pendingCount: number; reservedPoints: number; items: { id: string; userId: string; points: number; createdAt: string }[] };
  manualRechargeEnabled: boolean;
  ldxp: { enabled: boolean; orders: { id: string; userId: string; tradeNo: string; amountCents: number; points: number; channelId: number; status: string; createdAt: string; paidAt: string | null; lastCheckedAt: string | null }[] };
 };

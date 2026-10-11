@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Coins, KeyRound, Loader2, ArrowUpRight, ArrowRight, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
@@ -19,6 +19,8 @@ export function CreditsCenter(props: CreditsProps) {
 
 function CreditsCenterSession({ actorId, billing, availablePoints, products = getCreditProducts({}) }: CreditsProps) {
   const t = useTranslations("product.vouchers");
+  const locale = useLocale();
+  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
   const router = useRouter();
   const flight = useRef(false);
   const alive = useRef(true);
@@ -53,16 +55,16 @@ function CreditsCenterSession({ actorId, billing, availablePoints, products = ge
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
       <section className="rounded-3xl border bg-card p-6 sm:p-8" aria-labelledby="credits-balance-heading">
         <p id="credits-balance-heading" className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><Coins className="size-4 text-primary" aria-hidden="true" />{t("balance")}</p>
-        <p className="mt-4 text-5xl font-semibold tracking-tight tabular-nums">{availablePoints.toLocaleString()}</p>
+        <p className="mt-4 text-5xl font-semibold tracking-tight tabular-nums">{numbers.format(availablePoints)}</p>
         <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">{t("rules", { gpt: billing.gptConsumptionMultiplier, deepseek: billing.deepseekConsumptionMultiplier })}</p>
         <div className="mt-7 border-t pt-5">
           <div className="flex items-center justify-between gap-4"><h2 className="font-semibold">{t("catalogTitle")}</h2><span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">{t("oneTime")}</span></div>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">{t("catalogDescription")}</p>
           <fieldset className="mt-4"><legend className="sr-only">{t("chooseAmount")}</legend>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">{products.map(product => <label key={product.points} className="relative cursor-pointer">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{products.map(product => <label key={product.points} className="relative cursor-pointer">
               <input className="peer sr-only" type="radio" name="credit-denomination" value={product.points} checked={selectedPoints === product.points} onChange={() => setSelectedPoints(product.points)} />
               <span className="flex min-h-24 flex-col justify-between gap-3 rounded-xl border p-3 transition-colors peer-checked:border-primary peer-checked:bg-primary/5 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-ring hover:bg-muted/60">
-                <span className="font-semibold tabular-nums">{product.points.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{t("pointsUnit")}</span></span>
+                <span className="font-semibold tabular-nums">{numbers.format(product.points)} <span className="text-xs font-normal text-muted-foreground">{t("pointsUnit")}</span></span>
                 <span className="text-sm text-muted-foreground">¥{product.faceValueYuan}</span>
               </span>
             </label>)}</div>

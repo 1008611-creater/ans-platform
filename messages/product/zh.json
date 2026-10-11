@@ -913,7 +913,6 @@
       "demoLabel": "Demo 检查 #{sequence}",
       "chooseDetail": "选择问题或 Demo 检查",
       "attachDemo": "关联这次 Demo 检查",
-
       "title": "关联提交与问题",
       "privacy": "任务分享不会授予作品或问题权限。关联内容每次读取都独立核对权限；只能关联准确的提交版本。",
       "empty": "还没有关联记录。保存任务后，可以从你有权查看的提交中选择。",
@@ -1474,7 +1473,6 @@
     "assignedTo": "处理人：{id}",
     "completedBy": "完成人：{id}",
     "eventActor": "操作人：{id}",
-
     "title": "实时资料汇集",
     "intro": "把这次提交的版本、技术复查、Demo 和问题记录放在一起，方便核对交付情况。",
     "open": "汇集这次提交",
@@ -1704,7 +1702,6 @@
     "onsiteRecords": "现场技术记录",
     "onsiteHistory": "现场处理历史",
     "responsible": "{id} · {at}",
-
     "title": "已保存的技术档案",
     "intro": "将这份提交及相关核查保存为带时间的版本，后续实时资料变化不会覆盖它。",
     "open": "打开档案版本",
@@ -1894,7 +1891,8 @@
       "SELLER_INCOME": "卖家收入",
       "PURCHASE": "订单支付 / 托管",
       "RECHARGE": "充值到账",
-      "LEDGER_CORRECTION": "流水纠错（余额未变）"
+      "LEDGER_CORRECTION": "流水纠错（余额未变）",
+      "EXAM_ANALYSIS": "错题分析 / 预占"
     },
     "pointsUnit": "算力点"
   },
@@ -1940,7 +1938,11 @@
       "PAID": "已支付",
       "EXPIRED": "已过期",
       "FAILED": "核验失败"
-    }
+    },
+    "examTitle": "错题分析预占",
+    "examPending": "待结算：{count} 笔，共 {points} 积分",
+    "examRecovery": "错题服务会恢复并结算这些预占。长时间未结束时，请核对对应任务结果；本列表只展示状态，不因超时自动退款。",
+    "examEmpty": "暂无未结算的错题分析预占。"
   },
   "growth": {
     "eyebrow": "ANS GROWTH",
@@ -2552,19 +2554,19 @@
     }
   },
   "vibeplan": {
-    "pageTitle": "VibePlan · 创作订阅计划",
+    "pageTitle": "VibePlan · 套餐与算力",
     "navigation": "VibePlan 导航",
     "back": "返回积分中心",
-    "status": "准备中",
-    "headline": "给创作留一个位置",
-    "description": "为持续学习、探索 AI 和完成作品准备的订阅计划。周卡、月卡、季卡正在筹备，先选一种适合你的创作节奏。",
-    "choosePeriod": "选择你的节奏",
-    "periodHelp": "三种周期，同一个创作方向。",
+    "status": "方案已定 · 开放筹备中",
+    "headline": "让好项目，成为你的成果。",
+    "description": "选择适合自己的创作节奏。会员提供持续工作的工具，积分承担实际算力；项目、工作流与 AIGC 共用一个工作台。",
+    "choosePeriod": "选择使用周期",
+    "periodHelp": "默认月卡；周卡适合集中完成项目，季卡按批发放积分。",
     "previewLabel": "订阅计划预览",
     "subscriptionDirection": "VibePlan / 订阅计划",
     "notFinalized": "待公布",
-    "notAvailable": "套餐筹备中",
-    "previewNote": "当前仅展示套餐方向。价格、额度与权益确认后再开放购买；此页面不会收款或开通自动续费。",
+    "notAvailable": "开放筹备中",
+    "previewNote": "价格和额度已确认，目标权益完成后开放购买。",
     "terms": {
       "price": "套餐价格",
       "quota": "每期积分与结转",
@@ -2592,14 +2594,14 @@
       }
     },
     "availableNow": "当前可用",
-    "voucherTitle": "现在需要积分？先用积分卡。",
-    "voucherDescription": "链动小铺付款并发放卡密，在 ANS 兑换。积分卡是一次性购买，和未来的 VibePlan 订阅分开。",
+    "voucherTitle": "偶尔使用，按需要充值。",
+    "voucherDescription": "原五档积分卡继续可用：链动小铺购买卡密，在 ANS 兑换。收银台手续费以实际付款页面为准。",
     "voucherAction": "前往积分中心",
-    "faqTitle": "先了解这些",
+    "faqTitle": "规则说清楚",
     "faq": {
       "difference": {
-        "question": "积分卡和 VibePlan 有什么区别？",
-        "answer": "积分卡购买后用卡密一次性兑换积分。VibePlan 是按周、月或季度的订阅方向；具体额度、有效期、结转和权益尚未公布。"
+        "question": "会员和积分卡怎么选？",
+        "answer": "积分卡用于按需运行算力。会员价格包含工具权益和指定积分额度，学习、求职与 AIGC 共用同一个会员体系。套餐目前筹备中，不能购买或兑换会员。"
       },
       "payment": {
         "question": "现在能购买 VibePlan 吗？",
@@ -2608,7 +2610,116 @@
       "announcements": {
         "question": "正式开放时会公布什么？",
         "answer": "套餐价格、每期积分、额度有效期与结转规则、具体权益，以及购买、续费和取消方式都会在开放前说明。"
+      },
+      "ratio": {
+        "question": "¥49 月卡为什么不是490积分？",
+        "answer": "固定充值比例是 ¥1 = 10积分。VibePlan 月卡 ¥49 包含300积分及会员工具权益，套餐费用不全部兑换成积分，也不会改变充值倍率。积分不是提现或兑换现金的承诺。"
+      },
+      "expiry": {
+        "question": "积分什么时候到期？",
+        "answer": "方案中，充值积分长期有效；周卡积分有效14天，月卡及季卡每批积分有效60天。季卡分三次发放。会员到期不提前清除尚未过期的积分。以上套餐规则将在批次管理完成后执行，现有充值余额保持不变。"
+      },
+      "renewal": {
+        "question": "会自动续费吗？",
+        "answer": "首期使用链动小铺期限卡，手动续购，不自动扣款。同档续购延长周期，未来积分按计划发放；升级先确认差价，降档下一周期生效。准确升级计算与退款流程完成后再开放售卖。"
+      },
+      "ownership": {
+        "question": "到期后，我的作品怎么办？",
+        "answer": "成果归属、基础隐私和已有成果导出不按会员等级收费。到期后不突然删除已保存文字、源码和手动版本。大体积媒体的在线保存、归档与流量规则尚待明确，不承诺永久免费托管。商用仍需遵守素材与第三方许可。"
+      },
+      "failure": {
+        "question": "任务失败会怎样收费？",
+        "answer": "规则方向：执行前确认预算；未提交或重复请求不重复收费，平台故障造成的重复消耗由平台承担。上游已经收费的失败任务按真实回执核算，结果不满意不等于免费重做。具体费用和处理说明以任务执行前展示为准。"
+      },
+      "market": {
+        "question": "套餐积分可以买市场商品或提现吗？",
+        "answer": "不可以。套餐及活动积分仅用于规定范围的个人算力，不能购买可提现商品、转让或提现。卖家收入采用独立人民币账本。市场佣金、托管和结算仍需独立完成，不作为当前套餐权益售卖。"
       }
-    }
+    },
+    "principle": "手动续购，不自动扣款。已有成果可查看、导出。",
+    "personal": "个人项目",
+    "creator": "创作与交付",
+    "duration": "/ {days} 天",
+    "includedPoints": "含 {points} 算力积分",
+    "singleGrant": "开通发放一次，积分有效 {days} 天。",
+    "quarterGrants": "开通、第30天、第60天各发放 {points} 积分，每批有效60天。",
+    "approvedLabel": "已确认方案",
+    "readinessTitle": "先把服务做好，再开放购买。",
+    "readinessDescription": "当前可查看全部定价。会员开通、额度管理和履约保障尚未全部就绪，暂不收取套餐费用。",
+    "blockerFallback": "相关服务仍在完成中。",
+    "comparisonTitle": "同一个工作台，不同的工作能力。",
+    "comparisonNote": "下表为规划对比，容量、并发、版本和专业工具不是当前可购买权益；免费版目标额度也尚未作为实际限制执行。",
+    "capability": "能力",
+    "freeName": "免费版",
+    "exchange": "固定 ¥1 = 10 积分，1 积分 = ¥0.10。",
+    "blockers": {
+      "MEMBERSHIP_LIFECYCLE_MISSING": "会员开通、续购、升级与到期管理",
+      "CREDIT_BATCH_ALLOCATION_MISSING": "分批发放、准确到期和账单",
+      "CREDIT_PURPOSE_ISOLATION_MISSING": "套餐积分仅限个人算力使用",
+      "ENTITLEMENT_ENFORCEMENT_INCOMPLETE": "容量、任务并发与工具权益落实",
+      "REFUND_REVOCATION_INCOMPLETE": "原渠道退款与兑换撤销",
+      "MEDIA_TERMS_UNCONFIRMED": "媒体保存、归档与流量规则",
+      "PROCUREMENT_COST_UNVERIFIED": "真实模型采购成本核算",
+      "MERCHANT_PLAN_UNVERIFIED": "链动小铺套餐商品与履约核验",
+      "PRO_DELIVERY_INCOMPLETE": "Pro 批量、版本、协作与交付工具"
+    },
+    "tiers": {
+      "plan": {
+        "name": "VibePlan",
+        "description": "持续学习、求职、参赛，做好自己的项目。",
+        "workflow": "规划：官方成熟流程、个人配方",
+        "continuity": "规划：更长版本历史与项目容量",
+        "delivery": "规划：自定义展示与项目协作"
+      },
+      "pro": {
+        "name": "VibePlan Pro",
+        "description": "面向高频创作、多项目和接单交付。",
+        "workflow": "规划：批量执行与分支版本",
+        "continuity": "规划：更高并发、空间与版本容量",
+        "delivery": "规划：客户反馈、交付包与细分权限"
+      }
+    },
+    "comparison": {
+      "discovery": {
+        "label": "项目与社区",
+        "free": "浏览、发布、展示",
+        "plan": "同样开放",
+        "pro": "同样开放"
+      },
+      "workflows": {
+        "label": "工作流",
+        "free": "基础流程，充值运行",
+        "plan": "成熟流程、个人配方",
+        "pro": "批量、分支版本"
+      },
+      "projects": {
+        "label": "推进中项目"
+      },
+      "storage": {
+        "label": "文件空间"
+      },
+      "concurrency": {
+        "label": "同时执行任务"
+      },
+      "history": {
+        "label": "自动版本历史"
+      },
+      "delivery": {
+        "label": "协作与展示",
+        "free": "基础分享与主页",
+        "plan": "项目协作、自定义展示",
+        "pro": "客户反馈、交付包"
+      },
+      "export": {
+        "label": "已有成果导出",
+        "free": "开放",
+        "plan": "开放",
+        "pro": "开放"
+      }
+    },
+    "projectValue": "{value} 个",
+    "storageValue": "{value} GB",
+    "concurrencyValue": "{value} 个",
+    "historyValue": "{value} 天"
   }
 }

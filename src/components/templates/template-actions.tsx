@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -43,10 +44,15 @@ export function TemplateActions({ id, mode, canPublish = false, selfReview = fal
 }
 
 export function CopyTemplatePrompt({ prompt }: { prompt: string }) {
+  const t = useTranslations("templates");
   const [message, setMessage] = useState("");
   async function copy() {
-    try { await navigator.clipboard.writeText(prompt); setMessage("已复制提示词"); }
-    catch { setMessage("复制失败，请手动选择下方正文复制"); }
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setMessage(t("promptCopied"));
+    } catch {
+      setMessage(t("copyFailed"));
+    }
   }
-  return <div className="flex flex-wrap items-center gap-3"><Button onClick={copy}>复制提示词</Button><span role="status" className="text-sm text-muted-foreground">{message}</span></div>;
+  return <div className="flex flex-wrap items-center gap-3"><Button onClick={copy}>{t("copyPrompt")}</Button><span role="status" className="text-sm text-muted-foreground">{message}</span></div>;
 }

@@ -65,3 +65,9 @@ ai-video-skills-source/agnes-video-gen/AGNES_API_KEY.txt
 # Python interpreter cache
 __pycache__/
 *.pyc
+
+# Unified-credit deployment state and private snapshots
+.deploy-state/
+*-private.json
+.env.*
+!.env.example

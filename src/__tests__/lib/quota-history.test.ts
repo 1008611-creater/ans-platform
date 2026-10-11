@@ -3,9 +3,11 @@ import { beforeEach, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ transaction: vi.fn(), readOnly: vi.fn(), user: vi.fn(), anchor: vi.fn(), rows: vi.fn(), workflow: vi.fn(), api: vi.fn(), market: vi.fn(), template: vi.fn(), legacyWorkflow: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { $transaction: m.transaction } }));
 import { readQuotaHistory } from "@/server/quota/history";
+const exam = vi.hoisted(() => ({ read: vi.fn() }));
+vi.mock("@/server/quota/exam-reservations", () => ({ readExamReservations: exam.read }));
 const date = new Date("2026-10-10T00:00:00Z");
 beforeEach(() => {
-  vi.resetAllMocks(); m.user.mockResolvedValue({ quotaPoints: 1.25, deletedAt: null });
+  vi.resetAllMocks(); exam.read.mockResolvedValue({ reservedPoints: 0, pendingCount: 0, items: [] }); m.user.mockResolvedValue({ quotaPoints: 1.25, deletedAt: null });
   m.anchor.mockResolvedValue({ id: "entry-anchor", createdAt: date }); m.rows.mockResolvedValue([]);
   m.workflow.mockResolvedValue({ _sum: { authorizedPoints: 0.25 }, _count: { _all: 1 } });
   m.api.mockResolvedValue({ _sum: { authorizedPoints: 0.1 }, _count: { _all: 2 } });
@@ -41,4 +43,16 @@ it("includes legacy template and workflow holds without double-counting zero-cos
   m.legacyWorkflow.mockResolvedValue({ _sum: { costPoints: 0.5 }, _count: { _all: 1 } });
   expect(await readQuotaHistory("member")).toMatchObject({ reservedPoints: 11.1, pendingCount: 6 });
   expect(m.template).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: "member", status: { in: ["QUEUED", "RUNNING"] }, costPoints: { gt: 0 } } }));
+});
+
+it("includes outstanding exam holds and keeps account identifiers out of the statement", async () => {
+ exam.read.mockResolvedValue({ reservedPoints: 0.125001, pendingCount: 2, items: [{ id: "private-ref", userId: "member", points: 0.125001, createdAt: date.toISOString() }] });
+ const result = await readQuotaHistory("member");
+ expect(result).toMatchObject({ reservedPoints: 10.475001, pendingCount: 6 });
+ expect(exam.read).toHaveBeenCalledWith(expect.anything(), "member");
+ expect(JSON.stringify(result)).not.toContain("private-ref");
+});
+it("labels exam debits while retaining ordinary refund labels", async () => {
+ m.rows.mockResolvedValue([{ id: "debit", amount: -1, reason: "RUN_COST", refType: "exam-analysis", createdAt: date }, { id: "refund", amount: 1, reason: "REFUND", refType: "exam-analysis", createdAt: date }]);
+ expect((await readQuotaHistory("member")).entries.map(e => e.category)).toEqual(["EXAM_ANALYSIS", "REFUND"]);
 });

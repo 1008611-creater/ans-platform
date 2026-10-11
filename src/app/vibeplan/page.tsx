@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { VibePlan } from "@/components/workspace/vibeplan";
+import { getPlanSalesReadiness } from "@/server/billing/plan-readiness";
 
 export async function generateMetadata() {
   const t = await getTranslations("product.vibeplan");
@@ -7,5 +8,5 @@ export async function generateMetadata() {
 }
 
 export default function VibePlanPage() {
-  return <VibePlan />;
+  return <VibePlan readiness={getPlanSalesReadiness()} />;
 }

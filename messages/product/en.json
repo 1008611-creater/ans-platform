@@ -913,7 +913,6 @@
       "demoLabel": "Demo check #{sequence}",
       "chooseDetail": "Choose an issue or Demo check",
       "attachDemo": "Link this Demo check",
-
       "title": "Linked submissions and issues",
       "privacy": "Sharing a task does not grant access to submissions or issues. Each read checks target permissions independently. References identify an exact submitted version.",
       "empty": "No linked records. Save this task, then choose an accessible submission.",
@@ -1474,7 +1473,6 @@
     "assignedTo": "Assigned to: {id}",
     "completedBy": "Completed by: {id}",
     "eventActor": "Event actor: {id}",
-
     "title": "Live record summary",
     "intro": "Review this exact submission, its versions, technical checks, Demo checks and issues in one place.",
     "open": "Summarize this submission",
@@ -1704,7 +1702,6 @@
     "onsiteRecords": "Onsite technical records",
     "onsiteHistory": "Onsite processing history",
     "responsible": "{id} · {at}",
-
     "title": "Saved record archives",
     "intro": "Save the selected submission and its checks as a dated version that remains unchanged when live records change.",
     "open": "Open saved archives",
@@ -1895,7 +1892,8 @@
       "SELLER_INCOME": "Seller income",
       "PURCHASE": "Order payment / escrow",
       "RECHARGE": "Confirmed recharge",
-      "LEDGER_CORRECTION": "Ledger correction (balance unchanged)"
+      "LEDGER_CORRECTION": "Ledger correction (balance unchanged)",
+      "EXAM_ANALYSIS": "Exam analysis / reservation"
     }
   },
   "quotaAdmin": {
@@ -1940,7 +1938,11 @@
       "PAID": "Paid",
       "EXPIRED": "Expired",
       "FAILED": "Failed"
-    }
+    },
+    "examTitle": "Exam analysis reservations",
+    "examPending": "Awaiting settlement: {count} requests, {points} credits",
+    "examRecovery": "The exam service recovers and settles these reservations. For a long-running hold, check the task result. This list is read-only; a timeout does not trigger a refund.",
+    "examEmpty": "No outstanding exam analysis reservations."
   },
   "growth": {
     "eyebrow": "ANS GROWTH",
@@ -2552,19 +2554,19 @@
     "refresh": "Refresh"
   },
   "vibeplan": {
-    "pageTitle": "VibePlan · Creative subscriptions",
+    "pageTitle": "VibePlan · Plans and compute",
     "navigation": "VibePlan navigation",
     "back": "Back to points",
-    "status": "In preparation",
-    "headline": "Make room for creating",
-    "description": "A subscription direction for learning, exploring AI and finishing your own work. Weekly, monthly and quarterly plans are in preparation. Preview a rhythm that suits you.",
-    "choosePeriod": "Choose your rhythm",
-    "periodHelp": "Three periods, one creative direction.",
+    "status": "Terms confirmed · Preparing to open",
+    "headline": "Turn a good project into your own work.",
+    "description": "Choose a pace that fits your work. Membership provides production tools; points pay for compute. Projects, workflows and AIGC share one workspace.",
+    "choosePeriod": "Choose a term",
+    "periodHelp": "Monthly by default. Weekly for focused projects; quarterly points arrive in batches.",
     "previewLabel": "Subscription preview",
     "subscriptionDirection": "VibePlan / Subscription",
     "notFinalized": "To be announced",
-    "notAvailable": "Plans in preparation",
-    "previewNote": "This page previews the direction only. Pricing, quota and benefits will be confirmed before purchase opens. No payment or automatic renewal is activated here.",
+    "notAvailable": "Preparing to open",
+    "previewNote": "Prices and allowances are confirmed. Purchase opens after the target benefits are ready.",
     "terms": {
       "price": "Plan price",
       "quota": "Periodic points and rollover",
@@ -2592,14 +2594,14 @@
       }
     },
     "availableNow": "Available now",
-    "voucherTitle": "Need points now? Use a voucher.",
-    "voucherDescription": "Pay on LDXP, receive a voucher code and redeem it on ANS. Points vouchers are one-time purchases, separate from future VibePlan subscriptions.",
+    "voucherTitle": "Use occasionally? Top up when needed.",
+    "voucherDescription": "The five existing points vouchers remain available. Buy on LDXP and redeem the code on ANS. Checkout fees are shown by the payment provider.",
     "voucherAction": "Open points center",
-    "faqTitle": "Good to know",
+    "faqTitle": "Clear terms",
     "faq": {
       "difference": {
-        "question": "How do vouchers differ from VibePlan?",
-        "answer": "A points voucher is redeemed once using a code. VibePlan is a weekly, monthly or quarterly subscription direction. Quota, expiry, rollover and benefits have not been announced."
+        "question": "Membership or points vouchers?",
+        "answer": "Points vouchers fund compute when needed. Membership includes production tools and a stated points allowance. Learning, career work and AIGC share one membership. Plans are in preparation; purchase and membership redemption are not available."
       },
       "payment": {
         "question": "Can I buy VibePlan now?",
@@ -2608,7 +2610,116 @@
       "announcements": {
         "question": "What will be confirmed before launch?",
         "answer": "Plan pricing, periodic points, quota expiry and rollover, specific benefits, plus purchase, renewal and cancellation terms will be explained before availability."
+      },
+      "ratio": {
+        "question": "Why does the ¥49 plan include 300 points, not 490?",
+        "answer": "The top-up rate is fixed at ¥1 for 10 points. The ¥49 VibePlan monthly term includes 300 points and membership tools. Its full price is not converted to points, and it does not change the top-up rate. Points are not a promise of cash redemption."
+      },
+      "expiry": {
+        "question": "When do points expire?",
+        "answer": "Under the confirmed terms, top-up points do not expire. Weekly plan points last 14 days; each monthly or quarterly batch lasts 60 days. Quarterly grants arrive in three batches. Membership expiry does not remove points before their own expiry. These plan rules require batch management; existing top-up balances stay unchanged."
+      },
+      "renewal": {
+        "question": "Will I be charged automatically?",
+        "answer": "The first release uses LDXP term vouchers with manual renewal and no automatic charges. Same-tier renewal extends the term with scheduled grants. Upgrades show a price difference first; downgrades take effect next term. Exact upgrade calculations and refund handling must be ready before sale."
+      },
+      "ownership": {
+        "question": "What happens to my work when membership ends?",
+        "answer": "Ownership, basic privacy and export of existing work do not depend on membership. Saved text, source code and manual versions are not suddenly deleted at expiry. Large-media retention, archiving and traffic terms still need to be specified; permanent free hosting is not promised. Commercial use remains subject to asset and third-party licenses."
+      },
+      "failure": {
+        "question": "How are failed tasks charged?",
+        "answer": "The intended rules require a budget before execution. Unsubmitted or duplicate requests are not charged twice; the platform covers duplicate consumption caused by its own faults. Failures already charged upstream are settled from actual receipts. An unsatisfactory result does not automatically make a rerun free. Consult the terms and cost shown before each task."
+      },
+      "market": {
+        "question": "Can plan points buy market goods or be withdrawn?",
+        "answer": "No. Plan and promotional points are limited to permitted personal compute, with no transfers, withdrawals or purchases of withdrawable goods. Seller income uses a separate CNY ledger. Market commission, escrow and settlement need their own implementation and are not sold as current plan benefits."
       }
-    }
+    },
+    "principle": "Manual renewal, no automatic charges. View and export your existing work.",
+    "personal": "Personal projects",
+    "creator": "Creation and delivery",
+    "duration": "/ {days} days",
+    "includedPoints": "Includes {points} compute points",
+    "singleGrant": "One grant on activation, valid for {days} days.",
+    "quarterGrants": "{points} points on activation, day 30 and day 60. Each batch is valid for 60 days.",
+    "approvedLabel": "Confirmed terms",
+    "readinessTitle": "Make the service ready before taking payment.",
+    "readinessDescription": "All confirmed prices are visible. Membership, credit management and service safeguards are still being completed. Plans are not on sale.",
+    "blockerFallback": "A required service is still being completed.",
+    "comparisonTitle": "One workspace, different ways to work.",
+    "comparisonNote": "This is a target comparison, not benefits available to purchase today. Capacity, concurrency, history and professional tools are planned; free-tier limits are not currently enforced.",
+    "capability": "Capability",
+    "freeName": "Free",
+    "exchange": "Fixed: ¥1 = 10 points; 1 point = ¥0.10.",
+    "blockers": {
+      "MEMBERSHIP_LIFECYCLE_MISSING": "Activation, renewal, upgrades and expiry",
+      "CREDIT_BATCH_ALLOCATION_MISSING": "Scheduled grants, expiry and accurate statements",
+      "CREDIT_PURPOSE_ISOLATION_MISSING": "Plan points limited to personal compute",
+      "ENTITLEMENT_ENFORCEMENT_INCOMPLETE": "Capacity, concurrency and tool entitlements",
+      "REFUND_REVOCATION_INCOMPLETE": "Original-channel refunds and redemption revocation",
+      "MEDIA_TERMS_UNCONFIRMED": "Media retention, archiving and traffic terms",
+      "PROCUREMENT_COST_UNVERIFIED": "Verified model procurement costs",
+      "MERCHANT_PLAN_UNVERIFIED": "LDXP plan products and fulfillment verification",
+      "PRO_DELIVERY_INCOMPLETE": "Pro batch, version, collaboration and delivery tools"
+    },
+    "tiers": {
+      "plan": {
+        "name": "VibePlan",
+        "description": "Keep learning, applying, competing and building personal projects.",
+        "workflow": "Planned: mature official workflows and personal recipes",
+        "continuity": "Planned: longer version history and more projects",
+        "delivery": "Planned: custom presentation and project collaboration"
+      },
+      "pro": {
+        "name": "VibePlan Pro",
+        "description": "For frequent creation, multiple projects and client delivery.",
+        "workflow": "Planned: batch execution and version branches",
+        "continuity": "Planned: more concurrent tasks, storage and history",
+        "delivery": "Planned: client feedback, delivery packages and detailed permissions"
+      }
+    },
+    "comparison": {
+      "discovery": {
+        "label": "Projects and community",
+        "free": "Browse, publish, showcase",
+        "plan": "Also included",
+        "pro": "Also included"
+      },
+      "workflows": {
+        "label": "Workflows",
+        "free": "Basic workflows; top up compute",
+        "plan": "Mature workflows and recipes",
+        "pro": "Batch execution and branches"
+      },
+      "projects": {
+        "label": "Active projects"
+      },
+      "storage": {
+        "label": "File storage"
+      },
+      "concurrency": {
+        "label": "Concurrent tasks"
+      },
+      "history": {
+        "label": "Automatic history"
+      },
+      "delivery": {
+        "label": "Collaboration and presentation",
+        "free": "Basic sharing and profile",
+        "plan": "Project collaboration and custom presentation",
+        "pro": "Client feedback and delivery packages"
+      },
+      "export": {
+        "label": "Export existing work",
+        "free": "Included",
+        "plan": "Included",
+        "pro": "Included"
+      }
+    },
+    "projectValue": "{value} projects",
+    "storageValue": "{value} GB",
+    "concurrencyValue": "{value} tasks",
+    "historyValue": "{value} days"
   }
 }

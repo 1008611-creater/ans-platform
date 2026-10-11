@@ -124,3 +124,11 @@ REQ-I04/I05：公开五维评分/全领域赛道/视频模式同步中英文；�
 本地完整lint退出0、0errors / 382存量warnings；充值4文件30项、独立6文件34项、Hypit8项及完整test TypeScript通过，证据分别保存本机handoff目录。精确Linux检查、隔离DB、备份恢复、main提交及线上桌面手机仍由后续实际证据证明。旧市场verifier已修源而非overlay。schema/packages/migrations无新改动。真实库存准备已在生产用现有唯一卡密创建者管理员生成5批×20张，不是测试卡，无兑换/积分入账；明文仅服务器0700/0600私有目录，未打印或放Git。店铺商品发布与库存导入等待浏览器操作规则要求的当前步骤确认，生成库存不代表已出售或真实收款。
 
 发布磁盘清理已真实执行：删除已逐引用核对的6个过期停止ANS容器及15旧ANS镜像标签，保留运行当前镜像和最近3回档镜像、其他应用和所有volume；数据盘可用从3.2GB到12GB。证据服务器b9发布目录ui-next-retention-cleanup/result.json，未清除旧审计/备份文件。
+
+## 2026-10-12 Billing catalog and audited PR integration
+
+REQ-B01/B02/B03/B04/B05: approved commercial rules are saved in the commercial architecture, six versioned subscription SKUs, independent grant schedules and fixed CNY conversion (CNY 1 = 10 compute points). Membership sales remain blocked: the persisted batch lifecycle, purpose isolation, refunds, entitlements and verified procurement cost are incomplete. This change publishes an accurate plan preview; it does not issue memberships or revalue existing balances.
+
+Production recharge-r2 and exam reservation source increments were verified against transferred hashes and integrated, preserving APIC units and the existing LDXP product mapping. PR30 developers and PR47 template discovery were adapted to the current main; current favorites, growth rewards and APIC estimates remain. PR29 is superseded by the existing localized metadata implementation. VibeHub public labels use AIGC Workbench.
+
+Independent reviewer open_pr_audit executed 174 targeted tests, scoped lint and architecture boundaries. The exam writer contract matches the read-only reservation query. A full local run initially found three outdated voucher mock failures; the missing locale mock was added and business assertions retained. Final frozen Linux build and production evidence are still pending at this checkpoint. The companion/settings handoff is not included in this checkpoint. No production test accounts, memberships, orders or real payments were created.

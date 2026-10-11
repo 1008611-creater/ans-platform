@@ -1,5 +1,7 @@
+import { YUAN_PER_POINT } from "@/lib/credits-pricing";
+
 /** Face values approved for the existing LDXP voucher redemption flow. */
-export const CREDIT_DENOMINATIONS = [100, 500, 1000, 2000, 5000] as const;
+export const CREDIT_DENOMINATIONS = [10, 100, 500, 1000, 2000, 5000] as const;
 export type CreditDenomination = (typeof CREDIT_DENOMINATIONS)[number];
 export type CreditProduct = {
   points: CreditDenomination;
@@ -8,20 +10,20 @@ export type CreditProduct = {
 };
 export const LEGACY_CREDIT_PRODUCT = {
   points: 10,
-  faceValueYuan: 1,
+  faceValueYuan: 10 * YUAN_PER_POINT,
   purchaseUrl: "https://wzyp.cn/item/zkm211",
 } as const;
 
 /** Configuring a URL is an operator assertion that this exact SKU has been checked.
  * No inference from another product, redirect or amount is performed here. */
-function verifiedShopUrl(value: string | undefined): string | null {
+function verifiedShopUrl(value: string | undefined, points: CreditDenomination): string | null {
   if (!value) return null;
   try {
     const url = new URL(value.trim());
     if (url.protocol !== "https:" || url.hostname !== "wzyp.cn" || url.port ||
         url.username || url.password || url.search || url.hash ||
         !/^\/item\/[a-zA-Z0-9_-]+$/.test(url.pathname)) return null;
-    return url.href === LEGACY_CREDIT_PRODUCT.purchaseUrl ? null : url.href;
+    return url.href === LEGACY_CREDIT_PRODUCT.purchaseUrl && points !== 10 ? null : url.href;
   } catch {
     return null;
   }
@@ -31,8 +33,8 @@ function verifiedShopUrl(value: string | undefined): string | null {
 export function getCreditProducts(environment: Readonly<Record<string, string | undefined>>): CreditProduct[] {
   const products = CREDIT_DENOMINATIONS.map(points => ({
     points,
-    faceValueYuan: points / 10,
-    purchaseUrl: verifiedShopUrl(environment[`ANS_CREDIT_PRODUCT_${points}_URL`]),
+    faceValueYuan: points * YUAN_PER_POINT,
+    purchaseUrl: verifiedShopUrl(environment[`ANS_CREDIT_PRODUCT_${points}_URL`] ?? (points === 10 ? LEGACY_CREDIT_PRODUCT.purchaseUrl : undefined), points),
   }));
   // One SKU must never be shown as two different face values.
   return products.map(product => ({ ...product, purchaseUrl: product.purchaseUrl &&

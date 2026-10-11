@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+import { readExamReservations } from "./exam-reservations";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -44,14 +46,18 @@ export async function applyQuotaOperation(actorId: string, raw: unknown) {
   });
 }
 export async function quotaAdminOverview() {
-  const [users, operations, pending, disputes, uncertain, gaps, ldxpOrders] = await Promise.all([
-    db.user.findMany({ where: { deletedAt: null }, select: { id: true, username: true, quotaPoints: true, flagged: true }, orderBy: { createdAt: "desc" }, take: 100 }),
-    db.quotaOperation.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
-    db.apiComputeRequest.count({ where: { state: { in: ["RUNNING", "UNCERTAIN"] } } }),
-    db.marketOrder.findMany({ where: { paymentMethod: "POINTS", status: "DISPUTED" }, select: { id: true, buyerId: true, sellerId: true, totalMinor: true }, orderBy: { updatedAt: "asc" }, take: 50 }),
-    db.apiComputeRequest.findMany({ where: { state: "UNCERTAIN" }, select: { id: true, userId: true, modelId: true, authorizedPoints: true }, orderBy: { updatedAt: "asc" }, take: 50 }),
-    db.$queryRaw<{ count: number }[]>`SELECT count(*)::int AS count FROM (SELECT u.id FROM users u LEFT JOIN quota_ledgers l ON l."userId"=u.id GROUP BY u.id,u."quotaPoints" HAVING u."quotaPoints"<>coalesce(sum(l.amount),0)) differences`,
+ return db.$transaction(async tx => {
+  await tx.$executeRaw`SET TRANSACTION READ ONLY`;
+  const [users, operations, pending, disputes, uncertain, gaps, ldxpOrders, examPending] = await Promise.all([
+    tx.user.findMany({ where: { deletedAt: null }, select: { id: true, username: true, quotaPoints: true, flagged: true }, orderBy: { createdAt: "desc" }, take: 100 }),
+    tx.quotaOperation.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
+    tx.apiComputeRequest.count({ where: { state: { in: ["RUNNING", "UNCERTAIN"] } } }),
+    tx.marketOrder.findMany({ where: { paymentMethod: "POINTS", status: "DISPUTED" }, select: { id: true, buyerId: true, sellerId: true, totalMinor: true }, orderBy: { updatedAt: "asc" }, take: 50 }),
+    tx.apiComputeRequest.findMany({ where: { state: "UNCERTAIN" }, select: { id: true, userId: true, modelId: true, authorizedPoints: true }, orderBy: { updatedAt: "asc" }, take: 50 }),
+    tx.$queryRaw<{ count: number }[]>`SELECT count(*)::int AS count FROM (SELECT u.id FROM users u LEFT JOIN quota_ledgers l ON l."userId"=u.id GROUP BY u.id,u."quotaPoints" HAVING u."quotaPoints"<>coalesce(sum(l.amount),0)) differences`,
     listLdxpRechargeOrders(),
+    readExamReservations(tx),
   ]);
-  return { users, mismatchCount: gaps[0]?.count ?? 0, disputes, uncertain: uncertain.map(row => ({ ...row, authorizedPoints: Number(row.authorizedPoints) })), operations: operations.map(row => ({ ...row, amount: Number(row.amount), balanceAfter: Number(row.balanceAfter), createdAt: row.createdAt.toISOString() })), pending, manualRechargeEnabled: process.env.ANS_MANUAL_RECHARGE_ENABLED === "1", ldxp: { enabled: ldxpRechargeEnabled(), orders: ldxpOrders } };
+  return { users, mismatchCount: gaps[0]?.count ?? 0, disputes, uncertain: uncertain.map(row => ({ ...row, authorizedPoints: Number(row.authorizedPoints) })), operations: operations.map(row => ({ ...row, amount: Number(row.amount), balanceAfter: Number(row.balanceAfter), createdAt: row.createdAt.toISOString() })), pending, examPending, manualRechargeEnabled: process.env.ANS_MANUAL_RECHARGE_ENABLED === "1", ldxp: { enabled: ldxpRechargeEnabled(), orders: ldxpOrders } };
+ }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
 }

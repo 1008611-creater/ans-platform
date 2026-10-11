@@ -6,7 +6,7 @@ import enProduct from "../../../messages/product/en.json";
 import { VoucherPanel } from "@/components/admin/voucher-panel";
 const mocks=vi.hoisted(()=>({fetch:vi.fn(),refresh:vi.fn(),t:(key:string)=>key,session:{data:{user:{id:"actor"}},status:"authenticated"}}));
 vi.mock("next-auth/react",()=>({useSession:()=>mocks.session}));
-vi.mock("next-intl",()=>({useTranslations:()=>mocks.t}));
+vi.mock("next-intl",()=>({useLocale:()=>"en-US",useTranslations:()=>mocks.t}));
 vi.mock("next/navigation",()=>({useRouter:()=>({refresh:mocks.refresh})}));
 const billing={rechargeYuanPerPoint:0.1,usdQuotaPerPoint:1,gptConsumptionMultiplier:0.16,deepseekConsumptionMultiplier:1,rechargeEnabled:false};
 beforeEach(()=>{vi.clearAllMocks();mocks.session={data:{user:{id:"actor"}},status:"authenticated"};vi.stubGlobal("fetch",mocks.fetch);});
