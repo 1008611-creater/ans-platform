@@ -1,6 +1,8 @@
-import { MetadataRoute } from "next";
+﻿import { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { getAllChapters } from "@/lib/book/chapters";
+import vibeTerms from "./vibe-hub/terms.json";
+import vibeSpecials from "./vibe-hub/special-pages.json";
 
 // Revalidate sitemap every hour (3600 seconds)
 export const revalidate = 3600;
@@ -41,6 +43,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
   ];
+
+  const vibeStaticPages: MetadataRoute.Sitemap = ["vibe-hub", "vibe-hub/practice", "vibe-hub/anti-ai-flavor", "vibe-hub/skill", "vibe-hub/favorites", "vibe-hub/topics"].map((path) => ({ url: `${baseUrl}/${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: path === "vibe-hub" ? 0.9 : 0.6 }));
+  const vibeTermPages: MetadataRoute.Sitemap = vibeTerms.map((term) => ({ url: `${baseUrl}/vibe-hub/${term.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 }));
 
   // Book chapter pages
   const chapters = getAllChapters();
@@ -85,9 +90,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
-    return [...staticPages, ...bookPages, ...categoryPages, ...promptPages, ...tagPages];
+    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...categoryPages, ...promptPages, ...tagPages];
   } catch {
     // Database unavailable (build time) - return static and book pages only
-    return [...staticPages, ...bookPages];
+    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...bookPages];
   }
 }
+
