@@ -12,6 +12,8 @@ import {
 import { publicReviewBlockers } from "@/domain/projects/review";
 import type { FactRecord } from "@/domain/projects/pack";
 import { db } from "@/lib/db";
+import { lockCompetitionRegistrationWindow, assertAgriRegistrationOpen } from "./agrihackathon/registration";
+import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 
 export class CompetitionError extends Error {
   constructor(public readonly status: number, public readonly code: string, message: string) {
@@ -184,6 +186,7 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
 
   try {
     return await db.$transaction(async (tx) => {
+      const registration = await lockCompetitionRegistrationWindow(tx, actorId, competitionId);
       const [membership, competition] = await Promise.all([
         tx.teamMember.findFirst({ where: { teamId, userId: actorId, status: "ACTIVE" }, select: { role: true } }),
         tx.competition.findUnique({ where: { id: competitionId } }),
@@ -192,12 +195,16 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
         throw new CompetitionError(403, "TEAM_PERMISSION_REQUIRED", "需要队长或团队管理员报名。");
       }
       if (!competition) throw new CompetitionError(404, "NOT_FOUND", "赛事不存在。");
-      ensureEntryOpen(competition);
+      if (registration) await assertAgriRegistrationOpen(tx, registration);
+      else ensureEntryOpen(competition);
       const existing = await tx.teamCompetition.findUnique({
         where: { teamId_competitionId: { teamId, competitionId } },
       });
       if (existing) {
-        if (existing.entryStatus !== "REJECTED") return { entry: existing, created: false };
+        if (existing.entryStatus !== "REJECTED") {
+          if (registration) await assertAgriRegistrationOpen(tx, registration);
+          return { entry: existing, created: false };
+        }
         if (competition.maxTeams !== null) {
           const count = await tx.teamCompetition.count({ where: { competitionId, entryStatus: { not: "REJECTED" } } });
           if (count >= competition.maxTeams) throw new CompetitionError(409, "COMPETITION_FULL", "赛事队伍名额已满，暂时无法重新报名。");
@@ -215,9 +222,10 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
             resourceId: reset.id,
             before: { status: "REJECTED" },
             after: { status: "REGISTERED" },
-            metadata: { competitionId, teamId, artifactVersionId: null },
+            metadata: { competitionId, teamId, artifactVersionId: null, ...(registration ? { registrationRuleVersionId: registration.ruleVersionId } : {}) },
           },
         });
+        if (registration) await assertAgriRegistrationOpen(tx, registration);
         return { entry: reset, created: true };
       }
       if (competition.maxTeams !== null) {
@@ -233,12 +241,24 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
           resourceId: entry.id,
           before: { status: null },
           after: { status: "REGISTERED" },
-          metadata: { competitionId, teamId, artifactVersionId: null },
+          metadata: { competitionId, teamId, artifactVersionId: null, ...(registration ? { registrationRuleVersionId: registration.ruleVersionId } : {}) },
         },
       });
+      if (registration) await assertAgriRegistrationOpen(tx, registration);
       return { entry, created: true };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
+    if (error instanceof AgriWorkspaceError) {
+      const messages: Record<string, string> = {
+        AGRI_REGISTRATION_NOT_OPEN: "报名尚未开始，请查看已发布的报名时间。",
+        AGRI_REGISTRATION_CLOSED: "报名已截止，当前不接受新报名。",
+        AGRI_REGISTRATION_RULES_PENDING: "报名时间尚未确认，确认并发布后才能报名。",
+        AGRI_RULES_UNPUBLISHED: "本届报名规则尚未发布，暂未开放报名。",
+        AGRI_WORKSPACE_DISABLED: "本届农客松尚未开放报名。",
+        ACCOUNT_UNAVAILABLE: "账号当前不可用，无法报名。",
+      };
+      throw new CompetitionError(error.status, error.code, messages[error.code] ?? "本届报名配置暂不可用，请联系赛事负责人。");
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
       throw new CompetitionError(409, "REGISTRATION_CONFLICT", "名额刚被其他队伍占用，请刷新后重试。");
     }
