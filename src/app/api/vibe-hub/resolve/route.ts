@@ -1,0 +1,4 @@
+﻿import { NextResponse } from "next/server";
+import terms from "../terms/terms.json";
+const aliases: Record<string,string[]> = { hover:["鼠标放上去","悬停","hover",":hover"], tooltip:["小提示","提示","tooltip"], modal:["弹窗","模态框","modal"], drawer:["从右边展开","抽屉","drawer"], accordion:["折叠","展开收起","accordion"], toast:["轻提示","toast"] };
+export async function GET(request: Request) { const q=(new URL(request.url).searchParams.get("q")||"").trim().toLowerCase(); if(!q) return NextResponse.json({items:[]}); const scored=terms.map(t=>{const hay=`${t.name} ${t.slug} ${t.description}`.toLowerCase(); let score=hay.includes(q)?100:0; for(const [slug,words] of Object.entries(aliases)){if(words.some(w=>q.includes(w)||w.includes(q))&&t.slug===slug) score=160;} return {...t,score};}).filter(t=>t.score>0).sort((a,b)=>b.score-a.score).slice(0,3); return NextResponse.json({items:scored}); }
