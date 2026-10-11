@@ -34,12 +34,20 @@
       "sha256": "d41f4fa218c0815e3ebef40732b79a5aebc94b21539d1886f8625911c3f4f628"
     },
     {
+      "url": "https://vibe-hub.org/_next/static/chunks/5277-4d3cab0ece9b2812.js",
+      "sha256": "dee134573a344edd33f52b3de78cdeb20b272158a1dc3ded61a4dc0954586f9c"
+    },
+    {
       "url": "https://vibe-hub.org/_next/static/chunks/2652.d16f75bfdf2ab221.js",
       "sha256": "ce84ffa92963107d5a772b95ce0b7c4c2c3040de9f95b7412ccace218ad49bd4"
     },
     {
       "url": "https://vibe-hub.org/_next/static/chunks/3304.ac29985a724965b2.js",
       "sha256": "7074fbecfe213d65543f79a0954bd07fd1a6b1e2aa357d80a8706d46adbde7ce"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/8335-50fb2330fbd5dae3.js",
+      "sha256": "0b19c22cf51b4fb543fd75b958b82c69d9c949c855fcd8419052491b231492c5"
     },
     {
       "url": "https://vibe-hub.org/_next/static/chunks/3766-9a959b8fa5c7361e.js",
@@ -58,10 +66,6 @@
       "sha256": "729f1c7a1d60975b0d5b7cd0f0d1e37bbcb1e19a827e0a1fbc2b898b439692cd"
     },
     {
-      "url": "https://vibe-hub.org/_next/static/chunks/8335-50fb2330fbd5dae3.js",
-      "sha256": "0b19c22cf51b4fb543fd75b958b82c69d9c949c855fcd8419052491b231492c5"
-    },
-    {
       "url": "https://vibe-hub.org/_next/static/chunks/4829.c63f8f32258800b4.js",
       "sha256": "a6f76c4b584a5c9322bc96a03de45636ad1e2edfde7cc7cd021029f48dccd196"
     },
@@ -70,8 +74,8 @@
       "sha256": "dda35e072d467c7de36f5031c6c19e74a77360be8801bc7ee897f628cdb91504"
     },
     {
-      "url": "https://vibe-hub.org/_next/static/chunks/5277-4d3cab0ece9b2812.js",
-      "sha256": "dee134573a344edd33f52b3de78cdeb20b272158a1dc3ded61a4dc0954586f9c"
+      "url": "https://vibe-hub.org/_next/static/chunks/5278.575f0fa9aa3380dd.js",
+      "sha256": "ba96b6c0679537f0298c29946a2b6c6247e7739df44795c9d7dda3d56bef26d7"
     },
     {
       "url": "https://vibe-hub.org/_next/static/chunks/5593.d1c61040bfed225a.js",
@@ -80,6 +84,10 @@
     {
       "url": "https://vibe-hub.org/_next/static/chunks/5863.c9c4fc93c5ab6cd3.js",
       "sha256": "8191001613fce6096f0c9009c3762041389fe91f54941d6505923542d9fc21b4"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/8fc4c4dd-67f3c4fce6975c63.js",
+      "sha256": "f5626b15c7bd0e4794bfdc4a6bd8d8e7547c1ad8a8b42fa143905a7df6648f0c"
     },
     {
       "url": "https://vibe-hub.org/_next/static/chunks/6917.bf71b1589eacc149.js",
@@ -96,6 +104,14 @@
     {
       "url": "https://vibe-hub.org/_next/static/chunks/962.e8628eb4766c9c72.js",
       "sha256": "8648a14b0b0f30d7431763c78008899305bee209fc84ebc580d535aed94aed45"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/4902-0479db6f5ab05a08.js",
+      "sha256": "f5067367b6494d1656d93d9fd6216b4de0f6642b424cefcb6709035cf559f069"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/8977.11597d0f49a72e89.js",
+      "sha256": "eafabb6f6c6061e7011735a7f1209e3ba9696334d9c02fc665d7516f77ab7067"
     },
     {
       "url": "https://vibe-hub.org/_next/static/chunks/9172.4d21bf78f272a432.js",

@@ -145,7 +145,15 @@
     "labContinue": "Continue",
     "labTypography": "Typography",
     "courses": "Courses",
-    "loadError": "This content could not be loaded. Please retry."
+    "loadError": "This content could not be loaded. Please retry.",
+    "recentlySaved": "Recently saved",
+    "byCategory": "By category",
+    "view": "View",
+    "originalAuthor": "Original content by",
+    "authorContributions": "Author and contributions",
+    "red": "RED",
+    "email": "Email",
+    "suggestTerm": "Suggest a term"
   },
   "zh": {
     "terms": "术语图鉴",
@@ -293,6 +301,14 @@
     "labContinue": "继续",
     "labTypography": "排版",
     "courses": "课程",
-    "loadError": "内容暂时无法载入，请重试。"
+    "loadError": "内容暂时无法载入，请重试。",
+    "recentlySaved": "最近收藏",
+    "byCategory": "分类浏览",
+    "view": "浏览方式",
+    "originalAuthor": "原站内容作者",
+    "authorContributions": "作者与贡献",
+    "red": "小红书",
+    "email": "邮件",
+    "suggestTerm": "补充词条"
   }
 }

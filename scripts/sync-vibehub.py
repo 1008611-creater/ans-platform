@@ -5,7 +5,7 @@ active content, and internal links point at ANS. CSS is scoped in a separate ste
 Run from the ANS repository root: python scripts/sync-vibehub.py
 """
 from __future__ import annotations
-import concurrent.futures, hashlib, html, json, re, sys, time, urllib.request, os, tempfile
+import concurrent.futures, hashlib, html, json, re, sys, time, urllib.request, os, tempfile, subprocess
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from html.parser import HTMLParser
@@ -244,27 +244,24 @@ def fetch_term(item):
 
 
 def hydrate_catalog_previews():
-    # Catalog thumbnails are client-rendered upstream. Reuse each full guide's
-    # actual diagram instead of preserving the empty SSR thumbnail container.
+    # Use the official compact catalog illustrations. Detail-page diagrams are
+    # different content and must not silently replace these thumbnails.
+    preview_path = DATA / 'catalog-previews.json'
+    if not preview_path.exists():
+        raise ValueError('Run extract-vibehub-interactions.mjs first to extract official catalog previews')
+    previews = json.loads(preview_path.read_text(encoding='utf-8'))
     catalog_path = DATA / 'catalog.json'
     catalog = json.loads(catalog_path.read_text(encoding='utf-8'))
     for entry in catalog['entries']:
+        source = previews.get(entry['slug'])
+        if not source: raise ValueError('Missing official catalog preview: ' + entry['slug'])
         for lang in ['en', 'zh']:
-            page = json.loads((DATA / 'entries' / lang / (entry['slug'] + '.json')).read_text(encoding='utf-8'))
-            root = Tree(page['html']).root
-            title = root.first(lambda n: n.tag == 'h1')
-            if title:
-                entry[lang]['name'] = ''.join(c for c in title.children if isinstance(c, str)).strip()
-            visual = (root.first(lambda n: n.has('dh-demo')) or root.first(lambda n: n.has('interactive-demo'))
-                      or root.first(lambda n: n.has('flow-journey')) or root.first(lambda n: n.has('concept-stage')))
-            if not visual: raise ValueError('Missing thumbnail diagram: ' + entry['slug'])
-            if visual.has('dh-demo'):
-                visual = visual.first(lambda n: n.has('dh-demo-inner')) or visual.first(lambda n: n.has('style-detail-canvas')) or visual
-            for node in visual.walk():
-                if node.tag in ['button', 'input', 'select', 'textarea']: node.attrs['tabindex'] = '-1'
-            entry[lang]['preview'] = '<div class="card-demo vh-source-preview" aria-hidden="true" inert><div class="vh-preview-canvas">' + serialize(visual) + '</div></div>'
-        prefix = entry['en']['name'] + ' '
-        if entry['zh']['quote'].startswith(prefix): entry['zh']['quote'] = entry['zh']['quote'][len(prefix):]
+            root = Tree(source[lang]).root
+            cleaned = ''.join(serialize(child) for child in root.children)
+            if not cleaned.strip(): raise ValueError('Empty official preview: ' + entry['slug'])
+            entry[lang]['preview'] = cleaned
+            source[lang] = cleaned
+    write_json(preview_path, previews)
     write_json(catalog_path, catalog)
 
 
@@ -277,6 +274,12 @@ def specials():
             main = root.first(lambda n: n.tag == 'main')
             title = main.first(lambda n: n.tag == 'h1') if main else None
             if not main: raise ValueError('No main: ' + path)
+            expected = {'practice': 'practice-page', 'anti-ai-flavor': 'aif-catalog-page', 'vibehub-skill': 'skill-page', 'changelog': 'changelog-page', 'vibehub-skill/lab': 'learning-lab-page'}[slug]
+            if not main.first(lambda n: n.has(expected)):
+                if slug == 'changelog':
+                    subprocess.run(['node', 'scripts/render-vibehub-specials.mjs'], check=True)
+                    continue
+                raise ValueError('Unexpected homepage fallback: ' + path)
             write_json(DATA / 'specials' / lang / (slug.replace('/', '-') + '.json'), {'title': title.clean_text() if title else slug, 'html': serialize(main), 'sourceUrl': SITE + path})
             if slug == 'vibehub-skill/lab':
                 product = main.first(lambda n: n.has('learning-product'))
@@ -334,4 +337,6 @@ def main():
     write_json(DATA / 'provenance.json', {'source': SITE, 'retrievedAt': datetime.now(timezone.utc).isoformat(), 'termCount': len(entries), 'files': hashes})
     print('COMPLETE', len(entries), 'terms;', len(CSS), 'stylesheets;', len(ASSETS), 'assets', flush=True)
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    if '--previews-only' in sys.argv: hydrate_catalog_previews()
+    else: main()

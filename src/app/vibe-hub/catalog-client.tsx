@@ -1,9 +1,12 @@
 ﻿"use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useVibeLanguage } from "./use-vibe-language";
-import { FavoriteButton } from "./favorite-button";
+import { CatalogPreview, TechnologyIcon } from "./official/catalog-preview";
+import { FavoriteButton, useVibeFavorites } from "./favorite-button";
+import { searchTerms } from "./official/search";
 import { TermResolver } from "./term-resolver";
 
 type EntryText = { name: string; quote: string; category: string; preview: string };
@@ -17,38 +20,44 @@ export function Catalog({ data, initialTopic = "frontend", initialQuery = "" }: 
   const topic = data.topics.find((item) => item.slug === initialTopic) || data.topics[0];
   const groups = useMemo(() => {
     if (!query.trim()) return topic[lang].groups;
-    const hay = query.trim().toLowerCase();
-    const matches = data.entries.filter((entry) => `${entry.en.name} ${entry.zh.name} ${entry.en.quote} ${entry.zh.quote}`.toLowerCase().includes(hay));
-    return [{ title: t("search"), slugs: matches.map((entry) => entry.slug) }];
+    const available = new Set(data.entries.map(entry => entry.slug));
+    const matches = searchTerms({ query }).filter(hit => available.has(hit.entry.id));
+    return [{ title: t("search"), slugs: matches.map(hit => hit.entry.id) }];
   }, [data, topic, query, lang, t]);
   const bySlug = useMemo(() => new Map(data.entries.map((entry) => [entry.slug, entry])), [data]);
+  const [activeGroup, setActiveGroup] = useState<number | null>(null);
+  useEffect(() => {
+    let frame = 0;
+    const update = () => { frame = 0; let active: number | null = null; groups.forEach((_,index) => { const top = document.getElementById(`group-${index}`)?.getBoundingClientRect().top; if (top !== undefined && top <= 160) active = index; }); setActiveGroup(active); };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    schedule(); window.addEventListener("scroll",schedule,{passive:true}); window.addEventListener("resize",schedule);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll",schedule); window.removeEventListener("resize",schedule); };
+  }, [groups]);
   const count = groups.reduce((sum, group) => sum + group.slugs.length, 0);
-  return <main className="vh-catalog">
-    <nav className="vh-topic-row" aria-label={t("topics")}>
-      {data.topics.map((item) => <Link key={item.slug} href={`/vibe-hub/topics/${item.slug}?lang=${lang}`} className={topic.slug === item.slug && !query ? "active" : ""}>{t(item.slug)}<small>{item[lang].groups.reduce((sum, group) => sum + group.slugs.length, 0)}</small></Link>)}
-      <Link href={`/vibe-hub/favorites?lang=${lang}`}>{t("saved")}</Link>
-    </nav>
-    <div className="vh-catalog-layout">
-      <nav className="vh-category-nav" aria-label={t("topics")}>{groups.map((group, index) => <a key={group.title} href={`#group-${index}`}>{group.title}</a>)}<Link href={`/vibe-hub/journeys?lang=${lang}`}>{t("journeys")} ↗</Link></nav>
-      <div>
-        <h1>{query ? `${t("search")} · ${t("count", { count })}` : topic[lang].title}</h1>
-        {query && <div className="mb-6 flex gap-3"><input className="vh-field" aria-label={t("search")} value={query} onChange={(event) => setQuery(event.target.value)} /><button type="button" className="vh-text-button" onClick={() => setQuery("")}>{t("reset")}</button></div>}
-        {groups.map((group, index) => <section className="vh-catalog-group" id={`group-${index}`} key={group.title}>
-          <div className="vh-group-heading"><h2>{group.title}</h2><span>{t("count", { count: group.slugs.length })}</span></div>
-          <div className="vh-cards">{group.slugs.map((slug) => {
-            const entry = bySlug.get(slug); if (!entry) return null; const text = entry[lang];
-            return <article className="vh-term-card" key={slug}>
-              <div className="vh-card-title"><h3>{text.name}</h3>{lang === "zh" && text.name !== entry.en.name && <small>{entry.en.name}</small>}</div>
-              <p className="vh-card-quote">{text.quote}</p>
-              <div dangerouslySetInnerHTML={{ __html: text.preview }} />
-              <Link className="vh-card-overlay" href={`/vibe-hub/${slug}?lang=${lang}`} aria-label={text.name} />
-              <span className="vh-card-star"><FavoriteButton slug={slug} compact /></span>
-            </article>;
-          })}</div>
-        </section>)}
-        {count === 0 && <p className="vh-empty">{t("empty")}</p>}
-        <TermResolver />
-      </div>
+  const router = useRouter(); const { ids } = useVibeFavorites();
+  return <main className="catalog-page catalog-directory-page"><div className="catalog-layout catalog-directory-layout">
+    <section className="catalog-finder" aria-label={t("topics")}><div className="catalog-finder-row"><div className="catalog-filter-list">
+      {data.topics.map(item => <button key={item.slug} type="button" className="catalog-filter-chip" aria-pressed={topic.slug === item.slug && !query} onClick={() => router.push(`/vibe-hub/topics/${item.slug}?lang=${lang}`)}>{t(item.slug)}<span>{item[lang].groups.reduce((sum,group) => sum + group.slugs.length,0)}</span></button>)}
+      <button type="button" className="catalog-filter-chip" onClick={() => router.push(`/vibe-hub/favorites?lang=${lang}`)}>{t("saved")}<span>{ids.length}</span></button>
+    </div></div></section>
+    <aside className="catalog-sidebar"><nav className="cat-chips" aria-label={t("topics")}>{groups.map((group,index) => <button type="button" className="catalog-filter-chip" key={group.title} aria-pressed={activeGroup === index} aria-current={activeGroup === index ? "location" : undefined} onClick={() => document.getElementById(`group-${index}`)?.scrollIntoView({behavior:"smooth",block:"start"})}>{group.title}</button>)}<Link className="catalog-filter-chip" href={`/vibe-hub/journeys?lang=${lang}`}>{t("journeys")} ↗</Link></nav></aside>
+    <div className="grid-wrap">
+      <header className="catalog-heading"><h1>{query ? `${t("search")} · ${t("count", {count})}` : topic[lang].title}</h1></header>
+      {query && <div className="mb-6 flex gap-3"><input className="vh-field" aria-label={t("search")} value={query} onChange={event => setQuery(event.target.value)} /><button type="button" className="vh-text-button" onClick={() => setQuery("")}>{t("reset")}</button></div>}
+      {groups.map((group,index) => <section className="cat-section" id={`group-${index}`} key={group.title}>
+        <h2 className="cat-title">{group.title}<span>{t("count", {count:group.slugs.length})}</span></h2>
+        <div className={`grid${group.title === "官网区块" || group.title === "Website Sections" ? " grid-site-sections" : group.title === "设计风格" || group.title === "Design Styles" ? " grid-style" : ""}`}>{group.slugs.map(slug => {
+          const entry = bySlug.get(slug); if (!entry) return null; const text = entry[lang];
+          return <article className="card vh-official-card" data-id={slug} key={slug}>
+            <div className="card-head"><Link className="card-title-group card-title-link" href={`/vibe-hub/${slug}?lang=${lang}`} aria-label={text.name}><TechnologyIcon entry={{id:slug}} /><h3>{text.name}{lang === "zh" && text.name !== entry.en.name && <span>{entry.en.name}</span>}</h3></Link><FavoriteButton slug={slug} official /></div>
+            <div className="card-tagline card-quote">{text.quote}</div>
+            <CatalogPreview entry={{id:slug,cat:entry.zh.category}} html={text.preview} />
+            <Link className="vh-official-card-overlay" href={`/vibe-hub/${slug}?lang=${lang}`} aria-hidden="true" tabIndex={-1} />
+          </article>;
+        })}</div>
+      </section>)}
+      {count === 0 && <p className="vh-empty">{t("empty")}</p>}
+      <TermResolver />
     </div>
-  </main>;
+  </div></main>;
 }
