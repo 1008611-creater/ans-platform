@@ -2,731 +2,1023 @@
   {
     "slug": "frontend",
     "name": "Frontend",
-    "href": "/en/frontend"
+    "href": "/en/frontend",
+    "description": "The layer people directly see, click, and type into. On a sign-up page, the fields, submit button, and pending, success, or error messages belong to the frontend…",
+    "title": "Frontend in Web Development Explained | VibeHub"
   },
   {
     "slug": "component",
     "name": "Component",
-    "href": "/en/component"
+    "href": "/en/component",
+    "description": "A component is a unit that groups a reusable piece of interface with the behavior it owns. For example, a product card can be shared by the home page, search results…",
+    "title": "Component in Web Development Explained | VibeHub"
   },
   {
     "slug": "state",
     "name": "State",
-    "href": "/en/state"
+    "href": "/en/state",
+    "description": "State is information the interface needs to remember right now and that can change from actions or results. A form submitting, a modal being open, a cart count, and the…",
+    "title": "State in Web Development Explained | VibeHub"
   },
   {
     "slug": "markdown",
     "name": "Markdown",
-    "href": "/en/markdown"
+    "href": "/en/markdown",
+    "description": "Write structured text with lightweight punctuation. Markdown uses simple characters for headings, lists, links, code, and emphasis. It is convenient for documentation…",
+    "title": "Markdown in Web Development Explained | VibeHub"
   },
   {
     "slug": "html",
     "name": "HTML",
-    "href": "/en/html"
+    "href": "/en/html",
+    "description": "Describe the structure and meaning of a web page. HTML organizes a page into headings, paragraphs, links, forms, images, and other meaningful elements. CSS controls…",
+    "title": "HTML in Web Development Explained | VibeHub"
   },
   {
     "slug": "css",
     "name": "CSS",
-    "href": "/en/css"
+    "href": "/en/css",
+    "description": "CSS is a style language that describes a web page's appearance, layout, and changes across available space. For example, HTML may already contain a button while the…",
+    "title": "What Is CSS? | VibeHub"
   },
   {
     "slug": "dom",
     "name": "DOM",
-    "href": "/en/dom"
+    "href": "/en/dom",
+    "description": "The DOM is the node tree the browser uses to represent and modify a web document. For example, the source HTML may contain one task while a click adds another to the…",
+    "title": "DOM in Web Development Explained | VibeHub"
   },
   {
     "slug": "title-tag",
     "name": "Title Tag",
-    "href": "/en/title-tag"
+    "href": "/en/title-tag",
+    "description": "The HTML title that identifies the current document. The browser uses it in a tab or window title, and a search system may use it when generating a result title. It…",
+    "title": "What Is Title Tag? | VibeHub"
   },
   {
     "slug": "page-metadata",
     "name": "Page Metadata",
-    "href": "/en/page-metadata"
+    "href": "/en/page-metadata",
+    "description": "Information about a page that is read outside its visible body. Page metadata lives in the document head and is read separately by browsers, search systems, sharing…",
+    "title": "Page Metadata Explained | VibeHub"
   },
   {
     "slug": "favicon",
     "name": "Favicon",
-    "href": "/en/favicon"
+    "href": "/en/favicon",
+    "description": "A small icon browsers use to identify a website. After a site opens, the browser can show it in tabs, bookmarks, and history so people can recognize the site among many…",
+    "title": "Favicon in Web Development Explained | VibeHub"
   },
   {
     "slug": "open-graph",
     "name": "Open Graph",
-    "href": "/en/open-graph"
+    "href": "/en/open-graph",
+    "description": "og:* metadata that describes a shared-link preview. When an article link is sent through a chat or social platform, the platform can read og:title, og:description…",
+    "title": "Open Graph in Web Development Explained | VibeHub"
   },
   {
     "slug": "web-app-manifest",
     "name": "Web App Manifest",
-    "href": "/en/web-app-manifest"
+    "href": "/en/web-app-manifest",
+    "description": "A JSON file that describes a Web app's name, icons, and launch behavior. A page links to this JSON file with a manifest link, and a browser can use its name, icons…",
+    "title": "Web App Manifest in Web Development Explained | VibeHub"
   },
   {
     "slug": "undo",
     "name": "Undo",
-    "href": "/en/undo"
+    "href": "/en/undo",
+    "description": "Undo rolls your last action back exactly as it was—Ctrl+Z brings the wrongly deleted row back, no retyping. Press Ctrl+Z (Cmd+Z on Mac) to step backward, and redo to…",
+    "title": "Undo in Web Development Explained | VibeHub"
   },
   {
     "slug": "accessibility",
     "name": "Accessibility",
-    "href": "/en/accessibility"
+    "href": "/en/accessibility",
+    "description": "Accessibility means more people can use your page in more situations—not only with a mouse, not only with perfect vision, and even read aloud by a screen reader. You…",
+    "title": "What Is Accessibility? | VibeHub"
   },
   {
     "slug": "semantic-html",
     "name": "Semantic HTML",
-    "href": "/en/semantic-html"
+    "href": "/en/semantic-html",
+    "description": "HTML tags that mark each section's role in the document, such as headings, lists, and navigation. When structuring a web page, semantic HTML tags mark content roles…",
+    "title": "Semantic HTML in Web Development Explained | VibeHub"
   },
   {
     "slug": "mini-program",
     "name": "Mini Program",
-    "href": "/en/mini-program"
+    "href": "/en/mini-program",
+    "description": "A lightweight app that runs inside a host app such as WeChat. A shop can share a booking mini program in a chat, letting customers choose a time inside WeChat. A…",
+    "title": "Mini Program Explained | VibeHub"
   },
   {
     "slug": "wxml",
     "name": "WXML",
-    "href": "/en/wxml"
+    "href": "/en/wxml",
+    "description": "A markup language for describing a WeChat mini program’s page structure and binding displayed data. On a booking screen, text and button tags define the visible…",
+    "title": "WXML in Mini Programs Explained | VibeHub"
   },
   {
     "slug": "wxss",
     "name": "WXSS",
-    "href": "/en/wxss"
+    "href": "/en/wxss",
+    "description": "A style language that describes the appearance and layout of WeChat mini program components. A booking button can keep the same label and action while its color…",
+    "title": "WXSS in Mini Programs Explained | VibeHub"
   },
   {
     "slug": "rpx",
     "name": "rpx",
-    "href": "/en/rpx"
+    "href": "/en/rpx",
+    "description": "A relative size unit converted according to a mini program page’s width. When page width is 375px, 600rpx is 300px; at 450px it is 360px. Both occupy 80% of page width.…",
+    "title": "rpx in Mini Programs Explained | VibeHub"
   },
   {
     "slug": "page-lifecycle",
     "name": "Page Lifecycle",
-    "href": "/en/page-lifecycle"
+    "href": "/en/page-lifecycle",
+    "description": "Callbacks triggered when a page is created, shown, hidden, or unloaded. In a mini program, opening a booking detail page can hide the list while keeping its instance.…",
+    "title": "Page Lifecycle in Mini Programs Explained | VibeHub"
   },
   {
     "slug": "subpackage",
     "name": "Subpackage Loading",
-    "href": "/en/subpackage"
+    "href": "/en/subpackage",
+    "description": "A mechanism that separates mini program code into a main package and subpackages loaded when needed. A shop’s home screen can live in the main package while its return…",
+    "title": "Subpackage Loading in Mini Programs Explained | VibeHub"
   },
   {
     "slug": "button",
     "name": "Button",
-    "href": "/en/button"
+    "href": "/en/button",
+    "description": "Click to save, submit, delete, or run another action. A button runs an action on the current page, such as saving a form, creating a project, or confirming a deletion.…",
+    "title": "Button UI Component Explained | VibeHub"
   },
   {
     "slug": "link",
     "name": "Link",
-    "href": "/en/link"
+    "href": "/en/link",
+    "description": "Click to open another page, location, or file. A link takes people to another page, a place on the same page, or a downloadable file. Its text should make the…",
+    "title": "Link UI Component Explained | VibeHub"
   },
   {
     "slug": "input",
     "name": "Input",
-    "href": "/en/input"
+    "href": "/en/input",
+    "description": "Let the user enter one line of text. Use a text input for an account name, nickname, search query, or anything else that fits on one line. Give it a label that stays…",
+    "title": "Input UI Component Explained | VibeHub"
   },
   {
     "slug": "textarea",
     "name": "Textarea",
-    "href": "/en/textarea"
+    "href": "/en/textarea",
+    "description": "Let the user enter several lines of text. Comments, descriptions, feedback, and prompts for AI often need a multiline textarea. Give it a useful starting height and…",
+    "title": "Textarea UI Component Explained | VibeHub"
   },
   {
     "slug": "input-number",
     "name": "Number Input",
-    "href": "/en/input-number"
+    "href": "/en/input-number",
+    "description": "Enter a number with a defined range and step. A number input works for quantity, stock, price, and other numeric values. It can limit the format, minimum, maximum, and…",
+    "title": "Number Input Explained | VibeHub"
   },
   {
     "slug": "radio",
     "name": "Radio",
-    "href": "/en/radio"
+    "href": "/en/radio",
+    "description": "Choose exactly one option from a small set. Radio buttons show mutually exclusive choices such as payment method or visibility. Give the group a clear question and keep…",
+    "title": "Radio UI Component Explained | VibeHub"
   },
   {
     "slug": "checkbox",
     "name": "Checkbox",
-    "href": "/en/checkbox"
+    "href": "/en/checkbox",
+    "description": "Choose one, several, or none of the options. Checkboxes work for interests, filters, and other choices that are independent of one another. A single checkbox can also…",
+    "title": "Checkbox UI Component Explained | VibeHub"
   },
   {
     "slug": "switch",
     "name": "Switch",
-    "href": "/en/switch"
+    "href": "/en/switch",
+    "description": "Turn a setting on or off immediately. A switch shows whether a feature is currently on or off, such as dark mode or autosave. The change should take effect and show…",
+    "title": "Switch UI Component Explained | VibeHub"
   },
   {
     "slug": "slider",
     "name": "Slider",
-    "href": "/en/slider"
+    "href": "/en/slider",
+    "description": "Drag to adjust a value within a range. A slider is useful for quickly changing volume, brightness, or a price range. Show the limits and current value, and make the…",
+    "title": "Slider UI Component Explained | VibeHub"
   },
   {
     "slug": "rate",
     "name": "Rate",
-    "href": "/en/rate"
+    "href": "/en/rate",
+    "description": "Express a rating with stars or ordered levels. A rating control lets people show satisfaction on an ordered scale, often with five stars. Pair the graphic with a…",
+    "title": "Rate UI Component Explained | VibeHub"
   },
   {
     "slug": "select",
     "name": "Select",
-    "href": "/en/select"
+    "href": "/en/select",
+    "description": "Choose one value from a collapsed list. Use a select when answers come from a fixed list but do not need to stay visible all the time. A few options are clearer as…",
+    "title": "Select UI Component Explained | VibeHub"
   },
   {
     "slug": "auto-complete",
     "name": "Autocomplete",
-    "href": "/en/auto-complete"
+    "href": "/en/auto-complete",
+    "description": "Show matching suggestions while the user types. Autocomplete works for addresses, contacts, and tags that have common answers but may still allow free text. The user…",
+    "title": "Autocomplete UI Component Explained | VibeHub"
   },
   {
     "slug": "cascader",
     "name": "Cascader",
-    "href": "/en/cascader"
+    "href": "/en/cascader",
+    "description": "Choose a path one level at a time. A cascader works for data such as country, state, and city or a nested product category. Keep the current path visible and explain…",
+    "title": "Cascader UI Component Explained | VibeHub"
   },
   {
     "slug": "tree-select",
     "name": "Tree Select",
-    "href": "/en/tree-select"
+    "href": "/en/tree-select",
+    "description": "Choose one or more items from a hierarchy. A tree selector fits departments, categories, and permission scopes with parent-child relationships. Explain whether…",
+    "title": "Tree Select UI Component Explained | VibeHub"
   },
   {
     "slug": "date-picker",
     "name": "Date Picker",
-    "href": "/en/date-picker"
+    "href": "/en/date-picker",
+    "description": "Choose a date or date range from a calendar. A date picker reduces ambiguity by showing dates in a calendar. It may select one day or a range. State the allowed dates…",
+    "title": "Date Picker Explained | VibeHub"
   },
   {
     "slug": "time-picker",
     "name": "Time Picker",
-    "href": "/en/time-picker"
+    "href": "/en/time-picker",
+    "description": "Choose a specific time within allowed hours. A time picker lets people choose hours and minutes, and sometimes seconds. Make the 12-hour or 24-hour format clear, define…",
+    "title": "Time Picker Explained | VibeHub"
   },
   {
     "slug": "upload",
     "name": "Upload",
-    "href": "/en/upload"
+    "href": "/en/upload",
+    "description": "Send a file from a device to the website. Uploading includes choosing, transferring, and saving a file. Explain type, size, and count limits before selection, show…",
+    "title": "Upload UI Component Explained | VibeHub"
   },
   {
     "slug": "form",
     "name": "Form",
-    "href": "/en/form"
+    "href": "/en/form",
+    "description": "Collect several fields and submit them as one task. A form organizes multiple inputs into a task such as creating an account or placing an order. It needs clear labels…",
+    "title": "Form UI Component Explained | VibeHub"
   },
   {
     "slug": "color-picker",
     "name": "Color Picker",
-    "href": "/en/color-picker"
+    "href": "/en/color-picker",
+    "description": "A form control for viewing and choosing a color value. Use a color picker for a theme, chart series, or drawing tool. Along with the palette, show a copyable value…",
+    "title": "Color Picker UI Component Explained | VibeHub"
   },
   {
     "slug": "label",
     "name": "Label",
-    "href": "/en/label"
+    "href": "/en/label",
+    "description": "Visible text that tells people what a form control asks for. An Email label on a sign-in form should stay visible and focus its matching input when clicked. Put…",
+    "title": "Label UI Component Explained | VibeHub"
   },
   {
     "slug": "placeholder",
     "name": "Placeholder",
-    "href": "/en/placeholder"
+    "href": "/en/placeholder",
+    "description": "A placeholder is the gray example inside an input box showing the expected format; it vanishes the moment you type. The gray you@example.com in an email box…",
+    "title": "Placeholder UI Component Explained | VibeHub"
   },
   {
     "slug": "table",
     "name": "Table",
-    "href": "/en/table"
+    "href": "/en/table",
+    "description": "Compare many records across the same columns. Tables suit orders, members, inventory, and other records that share the same fields. Sorting, filtering, and pagination…",
+    "title": "Table UI Component Explained | VibeHub"
   },
   {
     "slug": "list",
     "name": "List",
-    "href": "/en/list"
+    "href": "/en/list",
+    "description": "Show similar items one after another. A list repeats the same structure for messages, articles, contacts, or other items that people scan from top to bottom. It is more…",
+    "title": "List UI Component Explained | VibeHub"
   },
   {
     "slug": "card",
     "name": "Card",
-    "href": "/en/card"
+    "href": "/en/card",
+    "description": "Keep information about one item in a single block. A card usually groups an image, title, summary, and actions for the same object. It works well for browsing similar…",
+    "title": "Card UI Component Explained | VibeHub"
   },
   {
     "slug": "tag",
     "name": "Tag",
-    "href": "/en/tag"
+    "href": "/en/tag",
+    "description": "Mark a status, category, or selected condition with short text. Tags help people recognize status, category, and active filters at a glance. Color can support scanning…",
+    "title": "Tag UI Component Explained | VibeHub"
   },
   {
     "slug": "badge",
     "name": "Badge",
-    "href": "/en/badge"
+    "href": "/en/badge",
+    "description": "Add a count or compact status next to another object. A badge sits beside an icon, tab, or avatar to show a count, short label, or status dot, such as unread messages.…",
+    "title": "Badge UI Component Explained | VibeHub"
   },
   {
     "slug": "avatar",
     "name": "Avatar",
-    "href": "/en/avatar"
+    "href": "/en/avatar",
+    "description": "Represent a person, team, or organization visually. An avatar may be a photo, initials, illustration, or logo; it does not have to be a circular face. Member lists and…",
+    "title": "Avatar UI Component Explained | VibeHub"
   },
   {
     "slug": "descriptions",
     "name": "Descriptions",
-    "href": "/en/descriptions"
+    "href": "/en/descriptions",
+    "description": "Show the field names and values of one record. A description list pairs labels with read-only values for an order, account, or project. It may look similar to a form…",
+    "title": "Descriptions UI Component Explained | VibeHub"
   },
   {
     "slug": "statistic",
     "name": "Statistic",
-    "href": "/en/statistic"
+    "href": "/en/statistic",
+    "description": "Highlight a small number of important values. A statistic combines a label, value, unit, and sometimes a trend. If a number went up or down, say what time period or…",
+    "title": "Statistic UI Component Explained | VibeHub"
   },
   {
     "slug": "tabs",
     "name": "Tabs",
-    "href": "/en/tabs"
+    "href": "/en/tabs",
+    "description": "Switch between a few peer sections on the same page. Tabs work for sections such as Overview, Settings, and Logs under the same object. Keep the active tab obvious and…",
+    "title": "Tabs UI Component Explained | VibeHub"
   },
   {
     "slug": "segmented",
     "name": "Segmented",
-    "href": "/en/segmented"
+    "href": "/en/segmented",
+    "description": "Switch quickly between a few short, exclusive modes. A segmented control keeps several short options visible together. It often changes a view, sort order, or time…",
+    "title": "Segmented UI Component Explained | VibeHub"
   },
   {
     "slug": "collapse",
     "name": "Collapse",
-    "href": "/en/collapse"
+    "href": "/en/collapse",
+    "description": "Hide secondary details until the user asks for them. A collapse panel shows a heading first and expands the body on request. It suits FAQs and advanced settings. Do not…",
+    "title": "Collapse UI Component Explained | VibeHub"
   },
   {
     "slug": "timeline",
     "name": "Timeline",
-    "href": "/en/timeline"
+    "href": "/en/timeline",
+    "description": "Show a sequence of events in time order. A timeline works for shipping, approval records, and release history. Choose whether the newest event appears first or last and…",
+    "title": "Timeline UI Component Explained | VibeHub"
   },
   {
     "slug": "tree",
     "name": "Tree",
-    "href": "/en/tree"
+    "href": "/en/tree",
+    "description": "Expand and browse data with parent-child levels. A tree reveals folders, departments, categories, and other hierarchies by expanding and collapsing levels. It may…",
+    "title": "Tree UI Component Explained | VibeHub"
   },
   {
     "slug": "carousel",
     "name": "Carousel",
-    "href": "/en/carousel"
+    "href": "/en/carousel",
+    "description": "Show several panels one at a time in the same space. A carousel often appears in promotional banners and onboarding, but later slides are easy to miss. Do not place…",
+    "title": "Carousel UI Component Explained | VibeHub"
   },
   {
     "slug": "empty",
     "name": "Empty",
-    "href": "/en/empty"
+    "href": "/en/empty",
+    "description": "Explain why no data is shown and what to do next. An empty state should not leave a blank area. Tell people what normally appears there, why it is empty now, and…",
+    "title": "Empty UI Component Explained | VibeHub"
   },
   {
     "slug": "image",
     "name": "Image",
-    "href": "/en/image"
+    "href": "/en/image",
+    "description": "Display an image with the right size, crop, and fallback. An image component can handle aspect ratio, cropping, lazy loading, preview, and loading failure consistently.…",
+    "title": "Image UI Component Explained | VibeHub"
   },
   {
     "slug": "file",
     "name": "File",
-    "href": "/en/file"
+    "href": "/en/file",
+    "description": "A UI row or card that shows one document, image, or attachment and its status. An upload list might show `project-plan.pdf`, 2.4 MB, and Uploaded. Make the filename…",
+    "title": "File UI Component Explained | VibeHub"
   },
   {
     "slug": "icon",
     "name": "Icon",
-    "href": "/en/icon"
+    "href": "/en/icon",
+    "description": "A small, consistent visual symbol for an action, object, or status. Familiar icons such as search, download, and close help people scan quickly. For an unfamiliar or…",
+    "title": "Icon UI Component Explained | VibeHub"
   },
   {
     "slug": "quote",
     "name": "Quote",
-    "href": "/en/quote"
+    "href": "/en/quote",
+    "description": "A sourced quotation or excerpt set apart from the surrounding text. Use indentation, quotation marks, or a rule to separate an expert’s words or customer feedback from…",
+    "title": "Quote UI Component Explained | VibeHub"
   },
   {
     "slug": "video",
     "name": "Video",
-    "href": "/en/video"
+    "href": "/en/video",
+    "description": "Media with moving images and a duration that plays on a page. Video can demonstrate a product action or teach a course, such as “Create a project in two minutes.” The…",
+    "title": "Video UI Component Explained | VibeHub"
   },
   {
     "slug": "chat-ui",
     "name": "Chat UI",
-    "href": "/en/chat-ui"
+    "href": "/en/chat-ui",
+    "description": "",
+    "title": "Chat UI"
   },
   {
     "slug": "filter",
     "name": "Filter",
-    "href": "/en/filter"
+    "href": "/en/filter",
+    "description": "Filtering is a feature that narrows the current content collection using existing properties or conditions. A task list can keep only items matching owner, status, and…",
+    "title": "Filter UI Component Explained | VibeHub"
   },
   {
     "slug": "chart",
     "name": "Chart",
-    "href": "/en/chart"
+    "href": "/en/chart",
+    "description": "A chart is a way to compare and understand data through visual encodings such as position, length, size, or color. A line chart can show orders changing by month, while…",
+    "title": "Chart UI Component Explained | VibeHub"
   },
   {
     "slug": "app-icon",
     "name": "App Icon",
-    "href": "/en/app-icon"
+    "href": "/en/app-icon",
+    "description": "A brand image the operating system uses to identify an app. An App Icon appears on the Home Screen, in system search, Settings, or an app store, and the system may…",
+    "title": "What Is App Icon? | VibeHub"
   },
   {
     "slug": "sort",
     "name": "Sort",
-    "href": "/en/sort"
+    "href": "/en/sort",
+    "description": "Sorting puts a list in order by one field—newest first, or largest amount first—without removing a single record. A quote list can default to newest first, and tapping…",
+    "title": "Sort UI Component Explained | VibeHub"
   },
   {
     "slug": "alert",
     "name": "Alert",
-    "href": "/en/alert"
+    "href": "/en/alert",
+    "description": "Keep an important message or warning visible on the page. An alert sits near the related content and explains a status, risk, or problem without blocking the whole…",
+    "title": "Alert UI Component Explained | VibeHub"
   },
   {
     "slug": "toast",
     "name": "Toast",
-    "href": "/en/toast"
+    "href": "/en/toast",
+    "description": "Briefly confirm a small action that just finished. A toast is useful for lightweight feedback such as Saved, Copied, or Added. It normally disappears after a few…",
+    "title": "Toast UI Component Explained | VibeHub"
   },
   {
     "slug": "notification",
     "name": "Notification",
-    "href": "/en/notification"
+    "href": "/en/notification",
+    "description": "Notify the user about an event with a title and details. A notification carries more information than a toast and suits background jobs, activity from other people, and…",
+    "title": "Notification UI Component Explained | VibeHub"
   },
   {
     "slug": "modal",
     "name": "Modal",
-    "href": "/en/modal"
+    "href": "/en/modal",
+    "description": "Pause the page for one focused decision or task. A modal appears above the page when the user must review or complete a focused task before continuing. It needs a clear…",
+    "title": "Modal UI Component Explained | VibeHub"
   },
   {
     "slug": "drawer",
     "name": "Drawer",
-    "href": "/en/drawer"
+    "href": "/en/drawer",
+    "description": "Slide in a side panel without leaving the current page. A drawer keeps the current page visible while showing details, filters, navigation, or a short editing task from…",
+    "title": "Drawer UI Component Explained | VibeHub"
   },
   {
     "slug": "popconfirm",
     "name": "Popconfirm",
-    "href": "/en/popconfirm"
+    "href": "/en/popconfirm",
+    "description": "Ask for confirmation next to the action that caused it. A popconfirm is a small confirmation panel anchored to a button or link. It works for a simple, local action…",
+    "title": "Popconfirm UI Component Explained | VibeHub"
   },
   {
     "slug": "popover",
     "name": "Popover",
-    "href": "/en/popover"
+    "href": "/en/popover",
+    "description": "Open a small panel with extra information or controls. A popover is anchored to a trigger and can contain richer content than a tooltip, such as a preview, explanation…",
+    "title": "Popover UI Component Explained | VibeHub"
   },
   {
     "slug": "tooltip",
     "name": "Tooltip",
-    "href": "/en/tooltip"
+    "href": "/en/tooltip",
+    "description": "Explain a compact control with a short text label. A tooltip gives a brief label or hint for an icon or unfamiliar control. It should appear on keyboard focus as well…",
+    "title": "Tooltip UI Component Explained | VibeHub"
   },
   {
     "slug": "progress",
     "name": "Progress",
-    "href": "/en/progress"
+    "href": "/en/progress",
+    "description": "Show how much of a task has been completed. A progress indicator helps people understand the state of an upload, installation, or multi-step task. Use a percentage when…",
+    "title": "Progress UI Component Explained | VibeHub"
   },
   {
     "slug": "skeleton",
     "name": "Skeleton",
-    "href": "/en/skeleton"
+    "href": "/en/skeleton",
+    "description": "Reserve the layout while content is loading. A skeleton roughly matches the shape of incoming content so the page stays stable during a short load. It should not be a…",
+    "title": "Skeleton UI Component Explained | VibeHub"
   },
   {
     "slug": "result",
     "name": "Result",
-    "href": "/en/result"
+    "href": "/en/result",
+    "description": "Explain the final outcome and the next available step. A result page or panel marks the end of a task, such as payment success, submission failure, or an empty…",
+    "title": "Result UI Component Explained | VibeHub"
   },
   {
     "slug": "spinner",
     "name": "Spinner",
-    "href": "/en/spinner"
+    "href": "/en/spinner",
+    "description": "A rotating indicator that shows a short, indeterminate wait. Use a spinner for a brief wait with no reliable completion percentage, such as a submit button, local…",
+    "title": "Spinner UI Component Explained | VibeHub"
   },
   {
     "slug": "menu",
     "name": "Menu",
-    "href": "/en/menu"
+    "href": "/en/menu",
+    "description": "Help people move between the main sections of a product. A menu groups destinations and makes the current location visible. Keep labels consistent, group related items…",
+    "title": "Menu UI Component Explained | VibeHub"
   },
   {
     "slug": "breadcrumb",
     "name": "Breadcrumb",
-    "href": "/en/breadcrumb"
+    "href": "/en/breadcrumb",
+    "description": "Show the path from a broad section to the current page. Breadcrumbs help people understand where a deeply nested page sits and let them move back to a parent level.…",
+    "title": "Breadcrumb UI Component Explained | VibeHub"
   },
   {
     "slug": "pagination",
     "name": "Pagination",
-    "href": "/en/pagination"
+    "href": "/en/pagination",
+    "description": "Move through a large result set in separate pages. Pagination breaks a long result set into stable pages and works well when people need to return to a position or…",
+    "title": "Pagination UI Component Explained | VibeHub"
   },
   {
     "slug": "steps",
     "name": "Steps",
-    "href": "/en/steps"
+    "href": "/en/steps",
+    "description": "Show progress through a task with several required stages. A step indicator shows where the user is in a fixed process such as checkout or setup. Use clear stage names…",
+    "title": "Steps UI Component Explained | VibeHub"
   },
   {
     "slug": "dropdown",
     "name": "Dropdown",
-    "href": "/en/dropdown"
+    "href": "/en/dropdown",
+    "description": "Open a compact menu of actions or destinations. A dropdown keeps secondary choices behind a trigger when showing them all would add clutter. Name the trigger clearly…",
+    "title": "Dropdown UI Component Explained | VibeHub"
   },
   {
     "slug": "anchor",
     "name": "Anchor",
-    "href": "/en/anchor"
+    "href": "/en/anchor",
+    "description": "Jump to a named section on the same long page. Anchor navigation helps people scan and jump within documentation, policies, and other long pages. Keep section labels…",
+    "title": "Anchor UI Component Explained | VibeHub"
   },
   {
     "slug": "back-top",
     "name": "Back to Top Button",
-    "href": "/en/back-top"
+    "href": "/en/back-top",
+    "description": "Return quickly to the top of a long page. A back-to-top control is useful after substantial scrolling, especially when important navigation sits at the top. Keep it out…",
+    "title": "Back to Top Button Explained | VibeHub"
   },
   {
     "slug": "skip-link",
     "name": "Skip Link",
-    "href": "/en/skip-link"
+    "href": "/en/skip-link",
+    "description": "A link that lets keyboard users skip repeated navigation and move to the main content. A skip link appears when someone starts tabbing through a page and moves focus…",
+    "title": "Skip Link Explained | VibeHub"
   },
   {
     "slug": "search",
     "name": "Search",
-    "href": "/en/search"
+    "href": "/en/search",
+    "description": "Search is a feature that uses a person's keywords to find potentially relevant results in a collection. After someone enters “budget,” projects whose name, description…",
+    "title": "Search UI Component Explained | VibeHub"
   },
   {
     "slug": "hero",
     "name": "Hero",
-    "href": "/en/hero"
+    "href": "/en/hero",
+    "description": "Use the opening area to explain the page's main point and next step. The Hero usually sits directly below the Header or Navbar. It may combine a headline, supporting…",
+    "title": "Hero Website Section Explained | VibeHub"
   },
   {
     "slug": "cta",
     "name": "CTA",
-    "href": "/en/cta"
+    "href": "/en/cta",
+    "description": "Tell visitors the next action you want them to take. A call to action turns the page's message into a concrete next step, such as Start free, Book a demo, or Download.…",
+    "title": "What Is CTA? | VibeHub"
   },
   {
     "slug": "user-voice",
     "name": "Customer Testimonial",
-    "href": "/en/user-voice"
+    "href": "/en/user-voice",
+    "description": "Use real customer words to show a concrete experience. A customer quote can explain what changed for a real user in language that feels more specific than product…",
+    "title": "Customer Testimonial Website Section Explained | VibeHub"
   },
   {
     "slug": "header",
     "name": "Header",
-    "href": "/en/header"
+    "href": "/en/header",
+    "description": "The top section of a page that introduces the site or page and often contains navigation. A Header usually holds the brand and the paths people need first, such as main…",
+    "title": "Header Website Section Explained | VibeHub"
   },
   {
     "slug": "logo",
     "name": "Logo",
-    "href": "/en/logo"
+    "href": "/en/logo",
+    "description": "A brand mark used to identify an organization, product, or service. A Logo can appear in a website header, mobile navigation, on a dark surface, or in promotional…",
+    "title": "Logo Website Section Explained | VibeHub"
   },
   {
     "slug": "navbar",
     "name": "Navbar",
-    "href": "/en/navbar"
+    "href": "/en/navbar",
+    "description": "Keep the brand, main destinations, and key action easy to reach. A website navbar helps visitors understand where they can go and how to return home. Keep the number of…",
+    "title": "Navbar Website Section Explained | VibeHub"
   },
   {
     "slug": "footer",
     "name": "Footer",
-    "href": "/en/footer"
+    "href": "/en/footer",
+    "description": "End the page with useful links, identity, and required information. A footer gives visitors another route to important pages and carries company details, legal links…",
+    "title": "Footer Website Section Explained | VibeHub"
   },
   {
     "slug": "faq",
     "name": "FAQ",
-    "href": "/en/faq"
+    "href": "/en/faq",
+    "description": "Answer common questions before visitors need to ask. A FAQ section handles repeated questions about price, setup, policy, or fit. Write questions in the visitor's…",
+    "title": "FAQ Website Section Explained | VibeHub"
   },
   {
     "slug": "pricing",
     "name": "Pricing",
-    "href": "/en/pricing"
+    "href": "/en/pricing",
+    "description": "Help visitors compare plans, cost, and included value. A pricing section should make plan differences, billing periods, limits, and extra fees understandable. Highlight…",
+    "title": "Pricing Website Section Explained | VibeHub"
   },
   {
     "slug": "social-proof",
     "name": "Social Proof",
-    "href": "/en/social-proof"
+    "href": "/en/social-proof",
+    "description": "Support a product claim with evidence from real use. Social proof can include customer logos, measured results, reviews, certifications, or case studies. Choose…",
+    "title": "Social Proof Website Section Explained | VibeHub"
   },
   {
     "slug": "top-nav-layout",
     "name": "Top Nav",
-    "href": "/en/top-nav-layout"
+    "href": "/en/top-nav-layout",
+    "description": "Place the main navigation across the top of the page. A top-navigation layout works when a product has a small number of primary sections and needs wide content space…",
+    "title": "Top Nav Web Layout Explained | VibeHub"
   },
   {
     "slug": "sidebar-layout",
     "name": "Sidebar",
-    "href": "/en/sidebar-layout"
+    "href": "/en/sidebar-layout",
+    "description": "Keep navigation in a vertical column beside the content. A sidebar suits products with many sections, grouped tools, or workspaces that users switch between often. Give…",
+    "title": "Sidebar Web Layout Explained | VibeHub"
   },
   {
     "slug": "single-page-layout",
     "name": "Single Page",
-    "href": "/en/single-page-layout"
+    "href": "/en/single-page-layout",
+    "description": "Arrange a complete story in sections down one scrolling page. A single-page layout guides visitors through a sequence such as value, proof, features, pricing, and…",
+    "title": "Single Page Web Layout Explained | VibeHub"
   },
   {
     "slug": "doc-layout",
     "name": "Doc Layout",
-    "href": "/en/doc-layout"
+    "href": "/en/doc-layout",
+    "description": "Combine section navigation, article content, and an on-page outline. A documentation layout often uses a left navigation for pages, a readable center column for the…",
+    "title": "Doc Layout Web Layout Explained | VibeHub"
   },
   {
     "slug": "card-grid-layout",
     "name": "Card Grid",
-    "href": "/en/card-grid-layout"
+    "href": "/en/card-grid-layout",
+    "description": "Arrange similar cards in a responsive grid. A card grid helps people browse products, templates, articles, or projects with a shared visual structure. Define how…",
+    "title": "Card Grid Explained | VibeHub"
   },
   {
     "slug": "centered-layout",
     "name": "Centered Column",
-    "href": "/en/centered-layout"
+    "href": "/en/centered-layout",
+    "description": "Keep one narrow content column centered on the page. A centered column focuses attention on reading or one simple task such as signing in, composing a post, or changing…",
+    "title": "Centered Column Web Layout Explained | VibeHub"
   },
   {
     "slug": "masonry-layout",
     "name": "Masonry",
-    "href": "/en/masonry-layout"
+    "href": "/en/masonry-layout",
+    "description": "Pack cards of different heights into equal-width columns. On galleries and inspiration feeds, images vary in height; masonry lets each new card fill the shortest gap so…",
+    "title": "Masonry Web Layout Explained | VibeHub"
   },
   {
     "slug": "split-screen-layout",
     "name": "Split-screen",
-    "href": "/en/split-screen-layout"
+    "href": "/en/split-screen-layout",
+    "description": "Give two parallel tasks two near-equal halves of one view. Login pages often put the brand story on the left half and the form on the right; entry pages can give…",
+    "title": "Split-screen Web Layout Explained | VibeHub"
   },
   {
     "slug": "responsive-design",
     "name": "Responsive Design",
-    "href": "/en/responsive-design"
+    "href": "/en/responsive-design",
+    "description": "Responsive design is the practice of adapting one interface's layout and interaction to available space and device capabilities. At 1440px, a site may show three card…",
+    "title": "Responsive Design Web Layout Explained | VibeHub"
   },
   {
     "slug": "space",
     "name": "Space",
-    "href": "/en/space"
+    "href": "/en/space",
+    "description": "Use empty space to show which things belong together. Related items should sit close together, while separate groups need more room between them. That empty room is…",
+    "title": "Space in CSS Explained | VibeHub"
   },
   {
     "slug": "margin",
     "name": "Margin",
-    "href": "/en/margin"
+    "href": "/en/margin",
+    "description": "Create space outside an element. Margin controls the space between an element and the things around it. It helps separate groups, but it does not add room inside a box.…",
+    "title": "Margin in CSS Explained | VibeHub"
   },
   {
     "slug": "padding",
     "name": "Padding",
-    "href": "/en/padding"
+    "href": "/en/padding",
+    "description": "Create space between a box and its content. Padding adds room inside an element, between its border and its content. It affects the visible size and click area of…",
+    "title": "Padding in CSS Explained | VibeHub"
   },
   {
     "slug": "flex",
     "name": "Flex",
-    "href": "/en/flex"
+    "href": "/en/flex",
+    "description": "Arrange items along one row or one column. Flexbox lays items out on a single main axis and handles alignment, spacing, wrapping, and flexible size. It is a good fit…",
+    "title": "Flex in CSS Explained | VibeHub"
   },
   {
     "slug": "grid",
     "name": "Grid",
-    "href": "/en/grid"
+    "href": "/en/grid",
+    "description": "Plan rows and columns as one layout system. CSS Grid controls two-dimensional layouts where rows and columns work together. It suits galleries, dashboards, and page…",
+    "title": "Grid in CSS Explained | VibeHub"
   },
   {
     "slug": "z-index",
     "name": "Z-Index",
-    "href": "/en/z-index"
+    "href": "/en/z-index",
+    "description": "Control which overlapping layer appears on top. Z-index affects the stacking order of positioned elements inside a stacking context. A larger number does not always…",
+    "title": "Z-Index in CSS Explained | VibeHub"
   },
   {
     "slug": "sticky",
     "name": "Sticky",
-    "href": "/en/sticky"
+    "href": "/en/sticky",
+    "description": "Keep an element visible after scrolling reaches it. Sticky positioning lets a header, table heading, or section navigation follow the viewport within its container. It…",
+    "title": "Sticky in CSS Explained | VibeHub"
   },
   {
     "slug": "position",
     "name": "Position",
-    "href": "/en/position"
+    "href": "/en/position",
+    "description": "Place an element in normal flow, against a parent, or against the viewport. CSS position decides how an element is placed and whether offsets such as top and left…",
+    "title": "Position in CSS Explained | VibeHub"
   },
   {
     "slug": "centering",
     "name": "Centering",
-    "href": "/en/centering"
+    "href": "/en/centering",
+    "description": "Align an element to the middle of the available space. Centering may mean horizontal alignment, vertical alignment, or both. Text can use text alignment, a fixed-width…",
+    "title": "Centering in CSS Explained | VibeHub"
   },
   {
     "slug": "box-model",
     "name": "Box Model",
-    "href": "/en/box-model"
+    "href": "/en/box-model",
+    "description": "The box model is the browser's rule for the space used by an element's content, padding, border, and margin. A card with 320px of content width can occupy more after…",
+    "title": "Box Model in CSS Explained | VibeHub"
   },
   {
     "slug": "overflow",
     "name": "Overflow",
-    "href": "/en/overflow"
+    "href": "/en/overflow",
+    "description": "Overflow is the rule for how the browser shows, clips, or scrolls content that exceeds a container's available space. When a card has a fixed height, longer content can…",
+    "title": "Overflow in CSS Explained | VibeHub"
   },
   {
     "slug": "typography",
     "name": "Typography",
-    "href": "/en/typography"
+    "href": "/en/typography",
+    "description": "Use text size and style to show what matters first. Typography separates headings, body text, and supporting information through size, line height, weight, and color.…",
+    "title": "What Is Typography? | VibeHub"
   },
   {
     "slug": "serif-sans",
     "name": "Serif & Sans",
-    "href": "/en/serif-sans"
+    "href": "/en/serif-sans",
+    "description": "Choose letterforms that match the content and reading task. Serif typefaces have finishing strokes; sans-serif typefaces do not. Neither is automatically more readable…",
+    "title": "Serif &amp; Sans in Web Design Explained | VibeHub"
   },
   {
     "slug": "text-truncate",
     "name": "Text Truncate",
-    "href": "/en/text-truncate"
+    "href": "/en/text-truncate",
+    "description": "Shorten text that cannot fit in the available space. Text truncation keeps a title or filename from breaking a compact layout, usually with an ellipsis. It hides…",
+    "title": "Text Truncate Explained | VibeHub"
   },
   {
     "slug": "divider",
     "name": "Divider",
-    "href": "/en/divider"
+    "href": "/en/divider",
+    "description": "Use a line to separate two different groups of content. A divider shows that one group has ended and another has begun. It works between list sections, menu groups, and…",
+    "title": "Divider in Web Design Explained | VibeHub"
   },
   {
     "slug": "border-radius",
     "name": "Border Radius",
-    "href": "/en/border-radius"
+    "href": "/en/border-radius",
+    "description": "Round the corners of a box. Border radius changes sharp corners into rounded ones and helps set the visual tone of controls, cards, and images. Define a small set of…",
+    "title": "Border Radius in Web Design Explained | VibeHub"
   },
   {
     "slug": "shadow",
     "name": "Shadow",
-    "href": "/en/shadow"
+    "href": "/en/shadow",
+    "description": "Use light and depth to separate overlapping surfaces. A shadow can show that a menu, dialog, or card sits above another surface. It should support a real layer…",
+    "title": "Shadow in Web Design Explained | VibeHub"
   },
   {
     "slug": "opacity",
     "name": "Opacity",
-    "href": "/en/opacity"
+    "href": "/en/opacity",
+    "description": "Make an element and its contents more transparent. Opacity changes the transparency of an entire element, including its children. It can soften secondary or disabled…",
+    "title": "Opacity in Web Design Explained | VibeHub"
   },
   {
     "slug": "gradient",
     "name": "Gradient",
-    "href": "/en/gradient"
+    "href": "/en/gradient",
+    "description": "Blend colors gradually across an area. A gradient moves smoothly between two or more colors. It can add depth, direction, or emphasis to a background and illustration.…",
+    "title": "Gradient in Web Design Explained | VibeHub"
   },
   {
     "slug": "corner-feel",
     "name": "Corner Feel",
-    "href": "/en/corner-feel"
+    "href": "/en/corner-feel",
+    "description": "Use corner shape to support the product's visual tone. Sharp, softly rounded, and pill-shaped corners can make a page feel different, but the effect comes from…",
+    "title": "Corner Feel in Web Design Explained | VibeHub"
   },
   {
     "slug": "backdrop-blur",
     "name": "Backdrop Blur",
-    "href": "/en/backdrop-blur"
+    "href": "/en/backdrop-blur",
+    "description": "Blur the content behind a translucent surface. Backdrop blur creates a frosted-glass effect by blurring what is behind a partly transparent element. It can separate a…",
+    "title": "Backdrop Blur in Web Design Explained | VibeHub"
   },
   {
     "slug": "dark-mode",
     "name": "Dark Mode",
-    "href": "/en/dark-mode"
+    "href": "/en/dark-mode",
+    "description": "Dark mode is a switchable dark interface theme state, not merely a page with a black background. When someone chooses dark mode or their system prefers it, backgrounds…",
+    "title": "Dark Mode in Web Design Explained | VibeHub"
   },
   {
     "slug": "design-token",
     "name": "Design Token",
-    "href": "/en/design-token"
+    "href": "/en/design-token",
+    "description": "A design token is a named variable that centrally stores and reuses design values such as color, spacing, and typography. A primary button color can be named…",
+    "title": "Design Token in Web Design Explained | VibeHub"
   },
   {
     "slug": "contrast",
     "name": "Contrast",
-    "href": "/en/contrast"
+    "href": "/en/contrast",
+    "description": "Contrast is the brightness difference between text and background—big enough to read; light gray on light gray is not. Light gray body text on a gray background almost…",
+    "title": "Contrast in Web Design Explained | VibeHub"
   },
   {
     "slug": "visual-hierarchy",
     "name": "Visual Hierarchy",
-    "href": "/en/visual-hierarchy"
+    "href": "/en/visual-hierarchy",
+    "description": "Visual hierarchy makes visitors read the page in your intended order—headline first, description next, button last. Where the eye lands first on a page is not random:…",
+    "title": "Visual Hierarchy in Web Design Explained | VibeHub"
   },
   {
     "slug": "prefers-reduced-motion",
     "name": "Prefers Reduced Motion",
-    "href": "/en/prefers-reduced-motion"
+    "href": "/en/prefers-reduced-motion",
+    "description": "Reading the system's reduce motion setting and disabling or reducing animation accordingly. When visitors enable their system's reduced-motion preference, a page can…",
+    "title": "Prefers Reduced Motion in Web Design Explained | VibeHub"
   },
   {
     "slug": "transition",
     "name": "Transition",
-    "href": "/en/transition"
+    "href": "/en/transition",
+    "description": "Smooth the change between two visual states. A transition animates a CSS property when its value changes, such as color on hover or a panel opening. Use it to clarify…",
+    "title": "Transition Web Animation Explained | VibeHub"
   },
   {
     "slug": "animation",
     "name": "Animation",
-    "href": "/en/animation"
+    "href": "/en/animation",
+    "description": "Run a planned sequence of visual changes. Animation can repeat, play through keyframes, or express a larger state change that a simple transition cannot. Use it to…",
+    "title": "Animation Web Animation Explained | VibeHub"
   },
   {
     "slug": "easing",
     "name": "Easing",
-    "href": "/en/easing"
+    "href": "/en/easing",
+    "description": "Control how motion speeds up and slows down. Easing changes the pace of a transition or animation over time. Ease-out often feels responsive for an element entering…",
+    "title": "Easing Web Animation Explained | VibeHub"
   },
   {
     "slug": "spring",
     "name": "Spring",
-    "href": "/en/spring"
+    "href": "/en/spring",
+    "description": "Create motion that settles with weight and elasticity. Spring motion is defined by physical-style values such as stiffness and damping rather than only a fixed curve.…",
+    "title": "Spring Web Animation Explained | VibeHub"
   },
   {
     "slug": "fade",
     "name": "Fade In / Out",
-    "href": "/en/fade"
+    "href": "/en/fade",
+    "description": "Reveal or hide an element by changing its opacity. A fade is a simple transition between transparent and visible states. It works for overlays, messages, and content…",
+    "title": "Fade In / Out Web Animation Explained | VibeHub"
   },
   {
     "slug": "keyframe",
     "name": "Keyframe",
-    "href": "/en/keyframe"
+    "href": "/en/keyframe",
+    "description": "The state points you specify in an animation; the browser interpolates animatable properties between specified points. CSS @keyframes lets you specify styles at points…",
+    "title": "Keyframe Web Animation Explained | VibeHub"
   },
   {
     "slug": "hover",
     "name": "Hover",
-    "href": "/en/hover"
+    "href": "/en/hover",
+    "description": "Respond when a pointer rests over an interactive element. Hover can preview that an item is interactive or reveal secondary detail before a click. It does not exist on…",
+    "title": "Hover UI Interaction Explained | VibeHub"
   },
   {
     "slug": "active",
     "name": "Active",
-    "href": "/en/active"
+    "href": "/en/active",
+    "description": "Show that a control is being pressed right now. The active state appears during the press between pointer down and release. A small change in color, depth, or scale…",
+    "title": "Active UI Interaction Explained | VibeHub"
   },
   {
     "slug": "focus",
     "name": "Focus",
-    "href": "/en/focus"
+    "href": "/en/focus",
+    "description": "Show which element will receive keyboard input. Focus identifies the interactive element currently controlled by the keyboard or another input method. A visible focus…",
+    "title": "Focus UI Interaction Explained | VibeHub"
   },
   {
     "slug": "drag",
     "name": "Drag",
-    "href": "/en/drag"
+    "href": "/en/drag",
+    "description": "Move or reorder an item by holding and pulling it. Drag interaction works for rearranging cards, moving files, and choosing a range. Show what can be grabbed, where it…",
+    "title": "Drag UI Interaction Explained | VibeHub"
   },
   {
     "slug": "disabled",
     "name": "Disabled",
-    "href": "/en/disabled"
+    "href": "/en/disabled",
+    "description": "Show that a control is currently unavailable. A disabled control cannot be operated in the current state. Use it when the action is visible and its future availability…",
+    "title": "Disabled UI Interaction Explained | VibeHub"
   },
   {
     "slug": "cursor",
     "name": "Cursor",
-    "href": "/en/cursor"
+    "href": "/en/cursor",
+    "description": "The mouse pointer changes shape to preview whether an area can be clicked, typed in, dragged, or is currently unavailable. When a mouse moves over an element, CSS…",
+    "title": "Cursor UI Interaction Explained | VibeHub"
   },
   {
     "slug": "selection",
     "name": "Selection",
-    "href": "/en/selection"
+    "href": "/en/selection",
+    "description": "Show which text or items the user has selected. Selection highlights the text, rows, files, or objects included in the next action. Keep it distinct from hover and…",
+    "title": "Selection UI Interaction Explained | VibeHub"
   }
 ]
