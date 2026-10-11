@@ -1,20 +1,20 @@
-﻿"use client";
+"use client";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { RefreshCw, ShieldCheck } from "lucide-react";
+import { VoucherPanel } from "./voucher-panel";
 import type { QuotaAdminOverview as Overview } from "@/contracts/quota";
 type Command = { userId: string; kind: string; amount: number; note: string; operationKey: string; evidenceRef?: string };
-export function CreditsPanel({ overview }: { overview: Overview }) {
+export function CreditsPanel({ overview, actorId }: { overview: Overview; actorId: string }) {
  const t = useTranslations("product.quotaAdmin"); const router = useRouter();
  const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
  const [pending, setPending] = useState<Command | null>(null); const inFlight = useRef(false);
  async function execute(command: Command) {
    if (inFlight.current) return; inFlight.current = true; setBusy(true); setMessage("");
    try {
-     const response = await fetch("/api/admin/credits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(command) });
+     const response = await fetch("/api/admin/credits", { method: "POST", headers: { "Content-Type": "application/json", "x-ans-actor": actorId }, body: JSON.stringify(command) });
      const result = await response.json(); if (!response.ok) throw new Error(result.error || "FAILED");
      setPending(null); setMessage(t("success")); router.refresh();
    } catch (error) { setMessage(t("error", { code: error instanceof Error ? error.message : "FAILED" })); }
@@ -29,26 +29,19 @@ export function CreditsPanel({ overview }: { overview: Overview }) {
  <label className="grid gap-2 text-sm">{t("receipt")}<Input name="receipt" maxLength={200}/></label>
  <label className="flex gap-3 text-sm"><input type="checkbox" required/>{t("confirm")}</label><Button disabled={busy || !!pending}>{t(busy ? "busy" : "submit")}</Button></fieldset></form>
  {message && <p role="status" className="text-sm">{message}</p>}{pending && !busy && <Button variant="outline" onClick={() => void execute(pending)}>{t("retry")}</Button>}
- <section className="space-y-4"><h2 className="font-semibold">{t("disputes")}</h2>{overview.disputes.map(order => <ReviewAction key={order.id} title={`${order.id} / ${order.totalMinor / 100}`} url={`/api/admin/credits/orders/${order.id}/refund`} kind="refund"/>)}</section>
- <section className="space-y-4"><h2 className="font-semibold">{t("uncertain")}</h2>{overview.uncertain.map(request => <ReviewAction key={request.id} title={`${request.id} / ${request.modelId} / ${request.authorizedPoints}`} url={`/api/admin/credits/requests/${request.id}/release`} kind="waive"/>)}</section>
+ <section className="space-y-4"><h2 className="font-semibold">{t("disputes")}</h2>{overview.disputes.map(order => <ReviewAction actorId={actorId} key={order.id} title={`${order.id} / ${order.totalMinor / 100}`} url={`/api/admin/credits/orders/${order.id}/refund`} kind="refund"/>)}</section>
+ <section className="space-y-4"><h2 className="font-semibold">{t("uncertain")}</h2>{overview.uncertain.map(request => <ReviewAction actorId={actorId} key={request.id} title={`${request.id} / ${request.modelId} / ${request.authorizedPoints}`} url={`/api/admin/credits/requests/${request.id}/release`} kind="waive"/>)}</section>
  <section><h2 className="font-semibold">{t("recent")}</h2><ul className="mt-4 divide-y">{overview.operations.map(operation => <li key={operation.id} className="py-3 text-sm"><p>{operation.userId} / {t(operation.kind)} / {operation.amount} / {operation.balanceAfter}</p><p className="mt-1 text-muted-foreground">{operation.note} / {operation.createdAt}</p></li>)}</ul></section>
- <LdxpReconciliation overview={overview} /></div>;
+ <VoucherPanel actorId={actorId} /></div>;
 }
 
-function ReviewAction({ title, url, kind }: { title: string; url: string; kind: "refund" | "waive" }) {
+function ReviewAction({ title, url, kind, actorId }: { actorId: string; title: string; url: string; kind: "refund" | "waive" }) {
  const t = useTranslations("product.quotaAdmin"); const router = useRouter(); const flight = useRef(false);
  const [busy, setBusy] = useState(false); const [error, setError] = useState("");
  return <form className="max-w-2xl space-y-3 rounded-md border p-4" onSubmit={async event => {
    event.preventDefault(); if (flight.current) return; const form = new FormData(event.currentTarget); flight.current = true; setBusy(true); setError("");
-   try { const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reason: String(form.get("reason")) }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "FAILED"); router.refresh(); }
+   try { const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "x-ans-actor": actorId }, body: JSON.stringify({ reason: String(form.get("reason")) }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "FAILED"); router.refresh(); }
    catch (caught) { setError(t("error", { code: caught instanceof Error ? caught.message : "FAILED" })); }
    finally { flight.current = false; setBusy(false); }
  }}><p className="break-all text-sm">{title}</p><label className="grid gap-2 text-sm">{t("note")}<Input name="reason" required minLength={3} maxLength={1000} disabled={busy}/></label><label className="flex gap-3 text-sm leading-6"><input type="checkbox" required disabled={busy}/>{t(kind === "waive" ? "waiverConfirm" : "refundConfirm")}</label><Button disabled={busy} variant="outline">{t(kind === "waive" ? "waive" : "refund")}</Button>{error && <p role="alert" className="text-sm text-destructive">{error}</p>}</form>;
 }
-
-function LdxpReconciliation({ overview }: { overview: Overview }) {
- const t = useTranslations("product.quotaAdmin"); const router = useRouter(); const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
- async function reconcile() { setBusy(true); setMessage(""); try { const response = await fetch("/api/admin/credits", { method: "POST", headers: { "Content-Type": "application/json", "x-ans-admin-action": "reconcile-ldxp" }, body: "{}" }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "FAILED"); setMessage(t("ldxpReconciled", { paid: data.paid ?? 0, checked: data.checked ?? 0 })); router.refresh(); } catch (error) { setMessage(t("error", { code: error instanceof Error ? error.message : "FAILED" })); } finally { setBusy(false); } }
- return <section className="space-y-4 rounded-2xl border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">{t("ldxpTitle")}</h2><p className="mt-1 text-sm text-muted-foreground">{overview.ldxp.enabled ? t("ldxpEnabled") : t("ldxpDisabled")}</p></div><Button variant="outline" onClick={() => void reconcile()} disabled={busy || !overview.ldxp.enabled}><RefreshCw className={busy ? "animate-spin" : ""} />{t("ldxpReconcile")}</Button></div>{message && <p role="status" className="text-sm">{message}</p>}<div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="px-2 py-2">{t("ldxpOrder")}</th><th className="px-2 py-2">{t("ldxpAmount")}</th><th className="px-2 py-2">{t("ldxpStatus")}</th><th className="px-2 py-2">{t("ldxpCreated")}</th></tr></thead><tbody>{overview.ldxp.orders.map(order => <tr key={order.id} className="border-b"><td className="px-2 py-3"><div className="flex items-center gap-2"><ShieldCheck className="size-4 text-muted-foreground" />{order.tradeNo}</div><div className="text-xs text-muted-foreground">{order.userId}</div></td><td className="px-2 py-3 tabular-nums">?{(order.amountCents / 100).toFixed(2)} / {order.points}</td><td className="px-2 py-3">{t(`ldxpStates.${order.status}`)}</td><td className="px-2 py-3 text-muted-foreground">{new Date(order.createdAt).toLocaleString()}</td></tr>)}{overview.ldxp.orders.length === 0 && <tr><td colSpan={4} className="px-2 py-6 text-muted-foreground">{t("ldxpEmpty")}</td></tr>}</tbody></table></div></section>;
-}
-

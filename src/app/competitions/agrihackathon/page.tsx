@@ -134,7 +134,7 @@ export default async function AgriHackathonPage() {
     }),
   }));
 
-  const rules = ["opensource", "data", "originality", "team", "demo", "conduct"] as const;
+  const rules = ["opensource", "data", "originality", "team", "demo", "conduct", "rights", "frozen"] as const;
 
   return (
     <div className="relative overflow-hidden">

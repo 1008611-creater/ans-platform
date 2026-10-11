@@ -1,50 +1,18 @@
-﻿"use client";
-
-import { useEffect, useRef, useState } from "react";
+"use client";
+import { useEffect,useRef,useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowUpRight, Check, Coins, Loader2, QrCode, Sparkles, WalletCards } from "lucide-react";
+import { Coins,KeyRound,Loader2,ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import { Input } from "@/components/ui/input";
-
-type Billing = { rechargeYuanPerPoint: number; usdQuotaPerPoint: number; gptConsumptionMultiplier: number; deepseekConsumptionMultiplier: number; rechargeEnabled: boolean };
-type Order = { id: string; tradeNo: string; amountCents: number; points: number; payUrl: string | null; status: string; paidAt?: string | null };
-
-export function CreditsCenter({ billing, availablePoints }: { billing: Billing; availablePoints: number }) {
-  const t = useTranslations("product.quotaHistory");
-  const [amount, setAmount] = useState("10");
-  const [order, setOrder] = useState<Order | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stopPolling = () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } };
-  useEffect(() => stopPolling, []);
-  async function createOrder() {
-    const cents = Math.round(Number(amount) * 100);
-    if (!Number.isSafeInteger(cents) || cents < 100 || cents > 100000000) { setMessage(t("rechargeUnavailable")); return; }
-    setBusy(true); setMessage(""); stopPolling();
-    try {
-      const requestKey = crypto.randomUUID();
-      const response = await fetch("/api/quota/recharge", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amountCents: cents, requestKey }) });
-      const data = await response.json(); if (!response.ok) throw new Error(data.error || "RECHARGE_UNAVAILABLE");
-      const next = data as Order; setOrder(next); if (next.payUrl) window.open(next.payUrl, "_blank", "noopener,noreferrer");
-      pollRef.current = setInterval(async () => {
-        try {
-          const statusResponse = await fetch(`/api/quota/recharge/${encodeURIComponent(next.id)}`, { cache: "no-store" });
-          const status = await statusResponse.json(); if (!statusResponse.ok) throw new Error(status.error || "RECHARGE_STATUS_UNAVAILABLE");
-          setOrder(status);
-          if (["PAID", "EXPIRED", "FAILED"].includes(status.status)) { stopPolling(); setBusy(false); if (status.status === "PAID") { setMessage(t("rechargePaid")); window.location.reload(); } }
-        } catch (error) { setMessage(error instanceof Error ? error.message : "RECHARGE_STATUS_UNAVAILABLE"); }
-      }, 4000);
-    } catch (error) { setMessage(error instanceof Error ? error.message : "RECHARGE_UNAVAILABLE"); }
-    finally { setBusy(false); }
-  }
-  const orderMessage = order?.status === "PAID" ? t("rechargePaid") : order?.status === "EXPIRED" ? t("rechargeExpired") : order?.status === "FAILED" ? t("rechargeFailed") : order ? t("rechargePending") : "";
-  return <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
-    <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/15 via-card to-card p-6 shadow-sm sm:p-8">
-      <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-primary/15 blur-3xl" />
-      <div className="relative flex items-start justify-between gap-4"><div><p className="flex items-center gap-2 text-sm font-medium text-primary"><Coins className="size-4" />{t("available")}</p><p className="mt-4 text-5xl font-semibold tracking-tight tabular-nums">{availablePoints.toLocaleString()}</p><p className="mt-2 text-sm text-muted-foreground">{t("billingBody")}</p></div><Sparkles className="size-7 text-primary/70" /></div>
-      <div className="mt-8 flex flex-wrap gap-2 text-xs text-muted-foreground"><span className="rounded-full border bg-background/70 px-3 py-1">1 CNY = 1 point</span><span className="rounded-full border bg-background/70 px-3 py-1">GPT × {billing.gptConsumptionMultiplier}</span><span className="rounded-full border bg-background/70 px-3 py-1">DeepSeek × {billing.deepseekConsumptionMultiplier}</span></div>
-    </section>
-    <section className="rounded-3xl border bg-card p-6 shadow-sm sm:p-8"><div className="flex items-center gap-3"><WalletCards className="size-5 text-primary" /><div><h2 className="font-semibold">{t("quotaRecharge")}</h2><p className="mt-1 text-sm text-muted-foreground">{billing.rechargeEnabled ? t("rechargeDescription") : t("rechargeUnavailable")}</p></div></div><div className="mt-6 space-y-3"><label className="grid gap-2 text-sm"><span>{t("rechargeAmount")}</span><Input value={amount} onChange={event => setAmount(event.target.value)} type="number" min="1" max="1000000" step="1" inputMode="decimal" /></label><Button className="w-full" onClick={() => void createOrder()} disabled={busy || !billing.rechargeEnabled}>{busy ? <Loader2 className="animate-spin" /> : <QrCode />}{busy ? t("rechargeChecking") : t("rechargeAction")}</Button></div>{order && <div className="mt-5 rounded-2xl border bg-muted/30 p-4"><p className="flex items-center gap-2 text-sm font-medium">{order.status === "PAID" ? <Check className="size-4 text-emerald-500" /> : <QrCode className="size-4" />}{orderMessage}</p><p className="mt-2 text-xs text-muted-foreground">{order.tradeNo} · ¥{(order.amountCents / 100).toFixed(2)} · {order.points} points</p>{order.payUrl && order.status === "PENDING" && <Button variant="link" className="mt-1 h-auto px-0" onClick={() => window.open(order.payUrl!, "_blank", "noopener,noreferrer")}>{t("rechargeOpen")} <ArrowUpRight /></Button>}</div>}{message && <p role="alert" className="mt-4 text-sm text-destructive">{message}</p>}</section>
-  </div>;
+type Billing={rechargeYuanPerPoint:number;usdQuotaPerPoint:number;gptConsumptionMultiplier:number;deepseekConsumptionMultiplier:number;rechargeEnabled:boolean};
+type CreditsProps={actorId:string;billing:Billing;availablePoints:number};
+export function CreditsCenter(props:CreditsProps){return <AccountContentBoundary actorId={props.actorId}><CreditsCenterSession key={props.actorId} {...props}/></AccountContentBoundary>;}
+function CreditsCenterSession({actorId,billing,availablePoints}:CreditsProps){
+ const t=useTranslations("product.vouchers");const router=useRouter();const flight=useRef(false);const alive=useRef(true);
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+ const [code,setCode]=useState("");const [busy,setBusy]=useState(false);const [message,setMessage]=useState("");const [ok,setOk]=useState(false);
+ async function redeem(){if(flight.current)return;flight.current=true;setBusy(true);setMessage("");setOk(false);try{const r=await fetch("/api/quota/redeem",{method:"POST",headers:{"Content-Type":"application/json","x-ans-actor":actorId},body:JSON.stringify({code})});const d=await r.json();if(!alive.current)return;if(!r.ok)throw new Error(d.error);setOk(true);setMessage(t(d.duplicate?"duplicate":"success",{points:d.points}));setCode("");router.refresh();}catch(e){if(!alive.current)return;const k=e instanceof Error?e.message:"";setMessage(t(["VOUCHER_INVALID","VOUCHER_USED","RATE_LIMITED"].includes(k)?k:"failed"));}finally{flight.current=false;if(alive.current)setBusy(false);}}
+ return <div className="grid gap-5 lg:grid-cols-2"><section className="rounded-3xl border bg-gradient-to-br from-primary/15 via-card to-card p-6 sm:p-8"><p className="flex items-center gap-2 text-sm text-primary"><Coins className="size-4"/>{t("balance")}</p><p className="mt-4 text-5xl font-semibold tabular-nums">{availablePoints.toLocaleString()}</p><p className="mt-4 text-sm text-muted-foreground">{t("rules",{gpt:billing.gptConsumptionMultiplier,deepseek:billing.deepseekConsumptionMultiplier})}</p></section><section className="rounded-3xl border bg-card p-6 sm:p-8"><h2 className="flex items-center gap-2 font-semibold"><KeyRound className="size-5 text-primary"/>{t("title")}</h2><p className="mt-2 text-sm text-muted-foreground">{t("description")}</p><form className="mt-5 space-y-3" onSubmit={e=>{e.preventDefault();void redeem();}}><label className="grid gap-2 text-sm">{t("code")}<Input value={code} onChange={e=>setCode(e.target.value)} autoComplete="off" spellCheck={false} maxLength={100} placeholder="ANS-…" required disabled={busy}/></label><Button className="w-full" disabled={busy||!code.trim()}>{busy&&<Loader2 className="animate-spin"/>}{t(busy?"busy":"redeem")}</Button></form>{message&&<p role={ok?"status":"alert"} className={ok?"mt-3 text-sm text-emerald-600":"mt-3 text-sm text-destructive"}>{message}</p>}<a className="mt-5 inline-flex items-center gap-1 text-sm text-primary underline-offset-4 hover:underline" href="https://wzyp.cn/item/zkm211" target="_blank" rel="noopener noreferrer">{t("shop")}<ArrowUpRight className="size-4"/></a><p className="mt-2 text-xs text-muted-foreground">{t("shopNote")}</p></section></div>;
 }

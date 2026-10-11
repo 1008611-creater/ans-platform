@@ -180,7 +180,7 @@ export interface AgriSubmissionHistoryItem {
 }
 export interface AgriStageDetail {
   competitionId: string; id: string; teamCompetitionId: string; stage: "PRELIMINARY" | "FINAL";
-  revision: number; frozenSubmissionId: string | null; workspaceEnabled: boolean; hasPrivateMaterials: boolean;
+  revision: number; frozenSubmissionId: string | null; recordedFrozenSubmissionId?: string | null; frozenByDeadline?: boolean; workspaceEnabled: boolean; hasPrivateMaterials: boolean;
   draft: AgriStageDraft | null; current: AgriSubmissionHistoryItem | null; history: AgriSubmissionHistoryItem[];
   nextBeforeSequence: number | null;
   publishedRule: { id: string; guidanceMarkdown: string; requirements: AgriSubmissionRequirements; window: z.infer<typeof agriSubmissionWindowSchema> } | null;
@@ -199,7 +199,7 @@ export const agriWorksExportQuerySchema = agriSubmissionListQuerySchema.omit({ s
 });
 export interface AgriStageListRow {
   id: string; teamCompetitionId: string; teamId: string; teamName: string; stage: "PRELIMINARY" | "FINAL";
-  revision: number; currentSubmissionId: string | null; frozenSubmissionId: string | null;
+  revision: number; currentSubmissionId: string | null; frozenSubmissionId: string | null; recordedFrozenSubmissionId?: string | null; frozenByDeadline?: boolean;
   latestTechnicalCheck?: { id: string; result: "PASS" | "NEEDS_ACTION" | "UNREACHABLE"; checkedAt: string } | null;
 }
 export interface AgriStageList {

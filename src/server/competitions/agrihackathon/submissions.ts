@@ -83,7 +83,7 @@ async function rule(tx: Tx, competitionId: string, ruleId: string | null, stage:
         closesAt: window.closesAt?.toISOString() ?? null, includesDeadline: window.includesDeadline,
         confirmedById: row.confirmedById, confirmedAt: row.confirmedAt.toISOString() }) };
 }
-async function priorClosed(tx: Tx, stage: Stage, now: Date) {
+async function priorClosed(tx: Tx, stage: Pick<Stage, "id" | "competitionId" | "stage" | "currentSubmissionId" | "frozenSubmissionId">, now: Date) {
   if (stage.frozenSubmissionId) return true;
   if (!stage.currentSubmissionId) return false;
   const [prior] = await tx.$queryRaw<Array<{ ruleVersionId: string }>>`SELECT "ruleVersionId" FROM agri_stage_submissions
@@ -91,12 +91,12 @@ async function priorClosed(tx: Tx, stage: Stage, now: Date) {
   if (!prior) return fail("AGRI_STAGE_INVALID", 500);
   return getAgriWindowState((await rule(tx, stage.competitionId, prior.ruleVersionId, stage.stage)).window, now) === "CLOSED";
 }
-async function freezeForRead(tx: Tx, ctx: AgriWorkspaceContext, stage: Stage, now: Date) {
-  if (!stage.frozenSubmissionId && stage.currentSubmissionId && await priorClosed(tx, stage, now)) {
-    stage.revision++; stage.frozenSubmissionId = stage.currentSubmissionId;
-    await tx.$executeRaw`UPDATE agri_entry_stages SET "frozenSubmissionId"=${stage.frozenSubmissionId},revision=${stage.revision},"updatedAt"=${now} WHERE id=${stage.id}`;
-    await event(tx, ctx, stage, "freezeStage", stage.currentSubmissionId, now);
-  }
+/** Effective deadline freeze is a read projection, never a persisted stage transition.
+ * Always use the current submission's adopted rule; a replacement publication cannot reopen it. */
+export async function projectAgriStageFreeze(tx: Tx, stage: Pick<Stage, "id" | "competitionId" | "stage" | "currentSubmissionId" | "frozenSubmissionId">, now: Date) {
+  const frozenByDeadline = !stage.frozenSubmissionId && await priorClosed(tx, stage, now);
+  return { frozenSubmissionId: stage.frozenSubmissionId ?? (frozenByDeadline ? stage.currentSubmissionId : null),
+    recordedFrozenSubmissionId: stage.frozenSubmissionId, frozenByDeadline };
 }
 async function validateVersions(tx: Tx, ctx: AgriWorkspaceContext, entry: Entry, content: z.infer<typeof agriStageDraftSchema>) {
   const [project] = await tx.$queryRaw<Array<{ ownerId: string; teamId: string | null; status: string }>>`
@@ -221,7 +221,6 @@ export async function readAgriStage(actorId: string, rawId: string, rawQuery: un
   const id = identifier.parse(rawId), query = historyQuery.parse(rawQuery);
   return db.$transaction(async tx => {
     const ctx = await lockAgriWorkspace(tx, actorId), target = await lockTarget(tx, ctx, id, false), stage = target.stage;
-    await freezeForRead(tx, ctx, stage, await agriDatabaseClock(tx));
     const rows = await tx.$queryRaw<Submission[]>`SELECT * FROM agri_stage_submissions WHERE "entryStageId"=${id} AND "competitionId"=${stage.competitionId}
       AND (${query.beforeSequence ?? null}::integer IS NULL OR sequence < ${query.beforeSequence ?? null}::integer) ORDER BY sequence DESC LIMIT 31`;
     const [current] = stage.currentSubmissionId ? await tx.$queryRaw<Submission[]>`SELECT * FROM agri_stage_submissions WHERE id=${stage.currentSubmissionId} AND "entryStageId"=${id}` : [];
@@ -232,9 +231,10 @@ export async function readAgriStage(actorId: string, rawId: string, rawQuery: un
     const corrections = await tx.$queryRaw<Array<{ submissionId: string; previousSubmissionId: string; permitId: string; reason: string }>>`SELECT c."submissionId",c."previousSubmissionId",c."permitId",p.reason FROM agri_submission_corrections c JOIN agri_correction_permits p ON p.id=c."permitId" WHERE c."entryStageId"=${stage.id} AND c."competitionId"=${stage.competitionId} AND c."submissionId"=ANY(${[...new Set([...rows.map(row => row.id), ...(current ? [current.id] : [])])]}::text[])`;
     const project = (row: Submission) => { const correction = corrections.find(item => item.submissionId === row.id); return { ...projectSubmission(row, target.privateMaterials), ...(correction ? { correction: { previousSubmissionId: correction.previousSubmissionId, permitId: correction.permitId, reason: correction.reason } } : {}) }; };
     const serverNow = await agriDatabaseClock(tx);
+    const freeze = await projectAgriStageFreeze(tx, stage, serverNow);
     await assertAgriAuthorityCurrent(tx, ...target.authorities);
     return { competitionId: stage.competitionId, id, teamCompetitionId: stage.teamCompetitionId, stage: stage.stage, revision: stage.revision,
-      frozenSubmissionId: stage.frozenSubmissionId, workspaceEnabled: ctx.workspace.enabled, hasPrivateMaterials: target.privateMaterials,
+      ...freeze, workspaceEnabled: ctx.workspace.enabled, hasPrivateMaterials: target.privateMaterials,
       draft: target.teamMember && stage.draft !== null ? agriStageDraftSchema.parse(stage.draft) : null,
       current: current ? project(current) : null,
       history: rows.slice(0, 30).map(project),
@@ -274,8 +274,10 @@ export async function listAgriStages(actorId: string, rawQuery: unknown = {}) {
       AND (${cursor?.id ?? null}::text IS NULL OR (es."createdAt",es.id)<(${cursor ? new Date(cursor.createdAt) : null}::timestamptz,${cursor?.id ?? null}::text))
       ORDER BY es."createdAt" DESC,es.id DESC LIMIT 31`;
     const page = rows.slice(0, 30), last = page.at(-1);
+    const now = await agriDatabaseClock(tx);
+    const projected = await Promise.all(page.map(async row => ({ row, freeze: await projectAgriStageFreeze(tx, { ...row, competitionId }, now) })));
     await assertAgriAuthorityCurrent(tx, authority, exportAuthority, privateAuthority);
-    return { competitionId, stages: page.map(row => ({ id: row.id, teamCompetitionId: row.teamCompetitionId, teamId: row.teamId, teamName: row.teamName, stage: row.stage, revision: row.revision, currentSubmissionId: row.currentSubmissionId, frozenSubmissionId: row.frozenSubmissionId, latestTechnicalCheck: row.checkId && row.checkResult && row.checkedAt ? { id: row.checkId, result: row.checkResult, checkedAt: row.checkedAt.toISOString() } : null })),
+    return { competitionId, stages: projected.map(({ row, freeze }) => ({ id: row.id, teamCompetitionId: row.teamCompetitionId, teamId: row.teamId, teamName: row.teamName, stage: row.stage, revision: row.revision, currentSubmissionId: row.currentSubmissionId, ...freeze, latestTechnicalCheck: row.checkId && row.checkResult && row.checkedAt ? { id: row.checkId, result: row.checkResult, checkedAt: row.checkedAt.toISOString() } : null })),
       canExport: !!exportAuthority, hasPrivateMaterials: !!privateAuthority,
       nextCursor: rows.length > 30 && last ? Buffer.from(JSON.stringify({ id: last.id,
         createdAt: last.createdAt.toISOString(), competitionId, stage: query.stage ?? null, scope: query.scope,

@@ -2512,30 +2512,30 @@
     }
   },
   "agriHackathon": {
-    "boundaryNextOpen": "Registration and submission are connected; results are pending",
-    "enterWorkbench": "Open the registration workbench",
-    "boundaryDescriptionOpen": "Registration and submission run on the ANS competition workbench. Rules and dates follow the official edition notice; result publication is not connected yet.",
+    "boundaryNextOpen": "View separate edition windows",
+    "enterWorkbench": "View edition progress",
+    "boundaryDescriptionOpen": "The edition workspace is connected. Registration, preliminary and final materials follow separate published windows.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
-    "title": "AgriHackathon",
-    "description": "A public-interest AI hackathon run by the CAUHub team at China Agricultural University. The 48-hour preliminary round is primarily online, with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final is held on the second weekend. Format, schedule and budget follow the approved event plan.",
+    "title": "AgriHackathon | 农客松",
+    "description": "The first AI hackathon initiated and organized by CAUHub, for current undergraduate and postgraduate students and alumni within three years of graduation. Create for 48 continuous hours, showcase and review for a week, then present at Demo Day the following weekend. Name provisional; official dates pending.",
     "createProject": "Create a competition project",
     "openTeams": "Open teams and competitions",
     "backToHub": "Back to the competition hub",
-    "statusTitle": "First edition in preparation",
-    "statusDescription": "The three tracks and the awards are set; scoring dimensions, weights and advancement follow the approved event plan. Dates, venue and registration will be published here once confirmed.",
+    "statusTitle": "First-edition plan · Dates pending",
+    "statusDescription": "Three tracks, teams of 1–5, and 10 Finalists. Actions open only within published stage windows.",
     "stats": {
       "tracks": "Tracks",
       "tracksValue": "3",
-      "scale": "Offline participants",
-      "scaleValue": "60-80",
-      "phases": "Phases",
+      "scale": "Team size",
+      "scaleValue": "1–5",
+      "phases": "Activity steps",
       "phasesValue": "4",
-      "deliverables": "Submission checks",
-      "deliverablesValue": "8"
+      "deliverables": "Materials",
+      "deliverablesValue": "Published guidance"
     },
     "tracksTitle": "Three tracks",
-    "tracksDescription": "Every project picks one track. Judges score five dimensions: innovation, technical depth, product completeness, real problem and track fit.",
+    "tracksDescription": "People, Discovery and Action. Choose the track after completing the project.",
     "tracksSectionLabel": "01 / TRACKS",
     "rulesSectionLabel": "03 / RULES",
     "openTrack": "Read the track",
@@ -2567,31 +2567,31 @@
       }
     },
     "phasesTitle": "Four-phase path",
-    "phasesDescription": "Every team follows one path: promotion and registration, the 48-hour preliminary round, preliminary judging and preparation, then the one-day on-site final.",
+    "phasesDescription": "Register a team → 48 continuous hours → One week of showcase and review → Demo Day the following weekend. Official dates will be confirmed separately.",
     "phases": {
       "discover": {
         "label": "01 · Register and team up",
-        "description": "Submit the project name, team members and chosen track, and confirm eligibility and rules.",
-        "state": "Not started"
+        "description": "Current undergraduate and postgraduate students and alumni within three years of graduation form teams of 1–5. Choose a track after completing the project.",
+        "state": "Dates pending"
       },
       "plan": {
         "label": "02 · 48 hours of building",
-        "description": "Primarily online development, with on-campus space provided; teams submit a demo, a project introduction and code.",
-        "state": "Not started"
+        "description": "Create for 48 continuous hours. Submit a working demonstration, public GitHub repository and required materials.",
+        "state": "Dates pending"
       },
       "produce": {
         "label": "03 · Preliminary judging and preparation",
-        "description": "Seven judges complete the preliminary review; advancing teams refine their work and prepare for the pitch.",
-        "state": "Not started"
+        "description": "One week of showcase and review; three reviewers per project, 80% professional and 20% public score. Select 10 Finalists.",
+        "state": "Dates pending"
       },
       "submit": {
         "label": "04 · One-day on-site final",
-        "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
-        "state": "Not started"
+        "description": "Demo Day the following weekend. Seven judges, drop the highest and lowest scores, average five. Five-minute demo and three-minute Q&A per team.",
+        "state": "Dates pending"
       }
     },
     "deliverablesTitle": "Submission checklist",
-    "deliverablesDescription": "Check every item before submitting so the work runs, the sources are traceable and others can take over.",
+    "deliverablesDescription": "Preparation references only. Required and optional materials come from this edition’s published technical guidance.",
     "deliverables": {
       "brief": "Project name, team, track and summary",
       "plan": "Team roles and development plan",
@@ -2603,46 +2603,41 @@
       "package": "Submission package and final check"
     },
     "scoringTitle": "Scoring dimensions",
-    "scoringDescription": "Judges assess entries on the dimensions below; weights and scoring method follow the approved event plan.",
+    "scoringDescription": "Preliminary: three reviewers per project, 80% professional and 20% public score. Final: seven judges, discard the highest and lowest scores and average the remaining five.",
     "scoringSectionLabel": "02 / SCORING",
     "scoring": {
       "innovation": {
         "label": "Innovation",
-        "weight": "30",
         "description": "Whether the problem framing or the solution path is new."
       },
       "technical": {
         "label": "Technical depth",
-        "weight": "25",
         "description": "Technology choices, implementation quality and engineering completeness."
       },
       "completeness": {
         "label": "Product completeness",
-        "weight": "20",
         "description": "Whether the demo runs and the flow closes end to end."
       },
       "problem": {
         "label": "Real problem",
-        "weight": "15",
         "description": "Whether the need comes from a real scenario and real users."
       },
       "fit": {
         "label": "Track fit",
-        "weight": "10",
         "description": "How well the work matches the chosen track."
       }
     },
-    "advanceTitle": "Advancement and review rules",
-    "advanceDescription": "The preliminary round is scored by seven judges; the highest and lowest scores are dropped and the rest averaged. Final-round scoring follows the approved event plan.",
-    "advanceNote": "The approved plan has no online public vote; on-site sticker voting is for engagement only and does not affect advancement.",
+    "advanceTitle": "Finalist selection and Demo Day",
+    "advanceDescription": "Select 10 Finalists. Each final team has five minutes to demonstrate and three minutes for questions. Technical checks are separate from advancement.",
+    "advanceNote": "Preliminary public scoring contributes 20%. The on-site popularity award is separate. Only a recorded eligibility decision grants Finalist status.",
     "advanceItems": {
-      "professional": "Seven judges in the preliminary round; highest and lowest scores dropped",
-      "pool": "Judges score on completeness, innovation and fit with the event theme",
-      "panel": "A one-day on-site final, with about 10 teams selected to advance",
-      "review": "A gap above 20 points between judges triggers manual review"
+      "professional": "Preliminary: three reviewers, 80% professional and 20% public",
+      "pool": "Select 10 Finalists; choose a track after completing the project",
+      "panel": "Final: seven judges, discard the highest and lowest, average five",
+      "review": "Five-minute demo plus three-minute Q&A per team"
     },
     "awardsTitle": "Prizes",
-    "awardsDescription": "CNY 3,300 in cash prizes for the first edition, plus three honorary awards.",
+    "awardsDescription": "First prize: ¥1,500; second: ¥1,000; third: ¥800. Additional technical, innovation and on-site popularity awards.",
     "awards": {
       "first": {
         "label": "First prize",
@@ -2670,20 +2665,22 @@
         "description": "Strongest on innovation"
       },
       "popular": {
-        "label": "Most popular",
+        "label": "On-site popularity award",
         "amount": "Honorary",
-        "description": "Selection follows the official rules for this edition"
+        "description": "Selected separately on site, distinct from preliminary public scoring."
       }
     },
     "rulesTitle": "Rules and compliance",
-    "rulesDescription": "These terms are confirmed at registration; breaking them removes a team from the awards.",
+    "rulesDescription": "All official projects use public GitHub repositories. Never upload credentials or private data. IP belongs to the team; organizers have non-exclusive display and distribution rights.",
     "rules": {
-      "opensource": "Submissions must be open source and state a licence in the repository",
-      "data": "Data sources and authorisation must be declared; unauthorised data is not allowed",
+      "opensource": "All official projects use public GitHub repositories with specific versions and licensing information.",
+      "data": "Never upload credentials or personal privacy. Data and materials require lawful sources and permissions.",
       "originality": "Work must be built during the event; previous or third-party projects are not accepted",
-      "team": "1-5 members per team; one person may not join multiple teams",
+      "team": "Teams of 1–5, for current undergraduate and postgraduate students and alumni within three years of graduation.",
       "demo": "The final requires a live runnable demo, not a video only",
-      "conduct": "Respect judges and other participants; no vote manipulation or review interference"
+      "conduct": "Respect judges and other participants; no vote manipulation or review interference",
+      "rights": "IP belongs to the team. Organizers have non-exclusive display and distribution rights.",
+      "frozen": "After freezing, only approved Bug, UI, stability or presentation changes are allowed. Core functionality cannot be rebuilt."
     },
     "workflowTitle": "ANS workspace shortcuts",
     "workflowDescription": "Keep project records on ANS; registration, review and publication follow in later phases.",
@@ -2692,13 +2689,13 @@
     "openTemplates": "Templates",
     "openSkills": "Skills",
     "boundaryTitle": "First edition boundaries",
-    "boundaryDescription": "This version shows historical rules, tracks and a submission checklist. Rules, dates and registration for this edition await confirmation.",
+    "boundaryDescription": "Registration, stage submissions, technical checks and internal records are integrated. Official windows and scoped access still require edition-specific configuration.",
     "boundaryItems": {
       "entry": "One ANS entry point",
-      "links": "Historical tracks, scoring and prizes are for reference",
-      "ownership": "Teams declare their own work and data authorisation",
-      "next": "Connect registration, submission and results after the edition arrangements are confirmed"
+      "links": "The edition plan and published technical guidance are distinct",
+      "ownership": "Team-owned IP; non-exclusive organizer display rights",
+      "next": "Actions open only within separate published edition windows"
     },
-    "syncNote": "The historical plan requested CNY 5,000. This edition’s budget, dates, registration and results follow the official notice."
+    "syncNote": "All official dates remain unconfirmed. Visual milestones are not registration or submission deadlines."
   }
 }

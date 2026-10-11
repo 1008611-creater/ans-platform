@@ -5,6 +5,7 @@ import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { agriStageSubmissionContentSchema, agriTechnicalCheckCommandSchema } from "@/contracts/agri-submissions";
 import { agriDemoSnapshotSchema } from "@/contracts/agri-demo";
 import { agriRecordSummaryQuerySchema, AGRI_RECORD_SUMMARY_LIMIT, type AgriRecordSummaryQuery, type AgriRecordSummary, type AgriSummarySubmission, type AgriSummaryCheck, type AgriSummaryDemo, type AgriSummaryIssue, type AgriSummaryIssueEvent, type AgriSummaryFeedback } from "@/contracts/agri-record-summary";
+import { projectAgriStageFreeze } from "./submissions";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent, agriDatabaseClock, type AgriWorkspaceContext } from "./workspace";
 
 const identifier = z.string().trim().min(1).max(80);
@@ -25,10 +26,11 @@ function bounded<T>(rows: T[]): T[] {
   if (rows.length > AGRI_RECORD_SUMMARY_LIMIT) throw new AgriWorkspaceError("AGRI_SUMMARY_TOO_LARGE", 422);
   return rows;
 }
-function submissionView(row: SubmissionRow): AgriSummarySubmission {
+function submissionView(row: SubmissionRow, freeze: Awaited<ReturnType<typeof projectAgriStageFreeze>>): AgriSummarySubmission {
   return { id: row.id, entryStageId: row.entryStageId, stage: row.stage, sequence: row.sequence,
     artifactVersionId: row.artifactVersionId, artifactVersion: row.artifactVersion, ruleVersionId: row.ruleVersionId,
-    acceptedAt: row.acceptedAt.toISOString(), isCurrent: row.currentSubmissionId === row.id, isFrozen: row.frozenSubmissionId === row.id,
+    acceptedAt: row.acceptedAt.toISOString(), isCurrent: row.currentSubmissionId === row.id, isFrozen: freeze.frozenSubmissionId === row.id,
+    isRecordedFrozen: freeze.recordedFrozenSubmissionId === row.id, frozenByDeadline: freeze.frozenByDeadline && freeze.frozenSubmissionId === row.id,
     ...(row.correctionPreviousId && row.correctionPermitId && row.correctionReason && row.correctionAuthorizedById && row.correctionAuthorizedAt ? { correction: { previousSubmissionId: row.correctionPreviousId, permitId: row.correctionPermitId, reason: row.correctionReason, authorizedById: row.correctionAuthorizedById, authorizedAt: row.correctionAuthorizedAt.toISOString() } } : {}) };
 }
 function feedbackView(row: FeedbackRow, includeBody: boolean): AgriSummaryFeedback | null {
@@ -84,11 +86,17 @@ export async function collectAgriRecordSummary(tx: Tx, ctx: AgriWorkspaceContext
     AND (i.visibility='TEAM' OR ${query.includeInternal}) AND (i.basis='METADATA' OR ${query.includePrivate})
     AND (e.visibility='TEAM' OR ${query.includeInternal}) AND (e.basis='METADATA' OR ${query.includePrivate})
     ORDER BY e."createdAt" DESC,e.id DESC LIMIT 101`);
-  const view: AgriRecordSummary = { schemaVersion: 1, source: "ANS_AGRI_LIVE_RECORD_SUMMARY", generatedAt: (await agriDatabaseClock(tx)).toISOString(),
+  const generatedAt = await agriDatabaseClock(tx);
+  const stages = new Map([item, ...history].map(row => [row.entryStageId, row]));
+  const freezes = new Map(await Promise.all([...stages].map(async ([id, row]) => [id,
+    await projectAgriStageFreeze(tx, { id, competitionId: item.competitionId, stage: row.stage,
+      currentSubmissionId: row.currentSubmissionId, frozenSubmissionId: row.frozenSubmissionId }, generatedAt)] as const)));
+  const projectedSubmission = (row: SubmissionRow) => submissionView(row, freezes.get(row.entryStageId)!);
+  const view: AgriRecordSummary = { schemaVersion: 1, source: "ANS_AGRI_LIVE_RECORD_SUMMARY", generatedAt: generatedAt.toISOString(),
     competitionId: item.competitionId, teamCompetitionId: item.teamCompetitionId, teamName: item.teamName,
-    submission: submissionView(item), rule: { id: item.ruleVersionId, version: item.ruleVersion, confirmedAt: item.ruleConfirmedAt.toISOString() },
+    submission: projectedSubmission(item), rule: { id: item.ruleVersionId, version: item.ruleVersion, confirmedAt: item.ruleConfirmedAt.toISOString() },
     selection: { includePrivate: query.includePrivate, includeInternal: query.includeInternal }, limits: { maxPerCollection: 100, complete: true },
-    stageHistory: history.map(submissionView),
+    stageHistory: history.map(projectedSubmission),
     technicalChecks: checks.map(row => ({ id: row.id, basis: row.basis, result: row.result, checkedAt: row.checkedAt.toISOString(), feedback: feedbackView(row, query.includePrivate),
       ...(query.includePrivate ? { checklist: agriTechnicalCheckCommandSchema.shape.checklist.parse(row.checklist) } : {}),
       ...(query.includeInternal && (row.basis === "METADATA" || query.includePrivate) ? { internalNote: row.internalNote } : {}) })),

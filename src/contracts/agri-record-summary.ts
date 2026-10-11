@@ -14,6 +14,8 @@ export interface AgriSummarySubmission {
   id: string; entryStageId: string; stage: "PRELIMINARY" | "FINAL"; sequence: number;
   artifactVersionId: string; artifactVersion: number; ruleVersionId: string; acceptedAt: string;
   isCurrent: boolean; isFrozen: boolean;
+  /** Optional provenance for live projections; older immutable archives retain their saved shape. */
+  isRecordedFrozen?: boolean; frozenByDeadline?: boolean;
   correction?: { previousSubmissionId: string; permitId: string; reason: string; authorizedById: string; authorizedAt: string };
 }
 export interface AgriSummaryFeedback { sequence: number; publishedAt: string; body?: string }

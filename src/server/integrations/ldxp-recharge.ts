@@ -14,7 +14,7 @@ export class LdxpRechargeError extends Error {
 }
 
 function configured() {
-  return process.env.ANS_LDXP_RECHARGE_ENABLED === "1" && Boolean(process.env.LDXP_MERCHANT_TOKEN);
+  return false; // Retired: customer recharge uses vouchers, not merchant wallet deposits.
 }
 
 export function ldxpRechargeEnabled() { return configured(); }

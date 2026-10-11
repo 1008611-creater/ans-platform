@@ -1,9 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { agriRecordSummaryQuerySchema } from "@/contracts/agri-record-summary";
 import { readAgriRecordSummary } from "@/server/competitions/agrihackathon/record-summary";
+import { projectAgriStageFreeze } from "@/server/competitions/agrihackathon/submissions";
 import { db } from "@/lib/db";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent } from "@/server/competitions/agrihackathon/workspace";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
+vi.mock("@/server/competitions/agrihackathon/submissions", () => ({ projectAgriStageFreeze: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { $transaction: vi.fn() } }));
 vi.mock("@/server/competitions/agrihackathon/workspace", () => ({
   lockAgriWorkspace: vi.fn(), requireAgriScope: vi.fn(), assertAgriAuthorityCurrent: vi.fn(),
@@ -16,7 +18,8 @@ const tx = { $queryRaw: vi.fn(), auditLog: { create: vi.fn() } };
 function results(overrides: { history?: unknown[]; checks?: unknown[]; demos?: unknown[]; issues?: unknown[]; events?: unknown[] } = {}) {
   tx.$queryRaw.mockResolvedValueOnce([source]).mockResolvedValueOnce(overrides.history ?? [source]).mockResolvedValueOnce(overrides.checks ?? [check]).mockResolvedValueOnce(overrides.demos ?? []).mockResolvedValueOnce(overrides.issues ?? []).mockResolvedValueOnce(overrides.events ?? []);
 }
-beforeEach(() => { vi.clearAllMocks(); tx.$queryRaw.mockReset(); vi.mocked(db.$transaction).mockImplementation(async run => (run as unknown as (transaction: typeof tx) => Promise<unknown>)(tx) as never);
+beforeEach(() => { vi.clearAllMocks();
+  vi.mocked(projectAgriStageFreeze).mockImplementation(async (_tx, stage) => ({ frozenSubmissionId: stage.frozenSubmissionId, recordedFrozenSubmissionId: stage.frozenSubmissionId, frozenByDeadline: false })); tx.$queryRaw.mockReset(); vi.mocked(db.$transaction).mockImplementation(async run => (run as unknown as (transaction: typeof tx) => Promise<unknown>)(tx) as never);
   vi.mocked(lockAgriWorkspace).mockResolvedValue({ actorId: "staff", workspace: { id: "workspace", competitionId: "edition", enabled: true, draftRevision: 1, rulesDraft: null, confirmedRuleVersionId: "rule-1", publishedRuleVersionId: "rule-1" } });
   vi.mocked(requireAgriScope).mockImplementation(async (_tx, _ctx, scope) => ({ id: scope, expiresAt: null } as never));
 });
@@ -28,6 +31,15 @@ describe("staff live summary boundaries", () => {
     const view = await readAgriRecordSummary("staff", "old-submission");
     expect(view.submission.correction).toEqual({ previousSubmissionId: "original", permitId: "permit", reason: "Approved correction", authorizedById: "manager", authorizedAt: at.toISOString() });
     expect(view.stageHistory[0].correction).toEqual(view.submission.correction);
+  });
+  it("marks deadline freezes as computed while retaining recorded-freeze provenance", async () => {
+    results();
+    vi.mocked(projectAgriStageFreeze).mockResolvedValue({ frozenSubmissionId: source.id, recordedFrozenSubmissionId: null, frozenByDeadline: true });
+    const view = await readAgriRecordSummary("staff", source.id);
+    expect(view.submission).toMatchObject({ isFrozen: true, isRecordedFrozen: false, frozenByDeadline: true });
+    expect(view.stageHistory[0]).toMatchObject({ isFrozen: true, isRecordedFrozen: false, frozenByDeadline: true });
+    expect(projectAgriStageFreeze).toHaveBeenCalledTimes(1);
+    expect(tx.auditLog.create).not.toHaveBeenCalled();
   });
   it("parses explicit true/false only and rejects forged modes/scopes/selection", () => {
     expect(agriRecordSummaryQuerySchema.parse({})).toEqual({ includePrivate: false, includeInternal: false, mode: "view" });

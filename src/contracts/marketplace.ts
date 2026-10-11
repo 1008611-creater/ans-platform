@@ -37,6 +37,7 @@ export const marketListingRevisionSchema = z.object({
 }).strict();
 export const marketOrderCreateSchema = z.object({
   listingId: z.string().trim().min(1).max(100),
+  paymentMethod: z.enum(["POINTS", "WECHAT", "ALIPAY"]).optional(),
   expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
   requirements: z.string().trim().max(10_000).default(""),
@@ -68,6 +69,7 @@ export type MarketListingInput = z.infer<typeof marketListingInputSchema>;
 export type MarketOrderStatus = z.infer<typeof marketOrderStatusSchema>;
 export type MarketOrderAction = z.infer<typeof marketOrderActionSchema>;
 export const marketQuoteSchema = marketListingInputSchema.extend({
+  paymentProvider: z.enum(["wechat", "alipay"]).optional(),
   priceMinor: marketMoneySchema,
   listingId: z.string().min(1),
   listingVersion: z.number().int().positive(),
@@ -88,6 +90,7 @@ export const marketProviderEventSchema = z.object({
   amountMinor: marketMoneySchema,
   currency: z.string().regex(/^[A-Z]{3}$/),
   refundId: z.string().min(1).max(120).optional(),
+  refundRequestId: z.string().min(1).max(100).optional(),
 }).strict().superRefine((event, ctx) => {
   if (event.type === "refund_succeeded" && !event.refundId) {
     ctx.addIssue({ code: "custom", path: ["refundId"], message: "REFUND_ID_REQUIRED" });

@@ -5,6 +5,7 @@ import { buildMarketQuote, completionPostings, MarketRuleError, nextOrderStatus 
 import { appendCashJournal, marketHash, marketTransaction, requireMarketActor } from "./shared";
 
 import { pointsPricingPolicy, settleMarketPoints } from "./points";
+import { availableCashProviders, cashListingPolicy, configuredCashProvider } from "./providers/config";
 
 export type MarketPricingPolicy = { commissionBps: number };
 
@@ -24,11 +25,11 @@ const orderDetails = {
 function presentOrder(order: Prisma.MarketOrderGetPayload<{ include: typeof orderDetails }>) {
   return {
     id: order.id, listingId: order.listingId, buyerId: order.buyerId, sellerId: order.sellerId,
-    paymentMethod: order.paymentMethod, status: order.status, quote: marketQuoteSchema.parse(order.quote), revision: order.revision,
+    paymentMethod: order.paymentMethod === "CASH" && marketQuoteSchema.parse(order.quote).paymentProvider ? marketQuoteSchema.parse(order.quote).paymentProvider!.toUpperCase() : order.paymentMethod, status: order.status, quote: marketQuoteSchema.parse(order.quote), revision: order.revision,
     revisionRequests: order.revisionRequests, requirements: order.requirements,
     paidAt: order.paidAt?.toISOString() ?? null, completedAt: order.completedAt?.toISOString() ?? null,
     createdAt: order.createdAt.toISOString(), updatedAt: order.updatedAt.toISOString(),
-    events: order.events.toReversed().map((event) => ({ id: event.id, actorId: event.actorId, action: event.action, fromStatus: event.fromStatus, toStatus: event.toStatus, revision: event.revision, message: event.message, createdAt: event.createdAt.toISOString() })),
+    events: order.events.toReversed().map((event) => ({ id: event.id, actorId: event.actorId, action: event.action, fromStatus: event.fromStatus, toStatus: event.toStatus, revision: event.revision, message: event.action.startsWith("CASH_CHECKOUT_") ? "" : event.message, createdAt: event.createdAt.toISOString() })),
     deliveries: order.deliveries.map((delivery) => ({ id: delivery.id, revision: delivery.orderRevision, markdown: delivery.contentMarkdown, createdAt: delivery.createdAt.toISOString() })),
     messages: order.messages.toReversed().map((message) => ({ id: message.id, authorId: message.authorId, content: message.content, createdAt: message.createdAt.toISOString() })),
     review: order.review ? { rating: order.review.rating, content: order.review.content, createdAt: order.review.createdAt.toISOString() } : null,
@@ -53,7 +54,7 @@ export async function listMarketOrders(userId: string) {
 }
 
 /** policy injection is server/test-only; request bodies cannot override prices or fees. */
-export async function createMarketOrder(buyerId: string, raw: unknown, policy: MarketPricingPolicy = configuredPricingPolicy()) {
+export async function createMarketOrder(buyerId: string, raw: unknown, policy?: MarketPricingPolicy) {
   const input = marketOrderCreateSchema.parse(raw);
   const requestHash = marketHash(input);
   const orderId = await marketTransaction(async (tx) => {
@@ -70,10 +71,19 @@ export async function createMarketOrder(buyerId: string, raw: unknown, policy: M
     if (listing.publishedVersion !== input.expectedVersion) throw new MarketRuleError("VERSION_CONFLICT");
     const version = listing.versions.find((row) => row.version === listing.publishedVersion);
     if (!version) throw new MarketRuleError("INVALID_LISTING_STATE");
-    const quote = buildMarketQuote(marketListingInputSchema.parse(version.payload), { listingId: listing.id, listingVersion: version.version, sellerId: listing.sellerId }, policy.commissionBps);
+    const paymentMethod = input.paymentMethod ?? "POINTS";
+    const listingInput = marketListingInputSchema.parse(version.payload);
+    let pricing = policy;
+    if (paymentMethod !== "POINTS") {
+      configuredCashProvider(paymentMethod === "WECHAT" ? "wechat" : "alipay");
+      const cash = cashListingPolicy(listing.id, version.version, listing.sellerId);
+      listingInput.priceMinor = cash.priceMinor; pricing = cash;
+    }
+    pricing ??= configuredPricingPolicy();
+    const quote = { ...buildMarketQuote(listingInput, { listingId: listing.id, listingVersion: version.version, sellerId: listing.sellerId }, pricing.commissionBps), ...(paymentMethod !== "POINTS" ? { paymentProvider: paymentMethod === "WECHAT" ? "wechat" as const : "alipay" as const } : {}) };
     const order = await tx.marketOrder.create({
       data: {
-        paymentMethod: "POINTS", buyerId, sellerId: listing.sellerId, listingId: listing.id, quote: quote as Prisma.InputJsonValue,
+        paymentMethod: paymentMethod === "POINTS" ? "POINTS" : "CASH", buyerId, sellerId: listing.sellerId, listingId: listing.id, quote: quote as Prisma.InputJsonValue,
         totalMinor: quote.priceMinor, currency: quote.currency, requirements: input.requirements,
         idempotencyKey: input.idempotencyKey, requestHash,
         events: { create: { actorId: buyerId, action: "ORDER_CREATED", toStatus: "AWAITING_PAYMENT", revision: 0, operationKey: "created", requestHash } },
@@ -170,4 +180,10 @@ export async function reviewMarketOrder(orderId: string, userId: string, raw: un
     await tx.auditLog.create({ data: { actorId: userId, action: "MARKET_ORDER_REVIEWED", resourceType: "market_order", resourceId: orderId } });
     return review;
   });
+}
+
+export function marketCashOffer(listingId: string, version: number, sellerId: string) {
+  try { const approval = cashListingPolicy(listingId, version, sellerId); const providers = availableCashProviders();
+    return providers.length ? { priceMinor: approval.priceMinor, providers } : null;
+  } catch { return null; }
 }

@@ -30,6 +30,7 @@ beforeEach(() => {
       detail = { ...detail, revision: detail.revision + 1, draft: command.draft ?? null }; return envelope({ appliedRevision: detail.revision });
     }
     if (url === api + "/entries") return envelope({ competitionId: "competition", workspaceEnabled: true, entries: [{ id: "entry", teamId: "team", competitionId: "competition", teamName: "Fixture team", role: "OWNER" }] });
+    if (url.startsWith(api + "?stage=")) return envelope({ stages: [], nextCursor: null });
     if (url.includes("/versions")) return envelope({ versions: [{ id: "version", projectId: "project", projectTitle: "Fixture project", artifactTitle: "Fixture work", version: 1 }], nextCursor: null });
     return envelope(detail);
   }); vi.stubGlobal("fetch", fetchMock);
@@ -121,5 +122,43 @@ describe("stage submission recovery and consent", () => {
   });
   it("keeps final submission closed and supports preparing a draft without invented eligibility", async () => {
     detail={...detail,stage:"FINAL",windowState:"RULES_PENDING"};await open();fill();fireEvent.click(screen.getByLabelText(copy.confirm));expect(screen.getByRole("button",{name:copy.submit})).toBeDisabled();expect(screen.getByRole("button",{name:copy.save})).toBeEnabled();expect(screen.getByText(copy.finalPending)).toBeInTheDocument();
+  });
+});
+
+describe("entry-point selection and read-only stage history", () => {
+  it("preselects the linked team and FINAL stage without writes on navigation", async () => {
+    render(<WorkspaceNavigationProvider><AgriSubmissions initialSelection={{ teamCompetitionId: "entry", stage: "FINAL" }} /></WorkspaceNavigationProvider>);
+    await screen.findByRole("button", { name: copy.open });
+    expect(screen.getByLabelText(copy.team)).toHaveValue("entry");
+    expect(screen.getByLabelText(copy.stageField)).toHaveValue("FINAL");
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+  });
+  it("honors a new stage link when the same route receives updated selection props", async () => {
+    const ui = render(<WorkspaceNavigationProvider><AgriSubmissions initialSelection={{ teamCompetitionId: "entry", stage: "PRELIMINARY" }} /></WorkspaceNavigationProvider>);
+    await screen.findByRole("button", { name: copy.open });
+    expect(screen.getByLabelText(copy.stageField)).toHaveValue("PRELIMINARY");
+    ui.rerender(<WorkspaceNavigationProvider><AgriSubmissions initialSelection={{ teamCompetitionId: "entry", stage: "FINAL" }} /></WorkspaceNavigationProvider>);
+    await screen.findByRole("button", { name: copy.open });
+    expect(screen.getByLabelText(copy.stageField)).toHaveValue("FINAL");
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+  });
+  it("does not silently switch to another team when a linked entry is inaccessible", async () => {
+    render(<WorkspaceNavigationProvider><AgriSubmissions initialSelection={{ teamCompetitionId: "foreign-entry", stage: "FINAL" }} /></WorkspaceNavigationProvider>);
+    const openButton = await screen.findByRole("button", { name: copy.open });
+    expect(screen.getByLabelText(copy.team)).toHaveValue(""); expect(openButton).toBeDisabled();
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+  });
+  it("reads an existing manager stage without preparing it, including a disabled workspace", async () => {
+    const normal = fetchMock.getMockImplementation()!;
+    detail.workspaceEnabled = false;
+    fetchMock.mockImplementation(async (url, init) => {
+      if (url === api + "/entries") return envelope({ competitionId: "competition", workspaceEnabled: false, entries: [{ id: "entry", teamName: "Fixture team", role: "OWNER" }] });
+      if (url === api + "?stage=PRELIMINARY") return envelope({ stages: [{ id: "stage", teamCompetitionId: "entry" }], nextCursor: null });
+      return normal(url, init);
+    });
+    render(<WorkspaceNavigationProvider><AgriSubmissions /></WorkspaceNavigationProvider>);
+    fireEvent.click(await screen.findByRole("button", { name: copy.open }));
+    expect(await screen.findByLabelText(copy.version)).toBeDisabled();
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
   });
 });

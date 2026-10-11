@@ -706,3 +706,31 @@ describe.skipIf(!childSourceRoot)("actual Toonflow child identity recovery", () 
     mounted.stop(); child.dispose();
   });
 });
+
+// Real account/compute statements must remain reachable without abandoning a draft.
+it.each([
+  ["computeHistory.title", "/workspace/compute"],
+  ["quotaHistory.title", "/workspace/credits"],
+])("saves the retained editor before opening %s", (label, destination) => {
+  const { frame, nonce, send } = setup(); message(frame, nonce);
+  fireEvent.click(screen.getByRole("button", { name: "expand" }));
+  const link = screen.getByRole("link", { name: label });
+  expect(link).toHaveAttribute("href", destination);
+  fireEvent.click(link);
+  const request = send.mock.calls.at(-1)![0];
+  expect(request.type).toBe("ans.toonflow.prepareLeave");
+  expect(mocks.push).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("link", { name: "back" }));
+  leaveResult(frame, nonce, request.requestId);
+  expect(mocks.push).toHaveBeenCalledExactlyOnceWith(destination);
+  expect(screen.getByTitle("frameTitle")).toBe(frame);
+});
+it("keeps the editor when saving before a statement fails", () => {
+  const { frame, nonce, send } = setup(); message(frame, nonce);
+  fireEvent.click(screen.getByRole("link", { name: "computeHistory.title" }));
+  const request = send.mock.calls.at(-1)![0];
+  leaveResult(frame, nonce, request.requestId, "failed");
+  expect(mocks.push).not.toHaveBeenCalled();
+  expect(screen.getByTitle("frameTitle")).toBe(frame);
+  expect(screen.getByRole("alert")).toHaveTextContent("saveFailed");
+});

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, ExternalLink, RefreshCw, Film } from "lucide-react";
+import { ArrowLeft, ExternalLink, RefreshCw, Film, ReceiptText, WalletCards } from "lucide-react";
 import { useToonflowHost, type ToonflowHostConfig } from "@/components/providers/toonflow-host";
 import { useWorkspaceNavigation } from "@/components/providers/workspace-navigation";
 import { Button } from "@/components/ui/button";
@@ -225,6 +225,7 @@ export function ToonflowWorkspaceSession({ origin, src, loginUrl, userId, active
   const t = useTranslations("product.toonflow.embed");
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
+  const product = useTranslations("product");
   const prepareLeaveRef = useRef<PrepareLeave | null>(null);
   const [leaveState, setLeaveState] = useState<LeaveState>("idle");
   const [attempt, setAttempt] = useState(0);
@@ -245,16 +246,26 @@ export function ToonflowWorkspaceSession({ origin, src, loginUrl, userId, active
     prepareLeaveRef.current?.(() => setAttempt(value => value + 1));
   }
 
+  // Financial views use the same confirmed-save handshake as the return link.
+  // The retained frame survives the route change, including an expanded editor.
+  function navigate(event: { preventDefault(): void }, destination: string) {
+    if (!accountValid) return;
+    event.preventDefault();
+    prepareLeaveRef.current?.(() => router.push(destination));
+  }
+
   return <section className={expanded ? "fixed inset-0 z-50 flex flex-col bg-background" : "ans-product-container flex flex-col py-6"}>
     <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-background px-4 py-3">
-      <div className="flex items-center gap-3"><Link href="/workspace" className="ans-text-link" aria-disabled={accountValid && leaveState === "saving"} onNavigate={event => {
-        if (!accountValid) return;
-        event.preventDefault();
-        prepareLeaveRef.current?.(() => router.push("/workspace"));
-      }}><ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("back")}</Link><span className="hidden text-muted-foreground sm:inline" aria-hidden="true">/</span><h1 className="flex items-center gap-2 text-base font-semibold"><Film className="h-4 w-4" aria-hidden="true" />{t("title")}</h1></div>
+      <div className="flex items-center gap-3"><Link href="/workspace" className="ans-text-link" aria-disabled={accountValid && leaveState === "saving"} onNavigate={event => navigate(event, "/workspace")}><ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("back")}</Link><span className="hidden text-muted-foreground sm:inline" aria-hidden="true">/</span><h1 className="flex items-center gap-2 text-base font-semibold"><Film className="h-4 w-4" aria-hidden="true" />{t("title")}</h1></div>
       <div className="flex flex-wrap items-center gap-2"><Button ref={expandToggle} variant="ghost" size="sm" onClick={() => setExpanded(value => !value)} aria-pressed={expanded}>{t(expanded ? "collapse" : "expand")}</Button><Button variant="ghost" size="sm" asChild><a href={origin} target="_blank" rel="noopener noreferrer">{t("standalone")}<ExternalLink className="ms-2 h-3 w-3" aria-hidden="true" /></a></Button></div>
     </div>
-    <p className="border-b px-4 py-2 text-xs leading-6 text-muted-foreground">{t("billing")}</p>
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b px-4 py-2 text-xs leading-6 text-muted-foreground">
+      <p>{t("billing")}</p>
+      <nav aria-label={product("computeHistory.title")} className="flex flex-wrap items-center gap-4">
+        <Link href="/workspace/compute" className="inline-flex items-center gap-1.5 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4" aria-disabled={accountValid && leaveState === "saving"} onNavigate={event => navigate(event, "/workspace/compute")}><ReceiptText className="size-3.5" aria-hidden="true" />{product("computeHistory.title")}</Link>
+        <Link href="/workspace/credits" className="inline-flex items-center gap-1.5 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4" aria-disabled={accountValid && leaveState === "saving"} onNavigate={event => navigate(event, "/workspace/credits")}><WalletCards className="size-3.5" aria-hidden="true" />{product("quotaHistory.title")}</Link>
+      </nav>
+    </div>
     {accountValid && leaveState !== "idle" && <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3 text-sm">
       <p role={leaveState === "failed" ? "alert" : "status"} aria-live="polite">{t(leaveState === "failed" ? "saveFailed" : leaveState)}</p>
       {leaveState === "navigating" && <Button variant="outline" size="sm" onClick={() => window.location.reload()}>{t("reloadSaved")}</Button>}

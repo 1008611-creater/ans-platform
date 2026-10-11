@@ -1,0 +1,22 @@
+{
+  "title": "CNY payment",
+  "official": "Official service",
+  "wechat": "WeChat Pay",
+  "alipay": "Alipay",
+  "price": "?{amount}",
+  "buy": "Create a CNY order",
+  "confirm": "I confirm the service, delivery time and CNY price.",
+  "start": "Continue to {provider}",
+  "qr": "Scan with WeChat to pay",
+  "qrTitle": "WeChat payment QR for this order",
+  "expires": "Valid until {time}",
+  "verify": "I have paid ? verify order",
+  "pending": "Payment is not confirmed yet. Check again shortly.",
+  "recovery": "Payment is confirmed against the payment provider.",
+  "notice": "CNY and points orders have separate prices. Accept delivery to complete your order.",
+  "unavailable": "This payment channel is not enabled",
+  "error": "Unable to complete. Try again shortly.",
+  "reconcile": "A payment request may already exist. Verify the order first or contact support.",
+  "expired": "This checkout expired. Contact support before placing a new order.",
+  "payout": "An order ledger does not prove bank settlement. Creator cash payouts are not enabled."
+}

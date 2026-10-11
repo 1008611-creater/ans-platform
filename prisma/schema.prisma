@@ -2607,3 +2607,19 @@ model AgriDecisionReceipt {
   @@unique([competitionId, actorId, operation, idempotencyKey])
   @@map("agri_decision_receipts")
 }
+
+model CreditVoucher {
+ id String @id @default(cuid())
+ batchId String
+ batchName String @db.VarChar(100)
+ codeHash String @unique @db.VarChar(64)
+ points Decimal @db.Decimal(24,6)
+ createdBy String
+ createdAt DateTime @default(now())
+ expiresAt DateTime?
+ revokedAt DateTime?
+ redeemedBy String?
+ redeemedAt DateTime?
+ @@index([batchId, redeemedAt])
+ @@map("credit_vouchers")
+}

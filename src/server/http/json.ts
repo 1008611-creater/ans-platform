@@ -40,3 +40,8 @@ export async function readSameOriginJson(request: Request): Promise<unknown> {
   catch { throw new HttpRequestError("INVALID_JSON", 400); }
 }
 
+
+/** Bind a browser operation to the account that rendered its private content. */
+export function assertRequestActor(request: Request, actorId: string): void {
+  if (request.headers.get("x-ans-actor") !== actorId) throw new HttpRequestError("ACCOUNT_CHANGED", 409);
+}

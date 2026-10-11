@@ -2,15 +2,17 @@
 
 实际运行目录为 `/srv/ans-platform-authoritative-main`，应用容器为 `ans-platform-app`，Compose 项目名为 `ans-platform-authoritative`。ANS 使用 Supabase Session pooler 与 PostgreSQL 17；共享服务器上的 `prompts-chat-db` 是另一业务，不能作为 ANS 的备份目标。
 
-## 2026-10-11 main 同步与本轮候选
+## 2026-10-11 当前正式站与待发布合并
 
-当前正式容器 `ans-platform-app`，Compose 项目 `ans-platform-header`；源码 release `/srv/ans-releases/ans-main-sync-20261011/source`，已部署 Git revision `e1dd01944a871cc5d36703f7e5add17dd4ba7d52`。以实际运行容器检查的配置、项目名和挂载为准，下文早期目录为历史记录。数据库运行使用 Supabase transaction pooler/6543；一致备份和迁移使用已有 `DIRECT_URL` session pooler/5432。
+2026-10-11T12:24Z 最近只读核对：正式容器 `ans-platform-app`、Compose `ans-platform-header` healthy；运行镜像 `sha256:e4417d5c35dc77478ba9336a7726c725378af5fa6f6753a4b48e451a3ce2c3db`，release `ans-vouchers-v2-20261011`，source SHA-256 `13945d63dfc0e021fb3b77fcfca9ea745e2e50cc5fde31397f5df9380b913a69`。此镜像标记基线 Git revision 491f1544 且 `localModifications=true`，不能称为 main 最新26398。充值员工已部署卡密及 `20261011160000_credit_vouchers` 增量迁移；其运行证据 `/srv/ans-releases/ans-vouchers-v2-20261011/deployment.json`。当前人民币市场收款尚未启用。
 
-44 张 GitGlow 封面已合并 main 且上线，公开 HTTPS 请求 44/44 HTTP200，与 main 源码哈希相同。证据在本机 `.workbuddy/evidence/ans-main-sync-20261011/gitglow-recheck-20261011.json`。个人主页、签到、XP/等级、装饰与奖励系统已包含在当前部署版本；本轮继续修复并发奖励扣回、公开身份、工作流审核版本、持久任务恢复、市场明确拒绝后重试与农客松阶段决定/更正管理。
+44 张 GitGlow 封面与个人主页/签到/XP/等级/装饰已在线。Main 26398 的收藏验证、等级文字对比度和详情页语义修复已推送，CI 38135852686 和 Docker publish 38135852757 均 success。`ans-audit-final-v2-20261011` 冻结源码3e262e9e与精确构建通过；对应bd7父版117表/71迁移的一致备份与独立恢复通过。正式切换前发生新的卡密上线，parent检查拒绝部署（退出1），没有覆盖新功能；该旧备份不是当前卡密数据库恢复证明，必须取fresh快照再验证。
 
-候选 release `ans-audit-20261011`：类型检查通过；全量 lint 0 errors，313 既有 warnings；184 个文件、2391 项单元验证通过，10 项 skipped；六类分层与113文档链接检查通过。全71项迁移在新建隔离库执行成功，11类真实 SQL 约束验证通过且事务回滚后业务表为空。此记录不代表候选已上线；正式部署以 release `deployment.json` 和运行容器版本为准。
+主控已逐hash核对并读取卡密16文件源码增量，在权威工作树保留农客松阶段UI和AIGC账单导航后进行语义合并，源压缩包SHA-256 `54e1a3c582e75dfde4fa030b648b4ca879a2a00b8a690433a5c4cbeb3d8c3b2a`，不包含私有业务数据或凭据。此合并、Hypit原生页面、双渠道现金收付款、账号换号保护和农客松历史纯读取均仍为本地工作，是否上线以新冻结release的deployment.json和实际运行容器为准。
 
-未完成：新版的五轮生产闭环审计、农客松正式赛事绑定与独立报名窗口接入、阶段档案公开授权、AIGC 工作台真实内嵌/视频统一收费、现金支付适配与真实结算。无真实赛事绑定时不开报，不虚构赛事日期、规则或名单，不用生产付费调用或测试数据验收。这些缺口不能用按钮、模拟或旧证据称已完成。
+独立审查发现：历史GET曾触发冻结数据库写入、券码及私有参赛页换号保护不足。已补纯冻结投影、服务器actor核对、敏感组件卸载及迟到响应保护。当前77项相关回归、生产与测试两套完整TypeScript类型检查、完整ESLint（0错误、384既有/无阻断警告）及六类分层边界检查均通过；尚需真实隔离PostgreSQL证明GET不写库及精确生产发布证据。本地券码/阶段/AIGC范围97项通过、10项既有跳过；换号/迟到请求补验17项通过。首个全量lint发现现金员工新增路由越界，已修复待整合复验；首次完整typecheck因2GB堆限制退出134，后以6GB堆完成两套检查并退出0。全量测试首次2511通过/2失败/10既有跳过，失败为英文账号提示缺失，已补齐并复验11项；最终全量复验以新退出码为准。
+
+仍未完成：当前版本五轮完整生产审计、农客松真实赛事绑定与独立窗口/规则发布、身份与最终队员硬校验、评分投票、阶段档案公开授权；AIGC新双端部署及原作品正式归属迁移、媒体统一计量收费；实际商户配置、真钱退款和创作者分账。用户已确认微信支付和支付宝商户均有，密钥仅通过安全配置注入，不发聊天。无真实绑定不开报，日期保持待确认；不使用生产虚构账户、项目、经验或付费调用验收。
 
 ## 发布前
 

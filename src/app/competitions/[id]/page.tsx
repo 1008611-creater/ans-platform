@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { CompetitionError, getCompetitionWorkbench, listTeamsForCompetition } from "@/server/competitions/service";
 import { CompetitionActions } from "@/components/competitions/competition-actions";
+import { getAgriCompetitionPhaseView } from "@/server/competitions/agrihackathon/phase-view";
+import { AgriCompetitionDetail } from "@/components/competitions/agri-competition-detail";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +32,8 @@ function competitionStatus(status: string) {
 export default async function CompetitionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await auth();
+  const agriView = await getAgriCompetitionPhaseView(id, session?.user?.id);
+  if (agriView) return <AgriCompetitionDetail view={agriView} actorId={session?.user?.id} />;
   let workbench: Workbench;
   try {
     workbench = await getCompetitionWorkbench(id, session?.user?.id);

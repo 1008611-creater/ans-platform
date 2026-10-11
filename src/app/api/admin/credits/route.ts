@@ -1,4 +1,4 @@
-﻿import { HttpRequestError, readSameOriginJson } from "@/server/http/json";
+import { HttpRequestError, readSameOriginJson, assertRequestActor } from "@/server/http/json";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { requireAdminPermission } from "@/lib/admin-permissions";
@@ -8,11 +8,12 @@ import { QuotaError } from "@/server/quota/service";
 import { MarketRuleError } from "@/domain/marketplace/order";
 export async function GET() {
   if (!await requireAdminPermission("USERS_MANAGE")) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
-  return NextResponse.json({ ...(await quotaAdminOverview()), ldxp: { enabled: process.env.ANS_LDXP_RECHARGE_ENABLED === "1" && Boolean(process.env.LDXP_MERCHANT_TOKEN), orders: await listLdxpRechargeOrders() } }, { headers: { "Cache-Control": "private, no-store" } });
+  return NextResponse.json({ ...(await quotaAdminOverview()), ldxp: { enabled: false, orders: await listLdxpRechargeOrders() } }, { headers: { "Cache-Control": "private, no-store" } });
 }
 export async function POST(request: Request) {
   const admin = await requireAdminPermission("USERS_MANAGE");
   if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  try { assertRequestActor(request, admin.userId); } catch { return NextResponse.json({ error: "ACCOUNT_CHANGED" }, { status: 409 }); }
   const action = request.headers.get("x-ans-admin-action");
   if (action === "reconcile-ldxp") {
     try { await readSameOriginJson(request); return NextResponse.json(await reconcilePendingLdxpRecharges()); }

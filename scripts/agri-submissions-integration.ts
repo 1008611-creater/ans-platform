@@ -8,17 +8,29 @@ for (const value of [process.env.DATABASE_URL, process.env.DIRECT_URL]) {
   const url = new URL(value ?? "http://invalid");
   if (url.hostname !== "127.0.0.1" || url.port !== "55438" || url.pathname !== "/ans_product_verify_agri_submissions_r1") throw new Error("Non-isolated submission writes refused");
 }
-const dir = ".workbuddy/evidence/agri-submissions";
+const dir = process.env.AGRI_SUBMISSIONS_EVIDENCE_DIR ?? ".workbuddy/evidence/agri-submissions";
 async function main() {
   const { db } = await import("../src/lib/db");
+  await mkdir(dir, { recursive: true });
   const { prepareAgriStage: prepare, executeAgriSubmissionCommand: run, readAgriStage: get, listAgriStages: list, listAgriTeamEntries: entries, listAgriSubmissionVersions: versions, exportAgriWorks: exportWorks } = await import("../src/server/competitions/agrihackathon/submissions");
+  const { getAgriCompetitionPhaseView: phaseView } = await import("../src/server/competitions/agrihackathon/phase-view");
+  const { readAgriRecordSummary: summary } = await import("../src/server/competitions/agrihackathon/record-summary");
+  const { executeAgriDecisionCommand: decide } = await import("../src/server/competitions/agrihackathon/decisions");
   const { executeAgriWorkspaceCommand: rules, readAgriWorkspaceRules: getRules } = await import("../src/server/competitions/agrihackathon/workspace");
   const { submitCompetitionEntry: legacySubmit, reviewCompetitionEntry: legacyReview } = await import("../src/server/competitions/service");
   const checks: Array<{ label: string; passed: boolean }> = [];
   const persistence = process.argv.includes("--persistence");
-  const report = { checks, passed: false, isolatedPostgres: true, productionWrites: false, modelCalls: 0, privateContent: "synthetic fixtures", failures: [] as string[] };
+  const report = { checks, passed: false, isolatedPostgres: true, productionWrites: false, modelCalls: 0, privateContent: "synthetic fixtures", failures: [] as string[], readonlySnapshots: [] as Array<{ before: unknown; after: unknown }> };
   const check = async (label: string, fn: () => Promise<void>) => { await fn(); checks.push({ label, passed: true }); console.log("[submissions] PASS " + label); };
   const clock = async () => (await db.$queryRaw<Array<{ now: Date }>>`SELECT clock_timestamp() AS now`)[0].now;
+  const databaseSnapshot = async () => {
+    const tables = await db.$queryRaw<Array<{ tablename: string }>>`SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename`;
+    return Promise.all(tables.map(async ({ tablename }) => {
+      assert.match(tablename, /^[A-Za-z0-9_]+$/);
+      const [row] = await db.$queryRawUnsafe<Array<{ count: bigint; content: string }>>(`SELECT count(*) AS count, COALESCE(jsonb_agg(to_jsonb(r) ORDER BY to_jsonb(r)::text),'[]'::jsonb)::text AS content FROM public."${tablename}" r`);
+      return { table: tablename, rows: Number(row.count), sha256: createHash("sha256").update(row.content).digest("hex") };
+    }));
+  };
   try {
     if (persistence) {
       const fixture = JSON.parse(await readFile(dir + "/persistence-fixture.json", "utf8")) as { actorId: string; competitionId: string; stageId: string; submissionId: string; expectedHistory: number };
@@ -213,7 +225,7 @@ async function main() {
       const final = await prepare(owner.id, { action: "prepareStage", teamCompetitionId: entry.id, stage: "FINAL" });
       ruleId = await publish(120000, true);
       await assert.rejects(run(owner.id, command({ entryStageId: final.entryStageId, expectedRevision: 1 })), /AGRI_FINAL_ELIGIBILITY_REQUIRED/);
-      await assert.rejects(run(owner.id, { ...command(), action: "correctSubmission", previousSubmissionId: currentId, correctionPermitId: "unissued" }), /AGRI_CORRECTION_PERMIT_REQUIRED/);
+      await assert.rejects(run(owner.id, { ...command(), action: "correctSubmission", previousSubmissionId: currentId, correctionPermitId: "unissued" }), /AGRI_PERMIT_MISMATCH/);
       assert.equal((await get(owner.id, stageId)).history.length, 2);
     });
     await check("account and membership rechecked on replays; withdrawn members cannot replay accepted commands", async () => {
@@ -252,16 +264,29 @@ async function main() {
       assert.deepEqual(counts, { refs: BigInt(0), events: BigInt(0), receipts: BigInt(0) });
     });
     let acceptedRaceCommand: ReturnType<typeof command>, acceptedRaceId: string;
-    await check("old adopted deadline cannot be reopened by a longer published replacement; read persists freeze once", async () => {
-      const raceRule = await publish(1000);
+    await check("old adopted deadline remains frozen after replacement rules reopen; consecutive history GETs do not write", async () => {
+      const raceRule = await publish(1600);
       acceptedRaceCommand = command({ entryStageId: raceStage.entryStageId, expectedRevision: 1, expectedRuleVersionId: raceRule, content: raceContent });
       const accepted = await run(owner.id, acceptedRaceCommand); acceptedRaceId = accepted.submissionId!;
       const extendedRule = await publish(120000);
-      await new Promise(resolve => setTimeout(resolve, 1150));
+      await new Promise(resolve => setTimeout(resolve, 1750));
+      const before = await databaseSnapshot();
+      for (let index = 0; index < 3; index++) {
+        const frozen = await get(owner.id, raceStage.entryStageId);
+        assert.equal(frozen.frozenSubmissionId, acceptedRaceId); assert.equal(frozen.recordedFrozenSubmissionId, null);
+        assert.equal(frozen.frozenByDeadline, true); assert.equal(frozen.revision, 2); assert.equal(frozen.windowState, "OPEN");
+        const listed = (await list(owner.id, { stage: "PRELIMINARY" })).stages.find(row => row.id === raceStage.entryStageId)!;
+        assert.equal(listed.frozenSubmissionId, acceptedRaceId); assert.equal(listed.recordedFrozenSubmissionId, null); assert.equal(listed.revision, 2);
+        const phase = await phaseView(edition.id, owner.id);
+        assert.equal(phase?.viewer?.entries.find(row => row.id === raceEntry.id)?.stages[0].frozen, true);
+        const record = await summary(fullStaff.id, acceptedRaceId);
+        assert.equal(record.submission.isFrozen, true); assert.equal(record.submission.isRecordedFrozen, false); assert.equal(record.submission.frozenByDeadline, true);
+      }
+      const after = await databaseSnapshot(); assert.deepEqual(after, before); report.readonlySnapshots.push({ before, after });
       await assert.rejects(run(owner.id, command({ entryStageId: raceStage.entryStageId, expectedRevision: 2, expectedRuleVersionId: extendedRule, content: raceContent })), /AGRI_FROZEN/);
-      const frozen = await get(owner.id, raceStage.entryStageId); assert.equal(frozen.frozenSubmissionId, accepted.submissionId); assert.equal(frozen.revision, 3);
-      assert.equal((await get(owner.id, raceStage.entryStageId)).revision, 3);
-      await assert.rejects(db.$executeRaw`UPDATE agri_entry_stages SET "frozenSubmissionId"=NULL,revision=revision+1 WHERE id=${raceStage.entryStageId}`, /AGRI_STAGE_REVISION_OR_FROZEN/);
+      await assert.rejects(run(owner.id, { action: "saveDraft", entryStageId: raceStage.entryStageId, expectedRevision: 2, idempotencyKey: randomUUID(), draft: raceContent }), /AGRI_FROZEN/);
+      const [stored] = await db.$queryRaw<Array<{ revision: number; frozenSubmissionId: string | null }>>`SELECT revision,"frozenSubmissionId" FROM agri_entry_stages WHERE id=${raceStage.entryStageId}`;
+      assert.deepEqual(stored, { revision: 2, frozenSubmissionId: null });
     });
     await check("valid accepted replay after deadline returns original immutable receipt without another sequence", async () => {
       const before = await get(owner.id, raceStage.entryStageId);
@@ -274,6 +299,21 @@ async function main() {
       const after = await get(owner.id, raceStage.entryStageId);
       assert.equal(after.history.length, 1); assert.equal(after.revision, before.revision);
       assert.equal(after.current?.id, acceptedRaceId!);
+    });
+    await check("only an explicit permitted correction records the original freeze and appends a new accepted version", async () => {
+      const permit = await decide(owner.id, { action: "issueCorrectionPermit", idempotencyKey: randomUUID(), entryStageId: raceStage.entryStageId,
+        expectedRevision: 2, previousSubmissionId: acceptedRaceId!, allowedFields: ["summary"], reason: "LOCAL FIXTURE permitted summary correction",
+        expiresAt: new Date((await clock()).getTime() + 120000).toISOString() });
+      const corrected = await run(owner.id, { action: "correctSubmission", idempotencyKey: randomUUID(), entryStageId: raceStage.entryStageId,
+        expectedRevision: 2, previousSubmissionId: acceptedRaceId!, correctionPermitId: permit.resourceId,
+        expectedRuleVersionId: acceptedRaceCommand!.expectedRuleVersionId, content: { ...raceContent, summary: "PRIVATE_FIXTURE permitted correction" } });
+      const view = await get(owner.id, raceStage.entryStageId);
+      assert.equal(view.revision, 3); assert.equal(view.current?.id, corrected.submissionId); assert.equal(view.history.length, 2);
+      assert.equal(view.frozenSubmissionId, acceptedRaceId!); assert.equal(view.recordedFrozenSubmissionId, acceptedRaceId!); assert.equal(view.frozenByDeadline, false);
+      assert.equal(view.current?.correction?.previousSubmissionId, acceptedRaceId!);
+      await assert.rejects(db.$executeRaw`UPDATE agri_entry_stages SET "frozenSubmissionId"=NULL,revision=revision+1 WHERE id=${raceStage.entryStageId}`, /AGRI_STAGE_REVISION_OR_FROZEN/);
+      const [eventCounts] = await db.$queryRaw<Array<{ correction: bigint; freeze: bigint }>>`SELECT count(*) FILTER(WHERE action='correctSubmission') AS correction,count(*) FILTER(WHERE action='freezeStage') AS freeze FROM agri_submission_events WHERE "entryStageId"=${raceStage.entryStageId}`;
+      assert.deepEqual(eventCounts, { correction: BigInt(1), freeze: BigInt(0) });
     });
     await check("pagination applies membership/stage filters in SQL and prevents cursor filter reuse", async () => {
       for (let index = 0; index < 65; index++) {

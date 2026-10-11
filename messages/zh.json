@@ -2496,30 +2496,30 @@
     }
   },
   "agriHackathon": {
-    "boundaryNextOpen": "报名与提交已接入；结果公示待接入",
-    "enterWorkbench": "进入报名与提交工作台",
-    "boundaryDescriptionOpen": "报名与提交已接入 ANS 赛事工作台；本届规则与日程以正式通知为准，结果公示尚未接入。",
+    "boundaryNextOpen": "查看本届独立阶段窗口",
+    "enterWorkbench": "查看本届参赛进度",
+    "boundaryDescriptionOpen": "已接入本届工作区。报名、初赛和决赛材料分别以已发布窗口为准。",
     "navLabel": "农客松比赛",
     "eyebrow": "AGRIHACKATHON",
-    "title": "AgriHackathon 农客松",
-    "description": "中国农业大学 CAUHub 团队组织执行的公益 AI 黑客松。48 小时初赛以线上开发为主，同时提供校内线下开发空间；两个周末之间完成初赛评审，第 2 个周末的一天线下决赛进行项目展示与路演评审。赛制、日程与预算以报批版《农客松首届活动方案》为准。",
+    "title": "AgriHackathon｜农客松",
+    "description": "由 CAUHub 发起组织的首届 AI 黑客松，面向校内本科生、研究生及毕业三年内校友。连续 48 小时共创，一周展示与评审，下周末 Demo Day。名称暂定，正式日期待确认。",
     "createProject": "创建参赛项目",
     "openTeams": "进入团队与比赛",
     "backToHub": "返回比赛中心",
-    "statusTitle": "首届赛事筹备中",
-    "statusDescription": "三大赛道与奖项设置已经明确；评分维度、权重与晋级办法以报批版活动方案为准。具体日期、场地与报名入口确定后在此更新。",
+    "statusTitle": "首届方案 · 日程待确认",
+    "statusDescription": "3 个赛道，团队 1–5 人；初赛选出 10 个 Finalist。报名及各阶段仅按正式发布窗口开放。",
     "stats": {
       "tracks": "赛道",
       "tracksValue": "3",
-      "scale": "线下规模（人）",
-      "scaleValue": "60–80",
-      "phases": "比赛阶段",
+      "scale": "团队规模",
+      "scaleValue": "1–5 人",
+      "phases": "活动环节",
       "phasesValue": "4",
-      "deliverables": "提交检查项",
-      "deliverablesValue": "8"
+      "deliverables": "材料要求",
+      "deliverablesValue": "按发布规范"
     },
     "tracksTitle": "三大赛道",
-    "tracksDescription": "每个项目选择一条赛道。评审按创新性、技术深度、产品完成度、真实问题与赛道契合度五个维度打分。",
+    "tracksDescription": "People、Discovery、Action 三个方向。项目完成后选择赛道，让作品决定归属。",
     "tracksSectionLabel": "01 / 赛道",
     "rulesSectionLabel": "03 / 规则",
     "openTrack": "查看赛道详情",
@@ -2551,31 +2551,31 @@
       }
     },
     "phasesTitle": "四阶段参赛路径",
-    "phasesDescription": "所有团队遵循同一条主路径：宣传与报名、48 小时初赛、初赛评审与准备、一天线下决赛。",
+    "phasesDescription": "组队报名 → 连续 48H 共创 → 一周展示与评审 → 下周末 Demo Day。正式日期另行确认。",
     "phases": {
       "discover": {
         "label": "01 · 报名与组队",
-        "description": "提交项目名、团队成员与所选赛道，确认参赛资格与赛事规则。",
-        "state": "待开始"
+        "description": "校内本科生、研究生及毕业三年内校友组队，团队 1–5 人；项目完成后再选赛道。",
+        "state": "日期待确认"
       },
       "plan": {
         "label": "02 · 48 小时开发",
-        "description": "以线上开发为主，同时提供校内线下开发空间；提交作品演示、项目介绍及代码。",
-        "state": "待开始"
+        "description": "连续 48 小时共创，提交可演示的作品、公开 GitHub 仓库及规定材料。",
+        "state": "日期待确认"
       },
       "produce": {
         "label": "03 · 初赛评审与准备",
-        "description": "7 位评委完成初赛评审；晋级团队继续完善作品并准备路演。",
-        "state": "待开始"
+        "description": "一周项目展示与评审，每项目 3 位评委，专业 80%＋大众 20%，选出 10 个 Finalist。",
+        "state": "日期待确认"
       },
       "submit": {
         "label": "04 · 一天线下决赛",
-        "description": "第 2 个周末一天线下决赛：项目展示、现场体验、路演评审及颁奖。",
-        "state": "待开始"
+        "description": "下周末 Demo Day；7 位评委去掉最高、最低分后取 5 人均值，每队演示 5 分钟、问答 3 分钟。",
+        "state": "日期待确认"
       }
     },
     "deliverablesTitle": "提交检查清单",
-    "deliverablesDescription": "提交前逐项核对，确保作品可运行、来源可追溯、他人可接手。",
+    "deliverablesDescription": "以下为材料准备参考，必交与选交项以本届已发布技术规范为准。",
     "deliverables": {
       "brief": "项目名、团队、赛道与项目简介",
       "plan": "团队分工与开发计划",
@@ -2587,46 +2587,41 @@
       "package": "提交包与最终检查"
     },
     "scoringTitle": "评分维度",
-    "scoringDescription": "评委按以下维度考察作品；具体权重与计分方式以报批版活动方案为准。",
+    "scoringDescription": "初赛每项目由 3 位评委评审，专业评分占 80%，大众评分占 20%；决赛采用 7 位评委评分，去掉最高和最低分后取 5 人均值。",
     "scoringSectionLabel": "02 / 评分",
     "scoring": {
       "innovation": {
         "label": "创新性",
-        "weight": "30",
         "description": "问题定义或解决路径是否有新意。"
       },
       "technical": {
         "label": "技术深度",
-        "weight": "25",
         "description": "技术选型、实现质量与工程完整度。"
       },
       "completeness": {
         "label": "产品完成度",
-        "weight": "20",
         "description": "Demo 是否可运行、流程是否闭环。"
       },
       "problem": {
         "label": "真实问题",
-        "weight": "15",
         "description": "需求是否来自真实场景与真实使用者。"
       },
       "fit": {
         "label": "赛道契合",
-        "weight": "10",
         "description": "作品与所选赛道的匹配程度。"
       }
     },
-    "advanceTitle": "晋级与评审规则",
-    "advanceDescription": "初赛由 7 位评委评分，去掉一个最高分和一个最低分后计算平均分；决赛评分方式以报批版活动方案为准。",
-    "advanceNote": "报批版方案未设线上大众投票；现场观众贴纸投票只用于增加项目体验与交流，不计入晋级成绩。",
+    "advanceTitle": "初赛晋级与 Demo Day",
+    "advanceDescription": "初赛选出 10 个 Finalist。决赛每队 5 分钟演示、3 分钟问答，技术检查与晋级决定分开。",
+    "advanceNote": "初赛大众评分占 20%；现场人气奖单独评选。晋级以独立记录的决定为准，技术检查不会自动授予资格。",
     "advanceItems": {
-      "professional": "初赛 7 位评委，去掉一个最高分和一个最低分后计算平均分",
-      "pool": "评委按作品完成度、创新程度及与活动主题的契合程度评分",
-      "panel": "决赛为一天线下路演，拟遴选约 10 支队伍",
-      "review": "评委分差超过 20 分触发人工复核"
+      "professional": "初赛：每项目 3 位评委，专业 80%＋大众 20%",
+      "pool": "初赛选出 10 个 Finalist，项目完成后选择赛道",
+      "panel": "决赛：7 位评委去最高、最低，取 5 人均值",
+      "review": "每队 5 分钟演示＋3 分钟问答"
     },
     "awardsTitle": "奖项设置",
-    "awardsDescription": "首届现金奖金共 3300 元，另设三项荣誉奖。",
+    "awardsDescription": "一等奖 1500 元、二等奖 1000 元、三等奖 800 元，另设技术、创新及现场人气奖。",
     "awards": {
       "first": {
         "label": "一等奖",
@@ -2654,20 +2649,22 @@
         "description": "创新性维度表现突出"
       },
       "popular": {
-        "label": "最佳人气",
+        "label": "现场人气奖",
         "amount": "荣誉奖",
-        "description": "评选方式以本届正式规则为准"
+        "description": "现场单独评选，不与初赛大众评分混为一项。"
       }
     },
     "rulesTitle": "参赛规则与合规红线",
-    "rulesDescription": "以下条款在报名时确认，违反将取消评奖资格。",
+    "rulesDescription": "所有正式项目公开 GitHub，凭证和隐私不得入库。知识产权归团队，官方享有非独占展示与传播权。",
     "rules": {
-      "opensource": "参赛作品必须开源，并在仓库中写明许可证",
-      "data": "必须说明数据来源与授权，不得使用未授权数据",
+      "opensource": "所有正式项目公开 GitHub，提交具体版本并保留开源与授权说明。",
+      "data": "禁止上传凭证或个人隐私，数据与素材须有合法来源和使用权限。",
       "originality": "作品须在比赛期间完成，不得提交往届或他人成果",
-      "team": "每队 1–5 人，同一人不得加入多支参赛队伍",
+      "team": "每队 1–5 人，面向校内本科生、研究生及毕业三年内校友。",
       "demo": "决赛必须现场演示可运行版本，不接受只播放视频",
-      "conduct": "尊重评委与其他参赛者，不得刷票或干扰评审"
+      "conduct": "尊重评委与其他参赛者，不得刷票或干扰评审",
+      "rights": "知识产权归团队；官方享有非独占的展示与传播权。",
+      "frozen": "冻结后仅可获准调整 Bug、UI、稳定性或演示，核心功能不得重做。"
     },
     "workflowTitle": "ANS 工作区快捷入口",
     "workflowDescription": "把项目记录留在 ANS，报名、评审与公示在后续阶段接入。",
@@ -2676,13 +2673,13 @@
     "openTemplates": "模板广场",
     "openSkills": "技能",
     "boundaryTitle": "首届集成边界",
-    "boundaryDescription": "首版提供历史赛制、赛道结构与提交清单；本届规则、日期与报名入口待确认。",
+    "boundaryDescription": "已接入报名、分阶段提交、技术检查和内部作品记录。正式窗口与人员授权仍须按本届信息配置。",
     "boundaryItems": {
       "entry": "一个 ANS 入口",
-      "links": "历史赛道、评分与奖项仅供参考",
-      "ownership": "作品与数据授权由参赛团队说明",
-      "next": "本届安排确认后接入报名、提交与结果公示"
+      "links": "首届方案与真实发布规范分开展示",
+      "ownership": "知识产权归团队，官方非独占展示传播",
+      "next": "仅按本届已发布的独立窗口开放操作"
     },
-    "syncNote": "历史方案申请经费 5000 元；本届预算、日期、报名与公示安排以正式通知为准。"
+    "syncNote": "所有正式日期待确认，视觉时间节点不作为报名或提交截止。"
   }
 }

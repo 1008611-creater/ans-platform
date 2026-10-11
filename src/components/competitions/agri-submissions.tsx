@@ -40,7 +40,7 @@ function Field({ label, children }: { label: string; children: (id: string) => R
 }
 function time(value: string, locale: string) { return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-GB", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value)); }
 function emptyDraft(): AgriStageDraft { return { projectId: "", artifactVersionId: null, repository: null, demoUrl: null, summary: "", materials: { schemaVersion: 1, items: [] } }; }
-export function AgriSubmissions() {
+export function AgriSubmissions({ initialSelection }: { initialSelection?: { teamCompetitionId: string; stage: "PRELIMINARY" | "FINAL" } } = {}) {
   const t = useTranslations("product.agriSubmissions"); const { data, status, update } = useSession();
   const [invalid, setInvalid] = useState(false);
   const invalidate = useCallback(() => { clearSubmissionRecoveries(); setInvalid(true); }, []);
@@ -48,33 +48,35 @@ export function AgriSubmissions() {
   if (status === "loading") return <p role="status">{t("loading")}</p>;
   if (!data?.user?.id) return <Button asChild><Link href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Fsubmissions">{t("login")}</Link></Button>;
   if (invalid) return <div className="space-y-3"><p role="alert">{t("errors.ACCOUNT_CHANGED")}</p><Button onClick={() => void update().then(() => setInvalid(false)).catch(() => setInvalid(true))}>{t("refresh")}</Button></div>;
-  return <TeamStages key={data.user.id} actorId={data.user.id} invalidate={invalidate} />;
+  return <TeamStages key={`${data.user.id}:${initialSelection?.teamCompetitionId ?? ""}:${initialSelection?.stage ?? ""}`} actorId={data.user.id} invalidate={invalidate} initialSelection={initialSelection} />;
 }
-function TeamStages({ actorId, invalidate }: { actorId: string; invalidate: () => void }) {
+function TeamStages({ actorId, invalidate, initialSelection }: { actorId: string; invalidate: () => void; initialSelection?: { teamCompetitionId: string; stage: "PRELIMINARY" | "FINAL" } }) {
   const t = useTranslations("product.agriSubmissions");
   const [data, setData] = useState<AgriSubmissionEntries | null>(null); const [entryId, setEntryId] = useState("");
-  const [stage, setStage] = useState<"PRELIMINARY" | "FINAL">("PRELIMINARY");
+  const [stage, setStage] = useState<"PRELIMINARY" | "FINAL">(initialSelection?.stage ?? "PRELIMINARY");
+  const requestedEntryId = initialSelection?.teamCompetitionId;
   const [detail, setDetail] = useState<AgriStageDetail | null>(null); const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
   const alive = useRef(true); const flight = useRef(false);
   const load = useCallback(async () => {
     setError(""); setBusy(true);
-    try { const result = await request<AgriSubmissionEntries>(api + "/entries", actorId); if (alive.current) { setData(result); setEntryId(old => result.entries.some(e => e.id === old) ? old : result.entries[0]?.id ?? ""); } }
+    try { const result = await request<AgriSubmissionEntries>(api + "/entries", actorId); if (alive.current) { setData(result); setEntryId(old => result.entries.some(e => e.id === old) ? old : requestedEntryId ? result.entries.find(e => e.id === requestedEntryId)?.id ?? "" : result.entries[0]?.id ?? ""); } }
     catch (e) { if (alive.current) { if (e instanceof SubmissionError && accountErrors.has(e.code)) invalidate(); else setError(e instanceof SubmissionError ? e.code : "INTERNAL_ERROR"); } }
     finally { if (alive.current) setBusy(false); }
-  }, [actorId, invalidate]);
+  }, [actorId, invalidate, requestedEntryId]);
   useEffect(() => { alive.current = true; void load(); return () => { alive.current = false; }; }, [load]);
   async function open() {
     if (!entryId || flight.current) return; flight.current = true; setBusy(true); setError("");
     try {
       const chosenEntry = data?.entries.find(row => row.id === entryId); let stageId: string | null = null;
-      if (["OWNER", "ADMIN"].includes(chosenEntry?.role ?? "")) {
+      // Viewing existing stages is read-only, including after the workspace is paused.
+      let cursor: string | null = null;
+      do {
+        const page: { stages: Array<{ id: string; teamCompetitionId: string }>; nextCursor: string | null } = await request(api + "?stage=" + stage + (cursor ? "&cursor=" + encodeURIComponent(cursor) : ""), actorId);
+        stageId = page.stages.find(row => row.teamCompetitionId === entryId)?.id ?? null; cursor = page.nextCursor;
+      } while (!stageId && cursor && alive.current);
+      if (!alive.current) return;
+      if (!stageId && ["OWNER", "ADMIN"].includes(chosenEntry?.role ?? "") && data?.workspaceEnabled) {
         const prepared = await request<{ entryStageId: string }>(api, actorId, { action: "prepareStage", teamCompetitionId: entryId, stage }); stageId = prepared.entryStageId;
-      } else {
-        let cursor: string | null = null;
-        do {
-          const page: { stages: Array<{ id: string; teamCompetitionId: string }>; nextCursor: string | null } = await request(api + "?stage=" + stage + (cursor ? "&cursor=" + encodeURIComponent(cursor) : ""), actorId);
-          stageId = page.stages.find(row => row.teamCompetitionId === entryId)?.id ?? null; cursor = page.nextCursor;
-        } while (!stageId && cursor && alive.current);
       }
       if (!stageId) throw new SubmissionError("AGRI_STAGE_NOT_PREPARED");
       const result = await request<AgriStageDetail>(api + "/" + encodeURIComponent(stageId), actorId); if (alive.current) setDetail(result);
@@ -88,10 +90,10 @@ function TeamStages({ actorId, invalidate }: { actorId: string; invalidate: () =
     {error && <p role="alert">{t.has("errors." + error) ? t("errors." + error) : t("errors.INTERNAL_ERROR")}</p>}
     {busy && <p role="status">{t("loading")}</p>}
     {data && !data.workspaceEnabled && <p role="status">{t("disabled")}</p>}{data && !data.entries.length && <p>{t("noTeam")}</p>}
-    {data && data.entries.length > 0 && <><div className="grid gap-4 sm:grid-cols-2"><Field label={t("team")}>{id => <select id={id} className={selectClass} disabled={busy} value={entryId} onChange={e => setEntryId(e.target.value)}>{data.entries.map(row => <option key={row.id} value={row.id}>{row.teamName}</option>)}</select>}</Field>
+    {data && data.entries.length > 0 && <><div className="grid gap-4 sm:grid-cols-2"><Field label={t("team")}>{id => <select id={id} className={selectClass} disabled={busy} value={entryId} onChange={e => setEntryId(e.target.value)}><option value="">{t("chooseTeam")}</option>{data.entries.map(row => <option key={row.id} value={row.id}>{row.teamName}</option>)}</select>}</Field>
     <Field label={t("stageField")}>{id => <select id={id} className={selectClass} disabled={busy} value={stage} onChange={e => setStage(e.target.value as typeof stage)}>{(["PRELIMINARY", "FINAL"] as const).map(value => <option key={value} value={value}>{t("stage." + value)}</option>)}</select>}</Field></div>
     {entry && !["OWNER", "ADMIN"].includes(entry.role) && <p>{t("managerOnly")}</p>}
-    <Button disabled={busy || !entry || (!data.workspaceEnabled && ["OWNER", "ADMIN"].includes(entry.role))} onClick={() => void open()}>{t("open")}</Button></>}
+    <Button disabled={busy || !entry} onClick={() => void open()}>{t("open")}</Button></>}
     <Button variant="ghost" disabled={busy} onClick={() => void load()}>{t("refresh")}</Button>
   </CardContent></Card>;
 }
