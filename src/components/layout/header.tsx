@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { WorkspaceLink as Link, useWorkspaceNavigation } from "@/components/providers/workspace-navigation";
 
 // Mini Promi icon for header
 function MiniPromi({ className }: { className?: string }) {
@@ -93,26 +94,74 @@ const languages = [
 ];
 
 interface HeaderProps {
+  embedded?: boolean;
   authProvider?: string;
   allowRegistration?: boolean;
 }
 
-export function Header({ authProvider = "credentials", allowRegistration = true }: HeaderProps) {
-  const { data: session } = useSession();
+export function Header({ embedded = false, authProvider = "credentials", allowRegistration = true }: HeaderProps) {
+  const { data: session, status: sessionStatus } = useSession();
   const t = useTranslations();
   const { theme, setTheme } = useTheme();
   const branding = useBranding();
   const router = useRouter();
+  const { run: leaveWorkspace } = useWorkspaceNavigation();
   const pathname = usePathname();
 
   const user = session?.user;
   const isAdmin = user?.role === "ADMIN";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const learningLinks = [
-    { href: "/#first-lesson", label: t("learning.navLearn") },
-    { href: "/projects#new-project", label: t("learning.navPractice") },
-    { href: "/projects", label: t("learning.navProjects") },
+  const [logoutState, setLogoutState] = useState<"idle" | "pending" | "confirming">("idle");
+  const logoutInFlight = useRef(false);
+
+  const handleLogout = useCallback(async function logout() {
+    if (logoutInFlight.current) return;
+    logoutInFlight.current = true;
+    setLogoutState("pending");
+    try {
+      // The redirecting branch skips this tab's session refresh. A blocked hard
+      // navigation would otherwise leave the old private workspace visible.
+      await signOut({ redirect: false, redirectTo: "/" });
+      // Auth.js maps failed session fetches to null. Check a successful fresh
+      // HTTP response as well, rather than treating a network error as logout.
+      const confirmation = await fetch("/api/auth/session", { cache: "no-store" });
+      if (!confirmation.ok || await confirmation.json() !== null) throw new Error("Logout not confirmed");
+      setLogoutState("confirming");
+    } catch {
+      logoutInFlight.current = false;
+      setLogoutState("idle");
+      toast.error(t("product.logoutFailed"), { action: { label: t("product.logoutRetry"), onClick: () => void logout() } });
+    }
+  }, [t]);
+
+  useEffect(() => {
+    if (logoutState !== "confirming" || sessionStatus === "loading") return;
+    // The effect runs after the anonymous render removes the private host.
+    // Cancel this deferred action if the account or component changes again.
+    const continuation = window.setTimeout(() => {
+      logoutInFlight.current = false;
+      setLogoutState("idle");
+      if (sessionStatus !== "unauthenticated") {
+        toast.error(t("product.logoutFailed"), { action: { label: t("product.logoutRetry"), onClick: () => void handleLogout() } });
+        return;
+      }
+      analyticsAuth.logout();
+      if (!embedded) { router.replace("/"); router.refresh(); }
+    }, 0);
+    return () => window.clearTimeout(continuation);
+  }, [logoutState, sessionStatus, router, t, handleLogout, embedded]);
+  const productLinks = [
+    { href: "/explore", label: t("product.nav.explore") },
+    { href: "/workflows", label: t("product.nav.workflows") },
+    { href: "/community", label: t("product.nav.community") },
+    { href: "/competitions", label: t("product.nav.competitions") },
+    { href: "/workspace", label: t("product.nav.workspace") },
   ];
+  function isProductLinkActive(href: string) {
+    if (href === "/explore" && pathname === "/") return true;
+    if (href === "/workspace" && (pathname === "/projects" || pathname.startsWith("/projects/"))) return true;
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   const handleCopyLogoSvg = async () => {
     try {
@@ -128,13 +177,13 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
 
   return (
     <header className="sticky top-[0px] z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className={`flex h-12 items-center gap-1 sm:gap-4 ${pathname === "/developers" ? "px-4" : "container"}`}>
+      <div className={`flex h-12 items-center gap-1 sm:gap-2 xl:gap-4 ${pathname === "/developers" ? "px-4" : "container"}`}>
         {/* Mobile menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild className="lg:hidden">
-            <Button variant="ghost" size="icon" className="-ml-2 h-8 w-8">
+            <Button variant="ghost" size="icon" className="-ml-2 h-8 w-8" data-testid="mobile-menu-trigger">
               <Menu className="h-4 w-4" />
-              <span className="sr-only">Toggle menu</span>
+              <span className="sr-only">{t("product.menu")}</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[280px] p-0">
@@ -148,14 +197,14 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                       alt={branding.name}
                       width={32}
                       height={32}
-                      className="h-8 w-8 dark:hidden"
+                      className="h-8 w-8 object-contain dark:hidden"
                     />
                     <Image
                       src={branding.logoDark || branding.logo}
                       alt={branding.name}
                       width={32}
                       height={32}
-                      className="h-8 w-8 hidden dark:block"
+                      className="h-8 w-8 object-contain hidden dark:block"
                     />
                   </>
                 )}
@@ -167,7 +216,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
 
               {/* Navigation */}
               <nav aria-label={t("a11y.mobileNav")} className="flex-1 overflow-y-auto p-4">
-                <div className="mb-3 space-y-1 border-b pb-3">{learningLinks.map(({ href, label }) => <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)} className="block rounded-md px-3 py-2.5 text-sm font-medium text-primary hover:bg-accent">{label}</Link>)}</div>
+                <div className="mb-3 space-y-1 border-b pb-3">{productLinks.map(({ href, label }) => <Link key={href} href={href} aria-current={isProductLinkActive(href) ? "page" : undefined} onClick={() => setMobileMenuOpen(false)} className="block rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary">{label}</Link>)}</div>
                 <details><summary className="cursor-pointer px-3 py-2 text-sm text-muted-foreground">{t("nav.more")}</summary>
                 <div className="space-y-1">
                   {user && (
@@ -326,7 +375,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
         {/* Logo — 始终提供右键菜单（复制 SVG / 品牌资源），不受 useCloneBranding 影响 */}
         <ContextMenu>
           <ContextMenuTrigger asChild>
-            <Link href="/" className="flex gap-2">
+            <Link href="/" className="flex shrink-0 gap-2">
               {branding.logo && (
                 <>
                   {/* 品牌名就在紧邻的文本节点里，图标重复朗读品牌名反而干扰读屏，故 alt 留空。 */}
@@ -335,14 +384,14 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                     alt=""
                     width={20}
                     height={20}
-                    className="h-5 w-5 dark:hidden"
+                    className="h-5 w-5 object-contain dark:hidden"
                   />
                   <Image
                     src={branding.logoDark || branding.logo}
                     alt=""
                     width={20}
                     height={20}
-                    className="h-5 w-5 hidden dark:block"
+                    className="h-5 w-5 object-contain hidden dark:block"
                   />
                 </>
               )}
@@ -354,7 +403,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               <Copy className="mr-2 h-4 w-4" />
               {t("brand.copyLogoSvg")}
             </ContextMenuItem>
-            <ContextMenuItem onClick={() => router.push("/brand")}>
+            <ContextMenuItem onClick={() => leaveWorkspace(() => router.push("/brand"))}>
               <ExternalLink className="mr-2 h-4 w-4" />
               {t("brand.brandAssets")}
             </ContextMenuItem>
@@ -362,13 +411,14 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
         </ContextMenu>
 
         {/* Primary desktop nav: keep the main job paths visible and move low-frequency destinations into More. */}
-        <nav aria-label={t("a11y.mainNav")} className="hidden min-w-0 flex-1 items-center gap-1 text-sm lg:flex">
-          {learningLinks.map(({ href, label }) => (
+        <nav aria-label={t("a11y.mainNav")} className="hidden shrink-0 items-center gap-1 text-sm lg:flex">
+          {productLinks.map(({ href, label }) => (
 
             <Link
               key={href}
               href={href}
-              className="shrink-0 rounded-md px-3 py-1.5 font-medium text-primary transition-colors hover:bg-accent hover:text-foreground"
+              aria-current={isProductLinkActive(href) ? "page" : undefined}
+              className="shrink-0 rounded-md px-2 py-1.5 font-medium xl:px-3 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
             >
               {label}
             </Link>
@@ -402,10 +452,10 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
         </nav>
 
         {/* Spacer */}
-        <div className="flex-1" />
+        <div className="min-w-0 flex-1" />
 
         {/* Right side actions */}
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <BilingualToggle />
           {/* For Kids link */}
           {!branding.useCloneBranding && (
@@ -461,14 +511,14 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 gap-2 px-2">
-                  <Avatar className="h-6 w-6">
+                <Button variant="ghost" className="relative h-8 min-w-0 max-w-40 gap-2 px-2 lg:max-w-32 xl:max-w-40">
+                  <Avatar className="h-6 w-6 shrink-0">
                     <AvatarImage src={user.image || undefined} alt={user.name || ""} />
                     <AvatarFallback className="text-xs">
                       {user.name?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:inline text-sm font-medium">
+                  <span className="hidden min-w-0 truncate text-sm font-medium sm:block">
                     @{user.username}
                   </span>
                 </Button>
@@ -476,8 +526,8 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
+                    <p className="break-words text-sm font-medium leading-snug">{user.name}</p>
+                    <p className="break-all text-xs leading-snug text-muted-foreground">
                       @{user.username}
                     </p>
                   </div>
@@ -515,7 +565,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                         key={lang.code}
                         onClick={() => {
                           analyticsSettings.changeLanguage(lang.code);
-                          setLocale(lang.code);
+                          leaveWorkspace(() => setLocale(lang.code));
                         }}
                       >
                         {lang.name}
@@ -524,12 +574,9 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => {
-                  analyticsAuth.logout();
-                  signOut({ callbackUrl: "/" });
-                }}>
+                <DropdownMenuItem disabled={logoutState !== "idle"} onClick={() => void handleLogout()}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  {t("nav.logout")}
+                  {t(logoutState === "idle" ? "nav.logout" : "product.loggingOut")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -548,7 +595,7 @@ export function Header({ authProvider = "credentials", allowRegistration = true 
                       key={lang.code}
                       onClick={() => {
                         analyticsSettings.changeLanguage(lang.code);
-                        setLocale(lang.code);
+                        leaveWorkspace(() => setLocale(lang.code));
                       }}
                     >
                       {lang.name}

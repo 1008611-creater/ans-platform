@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Activity, Clock3, Coins, FolderOpen, Heart, Users, Zap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -8,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DisplayNameEditor } from "@/components/workspace/display-name-editor";
+import { CreationTools } from "@/components/workspace/creation-tools";
 
 export const metadata = {
   title: "工作台 · ANS",
@@ -32,6 +34,8 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
     redirect("/login?callbackUrl=/workspace");
   }
 
+  const computeCopy = await getTranslations("product.computeHistory");
+  const quotaCopy = await getTranslations("product.quotaHistory");
   const query = searchParams ? await searchParams : {};
   const rawCursor = Array.isArray(query.runsCursor) ? query.runsCursor[0] : query.runsCursor;
   const runsCursor = rawCursor && rawCursor.length <= 128 ? rawCursor : undefined;
@@ -105,6 +109,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         </p>
       </header>
 
+      <CreationTools />
       <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
@@ -112,10 +117,11 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
               <Coins className="h-3.5 w-3.5" /> 算力余额
             </CardDescription>
             <CardTitle className="text-2xl">
-              {(user?.quotaPoints ?? 0).toLocaleString()}
+              {(user?.quotaPoints ?? 0).toLocaleString(undefined, { maximumFractionDigits: 6 })}
               <span className="ms-1 text-sm font-normal text-muted-foreground">点</span>
             </CardTitle>
           </CardHeader>
+          <CardContent className="flex flex-wrap gap-2 pt-0"><Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{quotaCopy("entry")}</Link></Button><Button asChild variant="ghost" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button></CardContent>
         </Card>
 
         <Card>

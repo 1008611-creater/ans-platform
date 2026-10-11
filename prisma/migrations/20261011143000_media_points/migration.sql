@@ -1,0 +1,1 @@
+ALTER TABLE "media_generations" ADD COLUMN "pointsCost" NUMERIC(24,6);

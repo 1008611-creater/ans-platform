@@ -1,3 +1,4 @@
+import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { randomUUID } from "node:crypto";
 import { Prisma, type Template } from "@prisma/client";
 import { z } from "zod";
@@ -153,6 +154,9 @@ export async function reviewTemplateManually(id: string, adminId: string, input:
   }
   return change(template, adminId, parsed.data.action === "publish" ? "TEMPLATE_PUBLISHED" : "TEMPLATE_REJECTED", {
     status: parsed.data.action === "publish" ? "PUBLISHED" : "REJECTED", reviewNote: parsed.data.note, reviewedAt: new Date(),
+  }).then(async (updated) => {
+    if (updated.status === "PUBLISHED") await safeAwardGrowthEvent({ userId: updated.authorId, type: "PUBLISH_TEMPLATE", reason: "PUBLISH_TEMPLATE", sourceType: "template", sourceId: updated.id });
+    return updated;
   });
 }
 export async function revisePublishedTemplate(id: string, authorId: string) {

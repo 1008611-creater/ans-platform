@@ -54,10 +54,10 @@ export async function GET(request: NextRequest) {
   try {
     const result = await plugin.checkStatus(socketAccessToken);
     return NextResponse.json(result);
-  } catch (error) {
-    console.error("Status check error:", error);
+  } catch {
+    console.error("MEDIA_STATUS_FAILED");
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Status check failed" },
+      { error: "MEDIA_STATUS_FAILED" },
       { status: 500 }
     );
   }

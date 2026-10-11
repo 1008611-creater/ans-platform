@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { Loader2, Wand2, Upload, ChevronDown, AlertCircle, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import type { WebSocketHandler, WebSocketCallbacks, GenerationStatusKey, AspectRatio } from "@/lib/plugins/media-generators/types";
+import type { WebSocketCallbacks, GenerationStatusKey, AspectRatio } from "@/lib/plugins/media-generators/types";
 import {
   Select,
   SelectContent,
@@ -51,6 +52,16 @@ interface MediaGeneratorModel {
   providerName: string;
   providerLogo?: string;
   providerLogoDark?: string;
+}
+
+interface SavedMediaRequest { hash: string; key: string; legacy?: boolean; }
+const legacyStorageKey = "ans-media-request-v1";
+function savedMediaRequest(value: string | null, hash?: string): SavedMediaRequest | null {
+  try {
+    const item = JSON.parse(value || "null");
+    if (item && typeof item.hash === "string" && /^[a-f0-9]{64}$/.test(item.hash) && (!hash || item.hash === hash) && typeof item.key === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(item.key)) return { hash: item.hash, key: item.key };
+  } catch { /* A malformed record is not a valid request identity. */ }
+  return null;
 }
 
 interface MediaGeneratorProps {
@@ -88,24 +99,81 @@ export function MediaGenerator({
   inputImageUrl,
 }: MediaGeneratorProps) {
   const t = useTranslations("prompts");
+  const { data: session } = useSession();
+  const actorId = session?.user?.id ?? null;
+  const actorRef = useRef(actorId);
+  actorRef.current = actorId;
+  const operationRef = useRef(0);
   const [models, setModels] = useState<MediaGeneratorModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedModel, setSelectedModel] = useState<MediaGeneratorModel | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
   const [status, setStatus] = useState<GenerationStatus>("idle");
   const [statusKey, setStatusKey] = useState<GenerationStatusKey | null>(null);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState<number | null>(null);
 
   // Get translated status message
   const statusMessage = statusKey ? t(`mediaGeneration.${statusKey}`) : "";
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const delayResolveRef = useRef<(() => void) | null>(null);
+  const [knownFailed, setKnownFailed] = useState(false);
+  const activeRef = useRef(false);
+  const busyRef = useRef(false);
+  const terminalRef = useRef(false);
+  const requestRef = useRef<SavedMediaRequest | null>(null);
+  const [savedRequests, setSavedRequests] = useState<SavedMediaRequest[]>([]);
+  const storageKey = `ans-media-request-v2:${actorId}:${mediaType}`;
+  const loadSavedRequests = useCallback(() => {
+    if (!actorId) { setSavedRequests([]); return; }
+    const saved: SavedMediaRequest[] = [];
+    try {
+      for (let index = 0; index < sessionStorage.length; index++) {
+        const name = sessionStorage.key(index);
+        const prefix = name?.startsWith(`${storageKey}:`) ? storageKey : name?.startsWith(`${legacyStorageKey}:`) ? legacyStorageKey : null;
+        if (!name || !prefix) continue;
+        const item = savedMediaRequest(sessionStorage.getItem(name), name.slice(prefix.length + 1));
+        if (item && !saved.some(request => request.key === item.key)) saved.push({ ...item, legacy: prefix === legacyStorageKey });
+      }
+    } catch { /* unavailable or corrupt storage cannot start a new request */ }
+    setSavedRequests(saved);
+  }, [actorId, storageKey]);
+  useEffect(() => { loadSavedRequests(); }, [loadSavedRequests]);
 
-  // Fetch available models
+  const stopTracking = useCallback(() => {
+    activeRef.current = false;
+    operationRef.current++;
+    busyRef.current = false;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+    delayResolveRef.current?.();
+    delayResolveRef.current = null;
+    if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.onmessage = null;
+      wsRef.current.onerror = null;
+      wsRef.current.onopen = null;
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
+    stopTracking();
+    requestRef.current = null;
+    setSelectedModel(null); setStatus("idle"); setKnownFailed(false);
+    setError(null); setProgress(null); setStatusKey(null);
+  }, [actorId, mediaType, stopTracking]);
+
+  // Fetch available models for the current member only.
+  useEffect(() => {
+    let cancelled = false;
+    setModels([]); setIsLoading(true);
     async function fetchModels() {
       try {
-        const response = await fetch("/api/media-generate");
+        if (!actorId) return;
+        const response = await fetch("/api/media-generate", { headers: { "x-ans-actor": actorId } });
         if (response.ok) {
           const data = await response.json();
           const relevantModels = mediaType === "IMAGE" 
@@ -113,180 +181,203 @@ export function MediaGenerator({
             : mediaType === "VIDEO" 
               ? data.videoModels 
               : data.audioModels;
-          setModels(relevantModels || []);
+          if (!cancelled) setModels(relevantModels || []);
         }
-      } catch (err) {
-        console.error("Failed to fetch media generation models:", err);
+      } catch {
+        // Do not expose network diagnostics or obsolete account responses.
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     }
-    fetchModels();
-  }, [mediaType]);
+    void fetchModels();
+    return () => { cancelled = true; };
+  }, [mediaType, actorId]);
 
-  const cleanupWebSocket = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-  }, []);
+  useEffect(() => () => { stopTracking(); }, [stopTracking]);
 
-  useEffect(() => {
-    return () => {
-      cleanupWebSocket();
-    };
-  }, [cleanupWebSocket]);
-
-  const handleGenerate = async () => {
-    if (!selectedModel) return;
-    
+  const handleGenerate = async (recovery?: SavedMediaRequest) => {
+    if (!actorId || (!recovery && !selectedModel) || busyRef.current) return;
+    stopTracking();
+    busyRef.current = true;
+    const operation = operationRef.current;
+    const isCurrent = () => activeRef.current && operationRef.current === operation && actorRef.current === actorId;
+    activeRef.current = true;
+    terminalRef.current = false;
+    setKnownFailed(false);
     setStatus("starting");
     setError(null);
-    setProgress(10);
+    setProgress(null);
     setStatusKey("connecting");
-
+    const input = selectedModel ? {
+      prompt: fillPromptVariables(prompt), model: selectedModel.id,
+      provider: selectedModel.provider, type: selectedModel.type,
+      inputImageUrl, resolution: "1K", aspectRatio,
+    } : null;
+    let message = t("generationConnectionFailed");
     try {
-      const response = await fetch("/api/media-generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: fillPromptVariables(prompt),
-          model: selectedModel.id,
-          provider: selectedModel.provider,
-          type: selectedModel.type,
-          inputImageUrl,
-          resolution: "1K",
-          aspectRatio,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to start generation");
-      }
-
-      const { socketAccessToken, webSocketUrl, provider, taskSig } = await response.json();
-
-      // Create callbacks for completion handling
-      const handleComplete = (urls: string[]) => {
-        if (urls.length > 0) {
-          onMediaGenerated(urls[0]);
-          toast.success(t("mediaGenerated"));
+      // Recovery always reads an existing reservation. It remains available
+      // without models and cannot accidentally submit an unconfigured new job.
+      let currentRequest = recovery;
+      if (!currentRequest) {
+        if (!input) return;
+        const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(input)));
+        if (!isCurrent()) return;
+        const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+        let saved = requestRef.current?.hash === hash ? requestRef.current : null;
+        try {
+          saved = savedMediaRequest(sessionStorage.getItem(`${storageKey}:${hash}`), hash) || saved;
+          if (!saved) {
+            const legacy = savedMediaRequest(sessionStorage.getItem(`${legacyStorageKey}:${hash}`), hash);
+            if (legacy) saved = { ...legacy, legacy: true };
+          }
+        } catch { /* memory fallback */ }
+        currentRequest = saved || { hash, key: crypto.randomUUID() };
+        if (!currentRequest.legacy) {
+          try { sessionStorage.setItem(`${storageKey}:${hash}`, JSON.stringify(currentRequest)); } catch { /* memory fallback */ }
         }
-        // Reset after a delay
-        setTimeout(() => {
-          setStatus("idle");
-          setProgress(0);
-          setStatusKey(null);
-          setSelectedModel(null);
-        }, 2000);
-      };
-
-      // Check if provider uses polling (empty webSocketUrl) or WebSocket
-      if (!webSocketUrl) {
-        // Polling mode (for Fal.ai)
-        setStatus("queued");
-        setProgress(20);
-        setStatusKey("queued");
-
-        const pollStatus = async () => {
+        loadSavedRequests();
+      }
+      requestRef.current = currentRequest;
+      if (!isCurrent()) return;
+      let response: Response;
+      let data;
+      if (currentRequest.legacy) {
+        // Version one had no owner. Only a server read under this account can
+        // establish ownership; never replay an unverified legacy key as a POST.
+        response = await fetch(`/api/media-generate?key=${encodeURIComponent(currentRequest.key)}`, { headers: { "x-ans-actor": actorId } });
+        data = await response.json();
+        if (!isCurrent()) return;
+        const owned = response.ok || (response.status === 409 && data.error === "MEDIA_SUBMISSION_NOT_ACCEPTED");
+        if (owned) {
+          if (data.type !== mediaType.toLowerCase()) throw new Error("MEDIA_TYPE_CHANGED");
+          const previous = currentRequest;
+          currentRequest = { hash: previous.hash, key: previous.key };
+          requestRef.current = currentRequest;
           try {
-            const statusResponse = await fetch(
-              `/api/media-generate/status?provider=${provider}&token=${encodeURIComponent(socketAccessToken)}&sig=${encodeURIComponent(taskSig || "")}`
-            );
-            
-            if (!statusResponse.ok) {
-              const data = await statusResponse.json();
-              throw new Error(data.error || "Status check failed");
+            sessionStorage.setItem(`${storageKey}:${previous.hash}`, JSON.stringify(currentRequest));
+            const stored = savedMediaRequest(sessionStorage.getItem(`${legacyStorageKey}:${previous.hash}`), previous.hash);
+            if (stored?.key === previous.key) sessionStorage.removeItem(`${legacyStorageKey}:${previous.hash}`);
+          } catch { /* Keep the legacy record if storage migration is unavailable. */ }
+          loadSavedRequests();
+        } else if (!recovery && response.status === 404 && data.error === "TASK_NOT_FOUND") {
+          // Another member's legacy record is retained for that member. The
+          // current member already explicitly confirmed a new request.
+          currentRequest = { hash: currentRequest.hash, key: crypto.randomUUID() };
+          requestRef.current = currentRequest;
+          try { sessionStorage.setItem(`${storageKey}:${currentRequest.hash}`, JSON.stringify(currentRequest)); } catch { /* memory fallback */ }
+          loadSavedRequests();
+          response = await fetch("/api/media-generate", { method: "POST", headers: { "Content-Type": "application/json", "x-ans-actor": actorId }, body: JSON.stringify({ ...input, idempotencyKey: currentRequest.key }) });
+          data = await response.json();
+        }
+      } else {
+        response = recovery
+          ? await fetch(`/api/media-generate?key=${encodeURIComponent(currentRequest.key)}`, { headers: { "x-ans-actor": actorId } })
+          : await fetch("/api/media-generate", { method: "POST", headers: { "Content-Type": "application/json", "x-ans-actor": actorId }, body: JSON.stringify({ ...input, idempotencyKey: currentRequest.key }) });
+        data = await response.json();
+      }
+      const { hash, key } = currentRequest;
+      // 202 is an existing reservation, not a new provider task. Read it until
+      // submission is known; never resubmit with a fresh key on a lost response.
+      while (response.status === 202) {
+        if (!isCurrent()) return;
+        if (data.requiresReview) {
+          message = t("generationReviewRequired");
+          throw new Error("REVIEW_REQUIRED");
+        }
+        setStatusKey("accepted");
+        await new Promise<void>(resolve => { delayResolveRef.current = resolve; timerRef.current = setTimeout(() => { delayResolveRef.current = null; resolve(); }, 2000); });
+        if (!isCurrent()) return;
+        response = await fetch(`/api/media-generate?key=${encodeURIComponent(key)}`, { headers: { "x-ans-actor": actorId } });
+        data = await response.json();
+      }
+      if (!isCurrent()) return;
+      if (!response.ok) {
+        setKnownFailed(data.error === "MEDIA_SUBMISSION_NOT_ACCEPTED");
+        message = data.error === "MEDIA_NO_CREDITS" ? t("generationNoCredits")
+          : data.error === "MEDIA_SUBMISSION_NOT_ACCEPTED" ? t("generationNotAccepted")
+          : t("generationConnectionFailed");
+        throw new Error("SUBMISSION_FAILED");
+      }
+      const { socketAccessToken, webSocketUrl, provider, taskSig } = data;
+      if (typeof socketAccessToken !== "string" || typeof taskSig !== "string" || typeof provider !== "string" || typeof webSocketUrl !== "string") {
+        throw new Error("INVALID_TASK");
+      }
+      const handleComplete = (urls: string[]) => {
+        if (!isCurrent() || terminalRef.current) return;
+        const validUrls = urls.filter(url => { try { return ["http:", "https:"].includes(new URL(url).protocol); } catch { return false; } });
+        if (!validUrls.length) { setStatus("error"); setError(t("generationConnectionFailed")); stopTracking(); return; }
+        terminalRef.current = true;
+        setStatus("completed");
+        setProgress(100);
+        setStatusKey("complete");
+        if (validUrls.length) { onMediaGenerated(validUrls[0]); toast.success(t("mediaGenerated")); }
+        requestRef.current = null;
+        try {
+          const stored = JSON.parse(sessionStorage.getItem(`${storageKey}:${hash}`) || "null");
+          if (stored?.key === key) sessionStorage.removeItem(`${storageKey}:${hash}`);
+        } catch { /* storage may be unavailable */ }
+        loadSavedRequests();
+        stopTracking();
+      };
+      setStatus("queued");
+      setStatusKey("queued");
+      if (!webSocketUrl) {
+        const pollStatus = async () => {
+          if (!isCurrent()) return;
+          try {
+            const result = await fetch(`/api/media-generate/status?provider=${encodeURIComponent(provider)}&token=${encodeURIComponent(socketAccessToken)}&sig=${encodeURIComponent(taskSig)}`);
+            if (!result.ok) throw new Error("STATUS_FAILED");
+            const update = await result.json();
+            if (!isCurrent()) return;
+            setProgress(typeof update.progress === "number" && Number.isFinite(update.progress) && update.progress >= 0 && update.progress <= 100 ? update.progress : null);
+            if (update.statusKey) setStatusKey(update.statusKey);
+            if (update.status === "completed") { handleComplete(update.outputUrls || []); return; }
+            if (update.status === "failed") {
+              terminalRef.current = true;
+              setKnownFailed(true);
+              setStatus("error"); setError(t("generationProviderFailed")); stopTracking(); return;
             }
-
-            const statusData = await statusResponse.json();
-            
-            setProgress(statusData.progress);
-            if (statusData.statusKey) {
-              setStatusKey(statusData.statusKey);
-            }
-
-            if (statusData.status === "completed") {
-              setStatus("completed");
-              if (statusData.outputUrls && statusData.outputUrls.length > 0) {
-                handleComplete(statusData.outputUrls);
-              }
-              return; // Stop polling
-            }
-
-            if (statusData.status === "failed") {
-              setStatus("error");
-              setError("Generation failed");
-              return; // Stop polling
-            }
-
-            // Continue polling
-            if (statusData.status === "in_queue" || statusData.status === "in_progress") {
-              setStatus("processing");
-              setTimeout(pollStatus, 2000); // Poll every 2 seconds
-            }
-          } catch (err) {
-            setStatus("error");
-            setError(err instanceof Error ? err.message : "Polling failed");
+            setStatus(update.status === "in_queue" ? "queued" : "processing");
+            timerRef.current = setTimeout(() => { void pollStatus(); }, 2000);
+          } catch {
+            if (!isCurrent()) return;
+            setStatus("error"); setError(t("generationConnectionFailed")); stopTracking();
           }
         };
-
-        // Start polling
-        pollStatus();
+        void pollStatus();
       } else {
-        // WebSocket mode (for Wiro.ai and others)
         const handler = getProviderWebSocketHandler(provider);
-
-        setStatus("queued");
-        setProgress(20);
-        setStatusKey("connecting");
-
         const ws = new WebSocket(webSocketUrl);
         wsRef.current = ws;
-
-        // Create callbacks for the handler
         const callbacks: WebSocketCallbacks = {
-          setProgress,
-          setStatus,
-          setStatusMessage: setStatusKey,
-          setError,
+          setProgress, setStatus, setStatusMessage: setStatusKey,
+          setError: code => {
+            if (!isCurrent()) return;
+            terminalRef.current = true;
+            setKnownFailed(code === "MEDIA_PROVIDER_FAILED");
+            setStatus("error"); setError(t(code === "MEDIA_PROVIDER_FAILED" ? "generationProviderFailed" : "generationConnectionFailed"));
+          },
           onComplete: handleComplete,
-          onCleanup: cleanupWebSocket,
+          onCleanup: () => {
+            if (!terminalRef.current) { setStatus("error"); setError(t("generationConnectionFailed")); }
+            stopTracking();
+          },
         };
-
         ws.onopen = () => {
-          const initMessage = handler.getInitMessage(socketAccessToken);
-          if (initMessage) {
-            ws.send(initMessage);
-          }
+          if (!isCurrent()) return;
+          const init = handler.getInitMessage(socketAccessToken);
+          if (init) ws.send(init);
           setStatusKey("connected");
         };
-
-        ws.onmessage = (event) => {
-          handler.handleMessage(event, callbacks);
-        };
-
-        ws.onerror = () => {
-          setStatus("error");
-          setError("WebSocket connection error");
-          cleanupWebSocket();
-        };
-
+        ws.onmessage = event => { if (isCurrent()) handler.handleMessage(event, callbacks); };
+        ws.onerror = () => { if (!isCurrent()) return; setStatus("error"); setError(t("generationConnectionFailed")); stopTracking(); };
         ws.onclose = () => {
-          if (status !== "completed" && status !== "error" && status !== "idle") {
-            // Unexpected close
-            setStatus("error");
-            setError("Connection closed unexpectedly");
-          }
+          if (isCurrent() && !terminalRef.current) { setStatus("error"); setError(t("generationConnectionFailed")); stopTracking(); }
         };
       }
-
-    } catch (err) {
-      setStatus("error");
-      setError(err instanceof Error ? err.message : "Generation failed");
-      cleanupWebSocket();
-    }
+    } catch {
+      if (isCurrent()) { setStatus("error"); setError(message); stopTracking(); }
+    } finally { if (operationRef.current === operation) busyRef.current = false; }
   };
 
   const handleConfirmGenerate = () => {
@@ -297,22 +388,20 @@ export function MediaGenerator({
     setStatus("idle");
     setSelectedModel(null);
     setError(null);
-    setProgress(0);
+    setProgress(null);
     setStatusKey(null);
-    cleanupWebSocket();
+    stopTracking();
   };
 
   const isGenerating = status === "starting" || status === "queued" || status === "processing";
 
-  // No models available - just show upload
-  if (!isLoading && models.length === 0) {
-    return (
-      <Button type="button" variant="outline" size="sm" onClick={onUploadClick}>
-        <Upload className="h-4 w-4 mr-2" />
-        {t("uploadMedia")}
-      </Button>
-    );
-  }
+  const recoveryControls = savedRequests.length > 0 && !isGenerating && status === "idle" && (
+    <div className="flex flex-wrap gap-2">
+      {savedRequests.map(request => <Button key={request.key} type="button" variant="outline" size="sm" onClick={() => { void handleGenerate(request); }} aria-label={t("resumeGeneration")}>
+        {t("resumeGeneration")}{savedRequests.length > 1 ? ` · ${request.key.slice(0, 8)}` : ""}
+      </Button>)}
+    </div>
+  );
 
   // Group models by provider
   const modelsByProvider = models.reduce((acc, model) => {
@@ -327,10 +416,11 @@ export function MediaGenerator({
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
+      {recoveryControls}
+      <div className="flex flex-wrap items-center gap-2">
+        {!isLoading && models.length === 0 ? <Button type="button" variant="outline" size="sm" onClick={onUploadClick}><Upload className="h-4 w-4 mr-2" />{t("uploadMedia")}</Button> : <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" variant="outline" size="sm" disabled={isGenerating || isLoading}>
+            <Button type="button" variant="outline" size="sm" disabled={isGenerating || isLoading || !actorId}>
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -400,7 +490,7 @@ export function MediaGenerator({
               {t("uploadInstead")}
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu>}
 
         {isGenerating && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -466,7 +556,7 @@ export function MediaGenerator({
             <Button type="button" variant="outline" onClick={handleCancelGeneration}>
               {t("cancel")}
             </Button>
-            <Button type="button" onClick={handleGenerate} disabled={!prompt}>
+            <Button type="button" onClick={() => { void handleGenerate(); }} disabled={!prompt}>
               <Wand2 className="h-4 w-4 mr-2" />
               {t("startGeneration")}
             </Button>
@@ -483,12 +573,12 @@ export function MediaGenerator({
               {t("generatingMedia", { provider: providerDisplayName })}
             </DialogTitle>
             <DialogDescription>
-              {t("doNotCloseWindow")}
+              {t("generationCanResume")}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <Progress value={progress} className="h-2" />
+            {progress !== null && <Progress value={progress} className="h-2" />}
             <p className="text-sm text-center text-muted-foreground">
               {statusMessage}
             </p>
@@ -529,6 +619,21 @@ export function MediaGenerator({
             <Button type="button" onClick={handleCancelGeneration}>
               {t("close")}
             </Button>
+            {status === "error" && requestRef.current && (
+              <Button type="button" variant="outline" onClick={() => {
+                if (knownFailed && selectedModel && requestRef.current) {
+                  try { sessionStorage.removeItem(`${storageKey}:${requestRef.current.hash}`); } catch { /* memory fallback */ }
+                  requestRef.current = null;
+                  loadSavedRequests();
+                  setStatus("confirming");
+                  setKnownFailed(false);
+                  return;
+                }
+                if (requestRef.current) void handleGenerate(requestRef.current);
+              }}>
+                {t(knownFailed && selectedModel ? "newGeneration" : "resumeGeneration")}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

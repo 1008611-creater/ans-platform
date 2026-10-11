@@ -13,6 +13,7 @@ vi.mock("@/lib/db", () => ({ db: {
   pinnedPrompt: { findMany: vi.fn() },
   changeRequest: { findMany: vi.fn() },
   artifactPublication: { findMany: vi.fn() },
+  marketListing: { findMany: vi.fn() },
   comment: { findMany: vi.fn() },
 } }));
 vi.mock("next-intl/server", () => ({
@@ -65,6 +66,7 @@ beforeEach(() => {
   vi.mocked(db.promptVote.findMany).mockResolvedValue([]);
   vi.mocked(db.comment.findMany).mockResolvedValue([]);
   vi.mocked(db.artifactPublication.findMany).mockResolvedValue([]);
+  vi.mocked(db.marketListing.findMany).mockResolvedValue([]);
   vi.mocked(db.pinnedPrompt.findMany).mockResolvedValue([{ prompt }] as never);
   vi.mocked(db.changeRequest.findMany).mockImplementation(query => Promise.resolve(query?.select ? [] : [{
     id: "change-id", status: "APPROVED", createdAt: new Date("2026-01-03"),

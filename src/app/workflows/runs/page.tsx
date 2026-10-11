@@ -55,7 +55,7 @@ export default async function WorkflowRunsPage() {
         <p className="text-muted-foreground">查看自己的运行记录需要先登录。</p>
         <Link
           href={`/login?callbackUrl=${encodeURIComponent("/workflows/runs")}`}
-          className="text-sm text-primary underline"
+          className="text-sm text-foreground underline"
         >
           前往登录
         </Link>
@@ -68,7 +68,7 @@ export default async function WorkflowRunsPage() {
   return (
     <div className="container max-w-4xl space-y-6 py-10">
       <header className="space-y-2">
-        <Link href="/workflows" className="text-sm text-primary">
+        <Link href="/workflows" className="text-sm text-foreground underline underline-offset-4">
           返回工作流广场
         </Link>
         <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">

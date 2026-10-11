@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,7 @@ export function WorkflowRunForm({
   defaultModelKey?: string;
 }) {
   const router = useRouter();
+  const billing = useTranslations("learning");
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(variables.map((variable) => [variable.key, ""])),
   );
@@ -164,7 +166,7 @@ export function WorkflowRunForm({
           <Sparkles className="h-4 w-4" /> 运行这个工作流
         </CardTitle>
         <CardDescription>
-          填写输入后运行，消耗 {estimatedCost} 点算力；失败会自动退回额度，结果保存在运行记录里。
+          {billing("billingExplanation", { points: estimatedCost })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -256,7 +258,7 @@ export function WorkflowRunForm({
         <div className="flex flex-wrap items-center gap-3">
           <Button disabled={busy || missing.length > 0} onClick={run}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            {busy ? "运行中…" : `运行（${estimatedCost} 点）`}
+            {busy ? "运行中…" : billing("billingRun", { points: estimatedCost })}
           </Button>
           {missing.length > 0 && (
             <span className="text-xs text-muted-foreground">还需填写：{missing.join("、")}</span>

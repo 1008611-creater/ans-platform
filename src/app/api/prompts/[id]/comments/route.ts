@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getPublicDisplayName } from "@/lib/public-identity";
 import { getConfig } from "@/lib/config";
 import { z } from "zod";
+import { safeAwardGrowthEvent } from "@/server/growth/service";
 
 const createCommentSchema = z.object({
   content: z.string().min(1).max(10000),
@@ -64,6 +65,8 @@ export async function GET(
             nickname: true,
             username: true,
             avatar: true,
+            avatarFrameKey: true,
+            chatBubbleKey: true,
             role: true,
           },
         },
@@ -107,6 +110,8 @@ export async function GET(
             username: comment.author.username,
             name: getPublicDisplayName(comment.author),
             avatar: comment.author.avatar,
+            ...(comment.author.avatarFrameKey ? { avatarFrameKey: comment.author.avatarFrameKey } : {}),
+            ...(comment.author.chatBubbleKey ? { chatBubbleKey: comment.author.chatBubbleKey } : {}),
             role: comment.author.role,
           },
           score: comment.score,
@@ -211,11 +216,15 @@ export async function POST(
             nickname: true,
             username: true,
             avatar: true,
+            avatarFrameKey: true,
+            chatBubbleKey: true,
             role: true,
           },
         },
       },
     });
+
+    await safeAwardGrowthEvent({ userId: session.user.id, type: "COMMENT", reason: "COMMENT", sourceType: "comment", sourceId: comment.id });
 
     // Create notification for prompt owner (if not commenting on own prompt)
     if (prompt.authorId !== session.user.id) {
@@ -266,6 +275,8 @@ export async function POST(
             username: comment.author.username,
             name: getPublicDisplayName(comment.author),
             avatar: comment.author.avatar,
+            ...(comment.author.avatarFrameKey ? { avatarFrameKey: comment.author.avatarFrameKey } : {}),
+            ...(comment.author.chatBubbleKey ? { chatBubbleKey: comment.author.chatBubbleKey } : {}),
             role: comment.author.role,
           },
         score: 0,

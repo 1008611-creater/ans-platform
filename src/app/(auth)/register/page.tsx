@@ -5,13 +5,21 @@ import { getTranslations } from "next-intl/server";
 import { getConfig } from "@/lib/config";
 import { getConfiguredProviderIds, getProviderMetadata } from "@/lib/auth/provider-metadata";
 import { AuthContent } from "@/components/auth/auth-content";
+import { safeCallbackUrl } from "@/lib/auth/safe-callback-url";
 
 export const metadata: Metadata = {
   title: "Register",
   description: "Create a new account",
 };
 
-export default async function RegisterPage() {
+interface RegisterPageProps {
+  searchParams: Promise<{ callbackUrl?: string | string[] }>;
+}
+
+export default async function RegisterPage({ searchParams }: RegisterPageProps) {
+  const params = await searchParams;
+  const callbackUrl = safeCallbackUrl(params.callbackUrl);
+  const loginUrl = callbackUrl === "/" ? "/login" : "/login?" + new URLSearchParams({ callbackUrl }).toString();
   const t = await getTranslations("auth");
   const config = await getConfig();
   const providers = getConfiguredProviderIds(config);
@@ -19,7 +27,7 @@ export default async function RegisterPage() {
 
   // Block registration if disabled or credentials not enabled
   if (!hasCredentials || !config.auth.allowRegistration) {
-    redirect("/login");
+    redirect(loginUrl);
   }
 
   const { displayNames, logos } = getProviderMetadata(providers);
@@ -32,11 +40,11 @@ export default async function RegisterPage() {
           <p className="text-xs text-muted-foreground">{t("registerDescription")}</p>
         </div>
         <div className="border rounded-lg p-4">
-          <AuthContent providers={providers} mode="register" providerDisplayNames={displayNames} providerLogos={logos} />
+          <AuthContent providers={providers} mode="register" callbackUrl={callbackUrl} providerDisplayNames={displayNames} providerLogos={logos} />
         </div>
         <p className="text-center text-xs text-muted-foreground">
           {t("hasAccount")}{" "}
-          <Link href="/login" className="text-foreground hover:underline">{t("login")}</Link>
+          <Link href={loginUrl} className="text-foreground hover:underline">{t("login")}</Link>
         </p>
       </div>
     </div>

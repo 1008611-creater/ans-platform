@@ -46,7 +46,7 @@ export interface GenerationResult {
 export interface PollStatusResult {
   status: "in_queue" | "in_progress" | "completed" | "failed";
   statusKey: GenerationStatusKey;
-  progress: number;
+  progress: number | null;
   queuePosition?: number;
   outputUrls: string[];
   error?: string;
@@ -54,7 +54,7 @@ export interface PollStatusResult {
 
 // WebSocket handler types (client-side)
 export interface WebSocketCallbacks {
-  setProgress: (value: number | ((prev: number) => number)) => void;
+  setProgress: (value: number | null | ((prev: number | null) => number | null)) => void;
   setStatus: (status: "idle" | "confirming" | "starting" | "queued" | "processing" | "completed" | "error") => void;
   setStatusMessage: (key: GenerationStatusKey) => void;
   setError: (error: string | null) => void;
@@ -123,4 +123,10 @@ export interface MediaGeneratorPlugin {
    * Returns null if provider uses WebSocket instead of polling
    */
   checkStatus?: (socketAccessToken: string) => Promise<PollStatusResult>;
+}
+
+/** Only throw before making any request to the provider. An HTTP failure/timeout
+ * does not prove no job was created and must never use this error. */
+export class MediaSubmissionNotSentError extends Error {
+  constructor() { super("MEDIA_SUBMISSION_NOT_SENT"); this.name = "MediaSubmissionNotSentError"; }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
+import {useTranslations} from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,15 +25,14 @@ const registerSchema = z.object({
   name: z.string().trim().min(2, "昵称至少 2 个字符").max(40, "昵称最多 40 个字符"),
   email: z.string().trim().max(254).email("请输入有效邮箱"),
   code: z.string().regex(/^\d{6}$/, "请输入 6 位邮箱验证码"),
-  inviteCode: z.string().trim().max(128),
   password: z.string().min(6, "密码至少 6 位").refine(value => new TextEncoder().encode(value).length <= 72, "密码不能超过 72 个 UTF-8 字节"),
   confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, { message: "两次密码不一致", path: ["confirmPassword"] })
-  .refine(data => data.email.toLowerCase().split("@")[1] === "cau.edu.cn" || Boolean(data.inviteCode), { message: "此邮箱需要邀请码", path: ["inviteCode"] });
+}).refine(data => data.password === data.confirmPassword, { message: "两次密码不一致", path: ["confirmPassword"] });
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export function RegisterForm() {
+export function RegisterForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
   const router = useRouter();
+  const t=useTranslations("auth");
   const [isLoading, setIsLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [siteKey, setSiteKey] = useState("");
@@ -46,7 +46,7 @@ export function RegisterForm() {
   const busy = useRef(false);
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: "", email: "", code: "", inviteCode: "", password: "", confirmPassword: "" },
+    defaultValues: { name: "", email: "", code: "", password: "", confirmPassword: "" },
   });
 
   useEffect(() => {
@@ -125,7 +125,7 @@ export function RegisterForm() {
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: data.name, email: data.email, password: data.password, code: data.code, inviteCode: data.inviteCode, turnstileToken: challenge }),
+        body: JSON.stringify({ name: data.name, email: data.email, password: data.password, code: data.code, turnstileToken: challenge }),
       });
       const result = await response.json();
       if (!response.ok) {
@@ -135,7 +135,8 @@ export function RegisterForm() {
       }
       analyticsAuth.register();
       toast.success("注册成功，邮箱已验证，请登录");
-      router.push("/login");
+      const target = callbackUrl;
+      router.push(target === "/" ? "/login" : "/login?" + new URLSearchParams({ callbackUrl: target }).toString());
     } catch { toast.error("注册失败，请稍后重试"); }
     finally { resetChallenge(); setIsLoading(false); busy.current = false; }
   }
@@ -145,7 +146,6 @@ export function RegisterForm() {
     { name: "name", label: "昵称", placeholder: "你希望大家如何称呼你（无需真实姓名）", autoComplete: "nickname", maxLength: 40 },
     { name: "email", label: "邮箱", type: "email", autoComplete: "email", maxLength: 254 },
     { name: "code", label: "邮箱验证码", placeholder: "6 位验证码，10 分钟有效", autoComplete: "one-time-code", maxLength: 6 },
-    { name: "inviteCode", label: "邀请码（非 cau.edu.cn 邮箱必填）", maxLength: 128 },
     { name: "password", label: "密码", type: "password", autoComplete: "new-password", maxLength: 72 },
     { name: "confirmPassword", label: "确认密码", type: "password", autoComplete: "new-password", maxLength: 72 },
   ];
@@ -163,7 +163,7 @@ export function RegisterForm() {
             </FormItem>
           )} />
         ))}
-        <p className="text-xs text-muted-foreground">所有邮箱均需验证码验证。仅 cau.edu.cn 精确域名免邀请码；昵称用于公开展示，不收集真实姓名。</p>
+        <p className="text-xs text-muted-foreground">{t("openRegistrationNote")}</p>
         <div ref={widgetNode} />
         {configError && <p role="alert" className="text-xs text-destructive">{configError}</p>}
         {challengeError && <p role="alert" className="text-xs text-destructive">{challengeError}</p>}

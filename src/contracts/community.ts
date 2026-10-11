@@ -32,6 +32,9 @@ export type CommunityCheckIn = {
 /** `GET /api/community/me`：仅本人可见的成长数据。 */
 export type CommunityMe = {
   xp: number;
+  communityPoints: number;
+  avatarFrameKey: string;
+  chatBubbleKey: string;
   level: LevelProgress;
   checkInStreak: number;
   todayCheckIn: CommunityCheckIn | null;

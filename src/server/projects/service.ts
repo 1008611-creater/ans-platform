@@ -215,6 +215,9 @@ export async function saveProjectArtifact(projectId: string, userId: string, raw
       where: { id: baseVersionId, artifact: { projectId, project: { ownerId: userId } } },
     });
     if (!source) throw new ProjectServiceError("成果版本不存在。", "NOT_FOUND", 404);
+    if (source.contentJson && typeof source.contentJson === "object" && !Array.isArray(source.contentJson) && "templateVersion" in source.contentJson) {
+      throw new ProjectServiceError("请在网站工作室中编辑网页文案。", "STRUCTURED_EDITOR_REQUIRED", 409);
+    }
     const changed = await tx.artifact.updateMany({
       where: { id: source.artifactId, currentVersion: expectedVersion, project: { ownerId: userId, status: "ACTIVE" } },
       data: { currentVersion: { increment: 1 } },
@@ -316,7 +319,7 @@ async function runProjectWorkflowForProject(
   }
   if (run.status !== "QUEUED") {
     throw new ProjectServiceError(
-      run.status === "FAILED" ? run.error ?? "工作流运行失败。" : "该请求已在处理中，请稍后刷新项目。",
+      run.status === "FAILED" ? "工作流运行失败，请稍后重试。" : "该请求已在处理中，请稍后刷新项目。",
       run.status === "FAILED" ? "WORKFLOW_FAILED" : "RUN_IN_PROGRESS",
       409,
     );
@@ -376,7 +379,7 @@ async function runProjectWorkflowForProject(
     throw new ProjectServiceError("该请求已在处理中，请稍后刷新项目。", "RUN_IN_PROGRESS", 409);
   }
   if (execution.status !== "succeeded") {
-    throw new ProjectServiceError(execution.error ?? "工作流运行失败，额度已退回。", "WORKFLOW_FAILED", 502);
+    throw new ProjectServiceError("工作流运行失败，请查看运行记录后重试。", "WORKFLOW_FAILED", 502);
   }
   return savedProjectRunResult(run.id, projectId, userId, input.workflowId, project.title);
 }
@@ -414,7 +417,7 @@ export async function runProjectPack(projectId: string, userId: string, rawInput
     failures.push({
       workflowId,
       code: error instanceof ProjectServiceError ? error.code : "WORKFLOW_FAILED",
-      error: error instanceof Error ? error.message : "成果生成失败。",
+      error: error instanceof ProjectServiceError ? error.message : "成果生成失败，请稍后重试。",
     });
   });
 

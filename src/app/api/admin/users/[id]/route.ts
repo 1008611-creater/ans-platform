@@ -40,6 +40,8 @@ export async function PATCH(
       flaggedReason?: string | null;
       dailyGenerationLimit?: number;
       generationCreditsRemaining?: number;
+      generationCreditsResetAt?: Date;
+      generationCreditsRevision?: { increment: number };
     } = {};
 
     if (role !== undefined) {
@@ -69,6 +71,8 @@ export async function PATCH(
       updateData.dailyGenerationLimit = limit;
       // Also reset remaining credits to the new limit
       updateData.generationCreditsRemaining = limit;
+      updateData.generationCreditsResetAt = new Date();
+      updateData.generationCreditsRevision = { increment: 1 };
     }
 
     const beforeUser = await db.user.findUnique({

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import {
   createHash,
   createPrivateKey,
@@ -12,14 +13,24 @@ import { db } from "@/lib/db";
 const ACCESS_TOKEN_TTL_SECONDS = 300;
 const ID_TOKEN_TTL_SECONDS = 300;
 const AUTH_CODE_TTL_MS = 180_000;
-const SUPPORTED_SCOPES = new Set(["openid", "profile", "email"]);
+const SUPPORTED_SCOPES = ["openid", "profile", "email"] as const;
+const SUPPORTED_SCOPE_SET = new Set<string>(SUPPORTED_SCOPES);
 const CODE_IDENTIFIER_PREFIX = "oidc:code:";
+const MAX_CLIENTS_CONFIG_BYTES = 128 * 1024;
 
-interface OidcConfig {
-  issuer: string;
+type OidcScope = (typeof SUPPORTED_SCOPES)[number];
+
+interface OidcClient {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
+  scopes: OidcScope[];
+  name?: string;
+}
+
+interface OidcConfig {
+  issuer: string;
+  clients: OidcClient[];
   keyId: string;
   privateKeyPem: string;
   publicKeyPem?: string;
@@ -56,24 +67,118 @@ function pem(value: string): string {
   return value.replace(/\\n/g, "\n");
 }
 
+function readString(value: unknown, field: string, source: string): string {
+  if (typeof value !== "string" || !value.trim()) throw new Error(`${source}.${field} must be a non-empty string`);
+  if (/[\u0000-\u001f\u007f]/.test(value)) throw new Error(`${source}.${field} contains control characters`);
+  return value.trim();
+}
+
+function validateRedirectUri(value: string, source: string): string {
+  let callback: URL;
+  try {
+    callback = new URL(value);
+  } catch {
+    throw new Error(`${source}.redirect_uri must be a valid URL`);
+  }
+  if (
+    callback.username || callback.password || callback.hash ||
+    !(callback.protocol === "https:" || (callback.protocol === "http:" && callback.hostname === "localhost"))
+  ) throw new Error(`${source}.redirect_uri must be an exact HTTPS callback URL`);
+  return callback.href;
+}
+
+function validateScopes(value: unknown, source: string): OidcScope[] {
+  const scopes = value === undefined ? [...SUPPORTED_SCOPES] : value;
+  if (!Array.isArray(scopes) || scopes.length === 0) throw new Error(`${source}.scopes must be a non-empty array`);
+  if (scopes.some((scope) => typeof scope !== "string" || !SUPPORTED_SCOPE_SET.has(scope))) {
+    throw new Error(`${source}.scopes contains an unsupported scope`);
+  }
+  if (new Set(scopes).size !== scopes.length || !scopes.includes("openid")) {
+    throw new Error(`${source}.scopes must contain openid once`);
+  }
+  return [...scopes] as OidcScope[];
+}
+
+function normalizeClient(raw: unknown, source: string): OidcClient {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error(`${source} must be an object`);
+  const record = raw as Record<string, unknown>;
+  const clientId = readString(record.client_id ?? record.clientId, "client_id", source);
+  const clientSecret = readString(record.client_secret ?? record.clientSecret, "client_secret", source);
+  if (Buffer.byteLength(clientSecret, "utf8") < 32) throw new Error(`${source}.client_secret must contain at least 32 bytes`);
+  const redirectUri = validateRedirectUri(readString(record.redirect_uri ?? record.redirectUri, "redirect_uri", source), source);
+  const scopes = validateScopes(record.scopes, source);
+  const name = record.name === undefined ? undefined : readString(record.name, "name", source);
+  return { clientId, clientSecret, redirectUri, scopes, ...(name ? { name } : {}) };
+}
+
+function readClient(prefix: string, optional = false): OidcClient | null {
+  const names = [`${prefix}_CLIENT_ID`, `${prefix}_CLIENT_SECRET`, `${prefix}_REDIRECT_URI`];
+  const present = names.map((name) => Boolean(process.env[name]?.trim()));
+  if (optional && present.every((value) => !value)) return null;
+  if (!present.every(Boolean)) throw new Error(`Incomplete OIDC client configuration: ${prefix}`);
+  const scopesValue = process.env[`${prefix}_SCOPES`];
+  const scopes = scopesValue === undefined ? undefined : scopesValue.split(/\s+/).filter(Boolean);
+  return normalizeClient({
+    client_id: requiredEnv(names[0]),
+    client_secret: requiredEnv(names[1]),
+    redirect_uri: requiredEnv(names[2]),
+    ...(scopes ? { scopes } : {}),
+  }, prefix);
+}
+
+function readRegisteredClients(): OidcClient[] | null {
+  const jsonValue = process.env.OIDC_CLIENTS_JSON?.trim();
+  const fileValue = process.env.OIDC_CLIENTS_FILE?.trim();
+  if (jsonValue && fileValue) throw new Error("Set only one of OIDC_CLIENTS_JSON or OIDC_CLIENTS_FILE");
+  if (!jsonValue && !fileValue) return null;
+  let text = jsonValue;
+  if (!text && fileValue) text = readFileSync(fileValue, "utf8");
+  if (!text || Buffer.byteLength(text, "utf8") > MAX_CLIENTS_CONFIG_BYTES) throw new Error("OIDC client registry is empty or too large");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error("OIDC client registry must be valid JSON");
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("OIDC client registry must be a non-empty JSON array");
+  return parsed.map((client, index) => normalizeClient(client, `OIDC_CLIENTS[${index}]`));
+}
+
+function assertUniqueClients(clients: OidcClient[]): void {
+  if (new Set(clients.map((client) => client.clientId)).size !== clients.length) {
+    throw new Error("OIDC client IDs must be unique");
+  }
+  if (new Set(clients.map((client) => client.redirectUri)).size !== clients.length) {
+    throw new Error("OIDC client callback URLs must be unique");
+  }
+}
+
 function getConfig(): OidcConfig {
   const issuer = requiredEnv("OIDC_ISSUER").replace(/\/$/, "");
   const issuerUrl = new URL(issuer);
   if (
-    (issuerUrl.protocol !== "https:" && issuerUrl.hostname !== "localhost") ||
+    !(issuerUrl.protocol === "https:" || (issuerUrl.protocol === "http:" && issuerUrl.hostname === "localhost")) ||
     issuerUrl.username || issuerUrl.password || issuerUrl.search || issuerUrl.hash || issuerUrl.pathname !== "/"
   ) {
     throw new Error("OIDC_ISSUER must be an HTTPS origin without a path");
   }
 
-  const redirectUri = requiredEnv("OIDC_TOONFLOW_REDIRECT_URI");
-  const redirectUrl = new URL(redirectUri);
-  if (
-    redirectUrl.username || redirectUrl.password || redirectUrl.hash ||
-    (redirectUrl.protocol !== "https:" && redirectUrl.hostname !== "localhost")
-  ) {
-    throw new Error("OIDC_TOONFLOW_REDIRECT_URI must be an exact HTTPS callback URL");
+  const registered = readRegisteredClients();
+  let clients: OidcClient[];
+  if (registered) {
+    const legacyNames = ["OIDC_TOONFLOW", "OIDC_SUANMING"].flatMap((prefix) => [
+      `${prefix}_CLIENT_ID`, `${prefix}_CLIENT_SECRET`, `${prefix}_REDIRECT_URI`, `${prefix}_SCOPES`,
+    ]);
+    if (legacyNames.some((name) => process.env[name]?.trim())) {
+      throw new Error("OIDC_CLIENTS_JSON/OIDC_CLIENTS_FILE cannot be combined with legacy OIDC_* client variables");
+    }
+    clients = registered;
+  } else {
+    const toonflow = readClient("OIDC_TOONFLOW");
+    const suanming = readClient("OIDC_SUANMING", true);
+    clients = [toonflow, suanming].filter((client): client is OidcClient => client !== null);
   }
+  assertUniqueClients(clients);
 
   const keyId = requiredEnv("OIDC_SIGNING_KEY_ID");
   const privateKeyPem = pem(requiredEnv("OIDC_SIGNING_PRIVATE_KEY"));
@@ -84,9 +189,7 @@ function getConfig(): OidcConfig {
 
   const config: OidcConfig = {
     issuer,
-    clientId: requiredEnv("OIDC_TOONFLOW_CLIENT_ID"),
-    clientSecret: requiredEnv("OIDC_TOONFLOW_CLIENT_SECRET"),
-    redirectUri,
+    clients,
     keyId,
     privateKeyPem,
     publicKeyPem: process.env.OIDC_SIGNING_PUBLIC_KEY ? pem(process.env.OIDC_SIGNING_PUBLIC_KEY) : undefined,
@@ -98,9 +201,6 @@ function getConfig(): OidcConfig {
     const derived = createPublicKey(privateKey).export({ format: "jwk" });
     const configured = createPublicKey(config.publicKeyPem).export({ format: "jwk" });
     if (derived.n !== configured.n || derived.e !== configured.e) throw new Error("OIDC public key does not match signing key");
-  }
-  if (Buffer.byteLength(config.clientSecret, "utf8") < 32) {
-    throw new Error("OIDC client secret must contain at least 32 bytes");
   }
   if (Boolean(config.previousKeyId) !== Boolean(config.previousPublicKeyPem)) {
     throw new Error("Both OIDC_PREVIOUS_KEY_ID and OIDC_PREVIOUS_PUBLIC_KEY are required during key rotation");
@@ -200,9 +300,13 @@ function verifyJwt(config: OidcConfig, token: string): Record<string, unknown> |
     const claims = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8")) as Record<string, unknown>;
     const now = Math.floor(Date.now() / 1000);
     const audience = claims.aud;
+    const client = typeof audience === "string" ? config.clients.find((candidate) => candidate.clientId === audience) : undefined;
+    const scopeValues = typeof claims.scope === "string" ? claims.scope.split(" ").filter(Boolean) : [];
     if (
       claims.iss !== config.issuer ||
-      !(audience === config.clientId || (Array.isArray(audience) && audience.includes(config.clientId))) ||
+      !client ||
+      claims.client_id !== audience ||
+      scopeValues.some((scope) => !client.scopes.includes(scope as OidcScope)) ||
       typeof claims.exp !== "number" || claims.exp <= now ||
       typeof claims.iat !== "number" || claims.iat > now + 60 ||
       claims.token_use !== "access_token" || typeof claims.sub !== "string"
@@ -213,23 +317,24 @@ function verifyJwt(config: OidcConfig, token: string): Record<string, unknown> |
   }
 }
 
-function parseBasicClient(request: Request, body: URLSearchParams, config: OidcConfig): boolean {
+function parseBasicClient(request: Request, body: URLSearchParams, config: OidcConfig): OidcClient | null {
   const authorization = request.headers.get("authorization");
-  if (!authorization || !/^Basic\s/i.test(authorization)) return false;
+  if (!authorization || !/^Basic\s/i.test(authorization)) return null;
   let clientId: string;
   let clientSecret: string;
   try {
     const decoded = Buffer.from(authorization.replace(/^Basic\s+/i, ""), "base64").toString("utf8");
     const separator = decoded.indexOf(":");
-    if (separator < 1) return false;
+    if (separator < 1) return null;
     const decodeFormComponent = (value: string) => decodeURIComponent(value.replace(/\+/g, " "));
     clientId = decodeFormComponent(decoded.slice(0, separator));
     clientSecret = decodeFormComponent(decoded.slice(separator + 1));
   } catch {
-    return false;
+    return null;
   }
-  if (body.has("client_id") || body.has("client_secret")) return false;
-  return clientId === config.clientId && constantTimeEqual(clientSecret, config.clientSecret);
+  if (body.has("client_id") || body.has("client_secret")) return null;
+  const client = config.clients.find((candidate) => candidate.clientId === clientId);
+  return client && constantTimeEqual(clientSecret, client.clientSecret) ? client : null;
 }
 
 async function findEligibleUser(id: string): Promise<OidcUser | null> {
@@ -254,7 +359,7 @@ export function discoveryHandler(): Response {
       id_token_signing_alg_values_supported: ["RS256"],
       token_endpoint_auth_methods_supported: ["client_secret_basic"],
       code_challenge_methods_supported: ["S256"],
-      scopes_supported: ["openid", "profile", "email"],
+      scopes_supported: [...SUPPORTED_SCOPES],
       claims_supported: ["sub", "iss", "aud", "exp", "iat", "nonce", "name", "preferred_username", "picture", "email", "email_verified"],
     });
   } catch {
@@ -287,15 +392,13 @@ export async function authorizeHandler(request: Request, sessionUserId: string |
   }
 
   const redirectUri = params.get("redirect_uri");
-  if (params.get("client_id") !== config.clientId || redirectUri !== config.redirectUri) {
-    return oauthError("invalid_request");
-  }
+  const client = config.clients.find((candidate) => candidate.clientId === params.get("client_id"));
+  if (!client || redirectUri !== client.redirectUri) return oauthError("invalid_request");
+
   const singletonParameters = [
     "response_type", "client_id", "redirect_uri", "scope", "state", "nonce", "code_challenge", "code_challenge_method",
   ];
-  if (singletonParameters.some((parameter) => params.getAll(parameter).length > 1)) {
-    return oauthError("invalid_request");
-  }
+  if (singletonParameters.some((parameter) => params.getAll(parameter).length > 1)) return oauthError("invalid_request");
 
   const state = params.get("state");
   const nonce = params.get("nonce");
@@ -306,12 +409,26 @@ export async function authorizeHandler(request: Request, sessionUserId: string |
     params.get("response_type") !== "code" ||
     !state || state.length > 512 || !nonce || nonce.length > 512 ||
     params.get("code_challenge_method") !== "S256" || !validChallenge ||
-    !scopes.includes("openid") || scopes.some((scope) => !SUPPORTED_SCOPES.has(scope)) ||
+    !scopes.includes("openid") || scopes.some((scope) => !client.scopes.includes(scope as OidcScope)) ||
     new Set(scopes).size !== scopes.length
   ) {
     const target = new URL(redirectUri);
     target.searchParams.set("error", "invalid_request");
     if (state) target.searchParams.set("state", state);
+    return redirect(target);
+  }
+
+  const prompt = params.get("prompt");
+  if (params.getAll("prompt").length > 1 || prompt !== null && prompt !== "none") {
+    const target = new URL(redirectUri);
+    target.searchParams.set("error", "invalid_request");
+    target.searchParams.set("state", state);
+    return redirect(target);
+  }
+  if (!sessionUserId && prompt === "none") {
+    const target = new URL(redirectUri);
+    target.searchParams.set("error", "login_required");
+    target.searchParams.set("state", state);
     return redirect(target);
   }
 
@@ -338,7 +455,7 @@ export async function authorizeHandler(request: Request, sessionUserId: string |
     data: {
       identifier: `${CODE_IDENTIFIER_PREFIX}${sha256(code)}`,
       token: JSON.stringify({
-        clientId: config.clientId,
+        clientId: client.clientId,
         redirectUri,
         subject: user.id,
         scope: scopes,
@@ -361,29 +478,26 @@ export async function tokenHandler(request: Request): Promise<Response> {
   let body: URLSearchParams;
   try {
     config = getConfig();
-    if (!request.headers.get("content-type")?.includes("application/x-www-form-urlencoded")) {
-      return oauthError("invalid_request");
-    }
+  } catch {
+    return oauthError("server_error", 503);
+  }
+  try {
+    if (!request.headers.get("content-type")?.includes("application/x-www-form-urlencoded")) return oauthError("invalid_request");
     body = new URLSearchParams(await request.text());
   } catch {
     return oauthError("invalid_request");
   }
   const singletonBodyParameters = ["grant_type", "code", "redirect_uri", "code_verifier"];
-  if (singletonBodyParameters.some((parameter) => body.getAll(parameter).length > 1)) {
-    return oauthError("invalid_request");
-  }
-  if (!parseBasicClient(request, body, config)) {
-    return oauthError("invalid_client", 401, { "WWW-Authenticate": 'Basic realm="oidc-token", charset="UTF-8"' });
-  }
+  if (singletonBodyParameters.some((parameter) => body.getAll(parameter).length > 1)) return oauthError("invalid_request");
+  const client = parseBasicClient(request, body, config);
+  if (!client) return oauthError("invalid_client", 401, { "WWW-Authenticate": 'Basic realm="oidc-token", charset="UTF-8"' });
   if (body.get("grant_type") !== "authorization_code") return oauthError("unsupported_grant_type");
 
   const code = body.get("code");
   const redirectUri = body.get("redirect_uri");
   const verifier = body.get("code_verifier");
-  if (!code || !redirectUri || !verifier || !/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) {
-    return oauthError("invalid_request");
-  }
-  if (redirectUri !== config.redirectUri) return oauthError("invalid_grant");
+  if (!code || !redirectUri || !verifier || !/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) return oauthError("invalid_request");
+  if (redirectUri !== client.redirectUri) return oauthError("invalid_grant");
 
   const rows = await db.$queryRaw<Array<{ token: string; expires: Date }>>`
     DELETE FROM "verification_tokens"
@@ -400,9 +514,10 @@ export async function tokenHandler(request: Request): Promise<Response> {
     return oauthError("invalid_grant");
   }
   if (
-    grant.clientId !== config.clientId || grant.redirectUri !== redirectUri ||
+    grant.clientId !== client.clientId || grant.redirectUri !== redirectUri ||
     !Array.isArray(grant.scope) || typeof grant.subject !== "string" ||
     !grant.nonce || !grant.codeChallenge ||
+    grant.scope.some((scope) => !client.scopes.includes(scope as OidcScope)) ||
     sha256(verifier) !== grant.codeChallenge
   ) return oauthError("invalid_grant");
 
@@ -410,7 +525,7 @@ export async function tokenHandler(request: Request): Promise<Response> {
   if (!user) return oauthError("invalid_grant");
 
   const now = Math.floor(Date.now() / 1000);
-  const commonClaims = { iss: config.issuer, aud: config.clientId, sub: user.id, iat: now };
+  const commonClaims = { iss: config.issuer, aud: client.clientId, sub: user.id, iat: now };
   const idToken = signJwt(config, {
     ...commonClaims,
     exp: now + ID_TOKEN_TTL_SECONDS,
@@ -422,7 +537,7 @@ export async function tokenHandler(request: Request): Promise<Response> {
     ...commonClaims,
     exp: now + ACCESS_TOKEN_TTL_SECONDS,
     token_use: "access_token",
-    client_id: config.clientId,
+    client_id: client.clientId,
     scope: grant.scope.join(" "),
   });
 

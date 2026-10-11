@@ -187,41 +187,28 @@ describe("REQ-AUTH 注册安全", () => {
     await POST(request({ ...input, code: code === "000000" ? "000001" : "000000" }));
     expect((await POST(request({ ...input, code }))).status).toBe(429);
   });
-  it.each(["user@sub.cau.edu.cn", "user@cau.edu.cn.evil.com", "user@example.com"])("%s 不享受精确域名直通", async (email) => {
+  it.each(["user@sub.cau.edu.cn", "user@cau.edu.cn.evil.com", "user@example.com"])("%s 完成邮箱验证即可注册，无需邀请码", async (email) => {
     const code = await issue(email);
-    expect((await POST(request({ ...input, email, code }))).status).toBe(400);
-    expect(users).toHaveLength(0);
+    expect((await POST(request({ ...input, email, code }))).status).toBe(200);
+    expect(users).toHaveLength(1);
+    expect(users[0].emailVerified).toBeTruthy();
+    expect(mocks.updateInvite).not.toHaveBeenCalled();
+    expect(redemptions).toHaveLength(0);
   });
-  it("外部邮箱扣邀请码并记录兑换", async () => {
+  it.each([undefined, "INVALID", "INVITE"])("兼容旧客户端邀请码字段 %s，但不查询或核销", async (inviteCode) => {
     const email = "user@example.com", code = await issue(email);
-    expect((await POST(request({ ...input, email, code, inviteCode: "INVITE" }))).status).toBe(200);
-    expect(invites[0].usedCount).toBe(1);
-    expect(redemptions).toHaveLength(1);
-    expect(mocks.updateInvite).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ usedCount: { lt: 5 }, maxUses: 5 }) }));
+    expect((await POST(request({ ...input, email, code, inviteCode }))).status).toBe(200);
+    expect(invites[0].usedCount).toBe(0);
+    expect(mocks.updateInvite).not.toHaveBeenCalled();
+    expect(redemptions).toHaveLength(0);
   });
-  it.each(["expired", "exhausted", "cap", "zero"])("拒绝过期/耗尽/超过硬上限/零额度邀请码 %s", async (mode) => {
-    if (mode === "expired") invites[0].expiresAt = new Date();
-    if (mode === "exhausted") { invites[0].maxUses = 2; invites[0].usedCount = 2; }
-    if (mode === "cap") { invites[0].maxUses = 100; invites[0].usedCount = 5; }
-    if (mode === "zero") invites[0].maxUses = 0;
-    const email = "user@example.com", code = await issue(email);
-    expect((await POST(request({ ...input, email, code, inviteCode: "INVITE" }))).status).toBe(400);
-    expect(users).toHaveLength(0);
-  });
-  it("邀请码竞争失败不消耗 OTP、不创建用户", async () => {
-    const email = "user@example.com", code = await issue(email);
-    mocks.updateInvite.mockResolvedValueOnce({ count: 0 });
-    expect((await POST(request({ ...input, email, code, inviteCode: "INVITE" }))).status).toBe(400);
-    expect(users).toHaveLength(0);
-    expect((await POST(request({ ...input, email, code, inviteCode: "INVITE" }))).status).toBe(200);
-  });
-  it("建号失败回滚邀请码与 OTP，保留已有账号", async () => {
+  it("建号失败回滚 OTP，保留原邀请码历史，原验证码仍可再次提交", async () => {
     const email = "user@example.com", code = await issue(email);
     mocks.createUser.mockRejectedValueOnce(new Error("数据库异常"));
-    expect((await POST(request({ ...input, email, code, inviteCode: "INVITE" }))).status).toBe(500);
+    expect((await POST(request({ ...input, email, code }))).status).toBe(500);
+    expect(users).toHaveLength(0);
     expect(invites[0].usedCount).toBe(0);
-    expect(redemptions).toHaveLength(0);
-    expect((await POST(request({ ...input, email, code, inviteCode: "INVITE" }))).status).toBe(200);
+    expect((await POST(request({ ...input, email, code }))).status).toBe(200);
   });
   it("邮箱已经注册时不覆盖老账号", async () => {
     const code = await issue();
@@ -252,26 +239,17 @@ describe("REQ-AUTH 注册安全", () => {
     expect((await POST(request({ ...input, code: fresh, password: "密".repeat(24), username: undefined }))).status).toBe(200);
     expect(users[0].username).toMatch(/^u_[a-f0-9]{24}$/);
   });
-  it("并发争抢邀请码最后一次仅成功一个，失败方 OTP 可重试", async () => {
-    invites[0].usedCount = 4;
+  it("不同邮箱并发注册不再争抢邀请码", async () => {
     const firstEmail = "first@example.com", secondEmail = "second@example.com";
     const first = await issue(firstEmail), second = await issue(secondEmail);
     const results = await Promise.all([
-      POST(request({ ...input, username: "first", email: firstEmail, code: first, inviteCode: "INVITE" })),
-      POST(request({ ...input, username: "second", email: secondEmail, code: second, inviteCode: "INVITE" })),
+      POST(request({ ...input, username: "first", email: firstEmail, code: first })),
+      POST(request({ ...input, username: "second", email: secondEmail, code: second })),
     ]);
-    expect(results.map(r => r.status).sort()).toEqual([200, 400]);
-    expect(invites[0].usedCount).toBe(5);
-    expect(users).toHaveLength(1);
-    expect(redemptions).toHaveLength(1);
-  });
-  it("兑换记录失败时整笔事务回滚", async () => {
-    const email = "user@example.com", code = await issue(email);
-    mocks.redeem.mockRejectedValueOnce(new Error("写入失败"));
-    expect((await POST(request({ ...input, email, code, inviteCode: "INVITE" }))).status).toBe(500);
-    expect(users).toHaveLength(0);
+    expect(results.map(r => r.status)).toEqual([200, 200]);
+    expect(users).toHaveLength(2);
     expect(invites[0].usedCount).toBe(0);
-    expect((await POST(request({ ...input, email, code, inviteCode: "INVITE" }))).status).toBe(200);
+    expect(redemptions).toHaveLength(0);
   });
   it("投递失败清除本次验证码但保留冷却", async () => {
     mocks.fetch.mockImplementation(async (url: string) => url.includes("siteverify") ? Response.json({ success: true, hostname: "community.example", action: "register" }) : Response.json({}, { status: 503 }));

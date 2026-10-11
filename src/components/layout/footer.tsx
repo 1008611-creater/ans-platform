@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { useTranslations } from "next-intl";
 import DeepWikiIcon from "@/../public/deepwiki.svg";
 import { useBranding } from "@/components/providers/branding-provider";

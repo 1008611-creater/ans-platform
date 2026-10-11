@@ -1,0 +1,85 @@
+import React from 'react';
+import { DEFAULT_COLOR, useCover, cn, convertIconTitleToIcon } from '../runtime';
+
+const themeColor = (values: Record<string, string | string[] | boolean>) =>
+  (values.themeColor as string) || DEFAULT_COLOR;
+
+const MinimalSlate = () => {
+  const { values, font } = useCover();
+  const year = values.category;
+  const iconTitles = Array.isArray(values.icons) ? values.icons : [];
+  const themeColorValue = themeColor(values);
+
+  return (
+    <div
+      className="w-full h-full relative flex flex-col justify-between p-12 overflow-hidden bg-preview-background"
+      style={font ? { fontFamily: font } : undefined}
+    >
+      <div
+        className="absolute top-0 left-0 w-full h-full z-10"
+        style={{
+          background: `linear-gradient(to bottom, ${themeColorValue} 0%, transparent 100%)`,
+        }}
+      />
+      <div
+        className={cn(
+          'absolute top-0 left-0 w-full h-full blur-xs bg-cover bg-center',
+          !values.image && 'bg-preview-placeholder',
+        )}
+        style={
+          values.image ? { backgroundImage: `url(${values.image})` } : undefined
+        }
+      />
+      <div className="flex justify-between items-center">
+        <div className="text-[20px] tracking-[0.12em] font-semibold z-20 text-preview-foreground">
+          {year}
+        </div>
+        {values.label && (
+          <div className="text-[20px] tracking-[0.12em] font-semibold z-20 text-preview-foreground">
+            {values.label}
+          </div>
+        )}
+      </div>
+
+      <div className="z-20 cover-title">
+        {values.titleMain && (
+          <p className="text-[68px] leading-[1.08] tracking-[-0.04em] font-semibold text-preview-foreground">
+            {values.titleMain}
+          </p>
+        )}
+        {values.titleAccent && (
+          <p
+            className="text-[68px] leading-[1.08] tracking-[-0.04em] font-semibold mt-3"
+            style={{ color: themeColorValue }}
+          >
+            {values.titleAccent}
+          </p>
+        )}
+        {iconTitles.length > 0 && (
+          <div className="flex flex-wrap gap-7 mt-10">
+            {iconTitles.map((title: string) => {
+              const slug = convertIconTitleToIcon(title);
+              return (
+                <span
+                  key={slug}
+                  className="inline-block size-[75px] shrink-0 bg-preview-icon"
+                  style={{
+                    WebkitMask: `url(/icons/${slug}.svg) no-repeat center`,
+                    WebkitMaskSize: 'contain',
+                    mask: `url(/icons/${slug}.svg) no-repeat center`,
+                    maskSize: 'contain',
+                  }}
+                  title={title}
+                  role="img"
+                  aria-label={title}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MinimalSlate;

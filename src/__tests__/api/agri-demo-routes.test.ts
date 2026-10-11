@@ -1,0 +1,23 @@
+import {afterEach,beforeEach,describe,expect,it,vi} from "vitest";
+import {POST} from "@/app/api/competitions/agrihackathon/demo/route";
+import {GET} from "@/app/api/competitions/agrihackathon/demo/[submissionId]/route";
+import {auth} from "@/lib/auth";
+import {executeAgriDemoCommand,readAgriDemoChecks} from "@/server/competitions/agrihackathon/demo";
+import {AgriWorkspaceError} from "@/contracts/agri-workspace";
+vi.mock("@/lib/auth",()=>({auth:vi.fn()}));
+vi.mock("@/server/competitions/agrihackathon/demo",()=>({executeAgriDemoCommand:vi.fn(),readAgriDemoChecks:vi.fn()}));
+const origin=process.env.AUTH_URL || "https://ans.example.invalid",actor="actor-review";
+const item={status:"PASS",note:"Manual"};
+const command={action:"recordDemoCheck",idempotencyKey:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",submissionId:"submission",expectedLatestCheckId:null,acknowledgeStaleSubmission:false,basis:"METADATA",demo:{schemaVersion:1,mode:"LIVE",description:"Laptop",device:item,compatibility:item,network:item,audio:item,backup:{...item,url:null,artifactVersionId:null},conclusion:"PASS",recheckDue:{state:"UNKNOWN",at:null}},internalNote:null};
+const read=(suffix="")=>new Request(origin+"/api/competitions/agrihackathon/demo/submission"+suffix,{headers:{"x-ans-submission-actor":actor}});
+const write=(body:unknown=command,from=origin)=>new Request(origin+"/api/competitions/agrihackathon/demo",{method:"POST",headers:{origin:from,"content-type":"application/json","x-ans-submission-actor":actor},body:JSON.stringify(body)});
+const ctx={params:Promise.resolve({submissionId:"submission"})};
+afterEach(()=>vi.unstubAllEnvs());
+beforeEach(()=>{vi.stubEnv("AUTH_URL",origin);vi.stubEnv("NEXTAUTH_URL",origin);vi.stubEnv("NEXT_PUBLIC_APP_URL",origin);vi.clearAllMocks();vi.mocked(auth).mockResolvedValue({user:{id:actor}} as never);vi.mocked(executeAgriDemoCommand).mockResolvedValue({checkId:"check",feedbackEventId:null,appliedSequence:0,duplicate:false});vi.mocked(readAgriDemoChecks).mockResolvedValue({competitionId:"edition",submissionId:"submission",artifactVersionId:"version",submissionSequence:1,stage:"PRELIMINARY",isCurrentSubmission:true,currentSubmissionId:"submission",latestCheckId:null,canRecheckLatest:false,recheckBlockedCode:null,workspaceEnabled:true,canRecordCheck:false,canReadPrivateMaterials:false,canUseInternalNotes:false,checks:[],nextCursor:null});});
+describe("agri technical review routes",()=>{
+ it("requires real auth and rejects old or missing actor intent before service",async()=>{vi.mocked(auth).mockResolvedValueOnce(null as never);expect((await POST(write())).status).toBe(401);expect((await GET(new Request(read().url),ctx)).status).toBe(409);expect(executeAgriDemoCommand).not.toHaveBeenCalled();expect(readAgriDemoChecks).not.toHaveBeenCalled();});
+ it("accepts strict commands with server-selected actor and stable metadata default",async()=>{const response=await POST(write());expect(response.status).toBe(200);expect(executeAgriDemoCommand).toHaveBeenCalledWith(actor,{...command,basis:"METADATA"});expect(response.headers.get("cache-control")).toBe("no-store");});
+ it("rejects cross-origin, malformed, oversized and forged commands",async()=>{expect((await POST(write(command,"https://other.invalid"))).status).toBe(403);for(const extra of [{checkedAt:new Date().toISOString()},{actorId:"forged"},{publicConsent:true},{demo:{...command.demo,network:{status:"UNREACHABLE",note:""}}}])expect((await POST(write({...command,...extra}))).status).toBe(400);expect((await POST(write({body:"x".repeat(100001)}))).status).toBe(413);expect(executeAgriDemoCommand).not.toHaveBeenCalled();});
+ it("rejects extra query expansions and binds the exact submission route",async()=>{expect((await GET(read("?scope=staff&cursor=page"),ctx)).status).toBe(200);expect(readAgriDemoChecks).toHaveBeenCalledWith(actor,"submission",{scope:"staff",cursor:"page"});expect((await GET(read("?includeInternal=true"),ctx)).status).toBe(400);expect(readAgriDemoChecks).toHaveBeenCalledTimes(1);});
+ it("does not return private provider or database diagnostics",async()=>{vi.mocked(readAgriDemoChecks).mockRejectedValueOnce(new Error("PRIVATE_DB_NOTE"));const response=await GET(read(),ctx);expect(response.status).toBe(500);expect(JSON.stringify(await response.json())).not.toContain("PRIVATE_DB_NOTE");vi.mocked(executeAgriDemoCommand).mockRejectedValueOnce(new AgriWorkspaceError("AGRI_DEMO_FEEDBACK_REVISION_CONFLICT"));expect((await POST(write())).status).toBe(409);});
+});

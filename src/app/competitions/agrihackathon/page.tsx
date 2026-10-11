@@ -38,9 +38,9 @@ import {
 import { findAgriHackathonCompetition } from "@/server/competitions/service";
 
 /**
- * 页面要判断「农客松在赛事系统里有没有记录」，所以必须动态渲染。
+ * 页面读取明确绑定的本届赛事，所以必须动态渲染。
  * 分层规矩：app 层不碰数据库，查询走 @/server 的服务函数。
- * 数据库不可用时不能整页 500 —— 服务层会吞掉异常返回 null，
+ * 未配置、记录缺失或数据库不可用时服务层返回 null，
  * 页面退回「报名尚未接入」的形态照常渲染。
  */
 export const dynamic = "force-dynamic";
@@ -79,6 +79,11 @@ const trackStyles = {
 
 export default async function AgriHackathonPage() {
   const t = await getTranslations("agriHackathon");
+  const pending = await getTranslations("product.agrihackathon");
+  const tasks = await getTranslations("product.agriTasks");
+  const submissions = await getTranslations("product.agriSubmissions");
+  const works = await getTranslations("product.agriWorks");
+  const onsite = await getTranslations("product.agriOnsite");
   const competition = await findAgriHackathonCompetition();
 
   const tracks = AGRI_TRACKS.map((track) => {
@@ -130,6 +135,10 @@ export default async function AgriHackathonPage() {
     <div className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(circle_at_20%_0%,rgba(16,185,129,0.16),transparent_45%),radial-gradient(circle_at_82%_12%,rgba(245,158,11,0.14),transparent_38%)]" />
       <div className="container space-y-12 py-10 md:py-14">
+        <aside aria-labelledby="agri-rules-pending" className="rounded-2xl border bg-muted/40 p-5">
+          <h2 id="agri-rules-pending" className="font-semibold">{pending("rulesPendingTitle")}</h2>
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">{pending("rulesPendingBody")}</p>
+        </aside>
         <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
@@ -165,6 +174,15 @@ export default async function AgriHackathonPage() {
                   </Link>
                 </Button>
               )}
+              <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/submissions"><FileCheck2 className="h-4 w-4" />{submissions("title")}</Link></Button>
+              <Button asChild size="lg" variant="outline"><Link href="/competitions/agrihackathon/works"><ClipboardCheck className="h-4 w-4" />{works("title")}</Link></Button>
+              <Button asChild size="lg" variant="outline"><Link href="/competitions/agrihackathon/onsite"><ClipboardCheck className="h-4 w-4" />{onsite("title")}</Link></Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/competitions/agrihackathon/tasks">
+                  <ListChecks className="h-4 w-4" />
+                  {tasks("title")}
+                </Link>
+              </Button>
               <Button asChild variant="outline" size="lg">
                 <Link href="/teams">
                   <Boxes className="h-4 w-4" />
@@ -209,7 +227,7 @@ export default async function AgriHackathonPage() {
         <section className="space-y-5">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">{t("tracksSectionLabel")}</p>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-foreground">{t("tracksSectionLabel")}</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">{t("tracksTitle")}</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-right">{t("tracksDescription")}</p>
@@ -260,7 +278,7 @@ export default async function AgriHackathonPage() {
         <section className="space-y-5">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">{t("scoringSectionLabel")}</p>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-foreground">{t("scoringSectionLabel")}</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">{t("scoringTitle")}</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-right">{t("scoringDescription")}</p>
@@ -291,7 +309,7 @@ export default async function AgriHackathonPage() {
             <CardContent className="space-y-3">
               {phases.map((phase, index) => (
                 <div key={phase.id} className="group flex gap-4 rounded-2xl border bg-muted/20 p-4 transition-colors hover:bg-muted/40">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-xs font-semibold text-primary ring-1 ring-border">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-xs font-semibold text-foreground ring-1 ring-border">
                     {String(index + 1).padStart(2, "0")}
                   </div>
                   <div className="min-w-0 flex-1 space-y-1">
@@ -364,7 +382,7 @@ export default async function AgriHackathonPage() {
                   <Medal className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
                   <div className="min-w-0 space-y-0.5">
                     <p className="text-sm font-medium">{award.label}</p>
-                    <p className="text-xs font-semibold text-primary">{award.amount}</p>
+                    <p className="text-xs font-semibold text-foreground">{award.amount}</p>
                     <p className="text-xs leading-5 text-muted-foreground">{award.description}</p>
                   </div>
                 </div>
@@ -376,7 +394,7 @@ export default async function AgriHackathonPage() {
         <section className="space-y-5">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">{t("rulesSectionLabel")}</p>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-foreground">{t("rulesSectionLabel")}</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">{t("rulesTitle")}</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-right">{t("rulesDescription")}</p>

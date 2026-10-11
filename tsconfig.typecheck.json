@@ -15,5 +15,8 @@
     "android",
     "android-web-assets",
     "src/__tests__"
-  ]
+  ],
+  "compilerOptions": {
+    "incremental": false
+  }
 }

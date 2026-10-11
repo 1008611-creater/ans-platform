@@ -1,9 +1,10 @@
 "use client";
+import Link from "next/link";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { PROJECT_WORKFLOW_COST_POINTS, projectPackWorkflowIds } from "@/contracts/projects";
+import { PROJECT_WORKFLOW_COST_POINTS, projectPackWorkflowIds, type OfficialWorkflowId } from "@/contracts/projects";
 import { OFFICIAL_WORKFLOWS } from "@/domain/projects/pack";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,9 +49,10 @@ async function postJson(url: string, body: unknown, fallback: string) {
   return payload.data;
 }
 
-export function ProjectStudio({ project }: { project: ProjectView }) {
+export function ProjectStudio({ project, initialWorkflowId }: { project: ProjectView; initialWorkflowId?: OfficialWorkflowId }) {
   const router = useRouter();
   const t = useTranslations("learning");
+  const product = useTranslations("product");
   const locale = useLocale();
   const [facts, setFacts] = useState(project.facts);
   const [message, setMessage] = useState("");
@@ -81,6 +83,7 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
   }, [project.id]);
   const recommended = useMemo(() => projectPackWorkflowIds.map((id) => OFFICIAL_WORKFLOWS.find((workflow) => workflow.id === id)!), []);
   const more = OFFICIAL_WORKFLOWS.filter((workflow) => !recommended.some((item) => item.id === workflow.id));
+  const selectedWorkflow = OFFICIAL_WORKFLOWS.find((workflow) => workflow.id === initialWorkflowId);
 
   function factPayload(confirm: boolean) {
     return facts.map((fact) => {
@@ -217,6 +220,8 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
         </CardContent>
       </Card>
       <div className="min-w-0 space-y-4">
+        <Button asChild variant="outline"><Link href={`/projects/${project.id}/website`}>{product("website.openStudio")}</Link></Button>
+        {selectedWorkflow && <Card id="selected-workflow" className="scroll-mt-24 border-primary/40"><CardHeader><CardTitle className="text-base">{product("selectedWorkflow")}</CardTitle><CardDescription>{product("selectedWorkflowHint")}</CardDescription></CardHeader><CardContent className="grid"><WorkflowButton workflow={selectedWorkflow} /></CardContent></Card>}
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -243,7 +248,7 @@ export function ProjectStudio({ project }: { project: ProjectView }) {
         {message ? <p role="status" className="text-sm text-primary">{message}</p> : null}
         {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
         <p className="rounded-lg border p-4 text-sm leading-6 text-muted-foreground">{t("draftWarning")}</p>
-        {project.artifacts.length === 0 ? <Card className="border-dashed"><CardContent className="py-8 text-sm text-muted-foreground">{t("noArtifacts")}</CardContent></Card> : project.artifacts.map((artifact) => {
+        {project.artifacts.length === 0 ? <Card className="border-dashed"><CardContent className="py-8 text-sm text-muted-foreground">{t("noArtifacts")}</CardContent></Card> : project.artifacts.filter((artifact) => artifact.workflowId !== "resume-website").map((artifact) => {
           const saved = savedVersions[artifact.id];
           if (saved && !artifact.versions.some((item) => item.id === saved.id)) {
             artifact = { ...artifact, currentVersion: Math.max(artifact.currentVersion, saved.version), versions: [...artifact.versions, saved].sort((a, b) => b.version - a.version) };

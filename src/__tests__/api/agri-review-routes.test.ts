@@ -1,0 +1,22 @@
+import {afterEach,beforeEach,describe,expect,it,vi} from "vitest";
+import {POST} from "@/app/api/competitions/agrihackathon/reviews/route";
+import {GET} from "@/app/api/competitions/agrihackathon/reviews/[submissionId]/route";
+import {auth} from "@/lib/auth";
+import {executeAgriReviewCommand,readAgriReviews} from "@/server/competitions/agrihackathon/reviews";
+import {AgriWorkspaceError} from "@/contracts/agri-workspace";
+vi.mock("@/lib/auth",()=>({auth:vi.fn()}));
+vi.mock("@/server/competitions/agrihackathon/reviews",()=>({executeAgriReviewCommand:vi.fn(),readAgriReviews:vi.fn()}));
+const origin=process.env.AUTH_URL || "https://ans.example.invalid",actor="actor-review";
+const command={action:"recordCheck",idempotencyKey:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",submissionId:"submission",result:"PASS",checklist:{schemaVersion:1,items:[{key:"materials",result:"PASS",note:"manual"}]},internalNote:null};
+const read=(suffix="")=>new Request(origin+"/api/competitions/agrihackathon/reviews/submission"+suffix,{headers:{"x-ans-submission-actor":actor}});
+const write=(body:unknown=command,from=origin)=>new Request(origin+"/api/competitions/agrihackathon/reviews",{method:"POST",headers:{origin:from,"content-type":"application/json","x-ans-submission-actor":actor},body:JSON.stringify(body)});
+const ctx={params:Promise.resolve({submissionId:"submission"})};
+afterEach(()=>vi.unstubAllEnvs());
+beforeEach(()=>{vi.stubEnv("AUTH_URL",origin);vi.stubEnv("NEXTAUTH_URL",origin);vi.stubEnv("NEXT_PUBLIC_APP_URL",origin);vi.clearAllMocks();vi.mocked(auth).mockResolvedValue({user:{id:actor}} as never);vi.mocked(executeAgriReviewCommand).mockResolvedValue({checkId:"check",feedbackEventId:null,appliedSequence:0,duplicate:false});vi.mocked(readAgriReviews).mockResolvedValue({competitionId:"edition",submissionId:"submission",artifactVersionId:"version",submissionSequence:1,workspaceEnabled:true,canRecordCheck:false,canReadPrivateMaterials:false,canUseInternalNotes:false,checks:[],nextCursor:null});});
+describe("agri technical review routes",()=>{
+ it("requires real auth and rejects old or missing actor intent before service",async()=>{vi.mocked(auth).mockResolvedValueOnce(null as never);expect((await POST(write())).status).toBe(401);expect((await GET(new Request(read().url),ctx)).status).toBe(409);expect(executeAgriReviewCommand).not.toHaveBeenCalled();expect(readAgriReviews).not.toHaveBeenCalled();});
+ it("accepts strict commands with server-selected actor and stable metadata default",async()=>{const response=await POST(write());expect(response.status).toBe(200);expect(executeAgriReviewCommand).toHaveBeenCalledWith(actor,{...command,basis:"METADATA"});expect(response.headers.get("cache-control")).toBe("no-store");});
+ it("rejects cross-origin, malformed, oversized and forged commands",async()=>{expect((await POST(write(command,"https://other.invalid"))).status).toBe(403);for(const extra of [{checkedAt:new Date().toISOString()},{actorId:"forged"},{publicConsent:true},{checklist:{schemaVersion:1,items:[{key:"demo",result:"UNREACHABLE",note:""}]}}])expect((await POST(write({...command,...extra}))).status).toBe(400);expect((await POST(write({body:"x".repeat(100001)}))).status).toBe(413);expect(executeAgriReviewCommand).not.toHaveBeenCalled();});
+ it("rejects extra query expansions and binds the exact submission route",async()=>{expect((await GET(read("?scope=staff&cursor=page"),ctx)).status).toBe(200);expect(readAgriReviews).toHaveBeenCalledWith(actor,"submission",{scope:"staff",cursor:"page"});expect((await GET(read("?includeInternal=true"),ctx)).status).toBe(400);expect(readAgriReviews).toHaveBeenCalledTimes(1);});
+ it("does not return private provider or database diagnostics",async()=>{vi.mocked(readAgriReviews).mockRejectedValueOnce(new Error("PRIVATE_DB_NOTE"));const response=await GET(read(),ctx);expect(response.status).toBe(500);expect(JSON.stringify(await response.json())).not.toContain("PRIVATE_DB_NOTE");vi.mocked(executeAgriReviewCommand).mockRejectedValueOnce(new AgriWorkspaceError("AGRI_FEEDBACK_REVISION_CONFLICT"));expect((await POST(write())).status).toBe(409);});
+});

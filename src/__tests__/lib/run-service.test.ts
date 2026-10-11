@@ -3,8 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
+  metered: vi.fn(),
   db: {
     template: { findFirst: vi.fn(), update: vi.fn() },
+    apiComputeRequest: { findMany: vi.fn(), findFirst: vi.fn() },
     user: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), updateMany: vi.fn(), update: vi.fn() },
     run: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     quotaLedger: { create: vi.fn() },
@@ -15,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   overrideTemplate: null as null | Record<string, unknown>,
 }));
 
+vi.mock("@/server/integrations/codex-gateway", () => ({ meteredResponses: mocks.metered, reconcileCodexCharges: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
@@ -154,15 +157,15 @@ describe("runTemplate", () => {
 
   it("模型白名单只包含生产网关实测可用的三个模型", async () => {
     const { RUN_MODEL_KEYS } = await import("@/lib/run-service");
-    expect(RUN_MODEL_KEYS).toEqual(["gpt-5.6-terra", "gpt-5.6-sol", "gpt-6-astra"]);
+    expect(RUN_MODEL_KEYS).toEqual(["deepseek-v4.1-flash", "gpt-6-astra", "gpt-6.1-sol"]);
     // 2026-10-05 网关探测：TR 国模全部 404，不得留在白名单里让用户选中后必然失败。
     expect(RUN_MODEL_KEYS).not.toContain("glm-5.2");
     expect(RUN_MODEL_KEYS).not.toContain("deepseek-v4-pro");
   });
 
-  it("默认模型为 gpt-5.6-terra", async () => {
+  it("默认模型为 deepseek-v4.1-flash", async () => {
     const { DEFAULT_RUN_MODEL } = await import("@/lib/run-service");
-    expect(DEFAULT_RUN_MODEL).toBe("gpt-5.6-terra");
+    expect(DEFAULT_RUN_MODEL).toBe("deepseek-v4.1-flash");
   });
 
   it("调用 OpenAI 兼容接口并回写结果", async () => {
@@ -172,10 +175,10 @@ describe("runTemplate", () => {
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: expect.stringContaining("Bearer ") }),
-        body: expect.stringContaining("gpt-5.6-terra"),
+        body: expect.stringContaining("deepseek-v4.1-flash"),
       })
     );
-    expect(mocks.db.run.update).toHaveBeenCalledWith(expect.objectContaining({
+    expect(mocks.db.run.updateMany).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ status: "SUCCEEDED", outputText: "生成好的内容" }),
     }));
   });
@@ -244,9 +247,9 @@ describe("runTemplate", () => {
       await vi.advanceTimersByTimeAsync(60_000);
       const result = await pending;
       expect(result.ok).toBe(false);
-      expect(!result.ok && result.message).toBe("模型响应超时");
+      expect(!result.ok && result.message).toBe("模型响应超时或网络不可用");
       expect(mocks.db.run.updateMany).toHaveBeenCalledWith(expect.objectContaining({
-        data: expect.objectContaining({ status: "FAILED", error: "模型响应超时" }),
+        data: expect.objectContaining({ status: "FAILED", error: "模型响应超时或网络不可用" }),
       }));
       expect(mocks.db.quotaLedger.create).toHaveBeenCalledWith(expect.objectContaining({
         data: expect.objectContaining({ amount: 3, reason: "REFUND" }),
@@ -256,4 +259,37 @@ describe("runTemplate", () => {
     }
   });
 
+  it("settles APIC micro-credit usage and refunds only unused reservation", async () => {
+    vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
+    vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
+    vi.stubEnv("APIC_COST_BRIDGE_URL", "http://bridge.internal:13021");
+    vi.stubEnv("APIC_COST_BRIDGE_SECRET", "test-secret");
+    mocks.fetch.mockResolvedValueOnce(Response.json({ choices: [{ message: { content: "settled draft" } }], usage: { prompt_tokens:1000,completion_tokens:1000 } }, {headers:{"x-oneapi-request-id":"request0001"}}))
+      .mockResolvedValueOnce(Response.json({requestId:"request0001",quota:960}));
+    const result = await runTemplate({userId:"user1",templateId:"tpl1",inputs:{topic:"AI"}});
+    expect(result).toMatchObject({ok:true,costPoints:0.00192});
+    expect(mocks.db.user.updateMany).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{decrement:0.25}}}));
+    expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{increment:0.24808}}}));
+    expect(mocks.db.run.updateMany).toHaveBeenCalledWith(expect.objectContaining({where:{id:"run1",userId:"user1",status:"QUEUED"},data:expect.objectContaining({costPoints:0.00192,status:"SUCCEEDED"})}));
+  });
+
+});
+describe("durable unified template billing", () => {
+  beforeEach(() => {
+    vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1"); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
+    mocks.db.apiComputeRequest.findFirst.mockResolvedValue({ settledPoints: 0.02, outcome: "upstream123456" });
+  });
+  it("takes model cost from the durable receipt without an outer template debit or refund", async () => {
+    mocks.metered.mockResolvedValue(Response.json({ output: [{ type: "message", content: [{ type: "output_text", text: "complete" }] }] }, { headers: { "x-ans-request-id": "req1" } }));
+    const result = await runTemplate({ userId: "user1", templateId: "tpl1", inputs: { topic: "AI" } });
+    expect(result).toMatchObject({ ok: true, costPoints: 0.02 }); expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled(); expect(mocks.db.user.update).not.toHaveBeenCalled();
+    const [request, user, parent] = mocks.metered.mock.calls[0]; expect(user).toBe("user1"); expect(parent).toEqual({ type: "run", id: "run1" }); expect(request.headers.get("idempotency-key")).toBe("template:run1");
+  });
+  it("retains an uncertain model reservation when generation fails", async () => {
+    mocks.metered.mockResolvedValue(Response.json({ error: { code: "BILLING_PENDING" } }, { status: 502 }));
+    mocks.db.apiComputeRequest.findMany.mockResolvedValue([{ state: "UNCERTAIN", settledPoints: null, authorizedPoints: 0.1 }]);
+    const result = await runTemplate({ userId: "user1", templateId: "tpl1", inputs: { topic: "AI" } });
+    expect(result.ok).toBe(false); expect(mocks.db.user.update).not.toHaveBeenCalled(); expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
+    expect(mocks.db.run.update).toHaveBeenCalledWith({ where: { id: "run1" }, data: { costPoints: 0.1 } });
+  });
 });

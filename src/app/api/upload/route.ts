@@ -170,10 +170,10 @@ export async function POST(request: NextRequest) {
       url: result.url,
       size: result.size,
     });
-  } catch (error) {
-    console.error("Upload error:", error);
+  } catch {
+    console.error("MEDIA_UPLOAD_FAILED");
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Upload failed" },
+      { error: "MEDIA_UPLOAD_FAILED" },
       { status: 500 }
     );
   }

@@ -19,12 +19,14 @@ export async function POST() {
 
   try {
     const result = await db.$transaction(async (tx) => {
+      // Serialize claims with every balance writer before reading eligibility.
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
       const user = await tx.user.findUnique({
         where: { id: userId },
-        select: { id: true, quotaClaimedAt: true, quotaPoints: true, deletedAt: true },
+        select: { id: true, quotaClaimedAt: true, quotaPoints: true, deletedAt: true, flagged: true },
       });
 
-      if (!user || user.deletedAt) {
+      if (!user || user.deletedAt || user.flagged) {
         return { ok: false as const, status: 401, message: "账号不可用" };
       }
       if (user.quotaClaimedAt) {
@@ -41,12 +43,12 @@ export async function POST() {
       }
 
       const grant = pool.perUserPoints;
-      if (grant <= 0) {
+      if (!Number.isSafeInteger(grant) || grant <= 0) {
         return { ok: false as const, status: 400, message: "额度池未配置发放数量" };
       }
 
-      const remaining = Number(pool.totalPoints) - Number(pool.claimedPoints);
-      if (remaining < grant) {
+      const remaining = pool.totalPoints - pool.claimedPoints;
+      if (remaining < BigInt(grant)) {
         return { ok: false as const, status: 410, message: "额度池已被领完" };
       }
 
@@ -54,6 +56,9 @@ export async function POST() {
       const updated = await tx.quotaPool.updateMany({
         where: {
           id: pool.id,
+          active: true,
+          perUserPoints: grant,
+          totalPoints: pool.totalPoints,
           claimedPoints: { lte: pool.totalPoints - BigInt(grant) },
         },
         data: { claimedPoints: { increment: grant } },
@@ -63,13 +68,13 @@ export async function POST() {
         return { ok: false as const, status: 410, message: "额度池已被领完" };
       }
 
-      const newBalance = user.quotaPoints + grant;
-
-      await tx.user.update({
+      const credited = await tx.user.update({
         where: { id: userId },
-        data: { quotaPoints: newBalance, quotaClaimedAt: new Date() },
+        data: { quotaPoints: { increment: grant }, quotaClaimedAt: new Date() },
+        select: { quotaPoints: true },
       });
 
+      const newBalance = credited.quotaPoints;
       await tx.quotaLedger.create({
         data: {
           userId,

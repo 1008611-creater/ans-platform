@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -9,6 +10,11 @@ datasource db {
 }
 
 model User {
+  communityPoints Int       @default(0)
+  avatarFrameKey  String    @default("default") @db.VarChar(64)
+  chatBubbleKey   String    @default("default") @db.VarChar(64)
+  growthEvents             GrowthEvent[]
+  apiComputeRequests ApiComputeRequest[]
   id                         String                 @id @default(cuid())
   email                      String                 @unique
   username                   String                 @unique
@@ -33,6 +39,40 @@ model User {
   flaggedReason              String?
   dailyGenerationLimit       Int                    @default(3)
   generationCreditsRemaining Int                    @default(3)
+  generationCreditsRevision  Int                    @default(0)
+  mediaGenerations           MediaGeneration[]
+  computeTasks               ComputeTask[]
+  agriCreatedIssues AgriIssue[] @relation("AgriIssueCreator")
+  agriAssignedIssues AgriIssue[] @relation("AgriIssueAssignee")
+  agriCompletedIssues AgriIssue[] @relation("AgriIssueCompleter")
+  agriIssueEvents AgriIssueEvent[] @relation("AgriIssueEventActor")
+  agriIssueReceipts AgriIssueReceipt[] @relation("AgriIssueReceiptActor")
+  agriTechnicalChecks AgriTechnicalCheck[] @relation("AgriCheckActor")
+  agriFeedbackEvents AgriCheckFeedbackEvent[] @relation("AgriFeedbackActor")
+  agriReviewReceipts AgriReviewReceipt[] @relation("AgriReviewActor")
+  agriDemoChecks AgriDemoCheck[] @relation("AgriDemoActor")
+  agriDemoFeedbackEvents AgriDemoFeedbackEvent[] @relation("AgriDemoFeedbackActor")
+  agriDemoReceipts AgriDemoReceipt[] @relation("AgriDemoReceiptActor")
+  agriDemoEvents AgriDemoEvent[] @relation("AgriDemoEventActor")
+  agriOnsiteItems AgriOnsiteItem[] @relation("AgriOnsiteCreator")
+  agriOnsiteEvents AgriOnsiteEvent[] @relation("AgriOnsiteEventActor")
+  agriOnsiteReceipts AgriOnsiteReceipt[] @relation("AgriOnsiteReceiptActor")
+  agriRecordArchives AgriRecordArchive[] @relation("AgriArchiveCreator")
+  agriRecordArchiveReceipts AgriRecordArchiveReceipt[] @relation("AgriArchiveReceiptActor")
+  agriStageSubmissions AgriStageSubmission[] @relation("AgriStageSubmitter")
+  agriSubmissionEvents AgriSubmissionEvent[] @relation("AgriSubmissionEventActor")
+  agriSubmissionReceipts AgriSubmissionReceipt[] @relation("AgriSubmissionReceiptActor")
+  agriWorkspaceUpdates AgriWorkspace[] @relation("AgriWorkspaceUpdater")
+  agriConfirmedRules AgriRuleVersion[] @relation("AgriRuleConfirmer")
+  agriAccessGrants AgriAccessGrant[] @relation("AgriGrantRecipient")
+  agriGrantedScopes AgriAccessGrant[] @relation("AgriGrantActor")
+  agriWorkspaceEvents AgriWorkspaceEvent[] @relation("AgriWorkspaceEventActor")
+  agriCommandReceipts AgriCommandReceipt[] @relation("AgriCommandActor")
+  agriPersonalTasks           AgriPersonalTask[] @relation("AgriTaskOwner")
+  agriTaskEvents              AgriTaskEvent[] @relation("AgriTaskEventActor")
+  agriTaskShares              AgriTaskShare[] @relation("AgriTaskShareRecipient")
+  agriSharesGranted           AgriTaskShare[] @relation("AgriTaskShareActor")
+  agriTaskReceipts             AgriTaskCommandReceipt[]
   generationCreditsResetAt   DateTime?
   accounts                   Account[]
   subscriptions              CategorySubscription[]
@@ -53,16 +93,16 @@ model User {
   auditLogs                  AuditLog[]             @relation("AuditActor")
   adminPermissions           Json?
 
-  // ===== ANS 社区：等级 / 经验 / 额度 =====
-  xp             Int       @default(0) // 累计经验，只增不减（除管理员调整）
-  nickname       String? // 匿名展示名，独立于 username
+  // ===== ANS 社区：等�?/ 经验 / 额度 =====
+  xp             Int       @default(0) // 累计经验，只增不减（除管理员调整�?
+  nickname       String? // 匿名展示名，独立�?username
   nicknameSetAt  DateTime? // 改昵称冷却起点（30 天一次）
   lastCheckInAt  DateTime?
   checkInStreak  Int       @default(0)
-  quotaPoints    Int       @default(0) // 个人可用算力点数
+  quotaPoints    Decimal       @default(0) @db.Decimal(24, 6) // 个人可用算力点数
   quotaClaimedAt DateTime? // 免费额度池领取时间（每人一次）
 
-  // ===== ANS 社区：关系 =====
+  // ===== ANS 社区：关�?=====
   xpHistory                  XpLedger[]
   checkIns                   CheckIn[]
   createdInvites             InviteCode[]           @relation("InviteCreator")
@@ -74,6 +114,7 @@ model User {
   ownedTeams                 Team[]                 @relation("TeamOwner")
   teamMemberships            TeamMember[]
   quotaLedgers               QuotaLedger[]
+  ldxpRechargeOrders LdxpRechargeOrder[]
   workflows        Workflow[]
   workflowRuns     WorkflowRun[]
   workflowVersions WorkflowVersion[]  @relation("WorkflowVersionCreator")
@@ -97,6 +138,12 @@ model User {
   artifactReactions ArtifactReaction[]
   artifactComments ArtifactComment[]
   artifactReports ArtifactReport[] @relation("ArtifactReportAuthor")
+  marketListings MarketListing[] @relation("MarketSeller")
+  marketPurchases MarketOrder[] @relation("MarketBuyer")
+  marketSales MarketOrder[] @relation("MarketOrderSeller")
+  marketEvents MarketOrderEvent[] @relation("MarketEventActor")
+  marketMessages MarketOrderMessage[]
+  marketReviews MarketReview[]
 
 
   @@index([deletedAt])
@@ -542,11 +589,12 @@ enum DelistReason {
 }
 
 // ============================================================================
-// ANS 社区平台（v3.2 框架）
+// ANS 社区平台（v3.2 框架�?
 // 等级经验 / 邀请码 / 模板 / 运行 / 团队 / 比赛 / 算力额度
 // ============================================================================
 
 enum XpReason {
+  SHARE
   CHECK_IN
   PUBLISH_PROMPT
   PUBLISH_TEMPLATE
@@ -753,11 +801,11 @@ model Template {
   authorId      String
   author        User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
   formSchema    Json // 输入表单 [{ key, label, type, required, options, default, placeholder }]
-  promptBody    String             @db.Text // 含变量占位 {{key}}
-  modelKey      String? // ANS 模型白名单稳定标识（见 src/lib/run-models.ts）
-  params        Json? // temperature / topP 等
+  promptBody    String             @db.Text // 含变量占�?{{key}}
+  modelKey      String? // ANS 模型白名单稳定标识（�?src/lib/run-models.ts�?
+  params        Json? // temperature / topP �?
   outputType    TemplateOutputType @default(TEXT)
-  estimatedCost Int                @default(1) // 预估消耗点数
+  estimatedCost Int                @default(1) // 预估消耗点�?
   status        TemplateStatus     @default(PENDING)
   reviewScore   Json? // AI 审核三维打分 { compliance, quality, intent }
   reviewNote    String?
@@ -797,8 +845,8 @@ model Run {
   outputText     String?      @db.Text
   outputUrl      String?
   error          String?
-  costPoints     Int          @default(0)
-  externalTaskId String? // 对接 /api/media-generate 的任务 ID
+  costPoints     Decimal          @default(0) @db.Decimal(24, 6)
+  externalTaskId String? // 对接 /api/media-generate 的任�?ID
   idempotencyKey String? // 客户端幂等键，防重复提交重复扣费
   startedAt      DateTime?
   finishedAt     DateTime?
@@ -886,7 +934,7 @@ model WorkflowRun {
   output     Json?
   status     WorkflowRunStatus @default(QUEUED)
   error      String?
-  costPoints Int               @default(0)
+  costPoints Decimal               @default(0) @db.Decimal(24, 6)
   startedAt  DateTime?
   finishedAt DateTime?
   createdAt  DateTime          @default(now())
@@ -919,8 +967,8 @@ model WorkflowNodeRun {
   @@map("workflow_node_runs")
 }
 
-/// 用户自带模型凭证（BYOK）。明文 Key 使用服务端密钥加密后存储，
-/// 客户端和日志只允许出现掩码后的后四位。
+/// 用户自带模型凭证（BYOK）。明�?Key 使用服务端密钥加密后存储�?
+/// 客户端和日志只允许出现掩码后的后四位�?
 model UserModelCredential {
   id           String   @id @default(cuid())
   userId       String
@@ -939,7 +987,7 @@ model UserModelCredential {
   @@map("user_model_credentials")
 }
 
-/// 平台管理员维护的 AI 初审供应商配置。API Key 只保存加密密文。
+/// 平台管理员维护的 AI 初审供应商配置。API Key 只保存加密密文�?
 model AdminAiConfig {
   id              String   @id @default("default")
   baseUrl         String
@@ -960,7 +1008,7 @@ model AdminAiConfig {
   @@map("admin_ai_configs")
 }
 
-/// 加密保存的配置快照，用于管理员回滚上一版初审配置。
+/// 加密保存的配置快照，用于管理员回滚上一版初审配置�?
 model AdminAiConfigVersion {
   id              String       @id @default(cuid())
   configId        String
@@ -982,7 +1030,7 @@ model AdminAiConfigVersion {
   @@map("admin_ai_config_versions")
 }
 
-/// 统一收藏：Prompt / 模板 / 工作流共用一张表，避免每个内容类型各建一套。
+/// 统一收藏：Prompt / 模板 / 工作流共用一张表，避免每个内容类型各建一套�?
 enum FavoriteTargetType {
   PROMPT
   TEMPLATE
@@ -1054,7 +1102,7 @@ model TeamMember {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   role           TeamRole     @default(MEMBER)
   status         MemberStatus @default(ACTIVE)
-  quotaAllowance Int          @default(0) // 队长队内分配的额度上限
+  quotaAllowance Int          @default(0) // 队长队内分配的额度上�?
   quotaUsed      Int          @default(0)
   joinedAt       DateTime     @default(now())
 
@@ -1092,7 +1140,7 @@ enum ArtifactReportStatus {
 model Competition {
   id          String            @id @default(cuid())
   title       String
-  organizer   String? // 外部赛事主办方
+  organizer   String? // 外部赛事主办�?
   url         String?
   description String?           @db.Text
   status      CompetitionStatus @default(UPCOMING)
@@ -1104,6 +1152,9 @@ model Competition {
   createdAt   DateTime          @default(now())
   teams       TeamCompetition[]
   runs        Run[]
+  agriWorkspace AgriWorkspace?
+  agriPersonalTasks AgriPersonalTask[]
+  agriTaskReceipts AgriTaskCommandReceipt[]
 
   @@index([status])
   @@map("competitions")
@@ -1115,7 +1166,7 @@ model TeamCompetition {
   team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
   competitionId String
   competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  quotaGranted  Int         @default(0) // 管理员按比赛发的算力包
+  quotaGranted  Int         @default(0) // 管理员按比赛发的算力�?
   quotaUsed     Int         @default(0)
   memberCap     Int         @default(0) // 单成员上限，防队长给自己无限额度
   frozen        Boolean     @default(false) // 比赛结束冻结回收
@@ -1131,9 +1182,11 @@ model TeamCompetition {
   reviewer User? @relation("CompetitionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
   reviewNote String? @db.Text
   awardedXp Int @default(0)
+  agriStages AgriEntryStage[]
   contributions TeamCompetitionContribution[]
   createdAt     DateTime    @default(now())
 
+  @@unique([id, competitionId])
   @@unique([teamId, competitionId])
   @@index([competitionId, entryStatus])
   @@map("team_competitions")
@@ -1141,7 +1194,7 @@ model TeamCompetition {
 
 model QuotaPool {
   id            String   @id @default(cuid())
-  name          String   @unique // 如 public-free-2026Q4
+  name          String   @unique // �?public-free-2026Q4
   totalPoints   BigInt   @default(0)
   claimedPoints BigInt   @default(0)
   perUserPoints Int      @default(0)
@@ -1158,6 +1211,7 @@ enum QuotaReason {
   RUN_COST
   REFUND
   ADMIN_ADJUST
+  RECHARGE
 }
 
 model QuotaLedger {
@@ -1165,8 +1219,8 @@ model QuotaLedger {
   userId       String?
   user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   poolId       String?
-  amount       Int // 正=发放，负=消耗
-  balanceAfter Int?
+  amount       Decimal @db.Decimal(24, 6) // �?发放，负=消�?
+  balanceAfter Decimal? @db.Decimal(24, 6)
   reason       QuotaReason
   refType      String? // "run" | "team" | "competition"
   refId        String?
@@ -1203,6 +1257,7 @@ enum FactConfirmation {
 }
 
 enum ArtifactKind {
+  RESUME_WEBSITE
   PROJECT_FACTS
   RESUME_BULLETS
   README_DRAFT
@@ -1213,7 +1268,7 @@ enum ArtifactKind {
   PROJECT_RETROSPECTIVE
 }
 
-/// 学生项目包。默认私密，归档后不再接受新的生成。
+/// 学生项目包。默认私密，归档后不再接受新的生成�?
 model Project {
   id          String             @id @default(cuid())
   ownerId     String
@@ -1226,8 +1281,10 @@ model Project {
   visibility  ProjectVisibility  @default(PRIVATE)
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
+  agriSubmissions AgriStageSubmission[]
   facts       ProjectFact[]
   artifacts   Artifact[]
+  workflowInputs ProjectWorkflowInput[]
   workflowRuns WorkflowRun[]
 
   @@index([ownerId, updatedAt])
@@ -1235,7 +1292,7 @@ model Project {
   @@map("projects")
 }
 
-/// 项目事实。空白与“暂无”分开保存，确认状态决定能否进入导出之外的公开流程。
+/// 项目事实。空白与“暂无”分开保存，确认状态决定能否进入导出之外的公开流程�?
 model ProjectFact {
   id           String           @id @default(cuid())
   projectId    String
@@ -1254,7 +1311,7 @@ model ProjectFact {
   @@map("project_facts")
 }
 
-/// 一次工作流产出的成果容器。正文只存在于不可变版本中。
+/// 一次工作流产出的成果容器。正文只存在于不可变版本中�?
 model Artifact {
   id             String             @id @default(cuid())
   projectId      String
@@ -1293,6 +1350,9 @@ model ArtifactVersion {
   @@index([createdById])
   @@index([workflowRunId])
   publication ArtifactPublication?
+  agriSubmissions AgriStageSubmission[]
+  agriRecordArchives AgriRecordArchive[]
+  agriMaterialRefs AgriSubmissionMaterialRef[]
   competitionSubmissions TeamCompetition[] @relation("CompetitionSubmissionVersion")
   reactions ArtifactReaction[]
   comments ArtifactComment[]
@@ -1370,4 +1430,1085 @@ model TeamCompetitionContribution {
   @@unique([teamCompetitionId, userId])
   @@index([userId, capturedAt])
   @@map("team_competition_contributions")
+}
+
+// Cash commerce is separate from compute QuotaLedger and community XP.
+enum MarketListingStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  WITHDRAWN
+}
+
+enum MarketOrderStatus {
+  AWAITING_PAYMENT
+  AWAITING_REQUIREMENTS
+  IN_PROGRESS
+  DELIVERED
+  REVISION_REQUESTED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  REFUND_PENDING
+  REFUNDED
+}
+
+enum MarketCashAccount {
+  PROVIDER_RECEIVABLE
+  BUYER_HELD
+  SELLER_PAYABLE
+  PLATFORM_REVENUE
+  REFUND_PAYABLE
+}
+
+model MarketListing {
+  id String @id @default(cuid())
+  slug String @unique
+  sellerId String
+  seller User @relation("MarketSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  official Boolean @default(false)
+  status MarketListingStatus @default(DRAFT)
+  currentVersion Int @default(1)
+  publishedVersion Int?
+  versions MarketListingVersion[]
+  orders MarketOrder[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([sellerId, updatedAt])
+  @@index([status, updatedAt])
+  @@map("market_listings")
+}
+
+/// Append-only offers. A published revision stays live while a new draft is reviewed.
+model MarketListingVersion {
+  id String @id @default(cuid())
+  listingId String
+  listing MarketListing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  version Int
+  payload Json
+  submittedAt DateTime?
+  reviewedAt DateTime?
+  reviewNote String? @db.VarChar(2000)
+  reviewedById String?
+  createdAt DateTime @default(now())
+  @@unique([listingId, version])
+  @@map("market_listing_versions")
+}
+
+model MarketOrder {
+  paymentMethod String @default("CASH") @db.VarChar(10)
+  id String @id @default(cuid())
+  listingId String
+  listing MarketListing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  buyerId String
+  buyer User @relation("MarketBuyer", fields: [buyerId], references: [id], onDelete: Restrict)
+  sellerId String
+  seller User @relation("MarketOrderSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  status MarketOrderStatus @default(AWAITING_PAYMENT)
+  quote Json
+  totalMinor Int
+  currency String @db.VarChar(3)
+  requirements String @default("") @db.Text
+  revision Int @default(0)
+  revisionRequests Int @default(0)
+  idempotencyKey String @db.VarChar(80)
+  requestHash String @db.VarChar(64)
+  paidAt DateTime?
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events MarketOrderEvent[]
+  messages MarketOrderMessage[]
+  deliveries MarketDelivery[]
+  payments MarketPayment[]
+  refunds MarketRefund[]
+  review MarketReview?
+  cashEntries MarketCashEntry[]
+  pointsEscrow MarketPointsEscrow?
+  @@unique([buyerId, idempotencyKey])
+  @@index([buyerId, updatedAt])
+  @@index([sellerId, status, updatedAt])
+  @@map("market_orders")
+}
+
+model MarketOrderEvent {
+  id String @id @default(cuid())
+  orderId String
+  order MarketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  actorId String?
+  actor User? @relation("MarketEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+  action String @db.VarChar(80)
+  fromStatus MarketOrderStatus?
+  toStatus MarketOrderStatus
+  revision Int
+  message String @default("") @db.Text
+  operationKey String @db.VarChar(200)
+  requestHash String @db.VarChar(64)
+  createdAt DateTime @default(now())
+  @@unique([orderId, operationKey])
+  @@index([orderId, createdAt])
+  @@map("market_order_events")
+}
+
+model MarketOrderMessage {
+  id String @id @default(cuid())
+  orderId String
+  order MarketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  content String @db.VarChar(4000)
+  idempotencyKey String @db.VarChar(80)
+  createdAt DateTime @default(now())
+  @@unique([orderId, authorId, idempotencyKey])
+  @@index([orderId, createdAt])
+  @@map("market_order_messages")
+}
+
+/// Copy delivered content; later artifact edits/deletion cannot alter a purchased delivery.
+model MarketDelivery {
+  id String @id @default(cuid())
+  orderId String
+  order MarketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  orderRevision Int
+  contentMarkdown String @db.Text
+  sourceArtifactVersionId String?
+  createdAt DateTime @default(now())
+  @@unique([orderId, orderRevision])
+  @@map("market_deliveries")
+}
+
+model MarketPayment {
+  id String @id @default(cuid())
+  orderId String
+  order MarketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  provider String @db.VarChar(40)
+  providerPaymentId String @db.VarChar(120)
+  amountMinor Int
+  currency String @db.VarChar(3)
+  allocation String @db.VarChar(30)
+  refund MarketRefund?
+  createdAt DateTime @default(now())
+  @@unique([provider, providerPaymentId])
+  @@index([orderId])
+  @@map("market_payments")
+}
+
+model MarketPaymentEvent {
+  id String @id @default(cuid())
+  provider String @db.VarChar(40)
+  providerEventId String @db.VarChar(120)
+  orderId String
+  payloadHash String @db.VarChar(64)
+  eventType String @db.VarChar(40)
+  payload Json
+  outcome String @db.VarChar(40)
+  createdAt DateTime @default(now())
+  @@unique([provider, providerEventId])
+  @@index([orderId, createdAt])
+  @@map("market_payment_events")
+}
+
+model MarketRefund {
+  id String @id @default(cuid())
+  orderId String
+  order MarketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  paymentId String @unique
+  payment MarketPayment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  amountMinor Int
+  reason String @db.VarChar(2000)
+  requestedById String?
+  providerRefundId String? @db.VarChar(120)
+  dispatchAttempts Int @default(0)
+  lastDispatchedAt DateTime?
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([orderId])
+  @@map("market_refunds")
+}
+
+/// Signed amounts sum to zero per journal. This records obligations, not a withdrawable wallet.
+model MarketCashEntry {
+  id String @id @default(cuid())
+  orderId String
+  order MarketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  journalKey String @db.VarChar(200)
+  account MarketCashAccount
+  amountMinor Int
+  currency String @db.VarChar(3)
+  createdAt DateTime @default(now())
+  @@unique([orderId, journalKey, account])
+  @@index([account, createdAt])
+  @@map("market_cash_entries")
+}
+
+model MarketReview {
+  id String @id @default(cuid())
+  orderId String @unique
+  order MarketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  rating Int
+  content String @db.VarChar(2000)
+  createdAt DateTime @default(now())
+  @@map("market_reviews")
+}
+
+/// A private structured draft; each accepted run freezes its own revision in WorkflowRun.input.
+model ProjectWorkflowInput {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workflowId String
+  revision   Int      @default(1)
+  content    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([projectId, workflowId])
+  @@map("project_workflow_inputs")
+}
+/// Public project recipe metadata. Member inputs and outputs remain in private Project.
+model CatalogProject {
+  id String @id @default(cuid())
+  slug String @unique @db.VarChar(80)
+  revision Int @default(1)
+  publishedRevision Int?
+  withdrawn Boolean @default(false)
+  versions CatalogProjectVersion[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("catalog_projects")
+}
+
+/// Immutable saved draft; publishing changes only the parent pointer.
+model CatalogProjectVersion {
+  id String @id @default(cuid())
+  projectId String
+  project CatalogProject @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  revision Int
+  payload Json
+  authorId String
+  createdAt DateTime @default(now())
+  @@unique([projectId, revision])
+  @@map("catalog_project_versions")
+}
+
+// Daily media allowance is separate from the QuotaLedger compute balance.
+enum MediaGenerationState {
+  RESERVED
+  SUBMITTING
+  ACCEPTED
+  UNCERTAIN
+  FAILED
+}
+
+model MediaGeneration {
+  id              String @id @default(cuid())
+  userId          String
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idempotencyKey  String @db.VarChar(100)
+  requestHash     String @db.VarChar(64)
+  provider        String @db.VarChar(100)
+  model           String @db.VarChar(200)
+  type            String @db.VarChar(10)
+  status          MediaGenerationState @default(RESERVED)
+  creditRevision  Int
+  creditReturned  Boolean @default(false)
+  pointsCost      Decimal? @db.Decimal(24, 6)
+  encryptedTask   String?
+  webSocketUrl    String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, idempotencyKey])
+  @@index([status, updatedAt])
+  @@map("media_generations")
+}
+
+
+/// Unified ANS points reservation for external official compute services.
+/// Distinct from a DAG run and from cash orders; no parallel credit balance.
+enum ComputeTaskState {
+  AUTHORIZED
+  RUNNING
+  UNCERTAIN
+  SETTLED
+  RELEASED
+}
+
+/// API request audit and reservation only. Member balances remain users.quotaPoints.
+model ApiComputeRequest {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  provider         String
+  idempotencyKey   String
+  requestHash      String
+  modelId          String
+  policyVersion    String
+  price            Json
+  maxUnits         Int
+  authorizedPoints Decimal          @db.Decimal(24, 6)
+  settledPoints    Decimal?         @db.Decimal(24, 6)
+  outcome          String?
+  state            ComputeTaskState @default(RUNNING)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  startedAt        DateTime?
+  finishedAt       DateTime?
+
+  @@unique([userId, provider, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([provider, state, updatedAt])
+  @@map("api_compute_requests")
+}
+
+model ComputeTask {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  provider         String
+  idempotencyKey   String
+  requestHash      String
+  modelId          String
+  policyVersion    String
+  price            Json
+  maxUnits         Int
+  authorizedPoints Decimal @db.Decimal(24, 6)
+  settledPoints    Decimal? @db.Decimal(24, 6)
+  units            Int?
+  outcome          String?
+  state            ComputeTaskState @default(AUTHORIZED)
+  revision         Int              @default(1)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  events           ComputeTaskEvent[]
+
+  @@unique([userId, provider, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([provider, state, updatedAt])
+  @@map("compute_tasks")
+}
+
+model ComputeTaskEvent {
+  id          String      @id @default(cuid())
+  taskId      String
+  task        ComputeTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  eventId     String
+  requestHash String
+  action      String
+  revision    Int
+  evidenceRef String?
+  createdAt   DateTime    @default(now())
+
+  @@unique([taskId, eventId])
+  @@unique([taskId, revision])
+  @@map("compute_task_events")
+}
+
+// Personal planning stays available while official windows and rules are pending.
+// Competition-bound; no global ADMIN access and no implicit collaborator shares.
+model AgriPersonalTask {
+  id String @id @default(cuid())
+  competitionId String
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Restrict)
+  ownerId String
+  owner User @relation("AgriTaskOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  templateKey String?
+  title String @db.VarChar(160)
+  stage String
+  status String @default("NOT_STARTED")
+  priority String @default("NORMAL")
+  dueState String @default("UNKNOWN")
+  dueAt DateTime? @db.Timestamptz(3)
+  acceptanceCriteria String @db.Text
+  collaborationNotes String? @db.VarChar(2000)
+  inputRequirements Json
+  blockingInput Json?
+  completionResult String? @db.VarChar(2000)
+  completedById String?
+  completedAt DateTime? @db.Timestamptz(3)
+  revision Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  events AgriTaskEvent[]
+  shares AgriTaskShare[]
+  receipts AgriTaskCommandReceipt[]
+  references AgriTaskReference[]
+
+  @@unique([ownerId, competitionId, templateKey])
+  @@unique([id, competitionId])
+  @@index([ownerId, competitionId, status, dueAt])
+  @@map("agri_personal_tasks")
+}
+
+model AgriTaskEvent {
+  id String @id @default(cuid())
+  taskId String
+  task AgriPersonalTask @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  actorId String
+  actor User @relation("AgriTaskEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+  revision Int
+  action String
+  snapshot Json
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([taskId, revision])
+  @@map("agri_task_events")
+}
+
+model AgriTaskShare {
+  id String @id @default(cuid())
+  taskId String
+  task AgriPersonalTask @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  userId String
+  user User @relation("AgriTaskShareRecipient", fields: [userId], references: [id], onDelete: Restrict)
+  sharedById String
+  sharedBy User @relation("AgriTaskShareActor", fields: [sharedById], references: [id], onDelete: Restrict)
+  sharedAt DateTime @default(now()) @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  expiresAt DateTime? @db.Timestamptz(3)
+  revision Int @default(1)
+
+  @@unique([taskId, userId])
+  @@index([userId, revokedAt, expiresAt])
+  @@map("agri_task_shares")
+}
+
+model AgriTaskCommandReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Restrict)
+  actorId String
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  operation String
+  idempotencyKey String
+  requestHash String
+  taskId String?
+  task AgriPersonalTask? @relation(fields: [taskId, competitionId], references: [id, competitionId], onDelete: Restrict)
+  appliedRevision Int?
+  createdTaskCount Int?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([competitionId, actorId, operation, idempotencyKey])
+  @@map("agri_task_command_receipts")
+}
+// P1 foundation: an edition must be explicitly configured; no users or rules are seeded by this migration.
+model AgriWorkspace {
+  id String @id @default(cuid())
+  competitionId String @unique
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  enabled Boolean @default(false)
+  draftRevision Int @default(1)
+  rulesDraft Json?
+  confirmedRuleVersionId String?
+  publishedRuleVersionId String?
+  confirmedRule AgriRuleVersion? @relation("AgriConfirmedRule", fields: [confirmedRuleVersionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction, map: "agri_workspace_confirmed_same_edition")
+  publishedRule AgriRuleVersion? @relation("AgriPublishedRule", fields: [publishedRuleVersionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction, map: "agri_workspace_published_same_edition")
+  entryStages AgriEntryStage[]
+  rules AgriRuleVersion[] @relation("AgriWorkspaceRules")
+  grants AgriAccessGrant[]
+  events AgriWorkspaceEvent[]
+  receipts AgriCommandReceipt[]
+  updatedById String?
+  updatedBy User? @relation("AgriWorkspaceUpdater", fields: [updatedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @db.Timestamptz(3)
+  @@map("agri_workspaces")
+}
+model AgriRuleVersion {
+  id String @id @default(cuid())
+  competitionId String
+  workspace AgriWorkspace @relation("AgriWorkspaceRules", fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  version Int
+  requirements Json
+  guidanceMarkdown String
+  confirmedById String
+  confirmedBy User @relation("AgriRuleConfirmer", fields: [confirmedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  confirmedAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  windows AgriStageWindow[]
+  confirmedWorkspaces AgriWorkspace[] @relation("AgriConfirmedRule")
+  publishedWorkspaces AgriWorkspace[] @relation("AgriPublishedRule")
+  submissions AgriStageSubmission[]
+  recordArchives AgriRecordArchive[]
+  workspaceEvents AgriWorkspaceEvent[]
+  @@unique([competitionId, version])
+  @@unique([id, competitionId])
+  @@map("agri_rule_versions")
+}
+model AgriStageWindow {
+  id String @id @default(cuid())
+  competitionId String
+  ruleVersionId String
+  rule AgriRuleVersion @relation(fields: [ruleVersionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  stage String @db.VarChar(16)
+  state String @db.VarChar(16)
+  opensAt DateTime? @db.Timestamptz(3)
+  closesAt DateTime? @db.Timestamptz(3)
+  includesDeadline Boolean?
+  @@unique([ruleVersionId, stage])
+  @@map("agri_stage_windows")
+}
+model AgriAccessGrant {
+  id String @id @default(cuid())
+  competitionId String
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  userId String
+  user User @relation("AgriGrantRecipient", fields: [userId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  scope String @db.VarChar(32)
+  grantedById String
+  grantedBy User @relation("AgriGrantActor", fields: [grantedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  grantedAt DateTime @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  expiresAt DateTime? @db.Timestamptz(3)
+  delegable Boolean @default(false)
+  revision Int @default(1)
+  sourceGrantId String?
+  sourceRevision Int?
+  sourceGrant AgriAccessGrant? @relation("AgriScopeSource", fields: [sourceGrantId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  derivedGrants AgriAccessGrant[] @relation("AgriScopeSource")
+  managerGrantId String?
+  managerRevision Int?
+  managerGrant AgriAccessGrant? @relation("AgriManagerSource", fields: [managerGrantId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  managedGrants AgriAccessGrant[] @relation("AgriManagerSource")
+  @@unique([competitionId, userId, scope])
+  @@unique([id, competitionId])
+  @@index([userId, competitionId])
+  @@map("agri_access_grants")
+}
+model AgriWorkspaceEvent {
+  id String @id @default(cuid())
+  competitionId String
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  revision Int
+  action String @db.VarChar(32)
+  ruleVersionId String?
+  rule AgriRuleVersion? @relation(fields: [ruleVersionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriWorkspaceEventActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, revision])
+  @@map("agri_workspace_events")
+}
+model AgriCommandReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriCommandActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  operation String @db.VarChar(32)
+  idempotencyKey String @db.VarChar(36)
+  requestHash String @db.VarChar(64)
+  resourceId String
+  appliedRevision Int
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, actorId, operation, idempotencyKey])
+  @@map("agri_command_receipts")
+}
+// Each stage has a mutable draft/revision; accepted versions and receipts are append-only.
+model AgriEntryStage {
+  id String @id @default(cuid())
+  competitionId String
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  teamCompetitionId String
+  entry TeamCompetition @relation(fields: [teamCompetitionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  stage String @db.VarChar(16)
+  revision Int @default(1)
+  draft Json?
+  currentSubmissionId String?
+  currentSubmission AgriStageSubmission? @relation("AgriStageCurrent", fields: [currentSubmissionId, id, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction, map: "agri_stage_current_same_entry")
+  frozenSubmissionId String?
+  frozenSubmission AgriStageSubmission? @relation("AgriStageFrozen", fields: [frozenSubmissionId, id, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction, map: "agri_stage_frozen_same_entry")
+  submissions AgriStageSubmission[] @relation("AgriStageHistory")
+  events AgriSubmissionEvent[]
+  receipts AgriSubmissionReceipt[]
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @db.Timestamptz(3)
+  @@unique([teamCompetitionId, stage])
+  @@unique([id, competitionId])
+  @@map("agri_entry_stages")
+}
+model AgriStageSubmission {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  entryStage AgriEntryStage @relation("AgriStageHistory", fields: [entryStageId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  sequence Int
+  ruleVersionId String
+  rule AgriRuleVersion @relation(fields: [ruleVersionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  artifactVersionId String
+  artifactVersion ArtifactVersion @relation(fields: [artifactVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  repository Json?
+  demoUrl String?
+  summary String
+  materials Json
+  submittedById String
+  submittedBy User @relation("AgriStageSubmitter", fields: [submittedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  acceptedAt DateTime @db.Timestamptz(3)
+  issues AgriIssue[]
+  technicalChecks AgriTechnicalCheck[]
+  demoChecks AgriDemoCheck[]
+  onsiteItems AgriOnsiteItem[]
+  recordArchives AgriRecordArchive[]
+  currentStages AgriEntryStage[] @relation("AgriStageCurrent")
+  frozenStages AgriEntryStage[] @relation("AgriStageFrozen")
+  materialRefs AgriSubmissionMaterialRef[]
+  events AgriSubmissionEvent[]
+  receipts AgriSubmissionReceipt[]
+  taskReferences AgriTaskReference[]
+  @@unique([entryStageId, sequence])
+  @@unique([id, entryStageId, competitionId])
+  @@index([competitionId, acceptedAt, id])
+  @@map("agri_stage_submissions")
+}
+model AgriSubmissionMaterialRef {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  submissionId String
+  submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  key String @db.VarChar(64)
+  artifactVersionId String
+  artifactVersion ArtifactVersion @relation(fields: [artifactVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  @@unique([submissionId, key])
+  @@map("agri_submission_material_refs")
+}
+model AgriSubmissionEvent {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  entryStage AgriEntryStage @relation(fields: [entryStageId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  revision Int
+  action String @db.VarChar(32)
+  submissionId String?
+  submission AgriStageSubmission? @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriSubmissionEventActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([entryStageId, revision])
+  @@map("agri_submission_events")
+}
+model AgriSubmissionReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  entryStage AgriEntryStage @relation(fields: [entryStageId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriSubmissionReceiptActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  operation String @db.VarChar(32)
+  idempotencyKey String @db.VarChar(36)
+  requestHash String @db.VarChar(64)
+  submissionId String?
+  submission AgriStageSubmission? @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  appliedRevision Int
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, actorId, operation, idempotencyKey])
+  @@map("agri_submission_receipts")
+}
+
+// Manual checks apply to one exact immutable submission. Feedback is independently append-only.
+model AgriTechnicalCheck {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  submissionId String
+  submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  result String @db.VarChar(16)
+  basis String @db.VarChar(24)
+  checklist Json
+  internalNote String?
+  checkedById String
+  checkedBy User @relation("AgriCheckActor", fields: [checkedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  checkedAt DateTime @db.Timestamptz(3)
+  feedbackEvents AgriCheckFeedbackEvent[]
+  receipts AgriReviewReceipt[]
+  @@unique([id, competitionId])
+  @@index([competitionId, submissionId, checkedAt, id])
+  @@map("agri_technical_checks")
+}
+model AgriCheckFeedbackEvent {
+  id String @id @default(cuid())
+  competitionId String
+  checkId String
+  check AgriTechnicalCheck @relation(fields: [checkId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  sequence Int
+  action String @db.VarChar(16)
+  body String?
+  actorId String
+  actor User @relation("AgriFeedbackActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  receipts AgriReviewReceipt[]
+  @@unique([checkId, sequence])
+  @@unique([id, checkId, competitionId])
+  @@map("agri_check_feedback_events")
+}
+model AgriReviewReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  checkId String
+  check AgriTechnicalCheck @relation(fields: [checkId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  feedbackEventId String?
+  feedbackEvent AgriCheckFeedbackEvent? @relation(fields: [feedbackEventId, checkId, competitionId], references: [id, checkId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriReviewActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  operation String @db.VarChar(32)
+  idempotencyKey String @db.VarChar(36)
+  requestHash String @db.VarChar(64)
+  appliedSequence Int
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, actorId, operation, idempotencyKey])
+  @@map("agri_review_receipts")
+}
+
+model AgriIssue {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  submissionId String
+  submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  title String @db.VarChar(180)
+  body String
+  status String @db.VarChar(20)
+  severity String @db.VarChar(16)
+  type String @db.VarChar(20)
+  basis String @db.VarChar(24)
+  visibility String @db.VarChar(16)
+  assigneeId String?
+  assignee User? @relation("AgriIssueAssignee", fields: [assigneeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  dueState String @db.VarChar(16)
+  dueAt DateTime? @db.Timestamptz(3)
+  processingSummary String?
+  completedById String?
+  completedBy User? @relation("AgriIssueCompleter", fields: [completedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  completedAt DateTime? @db.Timestamptz(3)
+  revision Int
+  createdById String
+  createdBy User @relation("AgriIssueCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  updatedAt DateTime @db.Timestamptz(3)
+  events AgriIssueEvent[]
+  receipts AgriIssueReceipt[]
+  taskReferences AgriTaskReference[]
+  @@unique([id, submissionId, competitionId], map: "agri_issue_task_reference_identity")
+  @@unique([id, competitionId])
+  @@index([competitionId, submissionId, createdAt, id], map: "agri_issues_submission_created_idx")
+  @@index([competitionId, status, dueAt], map: "agri_issues_status_due_idx")
+  @@index([assigneeId, status], map: "agri_issues_assignee_status_idx")
+  @@map("agri_issues")
+}
+model AgriIssueEvent {
+  id String @id @default(cuid())
+  competitionId String
+  issueId String
+  issue AgriIssue @relation(fields: [issueId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  revision Int
+  kind String @db.VarChar(16)
+  visibility String @db.VarChar(16)
+  basis String @db.VarChar(24)
+  body String
+  afterState Json?
+  actorId String
+  actor User @relation("AgriIssueEventActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  receipts AgriIssueReceipt[]
+  @@unique([issueId, revision])
+  @@unique([id, issueId, competitionId])
+  @@map("agri_issue_events")
+}
+model AgriIssueReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  issueId String
+  issue AgriIssue @relation(fields: [issueId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  eventId String
+  event AgriIssueEvent @relation(fields: [eventId, issueId, competitionId], references: [id, issueId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriIssueReceiptActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  operation String @db.VarChar(24)
+  idempotencyKey String @db.VarChar(36)
+  requestHash String @db.VarChar(64)
+  appliedRevision Int
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, actorId, operation, idempotencyKey])
+  @@map("agri_issue_receipts")
+}
+
+// A task share never delegates access to these targets. Detached rows retain provenance.
+model AgriTaskReference {
+  id String @id @default(cuid())
+  competitionId String
+  taskId String
+  task AgriPersonalTask @relation(fields: [taskId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  entryStageId String
+  submissionId String
+  submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  issueId String?
+  issue AgriIssue? @relation(fields: [issueId, submissionId, competitionId], references: [id, submissionId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  attachedAt DateTime @db.Timestamptz(3)
+  attachedRevision Int
+  detachedAt DateTime? @db.Timestamptz(3)
+  detachedRevision Int?
+  @@index([taskId, detachedAt], map: "agri_task_references_active_idx")
+  @@map("agri_task_references")
+}
+
+
+// Append-only Demo checks on one exact submission; parent is same-submission enforced.
+model AgriDemoCheck {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  submissionId String
+  submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  sequence Int
+  recheckOfId String? @unique
+  recheckOf AgriDemoCheck? @relation("AgriDemoRecheck", fields: [recheckOfId, submissionId, entryStageId, competitionId], references: [id, submissionId, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  recheckedBy AgriDemoCheck? @relation("AgriDemoRecheck")
+  result String @db.VarChar(16)
+  basis String @db.VarChar(24)
+  demo Json
+  internalNote String?
+  checkedById String
+  checkedBy User @relation("AgriDemoActor", fields: [checkedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  checkedAt DateTime @db.Timestamptz(3)
+  feedbackEvents AgriDemoFeedbackEvent[]
+  receipts AgriDemoReceipt[]
+  events AgriDemoEvent[]
+  onsiteItems AgriOnsiteItem[]
+  @@unique([recheckOfId, submissionId, entryStageId, competitionId])
+  @@unique([submissionId, sequence])
+  @@unique([id, submissionId, entryStageId, competitionId])
+  @@unique([id, competitionId])
+  @@index([competitionId, submissionId, checkedAt, id])
+  @@map("agri_demo_checks")
+}
+model AgriDemoFeedbackEvent {
+  id String @id @default(cuid())
+  competitionId String
+  checkId String
+  check AgriDemoCheck @relation(fields: [checkId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  sequence Int
+  action String @db.VarChar(16)
+  body String?
+  actorId String
+  actor User @relation("AgriDemoFeedbackActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  receipts AgriDemoReceipt[]
+  @@unique([checkId, sequence])
+  @@unique([id, checkId, competitionId])
+  @@map("agri_demo_feedback_events")
+}
+model AgriDemoReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  checkId String
+  check AgriDemoCheck @relation(fields: [checkId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  eventId String @unique
+  event AgriDemoEvent @relation(fields: [eventId, checkId, competitionId], references: [id, checkId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  feedbackEventId String?
+  feedbackEvent AgriDemoFeedbackEvent? @relation(fields: [feedbackEventId, checkId, competitionId], references: [id, checkId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriDemoReceiptActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  operation String @db.VarChar(32)
+  idempotencyKey String @db.VarChar(36)
+  requestHash String @db.VarChar(64)
+  appliedSequence Int
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([eventId, checkId, competitionId])
+  @@unique([competitionId, actorId, operation, idempotencyKey])
+  @@map("agri_demo_receipts")
+}
+
+model AgriDemoEvent {
+  id String @id @default(cuid())
+  competitionId String
+  checkId String
+  check AgriDemoCheck @relation(fields: [checkId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  action String @db.VarChar(32)
+  appliedSequence Int
+  actorId String
+  actor User @relation("AgriDemoEventActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  receipt AgriDemoReceipt?
+  @@unique([id, checkId, competitionId])
+  @@map("agri_demo_events")
+}
+
+
+// Human-reviewed safe onsite facts; source identity stays exact and immutable.
+model AgriOnsiteItem {
+  id String @id @default(cuid())
+  competitionId String
+  entryStageId String
+  submissionId String
+  submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  demoCheckId String?
+  demoCheck AgriDemoCheck? @relation(fields: [demoCheckId, submissionId, entryStageId, competitionId], references: [id, submissionId, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  fields Json
+  published Boolean @default(false)
+  revision Int
+  createdById String
+  createdBy User @relation("AgriOnsiteCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  updatedAt DateTime @db.Timestamptz(3)
+  events AgriOnsiteEvent[]
+  receipts AgriOnsiteReceipt[]
+  @@unique([id, competitionId])
+  @@index([competitionId, published, createdAt, id], map: "agri_onsite_items_published_idx")
+  @@index([competitionId, submissionId, createdAt, id], map: "agri_onsite_items_submission_idx")
+  @@map("agri_onsite_items")
+}
+model AgriOnsiteEvent {
+  id String @id @default(cuid())
+  competitionId String
+  itemId String
+  item AgriOnsiteItem @relation(fields: [itemId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  revision Int
+  action String @db.VarChar(32)
+  fields Json
+  published Boolean
+  actorId String
+  actor User @relation("AgriOnsiteEventActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  receipts AgriOnsiteReceipt[]
+  @@unique([itemId, revision])
+  @@unique([id, itemId, competitionId])
+  @@map("agri_onsite_events")
+}
+model AgriOnsiteReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  itemId String
+  item AgriOnsiteItem @relation(fields: [itemId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  eventId String @unique
+  event AgriOnsiteEvent @relation(fields: [eventId, itemId, competitionId], references: [id, itemId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriOnsiteReceiptActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  operation String @db.VarChar(32)
+  idempotencyKey String @db.VarChar(36)
+  requestHash String @db.VarChar(64)
+  appliedRevision Int
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, actorId, operation, idempotencyKey])
+  @@map("agri_onsite_receipts")
+}
+
+// Fixed private archival versions; exact canonical bytes are hashed and immutable in SQL.
+model AgriRecordArchive {
+  id String @id @default(cuid())
+  competitionId String
+  submissionId String
+  entryStageId String
+  submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  artifactVersionId String
+  artifactVersion ArtifactVersion @relation(fields: [artifactVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  ruleVersionId String
+  rule AgriRuleVersion @relation(fields: [ruleVersionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  sequence Int
+  previousArchiveId String?
+  previousArchive AgriRecordArchive? @relation("AgriArchiveChain", fields: [previousArchiveId, submissionId, competitionId], references: [id, submissionId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  nextArchives AgriRecordArchive[] @relation("AgriArchiveChain")
+  createdById String
+  createdBy User @relation("AgriArchiveCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  collectedAt DateTime @db.Timestamptz(3)
+  includePrivate Boolean
+  includeInternal Boolean
+  snapshotSchemaVersion Int
+  snapshotCanonical String
+  snapshotHash String @db.VarChar(64)
+  byteLength Int
+  receipt AgriRecordArchiveReceipt?
+  @@unique([id, submissionId, competitionId])
+  @@unique([id, competitionId])
+  @@unique([submissionId, sequence])
+  @@index([competitionId, submissionId, sequence, id], map: "agri_record_archives_source_idx")
+  @@map("agri_record_archives")
+}
+model AgriRecordArchiveReceipt {
+  id String @id @default(cuid())
+  competitionId String
+  archiveId String @unique
+  archive AgriRecordArchive @relation(fields: [archiveId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actorId String
+  actor User @relation("AgriArchiveReceiptActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  idempotencyKey String @db.VarChar(36)
+  requestHash String @db.VarChar(64)
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([archiveId, competitionId])
+  @@unique([competitionId, actorId, idempotencyKey])
+  @@map("agri_record_archive_receipts")
+}
+
+// Idempotent grant, adjustment and verified manual recharge operations.
+model QuotaOperation {
+  id String @id @default(cuid())
+  operationKey String @unique @db.VarChar(160)
+  requestHash String @db.VarChar(64)
+  userId String
+  actorId String
+  kind String @db.VarChar(30)
+  amount Decimal @db.Decimal(24, 6)
+  balanceAfter Decimal @db.Decimal(24, 6)
+  evidenceRef String? @db.VarChar(200)
+  note String @db.VarChar(1000)
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+  @@map("quota_operations")
+}
+
+// Holds are funded only from the buyer's ANS balance, never from cash callbacks.
+model MarketPointsEscrow {
+  orderId String @id
+  order MarketOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  amount Decimal @db.Decimal(24, 6)
+  sellerPoints Decimal @db.Decimal(24, 6)
+  feePoints Decimal @db.Decimal(24, 6)
+  state String @db.VarChar(20)
+  createdAt DateTime @default(now())
+  settledAt DateTime?
+  refundedAt DateTime?
+  @@map("market_points_escrows")
+}
+
+/// Pending LDXP merchant recharge orders. Credits are posted only after a verified paid status.
+model LdxpRechargeOrder {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  tradeNo         String   @unique @db.VarChar(120)
+  requestKey      String?  @db.VarChar(120)
+  amountCents     Int
+  points          Decimal  @db.Decimal(24, 6)
+  channelId       Int
+  payUrl          String   @db.Text
+  status          String   @db.VarChar(20)
+  providerPayload Json?
+  createdAt       DateTime @default(now())
+  paidAt          DateTime?
+  lastCheckedAt   DateTime?
+  @@index([userId, createdAt])
+  @@index([status, lastCheckedAt])
+  @@unique([userId, requestKey])
+  @@map("ldxp_recharge_orders")
+}
+model GrowthEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String   @db.VarChar(64)
+  sourceType String   @db.VarChar(64)
+  sourceId   String   @db.VarChar(128)
+  xp         Int      @default(0)
+  points     Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, type, sourceType, sourceId])
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@map("growth_events")
 }

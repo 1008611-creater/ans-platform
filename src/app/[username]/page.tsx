@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -11,7 +12,6 @@ import config from "@/../prompts.config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PromptList } from "@/components/prompts/prompt-list";
 import { PromptCard, type PromptCardProps } from "@/components/prompts/prompt-card";
 import { Masonry } from "@/components/ui/masonry";
@@ -20,36 +20,68 @@ import { PrivatePromptsNote } from "@/components/prompts/private-prompts-note";
 import { ActivityChartWrapper } from "@/components/user/activity-chart-wrapper";
 import { getPublicDisplayName, toPublicAuthor } from "@/lib/public-identity";
 import { listPublishedArtifacts } from "@/server/projects/publication";
+import { listPublishedMarketListingsBySeller } from "@/server/marketplace/listings";
+import { MarketOfferCard } from "@/components/marketplace/offer-card";
+import { ProfileGrowthPanel } from "@/components/growth/profile-growth-panel";
+import { AvatarFrame } from "@/components/growth/avatar-frame";
+import { getLevelProgress } from "@/lib/level";
+import { getCommunityDay } from "@/lib/community";
+import { getGrowthProfile } from "@/server/growth/service";
 
 interface UserProfilePageProps {
   params: Promise<{ username: string }>;
   searchParams: Promise<{ page?: string; tab?: string; date?: string }>;
 }
 
+const getProfileUser = cache((username: string) => db.user.findFirst({
+    where: { username: { equals: username, mode: "insensitive" }, deletedAt: null, flagged: false },
+    orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      nickname: true,
+      username: true,
+      avatar: true,
+      role: true,
+      verified: true,
+      bio: true,
+      xp: true,
+      communityPoints: true,
+      checkInStreak: true,
+      lastCheckInAt: true,
+      avatarFrameKey: true,
+      chatBubbleKey: true,
+      createdAt: true,
+      _count: {
+        select: {
+          prompts: { where: { deletedAt: null, isPrivate: false } },
+          contributions: { where: { deletedAt: null, isPrivate: false } },
+        },
+      },
+    },
+}));
+
 export async function generateMetadata({ params }: UserProfilePageProps): Promise<Metadata> {
+  const tErrors = await getTranslations("errors");
+  const tUser = await getTranslations("user");
   const { username: rawUsername } = await params;
   const decodedUsername = decodeURIComponent(rawUsername);
   
   // Only support /@username format
   if (!decodedUsername.startsWith("@")) {
-    return { title: "User Not Found" };
+    return { title: tErrors("notFound") };
   }
   
   const username = decodedUsername.slice(1);
     
-  const user = await db.user.findFirst({
-    where: { username: { equals: username, mode: "insensitive" } },
-    orderBy: { createdAt: "asc" },
-    select: { nickname: true, username: true },
-  });
+  const user = await getProfileUser(username);
 
   if (!user) {
-    return { title: "User Not Found" };
+    return { title: tErrors("notFound") };
   }
 
   return {
     title: `${getPublicDisplayName(user)} (@${user.username})`,
-    description: `View ${getPublicDisplayName(user)}'s prompts`,
+    description: `${tUser("profile")} · ${getPublicDisplayName(user)}`,
   };
 }
 
@@ -58,6 +90,8 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const { page: pageParam, tab, date: dateFilter } = await searchParams;
   const session = await auth();
   const t = await getTranslations("user");
+  const tProfile = await getTranslations("product.profile");
+  const tGrowth = await getTranslations("product.growth");
   const tChanges = await getTranslations("changeRequests");
   const tPrompts = await getTranslations("prompts");
   const locale = await getLocale();
@@ -72,25 +106,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   
   const username = decodedUsername.slice(1);
 
-  const user = await db.user.findFirst({
-    where: { username: { equals: username, mode: "insensitive" } },
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      nickname: true,
-      username: true,
-      avatar: true,
-      role: true,
-      verified: true,
-      createdAt: true,
-      _count: {
-        select: {
-          prompts: true,
-          contributions: true,
-        },
-      },
-    },
-  });
+  const user = await getProfileUser(username);
 
   if (!user) {
     notFound();
@@ -99,6 +115,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const page = Math.max(1, parseInt(pageParam || "1") || 1);
   const perPage = 24;
   const isOwner = session?.user?.id === user.id;
+  const defaultTab = tab === "changes" ? "changes" : tab === "contributions" ? "contributions" : tab === "likes" ? "likes" : tab === "examples" ? "examples" : "prompts";
 
   // Parse date filter for filtering prompts by day (validate YYYY-MM-DD format)
   const isValidDateFilter = dateFilter && /^\d{4}-\d{2}-\d{2}$/.test(dateFilter);
@@ -163,15 +180,15 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   oneYearAgo.setHours(0, 0, 0, 0);
 
   // Fetch prompts, pinned prompts, contributions, liked prompts, user examples, counts, and activity data
-  const [promptsRaw, total, totalUpvotes, pinnedPromptsRaw, contributionsRaw, likedPromptsRaw, userExamplesRaw, privatePromptsCount, activityPrompts, activityVotes, activityChangeRequests, activityComments] = await Promise.all([
-    db.prompt.findMany({
+  const [promptsRaw, total, totalUpvotes, pinnedPromptsRaw, contributionsRaw, likedPromptsRaw, userExamplesRaw, privatePromptsCount, activityRows, growthProfile, publicArtifacts, publicListings] = await Promise.all([
+    defaultTab === "prompts" ? db.prompt.findMany({
       where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * perPage,
       take: perPage,
       include: promptInclude,
-    }),
-    db.prompt.count({ where }),
+    }) : Promise.resolve([]),
+    defaultTab === "prompts" ? db.prompt.count({ where }) : Promise.resolve(0),
     db.promptVote.count({
       where: {
         prompt: {
@@ -179,7 +196,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
         },
       },
     }),
-    db.pinnedPrompt.findMany({
+    defaultTab === "prompts" ? db.pinnedPrompt.findMany({
       where: { userId: user.id },
       orderBy: { order: "asc" },
       include: {
@@ -187,10 +204,10 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           include: promptInclude,
         },
       },
-    }),
+    }) : Promise.resolve([]),
     // Fetch contributions (prompts where user is contributor but not author)
     // Limited to 50 to prevent memory issues
-    db.prompt.findMany({
+    defaultTab === "contributions" ? db.prompt.findMany({
       where: {
         contributors: {
           some: { id: user.id },
@@ -202,9 +219,9 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
       orderBy: { updatedAt: "desc" },
       take: 50,
       include: promptInclude,
-    }),
+    }) : Promise.resolve([]),
     // Fetch liked prompts (prompts user has voted for)
-    db.prompt.findMany({
+    defaultTab === "likes" ? db.prompt.findMany({
       where: {
         votes: {
           some: { userId: user.id },
@@ -215,10 +232,10 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
       orderBy: { createdAt: "desc" },
       take: 50,
       include: promptInclude,
-    }),
+    }) : Promise.resolve([]),
     // Fetch user's example media submissions (only their own examples, not original prompt media)
     // Get the prompts that user has added examples to, including their specific example
-    db.prompt.findMany({
+    defaultTab === "examples" ? db.prompt.findMany({
       where: {
         userExamples: {
           some: { userId: user.id },
@@ -237,47 +254,28 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           select: { mediaUrl: true },
         },
       },
-    }),
+    }) : Promise.resolve([]),
     // Count private prompts (only relevant for owner)
-    isOwner ? db.prompt.count({
+    isOwner && defaultTab === "prompts" ? db.prompt.count({
       where: {
         authorId: user.id,
         isPrivate: true,
         deletedAt: null,
       },
     }) : Promise.resolve(0),
-    // Activity: prompts created in last year
-    db.prompt.findMany({
-      where: {
-        authorId: user.id,
-        createdAt: { gte: oneYearAgo },
-      },
-      select: { createdAt: true },
-    }),
-    // Activity: votes given in last year
-    db.promptVote.findMany({
-      where: {
-        userId: user.id,
-        createdAt: { gte: oneYearAgo },
-      },
-      select: { createdAt: true },
-    }),
-    // Activity: change requests in last year
-    db.changeRequest.findMany({
-      where: {
-        authorId: user.id,
-        createdAt: { gte: oneYearAgo },
-      },
-      select: { createdAt: true },
-    }),
-    // Activity: comments in last year
-    db.comment.findMany({
-      where: {
-        authorId: user.id,
-        createdAt: { gte: oneYearAgo },
-      },
-      select: { createdAt: true },
-    }),
+    // Aggregate the real activity timeline in one database round trip.
+    db.$queryRaw<Array<{ date: string; count: number }>>`
+      SELECT to_char(date_trunc('day', a."createdAt"), 'YYYY-MM-DD') AS date, count(*)::int AS count
+      FROM (
+        SELECT "createdAt" FROM prompts WHERE "authorId" = ${user.id} AND "createdAt" >= ${oneYearAgo}
+        UNION ALL SELECT "createdAt" FROM prompt_votes WHERE "userId" = ${user.id} AND "createdAt" >= ${oneYearAgo}
+        UNION ALL SELECT "createdAt" FROM change_requests WHERE "authorId" = ${user.id} AND "createdAt" >= ${oneYearAgo}
+        UNION ALL SELECT "createdAt" FROM comments WHERE "authorId" = ${user.id} AND "createdAt" >= ${oneYearAgo}
+      ) a GROUP BY date_trunc('day', a."createdAt") ORDER BY date
+    `,
+    isOwner ? getGrowthProfile(user.id) : Promise.resolve(null),
+    listPublishedArtifacts(12, user.id),
+    listPublishedMarketListingsBySeller(user.id),
   ]);
 
   // Transform to include voteCount and contributorCount
@@ -315,24 +313,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     contributorCount: p._count?.contributors ?? 0,
   }));
 
-  // Process activity data into daily counts
-  const activityMap = new Map<string, number>();
-  const allActivities = [
-    ...activityPrompts,
-    ...activityVotes,
-    ...activityChangeRequests,
-    ...activityComments,
-  ];
-  
-  allActivities.forEach((item) => {
-    const dateStr = item.createdAt.toISOString().split("T")[0];
-    activityMap.set(dateStr, (activityMap.get(dateStr) || 0) + 1);
-  });
-
-  const activityData = Array.from(activityMap.entries()).map(([date, count]) => ({
-    date,
-    count,
-  }));
+  const activityData = activityRows;
 
   // Transform pinned prompts - filter out private prompts for non-owners (unlisted are visible)
   const pinnedPrompts = pinnedPromptsRaw
@@ -348,6 +329,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   const pinnedIds = new Set<string>(pinnedPrompts.map((p: { id: string }) => p.id));
 
   const totalPages = Math.ceil(total / perPage);
+  const checkedInToday = user.lastCheckInAt ? getCommunityDay(user.lastCheckInAt) === getCommunityDay(new Date()) : false;
 
   // Fetch change requests for this user
   // 1. Change requests the user submitted (all statuses for owner, approved only for others)
@@ -355,7 +337,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
   // Limited to 100 each to prevent memory issues
   const [submittedChangeRequests, receivedChangeRequests] = await Promise.all([
     // CRs user submitted
-    db.changeRequest.findMany({
+    defaultTab === "changes" ? db.changeRequest.findMany({
       where: {
         authorId: user.id,
         // Non-owners only see approved CRs
@@ -382,9 +364,9 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           },
         },
       },
-    }),
+    }) : Promise.resolve([]),
     // CRs received on user's prompts (all statuses for owner, approved only for others)
-    db.changeRequest.findMany({
+    defaultTab === "changes" ? db.changeRequest.findMany({
       where: {
         prompt: {
           authorId: user.id,
@@ -413,7 +395,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
           },
         },
       },
-    }),
+    }) : Promise.resolve([]),
   ]);
 
   // Combine and sort by date, marking the type
@@ -424,7 +406,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
 
   const pendingCount = submittedChangeRequests.filter((cr) => cr.status === "PENDING").length +
     receivedChangeRequests.filter((cr) => cr.status === "PENDING").length;
-  const defaultTab = tab === "changes" ? "changes" : tab === "contributions" ? "contributions" : tab === "likes" ? "likes" : tab === "examples" ? "examples" : "prompts";
+
 
   const statusColors = {
     PENDING: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20",
@@ -432,7 +414,7 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     REJECTED: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
   };
 
-  const publicArtifacts = await listPublishedArtifacts(12, user.id);
+
 
   const statusIcons = {
     PENDING: Clock,
@@ -446,12 +428,12 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
       <div className="flex flex-col gap-4 mb-8">
         {/* Avatar + Name row */}
         <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16 md:h-20 md:w-20 shrink-0">
-            <AvatarImage src={user.avatar || undefined} />
-            <AvatarFallback className="text-xl md:text-2xl">
-              {getPublicDisplayName(user).charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarFrame frameKey={user.avatarFrameKey} className="h-[68px] w-[68px] md:h-[84px] md:w-[84px] shrink-0">
+            <Avatar className="h-full w-full">
+              <AvatarImage src={user.avatar || undefined} alt={getPublicDisplayName(user)} />
+              <AvatarFallback className="text-xl md:text-2xl">{getPublicDisplayName(user).charAt(0)}</AvatarFallback>
+            </Avatar>
+          </AvatarFrame>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl md:text-2xl font-bold truncate">{getPublicDisplayName(user)}</h1>
@@ -462,9 +444,8 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
                 <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
               )}
             </div>
-            <p className="text-muted-foreground text-sm flex items-center gap-2 flex-wrap">
-              @{user.username}
-            </p>
+            <p className="text-muted-foreground text-sm flex items-center gap-2 flex-wrap">@{user.username}<span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">{tGrowth(`levels.${getLevelProgress(user.xp).level.key}.name`)}</span></p>
+            {user.bio && <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{user.bio}</p>}
           </div>
           {/* Actions - desktop only */}
           <div className="hidden md:flex items-center gap-2 shrink-0">
@@ -518,7 +499,11 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
 
         </div>
 
-      {publicArtifacts.length > 0 ? <section className="mb-7 space-y-4" aria-labelledby="public-works-heading"><div className="flex items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">ANS SHOWCASE</p><h2 id="public-works-heading" className="mt-1 text-xl font-bold">公开作品</h2></div><Link href="/showcase" className="text-sm text-primary hover:underline">浏览作品广场 →</Link></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{publicArtifacts.map((artifact) => <Link key={artifact.id} href={`/showcase/${artifact.id}`} className="group rounded-2xl border bg-card p-4 transition hover:border-primary/40 hover:shadow-md"><div className="flex items-center justify-between gap-2"><Badge variant="secondary">参赛作品 · v{artifact.version}</Badge><span className="text-xs text-muted-foreground">? {artifact.counts.reactions}</span></div><h3 className="mt-4 line-clamp-2 font-semibold group-hover:text-primary">{artifact.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-5 text-muted-foreground">{artifact.markdown}</p><p className="mt-4 border-t pt-3 text-xs text-muted-foreground">{artifact.project.title}</p></Link>)}</div></section> : null}
+      <ProfileGrowthPanel user={{ xp: user.xp, communityPoints: user.communityPoints, checkInStreak: user.checkInStreak, avatarFrameKey: user.avatarFrameKey, chatBubbleKey: user.chatBubbleKey, checkedInToday, recentEvents: growthProfile?.recentEvents ?? [], checkIns: growthProfile?.checkIns ?? [] }} avatarFallback={getPublicDisplayName(user).charAt(0) || "A"} editable={isOwner} />
+
+      {publicListings.length > 0 ? <section className="mb-7 space-y-4" aria-labelledby="profile-services-heading"><div className="flex items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">ANS MARKET</p><h2 id="profile-services-heading" className="mt-1 text-xl font-bold">{tProfile("services")}</h2></div><Link href="/market" className="text-sm text-primary hover:underline">{tProfile("browseMarket")}</Link></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{publicListings.map((offer) => <MarketOfferCard key={offer.id} offer={offer} headingLevel={3} />)}</div></section> : null}
+
+      {publicArtifacts.length > 0 ? <section className="mb-7 space-y-4" aria-labelledby="public-works-heading"><div className="flex items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">ANS SHOWCASE</p><h2 id="public-works-heading" className="mt-1 text-xl font-bold">{tProfile("works")}</h2></div><Link href="/showcase" className="text-sm text-primary hover:underline">{tProfile("browseWorks")}</Link></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{publicArtifacts.map((artifact) => <Link key={artifact.id} href={`/showcase/${artifact.id}`} className="group rounded-2xl border bg-card p-4 transition hover:border-primary/40 hover:shadow-md"><div className="flex items-center justify-between gap-2"><Badge variant="secondary">{tProfile("workVersion", { version: artifact.version })}</Badge><span className="text-xs text-muted-foreground">{tProfile("reactions", { count: artifact.counts.reactions })}</span></div><h3 className="mt-4 line-clamp-2 font-semibold group-hover:text-primary">{artifact.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-5 text-muted-foreground">{artifact.markdown}</p><p className="mt-4 border-t pt-3 text-xs text-muted-foreground">{artifact.project.title}</p></Link>)}</div></section> : null}
 
       {/* Activity Chart - above tabs */}
       <div className="mb-6">
@@ -526,51 +511,25 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
       </div>
 
       {/* Tabs for Prompts and Change Requests */}
-      <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="mb-4">
-          <TabsTrigger value="prompts" className="gap-2">
-            <FileText className="h-4 w-4" />
-            {t("prompts")}
-          </TabsTrigger>
-          <TabsTrigger value="contributions" className="gap-2">
-            <Users className="h-4 w-4" />
-            {t("contributions")}
-            {contributions.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1 text-xs">
-                {contributions.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="likes" className="gap-2">
-            <Heart className="h-4 w-4" />
-            {t("likes")}
-            {likedPrompts.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1 text-xs">
-                {likedPrompts.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="examples" className="gap-2">
-            <ImageIcon className="h-4 w-4" />
-            {t("examples")}
-            {userExamples.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1 text-xs">
-                {userExamples.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="changes" className="gap-2">
-            <GitPullRequest className="h-4 w-4" />
-            {tChanges("title")}
-            {isOwner && pendingCount > 0 && (
-              <Badge variant="destructive" className="ml-1 h-5 min-w-5 px-1 text-xs">
-                {pendingCount}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+      <div className="w-full">
+        <nav aria-label={t("profile")} className="mb-4 flex w-full gap-1 overflow-x-auto rounded-2xl border bg-muted/40 p-1.5">
+          {[
+            { key: "prompts", label: t("prompts"), icon: FileText },
+            { key: "contributions", label: t("contributions"), icon: Users },
+            { key: "likes", label: t("likes"), icon: Heart },
+            { key: "examples", label: t("examples"), icon: ImageIcon },
+            { key: "changes", label: tChanges("title"), icon: GitPullRequest },
+          ].map(({ key, label, icon: Icon }) => (
+            <Link key={key} href={`/@${user.username}?tab=${key}`} prefetch={false} scroll={false}
+              aria-current={defaultTab === key ? "page" : undefined}
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition ${defaultTab === key ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:bg-card/70 hover:text-foreground"}`}>
+              <Icon className="h-4 w-4" />{label}
+              {key === "changes" && isOwner && pendingCount > 0 ? <Badge variant="destructive" className="h-5 min-w-5 px-1 text-xs">{pendingCount}</Badge> : null}
+            </Link>
+          ))}
+        </nav>
 
-        <TabsContent value="prompts">
+        {defaultTab === "prompts" && <div>
           {/* Date Filter Indicator */}
           {validFilterDateStart && (
             <div className="flex items-center gap-2 mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg">
@@ -643,9 +602,9 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
               />
             </>
           ) : null}
-        </TabsContent>
+        </div>}
 
-        <TabsContent value="contributions">
+        {defaultTab === "contributions" && <div>
           {contributions.length === 0 ? (
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               <Users className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
@@ -658,9 +617,9 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
               ))}
             </div>
           )}
-        </TabsContent>
+        </div>}
 
-        <TabsContent value="likes">
+        {defaultTab === "likes" && <div>
           {likedPrompts.length === 0 ? (
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               <Heart className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
@@ -673,9 +632,9 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
               ))}
             </Masonry>
           )}
-        </TabsContent>
+        </div>}
 
-        <TabsContent value="examples">
+        {defaultTab === "examples" && <div>
           {userExamples.length === 0 ? (
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               <ImageIcon className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
@@ -688,9 +647,9 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
               ))}
             </div>
           )}
-        </TabsContent>
+        </div>}
 
-        <TabsContent value="changes">
+        {defaultTab === "changes" && <div>
           {allChangeRequests.length === 0 ? (
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               <GitPullRequest className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
@@ -726,8 +685,10 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
               })}
             </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>}
+      </div>
     </div>
   );
 }
+
+

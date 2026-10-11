@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { platformEmbedOrigins } from "./lib/platform-embed";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,11 +16,17 @@ export function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+  if (pathname === "/embed/platform-header") {
+    response.headers.set("Content-Security-Policy", `frame-ancestors 'self' ${platformEmbedOrigins().join(" ")}; object-src 'none'; base-uri 'self'`);
+    response.headers.set("Cache-Control", "no-store, private");
+    response.headers.set("Referrer-Policy", "no-referrer");
+  }
+  return response;
 }
 
 export const config = {

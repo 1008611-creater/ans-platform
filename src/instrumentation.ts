@@ -1,4 +1,10 @@
-// 本地私有提示词库不启用 Sentry；避免缺少可选监控依赖时阻塞应用启动。
-export async function register() {}
+// Long-running self-hosted Node instances consume the durable project queue.
+// Build/type-generation and edge workers must not start background database work.
+export async function register() {
+  if (process.env.NEXT_RUNTIME === "nodejs" && process.env.NEXT_PHASE !== "phase-production-build" && process.env.NODE_ENV !== "test" && process.env.ANS_PROJECT_WORKER_DISABLED !== "true") {
+    const { startProjectWorker } = await import("@/server/projects/worker");
+    startProjectWorker();
+  }
+}
 
 export function onRequestError() {}

@@ -1,0 +1,20 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { GET, POST } from "@/app/api/competitions/agrihackathon/onsite/route";
+import { GET as detail } from "@/app/api/competitions/agrihackathon/onsite/[itemId]/route";
+import { auth } from "@/lib/auth";
+import { executeAgriOnsiteCommand, listAgriOnsiteItems, readAgriOnsiteItem } from "@/server/competitions/agrihackathon/onsite";
+import { AgriWorkspaceError } from "@/contracts/agri-workspace";
+vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
+vi.mock("@/server/competitions/agrihackathon/onsite", () => ({ executeAgriOnsiteCommand: vi.fn(), listAgriOnsiteItems: vi.fn(), readAgriOnsiteItem: vi.fn() }));
+const origin = process.env.AUTH_URL || "https://ans.example.invalid", actor = "onsite-staff", api = origin + "/api/competitions/agrihackathon/onsite";
+const command = { action: "publishOnsite", itemId: "exact-item", idempotencyKey: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", expectedRevision: 1, reviewedForOnsite: true };
+const request = (query = "") => new Request(api + query, { headers: { "x-ans-submission-actor": actor } });
+const post = (body: unknown = command, from = origin) => new Request(api, { method: "POST", headers: { origin: from, "content-type": "application/json", "x-ans-submission-actor": actor }, body: JSON.stringify(body) });
+afterEach(() => vi.unstubAllEnvs());
+beforeEach(() => { vi.stubEnv("AUTH_URL", origin); vi.stubEnv("NEXTAUTH_URL", origin); vi.stubEnv("NEXT_PUBLIC_APP_URL", origin); vi.clearAllMocks(); vi.mocked(auth).mockResolvedValue({ user: { id: actor } } as never); vi.mocked(listAgriOnsiteItems).mockResolvedValue({ items: [] } as never); vi.mocked(readAgriOnsiteItem).mockResolvedValue({ item: { id: "exact-item" } } as never); vi.mocked(executeAgriOnsiteCommand).mockResolvedValue({ itemId: "exact-item", eventId: "event", appliedRevision: 2, duplicate: false }); });
+describe("onsite authenticated routes", () => {
+  it("requires real session and stable account intent", async () => { vi.mocked(auth).mockResolvedValueOnce(null as never); expect((await GET(request())).status).toBe(401); expect((await GET(new Request(api))).status).toBe(409); expect(listAgriOnsiteItems).not.toHaveBeenCalled(); });
+  it("strictly selects onsite/staff and binds exact detail route with no-store", async () => { const response = await GET(request()); expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("no-store"); expect(listAgriOnsiteItems).toHaveBeenCalledWith(actor, { scope: "onsite" }); expect((await detail(request("/exact-item?scope=staff"), { params: Promise.resolve({ itemId: "exact-item" }) })).status).toBe(200); expect(readAgriOnsiteItem).toHaveBeenCalledWith(actor, "exact-item", { scope: "staff" }); expect((await GET(request("?submissionId=private"))).status).toBe(400); });
+  it("rejects cross-origin writes, forged actor/time and implicit publication", async () => { expect((await POST(post(command, "https://other.invalid"))).status).toBe(403); for (const extra of [{ actorId: "other" }, { createdAt: "forged" }, { reviewedForOnsite: false }]) expect((await POST(post({ ...command, ...extra }))).status).toBe(400); expect(executeAgriOnsiteCommand).not.toHaveBeenCalled(); expect((await POST(post())).status).toBe(200); expect(executeAgriOnsiteCommand).toHaveBeenCalledWith(actor, command); });
+  it("maps denied/revision errors without serializing diagnostics", async () => { vi.mocked(listAgriOnsiteItems).mockRejectedValueOnce(new AgriWorkspaceError("AGRI_SCOPE_REQUIRED", 403)); expect((await GET(request())).status).toBe(403); vi.mocked(executeAgriOnsiteCommand).mockRejectedValueOnce(new AgriWorkspaceError("AGRI_ONSITE_REVISION_CONFLICT")); expect((await POST(post())).status).toBe(409); vi.mocked(listAgriOnsiteItems).mockRejectedValueOnce(new Error("PRIVATE_DATABASE_NOTE")); const response = await GET(request()); expect(response.status).toBe(500); expect(JSON.stringify(await response.json())).not.toContain("PRIVATE_DATABASE_NOTE"); });
+});

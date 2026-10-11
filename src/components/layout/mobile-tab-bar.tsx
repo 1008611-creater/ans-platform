@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { BookOpen, Pencil, FileCheck, User } from "lucide-react";
+import { Compass, GitBranch, LayoutDashboard, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -17,22 +17,22 @@ interface TabItem {
 
 const TABS: TabItem[] = [
   {
-    href: "/#first-lesson",
-    label: "learning.navLearn",
-    icon: BookOpen,
-    match: (pathname) => pathname === "/",
+    href: "/explore",
+    label: "product.nav.explore",
+    icon: Compass,
+    match: (pathname) => pathname === "/" || pathname.startsWith("/explore"),
   },
   {
-    href: "/projects#new-project",
-    label: "learning.navPractice",
-    icon: Pencil,
-    match: () => false,
+    href: "/workflows",
+    label: "product.nav.workflows",
+    icon: GitBranch,
+    match: (pathname) => pathname.startsWith("/workflows"),
   },
   {
-    href: "/projects",
-    label: "learning.navProjects",
-    icon: FileCheck,
-    match: (pathname) => pathname === "/projects" || pathname.startsWith("/projects/"),
+    href: "/workspace",
+    label: "product.nav.workspace",
+    icon: LayoutDashboard,
+    match: (pathname) => pathname === "/workspace" || pathname.startsWith("/projects"),
   },
 ];
 
@@ -66,10 +66,10 @@ export function MobileTabBar() {
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 py-2 transition-colors",
-                active ? "text-primary" : "text-muted-foreground"
+                active ? "bg-accent text-foreground" : "text-muted-foreground"
               )}
             >
-              <Icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
+              <Icon className={cn("h-5 w-5", active && "stroke-[2.5]")} aria-hidden="true" />
               <span className="text-[11px] font-medium leading-tight">{t(tab.label)}</span>
             </Link>
           );
@@ -80,7 +80,7 @@ export function MobileTabBar() {
           aria-current={accountActive ? "page" : undefined}
           className={cn(
             "flex flex-col items-center justify-center gap-1 py-2 transition-colors",
-            accountActive ? "text-primary" : "text-muted-foreground"
+            accountActive ? "bg-accent text-foreground" : "text-muted-foreground"
           )}
         >
           {user?.image ? (
@@ -91,7 +91,7 @@ export function MobileTabBar() {
               </AvatarFallback>
             </Avatar>
           ) : (
-            <User className={cn("h-5 w-5", accountActive && "stroke-[2.5]")} />
+            <User className={cn("h-5 w-5", accountActive && "stroke-[2.5]")} aria-hidden="true" />
           )}
           <span className="text-[11px] font-medium leading-tight">{t(user ? "learning.account" : "learning.signIn")}</span>
         </Link>

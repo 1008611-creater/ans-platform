@@ -1,4 +1,5 @@
-import type { Prisma } from "@prisma/client";
+import type { DbTransaction } from "@/lib/db";
+import { hasAdminPermission } from "@/lib/admin-permission-values";
 import { db } from "@/lib/db";
 
 /**
@@ -21,8 +22,17 @@ export class QuotaError extends Error {
 
 export type QuotaRef = { type: string; id: string };
 
+/** Amounts are stored to six decimal places; reject values outside JS safe units. */
+export function normalizeQuotaAmount(amount: number): number {
+  if (!Number.isFinite(amount) || !Number.isSafeInteger(Math.round(amount * 1e6))) {
+    throw new QuotaError("INVALID_CREDIT_AMOUNT", "ACCOUNT_UNAVAILABLE", 400);
+  }
+  return Math.round(amount * 1e6) / 1e6;
+}
+
+
 export async function assertAccountCanSpend(
-  tx: Prisma.TransactionClient,
+  tx: DbTransaction,
   userId: string,
   costPoints: number,
 ) {
@@ -32,7 +42,7 @@ export async function assertAccountCanSpend(
   });
   if (!user || user.deletedAt) throw new QuotaError("账号不可用", "ACCOUNT_UNAVAILABLE", 401);
   if (user.flagged) throw new QuotaError("账号受限，暂时无法运行", "ACCOUNT_UNAVAILABLE", 403);
-  if (user.quotaPoints < costPoints) {
+  if (Number(user.quotaPoints) < costPoints) {
     throw new QuotaError(`算力不足，本次运行需要 ${costPoints} 点`);
   }
   return user;
@@ -40,9 +50,11 @@ export async function assertAccountCanSpend(
 
 /** 在事务内扣减额度并写流水，返回扣减后的余额。 */
 export async function debitQuota(
-  tx: Prisma.TransactionClient,
+  tx: DbTransaction,
   args: { userId: string; costPoints: number; ref: QuotaRef; note: string },
 ): Promise<number> {
+  if (!Number.isFinite(args.costPoints) || args.costPoints < 0) throw new QuotaError("INVALID_CREDIT_AMOUNT");
+  args = { ...args, costPoints: normalizeQuotaAmount(args.costPoints) };
   await assertAccountCanSpend(tx, args.userId, args.costPoints);
   const debited = await tx.user.updateMany({
     where: { id: args.userId, quotaPoints: { gte: args.costPoints }, flagged: false, deletedAt: null },
@@ -64,7 +76,7 @@ export async function debitQuota(
       note: args.note,
     },
   });
-  return balance.quotaPoints;
+  return Number(balance.quotaPoints);
 }
 
 /**
@@ -74,9 +86,11 @@ export async function debitQuota(
  * 并且 `count === 1`），这样重复调用不会二次退费。
  */
 export async function refundQuota(
-  tx: Prisma.TransactionClient,
+  tx: DbTransaction,
   args: { userId: string; costPoints: number; ref: QuotaRef; note: string },
 ) {
+  if (!Number.isFinite(args.costPoints) || args.costPoints < 0) throw new QuotaError("INVALID_CREDIT_AMOUNT");
+  args = { ...args, costPoints: normalizeQuotaAmount(args.costPoints) };
   if (args.costPoints <= 0) return;
   const user = await tx.user.update({
     where: { id: args.userId },
@@ -98,10 +112,26 @@ export async function refundQuota(
 
 /** 管理端调整余额，用于补偿与人工处理。 */
 export async function adjustQuota(actorId: string, userId: string, amount: number, note: string) {
+  amount = normalizeQuotaAmount(amount);
+  if (amount === 0 || typeof note !== "string" || !note.trim() || note.length > 1000) {
+    throw new QuotaError("INVALID_CREDIT_ADJUSTMENT", "ACCOUNT_UNAVAILABLE", 400);
+  }
   return db.$transaction(async (tx) => {
-    const user = await tx.user.update({
-      where: { id: userId },
+    const actor = await tx.user.findUnique({
+      where: { id: actorId },
+      select: { role: true, flagged: true, deletedAt: true, adminPermissions: true },
+    });
+    if (!actor || actor.role !== "ADMIN" || actor.flagged || actor.deletedAt
+      || !hasAdminPermission(actor.adminPermissions, "USERS_MANAGE")) {
+      throw new QuotaError("ADMIN_PERMISSION_REQUIRED", "ACCOUNT_UNAVAILABLE", 403);
+    }
+    const changed = await tx.user.updateMany({
+      where: { id: userId, deletedAt: null, ...(amount < 0 ? { quotaPoints: { gte: -amount } } : {}) },
       data: { quotaPoints: { increment: amount } },
+    });
+    if (changed.count !== 1) throw new QuotaError("INSUFFICIENT_QUOTA_OR_ACCOUNT_UNAVAILABLE");
+    const user = await tx.user.findUniqueOrThrow({
+      where: { id: userId },
       select: { quotaPoints: true },
     });
     await tx.quotaLedger.create({
@@ -112,7 +142,7 @@ export async function adjustQuota(actorId: string, userId: string, amount: numbe
         reason: "ADMIN_ADJUST",
         refType: "admin",
         refId: actorId,
-        note,
+        note: note.trim(),
       },
     });
     return user.quotaPoints;

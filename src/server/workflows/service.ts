@@ -1,3 +1,6 @@
+import { safeAwardGrowthEvent } from "@/server/growth/service";
+import { unifiedModelBilling } from "@/server/integrations/metered-cost";
+import type { DbTransaction } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import {
@@ -266,6 +269,7 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
   return db.workflow.findMany({
     where: {
       status: "PUBLISHED",
+      publishedVersion: { not: null },
       isOfficial: false,
       ...(query
         ? {
@@ -278,13 +282,23 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
     },
     orderBy: [{ useCount: "desc" }, { updatedAt: "desc" }],
     take: Math.min(Math.max(options.take ?? 24, 1), 60),
-    include: {
+    // Public cards never hydrate workflow definitions or review data.
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      status: true,
+      publishedVersion: true,
+      useCount: true,
+      estimatedCost: true,
+      isOfficial: true,
+      createdAt: true,
+      updatedAt: true,
       author: { select: authorSelect },
-      versions: { orderBy: { version: "desc" }, take: 1, select: { version: true } },
     },
   });
 }
-
 export function listOwnWorkflows(authorId: string) {
   return db.workflow.findMany({
     where: { authorId, isOfficial: false },
@@ -310,17 +324,46 @@ export function listWorkflowQueue() {
 export async function getPublishedWorkflow(slug: string) {
   const workflow = await db.workflow.findFirst({
     where: { slug, status: "PUBLISHED", publishedVersion: { not: null }, isOfficial: false },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      description: true,
+      status: true,
+      publishedVersion: true,
+      useCount: true,
+      estimatedCost: true,
+      isOfficial: true,
+      createdAt: true,
+      updatedAt: true,
       author: { select: authorSelect },
-      versions: { orderBy: { version: "desc" } },
+      // Read versions server-side, then project only the pinned one below.
+      versions: { select: { version: true, definition: true } },
     },
   });
-  if (!workflow) return null;
+  if (!workflow || workflow.publishedVersion === null) return null;
   const published = workflow.versions.find((version) => version.version === workflow.publishedVersion);
-  return { ...workflow, publishedDefinition: published?.definition ?? null };
-}
+  if (!published) return null;
 
-/** 作者视角详情：包含草稿与全部版本。 */
+  return {
+    id: workflow.id,
+    slug: workflow.slug,
+    title: workflow.title,
+    summary: workflow.summary,
+    description: workflow.description,
+    status: workflow.status,
+    publishedVersion: workflow.publishedVersion,
+    useCount: workflow.useCount,
+    estimatedCost: workflow.estimatedCost,
+    isOfficial: workflow.isOfficial,
+    createdAt: workflow.createdAt,
+    updatedAt: workflow.updatedAt,
+    author: workflow.author,
+    versions: [{ version: published.version }],
+    publishedDefinition: published.definition,
+  };
+}
 export async function getWorkflowForEditor(slug: string, actorId: string) {
   const workflow = await db.workflow.findUnique({
     where: { slug },
@@ -395,6 +438,9 @@ export async function publishWorkflow(slug: string, actorId: string, version?: n
         after: { status: updated.status, publishedVersion: targetVersion.version },
       },
     });
+    return updated;
+  }).then(async (updated) => {
+    if (updated.status === "PUBLISHED") await safeAwardGrowthEvent({ userId: updated.authorId, type: "PUBLISH_TEMPLATE", reason: "PUBLISH_TEMPLATE", sourceType: "workflow", sourceId: updated.id });
     return updated;
   });
 }
@@ -619,6 +665,9 @@ export async function reviewWorkflow(
       },
     });
     return updated;
+  }).then(async (updated) => {
+    if (updated.status === "PUBLISHED") await safeAwardGrowthEvent({ userId: updated.authorId, type: "PUBLISH_TEMPLATE", reason: "PUBLISH_TEMPLATE", sourceType: "workflow", sourceId: updated.id });
+    return updated;
   });
 }
 
@@ -630,7 +679,7 @@ export async function createWorkflowRun(
   slug: string,
   userId: string,
   rawInput: unknown,
-  options: { projectId?: string } = {},
+  options: { projectId?: string; beforeCreate?: (tx: DbTransaction) => Promise<void> } = {},
 ) {
   const parsed = workflowRunInputSchema.safeParse(rawInput ?? {});
   if (!parsed.success) {
@@ -676,10 +725,11 @@ export async function createWorkflowRun(
   const version = workflow.versions.find((item) => item.version === workflow.publishedVersion);
   if (!version) throw new WorkflowServiceError("发布版本缺失，请联系管理员。", "NO_VERSION", 409);
   const definition = assertDefinition(version.definition);
-  const costPoints = Math.max(1, workflow.estimatedCost || 1);
+  const costPoints = unifiedModelBilling() ? 0 : process.env.ANS_APIC_BILLING_ENABLED === "1" ? Math.max(0.25, definition.nodes.filter(node => node.type === "model").length * 0.25) : Math.max(1, workflow.estimatedCost || 1);
 
   try {
     return await db.$transaction(async (tx) => {
+      await options.beforeCreate?.(tx);
       const run = await tx.workflowRun.create({
         data: {
           workflowId: workflow.id,

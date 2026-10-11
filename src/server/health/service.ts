@@ -18,12 +18,13 @@ export async function probeDatabase(): Promise<HealthProbe> {
   try {
     await db.$queryRaw`SELECT 1`;
     return { status: "healthy", timestamp, database: "connected" };
-  } catch (error) {
+  } catch {
     return {
       status: "unhealthy",
       timestamp,
       database: "disconnected",
-      error: error instanceof Error ? error.message : "Unknown error",
+      // Public health probes must never return raw ORM/connection diagnostics.
+      error: "DATABASE_UNAVAILABLE",
     };
   }
 }

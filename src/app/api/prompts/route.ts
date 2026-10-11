@@ -9,6 +9,7 @@ import { generatePromptEmbedding, findAndSaveRelatedPrompts } from "@/lib/ai/emb
 import { generatePromptSlug } from "@/lib/slug";
 import { checkPromptQuality } from "@/lib/ai/quality-check";
 import { isSimilarContent, normalizeContent } from "@/lib/similarity";
+import { safeAwardGrowthEvent } from "@/server/growth/service";
 
 const promptSchema = z.object({
   title: z.string().min(1).max(200),
@@ -242,6 +243,7 @@ export async function POST(request: Request) {
         createdBy: session.user.id,
       },
     });
+    if (!isPrivate) await safeAwardGrowthEvent({ userId: session.user.id, type: "PUBLISH_PROMPT", reason: "PUBLISH_PROMPT", sourceType: "prompt", sourceId: prompt.id });
 
     // Trigger webhooks for new prompt (non-blocking)
     if (!isPrivate) {
@@ -463,7 +465,7 @@ export async function GET(request: Request) {
     ]);
 
     // Transform to include voteCount and contributorCount, exclude internal fields
-    const prompts = promptsRaw.map(({ embedding: _e, isPrivate: _p, isUnlisted: _u, unlistedAt: _ua, deletedAt: _d, ...p }) => ({
+    const prompts = promptsRaw.map(({ embedding: _e, isPrivate: _p, isUnlisted: _u, unlistedAt: _ua, deletedAt: _d, authorId: _authorId, categoryId: _categoryId, delistReason: _delistReason, ...p }) => ({
       ...p,
       voteCount: p._count.votes,
       // 双语字段随 API 返回，客户端列表按当前 locale 选择显示文本。

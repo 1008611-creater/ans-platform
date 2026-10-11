@@ -19,6 +19,8 @@ interface Comment {
     name: string | null;
     username: string;
     avatar: string | null;
+    avatarFrameKey?: string;
+    chatBubbleKey?: string;
     role: string;
   };
   score: number;

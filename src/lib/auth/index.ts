@@ -8,7 +8,7 @@ import type { Adapter } from "next-auth/adapters";
 // Initialize plugins before use
 initializePlugins();
 
-// 注册仅允许走 /register 的验证码、Turnstile 与邀请码流程。
+// 注册仅允许走 /register 的邮箱验证码与 Turnstile 流程。
 function CustomPrismaAdapter(): Adapter {
   const prismaAdapter = PrismaAdapter(db);
 

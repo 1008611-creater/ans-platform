@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
     const result = await db.$executeRaw`
       UPDATE users 
       SET "generationCreditsRemaining" = "dailyGenerationLimit",
-          "generationCreditsResetAt" = NOW()
+          "generationCreditsResetAt" = NOW(),
+          "generationCreditsRevision" = "generationCreditsRevision" + 1
     `;
 
     console.log(`Daily credit reset completed. Updated ${result} users.`);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +45,7 @@ export function TemplateRunForm({
   estimatedCost: number;
 }) {
   const router = useRouter();
+  const billing = useTranslations("learning");
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(formSchema.map((f) => [f.key, String(f.default ?? "")]))
   );
@@ -128,7 +130,7 @@ export function TemplateRunForm({
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4" /> 在线运行
         </CardTitle>
-        <CardDescription>填写输入后运行模板，消耗算力点数，结果保存在工作台。</CardDescription>
+        <CardDescription>{billing("billingExplanation", { points: estimatedCost })}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {formSchema.map((field) => (
@@ -192,7 +194,7 @@ export function TemplateRunForm({
         <div className="flex items-center gap-3">
           <Button disabled={busy} onClick={run}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {busy ? "运行中…" : "运行（" + estimatedCost + " 点）"}
+            {busy ? "运行中…" : billing("billingRun", { points: estimatedCost })}
           </Button>
           {runId && <span className="text-sm text-muted-foreground">记录 {runId.slice(0, 8)}…</span>}
           {runStatus && busy && <span className="text-xs text-muted-foreground">{runStatus === "QUEUED" ? "排队中" : "处理中"}</span>}

@@ -41,7 +41,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         {hasCredentials && (
           <p className="text-center text-xs text-muted-foreground">
             {t("noAccount")}{" "}
-            <Link href="/register" className="text-foreground hover:underline">{t("register")}</Link>
+            <Link href={callbackUrl === "/" ? "/register" : "/register?" + new URLSearchParams({ callbackUrl }).toString()} className="text-foreground hover:underline">{t("register")}</Link>
           </p>
         )}
       </div>

@@ -1,3 +1,5 @@
+import { grantReachedLevelRewards } from "@/server/growth/service";
+import type { DbTransaction } from "@/lib/db";
 ﻿import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import {
@@ -15,6 +17,17 @@ export class CompetitionError extends Error {
   constructor(public readonly status: number, public readonly code: string, message: string) {
     super(message);
     this.name = "CompetitionError";
+  }
+}
+
+/** Same workspace-first order as stage commands; SQL guard remains the last line of defence. */
+async function ensureLegacyEntryAllowed(tx: DbTransaction, competitionId: string, entryId?: string) {
+  const workspaces = await tx.$queryRaw<Array<{ enabled: boolean }>>`SELECT enabled FROM agri_workspaces
+    WHERE "competitionId"=${competitionId} FOR SHARE`;
+  const history = entryId ? await tx.$queryRaw<Array<{ id: string }>>`SELECT id FROM agri_entry_stages
+    WHERE "teamCompetitionId"=${entryId} LIMIT 1` : [];
+  if (workspaces.some(row => row.enabled) || history.length) {
+    throw new CompetitionError(409, "AGRI_STAGE_WORKSPACE_REQUIRED", "本届已启用阶段工作区，请从农客松阶段提交入口操作。");
   }
 }
 
@@ -98,23 +111,19 @@ export async function listCompetitions() {
 }
 
 /**
- * 农客松板块用：查这条赛事在赛事系统里有没有记录。
- *
- * 约定：标题含「农客松」即视为已接入。找不到返回 null，页面自动退回
- * 「报名尚未接入」的形态 —— 所以管理员在 /admin/competitions 建好赛事后，
- * 板块页的报名入口会自动出现，不需要改代码。
- *
- * 查询失败不抛错：板块页不该因为数据库不可用而整页 500。
+ * Bind the landing page to an explicitly confirmed competition, never a title match.
+ * Missing configuration, a removed record or a query failure keeps the entry closed.
  */
 export async function findAgriHackathonCompetition() {
+  const competitionId = process.env.ANS_AGRIHACKATHON_COMPETITION_ID?.trim();
+  if (!competitionId || competitionId.length > 80) return null;
   try {
-    return await db.competition.findFirst({
-      where: { title: { contains: "农客松" } },
-      orderBy: { createdAt: "desc" },
+    return await db.competition.findUnique({
+      where: { id: competitionId },
       select: { id: true, status: true, startsAt: true, endsAt: true },
     });
-  } catch (error) {
-    console.error("competition: 农客松赛事记录查询失败，板块页退回未接入形态", error);
+  } catch {
+    console.error("competition: agrihackathon binding lookup failed");
     return null;
   }
 }
@@ -193,6 +202,7 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
           const count = await tx.teamCompetition.count({ where: { competitionId, entryStatus: { not: "REJECTED" } } });
           if (count >= competition.maxTeams) throw new CompetitionError(409, "COMPETITION_FULL", "赛事队伍名额已满，暂时无法重新报名。");
         }
+        await ensureLegacyEntryAllowed(tx, competitionId, existing.id);
         const reset = await tx.teamCompetition.update({
           where: { id: existing.id },
           data: { entryStatus: "REGISTERED", submissionVersionId: null, submittedById: null, submittedAt: null, submissionNote: null, publicConsent: false, reviewedAt: null, reviewedById: null, reviewNote: null, awardedXp: 0 },
@@ -242,6 +252,7 @@ export async function submitCompetitionEntry(actorId: string, competitionId: str
   const input = parsed.data;
   try {
     return await db.$transaction(async (tx) => {
+    await ensureLegacyEntryAllowed(tx, competitionId);
     const [membership, activeMembers, competition, project, version, entry] = await Promise.all([
       tx.teamMember.findFirst({ where: { teamId: input.teamId, userId: actorId, status: "ACTIVE" }, select: { id: true } }),
       tx.teamMember.findMany({ where: { teamId: input.teamId, status: "ACTIVE" }, orderBy: [{ joinedAt: "asc" }, { userId: "asc" }], select: { userId: true } }),
@@ -323,6 +334,8 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
 
   try {
     return await db.$transaction(async (tx) => {
+      const target = await tx.teamCompetition.findUnique({ where: { id: input.teamCompetitionId }, select: { competitionId: true } });
+      if (target) await ensureLegacyEntryAllowed(tx, target.competitionId, input.teamCompetitionId);
       const entry = await tx.teamCompetition.findUnique({
         where: { id: input.teamCompetitionId },
         include: {
@@ -375,9 +388,13 @@ export async function reviewCompetitionEntry(reviewerId: string, rawInput: unkno
           allocation.amount += 1;
           remainder -= 1;
         }
-        for (const allocation of allocations) {
+        for (const allocation of [...allocations].sort((a, b) => a.userId.localeCompare(b.userId))) {
           if (allocation.amount === 0) continue;
-          await tx.user.update({ where: { id: allocation.userId }, data: { xp: { increment: allocation.amount } }, select: { id: true } });
+          await tx.$queryRaw`SELECT id FROM users WHERE id = ${allocation.userId} FOR UPDATE`;
+          const member = await tx.user.findUniqueOrThrow({ where: { id: allocation.userId }, select: { xp: true } });
+          const levelPoints = await grantReachedLevelRewards(tx, allocation.userId, member.xp + allocation.amount);
+          await tx.user.update({ where: { id: allocation.userId }, data: { xp: { increment: allocation.amount }, communityPoints: { increment: levelPoints } }, select: { id: true } });
+          await tx.growthEvent.create({ data: { userId: allocation.userId, type: "COMPETITION_AWARD", sourceType: "team_competition", sourceId: entry.id, xp: allocation.amount, points: 0 } });
           await tx.xpLedger.create({ data: { userId: allocation.userId, amount: allocation.amount, reason: "COMPETITION_AWARD", refType: "team_competition", refId: entry.id, note: `Competition award: ${entry.competition.title}` } });
         }
       }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { checkPromptAccess } from "@/lib/prompt-access";
+import { safeAwardGrowthEvent } from "@/server/growth/service";
 
 // POST - Upvote a prompt
 export async function POST(
@@ -27,6 +28,7 @@ export async function POST(
 
     const denied = await checkPromptAccess(prompt);
     if (denied) return denied;
+    if (!prompt) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
     // Check if already voted
     const existing = await db.promptVote.findUnique({
@@ -52,6 +54,10 @@ export async function POST(
         promptId,
       },
     });
+    await safeAwardGrowthEvent({ userId: session.user.id, type: "LIKE", reason: "COMMUNITY_REWARD", sourceType: "prompt_like", sourceId: promptId, xp: 1, dailyCap: 10, note: "Like public content" });
+    if (prompt.authorId !== session.user.id) {
+      await safeAwardGrowthEvent({ userId: prompt.authorId, type: "RECEIVE_VOTE", reason: "RECEIVE_VOTE", sourceType: "prompt_vote", sourceId: `${session.user.id}:${promptId}` });
+    }
 
     // Get updated vote count
     const voteCount = await db.promptVote.count({

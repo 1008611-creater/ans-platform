@@ -4,8 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   db: {
-    workflowRun: { findFirst: vi.fn(), updateMany: vi.fn(), findUniqueOrThrow: vi.fn() },
+    workflowRun: { findFirst: vi.fn(), updateMany: vi.fn(), findUniqueOrThrow: vi.fn(), update: vi.fn() },
     workflowNodeRun: { updateMany: vi.fn() },
+    apiComputeRequest: { findMany: vi.fn() },
     userModelCredential: { findFirst: vi.fn() },
     user: { update: vi.fn() },
     quotaLedger: { create: vi.fn() },
@@ -60,6 +61,7 @@ beforeEach(() => {
       return { count: 1 };
     },
   );
+  mocks.db.apiComputeRequest.findMany.mockResolvedValue([]);
   mocks.db.workflowNodeRun.updateMany.mockResolvedValue({ count: 1 });
   mocks.db.user.update.mockResolvedValue({ quotaPoints: 13 });
   mocks.db.quotaLedger.create.mockResolvedValue({ id: "ledger1" });
@@ -99,6 +101,23 @@ describe("executePersistedWorkflow", () => {
     );
     expect(mocks.db.user.update).not.toHaveBeenCalled();
     expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
+  });
+
+  it("settles exactly once from APIC's final quota and releases fractional reservation", async () => {
+    vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
+    vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
+    vi.stubEnv("APIC_COST_BRIDGE_URL", "http://bridge.internal:13021");
+    vi.stubEnv("APIC_COST_BRIDGE_SECRET", "test-secret");
+    mocks.db.workflowRun.findFirst.mockResolvedValue({...run,costPoints:0.25,version:{definition:{...definition,nodes:[{...definition.nodes[0],type:"model"},definition.nodes[1]]}}});
+    const fetchMock = vi.fn().mockResolvedValueOnce(Response.json({choices:[{message:{content:"final draft"}}],usage:{prompt_tokens:1000,completion_tokens:1000}},{headers:{"x-oneapi-request-id":"request0001"}}))
+      .mockResolvedValueOnce(Response.json({requestId:"request0001",quota:960}));
+    vi.stubGlobal("fetch",fetchMock);
+    const result=await executePersistedWorkflow("run1","user1",{modelKey:"gpt-6.1-sol"});
+    expect(result?.status).toBe("succeeded");
+    expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{increment:0.24808}}}));
+    expect(mocks.db.workflowRun.update).toHaveBeenCalledWith({where:{id:"run1"},data:{costPoints:0.00192}});
+    expect(mocks.db.quotaLedger.create).toHaveBeenCalledTimes(1);
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({metadata:expect.objectContaining({costPoints:0.00192,apicCharges:[{requestId:"request0001",quota:960,points:0.00192}]})})}));
   });
 
   it("persists JSON null separately from a missing workflow output", async () => {
@@ -341,7 +360,7 @@ describe("executePersistedWorkflow", () => {
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         metadata: expect.objectContaining({
-          models: ["gpt-5.6-terra"],
+          models: ["deepseek-v4.1-flash"],
           modelCalls: 1,
           tokenUsage: { inputTokens: 13, outputTokens: 9, totalTokens: 22 },
         }),
@@ -394,7 +413,7 @@ describe("createWorkflowHandlers", () => {
     expect(callModel).toHaveBeenCalledWith(
       expect.objectContaining({
         prompt: "关于 社团招新 的一段话",
-        target: expect.objectContaining({ apiKey: "platform-key", upstream: "gpt-5.6-terra" }),
+        target: expect.objectContaining({ apiKey: "platform-key", upstream: "deepseek-v4.1-flash" }),
       }),
     );
   });
@@ -404,12 +423,12 @@ describe("createWorkflowHandlers", () => {
     const handlers = createWorkflowHandlers({
       userId: "user1",
       runId: "run1",
-      modelKey: "gpt-5.6-sol",
+      modelKey: "gpt-6.1-sol",
       callModel,
     });
 
     await handlers.model!(context());
-    expect(callModel.mock.calls[0][0].target.upstream).toBe("gpt-5.6-sol");
+    expect(callModel.mock.calls[0][0].target.upstream).toBe("gpt-6.1-sol");
 
     await handlers.model!(
       context({
@@ -497,5 +516,20 @@ describe("interpolate", () => {
     });
 
     expect(text).toBe("社团招新 / {\"title\":\"结构\"} / {{missing}}");
+  });
+});
+
+describe("durable unified workflow charges", () => {
+  it("failed output does not refund previously spent nodes or uncertain request holds", async () => {
+    vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1"); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, costPoints: 0 });
+    mocks.db.apiComputeRequest.findMany.mockResolvedValue([
+      { state: "SETTLED", settledPoints: 0.02, authorizedPoints: 0.05 },
+      { state: "UNCERTAIN", settledPoints: null, authorizedPoints: 0.1 },
+    ]);
+    const result = await executePersistedWorkflow("run1", "user1", { handlers: { prompt: () => { throw new Error("output invalid"); } } });
+    expect(result?.status).toBe("failed");
+    expect(mocks.db.user.update).not.toHaveBeenCalled(); expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
+    expect(mocks.db.workflowRun.update).toHaveBeenCalledWith({ where: { id: "run1" }, data: { costPoints: expect.closeTo(0.12, 6) } });
   });
 });

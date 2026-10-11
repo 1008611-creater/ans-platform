@@ -36,6 +36,8 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CommentForm } from "./comment-form";
+import { AvatarFrame } from "@/components/growth/avatar-frame";
+import { ChatBubble } from "@/components/growth/chat-bubble";
 
 interface Comment {
   id: string;
@@ -49,6 +51,8 @@ interface Comment {
     name: string | null;
     username: string;
     avatar: string | null;
+    avatarFrameKey?: string;
+    chatBubbleKey?: string;
     role: string;
   };
   score: number;
@@ -226,12 +230,14 @@ export function CommentItem({
         {/* Header */}
         <div className="flex items-center gap-2 mb-2">
           <Link href={`/@${comment.author.username}`} className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={comment.author.avatar || undefined} />
-              <AvatarFallback className="text-xs">
-                {comment.author.name?.charAt(0) || comment.author.username.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarFrame frameKey={comment.author.avatarFrameKey} className="h-6 w-6">
+              <Avatar className="h-full w-full">
+                <AvatarImage src={comment.author.avatar || undefined} alt={comment.author.name || comment.author.username} />
+                <AvatarFallback className="text-xs">
+                  {comment.author.name?.charAt(0) || comment.author.username.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </AvatarFrame>
             <span className="text-sm font-medium hover:underline">
               {comment.author.username}
             </span>
@@ -252,9 +258,9 @@ export function CommentItem({
         </div>
 
         {/* Content */}
-        <div className={cn("text-sm whitespace-pre-wrap break-words", isDownvoted && "text-muted-foreground")}>
+        <ChatBubble bubbleKey={comment.author.chatBubbleKey} className={cn("mt-2 whitespace-pre-wrap break-words", isDownvoted && "text-muted-foreground")}>
           {autoLinkText(comment.content)}
-        </div>
+        </ChatBubble>
 
         {/* Actions */}
         <div className="flex items-center gap-1 mt-2">

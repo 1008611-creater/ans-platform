@@ -1,6 +1,8 @@
 "use client";
 
-import { Share2 } from "lucide-react";
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Share2, Copy, Check } from "lucide-react";
 import { analyticsPrompt } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +37,15 @@ interface ShareDropdownProps {
 }
 
 export function ShareDropdown({ title, url, promptId }: ShareDropdownProps) {
+  const t = useTranslations("product.growth");
+  const [copied, setCopied] = useState(false);
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(url || window.location.href);
+      setCopied(true);
+      if (promptId) void fetch("/api/community/share", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ targetType: "prompt", targetId: promptId }) }).catch(() => undefined);
+    } catch { setCopied(false); }
+  }
   const handleShare = (platform: "twitter" | "hackernews") => {
     const shareUrl = url || (typeof window !== "undefined" ? window.location.href : "");
     const encodedUrl = encodeURIComponent(shareUrl);
@@ -51,16 +62,23 @@ export function ShareDropdown({ title, url, promptId }: ShareDropdownProps) {
 
     window.open(targetUrl, "_blank", "noopener,noreferrer");
     analyticsPrompt.share(promptId, platform);
+    if (promptId) {
+      void fetch("/api/community/share", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ targetType: "prompt", targetId: promptId }) }).catch(() => undefined);
+    }
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" aria-label={t("shareContent")}>
           <Share2 className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={copyLink}>
+          {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+          {copied ? t("linkCopied") : t("copyLink")}
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleShare("twitter")}>
           <XIcon className="h-4 w-4 mr-2" />
           X / Twitter

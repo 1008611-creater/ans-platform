@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embedded');</script>
+  <title>ANS 小恐龙 · 模型检查</title>
+  <style>
+    :root { color-scheme: light; font: 15px/1.55 system-ui, sans-serif; color: #30443b; background: #f2f5f2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { display: grid; grid-template-columns: minmax(0, 1fr) 272px; min-height: 100svh; }
+    #stage { position: relative; min-width: 0; min-height: 460px; height: 100svh; }
+    #stage canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+    #stage:focus-within { outline: 2px solid #438462; outline-offset: -3px; }
+    aside { display: flex; flex-direction: column; gap: 24px; padding: 24px; background: #fafcf9; border-left: 1px solid #d9e3da; }
+    h1 { margin: 0; font-size: 21px; line-height: 1.3; }
+    p { margin: 8px 0 0; }
+    .subtle { font-size: 13px; color: #64766b; }
+    fieldset { margin: 0; padding: 0; border: 0; }
+    legend { font-weight: 600; margin-bottom: 9px; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 7px; }
+    button { appearance: none; border: 1px solid #c6d5c9; border-radius: 8px; padding: 9px 12px; background: #f7faf6; color: inherit; font: inherit; cursor: pointer; min-height: 42px; }
+    button:hover:not(:disabled) { background: #eaf3e9; }
+    button[aria-pressed="true"] { background: #deefdf; border-color: #70a580; color: #21472e; }
+    button:focus-visible { outline: 3px solid #438462; outline-offset: 2px; }
+    button:disabled { opacity: .45; cursor: default; }
+    #pause { width: 100%; }
+    #status { font-size: 13px; margin: 0; min-height: 42px; overflow-wrap: anywhere; }
+    #status[data-state="error"] { color: #953b34; }
+    #summary { margin-top: auto; border-top: 1px solid #d9e3da; padding-top: 18px; }
+    select{width:100%;padding:10px;font:inherit;color:inherit;background:#fff;border:1px solid #c6d5c9;border-radius:8px}
+    .embedded main{display:block;min-height:100vh}.embedded aside{display:none}.embedded #stage{height:100vh;min-height:0}.embedded body{overflow:hidden}
+    @media (max-width: 720px) {
+      main { grid-template-columns: 1fr; }
+      #stage { height: 58svh; min-height: 330px; }
+      aside { border-left: 0; border-top: 1px solid #d9e3da; padding: 20px; gap: 20px; }
+      .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      #summary { margin-top: 0; }
+    }
+    @media (min-width: 721px) { .control-grid { display: grid; gap: 24px; } }
+    @media (max-width: 390px) { .control-grid { grid-template-columns: 1fr; } }
+  </style>
+  <script type="importmap">
+    {"imports":{"three":"./vendor/three.module.js"}}
+  </script>
+</head>
+<body>
+  <main>
+    <section id="stage" aria-label="小恐龙三维模型，拖动旋转，滚轮或双指缩放"></section>
+    <aside aria-label="模型检查控件">
+      <header>
+        <h1>小恐龙 · 360° 预览</h1>
+        <p class="subtle">拖动旋转，滚轮或双指缩放。左右视角按角色自身方向标记。</p>
+      </header>
+      <label>选择模型<select id="model-source"><option value="original">原始模型</option><option value="animated">原模型 · 骨骼动作</option></select></label>
+      <div class="control-grid">
+        <fieldset>
+          <legend>视角</legend>
+          <div class="buttons">
+            <button type="button" data-view="front" aria-pressed="true" disabled>前面</button>
+            <button type="button" data-view="back" aria-pressed="false" disabled>后面</button>
+            <button type="button" data-view="left" aria-pressed="false" disabled>左侧</button>
+            <button type="button" data-view="right" aria-pressed="false" disabled>右侧</button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>动作</legend>
+          <div class="buttons">
+            <button type="button" data-clip="Idle" aria-pressed="true" disabled>待机</button>
+            <button type="button" data-clip="Wave" aria-pressed="false" disabled>挥手</button>
+            <button type="button" data-clip="Walk" aria-pressed="false" disabled>走路</button>
+          </div>
+        </fieldset>
+        <fieldset data-controls="expression">
+          <legend>表情</legend>
+          <div class="buttons">
+            <button type="button" data-expression="open" aria-pressed="false" disabled>睁眼</button>
+            <button type="button" data-expression="blink" aria-pressed="false" disabled>眨眼</button>
+            <button type="button" data-expression="happy" aria-pressed="false" disabled>笑眼</button>
+            <button type="button" data-expression="auto" aria-pressed="true" disabled>恢复</button>
+          </div>
+          <p class="subtle">恢复自然眨眼。暂停时点击“眨眼”可检查闭眼形状。</p>
+        </fieldset>
+      </div>
+      <div>
+        <button type="button" id="pause" aria-pressed="false" disabled>暂停动画</button>
+        <p id="playback-note" class="subtle">挥手播放一次，随后回到待机。走路在原地循环。</p>
+      </div>
+      <div id="summary">
+        <p id="status" role="status" aria-live="polite">正在加载你的原始 GLB…</p>
+        <p class="subtle">原件几何与贴图保持不变 · 无左右旋转限制</p>
+      </div>
+    </aside>
+  </main>
+  <noscript>需要启用 JavaScript 才能查看三维模型。</noscript>
+  <script type="module" src="./model-viewer.js?v=original-v3"></script>
+</body>
+</html>

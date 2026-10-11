@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -52,13 +53,14 @@ export default async function WorkflowDetailPage({
   const variables = definition ? extractInputVariables(definition) : [];
 
   const [credentials, favorited] = await Promise.all([
-    userId ? listCredentials(userId).catch(() => []) : Promise.resolve([]),
+    userId && process.env.ANS_APIC_BILLING_ENABLED !== "1" ? listCredentials(userId).catch(() => []) : Promise.resolve([]),
     userId ? isFavorited(userId, "WORKFLOW", workflow.id) : Promise.resolve(false),
   ]);
 
   const authorName = getPublicDisplayName(workflow.author);
   const version = workflow.publishedVersion ?? 1;
-  const cost = Math.max(1, workflow.estimatedCost);
+  const cost = process.env.ANS_APIC_BILLING_ENABLED === "1" ? Math.max(0.25, (definition?.nodes.filter(node => node.type === "model").length ?? 1) * 0.25) : Math.max(1, workflow.estimatedCost);
+  const billing = await getTranslations("learning");
 
   return (
     <article className="container max-w-4xl space-y-6 py-10">
@@ -70,7 +72,7 @@ export default async function WorkflowDetailPage({
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">已发布</Badge>
           <Badge variant="outline">v{version}</Badge>
-          <Badge variant="outline">{cost} 点/次</Badge>
+          <Badge variant="outline">{billing("billingReservation", { points: cost })}</Badge>
           <Badge variant="outline">已运行 {workflow.useCount} 次</Badge>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">{workflow.title}</h1>
@@ -157,7 +159,7 @@ export default async function WorkflowDetailPage({
           <ShieldAlert className="h-4 w-4" /> 使用条件与限制
         </h2>
         <ul className="list-disc space-y-1 ps-5 text-xs text-muted-foreground">
-          <li>单次运行消耗 {cost} 点算力；运行失败会自动退回额度。</li>
+          <li>{billing("billingExplanation", { points: cost })}</li>
           <li>单次执行最长 120 秒，每个节点有自己的超时与重试上限。</li>
           <li>工作流只会按已发布的不可变版本执行，作者改动不会影响你正在跑的任务。</li>
           <li>输入内容会随运行记录保存，请不要填写身份证号、住址等敏感信息。</li>

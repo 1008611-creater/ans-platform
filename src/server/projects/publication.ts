@@ -5,6 +5,7 @@ import { artifactReviewDecisionInputSchema, artifactReviewRequestSchema } from "
 import { publicReviewBlockers, type SensitiveFinding } from "@/domain/projects/review";
 import type { FactRecord } from "@/domain/projects/pack";
 import { ProjectServiceError } from "@/server/projects/service";
+import { safeAwardGrowthEvent } from "@/server/growth/service";
 
 const CONFIRM_FROM_DB = { MISSING: "missing", UNCONFIRMED: "unconfirmed", CONFIRMED: "confirmed" } as const;
 
@@ -77,7 +78,7 @@ export async function decideArtifactPublication(reviewerId: string, rawInput: un
   if (!version) throw new ProjectServiceError("作品版本不存在。", "NOT_FOUND", 404);
   if (version.artifact.project.ownerId === reviewerId) throw new ProjectServiceError("不能审核自己的作品。", "SELF_REVIEW", 403);
   const approved = parsed.data.decision === "approve";
-  return db.$transaction(async (tx) => {
+  const result = await db.$transaction(async (tx) => {
     const updated = await tx.artifactPublication.updateMany({
       where: { artifactVersionId: version.id, status: "PENDING" },
       data: {
@@ -99,8 +100,20 @@ export async function decideArtifactPublication(reviewerId: string, rawInput: un
         metadata: { note: parsed.data.note, projectId: version.artifact.projectId } as Prisma.InputJsonValue,
       },
     });
-    return { artifactVersionId: version.id, status: approved ? "public" as const : "rejected" as const };
+    return { artifactVersionId: version.id, status: approved ? "public" as const : "rejected" as const, ownerId: version.artifact.project.ownerId };
   });
+  if (approved) {
+    // Award only after the moderation transaction commits. The growth event is
+    // idempotent by (user, type, source), so retries cannot duplicate XP.
+    await safeAwardGrowthEvent({
+      userId: result.ownerId,
+      type: "PUBLISH_TEMPLATE",
+      reason: "PUBLISH_TEMPLATE",
+      sourceType: "artifact_publication",
+      sourceId: result.artifactVersionId,
+    });
+  }
+  return { artifactVersionId: result.artifactVersionId, status: result.status };
 }
 
 export async function withdrawArtifactPublication(projectId: string, userId: string, artifactVersionId: string) {
@@ -204,7 +217,7 @@ export async function getPublishedArtifact(artifactVersionId: string, viewerId?:
           },
           createdBy: { select: { id: true, username: true, nickname: true, avatar: true } },
           reactions: { select: { userId: true } },
-          comments: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 100, include: { user: { select: { id: true, username: true, nickname: true, avatar: true } } } },
+          comments: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 100, include: { user: { select: { id: true, username: true, nickname: true, avatar: true, avatarFrameKey: true, chatBubbleKey: true } } } },
         },
       },
     },
@@ -246,6 +259,9 @@ export async function toggleArtifactReaction(userId: string, artifactVersionId: 
     await tx.artifactReaction.create({ data: { userId, artifactVersionId } });
     await tx.auditLog.create({ data: { actorId: userId, action: "ARTIFACT_LIKED", resourceType: "artifact_version", resourceId: artifactVersionId } });
     return { liked: true };
+  }).then(async (result) => {
+    if (result.liked) await safeAwardGrowthEvent({ userId, type: "LIKE", reason: "COMMUNITY_REWARD", sourceType: "artifact_like", sourceId: artifactVersionId, xp: 1, dailyCap: 10, note: "\u70b9\u8d5e\u516c\u5f00\u4f5c\u54c1" });
+    return result;
   });
 }
 
@@ -255,8 +271,11 @@ export async function addArtifactComment(userId: string, artifactVersionId: stri
   return db.$transaction(async (tx) => {
     const publication = await tx.artifactPublication.findFirst({ where: { artifactVersionId, status: "APPROVED" }, select: { id: true } });
     if (!publication) throw new ProjectServiceError("作品未公开或授权已撤回。", "NOT_FOUND", 404);
-    const comment = await tx.artifactComment.create({ data: { userId, artifactVersionId, content: input.data.content }, include: { user: { select: { id: true, username: true, nickname: true, avatar: true } } } });
+    const comment = await tx.artifactComment.create({ data: { userId, artifactVersionId, content: input.data.content }, include: { user: { select: { id: true, username: true, nickname: true, avatar: true, avatarFrameKey: true, chatBubbleKey: true } } } });
     await tx.auditLog.create({ data: { actorId: userId, action: "ARTIFACT_COMMENTED", resourceType: "artifact_comment", resourceId: comment.id, metadata: { artifactVersionId } } });
+    return comment;
+  }).then(async (comment) => {
+    await safeAwardGrowthEvent({ userId, type: "COMMENT", reason: "COMMENT", sourceType: "artifact_comment", sourceId: comment.id });
     return comment;
   });
 }

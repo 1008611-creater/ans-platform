@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/LenySauzet/gitglow",
+  "commit": "69afa6862f1d8fc99ac11466bb6da2b4ddd802f4",
+  "license": "MIT",
+  "adaptations": [
+    "Pure static rendering without Zustand or editor installation",
+    "Short Chinese titles and category labels",
+    "Screenshot scale and title placement for ANS 16:10 cards"
+  ],
+  "files": [
+    {
+      "file": "components/Settings/Templates/PerspectiveStack.tsx",
+      "sha256": "5cadcb0d227e274668f0e81197c92019cf6b022d82886ab2a282634d7c6589e9"
+    },
+    {
+      "file": "components/Settings/Templates/AngledCanvas.tsx",
+      "sha256": "0b2e2eeba73a609aba7313b2bb4420d60df0f958dad28cf511b5af1681f3b3ca"
+    },
+    {
+      "file": "components/Settings/Templates/FloatingLayers.tsx",
+      "sha256": "d072e98d9c6efeb7e58773a0288524fdf86bec020b032a5e4002b6030f6989ca"
+    },
+    {
+      "file": "components/Settings/Templates/GlowSpotlight.tsx",
+      "sha256": "351c5a3cb4ca2957bb88e811a4dd7d1a53c3d159cd6355afd1eeb3b9406adce9"
+    },
+    {
+      "file": "components/Settings/Templates/MinimalSlate.tsx",
+      "sha256": "5e646054ebaf290c6202cb6abe7c176b0e563e369a1e34f4f110c38474df7b86"
+    },
+    {
+      "file": "components/Settings/Templates/SplitGradient.tsx",
+      "sha256": "19b5c767b0e2dcc81b3cd1fc35af41dbceee07ad17330e8b394ee3673b4f5eb0"
+    }
+  ]
+}

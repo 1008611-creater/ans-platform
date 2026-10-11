@@ -96,6 +96,7 @@
     "loginDescriptionOAuth": "Melden Sie sich mit Ihrem Konto an, um fortzufahren",
     "register": "Registrieren",
     "registerDescription": "Erstellen Sie ein Konto, um loszulegen",
+    "openRegistrationNote": "Jeder kann sich mit einer bestätigten E-Mail-Adresse ohne Einladungscode registrieren. Bestätigen Sie Ihre E-Mail und die Sicherheitsprüfung. Ihr Spitzname ist öffentlich; ein echter Name ist nicht erforderlich.",
     "logout": "Abmelden",
     "email": "E-Mail",
     "password": "Passwort",
@@ -404,7 +405,15 @@
     "learnHowToWritePrompts": "Lernen Sie, effektive Prompts zu schreiben →",
     "structuredFormatDetected": "{format}-Format erkannt",
     "structuredFormatWarningDescription": "Ihr Prompt-Inhalt sieht nach strukturierten Daten aus. Erwägen Sie den Wechsel in den strukturierten Modus für bessere Syntaxhervorhebung und Validierung.",
-    "switchToStructured": "Zu {format} wechseln"
+    "switchToStructured": "Zu {format} wechseln",
+    "generationConnectionFailed": "Connection interrupted. Recover the original task without another submission or credit charge.",
+    "generationReviewRequired": "Submission needs review. The original request is retained. Contact an administrator; recovery does not submit again.",
+    "generationNoCredits": "No generation credits remain. Check your daily allowance.",
+    "generationNotAccepted": "This task was confirmed not submitted. Contact an administrator to review the outcome.",
+    "generationProviderFailed": "The provider reported a failure. Recover the original task to check its status without resubmitting.",
+    "generationCanResume": "Your request is recorded. With the same content and model, you can recover it after disconnection without resubmitting.",
+    "resumeGeneration": "Recover task",
+    "newGeneration": "Start a new generation"
   },
   "changeRequests": {
     "title": "Änderungsanfragen",
@@ -511,8 +520,8 @@
       "webhooks": "Webhooks",
       "prompts": "Prompts",
       "reports": "Meldungen",
-    "skills": "Skill-Verwaltung",
-    "governance": "Governance"
+      "skills": "Skill-Verwaltung",
+      "governance": "Governance"
     },
     "reports": {
       "title": "Meldungsverwaltung",
@@ -1226,7 +1235,10 @@
     "keyRevoked": "API-Schlüssel widerrufen",
     "publicByDefault": "Prompts standardmäßig öffentlich",
     "publicByDefaultDescription": "Beim Speichern von Prompts über MCP standardmäßig öffentlich statt privat machen.",
-    "settingUpdated": "Einstellung aktualisiert"
+    "settingUpdated": "Einstellung aktualisiert",
+    "codexTitle": "Codex connection",
+    "codexDescription": "Set ANS_API_KEY to your personal key generated here. Requests reserve ANS credits and settle actual usage. GPT consumption multiplier: 0.16.",
+    "codexLimits": "Limits: 512 KiB input and 16,384 output tokens per request. Background requests and server-side shared sessions are unsupported. Rotating or revoking a key blocks new requests immediately."
   },
   "connectedPrompts": {
     "title": "Prompt-Ablauf",
@@ -2323,7 +2335,7 @@
         "detail": "Plane is not the default task source for this contest. Use it when a team needs a separate audit trail."
       },
       "toonflow": {
-        "name": "Toonflow",
+        "name": "AIGC Workspace",
         "host": "toonflow.cauai.fun",
         "role": "Creative production workspace",
         "description": "Move from approved plan to generated assets, iterations, and production handoff.",
@@ -2347,7 +2359,7 @@
       "produce": {
         "label": "03 · Produce",
         "description": "Create, review, version, and package the work with evidence.",
-        "state": "Use Toonflow"
+        "state": "Use AIGC Workspace"
       },
       "submit": {
         "label": "04 · Submit",
@@ -2383,55 +2395,55 @@
     }
   },
   "homepageNext": {
-      "eyebrow":  "AI work, with a path to a finished result",
-      "heroTitle":  "Turn an idea into a runnable AI workflow",
-      "heroDescription":  "Find proven prompts, reuse ready-made templates, and keep the work that matters in one place.",
-      "primaryCta":  "Start with a template",
-      "continue":  "Open my workspace",
-      "secondaryCta":  "Explore the community",
-      "proofPrompt":  "Curated prompts",
-      "proofTemplate":  "Runnable templates",
-      "proofWorkflow":  "Reusable workflows",
-      "previewLabel":  "A simple path",
-      "previewTitle":  "From a question to a usable result",
-      "previewReady":  "Ready to start",
-      "previewInputLabel":  "Your starting point",
-      "previewInput":  "I have a project idea. Help me turn it into a clear first plan.",
-      "previewOutputLabel":  "A result you can continue",
-      "previewOutput":  "A structured plan with inputs, steps, evidence, and the next action.",
-      "previewNextLabel":  "Next action",
-      "previewNext":  "Open a template, add your real context, and run the first version.",
-      "pathEyebrow":  "Choose your next move",
-      "pathTitle":  "One place to discover, run, and improve",
-      "pathDescription":  "Start from a proven capability, then turn it into work you can check and reuse.",
-      "pathDiscoverTitle":  "Discover a starting point",
-      "pathDiscoverDescription":  "Browse prompts shaped by real use cases and community practice.",
-      "pathReuseTitle":  "Reuse a working pattern",
-      "pathReuseDescription":  "Fill in the context, keep the useful structure, and run a first version.",
-      "pathBuildTitle":  "Build a repeatable workflow",
-      "pathBuildDescription":  "Connect steps so your next project does not start from zero.",
-      "openAction":  "Open",
-      "closingEyebrow":  "Ready when you are",
-      "closingTitle":  "Start with one useful task",
-      "closingDescription":  "Your first result is the shortest path to understanding what ANS can do for you.",
-      "templates":  "Templates",
-      "workspace":  "Workspace",
-      "runHistory":  "Run history",
-      "computeTitle":  "Compute availability",
-      "computeEyebrow":  "Available compute",
-      "computeAvailable":  "Available",
-      "computeRemaining":  "{remaining} points remain · {total} points in the pool",
-      "computeDescription":  "Register to claim {points} points and use them to run AI tasks in the template library.",
-      "computeProgressLabel":  "Compute pool claimed",
-      "computeClaimed":  "{claimed} points claimed",
-      "computeClaimAction":  "Claim {points} points",
-      "computeLoginAction":  "Log in to claim",
-      "computeClaimedState":  "Claimed",
-      "computeRunAction":  "Run a task",
-      "computeExhausted":  "Pool exhausted",
-      "computeUnavailable":  "Compute availability is temporarily unavailable.",
-      "computeClaimError":  "Could not claim points. Please try again.",
-      "computeClaimNetworkError":  "Network error. Please try again."
+    "eyebrow": "AI work, with a path to a finished result",
+    "heroTitle": "Turn an idea into a runnable AI workflow",
+    "heroDescription": "Find proven prompts, reuse ready-made templates, and keep the work that matters in one place.",
+    "primaryCta": "Start with a template",
+    "continue": "Open my workspace",
+    "secondaryCta": "Explore the community",
+    "proofPrompt": "Curated prompts",
+    "proofTemplate": "Runnable templates",
+    "proofWorkflow": "Reusable workflows",
+    "previewLabel": "A simple path",
+    "previewTitle": "From a question to a usable result",
+    "previewReady": "Ready to start",
+    "previewInputLabel": "Your starting point",
+    "previewInput": "I have a project idea. Help me turn it into a clear first plan.",
+    "previewOutputLabel": "A result you can continue",
+    "previewOutput": "A structured plan with inputs, steps, evidence, and the next action.",
+    "previewNextLabel": "Next action",
+    "previewNext": "Open a template, add your real context, and run the first version.",
+    "pathEyebrow": "Choose your next move",
+    "pathTitle": "One place to discover, run, and improve",
+    "pathDescription": "Start from a proven capability, then turn it into work you can check and reuse.",
+    "pathDiscoverTitle": "Discover a starting point",
+    "pathDiscoverDescription": "Browse prompts shaped by real use cases and community practice.",
+    "pathReuseTitle": "Reuse a working pattern",
+    "pathReuseDescription": "Fill in the context, keep the useful structure, and run a first version.",
+    "pathBuildTitle": "Build a repeatable workflow",
+    "pathBuildDescription": "Connect steps so your next project does not start from zero.",
+    "openAction": "Open",
+    "closingEyebrow": "Ready when you are",
+    "closingTitle": "Start with one useful task",
+    "closingDescription": "Your first result is the shortest path to understanding what ANS can do for you.",
+    "templates": "Templates",
+    "workspace": "Workspace",
+    "runHistory": "Run history",
+    "computeTitle": "Compute availability",
+    "computeEyebrow": "Available compute",
+    "computeAvailable": "Available",
+    "computeRemaining": "{remaining} points remain · {total} points in the pool",
+    "computeDescription": "Register to claim {points} points and use them to run AI tasks in the template library.",
+    "computeProgressLabel": "Compute pool claimed",
+    "computeClaimed": "{claimed} points claimed",
+    "computeClaimAction": "Claim {points} points",
+    "computeLoginAction": "Log in to claim",
+    "computeClaimedState": "Claimed",
+    "computeRunAction": "Run a task",
+    "computeExhausted": "Pool exhausted",
+    "computeUnavailable": "Compute availability is temporarily unavailable.",
+    "computeClaimError": "Could not claim points. Please try again.",
+    "computeClaimNetworkError": "Network error. Please try again."
   },
   "serviceStatus": {
     "eyebrow": "DIENSTSTATUS",
@@ -2496,9 +2508,9 @@
     }
   },
   "agriHackathon": {
-    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "boundaryNextOpen": "Anmeldung und Einreichung sind angebunden; Ergebnisse stehen aus",
     "enterWorkbench": "Open the registration workbench",
-    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
+    "boundaryDescriptionOpen": "Anmeldung und Einreichung laufen im ANS-Wettbewerbsbereich. Regeln und Termine folgen der offiziellen Bekanntmachung dieser Ausgabe; Ergebnisse sind noch nicht angebunden.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
@@ -2656,7 +2668,7 @@
       "popular": {
         "label": "Beliebtestes Projekt",
         "amount": "Ehrenauszeichnung",
-        "description": "Höchste Stimmenzahl im Publikumsvoting"
+        "description": "Die Auswahl folgt den offiziellen Regeln dieser Ausgabe"
       }
     },
     "rulesTitle": "Regeln und Compliance",
@@ -2676,13 +2688,13 @@
     "openTemplates": "Vorlagen",
     "openSkills": "Skills",
     "boundaryTitle": "Grenzen der ersten Ausgabe",
-    "boundaryDescription": "Diese erste Version liefert Regeln, Track-Struktur und Einreichungs-Checkliste. Anmeldung, Publikumsvoting und Ergebnisveröffentlichung sind noch nicht angebunden.",
+    "boundaryDescription": "Diese Version zeigt frühere Regeln, Kategorien und eine Einreichungscheckliste. Regeln, Termine und Anmeldung dieser Ausgabe sind noch zu bestätigen.",
     "boundaryItems": {
       "entry": "Ein zentraler Einstieg auf ANS",
-      "links": "Tracks, Bewertung und Preise stehen fest",
+      "links": "Frühere Kategorien, Bewertung und Preise dienen als Referenz",
       "ownership": "Teams erklären ihre eigene Arbeit und die Datenfreigabe selbst",
-      "next": "Anmeldung und Voting folgen, sobald Termine und Ort feststehen"
+      "next": "Anmeldung, Einreichung und Ergebnisse nach Bestätigung der Planung anbinden"
     },
-    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
+    "syncNote": "Der frühere Plan beantragte 5.000 CNY. Budget, Termine, Anmeldung und Ergebnisse dieser Ausgabe folgen der offiziellen Bekanntmachung."
   }
 }

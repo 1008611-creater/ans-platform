@@ -1,3 +1,4 @@
+import { MediaSubmissionNotSentError } from "./types";
 /**
  * Wiro.ai Media Generator Plugin
  * 
@@ -62,66 +63,30 @@ const wiroWebSocketHandler: WebSocketHandler = {
   },
 
   handleMessage: (event: MessageEvent, callbacks: WebSocketCallbacks) => {
-    const { setProgress, setStatus, setStatusMessage, onComplete, onCleanup } = callbacks;
-
+    const { setProgress, setStatus, setStatusMessage, setError, onComplete, onCleanup } = callbacks;
+    const fail = (code: string) => { setProgress(null); setStatus("error"); setError(code); onCleanup(); };
     try {
       const msg = JSON.parse(event.data);
-
-      if (msg.type) {
-        const statusKey = wiroStatusMap[msg.type];
-        if (statusKey) {
-          setStatusMessage(statusKey);
-        }
-
-        switch (msg.type) {
-          case "task_queue":
-            setProgress(25);
-            break;
-          case "task_accept":
-            setProgress(30);
-            break;
-          case "task_preprocess_start":
-            setProgress(35);
-            break;
-          case "task_preprocess_end":
-            setProgress(40);
-            break;
-          case "task_assign":
-            setProgress(45);
-            break;
-          case "task_start":
-            setStatus("processing");
-            setProgress(50);
-            break;
-          case "task_output":
-            setProgress((prev) => Math.min(prev + 5, 85));
-            break;
-          case "task_error":
-            console.error("Wiro task error:", msg.message);
-            break;
-          case "task_end":
-            setProgress(90);
-            break;
-          case "task_postprocess_start":
-            setProgress(92);
-            break;
-          case "task_postprocess_end":
-            setProgress(100);
-            setStatus("completed");
-
-            // Extract output URLs
-            if (msg.message && Array.isArray(msg.message) && msg.message.length > 0) {
-              const urls = msg.message.map((item: { url: string }) => item.url).filter(Boolean);
-              if (urls.length > 0) {
-                onComplete(urls);
-              }
-            }
-            onCleanup();
-            break;
-        }
+      if (!msg || typeof msg !== "object" || typeof msg.type !== "string") { fail("MEDIA_STATUS_INVALID"); return; }
+      const statusKey = wiroStatusMap[msg.type];
+      if (!statusKey) return;
+      setStatusMessage(statusKey);
+      // Stage events contain no measured percentage. Repeated output chunks are
+      // not evidence of additional progress, so keep the percentage unknown.
+      setProgress(null);
+      if (msg.type === "task_error" || msg.type === "task_error_full") { fail("MEDIA_PROVIDER_FAILED"); return; }
+      if (msg.type === "task_start") setStatus("processing");
+      if (msg.type === "task_postprocess_end") {
+        const urls = Array.isArray(msg.message) ? msg.message.flatMap((item: unknown) => {
+          if (!item || typeof item !== "object" || !("url" in item) || typeof item.url !== "string") return [];
+          try { const url = new URL(item.url); return ["https:", "http:"].includes(url.protocol) ? [item.url] : []; } catch { return []; }
+        }) : [];
+        if (!urls.length) { fail("MEDIA_STATUS_INVALID"); return; }
+        setProgress(100); setStatus("completed"); onComplete(urls); onCleanup();
       }
-    } catch (err) {
-      console.error("Wiro WebSocket message parse error:", err);
+    } catch {
+      // A JSON parser exception can quote private upstream text. Never log it.
+      fail("MEDIA_STATUS_INVALID");
     }
   },
 };
@@ -152,9 +117,7 @@ export const wiroGeneratorPlugin: MediaGeneratorPlugin = {
 
   async startGeneration(request: GenerationRequest): Promise<GenerationTask> {
     if (!this.isConfigured()) {
-      throw new Error(
-        "Wiro.ai is not configured. Please set WIRO_API_KEY and WIRO_VIDEO_MODELS or WIRO_IMAGE_MODELS."
-      );
+      throw new MediaSubmissionNotSentError();
     }
 
     const apiKey = process.env.WIRO_API_KEY!;
@@ -196,6 +159,7 @@ export const wiroGeneratorPlugin: MediaGeneratorPlugin = {
         "x-api-key": apiKey,
       },
       body: formData,
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {

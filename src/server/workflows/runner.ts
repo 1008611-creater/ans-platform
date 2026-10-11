@@ -1,3 +1,7 @@
+import { safeAwardGrowthEvent } from "@/server/growth/service";
+import { randomUUID } from "node:crypto";
+import { readMeteredRunCost, unifiedModelBilling } from "@/server/integrations/metered-cost";
+import type { DbTransaction } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { workflowDefinitionSchema, type WorkflowDefinition } from "@/contracts/workflow";
@@ -14,7 +18,7 @@ import {
   resolveCredentialForRun,
 } from "@/server/credentials/service";
 import { refundQuota } from "@/server/quota/service";
-import { RUN_REASONING_EFFORTS, type RunReasoningEffort } from "@/lib/run-models";
+import { DEFAULT_RUN_MODEL, RUN_REASONING_EFFORTS, type RunReasoningEffort } from "@/lib/run-models";
 
 /**
  * 工作流运行器：把不可变版本定义翻译成一次可审计的执行。
@@ -70,7 +74,7 @@ export type WorkflowHandlerContext = {
   /** 允许测试注入模型调用，生产路径使用平台客户端。 */
   callModel?: (args: { target: ModelTarget; prompt: string; timeoutMs?: number; signal?: AbortSignal; reasoningEffort?: RunReasoningEffort }) => Promise<string>;
   onModelCallStart?: (model: string) => void;
-  onModelCall?: (call: { model: string; usage: ModelTokenUsage | null }) => void;
+  onModelCall?: (call: { model: string; usage: ModelTokenUsage | null; charge?: { requestId: string; quota: number; points: number } }) => void;
 };
 
 async function modelTargetFor(node: WorkflowNodeContext["node"], context: WorkflowHandlerContext): Promise<ModelTarget> {
@@ -78,12 +82,13 @@ async function modelTargetFor(node: WorkflowNodeContext["node"], context: Workfl
     typeof node.config.modelKey === "string" ? node.config.modelKey : context.modelKey;
   const credentialId =
     typeof node.config.credentialId === "string" ? node.config.credentialId : context.credentialId;
+  if (credentialId && process.env.ANS_APIC_BILLING_ENABLED === "1") throw new ModelClientError("PLATFORM_BILLING_REQUIRES_APIC", "BYOK_NOT_AVAILABLE");
   if (credentialId) {
     const credential = await resolveCredentialForRun(context.userId, credentialId);
     return {
       baseUrl: credential.baseUrl,
       apiKey: credential.apiKey,
-      upstream: modelKey?.trim() || "gpt-5.6-terra",
+      upstream: modelKey?.trim() || DEFAULT_RUN_MODEL,
       label: `${credential.label}（自带 Key ${credential.keyMasked}）`,
     };
   }
@@ -116,8 +121,8 @@ export function createWorkflowHandlers(context: WorkflowHandlerContext): Partial
           : "none";
         const result = context.callModel
           ? { text: await context.callModel({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal, ...(reasoning !== "none" ? { reasoningEffort: reasoning } : {}) }), usage: null }
-          : await callModelTextWithUsage({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal, reasoningEffort: reasoning });
-        context.onModelCall?.({ model: target.upstream, usage: result.usage });
+          : await callModelTextWithUsage({ target, prompt, timeoutMs: node.timeoutMs, signal: rest.signal, reasoningEffort: reasoning, userId: context.userId, chargeRef: { type: "workflow_run", id: context.runId }, idempotencyKey: `workflow:${context.runId}:${node.id}` });
+        context.onModelCall?.({ model: target.upstream, usage: result.usage, ...( "charge" in result ? { charge: result.charge } : {}) });
         return result.text;
       } catch (error) {
         if (error instanceof ModelClientError) throw new Error(`${error.message}（${target.label}）`);
@@ -141,7 +146,7 @@ export async function executeInlineWorkflow(
   return executeWorkflow(definition, input, {
     handlers: createWorkflowHandlers({
       ...context,
-      runId: context.runId ?? "inline-workflow",
+      runId: context.runId ?? `inline-${randomUUID()}`,
     }),
     maxExecutionMs: options.maxExecutionMs ?? MAX_WORKFLOW_EXECUTION_MS,
   });
@@ -152,6 +157,7 @@ type ModelUsageAudit = {
   modelCalls: number;
   tokenUsage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null };
   reasoningEffort: RunReasoningEffort;
+  apicCharges?: { requestId: string; quota: number; points: number }[];
 };
 
 function prismaJsonValue(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull | typeof Prisma.DbNull {
@@ -164,14 +170,16 @@ function createModelUsageTracker(reasoningEffort: RunReasoningEffort) {
   const models = new Set<string>();
   const responses: Array<ModelTokenUsage | null> = [];
   let modelCalls = 0;
+  const charges: NonNullable<ModelUsageAudit["apicCharges"]> = [];
   return {
     start(model: string) {
       models.add(model);
       modelCalls += 1;
     },
-    complete(call: { model: string; usage: ModelTokenUsage | null }) {
+    complete(call: { model: string; usage: ModelTokenUsage | null; charge?: NonNullable<ModelUsageAudit["apicCharges"]>[number] }) {
       models.add(call.model);
       responses.push(call.usage);
+      if (call.charge) charges.push(call.charge);
     },
     summary(): ModelUsageAudit {
       const sum = (key: keyof ModelTokenUsage) => {
@@ -185,6 +193,7 @@ function createModelUsageTracker(reasoningEffort: RunReasoningEffort) {
         return total;
       };
       return {
+        apicCharges: charges,
         models: [...models],
         modelCalls,
         tokenUsage: {
@@ -255,11 +264,15 @@ export async function executePersistedWorkflow(
     modelKey?: string;
     credentialId?: string;
     reasoningEffort?: RunReasoningEffort;
-    onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>;
+    onSucceeded?: (tx: DbTransaction, result: WorkflowExecutionResult) => Promise<void>;
   } = {},
 ): Promise<WorkflowExecutionResult | null> {
   const run = await loadRunnableRun(runId, userId);
   if (!run) return null;
+  // Project recipes must atomically save their deliverable with the success state.
+  if (run.projectId && !options.onSucceeded) {
+    throw Object.assign(new Error("PROJECT_ADAPTER_REQUIRED"), { code: "PROJECT_ADAPTER_REQUIRED", status: 409 });
+  }
 
   // 自带 Key 必须先校验归属，避免用户拿到别人的凭证编号去跑自己的任务。
   if (options.credentialId) {
@@ -311,6 +324,9 @@ export async function executePersistedWorkflow(
     stopWatchingCancellation();
   }
 
+  if (run.projectId && result.status === "failed") {
+    result = { ...result, error: "PROJECT_EXECUTION_FAILED", executions: result.executions.map((execution) => execution.error ? { ...execution, error: "PROJECT_NODE_FAILED" } : execution) };
+  }
   try {
     const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, result, options.onSucceeded, modelUsage.summary());
     return finalized ? result : null;
@@ -320,7 +336,7 @@ export async function executePersistedWorkflow(
       ...result,
       status: "failed",
       output: undefined,
-      error: `成果保存失败：${error instanceof Error ? error.message : "数据库写入错误"}`,
+      error: run.projectId ? "ARTIFACT_SAVE_FAILED" : `成果保存失败：${error instanceof Error ? error.message : "数据库写入错误"}`,
     };
     const finalized = await persistResult(run.id, userId, run.costPoints, run.workflow.title, failed, undefined, modelUsage.summary());
     return finalized ? failed : null;
@@ -328,13 +344,13 @@ export async function executePersistedWorkflow(
 }
 
 async function finalizeFailure(
-  run: { id: string; userId: string; costPoints: number; workflow: { title: string } },
+  run: { id: string; userId: string; costPoints: number; projectId?: string | null; workflow: { title: string } },
   message: string,
   modelUsage?: ModelUsageAudit,
 ): Promise<WorkflowExecutionResult | null> {
   const result: WorkflowExecutionResult = {
     status: "failed",
-    error: message,
+    error: run.projectId ? "PROJECT_EXECUTION_FAILED" : message,
     executions: [],
     elapsedMs: 0,
   };
@@ -348,7 +364,7 @@ async function persistResult(
   costPoints: number,
   workflowTitle: string,
   result: WorkflowExecutionResult,
-  onSucceeded?: (tx: Prisma.TransactionClient, result: WorkflowExecutionResult) => Promise<void>,
+  onSucceeded?: (tx: DbTransaction, result: WorkflowExecutionResult) => Promise<void>,
   modelUsage: ModelUsageAudit = { models: [], modelCalls: 0, tokenUsage: { inputTokens: null, outputTokens: null, totalTokens: null }, reasoningEffort: "none" },
 ): Promise<boolean> {
   const succeeded = result.status === "succeeded";
@@ -378,8 +394,24 @@ async function persistResult(
       });
     }
     if (succeeded && onSucceeded) await onSucceeded(tx, result);
+    let settledCostPoints = costPoints;
+    if (unifiedModelBilling()) {
+      const billing = await readMeteredRunCost(tx, userId, { type: "workflow_run", id: runId });
+      settledCostPoints = billing.settledPoints + billing.pendingPoints;
+      // Release only a legacy outer reservation. Model-request holds have their own state machine.
+      if (costPoints > 0) await refundQuota(tx, { userId, costPoints, ref: { type: "workflow_run", id: runId }, note: "Legacy workflow reservation transferred to unified model billing" });
+      await tx.workflowRun.update({ where: { id: runId }, data: { costPoints: settledCostPoints } });
+    } else if (succeeded && process.env.ANS_APIC_BILLING_ENABLED === "1" && ((modelUsage.apicCharges?.length ?? 0) > 0 || modelUsage.modelCalls === 0)) {
+      const charges = modelUsage.apicCharges ?? [];
+      if (new Set(charges.map(c => c.requestId)).size !== charges.length) throw new Error("APIC_DUPLICATE_CHARGE");
+      settledCostPoints = charges.reduce((total, charge) => total + charge.quota, 0) / 500000;
+      if (settledCostPoints > costPoints) throw new Error("APIC_USAGE_EXCEEDS_RESERVATION");
+      if (settledCostPoints < costPoints) await refundQuota(tx, { userId, costPoints: costPoints - settledCostPoints,
+        ref: { type: "workflow_run", id: runId }, note: "APIC actual usage settlement: unused reservation" });
+      await tx.workflowRun.update({ where: { id: runId }, data: { costPoints: settledCostPoints } });
+    }
 
-    if (!succeeded && costPoints > 0) {
+    if (!succeeded && costPoints > 0 && !unifiedModelBilling()) {
       await refundQuota(tx, {
         userId,
         costPoints,
@@ -396,7 +428,8 @@ async function persistResult(
         metadata: {
           elapsedMs: result.elapsedMs,
           error: result.error ?? null,
-          costPoints,
+          costPoints: settledCostPoints,
+          apicCharges: modelUsage.apicCharges ?? [],
           models: modelUsage.models,
           modelCalls: modelUsage.modelCalls,
           tokenUsage: modelUsage.tokenUsage,
@@ -405,6 +438,9 @@ async function persistResult(
       },
     });
     return true;
+  }).then(async (persisted) => {
+    if (persisted && succeeded) await safeAwardGrowthEvent({ userId, type: "RUN_COMPLETE", reason: "RUN_COMPLETE", sourceType: "workflow_run", sourceId: runId });
+    return persisted;
   });
 }
 

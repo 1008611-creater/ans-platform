@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Copy, Eye, EyeOff, RefreshCw, Trash2, Key, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,8 @@ export function ApiKeySettings({
   hasExistingKey,
   initialPublicByDefault,
 }: ApiKeySettingsProps) {
+  const [origin, setOrigin] = useState("https://ans.cauai.fun");
+  useEffect(() => setOrigin(window.location.origin), []);
   const t = useTranslations("apiKey");
   const tCommon = useTranslations("common");
   const [apiKey, setApiKey] = useState<string | null>(initialApiKey);
@@ -145,6 +147,25 @@ export function ApiKeySettings({
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="space-y-2 rounded-lg border p-3">
+          <Label>{t("codexTitle")}</Label>
+          <p className="text-sm text-muted-foreground">{t("codexDescription")}</p>
+          <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">{`model = "gpt-6.1-sol"
+model_provider = "ans"
+model_context_window = 100000
+model_auto_compact_token_limit = 80000
+
+[model_providers.ans]
+name = "ANS"
+base_url = "${origin}/api/codex/v1"
+wire_api = "responses"
+env_key = "ANS_API_KEY"
+requires_openai_auth = false
+supports_websockets = false
+request_max_retries = 0
+stream_max_retries = 0`}</pre>
+          <p className="text-xs text-muted-foreground">{t("codexLimits")}</p>
+        </div>
         {hasKey ? (
           <>
             <div className="space-y-2">

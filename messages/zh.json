@@ -96,6 +96,7 @@
     "loginDescriptionOAuth": "使用您的账户登录以继续",
     "register": "注册",
     "registerDescription": "创建账户以开始使用",
+    "openRegistrationNote": "所有邮箱都可注册，无需邀请码。完成邮箱验证码和人机验证即可；昵称用于公开展示，无需真实姓名。",
     "logout": "退出登录",
     "email": "邮箱",
     "password": "密码",
@@ -404,7 +405,15 @@
     "learnHowToWritePrompts": "学习如何写出有效的提示词 →",
     "structuredFormatDetected": "检测到 {format} 格式",
     "structuredFormatWarningDescription": "您的提示词内容看起来像结构化数据。考虑切换到结构化模式以获得更好的语法高亮和验证。",
-    "switchToStructured": "切换到 {format}"
+    "switchToStructured": "切换到 {format}",
+    "generationConnectionFailed": "连接中断。点击“找回任务”继续查看原任务，不会再次提交或重复扣额度。",
+    "generationReviewRequired": "任务是否受理还需要核对，已保留原请求。请联系管理员；找回任务不会重复提交。",
+    "generationNoCredits": "可用生成额度不足，请查看每日额度。",
+    "generationNotAccepted": "本次任务确认未提交。请联系管理员查看核对结果。",
+    "generationProviderFailed": "生成服务报告任务失败。可以找回原任务查看状态；重连不会再提交。",
+    "generationCanResume": "任务已记录。连接中断后可用相同内容和模型找回，不会重复提交。",
+    "resumeGeneration": "找回任务",
+    "newGeneration": "重新确认并生成"
   },
   "changeRequests": {
     "title": "变更请求",
@@ -511,8 +520,8 @@
       "webhooks": "Webhooks",
       "prompts": "提示词",
       "reports": "举报",
-    "skills": "Skill管理",
-    "governance": "治理中心"
+      "skills": "Skill管理",
+      "governance": "治理中心"
     },
     "reports": {
       "title": "举报管理",
@@ -1226,7 +1235,10 @@
     "keyRevoked": "API 密钥已撤销",
     "publicByDefault": "默认公开提示词",
     "publicByDefaultDescription": "通过MCP保存提示词时，默认设为公开而非私有。",
-    "settingUpdated": "设置已更新"
+    "settingUpdated": "设置已更新",
+    "codexTitle": "Codex 接入",
+    "codexDescription": "使用本页生成的个人 Key 设置 ANS_API_KEY 环境变量。请求按 ANS 积分预占，并按实际消耗结算。GPT 消耗倍率为 0.16。",
+    "codexLimits": "每次请求最多 512 KiB 输入、16,384 输出 Token。仅支持文本和本地工具调用。重置或撤销 Key 会立即停止新请求。"
   },
   "connectedPrompts": {
     "title": "提示词流程",
@@ -2311,7 +2323,7 @@
         "detail": "Plane 不是本次比赛的默认任务源，需要独立审计轨迹时再使用。"
       },
       "toonflow": {
-        "name": "Toonflow",
+        "name": "AIGC 工作台",
         "host": "toonflow.cauai.fun",
         "role": "创意生产工作台",
         "description": "从已确认的计划进入素材生成、迭代和生产交接。",
@@ -2335,7 +2347,7 @@
       "produce": {
         "label": "03 · 生产",
         "description": "生成、评审、版本化并整理带证据的作品。",
-        "state": "使用 Toonflow"
+        "state": "使用 AIGC 工作台"
       },
       "submit": {
         "label": "04 · 提交",
@@ -2371,55 +2383,55 @@
     }
   },
   "homepageNext": {
-      "eyebrow":  "让 AI 工作真正走到结果",
-      "heroTitle":  "把想法变成可运行的 AI 工作流",
-      "heroDescription":  "发现经过验证的提示词，复用可运行的模板，把重要的过程和成果留在一个地方。",
-      "primaryCta":  "从模板开始",
-      "continue":  "打开我的工作台",
-      "secondaryCta":  "探索社区内容",
-      "proofPrompt":  "精选提示词",
-      "proofTemplate":  "可运行模板",
-      "proofWorkflow":  "可复用工作流",
-      "previewLabel":  "一条清晰路径",
-      "previewTitle":  "从问题到可以继续的结果",
-      "previewReady":  "可以开始",
-      "previewInputLabel":  "你的起点",
-      "previewInput":  "我有一个项目想法，帮我把它变成清晰的第一步计划。",
-      "previewOutputLabel":  "可以继续加工的结果",
-      "previewOutput":  "一份包含输入、步骤、证据和下一步动作的结构化计划。",
-      "previewNextLabel":  "下一步动作",
-      "previewNext":  "打开一个模板，补充真实背景，然后运行第一个版本。",
-      "pathEyebrow":  "选择下一步",
-      "pathTitle":  "在一个地方发现、运行和改进",
-      "pathDescription":  "从已经验证的能力开始，把它变成可以检查、复用和继续迭代的工作。",
-      "pathDiscoverTitle":  "发现起点",
-      "pathDiscoverDescription":  "浏览来自真实场景和社区实践的提示词。",
-      "pathReuseTitle":  "复用有效模式",
-      "pathReuseDescription":  "补充你的背景，保留有用结构，运行第一个版本。",
-      "pathBuildTitle":  "建立可重复的工作流",
-      "pathBuildDescription":  "把步骤连接起来，让下一个项目不必从零开始。",
-      "openAction":  "打开",
-      "closingEyebrow":  "准备好就开始",
-      "closingTitle":  "先完成一个有用的任务",
-      "closingDescription":  "第一次得到结果，是理解 ANS 能为你做什么的最短路径。",
-      "templates":  "模板",
-      "workspace":  "工作台",
-      "runHistory":  "运行记录",
-      "computeTitle":  "算力可用性",
-      "computeEyebrow":  "可用算力",
-      "computeAvailable":  "当前可用",
-      "computeRemaining":  "剩余 {remaining} 点 · 算力池总量 {total} 点",
-      "computeDescription":  "注册即可领取 {points} 点，用于在模板库运行 AI 任务。",
-      "computeProgressLabel":  "算力池已领取比例",
-      "computeClaimed":  "已领取 {claimed} 点",
-      "computeClaimAction":  "领取 {points} 点",
-      "computeLoginAction":  "登录后领取",
-      "computeClaimedState":  "已领取",
-      "computeRunAction":  "运行任务",
-      "computeExhausted":  "算力池已领完",
-      "computeUnavailable":  "算力状态暂时不可用。",
-      "computeClaimError":  "领取失败，请稍后重试。",
-      "computeClaimNetworkError":  "网络异常，请稍后重试。"
+    "eyebrow": "让 AI 工作真正走到结果",
+    "heroTitle": "把想法变成可运行的 AI 工作流",
+    "heroDescription": "发现经过验证的提示词，复用可运行的模板，把重要的过程和成果留在一个地方。",
+    "primaryCta": "从模板开始",
+    "continue": "打开我的工作台",
+    "secondaryCta": "探索社区内容",
+    "proofPrompt": "精选提示词",
+    "proofTemplate": "可运行模板",
+    "proofWorkflow": "可复用工作流",
+    "previewLabel": "一条清晰路径",
+    "previewTitle": "从问题到可以继续的结果",
+    "previewReady": "可以开始",
+    "previewInputLabel": "你的起点",
+    "previewInput": "我有一个项目想法，帮我把它变成清晰的第一步计划。",
+    "previewOutputLabel": "可以继续加工的结果",
+    "previewOutput": "一份包含输入、步骤、证据和下一步动作的结构化计划。",
+    "previewNextLabel": "下一步动作",
+    "previewNext": "打开一个模板，补充真实背景，然后运行第一个版本。",
+    "pathEyebrow": "选择下一步",
+    "pathTitle": "在一个地方发现、运行和改进",
+    "pathDescription": "从已经验证的能力开始，把它变成可以检查、复用和继续迭代的工作。",
+    "pathDiscoverTitle": "发现起点",
+    "pathDiscoverDescription": "浏览来自真实场景和社区实践的提示词。",
+    "pathReuseTitle": "复用有效模式",
+    "pathReuseDescription": "补充你的背景，保留有用结构，运行第一个版本。",
+    "pathBuildTitle": "建立可重复的工作流",
+    "pathBuildDescription": "把步骤连接起来，让下一个项目不必从零开始。",
+    "openAction": "打开",
+    "closingEyebrow": "准备好就开始",
+    "closingTitle": "先完成一个有用的任务",
+    "closingDescription": "第一次得到结果，是理解 ANS 能为你做什么的最短路径。",
+    "templates": "模板",
+    "workspace": "工作台",
+    "runHistory": "运行记录",
+    "computeTitle": "算力可用性",
+    "computeEyebrow": "可用算力",
+    "computeAvailable": "当前可用",
+    "computeRemaining": "剩余 {remaining} 点 · 算力池总量 {total} 点",
+    "computeDescription": "注册即可领取 {points} 点，用于在模板库运行 AI 任务。",
+    "computeProgressLabel": "算力池已领取比例",
+    "computeClaimed": "已领取 {claimed} 点",
+    "computeClaimAction": "领取 {points} 点",
+    "computeLoginAction": "登录后领取",
+    "computeClaimedState": "已领取",
+    "computeRunAction": "运行任务",
+    "computeExhausted": "算力池已领完",
+    "computeUnavailable": "算力状态暂时不可用。",
+    "computeClaimError": "领取失败，请稍后重试。",
+    "computeClaimNetworkError": "网络异常，请稍后重试。"
   },
   "serviceStatus": {
     "eyebrow": "服务状态",
@@ -2462,7 +2474,11 @@
         "tagline": "面向 AIGC 创作团队的比赛工作台",
         "description": "以 ANS 作为共同地图，需要专业能力时再打开对应系统：计划、生产与审计各用各的工作台。",
         "status": "已开放",
-        "highlights": ["3 个外部工作台", "4 个比赛阶段", "8 项提交检查"],
+        "highlights": [
+          "3 个外部工作台",
+          "4 个比赛阶段",
+          "8 项提交检查"
+        ],
         "cta": "进入 AIGC 比赛中心"
       },
       "agrihackathon": {
@@ -2470,15 +2486,19 @@
         "tagline": "首届农业 AI 公益黑客松",
         "description": "48 小时初赛以线上开发为主，同时提供校内线下开发空间；两个周末之间完成初赛评审，第 2 个周末的一天线下决赛决出约 10 支晋级队伍。赛制与预算以报批版活动方案为准。",
         "status": "筹备中",
-        "highlights": ["3 条赛道", "线下 60–80 人", "预算 5000 元"],
+        "highlights": [
+          "3 条赛道",
+          "线下 60–80 人",
+          "预算 5000 元"
+        ],
         "cta": "查看农客松赛制"
       }
     }
   },
   "agriHackathon": {
-    "boundaryNextOpen": "报名与提交已接入；大众投票与结果公示待接入",
+    "boundaryNextOpen": "报名与提交已接入；结果公示待接入",
     "enterWorkbench": "进入报名与提交工作台",
-    "boundaryDescriptionOpen": "赛制说明、赛道结构与提交清单已就位；报名与提交已接入 ANS 赛事工作台。大众投票与结果公示尚未接入。",
+    "boundaryDescriptionOpen": "报名与提交已接入 ANS 赛事工作台；本届规则与日程以正式通知为准，结果公示尚未接入。",
     "navLabel": "农客松比赛",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon 农客松",
@@ -2570,11 +2590,31 @@
     "scoringDescription": "评委按以下维度考察作品；具体权重与计分方式以报批版活动方案为准。",
     "scoringSectionLabel": "02 / 评分",
     "scoring": {
-      "innovation": { "label": "创新性", "weight": "30", "description": "问题定义或解决路径是否有新意。" },
-      "technical": { "label": "技术深度", "weight": "25", "description": "技术选型、实现质量与工程完整度。" },
-      "completeness": { "label": "产品完成度", "weight": "20", "description": "Demo 是否可运行、流程是否闭环。" },
-      "problem": { "label": "真实问题", "weight": "15", "description": "需求是否来自真实场景与真实使用者。" },
-      "fit": { "label": "赛道契合", "weight": "10", "description": "作品与所选赛道的匹配程度。" }
+      "innovation": {
+        "label": "创新性",
+        "weight": "30",
+        "description": "问题定义或解决路径是否有新意。"
+      },
+      "technical": {
+        "label": "技术深度",
+        "weight": "25",
+        "description": "技术选型、实现质量与工程完整度。"
+      },
+      "completeness": {
+        "label": "产品完成度",
+        "weight": "20",
+        "description": "Demo 是否可运行、流程是否闭环。"
+      },
+      "problem": {
+        "label": "真实问题",
+        "weight": "15",
+        "description": "需求是否来自真实场景与真实使用者。"
+      },
+      "fit": {
+        "label": "赛道契合",
+        "weight": "10",
+        "description": "作品与所选赛道的匹配程度。"
+      }
     },
     "advanceTitle": "晋级与评审规则",
     "advanceDescription": "初赛由 7 位评委评分，去掉一个最高分和一个最低分后计算平均分；决赛评分方式以报批版活动方案为准。",
@@ -2588,12 +2628,36 @@
     "awardsTitle": "奖项设置",
     "awardsDescription": "首届现金奖金共 3300 元，另设三项荣誉奖。",
     "awards": {
-      "first": { "label": "一等奖", "amount": "1500 元", "description": "综合得分第一名" },
-      "second": { "label": "二等奖", "amount": "1000 元", "description": "综合得分第二名" },
-      "third": { "label": "三等奖", "amount": "800 元", "description": "综合得分第三名" },
-      "tech": { "label": "最佳技术实现", "amount": "荣誉奖", "description": "技术深度维度表现突出" },
-      "innovation": { "label": "最佳创新", "amount": "荣誉奖", "description": "创新性维度表现突出" },
-      "popular": { "label": "最佳人气", "amount": "荣誉奖", "description": "大众投票得票最高" }
+      "first": {
+        "label": "一等奖",
+        "amount": "1500 元",
+        "description": "综合得分第一名"
+      },
+      "second": {
+        "label": "二等奖",
+        "amount": "1000 元",
+        "description": "综合得分第二名"
+      },
+      "third": {
+        "label": "三等奖",
+        "amount": "800 元",
+        "description": "综合得分第三名"
+      },
+      "tech": {
+        "label": "最佳技术实现",
+        "amount": "荣誉奖",
+        "description": "技术深度维度表现突出"
+      },
+      "innovation": {
+        "label": "最佳创新",
+        "amount": "荣誉奖",
+        "description": "创新性维度表现突出"
+      },
+      "popular": {
+        "label": "最佳人气",
+        "amount": "荣誉奖",
+        "description": "评选方式以本届正式规则为准"
+      }
     },
     "rulesTitle": "参赛规则与合规红线",
     "rulesDescription": "以下条款在报名时确认，违反将取消评奖资格。",
@@ -2612,13 +2676,13 @@
     "openTemplates": "模板广场",
     "openSkills": "技能",
     "boundaryTitle": "首届集成边界",
-    "boundaryDescription": "首版提供赛制说明、赛道结构与提交清单；报名入口、大众投票与结果公示尚未接入。",
+    "boundaryDescription": "首版提供历史赛制、赛道结构与提交清单；本届规则、日期与报名入口待确认。",
     "boundaryItems": {
       "entry": "一个 ANS 入口",
-      "links": "赛道、评分与奖项设置已明确",
+      "links": "历史赛道、评分与奖项仅供参考",
       "ownership": "作品与数据授权由参赛团队说明",
-      "next": "日期与场地确定后接入报名与投票"
+      "next": "本届安排确认后接入报名、提交与结果公示"
     },
-    "syncNote": "首届申请经费 5000 元，科目与额度以报批版活动方案为准。报名入口、大众投票与结果公示将在赛事日期确定后接入。"
+    "syncNote": "历史方案申请经费 5000 元；本届预算、日期、报名与公示安排以正式通知为准。"
   }
 }

@@ -1,38 +1,11 @@
-/**
- * Models exposed by the template runner.
- *
- * `key` is the stable value used by ANS. `upstream` is the exact model id
- * understood by the configured OpenAI-compatible gateway. Keeping the two
- * separate prevents UI labels from accidentally being sent to the gateway.
- *
- * 2026-10-05 权威探测（生产文本网关 McGrox，`/v1/models` + 逐个真实调用）：
- * - 网关只接受**不带前缀**的模型名；旧 ID 上的 `openai/`、`zzzz/` 前缀一律返回 404。
- * - `gpt-5.6-terra` / `gpt-5.6-sol` / `gpt-6-astra` 实测均 200，且支持
- *   `reasoning_effort` 与流式返回（含 usage）。
- * - 原白名单里的 13 个 TR 国模（deepseek / glm / kimi / qwen / seed）返回 404
- *   `Model "..." is not supported by any configured account in this group`，
- *   已从白名单移除，避免用户选中后必然失败。
- * 新增模型前必须先用 `/v1/models` 加一次真实调用确认网关可用。
+/** ANS model IDs match the APIC gateway exactly. All member balances and
+ * spending authorization remain owned by ANS; upstream credentials stay server-side.
+ * Routing is prepared locally and requires live-call verification before release.
  */
 export const RUN_MODEL_OPTIONS = [
-  {
-    key: "gpt-5.6-terra",
-    label: "GPT-5.6 Terra (balanced)",
-    upstream: "gpt-5.6-terra",
-    channel: "McGrox",
-  },
-  {
-    key: "gpt-5.6-sol",
-    label: "GPT-5.6 Sol (frontier)",
-    upstream: "gpt-5.6-sol",
-    channel: "McGrox",
-  },
-  {
-    key: "gpt-6-astra",
-    label: "GPT-6 Astra (flagship)",
-    upstream: "gpt-6-astra",
-    channel: "McGrox",
-  },
+  { key: "deepseek-v4.1-flash", label: "DeepSeek V4.1 Flash", upstream: "deepseek-v4.1-flash", channel: "APIC" },
+  { key: "gpt-6-astra", label: "GPT-6 Astra", upstream: "gpt-6-astra", channel: "APIC" },
+  { key: "gpt-6.1-sol", label: "GPT-6.1 Sol", upstream: "gpt-6.1-sol", channel: "APIC" },
 ] as const;
 
 export type RunModelKey = (typeof RUN_MODEL_OPTIONS)[number]["key"];
@@ -49,7 +22,7 @@ export const RUN_REASONING_EFFORT_LABELS: Record<RunReasoningEffort, string> = {
   high: "高",
 };
 
-export const DEFAULT_RUN_MODEL: RunModelKey = "gpt-5.6-terra";
+export const DEFAULT_RUN_MODEL: RunModelKey = "deepseek-v4.1-flash";
 
 export function getRunModel(key: string): RunModelOption | undefined {
   return RUN_MODEL_OPTIONS.find((model) => model.key === key);

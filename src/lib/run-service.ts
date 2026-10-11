@@ -1,3 +1,7 @@
+import { readMeteredRunCost, unifiedModelBilling } from "@/server/integrations/metered-cost";
+import { callModelTextWithUsage, ModelClientError } from "@/server/integrations/model-client";
+import { refundQuota } from "@/server/quota/service";
+import type { DbTransaction } from "@/lib/db";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -219,7 +223,7 @@ export async function runTemplate(args: {
     return { ok: false, error: "invalid_input", message: parsed.message, status: 400 };
   }
 
-  const costPoints = Math.max(1, template.estimatedCost || 1);
+  const costPoints = unifiedModelBilling() ? 0 : process.env.ANS_APIC_BILLING_ENABLED === "1" ? 0.25 : Math.max(1, template.estimatedCost || 1);
   const idempotencyKey = normalizeIdempotencyKey(args.idempotencyKey);
 
   if (idempotencyKey) {
@@ -229,7 +233,7 @@ export async function runTemplate(args: {
 
   let created: CreatedRun;
   try {
-    created = await db.$transaction(async (tx: Prisma.TransactionClient) => {
+    created = await db.$transaction(async (tx: DbTransaction) => {
       const user = await tx.user.findUnique({
         where: { id: args.userId },
         select: { id: true, quotaPoints: true, flagged: true, deletedAt: true },
@@ -262,7 +266,7 @@ export async function runTemplate(args: {
           startedAt: new Date(),
         },
       });
-      await tx.quotaLedger.create({
+      if (costPoints > 0) await tx.quotaLedger.create({
         data: {
           userId: args.userId,
           amount: -costPoints,
@@ -297,79 +301,16 @@ export async function runTemplate(args: {
   });
 
   const prompt = fillPrompt(template.promptBody, parsed.values);
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), RUN_TIMEOUT_MS);
   let outputText: string | null = null;
   let error: string | null = null;
+  let settledCostPoints = costPoints;
+  let chargeRequestId: string | null = null;
   try {
-    const url = new URL(baseUrl);
-    const path = url.pathname.replace(/\/+$/, "");
-    url.pathname = `${path.endsWith("/v1") ? path : `${path}/v1`}/chat/completions`;
-    const response = await fetch(url.toString(), {
-      method: "POST",
-      signal: controller.signal,
-      redirect: "error",
-      cache: "no-store",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: model.upstream,
-        stream: false,
-        messages: [
-          { role: "system", content: "你是一个可靠的 AI 助手，按模板要求完成任务，直接输出结果，不要解释过程。" },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-    if (!response.ok) {
-      error = `模型服务返回 ${response.status}`;
-      // 网关可能对非流式请求返回超时，而其流式回退是健康的。只对这几类网关
-      // 错误重试，并把 SSE 帧解析成同样的纯文本结果。
-      if ([502, 503, 504, 524].includes(response.status)) {
-        const fallbackController = new AbortController();
-        const fallbackTimeout = setTimeout(() => fallbackController.abort(), RUN_TIMEOUT_MS);
-        try {
-          const fallback = await fetch(url.toString(), {
-            method: "POST",
-            signal: fallbackController.signal,
-            redirect: "error",
-            cache: "no-store",
-            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: model.upstream,
-              stream: true,
-              messages: [
-                { role: "system", content: "你是一个可靠的 AI 助手，按模板要求完成任务，直接输出结果，不要解释过程。" },
-                { role: "user", content: prompt },
-              ],
-            }),
-          });
-          if (fallback.ok) {
-            const streamed = parseStreamOutput(await fallback.text());
-            if (streamed) {
-              outputText = streamed.length > MAX_OUTPUT ? streamed.slice(0, MAX_OUTPUT) : streamed;
-              error = null;
-            }
-          }
-        } catch {
-          // Keep the original gateway error and refund below.
-        } finally {
-          clearTimeout(fallbackTimeout);
-        }
-      }
-    } else {
-      const payload = await response.json();
-      const content = payload?.choices?.[0]?.message?.content;
-      if (typeof content !== "string" || content.length === 0) {
-        error = "模型返回内容为空";
-      } else {
-        outputText = content.length > MAX_OUTPUT ? content.slice(0, MAX_OUTPUT) : content;
-      }
-    }
-  } catch {
-    error = controller.signal.aborted ? "模型响应超时" : "模型调用失败";
-  } finally {
-    clearTimeout(timeout);
-  }
+    const result = await callModelTextWithUsage({ target: { baseUrl, apiKey, upstream: model.upstream, label: model.key }, prompt, timeoutMs: RUN_TIMEOUT_MS, userId: args.userId, chargeRef: { type: "run", id: created.runId }, idempotencyKey: `template:${created.runId}` });
+    outputText = result.text;
+    if (result.charge) { settledCostPoints = result.charge.points; chargeRequestId = result.charge.requestId; }
+    if (!unifiedModelBilling() && settledCostPoints > costPoints) throw new Error("APIC_USAGE_EXCEEDS_RESERVATION");
+  } catch (failure) { error = failure instanceof ModelClientError ? failure.message : "APIC_BILLING_FAILED"; outputText = null; }
 
   if (outputText === null) {
     const reason = error || "模型调用失败";
@@ -393,9 +334,12 @@ export async function runTemplate(args: {
     return { ok: false, error: "run_failed", message: reason, runId: created.runId };
   }
 
-  await db.run.update({
-    where: { id: created.runId },
-    data: { status: "SUCCEEDED", outputText, finishedAt: new Date() },
+  await db.$transaction(async tx => {
+    const updated = await tx.run.updateMany({ where: { id: created.runId, userId: args.userId, status: "QUEUED" },
+      data: { status: "SUCCEEDED", outputText, costPoints: settledCostPoints, finishedAt: new Date() } });
+    if (updated.count !== 1) throw new Error("RUN_SETTLEMENT_CONFLICT");
+    if (settledCostPoints < costPoints) await refundQuota(tx, { userId: args.userId, costPoints: costPoints - settledCostPoints,
+      ref: { type: "run", id: created.runId }, note: "APIC actual usage settlement: unused reservation" });
   });
   await db.template.update({
     where: { id: template.id },
@@ -412,11 +356,13 @@ export async function runTemplate(args: {
       modelKey: model.key,
       costPoints,
       outputLength: outputText.length,
+      chargeRequestId,
+      settledCostPoints,
     },
     ipAddress: args.ipAddress ?? null,
     userAgent: args.userAgent ?? null,
   });
-  return { ok: true, runId: created.runId, status: "SUCCEEDED", outputText, costPoints };
+  return { ok: true, runId: created.runId, status: "SUCCEEDED", outputText, costPoints: settledCostPoints };
 }
 
 // 失败退费：只有真正把运行从 QUEUED/RUNNING 转为 FAILED 的那一次才退费，
@@ -428,12 +374,17 @@ async function refundRun(
   templateTitle: string,
   reason: string
 ): Promise<boolean> {
-  return db.$transaction(async (tx: Prisma.TransactionClient) => {
+  return db.$transaction(async (tx: DbTransaction) => {
     const transitioned = await tx.run.updateMany({
       where: { id: runId, userId, status: { in: ["QUEUED", "RUNNING"] } },
       data: { status: "FAILED", error: reason, finishedAt: new Date() },
     });
     if (transitioned.count !== 1) return false;
+    if (unifiedModelBilling()) {
+      const billing = await readMeteredRunCost(tx, userId, { type: "run", id: runId });
+      await tx.run.update({ where: { id: runId }, data: { costPoints: billing.settledPoints + billing.pendingPoints } });
+    }
+    if (costPoints <= 0) return true;
     const user = await tx.user.update({ where: { id: userId }, data: { quotaPoints: { increment: costPoints } }, select: { quotaPoints: true } });
     const balanceAfter = user.quotaPoints;
     await tx.quotaLedger.create({

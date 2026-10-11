@@ -1,6 +1,6 @@
 {
   "$comment": "src/app 下仍直接/间接访问数据库的历史文件。此清单只能变小：修好一个就从这里删掉一行；新增越界会被 npm run check:boundaries 拦下。用 node scripts/check-boundaries.mjs --write-app-baseline 重新生成。",
-  "count": 101,
+  "count": 100,
   "files": [
     "app/[username]/opengraph-image.tsx",
     "app/[username]/page.tsx",
@@ -39,7 +39,6 @@
     "app/api/improve-prompt/route.ts",
     "app/api/leaderboard/route.ts",
     "app/api/mcp/route.ts",
-    "app/api/media-generate/route.ts",
     "app/api/prompt-builder/chat/route.ts",
     "app/api/prompts/[id]/changes/[changeId]/route.ts",
     "app/api/prompts/[id]/changes/route.ts",

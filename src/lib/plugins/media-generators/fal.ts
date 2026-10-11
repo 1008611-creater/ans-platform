@@ -1,3 +1,4 @@
+import { MediaSubmissionNotSentError } from "./types";
 /**
  * Fal.ai Media Generator Plugin
  * 
@@ -108,7 +109,7 @@ async function submitToFalQueue(
   input: Record<string, unknown>
 ): Promise<FalQueueResponse> {
   const apiKey = process.env.FAL_API_KEY;
-  if (!apiKey) throw new Error("FAL_API_KEY is not configured");
+  if (!apiKey) throw new MediaSubmissionNotSentError();
 
   const url = `${FAL_QUEUE_BASE}/${modelId}`;
   
@@ -119,6 +120,7 @@ async function submitToFalQueue(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(input),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!response.ok) {
@@ -243,9 +245,7 @@ export const falGeneratorPlugin: MediaGeneratorPlugin = {
 
   async startGeneration(request: GenerationRequest): Promise<GenerationTask> {
     if (!this.isConfigured()) {
-      throw new Error(
-        "Fal.ai is not configured. Please set FAL_API_KEY and FAL_VIDEO_MODELS or FAL_IMAGE_MODELS."
-      );
+      throw new MediaSubmissionNotSentError();
     }
 
     const input: Record<string, unknown> = {
@@ -303,22 +303,9 @@ export const falGeneratorPlugin: MediaGeneratorPlugin = {
     // Map status to our format
     const statusKey = falStatusMap[status.status] || "generating";
     
-    // Calculate progress based on status
-    let progress = 0;
-    switch (status.status) {
-      case "IN_QUEUE":
-        progress = 25;
-        break;
-      case "IN_PROGRESS":
-        progress = 50;
-        break;
-      case "COMPLETED":
-        progress = 100;
-        break;
-      case "FAILED":
-        progress = 0;
-        break;
-    }
+    if (!["IN_QUEUE", "IN_PROGRESS", "COMPLETED", "FAILED"].includes(status.status)) throw new Error("MEDIA_STATUS_INVALID");
+    // Queue/running stages do not include measured completion percentages.
+    const progress = status.status === "COMPLETED" ? 100 : null;
 
     // If completed, fetch the result
     let outputUrls: string[] = [];
@@ -328,7 +315,7 @@ export const falGeneratorPlugin: MediaGeneratorPlugin = {
     }
 
     return {
-      status: status.status.toLowerCase().replace("_", "_") as PollStatusResult["status"],
+      status: status.status.toLowerCase() as PollStatusResult["status"],
       statusKey,
       progress,
       queuePosition: status.queue_position,

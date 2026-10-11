@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { auth } from "@/lib/auth";
+
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,8 +17,8 @@ import { ReportsTable } from "@/components/admin/reports-table";
 import { SkillsManagement } from "@/components/admin/skills-management";
 import { GovernanceManagement } from "@/components/admin/governance-management";
 import { isAISearchEnabled } from "@/lib/ai/embeddings";
-import { ADMIN_PERMISSIONS, hasAdminPermission } from "@/lib/admin-permissions";
-import { LayoutTemplate, KeyRound, Workflow, Settings2 } from "lucide-react";
+import { ADMIN_PERMISSIONS, hasAdminPermission, getAdminContext } from "@/lib/admin-permissions";
+import { History as HistoryIcon, LayoutTemplate, KeyRound, Workflow, Settings2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -26,17 +26,20 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  const session = await auth();
+  const adminContext = await getAdminContext();
   const t = await getTranslations("admin");
   const navT = await getTranslations("nav");
+  const marketT = await getTranslations("product.market");
+  const quotaT = await getTranslations("product.quotaAdmin");
+  const catalogT = await getTranslations("product.catalogAdmin");
+  const mediaT = await getTranslations("product.mediaReview");
 
   // Check if user is admin
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (!adminContext) {
     redirect("/");
   }
 
-  const adminRecord = await db.user.findUnique({ where: { id: session.user.id }, select: { adminPermissions: true } });
-  const can = (permission: (typeof ADMIN_PERMISSIONS)[number]) => hasAdminPermission(adminRecord?.adminPermissions, permission);
+  const can = (permission: (typeof ADMIN_PERMISSIONS)[number]) => hasAdminPermission(adminContext.permissions, permission);
   const visibleTabs = [
     can("USERS_VIEW") && "users",
     can("PROMPTS_VIEW") && "prompts",
@@ -198,6 +201,14 @@ export default async function AdminPage() {
 
       {/* 管理工具：模板与工作流审核队列 / 邀请码（ANS P1/P0） */}
       <div className="mb-4 flex flex-wrap gap-2">
+        {can("USERS_MANAGE") && <Link href="/admin/media-generations" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"><HistoryIcon className="h-4 w-4" />{mediaT("title")}</Link>}
+        {can("CATALOG_MANAGE") && <Link href="/admin/catalog" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"><FolderTree className="h-4 w-4" />{catalogT("title")}</Link>}
+        {can("USERS_MANAGE") && <Link href="/admin/credits" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted">{quotaT("title")}</Link>}
+        {can("MARKETPLACE_MANAGE") && (
+          <Link href="/admin/market" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted">
+            <LayoutTemplate className="h-4 w-4 text-muted-foreground" /> {marketT("moderation")}
+          </Link>
+        )}
         <Link href="/admin/competitions" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted">
           <Trophy className="h-4 w-4 text-muted-foreground" /> {navT("competitionHub")}
         </Link>

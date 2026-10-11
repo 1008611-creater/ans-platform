@@ -214,17 +214,20 @@ export function UsersTable() {
     }
   };
 
+  const catalogT = useTranslations("product.catalogAdmin");
   const adminPermissionOptions = [
     ["USERS_VIEW", "查看用户"], ["USERS_MANAGE", "管理用户"],
     ["PROMPTS_VIEW", "查看提示词"], ["PROMPTS_MANAGE", "管理提示词"],
     ["SKILLS_VIEW", "查看 Skill"], ["SKILLS_MANAGE", "管理 Skill"],
     ["REPORTS_MANAGE", "处理举报"], ["AUDIT_VIEW", "查看审计日志"],
     ["RECYCLE_BIN_MANAGE", "管理回收站"],
+    ["WEBHOOKS_MANAGE", "管理 Webhook"], ["INVITES_MANAGE", "管理邀请码"],
+    ["MARKETPLACE_MANAGE", catalogT("marketPermission")], ["CATALOG_MANAGE", catalogT("permission")],
   ] as const;
 
   const handleEditPermissions = (user: UserData) => {
     setPermissionsUser(user);
-    setSelectedPermissions(Array.isArray(user.adminPermissions) && user.adminPermissions.length > 0 ? user.adminPermissions : adminPermissionOptions.map(([permission]) => permission));
+    setSelectedPermissions(Array.isArray(user.adminPermissions) ? user.adminPermissions : adminPermissionOptions.map(([permission]) => permission));
   };
 
   const handleSavePermissions = async () => {

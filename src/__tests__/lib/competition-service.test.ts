@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 
 const mocks = vi.hoisted(() => ({
@@ -14,13 +14,14 @@ const mocks = vi.hoisted(() => ({
     artifactPublication: { findUnique: vi.fn(), upsert: vi.fn() },
     xpLedger: { create: vi.fn() },
     auditLog: { create: vi.fn() },
+    $queryRaw: vi.fn(),
     $transaction: vi.fn(),
   },
 }));
 
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
-import { deriveCompetitionProgress, getCompetition, registerCompetitionTeam, reviewCompetitionEntry, submitCompetitionEntry } from "@/server/competitions/service";
+import { deriveCompetitionProgress, findAgriHackathonCompetition, getCompetition, registerCompetitionTeam, reviewCompetitionEntry, submitCompetitionEntry } from "@/server/competitions/service";
 
 const submission = {
   teamId: "team1",
@@ -34,6 +35,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
   mocks.db.auditLog.create.mockResolvedValue({ id: "audit1" });
+  mocks.db.$queryRaw.mockResolvedValue([]);
 });
 
 describe("赛事参与闭环", () => {
@@ -176,4 +178,45 @@ describe("赛事参与闭环", () => {
     });
   });
 
+});
+
+
+describe("农客松本届赛事绑定", () => {
+  afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
+
+  it.each([undefined, "", "   ", "a".repeat(81)])("未配置有效 ID 时不猜测赛事：%s", async (id) => {
+    vi.stubEnv("ANS_AGRIHACKATHON_COMPETITION_ID", id);
+    expect(await findAgriHackathonCompetition()).toBeNull();
+    expect(mocks.db.competition.findUnique).not.toHaveBeenCalled();
+    expect(mocks.db.competition.findMany).not.toHaveBeenCalled();
+  });
+
+  it("只读取明确绑定的记录，不按标题或创建时间选择其他届", async () => {
+    vi.stubEnv("ANS_AGRIHACKATHON_COMPETITION_ID", " confirmed-edition ");
+    const edition = { id: "confirmed-edition", status: "UPCOMING", startsAt: null, endsAt: null };
+    mocks.db.competition.findUnique.mockResolvedValue(edition);
+    expect(await findAgriHackathonCompetition()).toEqual(edition);
+    expect(mocks.db.competition.findUnique).toHaveBeenCalledExactlyOnceWith({
+      where: { id: "confirmed-edition" },
+      select: { id: true, status: true, startsAt: true, endsAt: true },
+    });
+    expect(mocks.db.competition.findMany).not.toHaveBeenCalled();
+  });
+
+  it("已绑定记录不存在时保持入口关闭，不退回标题搜索", async () => {
+    vi.stubEnv("ANS_AGRIHACKATHON_COMPETITION_ID", "removed-edition");
+    mocks.db.competition.findUnique.mockResolvedValue(null);
+    expect(await findAgriHackathonCompetition()).toBeNull();
+    expect(mocks.db.competition.findMany).not.toHaveBeenCalled();
+  });
+
+  it("数据库故障不让介绍页崩溃，也不输出原始私密诊断", async () => {
+    vi.stubEnv("ANS_AGRIHACKATHON_COMPETITION_ID", "confirmed-edition");
+    const privateMarker = "private-database-diagnostic-marker";
+    mocks.db.competition.findUnique.mockRejectedValue(new Error(privateMarker));
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(await findAgriHackathonCompetition()).toBeNull();
+    expect(errorLog).toHaveBeenCalledExactlyOnceWith("competition: agrihackathon binding lookup failed");
+    expect(JSON.stringify(errorLog.mock.calls)).not.toContain(privateMarker);
+  });
 });

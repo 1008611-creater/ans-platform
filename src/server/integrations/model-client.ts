@@ -1,3 +1,6 @@
+import { db } from "@/lib/db";
+import { meteredResponses, reconcileCodexCharges } from "./codex-gateway";
+import { readApicCharge, isApicTarget, type ApicCharge } from "./apic-billing";
 import { DEFAULT_RUN_MODEL, getRunModel, type RunReasoningEffort } from "@/lib/run-models";
 
 /**
@@ -59,7 +62,7 @@ export type ModelTokenUsage = {
   totalTokens: number | null;
 };
 
-export type ModelTextResult = { text: string; usage: ModelTokenUsage | null };
+export type ModelTextResult = { text: string; usage: ModelTokenUsage | null; charge?: ApicCharge; metered?: boolean };
 
 function tokenCount(value: unknown): number | null {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
@@ -125,6 +128,7 @@ async function post<T>(
         model: target.upstream,
         stream,
         ...(reasoningEffort && reasoningEffort !== "none" ? { reasoning_effort: reasoningEffort } : {}),
+        ...(isApicTarget(target.baseUrl) ? { max_completion_tokens: 2048, max_tokens: 2048, ...(target.upstream === "deepseek-v4.1-flash" && (!reasoningEffort || reasoningEffort === "none") ? { thinking: { type: "disabled" } } : {}) } : {}),
         ...(stream ? { stream_options: { include_usage: true } } : {}),
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
@@ -153,7 +157,37 @@ export async function callModelTextWithUsage(args: {
   timeoutMs?: number;
   signal?: AbortSignal;
   reasoningEffort?: RunReasoningEffort;
+  userId?: string;
+  chargeRef?: { type: "run" | "workflow_run"; id: string };
+  idempotencyKey?: string;
 }): Promise<ModelTextResult> {
+  if (isApicTarget(args.target.baseUrl) && Buffer.byteLength(args.prompt, "utf8") > 112000) throw new ModelClientError("MODEL_INPUT_TOO_LARGE", "MODEL_INPUT_TOO_LARGE");
+  if (isApicTarget(args.target.baseUrl) && process.env.ANS_UNIFIED_POINTS_ENABLED === "1") {
+    if (!args.userId || !args.chargeRef || !args.idempotencyKey) throw new ModelClientError("METERED_ACCOUNT_REQUIRED", "METERED_ACCOUNT_REQUIRED");
+    await reconcileCodexCharges(args.userId);
+    const request = new Request("http://ans.internal/responses", {
+      method: "POST", signal: args.signal,
+      headers: { "Content-Type": "application/json", "Idempotency-Key": args.idempotencyKey },
+      body: JSON.stringify({ model: args.target.upstream, stream: false, max_output_tokens: 2048,
+        input: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: args.prompt }],
+        ...(args.reasoningEffort && args.reasoningEffort !== "none" ? { reasoning: { effort: args.reasoningEffort } } : {}),
+        ...(args.target.upstream === "deepseek-v4.1-flash" && (!args.reasoningEffort || args.reasoningEffort === "none") ? { thinking: { type: "disabled" } } : {}),
+      }),
+    });
+    const response = await meteredResponses(request, args.userId, args.chargeRef);
+    if (!response.ok) {
+      const failure = await response.json().catch(() => null);
+      throw new ModelClientError(failure?.error?.code || "MODEL_BILLING_PENDING", "MODEL_BILLING_PENDING");
+    }
+    const body = await response.json() as { output?: { type?: string; content?: { type?: string; text?: string }[] }[]; usage?: unknown };
+    const text = (body.output ?? []).filter(item => item.type === "message").flatMap(item => item.content ?? []).filter(item => item.type === "output_text").map(item => item.text ?? "").join("");
+    const record = await db.apiComputeRequest.findFirst({ where: { id: response.headers.get("x-ans-request-id") || "", userId: args.userId, state: "SETTLED" }, select: { settledPoints: true, outcome: true } });
+    if (!record || record.settledPoints === null || !record.outcome) throw new ModelClientError("MODEL_BILLING_PENDING", "MODEL_BILLING_PENDING");
+    // A malformed/empty output still incurred verified upstream cost; never refund it here.
+    if (!text) throw new ModelClientError("MODEL_EMPTY_OUTPUT", "MODEL_EMPTY_OUTPUT");
+    return { text: text.slice(0, MAX_MODEL_OUTPUT), usage: parseUsage(body.usage), metered: true,
+      charge: { requestId: record.outcome, points: Number(record.settledPoints), quota: Math.round(Number(record.settledPoints) * 500000) } };
+  }
   const timeoutMs = args.timeoutMs ?? MODEL_TIMEOUT_MS;
   const initial = await post(args.target, args.prompt, false, timeoutMs, args.signal, args.reasoningEffort, async (response) => {
     if (!response.ok) return { kind: "http-error" as const, status: response.status };
@@ -175,6 +209,7 @@ export async function callModelTextWithUsage(args: {
     return {
       kind: "success" as const,
       result: {
+        ...(isApicTarget(args.target.baseUrl) ? { charge: await readApicCharge(response.headers.get("x-oneapi-request-id") || "") } : {}),
         text: content.length > MAX_MODEL_OUTPUT ? content.slice(0, MAX_MODEL_OUTPUT) : content,
         usage: parseUsage(body.usage),
       },
@@ -182,7 +217,7 @@ export async function callModelTextWithUsage(args: {
   });
   if (initial.kind === "success") return initial.result;
 
-  if (GATEWAY_RETRY_STATUSES.includes(initial.status)) {
+  if (!isApicTarget(args.target.baseUrl) && GATEWAY_RETRY_STATUSES.includes(initial.status)) {
     try {
       const fallback = await post(args.target, args.prompt, true, timeoutMs, args.signal, args.reasoningEffort, async (response) => {
         if (!response.ok) return null;

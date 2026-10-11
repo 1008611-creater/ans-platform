@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -247,6 +247,39 @@ describe("项目服务", () => {
     ]);
   });
 
+  it("redacts unexpected pack errors without discarding successful artifacts", async () => {
+    const privateMarker = "PACK_PRIVATE_FAULT_MARKER";
+    mocks.db.project.findFirst.mockResolvedValue({
+      ...project,
+      facts: [...project.facts, { key: "method", value: "form intake", confirmation: "CONFIRMED", evidenceUrl: null }],
+    });
+    mocks.workflowService.ensureOfficialWorkflow.mockImplementation(async ({ officialId }: { officialId: string }) => ({
+      id: officialId, slug: `ans-official-${officialId}`,
+    }));
+    mocks.workflowService.createWorkflowRun.mockImplementation(async (slug: string) => {
+      if (slug.endsWith("project-one-pager")) throw new Error(`Database diagnostic ${privateMarker}`);
+      return { id: slug, status: "QUEUED" };
+    });
+    const response = await runProjectPack("p1", "u1", { idempotencyKey: "pack-redaction-1234" });
+    expect(response.status).toBe("partial");
+    expect(response.artifacts).toHaveLength(2);
+    expect(JSON.stringify(response)).not.toContain(privateMarker);
+    expect(response.failures).toEqual([{ workflowId: "project-one-pager", code: "WORKFLOW_FAILED", error: "成果生成失败，请稍后重试。" }]);
+  });
+
+  it.each(["persisted", "executor"])("redacts %s project failures", async (source) => {
+    const privateMarker = "RUN_PRIVATE_FAULT_MARKER";
+    if (source === "persisted") {
+      mocks.workflowService.createWorkflowRun.mockResolvedValue({ id: "run1", status: "FAILED", error: privateMarker });
+    } else {
+      mocks.workflowRunner.executePersistedWorkflow.mockResolvedValue({ status: "failed", error: privateMarker, executions: [], elapsedMs: 5 });
+    }
+    let failure: unknown;
+    try { await runProjectWorkflow("p1", "u1", { workflowId: "resume-bullets" }); } catch (error) { failure = error; }
+    expect(failure).toBeInstanceOf(ProjectServiceError);
+    expect((failure as ProjectServiceError).code).toBe("WORKFLOW_FAILED");
+    expect((failure as Error).message).not.toContain(privateMarker);
+  });
   it("exports the latest version and exposes files for zip packaging", async () => {
     mocks.db.project.findFirst.mockResolvedValue({
       ...project,

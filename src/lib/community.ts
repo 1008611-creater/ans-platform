@@ -1,4 +1,8 @@
-import type { Prisma } from "@prisma/client";
+import { randomUUID } from "node:crypto";
+import { LEVELS } from "@/domain/growth/levels";
+import { getLevelPointReward } from "@/domain/growth/rewards";
+import type { DbTransaction } from "@/lib/db";
+import { CommunityError } from "@/server/community/errors";
 import { db } from "@/lib/db";
 import { checkInBonus, getLevelProgress, XP_RULES } from "@/lib/level";
 import type {
@@ -14,11 +18,7 @@ const dayFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit",
 });
 
-export class CommunityError extends Error {
-  constructor(public readonly status: number, public readonly code: string) {
-    super(code);
-  }
-}
+export { CommunityError } from "@/server/community/errors";
 
 export function getCommunityDay(now: Date): string {
   const parts = dayFormatter.formatToParts(now);
@@ -26,10 +26,10 @@ export function getCommunityDay(now: Date): string {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
-async function requireCommunityUser(tx: Prisma.TransactionClient, userId: string) {
+async function requireCommunityUser(tx: DbTransaction, userId: string) {
   const user = await tx.user.findFirst({
     where: { id: userId, ...eligibleUser },
-    select: { id: true, xp: true, nickname: true, checkInStreak: true, lastCheckInAt: true },
+    select: { id: true, xp: true, nickname: true, checkInStreak: true, lastCheckInAt: true, communityPoints: true, avatarFrameKey: true, chatBubbleKey: true },
   });
   if (!user) throw new CommunityError(403, "COMMUNITY_INELIGIBLE");
   return user;
@@ -37,36 +37,63 @@ async function requireCommunityUser(tx: Prisma.TransactionClient, userId: string
 
 export async function checkIn(userId: string) {
   return db.$transaction(async (tx) => {
-    // 用户行锁串行化同一用户的请求；唯一键(userId, day)是数据库最终幂等防线。
-    await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${userId} FOR UPDATE`;
-    const user = await requireCommunityUser(tx, userId);
-    // 在获得锁后取服务端时间，避免等待跨越上海午夜时使用旧日期。
+    // The second statement gets a fresh READ COMMITTED snapshot after the row
+    // lock. Concurrent requests therefore see the preceding committed check-in.
+    const users = await tx.$queryRaw<Array<{ id: string; xp: number; checkInStreak: number; lastCheckInAt: Date | null }>>`
+      SELECT id, xp, "checkInStreak", "lastCheckInAt" FROM users
+      WHERE id = ${userId} AND "deletedAt" IS NULL AND flagged = false AND "emailVerified" IS NOT NULL
+      FOR UPDATE
+    `;
+    const user = users[0];
+    if (!user) throw new CommunityError(403, "COMMUNITY_INELIGIBLE");
     const now = new Date();
     const day = getCommunityDay(now);
-    const existing = await tx.checkIn.findUnique({
-      where: { userId_day: { userId, day } }, select: checkInSelect,
-    });
-    if (existing) return { alreadyCheckedIn: true, checkIn: existing };
-
     const yesterday = new Date(`${day}T00:00:00Z`);
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
     const streak = user.lastCheckInAt && getCommunityDay(user.lastCheckInAt) === yesterday.toISOString().slice(0, 10)
       ? user.checkInStreak + 1 : 1;
     const xpAwarded = XP_RULES.CHECK_IN.base + checkInBonus(streak);
-    const record = await tx.checkIn.create({
-      data: { userId, day, streak, xpAwarded, createdAt: now }, select: checkInSelect,
-    });
-    await tx.user.update({
-      where: { id: userId },
-      data: { xp: { increment: xpAwarded }, checkInStreak: streak, lastCheckInAt: now },
-      select: { id: true },
-    });
-    await tx.xpLedger.create({
-      data: { userId, amount: xpAwarded, reason: "CHECK_IN", refType: "checkIn", refId: record.id, note: XP_RULES.CHECK_IN.note, createdAt: now },
-      select: { id: true },
-    });
-    return { alreadyCheckedIn: false, checkIn: record };
-  }, { isolationLevel: "ReadCommitted" });
+    const recordId = randomUUID();
+    const levelRewards = JSON.stringify(LEVELS
+      .filter((level) => getLevelPointReward(level.index) > 0 && user.xp + xpAwarded >= level.minXp)
+      .map((level) => ({ id: randomUUID(), sourceId: String(level.index), points: getLevelPointReward(level.index) })));
+    const result = await tx.$queryRaw<Array<{ id: string; day: string; streak: number; xpAwarded: number; createdAt: Date; alreadyCheckedIn: boolean }>>`
+      WITH inserted AS (
+        INSERT INTO check_ins (id, "userId", day, streak, "xpAwarded", "createdAt")
+        VALUES (${recordId}, ${userId}, ${day}, ${streak}, ${xpAwarded}, ${now})
+        ON CONFLICT ("userId", day) DO NOTHING
+        RETURNING id, day, streak, "xpAwarded", "createdAt"
+      ), level_rewards AS (
+        INSERT INTO growth_events (id, "userId", type, "sourceType", "sourceId", xp, points, "createdAt")
+        SELECT r.id, ${userId}, 'LEVEL_REWARD', 'level', r."sourceId", 0, r.points, ${now}
+        FROM jsonb_to_recordset(${levelRewards}::jsonb) AS r(id text, "sourceId" text, points int)
+        WHERE EXISTS (SELECT 1 FROM inserted)
+        ON CONFLICT ("userId", type, "sourceType", "sourceId") DO NOTHING
+        RETURNING points
+      ), updated_user AS (
+        UPDATE users SET xp = xp + ${xpAwarded}, "communityPoints" = "communityPoints" + COALESCE((SELECT sum(points)::int FROM level_rewards), 0),
+          "checkInStreak" = ${streak}, "lastCheckInAt" = ${now}, "updatedAt" = ${now}
+        WHERE id = ${userId} AND EXISTS (SELECT 1 FROM inserted)
+        RETURNING id
+      ), growth_event AS (
+        INSERT INTO growth_events (id, "userId", type, "sourceType", "sourceId", xp, points, "createdAt")
+        SELECT ${randomUUID()}, ${userId}, 'CHECK_IN', 'check_in', id, ${xpAwarded}, 0, ${now} FROM inserted
+        RETURNING id
+      ), ledger AS (
+        INSERT INTO xp_ledger (id, "userId", amount, reason, "refType", "refId", note, "createdAt")
+        SELECT ${randomUUID()}, ${userId}, ${xpAwarded}, 'CHECK_IN'::"XpReason", 'checkIn', id, ${XP_RULES.CHECK_IN.note}, ${now} FROM inserted
+        RETURNING id
+      )
+      SELECT id, day, streak, "xpAwarded", "createdAt", false AS "alreadyCheckedIn" FROM inserted
+      UNION ALL
+      SELECT id, day, streak, "xpAwarded", "createdAt", true AS "alreadyCheckedIn" FROM check_ins
+      WHERE "userId" = ${userId} AND day = ${day} AND NOT EXISTS (SELECT 1 FROM inserted)
+    `;
+    const record = result[0];
+    if (!record) throw new Error("CHECK_IN_RECORD_MISSING");
+    const { alreadyCheckedIn, ...checkIn } = record;
+    return { alreadyCheckedIn, checkIn };
+  }, { isolationLevel: "ReadCommitted", timeout: 20000, maxWait: 10000 });
 }
 
 export async function getCommunityMe(userId: string) {
@@ -80,7 +107,7 @@ export async function getCommunityMe(userId: string) {
     const todayCheckIn = await tx.checkIn.findUnique({
       where: { userId_day: { userId, day: getCommunityDay(new Date()) } }, select: checkInSelect,
     });
-    return { xp: user.xp, level: getLevelProgress(user.xp), checkInStreak: user.checkInStreak, todayCheckIn, ledger };
+    return { xp: user.xp, communityPoints: user.communityPoints, avatarFrameKey: user.avatarFrameKey, chatBubbleKey: user.chatBubbleKey, level: getLevelProgress(user.xp), checkInStreak: user.checkInStreak, todayCheckIn, ledger };
   }, { isolationLevel: "RepeatableRead" });
 }
 

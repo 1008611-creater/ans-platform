@@ -1,0 +1,132 @@
+import { refreshMeteredParentCost } from "./metered-cost";
+import { createHash, randomUUID } from "node:crypto";
+import { db } from "@/lib/db";
+import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
+import { RUN_MODEL_OPTIONS } from "@/lib/run-models";
+import { debitQuota, refundQuota, QuotaError } from "@/server/quota/service";
+import { readApicCharge } from "./apic-billing";
+
+const PROVIDER = "apic-codex";
+const MAX_BODY = 524288;
+export function validateCodexPayload(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("INVALID_REQUEST");
+  const body = value as Record<string, unknown>;
+  if (!RUN_MODEL_OPTIONS.some(m => m.key === body.model)) throw new Error("MODEL_UNAVAILABLE");
+  if (body.previous_response_id || body.conversation || body.background === true) throw new Error("STATEFUL_REQUEST_UNSUPPORTED");
+  const limit = body.max_output_tokens === undefined ? 16384 : Number(body.max_output_tokens);
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 16384) throw new Error("OUTPUT_LIMIT_EXCEEDED");
+  if (Array.isArray(body.tools) && body.tools.some(tool => !tool || !["function", "custom"].includes(String((tool as Record<string,unknown>).type)))) throw new Error("HOSTED_TOOL_UNSUPPORTED");
+  const rejectMedia = (value:unknown):boolean => Array.isArray(value) ? value.some(rejectMedia) : Boolean(value && typeof value === "object" && (["input_image","input_file","input_audio"].includes(String((value as Record<string,unknown>).type)) || Object.values(value).some(rejectMedia)));
+  if (rejectMedia(body.input)) throw new Error("MEDIA_INPUT_UNSUPPORTED");
+  const sanitized = { ...body, store: false, service_tier: "default", max_output_tokens: limit };
+  const text = JSON.stringify(sanitized);
+  const bytes = Buffer.byteLength(text);
+  if (bytes > MAX_BODY) throw new Error("INPUT_LIMIT_EXCEEDED");
+  // Conservative reservation: UTF-8 bytes bound token count, including tool definitions.
+  // GPT long-context rates and 0.16 multiplier cover the highest supported tier.
+  const rates = body.model === "gpt-6-astra" ? [45,75,0.16] : body.model === "gpt-6.1-sol" ? [9,15,0.16] : [0.3,1.2,1];
+  const reserve = Math.ceil(((bytes + 16384) * rates[0] + limit * rates[1]) * rates[2]) / 1e6;
+  return { text, model: String(body.model), limit, reserve, streaming: body.stream === true };
+}
+export async function authenticateCodex(request: Request) {
+  if (process.env.ANS_CODEX_GATEWAY_ENABLED !== "1") return null;
+  const key = request.headers.get("authorization")?.replace(/^Bearer /i, "") || "";
+  if (!isValidApiKeyFormat(key)) return null;
+  const user = await db.user.findFirst({ where: { apiKey: hashApiKey(key), flagged: false, deletedAt: null }, select: { id: true } });
+  if(user) await reconcileCodexCharges(user.id);
+  return user;
+}
+/** Reconcile interrupted requests using the authoritative APIC receipt, never estimates. */
+export async function reconcileCodexCharges(userId: string, options = { limit: 5, deadline: Date.now() + 12000 }) {
+  const cutoff=new Date(Date.now()-360000);
+  await db.apiComputeRequest.updateMany({where:{userId,provider:PROVIDER,state:"RUNNING",updatedAt:{lt:cutoff}},data:{state:"UNCERTAIN"}});
+  const pending=await db.apiComputeRequest.findMany({where:{userId,provider:PROVIDER,state:"UNCERTAIN",outcome:{not:null}},take:options.limit,orderBy:{updatedAt:"asc"},select:{id:true,outcome:true,authorizedPoints:true,price:true}});
+  for(const task of pending){
+    if(Date.now() >= options.deadline) break;
+    if(!task.outcome || !/^[A-Za-z0-9_-]{8,128}$/.test(task.outcome) || task.outcome === "UNCERTAIN")continue;
+    try{const charge=await readApicCharge(task.outcome, 1);
+      await db.$transaction(async tx=>{const changed=await tx.apiComputeRequest.updateMany({where:{id:task.id,state:"UNCERTAIN"},data:{state:"SETTLED",settledPoints:charge.points,finishedAt:new Date()}});
+        if(changed.count===1 && charge.points>Number(task.authorizedPoints))await debitQuota(tx,{userId,costPoints:charge.points-Number(task.authorizedPoints),ref:{type:"api_compute_request",id:task.id},note:"Codex verified upstream extra usage"});
+        if(changed.count===1 && charge.points<Number(task.authorizedPoints))await refundQuota(tx,{userId,costPoints:Number(task.authorizedPoints)-charge.points,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
+        if(changed.count===1)await refreshMeteredParentCost(tx,userId,task.price);});
+    }catch{/* Preserve reservation until a verified receipt is available. */}
+  }
+}
+function failure(message: string, status: number) {
+  return Response.json({ error: { message, type: "ans_gateway_error", code: message } }, { status, headers: { "Cache-Control": "no-store" } });
+}
+export async function codexModels(request: Request) {
+  if (!await authenticateCodex(request)) return failure("INVALID_API_KEY", 401);
+  return Response.json({ object: "list", data: RUN_MODEL_OPTIONS.map(m => ({ id:m.key, object:"model", owned_by:"ANS" })) }, { headers:{"Cache-Control":"no-store"} });
+}
+export async function codexResponses(request: Request) {
+  const user = await authenticateCodex(request);
+  if (!user) return failure("INVALID_API_KEY",401);
+  return meteredResponses(request, user.id);
+}
+
+/** Server-only entry: userId must come from an authenticated feature service.
+ * Built-in runs share the exact durable reservation and settlement state machine. */
+export async function meteredResponses(request: Request, userId: string, parent?: { type: "run" | "workflow_run"; id: string }) {
+  const user = { id: userId };
+  if (request.signal.aborted) return failure("REQUEST_CANCELLED", 409);
+  if (Number(request.headers.get("content-length")) > MAX_BODY) return failure("INPUT_LIMIT_EXCEEDED",413);
+  let parsed: ReturnType<typeof validateCodexPayload>;
+  try {
+    const reader=request.body?.getReader(); if(!reader) return failure("INVALID_REQUEST",400);
+    const chunks:Uint8Array[]=[];let size=0;
+    while(true){const next=await reader.read();if(next.done)break;size+=next.value.byteLength;if(size>MAX_BODY){await reader.cancel();return failure("INPUT_LIMIT_EXCEEDED",413);}chunks.push(next.value);}
+    parsed=validateCodexPayload(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+  } catch { return failure("INVALID_REQUEST_OR_MODEL",400); }
+  const idempotency=request.headers.get("idempotency-key") || randomUUID();
+  if(idempotency.length>128) return failure("INVALID_IDEMPOTENCY_KEY",400);
+  let taskId:string;
+  try {
+    taskId=await db.$transaction(async tx=>{
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
+      const active=await tx.apiComputeRequest.count({where:{userId:user.id,provider:PROVIDER,state:{in:["RUNNING","UNCERTAIN"]}}});
+      if(active>=4)throw new Error("TOO_MANY_ACTIVE_REQUESTS");
+      const task=await tx.apiComputeRequest.create({data:{userId:user.id,provider:PROVIDER,idempotencyKey:idempotency,requestHash:createHash("sha256").update(parsed.text).digest("hex"),modelId:parsed.model,policyVersion:"apic-final-quota-v1",price:{source:"APIC",quotaPerPoint:500000,...(parent ? {parent} : {})},maxUnits:parsed.limit,authorizedPoints:parsed.reserve,state:"RUNNING",startedAt:new Date()},select:{id:true}});
+      await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:"Codex request reservation"});return task.id;
+    });
+  } catch(error){ return failure(error instanceof QuotaError?error.code:"REQUEST_CONFLICT",error instanceof QuotaError?error.status:409); }
+  const transition=async(state:"SETTLED"|"RELEASED"|"UNCERTAIN",points:number|null,requestId?:string)=>db.$transaction(async tx=>{
+    const changed=await tx.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{state,settledPoints:points,outcome:requestId || state,finishedAt:state==="UNCERTAIN"?null:new Date()}});
+    if(changed.count===1 && points!==null && points>parsed.reserve)await debitQuota(tx,{userId:user.id,costPoints:points-parsed.reserve,ref:{type:"api_compute_request",id:taskId},note:"Codex verified upstream extra usage"});
+    if(changed.count===1 && points!==null && points<parsed.reserve) await refundQuota(tx,{userId:user.id,costPoints:parsed.reserve-points,ref:{type:"api_compute_request",id:taskId},note:"Codex unused reservation settlement"});
+    if(changed.count===1 && parent && state!=="UNCERTAIN")await refreshMeteredParentCost(tx,user.id,{parent});
+  });
+  let upstream:Response;
+  try {
+    upstream=await fetch(`${process.env.RUN_BASE_URL?.replace(/\/$/,"")}/responses`,{method:"POST",headers:{Authorization:`Bearer ${process.env.RUN_API_KEY}`,"Content-Type":"application/json"},body:parsed.text,signal:AbortSignal.timeout(300000),redirect:"error"});
+  } catch {await transition("UNCERTAIN",null);return failure("UPSTREAM_RESULT_UNCERTAIN",502);}
+  const requestId=upstream.headers.get("x-oneapi-request-id");
+  if(requestId)await db.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{outcome:requestId}});
+  if(!upstream.ok){
+    // Only explicit validation/auth rejection is known not to have generated output.
+    await transition([400,401,403,404,422,429].includes(upstream.status)?"RELEASED":"UNCERTAIN",[400,401,403,404,422,429].includes(upstream.status)?0:null,requestId || undefined);
+    return failure("UPSTREAM_REJECTED",upstream.status);
+  }
+  const settle=async()=>{
+    if(!requestId)throw new Error("BILLING_REQUEST_ID_MISSING");
+    const charge=await readApicCharge(requestId);
+    
+    await transition("SETTLED",charge.points,requestId);
+  };
+  if(!parsed.streaming){
+    try{const text=await upstream.text();await settle();return new Response(text,{headers:{"Content-Type":"application/json","Cache-Control":"no-store","x-ans-request-id":taskId}});}
+    catch{await transition("UNCERTAIN",null,requestId || undefined);return failure("BILLING_PENDING",502);}
+  }
+  let disconnected=false;
+  const stream=new ReadableStream<Uint8Array>({
+    async start(controller){
+      try {
+        const reader=upstream.body?.getReader();if(!reader)throw new Error("EMPTY_STREAM");
+        // Drain upstream even when client disconnects, then settle exactly once.
+        while(true){const next=await reader.read();if(next.done)break;if(!disconnected)controller.enqueue(next.value);}
+        await settle();if(!disconnected)controller.close();
+      }catch{await transition("UNCERTAIN",null,requestId || undefined);if(!disconnected)controller.error(new Error("BILLING_OR_UPSTREAM_PENDING"));}
+    },cancel(){disconnected=true;}
+  });
+  return new Response(stream,{headers:{"Content-Type":"text/event-stream","Cache-Control":"no-cache, no-store","X-Accel-Buffering":"no","x-ans-request-id":taskId}});
+}

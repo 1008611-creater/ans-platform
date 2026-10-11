@@ -1,3 +1,4 @@
+import { grantReachedLevelRewards } from "@/server/growth/service";
 ﻿import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -83,7 +84,11 @@ export async function grantCommunityReward(actorId: string, rawInput: unknown) {
       if (dailyCount >= rule.dailyLimit) throw new RewardError(409, "DAILY_LIMIT_REACHED", "该用户今天已达到此奖励规则的发放次数上限。");
       const ledger = await tx.xpLedger.create({ data: { userId: user.id, amount: rule.amount, reason: "COMMUNITY_REWARD", refType: input.sourceType, refId: input.sourceId, note: input.note ?? rule.title } });
       const grant = await tx.xpRewardGrant.create({ data: { ruleId: rule.id, userId: user.id, sourceType: input.sourceType, sourceId: input.sourceId, amount: rule.amount, ledgerId: ledger.id } });
-      await tx.user.update({ where: { id: user.id }, data: { xp: { increment: rule.amount } } });
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
+      const current = await tx.user.findUniqueOrThrow({ where: { id: user.id }, select: { xp: true } });
+      const levelPoints = await grantReachedLevelRewards(tx, user.id, current.xp + rule.amount);
+      await tx.user.update({ where: { id: user.id }, data: { xp: { increment: rule.amount }, communityPoints: { increment: levelPoints } } });
+      await tx.growthEvent.create({ data: { userId: user.id, type: "COMMUNITY_REWARD", sourceType: "reward_grant", sourceId: grant.id, xp: rule.amount, points: 0 } });
       await tx.auditLog.create({ data: { actorId, action: "COMMUNITY_REWARD_GRANTED", resourceType: "xp_reward_grant", resourceId: grant.id, after: { userId: user.id, ruleId: rule.id, amount: rule.amount, sourceType: input.sourceType, sourceId: input.sourceId } } });
       return grant;
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
@@ -129,7 +134,11 @@ export async function reviewRewardAppeal(actorId: string, rawInput: unknown) {
     const changed = await tx.xpRewardAppeal.updateMany({ where: { id: appeal.id, status: "PENDING" }, data: { status, reviewedById: actorId, reviewedAt: new Date(), resolution: input.resolution, adjustment: input.adjustment } });
     if (changed.count !== 1) throw new RewardError(409, "APPEAL_ALREADY_HANDLED", "申诉刚刚被其他管理员处理。");
     if (status === "APPROVED" && input.adjustment !== 0) {
-      await tx.user.update({ where: { id: appeal.userId }, data: { xp: { increment: input.adjustment } } });
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${appeal.userId} FOR UPDATE`;
+      const current = await tx.user.findUniqueOrThrow({ where: { id: appeal.userId }, select: { xp: true } });
+      const levelPoints = input.adjustment > 0 ? await grantReachedLevelRewards(tx, appeal.userId, current.xp + input.adjustment) : 0;
+      await tx.user.update({ where: { id: appeal.userId }, data: { xp: { increment: input.adjustment }, communityPoints: { increment: levelPoints } } });
+      await tx.growthEvent.create({ data: { userId: appeal.userId, type: "MANUAL_ADJUST", sourceType: "reward_appeal", sourceId: appeal.id, xp: input.adjustment, points: 0 } });
       await tx.xpLedger.create({ data: { userId: appeal.userId, amount: input.adjustment, reason: input.adjustment > 0 ? "MANUAL_ADJUST" : "REWARD_REVERSAL", refType: "xp_reward_appeal", refId: appeal.id, note: input.resolution } });
     }
     await tx.auditLog.create({ data: { actorId, action: "XP_REWARD_APPEAL_REVIEWED", resourceType: "xp_reward_appeal", resourceId: appeal.id, before: { status: "PENDING" }, after: { status, adjustment: status === "APPROVED" ? input.adjustment : 0 }, metadata: { resolution: input.resolution, ledgerId: appeal.ledgerId } } });

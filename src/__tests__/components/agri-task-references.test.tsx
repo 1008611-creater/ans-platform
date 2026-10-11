@@ -1,0 +1,16 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { AgriTaskReferences } from "@/components/competitions/agri-task-references";
+import messages from "../../../messages/product/zh.json";
+vi.mock("@/components/providers/workspace-navigation",()=>({WorkspaceLink:({href,children}:{href:string;children:React.ReactNode})=><a href={href}>{children}</a>}));
+vi.mock("next-intl",()=>({useTranslations:()=>{const lookup=(key:string)=>key.split(".").reduce<unknown>((value,part)=>value&&typeof value==="object"?(value as Record<string,unknown>)[part]:undefined,messages.agriTasks);const t=(key:string,values?:Record<string,string|number>)=>{let text=String(lookup(key)??key);for(const [name,value] of Object.entries(values??{}))text=text.replace("{"+name+"}",String(value));return text;};t.has=(key:string)=>typeof lookup(key)==="string";return t;}}));
+const copy=messages.agriTasks.references;
+const record={submissionId:"s",entryStageId:"es",competitionId:"c",teamName:"LOCAL TEAM",stage:"PRELIMINARY" as const,sequence:2,artifactVersion:3,acceptedAt:"2026-10-08T00:00:00Z",scope:"team" as const,issue:null};
+const props={actorId:"owner",taskId:"task",revision:4,locked:false,readonly:false,mutate:vi.fn(async()=>{}),invalidate:vi.fn()};
+afterEach(()=>{cleanup();vi.unstubAllGlobals();vi.clearAllMocks();});
+describe("task reference selection",()=>{
+ it("chooses actual authorized version and submits precise CAS command",async()=>{vi.stubGlobal("fetch",vi.fn(async()=>new Response(JSON.stringify({ok:true,data:{records:[record],nextCursor:null}}))));render(<AgriTaskReferences {...props} references={[]}/>);fireEvent.click(screen.getByRole("button",{name:copy.choose}));fireEvent.click(await screen.findByRole("button",{name:copy.attachSubmission}));expect(props.mutate).toHaveBeenCalledWith(expect.objectContaining({action:"attachReference",taskId:"task",expectedRevision:4,target:{submissionId:"s",issueId:null}}));});
+ it("links exact submission and issue; inaccessible references have no target href",()=>{render(<AgriTaskReferences {...props} references={[{id:"r",available:true,record:{...record,scope:"staff",issue:{id:"i",title:"Issue",status:"OPEN"}}},{id:"hidden",available:false}]}/>);expect(screen.getByRole("link",{name:copy.open})).toHaveAttribute("href","/competitions/agrihackathon/records/s?scope=staff&issue=i");expect(screen.getByText(copy.unavailable)).toBeInTheDocument();fireEvent.click(screen.getAllByRole("button",{name:copy.remove})[1]);expect(props.mutate).toHaveBeenCalledWith(expect.objectContaining({action:"detachReference",referenceId:"hidden",expectedRevision:4}));});
+ it("shared recipients cannot add or detach refs",()=>{render(<AgriTaskReferences {...props} readonly references={[{id:"r",available:true,record}]}/>);expect(screen.queryByRole("button",{name:copy.choose})).not.toBeInTheDocument();expect(screen.queryByRole("button",{name:copy.remove})).not.toBeInTheDocument();});
+ it("pending task changes lock candidates and links",()=>{render(<AgriTaskReferences {...props} locked references={[{id:"r",available:true,record}]}/>);expect(screen.getByRole("button",{name:copy.choose})).toBeDisabled();expect(screen.getByRole("button",{name:copy.remove})).toBeDisabled();});
+});

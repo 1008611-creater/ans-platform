@@ -37,7 +37,7 @@ describe("GET /api/health", () => {
     expect(response.status).toBe(503);
     expect(data.status).toBe("unhealthy");
     expect(data.database).toBe("disconnected");
-    expect(data.error).toBe("Connection failed");
+    expect(data.error).toBe("DATABASE_UNAVAILABLE");
     expect(data.timestamp).toBeDefined();
   });
 
@@ -50,7 +50,23 @@ describe("GET /api/health", () => {
 
     expect(response.status).toBe(503);
     expect(data.status).toBe("unhealthy");
-    expect(data.error).toBe("Unknown error");
+    expect(data.error).toBe("DATABASE_UNAVAILABLE");
+  });
+
+  it("does not expose database connection diagnostics to anonymous callers", async () => {
+    const privateMarker = "audit_fake_private_health_marker";
+    vi.mocked(db.$queryRaw).mockRejectedValueOnce(new Error(
+      `Connection failed for postgresql://audit_user:${privateMarker}@internal-db:5432/ans`,
+    ));
+
+    const response = await GET();
+    const body = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(body).not.toContain(privateMarker);
+    expect(body).not.toContain("postgresql://");
+    expect(body).not.toContain("internal-db");
+    expect(JSON.parse(body).error).toBe("DATABASE_UNAVAILABLE");
   });
 
   it("should include ISO timestamp in response", async () => {

@@ -68,7 +68,7 @@
   "generated": "新草稿已保存，请检查后修改。再次生成会保留历史版本。",
   "coreTitle": "先完成这三份",
   "moreWorkflows": "其他已有工具（可选）",
-  "cost": "每次生成消耗 {points} 点额度；再次生成同样计费。在线修改和导出不消耗生成额度。",
+  "cost": "Token 单价保持原价；运行前最多预占 {points} 积分，完成后按实际消耗结算并退回剩余预占。GPT 消耗倍率为 0.16；1 积分等于1美元使用额度。手动修改和导出不消耗生成额度。",
   "generate": "生成草稿",
   "regenerate": "生成新版本",
   "generating": "正在生成…",
@@ -95,5 +95,8 @@
   "shareSubmitted": "申请已提交，审核通过前不会公开。",
   "shareWithdrawn": "公开授权或申请已撤回。",
   "reviewNote": "审核说明：{note}",
-  "busy": "处理中…"
+  "busy": "处理中…",
+  "billingExplanation": "运行前最多预占 {points} 积分，完成后按实际 Token 费用结算并退回差额。1 元充值＝1 积分＝1 美元使用额度；GPT 在原价基础上乘 0.16 消耗倍率。",
+  "billingRun": "运行（最多预占 {points} 积分）",
+  "billingReservation": "最多预占 {points} 积分"
 }

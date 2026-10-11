@@ -1,0 +1,23 @@
+import { afterEach,beforeEach,describe,expect,it,vi } from "vitest";
+import { POST } from "@/app/api/competitions/agrihackathon/issues/route";
+import { GET as list } from "@/app/api/competitions/agrihackathon/issues/[submissionId]/route";
+import { GET as detail } from "@/app/api/competitions/agrihackathon/issues/item/[issueId]/route";
+import { auth } from "@/lib/auth";
+import { executeAgriIssueCommand,readAgriIssues,readAgriIssue } from "@/server/competitions/agrihackathon/issues";
+import { AgriWorkspaceError } from "@/contracts/agri-workspace";
+vi.mock("@/lib/auth",()=>({auth:vi.fn()}));
+vi.mock("@/server/competitions/agrihackathon/issues",()=>({executeAgriIssueCommand:vi.fn(),readAgriIssues:vi.fn(),readAgriIssue:vi.fn()}));
+const origin=process.env.AUTH_URL||"https://ans.example.invalid",actor="issue-actor";
+const command={action:"createIssue",idempotencyKey:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",submissionId:"submission",basis:"METADATA",title:"Title",body:"Body",status:"OPEN",severity:"HIGH",type:"BUG",visibility:"INTERNAL",assigneeId:null,dueState:"UNKNOWN",dueAt:null,processingSummary:null,reviewedForTeam:false};
+const read=(suffix="")=>new Request(origin+"/api/competitions/agrihackathon/issues/submission"+suffix,{headers:{"x-ans-submission-actor":actor}});
+const write=(raw:unknown=command,from=origin)=>new Request(origin+"/api/competitions/agrihackathon/issues",{method:"POST",headers:{origin:from,"content-type":"application/json","x-ans-submission-actor":actor},body:JSON.stringify(raw)});
+const ctx={params:Promise.resolve({submissionId:"submission"})},itemCtx={params:Promise.resolve({issueId:"issue"})};
+afterEach(()=>vi.unstubAllEnvs());
+beforeEach(()=>{vi.stubEnv("AUTH_URL",origin);vi.stubEnv("NEXTAUTH_URL",origin);vi.stubEnv("NEXT_PUBLIC_APP_URL",origin);vi.clearAllMocks();vi.mocked(auth).mockResolvedValue({user:{id:actor}} as never);vi.mocked(executeAgriIssueCommand).mockResolvedValue({issueId:"issue",eventId:"event",appliedRevision:1,duplicate:false});});
+describe("technical issue HTTP boundaries",()=>{
+ it("requires auth and rejects missing or changed actor intent before service",async()=>{vi.mocked(auth).mockResolvedValueOnce(null as never);expect((await POST(write())).status).toBe(401);expect((await list(new Request(read().url),ctx)).status).toBe(409);expect((await detail(new Request(read().url,{headers:{"x-ans-submission-actor":"previous-account"}}),itemCtx)).status).toBe(409);expect(executeAgriIssueCommand).not.toHaveBeenCalled();expect(readAgriIssues).not.toHaveBeenCalled();expect(readAgriIssue).not.toHaveBeenCalled();});
+ it("passes only the authenticated actor and validated exact submission command",async()=>{const response=await POST(write());expect(response.status).toBe(200);expect(executeAgriIssueCommand).toHaveBeenCalledWith(actor,command);expect(response.headers.get("cache-control")).toBe("no-store");});
+ it("rejects cross-origin, oversized and forged commands",async()=>{expect((await POST(write(command,"https://other.invalid"))).status).toBe(403);for(const extra of [{actorId:"forged"},{completedAt:"2026-10-08T00:00:00Z"},{xp:999}])expect((await POST(write({...command,...extra}))).status).toBe(400);expect((await POST(write({body:"x".repeat(100001)}))).status).toBe(413);expect(executeAgriIssueCommand).not.toHaveBeenCalled();});
+ it("awaits dynamic route params and validates query expansion separately",async()=>{expect((await list(read("?scope=staff&cursor=page"),ctx)).status).toBe(200);expect(readAgriIssues).toHaveBeenCalledWith(actor,"submission",{scope:"staff",cursor:"page"});expect((await detail(read("?scope=team"),itemCtx)).status).toBe(200);expect(readAgriIssue).toHaveBeenCalledWith(actor,"issue",{scope:"team"});expect((await detail(read("?includeInternal=true"),itemCtx)).status).toBe(400);expect(readAgriIssue).toHaveBeenCalledTimes(1);});
+ it("returns expected CAS errors without leaking database diagnostics",async()=>{vi.mocked(executeAgriIssueCommand).mockRejectedValueOnce(new AgriWorkspaceError("AGRI_ISSUE_REVISION_CONFLICT"));expect((await POST(write())).status).toBe(409);vi.mocked(readAgriIssue).mockRejectedValueOnce(new Error("PRIVATE_SQL_DIAGNOSTIC"));const response=await detail(read(),itemCtx);expect(response.status).toBe(500);expect(JSON.stringify(await response.json())).not.toContain("PRIVATE_SQL_DIAGNOSTIC");});
+});

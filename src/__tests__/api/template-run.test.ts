@@ -68,7 +68,7 @@ describe("POST /api/templates/[slug]/run", () => {
   });
 
   it("成功路径返回 runId 与结果", async () => {
-    const response = await POST(request({ inputs: { topic: "AI" }, modelKey: "gpt-5.6-terra" }), context);
+    const response = await POST(request({ inputs: { topic: "AI" }, modelKey: "deepseek-v4.1-flash" }), context);
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.runId).toBe("run1");
@@ -77,7 +77,7 @@ describe("POST /api/templates/[slug]/run", () => {
       userId: "user1",
       templateId: "tpl1",
       inputs: { topic: "AI" },
-      modelKey: "gpt-5.6-terra",
+      modelKey: "deepseek-v4.1-flash",
       idempotencyKey: undefined,
       ipAddress: null,
       userAgent: null,
@@ -85,7 +85,7 @@ describe("POST /api/templates/[slug]/run", () => {
   });
 
   it("转发幂等键和请求审计上下文", async () => {
-    const response = await POST(request({ inputs: {}, modelKey: "gpt-5.6-terra" }, {
+    const response = await POST(request({ inputs: {}, modelKey: "deepseek-v4.1-flash" }, {
       "Idempotency-Key": "  request-123  ",
       "x-forwarded-for": "203.0.113.9, 10.0.0.1",
       "user-agent": "ANS test client",

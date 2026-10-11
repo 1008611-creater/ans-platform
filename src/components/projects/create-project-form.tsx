@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import type { CatalogWorkflowId } from "@/contracts/catalog";
 import type { ProjectGoal } from "@/contracts/projects";
+import { studioSelectionHref } from "@/domain/catalog/selection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export function CreateProjectForm({ initialGoal = "career" }: { initialGoal?: ProjectGoal }) {
+export function CreateProjectForm({ initialGoal = "career", initialWorkflowId }: { initialGoal?: ProjectGoal; initialWorkflowId?: CatalogWorkflowId }) {
   const router = useRouter();
   const t = useTranslations("learning");
   const [title, setTitle] = useState("");
@@ -25,7 +27,7 @@ export function CreateProjectForm({ initialGoal = "career" }: { initialGoal?: Pr
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok) throw new Error(payload.error?.message ?? t("createFailed"));
-      router.push(`/projects/${payload.data.project.id}`);
+      router.push(studioSelectionHref(payload.data.project.id, initialWorkflowId));
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t("createFailed"));

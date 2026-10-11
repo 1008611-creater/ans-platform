@@ -1,3 +1,4 @@
+import type { DbTransaction } from "@/lib/db";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -9,7 +10,7 @@ export const RESET_MAX_ATTEMPTS = 5;
 export const RESET_MAX_DAILY_SENDS = 10;
 export const RESET_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-type Transaction = Prisma.TransactionClient;
+type Transaction = DbTransaction;
 
 const digest = (value: string) => createHash("sha256").update(value).digest("hex");
 const namespace = (kind: string, email: string) =>

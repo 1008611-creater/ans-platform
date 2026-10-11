@@ -34,6 +34,7 @@ export default getRequestConfig(async () => {
       ...messages,
       // The first lesson ships in Chinese and English; other locales explicitly use English.
       learning: (await import(`@/../messages/learning/${locale === "zh" ? "zh" : "en"}.json`)).default,
+      product: (await import(`@/../messages/product/${locale === "zh" ? "zh" : "en"}.json`)).default,
     },
     timeZone: "UTC",
     // Handle missing messages gracefully in production

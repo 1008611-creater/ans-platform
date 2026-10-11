@@ -14,10 +14,20 @@ const withMDX = createMDX({
 });
 
 const nextConfig: NextConfig = {
+  // Local acceptance builds must not overwrite the candidate serving OIDC checks.
+  distDir: [".next-agri-tasks", ".next-agri-submissions", ".next-agri-reviews", ".next-agri-references", ".next-agri-demo", ".next-agri-summary", ".next-agri-p2", ".next-compute-history", ".next-compute-history-build"].includes(process.env.ANS_LOCAL_DIST_DIR ?? "")
+    ? process.env.ANS_LOCAL_DIST_DIR : ".next",
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   reactCompiler: true,
+  // Production builds check every application source. The full test/config
+  // types remain a separate required gate in scripts/verify.mjs.
+  typescript: {
+    ignoreBuildErrors: false,
+    tsconfigPath: "tsconfig.typecheck.json",
+  },
   // Configure webpack for raw imports
   webpack: (config) => {
+    if (process.env.ANS_BUILD_DISABLE_CACHE === "1") config.cache = false;
     config.module.rules.push({
       resourceQuery: /raw/,
       type: 'asset/source',

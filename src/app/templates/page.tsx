@@ -48,7 +48,7 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
   return (
     <div className="container py-10">
       <header className="mb-8">
-        <div className="flex items-center gap-2 text-sm font-medium text-primary">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
           <Blocks className="h-4 w-4" />
           <span>ANS 模板广场</span>
         </div>
@@ -135,9 +135,9 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
       </section>
 
       <nav aria-label="模板分页" className="mb-8 flex items-center gap-4">
-        {page > 1 && <Link href={pageHref(page - 1)} className="text-primary underline">上一页</Link>}
+        {page > 1 && <Link href={pageHref(page - 1)} className="text-foreground underline">上一页</Link>}
         <span className="text-sm text-muted-foreground">第 {page} 页</span>
-        {templates.length === 24 && <Link href={pageHref(page + 1)} className="text-primary underline">下一页</Link>}
+        {templates.length === 24 && <Link href={pageHref(page + 1)} className="text-foreground underline">下一页</Link>}
       </nav>
 
       {/* 站群入口 */}

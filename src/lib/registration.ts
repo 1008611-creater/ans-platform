@@ -1,3 +1,4 @@
+import type { DbTransaction } from "@/lib/db";
 import { createHash, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -18,15 +19,13 @@ const registerSchema = z.object({
   username: z.string().trim().min(1).max(30).regex(/^[a-z0-9_]+$/).optional(),
   password: z.string().min(6).refine(value => Buffer.byteLength(value, "utf8") <= 72),
   code: z.string().regex(/^\d{6}$/),
-  inviteCode: z.string().trim().max(128).optional(),
   turnstileToken: challengeSchema,
 });
-type Transaction = Prisma.TransactionClient;
+type Transaction = DbTransaction;
 const digest = (value: string) => createHash("sha256").update(value).digest("hex");
 const namespace = (kind: string, email: string) => `ans:registration:${kind}:${digest(email)}`;
 const otpDigest = (email: string, code: string) => digest(JSON.stringify(["ans:registration:otp", email, code, registrationEnvironment().secret]));
 const invalidCode = () => new RegistrationError(400, "code_invalid", "验证码错误、已过期或已使用");
-const invalidInvite = () => new RegistrationError(400, "invite_invalid", "非 cau.edu.cn 邮箱需要有效邀请码（最多使用 5 次）");
 
 export async function ensureRegistrationEnabled() {
   const config = await getConfig();
@@ -131,7 +130,7 @@ export async function sendRegistrationCode(body: unknown) {
 export async function registerWithCode(body: unknown) {
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) throw new RegistrationError(400, "validation_error", "请检查昵称、邮箱、密码（6 位以上且不超过 72 字节）和验证码");
-  const { email, name, password, code, inviteCode, turnstileToken } = parsed.data;
+  const { email, name, password, code, turnstileToken } = parsed.data;
   await verifyRegistrationChallenge(turnstileToken);
   const username = parsed.data.username ?? `u_${randomUUID().replaceAll("-", "").slice(0, 24)}`;
   const passwordHash = await bcrypt.hash(password, 12);
@@ -149,24 +148,10 @@ export async function registerWithCode(body: unknown) {
     }
     const existing = await tx.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true } });
     if (existing) throw new RegistrationError(409, "email_taken", "该邮箱已注册，请使用原账号登录");
-    let codeId: string | undefined;
-    if (email.split("@")[1] !== "cau.edu.cn") {
-      if (!inviteCode) throw invalidInvite();
-      const invite = await tx.inviteCode.findUnique({ where: { code: inviteCode } });
-      const inviteNow = new Date();
-      if (!invite || invite.maxUses <= 0 || invite.usedCount >= Math.min(5, invite.maxUses) || (invite.expiresAt && invite.expiresAt <= inviteNow)) throw invalidInvite();
-      const updated = await tx.inviteCode.updateMany({
-        where: { id: invite.id, maxUses: invite.maxUses, usedCount: { lt: Math.min(5, invite.maxUses) }, OR: [{ expiresAt: null }, { expiresAt: { gt: inviteNow } }] },
-        data: { usedCount: { increment: 1 } },
-      });
-      if (updated.count !== 1) throw invalidInvite();
-      codeId = invite.id;
-    }
     const verifiedAt = new Date();
     const consumed = await tx.verificationToken.deleteMany({ where: { identifier, token: expected, expires: { gt: verifiedAt } } });
     if (consumed.count !== 1) throw invalidCode();
     const user = await tx.user.create({ data: { email, username, name, nickname: name, nicknameSetAt: now, password: passwordHash, locale: "zh", emailVerified: now }, select: { id: true, name: true, username: true, email: true } });
-    if (codeId) await tx.inviteRedemption.create({ data: { codeId, usedById: user.id } });
     await tx.verificationToken.deleteMany({ where: { token: attempts.token } });
     return { user };
   });

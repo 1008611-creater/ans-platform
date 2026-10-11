@@ -1,3 +1,4 @@
+import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { db } from "@/lib/db";
 import {
   FAVORITE_TARGET_TYPES,
@@ -43,13 +44,14 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
   if (targetType === "PROMPT") {
     const prompt = await db.prompt.findFirst({
       where: { id: targetId, deletedAt: null, isPrivate: false },
-      select: { id: true, slug: true, title: true, description: true, author: { select: { nickname: true } } },
+      select: { id: true, slug: true, title: true, description: true, author: { select: { id: true, nickname: true } } },
     });
     if (!prompt) throw new FavoriteServiceError("提示词不存在或已下架。", "TARGET_UNAVAILABLE", 404);
     return {
       title: prompt.title,
       href: prompt.slug ? `/prompts/${prompt.slug}` : `/prompts/${prompt.id}`,
       subtitle: prompt.description ?? null,
+      authorId: prompt.author?.id,
       authorName: prompt.author?.nickname?.trim() || null,
       costPoints: null,
     };
@@ -64,7 +66,7 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
         title: true,
         summary: true,
         estimatedCost: true,
-        author: { select: { nickname: true } },
+        author: { select: { id: true, nickname: true } },
       },
     });
     if (!template) throw new FavoriteServiceError("模板不存在或尚未上架。", "TARGET_UNAVAILABLE", 404);
@@ -72,6 +74,7 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
       title: template.title,
       href: `/templates/${template.slug}`,
       subtitle: template.summary ?? null,
+      authorId: template.author?.id,
       authorName: template.author?.nickname?.trim() || null,
       costPoints: template.estimatedCost,
     };
@@ -85,7 +88,7 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
       title: true,
       summary: true,
       estimatedCost: true,
-      author: { select: { nickname: true } },
+      author: { select: { id: true, nickname: true } },
     },
   });
   if (!workflow) throw new FavoriteServiceError("工作流不存在或尚未发布。", "TARGET_UNAVAILABLE", 404);
@@ -93,6 +96,7 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
     title: workflow.title,
     href: `/workflows/${workflow.slug}`,
     subtitle: workflow.summary ?? null,
+    authorId: workflow.author?.id,
     authorName: workflow.author?.nickname?.trim() || null,
     costPoints: workflow.estimatedCost,
   };
@@ -106,7 +110,7 @@ export async function addFavorite(userId: string, targetType: unknown, targetId:
     throw new FavoriteServiceError("缺少收藏对象。", "INVALID_TARGET_ID");
   }
   const id = targetId.trim();
-  await assertTargetVisible(targetType, id);
+  const target = await assertTargetVisible(targetType, id);
 
   return db.$transaction(async (tx) => {
     const existing = await tx.contentFavorite.findUnique({
@@ -126,6 +130,9 @@ export async function addFavorite(userId: string, targetType: unknown, targetId:
       },
     });
     return { favorited: true, created: true };
+  }).then(async (result) => {
+    if (result.created && target.authorId && target.authorId !== userId) await safeAwardGrowthEvent({ userId: target.authorId, type: "RECEIVE_FAVORITE", reason: "RECEIVE_FAVORITE", sourceType: `favorite:${targetType}`, sourceId: `${userId}:${id}` });
+    return result;
   });
 }
 
@@ -180,7 +187,7 @@ export async function listFavorites(userId: string, take = 100): Promise<Favorit
   const [prompts, templates, workflows] = await Promise.all([
     db.prompt.findMany({
       where: { id: { in: byType("PROMPT") }, deletedAt: null, isPrivate: false },
-      select: { id: true, slug: true, title: true, description: true, author: { select: { nickname: true } } },
+      select: { id: true, slug: true, title: true, description: true, author: { select: { id: true, nickname: true } } },
     }),
     db.template.findMany({
       where: { id: { in: byType("TEMPLATE") }, status: "PUBLISHED" },
@@ -190,7 +197,7 @@ export async function listFavorites(userId: string, take = 100): Promise<Favorit
         title: true,
         summary: true,
         estimatedCost: true,
-        author: { select: { nickname: true } },
+        author: { select: { id: true, nickname: true } },
       },
     }),
     db.workflow.findMany({
@@ -201,7 +208,7 @@ export async function listFavorites(userId: string, take = 100): Promise<Favorit
         title: true,
         summary: true,
         estimatedCost: true,
-        author: { select: { nickname: true } },
+        author: { select: { id: true, nickname: true } },
       },
     }),
   ]);

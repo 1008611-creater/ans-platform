@@ -31,7 +31,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
     <section className="space-y-4"><h2 className="text-lg font-semibold">提示词正文</h2><CopyTemplatePrompt prompt={template.promptBody} />
       <pre className="whitespace-pre-wrap break-words rounded-lg border bg-muted/30 p-5 text-sm leading-7">{template.promptBody}</pre>
     </section>
-    {template.outputType === "TEXT" && <TemplateRunForm slug={template.slug} formSchema={template.formSchema as unknown as import("@/components/templates/template-run-form").RunFormField[]} estimatedCost={Math.max(1, template.estimatedCost)} />}
+    {template.outputType === "TEXT" && <TemplateRunForm slug={template.slug} formSchema={template.formSchema as unknown as import("@/components/templates/template-run-form").RunFormField[]} estimatedCost={process.env.ANS_APIC_BILLING_ENABLED === "1" ? 0.25 : Math.max(1, template.estimatedCost)} />}
     <details className="rounded-lg border p-4"><summary className="cursor-pointer text-sm font-medium">查看输入字段定义</summary><pre className="mt-4 overflow-x-auto text-xs">{JSON.stringify(template.formSchema, null, 2)}</pre></details>
   </article>;
 }

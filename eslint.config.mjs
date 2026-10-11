@@ -38,12 +38,23 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     ".next-vault/**",
+    ".next-agri-tasks/**",
+    ".next-agri-submissions/**",
+    ".next-agri-reviews/**",
+    ".next-agri-issues/**",
+    ".next-agri-references/**",
+    ".next-agri-demo/**",
+    ".next-agri-summary/**",
+    ".next-agri-p2/**",
+    ".workbuddy/**",
     // Archived skill bundles are data shipped for discovery, not application
     // source; linting their generated examples produces thousands of noise
     // errors and masks real ANS diagnostics.
     "ai-video-skills-source/**",
     "plugins/claude/**",
     "next-env.d.ts",
+    // Vendored Three.js bundles keep their upstream source and license.
+    "public/mascot/3d/vendor/**",
     // Compiled outputs
     "packages/*/dist/**",
     // Packages with their own ESLint config
@@ -55,6 +66,7 @@ const eslintConfig = defineConfig([
   ]),
   // Downgrade strict rules to warnings for gradual adoption
   {
+    files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {
       // React hooks compiler rules - many false positives in complex state patterns
       "react-hooks/set-state-in-effect": "warn",

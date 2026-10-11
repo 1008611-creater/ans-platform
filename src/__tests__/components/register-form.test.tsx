@@ -5,6 +5,7 @@ import { RegisterForm } from "@/components/auth/register-form";
 const mocks = vi.hoisted(() => ({ render: vi.fn(), reset: vi.fn(), remove: vi.fn(), fetch: vi.fn() }));
 vi.mock("next/script", () => ({ default: ({ onReady }: { onReady: () => void }) => <button type="button" onClick={onReady}>加载验证脚本</button> }));
 vi.mock("@/lib/analytics", () => ({ analyticsAuth: { register: vi.fn(), registerFailed: vi.fn() } }));
+vi.mock("next-intl", () => ({ useTranslations: () => () => "所有邮箱都可注册，无需邀请码。" }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 let callbacks: Record<string, (value?: string) => void>;
 
@@ -26,11 +27,12 @@ async function ready() {
 }
 
 describe("注册表单人机验证生命周期", () => {
-  it("使用昵称而非真实姓名，明确验证码和邀请码", async () => {
+  it("使用昵称与邮箱验证码，明确开放注册并移除邀请码输入", async () => {
     await ready();
     expect(screen.getByLabelText("昵称")).toBeInTheDocument();
     expect(screen.getByLabelText("邮箱验证码")).toBeInTheDocument();
-    expect(screen.getByLabelText("邀请码（非 cau.edu.cn 邮箱必填）")).toBeInTheDocument();
+    expect(screen.queryByLabelText(/邀请码/)).not.toBeInTheDocument();
+    expect(screen.getByText("所有邮箱都可注册，无需邀请码。")).toBeInTheDocument();
     expect(mocks.render).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ action: "register", sitekey: "public-key" }));
   });
   it("过期和错误立即禁用发送，重置和卸载清理 widget", async () => {

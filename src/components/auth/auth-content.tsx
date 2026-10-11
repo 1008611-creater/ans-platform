@@ -63,7 +63,7 @@ export function AuthContent({ providers, mode, callbackUrl = "/", useCloneBrandi
       )}
 
       {/* Credentials form */}
-      {hasCredentials && (mode === "login" ? <LoginForm callbackUrl={callbackUrl} /> : <RegisterForm />)}
+      {hasCredentials && (mode === "login" ? <LoginForm callbackUrl={callbackUrl} /> : <RegisterForm callbackUrl={callbackUrl} />)}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { Bell, MessageSquare } from "lucide-react";
