@@ -258,7 +258,7 @@ async function main() {
 
   const run = await createWorkflowRun(slug, student.id, { input: { topic: "校园 AI 社区" } });
   const afterDebit = await db.user.findUniqueOrThrow({ where: { id: student.id } });
-  check("创建运行即扣除额度", run.costPoints === 3 && afterDebit.quotaPoints === 17, `余额 ${afterDebit.quotaPoints}`);
+  check("创建运行即扣除额度", run.costPoints === 3 && afterDebit.quotaPoints.equals(17), `余额 ${afterDebit.quotaPoints}`);
   check("运行创建时预置全部节点记录", run.nodeRuns.length === definition.nodes.length);
 
   const executed = await executePersistedWorkflow(run.id, student.id, {
@@ -311,7 +311,7 @@ async function main() {
     },
   });
   const afterRefund = await db.user.findUniqueOrThrow({ where: { id: student.id } });
-  check("运行失败会退费且只退一次", failed?.status === "failed" && afterRefund.quotaPoints === 17, `余额 ${afterRefund.quotaPoints}`);
+  check("运行失败会退费且只退一次", failed?.status === "failed" && afterRefund.quotaPoints.equals(17), `余额 ${afterRefund.quotaPoints}`);
   const refunds = await db.quotaLedger.count({
     where: { userId: student.id, reason: "REFUND", refId: failingRun.id },
   });

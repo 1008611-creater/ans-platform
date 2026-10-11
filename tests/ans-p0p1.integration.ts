@@ -18,7 +18,7 @@ const requireLocal = createRequire(import.meta.url);
 const results: Array<{ scenario: string; status: "PASS" | "FAIL" | "SKIP"; evidence: unknown }> = [];
 const codes = new Map<string, string>();
 const externalCalls = { turnstile: 0, resend: 0, ai: 0, unexpected: 0 };
-let db: PrismaClient;
+let db: typeof import("../src/lib/db").db;
 let observer: PrismaClient;
 let blockedEnvReads = 0;
 let aiHandler: ((init?: RequestInit) => Promise<Response>) | undefined;

@@ -101,7 +101,10 @@ async function main() {
       const snapshotOwner = await user(90); const row = await db.computeTask.create({ data: fixture(snapshotOwner, 980, "RUNNING") });
       const writer = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
       const original = db.$transaction.bind(db); const originalMethod = db.$transaction; let intercepted = false;
-      db.$transaction = (async (callback: (tx: Prisma.TransactionClient) => Promise<unknown>, options?: { isolationLevel?: Prisma.TransactionIsolationLevel }) => original(async tx => {
+      db.$transaction = new Proxy(originalMethod, { apply(target, thisArg, args) {
+        const [callback, options] = args;
+        if (typeof callback !== "function") return Reflect.apply(target, thisArg, args);
+        return original(async tx => {
         const proxy = new Proxy(tx, { get(target, property, receiver) {
           if (property !== "user") return Reflect.get(target, property, receiver);
           return new Proxy(target.user, { get(delegate, method, delegateReceiver) {
@@ -120,7 +123,8 @@ async function main() {
           } });
         } });
         return callback(proxy);
-      }, options)) as typeof db.$transaction;
+      }, options);
+      } });
       try {
         const during = await history(snapshotOwner);
         assert.equal(intercepted, true); assert.equal(during.tasks[0].state, "RUNNING");

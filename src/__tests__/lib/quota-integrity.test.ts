@@ -11,7 +11,7 @@ beforeEach(() => {
   m.auth.mockResolvedValue({ user: { id: "member" } });
   m.read.mockResolvedValue({ role: "ADMIN", flagged: false, deletedAt: null, adminPermissions: ["USERS_MANAGE"], quotaClaimedAt: null });
   m.update.mockResolvedValue({ count: 1 }); m.balance.mockResolvedValue({ quotaPoints: 0.25 });
-  m.pool.mockResolvedValue({ id: "pool", name: "test", totalPoints: 100n, claimedPoints: 0n, perUserPoints: 1 });
+  m.pool.mockResolvedValue({ id: "pool", name: "test", totalPoints: BigInt(100), claimedPoints: BigInt(0), perUserPoints: 1 });
   m.claimPool.mockResolvedValue({ count: 1 }); m.credit.mockResolvedValue({ quotaPoints: 1.125 });
 });
 describe("credit integrity", () => {
