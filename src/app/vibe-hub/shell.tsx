@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AnsReturnLink } from "./ans-return-link";
 import Image from "next/image";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
@@ -46,10 +47,10 @@ function Navigation({ theme, accentId, toggleTheme, setAccent }: { theme: string
         <ThemePicker theme={accentId} onPick={setAccent} isEn={lang === "en"} />
         <button type="button" className="vh-icon-button" onClick={toggleTheme} aria-label={t(theme === "dark" ? "light" : "dark")}>{theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}</button>
         <button type="button" className="vh-icon-button vh-menu-toggle" aria-expanded={menuOpen} aria-controls="vh-mobile-nav" aria-label={t(menuOpen ? "close" : "menu")} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
-        <Link href="/" className="vh-ans-link">ANS ↗</Link>
+        <AnsReturnLink compact />
       </div>
     </div>
-    {menuOpen && <nav id="vh-mobile-nav" className="vh-mobile-nav" aria-label={t("navigation")}>{links.map((link) => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} onClick={() => setMenuOpen(false)}>{t(link.label)}</Link>)}</nav>}
+    {menuOpen && <nav id="vh-mobile-nav" className="vh-mobile-nav" aria-label={t("navigation")}>{links.map((link) => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} onClick={() => setMenuOpen(false)}>{t(link.label)}</Link>)}<AnsReturnLink /></nav>}
   </header>;
 }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense } from "react";
+import { VibeHubReturnNavigation } from "./vibehub-return-navigation";
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
@@ -45,6 +47,7 @@ interface ProvidersProps {
 export function Providers({ children, locale, timeZone, messages, theme, branding }: ProvidersProps) {
   return (
     <SessionProvider>
+      <Suspense fallback={null}><VibeHubReturnNavigation /></Suspense>
       <AgriTaskSessionBoundary />
       <AgriSubmissionSessionBoundary />
       <AgriReviewSessionBoundary />
