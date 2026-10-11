@@ -1,0 +1,3 @@
+﻿"use client";
+import { useEffect, useState } from "react";
+export function FavoriteButton({slug}:{slug:string}){const [saved,setSaved]=useState(false); useEffect(()=>{setSaved(JSON.parse(localStorage.getItem("vibehub:favorites")||"[]").includes(slug))},[slug]); function toggle(){const xs=JSON.parse(localStorage.getItem("vibehub:favorites")||"[]") as string[]; const next=xs.includes(slug)?xs.filter(x=>x!==slug):[...xs,slug]; localStorage.setItem("vibehub:favorites",JSON.stringify(next));setSaved(next.includes(slug));} return <button onClick={toggle} aria-pressed={saved} className={`rounded-full border px-4 py-2 text-sm ${saved?"border-[#8274d9] bg-[#f5f1ff] text-[#6254bf]":"border-[#ded8cf]"}`}>{saved?"Saved":"Save term"}</button>}
