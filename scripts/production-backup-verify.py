@@ -114,6 +114,10 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
         line_ending_matches = []
         original_byte_witnesses = []
         for item in source["migrations"]:
+            # Retain resolved failed attempts in the snapshot, but validate SQL
+            # against the successful attempt rather than a superseded rollback.
+            if item["rolled_back"]:
+                continue
             path = migration_path / item["migration_name"] / "migration.sql"
             if not item["finished"] or item["rolled_back"] or not path.is_file():
                 raise RuntimeError("Migration history is not a compatible prefix")
@@ -134,7 +138,8 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                                                "releaseSha256": hashlib.sha256(raw).hexdigest(), "normalizedSha256": hashlib.sha256(lf).hexdigest()})
             if hashlib.sha256(raw).hexdigest() != item["checksum"]:
                 line_ending_matches.append(item["migration_name"])
-        pending = [name for name in migration_names if name not in [item["migration_name"] for item in source["migrations"]]]
+        successful_names = {item["migration_name"] for item in source["migrations"] if item["finished"] and not item["rolled_back"]}
+        pending = [name for name in migration_names if name not in successful_names]
         dump = backup / "public.dump"
         run(["docker", "run", "--rm", "--network", "host", *pg_flags, "-v", str(backup) + ":/backup", "--entrypoint", "pg_dump", IMAGE,
              "--format=custom", "--schema=public", "--no-owner", "--no-acl", "--lock-wait-timeout=20s", "--snapshot=" + source["snapshot"], "--file=/backup/public.dump"], env=pg_env, timeout=480)
@@ -213,7 +218,7 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                   "snapshotConsistent": True, "restorePassed": True, "restorePostgresImage": IMAGE,
                   "tableCount": len(source["tables"]), "tableCounts": {k: v["count"] for k, v in source["tables"].items()},
                   "dataDigest": digest(source["tables"]), "constraintsDigest": digest(constraints), "sourceConstraintsDigest": digest(source["constraints"]), "checkReparseWitnesses": witnesses, "opsScriptSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "indexesDigest": digest(indexes),
-                  "migrationsDigest": digest(migrations), "appliedMigrationCount": len(migrations), "pendingMigrations": pending, "lineEndingOnlyMatches": line_ending_matches, "originalByteWitnesses": original_byte_witnesses,
+                  "migrationsDigest": digest(migrations), "appliedMigrationCount": len(successful_names), "rolledBackAttemptCount": sum(item["rolled_back"] for item in migrations), "pendingMigrations": pending, "lineEndingOnlyMatches": line_ending_matches, "originalByteWitnesses": original_byte_witnesses,
                   "checked": ["all public table row counts and content digests", "all public constraints", "all public indexes", "migration names and checksums (exact or proven LF/CRLF-only equivalence)"],
                   "limits": "Application public schema backup only; not Supabase platform schemas or external object storage."}
         report_path = backup / "verification.json"
