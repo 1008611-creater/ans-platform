@@ -1,3 +1,16 @@
-﻿import type { Metadata } from "next";
-export const metadata: Metadata = { title: "VibeHub · Frontend Terms for Vibe Coding", description: "A visual guide to interface terms, interaction patterns, and precise prompts for AI coding agents.", icons: { icon: "/vibe-hub/oil-favicon.png" }, openGraph: { title: "VibeHub · Frontend Terms for Vibe Coding", description: "A visual guide to interface terms and interaction patterns.", images: ["/vibe-hub/social-card-en.png"] } };
-export default function VibeHubLayout({children}:{children:React.ReactNode}){return children;}
+﻿import { Suspense } from "react";
+import type { Metadata } from "next";
+import { VibeHubFooter } from "./footer";
+import { VibeHubShell } from "./shell";
+
+export const metadata: Metadata = {
+  title: { default: "VibeHub | ANS", template: "%s | VibeHub · ANS" },
+  description: "Vibe Coding 可视化术语图鉴：前端、后端、AI、Git、设计风格与交互练习。",
+  icons: { icon: "/vibe-hub/oil-favicon.png" },
+  alternates: { canonical: "/vibe-hub" },
+  openGraph: { title: "VibeHub · ANS", images: ["/vibe-hub/social-card-zh.png"] },
+};
+
+export default function VibeHubLayout({ children }: { children: React.ReactNode }) {
+  return <Suspense><VibeHubShell>{children}<VibeHubFooter /></VibeHubShell></Suspense>;
+}

@@ -1,0 +1,3868 @@
+/* domains/ai/foundations.css */
+/* AI 目录卡片与 AI 工具详情视觉。 */
+
+.ai-preview {
+  width: min(390px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.ai-preview > strong {
+  font-size: 17px;
+  font-weight: 680;
+}
+.ai-preview > div {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+}
+.ai-preview > div span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 7px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-2);
+  background: var(--bg);
+  font-size: 10px;
+}
+.ai-preview > div span i {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 5px;
+  color: var(--brand);
+  background: var(--brand-light);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+}
+.ai-preview > div > b {
+  align-self: center;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+/* Agent 与工具：从详情主图提炼出的列表缩略图，各自保留真实对象和核心关系。 */
+.ai-card-visual {
+  width: min(420px, 100%);
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 11px;
+}
+.ai-card-visual * {
+  box-sizing: border-box;
+}
+.ai-card-visual small {
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 560;
+  line-height: 1.25;
+}
+.ai-card-visual b,
+.ai-card-visual strong {
+  line-height: 1.3;
+}
+.ai-card-visual .ok {
+  color: var(--green);
+}
+.ai-card-visual .fail {
+  color: var(--red);
+}
+.ai-card-openai-compatible-api {
+  gap: 7px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg-soft);
+}
+.ai-card-openai-compatible-row {
+  min-width: 0;
+  min-height: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.ai-card-openai-compatible-row > span,
+.ai-card-openai-compatible-row > code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ai-card-openai-compatible-row > b {
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+}
+.ai-card-openai-compatible-row > code {
+  color: var(--brand);
+  font:
+    600 11px/1.35 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.aic-foot {
+  min-height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--text-2);
+  font-size: 10px;
+  font-style: normal;
+  text-align: center;
+}
+.aic-foot i {
+  font-style: normal;
+}
+
+/* API Key：把安全存放位置与不应出现的位置放在同一张列表缩略图里。 */
+.ai-card-api-key {
+  gap: 7px;
+}
+.ai-card-api-key > div {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.42fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.ai-card-api-key > div code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+  font-size: 10px;
+  text-align: right;
+}
+.ai-card-api-key > div code.ok {
+  color: var(--green);
+}
+.ai-card-api-key > div code.bad {
+  color: var(--red);
+}
+
+.aic-goal,
+.aic-harness-head,
+.aic-skill-task,
+.aic-hitl-head {
+  min-height: 29px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-goal small,
+.aic-harness-head small,
+.aic-skill-task small {
+  flex: none;
+  color: var(--brand);
+}
+
+/* AI Agent：一个运行核心根据观察连续选择工具，直到验证通过。 */
+.aic-agent-work {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+  gap: 7px;
+  align-items: stretch;
+}
+.aic-agent-core {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--border));
+  border-radius: 8px;
+  background: var(--brand-light);
+  text-align: center;
+}
+.aic-agent-core > i {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-style: normal;
+}
+.aic-agent-core small {
+  color: var(--text-2);
+}
+.aic-tool-list {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+}
+.aic-tool-list span {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 21px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-2);
+}
+.aic-tool-list span::before {
+  content: "↗";
+  position: absolute;
+  left: 7px;
+  color: var(--brand);
+  font-size: 9px;
+}
+.aic-tool-list span.ok::before {
+  content: "✓";
+  color: var(--green);
+}
+
+/* Harness Engineering：同一个 Agent 被项目地图、沙箱、反馈和证据包在运行环境中。 */
+.aic-harness-frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 1.15fr) minmax(0, 1fr);
+  gap: 5px;
+  align-items: stretch;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg-soft);
+}
+.aic-harness-frame aside,
+.aic-harness-frame > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.aic-harness-frame aside span {
+  padding: 4px 5px;
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--text-3);
+  text-align: center;
+}
+.aic-harness-frame > div {
+  align-items: center;
+  padding: 7px;
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
+  border-radius: 7px;
+  background: var(--brand-light);
+  text-align: center;
+}
+.aic-harness-frame > div b {
+  color: var(--brand);
+}
+.aic-harness-frame > div span {
+  color: var(--text-2);
+  font-size: 10px;
+}
+
+/* Human in the loop：低风险检索先完成，高风险付款前出现人工闸门。 */
+.aic-hitl-head {
+  justify-content: space-between;
+}
+.aic-hitl-head > span {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+}
+.aic-hitl-head > strong {
+  flex: none;
+  color: var(--text);
+  font-size: 13px;
+}
+.aic-hitl-track {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.2fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+}
+.aic-hitl-track > span {
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text-3);
+  text-align: center;
+}
+.aic-hitl-track > span.done {
+  color: var(--text-2);
+}
+.aic-hitl-track > span.gate {
+  border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+  background: var(--brand-light);
+  color: var(--brand);
+  font-weight: 650;
+}
+.aic-hitl-track .gate i {
+  min-width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 8px;
+  font-style: normal;
+}
+.aic-hitl-track > b {
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+/* MCP：Host 内的 Client 通过同一协议分别连接不同 Server 和真实系统。 */
+.ai-card-mcp {
+  align-items: center;
+}
+.aic-mcp-host {
+  min-width: 120px;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 2px 7px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
+  border-radius: 8px;
+  background: var(--brand-light);
+}
+.aic-mcp-host small {
+  color: var(--brand);
+}
+.aic-mcp-host span {
+  grid-column: 1 / -1;
+  padding-top: 3px;
+  border-top: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border-light));
+  color: var(--text-2);
+  font-size: 9px;
+  text-align: center;
+}
+.aic-mcp-branches {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 10px;
+}
+.aic-mcp-branches::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 10px;
+  border-top: 1px solid var(--brand);
+  border-left: 1px solid var(--brand);
+  border-right: 1px solid var(--brand);
+  opacity: 0.55;
+}
+.aic-mcp-branches > span {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-mcp-branches code {
+  grid-row: 1 / 3;
+  align-self: center;
+  padding: 3px 5px;
+  border-radius: 5px;
+  background: var(--bg-soft);
+  color: var(--brand);
+  font-size: 9px;
+}
+
+/* Skill：入口文件、按需资料与脚本围绕一个真实任务组成文件夹。 */
+.aic-skill-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 66px minmax(0, 1fr);
+  gap: 6px;
+  align-items: stretch;
+}
+.aic-skill-tree,
+.aic-skill-result {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-skill-tree span,
+.aic-skill-result span {
+  padding: 3px 5px;
+  border-radius: 4px;
+  color: var(--text-3);
+  font-size: 9px;
+}
+.aic-skill-tree span.active {
+  background: var(--brand-light);
+  color: var(--brand);
+  font-weight: 650;
+}
+.aic-skill-agent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 7px;
+  background: var(--brand-light);
+  color: var(--brand);
+  text-align: center;
+}
+.aic-skill-agent::before {
+  content: "←";
+  color: var(--text-3);
+  font-size: 10px;
+}
+.aic-skill-agent::after {
+  content: "→";
+  color: var(--text-3);
+  font-size: 10px;
+}
+.aic-skill-agent small {
+  color: var(--text-2);
+  font-size: 8px;
+}
+
+/* Sub-agent：主 Agent 扇出边界清楚的工作，再把证据收回统一汇总。 */
+.aic-sub-main {
+  width: min(210px, 76%);
+  align-self: center;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
+  border-radius: 7px;
+  background: var(--brand-light);
+  text-align: center;
+}
+.aic-sub-main small {
+  color: var(--brand);
+}
+.aic-sub-lanes {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding-top: 11px;
+}
+.aic-sub-lanes::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 16.666%;
+  right: 16.666%;
+  height: 11px;
+  border-top: 1px solid var(--brand);
+  border-left: 1px solid var(--brand);
+  border-right: 1px solid var(--brand);
+  opacity: 0.55;
+}
+.aic-sub-lanes span {
+  display: flex;
+  min-width: 0;
+  min-height: 43px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+  text-align: center;
+}
+.aic-sub-lanes span b {
+  font-size: 10px;
+}
+
+/* AI 基础：界面、模型与真实工具不是同一层。 */
+.aic-app-query,
+.aic-hall-claim,
+.aic-structured-mail,
+.aic-system-rule,
+.aic-tool-request,
+.aic-loop-head {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-app-query small,
+.aic-structured-mail small,
+.aic-tool-request small {
+  flex: none;
+  color: var(--brand);
+}
+.aic-basics-map {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+}
+.aic-basics-map > span {
+  min-height: 48px;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+  text-align: center;
+}
+.aic-basics-map > span.model {
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+  background: var(--brand-light);
+}
+.aic-basics-map > span.model small,
+.aic-basics-map > span.tool small {
+  color: var(--brand);
+}
+.aic-basics-map > i {
+  color: var(--text-3);
+  font-style: normal;
+}
+
+/* AI 幻觉：有疑问的生成内容必须与一手来源对照后再改正。 */
+.aic-hall-claim {
+  position: relative;
+  padding-right: 34px;
+}
+.aic-hall-claim small {
+  flex: none;
+  color: var(--red);
+}
+.aic-hall-claim > i {
+  position: absolute;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--red) 10%, var(--bg));
+  color: var(--red);
+  font-style: normal;
+  font-weight: 750;
+}
+.aic-hall-verify {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 6px;
+}
+.aic-hall-verify > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 7px 8px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-hall-verify > em {
+  align-self: center;
+  color: var(--text-3);
+  font-size: 9px;
+  font-style: normal;
+}
+
+/* 多模态：多种输入汇入模型，并与可用输出分开展示。 */
+.aic-modal-sides {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(95px, 1.1fr) minmax(0, 0.8fr);
+  align-items: stretch;
+  gap: 7px;
+}
+.aic-modal-sides section {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.aic-modal-sides section small {
+  grid-column: 1 / -1;
+  color: var(--brand);
+}
+.aic-modal-sides section span {
+  padding: 4px;
+  border-radius: 5px;
+  background: var(--bg-soft);
+  color: var(--text-2);
+  font-size: 9px;
+  text-align: center;
+}
+.aic-modal-sides > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--brand-light);
+  color: var(--brand);
+  text-align: center;
+}
+.aic-modal-sides > div i {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-style: normal;
+}
+.aic-modal-sides > div small {
+  color: var(--text-2);
+  font-size: 8px;
+}
+
+/* Vibe Coding：自然语言、运行原型与肉眼反馈形成快速试做闭环。 */
+.aic-vibe-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 1.15fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 6px;
+}
+.aic-vibe-stage > span {
+  display: flex;
+  min-width: 0;
+  min-height: 58px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.aic-vibe-stage > span small {
+  color: var(--brand);
+}
+.aic-vibe-stage > span.screen {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 8px 1fr;
+  align-content: center;
+  gap: 4px;
+  border-color: color-mix(in srgb, var(--brand) 24%, var(--border));
+  background: var(--brand-light);
+}
+.aic-vibe-stage .screen i {
+  width: 4px;
+  height: 4px;
+  align-self: center;
+  border-radius: 50%;
+  background: var(--brand);
+  opacity: 0.6;
+}
+.aic-vibe-stage .screen b {
+  grid-column: 1 / -1;
+  align-self: center;
+  text-align: center;
+}
+.aic-vibe-loop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--brand);
+}
+.aic-vibe-loop b {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--brand-light);
+  font-size: 9px;
+}
+.aic-vibe-loop i {
+  color: var(--text-3);
+  font-style: normal;
+}
+
+/* 上下文工程：从候选资料中筛出本轮高信号内容，细节保留可取回线索。 */
+.aic-context-pool {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+.aic-context-pool span {
+  padding: 5px 7px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 9px;
+}
+.aic-context-pool span.keep {
+  border-color: color-mix(in srgb, var(--brand) 22%, var(--border));
+  color: var(--brand);
+}
+.aic-context-pool span.drop {
+  color: var(--text-3);
+  text-decoration: line-through;
+  opacity: 0.72;
+}
+.aic-context-select {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.aic-context-select > b {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 9px;
+}
+.aic-context-select > i {
+  color: var(--text-3);
+  font-style: normal;
+}
+.aic-context-select > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
+  border-radius: 7px;
+  background: var(--brand-light);
+}
+.aic-context-select > span small {
+  color: var(--brand);
+}
+
+/* 上下文窗口：规则、历史、文件与回答共享同一个容量边界。 */
+.aic-window-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.aic-window-label small {
+  color: var(--brand);
+}
+.aic-window-bar {
+  height: 55px;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+.aic-window-bar span {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 5px;
+  border-right: 1px solid var(--bg);
+  color: var(--text-2);
+  font-size: 9px;
+  text-align: center;
+}
+.aic-window-bar .rules {
+  flex: 18;
+  background: color-mix(in srgb, var(--brand) 9%, var(--bg));
+}
+.aic-window-bar .history {
+  flex: 28;
+  background: color-mix(in srgb, var(--brand) 15%, var(--bg));
+}
+.aic-window-bar .files {
+  flex: 25;
+  background: color-mix(in srgb, var(--brand) 22%, var(--bg));
+}
+.aic-window-bar .answer {
+  flex: 29;
+  border-right: 0;
+  border-left: 1px dashed var(--brand);
+  background: var(--brand-light);
+  color: var(--brand);
+  font-weight: 680;
+}
+.aic-window-out {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.aic-window-out span {
+  padding: 4px 6px;
+  border: 1px dashed var(--border);
+  border-radius: 5px;
+  color: var(--text-3);
+  font-size: 9px;
+  text-decoration: line-through;
+}
+.aic-window-out small {
+  margin-left: auto;
+  color: var(--red);
+}
+
+/* 对话历史：同一条追问在有、无相关历史时产生不同的可理解性。 */
+.aic-history-question {
+  align-self: center;
+  padding: 6px 10px;
+  border-radius: 12px 12px 3px 12px;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-weight: 650;
+}
+.aic-history-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.aic-history-compare section {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-history-compare section > span {
+  padding: 3px 5px;
+  border-radius: 4px;
+  color: var(--text-3);
+  font-size: 9px;
+}
+.aic-history-compare section > span.active {
+  background: var(--brand-light);
+  color: var(--brand);
+}
+.aic-history-compare section > b {
+  margin-top: auto;
+  color: var(--green);
+  font-size: 9px;
+}
+.aic-history-compare section.with small {
+  color: var(--green);
+}
+.aic-history-compare section.without small,
+.aic-history-compare section.without > b {
+  color: var(--red);
+}
+.aic-history-compare section > strong {
+  display: grid;
+  min-height: 37px;
+  place-items: center;
+  color: var(--text-3);
+  text-align: center;
+}
+
+/* 系统提示词：模型层的行为规则与产品层的真实权限分开。 */
+.aic-system-rule {
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+  background: var(--brand-light);
+}
+.aic-system-rule small {
+  flex: none;
+  color: var(--brand);
+}
+.aic-system-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) auto minmax(0, 1fr) auto minmax(0, 1.1fr);
+  align-items: stretch;
+  gap: 5px;
+}
+.aic-system-stack > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+  text-align: center;
+}
+.aic-system-stack > span.model {
+  color: var(--brand);
+}
+.aic-system-stack > span.gate {
+  border-color: color-mix(in srgb, var(--red) 28%, var(--border));
+  color: var(--red);
+}
+.aic-system-stack > i {
+  align-self: center;
+  color: var(--text-3);
+  font-style: normal;
+}
+
+/* 无状态请求：每一轮都是独立、完整的请求包裹。 */
+.aic-request-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 56px;
+  align-items: center;
+  gap: 7px;
+}
+.aic-request-row section {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 7px;
+  padding: 7px 9px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-request-row section small {
+  color: var(--brand);
+}
+.aic-request-row section span {
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aic-request-row section b {
+  grid-column: 1 / -1;
+}
+.aic-request-row > i {
+  color: var(--text-3);
+  font-style: normal;
+}
+.aic-request-row > .model {
+  display: grid;
+  height: 44px;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-weight: 680;
+}
+.aic-request-row.second section {
+  border-color: color-mix(in srgb, var(--brand) 25%, var(--border));
+}
+
+/* 结构化输出：自然语言内容被约束成固定字段，再进入业务检查。 */
+.aic-structured-mail::before {
+  content: "✉";
+  color: var(--brand);
+  font-size: 15px;
+}
+.aic-structured-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
+  border-radius: 8px;
+  background: var(--bg);
+}
+.aic-structured-fields span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-right: 1px solid var(--border-light);
+}
+.aic-structured-fields span:last-child {
+  border-right: 0;
+}
+.aic-structured-fields small {
+  color: var(--brand);
+  font-family: ui-monospace, monospace;
+}
+.aic-structured-fields b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 流式响应：离散事件持续追加成同一个仍未完成的聊天气泡。 */
+.aic-stream-events {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.aic-stream-events small {
+  margin-right: auto;
+  color: var(--brand);
+}
+.aic-stream-events span {
+  padding: 4px 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 9px;
+}
+.aic-stream-events > i {
+  color: var(--brand);
+  font-style: normal;
+  letter-spacing: 2px;
+}
+.aic-stream-bubble {
+  width: min(290px, 86%);
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px 11px;
+  border-radius: 12px 12px 3px 12px;
+  background: var(--brand-light);
+}
+.aic-stream-bubble small {
+  color: var(--brand);
+}
+.aic-stream-bubble .cursor {
+  display: inline-block;
+  width: 2px;
+  height: 12px;
+  margin-left: 3px;
+  vertical-align: -2px;
+  background: var(--brand);
+}
+
+/* 工具调用：模型的结构化请求先过应用校验，真实执行结果再返回。 */
+.aic-tool-request {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.aic-tool-request code {
+  width: 100%;
+  overflow: hidden;
+  color: var(--text-2);
+  font-family: ui-monospace, monospace;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aic-tool-flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 7px;
+}
+.aic-tool-flow > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 9px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-tool-flow > i {
+  align-self: center;
+  color: var(--text-3);
+  font-style: normal;
+}
+
+/* ReAct：判断、行动、观察组成会被真实结果改写的闭环。 */
+.aic-react-loop {
+  position: relative;
+  min-height: 96px;
+}
+.aic-react-loop > span {
+  position: absolute;
+  width: 42%;
+  min-height: 43px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.aic-react-loop .think {
+  top: 0;
+  left: 0;
+}
+.aic-react-loop .act {
+  top: 0;
+  right: 0;
+}
+.aic-react-loop .observe {
+  right: 29%;
+  bottom: 0;
+}
+.aic-react-loop > i {
+  position: absolute;
+  color: var(--text-3);
+  font-style: normal;
+}
+.aic-react-loop > i.one {
+  top: 15px;
+  left: 48%;
+}
+.aic-react-loop > i.two {
+  top: 45px;
+  right: 19%;
+}
+.aic-react-loop > i.three {
+  bottom: 8px;
+  left: 23%;
+}
+
+/* Agent 循环：运行时记录轮次，并依据检查、上限和人工确认控制状态。 */
+.aic-loop-head {
+  justify-content: space-between;
+}
+.aic-loop-head > span {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+}
+.aic-loop-head > span small {
+  color: var(--brand);
+}
+.aic-loop-head > strong {
+  flex: none;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 9px;
+}
+.aic-loop-run {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.aic-loop-run span {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 5px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--bg);
+  text-align: center;
+}
+.aic-loop-run span.check {
+  border-color: color-mix(in srgb, var(--red) 25%, var(--border));
+  color: var(--red);
+}
+.aic-loop-run i {
+  color: var(--text-3);
+  font-style: normal;
+}
+.aic-loop-conditions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.aic-loop-conditions span {
+  padding: 5px 7px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--text-2);
+  font-size: 9px;
+  text-align: center;
+}
+
+/* TTFT / TPS：第一段等待和之后的生成密度位于同一条时间线上。 */
+.aic-speed-axis {
+  min-height: 70px;
+  display: grid;
+  grid-template-columns: auto minmax(72px, 0.8fr) minmax(130px, 1.3fr) auto;
+  align-items: center;
+}
+.aic-speed-axis > span {
+  position: relative;
+  z-index: 1;
+}
+.aic-speed-axis .send,
+.aic-speed-axis .done {
+  padding: 5px 7px;
+  border-radius: 6px;
+  background: var(--inverse-bg);
+  color: var(--inverse-text);
+  font-size: 9px;
+}
+.aic-speed-axis .wait {
+  height: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+}
+.aic-speed-axis .wait b,
+.aic-speed-axis .wait small,
+.aic-speed-axis .ticks small {
+  position: absolute;
+  white-space: nowrap;
+}
+.aic-speed-axis .wait b {
+  top: -24px;
+  color: var(--brand);
+}
+.aic-speed-axis .wait small {
+  top: 7px;
+}
+.aic-speed-axis .ticks {
+  height: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+.aic-speed-axis .ticks i {
+  width: 7px;
+  height: 22px;
+  border-radius: 2px;
+  background: var(--brand);
+}
+.aic-speed-axis .ticks small {
+  top: 19px;
+  color: var(--brand);
+}
+.aic-speed-legend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+.aic-speed-legend span {
+  padding: 5px;
+  border-radius: 5px;
+  background: var(--bg-soft);
+  color: var(--text-3);
+  font-size: 9px;
+  text-align: center;
+}
+
+/* Token：原句被模型切成不等长片段，输入与输出分别计数。 */
+.aic-token-text {
+  align-self: center;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 640;
+}
+.aic-token-pieces {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+.aic-token-pieces span {
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
+  border-radius: 6px;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+}
+.aic-token-pieces span:nth-child(even) {
+  transform: translateY(4px);
+}
+.aic-token-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.aic-token-count > span {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+}
+.aic-token-count > i {
+  color: var(--text-3);
+  font-style: normal;
+}
+
+/* Token 成本：逐轮累计输入输出，再按不同单价计算。 */
+.aic-cost-turns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.aic-cost-turns span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-cost-turns span:nth-child(2) {
+  border-color: color-mix(in srgb, var(--brand) 22%, var(--border));
+}
+.aic-cost-turns span:nth-child(3) {
+  border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+}
+.aic-cost-turns span em {
+  color: var(--text-3);
+  font-size: 9px;
+  font-style: normal;
+}
+.aic-cost-total {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 7px;
+  background: var(--brand-light);
+  color: var(--text-2);
+  font-size: 9px;
+}
+.aic-cost-total i {
+  color: var(--text-3);
+  font-style: normal;
+}
+.aic-cost-total b {
+  color: var(--brand);
+}
+
+/* 速率限制：队列进入并发闸门，一部分执行，超限请求收到 429。 */
+.aic-rate-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 74px;
+  align-items: center;
+  gap: 8px;
+}
+.aic-rate-queue {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-rate-queue small {
+  margin-right: auto;
+  color: var(--brand);
+}
+.aic-rate-queue span {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--bg-soft);
+  color: var(--text-2);
+  font-size: 9px;
+}
+.aic-rate-main > i {
+  color: var(--text-3);
+  font-style: normal;
+}
+.aic-rate-gate {
+  display: flex;
+  height: 50px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--border));
+  border-radius: 8px;
+  background: var(--brand-light);
+}
+.aic-rate-gate b {
+  color: var(--brand);
+  font-size: 16px;
+}
+.aic-rate-branches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.aic-rate-branches span {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+  font-size: 9px;
+  text-align: center;
+}
+
+@media (max-width: 420px) {
+  .ai-card-visual {
+    gap: 6px;
+  }
+  .ai-card-openai-compatible-api {
+    padding: 10px 11px;
+  }
+  .ai-card-openai-compatible-row {
+    grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+    gap: 6px;
+    font-size: 10px;
+  }
+  .ai-card-openai-compatible-row > b {
+    font-size: 13px;
+  }
+  .ai-card-openai-compatible-row > code {
+    font-size: 10px;
+  }
+  .aic-agent-work {
+    grid-template-columns: minmax(94px, 0.8fr) minmax(0, 1.2fr);
+  }
+  .aic-harness-frame {
+    grid-template-columns: minmax(0, 1fr) minmax(88px, 1.1fr) minmax(0, 1fr);
+  }
+  .aic-skill-layout {
+    grid-template-columns: minmax(0, 1fr) 54px minmax(0, 1fr);
+  }
+  .aic-modal-sides {
+    grid-template-columns: minmax(0, 0.8fr) minmax(86px, 1fr) minmax(0, 0.8fr);
+  }
+  .aic-vibe-stage {
+    grid-template-columns: minmax(0, 1fr) minmax(90px, 1.05fr) minmax(0, 1fr);
+  }
+  .aic-rate-queue span:nth-last-child(-n + 2) {
+    display: none;
+  }
+}
+
+/* 提示词：你写的与预设的两层。 */
+.aic-prompt-layer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg);
+}
+.aic-prompt-layer small {
+  flex: none;
+  color: var(--text-3);
+}
+.aic-prompt-layer.is-user {
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+  background: var(--brand-light);
+}
+.aic-prompt-layer.is-user small {
+  color: var(--brand);
+}
+.aic-prompt-layer b {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Base URL：把服务方和可参考文档放在同一张表面上。 */
+.base-url-reference-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.base-url-reference-row {
+  min-width: 0;
+}
+.base-url-reference-card {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  color: inherit;
+  background: var(--bg);
+  text-decoration: none;
+}
+.base-url-reference-provider {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+.base-url-reference-provider strong {
+  min-width: 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.base-url-reference-provider span {
+  flex: 0 0 auto;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: right;
+}
+.base-url-reference-doc {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.base-url-reference-doc span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.base-url-reference-doc i {
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1;
+}
+.base-url-reference-card:hover {
+  border-color: var(--brand);
+  background: var(--brand-light);
+}
+.base-url-reference-card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 60%, transparent);
+  outline-offset: 2px;
+}
+.detail-entry-base-url .plain-explanation-section {
+  max-width: 100%;
+}
+.detail-entry-base-url .boundary-note p {
+  max-width: none;
+}
+.base-url-reference-note {
+  max-width: 820px;
+  margin: 17px auto 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.65;
+  text-align: center;
+}
+
+/* 配置文件：用四列对照支持情况、配置位置和官方文档。 */
+.config-file-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg);
+}
+.config-file-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: left;
+}
+.config-file-table th,
+.config-file-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: top;
+}
+.config-file-table thead th {
+  color: var(--text-2);
+  background: var(--bg-soft);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+.config-file-table thead th:nth-child(1) {
+  width: 18%;
+}
+.config-file-table thead th:nth-child(2) {
+  width: 19%;
+}
+.config-file-table thead th:nth-child(3) {
+  width: 45%;
+}
+.config-file-table thead th:nth-child(4) {
+  width: 18%;
+}
+.config-file-table tbody tr:last-child th,
+.config-file-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.config-file-table tbody tr:hover th,
+.config-file-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--brand-light) 26%, var(--bg));
+}
+.config-file-table tbody th {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.config-file-table tbody td {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.config-file-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.config-file-status.is-supported {
+  color: color-mix(in srgb, var(--green) 82%, var(--text));
+  background: color-mix(in srgb, var(--green-light) 72%, var(--bg));
+}
+.config-file-status.is-unsupported {
+  color: color-mix(in srgb, var(--red) 82%, var(--text));
+  background: color-mix(in srgb, var(--red-light) 72%, var(--bg));
+}
+.config-file-location {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 5px;
+  min-width: 0;
+}
+.config-file-path {
+  max-width: 100%;
+  color: var(--text);
+  font:
+    0.9em/1.5 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.config-file-product {
+  overflow-wrap: anywhere;
+}
+.config-file-doc-cell {
+  vertical-align: middle;
+}
+.config-file-doc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.4;
+  text-decoration: none;
+}
+.config-file-doc-logo {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  object-fit: contain;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  background: var(--bg-soft);
+}
+.config-file-doc-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.config-file-doc-label > span {
+  overflow-wrap: anywhere;
+}
+.config-file-doc:hover {
+  text-decoration: underline;
+}
+.config-file-doc:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 60%, transparent);
+  outline-offset: 2px;
+}
+.config-file-doc i {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Provider：把本地配置、实际请求和返回结果放在同一条可核对的链路上。 */
+.provider-call-flow {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) minmax(68px, 0.24fr) minmax(0, 1.08fr) minmax(68px, 0.24fr)
+    minmax(0, 1fr);
+  align-items: stretch;
+  gap: 12px;
+}
+.provider-call-step {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 11px;
+}
+.provider-call-step-heading {
+  display: grid;
+  gap: 3px;
+  min-height: 42px;
+}
+.provider-call-step-heading span {
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.provider-call-step-heading strong {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.provider-call-step > p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.provider-call-config .real-editor,
+.provider-call-result .real-terminal {
+  height: 100%;
+}
+.provider-call-config .real-editor {
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+.provider-call-config .real-code > div.active {
+  background: color-mix(in srgb, var(--brand) 13%, transparent);
+}
+.provider-call-request-record {
+  min-height: 206px;
+  display: grid;
+  align-content: center;
+  gap: 11px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--brand) 30%, var(--border));
+  border-radius: 11px;
+  background: var(--bg);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--text) 5%, transparent);
+}
+.provider-call-request-line {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0;
+}
+.provider-call-request-line b {
+  flex: 0 0 auto;
+  color: var(--brand);
+  font:
+    700 12px/1.4 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.provider-call-request-record code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font:
+    500 12px/1.6 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.provider-call-request-record > code {
+  padding: 8px 9px;
+  background: var(--bg-soft);
+}
+.provider-call-request-record p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.provider-call-result .real-terminal {
+  min-height: 206px;
+}
+.provider-call-result .real-terminal pre {
+  display: grid;
+  align-content: center;
+  min-height: 170px;
+}
+.provider-call-connector {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 7px;
+  color: var(--brand);
+  text-align: center;
+}
+.provider-call-connector span {
+  font-size: 25px;
+  line-height: 1;
+}
+.provider-call-connector small {
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.provider-call-conclusion {
+  max-width: 760px;
+  margin: 19px auto 0;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* 权限模式：复刻 Codex 官方的权限选择器与动态说明。 */
+.permission-mode-visual {
+  overflow: hidden;
+}
+.permission-mode-codex-shell {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  overflow: visible;
+}
+.permission-mode-codex-shell.is-menu-open {
+  padding-top: 112px;
+}
+.permission-mode-composer {
+  position: relative;
+  min-height: 131px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--text) 8%, transparent);
+  backdrop-filter: blur(12px);
+}
+.permission-mode-composer-placeholder {
+  display: block;
+  box-sizing: border-box;
+  padding: 24px 32px 78px;
+  color: color-mix(in srgb, var(--text) 18%, transparent);
+  font-size: 16px;
+  line-height: 28px;
+}
+.permission-mode-toolbar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 0 28px 20px;
+  box-sizing: border-box;
+}
+.permission-mode-toolbar-group {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.permission-mode-toolbar-group-start {
+  gap: 8px;
+}
+.permission-mode-toolbar-group-end {
+  gap: 12px;
+  margin-left: auto;
+}
+.permission-mode-tool-button {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--text) 56%, transparent);
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+}
+.permission-mode-model {
+  min-width: 0;
+  color: color-mix(in srgb, var(--text) 56%, transparent);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.permission-mode-selector {
+  position: relative;
+  min-width: 0;
+}
+.permission-mode-selector-trigger {
+  max-width: 100%;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--text) 45%, transparent);
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+.permission-mode-selector-trigger:hover {
+  color: color-mix(in srgb, var(--text) 68%, transparent);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+.permission-mode-selector-trigger:active {
+  transform: translateY(1px);
+}
+.permission-mode-selector-trigger:focus-visible,
+.permission-mode-option:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--text) 18%, transparent);
+  outline-offset: 2px;
+}
+.permission-mode-selector-trigger > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.permission-mode-selector-icon,
+.permission-mode-selector-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1;
+}
+.permission-mode-selector-icon {
+  width: 16px;
+}
+.permission-mode-selector-chevron {
+  font-size: 14px;
+}
+.permission-mode-selector-menu {
+  display: grid;
+  gap: 2px;
+  position: absolute;
+  right: auto;
+  bottom: calc(100% + 12px);
+  left: -10px;
+  z-index: 10;
+  width: min(318px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg) 95%, transparent);
+  box-shadow: 0 16px 42px color-mix(in srgb, var(--text) 14%, transparent);
+  backdrop-filter: blur(16px);
+}
+.permission-mode-option {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+.permission-mode-option:hover {
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+.permission-mode-option:active {
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+}
+.permission-mode-option.is-selected {
+  color: var(--text);
+  background: transparent;
+}
+.permission-mode-option > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.permission-mode-option-icon {
+  width: 16px;
+  flex: 0 0 16px;
+  color: color-mix(in srgb, var(--text) 62%, transparent);
+  font-size: 16px;
+  line-height: 1;
+}
+.permission-mode-option-check {
+  width: 16px;
+  flex: 0 0 16px;
+  margin-left: auto;
+  color: color-mix(in srgb, var(--text) 72%, transparent);
+  font-size: 16px;
+  line-height: 1;
+  text-align: center;
+}
+.permission-mode-details {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 20px 24px;
+  border: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 5%, transparent);
+  backdrop-filter: blur(12px);
+}
+.permission-mode-details-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.permission-mode-details-heading > i {
+  width: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: color-mix(in srgb, var(--text) 72%, transparent);
+  font-size: 22px;
+  line-height: 1;
+}
+.permission-mode-details h4 {
+  min-width: 0;
+  margin: 0;
+  color: color-mix(in srgb, var(--text) 84%, transparent);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 35px;
+  overflow-wrap: anywhere;
+}
+.permission-mode-details p {
+  max-width: none;
+  margin: 0;
+  color: color-mix(in srgb, var(--text) 72%, transparent);
+  font-size: 16px;
+  line-height: 28px;
+  overflow-wrap: anywhere;
+}
+.permission-mode-details dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+.permission-mode-details dl > div {
+  min-width: 0;
+  padding: 16px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+.permission-mode-details dt {
+  color: color-mix(in srgb, var(--text) 50%, transparent);
+  font-size: 13px;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+.permission-mode-details dd {
+  min-width: 0;
+  margin: 12px 0 0;
+}
+.permission-mode-details code {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  font:
+    500 15px/1.4 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.permission-mode-send-button {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--bg);
+  background: color-mix(in srgb, var(--text) 44%, var(--bg));
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* AI 工具详情图解：用真实的工具、配置和运行边界表达一条关系。 */
+.tool-flow-track {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) minmax(86px, 0.42fr) minmax(0, 1fr) minmax(86px, 0.42fr)
+    minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+}
+.tool-flow-node {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  min-height: 206px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg);
+}
+.tool-flow-node.brand {
+  border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+  background: var(--brand-light);
+}
+.tool-flow-node.warning {
+  border-color: color-mix(in srgb, var(--orange) 38%, var(--border));
+  background: var(--orange-light);
+}
+.tool-flow-node strong {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.tool-flow-node p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.tool-flow-object {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 8px;
+  min-height: 58px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-soft) 76%, var(--bg));
+}
+.tool-flow-object-mark {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--text-3);
+  border-radius: 3px;
+}
+.tool-flow-object-mark::after {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 5px;
+  height: 5px;
+  border-top: 2px solid var(--text-3);
+  border-left: 2px solid var(--text-3);
+  background: var(--bg-soft);
+  content: "";
+}
+.tool-flow-object.request .tool-flow-object-mark,
+.tool-flow-object.terminal .tool-flow-object-mark {
+  border-radius: 50%;
+}
+.tool-flow-object.service .tool-flow-object-mark,
+.tool-flow-object.status .tool-flow-object-mark {
+  border-color: var(--brand);
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent);
+}
+.tool-flow-object.policy .tool-flow-object-mark,
+.tool-flow-object.boundary .tool-flow-object-mark {
+  border-color: var(--orange);
+  background: color-mix(in srgb, var(--orange) 22%, transparent);
+}
+.tool-flow-object-lines {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.tool-flow-object-lines span {
+  overflow-wrap: anywhere;
+}
+.tool-flow-object.code .tool-flow-object-lines,
+.tool-flow-object.file .tool-flow-object-lines,
+.tool-flow-object.terminal .tool-flow-object-lines {
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.tool-flow-object.tabs .tool-flow-object-lines {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+.tool-flow-object.tabs .tool-flow-object-lines span {
+  padding: 4px 5px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  text-align: center;
+}
+.tool-flow-object.tabs .tool-flow-object-lines span:first-child {
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--border));
+  color: var(--brand);
+  background: var(--brand-light);
+}
+.tool-flow-object.tree .tool-flow-object-lines span::before {
+  margin-right: 5px;
+  color: var(--brand);
+  content: ">";
+}
+.tool-flow-object.timeline .tool-flow-object-lines span::before {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin: 0 6px 1px 1px;
+  border: 1px solid var(--brand);
+  border-radius: 50%;
+  content: "";
+}
+.tool-flow-object.window .tool-flow-object-lines span {
+  padding: 3px 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  background: var(--bg);
+}
+.tool-flow-object.policy .tool-flow-object-lines,
+.tool-flow-object.boundary .tool-flow-object-lines {
+  color: var(--text);
+}
+.tool-flow-relation {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 7px;
+  color: var(--brand);
+  text-align: center;
+}
+.tool-flow-relation span {
+  font-size: 24px;
+  line-height: 1;
+}
+.tool-flow-relation small {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.tool-flow-conclusion {
+  max-width: 720px;
+  margin: 18px auto 0;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* OpenAI 兼容 API：集中呈现常见能力及其请求格式。 */
+.openai-compatible-visual {
+  overflow: hidden;
+}
+.openai-compatible-capabilities {
+  margin-top: 0;
+}
+.openai-compatible-capability-tabs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.openai-compatible-capability-tab {
+  min-width: 0;
+  min-height: 68px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 9px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-2);
+  background: var(--bg);
+  text-align: left;
+  cursor: pointer;
+}
+.openai-compatible-capability-tab:hover {
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--border));
+}
+.openai-compatible-capability-tab:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 60%, transparent);
+  outline-offset: 2px;
+}
+.openai-compatible-capability-tab.is-active {
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+  color: var(--brand);
+  background: var(--brand-light);
+}
+.openai-compatible-capability-tab span {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.openai-compatible-capability-tab code {
+  min-width: 0;
+  color: var(--text-3);
+  font:
+    11px/1.35 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.openai-compatible-capability-panel {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 11px 13px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-soft) 70%, var(--bg));
+}
+.openai-compatible-capability-panel-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.openai-compatible-capability-panel-title strong {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.openai-compatible-capability-panel-title code {
+  color: var(--brand);
+  font:
+    600 12px/1.4 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.openai-compatible-capability-panel p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.openai-compatible-capability-panel > span {
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.openai-compatible-conclusion {
+  max-width: 760px;
+  margin: 16px auto 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.65;
+  text-align: center;
+}
+
+/* API 代理：三个主体共享两段双向连接，直接对应一次模型调用。 */
+.proxy-network {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.92fr) minmax(126px, 0.72fr) minmax(0, 1.08fr) minmax(126px, 0.72fr)
+    minmax(0, 0.92fr);
+  align-items: stretch;
+  gap: 12px;
+}
+.proxy-network-node {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  min-height: 218px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+}
+.proxy-network-node-person {
+  grid-column: 1;
+  grid-row: 1;
+}
+.proxy-network-node-relay {
+  grid-column: 3;
+  grid-row: 1;
+  border-color: color-mix(in srgb, var(--orange) 38%, var(--border));
+  background: var(--orange-light);
+}
+.proxy-network-node-provider {
+  grid-column: 5;
+  grid-row: 1;
+  border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+  background: var(--brand-light);
+}
+.proxy-network-node strong {
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.proxy-network-node p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.proxy-network-channel {
+  min-width: 0;
+  display: grid;
+  grid-row: 1;
+  align-content: center;
+  gap: 10px;
+}
+.proxy-network-channel-person-relay {
+  grid-column: 2;
+}
+.proxy-network-channel-relay-provider {
+  grid-column: 4;
+}
+.proxy-network-transfer {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 9px 8px;
+  border: 1px solid color-mix(in srgb, var(--brand) 23%, var(--border));
+  border-radius: 9px;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--bg) 90%, var(--brand-light));
+}
+.proxy-network-response {
+  border-color: color-mix(in srgb, var(--text-3) 28%, var(--border));
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--bg-soft) 72%, var(--bg));
+}
+.proxy-network-transfer span {
+  font-size: 23px;
+  line-height: 1;
+}
+.proxy-network-transfer small {
+  min-width: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.proxy-network-request {
+  border-color: color-mix(in srgb, var(--brand) 23%, var(--border));
+  color: var(--brand);
+  background: color-mix(in srgb, var(--bg) 90%, var(--brand-light));
+}
+.proxy-network-conclusion {
+  max-width: 760px;
+  margin: 18px auto 0;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .provider-call-flow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .provider-call-step {
+    gap: 10px;
+  }
+  .provider-call-connector {
+    grid-auto-flow: column;
+    justify-content: center;
+    gap: 7px;
+    min-height: 30px;
+  }
+  .provider-call-connector span {
+    transform: rotate(90deg);
+  }
+  .provider-call-conclusion {
+    margin-top: 16px;
+    text-align: left;
+  }
+  .base-url-reference-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .base-url-reference-note {
+    text-align: left;
+  }
+  .config-file-table {
+    min-width: 900px;
+  }
+  .config-file-table th,
+  .config-file-table td {
+    padding: 11px 12px;
+  }
+  .config-file-table tbody th {
+    font-size: 14px;
+  }
+  .permission-mode-composer {
+    min-height: 116px;
+    border-radius: 24px;
+  }
+  .permission-mode-composer-placeholder {
+    padding: 20px 24px 68px;
+    font-size: 15px;
+    line-height: 24px;
+  }
+  .permission-mode-toolbar {
+    gap: 8px;
+    padding: 0 20px 16px;
+  }
+  .permission-mode-toolbar-group-start {
+    gap: 4px;
+  }
+  .permission-mode-toolbar-group-end {
+    gap: 8px;
+  }
+  .permission-mode-model {
+    max-width: 112px;
+    font-size: 14px;
+  }
+  .permission-mode-selector-trigger {
+    max-width: min(190px, 46vw);
+    font-size: 14px;
+  }
+  .permission-mode-selector-menu {
+    left: -8px;
+    width: min(286px, calc(100vw - 32px));
+  }
+  .permission-mode-option {
+    font-size: 15px;
+  }
+  .permission-mode-details {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 24px;
+  }
+  .permission-mode-details h4 {
+    font-size: 18px;
+  }
+  .permission-mode-details dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .permission-mode-details dl > div {
+    padding: 14px;
+  }
+  .proxy-network {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .proxy-network-node {
+    min-height: 166px;
+    padding: 15px;
+  }
+  .proxy-network-node-person {
+    order: 1;
+  }
+  .proxy-network-channel-person-relay {
+    order: 2;
+  }
+  .proxy-network-node-relay {
+    order: 3;
+  }
+  .proxy-network-channel-relay-provider {
+    order: 4;
+  }
+  .proxy-network-node-provider {
+    order: 5;
+  }
+  .proxy-network-channel {
+    grid-row: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    align-items: stretch;
+    padding: 0 2px;
+  }
+  .proxy-network-transfer {
+    grid-template-columns: auto minmax(0, 1fr);
+    min-height: 42px;
+  }
+  .proxy-network-request span,
+  .proxy-network-response span {
+    transform: rotate(90deg);
+  }
+  .proxy-network-conclusion {
+    margin-top: 16px;
+    text-align: left;
+  }
+  .tool-flow-track {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .tool-flow-node {
+    min-height: 166px;
+    padding: 15px;
+  }
+  .tool-flow-relation {
+    grid-auto-flow: column;
+    justify-content: center;
+    gap: 7px;
+    min-height: 30px;
+  }
+  .tool-flow-relation span {
+    transform: rotate(90deg);
+  }
+  .tool-flow-relation small {
+    font-size: 14px;
+  }
+  .tool-flow-conclusion {
+    margin-top: 16px;
+    font-size: 16px;
+    text-align: left;
+  }
+  .openai-compatible-capability-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .openai-compatible-capability-panel-title {
+    display: grid;
+    gap: 3px;
+  }
+  .openai-compatible-capability-panel-title code {
+    justify-self: start;
+  }
+  .openai-compatible-conclusion {
+    margin-top: 14px;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .openai-compatible-capability-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 近期六词的列表证据：资料、样例、回复、请求和信息来源各有自己的结构。 */
+.ai-card-visual:is(
+  .ai-card-rag,
+  .ai-card-fine-tuning,
+  .ai-card-temperature,
+  .ai-card-reasoning,
+  .ai-card-injection,
+  .ai-card-memory
+) {
+  min-width: 0;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  container: recent-ai-card / inline-size;
+}
+.ai-card-visual:is(
+    .ai-card-rag,
+    .ai-card-fine-tuning,
+    .ai-card-temperature,
+    .ai-card-reasoning,
+    .ai-card-injection,
+    .ai-card-memory
+  )
+  :is(div, span, b, strong, code, i) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ai-card-visual:is(
+    .ai-card-rag,
+    .ai-card-fine-tuning,
+    .ai-card-temperature,
+    .ai-card-reasoning,
+    .ai-card-injection,
+    .ai-card-memory
+  )
+  small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ai-card-visual:is(
+    .ai-card-rag,
+    .ai-card-fine-tuning,
+    .ai-card-temperature,
+    .ai-card-reasoning,
+    .ai-card-injection,
+    .ai-card-memory
+  )
+  i {
+  font-style: normal;
+}
+.ai-card-visual:is(
+    .ai-card-rag,
+    .ai-card-fine-tuning,
+    .ai-card-temperature,
+    .ai-card-reasoning,
+    .ai-card-injection,
+    .ai-card-memory
+  )
+  .aic-foot {
+  padding: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.aic-rag-question,
+.aic-temp-question,
+.aic-rm-report,
+.aic-injection-request {
+  display: grid;
+  gap: 4px;
+}
+.aic-rag-flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.aic-rag-source,
+.aic-rag-answer {
+  align-self: stretch;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg-soft);
+}
+.aic-rag-answer b {
+  color: var(--brand);
+}
+.aic-rag-flow > i {
+  font-size: 20px;
+  color: var(--text-3);
+}
+.aic-ft-samples {
+  display: grid;
+  gap: 12px;
+}
+.aic-ft-pair,
+.aic-ft-new {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  background: var(--bg-soft);
+  border-radius: 8px;
+}
+.aic-ft-new {
+  background: var(--brand-light);
+}
+.aic-ft-samples strong {
+  font-weight: 500;
+}
+.aic-temp-answers {
+  display: grid;
+  gap: 8px;
+}
+.aic-temp-answers > span {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+}
+.aic-temp-answers .high {
+  background: var(--brand-light);
+}
+.aic-rm-compare {
+  display: grid;
+  gap: 12px;
+}
+.aic-rm-compare .row {
+  display: grid;
+  grid-template-columns: 6em minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+.aic-rm-compare .evidence {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.aic-injection-content {
+  display: grid;
+  gap: 8px;
+  padding-block: 10px;
+}
+.aic-injection-content .untrusted {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--red);
+}
+.aic-injection-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.aic-injection-action > b {
+  color: var(--brand);
+}
+.aic-mem-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.aic-mem-slots .slot {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+}
+.aic-mem-check {
+  display: grid;
+  gap: 6px;
+  text-align: center;
+  color: var(--brand);
+}
+@container recent-ai-card (max-width: 340px) {
+  .aic-rag-flow,
+  .aic-mem-slots {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .aic-rag-flow > i {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+  .aic-rm-compare .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.aic-ft-policy {
+  display: block;
+  padding: 8px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.catalog-layout
+  .card-demo:not(.scaled-preview)
+  > .card-demo-mount:has(
+    > :is(
+      .ai-card-rag,
+      .ai-card-fine-tuning,
+      .ai-card-temperature,
+      .ai-card-reasoning,
+      .ai-card-injection,
+      .ai-card-memory
+    )
+  ) {
+  zoom: 1;
+}
+
+/* domains/ai/agent-skill.css */
+/* Skill 术语页：沿用站内文件树、聊天窗口、编辑器与对照场景。 */
+
+.agent-skill-guide {
+  display: grid;
+  gap: 86px;
+  margin-top: 72px;
+}
+
+/* ConceptVisual 会把文件行增强成可点击按钮；在 AI 样式包中保证按钮延续文件树样式。 */
+.skill-tree > button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-3);
+  background: transparent;
+  font: 550 12px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: left;
+  cursor: pointer;
+}
+
+.skill-tree > button:hover {
+  color: var(--text);
+  background: var(--bg-soft);
+}
+
+.skill-tree > button.active {
+  color: var(--brand);
+  background: var(--brand-light);
+}
+
+.skill-tree > button b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skill-tree > button em {
+  flex: none;
+  padding: 2px 5px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  color: var(--text-3);
+  background: var(--bg);
+  font: 650 10px/1.35 var(--font-sans);
+  font-style: normal;
+}
+
+.skill-tree > button.active em {
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 26%, var(--border));
+}
+
+.asg-section {
+  min-width: 0;
+  scroll-margin-top: 110px;
+}
+
+.asg-heading {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.asg-heading > span {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: .04em;
+}
+
+.asg-heading h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(28px, 4vw, 42px);
+  letter-spacing: -.045em;
+  line-height: 1.15;
+}
+
+.asg-heading p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.asg-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.asg-controls button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--text-2);
+  background: transparent;
+  font: 650 13px/1.25 inherit;
+  cursor: pointer;
+}
+
+.asg-controls button:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.asg-controls button.is-active {
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 20%, var(--border));
+  background: var(--brand-light);
+}
+
+.asg-controls button:focus-visible,
+.asg-copy:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.asg-controls button span {
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--text-3);
+  background: var(--bg-soft);
+  font-size: 11px;
+}
+
+.asg-controls button.is-active span {
+  color: var(--on-brand);
+  background: var(--brand);
+}
+
+.asg-chat-window {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--text) 5%, transparent);
+}
+
+.asg-chat-window > header {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-soft);
+}
+
+.asg-chat-window > header strong {
+  min-width: 0;
+  flex: 1;
+  font-size: 13px;
+}
+
+.asg-chat-avatar {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--brand);
+  background: var(--brand-light);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.asg-chat-window pre {
+  min-height: 116px;
+  margin: 0;
+  padding: 18px;
+  overflow: auto;
+  color: var(--text);
+  background: var(--bg);
+  font: 560 14px/1.8 ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.asg-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-2);
+  background: var(--bg);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.asg-copy:hover {
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+}
+
+/* 安装与使用 */
+.asg-install-scene {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) 42px minmax(220px, .65fr);
+  align-items: center;
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--text) 2.2%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 2.2%, transparent) 1px, transparent 1px),
+    var(--bg);
+  background-size: 24px 24px;
+}
+
+.asg-install-arrow,
+.asg-create-arrow {
+  color: var(--brand);
+  font-size: 27px;
+  font-weight: 650;
+  text-align: center;
+}
+
+.asg-installed-folder {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 4px;
+}
+
+.asg-installed-folder > i {
+  color: var(--brand);
+  font-size: 48px;
+}
+
+.asg-installed-folder > span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.asg-installed-folder small,
+.asg-installed-folder em {
+  color: var(--text-3);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.asg-installed-folder strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font: 720 14px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.asg-source-line {
+  margin: 14px 0 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.asg-source-line strong {
+  color: var(--text);
+}
+
+.asg-use-example {
+  display: grid;
+  grid-template-columns: minmax(190px, .7fr) minmax(0, 1.3fr);
+  align-items: center;
+  gap: 28px;
+  margin-top: 28px;
+  padding: 24px 26px;
+  border-radius: 14px;
+  background: var(--bg-soft);
+}
+
+.asg-use-example > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.asg-use-example small {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.asg-use-example strong {
+  font-size: 17px;
+}
+
+.asg-use-example p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.asg-use-example .asg-chat-window pre {
+  min-height: 86px;
+}
+
+.asg-boundary-line {
+  max-width: 820px;
+  margin: 16px 0 0;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* 作用 */
+.asg-value-scene {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(210px, 1fr) 110px minmax(210px, 1fr);
+  align-items: center;
+  gap: 34px;
+  min-height: 280px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--text) 2.2%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 2.2%, transparent) 1px, transparent 1px),
+    var(--bg);
+  background-size: 24px 24px;
+}
+
+.asg-workflow-sheet,
+.asg-knowledge-files {
+  min-height: 178px;
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--text) 5%, transparent);
+}
+
+.asg-workflow-sheet > span,
+.asg-knowledge-files > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.asg-workflow-sheet > span i,
+.asg-knowledge-files > span i {
+  color: var(--brand);
+  font-size: 19px;
+}
+
+.asg-workflow-sheet ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.asg-knowledge-files code {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-2);
+  font: 540 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.asg-knowledge-files code i {
+  color: var(--text-3);
+}
+
+.asg-skill-core {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: var(--brand);
+}
+
+.asg-skill-core::before,
+.asg-skill-core::after {
+  content: "";
+  position: absolute;
+  top: 35px;
+  width: 40px;
+  height: 2px;
+  background: color-mix(in srgb, var(--brand) 42%, var(--border));
+}
+
+.asg-skill-core::before { right: calc(100% + 4px); }
+.asg-skill-core::after { left: calc(100% + 4px); }
+
+.asg-skill-core i {
+  font-size: 56px;
+}
+
+.asg-skill-core strong {
+  font-size: 15px;
+}
+
+.asg-value-labels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 16px;
+}
+
+.asg-value-labels > span {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 2px 10px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.asg-value-labels b {
+  grid-row: 1 / 3;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--on-brand);
+  background: var(--brand);
+  font-size: 12px;
+}
+
+.asg-value-labels strong {
+  font-size: 14px;
+}
+
+.asg-value-labels small {
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+/* 创建 */
+.asg-create-scene {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) 42px minmax(220px, .75fr);
+  align-items: center;
+  gap: 22px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+}
+
+.asg-created-skill {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 0;
+}
+
+.asg-created-skill > i {
+  color: var(--brand);
+  font-size: 48px;
+}
+
+.asg-created-skill > span {
+  display: grid;
+  gap: 5px;
+}
+
+.asg-created-skill strong {
+  margin-bottom: 3px;
+  font: 720 14px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.asg-created-skill code {
+  color: var(--text-3);
+  font: 540 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.asg-create-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.asg-create-steps li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+
+.asg-create-steps span {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--brand);
+  background: var(--brand-light);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.asg-create-steps p {
+  margin: 4px 0 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 测试 */
+.asg-test-task {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.asg-test-task small {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.asg-test-task strong {
+  font-size: 16px;
+}
+
+.asg-test-lanes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.asg-test-lanes article {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--bg-soft);
+}
+
+.asg-test-lanes article:last-child {
+  border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+  background: color-mix(in srgb, var(--brand-light) 40%, var(--bg));
+}
+
+.asg-test-lanes header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.asg-test-lanes header i {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--text-2);
+  background: var(--bg);
+  font-size: 18px;
+}
+
+.asg-test-lanes article:last-child header i {
+  color: var(--brand);
+}
+
+.asg-test-lanes header strong {
+  font-size: 14px;
+}
+
+.asg-test-lanes article > p {
+  min-height: 44px;
+  margin: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.asg-test-output {
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px;
+  gap: 8px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+
+.asg-test-output i {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--border);
+}
+
+.asg-test-output i:nth-child(2) {
+  width: 66%;
+}
+
+.asg-test-output span {
+  grid-column: 1 / -1;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.asg-test-output.is-ready {
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+
+.asg-test-output.is-ready i {
+  background: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+
+.asg-test-output.is-ready span {
+  color: var(--brand);
+}
+
+.asg-test-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  margin-top: 16px;
+}
+
+.asg-test-metrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.asg-test-metrics i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+/* 最佳实践 */
+.asg-practice-stage {
+  min-height: 270px;
+  display: grid;
+  place-items: center;
+  padding: 30px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--text) 2.2%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 2.2%, transparent) 1px, transparent 1px),
+    var(--bg);
+  background-size: 24px 24px;
+}
+
+.asg-practice-stage > * {
+  width: min(680px, 100%);
+}
+
+.asg-skill-editor {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--text) 5%, transparent);
+}
+
+.asg-skill-editor header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-soft);
+}
+
+.asg-skill-editor header i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.asg-skill-editor header b {
+  margin-left: 5px;
+  color: var(--text-3);
+  font: 620 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.asg-skill-editor code {
+  display: block;
+  padding: 8px 16px;
+  color: var(--text-2);
+  font: 540 13px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow-wrap: anywhere;
+}
+
+.asg-skill-editor code:first-of-type {
+  padding-top: 16px;
+}
+
+.asg-skill-editor code:last-of-type {
+  padding-bottom: 16px;
+}
+
+.asg-skill-editor code.is-highlighted {
+  color: var(--brand);
+  background: var(--brand-light);
+}
+
+.asg-skill-editor em {
+  color: var(--brand);
+  font-style: normal;
+}
+
+.asg-script-evidence {
+  display: grid;
+  grid-template-columns: minmax(210px, .8fr) minmax(0, 1.2fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.asg-script-evidence > div {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg);
+  text-align: center;
+}
+
+.asg-script-evidence > div i {
+  color: var(--brand);
+  font-size: 34px;
+}
+
+.asg-script-evidence > div strong {
+  font: 700 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.asg-script-evidence > div span {
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.asg-script-evidence pre {
+  min-height: 168px;
+  margin: 0;
+  padding: 20px;
+  border-radius: 11px;
+  color: #e5e7eb;
+  background: #15181e;
+  font: 540 13px/1.8 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap;
+}
+
+.asg-concise-evidence {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(170px, .7fr);
+  align-items: center;
+  gap: 24px;
+}
+
+.asg-concise-evidence > p {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.asg-concise-evidence > p strong {
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.asg-concise-evidence > p span {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.asg-result-note {
+  margin: 14px 0 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.asg-result-note strong {
+  color: var(--text);
+}
+
+@media (max-width: 820px) {
+  .agent-skill-guide {
+    gap: 70px;
+    margin-top: 62px;
+  }
+
+  .asg-install-scene,
+  .asg-create-scene,
+  .asg-value-scene {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .asg-install-arrow,
+  .asg-create-arrow {
+    transform: rotate(90deg);
+  }
+
+  .asg-installed-folder,
+  .asg-created-skill {
+    justify-content: center;
+  }
+
+  .asg-skill-core::before,
+  .asg-skill-core::after {
+    display: none;
+  }
+
+  .asg-value-labels,
+  .asg-use-example,
+  .asg-test-lanes,
+  .asg-script-evidence,
+  .asg-concise-evidence {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .asg-create-steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .agent-skill-guide {
+    gap: 58px;
+    margin-top: 52px;
+  }
+
+  .asg-heading {
+    margin-bottom: 18px;
+  }
+
+  .asg-heading h2 {
+    font-size: 28px;
+  }
+
+  .asg-heading p {
+    font-size: 14px;
+  }
+
+  .asg-controls {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    margin-right: 0;
+    padding-right: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .asg-controls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .asg-controls button {
+    flex: 0 0 auto;
+  }
+
+  .asg-install-scene,
+  .asg-create-scene,
+  .asg-value-scene,
+  .asg-practice-stage {
+    padding: 18px;
+  }
+
+  .asg-chat-window pre {
+    padding: 15px;
+    font-size: 12px;
+  }
+
+  .asg-use-example {
+    gap: 16px;
+    padding: 20px 18px;
+  }
+
+  .asg-test-lanes article {
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-skill-guide *,
+  .agent-skill-guide *::before,
+  .agent-skill-guide *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation: none !important;
+  }
+}

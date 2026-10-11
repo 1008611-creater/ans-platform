@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import vibeTerms from "@/data/vibehub/terms.json";
 import {
   FAVORITE_TARGET_TYPES,
   type FavoriteTargetType,
@@ -74,6 +75,18 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
       subtitle: template.summary ?? null,
       authorName: template.author?.nickname?.trim() || null,
       costPoints: template.estimatedCost,
+    };
+  }
+
+  if (targetType === "VIBEHUB_TERM") {
+    const term = vibeTerms.find((item) => item.slug === targetId);
+    if (!term) throw new FavoriteServiceError("VibeHub term not found.", "TARGET_UNAVAILABLE", 404);
+    return {
+      title: term.name,
+      href: `/vibe-hub/${term.slug}`,
+      subtitle: term.description ?? null,
+      authorName: "VibeHub",
+      costPoints: null,
     };
   }
 
@@ -166,11 +179,11 @@ export function isFavorited(userId: string, targetType: FavoriteTargetType, targ
 }
 
 /** 收藏列表：按收藏时间倒序，并跳过已经不可访问的对象。 */
-export async function listFavorites(userId: string, take = 100): Promise<FavoriteTargetSummary[]> {
+export async function listFavorites(userId: string, take = 100, targetType?: FavoriteTargetType): Promise<FavoriteTargetSummary[]> {
   const rows = await db.contentFavorite.findMany({
-    where: { userId },
+    where: { userId, ...(targetType ? { targetType } : {}) },
     orderBy: { createdAt: "desc" },
-    take: Math.min(Math.max(take, 1), 200),
+    take: Math.min(Math.max(Number.isFinite(take) ? Math.floor(take) : 100, 1), targetType === "VIBEHUB_TERM" ? vibeTerms.length : 200),
   });
   if (rows.length === 0) return [];
 
@@ -238,6 +251,21 @@ export async function listFavorites(userId: string, take = 100): Promise<Favorit
         subtitle: template.summary ?? null,
         authorName: template.author?.nickname?.trim() || null,
         costPoints: template.estimatedCost,
+        favoritedAt: row.createdAt,
+      });
+      continue;
+    }
+    if (row.targetType === "VIBEHUB_TERM") {
+      const term = vibeTerms.find((item) => item.slug === row.targetId);
+      if (!term) continue;
+      items.push({
+        targetType: "VIBEHUB_TERM",
+        targetId: term.slug,
+        title: term.name,
+        href: `/vibe-hub/${term.slug}`,
+        subtitle: term.description ?? null,
+        authorName: "VibeHub",
+        costPoints: null,
         favoritedAt: row.createdAt,
       });
       continue;

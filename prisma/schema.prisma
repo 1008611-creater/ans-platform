@@ -988,6 +988,7 @@ enum FavoriteTargetType {
   TEMPLATE
   WORKFLOW
   ARTIFACT_VERSION
+  VIBEHUB_TERM
 }
 
 model ContentFavorite {

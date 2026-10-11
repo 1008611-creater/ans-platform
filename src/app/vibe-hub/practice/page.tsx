@@ -1,8 +1,15 @@
-﻿"use client";
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { vibePageMetadata } from "../metadata";
+import { getLocale } from "next-intl/server";
 import terms from "../terms.json";
-import special from "../special-pages.json";
-const prompts=["A short hint appears when a pointer rests over an unfamiliar icon.","A panel opens above the page and asks the user to confirm an action.","A control expands a hidden block of related content."];
-const expected=["tooltip","modal","accordion"];
-export default function Practice(){const [step,setStep]=useState(0),[answer,setAnswer]=useState(""),[score,setScore]=useState(0),[done,setDone]=useState(false); const options=useMemo(()=>terms.filter(t=>["tooltip","modal","accordion","hover","dialog","button","link","drawer"].includes(t.slug)).slice(0,8),[]); const source=special.find(x=>x.slug==="practice"); function submit(){if(answer===expected[step])setScore(s=>s+1); if(step===prompts.length-1)setDone(true); else {setStep(s=>s+1);setAnswer("")}} return <main className="min-h-screen bg-[#fbfaf8] p-8 text-[#272522]"><div className="mx-auto max-w-3xl"><Link href="/vibe-hub" className="text-sm text-[#716d66]">← VibeHub</Link><p className="mt-16 text-sm font-medium text-[#8274d9]">Vibe Coding practice</p><h1 className="mt-3 text-5xl font-semibold">Name the interface</h1><p className="mt-5 text-lg text-[#716d66]">{source?.enDescription||"Choose the most precise term for each interaction description."}</p>{done?<section className="mt-10 rounded-3xl border border-[#e9e4dc] bg-white p-8"><h2 className="text-2xl font-semibold">Score: {score}/{prompts.length}</h2><p className="mt-3 text-[#716d66]">Use these terms in your next request to an AI coding agent.</p><button onClick={()=>{setStep(0);setScore(0);setDone(false)}} className="mt-6 rounded-full bg-[#272522] px-5 py-3 text-sm text-white">Try again</button></section>:<section className="mt-10 rounded-3xl border border-[#e9e4dc] bg-white p-8"><div className="flex items-center justify-between text-sm text-[#716d66]"><span>Question {step+1} of {prompts.length}</span><span>{score} correct</span></div><p className="mt-8 text-xl leading-8">{prompts[step]}</p><div className="mt-6 grid gap-3 sm:grid-cols-2">{options.map(t=><button key={t.slug} onClick={()=>setAnswer(t.slug)} className={`rounded-2xl border p-4 text-left ${answer===t.slug?"border-[#8274d9] bg-[#f5f1ff]":"border-[#e9e4dc]"}`}><span className="font-medium">{t.name}</span><span className="mt-1 block text-xs text-[#716d66]">{t.category}</span></button>)}</div><button disabled={!answer} onClick={submit} className="mt-8 rounded-full bg-[#272522] px-5 py-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40">{step===prompts.length-1?"Finish":"Next"}</button></section>}<section className="mt-8 space-y-3">{source?.enSections?.map((x:any)=><article key={x.title} className="rounded-2xl border border-[#e9e4dc] bg-white p-5"><h2 className="text-sm font-semibold">{x.title}</h2><p className="mt-2 text-sm leading-6 text-[#716d66]">{x.body}</p></article>)}</section></div></main>}
+import { readVibeData, languageParam, type AgentEnvelope, type Lesson } from "../source-data";
+import { PracticeClient } from "./practice-client";
+export default async function Practice({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
+  const lang = languageParam((await searchParams).lang, await getLocale());
+  const payloads = await Promise.all(terms.map(async (term) => {
+    const item = await readVibeData<AgentEnvelope<Lesson>>(`lessons/${lang}/${term.slug}.json`);
+    return item?.data.lessonPractice ? { id: term.slug, title: item.data.title, lessonPractice: item.data.lessonPractice, macroCategory: term.macroCategory } : null;
+  }));
+  return <PracticeClient lessons={payloads.flatMap(item => item ? [item] : [])} />;
+}
+
+export function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }) { return vibePageMetadata("practice", searchParams); }

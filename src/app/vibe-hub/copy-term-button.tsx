@@ -1,3 +1,11 @@
 ﻿"use client";
-import { useState } from "react";
-export function CopyTermButton({text}:{text:string}){const [copied,setCopied]=useState(false); return <button onClick={async()=>{await navigator.clipboard.writeText(text);setCopied(true);setTimeout(()=>setCopied(false),1400)}} className="rounded-full border border-[#ded8cf] px-4 py-2 text-sm transition hover:border-[#8274d9]">{copied?"Copied":"Copy prompt"}</button>}
+import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
+export function CopyTermButton({ text, markdown = false }: { text: string; markdown?: boolean }) {
+  const t = useTranslations("vibehub"); const [copied, setCopied] = useState(false); const [error, setError] = useState(false); const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  return <span><button type="button" className="vh-small-button" onClick={async () => {
+    try { await navigator.clipboard.writeText(text); setCopied(true); setError(false); if (timer.current) clearTimeout(timer.current); timer.current = setTimeout(() => setCopied(false), 1800); }
+    catch { setError(true); }
+  }}>{t(copied ? "copied" : markdown ? "copyMarkdown" : "copy")}</button>{error && <span role="alert" className="ml-2 text-xs">{t("copyError")}</span>}</span>;
+}

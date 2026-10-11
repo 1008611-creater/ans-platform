@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { fail, ok, readJson, respondWithError } from "@/server/http/respond";
-import { addFavorite, listFavorites, removeFavorite } from "@/server/favorites/service";
+import { addFavorite, isFavoriteTargetType, listFavorites, removeFavorite } from "@/server/favorites/service";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +9,11 @@ export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return fail("UNAUTHORIZED", "请先登录。", { status: 401 });
   try {
-    const take = Number(new URL(request.url).searchParams.get("take") ?? 100) || 100;
-    return ok({ favorites: await listFavorites(session.user.id, take) });
+    const params = new URL(request.url).searchParams;
+    const take = Number(params.get("take") ?? 100) || 100;
+    const targetType = params.get("targetType");
+    if (targetType !== null && !isFavoriteTargetType(targetType)) return fail("INVALID_TARGET_TYPE", "Invalid favorite type.", { status: 400 });
+    return ok({ favorites: await listFavorites(session.user.id, take, targetType ?? undefined) });
   } catch (error) {
     return respondWithError(error);
   }

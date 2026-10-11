@@ -1,2 +1,3 @@
 ﻿import { NextResponse } from "next/server";
-export function GET(request:Request){const origin=new URL(request.url).origin; return NextResponse.json({schemaVersion:"1",revision:"ans-local-v1",data:{name:"VibeHub",schemaVersion:"1",revision:"ans-local-v1",siteUrl:origin,apiBaseUrl:`${origin}/api/vibe-hub`,language:"zh-CN",capabilities:["search-lessons","get-lesson","search-journeys","get-journey","resolve-terms"],endpoints:{manifest:`${origin}/.well-known/vibehub.json`,search:`${origin}/api/vibe-hub/resolve{?q,limit}`,lesson:`${origin}/api/vibe-hub/lessons/{id}`,journeys:`${origin}/api/vibe-hub/journeys{?q,limit}`}}});}
+import { makeVibeManifest } from "@/server/vibehub/manifest";
+export function GET(request: Request) {return NextResponse.json(makeVibeManifest(new URL(request.url).origin),{headers:{"Cache-Control":"public, max-age=300"}});}

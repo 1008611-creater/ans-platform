@@ -1,4 +1,23 @@
 ﻿"use client";
 import Link from "next/link";
-import { useState } from "react";
-export function TermResolver(){const [query,setQuery]=useState("");const [items,setItems]=useState<any[]>([]);const [loading,setLoading]=useState(false);async function resolve(){if(!query.trim())return;setLoading(true);try{const r=await fetch(`/api/vibe-hub/resolve?q=${encodeURIComponent(query)}`);const j=await r.json();setItems(j.items||[])}finally{setLoading(false)}}return <section className="mx-auto max-w-3xl px-5 pb-10"><div className="rounded-3xl border border-[#ded8cf] bg-white p-6 shadow-sm"><p className="text-sm font-medium text-[#8274d9]">Describe it in plain words</p><h2 className="mt-2 text-2xl font-semibold">Find the term an AI agent will understand</h2><div className="mt-5 flex gap-2"><input value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>e.key==="Enter"&&resolve()} placeholder="e.g. 从右边展开详情、鼠标放上去显示提示" className="min-w-0 flex-1 rounded-2xl border border-[#ded8cf] px-4 py-3 text-sm outline-none focus:border-[#8274d9]" /><button onClick={resolve} className="rounded-2xl bg-[#272522] px-5 py-3 text-sm text-white">{loading?"Searching…":"Resolve"}</button></div>{items.length>0&&<div className="mt-5 space-y-2">{items.map(item=><Link key={item.slug} href={`/vibe-hub/${item.slug}`} className="block rounded-2xl border border-[#e9e4dc] p-4 hover:border-[#8274d9]"><div className="flex items-center justify-between"><span className="font-medium">{item.name}</span><span className="text-xs text-[#8274d9]">{item.category}</span></div><p className="mt-1 text-sm text-[#716d66]">{item.description}</p></Link>)}</div>}</div></section>}
+import { useTranslations } from "next-intl";
+import { useState, useRef, useEffect } from "react";
+import { useVibeLanguage } from "./use-vibe-language";
+type Match = { slug: string; name: string; description?: string; category?: string };
+export function TermResolver() {
+  const [query, setQuery] = useState(""); const [items, setItems] = useState<Match[]>([]); const [loading, setLoading] = useState(false); const [error, setError] = useState(""); const [searched, setSearched] = useState(false);
+  const request = useRef<AbortController | null>(null); const lang = useVibeLanguage(); const t = useTranslations("vibehub");
+  useEffect(() => () => request.current?.abort(), []);
+  async function resolve() {
+    if (!query.trim()) return; request.current?.abort(); const controller = new AbortController(); request.current = controller;
+    setLoading(true); setError(""); setSearched(false);
+    try {
+      const response = await fetch(`/api/vibe-hub/resolve?q=${encodeURIComponent(query)}&locale=${lang}`, { signal: controller.signal });
+      if (!response.ok) throw new Error("Request failed"); const payload = await response.json(); if (controller.signal.aborted) return; setItems(payload.items || []); setSearched(true);
+    } catch (failure) { if (!(failure instanceof DOMException && failure.name === "AbortError")) setError(t("resolveError")); }
+    finally { if (!controller.signal.aborted) setLoading(false); }
+  }
+  return <section className="vh-resolver"><h2>{t("resolveHeading")}</h2><p>{t("resolveBody")}</p><form onSubmit={(event) => { event.preventDefault(); void resolve(); }}><input value={query} onChange={(event) => setQuery(event.target.value)} aria-label={t("resolveHeading")} placeholder={t("resolvePlaceholder")} maxLength={500} /><button type="submit" className="vh-primary" disabled={loading || !query.trim()}>{t(loading ? "resolving" : "resolve")}</button></form>
+    <div aria-live="polite">{error && <p role="alert">{error}</p>}{searched && !items.length && <p>{t("resolveEmpty")}</p>}{items.map((item) => <Link key={item.slug} href={`/vibe-hub/${item.slug}?lang=${lang}`} className="vh-result"><strong>{item.name}</strong><p>{item.description}</p></Link>)}</div>
+  </section>;
+}

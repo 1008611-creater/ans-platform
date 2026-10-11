@@ -1,7 +1,23 @@
-﻿"use client";
+"use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { TermDemo, hasNativeDemo } from "./term-demo";
+import { Volume2 } from "lucide-react";
+import { SourceContent } from "./source-content";
 import { CopyTermButton } from "./copy-term-button";
 import { FavoriteButton } from "./favorite-button";
-import { TermDemo } from "./term-demo";
-export default function VibeHubTermClient({term,previous,next}:{term:any,previous:any,next:any}){const [zh,setZh]=useState(false); const sections=zh?(term.zhSections||term.sections):(term.sections||[]); return <main className="min-h-screen bg-[#fbfaf8] text-[#272522]"><header className="border-b border-[#e9e4dc] px-5 py-4"><div className="mx-auto flex max-w-5xl items-center justify-between"><Link href="/vibe-hub" className="flex items-center gap-2 font-semibold"><img src="/vibe-hub/vh-logo-v4-tight.png" alt="VibeHub" className="h-7 w-auto" /></Link><div className="flex items-center gap-2"><button onClick={()=>setZh(false)} aria-pressed={!zh} className={`rounded-full px-3 py-1 text-xs ${!zh?"bg-[#272522] text-white":"border border-[#ded8cf]"}`}>EN</button><button onClick={()=>setZh(true)} aria-pressed={zh} className={`rounded-full px-3 py-1 text-xs ${zh?"bg-[#272522] text-white":"border border-[#ded8cf]"}`}>中文</button><Link href="/vibe-hub" className="ml-2 text-sm text-[#716d66]">← All terms</Link></div></div></header><article className="mx-auto max-w-3xl px-5 py-16"><p className="text-sm text-[#8274d9]">{zh?"Vibe Coding 术语":"Vibe Coding term"}</p><h1 className="mt-3 text-5xl font-semibold tracking-tight">{zh?(term.zhTitle||term.name):term.name}</h1><p className="mt-6 text-xl leading-9 text-[#716d66]">{zh?(term.zhDescription||term.description):term.description}</p><div className="mt-6 flex flex-wrap gap-3"><FavoriteButton slug={term.slug} /><CopyTermButton text={`${zh?"请使用":"Use the"} ${term.name} pattern here. ${term.description}`} /></div><div className="mt-8"><TermDemo slug={term.slug} /></div><div className="mt-10 space-y-4">{sections?.map((section:any)=><section key={section.title} className="rounded-3xl border border-[#e9e4dc] bg-white p-6"><h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8274d9]">{section.title}</h2><p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#716d66]">{section.body}</p></section>)}</div><div className="mt-10 flex items-center justify-between gap-4 border-t border-[#e9e4dc] pt-6"><Link href={`/vibe-hub/${previous.slug}`} className="text-sm text-[#716d66]">← {previous.name}</Link><Link href={`/vibe-hub/${next.slug}`} className="text-sm text-[#716d66]">{next.name} →</Link></div></article></main>}
+import { LessonQuiz } from "./lesson-quiz";
+import { useVibeLanguage } from "./use-vibe-language";
+import type { SourcePage, Lesson } from "./source-data";
+type Adjacent = { slug: string; name: string; zhName: string };
+
+export default function VibeHubTermClient({ slug, content, lesson, previous, next }: { slug: string; content: SourcePage; lesson: Lesson | null; previous: Adjacent; next: Adjacent }) {
+  const lang = useVibeLanguage(); const t = useTranslations("vibehub");
+  const markdown = content.markdown || `# ${content.name}\n\n${content.description || ""}\n\n> ${content.quote || ""}\n\n${content.agentPrompt || lesson?.agentPrompt || lesson?.flowLesson?.agentPrompt || ""}\n\n${lesson?.references?.map((item) => `- [${item.title}](${item.url})`).join("\n") || ""}`;
+  const pronounce = () => { if ("speechSynthesis" in window) { const utterance = new SpeechSynthesisUtterance(content.name || slug); utterance.lang = lang === "zh" ? "zh-CN" : "en-US"; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance); } };
+  return <main className="vh-page"><div className="vh-detail-toolbar"><Link href={`/vibe-hub?lang=${lang}`}>← {t("all")}</Link><div className="vh-detail-actions"><FavoriteButton slug={slug} /><CopyTermButton text={markdown} markdown /><CopyTermButton text={content.agentPrompt || lesson?.agentPrompt || lesson?.flowLesson?.agentPrompt || markdown} /><button type="button" className="vh-icon-button" onClick={pronounce} aria-label={t("pronounce")}><Volume2 size={18} /></button><a href={content.sourceUrl} target="_blank" rel="noreferrer" className="vh-small-button">{t("source")} ↗</a></div></div>
+    <SourceContent flowLesson={lesson?.flowLesson} html={content.html} className="vh-detail-content" demo={hasNativeDemo(slug) ? <TermDemo slug={slug} /> : undefined} />
+    {lesson?.lessonPractice && <LessonQuiz id={slug} practice={lesson.lessonPractice} />}
+    <nav className="vh-detail-nav" aria-label={t("terms")}><Link href={`/vibe-hub/${previous.slug}?lang=${lang}`} rel="prev">← {lang === "zh" ? previous.zhName : previous.name}</Link><Link href={`/vibe-hub/${next.slug}?lang=${lang}`} rel="next">{lang === "zh" ? next.zhName : next.name} →</Link></nav>
+  </main>;
+}

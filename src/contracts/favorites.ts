@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-/** 统一收藏目标类型：Prompt / 模板 / 工作流共用一套契约。 */
-export const favoriteTargetTypeSchema = z.enum(["PROMPT", "TEMPLATE", "WORKFLOW"]);
+/** Unified favorite targets used by the ANS content library. */
+export const favoriteTargetTypeSchema = z.enum(["PROMPT", "TEMPLATE", "WORKFLOW", "VIBEHUB_TERM"]);
 
 export type FavoriteTargetType = z.infer<typeof favoriteTargetTypeSchema>;
 
@@ -11,4 +11,5 @@ export const favoriteTargetLabels: Record<FavoriteTargetType, string> = {
   PROMPT: "提示词",
   TEMPLATE: "模板",
   WORKFLOW: "工作流",
+  VIBEHUB_TERM: "VibeHub 术语",
 };
