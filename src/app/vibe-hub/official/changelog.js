@@ -162,9 +162,10 @@ function r(e) {
           className: "changelog-header",
           children: [(0, t.jsxs)("div", {
             className: "changelog-header-main",
-            children: [(0, t.jsx)("h1", {
+            // ANS adaptation: retain upstream history with explicit provenance.
+            children: [(0, t.jsx)("h2", {
               className: "changelog-title",
-              children: r ? "Changelog" : "更新日志"
+              children: r ? "VibeHub upstream changelog" : "VibeHub 原站更新记录"
             }), (0, t.jsx)("p", {
               className: "changelog-subtitle",
               children: r ? "See new terms, courses, and features to help you learn." : "看看新增了哪些词条、学习路线和实用功能。"

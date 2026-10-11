@@ -1,14 +1,9 @@
 "use client";
 import Link from "next/link";
-import { AnsReturnLink } from "./ans-return-link";
 import { useTranslations } from "next-intl";
+import { useVibeLanguage } from "./use-vibe-language";
+import { AnsReturnLink } from "./ans-return-link";
 export function VibeHubFooter() {
-  const t = useTranslations("vibehub");
-  return <footer className="vh-source-footer"><div><p>{t("footerBody")}</p><p>{t("originalAuthor")} <a href="https://oiloil.org/" target="_blank" rel="noreferrer">oil oil ↗</a></p></div>
-    <nav aria-label={t("authorContributions")}>
-      <a href="https://github.com/oil-oil" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://x.com/I_am_oil_oil" target="_blank" rel="noreferrer">X ↗</a>
-      <a href="https://www.xiaohongshu.com/user/profile/5f4dfecb000000000100571d" target="_blank" rel="noreferrer">{t("red")} ↗</a><a href="mailto:zhihuang.oiloil@gmail.com">{t("email")}</a>
-      <a href="https://my.feishu.cn/share/base/shrcnxcYfvOPpNtF0c1Vv3oBXGb" target="_blank" rel="noreferrer">{t("suggestTerm")} ↗</a>
-    </nav><nav aria-label={t("source")}><a href="https://vibe-hub.org" target="_blank" rel="noreferrer">{t("officialSite")} ↗</a><a href="https://github.com/oil-oil/vibe-hub-skill" target="_blank" rel="noreferrer">{t("githubSkill")} ↗</a><Link href="/.well-known/vibehub.json">{t("manifest")}</Link><AnsReturnLink /></nav>
-  </footer>;
+  const t = useTranslations("vibehub"); const lang = useVibeLanguage();
+  return <footer className="vh-footer ans-knowledge-footer"><div className="ans-knowledge-container"><div className="ans-knowledge-footer-main"><div><Link href={`/vibe-hub?lang=${lang}`} className="ans-knowledge-footer-brand">ANS VibeHub</Link><p>{t("knowledgeTagline")}</p></div><nav aria-label={t("ansDestinations")}><Link href="/explore">{t("exploreAns")}</Link><Link href="/workflows">{t("workflowAns")}</Link><Link href="/community">{t("communityAns")}</Link><AnsReturnLink /></nav></div><div className="ans-knowledge-footer-credit"><p>{t("sourceAttribution")}</p><nav aria-label={t("source")}><a href="https://vibe-hub.org" target="_blank" rel="noreferrer">VibeHub ↗</a><a href="https://github.com/oil-oil/vibe-hub-skill" target="_blank" rel="noreferrer">{t("githubSkill")} ↗</a><Link href="/.well-known/vibehub.json">{t("manifest")}</Link><Link href={`/vibe-hub/updates?lang=${lang}`}>{t("updates")}</Link></nav></div></div></footer>;
 }

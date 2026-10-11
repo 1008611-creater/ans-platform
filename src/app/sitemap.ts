@@ -5,6 +5,7 @@ import vibeTerms from "./vibe-hub/terms.json";
 import vibeCourses from "@/data/vibehub/courses/index.json";
 import vibeTopics from "./vibe-hub/topics.json";
 import vibeJourneys from "@/data/vibehub/journeys-en.json";
+import { ANS_PRACTICES } from "@/domain/vibehub/ans-practices";
 
 // Revalidate sitemap every hour (3600 seconds)
 export const revalidate = 3600;
@@ -53,6 +54,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const vibeCoursePages: MetadataRoute.Sitemap = ["courses", ...new Set(vibeCourses.map(item=>`courses/${item.course}`)), ...vibeCourses.map(item=>`courses/${item.course}/${item.id}`), ...vibeTopics.map(item=>`topics/${item.slug}`)].map(path=>({url:`${baseUrl}/vibe-hub/${path}`,changeFrequency:"monthly" as const,priority:0.5}));
 
+  const ansPracticePages: MetadataRoute.Sitemap = ["", ...ANS_PRACTICES.map(item => `/${item.slug}`)].map(path => ({
+    url: `${baseUrl}/vibe-hub/ans${path}?lang=zh`,
+    changeFrequency: "monthly" as const,
+    priority: path ? 0.6 : 0.7,
+    alternates: { languages: { "zh-CN": `${baseUrl}/vibe-hub/ans${path}?lang=zh`, en: `${baseUrl}/vibe-hub/ans${path}?lang=en` } },
+  }));
+
   // Book chapter pages
   const chapters = getAllChapters();
   const bookPages: MetadataRoute.Sitemap = chapters.map((chapter) => ({
@@ -96,10 +104,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
-    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...categoryPages, ...promptPages, ...tagPages];
+    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...categoryPages, ...promptPages, ...tagPages];
   } catch {
     // Database unavailable (build time) - return static and book pages only
-    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...bookPages];
+    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...bookPages];
   }
 }
 

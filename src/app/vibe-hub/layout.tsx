@@ -5,7 +5,7 @@ import { VibeHubShell } from "./shell";
 
 export const metadata: Metadata = {
   title: { default: "ANS VibeHub", template: "%s | ANS VibeHub" },
-  description: "Vibe Coding 可视化术语图鉴：前端、后端、AI、Git、设计风格与交互练习。",
+  description: "ANS 的知识与实践入口：查懂术语，整理真实资料，用项目与工作流完成自己的作品。",
   icons: { icon: "/favicon/favicon.svg", apple: "/favicon/apple-touch-icon.png" },
   alternates: { canonical: "/vibe-hub" },
   openGraph: { title: "ANS VibeHub", siteName: "ANS VibeHub", images: ["/favicon/web-app-manifest-512x512.png"] },
