@@ -17,7 +17,11 @@ export function registrationEnvironment() {
   if (!secret || !siteKey || !resendKey || !from || !hostname) {
     throw new RegistrationError(503, "registration_unavailable", "注册服务尚未配置完成，请稍后再试");
   }
-  return { secret, siteKey, resendKey, from, hostname };
+  const allowedHostnames = new Set([hostname, ...(process.env.ANS_REGISTRATION_HOSTNAMES || "").split(",").map(value => value.trim().toLowerCase()).filter(Boolean)]);
+  if ([...allowedHostnames].some(value => !/^(?=.{1,253}$)[a-z0-9]+(?:[.-][a-z0-9]+)*$/.test(value))) {
+    throw new RegistrationError(503, "registration_unavailable", "Registration hostnames are not configured correctly");
+  }
+  return { secret, siteKey, resendKey, from, hostname, allowedHostnames };
 }
 
 export async function verifyRegistrationChallenge(token: string) {
@@ -36,7 +40,7 @@ export async function verifyRegistrationChallenge(token: string) {
   } catch {
     throw new RegistrationError(503, "challenge_unavailable", "人机验证服务暂不可用，请重试");
   }
-  if (!result || result.success !== true || result.hostname !== env.hostname || result.action !== "register") {
+  if (!result || result.success !== true || typeof result.hostname !== "string" || !env.allowedHostnames.has(result.hostname) || result.action !== "register") {
     throw new RegistrationError(400, "challenge_invalid", "人机验证无效或已过期，请重新验证");
   }
 }
