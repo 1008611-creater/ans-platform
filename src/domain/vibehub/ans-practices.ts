@@ -1,5 +1,5 @@
 export type PracticeLocale = "zh" | "en";
-type Localized = Record<PracticeLocale, string>;
+export type Localized = Record<PracticeLocale, string>;
 export type AnsPractice = {
   slug: string; number: string; icon: "brief" | "site" | "video" | "github" | "contest" | "credits";
   title: Localized; summary: Localized; outcome: Localized; audience: Localized;

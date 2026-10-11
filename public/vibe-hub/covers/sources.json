@@ -1,0 +1,22 @@
+{
+  "method": "GitGlow compositions adapted as live HTML/CSS; source images are direct browser captures of ANS VibeHub itself",
+  "gitglowRevision": "69afa6862f1d8fc99ac11466bb6da2b4ddd802f4",
+  "sources": [
+    {
+      "file": "terms-source.png",
+      "route": "/vibe-hub/topics?lang=zh",
+      "content": "Actual frontend term atlas"
+    },
+    {
+      "file": "practice-source.png",
+      "route": "/vibe-hub/ans?lang=zh",
+      "content": "Actual ANS original practice directory"
+    },
+    {
+      "file": "interaction-source.png",
+      "route": "/vibe-hub/practice?lang=zh",
+      "content": "Actual unanswered interface quiz"
+    }
+  ],
+  "scope": "Public knowledge content only; no user data, other ANS projects or adoption metrics"
+}

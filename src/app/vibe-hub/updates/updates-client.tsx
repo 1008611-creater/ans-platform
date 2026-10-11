@@ -1,10 +1,20 @@
 "use client";
 import Link from "next/link";
+import { ArrowUpRight, BookOpen, Route, Sparkles, PanelsTopLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useVibeLanguage } from "../use-vibe-language";
-import { ChangelogView } from "../official/changelog";
+const entries = [
+  { id: "content", icon: BookOpen, href: "/vibe-hub/ans" },
+  { id: "paths", icon: Route, href: "/vibe-hub/journeys" },
+  { id: "collaboration", icon: Sparkles, href: "/vibe-hub/vibehub-skill" },
+  { id: "identity", icon: PanelsTopLeft, href: "/vibe-hub" },
+] as const;
 export default function Updates() {
-  const locale = useVibeLanguage(); const router = useRouter(); const t = useTranslations("vibehub");
-  return <main><section className="ans-knowledge-container ans-updates-intro"><p className="ans-knowledge-eyebrow">ANS VibeHub</p><h1>{t("ansAdaptation")}</h1><p>{t("ansAdaptationBody")}</p><Link href={`/vibe-hub/ans?lang=${locale}`}>{t("allPractices")} →</Link><div className="ans-upstream-notice"><p className="ans-upstream-label">{t("upstreamUpdates")}</p><p>{t("upstreamUpdatesBody")}</p></div></section><ChangelogView locale={locale} onGoHome={() => router.push(`/vibe-hub/topics?lang=${locale}`)} onOpenTerm={id => router.push(`/vibe-hub/${id}?lang=${locale}`)} /></main>;
+  const lang = useVibeLanguage(); const t = useTranslations("vibehub");
+  return <main className="ans-knowledge-container ans-editorial-page">
+    <header className="ans-knowledge-page-heading"><p className="ans-knowledge-eyebrow">ANS / {t("updates")}</p><h1>{t("ansChangesTitle")}</h1><p>{t("ansChangesBody")}</p></header>
+    <div className="ans-changes-layout"><aside className="ans-changes-date"><time dateTime="2026-10-12">2026.10.12</time><p>{t("ansChangesEdition")}</p><span>{t("ansChangesDateNote")}</span></aside>
+    <div className="ans-changes-entries">{entries.map(({id, icon: Icon, href}, index) => <article key={id} className="ans-change-entry"><div className="ans-change-symbol"><Icon size={21} aria-hidden="true" /><span>0{index + 1}</span></div><div><p className="ans-knowledge-eyebrow">{t(`ansChange${id}Category`)}</p><h2>{t(`ansChange${id}Title`)}</h2><p>{t(`ansChange${id}Body`)}</p><Link className="ans-editorial-link" href={`${href}?lang=${lang}`}>{t(`ansChange${id}Link`)}<ArrowUpRight size={16} aria-hidden="true" /></Link></div></article>)}</div></div>
+    <section className="ans-editorial-note"><h2>{t("ansChangesSourceTitle")}</h2><p>{t("ansChangesSourceBody")}</p><Link className="ans-editorial-link" href={`/vibe-hub/ans/github-to-project?lang=${lang}`}>{t("ansChangesSourceLink")}<ArrowUpRight size={16} aria-hidden="true" /></Link></section>
+  </main>;
 }

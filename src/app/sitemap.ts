@@ -1,3 +1,4 @@
+import { ANS_LEARNING_PATHS } from "@/domain/vibehub/ans-learning-paths";
 import { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { getAllChapters } from "@/lib/book/chapters";
@@ -61,6 +62,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: { languages: { "zh-CN": `${baseUrl}/vibe-hub/ans${path}?lang=zh`, en: `${baseUrl}/vibe-hub/ans${path}?lang=en` } },
   }));
 
+  const ansPathPages: MetadataRoute.Sitemap = ANS_LEARNING_PATHS.map(path => ({
+    url: `${baseUrl}/vibe-hub/journeys/${path.id}?lang=zh`, changeFrequency: "monthly" as const, priority: 0.6,
+    alternates: { languages: { "zh-CN": `${baseUrl}/vibe-hub/journeys/${path.id}?lang=zh`, en: `${baseUrl}/vibe-hub/journeys/${path.id}?lang=en` } },
+  }));
+
   // Book chapter pages
   const chapters = getAllChapters();
   const bookPages: MetadataRoute.Sitemap = chapters.map((chapter) => ({
@@ -104,10 +110,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
-    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...categoryPages, ...promptPages, ...tagPages];
+    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...ansPathPages, ...categoryPages, ...promptPages, ...tagPages];
   } catch {
     // Database unavailable (build time) - return static and book pages only
-    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...bookPages];
+    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...ansPathPages, ...bookPages];
   }
 }
-

@@ -1,6 +1,9 @@
 // Derived from public VibeHub presentation code. Source hashes: src/data/vibehub/interaction-sources.json.
 "use client";
 
+import terms from "../terms.json";
+import { ANS_PRACTICES } from "@/domain/vibehub/ans-practices";
+
 import { SkillCopyButton } from "../skill-copy-button";
 import * as n from "react/jsx-runtime";
 import * as a from "react";
@@ -540,8 +543,8 @@ let N = {
 };
 let C = {
   v: 1,
-  goal: "让产品首页更有高级感",
-  context: "准备上线的 AI 产品首页",
+  goal: "把 ANS 首页的重点说清楚",
+  context: "ANS VibeHub 布局演示",
   focus: "hierarchy",
   modules: ["observe", "prioritize", "tune", "verify"]
 };
@@ -563,8 +566,8 @@ let E = {
   },
   proof: {
     label: "先确认它是否可信",
-    shortLabel: "使用证明",
-    description: "让使用人数和评价更容易被注意到。"
+    shortLabel: "内容依据",
+    description: "让真实的内容范围和方法来源更容易被注意到。"
   }
 };
 let A = {
@@ -607,8 +610,8 @@ let q = {
   },
   defaultSpec: {
     ...C,
-    goal: "Make the product homepage feel more polished",
-    context: "An AI product homepage that is almost ready to launch"
+    goal: "Make the ANS homepage hierarchy clear",
+    context: "ANS VibeHub layout demo"
   },
   priorities: {
     value: {
@@ -623,8 +626,8 @@ let q = {
     },
     proof: {
       label: "See whether it is trustworthy first",
-      shortLabel: "Proof",
-      description: "Make usage numbers and ratings easier to notice."
+      shortLabel: "Content evidence",
+      description: "Make the actual content scope and method provenance easier to notice."
     }
   },
   verifyItems: {
@@ -691,24 +694,25 @@ let D = {
     currentPriority: "当前重点 \xb7 ",
     emphasizeOne: "先突出一个重点",
     competingContent: "内容差不多抢眼",
-    examplePage: "示例页面",
+    examplePage: "ANS VibeHub · 布局演示",
     previewNavAria: "示例页面导航",
-    nav: ["产品", "案例", "价格"],
+    nav: ["术语", "实践", "学习"],
     login: "登录",
     creator: "为独立创作者准备",
     productTitle: (0, n.jsxs)(n.Fragment, {
       children: ["把想法变成", (0, n.jsx)("br", {}), "可以分享的作品"]
     }),
-    productDescription: "从第一张画布到最终发布，把创作过程放进一个安静、顺手的工作空间。",
-    startFree: "免费开始",
-    seeWork: "看看作品",
-    creators: "位创作者正在使用",
-    rating: "用户评分",
-    springNotes: "春日笔记",
+    productDescription: "查懂术语、说清需求，再用自己的真实资料完成创作。这里演示如何让页面重点更清楚。",
+    startFree: "开始学习",
+    seeWork: "查看实践",
+    creators: " 个可查术语",
+    rating: " 份 ANS 原创实践",
+    springNotes: "从知识到作品",
     breadcrumbAria: "面包屑",
     lab: "组合练习",
-    generated: "Agent 组合了 ",
-    interactions: " 个互动",
+    collaboration: "ANS Agent 协作",
+    generated: "本次练习包含 ",
+    interactions: " 个步骤",
     combinedCase: "组合案例 \xb7 ",
     intro: "先比较做法，再决定第一眼要看到什么。调整完成以后，离开参数检查一次真实感受。",
     routeAria: "练习步骤",
@@ -758,24 +762,25 @@ let D = {
     currentPriority: "Current priority \xb7 ",
     emphasizeOne: "Lead with one main point",
     competingContent: "Everything competes for attention",
-    examplePage: "Example page",
+    examplePage: "ANS VibeHub · Layout demo",
     previewNavAria: "Example page navigation",
-    nav: ["Product", "Stories", "Pricing"],
+    nav: ["Terms", "Practice", "Learning"],
     login: "Log in",
     creator: "Made for independent creators",
     productTitle: (0, n.jsxs)(n.Fragment, {
       children: ["Turn ideas into", (0, n.jsx)("br", {}), "work you can share"]
     }),
-    productDescription: "From the first canvas to launch, keep your creative process in one calm, practical workspace.",
-    startFree: "Start for free",
-    seeWork: "View examples",
-    creators: " creators are using it",
-    rating: " user rating",
-    springNotes: "Spring Notes",
+    productDescription: "Learn the terms, write a clear brief and create from your own material. This layout demonstrates how to make the page priority clearer.",
+    startFree: "Start learning",
+    seeWork: "View practices",
+    creators: " searchable terms",
+    rating: " original ANS practices",
+    springNotes: "From knowledge to work",
     breadcrumbAria: "Breadcrumb",
     lab: "Learning Lab",
-    generated: "Your Agent combined ",
-    interactions: " interactions",
+    collaboration: "ANS Agent collaboration",
+    generated: "This exercise has ",
+    interactions: " steps",
     combinedCase: "Combined exercise \xb7 ",
     intro: "Compare two approaches first, then decide what people should notice at first glance. When you finish adjusting, check the page based on how it actually feels—not the settings.",
     routeAria: "Exercise steps",
@@ -900,11 +905,11 @@ function O(e) {
           className: "learning-product-proof",
           children: [(0, n.jsxs)("span", {
             children: [(0, n.jsx)("b", {
-              children: "12,800"
+              children: terms.length
             }), a.creators]
           }), (0, n.jsxs)("span", {
             children: [(0, n.jsx)("b", {
-              children: "4.9"
+              children: ANS_PRACTICES.length
             }), a.rating]
           })]
         })]
@@ -1098,7 +1103,7 @@ function H(e) {
             className: "breadcrumb-link",
             type: "button",
             onClick: r,
-            children: "VibeHub Skill"
+            children: s.collaboration
           }), (0, n.jsx)("span", {
             className: "breadcrumb-separator",
             "aria-hidden": "true",
