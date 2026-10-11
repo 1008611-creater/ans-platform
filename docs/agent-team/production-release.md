@@ -1,8 +1,24 @@
 # ANS 生产发布与恢复门禁
 
-实际运行目录为 `/srv/ans-platform-authoritative-main`，应用容器为 `ans-platform-app`，Compose 项目名为 `ans-platform-authoritative`。ANS 使用 Supabase Session pooler 与 PostgreSQL 17；共享服务器上的 `prompts-chat-db` 是另一业务，不能作为 ANS 的备份目标。
+当前运行配置以本次发布记录及实际容器检查为准；以下历史记录用于追溯。
 
-## 2026-10-11 main 同步与本轮候选
+## 当前发布：VibeHub 完整内容与账号收藏（2026-10-11）
+
+本次发布已完成，正式站为 `https://ans.cauai.fun/vibe-hub`。冻结应用提交 `491f1544d1e20e9d26685f6ccfd5eb61c0961e83`，release `ans-vibehub-491f1544d1-20261011`，源码 SHA-256 `b6f3855644fcd5520bfbb71d77a2065d593ebe99a5515879759eb5274bd76c18`；运行镜像 `sha256:bd7d44407a286ab40ee6889b63edca91898ddbaa630a375d5839bd4f451bf4cc`，BUILD_ID `U_XFdNEkMc9SxQjul4cEo`，发布时间 `2026-10-11T11:42:31Z`（UTC）。正式容器 `ans-platform-app`，Compose 项目 `ans-platform-header`。运行环境值与原挂载逐项一致，原登录密钥、小恐龙挂载和业务配置保留；回滚镜像及私有原配置已留存。部署结束再次核对正式镜像仍为本版本。
+
+本版包含已合并的 VibeHub 内容、课程、图解、练习、学习路径、Agent API 及截至冻结时已合并的 main 功能。收藏按游客和账号分别存储，只导入游客收藏；账号收藏以服务器为准，未完成操作可重试。切换账号时中止旧请求，后端拒绝身份不符的收藏读写；并发重复添加保持幂等。
+
+发布门禁：Linux Prisma 生成、完整类型检查、lint 和生产构建退出码均为 0；服务端 lint 为 0 errors、369 项存量 warnings。一致 public schema 备份及独立 PostgreSQL 17 真实恢复通过，112 张表行数、内容摘要、约束、索引和迁移记录一致，备份 SHA-256 `185c16e83da3321847e34e3c6eb8e627089a62f388a806a80423489c67facef3`。唯一待迁移 `20261011160000_agri_stage_decisions` 已先在备份恢复库演练，111 张既有业务表的数据未变，再执行正式增量迁移；正式 71 项迁移全部完成。未创建正式赛事、虚构账号、业务验收数据或付费调用。
+
+精确发布镜像使用两个**隔离验收账号**完成真实 Credentials/CSRF 登录：匿名 401、8 次并发添加仅生成一条收藏和一条审计、独立账号隔离、新登录读回、身份头不符的 GET/POST/DELETE 409、取消后重登仍为空且不影响另一账号、无效词条 404 均通过。这些增删发生在临时 PostgreSQL，不冒充正式用户或跨实体设备验收。临时数据库、内部网络和候选容器已清理。
+
+用户已在正式 HTTPS 页面完成真实登录。经浏览器 UI 收藏 `tooltip`（文字提示），正式数据库确认一条持久记录及一条添加审计；刷新和新页面均显示“已同步到 ANS 账号”且词条存在。此验收收藏保留在用户账号，未取消或删除用户已有收藏。1280×720 桌面和390×844 手机尺寸均无横向溢出，新页面捕获 console error 为 0。正式健康检查及数据库 connected，16 个真实 HTTPS 页面完整返回200；676 个公开资源哈希核对通过（小恐龙按原挂载保留）。
+
+本地证据：`C:/Users/lsb/Documents/Codex/2026-10-11/ui-screenshot-to-code-01-html/outputs/vibehub-release/` 中的 `deployment.json`、`backup-verification.json`、`isolated-verification.json`、`production-favorite-database.json`、`browser-verification.json` 和桌面/手机截图。服务器受限证据与备份位于本 release 目录。首次隔离网络地址池不足、网络列表空配置及临时库默认 public schema 冲突均已保留诊断后修正；最终恢复、隔离验收及发布退出0，不描述为首次全部成功。
+
+本次完成 VibeHub 发布及账号收藏持久化验证，不扩大其他 ANS 模块的验收范围；真实支付、模型生成、长期稳定观察和其他历史未完成事项仍遵循原项目状态。
+
+## 2026-10-11 main 同步与候选（历史，正式版本已由上述发布替换）
 
 当前正式容器 `ans-platform-app`，Compose 项目 `ans-platform-header`；源码 release `/srv/ans-releases/ans-main-sync-20261011/source`，已部署 Git revision `e1dd01944a871cc5d36703f7e5add17dd4ba7d52`。以实际运行容器检查的配置、项目名和挂载为准，下文早期目录为历史记录。数据库运行使用 Supabase transaction pooler/6543；一致备份和迁移使用已有 `DIRECT_URL` session pooler/5432。
 
