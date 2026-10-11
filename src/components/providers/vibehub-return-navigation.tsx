@@ -26,7 +26,7 @@ function parse(raw: string): Entry | null {
     const value = entry as Partial<Entry>;
     if (typeof value.href !== "string" || !value.href.startsWith("/") || value.href.startsWith("//")) return null;
     const url = new URL(value.href, window.location.origin);
-    if (url.origin !== window.location.origin || isVibeHub(url.pathname) || url.pathname.startsWith("/api/")) return null;
+    if (url.origin !== window.location.origin || isVibeHub(url.pathname) || url.pathname === "/api" || url.pathname.startsWith("/api/")) return null;
     if (typeof value.x !== "number" || typeof value.y !== "number" || !Number.isFinite(value.x) || !Number.isFinite(value.y) || value.x < 0 || value.y < 0) return null;
     return { href: url.pathname + url.search + url.hash, x: value.x, y: value.y };
   } catch { return null; }
@@ -100,8 +100,10 @@ export function VibeHubReturnNavigation() {
     const onClick = (event: MouseEvent) => {
       const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
       if (!link || event.button !== 0) return;
-      const target = new URL(link.getAttribute("href") ?? "", location.href);
-      if (target.origin === location.origin && isVibeHub(target.pathname)) save();
+      try {
+        const target = new URL(link.getAttribute("href") ?? "", location.href);
+        if (target.origin === location.origin && isVibeHub(target.pathname)) save();
+      } catch { /* Ignore malformed link URLs without interrupting other navigation. */ }
     };
     if (restoring && pending) {
       const deadline = performance.now() + 4000;
