@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Check, Clapperboard, RefreshCw } from "lucide-react";
+import { Check, Clapperboard, RefreshCw, Plus, FolderOpen, Save, Play, Download, SlidersHorizontal, ShieldCheck, FileCheck2, ArrowRight, CircleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import styles from "./hypit-workspace.module.css";
 import { useWorkspaceNavigation } from "@/components/providers/workspace-navigation";
 
 const BASE = "/workflows/hypit";
@@ -49,6 +50,9 @@ function InternalWorkspace({ userId }: { userId: string }) {
   const [template, setTemplate] = useState<Template>("chat");
   const [name, setName] = useState("");
   const [brief, setBrief] = useState("");
+  const [showCreate, setShowCreate] = useState(true);
+  const [listStatus, setListStatus] = useState<"loading" | "ready" | "error">("loading");
+  const editorHeading = useRef<HTMLHeadingElement>(null);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [draft, setDraft] = useState<Draft>({ title: "", brief: "", source: "" });
@@ -81,8 +85,11 @@ function InternalWorkspace({ userId }: { userId: string }) {
   }, [t, userId]);
 
   const refresh = useCallback(async () => {
-    const result = await request<{ projects: ProjectSummary[] }>("/projects");
-    if (mounted.current) setProjects(result.projects);
+    setListStatus("loading");
+    try {
+      const result = await request<{ projects: ProjectSummary[] }>("/projects");
+      if (mounted.current) { setProjects(result.projects); setListStatus("ready"); }
+    } catch (error) { if (mounted.current) setListStatus("error"); throw error; }
   }, [request]);
 
   useEffect(() => {
@@ -134,6 +141,7 @@ function InternalWorkspace({ userId }: { userId: string }) {
     finally { operation.current = false; if (mounted.current) setBusy(false); }
   }
   function receive(current: Project) {
+    setShowCreate(false);
     setProject(current); setDraft({ title: current.title, brief: current.brief, source: current.source });
     setLog(current.job?.output || "");
     if (current.job?.status === "running") setRenderingId(current.id);
@@ -153,7 +161,7 @@ function InternalWorkspace({ userId }: { userId: string }) {
   async function openProject(id: string) {
     if ((dirty || studio) && !window.confirm(t(dirty ? "discard" : "studioLeave"))) return;
     const current = await request<Project>("/projects/" + id);
-    await closeStudio(); receive(current);
+    await closeStudio(); receive(current); setNotice({ text: t("workspace.projectOpened", { title: current.title }), error: false });
   }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -176,55 +184,87 @@ function InternalWorkspace({ userId }: { userId: string }) {
     setStudio({ id: current.id, url: result.url }); setNotice({ text: t("studioOpened"), error: false });
   }
   useEffect(() => { if (studio) studioPanel.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }); }, [studio]);
+  useEffect(() => { editorHeading.current?.focus({ preventScroll: true }); }, [project?.id]);
   const video = project?.artifactAvailable && !dirty && renderingId !== project.id;
 
-  return <div className="space-y-9">
-    <p role={notice.error ? "alert" : "status"} className={`rounded-lg border px-4 py-3 text-sm leading-6 ${notice.error ? "border-destructive/40 text-destructive" : "bg-muted/40 text-muted-foreground"}`}>{notice.text}</p>
-    <section aria-labelledby="hypit-formats">
-      <h2 id="hypit-formats" className="text-xl font-semibold">{t("formats")}</h2>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {formats.map(format => <button key={format.id} type="button" disabled={busy} aria-pressed={template === format.id} onClick={() => setTemplate(format.id)} className={`rounded-xl border p-5 text-start transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${template === format.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"}`}>
-          <span className="flex items-center justify-between gap-3 font-semibold"><span>{t(`templates.${format.name}`)}</span>{template === format.id && <Check className="h-4 w-4 text-primary" aria-hidden="true" />}</span>
-          <span className="mt-2 block text-sm leading-6 text-muted-foreground">{t(`templates.${format.body}`)}</span>
-          <span className="mt-3 block text-xs text-muted-foreground">{t(format.ready ? "ready" : "needsAssets")}</span>
-        </button>)}
+  return <div className={styles.workspace}>
+    <header className={styles.header}>
+      <div><p className="ans-eyebrow">{t("workspace.eyebrow")}</p><h2 className="mt-2 text-2xl font-semibold tracking-tight">{t("workspace.title")}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{t("workspace.subtitle")}</p></div>
+      <Button variant={showCreate ? "secondary" : "outline"} disabled={busy} aria-expanded={showCreate} aria-controls="hypit-new-project" onClick={() => setShowCreate(value => !value)}><Plus aria-hidden="true" />{t("newProject")}</Button>
+    </header>
+    <p role={notice.error && !busy ? "alert" : "status"} aria-atomic="true" className={`${styles.notice} ${notice.error && !busy ? styles.error : ""}`}>
+      {notice.error && !busy ? <CircleAlert aria-hidden="true" /> : <ShieldCheck aria-hidden="true" />}<span>{busy ? t("busy") : notice.text}</span>
+    </p>
+    <section id="hypit-new-project" hidden={!showCreate} className={styles.createPanel} aria-labelledby="hypit-create">
+      <div className={styles.sectionHeading}><span className={styles.step}>01</span><div><h3 id="hypit-create" className="font-semibold">{t("newProject")}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{t("intro")}</p></div></div>
+      <div className={styles.createGrid}>
+        <fieldset className="min-w-0"><legend className="mb-3 text-sm font-medium">{t("formats")}</legend><div className={styles.formats}>
+          {formats.map(format => <button key={format.id} type="button" disabled={busy} aria-pressed={template === format.id} onClick={() => setTemplate(format.id)} className={styles.format}>
+            <span className="flex items-center justify-between gap-2 font-medium"><span>{t(`templates.${format.name}`)}</span>{template === format.id && <Check className="size-4 text-primary" aria-hidden="true" />}</span>
+            <span className="mt-2 block text-xs leading-5 text-muted-foreground">{t(`templates.${format.body}`)}</span>
+            <span className={styles.formatState}>{t(format.ready ? "ready" : "needsAssets")}</span>
+          </button>)}
+        </div></fieldset>
+        <form className="min-w-0 space-y-4" onSubmit={create} aria-busy={busy}>
+          <div className="space-y-2"><Label htmlFor="hypit-new-name">{t("name")}</Label><Input id="hypit-new-name" value={name} onChange={event => setName(event.target.value)} maxLength={100} placeholder={t("namePlaceholder")} required disabled={busy} /></div>
+          <div className="space-y-2"><Label htmlFor="hypit-new-brief">{t("brief")}</Label><Textarea id="hypit-new-brief" value={brief} onChange={event => setBrief(event.target.value)} maxLength={12000} rows={4} placeholder={t("briefPlaceholder")} disabled={busy} /></div>
+          <Button type="submit" disabled={busy || !name.trim()}>{busy ? t("busy") : t("create")}<ArrowRight aria-hidden="true" /></Button>
+        </form>
       </div>
     </section>
-    <section className="grid gap-6 border-t pt-8 lg:grid-cols-[1fr_1.5fr]" aria-labelledby="hypit-create">
-      <div><h2 id="hypit-create" className="text-xl font-semibold">{t("newProject")}</h2><p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">{t("intro")}</p><p className="mt-3 text-sm font-medium text-primary">{t(`templates.${formats.find(format => format.id === template)!.name}`)}</p></div>
-      <form className="space-y-4" onSubmit={create}>
-        <div className="space-y-2"><Label htmlFor="hypit-new-name">{t("name")}</Label><Input id="hypit-new-name" value={name} onChange={event => setName(event.target.value)} maxLength={100} placeholder={t("namePlaceholder")} required disabled={busy} /></div>
-        <div className="space-y-2"><Label htmlFor="hypit-new-brief">{t("brief")}</Label><Textarea id="hypit-new-brief" value={brief} onChange={event => setBrief(event.target.value)} maxLength={12000} rows={3} placeholder={t("briefPlaceholder")} disabled={busy} /></div>
-        <Button type="submit" disabled={busy || !name.trim()}>{busy ? t("busy") : t("create")}</Button>
-      </form>
-    </section>
-    <section aria-labelledby="hypit-projects" className="border-t pt-8">
-      <div className="mb-5 flex items-center justify-between gap-4"><h2 id="hypit-projects" className="text-xl font-semibold">{t("projects")}</h2><Button variant="outline" size="sm" disabled={busy} onClick={() => void run(refresh)}><RefreshCw className="me-2 h-4 w-4" aria-hidden="true" />{t("refresh")}</Button></div>
-      <div className="grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
-        <aside className="min-w-0 space-y-2">{!projects.length && <p className="text-sm leading-7 text-muted-foreground">{t("empty")}</p>}{projects.map(item => <button key={item.id} type="button" disabled={busy} onClick={() => void run(() => openProject(item.id))} aria-pressed={project?.id === item.id} className={`block w-full rounded-lg p-3 text-start transition-colors ${project?.id === item.id ? "bg-primary/10" : "hover:bg-muted"}`}><span className="block break-words text-sm font-medium">{item.title}</span><span className="mt-1 block text-xs text-muted-foreground">{new Date(item.updatedAt).toLocaleDateString(locale)}</span></button>)}</aside>
-        <div className="min-w-0 rounded-xl border p-5 sm:p-6">
-          {!project ? <div className="flex gap-3 py-6 text-sm text-muted-foreground"><Clapperboard className="h-5 w-5 shrink-0" aria-hidden="true" />{t("choose")}</div> : <div className="space-y-4">
-            <div className="flex flex-wrap items-start justify-between gap-3"><h3 className="break-words text-lg font-semibold">{project.title}</h3><span className="text-xs text-muted-foreground">{t("revision", { revision: project.revision })}</span></div>
-            <div className="space-y-2"><Label htmlFor="hypit-edit-title">{t("name")}</Label><Input id="hypit-edit-title" value={draft.title} onChange={event => setDraft({ ...draft, title: event.target.value })} maxLength={100} disabled={busy} /></div>
-            <div className="space-y-2"><Label htmlFor="hypit-edit-brief">{t("brief")}</Label><Textarea id="hypit-edit-brief" value={draft.brief} onChange={event => setDraft({ ...draft, brief: event.target.value })} maxLength={12000} rows={3} disabled={busy} /></div>
-            <p className="text-xs text-muted-foreground">{t(project.canRender ? "codeModel" : "channelsNote")}</p>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={busy || !draft.title.trim()} onClick={() => void run(async () => { await save(); })}>{t("save")}</Button>
-              <Button variant="outline" size="sm" disabled={busy} onClick={() => void run(() => inspect("check"))}>{t("check")}</Button>
-              <Button variant="outline" size="sm" disabled={busy} onClick={() => void run(() => inspect("plan"))}>{t("plan")}</Button>
-              <Button variant="outline" size="sm" disabled={busy || !project.canRender} onClick={() => void run(openStudio)}>{t("studio")}</Button>
-              <Button variant="outline" size="sm" disabled={busy || !!renderingId || !project.canRender} onClick={() => void run(async () => { const current = await save(); await request("/projects/" + current.id + "/render", "POST", {}); setRenderingId(current.id); setNotice({ text: t("rendering"), error: false }); })}>{renderingId === project.id ? t("busy") : t("render")}</Button>
-              <Button variant="outline" size="sm" disabled={busy} onClick={() => void run(async () => { const current = await save(); window.location.assign(BASE + "/api/projects/" + current.id + "/export"); })}>{t("export")}</Button>
-              <Button variant="ghost" size="sm" disabled={busy} onClick={() => void run(() => openProject(project.id))}>{t("reload")}</Button>
+    <div className={styles.workbench}>
+      <aside className={styles.sidebar} aria-labelledby="hypit-projects" aria-busy={listStatus === "loading"}>
+        <div className={styles.listHeading}><h3 id="hypit-projects" className="text-sm font-semibold">{t("projects")}</h3><Button variant="ghost" size="icon" disabled={busy} aria-label={t("refresh")} onClick={() => void run(refresh)}><RefreshCw aria-hidden="true" /></Button></div>
+        {listStatus === "loading" && <p className={styles.listMessage}>{t("workspace.loadingProjects")}</p>}
+        {listStatus === "error" && <p className={styles.listMessage}>{t("workspace.listError")}</p>}
+        {listStatus === "ready" && !projects.length && <p className={styles.listMessage}>{t("empty")}</p>}
+        <div className={styles.projectList}>{projects.map(item => <button key={item.id} type="button" disabled={busy} onClick={() => void run(() => openProject(item.id))} aria-pressed={project?.id === item.id} className={styles.projectItem}>
+          <span className="flex items-start gap-2"><FolderOpen className="mt-0.5 size-4 shrink-0" aria-hidden="true" /><span className="min-w-0 break-words text-sm font-medium">{item.title}</span></span>
+          <span className="mt-2 block text-xs text-muted-foreground">{t(`templates.${formats.find(format => format.id === item.template)?.name || "chat"}`)} · {new Date(item.updatedAt).toLocaleDateString(locale)}</span>
+        </button>)}</div>
+      </aside>
+      <section className={styles.editor} aria-labelledby={project ? "hypit-editor-title" : "hypit-empty-title"} aria-busy={busy}>
+        {!project ? <div className={styles.empty}>
+          <Clapperboard className="size-8 text-primary" aria-hidden="true" /><h3 id="hypit-empty-title" className="text-lg font-semibold">{t("workspace.emptyTitle")}</h3><p className="max-w-sm text-sm leading-7 text-muted-foreground">{t("choose")}</p>
+          {!showCreate && <Button variant="outline" onClick={() => setShowCreate(true)}><Plus aria-hidden="true" />{t("newProject")}</Button>}
+        </div> : <>
+          <div className={styles.editorHeader}>
+            <div className="min-w-0"><p className="mb-2 text-xs text-muted-foreground">{t(`templates.${formats.find(format => format.id === project.template)?.name || "chat"}`)}</p><h3 ref={editorHeading} tabIndex={-1} id="hypit-editor-title" className="break-words text-lg font-semibold outline-none">{project.title}</h3></div>
+            <div className={styles.metadata}><span>{t("revision", { revision: project.revision })}</span><span className={dirty ? "font-medium text-primary" : "text-muted-foreground"}>{dirty ? t("workspace.unsaved") : t("workspace.synced")}</span></div>
+          </div>
+          <div className={styles.editorGrid}>
+            <div className={styles.editing}>
+              <div className={styles.sectionHeading}><span className={styles.step}>02</span><h4 className="text-sm font-semibold">{t("workspace.editTitle")}</h4></div>
+              <div className="space-y-2"><Label htmlFor="hypit-edit-title">{t("name")}</Label><Input id="hypit-edit-title" value={draft.title} onChange={event => setDraft({ ...draft, title: event.target.value })} maxLength={100} disabled={busy} /></div>
+              <div className="space-y-2"><Label htmlFor="hypit-edit-brief">{t("brief")}</Label><Textarea id="hypit-edit-brief" aria-describedby="hypit-brief-help" value={draft.brief} onChange={event => setDraft({ ...draft, brief: event.target.value })} maxLength={12000} rows={6} disabled={busy} /><p id="hypit-brief-help" className="text-xs leading-6 text-muted-foreground">{t("workspace.briefHelp")}</p></div>
+              <div className={styles.actions}>
+                <Button disabled={busy || !draft.title.trim()} onClick={() => void run(async () => { await save(); })}><Save aria-hidden="true" />{t("save")}</Button>
+                <Button variant="outline" disabled={busy || !draft.title.trim()} onClick={() => void run(() => inspect("check"))}><FileCheck2 aria-hidden="true" />{t("check")}</Button>
+              </div>
+              <details className={styles.disclosure}><summary><SlidersHorizontal className="size-4" aria-hidden="true" />{t("workspace.advanced")}</summary><div className="space-y-4 pb-4">
+                <p className="text-xs leading-6 text-muted-foreground">{t("workspace.advancedHelp")}</p>
+                <div className={styles.actions}><Button variant="outline" disabled={busy || !draft.title.trim()} onClick={() => void run(() => inspect("plan"))}>{t("plan")}</Button><Button variant="outline" disabled={busy || !draft.title.trim()} onClick={() => void run(async () => { const current = await save(); window.location.assign(BASE + "/api/projects/" + current.id + "/export"); })}><Download aria-hidden="true" />{t("export")}</Button><Button variant="ghost" disabled={busy} onClick={() => void run(() => openProject(project.id))}>{t("reload")}</Button></div>
+                <Label htmlFor="hypit-source">{t("source")}</Label><Textarea id="hypit-source" aria-label={t("sourceLabel")} value={draft.source} onChange={event => setDraft({ ...draft, source: event.target.value })} maxLength={150000} spellCheck={false} disabled={busy} className="min-h-80 font-mono text-xs" />
+              </div></details>
+              {log && <details className={styles.disclosure} open><summary>{t("log")}</summary><pre className="mb-4 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-4 text-xs leading-6">{log}</pre></details>}
             </div>
-            {!project.canRender && <p className="text-sm leading-7 text-muted-foreground">{t("channelPending")}</p>}
-            <details><summary className="cursor-pointer py-3 text-sm font-medium">{t("source")}</summary><Textarea aria-label={t("sourceLabel")} value={draft.source} onChange={event => setDraft({ ...draft, source: event.target.value })} maxLength={150000} spellCheck={false} disabled={busy} className="min-h-80 font-mono text-xs" /></details>
-            {log && <details><summary className="cursor-pointer py-2 text-sm font-medium">{t("log")}</summary><pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-4 text-xs leading-6">{log}</pre></details>}
-            {video && <div className="space-y-3 border-t pt-5"><video key={`${project.id}-${videoVersion}`} controls preload="metadata" className="max-h-[520px] max-w-full rounded-lg" src={`${BASE}/api/projects/${project.id}/video?v=${videoVersion}`} /><Button asChild variant="outline" size="sm"><a href={`${BASE}/api/projects/${project.id}/video?download=1`}>{t("download")}</a></Button></div>}
-          </div>}
-        </div>
-      </div>
-    </section>
+            <aside className={styles.preview} aria-labelledby="hypit-preview-title">
+              <div className={styles.sectionHeading}><span className={styles.step}>03</span><h4 id="hypit-preview-title" className="text-sm font-semibold">{t("workspace.previewTitle")}</h4></div>
+              <div className={styles.screen}>
+                {video ? <video key={`${project.id}-${videoVersion}`} aria-label={t("workspace.videoLabel")} controls preload="metadata" src={`${BASE}/api/projects/${project.id}/video?v=${videoVersion}`} /> : <div className={styles.screenEmpty}><Clapperboard className="size-7" aria-hidden="true" /><p className="text-sm font-medium">{t(renderingId === project.id ? "workspace.renderTitle" : dirty ? "workspace.draftTitle" : "workspace.previewEmpty")}</p><p className="text-xs leading-6">{t(renderingId === project.id ? "workspace.renderHelp" : dirty ? "workspace.draftHelp" : "workspace.previewHelp")}</p></div>}
+              </div>
+              <p id="hypit-render-help" className="text-xs leading-6 text-muted-foreground">{t(project.canRender ? "codeModel" : "channelPending")}</p>
+              <div className={styles.previewActions}>
+                <Button variant="outline" disabled={busy || !project.canRender || !draft.title.trim()} aria-describedby="hypit-render-help" onClick={() => void run(openStudio)}><Clapperboard aria-hidden="true" />{t("studio")}</Button>
+                <Button disabled={busy || !!renderingId || !project.canRender || !draft.title.trim()} aria-describedby="hypit-render-help" onClick={() => void run(async () => { const current = await save(); await request("/projects/" + current.id + "/render", "POST", {}); setRenderingId(current.id); setNotice({ text: t("rendering"), error: false }); })}><Play aria-hidden="true" />{renderingId === project.id ? t("busy") : t("render")}</Button>
+                {video && <Button asChild variant="outline"><a href={`${BASE}/api/projects/${project.id}/video?download=1`}><Download aria-hidden="true" />{t("download")}</a></Button>}
+              </div>
+              <p className="text-xs leading-6 text-muted-foreground">{t("workspace.autoSaveHelp")}</p>
+            </aside>
+          </div>
+        </>}
+      </section>
+    </div>
     {studio && <section ref={studioPanel} className="scroll-mt-20" aria-labelledby="hypit-studio-heading"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">POWERED BY HYPIT.AI</p><h2 id="hypit-studio-heading" className="mt-2 text-xl font-semibold">{t("studioTitle")}</h2></div><Button variant="outline" size="sm" disabled={busy} onClick={() => void run(async () => { if (window.confirm(t("studioLeave"))) await closeStudio(); })}>{t("closeStudio")}</Button></div><iframe src={studio.url} title={t("studioTitle")} className="h-[760px] w-full rounded-xl border bg-background" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads" referrerPolicy="same-origin" /><p className="mt-3 text-xs leading-6 text-muted-foreground">{t("studioHint")}</p></section>}
   </div>;
 }

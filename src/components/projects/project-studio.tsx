@@ -65,6 +65,9 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
   const uiCallbacks = useRef({ router, t });
   useEffect(() => { uiCallbacks.current = { router, t }; }, [router, t]);
   const observedRuns = useRef(new Map<string, string>());
+  // Preserve receipt evidence if GET resolves before the original POST returns.
+  const verifiedReceipts = useRef(new Map<string, { status: string; id: string }>());
+  const recoveringRequest = useRef<{ workflowId: string; key: string } | null>(null);
   const activeRuns = runs.filter(run => ["QUEUED", "RUNNING"].includes(run.status));
   const isZh = locale.startsWith("zh");
   const [publications, setPublications] = useState<Record<string, { status: string; reviewNote: string | null }>>({});
@@ -89,12 +92,19 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
         setRunReadError(false);
         setRunsLoaded(true);
         for (const run of current) {
+          if (run.requestKey) verifiedReceipts.current.set(run.requestKey, { status: run.status, id: run.id });
+          const recovering = recoveringRequest.current?.workflowId === run.workflowId && recoveringRequest.current.key === run.requestKey;
           const previous = observedRuns.current.get(run.id);
-          if (previous && ["QUEUED", "RUNNING"].includes(previous) && !["QUEUED", "RUNNING"].includes(run.status)) {
+          if (recovering && ["QUEUED", "RUNNING"].includes(run.status)) {
+            setError("");
+            setMessage(isZh ? "已查到任务，后台正在处理。请等待结果，无需再次生成。" : "Task located and processing in the background. Wait for the result; no new generation is needed.");
+          }
+          if ((recovering || (previous && ["QUEUED", "RUNNING"].includes(previous))) && !["QUEUED", "RUNNING"].includes(run.status)) {
             uiCallbacks.current.router.refresh();
-            if (run.status === "SUCCEEDED") { setSelectedVersions({}); setMessage(uiCallbacks.current.t("generated")); }
+            if (run.status === "SUCCEEDED") { setError(""); setSelectedVersions({}); setMessage(uiCallbacks.current.t("generated")); }
             else setError(isZh ? "\u4efb\u52a1\u672a\u5b8c\u6210\uff0c\u8bf7\u67e5\u770b\u8fd0\u884c\u8bb0\u5f55\u540e\u91cd\u8bd5\u3002\u5df2\u786e\u8ba4\u7684\u5b9e\u9645\u7b97\u529b\u6d88\u8017\u4ecd\u4f1a\u8bb0\u8d26\u3002" : "Task did not complete. Check the run history before retrying. Confirmed compute usage remains billed.");
           }
+          if (recovering && !["QUEUED", "RUNNING"].includes(run.status)) recoveringRequest.current = null;
           observedRuns.current.set(run.id, run.status);
           if (!["QUEUED", "RUNNING"].includes(run.status)) {
             if (requestKeys.current.get(run.workflowId) === run.requestKey) requestKeys.current.delete(run.workflowId);
@@ -192,6 +202,7 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
     setPending(workflowId);
     setError("");
     setMessage("");
+    let submittedKey: string | null = null;
     try {
       await postJson(`/api/projects/${project.id}/facts`, { facts: factPayload(false) }, t("operationFailed"));
       const requestStorageKey = `ans:document:${project.id}:${workflowId}`;
@@ -201,6 +212,7 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
         sessionStorage.setItem(requestStorageKey, idempotencyKey);
       } catch { idempotencyKey = requestKeys.current.get(workflowId) ?? `${workflowId}-${crypto.randomUUID()}`; }
       requestKeys.current.set(workflowId, idempotencyKey);
+      submittedKey = idempotencyKey;
       const accepted = await postJson(`/api/projects/${project.id}/runs`, { workflowId, idempotencyKey }, t("operationFailed"));
       if (typeof accepted.workflowRunId !== "string" || typeof accepted.status !== "string") throw new Error(isZh ? "\u4efb\u52a1\u63d0\u4ea4\u7ed3\u679c\u672a\u786e\u8ba4\uff0c\u8bf7\u7a0d\u540e\u67e5\u770b\u8fd0\u884c\u8bb0\u5f55\u3002" : "Task receipt is unconfirmed. Check the run history shortly.");
       observedRuns.current.set(accepted.workflowRunId, accepted.status);
@@ -208,7 +220,23 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
       setMessage(isZh ? "\u4efb\u52a1\u5df2\u63d0\u4ea4\uff0c\u540e\u53f0\u4f1a\u7ee7\u7eed\u5904\u7406\u3002\u53ef\u4ee5\u79bb\u5f00\u9875\u9762\uff0c\u7a0d\u540e\u56de\u6765\u67e5\u770b\u6210\u679c\u3002" : "Task submitted. Processing continues in the background; return later to view the result.");
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : t("operationFailed"));
+      if (submittedKey && cause instanceof TypeError) {
+        const receipt = verifiedReceipts.current.get(submittedKey);
+        if (receipt?.status === "SUCCEEDED") {
+          setError("");
+          setSelectedVersions({});
+          setMessage(t("generated"));
+          router.refresh();
+        } else if (receipt && !["QUEUED", "RUNNING"].includes(receipt.status)) {
+          setError(isZh ? "任务未完成，请查看运行记录。" : "Task did not complete. Check the run history.");
+        } else {
+          recoveringRequest.current = { workflowId, key: submittedKey };
+          setError("");
+          setMessage(isZh ? "连接暂时中断，正在核对本次任务。请等待运行记录更新；重新提交会沿用本次请求编号。" : "Connection interrupted. Checking this task's status. Wait for the run history to update; resubmission keeps the same request key.");
+        }
+      } else {
+        setError(cause instanceof Error ? cause.message : t("operationFailed"));
+      }
     } finally {
       setPending("");
     }

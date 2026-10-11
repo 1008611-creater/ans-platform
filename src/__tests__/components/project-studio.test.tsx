@@ -150,3 +150,40 @@ describe("ProjectStudio", () => {
 });
 
 
+
+
+describe("document task receipt recovery", () => {
+  for (const receiptBeforeFailure of [false, true]) {
+    it(`reconciles a succeeded run after a lost POST receipt (observed first: ${receiptBeforeFailure})`, async () => {
+      let requestKey: string | undefined;
+      let rejectReceipt: ((reason: Error) => void) | undefined;
+      let readWithReceipt: (() => void) | undefined;
+      const receiptRead = new Promise<void>(resolve => { readWithReceipt = resolve; });
+      vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith("/runs") && init?.method === "POST") {
+          requestKey = JSON.parse(String(init.body)).idempotencyKey;
+          if (receiptBeforeFailure) return new Promise<Response>((_, reject) => { rejectReceipt = reject; });
+          throw new TypeError("Network connection interrupted");
+        }
+        if (url.endsWith("/runs")) {
+          const runs = requestKey ? [{ id: "confirmed-run", workflowId: "resume-bullets", requestKey, status: "SUCCEEDED" }] : [];
+          if (runs.length) readWithReceipt?.();
+          return { ok: true, json: async () => ({ ok: true, data: { runs } }) } as Response;
+        }
+        return { ok: true, json: async () => ({ ok: true, data: { publications: [] } }) } as Response;
+      }));
+      render(<ProjectStudio project={project} />);
+      const findGenerateButton = () => screen.getByRole("button", { name: new RegExp("\\u7b80\\u5386\\u9879\\u76ee\\u6761\\u76ee") });
+      await waitFor(() => expect(findGenerateButton()).toBeEnabled());
+      await userEvent.click(findGenerateButton());
+      if (receiptBeforeFailure) {
+        await receiptRead;
+        rejectReceipt?.(new TypeError("Network connection interrupted"));
+      }
+      await screen.findByText(messages.generated, {}, { timeout: 5000 });
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(vi.mocked(fetch).mock.calls.filter(([url, init]) => String(url).endsWith("/runs") && init?.method === "POST")).toHaveLength(1);
+    }, 10000);
+  }
+});

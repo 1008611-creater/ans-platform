@@ -77,3 +77,31 @@ it("uses the existing navigation guard to preserve an unsaved draft", async () =
   expect(cancel).toHaveBeenCalledOnce(); expect(proceed).not.toHaveBeenCalled(); expect(confirm).toHaveBeenCalledWith("discard");
   expect(screen.getByDisplayValue("Unsaved private draft")).toBeInTheDocument();
 });
+it("collapses creation after opening a project and restores the unfinished new-project form", async () => {
+  render(<HypitWorkspace />);
+  fireEvent.change(screen.getByLabelText("name"), { target: { value: "Unfinished next project" } });
+  await openFixture();
+  expect(document.getElementById("hypit-new-project")).not.toBeVisible();
+  expect(screen.getByRole("heading", { name: fixture.title })).toHaveFocus();
+  fireEvent.click(screen.getByRole("button", { name: "newProject" }));
+  expect(screen.getByDisplayValue("Unfinished next project")).toBeVisible();
+});
+it("explains unsaved output and keeps the draft when project loading fails", async () => {
+  render(<HypitWorkspace />); await openFixture();
+  fireEvent.change(screen.getByDisplayValue("Private facts"), { target: { value: "My unsaved composition" } });
+  expect(screen.getByText("workspace.unsaved")).toBeVisible();
+  expect(screen.getByText("workspace.draftHelp")).toBeVisible();
+  fetchMock.mockImplementation(async () => ({ ok: false, json: async () => ({ error: "Could not read projects" }) }));
+  fireEvent.click(screen.getByRole("button", { name: "refresh" }));
+  await screen.findByText("workspace.listError");
+  expect(screen.getByDisplayValue("My unsaved composition")).toBeInTheDocument();
+});
+it("hides outdated video and its download after editing a rendered project", async () => {
+  fetchMock.mockImplementation(async (url: string) => ({ ok: true, json: async () => url.endsWith("/projects") ? { projects: [fixture] } : { ...fixture, artifactAvailable: true } }));
+  render(<HypitWorkspace />); await openFixture();
+  expect(screen.getByLabelText("workspace.videoLabel")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "download" })).toBeVisible();
+  fireEvent.change(screen.getByDisplayValue("Private facts"), { target: { value: "New brief" } });
+  expect(screen.queryByLabelText("workspace.videoLabel")).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "download" })).not.toBeInTheDocument();
+});
