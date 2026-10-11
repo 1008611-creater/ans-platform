@@ -1,6 +1,6 @@
 export type QuotaAdminOverview = {
  users: { id: string; username: string; quotaPoints: number; flagged: boolean }[];
- operations: { id: string; userId: string; kind: string; amount: number; balanceAfter: number; note: string; createdAt: string }[];
+ operations: { id: string; userId: string; kind: string; amount: number; balanceAfter: number; note: string; evidenceRef?: string | null; createdAt: string }[];
  disputes: { id: string; buyerId: string; sellerId: string; totalMinor: number }[];
  uncertain: { id: string; userId: string; modelId: string; authorizedPoints: number }[];
  mismatchCount: number;

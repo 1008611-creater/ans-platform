@@ -1897,6 +1897,10 @@
     }
   },
   "quotaAdmin": {
+    "selectUser": "Choose the account for this operation",
+    "restrictedAccount": "Restricted",
+    "VOUCHER_REDEEM": "Voucher redeemed",
+    "confirmAdjustment": "I verified the account, amount and reason.",
     "title": "Credit administration",
     "description": "Grants, adjustments and verified receipts are audited.",
     "user": "Account",

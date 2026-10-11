@@ -30,4 +30,3 @@ export type PlanSalesReadiness = Readonly<{
   blockers: readonly PlanSaleBlocker[];
   skus: readonly PlanSkuReadiness[];
 }>;
-

@@ -1,12 +1,12 @@
 import * as T from 'three';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
-import { DinoPerformance } from './controller.mjs?v=dock4';
-import { MotionDirector } from './motion-director.mjs?v=dock4';
-import { FaceVoiceController } from './face-voice.mjs?v=single5';
+import { DinoPerformance } from './controller.mjs?v=expressive6';
+import { MotionDirector } from './motion-director.mjs?v=expressive6';
+import { FaceVoiceController } from './face-voice.mjs?v=settings-20261012-2';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { installCompanion } from './companion-widget.mjs?v=single5';
+import { installCompanion } from './companion-widget.mjs?v=settings-20261012-2';
 
-const VERSION = 'ans-mascot-single-20261011-5';
+const VERSION = 'ans-mascot-settings-20261012-2';
 const DOCK = new URLSearchParams(location.search).get('dock') === '1';
 const SOURCE_SHA256 = 'f4be8ba420e58ac3304d8d9f5f6a6b984f7bab11ebb15c7895af7cfb5574cb93';
 const SETTINGS = Object.freeze({
@@ -53,7 +53,7 @@ function startCompanion() {
   const framing = new T.Group();
   const camera = new T.OrthographicCamera(-0.7, 0.7, 0.7, -0.7, 0.01, 12);
   camera.position.set(0.11, 0.65, 3.2);
-  camera.lookAt(0, 0.52, 0);
+  camera.lookAt(0, 0.58, 0);
   actor.add(framing);
   scene.add(actor);
 
@@ -62,6 +62,9 @@ function startCompanion() {
   let phase = 'idle';
   let parentVisible = true;
   let pageSuspended = false;
+  let calmMode = false;
+  let voiceEnabled = window.parent === window;
+  let voiceVolume = 0.65;
   let reducedMotion = motionPreference.matches;
   let disposed = false, failed = false, ready = false, modelLoaded = false;
   let resourcesComplete = false, rafId = 0, lastFrameStamp = null;
@@ -192,6 +195,15 @@ function startCompanion() {
     if (!trustedSource) return;
     const data = event.data;
     if (!data || typeof data !== 'object' || data.type !== 'ans-dino') return;
+    if (data.event === 'preferences') {
+      voiceEnabled = data.voice === true;
+      if (Number.isFinite(data.volume)) voiceVolume = Math.max(0, Math.min(1, data.volume));
+      calmMode = data.calm === true;
+      reducedMotion = motionPreference.matches || calmMode;
+      director.setAutoplay(!reducedMotion, time);
+      if (faceVoice) { faceVoice.volume = voiceVolume; if (faceVoice.audio) faceVoice.audio.volume = voiceVolume; if (!voiceEnabled) faceVoice.stopAudio(); }
+      suspend(); wake();
+    }
     if (data.event === 'hello') hello();
     if (data.event === 'autoplay' && typeof data.enabled === 'boolean') {
       director.setAutoplay(data.enabled, time); applyNextGesture(); wake();
@@ -207,7 +219,7 @@ function startCompanion() {
       performer?.look(data.x, data.y, time);
       wake();
     }
-    if (data.event === 'speak' && typeof data.text === 'string') {
+    if (data.event === 'speak' && voiceEnabled && typeof data.text === 'string') {
       faceVoice?.speak(data.text, typeof data.voice === 'string' ? data.voice : 'Chloe');
       wake();
     }
@@ -215,7 +227,7 @@ function startCompanion() {
     if (data.event === 'visibility' && typeof data.visible === 'boolean') {
       const wasVisible = parentVisible;
       parentVisible = data.visible;
-      if (!parentVisible) suspend();
+      if (!parentVisible) { faceVoice?.stopAudio(); suspend(); }
       else { if (!wasVisible) director.resume(time); wake(); }
     }
   }
@@ -283,12 +295,12 @@ function startCompanion() {
     if (rendered && canAnimate() && !rafId) rafId = requestAnimationFrame(tick);
   }
   function onMotionPreference(event) {
-    reducedMotion = event.matches;
+    reducedMotion = event.matches || calmMode;
     suspend();
     wake();
   }
   function onVisibility() {
-    if (!isVisible()) suspend();
+    if (!isVisible()) { faceVoice?.stopAudio(); suspend(); }
     else { director.resume(time); wake(); }
   }
   function onPageHide(event) {
@@ -337,7 +349,7 @@ function startCompanion() {
   renderer.domElement.addEventListener('webglcontextlost', onContextLost);
   if (DOCK) {
     orbit = new OrbitControls(camera, renderer.domElement);
-    orbit.target.set(0, 0.52, 0); orbit.enablePan = false; orbit.enableZoom = false;
+    orbit.target.set(0, 0.58, 0); orbit.enablePan = false; orbit.enableZoom = false;
     orbit.enableDamping = true; orbit.dampingFactor = 0.1;
     orbit.minPolarAngle = 0.25; orbit.maxPolarAngle = Math.PI * 0.8;
     orbit.addEventListener('change', wake); orbit.update();
@@ -407,7 +419,7 @@ startCompanion();
 // The existing Next avatar is the bootstrap; dock frames never install another dock.
 if (!DOCK && window.parent !== window) {
   try {
-    if (window.frameElement?.closest('.ans-dino-guide')) installCompanion(window.parent, window.frameElement);
+    if (window.frameElement?.closest('.ans-dino-guide') && !window.frameElement.closest('[data-companion-owner=react]')) installCompanion(window.parent, window.frameElement);
   } catch { /* Only same-origin embedding is supported. */ }
 }
 

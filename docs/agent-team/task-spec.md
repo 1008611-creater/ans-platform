@@ -97,3 +97,9 @@ REQ-P02 / AC-P02：积分中心新增100/500/1000/2000/5000积分五档；按已
 REQ-P03 / AC-P03：运营卡密生成界面支持五档快捷选择，生成仍需要真实管理员权限，明文保存/导出提醒和跨账号保护保留，不擅自造生产兑换卡。真实商户上架须登录后按准确商品及授权流程操作并读回规格/库存，不把本地档位代码称为已上架。
 REQ-P04 / AC-P04：VibePlan作为独立套餐界面及后续重中之重，周卡/月卡/季卡的方向已确认；价格、每期额度、结转、权益、续费方式未知，不凭空设置收费和订阅。当前提供清晰的独立页面入口及准备中状态，与一次性积分卡区分；继续下一阶段设计与真实权益闭环，不声称订阅已上线可购。
 REQ-P05 / AC-P05：保持当前真实业务/44封面/小恐龙/Hypit/UI整合；新增界面可访问、响应式、中英文同键，定向代码验证和实际正式页面验收，最终main与运行镜像精确绑定。
+
+## REQ-B08 / AC-B08: Companion and admin UI final integration
+
+Include the separately authorized companion/settings handoff in this unified release: default voice off, no fake LLM or autonomous execution, same-origin/current-frame messages, account-session separation, stored presentation preferences and reduced-motion static fallback. Preserve the deployed GLB/rig assets while updating only the four reviewed renderer text files. AC-B08: strict existing task/logout/frame lifecycle checks pass; default silence and opt-in behavior pass; immutable asset mount preserves unrelated files; actual mobile/desktop production pages show a single companion and no horizontal overflow.
+
+Include the reviewed admin credit clarity increment: no default account selection, visible restricted-account state, explicit TOP_UP evidence/confirmation, accurate voucher classification. No new accounting writes or schema. Require exact source build, fresh consistent backup/restore, isolated service regressions and real production health/read-only page checks before final acceptance.

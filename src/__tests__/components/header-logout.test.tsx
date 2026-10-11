@@ -18,12 +18,14 @@ const AuthContext = createContext<AuthState>(alice);
 let setAuth!: (next: AuthState) => void;
 vi.mock("next-auth/react", () => ({ useSession: () => useContext(AuthContext), signOut: mocks.signOut }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/workflows/toonflow", useRouter: () => mocks.router }));
-vi.mock("next-intl", () => ({ useTranslations: (namespace?: string) => namespace ? (key: string) => `${namespace}.${key}` : mocks.translate }));
+vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: (namespace?: string) => namespace ? (key: string) => `${namespace}.${key}` : mocks.translate }));
 vi.mock("next-themes", () => ({ useTheme: () => ({ theme: "light", setTheme: vi.fn() }) }));
 vi.mock("sonner", () => ({ toast: { error: mocks.error } }));
 vi.mock("@/lib/analytics", () => ({ analyticsAuth: { logout: mocks.logout }, analyticsSettings: { changeLanguage: vi.fn(), changeTheme: vi.fn() } }));
 vi.mock("@/lib/i18n/client", () => ({ setLocale: vi.fn() }));
 vi.mock("@/components/providers/branding-provider", () => ({ useBranding: () => ({ name: "ANS", logo: "", useCloneBranding: true }) }));
+// Settings has its own regression suite; keep this fixture focused on the strict logout boundary.
+vi.mock("@/components/settings/site-settings", () => ({ SiteSettings: () => null }));
 vi.mock("@/components/layout/notification-bell", () => ({ NotificationBell: () => null }));
 vi.mock("@/components/layout/bilingual-toggle", () => ({ BilingualToggle: () => null }));
 vi.mock("next/image", () => ({ default: () => null }));

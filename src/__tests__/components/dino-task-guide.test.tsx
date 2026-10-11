@@ -8,6 +8,7 @@ import { ResumeWebsiteStudio } from "@/components/projects/resume-website-studio
 import type { ResumeWebsiteState } from "@/contracts/resume-website";
 import { plainResumeWebsiteCopy, RESUME_WEBSITE_EXAMPLE } from "@/domain/projects/resume-website";
 import messages from "../../../messages/product/zh.json";
+import companion from "../../../messages/companion/zh.json";
 
 const session = vi.hoisted(() => ({ actor: "actor-a" as string | null, status: "authenticated", pathname: "/projects/project-a/website" }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ data: session.actor ? { user: { id: session.actor } } : null, status: session.status }) }));
@@ -15,7 +16,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => session.pathname }));
 vi.mock("next/image", () => ({ default: () => null }));
 vi.mock("next/link", () => ({ default: (props: ComponentProps<"a">) => <a {...props} /> }));
 vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: (namespace: string) => {
-  const source = namespace === "product.mascot" ? messages.mascot : messages.website;
+  const source = namespace === "product.mascot" ? messages.mascot : namespace === "companion" ? companion : messages.website;
   const lookup = (key: string) => key.split(".").reduce<unknown>((value, part) => value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined, source);
   const t = (key: string, values?: Record<string, string | number>) => { let result = String(lookup(key) ?? key); for (const [name, value] of Object.entries(values ?? {})) result = result.replace("{" + name + "}", String(value)); return result; };
   t.has = (key: string) => typeof lookup(key) === "string"; return t;
@@ -54,8 +55,8 @@ afterEach(() => { cleanup(); Reflect.deleteProperty(HTMLElement.prototype, "scro
 describe("Dino follows the actual portfolio workflow", () => {
   it("keeps navigation available when no task is registered", async () => {
     render(<Shell />); await userEvent.click(screen.getByRole("button", { name: text.open }));
-    expect(screen.getByRole("heading", { name: text.title })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: text.create })).toHaveAttribute("href", "/workflows/toonflow");
+    expect(screen.getByRole("heading", { name: text.name })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: new RegExp(companion.actionVideoTitle) })).toHaveAttribute("href", "/workflows");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

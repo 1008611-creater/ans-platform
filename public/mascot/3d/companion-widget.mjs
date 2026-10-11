@@ -6,7 +6,7 @@ export function installCompanion(w = window, sourceFrame = null) {
   const language = d.documentElement.lang.toLowerCase().startsWith('zh') ? 'zh' : 'en';
   const words = COPY[language], reduced = w.matchMedia('(prefers-reduced-motion: reduce)');
   const link = d.createElement('link'); link.rel = 'stylesheet';
-  link.href = '/mascot/3d/companion-widget.css?v=single-20261011-5'; d.head.append(link);
+  link.href = '/mascot/3d/companion-widget.css?v=expressive-20261011-6'; d.head.append(link);
   const bubble = d.createElement('aside'); bubble.className = 'ans-companion-panel';
   bubble.id = 'ans-companion-panel'; bubble.hidden = true; bubble.setAttribute('aria-label',words.name);
   const name = d.createElement('span'); name.className = 'ans-companion-name'; name.textContent = words.name;
@@ -41,9 +41,10 @@ export function installCompanion(w = window, sourceFrame = null) {
   function say(first) {
     if (!opened || d.hidden) return;
     if (!ready || voiceBusy) {schedule();return;}
-    lastLine=pickLine(first); text.textContent=lastLine; send({event:'speak',text:lastLine}); schedule();
+    lastLine=pickLine(first); text.textContent=lastLine; if(preferences().voice===true)send({event:'speak',text:lastLine}); schedule();
   }
-  function sync() {send({event:'visibility',visible:!d.hidden});send({event:'autoplay',enabled:!reduced.matches});}
+  function preferences() { try { return JSON.parse(w.localStorage.getItem('ans.site-preferences.v2') || 'null') || {}; } catch { return {}; } }
+  function sync() { const prefs=preferences(); send({event:'preferences',voice:prefs.voice===true,volume:Number.isFinite(prefs.volume)?prefs.volume/100:.65,calm:prefs.motion==='calm'});send({event:'visibility',visible:!d.hidden});send({event:'autoplay',enabled:!reduced.matches});}
   function setOpen(value) {
     opened=value; bubble.hidden=!value; d.documentElement.classList.toggle('ans-companion-open',value);
     const trigger=d.querySelector('.ans-dino-trigger');
@@ -52,7 +53,7 @@ export function installCompanion(w = window, sourceFrame = null) {
     sync();
     if (value) {
       text.textContent=words.greeting; align();
-      try {frame()?.contentWindow?.__ANS_DINO__?.activateAudio?.();} catch { /* Renderer may still be loading. */ }
+      try {if(preferences().voice===true)frame()?.contentWindow?.__ANS_DINO__?.activateAudio?.();} catch { /* Renderer may still be loading. */ }
       send({event:'gesture',gesture:'hello'}); say(true);
     } else {clearTimer();send({event:'stop-speech'});voiceBusy=false;}
   }

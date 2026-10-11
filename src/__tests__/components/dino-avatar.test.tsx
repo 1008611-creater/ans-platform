@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DinoAvatar } from "@/components/mascot/dino-avatar";
+import { resetSitePreferences, updateSitePreferences } from "@/lib/site-preferences";
 
 vi.mock("next/image", () => ({ default: ({ className }: { className?: string }) => <span data-testid="static-mascot" className={className} /> }));
 
@@ -14,6 +15,7 @@ const media = {
 };
 
 beforeEach(() => {
+  resetSitePreferences();
   vi.useFakeTimers();
   reducedMotion = false;
   documentHidden = false;
@@ -53,6 +55,22 @@ function pointer() {
 }
 
 describe("DinoAvatar frame lifecycle", () => {
+  it("keeps voice off by default and speaks only after an explicit preference opt-in and fresh reply", () => {
+    const view = mount(true);
+    view.rerender(<DinoAvatar phase="idle" open speech={{ id: 1, text: "Public guide reply" }} />);
+    message(view.source, "ans-dino-ready");
+    expect(view.send).toHaveBeenCalledWith({ type: "ans-dino", event: "preferences", voice: false, volume: .65, calm: false }, window.location.origin);
+    expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(0);
+    act(() => updateSitePreferences({ voice: true }));
+    expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(0);
+    view.rerender(<DinoAvatar phase="idle" open speech={{ id: 2, text: "Next public reply" }} />);
+    expect(view.send).toHaveBeenCalledWith({ type: "ans-dino", event: "speak", text: "Next public reply" }, window.location.origin);
+    view.send.mockClear();
+    act(() => updateSitePreferences({ voice: false }));
+    expect(view.send).toHaveBeenCalledWith({ type: "ans-dino", event: "stop-speech" }, window.location.origin);
+    view.rerender(<DinoAvatar phase="idle" open speech={{ id: 3, text: "Silent public reply" }} />);
+    expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(0);
+  });
   it("starts the visible companion eagerly and keeps its still until ready", () => {
     const view = mount();
     expect(view.frame).toHaveAttribute("loading", "eager");
@@ -91,6 +109,7 @@ describe("DinoAvatar frame lifecycle", () => {
     view.rerender(<DinoAvatar phase="working" open />);
     message(view.source, "ans-dino-ready");
     expect(view.send.mock.calls.map(call => call[0])).toEqual([
+      { type: "ans-dino", event: "stop-speech" },
       { type: "ans-dino", event: "hello" },
       { type: "ans-dino", event: "phase", phase: "queued" },
       { type: "ans-dino", event: "phase", phase: "working" },
@@ -161,6 +180,8 @@ describe("DinoAvatar frame lifecycle", () => {
     expect(view.frame).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(1));
     expect(view.frame).not.toBeInTheDocument();
+    expect(view.send.mock.calls.map(call => call[0])).toEqual([{ type: "ans-dino", event: "stop-speech" }]);
+    view.send.mockClear();
     message(view.source, "ans-dino-ready");
     expect(screen.getByTestId("static-mascot")).not.toHaveClass("invisible");
     expect(view.send).not.toHaveBeenCalled();

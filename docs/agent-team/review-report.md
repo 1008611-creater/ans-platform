@@ -196,3 +196,9 @@ Reviewer: open_pr_audit. Scope: REQ-B01 through B05 and the verified recharge/ex
 Evidence: 174 independently executed targeted checks, 17 implementation files lint with zero errors/warnings, layer boundaries passed. Exam settlement writer source contract was read from the live bridge and checked against the strict receipt query. All 17 template locale additions preserve other namespaces. Existing favorite histories, growth writes and APIC estimate branch were preserved. PR29 is superseded.
 
 This is a code-review checkpoint, not evidence of final Linux image, live HTTPS visuals, actual member activation, real model procurement cost or refunds. Companion/settings source and final release verification must be reviewed separately before final release acceptance.
+
+## 2026-10-12 Final companion/admin code review
+
+Reviewer open_pr_audit: PASS for code freeze. Forty-nine independently executed companion/header/admin tests pass. Fourteen related files lint: zero errors and six existing lifecycle/ref warnings. Reduced-motion parent fallback is restored, task and logout safeguards retain their original assertions, default voice is off and an opt-in only speaks a new reply. Admin form account selection, restricted-account labels, TOP_UP evidence and voucher classification preserve existing ledger/API behavior.
+
+This PASS does not open membership sales or certify real TTS supplier calls. Final frozen Linux checks, fresh backup restore, isolated service checks and production HTTPS/mobile/desktop evidence remain required.

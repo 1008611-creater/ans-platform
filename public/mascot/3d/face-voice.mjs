@@ -144,7 +144,7 @@ export class FaceVoiceController {
       if (requestId !== this.speechRequestId) return;
       this.speechAbort = null;
       const url = URL.createObjectURL(blob); this.audioUrl = url;
-      const audio = new Audio(url); audio.preload = 'auto'; this.setAudio(audio, clean);
+      const audio = new Audio(url); audio.volume = Number.isFinite(this.volume) ? this.volume : 0.65; audio.preload = 'auto'; this.setAudio(audio, clean);
       await this.activateAudio();
       if (requestId !== this.speechRequestId) return;
       const source = this.audioContext.createMediaElementSource(audio); this.audioSource = source;

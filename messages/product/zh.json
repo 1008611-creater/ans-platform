@@ -1897,6 +1897,10 @@
     "pointsUnit": "算力点"
   },
   "quotaAdmin": {
+    "selectUser": "请选择要操作的账号",
+    "restrictedAccount": "已停用",
+    "VOUCHER_REDEEM": "卡密兑换到账",
+    "confirmAdjustment": "我已核对账号、数量和原因。",
     "title": "积分管理",
     "description": "发放、调账和已收款确认均有流水与审计记录。",
     "user": "用户",
