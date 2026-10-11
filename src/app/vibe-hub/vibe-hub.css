@@ -48,3 +48,6 @@
 
 /* Match the source site's default typography; retain copied font assets for its demos. */
 .vibehub-source{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;line-height:1.7}
+
+/* Keep the ANS brand readable before the full navigation fits. */
+@media(max-width:1050px){.vh-desktop-nav{display:none}}

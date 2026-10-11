@@ -4,7 +4,7 @@ import { readVibeData } from "../../source-data";
 import index from "@/data/vibehub/courses/index.json";
 import terms from "../../terms.json";
 type Props={params:Promise<{segments?:string[]}>;searchParams:Promise<{lang?:string;term?:string}>};
-export async function generateMetadata({params}:Props){const parts=(await params).segments||[];const chapter=index.find(item=>item.course===parts[0]&&item.id===parts[1]);return {title:chapter?.title||"VibeHub Courses",description:chapter?.intro,alternates:{canonical:"/vibe-hub/courses"+(parts.length?"/"+parts.join("/"):"")}};}
+export async function generateMetadata({params}:Props){const parts=(await params).segments||[];const chapter=index.find(item=>item.course===parts[0]&&item.id===parts[1]);return {title:chapter?.title||"ANS VibeHub Courses",description:chapter?.intro,alternates:{canonical:"/vibe-hub/courses"+(parts.length?"/"+parts.join("/"):"")}};}
 export default async function Courses({params,searchParams}:Props){
  const parts=(await params).segments||[];const [course,chapter]=parts;const query=await searchParams;
  if(parts.length>2||(course&&!index.some(item=>item.course===course))||(chapter&&!index.some(item=>item.course===course&&item.id===chapter)))notFound();
