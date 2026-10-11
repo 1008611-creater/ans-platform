@@ -1,0 +1,30 @@
+{
+  "provider": "Hypit.AI",
+  "page": "https://hypit.ai/",
+  "examples": [
+    {
+      "id": "ranking",
+      "source": "https://hypit.ai/demo/reference-ranking/poster/full.webp?v=20260831-reference-lowbitrate",
+      "sha256": "941b74502e7944518af5dbc950b192f530ed7e5716ed7b85a9aaadfa7a099120",
+      "bytes": 18910,
+      "kind": "official-demo-poster",
+      "modified": false
+    },
+    {
+      "id": "podcast",
+      "source": "https://hypit.ai/demo/reference-podcast/poster/full.webp?v=20260831-reference-lowbitrate",
+      "sha256": "06d7f85ccd4a80fe8492976e11db826635a1b48ee4e50383d1654566fd2458b6",
+      "bytes": 106384,
+      "kind": "official-demo-poster",
+      "modified": false
+    },
+    {
+      "id": "interview",
+      "source": "https://hypit.ai/demo/reference-interview/poster/full.webp?v=20260831-reference-lowbitrate",
+      "sha256": "eca2587feb009647bc0e6287ca0780c0fb91d3f85739d6e01886579fd7dbd143",
+      "bytes": 118738,
+      "kind": "official-demo-poster",
+      "modified": false
+    }
+  ]
+}

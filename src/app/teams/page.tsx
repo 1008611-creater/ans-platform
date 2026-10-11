@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Trophy, Users } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { PageHeading } from "@/components/layout/page-heading";
+import { Trophy } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { listMyTeams } from "@/server/teams/service";
@@ -26,6 +28,7 @@ const ROLE_LABEL: Record<string, string> = { OWNER: "队长", ADMIN: "管理员"
 
 export default async function TeamsPage() {
   const session = await auth();
+  const p = await getTranslations("product");
   const viewerId = session?.user?.id ?? null;
 
   const [mine, competitions] = await Promise.all([
@@ -38,17 +41,10 @@ export default async function TeamsPage() {
   ]);
 
   return (
-    <div className="container py-10">
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-sm font-medium text-primary">
-          <Users className="h-4 w-4" />
-          <span>ANS 团队</span>
-        </div>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight">组队参赛，平台给算力</h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
-          我们组织参加北京及全国高校的 AI、AIGC、黑客松赛事。平台负责组队、发放比赛算力包、沉淀作品。
-        </p>
-      </header>
+    <div className="ans-product-container ans-page-content ans-teams-page">
+      <PageHeading eyebrow="ANS 团队" title="组队参赛，平台给算力"
+        description="我们组织参加北京及全国高校的 AI、AIGC、黑客松赛事。平台负责组队、发放比赛算力包、沉淀作品。"
+        actions={<Button asChild variant="outline"><Link href="/competitions">{p("nav.competitions")}</Link></Button>} />
 
       <section className="mb-12">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

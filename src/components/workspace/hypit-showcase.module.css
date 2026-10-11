@@ -1,0 +1,31 @@
+.hero { display: grid; gap: 3rem; align-items: start; }
+.intro { max-width: 36rem; padding-top: 1rem; }
+.capabilities { margin-top: 2rem; display: grid; gap: 1rem; }
+.capabilities li { display: flex; align-items: start; gap: .8rem; font-size: .9rem; line-height: 1.6; }
+.capabilities svg { margin-top: .2rem; flex: none; color: var(--primary); }
+.actions { margin-top: 2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.showcase { scroll-margin-top: 6rem; min-width: 0; border: 1px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; background: var(--card); }
+.topline { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+/* GitGlow FloatingLayers: real images in angled layers, rendered as responsive DOM. */
+.stage { position: relative; height: 350px; margin: 1.5rem 0 .5rem; isolation: isolate; }
+.phone { position: absolute; left: 50%; top: 24px; width: 158px; aspect-ratio: 9 / 16; overflow: hidden; border-radius: 1rem; border: 1px solid var(--border); box-shadow: 0 12px 28px color-mix(in oklch, var(--foreground) 12%, transparent); transition: transform .22s ease-out, opacity .22s ease-out; cursor: pointer; background: var(--muted); }
+.phone:focus-visible { z-index: 6; outline: 3px solid var(--ring); outline-offset: 4px; }
+.front { z-index: 3; width: 186px; top: 8px; transform: translateX(-50%); }
+.left { z-index: 1; transform: translateX(-118%) rotate(-9deg); opacity: .8; }
+.right { z-index: 2; transform: translateX(18%) rotate(9deg); opacity: .8; }
+.caption { position: absolute; inset: auto 0 0; padding: 1.6rem .5rem .65rem; color: oklch(.98 .005 280); font-size: .75rem; font-weight: 600; background: linear-gradient(transparent, oklch(.18 .01 280 / .92)); }
+.play { position: absolute; z-index: 4; left: 50%; top: 147px; transform: translateX(-50%); width: 3rem; height: 3rem; border-radius: 50%; box-shadow: 0 0 0 6px color-mix(in oklch, var(--background) 35%, transparent); }
+.player { position: absolute; z-index: 5; left: 50%; top: 8px; transform: translateX(-50%); width: 186px; aspect-ratio: 9 / 16; border-radius: 1rem; overflow: hidden; background: var(--muted); }
+.player video { width: 100%; height: 100%; object-fit: contain; }
+.close { position: absolute; top: .5rem; right: .5rem; width: 2.75rem; height: 2.75rem; }
+.switcher { display: flex; gap: .3rem; justify-content: center; flex-wrap: wrap; }
+.details { margin-top: 1.25rem; min-height: 112px; }
+.links { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding-top: 1rem; }
+.preparation { padding: 2rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.steps { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
+.steps li { display: flex; gap: .9rem; align-items: start; }
+.stepNumber { width: 1.75rem; height: 1.75rem; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--primary); background: color-mix(in oklch, var(--primary) 10%, var(--background)); font-size: .75rem; font-weight: 600; }
+@media (min-width: 768px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3.5rem; } .intro { padding-top: 2rem; } }
+@media (max-width: 420px) { .showcase { padding: 1rem; } .stage { height: 315px; } .phone { width: 122px; } .front, .player { width: 166px; } .left { transform: translateX(-114%) rotate(-7deg); } .right { transform: translateX(14%) rotate(7deg); } .play { top: 133px; } }
+@media (prefers-reduced-motion: reduce) { .phone { transition: none; } }

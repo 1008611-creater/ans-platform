@@ -104,10 +104,26 @@ async function main() {
     });
     await check("production checkout and unverifiable payment remain closed", async () => {
       assert.equal(orders.marketCheckoutAvailability().checkoutAvailable, false);
-      await assert.rejects(orders.createMarketOrder(buyer.id, {}), /PAYMENT_NOT_CONFIGURED/);
+      // Valid explicit cash input must reach the provider gate; default checkout is POINTS.
+      await assert.rejects(orders.createMarketOrder(buyer.id, { listingId: listing.id, expectedVersion: 2, idempotencyKey: `${prefix}-cash-disabled`, paymentMethod: "WECHAT" }), /PAYMENT_NOT_CONFIGURED/);
       await assert.rejects(payments.handleMarketWebhook("{}", new Headers()), /PAYMENT_NOT_CONFIGURED/);
       await assert.rejects(payments.handleMarketWebhook("{}", new Headers(), adapter), /BAD_SIGNATURE/);
     });
+    // Historical cash fixtures exist only behind the loopback test/verify database guard above.
+    // Current public checkout defaults to POINTS, so never rewrite its immutable payment method.
+    // Copy its validated historical quote to a separate CASH order for signed simulated callbacks.
+    // This bypasses real provider checkout only in isolation and proves no real collection/refund.
+    async function cashFixture(sourceId: string) {
+      const source = await db.marketOrder.findUniqueOrThrow({ where: { id: sourceId } });
+      const fixture = await db.marketOrder.create({ data: {
+        buyerId: source.buyerId, sellerId: source.sellerId, listingId: source.listingId,
+        paymentMethod: "CASH", quote: source.quote!, totalMinor: source.totalMinor,
+        currency: source.currency, requirements: source.requirements,
+        idempotencyKey: `${source.idempotencyKey}-cash-fixture`, requestHash: source.requestHash,
+      } });
+      return orders.getMarketOrder(fixture.id, buyer.id);
+    }
+    order = await cashFixture(order.id);
     await check("concurrent verified callbacks apply exactly one payment journal", async () => {
       const event = { provider: adapter.provider, eventId: `${prefix}-paid`, orderId: order.id, paymentId: `${prefix}-payment`, type: "payment_succeeded", amountMinor: 10001, currency: "CNY" };
       const body = JSON.stringify(event);
@@ -145,7 +161,7 @@ async function main() {
       await orders.reviewMarketOrder(order.id, buyer.id, { rating: 5, content: "[隔离测试] 已完成" });
       await assert.rejects(orders.reviewMarketOrder(order.id, seller.id, { rating: 5, content: "self" }), /NOT_FOUND/);
     });
-    await check("second actual charge is recorded separately and refunded without disturbing fulfillment", async () => {
+    await check("second simulated charge is recorded separately and refunded without disturbing fulfillment", async () => {
       const result = await providerEvent(order.id, `${prefix}-second-payment`);
       assert.equal(result.outcome, "RETURN_REQUIRED");
       assert.equal((await orders.getMarketOrder(order.id, buyer.id)).status, "COMPLETED");
@@ -168,11 +184,11 @@ async function main() {
       assert.ok(balance.every((row) => row._sum.amountMinor === 0));
     });
     await check("late payment after cancellation and wrong amount/currency create return obligations", async () => {
-      const late = await orders.createMarketOrder(buyer.id, { listingId: listing.id, expectedVersion: 2, idempotencyKey: `${prefix}-late` }, policy);
+      const late = await cashFixture((await orders.createMarketOrder(buyer.id, { listingId: listing.id, expectedVersion: 2, idempotencyKey: `${prefix}-late` }, policy)).id);
       await orders.actOnMarketOrder(late.id, buyer.id, { action: "cancel", expectedRevision: 0, idempotencyKey: `${prefix}-cancel`, message: "" });
       assert.equal((await providerEvent(late.id, `${prefix}-late-payment`, { amountMinor: 20002 })).outcome, "RETURN_REQUIRED");
       assert.equal((await orders.getMarketOrder(late.id, buyer.id)).status, "CANCELLED");
-      const mismatch = await orders.createMarketOrder(buyer.id, { listingId: listing.id, expectedVersion: 2, idempotencyKey: `${prefix}-mismatch` }, policy);
+      const mismatch = await cashFixture((await orders.createMarketOrder(buyer.id, { listingId: listing.id, expectedVersion: 2, idempotencyKey: `${prefix}-mismatch` }, policy)).id);
       assert.equal((await providerEvent(mismatch.id, `${prefix}-wrong-money`, { amountMinor: 20001 })).outcome, "RETURN_REQUIRED");
       assert.equal((await providerEvent(mismatch.id, `${prefix}-wrong-currency`, { amountMinor: 20002, currency: "USD" })).outcome, "RETURN_REQUIRED");
       assert.equal((await orders.getMarketOrder(mismatch.id, buyer.id)).status, "AWAITING_PAYMENT");

@@ -60,3 +60,22 @@ RULE-AUTH-I01：服务端从session取真实身份，再与期望actor比对；�
 ## 原始资料
 
 已读取仓库 AGENTS.md、P0/P1 规范及 `E:/WORKBUDDY/2026-08-27-06-01-25/ANS-handoff-20260907.zip` 内 00/01/02/03/05/06 文档。旧交接资料只作历史证据，当前状态以重跑结果为准。
+
+
+## Authorized UI handoff integration, 2026-10-11
+
+REQ-UI01 / AC-UI01: integrate only the authorized 16-file `ui-only.patch` handoff into current 5bf0d371 application code, keeping current Hypit card, market/account/permission fixes, current event provenance and actual 44 GitGlow assets. No package, authentication, pricing, schema, role or business payload change. Conflict in OfficialWorkflows must retain Hypit with compact semantics. Read-only source audit compares business sections to pre-merge source; exact compiled candidate must contain both workflow links.
+REQ-UI02 / AC-UI02: shared heading hierarchy, desktop title/actions alignment, featured AIGC workflow row, workspace tools, mobile horizontal project-category scrolling, spacing and lightweight interactions. Core desktop/mobile pages must render real source/content, remain within actual viewport, expose form labels and correct links. Authenticated workspace/community/project/team pages need checks after merger; old candidate screenshots do not prove current release. Reduced-motion and keyboard focus remain usable.
+REQ-UI03 / AC-UI03: repair obsolete market integration verifier in the real source; keep loopback verify-database guard before imports, explicit disabled-WeChat request fields, immutable isolated historical CASH fixtures, signed simulated provider with zero real funds. Candidate DB run must directly use committed script, without prior verifier overlay.
+REQ-UI04 / AC-UI04: exact-source Linux type/lint/boundary/related tests/build, unique image/source binding, preserved rollback and restored production snapshot before switching. No schema changes and no new migrations expected. Current main application parent is integrated-b9ab5ffe/image617f660a; do not deploy the older UI candidate image. Preserve original 3D mascot bind mount.
+REQ-UI05 / AC-UI05: independent review before publishing, source verification and actual main merge, then actual container/health/HTTPS desktop-mobile verification; retain failed attempts and state unfinished real merchant payment, model billing and formal event configuration separately.
+
+Root integrates UI and releases; market_verifier_repair owns only verifier; market_completion_audit independently reviews integrated code; agri_completion_audit separately maps complete event requirements to current evidence. Existing task/worker/review/release files are retained as history.
+
+## 链动小铺充值与 VibePlan 方向更新，2026-10-11
+
+本节按用户最新决定覆盖直接微信/支付宝商户接入要求。REQ-P01 / AC-P01：顾客充值只沿用链动小铺购买 ANS 卡密 → ANS 手动兑换的已上线链路，绝不启用供应商商户钱包充值；停止直接微信/支付宝商户登录及配置要求。已公开现售10积分/¥1商品为 https://wzyp.cn/item/zkm211 ，单次兑换、账户换号边界不变。
+REQ-P02 / AC-P02：积分中心新增100/500/1000/2000/5000积分五档；按已确认¥1=10积分显示面值¥10/50/100/200/500，并明示渠道手续费以收银台为准。只有核对过实际商品的确切URL才能出现购买入口；未上架的档位明确待上架，不能将10积分商品冒充高档位。保留10积分商品作为现售入口。
+REQ-P03 / AC-P03：运营卡密生成界面支持五档快捷选择，生成仍需要真实管理员权限，明文保存/导出提醒和跨账号保护保留，不擅自造生产兑换卡。真实商户上架须登录后按准确商品及授权流程操作并读回规格/库存，不把本地档位代码称为已上架。
+REQ-P04 / AC-P04：VibePlan作为独立套餐界面及后续重中之重，周卡/月卡/季卡的方向已确认；价格、每期额度、结转、权益、续费方式未知，不凭空设置收费和订阅。当前提供清晰的独立页面入口及准备中状态，与一次性积分卡区分；继续下一阶段设计与真实权益闭环，不声称订阅已上线可购。
+REQ-P05 / AC-P05：保持当前真实业务/44封面/小恐龙/Hypit/UI整合；新增界面可访问、响应式、中英文同键，定向代码验证和实际正式页面验收，最终main与运行镜像精确绑定。

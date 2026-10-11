@@ -9,6 +9,8 @@ import { filterCatalogProjects, PROJECT_CATEGORIES } from "@/domain/catalog/proj
 import { ProjectCard } from "@/components/catalog/project-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import styles from "./explore.module.css";
+import { PageHeading } from "@/components/layout/page-heading";
 
 export async function generateMetadata() {
   const t = await getTranslations("product");
@@ -32,20 +34,20 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
     return `/explore${next.size ? `?${next}` : ""}`;
   }
   return (
-    <div className="ans-product-shell"><div className="ans-product-container py-12 sm:py-16">
-      <header className="max-w-3xl">
-        <p className="ans-eyebrow">{t("nav.explore")}</p>
-        <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">{t("exploreTitle")}</h1>
-        <p className="mt-5 text-pretty leading-8 text-muted-foreground">{t("exploreBody")}</p>
-      </header>
-      <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link href="/explore/submit">{t("realProject.submit")}</Link></Button><Button asChild variant="outline"><Link href="/market">{t("market.browse")}</Link></Button><Button asChild variant="outline"><Link href="/market/creator">{t("market.creator")}</Link></Button></div>
-      <form action="/explore" className="mt-8 flex max-w-xl gap-2">
-        <label className="sr-only" htmlFor="project-search">{t("searchLabel")}</label>
-        <Input id="project-search" type="search" name="q" autoComplete="off" defaultValue={query} placeholder={t("searchPlaceholder")} className="h-12 rounded-xl" />
-        {Object.entries({ category: category?.id, subcategory, source, readiness }).map(([key, value]) => value && <input key={key} type="hidden" name={key} value={value} />)}
-        <Button type="submit" className="h-12 rounded-xl"><Search className="me-2 h-4 w-4" aria-hidden="true" />{t("search")}</Button>
-      </form>
-      <nav aria-label={t("categoriesLabel")} className="ans-category-row mt-8">
+    <div className="ans-product-shell"><div className={`ans-product-container ans-page-content ${styles.page}`}>
+      <PageHeading eyebrow={t("nav.explore")} title={t("exploreTitle")} description={t("exploreBody")}
+        tools={<form action="/explore" className={styles.search}>
+            <label className={styles.searchLabel} htmlFor="project-search">{t("searchLabel")}</label>
+            <Input id="project-search" type="search" name="q" autoComplete="off" defaultValue={query} placeholder={t("searchPlaceholder")} className="h-12 min-w-0 rounded-xl" />
+            {Object.entries({ category: category?.id, subcategory, source, readiness }).map(([key, value]) => value && <input key={key} type="hidden" name={key} value={value} />)}
+            <Button type="submit" className="h-12 shrink-0 rounded-xl"><Search className="me-2 h-4 w-4" aria-hidden="true" />{t("search")}</Button>
+          </form>}
+        actions={<>
+            <Button asChild><Link href="/explore/submit">{t("realProject.submit")}</Link></Button>
+            <Button asChild variant="outline"><Link href="/market">{t("market.browse")}</Link></Button>
+            <Button asChild variant="outline"><Link href="/market/creator">{t("market.creator")}</Link></Button>
+        </>} />
+      <nav aria-label={t("categoriesLabel")} className={`ans-category-row ${styles.categories}`}>
         <Link href={filterHref({ category: undefined, subcategory: undefined })} aria-current={!category ? "page" : undefined} className="ans-category-pill">{t("all")}</Link>
         {PROJECT_CATEGORIES.map((item) => <Link key={item.id} href={filterHref({ category: item.id, subcategory: undefined })} aria-current={category?.id === item.id ? "page" : undefined} className="ans-category-pill">{t(`categories.${item.id}`)}<span className="ms-2 text-xs opacity-70">{catalog.filter(project => project.category === item.id).length}</span></Link>)}
       </nav>
@@ -53,7 +55,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
         <Link href={filterHref({ subcategory: undefined })} aria-current={!subcategory ? "page" : undefined} className="ans-subcategory">{t("allChildren")}</Link>
         {category.children.map((child) => <Link key={child} href={filterHref({ subcategory: child })} aria-current={subcategory === child ? "page" : undefined} className="ans-subcategory">{t(`children.${child}`)}</Link>)}
       </nav>}
-      <div className="mb-8 grid gap-3 border-y py-4 text-sm sm:grid-cols-2">
+      <div className={styles.filters}>
         <nav aria-label={t("sourceFilter")} className="flex flex-wrap items-center gap-1">
           <span className="me-2 text-xs text-muted-foreground">{t("sourceFilter")}</span>
           {[undefined, ...CATALOG_SOURCES].map((value) => <Link key={value ?? "all"} href={filterHref({ source: value })} aria-current={source === value ? "page" : undefined} className="ans-subcategory">{t(value ? catalogSourceLabel(value) : "allSources")}</Link>)}
@@ -65,7 +67,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
       </div>
       
       <h2 className="mb-5 text-sm font-normal text-muted-foreground">{t("results", { count: projects.length })}</h2>
-      {projects.length ? <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">{projects.map((project) => <ProjectCard key={project.slug} project={project} />)}</div> : <div className="ans-empty">
+      {projects.length ? <div className={styles.projects}>{projects.map((project) => <ProjectCard key={project.slug} project={project} />)}</div> : <div className="ans-empty">
         <h2 className="text-xl font-semibold">{t("emptyTitle")}</h2>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">{t("emptyBody")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3"><Button asChild variant="outline"><Link href="/explore">{t("clear")}</Link></Button><Button asChild><Link href="/workflows">{t("nav.workflows")}<ArrowRight className="ms-2 h-4 w-4" aria-hidden="true" /></Link></Button></div>

@@ -1,0 +1,69 @@
+/* Product register: a student chooses a plan on a laptop or phone in daylight.
+   Use the existing ANS theme; one distinct pass surface carries the purple identity. */
+.shell { --plan-ink: oklch(0.3 0.055 290); --plan-paper: oklch(0.975 0.008 290); }
+.container { padding-block: 2rem 4.5rem; }
+.topline { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+.back { display:inline-flex; align-items:center; gap:.5rem; color:var(--muted-foreground); font-size:.875rem; min-height:2.75rem; }
+.back:hover { color:var(--foreground); }
+.back:focus-visible { outline:2px solid var(--ring); outline-offset:4px; border-radius:.25rem; }
+.status { display:inline-flex; align-items:center; gap:.45rem; border:1px solid var(--border); border-radius:999px; padding:.45rem .75rem; font-size:.75rem; color:var(--muted-foreground); white-space:nowrap; }
+.heading { padding-block:3.5rem 2.5rem; max-width:55rem; }
+.eyebrow { font-size:.75rem; font-weight:600; letter-spacing:.1em; color:var(--muted-foreground); }
+.heading h1 { margin-top:1.2rem; font-size:3.75rem; line-height:1.06; font-weight:650; letter-spacing:-.065em; }
+.heading h1 span { display:block; font-size:2.5rem; line-height:1.3; letter-spacing:-.045em; margin-top:.65rem; }
+.description { max-width:65ch; margin-top:1.4rem; color:var(--muted-foreground); font-size:1rem; line-height:1.8; }
+.plans { gap:1.8rem; }
+.selection { display:flex; align-items:center; justify-content:space-between; gap:1rem; border-top:1px solid var(--border); padding-top:1.6rem; }
+.selection h2 { font-size:1rem; font-weight:600; }
+.selection p { margin-top:.35rem; font-size:.875rem; color:var(--muted-foreground); line-height:1.6; }
+.tabs { width:auto; min-height:3rem; padding:.3rem; gap:.25rem; border:1px solid var(--border); }
+.tabs [role="tab"] { min-height:2.3rem; padding-inline:1.35rem; }
+.content { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); border:1px solid var(--border); border-radius:1.75rem; overflow:hidden; }
+.content[hidden] { display:none; }
+.pass { color:var(--plan-ink); background:var(--plan-paper); display:flex; flex-direction:column; justify-content:space-between; padding:2.25rem; min-height:30rem; position:relative; isolation:isolate; }
+.pass::before { content:""; position:absolute; inset:0; z-index:-1; background-image:radial-gradient(oklch(0.82 0.03 290 / .4) 1px,transparent 1px); background-size:14px 14px; mask-image:linear-gradient(to bottom,transparent 25%,black); }
+.passTop { display:flex; align-items:center; justify-content:space-between; gap:1rem; font-size:.75rem; letter-spacing:.07em; }
+.passIdentity { padding-block:3rem; }
+.passIdentity>p:first-child { font-size:1.125rem; font-weight:600; letter-spacing:-.03em; }
+.passIdentity h3 { font-size:3rem; line-height:1.15; letter-spacing:-.04em; font-weight:650; margin-top:.8rem; }
+.passCaption { max-width:30ch; margin-top:1rem; font-size:.9375rem; line-height:1.8; }
+.passFooter { display:flex; justify-content:space-between; align-items:center; gap:1rem; border-top:1px dashed oklch(0.72 0.04 290); padding-top:1.2rem; font-size:.75rem; }
+.details { display:flex; flex-direction:column; padding:2.25rem; background:var(--card); }
+.detailHeading>p:first-child { font-size:.75rem; font-weight:600; color:var(--primary); }
+.detailHeading h2 { font-size:1.75rem; font-weight:600; letter-spacing:-.035em; margin-top:.55rem; }
+.detailHeading>p:last-child { margin-top:.7rem; font-size:.9375rem; color:var(--muted-foreground); line-height:1.7; }
+.terms { margin-block:1.8rem; }
+.terms>div { display:flex; justify-content:space-between; gap:1rem; padding-block:.85rem; border-bottom:1px solid var(--border); font-size:.875rem; }
+.terms dt { color:var(--muted-foreground); }
+.terms dd { text-align:end; font-weight:500; }
+.actions { margin-top:auto; }
+.actions button { width:100%; }
+.actions p { margin-top:.8rem; font-size:.75rem; color:var(--muted-foreground); line-height:1.7; }
+.bridge { display:flex; justify-content:space-between; align-items:center; gap:2rem; padding-block:2.4rem; margin-top:1rem; border-bottom:1px solid var(--border); }
+.bridge h2 { font-size:1.25rem; font-weight:600; margin-top:.6rem; }
+.bridge p:last-child { font-size:.875rem; color:var(--muted-foreground); line-height:1.8; margin-top:.65rem; max-width:60ch; }
+.bridge>a { flex-shrink:0; }
+.faq { display:grid; grid-template-columns:1fr 2fr; gap:2rem; margin-top:2.5rem; }
+.faq h2 { font-size:1.25rem; font-weight:600; }
+.faq details { border-bottom:1px solid var(--border); padding-block:1rem; }
+.faq details:first-child { padding-top:0; }
+.faq summary { font-size:.9375rem; font-weight:500; cursor:pointer; min-height:2rem; }
+.faq summary:focus-visible { outline:2px solid var(--ring); outline-offset:4px; }
+.faq details p { font-size:.875rem; line-height:1.8; color:var(--muted-foreground); max-width:65ch; margin-top:.75rem; }
+@media(max-width:767px) {
+  .container { padding-block:1.25rem 3rem; }
+  .heading { padding-block:2.25rem 2rem; }
+  .heading h1 { font-size:2.75rem; }
+  .heading h1 span { font-size:1.875rem; }
+  .selection { align-items:stretch; flex-direction:column; }
+  .tabs { width:100%; }
+  .tabs [role="tab"] { padding-inline:.7rem; }
+  .content { grid-template-columns:minmax(0,1fr); border-radius:1.25rem; }
+  .pass { min-height:20rem; padding:1.5rem; }
+  .passIdentity { padding-block:2rem; }
+  .passIdentity h3 { font-size:2.25rem; }
+  .details { padding:1.5rem; }
+  .detailHeading h2 { font-size:1.5rem; }
+  .bridge { flex-direction:column; align-items:flex-start; gap:1.25rem; }
+  .faq { grid-template-columns:minmax(0,1fr); gap:1.25rem; }
+}

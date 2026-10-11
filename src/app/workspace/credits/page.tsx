@@ -7,6 +7,7 @@ import { QuotaError } from "@/server/quota/service";
 import { Button } from "@/components/ui/button";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import { CreditsCenter } from "@/components/workspace/credits-center";
+import { getCreditProducts } from "@/lib/credits-catalog";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata() {
@@ -30,7 +31,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
     <Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground">{t("back")}</Link>
     <header className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1><p className="mt-3 text-muted-foreground">{t("description")}</p></div><Button asChild variant="outline"><Link href="/workspace/credits" prefetch={false}>{t("refresh")}</Link></Button></header>
     {!history ? <p role="alert" className="rounded-[var(--radius)] border p-5">{t(invalid ? "invalid" : "unavailable")}</p> : <>
-      <CreditsCenter actorId={session.user.id} billing={history.billing} availablePoints={Number(history.availablePoints)} />
+      <CreditsCenter actorId={session.user.id} billing={history.billing} availablePoints={Number(history.availablePoints)} products={getCreditProducts(process.env)} />
       <dl className="flex flex-wrap gap-x-12 gap-y-5 border-y py-6">
         <div><dt className="text-sm text-muted-foreground">{t("available")}</dt><dd className="mt-2 text-3xl font-semibold tabular-nums">{numbers.format(history.availablePoints)}</dd></div>
         <div><dt className="text-sm text-muted-foreground">{t("reserved")}</dt><dd className="mt-2 text-3xl font-semibold tabular-nums">{numbers.format(history.reservedPoints)}</dd></div>

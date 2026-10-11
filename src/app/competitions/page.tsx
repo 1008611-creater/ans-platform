@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import {
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageHeading } from "@/components/layout/page-heading";
 import {
   Card,
   CardContent,
@@ -50,6 +51,7 @@ const hubEntries = [
 
 export default async function CompetitionsPage() {
   const t = await getTranslations("competitionsHub");
+  const p = await getTranslations("product");
 
   const entries = hubEntries.map((entry) => ({
     ...entry,
@@ -64,20 +66,10 @@ export default async function CompetitionsPage() {
   }));
 
   return (
-    <div className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(circle_at_18%_0%,hsl(var(--primary)/0.16),transparent_45%),radial-gradient(circle_at_84%_10%,rgba(16,185,129,0.14),transparent_38%)]" />
-      <div className="container space-y-12 py-10 md:py-14">
-        <section className="max-w-3xl space-y-4">
-          <Badge variant="secondary" className="rounded-full px-3 py-1 text-[11px] tracking-[0.18em]">
-            {t("eyebrow")}
-          </Badge>
-          <h1 className="text-4xl font-semibold tracking-tight md:text-6xl md:leading-[1.05]">
-            {t("title")}
-          </h1>
-          <p className="text-base leading-7 text-muted-foreground md:text-lg">
-            {t("description")}
-          </p>
-        </section>
+    <div className="ans-product-shell">
+      <div className="ans-product-container ans-page-content ans-competitions-page">
+        <PageHeading eyebrow={t("eyebrow")} title={t("title")} description={t("description")}
+          actions={<><Button asChild><Link href="/teams">{p("teamEntry")}</Link></Button><Button asChild variant="outline"><Link href="/workspace">{p("nav.workspace")}</Link></Button></>} />
 
         <section className="grid gap-5 lg:grid-cols-2">
           {entries.map((entry) => {
@@ -85,13 +77,12 @@ export default async function CompetitionsPage() {
             return (
               <Card
                 key={entry.id}
-                className="group relative flex flex-col overflow-hidden border-border/80 bg-background/80 transition-colors hover:border-primary/40"
+                className="ans-competition-card group relative flex flex-col overflow-hidden"
               >
-                <div className={`absolute inset-x-0 top-0 h-32 bg-gradient-to-br ${entry.accent}`} />
                 <CardHeader className="relative gap-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${entry.iconClass}`}>
-                      <Icon className="h-6 w-6" />
+                      <Icon className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <Badge variant="outline" className="rounded-full bg-background/60 text-[11px]">
                       {entry.status}
@@ -106,10 +97,10 @@ export default async function CompetitionsPage() {
                 </CardHeader>
                 <CardContent className="relative flex flex-1 flex-col gap-5">
                   <p className="text-sm leading-6 text-muted-foreground">{entry.description}</p>
-                  <ul className="space-y-2">
+                  <ul className="ans-competition-highlights">
                     {entry.highlights.map((highlight) => (
                       <li key={highlight} className="flex items-start gap-2 text-sm">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                         <span>{highlight}</span>
                       </li>
                     ))}

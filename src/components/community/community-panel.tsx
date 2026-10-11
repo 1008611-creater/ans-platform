@@ -7,6 +7,7 @@ import { formatLevel, XP_RULES } from "@/lib/level";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle2 } from "lucide-react";
 
 function errorMessage(status: number, fallback: string) {
   if (status === 401) return "请先登录后参与社区。";
@@ -99,7 +100,7 @@ export function CommunityPanel() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="ans-community-data space-y-6">
       <p className="text-sm text-muted-foreground">
         等级仅作纪念称号，0 级即可提交模板；管理权限始终由管理员独立授权。
       </p>
@@ -107,8 +108,8 @@ export function CommunityPanel() {
         <p>{error}</p><Button variant="outline" onClick={() => void load()} disabled={loading || pending}>重试</Button>
         <Link href="/login?callbackUrl=/community" className="underline">前往登录</Link>
       </div>}
-      {notice && <p role="status" className="text-sm">{notice}</p>}
-      {loading && !me && <p role="status" className="text-sm text-muted-foreground">正在加载社区数据…</p>}
+      {notice && <p role="status" className="ans-inline-notice"><CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />{notice}</p>}
+      {loading && !me && <div className="ans-loading-region" role="status"><p className="text-sm text-muted-foreground">正在加载社区数据…</p><div className="ans-loading-block ans-loading-block-wide" aria-hidden="true" /><div className="ans-loading-grid" aria-hidden="true"><div className="ans-loading-block" /><div className="ans-loading-block" /></div></div>}
       {me && contributions && <>
         <Card>
           <CardHeader><h2 className="text-lg font-semibold">我的社区成长</h2></CardHeader>
@@ -149,7 +150,7 @@ export function CommunityPanel() {
                               {entry.appeal.status === "PENDING" ? "申诉处理中" : entry.appeal.status === "APPROVED" ? "申诉已通过" : "申诉未通过"}
                             </span>
                           ) : appealLedgerId === entry.id ? (
-                            <div className="mt-2 w-64 space-y-2 text-left">
+                            <div className="mt-2 w-full min-w-0 space-y-2 text-left sm:w-64">
                               <Textarea aria-label="申诉说明" minLength={10} maxLength={2000} rows={3} value={appealMessage} onChange={(event) => setAppealMessage(event.target.value)} placeholder="说明你认为奖励需要复核的原因" />
                               <div className="flex justify-end gap-2">
                                 <Button size="sm" variant="outline" onClick={() => setAppealLedgerId("")}>取消</Button>

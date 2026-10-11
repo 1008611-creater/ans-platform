@@ -2351,10 +2351,10 @@
     "VOUCHER_USED": "This voucher has been used.",
     "RATE_LIMITED": "Too many attempts. Try again in one minute.",
     "failed": "Operation failed. Retrying redemption will not credit twice.",
-    "shop": "Visit the LDXP shop",
+    "shop": "Visit LDXP",
     "shopNote": "Only products explicitly labelled ANS points vouchers can be redeemed.",
     "adminTitle": "Points vouchers",
-    "adminDescription": "Generate vouchers, download and import them into LDXP inventory. The shop handles payment and delivery; ANS handles redemption.",
+    "adminDescription": "Generate vouchers, download and import them into the matching LDXP product inventory. The shop handles payment and delivery; ANS handles redemption.",
     "batchName": "Batch name",
     "points": "Points per voucher",
     "quantity": "Quantity",
@@ -2368,7 +2368,27 @@
     "revoked": "Revoked",
     "expired": "Expired",
     "revoke": "Revoke unused vouchers",
-    "revokeConfirm": "Confirm revoking remaining vouchers"
+    "revokeConfirm": "Confirm revoking remaining vouchers",
+    "catalogTitle": "Choose a points voucher",
+    "oneTime": "One-time purchase",
+    "catalogDescription": "Buy a voucher, receive its code, then redeem it here into this account.",
+    "chooseAmount": "Choose a points amount",
+    "pointsUnit": "points",
+    "selectedProduct": "{points} points · Face value CNY {yuan}",
+    "purchaseReady": "Purchase on LDXP and receive your voucher code after payment.",
+    "awaitingListing": "This face value is being prepared and is not available to buy yet.",
+    "purchase": "Buy voucher",
+    "notListed": "Not listed yet",
+    "checkoutFees": "Face values use CNY 1 = 10 points. Provider fees are shown at the LDXP checkout.",
+    "legacyProduct": "Available: 10 points · Face value CNY 1",
+    "buyStep": "Choose the matching points voucher on LDXP.",
+    "receiveStep": "Receive the voucher code from the shop after payment.",
+    "redeemStep": "Paste the code to credit your current ANS account.",
+    "accountNote": "Check that you are signed into the account you want to credit. A redeemed code cannot be used by another account.",
+    "planStatus": "In preparation",
+    "planDescription": "Weekly, monthly and quarterly: explore the VibePlan interface.",
+    "planExplore": "Explore VibePlan",
+    "quickAmounts": "Choose a face value"
   },
   "hypit": {
     "title": "Hypit video creation",
@@ -2445,11 +2465,126 @@
     "internalNote": "Hypit.AI internal use. Original branding and license are retained.",
     "sourceLink": "Source repository",
     "licenseLink": "License",
-    "channelsNote": "AI image, video and voice providers are not connected."
+    "channelsNote": "AI image, video and voice providers are not connected.",
+    "overview": {
+      "reference": "Use a reference video to reuse its pacing, captions and visual structure.",
+      "edit": "Swap characters, dialogue or topics in an editable video project.",
+      "deliver": "Review in Studio. Animated chat currently supports MP4 export.",
+      "examples": "Explore real examples"
+    },
+    "preparation": {
+      "title": "What should you prepare?",
+      "brief": {
+        "title": "Describe your video",
+        "body": "Bring a topic, language, orientation and optional reference video. You can also start with a structure."
+      },
+      "assets": {
+        "title": "Bring the assets you want to keep",
+        "body": "Provide portraits, a brand logo or product images as needed. Creating a project does not incur model charges."
+      },
+      "review": {
+        "title": "Review before exporting",
+        "body": "Check dialogue, captions and pacing. Chat animation can render now; other formats need assets and model services."
+      }
+    },
+    "showcase": {
+      "title": "See what Hypit can make",
+      "official": "Official Hypit examples",
+      "switcher": "Choose a video example",
+      "select": "View the {name} example",
+      "watch": "Play the official {name} example",
+      "close": "Close video",
+      "input": "You can bring:",
+      "source": "Explore example project",
+      "fallback": "Watch on Hypit",
+      "credit": "Layout · GitGlow",
+      "notice": "Images are from public Hypit examples. Check the workspace for currently available ANS capabilities.",
+      "ranking": {
+        "short": "Ranking",
+        "title": "Ranking commentary",
+        "alt": "Official Hypit ranking video with a presenter above an S-to-D tier board",
+        "body": "Commentary, captions, ranking changes and cutaways follow the dialogue. Useful for reviews, annual lists and topical videos.",
+        "input": "A topic, ranked items, a portrait and a reference video."
+      },
+      "podcast": {
+        "short": "Podcast",
+        "title": "Two-person podcast",
+        "alt": "Official Hypit podcast with two speakers and microphones in a vertical split screen",
+        "body": "Combine two speakers, speaker-aware captions and product inserts in one project. Useful for conversations, product stories and explainers.",
+        "input": "Two characters, dialogue and product or brand assets."
+      },
+      "interview": {
+        "short": "Interview",
+        "title": "Street interview",
+        "alt": "Official Hypit street interview with a microphone and staged reveal board",
+        "body": "Build a short video around questions, answers and staged reveals, with tracked captions and sound effects.",
+        "input": "Questions, characters, a setting and the reveal content."
+      }
+    }
   },
   "accountBoundary": {
     "loading": "Checking your account…",
     "changed": "Your account changed. Refresh to load the current account’s content.",
     "refresh": "Refresh"
+  },
+  "vibeplan": {
+    "pageTitle": "VibePlan · Creative subscriptions",
+    "navigation": "VibePlan navigation",
+    "back": "Back to points",
+    "status": "In preparation",
+    "headline": "Make room for creating",
+    "description": "A subscription direction for learning, exploring AI and finishing your own work. Weekly, monthly and quarterly plans are in preparation. Preview a rhythm that suits you.",
+    "choosePeriod": "Choose your rhythm",
+    "periodHelp": "Three periods, one creative direction.",
+    "previewLabel": "Subscription preview",
+    "subscriptionDirection": "VibePlan / Subscription",
+    "notFinalized": "To be announced",
+    "notAvailable": "Plans in preparation",
+    "previewNote": "This page previews the direction only. Pricing, quota and benefits will be confirmed before purchase opens. No payment or automatic renewal is activated here.",
+    "terms": {
+      "price": "Plan price",
+      "quota": "Periodic points and rollover",
+      "benefits": "Plan benefits",
+      "renewal": "Purchase and renewal"
+    },
+    "periods": {
+      "week": {
+        "label": "Weekly",
+        "caption": "Set aside a week for an idea.",
+        "title": "Start with a week",
+        "description": "A short-period plan direction for a focused stretch of exploration and creation. Terms will be announced."
+      },
+      "month": {
+        "label": "Monthly",
+        "caption": "Make creating part of your routine.",
+        "title": "Keep a monthly rhythm",
+        "description": "A monthly plan direction for continued use of ANS. Terms will be announced."
+      },
+      "quarter": {
+        "label": "Quarterly",
+        "caption": "Give meaningful work a little more time.",
+        "title": "Keep a direction growing",
+        "description": "A quarterly plan direction for longer-term learning and projects. Terms will be announced."
+      }
+    },
+    "availableNow": "Available now",
+    "voucherTitle": "Need points now? Use a voucher.",
+    "voucherDescription": "Pay on LDXP, receive a voucher code and redeem it on ANS. Points vouchers are one-time purchases, separate from future VibePlan subscriptions.",
+    "voucherAction": "Open points center",
+    "faqTitle": "Good to know",
+    "faq": {
+      "difference": {
+        "question": "How do vouchers differ from VibePlan?",
+        "answer": "A points voucher is redeemed once using a code. VibePlan is a weekly, monthly or quarterly subscription direction. Quota, expiry, rollover and benefits have not been announced."
+      },
+      "payment": {
+        "question": "Can I buy VibePlan now?",
+        "answer": "Not yet. Plans are in preparation, with no payment, automatic renewal or presale. See the points center for vouchers that are actually available."
+      },
+      "announcements": {
+        "question": "What will be confirmed before launch?",
+        "answer": "Plan pricing, periodic points, quota expiry and rollover, specific benefits, plus purchase, renewal and cancellation terms will be explained before availability."
+      }
+    }
   }
 }

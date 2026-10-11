@@ -2351,10 +2351,10 @@
     "VOUCHER_USED": "这张卡密已被使用。",
     "RATE_LIMITED": "操作过于频繁，请一分钟后重试。",
     "failed": "操作失败，请稍后重试；兑换重试不会重复入账。",
-    "shop": "前往 LDXP 店铺",
+    "shop": "前往链动小铺",
     "shopNote": "请购买明确标注 ANS 积分的卡密商品；店内其他商品不能用于兑换。",
     "adminTitle": "积分卡密管理",
-    "adminDescription": "生成卡密，下载后导入 LDXP 卡密商品库存。付款与发货由店铺处理，ANS 仅负责兑换入账。",
+    "adminDescription": "生成卡密，下载后导入链动小铺对应商品库存。付款与发货由店铺处理，ANS 负责兑换入账。",
     "batchName": "批次名称",
     "points": "每张积分",
     "quantity": "生成数量",
@@ -2368,7 +2368,27 @@
     "revoked": "已停用",
     "expired": "已过期",
     "revoke": "停用未兑换卡密",
-    "revokeConfirm": "确认停用本批次剩余卡密"
+    "revokeConfirm": "确认停用本批次剩余卡密",
+    "catalogTitle": "选择积分卡",
+    "oneTime": "一次性购买",
+    "catalogDescription": "买卡、收卡密、回这里兑换。积分入账到当前账号。",
+    "chooseAmount": "选择积分面值",
+    "pointsUnit": "积分",
+    "selectedProduct": "{points} 积分 · 面值 ¥{yuan}",
+    "purchaseReady": "在链动小铺购买，付款后领取卡密。",
+    "awaitingListing": "这个面值的商品正在准备，暂时无法购买。",
+    "purchase": "去购买",
+    "notListed": "待上架",
+    "checkoutFees": "商品面值按 ¥1 = 10 积分计算；渠道手续费以链动小铺收银台实际显示为准。",
+    "legacyProduct": "现售：10 积分卡 · 面值 ¥1",
+    "buyStep": "在链动小铺选择对应积分卡。",
+    "receiveStep": "付款后，领取店铺发放的卡密。",
+    "redeemStep": "粘贴卡密，兑换到当前 ANS 账号。",
+    "accountNote": "请先确认登录的是要充值的账号。已兑换卡密无法用于另一个账号。",
+    "planStatus": "准备中",
+    "planDescription": "周卡、月卡、季卡，看看 VibePlan 的新界面。",
+    "planExplore": "了解 VibePlan",
+    "quickAmounts": "快捷选择面值"
   },
   "accountBoundary": {
     "loading": "正在核对登录账号…",
@@ -2450,6 +2470,121 @@
     "internalNote": "Hypit.AI 组织内部使用，保留原项目品牌与许可证。",
     "sourceLink": "项目源码",
     "licenseLink": "许可证",
-    "channelsNote": "AI 图像、视频和声音渠道尚未连接。"
+    "channelsNote": "AI 图像、视频和声音渠道尚未连接。",
+    "overview": {
+      "reference": "参考一支视频，复用它的节奏、字幕和画面结构。",
+      "edit": "替换人物、台词或主题，继续编辑同一个视频项目。",
+      "deliver": "在 Studio 检查编排，已支持动态对话动画导出 MP4。",
+      "examples": "先看真实案例"
+    },
+    "preparation": {
+      "title": "开始前，你需要准备什么？",
+      "brief": {
+        "title": "说清想做什么",
+        "body": "提供主题、语言、横竖屏和参考视频。没有参考也可以从结构开始。"
+      },
+      "assets": {
+        "title": "提供想保留的素材",
+        "body": "人物图、品牌 Logo、产品图按需提供。先创建项目，不会触发模型费用。"
+      },
+      "review": {
+        "title": "检查后再导出",
+        "body": "确认台词、字幕和节奏。动态对话可直接渲染；其他结构需补齐素材与渠道。"
+      }
+    },
+    "showcase": {
+      "title": "用作品认识 Hypit",
+      "official": "Hypit 官方示例",
+      "switcher": "切换视频案例",
+      "select": "查看{name}案例",
+      "watch": "播放{name}官方示例",
+      "close": "关闭视频",
+      "input": "你可以提供：",
+      "source": "查看案例项目",
+      "fallback": "到官网观看",
+      "credit": "展示样式 · GitGlow",
+      "notice": "画面来自 Hypit 官方公开示例；ANS 当前可用能力以工作区标注为准。",
+      "ranking": {
+        "short": "排行榜",
+        "title": "排行榜口播",
+        "alt": "Hypit 官方排行榜成片：上半屏人物口播，下半屏 S 到 D 级排行榜",
+        "body": "人物口播与榜单同时推进，字幕、排名和插入画面跟随台词。适合测评、年度盘点和热点话题。",
+        "input": "榜单主题、排名内容、人物图与参考视频。"
+      },
+      "podcast": {
+        "short": "播客",
+        "title": "双人播客",
+        "alt": "Hypit 官方播客成片：上下分屏的两位说话人和麦克风",
+        "body": "双人分屏、说话人字幕与产品展示组合在同一个项目里。适合对谈、产品介绍和知识内容。",
+        "input": "两位角色、对话台词、产品图或品牌素材。"
+      },
+      "interview": {
+        "short": "街头采访",
+        "title": "街头采访",
+        "alt": "Hypit 官方街头采访成片：街景中的采访人物、麦克风和揭晓板",
+        "body": "提问、回答和分段揭晓形成短视频节奏，配合跟随字幕与音效。适合问答、人物故事和情景广告。",
+        "input": "采访问题、人物设定、场景与揭晓内容。"
+      }
+    }
+  },
+  "vibeplan": {
+    "pageTitle": "VibePlan · 创作订阅计划",
+    "navigation": "VibePlan 导航",
+    "back": "返回积分中心",
+    "status": "准备中",
+    "headline": "给创作留一个位置",
+    "description": "为持续学习、探索 AI 和完成作品准备的订阅计划。周卡、月卡、季卡正在筹备，先选一种适合你的创作节奏。",
+    "choosePeriod": "选择你的节奏",
+    "periodHelp": "三种周期，同一个创作方向。",
+    "previewLabel": "订阅计划预览",
+    "subscriptionDirection": "VibePlan / 订阅计划",
+    "notFinalized": "待公布",
+    "notAvailable": "套餐筹备中",
+    "previewNote": "当前仅展示套餐方向。价格、额度与权益确认后再开放购买；此页面不会收款或开通自动续费。",
+    "terms": {
+      "price": "套餐价格",
+      "quota": "每期积分与结转",
+      "benefits": "套餐权益",
+      "renewal": "购买与续费方式"
+    },
+    "periods": {
+      "week": {
+        "label": "周卡",
+        "caption": "留出一周，认真做一个想法。",
+        "title": "从一周开始",
+        "description": "短周期的套餐方向，适合安排一段集中的探索与创作。具体规则待公布。"
+      },
+      "month": {
+        "label": "月卡",
+        "caption": "把创作放进日常。",
+        "title": "保持每月的创作节奏",
+        "description": "月度套餐方向，为持续使用 ANS 而准备。具体规则待公布。"
+      },
+      "quarter": {
+        "label": "季卡",
+        "caption": "给值得做的事，多一点时间。",
+        "title": "让一个方向持续生长",
+        "description": "季度套餐方向，为更长周期的学习与项目创作而准备。具体规则待公布。"
+      }
+    },
+    "availableNow": "当前可用",
+    "voucherTitle": "现在需要积分？先用积分卡。",
+    "voucherDescription": "链动小铺付款并发放卡密，在 ANS 兑换。积分卡是一次性购买，和未来的 VibePlan 订阅分开。",
+    "voucherAction": "前往积分中心",
+    "faqTitle": "先了解这些",
+    "faq": {
+      "difference": {
+        "question": "积分卡和 VibePlan 有什么区别？",
+        "answer": "积分卡购买后用卡密一次性兑换积分。VibePlan 是按周、月或季度的订阅方向；具体额度、有效期、结转和权益尚未公布。"
+      },
+      "payment": {
+        "question": "现在能购买 VibePlan 吗？",
+        "answer": "还不能。套餐仍在筹备，不收款、不自动续费，也没有预售。当前可购买的积分卡请在积分中心查看实际商品。"
+      },
+      "announcements": {
+        "question": "正式开放时会公布什么？",
+        "answer": "套餐价格、每期积分、额度有效期与结转规则、具体权益，以及购买、续费和取消方式都会在开放前说明。"
+      }
+    }
   }
 }

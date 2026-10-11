@@ -140,3 +140,51 @@ MARKET-I10 本次声称修复后实际读取仍未通过：zh title 仍为 `????
 再读 `src/i18n/request.ts`，agriHackathon 覆盖仍位于 `...messages` 后，中文使用 zh、其他语言使用当前 en。英文五维实际为 30/25/20/15/10，分隔符均为真实中点。MARKET-I10 **已修复并独立文件值复验**；MARKET-I08 / I09 / I10 / I11 在本审查范围内均已关闭。此前未通过读回记录保留，不能描述首次修复已成功。
 
 本范围代码结论更新为 **ship-to-release-gates**：允许进入主控最终冻结源、构建、迁移演练和生产上线门禁。这不是生产已发布、真实商户资金验收或全目标完成证明；原发布与真实资金范围仍保持独立。
+
+## 2026-10-11 UI 整合候选独立审查（REQ-UI01..05）
+
+审查者 market_completion_audit；基线 5bf0d3717f93474b903290b104e9fb170d776da8 与本次未提交 UI / marketplace-integration 增量。实际读取完整相关界面源码、diff -w、两个新文件、原始交接 JSON 与当前 task-spec。未修改业务、提交或访问生产；此节仅经主控明确授权追加。
+
+### UI-I01 · P2 · 新减少动效规则被高优先级 hover/active 覆盖（已修复并复验）
+
+首轮 `globals.css` 新 hover 状态设 translateY(-2px)、按钮 active 状态设 scale(.985)；末尾 reduce 基础选择器优先级更低，无法覆盖具体状态，历史 reduce 对 project hover 也被新同级规则覆盖。主控已将新位移动效媒体限制为 `(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)`。本审查者再读实际文件确认全部本轮 hover/active 变换在该媒体内，reduce 关闭过渡/变换及通知动画，键盘 focus-visible 的 outline 与即时状态保护仍保留；修复 diff check 退出 0。本项以源码规则复验关闭，未声称真实浏览器计算样式验收。
+
+### 已独立核对的范围
+
+- diff -w 未见应用权限、查询条件、私密项目身份、表单业务载荷、商户、模型价格或数据库迁移回退。工作台 session/userId 过滤、运行分页、余额/团队/收藏读取不变；运行区移动到收藏前属于视图重排。社区认证及参与/申诉逻辑不变，仅布局、loading/status 与宽度变化。市场服务和账号边界文件未被此次 UI patch 修改。
+- Hypit 卡片仍仅在非 compact OfficialWorkflows 渲染，`/workflows/hypit` 与 `/workflows/toonflow` 均保留；VibeHub、项目发布、市场/订单、团队、工作流新建/个人列表/运行记录入口保留。GitGlow 与小恐龙资源无本次源修改，资源真实可用性须由发布镜像验收。
+- PageHeading 使用一个 h1 与可选 eyebrow/description/tools/actions；ReactNode 可容纳工作台昵称控件，未注入 HTML。探索、市场和社区工作流搜索仍使用真实 GET action/name/q，查询截断与隐藏筛选字段保持；label 与 input id 关联存在。手机分类 CSS 为局部横向滚动、链接保留原生可聚焦，minmax/min-width 限制内容列。实际桌面/手机/多语言布局仍须精确候选浏览器核验。
+- marketplace-integration 隔离 guard 在动态数据库/业务 import 前执行。实际运行两次拒绝场景：非 loopback 的 example.invalid/ans_test、本地生产名 127.0.0.1/production，均在 guard 退出 1，未接触数据库。新增 CASH 历史 fixture 是隔离库独立插入，复制已经服务校验的冻结 quote，没有 UPDATE 原 POINTS method/quote；显式 WECHAT 下单用于配置关闭断言。回调由随机 HMAC 模拟 adapter 验证，所有相关文案标模拟、无真实资金；没有修改商户实现或免验签入口。此审查未运行正向 PostgreSQL 脚本，旧 overlay 成功不代替精确源正向验收。
+
+### 本审查者实际验证与结论
+
+2026-10-11 22:43:01 独立执行 community-page、community、published-workflows、catalog-content、marketplace-presentation、marketplace-order 六个定向文件，45 项通过。当前 diff whitespace 检查通过。只对修复 CSS 做定向源码复验，没有重复已通过检查。
+
+结论：**ship-to-release-gates（仅本次 UI 整合与 verifier 源范围）**。UI-I01 已关闭，本范围未发现剩余具体阻断。仍需主控以最终精确源码执行 Linux 类型/lint/boundary/build 与直接源码正向隔离 DB 检查，使用当前镜像而非交接旧候选，保留恢复备份/回滚及小恐龙挂载，再完成实际 main、生产 health/HTTPS、登录后的工作台/社区/项目/团队与桌面手机验收。此结论不表示部署已经完成、不证明全站成熟，也不改变真实商户支付/卖家结算、模型计费、正式赛事配置等原未完成范围。
+
+## 2026-10-11 Independent Hypit showcase review (release_ui_catalog_audit)
+
+Scope: authorized UI handoff, the nine-file Hypit gallery delta and current REQ-UI01/02/05, AC-P05 preservation. Read-only review of implementation and existing guards; only the newly authorized reviewer-owned `src/__tests__/components/hypit-showcase.test.tsx` was added. No production API writes, accounts, projects, orders, credits or images were created by this reviewer.
+
+HYPIT-UI-I02 (P2, AC-UI02/AC-P05) initially reproduced a keyboard-focus loss in the actual React component: activating Play removed its focused node and left document.activeElement=BODY; Close did the same. Root repaired it with explicit play/close refs, playback-action focus transfer and restoration, without forcing focus after selecting another example. The independent regression uses real userEvent Enter activation: Play moves focus to Close; Close restores focus to Play; switching examples while playing keeps focus on the switcher, closes the player and updates the source link. Two new tests plus six existing Hypit workspace tests passed (2 files / 8 tests). The new focus-visible rule raises the focused layer to z-index 6 above the other layers/player; Close is 44x44 CSS pixels. This issue is closed for React focus behavior and source rules. Computed browser geometry, media controls and reduced-motion rendering still require root's exact-candidate browser check.
+
+All three local official poster hashes match sources.json. This reviewer performed read-only HTTPS requests against the manifest's exact Hypit URLs: each returned 200, with 18,910 / 106,384 / 118,738 bytes and identical SHA256 to the local original assets. No image rewrite occurred. The three GitHub example source links and GitGlow attribution link returned 200. The page visibly identifies official examples and says current ANS capability follows workspace labels; model-provider absence and internal/admin scope remain visible. Original HypitWorkspace/API/service source is unchanged; ADMIN gating, keyed account remount, native login, expected-owner requests and paid-format render restrictions remain intact.
+
+Checks: focused ESLint for the gallery/component/page/new test exited 0. Earlier independently rerun Hypit workspace, voucher UI, voucher actor HTTP and quota translations were 4 files / 18 tests passed. These checks do not establish browser playback, production deployment, real funds or complete-site readiness. Source conclusion for this Hypit increment: PASS, eligible for root's combined release gates.
+
+## 2026-10-11 Independent points catalog and VibePlan source review (REQ-P01..05)
+
+Reviewer: release_ui_catalog_audit. Current source and worker-fragment.json read after implementation; production shop inventory, user balances, card batches and orders were not modified. Existing USER/ADMIN API authority was inspected, not replaced by frontend permission checks.
+
+- AC-P01 / AC-P02 source PASS: the public path remains external LDXP purchase followed by manual ANS voucher redemption. Five amounts are exactly 100/500/1000/2000/5000 points with CNY 10/50/100/200/500 face values. Missing SKU mappings cannot purchase; HTTPS, exact wzyp.cn host, item path, credential/port/query/hash rejection, old 10-point URL rejection and cross-denomination duplicate rejection are explicit. The actual 10-point item stays separately labelled. No WeChat/Alipay merchant API call was added. Displaying a configured URL only proves operator configuration, not real SKU price/inventory; actual five-product listing verification remains pending with root.
+- AC-P03 source PASS: the five admin shortcuts only select the existing form's points. Generation still goes through requireAdminPermission(USERS_MANAGE), expected actor, same-origin JSON and a transactional administrator recheck. No API/service/schema migration was changed. Unsaved plaintext warning, generation lock, download and account-change unmount remain. No production voucher was generated by this reviewer.
+- AC-P04 source PASS for a preparation page: /vibeplan uses the shared theme and accessible Radix weekly/monthly/quarterly tabs; prices, quota/rollover, benefits and renewal remain explicitly unannounced. Purchase is disabled, the FAQ identifies no presale or auto-renewal, and the current voucher option links back to the credits center. This is not proof that subscription entitlement, billing or renewal is implemented.
+- AC-P05 source PASS within the increment: Chinese/English vouchers, vibeplan and hypit recursive leaf keys match. No existing key was deleted; the only modified existing values are vouchers.shop and vouchers.adminDescription. All 97 added leaf keys per language were read as valid JSON; no new double-question-mark strings. Exact CNY sign and ANS ellipsis readback passed. Business source, authority wrappers, 44 covers and mascot source were preserved; root still owns exact-image and rendered viewport verification.
+
+VIBEPLAN-UI-I03 (P2, AC-P05): the initial component nested a second main inside RootLayout's main-content landmark. Worker changed its inner container to div. Independently re-read the component and verified it produces no inner main. Closed.
+
+VIBEPLAN-UI-I04 (P2, AC-P05): unconditional .content display:grid overrode the hidden attribute on inactive Radix panels. An independent in-memory React/Radix DOM probe with the actual source display rule showed two inactive empty panels hidden=true but display=grid. Worker added .content[hidden] display:none after the general rule. The same probe then showed inactive/active/inactive display none/grid/none; closed for DOM/CSS behavior. Initial probe setup failures (default-export mocking and missing animation-frame globals) were harness failures, not application checks or production operations. Full browser viewport appearance remains root's release gate.
+
+Independent commands: six focused test files (credits-catalog, credits-catalog-ui, voucher-ui, voucher-account-http, quota-translations, hypit-showcase), 34 tests passed. Focused ESLint across eight current catalog/credits/plan/admin/route/test files: 0 errors, 1 pre-existing voucher-panel effect dependency warning. Current git diff whitespace check exited 0. Final CSS-only fixes were verified by source and computed DOM styles; already passed business tests were not mechanically repeated.
+
+Conclusion: PASS for this local source review; eligible for combined release gates. Actual high-value SKU publication/inventory, deployed main/image binding, authenticated credits screen, desktop/mobile VibePlan rendering and complete-platform requirements remain unproven here. Root must preserve those requirements as outstanding until authoritative external evidence exists.

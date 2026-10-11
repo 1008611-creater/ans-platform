@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DisplayNameEditor } from "@/components/workspace/display-name-editor";
 import { CreationTools } from "@/components/workspace/creation-tools";
+import { PageHeading } from "@/components/layout/page-heading";
 
 export const metadata = {
   title: "工作台 · ANS",
@@ -35,6 +36,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   }
 
   const computeCopy = await getTranslations("product.computeHistory");
+  const product = await getTranslations("product");
   const quotaCopy = await getTranslations("product.quotaHistory");
   const query = searchParams ? await searchParams : {};
   const rawCursor = Array.isArray(query.runsCursor) ? query.runsCursor[0] : query.runsCursor;
@@ -100,17 +102,14 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   const displayName = user?.nickname?.trim() || "匿名同学";
 
   return (
-    <div className="container py-10">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">工作台</h1>
-        <p className="mt-2 text-muted-foreground">
-          你好，{displayName} · {formatLevel(xp)}
-          <DisplayNameEditor current={displayName} />
-        </p>
-      </header>
+    <div className="ans-product-container ans-page-content ans-workspace-page">
+      <PageHeading title="工作台"
+        description={<span className="ans-workspace-greeting">你好，{displayName} · {formatLevel(xp)}
+          <DisplayNameEditor current={displayName} /></span>}
+        actions={<><Button asChild><Link href="/projects">{product("myProjects")}</Link></Button><Button asChild variant="outline"><Link href="/explore">{product("nav.explore")}</Link></Button></>} />
 
       <CreationTools />
-      <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="ans-account-summary">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5">
@@ -171,66 +170,8 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         </Card>
       </section>
 
-      <section className="mb-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Heart className="h-4 w-4" /> 我的收藏
-          </h2>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/templates">发现更多模板</Link>
-          </Button>
-        </div>
-        {favoriteTemplates.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-8 text-center text-sm text-muted-foreground">
-              还没有收藏模板。在模板详情页点击“收藏”即可保存。
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {favoriteTemplates.map((item) => (
-              <Card key={item.template.slug}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
-                    <Link href={"/templates/" + item.template.slug} className="hover:underline">
-                      {item.template.title}
-                    </Link>
-                  </CardTitle>
-                  {item.template.summary && <CardDescription className="line-clamp-2">{item.template.summary}</CardDescription>}
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="mb-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Clock3 className="h-4 w-4" /> 最近使用
-          </h2>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/templates">去模板广场</Link>
-          </Button>
-        </div>
-        {recentTemplates.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-8 text-center text-sm text-muted-foreground">
-              运行过的模板会显示在这里。
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {recentTemplates.map((template) => (
-              <Button key={template.slug} asChild variant="secondary" size="sm">
-                <Link href={"/templates/" + template.slug}>{template.title}</Link>
-              </Button>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="mb-10">
+      <div className="ans-workspace-records">
+      <section className="ans-workspace-section ans-workspace-runs">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
             <FolderOpen className="h-4 w-4" /> 我的运行
@@ -293,8 +234,64 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
           </div>
         )}
       </section>
-
-      <section>
+      <section className="ans-workspace-section">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <Heart className="h-4 w-4" /> 我的收藏
+          </h2>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/templates">发现更多模板</Link>
+          </Button>
+        </div>
+        {favoriteTemplates.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="py-8 text-center text-sm text-muted-foreground">
+              还没有收藏模板。在模板详情页点击“收藏”即可保存。
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {favoriteTemplates.map((item) => (
+              <Card key={item.template.slug}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">
+                    <Link href={"/templates/" + item.template.slug} className="hover:underline">
+                      {item.template.title}
+                    </Link>
+                  </CardTitle>
+                  {item.template.summary && <CardDescription className="line-clamp-2">{item.template.summary}</CardDescription>}
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+      <section className="ans-workspace-section">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <Clock3 className="h-4 w-4" /> 最近使用
+          </h2>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/templates">去模板广场</Link>
+          </Button>
+        </div>
+        {recentTemplates.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="py-8 text-center text-sm text-muted-foreground">
+              运行过的模板会显示在这里。
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {recentTemplates.map((template) => (
+              <Button key={template.slug} asChild variant="secondary" size="sm">
+                <Link href={"/templates/" + template.slug}>{template.title}</Link>
+              </Button>
+            ))}
+          </div>
+        )}
+      </section>
+      <section className="ans-workspace-section ans-workspace-teams">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
             <Users className="h-4 w-4" /> 团队与算力
@@ -332,6 +329,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 }

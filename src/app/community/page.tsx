@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { CommunityPanel } from "@/components/community/community-panel";
+import { PageHeading } from "@/components/layout/page-heading";
+import { Button } from "@/components/ui/button";
 
 export const metadata = {
   title: "社区成长 · ANS",
@@ -13,11 +15,9 @@ export default async function CommunityPage() {
   if (!session?.user?.id) redirect("/login?callbackUrl=/community");
 
   return (
-    <div className="container max-w-6xl py-10">
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div><h1 className="text-3xl font-bold tracking-tight">社区成长</h1><p className="mt-2 text-muted-foreground">记录每一次参与，见证共同成长。</p></div>
-        <Link href="/workspace" className="text-sm underline underline-offset-4">返回工作台</Link>
-      </header>
+    <div className="ans-product-container ans-page-content ans-community-page">
+      <PageHeading title="社区成长" description="记录每一次参与，见证共同成长。"
+        actions={<Button asChild variant="outline"><Link href="/workspace">返回工作台</Link></Button>} />
       <CommunityPanel />
     </div>
   );
