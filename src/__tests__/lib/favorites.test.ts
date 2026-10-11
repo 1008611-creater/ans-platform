@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
     prompt: { findFirst: vi.fn(), findMany: vi.fn() },
     template: { findFirst: vi.fn(), findMany: vi.fn() },
     workflow: { findFirst: vi.fn(), findMany: vi.fn() },
-    contentFavorite: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
+    contentFavorite: { findUnique: vi.fn(), findMany: vi.fn(), createMany: vi.fn(), deleteMany: vi.fn() },
     auditLog: { create: vi.fn() },
     $transaction: vi.fn(),
   },
@@ -33,7 +33,7 @@ const visiblePrompt = {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
-  mocks.db.contentFavorite.create.mockResolvedValue({ id: "fav1" });
+  mocks.db.contentFavorite.createMany.mockResolvedValue({ count: 1 });
   mocks.db.auditLog.create.mockResolvedValue({ id: "audit1" });
   mocks.db.prompt.findFirst.mockResolvedValue(visiblePrompt);
   mocks.db.template.findFirst.mockResolvedValue(null);
@@ -47,12 +47,12 @@ describe("addFavorite", () => {
   it("rejects an unknown target type before touching the database", async () => {
     await expect(addFavorite("user1", "ARTICLE", "p1")).rejects.toBeInstanceOf(FavoriteServiceError);
     expect(mocks.db.prompt.findFirst).not.toHaveBeenCalled();
-    expect(mocks.db.contentFavorite.create).not.toHaveBeenCalled();
+    expect(mocks.db.contentFavorite.createMany).not.toHaveBeenCalled();
   });
 
   it("rejects a missing target id", async () => {
     await expect(addFavorite("user1", "PROMPT", "  ")).rejects.toBeInstanceOf(FavoriteServiceError);
-    expect(mocks.db.contentFavorite.create).not.toHaveBeenCalled();
+    expect(mocks.db.contentFavorite.createMany).not.toHaveBeenCalled();
   });
 
   it("refuses to favorite a prompt that is private or deleted", async () => {
@@ -63,15 +63,16 @@ describe("addFavorite", () => {
     expect(error).toBeInstanceOf(FavoriteServiceError);
     expect((error as FavoriteServiceError).code).toBe("TARGET_UNAVAILABLE");
     expect((error as FavoriteServiceError).status).toBe(404);
-    expect(mocks.db.contentFavorite.create).not.toHaveBeenCalled();
+    expect(mocks.db.contentFavorite.createMany).not.toHaveBeenCalled();
   });
 
   it("creates the favorite and an audit entry", async () => {
     mocks.db.contentFavorite.findUnique.mockResolvedValue(null);
 
     expect(await addFavorite("user1", "PROMPT", " p1 ")).toEqual({ favorited: true, created: true });
-    expect(mocks.db.contentFavorite.create).toHaveBeenCalledWith({
-      data: { userId: "user1", targetType: "PROMPT", targetId: "p1" },
+    expect(mocks.db.contentFavorite.createMany).toHaveBeenCalledWith({
+      data: [{ userId: "user1", targetType: "PROMPT", targetId: "p1" }],
+      skipDuplicates: true,
     });
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ action: "FAVORITE_ADDED" }) }),
@@ -79,10 +80,10 @@ describe("addFavorite", () => {
   });
 
   it("is idempotent: a repeated favorite neither duplicates nor re-audits", async () => {
-    mocks.db.contentFavorite.findUnique.mockResolvedValue({ id: "fav1" });
+    mocks.db.contentFavorite.createMany.mockResolvedValue({ count: 0 });
 
     expect(await addFavorite("user1", "PROMPT", "p1")).toEqual({ favorited: true, created: false });
-    expect(mocks.db.contentFavorite.create).not.toHaveBeenCalled();
+    expect(mocks.db.contentFavorite.createMany).toHaveBeenCalledTimes(1);
     expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
   });
 

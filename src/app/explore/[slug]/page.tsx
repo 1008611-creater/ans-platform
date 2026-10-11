@@ -57,7 +57,7 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
         )}
       </div>
       {project.sourceUrl && (
-        <aside className="ans-detail-block mt-6">
+        <div className="ans-detail-block mt-6">
           <h3 className="font-semibold">{t("sourceNote")}</h3>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">{catalogText(project, t, "sourceNote", locale)}</p>
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3">
@@ -65,7 +65,7 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
             {project.discoveryUrl && <a href={project.discoveryUrl} target="_blank" rel="noopener noreferrer" className="ans-text-link">{t("realProject.discovery")}<ExternalLink className="h-4 w-4" aria-hidden="true" /></a>}
             {project.licenseUrl && <a href={project.licenseUrl} target="_blank" rel="noopener noreferrer" className="ans-text-link">{t("license")}<ExternalLink className="h-4 w-4" aria-hidden="true" /></a>}
           </div>
-        </aside>
+        </div>
       )}
       {project.workflowId && <ol className="mt-8 grid gap-4 sm:grid-cols-3">{[1, 2, 3].map((step) => <li key={step} className="border-t pt-4"><p className="text-sm font-semibold">{step}. {t(`steps.${step}.title`)}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{t(`steps.${step}.body`)}</p></li>)}</ol>}
     </section>
