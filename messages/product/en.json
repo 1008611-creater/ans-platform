@@ -484,6 +484,7 @@
       "dispute": "Raise a dispute"
     },
     "errors": {
+      "ACCOUNT_CHANGED": "Your account changed. Refresh to continue.",
       "INTERNAL_ERROR": "The request could not complete. Please retry; your input remains here.",
       "INVALID_INPUT": "Check the length, category, price, links and deliverables.",
       "INVALID_JSON": "Invalid request content. Please retry.",
@@ -772,6 +773,7 @@
     "rulesPendingBody": "The first-edition plan is shown below. Official dates are not confirmed. Registration, preliminary submissions and final materials open only through the edition’s separate published windows. This overview does not open registration or publish technical guidance."
   },
   "agriTasks": {
+    "ownerLabel": "Owner: {id}",
     "title": "My agrihackathon timetable",
     "description": "Plan six technical deliveries with dates, required inputs and acceptance results. Preparation can start before dates are confirmed.",
     "privacy": "Private by default. Explicit sharing provides read-only access to the current task, not its history or other recipients. Collaboration notes never grant access.",
@@ -908,6 +910,10 @@
     "detailStale": "The operation was saved, but details could not refresh. Reload sharing and history without saving again.",
     "refreshDetail": "Refresh details",
     "references": {
+      "demoLabel": "Demo check #{sequence}",
+      "chooseDetail": "Choose an issue or Demo check",
+      "attachDemo": "Link this Demo check",
+
       "title": "Linked submissions and issues",
       "privacy": "Sharing a task does not grant access to submissions or issues. Each read checks target permissions independently. References identify an exact submitted version.",
       "empty": "No linked records. Save this task, then choose an accessible submission.",
@@ -1464,6 +1470,11 @@
     }
   },
   "agriSummary": {
+    "checkedBy": "Checked by: {id}",
+    "assignedTo": "Assigned to: {id}",
+    "completedBy": "Completed by: {id}",
+    "eventActor": "Event actor: {id}",
+
     "title": "Live record summary",
     "intro": "Review this exact submission, its versions, technical checks, Demo checks and issues in one place.",
     "open": "Summarize this submission",
@@ -1690,12 +1701,16 @@
     "demoSelectionHint": "The selected check is not in the currently authorized list. Reload checks, or select \"No linked demo check\" above before saving."
   },
   "agriArchives": {
+    "onsiteRecords": "Onsite technical records",
+    "onsiteHistory": "Onsite processing history",
+    "responsible": "{id} · {at}",
+
     "title": "Saved record archives",
     "intro": "Save the selected submission and its checks as a dated version that remains unchanged when live records change.",
     "open": "Open saved archives",
     "close": "Close saved archives",
     "fixedHint": "Every archive keeps its original submission, scope and content. Reading and exporting recheck your current permissions; a restricted archive is never silently reduced.",
-    "onsiteHint": "This version contains submissions, technical checks, Demo checks and issues. Onsite records are managed separately and are not included.",
+    "onsiteHint": "New archives preserve onsite records and history within your permissions. Existing archives keep their original contents.",
     "scope": "Content to save",
     "includePrivate": "Include private submission content",
     "includeInternal": "Include internal check and issue notes",

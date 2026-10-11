@@ -6,6 +6,7 @@ import { OrderStudio } from "@/components/marketplace/order-studio";
 const mocks = vi.hoisted(() => ({ request: vi.fn(), refresh: vi.fn() }));
 vi.mock("@/components/marketplace/request", async importOriginal => ({ ...await importOriginal<typeof import("@/components/marketplace/request")>(), marketRequest: mocks.request }));
 import { MarketRequestRejection } from "@/components/marketplace/request";
+vi.mock("@/components/marketplace/account-boundary",()=>({useMarketRequest:()=>mocks.request,MarketAccountBoundary:({children}:{children:React.ReactNode})=>children}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
 vi.mock("next-intl", () => ({ useTranslations: () => Object.assign((key: string) => key, { has: () => false }) }));
 

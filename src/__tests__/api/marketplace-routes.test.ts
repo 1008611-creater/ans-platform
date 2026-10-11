@@ -8,7 +8,7 @@ import { GET, POST } from "@/app/api/market/listings/route";
 import { POST as action } from "@/app/api/market/listings/[id]/route";
 import { POST as review } from "@/app/api/admin/market/[id]/route";
 const origin = "https://ans.example";
-function request(body: unknown) { return new Request(origin + "/api/market/listings", { method: "POST", headers: { origin, "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+function request(body: unknown, actorId = "real") { return new Request(origin + "/api/market/listings", { method: "POST", headers: { origin, "Content-Type": "application/json", "x-ans-actor": actorId }, body: JSON.stringify(body) }); }
 beforeEach(() => { vi.resetAllMocks(); for (const key of ["AUTH_URL", "NEXTAUTH_URL", "NEXT_PUBLIC_APP_URL"]) vi.stubEnv(key, ""); });
 describe("market routes", () => {
   it("allows public browse but requires login for owner listings", async () => {
@@ -19,6 +19,12 @@ describe("market routes", () => {
   it("routes writes using the authenticated user, never a query identity", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "real" } } as never); vi.mocked(createMarketListing).mockResolvedValue({ id: "created" } as never);
     expect((await POST(request({ title: "draft" }))).status).toBe(201); expect(createMarketListing).toHaveBeenCalledWith("real", { title: "draft" });
+  });
+  it("rejects stale actor requests before listing or moderation writes", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "real" } } as never);
+    expect((await POST(request({ title: "old account draft" }, "previous"))).status).toBe(409);
+    expect((await review(request({ version: 1, approve: true, note: "review" }, "previous"), { params: Promise.resolve({ id: "listing" }) })).status).toBe(409);
+    expect(createMarketListing).not.toHaveBeenCalled(); expect(reviewMarketListing).not.toHaveBeenCalled();
   });
   it("rejects hidden authority fields and missing expected versions", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "real" } } as never);

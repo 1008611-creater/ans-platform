@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 import { agriReferenceTargetSchema, type AgriTaskReferenceView, type AgriReferenceChange } from "./agri-task-references";
 import { agriTargetDateSchema, agriTaskStatusSchema } from "./agrihackathon";
 
@@ -49,7 +49,7 @@ export const agriTaskCommandSchema = z.discriminatedUnion("action", [
 ]);
 export type AgriTaskCommand = z.infer<typeof agriTaskCommandSchema>;
 export const agriTaskViewSchema = agriTaskEditableSchema.safeExtend({
-  id, competitionId: id, revision, templateKey: z.string().nullable(),
+  id, ownerId: id, competitionId: id, revision, templateKey: z.string().nullable(),
   access: z.enum(["OWNER", "SHARED_READONLY"]),
   dueState: z.enum(["UNDATED", "TENTATIVE", "SCHEDULED", "OVERDUE", "DONE"]),
   completedAt: z.string().datetime({ offset: true }).nullable(),

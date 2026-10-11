@@ -1,4 +1,5 @@
 "use client";
+import { useMarketRequest } from "./account-boundary";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -6,12 +7,12 @@ import type { MarketOfferView } from "@/contracts/marketplace-view";
 import { marketListingInputSchema } from "@/contracts/marketplace";
 import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
 import { parseMarketPrice } from "@/domain/marketplace/presentation";
-import { marketRequest } from "./request";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 export function ListingEditor({ offer, share = false }: { offer?: MarketOfferView; share?: boolean }) {
+  const marketRequest = useMarketRequest();
   const t = useTranslations("product.market"); const p = useTranslations("product"); const router = useRouter();
   const data = offer?.listing; const [category, setCategory] = useState(data?.category ?? "career");
   const [subcategory, setSubcategory] = useState(data?.subcategory ?? "resume");

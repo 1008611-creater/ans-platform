@@ -1,4 +1,5 @@
 ﻿import { z } from "zod";
+import { agriOnsiteFieldsSchema } from "./agri-onsite";
 import type { AgriRecordSummary } from "./agri-record-summary";
 const identifier = z.string().trim().min(1).max(80);
 export const agriRecordArchiveSelectionSchema = z.object({ includePrivate: z.boolean().default(false), includeInternal: z.boolean().default(false) }).strict();
@@ -10,15 +11,23 @@ export const agriRecordArchiveCommandSchema = z.object({
 export const agriRecordArchiveListQuerySchema = z.object({ cursor: z.string().max(1500).optional() }).strict();
 export const agriRecordArchiveReadQuerySchema = z.object({ mode: z.enum(["view", "exportJSON"]).default("view") }).strict();
 export type AgriRecordArchiveSelection = z.infer<typeof agriRecordArchiveSelectionSchema>;
-export interface AgriRecordArchiveSnapshot {
-  schemaVersion: 1; source: "ANS_AGRI_SAVED_RECORD_ARCHIVE"; includesOnsite: false;
+export const agriArchiveOnsiteSchema = z.object({
+  items: z.array(z.object({ id: identifier, demoCheckId: identifier.nullable(), revision: z.number().int().positive(), published: z.boolean(), createdById: identifier, createdAt: z.string().datetime({ offset: true }), updatedAt: z.string().datetime({ offset: true }), fields: agriOnsiteFieldsSchema }).strict()).max(100),
+  events: z.array(z.object({ id: identifier, itemId: identifier, revision: z.number().int().positive(), action: z.string().min(1), actorId: identifier, createdAt: z.string().datetime({ offset: true }), published: z.boolean(), fields: agriOnsiteFieldsSchema }).strict()).max(100),
+}).strict();
+export type AgriArchiveOnsite = z.infer<typeof agriArchiveOnsiteSchema>;
+interface AgriRecordArchiveBase {
+  source: "ANS_AGRI_SAVED_RECORD_ARCHIVE";
   archiveId: string; sequence: number; previousArchiveId: string | null; createdById: string; collectedAt: string;
   record: AgriRecordSummary;
 }
+export type AgriRecordArchiveSnapshot = AgriRecordArchiveBase & (
+  { schemaVersion: 1; includesOnsite: false } | { schemaVersion: 2; includesOnsite: true; onsite: AgriArchiveOnsite }
+);
 export interface AgriRecordArchiveDescriptor {
   id: string; competitionId: string; submissionId: string; entryStageId: string; artifactVersionId: string; ruleVersionId: string;
   sequence: number; previousArchiveId: string | null; createdById: string; collectedAt: string;
-  selection: AgriRecordArchiveSelection; snapshotSchemaVersion: 1; includesOnsite: false;
+  selection: AgriRecordArchiveSelection; snapshotSchemaVersion: 1 | 2; includesOnsite: boolean;
   sha256: string; byteLength: number;
 }
 export interface AgriRecordArchiveList { competitionId: string; submissionId: string; workspaceEnabled: boolean; canCreate: boolean; items: AgriRecordArchiveDescriptor[]; nextCursor: string | null }

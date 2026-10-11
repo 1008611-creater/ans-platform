@@ -1,7 +1,8 @@
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { marketCashCheckoutSchema as checkoutSchema } from "@/contracts/marketplace-cash";
 import { configuredCashProvider, cashListingPolicy } from "./providers/config";
-import type { CashProvider, CashCheckout, CashPaymentProvider } from "./providers/common";
+import type { CashProvider, CashPaymentProvider, CashPaymentState } from "./providers/common";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { marketProviderEventSchema, marketQuoteSchema, type MarketProviderEvent } from "@/contracts/marketplace";
@@ -156,7 +157,13 @@ function orderProvider(method: string, quote: unknown): CashProvider {
   throw new MarketRuleError("CASH_PAYMENT_REQUIRED", 400);
 }
 
-/** A single durable reservation prevents concurrent or lost-response retries creating new payment attempts. */
+const checkoutAttemptSchema = z.object({
+  version: z.literal(1), merchantIdentity: z.string().min(1), paymentExpiresAt: z.string().datetime().nullable(),
+  leaseUntil: z.string().datetime(), leaseToken: z.string().uuid(), checkout: checkoutSchema.nullable(),
+}).strict();
+const CHECKOUT_LEASE_MS = 60_000;
+
+/** Frozen merchant/order identity + durable lease. Recovery always inspects ambiguous provider state first. */
 export async function createMarketCashCheckout(orderId: string, buyerId: string, raw: unknown) {
   const input = cashPaySchema.parse(raw);
   const prepared = await marketTransaction(async tx => {
@@ -166,28 +173,103 @@ export async function createMarketCashCheckout(orderId: string, buyerId: string,
     if (!order) throw new MarketRuleError("NOT_FOUND", 404);
     await requireMarketActor(tx, order.sellerId);
     if (order.status !== "AWAITING_PAYMENT" || order.revision !== input.expectedRevision) throw new MarketRuleError("VERSION_CONFLICT");
-    const provider = orderProvider(order.paymentMethod, order.quote); configuredMarketPaymentAdapter(provider);
+    const provider = orderProvider(order.paymentMethod, order.quote); const adapter = configuredMarketPaymentAdapter(provider);
     const quote = marketQuoteSchema.parse(order.quote); const approval = cashListingPolicy(order.listingId, quote.listingVersion, order.sellerId);
     if (approval.priceMinor !== order.totalMinor || approval.commissionBps !== quote.commissionBps) throw new MarketRuleError("CASH_PRICE_NOT_APPROVED", 503);
     const operationKey = `cash-checkout:${provider}`;
     const previous = await tx.marketOrderEvent.findUnique({ where: { orderId_operationKey: { orderId, operationKey } } });
+    let attempt: z.infer<typeof checkoutAttemptSchema>;
     if (previous) {
-      let checkout: CashCheckout; try { checkout = checkoutSchema.parse(JSON.parse(previous.message)); } catch { throw new MarketRuleError("PAYMENT_RECONCILIATION_REQUIRED", 409); }
-      if (checkout.provider !== provider || new Date(checkout.expiresAt).getTime() <= Date.now()) throw new MarketRuleError("PAYMENT_CHECKOUT_EXPIRED", 409);
-      return { order, provider, operationKey, checkout };
+      let stored: unknown; try { stored = JSON.parse(previous.message); } catch { stored = null; }
+      const current = checkoutAttemptSchema.safeParse(stored);
+      if (current.success) {
+        attempt = current.data;
+        if (attempt.merchantIdentity !== adapter.merchantIdentity) throw new MarketRuleError("PROVIDER_MERCHANT_MISMATCH", 409);
+        if (attempt.checkout && attempt.checkout.provider === provider && Date.parse(attempt.checkout.expiresAt) > Date.now()) return { order, provider, operationKey, attempt, recovery: true, cached: attempt.checkout };
+        if (Date.parse(attempt.leaseUntil) > Date.now()) throw new MarketRuleError("PAYMENT_REQUEST_IN_PROGRESS", 409);
+      } else {
+        // Legacy bare RESERVED has no exact request deadline. Query/close is safe; guessing a new unpaid request is not.
+        const legacy = checkoutSchema.safeParse(stored);
+        if (previous.message !== "RESERVED" && !legacy.success) throw new MarketRuleError("PAYMENT_RECONCILIATION_REQUIRED", 409);
+        if (legacy.success && legacy.data.provider !== provider) throw new MarketRuleError("PROVIDER_MISMATCH", 409);
+        if (legacy.success && Date.parse(legacy.data.expiresAt) > Date.now()) return { order, provider, operationKey, attempt: null, recovery: true, cached: legacy.data };
+        attempt = { version: 1, merchantIdentity: adapter.merchantIdentity, paymentExpiresAt: legacy.success ? legacy.data.expiresAt : null, leaseUntil: new Date(0).toISOString(), leaseToken: randomUUID(), checkout: legacy.success ? legacy.data : null };
+      }
+      attempt.leaseUntil = new Date(Date.now() + CHECKOUT_LEASE_MS).toISOString(); attempt.leaseToken = randomUUID();
+      await tx.marketOrderEvent.update({ where: { orderId_operationKey: { orderId, operationKey } }, data: { action: "CASH_CHECKOUT_RECOVERING", message: JSON.stringify(attempt) } });
+    } else {
+      attempt = { version: 1, merchantIdentity: adapter.merchantIdentity, paymentExpiresAt: new Date(Math.floor((Date.now() + 30 * 60_000) / 1000) * 1000).toISOString(), leaseUntil: new Date(Date.now() + CHECKOUT_LEASE_MS).toISOString(), leaseToken: randomUUID(), checkout: null };
+      await tx.marketOrderEvent.create({ data: { orderId, actorId: buyerId, action: "CASH_CHECKOUT_RESERVED", fromStatus: order.status, toStatus: order.status, revision: order.revision, operationKey, requestHash: marketHash({ provider, amountMinor: order.totalMinor, currency: order.currency }), message: JSON.stringify(attempt) } });
     }
-    await tx.marketOrderEvent.create({ data: { orderId, actorId: buyerId, action: "CASH_CHECKOUT_RESERVED", fromStatus: order.status, toStatus: order.status, revision: order.revision, operationKey, requestHash: marketHash({ provider, amountMinor: order.totalMinor, currency: order.currency }), message: "RESERVED" } });
-    return { order, provider, operationKey, checkout: null };
+    return { order, provider, operationKey, attempt, recovery: !!previous, cached: null };
   });
-  if (prepared.checkout) return prepared.checkout;
-  // A timeout deliberately leaves the durable reservation for reconciliation. Never invent a paid flag.
-  const checkout = checkoutSchema.parse(await configuredMarketPaymentAdapter(prepared.provider).createCheckout({ orderId, amountMinor: prepared.order.totalMinor, currency: prepared.order.currency, title: marketQuoteSchema.parse(prepared.order.quote).title }));
-  await marketTransaction(async tx => {
-    await tx.marketOrderEvent.update({ where: { orderId_operationKey: { orderId, operationKey: prepared.operationKey } }, data: { action: "CASH_CHECKOUT_READY", message: JSON.stringify(checkout) } });
-  });
-  const current = await db.marketOrder.findUnique({ where: { id: orderId }, select: { status: true } });
-  if (current?.status !== "AWAITING_PAYMENT") throw new MarketRuleError("VERSION_CONFLICT");
-  return checkout;
+  if (prepared.cached) return prepared.cached;
+  const attempt = prepared.attempt!; const adapter = configuredMarketPaymentAdapter(prepared.provider);
+  if (adapter.merchantIdentity !== attempt.merchantIdentity) throw new MarketRuleError("PROVIDER_MERCHANT_MISMATCH", 409);
+  async function saveAttempt(action: string) {
+    await marketTransaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM market_orders WHERE id = ${orderId} FOR UPDATE`;
+      const stored = await tx.marketOrderEvent.findUnique({ where: { orderId_operationKey: { orderId, operationKey: prepared.operationKey } } });
+      let record: z.infer<typeof checkoutAttemptSchema>; try { record = checkoutAttemptSchema.parse(JSON.parse(stored?.message ?? "")); } catch { throw new MarketRuleError("PAYMENT_RECONCILIATION_REQUIRED", 409); }
+      if (record.leaseToken !== attempt.leaseToken) throw new MarketRuleError("PAYMENT_REQUEST_IN_PROGRESS", 409);
+      await tx.marketOrderEvent.update({ where: { orderId_operationKey: { orderId, operationKey: prepared.operationKey } }, data: { action, message: JSON.stringify(attempt) } });
+    });
+  }
+  function checkState(state: CashPaymentState) {
+    const amount = state.status === "PAID" ? state.event.amountMinor : state.status === "NOT_FOUND" ? null : state.amountMinor;
+    const currency = state.status === "PAID" ? state.event.currency : state.status === "NOT_FOUND" ? null : state.currency;
+    if (amount !== null && (amount !== prepared.order.totalMinor || currency !== prepared.order.currency)) throw new MarketRuleError("PAYMENT_RECONCILIATION_REQUIRED", 409);
+    if (state.status === "PAID" && (state.event.provider !== prepared.provider || state.event.orderId !== orderId || state.event.type !== "payment_succeeded")) throw new MarketRuleError("PROVIDER_MISMATCH", 400);
+  }
+  async function recordPaid(state: Extract<CashPaymentState, { status: "PAID" }>) {
+    checkState(state); const result = await processProviderEvent(marketProviderEventSchema.parse(state.event));
+    if (!["PAYMENT_APPLIED", "PAYMENT_ALREADY_RECORDED"].includes(result.outcome)) throw new MarketRuleError("PAYMENT_RECONCILIATION_REQUIRED", 409);
+    throw new MarketRuleError("PAYMENT_ALREADY_CONFIRMED", 409);
+  }
+  async function recordClosed() {
+    await marketTransaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM market_orders WHERE id = ${orderId} FOR UPDATE`;
+      const order = await tx.marketOrder.findUnique({ where: { id: orderId } });
+      if (!order || order.status !== "AWAITING_PAYMENT") return;
+      await tx.marketOrder.update({ where: { id: orderId }, data: { status: "CANCELLED", revision: { increment: 1 } } });
+      await tx.marketOrderEvent.create({ data: { orderId, actorId: buyerId, action: "CASH_PAYMENT_CLOSED", fromStatus: order.status, toStatus: "CANCELLED", revision: order.revision + 1, operationKey: `cash-close:${prepared.provider}`, requestHash: marketHash({ provider: prepared.provider, closed: true }) } });
+    });
+    throw new MarketRuleError("PAYMENT_CHECKOUT_CLOSED", 409);
+  }
+  try {
+    if (prepared.recovery) {
+      let state = await adapter.inspectPayment(orderId); checkState(state);
+      if (state.status === "PAID") await recordPaid(state);
+      if (state.status === "CLOSED") await recordClosed();
+      if (state.status === "PROCESSING" || state.status === "REFUNDED") throw new MarketRuleError("PAYMENT_RECONCILIATION_REQUIRED", 409);
+      if (state.status === "NOT_FOUND") {
+        // Only authenticated absence allows a request with this same merchant order ID and frozen price.
+        if (!attempt.paymentExpiresAt || Date.parse(attempt.paymentExpiresAt) <= Date.now() + 60_000) {
+          attempt.paymentExpiresAt = new Date(Math.floor((Date.now() + 30 * 60_000) / 1000) * 1000).toISOString(); attempt.checkout = null;
+          await saveAttempt("CASH_CHECKOUT_RECOVERING");
+        }
+      } else if (state.status === "UNPAID" && (!attempt.paymentExpiresAt || Date.parse(attempt.paymentExpiresAt) <= Date.now() + 60_000)) {
+        // Close first; success/timeout during close must be resolved by a subsequent authenticated query.
+        try { await adapter.closePayment(orderId); } catch { /* query decides; transport acknowledgement cannot decide state */ }
+        state = await adapter.inspectPayment(orderId); checkState(state);
+        if (state.status === "PAID") await recordPaid(state);
+        if (state.status === "CLOSED") await recordClosed();
+        throw new MarketRuleError("PAYMENT_RECONCILIATION_REQUIRED", 409);
+      }
+      // UNPAID retains the original deadline and order ID; never relabel it NOT_FOUND.
+    }
+    const checkout = checkoutSchema.parse(await adapter.createCheckout({ orderId, amountMinor: prepared.order.totalMinor, currency: prepared.order.currency, title: marketQuoteSchema.parse(prepared.order.quote).title, paymentExpiresAt: attempt.paymentExpiresAt! }));
+    if (checkout.provider !== prepared.provider || checkout.expiresAt !== attempt.paymentExpiresAt) throw new MarketRuleError("INVALID_PROVIDER_EVENT", 400);
+    attempt.checkout = checkout; attempt.leaseUntil = new Date(0).toISOString(); await saveAttempt("CASH_CHECKOUT_READY");
+    const current = await db.marketOrder.findUnique({ where: { id: orderId }, select: { status: true } });
+    if (current?.status !== "AWAITING_PAYMENT") throw new MarketRuleError("VERSION_CONFLICT");
+    return checkout;
+  } catch (error) {
+    // The original request metadata survives all failures. Releasing this lease enables safe inspect-first retries.
+    attempt.leaseUntil = new Date(0).toISOString();
+    try { await saveAttempt(attempt.checkout ? "CASH_CHECKOUT_READY" : "CASH_CHECKOUT_RESERVED"); } catch { /* lease expires naturally if persistence is unavailable */ }
+    throw error;
+  }
 }
 
 /** Explicit authenticated command: viewing an order never calls a provider or writes payment state. */

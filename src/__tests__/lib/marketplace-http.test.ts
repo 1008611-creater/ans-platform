@@ -14,6 +14,12 @@ describe("market HTTP boundary", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "real-user" } } as never);
     expect(await marketUser()).toBe("real-user");
   });
+  it("rejects an old rendered actor before a new account can execute its command", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "seller-1" } } as never);
+    await expect(marketUser(request("{}", { "x-ans-actor": "buyer-1" }))).rejects.toMatchObject({ code: "ACCOUNT_CHANGED", status: 409 });
+    await expect(marketUser(request("{}"))).rejects.toMatchObject({ code: "ACCOUNT_CHANGED", status: 409 });
+    expect(await marketUser(request("{}", { "x-ans-actor": "seller-1" }))).toBe("seller-1");
+  });
   it("accepts same-origin JSON", async () => { expect(await marketJson(request('{"title":"offer"}'))).toEqual({ title: "offer" }); });
   it.each([{ origin: "https://evil.example" } as Record<string,string>, { "sec-fetch-site": "cross-site" } as Record<string,string>])("rejects cross-site mutation %s", async (headers) => { await expect(marketJson(request("{}", headers))).rejects.toMatchObject({ status: 403 }); });
   it("accepts configured public origin behind a proxy without trusting forwarded headers", async () => {

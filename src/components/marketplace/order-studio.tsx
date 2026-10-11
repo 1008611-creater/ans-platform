@@ -1,4 +1,5 @@
 "use client";
+import { useMarketRequest, MarketAccountBoundary } from "./account-boundary";
 import { CashPayment } from "./cash-payment";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
@@ -11,7 +12,7 @@ import remarkGfm from "remark-gfm";
 import type { MarketOrderView } from "@/contracts/marketplace-view";
 import { availableMarketActions, marketPrice } from "@/domain/marketplace/presentation";
 import { PointsPayment } from "./points-payment";
-import { MarketRequestRejection, marketRequest } from "./request";
+import { MarketRequestRejection } from "./request";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 type PendingOrderCommand = { url: string; form: HTMLFormElement } & (
@@ -22,10 +23,11 @@ type PendingOrderCommand = { url: string; form: HTMLFormElement } & (
 const savedRecordSchema = z.object({ id: z.string().min(1).max(128) });
 
 export function OrderStudio({ order, userId }: { order: MarketOrderView; userId: string }) {
-  return <OrderStudioSession key={JSON.stringify([order.id, userId])} order={order} userId={userId} />;
+  return <MarketAccountBoundary actorId={userId}><OrderStudioSession key={JSON.stringify([order.id, userId])} order={order} userId={userId} /></MarketAccountBoundary>;
 }
 
 function OrderStudioSession({ order, userId }: { order: MarketOrderView; userId: string }) {
+  const marketRequest = useMarketRequest();
   const t = useTranslations("product.market"); const router = useRouter();
   const role = order.buyerId === userId ? "buyer" : "seller";
   const actions = availableMarketActions({ ...order, revisionLimit: order.quote.revisionLimit }, role);

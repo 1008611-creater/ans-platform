@@ -2,6 +2,14 @@
 
 当前运行配置以本次发布记录及实际容器检查为准；以下历史记录用于追溯。
 
+## 2026-10-11 21:23 本轮修复与待发布冻结
+
+最近真实父版为 ans-vibehub-branding-89a7753-20261011，image sha256:e892b2c5532f3cb580e96018bf7307effd7b3b24cd6d6be5d8b79e5ed0463e64、healthy；以下旧e441父版记录为历史。Hypit最小候选已构建，主控整合版包含其7文件但尚未部署。当前整合补齐账号绑定、支付恢复、模型安全重试、争议审批及退款队列、农客松负责人/精确Demo引用/固定现场责任档案。197文件2584通过/10既有跳过、完整类型、lint0错误及六类边界通过；下一步按最终Git冻结源码fresh备份恢复、唯一新迁移旧数据演练、Linux构建和实际切换。
+
+唯一新迁移20261011183000_agri_completion_provenance（SHA256 a3f9a5ab4bcbac57ae128b7fe7ccd25be2263a1a8466eef420c7d393b38490eb）已在独立PG17核验旧v1档案逐字节不变及v2权限。回滚原旧镜像在产生v2后会拒读v2，不能宣称无条件回滚；发布前后核验赛事绑定关闭和新档案写入不可达，后续开赛必须采用兼容reader回滚版本。旧冻结27ea的备份与构建失败不用于放行当前父版。
+
+商户后台双方均有；微信登录等待用户扫码。真实付款/退款/卖家分账、真实比赛身份日期、AIGC全媒体计量/双端发布、五轮完整生产审计仍未完成。所有生产fixture/收费调用保持零，不把入口或关闭的开关算真实商业闭环。
+
 ## 2026-10-11 当前正式站与待发布合并
 
 2026-10-11T12:24Z 最近只读核对：正式容器 `ans-platform-app`、Compose `ans-platform-header` healthy；运行镜像 `sha256:e4417d5c35dc77478ba9336a7726c725378af5fa6f6753a4b48e451a3ce2c3db`，release `ans-vouchers-v2-20261011`，source SHA-256 `13945d63dfc0e021fb3b77fcfca9ea745e2e50cc5fde31397f5df9380b913a69`。此镜像标记基线 Git revision 491f1544 且 `localModifications=true`，不能称为 main 最新26398。充值员工已部署卡密及 `20261011160000_credit_vouchers` 增量迁移；其运行证据 `/srv/ans-releases/ans-vouchers-v2-20261011/deployment.json`。当前人民币市场收款尚未启用。

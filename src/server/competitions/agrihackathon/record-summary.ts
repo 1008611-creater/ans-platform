@@ -17,10 +17,10 @@ interface SubmissionRow {
   correctionPreviousId?: string | null; correctionPermitId?: string | null; correctionReason?: string | null; correctionAuthorizedById?: string | null; correctionAuthorizedAt?: Date | null;
   content: unknown; ruleVersion: number; ruleConfirmedAt: Date;
 }
-interface FeedbackRow { feedbackSequence: number | null; feedbackAction: string | null; feedbackBody: string | null; feedbackAt: Date | null }
-interface CheckRow extends FeedbackRow { id: string; basis: AgriSummaryCheck["basis"]; result: AgriSummaryCheck["result"]; checkedAt: Date; checklist: unknown; internalNote: string | null }
-interface DemoRow extends FeedbackRow { id: string; sequence: number; recheckOfId: string | null; basis: AgriSummaryDemo["basis"]; result: AgriSummaryDemo["result"]; checkedAt: Date; demo: unknown; internalNote: string | null }
-interface IssueRow extends Omit<AgriSummaryIssue, "dueAt" | "createdAt" | "updatedAt"> { dueAt: Date | null; createdAt: Date; updatedAt: Date }
+interface FeedbackRow { feedbackSequence: number | null; feedbackAction: string | null; feedbackBody: string | null; feedbackAt: Date | null; feedbackActorId: string | null }
+interface CheckRow extends FeedbackRow { id: string; basis: AgriSummaryCheck["basis"]; result: AgriSummaryCheck["result"]; checkedAt: Date; checkedById: string; checklist: unknown; internalNote: string | null }
+interface DemoRow extends FeedbackRow { id: string; sequence: number; recheckOfId: string | null; basis: AgriSummaryDemo["basis"]; result: AgriSummaryDemo["result"]; checkedAt: Date; checkedById: string; demo: unknown; internalNote: string | null }
+interface IssueRow extends Omit<AgriSummaryIssue, "dueAt" | "createdAt" | "updatedAt" | "completedAt"> { dueAt: Date | null; completedAt: Date | null; createdAt: Date; updatedAt: Date }
 interface IssueEventRow extends Omit<AgriSummaryIssueEvent, "createdAt"> { createdAt: Date }
 function bounded<T>(rows: T[]): T[] {
   if (rows.length > AGRI_RECORD_SUMMARY_LIMIT) throw new AgriWorkspaceError("AGRI_SUMMARY_TOO_LARGE", 422);
@@ -35,7 +35,7 @@ function submissionView(row: SubmissionRow, freeze: Awaited<ReturnType<typeof pr
 }
 function feedbackView(row: FeedbackRow, includeBody: boolean): AgriSummaryFeedback | null {
   if (row.feedbackAction !== "PUBLISH" || !row.feedbackAt || row.feedbackSequence === null) return null;
-  return { sequence: row.feedbackSequence, publishedAt: row.feedbackAt.toISOString(),
+  return { sequence: row.feedbackSequence, publishedAt: row.feedbackAt.toISOString(), ...(row.feedbackActorId ? { actorId: row.feedbackActorId } : {}),
     ...(includeBody && row.feedbackBody !== null ? { body: row.feedbackBody } : {}) };
 }
 async function submissions(tx: Tx, competitionId: string, submissionId: string): Promise<SubmissionRow | undefined> {
@@ -60,26 +60,27 @@ export async function collectAgriRecordSummary(tx: Tx, ctx: AgriWorkspaceContext
     LEFT JOIN agri_submission_corrections c ON c."submissionId"=s.id LEFT JOIN agri_correction_permits p ON p.id=c."permitId"
     WHERE es."teamCompetitionId"=${item.teamCompetitionId} AND s."competitionId"=${item.competitionId}
     ORDER BY es.stage,s.sequence DESC,s.id DESC LIMIT 101`);
-  const checks = bounded(await tx.$queryRaw<CheckRow[]>`SELECT c.id,c.basis,c.result,c."checkedAt",
+  const checks = bounded(await tx.$queryRaw<CheckRow[]>`SELECT c.id,c.basis,c.result,c."checkedAt",c."checkedById",
     CASE WHEN ${query.includePrivate} THEN c.checklist ELSE NULL END AS checklist,
     CASE WHEN ${query.includeInternal} AND (c.basis='METADATA' OR ${query.includePrivate}) THEN c."internalNote" ELSE NULL END AS "internalNote",
-    f.sequence AS "feedbackSequence",f.action AS "feedbackAction",f."createdAt" AS "feedbackAt",CASE WHEN ${query.includePrivate} THEN f.body ELSE NULL END AS "feedbackBody"
-    FROM agri_technical_checks c LEFT JOIN LATERAL (SELECT sequence,action,body,"createdAt" FROM agri_check_feedback_events WHERE "checkId"=c.id ORDER BY sequence DESC LIMIT 1) f ON true
+    f."actorId" AS "feedbackActorId",f.sequence AS "feedbackSequence",f.action AS "feedbackAction",f."createdAt" AS "feedbackAt",CASE WHEN ${query.includePrivate} THEN f.body ELSE NULL END AS "feedbackBody"
+    FROM agri_technical_checks c LEFT JOIN LATERAL (SELECT sequence,action,body,"createdAt","actorId" FROM agri_check_feedback_events WHERE "checkId"=c.id ORDER BY sequence DESC LIMIT 1) f ON true
     WHERE c."competitionId"=${item.competitionId} AND c."submissionId"=${item.id} ORDER BY c."checkedAt" DESC,c.id DESC LIMIT 101`);
-  const demos = bounded(await tx.$queryRaw<DemoRow[]>`SELECT c.id,c.sequence,c."recheckOfId",c.basis,c.result,c."checkedAt",
+  const demos = bounded(await tx.$queryRaw<DemoRow[]>`SELECT c.id,c.sequence,c."recheckOfId",c.basis,c.result,c."checkedAt",c."checkedById",
     CASE WHEN ${query.includePrivate} THEN c.demo ELSE NULL END AS demo,
     CASE WHEN ${query.includeInternal} AND (c.basis='METADATA' OR ${query.includePrivate}) THEN c."internalNote" ELSE NULL END AS "internalNote",
-    f.sequence AS "feedbackSequence",f.action AS "feedbackAction",f."createdAt" AS "feedbackAt",CASE WHEN ${query.includePrivate} THEN f.body ELSE NULL END AS "feedbackBody"
-    FROM agri_demo_checks c LEFT JOIN LATERAL (SELECT sequence,action,body,"createdAt" FROM agri_demo_feedback_events WHERE "checkId"=c.id ORDER BY sequence DESC LIMIT 1) f ON true
+    f."actorId" AS "feedbackActorId",f.sequence AS "feedbackSequence",f.action AS "feedbackAction",f."createdAt" AS "feedbackAt",CASE WHEN ${query.includePrivate} THEN f.body ELSE NULL END AS "feedbackBody"
+    FROM agri_demo_checks c LEFT JOIN LATERAL (SELECT sequence,action,body,"createdAt","actorId" FROM agri_demo_feedback_events WHERE "checkId"=c.id ORDER BY sequence DESC LIMIT 1) f ON true
     WHERE c."competitionId"=${item.competitionId} AND c."submissionId"=${item.id} ORDER BY c.sequence DESC LIMIT 101`);
-  const issues = bounded(await tx.$queryRaw<IssueRow[]>`SELECT id,revision,status,severity,type,basis,visibility,"dueState","dueAt","createdAt","updatedAt",
+  const issues = bounded(await tx.$queryRaw<IssueRow[]>`SELECT id,revision,status,severity,type,basis,visibility,"dueState","dueAt","createdAt","updatedAt","assigneeId","createdById","completedById","completedAt",
     CASE WHEN ${query.includePrivate} OR (${query.includeInternal} AND visibility='INTERNAL') THEN title ELSE NULL END AS title,
     CASE WHEN ${query.includePrivate} OR (${query.includeInternal} AND visibility='INTERNAL') THEN body ELSE NULL END AS body,
     CASE WHEN ${query.includePrivate} OR (${query.includeInternal} AND visibility='INTERNAL') THEN "processingSummary" ELSE NULL END AS "processingSummary"
     FROM agri_issues WHERE "competitionId"=${item.competitionId} AND "submissionId"=${item.id}
     AND (visibility='TEAM' OR ${query.includeInternal}) AND (basis='METADATA' OR ${query.includePrivate})
     ORDER BY "createdAt" DESC,id DESC LIMIT 101`);
-  const issueEvents = bounded(await tx.$queryRaw<IssueEventRow[]>`SELECT e.id,e."issueId",e.revision,e.kind,e.basis,e.visibility,e."createdAt",
+  const issueEvents = bounded(await tx.$queryRaw<IssueEventRow[]>`SELECT e.id,e."issueId",e.revision,e.kind,e.basis,e.visibility,e."createdAt",e."actorId",
+    CASE WHEN ${query.includePrivate} OR (${query.includeInternal} AND e.visibility='INTERNAL') THEN e."afterState" ELSE NULL END AS "afterState",
     CASE WHEN ${query.includePrivate} OR (${query.includeInternal} AND e.visibility='INTERNAL') THEN e.body ELSE NULL END AS body
     FROM agri_issue_events e JOIN agri_issues i ON i.id=e."issueId" AND i."competitionId"=e."competitionId"
     WHERE i."submissionId"=${item.id} AND e."competitionId"=${item.competitionId}
@@ -97,17 +98,18 @@ export async function collectAgriRecordSummary(tx: Tx, ctx: AgriWorkspaceContext
     submission: projectedSubmission(item), rule: { id: item.ruleVersionId, version: item.ruleVersion, confirmedAt: item.ruleConfirmedAt.toISOString() },
     selection: { includePrivate: query.includePrivate, includeInternal: query.includeInternal }, limits: { maxPerCollection: 100, complete: true },
     stageHistory: history.map(projectedSubmission),
-    technicalChecks: checks.map(row => ({ id: row.id, basis: row.basis, result: row.result, checkedAt: row.checkedAt.toISOString(), feedback: feedbackView(row, query.includePrivate),
+    technicalChecks: checks.map(row => ({ id: row.id, basis: row.basis, result: row.result, checkedAt: row.checkedAt.toISOString(), checkedById: row.checkedById, feedback: feedbackView(row, query.includePrivate),
       ...(query.includePrivate ? { checklist: agriTechnicalCheckCommandSchema.shape.checklist.parse(row.checklist) } : {}),
       ...(query.includeInternal && (row.basis === "METADATA" || query.includePrivate) ? { internalNote: row.internalNote } : {}) })),
-    demoChecks: demos.map(row => ({ id: row.id, sequence: row.sequence, recheckOfId: row.recheckOfId, basis: row.basis, result: row.result, checkedAt: row.checkedAt.toISOString(), feedback: feedbackView(row, query.includePrivate),
+    demoChecks: demos.map(row => ({ id: row.id, sequence: row.sequence, recheckOfId: row.recheckOfId, basis: row.basis, result: row.result, checkedAt: row.checkedAt.toISOString(), checkedById: row.checkedById, feedback: feedbackView(row, query.includePrivate),
       ...(query.includePrivate ? { demo: agriDemoSnapshotSchema.parse(row.demo) } : {}),
       ...(query.includeInternal && (row.basis === "METADATA" || query.includePrivate) ? { internalNote: row.internalNote } : {}) })),
     issues: issues.map(row => ({ id: row.id, revision: row.revision, status: row.status, severity: row.severity, type: row.type, basis: row.basis, visibility: row.visibility,
+      assigneeId: row.assigneeId, createdById: row.createdById, completedById: row.completedById, completedAt: row.completedAt?.toISOString() ?? null,
       dueState: row.dueState, dueAt: row.dueAt?.toISOString() ?? null, createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString(),
       ...(query.includePrivate || (query.includeInternal && row.visibility === "INTERNAL") ? { title: row.title!, body: row.body!, processingSummary: row.processingSummary } : {}) })),
-    issueEvents: issueEvents.map(row => ({ id: row.id, issueId: row.issueId, revision: row.revision, kind: row.kind, basis: row.basis, visibility: row.visibility, createdAt: row.createdAt.toISOString(),
-      ...(query.includePrivate || (query.includeInternal && row.visibility === "INTERNAL") ? { body: row.body! } : {}) })),
+    issueEvents: issueEvents.map(row => ({ id: row.id, issueId: row.issueId, revision: row.revision, kind: row.kind, basis: row.basis, visibility: row.visibility, createdAt: row.createdAt.toISOString(), actorId: row.actorId,
+      ...(query.includePrivate || (query.includeInternal && row.visibility === "INTERNAL") ? { body: row.body!, afterState: row.afterState } : {}) })),
   };
   if (query.includePrivate) {
     const [source] = await tx.$queryRaw<Array<{ content: unknown }>>`SELECT jsonb_build_object('projectId',"projectId",'artifactVersionId',"artifactVersionId",'repository',repository,'demoUrl',"demoUrl",'summary',summary,'materials',materials) AS content

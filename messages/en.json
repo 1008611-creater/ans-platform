@@ -2499,8 +2499,8 @@
       },
       "agrihackathon": {
         "name": "AgriHackathon",
-        "tagline": "The first agriculture AI public-interest hackathon",
-        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
+        "tagline": "The first AI hackathon organized by CAUHub",
+        "description": "Create for 48 continuous hours, showcase and review online for a week, then hold Demo Day with 10 Finalists on the following weekend. Official dates are pending.",
         "status": "In preparation",
         "highlights": [
           "3 tracks",
@@ -2545,7 +2545,7 @@
         "name": "AI for People",
         "code": "TRACK 01 · AI FOR PEOPLE",
         "role": "Use AI to improve a real situation for a real group of people",
-        "description": "Build a usable tool or service for a verifiable need in agriculture, rural areas or everyday production.",
+        "description": "Use AI to improve learning, creation, work, social experiences or everyday life for specific people.",
         "status": "Published",
         "detail": "Judges look at whether the problem is real, who the users are, and whether a runnable minimum version is achievable in 48 hours."
       },
@@ -2553,7 +2553,7 @@
         "name": "AI for Discovery",
         "code": "TRACK 02 · AI FOR DISCOVERY",
         "role": "Use AI to help people understand a complex problem",
-        "description": "Turn agricultural data, research papers or field experience into knowledge that can be queried and explained.",
+        "description": "Use AI in research, life sciences, agriculture, food, environment or data analysis to understand and discover complex problems.",
         "status": "Published",
         "detail": "Judges look at whether data sources are compliant, whether the reasoning is explainable, and whether others can reproduce the result."
       },
@@ -2561,7 +2561,7 @@
         "name": "AI for Action",
         "code": "TRACK 03 · AI FOR ACTION",
         "role": "Use AI to push one concrete action into practice",
-        "description": "Target a real step in planting, farming, distribution or rural governance and build something that fits the existing workflow.",
+        "description": "Build agents, automated workflows, enterprise tools, robotics or smart hardware that use AI to complete real tasks.",
         "status": "Published",
         "detail": "Judges look at whether the plan can be executed in the field, whether the cost is controllable, and whether others can take over the deliverables."
       }
@@ -2607,23 +2607,23 @@
     "scoringSectionLabel": "02 / SCORING",
     "scoring": {
       "innovation": {
-        "label": "Innovation",
+        "label": "Innovation \u00b7 30 points",
         "description": "Whether the problem framing or the solution path is new."
       },
       "technical": {
-        "label": "Technical depth",
+        "label": "Technical depth and implementation \u00b7 25 points",
         "description": "Technology choices, implementation quality and engineering completeness."
       },
       "completeness": {
-        "label": "Product completeness",
+        "label": "Product completeness and Demo \u00b7 20 points",
         "description": "Whether the demo runs and the flow closes end to end."
       },
       "problem": {
-        "label": "Real problem",
+        "label": "Real problem and future value \u00b7 15 points",
         "description": "Whether the need comes from a real scenario and real users."
       },
       "fit": {
-        "label": "Track fit",
+        "label": "Track fit \u00b7 10 points",
         "description": "How well the work matches the chosen track."
       }
     },
@@ -2677,7 +2677,7 @@
       "data": "Never upload credentials or personal privacy. Data and materials require lawful sources and permissions.",
       "originality": "Work must be built during the event; previous or third-party projects are not accepted",
       "team": "Teams of 1–5, for current undergraduate and postgraduate students and alumni within three years of graduation.",
-      "demo": "The final requires a live runnable demo, not a video only",
+      "demo": "Present a working Demo. Prepare live, video or hybrid presentation and backup materials according to the published requirements.",
       "conduct": "Respect judges and other participants; no vote manipulation or review interference",
       "rights": "IP belongs to the team. Organizers have non-exclusive display and distribution rights.",
       "frozen": "After freezing, only approved Bug, UI, stability or presentation changes are allowed. Core functionality cannot be rebuilt."

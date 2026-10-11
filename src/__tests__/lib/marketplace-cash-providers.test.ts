@@ -94,3 +94,42 @@ describe("Alipay authenticated protocol", () => {
  it("does not treat query HTTP10000 alone as a successful refund",async()=>{vi.stubGlobal("fetch",vi.fn(async()=>alipayResponse("alipay.trade.fastpay.refund.query",{code:"10000"})));expect(await new AlipayMarketProvider().queryRefund({orderId,paymentId:"2026000123456",refundRequestId:"cmrefund",amountMinor:12345,currency:"CNY"})).toBeNull();});
  it("requires explicit refund success and exact request, trade, amount",async()=>{const input={orderId,paymentId:"2026000123456",refundRequestId:"cmrefund",amountMinor:12345,currency:"CNY"};const data={code:"10000",out_trade_no:orderId,trade_no:input.paymentId,out_request_no:input.refundRequestId,total_amount:"123.45",refund_amount:"123.45",refund_status:"REFUND_SUCCESS"};vi.stubGlobal("fetch",vi.fn(async()=>alipayResponse("alipay.trade.fastpay.refund.query",data)));expect(await new AlipayMarketProvider().queryRefund(input)).toMatchObject({type:"refund_succeeded",refundRequestId:"cmrefund"});vi.stubGlobal("fetch",vi.fn(async()=>alipayResponse("alipay.trade.fastpay.refund.query",{...data,out_request_no:"someone-else"})));await expect(new AlipayMarketProvider().queryRefund(input)).rejects.toThrow("INVALID_PROVIDER_EVENT");});
 });
+describe("authenticated payment-state recovery",()=>{
+ it("WeChat distinguishes a signed ORDER_NOT_EXIST from NOTPAY",async()=>{
+  const absent=JSON.stringify({code:"ORDER_NOT_EXIST",message:"not found"});vi.stubGlobal("fetch",vi.fn(async()=>new Response(absent,{status:404,headers:signedWechat(absent)})));
+  expect(await new WechatMarketProvider().inspectPayment(orderId)).toEqual({status:"NOT_FOUND"});
+  const notpay=JSON.stringify({...payment,trade_state:"NOTPAY",transaction_id:undefined});vi.stubGlobal("fetch",vi.fn(async()=>new Response(notpay,{headers:signedWechat(notpay)})));
+  expect(await new WechatMarketProvider().inspectPayment(orderId)).toEqual({status:"UNPAID",amountMinor:12345,currency:"CNY"});
+ });
+ it("WeChat treats only official HTTPS exact 404 as absence, never generic errors or bad signatures",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async()=>new Response(JSON.stringify({code:"ORDER_NOT_EXIST"}),{status:404})));expect(await new WechatMarketProvider().inspectPayment(orderId)).toEqual({status:"NOT_FOUND"});
+  const absence=JSON.stringify({code:"ORDER_NOT_EXIST"});const headers=signedWechat(absence);headers.set("Wechatpay-Signature","Zm9yZ2Vk");vi.stubGlobal("fetch",vi.fn(async()=>new Response(absence,{status:404,headers})));await expect(new WechatMarketProvider().inspectPayment(orderId)).rejects.toThrow("INVALID_PROVIDER_SIGNATURE");
+  vi.stubGlobal("fetch",vi.fn(async()=>new Response(JSON.stringify({code:"ORDER_NOT_EXIST"}),{status:403})));await expect(new WechatMarketProvider().inspectPayment(orderId)).rejects.toThrow("PAYMENT_PROVIDER_UNAVAILABLE");
+  const generic=JSON.stringify({code:"SYSTEM_ERROR"});vi.stubGlobal("fetch",vi.fn(async()=>new Response(generic,{status:500,headers:signedWechat(generic)})));await expect(new WechatMarketProvider().inspectPayment(orderId)).rejects.toThrow("PAYMENT_PROVIDER_UNAVAILABLE");
+ });
+ it("WeChat validates merchant and amount on unpaid queries and keeps caller deadline",async()=>{
+  const deadline=new Date(Math.floor((Date.now()+10*60_000)/1000)*1000).toISOString();
+  vi.stubGlobal("fetch",vi.fn(async(_url:unknown,init:RequestInit)=>{expect(JSON.parse(String(init.body)).time_expire).toBe(deadline);const body=JSON.stringify({code_url:"weixin://wxpay/bizpayurl?pr=recovered"});return new Response(body,{headers:signedWechat(body)});}));
+  expect((await new WechatMarketProvider().createCheckout({orderId,amountMinor:12345,currency:"CNY",title:"Real service",paymentExpiresAt:deadline})).expiresAt).toBe(deadline);
+ });
+ it("Alipay recognizes only its signed exact absence error, not WAIT_BUYER_PAY",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async()=>alipayResponse("alipay.trade.query",{code:"40004",sub_code:"ACQ.TRADE_NOT_EXIST"})));expect(await new AlipayMarketProvider().inspectPayment(orderId)).toEqual({status:"NOT_FOUND"});
+  vi.stubGlobal("fetch",vi.fn(async()=>alipayResponse("alipay.trade.query",{code:"10000",out_trade_no:orderId,total_amount:"123.45",trade_status:"WAIT_BUYER_PAY"})));expect(await new AlipayMarketProvider().inspectPayment(orderId)).toEqual({status:"UNPAID",amountMinor:12345,currency:"CNY"});
+  vi.stubGlobal("fetch",vi.fn(async()=>alipayResponse("alipay.trade.query",{code:"40004",sub_code:"ACQ.SYSTEM_ERROR"})));await expect(new AlipayMarketProvider().inspectPayment(orderId)).rejects.toThrow("PAYMENT_PROVIDER_UNAVAILABLE");
+ });
+ it("Alipay retry page retains absolute deadline rather than resetting a relative timeout",async()=>{
+  const deadline=new Date(Math.floor((Date.now()+10*60_000)/1000)*1000).toISOString();const checkout=await new AlipayMarketProvider().createCheckout({orderId,amountMinor:12345,currency:"CNY",title:"Real service",paymentExpiresAt:deadline});
+  const biz=JSON.parse(new URL(checkout.url).searchParams.get("biz_content")!);expect(biz.time_expire).toBe(new Date(Date.parse(deadline)+8*3600_000).toISOString().slice(0,19).replace("T"," "));expect(biz).not.toHaveProperty("timeout_express");expect(checkout.expiresAt).toBe(deadline);
+ });
+ it("close commands use the existing merchant order ID and do not invent a successful closed state",async()=>{
+  const fetcher=vi.fn(async(url:unknown)=>{expect(String(url)).toContain("/close");return new Response(null,{status:204});});vi.stubGlobal("fetch",fetcher);await new WechatMarketProvider().closePayment(orderId);expect(fetcher.mock.calls[0][0]).toBe(`https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no/${orderId}/close`);
+  vi.stubGlobal("fetch",vi.fn(async()=>alipayResponse("alipay.trade.close",{code:"10000",out_trade_no:"different"})));await expect(new AlipayMarketProvider().closePayment(orderId)).rejects.toThrow("INVALID_PROVIDER_EVENT");
+ });
+});
+
+describe("current Native code_url format",()=>{
+ it("accepts the official /bizpayurl/up response path",async()=>{
+  const text=JSON.stringify({code_url:"weixin://wxpay/bizpayurl/up?pr=trusted&groupid=00"});vi.stubGlobal("fetch",vi.fn(async()=>new Response(text,{headers:signedWechat(text)})));
+  expect(await new WechatMarketProvider().createCheckout({orderId,amountMinor:12345,currency:"CNY",title:"Real service"})).toMatchObject({url:"weixin://wxpay/bizpayurl/up?pr=trusted&groupid=00"});
+ });
+});

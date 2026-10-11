@@ -1,10 +1,11 @@
 "use client";
+import { useMarketRequest } from "./account-boundary";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { marketRequest } from "./request";
 export function PointsPayment({ orderId, revision, amount }: { orderId: string; revision: number; amount: number }) {
+  const marketRequest = useMarketRequest();
  const t = useTranslations("product.market"); const router = useRouter();
  const key = useRef<string | null>(null); const inFlight = useRef(false);
  const [busy, setBusy] = useState(false); const [error, setError] = useState("");

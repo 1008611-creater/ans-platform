@@ -8,6 +8,8 @@ import { readApicCharge } from "./apic-billing";
 
 const PROVIDER = "apic-codex";
 const MAX_BODY = 524288;
+// Reserved namespace for durable attempts; callers cannot address an attempt directly.
+const RETRY_KEY_PREFIX = "ans-internal-retry:";
 export function validateCodexPayload(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("INVALID_REQUEST");
   const body = value as Record<string, unknown>;
@@ -79,19 +81,52 @@ export async function meteredResponses(request: Request, userId: string, parent?
     parsed=validateCodexPayload(JSON.parse(Buffer.concat(chunks).toString("utf8")));
   } catch { return failure("INVALID_REQUEST_OR_MODEL",400); }
   const idempotency=request.headers.get("idempotency-key") || randomUUID();
-  if(idempotency.length>128) return failure("INVALID_IDEMPOTENCY_KEY",400);
-  let taskId:string;
+  if(idempotency.length>128 || idempotency.startsWith(RETRY_KEY_PREFIX)) return failure("INVALID_IDEMPOTENCY_KEY",400);
+  const requestHash=createHash("sha256").update(parsed.text).digest("hex");
+  let reservation:{id:string;price:{source:string;quotaPerPoint:number;parent?:{type:"run"|"workflow_run";id:string};retry?:{rootRequestId:string;previousRequestId:string}}};
   try {
-    taskId=await db.$transaction(async tx=>{
+    reservation=await db.$transaction(async tx=>{
       await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
+      let attemptKey=idempotency;
+      let rootRequestId:string|undefined;
+      let previousRequestId:string|undefined;
+      // The user lock serializes reservations for every attempt of this key. Keep each
+      // failed attempt and its debit/refund intact rather than recycling its task id.
+      while(true){
+        const previous=await tx.apiComputeRequest.findUnique({
+          where:{userId_provider_idempotencyKey:{userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey}},
+          select:{id:true,requestHash:true,state:true,settledPoints:true,finishedAt:true,price:true,outcome:true},
+        });
+        if(!previous)break;
+        if(previous.requestHash!==requestHash)throw new Error("REQUEST_HASH_CONFLICT");
+        const previousParent=previous.price && typeof previous.price==="object" && !Array.isArray(previous.price)
+          ? (previous.price as {parent?:{type?:unknown;id?:unknown}}).parent : undefined;
+        if(previousParent?.type!==parent?.type || previousParent?.id!==parent?.id)throw new Error("REQUEST_PARENT_CONFLICT");
+        const rejectedStatus=previous.price && typeof previous.price==="object" && !Array.isArray(previous.price)
+          ? (previous.price as {rejectedUpstreamStatus?:unknown}).rejectedUpstreamStatus : undefined;
+        // An operator can waive UNCERTAIN charges into RELEASED without proving
+        // non-execution. Only explicit rejection evidence permits a fresh attempt.
+        // Legacy outcome="RELEASED" was written solely by rejection transition();
+        // operator waivers preserve UNCERTAIN or the upstream receipt id instead.
+        const rejectedWithoutExecution=[400,401,403,404,422,429].includes(Number(rejectedStatus)) || (rejectedStatus===undefined && previous.outcome==="RELEASED");
+        if(previous.state!=="RELEASED" || previous.settledPoints===null || Number(previous.settledPoints)!==0 || !previous.finishedAt || !rejectedWithoutExecution)throw new Error("REQUEST_CONFLICT");
+        rootRequestId ??= previous.id;
+        previousRequestId=previous.id;
+        attemptKey=RETRY_KEY_PREFIX+createHash("sha256").update(JSON.stringify([idempotency,previous.id])).digest("hex");
+      }
       const active=await tx.apiComputeRequest.count({where:{userId:user.id,provider:PROVIDER,state:{in:["RUNNING","UNCERTAIN"]}}});
       if(active>=4)throw new Error("TOO_MANY_ACTIVE_REQUESTS");
-      const task=await tx.apiComputeRequest.create({data:{userId:user.id,provider:PROVIDER,idempotencyKey:idempotency,requestHash:createHash("sha256").update(parsed.text).digest("hex"),modelId:parsed.model,policyVersion:"apic-final-quota-v1",price:{source:"APIC",quotaPerPoint:500000,...(parent ? {parent} : {})},maxUnits:parsed.limit,authorizedPoints:parsed.reserve,state:"RUNNING",startedAt:new Date()},select:{id:true}});
-      await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:"Codex request reservation"});return task.id;
+      const price={source:"APIC",quotaPerPoint:500000,...(parent ? {parent} : {}),...(rootRequestId && previousRequestId ? {retry:{rootRequestId,previousRequestId}} : {})};
+      const task=await tx.apiComputeRequest.create({data:{userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey,requestHash,modelId:parsed.model,policyVersion:"apic-final-quota-v1",price,maxUnits:parsed.limit,authorizedPoints:parsed.reserve,state:"RUNNING",startedAt:new Date()},select:{id:true}});
+      await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:"Codex request reservation"});return {id:task.id,price};
     });
-  } catch(error){ return failure(error instanceof QuotaError?error.code:"REQUEST_CONFLICT",error instanceof QuotaError?error.status:409); }
-  const transition=async(state:"SETTLED"|"RELEASED"|"UNCERTAIN",points:number|null,requestId?:string)=>db.$transaction(async tx=>{
-    const changed=await tx.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{state,settledPoints:points,outcome:requestId || state,finishedAt:state==="UNCERTAIN"?null:new Date()}});
+  } catch(error){
+    const code=error instanceof QuotaError ? error.code : error instanceof Error && ["REQUEST_HASH_CONFLICT","REQUEST_PARENT_CONFLICT","TOO_MANY_ACTIVE_REQUESTS"].includes(error.message) ? error.message : "REQUEST_CONFLICT";
+    return failure(code,error instanceof QuotaError?error.status:409);
+  }
+  const taskId=reservation.id;
+  const transition=async(state:"SETTLED"|"RELEASED"|"UNCERTAIN",points:number|null,requestId?:string,rejectedUpstreamStatus?:number)=>db.$transaction(async tx=>{
+    const changed=await tx.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{state,settledPoints:points,outcome:requestId || state,finishedAt:state==="UNCERTAIN"?null:new Date(),...(state==="RELEASED" && rejectedUpstreamStatus!==undefined ? {price:{...reservation.price,rejectedUpstreamStatus}} : {})}});
     if(changed.count===1 && points!==null && points>parsed.reserve)await debitQuota(tx,{userId:user.id,costPoints:points-parsed.reserve,ref:{type:"api_compute_request",id:taskId},note:"Codex verified upstream extra usage"});
     if(changed.count===1 && points!==null && points<parsed.reserve) await refundQuota(tx,{userId:user.id,costPoints:parsed.reserve-points,ref:{type:"api_compute_request",id:taskId},note:"Codex unused reservation settlement"});
     if(changed.count===1 && parent && state!=="UNCERTAIN")await refreshMeteredParentCost(tx,user.id,{parent});
@@ -104,7 +139,7 @@ export async function meteredResponses(request: Request, userId: string, parent?
   if(requestId)await db.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{outcome:requestId}});
   if(!upstream.ok){
     // Only explicit validation/auth rejection is known not to have generated output.
-    await transition([400,401,403,404,422,429].includes(upstream.status)?"RELEASED":"UNCERTAIN",[400,401,403,404,422,429].includes(upstream.status)?0:null,requestId || undefined);
+    await transition([400,401,403,404,422,429].includes(upstream.status)?"RELEASED":"UNCERTAIN",[400,401,403,404,422,429].includes(upstream.status)?0:null,requestId || undefined,upstream.status);
     return failure("UPSTREAM_REJECTED",upstream.status);
   }
   const settle=async()=>{

@@ -390,7 +390,10 @@ async function main() {
       assert.equal(bounded.rows, 5000); assert.equal(bounded.csv.split("\r\n").length, 5002);
     });
     await check("technical submissions do not change competition approval, member XP/quota, public consent or publication", async () => {
-      for (const user of [owner, teammate, outsider, admin, staff, fullStaff]) assert.deepEqual(await db.user.findUniqueOrThrow({ where: { id: user.id }, select: { id: true, xp: true, quotaPoints: true } }), user);
+      for (const user of [owner, teammate, outsider, admin, staff, fullStaff]) {
+        const current = await db.user.findUniqueOrThrow({ where: { id: user.id }, select: { id: true, xp: true, quotaPoints: true } });
+        assert.equal(current.id, user.id); assert.equal(current.xp, user.xp); assert.equal(current.quotaPoints.toString(), user.quotaPoints.toString());
+      }
       const live = await db.teamCompetition.findUniqueOrThrow({ where: { id: entry.id } }); assert.equal(live.entryStatus, "REGISTERED"); assert.equal(live.submissionVersionId, null); assert.equal(live.publicConsent, false); assert.equal(live.awardedXp, 0);
       assert.equal(await db.artifactPublication.count({ where: { artifactVersionId: { in: [own.artifactVersionId, foreign.artifactVersionId] } } }), 0);
       assert.equal(await db.quotaLedger.count({ where: { userId: { in: [owner.id, teammate.id, outsider.id] } } }), 0);

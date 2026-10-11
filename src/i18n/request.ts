@@ -32,6 +32,8 @@ export default getRequestConfig(async () => {
     locale,
     messages: {
       ...messages,
+      // Publish one current rule set until translations of the revised event are available.
+      agriHackathon: (await import(`@/../messages/${locale === "zh" ? "zh" : "en"}.json`)).default.agriHackathon,
       // The first lesson ships in Chinese and English; other locales explicitly use English.
       learning: (await import(`@/../messages/learning/${locale === "zh" ? "zh" : "en"}.json`)).default,
       marketCash: (await import(`@/../messages/market-cash/${locale === "zh" ? "zh" : "en"}.json`)).default,

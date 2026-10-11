@@ -4,14 +4,27 @@ import { MarketRuleError } from "@/domain/marketplace/order";
 import type { MarketProviderEvent } from "@/contracts/marketplace";
 
 export type CashProvider = "wechat" | "alipay";
-export type CashCheckoutInput = { orderId: string; amountMinor: number; currency: string; title: string };
+export type CashCheckoutInput = { orderId: string; amountMinor: number; currency: string; title: string; paymentExpiresAt?: string };
 export type CashCheckout = { provider: CashProvider; mode: "qr" | "redirect"; url: string; expiresAt: string };
 export type CashRefundInput = { orderId: string; paymentId: string; refundRequestId: string; amountMinor: number; currency: string };
+export type CashPaymentState =
+  | { status: "NOT_FOUND" }
+  | { status: "UNPAID" | "PROCESSING" | "CLOSED" | "REFUNDED"; amountMinor: number; currency: string }
+  | { status: "PAID"; event: MarketProviderEvent };
+export function paymentDeadline(value?: string) {
+  const expiresAt = value ?? new Date(Date.now() + 30 * 60_000).toISOString();
+  const timestamp = Date.parse(expiresAt);
+  if (!Number.isFinite(timestamp) || timestamp <= Date.now() + 60_000 || timestamp > Date.now() + 7 * 24 * 3600_000) throw providerFailure("PAYMENT_CHECKOUT_EXPIRED", 409);
+  return expiresAt;
+}
 export interface CashPaymentProvider {
   readonly provider: CashProvider;
+  readonly merchantIdentity: string;
   createCheckout(input: CashCheckoutInput): Promise<CashCheckout>;
   verifyWebhook(body: string, headers: Headers): Promise<MarketProviderEvent | null>;
   queryPayment(orderId: string): Promise<MarketProviderEvent | null>;
+  inspectPayment(orderId: string): Promise<CashPaymentState>;
+  closePayment(orderId: string): Promise<void>;
   requestRefund(input: CashRefundInput): Promise<MarketProviderEvent | null>;
   queryRefund(input: CashRefundInput): Promise<MarketProviderEvent | null>;
 }

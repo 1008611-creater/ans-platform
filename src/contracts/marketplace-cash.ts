@@ -5,7 +5,7 @@ export const marketCashCheckoutSchema = z.object({
 }).strict().superRefine((value, context) => {
   let valid = false;
   try { const url = new URL(value.url);
-    valid = value.provider === "wechat" ? value.mode === "qr" && url.protocol === "weixin:" && url.hostname === "wxpay" && url.pathname === "/bizpayurl" && !url.username && !url.password : value.mode === "redirect" && url.protocol === "https:" && url.hostname === "openapi.alipay.com" && url.pathname === "/gateway.do" && !url.port && !url.username && !url.password;
+    valid = value.provider === "wechat" ? value.mode === "qr" && url.protocol === "weixin:" && url.hostname === "wxpay" && ["/bizpayurl", "/bizpayurl/up"].includes(url.pathname) && !url.port && !url.username && !url.password : value.mode === "redirect" && url.protocol === "https:" && url.hostname === "openapi.alipay.com" && url.pathname === "/gateway.do" && !url.port && !url.username && !url.password;
   } catch { /* fail closed */ }
   if (!valid) context.addIssue({ code: "custom", path: ["url"], message: "INVALID_PROVIDER_CHECKOUT" });
 });

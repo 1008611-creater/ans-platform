@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import { agriRecordArchiveCommandSchema, agriRecordArchiveReadQuerySchema, canonicalAgriArchiveJSON, type AgriRecordArchiveSnapshot } from "@/contracts/agri-record-archive";
 import { createAgriRecordArchive, readAgriRecordArchive } from "@/server/competitions/agrihackathon/record-archive";
+import { collectAgriArchiveOnsite } from "@/server/competitions/agrihackathon/archive-onsite";
 import { collectAgriRecordSummary } from "@/server/competitions/agrihackathon/record-summary";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent } from "@/server/competitions/agrihackathon/workspace";
 import { db } from "@/lib/db";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
+vi.mock("@/server/competitions/agrihackathon/archive-onsite", () => ({ collectAgriArchiveOnsite: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { $transaction: vi.fn() } }));
 vi.mock("@/server/competitions/agrihackathon/record-summary", () => ({ collectAgriRecordSummary: vi.fn() }));
 vi.mock("@/server/competitions/agrihackathon/workspace", () => ({ lockAgriWorkspace: vi.fn(), requireAgriScope: vi.fn(), assertAgriAuthorityCurrent: vi.fn() }));
@@ -23,7 +25,7 @@ beforeEach(() => {
   vi.clearAllMocks(); tx.$queryRaw.mockReset(); vi.mocked(db.$transaction).mockReset();
   vi.mocked(db.$transaction).mockImplementation(async run => (run as unknown as (value: typeof tx) => Promise<unknown>)(tx) as never);
   vi.mocked(lockAgriWorkspace).mockResolvedValue(ctx); vi.mocked(requireAgriScope).mockImplementation(async (_tx,_ctx,scope) => ({ id: scope, expiresAt: null } as never));
-  vi.mocked(collectAgriRecordSummary).mockResolvedValue(record as never);
+  vi.mocked(collectAgriRecordSummary).mockResolvedValue(record as never); vi.mocked(collectAgriArchiveOnsite).mockResolvedValue({ items: [], events: [] });
 });
 describe("immutable private archive service", () => {
   it("accepts explicit save selection and refuses forged publication, download downgrade and unknown flags", () => {
@@ -38,9 +40,30 @@ describe("immutable private archive service", () => {
     expect(result).toMatchObject({ sequence: 1, duplicate: false }); expect(db.$transaction).toHaveBeenCalledTimes(1);
     expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "Serializable", timeout: 20000 });
     expect(collectAgriRecordSummary).toHaveBeenCalledWith(tx, ctx, "submission", request.selection);
-    expect(vi.mocked(requireAgriScope).mock.calls.map(call => call[2])).toEqual(["WORKS_READ", "ARCHIVE_WRITE"]);
+    expect(vi.mocked(requireAgriScope).mock.calls.map(call => call[2])).toEqual(["WORKS_READ", "ARCHIVE_WRITE", "ONSITE_READ"]);
     expect(tx.$executeRaw).toHaveBeenCalledTimes(2); expect(tx.auditLog.create).toHaveBeenCalledTimes(1); expect(assertAgriAuthorityCurrent).toHaveBeenCalledTimes(1);
     expect(vi.mocked(assertAgriAuthorityCurrent).mock.invocationCallOrder[0]).toBeGreaterThan(tx.auditLog.create.mock.invocationCallOrder[0]);
+  });
+  it("new snapshots keep fixed onsite facts and operators while legacy reads do not acquire onsite authority", async () => {
+    const onsite = { items: [], events: [] };
+    vi.mocked(collectAgriArchiveOnsite).mockResolvedValue(onsite);
+    tx.$queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+    await createAgriRecordArchive("staff", request);
+    const insert = tx.$executeRaw.mock.calls[0];
+    const canonical = insert.find(value => typeof value === "string" && value.includes("ANS_AGRI_SAVED_RECORD_ARCHIVE")) as string;
+    const value = JSON.parse(canonical);
+    expect(value).toMatchObject({ schemaVersion: 2, includesOnsite: true, onsite });
+    expect(collectAgriArchiveOnsite).toHaveBeenCalledWith(tx, ctx, "submission", request.selection);
+    vi.mocked(requireAgriScope).mockClear(); tx.$queryRaw.mockResolvedValueOnce([stored()]);
+    await readAgriRecordArchive("staff", "archive");
+    expect(vi.mocked(requireAgriScope).mock.calls.map(call => call[2])).toEqual(["WORKS_READ"]);
+  });
+  it("v2 refuses an onsite payload whose event points outside its fixed item collection", async () => {
+    const row = stored(), value = JSON.parse(row.snapshotCanonical);
+    Object.assign(value, { schemaVersion: 2, includesOnsite: true, onsite: { items: [], events: [{ id: "event", itemId: "foreign", revision: 1, action: "createOnsite", actorId: "staff", createdAt: record.generatedAt, published: false, fields: { title: "Local", mode: "LIVE", summary: "", backupSummary: "", operations: { device: "", conditions: "", schedule: { state: "UNKNOWN", at: null }, status: "NOT_STARTED", result: null } } }] } });
+    row.snapshotSchemaVersion = 2; row.snapshotCanonical = canonicalAgriArchiveJSON(value); row.snapshotHash = createHash("sha256").update(row.snapshotCanonical).digest("hex"); row.byteLength = Buffer.byteLength(row.snapshotCanonical);
+    tx.$queryRaw.mockResolvedValueOnce([row]);
+    await expect(readAgriRecordArchive("staff", "archive")).rejects.toMatchObject({ code: "AGRI_ARCHIVE_INTEGRITY_FAILED" });
   });
   it("requires stored private and internal permissions as a whole, without reading a live source or silently lowering", async () => {
     tx.$queryRaw.mockResolvedValueOnce([stored({ includePrivate: true, includeInternal: true })]);

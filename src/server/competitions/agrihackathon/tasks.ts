@@ -44,7 +44,7 @@ function editable(row: AgriPersonalTask): AgriTaskEditable {
 }
 function view(row: AgriPersonalTask, actorId: string, now: Date) {
   const task = editable(row);
-  return agriTaskViewSchema.parse({ ...task, id: row.id, competitionId: row.competitionId, revision: row.revision,
+  return agriTaskViewSchema.parse({ ...task, id: row.id, ownerId: row.ownerId, competitionId: row.competitionId, revision: row.revision,
     templateKey: row.templateKey, access: row.ownerId === actorId ? "OWNER" : "SHARED_READONLY",
     dueState: deriveAgriTaskDueState(task.due, task.status, now), completedAt: row.completedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() });
@@ -123,7 +123,11 @@ export async function getAgriTask(actorId: string, taskId: string): Promise<Agri
 }
 export async function executeAgriTaskCommand(actorId: string, raw: unknown): Promise<AgriTaskMutation> {
   const command = agriTaskCommandSchema.parse(raw); const competitionId = boundCompetitionId();
-  const requestHash = digest(command);
+  // Keep pre-Demo idempotency receipts usable: an absent detail and explicit null are identical.
+  const hashInput = command.action === "attachReference" && command.target.demoCheckId === null
+    ? { ...command, target: { submissionId: command.target.submissionId, issueId: command.target.issueId } }
+    : command;
+  const requestHash = digest(hashInput);
   return db.$transaction(async tx => {
     await lockEditionWorkspace(tx, competitionId); await lockAccount(tx, actorId); await ensureEdition(tx, competitionId);
     const identity = { competitionId, actorId, operation: command.action, idempotencyKey: command.idempotencyKey };

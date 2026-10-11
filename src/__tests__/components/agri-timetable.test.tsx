@@ -14,7 +14,7 @@ vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: () => {
 } }));
 const copy = messages.agriTasks;
 const api = "/api/competitions/agrihackathon/tasks";
-const original: AgriTaskView = { ...agriTaskTemplates("zh")[0].task, id: "task-a", competitionId: "edition", revision: 1, templateKey: "fixture", access: "OWNER", dueState: "UNDATED", completedAt: null, createdAt: "2026-10-07T00:00:00Z", updatedAt: "2026-10-07T00:00:00Z" };
+const original: AgriTaskView = { ...agriTaskTemplates("zh")[0].task, id: "task-a", ownerId: "owner-a", competitionId: "edition", revision: 1, templateKey: "fixture", access: "OWNER", dueState: "UNDATED", completedAt: null, createdAt: "2026-10-07T00:00:00Z", updatedAt: "2026-10-07T00:00:00Z" };
 let task: AgriTaskView; let detail: AgriTaskDetail; let fetchMock: Mock<(url: string, init?: RequestInit) => Promise<Response>>;
 const envelope = (data: unknown, status = 200) => new Response(JSON.stringify({ ok: true, data }), { status });
 function list() { return { competitionId: "edition", tasks: [task], nextCursor: null, serverNow: "2026-10-07T00:00:00Z", sharingLimit: 30 }; }

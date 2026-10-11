@@ -1,13 +1,17 @@
-import { HttpRequestError, readSameOriginJson } from "@/server/http/json";
+import { assertRequestActor, HttpRequestError, readSameOriginJson } from "@/server/http/json";
 import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { fail, ok } from "@/server/http/respond";
 import { QuotaError } from "@/server/quota/service";
 import { MarketRuleError } from "@/domain/marketplace/order";
 
-export async function marketUser() {
+export async function marketUser(request?: Request) {
   const session = await auth();
   if (!session?.user?.id) throw new MarketRuleError("UNAUTHORIZED", 401);
+  if (request) {
+    try { assertRequestActor(request, session.user.id); }
+    catch (error) { if (error instanceof HttpRequestError) throw new MarketRuleError(error.code, error.status); throw error; }
+  }
   return session.user.id;
 }
 

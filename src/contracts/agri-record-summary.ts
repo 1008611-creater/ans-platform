@@ -18,27 +18,28 @@ export interface AgriSummarySubmission {
   isRecordedFrozen?: boolean; frozenByDeadline?: boolean;
   correction?: { previousSubmissionId: string; permitId: string; reason: string; authorizedById: string; authorizedAt: string };
 }
-export interface AgriSummaryFeedback { sequence: number; publishedAt: string; body?: string }
+export interface AgriSummaryFeedback { sequence: number; publishedAt: string; actorId?: string; body?: string }
 export interface AgriSummaryCheck {
   id: string; basis: "METADATA" | "PRIVATE_MATERIALS"; result: "PASS" | "NEEDS_ACTION" | "UNREACHABLE";
-  checkedAt: string; feedback: AgriSummaryFeedback | null;
+  checkedAt: string; checkedById?: string; feedback: AgriSummaryFeedback | null;
   checklist?: { schemaVersion: 1; items: Array<{ key: string; result: "PASS" | "NEEDS_ACTION" | "UNREACHABLE" | "NOT_APPLICABLE"; note: string }> };
   internalNote?: string | null;
 }
 export interface AgriSummaryDemo {
   id: string; sequence: number; recheckOfId: string | null; basis: "METADATA" | "PRIVATE_MATERIALS";
-  result: "PASS" | "NEEDS_ACTION" | "UNREACHABLE"; checkedAt: string;
+  result: "PASS" | "NEEDS_ACTION" | "UNREACHABLE"; checkedAt: string; checkedById?: string;
   feedback: AgriSummaryFeedback | null; demo?: AgriDemoSnapshot; internalNote?: string | null;
 }
 export interface AgriSummaryIssue {
   id: string; revision: number; status: string; severity: string; type: string;
   basis: "METADATA" | "PRIVATE_MATERIALS"; visibility: "TEAM" | "INTERNAL";
   dueState: "UNKNOWN" | "TENTATIVE" | "CONFIRMED"; dueAt: string | null; createdAt: string; updatedAt: string;
+  assigneeId?: string | null; createdById?: string; completedById?: string | null; completedAt?: string | null;
   title?: string; body?: string; processingSummary?: string | null;
 }
 export interface AgriSummaryIssueEvent {
   id: string; issueId: string; revision: number; kind: string; basis: "METADATA" | "PRIVATE_MATERIALS";
-  visibility: "TEAM" | "INTERNAL"; createdAt: string; body?: string;
+  visibility: "TEAM" | "INTERNAL"; createdAt: string; actorId?: string; afterState?: unknown; body?: string;
 }
 /** Live authorized projection, not a saved archive, public record or repository backup. */
 export interface AgriRecordSummary {

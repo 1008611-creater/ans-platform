@@ -54,11 +54,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/**
- * 评分维度顺序固定。报批版只给维度（作品完成度 / 创新程度 / 主题契合），
- * 不给权重，所以这里不再有 weight，卡片也不展示分值。
- */
-const SCORING_KEYS = ["completeness", "innovation", "fit"] as const;
+/** Initial-round criteria from the user's current event plan. */
+const SCORING_KEYS = ["innovation", "technical", "completeness", "problem", "fit"] as const;
+
 
 const trackStyles = {
   people: {

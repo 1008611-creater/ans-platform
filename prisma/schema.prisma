@@ -2261,6 +2261,8 @@ model AgriTaskReference {
   entryStageId String
   submissionId String
   submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  demoCheckId String?
+  demoCheck AgriDemoCheck? @relation(fields: [demoCheckId, submissionId, entryStageId, competitionId], references: [id, submissionId, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
   issueId String?
   issue AgriIssue? @relation(fields: [issueId, submissionId, competitionId], references: [id, submissionId, competitionId], onDelete: Restrict, onUpdate: NoAction)
   attachedAt DateTime @db.Timestamptz(3)
@@ -2294,6 +2296,7 @@ model AgriDemoCheck {
   receipts AgriDemoReceipt[]
   events AgriDemoEvent[]
   onsiteItems AgriOnsiteItem[]
+  taskReferences AgriTaskReference[]
   @@unique([recheckOfId, submissionId, entryStageId, competitionId])
   @@unique([submissionId, sequence])
   @@unique([id, submissionId, entryStageId, competitionId])

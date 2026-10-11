@@ -1,6 +1,6 @@
 ﻿import { z } from "zod";
 import type { MarketProviderEvent } from "@/contracts/marketplace";
-import { type CashPaymentProvider, type CashCheckoutInput, type CashRefundInput, cashOrigin, fenToYuan, keyFromFile, merchantOrderId, providerFailure, providerFetch, requiredEnv, rsaSign, rsaVerify, webhookUrl, yuanToFen } from "./common";
+import { type CashPaymentProvider, type CashCheckoutInput, type CashRefundInput, type CashPaymentState, paymentDeadline, cashOrigin, fenToYuan, keyFromFile, merchantOrderId, providerFailure, providerFetch, requiredEnv, rsaSign, rsaVerify, webhookUrl, yuanToFen } from "./common";
 
 export function alipayCanonical(params: Record<string, string>, notification = false) {
   return Object.keys(params).filter(key => key !== "sign" && (!notification || key !== "sign_type") && params[key] !== "").sort().map(key => `${key}=${params[key]}`).join("&");
@@ -29,17 +29,19 @@ export class AlipayMarketProvider implements CashPaymentProvider {
   private readonly sellerId = requiredEnv("ANS_ALIPAY_SELLER_ID");
   private readonly privateKey = keyFromFile("ANS_ALIPAY_PRIVATE_KEY_FILE", "private");
   private readonly publicKey = keyFromFile("ANS_ALIPAY_PUBLIC_KEY_FILE", "public");
+  get merchantIdentity() { return `${this.provider}:${this.sellerId}:${this.appid}`; }
   constructor() { if (!/^\d{16,32}$/.test(this.appid) || !/^2088\d{12}$/.test(this.sellerId)) throw providerFailure("PAYMENT_NOT_CONFIGURED", 503); webhookUrl(this.provider); }
   private params(method: string, biz: unknown, extra: Record<string, string> = {}) {
     const params: Record<string, string> = { app_id: this.appid, method, format: "JSON", charset: "utf-8", sign_type: "RSA2", timestamp: new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 19).replace("T", " "), version: "1.0", biz_content: JSON.stringify(biz), ...extra };
     params.sign = rsaSign(alipayCanonical(params), this.privateKey); return params;
   }
-  private async request(method: string, biz: unknown) {
+  private async request(method: string, biz: unknown, allowAbsent = false) {
     const { response, text } = await providerFetch("https://openapi.alipay.com/gateway.do", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded; charset=utf-8" }, body: new URLSearchParams(this.params(method, biz)).toString() });
     if (!response.ok) throw providerFailure();
     const verified = alipaySignedResponse(text, `${method.replaceAll(".", "_")}_response`);
     rsaVerify(verified.payload, verified.signature, this.publicKey);
-    const value: unknown = JSON.parse(verified.payload); const status = z.object({ code: z.string() }).parse(value);
+    const value: unknown = JSON.parse(verified.payload); const status = z.object({ code: z.string(), sub_code: z.string().optional() }).parse(value);
+    if (allowAbsent && status.code === "40004" && status.sub_code === "ACQ.TRADE_NOT_EXIST") return null;
     if (status.code !== "10000") throw providerFailure(); return value;
   }
   private paymentEvent(value: unknown, eventId?: string): MarketProviderEvent | null {
@@ -51,8 +53,9 @@ export class AlipayMarketProvider implements CashPaymentProvider {
   }
   async createCheckout(input: CashCheckoutInput) {
     if (input.currency !== "CNY") throw providerFailure("INVALID_PROVIDER_AMOUNT", 400);
-    const params = this.params("alipay.trade.page.pay", { out_trade_no: merchantOrderId(input.orderId), seller_id: this.sellerId, product_code: "FAST_INSTANT_TRADE_PAY", total_amount: fenToYuan(input.amountMinor), subject: Array.from(input.title).slice(0, 100).join(""), timeout_express: "30m" }, { notify_url: webhookUrl(this.provider), return_url: `${cashOrigin()}/market/orders/${input.orderId}` });
-    return { provider: this.provider, mode: "redirect" as const, url: `https://openapi.alipay.com/gateway.do?${new URLSearchParams(params)}`, expiresAt: new Date(Date.now() + 30 * 60_000).toISOString() };
+    const expiresAt = paymentDeadline(input.paymentExpiresAt);
+    const params = this.params("alipay.trade.page.pay", { out_trade_no: merchantOrderId(input.orderId), seller_id: this.sellerId, product_code: "FAST_INSTANT_TRADE_PAY", total_amount: fenToYuan(input.amountMinor), subject: Array.from(input.title).slice(0, 100).join(""), time_expire: new Date(Date.parse(expiresAt) + 8 * 3600_000).toISOString().slice(0, 19).replace("T", " ") }, { notify_url: webhookUrl(this.provider), return_url: `${cashOrigin()}/market/orders/${input.orderId}` });
+    return { provider: this.provider, mode: "redirect" as const, url: `https://openapi.alipay.com/gateway.do?${new URLSearchParams(params)}`, expiresAt };
   }
   async verifyWebhook(body: string, headers: Headers) {
     if (!(headers.get("content-type") ?? "").toLowerCase().startsWith("application/x-www-form-urlencoded")) throw providerFailure("INVALID_PROVIDER_EVENT", 400);
@@ -65,10 +68,20 @@ export class AlipayMarketProvider implements CashPaymentProvider {
     if (params.refund_fee || params.gmt_refund) return null;
     return this.paymentEvent(params, params.notify_id);
   }
-  async queryPayment(orderId: string) {
-    const result = await this.request("alipay.trade.query", { out_trade_no: merchantOrderId(orderId) });
-    if (tradeSchema.parse(result).out_trade_no !== orderId) throw providerFailure("INVALID_PROVIDER_EVENT", 400);
-    return this.paymentEvent(result);
+  async inspectPayment(orderId: string): Promise<CashPaymentState> {
+    const result = await this.request("alipay.trade.query", { out_trade_no: merchantOrderId(orderId) }, true);
+    if (result === null) return { status: "NOT_FOUND" };
+    const trade = tradeSchema.parse(result);
+    if (trade.out_trade_no !== orderId) throw providerFailure("INVALID_PROVIDER_EVENT", 400);
+    const event = this.paymentEvent(result);
+    if (event) return { status: "PAID", event };
+    if (!["WAIT_BUYER_PAY", "TRADE_CLOSED"].includes(trade.trade_status)) throw providerFailure("INVALID_PROVIDER_EVENT", 400);
+    return { status: trade.trade_status === "WAIT_BUYER_PAY" ? "UNPAID" : "CLOSED", amountMinor: yuanToFen(trade.total_amount), currency: "CNY" };
+  }
+  async queryPayment(orderId: string) { const state = await this.inspectPayment(orderId); return state.status === "PAID" ? state.event : null; }
+  async closePayment(orderId: string) {
+    const result = z.object({ out_trade_no: z.string() }).parse(await this.request("alipay.trade.close", { out_trade_no: merchantOrderId(orderId) }));
+    if (result.out_trade_no !== orderId) throw providerFailure("INVALID_PROVIDER_EVENT", 400);
   }
   async queryRefund(input: CashRefundInput) {
     const value = z.object({ trade_no: z.string().optional(), out_trade_no: z.string().optional(), out_request_no: z.string().optional(), refund_status: z.string().optional(), refund_amount: z.string().optional(), total_amount: z.string().optional() }).parse(await this.request("alipay.trade.fastpay.refund.query", { out_trade_no: merchantOrderId(input.orderId), trade_no: input.paymentId, out_request_no: input.refundRequestId }));
