@@ -31,8 +31,8 @@ function Navigation({ theme, accentId, toggleTheme, setAccent }: { theme: string
 
   return <header className="vh-header">
     <div className="vh-header-inner">
-      <Link href={`/vibe-hub?lang=${lang}`} className="vh-brand" aria-label="VibeHub">
-        <Image src="/vibe-hub/vh-logo-v4-tight.png" width="27" height="27" alt="" /><span>Vibe<b>Hub</b></span>
+      <Link href={`/vibe-hub?lang=${lang}`} className="vh-brand" aria-label="ANS VibeHub">
+        <Image src={theme === "dark" ? "/ans-logo-dark.svg" : "/ans-logo-light.svg"} width={27} height={27} alt="" /><span>ANS Vibe<b>Hub</b></span>
       </Link>
       <nav className="vh-desktop-nav" aria-label={t("navigation")}>
         {links.slice(0, 6).map((link) => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={pathname === `/vibe-hub${link.path}` ? "page" : undefined}>{t(link.label)}</Link>)}
