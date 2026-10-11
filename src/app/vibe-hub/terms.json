@@ -1,0 +1,732 @@
+[
+  {
+    "slug": "frontend",
+    "name": "Frontend",
+    "href": "/en/frontend"
+  },
+  {
+    "slug": "component",
+    "name": "Component",
+    "href": "/en/component"
+  },
+  {
+    "slug": "state",
+    "name": "State",
+    "href": "/en/state"
+  },
+  {
+    "slug": "markdown",
+    "name": "Markdown",
+    "href": "/en/markdown"
+  },
+  {
+    "slug": "html",
+    "name": "HTML",
+    "href": "/en/html"
+  },
+  {
+    "slug": "css",
+    "name": "CSS",
+    "href": "/en/css"
+  },
+  {
+    "slug": "dom",
+    "name": "DOM",
+    "href": "/en/dom"
+  },
+  {
+    "slug": "title-tag",
+    "name": "Title Tag",
+    "href": "/en/title-tag"
+  },
+  {
+    "slug": "page-metadata",
+    "name": "Page Metadata",
+    "href": "/en/page-metadata"
+  },
+  {
+    "slug": "favicon",
+    "name": "Favicon",
+    "href": "/en/favicon"
+  },
+  {
+    "slug": "open-graph",
+    "name": "Open Graph",
+    "href": "/en/open-graph"
+  },
+  {
+    "slug": "web-app-manifest",
+    "name": "Web App Manifest",
+    "href": "/en/web-app-manifest"
+  },
+  {
+    "slug": "undo",
+    "name": "Undo",
+    "href": "/en/undo"
+  },
+  {
+    "slug": "accessibility",
+    "name": "Accessibility",
+    "href": "/en/accessibility"
+  },
+  {
+    "slug": "semantic-html",
+    "name": "Semantic HTML",
+    "href": "/en/semantic-html"
+  },
+  {
+    "slug": "mini-program",
+    "name": "Mini Program",
+    "href": "/en/mini-program"
+  },
+  {
+    "slug": "wxml",
+    "name": "WXML",
+    "href": "/en/wxml"
+  },
+  {
+    "slug": "wxss",
+    "name": "WXSS",
+    "href": "/en/wxss"
+  },
+  {
+    "slug": "rpx",
+    "name": "rpx",
+    "href": "/en/rpx"
+  },
+  {
+    "slug": "page-lifecycle",
+    "name": "Page Lifecycle",
+    "href": "/en/page-lifecycle"
+  },
+  {
+    "slug": "subpackage",
+    "name": "Subpackage Loading",
+    "href": "/en/subpackage"
+  },
+  {
+    "slug": "button",
+    "name": "Button",
+    "href": "/en/button"
+  },
+  {
+    "slug": "link",
+    "name": "Link",
+    "href": "/en/link"
+  },
+  {
+    "slug": "input",
+    "name": "Input",
+    "href": "/en/input"
+  },
+  {
+    "slug": "textarea",
+    "name": "Textarea",
+    "href": "/en/textarea"
+  },
+  {
+    "slug": "input-number",
+    "name": "Number Input",
+    "href": "/en/input-number"
+  },
+  {
+    "slug": "radio",
+    "name": "Radio",
+    "href": "/en/radio"
+  },
+  {
+    "slug": "checkbox",
+    "name": "Checkbox",
+    "href": "/en/checkbox"
+  },
+  {
+    "slug": "switch",
+    "name": "Switch",
+    "href": "/en/switch"
+  },
+  {
+    "slug": "slider",
+    "name": "Slider",
+    "href": "/en/slider"
+  },
+  {
+    "slug": "rate",
+    "name": "Rate",
+    "href": "/en/rate"
+  },
+  {
+    "slug": "select",
+    "name": "Select",
+    "href": "/en/select"
+  },
+  {
+    "slug": "auto-complete",
+    "name": "Autocomplete",
+    "href": "/en/auto-complete"
+  },
+  {
+    "slug": "cascader",
+    "name": "Cascader",
+    "href": "/en/cascader"
+  },
+  {
+    "slug": "tree-select",
+    "name": "Tree Select",
+    "href": "/en/tree-select"
+  },
+  {
+    "slug": "date-picker",
+    "name": "Date Picker",
+    "href": "/en/date-picker"
+  },
+  {
+    "slug": "time-picker",
+    "name": "Time Picker",
+    "href": "/en/time-picker"
+  },
+  {
+    "slug": "upload",
+    "name": "Upload",
+    "href": "/en/upload"
+  },
+  {
+    "slug": "form",
+    "name": "Form",
+    "href": "/en/form"
+  },
+  {
+    "slug": "color-picker",
+    "name": "Color Picker",
+    "href": "/en/color-picker"
+  },
+  {
+    "slug": "label",
+    "name": "Label",
+    "href": "/en/label"
+  },
+  {
+    "slug": "placeholder",
+    "name": "Placeholder",
+    "href": "/en/placeholder"
+  },
+  {
+    "slug": "table",
+    "name": "Table",
+    "href": "/en/table"
+  },
+  {
+    "slug": "list",
+    "name": "List",
+    "href": "/en/list"
+  },
+  {
+    "slug": "card",
+    "name": "Card",
+    "href": "/en/card"
+  },
+  {
+    "slug": "tag",
+    "name": "Tag",
+    "href": "/en/tag"
+  },
+  {
+    "slug": "badge",
+    "name": "Badge",
+    "href": "/en/badge"
+  },
+  {
+    "slug": "avatar",
+    "name": "Avatar",
+    "href": "/en/avatar"
+  },
+  {
+    "slug": "descriptions",
+    "name": "Descriptions",
+    "href": "/en/descriptions"
+  },
+  {
+    "slug": "statistic",
+    "name": "Statistic",
+    "href": "/en/statistic"
+  },
+  {
+    "slug": "tabs",
+    "name": "Tabs",
+    "href": "/en/tabs"
+  },
+  {
+    "slug": "segmented",
+    "name": "Segmented",
+    "href": "/en/segmented"
+  },
+  {
+    "slug": "collapse",
+    "name": "Collapse",
+    "href": "/en/collapse"
+  },
+  {
+    "slug": "timeline",
+    "name": "Timeline",
+    "href": "/en/timeline"
+  },
+  {
+    "slug": "tree",
+    "name": "Tree",
+    "href": "/en/tree"
+  },
+  {
+    "slug": "carousel",
+    "name": "Carousel",
+    "href": "/en/carousel"
+  },
+  {
+    "slug": "empty",
+    "name": "Empty",
+    "href": "/en/empty"
+  },
+  {
+    "slug": "image",
+    "name": "Image",
+    "href": "/en/image"
+  },
+  {
+    "slug": "file",
+    "name": "File",
+    "href": "/en/file"
+  },
+  {
+    "slug": "icon",
+    "name": "Icon",
+    "href": "/en/icon"
+  },
+  {
+    "slug": "quote",
+    "name": "Quote",
+    "href": "/en/quote"
+  },
+  {
+    "slug": "video",
+    "name": "Video",
+    "href": "/en/video"
+  },
+  {
+    "slug": "chat-ui",
+    "name": "Chat UI",
+    "href": "/en/chat-ui"
+  },
+  {
+    "slug": "filter",
+    "name": "Filter",
+    "href": "/en/filter"
+  },
+  {
+    "slug": "chart",
+    "name": "Chart",
+    "href": "/en/chart"
+  },
+  {
+    "slug": "app-icon",
+    "name": "App Icon",
+    "href": "/en/app-icon"
+  },
+  {
+    "slug": "sort",
+    "name": "Sort",
+    "href": "/en/sort"
+  },
+  {
+    "slug": "alert",
+    "name": "Alert",
+    "href": "/en/alert"
+  },
+  {
+    "slug": "toast",
+    "name": "Toast",
+    "href": "/en/toast"
+  },
+  {
+    "slug": "notification",
+    "name": "Notification",
+    "href": "/en/notification"
+  },
+  {
+    "slug": "modal",
+    "name": "Modal",
+    "href": "/en/modal"
+  },
+  {
+    "slug": "drawer",
+    "name": "Drawer",
+    "href": "/en/drawer"
+  },
+  {
+    "slug": "popconfirm",
+    "name": "Popconfirm",
+    "href": "/en/popconfirm"
+  },
+  {
+    "slug": "popover",
+    "name": "Popover",
+    "href": "/en/popover"
+  },
+  {
+    "slug": "tooltip",
+    "name": "Tooltip",
+    "href": "/en/tooltip"
+  },
+  {
+    "slug": "progress",
+    "name": "Progress",
+    "href": "/en/progress"
+  },
+  {
+    "slug": "skeleton",
+    "name": "Skeleton",
+    "href": "/en/skeleton"
+  },
+  {
+    "slug": "result",
+    "name": "Result",
+    "href": "/en/result"
+  },
+  {
+    "slug": "spinner",
+    "name": "Spinner",
+    "href": "/en/spinner"
+  },
+  {
+    "slug": "menu",
+    "name": "Menu",
+    "href": "/en/menu"
+  },
+  {
+    "slug": "breadcrumb",
+    "name": "Breadcrumb",
+    "href": "/en/breadcrumb"
+  },
+  {
+    "slug": "pagination",
+    "name": "Pagination",
+    "href": "/en/pagination"
+  },
+  {
+    "slug": "steps",
+    "name": "Steps",
+    "href": "/en/steps"
+  },
+  {
+    "slug": "dropdown",
+    "name": "Dropdown",
+    "href": "/en/dropdown"
+  },
+  {
+    "slug": "anchor",
+    "name": "Anchor",
+    "href": "/en/anchor"
+  },
+  {
+    "slug": "back-top",
+    "name": "Back to Top Button",
+    "href": "/en/back-top"
+  },
+  {
+    "slug": "skip-link",
+    "name": "Skip Link",
+    "href": "/en/skip-link"
+  },
+  {
+    "slug": "search",
+    "name": "Search",
+    "href": "/en/search"
+  },
+  {
+    "slug": "hero",
+    "name": "Hero",
+    "href": "/en/hero"
+  },
+  {
+    "slug": "cta",
+    "name": "CTA",
+    "href": "/en/cta"
+  },
+  {
+    "slug": "user-voice",
+    "name": "Customer Testimonial",
+    "href": "/en/user-voice"
+  },
+  {
+    "slug": "header",
+    "name": "Header",
+    "href": "/en/header"
+  },
+  {
+    "slug": "logo",
+    "name": "Logo",
+    "href": "/en/logo"
+  },
+  {
+    "slug": "navbar",
+    "name": "Navbar",
+    "href": "/en/navbar"
+  },
+  {
+    "slug": "footer",
+    "name": "Footer",
+    "href": "/en/footer"
+  },
+  {
+    "slug": "faq",
+    "name": "FAQ",
+    "href": "/en/faq"
+  },
+  {
+    "slug": "pricing",
+    "name": "Pricing",
+    "href": "/en/pricing"
+  },
+  {
+    "slug": "social-proof",
+    "name": "Social Proof",
+    "href": "/en/social-proof"
+  },
+  {
+    "slug": "top-nav-layout",
+    "name": "Top Nav",
+    "href": "/en/top-nav-layout"
+  },
+  {
+    "slug": "sidebar-layout",
+    "name": "Sidebar",
+    "href": "/en/sidebar-layout"
+  },
+  {
+    "slug": "single-page-layout",
+    "name": "Single Page",
+    "href": "/en/single-page-layout"
+  },
+  {
+    "slug": "doc-layout",
+    "name": "Doc Layout",
+    "href": "/en/doc-layout"
+  },
+  {
+    "slug": "card-grid-layout",
+    "name": "Card Grid",
+    "href": "/en/card-grid-layout"
+  },
+  {
+    "slug": "centered-layout",
+    "name": "Centered Column",
+    "href": "/en/centered-layout"
+  },
+  {
+    "slug": "masonry-layout",
+    "name": "Masonry",
+    "href": "/en/masonry-layout"
+  },
+  {
+    "slug": "split-screen-layout",
+    "name": "Split-screen",
+    "href": "/en/split-screen-layout"
+  },
+  {
+    "slug": "responsive-design",
+    "name": "Responsive Design",
+    "href": "/en/responsive-design"
+  },
+  {
+    "slug": "space",
+    "name": "Space",
+    "href": "/en/space"
+  },
+  {
+    "slug": "margin",
+    "name": "Margin",
+    "href": "/en/margin"
+  },
+  {
+    "slug": "padding",
+    "name": "Padding",
+    "href": "/en/padding"
+  },
+  {
+    "slug": "flex",
+    "name": "Flex",
+    "href": "/en/flex"
+  },
+  {
+    "slug": "grid",
+    "name": "Grid",
+    "href": "/en/grid"
+  },
+  {
+    "slug": "z-index",
+    "name": "Z-Index",
+    "href": "/en/z-index"
+  },
+  {
+    "slug": "sticky",
+    "name": "Sticky",
+    "href": "/en/sticky"
+  },
+  {
+    "slug": "position",
+    "name": "Position",
+    "href": "/en/position"
+  },
+  {
+    "slug": "centering",
+    "name": "Centering",
+    "href": "/en/centering"
+  },
+  {
+    "slug": "box-model",
+    "name": "Box Model",
+    "href": "/en/box-model"
+  },
+  {
+    "slug": "overflow",
+    "name": "Overflow",
+    "href": "/en/overflow"
+  },
+  {
+    "slug": "typography",
+    "name": "Typography",
+    "href": "/en/typography"
+  },
+  {
+    "slug": "serif-sans",
+    "name": "Serif & Sans",
+    "href": "/en/serif-sans"
+  },
+  {
+    "slug": "text-truncate",
+    "name": "Text Truncate",
+    "href": "/en/text-truncate"
+  },
+  {
+    "slug": "divider",
+    "name": "Divider",
+    "href": "/en/divider"
+  },
+  {
+    "slug": "border-radius",
+    "name": "Border Radius",
+    "href": "/en/border-radius"
+  },
+  {
+    "slug": "shadow",
+    "name": "Shadow",
+    "href": "/en/shadow"
+  },
+  {
+    "slug": "opacity",
+    "name": "Opacity",
+    "href": "/en/opacity"
+  },
+  {
+    "slug": "gradient",
+    "name": "Gradient",
+    "href": "/en/gradient"
+  },
+  {
+    "slug": "corner-feel",
+    "name": "Corner Feel",
+    "href": "/en/corner-feel"
+  },
+  {
+    "slug": "backdrop-blur",
+    "name": "Backdrop Blur",
+    "href": "/en/backdrop-blur"
+  },
+  {
+    "slug": "dark-mode",
+    "name": "Dark Mode",
+    "href": "/en/dark-mode"
+  },
+  {
+    "slug": "design-token",
+    "name": "Design Token",
+    "href": "/en/design-token"
+  },
+  {
+    "slug": "contrast",
+    "name": "Contrast",
+    "href": "/en/contrast"
+  },
+  {
+    "slug": "visual-hierarchy",
+    "name": "Visual Hierarchy",
+    "href": "/en/visual-hierarchy"
+  },
+  {
+    "slug": "prefers-reduced-motion",
+    "name": "Prefers Reduced Motion",
+    "href": "/en/prefers-reduced-motion"
+  },
+  {
+    "slug": "transition",
+    "name": "Transition",
+    "href": "/en/transition"
+  },
+  {
+    "slug": "animation",
+    "name": "Animation",
+    "href": "/en/animation"
+  },
+  {
+    "slug": "easing",
+    "name": "Easing",
+    "href": "/en/easing"
+  },
+  {
+    "slug": "spring",
+    "name": "Spring",
+    "href": "/en/spring"
+  },
+  {
+    "slug": "fade",
+    "name": "Fade In / Out",
+    "href": "/en/fade"
+  },
+  {
+    "slug": "keyframe",
+    "name": "Keyframe",
+    "href": "/en/keyframe"
+  },
+  {
+    "slug": "hover",
+    "name": "Hover",
+    "href": "/en/hover"
+  },
+  {
+    "slug": "active",
+    "name": "Active",
+    "href": "/en/active"
+  },
+  {
+    "slug": "focus",
+    "name": "Focus",
+    "href": "/en/focus"
+  },
+  {
+    "slug": "drag",
+    "name": "Drag",
+    "href": "/en/drag"
+  },
+  {
+    "slug": "disabled",
+    "name": "Disabled",
+    "href": "/en/disabled"
+  },
+  {
+    "slug": "cursor",
+    "name": "Cursor",
+    "href": "/en/cursor"
+  },
+  {
+    "slug": "selection",
+    "name": "Selection",
+    "href": "/en/selection"
+  }
+]
