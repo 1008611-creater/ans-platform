@@ -45,19 +45,6 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-KNOWN_CHECK_SOURCE = {'name': 'market_payment_money_valid', 'type': 'c', 'table': 'market_payments', 'validated': True, 'definition': 'CHECK ("amountMinor" >= 1 AND "amountMinor" <= 100000000 AND currency::text ~ \'^[A-Z]{3}$\'::text AND (allocation::text = ANY (ARRAY[\'ORDER\'::character varying, \'RETURN_REQUIRED\'::character varying]::text[])))'}
-KNOWN_CHECK_RESTORED = {'name': 'market_payment_money_valid', 'type': 'c', 'table': 'market_payments', 'validated': True, 'definition': 'CHECK ("amountMinor" >= 1 AND "amountMinor" <= 100000000 AND currency::text ~ \'^[A-Z]{3}$\'::text AND (allocation::text = ANY (ARRAY[\'ORDER\'::character varying::text, \'RETURN_REQUIRED\'::character varying::text])))'}
-
-
-# Investigated against the retained round-4 dump. PostgreSQL reparse and rollback
-# witnesses are still mandatory for each exact pair on every new restore.
-KNOWN_MEDIA_CHECK_SOURCE = {'name': 'media_generations_type', 'type': 'c', 'table': 'media_generations', 'validated': True, 'definition': "CHECK (type::text = ANY (ARRAY['image'::character varying, 'video'::character varying, 'audio'::character varying]::text[]))"}
-KNOWN_MEDIA_CHECK_RESTORED = {'name': 'media_generations_type', 'type': 'c', 'table': 'media_generations', 'validated': True, 'definition': "CHECK (type::text = ANY (ARRAY['image'::character varying::text, 'video'::character varying::text, 'audio'::character varying::text]))"}
-KNOWN_CHECK_PAIRS = [(KNOWN_CHECK_SOURCE, KNOWN_CHECK_RESTORED), (KNOWN_MEDIA_CHECK_SOURCE, KNOWN_MEDIA_CHECK_RESTORED)]
-
-def known_check_pair(source, restored):
-    return any(source == expected and restored == actual for expected, actual in KNOWN_CHECK_PAIRS)
-
 def main():
     release_id = sys.argv[1]
     if not re.fullmatch(r"ans-[a-z0-9-]{8,64}", release_id):
@@ -174,8 +161,8 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
         indexes = [{"item": item} for item in sql(INDEX_SQL)]
         migrations = sql("SELECT row_to_json(t) FROM (" + MIGRATION_SQL + ") t")
         # Strict rendering compatibility witnessed on the isolated restored database.
-        # Permit precisely the investigated rendering pair, with a transactional
-        # PostgreSQL reparse witness, never text stripping or blanket exclusions.
+        # Every differing CHECK must retain all metadata and reparse to the exact
+        # restored definition. Any other constraint difference remains a failure.
         witnesses = []
         expected_constraints = source['constraints']
         if constraints != expected_constraints:
@@ -188,8 +175,15 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                 if actual == entry:
                     continue
                 a, b = entry['item'], actual['item']
-                if not known_check_pair(a, b):
-                    raise RuntimeError('Uninvestigated restore constraint difference')
+                # A PostgreSQL minor version may render explicit array casts
+                # differently after pg_restore. Verify the source expression by
+                # the restored server's parser, never by stripping SQL text.
+                if a.get('type') != 'c' or b.get('type') != 'c' or {
+                    key: value for key, value in a.items() if key != 'definition'
+                } != {key: value for key, value in b.items() if key != 'definition'}:
+                    raise RuntimeError('Restore constraint metadata changed')
+                if not a['definition'].startswith('CHECK (') or not b['definition'].startswith('CHECK ('):
+                    raise RuntimeError('Unrecognized CHECK definition')
                 witness = 'ans_witness_' + secrets.token_hex(6)
                 table = 'public.' + quote(a['table'])
                 literal = lambda value: "'" + value.replace("'", "''") + "'"

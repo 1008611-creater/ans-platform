@@ -27,6 +27,7 @@ import { createRequire } from "node:module";
 import {
   SEED_EMAIL,
   SEED_PASSWORD,
+  SEED_USERNAME,
   createReporter,
   readMode,
   registrationConfigured,
@@ -62,6 +63,7 @@ const PUBLIC_PAGES = [
 
 /** 需要登录的页面：只有拿到冒烟账号时才会被扫描。 */
 const PRIVATE_PAGES = [
+  [`/@${SEED_USERNAME}`, "个人主页与成长系统", "XP"],
   ["/collection", "我的收藏", null],
   ["/workflows/runs", "运行记录", null],
   ["/settings", "账户设置", null],
@@ -207,6 +209,11 @@ async function main() {
       await page.setViewport(MOBILE);
       for (const [pathname, label, expectText] of MOBILE_PAGES) {
         await scanPage(page, axeSource, store, failures, baseUrl, pathname, label, assertContent ? expectText : null);
+        scanned += 1;
+      }
+
+      if (seed.created) {
+        await scanPage(page, axeSource, store, failures, baseUrl, `/@${SEED_USERNAME}`, "移动端 个人主页与成长系统", "XP");
         scanned += 1;
       }
 
