@@ -95,7 +95,7 @@ def remap(value, attribute):
         parsed = urlparse(urljoin(SITE, value)); path = parsed.path
         lang = 'en' if path == '/en' or path.startswith('/en/') else 'zh'
         path = re.sub(r'^/en(?=/|$)', '', path) or '/'
-        aliases = {'/': '/vibe-hub', '/vibehub-skill': '/vibe-hub/skill', '/anti-ai-flavor': '/vibe-hub/anti-ai-flavor', '/practice': '/vibe-hub/practice', '/vibehub-skill/lab': '/vibe-hub/lab', '/changelog': '/vibe-hub/updates'}
+        aliases = {'/': '/vibe-hub', '/vibehub-skill': '/vibe-hub/vibehub-skill', '/anti-ai-flavor': '/vibe-hub/anti-ai-flavor', '/practice': '/vibe-hub/practice', '/vibehub-skill/lab': '/vibe-hub/lab', '/changelog': '/vibe-hub/updates'}
         if path.startswith('/topics/'):
             target = '/vibe-hub/topics?topic=' + path.rsplit('/', 1)[-1] + '&lang=' + lang
         else:

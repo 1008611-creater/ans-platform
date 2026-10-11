@@ -2,6 +2,8 @@ import { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { getAllChapters } from "@/lib/book/chapters";
 import vibeTerms from "./vibe-hub/terms.json";
+import vibeCourses from "@/data/vibehub/courses/index.json";
+import vibeTopics from "./vibe-hub/topics.json";
 import vibeJourneys from "@/data/vibehub/journeys-en.json";
 
 // Revalidate sitemap every hour (3600 seconds)
@@ -44,10 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const vibeStaticPages: MetadataRoute.Sitemap = ["vibe-hub", "vibe-hub/practice", "vibe-hub/anti-ai-flavor", "vibe-hub/skill", "vibe-hub/favorites", "vibe-hub/topics", "vibe-hub/journeys", "vibe-hub/lab", "vibe-hub/updates"].map((path) => ({ url: `${baseUrl}/${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: path === "vibe-hub" ? 0.9 : 0.6 }));
+  const vibeStaticPages: MetadataRoute.Sitemap = ["vibe-hub", "vibe-hub/practice", "vibe-hub/anti-ai-flavor", "vibe-hub/vibehub-skill", "vibe-hub/favorites", "vibe-hub/topics", "vibe-hub/journeys", "vibe-hub/lab", "vibe-hub/updates"].map((path) => ({ url: `${baseUrl}/${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: path === "vibe-hub" ? 0.9 : 0.6 }));
   const vibeTermPages: MetadataRoute.Sitemap = vibeTerms.map((term) => ({ url: `${baseUrl}/vibe-hub/${term.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 }));
 
   const vibeJourneyPages: MetadataRoute.Sitemap = vibeJourneys.data.results.map((journey) => ({ url: `${baseUrl}/vibe-hub/journeys/${journey.id}`, changeFrequency: "monthly" as const, priority: 0.5 }));
+
+  const vibeCoursePages: MetadataRoute.Sitemap = ["courses", ...new Set(vibeCourses.map(item=>`courses/${item.course}`)), ...vibeCourses.map(item=>`courses/${item.course}/${item.id}`), ...vibeTopics.map(item=>`topics/${item.slug}`)].map(path=>({url:`${baseUrl}/vibe-hub/${path}`,changeFrequency:"monthly" as const,priority:0.5}));
 
   // Book chapter pages
   const chapters = getAllChapters();
@@ -92,10 +96,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
-    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...categoryPages, ...promptPages, ...tagPages];
+    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...categoryPages, ...promptPages, ...tagPages];
   } catch {
     // Database unavailable (build time) - return static and book pages only
-    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...bookPages];
+    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...bookPages];
   }
 }
 

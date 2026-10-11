@@ -143,7 +143,9 @@
     "labContrast": "Description contrast",
     "labVerify": "Look away from the sliders. Can you identify the message and primary action quickly? Check that the supporting text is readable and the layout still fits a small screen.",
     "labContinue": "Continue",
-    "labTypography": "Typography"
+    "labTypography": "Typography",
+    "courses": "Courses",
+    "loadError": "This content could not be loaded. Please retry."
   },
   "zh": {
     "terms": "术语图鉴",
@@ -185,7 +187,7 @@
     "resolving": "正在查找…",
     "resolveEmpty": "暂无可靠匹配，试试更简短的描述。",
     "resolveError": "术语请求失败，请重试。",
-    "loading": "正在加载…",
+    "loading": "正在载入…",
     "previous": "上一个词条",
     "next": "下一个词条",
     "source": "官方原文",
@@ -289,6 +291,8 @@
     "labContrast": "说明文字对比度",
     "labVerify": "暂时不看滑块。能否快速找到主要信息和操作？检查辅助文字是否可读，以及小屏幕是否仍能完整展示。",
     "labContinue": "继续",
-    "labTypography": "排版"
+    "labTypography": "排版",
+    "courses": "课程",
+    "loadError": "内容暂时无法载入，请重试。"
   }
 }

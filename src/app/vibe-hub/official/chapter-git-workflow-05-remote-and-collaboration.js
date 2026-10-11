@@ -1,0 +1,333 @@
+// Derived from public VibeHub presentation code. Source hashes: src/data/vibehub/interaction-sources.json.
+"use client";
+
+let i = {
+  id: "05-remote-and-collaboration",
+  order: 5,
+  shortTitle: "远程与 PR",
+  header: {
+    visual: {
+      kind: "image",
+      src: "/vibe-hub/source/assets/git-workflow-chapter-05-overview-v1.webp",
+      srcEn: "/vibe-hub/source/assets/git-workflow-chapter-05-overview-en-v1.webp",
+      alt: "本地仓库与 GitHub 远程同步及 Pull Request 协作",
+      altEn: "Local repo sync with GitHub remote and Pull Request workflow",
+      width: 1536,
+      height: 1024
+    },
+    listVisual: {
+      src: "/vibe-hub/source/assets/git-workflow-chapter-05-list-v1.webp",
+      srcEn: "/vibe-hub/source/assets/git-workflow-chapter-05-list-en-v1.webp",
+      alt: "远程推送与拉取及代码审查示意图",
+      altEn: "Remote push, pull and code review diagram",
+      width: 640,
+      height: 640
+    }
+  },
+  coreTerms: ["push", "pull", "clone", "pull-request"],
+  title: "远程仓库与多人协作",
+  intro: "将本地项目关联到 GitHub 远程仓库，掌握推送（Push）、获取更新（Fetch）与拉取（Pull）的完整流程，并使用 Pull Request 进行代码审查与合并。",
+  sections: [{
+    id: "remote-sync",
+    title: "远程同步的三种动作：Clone、Push 与 Pull",
+    content: [{
+      kind: "paragraph",
+      content: ["在前面的章节中，我们的所有操作都发生在本地电脑上。但在实际项目中，我们通常需要把代码托管在 GitHub 等远程平台上，以便团队共享或者触发自动化构建。"]
+    }, {
+      kind: "paragraph",
+      content: ["围绕本地仓库与远程仓库，存在三个最基本的数据流转操作："]
+    }, {
+      kind: "paragraph",
+      content: ["第一个操作是 ", {
+        type: "term",
+        termId: "clone",
+        label: "克隆"
+      }, "。当我们要参与一个已有的项目时，普通克隆会下载仓库历史，在本地建立仓库并检出默认分支。浅克隆等选项可以限制下载范围。已有远程项目从 clone 开始，不必再 init；下文的初次关联用于本地新项目。"]
+    }, {
+      kind: "paragraph",
+      content: ["初次下载一个已有项目时，先在 GitHub 仓库页面复制仓库地址，然后在准备存放项目的目录中对 Agent 说："]
+    }, {
+      kind: "paragraph",
+      content: ["“帮我把这个远程仓库克隆到当前目录下：`https://github.com/YOUR_ACCOUNT/YOUR_REPO.git`。克隆完成后打开该项目，并告诉我当前分支和远程连接地址。”"]
+    }, {
+      kind: "paragraph",
+      content: ["Agent 底层执行的正是 `git clone` 命令。完成后它会向我们汇报检出的分支、文件状态与远程 origin 地址，我们不必手动下载或解压压缩包。私有仓库还需要对应的读取权限和认证，详见 ", {
+        type: "link",
+        label: "GitHub 克隆仓库说明",
+        href: "https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository"
+      }, "。"]
+    }, {
+      kind: "paragraph",
+      content: ["第二个操作是 ", {
+        type: "term",
+        termId: "push",
+        label: "推送"
+      }, "。当我们在本地完成了若干个 Commit 并测试无误后，推送会把这些新增的提交对象上传到远程仓库，并更新远程分支的指针。需要明确的是，推送只会传输已经提交的历史记录，未保存或未提交的工作区修改不会被推送到远程。初学者在运行推送时，有时会遇到终端提示 `[rejected - non-fast-forward]`。这通常是因为远程仓库中已经存在其他人提交的新代码，而我们本地还没有同步这部分更新。为了避免覆盖别人的提交历史，Git 会拦截推送，要求我们先完成拉取与整合。"]
+    }, {
+      kind: "paragraph",
+      content: ["第三个操作是 ", {
+        type: "term",
+        termId: "pull",
+        label: "拉取"
+      }, "。它先 fetch 获取远程更新，再按仓库配置整合到当前分支（如合并或仅快进）。不要把 pull 理解成固定的“下载加 merge”。"]
+    }, {
+      kind: "paragraph",
+      content: ["只想先看远程有没有新进度时，直接对 Agent 说："]
+    }, {
+      kind: "paragraph",
+      content: ["“先帮我检查远程 origin/main 分支相比本地有哪些新提交，只获取最新记录，先不要自动合并到当前工作区。”"]
+    }, {
+      kind: "paragraph",
+      content: ["Agent 底层会运行 `git fetch origin` 获取最新记录，并通过比对命令向我们列出远程多出的提交。这里的 `origin/main` 是保存在本地的远程分支记录，反映上次获取到的位置；服务器上的分支名是 `main`。fetch 只更新本地记录，不直接合并进当前分支或改写工作区。如果确认需要安全同步更新，对 Agent 说“拉取远程更新并只允许快进合并”（底层对应 `git pull --ff-only`）。出现历史分叉时它会拒绝整合，此时先检查差异并确认团队策略，不要靠强推绕过。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "git-remote-sync",
+          title: "本地与远程仓库之间的数据同步链条",
+          caption: "上图为推送前：本地购物车分支比远程多一个提交。下方是推送后可发起的 PR 示例，不代表真实项目检查结果。",
+          local: {
+            label: "本地计算机（Local Repository）",
+            branch: "feature/cart (HEAD)",
+            commits: ["c7d8e9f 完成登录", "e4f5a6b 实现购物车抽屉", "f7a8b9c 结算超时 8 秒 \xb7 待推送"]
+          },
+          remote: {
+            label: "GitHub 云端（Remote origin）",
+            branch: "feature/cart",
+            commits: ["c7d8e9f 完成登录", "e4f5a6b 实现购物车抽屉"]
+          },
+          pullRequest: {
+            title: "feat: 新增购物车商品抽屉与结算链路",
+            id: "14",
+            sourceBranch: "feature/cart",
+            targetBranch: "main",
+            checksStatus: "示例：必需检查通过",
+            reviewStatus: "示例：1 位审查者批准"
+          }
+        }
+      }
+    }]
+  }, {
+    id: "remote-connection",
+    title: "从本地到云端：SSH 密钥配对与初次关联 origin",
+    content: [{
+      kind: "paragraph",
+      content: ["先登录 ", {
+        type: "link",
+        label: "GitHub",
+        href: "https://github.com/"
+      }, "，使用 ", {
+        type: "link",
+        label: "新建仓库入口",
+        href: "https://github.com/new"
+      }, "，选择仓库所属账号、填写名称，并决定公开或私有。公开仓库里的内容可被他人查看；只给团队用时可选私有并按需添加协作者。为了接收本地已有历史，这里不要勾选 README、.gitignore 或许可证初始化选项，创建一个空仓库；具体界面见 ", {
+        type: "link",
+        label: "GitHub 新建仓库说明",
+        href: "https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository"
+      }, "。"]
+    }, {
+      kind: "paragraph",
+      content: ["下面只适用于本地已有提交、当前分支名为 main，且刚创建的空仓库允许自己写入。在初次关联前，可以直接对 Agent 说："]
+    }, {
+      kind: "paragraph",
+      content: ["“帮我检查当前项目有没有配置远程仓库地址，以及这台电脑是否已经能够通过 SSH 成功连通 GitHub。”"]
+    }, {
+      kind: "paragraph",
+      content: ["Agent 会在后台运行 `git remote -v` 核对现有地址，并通过 `ssh -T git@github.com` 测试连接。连接成功时，Agent 返回的提示会包含 `successfully authenticated` 和账号名。首次连接要求确认服务器指纹时，按 ", {
+        type: "link",
+        label: "GitHub 官方 SSH 指纹",
+        href: "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints"
+      }, " 核对。出现 `Permission denied (publickey)` 表示 SSH 公钥认证没有通过，应检查本机使用了哪把密钥、公钥是否加到了正确的 GitHub 账号；它不是 HTTPS 密码停用导致的报错。"]
+    }, {
+      kind: "paragraph",
+      content: ["在 SSH 认证体系中，公钥与私钥成对配合：公钥（带有 `.pub` 后缀的文件）相当于公开的锁，可以安全地配置在 GitHub 网站的账号设置里；私钥（不带后缀的文件）相当于开锁的钥匙，必须保密留在本机电脑中。连接时，Git 自动使用本机私钥与云端公钥核对，验证通过后即可完成上传与拉取。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "flow",
+          title: "SSH 密钥对的分工与认证流程",
+          caption: "公钥公开配置在云端，私钥保密留存本机；两者成对验证权限。",
+          steps: [{
+            title: "1. 本机生成密钥对",
+            detail: "生成公钥（id_ed25519.pub）与私钥（id_ed25519）两份成对的凭证。"
+          }, {
+            title: "2. 将公钥登记到 GitHub",
+            detail: "把公钥内容复制到 GitHub 账号设置中，相当于在云端挂上一把专属门锁。"
+          }, {
+            title: "3. 连接时自动配对验证",
+            detail: "推送或拉取代码时，Git 用本机私钥与云端公钥核对，无需每次输入密码。"
+          }]
+        }
+      }
+    }, {
+      kind: "paragraph",
+      content: ["只把公钥添加到 GitHub，私钥留在本机。如果还没有配置密钥，可以对 Agent 说：“检查这台电脑现有的 SSH 配置，帮我配置 GitHub 认证，不要覆盖已有密钥。告诉我应添加哪份公钥，并用 ssh -T 核对登录账号。”认证成功也不等于对任意仓库都有写入权限。需要自己操作时，按 ", {
+        type: "link",
+        label: "生成 SSH 密钥",
+        href: "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent"
+      }, "、", {
+        type: "link",
+        label: "把公钥添加到 GitHub",
+        href: "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account"
+      }, "、", {
+        type: "link",
+        label: "测试 SSH 连接",
+        href: "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/testing-your-ssh-connection"
+      }, " 的官方步骤完成。"]
+    }, {
+      kind: "paragraph",
+      content: ["你可以直接把 GitHub 仓库的地址发给 Agent，说：“帮我把当前项目关联到这个远程仓库地址，并把本地 main 分支的代码推送上去。”"]
+    }, {
+      kind: "paragraph",
+      content: ["Agent 底层执行的是两步标准操作："]
+    }, {
+      kind: "list",
+      items: [["首先关联远程地址：`git remote add origin <远程地址>`。这里的 `origin` 是 Git 习惯给这个远程地址起的本地别名。"], ["然后执行首次推送：`git push -u origin main`。这里的 `-u`（关联上游）非常实用，它的作用是", {
+        type: "strong",
+        text: "把本地的 main 和远程的 main 绑定在一起"
+      }, "。只要初次绑定过一次，以后在这个分支上推送或拉取代码时，直接简写成 `git push` 或 `git pull` 即可，不需要每次都重复打远程名和分支名。"]]
+    }, {
+      kind: "paragraph",
+      content: ["推送成功后，刷新 GitHub 网页，就能在仓库页面看到刚刚上传的文件与提交记录了。以后让 Agent 推送或自己操作，都不必再记复杂的网络参数。"]
+    }]
+  }, {
+    id: "collaboration-patterns",
+    title: "团队协作模式：内部分支 vs 开源 Fork",
+    content: [{
+      kind: "paragraph",
+      content: ["在借助 GitHub 开展多分支协作时，我们需要根据自己对仓库的权限，选择不同的协作路径："]
+    }, {
+      kind: "paragraph",
+      content: ["第一种是", {
+        type: "strong",
+        text: "内部分支模式（Direct Branch + PR）"
+      }, "。在个人独立项目或我们拥有直接写入权限的团队仓库中，我们可以直接从 `main` 主干切出专用的功能分支（例如 `feature/cart`），将该分支推送到 `origin` 远端，并在同一个仓库内部发起合并请求。这是大多数公司和既有团队最日常的开发路径。"]
+    }, {
+      kind: "paragraph",
+      content: ["第二种是", {
+        type: "strong",
+        text: "开源贡献与跨团队模式（Fork + Upstream PR）"
+      }, "。当我们想给一个公开的开源项目贡献代码，或者跨部门参与一个没有直接推送权限的公共仓库时，我们无法向对方的仓库直接推送新分支。此时标准做法是先在 GitHub 页面点击 ", {
+        type: "strong",
+        text: "Fork"
+      }, "（派生），在我们自己的 GitHub 账号下创建关联的仓库副本。我们在自己的副本仓库中自由修改、测试并推送分支，最后跨仓库向原作者的官方仓库（通常被称为 Upstream 上游仓库）提交一份 Pull Request。原作者在审核通过后，便可以将我们贡献的代码汇入官方版本。"]
+    }]
+  }, {
+    id: "pull-request-workflow",
+    title: "Pull Request 的运作流程与三种合并方式",
+    content: [{
+      kind: "paragraph",
+      content: ["在团队协作中，团队可以限制直接向 `main` 推送，要求先通过审查再合并；是否限制取决于仓库规则，合入 main 也不自动等于上线。常见的协作入口是", {
+        type: "term",
+        termId: "pull-request",
+        label: "Pull Request"
+      }, "。"]
+    }, {
+      kind: "paragraph",
+      content: ["Pull Request（合并请求）并不是 Git 的底层命令，而是 GitHub 等代码托管服务围绕分支管理建立的一套协作规范。它的核心流程是：开发者在独立分支上完成功能并推送到远程后，在平台上发起一份合并请求，申请将该分支的代码合入主干。"]
+    }, {
+      kind: "paragraph",
+      content: ["在合并请求页面上，团队成员可以逐行查看本次改动的代码差异，发表修改意见。团队可以配置", {
+        type: "strong",
+        text: "分支保护规则"
+      }, "（Branch Protection Rules），要求指定数量的审查批准，以及指定的自动检查通过。批准人数、必需检查和绕过权限由仓库设置决定；有绿色对勾不代表所有功能都已验证。"]
+    }, {
+      kind: "paragraph",
+      content: ["而在点击合并时，GitHub 提供了三种不同的合并策略供我们选择："]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "Create a merge commit（生成合并提交）"
+      }, "：原样保留该分支上的全部提交历史，哪怕分支中包含了“微调样式”、“修复错别字”等零碎提交，也会完整收录，并在主干上生成一个新的双亲合并节点。"], [{
+        type: "strong",
+        text: "Squash and merge（压缩合并）"
+      }, "：把 PR 的最终改动汇总成一个新提交，适合希望主干按任务记录的团队。它不会自动提高代码质量，主干也不会逐一保留分支原来的提交节点。"], [{
+        type: "strong",
+        text: "Rebase and merge（变基合并）"
+      }, "：将分支上的提交逐个重新追加到主干最新节点的最顶端，通常生成新的提交哈希，在这一段主干上不创建合并节点。具体选哪一种，以仓库开放的选项和团队约定为准。"]]
+    }, {
+      kind: "paragraph",
+      content: ["此外，在撰写 Pull Request 的描述时，如果我们包含类似于 `Fixes #12` 或 `Closes #34` 的关键词，当 PR 以默认分支为目标并合并后，GitHub 可自动关闭关联的 Issue。不要给尚未解决的问题填写关闭关键词。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "checklist",
+          title: "发起 Pull Request（PR）前的自检清单",
+          caption: "在将分支请求合并到团队主干前，确保改动完整且符合工程规范。",
+          heading: "PR 发起前检查项",
+          steps: [{
+            label: "核对目标分支与历史差异",
+            text: "先 fetch，再按团队约定判断是否需整合 main；有冲突先解决，不要擅自重写共享历史。"
+          }, {
+            label: "自动化测试与本地构建通过",
+            text: "从项目配置确认实际测试和构建命令，记录执行结果；未执行或失败的检查应明确写出。"
+          }, {
+            label: "清理临时调试日志与注释",
+            text: "检查是否混入无关的调试代码或秘密信息；不要顺便删除项目需要的日志。"
+          }, {
+            label: "说明修改背景与测试结果",
+            text: "清晰写明解决了什么问题、涉及哪些模块，附带测试通过的截图或日志说明。"
+          }]
+        }
+      }
+    }]
+  }, {
+    id: "agent-remote-prompt",
+    title: "怎样让 AI 安全推送并自动发起 PR",
+    content: [{
+      kind: "paragraph",
+      content: ["很多初学者在准备发起 Pull Request 时，会担心自己不会起规范的 PR 标题，或者不知道怎么用专业术语总结修改内容。其实我们完全不需要操心这些，PR 的标题和改动说明完全可以让 AI 根据代码差异（Diff）自动生成。"]
+    }, {
+      kind: "paragraph",
+      content: ["当我们让 AI 推送代码并提交合并请求时，真正需要把握的是安全边界与合并目标："]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "指定推送分支，明确禁止强推"
+      }, "：告诉 AI 把当前分支推送到远程，并明确提醒“不要强推（force push）”；如果推送被拒绝，让 AI 先说明原因，而不是强行覆盖远程历史。"], [{
+        type: "strong",
+        text: "指明合并目标，让 AI 自动起标题与说明"
+      }, "：告诉 AI 目标是合并到哪个分支（通常是 `main`），让 AI 根据代码差异自动提炼 PR 标题和改动说明，生成后由我们核对确认。"]]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "chat-flow",
+          title: "向 AI 下达安全推送与发起 PR 指令",
+          caption: "禁止破坏性强推，让 AI 自动生成 PR 标题与变更说明。",
+          messages: [{
+            role: "user",
+            text: "确认远程仓库地址和当前分支后，把当前购物车分支推送到 GitHub，不要强推；推送成功后帮我发起一个合并到 main 的 Pull Request，PR 标题和改动说明你根据这次代码差异自动生成就好。"
+          }, {
+            role: "agent",
+            text: "示例结果：已推送到 origin/feature/cart。已为你自动生成 PR 标题「feat: 新增购物车抽屉与结算流程」，并在说明中汇总了核心变更与验证结果，请确认后即可创建。"
+          }]
+        }
+      }
+    }, {
+      kind: "paragraph",
+      content: ["把推送安全与自动生成的清晰说明结合起来，既不需要初学者去死记专业格式，又能为团队协作留下清晰易懂的记录。"]
+    }]
+  }, {
+    id: "remote-summary",
+    title: "本章总结：确认推送目标，再交给团队审查",
+    content: [{
+      kind: "paragraph",
+      content: ["推送前确认账号、仓库和分支，PR 中核对改动与实际验证结果。", {
+        type: "strong",
+        text: "fetch 后，工作区会自动出现同事的新代码吗？"
+      }, " 不会；还需要按团队策略整合。下一章回到本地，处理需要撤销或临时搁置的改动。"]
+    }],
+    variant: "summary"
+  }]
+};
+export {};
+export default i;

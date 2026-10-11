@@ -59,7 +59,7 @@ for (const name of names) {
   });
   output.push(root.toString());
 }
-fs.writeFileSync(path.join(directory, "scoped.css"), (output.join("\n") + "\n" + fs.readFileSync(path.join(process.cwd(), "src/app/vibe-hub/vibe-hub.css"), "utf8")).replace(/[ \t]+$/gm, ""));
+fs.writeFileSync(path.join(directory, "scoped.css"), (output.join("\n") + "\n" + fs.readFileSync(path.join(process.cwd(), "src/app/vibe-hub/vibe-hub.css"), "utf8")).replaceAll("\r\n", "\n").replace(/[ \t]+$/gm, ""));
 console.log(`Scoped ${names.length} upstream stylesheets and localized their media URLs.`);
 
 updateVibeProvenance();

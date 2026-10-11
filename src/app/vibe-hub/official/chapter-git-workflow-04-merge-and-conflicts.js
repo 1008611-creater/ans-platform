@@ -1,0 +1,223 @@
+// Derived from public VibeHub presentation code. Source hashes: src/data/vibehub/interaction-sources.json.
+"use client";
+
+let n = {
+  id: "04-merge-and-conflicts",
+  order: 4,
+  shortTitle: "合并与冲突",
+  header: {
+    visual: {
+      kind: "image",
+      src: "/vibe-hub/source/assets/git-workflow-chapter-04-overview-v1.webp",
+      srcEn: "/vibe-hub/source/assets/git-workflow-chapter-04-overview-en-v1.webp",
+      alt: "快进合并、三方合并与冲突标记处理",
+      altEn: "Fast-forward, 3-way merge and merge conflict resolution",
+      width: 1536,
+      height: 1024
+    },
+    listVisual: {
+      src: "/vibe-hub/source/assets/git-workflow-chapter-04-list-v1.webp",
+      srcEn: "/vibe-hub/source/assets/git-workflow-chapter-04-list-en-v1.webp",
+      alt: "分支合并与代码冲突处理示意图",
+      altEn: "Branch merging and code conflict resolution diagram",
+      width: 640,
+      height: 640
+    }
+  },
+  coreTerms: ["merge", "diff"],
+  title: "分支合并与解决代码冲突",
+  intro: "当新功能在分支上验证通过后，将其合并回主线。理解快进合并与三方合并的机制，并在不同分支修改了同一处代码产生冲突时，指导 AI 正确解决冲突。",
+  sections: [{
+    id: "merge-mechanisms",
+    title: "快进合并与三方合并的区别",
+    content: [{
+      kind: "paragraph",
+      content: ["在分支上完成开发与测试之后，接下来的任务是将分支中的改动汇入主线代码。在 Git 中，", {
+        type: "term",
+        termId: "merge",
+        label: "代码合并"
+      }, " 的结果取决于两条分支的历史关系和合并选项。下面说明默认允许快进时的两种常见情况。"]
+    }, {
+      kind: "paragraph",
+      content: ["第一种情况是", {
+        type: "strong",
+        text: "快进合并"
+      }, "（Fast-forward）。如果在我们切出新分支之后，主干分支自身并没有产生任何新的提交，那么两者的历史实际上处于同一条直线上。此时执行合并，Git 只需要将主干分支的指针直接平移到新分支所在的位置即可。整个过程不产生额外的节点，历史记录呈现干净的单一线条。"]
+    }, {
+      kind: "paragraph",
+      content: ["第二种情况是", {
+        type: "strong",
+        text: "三方合并"
+      }, "（Three-way Merge）。如果在此期间主干分支也推进了新的提交，两条分支的历史便发生了分叉。之所以被称为“三方”，是因为 Git 在整合时需要同时比对三个版本：两者分叉时的共同祖先版本、主干分支的新改动，以及功能分支的新改动。有了共同祖先作为参照物，计算机才能准确判断某一行究竟是哪一方做出的修改。没有冲突时，Git 可以自动生成一个拥有两个父节点的“合并提交”（Merge Commit）；有冲突则先停下，等我们解决后再完成提交。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "git-merge-diagram",
+          title: "快进合并（Fast-forward） vs 三方合并（Three-way Merge）",
+          caption: "在允许快进的普通合并中，比较共同祖先与两个分支尖端；箭头表示历史推进方向。",
+          fastForward: {
+            title: "主干无新提交：指针直接快进",
+            summary: "main 分支在分叉后未发生任何改动，Git 直接将 main 指针移动到 feature 尖端。",
+            commits: ["C1 (Base)", "C2", "C3 (feature)"],
+            branchPointerMove: "main 指针直接前进到 C3，无需生成新提交节点",
+            actionNote: "历史记录呈现为一条清晰的直线，单人顺序开发时最常见。"
+          },
+          threeWay: {
+            title: "两侧均有独立提交：三方计算生成 Merge Commit",
+            summary: "main 与 feature 分叉后各自追加了新提交，Git 寻找共同祖先，合并差异生成新节点。",
+            ancestor: "C1 (共同祖先)",
+            mainTip: "C2 (main 新提交)",
+            featureTip: "C3 (feature 新提交)",
+            mergeCommit: "C4 (Merge Commit: 拥有 C2 和 C3 双亲)",
+            actionNote: "保留了完整的分支分叉与汇合记录；无法自动整合差异时会暂停提示冲突。"
+          }
+        }
+      }
+    }]
+  }, {
+    id: "conflict-cause",
+    title: "冲突为什么会发生，如何看懂冲突标记",
+    content: [{
+      kind: "paragraph",
+      content: ["当三方合并计算两边的修改时，如果两个分支修改了完全不同的文件，或者修改了同一文件的不同段落，Git 通常能够自动合并，但代码能自动合并不代表功能一定正确。然而，如果两个分支对同一个文件的同一行代码做出了不同的修改，Git 便可能无法判定该保留哪一方。删除文件与另一方修改该文件等情况，也会产生冲突。"]
+    }, {
+      kind: "paragraph",
+      content: ["此时就会产生", {
+        type: "strong",
+        text: "代码冲突"
+      }, "（Merge Conflict）。出现冲突并不是代码损坏，而是 Git 遇到无法自动决断的修改时采取的保护机制。Git 会暂停合并流程，并在冲突的文件内部插入明确的三段式标记："]
+    }, {
+      kind: "list",
+      items: [["`<<<<<<< HEAD`：标记当前所在分支的代码起点；"], ["`=======`：两条分支改动之间的分割线；"], ["`>>>>>>> feature/cart`：标记传入分支的代码终点。"]]
+    }, {
+      kind: "paragraph",
+      content: ["解决冲突的过程，本质上就是做一次清晰的代码取舍：人工或借助 AI 决定保留哪一部分代码，或者将两者的逻辑整合起来，最后彻底删除这些尖括号与等号标记。在这期间，我们依然可以随时通过 ", {
+        type: "term",
+        termId: "diff",
+        label: "差异对比"
+      }, " 来确认最终保留的内容是否准确。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "git-conflict-viewer",
+          title: "结算超时：冲突代码与解决结果",
+          caption: "静态示例：在 main 合并 feature/cart。已确认的要求是结算最多等待 8 秒，不能保留两个同名常量。",
+          filename: "src/lib/checkout.ts",
+          currentChange: {
+            branch: "main",
+            code: "const TIMEOUT_MS = 5000; // 主线结算超时",
+            note: "main 把结算超时改为 5 秒"
+          },
+          incomingChange: {
+            branch: "feature/cart",
+            code: "const TIMEOUT_MS = 8000; // 购物车分支结算超时",
+            note: "feature/cart 把结算超时改为 8 秒"
+          },
+          resolvedResult: {
+            code: "const TIMEOUT_MS = 8000; // 结算最多等待 8 秒",
+            note: "按示例需求保留 8 秒，只留下一个常量；没有新增重试功能。还需验证、git add 并完成合并。"
+          }
+        }
+      }
+    }, {
+      kind: "paragraph",
+      content: ["图中采用一个明确的示例需求：结算请求最多等待 8 秒。最终只保留一个 `TIMEOUT_MS = 8000`，这不等于实现了自动重试或其他功能。", {
+        type: "strong",
+        text: "能不能直接“保留双方”？"
+      }, " 不能原样留下两个同名常量，否则会重复声明。"]
+    }, {
+      kind: "paragraph",
+      content: ["在实际开发中，合并操作和冲突解决通常可以直接交给 Agent 处理，但关键是由你给出明确的裁决规则。"]
+    }, {
+      kind: "paragraph",
+      content: ["你可以直接对 Agent 说：“帮我把 feature/cart 分支合并到 main 分支。如果产生代码冲突，不要随意做决定，先告诉我冲突的具体位置，按照‘超时时间保留 8 秒’的规则解决；解决后运行测试，并告诉我合并结果。”"]
+    }, {
+      kind: "paragraph",
+      content: ["了解底层执行步骤，有助于我们看懂 Agent 的操作："]
+    }, {
+      kind: "list",
+      items: [["首先切换到目标分支并执行合并：`git switch main`，再运行 `git merge feature/cart`。"], ["若没有冲突，Git 会自动完成合并；若出现冲突，编辑冲突文件删除尖括号标记，只保留最终代码。"], ["解决完冲突文件后，运行 `git add` 标记该文件已解决，最后执行 `git merge --continue` 完成合并提交。"], ["如果中途发现合并方向不对想彻底反悔，只要对 Agent 说“取消这次合并”，底层执行 `git merge --abort`，项目就会回到合并开始前的干净状态。"]]
+    }]
+  }, {
+    id: "rebase-and-cherry-pick",
+    title: "可选了解：变基与单次挑选",
+    content: [{
+      kind: "paragraph",
+      content: ["除了直接合并，我们在实际协作中还会经常遇到两种整理历史的高级操作：", {
+        type: "strong",
+        text: "变基"
+      }, "（Rebase）与", {
+        type: "strong",
+        text: "单次挑选"
+      }, "（Cherry-pick）。"]
+    }, {
+      kind: "paragraph",
+      content: [{
+        type: "strong",
+        text: "变基（Rebase）"
+      }, "会把当前分支需要重放的改动，依次应用到新的起点，通常生成哈希不同的新提交。它可以整理这一段历史，但不会把整个仓库的所有分支变成直线，也可能发生冲突。已经被他人使用的共享提交，不应擅自变基；先遵循团队的历史管理约定。"]
+    }, {
+      kind: "paragraph",
+      content: [{
+        type: "strong",
+        text: "单次挑选（Cherry-pick）"
+      }, "用于把某次提交引入的改动应用到当前分支，通常创建一个新提交。例如只取实验分支里的一次按钮修复，而不合并整个实验功能。"]
+    }, {
+      kind: "paragraph",
+      content: ["单次挑选仍可能冲突，而且目标提交可能依赖更早的改动，不能只看标题就搬过来。本课先完成 merge 流程；遇到这些操作时，让 Agent 说明目标提交、依赖和对共享历史的影响，再决定是否采用。"]
+    }]
+  }, {
+    id: "agent-merge-prompt",
+    title: "怎样向 AI 表达合并与冲突处理需求",
+    content: [{
+      kind: "paragraph",
+      content: ["AI Agent 可以执行合并并提出冲突解决方案。但在发出指令时，我们需要给出明确的业务原则，而不是让 AI 随意决定代码取舍。"]
+    }, {
+      kind: "paragraph",
+      content: ["当我们要求 AI 合并分支时，应当提醒它在合并后运行项目的测试与构建命令。如果出现了冲突，我们应该要求 AI 先列出冲突文件并解释双方的改动内容，再按照我们指定的业务优先级来处理。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "chat-flow",
+          title: "向 AI 下达合并与冲突裁决指令",
+          caption: "示例对话：把业务要求与代码取舍对应起来，验证未完成就明确说明。",
+          messages: [{
+            role: "user",
+            text: "在干净的 main 上合并 feature/cart。结算超时保留 8 秒；其他冲突先说明双方差异。运行项目已有测试与构建，检查结算行为，再完成合并。"
+          }, {
+            role: "agent",
+            text: "示例进度：src/lib/checkout.ts 两边分别为 5 秒和 8 秒，已改成单个 8000 常量并删除标记。结算行为尚未验证，合并还未完成；下一步运行检查，再 add 和 merge --continue。"
+          }]
+        }
+      }
+    }, {
+      kind: "paragraph",
+      content: ["验收时检查最终代码和实际测试输出。Agent 没有运行的检查应明确列出，不能把“冲突标记已删除”当成功能已验证。"]
+    }]
+  }, {
+    id: "merge-summary",
+    title: "本章总结：合并汇聚历史，业务决定冲突取舍",
+    content: [{
+      kind: "paragraph",
+      content: ["在这一章中，我们对比了", {
+        type: "strong",
+        text: "快进合并与三方合并的差异"
+      }, "，理解了", {
+        type: "strong",
+        text: "代码冲突的成因与标记结构"
+      }, "，并掌握了", {
+        type: "strong",
+        text: "如何向 AI 明确合并要求与冲突解决原则"
+      }, "。代码合并是团队开发与多分支协作的核心环节。在下一章中，我们会走出本地环境，学习如何把代码推送到远程仓库，并通过 Pull Request 与他人协作。"]
+    }],
+    variant: "summary"
+  }]
+};
+export {};
+export default n;

@@ -25,7 +25,7 @@ export function Catalog({ data, initialTopic = "frontend", initialQuery = "" }: 
   const count = groups.reduce((sum, group) => sum + group.slugs.length, 0);
   return <main className="vh-catalog">
     <nav className="vh-topic-row" aria-label={t("topics")}>
-      {data.topics.map((item) => <Link key={item.slug} href={`/vibe-hub/topics?topic=${item.slug}&lang=${lang}`} className={topic.slug === item.slug && !query ? "active" : ""}>{t(item.slug)}<small>{item[lang].groups.reduce((sum, group) => sum + group.slugs.length, 0)}</small></Link>)}
+      {data.topics.map((item) => <Link key={item.slug} href={`/vibe-hub/topics/${item.slug}?lang=${lang}`} className={topic.slug === item.slug && !query ? "active" : ""}>{t(item.slug)}<small>{item[lang].groups.reduce((sum, group) => sum + group.slugs.length, 0)}</small></Link>)}
       <Link href={`/vibe-hub/favorites?lang=${lang}`}>{t("saved")}</Link>
     </nav>
     <div className="vh-catalog-layout">

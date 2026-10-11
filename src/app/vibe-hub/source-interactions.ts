@@ -1,6 +1,5 @@
-import type { FlowLesson } from "./source-data";
 /** Enhance the official, sanitized examples while preserving their visual markup. */
-export function enhanceSource(root: HTMLElement, messages: { done: string; invalid: string; fileError: string; copied: string; copyError: string }, flowLesson?: FlowLesson | null) {
+export function enhanceSource(root: HTMLElement, messages: { done: string; invalid: string; fileError: string; copied: string; copyError: string }) {
   const timers = new Set<ReturnType<typeof setTimeout>>();
   const cleanups: (() => void)[] = [];
   const status = (parent: Element, text: string) => {
@@ -50,38 +49,37 @@ export function enhanceSource(root: HTMLElement, messages: { done: string; inval
     for (let index = 0; index < offset + days; index++) { const cell = document.createElement("span"); cell.className = index < offset ? "dp-cell dim" : "dp-cell"; cell.textContent = index < offset ? "" : String(index - offset + 1); if (index >= offset) { cell.setAttribute("role", "button"); cell.tabIndex = 0; } grid.append(cell); }
     const first = grid.querySelector(".dp-cell:not(.dim)"); if (first) chooseDate(first);
   };
-  let flowIndex = 0;
-  const updateFlow = (index: number) => {
-    if (!flowLesson?.steps.length) return;
-    flowIndex = Math.max(0, Math.min(flowLesson.steps.length - 1, index));
-    const step = flowLesson.steps[flowIndex];
-    const journey = root.querySelector(".flow-journey"); if (!journey) return;
-    const scene = journey.querySelector<HTMLElement>(".fj-scene"); if (scene) scene.dataset.step = step.id;
-    const counter = journey.querySelector(".fj-now-index"); if (counter) counter.textContent = `${flowIndex + 1} / ${flowLesson.steps.length}`;
-    const title = journey.querySelector(".fj-now-head strong"); if (title) title.textContent = step.label;
-    const detail = journey.querySelector(".fj-now-detail"); if (detail) detail.textContent = `${step.owner} ? ${step.detail}`;
-    const focus = journey.querySelector<HTMLElement>(".fj-now-head em"); if (focus) focus.hidden = !step.focused;
-    journey.querySelectorAll<HTMLButtonElement>(".fj-nav").forEach((button, position) => { button.disabled = position === 0 ? flowIndex === 0 : flowIndex === flowLesson.steps.length - 1; });
-    const zones: Record<string, string> = { input: "frontend", request: "api", validate: "backend", write: "database", response: "api", display: "frontend" };
-    journey.querySelectorAll<HTMLElement>(".fj-zone").forEach(zone => { const selected = zone.classList.contains(`fj-${zones[step.id]}`); zone.classList.toggle("is-active", selected); zone.classList.toggle("is-focus", selected && step.focused); });
+  const activateAnatomy = (wrap: HTMLElement, key?: string) => {
+    wrap.querySelectorAll(".is-anat-active").forEach(item => item.classList.remove("is-anat-active"));
+    wrap.querySelectorAll<HTMLElement>(".anat-stage .ap[data-callout]").forEach(item => delete item.dataset.callout);
+    delete wrap.dataset.activeAp;
+    if (!key) return;
+    const row = [...wrap.querySelectorAll<HTMLElement>(".anat-part[data-ap]")].find(item => item.dataset.ap === key);
+    const regions = [...wrap.querySelectorAll<HTMLElement>(".anat-stage .ap[data-ap]")].filter(item => item.dataset.ap === key);
+    if (!row || !regions.length) return;
+    row.classList.add("is-anat-active"); wrap.dataset.activeAp = key;
+    regions.forEach(item => { item.dataset.callout = row.querySelector(".idx")?.textContent?.trim() || ""; item.classList.add("is-anat-active"); });
   };
-  updateFlow(0);
+  const unlockAnatomy = (wrap: HTMLElement) => {
+    delete wrap.dataset.lockedAp;
+    wrap.querySelectorAll(".is-anat-locked").forEach(item => { item.classList.remove("is-anat-locked"); item.querySelector(".anat-part-trigger")?.setAttribute("aria-pressed", "false"); });
+    activateAnatomy(wrap);
+  };
+  const closeSelect = (wrap: Element) => { wrap.classList.remove("open"); wrap.querySelector("[data-custom-select-trigger]")?.setAttribute("aria-expanded", "false"); };
   const click = (event: MouseEvent) => {
-    const target = event.target instanceof Element ? event.target : null; if (!target) return;
-    const sceneButton = target.closest<HTMLButtonElement>(".scene-controls button");
-    if (sceneButton) {
-      const controls = sceneButton.parentElement; const buttons = [...(controls?.querySelectorAll("button") || [])]; const index = buttons.indexOf(sceneButton);
-      buttons.forEach(button => { button.classList.toggle("on", button === sceneButton); button.setAttribute("aria-pressed", String(button === sceneButton)); });
-      const scene = sceneButton.closest(".interactive-demo,.concept-stage");
-      scene?.querySelectorAll<HTMLElement>('[class*="state-"]').forEach(node => { node.className = node.className.replace(/\bstate-\d+\b/g, `state-${index}`); });
-      if (scene) status(scene, sceneButton.textContent?.trim() || ""); return;
+    const target = event.target instanceof Element ? event.target : null; if (!target || target.closest("[data-vh-react]")) return;
+    const part = target.closest<HTMLElement>(".anat-stage .ap,.anat-part");
+    const wrap = part?.closest<HTMLElement>(".anat-wrap");
+    if (part && wrap && !target.closest(".anat-part .pd a,.anat-part .pd button")) {
+      event.preventDefault(); root.querySelectorAll<HTMLElement>(".anat-wrap[data-locked-ap]").forEach(item => { if (item !== wrap) unlockAnatomy(item); });
+      const key = part.dataset.ap;
+      if (!key || wrap.dataset.lockedAp === key) unlockAnatomy(wrap);
+      else { unlockAnatomy(wrap); wrap.dataset.lockedAp = key; const row = [...wrap.querySelectorAll<HTMLElement>(".anat-part[data-ap]")].find(item => item.dataset.ap === key); row?.classList.add("is-anat-locked"); row?.querySelector(".anat-part-trigger")?.setAttribute("aria-pressed", "true"); activateAnatomy(wrap, key); }
+      return;
     }
-    const counterButton = target.closest(".react-workbench .shop-preview button,.vue-workbench .shop-preview button");
-    if (counterButton) { const count = counterButton.querySelector("strong"); if (count) count.textContent = String((Number(count.textContent) || 0) + 1); return; }
-    const flowNavigation = target.closest(".fj-nav");
-    if (flowNavigation) { const controls = [...(flowNavigation.parentElement?.querySelectorAll(".fj-nav") || [])]; updateFlow(flowIndex + (controls.indexOf(flowNavigation) === 0 ? -1 : 1)); return; }
-    const flowAnswer = target.closest(".flow-practice-option");
-    if (flowAnswer && flowLesson?.practice) { const section = flowAnswer.closest(".flow-practice"); const buttons = [...(section?.querySelectorAll(".flow-practice-option") || [])]; const answer = flowLesson.practice.options[buttons.indexOf(flowAnswer)]; buttons.forEach(button => button.setAttribute("aria-checked", String(button === flowAnswer))); if (answer && section) status(section, answer.feedback); return; }
+    root.querySelectorAll<HTMLElement>(".anat-wrap[data-locked-ap]").forEach(unlockAnatomy);
+    const closeTag = target.closest("[data-close-tag]"); if (closeTag) { closeTag.closest(".demo-tag")?.remove(); return; }
+    root.querySelectorAll("[data-custom-select].open").forEach(item => { if (!item.contains(target)) closeSelect(item); });
     const trigger = target.closest<HTMLElement>("[data-custom-select-trigger]");
     if (trigger) { const wrap = trigger.closest("[data-custom-select]"); const open = wrap?.classList.toggle("open"); trigger.setAttribute("aria-expanded", String(open)); return; }
     const option = target.closest<HTMLElement>("[data-custom-select-option]");
@@ -110,7 +108,6 @@ export function enhanceSource(root: HTMLElement, messages: { done: string; inval
       const text = code ? [...code.childNodes].map(node => node.textContent).join("\n").trim() : section?.querySelector("p")?.textContent;
       if (text) { void (async () => { try { await navigator.clipboard.writeText(text); copy.classList.add("is-copied"); status(section || root, messages.copied); const timer = setTimeout(() => { copy.classList.remove("is-copied"); timers.delete(timer); }, 2000); timers.add(timer); } catch { status(section || root, messages.copyError); } })(); } return;
     }
-    const skillTerm = target.closest(".skill-browser-term-trigger"); if (skillTerm) { const existing = root.querySelector("#skill-tooltip-preview"); if (existing) { existing.remove(); skillTerm.setAttribute("aria-expanded", "false"); } else { const panel = document.createElement("div"); panel.id = "skill-tooltip-preview"; panel.className = "vh-example-status"; const link = document.createElement("a"); const lang = root.closest("[lang]")?.getAttribute("lang") || "zh"; link.href = `/vibe-hub/tooltip?lang=${lang}`; link.textContent = "Tooltip ↗"; panel.append(link); skillTerm.parentElement?.append(panel); skillTerm.setAttribute("aria-expanded", "true"); } return; }
     const formAction = target.closest(".form-actions button,.button-panel-submit,.disabled-live:not(:disabled)");
     if (formAction) {
       const form = formAction.closest(".form-demo,.button-panel,.disabled-play"); if (!form) return;
@@ -122,13 +119,13 @@ export function enhanceSource(root: HTMLElement, messages: { done: string; inval
     }
   };
   const input = (event: Event) => {
-    const node = event.target; if (!(node instanceof HTMLInputElement)) return;
+    const node = event.target; if (!(node instanceof HTMLInputElement) || node.closest("[data-vh-react]")) return;
     if (node.matches(".disabled-demo-input")) { const button = node.parentElement?.querySelector<HTMLButtonElement>("button.disabled-live"); if (button) { button.disabled = !node.value.trim(); button.classList.toggle("off", button.disabled); } }
     if (node.matches(".ac-wrap input")) node.closest(".ac-wrap")?.querySelectorAll<HTMLElement>(".ac-item").forEach(item => { item.hidden = !(item.textContent || "").toLowerCase().includes(node.value.toLowerCase()); });
   };
   const keydown = (event: KeyboardEvent) => {
-    const node = event.target instanceof HTMLElement ? event.target : null; if (!node) return;
-    if (node.matches(".flow-journey") && ["ArrowLeft", "ArrowRight"].includes(event.key)) { event.preventDefault(); updateFlow(flowIndex + (event.key === "ArrowLeft" ? -1 : 1)); }
+    const node = event.target instanceof HTMLElement ? event.target : null; if (!node || node.closest("[data-vh-react]")) return;
+    if (event.key === "Escape") { const anatomy = node.closest<HTMLElement>(".anat-wrap[data-locked-ap]"); if (anatomy) { event.preventDefault(); unlockAnatomy(anatomy); return; } }
     if (node.matches('[role="button"],[role="radio"]') && node.tagName !== "BUTTON" && ["Enter", " "].includes(event.key)) { event.preventDefault(); node.click(); }
     const group = node.closest(".demo-tabs,[data-custom-select],.rate-demo");
     if (group && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) { const items = [...group.querySelectorAll<HTMLElement>(".tab,[data-custom-select-option],i[role=radio]")]; if (!items.length) return; event.preventDefault(); const index = items.indexOf(node); const delta = ["ArrowLeft", "ArrowUp"].includes(event.key) ? -1 : 1; const next = event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : (index + delta + items.length) % items.length; items[next].focus(); if (node.matches(".tab,i[role=radio]")) items[next].click(); }
@@ -142,6 +139,24 @@ export function enhanceSource(root: HTMLElement, messages: { done: string; inval
     drop.addEventListener("click", choose); picker.addEventListener("change", change); drop.addEventListener("dragover", drag); drop.addEventListener("drop", dropped);
     cleanups.push(() => { drop.removeEventListener("click", choose); picker.removeEventListener("change", change); drop.removeEventListener("dragover", drag); drop.removeEventListener("drop", dropped); picker.remove(); });
   });
+  const hover = (event: MouseEvent) => {
+    const element = event.target instanceof Element ? event.target : null;
+    if (!element || element.closest("[data-vh-react]")) return;
+    const part = element.closest<HTMLElement>(".anat-part,.anat-stage .ap"); const wrap = part?.closest<HTMLElement>(".anat-wrap");
+    if (!wrap) return;
+    const next = event.relatedTarget instanceof Element ? event.relatedTarget.closest<HTMLElement>(".anat-part,.anat-stage .ap") : null;
+    activateAnatomy(wrap, event.type === "mouseover" ? part?.dataset.ap : next?.closest(".anat-wrap") === wrap ? next.dataset.ap : wrap.dataset.lockedAp);
+  };
+  const pointerdown = (event: PointerEvent) => {
+    const element = event.target instanceof Element ? event.target : null;
+    const item = element?.closest<HTMLElement>("[data-drag]"); if (!item || element?.closest("[data-vh-react]")) return;
+    event.preventDefault(); event.stopPropagation(); const x = event.clientX; const y = event.clientY;
+    const move = (next: PointerEvent) => { item.style.transform = `translate(${next.clientX - x}px, ${next.clientY - y}px)`; item.classList.add("dragging"); };
+    const stop = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", stop); window.removeEventListener("pointercancel", stop); item.classList.remove("dragging"); item.style.transition = "transform .35s cubic-bezier(.2,.8,.2,1)"; item.style.transform = ""; const timer = setTimeout(() => { item.style.transition = ""; timers.delete(timer); }, 400); timers.add(timer); };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", stop); window.addEventListener("pointercancel", stop);
+    cleanups.push(() => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", stop); window.removeEventListener("pointercancel", stop); item.style.transform = ""; item.style.transition = ""; item.classList.remove("dragging"); });
+  };
+  root.addEventListener("mouseover", hover); root.addEventListener("mouseout", hover); root.addEventListener("pointerdown", pointerdown);
   root.addEventListener("click", click); root.addEventListener("input", input); root.addEventListener("keydown", keydown);
-  return () => { root.removeEventListener("click", click); root.removeEventListener("input", input); root.removeEventListener("keydown", keydown); timers.forEach(clearTimeout); cleanups.forEach(cleanup => cleanup()); };
+  return () => { root.removeEventListener("mouseover", hover); root.removeEventListener("mouseout", hover); root.removeEventListener("pointerdown", pointerdown); root.removeEventListener("click", click); root.removeEventListener("input", input); root.removeEventListener("keydown", keydown); timers.forEach(clearTimeout); cleanups.forEach(cleanup => cleanup()); };
 }

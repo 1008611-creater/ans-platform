@@ -1,0 +1,180 @@
+// Derived from public VibeHub presentation code. Source hashes: src/data/vibehub/interaction-sources.json.
+"use client";
+
+let n = {
+  id: "05-evidence-pricing-faq",
+  order: 5,
+  shortTitle: "证据与定价",
+  header: {
+    visual: {
+      kind: "image",
+      src: "/vibe-hub/source/assets/product-website-chapter-06-evidence-v3.webp",
+      alt: "小人和猫用放大镜核对证据、价格和常见问题",
+      width: 1536,
+      height: 1024
+    },
+    listVisual: {
+      src: "/vibe-hub/source/assets/product-website-chapter-06-list-v2.webp",
+      alt: "小人和猫用放大镜检查产品证据和价格资料",
+      width: 640,
+      height: 640
+    }
+  },
+  coreTerms: ["social-proof", "user-voice", "pricing", "faq"],
+  title: "真实证据、定价与常见问题",
+  intro: "了解了产品功能后，访客通常需要进一步确认可靠性、价格方案和使用限制。本章介绍如何组织真实的用户证据、透明的定价对比以及常见问题解答（FAQ）。",
+  sections: [{
+    id: "match-claim-and-source",
+    title: "社会证明与真实证据",
+    content: [{
+      kind: "paragraph",
+      content: ["在网页设计中，客户评价、用户量数据或合作企业 Logo 墙统称为", {
+        type: "term",
+        termId: "social-proof",
+        label: "社会证明"
+      }, "（Social Proof）。"]
+    }, {
+      kind: "paragraph",
+      content: ["新项目不需要虚构用户数量或合作企业标识。相比没有来源的背书，真实的产品运行截图或生成示例往往更具说明力。"]
+    }, {
+      kind: "paragraph",
+      content: ["展示功能录屏或界面截图，说明软件实际能完成的任务，是早期产品最自然的证据呈现方式。"]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "对 AI 这样说"
+      }, "：“我们是刚起步的新项目，不要生成虚构的知名客户 Logo 墙或夸大的用户数字。帮我做一个真实能力展示区，用产品实际生成的作品页截图，搭配一两句说明，证明工具的排版效果。”"]]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "flow",
+          title: "一句宣传内容怎样变成可以发布的证据",
+          caption: "评价、Logo 和数字需要各自的来源，页面样式不能替代核对。",
+          steps: [{
+            title: "页面主张",
+            detail: "例如“提升 20%”"
+          }, {
+            title: "补齐来源",
+            detail: "对象、对比、时间和授权"
+          }, {
+            title: "决定发布",
+            detail: "完整才展示，否则删除"
+          }]
+        }
+      }
+    }]
+  }, {
+    id: "handle-voice-and-numbers",
+    title: "用户原声的呈现方式",
+    content: [{
+      kind: "paragraph",
+      content: ["真实测试用户的评价，称为", {
+        type: "term",
+        termId: "user-voice",
+        label: "用户原声"
+      }, "（User Voice）。"]
+    }, {
+      kind: "paragraph",
+      content: ["整理用户评价时，保留他们原本的口语表达往往更加真实。例如：“以前每次整理作品集要花几个小时，现在半小时就能把过程稿理成清晰的网页，发给客户很方便。”"]
+    }, {
+      kind: "paragraph",
+      content: ["包含具体耗时和实际使用场景的评价，更容易让遇到同类问题的访客理解产品的实际价值。"]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "对 AI 这样说"
+      }, "：“帮我设计 3 张用户原声卡片，展示用户昵称、职业标签和一段短评，说明工具帮他们节省了多少时间。文案保持日常口语表达，不要写成广告口号。”"]]
+    }]
+  }, {
+    id: "describe-pricing-boundary",
+    title: "定价方案与权益边界",
+    content: [{
+      kind: "paragraph",
+      content: ["向用户展示", {
+        type: "term",
+        termId: "pricing",
+        label: "定价与方案"
+      }, "（Pricing）时，核心是说明不同版本之间的功能权益差异。"]
+    }, {
+      kind: "paragraph",
+      content: ["常见的做法是区分免费版和付费版："]
+    }, {
+      kind: "list",
+      items: [["明确权益：列出哪些功能免费可用，哪些属于付费权益（例如绑定自定义域名、去除导出限制等）。"], ["标明边界：如果某些计费模式或支付功能还在开发中，可以直接标注「即将开放」，并说明后续通知方式。"]]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "对 AI 这样说"
+      }, "：“帮我做一个双列定价卡片（免费版 vs 专业版）。清晰对比功能权益；由于在线支付还在对接，专业版按钮显示为‘即将开放’，下方附带一行小字‘正式上线时将通过邮件通知’。”"]]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "before-after",
+          title: "没有来源的数字，先撤下来",
+          caption: "左边是 AI 常给的第一版：数字没有来源。右边是调整后的做法：先说明评价整理中。",
+          agentSay: "没有来源的数字和评价先撤下，换成「整理中」的说明",
+          before: {
+            label: "AI 给的第一版 \xb7 数字来路不明",
+            card: {
+              title: "30,000+ 用户的选择",
+              text: "「效率提升 20%」「好评率 99%」——和谁比？统计了多久？没人说得清",
+              chips: ["30,000+ 用户", "好评率 99%", "效率提升 20%"],
+              tone: "problem"
+            }
+          },
+          after: {
+            label: "调整之后 \xb7 每个说法都能核对",
+            note: "标「整理中」是正常做法。等真实数据有了来源和口径，再放上去。",
+            card: {
+              title: "评价整理中",
+              text: "上线后第一时间公开真实用户反馈和统计口径",
+              chips: ["评价整理中"],
+              primaryChip: !0,
+              tone: "fixed"
+            }
+          }
+        }
+      }
+    }]
+  }, {
+    id: "answer-real-concerns",
+    title: "常见问题（FAQ）的组织原则",
+    content: [{
+      kind: "paragraph",
+      content: [{
+        type: "term",
+        termId: "faq",
+        label: "常见问题"
+      }, "（FAQ）的作用是在决策环节解答访客的具体疑问。"]
+    }, {
+      kind: "paragraph",
+      content: ["编写 FAQ 时，建议第一句话先给出明确结论，再展开说明具体规则："]
+    }, {
+      kind: "list",
+      items: [["“需要自己买服务器或域名吗？”——“不需要。所有生成的页面都由我们提供基础托管；如果你有自己的独立域名，也可以绑定。”"], ["“免费版生成的页面会有水印吗？”——“不会。免费版排版保持简洁，没有强制品牌水印。”"]]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "对 AI 这样说"
+      }, "：“帮我写 4 条针对作品页工具的常见问题（FAQ）。解答关于‘是否需要自备服务器’、‘支持从哪些平台导入素材’、‘免费版作品数量限制’、‘是否适配手机’这四个问题。每条解答第一句直接回答‘是/否/不需要’，后面用一两句话解释规则。”"]]
+    }]
+  }, {
+    id: "summarize-evidence-pricing-faq",
+    title: "本章总结",
+    content: [{
+      kind: "paragraph",
+      content: ["本章介绍了真实证据的呈现方式、用户原声的整理、定价方案的对比以及 FAQ 的编写要点。下一章，我们将讨论盒模型、间距贴边、内容溢出与层叠遮挡等布局问题。"]
+    }],
+    variant: "summary"
+  }]
+};
+export {};
+export default n;

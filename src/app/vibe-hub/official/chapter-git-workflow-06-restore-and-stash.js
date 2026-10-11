@@ -1,0 +1,183 @@
+// Derived from public VibeHub presentation code. Source hashes: src/data/vibehub/interaction-sources.json.
+"use client";
+
+let s = {
+  id: "06-restore-and-stash",
+  order: 6,
+  shortTitle: "撤销与暂存",
+  header: {
+    visual: {
+      kind: "image",
+      src: "/vibe-hub/source/assets/git-workflow-chapter-06-overview-v1.webp",
+      srcEn: "/vibe-hub/source/assets/git-workflow-chapter-06-overview-en-v1.webp",
+      alt: "工作区修改放弃、历史反向提交与临时存储",
+      altEn: "Discard working tree changes, append inverse commits and stash",
+      width: 1536,
+      height: 1024
+    },
+    listVisual: {
+      src: "/vibe-hub/source/assets/git-workflow-chapter-06-list-v1.webp",
+      srcEn: "/vibe-hub/source/assets/git-workflow-chapter-06-list-en-v1.webp",
+      alt: "撤销修改与暂存操作示意图",
+      altEn: "Safe undo operations and temporary stash drawer diagram",
+      width: 640,
+      height: 640
+    }
+  },
+  coreTerms: ["stash", "worktree"],
+  title: "撤销修改与临时暂存",
+  intro: "掌握放弃未暂存修改（Restore）、通过反向提交安全回退历史（Revert），以及在临时切换任务时使用 Stash 保存当前未完成的工作。",
+  sections: [{
+    id: "undo-mechanisms",
+    title: "放弃未提交改动 vs 撤销已提交历史",
+    content: [{
+      kind: "paragraph",
+      content: ["在日常开发中，当我们发现某段代码写得不符合预期想要撤销时，我们不需要自己去记忆和输入复杂的恢复参数，直接用自然语言把要放弃或保留的范围清楚地告诉 Agent 即可。先让 Agent 检查当前未暂存、已暂存和已提交的代码状态，再按需选择恢复层级："]
+    }, {
+      kind: "paragraph",
+      content: ["面对未提交的修改，我们有三种不同层级的恢复需求。如果我们刚写的代码逻辑混乱，且尚未执行 commit，就可以使用 restore 直接把文件还原成上一次提交时的样子。需要注意的是，丢弃未提交的修改是不可逆的，被覆盖的内容无法找回。这类具体的参数命令完全可以直接交给 Agent 处理，关键是把你的诉求用自然语言说清楚："]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "只放弃尚未暂存的改动"
+      }, "：对 Agent 说“放弃购物车抽屉组件中尚未暂存的编辑，恢复到刚才暂存的状态”（底层对应 `git restore <file>`）。例如暂存区是 B，工作区改成了 C，执行后工作区恢复为 B。"], [{
+        type: "strong",
+        text: "只取消暂存、继续保留编辑"
+      }, "：对 Agent 说“把购物车抽屉组件移出暂存区，但保留我对文件的最新修改”（底层对应 `git restore --staged <file>`）。"], [{
+        type: "strong",
+        text: "彻底退回最近一次提交"
+      }, "：对 Agent 说“放弃购物车抽屉组件所有的未提交修改，彻底还原成最近一次提交时的样子”（底层对应把工作区与暂存区同时还原为 HEAD）。"]]
+    }, {
+      kind: "paragraph",
+      content: ["第二种情况是代码已经生成了 Commit，甚至已经推送到远程仓库。此时如果我们直接用硬重置等暴力手段去抹除历史，会导致其他协作者无法正常同步。共享分支上通常选择", {
+        type: "strong",
+        text: "反向提交（Revert）"
+      }, "：自动新增一次提交，抵消指定提交引入的改动。例如上一次提交新增了两行代码，反向提交就会自动删掉这两行代码，既撤销了改动，又完整保留了操作历史。"]
+    }, {
+      kind: "paragraph",
+      content: ["你可以直接对 Agent 说：“帮我创建一个反向提交，撤销最近一次提交的修改。” Agent 底层执行的正是 `git revert` 命令（例如 `git revert --no-edit HEAD`）。撤销后，历史中会多出一行清晰的 Revert 记录，既安全又公开透明。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "git-undo-diagram",
+          title: "先确定恢复来源，再选择操作",
+          caption: "A 为 HEAD 版本、B 为 add 后暂存版本、C 为继续编辑的工作区版本。默认 restore 后，工作区从 C 变成 B。",
+          methods: [{
+            command: "git restore <file>",
+            scope: "工作区（Working Directory）",
+            mechanism: "来源：暂存区 B → 工作区 C 变为 B；HEAD 与暂存区不变",
+            historyImpact: "不产生提交；被覆盖的 C 若未另存，Git 不能保证找回",
+            safeTone: "caution"
+          }, {
+            command: "git revert <commit>",
+            scope: "历史提交链（Commit History）",
+            mechanism: "撤销指定提交引入的改动，生成新提交；可能产生冲突",
+            historyImpact: "保留既有历史；不等于把整个项目退回旧版本",
+            safeTone: "safe"
+          }],
+          stashDetail: {
+            label: "Stash：临时存放，不是 add 暂存区",
+            desc: "默认只保存已跟踪文件的工作区和暂存区改动；-u 也包含未跟踪文件。pop 冲突时记录保留，先处理冲突再继续。",
+            popCmd: "git stash pop"
+          }
+        }
+      }
+    }]
+  }, {
+    id: "stash-and-worktree",
+    title: "临时存放改动，或使用另一个工作目录",
+    content: [{
+      kind: "paragraph",
+      content: ["在实际开发中，经常会遇到这种情况：我们正在当前分支上编写某个功能，代码刚写了一半，尚未调试完毕，甚至还处于报错状态，无法生成一次完整的 Commit；此时突然需要紧急切换到另一个分支查看或修复问题。如果直接切换分支，这些未完成的改动可能会阻止切换，或者被错误地带到另一个分支造成混淆。"]
+    }, {
+      kind: "paragraph",
+      content: [{
+        type: "term",
+        termId: "stash",
+        label: "临时存放（Stash）"
+      }, ' 可以把已跟踪文件的工作区和暂存区改动暂时收纳起来，让当前工作区恢复干净。但默认不包含未跟踪的新文件，需要一起保存新文件时，用 `git stash push -u -m "购物车进行中"`；`-u` 仍不包含被忽略的文件。它与 add 使用的暂存区是两回事。']
+    }, {
+      kind: "paragraph",
+      content: ["用 `git stash list` 确认出现“购物车进行中”，再用 `git status` 核对剩余文件。在其他分支处理完工作并切回原分支后，运行 `git stash pop` 会取出最近一份收纳的改动，成功后自动移除记录；如果产生冲突，记录会保留，先解决冲突，不要反复 pop。需要尝试恢复原来的暂存状态时可用 `git stash pop --index`，但仍可能失败或冲突。"]
+    }, {
+      kind: "paragraph",
+      content: ["如果需要更彻底的隔离，例如同时让多个 AI Agent 在不同的分支上并行执行长时间任务，我们还可以使用 ", {
+        type: "term",
+        termId: "worktree",
+        label: "工作树"
+      }, " 能力。工作树允许在同一个代码仓库下，把不同的分支同时检出到本地不同的文件夹中。每个工作树有自己的工作区、暂存区和 HEAD，但共享仓库对象与分支引用。它不会自动安装依赖，也不会隔离端口、数据库或环境变量。"]
+    }, {
+      kind: "paragraph",
+      content: ["使用工作树时，直接对 Agent 说：“帮我在上级目录新建一个名为 shop-cart-fix 的独立工作树，基于 main 分支新建 fix/cart-copy 分支检出到那里，让我可以并行修复问题。”Agent 底层会执行 `git worktree add` 命令，并向我们反馈两个工作目录的路径。我们可以在新窗口打开该目录独立操作，互不干扰。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "flow",
+          title: "使用 Stash 临时存放未完工代码的流程",
+          caption: "先核对存了什么，再切换任务；被忽略的文件不包含在 -u 中。",
+          steps: [{
+            title: "1. 当前任务进行到一半",
+            detail: "功能尚未调试通过，无法直接生成一个逻辑完整的 Commit。"
+          }, {
+            title: "2. 保存已跟踪改动与新文件",
+            detail: '执行 git stash push -u -m "购物车进行中"，再用 stash list 和 status 确认保存结果与剩余文件。'
+          }, {
+            title: "3. 切换分支处理紧急修复",
+            detail: "顺利切换到其他分支完成 Bug 修复、测试与提交，互不干扰。"
+          }, {
+            title: "4. 切回原分支并恢复",
+            detail: "切回原分支运行 git stash pop。成功后核对文件与 status；冲突时先解决，记录仍保留，不要重复 pop。"
+          }]
+        }
+      }
+    }]
+  }, {
+    id: "agent-undo-prompt",
+    title: "怎样向 AI 准确表达恢复范围",
+    content: [{
+      kind: "paragraph",
+      content: ["当代码出现问题需要撤销时，我们向 AI 下达的指令必须清晰严谨。如果含糊地要求 AI“帮我把刚才的改动退回去”，AI 有可能误用清空工作区或重置分支的危险命令，导致尚未保存的工作彻底丢失。"]
+    }, {
+      kind: "paragraph",
+      content: ["规范的表达应当指明要撤销的功能范围（例如说“购物车抽屉组件”），并明确说明是“只放弃未暂存的编辑，保留已暂存内容”，还是“创建一个反向提交来撤销指定历史记录”。在需要临时保留现场时，主动指示 AI 使用 stash 将改动存入临时栈中。"]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "chat-flow",
+          title: "向 AI 说明只放弃哪一层修改",
+          caption: "示例对话：用自然语言说明要撤销的功能范围，只恢复工作区，保留暂存区里的版本。",
+          messages: [{
+            role: "user",
+            text: "刚才购物车抽屉组件里尚未暂存的编辑不要了，帮我恢复到刚才暂存的状态。保留已经暂存的改动，别动其他文件。"
+          }, {
+            role: "agent",
+            text: "示例结果：已恢复购物车抽屉文件（CartDrawer.tsx）的工作区编辑，该文件未暂存改动已清空；暂存区内容与操作前保持一致，其他文件未受影响。"
+          }]
+        }
+      }
+    }, {
+      kind: "paragraph",
+      content: [{
+        type: "strong",
+        text: "判断一下：新建了未跟踪的购物车文件，只运行默认 git stash，它会一起被存起来吗？"
+      }, " 不会。要包含它需明确使用 `-u`，之后通过 status 和 stash list 检查结果。"]
+    }]
+  }, {
+    id: "undo-summary",
+    title: "本章总结：分清撤销层级，灵活调度工作状态",
+    content: [{
+      kind: "paragraph",
+      content: ["恢复前先确定来源、目标文件和需要保留的修改；恢复后用差异与文件内容核对结果。从登录功能到购物车，这门课已经走过存版本、查差异、分支、合并、远程协作和恢复。以后让 Agent 操作 Git，也应说清这次要改变哪一部分，并检查实际结果。"]
+    }],
+    variant: "summary"
+  }]
+};
+export {};
+export default s;

@@ -1,0 +1,114 @@
+{
+  "source": "https://vibe-hub.org",
+  "modules": [
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/101.d2009221cfad5949.js",
+      "sha256": "ee6e80a8b7361959cc29ba54063f83083f7ec1c3069bef7536fb6dc962e96977"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/109.cde55c81a7f4792c.js",
+      "sha256": "3496cff24cab2264bc194d870b9c721d24702ab590a088df94ae5d1a6515ecdc"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/301.325d572dc79a97c6.js",
+      "sha256": "bea837b31c23f8b15671cfa9192891c4665222769568a1969274b97b282234e4"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/395.872116dd12abe6cd.js",
+      "sha256": "f16e65d18aa45e7aed01775c08d02846cc855c4d3689547ad09ba98720dd6a8d"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/5510.c11e07028153948c.js",
+      "sha256": "68247a040d3430355a647cc5e08275199af20bb9bdcb5bb992b8264a7f60fc0a"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/7098.c2c465cdaa186350.js",
+      "sha256": "4055851ee9e2af15fb182a814ebae84c8a58579e07a3e310c2d147a35f0ef163"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/5842-a37af9e9c8f4465d.js",
+      "sha256": "024ff10e59f7ca1a88d6cdc28151a1bc78bb77ab6fd74f8d41d4e734ea8df6f5"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/1893.378e71c6ea7d6fab.js",
+      "sha256": "d41f4fa218c0815e3ebef40732b79a5aebc94b21539d1886f8625911c3f4f628"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/2652.d16f75bfdf2ab221.js",
+      "sha256": "ce84ffa92963107d5a772b95ce0b7c4c2c3040de9f95b7412ccace218ad49bd4"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/3304.ac29985a724965b2.js",
+      "sha256": "7074fbecfe213d65543f79a0954bd07fd1a6b1e2aa357d80a8706d46adbde7ce"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/3766-9a959b8fa5c7361e.js",
+      "sha256": "3031226cffcda3fc2e34638d281050baefb2484b176bfe4d5eaadf5661fa47b2"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/4041.ed67faddb3090e68.js",
+      "sha256": "a33f57db24e195baaeee7b0511cf748c82066b007e606f146d22d5da21532dad"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/4066.16167a6c7ca6a7cd.js",
+      "sha256": "f83ab95ba1f2e8f652f9122e0f43b80e2e2d280b4c1eea44b5b9f518ed46168e"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/5388-2ea231972c554b87.js",
+      "sha256": "729f1c7a1d60975b0d5b7cd0f0d1e37bbcb1e19a827e0a1fbc2b898b439692cd"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/8335-50fb2330fbd5dae3.js",
+      "sha256": "0b19c22cf51b4fb543fd75b958b82c69d9c949c855fcd8419052491b231492c5"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/4829.c63f8f32258800b4.js",
+      "sha256": "a6f76c4b584a5c9322bc96a03de45636ad1e2edfde7cc7cd021029f48dccd196"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/5074.f3a615adb28af950.js",
+      "sha256": "dda35e072d467c7de36f5031c6c19e74a77360be8801bc7ee897f628cdb91504"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/5277-4d3cab0ece9b2812.js",
+      "sha256": "dee134573a344edd33f52b3de78cdeb20b272158a1dc3ded61a4dc0954586f9c"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/5593.d1c61040bfed225a.js",
+      "sha256": "af8c1649b56beb524b0dd372b94472c576d6b33fd2fe93442fa010edaabdc30e"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/5863.c9c4fc93c5ab6cd3.js",
+      "sha256": "8191001613fce6096f0c9009c3762041389fe91f54941d6505923542d9fc21b4"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/6917.bf71b1589eacc149.js",
+      "sha256": "86d8154726ba01bb65429c44531f23e279818546acbc4b3ba283cb87a322327f"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/7110.0e3eb2cfea616990.js",
+      "sha256": "ef4419719ea0a8c06a43aff989d938c7c9dfe08d3d1911413dca117fef080b17"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/8193.5bd5c009ad5b41d7.js",
+      "sha256": "50dbbba752026ce188c226e5888c0d469c65f6593cd3b24782e4809c2d22dd89"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/962.e8628eb4766c9c72.js",
+      "sha256": "8648a14b0b0f30d7431763c78008899305bee209fc84ebc580d535aed94aed45"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/9172.4d21bf78f272a432.js",
+      "sha256": "d17da0fc84cca529f68be272b97112f1596f784878ccb8de2646e5982d0133e2"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/9325.98a8175740dd0b08.js",
+      "sha256": "a53758674a39c4bfefd1fab5ee89d8609e8aaaddbb5badf27e3f0472a37fc4a5"
+    },
+    {
+      "url": "https://vibe-hub.org/_next/static/chunks/9699.c4e40a43a179009a.js",
+      "sha256": "7f7c60a40c0ca2267d59e62b3e943a8ddd7965fa823b05c3b54032595f9d91d1"
+    }
+  ],
+  "extraction": "AST dependency closure; React is supplied by ANS. No upstream runtime, remote loading, analytics or authentication."
+}

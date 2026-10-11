@@ -1,0 +1,200 @@
+// Derived from public VibeHub presentation code. Source hashes: src/data/vibehub/interaction-sources.json.
+"use client";
+
+let n = {
+  id: "06-layout-surface",
+  order: 6,
+  shortTitle: "间距与遮挡",
+  header: {
+    visual: {
+      kind: "image",
+      src: "/vibe-hub/source/assets/product-website-chapter-07-layout-surface-v2.webp",
+      alt: "小人和猫检查内容、内边距和外间距的盒模型关系",
+      width: 1536,
+      height: 1024
+    },
+    listVisual: {
+      src: "/vibe-hub/source/assets/product-website-chapter-07-list-v3.webp",
+      alt: "小人和猫一起检查盒模型、间距和层叠关系",
+      width: 640,
+      height: 640
+    }
+  },
+  coreTerms: ["box-model", "padding", "overflow", "z-index"],
+  title: "间距贴边与层叠遮挡",
+  intro: "在网页排版中，文字贴边、内容截断和浮层被遮挡是常见的布局问题。理解盒模型、内边距、溢出机制和层叠层级，可以帮助我们向 AI 准确定位并修正这些问题。",
+  sections: [{
+    id: "describe-cramped-cards",
+    title: "盒模型与内边距（Padding）",
+    content: [{
+      kind: "paragraph",
+      content: ["如果卡片中的标题和正文紧贴着四周边缘，视觉上会显得拥挤。"]
+    }, {
+      kind: "paragraph",
+      content: ["在网页中，每个元素都被一个矩形盒模型包裹，AI 回复里常提到的概念即来自", {
+        type: "term",
+        termId: "box-model",
+        label: "盒模型"
+      }, "（Box Model）。盒模型由内向外依次分为："]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "内容"
+      }, "（Content）：文本或图片等核心要素；"], [{
+        type: "strong",
+        text: "内边距"
+      }, "（", {
+        type: "term",
+        termId: "padding",
+        label: "Padding"
+      }, "）：内容与边框之间的空白距离；"], [{
+        type: "strong",
+        text: "边框"
+      }, "（Border）：容器四周的线条轮廓；"], [{
+        type: "strong",
+        text: "外边距"
+      }, "（Margin）：当前容器与其他相邻元素之间的距离。"]]
+    }, {
+      kind: "paragraph",
+      content: ["文字贴边说明缺少内边距（Padding）。为卡片设置统一的内边距，文字就能与卡片边缘保持合适的距离。"]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "对 AI 这样说"
+      }, "：“卡片里的文字紧贴着四周边缘，太挤了。请为卡片统一设置 24px 的内边距（padding），并确保使用 border-box 盒模型，避免内边距把卡片宽度额外撑大。”"]]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "before-after",
+          title: "跟 AI 说「文字贴边了」，它就会去调这里",
+          caption: "我们不需要懂尺寸怎么算，只要能把看到的问题说出口。",
+          agentSay: "卡片里的文字贴边了，周围留一点空隙",
+          before: {
+            label: "现在的页面 \xb7 字贴着边，看着很挤",
+            card: {
+              title: "整理背景",
+              text: "把项目素材归类成背景、过程和结果。",
+              tone: "problem"
+            }
+          },
+          after: {
+            label: "调整之后 \xb7 文字和边缘之间有了空隙",
+            note: "AI 回复里的「内边距」说的就是这块空隙；「盒模型」是它连着边框、间距一起计算的规则，我们不用管怎么算。",
+            card: {
+              title: "整理背景",
+              text: "把项目素材归类成背景、过程和结果。",
+              annotation: "这块空隙叫内边距 Padding",
+              tone: "fixed"
+            }
+          }
+        }
+      }
+    }]
+  }, {
+    id: "separate-inside-outside",
+    title: "内边距与外间距的区别",
+    content: [{
+      kind: "paragraph",
+      content: ["向 AI 描述间距时，需要区分内部与外部属性："]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "内部间距"
+      }, "：文字到卡片边框的距离，称为", {
+        type: "term",
+        termId: "padding",
+        label: "内边距"
+      }, "（Padding）。"], [{
+        type: "strong",
+        text: "外部间距"
+      }, "：两张卡片互相之间的距离，称为外边距（Margin）或网格间隙（Gap）。"]]
+    }, {
+      kind: "paragraph",
+      content: ["排版通常遵循“组内紧凑、组间清晰”的原则。同组的功能卡片之间保持适度间距，而不同的大区块之间则需要留出更大的垂直间距。"]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "对 AI 这样说"
+      }, "：“三张同组卡片之间设置 16px 的间距（gap）；而能力卡片区和下方的案例区之间，留出 64px 的大区块垂直间距，让内容节奏更清晰。”"]]
+    }, {
+      kind: "block",
+      block: {
+        kind: "visual",
+        visual: {
+          kind: "compare",
+          title: "卡片里面的距离和卡片之间的距离",
+          caption: "跟 AI 描述时带上位置，它就知道该调哪一个。",
+          left: {
+            title: "Padding 内边距",
+            detail: "卡片里面",
+            items: ["文字到卡片边缘的空隙", "会让卡片的背景变大", "说「里面留点空隙」"]
+          },
+          right: {
+            title: "区块间距",
+            detail: "卡片之间",
+            items: ["两张卡片之间的空隙", "同级卡片用同一档", "说「卡片挤在一起了」"]
+          }
+        }
+      }
+    }]
+  }, {
+    id: "handle-overflow",
+    title: "内容溢出与容器自适应",
+    content: [{
+      kind: "paragraph",
+      content: ["当卡片中的文本较长时，如果容器高度被固定，超出的文字可能会被截断或只显示一部分，这种现象称为", {
+        type: "term",
+        termId: "overflow",
+        label: "内容溢出"
+      }, "（Overflow）。"]
+    }, {
+      kind: "paragraph",
+      content: ["如果只是笼统地说“文字超出了”，AI 可能会直接设置 `overflow: hidden` 截断文字，或者给卡片内部加上局部滚动条。"]
+    }, {
+      kind: "paragraph",
+      content: ["通常的做法是让卡片高度随内容自适应撑高，允许文字自然折行，保证全部文字正常展示。"]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "对 AI 这样说"
+      }, "：“卡片里的长标题请允许自然换行，卡片高度随内容自适应撑高。不要使用 overflow: hidden 截断文字，也不要在卡片内部出现滚动条。”"]]
+    }]
+  }, {
+    id: "set-layer-order",
+    title: "层叠上下文与层级（z-index）",
+    content: [{
+      kind: "paragraph",
+      content: ["导航菜单展开时，下拉浮层有时会被下方的横幅或图片遮挡。这通常涉及", {
+        type: "term",
+        termId: "z-index",
+        label: "层叠上下文与层级"
+      }, "（z-index）。"]
+    }, {
+      kind: "paragraph",
+      content: ["如果直接提高 `z-index` 依然无效，通常是因为包裹导航栏的外层容器设置了 `overflow: hidden`，导致超出容器范围的下拉浮层被直接裁切。"]
+    }, {
+      kind: "list",
+      items: [[{
+        type: "strong",
+        text: "对 AI 这样说"
+      }, "：“展开的下拉菜单被下方的横幅图片挡住了。请先检查导航栏外层容器是否设置了 overflow: hidden 导致内容被裁切；解除限制后，将下拉浮层的 z-index 设为较高的数值（如 z-index: 50）确保置顶浮现。”"]]
+    }]
+  }, {
+    id: "summarize-layout-surface",
+    title: "本章总结",
+    content: [{
+      kind: "paragraph",
+      content: ["本章梳理了盒模型中内边距与外间距的分工、容器自适应与内容溢出的处理方式，以及层叠层级被遮挡的排查思路。下一章，我们将讨论按钮的交互反馈与候补表单的设计。"]
+    }],
+    variant: "summary"
+  }]
+};
+export {};
+export default n;

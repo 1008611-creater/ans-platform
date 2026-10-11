@@ -1,0 +1,2 @@
+import type { ReactElement } from "react";
+export function CoursePage(props: {initialChapter?: {id:string;[key:string]:unknown} | null; courseId?:string; chapterId?:string; initialTermId?:string; locale:"en" | "zh"; onChapterResolved:(chapter:unknown)=>void; onMobileTermSheetChange:(open:boolean)=>void; onOpenChapter:(course:string,chapter:string)=>void; onOpenHome:(course:string)=>void; onOpenRoute:(course:string)=>void; onOpenRoutes:()=>void; onOpenTermPage:(term:string)=>void}):ReactElement;

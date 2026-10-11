@@ -1,35 +1,8 @@
 "use client";
-import { useState, useSyncExternalStore } from "react";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { LearningLab } from "../official/learning-lab.js";
 import { useVibeLanguage } from "../use-vibe-language";
-import snapshot from "@/data/vibehub/manifest.json";
-import { CopyTermButton } from "../copy-term-button";
-import Link from "next/link";
-type ActivitySpec = { v: 1; goal: string; context: string; focus: string; modules: string[] };
-function encode(spec: ActivitySpec) { return btoa(Array.from(new TextEncoder().encode(JSON.stringify(spec)), byte => String.fromCharCode(byte)).join("")).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, ""); }
-const subscribeHash = (listener: () => void) => { window.addEventListener("hashchange", listener); return () => window.removeEventListener("hashchange", listener); };
-export function LabClient({ preview }: { preview: { en: string; zh: string } }) {
-  const t = useTranslations("vibehub"); const lang = useVibeLanguage(); const protocol = snapshot.data.activityProtocol;
-  const urlHash = useSyncExternalStore(subscribeHash, () => window.location.hash, () => "");
-  const [draft, setDraft] = useState<ActivitySpec | null>(null); const [scale, setScale] = useState(54); const [spacing, setSpacing] = useState(36); const [contrast, setContrast] = useState(59);
-  const [stage, setStage] = useState(0); const [flat, setFlat] = useState(true); const [priority, setPriority] = useState("value");
-  let initial: ActivitySpec = { ...protocol.specExample, v: 1 };
-  try { const encoded = new URLSearchParams(urlHash.slice(1)).get("spec"); if (encoded) { const bytes = Uint8Array.from(atob(encoded.replace(/-/g, "+").replace(/_/g, "/")), char => char.charCodeAt(0)); const value = JSON.parse(new TextDecoder().decode(bytes)) as ActivitySpec; if (value.v === 1) initial = { v: 1, goal: String(value.goal || "").slice(0, 200), context: String(value.context || "").slice(0, 300), focus: ["hierarchy", "spacing", "typography"].includes(value.focus) ? value.focus : "hierarchy", modules: Array.isArray(value.modules) ? [...new Set(value.modules.filter(id => protocol.modules.some(module => module.id === id)))] : [] }; } } catch { /* An invalid spec falls back to the official example. */ }
-  const active = draft || initial; const modules = active.modules.length ? active.modules : protocol.modules.map(module => module.id); const currentStage = modules[Math.min(stage, modules.length - 1)];
-  const setField = (name: "goal" | "context" | "focus", value: string) => setDraft({ ...active, [name]: value });
-  const hash = `#spec=${encode(active)}`; const localLink = `/vibe-hub/lab?lang=${lang}${hash}`;
-  const reset = () => { setStage(0); setFlat(true); setPriority("value"); setScale(54); setSpacing(36); setContrast(59); };
-  return <main className="learning-lab-page"><div className="learning-lab-shell">
-    <header className="learning-lab-topbar"><Link href={`/vibe-hub/skill?lang=${lang}`}>← {t("skill")}</Link><span>{t("lab")}</span></header>
-    <section className="learning-intro"><div className="learning-intro-context">{active.context}</div><h1>{active.goal}</h1><p>{t("labHelp")}</p><ol className="learning-route" aria-label={t("module")}>{modules.map((module, index) => <li key={module} className={index === stage ? "is-current" : ""}><button type="button" aria-current={index === stage ? "step" : undefined} onClick={() => setStage(index)}>{t(`labModules.${module}`)}</button></li>)}</ol></section>
-    <section className="learning-stage"><header className="learning-stage-header"><div><small>{t(`labModules.${currentStage}`)}</small><h2>{t(`labStages.${currentStage}`)}</h2></div><button type="button" className="learning-reset" onClick={reset}>{t("retry")}</button></header>
-      <div className={`vh-learning-preview ${flat ? "is-flat" : "is-hierarchical"} priority-${priority}`} style={{ "--learning-title": `${flat ? 30 : scale}px`, "--learning-gap": `${flat ? 18 : spacing}px`, "--learning-muted": contrast / 100 } as React.CSSProperties} dangerouslySetInnerHTML={{ __html: preview[lang] }} />
-      {currentStage === "observe" && <><div className="learning-compare-row"><div className="learning-option-cards">{[true, false].map(value => <button key={String(value)} type="button" className={flat === value ? "is-active" : ""} aria-pressed={flat === value} onClick={() => setFlat(value)}><small>{value ? "A" : "B"}</small><b>{t(value ? "labFlat" : "labHierarchy")}</b><span>{t(value ? "labFlatBody" : "labHierarchyBody")}</span></button>)}</div></div></>}
-      {currentStage === "prioritize" && <div className="vh-lab-modules mt-6">{["value", "action", "proof"].map(value => <button type="button" key={value} className="vh-small-button" aria-pressed={priority === value} onClick={() => { setPriority(value); setFlat(false); }}>{t(`labPriorities.${value}`)}</button>)}</div>}
-      {currentStage === "tune" && <div className="vh-lab-modules mt-6"><label>{t("labTitleSize")}<input type="range" min="30" max="72" value={scale} onChange={event => { setScale(Number(event.target.value)); setFlat(false); }} /><output>{scale}px</output></label><label>{t("labGap")}<input type="range" min="16" max="56" value={spacing} onChange={event => { setSpacing(Number(event.target.value)); setFlat(false); }} /><output>{spacing}px</output></label><label>{t("labContrast")}<input type="range" min="40" max="85" value={contrast} onChange={event => setContrast(Number(event.target.value))} /><output>{contrast}%</output></label></div>}
-      {currentStage === "verify" && <div className="vh-quiz"><p>{t("labVerify")}</p><div className="vh-topic-row mt-4">{["visual-hierarchy", "space", "typography"].map(id => <Link key={id} href={`/vibe-hub/${id}?lang=${lang}`}>{t(id === "visual-hierarchy" ? "labHierarchy" : id === "space" ? "labGap" : "labTypography")} ↗</Link>)}</div></div>}
-      <div className="learning-observe-action"><button type="button" className="learning-choose" onClick={() => stage < modules.length - 1 ? setStage(stage + 1) : reset()}>{t(stage < modules.length - 1 ? "labContinue" : "retry")} →</button></div>
-    </section>
-    <details className="vh-lab-config"><summary>{t("activity")}</summary><form className="vh-lab-form mt-5" onSubmit={event => event.preventDefault()}><label>{t("activityGoal")}<input className="vh-field" value={active.goal} onChange={event => setField("goal", event.target.value)} maxLength={200} /></label><label>{t("activityContext")}<input className="vh-field" value={active.context} onChange={event => setField("context", event.target.value)} maxLength={300} /></label><label>{t("activityFocus")}<select className="vh-field" value={active.focus} onChange={event => setField("focus", event.target.value)}>{["hierarchy", "spacing", "typography"].map(id => <option key={id} value={id}>{t(id === "hierarchy" ? "labHierarchy" : id === "spacing" ? "labGap" : "labTypography")}</option>)}</select></label><fieldset><legend>{t("module")}</legend><div className="vh-lab-modules mt-3">{protocol.modules.map(module => <label key={module.id}><input type="checkbox" checked={active.modules.includes(module.id)} onChange={event => { setStage(0); setDraft({ ...active, modules: event.target.checked ? [...active.modules, module.id] : active.modules.filter(id => id !== module.id) }); }} />{t(`labModules.${module.id}`)}</label>)}</div></fieldset></form><div className="vh-lab-links mt-5"><CopyTermButton text={localLink} /><Link href={localLink} className="vh-small-button" onClick={() => setDraft(null)}>{t("activityCopy")}</Link></div></details>
-  </div></main>;
+export function LabClient() {
+  const lang = useVibeLanguage(); const router = useRouter();
+  return <LearningLab key={lang} locale={lang} onBack={() => router.push(`/vibe-hub/vibehub-skill?lang=${lang}`)} />;
 }

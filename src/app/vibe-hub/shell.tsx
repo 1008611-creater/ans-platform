@@ -19,7 +19,7 @@ function Navigation({ theme, toggleTheme, setAccent }: { theme: string; toggleTh
   const params = useSearchParams();
   const [menuOpen, setMenuOpen] = useState(false);
   const [colorsOpen, setColorsOpen] = useState(false);
-  const links = [{ label: "terms", path: "" }, { label: "practice", path: "/practice" }, { label: "antiAi", path: "/anti-ai-flavor" }, { label: "updates", path: "/updates" }, { label: "skill", path: "/skill" }, { label: "saved", path: "/favorites" }, { label: "journeys", path: "/journeys" }, { label: "lab", path: "/lab" }] as const;
+  const links = [{ label: "terms", path: "" }, { label: "courses", path: "/courses" }, { label: "practice", path: "/practice" }, { label: "antiAi", path: "/anti-ai-flavor" }, { label: "updates", path: "/updates" }, { label: "skill", path: "/vibehub-skill" }, { label: "saved", path: "/favorites" }, { label: "journeys", path: "/journeys" }, { label: "lab", path: "/lab" }] as const;
 
   function switchLanguage(value: string) {
     const next = new URLSearchParams(params.toString()); next.set("lang", value);
@@ -32,7 +32,7 @@ function Navigation({ theme, toggleTheme, setAccent }: { theme: string; toggleTh
         <Image src="/vibe-hub/vh-logo-v4-tight.png" width="27" height="27" alt="" /><span>Vibe<b>Hub</b></span>
       </Link>
       <nav className="vh-desktop-nav" aria-label={t("navigation")}>
-        {links.slice(0, 5).map((link) => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={pathname === `/vibe-hub${link.path}` ? "page" : undefined}>{t(link.label)}</Link>)}
+        {links.slice(0, 6).map((link) => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={pathname === `/vibe-hub${link.path}` ? "page" : undefined}>{t(link.label)}</Link>)}
       </nav>
       <form className="vh-global-search" action="/vibe-hub">
         <Search size={15} aria-hidden="true" /><input aria-label={t("search")} placeholder={t("searchPlaceholder")} name="q" defaultValue={params.get("q") || ""} /><input type="hidden" name="lang" value={lang} />

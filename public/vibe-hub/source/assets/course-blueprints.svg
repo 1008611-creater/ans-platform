@@ -1,0 +1,961 @@
+<svg xmlns="http://www.w3.org/2000/svg"><symbol id="product-website-chapter-01-list-v2" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-01-list-v2-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-01-list-v2-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-01-list-v2-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-01-list-v2-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <rect x="40" y="184" width="200" height="268" rx="18" fill="var(--brand-light, #eff6ff)" />
+    <circle cx="140" cy="268" r="36" fill="var(--brand-light, #bfdbfe)" />
+    <circle cx="140" cy="258" r="14" fill="var(--brand, #2563eb)" />
+    <ellipse cx="140" cy="292" rx="20" ry="12" fill="var(--brand, #2563eb)" />
+    <text x="140" y="348" font-size="32" font-weight="900" fill="var(--text, #0f172a)" text-anchor="middle">林夏</text>
+    <text x="140" y="386" font-size="22" font-weight="800" fill="var(--brand, #2563eb)" text-anchor="middle">独立创作者</text>
+    <rect x="256" y="184" width="344" height="268" rx="18" fill="var(--bg-hover, #f8fafc)" />
+    <text x="280" y="268" font-size="34" font-weight="900" fill="var(--text, #0f172a)">让客户看见作品</text>
+    <text x="280" y="314" font-size="24" font-weight="700" fill="var(--text-2, #64748b)">首页对着她说话</text>
+    <rect x="280" y="348" width="188" height="56" rx="14" fill="var(--brand, #2563eb)" />
+    <text x="374" y="384" font-size="24" font-weight="800" fill="var(--on-status, #ffffff)" text-anchor="middle">查看作品 →</text>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-02-list-v3" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-02-list-v3-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-02-list-v3-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-02-list-v3-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-02-list-v3-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 184)">
+      <rect width="560" height="48" rx="12" fill="var(--brand-light, #eff6ff)" />
+      <text x="24" y="34" font-size="26" font-weight="900" fill="var(--brand, #1d4ed8)">页头</text>
+      <rect y="56" width="560" height="100" rx="12" fill="var(--brand-light, #dbeafe)" />
+      <text x="24" y="100" font-size="28" font-weight="900" fill="var(--brand, #1e40af)">首屏</text>
+      <rect x="24" y="112" width="160" height="32" rx="8" fill="var(--brand, #2563eb)" />
+      <rect y="164" width="560" height="56" rx="12" fill="var(--bg-hover, #f8fafc)" />
+      <text x="24" y="202" font-size="26" font-weight="900" fill="var(--text-2, #334155)">功能</text>
+      <rect x="160" y="180" width="72" height="24" rx="6" fill="var(--border, #e2e8f0)" />
+      <rect x="244" y="180" width="72" height="24" rx="6" fill="var(--border, #e2e8f0)" />
+      <rect x="328" y="180" width="72" height="24" rx="6" fill="var(--border, #e2e8f0)" />
+      <rect y="228" width="272" height="48" rx="12" fill="var(--green-light, #dcfce7)" />
+      <text x="24" y="262" font-size="24" font-weight="900" fill="var(--green, #166534)">证据</text>
+      <rect x="288" y="228" width="272" height="48" rx="12" fill="var(--bg-hover, #f1f5f9)" />
+      <text x="312" y="262" font-size="24" font-weight="900" fill="var(--text-2, #64748b)">页脚</text>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-03-list-v2" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-03-list-v2-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-03-list-v2-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-03-list-v2-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-03-list-v2-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <rect x="40" y="184" width="560" height="268" rx="18" fill="var(--bg-hover, #f8fafc)" />
+    <text x="64" y="264" font-size="42" font-weight="900" fill="var(--text, #0f172a)">同一套视觉规则</text>
+    <text x="64" y="314" font-size="26" font-weight="700" fill="var(--text-2, #64748b)">标题、正文、按钮用同一组颜色</text>
+    <circle cx="86" cy="390" r="26" fill="var(--brand, #2563eb)" />
+    <circle cx="150" cy="390" r="26" fill="var(--text, #0f172a)" />
+    <circle cx="214" cy="390" r="26" fill="var(--green, #10b981)" />
+    <circle cx="278" cy="390" r="26" fill="var(--border, #e2e8f0)" />
+    <rect x="328" y="364" width="180" height="52" rx="14" fill="var(--brand, #2563eb)" />
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-04-list-v3" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-04-list-v3-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-04-list-v3-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-04-list-v3-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-04-list-v3-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <rect x="40" y="184" width="560" height="268" rx="18" fill="var(--bg-hover, #f1f5f9)" />
+    <text x="64" y="268" font-size="42" font-weight="900" fill="var(--text, #0f172a)">一屏说清产品价值</text>
+    <text x="64" y="316" font-size="24" font-weight="700" fill="var(--text-2, #64748b)">只留一个下一步按钮</text>
+    <rect x="64" y="348" width="228" height="60" rx="14" fill="var(--brand, #2563eb)" />
+    <text x="178" y="388" font-size="24" font-weight="800" fill="var(--on-status, #ffffff)" text-anchor="middle">查看完整示例 →</text>
+    <rect x="308" y="348" width="168" height="60" rx="14" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #cbd5e1)" stroke-width="2" />
+    <text x="392" y="388" font-size="22" font-weight="700" fill="var(--text-3, #94a3b8)" text-anchor="middle">次要入口</text>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-05-list-v2" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-05-list-v2-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-05-list-v2-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-05-list-v2-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-05-list-v2-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 184)">
+      <rect width="176" height="268" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+      <rect x="20" y="28" width="52" height="52" rx="14" fill="var(--brand-light, #dbeafe)" />
+      <text x="20" y="128" font-size="28" font-weight="900" fill="var(--text, #0f172a)">整理作品</text>
+      <rect x="20" y="152" width="128" height="14" rx="4" fill="var(--text-3, #94a3b8)" />
+      <g transform="translate(192, 0)">
+        <rect width="176" height="268" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--brand, #2563eb)" stroke-width="3" />
+        <rect x="20" y="28" width="52" height="52" rx="14" fill="var(--green-light, #dcfce7)" />
+        <text x="20" y="128" font-size="28" font-weight="900" fill="var(--text, #0f172a)">完整示例</text>
+        <rect x="20" y="152" width="128" height="14" rx="4" fill="var(--text-3, #94a3b8)" />
+      </g>
+      <g transform="translate(384, 0)">
+        <rect width="176" height="268" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+        <rect x="20" y="28" width="52" height="52" rx="14" fill="var(--warning-light, #fef3c7)" />
+        <text x="20" y="128" font-size="28" font-weight="900" fill="var(--text, #0f172a)">补充说明</text>
+        <rect x="20" y="152" width="128" height="14" rx="4" fill="var(--text-3, #94a3b8)" />
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-06-list-v2" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-06-list-v2-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-06-list-v2-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-06-list-v2-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-06-list-v2-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <rect x="40" y="184" width="560" height="268" rx="18" fill="var(--bg-soft, #ffffff)" />
+    <text x="64" y="256" font-size="32" fill="var(--warning, #f59e0b)">★★★★★</text>
+    <text x="64" y="320" font-size="34" font-weight="900" fill="var(--text, #0f172a)">三周内上线了作品页</text>
+    <text x="64" y="372" font-size="24" font-weight="700" fill="var(--text-2, #64748b)">可核对的真实反馈</text>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-07-list-v3" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-07-list-v3-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-07-list-v3-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-07-list-v3-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-07-list-v3-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 184)">
+      <rect width="268" height="268" rx="16" fill="var(--warning-light, #fff7ed)" />
+      <text x="134" y="52" font-size="28" font-weight="900" fill="var(--warning, #c2410c)" text-anchor="middle">贴边拥挤</text>
+      <rect x="16" y="76" width="236" height="168" rx="10" fill="var(--bg-soft, #ffffff)" />
+      <rect x="20" y="84" width="228" height="36" rx="6" fill="var(--border, #e2e8f0)" />
+      <rect x="20" y="128" width="228" height="100" rx="6" fill="var(--red-light, #fecaca)" />
+      <g transform="translate(292, 0)">
+        <rect width="268" height="268" rx="16" fill="var(--green-light, #f0fdf4)" />
+        <text x="134" y="52" font-size="28" font-weight="900" fill="var(--green, #166534)" text-anchor="middle">留白清楚</text>
+        <rect x="28" y="84" width="212" height="152" rx="16" fill="var(--bg-soft, #ffffff)" />
+        <rect x="52" y="112" width="164" height="24" rx="6" fill="var(--border, #cbd5e1)" />
+        <rect x="52" y="156" width="108" height="40" rx="10" fill="var(--brand, #2563eb)" />
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-08-list-v4" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-08-list-v4-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-08-list-v4-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-08-list-v4-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-08-list-v4-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 184)">
+      <rect width="268" height="268" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" />
+      <text x="134" y="72" font-size="26" font-weight="800" fill="var(--text-2, #64748b)" text-anchor="middle">默认</text>
+      <rect x="36" y="108" width="196" height="72" rx="16" fill="var(--brand-light, #eff6ff)" stroke="var(--brand, #2563eb)" stroke-width="2" />
+      <text x="134" y="154" font-size="28" font-weight="800" fill="var(--brand, #2563eb)" text-anchor="middle">查看示例</text>
+      <g transform="translate(292, 0)">
+        <rect width="268" height="268" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--brand-light, #93c5fd)" stroke-width="2" />
+        <text x="134" y="72" font-size="26" font-weight="800" fill="var(--brand, #2563eb)" text-anchor="middle">悬停</text>
+        <rect x="36" y="108" width="196" height="72" rx="16" fill="var(--brand, #2563eb)" />
+        <text x="134" y="154" font-size="28" font-weight="800" fill="var(--on-status, #ffffff)" text-anchor="middle">查看示例</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-09-list-v4" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-09-list-v4-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-09-list-v4-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-09-list-v4-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-09-list-v4-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <rect x="40" y="184" width="560" height="268" rx="18" fill="var(--bg-soft, #ffffff)" />
+    <text x="64" y="248" font-size="32" font-weight="900" fill="var(--text, #0f172a)">加入候补名单</text>
+    <rect x="64" y="276" width="328" height="60" rx="14" fill="var(--green-light, #f0fdf4)" stroke="var(--green, #10b981)" stroke-width="2" />
+    <text x="88" y="316" font-size="24" font-weight="700" fill="var(--text, #0f172a)">lin@studio.dev</text>
+    <rect x="408" y="276" width="160" height="60" rx="14" fill="var(--brand, #2563eb)" />
+    <text x="488" y="316" font-size="22" font-weight="800" fill="var(--on-status, #ffffff)" text-anchor="middle">加入 →</text>
+    <text x="64" y="388" font-size="24" font-weight="700" fill="var(--green, #15803d)">可以提交</text>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-10-list-v4" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-10-list-v4-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-10-list-v4-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-10-list-v4-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-10-list-v4-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 184)">
+      <rect width="340" height="268" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+      <rect x="16" y="16" width="308" height="36" rx="8" fill="var(--bg-hover, #f1f5f9)" />
+      <rect x="16" y="64" width="308" height="80" rx="10" fill="var(--brand-light, #dbeafe)" />
+      <rect x="16" y="156" width="92" height="64" rx="8" fill="var(--bg-hover, #f8fafc)" stroke="var(--border, #e2e8f0)" />
+      <rect x="124" y="156" width="92" height="64" rx="8" fill="var(--bg-hover, #f8fafc)" stroke="var(--border, #e2e8f0)" />
+      <rect x="232" y="156" width="92" height="64" rx="8" fill="var(--bg-hover, #f8fafc)" stroke="var(--border, #e2e8f0)" />
+      <text x="170" y="252" font-size="24" font-weight="800" fill="var(--brand, #2563eb)" text-anchor="middle">桌面</text>
+      <g transform="translate(372, 8)">
+        <rect width="176" height="252" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #cbd5e1)" stroke-width="3" />
+        <rect x="16" y="20" width="144" height="28" rx="6" fill="var(--bg-hover, #f1f5f9)" />
+        <rect x="16" y="56" width="144" height="56" rx="8" fill="var(--brand-light, #dbeafe)" />
+        <rect x="16" y="124" width="144" height="44" rx="8" fill="var(--bg-hover, #f8fafc)" stroke="var(--border, #e2e8f0)" />
+        <text x="88" y="228" font-size="24" font-weight="800" fill="var(--text, #0f172a)" text-anchor="middle">手机</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-11-list-v3" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-11-list-v3-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-11-list-v3-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-11-list-v3-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-11-list-v3-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 184)">
+      <rect width="560" height="80" rx="16" fill="var(--green-light, #f0fdf4)" />
+      <circle cx="40" cy="40" r="18" fill="var(--green, #10b981)" />
+      <text x="40" y="48" font-size="20" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">✓</text>
+      <text x="72" y="50" font-size="28" font-weight="800" fill="var(--text, #0f172a)">首屏能看懂</text>
+      <rect y="92" width="560" height="80" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" />
+      <circle cx="40" cy="132" r="18" fill="var(--green, #10b981)" />
+      <text x="40" y="140" font-size="20" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">✓</text>
+      <text x="72" y="142" font-size="28" font-weight="800" fill="var(--text, #0f172a)">功能分区清楚</text>
+      <rect y="184" width="560" height="80" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" />
+      <circle cx="40" cy="224" r="18" fill="var(--green, #10b981)" />
+      <text x="40" y="232" font-size="20" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">✓</text>
+      <text x="72" y="234" font-size="28" font-weight="800" fill="var(--text, #0f172a)">手机也能用</text>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-chapter-12-list-v2" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="product-website-chapter-12-list-v2-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="product-website-chapter-12-list-v2-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#product-website-chapter-12-list-v2-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#product-website-chapter-12-list-v2-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 184)">
+      <rect width="248" height="268" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+      <rect x="16" y="16" width="216" height="32" rx="8" fill="var(--bg-hover, #f1f5f9)" />
+      <rect x="16" y="60" width="216" height="72" rx="10" fill="var(--brand-light, #dbeafe)" />
+      <rect x="16" y="144" width="216" height="44" rx="8" fill="var(--bg-hover, #f8fafc)" stroke="var(--border, #e2e8f0)" />
+      <g transform="translate(268, 0)">
+        <rect width="292" height="268" rx="16" fill="var(--brand-light, #eff6ff)" />
+        <text x="24" y="56" font-size="28" font-weight="900" fill="var(--brand, #1e40af)">发给 Agent</text>
+        <rect x="24" y="80" width="244" height="16" rx="4" fill="var(--brand-light, #93c5fd)" />
+        <rect x="24" y="108" width="200" height="14" rx="4" fill="var(--brand-light, #bfdbfe)" />
+        <rect x="24" y="134" width="220" height="14" rx="4" fill="var(--brand-light, #bfdbfe)" />
+        <rect x="24" y="188" width="244" height="52" rx="12" fill="var(--brand, #2563eb)" />
+        <text x="146" y="222" font-size="22" font-weight="800" fill="var(--on-status, #ffffff)" text-anchor="middle">按这页改官网</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="product-website-route-list-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+
+    <filter id="product-website-route-list-v1-card-shadow" x="-30%" y="-30%" width="160%" height="160%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#0f172a" flood-opacity="0.14" />
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.06" />
+    </filter>
+    <clipPath id="product-website-route-list-v1-card-clip">
+      <rect x="65" y="60" width="510" height="565" rx="28" />
+    </clipPath>
+  </defs>
+
+
+  <g transform="rotate(-3 320 345)" filter="url(#product-website-route-list-v1-card-shadow)">
+
+    <rect x="65" y="60" width="510" height="565" rx="28" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2.5" />
+
+    <g clip-path="url(#product-website-route-list-v1-card-clip)">
+
+    <rect x="88" y="100" width="464" height="220" rx="24" fill="var(--bg-hover, #f1f5f9)" />
+    <text x="112" y="168" font-size="32" font-weight="900" fill="var(--text, #0f172a)">把作品做成官网</text>
+    <text x="112" y="208" font-size="18" font-weight="700" fill="var(--text-2, #64748b)">给下一位客户看的产品首页</text>
+    <rect x="112" y="236" width="176" height="52" rx="14" fill="var(--brand, #2563eb)" />
+    <text x="200" y="270" font-size="20" font-weight="800" fill="var(--on-status, #ffffff)" text-anchor="middle">查看示例 →</text>
+    <rect x="392" y="128" width="136" height="160" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" />
+    <rect x="408" y="148" width="104" height="64" rx="8" fill="var(--brand-light, #dbeafe)" />
+    <rect x="408" y="224" width="72" height="10" rx="3" fill="var(--text-3, #94a3b8)" />
+    <rect x="408" y="244" width="52" height="10" rx="3" fill="var(--border, #cbd5e1)" />
+
+    <g transform="translate(88, 344)">
+      <rect width="144" height="128" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" />
+      <rect x="16" y="20" width="36" height="36" rx="8" fill="var(--brand-light, #dbeafe)" />
+      <rect x="16" y="72" width="96" height="14" rx="4" fill="var(--text, #0f172a)" />
+      <rect x="16" y="96" width="72" height="10" rx="3" fill="var(--text-3, #94a3b8)" />
+      <g transform="translate(160, 0)">
+        <rect width="144" height="128" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" />
+        <rect x="16" y="20" width="36" height="36" rx="8" fill="var(--green-light, #dcfce7)" />
+        <rect x="16" y="72" width="96" height="14" rx="4" fill="var(--text, #0f172a)" />
+        <rect x="16" y="96" width="72" height="10" rx="3" fill="var(--text-3, #94a3b8)" />
+      </g>
+      <g transform="translate(320, 0)">
+        <rect width="144" height="128" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" />
+        <rect x="16" y="20" width="36" height="36" rx="8" fill="var(--warning-light, #fef3c7)" />
+        <rect x="16" y="72" width="96" height="14" rx="4" fill="var(--text, #0f172a)" />
+        <rect x="16" y="96" width="72" height="10" rx="3" fill="var(--text-3, #94a3b8)" />
+      </g>
+    </g>
+
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-route-list-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+
+    <filter id="git-workflow-route-list-v1-card-shadow" x="-30%" y="-30%" width="160%" height="160%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#0f172a" flood-opacity="0.14" />
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.06" />
+    </filter>
+    <clipPath id="git-workflow-route-list-v1-card-clip">
+      <rect x="65" y="60" width="510" height="565" rx="28" />
+    </clipPath>
+  </defs>
+
+
+  <g transform="rotate(-3 320 345)" filter="url(#git-workflow-route-list-v1-card-shadow)">
+
+    <rect x="65" y="60" width="510" height="565" rx="28" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2.5" />
+
+    <g clip-path="url(#git-workflow-route-list-v1-card-clip)">
+
+    <g transform="translate(88, 118)">
+      <rect width="456" height="300" rx="24" fill="var(--bg-hover, #f8fafc)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+
+      <line x1="128" y1="72" x2="352" y2="72" stroke="var(--brand, #3b82f6)" stroke-width="12" stroke-linecap="round" />
+      <path d="M 176 72 C 214 72, 224 214, 264 214 L 336 214 C 376 214, 384 72, 384 72" fill="none" stroke="var(--warning, #f59e0b)" stroke-width="12" stroke-linecap="round" />
+
+      <rect x="16" y="48" width="100" height="48" rx="12" fill="var(--brand, #2563eb)" />
+      <text x="66" y="80" font-size="22" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">main</text>
+
+      <circle cx="176" cy="72" r="30" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="5" />
+      <text x="176" y="80" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C1</text>
+
+      <circle cx="264" cy="72" r="30" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="5" />
+      <text x="264" y="80" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C2</text>
+
+      <rect x="16" y="190" width="120" height="48" rx="12" fill="var(--warning, #d97706)" />
+      <text x="76" y="222" font-size="22" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">feature</text>
+
+      <circle cx="264" cy="214" r="30" fill="var(--warning, #b45309)" stroke="var(--warning, #fcd34d)" stroke-width="5" />
+      <text x="264" y="222" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C3</text>
+
+      <circle cx="336" cy="214" r="30" fill="var(--warning, #b45309)" stroke="var(--warning, #fcd34d)" stroke-width="5" />
+      <text x="336" y="222" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C4</text>
+
+      <circle cx="384" cy="72" r="36" fill="var(--green, #059669)" stroke="var(--green, #6ee7b7)" stroke-width="6" />
+      <text x="384" y="84" font-size="28" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">✓</text>
+
+      <rect x="320" y="124" width="128" height="40" rx="10" fill="var(--green, #059669)" />
+      <text x="384" y="151" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">MERGED</text>
+    </g>
+
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-route-list-en-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+
+    <filter id="git-workflow-route-list-en-v1-card-shadow" x="-30%" y="-30%" width="160%" height="160%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#0f172a" flood-opacity="0.14" />
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.06" />
+    </filter>
+    <clipPath id="git-workflow-route-list-en-v1-card-clip">
+      <rect x="65" y="60" width="510" height="565" rx="28" />
+    </clipPath>
+  </defs>
+
+
+  <g transform="rotate(-3 320 345)" filter="url(#git-workflow-route-list-en-v1-card-shadow)">
+
+    <rect x="65" y="60" width="510" height="565" rx="28" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2.5" />
+
+    <g clip-path="url(#git-workflow-route-list-en-v1-card-clip)">
+
+    <g transform="translate(88, 118)">
+      <rect width="456" height="300" rx="24" fill="var(--bg-hover, #f8fafc)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+
+      <line x1="128" y1="72" x2="352" y2="72" stroke="var(--brand, #3b82f6)" stroke-width="12" stroke-linecap="round" />
+      <path d="M 176 72 C 214 72, 224 214, 264 214 L 336 214 C 376 214, 384 72, 384 72" fill="none" stroke="var(--warning, #f59e0b)" stroke-width="12" stroke-linecap="round" />
+
+      <rect x="16" y="48" width="100" height="48" rx="12" fill="var(--brand, #2563eb)" />
+      <text x="66" y="80" font-size="22" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">main</text>
+
+      <circle cx="176" cy="72" r="30" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="5" />
+      <text x="176" y="80" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C1</text>
+
+      <circle cx="264" cy="72" r="30" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="5" />
+      <text x="264" y="80" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C2</text>
+
+      <rect x="16" y="190" width="120" height="48" rx="12" fill="var(--warning, #d97706)" />
+      <text x="76" y="222" font-size="22" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">feature</text>
+
+      <circle cx="264" cy="214" r="30" fill="var(--warning, #b45309)" stroke="var(--warning, #fcd34d)" stroke-width="5" />
+      <text x="264" y="222" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C3</text>
+
+      <circle cx="336" cy="214" r="30" fill="var(--warning, #b45309)" stroke="var(--warning, #fcd34d)" stroke-width="5" />
+      <text x="336" y="222" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C4</text>
+
+      <circle cx="384" cy="72" r="36" fill="var(--green, #059669)" stroke="var(--green, #6ee7b7)" stroke-width="6" />
+      <text x="384" y="84" font-size="28" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">✓</text>
+
+      <rect x="320" y="124" width="128" height="40" rx="10" fill="var(--green, #059669)" />
+      <text x="384" y="151" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">MERGED</text>
+    </g>
+
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-01-list-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-01-list-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-01-list-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-01-list-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-01-list-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="118" height="220" rx="16" fill="var(--brand-light, #eff6ff)" stroke="var(--brand-light, #93c5fd)" stroke-width="2" />
+      <rect x="37" y="28" width="44" height="32" rx="6" fill="var(--brand, #2563eb)" />
+      <text x="59" y="92" font-size="22" font-weight="900" fill="var(--brand, #1e40af)" text-anchor="middle">工作区</text>
+      <g transform="translate(140, 0)">
+        <rect width="118" height="220" rx="16" fill="var(--info-light, #ecfeff)" stroke="var(--info, #67e8f9)" stroke-width="2" />
+        <rect x="37" y="36" width="44" height="8" rx="3" fill="var(--info, #0891b2)" />
+        <rect x="37" y="50" width="44" height="8" rx="3" fill="var(--info, #22d3ee)" />
+        <text x="59" y="92" font-size="22" font-weight="900" fill="var(--info, #0e7490)" text-anchor="middle">暂存区</text>
+      </g>
+      <g transform="translate(280, 0)">
+        <rect width="118" height="220" rx="16" fill="var(--green-light, #f0fdf4)" stroke="var(--green, #86efac)" stroke-width="2" />
+        <rect x="39" y="24" width="40" height="12" rx="3" fill="var(--green, #16a34a)" />
+        <rect x="39" y="40" width="40" height="12" rx="3" fill="var(--green, #4ade80)" />
+        <rect x="39" y="56" width="40" height="12" rx="3" fill="var(--green, #86efac)" />
+        <text x="59" y="92" font-size="22" font-weight="900" fill="var(--green, #166534)" text-anchor="middle">本地</text>
+      </g>
+      <g transform="translate(420, 0)">
+        <rect width="118" height="220" rx="16" fill="var(--code-keyword-light, #f5f3ff)" stroke="var(--code-keyword, #c4b5fd)" stroke-width="2" />
+        <ellipse cx="59" cy="36" rx="22" ry="12" fill="var(--code-keyword, #7c3aed)" />
+        <ellipse cx="59" cy="48" rx="22" ry="12" fill="var(--code-keyword, #a78bfa)" />
+        <text x="59" y="92" font-size="22" font-weight="900" fill="var(--code-keyword, #5b21b6)" text-anchor="middle">远程</text>
+      </g>
+      <rect x="122" y="104" width="14" height="6" rx="3" fill="var(--text-3, #94a3b8)" />
+      <rect x="262" y="104" width="14" height="6" rx="3" fill="var(--text-3, #94a3b8)" />
+      <rect x="402" y="104" width="14" height="6" rx="3" fill="var(--text-3, #94a3b8)" />
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-01-list-en-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-01-list-en-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-01-list-en-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-01-list-en-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-01-list-en-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="118" height="220" rx="16" fill="var(--brand-light, #eff6ff)" stroke="var(--brand-light, #93c5fd)" stroke-width="2" />
+      <rect x="37" y="28" width="44" height="32" rx="6" fill="var(--brand, #2563eb)" />
+      <text x="59" y="92" font-size="22" font-weight="900" fill="var(--brand, #1e40af)" text-anchor="middle">Work</text>
+      <g transform="translate(140, 0)">
+        <rect width="118" height="220" rx="16" fill="var(--info-light, #ecfeff)" stroke="var(--info, #67e8f9)" stroke-width="2" />
+        <rect x="37" y="36" width="44" height="8" rx="3" fill="var(--info, #0891b2)" />
+        <rect x="37" y="50" width="44" height="8" rx="3" fill="var(--info, #22d3ee)" />
+        <text x="59" y="92" font-size="22" font-weight="900" fill="var(--info, #0e7490)" text-anchor="middle">Stage</text>
+      </g>
+      <g transform="translate(280, 0)">
+        <rect width="118" height="220" rx="16" fill="var(--green-light, #f0fdf4)" stroke="var(--green, #86efac)" stroke-width="2" />
+        <rect x="39" y="24" width="40" height="12" rx="3" fill="var(--green, #16a34a)" />
+        <rect x="39" y="40" width="40" height="12" rx="3" fill="var(--green, #4ade80)" />
+        <rect x="39" y="56" width="40" height="12" rx="3" fill="var(--green, #86efac)" />
+        <text x="59" y="92" font-size="22" font-weight="900" fill="var(--green, #166534)" text-anchor="middle">Local</text>
+      </g>
+      <g transform="translate(420, 0)">
+        <rect width="118" height="220" rx="16" fill="var(--code-keyword-light, #f5f3ff)" stroke="var(--code-keyword, #c4b5fd)" stroke-width="2" />
+        <ellipse cx="59" cy="36" rx="22" ry="12" fill="var(--code-keyword, #7c3aed)" />
+        <ellipse cx="59" cy="48" rx="22" ry="12" fill="var(--code-keyword, #a78bfa)" />
+        <text x="59" y="92" font-size="22" font-weight="900" fill="var(--code-keyword, #5b21b6)" text-anchor="middle">Remote</text>
+      </g>
+      <rect x="122" y="104" width="14" height="6" rx="3" fill="var(--text-3, #94a3b8)" />
+      <rect x="262" y="104" width="14" height="6" rx="3" fill="var(--text-3, #94a3b8)" />
+      <rect x="402" y="104" width="14" height="6" rx="3" fill="var(--text-3, #94a3b8)" />
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-02-list-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-02-list-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-02-list-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-02-list-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-02-list-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="320" height="220" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+      <rect x="20" y="28" width="280" height="44" rx="8" fill="var(--red-light, #fee2e2)" />
+      <text x="40" y="58" font-size="22" font-weight="800" fill="var(--red, #b91c1c)">− login</text>
+      <rect x="20" y="88" width="280" height="44" rx="8" fill="var(--green-light, #dcfce7)" />
+      <text x="40" y="118" font-size="22" font-weight="800" fill="var(--green, #15803d)">+ 立即登录</text>
+      <rect x="20" y="148" width="200" height="16" rx="4" fill="var(--border, #e2e8f0)" />
+      <g transform="translate(344, 0)">
+        <rect width="216" height="220" rx="16" fill="var(--brand-light, #eff6ff)" stroke="var(--brand-light, #93c5fd)" stroke-width="2" />
+        <rect x="78" y="28" width="60" height="72" rx="12" fill="var(--brand, #2563eb)" />
+        <text x="108" y="140" font-size="24" font-weight="900" fill="var(--brand, #1e40af)" text-anchor="middle">.gitignore</text>
+        <rect x="36" y="160" width="144" height="32" rx="8" fill="var(--red-light, #fee2e2)" />
+        <text x="108" y="182" font-size="16" font-weight="800" fill="var(--red, #b91c1c)" text-anchor="middle">.env</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-02-list-en-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-02-list-en-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-02-list-en-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-02-list-en-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-02-list-en-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="320" height="220" rx="16" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+      <rect x="20" y="28" width="280" height="44" rx="8" fill="var(--red-light, #fee2e2)" />
+      <text x="40" y="58" font-size="22" font-weight="800" fill="var(--red, #b91c1c)">− login</text>
+      <rect x="20" y="88" width="280" height="44" rx="8" fill="var(--green-light, #dcfce7)" />
+      <text x="40" y="118" font-size="22" font-weight="800" fill="var(--green, #15803d)">+ 立即登录</text>
+      <rect x="20" y="148" width="200" height="16" rx="4" fill="var(--border, #e2e8f0)" />
+      <g transform="translate(344, 0)">
+        <rect width="216" height="220" rx="16" fill="var(--brand-light, #eff6ff)" stroke="var(--brand-light, #93c5fd)" stroke-width="2" />
+        <rect x="78" y="28" width="60" height="72" rx="12" fill="var(--brand, #2563eb)" />
+        <text x="108" y="140" font-size="24" font-weight="900" fill="var(--brand, #1e40af)" text-anchor="middle">.gitignore</text>
+        <rect x="36" y="160" width="144" height="32" rx="8" fill="var(--red-light, #fee2e2)" />
+        <text x="108" y="182" font-size="16" font-weight="800" fill="var(--red, #b91c1c)" text-anchor="middle">.env</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-03-list-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-03-list-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-03-list-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-03-list-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-03-list-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(56, 220)">
+      <line x1="24" y1="48" x2="360" y2="48" stroke="var(--brand, #3b82f6)" stroke-width="10" stroke-linecap="round" />
+      <path d="M 168 48 C 220 48, 232 168, 280 168 L 420 168" fill="none" stroke="var(--warning, #f59e0b)" stroke-width="10" stroke-linecap="round" />
+      <circle cx="48" cy="48" r="26" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="4" />
+      <text x="48" y="56" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C1</text>
+      <circle cx="168" cy="48" r="26" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="4" />
+      <text x="168" y="56" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C2</text>
+      <circle cx="336" cy="48" r="26" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="4" />
+      <text x="336" y="56" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C3</text>
+      <circle cx="280" cy="168" r="26" fill="var(--warning, #b45309)" stroke="var(--warning, #fcd34d)" stroke-width="4" />
+      <text x="280" y="176" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C4</text>
+      <circle cx="420" cy="168" r="26" fill="var(--warning, #b45309)" stroke="var(--warning, #fcd34d)" stroke-width="4" />
+      <text x="420" y="176" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C5</text>
+      <rect x="372" y="24" width="80" height="36" rx="10" fill="var(--brand, #2563eb)" />
+      <text x="412" y="48" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">main</text>
+      <rect x="456" y="150" width="92" height="36" rx="10" fill="var(--warning, #d97706)" />
+      <text x="502" y="174" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">feature</text>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-03-list-en-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-03-list-en-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-03-list-en-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-03-list-en-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-03-list-en-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(56, 220)">
+      <line x1="24" y1="48" x2="360" y2="48" stroke="var(--brand, #3b82f6)" stroke-width="10" stroke-linecap="round" />
+      <path d="M 168 48 C 220 48, 232 168, 280 168 L 420 168" fill="none" stroke="var(--warning, #f59e0b)" stroke-width="10" stroke-linecap="round" />
+      <circle cx="48" cy="48" r="26" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="4" />
+      <text x="48" y="56" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C1</text>
+      <circle cx="168" cy="48" r="26" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="4" />
+      <text x="168" y="56" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C2</text>
+      <circle cx="336" cy="48" r="26" fill="var(--brand, #1d4ed8)" stroke="var(--brand-light, #93c5fd)" stroke-width="4" />
+      <text x="336" y="56" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C3</text>
+      <circle cx="280" cy="168" r="26" fill="var(--warning, #b45309)" stroke="var(--warning, #fcd34d)" stroke-width="4" />
+      <text x="280" y="176" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C4</text>
+      <circle cx="420" cy="168" r="26" fill="var(--warning, #b45309)" stroke="var(--warning, #fcd34d)" stroke-width="4" />
+      <text x="420" y="176" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">C5</text>
+      <rect x="372" y="24" width="80" height="36" rx="10" fill="var(--brand, #2563eb)" />
+      <text x="412" y="48" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">main</text>
+      <rect x="456" y="150" width="92" height="36" rx="10" fill="var(--warning, #d97706)" />
+      <text x="502" y="174" font-size="18" font-weight="900" fill="var(--on-status, #ffffff)" text-anchor="middle">feature</text>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-04-list-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-04-list-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-04-list-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-04-list-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-04-list-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="248" height="220" rx="16" fill="var(--green-light, #f0fdf4)" stroke="var(--green, #86efac)" stroke-width="2" />
+      <line x1="40" y1="110" x2="208" y2="110" stroke="var(--green, #16a34a)" stroke-width="8" stroke-linecap="round" />
+      <circle cx="56" cy="110" r="18" fill="var(--bg-soft, #ffffff)" stroke="var(--green, #16a34a)" stroke-width="4" />
+      <circle cx="124" cy="110" r="18" fill="var(--bg-soft, #ffffff)" stroke="var(--green, #16a34a)" stroke-width="4" />
+      <circle cx="192" cy="110" r="22" fill="var(--green, #16a34a)" />
+      <text x="124" y="50" font-size="22" font-weight="900" fill="var(--green, #166534)" text-anchor="middle">main</text>
+      <g transform="translate(272, 0)">
+        <rect width="288" height="220" rx="16" fill="var(--warning-light, #fffbeb)" stroke="var(--warning, #fcd34d)" stroke-width="2" />
+        <rect x="24" y="36" width="240" height="48" rx="10" fill="var(--warning-light, #fef3c7)" />
+        <text x="144" y="68" font-size="20" font-weight="800" fill="var(--warning, #92400e)" text-anchor="middle">&lt;&lt;&lt;&lt;&lt;&lt; HEAD</text>
+        <rect x="24" y="96" width="240" height="8" rx="4" fill="var(--border, #e2e8f0)" />
+        <rect x="24" y="124" width="240" height="48" rx="10" fill="var(--brand-light, #dbeafe)" />
+        <text x="144" y="156" font-size="20" font-weight="800" fill="var(--brand, #1d4ed8)" text-anchor="middle">&gt;&gt;&gt;&gt;&gt;&gt; feature</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-04-list-en-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-04-list-en-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-04-list-en-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-04-list-en-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-04-list-en-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="248" height="220" rx="16" fill="var(--green-light, #f0fdf4)" stroke="var(--green, #86efac)" stroke-width="2" />
+      <line x1="40" y1="110" x2="208" y2="110" stroke="var(--green, #16a34a)" stroke-width="8" stroke-linecap="round" />
+      <circle cx="56" cy="110" r="18" fill="var(--bg-soft, #ffffff)" stroke="var(--green, #16a34a)" stroke-width="4" />
+      <circle cx="124" cy="110" r="18" fill="var(--bg-soft, #ffffff)" stroke="var(--green, #16a34a)" stroke-width="4" />
+      <circle cx="192" cy="110" r="22" fill="var(--green, #16a34a)" />
+      <text x="124" y="50" font-size="22" font-weight="900" fill="var(--green, #166534)" text-anchor="middle">main</text>
+      <g transform="translate(272, 0)">
+        <rect width="288" height="220" rx="16" fill="var(--warning-light, #fffbeb)" stroke="var(--warning, #fcd34d)" stroke-width="2" />
+        <rect x="24" y="36" width="240" height="48" rx="10" fill="var(--warning-light, #fef3c7)" />
+        <text x="144" y="68" font-size="20" font-weight="800" fill="var(--warning, #92400e)" text-anchor="middle">&lt;&lt;&lt;&lt;&lt;&lt; HEAD</text>
+        <rect x="24" y="96" width="240" height="8" rx="4" fill="var(--border, #e2e8f0)" />
+        <rect x="24" y="124" width="240" height="48" rx="10" fill="var(--brand-light, #dbeafe)" />
+        <text x="144" y="156" font-size="20" font-weight="800" fill="var(--brand, #1d4ed8)" text-anchor="middle">&gt;&gt;&gt;&gt;&gt;&gt; feature</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-05-list-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-05-list-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-05-list-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-05-list-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-05-list-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="220" height="220" rx="16" fill="var(--brand-light, #eff6ff)" stroke="var(--brand-light, #93c5fd)" stroke-width="2" />
+      <rect x="70" y="36" width="80" height="52" rx="10" fill="var(--brand, #2563eb)" />
+      <text x="110" y="128" font-size="24" font-weight="900" fill="var(--brand, #1e40af)" text-anchor="middle">Local</text>
+      <g transform="translate(300, 0)">
+        <rect width="220" height="220" rx="16" fill="var(--code-keyword-light, #f5f3ff)" stroke="var(--code-keyword, #c4b5fd)" stroke-width="2" />
+        <ellipse cx="110" cy="52" rx="36" ry="18" fill="var(--code-keyword, #7c3aed)" />
+        <ellipse cx="110" cy="68" rx="36" ry="18" fill="var(--code-keyword, #a78bfa)" />
+        <text x="110" y="128" font-size="24" font-weight="900" fill="var(--code-keyword, #5b21b6)" text-anchor="middle">GitHub</text>
+      </g>
+      <rect x="228" y="72" width="64" height="8" rx="4" fill="var(--brand, #2563eb)" />
+      <polygon points="292,76 276,64 276,88" fill="var(--brand, #2563eb)" />
+      <rect x="228" y="140" width="64" height="8" rx="4" fill="var(--green, #16a34a)" />
+      <polygon points="228,144 244,132 244,156" fill="var(--green, #16a34a)" />
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-05-list-en-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-05-list-en-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-05-list-en-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-05-list-en-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-05-list-en-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="220" height="220" rx="16" fill="var(--brand-light, #eff6ff)" stroke="var(--brand-light, #93c5fd)" stroke-width="2" />
+      <rect x="70" y="36" width="80" height="52" rx="10" fill="var(--brand, #2563eb)" />
+      <text x="110" y="128" font-size="24" font-weight="900" fill="var(--brand, #1e40af)" text-anchor="middle">Local</text>
+      <g transform="translate(300, 0)">
+        <rect width="220" height="220" rx="16" fill="var(--code-keyword-light, #f5f3ff)" stroke="var(--code-keyword, #c4b5fd)" stroke-width="2" />
+        <ellipse cx="110" cy="52" rx="36" ry="18" fill="var(--code-keyword, #7c3aed)" />
+        <ellipse cx="110" cy="68" rx="36" ry="18" fill="var(--code-keyword, #a78bfa)" />
+        <text x="110" y="128" font-size="24" font-weight="900" fill="var(--code-keyword, #5b21b6)" text-anchor="middle">GitHub</text>
+      </g>
+      <rect x="228" y="72" width="64" height="8" rx="4" fill="var(--brand, #2563eb)" />
+      <polygon points="292,76 276,64 276,88" fill="var(--brand, #2563eb)" />
+      <rect x="228" y="140" width="64" height="8" rx="4" fill="var(--green, #16a34a)" />
+      <polygon points="228,144 244,132 244,156" fill="var(--green, #16a34a)" />
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-06-list-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-06-list-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-06-list-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-06-list-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-06-list-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="176" height="220" rx="16" fill="var(--red-light, #fff1f2)" stroke="var(--red, #fda4af)" stroke-width="2" />
+      <text x="88" y="120" font-size="26" font-weight="900" fill="var(--red, #be123c)" text-anchor="middle">restore</text>
+      <g transform="translate(192, 0)">
+        <rect width="176" height="220" rx="16" fill="var(--green-light, #f0fdf4)" stroke="var(--green, #86efac)" stroke-width="2" />
+        <text x="88" y="120" font-size="26" font-weight="900" fill="var(--green, #166534)" text-anchor="middle">revert</text>
+      </g>
+      <g transform="translate(384, 0)">
+        <rect width="176" height="220" rx="16" fill="var(--warning-light, #fffbeb)" stroke="var(--warning, #fcd34d)" stroke-width="2" />
+        <text x="88" y="120" font-size="26" font-weight="900" fill="var(--warning, #92400e)" text-anchor="middle">stash</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol>
+<symbol id="git-workflow-chapter-06-list-en-v1" viewBox="0 0 640 640" style="font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <filter id="git-workflow-chapter-06-list-en-v1-wide-card-shadow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+    <clipPath id="git-workflow-chapter-06-list-en-v1-wide-card-clip">
+      <rect x="24" y="48" width="592" height="420" rx="22" />
+    </clipPath>
+  </defs>
+  <g transform="rotate(-2.2 320 258)" filter="url(#git-workflow-chapter-06-list-en-v1-wide-card-shadow)">
+    <rect x="24" y="48" width="592" height="420" rx="22" fill="var(--bg-soft, #ffffff)" stroke="var(--border, #e2e8f0)" stroke-width="2" />
+    <g clip-path="url(#git-workflow-chapter-06-list-en-v1-wide-card-clip)">
+      <g transform="translate(0 -120)">
+
+    <g transform="translate(40, 200)">
+      <rect width="176" height="220" rx="16" fill="var(--red-light, #fff1f2)" stroke="var(--red, #fda4af)" stroke-width="2" />
+      <text x="88" y="120" font-size="26" font-weight="900" fill="var(--red, #be123c)" text-anchor="middle">restore</text>
+      <g transform="translate(192, 0)">
+        <rect width="176" height="220" rx="16" fill="var(--green-light, #f0fdf4)" stroke="var(--green, #86efac)" stroke-width="2" />
+        <text x="88" y="120" font-size="26" font-weight="900" fill="var(--green, #166534)" text-anchor="middle">revert</text>
+      </g>
+      <g transform="translate(384, 0)">
+        <rect width="176" height="220" rx="16" fill="var(--warning-light, #fffbeb)" stroke="var(--warning, #fcd34d)" stroke-width="2" />
+        <text x="88" y="120" font-size="26" font-weight="900" fill="var(--warning, #92400e)" text-anchor="middle">stash</text>
+      </g>
+    </g>
+
+      </g>
+    </g>
+  </g>
+</symbol></svg>

@@ -17,12 +17,16 @@ function writeLocal(ids: string[]) { try { localStorage.setItem(key, JSON.string
 export function VibeFavoritesProvider({ children }: { children: React.ReactNode }) {
   const [ids, setIds] = useState<string[]>([]); const currentIds = useRef<string[]>([]);
   const [loading, setLoading] = useState(true); const remote = useRef(false);
+  const changedWhileLoading = useRef(new Map<string, boolean>());
   const [busy, setBusy] = useState<string[]>([]); const pending = useRef(new Set<string>());
   const [error, setError] = useState(""); const t = useTranslations("vibehub");
   const update = useCallback((value: string[]) => { currentIds.current = value; setIds(value); writeLocal(value); }, []);
   useEffect(() => {
-    let active = true;
-    const controller = new AbortController(); update(readLocal());
+    let active = true; const syncing = new Set<string>();
+    const controller = new AbortController(); remote.current = false; changedWhileLoading.current.clear(); update(readLocal());
+    // Visitor storage is ready immediately; account availability cannot block local saves.
+    queueMicrotask(() => { if (active) setLoading(false); });
+    const timeout = setTimeout(() => controller.abort(), 8000);
     void (async () => {
       try {
         const response = await fetch(`/api/favorites?targetType=${targetType}&take=360`, { cache: "no-store", signal: controller.signal });
@@ -31,7 +35,15 @@ export function VibeFavoritesProvider({ children }: { children: React.ReactNode 
         const favorites: { targetType: string; targetId: string }[] = payload?.data?.favorites || [];
         const remoteIds = favorites.filter(item => item.targetType === targetType).map(item => item.targetId);
         const local = currentIds.current; const missing = local.filter(slug => !remoteIds.includes(slug));
-        update(Array.from(new Set([...local, ...remoteIds]))); remote.current = true;
+        const removed = remoteIds.filter(slug => changedWhileLoading.current.get(slug) === false);
+        // Serialize initial account imports with normal toggle actions for the same term.
+        [...missing, ...removed].forEach(slug => { syncing.add(slug); pending.current.add(slug); });
+        setBusy([...pending.current]);
+        update(Array.from(new Set([...local, ...remoteIds.filter(slug => !removed.includes(slug))]))); remote.current = true;
+        for (const slug of removed) {
+          const result = await fetch(`/api/favorites?targetType=${targetType}&targetId=${encodeURIComponent(slug)}`, {method: "DELETE", signal: controller.signal});
+          if (!result.ok && active) setError(t("saveError"));
+        }
         // Bound concurrency when importing visitor favorites into the account.
         let index = 0;
         await Promise.all(Array.from({ length: Math.min(4, missing.length) }, async () => {
@@ -42,23 +54,26 @@ export function VibeFavoritesProvider({ children }: { children: React.ReactNode 
           }
         }));
       } catch { if (active && remote.current) setError(t("saveError")); }
-      finally { if (active) setLoading(false); }
+      finally { clearTimeout(timeout); syncing.forEach(slug => pending.current.delete(slug)); if (active) setBusy([...pending.current]); }
     })();
     const synchronize = (event: StorageEvent) => { if (event.key === key) { currentIds.current = readLocal(); setIds(currentIds.current); } };
     window.addEventListener("storage", synchronize);
-    return () => { active = false; controller.abort(); window.removeEventListener("storage", synchronize); };
+    return () => { active = false; clearTimeout(timeout); controller.abort(); window.removeEventListener("storage", synchronize); };
   }, [update, t]);
 
   const toggle = useCallback(async (slug: string) => {
     if (loading || pending.current.has(slug)) return;
     const next = !currentIds.current.includes(slug);
     update(next ? [...currentIds.current, slug] : currentIds.current.filter(item => item !== slug));
-    setError(""); pending.current.add(slug); setBusy([...pending.current]);
+    setError(""); changedWhileLoading.current.set(slug, next);
+    if (!remote.current) return;
+    pending.current.add(slug); setBusy([...pending.current]);
     try {
       const response = next
-        ? await fetch("/api/favorites", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ targetType, targetId: slug }) })
-        : await fetch(`/api/favorites?targetType=${targetType}&targetId=${encodeURIComponent(slug)}`, { method: "DELETE" });
+        ? await fetch("/api/favorites", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ targetType, targetId: slug }), signal: AbortSignal.timeout(8000) })
+        : await fetch(`/api/favorites?targetType=${targetType}&targetId=${encodeURIComponent(slug)}`, { method: "DELETE", signal: AbortSignal.timeout(8000) });
       if (response.ok) remote.current = true;
+      else if (response.status === 401) remote.current = false;
       else if (remote.current && response.status !== 401) {
         if (!next) update(Array.from(new Set([...currentIds.current, slug])));
         setError(t("saveError"));
