@@ -158,7 +158,9 @@
     "syncedToAccount": "Saved to your ANS account",
     "storedOnDevice": "Saved on this device · Sign in to sync",
     "signInToSync": "Sign in to sync",
-    "retrySync": "Retry sync"
+    "retrySync": "Retry sync",
+    "returnAns": "Back to ANS",
+    "returnAnsHint": "Return to the ANS page and scroll position you came from"
   },
   "zh": {
     "terms": "术语图鉴",
@@ -319,6 +321,8 @@
     "syncedToAccount": "已同步到 ANS 账号",
     "storedOnDevice": "已保存在当前设备 · 登录后同步",
     "signInToSync": "登录同步收藏",
-    "retrySync": "重试同步"
+    "retrySync": "重试同步",
+    "returnAns": "返回 ANS",
+    "returnAnsHint": "回到进入前的 ANS 页面和浏览位置"
   }
 }

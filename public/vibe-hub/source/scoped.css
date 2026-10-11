@@ -10947,3 +10947,6 @@
 
 /* Keep the ANS brand readable before the full navigation fits. */
 @media(max-width:1050px){.vh-desktop-nav{display:none}}
+
+.vh-ans-return{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-size:12px;font-weight:700;text-decoration:none;flex-shrink:0}
+@media(max-width:760px){.vh-header-actions .vh-ans-return{width:26px;height:34px;justify-content:center}.vh-header-actions .vh-ans-return span{display:none}}
