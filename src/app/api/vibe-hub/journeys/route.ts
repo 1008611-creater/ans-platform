@@ -1,0 +1,2 @@
+﻿import { NextResponse } from "next/server";
+export async function GET(request:Request){const params=new URL(request.url).searchParams; const q=params.get("q")||""; try{const r=await fetch(`https://vibe-hub.org/api/agent/v1/journeys?q=${encodeURIComponent(q)}&limit=20&locale=zh`,{next:{revalidate:300}}); if(r.ok)return NextResponse.json(await r.json());}catch{} return NextResponse.json({data:{results:[]}});}

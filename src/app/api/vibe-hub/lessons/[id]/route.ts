@@ -1,0 +1,2 @@
+﻿import { NextResponse } from "next/server";
+export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params; try{const r=await fetch(`https://vibe-hub.org/api/agent/v1/lessons/${encodeURIComponent(id)}?locale=zh`,{next:{revalidate:300}}); if(r.ok)return NextResponse.json(await r.json());}catch{} return NextResponse.json({error:"Lesson unavailable"},{status:404});}
