@@ -10944,3 +10944,6 @@
 .vh-term-card .vh-source-preview{height:172px;min-height:172px;position:relative;overflow:hidden;background:var(--vh-panel)}.vh-preview-canvas{max-width:none!important;width:760px!important;flex:none;position:absolute;top:10px;left:50%;width:760px;transform:translateX(-50%) scale(.38);transform-origin:top center;pointer-events:none}.vh-preview-canvas :is(.scene-controls,.fj-control,.demo-live-trigger,.learning-route){display:none!important}.vh-preview-canvas :is(.interactive-demo,.concept-stage,.flow-journey,.style-detail-canvas){width:760px;max-width:none!important;min-width:0!important;margin:0;padding:12px}.vh-preview-canvas .dh-demo{border:0;background:none;margin:0}.vh-preview-canvas .concept-stage{min-height:0}.vh-preview-canvas img{max-width:100%}.vh-preview-canvas .dh-demo-inner{display:flex;align-items:center;justify-content:center;gap:24px}
 
 .vibehub-source:has(.course-reader-app){height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}.vibehub-source:has(.course-reader-app) .vh-header{flex-shrink:0}.vibehub-source:has(.course-reader-app) .vh-page-content{flex:1;min-height:0;overflow:hidden}.vibehub-source:has(.course-reader-app) .vh-page-content>footer{display:none}
+
+/* Keep the ANS brand readable before the full navigation fits. */
+@media(max-width:1050px){.vh-desktop-nav{display:none}}
