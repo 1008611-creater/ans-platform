@@ -61,3 +61,7 @@ tmp-*
 android/keystore.properties
 android/*.keystore
 ai-video-skills-source/agnes-video-gen/AGNES_API_KEY.txt
+
+# Python interpreter cache
+__pycache__/
+*.pyc
