@@ -34,7 +34,7 @@ export default async function HomePage() {
         <Button className="mt-7" asChild><Link href="/projects#new-project">{t("start")}</Link></Button>
       </section>
       <section className="container max-w-5xl pb-14">
-        <div className="rounded-xl border bg-muted/20 p-6"><h2 className="font-semibold">{t("libraryTitle")}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{t("libraryBody")}</p><div className="mt-4 flex flex-wrap gap-3">{(["prompts", "templates", "workflows"] as const).map((key) => <Button key={key} asChild variant="outline"><Link href={`/${key}`}>{t(key)}</Link></Button>)}</div></div>
+        <div className="rounded-xl border bg-muted/20 p-6"><h2 className="font-semibold">{t("libraryTitle")}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{t("libraryBody")}</p><div className="mt-4 flex flex-wrap gap-3">{(["prompts", "templates", "workflows"] as const).map((key) => <Button key={key} asChild variant="outline"><Link href={`/${key}`}>{t(key)}</Link></Button>)}<Button asChild variant="outline"><Link href="/vibe-hub">VibeHub terms</Link></Button></div></div>
       </section>
     </div>
   );
