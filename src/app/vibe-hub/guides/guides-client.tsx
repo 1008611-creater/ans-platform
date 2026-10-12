@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Check, ChevronDown, Copy, FileText, Flag, GitBranch, PanelsTopLeft, Clapperboard, Wallet } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { guideHref, guideResourceHref } from "@/domain/vibehub/guide-routing";
+import { guideHref, guideResourceHref, legacyPracticeStep } from "@/domain/vibehub/guide-routing";
 import { CopyTermButton } from "../copy-term-button";
 import { usePersistedSetting } from "../use-persisted-setting";
 import { useVibeLanguage } from "../use-vibe-language";
@@ -34,17 +34,30 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
   const active = guide.steps.find(step => step.id === requestedStep) || guide.steps[0];
   const panel = useRef<HTMLElement>(null);
   const enteredSelection = useRef(params.has("task") || params.has("topic"));
-  // A legacy URL's fragment still points to the matching step after its redirect.
+  // Legacy practice sections had ordinal anchors; map them once after redirect.
   useEffect(() => {
     let id = "";
     try { id = decodeURIComponent(window.location.hash.slice(1)); } catch { return; }
-    if (!params.has("step") && guide.steps.some(step => step.id === id)) {
-      const next = new URLSearchParams(params.toString()); next.set("step", id);
-      router.replace(`/vibe-hub/guides?${next}`, { scroll: false });
+    const legacy = params.get("legacyPractice");
+    const mapped = legacy ? legacyPracticeStep(legacy, id) : undefined;
+    const step = mapped || (!params.has("step") && guide.steps.some(item => item.id === id) ? id : undefined);
+    if (step || legacy) {
+      const next = new URLSearchParams(params.toString());
+      next.delete("legacyPractice");
+      if (step && guide.steps.some(item => item.id === step)) next.set("step", step);
+      router.replace("/vibe-hub/guides?" + next.toString() + (id === "request" ? "#request" : ""), { scroll: false });
+    }
+    if (id === "request") {
+      const request = document.getElementById("request") as HTMLDetailsElement | null;
+      if (request) {
+        request.open = true;
+        request.scrollIntoView({ block: "start" });
+        request.querySelector("summary")?.focus({ preventScroll: true });
+      }
     }
   }, [guide.steps, params, router]);
   useEffect(() => {
-    if (!enteredSelection.current) return;
+    if (!enteredSelection.current || window.location.hash === "#request") return;
     panel.current?.focus({ preventScroll: true });
     if (window.matchMedia("(max-width: 760px)").matches) panel.current?.scrollIntoView({ block: "start" });
   }, [guide.id]);
@@ -89,7 +102,7 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
         })}</div>
         {completed.length === total && <div className="ans-guide-finished" role="status"><Check size={20} aria-hidden="true" /><span>{t("guideFinish")}</span><Link href="/workspace" className="ans-editorial-link">{t("workspaceAns")}<ArrowUpRight size={15} aria-hidden="true" /></Link></div>}
         {reference && <div className="ans-guide-reference">
-          <details><summary><Copy size={16} aria-hidden="true" />{t("guideReferencePrompt")}<ChevronDown size={16} aria-hidden="true" /></summary><div className="ans-guide-prompt"><p>{reference.prompt[lang]}</p><CopyTermButton text={reference.prompt[lang]} /></div></details>
+          <details id="request"><summary><Copy size={16} aria-hidden="true" />{t("guideReferencePrompt")}<ChevronDown size={16} aria-hidden="true" /></summary><div className="ans-guide-prompt"><p>{reference.prompt[lang]}</p><CopyTermButton text={reference.prompt[lang]} /></div></details>
           <nav aria-label={t("guideBrowseTerms")}>{reference.terms.map(term => <Link href={`/vibe-hub/${term.slug}?lang=${lang}`} key={term.slug}>{term.name[lang]}<ArrowUpRight size={13} aria-hidden="true" /></Link>)}</nav>
           <nav className="ans-guide-destinations" aria-label={t("continueInAns")}>{reference.destinations.map(link => <Link key={link.href} href={guideResourceHref(link.href, lang)} className="ans-editorial-link">{link.label[lang]}<ArrowUpRight size={15} aria-hidden="true" /></Link>)}</nav>
         </div>}

@@ -11,14 +11,30 @@ const practices: Record<string, { task: GuideTask; step?: string }> = {
 };
 export function guideTaskForPath(id: string) { return paths[id]; }
 export function guideSelectionForPractice(slug: string) { return practices[slug]; }
-export function guideHref(locale: string, selection: { task?: string; topic?: string; step?: string } = {}) {
+export function legacyPracticeStep(slug: string, fragment: string) {
+  const selection = guideSelectionForPractice(slug);
+  const match = /^step-([1-3])$/.exec(fragment);
+  if (!selection || !match) return undefined;
+  const steps: Partial<Record<GuideTask, readonly string[]>> = {
+    website: ["content", "interface", "delivery"],
+    creative: ["facts", "assets", "shots"],
+    github: ["source", "roles", "handoff"],
+  };
+  return steps[selection.task]?.[Number(match[1]) - 1] || fragment;
+}
+export function guideHref(locale: string, selection: { task?: string; topic?: string; step?: string; legacyPractice?: string } = {}) {
   return `/vibe-hub/guides?${new URLSearchParams({ lang: locale, ...Object.fromEntries(Object.entries(selection).filter(([, value]) => value)) })}`;
 }
 export function guideResourceHref(href: string, locale: string) {
   const url = new URL(href, "https://ans.local");
+  if (url.origin !== "https://ans.local") return href;
   if (url.pathname.startsWith("/vibe-hub/ans/")) {
     const selection = guideSelectionForPractice(url.pathname.split("/").pop() || "");
-    if (selection) return guideHref(locale, selection);
+    if (selection) {
+      const slug = url.pathname.split("/").pop() || "";
+      const step = legacyPracticeStep(slug, url.hash.slice(1));
+      return guideHref(locale, { ...selection, ...(step ? { step } : {}) }) + (url.hash === "#request" ? "#request" : "");
+    }
   }
   if (url.pathname.startsWith("/vibe-hub/journeys/")) {
     const id = url.pathname.split("/").pop() || "";

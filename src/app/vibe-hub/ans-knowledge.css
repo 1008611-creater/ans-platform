@@ -624,3 +624,5 @@
 }
 .ans-knowledge .catalog-filter-chip[aria-current=page] > span { color: inherit; opacity: .85; }
 .ans-guide-step-trigger { scroll-margin-top: 144px; }
+
+.ans-guide-reference details[id] { scroll-margin-top: 144px; }
