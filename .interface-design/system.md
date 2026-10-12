@@ -51,3 +51,12 @@ Three bilingual original paths connect facts, actions, inspectable deliverables 
 ## Focused entry hierarchy
 
 The home leads with project selection and the brief editor, followed by the three content covers, four practical guides and two course/practice links. Keep one visible title per cover and factual compact counts. Full guide directories use one page heading. Guide pages lead with their deliverable, a short outline, concise step introductions, substantive lists and a copyable brief. The footer contains updates and same-position return; host destinations remain in the navigation menu. Keep device/account persistence, errors and permission information where it affects an action.
+
+## Task and learning flow refinement (2026-10-12)
+
+Home task rows open the matching brief scenario directly. Learning paths are labelled as learning paths, with contextual links to the editor. Each scenario stores its own device draft; the previous shared draft is retained as the custom draft. Templates fill only empty goal/delivery/acceptance fields and never invent personal material. Copy is enabled only after all four fields have input; missing-field controls focus the actual textarea.
+Global search is the single query entry, with URL-owned query and category filters. Local bilingual intent rules supplement the existing index; no model-backed search is claimed. Empty results offer real sample queries, all-category search and the custom brief.
+Practice runs contain at most 8 questions. Any answer unlocks the guide; opening a guide without answering does not count as a correct answer. Scores refer to first attempts, unanswered questions remain explicit, and missed questions can be opened or retried. Question changes focus the content region, request failures have a retry action, and content is keyed by question and locale.
+Mobile covers use a compact horizontal row with the next cover visible; existing cover art remains unchanged. Compact starter controls use 44px minimum height, 14px labels and 10px radius. Missing-field buttons use 36px minimum height, 12px labels and 8px radius.
+
+Quiz option order is rotated by a stable question/session seed, preserving the original correct flag and feedback. This spreads correct positions without creating server/client hydration differences or changing the source question.

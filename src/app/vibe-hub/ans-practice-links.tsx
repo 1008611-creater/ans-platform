@@ -4,13 +4,21 @@ import { useTranslations } from "next-intl";
 import { ArrowUpRight, FileText, PanelsTopLeft, Clapperboard, GitBranch, Flag, Wallet } from "lucide-react";
 import { ANS_PRACTICES, practicesForTerm, type AnsPractice } from "@/domain/vibehub/ans-practices";
 import { useVibeLanguage } from "./use-vibe-language";
+const queryIntents: Record<string, RegExp> = {
+  "clear-brief": /写需求|需求描述|说明需求|clear brief|write.*brief/iu,
+  portfolio: /个人网站|作品集|portfolio|personal website/iu,
+  "creative-production": /视频|镜头|创作|short film|video|creative/iu,
+  "github-to-project": /github|开源|open.?source/iu,
+  "account-and-cost": /费用|积分|成本|credits|cost|budget/iu,
+  "competition-evidence": /比赛|参赛|competition|contest/iu,
+};
 const icons = { brief: FileText, site: PanelsTopLeft, video: Clapperboard, github: GitBranch, contest: Flag, credits: Wallet };
 export function PracticeIcon({ kind, size = 20 }: { kind: AnsPractice["icon"]; size?: number }) { const Icon = icons[kind]; return <Icon size={size} aria-hidden="true" />; }
 export function AnsPracticeLinks({ term, compact = false, query }: { term?: string; compact?: boolean; query?: string }) {
   const lang = useVibeLanguage(); const t = useTranslations("vibehub");
   const normalized = query?.trim().normalize("NFKC").toLocaleLowerCase();
   const practices = term ? practicesForTerm(term) : normalized
-    ? ANS_PRACTICES.filter(item => [item.title.zh, item.title.en, item.summary.zh, item.summary.en, ...item.sections.flatMap(section => [section.title.zh, section.title.en])].some(text => text.normalize("NFKC").toLocaleLowerCase().includes(normalized)))
+    ? ANS_PRACTICES.filter(item => queryIntents[item.slug]?.test(normalized) || [item.title.zh, item.title.en, item.summary.zh, item.summary.en, ...item.sections.flatMap(section => [section.title.zh, section.title.en])].some(text => text.normalize("NFKC").toLocaleLowerCase().includes(normalized)))
     : compact ? ANS_PRACTICES.slice(0, 4) : ANS_PRACTICES;
   if (!practices.length) return null;
   return <section className={`ans-practices${term ? " ans-term-practices" : ""}`} aria-label={t("ansPractice")}>

@@ -98,8 +98,8 @@
 .ans-menu-language { margin: 0 28px; min-height: 44px; }
 .ans-knowledge .ans-knowledge-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 650; letter-spacing: .08em; color: var(--muted-foreground); }
 .ans-knowledge-hero { border-bottom: 1px solid var(--border); }
-.ans-knowledge-hero-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: clamp(40px, 6vw, 96px); padding-block: 64px; align-items: center; }
-.ans-knowledge .ans-knowledge-hero h1 { font-size: clamp(32px, 4.4vw, 60px); line-height: 1.18; font-weight: 600; letter-spacing: -.045em; margin: 24px 0; }
+.ans-knowledge-hero-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: clamp(40px, 6vw, 96px); padding-block: 40px; align-items: center; }
+.ans-knowledge .ans-knowledge-hero h1 { font-size: 48px; line-height: 1.18; font-weight: 600; letter-spacing: -.045em; margin: 24px 0; }
 .ans-knowledge .ans-knowledge-hero h1 > span { color: var(--brand); }
 .ans-knowledge .ans-knowledge-intro { max-width: 560px; color: var(--muted-foreground); font-size: 16px; line-height: 1.9; }
 .ans-knowledge-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
@@ -357,7 +357,7 @@
 .ans-path-steps > section { border-bottom: 1px solid var(--border); padding-bottom: 32px; margin-bottom: 32px; }
 .ans-path-steps h2 { font-size: 26px; font-weight: 550; line-height: 1.5; letter-spacing: -.02em; margin-top: 12px; }
 .ans-path-steps > section > p:not(.ans-knowledge-eyebrow) { font-size: 15px; color: var(--muted-foreground); line-height: 1.9; margin-top: 16px; }
-.ans-path-evidence { margin-top: 20px; border-left: 2px solid var(--primary); padding: 4px 0 4px 20px; }
+.ans-path-evidence { margin-top: 20px; padding: 16px 20px; border-radius: 12px; background: var(--muted); }
 .ans-path-evidence > strong { font-size: 12px; font-weight: 550; }
 .ans-path-evidence > p { font-size: 14px; line-height: 1.9; margin-top: 8px; color: var(--muted-foreground); }
 .ans-path-steps nav { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 12px; }
@@ -440,4 +440,75 @@
 @media (max-width: 760px) {
   .ans-knowledge-subnav .vh-global-search { max-width: none; }
   .ans-knowledge-footer-main { padding-block: 24px; gap: 16px; }
+}
+
+/* A compact, task-led entry and a continuous brief/learning flow. */
+.ans-home-tasks { display: grid; max-width: 480px; margin-top: 28px; }
+.ans-home-tasks > a { display: flex; align-items: center; gap: 16px; min-height: 60px; padding: 16px 0; border-bottom: 1px solid var(--border); font-size: 17px; font-weight: 550; transition: color 180ms var(--ease); }
+.ans-home-task-number { font-size: 12px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.ans-home-tasks > a > svg { margin-inline-start: auto; color: var(--muted-foreground); transition: transform 180ms var(--ease); }
+.ans-home-tasks > a:hover { color: var(--primary); }
+.ans-home-tasks > a:hover > svg { transform: translateX(3px); color: var(--primary); }
+.ans-home-path-link { margin-top: 20px; color: var(--muted-foreground); }
+.ans-knowledge .ans-home-path-link { font-size: 13px; }
+.ans-search-summary { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 16px 0 24px; }
+.ans-search-summary p { font-size: 14px; color: var(--muted-foreground); overflow-wrap: anywhere; }
+.ans-knowledge .catalog-filter-chip[aria-current=page] { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+.ans-search-empty { padding: 32px 0; }
+.ans-search-empty > p { font-size: 15px; max-width: 65ch; }
+.ans-search-empty nav { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 20px; }
+.ans-search-empty > a { margin-right: 24px; }
+.ans-brief-start { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-block: 24px; border-bottom: 1px solid var(--border); }
+.ans-brief-scenarios { display: flex; flex-wrap: wrap; gap: 8px; }
+.ans-brief-scenarios button { min-height: 44px; border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; background: var(--background); color: var(--muted-foreground); font-size: 14px; }
+.ans-brief-scenarios button:hover { color: var(--foreground); background: var(--muted); }
+.ans-brief-scenarios button[aria-pressed=true] { color: var(--primary-foreground); background: var(--primary); border-color: var(--primary); }
+.ans-brief-template-status { flex-basis: 100%; font-size: 12px; color: var(--muted-foreground); }
+.ans-brief-template-status:empty { display: none; }
+.ans-knowledge button:disabled { cursor: not-allowed; opacity: .5; }
+.ans-knowledge :is(textarea, select):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.ans-brief-missing { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; padding-top: 20px; }
+.ans-brief-missing > span { font-size: 12px; color: var(--muted-foreground); }
+.ans-brief-missing > button { min-height: 36px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); font-size: 12px; color: var(--foreground); }
+.ans-brief-missing > button:hover { background: var(--muted); }
+.ans-knowledge .ans-brief-ready { color: var(--foreground); }
+.ans-brief-empty { padding-block: 28px; }
+.ans-brief-next { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px; }
+.ans-practice-request > .ans-editorial-link { margin-top: 16px; }
+.ans-knowledge-page-heading > .ans-editorial-link { margin-top: 20px; }
+.ans-copy-control { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.ans-knowledge .ans-practice-run-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+.ans-practice-run-head > span { font-size: 14px; font-variant-numeric: tabular-nums; }
+.ans-knowledge .ans-practice-run-head .vh-demo-field { flex-direction: row; align-items: center; gap: 12px; font-size: 13px; }
+.ans-practice-run-head .vh-field { min-width: 160px; }
+.ans-practice-results { max-width: 760px; margin-inline: auto; }
+.ans-practice-question-actions, .ans-practice-result-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 20px; }
+.ans-knowledge .ans-practice-question-actions > :is(a,button), .ans-knowledge .ans-practice-result-actions > :is(a,button) { min-height: 44px; }
+.ans-practice-mistakes { margin-top: 28px; }
+.ans-practice-mistakes h3 { font-size: 16px; font-weight: 550; }
+.ans-practice-mistakes ul { padding: 0; list-style: none; margin-top: 8px; }
+.ans-practice-mistakes a { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: var(--primary); }
+.ans-knowledge .vh-quiz-feedback[data-correct=true] { color: var(--green, var(--foreground)); }
+.ans-knowledge .vh-quiz-feedback[data-correct=false] { color: var(--red, var(--foreground)); }
+.ans-practice-load-error { padding: 24px; }
+@media (max-width: 760px) {
+  .ans-knowledge-hero-layout { padding-block: 24px; gap: 24px; }
+  .ans-knowledge .ans-knowledge-hero h1 { font-size: 34px; margin-block: 8px 20px; }
+  .ans-home-tasks { margin-top: 20px; max-width: none; }
+  .ans-home-tasks > a { min-height: 56px; padding-block: 12px; font-size: 16px; }
+  .ans-home-path-link { margin-top: 12px; }
+  .ans-knowledge-cover-grid { display: flex; gap: 16px; align-items: center; }
+  .ans-knowledge-cover-slot { flex: 0 0 76%; scroll-snap-align: start; }
+  .ans-knowledge-cover-feature { width: auto; padding-bottom: 0; }
+  .ans-knowledge-cover-interaction { margin-top: 0; }
+  .ans-knowledge-cover { transform: none; }
+  .ans-knowledge-covers { width: 100%; padding: 12px 8px; overflow-x: auto; scroll-snap-type: x proximity; }
+  .ans-brief-scenarios { gap: 8px; }
+  .ans-brief-scenarios button { padding-inline: 12px; }
+  .ans-brief-workbench { padding-top: 24px; }
+  .ans-search-summary { align-items: flex-start; }
+  .ans-practice-run-head .vh-field { min-width: 0; max-width: 220px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ans-home-tasks > a, .ans-home-tasks > a > svg { transition: none; transform: none !important; }
 }
