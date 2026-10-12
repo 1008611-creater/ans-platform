@@ -154,3 +154,12 @@ AC-AU03：实际隔离PostgreSQL（全新数据库）应用全部迁移，直接
 AC-AU04：精准应用+测试类型、相关tests/lint/边界、postcoding独立审查完成后PR/main统一集成；发布仍要求当前parent、fresh备份隔离恢复、精确Linuxsource/image、迁移preflight和生产只读验收。并行市场发布不得覆盖新导航/R9/配方，本切片也不覆盖其已发布增量。无付费调用或真实业务样例。
 
 分工：root实现legacy service/DB migration与相关验证；platform_recipe_registration实施任务list+targeted tests；agri_current_completion_audit只读六交付/legacy旁路审查；vibehub_followup_review独立源/任务权限及问题复验。仅独立reviewer能CLOSED。原已完成R3记录保留，当前发现不会逆改历史PASS范围。
+## 2026-10-13: Public companion context and personal ledger scope (XL)
+
+REQ-C01 / AC-C01: R11 reads only currently published public detail summaries; private routes, entered facts, files and workflow definitions never enter tool output. Page hints confer no authority. Withdrawn/read-failed entries do not resurrect.
+REQ-C02 / AC-C02: Keyword matches disclose partial results; final recommendation buttons come only from the most recent verified lookup, including clearing after empty/failed reads. Preserve confirmation tickets, actual metering, cancellation and recovery.
+REQ-L01 / AC-L01: Personal credits statements and reconciliation include only entries which affect users.quotaPoints. Team allocations use team allowances, not personal money; TEAM_GRANT and team/team_member references are excluded before pagination, cursor lookup and balance summation. Historical null refType remains included.
+REQ-L02 / AC-L02: One typed filter and one shared SQL reconciliation define this scope. Never fix a displayed mismatch by modifying balances, deleting history or adding compensation. Existing team statements remain intact; real personal mismatches are still detected.
+AC-L03: Isolated localhost PostgreSQL proves mixed personal/team history, null refType, positive/negative team allocation, team-only balance, and a real personal mismatch. Fixtures are rolled back; no production identities, orders, payments or model calls.
+AC-L04: Integrated companion and quota regressions, all-source lint, application/test types and boundary checks pass. Independent reviewer inspects exact final code. Runtime deployment requires current parent, source/image identity, backup and read-only acceptance; a local PASS is not a deployed claim.
+NON-C01: This increment does not open VibePlan sales or claim fully implemented batches/expiry/membership. Follow-up wallet lifecycle remains in the complete objective. The genuine event has no confirmed production record/window/role mapping; do not manufacture dates or staff grants.

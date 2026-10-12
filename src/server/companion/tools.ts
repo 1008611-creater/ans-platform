@@ -4,12 +4,14 @@ import enCopy from "@/../messages/companion/en.json";
 import { db } from "@/lib/db";
 import type { AgentInput, AgentLink } from "@/contracts/companion-agent";
 import { listPublishedCatalog } from "@/server/catalog/service";
-import { listPublishedWorkflows } from "@/server/workflows/service";
+import { getPublishedWorkflow, listPublishedWorkflows } from "@/server/workflows/service";
 import { YUAN_PER_POINT } from "@/lib/credits-pricing";
+import { publicProjectSummary, searchPublicProjects } from "./catalog-search";
 const argsSchema = z.object({ query: z.string().trim().max(100) }).strict();
 const descriptions = {
+  current_page: "Read the current page's published public project or workflow summary, inputs and output where available. Use when the user says this project, this workflow or what do I need here. Uses only the supplied pathname; never reads private project pages, forms, drafts, files or workflow runtime state. Query must be empty.",
   site_help: "Get verified in-site destinations for a goal: video, aigc, learning, competition, team, workspace, hub, community, market or discover. This is navigation help, not execution. Query may be empty.",
-  search_projects: "Search currently published ANS project references. Check source and executable availability. Query in the user's language; empty query lists a few projects.",
+  search_projects: "Search currently published ANS project references. Check source and executable availability. Use short keywords, not a full question. Exact/all-keyword matches rank before partial matches; inspect match and matchedTerms and do not claim a partial match meets every requirement. Query in the user's language; empty query lists a few projects.",
   search_workflows: "Search currently published user workflows. Returns declared estimated price, NOT a live execution quote. Query may be empty.",
   my_projects: "Read this authenticated member's own project summaries only; requires explicit privateAccess. Does not read project facts or file contents. Query may be empty.",
   my_tasks: "Read this authenticated member's most recent workflow task states and actual recorded cost only; requires explicit privateAccess. Does not retry or cancel a task.",
@@ -27,6 +29,29 @@ export async function executeAgentTool(name: string, raw: string, actor: string,
   catch { return { ok: false, data: { code: "INVALID_TOOL_ARGUMENTS" }, links: [] }; }
   if (!Object.hasOwn(descriptions, name)) return { ok: false, data: { code: "TOOL_UNAVAILABLE" }, links: [] };
   if (["my_projects", "my_tasks"].includes(name) && !input.privateAccess) return { ok: false, data: { code: "PRIVATE_ACCESS_REQUIRED" }, links: [] };
+  if (name === "current_page") {
+    if (query) return { ok: false, data: { code: "INVALID_TOOL_ARGUMENTS" }, links: [] };
+    const path = input.pathname.replace(/\/$/, "");
+    const detail = /^\/(explore|market)\/([A-Za-z0-9_-]+)$/.exec(path);
+    if (detail) {
+      const entries = await listPublishedCatalog();
+      const entry = entries.find(item => detail[1] === "explore" ? item.slug === detail[2] && !item.memberHref : item.memberHref === path);
+      const project = entry ? publicProjectSummary(entry, input.locale) : null;
+      return { ok: true, data: { project, note: project
+        ? "Published public summary only. Page route is a browser hint, not proof of private state. executable is declared catalog linkage, not live runtime availability."
+        : "No currently published public project matches this page. Do not resurrect withdrawn content or infer private data." },
+        links: project ? [{ href: project.href, title: project.title, detail: project.summary, icon: "discover" }] : [] };
+    }
+    const workflowPath = /^\/workflows\/([A-Za-z0-9_-]+)$/.exec(path);
+    if (workflowPath && !["runs", "new"].includes(workflowPath[1])) {
+      const row = await getPublishedWorkflow(workflowPath[1]);
+      const workflow = row ? { title: row.title, summary: row.summary?.slice(0, 600) ?? "", description: row.description?.slice(0, 1200) ?? "",
+        href: `/workflows/${row.slug}`, version: row.publishedVersion, estimatedPoints: Number(row.estimatedCost) } : null;
+      return { ok: true, data: { workflow, note: "Published public workflow description only; no definitions, prompts, inputs entered by a member or task state. Estimated cost is not an execution quote. Null means no verified published workflow on this route; a workbench entry does not prove readiness." },
+        links: workflow ? [{ href: workflow.href, title: workflow.title, detail: workflow.summary, icon: "video" }] : [] };
+    }
+    return { ok: true, data: { note: "This route has no supported public detail lookup. Use site_help or search tools. Never infer private state or unsaved inputs from the route." }, links: [] };
+  }
   if (name === "site_help") {
     const routes = [
       { key: "aigc", href: "/workflows/hypit", icon: "video" },
@@ -50,17 +75,8 @@ export async function executeAgentTool(name: string, raw: string, actor: string,
   }
   if (name === "search_projects") {
     const entries = await listPublishedCatalog();
-    const terms = query.normalize("NFKC").toLocaleLowerCase().split(/\s+/).filter(Boolean);
-    const items = entries.flatMap(entry => {
-      const text = input.locale === "en" ? entry.content?.en ?? entry.content?.zh : entry.content?.zh;
-      if (!text) return [];
-      const search = [entry.slug, entry.category, entry.subcategory, text.title, text.summary].join(" ").normalize("NFKC").toLocaleLowerCase();
-      if (!terms.every(term => search.includes(term))) return [];
-      // Only real internal detail destinations, never follow a model-provided URL.
-      return [{ slug: entry.slug, title: text.title, summary: text.summary.slice(0, 420), input: text.inputs.slice(0, 220), output: text.output.slice(0, 220), source: entry.source, sourceUrl: entry.sourceUrl ?? null,
-        executable: Boolean(entry.workflowId), href: entry.memberHref ?? `/explore/${entry.slug}` }];
-    }).slice(0, 5);
-    return { ok: true, data: { projects: items, note: "References without executable=true are browse/learn entries, not runnable workflows." }, links: items.map(item => ({ href: item.href, title: item.title, detail: item.summary, icon: "discover" })) };
+    const items = searchPublicProjects(entries, query, input.locale);
+    return { ok: true, data: { projects: items, note: "Keyword results only; partial matches do not satisfy every requested term. References without executable=true are browse/learn entries. executable=true means a declared catalog workflow link, not current runtime or model readiness. An empty result is no match, never a reason to invent recommendations." }, links: items.map(item => ({ href: item.href, title: item.title, detail: item.summary, icon: "discover" })) };
   }
   if (name === "search_workflows") {
     const rows = await listPublishedWorkflows({ query, take: 4 });

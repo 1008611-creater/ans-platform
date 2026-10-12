@@ -104,6 +104,7 @@
     "answering": "Turning the findings into a next step…"
   },
   "agentTool": {
+    "current_page": "Checking this page’s public details",
     "search_projects": "Search real projects",
     "search_workflows": "Search published workflows",
     "my_projects": "Read my project summaries",

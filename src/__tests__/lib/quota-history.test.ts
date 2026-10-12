@@ -3,6 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ transaction: vi.fn(), readOnly: vi.fn(), user: vi.fn(), anchor: vi.fn(), rows: vi.fn(), workflow: vi.fn(), api: vi.fn(), market: vi.fn(), template: vi.fn(), legacyWorkflow: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { $transaction: m.transaction } }));
 import { readQuotaHistory } from "@/server/quota/history";
+import { personalQuotaLedgerWhere } from "@/server/quota/ledger-scope";
 const exam = vi.hoisted(() => ({ read: vi.fn() }));
 vi.mock("@/server/quota/exam-reservations", () => ({ readExamReservations: exam.read }));
 const date = new Date("2026-10-10T00:00:00Z");
@@ -26,7 +27,7 @@ it.each([{ userId: "victim" }, { cursor: "bad" }, { limit: 100 }, null])("reject
 it("rejects a foreign cursor without reading entries", async () => {
   m.anchor.mockResolvedValue(null);
   await expect(readQuotaHistory("member", { cursor: "foreign-entry" })).rejects.toMatchObject({ status: 400 });
-  expect(m.anchor).toHaveBeenCalledWith({ where: { id: "foreign-entry", userId: "member" }, select: { id: true, createdAt: true } }); expect(m.rows).not.toHaveBeenCalled();
+  expect(m.anchor).toHaveBeenCalledWith({ where: { id: "foreign-entry", userId: "member", ...personalQuotaLedgerWhere() }, select: { id: true, createdAt: true } }); expect(m.rows).not.toHaveBeenCalled();
 });
 it("rejects deleted users", async () => {
   m.user.mockResolvedValue({ quotaPoints: 1, deletedAt: date }); await expect(readQuotaHistory("member")).rejects.toMatchObject({ status: 404 }); expect(m.rows).not.toHaveBeenCalled();
@@ -55,4 +56,25 @@ it("includes outstanding exam holds and keeps account identifiers out of the sta
 it("labels exam debits while retaining ordinary refund labels", async () => {
  m.rows.mockResolvedValue([{ id: "debit", amount: -1, reason: "RUN_COST", refType: "exam-analysis", createdAt: date }, { id: "refund", amount: 1, reason: "REFUND", refType: "exam-analysis", createdAt: date }]);
  expect((await readQuotaHistory("member")).entries.map(e => e.category)).toEqual(["EXAM_ANALYSIS", "REFUND"]);
+});
+
+it("filters team allocations before pagination while retaining legacy null references", async () => {
+  await readQuotaHistory("member", { cursor: "entry-anchor" });
+  const scope = personalQuotaLedgerWhere();
+  expect(scope).toEqual({ AND: [
+    { reason: { not: "TEAM_GRANT" } },
+    { OR: [{ refType: null }, { refType: { notIn: ["team", "team_member"] } }] },
+  ] });
+  expect(m.anchor).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "entry-anchor", userId: "member", ...scope } }));
+  const request = m.rows.mock.calls[0][0];
+  expect(request.where.AND).toEqual(scope.AND);
+  expect(request.where.OR).toHaveLength(2);
+  expect(request.where.OR[0]).toEqual({ createdAt: { lt: date } });
+  expect(request.take).toBe(31);
+});
+it("rejects a same-account team cursor before querying the personal statement", async () => {
+  m.anchor.mockResolvedValue(null);
+  await expect(readQuotaHistory("member", { cursor: "team-allocation" })).rejects.toMatchObject({ status: 400 });
+  expect(m.anchor.mock.calls[0][0].where.AND).toEqual(personalQuotaLedgerWhere().AND);
+  expect(m.rows).not.toHaveBeenCalled();
 });

@@ -104,6 +104,7 @@
     "answering": "把查到的资料整理成建议…"
   },
   "agentTool": {
+    "current_page": "核对当前页的公开资料",
     "search_projects": "查询真实项目",
     "search_workflows": "查询已发布工作流",
     "my_projects": "读取我的项目摘要",

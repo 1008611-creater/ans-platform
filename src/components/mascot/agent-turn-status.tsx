@@ -4,7 +4,7 @@ import { Check, CircleAlert, Search, ArrowUpRight } from "lucide-react";
 import { WorkspaceLink } from "@/components/providers/workspace-navigation";
 import { getRunModel, RUN_MODEL_METERING } from "@/lib/run-models";
 import type { useCompanionAgent } from "./use-companion-agent";
-const names = new Set(["site_help", "search_projects", "search_workflows", "my_projects", "my_tasks", "credits"]);
+const names = new Set(["current_page", "site_help", "search_projects", "search_workflows", "my_projects", "my_tasks", "credits"]);
 const toolKey = (name: string | null) => name && names.has(name) ? `agentTool.${name}` : "agentTool.generic";
 const errorKeys: Record<string, string> = {
   UNAUTHORIZED: "signIn", ACCOUNT_CHANGED: "accountChanged", ACCOUNT_UNAVAILABLE: "accountChanged", QUOTE_EXPIRED: "quoteExpired", QUOTE_CHANGED: "quoteExpired",
