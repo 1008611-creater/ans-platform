@@ -8,5 +8,5 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 export default async function AnsPracticesPage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
   const lang = languageParam((await searchParams).lang, await getLocale()); const text = labels[lang];
-  return <main className="ans-knowledge-container ans-practice-directory"><header className="ans-knowledge-page-heading"><p className="ans-knowledge-eyebrow">{text.ansOriginal}</p><h1>{text.practicePageTitle}</h1><p>{text.practicePageBody}</p></header><AnsPracticeLinks /><p className="ans-knowledge-provenance">{text.practiceProvenance}</p></main>;
+  return <main className="ans-knowledge-container ans-practice-directory"><header className="ans-knowledge-page-heading"><h1>{text.practicePageTitle}</h1></header><AnsPracticeLinks /></main>;
 }

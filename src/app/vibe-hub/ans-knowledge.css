@@ -187,7 +187,7 @@
 .ans-knowledge-work a:last-child { border-bottom: 0; }
 .ans-knowledge-work a:hover { color: var(--primary); }
 .ans-knowledge-page-heading { padding: 48px 0 36px; border-bottom: 1px solid var(--border); }
-.ans-knowledge-page-heading h1 { max-width: 850px; white-space: pre-line; font-size: clamp(30px, 3.4vw, 46px); font-weight: 600; letter-spacing: -.035em; line-height: 1.3; margin-top: 16px; }
+.ans-knowledge-page-heading h1 { max-width: 850px; white-space: pre-line; font-size: clamp(30px, 3.4vw, 46px); font-weight: 600; letter-spacing: -.035em; line-height: 1.3; margin-top: 0; }
 .ans-knowledge-page-heading > p:last-child { max-width: 720px; margin-top: 20px; font-size: 15px; color: var(--muted-foreground); line-height: 1.9; }
 .ans-knowledge-provenance { max-width: 780px; padding-bottom: 64px; color: var(--muted-foreground); font-size: 12px; line-height: 1.9; }
 .ans-knowledge-breadcrumb { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 24px; font-size: 12px; color: var(--muted-foreground); }
@@ -225,7 +225,7 @@
 .ans-term-practices .ans-practice-row { grid-template-columns: 24px 36px minmax(0, 1fr) 20px; padding-inline: 0; gap: 12px; }
 .ans-term-practices .ans-practice-icon { width: 36px; height: 36px; }
 .ans-knowledge-footer { background: var(--background); border-top: 1px solid var(--border); text-align: start; padding: 0; }
-.ans-knowledge-footer-main { display: flex; justify-content: space-between; align-items: start; gap: 32px; flex-wrap: wrap; padding-block: 40px; }
+.ans-knowledge-footer-main { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; padding-block: 28px; }
 .ans-knowledge-footer-brand { font-size: 20px; font-weight: 550; letter-spacing: -.025em; }
 .ans-knowledge-footer p { font-size: 12px; color: var(--muted-foreground); margin-top: 12px; line-height: 1.8; }
 .ans-knowledge-footer nav { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
@@ -434,3 +434,17 @@
 .ans-study-more { display: flex; gap: 20px; flex-wrap: wrap; }
 .ans-study-more a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; color: var(--muted-foreground); }
 .ans-study-more a:hover { color: var(--foreground); }
+
+/* Keep the next action visible after removing repeated explanations. */
+.ans-knowledge-subnav { justify-content: space-between; }
+.ans-knowledge-subnav .vh-global-search { flex: 1; max-width: 640px; margin-inline: 0; }
+.ans-knowledge-subnav-note { color: var(--foreground); font-weight: 550; }
+.ans-next-action { padding-block: 28px; }
+.ans-brief-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.ans-brief-heading h2 { font-size: 26px; font-weight: 550; line-height: 1.5; }
+.ans-device-state { font-size: 12px; line-height: 1.7; color: var(--muted-foreground); }
+.ans-path-summary .ans-device-state { margin-top: 20px; }
+@media (max-width: 760px) {
+  .ans-knowledge-subnav .vh-global-search { max-width: none; }
+  .ans-knowledge-footer-main { padding-block: 24px; gap: 16px; }
+}

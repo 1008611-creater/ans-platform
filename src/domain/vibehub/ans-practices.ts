@@ -14,7 +14,7 @@ export type AnsPractice = {
 export const ANS_PRACTICES: readonly AnsPractice[] = [
   {
     slug: "clear-brief", number: "01", icon: "brief",
-    title: { zh: "先把想法，说成能执行的需求", en: "Turn an idea into an actionable brief" },
+    title: { zh: "写清需求", en: "Write a clear brief" },
     summary: { zh: "把“帮我做一个”拆成目标、资料、交付物和验收方式，给 Agent 一份有边界的任务。", en: "Define the goal, source material, deliverable and acceptance criteria before asking an agent to build." },
     outcome: { zh: "一份可复制、可核对的任务说明", en: "A brief you can copy and verify" },
     audience: { zh: "开始新项目、准备让 AI 接手的人", en: "Anyone starting a project with an AI agent" },
@@ -30,7 +30,7 @@ export const ANS_PRACTICES: readonly AnsPractice[] = [
   },
   {
     slug: "portfolio", number: "02", icon: "site",
-    title: { zh: "把真实经历，做成能展示的作品", en: "Build a portfolio from real experience" },
+    title: { zh: "做个人网站", en: "Build a portfolio" },
     summary: { zh: "从简历与项目事实出发，组织内容、网页结构和交付检查，不替你编履历。", en: "Organize real resume and project facts into a website, with a clear structure and delivery checks." },
     outcome: { zh: "个人网站需求与交付核对清单", en: "A portfolio brief and delivery checklist" },
     audience: { zh: "准备简历网站、项目展示与求职作品集的人", en: "People preparing a resume site or project portfolio" },
@@ -46,7 +46,7 @@ export const ANS_PRACTICES: readonly AnsPractice[] = [
   },
   {
     slug: "creative-production", number: "03", icon: "video",
-    title: { zh: "从参考素材，到有依据的创作交付", en: "From references to grounded creative delivery" },
+    title: { zh: "完成创作交付", en: "Plan a creative delivery" },
     summary: { zh: "图像、视频和短剧先锁定事实与资产，再拆任务；生成成功、画面检查和最终导出分开记录。", en: "Lock facts and assets before splitting image or video work. Separate generation, visual review and final export." },
     outcome: { zh: "一份创作输入与分阶段交付说明", en: "A creative input and delivery brief" },
     audience: { zh: "使用 AIGC、Hypit 或 AIGC工作台 相关工作流的人", en: "People using AIGC, Hypit or AIGC Workbench workflows" },
@@ -62,7 +62,7 @@ export const ANS_PRACTICES: readonly AnsPractice[] = [
   },
   {
     slug: "github-to-project", number: "04", icon: "github",
-    title: { zh: "把 GitHub 宝藏，转成自己的项目", en: "Turn a GitHub find into your own project" },
+    title: { zh: "使用开源项目", en: "Use an open-source project" },
     summary: { zh: "看清来源、许可、部署条件与 Skill 的职责，复用方法，也保留项目的可维护性。", en: "Review provenance, licensing, setup and skill scope while making a reusable project your own." },
     outcome: { zh: "一份复用计划与可追踪的交接记录", en: "A reuse plan with a traceable handoff" },
     audience: { zh: "准备复刻、二次开发或安装 Skill 的人", en: "People adapting repositories or installing skills" },
@@ -78,7 +78,7 @@ export const ANS_PRACTICES: readonly AnsPractice[] = [
   },
   {
     slug: "competition-evidence", number: "05", icon: "contest",
-    title: { zh: "比赛方案，先有事实再有故事", en: "Build competition narratives from evidence" },
+    title: { zh: "准备比赛作品", en: "Prepare competition work" },
     summary: { zh: "把规则、项目事实、分工与 Demo 证据分开核对，历史赛制只作为历史参考。", en: "Separate rules, project facts, responsibilities and demo evidence. Treat past competition rules as history." },
     outcome: { zh: "可核对的比赛准备与演示清单", en: "A verifiable preparation and demo checklist" },
     audience: { zh: "准备竞赛、团队方案或项目路演的人", en: "People preparing competitions, team projects or pitches" },
@@ -94,7 +94,7 @@ export const ANS_PRACTICES: readonly AnsPractice[] = [
   },
   {
     slug: "account-and-cost", number: "06", icon: "credits",
-    title: { zh: "收藏、私密资料与算力，分别管好", en: "Keep saves, private material and compute distinct" },
+    title: { zh: "管理资料与费用", en: "Manage material and costs" },
     summary: { zh: "分清设备收藏、账号同步、项目资料和实际消耗，知道什么已经保存，什么还没发生。", en: "Understand device saves, account sync, project material and actual usage so you know what has really happened." },
     outcome: { zh: "一份账号与执行前核对说明", en: "An account and pre-execution checklist" },
     audience: { zh: "登录 ANS、保存术语或准备执行任务的人", en: "People signing in, saving terms or starting tasks" },
