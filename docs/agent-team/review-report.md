@@ -207,3 +207,10 @@ This PASS does not open membership sales or certify real TTS supplier calls. Fin
 ## 2026-10-12 本轮正式发布结果
 
 应用29dec185实际部署并通过候选/正式健康与页面验证、备份恢复及精确Linux检查。2683项通过、10跳过；history31/completion14/market13仅隔离验收。套餐展示已上线、会员售卖仍关闭；PR47/30合并，PR29替代关闭。真实HTTPS手机/桌面验收证据及未验边界见 production-release.md 本轮节与 ans-billing-release-20261012/browser-verification.json。冻结后f4172f18知识区增量尚未包含在本轮运行镜像；文档提交不改变已运行应用。
+
+
+## 2026-10-12: Independent review of final knowledge/cover/return release
+
+Reviewer /root/vibehub_followup_review: PASS limited to this integrated knowledge, cover sizing, return navigation and deployment scope. Final source25580d29 / SHA6ee1ff / image8d0ab499 identities match;4870-source manifest and delta archive hashes were independently recalculated, two source increments match Git. Fresh b461 public-schema restore belongs to actual4fc parent. Reviewer personally examined desktop/mobile return screenshots and final VibePlan screenshot, plus deployment/backup/source/browser records. Desktop1440 and mobile2284 remain unchanged in two delayed reads; four initially undecoded covers have identical decoded rects. ISSUE-V01 is CLOSED by the independent reviewer; ISSUE-V02 remains CLOSED with concurrent footer simplification explicitly recorded.
+
+AC-V04 is PARTIAL:25580 authenticated favorite persistence was not repeated and oldf417 evidence is not presented as current acceptance. Chinese VibePlan six SKUs and English monthly two SKUs are observed; membership sales/entitlements and actual model/TTS/payment calls are not verified. This PASS does not certify all ANS commerce/event functionality. Review artifacts: C:/Users/lsb/.workbuddy/ans-vibehub-followup-audit-20261012/{review.md,review.json,issues.json}; release evidence: C:/Users/lsb/.workbuddy/ans-cover-stability-20261012/. Final running app25580 remains distinct from the documentation commit.

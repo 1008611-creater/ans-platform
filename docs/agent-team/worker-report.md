@@ -155,3 +155,10 @@ REQ-V01..04可执行。正式f4172f18浏览器验收发现ISSUE-V01：知识区�
 ## 2026-10-12 知识区精简增量整合与来源审查
 
 main并行新增1f5b224d知识区文案/下一步/本机保存提示，已合并babb4c41并保留滚动aa379e54。范围23知识应用文件 +2滚动源码/回归 +2资料。独立审查发现精简误删来源，已保留紧凑footer来源及2原链接、VibeHub课程/基础路径和ANS原创行标记；没有恢复冗文。zh/en322键与ICU对齐，持久设置隔离harness核对保存失败内存退化、重试、空值、跨tab更新/clear；无业务API写入。完整本地类型、源lint和11导航回归通过。源审查PASS，ISSUE-V01待最终精确Linux/HTTPS滚动关闭。r2因main前进、r3因来源复核而停止，均未切生产；首修2fac7f32已上线布局恢复，晚47px滚动失败记录保留。最终发布只包含本节冻结源，未完成恐龙Agent/赠额入口不插入。
+
+
+## 2026-10-12: Knowledge return and cover sizing implementation completion
+
+REQ-V01..03: final25580 integrates client frame restoration, bounded scroll recovery, true8:5 cover reservation and normally merged concurrent footer simplification. Live5aae showed a late72px offset and was not called a pass; the cover ratio was subsequently fixed without lowering acceptance. Exact Linux gates and candidate/production12route checks pass. Final desktop1440 and mobile2284 remain identical after6seconds and another5seconds; incomplete and decoded cover rects match.44covers/24companion files, environment/mounts/migrations are preserved. Full evidence and failed attempts are described in production-release.md.
+
+AC-V04 authenticated favorite persistence was not repeated; oldf417 evidence does not verify25580. Membership purchases remain disabled. No real payment, redemption, member grant, model/TTS execution. Running application revision is25580; documentation commits are not a new deployed app. Independent acceptance is limited to this knowledge/cover/return and publication scope, not completion of all ANS commerce features.
