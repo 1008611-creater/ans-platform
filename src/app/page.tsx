@@ -1,26 +1,72 @@
-import Image from "next/image";
-import { listPublishedCatalog } from "@/server/catalog/service";
-export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { ArrowRight, ArrowUpRight, Search, BookOpen, BriefcaseBusiness, Clapperboard, Code2, Github, Store, Zap, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FEATURED_PROJECT_SLUGS, PROJECT_CATEGORIES } from "@/domain/catalog/projects";
-import { ProjectCard } from "@/components/catalog/project-card";
+import { Input } from "@/components/ui/input";
+import { listPublishedCatalog } from "@/server/catalog/service";
+import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
+import { catalogText } from "@/domain/catalog/content";
+import { homepageProjects } from "@/domain/catalog/homepage";
+import { ProjectPreview } from "@/components/catalog/project-preview";
 import { OfficialWorkflows } from "@/components/catalog/official-workflows";
+import { ProjectCoverflow } from "@/components/homepage/project-coverflow";
 import { HomepageCtaLink } from "@/components/homepage/homepage-cta-link";
+import styles from "./home.module.css";
+
+export const dynamic = "force-dynamic";
+const categoryIcons = { learning: BookOpen, career: BriefcaseBusiness, aigc: Clapperboard, web: Code2, github: Github, business: Store, productivity: Zap, competition: Trophy };
 
 export default async function HomePage() {
-  const t = await getTranslations("product");
-  const catalog = await listPublishedCatalog();
-  const featured = FEATURED_PROJECT_SLUGS.flatMap((slug) => catalog.filter((project) => project.slug === slug));
-  return <div className="ans-product-shell ans-home-page">
-    <section className="ans-home-hero"><div className="ans-product-container ans-home-intro">
-      <div><p className="ans-eyebrow">{t("eyebrow")}</p><h1 className="ans-home-title whitespace-pre-line">{t("heroTitle")}</h1><p className="mt-6 max-w-xl text-pretty text-base leading-8 text-muted-foreground sm:text-lg">{t("heroBody")}</p><div className="mt-8 flex flex-wrap gap-3"><Button asChild size="lg" className="rounded-full"><HomepageCtaLink href="/explore" eventName="primary_cta">{t("exploreAction")}<ArrowRight className="ms-2 h-4 w-4" aria-hidden="true" /></HomepageCtaLink></Button><Button asChild variant="outline" size="lg" className="rounded-full"><HomepageCtaLink href="/hubs" eventName="workflow_cta">{t("workflowAction")}</HomepageCtaLink></Button></div></div>
-      <div className="ans-hero-character"><div className="ans-hero-orbit" aria-hidden="true" /><div className="ans-dino-bubble"><p>{t("mascot.hello")}</p></div><Image src="/mascot/ans-mascot.png" alt={t("mascot.name")} width={420} height={420} priority className="ans-hero-dino" /><span className="ans-hero-sticker" aria-hidden="true">✦</span></div>
+  const [t, locale, catalog] = await Promise.all([getTranslations("product"), getLocale(), listPublishedCatalog()]);
+  const { hero, featured, showcase } = homepageProjects(catalog);
+  return <div className={`ans-product-shell ans-home-page ${styles.page}`}>
+    <section className={styles.hero} aria-labelledby="home-title">
+      <div className={`ans-product-container ${styles.intro}`}>
+        <div className={styles.copy}>
+          <p className={styles.eyebrow}>{t("home.eyebrow")}</p>
+          <h1 id="home-title" className={styles.title}>{t("home.title")}</h1>
+          <p className={styles.description}>{t("home.description")}</p>
+          <form action="/explore" method="get" role="search" className={styles.search} aria-label={t("searchLabel")}>
+            <label className="sr-only" htmlFor="home-project-search">{t("searchLabel")}</label>
+            <Search className={styles.searchIcon} aria-hidden="true" />
+            <Input id="home-project-search" name="q" type="search" maxLength={200} autoComplete="off" placeholder={t("home.searchPlaceholder")} />
+            <Button type="submit" aria-label={t("search")}><ArrowRight aria-hidden="true" /></Button>
+          </form>
+          <div className={styles.actions}>
+            <HomepageCtaLink href="/explore" eventName="primary_cta">{t("exploreAction")}<ArrowRight aria-hidden="true" /></HomepageCtaLink>
+            <HomepageCtaLink href="/hubs" eventName="workflow_cta">{t("workflowAction")}<ArrowUpRight aria-hidden="true" /></HomepageCtaLink>
+          </div>
+        </div>
+        {hero ? <ProjectCoverflow projects={(showcase.length ? showcase : [hero]).map(project => ({
+          slug: project.slug,
+          href: project.memberHref ?? `/explore/${project.slug}`,
+          title: catalogText(project, t, "title", locale),
+          summary: catalogText(project, t, "summary", locale),
+          category: t(`categories.${project.category}`),
+          coverUrl: project.coverUrl,
+        }))} labels={{ title: t("home.spotlight"), previous: t("home.previousProject"), next: t("home.nextProject"), pause: t("home.pauseProjects"), play: t("home.playProjects"), open: t("detail"), select: t("home.selectProject"), carousel: t("home.projectCarousel") }} /> : <div className={styles.empty}><BookOpen aria-hidden="true" /><h2>{t("emptyTitle")}</h2><p>{t("emptyBody")}</p><Link href="/hubs" className="ans-text-link">{t("workflowAction")}<ArrowRight aria-hidden="true" /></Link></div>}
+      </div>
+    </section>
+    <div className={`ans-product-container ${styles.directions}`}>
+      <span className={styles.directionLabel}>{t("home.directions")}</span>
+      <nav aria-label={t("categoriesLabel")} className={styles.categoryRail}>{PROJECT_CATEGORIES.map(category => { const Icon = categoryIcons[category.id]; return <Link key={category.id} href={`/explore?category=${category.id}`}><Icon aria-hidden="true" />{t(`categories.${category.id}`)}</Link>; })}</nav>
+    </div>
+    {featured.length > 0 && <section className={`ans-product-container ${styles.selection}`} aria-labelledby="home-projects-title">
+      <div className={styles.sectionHeading}><div><p className={styles.kicker}>{t("home.selectionLabel")}</p><h2 id="home-projects-title">{t("selectionTitle")}</h2></div><Link href="/explore" className="ans-text-link">{t("viewAll")}<ArrowUpRight aria-hidden="true" /></Link></div>
+      <div className={`ans-catalog-grid ${styles.projects}`}>{featured.map(project => <article key={project.slug} className={styles.project}>
+        <Link href={project.memberHref ?? `/explore/${project.slug}`}>
+          <div className={styles.projectCopy}><div className={styles.projectMeta}><span>{t(`categories.${project.category}`)}</span><span>{t(project.workflowId ? "ready" : project.memberHref ? "realProject.member" : project.source === "official" ? "realProject.externalProduct" : "reference")}</span></div><h3>{catalogText(project, t, "title", locale)}<ArrowUpRight aria-hidden="true" /></h3><p>{catalogText(project, t, "summary", locale)}</p></div>
+          <ProjectPreview project={project} />
+        </Link>
+      </article>)}</div>
+    </section>}
+    <section className={styles.workflowSection} aria-labelledby="home-workflows-title"><div className={`ans-product-container ${styles.section}`}>
+      <div className={styles.sectionHeading}><div><p className={styles.kicker}>{t("home.workflowLabel")}</p><h2 id="home-workflows-title">{t("workflowTitle")}</h2><p>{t("home.workflowDescription")}</p></div><Link href="/hubs" className="ans-text-link">{t("nav.workflows")}<ArrowUpRight aria-hidden="true" /></Link></div>
+      <OfficialWorkflows compact />
     </div></section>
-    <section className="ans-product-container ans-home-section"><div className="ans-section-heading"><div><h2>{t("selectionTitle")}</h2></div><div className="flex items-center gap-5"><Link href="/hubs/vibehub" className="ans-text-link">ANS VibeHub<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link><Link href="/explore" className="ans-text-link">{t("viewAll")}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link></div></div><nav aria-label={t("categoriesLabel")} className="ans-category-row">{PROJECT_CATEGORIES.map((category) => <Link key={category.id} href={`/explore?category=${category.id}`} className="ans-category-pill">{t(`categories.${category.id}`)}</Link>)}</nav><div className="ans-catalog-grid">{featured.map((project) => <ProjectCard key={project.slug} project={project} />)}</div></section>
-    <section className="ans-workflow-section"><div className="ans-product-container ans-home-section"><div className="ans-section-heading"><div><h2>{t("workflowTitle")}</h2><p>{t("workflowBody")}</p></div><Link href="/hubs" className="ans-text-link">{t("nav.workflows")}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link></div><OfficialWorkflows compact /></div></section>
-    <section className="ans-product-container ans-home-section"><h2 className="text-balance text-2xl font-semibold sm:text-3xl">{t("stepsTitle")}</h2><div className="mt-8 grid gap-8 md:grid-cols-3">{[1, 2, 3].map((step) => <div key={step} className="border-t pt-5"><span className="ans-step-number" aria-hidden="true">0{step}</span><h3 className="mt-4 text-lg font-semibold">{t(`steps.${step}.title`)}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{t(`steps.${step}.body`)}</p></div>)}</div><div className="ans-community-banner mt-14"><div><h2 className="text-2xl font-semibold">{t("communityTitle")}</h2><p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t("communityBody")}</p></div><Button asChild className="rounded-full"><Link href="/community">{t("communityAction")}<ArrowRight className="ms-2 h-4 w-4" aria-hidden="true" /></Link></Button></div></section>
+    <section className={`ans-product-container ${styles.section} ${styles.bottom}`} aria-labelledby="home-steps-title">
+      <div className={styles.steps}><p className={styles.kicker}>{t("home.stepsLabel")}</p><h2 id="home-steps-title">{t("stepsTitle")}</h2><ol>{[1, 2, 3].map(step => <li key={step}><span aria-hidden="true">0{step}</span><div><h3>{t(`steps.${step}.title`)}</h3><p>{t(`steps.${step}.body`)}</p></div></li>)}</ol></div>
+      <div className={styles.community}><BookOpen aria-hidden="true" /><p className={styles.kicker}>{t("home.communityLabel")}</p><h2>{t("communityTitle")}</h2><p>{t("communityBody")}</p><div className={styles.communityLinks}><Link href="/community" className="ans-text-link">{t("communityAction")}<ArrowRight aria-hidden="true" /></Link><Link href="/hubs/vibehub" className="ans-text-link">ANS VibeHub<ArrowUpRight aria-hidden="true" /></Link></div></div>
+    </section>
   </div>;
 }
