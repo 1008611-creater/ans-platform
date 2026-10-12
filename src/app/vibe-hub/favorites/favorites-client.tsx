@@ -11,7 +11,7 @@ export default function FavoritesPage() {
   const saved = terms.filter(term => ids.includes(term.slug));
   const groups = order === "recent" ? [{ title: t("recentlySaved"), entries: [...saved].sort((a,b) => ids.indexOf(b.slug) - ids.indexOf(a.slug)) }]
     : [...new Set(saved.map(term => en ? term.category : term.zhCategory))].map(title => ({title, entries: saved.filter(term => (en ? term.category : term.zhCategory) === title)}));
-  return <main className="vh-page"><header className="vh-feature-heading"><p>{t("yourLibrary")}</p><h1>{t("savedTitle")}</h1><p>{t("savedBody")}</p></header>
+  return <main className="vh-page"><header className="vh-feature-heading"><h1>{t("savedTitle")}</h1></header>
     <p role="status" className="mt-4 text-sm">{t(loading ? "loading" : syncing ? "syncingFavorites" : error ? "saveError" : accountId ? "syncedToAccount" : "storedOnDevice")}</p>
     {error && <button type="button" className="vh-text-button" onClick={retry}>{t("retrySync")}</button>}
     {!loading && !accountId && <Link className="vh-text-button" href={`/login?callbackUrl=${encodeURIComponent(`/vibe-hub/favorites?lang=${lang}`)}`}>{t("signInToSync")}</Link>}

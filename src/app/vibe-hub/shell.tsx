@@ -25,10 +25,10 @@ function Navigation() {
   const [, setSavedLanguage] = usePersistedSetting("vibehub:language", lang);
   const [menuOpen, setMenuOpen] = useState(false);
   const links = [
-    { label: "knowledgeHome", path: "" }, { label: "ansPractice", path: "/ans" },
-    { label: "terms", path: "/topics" }, { label: "courses", path: "/courses" },
-    { label: "practice", path: "/practice" }, { label: "saved", path: "/favorites" },
-    { label: "antiAi", path: "/anti-ai-flavor" }, { label: "journeys", path: "/journeys" },
+    { label: "knowledgeHome", path: "" }, { label: "journeys", path: "/journeys" },
+    { label: "ansPractice", path: "/ans" }, { label: "terms", path: "/topics" },
+    { label: "courses", path: "/courses" }, { label: "saved", path: "/favorites" },
+    { label: "practice", path: "/practice" }, { label: "antiAi", path: "/anti-ai-flavor" },
     { label: "lab", path: "/lab" }, { label: "skill", path: "/vibehub-skill" }, { label: "updates", path: "/updates" },
   ] as const;
   const active = (path: string) => path ? pathname === `/vibe-hub${path}` || pathname.startsWith(`/vibe-hub${path}/`) : pathname === "/vibe-hub";
@@ -56,7 +56,7 @@ function Navigation() {
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild><Button variant="ghost" size="icon" className="ans-knowledge-action" aria-label={t("menu")}><Menu size={20} aria-hidden="true" /></Button></SheetTrigger>
           <SheetContent className="ans-knowledge-menu" aria-describedby="ans-menu-description">
-            <SheetHeader><SheetTitle>ANS VibeHub</SheetTitle><SheetDescription id="ans-menu-description">{t("knowledgeDescription")}</SheetDescription></SheetHeader>
+            <SheetHeader><SheetTitle>ANS VibeHub</SheetTitle><SheetDescription id="ans-menu-description" className="sr-only">{t("knowledgeDescription")}</SheetDescription></SheetHeader>
             <nav aria-label={t("navigation")} className="ans-knowledge-menu-links">{links.map(link => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={active(link.path) ? "page" : undefined} onClick={() => setMenuOpen(false)}>{t(link.label)}</Link>)}</nav>
             <div className="ans-knowledge-menu-main"><Link href="/explore" onClick={() => setMenuOpen(false)}>{t("exploreAns")}</Link><Link href="/workflows" onClick={() => setMenuOpen(false)}>{t("workflowAns")}</Link><Link href="/community" onClick={() => setMenuOpen(false)}>{t("communityAns")}</Link><AnsReturnLink /></div>
             <Button variant="outline" className="ans-menu-language" onClick={switchLanguage}><Languages size={18} aria-hidden="true" />{t("switchLanguage")}</Button>
@@ -65,11 +65,10 @@ function Navigation() {
       </div>
     </div>
     <div className="ans-knowledge-subnav">
-      <p>{t("knowledgeTagline")}</p>
       <form className="vh-global-search" action="/vibe-hub/topics" role="search">
         <Search size={17} aria-hidden="true" /><input aria-label={t("search")} placeholder={t("knowledgeSearch")} name="q" defaultValue={params.get("q") || ""} key={`${pathname}:${params.get("q") || ""}`} /><input type="hidden" name="lang" value={lang} /><button type="submit">{t("searchAction")}</button>
       </form>
-      <Link href={`/vibe-hub/ans/clear-brief?lang=${lang}`} className="ans-knowledge-subnav-note">{t("briefAction")} ↗</Link>
+      <Link href={`/vibe-hub/vibehub-skill?lang=${lang}`} className="ans-knowledge-subnav-note">{t("briefAction")} ↗</Link>
     </div>
   </header>;
 }

@@ -702,7 +702,7 @@ let D = {
     productTitle: (0, n.jsxs)(n.Fragment, {
       children: ["把想法变成", (0, n.jsx)("br", {}), "可以分享的作品"]
     }),
-    productDescription: "查懂术语、说清需求，再用自己的真实资料完成创作。这里演示如何让页面重点更清楚。",
+    productDescription: "查词、写需求、做作品。",
     startFree: "开始学习",
     seeWork: "查看实践",
     creators: " 个可查术语",
@@ -714,7 +714,7 @@ let D = {
     generated: "本次练习包含 ",
     interactions: " 个步骤",
     combinedCase: "组合案例 \xb7 ",
-    intro: "先比较做法，再决定第一眼要看到什么。调整完成以后，离开参数检查一次真实感受。",
+    intro: "调整布局，看看重点是否清楚。",
     routeAria: "练习步骤",
     stageAria: "组合互动练习",
     practicing: "正在练习 \xb7 ",
@@ -770,7 +770,7 @@ let D = {
     productTitle: (0, n.jsxs)(n.Fragment, {
       children: ["Turn ideas into", (0, n.jsx)("br", {}), "work you can share"]
     }),
-    productDescription: "Learn the terms, write a clear brief and create from your own material. This layout demonstrates how to make the page priority clearer.",
+    productDescription: "Find a term. Write a brief. Make something.",
     startFree: "Start learning",
     seeWork: "View practices",
     creators: " searchable terms",
@@ -782,7 +782,7 @@ let D = {
     generated: "This exercise has ",
     interactions: " steps",
     combinedCase: "Combined exercise \xb7 ",
-    intro: "Compare two approaches first, then decide what people should notice at first glance. When you finish adjusting, check the page based on how it actually feels—not the settings.",
+    intro: "Adjust the layout. Check what stands out.",
     routeAria: "Exercise steps",
     stageAria: "Combined interactive exercise",
     practicing: "Practicing \xb7 ",

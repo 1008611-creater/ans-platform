@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { enhanceSource } from "./source-interactions";
@@ -10,6 +10,7 @@ import { useVibeLanguage } from "./use-vibe-language";
 type Slot = { host: HTMLElement; content: React.ReactNode };
 /** HTML comes only from the reviewed local synchronizer. React owns each live example. */
 export function SourceContent({ html, className = "", demo, slug, officialEntry }: { html: string; className?: string; demo?: React.ReactNode; slug?: string; officialEntry?: OfficialEntry | null }) {
+  const presentationHtml = useMemo(() => html.replace(/<section\b[^>]*class=["'][^"']*\boil-ui-pro-recommendation\b[^"']*["'][^>]*>[\s\S]*?<\/section>/gi, ""), [html]);
   const container = useRef<HTMLDivElement>(null); const [slots, setSlots] = useState<Slot[]>([]);
   const hasDemo = Boolean(demo); const lang = useVibeLanguage(); const t = useTranslations("vibehub");
   useEffect(() => {
@@ -40,6 +41,6 @@ export function SourceContent({ html, className = "", demo, slug, officialEntry 
     const handleSubmit = (event: Event) => { if (event.target instanceof HTMLFormElement) event.preventDefault(); };
     root.addEventListener("click", handleClick); root.addEventListener("submit", handleSubmit);
     return () => { active = false; removeInteractions(); restore.reverse().forEach(fn => fn()); if (liveTrigger) liveTrigger.hidden = false; root.removeEventListener("click", handleClick); root.removeEventListener("submit", handleSubmit); };
-  }, [html, hasDemo, demo, officialEntry, slug, lang, t]);
-  return <><div ref={container} className={className} dangerouslySetInnerHTML={{ __html: html }} />{slots.map((slot, index) => createPortal(slot.content, slot.host, String(index)))}</>;
+  }, [presentationHtml, hasDemo, demo, officialEntry, slug, lang, t]);
+  return <><div ref={container} className={className} dangerouslySetInnerHTML={{ __html: presentationHtml }} />{slots.map((slot, index) => createPortal(slot.content, slot.host, String(index)))}</>;
 }

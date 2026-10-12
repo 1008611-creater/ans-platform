@@ -18,9 +18,9 @@ export interface AnsLearningPath {
 export const ANS_LEARNING_PATHS: AnsLearningPath[] = [
   {
     id: "ans-first-website", number: "01",
-    title: text("做出第一个有自己内容的网站", "Build a website with your own content"),
+    title: text("做自己的网站", "Build your own website"),
     summary: text("从一份清楚的需求开始，整理真实资料，再完成页面、交互和交付。", "Start with a clear brief, collect real material, then work through layout, interaction and delivery."),
-    outcome: text("一份可执行需求、一套真实页面内容，以及能逐项检查的网站交付清单。", "An actionable brief, real page content and a website delivery checklist you can inspect."),
+    outcome: text("写需求 → 整理内容 → 做页面 → 交付", "Brief → Content → Interface → Delivery"),
     steps: [
       { id: "brief", title: text("先写清楚，这个网站帮谁做什么", "Define who the website helps and how"),
         action: text("选定一种主要用途：介绍自己、展示作品或说明产品。写下访客最需要知道的事实，以及你希望他们完成的一件事。把缺失资料单独列出，再把需求交给 Agent。", "Choose a primary purpose: introducing yourself, showing work or explaining a product. List the facts visitors need and one action they should take. Identify missing material before handing the brief to an Agent."),
@@ -42,9 +42,9 @@ export const ANS_LEARNING_PATHS: AnsLearningPath[] = [
   },
   {
     id: "ans-creative-delivery", number: "02",
-    title: text("把参考素材变成自己的创作", "Turn references into your own creative work"),
+    title: text("完成一次创作", "Complete a creative project"),
     summary: text("先锁定故事与素材职责，再拆镜头、检查连续性，最后确认真实导出。", "Lock story facts and reference roles, split the shots, review continuity and confirm the actual export."),
-    outcome: text("一份创作简报、清楚的资产分工，以及从制作到导出的交接记录。", "A creative brief, defined asset roles and a production-to-export handoff record."),
+    outcome: text("定故事 → 整理素材 → 做镜头 → 导出", "Story → Assets → Shots → Export"),
     steps: [
       {id:"facts",title:text("确认故事，也确认不能改的事实", "Confirm the story and its fixed facts"),action:text("写下作品类型、观众与交付规格。把已确认的剧本、角色、地点、时间顺序和必须保留的台词整理在一起，尚未决定的部分明确留空。", "Specify format, audience and delivery requirements. Collect approved script, characters, locations, chronology and required dialogue. Leave undecided details explicit."),evidence:text("可交接的创作简报；事实、设想和缺失信息清楚分开。", "A handoff brief that distinguishes facts, ideas and missing inputs."),links:[{href:"/vibe-hub/ans/clear-brief",label:text("创作前的需求整理", "Prepare the brief")}]},
       {id:"assets",title:text("每张参考，都有自己的职责", "Give each reference a specific role"),action:text("标明每份素材用于角色外观、场景、道具、镜头还是风格。核对使用权限和上传目标，避免把风格参考误当成故事事实。", "Label each reference as appearance, location, prop, framing or style. Check usage rights and upload destinations so a style reference does not silently alter the story."),evidence:text("素材清单包含来源、用途、保留特征与不可变更的约束。", "An asset list with source, role, required features and fixed constraints."),links:[{href:"/vibe-hub/ans/creative-production",label:text("素材与制作实践", "Asset and production practice")}]},
@@ -54,9 +54,9 @@ export const ANS_LEARNING_PATHS: AnsLearningPath[] = [
   },
   {
     id: "ans-open-source", number: "03",
-    title: text("把开源宝藏接进自己的项目", "Bring an open-source find into your project"),
+    title: text("接入开源项目", "Integrate an open-source project"),
     summary: text("分清应用与 Skill，固定来源版本，在独立改动中接入，再留下可维护的交付。", "Distinguish apps from skills, pin the source, integrate in isolation and leave a maintainable handoff."),
-    outcome: text("一份来源与许可记录、一组可追踪改动，以及明确的运行与发布边界。", "A provenance and license record, traceable changes and clear runtime and release boundaries."),
+    outcome: text("选项目 → 定范围 → 接功能 → 交付", "Choose → Scope → Integrate → Deliver"),
     steps: [
       {id:"source",title:text("先看仓库实际交付什么", "Identify what the repository actually delivers"),action:text("读 README、核心源码与许可证。确认它是应用、Skill 还是在线服务；记录版本与运行条件，分别核对代码、素材和内容的许可。", "Read the README, core source and license. Determine whether this is an app, skill or hosted service. Record version and requirements, and check code, asset and content licenses separately."),evidence:text("保存上游链接、版本、许可证与复用范围。", "Keep the upstream URL, revision, license and reuse scope."),links:[{href:"/vibe-hub/ans/github-to-project",label:text("开源复用实践", "Open-source reuse practice")}]},
       {id:"roles",title:text("让方法服从自己的产品", "Make the methods serve your product"),action:text("给设计、资料检索和动效方法分配明确职责。沿用现有品牌、组件与数据事实，再决定需要保留哪些上游功能，不把原作者的产品历史写成自己的。", "Assign clear roles to design, research and motion methods. Retain your brand, components and factual data. Decide which upstream features to keep without presenting its product history as your own."),evidence:text("一份改造范围与职责说明；保留来源，写清自己的新增内容。", "A scope and responsibility brief that preserves provenance and identifies original additions."),links:[{href:"/vibe-hub/vibehub-skill",label:text("与 Agent 协作", "Work with an Agent")}]},

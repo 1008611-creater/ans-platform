@@ -43,7 +43,7 @@ export function Catalog({ data, initialTopic = "frontend", initialQuery = "" }: 
     </div></div></section>
     <aside className="catalog-sidebar"><nav className="cat-chips" aria-label={t("topics")}>{groups.map((group,index) => <button type="button" className="catalog-filter-chip" key={group.title} aria-pressed={activeGroup === index} aria-current={activeGroup === index ? "location" : undefined} onClick={() => document.getElementById(`group-${index}`)?.scrollIntoView({behavior:"smooth",block:"start"})}>{group.title}</button>)}<Link className="catalog-filter-chip" href={`/vibe-hub/journeys?lang=${lang}`}>{t("journeys")} ↗</Link></nav></aside>
     <div className="grid-wrap">
-      <header className="catalog-heading"><p className="ans-knowledge-eyebrow">ANS / {t("terms")}</p><h1>{query ? `${t("search")} · ${t("count", {count})}` : topic[lang].title}</h1><p className="ans-catalog-description">{t("catalogBody")}</p></header>
+      <header className="catalog-heading"><h1>{query ? `${t("search")} · ${t("count", {count})}` : topic[lang].title}</h1></header>
       {query && <div className="mb-6 flex gap-3"><input className="vh-field" aria-label={t("search")} value={query} onChange={event => setQuery(event.target.value)} /><button type="button" className="vh-text-button" onClick={() => setQuery("")}>{t("reset")}</button></div>}
       {query.trim() && <AnsPracticeLinks query={query} />}
       {groups.map((group,index) => <section className="cat-section" id={`group-${index}`} key={group.title}>
