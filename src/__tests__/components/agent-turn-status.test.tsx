@@ -25,3 +25,13 @@ it("makes metered consent explicit without exposing spend or balance numbers", (
   expect(screen.getByRole("button", { name: companion.agentConfirm })).toBeEnabled();
   expect(screen.getByRole("checkbox", { name: companion.agentPrivateConsent })).not.toBeChecked();
 });
+
+it("names public-page verification without implying a private read", () => {
+  const agent: ReturnType<typeof useCompanionAgent> = {
+    phase: "reading", quote: null, error: null, receipts: [], tools: [{ name: "current_page", ok: true }], activeTool: "current_page", busy: true, privateAccess: false,
+    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "这个项目需要准备什么", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {},
+  };
+  render(<AgentTurnStatus agent={agent} />);
+  expect(screen.getByRole("status")).toHaveTextContent(companion.agentTool.current_page);
+  expect(screen.getByRole("status")).not.toHaveTextContent(companion.agentTool.my_projects);
+});

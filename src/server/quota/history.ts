@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { QuotaError } from "./service";
 import { readExamReservations } from "./exam-reservations";
+import { personalQuotaLedgerWhere } from "./ledger-scope";
 import { ldxpRechargeEnabled } from "@/server/integrations/ldxp-recharge";
 
 const querySchema = z.object({
@@ -11,7 +12,8 @@ const querySchema = z.object({
 }).strict();
 const limit = 30;
 
-/** One authoritative balance and ledger, including workflow and Codex entries.
+/** Personal balance and its entries, including workflow and Codex charges.
+ * Team allowance entries stay in the separate team statement.
  * Never expose admin notes, upstream request ids or provider credentials. */
 export async function readQuotaHistory(userId: string, raw: unknown = {}) {
   const query = querySchema.safeParse(raw);
@@ -21,11 +23,11 @@ export async function readQuotaHistory(userId: string, raw: unknown = {}) {
     const account = await tx.user.findUnique({ where: { id: userId }, select: { quotaPoints: true, deletedAt: true } });
     if (!account || account.deletedAt) throw new QuotaError("ACCOUNT_UNAVAILABLE", "ACCOUNT_UNAVAILABLE", 404);
     const anchor = query.data.cursor ? await tx.quotaLedger.findFirst({
-      where: { id: query.data.cursor, userId }, select: { id: true, createdAt: true },
+      where: { id: query.data.cursor, userId, ...personalQuotaLedgerWhere() }, select: { id: true, createdAt: true },
     }) : null;
     if (query.data.cursor && !anchor) throw new QuotaError("INVALID_QUOTA_CURSOR", "ACCOUNT_UNAVAILABLE", 400);
     const rows = await tx.quotaLedger.findMany({
-      where: { userId, ...(anchor ? { OR: [
+      where: { userId, ...personalQuotaLedgerWhere(), ...(anchor ? { OR: [
         { createdAt: { lt: anchor.createdAt } },
         { createdAt: anchor.createdAt, id: { lt: anchor.id } },
       ] } : {}) },

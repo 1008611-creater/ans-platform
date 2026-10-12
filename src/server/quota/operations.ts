@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { readExamReservations } from "./exam-reservations";
+import { countPersonalQuotaMismatches } from "./ledger-scope";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -54,10 +55,10 @@ export async function quotaAdminOverview() {
     tx.apiComputeRequest.count({ where: { state: { in: ["RUNNING", "UNCERTAIN"] } } }),
     tx.marketOrder.findMany({ where: { paymentMethod: "POINTS", status: "DISPUTED" }, select: { id: true, buyerId: true, sellerId: true, totalMinor: true }, orderBy: { updatedAt: "asc" }, take: 50 }),
     tx.apiComputeRequest.findMany({ where: { state: "UNCERTAIN" }, select: { id: true, userId: true, modelId: true, authorizedPoints: true }, orderBy: { updatedAt: "asc" }, take: 50 }),
-    tx.$queryRaw<{ count: number }[]>`SELECT count(*)::int AS count FROM (SELECT u.id FROM users u LEFT JOIN quota_ledgers l ON l."userId"=u.id GROUP BY u.id,u."quotaPoints" HAVING u."quotaPoints"<>coalesce(sum(l.amount),0)) differences`,
+    countPersonalQuotaMismatches(tx),
     listLdxpRechargeOrders(),
     readExamReservations(tx),
   ]);
-  return { users, mismatchCount: gaps[0]?.count ?? 0, disputes, uncertain: uncertain.map(row => ({ ...row, authorizedPoints: Number(row.authorizedPoints) })), operations: operations.map(row => ({ ...row, amount: Number(row.amount), balanceAfter: Number(row.balanceAfter), createdAt: row.createdAt.toISOString() })), pending, examPending, manualRechargeEnabled: process.env.ANS_MANUAL_RECHARGE_ENABLED === "1", ldxp: { enabled: ldxpRechargeEnabled(), orders: ldxpOrders } };
+  return { users, mismatchCount: gaps, disputes, uncertain: uncertain.map(row => ({ ...row, authorizedPoints: Number(row.authorizedPoints) })), operations: operations.map(row => ({ ...row, amount: Number(row.amount), balanceAfter: Number(row.balanceAfter), createdAt: row.createdAt.toISOString() })), pending, examPending, manualRechargeEnabled: process.env.ANS_MANUAL_RECHARGE_ENABLED === "1", ldxp: { enabled: ldxpRechargeEnabled(), orders: ldxpOrders } };
  }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
 }
