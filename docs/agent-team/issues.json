@@ -280,5 +280,18 @@
             "C:/Users/lsb/.workbuddy/ans-member-workflow-release-r6-20261013/reviewer-ao-executor-local-r6.json"
         ],
         "limits": "No production event, paid call, XP, balance or permission fixtures created. Overall product and formal event configuration remain unfinished."
+    },
+    {
+        "id": "ISSUE-MW01",
+        "status": "OPEN",
+        "severity": "P1",
+        "expected": "Manual approval binds the immutable member workflow version consistently across publication, public discovery, market upload and execution. Historical unreviewed self-publication can re-enter review.",
+        "actual": "AI-only author publication cleared reviewPending, removed a workflow from the administrator queue, exposed an unreviewed public workflow and runnable version, while market binding refused it and same-version resubmission was blocked.",
+        "fixCandidate": "Frozen approval helper shared by service and market binding; legacy publish cannot grant approval or clear newer review; historical unreviewed publication can return to PENDING; editor uses distinct approval state; run creation rechecks locked version; queued unreviewed runs fail before supplier execution.",
+        "localEvidence": [
+            "C:/Users/lsb/.workbuddy/ans-member-market-audit-20261013/member-review-final-manifest.json",
+            "C:/Users/lsb/.workbuddy/ans-member-workflow-release-r6-20261013/root-integrated-member-focused.json"
+        ],
+        "limits": "Actual exported modules and mocked regressions pass locally. Real isolated PostgreSQL and exact CI/final release review remain pending; no paid model or production fixture generated."
     }
 ]

@@ -42,7 +42,7 @@ beforeEach(() => {
   listing = { id: "listing-one", sellerId: "seller", status: "PUBLISHED", publishedVersion: 3, versions: [{ version: 3, payload: { slug: "personal-workflow", title: "My workflow", summary: "Reusable workflow based on real personal input", description: "A reusable reviewed workflow producing a recorded output.", category: "web", subcategory: "applications", fulfillment: "resource", priceMinor: 0, currency: "CNY", deliveryDays: 1, revisionLimit: 0, computeIncluded: false, deliverables: ["Recorded output"], licenseTerms: "Personal use under the author's license terms.", execution: binding() } }] };
   mocks.db.user.findFirst.mockImplementation(async ({ where }: { where: { id: string } }) => where.id === "seller" || where.id === "buyer" ? { id: where.id, role: "USER", adminPermissions: [] } : null);
   mocks.db.workflow.findFirst.mockImplementation(async ({ where }: { where: Record<string, unknown> }) => {
-    if (where.id) return where.id === workflow.id && where.authorId === workflow.authorId && workflow.status === "PUBLISHED" && !workflow.isOfficial && workflow.publishedVersion !== null ? workflow : null;
+    if (where.id) return where.id === workflow.id && (where.authorId === undefined || where.authorId === workflow.authorId) && workflow.status === "PUBLISHED" && !workflow.isOfficial && workflow.publishedVersion !== null ? workflow : null;
     return where.slug === workflow.slug && workflow.status === "PUBLISHED" ? workflow : null;
   });
   mocks.db.marketListing.findFirst.mockImplementation(async ({ where }: { where: { id: string; publishedVersion?: number } }) => where.id === listing.id && listing.status === "PUBLISHED" && (where.publishedVersion === undefined || where.publishedVersion === listing.publishedVersion) ? listing : null);
@@ -115,7 +115,7 @@ describe("explicit charged run and recovery", () => {
   });
   it("locks and rechecks listing/source inside the same transaction before creating and debiting", async () => {
     await expect(runMarketWorkflow(listing.id, "buyer", request())).resolves.toMatchObject({ run: { id: "run-one", costPoints: 2 }, listingVersion: 3, workflowVersion: 1 });
-    expect(mocks.events).toEqual(["lock-listing", "lock-workflow", "create", "debit"]);
+    expect(mocks.events).toEqual(["lock-listing", "lock-workflow", "lock-workflow", "create", "debit"]);
     expect(mocks.db.workflowRun.create).toHaveBeenCalledWith({ data: expect.objectContaining({ userId: "buyer", workflowId: workflow.id, versionId: v1.id, costPoints: 2, input: request().input, idempotencyKey: "market/listing-one/3/personal-recipe/safe-request-001" }) });
     expect(mocks.debit).toHaveBeenCalledWith(mocks.db, expect.objectContaining({ userId: "buyer", costPoints: 2, ref: { type: "workflow_run", id: "run-one" } }));
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ actorId: "buyer", metadata: expect.objectContaining({ source: "market" }) }) }));
@@ -188,7 +188,7 @@ describe("direct reviewed recipe Hub execution", () => {
   });
   it("locks the reviewed recipe before exact-version enqueue and original quota debit", async () => {
     await expect(runReviewedRecipe(workflow.slug, "buyer", recipeRequest())).resolves.toMatchObject({ run: { id: "run-one" } });
-    expect(mocks.events).toEqual(["lock-workflow", "create", "debit"]);
+    expect(mocks.events).toEqual(["lock-workflow", "lock-workflow", "create", "debit"]);
     expect(mocks.db.workflowRun.create).toHaveBeenCalledWith({ data: expect.objectContaining({ versionId: v1.id, userId: "buyer", input: { profile: resumeProfile }, idempotencyKey: "reviewed/workflow-one/1/personal-recipe/recipe-request-001" }) });
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ metadata: expect.objectContaining({ source: "reviewed_workflow", confirmationScope: "reviewed/workflow-one/1" }) }) }));
   });

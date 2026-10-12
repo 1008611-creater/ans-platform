@@ -49,7 +49,7 @@ async function main() {
     assert.ok(accepted.submissionId); const submissionId = accepted.submissionId;
     const create = (overrides: Record<string, unknown> = {}) => ({ action: "createIssue", idempotencyKey: randomUUID(), submissionId, title: "Actual issue", body: "Actual feedback", status: "OPEN", severity: "MEDIUM", type: "BUG", basis: "METADATA", visibility: "TEAM", reviewedForTeam: true, assigneeId: member.id, dueState: "UNKNOWN", dueAt: null, processingSummary: null, ...overrides });
     const snapshot = async () => ({
-      users: (await db.user.findMany({ where: { id: { in: [owner.id, member.id, outsider.id, reader.id, full.id] } }, orderBy: { id: "asc" }, select: { id: true, xp: true, quotaPoints: true } })).map(user => ({ id: user.id, xp: user.xp, quotaPoints: user.quotaPoints.toString() })), 
+      users: (await db.user.findMany({ where: { id: { in: [owner.id, member.id, outsider.id, reader.id, full.id] } }, orderBy: { id: "asc" }, select: { id: true, xp: true, quotaPoints: true } })).map(user => ({ id: user.id, xp: user.xp, quotaPoints: user.quotaPoints.toString() })),
       entry: await db.teamCompetition.findUniqueOrThrow({ where: { id: entry.id } }),
       publications: await db.artifactPublication.count({ where: { artifactVersionId: version.id } }),
       ledger: await db.quotaLedger.count({ where: { userId: { in: [owner.id, member.id, full.id] } } }),

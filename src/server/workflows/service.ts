@@ -1,3 +1,4 @@
+import { hasWorkflowManualApproval } from "./approval";
 import { extractInputVariables, missingRequiredVariables } from "@/domain/workflows/variables";
 import { randomUUID } from "node:crypto";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
@@ -323,12 +324,20 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
       createdAt: true,
       updatedAt: true,
       author: { select: authorSelect },
+      versions: { select: { id: true, version: true, createdAt: true } },
     },
   });
+  const approvedRows = (await Promise.all(rows.map(async row => {
+    const version = row.versions.find(item => item.version === row.publishedVersion);
+    if (!version || !await hasWorkflowManualApproval(db, row, version)) return null;
+    const { versions, ...card } = row;
+    void versions;
+    return card;
+  }))).filter(row => row !== null);
   const platform = await findPublishedPlatformRecipe();
-  if (!platform || query && !`${platform.workflow.title} ${platform.workflow.summary ?? ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())) return rows;
+  if (!platform || query && !`${platform.workflow.title} ${platform.workflow.summary ?? ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())) return approvedRows;
   const { id, slug, title, summary, status, publishedVersion, useCount, estimatedCost, isOfficial, createdAt, updatedAt, author } = platform.workflow;
-  return [{ id, slug, title, summary, status, publishedVersion, useCount, estimatedCost, isOfficial, createdAt, updatedAt, author }, ...rows].slice(0, Math.min(Math.max(options.take ?? 24, 1), 60));
+  return [{ id, slug, title, summary, status, publishedVersion, useCount, estimatedCost, isOfficial, createdAt, updatedAt, author }, ...approvedRows].slice(0, Math.min(Math.max(options.take ?? 24, 1), 60));
 }
 export async function listOwnWorkflows(authorId: string) {
   const rows = await db.workflow.findMany({
@@ -379,12 +388,12 @@ export async function getPublishedWorkflow(slug: string) {
       updatedAt: true,
       author: { select: authorSelect },
       // Read versions server-side, then project only the pinned one below.
-      versions: { select: { version: true, definition: true } },
+      versions: { select: { id: true, version: true, createdAt: true, definition: true } },
     },
   });
   if (!workflow || workflow.publishedVersion === null) return null;
   const published = workflow.versions.find((version) => version.version === workflow.publishedVersion);
-  if (!published) return null;
+  if (!published || !await hasWorkflowManualApproval(db, workflow, published)) return null;
 
   return {
     id: workflow.id,
@@ -404,6 +413,11 @@ export async function getPublishedWorkflow(slug: string) {
     publishedDefinition: published.definition,
   };
 }
+export async function isWorkflowPublicationApproved(workflow: Parameters<typeof hasWorkflowManualApproval>[1] & { status: string; publishedVersion: number | null }) {
+  const version = workflow.versions.find(row => row.version === workflow.publishedVersion);
+  return workflow.status === "PUBLISHED" && !!version && await hasWorkflowManualApproval(db, workflow, version);
+}
+
 export async function getWorkflowForEditor(slug: string, actorId: string) {
   const workflow = await db.workflow.findUnique({
     where: { slug },
@@ -421,71 +435,27 @@ export async function getWorkflowForEditor(slug: string, actorId: string) {
   return workflow;
 }
 
-/**
- * 作者/管理员发布指定版本。
- *
- * 仍然要过 AI 初审这道门：否则「作者直接发布」会成为绕过审核的捷径，
- * 让审核队列形同虚设。需要重新初审时先走提交或管理员复查。
- */
+/** Legacy publication only acknowledges an existing manually approved version. */
 export async function publishWorkflow(slug: string, actorId: string, version?: number) {
-  const workflow = await db.workflow.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      authorId: true,
-      isOfficial: true,
-      status: true,
-      reviewScore: true,
-      versions: { orderBy: { version: "desc" } },
-    },
-  });
-  if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
-  if (workflow.isOfficial) throw new WorkflowServiceError("官方工作流由平台管理。", "OFFICIAL_WORKFLOW_LOCKED", 403);
+  const workflow = await db.workflow.findUnique({ where: { slug }, include: { versions: { orderBy: { version: "desc" } } } });
+  if (!workflow) throw new WorkflowServiceError("Workflow not found.", "NOT_FOUND", 404);
+  if (workflow.isOfficial) throw new WorkflowServiceError("Official workflows are platform managed.", "OFFICIAL_WORKFLOW_LOCKED", 403);
   const actor = await requireActor(actorId);
-  if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
-    throw new WorkflowServiceError("没有发布该工作流的权限。", "FORBIDDEN", 403);
+  if (workflow.authorId !== actorId && actor.role !== "ADMIN") throw new WorkflowServiceError("You cannot publish this workflow.", "FORBIDDEN", 403);
+  const targetVersion = workflow.versions.find(item => item.version === (version ?? workflow.publishedVersion ?? workflow.versions[0]?.version));
+  if (!targetVersion) throw new WorkflowServiceError("Version not found.", "NO_VERSION", 404);
+  if (workflow.status !== "PUBLISHED" || workflow.publishedVersion !== targetVersion.version || !await hasWorkflowManualApproval(db, workflow, targetVersion)) {
+    throw new WorkflowServiceError("Submit for administrator review before publication.", "REVIEW_REQUIRED", 409);
   }
-  if (workflow.versions.length === 0) {
-    throw new WorkflowServiceError("工作流还没有可发布的版本。", "NO_VERSION");
-  }
-  const target = version ?? workflow.versions[0].version;
-  const targetVersion = workflow.versions.find((item) => item.version === target);
-  if (!targetVersion) {
-    throw new WorkflowServiceError("指定的版本不存在。", "NO_VERSION", 404);
-  }
-  if (!canPublishAfterReview(workflow.reviewScore, targetVersion.version)) {
-    throw new WorkflowServiceError("AI 初审未通过或审核版本不匹配，不能发布。", "REVIEW_REQUIRED", 409);
-  }
-  // 发布前再次校验，防止旧版本携带已失效的定义。
-  assertDefinition(targetVersion.definition);
-
-  return db.$transaction(async (tx) => {
-    await guardWorkflowSnapshot(tx, workflow);
-    const updated = await tx.workflow.update({
-      where: { id: workflow.id },
-      data: { status: "PUBLISHED", publishedVersion: targetVersion.version, reviewScore: { ...(workflow.reviewScore as Prisma.InputJsonObject), reviewPending: false } },
-    });
-    await tx.auditLog.create({
-      data: {
-        actorId,
-        action: "WORKFLOW_PUBLISHED",
-        resourceType: "workflow",
-        resourceId: workflow.id,
-        before: { status: workflow.status },
-        after: { status: updated.status, publishedVersion: targetVersion.version },
-      },
-    });
-    return updated;
-  }).then(async (updated) => {
-    if (updated.status === "PUBLISHED") await safeAwardGrowthEvent({ userId: updated.authorId, type: "PUBLISH_TEMPLATE", reason: "PUBLISH_TEMPLATE", sourceType: "workflow", sourceId: updated.id });
-    return updated;
-  });
+  // Legacy endpoint only acknowledges an already manually approved version.
+  // It cannot clear a newer review request or manufacture a manual approval.
+  return workflow;
 }
 
 export async function submitWorkflowForReview(slug: string, actorId: string) {
   const workflow = await db.workflow.findUnique({
     where: { slug },
-    select: { id: true, authorId: true, status: true, isOfficial: true, title: true, summary: true, description: true, publishedVersion: true, reviewScore: true, versions: { orderBy: { version: "desc" }, take: 1 } },
+    select: { id: true, authorId: true, status: true, isOfficial: true, title: true, summary: true, description: true, publishedVersion: true, reviewScore: true, versions: { orderBy: { version: "desc" } } },
   });
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
   if (workflow.isOfficial) throw new WorkflowServiceError("官方工作流由平台管理。", "OFFICIAL_WORKFLOW_LOCKED", 403);
@@ -494,8 +464,10 @@ export async function submitWorkflowForReview(slug: string, actorId: string) {
   if (workflow.status === "PENDING" || workflow.status === "PUBLISHED" && reviewIsPending(workflow.reviewScore)) return workflow;
   const version = workflow.versions[0];
   if (!version) throw new WorkflowServiceError("工作流还没有可提交的版本。", "NO_VERSION");
-  const publishedUpdate = workflow.status === "PUBLISHED" && version.version > (workflow.publishedVersion ?? 0);
-  if (!["DRAFT", "REJECTED"].includes(workflow.status) && !publishedUpdate) throw new WorkflowServiceError("工作流当前状态无法提交审核。", "INVALID_STATE", 409);
+  const publishedVersion = workflow.versions.find(row => row.version === workflow.publishedVersion);
+  const unreviewedPublication = workflow.status === "PUBLISHED" && (!publishedVersion || !await hasWorkflowManualApproval(db, workflow, publishedVersion));
+  const publishedUpdate = workflow.status === "PUBLISHED" && !unreviewedPublication && version.version > (workflow.publishedVersion ?? 0);
+  if (!["DRAFT", "REJECTED"].includes(workflow.status) && !publishedUpdate && !unreviewedPublication) throw new WorkflowServiceError("工作流当前状态无法提交审核。", "INVALID_STATE", 409);
   const definition = assertDefinition(version.definition);
   const binding = reviewRequest(version.version);
   const status = publishedUpdate ? "PUBLISHED" : "PENDING";
@@ -715,6 +687,7 @@ export async function createWorkflowRun(
   const version = workflow.versions.find((item) => item.version === workflow.publishedVersion);
   if (!version) throw new WorkflowServiceError("Published version is missing.", "NO_VERSION", 409);
   if (options.expectedVersionId && version.id !== options.expectedVersionId) throw new WorkflowServiceError("Published version changed.", "VERSION_CONFLICT", 409);
+  if (!workflow.isOfficial && !await hasWorkflowManualApproval(db, workflow, version)) throw new WorkflowServiceError("Administrator approval is required.", "REVIEW_REQUIRED", 409);
   const definition = assertDefinition(version.definition);
   if (definition.recipe && !options.confirmedSource) throw new WorkflowServiceError("Use the confirmed recipe run entry.", "RECIPE_CONFIRMATION_REQUIRED", 409);
   const runInput = normalizeRecipeInput(definition, parsed.data.input);
@@ -737,6 +710,12 @@ export async function createWorkflowRun(
   try {
     return await db.$transaction(async (tx) => {
       await options.beforeCreate?.(tx);
+      if (!workflow.isOfficial) {
+        await tx.$queryRaw`SELECT id FROM workflows WHERE id = ${workflow.id} FOR UPDATE`;
+        const current = await tx.workflow.findFirst({ where: { id: workflow.id, status: "PUBLISHED", publishedVersion: version.version }, include: { versions: true } });
+        const currentVersion = current?.versions.find(row => row.id === version.id);
+        if (!current || !currentVersion || !await hasWorkflowManualApproval(tx, current, currentVersion)) throw new WorkflowServiceError("Workflow version or approval changed.", "REVIEW_REQUIRED", 409);
+      }
       if (platformRun) {
         await tx.$queryRaw`SELECT id FROM workflows WHERE id = ${workflow.id} FOR UPDATE`;
         const current = await readPlatformRecipe(tx, workflow.id);

@@ -1,3 +1,4 @@
+import { hasWorkflowManualApproval } from "./approval";
 import { resumeWebsiteInputSchema } from "@/contracts/resume-website";
 import { buildResumeWebsitePrompt } from "@/domain/projects/resume-website";
 import { assertSupportedRecipe, renderRecipeArtifact } from "@/domain/workflows/recipes";
@@ -248,7 +249,7 @@ function watchRunCancellation(runId: string, userId: string, startedAt: Date, co
 async function loadRunnableRun(runId: string, userId: string) {
   return db.workflowRun.findFirst({
     where: { id: runId, userId },
-    include: { version: true, nodeRuns: true, workflow: { select: { title: true } } },
+    include: { version: true, nodeRuns: true, workflow: { select: { id: true, title: true, isOfficial: true } } },
   });
 }
 
@@ -295,9 +296,16 @@ export async function executePersistedWorkflow(
     if (claimed.count !== 1) return false;
     await tx.auditLog.create({ data: { actorId: userId, action: "WORKFLOW_RUN_STARTED", resourceType: "workflow_run", resourceId: run.id,
       metadata: { leaseStartedAt: leaseStartedAt.toISOString(), ...(options.modelKey ? { modelKey: options.modelKey } : {}), ...(options.credentialId ? { credentialId: options.credentialId } : {}), ...(options.reasoningEffort ? { reasoningEffort: options.reasoningEffort } : {}) } } });
-    return true;
+    if (!run.workflow.isOfficial) {
+      await tx.$queryRaw`SELECT id FROM workflows WHERE id = ${run.workflow.id} FOR UPDATE`;
+      const workflow = await tx.workflow.findUnique({ where: { id: run.workflow.id }, include: { versions: true } });
+      const version = workflow?.versions.find(row => row.id === run.version.id);
+      if (!workflow || !version || !await hasWorkflowManualApproval(tx, workflow, version)) return "UNREVIEWED" as const;
+    }
+    return "CLAIMED" as const;
   });
   if (!claimed) return null;
+  if (claimed === "UNREVIEWED") return finalizeFailure({ ...run, startedAt: leaseStartedAt }, "WORKFLOW_REVIEW_REQUIRED");
 
   let definition: WorkflowDefinition;
   try {
