@@ -1,4 +1,5 @@
 "use client";
+import { useCommunityRequest } from "./account-request";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -15,7 +16,10 @@ function errorMessage(status: number, fallback: string) {
   return fallback;
 }
 
-export function CommunityPanel() {
+export function CommunityPanel({ actorId }: { actorId?: string }) {
+  const request = useCommunityRequest(actorId);
+  const alive = useRef(true);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const [me, setMe] = useState<CommunityMe | null>(null);
   const [contributions, setContributions] = useState<CommunityContributions | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,28 +31,29 @@ export function CommunityPanel() {
   const submitting = useRef(false);
 
   const load = useCallback(async (signal?: AbortSignal) => {
+    if (!alive.current) return;
     setLoading(true);
     setError("");
     try {
       const [meResponse, boardResponse] = await Promise.all([
-        fetch("/api/community/me", { cache: "no-store", signal }),
-        fetch("/api/community/contributions", { cache: "no-store", signal }),
+        fetch("/api/community/me", { cache: "no-store", signal, headers: { "x-ans-actor": actorId ?? "" } }),
+        fetch("/api/community/contributions", { cache: "no-store", signal, headers: { "x-ans-actor": actorId ?? "" } }),
       ]);
       if (!meResponse.ok || !boardResponse.ok) {
         throw new Error(errorMessage(!meResponse.ok ? meResponse.status : boardResponse.status, "社区数据加载失败，请重试。"));
       }
       const [meData, boardData] = await Promise.all([meResponse.json(), boardResponse.json()]);
-      if (!signal?.aborted) { setMe(meData); setContributions(boardData); }
+      if (!signal?.aborted && alive.current) { setMe(meData); setContributions(boardData); }
     } catch (cause) {
-      if (!signal?.aborted) {
+      if (!signal?.aborted && alive.current) {
         setMe(null);
         setContributions(null);
         setError(cause instanceof Error ? cause.message : "社区数据加载失败，请重试。");
       }
     } finally {
-      if (!signal?.aborted) setLoading(false);
+      if (!signal?.aborted && alive.current) setLoading(false);
     }
-  }, []);
+  }, [actorId]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -61,21 +66,17 @@ export function CommunityPanel() {
     setError("");
     setNotice("");
     try {
-      const response = await fetch("/api/rewards/appeals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ledgerId, message: appealMessage }),
-      });
-      const result = await response.json();
-      if (!response.ok || !result.ok) throw new Error(result.error?.message ?? "申诉提交失败。");
+      const result = await request<{ ok: boolean; error?: { message?: string } }>("/api/rewards/appeals", "POST", { ledgerId, message: appealMessage });
+      if (!alive.current) return;
+      if (!result.ok) throw new Error(result.error?.message ?? "申诉提交失败。");
       setAppealLedgerId("");
       setAppealMessage("");
       setNotice("申诉已提交，管理员处理后会更新状态。");
       await load();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "申诉提交失败。");
+      if (alive.current) setError(cause instanceof Error ? cause.message : "申诉提交失败。");
     } finally {
-      setPending(false);
+      if (alive.current) setPending(false);
     }
   }
 
@@ -86,23 +87,22 @@ export function CommunityPanel() {
     setError("");
     setNotice("");
     try {
-      const response = await fetch("/api/community/check-in", { method: "POST", cache: "no-store" });
-      if (!response.ok) throw new Error(errorMessage(response.status, "签到失败，请重试。"));
-      const result = await response.json();
+      const result = await request<{ alreadyCheckedIn: boolean; checkIn: { xpAwarded: number } }>("/api/community/check-in", "POST", {});
+      if (!alive.current) return;
       setNotice(result.alreadyCheckedIn ? "今天已经签到，本次未重复增加经验。" : `签到成功，获得 ${result.checkIn.xpAwarded} XP。`);
       await load();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "签到失败，请重试。");
+      if (alive.current) setError(cause instanceof Error ? cause.message : "REQUEST_FAILED");
     } finally {
       submitting.current = false;
-      setPending(false);
+      if (alive.current) setPending(false);
     }
   }
 
   return (
     <div className="ans-community-data space-y-6">
       <p className="text-sm text-muted-foreground">
-        等级仅作纪念称号，0 级即可提交模板；管理权限始终由管理员独立授权。
+        等级记录你的参与和成长；项目上架与管理权限按实际审核与授权执行。
       </p>
       {error && <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-destructive p-4 text-sm">
         <p>{error}</p><Button variant="outline" onClick={() => void load()} disabled={loading || pending}>重试</Button>

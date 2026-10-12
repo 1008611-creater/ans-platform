@@ -1,97 +1,53 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { analyticsFavorite } from "@/lib/analytics";
 import type { FavoriteTargetType } from "@/contracts/favorites";
 
-/**
- * 统一收藏按钮：Prompt / 模板 / 工作流共用。
- * 未登录时引导到登录页并带上回跳地址，避免用户丢失当前上下文。
- */
-export function FavoriteButton({
-  targetType,
-  targetId,
-  initialFavorited,
-  size = "sm",
-  variant = "outline",
-  className,
-}: {
-  targetType: FavoriteTargetType;
-  targetId: string;
-  initialFavorited: boolean;
-  size?: "sm" | "default" | "lg" | "icon";
-  variant?: "outline" | "ghost" | "default" | "secondary";
-  className?: string;
-}) {
-  const router = useRouter();
-  const { status } = useSession();
-  const [favorited, setFavorited] = useState(initialFavorited);
-  const [error, setError] = useState("");
-  const [pending, startTransition] = useTransition();
-  const [busy, setBusy] = useState(false);
-
+type FavoriteButtonProps = {
+  targetType: FavoriteTargetType; targetId: string; initialFavorited: boolean; accountId: string | null;
+  size?: "sm" | "default" | "lg" | "icon"; variant?: "outline" | "ghost" | "default" | "secondary"; className?: string;
+};
+export function FavoriteButton(props: FavoriteButtonProps) {
+  const { data, status } = useSession();
+  return <FavoriteButtonState key={`${status}:${data?.user?.id ?? "guest"}:${props.targetType}:${props.targetId}:${props.initialFavorited}`} {...props} />;
+}
+function FavoriteButtonState({ targetType, targetId, initialFavorited, accountId, size = "sm", variant = "outline", className }: FavoriteButtonProps) {
+  const router = useRouter(); const { data: session, status } = useSession(); const t = useTranslations("favorites");
+  const actor = status === "authenticated" ? session?.user?.id ?? null : null;
+  const currentActor = useRef(actor); currentActor.current = actor;
+  const control = useRef<AbortController | null>(null); const locked = useRef(false);
+  const [favorited, setFavorited] = useState(initialFavorited); const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
+  useEffect(() => { control.current?.abort(); return () => { control.current?.abort(); }; }, [actor, targetId, targetType]);
+  const bound = status === "authenticated" && actor === accountId;
   async function toggle() {
-    if (status !== "authenticated") {
-      router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-    setBusy(true);
-    setError("");
-    const next = !favorited;
-    setFavorited(next);
+    if (locked.current || status === "loading") return;
+    if (status === "unauthenticated") { router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`); return; }
+    if (!bound || !actor) { router.refresh(); return; }
+    const expected = actor; const next = !favorited; const controller = new AbortController();
+    control.current = controller; locked.current = true; setBusy(true); setError("");
     try {
-      const response = await fetch(
-        next
-          ? "/api/favorites"
-          : `/api/favorites?targetType=${targetType}&targetId=${encodeURIComponent(targetId)}`,
-        next
-          ? {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ targetType, targetId }),
-            }
-          : { method: "DELETE" },
-      );
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error?.message ?? "收藏操作失败，请稍后重试");
-      }
-      if (next) analyticsFavorite.add(targetType, targetId);
-      else analyticsFavorite.remove(targetType, targetId);
-      startTransition(() => router.refresh());
-    } catch (cause) {
-      setFavorited(!next);
-      setError(cause instanceof Error ? cause.message : "收藏操作失败，请稍后重试");
-    } finally {
-      setBusy(false);
-    }
+      const response = await fetch(next ? "/api/favorites" : `/api/favorites?targetType=${targetType}&targetId=${encodeURIComponent(targetId)}`, {
+        method: next ? "POST" : "DELETE", headers: { "Content-Type": "application/json", "x-vibehub-account-id": expected },
+        ...(next ? { body: JSON.stringify({ targetType, targetId }) } : {}), signal: controller.signal,
+      });
+      if (controller.signal.aborted || currentActor.current !== expected) return;
+      if (!response.ok) throw new Error(t("error"));
+      setFavorited(next); if (next) analyticsFavorite.add(targetType, targetId); else analyticsFavorite.remove(targetType, targetId);
+      router.refresh();
+    } catch { if (!controller.signal.aborted && currentActor.current === expected) setError(t("error")); }
+    finally { locked.current = false; if (!controller.signal.aborted && currentActor.current === expected) setBusy(false); }
   }
-
-  const Icon = favorited ? BookmarkCheck : Bookmark;
-
-  return (
-    <div className={cn("inline-flex flex-col gap-1", className)}>
-      <Button
-        type="button"
-        size={size}
-        variant={favorited ? "default" : variant}
-        disabled={busy || pending}
-        onClick={toggle}
-        aria-pressed={favorited}
-      >
-        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Icon className="h-3.5 w-3.5" />}
-        {favorited ? "已收藏" : "收藏"}
-      </Button>
-      {error && (
-        <span role="alert" className="text-xs text-destructive">
-          {error}
-        </span>
-      )}
-    </div>
-  );
+  // A stale server render never exposes the previous account's saved state.
+  if (status === "authenticated" && !bound) return <Button variant="outline" size={size} onClick={() => router.refresh()}>{t("accountChanged")}</Button>;
+  const saved = bound && favorited; const Icon = saved ? BookmarkCheck : Bookmark;
+  return <div className={cn("inline-flex flex-col gap-1", className)}><Button type="button" size={size} variant={saved ? "default" : variant} disabled={busy || status === "loading"} onClick={toggle} aria-pressed={saved}>
+    {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Icon className="h-3.5 w-3.5" />}{t(saved ? "saved" : "save")}
+  </Button>{error && bound && <span role="alert" className="text-xs text-destructive">{error}</span>}</div>;
 }

@@ -1,268 +1,46 @@
-<h1 align="center">
-  <a href="https://ans.cauai.fun">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://ans.cauai.fun/logo-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://ans.cauai.fun/logo.svg">
-      <img height="60" alt="ANS" src="https://ans.cauai.fun/logo.svg">
-    </picture>
-    <br>
-    ANS
-  </a>
-</h1>
+﻿# ANS
 
-<p align="center">
-  <strong>The world's largest open-source prompt library for AI</strong><br>
-  <sub>Works with ChatGPT, Claude, Gemini, Llama, Mistral, and more</sub>
-</p>
-<p align="center">
-  <sub>formerly known as Awesome ChatGPT Prompts</sub>
-</p>
+ANS 是面向 AI 创作者的项目、工作流与协作平台。用户先看真实成果与制作方式，再填写自己的信息，通过成熟工作流得到产物；创作者可以发布项目和可运行的工作流。
 
-<p align="center">
-  <a href="https://ans.cauai.fun"><img src="https://img.shields.io/badge/Website-ANS-blue?style=flat-square" alt="Website"></a>
-  <a href="https://github.com/sindresorhus/awesome"><img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome"></a>
-  <a href="https://huggingface.co/datasets/fka/prompts.chat"><img src="https://img.shields.io/badge/🤗-Hugging_Face-yellow?style=flat-square" alt="Hugging Face"></a>
-  <a href="https://deepwiki.com/1008611-creater/ans-platform"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
-</p>
+## 产品入口
 
-<p align="center">
-  <a href="https://ans.cauai.fun/prompts">🌐 Browse Prompts</a> •
-  <a href="https://fka.gumroad.com/l/art-of-chatgpt-prompting">📖 Read the Book</a> •
-  <a href="https://raw.githubusercontent.com/f/prompts.chat/main/PROMPTS.md">📄 View on GitHub</a> •
-  <a href="#-self-hosting">🚀 Self-Host</a>
-</p>
+- 项目广场：按用途分类的真实项目、工具、开源参考和已审核成员项目。
+- Hub 与工作流：先进入 Hub 目录，再发现与学校或主题明确关联的项目、知识和成熟工作流。
+- 社区成长：签到、等级、经验、社区积分与已实现的装扮。
+- 赛事活动：赛事规则、报名、作品提交、评审与活动管理。
+- 市场：经过审核的服务、资源及可运行工作流。
+- 工作台：私密项目、运行记录、产物、团队与订单。
 
-<p align="center">
-  <sub>
-    🏆 Featured in <a href="https://www.forbes.com/sites/tjmccue/2023/01/19/chatgpt-success-completely-depends-on-your-prompt/">Forbes</a> ·
-    🎓 Referenced by <a href="https://www.huit.harvard.edu/news/ai-prompts">Harvard</a>, <a href="https://etc.cuit.columbia.edu/news/columbia-prompt-library-effective-academic-ai-use">Columbia</a> ·
-    📄 <a href="https://scholar.google.com/citations?user=AZ0Dg8YAAAAJ&hl=en">40+ academic citations</a> ·
-    ❤️ <a href="https://huggingface.co/datasets/fka/prompts.chat">Most liked dataset</a> on Hugging Face<br>
-    ⭐ 143k+ GitHub stars ·
-    🏅 <a href="https://spotlights-feed.github.com/spotlights/prompts-chat/index/">GitHub Staff Pick</a> ·
-    🚀 First prompt library (Dec 2022)
-  </sub>
-</p>
+我的收藏和算力中心放在账号菜单。首批 Hub 是 CAUHub、ANS VibeHub、AIGC Hub、全栈开发 Hub；目录不代表其他高校已入驻。学校归属必须来自明确关联，不能由关键词猜测。
 
-<p align="center">
-  <sub><strong>Loved by AI pioneers:</strong></sub><br>
-  <sub>
-    <a href="https://x.com/gdb/status/1602072566671110144"><strong>Greg Brockman</strong></a> (OpenAI Co-Founder) ·
-    <a href="https://x.com/woj_zaremba/status/1601362952841760769"><strong>Wojciech Zaremba</strong></a> (OpenAI Co-Founder) ·
-    <a href="https://x.com/clementdelangue/status/1830976369389642059"><strong>Clement Delangue</strong></a> (Hugging Face CEO) ·
-    <a href="https://x.com/ashtom/status/1887250944427237816"><strong>Thomas Dohmke</strong></a> (Former GitHub CEO)
-  </sub>
-</p>
+## 工作流与交易
 
----
+Hub 负责组织内容；版本化工作流负责执行；市场负责审核后的分发。工作流上架绑定作者自己的已发布版本，修改后重新审核。用户确认输入和费用后才能运行。预置简历网站复用固定渲染代码，模型只处理个性化内容。查看页面不会自动执行或扣费。
 
-## What is this?
+算力积分固定换算为 **人民币 1 元 = 10 积分**。充值沿用链动小铺卡密购买与兑换。VibePlan 的方案已批准，但套餐购买是否开放必须由实际权益与履约状态决定。现金交易、模型费用、社区积分和会员额度各自记账，不相互冒充。
 
-A curated collection of **prompts** for AI chat models. Originally created for ChatGPT, these prompts work great with any modern AI assistant.
+## 开发
 
-| Browse Prompts | Data Formats |
-|----------------|--------------|
-| [ANS](https://ans.cauai.fun/prompts) | [prompts.csv](prompts.csv) |
-| [PROMPTS.md](https://raw.githubusercontent.com/f/prompts.chat/main/PROMPTS.md) | [Hugging Face Dataset](https://huggingface.co/datasets/fka/prompts.chat) |
+Node.js 24、Next.js App Router、React、TypeScript、PostgreSQL、Prisma、NextAuth 和 next-intl。
 
-**Want to contribute?** Add prompts at [ANS/prompts/new](https://ans.cauai.fun/prompts/new) — they sync here automatically.
+安装依赖前配置本地数据库环境变量；不要提交凭据。生产数据库不得用于种子数据、重置或自动测试。
 
----
-
-## 📖 The Interactive Book of Prompting
-
-Learn prompt engineering with our **free, interactive guide** — 25+ chapters covering everything from basics to advanced techniques like chain-of-thought reasoning, few-shot learning, and AI agents.
-
-**[Start Reading →](https://fka.gumroad.com/l/art-of-chatgpt-prompting)** (Source: https://github.com/1008611-creater/ans-platform/tree/main/src/content/book)
-
----
-
-## 🎮 Prompting for Kids
-
-<p>
-  <a href="https://ans.cauai.fun/kids">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://ans.cauai.fun/promi-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://ans.cauai.fun/promi.svg">
-      <img height="60" alt="Promi" src="https://ans.cauai.fun/promi.svg" align="left">
-    </picture>
-  </a>
-</p>
-
-An interactive, game-based adventure to teach children (ages 8-14) how to communicate with AI through fun puzzles and stories.
-
-**[Start Playing →](https://ans.cauai.fun/kids)**
-
-<br clear="left">
-
----
-
-## 🚀 Self-Hosting
-
-Deploy your own private prompt library with custom branding, themes, and authentication.
-
-**Quick Start:**
-```bash
-npx ANS new my-prompt-library
-cd my-prompt-library
+```sh
+npm ci
+npm run db:generate
+npm run dev
+npm run typecheck
+npm run check:boundaries
+npm run lint
+npm run build
 ```
 
-**Manual Setup:**
-```bash
-git clone https://github.com/1008611-creater/ans-platform.git
-cd ANS
-npm install && npm run setup
-```
+数据库升级使用已审查的增量迁移。正式部署必须冻结实际源码、核对运行父版本，完成一致备份与隔离恢复，再切换镜像并验证真实页面。保留原配置、挂载和可用回滚镜像。公共旧提示词页面已进入退役范围；历史数据、共享鉴权、计费、模板与运行 API 仍保留。
 
-The setup wizard configures branding, theme, authentication (GitHub/Google/Azure AD), and features.
+权威产品与架构见 [ANS 权威产品与架构总纲](docs/ANS权威产品与架构总纲.md)，商业规则见 [ANS 商业化与计费架构](docs/ANS商业化与计费架构.md)，当前交付范围见 [任务规范](docs/agent-team/task-spec.md)。
 
-**Recommended database:** ANS uses PostgreSQL. For a hosted database, we recommend [Neon](https://get.neon.com/VqfnMo4).
+## 来源与许可证
 
-<div>
-  <p>Sponsored by</p>
-  <a href="https://get.neon.com/VqfnMo4">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/neon-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/neon.svg">
-      <img width="250px" alt="Neon Logo fallback" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/neon-dark.svg">
-    </picture>
-  </a>
-</div>
+ANS 保留并演进了 prompts.chat / f / prompts.chat 的部分开源代码。保留代码继续遵循 [LICENSE-MIT](LICENSE-MIT) 中 Fatih Kadir Akin and contributors 的版权与许可通知。原提示词数据的 CC0 适用范围见 [LICENSE-CC0](LICENSE-CC0) 和 [LICENSE](LICENSE)。这不将 ANS 的全部新内容、用户作品、交易资料或品牌统一授权为 CC0。
 
-📖 **[Full Self-Hosting Guide](SELF-HOSTING.md)** • 🐳 **[Docker Guide](DOCKER.md)**
-
----
-
-## 🔌 Integrations
-
-### CLI
-```bash
-npx ANS
-```
-
-### Claude Code Plugin
-```
-/plugin marketplace add f/ANS
-/plugin install prompts.chat@prompts.chat
-```
-📖 [Plugin Documentation](CLAUDE-PLUGIN.md)
-
-### MCP Server
-Use ANS as an MCP server in your AI tools.
-
-**Remote (recommended):**
-```json
-{
-  "mcpServers": {
-    "ANS": {
-      "url": "https://ans.cauai.fun/api/mcp"
-    }
-  }
-}
-```
-
-**Local:**
-```json
-{
-  "mcpServers": {
-    "ANS": {
-      "command": "npx",
-      "args": ["-y", "ANS", "mcp"]
-    }
-  }
-}
-```
-
-📖 [MCP Documentation](https://ans.cauai.fun/docs/api)
-
----
-
-## 💖 Sponsors
-
-<p align="center">
-  <!-- Neon (py-1) -->
-  <a href="https://get.neon.com/VqfnMo4">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/neon-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/neon.svg">
-      <img height="30" alt="Neon" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/neon.svg">
-    </picture>
-  </a>&nbsp;&nbsp;
-  <!-- Clemta -->
-  <a href="https://clemta.com/?utm_source=prompts.chat">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/clemta-dark.webp">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/clemta.webp">
-      <img height="35" alt="Clemta" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/clemta.webp">
-    </picture>
-  </a>&nbsp;&nbsp;
-  <!-- Wiro (py-1) -->
-  <a href="https://wiro.ai/?utm_source=prompts.chat">
-    <img height="30" alt="Wiro" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/wiro.png">
-  </a>&nbsp;&nbsp;
-  <!-- Cognition -->
-  <a href="https://wind.surf/prompts-chat">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/cognition-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/cognition.svg">
-      <img height="35" alt="Cognition" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/cognition.svg">
-    </picture>
-  </a>&nbsp;&nbsp;
-  <!-- CodeRabbit (py-1) -->
-  <a href="https://coderabbit.link/fatih">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/coderabbit-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/coderabbit.svg">
-      <img height="30" alt="CodeRabbit" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/coderabbit.svg">
-    </picture>
-  </a>&nbsp;&nbsp;
-  <!-- Sentry (py-1) -->
-  <a href="https://sentry.io/?utm_source=prompts.chat">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/sentry-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/sentry.svg">
-      <img height="30" alt="Sentry" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/sentry.svg">
-    </picture>
-  </a>&nbsp;&nbsp;
-  <!-- Each Labs (py-[6px]) -->
-  <a href="https://www.eachlabs.ai/?utm_source=promptschat&utm_medium=referral">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/eachlabs-dark.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/eachlabs.png">
-      <img height="28" alt="Each Labs" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/eachlabs.png">
-    </picture>
-  </a>&nbsp;&nbsp;
-  <!-- CommandCode (py-1) -->
-  <a href="https://commandcode.ai/?utm_source=prompts.chat">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/commandcode-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/commandcode.svg">
-      <img height="30" alt="CommandCode" src="https://raw.githubusercontent.com/f/prompts.chat/main/public/sponsors/commandcode.svg">
-    </picture>
-  </a>
-</p>
-
-<p align="center">
-  <sub>Built with <a href="https://wind.surf/prompts-chat">Windsurf</a> and <a href="https://devin.ai">Devin</a></sub><br>
-  <a href="https://github.com/sponsors/f/sponsorships?sponsor=f&tier_id=558224&preview=false"><strong>Become a Sponsor →</strong></a>
-</p>
-
----
-
-## 👥 Contributors
-
-<a href="https://github.com/1008611-creater/ans-platform/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=f/ANS" />
-</a>
-
----
-
-## 📜 License
-
-This project is dual-licensed:
-
-- **Source code and site-authored content** is licensed under the [MIT License](LICENSE-MIT),
-  including the interactive book content in [`src/content/book`](src/content/book).
-- **Prompt content and data** (prompts.csv, PROMPTS.md, user-submitted prompts) is dedicated to the public domain under [CC0 1.0 Universal](LICENSE-CC0).
-
-See [LICENSE](LICENSE) for details.
+GitGlow 等第三方资产保留对应目录中的许可证。调整品牌、导航和产品方向不会取消保留开源代码的署名及许可证义务。

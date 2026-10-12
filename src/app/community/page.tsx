@@ -1,3 +1,4 @@
+import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -18,7 +19,7 @@ export default async function CommunityPage() {
     <div className="ans-product-container ans-page-content ans-community-page">
       <PageHeading title="社区成长" description="记录每一次参与，见证共同成长。"
         actions={<Button asChild variant="outline"><Link href="/workspace">返回工作台</Link></Button>} />
-      <CommunityPanel />
+      <AccountContentBoundary actorId={session.user.id}><CommunityPanel actorId={session.user.id} /></AccountContentBoundary>
     </div>
   );
 }

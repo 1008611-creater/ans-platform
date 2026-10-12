@@ -207,12 +207,31 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
         for label, actual in [("tables", restored_tables), ("constraints", constraints), ("indexes", indexes), ("migrations", migrations)]:
             if actual != (expected_constraints if label == "constraints" else source[label]):
                 raise RuntimeError("Restore mismatch: " + label)
+        # This additive enum migration is rehearsed only in the network-none restored database.
+        # It must not alter any application row, index or constraint.
+        migration_rehearsal = []
+        if pending:
+            enum_migration = "20261012180000_project_favorites"
+            expected_sql = "ALTER TYPE \"FavoriteTargetType\" ADD VALUE IF NOT EXISTS 'PROJECT';\n".encode()
+            if pending != [enum_migration] or (migration_path / enum_migration / "migration.sql").read_bytes().replace(b"\r\n", b"\n") != expected_sql:
+                raise RuntimeError("Unapproved pending migration rehearsal")
+            before_enum = sql("SELECT jsonb_agg(enumlabel ORDER BY enumsortorder) FROM pg_enum WHERE enumtypid='public.\"FavoriteTargetType\"'::regtype")[0]
+            run(["docker", "exec", "-i", restored, "psql", "-X", "-U", "ans_restore", "-d", "ans_restore", "-v", "ON_ERROR_STOP=1"], input=expected_sql.decode())
+            after_enum = sql("SELECT jsonb_agg(enumlabel ORDER BY enumsortorder) FROM pg_enum WHERE enumtypid='public.\"FavoriteTargetType\"'::regtype")[0]
+            if after_enum != before_enum + (["PROJECT"] if "PROJECT" not in before_enum else []):
+                raise RuntimeError("Enum rehearsal changed unexpected values")
+            for name, before in restored_tables.items():
+                after = sql("SELECT jsonb_build_object('count',count(*)::text,'digest',md5(COALESCE(string_agg(md5(row_to_json(t)::text),'' ORDER BY md5(row_to_json(t)::text)),''))) FROM public." + quote(name) + " t")[0]
+                if after != before: raise RuntimeError("Migration rehearsal changed application data")
+            if [{"item": item} for item in sql(CONSTRAINT_SQL)] != constraints or [{"item": item} for item in sql(INDEX_SQL)] != indexes:
+                raise RuntimeError("Migration rehearsal changed constraints or indexes")
+            migration_rehearsal = [{"name": enum_migration, "sqlSha256": hashlib.sha256(expected_sql).hexdigest(), "isolatedNetwork": "none", "passed": True, "applicationDataPreserved": True, "values": after_enum}]
         report = {"release": release_id, "sourceImage": info["Image"], "backupBytes": dump.stat().st_size,
                   "backupSha256": hashlib.sha256(dump.read_bytes()).hexdigest(), "schema": "public",
                   "snapshotConsistent": True, "restorePassed": True, "restorePostgresImage": IMAGE,
                   "tableCount": len(source["tables"]), "tableCounts": {k: v["count"] for k, v in source["tables"].items()},
                   "dataDigest": digest(source["tables"]), "constraintsDigest": digest(constraints), "sourceConstraintsDigest": digest(source["constraints"]), "checkReparseWitnesses": witnesses, "opsScriptSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "indexesDigest": digest(indexes),
-                  "migrationsDigest": digest(migrations), "appliedMigrationCount": len(successful_names), "rolledBackAttemptCount": sum(item["rolled_back"] for item in migrations), "pendingMigrations": pending, "lineEndingOnlyMatches": line_ending_matches, "originalByteWitnesses": original_byte_witnesses,
+                  "migrationsDigest": digest(migrations), "appliedMigrationCount": len(successful_names), "rolledBackAttemptCount": sum(item["rolled_back"] for item in migrations), "pendingMigrations": pending, "migrationRehearsal": migration_rehearsal, "lineEndingOnlyMatches": line_ending_matches, "originalByteWitnesses": original_byte_witnesses,
                   "checked": ["all public table row counts and content digests", "all public constraints", "all public indexes", "migration names and checksums (exact or proven LF/CRLF-only equivalence)"],
                   "limits": "Application public schema backup only; not Supabase platform schemas or external object storage."}
         report_path = backup / "verification.json"

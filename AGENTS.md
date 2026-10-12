@@ -1,12 +1,12 @@
 # AGENTS.md
 
-> Product authority: read [the confirmed ANS baseline](docs/ANS权威产品与架构总纲.md) first. It supersedes the historical social-prompt-platform overview below. Keep the first release focused on guided learning → private project facts → generated drafts → manual revision → saved versions/export. Do not expand scope without the user's confirmation.
+> Product authority: read docs/ANS权威产品与架构总纲.md first. The current 2026-10-12 Hub and workflow revision supersedes the historical prompt-platform and learning-only scopes. Implement only authorized product changes; preserve authentication, accounting, private data, runtime APIs and applicable source notices.
 
 > Guidelines for AI coding agents working on this project.
 
 ## Project Overview
 
-**ANS** is a social platform for AI prompts built with Next.js 16. It allows users to share, discover, and collect prompts from the community. The project is open source and can be self-hosted with customizable branding, themes, and authentication.
+**ANS** is a project discovery, Hub, workflow, community, event and marketplace platform built with Next.js. Six primary destinations are /explore, /hubs, /community, /competitions, /market and /workspace. Favorites and compute center belong to the account menu. Hubs organize explicitly related contents; immutable workflows execute personal inputs; reviewed marketplace listings bind the exact runnable version. Keep historical data and shared backend interfaces when retiring old prompt UI. Retained upstream code remains governed by its source licenses.
 
 ### Tech Stack
 

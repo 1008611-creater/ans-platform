@@ -1,0 +1,114 @@
+{
+  "nav": {
+    "explore": "项目广场",
+    "hubs": "Hub 与工作流",
+    "community": "社区成长",
+    "competitions": "赛事活动",
+    "market": "市场",
+    "workspace": "工作台"
+  },
+  "shortNav": {
+    "explore": "项目",
+    "hubs": "Hub",
+    "community": "社区",
+    "competitions": "赛事",
+    "market": "市场",
+    "workspace": "工作台"
+  },
+  "account": {
+    "favorites": "我的收藏",
+    "compute": "算力中心"
+  },
+  "navigationDescription": "项目、Hub、社区、赛事、市场与工作台",
+  "mobileNavigation": "主要导航",
+  "eyebrow": "ANS / HUBS",
+  "title": "找到你的 Hub",
+  "description": "按学校、知识与创作方向，找到项目、工作流和真正可用的入口。",
+  "allWorkflows": "查看全部工作流",
+  "searchLabel": "查找 Hub",
+  "searchPlaceholder": "学校、知识、AIGC、全栈开发",
+  "search": "查找",
+  "emptySearch": "没有找到匹配的 Hub。",
+  "clear": "清除筛选",
+  "unavailable": "暂不可用",
+  "catalogUnavailable": "项目目录暂时无法读取，已隐藏项目和未知数量。稍后重试即可。",
+  "directoryNote": "数量来自当前明确关联的内容。参考项目、工具入口与可运行工作流分别展示，不代表学校入驻人数或官方认证。",
+  "back": "返回 Hub 目录",
+  "universityNote": "ANS × {university}，目前展示已明确关联的校内赛事；其他学校尚未开放，不做入驻承诺。",
+  "runnableTitle": "可运行工作流",
+  "runnableNote": "填写自己的资料，确认费用后运行。打开页面不会自动生成或扣费。",
+  "noRunnable": "这个 Hub 还没有已关联的可运行工作流。",
+  "resourcesTitle": "工具与内容入口",
+  "projectsTitle": "项目与参考",
+  "projectsNote": "打开项目详情了解来源和使用方式。外部工具的登录、费用和交付以原站为准；开源参考不等于 ANS 已接入运行。",
+  "noProjects": "目前没有已发布并明确关联的项目。",
+  "recipeCost": "本流程确认运行消耗 {points} 积分，修改与保存方式见准备页。",
+  "prepareWorkflow": "准备我的项目",
+  "counts": {
+    "workflows": "可运行",
+    "projects": "项目",
+    "resources": "入口"
+  },
+  "types": {
+    "university": "学校 Hub",
+    "knowledge": "知识 Hub",
+    "topic": "主题 Hub"
+  },
+  "organizations": {
+    "cauhub": "CAUHub",
+    "cau": "中国农业大学",
+    "vibehub": "ANS VibeHub",
+    "aigc": "ANS AIGC",
+    "fullStack": "ANS 全栈开发"
+  },
+  "items": {
+    "cauhub": {
+      "name": "CAUHub",
+      "description": "面向中国农业大学的赛事与校内协作入口，内容按真实关联收录。"
+    },
+    "vibehub": {
+      "name": "ANS VibeHub",
+      "description": "从概念到实践，找到现有术语、课程、学习路径与方法。"
+    },
+    "aigc": {
+      "name": "AIGC Hub",
+      "description": "图像、视频与音频创作工具，配套真实项目和开源参考。"
+    },
+    "full-stack": {
+      "name": "全栈开发 Hub",
+      "description": "从可运行的个人网站流程，到开发、部署和开源项目参考。"
+    }
+  },
+  "kinds": {
+    "runnable": "ANS 可运行",
+    "hosted-tool": "工具入口 · 按页面权限使用",
+    "knowledge": "知识与学习",
+    "event": "赛事入口",
+    "reference": "开源或外部参考",
+    "external": "外部产品 · 查看原站条件"
+  },
+  "resources": {
+    "agrihackathon": {
+      "title": "AgriHackathon · 农客松",
+      "description": "查看当前赛事方案、作品提交要求和活动信息。报名及时间以赛事页实际状态为准。"
+    },
+    "vibehub": {
+      "title": "进入 VibeHub",
+      "description": "浏览现有课程、术语、学习路径、实践与 Skill 方法。"
+    },
+    "aigc": {
+      "title": "AIGC 工作台",
+      "description": "进入视频创作工具页面，核对连接、账号、模型和费用后使用。"
+    },
+    "hypit": {
+      "title": "Hypit 创作工作区",
+      "description": "查看官方演示与当前工作区入口；实际工具按页面账号权限开放。"
+    }
+  },
+  "recipes": {
+    "resume-website": {
+      "title": "个人简历与作品集网站",
+      "description": "复用固定网站模板，将自己的真实经历和项目组织成可预览、修改和导出的个人网站。"
+    }
+  }
+}

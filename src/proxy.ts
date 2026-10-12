@@ -1,15 +1,14 @@
+import { retiredDestination } from "./domain/navigation/retired";
 import { NextRequest, NextResponse } from "next/server";
 import { platformEmbedOrigins } from "./lib/platform-embed";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Rewrite .prompt.md and .prompt.yml requests to the raw API route
-  if (pathname.startsWith("/prompts/") && (pathname.endsWith(".prompt.md") || pathname.endsWith(".prompt.yml"))) {
-    const id = pathname.slice("/prompts/".length);
-    const url = request.nextUrl.clone();
-    url.pathname = `/api/prompts/${id}/raw`;
-    return NextResponse.rewrite(url);
+  const destination = retiredDestination(pathname);
+  if (destination) {
+    const url = request.nextUrl.clone(); url.pathname = destination; url.search = "";
+    return NextResponse.redirect(url, 308);
   }
 
   // Add pathname header for layout detection

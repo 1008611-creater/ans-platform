@@ -4,29 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { WorkspaceLink as Link, useWorkspaceNavigation } from "@/components/providers/workspace-navigation";
 
-// Mini Promi icon for header
-function MiniPromi({ className }: { className?: string }) {
-  return (
-    <svg 
-      viewBox="0 0 16 20" 
-      className={className}
-      style={{ imageRendering: "pixelated" }}
-    >
-      <rect x="7" y="0" width="2" height="2" fill="#FFD700" />
-      <rect x="6" y="2" width="4" height="2" fill="#C0C0C0" />
-      <rect x="2" y="4" width="12" height="8" fill="#4A90D9" />
-      <rect x="4" y="6" width="3" height="3" fill="white" />
-      <rect x="9" y="6" width="3" height="3" fill="white" />
-      <rect x="5" y="7" width="2" height="2" fill="#333" />
-      <rect x="10" y="7" width="2" height="2" fill="#333" />
-      <rect x="6" y="10" width="4" height="1" fill="#333" />
-      <rect x="5" y="9" width="1" height="1" fill="#333" />
-      <rect x="10" y="9" width="1" height="1" fill="#333" />
-      <rect x="4" y="12" width="8" height="6" fill="#4A90D9" />
-      <rect x="6" y="14" width="4" height="2" fill="#FFD700" />
-    </svg>
-  );
-}
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -39,12 +16,9 @@ import {
   LogOut,
   Shield,
   Globe,
-  Moon,
-  Sun,
   Copy,
-  ExternalLink,
-  Hammer,
-  MoreHorizontal,
+  Heart,
+  Coins,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -73,6 +47,7 @@ import { BilingualToggle } from "@/components/layout/bilingual-toggle";
 import { setLocale } from "@/lib/i18n/client";
 import { useBranding } from "@/components/providers/branding-provider";
 import { analyticsAuth, analyticsSettings } from "@/lib/analytics";
+import { PRIMARY_NAVIGATION, isPrimaryNavigationActive } from "@/domain/navigation/primary";
 
 const languages = [
   { code: "en", name: "English" },
@@ -103,7 +78,8 @@ interface HeaderProps {
 export function Header({ embedded = false, authProvider = "credentials", allowRegistration = true }: HeaderProps) {
   const { data: session, status: sessionStatus } = useSession();
   const t = useTranslations();
-  const { theme, setTheme } = useTheme();
+  const hubText = useTranslations("hubs");
+  const { theme } = useTheme();
   const branding = useBranding();
   const router = useRouter();
   const { run: leaveWorkspace } = useWorkspaceNavigation();
@@ -151,18 +127,7 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
     }, 0);
     return () => window.clearTimeout(continuation);
   }, [logoutState, sessionStatus, router, t, handleLogout, embedded]);
-  const productLinks = [
-    { href: "/explore", label: t("product.nav.explore") },
-    { href: "/workflows", label: t("product.nav.workflows") },
-    { href: "/community", label: t("product.nav.community") },
-    { href: "/competitions", label: t("product.nav.competitions") },
-    { href: "/workspace", label: t("product.nav.workspace") },
-  ];
-  function isProductLinkActive(href: string) {
-    if (href === "/explore" && pathname === "/") return true;
-    if (href === "/workspace" && (pathname === "/projects" || pathname.startsWith("/projects/"))) return true;
-    return pathname === href || pathname.startsWith(`${href}/`);
-  }
+  const productLinks = PRIMARY_NAVIGATION.map(item => ({ ...item, label: hubText(`nav.${item.id}`) }));
 
   const handleCopyLogoSvg = async () => {
     try {
@@ -178,10 +143,10 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
 
   return (
     <header className="sticky top-[0px] z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className={`flex h-12 items-center gap-1 sm:gap-2 xl:gap-4 ${pathname === "/developers" ? "px-4" : "container"}`}>
+      <div className="container flex h-12 items-center gap-1 sm:gap-2 xl:gap-4">
         {/* Mobile menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild className="lg:hidden">
+          <SheetTrigger asChild className="xl:hidden">
             <Button variant="ghost" size="icon" className="-ml-2 h-8 w-8" data-testid="mobile-menu-trigger">
               <Menu className="h-4 w-4" />
               <span className="sr-only">{t("product.menu")}</span>
@@ -212,155 +177,11 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
                 {/* Radix 要求抽屉有可访问的标题与描述；标题直接用可见品牌名，
                     描述对视觉隐藏，只供读屏使用。 */}
                 <SheetTitle className="text-lg font-semibold mt-2">{branding.name}</SheetTitle>
-                <SheetDescription className="sr-only">{t("nav.more")}</SheetDescription>
+                <SheetDescription className="sr-only">{hubText("navigationDescription")}</SheetDescription>
               </div>
 
-              {/* Navigation */}
               <nav aria-label={t("a11y.mobileNav")} className="flex-1 overflow-y-auto p-4">
-                <div className="mb-3 space-y-1 border-b pb-3">{productLinks.map(({ href, label }) => <Link key={href} href={href} aria-current={isProductLinkActive(href) ? "page" : undefined} onClick={() => setMobileMenuOpen(false)} className="block rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary">{label}</Link>)}</div>
-                <details><summary className="cursor-pointer px-3 py-2 text-sm text-muted-foreground">{t("nav.more")}</summary>
-                <div className="space-y-1">
-                  {user && (
-                    <>
-                      <Link 
-                        href="/collection" 
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                      >
-                        {t("nav.collection")}
-                      </Link>
-                      <Link 
-                        href="/feed" 
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                      >
-                        {t("nav.feed")}
-                      </Link>
-                    </>
-                  )}
-                  <Link 
-                    href="/prompts" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.prompts")}
-                  </Link>
-                  <Link 
-                    href="/skills" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.skills")}
-                  </Link>
-                  <Link 
-                    href="/taste" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.taste")}
-                  </Link>
-                  <Link 
-                    href="/workflows" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.workflows")}
-                  </Link>
-                  {user && (
-                    <>
-                      <Link
-                        href="/workflows/mine"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 ps-6 pe-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                      >
-                        我的工作流
-                      </Link>
-                      <Link
-                        href="/workflows/runs"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 ps-6 pe-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                      >
-                        运行记录
-                      </Link>
-                    </>
-                  )}
-                  <Link
-                    href="/status"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.status")}
-                  </Link>
-                  <Link 
-                    href="/categories" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.categories")}
-                  </Link>
-                  <Link 
-                    href="/tags" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.tags")}
-                  </Link>
-                  <Link 
-                    href="/discover" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("feed.discover")}
-                  </Link>
-                  <Link 
-                    href="/promptmasters" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.promptmasters")}
-                  </Link>
-                  <Link
-                    href="/projects"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("learning.navProjects")}
-                  </Link>
-                  <Link
-                    href="/templates"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    模板广场
-                  </Link>
-                  <Link
-                    href="/teams"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    团队与比赛
-                  </Link>
-                  <Link
-                    href="/competitions"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-primary hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    {t("nav.competitionHub")}
-                  </Link>
-                  {!branding.useCloneBranding && (
-                    <Link
-                      href="/kids"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors font-kids"
-                    >
-                      <MiniPromi className="h-5 w-4" />
-                      <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
-                        {t("nav.forKids")}
-                      </span>
-                    </Link>
-                  )}
-                </div>
-                </details>
+                <div className="space-y-1">{productLinks.map(({ id, href, label }) => <Link key={href} href={href} aria-current={isPrimaryNavigationActive(id, pathname) ? "page" : undefined} onClick={() => setMobileMenuOpen(false)} className="block rounded-md px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary">{label}</Link>)}</div>
               </nav>
 
               {/* Footer */}
@@ -404,52 +225,12 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
               <Copy className="mr-2 h-4 w-4" />
               {t("brand.copyLogoSvg")}
             </ContextMenuItem>
-            <ContextMenuItem onClick={() => leaveWorkspace(() => router.push("/brand"))}>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              {t("brand.brandAssets")}
-            </ContextMenuItem>
+
           </ContextMenuContent>
         </ContextMenu>
 
-        {/* Primary desktop nav: keep the main job paths visible and move low-frequency destinations into More. */}
-        <nav aria-label={t("a11y.mainNav")} className="hidden shrink-0 items-center gap-1 text-sm lg:flex">
-          {productLinks.map(({ href, label }) => (
-
-            <Link
-              key={href}
-              href={href}
-              aria-current={isProductLinkActive(href) ? "page" : undefined}
-              className="shrink-0 rounded-md px-2 py-1.5 font-medium xl:px-3 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
-            >
-              {label}
-            </Link>
-          ))}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1 px-2 text-muted-foreground hover:text-foreground">
-                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-                <span>{t("nav.more")}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem asChild><Link href="/prompts">{t("nav.prompts")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/templates">{t("learning.templates")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/workflows">{t("nav.workflows")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/competitions">{t("nav.competitionHub")}</Link></DropdownMenuItem>
-              {user && <DropdownMenuItem asChild><Link href="/workspace">{t("homepageNext.workspace")}</Link></DropdownMenuItem>}
-              {user && <DropdownMenuItem asChild><Link href="/collection">{t("nav.collection")}</Link></DropdownMenuItem>}
-              {user && <DropdownMenuItem asChild><Link href="/workflows/runs">{t("homepageNext.runHistory")}</Link></DropdownMenuItem>}
-              <DropdownMenuItem asChild><Link href="/status">{t("nav.status")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/discover">{t("feed.discover")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/categories">{t("nav.categories")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/tags">{t("nav.tags")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/skills">{t("nav.skills")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/taste">{t("nav.taste")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/promptmasters">{t("nav.promptmasters")}</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/developers"><Hammer className="mr-2 h-4 w-4" aria-hidden="true" />{t("nav.developers")}</Link></DropdownMenuItem>
-              {!branding.useCloneBranding && <DropdownMenuItem asChild><Link href="/kids" className="font-kids"><MiniPromi className="mr-2 h-4 w-4" />{t("nav.forKids")}</Link></DropdownMenuItem>}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <nav aria-label={t("a11y.mainNav")} className="hidden min-w-0 items-center gap-1 text-sm xl:flex">
+          {productLinks.map(({ id, href, label }) => <Link key={href} href={href} aria-current={isPrimaryNavigationActive(id, pathname) ? "page" : undefined} className="shrink-0 rounded-md px-2 py-2 font-medium text-muted-foreground transition-colors motion-reduce:transition-none hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary">{label}</Link>)}
         </nav>
 
         {/* Spacer */}
@@ -458,27 +239,6 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
         {/* Right side actions */}
         <div className="flex shrink-0 items-center gap-1">
           <BilingualToggle />
-          {/* For Kids link */}
-          {!branding.useCloneBranding && (
-            <Link
-              href="/kids" 
-              className="hidden 2xl:flex items-center gap-1 px-2 py-1 rounded-md hover:bg-accent transition-colors font-kids"
-            >
-              <MiniPromi className="h-5 w-4" />
-              <span className="text-sm font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
-                {t("nav.forKids")}
-              </span>
-            </Link>
-          )}
-
-          {/* Developers link */}
-          <Button asChild variant="ghost" size="icon" className="hidden 2xl:flex h-8 w-8">
-            <Link href="/developers" title={t("nav.developers")}>
-              <Hammer className="h-4 w-4" />
-              <span className="sr-only">{t("nav.developers")}</span>
-            </Link>
-          </Button>
-
           {/* Primary creation action follows the learning project flow. */}
           {user && (
             <Button asChild variant="ghost" size="icon" className="h-8 w-8">
@@ -560,6 +320,8 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
                     ))}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
+                <DropdownMenuItem asChild><Link href="/collection"><Heart className="mr-2 h-4 w-4" aria-hidden="true" />{hubText("account.favorites")}</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/workspace/credits"><Coins className="mr-2 h-4 w-4" aria-hidden="true" />{hubText("account.compute")}</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem disabled={logoutState !== "idle"} onClick={() => void handleLogout()}>
                   <LogOut className="mr-2 h-4 w-4" />

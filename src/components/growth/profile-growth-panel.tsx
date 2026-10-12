@@ -1,7 +1,9 @@
 "use client";
+import { useCommunityRequest } from "@/components/community/account-request";
+import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Activity,
@@ -47,6 +49,7 @@ type ProfileGrowthProps = {
     checkIns?: CheckInRecord[];
   };
   editable?: boolean;
+  actorId?: string;
   avatarFallback?: string;
 };
 
@@ -86,7 +89,14 @@ function levelColor(index: number) {
   return ["from-slate-500 to-slate-700", "from-emerald-400 to-teal-600", "from-sky-400 to-indigo-600", "from-fuchsia-400 to-violet-600", "from-amber-400 to-orange-600", "from-cyan-400 to-blue-700", "from-rose-400 to-purple-700", "from-violet-400 to-pink-600"][index] ?? "from-primary to-violet-500";
 }
 
-export function ProfileGrowthPanel({ user, editable = false, avatarFallback = "A" }: ProfileGrowthProps) {
+export function ProfileGrowthPanel(props: ProfileGrowthProps) {
+  if (props.editable) return props.actorId ? <MarketAccountBoundary actorId={props.actorId}><ProfileGrowthState key={props.actorId} {...props} /></MarketAccountBoundary> : null;
+  return <ProfileGrowthState {...props} editable={false} />;
+}
+function ProfileGrowthState({ user, editable = false, avatarFallback = "A", actorId }: ProfileGrowthProps) {
+  const request = useCommunityRequest(actorId); const alive = useRef(true);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+
   const router = useRouter();
   const t = useTranslations("product.growth");
   const locale = useLocale();
@@ -124,12 +134,11 @@ export function ProfileGrowthPanel({ user, editable = false, avatarFallback = "A
     if (busy || checked) return;
     setBusy(true); setNotice("");
     try {
-      const response = await fetch("/api/community/check-in", { method: "POST", cache: "no-store" });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "CHECK_IN_FAILED");
+      const data = await request<Record<string, unknown>>("/api/community/check-in", "POST", {});
+      if (!alive.current) return;
       const alreadyCheckedIn = Boolean(data.alreadyCheckedIn);
       const record = data.checkIn as CheckInRecord | undefined;
-      const xpAwarded = Number(data.checkIn?.xpAwarded ?? 0);
+      const xpAwarded = Number(record?.xpAwarded ?? 0);
       if (record) {
         setCheckIns((current) => current.some((entry) => entry.id === record.id || entry.day === record.day)
           ? current
@@ -146,32 +155,30 @@ export function ProfileGrowthPanel({ user, editable = false, avatarFallback = "A
       // Reload balances and ledgers from the committed server state. Another tab
       // may have earned XP while this page was open.
       try {
-        const growthResponse = await fetch("/api/community/growth", { cache: "no-store" });
-        if (growthResponse.ok) {
-          const profile = await growthResponse.json();
-          setXp(profile.xp); setPoints(profile.communityPoints); setStreak(profile.checkInStreak);
-          setCheckIns(profile.checkIns); setRecentEvents(profile.recentEvents);
-        }
+        const profile = await request<{ xp: number; communityPoints: number; checkInStreak: number; checkIns: CheckInRecord[]; recentEvents: GrowthEvent[] }>("/api/community/growth", "GET", undefined);
+        if (!alive.current) return;
+        setXp(profile.xp); setPoints(profile.communityPoints); setStreak(profile.checkInStreak);
+        setCheckIns(profile.checkIns); setRecentEvents(profile.recentEvents);
       } catch { /* The committed check-in remains visible using its response. */ }
+      if (!alive.current) return;
       setChecked(true);
-      setStreak(Number(data.checkIn?.streak ?? streak));
+      setStreak(Number(record?.streak ?? streak));
       setNotice(alreadyCheckedIn ? t("alreadyCheckedIn") : t("checkInSuccess", { xp: xpAwarded }));
     } catch {
-      setNotice(t("checkInFailed"));
-    } finally { setBusy(false); }
+      if (alive.current) setNotice(t("checkInFailed"));
+    } finally { if (alive.current) setBusy(false); }
   }
 
   async function equip(kind: "avatar-frame" | "chat-bubble", key: string) {
     if (busy) return;
     setBusy(true); setNotice("");
     try {
-      const response = await fetch("/api/community/growth/equip", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind, key }) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "EQUIP_FAILED");
+      const data = await request<{ key?: string }>("/api/community/growth/equip", "POST", { kind, key });
+      if (!alive.current) return;
       if (kind === "avatar-frame") setFrame(data.key ?? key); else setBubble(data.key ?? key);
       setNotice(t("applied"));
       router.refresh();
-    } catch { setNotice(t("equipFailed")); } finally { setBusy(false); }
+    } catch { if (alive.current) setNotice(t("equipFailed")); } finally { if (alive.current) setBusy(false); }
   }
 
   return (

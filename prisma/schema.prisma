@@ -1036,6 +1036,7 @@ model AdminAiConfigVersion {
 
 /// 统一收藏：Prompt / 模板 / 工作流共用一张表，避免每个内容类型各建一套�?
 enum FavoriteTargetType {
+  PROJECT
   PROMPT
   TEMPLATE
   WORKFLOW

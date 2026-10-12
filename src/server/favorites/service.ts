@@ -1,3 +1,7 @@
+import productEn from "@/../messages/product/en.json";
+import { findPublishedCatalog, listPublishedCatalog } from "@/server/catalog/service";
+import { catalogText } from "@/domain/catalog/content";
+import productZh from "@/../messages/product/zh.json";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { db } from "@/lib/db";
 import vibeTerms from "@/data/vibehub/terms.json";
@@ -42,6 +46,11 @@ export type FavoriteTargetSummary = {
 };
 
 async function assertTargetVisible(targetType: FavoriteTargetType, targetId: string) {
+  if (targetType === "PROJECT") {
+    const project = await findPublishedCatalog(targetId);
+    if (!project) throw new FavoriteServiceError("Project is unavailable.", "TARGET_UNAVAILABLE", 404);
+    return { title: project.slug, href: `/explore/${project.slug}`, subtitle: null, authorName: null, costPoints: null };
+  }
   if (targetType === "PROMPT") {
     const prompt = await db.prompt.findFirst({
       where: { id: targetId, deletedAt: null, isPrivate: false },
@@ -94,7 +103,7 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
   }
 
   const workflow = await db.workflow.findFirst({
-    where: { id: targetId, status: "PUBLISHED" },
+    where: { id: targetId, status: "PUBLISHED", publishedVersion: { not: null }, isOfficial: false, author: { deletedAt: null, flagged: false } },
     select: {
       id: true,
       slug: true,
@@ -181,111 +190,42 @@ export function isFavorited(userId: string, targetType: FavoriteTargetType, targ
     .then((row) => Boolean(row));
 }
 
-/** 收藏列表：按收藏时间倒序，并跳过已经不可访问的对象。 */
-export async function listFavorites(userId: string, take = 100, targetType?: FavoriteTargetType): Promise<FavoriteTargetSummary[]> {
+/** Retired favorites remain stored; filter before taking a page to avoid starvation. */
+export async function listFavorites(userId: string, take = 100, targetType?: FavoriteTargetType, locale = "zh"): Promise<FavoriteTargetSummary[]> {
+  const active: FavoriteTargetType[] = ["PROJECT", "WORKFLOW", "VIBEHUB_TERM"];
+  if (targetType && !active.includes(targetType)) return [];
   const rows = await db.contentFavorite.findMany({
-    where: { userId, ...(targetType ? { targetType } : {}) },
+    where: { userId, targetType: targetType ?? { in: active } },
     orderBy: { createdAt: "desc" },
     take: Math.min(Math.max(Number.isFinite(take) ? Math.floor(take) : 100, 1), targetType === "VIBEHUB_TERM" ? vibeTerms.length : 200),
   });
-  if (rows.length === 0) return [];
-
-  const byType = <T extends FavoriteTargetType>(type: T) =>
-    rows.filter((row) => row.targetType === type).map((row) => row.targetId);
-
-  const [prompts, templates, workflows] = await Promise.all([
-    db.prompt.findMany({
-      where: { id: { in: byType("PROMPT") }, deletedAt: null, isPrivate: false },
-      select: { id: true, slug: true, title: true, description: true, author: { select: { id: true, nickname: true } } },
-    }),
-    db.template.findMany({
-      where: { id: { in: byType("TEMPLATE") }, status: "PUBLISHED" },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        summary: true,
-        estimatedCost: true,
-        author: { select: { id: true, nickname: true } },
-      },
-    }),
+  if (!rows.length) return [];
+  const [projects, workflows] = await Promise.all([
+    rows.some(row => row.targetType === "PROJECT") ? listPublishedCatalog() : Promise.resolve([]),
     db.workflow.findMany({
-      where: { id: { in: byType("WORKFLOW") }, status: "PUBLISHED" },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        summary: true,
-        estimatedCost: true,
-        author: { select: { id: true, nickname: true } },
-      },
+      where: { id: { in: rows.filter(row => row.targetType === "WORKFLOW").map(row => row.targetId) }, status: "PUBLISHED", publishedVersion: { not: null }, isOfficial: false, author: { deletedAt: null, flagged: false } },
+      select: { id: true, slug: true, title: true, summary: true, estimatedCost: true, author: { select: { nickname: true } } },
     }),
   ]);
-
-  const promptById = new Map(prompts.map((item) => [item.id, item]));
-  const templateById = new Map(templates.map((item) => [item.id, item]));
-  const workflowById = new Map(workflows.map((item) => [item.id, item]));
-
-  const items: FavoriteTargetSummary[] = [];
-  for (const row of rows) {
-    if (row.targetType === "PROMPT") {
-      const prompt = promptById.get(row.targetId);
-      if (!prompt) continue;
-      items.push({
-        targetType: "PROMPT",
-        targetId: prompt.id,
-        title: prompt.title,
-        href: prompt.slug ? `/prompts/${prompt.slug}` : `/prompts/${prompt.id}`,
-        subtitle: prompt.description ?? null,
-        authorName: prompt.author?.nickname?.trim() || null,
-        costPoints: null,
-        favoritedAt: row.createdAt,
-      });
-      continue;
-    }
-    if (row.targetType === "TEMPLATE") {
-      const template = templateById.get(row.targetId);
-      if (!template) continue;
-      items.push({
-        targetType: "TEMPLATE",
-        targetId: template.id,
-        title: template.title,
-        href: `/templates/${template.slug}`,
-        subtitle: template.summary ?? null,
-        authorName: template.author?.nickname?.trim() || null,
-        costPoints: template.estimatedCost,
-        favoritedAt: row.createdAt,
-      });
-      continue;
+  const projectBySlug = new Map(projects.map(project => [project.slug, project]));
+  const workflowById = new Map(workflows.map(workflow => [workflow.id, workflow]));
+  const translate = (key: string): string => {
+    let value: unknown = locale.startsWith("zh") ? productZh : productEn;
+    for (const part of key.split(".")) value = value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined;
+    return typeof value === "string" ? value : key;
+  };
+  return rows.flatMap<FavoriteTargetSummary>(row => {
+    const base = { targetType: row.targetType as FavoriteTargetType, targetId: row.targetId, favoritedAt: row.createdAt };
+    if (row.targetType === "PROJECT") {
+      const project = projectBySlug.get(row.targetId);
+      return project ? [{ ...base, title: catalogText(project, translate, "title", locale), href: `/explore/${project.slug}`, subtitle: catalogText(project, translate, "summary", locale), authorName: project.creator ?? null, costPoints: null }] : [];
     }
     if (row.targetType === "VIBEHUB_TERM") {
-      const term = vibeTerms.find((item) => item.slug === row.targetId);
-      if (!term) continue;
-      items.push({
-        targetType: "VIBEHUB_TERM",
-        targetId: term.slug,
-        title: term.name,
-        href: `/vibe-hub/${term.slug}`,
-        subtitle: term.description ?? null,
-        authorName: "VibeHub",
-        costPoints: null,
-        favoritedAt: row.createdAt,
-      });
-      continue;
+      const term = vibeTerms.find(item => item.slug === row.targetId);
+      return term ? [{ ...base, title: term.name, href: `/vibe-hub/${term.slug}`, subtitle: term.description ?? null, authorName: "VibeHub", costPoints: null }] : [];
     }
+    if (row.targetType !== "WORKFLOW") return [];
     const workflow = workflowById.get(row.targetId);
-    if (!workflow) continue;
-    items.push({
-      targetType: "WORKFLOW",
-      targetId: workflow.id,
-      title: workflow.title,
-      href: `/workflows/${workflow.slug}`,
-      subtitle: workflow.summary ?? null,
-      authorName: workflow.author?.nickname?.trim() || null,
-      costPoints: workflow.estimatedCost,
-      favoritedAt: row.createdAt,
-    });
-  }
-
-  return items;
+    return workflow ? [{ ...base, title: workflow.title, href: `/workflows/${workflow.slug}`, subtitle: workflow.summary ?? null, authorName: workflow.author?.nickname?.trim() || null, costPoints: workflow.estimatedCost }] : [];
+  });
 }

@@ -146,7 +146,7 @@ export function NotificationBell() {
             {notifications.commentNotifications.map((notification) => (
               <DropdownMenuItem key={notification.id} asChild>
                 <Link 
-                  href={`/prompts/${notification.promptId}`}
+                  href="/community"
                   onClick={() => handleMarkAsRead([notification.id])}
                   className="flex items-start gap-3 py-2"
                 >

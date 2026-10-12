@@ -1,3 +1,4 @@
+vi.mock("next-auth/react", () => ({ useSession: () => ({ status: "authenticated", data: { user: { id: "self" } } }) }));
 import { beforeEach, expect, it, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
@@ -5,7 +6,7 @@ import CommunityPage from "@/app/community/page";
 
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), redirect: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
-vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
+vi.mock("next/navigation", () => ({ redirect: mocks.redirect, useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/components/community/community-panel", () => ({ CommunityPanel: () => <div>社区面板已挂载</div> }));
 beforeEach(() => {
   vi.resetAllMocks();

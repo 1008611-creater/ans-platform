@@ -1,0 +1,15 @@
+{
+  "workflowRuns": "Workflow runs",
+  "noHistory": "No historical runs yet. Choose a workflow from a Hub to start.",
+  "historyTitle": "Historical tasks and outputs",
+  "favoritesTitle": "My favorites",
+  "favoritesNote": "Projects, workflows and knowledge saved in one place.",
+  "openFavorites": "Open favorites",
+  "verified": "Verified",
+  "publicWorksCount": "Showing {count} works",
+  "publicOffersCount": "Showing {count} market projects",
+  "editProfile": "Edit profile",
+  "viewWork": "View work",
+  "noPublicWorks": "No published works yet.",
+  "noPublicOffers": "No published market projects yet."
+}

@@ -12,10 +12,13 @@ async function executeQueuedRun(run: { id: string; userId: string; projectId: st
       ? executeResumeWebsiteRun(run.id, run.userId)
       : executeProjectDocumentRun(run.id, run.userId);
   }
-  // General workflows are started explicitly over HTTP. Only an interrupted, previously started run is resumed here.
+  // Market runs have explicit confirmation durably recorded before debit; other generic runs need a prior HTTP start.
   const started = await db.auditLog.findFirst({ where: { resourceType: "workflow_run", resourceId: run.id, action: "WORKFLOW_RUN_STARTED" }, orderBy: { createdAt: "desc" }, select: { metadata: true } });
-  if (!started) return null;
-  const raw = started.metadata && typeof started.metadata === "object" && !Array.isArray(started.metadata) ? started.metadata : {};
+  if (!started) {
+    const confirmed = await db.auditLog.findFirst({ where: { resourceType: "workflow_run", resourceId: run.id, actorId: run.userId, action: "WORKFLOW_RUN_QUEUED", OR: [{ metadata: { path: ["source"], equals: "market" } }, { metadata: { path: ["source"], equals: "reviewed_workflow" } }] }, select: { id: true } });
+    if (!confirmed) return null;
+  }
+  const raw = started?.metadata && typeof started.metadata === "object" && !Array.isArray(started.metadata) ? started.metadata : {};
   return executePersistedWorkflow(run.id, run.userId, {
     ...(typeof raw.modelKey === "string" ? { modelKey: raw.modelKey } : {}),
     ...(typeof raw.credentialId === "string" ? { credentialId: raw.credentialId } : {}),
@@ -40,7 +43,9 @@ export async function processProjectQueue() {
     select: { id: true, userId: true, projectId: true, workflow: { select: { officialId: true } } } }) : [];
   const recovered = genericCandidates.length ? await db.auditLog.findMany({ where: { action: "WORKFLOW_RUN_RECOVERED", resourceType: "workflow_run", resourceId: { in: genericCandidates.map(run => run.id) } }, select: { resourceId: true } }) : [];
   const recoveredIds = new Set(recovered.map(item => item.resourceId));
-  const genericRuns = genericCandidates.filter(run => recoveredIds.has(run.id)).slice(0, 2 - projectRuns.length);
+  const confirmed = genericCandidates.length ? await db.auditLog.findMany({ where: { action: "WORKFLOW_RUN_QUEUED", resourceType: "workflow_run", resourceId: { in: genericCandidates.map(run => run.id) }, OR: [{ metadata: { path: ["source"], equals: "market" } }, { metadata: { path: ["source"], equals: "reviewed_workflow" } }] }, select: { resourceId: true } }) : [];
+  const confirmedIds = new Set(confirmed.map(item => item.resourceId));
+  const genericRuns = genericCandidates.filter(run => recoveredIds.has(run.id) || confirmedIds.has(run.id)).slice(0, 2 - projectRuns.length);
   const outcomes = await Promise.allSettled([...projectRuns, ...genericRuns].map(executeQueuedRun));
   if (outcomes.some(outcome => outcome.status === "rejected")) console.error("ANS workflow execution failed for one or more tasks; persisted work will be retried.");
 }

@@ -23,27 +23,27 @@ import HomePage from "@/app/page";
 describe("product discovery entry points", () => {
   beforeEach(() => { state.pathname = "/"; state.user = null; });
 
-  it("keeps discovery, workflows, workspace and account visible on mobile", () => {
+  it("uses the same six primary destinations on mobile", () => {
     render(<MobileTabBar />);
     expect(screen.getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual([
-      "/explore", "/workflows", "/workspace", "/login",
+      "/explore", "/hubs", "/community", "/competitions", "/market", "/workspace",
     ]);
-    expect(screen.getByRole("link", { name: "product.nav.explore" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "nav.explore" })).toHaveAttribute("aria-current", "page");
   });
 
-  it("marks project results active and preserves account access", () => {
+  it("marks project results under workspace without adding a seventh account destination", () => {
     state.pathname = "/projects/project-1";
     state.user = { username: "learner" };
     render(<MobileTabBar />);
-    expect(screen.getByRole("link", { name: "product.nav.workspace" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "learning.account" })).toHaveAttribute("href", "/@learner");
+    expect(screen.getByRole("link", { name: "nav.workspace" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getAllByRole("link")).toHaveLength(6);
   });
 
   it("offers discovery, workflow, category and community entry points", async () => {
     render(await HomePage());
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("heroTitle");
     expect(screen.getByRole("link", { name: /exploreAction/ })).toHaveAttribute("href", "/explore");
-    expect(screen.getByRole("link", { name: "workflowAction" })).toHaveAttribute("href", "/workflows");
+    expect(screen.getByRole("link", { name: "workflowAction" })).toHaveAttribute("href", "/hubs");
     expect(screen.getByRole("link", { name: "communityAction" })).toHaveAttribute("href", "/community");
     expect(screen.getByRole("link", { name: "categories.aigc" })).toHaveAttribute("href", "/explore?category=aigc");
     expect(screen.getByRole("link", { name: "liu-resume" })).toHaveAttribute("href", "/explore/liu-resume");

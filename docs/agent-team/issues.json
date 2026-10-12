@@ -1,0 +1,79 @@
+﻿[
+    {
+        "id":  "ISSUE-HR05",
+        "expected":  "Valid owner workflow metadata can be uploaded without fabricated content.",
+        "acceptance_item":  "AC-H04",
+        "requirement":  "REQ-H04",
+        "actual":  "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
+        "severity":  "P2",
+        "status":  "CLOSED"
+    },
+    {
+        "id":  "ISSUE-HR06",
+        "expected":  "Standalone fixed recipe accepts validated personal facts through the same reviewed version/confirmation billing gate.",
+        "acceptance_item":  "AC-H03",
+        "requirement":  "REQ-H03",
+        "actual":  "Independent exact-version, manual approval, actor/ack/origin, row-lock recheck, changed-input and worker-source tests pass for reviewed recipe-run path.",
+        "severity":  "P1",
+        "status":  "CLOSED"
+    },
+    {
+        "acceptance_item":  "AC-H03 / AC-H04",
+        "id":  "ISSUE-HR07",
+        "evidence":  [
+                         "src/components/marketplace/workflow-run.tsx"
+                     ],
+        "severity":  "P2",
+        "requirement":  "REQ-H03 / REQ-H04",
+        "actual":  "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
+        "suggestion":  "Use actor/endpoint/version-scoped pending identity and explicit run history recovery without storing sensitive input.",
+        "status":  "CLOSED",
+        "expected":  "Lost acknowledgements remain recoverable after reload without another command or debit."
+    },
+    {
+        "acceptance_item":  "AC-H03 / AC-H04",
+        "id":  "ISSUE-HR08",
+        "evidence":  [
+                         "src/domain/workflows/recipes.ts",
+                         "src/domain/workflows/variables.ts",
+                         "src/server/workflows/service.ts"
+                     ],
+        "severity":  "P2",
+        "requirement":  "REQ-H03 / REQ-H04",
+        "actual":  "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
+        "suggestion":  "Validate extracted required input server-side before creation/debit.",
+        "status":  "CLOSED",
+        "expected":  "Missing required generic input is rejected before run creation and debit."
+    },
+    {
+        "acceptance_item":  "AC-H03 / AC-H04",
+        "id":  "ISSUE-HR09",
+        "evidence":  [
+                         "src/app/api/workflows/[slug]/run/route.ts",
+                         "src/app/api/workflows/runs/[id]/execute/route.ts",
+                         "src/components/workflows/workflow-run-form.tsx",
+                         "src/app/workflows/[slug]/page.tsx"
+                     ],
+        "severity":  "P1",
+        "requirement":  "REQ-H03 / REQ-H04 / RULE-AUTH-B01",
+        "actual":  "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
+        "suggestion":  "Route recipes through reviewed recipe-run only; protect generic runtime with account boundary, expected actor, same origin and stable idempotency key.",
+        "status":  "CLOSED",
+        "expected":  "All public recipe/runtime entrances enforce reviewed confirmation and rendered actor isolation without alternate bypass."
+    },
+    {
+        "acceptance_item":  "AC-H05 / AC-H06",
+        "id":  "ISSUE-HR10",
+        "evidence":  [
+                         "C:/Users/lsb/.workbuddy/ans-hubs-release-20261012/prepare.py",
+                         "docker/entrypoint.sh",
+                         "next.config.ts"
+                     ],
+        "severity":  "P1",
+        "requirement":  "REQ-H05 / REQ-H06 / RULE-H02",
+        "actual":  "Generated prepare Dockerfile omits source/prisma COPY and inherits old runtime migration directory.",
+        "suggestion":  "Explicitly COPY source/prisma to /app/prisma and allow it in Dockerfile.dockerignore; verify final image and deployed migration status.",
+        "status":  "OPEN",
+        "expected":  "Runtime image carries the new Prisma schema and additive PROJECT migration as well as regenerated client."
+    }
+]

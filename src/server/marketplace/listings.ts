@@ -1,3 +1,4 @@
+import { assertMarketWorkflowBinding } from "./workflow-binding";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -8,7 +9,8 @@ import { marketTransaction, requireMarketActor, requireMarketModerator } from ".
 
 function parseListing(raw: unknown) {
   const data = marketListingInputSchema.parse(raw);
-  if (data.priceMinor === 0 && (data.fulfillment !== "resource" || (!data.sourceUrl && !data.previewUrl) || data.computeIncluded)) {
+  if (data.execution && (data.fulfillment !== "resource" || data.priceMinor !== 0 || data.computeIncluded)) throw new MarketRuleError("WORKFLOW_COMPUTE_SEPARATE", 400);
+  if (!data.execution && data.priceMinor === 0 && (data.fulfillment !== "resource" || (!data.sourceUrl && !data.previewUrl) || data.computeIncluded)) {
     throw new MarketRuleError("INVALID_INPUT", 400);
   }
   const category = PROJECT_CATEGORIES.find((item) => item.id === data.category);
@@ -22,6 +24,7 @@ export async function createMarketListing(sellerId: string, raw: unknown, option
   const data = parseListing(raw);
   return marketTransaction(async (tx) => {
     await requireMarketActor(tx, sellerId);
+    if (data.execution) await assertMarketWorkflowBinding(tx, sellerId, data.execution);
     if (options.official) await requireMarketModerator(tx, sellerId);
     if (await tx.marketListing.findUnique({ where: { slug: data.slug }, select: { id: true } })) {
       throw new MarketRuleError("SLUG_TAKEN");
@@ -43,6 +46,7 @@ export async function reviseMarketListing(listingId: string, sellerId: string, r
   const data = parseListing(input.listing);
   return marketTransaction(async (tx) => {
     await requireMarketActor(tx, sellerId);
+    if (data.execution) await assertMarketWorkflowBinding(tx, sellerId, data.execution);
     const listing = await tx.marketListing.findFirst({ where: { id: listingId, sellerId } });
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
     if (listing.currentVersion !== input.expectedVersion) throw new MarketRuleError("VERSION_CONFLICT");
@@ -65,6 +69,8 @@ export async function submitMarketListing(listingId: string, sellerId: string, e
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
     if (listing.currentVersion !== expectedVersion) throw new MarketRuleError("VERSION_CONFLICT");
     const version = await tx.marketListingVersion.findUniqueOrThrow({ where: { listingId_version: { listingId, version: expectedVersion } } });
+    const payload = parseListing(version.payload);
+    if (payload.execution) await assertMarketWorkflowBinding(tx, sellerId, payload.execution);
     if (version.submittedAt || version.reviewedAt) throw new MarketRuleError("INVALID_LISTING_STATE");
     await tx.marketListingVersion.update({ where: { id: version.id }, data: { submittedAt: new Date() } });
     await tx.marketListing.update({ where: { id: listingId }, data: { status: listing.status === "WITHDRAWN" ? "WITHDRAWN" : listing.publishedVersion ? "PUBLISHED" : "PENDING" } });
@@ -84,7 +90,8 @@ export async function reviewMarketListing(listingId: string, reviewerId: string,
     if (listing.currentVersion !== versionNumber) throw new MarketRuleError("VERSION_CONFLICT");
     const version = await tx.marketListingVersion.findUniqueOrThrow({ where: { listingId_version: { listingId, version: versionNumber } } });
     if (!version.submittedAt || version.reviewedAt) throw new MarketRuleError("INVALID_LISTING_STATE");
-    parseListing(version.payload);
+    const payload = parseListing(version.payload);
+    if (approve && payload.execution) await assertMarketWorkflowBinding(tx, listing.sellerId, payload.execution);
     await tx.marketListingVersion.update({ where: { id: version.id }, data: { reviewedAt: new Date(), reviewedById: reviewerId, reviewNote: note.trim() } });
     const updated = await tx.marketListing.update({
       where: { id: listingId },

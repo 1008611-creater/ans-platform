@@ -1,4 +1,6 @@
 "use client";
+import { RESUME_WORKFLOW_DEFINITION } from "@/domain/workflows/recipes";
+import { useTranslations } from "next-intl";
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -77,6 +79,7 @@ export function WorkflowEditor({
   initialDefinition?: unknown;
   initialVersion?: number;
 }) {
+  const t = useTranslations("marketWorkflow");
   const router = useRouter();
   const [meta, setMeta] = useState<WorkflowEditorMeta>({
     slug: initialMeta?.slug ?? "",
@@ -180,6 +183,7 @@ export function WorkflowEditor({
 
   return (
     <div className="space-y-6">
+      {mode === "create" && <section className="space-y-3 rounded-2xl border p-5"><h2 className="font-semibold">{t("recipeTitle")}</h2><p className="text-sm text-muted-foreground">{t("recipeNotice")}</p><Button variant="outline" disabled={busy} onClick={() => { setText(JSON.stringify(RESUME_WORKFLOW_DEFINITION, null, 2)); setChecked(false); setIssues([]); setError(""); }}>{t("useResumeRecipe")}</Button></section>}
       {mode === "create" && (
         <Card>
           <CardHeader>

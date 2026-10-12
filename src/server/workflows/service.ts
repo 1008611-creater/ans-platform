@@ -1,3 +1,4 @@
+import { extractInputVariables, missingRequiredVariables } from "@/domain/workflows/variables";
 import { randomUUID } from "node:crypto";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { unifiedModelBilling } from "@/server/integrations/metered-cost";
@@ -10,6 +11,7 @@ import {
   workflowVersionInputSchema,
   workflowRunInputSchema,
 } from "@/contracts/workflow";
+import { assertSupportedRecipe, normalizeRecipeInput, stableWorkflowInput } from "@/domain/workflows/recipes";
 import { validateWorkflow } from "@/domain/workflows/graph";
 import { debitQuota, QuotaError } from "@/server/quota/service";
 import { canPublishAfterReview, reviewWorkflowDefinition } from "@/server/workflows/review";
@@ -137,6 +139,7 @@ function assertDefinition(definition: unknown) {
   if (!parsed.success) {
     throw new WorkflowServiceError("工作流定义格式不正确。", "INVALID_DEFINITION");
   }
+  try { assertSupportedRecipe(parsed.data); } catch { throw new WorkflowServiceError("Unsupported recipe definition.", "INVALID_RECIPE_DEFINITION"); }
   const validation = validateWorkflow(parsed.data);
   if (!validation.ok) {
     throw new WorkflowServiceError(
@@ -632,7 +635,7 @@ export async function reviewWorkflow(
         resourceType: "workflow",
         resourceId: workflow.id,
         before: { status: workflow.status },
-        after: { status: updated.status, note: input.note.trim() },
+        after: { status: updated.status, note: input.note.trim(), ...(published ? { publishedVersion: version.version, versionId: version.id } : {}) },
       },
     });
     return updated;
@@ -650,7 +653,7 @@ export async function createWorkflowRun(
   slug: string,
   userId: string,
   rawInput: unknown,
-  options: { projectId?: string; beforeCreate?: (tx: DbTransaction) => Promise<void> } = {},
+  options: { projectId?: string; expectedVersionId?: string; expectedInput?: boolean; idempotencyScope?: string; confirmedSource?: "market" | "reviewed_workflow"; beforeCreate?: (tx: DbTransaction) => Promise<void> } = {},
 ) {
   const parsed = workflowRunInputSchema.safeParse(rawInput ?? {});
   if (!parsed.success) {
@@ -683,19 +686,26 @@ export async function createWorkflowRun(
     });
     if (!project) throw new WorkflowServiceError("项目不存在、已归档或无权访问。", "NOT_FOUND", 404);
   }
+  const version = workflow.versions.find((item) => item.version === workflow.publishedVersion);
+  if (!version) throw new WorkflowServiceError("Published version is missing.", "NO_VERSION", 409);
+  if (options.expectedVersionId && version.id !== options.expectedVersionId) throw new WorkflowServiceError("Published version changed.", "VERSION_CONFLICT", 409);
+  const definition = assertDefinition(version.definition);
+  if (definition.recipe && !options.confirmedSource) throw new WorkflowServiceError("Use the confirmed recipe run entry.", "RECIPE_CONFIRMATION_REQUIRED", 409);
+  const runInput = normalizeRecipeInput(definition, parsed.data.input);
+  if (options.expectedInput && !definition.recipe && missingRequiredVariables(extractInputVariables(definition), runInput).length) throw new WorkflowServiceError("Required workflow input is missing.", "INVALID_INPUT", 400);
+  const assertExisting = (existing: { versionId: string; input: unknown }) => {
+    if (options.expectedInput && (existing.versionId !== version.id || stableWorkflowInput(existing.input) !== stableWorkflowInput(runInput))) throw new WorkflowServiceError("Idempotency input changed.", "IDEMPOTENCY_CONFLICT", 409);
+  };
   const idempotencyKey = parsed.data.idempotencyKey
-    ? `${options.projectId ? `project/${options.projectId}` : "workflow"}/${slug}/${parsed.data.idempotencyKey}`
+    ? `${options.projectId ? `project/${options.projectId}` : options.idempotencyScope ?? "workflow"}/${slug}/${parsed.data.idempotencyKey}`
     : undefined;
   if (idempotencyKey) {
     const existing = await db.workflowRun.findFirst({
       where: { userId, idempotencyKey },
       include: { nodeRuns: { orderBy: { nodeId: "asc" } } },
     });
-    if (existing) return existing;
+    if (existing) { assertExisting(existing); return existing; }
   }
-  const version = workflow.versions.find((item) => item.version === workflow.publishedVersion);
-  if (!version) throw new WorkflowServiceError("发布版本缺失，请联系管理员。", "NO_VERSION", 409);
-  const definition = assertDefinition(version.definition);
   const costPoints = unifiedModelBilling() ? 0 : process.env.ANS_APIC_BILLING_ENABLED === "1" ? Math.max(0.25, definition.nodes.filter(node => node.type === "model").length * 0.25) : Math.max(1, workflow.estimatedCost || 1);
 
   try {
@@ -708,7 +718,7 @@ export async function createWorkflowRun(
           userId,
           ...(options.projectId ? { projectId: options.projectId } : {}),
           ...(idempotencyKey ? { idempotencyKey } : {}),
-          input: parsed.data.input as Prisma.InputJsonValue,
+          input: runInput as Prisma.InputJsonValue,
           status: "QUEUED",
           costPoints,
         },
@@ -724,7 +734,7 @@ export async function createWorkflowRun(
           runId: run.id,
           nodeId: node.id,
           status: "QUEUED" as const,
-          input: parsed.data.input as Prisma.InputJsonValue,
+          input: runInput as Prisma.InputJsonValue,
         })),
       });
       await tx.workflow.update({ where: { id: workflow.id }, data: { useCount: { increment: 1 } } });
@@ -734,7 +744,7 @@ export async function createWorkflowRun(
           action: "WORKFLOW_RUN_QUEUED",
           resourceType: "workflow_run",
           resourceId: run.id,
-          metadata: { slug, version: version.version, costPoints },
+          metadata: { slug, version: version.version, costPoints, ...(options.confirmedSource ? { source: options.confirmedSource, confirmationScope: options.idempotencyScope } : {}) },
         },
       });
       return tx.workflowRun.findUniqueOrThrow({
@@ -748,7 +758,7 @@ export async function createWorkflowRun(
         where: { userId, idempotencyKey },
         include: { nodeRuns: { orderBy: { nodeId: "asc" } } },
       });
-      if (existing) return existing;
+      if (existing) { assertExisting(existing); return existing; }
     }
     if (error instanceof QuotaError) {
       throw new WorkflowServiceError(error.message, error.code, error.status);

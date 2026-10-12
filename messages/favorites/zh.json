@@ -1,0 +1,16 @@
+﻿{
+  "title": "我的收藏",
+  "description": "收藏项目、工作流和知识，下次从这里继续。",
+  "loginNote": "登录后查看自己的收藏。",
+  "login": "前往登录",
+  "empty": "还没有收藏。打开项目或工作流，点一下收藏即可。",
+  "explore": "逛项目广场",
+  "hubs": "发现 Hub 与工作流",
+  "save": "收藏",
+  "saved": "已收藏",
+  "remove": "取消收藏",
+  "error": "操作未完成，请刷新后重试。",
+  "accountChanged": "账号已切换，刷新页面",
+  "estimatedCost": "预计 {points} 积分，运行前确认",
+  "types": { "PROJECT": "项目", "WORKFLOW": "工作流", "VIBEHUB_TERM": "知识", "PROMPT": "历史提示词", "TEMPLATE": "历史模板" }
+}

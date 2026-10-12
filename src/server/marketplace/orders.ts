@@ -73,6 +73,7 @@ export async function createMarketOrder(buyerId: string, raw: unknown, policy?: 
     if (!version) throw new MarketRuleError("INVALID_LISTING_STATE");
     const paymentMethod = input.paymentMethod ?? "POINTS";
     const listingInput = marketListingInputSchema.parse(version.payload);
+    if (listingInput.execution) throw new MarketRuleError("WORKFLOW_RUN_REQUIRED", 409);
     let pricing = policy;
     if (paymentMethod !== "POINTS") {
       configuredCashProvider(paymentMethod === "WECHAT" ? "wechat" : "alipay");

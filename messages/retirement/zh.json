@@ -1,0 +1,15 @@
+{
+  "workflowRuns": "工作流运行记录",
+  "noHistory": "暂无历史运行记录。从 Hub 选择工作流后可开始。",
+  "historyTitle": "历史任务与产出",
+  "favoritesTitle": "我的收藏",
+  "favoritesNote": "项目、工作流与知识收藏在一处。",
+  "openFavorites": "打开收藏",
+  "verified": "已认证",
+  "publicWorksCount": "展示 {count} 件作品",
+  "publicOffersCount": "展示 {count} 个市场项目",
+  "editProfile": "编辑资料",
+  "viewWork": "查看作品",
+  "noPublicWorks": "还没有公开作品。",
+  "noPublicOffers": "还没有已上架的市场项目。"
+}

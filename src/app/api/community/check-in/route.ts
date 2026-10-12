@@ -1,3 +1,4 @@
+import { assertRequestActor } from "@/server/http/json";
 import { assertSameOrigin } from "@/server/http/json";
 import { auth } from "@/lib/auth";
 import { checkIn } from "@/lib/community";
@@ -7,6 +8,7 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) return communityJson({ error: "UNAUTHORIZED" }, 401);
+    assertRequestActor(request, session.user.id);
     assertSameOrigin(request);
     return communityJson(await checkIn(session.user.id));
   } catch (error) {

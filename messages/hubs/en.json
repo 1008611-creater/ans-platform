@@ -1,0 +1,114 @@
+{
+  "nav": {
+    "explore": "Project square",
+    "hubs": "Hubs & workflows",
+    "community": "Community",
+    "competitions": "Events",
+    "market": "Market",
+    "workspace": "Workspace"
+  },
+  "shortNav": {
+    "explore": "Projects",
+    "hubs": "Hubs",
+    "community": "Community",
+    "competitions": "Events",
+    "market": "Market",
+    "workspace": "Workspace"
+  },
+  "account": {
+    "favorites": "My favorites",
+    "compute": "Compute center"
+  },
+  "navigationDescription": "Projects, hubs, community, events, market and workspace",
+  "mobileNavigation": "Primary navigation",
+  "eyebrow": "ANS / HUBS",
+  "title": "Find your Hub",
+  "description": "Discover projects, workflows and available tools by university, knowledge and creative direction.",
+  "allWorkflows": "All workflows",
+  "searchLabel": "Find a Hub",
+  "searchPlaceholder": "University, knowledge, AIGC, full-stack development",
+  "search": "Search",
+  "emptySearch": "No matching Hub found.",
+  "clear": "Clear filters",
+  "unavailable": "Unavailable",
+  "catalogUnavailable": "The project directory could not be loaded. Projects and unknown counts are hidden. Try again later.",
+  "directoryNote": "Counts reflect explicitly linked content. References, tool entries and runnable workflows are separate, not university enrollment figures or official accreditation.",
+  "back": "Back to Hubs",
+  "universityNote": "ANS × {university}. Currently includes explicitly linked campus events. Other universities are not open for enrollment.",
+  "runnableTitle": "Runnable workflows",
+  "runnableNote": "Provide your own information and confirm the cost before running. Opening a page does not start work or charge points.",
+  "noRunnable": "No runnable workflow has been linked to this Hub yet.",
+  "resourcesTitle": "Tools and content",
+  "projectsTitle": "Projects and references",
+  "projectsNote": "Open a project to check its source and use. External tools set their own login, costs and delivery terms. Open-source references are not proof of ANS runtime integration.",
+  "noProjects": "No published project has been explicitly linked yet.",
+  "recipeCost": "Confirmed execution costs {points} points. See the preparation page for editing and saving.",
+  "prepareWorkflow": "Prepare my project",
+  "counts": {
+    "workflows": "Runnable",
+    "projects": "Projects",
+    "resources": "Entries"
+  },
+  "types": {
+    "university": "University Hub",
+    "knowledge": "Knowledge Hub",
+    "topic": "Topic Hub"
+  },
+  "organizations": {
+    "cauhub": "CAUHub",
+    "cau": "China Agricultural University",
+    "vibehub": "ANS VibeHub",
+    "aigc": "ANS AIGC",
+    "fullStack": "ANS Full-stack"
+  },
+  "items": {
+    "cauhub": {
+      "name": "CAUHub",
+      "description": "Events and campus collaboration for China Agricultural University, with explicitly linked content."
+    },
+    "vibehub": {
+      "name": "ANS VibeHub",
+      "description": "Existing concepts, courses, learning paths and practical methods."
+    },
+    "aigc": {
+      "name": "AIGC Hub",
+      "description": "Image, video and audio tools with real projects and open-source references."
+    },
+    "full-stack": {
+      "name": "Full-stack Development Hub",
+      "description": "A runnable personal website recipe, development, deployment and open-source references."
+    }
+  },
+  "kinds": {
+    "runnable": "Runnable on ANS",
+    "hosted-tool": "Tool entry; page permissions apply",
+    "knowledge": "Knowledge and learning",
+    "event": "Event entry",
+    "reference": "Open-source or external reference",
+    "external": "External product; original terms apply"
+  },
+  "resources": {
+    "agrihackathon": {
+      "title": "AgriHackathon",
+      "description": "Current event plan, submission requirements and information. Registration and dates follow the actual event page."
+    },
+    "vibehub": {
+      "title": "Open VibeHub",
+      "description": "Browse existing courses, concepts, learning paths, practices and skill methods."
+    },
+    "aigc": {
+      "title": "AIGC Workbench",
+      "description": "Open the video tool page and check connection, account, models and costs before use."
+    },
+    "hypit": {
+      "title": "Hypit creation workspace",
+      "description": "See official demos and the workspace entry. Actual tools depend on account permissions shown on the page."
+    }
+  },
+  "recipes": {
+    "resume-website": {
+      "title": "Resume and portfolio website",
+      "description": "Reuse a fixed website template to organize your real experience and projects into a site you can preview, edit and export."
+    }
+  }
+}

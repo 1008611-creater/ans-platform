@@ -1,3 +1,6 @@
+import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
+import { WorkflowMarketUpload } from "@/components/workflows/workflow-market-upload";
+import { isWorkflowMarketAvailable } from "@/server/marketplace/workflow-binding";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -64,6 +67,8 @@ export default async function EditWorkflowPage({
 
   const latest = workflow.versions[0] ?? null;
   const isOwner = workflow.authorId === session.user.id;
+  const marketAvailable = isOwner && workflow.status === "PUBLISHED" ? await isWorkflowMarketAvailable(workflow.id, session.user.id) : false;
+
 
   return (
     <div className="container max-w-4xl space-y-6 py-10">
@@ -146,6 +151,7 @@ export default async function EditWorkflowPage({
         </Card>
       )}
 
+      {isOwner && <MarketAccountBoundary actorId={session.user.id}><WorkflowMarketUpload slug={workflow.slug} version={workflow.publishedVersion ?? latest?.version ?? 1} available={marketAvailable} /></MarketAccountBoundary>}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">版本历史</h2>
         <p className="text-sm text-muted-foreground">

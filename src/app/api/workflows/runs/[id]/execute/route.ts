@@ -1,3 +1,4 @@
+import { assertRequestActor, readSameOriginJson } from "@/server/http/json";
 import { auth } from "@/lib/auth";
 import { fail, ok, respondWithError } from "@/server/http/respond";
 import { executePersistedWorkflow } from "@/server/workflows/runner";
@@ -20,17 +21,7 @@ const executeOptionsSchema = z
   .strict();
 
 async function readOptions(request: Request) {
-  const raw = await request.text();
-  if (!raw.trim()) return {};
-  let parsedBody: unknown;
-  try {
-    parsedBody = JSON.parse(raw);
-  } catch {
-    throw Object.assign(new SyntaxError("请求体不是有效 JSON。"), {
-      status: 400,
-      code: "INVALID_JSON",
-    });
-  }
+  const parsedBody = await readSameOriginJson(request);
   const parsed = executeOptionsSchema.safeParse(parsedBody ?? {});
   if (!parsed.success) {
     throw Object.assign(new Error("运行参数不正确。"), { status: 400, code: "INVALID_INPUT" });
@@ -46,6 +37,7 @@ export async function POST(
   const session = await auth();
   if (!session?.user?.id) return fail("UNAUTHORIZED", "请先登录。", { status: 401 });
   try {
+    assertRequestActor(request, session.user.id);
     const { id } = await params;
     const options = await readOptions(request);
     const result = await executePersistedWorkflow(id, session.user.id, options);

@@ -1,7 +1,7 @@
 import { ANS_LEARNING_PATHS } from "@/domain/vibehub/ans-learning-paths";
 import { MetadataRoute } from "next";
-import { db } from "@/lib/db";
-import { getAllChapters } from "@/lib/book/chapters";
+import { listPublishedCatalog } from "@/server/catalog/service";
+import { HUBS } from "@/domain/hubs/registry";
 import vibeTerms from "./vibe-hub/terms.json";
 import vibeCourses from "@/data/vibehub/courses/index.json";
 import vibeTopics from "./vibe-hub/topics.json";
@@ -9,46 +9,14 @@ import vibeJourneys from "@/data/vibehub/journeys-en.json";
 import { ANS_PRACTICES } from "@/domain/vibehub/ans-practices";
 
 // Revalidate sitemap every hour (3600 seconds)
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun";
 
-  // Static pages - always included
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/discover`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/categories`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/tags`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/book`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-  ];
+  const staticPages: MetadataRoute.Sitemap = ["", "/explore", "/hubs", "/community", "/competitions", "/competitions/agrihackathon", "/market", "/workflows", "/showcase", "/vibeplan", ...HUBS.map(hub => `/hubs/${hub.slug}`)].map(path => ({ url: baseUrl + path, changeFrequency: "weekly", priority: path ? 0.8 : 1 }));
 
-  const vibeStaticPages: MetadataRoute.Sitemap = ["vibe-hub", "vibe-hub/practice", "vibe-hub/anti-ai-flavor", "vibe-hub/vibehub-skill", "vibe-hub/favorites", "vibe-hub/topics", "vibe-hub/journeys", "vibe-hub/lab", "vibe-hub/updates"].map((path) => ({ url: `${baseUrl}/${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: path === "vibe-hub" ? 0.9 : 0.6 }));
+  const vibeStaticPages: MetadataRoute.Sitemap = ["vibe-hub", "vibe-hub/practice", "vibe-hub/anti-ai-flavor", "vibe-hub/vibehub-skill", "vibe-hub/topics", "vibe-hub/journeys", "vibe-hub/lab", "vibe-hub/updates"].map((path) => ({ url: `${baseUrl}/${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: path === "vibe-hub" ? 0.9 : 0.6 }));
   const vibeTermPages: MetadataRoute.Sitemap = vibeTerms.map((term) => ({ url: `${baseUrl}/vibe-hub/${term.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 }));
 
   const vibeJourneyPages: MetadataRoute.Sitemap = vibeJourneys.data.results.map((journey) => ({ url: `${baseUrl}/vibe-hub/journeys/${journey.id}`, changeFrequency: "monthly" as const, priority: 0.5 }));
@@ -67,52 +35,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: { languages: { "zh-CN": `${baseUrl}/vibe-hub/journeys/${path.id}?lang=zh`, en: `${baseUrl}/vibe-hub/journeys/${path.id}?lang=en` } },
   }));
 
-  // Book chapter pages
-  const chapters = getAllChapters();
-  const bookPages: MetadataRoute.Sitemap = chapters.map((chapter) => ({
-    url: `${baseUrl}/book/${chapter.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.7,
-  }));
-
-  // Dynamic pages - skip if database is unavailable (e.g., during build)
-  try {
-    const [categories, prompts, tags] = await Promise.all([
-      db.category.findMany({ select: { slug: true } }),
-      db.prompt.findMany({
-        where: { isPrivate: false, deletedAt: null, isUnlisted: false },
-        select: { id: true, slug: true, updatedAt: true },
-        orderBy: { updatedAt: "desc" },
-        take: 1000,
-      }),
-      db.tag.findMany({ select: { slug: true } }),
-    ]);
-
-    const categoryPages: MetadataRoute.Sitemap = categories.map((category) => ({
-      url: `${baseUrl}/categories/${category.slug}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    }));
-
-    const promptPages: MetadataRoute.Sitemap = prompts.map((prompt) => ({
-      url: `${baseUrl}/prompts/${prompt.id}_${prompt.slug}`,
-      lastModified: prompt.updatedAt,
-      changeFrequency: "weekly",
-      priority: 0.6,
-    }));
-
-    const tagPages: MetadataRoute.Sitemap = tags.map((tag) => ({
-      url: `${baseUrl}/tags/${tag.slug}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.5,
-    }));
-
-    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...ansPathPages, ...categoryPages, ...promptPages, ...tagPages];
-  } catch {
-    // Database unavailable (build time) - return static and book pages only
-    return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...ansPathPages, ...bookPages];
-  }
+  // Database failures omit dynamic contents instead of resurrecting withdrawn entries.
+  let catalogPages: MetadataRoute.Sitemap = [];
+  try { catalogPages = (await listPublishedCatalog()).map(project => ({ url: `${baseUrl}/explore/${project.slug}`, changeFrequency: "weekly", priority: 0.6 })); } catch { /* Static public entry points remain available. */ }
+  return [...staticPages, ...vibeStaticPages, ...vibeTermPages, ...vibeJourneyPages, ...vibeCoursePages, ...ansPracticePages, ...ansPathPages, ...catalogPages];
 }

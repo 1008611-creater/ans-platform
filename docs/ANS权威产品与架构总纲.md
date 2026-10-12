@@ -584,3 +584,23 @@ The current production release is `ans-product-e37c465603270fa1`, deployed at `2
 Post-release evidence records a 60-to-60 no-op migration check, preservation checks for schema and existing data across 107 public tables, six deferred guards, three function definitions, and production page plus signed-in onsite targeted-message acceptance. The public-schema backup SHA-256 is `0df818a52807b29e297fe2030c69f3ad3482219618bedebce010e4c346fa5a47`.
 
 `ans-product-c89b31a564b6e794` remains a historical baseline. Its BUILD_ID, image, and deployment time must not be presented as e37 state. Toonflow production embed remains disabled and e37 parent transfer is incomplete; c89/9c68 recovery evidence does not prove a new e37 preview.
+
+## 2026-10-12 Hub、导航与可运行市场架构（当前优先）
+
+本节为用户本轮明确确认的产品决策，优先于本文旧导航和纯学习定位。实施、审核和实际部署状态须分别记录，方案获批不等于已上线。
+
+**一级导航固定六项**：项目广场 `/explore`、Hub 与工作流 `/hubs`、社区成长 `/community`、赛事活动 `/competitions`、市场 `/market`、工作台 `/workspace`。账号菜单保留个人资料、设置、授权管理、语言，再加入我的收藏 `/collection`、算力中心 `/workspace/credits`。登录、注册、找回密码、条款、支持、真实项目、作品、工作流运行、团队和订单详情仍是必要功能。
+
+**Hub 是内容归属与发现层**，独立于工作流执行。点击主导航首先进入 Hub 目录。首批为 CAUHub、ANS VibeHub、AIGC Hub、全栈开发 Hub；未来高校以稳定 slug、组织类型与明确内容关联入驻，不提前生成虚构学校、成员或数量。CAUHub 表达 ANS 与中国农业大学相关内容，当前能证实的是农客松赛事入口，通用简历或学习工具不能冒称学校专属。所有计数只来自实际关联且仍公开的内容，读取失败显示不可用，不能用静态回退复活已撤回项目。
+
+**工作流是版本化执行配方**：固定输入、代码或受审核节点、人工确认、真实产物和费用。Hub 只记录工作流归属；私密项目保存个人事实与产物；市场分发经过审核的工作流版本。预置简历网站复用现有确定性 HTML renderer，模型只生成个人内容，避免每次重新生成网站代码。任意上传代码不获得服务器执行权限。
+
+**工作流上架市场**：作者从自己已人工发布、冻结的版本创建绑定，绑定包含 workflowId、versionId、version 和 definitionHash，市场自身仍需审核。工作流或市场版本变化必须重新检查，不能运行旧审核名义下的新私密版本。运行入口展示输入、版本、预计积分及输出方式，用户主动确认才创建任务。复用现有运行、预占、计量、退款、幂等与恢复逻辑，不旁路生成第二套账本。市场现金购买与工作流算力运行清楚区分；未来授权收费也需独立订单与真实支付，不暗中加入本轮费用。
+
+**公共旧界面退役**：提示词、模板、标签、分类、开发者、旧技能与儿童等原产品公共页面退出，旧深链同源跳转到项目广场或相关 Hub。不删除历史收藏、旧运行、模板及提示词数据库记录，也不删除共享 API、计费、鉴权和运行引擎。个人主页只展示明确公开的作品、服务和成长；不泄露私密项目名称、邮箱或草稿。
+
+**收藏**：真实项目采用独立 PROJECT 类型和增量 enum 迁移；目标为当前公开目录 slug，成员目录由已审核市场版本提供，不将用户私密 Project ID 当公开项目。列表查询前排除已退役提示词与模板类型，历史记录仍保留，可按本人权限取消。所有收藏请求绑定当前真实会话，换号时拒绝旧身份操作，迟到响应不能恢复旧账户内容。
+
+**来源**：ANS 的产品定位、品牌和信息架构可独立演进；保留的开源代码仍保留 MIT 来源和版权通知，原提示词数据 CC0 不能扩大到全部 ANS 用户作品。GitGlow 及其他第三方资产保留自己的许可文件。发布包和镜像必须携带对应通知。
+
+边界继续遵循：人民币 1 元 = 10 算力积分；充值沿用链动小铺；VibePlan 未完成真实权益与履约时维持禁售。本轮不能冒称全国高校已入驻、全部市场支付结算完成或自主 Agent 已交付。

@@ -1,0 +1,32 @@
+﻿import { RESUME_WEBSITE_WORKFLOW_ID } from "@/contracts/resume-website";
+import type { CatalogWorkflowId } from "@/contracts/catalog";
+import type { CatalogProject } from "@/domain/catalog/projects";
+
+export const HUB_SLUGS = ["cauhub", "vibehub", "aigc", "full-stack"] as const;
+export type HubSlug = typeof HUB_SLUGS[number];
+export type HubOrganization = Readonly<{ id: string; type: "university" | "topic" | "knowledge"; nameKey: string; university?: { id: string; nameKey: string } }>;
+export type HubResource = Readonly<{ id: string; href: string; kind: "knowledge" | "event" | "hosted-tool"; titleKey: string; descriptionKey: string }>;
+export type HubDefinition = Readonly<{ slug: HubSlug; organization: HubOrganization; projectSlugs: readonly string[]; workflowRecipeIds: readonly CatalogWorkflowId[]; resources: readonly HubResource[] }>;
+
+/** Membership is curated explicitly. A title or keyword never associates work with a university. */
+export const HUBS: readonly HubDefinition[] = [
+  { slug: "cauhub", organization: { id: "cauhub", type: "university", nameKey: "organizations.cauhub", university: { id: "china-agricultural-university", nameKey: "organizations.cau" } }, projectSlugs: [], workflowRecipeIds: [], resources: [
+    { id: "agrihackathon", href: "/competitions/agrihackathon", kind: "event", titleKey: "resources.agrihackathon.title", descriptionKey: "resources.agrihackathon.description" },
+  ] },
+  { slug: "vibehub", organization: { id: "ans-vibehub", type: "knowledge", nameKey: "organizations.vibehub" }, projectSlugs: [], workflowRecipeIds: [], resources: [
+    { id: "vibehub-knowledge", href: "/vibe-hub", kind: "knowledge", titleKey: "resources.vibehub.title", descriptionKey: "resources.vibehub.description" },
+  ] },
+  { slug: "aigc", organization: { id: "ans-aigc", type: "topic", nameKey: "organizations.aigc" }, projectSlugs: ["image2-library", "vibephoto", "aigc-workspace", "niannian-drama", "niannian-edit", "infinite-canvas", "ai-video-services", "niannian-agent", "liu-aigc-portfolio", "remotion-video", "comfyui", "pyvideotrans", "video2x"], workflowRecipeIds: [], resources: [
+    { id: "aigc-workbench", href: "/workflows/toonflow", kind: "hosted-tool", titleKey: "resources.aigc.title", descriptionKey: "resources.aigc.description" },
+    { id: "hypit", href: "/workflows/hypit", kind: "hosted-tool", titleKey: "resources.hypit.title", descriptionKey: "resources.hypit.description" },
+  ] },
+  { slug: "full-stack", organization: { id: "ans-full-stack", type: "topic", nameKey: "organizations.fullStack" }, projectSlugs: ["liu-resume", "hello-algo", "build-your-own-x", "freecodecamp", "python-algorithms", "reactive-resume", "magic-resume", "vcard-portfolio", "react-interview", "hugo-site", "docsify", "astro-starlight", "code2prompt", "saleor-commerce", "plausible-analytics", "plane-projects"], workflowRecipeIds: [RESUME_WEBSITE_WORKFLOW_ID], resources: [] },
+];
+export function getHub(slug: string) { return HUBS.find(hub => hub.slug === slug); }
+export function hubProjects(hub: HubDefinition, published: readonly CatalogProject[]) {
+  const bySlug = new Map(published.map(project => [project.slug, project]));
+  return hub.projectSlugs.flatMap(slug => { const project = bySlug.get(slug); return project ? [project] : []; });
+}
+export function getWorkflowHubMembership(workflowId: CatalogWorkflowId): HubSlug[] {
+  return HUBS.filter(hub => hub.workflowRecipeIds.includes(workflowId)).map(hub => hub.slug);
+}

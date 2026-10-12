@@ -10,6 +10,8 @@ export function MarketAccountBoundary({ actorId, children }: { actorId: string; 
   return <AccountContentBoundary actorId={actorId}><MarketActorContext.Provider key={actorId} value={actorId}>{children}</MarketActorContext.Provider></AccountContentBoundary>;
 }
 
+export function useMarketActorId() { return useContext(MarketActorContext); }
+
 /** Abort old-account requests and suppress their acknowledgements after unmount. */
 export function useMarketRequest() {
   const actorId = useContext(MarketActorContext);

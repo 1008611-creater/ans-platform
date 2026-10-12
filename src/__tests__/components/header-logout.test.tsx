@@ -147,3 +147,20 @@ it.each(["http-error", "still-authenticated", "network-error"])("does not fake s
   await waitFor(() => expect(mocks.router.replace).toHaveBeenCalledExactlyOnceWith("/"));
   expect(mocks.signOut).toHaveBeenCalledTimes(2);
 });
+
+
+it("exposes only six primary destinations and account utilities after language", () => {
+  render(<App />);
+  const expected = ["/explore", "/hubs", "/community", "/competitions", "/market", "/workspace"];
+  for (const label of ["a11y.mainNav", "a11y.mobileNav"]) {
+    const nav = screen.getByRole("navigation", { name: label });
+    expect(Array.from(nav.querySelectorAll("a")).map(link => link.getAttribute("href"))).toEqual(expected);
+    expect(nav.textContent).not.toContain("nav.more");
+  }
+  expect(screen.queryByRole("link", { name: "nav.developers" })).toBeNull();
+  expect(screen.queryByRole("link", { name: "nav.prompts" })).toBeNull();
+  expect(screen.getByRole("link", { name: "hubs.account.favorites" })).toHaveAttribute("href", "/collection");
+  expect(screen.getByRole("link", { name: "hubs.account.compute" })).toHaveAttribute("href", "/workspace/credits");
+  const language = screen.getByText("settings.language"), favorites = screen.getByRole("link", { name: "hubs.account.favorites" });
+  expect(language.compareDocumentPosition(favorites) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});

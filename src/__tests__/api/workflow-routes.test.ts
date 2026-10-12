@@ -37,6 +37,7 @@ const mocks = vi.hoisted(() => ({
         this.name = "FavoriteServiceError";
       }
     },
+    isFavoriteTargetType: (s: string) => ["PROJECT", "WORKFLOW", "VIBEHUB_TERM"].includes(s),
     addFavorite: vi.fn(),
     removeFavorite: vi.fn(),
     listFavorites: vi.fn(),
@@ -71,7 +72,7 @@ import { GET as listRuns } from "@/app/api/workflows/runs/route";
 import { GET as getRun } from "@/app/api/workflows/runs/[id]/route";
 import { POST as executeRun } from "@/app/api/workflows/runs/[id]/execute/route";
 import { POST as cancelRun } from "@/app/api/workflows/runs/[id]/cancel/route";
-import { GET as listFavoritesRoute, POST as addFavoriteRoute, DELETE as removeFavoriteRoute } from "@/app/api/favorites/route";
+import { POST as addFavoriteRoute, DELETE as removeFavoriteRoute } from "@/app/api/favorites/route";
 import { GET as listCredentialsRoute, POST as createCredentialRoute } from "@/app/api/user/model-credentials/route";
 import { PATCH as patchCredentialRoute, DELETE as deleteCredentialRoute } from "@/app/api/user/model-credentials/[id]/route";
 import { GET as adminQueueRoute } from "@/app/api/admin/workflows/route";
@@ -83,11 +84,11 @@ const params = <T extends Record<string, string>>(value: T) => ({ params: Promis
 const json = (body: unknown) =>
   new Request("http://localhost/api/test", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", Origin: "http://localhost:3000", "Sec-Fetch-Site": "same-origin", "x-ans-actor": "user1", "x-vibehub-account-id": "user1" },
     body: JSON.stringify(body),
   });
 
-const request = (url = "http://localhost/api/test") => new Request(url);
+const request = (url = "http://localhost/api/test") => new Request(url, { headers: { "x-ans-actor": "user1", "x-vibehub-account-id": "user1" } });
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -106,7 +107,7 @@ describe("auth guard on workflow routes", () => {
       await runWorkflowRoute(json({}), params({ slug: "weekly" })),
       await listRuns(request()),
       await getRun(request(), params({ id: "run1" })),
-      await executeRun(request(), params({ id: "run1" })),
+      await executeRun(json({}), params({ id: "run1" })),
       await cancelRun(request(), params({ id: "run1" })),
       await addFavoriteRoute(json({})),
       await removeFavoriteRoute(request()),
@@ -210,10 +211,10 @@ describe("POST /api/workflows/runs/[id]/execute", () => {
     });
   });
 
-  it("accepts an empty body and falls back to the definition", async () => {
+  it("accepts empty JSON options and falls back to the definition", async () => {
     mocks.runner.executePersistedWorkflow.mockResolvedValue({ status: "succeeded", executions: [], elapsedMs: 1 });
 
-    const response = await executeRun(request(), params({ id: "run1" }));
+    const response = await executeRun(json({}), params({ id: "run1" }));
 
     expect(response.status).toBe(200);
     expect(mocks.runner.executePersistedWorkflow).toHaveBeenCalledWith("run1", "user1", {});
@@ -231,7 +232,7 @@ describe("POST /api/workflows/runs/[id]/execute", () => {
   it("returns 404 when the run is missing or already claimed", async () => {
     mocks.runner.executePersistedWorkflow.mockResolvedValue(null);
 
-    const response = await executeRun(request(), params({ id: "run1" }));
+    const response = await executeRun(json({}), params({ id: "run1" }));
 
     expect(response.status).toBe(404);
   });
@@ -332,8 +333,8 @@ describe("favorites routes", () => {
     mocks.favorites.addFavorite.mockResolvedValueOnce({ favorited: true, created: true });
     mocks.favorites.addFavorite.mockResolvedValueOnce({ favorited: true, created: false });
 
-    const created = await addFavoriteRoute(json({ targetType: "PROMPT", targetId: "p1" }));
-    const existing = await addFavoriteRoute(json({ targetType: "PROMPT", targetId: "p1" }));
+    const created = await addFavoriteRoute(json({ targetType: "PROJECT", targetId: "p1" }));
+    const existing = await addFavoriteRoute(json({ targetType: "PROJECT", targetId: "p1" }));
 
     expect(created.status).toBe(201);
     expect(existing.status).toBe(200);
@@ -352,10 +353,10 @@ describe("favorites routes", () => {
 
   it("propagates the target-unavailable error as a 404", async () => {
     mocks.favorites.addFavorite.mockRejectedValue(
-      new mocks.favorites.FavoriteServiceError("提示词不存在或已下架。", "TARGET_UNAVAILABLE", 404),
+      new mocks.favorites.FavoriteServiceError("项目不存在或已下架。", "TARGET_UNAVAILABLE", 404),
     );
 
-    const response = await addFavoriteRoute(json({ targetType: "PROMPT", targetId: "gone" }));
+    const response = await addFavoriteRoute(json({ targetType: "PROJECT", targetId: "gone" }));
     const body = await response.json();
 
     expect(response.status).toBe(404);
@@ -395,5 +396,48 @@ describe("model credential routes", () => {
     const response = await deleteCredentialRoute(request(), params({ id: "cred1" }));
 
     expect(response.status).toBe(404);
+  });
+});
+
+
+describe("普通工作流运行账号与同源边界", () => {
+  const url = "http://localhost:3000/api/workflows/weekly/run";
+  const write = (body: unknown, extra: Record<string, string> = {}) => new Request(url, { method: "POST", headers: { "Content-Type": "application/json", Origin: "http://localhost:3000", "Sec-Fetch-Site": "same-origin", "x-ans-actor": "user1", ...extra }, body: JSON.stringify(body) });
+  it.each([undefined, "previous-user"])("旧或缺失账号 %s 在创建、执行和读取前被拒绝", async actor => {
+    const headers: Record<string, string> = actor ? { "x-ans-actor": actor } : {};
+    const responses = [
+      await runWorkflowRoute(new Request(url, { method: "POST", headers, body: JSON.stringify({ input: {} }) }), params({ slug: "weekly" })),
+      await executeRun(new Request(url, { method: "POST", headers, body: "{}" }), params({ id: "run1" })),
+      await getRun(new Request(url, { headers }), params({ id: "run1" })),
+    ];
+    for (const response of responses) { expect(response.status).toBe(409); expect((await response.json()).error.code).toBe("ACCOUNT_CHANGED"); }
+    expect(mocks.service.createWorkflowRun).not.toHaveBeenCalled(); expect(mocks.runner.executePersistedWorkflow).not.toHaveBeenCalled(); expect(mocks.service.getWorkflowRun).not.toHaveBeenCalled();
+  });
+  it("创建转交幂等编号及严格输入校验选项，不采用 body 用户", async () => {
+    mocks.service.createWorkflowRun.mockResolvedValue({ id: "created-run" });
+    const body = { input: { topic: "my-input" }, idempotencyKey: "stable-intent-1", userId: "victim" };
+    const response = await runWorkflowRoute(write(body), params({ slug: "weekly" }));
+    expect(response.status).toBe(202); expect(mocks.service.createWorkflowRun).toHaveBeenCalledWith("weekly", "user1", body, { expectedInput: true });
+  });
+  it("运行读取只使用已验证的 session 身份且禁止缓存", async () => {
+    mocks.service.getWorkflowRun.mockResolvedValue({ id: "run1", status: "SUCCEEDED" });
+    const response = await getRun(request(url + "?userId=victim"), params({ id: "run1" }));
+    expect(response.status).toBe(200); expect(mocks.service.getWorkflowRun).toHaveBeenCalledWith("run1", "user1"); expect(response.headers.get("cache-control")).toBe("no-store");
+  });
+  it.each(["cross-site", "missing"])("创建与执行拒绝 %s 的同源上下文", async variant => {
+    const headers = { "Content-Type": "application/json", "x-ans-actor": "user1", ...(variant === "cross-site" ? { Origin: "https://evil.example", "Sec-Fetch-Site": "cross-site" } : {}) };
+    for (const handler of [runWorkflowRoute, executeRun]) {
+      const response = await handler(new Request(url, { method: "POST", headers, body: "{}" }), params({ slug: "weekly", id: "run1" }));
+      expect(response.status).toBe(403); expect((await response.json()).error.code).toBe("FORBIDDEN");
+    }
+    expect(mocks.service.createWorkflowRun).not.toHaveBeenCalled(); expect(mocks.runner.executePersistedWorkflow).not.toHaveBeenCalled();
+  });
+  it("无效 JSON 的创建请求不能落入空输入扣费", async () => {
+    const response = await runWorkflowRoute(new Request(url, { method: "POST", headers: { "Content-Type": "application/json", Origin: "http://localhost:3000", "x-ans-actor": "user1" }, body: "{" }), params({ slug: "weekly" }));
+    expect(response.status).toBe(400); expect((await response.json()).error.code).toBe("INVALID_JSON"); expect(mocks.service.createWorkflowRun).not.toHaveBeenCalled();
+  });
+  it("执行保留模型选择的严格字段与枚举验证", async () => {
+    const response = await executeRun(write({ reasoningEffort: "invalid" }), params({ id: "run1" }));
+    expect(response.status).toBe(400); expect((await response.json()).error.code).toBe("INVALID_INPUT"); expect(mocks.runner.executePersistedWorkflow).not.toHaveBeenCalled();
   });
 });

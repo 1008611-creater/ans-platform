@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  catalog: { findPublishedCatalog: vi.fn(), listPublishedCatalog: vi.fn() },
   db: {
     prompt: { findFirst: vi.fn(), findMany: vi.fn() },
     template: { findFirst: vi.fn(), findMany: vi.fn() },
@@ -12,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("@/server/catalog/service", () => mocks.catalog);
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import {
@@ -32,6 +34,8 @@ const visiblePrompt = {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.catalog.findPublishedCatalog.mockResolvedValue(null);
+  mocks.catalog.listPublishedCatalog.mockResolvedValue([]);
   mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
   mocks.db.contentFavorite.createMany.mockResolvedValue({ count: 1 });
   mocks.db.auditLog.create.mockResolvedValue({ id: "audit1" });
@@ -143,59 +147,34 @@ describe("listFavorites", () => {
     expect(mocks.db.prompt.findMany).not.toHaveBeenCalled();
   });
 
-  it("keeps collection order and hydrates prompt, template and workflow rows", async () => {
-    const favoritedAt = new Date("2026-09-01T00:00:00.000Z");
-    mocks.db.contentFavorite.findMany.mockResolvedValue([
-      { targetType: "WORKFLOW", targetId: "w1", createdAt: favoritedAt },
-      { targetType: "PROMPT", targetId: "p1", createdAt: favoritedAt },
-    ]);
-    mocks.db.prompt.findMany.mockResolvedValue([visiblePrompt]);
-    mocks.db.workflow.findMany.mockResolvedValue([
-      {
-        id: "w1",
-        slug: "weekly",
-        title: "周报工作流",
-        summary: "汇总并润色",
-        estimatedCost: 6,
-        author: { nickname: "编辑部" },
-      },
-    ]);
+  it("filters retired targets before pagination without deleting historical records", async () => {
+    mocks.db.contentFavorite.findMany.mockResolvedValue([]);
+    await listFavorites("user1", 100);
+    expect(mocks.db.contentFavorite.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: "user1", targetType: { in: ["PROJECT", "WORKFLOW", "VIBEHUB_TERM"] } } }));
+    expect(await listFavorites("user1", 100, "PROMPT")).toEqual([]);
+    expect(mocks.db.contentFavorite.deleteMany).not.toHaveBeenCalled();
+  });
 
+  it("only hydrates projects from the current published catalog and preserves order", async () => {
+    const at = new Date();
+    mocks.db.contentFavorite.findMany.mockResolvedValue([
+      { targetType: "PROJECT", targetId: "withdrawn", createdAt: at },
+      { targetType: "PROJECT", targetId: "member-real", createdAt: at },
+      { targetType: "WORKFLOW", targetId: "w1", createdAt: at },
+    ]);
+    mocks.catalog.listPublishedCatalog.mockResolvedValue([{ slug: "member-real", creator: "Creator", content: { zh: { title: "Real project", summary: "Published offer" } } }]);
+    mocks.db.workflow.findMany.mockResolvedValue([{ id: "w1", slug: "weekly", title: "Weekly", summary: null, estimatedCost: 2, author: null }]);
     const items = await listFavorites("user1");
-
-    expect(items.map((item) => item.targetType)).toEqual(["WORKFLOW", "PROMPT"]);
-    expect(items[0]).toEqual({
-      targetType: "WORKFLOW",
-      targetId: "w1",
-      title: "周报工作流",
-      href: "/workflows/weekly",
-      subtitle: "汇总并润色",
-      authorName: "编辑部",
-      costPoints: 6,
-      favoritedAt,
-    });
-    expect(items[1]).toEqual(
-      expect.objectContaining({ href: "/prompts/campus-ai", authorName: "匿名同学", costPoints: null }),
-    );
+    expect(items.map(item => item.targetId)).toEqual(["member-real", "w1"]);
+    expect(items[0]).toMatchObject({ targetType: "PROJECT", href: "/explore/member-real", title: "Real project" });
   });
 
-  it("skips favorites whose target was delisted", async () => {
-    mocks.db.contentFavorite.findMany.mockResolvedValue([
-      { targetType: "TEMPLATE", targetId: "gone", createdAt: new Date() },
-      { targetType: "PROMPT", targetId: "p1", createdAt: new Date() },
-    ]);
-    mocks.db.prompt.findMany.mockResolvedValue([visiblePrompt]);
-
-    expect((await listFavorites("user1")).map((item) => item.targetId)).toEqual(["p1"]);
-  });
-
-  it("falls back to the prompt id when there is no slug", async () => {
-    mocks.db.contentFavorite.findMany.mockResolvedValue([
-      { targetType: "PROMPT", targetId: "p2", createdAt: new Date() },
-    ]);
-    mocks.db.prompt.findMany.mockResolvedValue([{ ...visiblePrompt, id: "p2", slug: null }]);
-
-    expect((await listFavorites("user1"))[0].href).toBe("/prompts/p2");
+  it("rejects unavailable projects and never treats a private project ID as a catalog slug", async () => {
+    await expect(addFavorite("user1", "PROJECT", "private-id")).rejects.toMatchObject({ code: "TARGET_UNAVAILABLE", status: 404 });
+    expect(mocks.db.contentFavorite.createMany).not.toHaveBeenCalled();
+    mocks.catalog.findPublishedCatalog.mockResolvedValue({ slug: "real" });
+    await addFavorite("user1", "PROJECT", "real");
+    expect(mocks.db.contentFavorite.createMany).toHaveBeenCalledWith({ data: [{ userId: "user1", targetType: "PROJECT", targetId: "real" }], skipDuplicates: true });
   });
 
   it("clamps the page size to a safe maximum", async () => {

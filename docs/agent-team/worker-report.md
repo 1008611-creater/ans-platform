@@ -162,3 +162,25 @@ main并行新增1f5b224d知识区文案/下一步/本机保存提示，已合并
 REQ-V01..03: final25580 integrates client frame restoration, bounded scroll recovery, true8:5 cover reservation and normally merged concurrent footer simplification. Live5aae showed a late72px offset and was not called a pass; the cover ratio was subsequently fixed without lowering acceptance. Exact Linux gates and candidate/production12route checks pass. Final desktop1440 and mobile2284 remain identical after6seconds and another5seconds; incomplete and decoded cover rects match.44covers/24companion files, environment/mounts/migrations are preserved. Full evidence and failed attempts are described in production-release.md.
 
 AC-V04 authenticated favorite persistence was not repeated; oldf417 evidence does not verify25580. Membership purchases remain disabled. No real payment, redemption, member grant, model/TTS execution. Running application revision is25580; documentation commits are not a new deployed app. Independent acceptance is limited to this knowledge/cover/return and publication scope, not completion of all ANS commerce features.
+
+
+## 2026-10-12 Hub 可运行工作流市场离线安全回归
+
+REQ-H03/H04 可执行。workflow-market 实施角色最后限定范围为安全检查：5 个新增文件 65 项，连原 service/runner/review/worker/market/API 共 11 文件 174/174 通过；新增文件 lint 零错误零警告，完整 typecheck 通过。实际服务API、冻结版本绑定、人工审核、actor/same-origin、ack、canonical input/幂等、锁先于扣费、owner-only history、durable worker confirmation 和固定 renderer 输出均有隔离检查。真实 handler/executor 注入离线模型响应，不调供应商、不写生产、不收费。详见 ans-hubs-release-20261012/workflow-market-test-worker.md/json；这是实施自测，独立复验、真实隔离DB计费并发及正式部署仍待主控。
+
+
+## 2026-10-12 HR05 / HR07 / HR08 / HR09 增量自测
+
+本轮新增 19 项（真实 MarketWorkflowRun 组件 9 项、服务安全 10 项）。重新运行六个安全文件 84/84 通过；两个新增/修改检查文件 lint 0 错误、0 警告；完整应用 tsconfig.typecheck.json 通过，exit 0。此前 11 文件 174/174 为先前基线，本轮未重复运行，不合并数量虚报当前全量结果。
+
+HR07 使用真实 MarketWorkflowRun、MarketAccountBoundary 和请求 hook，只隔离低层网关：市场/direct reviewed recipe 两入口刷新丢回执复用原确认 key、只存 SHA256 摘要和 key、actor/endpoint/version/input 隔离、未确认与必填空缺不提交、digest 并发只发一次 POST、账号切换 abort 且迟到旧响应不清恢复槽。HR08 市场与 service 两层缺失/空白变量均无 create/debit。HR05 稀疏原始元信息用实际执行说明生成合法 pending listing；并发重复上传恢复同记录且只提交一次。另覆盖数据库唯一键冲突恢复原 run、不再次扣费；HR09 固定 recipe 旧 service 入口拒绝绕过确认。
+
+证据：ans-hubs-release-20261012/market-workflow-incremental-safety-tests.json、market-workflow-incremental-tests-lint.json、workflow-market-test-worker.json（包含当前源哈希）。只改测试与交接报告；无 commit/push/deploy、无生产写入、无模型收费调用。此为实施自测，仍需独立审查；上线由根主控统一执行。
+
+
+## 2026-10-12 Hub / workflow release freeze checkpoint
+REQ-H01..H06: six primary navigation targets, four truthful Hub directories, actor-bound project/workflow/knowledge favorites and public works/services profiles; legacy public prompt UI retired with same-origin redirects, historical records and shared APIs retained. Fixed resume recipe renders real validated personal facts through existing website code. Upload binds reviewed immutable workflow versions to market review; both recipe and market runs require actor, acknowledged input, version and retry-key checks before debit. Generic forms now abort on account changes and retain only hashed-input retry keys across reload. No production seeds or paid model/TTS/payment transactions were performed.
+
+Local final regression: 2808 passed, 10 skipped, zero failed; an earlier broad run found one existing Hypit focus timing failure, then its isolated 9 checks and final full suite passed without modifying Hypit. Application and test types passed; lint zero errors with 351 retained warnings; six boundary checks passed after removing 27 retired entries from the baseline (no new exemptions). Independent HR01..09 issues closed with actual source/regression evidence.
+
+Release gates still pending at freeze: exact Linux build, fresh application-schema snapshot restore and additive PROJECT enum rehearsal, migration, precise image, official HTTPS desktop/mobile evidence. Source packaging explicitly keeps all three root licenses, original covers and separately mounted mascot assets. No member subscription sales or actual vendor billing acceptance is implied.

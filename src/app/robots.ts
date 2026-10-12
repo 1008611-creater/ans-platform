@@ -10,6 +10,13 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: [
           "/api/",
+          "/workspace",
+          "/projects",
+          "/collection",
+          "/market/creator",
+          "/market/orders",
+          "/workflows/mine",
+          "/workflows/runs",
           "/admin/",
           "/settings/",
           "/login",

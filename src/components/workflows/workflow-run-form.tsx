@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useMarketActorId, useMarketRequest } from "@/components/marketplace/account-boundary";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,25 +45,9 @@ function outputText(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
 
-async function fetchRunDetail(id: string): Promise<PersistedRunSummary | null> {
-  const response = await fetch(`/api/workflows/runs/${id}`, { cache: "no-store" });
-  const body = await response.json().catch(() => null);
-  if (!response.ok) return null;
-  return (body?.data?.run ?? null) as PersistedRunSummary | null;
-}
-
-async function waitForRunCompletion(id: string, maxPolls = 150): Promise<PersistedRunSummary | null> {
-  for (let attempt = 0; attempt < maxPolls; attempt += 1) {
-    const run = await fetchRunDetail(id).catch(() => null);
-    if (run && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(run.status)) return run;
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-  return null;
-}
-
 /**
  * 统一运行入口：填变量 → 创建运行（扣额度）→ 同步执行 → 展示逐节点结果。
- * 失败时服务端已自动退费，这里只负责把可理解的错误显示给用户。
+ * 连接中断时仅查询已创建的运行，人工重试复用原请求编号，避免重复扣额度。
  */
 export function WorkflowRunForm({
   slug,
@@ -78,6 +63,15 @@ export function WorkflowRunForm({
   defaultModelKey?: string;
 }) {
   const router = useRouter();
+  const request = useMarketRequest(), actorId = useMarketActorId();
+  const alive = useRef(true), submitting = useRef(false);
+  const intent = useRef<{ fingerprint: string; key: string } | null>(null);
+  const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelWait = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    alive.current = true;
+    return () => { alive.current = false; if (pollTimer.current) clearTimeout(pollTimer.current); cancelWait.current?.(); };
+  }, []);
   const billing = useTranslations("learning");
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(variables.map((variable) => [variable.key, ""])),
@@ -95,67 +89,87 @@ export function WorkflowRunForm({
     .filter((variable) => variable.required && !(values[variable.key] ?? "").trim())
     .map((variable) => variable.label);
 
-  async function run() {
-    setBusy(true);
-    setError("");
-    setOutput(null);
-    setNodeRuns([]);
-    let createdRunId: string | null = null;
-    try {
-      const created = await fetch(`/api/workflows/${slug}/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: values }),
+  async function fetchRunDetail(id: string) {
+    const detail = await request<{ run: PersistedRunSummary }>(`/api/workflows/runs/${id}`, "GET", undefined);
+    return detail.run;
+  }
+  async function waitForRunCompletion(id: string, maxPolls = 150): Promise<PersistedRunSummary | null> {
+    for (let attempt = 0; alive.current && attempt < maxPolls; attempt += 1) {
+      const detail = await fetchRunDetail(id).catch(() => null);
+      if (!alive.current) return null;
+      if (detail && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.status)) return detail;
+      await new Promise<void>((resolve) => {
+        cancelWait.current = resolve;
+        pollTimer.current = setTimeout(() => { pollTimer.current = null; cancelWait.current = null; resolve(); }, 1000);
       });
-      const createdBody = await created.json().catch(() => null);
-      if (!created.ok) {
-        throw new Error(createdBody?.error?.message ?? "无法创建运行，请稍后重试");
+    }
+    return null;
+  }
+
+  async function run() {
+    if (submitting.current || !alive.current || missing.length) return;
+    submitting.current = true;
+    // Capture both inputs and execution choices before any asynchronous work.
+    const input = { ...values };
+    const options = { modelKey, reasoningEffort, ...(credentialId === "platform" ? {} : { credentialId }) };
+    setBusy(true); setError(""); setOutput(null); setNodeRuns([]);
+    let createdRunId: string | null = null;
+    let recoverySlot: string | null = null;
+    function finishIntent() {
+      intent.current = null;
+      try { if (recoverySlot) sessionStorage.removeItem(recoverySlot); } catch { /* Optional recovery storage. */ }
+    }
+    try {
+      if (!actorId) throw new Error("账号已变更，请刷新后重试。");
+      // Persist only a digest and random key, never the personal input or credential choice.
+      const serialized = JSON.stringify([slug, Object.keys(input).sort().map(key => [key, input[key]]), options]);
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(serialized));
+      if (!alive.current) return;
+      const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+      recoverySlot = `ans:workflow-run:${encodeURIComponent(actorId)}:${encodeURIComponent(slug)}:${fingerprint}`;
+      if (!intent.current || intent.current.fingerprint !== fingerprint) {
+        let savedKey: string | null = null;
+        try {
+          const stored = sessionStorage.getItem(recoverySlot);
+          if (stored && /^[a-zA-Z0-9_-]{8,80}$/.test(stored)) savedKey = stored;
+        } catch { /* In-memory idempotency remains available when storage is disabled. */ }
+        intent.current = { fingerprint, key: savedKey ?? crypto.randomUUID() };
       }
-      const id: string = createdBody?.data?.run?.id;
+      const idempotencyKey = intent.current.key;
+      try { sessionStorage.setItem(recoverySlot, idempotencyKey); } catch { /* Optional recovery storage. */ }
+      const created = await request<{ run: { id: string } }>(`/api/workflows/${slug}/run`, "POST", { input, idempotencyKey });
+      if (!alive.current) return;
+      const id = created.run?.id;
       if (!id) throw new Error("服务端未返回运行编号。");
       createdRunId = id;
       setRunId(id);
-
-      // 模型与额度来源随执行请求一起提交；服务端会再次校验凭证归属。
-      const executed = await fetch(`/api/workflows/runs/${id}/execute`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          modelKey,
-          reasoningEffort,
-          ...(credentialId === "platform" ? {} : { credentialId }),
-        }),
-      });
-      const executedBody = await executed.json().catch(() => null);
-      if (!executed.ok) {
-        throw new Error(executedBody?.error?.message ?? "工作流执行失败");
-      }
-      const result = executedBody?.data?.result;
-      if (result?.status === "failed") {
-        setError(result.error ?? "工作流执行失败，额度已退回。");
-      } else {
-        setOutput(outputText(result?.output));
-      }
-      const detail = await fetch(`/api/workflows/runs/${id}`).then((r) => r.json()).catch(() => null);
-      setNodeRuns((detail?.data?.run?.nodeRuns ?? []) as NodeRunSummary[]);
+      // 模型与额度来源随执行请求提交；服务端再次校验凭证归属。
+      const executed = await request<{ result: { status: string; output?: unknown; error?: string } }>(`/api/workflows/runs/${id}/execute`, "POST", options);
+      if (!alive.current) return;
+      if (executed.result?.status === "failed") setError(executed.result.error ?? "工作流执行失败，请查看运行记录与额度流水。");
+      else setOutput(outputText(executed.result?.output));
+      const detail = await fetchRunDetail(id).catch(() => null);
+      if (!alive.current) return;
+      setNodeRuns(detail?.nodeRuns ?? []);
+      finishIntent();
       router.refresh();
     } catch (cause) {
+      if (!alive.current) return;
+      // Recover acknowledgements with read-only polling; never retry a charge automatically.
       const completed = createdRunId ? await waitForRunCompletion(createdRunId) : null;
+      if (!alive.current) return;
       if (completed) {
         setNodeRuns(completed.nodeRuns ?? []);
-        if (completed.status === "SUCCEEDED") {
-          setError("");
-          setOutput(outputText(completed.output));
-        } else {
-          setOutput(null);
-          setError(completed.error ?? "Workflow execution failed; quota refunded.");
-        }
+        if (completed.status === "SUCCEEDED") { setError(""); setOutput(outputText(completed.output)); }
+        else { setOutput(null); setError(completed.error ?? "工作流执行未完成，请查看运行记录与额度流水。"); }
+        finishIntent();
         router.refresh();
       } else {
-        setError(cause instanceof Error ? cause.message : "Run failed; please retry.");
+        setError(cause instanceof Error ? cause.message : "运行未完成，请稍后重试。");
       }
     } finally {
-      setBusy(false);
+      submitting.current = false;
+      if (alive.current) setBusy(false);
     }
   }
 
@@ -185,6 +199,7 @@ export function WorkflowRunForm({
               {variable.hint && variable.hint.length > 60 ? (
                 <Textarea
                   id={`wf-${variable.key}`}
+                  disabled={busy}
                   rows={4}
                   value={values[variable.key] ?? ""}
                   onChange={(event) =>
@@ -194,6 +209,7 @@ export function WorkflowRunForm({
               ) : (
                 <Input
                   id={`wf-${variable.key}`}
+                  disabled={busy}
                   value={values[variable.key] ?? ""}
                   onChange={(event) =>
                     setValues((prev) => ({ ...prev, [variable.key]: event.target.value }))
@@ -207,7 +223,7 @@ export function WorkflowRunForm({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="workflow-run-model">模型</Label>
-            <Select value={modelKey} onValueChange={setModelKey}>
+            <Select disabled={busy} value={modelKey} onValueChange={setModelKey}>
               <SelectTrigger id="workflow-run-model" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -222,7 +238,7 @@ export function WorkflowRunForm({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="workflow-run-reasoning">思考强度</Label>
-            <Select value={reasoningEffort} onValueChange={(value) => setReasoningEffort(value as RunReasoningEffort)}>
+            <Select disabled={busy} value={reasoningEffort} onValueChange={(value) => setReasoningEffort(value as RunReasoningEffort)}>
               <SelectTrigger id="workflow-run-reasoning" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -238,7 +254,7 @@ export function WorkflowRunForm({
           {credentials.length > 0 && (
             <div className="space-y-1.5">
               <Label htmlFor="workflow-run-credential">模型额度来源</Label>
-              <Select value={credentialId} onValueChange={setCredentialId}>
+              <Select disabled={busy} value={credentialId} onValueChange={setCredentialId}>
                 <SelectTrigger id="workflow-run-credential" className="w-full">
                   <SelectValue />
                 </SelectTrigger>

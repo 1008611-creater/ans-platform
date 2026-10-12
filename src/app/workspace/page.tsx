@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { Activity, Clock3, Coins, FolderOpen, Heart, Users, Zap } from "lucide-react";
+import { Activity, Coins, FolderOpen, Heart, Users, Zap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelProgress, formatLevel } from "@/lib/level";
@@ -35,6 +35,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
     redirect("/login?callbackUrl=/workspace");
   }
 
+  const retired = await getTranslations("retirement");
   const computeCopy = await getTranslations("product.computeHistory");
   const product = await getTranslations("product");
   const quotaCopy = await getTranslations("product.quotaHistory");
@@ -43,7 +44,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   const runsCursor = rawCursor && rawCursor.length <= 128 ? rawCursor : undefined;
   const pageSize = 20;
 
-  const [user, runRows, runCount, memberships, favorites, recentRuns] = await Promise.all([
+  const [user, runRows, runCount, memberships] = await Promise.all([
     db.user.findUnique({
       where: { id: session.user.id },
       select: { xp: true, quotaPoints: true, nickname: true },
@@ -73,30 +74,11 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         team: { select: { id: true, name: true, slug: true } },
       },
     }),
-    db.templateFavorite.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      take: 12,
-      select: {
-        template: { select: { slug: true, title: true, summary: true, status: true } },
-      },
-    }),
-    db.run.findMany({
-      where: { userId: session.user.id, status: "SUCCEEDED" },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: 12,
-      select: { template: { select: { slug: true, title: true } } },
-    }),
   ]);
 
   const hasMoreRuns = runRows.length > pageSize;
   const runs = hasMoreRuns ? runRows.slice(0, pageSize) : runRows;
   const nextRunsCursor = hasMoreRuns ? runs[runs.length - 1]?.id : undefined;
-  const favoriteTemplates = favorites.filter((item) => item.template.status === "PUBLISHED");
-  const recentTemplates = Array.from(
-    new Map(recentRuns.map((item) => [item.template.slug, item.template])).values()
-  ).slice(0, 6);
-
   const xp = user?.xp ?? 0;
   const progress = getLevelProgress(xp);
   const displayName = user?.nickname?.trim() || "匿名同学";
@@ -174,17 +156,17 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
       <section className="ans-workspace-section ans-workspace-runs">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <FolderOpen className="h-4 w-4" /> 我的运行
+            <FolderOpen className="h-4 w-4" /> {retired("historyTitle")}
           </h2>
           <Button asChild variant="outline" size="sm">
-            <Link href="/templates">去模板广场</Link>
+            <Link href="/workflows/runs">{retired("workflowRuns")}</Link>
           </Button>
         </div>
 
         {runs.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              还没有运行记录。去模板广场挑一个模板试试吧。
+              {retired("noHistory")}
             </CardContent>
           </Card>
         ) : (
@@ -196,12 +178,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
                   return (
                     <li key={r.id} className="flex items-center justify-between gap-3 px-4 py-3">
                       <div className="min-w-0">
-                        <Link
-                          href={"/templates/" + r.template.slug}
-                          className="truncate font-medium hover:underline"
-                        >
-                          {r.template.title}
-                        </Link>
+                        <p className="truncate font-medium">{r.template.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {r.createdAt.toLocaleString("zh-CN")}
                         </p>
@@ -234,63 +211,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
           </div>
         )}
       </section>
-      <section className="ans-workspace-section">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Heart className="h-4 w-4" /> 我的收藏
-          </h2>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/templates">发现更多模板</Link>
-          </Button>
-        </div>
-        {favoriteTemplates.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-8 text-center text-sm text-muted-foreground">
-              还没有收藏模板。在模板详情页点击“收藏”即可保存。
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {favoriteTemplates.map((item) => (
-              <Card key={item.template.slug}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
-                    <Link href={"/templates/" + item.template.slug} className="hover:underline">
-                      {item.template.title}
-                    </Link>
-                  </CardTitle>
-                  {item.template.summary && <CardDescription className="line-clamp-2">{item.template.summary}</CardDescription>}
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-      <section className="ans-workspace-section">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Clock3 className="h-4 w-4" /> 最近使用
-          </h2>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/templates">去模板广场</Link>
-          </Button>
-        </div>
-        {recentTemplates.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-8 text-center text-sm text-muted-foreground">
-              运行过的模板会显示在这里。
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {recentTemplates.map((template) => (
-              <Button key={template.slug} asChild variant="secondary" size="sm">
-                <Link href={"/templates/" + template.slug}>{template.title}</Link>
-              </Button>
-            ))}
-          </div>
-        )}
-      </section>
+      <section className="ans-workspace-section"><h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Heart className="h-4 w-4" />{retired("favoritesTitle")}</h2><p className="text-sm leading-7 text-muted-foreground">{retired("favoritesNote")}</p><Button asChild variant="outline" className="mt-4"><Link href="/collection">{retired("openFavorites")}</Link></Button></section>
       <section className="ans-workspace-section ans-workspace-teams">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold">

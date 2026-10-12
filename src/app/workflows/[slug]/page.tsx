@@ -1,3 +1,6 @@
+import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
+import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
+import { unifiedModelBilling } from "@/server/integrations/metered-cost";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -82,6 +85,7 @@ export default async function WorkflowDetailPage({
         {workflow.summary && <p className="text-muted-foreground">{workflow.summary}</p>}
         <div className="flex flex-wrap items-center gap-2">
           <FavoriteButton
+            accountId={userId}
             targetType="WORKFLOW"
             targetId={workflow.id}
             initialFavorited={favorited}
@@ -124,7 +128,7 @@ export default async function WorkflowDetailPage({
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">运行这个工作流</h2>
         {userId ? (
-          <WorkflowRunForm
+          <>{definition?.recipe ? <MarketAccountBoundary actorId={userId}><MarketWorkflowRun listingId={workflow.id} workflowSlug={workflow.slug} version={version} details={{ recipe: definition.recipe, variables, version, estimatedCost: unifiedModelBilling() ? null : cost }} /></MarketAccountBoundary> : <MarketAccountBoundary actorId={userId}><WorkflowRunForm
             slug={workflow.slug}
             variables={variables}
             estimatedCost={cost}
@@ -133,7 +137,7 @@ export default async function WorkflowDetailPage({
               label: credential.label,
               keyMasked: credential.keyMasked,
             }))}
-          />
+          /></MarketAccountBoundary>}</>
         ) : (
           <Card>
             <CardHeader>

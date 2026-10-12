@@ -1,0 +1,16 @@
+﻿{
+  "title": "My favorites",
+  "description": "Save projects, workflows and knowledge to pick up later.",
+  "loginNote": "Sign in to view your favorites.",
+  "login": "Sign in",
+  "empty": "No favorites yet. Open a project or workflow and save it here.",
+  "explore": "Explore projects",
+  "hubs": "Discover hubs and workflows",
+  "save": "Save",
+  "saved": "Saved",
+  "remove": "Remove",
+  "error": "The action did not complete. Refresh and try again.",
+  "accountChanged": "Account changed. Refresh page",
+  "estimatedCost": "Estimated {points} points; confirm before running",
+  "types": { "PROJECT": "Project", "WORKFLOW": "Workflow", "VIBEHUB_TERM": "Knowledge", "PROMPT": "Historical prompt", "TEMPLATE": "Historical template" }
+}

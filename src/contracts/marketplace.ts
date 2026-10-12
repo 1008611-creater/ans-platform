@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { marketWorkflowBindingSchema } from "./market-workflow";
 
 export const marketCategorySchema = z.enum([
   "learning", "career", "aigc", "web", "github", "business", "productivity", "competition",
@@ -19,6 +20,7 @@ export const marketListingInputSchema = z.object({
   description: z.string().trim().min(20).max(20_000),
   category: marketCategorySchema,
   subcategory: z.string().trim().min(1).max(80),
+  execution: marketWorkflowBindingSchema.optional(),
   fulfillment: z.enum(["service", "resource"]),
   priceMinor: z.number().int().min(0).max(100_000_000),
   currency: z.literal("CNY"),

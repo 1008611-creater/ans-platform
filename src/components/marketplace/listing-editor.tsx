@@ -24,10 +24,11 @@ export function ListingEditor({ offer, share = false }: { offer?: MarketOfferVie
     event.preventDefault(); const form = new FormData(event.currentTarget); setError("");
     const text = (key: string) => String(form.get(key) ?? "").trim();
     const parsed = marketListingInputSchema.safeParse({
+      ...(data?.execution ? { execution: data.execution } : {}),
       slug: offer?.slug ?? (free ? "project-" + crypto.randomUUID() : text("slug")), title: text("title"), summary: text("summary"), description: text("description"), category, subcategory,
       fulfillment: free ? "resource" : text("fulfillment"), priceMinor: free ? 0 : parseMarketPrice(text("price")), currency: "CNY", deliveryDays: free ? 1 : Number(text("deliveryDays")), revisionLimit: free ? 0 : Number(text("revisionLimit")), computeIncluded: !free && form.get("computeIncluded") === "on", deliverables: text("deliverables").split("\n").map((item) => item.trim()).filter(Boolean), licenseTerms: text("licenseTerms"), ...(text("coverUrl") ? { coverUrl: text("coverUrl") } : {}), ...(text("previewUrl") ? { previewUrl: text("previewUrl") } : {}), ...(text("sourceUrl") ? { sourceUrl: text("sourceUrl") } : {}),
     });
-    if (!parsed.success || (free && !parsed.data.sourceUrl && !parsed.data.previewUrl)) { setError(errorMessage("INVALID_INPUT")); return; }
+    if (!parsed.success || (free && !parsed.data.execution && !parsed.data.sourceUrl && !parsed.data.previewUrl)) { setError(errorMessage("INVALID_INPUT")); return; }
     setBusy(true);
     try {
       if (offer) { await marketRequest("/api/market/listings/" + offer.id, "PATCH", { expectedVersion: offer.version, listing: parsed.data }); router.refresh(); }
@@ -44,7 +45,7 @@ export function ListingEditor({ offer, share = false }: { offer?: MarketOfferVie
   const field = (key: string, input: React.ReactNode) => <label className="grid min-w-0 gap-2 text-sm font-medium"><span>{t("fields." + key)}</span>{input}</label>;
   const selectClass = "h-10 w-full min-w-0 rounded-md border bg-background px-3 text-sm";
   return <div className="space-y-6">
-    <label className="ans-detail-block flex items-start gap-3 text-sm"><input type="checkbox" checked={free} disabled={busy} onChange={event => setFree(event.target.checked)} className="mt-1 h-4 w-4 accent-primary"/><span><strong>{p("realProject.freeShare")}</strong><span className="mt-2 block leading-6 text-muted-foreground">{p("realProject.submitBody")}</span></span></label>
+    <label className="ans-detail-block flex items-start gap-3 text-sm"><input type="checkbox" checked={free} disabled={busy || Boolean(data?.execution)} onChange={event => setFree(event.target.checked)} className="mt-1 h-4 w-4 accent-primary"/><span><strong>{p("realProject.freeShare")}</strong><span className="mt-2 block leading-6 text-muted-foreground">{p("realProject.submitBody")}</span></span></label>
     {offer && <div className="ans-detail-block space-y-3"><p className="font-medium">{t("version", { version: offer.version })} · {t("listingStatus." + (offer.submittedAt && !offer.reviewedAt ? "PENDING" : offer.status))}</p>{offer.status === "PUBLISHED" && <p className="text-sm text-muted-foreground">{t("publishedEditNote")}</p>}{offer.reviewNote && <p className="break-words text-sm">{t("reviewNote")}: {offer.reviewNote}</p>}
       <div className="flex flex-wrap gap-3"><Button type="button" disabled={busy || Boolean(offer.submittedAt || offer.reviewedAt)} onClick={() => act("submit")}>{t("submit")}</Button><Button type="button" variant="outline" disabled={busy || offer.status === "WITHDRAWN"} onClick={() => act("withdraw")}>{t("withdraw")}</Button></div></div>}
     {error && <p role="alert" className="rounded-xl border border-destructive p-4 text-sm text-destructive">{error}</p>}

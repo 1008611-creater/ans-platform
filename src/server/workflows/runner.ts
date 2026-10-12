@@ -1,3 +1,6 @@
+import { resumeWebsiteInputSchema } from "@/contracts/resume-website";
+import { buildResumeWebsitePrompt } from "@/domain/projects/resume-website";
+import { assertSupportedRecipe, renderRecipeArtifact } from "@/domain/workflows/recipes";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { randomUUID } from "node:crypto";
 import { readMeteredRunCost, unifiedModelBilling } from "@/server/integrations/metered-cost";
@@ -64,6 +67,7 @@ function nodeTemplate(node: WorkflowNodeContext["node"]): string {
 export type WorkflowHandlerContext = {
   userId: string;
   runId: string;
+  recipe?: "resume-website-v1";
   /**
    * 本次运行的默认模型来源。节点 config 里显式写了 modelKey / credentialId 时以节点为准，
    * 否则回退到这里，让「同一个工作流换模型再跑」不需要改定义。
@@ -105,13 +109,14 @@ export function createWorkflowHandlers(context: WorkflowHandlerContext): Partial
       return expected === undefined ? Boolean(actual) : actual === expected;
     },
     output: ({ node, dependencyOutputs, input }) => {
+      if (context.recipe === "resume-website-v1") return renderRecipeArtifact((input as Record<string, unknown>).profile, dependencyOutputs.copy);
       const values = Object.values(dependencyOutputs);
       const fallback = node.config.fallback;
       if (values.length === 0) return fallback === undefined ? input : fallback;
       return values.at(-1);
     },
     model: async ({ node, ...rest }) => {
-      const prompt = interpolate(nodeTemplate(node), { node, ...rest });
+      const prompt = context.recipe === "resume-website-v1" ? buildResumeWebsitePrompt(resumeWebsiteInputSchema.parse((rest.input as Record<string, unknown>).profile)) : interpolate(nodeTemplate(node), { node, ...rest });
       if (!prompt.trim()) throw new Error(`模型节点「${node.label}」缺少输入内容。`);
       const target = await modelTargetFor(node, context);
       try {
@@ -248,7 +253,9 @@ async function loadRunnableRun(runId: string, userId: string) {
 }
 
 function definitionOf(run: { version: { definition: Prisma.JsonValue } }): WorkflowDefinition {
-  return workflowDefinitionSchema.parse(run.version.definition);
+  const definition = workflowDefinitionSchema.parse(run.version.definition);
+  assertSupportedRecipe(definition);
+  return definition;
 }
 
 /**
@@ -309,6 +316,7 @@ export async function executePersistedWorkflow(
     createWorkflowHandlers({
       userId,
       runId: run.id,
+      recipe: definition.recipe,
       modelKey,
       credentialId: options.credentialId,
       reasoningEffort,

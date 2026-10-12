@@ -25,6 +25,7 @@ export const workflowEdgeSchema = z.object({
 });
 
 export const workflowDefinitionSchema = z.object({
+  recipe: z.literal("resume-website-v1").optional(),
   version: z.literal(1),
   maxNodes: z.number().int().min(1).max(50).default(20),
   nodes: z.array(workflowNodeSchema).min(1).max(50),
