@@ -2,21 +2,22 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowRight, BookOpen, MousePointer2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useVibeLanguage } from "./use-vibe-language";
 import { AnsPracticeLinks } from "./ans-practice-links";
 import { KnowledgeProjectCovers } from "./knowledge-project-covers";
-
+const tasks = [
+  { scenario: "website", label: "homeTaskWebsite" },
+  { scenario: "creative", label: "homeTaskCreative" },
+  { scenario: "github", label: "homeTaskGithub" },
+] as const;
 export function KnowledgeHome({ termCount }: { termCount: number }) {
   const lang = useVibeLanguage(); const t = useTranslations("vibehub");
   return <main className="ans-knowledge-home">
     <section className="ans-knowledge-hero"><div className="ans-knowledge-container ans-knowledge-hero-layout">
       <div className="ans-knowledge-hero-copy">
         <h1>{t("knowledgeHeroFirst")}<br /><span>{t("knowledgeHeroSecond")}</span></h1>
-        <div className="ans-knowledge-hero-actions">
-          <Button asChild data-variant="default" className="ans-knowledge-button"><Link href={`/vibe-hub/journeys?lang=${lang}`}>{t("startWithPractice")}<ArrowRight size={17} aria-hidden="true" /></Link></Button>
-          <Button asChild variant="outline" data-variant="outline" className="ans-knowledge-button"><Link href={`/vibe-hub/vibehub-skill?lang=${lang}`}>{t("briefAction")}</Link></Button>
-        </div>
+        <nav className="ans-home-tasks" aria-label={t("homeTaskLabel")}>{tasks.map((task, index) => <Link key={task.scenario} href={`/vibe-hub/vibehub-skill?scenario=${task.scenario}&lang=${lang}`}><span className="ans-home-task-number">0{index + 1}</span><span>{t(task.label)}</span><ArrowRight size={18} aria-hidden="true" /></Link>)}</nav>
+        <Link className="ans-editorial-link ans-home-path-link" href={`/vibe-hub/journeys?lang=${lang}`}>{t("startWithPractice")}<ArrowRight size={16} aria-hidden="true" /></Link>
       </div>
       <KnowledgeProjectCovers termCount={termCount} />
     </div></section>

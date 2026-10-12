@@ -20,7 +20,7 @@ import "./ans-knowledge.css";
 function Navigation() {
   const t = useTranslations("vibehub");
   const lang = useVibeLanguage();
-  const pathname = usePathname(); const params = useSearchParams();
+  const pathname = usePathname(); const params = useSearchParams(); const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
   const [, setSavedLanguage] = usePersistedSetting("vibehub:language", lang);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -65,8 +65,8 @@ function Navigation() {
       </div>
     </div>
     <div className="ans-knowledge-subnav">
-      <form className="vh-global-search" action="/vibe-hub/topics" role="search">
-        <Search size={17} aria-hidden="true" /><input aria-label={t("search")} placeholder={t("knowledgeSearch")} name="q" defaultValue={params.get("q") || ""} key={`${pathname}:${params.get("q") || ""}`} /><input type="hidden" name="lang" value={lang} /><button type="submit">{t("searchAction")}</button>
+      <form className="vh-global-search" action="/vibe-hub/topics" role="search" onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); const next = new URLSearchParams({ lang, q: String(form.get("q") || "").trim() }); router.push(`/vibe-hub/topics?${next}`); }}>
+        <Search size={17} aria-hidden="true" /><input aria-label={t("search")} placeholder={t("knowledgeSearch")} name="q" maxLength={500} type="search" defaultValue={params.get("q") || ""} key={`${pathname}:${params.get("q") || ""}`} /><input type="hidden" name="lang" value={lang} /><button type="submit">{t("searchAction")}</button>
       </form>
       <Link href={`/vibe-hub/vibehub-skill?lang=${lang}`} className="ans-knowledge-subnav-note">{t("briefAction")} ↗</Link>
     </div>
