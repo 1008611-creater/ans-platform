@@ -7,7 +7,7 @@ import type { CatalogProject } from "@/domain/catalog/projects";
 export async function ProjectPreview({ project, large = false }: { project: CatalogProject; large?: boolean }) {
   const [t, locale] = await Promise.all([getTranslations("product"), getLocale()]);
   if (project.coverUrl) return <figure className="overflow-hidden rounded-3xl border bg-muted/20">
-    <Image src={project.coverUrl} alt={catalogText(project, t, "title", locale)} width={1264} height={712} unoptimized className={`h-auto w-full object-cover object-top ${large ? "max-h-[520px]" : ""}`} />
+    <Image src={project.coverUrl} alt={catalogText(project, t, "title", locale)} width={1280} height={800} unoptimized className={`aspect-[8/5] h-auto w-full object-cover object-top ${large ? "max-h-[520px]" : ""}`} />
     {large && <figcaption className="border-t px-5 py-3 text-xs text-muted-foreground">{project.coverNote ?? t("realProject.cover")}</figcaption>}
   </figure>;
   const Icon = { document: FileText, code: Terminal, plan: Route, character: FileText, site: Globe, video: Film, agent: GitBranch }[project.preview];
