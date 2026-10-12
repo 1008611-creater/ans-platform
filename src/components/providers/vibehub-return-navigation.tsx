@@ -90,7 +90,7 @@ export function VibeHubReturnNavigation() {
       save();
     };
     const onKey = (event: KeyboardEvent) => {
-      if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) cancelRestore();
+      if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " ", "Tab", "Enter"].includes(event.key)) cancelRestore();
     };
     const onScroll = () => {
       if (saveTimer) clearTimeout(saveTimer);
@@ -107,12 +107,13 @@ export function VibeHubReturnNavigation() {
     };
     if (restoring && pending) {
       const deadline = performance.now() + 4000;
-      let stable = 0;
       const restore = () => {
         if (!restoring) return;
         window.scrollTo({ left: pending.x, top: pending.y, behavior: "instant" });
-        stable = Math.abs(window.scrollY - pending.y) < 2 && Math.abs(window.scrollX - pending.x) < 2 ? stable + 1 : 0;
-        if (stable >= 3 || performance.now() >= deadline) {
+        // Route hydration and scroll anchoring may move the page after the first
+        // matching frames. Keep restoring through the bounded settling window;
+        // any user scroll/pointer input below immediately cancels this loop.
+        if (performance.now() >= deadline) {
           restoring = false;
           write(restoreKey, "");
           save();

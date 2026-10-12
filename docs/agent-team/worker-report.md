@@ -147,3 +147,7 @@ REQ-B08: the 11 source files and four renderer text files were individually hash
 REQ-V01..04可执行。正式f4172f18浏览器验收发现ISSUE-V01：知识区刷新后返回项目广场，共享RootLayout沿用服务端初始路径，主导航/页脚/恐龙缺失，滚动720实际仅384。新增客户端SiteFrame按usePathname决定站点框架，Header/Footer仍由服务端ReactNode slots传入，Providers持续保留；embed/kids裸布局范围沿用原逻辑。新增同一root跨区切换回归，无真实业务写入。
 
 本地2文件10测试、3文件lint零错误零警告、完整typecheck及六类边界通过。独立审查源复核PASS，ISSUE-V01=FIXED_WAIT_RETEST；精确Linux构建、备份恢复和正式HTTPS返回/滚动证据待部署完成后填写。
+
+## 2026-10-12 返回滚动晚布局补正（同一 ISSUE-V01）
+
+2fac7f32已正式部署healthy，环境与mascot挂载逐项保留、44封面+24恐龙文件哈希一致，候选/正式各12路径200。主导航/main/footer/1恐龙iframe恢复；真实无菜单复验1512→1559仍偏47px，不能将此版滚动记成功。旧provider在3帧稳定即终止，后续布局锚定会移位。移除提前停止，保持原有限4秒settling窗口；wheel/pointer/touch/滚动键以及独立审查要求的Tab/Enter主动交互立即取消，保留cleanup及deadline。新增回归覆盖3帧后继续、晚47px移位、deadline结束、wheel/Tab/Enter优先。3文件11项通过，新增2文件lint零错误零警告，完整TypeScript通过。下一r2精确构建和实际返回仍待核验。
