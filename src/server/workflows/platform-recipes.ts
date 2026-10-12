@@ -63,7 +63,7 @@ export async function findPublishedPlatformRecipe(idOrSlug: string = PLATFORM_RE
 export async function registerPlatformResumeRecipe(ownerId: string) {
   return db.$transaction(async tx => {
     // Serialize both the reserved identifiers and concurrent owner deactivation.
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${PLATFORM_RESUME_RECIPE.officialId}))`;
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${PLATFORM_RESUME_RECIPE.officialId}))`;
     await tx.$queryRaw`SELECT id FROM users WHERE id = ${ownerId} FOR UPDATE`;
     const owner = await tx.user.findUnique({ where: { id: ownerId }, select: { id: true, role: true, deletedAt: true, flagged: true, adminPermissions: true } });
     if (!owner || owner.role !== "ADMIN" || owner.deletedAt || owner.flagged || !hasAdminPermission(owner.adminPermissions, "MARKETPLACE_MANAGE")) throw new PlatformRecipeError("PLATFORM_RECIPE_OWNER_FORBIDDEN", 403);

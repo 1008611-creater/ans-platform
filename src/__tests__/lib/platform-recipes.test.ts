@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({ db: {
   marketListing: { findUnique: vi.fn() },
   workflow: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn() },
   user: { findUnique: vi.fn() }, auditLog: { findFirst: vi.fn(), create: vi.fn() },
-  $queryRaw: vi.fn(), $transaction: vi.fn(),
+  $queryRaw: vi.fn(), $executeRaw: vi.fn(), $transaction: vi.fn(),
 }, upload: vi.fn(), review: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 vi.mock("@/server/marketplace/workflows", () => ({ uploadWorkflowToMarket: mocks.upload }));
@@ -105,7 +105,9 @@ describe("source-reviewed platform recipe registry", () => {
 describe("explicit platform registration", () => {
   it("creates only real immutable platform source and provenance with no AI review claim", async () => {
     await registerPlatformResumeRecipe("real-owner");
-    expect(mocks.db.$queryRaw).toHaveBeenCalledTimes(3);
+    expect(mocks.db.$executeRaw).toHaveBeenCalledTimes(1);
+    expect(mocks.db.$executeRaw.mock.calls[0][0].join("?")).toContain("pg_advisory_xact_lock");
+    expect(mocks.db.$queryRaw).toHaveBeenCalledTimes(2);
     const data = mocks.db.workflow.create.mock.calls[0][0].data;
     expect(data).toMatchObject({ authorId: "real-owner", officialId: recipe.officialId, slug: recipe.slug, status: "PUBLISHED", publishedVersion: 1, estimatedCost: 2 });
     expect(data.reviewScore).toBeUndefined();
