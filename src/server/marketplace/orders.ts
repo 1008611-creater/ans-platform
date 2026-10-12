@@ -1,9 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { marketListingInputSchema, marketMessageSchema, marketOrderActionSchema, marketOrderCreateSchema, marketQuoteSchema, marketReviewSchema } from "@/contracts/marketplace";
-import { buildMarketQuote, completionPostings, MarketRuleError, nextOrderStatus } from "@/domain/marketplace/order";
+import { buildMarketQuote, completionPostings, MarketRuleError, nextOrderStatus, selectMarketPricingTier } from "@/domain/marketplace/order";
 import { appendCashJournal, marketHash, marketTransaction, requireMarketActor } from "./shared";
 
+import { marketPointsOnly } from "./policy";
 import { pointsPricingPolicy, settleMarketPoints } from "./points";
 import { availableCashProviders, cashListingPolicy, configuredCashProvider } from "./providers/config";
 
@@ -64,6 +65,7 @@ export async function createMarketOrder(buyerId: string, raw: unknown, policy?: 
       if (previous.requestHash !== requestHash) throw new MarketRuleError("IDEMPOTENCY_CONFLICT");
       return previous.id;
     }
+    if (marketPointsOnly() && input.paymentMethod && input.paymentMethod !== "POINTS") throw new MarketRuleError("POINTS_ONLY", 400);
     const listing = await tx.marketListing.findFirst({ where: { id: input.listingId, status: "PUBLISHED" }, include: { versions: true } });
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
     await requireMarketActor(tx, listing.sellerId);
@@ -72,8 +74,10 @@ export async function createMarketOrder(buyerId: string, raw: unknown, policy?: 
     const version = listing.versions.find((row) => row.version === listing.publishedVersion);
     if (!version) throw new MarketRuleError("INVALID_LISTING_STATE");
     const paymentMethod = input.paymentMethod ?? "POINTS";
-    const listingInput = marketListingInputSchema.parse(version.payload);
-    if (listingInput.execution) throw new MarketRuleError("WORKFLOW_RUN_REQUIRED", 409);
+    const publishedInput = marketListingInputSchema.parse(version.payload);
+    if (publishedInput.execution) throw new MarketRuleError("WORKFLOW_RUN_REQUIRED", 409);
+    const selected = selectMarketPricingTier(publishedInput, input.tierId);
+    const listingInput = selected.listing;
     let pricing = policy;
     if (paymentMethod !== "POINTS") {
       configuredCashProvider(paymentMethod === "WECHAT" ? "wechat" : "alipay");
@@ -81,7 +85,7 @@ export async function createMarketOrder(buyerId: string, raw: unknown, policy?: 
       listingInput.priceMinor = cash.priceMinor; pricing = cash;
     }
     pricing ??= configuredPricingPolicy();
-    const quote = { ...buildMarketQuote(listingInput, { listingId: listing.id, listingVersion: version.version, sellerId: listing.sellerId }, pricing.commissionBps), ...(paymentMethod !== "POINTS" ? { paymentProvider: paymentMethod === "WECHAT" ? "wechat" as const : "alipay" as const } : {}) };
+    const quote = { ...buildMarketQuote(listingInput, { listingId: listing.id, listingVersion: version.version, sellerId: listing.sellerId }, pricing.commissionBps), ...(selected.selectedTierId ? { selectedTierId: selected.selectedTierId, selectedTierTitle: selected.selectedTierTitle } : {}), ...(paymentMethod !== "POINTS" ? { paymentProvider: paymentMethod === "WECHAT" ? "wechat" as const : "alipay" as const } : {}) };
     const order = await tx.marketOrder.create({
       data: {
         paymentMethod: paymentMethod === "POINTS" ? "POINTS" : "CASH", buyerId, sellerId: listing.sellerId, listingId: listing.id, quote: quote as Prisma.InputJsonValue,
@@ -184,6 +188,7 @@ export async function reviewMarketOrder(orderId: string, userId: string, raw: un
 }
 
 export function marketCashOffer(listingId: string, version: number, sellerId: string) {
+  if (marketPointsOnly()) return null;
   try { const approval = cashListingPolicy(listingId, version, sellerId); const providers = availableCashProviders();
     return providers.length ? { priceMinor: approval.priceMinor, providers } : null;
   } catch { return null; }

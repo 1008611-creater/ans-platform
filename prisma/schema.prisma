@@ -143,6 +143,9 @@ model User {
   artifactComments ArtifactComment[]
   artifactReports ArtifactReport[] @relation("ArtifactReportAuthor")
   marketListings MarketListing[] @relation("MarketSeller")
+  marketCheckouts MarketExternalCheckout[]
+  marketMedia MarketMedia[]
+  marketStars MarketListingStar[]
   marketPurchases MarketOrder[] @relation("MarketBuyer")
   marketSales MarketOrder[] @relation("MarketOrderSeller")
   marketEvents MarketOrderEvent[] @relation("MarketEventActor")
@@ -1479,11 +1482,25 @@ model MarketListing {
   publishedVersion Int?
   versions MarketListingVersion[]
   orders MarketOrder[]
+  integration MarketIntegration?
+  stars MarketListingStar[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([sellerId, updatedAt])
   @@index([status, updatedAt])
   @@map("market_listings")
+}
+
+model MarketListingStar {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing MarketListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, listingId])
+  @@index([listingId, createdAt])
+  @@map("market_listing_stars")
 }
 
 /// Append-only offers. A published revision stays live while a new draft is reviewed.
@@ -1531,6 +1548,7 @@ model MarketOrder {
   refunds MarketRefund[]
   review MarketReview?
   cashEntries MarketCashEntry[]
+  externalCheckout MarketExternalCheckout?
   pointsEscrow MarketPointsEscrow?
   @@unique([buyerId, idempotencyKey])
   @@index([buyerId, updatedAt])
@@ -2626,4 +2644,56 @@ model CreditVoucher {
  redeemedAt DateTime?
  @@index([batchId, redeemedAt])
  @@map("credit_vouchers")
+}
+
+/// Credentials scoped to one market listing; raw secret is never persisted.
+model MarketIntegration {
+  id String @id @default(cuid())
+  listingId String @unique
+  listing MarketListing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  keyHash String @unique @db.VarChar(64)
+  keyPrefix String @db.VarChar(24)
+  returnOrigins String[]
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  checkouts MarketExternalCheckout[]
+  @@map("market_integrations")
+}
+
+/// Buyer identity comes only from an authenticated ANS confirmation.
+model MarketExternalCheckout {
+  id String @id @default(cuid())
+  integrationId String
+  integration MarketIntegration @relation(fields: [integrationId], references: [id], onDelete: Restrict)
+  reference String @db.VarChar(80)
+  requestHash String @db.VarChar(64)
+  listingVersion Int
+  tierId String? @db.VarChar(60)
+  amountMinor Int
+  returnUrl String @db.VarChar(1000)
+  buyerId String?
+  buyer User? @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+  orderId String? @unique
+  order MarketOrder? @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([integrationId, reference])
+  @@index([buyerId, createdAt])
+  @@map("market_external_checkouts")
+}
+
+/// Original validated raster bytes; application does not edit submitted covers.
+model MarketMedia {
+  id String @id @default(cuid())
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  mimeType String @db.VarChar(40)
+  sha256 String @db.VarChar(64)
+  size Int
+  content Bytes @db.ByteA
+  createdAt DateTime @default(now())
+  @@index([ownerId, createdAt])
+  @@map("market_media")
 }

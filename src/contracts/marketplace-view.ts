@@ -2,6 +2,7 @@ import type { MarketListingInput, MarketOrderStatus, MarketQuote } from "./marke
 export type MarketOfferView = {
   id: string; slug: string; official: boolean; status: string; version: number;
   seller: { id: string; username: string; nickname: string | null; avatar: string | null };
+  starCount?: number; starred?: boolean;
   listing: MarketListingInput; submittedAt: string | null; reviewedAt: string | null; reviewNote: string | null;
 };
 export type MarketOrderSummary = { id: string; buyerId: string; sellerId: string; status: MarketOrderStatus; quote: MarketQuote; revision: number; updatedAt: string };

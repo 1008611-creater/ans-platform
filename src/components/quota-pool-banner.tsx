@@ -80,7 +80,7 @@ export async function QuotaPoolBanner() {
                 已领取
               </Button>
             ) : (
-              <QuotaClaimButton points={perUserPoints} />
+              <QuotaClaimButton points={perUserPoints} actorId={state.actorId ?? ""} />
             )}
           </div>
         </div>
