@@ -60,6 +60,7 @@ beforeEach(() => {
   vi.mocked(db.marketListing.findMany).mockResolvedValue([{
     id: "public-offer", slug: "public-service", official: false, status: "PUBLISHED", publishedVersion: 2,
     seller: { id: rawIdentity.id, username: rawIdentity.username, nickname: "星河", avatar: null },
+    _count: { stars: 0 }, stars: [],
     versions: [{ version: 3, payload: { ...publishedListing, title: "未发布服务草稿" } }, { version: 2, payload: publishedListing }],
   }] as never);
 });
@@ -137,7 +138,7 @@ describe("profile 服务端到 client 的身份与发布边界", () => {
     });
     const query = vi.mocked(db.marketListing.findMany).mock.calls[0][0];
     expect(query?.where).toEqual({ sellerId: rawIdentity.id, status: "PUBLISHED", seller: { deletedAt: null, flagged: false } });
-    expect(query?.include).toEqual({ versions: true, seller: { select: { id: true, username: true, nickname: true, avatar: true } } });
+    expect(query?.include).toEqual({ versions: { orderBy: { version: "desc" } }, seller: { select: { id: true, username: true, nickname: true, avatar: true } }, _count: { select: { stars: true } }, stars: { where: { userId: "" }, select: { userId: true } } });
   });
   it("无公开成果时真实空态不补示例项目或服务", async () => {
     vi.mocked(db.artifactPublication.findMany).mockResolvedValue([]); vi.mocked(db.marketListing.findMany).mockResolvedValue([]);

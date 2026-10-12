@@ -260,3 +260,7 @@ Actual prepare hard gate rejected only two already-applied marketR3 migrations b
 ### Market test compiler compatibility
 
 Actual b53CI failed in complete test typecheck because the four new market gift fixture BigInt literals required ES2020, while the project test compiler preserves its existing lower target. Replaced the four literals with equivalent BigInt(integer) constructors; kept target/config and gift behavior unchanged. Root complete application+testtypes exit0 and gift regressions9passed. Prior failedCI evidence retained in r10-ci-failed.log. New head must pass fullCI before merge/deploy.
+
+### Complete market/profile regression fixture synchronization
+
+Actual801CI and frozenLinux build both failed only4 public identity/profile tests because their mocked market row and exact query expectation predated the deployed Star projection. Added _count.stars/stars to that isolated fixture and updated the explicit include expectation to descending versions and current limited Star fields.13identity/privacy tests now pass, with all prior published-version, ownership/private-growth and unsafe-identity exclusion assertions retained. Production business code was not weakened. R1 failed build/source evidence is retained; successful fresh122-table/applied76-migration backup restoration and exact guard rehearsal remain separately verified evidence. A new immutable frozen release must pass CI/build before deployment.
