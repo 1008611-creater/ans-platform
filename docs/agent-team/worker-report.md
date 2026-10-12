@@ -256,3 +256,7 @@ Applied exactly14 reviewed R10 client/UI/message/test paths from patchSHA4331c4d
 ### Exact historical migration byte preservation
 
 Actual prepare hard gate rejected only two already-applied marketR3 migrations because Git text normalization had converted their audited productionCRLF bytes toLF. No deployment/schema change occurred. Added exact-path -text/-eol attributes for these two historical files and restored original verified archive bytes. Existing74 migrations were already exact. This preserves historical SQL checksum authority rather than weakening the gate or rewriting migration records. FinalGit freeze andCI must use this correction.
+
+### Market test compiler compatibility
+
+Actual b53CI failed in complete test typecheck because the four new market gift fixture BigInt literals required ES2020, while the project test compiler preserves its existing lower target. Replaced the four literals with equivalent BigInt(integer) constructors; kept target/config and gift behavior unchanged. Root complete application+testtypes exit0 and gift regressions9passed. Prior failedCI evidence retained in r10-ci-failed.log. New head must pass fullCI before merge/deploy.
