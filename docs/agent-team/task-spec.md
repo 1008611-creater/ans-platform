@@ -163,3 +163,9 @@ REQ-L02 / AC-L02: One typed filter and one shared SQL reconciliation define this
 AC-L03: Isolated localhost PostgreSQL proves mixed personal/team history, null refType, positive/negative team allocation, team-only balance, and a real personal mismatch. Fixtures are rolled back; no production identities, orders, payments or model calls.
 AC-L04: Integrated companion and quota regressions, all-source lint, application/test types and boundary checks pass. Independent reviewer inspects exact final code. Runtime deployment requires current parent, source/image identity, backup and read-only acceptance; a local PASS is not a deployed claim.
 NON-C01: This increment does not open VibePlan sales or claim fully implemented batches/expiry/membership. Follow-up wallet lifecycle remains in the complete objective. The genuine event has no confirmed production record/window/role mapping; do not manufacture dates or staff grants.
+
+## 2026-10-13 Hub executable availability correction (M)
+
+REQ-HV01 / AC-HV01: Directory counts and detail links derive only from the currently attested published platform recipe. A configured identifier does not establish executable availability. Missing/withdrawn/invalid registration shows zero; read failure shows unknown and preserves the four actual Hub categories.
+REQ-HV02 / AC-HV02: No unregistered recipe is resurrected through a generic private-project fallback. A read failure hides execution links, keeps reference/resource content accessible, and uses a translated retry notice. No navigation triggers registration, running, billing or production fixtures.
+AC-HV03: Confirm absent, present and failed-publication responses in regression tests, verify locale key parity, types, lint and boundaries, obtain independent source review, then integrate with current production without overwriting concurrent voice/ledger patches.

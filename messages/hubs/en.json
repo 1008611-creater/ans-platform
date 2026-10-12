@@ -113,5 +113,7 @@
   },
   "recipeMeteredCost": "Confirm to run. Points settle from actual model usage. CNY 1 = 10 points.",
   "openWorkflow": "Open and personalize",
-  "viewMarketCard": "View market card"
+  "viewMarketCard": "View market card",
+  "workflowsUnavailable": "Workflow availability could not be loaded. Please try again shortly.",
+  "marketUnavailable": "The market card could not be loaded. The workflow remains available through its own entry."
 }

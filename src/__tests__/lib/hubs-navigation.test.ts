@@ -1,5 +1,5 @@
-﻿import { describe, expect, it } from "vitest";
-import { HUBS, getHub, hubProjects, getWorkflowHubMembership } from "@/domain/hubs/registry";
+import { describe, expect, it } from "vitest";
+import { HUBS, getHub, hubProjects, hubWorkflowRecipes, getWorkflowHubMembership } from "@/domain/hubs/registry";
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 import { PRIMARY_NAVIGATION, isPrimaryNavigationActive } from "@/domain/navigation/primary";
 
@@ -41,5 +41,17 @@ describe("unified finite primary navigation", () => {
     expect(isPrimaryNavigationActive("workspace", "/projects/project-a/website")).toBe(true);
     expect(isPrimaryNavigationActive("workspace", "/workspace/credits")).toBe(true);
     expect(isPrimaryNavigationActive("explore", "/")).toBe(true);
+  });
+});
+
+describe("published executable Hub counts", () => {
+  it("does not count configured recipes which are no longer attested", () => {
+    const hub = getHub("full-stack")!;
+    expect(hubWorkflowRecipes(hub, [])).toEqual([]);
+    expect(hubWorkflowRecipes(hub, ["resume-website"])).toEqual(["resume-website"]);
+  });
+  it("keeps an unknown read distinct from a confirmed empty publication", () => {
+    expect(hubWorkflowRecipes(getHub("full-stack")!, null)).toBeNull();
+    expect(hubWorkflowRecipes(getHub("cauhub")!, null)).toEqual([]);
   });
 });

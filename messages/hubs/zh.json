@@ -113,5 +113,7 @@
   },
   "recipeMeteredCost": "确认运行后，按实际模型用量结算积分。¥1＝10 积分。",
   "openWorkflow": "填写资料并使用",
-  "viewMarketCard": "查看市场卡"
+  "viewMarketCard": "查看市场卡",
+  "workflowsUnavailable": "工作流状态暂时无法读取，稍后重试。",
+  "marketUnavailable": "市场卡暂时无法读取，仍可以从工作流入口使用。"
 }
