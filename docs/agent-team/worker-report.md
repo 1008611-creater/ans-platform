@@ -252,3 +252,7 @@ Backup verifier adds only the exact reviewed guard SQL allowlist; preserved PROJ
 ### R10 companion UI inclusion
 
 Applied exactly14 reviewed R10 client/UI/message/test paths from patchSHA4331c4d9b2d428013035c3a24d9aac7ca21173efb866e2f9ef3ae9bf29d3c736, matched delivery LF bytes. Independent source reviewer PASS: safeMarkdown and explicit links, per-account remount/abort/generation late-response isolation, quote/confirm/expiry boundaries retained, submitted-ticket status-only recovery, in-memory mode drafts/history, localStorage only model enum and size. Root integrated5files35tests pass, applicationtypes exit0, completeESLint exit0/353warnings. Delivery's8files83tests and desktop/390zh/320en isolated component UI evidence remain separate worker evidence; entity phone keyboard and actual charged model/TTS not verified. No database/dependencies/service billing/3Dasset changes. Runtime publication still pending.
+
+### Exact historical migration byte preservation
+
+Actual prepare hard gate rejected only two already-applied marketR3 migrations because Git text normalization had converted their audited productionCRLF bytes toLF. No deployment/schema change occurred. Added exact-path -text/-eol attributes for these two historical files and restored original verified archive bytes. Existing74 migrations were already exact. This preserves historical SQL checksum authority rather than weakening the gate or rewriting migration records. FinalGit freeze andCI must use this correction.
