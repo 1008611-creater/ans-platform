@@ -226,3 +226,17 @@ PR #47 的发现/搜索/输入预览与翻译经安全适配合并，保留成�
 证据：`C:/Users/lsb/.workbuddy/ans-billing-release-20261012/` 下 deployment.json、public-verification.json、browser-verification.json、backup-verification.json、source-validation.json、candidate-covers.json、linux-build.log、isolated-evidence及实际桌面/手机截图。前端聊天另外只读验收了 `/explore` 的新面板与设置，证据位于 `ans-companion-settings-20261012/evidence/`，其报告未冒充额外真实TTS验收。
 
 冻结后main新增 `f4172f18864f5fe9403736f87c9b612ec4e682c9` 的下一批知识区改动，未在本轮镜像中；不能把本轮验证或下述文档提交当成这一增量已部署的证据。本轮应用仍以29dec185为准，后续增量须另做精确发布门禁，不覆盖本次记录。
+
+## 2026-10-12：ANS VibeHub 原创学习与创作改造正式发布
+
+北京时间 2026-10-12 11:57:22 发布完成，应用源码提交 `f4172f18864f5fe9403736f87c9b612ec4e682c9`，release `/srv/ans-releases/ans-vibehub-original-f4172f1-20261012`。运行镜像 `sha256:11f03f87f3449792e31bcfe2920b02563ca5d7fbf318032db20424afaa8247c6`，BUILD_ID `LYH9fyp3QZYHm5-9F4ZrI`，源码 SHA-256 `5a2a18bca2b0372555f0ae3ff4b0bdc8cf4ad352fd61d0a2608962261edfe1ba`，10386 个 Git 归档文件逐项核验。集成保留最新 29dec18 主站代码及其实际生产源码，未用旧冻结版本覆盖并行成果。首次准备检测到父版变化，拒绝继续；重新核对新父版与 29dec18 应用源码完全一致后才构建。
+
+本版把上游更新历史替换成有实际页面对应的 ANS 改进记录，增加三条原创学习路径、课程导学目录与可填写/复制的 Agent 需求整理；首页三张封面概括本站术语、原创实践和互动练习，沿用 GitGlow 排版方法和许可。保留上游术语、基础课程与来源。实验室虚构人数/评分已换成真实内容数量。学习路径勾选与需求草稿保存当前设备，不宣称账号同步；词条收藏继续使用真实 ANS 账号与数据库。
+
+集成源码本地类型检查、完整 lint（0 error / 376 既有 warning）、六类边界通过。精确 Linux 源码完成 Prisma 生成、类型检查、边界、lint 和生产构建，构建退出 0。未增加测试套件。构建初次依赖镜像缺少已有 QR 依赖、第二次受隔离网络限制，切换当前正式镜像的依赖与构建网络后通过；首次镜像打包引用原镜像 ID 格式错误，固定验证标签后通过。失败日志保留，不称首次全部成功。
+
+当前父版的 public schema 一致快照与 PostgreSQL 17 独立实际恢复通过：118 张表，73 项已完成迁移，0 项待迁移；备份 SHA-256 `f97a39eea012d4711537f6f7220bdf2e84f4e040efca10edac4b8be4c739213d`。没有新增迁移。共享发布锁内再次核对父容器和镜像，保留所有环境值及挂载、原镜像回滚标签；候选与正式各 30 个页面/资源 HTTP200，新封面候选哈希符合冻结源码。正式 healthy / 数据库 connected；未进行生产数据库回灌、真实收费或模型调用。
+
+真实已登录账号新增 progress 收藏，数据库一条持久记录及一条 FAVORITE_ADDED 审计记录确认；浏览器刷新后显示“已同步到 ANS 账号”，上线后仍读取到原 tooltip 与新增 progress 两条收藏。只清理本次验收新建的 progress 记录并保留原 tooltip 与审计日志，不删除原收藏。返回 ANS 实际验收：`/explore?search=agent#ans-main-content`、滚动 y=294，经知识站跨栏目及刷新返回后地址与 y=294 均恢复。正式桌面首页确认本站三张封面，改进记录中文桌面与英文 390px 手机无横向溢出；最后学习路径导航曾超时，但随后实际文档标题、地址与原创路径内容正确，保留此边界，不宣称全站逐交互生产验收。
+
+证据：`C:/Users/lsb/Documents/Codex/2026-10-11/ui-screenshot-to-code-01-html/outputs/vibehub-refactor-release/`，包括 deployment.json、source-validation.json、backup-verification.json、favorites-added-database.json、favorites-restored.json、return-navigation.json、candidate-pages.json、production-pages.json 和正式站截图。源构建与备份私有日志保留服务器受限目录，凭据不进入 Git。
