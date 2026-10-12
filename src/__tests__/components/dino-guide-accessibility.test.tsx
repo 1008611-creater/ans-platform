@@ -1,11 +1,11 @@
 import type { ComponentProps } from "react";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, act, fireEvent, render, renderHook, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { DinoGuide } from "@/components/mascot/dino-guide";
 import mascotMessages from "../../../messages/product/zh.json";
 import companionMessages from "../../../messages/companion/zh.json";
 import { PREFERENCES_KEY, resetSitePreferences } from "@/lib/site-preferences";
-import { COMPANION_SIZE_KEY, clampCompanionSize, defaultCompanionSize } from "@/components/mascot/use-companion-size";
+import { COMPANION_SIZE_KEY, clampCompanionSize, defaultCompanionSize, useCompanionSize } from "@/components/mascot/use-companion-size";
 import type { DinoTaskSnapshot } from "@/components/mascot/dino-task-context";
 
 const state = vi.hoisted(() => ({ task: null as DinoTaskSnapshot | null }));
@@ -30,7 +30,7 @@ it.each([false, true])("names the companion dialog from its visible heading (tas
   expect(within(dialog).getByRole("button", { name: companionMessages.openSiteSettings })).toBeInTheDocument();
   expect(within(dialog).getByRole("navigation", { name: companionMessages.suggestedNextSteps })).toBeInTheDocument();
   expect(within(dialog).getByRole("link", { name: new RegExp(companionMessages.actionProjectTitle) })).toHaveAttribute("href", "/projects#new-project");
-  expect(within(dialog).getByRole("link", { name: new RegExp(companionMessages.actionVideoTitle) })).toHaveAttribute("href", "/workflows");
+  expect(within(dialog).getByRole("link", { name: new RegExp(companionMessages.actionHubTitle) })).toHaveAttribute("href", "/hubs");
   expect(within(dialog).getByRole("button", { name: companionMessages.sendMessage })).toBeDisabled();
 });
 
@@ -58,7 +58,7 @@ it("places the direct voice toggle in the header and places the model selector i
 
 it("bounds saved sizing to small screens and restores large desktop defaults", () => {
   expect(defaultCompanionSize(1280, 720)).toEqual({ width: 717, height: 605 });
-  expect(clampCompanionSize({ width: 1500, height: 1500 }, 390, 844)).toEqual({ width: 366, height: 694 });
+  expect(clampCompanionSize({ width: 1500, height: 1500 }, 390, 844)).toEqual({ width: 366, height: 606 });
   expect(clampCompanionSize({ width: 1, height: 1 }, 1280, 720)).toEqual({ width: 360, height: 340 });
 });
 it("persists keyboard resizing and allows reset without clearing conversation", () => {
@@ -73,4 +73,59 @@ it("persists keyboard resizing and allows reset without clearing conversation", 
   fireEvent.click(within(dialog).getByRole("button", { name: companionMessages.resetChatSize }));
   expect(parseFloat(dialog.style.width)).toBe(before);
   expect(localStorage.getItem(COMPANION_SIZE_KEY)).toBeNull();
+});
+
+it("preserves independent mode drafts and supports undo without submitting them", async () => {
+  const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+  render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  const dialog = screen.getByRole("dialog");
+  fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: "Agent 草稿" } });
+  fireEvent.click(within(dialog).getByRole("button", { name: companionMessages.guideMode }));
+  expect(within(dialog).getByRole("textbox")).toHaveValue("");
+  fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: "向导草稿" } });
+  fireEvent.click(within(dialog).getByRole("button", { name: companionMessages.agentMode }));
+  expect(within(dialog).getByRole("textbox")).toHaveValue("Agent 草稿");
+  fireEvent.click(within(dialog).getByRole("button", { name: companionMessages.newConversation }));
+  expect(within(dialog).getByRole("textbox")).toHaveValue("");
+  fireEvent.click(within(dialog).getByRole("button", { name: companionMessages.undoClear }));
+  expect(within(dialog).getByRole("textbox")).toHaveValue("Agent 草稿");
+  expect(fetch).not.toHaveBeenCalled(); vi.unstubAllGlobals();
+});
+it("keeps the next draft while an answer arrives and offers stop at the composer", async () => {
+  let respond: (response: Response) => void = () => {};
+  const quote = { ticket: "local-approval", requestId: "local-request", model: "deepseek-v4.1-flash", maxPoints: 1, balance: 2, expiresAt: Date.now() + 300000 };
+  const fetch = vi.fn().mockResolvedValueOnce(Response.json(quote)).mockImplementationOnce(() => new Promise<Response>(resolve => { respond = resolve; }));
+  vi.stubGlobal("fetch", fetch); render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  const dialog = screen.getByRole("dialog"), input = within(dialog).getByRole("textbox");
+  fireEvent.change(input, { target: { value: "第一句" } });
+  fireEvent.click(within(dialog).getByRole("button", { name: companionMessages.sendMessage }));
+  await waitFor(() => expect(within(dialog).getByRole("button", { name: companionMessages.agentConfirm })).toBeInTheDocument());
+  fireEvent.click(within(dialog).getByRole("button", { name: companionMessages.agentConfirm }));
+  const stop = await within(dialog).findByRole("button", { name: companionMessages.agentStop });
+  expect(stop.closest("form")).not.toBeNull(); expect(input).toBeEnabled();
+  fireEvent.change(input, { target: { value: "下一句的草稿" } });
+  respond(new Response([JSON.stringify({ type: "answer", text: "## 第一条建议\n\n真实回复样本", links: [] }), JSON.stringify({ type: "done" })].join("\n")));
+  await waitFor(() => expect(within(dialog).getByRole("button", { name: companionMessages.sendMessage })).toBeEnabled());
+  expect(input).toHaveValue("下一句的草稿"); expect(fetch).toHaveBeenCalledTimes(2);
+  vi.unstubAllGlobals();
+});
+
+it("fits the visual keyboard viewport without overwriting desktop sizing", () => {
+  const width = window.innerWidth, height = window.innerHeight;
+  Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
+  Object.defineProperty(window, "innerHeight", { configurable: true, value: 844 });
+  const visual = Object.assign(new EventTarget(), { width: 390, height: 460, offsetLeft: 0, offsetTop: 0 });
+  Object.defineProperty(window, "visualViewport", { configurable: true, value: visual });
+  localStorage.setItem(COMPANION_SIZE_KEY, JSON.stringify({ width: 800, height: 650 }));
+  const view = renderHook(useCompanionSize); act(() => view.result.current.prepare());
+  expect(view.result.current.keyboard).toBe(true);
+  expect(view.result.current.style).toEqual({ width: 366, height: 424 });
+  expect(view.result.current.anchor.current.getBoundingClientRect().bottom).toBe(448);
+  expect(JSON.parse(localStorage.getItem(COMPANION_SIZE_KEY)!)).toEqual({ width: 800, height: 650 });
+  view.unmount();
+  Object.defineProperty(window, "visualViewport", { configurable: true, value: undefined });
+  Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+  Object.defineProperty(window, "innerHeight", { configurable: true, value: height });
 });

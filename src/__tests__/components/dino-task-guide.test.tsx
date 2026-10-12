@@ -56,7 +56,7 @@ describe("Dino follows the actual portfolio workflow", () => {
   it("keeps navigation available when no task is registered", async () => {
     render(<Shell />); await userEvent.click(screen.getByRole("button", { name: text.open }));
     expect(screen.getByRole("heading", { name: text.name })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: new RegExp(companion.actionVideoTitle) })).toHaveAttribute("href", "/workflows");
+    expect(screen.getByRole("link", { name: new RegExp(companion.actionHubTitle) })).toHaveAttribute("href", "/hubs");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
