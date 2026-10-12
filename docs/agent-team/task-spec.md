@@ -103,3 +103,15 @@ REQ-P05 / AC-P05：保持当前真实业务/44封面/小恐龙/Hypit/UI整合；
 Include the separately authorized companion/settings handoff in this unified release: default voice off, no fake LLM or autonomous execution, same-origin/current-frame messages, account-session separation, stored presentation preferences and reduced-motion static fallback. Preserve the deployed GLB/rig assets while updating only the four reviewed renderer text files. AC-B08: strict existing task/logout/frame lifecycle checks pass; default silence and opt-in behavior pass; immutable asset mount preserves unrelated files; actual mobile/desktop production pages show a single companion and no horizontal overflow.
 
 Include the reviewed admin credit clarity increment: no default account selection, visible restricted-account state, explicit TOP_UP evidence/confirmation, accurate voucher classification. No new accounting writes or schema. Require exact source build, fresh consistent backup/restore, isolated service regressions and real production health/read-only page checks before final acceptance.
+
+
+## 2026-10-12 知识区后续增量正式审计（L）
+
+用户“继续”授权承接此前未上线批次。只读发现并行发布已将f4172f18864f5fe9403736f87c9b612ec4e682c9切到正式站，故本轮审计实际发布与线上交互，不重复切换。
+
+REQ-V01 / AC-V01：独立检查29dec185..f4172f18的25个文件；链接、双语、来源、学习路径、历史内容与返回导航不能虚构或破坏既有内容；源审计给具体证据。
+REQ-V02 / AC-V02：正式容器revision/source/image与部署记录一致；原环境和mascot挂载保留，固定10倍充值及会员禁售不变；核对backup恢复、73迁移零新增及代码检查真实退出。
+REQ-V03 / AC-V03：真实HTTPS1280/390、中英、至少首页/课程/学习路径/改进记录/实践/Skill，验证新封面、导航/返回、页面无横向溢出；保留截图与实际读出结果。
+REQ-V04 / AC-V04：已有登录收藏只读验收持久化，继续核对套餐和积分页真实入口；不创建假业务、不购买、兑换、生成或真实TTS、不覆盖并行发布。
+NON-V01：不以本轮静态与浏览器审计冒充会员权益、交易收费、全部农客松或跨设备功能验收。
+独立审查只写本轮evidence目录中的review.md/json，不改代码；主控汇总现有review-report并发布文档。当前生产已有backup/deploy gate0，失败构建记录保留并区分修复后成功。

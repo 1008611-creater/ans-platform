@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
 import { getMessages, getLocale, getTimeZone, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { Header } from "@/components/layout/header";
+import { SiteFrame } from "@/components/layout/site-frame";
 import { Footer } from "@/components/layout/footer";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { DinoGuide } from "@/components/mascot/dino-guide";
@@ -98,12 +98,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || headersList.get("x-invoke-path") || "";
-  const isEmbedRoute = pathname.startsWith("/embed");
-  const isKidsRoute = pathname.startsWith("/kids");
-  const isVibeHubRoute = pathname.startsWith("/vibe-hub");
-  
   const locale = await getLocale();
   const messages = await getMessages();
   const timeZone = await getTimeZone();
@@ -131,22 +125,13 @@ export default async function RootLayout({
       </head>
       <body className={`${fontClasses} antialiased`}>
         <Providers locale={locale} timeZone={timeZone} messages={messages} theme={config.theme} branding={{ ...config.branding, useCloneBranding: config.homepage?.useCloneBranding }}>
-          {isEmbedRoute || isKidsRoute || isVibeHubRoute ? (
-            children
-          ) : (
-            <>
-              <div className="relative min-h-screen flex flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
-                <a href="#main-content" className="sr-only fixed start-4 top-2 z-[60] rounded-lg bg-background p-3 font-medium text-foreground focus:not-sr-only focus-visible:outline-2 focus-visible:outline-primary">{product("skipToContent")}</a>
-                <Header authProvider={config.auth.provider} allowRegistration={config.auth.allowRegistration} />
-                <main id="main-content" tabIndex={-1} className="flex-1 scroll-mt-16">{children}</main>
-                <Footer />
-                <MobileTabBar />
-                <DinoGuide />
-                {/* 移动端/WebView 中 Cookie 横幅会遮挡底部 Tab 栏，暂不渲染；桌面端如有合规需要可恢复。 */}
-                {/* <CookieConsentBanner /> */}
-              </div>
-            </>
-          )}
+          <SiteFrame
+            skipLabel={product("skipToContent")}
+            header={<Header authProvider={config.auth.provider} allowRegistration={config.auth.allowRegistration} />}
+            footer={<Footer />}
+            mobileNavigation={<MobileTabBar />}
+            companion={<DinoGuide />}
+          >{children}</SiteFrame>
         </Providers>
       </body>
     </html>

@@ -141,3 +141,9 @@ REQ-B08: the 11 source files and four renderer text files were individually hash
 ## 2026-10-12 本轮正式发布结果
 
 应用29dec185实际部署并通过候选/正式健康与页面验证、备份恢复及精确Linux检查。2683项通过、10跳过；history31/completion14/market13仅隔离验收。套餐展示已上线、会员售卖仍关闭；PR47/30合并，PR29替代关闭。真实HTTPS手机/桌面验收证据及未验边界见 production-release.md 本轮节与 ans-billing-release-20261012/browser-verification.json。冻结后f4172f18知识区增量尚未包含在本轮运行镜像；文档提交不改变已运行应用。
+
+## 2026-10-12 知识区返回布局修复
+
+REQ-V01..04可执行。正式f4172f18浏览器验收发现ISSUE-V01：知识区刷新后返回项目广场，共享RootLayout沿用服务端初始路径，主导航/页脚/恐龙缺失，滚动720实际仅384。新增客户端SiteFrame按usePathname决定站点框架，Header/Footer仍由服务端ReactNode slots传入，Providers持续保留；embed/kids裸布局范围沿用原逻辑。新增同一root跨区切换回归，无真实业务写入。
+
+本地2文件10测试、3文件lint零错误零警告、完整typecheck及六类边界通过。独立审查源复核PASS，ISSUE-V01=FIXED_WAIT_RETEST；精确Linux构建、备份恢复和正式HTTPS返回/滚动证据待部署完成后填写。
