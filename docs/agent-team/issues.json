@@ -71,9 +71,9 @@
                      ],
         "severity":  "P1",
         "requirement":  "REQ-H05 / REQ-H06 / RULE-H02",
-        "actual":  "Generated prepare Dockerfile omits source/prisma COPY and inherits old runtime migration directory.",
+        "actual":  "Independently confirmed explicit source/prisma COPY and whitelist, exact generated client and LICENSE copies; packaging scripts compile in memory. Actual release migration/image status still pending.",
         "suggestion":  "Explicitly COPY source/prisma to /app/prisma and allow it in Dockerfile.dockerignore; verify final image and deployed migration status.",
-        "status":  "OPEN",
+        "status":  "CLOSED",
         "expected":  "Runtime image carries the new Prisma schema and additive PROJECT migration as well as regenerated client."
     }
 ]
