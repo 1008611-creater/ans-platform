@@ -43,7 +43,7 @@ describe("decision management selection and safety", () => {
     expect(reads()[0][1]).toMatchObject({ cache: "no-store", headers: { "x-ans-submission-actor": mocks.session.data.user.id } });
     expect(Object.fromEntries(new URL(reads()[0][0], "http://fixture.invalid").searchParams)).toEqual(target);
     expect(screen.getByText("stage.PRELIMINARY")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "decisionsTitle" })).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole("heading", { name: "decisionsTitle" })).toHaveFocus());
     expect(screen.getByText("manualDecisionTarget").closest("details")).not.toHaveAttribute("open");
     expect(writes()).toHaveLength(0);
   });
