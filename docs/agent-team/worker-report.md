@@ -225,3 +225,12 @@ Changed only the explicit platform registration transaction to finite maxWait150
 应用冻结 `1c1d4db1897dd738812963562a33d6f329bf56cb` 已进入 main 并正式部署，image a6694acb / BUILD_ID Y3jvHQM_xL96PNVZdEQQ5，deploy.exit0、healthy/database connected。官方 resume-website-v1 真实workflow immutablev1与市场卡已登记并读回，XP7→7；普通成员审核、来源/代码/版本/事务重验保留。R1锁void兼容和R2有限事务预算修复经过实际PostgreSQL诊断及R3成功发布，独立reviewer依据实证关闭HR13。
 
 Linux223文件2932通过/10跳过，类型/边界/lint/生产build通过；118表fresh隔离恢复和71静态文件hash一致；74迁移零新增DDL。生产桌面/390手机六导航、账号收藏算力、四Hub、真实workflow/market表单、空输入disabled、折叠高级结构、R9静音/模型同排/一iframe/无横向溢出通过。所有浏览器操作只读，不提交资料或生成。收费模型/TTS、支付/兑换、完整订阅履约及市场结算未验收，整体goal仍active。证据在 ans-platform-recipe-r9-r3-20261012/browser-verification.json、local-safe-evidence-manifest.json及实际截图；正式详录见 production-release.md 本日R3节。
+## 2026-10-12 农客松安全修复（本地复验完成，部署待执行）
+
+REQ-AU01：任务列表在一次批量分享授权重验后读取最终数据库时间，过滤读取期间到期或撤销的分享；本人任务保留，分页沿原扫描边界推进，serverNow 与截止状态均使用最终时间。独立 reviewer 的实际源码复现由旧版返回一条改为零条，相关六文件 68 项通过。
+
+REQ-AU02：普通赛事提交/审核在显式绑定、任一持久化工作区或阶段历史下拒绝旧入口。新增独立 migration 20261012213000_agri_legacy_workspace_boundary 仅收紧旧 guard 对 disabled 工作区的保护；保留纯 REGISTERED、额度元数据、普通赛事、OLD/NEW 归属及 NOWAIT 锁序。原 migration 与业务数据未修改。独立三文件 58 项、受限本机 PostgreSQL 75 项 migration 和八项直接 SQL mutation 拒绝通过，验收 fixture 回滚后零行。ENV-only 认领目前由应用保护，SQL 按持久化 workspace/history 认领。
+
+本机完整应用类型、六类边界通过；提交前 full lint 0 errors / 351 warnings。测试完整类型已由任务实施员工验证通过。两个问题由独立 reviewer 按本地源码/隔离验收范围关闭（HR14、HR15），正式运行仍须精确父版、备份恢复、迁移演练和上线后复验。先取得刚上线市场的精确源码提交与 parent，避免覆盖其新增供应、Star、积分支付与 SDK 功能。没有生产造数据或执行真实付费模型/订单；不宣称完整会员或农客松全部验收完成。
+
+安全证据：C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-review.json、legacy-guard-isolated-postgres.json、full-lint-current.log、typecheck-current.log；HR14 独立证据在 ans-vibehub-followup-audit-20261012/agri-task-list-expiry-fix-review.json。

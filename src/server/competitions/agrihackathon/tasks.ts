@@ -94,9 +94,21 @@ export async function listAgriTasks(actorId: string, cursor?: string, rawFilters
       AND: [visibility, ...(after ? [{ OR: [{ createdAt: { lt: new Date(after.createdAt) } }, { createdAt: new Date(after.createdAt), id: { lt: after.id } }] }] : [])] },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: taskLimit + 1 });
     const page = rows.slice(0, taskLimit); const last = page.at(-1);
-    return { competitionId, serverNow: now.toISOString(), tasks: page.map(row => view(row, actorId, now)), sharingLimit,
+    const sharedIds = page.filter(row => row.ownerId !== actorId).map(row => row.id);
+    // Recheck only this page in one query. A share can expire while either read
+    // is in flight, so the final database clock also filters returned expiries.
+    const currentShares = sharedIds.length ? await tx.agriTaskShare.findMany({
+      where: { taskId: { in: sharedIds }, userId: actorId, revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+      select: { taskId: true, expiresAt: true },
+    }) : [];
+    const finalNow = await clock(tx);
+    const readableIds = new Set(currentShares.filter(share => !share.expiresAt || share.expiresAt > finalNow).map(share => share.taskId));
+    const visiblePage = page.filter(row => row.ownerId === actorId || readableIds.has(row.id));
+    // Pagination advances over the fetched page, even if its shares all expired.
+    return { competitionId, serverNow: finalNow.toISOString(), tasks: visiblePage.map(row => view(row, actorId, finalNow)), sharingLimit,
       nextCursor: rows.length > taskLimit && last ? JSON.stringify({ createdAt: last.createdAt.toISOString(), id: last.id }) : null };
-  });
+  }, { maxWait: 10_000, timeout: 20_000 });
 }
 export async function getAgriTask(actorId: string, taskId: string): Promise<AgriTaskDetail> {
   const competitionId = boundCompetitionId();

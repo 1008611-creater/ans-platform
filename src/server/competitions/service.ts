@@ -22,14 +22,14 @@ export class CompetitionError extends Error {
   }
 }
 
-/** Same workspace-first order as stage commands; SQL guard remains the last line of defence. */
+/** Managed ownership survives disabling the workspace; legacy paths must never reopen it. */
 async function ensureLegacyEntryAllowed(tx: DbTransaction, competitionId: string, entryId?: string) {
   const workspaces = await tx.$queryRaw<Array<{ enabled: boolean }>>`SELECT enabled FROM agri_workspaces
     WHERE "competitionId"=${competitionId} FOR SHARE`;
   const history = entryId ? await tx.$queryRaw<Array<{ id: string }>>`SELECT id FROM agri_entry_stages
     WHERE "teamCompetitionId"=${entryId} LIMIT 1` : [];
-  if (workspaces.some(row => row.enabled) || history.length) {
-    throw new CompetitionError(409, "AGRI_STAGE_WORKSPACE_REQUIRED", "本届已启用阶段工作区，请从农客松阶段提交入口操作。");
+  if (competitionId === process.env.ANS_AGRIHACKATHON_COMPETITION_ID?.trim() || workspaces.length || history.length) {
+    throw new CompetitionError(409, "AGRI_STAGE_WORKSPACE_REQUIRED", "本届使用农客松阶段工作区，请从阶段提交入口操作。");
   }
 }
 

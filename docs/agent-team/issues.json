@@ -130,5 +130,59 @@
             "C:/Users/lsb/.workbuddy/ans-platform-recipe-r9-r3-20261012/deployment.json"
         ],
         "closure": "R3 exact 1c1d4db source registered on the actual Supabase pooler and published its real official listing before production switched. Baseline workflow/listing null became cmv57kxtg0001rs0hofcak7p2 / cmv57lacv0007rs0hca9i3dy2, definition and source hashes match the independently reviewed registry; actual readPlatformRecipe check validates owner authority, immutable version and seven audit metadata bindings. Owner XP remained 7. Exact a6694ac image is healthy with worker enabled. Reviewer independently rehashed 4885 Git blobs, delta archive and 20 safe artifacts. No real paid model, TTS or payment verified; R2 original masked error is not asserted as certain P2028."
-    }
+    },
+    {
+        "id": "ISSUE-HR14",
+        "status": "CLOSED",
+        "severity": "P2",
+        "requirement": "Current share authorization must remain valid at the last accepted read; private task metadata must not be returned after share expiration.",
+        "acceptance_item": "Independent service-level list/read expiry boundary",
+        "expected": "A share that expires while listAgriTasks is querying is rechecked against the final database clock and omitted/denied before returning task metadata. Owned tasks and still-valid shares remain readable.",
+        "actual": "Current a9abac68 tasks.ts listAgriTasks reads the database clock only before findMany, uses that timestamp in the sharing predicate and immediately projects returned rows. Deterministic execution of the actual complete service module and actual contracts/template: initial clock .000, share expiry .050, findMany completes at .100; expired shared task is returned with title, collaboration notes and input requirements. getAgriTask control rechecks final time and rejects NOT_FOUND404.",
+        "suggestion": "Retain workspace/account lock order. Recheck returned shared task authorization against final database time before projection, with coherent cursor/pagination; preserve owner reads and active shared reads. Do not mistake locks for protection against time passing.",
+        "source": "/root/vibehub_followup_review independent read-only source audit plus deterministic actual-service execution",
+        "sourceLocations": [
+            "src/server/competitions/agrihackathon/tasks.ts:86",
+            "src/server/competitions/agrihackathon/tasks.ts:93",
+            "src/server/competitions/agrihackathon/tasks.ts:111"
+        ],
+        "evidence": [
+            "C:/Users/lsb/.workbuddy/ans-vibehub-followup-audit-20261012/agri-task-list-expiry-repro.cjs",
+            "C:/Users/lsb/.workbuddy/ans-vibehub-followup-audit-20261012/agri-task-list-expiry-repro.json"
+        ],
+        "limitations": "Mocked deterministic DB clock proves service behavior; no real concurrent PostgreSQL/production read/write experiment, no app source modification. Compliant revocation is serialized by workspace lock; this finding is expiration during a read.",
+        "closedBy": "/root/vibehub_followup_review",
+        "closureScope": "Independent local source and deterministic service/test verification; not yet certified deployed.",
+        "closure": "Batch re-reads current actor non-revoked shares for fetched page shared IDs, then final DB clock removes expired/equal-time shares. Owned and active/null-expiry tasks remain, original raw page cursor prevents repeats while expired rows are skipped. Independent exact prior scenario now returns 0 shared tasks after expiry with two DB clocks; active baseline1 and get404 control retained. Actual targeted six-file68/68 pass at20:44:27. No production data or network action by reviewer.",
+        "closureEvidence": [
+            "C:/Users/lsb/.workbuddy/ans-vibehub-followup-audit-20261012/agri-task-list-expiry-retest.cjs",
+            "C:/Users/lsb/.workbuddy/ans-vibehub-followup-audit-20261012/agri-task-list-expiry-retest.json",
+            "src/__tests__/lib/agri-task-list-access.test.ts"
+        ]
+    },
+{
+    "id":  "ISSUE-HR15",
+    "status":  "CLOSED",
+    "severity":  "P1",
+    "requirement":  "REQ-AU02",
+    "acceptance_item":  "AC-AU02",
+    "expected":  "Managed edition cannot fall back to legacy submission/review while disabled, before first stage or before workspace setup. Database prevents protected legacy mutations in persisted workspaces; pure registration/quota and ordinary editions remain compatible.",
+    "actual":  "Original actual-service offline reproduction accepted SUBMITTED and legacy REJECTED in disabled managed workspace. Legacy SQL guard also depended on enabled and did not protect a disabled workspace before first stage.",
+    "suggestion":  "Check explicit configured edition and any persisted workspace in application; use additive CREATE OR REPLACE database guard checking workspace existence independently of enabled, preserving history/NOWAIT, ordinary registration and quota updates.",
+    "evidence":  [
+                     "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-boundary-result.json",
+                     "src/server/competitions/service.ts",
+                     "prisma/migrations/20261012213000_agri_legacy_workspace_boundary/migration.sql",
+                     "scripts/agri-legacy-boundary-sql-check.sql"
+                 ],
+    "closedBy":  "/root/agri_current_completion_audit",
+    "closureScope":  "Independent local source and actual isolated PostgreSQL verification; deployment pending.",
+    "closure":  "Independent source review and actual three-file58/58 regression passed. Reviewer independently reran strict localhost PostgreSQL runner:75 migrations,8 forbidden protected operations rejected, disabled workspace protected; plain REGISTERED/quota and ordinary submission/rejection/delete compatible,0 publication/XP writes,fixture transaction rolled back with0 user fixture rows. Config-only binding rejected by service before workspace setup; SQL uses actual persisted workspace identity and does not infer ENV.",
+    "closureEvidence":  [
+                            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-review.json",
+                            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-result.json",
+                            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-guard-isolated-postgres.json"
+                        ],
+    "limits":  "Reviewer made no application-source changes, production writes, deployment or paid calls. Full event roster/eligibility/publication/window/real staff flows remain separate incomplete requirements."
+}
 ]

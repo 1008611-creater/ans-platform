@@ -138,3 +138,19 @@ Validation: exact types/boundaries/lint/build, necessary authorization/billing b
 User explicitly reauthorizes implementation, main merge and production deployment for the whole six-navigation/Hub/fixed-code-market loop. REQ-R01: retain the already-live finite navigation and account menu, preserve source licenses and original business data. REQ-R02: publish the genuine existing resume renderer as a platform-managed immutable executable recipe, not a synthetic user project/demo. REQ-R03: full-stack Hub links to that current real workflow; the public workflow offers an owner-only one-click market submission, and the platform's real listing exposes personal-input confirmation, billing, output history and HTML preview/download. REQ-R04: platform-owned code recipes have an explicit registry and source/version/hash attestation; ordinary author manual/AI review rules remain unchanged, no invented AI PASS or alternate reviewer account. Retired/private/unreviewed/version-changed sources must fail closed before fee/run. REQ-R05: this release registers only the actual source-reviewed recipe under the real existing owner account; no new users, dummy personal input, XP fixture, order or test generation/payment. No automatic model execution on navigation/provisioning. REQ-R06: fixed ¥1=10 and existing Liandong only; membership sale stays closed.
 
 AC-R01: real desktop/mobile six targets and correct account menu persist. AC-R02: exact registry officialId/slug/owner-admin/v1/source hash/audit/graph are enforced; arbitrary old official workflow cannot run without a project or enter market. AC-R03: record registration + real market create/submission/official review are idempotent and auditable; source unknown/change rejects, no ordinary review bypass or fabricated reviewer. AC-R04: deployed Hub/workflow/market show actual current source and own-input form, no GET-triggered queue; no production fake content used for acceptance. AC-R05: offline meaningful permission/version/retry/billing guards and Linux build checks, consistent backup and precise-image browser evidence; actual paid generation remains unclaimed unless legitimately executed for a real deliverable.
+
+## 2026-10-12 当前农客松安全审计修复（XL）
+
+长期目标保持全部ANS商业、AIGC与农客松范围；本切片优先解决两条已复现的权限/阶段旁路，不把修复等同全目标或五轮完整审计通过。本次用户持续授权协作、实现、审计、main与上线；未知赛事日期、实名角色与规则不伪造。
+
+REQ-AU01 / AC-AU01：任务列表仅返回最终服务器时间仍具权限的任务。查询途中到期或被撤销的分享不返回标题、依赖、协作说明或ID；本人任务保留。采用批量重验，分页游标按原扫描边界推进，不逐500条发请求。serverNow/截止状态使用最终时间；保留edition/account/workspace锁与权限。模拟服务覆盖到期瞬间、撤销、有效分享、自己任务、最后页及续页、新分享不额外加入；独立复验实际当前源。
+
+REQ-AU02 / AC-AU02：显式配置的农客松edition（即使尚无workspace）、任何已有农客松workspace（即使disabled）、已有stage历史的entry，全部拒绝普通赛事legacy提交/复核。禁止旧接口绕开已发布独立窗口、阶段不可变版本、技术权限或直接发布/奖励。其他普通赛事保持原功能；正式REGISTERED报名经现有独立窗口权限，不把报名与submission混同。
+
+RULE-AU01：服务端ensureLegacyEntryAllowed在任何业务写/XP/公开之前拒绝，并维持workspace-first锁。数据库agri_legacy_entry_guard通过独立兼容migration更新，任何workspace存在即保护，不以enabled开关解禁；历史protected列、stage-history、old/new edition、NOWAIT防死锁、无保护普通赛事和纯REGISTERED insert行为保留。不重写旧migration或schema/数据，不自动迁移production。
+
+AC-AU03：实际隔离PostgreSQL（全新数据库）应用全部迁移，直接INSERT/UPDATE/DELETE在disabledworkspace、stage历史、跨edition、旧XP/public字段写入均拒绝；普通competition合法旧操作和REGISTERED报名保持。迁移前后既有字段/行/触发器无丢失，新函数只收紧准入。角色权限、publication和XP无新增副作用。测试fixture仅隔离库，不生产造账号/赛事。
+
+AC-AU04：精准应用+测试类型、相关tests/lint/边界、postcoding独立审查完成后PR/main统一集成；发布仍要求当前parent、fresh备份隔离恢复、精确Linuxsource/image、迁移preflight和生产只读验收。并行市场发布不得覆盖新导航/R9/配方，本切片也不覆盖其已发布增量。无付费调用或真实业务样例。
+
+分工：root实现legacy service/DB migration与相关验证；platform_recipe_registration实施任务list+targeted tests；agri_current_completion_audit只读六交付/legacy旁路审查；vibehub_followup_review独立源/任务权限及问题复验。仅独立reviewer能CLOSED。原已完成R3记录保留，当前发现不会逆改历史PASS范围。
