@@ -160,29 +160,51 @@
             "src/__tests__/lib/agri-task-list-access.test.ts"
         ]
     },
-{
-    "id":  "ISSUE-HR15",
-    "status":  "CLOSED",
-    "severity":  "P1",
-    "requirement":  "REQ-AU02",
-    "acceptance_item":  "AC-AU02",
-    "expected":  "Managed edition cannot fall back to legacy submission/review while disabled, before first stage or before workspace setup. Database prevents protected legacy mutations in persisted workspaces; pure registration/quota and ordinary editions remain compatible.",
-    "actual":  "Original actual-service offline reproduction accepted SUBMITTED and legacy REJECTED in disabled managed workspace. Legacy SQL guard also depended on enabled and did not protect a disabled workspace before first stage.",
-    "suggestion":  "Check explicit configured edition and any persisted workspace in application; use additive CREATE OR REPLACE database guard checking workspace existence independently of enabled, preserving history/NOWAIT, ordinary registration and quota updates.",
-    "evidence":  [
-                     "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-boundary-result.json",
-                     "src/server/competitions/service.ts",
-                     "prisma/migrations/20261012213000_agri_legacy_workspace_boundary/migration.sql",
-                     "scripts/agri-legacy-boundary-sql-check.sql"
-                 ],
-    "closedBy":  "/root/agri_current_completion_audit",
-    "closureScope":  "Independent local source and actual isolated PostgreSQL verification; deployment pending.",
-    "closure":  "Independent source review and actual three-file58/58 regression passed. Reviewer independently reran strict localhost PostgreSQL runner:75 migrations,8 forbidden protected operations rejected, disabled workspace protected; plain REGISTERED/quota and ordinary submission/rejection/delete compatible,0 publication/XP writes,fixture transaction rolled back with0 user fixture rows. Config-only binding rejected by service before workspace setup; SQL uses actual persisted workspace identity and does not infer ENV.",
-    "closureEvidence":  [
-                            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-review.json",
-                            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-result.json",
-                            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-guard-isolated-postgres.json"
-                        ],
-    "limits":  "Reviewer made no application-source changes, production writes, deployment or paid calls. Full event roster/eligibility/publication/window/real staff flows remain separate incomplete requirements."
-}
+    {
+        "id": "ISSUE-HR15",
+        "status": "CLOSED",
+        "severity": "P1",
+        "requirement": "REQ-AU02",
+        "acceptance_item": "AC-AU02",
+        "expected": "Managed edition cannot fall back to legacy submission/review while disabled, before first stage or before workspace setup. Database prevents protected legacy mutations in persisted workspaces; pure registration/quota and ordinary editions remain compatible.",
+        "actual": "Original actual-service offline reproduction accepted SUBMITTED and legacy REJECTED in disabled managed workspace. Legacy SQL guard also depended on enabled and did not protect a disabled workspace before first stage.",
+        "suggestion": "Check explicit configured edition and any persisted workspace in application; use additive CREATE OR REPLACE database guard checking workspace existence independently of enabled, preserving history/NOWAIT, ordinary registration and quota updates.",
+        "evidence": [
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-boundary-result.json",
+            "src/server/competitions/service.ts",
+            "prisma/migrations/20261012213000_agri_legacy_workspace_boundary/migration.sql",
+            "scripts/agri-legacy-boundary-sql-check.sql"
+        ],
+        "closedBy": "/root/agri_current_completion_audit",
+        "closureScope": "Independent local source and actual isolated PostgreSQL verification; deployment pending.",
+        "closure": "Independent source review and actual three-file58/58 regression passed. Reviewer independently reran strict localhost PostgreSQL runner:75 migrations,8 forbidden protected operations rejected, disabled workspace protected; plain REGISTERED/quota and ordinary submission/rejection/delete compatible,0 publication/XP writes,fixture transaction rolled back with0 user fixture rows. Config-only binding rejected by service before workspace setup; SQL uses actual persisted workspace identity and does not infer ENV.",
+        "closureEvidence": [
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-review.json",
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-result.json",
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-guard-isolated-postgres.json"
+        ],
+        "limits": "Reviewer made no application-source changes, production writes, deployment or paid calls. Full event roster/eligibility/publication/window/real staff flows remain separate incomplete requirements."
+    },
+    {
+        "id": "ISSUE-HR16",
+        "status": "FIXED_SOURCE_PENDING_CI",
+        "severity": "P2",
+        "requirement": "Approved six-primary navigation and retired public routes must be checked by current quality gates without lowering accessibility/performance/fixture rules.",
+        "acceptance_item": "Independent smoke/a11y/performance script source review, followed by real PR CI gate",
+        "expected": "Smoke explicitly asserts approved paths/order /explore,/hubs,/community,/competitions,/market,/workspace and correct retired redirects. A11y scans protected content after authenticated login. Existing axe severity, fixture requirements and API/LCP budgets remain enforced.",
+        "actual": "eb75f74a smoke still requires four mobile tabs and drawer /workflows, contradicting actual approved six routes. Independent read of old script and current primary/header/bottom navigation confirms obsolete expectation; unrelated unit-test success is not smoke success. New candidate initially assumed /templates?/explore although actual accepted mapping is /hubs, and a11y public community content assertion conflicts with its unauthenticated login redirect; these candidate issues were reported before acceptance.",
+        "suggestion": "Use explicit independent six-path order, explicit retired-route pairs and authenticated community/workspace scans. Preserve existing strong failures and require-mode fixture checks, then rerun real PR CI.",
+        "source": "/root/vibehub_followup_review read-only current script/source audit",
+        "evidence": [
+            "scripts/smoke-e2e.mjs",
+            "scripts/a11y-audit.mjs",
+            "scripts/perf-budget.mjs",
+            "src/domain/navigation/primary.ts",
+            "src/domain/navigation/retired.ts",
+            "src/app/community/page.tsx",
+            ".github/workflows/ci.yml"
+        ],
+        "limits": "No terminal UI/browser invocation by reviewer; source/syntax/lint alone do not establish real preview or CI acceptance.",
+        "sourceReview": "Independent corrected source review passes: exact explicit six navigation order, prompts to explore/templates to hubs, authenticated community/workspace routes including mobile axe. Syntax3passed, actual no-ignore lint0errors/two pre-existingwarnings. Unchanged axe blocking/fixture gates and API/LCP budgets verified. Actual PR CI not yet reviewed; no terminal UI executed by reviewer."
+    }
 ]

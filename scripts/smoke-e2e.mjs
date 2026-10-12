@@ -7,7 +7,7 @@
  * 跑两轮：
  *   - 桌面视口（1280×900）：完整核心路径，含登录与登录后的页面。
  *   - 移动视口（390×844）：确认主导航按屏宽收敛后，核心入口仍然可达——
- *     底部 Tab 栏在位、抽屉菜单能打开并包含三类内容入口、页面没有横向溢出。
+ *     底部六入口与抽屉六入口一致，旧公共深链退役，页面没有横向溢出。
  *
  * 三种退出形态见 `scripts/lib/preview-server.mjs`。
  *
@@ -35,6 +35,8 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
 
 /** 允许 1px 的亚像素误差，超过才算真实横向溢出。 */
 const OVERFLOW_TOLERANCE = 1;
+// Product acceptance is explicit here, independent of the implementation registry.
+const PRIMARY_PATHS = ["/explore", "/hubs", "/community", "/competitions", "/market", "/workspace"];
 
 /**
  * 把页面的异常采集挂到某个 page 上。桌面轮和移动轮各挂一次，
@@ -114,8 +116,18 @@ async function runDesktop(page, { baseUrl, seed }, checks, problems) {
   const visit = await makeVisitor(page, baseUrl, pageProblems, checks);
 
   await visit("/", "首页");
-  await visit("/prompts", "提示词广场");
-  await visit("/templates", "模板广场");
+  await visit("/explore", "项目广场");
+  await visit("/hubs", "Hub 目录", "找到你的 Hub");
+  await visit("/community", "社区成长");
+  await visit("/competitions", "赛事活动");
+  await visit("/market", "市场");
+  for (const [retired, expectedDestination] of [["/prompts", "/explore"], ["/templates", "/hubs"]]) {
+    await visit(retired, "退役公共入口");
+    const destination = new URL(page.url()).pathname;
+    const redirected = destination === expectedDestination;
+    checks.push({ label: "旧入口转入批准的发现页面", pathname: retired, status: 200, matched: redirected, newProblems: 0 });
+    if (!redirected) pageProblems.push(`${retired} 未转入 ${expectedDestination}（实际 ${destination}）`);
+  }
   await visit("/workflows", "工作流广场", "工作流");
   await visit("/login", "登录页");
   await visit("/register", "注册页");
@@ -132,6 +144,8 @@ async function runDesktop(page, { baseUrl, seed }, checks, problems) {
     checks.push({ label: "登录", pathname: "/login", status: 200, matched: loggedIn, newProblems: 0 });
     if (!loggedIn) pageProblems.push("登录失败：提交后仍停留在 /login");
     if (loggedIn) {
+      await visit("/community", "社区成长（已登录）", "社区成长");
+      await visit("/workspace", "工作台（已登录）");
       await visit("/collection", "我的收藏", "我的收藏");
       await visit("/workflows/runs", "运行记录", "运行记录");
       await visit("/settings", "账户设置");
@@ -151,12 +165,15 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
 
   const MOBILE_PAGES = [
     ["/", "移动端 首页"],
-    ["/prompts", "移动端 提示词广场"],
-    ["/templates", "移动端 模板广场"],
+    ["/explore", "移动端 项目广场"],
+    ["/hubs", "移动端 Hub 目录"],
+    ["/community", "移动端 社区成长"],
+    ["/competitions", "移动端 赛事活动"],
+    ["/market", "移动端 市场"],
     ["/workflows", "移动端 工作流广场"],
     ["/login", "移动端 登录页"],
   ];
-  if (seed.created) MOBILE_PAGES.push(["/collection", "移动端 我的收藏"]);
+  if (seed.created) MOBILE_PAGES.push(["/workspace", "移动端 工作台"], ["/collection", "移动端 我的收藏"]);
 
   for (const [pathname, label] of MOBILE_PAGES) {
     await visit(pathname, label);
@@ -185,14 +202,14 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
       hrefs: [...bar.querySelectorAll("a")].map(a => new URL(a.href).pathname),
     };
   });
-  // 当前权威总纲：发现项目、工作流、工作台 + 账户入口，共 4 个链接。
-  const tabOk = tabs.found && tabs.hrefs.length === 4;
+  // Six primary destinations in the approved order; no retired or account links.
+  const tabOk = tabs.found && JSON.stringify(tabs.hrefs) === JSON.stringify(PRIMARY_PATHS);
   checks.push({ label: "移动端底部 Tab 栏", pathname: "/", status: 200, matched: tabOk, newProblems: 0 });
   if (!tabOk) pageProblems.push(`移动端底部 Tab 栏异常（可见=${tabs.found}，链接=${tabs.hrefs.join(",") || "无"}）`);
 
-  // 窄屏下 /templates 与 /workflows 被收进抽屉菜单，必须能在两步内到达。
-  const collapsed = await page.evaluate(() =>
-    [...document.querySelectorAll("header a")].filter(a => ["/templates", "/workflows"].includes(new URL(a.href).pathname) && a.offsetParent).length);
+  // 窄屏六主导航收进抽屉，全部入口仍可到达。
+  const collapsed = await page.evaluate(paths =>
+    [...document.querySelectorAll("header nav a")].filter(a => paths.includes(new URL(a.href).pathname) && a.offsetParent).length, PRIMARY_PATHS);
   checks.push({ label: "移动端 主导航按屏宽收敛", pathname: "/", status: 200, matched: collapsed === 0, newProblems: 0 });
   if (collapsed !== 0) pageProblems.push(`移动端顶栏仍直接展示 ${collapsed} 个宽屏入口，未收敛`);
 
@@ -209,7 +226,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
     drawerHrefs = await page.evaluate(() =>
       [...document.querySelectorAll("[role=dialog] a")].map(a => new URL(a.href).pathname));
   }
-  const reachable = ["/explore", "/workflows", "/community", "/competitions", "/workspace"].every(href => drawerHrefs.includes(href));
+  const reachable = JSON.stringify(drawerHrefs) === JSON.stringify(PRIMARY_PATHS);
   checks.push({ label: "移动端 抽屉菜单可达核心入口", pathname: "/", status: 200, matched: opened && reachable, newProblems: 0 });
   if (!opened) pageProblems.push("移动端未找到抽屉菜单触发按钮");
   else if (!reachable) pageProblems.push(`移动端抽屉菜单缺少核心入口（实际：${drawerHrefs.join(",") || "无"}）`);

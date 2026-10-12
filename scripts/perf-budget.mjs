@@ -82,8 +82,8 @@ const READS = [
 
 const PAGES = [
   ["/", "首页"],
-  ["/prompts", "提示词广场"],
-  ["/templates", "模板广场"],
+  ["/explore", "项目广场"],
+  ["/hubs", "Hub 目录"],
   ["/workflows", "工作流广场"],
 ];
 

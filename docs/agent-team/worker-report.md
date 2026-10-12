@@ -234,3 +234,9 @@ REQ-AU02：普通赛事提交/审核在显式绑定、任一持久化工作区�
 本机完整应用类型、六类边界通过；提交前 full lint 0 errors / 351 warnings。测试完整类型已由任务实施员工验证通过。两个问题由独立 reviewer 按本地源码/隔离验收范围关闭（HR14、HR15），正式运行仍须精确父版、备份恢复、迁移演练和上线后复验。先取得刚上线市场的精确源码提交与 parent，避免覆盖其新增供应、Star、积分支付与 SDK 功能。没有生产造数据或执行真实付费模型/订单；不宣称完整会员或农客松全部验收完成。
 
 安全证据：C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-review.json、legacy-guard-isolated-postgres.json、full-lint-current.log、typecheck-current.log；HR14 独立证据在 ans-vibehub-followup-audit-20261012/agri-task-list-expiry-fix-review.json。
+
+### 2026-10-12 当前六导航质量门纠正
+
+PR54 首轮 Linux CI 已通过 225 文件、2948 测试（10 skipped）及构建，实际 browser smoke 失败于旧版四 Tab 和旧 /workflows 抽屉期待。真实产品是六导航。REQ-AU04 的候选验证现明确独立六路径顺序与两条退役跳转（/prompts→/explore、/templates→/hubs），公共/登录后内容分别检查，并增加 authenticated community/workspace 手机 axe。保留原异常/5xx/横溢出、axe critical/serious 零、require fixture 与 500/800/2500 性能预算；旧共享 API 的读取/写入兼容检查不删除。
+
+候选曾误把 templates 指向 explore、把私有 community 放公共内容扫描；独立审查发现后已纠正。三个脚本语法与 source 独立复验通过，脚本实际 no-ignore lint 零 errors，完整 lint 0 errors / 351 warnings。HR16 为 FIXED_SOURCE_PENDING_CI，尚不能称新 CI 通过。未在终端操纵本机浏览器，后续由真实 CI 和许可浏览器证据验证。
