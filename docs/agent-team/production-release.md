@@ -209,3 +209,20 @@ Only the existing LDXP voucher route is used for credit sales. The user explicit
 Exact Linux build, fresh consistent backup/restore and isolated committed-source verification all exited 0. No new migration; 73 completed migrations with zero pending. History 31, completion 14 and marketplace 13 simulated-provider checks passed only in isolated PostgreSQL. Increment audit passed 18 focused component checks; no claim of rerunning the full repository during that independent increment audit. Production and candidate core pages returned complete HTTP200. Public HTTPS health, VibePlan, Hypit, Explore and VibeHub returned200; anonymous credits correctly redirects to login. VibePlan serves weekly/monthly/quarterly preview with purchases disabled; price, quota, benefits, renewal and carryover remain unconfirmed. This is a preview release, not a sellable subscription.
 
 Browser tabs changed across compaction; new-tab initialization, navigation and screenshot commands repeatedly timed out. Final desktop/mobile visual, live SKU selector interactions, Hypit playback and VibeHub scroll-return acceptance remain unverified for this release; candidate screenshots are not production screenshots. Stored merchant inventory screenshot remains valid evidence for the completed publication. Local release evidence and existing Hypit handoff are updated under `C:/Users/lsb/.workbuddy/ans-credits-vibeplan-handoff/` (`v2-deployment.json`, `v2-public-readonly-verification.json`, `v2-source-validation.json`, `v2-candidate-covers.json`, `v2-backup-verification.json`, `ldxp-five-products-stocked.png`). This completes this publication, not the overall ANS product goal or formal event setup.
+
+
+## 套餐目录、已审计 PR 与小恐龙统一上线（2026-10-12 Asia/Shanghai）
+
+本轮用户明确授权合并并部署。实际应用冻结提交 `29dec185be4980836c83f878595ce931cc39864b` 已合入 main，部署目录 `/srv/ans-releases/ans-billing-pr-integrated-20261012`；正式切换时间 `2026-10-11T18:34:28Z`（UTC）。运行镜像 `sha256:8e6d3a015f4103f5722eef1348a61f55f3feb8d987435bd17911503e731c7658`，BUILD_ID `FnFxoBjNXK-MNTBO-XCzo`，容器与数据库均 healthy。源码 SHA-256 `9ec56237757283b0a28df8e1b660768ad12486851b509b7d131fe515aeb804f2`。生产原环境逐项保留，新小恐龙文本使用独立只读挂载；既有 GLB、rig、44 张 GitGlow 封面逐文件哈希核验通过。未新增生产迁移，73 项迁移已完成、零待迁移。
+
+发布范围：已确认的 VibePlan/Pro 六个周月季 SKU、规则与权益规划、固定 ¥1=10 算力积分；原链动小铺五档及旧10积分卡保留。会员购买仍关闭，服务端就绪门禁未通过，未发放虚构会员或积分。完整批次钱包、到期/用途隔离、权益履约、原渠道退款、真实成本及会员商品仍未完成；详见商业化计费架构及本轮 backend-lifecycle-next.md。计划页上线不表示会员已可购买。
+
+PR #47 的发现/搜索/输入预览与翻译经安全适配合并，保留成长奖励、旧新两类收藏、现有APIC估价；PR #30 的SSR首屏、metadata/hash、手机重工具挂载及键盘焦点经适配合并；#29 被现有实现替代并关闭。发布后 GitHub 开放 PR 列表为空。另包含 VibeHub 91a89630 的 ANS 实践内容、公开 AIGC 工作台命名、安全管理员调账界面，以及小恐龙本地站内向导和网站设置。小恐龙默认静音、聊天不消耗积分，未冒充付费模型回复。
+
+精确 Linux 构建退出0：应用与测试类型、六类架构边界、lint与生产构建通过。208个测试文件通过；2683项通过，10项按原规则跳过；lint 0 errors、373 warnings。新一致快照备份在独立 PostgreSQL17恢复，118张public业务表行数/摘要、约束、索引和迁移记录一致；备份 SHA-256 `34bb4857e5fceb7858d8daf86815b8b9f9c793eac44ddf1810220faab4ee8a35`。仅为应用public schema，不覆盖Supabase平台schema或外部对象存储。隔离精确源码验收history31、completion14、market13（签名模拟渠道、无真实付款）通过；隔离环境记录不冒充生产业务交易。
+
+候选与正式12个页面完整HTTP200；真实HTTPS health及VibePlan/templates/developers/VibeHub/explore完整200。真实浏览器核对六价格/额度/周期、按钮禁购、固定换算、中文与英文；1280桌面和390手机均无横向溢出。小恐龙1iframe/1panel、快捷视频提问更新真实工作流与工作台入口、默认语音关闭、安静与推荐开关工作。模板真实总数1，agent搜索0并显示诚实空态；开发者手机告知桌面限制、桌面分词器加载及hash切换成功。VibeHub手机/桌面布局与返回 `/developers#tokenizer` 成功，精确滚动位置未重新验证。已有真实账号积分账单加载；5000积分/¥500切换到原已上架商品；没有购买、兑换、生成、付费TTS、造账号或生产验收订单。
+
+证据：`C:/Users/lsb/.workbuddy/ans-billing-release-20261012/` 下 deployment.json、public-verification.json、browser-verification.json、backup-verification.json、source-validation.json、candidate-covers.json、linux-build.log、isolated-evidence及实际桌面/手机截图。前端聊天另外只读验收了 `/explore` 的新面板与设置，证据位于 `ans-companion-settings-20261012/evidence/`，其报告未冒充额外真实TTS验收。
+
+冻结后main新增 `f4172f18864f5fe9403736f87c9b612ec4e682c9` 的下一批知识区改动，未在本轮镜像中；不能把本轮验证或下述文档提交当成这一增量已部署的证据。本轮应用仍以29dec185为准，后续增量须另做精确发布门禁，不覆盖本次记录。

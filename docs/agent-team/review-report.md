@@ -202,3 +202,8 @@ This is a code-review checkpoint, not evidence of final Linux image, live HTTPS 
 Reviewer open_pr_audit: PASS for code freeze. Forty-nine independently executed companion/header/admin tests pass. Fourteen related files lint: zero errors and six existing lifecycle/ref warnings. Reduced-motion parent fallback is restored, task and logout safeguards retain their original assertions, default voice is off and an opt-in only speaks a new reply. Admin form account selection, restricted-account labels, TOP_UP evidence and voucher classification preserve existing ledger/API behavior.
 
 This PASS does not open membership sales or certify real TTS supplier calls. Final frozen Linux checks, fresh backup restore, isolated service checks and production HTTPS/mobile/desktop evidence remain required.
+
+
+## 2026-10-12 本轮正式发布结果
+
+应用29dec185实际部署并通过候选/正式健康与页面验证、备份恢复及精确Linux检查。2683项通过、10跳过；history31/completion14/market13仅隔离验收。套餐展示已上线、会员售卖仍关闭；PR47/30合并，PR29替代关闭。真实HTTPS手机/桌面验收证据及未验边界见 production-release.md 本轮节与 ans-billing-release-20261012/browser-verification.json。冻结后f4172f18知识区增量尚未包含在本轮运行镜像；文档提交不改变已运行应用。

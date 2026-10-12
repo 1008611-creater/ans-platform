@@ -136,3 +136,8 @@ Independent reviewer open_pr_audit executed 174 targeted tests, scoped lint and 
 ## 2026-10-12 Companion/settings and admin clarity integration checkpoint
 
 REQ-B08: the 11 source files and four renderer text files were individually hash-checked against the frozen handoff. A parent reduced-motion effect was restored from the pre-change implementation so system preference and unsupported environments retain the static mascot. The old task, logout, origin, frame and lifecycle checks were retained; the new interface/i18n and legitimate audio-stop messages were adapted. Forty-four companion/header regression tests pass, including default silence and explicit opt-in behavior. Admin clarity retains exam projection and original retry keys; seven safety/exam checks and scoped type/lint pass. These are local implementation checks, not final production acceptance.
+
+
+## 2026-10-12 本轮正式发布结果
+
+应用29dec185实际部署并通过候选/正式健康与页面验证、备份恢复及精确Linux检查。2683项通过、10跳过；history31/completion14/market13仅隔离验收。套餐展示已上线、会员售卖仍关闭；PR47/30合并，PR29替代关闭。真实HTTPS手机/桌面验收证据及未验边界见 production-release.md 本轮节与 ans-billing-release-20261012/browser-verification.json。冻结后f4172f18知识区增量尚未包含在本轮运行镜像；文档提交不改变已运行应用。
