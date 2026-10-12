@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  db: { user: { findUnique: vi.fn() }, workflow: { findUnique: vi.fn(), update: vi.fn(), updateMany: vi.fn() }, workflowVersion: { create: vi.fn() }, auditLog: { create: vi.fn() }, $transaction: vi.fn(), $queryRaw: vi.fn() },
+  db: { user: { findUnique: vi.fn() }, workflow: { findUnique: vi.fn(), update: vi.fn(), updateMany: vi.fn() }, workflowVersion: { create: vi.fn() }, auditLog: { create: vi.fn(), findMany: vi.fn() }, $transaction: vi.fn(), $queryRaw: vi.fn() },
   review: vi.fn(),
 }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
@@ -18,6 +18,7 @@ function database(initial: Partial<FixtureState>) {
   mocks.db.user.findUnique.mockResolvedValue({ id: "author", role: "USER", flagged: false, deletedAt: null });
   mocks.db.$transaction.mockImplementation(async fn => fn(mocks.db));
   mocks.db.auditLog.create.mockResolvedValue({ id: "audit" });
+  mocks.db.auditLog.findMany.mockResolvedValue(initial.status === "PUBLISHED" ? [{ createdAt: new Date("2026-10-13T01:00:00Z"), after: { status: "PUBLISHED", publishedVersion: 1, versionId: "v1" } }] : []);
   mocks.db.workflow.findUnique.mockImplementation(async () => structuredClone(state));
   mocks.db.workflow.updateMany.mockImplementation(async args => { if ((typeof args.where.status === "string" && state.status !== args.where.status) || (typeof args.where.status === "object" && !args.where.status.in.includes(state.status))) return { count: 0 }; if (args.where.AND?.some((filter: { reviewScore: { path: string[]; equals: unknown } }) => state.reviewScore?.[filter.reviewScore.path[0]] !== filter.reviewScore.equals)) return { count: 0 }; if (args.where.versions && state.versions.some(v => v.version > args.where.versions.none.version.gt)) return { count: 0 }; state = { ...state, ...args.data }; return { count: 1 }; });
   mocks.db.workflow.update.mockImplementation(async args => { state = { ...state, ...args.data }; return structuredClone(state); });
@@ -92,11 +93,11 @@ describe("review request races", () => {
     expect(state().reviewScore).toMatchObject({ verdict: "BLOCKED", reviewRequestId: newerRequest });
     await expect(publishWorkflow("audit-workflow", "author")).rejects.toMatchObject({ code: "REVIEW_REQUIRED" });
   });
-  it("rejects a publication snapshot changed before the row lock is acquired", async () => {
+  it("rejects author publication before any mutating row lock", async () => {
     database({ status: "PENDING", reviewScore: { ...pass, reviewVersion: 1, reviewRequestId: "00000000-0000-4000-8000-000000000001", reviewPending: true } });
     const snapshot = await mocks.db.workflow.findUnique();
     mocks.db.workflow.findUnique.mockResolvedValueOnce(snapshot).mockResolvedValueOnce({ ...snapshot, reviewScore: null });
-    await expect(publishWorkflow("audit-workflow", "author")).rejects.toMatchObject({ code: "INVALID_STATE" });
+    await expect(publishWorkflow("audit-workflow", "author")).rejects.toMatchObject({ code: "REVIEW_REQUIRED" });
     expect(mocks.db.workflow.update).not.toHaveBeenCalled();
   });
 });

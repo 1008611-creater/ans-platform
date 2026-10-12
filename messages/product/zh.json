@@ -1103,6 +1103,7 @@
     }
   },
   "agriWorks": {
+    "manageDecisions": "晋级与更正管理",
     "title": "内部作品汇总",
     "description": "技术负责人和赛事运营共用的作品数据。按队伍、阶段和提交状态定位材料，查看固定版本与历史；内部访问和导出分别授权。",
     "back": "返回农客松",
@@ -1290,7 +1291,7 @@
     "visibility": "问题可见范围",
     "basis": "材料依据",
     "assignee": "负责人 userId",
-    "assigneeHint": "填写真实有效账号的 userId，留空表示暂未指定。姓名或协作说明不会授予访问。",
+    "assigneeHint": "填写真实账号 userId，可留空。本队可见问题可指派给有效队员；内部问题需赛事授权，非本队工作人员读取私有材料时还需材料授权。指派不会增加读取或处理权限。",
     "dueState": "期限确定状态",
     "dueAt": "处理期限（北京时间）",
     "processingSummary": "实际处理与验证说明",
@@ -1356,6 +1357,7 @@
       "INVALID_INPUT": "请检查必填输入、期限与处理说明；向本队展示前须明确核对。",
       "AGRI_SCOPE_REQUIRED": "本届问题、内部内容或私有材料授权已失效，请重新读取。",
       "AGRI_ASSIGNEE_UNAVAILABLE": "负责人必须是有效的真实账号 userId。",
+      "AGRI_ASSIGNEE_CANNOT_READ": "该负责人当前无权读取此问题。请选择已有读取权限的人，或由赛事负责人先完成授权。指派不会自动增加权限。",
       "AGRI_ISSUE_REVISION_CONFLICT": "问题已被修改。你的输入仍保留，请重新读取并核对最新版本。",
       "AGRI_IDEMPOTENCY_CONFLICT": "这个幂等键已用于另一请求，请核对已保存记录。",
       "AGRI_ISSUE_NOT_FOUND": "问题不存在或当前不可见，请重新读取问题列表。",
@@ -2122,6 +2124,13 @@
     "shareContent": "分享内容"
   },
   "agriWorkspace": {
+    "decisionContextTitle": "当前管理对象",
+    "decisionContextHint": "已按你的当前权限核对队伍与阶段。提交前仍需确认具体决定。",
+    "verifiedDecisionTarget": "已核对参赛记录：{id}",
+    "manualDecisionTarget": "手动查找其他参赛记录",
+    "manualDecisionTargetHint": "只有没有作品入口时才需要填写 ID。查询会重新核对你的权限。",
+    "invalidDecisionTarget": "链接中的管理对象无效，请从作品详情重新进入，或手动查询。",
+    "backToWorks": "返回作品管理",
     "back": "返回农客松",
     "title": "赛事规范与权限管理",
     "description": "获授权人员维护本届规范、阶段窗口和赛事权限。确认、发布与开启提交分别执行；真实日期和账号由负责人核对。",

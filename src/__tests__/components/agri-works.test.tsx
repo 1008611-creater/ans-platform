@@ -95,4 +95,27 @@ describe("internal works permission and request boundaries", () => {
     fireEvent.click(screen.getByRole("button", { name: copy.close }));
     expect(screen.queryByRole("region", { name: "Exact record summary" })).not.toBeInTheDocument();
   });
+  it("builds a decision link from the authorized detail IDs, with no private materials", async () => {
+    fetchMock.mockResolvedValueOnce(envelope(page()));
+    fetchMock.mockResolvedValueOnce(envelope({ ...detail(), teamCompetitionId: "verified-entry", id: "verified-stage" }));
+    await openDetail();
+    const link = screen.getByRole("link", { name: copy.manageDecisions });
+    const url = new URL(link.getAttribute("href")!, "https://ans.invalid");
+    expect(url.pathname).toBe("/competitions/agrihackathon/manage");
+    expect(Object.fromEntries(url.searchParams)).toEqual({ teamCompetitionId: "verified-entry", entryStageId: "verified-stage" });
+    expect(url.hash).toBe("#agri-decisions");
+    expect(link.getAttribute("href")).not.toContain("PRIVATE_");
+    expect(link.getAttribute("href")).not.toContain("Fixture");
+  });
+  it("offers no decision link before detail permission is verified or after it is denied", async () => {
+    await open();
+    expect(screen.queryByRole("link", { name: copy.manageDecisions })).not.toBeInTheDocument();
+    const late = deferred<Response>(); fetchMock.mockReturnValueOnce(late.promise);
+    fireEvent.click(screen.getByRole("button", { name: copy.openTeam.replace("{team}", "Fixture team").replace("{stage}", copy.stage.PRELIMINARY) }));
+    expect(screen.queryByRole("link", { name: copy.manageDecisions })).not.toBeInTheDocument();
+    await act(async () => late.resolve(rejected("AGRI_SCOPE_REQUIRED")));
+    expect(await screen.findByRole("alert")).toHaveTextContent(copy.errors.AGRI_SCOPE_REQUIRED);
+    expect(screen.queryByRole("link", { name: copy.manageDecisions })).not.toBeInTheDocument();
+  });
+
 });

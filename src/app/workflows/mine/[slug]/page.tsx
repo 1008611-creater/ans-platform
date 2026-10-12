@@ -12,7 +12,7 @@ import { WorkflowActions } from "@/components/workflows/workflow-actions";
 import { WorkflowEditor } from "@/components/workflows/workflow-editor";
 import { WorkflowReviewStatus } from "@/components/workflows/workflow-review-status";
 import { auth } from "@/lib/auth";
-import { WorkflowServiceError, getWorkflowForEditor } from "@/server/workflows/service";
+import { WorkflowServiceError, getWorkflowForEditor, isWorkflowPublicationApproved } from "@/server/workflows/service";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +70,7 @@ export default async function EditWorkflowPage({
   const w = await getTranslations("marketWorkflow");
   const latest = workflow.versions[0] ?? null;
   const isOwner = workflow.authorId === session.user.id;
+  const publishedManuallyApproved = await isWorkflowPublicationApproved(workflow);
   const marketAvailable = isOwner && workflow.status === "PUBLISHED" ? await isWorkflowMarketAvailable(workflow.id, session.user.id) : false;
 
 
@@ -140,7 +141,7 @@ export default async function EditWorkflowPage({
         initialVersion={latest?.version ?? 0}
       />}
 
-      {!workflow.isOfficial && (workflow.status === "DRAFT" || workflow.status === "REJECTED" || workflow.status === "PUBLISHED" && (latest?.version ?? 0) > (workflow.publishedVersion ?? 0)) && isOwner && (
+      {!workflow.isOfficial && (workflow.status === "DRAFT" || workflow.status === "REJECTED" || workflow.status === "PUBLISHED" && (!publishedManuallyApproved || (latest?.version ?? 0) > (workflow.publishedVersion ?? 0))) && isOwner && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">提交审核</CardTitle>

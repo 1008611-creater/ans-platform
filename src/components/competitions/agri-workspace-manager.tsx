@@ -3,15 +3,14 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useWorkspaceNavigation } from "@/components/providers/workspace-navigation";
+import { useWorkspaceNavigation, WorkspaceLink } from "@/components/providers/workspace-navigation";
 import { agriRulesDraftSchema, agriWorkspaceCommandSchema, agriGrantCommandSchema, type AgriRulesDraft, type AgriWorkspaceRulesView, type AgriGrantManagementView, type AgriWorkspaceCommand, type AgriGrantCommand } from "@/contracts/agri-workspace";
-import { agriDecisionCommandSchema, type AgriDecisionCommand, type AgriDecisionManagementView } from "@/contracts/agri-decisions";
+import { agriDecisionQuerySchema, agriDecisionCommandSchema, type AgriDecisionCommand, type AgriDecisionManagementView } from "@/contracts/agri-decisions";
 import { agriCorrectableFieldSchema, type AgriCorrectableField } from "@/contracts/agri-submissions";
 import { agriWorkspaceScopeSchema, type AgriWorkspaceScope } from "@/contracts/agrihackathon";
 
@@ -91,7 +90,8 @@ function Confirmation({ open, title, description, children, onCancel, onConfirm 
   const t = useTranslations("product.agriWorkspace");
   return <AlertDialog open={open} onOpenChange={value => { if (!value) onCancel(); }}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{title}</AlertDialogTitle><AlertDialogDescription>{description}</AlertDialogDescription></AlertDialogHeader>{children}<AlertDialogFooter><AlertDialogCancel onClick={onCancel}>{t("cancel")}</AlertDialogCancel><AlertDialogAction onClick={onConfirm}>{t("proceed")}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>;
 }
-export function AgriWorkspaceManager() {
+type DecisionTarget = { teamCompetitionId: string; entryStageId?: string };
+export function AgriWorkspaceManager({ preselection, invalidPreselection = false }: { preselection?: DecisionTarget; invalidPreselection?: boolean }) {
   const t = useTranslations("product.agriWorkspace"); const { data, status } = useSession();
   const actorId = data?.user?.id ?? null;
   useEffect(() => {
@@ -100,8 +100,11 @@ export function AgriWorkspaceManager() {
     recoveryActor = actorId;
   }, [actorId, status]);
   if (status === "loading") return <p role="status">{t("loading")}</p>;
-  if (!actorId) return <Button asChild><Link href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Fmanage">{t("login")}</Link></Button>;
-  return <div key={actorId} className="space-y-6"><RulesManager actorId={actorId} /><DecisionManager actorId={actorId} /><GrantsManager actorId={actorId} /></div>;
+  const checkedPreselection = agriDecisionQuerySchema.safeParse(preselection);
+  const callbackUrl = "/competitions/agrihackathon/manage" + (checkedPreselection.success && !invalidPreselection ? "?" + new URLSearchParams(checkedPreselection.data) + "#agri-decisions" : "");
+  if (!actorId) return <Button asChild><WorkspaceLink href={"/login?" + new URLSearchParams({ callbackUrl })}>{t("login")}</WorkspaceLink></Button>;
+  const decisions = <DecisionManager key={JSON.stringify([actorId, preselection?.teamCompetitionId, preselection?.entryStageId, invalidPreselection])} actorId={actorId} preselection={preselection} invalidPreselection={invalidPreselection} />;
+  return <div key={actorId} className="space-y-6">{preselection || invalidPreselection ? <>{decisions}<RulesManager actorId={actorId} /></> : <><RulesManager actorId={actorId} />{decisions}</>}<GrantsManager actorId={actorId} /></div>;
 }
 const stages = ["REGISTRATION", "PRELIMINARY", "FINAL"] as const;
 interface RuleForm {
@@ -192,31 +195,53 @@ function GrantsManager({ actorId }: { actorId: string }) {
   </CardContent></Card>;
 }
 
-function DecisionManager({ actorId }: { actorId: string }) {
+function DecisionManager({ actorId, preselection, invalidPreselection }: { actorId: string; preselection?: DecisionTarget; invalidPreselection: boolean }) {
   const t = useTranslations("product.agriWorkspace"); const command = useCommand(actorId, api + "/decisions");
-  const [entryId, setEntryId] = useState(""), [stageId, setStageId] = useState("");
+  const [entryId, setEntryId] = useState(preselection?.teamCompetitionId ?? ""), [stageId, setStageId] = useState(preselection?.entryStageId ?? "");
   const [data, setData] = useState<AgriDecisionManagementView | null>(null), [loading, setLoading] = useState(false), [readError, setReadError] = useState("");
   const [state, setState] = useState<"ELIGIBLE" | "INELIGIBLE">("INELIGIBLE"), [reason, setReason] = useState(""), [source, setSource] = useState(""), [expiry, setExpiry] = useState("");
-  const [fields, setFields] = useState<AgriCorrectableField[]>([]), [proposed, setProposed] = useState<AgriDecisionCommand | null>(null); const alive = useRef(true);
-  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+  const [fields, setFields] = useState<AgriCorrectableField[]>([]), [proposed, setProposed] = useState<AgriDecisionCommand | null>(null); const alive = useRef(true), generation = useRef(0);
+  const selection = useRef({ teamCompetitionId: entryId, entryStageId: stageId });
+  const contextHeading = useRef<HTMLHeadingElement>(null);
+  const load = useCallback(async (target: DecisionTarget) => {
+    const checked = agriDecisionQuerySchema.safeParse(target);
+    if (!checked.success) { setData(null); setReadError("INVALID_INPUT"); return; }
+    const requestId = ++generation.current; setLoading(true); setData(null); setReadError("");
+    const query = new URLSearchParams(checked.data);
+    try {
+      const result = await request<AgriDecisionManagementView>(api + "/decisions?" + query, actorId);
+      if (!alive.current || requestId !== generation.current) return;
+      if (result.teamCompetitionId !== checked.data.teamCompetitionId || result.entryStageId !== (checked.data.entryStageId ?? null)) throw new ManagerError("INVALID_INPUT");
+      if (selection.current.teamCompetitionId.trim() !== checked.data.teamCompetitionId || (selection.current.entryStageId.trim() || null) !== (checked.data.entryStageId ?? null)) return;
+      setData(result);
+    } catch (error) { if (alive.current && requestId === generation.current) { setData(null); setReadError(error instanceof ManagerError ? error.code : "INTERNAL_ERROR"); } }
+    finally { if (alive.current && requestId === generation.current) setLoading(false); }
+  }, [actorId]);
+  const selectedEntryId = preselection?.teamCompetitionId, selectedStageId = preselection?.entryStageId;
+  useEffect(() => { alive.current = true; if (selectedEntryId && !invalidPreselection) void load({ teamCompetitionId: selectedEntryId, ...(selectedStageId ? { entryStageId: selectedStageId } : {}) }); return () => { alive.current = false; }; }, [selectedEntryId, selectedStageId, invalidPreselection, load]);
+  useEffect(() => { if (data && preselection) contextHeading.current?.focus(); }, [data, preselection]);
   useGuard(!!reason.trim() || !!source.trim() || !!expiry || fields.length > 0, !!command.pending);
   const locked = loading || command.busy || !!command.pending;
   const matches = !!data && data.teamCompetitionId === entryId.trim() && data.entryStageId === (stageId.trim() || null);
-  async function load() {
-    if (!entryId.trim()) return; setLoading(true); setReadError("");
-    try { const result = await request<AgriDecisionManagementView>(api + "/decisions?teamCompetitionId=" + encodeURIComponent(entryId.trim()) + (stageId.trim() ? "&entryStageId=" + encodeURIComponent(stageId.trim()) : ""), actorId); if (alive.current) setData(result); }
-    catch (error) { if (alive.current) { setData(null); setReadError(error instanceof ManagerError ? error.code : "INTERNAL_ERROR"); } }
-    finally { if (alive.current) setLoading(false); }
-  }
-  async function execute(next?: AgriDecisionCommand) { if (await command.execute(next) && alive.current) { setReason(""); setSource(""); setExpiry(""); setFields([]); await load(); } }
+  async function execute(next?: AgriDecisionCommand) { if (await command.execute(next) && alive.current) { setReason(""); setSource(""); setExpiry(""); setFields([]); await load({ teamCompetitionId: entryId.trim(), ...(stageId.trim() ? { entryStageId: stageId.trim() } : {}) }); } }
   function propose(action: AgriDecisionCommand["action"], permitId?: string) {
     if (!data || !matches || locked) return;
     const base = { action, idempotencyKey: crypto.randomUUID(), reason };
     try { setProposed(agriDecisionCommandSchema.parse(action === "recordFinalEligibility" ? { ...base, teamCompetitionId: data.teamCompetitionId, expectedSequence: data.eligibility[0]?.sequence ?? 0, state, sourceReference: source } : action === "issueCorrectionPermit" ? { ...base, entryStageId: data.entryStageId, expectedRevision: data.stageRevision, previousSubmissionId: data.currentSubmissionId, allowedFields: fields, expiresAt: instant(expiry) } : { ...base, permitId })); }
     catch { command.setError("INVALID_INPUT"); }
   }
-  return <Card><CardHeader><CardTitle>{t("decisionsTitle")}</CardTitle></CardHeader><CardContent className="space-y-5"><p className="text-sm leading-6 text-muted-foreground">{t("decisionsHelp")}</p><Notice error={readError || command.error} saved={command.saved} pending={!!command.pending} busy={command.busy} retry={() => void execute()} />
-    <fieldset disabled={locked} className="grid min-w-0 gap-4 sm:grid-cols-2"><Field label={t("entryId")}>{id => <Input id={id} value={entryId} maxLength={80} onChange={e => setEntryId(e.target.value)} />}</Field><Field label={t("stageId")}>{id => <Input id={id} value={stageId} maxLength={80} onChange={e => setStageId(e.target.value)} />}</Field></fieldset><Button variant="outline" disabled={locked || !entryId.trim()} onClick={() => void load()}>{t("lookupDecisions")}</Button>{loading && <p role="status">{t("loading")}</p>}
+  return <Card id="agri-decisions"><CardHeader><CardTitle><h2 ref={contextHeading} tabIndex={-1}>{t("decisionsTitle")}</h2></CardTitle></CardHeader><CardContent className="space-y-5"><p className="text-sm leading-6 text-muted-foreground">{t("decisionsHelp")}</p><Notice error={readError || command.error} saved={command.saved} pending={!!command.pending} busy={command.busy} retry={() => void execute()} />
+    {invalidPreselection && <p role="alert">{t("invalidDecisionTarget")}</p>}
+    {matches && data && <section aria-label={t("decisionContextTitle")} className="space-y-2 rounded-lg bg-muted/40 p-4">
+      {data.context ? <><p className="break-words text-lg font-semibold">{data.context.teamName}</p>{data.context.stage && <p className="text-sm">{t("stage." + data.context.stage)}</p>}</> : <p className="break-all text-sm">{t("verifiedDecisionTarget", { id: data.teamCompetitionId })}</p>}
+      <p className="text-sm text-muted-foreground">{t("decisionContextHint")}</p>
+      <Button asChild variant="ghost" size="sm"><WorkspaceLink href="/competitions/agrihackathon/works">{t("backToWorks")}</WorkspaceLink></Button>
+    </section>}
+    <details open={!preselection || invalidPreselection} className="space-y-3 rounded-lg border p-4"><summary className="cursor-pointer text-sm font-medium">{t("manualDecisionTarget")}</summary>
+      <p className="text-sm text-muted-foreground">{t("manualDecisionTargetHint")}</p>
+      <fieldset disabled={locked} className="grid min-w-0 gap-4 sm:grid-cols-2"><Field label={t("entryId")}>{id => <Input id={id} value={entryId} maxLength={80} onChange={e => { const value = e.target.value; setEntryId(value); selection.current.teamCompetitionId = value; ++generation.current; setData(null); }} />}</Field><Field label={t("stageId")}>{id => <Input id={id} value={stageId} maxLength={80} onChange={e => { const value = e.target.value; setStageId(value); selection.current.entryStageId = value; ++generation.current; setData(null); }} />}</Field></fieldset>
+      <Button variant="outline" disabled={locked || !entryId.trim()} onClick={() => void load({ teamCompetitionId: entryId.trim(), ...(stageId.trim() ? { entryStageId: stageId.trim() } : {}) })}>{t("lookupDecisions")}</Button>
+    </details>{loading && <p role="status">{t("loading")}</p>}
     {matches && data && <><div className="space-y-2"><h3 className="font-medium">{t("eligibilityTitle")}</h3><p>{t("eligibility." + (data.eligibility[0]?.state ?? "UNKNOWN"))}</p><Field label={t("eligibilityState")}>{id => <select id={id} className={selectClass} disabled={locked} value={state} onChange={e => setState(e.target.value as typeof state)}><option value="INELIGIBLE">{t("eligibility.INELIGIBLE")}</option><option value="ELIGIBLE">{t("eligibility.ELIGIBLE")}</option></select>}</Field><Field label={t("sourceReference")}>{id => <Textarea id={id} maxLength={2000} disabled={locked} value={source} onChange={e => setSource(e.target.value)} />}</Field></div>
     <Field label={t("decisionReason")}>{id => <Textarea id={id} maxLength={2000} disabled={locked} value={reason} onChange={e => setReason(e.target.value)} />}</Field><Button disabled={locked || !reason.trim() || !source.trim()} onClick={() => propose("recordFinalEligibility")}>{t("recordEligibility")}</Button>
     <div className="space-y-3">{data.eligibility.map(row => <div key={row.id} className="space-y-1 rounded-md border p-3 text-sm"><p>{t("eligibility." + row.state)} · {t("revision", { revision: row.sequence })}</p><p className="whitespace-pre-wrap break-words">{row.reason}</p><p className="whitespace-pre-wrap break-words">{row.sourceReference}</p><p className="break-all">{row.actorId} · {row.decidedAt}</p></div>)}</div>

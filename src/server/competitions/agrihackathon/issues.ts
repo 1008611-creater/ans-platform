@@ -1,11 +1,11 @@
 import type { DbTransaction } from "@/lib/db";
 import { createHash, randomUUID } from "node:crypto";
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { agriIssueCommandSchema, agriIssuesQuerySchema, type AgriIssueItem, type AgriIssueEventItem, type AgriIssueList, type AgriIssueDetail, type AgriIssueResult, type AgriIssueFields } from "@/contracts/agri-issues";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent, agriDatabaseClock, type AgriWorkspaceContext } from "./workspace";
+import { requireAgriIssueAssignee, assertAgriIssueAssigneeCurrent } from "./issue-assignee";
 type Tx=DbTransaction;
 type Authority=Awaited<ReturnType<typeof requireAgriScope>>;
 const idSchema=z.string().trim().min(1).max(80);
@@ -65,7 +65,7 @@ export async function executeAgriIssueCommand(actorId:string,raw:unknown):Promis
   if(command.action==="updateIssue"){const [previous]=await tx.$queryRaw<Array<{visibility:string}>>`SELECT visibility FROM agri_issue_events WHERE "issueId"=${prior.issueId} AND revision<${prior.appliedRevision} AND kind IN ('CREATE','UPDATE') ORDER BY revision DESC LIMIT 1`;if(previous?.visibility==="INTERNAL")additional.push(await requireAgriScope(tx,ctx,"INTERNAL_NOTES_READ"));}
   await assertAgriAuthorityCurrent(tx,read,write,...additional);return {issueId:prior.issueId,eventId:prior.eventId,appliedRevision:prior.appliedRevision,duplicate:true};}
  if(command.action!=="createIssue"&&row!.revision!==command.expectedRevision)return fail("AGRI_ISSUE_REVISION_CONFLICT");
- if(command.action!=="appendEvent"&&command.assigneeId){const [assignee]=await tx.$queryRaw<Array<{flagged:boolean;deletedAt:Date|null}>>`SELECT flagged,"deletedAt" FROM users WHERE id=${command.assigneeId} FOR SHARE`;if(!assignee||assignee.flagged||assignee.deletedAt)return fail("AGRI_ASSIGNEE_UNAVAILABLE",422);}
+ const assigneeAuthorities=command.action!=="appendEvent"&&command.assigneeId?await requireAgriIssueAssignee(tx,ctx,command.assigneeId,item.teamId,command.visibility,basis):[];
  const now=await agriDatabaseClock(tx),issueId=row?.id??randomUUID(),eventId=randomUUID(),revision=(row?.revision??0)+1;
  const done=command.action!=="appendEvent"&&["RESOLVED","CLOSED"].includes(command.status),completedBy=done?actorId:null,completedAt=done?now:null;
  if(command.action==="createIssue")await tx.$executeRaw`INSERT INTO agri_issues (id,"competitionId","entryStageId","submissionId",title,body,status,severity,type,basis,visibility,"assigneeId","dueState","dueAt","processingSummary","completedById","completedAt",revision,"createdById","createdAt","updatedAt") VALUES (${issueId},${item.competitionId},${item.entryStageId},${item.id},${command.title},${command.body},${command.status},${command.severity},${command.type},${basis},${command.visibility},${command.assigneeId},${command.dueState},${command.dueAt?new Date(command.dueAt):null},${command.processingSummary},${completedBy},${completedAt},${revision},${actorId},${now},${now})`;
@@ -75,6 +75,6 @@ export async function executeAgriIssueCommand(actorId:string,raw:unknown):Promis
  const afterState=command.action==="appendEvent"?null:JSON.stringify({title:command.title,body:command.body,status:command.status,severity:command.severity,type:command.type,visibility:command.visibility,assigneeId:command.assigneeId,dueState:command.dueState,dueAt:command.dueAt,processingSummary:command.processingSummary});
  await tx.$executeRaw`INSERT INTO agri_issue_events (id,"competitionId","issueId",revision,kind,visibility,basis,body,"afterState","actorId","createdAt") VALUES (${eventId},${item.competitionId},${issueId},${revision},${command.action==="createIssue"?"CREATE":command.action==="updateIssue"?"UPDATE":"COMMENT"},${command.visibility},${basis},${eventBody},${afterState}::jsonb,${actorId},${now})`;
  await tx.$executeRaw`INSERT INTO agri_issue_receipts (id,"competitionId","issueId","eventId","actorId",operation,"idempotencyKey","requestHash","appliedRevision","createdAt") VALUES (${randomUUID()},${item.competitionId},${issueId},${eventId},${actorId},${command.action},${command.idempotencyKey},${requestHash},${revision},${now})`;
- await tx.auditLog.create({data:{actorId,action:"AGRI_"+command.action.toUpperCase(),resourceType:"agri_issue",resourceId:issueId,metadata:{competitionId:item.competitionId,submissionId:item.id,revision,eventId}}});await assertAgriAuthorityCurrent(tx,read,write,...additional);return {issueId,eventId,appliedRevision:revision,duplicate:false};
+ await tx.auditLog.create({data:{actorId,action:"AGRI_"+command.action.toUpperCase(),resourceType:"agri_issue",resourceId:issueId,metadata:{competitionId:item.competitionId,submissionId:item.id,revision,eventId}}});await assertAgriAuthorityCurrent(tx,read,write,...additional);await assertAgriIssueAssigneeCurrent(tx,assigneeAuthorities);return {issueId,eventId,appliedRevision:revision,duplicate:false};
  },{timeout:15000});
 }

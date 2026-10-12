@@ -1103,6 +1103,7 @@
     }
   },
   "agriWorks": {
+    "manageDecisions": "Manage eligibility and corrections",
     "title": "Internal works overview",
     "description": "Shared works data for technical staff and competition operations. Find fixed submissions and their history by team, stage and status. Internal access and export require separate grants.",
     "back": "Back to AgriHackathon",
@@ -1290,7 +1291,7 @@
     "visibility": "Issue visibility",
     "basis": "Evidence basis",
     "assignee": "Assignee userId",
-    "assigneeHint": "Use the userId of a real active account, or leave empty. Names and collaboration notes do not grant access.",
+    "assigneeHint": "Enter a real account userId, or leave blank. Active members can receive team-visible issues. Internal issues need event authorization; staff outside the team also need materials authorization to read private-material issues. Assignment grants no read or write access.",
     "dueState": "Deadline certainty",
     "dueAt": "Deadline (Asia/Shanghai)",
     "processingSummary": "Actual processing and verification",
@@ -1356,6 +1357,7 @@
       "INVALID_INPUT": "Check required input, deadline and processing summary. Review content before showing it to the team.",
       "AGRI_SCOPE_REQUIRED": "Issue, internal-content or private-material access has expired. Reload.",
       "AGRI_ASSIGNEE_UNAVAILABLE": "The assignee must be a real active account userId.",
+      "AGRI_ASSIGNEE_CANNOT_READ": "This assignee cannot currently read the issue. Choose someone with existing access, or ask the event owner to grant the necessary scope first. Assignment never grants access.",
       "AGRI_ISSUE_REVISION_CONFLICT": "The issue has changed. Your input is retained; reload and compare the latest version.",
       "AGRI_IDEMPOTENCY_CONFLICT": "This key was used for a different request. Check the saved record.",
       "AGRI_ISSUE_NOT_FOUND": "The issue does not exist or is no longer visible. Reload the list.",
@@ -2122,6 +2124,13 @@
     "shareContent": "Share content"
   },
   "agriWorkspace": {
+    "decisionContextTitle": "Selected entry",
+    "decisionContextHint": "The team and stage have been checked against your current permissions. Confirm each decision before submitting.",
+    "verifiedDecisionTarget": "Verified entry: {id}",
+    "manualDecisionTarget": "Find another entry by ID",
+    "manualDecisionTargetHint": "Use IDs when a work entry is unavailable. Lookup checks your permissions again.",
+    "invalidDecisionTarget": "This management link is invalid. Open it again from the work details or look up an entry manually.",
+    "backToWorks": "Back to works",
     "back": "Back to AgriHackathon",
     "title": "Competition rules and access",
     "description": "Authorized staff manage this edition?s rules, stage windows and access. Confirming, publishing and enabling submissions are separate actions. Verify real dates and account IDs with the responsible person.",

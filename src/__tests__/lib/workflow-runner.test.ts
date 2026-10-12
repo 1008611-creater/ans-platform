@@ -10,7 +10,9 @@ const mocks = vi.hoisted(() => ({
     userModelCredential: { findFirst: vi.fn() },
     user: { update: vi.fn() },
     quotaLedger: { create: vi.fn() },
-    auditLog: { create: vi.fn(), findFirst: vi.fn() },
+    workflow: { findUnique: vi.fn() },
+    auditLog: { create: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
+    $queryRaw: vi.fn(),
     $transaction: vi.fn(),
   },
 }));
@@ -41,9 +43,9 @@ const run = {
   status: "QUEUED",
   costPoints: 3,
   input: { topic: "校园 AI" },
-  version: { definition },
+  version: { id: "v1", version: 1, createdAt: new Date("2026-10-13T00:00:00Z"), definition },
   nodeRuns: [],
-  workflow: { title: "测试工作流" },
+  workflow: { id: "w1", isOfficial: false, title: "测试工作流" },
 };
 
 beforeEach(() => {
@@ -53,6 +55,8 @@ beforeEach(() => {
   vi.stubEnv("RUN_API_KEY", "platform-key");
 
   mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run });
+  mocks.db.workflow.findUnique.mockResolvedValue({ id: "w1", versions: [run.version] });
+  mocks.db.auditLog.findMany.mockResolvedValue([{ createdAt: new Date("2026-10-13T01:00:00Z"), after: { status: "PUBLISHED", publishedVersion: 1, versionId: "v1" } }]);
   mocks.db.workflowRun.updateMany.mockImplementation(
     async ({ where }: { where: { status?: string | { in?: string[] } } }) => {
       const status = typeof where?.status === "string" ? where.status : undefined;
@@ -82,6 +86,30 @@ describe("executePersistedWorkflow", () => {
     expect(mocks.db.workflowRun.updateMany).not.toHaveBeenCalled();
   });
 
+  it("rejects historical self-published queued runs before handlers and refunds only the legacy reservation", async () => {
+    mocks.db.auditLog.findMany.mockResolvedValue([]);
+    const handler = vi.fn();
+    const result = await executePersistedWorkflow("run1", "user1", { handlers: { prompt: handler } });
+    expect(result).toMatchObject({ status: "failed", error: "WORKFLOW_REVIEW_REQUIRED", executions: [] });
+    expect(handler).not.toHaveBeenCalled();
+    expect(mocks.db.quotaLedger.create).toHaveBeenCalledTimes(1);
+    expect(mocks.db.auditLog.create).toHaveBeenLastCalledWith(expect.objectContaining({ data: expect.objectContaining({ action: "WORKFLOW_RUN_FAILED", metadata: expect.objectContaining({ modelCalls: 0, models: [] }) }) }));
+  });
+
+  it("retains a confirmed approved old-version run after a newer published version", async () => {
+    mocks.db.workflow.findUnique.mockResolvedValue({ id: "w1", publishedVersion: 2, versions: [{ ...run.version, id: "v2", version: 2 }, run.version] });
+    expect((await executePersistedWorkflow("run1", "user1"))?.status).toBe("succeeded");
+  });
+
+  it("retains platform-owned official project execution", async () => {
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, projectId: "project-one", workflow: { ...run.workflow, isOfficial: true } });
+    mocks.db.auditLog.findMany.mockResolvedValue([]);
+    const save = vi.fn();
+    expect((await executePersistedWorkflow("run1", "user1", { onSucceeded: save }))?.status).toBe("succeeded");
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(mocks.db.workflow.findUnique).not.toHaveBeenCalled();
+  });
+
   it("runs the workflow, persists node results and audits success", async () => {
     const result = await executePersistedWorkflow("run1", "user1", {
       handlers: {
@@ -108,7 +136,7 @@ describe("executePersistedWorkflow", () => {
     vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
     vi.stubEnv("APIC_COST_BRIDGE_URL", "http://bridge.internal:13021");
     vi.stubEnv("APIC_COST_BRIDGE_SECRET", "test-secret");
-    mocks.db.workflowRun.findFirst.mockResolvedValue({...run,costPoints:0.25,version:{definition:{...definition,nodes:[{...definition.nodes[0],type:"model"},definition.nodes[1]]}}});
+    mocks.db.workflowRun.findFirst.mockResolvedValue({...run,costPoints:0.25,version:{...run.version,definition:{...definition,nodes:[{...definition.nodes[0],type:"model"},definition.nodes[1]]}}});
     const fetchMock = vi.fn().mockResolvedValueOnce(Response.json({choices:[{message:{content:"final draft"}}],usage:{prompt_tokens:1000,completion_tokens:1000}},{headers:{"x-oneapi-request-id":"request0001"}}))
       .mockResolvedValueOnce(Response.json({requestId:"request0001",quota:960}));
     vi.stubGlobal("fetch",fetchMock);
@@ -139,6 +167,7 @@ describe("executePersistedWorkflow", () => {
     mocks.db.workflowRun.findFirst.mockResolvedValue({
       ...run,
       version: {
+        ...run.version,
         definition: {
           ...definition,
           edges: [{ id: "broken", from: "missing", to: "final", mapping: {} }],
@@ -234,7 +263,7 @@ describe("executePersistedWorkflow", () => {
       edges: [{ id: "draft-final", from: "draft", to: "final", mapping: {} }],
     };
     mocks.db.workflowRun.findFirst
-      .mockResolvedValueOnce({ ...run, version: { definition: modelDefinition } })
+      .mockResolvedValueOnce({ ...run, version: { ...run.version, definition: modelDefinition } })
       .mockResolvedValue({ status: "CANCELLED" });
     let runningWrites = 0;
     mocks.db.workflowRun.updateMany.mockImplementation(
@@ -285,7 +314,7 @@ describe("executePersistedWorkflow", () => {
       ],
       edges: [{ id: "draft-final", from: "draft", to: "final", mapping: {} }],
     };
-    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { definition: modelDefinition } });
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { ...run.version, definition: modelDefinition } });
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
       choices: [{ message: { content: "Generated draft" } }],
       usage: { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 },
@@ -314,7 +343,7 @@ describe("executePersistedWorkflow", () => {
       ],
       edges: [{ id: "draft-final", from: "draft", to: "final", mapping: {} }],
     };
-    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { definition: modelDefinition } });
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { ...run.version, definition: modelDefinition } });
     const fetchMock = vi.fn().mockResolvedValue(Response.json({ choices: [{ message: { content: "Generated" } }] }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -337,7 +366,7 @@ describe("executePersistedWorkflow", () => {
       ],
       edges: [{ id: "draft-final", from: "draft", to: "final", mapping: {} }],
     };
-    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { definition: modelDefinition } });
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { ...run.version, definition: modelDefinition } });
     mocks.db.userModelCredential.findFirst.mockResolvedValue({
       id: "cred1",
       userId: "user1",
@@ -541,7 +570,7 @@ describe("durable execution recovery", () => {
   const lease = new Date("2026-10-11T00:00:00Z");
   const modelDefinition = { ...definition, nodes: [{ ...definition.nodes[0], type: "model" as const }, definition.nodes[1]] };
   function interrupted(nodeRuns: unknown[]) {
-    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, status: "RUNNING", startedAt: lease, version: { definition: modelDefinition }, nodeRuns });
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, status: "RUNNING", startedAt: lease, version: { ...run.version, definition: modelDefinition }, nodeRuns });
     mocks.db.auditLog.findFirst.mockResolvedValue({ metadata: { leaseStartedAt: lease.toISOString() } });
   }
   it("requeues a durable paid response without debit or refund", async () => {
@@ -578,7 +607,7 @@ describe("durable execution recovery", () => {
   });
   it("reuses a persisted model output and executes only the unfinished output node", async () => {
     const model = vi.fn();
-    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { definition: modelDefinition }, nodeRuns: [{ nodeId: "draft", status: "SUCCEEDED", output: "saved response", attempts: 1, startedAt: lease, finishedAt: lease }] });
+    mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, version: { ...run.version, definition: modelDefinition }, nodeRuns: [{ nodeId: "draft", status: "SUCCEEDED", output: "saved response", attempts: 1, startedAt: lease, finishedAt: lease }] });
     const result = await executePersistedWorkflow("run1", "user1", { handlers: { model, output: ({ dependencyOutputs }) => dependencyOutputs.draft } });
     expect(result?.output).toBe("saved response");
     expect(model).not.toHaveBeenCalled();
@@ -590,7 +619,7 @@ it("settles a resumed paid response from the durable usage checkpoint", async ()
   vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
   const model = vi.fn();
   const paidDefinition = { ...definition, nodes: [{ ...definition.nodes[0], type: "model" as const }, definition.nodes[1]] };
-  mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, costPoints: 0.25, version: { definition: paidDefinition }, nodeRuns: [{ nodeId: "draft", status: "SUCCEEDED", output: "saved response", attempts: 1 }] });
+  mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, costPoints: 0.25, version: { ...run.version, definition: paidDefinition }, nodeRuns: [{ nodeId: "draft", status: "SUCCEEDED", output: "saved response", attempts: 1 }] });
   mocks.db.auditLog.findFirst.mockResolvedValue({ metadata: { modelUsage: { models: ["gpt-6.1-sol"], modelCalls: 1, tokenUsage: { inputTokens: 1000, outputTokens: 1000, totalTokens: 2000 }, reasoningEffort: "none", apicCharges: [{ requestId: "request0001", quota: 960, points: 0.00192 }] } } });
   const result = await executePersistedWorkflow("run1", "user1", { handlers: { model, output: ({ dependencyOutputs }) => dependencyOutputs.draft } });
   expect(result?.status).toBe("succeeded");

@@ -45,6 +45,18 @@ export async function seedProbeFixture(databaseUrl) {
     });
     if (!author) return { seeded: false, reason: "缺少冒烟账号，无法建立探针数据" };
 
+    // Explicitly isolated approval fixture, never a model verdict or production moderator.
+    const reviewerData = {
+      role: "ADMIN", name: "LOCAL probe reviewer", deletedAt: null, flagged: false,
+    };
+    const reviewer = await prisma.user.upsert({
+      where: { email: `${FIXTURE}-reviewer@example.invalid` },
+      update: reviewerData,
+      create: { email: `${FIXTURE}-reviewer@example.invalid`, username: `${FIXTURE}-reviewer`, ...reviewerData },
+      select: { id: true },
+    });
+    if (reviewer.id === author.id) throw new Error("PROBE_REVIEWER_MUST_BE_INDEPENDENT");
+
     await prisma.prompt.deleteMany({
       where: { authorId: author.id, slug: { startsWith: FIXTURE } },
     });
@@ -80,40 +92,55 @@ export async function seedProbeFixture(databaseUrl) {
 
     for (let index = 0; index < FIXTURE_WORKFLOWS; index += 1) {
       const slug = `${FIXTURE}-workflow-${index + 1}`;
-      const workflow = await prisma.workflow.upsert({
-        where: { slug },
-        update: { status: "PUBLISHED", publishedVersion: 1 },
-        create: {
-          slug,
-          title: `性能探针工作流 ${index + 1}`,
-          summary: `用于性能门禁的第 ${index + 1} 条探针工作流。`,
-          authorId: author.id,
-          status: "PUBLISHED",
-          publishedVersion: 1,
-          estimatedCost: 1,
-        },
-      });
-      await prisma.workflowVersion.upsert({
-        where: { workflowId_version: { workflowId: workflow.id, version: 1 } },
-        update: {},
-        create: {
-          workflowId: workflow.id,
-          version: 1,
-          createdById: author.id,
-          definition: {
-            version: 1,
-            maxNodes: 20,
-            nodes: [
-              { id: "start", type: "prompt", label: "整理输入", config: {}, timeoutMs: 30_000, maxRetries: 1 },
-              { id: "draft", type: "model", label: "生成草稿", config: {}, timeoutMs: 30_000, maxRetries: 1 },
-              { id: "finish", type: "output", label: "输出结果", config: {}, timeoutMs: 30_000, maxRetries: 0 },
-            ],
-            edges: [
-              { id: "e1", from: "start", to: "draft", mapping: {} },
-              { id: "e2", from: "draft", to: "finish", mapping: {} },
-            ],
+      await prisma.$transaction(async (tx) => {
+        const workflow = await tx.workflow.upsert({
+          where: { slug },
+          update: { status: "PUBLISHED", publishedVersion: 1 },
+          create: {
+            slug,
+            title: `性能探针工作流 ${index + 1}`,
+            summary: `用于性能门禁的第 ${index + 1} 条探针工作流。`,
+            authorId: author.id,
+            status: "PUBLISHED",
+            publishedVersion: 1,
+            estimatedCost: 1,
           },
-        },
+        });
+        const version = await tx.workflowVersion.upsert({
+          where: { workflowId_version: { workflowId: workflow.id, version: 1 } },
+          update: {},
+          create: {
+            workflowId: workflow.id,
+            version: 1,
+            createdById: author.id,
+            definition: {
+              version: 1,
+              maxNodes: 20,
+              nodes: [
+                { id: "start", type: "prompt", label: "整理输入", config: {}, timeoutMs: 30_000, maxRetries: 1 },
+                { id: "draft", type: "model", label: "生成草稿", config: {}, timeoutMs: 30_000, maxRetries: 1 },
+                { id: "finish", type: "output", label: "输出结果", config: {}, timeoutMs: 30_000, maxRetries: 0 },
+              ],
+              edges: [
+                { id: "e1", from: "start", to: "draft", mapping: {} },
+                { id: "e2", from: "draft", to: "finish", mapping: {} },
+              ],
+            },
+          },
+        });
+        const approvedAt = new Date(Math.max(Date.now(), version.createdAt.getTime()));
+        const approval = {
+          actorId: reviewer.id, action: "WORKFLOW_APPROVED", resourceType: "workflow", resourceId: workflow.id,
+          after: { status: "PUBLISHED", publishedVersion: version.version, versionId: version.id, note: "LOCAL isolated probe approval fixture" },
+          metadata: { fixture: FIXTURE, source: "LOCAL_BROWSER_PROBE", isolatedApprovalFixture: true },
+          createdAt: approvedAt,
+        };
+        // One stable evidence row per immutable fixture version, including repeated CI runs.
+        await tx.auditLog.upsert({
+          where: { id: `${FIXTURE}-approval-${workflow.id}-v1` },
+          update: approval, create: { id: `${FIXTURE}-approval-${workflow.id}-v1`, ...approval },
+        });
+        await tx.workflow.update({ where: { id: workflow.id }, data: { reviewNote: approval.after.note, reviewedAt: approvedAt } });
       });
     }
 

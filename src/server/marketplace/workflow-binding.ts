@@ -1,3 +1,4 @@
+import { hasWorkflowManualApproval } from "@/server/workflows/approval";
 import { createHash } from "node:crypto";
 import { db } from "@/lib/db";
 import { readPlatformRecipe } from "@/server/workflows/platform-recipes";
@@ -19,14 +20,7 @@ export async function readReviewedWorkflow(tx: DbTransaction, workflowId: string
     if (platform) return platform;
     throw new MarketRuleError("WORKFLOW_NOT_AVAILABLE", 409);
   }
-  const approvals = await tx.auditLog.findMany({ where: { resourceType: "workflow", resourceId: workflow.id, action: "WORKFLOW_APPROVED", createdAt: { gte: version.createdAt } }, orderBy: { createdAt: "desc" }, take: 100, select: { createdAt: true, after: true } });
-  const reviewed = approvals.some(approval => {
-    const after = approval.after;
-    if (!after || typeof after !== "object" || Array.isArray(after) || after.status !== "PUBLISHED") return false;
-    // New evidence binds explicitly; historical reviewWorkflow audited its latest immutable version.
-    if (typeof after.publishedVersion === "number") return after.publishedVersion === version.version;
-    return workflow.versions.filter(row => row.createdAt <= approval.createdAt).at(-1)?.id === version.id;
-  });
+  const reviewed = await hasWorkflowManualApproval(tx, workflow, version);
   if (!reviewed) throw new MarketRuleError("WORKFLOW_REVIEW_REQUIRED", 409);
   const definition = workflowDefinitionSchema.parse(version.definition);
   try { assertSupportedRecipe(definition); } catch { throw new MarketRuleError("INVALID_RECIPE_DEFINITION", 400); }

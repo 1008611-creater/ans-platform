@@ -48,25 +48,32 @@ function timeoutError(node: WorkflowNode) {
   return new Error(`Node '${node.id}' exceeded its ${node.timeoutMs}ms timeout.`);
 }
 
+class WorkflowStoppedError extends Error {}
+
 function executionBudgetError(maxExecutionMs: number) {
-  return new Error(`Workflow exceeded its ${maxExecutionMs}ms execution budget.`);
+  return new WorkflowStoppedError(`Workflow exceeded its ${maxExecutionMs}ms execution budget.`);
+}
+
+function cancellationError() {
+  return new WorkflowStoppedError("Workflow execution was cancelled.");
 }
 
 async function executeAttempt(
   node: WorkflowNode,
   context: WorkflowNodeContext,
   handler: WorkflowNodeExecutor,
+  budget: { remainingMs: number; maxExecutionMs: number },
   signal?: AbortSignal,
 ): Promise<unknown> {
-  if (signal?.aborted) throw new Error("Workflow execution was cancelled.");
+  if (signal?.aborted) throw cancellationError();
   const controller = new AbortController();
   const attemptContext = { ...context, signal: controller.signal };
   let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
   let abortListener: (() => void) | undefined;
   const cancelled = new Promise<never>((_, reject) => {
     abortListener = () => {
+      reject(cancellationError());
       controller.abort();
-      reject(new Error("Workflow execution was cancelled."));
     };
     if (signal?.aborted) abortListener();
     else signal?.addEventListener("abort", abortListener, { once: true });
@@ -78,9 +85,11 @@ async function executeAttempt(
       cancelled,
       new Promise<never>((_, reject) => {
         timeoutHandle = setTimeout(() => {
+          // The limiting deadline decides the cause, even if a clock sample
+          // is still just short. Reject before aborting a cooperative handler.
+          reject(budget.remainingMs <= node.timeoutMs ? executionBudgetError(budget.maxExecutionMs) : timeoutError(node));
           controller.abort();
-          reject(timeoutError(node));
-        }, node.timeoutMs);
+        }, Math.min(node.timeoutMs, budget.remainingMs));
       }),
     ]);
   } finally {
@@ -116,7 +125,7 @@ export async function executeWorkflow(
         elapsedMs: clock() - startedAt,
       };
     }
-    if (clock() - startedAt > maxExecutionMs) {
+    if (clock() - startedAt >= maxExecutionMs) {
       const error = executionBudgetError(maxExecutionMs);
       return {
         status: "failed",
@@ -139,18 +148,19 @@ export async function executeWorkflow(
 
     for (attempts = 1; attempts <= node.maxRetries + 1; attempts += 1) {
       try {
+        if (options.signal?.aborted) throw cancellationError();
         if (!handler) {
           throw new Error(`No executor is registered for node type '${node.type}'.`);
         }
         const budgetRemaining = maxExecutionMs - (clock() - startedAt);
         if (budgetRemaining <= 0) throw executionBudgetError(maxExecutionMs);
-        const output = await executeAttempt({ ...node, timeoutMs: Math.min(node.timeoutMs, budgetRemaining) }, {
+        const output = await executeAttempt(node, {
           node,
           input,
           dependencyOutputs,
           outputs,
           signal: new AbortController().signal,
-        }, handler, options.signal);
+        }, handler, { remainingMs: budgetRemaining, maxExecutionMs }, options.signal);
         outputs[node.id] = output;
         const execution: WorkflowNodeExecution = {
           nodeId: node.id,
@@ -164,7 +174,11 @@ export async function executeWorkflow(
         lastError = undefined;
         break;
       } catch (error) {
-        lastError = clock() - startedAt >= maxExecutionMs ? executionBudgetError(maxExecutionMs) : error instanceof Error ? error : new Error(String(error));
+        if (error instanceof WorkflowStoppedError) lastError = error;
+        else if (options.signal?.aborted) lastError = cancellationError();
+        else if (clock() - startedAt >= maxExecutionMs) lastError = executionBudgetError(maxExecutionMs);
+        else lastError = error instanceof Error ? error : new Error(String(error));
+        if (lastError instanceof WorkflowStoppedError) break;
       }
     }
 
@@ -188,7 +202,7 @@ export async function executeWorkflow(
     }
 
     await options.onNodeFinished?.(executions[executions.length - 1]);
-    if (clock() - startedAt > maxExecutionMs) {
+    if (clock() - startedAt >= maxExecutionMs) {
       const error = executionBudgetError(maxExecutionMs);
       return {
         status: "failed",
