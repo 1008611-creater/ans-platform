@@ -187,12 +187,12 @@
     },
     {
         "id": "ISSUE-HR16",
-        "status": "FIXED_SOURCE_PENDING_CI",
+        "status": "CLOSED",
         "severity": "P2",
         "requirement": "Approved six-primary navigation and retired public routes must be checked by current quality gates without lowering accessibility/performance/fixture rules.",
         "acceptance_item": "Independent smoke/a11y/performance script source review, followed by real PR CI gate",
         "expected": "Smoke explicitly asserts approved paths/order /explore,/hubs,/community,/competitions,/market,/workspace and correct retired redirects. A11y scans protected content after authenticated login. Existing axe severity, fixture requirements and API/LCP budgets remain enforced.",
-        "actual": "eb75f74a smoke still requires four mobile tabs and drawer /workflows, contradicting actual approved six routes. Independent read of old script and current primary/header/bottom navigation confirms obsolete expectation; unrelated unit-test success is not smoke success. New candidate initially assumed /templates?/explore although actual accepted mapping is /hubs, and a11y public community content assertion conflicts with its unauthenticated login redirect; these candidate issues were reported before acceptance. Subsequent CI 38266647316 passed new smoke and23-page axe but failed writesHTTP409: preview perf request omitted expected account header. Current source reads actual authenticated session actor and targets live WORKFLOW fixture for paired POST/DELETE; budgets/sampling/201 requirement unchanged.",
+        "actual": "eb75f74a smoke still requires four mobile tabs and drawer /workflows, contradicting actual approved six routes. Independent read of old script and current primary/header/bottom navigation confirms obsolete expectation; unrelated unit-test success is not smoke success. New candidate initially assumed /templates?/explore although actual accepted mapping is /hubs, and a11y public community content assertion conflicts with its unauthenticated login redirect; these candidate issues were reported before acceptance. Subsequent CI 38266647316 passed new smoke and23-page axe but failed writesHTTP409: preview perf request omitted expected account header. Current source reads actual authenticated session actor and targets live WORKFLOW fixture for paired POST/DELETE; budgets/sampling/201 requirement unchanged. Independent final CI review now confirms main dae90a70 run38300984567: require-mode smoke43 PASS, authenticated desktop/mobile axe23 pages critical/serious0, actual five read and paired two write probes + four LCP pages within unchanged500/800/2500ms budgets. Exact source explicitly asserts six primary order and correct retired pairs; favorite probe uses real session actor and valid WORKFLOW fixture. Full log and commit source hashes are preserved; no local browser was run.",
         "suggestion": "Use explicit independent six-path order, explicit retired-route pairs and authenticated community/workspace scans. Preserve existing strong failures and require-mode fixture checks, then rerun real PR CI.",
         "source": "/root/vibehub_followup_review read-only current script/source audit",
         "evidence": [
@@ -204,7 +204,40 @@
             "src/app/community/page.tsx",
             ".github/workflows/ci.yml"
         ],
-        "limits": "No terminal UI/browser invocation by reviewer; source/syntax/lint alone do not establish real preview or CI acceptance.",
-        "sourceReview": "Independent corrected source review passes: exact explicit six navigation order, prompts to explore/templates to hubs, authenticated community/workspace routes including mobile axe. Syntax3passed, actual no-ignore lint0errors/two pre-existingwarnings. Unchanged axe blocking/fixture gates and API/LCP budgets verified. Actual PR CI not yet reviewed; no terminal UI executed by reviewer. Independent perf/probe source/syntax/no-ignorelint verification passed; production authorization unchanged. Full latest CI remains pending."
+        "limits": "Closure is exact main CI source and isolated runner outcome, not production business writes, real network performance or overall ANS/event completion. Reviewer did not invoke terminal UI/browser.",
+        "sourceReview": "Historical source-only review: Independent corrected source review passes: exact explicit six navigation order, prompts to explore/templates to hubs, authenticated community/workspace routes including mobile axe. Syntax3passed, actual no-ignore lint0errors/two pre-existingwarnings. Unchanged axe blocking/fixture gates and API/LCP budgets verified. Actual PR CI not yet reviewed; no terminal UI executed by reviewer. Independent perf/probe source/syntax/no-ignorelint verification passed; production authorization unchanged. Full latest CI remains pending. Superseded on 2026-10-13 by independent exact main CI run 38300984567 review; see closureEvidence and closureScope.",
+        "closedBy": "/root/hub_release_review",
+        "closureScope": "Exact main commit dae90a70a95e835f64617e726e0611727060a84f GitHub CI run 38300984567, isolated quality gates only.",
+        "closureEvidence": [
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/hr16-quality-gates-exact-main-ci-independent-review.json",
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/hr16-run38300984567-metadata.json",
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/hr16-run38300984567.log"
+        ]
+    },
+    {
+        "id": "ISSUE-WS01",
+        "status": "CLOSED",
+        "severity": "P1",
+        "requirement": "REQ-WS01 / REQ-WS02",
+        "acceptance_item": "AC-WS01 / AC-WS02 / AC-WS03 / AC-WS04",
+        "expected": "Keep request quote immutable; append trustworthy cost evidence; settle/refund/reconcile atomically within the user-approved authorization.",
+        "actual": "Current live R4 enables unified model and APIC billing. Main gateway success/reconciliation and explicit rejection modify immutable price, violating the actual PostgreSQL trigger. Successful upstream output can become BILLING_PENDING with reservation retained. All78 migrations must be used: final state CHECK allows0..10; the confirmed failure is immutable price, not the superseded authorizedPoints CHECK.",
+        "evidence": [
+            "src/server/integrations/codex-gateway.ts",
+            "prisma/migrations/20261009120000_codex_api_request_audit/migration.sql",
+            "prisma/migrations/20261009130000_codex_verified_actual_usage/migration.sql",
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/navigation-hub-runtime-latest-scope-independent-assessment.json",
+            "C:/Users/lsb/.workbuddy/ans-agri-operations-release-20261013/live-three-flags-readonly.json"
+        ],
+        "limits": "Actual main-path production configuration and source reviewed; isolated baseline failure supplied by author, not a paid production trial. Complete real generated output/download/payment/member publication remains unverified.",
+        "closedBy": "/root/hub_release_review",
+        "closureScope": "Frozen local source/additive SQL and isolated verification only; actual CI/release/deployment pending",
+        "closure": "Independent exact8source/78history byte verification,105/105 reviewer mocked regressions, reviewed author20 actualPG cases androot79migrations/7workflowchain cases. Quote immutable, evidence immutable/terminal paired, user charge capped at initial authorization; platform covers actual excess. No production completion asserted.",
+        "closureEvidence": [
+            "C:\\Users\\lsb\\.workbuddy\\ans-agri-current-audit-20261012\\gateway-root-local-final-independent-review.json",
+            "C:\\Users\\lsb\\.workbuddy\\ans-agri-current-audit-20261012\\gateway-root-independent-105-unit.log",
+            "C:\\Users\\lsb\\.workbuddy\\ans-membership-current-audit-20261013\\gateway-main-candidate\\.gateway-validation\\main-postgres-results.json",
+            "C:\\Users\\lsb\\.workbuddy\\ans-workflow-settlement-release-20261013\\workflow-chain-isolated.json"
+        ]
     }
 ]

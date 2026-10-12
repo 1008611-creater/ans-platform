@@ -4,7 +4,8 @@ import { db } from "@/lib/db";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
 import { RUN_MODEL_OPTIONS, RUN_MODEL_METERING, type RunModelKey } from "@/lib/run-models";
 import { debitQuota, refundQuota, QuotaError } from "@/server/quota/service";
-import { readApicCharge } from "./apic-billing";
+import { readApicCharge, type ApicCharge } from "./apic-billing";
+import { hasNonexecutionEvidence, recordGatewayEvidence, lockGatewayBillingAccount } from "./gateway-evidence";
 
 const PROVIDER = "apic-codex";
 const MAX_BODY = 524288;
@@ -40,12 +41,13 @@ export async function authenticateCodex(request: Request) {
 }
 /** An internal feature may cap the member's approved spend. Preserve the
  * verified supplier cost separately; unexpected excess is platform-covered. */
-export function cappedMemberCharge(price: unknown, upstreamPoints: number) {
+export function cappedMemberCharge(price: unknown, upstreamPoints: number, authorizedPoints?: number) {
   if (!Number.isFinite(upstreamPoints) || upstreamPoints < 0) throw new Error("INVALID_UPSTREAM_CHARGE");
   const record = price && typeof price === "object" && !Array.isArray(price) ? price as Record<string, unknown> : {};
   const cap = record.memberPointsCap;
   if (cap !== undefined && (typeof cap !== "number" || !Number.isFinite(cap) || cap <= 0)) throw new Error("INVALID_MEMBER_BUDGET");
-  const billedPoints = typeof cap === "number" ? Math.min(upstreamPoints, cap) : upstreamPoints;
+  if (authorizedPoints !== undefined && (!Number.isFinite(authorizedPoints) || authorizedPoints <= 0)) throw new Error("INVALID_MEMBER_BUDGET");
+  const billedPoints = Math.min(upstreamPoints, typeof cap === "number" ? cap : Infinity, authorizedPoints ?? Infinity);
   return { billedPoints, price: { ...record, verifiedUpstreamPoints: upstreamPoints, platformCoveredPoints: Math.max(0, upstreamPoints - billedPoints) } };
 }
 /** Reconcile interrupted requests using the authoritative APIC receipt, never estimates. */
@@ -56,11 +58,17 @@ export async function reconcileCodexCharges(userId: string, options = { limit: 5
   for(const task of pending){
     if(Date.now() >= options.deadline) break;
     if(!task.outcome || !/^[A-Za-z0-9_-]{8,128}$/.test(task.outcome) || task.outcome === "UNCERTAIN")continue;
-    try{const charge=await readApicCharge(task.outcome, 1);const member=cappedMemberCharge(task.price,charge.points);
-      await db.$transaction(async tx=>{const changed=await tx.apiComputeRequest.updateMany({where:{id:task.id,state:"UNCERTAIN"},data:{state:"SETTLED",settledPoints:member.billedPoints,price:member.price as import("@prisma/client").Prisma.InputJsonValue,finishedAt:new Date()}});
-        if(changed.count===1 && member.billedPoints>Number(task.authorizedPoints))await debitQuota(tx,{userId,costPoints:member.billedPoints-Number(task.authorizedPoints),ref:{type:"api_compute_request",id:task.id},note:"Codex verified upstream extra usage"});
-        if(changed.count===1 && member.billedPoints<Number(task.authorizedPoints))await refundQuota(tx,{userId,costPoints:Number(task.authorizedPoints)-member.billedPoints,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
-        if(changed.count===1)await refreshMeteredParentCost(tx,userId,task.price);});
+    try{const charge=await readApicCharge(task.outcome, 1);const member=cappedMemberCharge(task.price,charge.points,Number(task.authorizedPoints));
+      await db.$transaction(async tx=>{
+        await lockGatewayBillingAccount(tx, userId, true);
+        const current = await tx.apiComputeRequest.findFirst({ where: { id: task.id, userId, provider: PROVIDER, state: "UNCERTAIN" } });
+        if (!current) return;
+        await recordGatewayEvidence(tx,userId,task.id,{kind:"VERIFIED",charge,billedPoints:member.billedPoints});
+        const changed=await tx.apiComputeRequest.updateMany({where:{id:task.id,userId,state:"UNCERTAIN"},data:{state:"SETTLED",settledPoints:member.billedPoints,finishedAt:new Date()}});
+        if(changed.count!==1) throw new Error("REQUEST_CONFLICT");
+        if(member.billedPoints<Number(current.authorizedPoints)) await refundQuota(tx,{userId,costPoints:Number(current.authorizedPoints)-member.billedPoints,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
+        await refreshMeteredParentCost(tx,userId,task.price);
+      });
     }catch{/* Preserve reservation until a verified receipt is available. */}
   }
 }
@@ -97,7 +105,7 @@ export async function meteredResponses(request: Request, userId: string, parent?
   let reservation:{id:string;price:{source:string;quotaPerPoint:number;memberPointsCap?:number;parent?:{type:"run"|"workflow_run";id:string};retry?:{rootRequestId:string;previousRequestId:string}}};
   try {
     reservation=await db.$transaction(async tx=>{
-      await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
+      await lockGatewayBillingAccount(tx, user.id);
       let attemptKey=idempotency;
       let rootRequestId:string|undefined;
       let previousRequestId:string|undefined;
@@ -121,7 +129,8 @@ export async function meteredResponses(request: Request, userId: string, parent?
         // non-execution. Only explicit rejection evidence permits a fresh attempt.
         // Legacy outcome="RELEASED" was written solely by rejection transition();
         // operator waivers preserve UNCERTAIN or the upstream receipt id instead.
-        const rejectedWithoutExecution=[400,401,403,404,422,429].includes(Number(rejectedStatus)) || (rejectedStatus===undefined && previous.outcome==="RELEASED");
+        const explicitNonexecution=await hasNonexecutionEvidence(tx,user.id,previous.id);
+        const rejectedWithoutExecution=explicitNonexecution===null ? [400,401,403,404,422,429].includes(Number(rejectedStatus)) || (rejectedStatus===undefined && previous.outcome==="RELEASED") : explicitNonexecution;
         if(previous.state!=="RELEASED" || previous.settledPoints===null || Number(previous.settledPoints)!==0 || !previous.finishedAt || !rejectedWithoutExecution)throw new Error("REQUEST_CONFLICT");
         rootRequestId ??= previous.id;
         previousRequestId=previous.id;
@@ -138,13 +147,18 @@ export async function meteredResponses(request: Request, userId: string, parent?
     return failure(code,error instanceof QuotaError?error.status:409);
   }
   const taskId=reservation.id;
-  const transition=async(state:"SETTLED"|"RELEASED"|"UNCERTAIN",upstreamPoints:number|null,requestId?:string,rejectedUpstreamStatus?:number)=>db.$transaction(async tx=>{
-    const member=upstreamPoints!==null && state==="SETTLED" ? cappedMemberCharge(reservation.price,upstreamPoints) : null;
+  const transition=async(state:"SETTLED"|"RELEASED"|"UNCERTAIN",upstreamPoints:number|null,requestId?:string,rejectedUpstreamStatus?:number,charge?:ApicCharge)=>db.$transaction(async tx=>{
+    await lockGatewayBillingAccount(tx, user.id, true);
+    const current = await tx.apiComputeRequest.findFirst({ where: { id: taskId, userId: user.id, provider: PROVIDER, state: "RUNNING" } });
+    if (!current) return;
+    const member=upstreamPoints!==null && state==="SETTLED" ? cappedMemberCharge(current.price,upstreamPoints,Number(current.authorizedPoints)) : null;
     const points=member ? member.billedPoints : upstreamPoints;
-    const changed=await tx.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{state,settledPoints:points,outcome:requestId || state,finishedAt:state==="UNCERTAIN"?null:new Date(),...(member ? {price:member.price as import("@prisma/client").Prisma.InputJsonValue} : {}),...(state==="RELEASED" && rejectedUpstreamStatus!==undefined ? {price:{...reservation.price,rejectedUpstreamStatus}} : {})}});
-    if(changed.count===1 && points!==null && points>parsed.reserve)await debitQuota(tx,{userId:user.id,costPoints:points-parsed.reserve,ref:{type:"api_compute_request",id:taskId},note:"Codex verified upstream extra usage"});
-    if(changed.count===1 && points!==null && points<parsed.reserve) await refundQuota(tx,{userId:user.id,costPoints:parsed.reserve-points,ref:{type:"api_compute_request",id:taskId},note:"Codex unused reservation settlement"});
-    if(changed.count===1 && parent && state!=="UNCERTAIN")await refreshMeteredParentCost(tx,user.id,{parent});
+    if (state === "SETTLED" && member && charge) await recordGatewayEvidence(tx,user.id,taskId,{kind:"VERIFIED",charge,billedPoints:member.billedPoints});
+    if (state === "RELEASED" && rejectedUpstreamStatus !== undefined) await recordGatewayEvidence(tx,user.id,taskId,{kind:"REJECTED",status:rejectedUpstreamStatus,upstreamRequestId:requestId});
+    const changed=await tx.apiComputeRequest.updateMany({where:{id:taskId,userId:user.id,state:"RUNNING"},data:{state,settledPoints:points,outcome:requestId || state,finishedAt:state==="UNCERTAIN"?null:new Date()}});
+    if(changed.count!==1) throw new Error("REQUEST_CONFLICT");
+    if(points!==null && points<Number(current.authorizedPoints)) await refundQuota(tx,{userId:user.id,costPoints:Number(current.authorizedPoints)-points,ref:{type:"api_compute_request",id:taskId},note:"Codex unused reservation settlement"});
+    if(parent && state!=="UNCERTAIN")await refreshMeteredParentCost(tx,user.id,{parent});
   });
   let upstream:Response;
   try {
@@ -161,7 +175,7 @@ export async function meteredResponses(request: Request, userId: string, parent?
     if(!requestId)throw new Error("BILLING_REQUEST_ID_MISSING");
     const charge=await readApicCharge(requestId);
     
-    await transition("SETTLED",charge.points,requestId);
+    await transition("SETTLED",charge.points,requestId,undefined,charge);
   };
   if(!parsed.streaming){
     try{const text=await upstream.text();await settle();return new Response(text,{headers:{"Content-Type":"application/json","Cache-Control":"no-store","x-ans-request-id":taskId}});}
