@@ -231,13 +231,54 @@
         ],
         "limits": "Actual main-path production configuration and source reviewed; isolated baseline failure supplied by author, not a paid production trial. Complete real generated output/download/payment/member publication remains unverified.",
         "closedBy": "/root/hub_release_review",
-        "closureScope": "Frozen local source/additive SQL and isolated verification only; actual CI/release/deployment pending",
+        "closureScope": "R5 exact main cce1e6fd deployed; fresh restore, Linux build, actual production schema and HTTPS/CUA independently verified. Real paid supplier call remains unverified.",
         "closure": "Independent exact8source/78history byte verification,105/105 reviewer mocked regressions, reviewed author20 actualPG cases androot79migrations/7workflowchain cases. Quote immutable, evidence immutable/terminal paired, user charge capped at initial authorization; platform covers actual excess. No production completion asserted.",
         "closureEvidence": [
             "C:\\Users\\lsb\\.workbuddy\\ans-agri-current-audit-20261012\\gateway-root-local-final-independent-review.json",
             "C:\\Users\\lsb\\.workbuddy\\ans-agri-current-audit-20261012\\gateway-root-independent-105-unit.log",
             "C:\\Users\\lsb\\.workbuddy\\ans-membership-current-audit-20261013\\gateway-main-candidate\\.gateway-validation\\main-postgres-results.json",
-            "C:\\Users\\lsb\\.workbuddy\\ans-workflow-settlement-release-20261013\\workflow-chain-isolated.json"
+            "C:\\Users\\lsb\\.workbuddy\\ans-workflow-settlement-release-20261013\\workflow-chain-isolated.json",
+            "C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/gateway-deployment-browser-final-independent-review.json",
+            "C:/Users/lsb/.workbuddy/ans-member-workflow-release-r6-20261013/r5-parent-current.json"
         ]
+    },
+    {
+        "id": "ISSUE-AO01",
+        "status": "CLOSED",
+        "severity": "P2",
+        "expected": "Authorized entry/stage decisions must open from exact submitted work",
+        "actual": "Work detail lacked an exact decision-management target/context and late-response protection. Reviewed fixed target parsing, server authorization, labeled context and account/selection guards are integrated.",
+        "closedBy": "/root/hub_release_review",
+        "closureScope": "Independent local R6 increment only; exact final CI and deployment pending.",
+        "closureEvidence": [
+            "C:/Users/lsb/.workbuddy/ans-member-workflow-release-r6-20261013/reviewer-ao-executor-local-r6.json"
+        ],
+        "limits": "No production event, paid call, XP, balance or permission fixtures created. Overall product and formal event configuration remain unfinished."
+    },
+    {
+        "id": "ISSUE-AO02",
+        "status": "CLOSED",
+        "severity": "P2",
+        "expected": "Issue assignment must name an existing readable recipient without granting access",
+        "actual": "Previous assignment only checked account availability. Reviewed helper uses exact active membership or existing staff scopes and validates expiring permissions at commit.",
+        "closedBy": "/root/hub_release_review",
+        "closureScope": "Independent local R6 increment only; exact final CI and deployment pending.",
+        "closureEvidence": [
+            "C:/Users/lsb/.workbuddy/ans-member-workflow-release-r6-20261013/reviewer-ao-executor-local-r6.json"
+        ],
+        "limits": "No production event, paid call, XP, balance or permission fixtures created. Overall product and formal event configuration remain unfinished."
+    },
+    {
+        "id": "ISSUE-EB01",
+        "status": "CLOSED",
+        "severity": "P2",
+        "expected": "Total execution budget and cancellation must stop retries with their actual cause",
+        "actual": "Original executor classified a budget-limited timeout as the shortened node timeout when the sampled clock was one millisecond short. Deterministic original failure retained; limit cause and retry boundary repaired.",
+        "closedBy": "/root/hub_release_review",
+        "closureScope": "Independent local R6 increment only; exact final CI and deployment pending.",
+        "closureEvidence": [
+            "C:/Users/lsb/.workbuddy/ans-member-workflow-release-r6-20261013/reviewer-ao-executor-local-r6.json"
+        ],
+        "limits": "No production event, paid call, XP, balance or permission fixtures created. Overall product and formal event configuration remain unfinished."
     }
 ]

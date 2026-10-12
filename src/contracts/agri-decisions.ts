@@ -26,6 +26,7 @@ export interface AgriCorrectionPermitView {
   authorizedById: string; authorizedAt: string; expiresAt: string; revokedAt: string | null; usedBySubmissionId: string | null;
 }
 export interface AgriDecisionManagementView {
+  context?: { teamName: string; stage: "PRELIMINARY" | "FINAL" | null };
   competitionId: string; teamCompetitionId: string; entryStageId: string | null; stageRevision: number | null;
   currentSubmissionId: string | null; eligibility: AgriEligibilityDecision[];
   permits: AgriCorrectionPermitView[];

@@ -38,14 +38,14 @@ export async function readAgriDecisionManagement(actorId: string, raw: unknown):
   const query = agriDecisionQuerySchema.parse(raw);
   return db.$transaction(async tx => {
     const ctx = await lockAgriWorkspace(tx, actorId), authority = await requireAgriScope(tx, ctx, "RULES_CONFIRM");
-    const [entry] = await tx.$queryRaw<Array<{ id: string }>>`SELECT id FROM team_competitions WHERE id=${query.teamCompetitionId} AND "competitionId"=${ctx.workspace.competitionId} FOR SHARE`;
+    const [entry] = await tx.$queryRaw<Array<{ id: string; teamName: string }>>`SELECT tc.id,t.name AS "teamName" FROM team_competitions tc JOIN teams t ON t.id=tc."teamId" WHERE tc.id=${query.teamCompetitionId} AND tc."competitionId"=${ctx.workspace.competitionId} FOR SHARE OF tc,t`;
     if (!entry) return fail("AGRI_ENTRY_NOT_FOUND", 404);
-    const [stage] = query.entryStageId ? await tx.$queryRaw<Array<{ id: string; revision: number; currentSubmissionId: string | null }>>`SELECT id,revision,"currentSubmissionId" FROM agri_entry_stages WHERE id=${query.entryStageId} AND "teamCompetitionId"=${entry.id} AND "competitionId"=${ctx.workspace.competitionId} FOR SHARE` : [];
+    const [stage] = query.entryStageId ? await tx.$queryRaw<Array<{ id: string; revision: number; currentSubmissionId: string | null; stage: "PRELIMINARY" | "FINAL" }>>`SELECT id,revision,"currentSubmissionId",stage FROM agri_entry_stages WHERE id=${query.entryStageId} AND "teamCompetitionId"=${entry.id} AND "competitionId"=${ctx.workspace.competitionId} FOR SHARE` : [];
     if (query.entryStageId && !stage) return fail("AGRI_STAGE_NOT_FOUND", 404);
     const decisions = await tx.$queryRaw<Array<{ id: string; sequence: number; state: "ELIGIBLE" | "INELIGIBLE"; reason: string; sourceReference: string; actorId: string; decidedAt: Date }>>`SELECT id,sequence,state,reason,"sourceReference","actorId","decidedAt" FROM agri_final_decisions WHERE "teamCompetitionId"=${entry.id} AND "competitionId"=${ctx.workspace.competitionId} ORDER BY sequence DESC LIMIT 30`;
     const permits = stage ? await tx.$queryRaw<PermitRow[]>`SELECT p.*,CASE WHEN e.action='REVOKE' THEN e."createdAt" ELSE NULL END AS "revokedAt",CASE WHEN e.action='USE' THEN e."submissionId" ELSE NULL END AS "usedBySubmissionId" FROM agri_correction_permits p LEFT JOIN agri_correction_permit_events e ON e."permitId"=p.id WHERE p."entryStageId"=${stage.id} AND p."competitionId"=${ctx.workspace.competitionId} ORDER BY p."authorizedAt" DESC,p.id DESC LIMIT 30` : [];
     await assertAgriAuthorityCurrent(tx, authority);
-    return { competitionId: ctx.workspace.competitionId, teamCompetitionId: entry.id, entryStageId: stage?.id ?? null, stageRevision: stage?.revision ?? null, currentSubmissionId: stage?.currentSubmissionId ?? null,
+    return { context: { teamName: entry.teamName, stage: stage?.stage ?? null }, competitionId: ctx.workspace.competitionId, teamCompetitionId: entry.id, entryStageId: stage?.id ?? null, stageRevision: stage?.revision ?? null, currentSubmissionId: stage?.currentSubmissionId ?? null,
       eligibility: decisions.map(row => ({ ...row, decidedAt: row.decidedAt.toISOString() })), permits: permits.map(permitView) };
   }, { timeout: 15000 });
 }
