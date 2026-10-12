@@ -43,8 +43,12 @@ export async function readQuotaHistory(userId: string, raw: unknown = {}) {
       tx.mediaGeneration?.aggregate({ where: { userId, status: { in: ["RESERVED", "SUBMITTING", "UNCERTAIN"] }, pointsCost: { gt: 0 } }, _sum: { pointsCost: true }, _count: { _all: true } }) ?? Promise.resolve({ _sum: { pointsCost: null }, _count: { _all: 0 } }),
       readExamReservations(tx, userId),
     ]);
+    const voiceUsage = await tx.apiComputeRequest.findMany({ where: { userId, provider: "mimo-tts" },
+      select: { id: true, state: true, modelId: true, settledPoints: true, authorizedPoints: true, maxUnits: true, createdAt: true },
+      orderBy: { createdAt: "desc" }, take: 20 });
     const page = rows.slice(0, limit);
     return {
+      voiceUsage: voiceUsage.map(row => ({ ...row, settledPoints: row.settledPoints === null ? null : Number(row.settledPoints), authorizedPoints: Number(row.authorizedPoints), createdAt: row.createdAt.toISOString() })),
       availablePoints: account.quotaPoints,
       reservedPoints: Math.round((Number(workflowPending._sum.authorizedPoints ?? 0) + Number(apiPending._sum.authorizedPoints ?? 0) + Number(marketPending._sum.amount ?? 0) + Number(templatePending._sum.costPoints ?? 0) + Number(legacyWorkflowPending._sum.costPoints ?? 0) + Number(mediaPending._sum.pointsCost ?? 0) + examPending.reservedPoints) * 1e6) / 1e6,
       pendingCount: workflowPending._count._all + apiPending._count._all + marketPending._count._all + templatePending._count._all + legacyWorkflowPending._count._all + mediaPending._count._all + examPending.pendingCount,
@@ -52,5 +56,5 @@ export async function readQuotaHistory(userId: string, raw: unknown = {}) {
       nextCursor: rows.length > limit ? page[page.length - 1].id : null,
       billing: { rechargeYuanPerPoint: YUAN_PER_POINT, usdQuotaPerPoint: 1, gptConsumptionMultiplier: 0.16, deepseekConsumptionMultiplier: 1, rechargeEnabled: ldxpRechargeEnabled() },
     };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead, maxWait: 10000, timeout: 30000 });
 }

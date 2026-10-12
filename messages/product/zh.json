@@ -42,6 +42,25 @@
     "competitions": "比赛",
     "workspace": "工作台"
   },
+  "home": {
+    "eyebrow": "ANS / 发现 · 学习 · 创作",
+    "title": "让想法，\n长成你的作品。",
+    "description": "从真实项目里找灵感，沿着成熟的方法，把下一件作品做出来。",
+    "searchPlaceholder": "试试：简历网站、AI 视频、开源工具",
+    "spotlight": "正在发生的好项目",
+    "directions": "按方向找灵感",
+    "selectionLabel": "挑一个，动手试试",
+    "workflowLabel": "有方向，就开始",
+    "workflowDescription": "准备自己的内容，查看流程与费用，确认后再运行。",
+    "stepsLabel": "从灵感到作品",
+    "communityLabel": "一起走得更远",
+    "previousProject": "上一个项目",
+    "nextProject": "下一个项目",
+    "pauseProjects": "暂停自动轮换",
+    "playProjects": "开始自动轮换",
+    "selectProject": "切换到",
+    "projectCarousel": "项目封面轮播"
+  },
   "eyebrow": "AI NEVER STOPS",
   "heroTitle": "你的下一个作品，\n从这里开始。",
   "heroBody": "发现好项目，学会怎么做，用 AI 完成你的作品。",
@@ -1947,7 +1966,13 @@
     "examTitle": "错题分析预占",
     "examPending": "待结算：{count} 笔，共 {points} 积分",
     "examRecovery": "错题服务会恢复并结算这些预占。长时间未结束时，请核对对应任务结果；本列表只展示状态，不因超时自动退款。",
-    "examEmpty": "暂无未结算的错题分析预占。"
+    "examEmpty": "暂无未结算的错题分析预占。",
+    "voiceTitle": "语音计量政策",
+    "voiceFreePolicy": "当前已核准政策：免费，消耗 0 积分。",
+    "voicePolicyPaused": "语音调用已暂停，请核对渠道凭据、核准模型和价格复核期限。",
+    "voiceDeadline": "ANS 政策复核期限（UTC）：",
+    "voiceUsage": "最近 24 小时 {count} 次调用；{pending} 笔待结案；音频缓存 {megabytes} MB。",
+    "voiceNoAutomaticCharge": "该期限是 ANS 的复核要求，不是供应商促销结束时间。政策变化后暂停新调用，不会静默启用收费；既有请求仍可核对，过期音频仍会清理。"
   },
   "growth": {
     "eyebrow": "ANS GROWTH",
@@ -2867,6 +2892,20 @@
       "RATE_LIMITED": "操作较频繁，请稍后再试。",
       "RETURN_ORIGIN_FORBIDDEN": "返回网站未在商品接入设置中登记。",
       "INVALID_TIER": "请选择项目当前有效的收费档次。"
+    }
+  },
+  "voiceUsage": {
+    "title": "语音调用记录",
+    "description": "免费语音也记录在统一调用记录中，不改变积分余额。结果不确定时保留待核对状态，恢复播放不会重新生成。",
+    "characters": "{count} 字符",
+    "reserved": "预占 0 积分",
+    "zero": "0 积分",
+    "states": {
+      "AUTHORIZED": "已授权",
+      "RUNNING": "正在准备",
+      "UNCERTAIN": "结果待核对",
+      "SETTLED": "音频已交付",
+      "RELEASED": "已结束，未交付音频"
     }
   }
 }

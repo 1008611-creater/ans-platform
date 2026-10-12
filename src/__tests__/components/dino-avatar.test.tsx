@@ -54,22 +54,33 @@ function pointer() {
   fireEvent(window, event);
 }
 
+const offer = { available: true, mode: "free" as const, points: 0 as const, modelId: "mimo-v2.5-tts", policyVersion: "fixture-free", checkedAt: "2026-10-12T00:00:00Z", reviewBy: "2099-01-01T00:00:00Z", cacheHours: 24, maxCharacters: 1200 };
+
 describe("DinoAvatar frame lifecycle", () => {
   it("keeps voice off by default and speaks only after an explicit preference opt-in and fresh reply", () => {
     const view = mount(true);
-    view.rerender(<DinoAvatar phase="idle" open speech={{ id: 1, text: "Public guide reply" }} />);
+    view.rerender(<DinoAvatar actor="member" voicePolicy={offer} phase="idle" open speech={{ id: 1, text: "Public guide reply" }} />);
     message(view.source, "ans-dino-ready");
     expect(view.send).toHaveBeenCalledWith({ type: "ans-dino", event: "preferences", voice: false, volume: .65, calm: false }, window.location.origin);
     expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(0);
     act(() => updateSitePreferences({ voice: true }));
     expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(0);
-    view.rerender(<DinoAvatar phase="idle" open speech={{ id: 2, text: "Next public reply" }} />);
-    expect(view.send).toHaveBeenCalledWith({ type: "ans-dino", event: "speak", text: "Next public reply" }, window.location.origin);
+    view.rerender(<DinoAvatar actor="member" voicePolicy={offer} phase="idle" open speech={{ id: 2, text: "Next public reply" }} />);
+    expect(view.send).toHaveBeenCalledWith({ type: "ans-dino", event: "speak", text: "Next public reply", actor: "member", policyVersion: offer.policyVersion }, window.location.origin);
     view.send.mockClear();
     act(() => updateSitePreferences({ voice: false }));
     expect(view.send).toHaveBeenCalledWith({ type: "ans-dino", event: "stop-speech" }, window.location.origin);
-    view.rerender(<DinoAvatar phase="idle" open speech={{ id: 3, text: "Silent public reply" }} />);
+    view.rerender(<DinoAvatar actor="member" voicePolicy={offer} phase="idle" open speech={{ id: 3, text: "Silent public reply" }} />);
     expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(0);
+  });
+  it("waits for an authenticated free quote and blocks expired voice policies", () => {
+    const view = mount(true); act(() => updateSitePreferences({ voice: true })); message(view.source, "ans-dino-ready");
+    view.rerender(<DinoAvatar phase="idle" open speech={{ id: 7, text: "Public" }} />);
+    view.rerender(<DinoAvatar actor="member" phase="idle" open speech={{ id: 7, text: "Public" }} />);
+    view.rerender(<DinoAvatar actor="member" voicePolicy={{...offer,reviewBy:"2020-01-01T00:00:00Z"}} phase="idle" open speech={{ id: 7, text: "Public" }} />);
+    expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(0);
+    view.rerender(<DinoAvatar actor="member" voicePolicy={offer} phase="idle" open speech={{ id: 7, text: "Public" }} />);
+    expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(1);
   });
   it("starts the visible companion eagerly and keeps its still until ready", () => {
     const view = mount();

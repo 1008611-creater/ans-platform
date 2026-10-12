@@ -22,6 +22,14 @@ export function CreditsPanel({ overview, actorId }: { overview: Overview; actorI
    finally { inFlight.current = false; setBusy(false); }
  }
  return <div className="space-y-8"><p>{t("pending", { count: overview.pending })}</p><p role={overview.mismatchCount ? "alert" : undefined}>{t("mismatchCount", { count: overview.mismatchCount })}</p>{!overview.manualRechargeEnabled && <p className="text-sm text-muted-foreground">{t("disabled")}</p>}
+ {overview.voice && <section className="max-w-3xl space-y-3 rounded-md border p-5" aria-labelledby="voice-policy-title">
+   <h2 id="voice-policy-title" className="font-semibold">{t("voiceTitle")}</h2>
+   <p role={overview.voice.available ? "status" : "alert"}>{t(overview.voice.available ? "voiceFreePolicy" : "voicePolicyPaused")}</p>
+   <p className="break-all text-sm text-muted-foreground">{overview.voice.policyVersion}</p>
+   <p className="text-sm">{t("voiceDeadline")} <time dateTime={overview.voice.reviewBy}>{overview.voice.reviewBy}</time></p>
+   <p className="text-sm">{t("voiceUsage", { count: overview.voice.recentCalls, pending: overview.voice.pendingCount, megabytes: (overview.voice.cachedAudioBytes / 1024 / 1024).toFixed(1) })}</p>
+   <p className="text-sm leading-6 text-muted-foreground">{t("voiceNoAutomaticCharge")}</p>
+ </section>}
  <form className="max-w-2xl space-y-4" onSubmit={event => { event.preventDefault(); if (busy || pending || !event.currentTarget.reportValidity()) return; const form = new FormData(event.currentTarget); const evidenceRef = String(form.get("receipt") || "").trim(); const command = { userId: String(form.get("userId")), kind: String(form.get("kind")), amount: Number(form.get("amount")), note: String(form.get("note")), operationKey: crypto.randomUUID(), ...(evidenceRef ? { evidenceRef } : {}) }; setPending(command); void execute(command); }}>
  <fieldset disabled={busy || !!pending} className="space-y-4"><label className="grid gap-2 text-sm">{t("user")}<select name="userId" defaultValue="" required className="h-10 rounded-md border bg-background px-3"><option value="" disabled>{t("selectUser")}</option>{overview.users.map(user => <option key={user.id} value={user.id}>{user.username} / {user.quotaPoints}{user.flagged ? ` (${t("restrictedAccount")})` : ""}</option>)}</select></label>
  <label className="grid gap-2 text-sm">{t("kind")}<select name="kind" value={kind} onChange={event => setKind(event.target.value)} className="h-10 rounded-md border bg-background px-3">{["GRANT","ADJUST",...(overview.manualRechargeEnabled ? ["TOP_UP"] : [])].map(kind => <option value={kind} key={kind}>{t(kind)}</option>)}</select></label>

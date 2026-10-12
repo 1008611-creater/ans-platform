@@ -11,12 +11,13 @@ vi.mock("@/server/catalog/service", async () => {
 const state = vi.hoisted(() => ({ pathname: "/", user: null as null | { username: string } }));
 vi.mock("next/navigation", () => ({ usePathname: () => state.pathname }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ data: state.user ? { user: state.user } : null }) }));
-vi.mock("next-intl/server", () => ({ getTranslations: async () => (key: string) => key }));
+vi.mock("next-intl/server", () => ({ getLocale: async () => "zh", getTranslations: async () => (key: string) => key }));
 vi.mock("@/components/homepage/homepage-cta-link", () => ({
   HomepageCtaLink: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a>,
 }));
-vi.mock("@/components/catalog/project-card", () => ({ ProjectCard: ({ project }: { project: { slug: string } }) => <a href={`/explore/${project.slug}`}>{project.slug}</a> }));
+vi.mock("@/components/catalog/project-preview", () => ({ ProjectPreview: () => <div data-testid="project-preview" /> }));
 vi.mock("@/components/catalog/official-workflows", () => ({ OfficialWorkflows: () => <Link href="/workflows/toonflow">Toonflow</Link> }));
+vi.mock("@/components/homepage/project-coverflow", () => ({ ProjectCoverflow: ({ projects }: { projects: { href: string; title: string }[] }) => <Link href={projects[0].href}>{projects[0].title}</Link> }));
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import HomePage from "@/app/page";
 
@@ -41,12 +42,12 @@ describe("product discovery entry points", () => {
 
   it("offers discovery, workflow, category and community entry points", async () => {
     render(await HomePage());
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("heroTitle");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("home.title");
     expect(screen.getByRole("link", { name: /exploreAction/ })).toHaveAttribute("href", "/explore");
     expect(screen.getByRole("link", { name: "workflowAction" })).toHaveAttribute("href", "/hubs");
     expect(screen.getByRole("link", { name: "communityAction" })).toHaveAttribute("href", "/community");
     expect(screen.getByRole("link", { name: "categories.aigc" })).toHaveAttribute("href", "/explore?category=aigc");
-    expect(screen.getByRole("link", { name: "liu-resume" })).toHaveAttribute("href", "/explore/liu-resume");
+    expect(screen.getByRole("link", { name: /个人简历与作品集/ })).toHaveAttribute("href", "/explore/liu-resume");
   });
 
   it("keeps Chinese and English learning keys and placeholders aligned", () => {

@@ -1782,6 +1782,8 @@ model ApiComputeRequest {
   startedAt        DateTime?
   finishedAt       DateTime?
 
+  voiceResult      VoiceResult?
+
   @@unique([userId, provider, idempotencyKey])
   @@index([userId, createdAt])
   @@index([provider, state, updatedAt])
@@ -2696,4 +2698,19 @@ model MarketMedia {
   createdAt DateTime @default(now())
   @@index([ownerId, createdAt])
   @@map("market_media")
+}
+
+/// Private replay cache; expiry is enforced on read and swept without deleting the audit.
+model VoiceResult {
+  requestId String @id
+  request ApiComputeRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  audio Bytes @db.ByteA
+  byteLength Int
+  sha256 String
+  contentType String @default("audio/wav")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("voice_results")
 }

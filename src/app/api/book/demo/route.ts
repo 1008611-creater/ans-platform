@@ -1,3 +1,4 @@
+import { blockUnmeteredConsumerAI } from "@/server/integrations/legacy-consumer-ai";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
 import { auth } from "@/lib/auth";
@@ -175,6 +176,9 @@ Return JSON with this exact structure:
 };
 
 export async function POST(request: NextRequest) {
+  const blocked = blockUnmeteredConsumerAI();
+  if (blocked) return blocked;
+
   const session = await auth();
   const isAuthenticated = !!session?.user;
   const userId = session?.user?.id || session?.user?.email;

@@ -1,3 +1,4 @@
+import { voiceOffer, VOICE_PROVIDER, VOICE_CACHE_MS } from "@/server/voice/policy";
 import { Prisma } from "@prisma/client";
 import { readExamReservations } from "./exam-reservations";
 import { countPersonalQuotaMismatches } from "./ledger-scope";
@@ -59,6 +60,11 @@ export async function quotaAdminOverview() {
     listLdxpRechargeOrders(),
     readExamReservations(tx),
   ]);
-  return { users, mismatchCount: gaps, disputes, uncertain: uncertain.map(row => ({ ...row, authorizedPoints: Number(row.authorizedPoints) })), operations: operations.map(row => ({ ...row, amount: Number(row.amount), balanceAfter: Number(row.balanceAfter), createdAt: row.createdAt.toISOString() })), pending, examPending, manualRechargeEnabled: process.env.ANS_MANUAL_RECHARGE_ENABLED === "1", ldxp: { enabled: ldxpRechargeEnabled(), orders: ldxpOrders } };
- }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  const [voicePending, voiceCalls, voiceStored] = await Promise.all([
+    tx.apiComputeRequest.count({ where: { provider: VOICE_PROVIDER, state: { in: ["RUNNING", "UNCERTAIN"] } } }),
+    tx.apiComputeRequest.count({ where: { provider: VOICE_PROVIDER, createdAt: { gt: new Date(Date.now() - VOICE_CACHE_MS) } } }),
+    tx.voiceResult.aggregate({ _sum: { byteLength: true } }),
+  ]);
+  return { voice: { ...voiceOffer(), pendingCount: voicePending, recentCalls: voiceCalls, cachedAudioBytes: Number(voiceStored._sum.byteLength ?? 0) }, users, mismatchCount: gaps, disputes, uncertain: uncertain.map(row => ({ ...row, authorizedPoints: Number(row.authorizedPoints) })), operations: operations.map(row => ({ ...row, amount: Number(row.amount), balanceAfter: Number(row.balanceAfter), createdAt: row.createdAt.toISOString() })), pending, examPending, manualRechargeEnabled: process.env.ANS_MANUAL_RECHARGE_ENABLED === "1", ldxp: { enabled: ldxpRechargeEnabled(), orders: ldxpOrders } };
+ }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead, maxWait: 10000, timeout: 30000 });
 }
