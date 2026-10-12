@@ -1,4 +1,4 @@
-﻿import { createHash } from "node:crypto";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { PLATFORM_RESUME_RECIPE } from "../src/domain/workflows/platform-recipes";
@@ -61,6 +61,16 @@ export function parsePlatformRecipeArgs(args: string[]) {
   return { ownerId: args[1] };
 }
 
+/** Safe observable error class/code; ORM messages and meta may contain private data. */
+export function platformRecipeDeploymentError(error: unknown): string {
+  if (error instanceof Error && /^PLATFORM_RECIPE_[A-Z_]+$/u.test(error.message)) return error.message;
+  if (error instanceof Error && error.message === "Usage: register-platform-resume-recipe.ts --owner-id <existing-admin-id>") return error.message;
+  const code = error && typeof error === "object" && "code" in error ? error.code : null;
+  return typeof code === "string" && /^P[0-9]{4}$/u.test(code)
+    ? `PLATFORM_RECIPE_DEPLOYMENT_FAILED ${code}`
+    : "PLATFORM_RECIPE_DEPLOYMENT_FAILED";
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === resolve("scripts/register-platform-resume-recipe.ts")) {
   void (async () => {
     try {
@@ -68,7 +78,7 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve("scripts/register-pl
       console.log(JSON.stringify(await publishPlatformResumeRecipe(ownerId, process.cwd())));
     } catch (error) {
       // Do not print ORM/provider diagnostics or any environment/credential value.
-      console.error(error instanceof Error && /^(?:PLATFORM_RECIPE_[A-Z_]+|Usage:)/u.test(error.message) ? error.message : "PLATFORM_RECIPE_DEPLOYMENT_FAILED");
+      console.error(platformRecipeDeploymentError(error));
       process.exitCode = 1;
     } finally {
       const { db } = await import("../src/lib/db");

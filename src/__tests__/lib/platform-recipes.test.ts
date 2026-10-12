@@ -19,7 +19,7 @@ vi.mock("@/server/marketplace/workflows", () => ({ uploadWorkflowToMarket: mocks
 vi.mock("@/server/marketplace/listings", () => ({ reviewMarketListing: mocks.review }));
 vi.mock("@/server/marketplace/shared", () => ({ marketHash: (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex") }));
 import { findPublishedPlatformRecipe, readPlatformRecipe, registerPlatformResumeRecipe } from "@/server/workflows/platform-recipes";
-import { parsePlatformRecipeArgs, verifyPlatformRecipeSource, publishPlatformResumeRecipe } from "../../../scripts/register-platform-resume-recipe";
+import { parsePlatformRecipeArgs, verifyPlatformRecipeSource, publishPlatformResumeRecipe, platformRecipeDeploymentError } from "../../../scripts/register-platform-resume-recipe";
 const tx = mocks.db as unknown as DbTransaction;
 const owner = () => ({ id: "real-owner", role: "ADMIN", deletedAt: null, flagged: false, adminPermissions: ["MARKETPLACE_MANAGE"], username: "owner", nickname: "Owner", avatar: null });
 const version = () => ({ id: "fixed-v1", workflowId: "fixed-workflow", version: 1, createdById: "real-owner", definition: structuredClone(recipe.definition), createdAt: new Date("2026-10-12T00:00:00Z") });
@@ -119,6 +119,7 @@ describe("explicit platform registration", () => {
     expect((await registerPlatformResumeRecipe("real-owner")).workflow.id).toBe("fixed-workflow");
     expect(mocks.db.workflow.create).not.toHaveBeenCalled();
     expect(mocks.db.auditLog.create).not.toHaveBeenCalled();
+    expect(mocks.db.$transaction).toHaveBeenCalledWith(expect.any(Function), { maxWait: 15000, timeout: 30000 });
   });
   it("does not fabricate evidence for preexisting unknown provenance", async () => {
     mocks.db.workflow.findMany.mockResolvedValue([{ id: "fixed-workflow" }]); evidence = null;
@@ -142,6 +143,14 @@ describe("explicit platform registration", () => {
 });
 
 describe("authorized deployment CLI", () => {
+  it("reports only bounded Prisma codes without database message or metadata", () => {
+    const error = Object.assign(new Error("private database url postgres://secret and parameters"), { code: "P2028", meta: { private: "secret" } });
+    expect(platformRecipeDeploymentError(error)).toBe("PLATFORM_RECIPE_DEPLOYMENT_FAILED P2028");
+    expect(platformRecipeDeploymentError(Object.assign(error, { code: "secret-not-a-code" }))).toBe("PLATFORM_RECIPE_DEPLOYMENT_FAILED");
+    expect(platformRecipeDeploymentError(new Error("private connection details"))).toBe("PLATFORM_RECIPE_DEPLOYMENT_FAILED");
+    expect(platformRecipeDeploymentError(new Error("PLATFORM_RECIPE_ERROR secret private data"))).toBe("PLATFORM_RECIPE_DEPLOYMENT_FAILED");
+    expect(platformRecipeDeploymentError(new Error("PLATFORM_RECIPE_SOURCE_CONFLICT"))).toBe("PLATFORM_RECIPE_SOURCE_CONFLICT");
+  });
   const listingSlug = "workflow-" + createHash("sha256").update(JSON.stringify("fixed-workflow")).digest("hex").slice(0, 24) + "-v1";
   const makeListing = () => ({
     id: "real-listing", slug: listingSlug, sellerId: "real-owner", official: true,

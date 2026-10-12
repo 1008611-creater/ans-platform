@@ -61,6 +61,8 @@ export async function findPublishedPlatformRecipe(idOrSlug: string = PLATFORM_RE
 
 /** Explicit authorized deployment command only. Never call from a page or GET. */
 export async function registerPlatformResumeRecipe(ownerId: string) {
+  // Session-pooler round trips exceed Prisma's default 5s for the full attestation.
+  // Keep a finite budget and the same atomic registration/provenance transaction.
   return db.$transaction(async tx => {
     // Serialize both the reserved identifiers and concurrent owner deactivation.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${PLATFORM_RESUME_RECIPE.officialId}))`;
@@ -91,5 +93,5 @@ export async function registerPlatformResumeRecipe(ownerId: string) {
     const registered = await readPlatformRecipe(tx, created.id, ownerId);
     if (!registered) throw new PlatformRecipeError("PLATFORM_RECIPE_REGISTRATION_INVALID");
     return registered;
-  });
+  }, { maxWait: 15000, timeout: 30000 });
 }

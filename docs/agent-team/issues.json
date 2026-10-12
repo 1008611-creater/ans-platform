@@ -1,4 +1,4 @@
-﻿[
+[
     {
         "id":  "ISSUE-HR05",
         "expected":  "Valid owner workflow metadata can be uploaded without fabricated content.",
@@ -105,5 +105,21 @@
                          "src/server/workflows/service.ts",
                          "src/server/workflows/platform-recipes.ts"
                      ]
+    },
+    {
+        "id": "ISSUE-HR13",
+        "status": "OPEN",
+        "severity": "P1",
+        "requirement": "REQ-R04 / REQ-R05",
+        "acceptance_item": "AC-R03 / AC-R05",
+        "expected": "Atomic official recipe registration completes under actual Session-pooler latency with a finite transaction budget and safely observable failure codes.",
+        "actual": "R2 registration failed before production switch with no registered workflow/listing. Its original detailed error was masked. Actual read-only equivalent13queries default5000ms reproduced P2028 at4883ms; identical maxWait15000/timeout30000 passed5500ms. Local minimum fix retains exact registration transaction with bounded budget and safe diagnostic code;81offline cases passed. Independent review and actual frozen production registration pending.",
+        "suggestion": "Re-review bounded transaction and diagnostic redaction, rebuild exact immutable release and verify authorized real registration/publication before switching production.",
+        "evidence": [
+            "src/server/workflows/platform-recipes.ts",
+            "scripts/register-platform-resume-recipe.ts",
+            "src/__tests__/lib/platform-recipes.test.ts",
+            "/srv/ans-releases/ans-platform-recipe-r9-r2-20261012/readonly-timeout-comparison.json"
+        ]
     }
 ]
