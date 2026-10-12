@@ -15,7 +15,7 @@ it("makes metered consent explicit without exposing spend or balance numbers", (
   const agent: ReturnType<typeof useCompanionAgent> = {
     phase: "confirm", quote: { ticket: "isolated-ticket", requestId: "isolated-request", model: "deepseek-v4.1-flash", maxPoints: 123.456, balance: 999.321, expiresAt: 1 },
     error: null, receipts: [], tools: [], activeTool: null, busy: false, privateAccess: false,
-    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "查找工作流", hasTicket: false,
+    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "查找工作流", hasTicket: false, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {},
   };
   const view = render(<AgentTurnStatus agent={agent} />);
   expect(screen.getByText(companion.agentBillingNotice)).toBeInTheDocument();

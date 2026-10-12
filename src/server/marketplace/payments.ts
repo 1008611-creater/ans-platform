@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { marketProviderEventSchema, marketQuoteSchema, type MarketProviderEvent } from "@/contracts/marketplace";
 import { completionPostings, MarketRuleError, paymentPostings } from "@/domain/marketplace/order";
 import { refundMarketPoints } from "./points";
+import { marketPointsOnly } from "./policy";
 import { appendCashJournal, marketHash, marketTransaction, requireMarketModerator, requireMarketActor } from "./shared";
 
 /** A provider implementation must verify signature, merchant identity and event authenticity. */
@@ -166,6 +167,8 @@ const CHECKOUT_LEASE_MS = 60_000;
 /** Frozen merchant/order identity + durable lease. Recovery always inspects ambiguous provider state first. */
 export async function createMarketCashCheckout(orderId: string, buyerId: string, raw: unknown) {
   const input = cashPaySchema.parse(raw);
+  // Querying or refunding historical cash remains separate from creating a new charge.
+  if (marketPointsOnly()) throw new MarketRuleError("POINTS_ONLY", 400);
   const prepared = await marketTransaction(async tx => {
     await requireMarketActor(tx, buyerId);
     await tx.$queryRaw`SELECT id FROM market_orders WHERE id = ${orderId} FOR UPDATE`;

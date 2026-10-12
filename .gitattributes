@@ -25,3 +25,6 @@ scripts/** text eol=lf
 *.ttf binary
 *.mp4 binary
 *.pdf binary
+# Preserve exact bytes of already applied production migration history.
+prisma/migrations/20261012120000_market_listing_stars/migration.sql -text -eol
+prisma/migrations/20261012121000_market_integrations_media/migration.sql -text -eol

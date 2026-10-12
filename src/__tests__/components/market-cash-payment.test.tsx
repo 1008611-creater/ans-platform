@@ -1,9 +1,10 @@
-﻿import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CreatePointsOrder } from "@/components/marketplace/create-points-order";
+import { MarketRequestRejection } from "@/components/marketplace/request";
 import { CashPayment, CreateCashOrder } from "@/components/marketplace/cash-payment";
 const m=vi.hoisted(()=>({request:vi.fn(),refresh:vi.fn(),push:vi.fn()}));
-vi.mock("@/components/marketplace/request",()=>({marketRequest:m.request}));
+vi.mock("@/components/marketplace/request",async importOriginal=>({...await importOriginal<typeof import("@/components/marketplace/request")>(),marketRequest:m.request}));
 vi.mock("@/components/marketplace/account-boundary",()=>({useMarketRequest:()=>m.request,MarketAccountBoundary:({children}:{children:React.ReactNode})=>children}));
 vi.mock("next/navigation",()=>({useRouter:()=>({refresh:m.refresh,push:m.push})}));
 vi.mock("next-intl",()=>({useTranslations:()=>Object.assign((key:string)=>key,{has:()=>true})}));
@@ -12,6 +13,10 @@ beforeEach(()=>vi.clearAllMocks());afterEach(cleanup);
 const expiry=new Date(Date.now()+30*60_000).toISOString();
 async function submitPay(){const checkbox=screen.getByRole("checkbox");fireEvent.click(checkbox);const form=checkbox.closest("form")!;await act(async()=>fireEvent.submit(form));}
 describe("cash order and payment interaction",()=>{
+ it("releases a stale cash creation command after a confirmed points-only rejection",async()=>{m.request.mockRejectedValue(new MarketRequestRejection("POINTS_ONLY",400));render(<CreateCashOrder listingId="listing" version={3} offer={{priceMinor:19900,providers:["wechat","alipay"]}}/>);await submitPay();expect(screen.getByRole("alert")).toHaveTextContent("errors.POINTS_ONLY");for (const radio of screen.getAllByRole("radio")) expect(radio).toBeEnabled();expect(m.refresh).toHaveBeenCalledTimes(1);expect(m.push).not.toHaveBeenCalled();expect(m.request).toHaveBeenCalledTimes(1);});
+ it("removes a stale payment QR only after a confirmed points-only rejection",async()=>{m.request.mockResolvedValueOnce({provider:"wechat",mode:"qr",url:"weixin://wxpay/bizpayurl?pr=trusted",expiresAt:expiry}).mockRejectedValueOnce(new MarketRequestRejection("POINTS_ONLY",400));render(<CashPayment orderId="cmorder" revision={0} method="WECHAT" amountMinor={19900}/>);await submitPay();expect(screen.getByRole("img")).toBeInTheDocument();await act(async()=>fireEvent.click(screen.getByRole("button",{name:"refreshCheckout"})));expect(screen.queryByRole("img")).not.toBeInTheDocument();expect(screen.getByRole("alert")).toHaveTextContent("errors.POINTS_ONLY");expect(m.refresh).toHaveBeenCalledTimes(1);});
+ it("retains a payment QR when the rejection is an ambiguous server failure",async()=>{m.request.mockResolvedValueOnce({provider:"wechat",mode:"qr",url:"weixin://wxpay/bizpayurl?pr=trusted",expiresAt:expiry}).mockRejectedValueOnce(new Error("POINTS_ONLY"));render(<CashPayment orderId="cmorder" revision={0} method="WECHAT" amountMinor={19900}/>);await submitPay();await act(async()=>fireEvent.click(screen.getByRole("button",{name:"refreshCheckout"})));expect(screen.getByRole("img")).toBeInTheDocument();expect(screen.getByRole("alert")).not.toHaveTextContent("errors.POINTS_ONLY");expect(m.refresh).not.toHaveBeenCalled();});
+
  it("creates no cash request on page load",()=>{render(<CashPayment orderId="cmorder" revision={0} method="WECHAT" amountMinor={19900}/>);expect(m.request).not.toHaveBeenCalled();});
  it("encodes the verified WeChat link locally without external QR requests",async()=>{m.request.mockResolvedValue({provider:"wechat",mode:"qr",url:"weixin://wxpay/bizpayurl?pr=trusted",expiresAt:expiry});render(<CashPayment orderId="cmorder" revision={0} method="WECHAT" amountMinor={19900}/>);await submitPay();expect(screen.getByRole("img")).toHaveAttribute("data-qr-value","weixin://wxpay/bizpayurl?pr=trusted");expect(m.refresh).not.toHaveBeenCalled();});
  it("accepts the current WeChat Native path without external QR generation",async()=>{const url="weixin://wxpay/bizpayurl/up?pr=trusted&groupid=00";m.request.mockResolvedValue({provider:"wechat",mode:"qr",url,expiresAt:expiry});render(<CashPayment orderId="cmorder" revision={0} method="WECHAT" amountMinor={19900}/>);await submitPay();expect(screen.getByRole("img")).toHaveAttribute("data-qr-value",url);});

@@ -13,6 +13,21 @@ const safeUrl = z.string().trim().url().max(1000).refine((value) => {
   const url = new URL(value);
   return ["https:", "http:"].includes(url.protocol) && !url.username && !url.password;
 }, "INVALID_URL");
+const httpsUrl = safeUrl.refine(value => new URL(value).protocol === "https:", "HTTPS_REQUIRED");
+const githubUrl = httpsUrl.refine(value => {
+  const url = new URL(value);
+  return url.hostname === "github.com" && !url.port && !url.search && !url.hash && /^\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+\/?$/.test(url.pathname);
+}, "INVALID_GITHUB_URL");
+export const marketTierIdSchema = z.string().regex(/^[a-zA-Z0-9_-]{1,60}$/);
+export const marketPricingTierSchema = z.object({
+  id: marketTierIdSchema,
+  title: z.string().trim().min(1).max(80),
+  description: z.string().trim().min(1).max(1000),
+  priceMinor: marketMoneySchema,
+  deliverables: z.array(z.string().trim().min(1).max(300)).min(1).max(20),
+}).strict();
+export type MarketPricingTier = z.infer<typeof marketPricingTierSchema>;
+export const marketStarInputSchema = z.object({ starred: z.boolean() }).strict();
 export const marketListingInputSchema = z.object({
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).min(3).max(80),
   title: z.string().trim().min(2).max(100),
@@ -29,7 +44,10 @@ export const marketListingInputSchema = z.object({
   computeIncluded: z.boolean(),
   deliverables: z.array(z.string().trim().min(1).max(300)).min(1).max(20),
   licenseTerms: z.string().trim().min(10).max(3000),
-  coverUrl: safeUrl.refine(value => new URL(value).protocol === "https:", "HTTPS_REQUIRED").optional(),
+  coverUrl: httpsUrl.optional(),
+  githubUrl: githubUrl.optional(),
+  usageUrl: httpsUrl.optional(),
+  pricingTiers: z.array(marketPricingTierSchema).max(6).refine(tiers => new Set(tiers.map(tier => tier.id)).size === tiers.length, "DUPLICATE_TIER_ID").optional(),
   previewUrl: safeUrl.optional(),
   sourceUrl: safeUrl.optional(),
 }).strict();
@@ -40,6 +58,7 @@ export const marketListingRevisionSchema = z.object({
 export const marketOrderCreateSchema = z.object({
   listingId: z.string().trim().min(1).max(100),
   paymentMethod: z.enum(["POINTS", "WECHAT", "ALIPAY"]).optional(),
+  tierId: marketTierIdSchema.optional(),
   expectedVersion: z.number().int().positive(),
   idempotencyKey: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
   requirements: z.string().trim().max(10_000).default(""),
@@ -68,10 +87,13 @@ export const marketReviewSchema = z.object({
 }).strict();
 
 export type MarketListingInput = z.infer<typeof marketListingInputSchema>;
+export type MarketOrderCreateInput = z.infer<typeof marketOrderCreateSchema>;
 export type MarketOrderStatus = z.infer<typeof marketOrderStatusSchema>;
 export type MarketOrderAction = z.infer<typeof marketOrderActionSchema>;
 export const marketQuoteSchema = marketListingInputSchema.extend({
   paymentProvider: z.enum(["wechat", "alipay"]).optional(),
+  selectedTierId: marketTierIdSchema.optional(),
+  selectedTierTitle: z.string().trim().min(1).max(80).optional(),
   priceMinor: marketMoneySchema,
   listingId: z.string().min(1),
   listingVersion: z.number().int().positive(),

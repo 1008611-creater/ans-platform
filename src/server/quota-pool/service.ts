@@ -17,6 +17,7 @@ export type QuotaPoolBannerState = {
   perUserPoints: number;
   exhausted: boolean;
   claimState: "anonymous" | "claimed" | "available";
+  actorId?: string;
 };
 
 export async function getQuotaPoolBannerState(): Promise<QuotaPoolBannerState | null> {
@@ -53,5 +54,6 @@ export async function getQuotaPoolBannerState(): Promise<QuotaPoolBannerState | 
     perUserPoints: Number(pool.perUserPoints),
     exhausted: remaining <= 0,
     claimState,
+    actorId: session?.user?.id,
   };
 }

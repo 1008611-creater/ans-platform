@@ -7,6 +7,8 @@ import { QuotaError } from "@/server/quota/service";
 import { Button } from "@/components/ui/button";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import { CreditsCenter } from "@/components/workspace/credits-center";
+import { CreditGiftClaim } from "@/components/workspace/credit-gift-claim";
+import { readCreditGiftOffer } from "@/server/quota/gift-offer";
 import { getCreditProducts } from "@/lib/credits-catalog";
 
 export const dynamic = "force-dynamic";
@@ -27,10 +29,12 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
     if (error instanceof QuotaError && error.status === 404) redirect("/login?callbackUrl=%2Fworkspace%2Fcredits");
     invalid = error instanceof QuotaError && error.status === 400;
   }
+  const giftOffer = history ? await readCreditGiftOffer(session.user.id).catch(() => null) : null;
   return <AccountContentBoundary actorId={session.user.id}><div className="ans-product-shell"><div className="ans-product-container space-y-7 py-8 sm:py-12">
     <Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground">{t("back")}</Link>
     <header className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1><p className="mt-3 text-muted-foreground">{t("description")}</p></div><Button asChild variant="outline"><Link href="/workspace/credits" prefetch={false}>{t("refresh")}</Link></Button></header>
     {!history ? <p role="alert" className="rounded-[var(--radius)] border p-5">{t(invalid ? "invalid" : "unavailable")}</p> : <>
+      {giftOffer && <CreditGiftClaim actorId={session.user.id} offer={giftOffer} />}
       <CreditsCenter actorId={session.user.id} billing={history.billing} availablePoints={Number(history.availablePoints)} products={getCreditProducts(process.env)} />
       <dl className="flex flex-wrap gap-x-12 gap-y-5 border-y py-6">
         <div><dt className="text-sm text-muted-foreground">{t("available")}</dt><dd className="mt-2 text-3xl font-semibold tabular-nums">{numbers.format(history.availablePoints)}</dd></div>

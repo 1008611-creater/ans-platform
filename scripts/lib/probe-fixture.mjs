@@ -117,11 +117,11 @@ export async function seedProbeFixture(databaseUrl) {
       });
     }
 
-    const favorite = await prisma.prompt.findFirst({
-      where: { authorId: author.id, slug: `${FIXTURE}-prompt-1` },
+    const favorite = await prisma.workflow.findFirst({
+      where: { authorId: author.id, slug: `${FIXTURE}-workflow-1`, status: "PUBLISHED", publishedVersion: 1, isOfficial: false, author: { deletedAt: null, flagged: false } },
       select: { id: true },
     });
-    return { seeded: true, favoriteTargetId: favorite?.id ?? null };
+    return { seeded: true, favoriteTargetId: favorite?.id ?? null, favoriteTargetType: "WORKFLOW" };
   } finally {
     await prisma.$disconnect();
   }

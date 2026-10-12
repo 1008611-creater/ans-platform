@@ -1,0 +1,63 @@
+import assert from "node:assert/strict";
+import { randomBytes } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
+const u = new URL(process.env.DATABASE_URL || "http://invalid");
+if (!["localhost","127.0.0.1"].includes(u.hostname) || !/^\/ans_test/.test(u.pathname)) throw new Error("Isolated database required");
+process.env.ANS_UNIFIED_POINTS_ENABLED="1"; process.env.ANS_MARKET_COMMISSION_BPS="1000"; process.env.NEXT_PUBLIC_APP_URL="https://ans.cauai.fun";
+const prefix="external-"+Date.now().toString(36)+randomBytes(3).toString("hex");
+const checks:string[]=[];
+async function main() {
+ const {db}=await import("../src/lib/db");
+ const {createMarketListing,reviseMarketListing,submitMarketListing,reviewMarketListing}=await import("../src/server/marketplace/listings");
+ const api=await import("../src/server/marketplace/integration");
+ const {actOnMarketOrder}=await import("../src/server/marketplace/orders");
+ const {refundMarketPoints}=await import("../src/server/marketplace/points");
+ try {
+  const users=await Promise.all(["seller","buyer","other","poor","moderator"].map(role=>db.user.create({data:{username:prefix+"-"+role,email:prefix+"-"+role+"@example.invalid",role:role==="moderator"?"ADMIN":"USER",quotaPoints:role==="buyer"?100:0}})));
+  const [seller,buyer,other,poor,moderator]=users;
+  await db.quotaLedger.create({data:{userId:buyer.id,amount:100,balanceAfter:100,reason:"GRANT",refType:"isolated_seed",refId:prefix}});
+  const offer={slug:prefix,title:"[Isolated] External project",summary:"External project integration in isolated database only",description:"Real isolated database acceptance; this listing is never published on the production market.",category:"web",subcategory:"documentation",fulfillment:"resource",priceMinor:1000,currency:"CNY",deliveryDays:1,revisionLimit:1,computeIncluded:false,deliverables:["Project access"],licenseTerms:"Only for isolated technical verification, not a real sale.",pricingTiers:[{id:"basic",title:"Basic",description:"Project access",priceMinor:1000,deliverables:["Project access"]},{id:"plus",title:"Plus",description:"Extended project access",priceMinor:2500,deliverables:["Extended project access"]}]};
+  const listing=await createMarketListing(seller.id,offer);
+  await submitMarketListing(listing.id,seller.id,1);await reviewMarketListing(listing.id,moderator.id,1,true,"Isolated approval");
+  await assert.rejects(api.configureMarketIntegration(listing.id,other.id,{action:"rotate",returnOrigins:["https://example.invalid"]}),/NOT_FOUND/);
+  await assert.rejects(api.configureMarketIntegration(listing.id,seller.id,{action:"rotate",returnOrigins:["http://example.invalid"]}));
+  const setup=await api.configureMarketIntegration(listing.id,seller.id,{action:"rotate",returnOrigins:["https://example.invalid"]});
+  assert.ok("key" in setup);if (!("key" in setup)) throw new Error("Missing key");
+  const request=()=>new Request("https://ans.cauai.fun/api/integrations/market/v1/checkouts",{headers:{authorization:"Bearer "+setup.key}});
+  const actor=await api.integrationActor(request());assert.equal(actor.listingId,listing.id);
+  const stored=await db.marketIntegration.findUniqueOrThrow({where:{id:actor.id}});assert.notEqual(stored.keyHash,setup.key);assert.equal(stored.keyHash.length,64);checks.push("owner-only setup and credential hash");
+  await assert.rejects(api.createExternalCheckout(actor.id,{reference:prefix+"-bad",tierId:"basic",returnUrl:"https://evil.invalid/return"}),/RETURN_ORIGIN_FORBIDDEN/);
+  await assert.rejects(api.createExternalCheckout(actor.id,{reference:prefix+"-bad",returnUrl:"https://example.invalid/return"}),/INVALID_TIER/);
+  await assert.rejects(api.createExternalCheckout(actor.id,{reference:prefix+"-bad",tierId:"basic",returnUrl:"https://example.invalid/return",userId:buyer.id}));checks.push("origin, tier and arbitrary actor validation");
+  const input={reference:prefix+"-purchase",tierId:"plus",returnUrl:"https://example.invalid/return"};
+  const [a,b]=await Promise.all([api.createExternalCheckout(actor.id,input),api.createExternalCheckout(actor.id,input)]);assert.equal(a.id,b.id);assert.equal(a.pricePoints,25);assert.equal(a.entitlementActive,false);assert.equal(a.ansUserId,null);
+  await assert.rejects(api.createExternalCheckout(actor.id,{...input,tierId:"basic"}),/IDEMPOTENCY_CONFLICT/);checks.push("checkout concurrent idempotency and no client prices");
+  await assert.rejects(api.confirmExternalCheckout(a.id,seller.id),/SELF_PURCHASE_FORBIDDEN/);
+  const [paid,replayed]=await Promise.all([api.confirmExternalCheckout(a.id,buyer.id),api.confirmExternalCheckout(a.id,buyer.id)]);assert.equal(paid.status,"paid");assert.equal(replayed.orderId,paid.orderId);
+  assert.equal((await db.user.findUniqueOrThrow({where:{id:buyer.id}})).quotaPoints,75);assert.equal(await db.quotaLedger.count({where:{userId:buyer.id,refId:paid.orderId!,amount:{lt:0}}}),1);
+  await assert.rejects(api.confirmExternalCheckout(a.id,other.id),/FORBIDDEN/);await assert.rejects(api.getExternalCheckoutForBuyer(a.id,other.id),/NOT_FOUND/);checks.push("same payment retries debit once and bind buyer");
+  const poorCheckout=await api.createExternalCheckout(actor.id,{...input,reference:prefix+"-poor"});await assert.rejects(api.confirmExternalCheckout(poorCheckout.id,poor.id));const poorRecord=await db.marketExternalCheckout.findUniqueOrThrow({where:{id:poorCheckout.id}});assert.equal(await db.marketPointsEscrow.count({where:{orderId:poorRecord.orderId!}}),0);assert.equal((await api.externalReceipt(poorCheckout.id,actor.id)).entitlementActive,false);checks.push("insufficient balance creates no payment entitlement");
+  assert.ok(paid.orderId);const order=await db.marketOrder.findUniqueOrThrow({where:{id:paid.orderId!}});
+  await actOnMarketOrder(order.id,buyer.id,{action:"dispute",expectedRevision:order.revision,idempotencyKey:prefix+"-dispute",message:"Isolated dispute"});assert.equal((await api.externalReceipt(a.id,actor.id)).entitlementActive,false);assert.equal((await api.externalReceipt(a.id,actor.id)).status,"disputed");
+  await refundMarketPoints(order.id,moderator.id,"Isolated refund");const receipt=await api.externalReceipt(a.id,actor.id);assert.equal(receipt.status,"refunded");assert.equal(receipt.entitlementActive,false);assert.equal((await db.user.findUniqueOrThrow({where:{id:buyer.id}})).quotaPoints,100);checks.push("dispute and refund revoke entitlement and restore balance");
+  const expire=await api.createExternalCheckout(actor.id,{...input,reference:prefix+"-expire"});await db.marketExternalCheckout.update({where:{id:expire.id},data:{expiresAt:new Date(Date.now()-1000)}});await assert.rejects(api.confirmExternalCheckout(expire.id,buyer.id),/CHECKOUT_EXPIRED/);assert.equal((await api.externalReceipt(expire.id,actor.id)).status,"cancelled");checks.push("expired checkout cannot charge");
+  const stale=await api.createExternalCheckout(actor.id,{...input,reference:prefix+"-stale-version"},actor.keyHash);
+  assert.equal(stale.status,"pending");assert.equal(stale.orderId,null);
+  await reviseMarketListing(listing.id,seller.id,{expectedVersion:1,listing:{...offer,pricingTiers:offer.pricingTiers.map(tier=>({...tier,priceMinor:tier.priceMinor+100}))}});
+  await submitMarketListing(listing.id,seller.id,2);await reviewMarketListing(listing.id,moderator.id,2,true,"Isolated version update");
+  const staleReceipt=await api.externalReceipt(stale.id,actor.id,actor.keyHash);assert.equal(staleReceipt.status,"cancelled");assert.equal(staleReceipt.entitlementActive,false);assert.equal(staleReceipt.orderId,null);
+  await assert.rejects(api.confirmExternalCheckout(stale.id,buyer.id),error=>error instanceof Error && "code" in error && error.code==="VERSION_CONFLICT");
+  const staleRecord=await db.marketExternalCheckout.findUniqueOrThrow({where:{id:stale.id}});assert.equal(staleRecord.orderId,null);assert.equal(staleRecord.buyerId,null);assert.equal((await db.user.findUniqueOrThrow({where:{id:buyer.id}})).quotaPoints,100);
+  assert.equal((await api.createExternalCheckout(actor.id,{...input,reference:prefix+"-stale-version"},actor.keyHash)).status,"cancelled");checks.push("new publication cancels unbound checkout and refuses charge without claiming buyer");
+  const second=await createMarketListing(seller.id,{slug:prefix+"-second",title:"Isolated second listing",summary:"Second listing verifies credential scope only",description:"This unpublished isolated listing is not available on production.",category:"web",subcategory:"documentation",fulfillment:"resource",priceMinor:1000,currency:"CNY",deliveryDays:1,revisionLimit:0,computeIncluded:false,deliverables:["Fixture"],licenseTerms:"Isolated fixture license only"});const secondSetup=await api.configureMarketIntegration(second.id,seller.id,{action:"rotate",returnOrigins:["https://example.invalid"]});if (!("id"in secondSetup) || !secondSetup.id) throw new Error("Missing integration id");await assert.rejects(api.externalReceipt(a.id,secondSetup.id),/NOT_FOUND/);checks.push("credential cannot read other listing checkout");
+  // Authentication completed before rotation: carry its old hash into a later service transaction.
+  const oldExpectedKeyHash=actor.keyHash;
+  await api.configureMarketIntegration(listing.id,seller.id,{action:"rotate",returnOrigins:["https://example.invalid"]});
+  await assert.rejects(api.createExternalCheckout(actor.id,{...input,reference:prefix+"-rotated-flight"},oldExpectedKeyHash),error=>error instanceof Error && "code" in error && error.code==="UNAUTHORIZED");
+  await assert.rejects(api.externalReceipt(a.id,actor.id,oldExpectedKeyHash),error=>error instanceof Error && "code" in error && error.code==="UNAUTHORIZED");
+  assert.equal(await db.marketExternalCheckout.count({where:{integrationId:actor.id,reference:prefix+"-rotated-flight"}}),0);checks.push("already authenticated old key hash is refused by creation and receipt transactions after rotation");
+  await assert.rejects(api.integrationActor(request()),/UNAUTHORIZED/);await api.configureMarketIntegration(listing.id,seller.id,{action:"revoke"});await assert.rejects(api.externalReceipt(a.id,actor.id),/UNAUTHORIZED/);checks.push("rotation and revocation invalidate old credential");
+  await mkdir(".workbuddy/evidence/market-external",{recursive:true});await writeFile(".workbuddy/evidence/market-external/integration.json",JSON.stringify({isolated:true,checks,productionWrites:0,providersCalled:0},null,2));console.log(JSON.stringify({passed:checks.length,isolated:true,providersCalled:0}));
+ }finally{await db.$disconnect();}
+}
+main().catch(()=>{console.error("EXTERNAL_INTEGRATION_VERIFY_FAILED");process.exitCode=1;});

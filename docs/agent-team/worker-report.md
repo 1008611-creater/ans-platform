@@ -225,3 +225,42 @@ Changed only the explicit platform registration transaction to finite maxWait150
 应用冻结 `1c1d4db1897dd738812963562a33d6f329bf56cb` 已进入 main 并正式部署，image a6694acb / BUILD_ID Y3jvHQM_xL96PNVZdEQQ5，deploy.exit0、healthy/database connected。官方 resume-website-v1 真实workflow immutablev1与市场卡已登记并读回，XP7→7；普通成员审核、来源/代码/版本/事务重验保留。R1锁void兼容和R2有限事务预算修复经过实际PostgreSQL诊断及R3成功发布，独立reviewer依据实证关闭HR13。
 
 Linux223文件2932通过/10跳过，类型/边界/lint/生产build通过；118表fresh隔离恢复和71静态文件hash一致；74迁移零新增DDL。生产桌面/390手机六导航、账号收藏算力、四Hub、真实workflow/market表单、空输入disabled、折叠高级结构、R9静音/模型同排/一iframe/无横向溢出通过。所有浏览器操作只读，不提交资料或生成。收费模型/TTS、支付/兑换、完整订阅履约及市场结算未验收，整体goal仍active。证据在 ans-platform-recipe-r9-r3-20261012/browser-verification.json、local-safe-evidence-manifest.json及实际截图；正式详录见 production-release.md 本日R3节。
+## 2026-10-12 农客松安全修复（本地复验完成，部署待执行）
+
+REQ-AU01：任务列表在一次批量分享授权重验后读取最终数据库时间，过滤读取期间到期或撤销的分享；本人任务保留，分页沿原扫描边界推进，serverNow 与截止状态均使用最终时间。独立 reviewer 的实际源码复现由旧版返回一条改为零条，相关六文件 68 项通过。
+
+REQ-AU02：普通赛事提交/审核在显式绑定、任一持久化工作区或阶段历史下拒绝旧入口。新增独立 migration 20261012213000_agri_legacy_workspace_boundary 仅收紧旧 guard 对 disabled 工作区的保护；保留纯 REGISTERED、额度元数据、普通赛事、OLD/NEW 归属及 NOWAIT 锁序。原 migration 与业务数据未修改。独立三文件 58 项、受限本机 PostgreSQL 75 项 migration 和八项直接 SQL mutation 拒绝通过，验收 fixture 回滚后零行。ENV-only 认领目前由应用保护，SQL 按持久化 workspace/history 认领。
+
+本机完整应用类型、六类边界通过；提交前 full lint 0 errors / 351 warnings。测试完整类型已由任务实施员工验证通过。两个问题由独立 reviewer 按本地源码/隔离验收范围关闭（HR14、HR15），正式运行仍须精确父版、备份恢复、迁移演练和上线后复验。先取得刚上线市场的精确源码提交与 parent，避免覆盖其新增供应、Star、积分支付与 SDK 功能。没有生产造数据或执行真实付费模型/订单；不宣称完整会员或农客松全部验收完成。
+
+安全证据：C:/Users/lsb/.workbuddy/ans-agri-current-audit-20261012/legacy-fix-independent-review.json、legacy-guard-isolated-postgres.json、full-lint-current.log、typecheck-current.log；HR14 独立证据在 ans-vibehub-followup-audit-20261012/agri-task-list-expiry-fix-review.json。
+
+### 2026-10-12 当前六导航质量门纠正
+
+PR54 首轮 Linux CI 已通过 225 文件、2948 测试（10 skipped）及构建，实际 browser smoke 失败于旧版四 Tab 和旧 /workflows 抽屉期待。真实产品是六导航。REQ-AU04 的候选验证现明确独立六路径顺序与两条退役跳转（/prompts→/explore、/templates→/hubs），公共/登录后内容分别检查，并增加 authenticated community/workspace 手机 axe。保留原异常/5xx/横溢出、axe critical/serious 零、require fixture 与 500/800/2500 性能预算；旧共享 API 的读取/写入兼容检查不删除。
+
+候选曾误把 templates 指向 explore、把私有 community 放公共内容扫描；独立审查发现后已纠正。三个脚本语法与 source 独立复验通过，脚本实际 no-ignore lint 零 errors，完整 lint 0 errors / 351 warnings。HR16 为 FIXED_SOURCE_PENDING_CI，尚不能称新 CI 通过。未在终端操纵本机浏览器，后续由真实 CI 和许可浏览器证据验证。
+
+### Current marketplace and performance gate integration
+
+Integrated exactly71 reviewed live marketR3 files (43added/28modified) from sourceSHA60bb4f849a47b2705f086ac8700dd1f1e830632ed9aaafaf1a6ab52c7017249b; retained local safety fixes and release docs, excluded unpublished TTS. One test EOF blank line was removed for diff-format compliance only. Application types passed,18files216targeted regressions passed, complete lint0errors351existingwarnings. Evidence: integrated-types.log/integrated-targeted-tests.log/integrated-final-lint.log.
+
+Actual44c8 CI passed smoke and23-page axe, but favorite writesHTTP409 failed because the probe lacked the expected-account header. Updated probe reads actual preview cookie session.user.id and sends that actor header on paired POST/DELETE of an existing PUBLISHED nonofficial WORKFLOW. Retained500/800/2500budgets, sample counts and real201creation requirement. Independent source review passed; latestCI remains pending. Production authorization is unchanged; no production fixtures were written.
+
+Backup verifier adds only the exact reviewed guard SQL allowlist; preserved PROJECT branch, rejected unknown/combined/tampered pending migrations. Added guard function definition/metadata and all trigger attestation, rolled-back parser witness and preservation of restored rows/constraints/indexes/historical migration records.34offline fault-injection checks and syntax passed. Actual fresh backup/isolated restoration/migration rehearsal still pending.
+
+### R10 companion UI inclusion
+
+Applied exactly14 reviewed R10 client/UI/message/test paths from patchSHA4331c4d9b2d428013035c3a24d9aac7ca21173efb866e2f9ef3ae9bf29d3c736, matched delivery LF bytes. Independent source reviewer PASS: safeMarkdown and explicit links, per-account remount/abort/generation late-response isolation, quote/confirm/expiry boundaries retained, submitted-ticket status-only recovery, in-memory mode drafts/history, localStorage only model enum and size. Root integrated5files35tests pass, applicationtypes exit0, completeESLint exit0/353warnings. Delivery's8files83tests and desktop/390zh/320en isolated component UI evidence remain separate worker evidence; entity phone keyboard and actual charged model/TTS not verified. No database/dependencies/service billing/3Dasset changes. Runtime publication still pending.
+
+### Exact historical migration byte preservation
+
+Actual prepare hard gate rejected only two already-applied marketR3 migrations because Git text normalization had converted their audited productionCRLF bytes toLF. No deployment/schema change occurred. Added exact-path -text/-eol attributes for these two historical files and restored original verified archive bytes. Existing74 migrations were already exact. This preserves historical SQL checksum authority rather than weakening the gate or rewriting migration records. FinalGit freeze andCI must use this correction.
+
+### Market test compiler compatibility
+
+Actual b53CI failed in complete test typecheck because the four new market gift fixture BigInt literals required ES2020, while the project test compiler preserves its existing lower target. Replaced the four literals with equivalent BigInt(integer) constructors; kept target/config and gift behavior unchanged. Root complete application+testtypes exit0 and gift regressions9passed. Prior failedCI evidence retained in r10-ci-failed.log. New head must pass fullCI before merge/deploy.
+
+### Complete market/profile regression fixture synchronization
+
+Actual801CI and frozenLinux build both failed only4 public identity/profile tests because their mocked market row and exact query expectation predated the deployed Star projection. Added _count.stars/stars to that isolated fixture and updated the explicit include expectation to descending versions and current limited Star fields.13identity/privacy tests now pass, with all prior published-version, ownership/private-growth and unsafe-identity exclusion assertions retained. Production business code was not weakened. R1 failed build/source evidence is retained; successful fresh122-table/applied76-migration backup restoration and exact guard rehearsal remain separately verified evidence. A new immutable frozen release must pass CI/build before deployment.

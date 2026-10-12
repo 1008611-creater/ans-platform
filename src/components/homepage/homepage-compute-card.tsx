@@ -78,7 +78,7 @@ export async function HomepageComputeCard({
               <Button variant="outline" asChild><Link href="/templates">{t("computeRunAction")}<ArrowRight className="ms-1.5 h-4 w-4" aria-hidden="true" /></Link></Button>
             </div>
           ) : (
-            <QuotaClaimButton points={state.perUserPoints} />
+            <QuotaClaimButton points={state.perUserPoints} actorId={state.actorId ?? ""} />
           )}
         </div>
       </div>

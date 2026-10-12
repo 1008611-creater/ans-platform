@@ -55,14 +55,18 @@ const PUBLIC_PAGES = [
   ["/explore", "项目发现", "发现好项目"],
   ["/explore/liu-resume", "项目详情", "个人简历与作品集"],
   ["/workflows/toonflow", "视频工作流", "AIGC 工作台"],
-  ["/prompts", "提示词广场", "提示词"],
-  ["/templates", "模板广场", "模板"],
+  ["/hubs", "Hub 目录", "找到你的 Hub"],
+  ["/hubs/full-stack", "全栈开发 Hub", "全栈开发 Hub"],
+  ["/competitions", "赛事活动", null],
+  ["/market", "市场", null],
   ["/workflows", "工作流广场", "工作流"],
   ["/login", "登录页", null],
 ];
 
 /** 需要登录的页面：只有拿到冒烟账号时才会被扫描。 */
 const PRIVATE_PAGES = [
+  ["/community", "社区成长", "社区成长"],
+  ["/workspace", "工作台", null],
   [`/@${SEED_USERNAME}`, "个人主页与成长系统", "XP"],
   ["/collection", "我的收藏", null],
   ["/workflows/runs", "运行记录", null],
@@ -73,7 +77,7 @@ const PRIVATE_PAGES = [
 const MOBILE_PAGES = [
   ["/", "移动端 首页", "你的下一个作品"],
   ["/explore", "移动端 项目发现", "发现好项目"],
-  ["/prompts", "移动端 提示词广场", "提示词"],
+  ["/hubs", "移动端 Hub 目录", "找到你的 Hub"],
   ["/workflows", "移动端 工作流广场", "工作流"],
 ];
 
@@ -213,6 +217,10 @@ async function main() {
       }
 
       if (seed.created) {
+        await scanPage(page, axeSource, store, failures, baseUrl, "/community", "移动端 社区成长", "社区成长");
+        scanned += 1;
+        await scanPage(page, axeSource, store, failures, baseUrl, "/workspace", "移动端 工作台", null);
+        scanned += 1;
         await scanPage(page, axeSource, store, failures, baseUrl, `/@${SEED_USERNAME}`, "移动端 个人主页与成长系统", "XP");
         scanned += 1;
       }

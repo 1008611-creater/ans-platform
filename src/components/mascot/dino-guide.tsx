@@ -1,103 +1,169 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ArrowUp, ArrowUpRight, X, Settings, Volume2, VolumeX, Sparkles, FolderPlus, Clapperboard, Coins, Users, Compass, BookOpen, RotateCcw, Maximize2, MoveUpLeft } from "lucide-react";
+import { ArrowUp, ArrowDown, ArrowUpRight, Square, X, Settings, Volume2, VolumeX, Sparkles, FolderPlus, Clapperboard, Coins, Users, Compass, BookOpen, RotateCcw, Maximize2, MoveUpLeft } from "lucide-react";
 import { DinoAvatar, type SpeechRequest } from "./dino-avatar";
 import { useDinoTask } from "./dino-task-context";
-import { guideReply, pageActions, type GuideAction } from "./guide-actions";
+import { guideReply, pageActions, pagePrompts, pageContextKey, type GuideAction } from "./guide-actions";
 import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { openSiteSettings, updateSitePreferences, useSitePreferences } from "@/lib/site-preferences";
-import { useCompanionAgent } from "./use-companion-agent";
+import { useCompanionAgent, type CompanionMessage } from "./use-companion-agent";
 import { AgentTurnStatus } from "./agent-turn-status";
 import { CompanionModelSelect } from "./companion-model-select";
-import { DEFAULT_RUN_MODEL, type RunModelKey } from "@/lib/run-models";
+import { DEFAULT_RUN_MODEL, getRunModel, type RunModelKey } from "@/lib/run-models";
 import { useCompanionSize } from "./use-companion-size";
 import "./companion.css";
 
+const CompanionReply = lazy(() => import("./companion-reply").then(module => ({ default: module.CompanionReply })));
 const icons = { project: FolderPlus, video: Clapperboard, credits: Coins, team: Users, discover: Compass, learn: BookOpen };
-type Message = { id: number; role: "guide" | "user"; text: string };
+type Mode = "guide" | "agent";
+type Thread = { draft: string; messages: CompanionMessage[]; recommendations: GuideAction[] | null };
+const freshThread = (): Thread => ({ draft: "", messages: [], recommendations: null });
 export function DinoGuide() {
   const { data, status } = useSession();
   return <Companion key={status === "authenticated" ? data?.user?.id : status} actor={status === "authenticated" ? data?.user?.id ?? null : null} />;
 }
 function Companion({ actor }: { actor: string | null }) {
-  const t = useTranslations("product.mascot");
-  const ui = useTranslations("companion");
-  const pathname = usePathname();
-  const locale = useLocale() === "zh" ? "zh" : "en";
+  const t = useTranslations("product.mascot"), ui = useTranslations("companion");
+  const pathname = usePathname(), locale = useLocale() === "zh" ? "zh" : "en";
   const [model, setModel] = useState<RunModelKey>(DEFAULT_RUN_MODEL);
-  const [mode, setMode] = useState<"guide" | "agent">(actor ? "agent" : "guide");
-  const prefs = useSitePreferences(), task = useDinoTask();
-  const panelSize = useCompanionSize();
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [recommendations, setRecommendations] = useState<GuideAction[] | null>(null);
-  const [speech, setSpeech] = useState<SpeechRequest | null>(null);
-  const [voiceStatus, setVoiceStatus] = useState("idle");
-  const sequence = useRef(0), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState<Mode>(actor ? "agent" : "guide");
+  const [threads, setThreads] = useState<Record<Mode, Thread>>(() => ({ agent: freshThread(), guide: freshThread() }));
+  const { draft, messages, recommendations } = threads[mode];
+  function updateThread(which: Mode, update: (thread: Thread) => Thread) {
+    setThreads(current => ({ ...current, [which]: update(current[which]) }));
+  }
+  const [undo, setUndo] = useState<{ mode: Mode; thread: Thread } | null>(null);
+  const prefs = useSitePreferences(), task = useDinoTask(), panelSize = useCompanionSize();
+  const [open, setOpen] = useState(false), [showLatest, setShowLatest] = useState(false), [unread, setUnread] = useState(false);
+  const [speech, setSpeech] = useState<SpeechRequest | null>(null), [voiceStatus, setVoiceStatus] = useState("idle");
+  const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null);
+  const scrollState = useRef<Record<Mode, { top: number; follow: boolean; lastId: number | undefined }>>({ agent: { top: 0, follow: true, lastId: undefined }, guide: { top: 0, follow: true, lastId: undefined } });
   const titleId = useId(), taskId = useId(), composer = useRef<HTMLTextAreaElement>(null);
   const agent = useCompanionAgent(actor, pathname, locale, (text, links) => {
-    setMessages(current => [...current, { id: ++sequence.current, role: "guide" as const, text }].slice(-40));
-    setDraft(""); setRecommendations(links.length ? links : pageActions(pathname, ui));
-    // The avatar frame receives a public acknowledgement, never private replies.
+    updateThread("agent", current => ({ ...current, messages: [...current.messages, { id: ++sequence.current, role: "guide" as const, text }].slice(-40), recommendations: links.length ? links : pageActions(pathname, ui) }));
+    // The iframe receives a public acknowledgement only, never the user's private reply.
     setSpeech({ id: ++sequence.current, text: ui("agentSpokenReady") });
-  }, text => setMessages(current => [...current, { id: ++sequence.current, role: "user" as const, text }].slice(-40)), model);
+  }, text => {
+    scrollState.current.agent.follow = true;
+    updateThread("agent", current => ({ ...current, draft: current.draft.trim() === text ? "" : current.draft, messages: [...current.messages, { id: ++sequence.current, role: "user" as const, text }].slice(-40) }));
+    setUndo(null);
+  }, model);
   const greeting = ui(mode === "agent" ? "agentGreeting" : "whatWouldYouLikeToMakeTell");
   const nextActions = recommendations ?? pageActions(pathname, ui);
-  useEffect(() => { setRecommendations(null); setOpen(false); }, [pathname]);
+  const blocked = mode === "agent" && (agent.busy || agent.phase === "confirm" || agent.checkingReceipts);
+  const modelStorageKey = `ans.companion-model.v1:${actor ?? "guest"}`;
   useEffect(() => {
-    const node = list.current;
+    try { const option = getRunModel(localStorage.getItem(modelStorageKey) ?? ""); if (option) setModel(option.key); } catch { /* Browser storage is optional. */ }
+  }, [modelStorageKey]);
+  function changeModel(value: RunModelKey) {
+    setModel(value);
+    try { localStorage.setItem(modelStorageKey, value); } catch { /* Keep the current choice in memory. */ }
+  }
+  useEffect(() => {
+    setThreads(current => ({ agent: { ...current.agent, recommendations: null }, guide: { ...current.guide, recommendations: null } }));
+    setOpen(false);
+  }, [pathname]);
+  const rememberScroll = useCallback(() => {
+    const node = list.current; if (!node) return;
+    const follow = node.scrollHeight - node.scrollTop - node.clientHeight < 64;
+    scrollState.current[mode].top = node.scrollTop; scrollState.current[mode].follow = follow;
+    setShowLatest(!follow); if (follow) setUnread(false);
+  }, [mode]);
+  const scrollObserver = useRef<ResizeObserver | null>(null);
+  const bindList = useCallback((node: HTMLDivElement | null) => {
+    scrollObserver.current?.disconnect(); scrollObserver.current = null; list.current = node;
     if (!node) return;
-    if (agent.phase === "complete") {
-      const reply = Array.from(node.querySelectorAll<HTMLElement>(".ans-companion-message.guide")).at(-1);
-      if (reply) {
-        node.scrollTop += reply.getBoundingClientRect().top - node.getBoundingClientRect().top - 16;
-        return;
-      }
+    const state = scrollState.current[mode];
+    node.scrollTop = state.follow && node.querySelector(".ans-companion-message") ? node.scrollHeight : state.top;
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(rememberScroll);
+      for (const child of Array.from(node.children)) observer.observe(child);
+      scrollObserver.current = observer;
     }
-    node.scrollTop = node.scrollHeight;
-  }, [messages, open, agent.phase]);
-  useEffect(() => { const input = composer.current; if (input) { input.style.height = "auto"; input.style.height = Math.max(28, Math.min(72, input.scrollHeight)) + "px"; } }, [draft, open]);
-  // Remove the legacy injected bubble once. React now owns this single panel.
+  }, [mode, rememberScroll]);
+  useLayoutEffect(() => {
+    if (!open || !list.current) return;
+    const state = scrollState.current[mode], node = list.current;
+    node.scrollTop = state.follow && node.querySelector(".ans-companion-message") ? node.scrollHeight : state.top;
+    setShowLatest(!state.follow); setUnread(false);
+  }, [open, mode]);
+  useLayoutEffect(() => {
+    const node = list.current; if (!node || !open) return;
+    const state = scrollState.current[mode], latest = messages.at(-1), changed = latest?.id !== state.lastId;
+    state.lastId = latest?.id;
+    if (!state.follow) { if (changed && latest?.role === "guide") setUnread(true); return; }
+    // Show a new answer from its beginning, so a long reply doesn't skip its first half.
+    const reply = mode === "agent" && agent.phase === "confirm" ? node.querySelector<HTMLElement>(".ans-agent-quote") : changed && latest?.role === "guide" ? node.querySelector<HTMLElement>(`[data-message-id="${latest.id}"]`) : null;
+    if (reply) node.scrollTop += reply.getBoundingClientRect().top - node.getBoundingClientRect().top - 16;
+    else node.scrollTop = node.scrollHeight;
+    rememberScroll();
+  }, [messages, open, mode, agent.phase, rememberScroll]);
+  useEffect(() => {
+    const input = composer.current;
+    if (input) { input.style.height = "auto"; input.style.height = Math.max(28, Math.min(120, input.scrollHeight)) + "px"; }
+  }, [draft, open, mode]);
   useEffect(() => {
     const host = window as unknown as Record<symbol, { dispose?: () => void } | undefined>;
     host[Symbol.for("ans.mascot.companion.v1")]?.dispose?.();
   }, []);
   function changeOpen(value: boolean) {
-    if (value) panelSize.prepare();
+    if (value) panelSize.prepare(); else rememberScroll();
     setOpen(value);
-    if (value) { if (prefs.voice) window.dispatchEvent(new CustomEvent("ans:dino-activate")); setSpeech({ id: ++sequence.current, text: (mode === "agent" ? greeting : messages.filter(m => m.role === "guide").at(-1)?.text ?? greeting) }); }
+    if (value && !welcomed.current) {
+      welcomed.current = true;
+      if (prefs.voice) { window.dispatchEvent(new CustomEvent("ans:dino-activate")); setSpeech({ id: ++sequence.current, text: greeting }); }
+    }
   }
   function submit(event?: FormEvent, quick?: string) {
-    event?.preventDefault(); const input = (quick ?? draft).trim().slice(0, 1200); if (!input || agent.busy || agent.phase === "confirm") return;
-    if (mode === "agent") { setRecommendations([]); void agent.ask(messages, input); return; }
+    event?.preventDefault(); const input = (quick ?? draft).trim().slice(0, 1200); if (!input || blocked) return;
+    scrollState.current[mode].follow = true; setUnread(false); setUndo(null);
+    if (mode === "agent") { updateThread("agent", current => ({ ...current, recommendations: null })); void agent.ask(messages, input); return; }
     const reply = guideReply(input, ui), id = ++sequence.current, responseId = ++sequence.current;
-    setMessages(current => [...current, { id, role: "user" as const, text: input }, { id: responseId, role: "guide" as const, text: reply.text }].slice(-40));
-    setRecommendations(reply.actions); setDraft("");
+    updateThread("guide", current => ({ draft: quick ? current.draft : "", messages: [...current.messages, { id, role: "user" as const, text: input }, { id: responseId, role: "guide" as const, text: reply.text }].slice(-40), recommendations: reply.actions }));
     setSpeech({ id: ++sequence.current, text: reply.text });
   }
-  function changeMode(value: "guide" | "agent") { agent.reset(); setMode(value); setMessages([]); setRecommendations(null); setSpeech(null); }
-  function newConversation() { agent.reset(); setMessages([]); setDraft(""); setRecommendations(null); setSpeech(null); composer.current?.focus(); }
-  function settings() { setOpen(false); requestAnimationFrame(openSiteSettings); }
+  function changeMode(value: Mode) {
+    if (value === mode || agent.busy || agent.checkingReceipts) return;
+    rememberScroll(); agent.cancelQuote(); setMode(value); setSpeech(null);
+  }
+  function newConversation() {
+    rememberScroll(); setUndo({ mode, thread: threads[mode] });
+    if (mode === "agent") { if (agent.hasTicket && ["error", "stopped"].includes(agent.phase)) agent.cancelQuote(); else agent.reset(); }
+    updateThread(mode, freshThread); setSpeech(null); scrollState.current[mode] = { top: 0, follow: true, lastId: undefined };
+    if (window.innerWidth >= 900) composer.current?.focus();
+  }
+  function restoreConversation() {
+    if (!undo || undo.mode !== mode) return;
+    updateThread(mode, () => undo.thread); setUndo(null); scrollState.current[mode].follow = true;
+  }
+  function jumpToLatest() {
+    const node = list.current; if (!node) return;
+    node.scrollTop = node.scrollHeight; rememberScroll();
+  }
+  function settings() { changeOpen(false); requestAnimationFrame(openSiteSettings); }
   function toggleVoice() {
-    const voice = !prefs.voice;
-    // Enabling audio affects future replies; don't replay a prior message.
-    setSpeech(null); setVoiceStatus("idle"); updateSitePreferences({ voice });
+    const voice = !prefs.voice; setSpeech(null); setVoiceStatus("idle"); updateSitePreferences({ voice });
     if (voice) window.dispatchEvent(new CustomEvent("ans:dino-activate"));
   }
   const speaking = voiceStatus === "playing", loading = voiceStatus === "loading";
   const voiceLabel = ui(prefs.voice ? "disableDinoVoice" : "enableDinoVoice");
   const voiceHint = !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceOn");
-  return <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-task-state={task?.phase ?? "idle"}>
+  const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
+  const modeHint = mode === "agent" && agent.busy ? ui(`agentPhase.${agent.phase}`) : ui(mode === "agent" ? "agentModeHint" : "guideModeHint");
+  return <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={changeOpen}>
-      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger"><DinoAvatar phase={agent.busy ? "working" : agent.phase === "error" ? "attention" : task?.phase ?? "idle"} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
+      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger"><DinoAvatar phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
       <PopoverAnchor virtualRef={panelSize.anchor} />
-      <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" onOpenAutoFocus={event => { event.preventDefault(); document.getElementById("ans-companion-dismiss")?.focus({ preventScroll: true }); }} onCloseAutoFocus={event => {
+      <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" onOpenAutoFocus={event => {
+        event.preventDefault();
+        const input = window.innerWidth >= 900 && agent.phase !== "confirm" ? composer.current : null;
+        (input ?? document.getElementById("ans-companion-dismiss"))?.focus({ preventScroll: true });
+      }} onCloseAutoFocus={event => {
         const id = focusTarget.current; focusTarget.current = null;
         if (!id || id !== task?.targetId) return;
         const target = document.getElementById(id);
@@ -107,26 +173,43 @@ function Companion({ actor }: { actor: string | null }) {
         <button type="button" className="ans-companion-resize width" aria-label={ui("resizeChatWidth")} title={ui("resizeChatHint")} {...panelSize.handle("width")} />
         <button type="button" className="ans-companion-resize height" aria-label={ui("resizeChatHeight")} title={ui("resizeChatHint")} {...panelSize.handle("height")} />
         <button type="button" className="ans-companion-resize both" aria-label={ui("resizeChat")} title={ui("resizeChatHint")} {...panelSize.handle("both")}><MoveUpLeft aria-hidden="true" /></button>
-        <header className="ans-companion-header"><div className="ans-companion-heading"><button type="button" className="ans-companion-voice" aria-label={voiceLabel} aria-pressed={prefs.voice} title={`${voiceLabel} · ${voiceHint}`} onClick={toggleVoice}>{prefs.voice ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}</button><div><span className="ans-companion-kicker">ANS / {ui("byYOURSIDE")}</span><h2 id={titleId}>{t("name")}<span aria-hidden="true" /></h2></div></div><div className="ans-companion-controls"><button type="button" onClick={panelSize.reset} aria-label={ui("resetChatSize")} title={ui("resetChatSize")}><Maximize2 aria-hidden="true" /></button><button type="button" disabled={agent.busy} aria-label={ui("newConversation")} onClick={newConversation}><RotateCcw aria-hidden="true" /></button><button type="button" aria-label={ui("openSiteSettings")} onClick={settings}><Settings aria-hidden="true" /></button><button id="ans-companion-dismiss" type="button" aria-label={t("close")} onClick={() => setOpen(false)}><X aria-hidden="true" /></button></div></header>
+        <header className="ans-companion-header">
+          <div className="ans-companion-heading"><button type="button" className="ans-companion-voice" aria-label={voiceLabel} aria-pressed={prefs.voice} title={`${voiceLabel} · ${voiceHint}`} onClick={toggleVoice}>{prefs.voice ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}</button><div><span className="ans-companion-kicker">ANS / {ui("byYOURSIDE")}</span><h2 id={titleId}>{t("name")}<span aria-hidden="true" /></h2></div></div>
+          <div className="ans-companion-controls">
+            <button type="button" onClick={panelSize.reset} aria-label={ui("resetChatSize")} title={ui("resetChatSize")}><Maximize2 aria-hidden="true" /></button>
+            <button type="button" disabled={agent.busy || agent.checkingReceipts || (!messages.length && !draft && !agent.quote)} aria-label={ui("newConversation")} title={ui("newConversation")} onClick={newConversation}><RotateCcw aria-hidden="true" /></button>
+            <button type="button" aria-label={ui("openSiteSettings")} title={ui("openSiteSettings")} onClick={settings}><Settings aria-hidden="true" /></button>
+            <button id="ans-companion-dismiss" type="button" aria-label={t("close")} title={t("close")} onClick={() => changeOpen(false)}><X aria-hidden="true" /></button>
+          </div>
+        </header>
         <div className="ans-companion-mode" role="group" aria-label={ui("conversationMode")}>
-          <button type="button" aria-pressed={mode === "agent"} onClick={() => changeMode("agent")} disabled={!actor || agent.busy}>{ui("agentMode")}</button>
-          <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy}>{ui("guideMode")}</button>
-          <span>{ui(mode === "agent" ? "agentModeHint" : "guideModeHint")}</span>
+          <button type="button" aria-pressed={mode === "agent"} onClick={() => changeMode("agent")} disabled={!actor || agent.busy || agent.checkingReceipts}>{ui("agentMode")}</button>
+          <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>{ui("guideMode")}</button>
+          <span role="status">{modeHint}</span>
         </div>
-        {!actor && <Link className="ans-companion-signin" href="/login?callbackUrl=%2Fexplore">{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
-        <div className="ans-companion-body" ref={list}>
-        {task && <section className="ans-companion-task" aria-labelledby={taskId}><div><h3 id={taskId}>{ui("currentTask")}</h3><span>{task.step}/3</span></div><p role="status">{t(`task.${task.phase}`)}</p><ol aria-label={t("taskSteps")}>{([1, 2, 3] as const).map(step => <li key={step} aria-current={step === task.step ? "step" : undefined}><span>0{step}</span>{t(`taskStep.${step}`)}</li>)}</ol><footer>{task.targetId && <button type="button" onClick={() => { focusTarget.current = task.targetId ?? null; setOpen(false); }}>{t("taskAction")}<ArrowUpRight aria-hidden="true" /></button>}</footer></section>}
-        <div className="ans-companion-conversation" role="log" aria-label={ui("conversationWithDino")} aria-live="polite" aria-relevant="additions">
-          {!messages.length && !agent.quote && <div className="ans-companion-welcome"><Sparkles aria-hidden="true" /><p>{greeting}</p></div>}
-          {messages.map(message => <div key={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span><p>{message.text}</p></div>)}
-          {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>
-            {[ui("iWantToMakeAVideo"), ui("findProjectInspiration"), ui("howDoCreditsWork")].map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}
-          </div>}
-          {mode === "agent" && <AgentTurnStatus agent={agent} />}
+        {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
+        {undo?.mode === mode && <div className="ans-companion-undo" role="status"><span>{ui("conversationCleared")}</span><button type="button" onClick={restoreConversation}>{ui("undoClear")}</button></div>}
+        <div className="ans-companion-reading">
+          <div className="ans-companion-body" ref={bindList} onScroll={rememberScroll}>
+            {task && <section className="ans-companion-task" aria-labelledby={taskId}><div><h3 id={taskId}>{ui("currentTask")}</h3><span>{task.step}/3</span></div><p role="status">{t(`task.${task.phase}`)}</p><ol aria-label={t("taskSteps")}>{([1, 2, 3] as const).map(step => <li key={step} aria-current={step === task.step ? "step" : undefined}><span>0{step}</span>{t(`taskStep.${step}`)}</li>)}</ol><footer>{task.targetId && <button type="button" onClick={() => { focusTarget.current = task.targetId ?? null; changeOpen(false); }}>{t("taskAction")}<ArrowUpRight aria-hidden="true" /></button>}</footer></section>}
+            <div className="ans-companion-conversation" role="log" aria-label={ui("conversationWithDino")} aria-live="polite" aria-relevant="additions">
+              {!messages.length && !agent.quote && <div className="ans-companion-welcome"><Sparkles aria-hidden="true" /><div><small>{ui("currentPage", { page: ui(pageContextKey(pathname)) })}</small><p>{greeting}</p></div></div>}
+              {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} /></Suspense>}</div>)}
+              {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
+              {mode === "agent" && <AgentTurnStatus agent={agent} />}
+            </div>
+            {prefs.suggestions && !blocked && nextActions.length > 0 && <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}><h3>{ui("suggestedNextSteps")}</h3>{nextActions.map(action => { const Icon = icons[action.icon]; return <Link href={action.href} key={action.href} onClick={() => changeOpen(false)}><span className="ans-companion-action-icon"><Icon aria-hidden="true" /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight className="ans-companion-action-arrow" aria-hidden="true" /></Link>; })}</nav>}
+          </div>
+          {showLatest && (messages.length > 0 || agent.quote) && <button className="ans-companion-latest" type="button" onClick={jumpToLatest}><ArrowDown aria-hidden="true" />{ui(unread ? "newReplyBelow" : "backToLatest")}</button>}
         </div>
-        {prefs.suggestions && nextActions.length > 0 && <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}><h3>{ui("suggestedNextSteps")}<span>{ui("keepGoing")}</span></h3>{nextActions.map(action => { const Icon = icons[action.icon]; return <Link href={action.href} key={action.href} onClick={() => setOpen(false)}><span className="ans-companion-action-icon"><Icon aria-hidden="true" /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight className="ans-companion-action-arrow" aria-hidden="true" /></Link>; })}</nav>}
-        </div>
-        <form className="ans-companion-composer" onSubmit={event => { submit(event); }}><label className="sr-only" htmlFor="ans-companion-input">{ui("tellDinoWhatYouWantToDo")}</label><div><textarea ref={composer} id="ans-companion-input" rows={1} maxLength={1200} disabled={agent.busy || agent.phase === "confirm"} value={draft} onChange={e => setDraft(e.target.value)} placeholder={ui("whatWouldYouLikeToDo")} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); submit(); } }} />{mode === "agent" && <CompanionModelSelect model={model} onChange={setModel} disabled={agent.busy} />}<button type="submit" disabled={!draft.trim() || agent.busy || agent.phase === "confirm"} aria-label={ui("sendMessage")}><ArrowUp aria-hidden="true" /></button></div></form>
+        <form className="ans-companion-composer" onSubmit={event => submit(event)}>
+          <label className="sr-only" htmlFor="ans-companion-input">{ui("tellDinoWhatYouWantToDo")}</label>
+          <div><textarea ref={composer} id="ans-companion-input" rows={1} maxLength={1200} value={draft} onChange={event => updateThread(mode, current => ({ ...current, draft: event.target.value }))} placeholder={ui(mode === "agent" && agent.busy ? "draftWhileWaiting" : "whatWouldYouLikeToDo")} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); submit(); } }} />
+            {mode === "agent" && <CompanionModelSelect model={model} onChange={changeModel} disabled={agent.busy || agent.checkingReceipts} />}
+            {mode === "agent" && agent.busy ? <button className="ans-companion-stop" type="button" onClick={agent.stop} aria-label={ui("agentStop")} title={ui("agentStop")}><Square aria-hidden="true" /></button> : <button type="submit" disabled={!draft.trim() || blocked} aria-label={ui("sendMessage")} title={ui("sendMessage")}><ArrowUp aria-hidden="true" /></button>}
+          </div>
+          {(draft.length > 1050 || (mode === "agent" && agent.busy)) && <footer><span>{ui(mode === "agent" && agent.busy ? "draftWaitingHint" : "messageLimit", { count: draft.length })}</span></footer>}
+        </form>
       </PopoverContent>
     </Popover>
   </div>;

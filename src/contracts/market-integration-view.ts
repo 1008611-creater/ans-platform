@@ -1,0 +1,1 @@
+export type AwaitedReceipt = { id: string; reference: string; checkoutUrl: string; status: "pending" | "paid" | "refunded" | "disputed" | "cancelled"; pricePoints: number; listingId: string; listingVersion: number; tierId: string | null; orderId: string | null; paidAt: string | null; entitlementActive: boolean; ansUserId: string | null };

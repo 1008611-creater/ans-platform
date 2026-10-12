@@ -6,18 +6,19 @@ import { marketListingInputSchema, marketListingRevisionSchema } from "@/contrac
 import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { marketTransaction, requireMarketActor, requireMarketModerator } from "./shared";
+import { requireMarketCoverOwnership } from "./media-access";
 
 function parseListing(raw: unknown) {
   const data = marketListingInputSchema.parse(raw);
-  if (data.execution && (data.fulfillment !== "resource" || data.priceMinor !== 0 || data.computeIncluded)) throw new MarketRuleError("WORKFLOW_COMPUTE_SEPARATE", 400);
-  if (!data.execution && data.priceMinor === 0 && (data.fulfillment !== "resource" || (!data.sourceUrl && !data.previewUrl) || data.computeIncluded)) {
+  if (data.execution && (data.fulfillment !== "resource" || data.priceMinor !== 0 || data.computeIncluded || data.pricingTiers?.length)) throw new MarketRuleError("WORKFLOW_COMPUTE_SEPARATE", 400);
+  if (!data.execution && data.priceMinor === 0 && !data.pricingTiers?.length && (data.fulfillment !== "resource" || (!data.sourceUrl && !data.previewUrl && !data.githubUrl && !data.usageUrl) || data.computeIncluded)) {
     throw new MarketRuleError("INVALID_INPUT", 400);
   }
   const category = PROJECT_CATEGORIES.find((item) => item.id === data.category);
   if (!category || !(category.children as readonly string[]).includes(data.subcategory)) {
     throw new MarketRuleError("INVALID_CATEGORY", 400);
   }
-  return data;
+  return { ...data, priceMinor: data.pricingTiers?.length ? Math.min(...data.pricingTiers.map(tier => tier.priceMinor)) : data.priceMinor, pricingTiers: data.pricingTiers ?? [] };
 }
 
 export async function createMarketListing(sellerId: string, raw: unknown, options: { official?: boolean } = {}) {
@@ -26,6 +27,7 @@ export async function createMarketListing(sellerId: string, raw: unknown, option
     await requireMarketActor(tx, sellerId);
     if (data.execution) await assertMarketWorkflowBinding(tx, sellerId, data.execution);
     if (options.official) await requireMarketModerator(tx, sellerId);
+    await requireMarketCoverOwnership(tx, sellerId, data.coverUrl);
     if (await tx.marketListing.findUnique({ where: { slug: data.slug }, select: { id: true } })) {
       throw new MarketRuleError("SLUG_TAKEN");
     }
@@ -51,6 +53,7 @@ export async function reviseMarketListing(listingId: string, sellerId: string, r
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
     if (listing.currentVersion !== input.expectedVersion) throw new MarketRuleError("VERSION_CONFLICT");
     if (listing.slug !== data.slug) throw new MarketRuleError("SLUG_IMMUTABLE", 400);
+    await requireMarketCoverOwnership(tx, sellerId, data.coverUrl);
     const changed = await tx.marketListing.updateMany({
       where: { id: listing.id, currentVersion: input.expectedVersion },
       data: { currentVersion: { increment: 1 }, status: listing.status === "WITHDRAWN" ? "WITHDRAWN" : listing.publishedVersion ? "PUBLISHED" : "DRAFT" },
@@ -90,8 +93,9 @@ export async function reviewMarketListing(listingId: string, reviewerId: string,
     if (listing.currentVersion !== versionNumber) throw new MarketRuleError("VERSION_CONFLICT");
     const version = await tx.marketListingVersion.findUniqueOrThrow({ where: { listingId_version: { listingId, version: versionNumber } } });
     if (!version.submittedAt || version.reviewedAt) throw new MarketRuleError("INVALID_LISTING_STATE");
-    const payload = parseListing(version.payload);
-    if (approve && payload.execution) await assertMarketWorkflowBinding(tx, listing.sellerId, payload.execution);
+    const reviewed = parseListing(version.payload);
+    if (approve && reviewed.execution) await assertMarketWorkflowBinding(tx, listing.sellerId, reviewed.execution);
+    if (approve) await requireMarketCoverOwnership(tx, listing.sellerId, reviewed.coverUrl);
     await tx.marketListingVersion.update({ where: { id: version.id }, data: { reviewedAt: new Date(), reviewedById: reviewerId, reviewNote: note.trim() } });
     const updated = await tx.marketListing.update({
       where: { id: listingId },
@@ -115,61 +119,70 @@ export async function withdrawMarketListing(listingId: string, sellerId: string)
   });
 }
 
-export async function listMarketListings(sellerId?: string) {
+function listingReadInclude(viewerId?: string) {
+  return {
+    versions: { orderBy: { version: "desc" as const } },
+    seller: { select: { id: true, username: true, nickname: true, avatar: true } },
+    _count: { select: { stars: true } },
+    stars: { where: { userId: viewerId ?? "" }, select: { userId: true } },
+  } satisfies Prisma.MarketListingInclude;
+}
+
+export async function listMarketListings(sellerId?: string, viewerId?: string) {
   if (sellerId) await requireMarketActor(db, sellerId);
   const listings = await db.marketListing.findMany({
     where: sellerId ? { sellerId } : { status: "PUBLISHED", seller: { deletedAt: null, flagged: false } },
-    include: { versions: { orderBy: { version: "desc" } }, seller: { select: { id: true, username: true, nickname: true, avatar: true } } },
+    include: listingReadInclude(viewerId ?? sellerId),
     orderBy: { updatedAt: "desc" }, take: 100,
   });
   return listings.flatMap((listing) => {
     const version = listing.versions.find((item) => item.version === (sellerId ? listing.currentVersion : listing.publishedVersion));
     if (!version) return [];
-    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: sellerId ? version.reviewNote : null }];
+    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: sellerId ? version.reviewNote : null }];
   });
 }
 
 
-export async function listPublishedMarketListingsBySeller(sellerId: string) {
+export async function listPublishedMarketListingsBySeller(sellerId: string, viewerId?: string) {
   const listings = await db.marketListing.findMany({
     where: { sellerId, status: "PUBLISHED", seller: { deletedAt: null, flagged: false } },
-    include: { versions: true, seller: { select: { id: true, username: true, nickname: true, avatar: true } } },
+    include: listingReadInclude(viewerId),
     orderBy: { updatedAt: "desc" }, take: 24,
   });
   return listings.flatMap((listing) => {
     const version = listing.versions.find((item) => item.version === listing.publishedVersion);
     if (!version) return [];
-    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null }];
+    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null }];
   });
 }
 
-export async function getMarketListing(slug: string) {
+export async function getMarketListing(slug: string, viewerId?: string) {
   const listing = await db.marketListing.findFirst({
     where: { slug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false } },
-    include: { versions: true, seller: { select: { id: true, username: true, nickname: true, avatar: true } } },
+    include: listingReadInclude(viewerId),
   });
   const version = listing?.versions.find((item) => item.version === listing.publishedVersion);
   if (!listing || !version) throw new MarketRuleError("NOT_FOUND", 404);
-  return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null };
+  return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null };
 }
 
 export async function getOwnedMarketListing(id: string, sellerId: string) {
   await requireMarketActor(db, sellerId);
-  const row = await db.marketListing.findFirst({ where: { id, sellerId }, include: { versions: true, seller: { select: { id: true, username: true, nickname: true, avatar: true } } } });
+  const row = await db.marketListing.findFirst({ where: { id, sellerId }, include: listingReadInclude(sellerId) });
   const version = row?.versions.find((item) => item.version === row.currentVersion);
   if (!row || !version) throw new MarketRuleError("NOT_FOUND", 404);
-  return { id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: version.reviewNote };
+  return { id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, starCount: row._count.stars, starred: row.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: version.reviewNote };
 }
 
 export async function listPendingMarketListings(reviewerId: string) {
   await requireMarketModerator(db, reviewerId);
   const rows = await db.marketListing.findMany({
     where: { versions: { some: { submittedAt: { not: null }, reviewedAt: null } }, seller: { deletedAt: null, flagged: false } },
-    include: { versions: { orderBy: { version: "desc" } }, seller: { select: { id: true, username: true, nickname: true, avatar: true } } },
+    include: listingReadInclude(reviewerId),
     orderBy: { updatedAt: "asc" }, take: 100,
   });
   return rows.flatMap((row) => {
     const version = row.versions.find((item) => item.version === row.currentVersion && item.submittedAt && !item.reviewedAt);
-    return version ? [{ id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt!.toISOString(), reviewedAt: null, reviewNote: null }] : [];
+    return version ? [{ id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, starCount: row._count.stars, starred: row.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt!.toISOString(), reviewedAt: null, reviewNote: null }] : [];
   });
 }
