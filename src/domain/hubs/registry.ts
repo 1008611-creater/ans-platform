@@ -1,4 +1,4 @@
-﻿import { RESUME_WEBSITE_WORKFLOW_ID } from "@/contracts/resume-website";
+import { RESUME_WEBSITE_WORKFLOW_ID } from "@/contracts/resume-website";
 import type { CatalogWorkflowId } from "@/contracts/catalog";
 import type { CatalogProject } from "@/domain/catalog/projects";
 
@@ -29,4 +29,12 @@ export function hubProjects(hub: HubDefinition, published: readonly CatalogProje
 }
 export function getWorkflowHubMembership(workflowId: CatalogWorkflowId): HubSlug[] {
   return HUBS.filter(hub => hub.workflowRecipeIds.includes(workflowId)).map(hub => hub.slug);
+}
+
+/** Counts describe currently attested executable recipes, not configured intentions. */
+export function hubWorkflowRecipes(hub: HubDefinition, publishedRecipeIds: readonly CatalogWorkflowId[] | null): readonly CatalogWorkflowId[] | null {
+  if (!hub.workflowRecipeIds.length) return [];
+  if (publishedRecipeIds === null) return null;
+  const published = new Set(publishedRecipeIds);
+  return hub.workflowRecipeIds.filter(id => published.has(id));
 }

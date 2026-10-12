@@ -1,4 +1,4 @@
-﻿import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { HubDirectory } from "@/components/hubs/hub-directory";
 import HubDetailPage from "@/app/hubs/[slug]/page";
@@ -17,7 +17,7 @@ beforeEach(() => { vi.unstubAllEnvs(); mocks.platform.mockReset(); mocks.platfor
 afterEach(cleanup);
 
 it("keeps unknown project counts unknown while showing real Hub links", async () => {
-  render(await HubDirectory({ hubs: HUBS, published: null }));
+  render(await HubDirectory({ hubs: HUBS, published: null, publishedRecipeIds: [] }));
   expect(screen.getAllByText("unavailable")).toHaveLength(4);
   expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["/hubs/cauhub", "/hubs/vibehub", "/hubs/aigc", "/hubs/full-stack"]);
 });
@@ -28,10 +28,11 @@ it("keeps CAU explicit and does not claim generic runnable projects", async () =
   expect(screen.getByRole("link", { name: "resources.agrihackathon.title" })).toHaveAttribute("href", "/competitions/agrihackathon");
   expect(screen.queryByRole("link", { name: /prepareWorkflow/ })).toBeNull();
 });
-it("offers the real fixed recipe through preparation with exact compute cost, without running it", async () => {
+it("omits executable claims and generic preparation when the real registration is absent", async () => {
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
-  expect(screen.getByText("recipeCost:2")).toBeVisible();
-  expect(screen.getByRole("link", { name: "prepareWorkflow" })).toHaveAttribute("href", "/projects?goal=portfolio&workflow=resume-website#new-project");
+  expect(screen.getByText("noRunnable")).toBeVisible();
+  expect(screen.queryByRole("link", { name: "prepareWorkflow" })).toBeNull();
+  expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(mocks.list).toHaveBeenCalledExactlyOnceWith();
   expect(screen.queryByRole("button", { name: /run|generate/ })).toBeNull();
 });
@@ -46,7 +47,7 @@ it("omits project cards after a publication read fails and does not expose inter
 it("renders exact published-project counts without adding a withdrawn reference", async () => {
   const hub = getHub("aigc")!;
   const published = CATALOG_PROJECTS.filter(project => project.slug !== "comfyui");
-  render(await HubDirectory({ hubs: [hub], published }));
+  render(await HubDirectory({ hubs: [hub], published, publishedRecipeIds: [] }));
   const projects = screen.getByText("counts.projects").parentElement!;
   expect(within(projects).getByText(String(hub.projectSlugs.length - 1))).toBeInTheDocument();
 });
@@ -75,4 +76,32 @@ it("does not claim a withdrawn market card exists or add a generic recipe to CAU
   render(await HubDetailPage({ params: Promise.resolve({ slug: "cauhub" }) }));
   expect(mocks.platform).not.toHaveBeenCalled();
   expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
+});
+
+it("shows unknown execution availability without losing references after attestation read failure", async () => {
+  mocks.platform.mockRejectedValue(new Error("private connection detail"));
+  render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
+  expect(screen.getByRole("status")).toHaveTextContent("workflowsUnavailable");
+  expect(screen.queryByText("noRunnable")).toBeNull();
+  expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
+  expect(screen.queryByRole("link", { name: "prepareWorkflow" })).toBeNull();
+  expect(screen.getByRole("link", { name: "Hello \u7b97\u6cd5" })).toBeVisible();
+  expect(document.body.textContent).not.toContain("private connection detail");
+  expect(mocks.market).not.toHaveBeenCalled();
+});
+it("keeps an attested workflow and references available when only its market read fails", async () => {
+  mocks.platform.mockResolvedValue({ workflow: { id: "real-recipe-id", authorId: "real-owner", slug: "ans-portfolio-website" }, version: { id: "immutable-version", version: 1 }, recipe: { catalogRecipeId: "resume-website", definitionHash: "verified-hash" } });
+  mocks.market.mockRejectedValue(new Error("private market connection detail"));
+  render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
+  expect(screen.getByRole("link", { name: "openWorkflow" })).toHaveAttribute("href", "/workflows/ans-portfolio-website");
+  expect(screen.queryByRole("link", { name: "viewMarketCard" })).toBeNull();
+  expect(screen.getByRole("status")).toHaveTextContent("marketUnavailable");
+  expect(screen.getByRole("link", { name: "Hello \u7b97\u6cd5" })).toBeVisible();
+  expect(document.body.textContent).not.toContain("private market connection detail");
+});
+it("shows failed recipe counts as unknown only for Hubs which actually configure them", async () => {
+  render(await HubDirectory({ hubs: HUBS, published: [], publishedRecipeIds: null }));
+  expect(screen.getAllByText("unavailable")).toHaveLength(1);
+  const full = screen.getByRole("link", { name: "items.full-stack.name" }).closest("article")!;
+  expect(within(full).getByText("unavailable")).toBeVisible();
 });

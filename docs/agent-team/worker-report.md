@@ -272,3 +272,10 @@ REQ-L01/L02: personal history, cursor validation and admin mismatch diagnosis ex
 AC-L03: scripts/personal-quota-ledger-integration.ts ran against verified localhost ans-dev-db in one rollback-only transaction: personal null-reference precision, mixed team histories, cursor denial, real mismatch detection and data preservation pass; fixture rows after=0.
 Integrated validation: eight actual test files / 149 tests pass; full application-and-test types exit0; full npm run lint exit0, 353 existing warnings; six boundaries pass. First bundled-node lint native aborts and parallel type OOM retained, sequential explicit type invocation and system npm lint succeed. No production/provider/TTS/charge calls.
 Release evidence: C:/Users/lsb/.workbuddy/ans-dino-agent-20261012/delivery-r11/root-current-validation.json. Independent ledger review and final frozen Linux image/build/release verification remain required. VibePlan batch lifecycle and real event configuration remain incomplete.
+
+
+## 2026-10-13 Hub published-workflow availability
+
+REQ-HUB-COUNT / AC-HUB-COUNT: directory and detail availability now derive from the currently attested published platform recipe. Configured recipe IDs alone do not establish runnable availability. Missing attestation omits execution and generic private-project fallback; unknown read state is translated separately from an empty Hub. Marketplace lookup failure preserves the attested workflow and references while withholding the unavailable market link. GET paths perform no registration, execution or billing mutation.
+
+Validation: 24 directed Hub tests passed; full application and test typecheck exited 0; targeted lint, full repository lint and six architecture boundaries passed. Independent review r2 passed and closed the three r1 issues (Chinese text, updated test callers, market lookup failure). Evidence is retained in the existing delivery-r11 directory. Production build and browser verification remain release gates, not implied by this local report.
