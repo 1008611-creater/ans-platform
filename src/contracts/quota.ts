@@ -1,4 +1,6 @@
+import type { VoiceOffer } from "./voice";
 export type QuotaAdminOverview = {
+ voice?: VoiceOffer & { pendingCount: number; recentCalls: number; cachedAudioBytes: number };
  users: { id: string; username: string; quotaPoints: number; flagged: boolean }[];
  operations: { id: string; userId: string; kind: string; amount: number; balanceAfter: number; note: string; evidenceRef?: string | null; createdAt: string }[];
  disputes: { id: string; buyerId: string; sellerId: string; totalMinor: number }[];

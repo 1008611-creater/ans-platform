@@ -232,5 +232,7 @@
   "actionMarketDetail": "Review published projects, inputs and usage",
   "replyHub": "Find a project or workflow in a Hub, then check its inputs, outputs and cost before starting your own task.",
   "replyCommunity": "The community is for sharing work and talking. Check the visibility before sharing anything.",
-  "replyMarket": "Review the listing for actual deliverables, inputs and usage. Workflow execution has a separate cost confirmation."
+  "replyMarket": "Review the listing for actual deliverables, inputs and usage. Workflow execution has a separate cost confirmation.",
+  "voiceSignIn": "Sign in to use voice.",
+  "voiceFree": "Voice is currently free (0 credits). Private audio replay is kept for 24 hours."
 }

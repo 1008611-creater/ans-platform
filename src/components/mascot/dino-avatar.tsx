@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Image from "next/image";
+import type { VoiceOffer } from "@/contracts/voice";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSitePreferences } from "@/lib/site-preferences";
 
@@ -9,14 +10,14 @@ export type SpeechRequest = { id: number; text: string };
 type AvatarMessage =
   | { event: "phase"; phase: string }
   | { event: "preferences"; voice: boolean; volume: number; calm: boolean }
-  | { event: "speak"; text: string }
+  | { event: "speak"; text: string; actor: string; policyVersion: string }
   | { event: "stop-speech" }
   | { event: "hello" }
   | { event: "pointer"; x: number; y: number }
   | { event: "visibility"; visible: boolean };
 
-/** Receives presentation state and public guide replies only, never member or task data. */
-export function DinoAvatar({ phase, open, speech, onVoiceStatus }: { phase: string; open: boolean; speech?: SpeechRequest | null; onVoiceStatus?: (status: string) => void }) {
+/** Sends public guide replies and a bound actor ID; no credentials or private task records. */
+export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, speech, onVoiceStatus }: { actor?: string | null; voicePolicy?: VoiceOffer | null; phase: string; open: boolean; speech?: SpeechRequest | null; onVoiceStatus?: (status: string) => void }) {
   const preferences = useSitePreferences();
   const deliveredSpeech = useRef<number | null>(null);
   const voiceCallback = useRef(onVoiceStatus);
@@ -99,9 +100,11 @@ export function DinoAvatar({ phase, open, speech, onVoiceStatus }: { phase: stri
   }, [animated, preferences, send]);
   useEffect(() => {
     if (!animated || !speech || deliveredSpeech.current === speech.id) return;
+    if (!open || !preferences.voice) { deliveredSpeech.current = speech.id; return; }
+    if (!actor || !voicePolicy?.available || Date.parse(voicePolicy.reviewBy) <= Date.now()) return;
     deliveredSpeech.current = speech.id;
-    if (open && preferences.voice) send({ event: "speak", text: speech.text });
-  }, [animated, open, preferences.voice, speech, send]);
+    send({ event: "speak", text: speech.text, actor, policyVersion: voicePolicy.policyVersion });
+  }, [actor, voicePolicy, animated, open, preferences.voice, speech, send]);
   useEffect(() => {
     if (!open && animated) { send({ event: "stop-speech" }); voiceCallback.current?.("idle"); }
     return () => { send({ event: "stop-speech" }); };
@@ -129,7 +132,7 @@ export function DinoAvatar({ phase, open, speech, onVoiceStatus }: { phase: stri
   return <span className="ans-dino-avatar" aria-hidden="true">
     <Image src="/mascot/ans-mascot.png" width={88} height={88} alt="" className={animated ? "invisible" : ""} />
     {/* The fixed companion is already in view; lazy loading must not consume its ready timeout. */}
-    {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=companion-settings-v2" title="" tabIndex={-1} loading="eager" className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
+    {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=voice-points-20261013-1" title="" tabIndex={-1} loading="eager" className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
   </span>;
 }
 

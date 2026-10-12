@@ -1966,7 +1966,13 @@
     "examTitle": "Exam analysis reservations",
     "examPending": "Awaiting settlement: {count} requests, {points} credits",
     "examRecovery": "The exam service recovers and settles these reservations. For a long-running hold, check the task result. This list is read-only; a timeout does not trigger a refund.",
-    "examEmpty": "No outstanding exam analysis reservations."
+    "examEmpty": "No outstanding exam analysis reservations.",
+    "voiceTitle": "Voice accounting policy",
+    "voiceFreePolicy": "Current reviewed policy: free, 0 credits.",
+    "voicePolicyPaused": "Voice dispatch is unavailable. Check credentials, approved model and policy review deadline.",
+    "voiceDeadline": "ANS policy review deadline (UTC):",
+    "voiceUsage": "Last 24 hours: {count} requests; {pending} need closure; {megabytes} MB cached.",
+    "voiceNoAutomaticCharge": "The deadline is an ANS review requirement, not the supplier promotion end date. A policy change stops new dispatch and never silently enables a charge. Existing requests and expired audio are still reconciled and cleaned."
   },
   "growth": {
     "eyebrow": "ANS GROWTH",
@@ -2886,6 +2892,20 @@
       "RATE_LIMITED": "Too many requests. Please try later.",
       "RETURN_ORIGIN_FORBIDDEN": "The return website is not registered for this listing.",
       "INVALID_TIER": "Choose a current pricing tier."
+    }
+  },
+  "voiceUsage": {
+    "title": "Voice usage",
+    "description": "Free voice calls use the shared usage audit. They do not change your balance. Unknown results stay pending; replay does not generate again.",
+    "characters": "{count} characters",
+    "reserved": "0 credits reserved",
+    "zero": "0 credits",
+    "states": {
+      "AUTHORIZED": "Authorized",
+      "RUNNING": "Preparing",
+      "UNCERTAIN": "Result needs review",
+      "SETTLED": "Audio delivered",
+      "RELEASED": "Ended without delivery"
     }
   }
 }

@@ -14,7 +14,7 @@ export async function waiveUncertainRequest(actorId: string, id: string, reason:
    if (request.state !== "UNCERTAIN") throw new QuotaError("REQUEST_NOT_UNCERTAIN", "ACCOUNT_UNAVAILABLE", 409);
    const changed = await tx.apiComputeRequest.updateMany({ where: { id, state: "UNCERTAIN" }, data: { state: "RELEASED", settledPoints: 0, finishedAt: new Date() } });
    if (changed.count !== 1) throw new QuotaError("STATE_CONFLICT", "ACCOUNT_UNAVAILABLE", 409);
-   await refundQuota(tx, { userId: request.userId, costPoints: Number(request.authorizedPoints), ref: { type: "api_compute_request", id }, note: reason.trim() });
+   if (Number(request.authorizedPoints) > 0) await refundQuota(tx, { userId: request.userId, costPoints: Number(request.authorizedPoints), ref: { type: "api_compute_request", id }, note: reason.trim() });
    await refreshMeteredParentCost(tx, request.userId, request.price);
    await tx.auditLog.create({ data: { actorId, action: "API_COMPUTE_OPERATOR_WAIVER", resourceType: "api_compute_request", resourceId: id, metadata: { reason: reason.trim(), points: Number(request.authorizedPoints), previousOutcome: request.outcome, upstreamCostUnknown: true } } });
    return { released: true, duplicate: false };

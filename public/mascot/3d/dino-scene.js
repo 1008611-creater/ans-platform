@@ -2,7 +2,7 @@ import * as T from 'three';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { DinoPerformance } from './controller.mjs?v=expressive6';
 import { MotionDirector } from './motion-director.mjs?v=expressive6';
-import { FaceVoiceController } from './face-voice.mjs?v=settings-20261012-2';
+import { FaceVoiceController } from './face-voice.mjs?v=voice-points-20261013-1';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { installCompanion } from './companion-widget.mjs?v=settings-20261012-2';
 
@@ -220,7 +220,7 @@ function startCompanion() {
       wake();
     }
     if (data.event === 'speak' && voiceEnabled && typeof data.text === 'string') {
-      faceVoice?.speak(data.text, typeof data.voice === 'string' ? data.voice : 'Chloe');
+      if (typeof data.actor === 'string' && typeof data.policyVersion === 'string') faceVoice?.speak(data.text, 'Chloe', { actor: data.actor, policyVersion: data.policyVersion });
       wake();
     }
     if (data.event === 'stop-speech') { faceVoice?.stopAudio(); wake(); }

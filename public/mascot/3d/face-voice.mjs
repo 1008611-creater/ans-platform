@@ -1,3 +1,4 @@
+import { VoiceClient } from "./voice-client.mjs";
 import * as T from './vendor/three.module.js';
 
 const BODY_GREEN = 0xa8cdb7;
@@ -124,26 +125,30 @@ export class FaceVoiceController {
     if (this.status === 'speaking') { this.status = 'idle'; this.onStatus({ state: 'stopped' }); }
   }
 
-  async speak(text, voice = 'Chloe') {
-    const clean = String(text || '').trim().slice(0, 1200); if (!clean) return;
+  async speak(text, voice = 'Chloe', context = null) {
+    const clean = [...String(text || '').trim()].slice(0, 1200).join('');
+    if (!clean || !context?.actor || !context?.policyVersion) return;
     this.stopAudio(); const requestId = ++this.speechRequestId;
     this.status = 'loading'; this.onStatus({ state: 'loading' });
     try {
-      const cacheKey = voice + ':' + clean;
-      let blob = this.audioCache.get(cacheKey);
-      if (!blob) {
+      const scope = context.actor + ':' + context.policyVersion;
+      if (this.voiceScope !== scope) { this.audioCache.clear(); this.voiceScope = scope; }
+      const cacheKey = scope + ':' + voice + ':' + clean;
+      let entry = this.audioCache.get(cacheKey);
+      if (!entry || entry.expiresAt <= Date.now()) {
         this.speechAbort = new AbortController();
-        const response = await fetch('/api/mascot/tts', { method: 'POST', signal: this.speechAbort.signal,
-          headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: clean, voice }) });
-        if (!response.ok) throw new Error(`TTS ${response.status}`);
-        blob = await response.blob();
+        if (!this.voiceClient) {
+          let storage = null; try { storage = sessionStorage; } catch { /* Private mode. */ }
+          this.voiceClient = new VoiceClient({ storage });
+        }
+        entry = await this.voiceClient.audio(context, { text: clean, voice }, this.speechAbort.signal);
         if (requestId !== this.speechRequestId) return;
         if (this.audioCache.size >= 12) this.audioCache.delete(this.audioCache.keys().next().value);
-        this.audioCache.set(cacheKey,blob);
+        this.audioCache.set(cacheKey,entry);
       }
       if (requestId !== this.speechRequestId) return;
       this.speechAbort = null;
-      const url = URL.createObjectURL(blob); this.audioUrl = url;
+      const url = URL.createObjectURL(entry.blob); this.audioUrl = url;
       const audio = new Audio(url); audio.volume = Number.isFinite(this.volume) ? this.volume : 0.65; audio.preload = 'auto'; this.setAudio(audio, clean);
       await this.activateAudio();
       if (requestId !== this.speechRequestId) return;

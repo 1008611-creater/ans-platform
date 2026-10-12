@@ -20,6 +20,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=%2Fworkspace%2Fcredits");
   const [t, locale, query] = await Promise.all([getTranslations("product.quotaHistory"), getLocale(), searchParams ?? Promise.resolve({} as { cursor?: string | string[] })]);
+  const voiceText = await getTranslations("product.voiceUsage");
   const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
   let history;
@@ -43,6 +44,13 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
       {history.pendingCount > 0 && <aside className="space-y-2 text-sm"><p className="font-medium">{t("pending", { count: history.pendingCount })}</p><p className="max-w-3xl leading-6 text-muted-foreground">{t("hold")}</p></aside>}
       <div className="space-y-2 text-sm leading-6 text-muted-foreground"><p>{t("rules")}</p><p>{t("recharge")}</p></div>
       {history.entries.length === 0 ? <p className="border-t py-8 text-muted-foreground">{t("empty")}</p> : <div className="overflow-x-auto"><table className="w-full text-sm"><caption className="sr-only">{t("title")}</caption><thead><tr className="border-b text-start">{["date","reason","amount","balance"].map(key => <th key={key} scope="col" className="whitespace-nowrap px-3 py-3 text-start font-medium">{t(key)}</th>)}</tr></thead><tbody>{history.entries.map(entry => <tr key={entry.id} className="border-b"><td className="whitespace-nowrap px-3 py-4"><time dateTime={entry.createdAt}>{dates.format(new Date(entry.createdAt))}</time></td><td className="px-3 py-4">{t(`reasons.${entry.category}`)}</td><td className="whitespace-nowrap px-3 py-4 font-medium tabular-nums">{entry.amount > 0 ? "+" : ""}{numbers.format(entry.amount)}</td><td className="px-3 py-4 tabular-nums">{entry.balanceAfter === null ? "-" : numbers.format(entry.balanceAfter)}</td></tr>)}</tbody></table></div>}
+      {history.voiceUsage.length > 0 && <section className="space-y-3 rounded-[var(--radius)] border p-5" aria-labelledby="voice-usage-title">
+        <h2 id="voice-usage-title" className="font-semibold">{voiceText("title")}</h2><p className="text-sm leading-6 text-muted-foreground">{voiceText("description")}</p>
+        <ul className="divide-y">{history.voiceUsage.map(call => <li key={call.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+          <time dateTime={call.createdAt}>{dates.format(new Date(call.createdAt))}</time><span>{voiceText(`states.${call.state}`)}</span>
+          <span>{voiceText("characters", { count: call.maxUnits })}</span><span className="font-medium">{voiceText(call.settledPoints === null ? "reserved" : "zero")}</span>
+        </li>)}</ul>
+      </section>}
       <nav className="flex gap-3" aria-label={t("title")}><Button asChild variant="outline"><Link href="/workspace/credits">{t("first")}</Link></Button>{history.nextCursor && <Button asChild variant="outline"><Link href={`/workspace/credits?cursor=${encodeURIComponent(history.nextCursor)}`}>{t("next")}</Link></Button>}</nav>
     </>}
   </div></div></AccountContentBoundary>;

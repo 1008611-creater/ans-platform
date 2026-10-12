@@ -1,3 +1,4 @@
+import { blockUnmeteredConsumerAI } from "@/server/integrations/legacy-consumer-ai";
 import OpenAI from "openai";
 import { auth } from "@/lib/auth";
 import { getConfig } from "@/lib/config";
@@ -148,6 +149,9 @@ export async function POST() {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const blocked = blockUnmeteredConsumerAI();
+  if (blocked) return blocked;
 
   // Check rate limit
   const userId = session.user.id || session.user.email || "anonymous";

@@ -1,5 +1,7 @@
 "use client";
 
+import { useVoiceOffer } from "./use-voice-offer";
+
 import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
@@ -39,6 +41,7 @@ function Companion({ actor }: { actor: string | null }) {
   }
   const [undo, setUndo] = useState<{ mode: Mode; thread: Thread } | null>(null);
   const prefs = useSitePreferences(), task = useDinoTask(), panelSize = useCompanionSize();
+  const voiceOffer = useVoiceOffer(actor, prefs.voice);
   const [open, setOpen] = useState(false), [showLatest, setShowLatest] = useState(false), [unread, setUnread] = useState(false);
   const [speech, setSpeech] = useState<SpeechRequest | null>(null), [voiceStatus, setVoiceStatus] = useState("idle");
   const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null);
@@ -152,12 +155,12 @@ function Companion({ actor }: { actor: string | null }) {
   }
   const speaking = voiceStatus === "playing", loading = voiceStatus === "loading";
   const voiceLabel = ui(prefs.voice ? "disableDinoVoice" : "enableDinoVoice");
-  const voiceHint = !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceOn");
+  const voiceHint = !actor ? ui("voiceSignIn") : prefs.voice && !voiceOffer ? ui("voiceUnavailable") : !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceFree");
   const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
   const modeHint = mode === "agent" && agent.busy ? ui(`agentPhase.${agent.phase}`) : ui(mode === "agent" ? "agentModeHint" : "guideModeHint");
   return <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={changeOpen}>
-      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger"><DinoAvatar phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
+      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger"><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
       <PopoverAnchor virtualRef={panelSize.anchor} />
       <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" onOpenAutoFocus={event => {
         event.preventDefault();
@@ -174,7 +177,7 @@ function Companion({ actor }: { actor: string | null }) {
         <button type="button" className="ans-companion-resize height" aria-label={ui("resizeChatHeight")} title={ui("resizeChatHint")} {...panelSize.handle("height")} />
         <button type="button" className="ans-companion-resize both" aria-label={ui("resizeChat")} title={ui("resizeChatHint")} {...panelSize.handle("both")}><MoveUpLeft aria-hidden="true" /></button>
         <header className="ans-companion-header">
-          <div className="ans-companion-heading"><button type="button" className="ans-companion-voice" aria-label={voiceLabel} aria-pressed={prefs.voice} title={`${voiceLabel} · ${voiceHint}`} onClick={toggleVoice}>{prefs.voice ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}</button><div><span className="ans-companion-kicker">ANS / {ui("byYOURSIDE")}</span><h2 id={titleId}>{t("name")}<span aria-hidden="true" /></h2></div></div>
+          <div className="ans-companion-heading"><button type="button" className="ans-companion-voice" aria-label={voiceLabel} aria-pressed={prefs.voice} title={`${voiceLabel} · ${voiceHint}`} onClick={toggleVoice} disabled={!actor}>{prefs.voice ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}</button><div><span className="ans-companion-kicker">ANS / {ui("byYOURSIDE")}</span><h2 id={titleId}>{t("name")}<span aria-hidden="true" /></h2></div></div>
           <div className="ans-companion-controls">
             <button type="button" onClick={panelSize.reset} aria-label={ui("resetChatSize")} title={ui("resetChatSize")}><Maximize2 aria-hidden="true" /></button>
             <button type="button" disabled={agent.busy || agent.checkingReceipts || (!messages.length && !draft && !agent.quote)} aria-label={ui("newConversation")} title={ui("newConversation")} onClick={newConversation}><RotateCcw aria-hidden="true" /></button>
@@ -187,6 +190,7 @@ function Companion({ actor }: { actor: string | null }) {
           <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>{ui("guideMode")}</button>
           <span role="status">{modeHint}</span>
         </div>
+        {prefs.voice && <p className="px-4 pb-2 text-xs text-muted-foreground" role="status">{voiceHint}</p>}
         {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
         {undo?.mode === mode && <div className="ans-companion-undo" role="status"><span>{ui("conversationCleared")}</span><button type="button" onClick={restoreConversation}>{ui("undoClear")}</button></div>}
         <div className="ans-companion-reading">
