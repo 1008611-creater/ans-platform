@@ -14,7 +14,7 @@ export function AnsPracticeLinks({ term, compact = false, query }: { term?: stri
     : compact ? ANS_PRACTICES.slice(0, 4) : ANS_PRACTICES;
   if (!practices.length) return null;
   return <section className={`ans-practices${term ? " ans-term-practices" : ""}`} aria-label={t("ansPractice")}>
-    <div className="ans-knowledge-section-heading"><div><h2>{term ? t("termToWork") : normalized ? t("practiceSearch") : t("practiceSectionTitle")}</h2></div>{!term && (compact || normalized) && <Link href={`/vibe-hub/ans?lang=${lang}`}>{t("allPractices")}<ArrowUpRight size={16} aria-hidden="true" /></Link>}</div>
+    {(term || compact || normalized) && <div className="ans-knowledge-section-heading"><div><h2>{term ? t("termToWork") : normalized ? t("practiceSearch") : t("practiceSectionTitle")}</h2></div>{!term && (compact || normalized) && <Link href={`/vibe-hub/ans?lang=${lang}`}>{t("allPractices")}<ArrowUpRight size={16} aria-hidden="true" /></Link>}</div>}
     <div className="ans-practice-list">{practices.map(item => <Link className="ans-practice-row" key={item.slug} href={`/vibe-hub/ans/${item.slug}?lang=${lang}`}>
       <span className="ans-practice-number">{item.number}</span><span className="ans-practice-icon"><PracticeIcon kind={item.icon} /></span><div><h3>{item.title[lang]}</h3>{!compact && <p>{item.outcome[lang]}</p>}</div><ArrowUpRight size={20} className="ans-practice-arrow" aria-hidden="true" />
     </Link>)}</div>

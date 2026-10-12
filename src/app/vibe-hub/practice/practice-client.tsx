@@ -23,7 +23,7 @@ export function PracticeClient({ lessons }: { lessons: PracticeLesson[] }) {
   }, [unlocked, lesson, lang]);
   const reset = (value = scope) => { setScope(value); setIndex(0); setAnswers({}); setFinished(false); setUnlocked(false); setPage(null); setLoadError(false); };
   if (!lesson) return <main className="vh-page"><p>{t("unavailable")}</p></main>;
-  return <main className="practice-page practice-question is-ready"><div className="vh-practice-intro"><h1>{t("practiceTitle")}</h1><p>{t("practiceBody")}</p></div>
+  return <main className="practice-page practice-question is-ready"><div className="vh-practice-intro"><h1>{t("practiceTitle")}</h1></div>
     <div className="practice-question-layout"><section className="practice-answer-panel">
       {finished ? <section className="vh-quiz"><h2>{t("practiceFinish")}</h2><p>{t("practiceScore", { correct: Object.values(answers).filter(Boolean).length, total: pool.length })}</p><button type="button" className="vh-primary" onClick={() => reset()}>{t("retry")}</button></section> : <>
         {lesson.lessonPractice && <LessonQuiz key={`${scope}-${index}`} id={lesson.id} practice={lesson.lessonPractice} onAnswer={(correct) => setAnswers(current => ({ ...current, [index]: correct }))} onSelect={correct => { if (correct) setUnlocked(true); }} />}

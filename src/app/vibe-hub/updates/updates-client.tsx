@@ -1,13 +1,12 @@
 "use client";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Route, Sparkles, PanelsTopLeft } from "lucide-react";
+import { ArrowUpRight, BookOpen, Route, FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useVibeLanguage } from "../use-vibe-language";
 const entries = [
   { id: "content", icon: BookOpen, href: "/vibe-hub/ans" },
   { id: "paths", icon: Route, href: "/vibe-hub/journeys" },
-  { id: "collaboration", icon: Sparkles, href: "/vibe-hub/vibehub-skill" },
-  { id: "identity", icon: PanelsTopLeft, href: "/vibe-hub" },
+  { id: "collaboration", icon: FileText, href: "/vibe-hub/vibehub-skill" },
 ] as const;
 export default function Updates() {
   const lang = useVibeLanguage(); const t = useTranslations("vibehub");

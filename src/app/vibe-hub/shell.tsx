@@ -29,7 +29,7 @@ function Navigation() {
     { label: "ansPractice", path: "/ans" }, { label: "terms", path: "/topics" },
     { label: "courses", path: "/courses" }, { label: "saved", path: "/favorites" },
     { label: "practice", path: "/practice" }, { label: "antiAi", path: "/anti-ai-flavor" },
-    { label: "lab", path: "/lab" }, { label: "skill", path: "/vibehub-skill" }, { label: "updates", path: "/updates" },
+    { label: "skill", path: "/vibehub-skill" }, { label: "updates", path: "/updates" },
   ] as const;
   const active = (path: string) => path ? pathname === `/vibe-hub${path}` || pathname.startsWith(`/vibe-hub${path}/`) : pathname === "/vibe-hub";
   function switchLanguage() {
