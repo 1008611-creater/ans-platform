@@ -1,20 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { executeWorkflow } from "@/domain/workflows/executor";
 import { QuotaError } from "@/server/quota/service";
-const mocks=vi.hoisted(()=>({user:vi.fn(),create:vi.fn(),update:vi.fn(),find:vi.fn(),unique:vi.fn(),count:vi.fn(),transaction:vi.fn(),parentCost:vi.fn(),debit:vi.fn(),refund:vi.fn(),charge:vi.fn(),fetch:vi.fn()}));
-vi.mock("@/lib/db",()=>{const tx={$queryRaw:vi.fn(),apiComputeRequest:{create:mocks.create,updateMany:mocks.update,findMany:mocks.find,findUnique:mocks.unique,count:mocks.count},user:{findFirst:mocks.user},run:{updateMany:mocks.parentCost},workflowRun:{updateMany:mocks.parentCost}};return {db:{...tx,$transaction:(fn:(tx:unknown)=>unknown)=>mocks.transaction(fn,tx)}};});
+const mocks=vi.hoisted(()=>({user:vi.fn(),create:vi.fn(),update:vi.fn(),find:vi.fn(),unique:vi.fn(),count:vi.fn(),transaction:vi.fn(),parentCost:vi.fn(),current:vi.fn(),evidence:vi.fn(),rejectedEvidence:vi.fn(),debit:vi.fn(),refund:vi.fn(),charge:vi.fn(),fetch:vi.fn()}));
+vi.mock("@/lib/db",()=>{const tx={$queryRaw:vi.fn(),apiComputeRequest:{create:mocks.create,updateMany:mocks.update,findMany:mocks.find,findUnique:mocks.unique,findFirst:mocks.current,count:mocks.count},user:{findFirst:mocks.user},run:{updateMany:mocks.parentCost},workflowRun:{updateMany:mocks.parentCost}};return {db:{...tx,$transaction:(fn:(tx:unknown)=>unknown)=>mocks.transaction(fn,tx)}};});
 vi.mock("@/server/quota/service",()=>({debitQuota:mocks.debit,refundQuota:mocks.refund,QuotaError:class extends Error{status=402;code="INSUFFICIENT_QUOTA";}}));
 vi.mock("@/server/integrations/apic-billing",()=>({readApicCharge:mocks.charge}));
+vi.mock("@/server/integrations/gateway-evidence",()=>({lockGatewayBillingAccount:vi.fn(),recordGatewayEvidence:mocks.evidence,hasNonexecutionEvidence:mocks.rejectedEvidence}));
 import {codexResponses,codexModels,validateCodexPayload,meteredResponses} from "@/server/integrations/codex-gateway";
 const key="pchat_"+"a".repeat(64);
 function request(body:unknown,token=key){return new Request("https://ans.invalid/api/codex/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});}
-beforeEach(()=>{vi.resetAllMocks();mocks.transaction.mockImplementation((fn,tx)=>fn(tx));mocks.unique.mockResolvedValue(null);mocks.count.mockResolvedValue(0);process.env.ANS_CODEX_GATEWAY_ENABLED="1";process.env.RUN_BASE_URL="https://apic.cauai.fun/v1";process.env.RUN_API_KEY="private-test-only";mocks.user.mockResolvedValue({id:"u"});mocks.find.mockResolvedValue([]);mocks.create.mockResolvedValue({id:"task"});mocks.update.mockResolvedValue({count:1});mocks.charge.mockResolvedValue({points:0.001,requestId:"request123456",quota:500});vi.stubGlobal("fetch",mocks.fetch);});
+beforeEach(()=>{vi.resetAllMocks();mocks.transaction.mockImplementation((fn,tx)=>fn(tx));mocks.unique.mockResolvedValue(null);mocks.count.mockResolvedValue(0);process.env.ANS_CODEX_GATEWAY_ENABLED="1";process.env.RUN_BASE_URL="https://apic.cauai.fun/v1";process.env.RUN_API_KEY="private-test-only";mocks.user.mockResolvedValue({id:"u"});mocks.find.mockResolvedValue([]);mocks.create.mockImplementation(({data})=>{mocks.current.mockResolvedValue({...data,id:"task"});return Promise.resolve({id:"task"});});mocks.rejectedEvidence.mockImplementation((_tx,_owner,id)=>Promise.resolve(mocks.evidence.mock.calls.find(call=>call[2]===id)?.[3].kind===undefined ? null : mocks.evidence.mock.calls.some(call=>call[2]===id && call[3].kind==="REJECTED")));mocks.update.mockResolvedValue({count:1});mocks.charge.mockResolvedValue({points:0.001,requestId:"request123456",quota:500});vi.stubGlobal("fetch",mocks.fetch);});
 describe("Codex sole-ledger gateway",()=>{
  it("rejects unknown model, server state, and oversized output",()=>{for(const b of [{model:"unknown"},{model:"gpt-6.1-sol",previous_response_id:"another-user"},{model:"gpt-6.1-sol",background:true},{model:"gpt-6.1-sol",max_output_tokens:16385}])expect(()=>validateCodexPayload(b)).toThrow();});
  it("forces storage off, preserves tool schemas, and reserves above actual minimum",()=>{const result=validateCodexPayload({model:"gpt-6.1-sol",input:"hello",store:true,tools:[{type:"function",name:"test",parameters:{}}]});expect(JSON.parse(result.text).store).toBe(false);expect(JSON.parse(result.text).tools[0].name).toBe("test");expect(result.reserve).toBeGreaterThan(0.001);});
  it("rejects invalid and revoked keys without upstream call",async()=>{expect((await codexModels(request({},"bad"))).status).toBe(401);mocks.user.mockResolvedValue(null);expect((await codexResponses(request({model:"gpt-6.1-sol"}))).status).toBe(401);expect(mocks.fetch).not.toHaveBeenCalled();});
  it("reserves then settles the authoritative quota once",async()=>{mocks.fetch.mockResolvedValue(new Response('{"output":[]}',{headers:{"x-oneapi-request-id":"request123456"}}));const response=await codexResponses(request({model:"gpt-6.1-sol",input:"hello"}));expect(response.status).toBe(200);expect(mocks.debit).toHaveBeenCalledTimes(1);expect(mocks.refund).toHaveBeenCalledTimes(1);expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({state:"SETTLED",settledPoints:0.001})}));});
- it("settles verified usage beyond reservation with an atomic extra debit",async()=>{mocks.charge.mockResolvedValue({points:2,requestId:"request123456",quota:1000000});mocks.fetch.mockResolvedValue(new Response('{"output":[]}',{headers:{"x-oneapi-request-id":"request123456"}}));const response=await codexResponses(request({model:"gpt-6.1-sol",input:"hello"}));expect(response.status).toBe(200);expect(mocks.debit).toHaveBeenCalledTimes(2);expect(mocks.refund).not.toHaveBeenCalled();});
+ it("records supplier excess while keeping user debit inside original authorization",async()=>{mocks.charge.mockResolvedValue({points:2,requestId:"request123456",quota:1000000});mocks.fetch.mockResolvedValue(new Response('{"output":[]}',{headers:{"x-oneapi-request-id":"request123456"}}));const response=await codexResponses(request({model:"gpt-6.1-sol",input:"hello"}));expect(response.status).toBe(200);expect(mocks.debit).toHaveBeenCalledTimes(1);expect(mocks.refund).not.toHaveBeenCalled();expect(mocks.evidence).toHaveBeenCalledWith(expect.anything(),"u","task",expect.objectContaining({kind:"VERIFIED",charge:expect.objectContaining({points:2}),billedPoints:validateCodexPayload({model:"gpt-6.1-sol",input:"hello"}).reserve}));});
  it("does not turn ambiguous upstream failure into free credit",async()=>{mocks.fetch.mockRejectedValue(new Error("timeout"));const response=await codexResponses(request({model:"gpt-6.1-sol"}));expect(response.status).toBe(502);expect(mocks.refund).not.toHaveBeenCalled();expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({state:"UNCERTAIN"})}));});
  it("returns streamed tool events unchanged and settles",async()=>{const text='event: response.output_item.added\ndata: {"type":"function_call","name":"test"}\n\n';mocks.fetch.mockResolvedValue(new Response(text,{headers:{"x-oneapi-request-id":"request123456"}}));const response=await codexResponses(request({model:"gpt-6.1-sol",stream:true}));expect(await response.text()).toBe(text);expect(mocks.refund).toHaveBeenCalledTimes(1);});
  it("releases reservation for explicit upstream validation rejection",async()=>{mocks.fetch.mockResolvedValue(new Response("bad",{status:400}));expect((await codexResponses(request({model:"gpt-6.1-sol"}))).status).toBe(400);expect(mocks.refund).toHaveBeenCalledTimes(1);});
@@ -73,6 +74,7 @@ describe("durable model retries after verified non-execution", () => {
       const row = rows.find(row => row.userId === match.userId && row.provider === match.provider && row.idempotencyKey === match.idempotencyKey);
       return Promise.resolve(row ? structuredClone(row) : null);
     });
+    mocks.current.mockImplementation(({where}:{where:{id:string;userId:string;state:string}})=>Promise.resolve(structuredClone(rows.find(row=>row.id===where.id && row.userId===where.userId && row.state===where.state)??null)));
     mocks.count.mockImplementation(() => Promise.resolve(rows.filter(row => ["RUNNING", "UNCERTAIN"].includes(row.state)).length));
     mocks.create.mockImplementation(({ data }: { data: Omit<AttemptRow, "id" | "settledPoints" | "finishedAt"> }) => {
       if (rows.some(row => row.userId === data.userId && row.provider === data.provider && row.idempotencyKey === data.idempotencyKey)) throw new Error("P2002");
@@ -267,7 +269,8 @@ describe("durable model retries after verified non-execution", () => {
   it("records safe rejection evidence when upstream supplies a receipt id", async () => {
     mocks.fetch.mockResolvedValueOnce(new Response("rate limited", { status: 429, headers: { "x-oneapi-request-id": "rejected123456" } })).mockResolvedValueOnce(ok());
     await codexResponses(keyedRequest(body));
-    expect(rows[0].price.rejectedUpstreamStatus).toBe(429);
+    expect(rows[0].price.rejectedUpstreamStatus).toBeUndefined();
+    expect(mocks.evidence).toHaveBeenCalledWith(expect.anything(),"u","attempt-1",expect.objectContaining({kind:"REJECTED",status:429,upstreamRequestId:"rejected123456"}));
     expect(rows[0].outcome).toBe("rejected123456");
     expect((await codexResponses(keyedRequest(body))).status).toBe(200);
     expect(rows[0].outcome).toBe("rejected123456");
@@ -306,7 +309,9 @@ describe("optional companion member budget cap", () => {
     mocks.fetch.mockResolvedValue(new Response('{"output":[]}', { headers: { "x-oneapi-request-id": "request123456" } }));
     const response = await meteredResponses(request(body), "u", undefined, { memberPointsCap: cap });
     expect(response.status).toBe(200); expect(mocks.debit).toHaveBeenCalledTimes(1);
-    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ state: "SETTLED", settledPoints: cap, price: expect.objectContaining({ memberPointsCap: cap, verifiedUpstreamPoints: 2, platformCoveredPoints: 2 - cap }) }) }));
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ state: "SETTLED", settledPoints: cap }) }));
+    expect(mocks.update.mock.calls.every(call=>call[0].data.price===undefined)).toBe(true);
+    expect(mocks.evidence).toHaveBeenCalledWith(expect.anything(),"u","task",expect.objectContaining({kind:"VERIFIED",charge:expect.objectContaining({points:2}),billedPoints:cap}));
   });
   it("rejects an inadequate cap before any upstream call or debit", async () => {
     const response = await meteredResponses(request({ model: "deepseek-v4.1-flash", input: "hello" }), "u", undefined, { memberPointsCap: 0.000001 });
@@ -315,9 +320,10 @@ describe("optional companion member budget cap", () => {
   it("keeps the same cap when an uncertain receipt is reconciled later", async () => {
     const { reconcileCodexCharges } = await import("@/server/integrations/codex-gateway");
     mocks.find.mockResolvedValue([{ id: "pending", outcome: "request123456", authorizedPoints: 0.01, price: { source: "APIC", memberPointsCap: 0.01 } }]);
+    mocks.current.mockResolvedValue({id:"pending",userId:"u",provider:"apic-codex",authorizedPoints:.01,state:"UNCERTAIN",price:{source:"APIC",memberPointsCap:.01}});
     mocks.charge.mockResolvedValue({ points: 2, requestId: "request123456", quota: 1000000 });
     await reconcileCodexCharges("u");
-    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "pending", state: "UNCERTAIN" }, data: expect.objectContaining({ settledPoints: 0.01, price: expect.objectContaining({ verifiedUpstreamPoints: 2, platformCoveredPoints: 1.99 }) }) }));
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "pending", userId:"u", state: "UNCERTAIN" }, data: expect.objectContaining({ settledPoints: 0.01 }) }));
     expect(mocks.debit).not.toHaveBeenCalled();
   });
 });

@@ -1788,6 +1788,7 @@ model ApiComputeRequest {
   @@index([userId, createdAt])
   @@index([provider, state, updatedAt])
   @@map("api_compute_requests")
+  billingEvidence ApiComputeBillingEvidence[]
 }
 
 model ComputeTask {
@@ -2713,4 +2714,25 @@ model VoiceResult {
 
   @@index([expiresAt])
   @@map("voice_results")
+}
+
+// Verified costs/rejection/waiver evidence is separate from the immutable quote.
+model ApiComputeBillingEvidence {
+ id String @id
+ requestId String
+ request ApiComputeRequest @relation(fields:[requestId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+ ownerId String
+ kind String
+ upstreamRequestId String?
+ upstreamQuota BigInt?
+ upstreamPoints Decimal? @db.Decimal(24,6)
+ billedPoints Decimal @db.Decimal(24,6)
+ platformCoveredPoints Decimal? @db.Decimal(24,6)
+ rejectedUpstreamStatus Int?
+ actorId String?
+ policyVersion String
+ createdAt DateTime @default(now()) @db.Timestamptz(3)
+ @@unique([requestId],map:"api_compute_billing_evidence_request_key")
+ @@index([ownerId,createdAt,id],map:"api_compute_billing_evidence_owner_time_idx")
+ @@map("api_compute_billing_evidence")
 }
