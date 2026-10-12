@@ -6,7 +6,7 @@ export class MarketRequestRejection extends Error {
 // These service rules reject before committing. Account/not-found failures may
 // instead come from the acknowledgement read after a committed order action.
 const confirmedRejectionCodes = new Set([
-  "ACCOUNT_CHANGED", "UNAUTHORIZED", "VERSION_CONFLICT", "INVALID_ORDER_STATE", "REVISION_LIMIT_REACHED", "INVALID_INPUT",
+  "POINTS_ONLY", "INVALID_TIER", "ACCOUNT_CHANGED", "UNAUTHORIZED", "VERSION_CONFLICT", "INVALID_ORDER_STATE", "REVISION_LIMIT_REACHED", "INVALID_INPUT",
   "ARTIFACT_PERMISSION_REQUIRED", "REVIEW_ALREADY_SUBMITTED", "IDEMPOTENCY_CONFLICT", "FORBIDDEN",
 ]);
 

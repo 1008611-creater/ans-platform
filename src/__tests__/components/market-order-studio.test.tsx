@@ -2,13 +2,14 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { MarketOrderView } from "@/contracts/marketplace-view";
 import { OrderStudio } from "@/components/marketplace/order-studio";
+import { ProjectUsageEntry } from "@/components/marketplace/project-usage-entry";
 
 const mocks = vi.hoisted(() => ({ request: vi.fn(), refresh: vi.fn() }));
 vi.mock("@/components/marketplace/request", async importOriginal => ({ ...await importOriginal<typeof import("@/components/marketplace/request")>(), marketRequest: mocks.request }));
 import { MarketRequestRejection } from "@/components/marketplace/request";
 vi.mock("@/components/marketplace/account-boundary",()=>({useMarketRequest:()=>mocks.request,MarketAccountBoundary:({children}:{children:React.ReactNode})=>children}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
-vi.mock("next-intl", () => ({ useTranslations: () => Object.assign((key: string) => key, { has: () => false }) }));
+vi.mock("next-intl", () => ({ useTranslations: () => Object.assign((key: string, values?: { title?: string }) => key === "purchasedTier" ? `${key}: ${values?.title}` : key, { has: () => false }) }));
 
 function order(patch: Partial<MarketOrderView> = {}): MarketOrderView {
   return { id: "order-1", listingId: "listing-1", buyerId: "buyer-1", sellerId: "seller-1", status: "IN_PROGRESS",
@@ -182,5 +183,37 @@ describe("confirmed order rejections", () => {
     await act(async () => { fireEvent.submit(formOf(input)); });
     expect(mocks.request.mock.calls[1][2]).toMatchObject({ expectedRevision: 4, message: "Retain this delivery" });
     expect(mocks.request.mock.calls[1][2].idempotencyKey).not.toBe(oldKey);
+  });
+});
+
+describe("paid project access entry", () => {
+  const projectOrder = (patch: Partial<MarketOrderView> = {}) => {
+    const base = order();
+    return order({ paymentMethod: "POINTS", quote: { ...base.quote, usageUrl: "https://project.example/use", githubUrl: "https://github.com/author/project", selectedTierId: "basic", selectedTierTitle: "Frozen purchased tier" }, ...patch });
+  };
+  it.each(["AWAITING_REQUIREMENTS", "IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED", "COMPLETED"] as const)("shows the original access URL for a paid buyer in %s", status => {
+    render(<OrderStudio order={projectOrder({ status })} userId="buyer-1"/>);
+    expect(screen.getByRole("link", { name: "openPurchasedProject" })).toHaveAttribute("href", "https://project.example/use");
+    expect(screen.getByRole("link", { name: "openPurchasedProject" })).toHaveAttribute("rel", "noopener noreferrer");
+    expect(screen.getByText("purchasedUseNote")).toBeInTheDocument(); expect(mocks.request).not.toHaveBeenCalled();
+  });
+  it.each(["AWAITING_PAYMENT", "DISPUTED", "REFUND_PENDING", "REFUNDED", "CANCELLED"] as const)("does not present purchased project access in %s even when paidAt exists", status => {
+    render(<OrderStudio order={projectOrder({ status })} userId="buyer-1"/>);
+    expect(screen.queryByRole("link", { name: "openPurchasedProject" })).not.toBeInTheDocument();
+  });
+  it.each([{ paidAt: null }, { paymentMethod: "WECHAT" }, { paymentMethod: "ALIPAY" }])("does not expose the paid-points use entry for %j", patch => {
+    render(<OrderStudio order={projectOrder(patch)} userId="buyer-1"/>);
+    expect(screen.queryByRole("link", { name: "openPurchasedProject" })).not.toBeInTheDocument();
+  });
+  it("shows the frozen purchased tier and repository but does not present buyer access to the seller", () => {
+    render(<OrderStudio order={projectOrder()} userId="seller-1"/>);
+    expect(screen.getByText("purchasedTier: Frozen purchased tier")).toBeInTheDocument(); expect(screen.getByText("orderDeliveryNote")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "viewGithub" })).toHaveAttribute("href", "https://github.com/author/project");
+    expect(screen.queryByRole("link", { name: "openPurchasedProject" })).not.toBeInTheDocument();
+  });
+  it("offers the project checkout route without creating an ANS delivery order or claiming access", () => {
+    render(<ProjectUsageEntry usageUrl="https://project.example/use"/>);
+    expect(screen.getByRole("link", { name: "payInsideProject" })).toHaveAttribute("href", "https://project.example/use");
+    expect(screen.getByText("projectCheckoutNote")).toBeInTheDocument(); expect(mocks.request).not.toHaveBeenCalled();
   });
 });

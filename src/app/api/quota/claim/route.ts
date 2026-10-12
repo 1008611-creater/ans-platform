@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { assertRequestActor, readSameOriginJson, HttpRequestError } from "@/server/http/json";
 
 /**
  * 领取公共免费算力池额度
  * 规则：登录 + 未领取过 + 池子仍有余量。每人限一次，用事务 + 条件更新防并发超发。
  */
-export async function POST() {
+export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -15,6 +16,14 @@ export async function POST() {
       { error: "unauthorized", message: "请先登录" },
       { status: 401 }
     );
+  }
+
+  try {
+    assertRequestActor(request, userId);
+    await readSameOriginJson(request);
+  } catch (error) {
+    if (error instanceof HttpRequestError) return NextResponse.json({ error: error.code }, { status: error.status });
+    throw error;
   }
 
   try {

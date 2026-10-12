@@ -123,7 +123,14 @@ async function login(page, baseUrl) {
     .catch(() => null);
   if (new URL(page.url()).pathname.startsWith("/login")) return null;
   const cookies = await page.cookies();
-  return cookies.map(cookie => `${cookie.name}=${cookie.value}`).join("; ");
+  const cookie = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join("; ");
+  const response = await fetch(`${baseUrl}/api/auth/session`, {
+    headers: { cookie },
+    cache: "no-store",
+  });
+  const session = await response.json().catch(() => null);
+  if (!response.ok || typeof session?.user?.id !== "string" || !session.user.id) return null;
+  return { cookie, accountId: session.user.id };
 }
 
 /** 一个读取目标：先热身几发，再逐次计时，同时记录非 2xx 与不满足断言时的响应。 */
@@ -154,15 +161,19 @@ async function measureRead(baseUrl, path, expect) {
   return { samples, errors };
 }
 
-async function callFavorite(baseUrl, cookie, targetId, method) {
+async function callFavorite(baseUrl, account, targetType, targetId, method) {
   const url = method === "POST"
     ? `${baseUrl}/api/favorites`
-    : `${baseUrl}/api/favorites?targetType=PROMPT&targetId=${encodeURIComponent(targetId)}`;
+    : `${baseUrl}/api/favorites?targetType=${encodeURIComponent(targetType)}&targetId=${encodeURIComponent(targetId)}`;
   const started = performance.now();
   const response = await fetch(url, {
     method,
-    headers: method === "POST" ? { cookie, "content-type": "application/json" } : { cookie },
-    body: method === "POST" ? JSON.stringify({ targetType: "PROMPT", targetId }) : undefined,
+    headers: {
+      cookie: account.cookie,
+      "x-vibehub-account-id": account.accountId,
+      ...(method === "POST" ? { "content-type": "application/json" } : {}),
+    },
+    body: method === "POST" ? JSON.stringify({ targetType, targetId }) : undefined,
   });
   await response.arrayBuffer();
   const elapsed = performance.now() - started;
@@ -177,15 +188,15 @@ async function callFavorite(baseUrl, cookie, targetId, method) {
  * 关键是一发写、一发删交替进行，而不是连着发 15 次收藏——后者除了第一发以外
  * 全落在「已收藏就直接返回」的幂等捷径上，量出来的数字没有意义。
  */
-async function measureWrites(baseUrl, cookie, targetId) {
+async function measureWrites(baseUrl, account, targetType, targetId) {
   const add = [];
   const remove = [];
   const errors = [];
   let createdOnce = false;
   for (let index = 0; index < SAMPLES + WARMUP; index += 1) {
     try {
-      const create = await callFavorite(baseUrl, cookie, targetId, "POST");
-      const drop = await callFavorite(baseUrl, cookie, targetId, "DELETE");
+      const create = await callFavorite(baseUrl, account, targetType, targetId, "POST");
+      const drop = await callFavorite(baseUrl, account, targetType, targetId, "DELETE");
       // 201 说明这一发真的新建了收藏；若全是 200，量到的是幂等捷径而不是写路径。
       if (create.status === 201) createdOnce = true;
       if (index >= WARMUP) {
@@ -261,13 +272,13 @@ async function main() {
       }
 
       const page = await browser.newPage();
-      const cookie = await login(page, baseUrl);
-      if (!cookie) {
+      const account = await login(page, baseUrl);
+      if (!account) {
         failures.push("登录失败，无法测量写入路径");
-      } else if (!fixture.favoriteTargetId) {
+      } else if (!fixture.favoriteTargetId || fixture.favoriteTargetType !== "WORKFLOW") {
         failures.push("探针数据缺少可收藏对象，无法测量写入路径");
       } else {
-        const { add, remove, errors } = await measureWrites(baseUrl, cookie, fixture.favoriteTargetId);
+        const { add, remove, errors } = await measureWrites(baseUrl, account, fixture.favoriteTargetType, fixture.favoriteTargetId);
         for (const error of errors.slice(0, 3)) failures.push(error);
         for (const [label, path, samples] of [
           ["收藏写入", "/api/favorites (POST)", add],

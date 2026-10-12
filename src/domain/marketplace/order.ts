@@ -7,7 +7,22 @@ export class MarketRuleError extends Error {
   }
 }
 
-/** Prices are integer fen. No floating-point currency or implicit platform fee. */
+/** Select only a tier saved in the reviewed version; client amounts are never used. */
+export function selectMarketPricingTier(listing: MarketListingInput, tierId?: string) {
+  const tiers = listing.pricingTiers ?? [];
+  if (!tiers.length) {
+    if (tierId) throw new MarketRuleError("INVALID_TIER", 400);
+    return { listing, selectedTierId: undefined, selectedTierTitle: undefined };
+  }
+  const tier = tiers.find(item => item.id === tierId);
+  if (!tier) throw new MarketRuleError("INVALID_TIER", 400);
+  return {
+    listing: { ...listing, priceMinor: tier.priceMinor, deliverables: [...tier.deliverables] },
+    selectedTierId: tier.id, selectedTierTitle: tier.title,
+  };
+}
+
+/** Prices are integer hundredths (points for POINTS orders, fen for legacy cash). No floating-point currency or implicit platform fee. */
 export function buildMarketQuote(
   listing: MarketListingInput,
   identity: { listingId: string; listingVersion: number; sellerId: string },
