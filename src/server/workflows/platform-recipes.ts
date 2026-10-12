@@ -93,4 +93,3 @@ export async function registerPlatformResumeRecipe(ownerId: string) {
     return registered;
   });
 }
-

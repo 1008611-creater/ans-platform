@@ -31,4 +31,3 @@ export function isPlatformRecipeMetadata(value: unknown): boolean {
   const workflow = value as Record<string, unknown>;
   return PLATFORM_RECIPE_REGISTRY.some(recipe => workflow.isOfficial === true && workflow.officialId === recipe.officialId && workflow.slug === recipe.slug && workflow.status === "PUBLISHED" && workflow.publishedVersion === recipe.version && workflow.title === recipe.title && workflow.summary === recipe.summary && workflow.description === recipe.description && workflow.estimatedCost === recipe.estimatedCost);
 }
-
