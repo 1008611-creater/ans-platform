@@ -1,125 +1,134 @@
 [
     {
-        "id":  "ISSUE-HR05",
-        "expected":  "Valid owner workflow metadata can be uploaded without fabricated content.",
-        "acceptance_item":  "AC-H04",
-        "requirement":  "REQ-H04",
-        "actual":  "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
-        "severity":  "P2",
-        "status":  "CLOSED"
+        "id": "ISSUE-HR05",
+        "expected": "Valid owner workflow metadata can be uploaded without fabricated content.",
+        "acceptance_item": "AC-H04",
+        "requirement": "REQ-H04",
+        "actual": "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
+        "severity": "P2",
+        "status": "CLOSED"
     },
     {
-        "id":  "ISSUE-HR06",
-        "expected":  "Standalone fixed recipe accepts validated personal facts through the same reviewed version/confirmation billing gate.",
-        "acceptance_item":  "AC-H03",
-        "requirement":  "REQ-H03",
-        "actual":  "Independent exact-version, manual approval, actor/ack/origin, row-lock recheck, changed-input and worker-source tests pass for reviewed recipe-run path.",
-        "severity":  "P1",
-        "status":  "CLOSED"
+        "id": "ISSUE-HR06",
+        "expected": "Standalone fixed recipe accepts validated personal facts through the same reviewed version/confirmation billing gate.",
+        "acceptance_item": "AC-H03",
+        "requirement": "REQ-H03",
+        "actual": "Independent exact-version, manual approval, actor/ack/origin, row-lock recheck, changed-input and worker-source tests pass for reviewed recipe-run path.",
+        "severity": "P1",
+        "status": "CLOSED"
     },
     {
-        "acceptance_item":  "AC-H03 / AC-H04",
-        "id":  "ISSUE-HR07",
-        "evidence":  [
-                         "src/components/marketplace/workflow-run.tsx"
-                     ],
-        "severity":  "P2",
-        "requirement":  "REQ-H03 / REQ-H04",
-        "actual":  "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
-        "suggestion":  "Use actor/endpoint/version-scoped pending identity and explicit run history recovery without storing sensitive input.",
-        "status":  "CLOSED",
-        "expected":  "Lost acknowledgements remain recoverable after reload without another command or debit."
+        "acceptance_item": "AC-H03 / AC-H04",
+        "id": "ISSUE-HR07",
+        "evidence": [
+            "src/components/marketplace/workflow-run.tsx"
+        ],
+        "severity": "P2",
+        "requirement": "REQ-H03 / REQ-H04",
+        "actual": "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
+        "suggestion": "Use actor/endpoint/version-scoped pending identity and explicit run history recovery without storing sensitive input.",
+        "status": "CLOSED",
+        "expected": "Lost acknowledgements remain recoverable after reload without another command or debit."
     },
     {
-        "acceptance_item":  "AC-H03 / AC-H04",
-        "id":  "ISSUE-HR08",
-        "evidence":  [
-                         "src/domain/workflows/recipes.ts",
-                         "src/domain/workflows/variables.ts",
-                         "src/server/workflows/service.ts"
-                     ],
-        "severity":  "P2",
-        "requirement":  "REQ-H03 / REQ-H04",
-        "actual":  "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
-        "suggestion":  "Validate extracted required input server-side before creation/debit.",
-        "status":  "CLOSED",
-        "expected":  "Missing required generic input is rejected before run creation and debit."
+        "acceptance_item": "AC-H03 / AC-H04",
+        "id": "ISSUE-HR08",
+        "evidence": [
+            "src/domain/workflows/recipes.ts",
+            "src/domain/workflows/variables.ts",
+            "src/server/workflows/service.ts"
+        ],
+        "severity": "P2",
+        "requirement": "REQ-H03 / REQ-H04",
+        "actual": "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
+        "suggestion": "Validate extracted required input server-side before creation/debit.",
+        "status": "CLOSED",
+        "expected": "Missing required generic input is rejected before run creation and debit."
     },
     {
-        "acceptance_item":  "AC-H03 / AC-H04",
-        "id":  "ISSUE-HR09",
-        "evidence":  [
-                         "src/app/api/workflows/[slug]/run/route.ts",
-                         "src/app/api/workflows/runs/[id]/execute/route.ts",
-                         "src/components/workflows/workflow-run-form.tsx",
-                         "src/app/workflows/[slug]/page.tsx"
-                     ],
-        "severity":  "P1",
-        "requirement":  "REQ-H03 / REQ-H04 / RULE-AUTH-B01",
-        "actual":  "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
-        "suggestion":  "Route recipes through reviewed recipe-run only; protect generic runtime with account boundary, expected actor, same origin and stable idempotency key.",
-        "status":  "CLOSED",
-        "expected":  "All public recipe/runtime entrances enforce reviewed confirmation and rendered actor isolation without alternate bypass."
+        "acceptance_item": "AC-H03 / AC-H04",
+        "id": "ISSUE-HR09",
+        "evidence": [
+            "src/app/api/workflows/[slug]/run/route.ts",
+            "src/app/api/workflows/runs/[id]/execute/route.ts",
+            "src/components/workflows/workflow-run-form.tsx",
+            "src/app/workflows/[slug]/page.tsx"
+        ],
+        "severity": "P1",
+        "requirement": "REQ-H03 / REQ-H04 / RULE-AUTH-B01",
+        "actual": "Independently source-reviewed and retested: final 9-file 133/133 safety/account/recovery checks passed at 14:45:50, details in review-report.md.",
+        "suggestion": "Route recipes through reviewed recipe-run only; protect generic runtime with account boundary, expected actor, same origin and stable idempotency key.",
+        "status": "CLOSED",
+        "expected": "All public recipe/runtime entrances enforce reviewed confirmation and rendered actor isolation without alternate bypass."
     },
     {
-        "acceptance_item":  "AC-H05 / AC-H06",
-        "id":  "ISSUE-HR10",
-        "evidence":  [
-                         "C:/Users/lsb/.workbuddy/ans-hubs-release-20261012/prepare.py",
-                         "docker/entrypoint.sh",
-                         "next.config.ts"
-                     ],
-        "severity":  "P1",
-        "requirement":  "REQ-H05 / REQ-H06 / RULE-H02",
-        "actual":  "Independently confirmed explicit source/prisma COPY and whitelist, exact generated client and LICENSE copies; packaging scripts compile in memory. Actual release migration/image status still pending.",
-        "suggestion":  "Explicitly COPY source/prisma to /app/prisma and allow it in Dockerfile.dockerignore; verify final image and deployed migration status.",
-        "status":  "CLOSED",
-        "expected":  "Runtime image carries the new Prisma schema and additive PROJECT migration as well as regenerated client."
+        "acceptance_item": "AC-H05 / AC-H06",
+        "id": "ISSUE-HR10",
+        "evidence": [
+            "C:/Users/lsb/.workbuddy/ans-hubs-release-20261012/prepare.py",
+            "docker/entrypoint.sh",
+            "next.config.ts"
+        ],
+        "severity": "P1",
+        "requirement": "REQ-H05 / REQ-H06 / RULE-H02",
+        "actual": "Independently confirmed explicit source/prisma COPY and whitelist, exact generated client and LICENSE copies; packaging scripts compile in memory. Actual release migration/image status still pending.",
+        "suggestion": "Explicitly COPY source/prisma to /app/prisma and allow it in Dockerfile.dockerignore; verify final image and deployed migration status.",
+        "status": "CLOSED",
+        "expected": "Runtime image carries the new Prisma schema and additive PROJECT migration as well as regenerated client."
     },
     {
-        "id":  "ISSUE-HR11",
-        "status":  "CLOSED",
-        "severity":  "P2",
-        "requirement":  "REQ-R04 / R9 paid agent confirmation",
-        "acceptance_item":  "AC-R05 / truthful fee confirmation",
-        "expected":  "The hidden-number chat interface still clearly states that the approved Agent conversation consumes points according to actual model usage and links to billing.",
-        "actual":  "Independently source-verified explicit actual-model-usage points sentence and billing link in quote UI; actual agent-turn-status regression passed at 18:26:48 while proving spend/balance numbers remain hidden.",
-        "suggestion":  "Add a concise metered-conversation sentence and billing link without introducing a numeric badge.",
-        "evidence":  [
-                         "src/components/mascot/agent-turn-status.tsx",
-                         "messages/companion/zh.json",
-                         "messages/companion/en.json"
-                     ]
+        "id": "ISSUE-HR11",
+        "status": "CLOSED",
+        "severity": "P2",
+        "requirement": "REQ-R04 / R9 paid agent confirmation",
+        "acceptance_item": "AC-R05 / truthful fee confirmation",
+        "expected": "The hidden-number chat interface still clearly states that the approved Agent conversation consumes points according to actual model usage and links to billing.",
+        "actual": "Independently source-verified explicit actual-model-usage points sentence and billing link in quote UI; actual agent-turn-status regression passed at 18:26:48 while proving spend/balance numbers remain hidden.",
+        "suggestion": "Add a concise metered-conversation sentence and billing link without introducing a numeric badge.",
+        "evidence": [
+            "src/components/mascot/agent-turn-status.tsx",
+            "messages/companion/zh.json",
+            "messages/companion/en.json"
+        ]
     },
     {
-        "id":  "ISSUE-HR12",
-        "status":  "CLOSED",
-        "severity":  "P2",
-        "requirement":  "REQ-R03 / REQ-R04",
-        "acceptance_item":  "AC-R04 / AC-R05",
-        "expected":  "Hub tests cover real registered workflow and exact published market binding, plus missing or invalid registration fallback, without side effects.",
-        "actual":  "Actual 18:26:48 six-file116/116 pass: registered Hub/market links and invalid fallback, platform execution gate and transaction source/owner/audit/listing changes before debit, preserved legacy project flow, registry/CLI and favorites. Previous Hub fixture failure fixed and retested.",
-        "suggestion":  "Update actual Hub service fixtures and add meaningful managed platform confirmation/project/scope/version/provenance regressions before freezing source.",
-        "evidence":  [
-                         "src/__tests__/components/hubs.test.tsx",
-                         "src/server/workflows/service.ts",
-                         "src/server/workflows/platform-recipes.ts"
-                     ]
+        "id": "ISSUE-HR12",
+        "status": "CLOSED",
+        "severity": "P2",
+        "requirement": "REQ-R03 / REQ-R04",
+        "acceptance_item": "AC-R04 / AC-R05",
+        "expected": "Hub tests cover real registered workflow and exact published market binding, plus missing or invalid registration fallback, without side effects.",
+        "actual": "Actual 18:26:48 six-file116/116 pass: registered Hub/market links and invalid fallback, platform execution gate and transaction source/owner/audit/listing changes before debit, preserved legacy project flow, registry/CLI and favorites. Previous Hub fixture failure fixed and retested.",
+        "suggestion": "Update actual Hub service fixtures and add meaningful managed platform confirmation/project/scope/version/provenance regressions before freezing source.",
+        "evidence": [
+            "src/__tests__/components/hubs.test.tsx",
+            "src/server/workflows/service.ts",
+            "src/server/workflows/platform-recipes.ts"
+        ]
     },
     {
         "id": "ISSUE-HR13",
-        "status": "OPEN",
+        "status": "CLOSED",
         "severity": "P1",
         "requirement": "REQ-R04 / REQ-R05",
         "acceptance_item": "AC-R03 / AC-R05",
         "expected": "Atomic official recipe registration completes under actual Session-pooler latency with a finite transaction budget and safely observable failure codes.",
-        "actual": "R2 registration failed before production switch with no registered workflow/listing. Its original detailed error was masked. Actual read-only equivalent13queries default5000ms reproduced P2028 at4883ms; identical maxWait15000/timeout30000 passed5500ms. Local minimum fix retains exact registration transaction with bounded budget and safe diagnostic code;81offline cases passed. Independent review and actual frozen production registration pending.",
+        "actual": "R2 registration failed before production switch with no registered workflow/listing. Its original detailed error was masked. Actual read-only equivalent13queries default5000ms reproduced P2028 at4883ms; identical maxWait15000/timeout30000 passed5500ms. Local minimum fix retains exact registration transaction with bounded budget and safe diagnostic code;81offline cases passed. R3 independent review and actual frozen production registration completed; see closure evidence.",
         "suggestion": "Re-review bounded transaction and diagnostic redaction, rebuild exact immutable release and verify authorized real registration/publication before switching production.",
         "evidence": [
             "src/server/workflows/platform-recipes.ts",
             "scripts/register-platform-resume-recipe.ts",
             "src/__tests__/lib/platform-recipes.test.ts",
             "/srv/ans-releases/ans-platform-recipe-r9-r2-20261012/readonly-timeout-comparison.json"
-        ]
+        ],
+        "closedBy": "/root/vibehub_followup_review",
+        "closureEvidence": [
+            "C:/Users/lsb/.workbuddy/ans-vibehub-followup-audit-20261012/r3-registration-deployment-review.json",
+            "C:/Users/lsb/.workbuddy/ans-platform-recipe-r9-r3-20261012/platform-product.json",
+            "C:/Users/lsb/.workbuddy/ans-platform-recipe-r9-r3-20261012/platform-product-check.json",
+            "C:/Users/lsb/.workbuddy/ans-platform-recipe-r9-r3-20261012/recipe-baseline.json",
+            "C:/Users/lsb/.workbuddy/ans-platform-recipe-r9-r3-20261012/deployment.json"
+        ],
+        "closure": "R3 exact 1c1d4db source registered on the actual Supabase pooler and published its real official listing before production switched. Baseline workflow/listing null became cmv57kxtg0001rs0hofcak7p2 / cmv57lacv0007rs0hca9i3dy2, definition and source hashes match the independently reviewed registry; actual readPlatformRecipe check validates owner authority, immutable version and seven audit metadata bindings. Owner XP remained 7. Exact a6694ac image is healthy with worker enabled. Reviewer independently rehashed 4885 Git blobs, delta archive and 20 safe artifacts. No real paid model, TTS or payment verified; R2 original masked error is not asserted as certain P2028."
     }
 ]

@@ -270,3 +270,21 @@ Concurrent production handling:1f5b224 was an ancestor of5aae. The first parent 
 Exact Linux generation, application types, six architecture boundaries,3files/11 relevant regressions, full lint and production build all exit0. Lint0errors/373 existing warnings;174 static pages. The intentionally disconnected build DB produced a prompts.csv warning while build exited0; it is not production API acceptance evidence. Independent reviewer vibehub_followup_review verifies this release only. AC-V04 authenticated favorites were not repeated in this batch; priorf417 favorite evidence cannot prove25580 behavior.
 
 Evidence: `C:/Users/lsb/.workbuddy/ans-cover-stability-20261012/` deployment.json, backup-verification.json, source-validation.json, source-manifest.json, browser-verification.json, vibeplan-verification.json, public-verification.json, final-live-state.json and actual screenshots. Independent review: `C:/Users/lsb/.workbuddy/ans-vibehub-followup-audit-20261012/`. Documentation commits do not change the deployed application revision. Membership remains an approved plan preview with purchases disabled: real activation, batch expiration/purpose isolation, entitlements, original-channel refunds, procurement cost and plan products are unfinished. Existing five LDXP recharge products remain. The other chat's real companion Agent candidate is excluded from this frozen release and is not deployed; its isolated UI evidence cannot substitute for real model/tool compatibility or billing verification.
+
+## 2026-10-12 20:10:43 北京时间：六导航、Hub、固定配方与 R9 正式上线
+
+用户明确授权本次提交 main 与部署。应用冻结 revision `1c1d4db1897dd738812963562a33d6f329bf56cb` 已推至 main，并从 `/srv/ans-releases/ans-platform-recipe-r9-r3-20261012` 正式发布。部署退出 0；实际 image `sha256:a6694acb1fe03e4b58071e7a261d0d72f2e401a237615fcce32c923ef3a773ea`，container `8b83b3ac26df1791ad73576e498ac5a7ea217dbe966ea0e78eb284c5827e39b9`，BUILD_ID `Y3jvHQM_xL96PNVZdEQQ5`，source SHA256 `1f4a07de61a11431036bad24098fabd93b583c7fab903770a806fc5c3ad2a358`。实际容器 healthy，数据库 connected，workerEnabled true；环境与挂载逐项保留。此后文档提交不代表应用已换版。
+
+发布包含六主导航、账号菜单收藏与算力中心、四个真实 Hub、旧公共提示词等界面退役、PROJECT 收藏支持，以及 R9 小恐龙 Agent 布局/模型选择/静音/可调整面板。完整保留当前父版知识区、44 张 GitGlow 封面、24 件 mascot 资产与三件许可文件，71 件静态文件 hash 通过。并行市场线程尚未整合的新项目/SDK候选不属于本 release。
+
+首个官方固定配方真实登记成功：officialId `ans-platform-resume-website-v1`，workflow `cmv57kxtg0001rs0hofcak7p2`，slug `ans-portfolio-website`，immutable version `cmv57kxth0003rs0hjo3cnap7`；市场卡 `cmv57lacv0007rs0hca9i3dy2`、slug `workflow-1d3ca6305418660ecacf4b3f-v1`，version1/PUBLISHED。平台严格注册来源、代码、版本和审计；实际 owner 权限有效。官方发布前后 XP 均7，不生成虚构账号或奖励。模型仅整理用户事实，固定代码产出个人网站；Hub、workflow详情、market均指向这套实际版本。
+
+R1、R2 都在生产切换前失败，证据保留。R1 `$queryRaw` 接收 PostgreSQL advisory lock 的 void 返回引发 P2010，改为 `$executeRaw` 并在真实只读事务确认。R2 原始详细错误被发布器遮蔽，不声称直接捕获其原始 Prisma code；独立13查询对照在默认5秒事务末步复现P2028，30秒上限成功。仅官方登记事务增加有限 maxWait15000/timeout30000，诊断只输出安全稳定错误码，R3 成功登记。独立审查依据 R3 实际登记、版本、来源、audit、XP及healthy关闭 ISSUE-HR13，不扩大为真实收费模型验收。
+
+精确 Linux：223文件、2932通过/10跳过/0失败，完整应用与测试类型、六边界、生产构建通过；lint0error/340存量warning。74项迁移、零待迁移、本轮零新增DDL。发布前 fresh public-schema 一致备份 SHA256 `411d57d98b86cd9e4c0a0d0c9c4acb984841bd2a9246785fb1e48ff6410222be` 在隔离 PostgreSQL17 恢复，118表计数/摘要/约束/索引/迁移一致；不覆盖 Supabase 平台 schema 或外部存储。candidate/production 各20页面完整HTTP200，公开HTTPS六入口及精确运行镜像再次通过。
+
+实际生产浏览器使用已有账号：桌面与390×844手机确认六导航、账号收藏/算力、四Hub、Hub→真实配方、市场同版本个人输入、空输入生成禁用、高级结构折叠和页面无横向溢出。R9 默认静音、三个实际模型选项、模型与发送同排，手机面板366×522宽度适配、全页一iframe。独立小恐龙聊天另确认桌面拖动后重开/刷新记忆与恢复默认，本聊天自身刷新曾出现ERR_HTTP2_PROTOCOL_ERROR，随后同浏览器新HTTPS tab恢复；失败不删除。临时手机viewport已恢复，交付页为 `/hubs`。
+
+未提交个人资料、运行工作流、发送模型/TTS、购买、兑换、制造订单、XP或收藏写入。真实付费生成和结算未执行；VibePlan仍禁售，完整会员生命周期、市场现金购买与卖家结算未完成。此发布完成本轮导航/Hub/固定配方供应与R9，整体长期目标仍active。
+
+安全证据与实际截图：`C:/Users/lsb/.workbuddy/ans-platform-recipe-r9-r3-20261012/`，包括 `local-safe-evidence-manifest.json`、`deployment.json`、`platform-product.json`、`platform-product-check.json`、`source-validation.json`、`backup-verification.json`、`build-verification-safe.json`、`public-runtime-verification.json`、`browser-verification.json` 及桌面/手机截图。独立审查在 `C:/Users/lsb/.workbuddy/ans-vibehub-followup-audit-20261012/`。私有env、原始ORM、备份dump与运行私有日志没有进入Git。

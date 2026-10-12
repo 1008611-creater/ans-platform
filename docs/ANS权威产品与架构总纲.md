@@ -604,3 +604,9 @@ Post-release evidence records a 60-to-60 no-op migration check, preservation che
 **来源**：ANS 的产品定位、品牌和信息架构可独立演进；保留的开源代码仍保留 MIT 来源和版权通知，原提示词数据 CC0 不能扩大到全部 ANS 用户作品。GitGlow 及其他第三方资产保留自己的许可文件。发布包和镜像必须携带对应通知。
 
 边界继续遵循：人民币 1 元 = 10 算力积分；充值沿用链动小铺；VibePlan 未完成真实权益与履约时维持禁售。本轮不能冒称全国高校已入驻、全部市场支付结算完成或自主 Agent 已交付。
+
+### 2026-10-12 本轮实际交付状态
+
+六主导航、账号菜单收藏/算力、四个Hub、旧公共界面退役，以及首个官方固定简历网站配方与市场运行入口已于北京时间20:10:43正式上线，应用revision `1c1d4db1897dd738812963562a33d6f329bf56cb`。真实入口：`/hubs`、`/workflows/ans-portfolio-website`、`/market/workflow-1d3ca6305418660ecacf4b3f-v1`。现有来源/代码/不可变版本登记、私密输入产物、普通成员审核、运行积分事务重验已落地，官方登记不发XP。R9新版小恐龙随同部署。
+
+生产health、精确源码/镜像、fresh118表隔离备份恢复、桌面与390手机导航和真实表单通过。无真实付费生成、订单、兑换或模型/TTS调用；VibePlan仍禁售。四Hub不表示全部分类已有可运行供应：本轮全栈开发有一套实际注册配方，CAUHub只真实农客松关联，其他开源参考与外部入口不冒充内置运行。并行市场新供应/SDK候选和完整会员、交易结算仍需独立后续交付。实际证据与发布详情见 `docs/agent-team/production-release.md` 本日R3记录；后续文档HEAD不替代上述runtime revision。
