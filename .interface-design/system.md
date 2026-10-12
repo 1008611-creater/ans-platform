@@ -5,7 +5,7 @@ Scope: `/vibe-hub` and its children. Existing ANS host tokens and components are
 ## Intent and domain
 
 Audience: ANS members moving from an idea or unfamiliar term toward their own project. Their next action is to clarify requirements, prepare real inputs and open an appropriate project/workflow.
-Domain: references, terminology, agent briefs, private project facts, editable artifacts, evidence and handoff. Color world: host paper/background, ink/foreground, secondary text, subtle page boundaries, indigo actions and the existing green ANS dinosaur. One focal point per screen: the home invitation, a directory heading, or the guide title.
+Domain: references, terminology, agent briefs, private project facts, editable artifacts, evidence and handoff. Color world: host paper/background, ink/foreground, secondary text, subtle page boundaries, indigo actions and the existing green ANS dinosaur. One focal point per screen: the selected term category or the active task step.
 Signature: a knowledge-to-work handoff. It appears in the GitGlow VibeHub content gallery, ANS practice rows, term-specific practice links, copyable briefs and real ANS destinations. Use editorial rows instead of a repetitive promo grid; real content counts instead of invented adoption numbers; a shared host theme instead of a second palette selector.
 
 ## Tokens and layout
@@ -14,7 +14,7 @@ Signature: a knowledge-to-work handoff. It appears in the GitGlow VibeHub conten
 - Shared `next-themes` state. Legacy VibeHub color selections are not a separate host theme.
 - Depth: quiet surface/border distinction. Project preview covers use a light physical-card shadow; no glowing accents. One brand accent for actions; teaching examples may illustrate other visual styles.
 - 4px spacing base: 8/12/16/20/24/32/40/48/64. Page width 1240px; wide gutter 24px, mobile 16px. Prose width 760px. No negative layout escapes.
-- Home split: 1.45:1 at desktop, single-column at 760px. Guide: 240px outline plus prose, stacked on mobile.
+- Root entry renders the term atlas directly. Guides use a 216px task navigation beside the active step; stack at 760px with compact task links.
 - Type: host sans family. Caption 11–12px, supporting 13–14px, prose 15–16px, section 23–30px, guide 30–46px, home 32–60px. Weight and space carry hierarchy. Balanced headings and readable line height.
 - Header: 44px controls; same-location return. Second row search. Desktop main entries plus Radix Sheet for complete navigation; mobile moves language choice into the Sheet. No hover-only critical action.
 - Buttons: existing Button primitive, 44px minimum height, 20px horizontal padding, pill form consistent with ANS calls to action. Primary and outline get explicit local variant styling because source CSS is unlayered.
@@ -50,7 +50,7 @@ Three bilingual original paths connect facts, actions, inspectable deliverables 
 
 ## Focused entry hierarchy
 
-The home leads with project selection and the brief editor, followed by the three content covers, four practical guides and two course/practice links. Keep one visible title per cover and factual compact counts. Full guide directories use one page heading. Guide pages lead with their deliverable, a short outline, concise step introductions, substantive lists and a copyable brief. The footer contains updates and same-position return; host destinations remain in the navigation menu. Keep device/account persistence, errors and permission information where it affects an action.
+The root opens the term atlas, with one search and visible category navigation. Practical guides merge task steps and substantive reference checklists in one page; the old introductory home is retired. Keep one visible title per cover and factual compact counts. Full guide directories use one page heading. Guide pages lead with their deliverable, a short outline, concise step introductions, substantive lists and a copyable brief. The footer contains updates and same-position return; host destinations remain in the navigation menu. Keep device/account persistence, errors and permission information where it affects an action.
 
 ## Task and learning flow refinement (2026-10-12)
 
@@ -60,3 +60,9 @@ Practice runs contain at most 8 questions. Any answer unlocks the guide; opening
 Mobile covers use a compact horizontal row with the next cover visible; existing cover art remains unchanged. Compact starter controls use 44px minimum height, 14px labels and 10px radius. Missing-field buttons use 36px minimum height, 12px labels and 8px radius.
 
 Quiz option order is rotated by a stable question/session seed, preserving the original correct flag and feedback. This spreads correct positions without creating server/client hydration differences or changing the source question.
+
+## Direct atlas and unified practical guides (2026-10-13)
+
+The root `/vibe-hub` is the canonical atlas entry. `/topics` forwards queries to it; category-specific routes stay valid. Main navigation is terms, practical guides, courses, practice and favorites. No homepage promotional detour. `/guides` owns task/topic/step in the URL, allowing deep links and browser back. Step-only changes use the native history integration with immediate feedback. Show one step at a time, concise action, substantive checklist, expected deliverable and resources. Completion is explicitly manual and device-local, reusing existing path keys and stage IDs. Three task guides and three quick references live in the same shell; the 18 retained learning topics use the same step presentation. Legacy guide/path routes redirect to their corresponding content; sitemap and contextual links point to canonical destinations. No additional UI runtime, generated artwork, external fonts, schema changes or automated test suite is needed.
+
+Component intent: newcomers lookup terms immediately; task users continue a concrete step. Hierarchy: category and examples for the atlas, active step for guides. Palette and surfaces: existing ANS host tokens, restrained primary action and quiet separators. Type: system sans, page 32px, task 28px, step 16px, prose 14px; mobile 26/23/15/14px. Spacing: 4px base, 24px controls, 56px desktop column gap, 16px mobile gutters. Motion: 160–180ms state transitions only, reduced-motion fallback.

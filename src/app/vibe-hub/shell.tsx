@@ -25,13 +25,12 @@ function Navigation() {
   const [, setSavedLanguage] = usePersistedSetting("vibehub:language", lang);
   const [menuOpen, setMenuOpen] = useState(false);
   const links = [
-    { label: "knowledgeHome", path: "" }, { label: "journeys", path: "/journeys" },
-    { label: "ansPractice", path: "/ans" }, { label: "terms", path: "/topics" },
-    { label: "courses", path: "/courses" }, { label: "saved", path: "/favorites" },
-    { label: "practice", path: "/practice" }, { label: "antiAi", path: "/anti-ai-flavor" },
+    { label: "terms", path: "" }, { label: "guides", path: "/guides" },
+    { label: "courses", path: "/courses" }, { label: "practice", path: "/practice" },
+    { label: "saved", path: "/favorites" }, { label: "antiAi", path: "/anti-ai-flavor" },
     { label: "skill", path: "/vibehub-skill" }, { label: "updates", path: "/updates" },
   ] as const;
-  const active = (path: string) => path ? pathname === `/vibe-hub${path}` || pathname.startsWith(`/vibe-hub${path}/`) : pathname === "/vibe-hub";
+  const active = (path: string) => path ? pathname === `/vibe-hub${path}` || pathname.startsWith(`/vibe-hub${path}/`) : (pathname === "/vibe-hub" || pathname.startsWith("/vibe-hub/topics"));
   function switchLanguage() {
     const nextLang = lang === "zh" ? "en" : "zh";
     setSavedLanguage(nextLang);
@@ -47,7 +46,7 @@ function Navigation() {
         <span>ANS <b>VibeHub</b></span>
       </Link>
       <nav className="vh-desktop-nav" aria-label={t("navigation")}>
-        {links.slice(0, 6).map(link => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={active(link.path) ? "page" : undefined}>{t(link.label)}</Link>)}
+        {links.slice(0, 5).map(link => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={active(link.path) ? "page" : undefined}>{t(link.label)}</Link>)}
       </nav>
       <div className="vh-header-actions">
         <Button variant="ghost" size="icon" className="ans-knowledge-action ans-language-action" onClick={switchLanguage} aria-label={t("switchLanguage")} title={t("switchLanguage")}><Languages size={18} aria-hidden="true" /><span>{lang === "zh" ? "EN" : "中"}</span></Button>
@@ -65,7 +64,7 @@ function Navigation() {
       </div>
     </div>
     <div className="ans-knowledge-subnav">
-      <form className="vh-global-search" action="/vibe-hub/topics" role="search" onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); const next = new URLSearchParams({ lang, q: String(form.get("q") || "").trim() }); router.push(`/vibe-hub/topics?${next}`); }}>
+      <form className="vh-global-search" action="/vibe-hub" role="search" onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); const next = new URLSearchParams({ lang, q: String(form.get("q") || "").trim() }); router.push(`/vibe-hub?${next}`); }}>
         <Search size={17} aria-hidden="true" /><input aria-label={t("search")} placeholder={t("knowledgeSearch")} name="q" maxLength={500} type="search" defaultValue={params.get("q") || ""} key={`${pathname}:${params.get("q") || ""}`} /><input type="hidden" name="lang" value={lang} /><button type="submit">{t("searchAction")}</button>
       </form>
       <Link href={`/vibe-hub/vibehub-skill?lang=${lang}`} className="ans-knowledge-subnav-note">{t("briefAction")} ↗</Link>

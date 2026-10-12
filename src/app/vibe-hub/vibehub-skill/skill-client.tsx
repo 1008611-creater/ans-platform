@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { guideHref, guideSelectionForPractice } from "@/domain/vibehub/guide-routing";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
@@ -37,7 +38,7 @@ export function SkillClient() {
     <div className="ans-brief-preview"><div><h3>{t("agentBriefPreview")}</h3><CopyTermButton text={brief} disabled={missing.length > 0} /></div>
       {missing.length > 0 ? <div className="ans-brief-missing"><span>{t("briefMissingFields")}</span>{missing.map(key => <button key={key} type="button" onClick={() => document.getElementById(`brief-${key}`)?.focus()}>{t(`agentField${key}`)}</button>)}</div> : <p className="ans-brief-ready" role="status">{t("briefReady")}</p>}
       {hasContent ? <pre>{brief}</pre> : <p className="ans-brief-empty">{t("briefEmptyPreview")}</p>}
-      <nav className="ans-brief-next" aria-label={t("related")}><Link className="ans-editorial-link" href={`/vibe-hub/ans/${scenario.guide}?lang=${lang}`}>{t("agentBriefGuide")}<ArrowUpRight size={16} aria-hidden="true" /></Link>{scenario.path && <Link className="ans-editorial-link" href={`/vibe-hub/journeys/${scenario.path}?lang=${lang}`}>{t("briefContinuePath")}<ArrowUpRight size={16} aria-hidden="true" /></Link>}</nav>
+      <nav className="ans-brief-next" aria-label={t("related")}><Link className="ans-editorial-link" href={guideHref(lang, guideSelectionForPractice(scenario.guide))}>{t("guideSeeSteps")}<ArrowUpRight size={16} aria-hidden="true" /></Link></nav>
     </div></section>
   </main>;
 }
