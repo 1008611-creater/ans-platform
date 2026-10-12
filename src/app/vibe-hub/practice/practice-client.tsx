@@ -48,7 +48,7 @@ export function PracticeClient({ lessons }: { lessons: PracticeLesson[] }) {
     else { setIndex(value => value + 1); setUnlocked(false); setPage(null); setLoadError(null); }
     focusQuestion();
   }
-  if (!lesson) return <main className="vh-page"><p>{t("unavailable")}</p><Link href={`/vibe-hub/topics?lang=${lang}`}>{t("practiceBrowse")}</Link></main>;
+  if (!lesson) return <main className="vh-page"><p>{t("unavailable")}</p><Link href={`/vibe-hub?lang=${lang}`}>{t("practiceBrowse")}</Link></main>;
   const missed = pool.filter(item => answers[item.id] === false);
   const attempted = Object.keys(answers).length; const correct = Object.values(answers).filter(Boolean).length;
   const currentPage = page?.key === contentKey ? page.data : null;
@@ -58,7 +58,7 @@ export function PracticeClient({ lessons }: { lessons: PracticeLesson[] }) {
       <section className="practice-answer-panel">
       {finished ? <section className="vh-quiz"><h2>{t("practiceFinish")}</h2><p>{attempted ? t("practiceScore", { correct, total: attempted }) : t("practiceNoAttempts")}</p>{attempted > 0 && attempted < pool.length && <p>{t("practiceSkipped", { count: pool.length - attempted })}</p>}
         {missed.length > 0 && <div className="ans-practice-mistakes"><h3>{t("practiceMistakes")}</h3><ul>{missed.map(item => <li key={item.id}><Link href={`/vibe-hub/${item.id}?lang=${lang}`}>{item.title} ↗</Link></li>)}</ul></div>}
-        <div className="ans-practice-result-actions">{missed.length > 0 && <button type="button" className="vh-primary" onClick={() => reset(scope, round, missed.map(item => item.id))}>{t("practiceReview")}</button>}<button type="button" className={missed.length ? "vh-text-button" : "vh-primary"} onClick={() => reset(scope, round + 1)}>{t(available.length > ROUND_SIZE ? "practiceAnother" : "retry")}</button><Link href={`/vibe-hub/topics?lang=${lang}`} className="vh-text-button">{t("practiceBrowse")}</Link></div>
+        <div className="ans-practice-result-actions">{missed.length > 0 && <button type="button" className="vh-primary" onClick={() => reset(scope, round, missed.map(item => item.id))}>{t("practiceReview")}</button>}<button type="button" className={missed.length ? "vh-text-button" : "vh-primary"} onClick={() => reset(scope, round + 1)}>{t(available.length > ROUND_SIZE ? "practiceAnother" : "retry")}</button><Link href={`/vibe-hub?lang=${lang}`} className="vh-text-button">{t("practiceBrowse")}</Link></div>
       </section> : <>
         {lesson.lessonPractice && <LessonQuiz key={`${scope}-${round}-${reviewIds?.join(",") || "round"}-${index}`} id={lesson.id} seed={`${lesson.id}:${round}:${reviewIds ? "review" : "round"}`} practice={lesson.lessonPractice} onAnswer={answer => setAnswers(current => ({ ...current, [lesson.id]: answer }))} onSelect={() => setUnlocked(true)} />}
         <div className="ans-practice-question-actions"><button type="button" className="vh-primary" disabled={!unlocked} onClick={next}>{t(index === pool.length - 1 ? "finish" : "nextQuestion")}</button>{!unlocked && <button type="button" className="vh-text-button" onClick={() => setUnlocked(true)}>{t("practiceReveal")}</button>}</div>

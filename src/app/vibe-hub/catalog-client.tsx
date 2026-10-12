@@ -20,7 +20,7 @@ export function Catalog({ data, initialTopic, initialQuery = "" }: { data: Catal
   const lang = useVibeLanguage(); const t = useTranslations("vibehub");
   const query = initialQuery.trim();
   const topic = data.topics.find(item => item.slug === initialTopic) || data.topics[0];
-  const searchHref = (area?: string, value = query) => `/vibe-hub/topics${area ? `/${area}` : ""}?${new URLSearchParams({ lang, ...(value ? { q: value } : {}) })}`;
+  const searchHref = (area?: string, value = query) => `/vibe-hub${area ? `/topics/${area}` : ""}?${new URLSearchParams({ lang, ...(value ? { q: value } : {}) })}`;
   const groups = useMemo(() => {
     const value = initialQuery.trim();
     if (!value) return topic[lang].groups;
@@ -45,9 +45,9 @@ export function Catalog({ data, initialTopic, initialQuery = "" }: { data: Catal
       {data.topics.map(item => <Link key={item.slug} className="catalog-filter-chip" aria-current={topic.slug === item.slug && (!query || initialTopic) ? "page" : undefined} href={searchHref(item.slug)}>{t(item.slug)}{!query && <span>{item[lang].groups.reduce((sum, group) => sum + group.slugs.length, 0)}</span>}</Link>)}
       <Link className="catalog-filter-chip" href={`/vibe-hub/favorites?lang=${lang}`}>{t("saved")}<span>{ids.length}</span></Link>
     </nav></div></section>
-    <aside className="catalog-sidebar"><nav className="cat-chips" aria-label={t("onThisPage")}>{!query && groups.map((group, index) => <button type="button" className="catalog-filter-chip" key={group.title} aria-pressed={activeGroup === index} aria-current={activeGroup === index ? "location" : undefined} onClick={() => { const target = document.getElementById(`group-${index}`); target?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }); target?.focus({ preventScroll: true }); }}>{group.title}</button>)}<Link className="catalog-filter-chip" href={`/vibe-hub/journeys?lang=${lang}`}>{t("journeys")} ↗</Link></nav></aside>
+    <aside className="catalog-sidebar"><nav className="cat-chips" aria-label={t("onThisPage")}>{!query && groups.map((group, index) => <button type="button" className="catalog-filter-chip" key={group.title} aria-pressed={activeGroup === index} aria-current={activeGroup === index ? "location" : undefined} onClick={() => { const target = document.getElementById(`group-${index}`); target?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }); target?.focus({ preventScroll: true }); }}>{group.title}</button>)}</nav></aside>
     <div className="grid-wrap">
-      <header className="catalog-heading"><h1>{query ? t("searchResults") : topic[lang].title}</h1>{query && <div className="ans-search-summary"><p role="status">{t("searchCount", { count, query })}</p><Link className="vh-text-button" href={searchHref(initialTopic, "")}>{t("reset")}</Link></div>}</header>
+      <header className="catalog-heading"><h1>{query ? t("searchResults") : t("terms")}</h1>{!query && <p className="ans-atlas-current">{t(topic.slug)}<span>{t("count", { count })}</span></p>}{query && <div className="ans-search-summary"><p role="status">{t("searchCount", { count, query })}</p><Link className="vh-text-button" href={searchHref(initialTopic, "")}>{t("reset")}</Link></div>}</header>
       {query && <AnsPracticeLinks query={query} />}
       {groups.filter(group => group.slugs.length > 0).map((group, index) => <section className="cat-section" id={`group-${index}`} tabIndex={-1} key={group.title}>
         {!query && <h2 className="cat-title">{group.title}<span>{t("count", { count: group.slugs.length })}</span></h2>}
