@@ -296,3 +296,28 @@ describe("durable model retries after verified non-execution", () => {
     expect(mocks.fetch).not.toHaveBeenCalled();
   });
 });
+
+
+describe("optional companion member budget cap", () => {
+  it("preserves full supplier cost while capping the member debit", async () => {
+    const body = { model: "deepseek-v4.1-flash", input: "hello", max_output_tokens: 900 };
+    const cap = validateCodexPayload(body).reserve;
+    mocks.charge.mockResolvedValue({ points: 2, requestId: "request123456", quota: 1000000 });
+    mocks.fetch.mockResolvedValue(new Response('{"output":[]}', { headers: { "x-oneapi-request-id": "request123456" } }));
+    const response = await meteredResponses(request(body), "u", undefined, { memberPointsCap: cap });
+    expect(response.status).toBe(200); expect(mocks.debit).toHaveBeenCalledTimes(1);
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ state: "SETTLED", settledPoints: cap, price: expect.objectContaining({ memberPointsCap: cap, verifiedUpstreamPoints: 2, platformCoveredPoints: 2 - cap }) }) }));
+  });
+  it("rejects an inadequate cap before any upstream call or debit", async () => {
+    const response = await meteredResponses(request({ model: "deepseek-v4.1-flash", input: "hello" }), "u", undefined, { memberPointsCap: 0.000001 });
+    expect(response.status).toBe(400); expect(mocks.fetch).not.toHaveBeenCalled(); expect(mocks.debit).not.toHaveBeenCalled();
+  });
+  it("keeps the same cap when an uncertain receipt is reconciled later", async () => {
+    const { reconcileCodexCharges } = await import("@/server/integrations/codex-gateway");
+    mocks.find.mockResolvedValue([{ id: "pending", outcome: "request123456", authorizedPoints: 0.01, price: { source: "APIC", memberPointsCap: 0.01 } }]);
+    mocks.charge.mockResolvedValue({ points: 2, requestId: "request123456", quota: 1000000 });
+    await reconcileCodexCharges("u");
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "pending", state: "UNCERTAIN" }, data: expect.objectContaining({ settledPoints: 0.01, price: expect.objectContaining({ verifiedUpstreamPoints: 2, platformCoveredPoints: 1.99 }) }) }));
+    expect(mocks.debit).not.toHaveBeenCalled();
+  });
+});

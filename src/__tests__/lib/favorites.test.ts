@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  platform: vi.fn(),
   catalog: { findPublishedCatalog: vi.fn(), listPublishedCatalog: vi.fn() },
   db: {
     prompt: { findFirst: vi.fn(), findMany: vi.fn() },
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("@/server/workflows/platform-recipes", () => ({ findPublishedPlatformRecipe: mocks.platform }));
 vi.mock("@/server/catalog/service", () => mocks.catalog);
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
@@ -34,6 +36,7 @@ const visiblePrompt = {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.platform.mockResolvedValue(null);
   mocks.catalog.findPublishedCatalog.mockResolvedValue(null);
   mocks.catalog.listPublishedCatalog.mockResolvedValue([]);
   mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
@@ -195,5 +198,21 @@ describe("isFavorited", () => {
 
     mocks.db.contentFavorite.findUnique.mockResolvedValue(null);
     expect(await isFavorited("user1", "PROMPT", "p1")).toBe(false);
+  });
+});
+
+describe("registered platform favorites", () => {
+  it("only accepts a registered exact workflow id, never a guessed slug", async () => {
+    mocks.platform.mockResolvedValue({ workflow: { id: "registered-id", slug: "ans-portfolio-website", title: "Real recipe", summary: "Fixed code", estimatedCost: 2, author: { id: "user1", nickname: "Owner" } } });
+    await expect(addFavorite("user1", "WORKFLOW", "registered-id")).resolves.toEqual({ favorited: true, created: true });
+    mocks.db.contentFavorite.createMany.mockClear();
+    await expect(addFavorite("user1", "WORKFLOW", "ans-portfolio-website")).rejects.toMatchObject({ code: "TARGET_UNAVAILABLE" });
+    expect(mocks.db.contentFavorite.createMany).not.toHaveBeenCalled();
+  });
+  it("hides a platform favorite when registration is no longer valid", async () => {
+    mocks.db.contentFavorite.findMany.mockResolvedValue([{ targetType: "WORKFLOW", targetId: "registered-id", createdAt: new Date() }]);
+    mocks.platform.mockResolvedValue(null);
+    await expect(listFavorites("user1")).resolves.toEqual([]);
+    expect(mocks.platform).toHaveBeenCalledExactlyOnceWith();
   });
 });

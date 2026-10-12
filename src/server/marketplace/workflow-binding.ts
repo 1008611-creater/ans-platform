@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { db } from "@/lib/db";
+import { readPlatformRecipe } from "@/server/workflows/platform-recipes";
 import type { DbTransaction } from "@/lib/db";
 import type { MarketWorkflowBinding } from "@/contracts/market-workflow";
 import { workflowDefinitionSchema } from "@/contracts/workflow";
@@ -13,7 +14,11 @@ export async function readReviewedWorkflow(tx: DbTransaction, workflowId: string
   await requireMarketActor(tx, sellerId);
   const workflow = await tx.workflow.findFirst({ where: { id: workflowId, authorId: sellerId, status: "PUBLISHED", isOfficial: false, publishedVersion: { not: null } }, include: { versions: { orderBy: { version: "asc" } } } });
   const version = workflow?.versions.find(row => row.version === workflow.publishedVersion);
-  if (!workflow || !version) throw new MarketRuleError("WORKFLOW_NOT_AVAILABLE", 409);
+  if (!workflow || !version) {
+    const platform = await readPlatformRecipe(tx, workflowId, sellerId);
+    if (platform) return platform;
+    throw new MarketRuleError("WORKFLOW_NOT_AVAILABLE", 409);
+  }
   const approvals = await tx.auditLog.findMany({ where: { resourceType: "workflow", resourceId: workflow.id, action: "WORKFLOW_APPROVED", createdAt: { gte: version.createdAt } }, orderBy: { createdAt: "desc" }, take: 100, select: { createdAt: true, after: true } });
   const reviewed = approvals.some(approval => {
     const after = approval.after;

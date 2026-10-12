@@ -75,5 +75,35 @@
         "suggestion":  "Explicitly COPY source/prisma to /app/prisma and allow it in Dockerfile.dockerignore; verify final image and deployed migration status.",
         "status":  "CLOSED",
         "expected":  "Runtime image carries the new Prisma schema and additive PROJECT migration as well as regenerated client."
+    },
+    {
+        "id":  "ISSUE-HR11",
+        "status":  "CLOSED",
+        "severity":  "P2",
+        "requirement":  "REQ-R04 / R9 paid agent confirmation",
+        "acceptance_item":  "AC-R05 / truthful fee confirmation",
+        "expected":  "The hidden-number chat interface still clearly states that the approved Agent conversation consumes points according to actual model usage and links to billing.",
+        "actual":  "Independently source-verified explicit actual-model-usage points sentence and billing link in quote UI; actual agent-turn-status regression passed at 18:26:48 while proving spend/balance numbers remain hidden.",
+        "suggestion":  "Add a concise metered-conversation sentence and billing link without introducing a numeric badge.",
+        "evidence":  [
+                         "src/components/mascot/agent-turn-status.tsx",
+                         "messages/companion/zh.json",
+                         "messages/companion/en.json"
+                     ]
+    },
+    {
+        "id":  "ISSUE-HR12",
+        "status":  "CLOSED",
+        "severity":  "P2",
+        "requirement":  "REQ-R03 / REQ-R04",
+        "acceptance_item":  "AC-R04 / AC-R05",
+        "expected":  "Hub tests cover real registered workflow and exact published market binding, plus missing or invalid registration fallback, without side effects.",
+        "actual":  "Actual 18:26:48 six-file116/116 pass: registered Hub/market links and invalid fallback, platform execution gate and transaction source/owner/audit/listing changes before debit, preserved legacy project flow, registry/CLI and favorites. Previous Hub fixture failure fixed and retested.",
+        "suggestion":  "Update actual Hub service fixtures and add meaningful managed platform confirmation/project/scope/version/provenance regressions before freezing source.",
+        "evidence":  [
+                         "src/__tests__/components/hubs.test.tsx",
+                         "src/server/workflows/service.ts",
+                         "src/server/workflows/platform-recipes.ts"
+                     ]
     }
 ]

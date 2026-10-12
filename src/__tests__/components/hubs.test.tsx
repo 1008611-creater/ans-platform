@@ -5,12 +5,15 @@ import HubDetailPage from "@/app/hubs/[slug]/page";
 import { HUBS, getHub } from "@/domain/hubs/registry";
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 
-const mocks = vi.hoisted(() => ({ list: vi.fn() }));
+const mocks = vi.hoisted(() => ({ list: vi.fn(), platform: vi.fn(), market: vi.fn() }));
+vi.mock("@/server/workflows/platform-recipes", () => ({ findPublishedPlatformRecipe: mocks.platform }));
+vi.mock("@/server/marketplace/workflows", () => ({ publishedRecipeMarketPath: mocks.market }));
+vi.mock("@/server/integrations/metered-cost", () => ({ unifiedModelBilling: () => process.env.ANS_UNIFIED_POINTS_ENABLED === "1" }));
 vi.mock("@/server/catalog/service", () => ({ listPublishedCatalog: mocks.list }));
 vi.mock("next/image", () => ({ default: ({ alt }: { alt: string }) => <span data-testid="real-project-cover">{alt}</span> }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "zh", getTranslations: async () => (key: string, values?: Record<string, string | number>) => values ? `${key}:${Object.values(values).join(",")}` : key }));
-beforeEach(() => { mocks.list.mockReset(); mocks.list.mockResolvedValue(CATALOG_PROJECTS); });
+beforeEach(() => { vi.unstubAllEnvs(); mocks.platform.mockReset(); mocks.platform.mockResolvedValue(null); mocks.market.mockReset(); mocks.market.mockResolvedValue(null); mocks.list.mockReset(); mocks.list.mockResolvedValue(CATALOG_PROJECTS); });
 afterEach(cleanup);
 
 it("keeps unknown project counts unknown while showing real Hub links", async () => {
@@ -50,4 +53,26 @@ it("renders exact published-project counts without adding a withdrawn reference"
 it("rejects an invented university route", async () => {
   await expect(HubDetailPage({ params: Promise.resolve({ slug: "made-up-university" }) })).rejects.toThrow("NOT_FOUND");
   expect(mocks.list).not.toHaveBeenCalled();
+});
+
+it("links the registered platform recipe and its published market version without enqueueing", async () => {
+  mocks.platform.mockResolvedValue({ workflow: { id: "real-recipe-id", authorId: "real-owner", slug: "ans-portfolio-website" }, version: { id: "immutable-version", version: 1 }, recipe: { catalogRecipeId: "resume-website", definitionHash: "verified-hash" } });
+  mocks.market.mockResolvedValue("/market/real-published-card");
+  vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1");
+  render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
+  expect(screen.getByRole("link", { name: "openWorkflow" })).toHaveAttribute("href", "/workflows/ans-portfolio-website");
+  expect(screen.getByRole("link", { name: "viewMarketCard" })).toHaveAttribute("href", "/market/real-published-card");
+  expect(screen.getByText("recipeMeteredCost:2")).toBeVisible();
+  expect(mocks.market).toHaveBeenCalledWith(expect.objectContaining({ id: "real-recipe-id" }), { id: "immutable-version", version: 1 }, "verified-hash");
+  expect(screen.queryByRole("button", { name: /run|generate/ })).toBeNull();
+});
+it("does not claim a withdrawn market card exists or add a generic recipe to CAU", async () => {
+  mocks.platform.mockResolvedValue({ workflow: { id: "real-recipe-id", authorId: "real-owner", slug: "ans-portfolio-website" }, version: { id: "immutable-version", version: 1 }, recipe: { catalogRecipeId: "resume-website", definitionHash: "verified-hash" } });
+  render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
+  expect(screen.getByRole("link", { name: "openWorkflow" })).toBeVisible();
+  expect(screen.queryByRole("link", { name: "viewMarketCard" })).toBeNull();
+  cleanup(); mocks.platform.mockClear();
+  render(await HubDetailPage({ params: Promise.resolve({ slug: "cauhub" }) }));
+  expect(mocks.platform).not.toHaveBeenCalled();
+  expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
 });

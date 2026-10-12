@@ -42,7 +42,7 @@ export async function uploadWorkflowToMarket(slug: string, actorId: string, raw:
     execution: { workflowId: workflow.id, versionId: version.id, version: version.version, definitionHash: workflowDefinitionHash(definition) },
   };
   try {
-    const created = await createMarketListing(actorId, listing);
+    const created = await createMarketListing(actorId, listing, { official: workflow.isOfficial });
     await submitMarketListing(created.id, actorId, 1);
     return { id: created.id, slug: created.slug, status: "PENDING" };
   } catch (error) {
@@ -130,4 +130,15 @@ export async function listReviewedRecipeRuns(slug: string, actorId: string) {
   if (!source) throw new MarketRuleError("NOT_FOUND", 404);
   const runs = await db.workflowRun.findMany({ where: { userId: actorId, idempotencyKey: { startsWith: `reviewed/${source.id}/` } }, orderBy: { createdAt: "desc" }, take: 12, select: { id: true, status: true, costPoints: true, error: true, output: true, createdAt: true, version: { select: { version: true } } } });
   return { runs: runs.map(run => ({ id: run.id, status: run.status, costPoints: run.costPoints, error: run.error ? "EXECUTION_FAILED" : null, output: run.status === "SUCCEEDED" ? run.output : null, createdAt: run.createdAt.toISOString(), workflowVersion: run.version.version })) };
+}
+
+/** Discover only the real, published market card bound to this exact platform version. */
+export async function publishedRecipeMarketPath(workflow: { id: string; authorId: string }, version: { id: string; version: number }, definitionHash: string) {
+  const slug = `workflow-${marketHash(workflow.id).slice(0, 24)}-v${version.version}`;
+  const listing = await db.marketListing.findFirst({ where: { slug, sellerId: workflow.authorId, status: "PUBLISHED", seller: { deletedAt: null, flagged: false } }, include: { versions: true } });
+  const published = listing?.versions.find(v => v.version === listing.publishedVersion);
+  const parsed = marketListingInputSchema.safeParse(published?.payload);
+  const binding = parsed.success ? parsed.data.execution : null;
+  if (!published?.reviewedAt || !binding || binding.workflowId !== workflow.id || binding.versionId !== version.id || binding.version !== version.version || binding.definitionHash !== definitionHash) return null;
+  return `/market/${slug}`;
 }

@@ -100,7 +100,7 @@ export async function reviewMarketListing(listingId: string, reviewerId: string,
     await tx.auditLog.create({ data: { actorId: reviewerId, action: approve ? "MARKET_LISTING_PUBLISHED" : "MARKET_LISTING_REJECTED", resourceType: "market_listing", resourceId: listingId, metadata: { version: versionNumber } } });
     return updated;
   }).then(async (updated) => {
-    if (approve) await safeAwardGrowthEvent({ userId: updated.sellerId, type: "PUBLISH_TEMPLATE", reason: "PUBLISH_TEMPLATE", sourceType: "market_listing", sourceId: updated.id });
+    if (approve && !updated.official) await safeAwardGrowthEvent({ userId: updated.sellerId, type: "PUBLISH_TEMPLATE", reason: "PUBLISH_TEMPLATE", sourceType: "market_listing", sourceId: updated.id });
     return updated;
   });
 }

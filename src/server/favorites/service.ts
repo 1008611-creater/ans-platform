@@ -4,6 +4,7 @@ import { catalogText } from "@/domain/catalog/content";
 import productZh from "@/../messages/product/zh.json";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { db } from "@/lib/db";
+import { findPublishedPlatformRecipe } from "@/server/workflows/platform-recipes";
 import vibeTerms from "@/data/vibehub/terms.json";
 import {
   FAVORITE_TARGET_TYPES,
@@ -102,7 +103,7 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
     };
   }
 
-  const workflow = await db.workflow.findFirst({
+  let workflow = await db.workflow.findFirst({
     where: { id: targetId, status: "PUBLISHED", publishedVersion: { not: null }, isOfficial: false, author: { deletedAt: null, flagged: false } },
     select: {
       id: true,
@@ -113,6 +114,10 @@ async function assertTargetVisible(targetType: FavoriteTargetType, targetId: str
       author: { select: { id: true, nickname: true } },
     },
   });
+  if (!workflow) {
+    const platform = await findPublishedPlatformRecipe(targetId);
+    if (platform?.workflow.id === targetId) workflow = platform.workflow;
+  }
   if (!workflow) throw new FavoriteServiceError("工作流不存在或尚未发布。", "TARGET_UNAVAILABLE", 404);
   return {
     title: workflow.title,
@@ -207,6 +212,11 @@ export async function listFavorites(userId: string, take = 100, targetType?: Fav
       select: { id: true, slug: true, title: true, summary: true, estimatedCost: true, author: { select: { nickname: true } } },
     }),
   ]);
+  const wantedPlatform = rows.some(row => row.targetType === "WORKFLOW" && !workflows.some(w => w.id === row.targetId));
+  if (wantedPlatform) {
+    const platform = await findPublishedPlatformRecipe();
+    if (platform && rows.some(row => row.targetType === "WORKFLOW" && row.targetId === platform.workflow.id)) workflows.push(platform.workflow);
+  }
   const projectBySlug = new Map(projects.map(project => [project.slug, project]));
   const workflowById = new Map(workflows.map(workflow => [workflow.id, workflow]));
   const translate = (key: string): string => {

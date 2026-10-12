@@ -5,6 +5,9 @@ import { unifiedModelBilling } from "@/server/integrations/metered-cost";
 import type { DbTransaction } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { marketListingInputSchema } from "@/contracts/marketplace";
+import { getPlatformRecipe } from "@/domain/workflows/platform-recipes";
+import { findPublishedPlatformRecipe, readPlatformRecipe } from "./platform-recipes";
 import {
   workflowCreateInputSchema,
   workflowDefinitionSchema,
@@ -166,7 +169,7 @@ export async function createWorkflow(authorId: string, rawInput: unknown) {
     throw new WorkflowServiceError("工作流信息不完整或格式不正确。", "INVALID_INPUT");
   }
   const input = parsed.data;
-  if (input.slug.startsWith("ans-official-")) {
+  if (input.slug.startsWith("ans-official-") || getPlatformRecipe(input.slug)) {
     throw new WorkflowServiceError("该工作流标识由平台官方工作流保留。", "RESERVED_SLUG", 409);
   }
   const definition = assertDefinition(input.definition);
@@ -290,7 +293,7 @@ export async function createWorkflowVersion(slug: string, actorId: string, rawIn
 
 export async function listPublishedWorkflows(options: { query?: string; take?: number } = {}) {
   const query = options.query?.trim();
-  return db.workflow.findMany({
+  const rows = await db.workflow.findMany({
     where: {
       status: "PUBLISHED",
       publishedVersion: { not: null },
@@ -322,14 +325,21 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
       author: { select: authorSelect },
     },
   });
+  const platform = await findPublishedPlatformRecipe();
+  if (!platform || query && !`${platform.workflow.title} ${platform.workflow.summary ?? ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())) return rows;
+  const { id, slug, title, summary, status, publishedVersion, useCount, estimatedCost, isOfficial, createdAt, updatedAt, author } = platform.workflow;
+  return [{ id, slug, title, summary, status, publishedVersion, useCount, estimatedCost, isOfficial, createdAt, updatedAt, author }, ...rows].slice(0, Math.min(Math.max(options.take ?? 24, 1), 60));
 }
-export function listOwnWorkflows(authorId: string) {
-  return db.workflow.findMany({
+export async function listOwnWorkflows(authorId: string) {
+  const rows = await db.workflow.findMany({
     where: { authorId, isOfficial: false },
     orderBy: { updatedAt: "desc" },
     take: 100,
     include: { versions: { orderBy: { version: "desc" }, select: { version: true, createdAt: true } } },
   });
+  const platform = await findPublishedPlatformRecipe();
+  if (!platform || platform.workflow.authorId !== authorId) return rows;
+  return [{ ...platform.workflow, versions: [{ version: platform.version.version, createdAt: platform.version.createdAt }] }, ...rows];
 }
 
 export function listWorkflowQueue() {
@@ -346,6 +356,12 @@ export function listWorkflowQueue() {
 
 /** 公开详情：只有已发布且存在发布版本的工作流可见。 */
 export async function getPublishedWorkflow(slug: string) {
+  if (getPlatformRecipe(slug)) {
+    const platform = await findPublishedPlatformRecipe(slug);
+    if (!platform) return null;
+    const { workflow, version } = platform;
+    return { ...workflow, versions: [{ version: version.version }], publishedDefinition: platform.definition };
+  }
   const workflow = await db.workflow.findFirst({
     where: { slug, status: "PUBLISHED", publishedVersion: { not: null }, isOfficial: false },
     select: {
@@ -397,7 +413,7 @@ export async function getWorkflowForEditor(slug: string, actorId: string) {
     },
   });
   if (!workflow) throw new WorkflowServiceError("工作流不存在。", "NOT_FOUND", 404);
-  if (workflow.isOfficial) throw new WorkflowServiceError("官方工作流由平台管理。", "OFFICIAL_WORKFLOW_LOCKED", 403);
+  if (workflow.isOfficial && !await readPlatformRecipe(db, workflow.id)) throw new WorkflowServiceError("官方工作流由平台管理。", "OFFICIAL_WORKFLOW_LOCKED", 403);
   const actor = await requireActor(actorId);
   if (workflow.authorId !== actorId && actor.role !== "ADMIN") {
     throw new WorkflowServiceError("没有查看该工作流的权限。", "FORBIDDEN", 403);
@@ -673,8 +689,18 @@ export async function createWorkflowRun(
   if (!workflow || workflow.publishedVersion === null) {
     throw new WorkflowServiceError("工作流不存在或尚未发布。", "NOT_FOUND", 404);
   }
-  if (workflow.isOfficial && !options.projectId) {
-    throw new WorkflowServiceError("官方项目工作流必须从所属项目启动。", "PROJECT_LINK_REQUIRED", 403);
+  if (getPlatformRecipe(slug) && options.projectId) throw new WorkflowServiceError("平台配方请从 Hub 或市场确认运行。", "PROJECT_LINK_NOT_SUPPORTED", 403);
+  const platformRun = workflow.isOfficial && !options.projectId;
+  if (platformRun) {
+    if (!options.expectedInput || !options.confirmedSource || !options.expectedVersionId || !options.beforeCreate
+      || !options.idempotencyScope || !/^(market|reviewed)\/[a-zA-Z0-9_-]+\/[1-9][0-9]*$/.test(options.idempotencyScope)) {
+      throw new WorkflowServiceError("官方项目工作流必须从所属项目启动。", "PROJECT_LINK_REQUIRED", 403);
+    }
+    const managed = await readPlatformRecipe(db, workflow.id);
+    const scope = options.idempotencyScope.split("/");
+    if (options.confirmedSource === "reviewed_workflow" && options.idempotencyScope !== `reviewed/${workflow.id}/${managed?.version.version}`
+      || options.confirmedSource === "market" && scope[0] !== "market") throw new WorkflowServiceError("运行来源不一致。", "INVALID_RUN_SOURCE", 403);
+    if (!managed || managed.version.id !== options.expectedVersionId) throw new WorkflowServiceError("Platform recipe is unavailable.", "PROJECT_LINK_REQUIRED", 403);
   }
   if (options.projectId && !workflow.isOfficial) {
     throw new WorkflowServiceError("项目只能运行平台注册的官方工作流。", "OFFICIAL_WORKFLOW_REQUIRED", 403);
@@ -711,6 +737,19 @@ export async function createWorkflowRun(
   try {
     return await db.$transaction(async (tx) => {
       await options.beforeCreate?.(tx);
+      if (platformRun) {
+        await tx.$queryRaw`SELECT id FROM workflows WHERE id = ${workflow.id} FOR UPDATE`;
+        const current = await readPlatformRecipe(tx, workflow.id);
+        if (!current || current.version.id !== options.expectedVersionId) throw new WorkflowServiceError("Platform recipe changed.", "VERSION_CONFLICT", 409);
+        if (options.confirmedSource === "market") {
+          const [, listingId, listingVersion] = options.idempotencyScope!.split("/");
+          const listing = await tx.marketListing.findFirst({ where: { id: listingId, sellerId: current.workflow.authorId, status: "PUBLISHED", publishedVersion: Number(listingVersion), seller: { deletedAt: null, flagged: false } }, include: { versions: true } });
+          const published = listing?.versions.find(v => v.version === listing.publishedVersion);
+          const payload = marketListingInputSchema.safeParse(published?.payload);
+          const binding = payload.success ? payload.data.execution : null;
+          if (!published?.reviewedAt || !binding || binding.workflowId !== workflow.id || binding.versionId !== current.version.id || binding.version !== current.version.version || binding.definitionHash !== current.recipe.definitionHash) throw new WorkflowServiceError("市场版本不一致。", "VERSION_CONFLICT", 409);
+        }
+      }
       const run = await tx.workflowRun.create({
         data: {
           workflowId: workflow.id,

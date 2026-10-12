@@ -8,7 +8,7 @@
   "appliedInstantlyAndSavedInThisBrowser": "即时生效，记在当前浏览器里。",
   "dinoCompanion": "小恐龙陪伴",
   "spokenReplies": "语音回复",
-  "offByDefaultDinoCanReadReplies": "默认静音。开启后，小恐龙会读出回复。",
+  "offByDefaultDinoCanReadReplies": "默认静音。开启后，向导读出回复，Agent 给出简短语音提示。",
   "voiceVolume": "语音音量",
   "suggestedNextSteps": "推荐下一步",
   "usefulShortcutsForYourCurrentPage": "根据所在页面，给你几个顺手的入口。",
@@ -72,5 +72,112 @@
   "reply6": "发现项目里可以按方向筛选。找到合适的项目后，先定一个能完成的小目标。",
   "reply7": "先给想法一个具体目标。不用一次做完，项目页面可以帮你把第一步记下来。",
   "reply8": "嗨，我在！想做项目、创作内容，还是先找点灵感？告诉我方向，我帮你找到入口。",
-  "reply9": "我可以帮你找 ANS 里的功能入口。试着告诉我：想做视频、开始项目、查积分，或准备比赛。"
+  "reply9": "我可以帮你找 ANS 里的功能入口。试着告诉我：想做视频、开始项目、查积分，或准备比赛。",
+  "agentGreeting": "嗨，我在。想做什么，或者卡在哪一步？\n我可以查站内项目、找合适的工作流，再一起理清下一步。",
+  "agentSpokenReady": "建议已经整理好了，看看聊天框，我们从下一步开始。",
+  "newConversation": "开始新对话",
+  "conversationMode": "对话模式",
+  "agentMode": "Agent",
+  "guideMode": "快捷向导",
+  "agentModeHint": "查资料 · 理思路",
+  "guideModeHint": "免费找入口",
+  "agentSignIn": "登录，让我帮你查项目和理清计划",
+  "agentMetered": "选择模型开始对话",
+  "agentTurn": "本轮对话",
+  "agentStop": "停止后续处理",
+  "agentSources": "查询记录 · {count} 次",
+  "agentReadDone": "已读取",
+  "agentReadFailed": "未能读取",
+  "agentQuoteTitle": "开始这轮对话",
+  "agentPrivateConsent": "允许读取我的项目、任务与余额摘要",
+  "agentPrivacy": "问题、最近对话、页面位置及获准摘要会发送给模型。文件正文、项目事实和未保存输入不读取。",
+  "agentConfirm": "继续对话",
+  "agentCancel": "取消",
+  "agentTopUp": "去积分中心充值",
+  "agentStopped": "已停止后续处理。已提交的模型请求仍会完成计费核对，可以查询实际记录。",
+  "agentBillingDetails": "查看账单",
+  "agentCheckReceipt": "更新用量记录（不会重新调用模型）",
+  "agentPhase": {
+    "quoting": "读取费用与可用状态…",
+    "thinking": "理解你的目标…",
+    "reading": "查询站内资料…",
+    "answering": "把查到的资料整理成建议…"
+  },
+  "agentTool": {
+    "search_projects": "查询真实项目",
+    "search_workflows": "查询已发布工作流",
+    "my_projects": "读取我的项目摘要",
+    "my_tasks": "读取我的工作流任务状态",
+    "credits": "核对积分规则与余额",
+    "generic": "查询站内资料",
+    "site_help": "查找合适的站内入口"
+  },
+  "agentError": {
+    "signIn": "登录后才能开始 Agent 对话。快捷向导可以直接使用。",
+    "accountChanged": "账号状态已变化，请刷新后重新开始对话。",
+    "quoteExpired": "这份费用确认已失效。重新发送问题，获取当前费用。",
+    "balance": "积分不足。先核对余额，再决定是否充值。",
+    "rateLimit": "当前请求较多，稍后再继续。没有自动重试。",
+    "limit": "本轮已达到处理上限，停止继续调用。已产生的用量以账单为准。",
+    "alreadyStarted": "本轮请求已经提交，没有再次发送。请更新用量记录后再判断下一步。",
+    "pending": "结果或费用仍待核对，暂时不能确认成功或退款。请更新用量记录。",
+    "interrupted": "连接中断，没有自动重发。请核对用量记录，避免重复执行。",
+    "incomplete": "回复未完整返回。已停止继续调用，本轮实际用量可在账单查看。",
+    "unavailable": "这次没能取得回复。没有自动重试；如有已提交请求，请先核对用量记录。"
+  },
+  "agentRoutes": {
+    "aigc": {
+      "title": "AIGC 创作工作台",
+      "detail": "查看图片、视频与音频创作入口"
+    },
+    "video": {
+      "title": "视频工作流",
+      "detail": "准备自己的剧本和素材"
+    },
+    "learning": {
+      "title": "VibeHub",
+      "detail": "查技术概念，边做边学"
+    },
+    "competition": {
+      "title": "比赛信息",
+      "detail": "核对赛事规则与参与条件"
+    },
+    "team": {
+      "title": "我的团队",
+      "detail": "查看已有团队与协作入口"
+    },
+    "workspace": {
+      "title": "我的工作台",
+      "detail": "继续自己的任务与项目"
+    },
+    "discover": {
+      "title": "发现项目",
+      "detail": "找真实项目和开源方法"
+    },
+    "hub": {
+      "title": "Hub 与工作流",
+      "detail": "按学校或方向查找项目与成熟工作流"
+    },
+    "community": {
+      "title": "社区成长",
+      "detail": "看作品交流与真实成长记录"
+    },
+    "market": {
+      "title": "ANS 市场",
+      "detail": "查看真实上架项目与工作流"
+    }
+  },
+  "agentTasksTitle": "查看工作流任务",
+  "agentTasksDetail": "核对状态、结果与失败记录",
+  "agentModelLabel": "对话模型",
+  "agentModelRateNote": "倍率基于各模型原价。实际费用还取决于输入、输出长度及缓存命中。",
+  "agentQuoteModel": "{model} · {multiplier}× 消耗倍率",
+  "enableDinoVoice": "开启小恐龙语音",
+  "disableDinoVoice": "关闭小恐龙语音",
+  "resetChatSize": "恢复默认聊天框大小",
+  "resizeChatWidth": "调整聊天框宽度",
+  "resizeChatHeight": "调整聊天框高度",
+  "resizeChat": "调整聊天框大小",
+  "resizeChatHint": "拖动调整大小；方向键微调，双击恢复默认",
+  "agentBillingNotice": "对话按所选模型用量计费，详情见账单。"
 }

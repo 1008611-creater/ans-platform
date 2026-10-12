@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+import { unifiedModelBilling } from "@/server/integrations/metered-cost";
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { WorkflowMarketUpload } from "@/components/workflows/workflow-market-upload";
 import { isWorkflowMarketAvailable } from "@/server/marketplace/workflow-binding";
@@ -65,6 +67,7 @@ export default async function EditWorkflowPage({
     throw error;
   }
 
+  const w = await getTranslations("marketWorkflow");
   const latest = workflow.versions[0] ?? null;
   const isOwner = workflow.authorId === session.user.id;
   const marketAvailable = isOwner && workflow.status === "PUBLISHED" ? await isWorkflowMarketAvailable(workflow.id, session.user.id) : false;
@@ -85,7 +88,7 @@ export default async function EditWorkflowPage({
         </div>
         <p className="text-sm text-muted-foreground">
           标识 <span className="font-mono">{workflow.slug}</span> · 当前最新版本 v
-          {latest?.version ?? 0} · {Math.max(1, workflow.estimatedCost)} 点/次
+          {latest?.version ?? 0} · {unifiedModelBilling() ? w("computeOnRun") : w("fixedCost", { points: Math.max(1, workflow.estimatedCost) })}
         </p>
         <div className="flex flex-wrap gap-2">
           <Link href={`/workflows/${workflow.slug}`} className="text-sm text-primary underline">
@@ -104,11 +107,11 @@ export default async function EditWorkflowPage({
           <CardTitle className="text-base">审核状态</CardTitle>
         </CardHeader>
         <CardContent>
-          <WorkflowReviewStatus
+          {workflow.isOfficial ? <p className="text-sm text-muted-foreground">{w("platformMaintained")}</p> : <WorkflowReviewStatus
             status={workflow.status}
             reviewScore={workflow.reviewScore}
             reviewNote={workflow.reviewNote}
-          />
+          />}
         </CardContent>
       </Card>
 
@@ -124,7 +127,7 @@ export default async function EditWorkflowPage({
         </Card>
       )}
 
-      <WorkflowEditor
+      {!workflow.isOfficial && <WorkflowEditor
         mode="version"
         initialMeta={{
           slug: workflow.slug,
@@ -135,9 +138,9 @@ export default async function EditWorkflowPage({
         }}
         initialDefinition={latest?.definition ?? undefined}
         initialVersion={latest?.version ?? 0}
-      />
+      />}
 
-      {(workflow.status === "DRAFT" || workflow.status === "REJECTED" || workflow.status === "PUBLISHED" && (latest?.version ?? 0) > (workflow.publishedVersion ?? 0)) && isOwner && (
+      {!workflow.isOfficial && (workflow.status === "DRAFT" || workflow.status === "REJECTED" || workflow.status === "PUBLISHED" && (latest?.version ?? 0) > (workflow.publishedVersion ?? 0)) && isOwner && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">提交审核</CardTitle>

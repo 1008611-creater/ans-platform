@@ -96,7 +96,7 @@
   "shareWithdrawn": "公开授权或申请已撤回。",
   "reviewNote": "审核说明：{note}",
   "busy": "处理中…",
-  "billingExplanation": "运行前最多预占 {points} 积分，完成后按实际 Token 费用结算并退回差额。1 元充值＝1 积分＝1 美元使用额度；GPT 在原价基础上乘 0.16 消耗倍率。",
+  "billingExplanation": "本次运行最多预占 {points} 积分，费用与退款见运行记录。¥1＝10 积分；模型计费按当前平台规则执行。",
   "billingRun": "运行（最多预占 {points} 积分）",
   "billingReservation": "最多预占 {points} 积分"
 }

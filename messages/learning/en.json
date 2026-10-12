@@ -96,7 +96,7 @@
   "shareWithdrawn": "Publication or request withdrawn.",
   "reviewNote": "Review note: {note}",
   "busy": "Working…",
-  "billingExplanation": "Up to {points} credits are reserved; actual Token costs are settled and the difference refunded. CNY 1 recharge = 1 credit = USD 1 of service allowance. GPT consumption is multiplied by 0.16 at unchanged unit prices.",
+  "billingExplanation": "This run reserves up to {points} points. See run history for charges and refunds. CNY 1 = 10 points; current platform model pricing applies.",
   "billingRun": "Run (reserve up to {points} credits)",
   "billingReservation": "Reserve up to {points} credits"
 }

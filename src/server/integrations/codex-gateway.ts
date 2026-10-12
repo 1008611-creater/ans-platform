@@ -2,7 +2,7 @@ import { refreshMeteredParentCost } from "./metered-cost";
 import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
-import { RUN_MODEL_OPTIONS } from "@/lib/run-models";
+import { RUN_MODEL_OPTIONS, RUN_MODEL_METERING, type RunModelKey } from "@/lib/run-models";
 import { debitQuota, refundQuota, QuotaError } from "@/server/quota/service";
 import { readApicCharge } from "./apic-billing";
 
@@ -26,8 +26,8 @@ export function validateCodexPayload(value: unknown) {
   if (bytes > MAX_BODY) throw new Error("INPUT_LIMIT_EXCEEDED");
   // Conservative reservation: UTF-8 bytes bound token count, including tool definitions.
   // GPT long-context rates and 0.16 multiplier cover the highest supported tier.
-  const rates = body.model === "gpt-6-astra" ? [45,75,0.16] : body.model === "gpt-6.1-sol" ? [9,15,0.16] : [0.3,1.2,1];
-  const reserve = Math.ceil(((bytes + 16384) * rates[0] + limit * rates[1]) * rates[2]) / 1e6;
+  const rates = RUN_MODEL_METERING[body.model as RunModelKey];
+  const reserve = Math.ceil(((bytes + 16384) * rates.inputReservePerMillion + limit * rates.outputReservePerMillion) * rates.consumptionMultiplier) / 1e6;
   return { text, model: String(body.model), limit, reserve, streaming: body.stream === true };
 }
 export async function authenticateCodex(request: Request) {
@@ -38,6 +38,16 @@ export async function authenticateCodex(request: Request) {
   if(user) await reconcileCodexCharges(user.id);
   return user;
 }
+/** An internal feature may cap the member's approved spend. Preserve the
+ * verified supplier cost separately; unexpected excess is platform-covered. */
+export function cappedMemberCharge(price: unknown, upstreamPoints: number) {
+  if (!Number.isFinite(upstreamPoints) || upstreamPoints < 0) throw new Error("INVALID_UPSTREAM_CHARGE");
+  const record = price && typeof price === "object" && !Array.isArray(price) ? price as Record<string, unknown> : {};
+  const cap = record.memberPointsCap;
+  if (cap !== undefined && (typeof cap !== "number" || !Number.isFinite(cap) || cap <= 0)) throw new Error("INVALID_MEMBER_BUDGET");
+  const billedPoints = typeof cap === "number" ? Math.min(upstreamPoints, cap) : upstreamPoints;
+  return { billedPoints, price: { ...record, verifiedUpstreamPoints: upstreamPoints, platformCoveredPoints: Math.max(0, upstreamPoints - billedPoints) } };
+}
 /** Reconcile interrupted requests using the authoritative APIC receipt, never estimates. */
 export async function reconcileCodexCharges(userId: string, options = { limit: 5, deadline: Date.now() + 12000 }) {
   const cutoff=new Date(Date.now()-360000);
@@ -46,10 +56,10 @@ export async function reconcileCodexCharges(userId: string, options = { limit: 5
   for(const task of pending){
     if(Date.now() >= options.deadline) break;
     if(!task.outcome || !/^[A-Za-z0-9_-]{8,128}$/.test(task.outcome) || task.outcome === "UNCERTAIN")continue;
-    try{const charge=await readApicCharge(task.outcome, 1);
-      await db.$transaction(async tx=>{const changed=await tx.apiComputeRequest.updateMany({where:{id:task.id,state:"UNCERTAIN"},data:{state:"SETTLED",settledPoints:charge.points,finishedAt:new Date()}});
-        if(changed.count===1 && charge.points>Number(task.authorizedPoints))await debitQuota(tx,{userId,costPoints:charge.points-Number(task.authorizedPoints),ref:{type:"api_compute_request",id:task.id},note:"Codex verified upstream extra usage"});
-        if(changed.count===1 && charge.points<Number(task.authorizedPoints))await refundQuota(tx,{userId,costPoints:Number(task.authorizedPoints)-charge.points,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
+    try{const charge=await readApicCharge(task.outcome, 1);const member=cappedMemberCharge(task.price,charge.points);
+      await db.$transaction(async tx=>{const changed=await tx.apiComputeRequest.updateMany({where:{id:task.id,state:"UNCERTAIN"},data:{state:"SETTLED",settledPoints:member.billedPoints,price:member.price as import("@prisma/client").Prisma.InputJsonValue,finishedAt:new Date()}});
+        if(changed.count===1 && member.billedPoints>Number(task.authorizedPoints))await debitQuota(tx,{userId,costPoints:member.billedPoints-Number(task.authorizedPoints),ref:{type:"api_compute_request",id:task.id},note:"Codex verified upstream extra usage"});
+        if(changed.count===1 && member.billedPoints<Number(task.authorizedPoints))await refundQuota(tx,{userId,costPoints:Number(task.authorizedPoints)-member.billedPoints,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
         if(changed.count===1)await refreshMeteredParentCost(tx,userId,task.price);});
     }catch{/* Preserve reservation until a verified receipt is available. */}
   }
@@ -69,7 +79,7 @@ export async function codexResponses(request: Request) {
 
 /** Server-only entry: userId must come from an authenticated feature service.
  * Built-in runs share the exact durable reservation and settlement state machine. */
-export async function meteredResponses(request: Request, userId: string, parent?: { type: "run" | "workflow_run"; id: string }) {
+export async function meteredResponses(request: Request, userId: string, parent?: { type: "run" | "workflow_run"; id: string }, budget?: { memberPointsCap: number; timeoutMs?: number }) {
   const user = { id: userId };
   if (request.signal.aborted) return failure("REQUEST_CANCELLED", 409);
   if (Number(request.headers.get("content-length")) > MAX_BODY) return failure("INPUT_LIMIT_EXCEEDED",413);
@@ -80,10 +90,11 @@ export async function meteredResponses(request: Request, userId: string, parent?
     while(true){const next=await reader.read();if(next.done)break;size+=next.value.byteLength;if(size>MAX_BODY){await reader.cancel();return failure("INPUT_LIMIT_EXCEEDED",413);}chunks.push(next.value);}
     parsed=validateCodexPayload(JSON.parse(Buffer.concat(chunks).toString("utf8")));
   } catch { return failure("INVALID_REQUEST_OR_MODEL",400); }
+  if (budget && (!Number.isFinite(budget.memberPointsCap) || budget.memberPointsCap <= 0 || budget.memberPointsCap < parsed.reserve || (budget.timeoutMs !== undefined && (!Number.isSafeInteger(budget.timeoutMs) || budget.timeoutMs < 5000 || budget.timeoutMs > 300000)))) return failure("MEMBER_BUDGET_INVALID", 400);
   const idempotency=request.headers.get("idempotency-key") || randomUUID();
   if(idempotency.length>128 || idempotency.startsWith(RETRY_KEY_PREFIX)) return failure("INVALID_IDEMPOTENCY_KEY",400);
   const requestHash=createHash("sha256").update(parsed.text).digest("hex");
-  let reservation:{id:string;price:{source:string;quotaPerPoint:number;parent?:{type:"run"|"workflow_run";id:string};retry?:{rootRequestId:string;previousRequestId:string}}};
+  let reservation:{id:string;price:{source:string;quotaPerPoint:number;memberPointsCap?:number;parent?:{type:"run"|"workflow_run";id:string};retry?:{rootRequestId:string;previousRequestId:string}}};
   try {
     reservation=await db.$transaction(async tx=>{
       await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
@@ -101,6 +112,8 @@ export async function meteredResponses(request: Request, userId: string, parent?
         if(previous.requestHash!==requestHash)throw new Error("REQUEST_HASH_CONFLICT");
         const previousParent=previous.price && typeof previous.price==="object" && !Array.isArray(previous.price)
           ? (previous.price as {parent?:{type?:unknown;id?:unknown}}).parent : undefined;
+        const previousCap=previous.price && typeof previous.price==="object" && !Array.isArray(previous.price) ? (previous.price as {memberPointsCap?:unknown}).memberPointsCap : undefined;
+        if(previousCap!==budget?.memberPointsCap)throw new Error("REQUEST_PARENT_CONFLICT");
         if(previousParent?.type!==parent?.type || previousParent?.id!==parent?.id)throw new Error("REQUEST_PARENT_CONFLICT");
         const rejectedStatus=previous.price && typeof previous.price==="object" && !Array.isArray(previous.price)
           ? (previous.price as {rejectedUpstreamStatus?:unknown}).rejectedUpstreamStatus : undefined;
@@ -116,7 +129,7 @@ export async function meteredResponses(request: Request, userId: string, parent?
       }
       const active=await tx.apiComputeRequest.count({where:{userId:user.id,provider:PROVIDER,state:{in:["RUNNING","UNCERTAIN"]}}});
       if(active>=4)throw new Error("TOO_MANY_ACTIVE_REQUESTS");
-      const price={source:"APIC",quotaPerPoint:500000,...(parent ? {parent} : {}),...(rootRequestId && previousRequestId ? {retry:{rootRequestId,previousRequestId}} : {})};
+      const price={source:"APIC",quotaPerPoint:500000,...(budget ? {memberPointsCap:budget.memberPointsCap} : {}),...(parent ? {parent} : {}),...(rootRequestId && previousRequestId ? {retry:{rootRequestId,previousRequestId}} : {})};
       const task=await tx.apiComputeRequest.create({data:{userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey,requestHash,modelId:parsed.model,policyVersion:"apic-final-quota-v1",price,maxUnits:parsed.limit,authorizedPoints:parsed.reserve,state:"RUNNING",startedAt:new Date()},select:{id:true}});
       await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:"Codex request reservation"});return {id:task.id,price};
     });
@@ -125,15 +138,17 @@ export async function meteredResponses(request: Request, userId: string, parent?
     return failure(code,error instanceof QuotaError?error.status:409);
   }
   const taskId=reservation.id;
-  const transition=async(state:"SETTLED"|"RELEASED"|"UNCERTAIN",points:number|null,requestId?:string,rejectedUpstreamStatus?:number)=>db.$transaction(async tx=>{
-    const changed=await tx.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{state,settledPoints:points,outcome:requestId || state,finishedAt:state==="UNCERTAIN"?null:new Date(),...(state==="RELEASED" && rejectedUpstreamStatus!==undefined ? {price:{...reservation.price,rejectedUpstreamStatus}} : {})}});
+  const transition=async(state:"SETTLED"|"RELEASED"|"UNCERTAIN",upstreamPoints:number|null,requestId?:string,rejectedUpstreamStatus?:number)=>db.$transaction(async tx=>{
+    const member=upstreamPoints!==null && state==="SETTLED" ? cappedMemberCharge(reservation.price,upstreamPoints) : null;
+    const points=member ? member.billedPoints : upstreamPoints;
+    const changed=await tx.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{state,settledPoints:points,outcome:requestId || state,finishedAt:state==="UNCERTAIN"?null:new Date(),...(member ? {price:member.price as import("@prisma/client").Prisma.InputJsonValue} : {}),...(state==="RELEASED" && rejectedUpstreamStatus!==undefined ? {price:{...reservation.price,rejectedUpstreamStatus}} : {})}});
     if(changed.count===1 && points!==null && points>parsed.reserve)await debitQuota(tx,{userId:user.id,costPoints:points-parsed.reserve,ref:{type:"api_compute_request",id:taskId},note:"Codex verified upstream extra usage"});
     if(changed.count===1 && points!==null && points<parsed.reserve) await refundQuota(tx,{userId:user.id,costPoints:parsed.reserve-points,ref:{type:"api_compute_request",id:taskId},note:"Codex unused reservation settlement"});
     if(changed.count===1 && parent && state!=="UNCERTAIN")await refreshMeteredParentCost(tx,user.id,{parent});
   });
   let upstream:Response;
   try {
-    upstream=await fetch(`${process.env.RUN_BASE_URL?.replace(/\/$/,"")}/responses`,{method:"POST",headers:{Authorization:`Bearer ${process.env.RUN_API_KEY}`,"Content-Type":"application/json"},body:parsed.text,signal:AbortSignal.timeout(300000),redirect:"error"});
+    upstream=await fetch(`${process.env.RUN_BASE_URL?.replace(/\/$/,"")}/responses`,{method:"POST",headers:{Authorization:`Bearer ${process.env.RUN_API_KEY}`,"Content-Type":"application/json"},body:parsed.text,signal:AbortSignal.timeout(budget?.timeoutMs ?? 300000),redirect:"error"});
   } catch {await transition("UNCERTAIN",null);return failure("UPSTREAM_RESULT_UNCERTAIN",502);}
   const requestId=upstream.headers.get("x-oneapi-request-id");
   if(requestId)await db.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{outcome:requestId}});

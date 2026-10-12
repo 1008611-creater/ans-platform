@@ -1,3 +1,5 @@
+import { WorkflowMarketUpload } from "@/components/workflows/workflow-market-upload";
+import { isWorkflowMarketAvailable } from "@/server/marketplace/workflow-binding";
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
 import { unifiedModelBilling } from "@/server/integrations/metered-cost";
@@ -64,6 +66,9 @@ export default async function WorkflowDetailPage({
   const version = workflow.publishedVersion ?? 1;
   const cost = process.env.ANS_APIC_BILLING_ENABLED === "1" ? Math.max(0.25, (definition?.nodes.filter(node => node.type === "model").length ?? 1) * 0.25) : Math.max(1, workflow.estimatedCost);
   const billing = await getTranslations("learning");
+  const w = await getTranslations("marketWorkflow");
+  const owner = userId === workflow.author.id;
+  const marketAvailable = owner ? await isWorkflowMarketAvailable(workflow.id, userId!) : false;
 
   return (
     <article className="container max-w-4xl space-y-6 py-10">
@@ -75,12 +80,12 @@ export default async function WorkflowDetailPage({
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">已发布</Badge>
           <Badge variant="outline">v{version}</Badge>
-          <Badge variant="outline">{billing("billingReservation", { points: cost })}</Badge>
+          <Badge variant="outline">{unifiedModelBilling() ? w("computeOnRun") : billing("billingReservation", { points: cost })}</Badge>
           <Badge variant="outline">已运行 {workflow.useCount} 次</Badge>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">{workflow.title}</h1>
         <p className="text-sm text-muted-foreground">
-          作者：{authorName} · 内容已通过管理员复核
+          {workflow.isOfficial ? w("platformMaintained") : <>作者：{authorName} · 内容已通过管理员复核</>}
         </p>
         {workflow.summary && <p className="text-muted-foreground">{workflow.summary}</p>}
         <div className="flex flex-wrap items-center gap-2">
@@ -94,6 +99,7 @@ export default async function WorkflowDetailPage({
         </div>
       </header>
 
+      {owner && <MarketAccountBoundary actorId={userId!}><WorkflowMarketUpload slug={workflow.slug} version={version} available={marketAvailable} /></MarketAccountBoundary>}
       {workflow.description && (
         <section>
           <h2 className="mb-3 text-lg font-semibold">使用说明</h2>
@@ -101,10 +107,10 @@ export default async function WorkflowDetailPage({
         </section>
       )}
 
-      <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-lg font-semibold">
+      <details className="rounded-lg border p-4">
+        <summary className="flex cursor-pointer items-center gap-2 text-lg font-semibold">
           <GitBranch className="h-4 w-4" /> 节点结构（共 {definition?.nodes.length ?? 0} 个节点）
-        </h2>
+        </summary>
         {definition ? (
           <ol className="space-y-2">
             {definition.nodes.map((node) => (
@@ -123,7 +129,7 @@ export default async function WorkflowDetailPage({
         ) : (
           <p className="text-sm text-muted-foreground">发布版本的定义暂时无法解析，请联系管理员。</p>
         )}
-      </section>
+      </details>
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">运行这个工作流</h2>
@@ -163,7 +169,7 @@ export default async function WorkflowDetailPage({
           <ShieldAlert className="h-4 w-4" /> 使用条件与限制
         </h2>
         <ul className="list-disc space-y-1 ps-5 text-xs text-muted-foreground">
-          <li>{billing("billingExplanation", { points: cost })}</li>
+          <li>{unifiedModelBilling() ? w("meteredCost") : billing("billingExplanation", { points: cost })}</li>
           <li>单次执行最长 120 秒，每个节点有自己的超时与重试上限。</li>
           <li>工作流只会按已发布的不可变版本执行，作者改动不会影响你正在跑的任务。</li>
           <li>输入内容会随运行记录保存，请不要填写身份证号、住址等敏感信息。</li>

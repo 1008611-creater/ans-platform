@@ -27,3 +27,10 @@ export const DEFAULT_RUN_MODEL: RunModelKey = "deepseek-v4.1-flash";
 export function getRunModel(key: string): RunModelOption | undefined {
   return RUN_MODEL_OPTIONS.find((model) => model.key === key);
 }
+/** APIC consumption factors apply to each model's own base token price.
+ * These are not relative prices between models. Keep UI and reserve math aligned. */
+export const RUN_MODEL_METERING: Record<RunModelKey, { inputReservePerMillion: number; outputReservePerMillion: number; consumptionMultiplier: number }> = {
+  "deepseek-v4.1-flash": { inputReservePerMillion: 0.3, outputReservePerMillion: 1.2, consumptionMultiplier: 1 },
+  "gpt-6-astra": { inputReservePerMillion: 45, outputReservePerMillion: 75, consumptionMultiplier: 0.16 },
+  "gpt-6.1-sol": { inputReservePerMillion: 9, outputReservePerMillion: 15, consumptionMultiplier: 0.16 },
+};
