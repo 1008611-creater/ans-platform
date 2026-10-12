@@ -26,7 +26,7 @@ export function KnowledgeProjectCovers({ termCount }: { termCount: number }) {
             <Link className="ans-knowledge-cover" href={`/vibe-hub${path}?lang=${lang}`} aria-label={t(`knowledgeCover.${id}.label`)}>
               <div className={`ans-knowledge-cover-image ans-vibe-cover-art ans-vibe-cover-${id}`} data-gitglow-template={template}>
                 <span className="ans-vibe-cover-brand" aria-hidden="true">ANS <span>VibeHub</span></span>
-                <span className="ans-vibe-cover-index" aria-hidden="true">0{index + 1}</span>
+                <span className="ans-vibe-cover-index" aria-hidden="true"><ArrowUpRight size={18} /></span>
                 <div className="ans-vibe-cover-screen" aria-hidden="true">
                   <Image src={`/vibe-hub/covers/${source}`} alt="" width={width} height={height}
                     sizes={index === 0 ? "(max-width: 760px) 65vw, 320px" : "(max-width: 760px) 34vw, 190px"}
@@ -37,7 +37,6 @@ export function KnowledgeProjectCovers({ termCount }: { termCount: number }) {
                   <span className="ans-vibe-cover-meta">{id === "terms" ? t("knowledgeCoverTermCount", { count: termCount }) : id === "practice" ? t("knowledgeCoverPracticeCount", { count: ANS_PRACTICES.length }) : t("knowledgeCoverInteractionMeta")}</span>
                 </div>
               </div>
-              <span className="ans-knowledge-cover-caption"><span>{t(`knowledgeCover.${id}.label`)}</span><ArrowUpRight size={15} aria-hidden="true" /></span>
             </Link>
           </li>
         ))}

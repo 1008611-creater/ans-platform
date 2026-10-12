@@ -3,7 +3,6 @@ import { Catalog, type CatalogData } from "./catalog-client";
 import { KnowledgeHome } from "./knowledge-home";
 import { readVibeData, languageParam } from "./source-data";
 import labels from "./labels.json";
-import courseIndex from "@/data/vibehub/courses/index.json";
 
 export default async function VibeHubPage({ searchParams }: { searchParams: Promise<{ q?: string; lang?: string; topic?: string }> }) {
   const params = await searchParams; const language = languageParam(params.lang, await getLocale());
@@ -13,7 +12,7 @@ export default async function VibeHubPage({ searchParams }: { searchParams: Prom
     const localizedData = { ...data, entries: data.entries.map(entry => ({ ...entry, en: { ...entry.en, preview: language === "en" ? entry.en.preview : "" }, zh: { ...entry.zh, preview: language === "zh" ? entry.zh.preview : "" } })) };
     return <Catalog key={`${params.topic || "frontend"}-${params.q || ""}-${language}`} data={localizedData} initialTopic={params.topic} initialQuery={params.q} />;
   }
-  return <KnowledgeHome termCount={data.entries.length} courseCount={new Set(courseIndex.map(chapter => chapter.course)).size} />;
+  return <KnowledgeHome termCount={data.entries.length} />;
 }
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string; lang?: string; topic?: string }> }) {
   const params = await searchParams; const lang = languageParam(params.lang, await getLocale());
