@@ -8,14 +8,14 @@ export const agriStageSchema = z.enum(["REGISTRATION", "PRELIMINARY", "FINAL"]);
 export const agriWorkspaceScopeSchema = z.enum([
   "WORKS_READ", "PRIVATE_MATERIALS_READ", "TECHNICAL_WRITE", "INTERNAL_NOTES_READ",
   "ISSUES_WRITE", "DEMO_WRITE", "ONSITE_READ", "ONSITE_WRITE", "ARCHIVE_WRITE", "EXPORT",
-  "RULES_CONFIRM", "ACCESS_MANAGE",
+  "RULES_CONFIRM", "ACCESS_MANAGE", "PUBLICATIONS_REVIEW",
 ]);
 export type AgriWorkspaceScope = z.infer<typeof agriWorkspaceScopeSchema>;
 
 export const agriAccessGrantSchema = z.object({
   competitionId: id,
   userId: id,
-  scopes: z.array(agriWorkspaceScopeSchema).min(1).max(12),
+  scopes: z.array(agriWorkspaceScopeSchema).min(1).max(13),
   revokedAt: instant.nullable(),
   expiresAt: instant.nullable(),
 }).strict();

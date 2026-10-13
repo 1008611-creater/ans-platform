@@ -84,6 +84,7 @@ export default async function AgriHackathonPage() {
   const tasks = await getTranslations("product.agriTasks");
   const submissions = await getTranslations("product.agriSubmissions");
   const works = await getTranslations("product.agriWorks");
+  const publications = await getTranslations("product.agriPublications");
   const onsite = await getTranslations("product.agriOnsite");
   const management = await getTranslations("product.agriWorkspace");
   const competition = await findAgriHackathonCompetition();
@@ -177,6 +178,8 @@ export default async function AgriHackathonPage() {
                   </Link>
                 </Button>
               )}
+              <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/showcase">{publications("showcaseTitle")}</Link></Button>
+              <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/publication-review">{publications("reviewTitle")}</Link></Button>
               <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/submissions"><FileCheck2 className="h-4 w-4" />{submissions("title")}</Link></Button>
               <Button asChild size="lg" variant="outline"><Link href="/competitions/agrihackathon/works"><ClipboardCheck className="h-4 w-4" />{works("title")}</Link></Button>
               <Button asChild size="lg" variant="outline"><Link href="/competitions/agrihackathon/onsite"><ClipboardCheck className="h-4 w-4" />{onsite("title")}</Link></Button>
