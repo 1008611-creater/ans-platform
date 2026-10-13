@@ -47,6 +47,8 @@ const eslintConfig = defineConfig([
     ".next-agri-summary/**",
     ".next-agri-p2/**",
     ".workbuddy/**",
+    // Independently deployed source archives are not ANS application code.
+    "deployment-snapshots/**",
     // Archived skill bundles are data shipped for discovery, not application
     // source; linting their generated examples produces thousands of noise
     // errors and masks real ANS diagnostics.
