@@ -23,7 +23,7 @@
 #
 # Detects spam, self-promotion, and direct prompts.csv edits in issues and PRs. Automatically labels detected items as wontfix and closes them with an explanatory comment.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4f28f8d99509f46a573055cf9f77fe20292c6800bd735a6c6600e022722baea7"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9f5cbf065c274be1f3990590d4380d418d228e9d2167851362f1a3290bdf6af0"}
 
 name: "Spam & Self-Promotion Check"
 "on":
@@ -324,8 +324,8 @@ jobs:
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
               model: process.env.GH_AW_MODEL_AGENT_COPILOT || "",
-              version: "",
-              agent_version: "0.0.410",
+              version: "1.0.96",
+              agent_version: "1.0.96",
               cli_version: "v0.46.0",
               workflow_name: "Spam & Self-Promotion Check",
               experimental: false,
@@ -363,7 +363,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.410
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 1.0.96
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.20.0
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -1041,7 +1041,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.410
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 1.0.96
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
@@ -1136,6 +1136,7 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
+      GH_AW_ENGINE_VERSION: "1.0.96"
       GH_AW_WORKFLOW_ID: "spam-check"
       GH_AW_WORKFLOW_NAME: "Spam & Self-Promotion Check"
     outputs:
