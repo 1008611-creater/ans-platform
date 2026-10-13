@@ -16,6 +16,7 @@ import { AgriReviewSessionBoundary } from "@/components/competitions/agri-review
 import { AgriOnsiteSessionBoundary } from "@/components/competitions/agri-onsite-recovery";
 import { AgriArchiveSessionBoundary } from "@/components/competitions/agri-record-archive-recovery";
 import { AgriDemoSessionBoundary } from "@/components/competitions/agri-demo-recovery";
+import { AgriPublicationSessionBoundary } from "@/components/competitions/agri-publications-recovery";
 import { ToonflowHostProvider } from "./toonflow-host";
 import { DinoTaskSessionProvider } from "@/components/mascot/dino-task-context";
 
@@ -52,6 +53,7 @@ export function Providers({ children, locale, timeZone, messages, theme, brandin
       <AgriSubmissionSessionBoundary />
       <AgriReviewSessionBoundary />
       <AgriDemoSessionBoundary />
+      <AgriPublicationSessionBoundary />
       <AgriOnsiteSessionBoundary />
       <AgriArchiveSessionBoundary />
       <AgriIssueSessionBoundary />

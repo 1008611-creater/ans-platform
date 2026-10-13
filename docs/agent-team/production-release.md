@@ -1,5 +1,24 @@
 # ANS 生产发布与恢复门禁
 
+## 2026-10-13 农客松公开模块：本地通过，尚未部署
+
+本增量完成准确版本的主动授权、PUBLICATIONS_REVIEW 独立审核、匿名展示、撤回和不可变回执。原冻结版本与获准更正版本分别处理；不改变 Project/Artifact 公开状态，不写 XP、积分或付款。最终 schema validate / Prisma generate、完整测试类型检查、全仓 lint（0 错误、352 存量警告）、38 相关单元与组件检查、六类边界及112文档链接均通过。前端另有48项相关组件回归；其他语种沿用明确英文回退，旧翻译检查仍存在45项历史缺失，不登记为全语种检查通过。
+
+真实本地 PostgreSQL 79→80 迁移、124→127表及旧列内容保真通过；17组实际服务验证和独立4组rollback数据库检查通过。根通过真实CUA读取隔离LOCAL_SYNTHETIC授权结果，核对准确更正标签和桌面1280/手机375无横溢出；明确撤回后已打开详情停止展示、列表恢复真实空态。无生产业务写入或供应商调用。最初baseline范围错误、schema反向关系错误、deferred trigger字段错误及cold browser超时均保留，不作为成功证据。
+
+证据在 C:/Users/lsb/.workbuddy/ans-agri-public-results-20261013 与工作树 .workbuddy/evidence/agri-publications；独审 agri-publication-final-limited-local-independent-review-20261013.json 仅批准本地源码/SQL范围。真实赛事事实未绑定、认证工作人员浏览器流程未验收。新DDL必须完成fresh生产备份恢复、新迁移演练、Linux构建、CI、合并和实际部署后才属于正式版本；当前正式仍为以下R6。
+
+
+## 2026-10-13 R6 已正式上线
+
+PR #61 已合并 main `92e437c51ed398959a0be21e51e97439d4ef6e41`，北京时间 2026-10-13 08:00:14 部署。源码摘要 `a15a4f8df009a6970aa376e888542234fa6265a356b4c831604e08efbb742f96`，镜像 `sha256:90d559bd185474b716097f5857a1aafceb51d574b6e948f3f7a891c98017e884`，BUILD_ID `ppEWXq9O-Mlez493_oovX`。主导航六入口、四个 Hub、个人菜单收藏/算力入口及准确版本的成员工作流审核修复均已部署。
+
+备份真实恢复、精确源码 Linux 构建与镜像验证通过，生产 healthy，无新 DDL，79 迁移与 124 表保持。外网验收 25 页、57 个 Next 资源、44 张 GitGlow 封面及 4 个恐龙代码文件逐字节与运行容器一致；桌面/手机导航及空资料不可运行核对通过。首次外网脚本误拒 Next 合法 (auth) 路由组，原失败保留，独审修正路径校验后只读复验通过。
+
+证据目录：`C:/Users/lsb/.workbuddy/ans-member-workflow-release-r6-20261013`，最终报告 `reviewer-r6-final-limited-release.json`，服务器证据 `server-evidence-1791850467128`。真实付费生成与产物下载未生产验收，CAUHub 可运行工作流仍为零，农客松正式事实未配置；长期目标保持 active。
+
+接下来的公开作品模块尚在本地实施，未属于 R6 正式版本。
+
 ## 当前正式版本：Hub、导航与可运行工作流市场（2026-10-12 北京时间 15:06）
 
 本轮已合入 main 并实际部署。冻结应用提交 `71ab389593b536fad57c8fece92940376d0be04b`，正式 release `/srv/ans-releases/ans-hubs-release-20261012`；image `sha256:c5fb1c7d67f27ad311217c41ce5fb0f6a54202f440de5d097bccdf78d65ad32a`，source SHA-256 `b30a98fda57f17bd0143cbdba406a0819273c5212300a7cde598f8c1a4444cbf`，BUILD_ID `V1i1JOxr1qckKRptAt6_f`，实际发布时间 `2026-10-12T07:06:53Z`。容器 healthy，原环境与挂载逐项保留。后续仅补充本轮审查及发布文档的提交不表示应用镜像再次构建。

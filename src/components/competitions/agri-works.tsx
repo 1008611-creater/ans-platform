@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type { AgriStageDetail, AgriStageList, AgriStageListRow, AgriSubmissionHistoryItem } from "@/contracts/agri-submissions";
 import { AgriReviews } from "./agri-reviews";
+import { AgriPublications } from "./agri-publications";
 import { AgriDemoChecks } from "./agri-demo-checks";
 import { AgriIssues } from "./agri-issues";
 import { AgriOnsiteStaffLink } from "./agri-onsite";
@@ -145,7 +146,7 @@ function WorksDetail({ actorId, row, invalidate, close }: { actorId: string; row
     {detail && <><p className="break-all text-xs text-muted-foreground">{t("entryId", { id: detail.teamCompetitionId })}</p><p className="break-all text-xs text-muted-foreground">{t("stageId", { id: detail.id })}</p><p className="text-sm leading-6 text-muted-foreground">{t(detail.hasPrivateMaterials ? "privateVisible" : "metadataOnly")}</p><p className="text-sm">{t("window." + detail.windowState)}{detail.frozenSubmissionId ? " · " + t("recordedFrozen") : ""}</p><p className="text-xs text-muted-foreground">{t("serverNow", { at: time(detail.serverNow, locale) })}</p>
       <Button asChild variant="outline"><WorkspaceLink href={"/competitions/agrihackathon/manage?" + new URLSearchParams({ teamCompetitionId: detail.teamCompetitionId, entryStageId: detail.id }) + "#agri-decisions"}>{t("manageDecisions")}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></WorkspaceLink></Button>
       {detail.current && <Button variant="outline" onClick={() => navigation.run(() => setReviewedSubmissionId(detail.current!.id))}>{t("reviewCurrent")}</Button>}
-      <h3 className="font-semibold">{t("current")}</h3>{detail.current ? snapshot(detail.current) : <p className="text-sm text-muted-foreground">{t("noCurrent")}</p>}
+      <AgriPublications actorId={actorId} entryStageId={detail.id} scope="staff" invalidate={invalidate} /><h3 className="font-semibold">{t("current")}</h3>{detail.current ? snapshot(detail.current) : <p className="text-sm text-muted-foreground">{t("noCurrent")}</p>}
       {reviewedSubmissionId && <><AgriOnsiteStaffLink submissionId={reviewedSubmissionId} /><AgriRecordSummary actorId={actorId} submissionId={reviewedSubmissionId} invalidate={invalidate} /><AgriRecordArchives actorId={actorId} submissionId={reviewedSubmissionId} invalidate={invalidate} /><AgriReviews actorId={actorId} submissionId={reviewedSubmissionId} scope="staff" invalidate={invalidate} /><AgriIssues actorId={actorId} submissionId={reviewedSubmissionId} scope="staff" invalidate={invalidate} /><AgriDemoChecks actorId={actorId} submissionId={reviewedSubmissionId} scope="staff" invalidate={invalidate} /></>}
       <h3 className="font-semibold">{t("history")}</h3>{!detail.history.length && <p className="text-sm text-muted-foreground">{t("noHistory")}</p>}{detail.history.map(snapshot)}
       {detail.nextBeforeSequence && <Button variant="outline" disabled={loading} onClick={() => navigation.run(() => void load(detail.nextBeforeSequence!))}>{t("moreHistory")}</Button>}
