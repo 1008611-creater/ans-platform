@@ -8,5 +8,5 @@ export function homepageProjects(catalog: readonly CatalogProject[]) {
   const ordered = [...preferred.flatMap(slug => remaining.filter(project => project.slug === slug)),
     ...remaining.filter(project => !preferred.includes(project.slug))];
   const showcase = [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project?.coverUrl)).slice(0, 7);
-  return { hero, featured: ordered.slice(0, 3), showcase };
+  return { hero, projects: [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project)), showcase };
 }

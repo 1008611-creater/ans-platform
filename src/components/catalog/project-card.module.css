@@ -1,0 +1,12 @@
+.card { border: 1px solid var(--border); border-radius: 14px; background: var(--card); transition: border-color 160ms ease; }
+.card:hover { border-color: var(--primary); }
+.link { display: block; height: 100%; border-radius: inherit; }
+.link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.card figure { margin: 0; border: 0; border-radius: 13px 13px 0 0; border-bottom: 1px solid var(--border); }
+.card figure img { aspect-ratio: 1.8; object-position: center; }
+.title { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 76px; padding: 18px; }
+.title h3 { font-size: 17px; font-weight: 600; line-height: 1.5; text-wrap: pretty; }
+.title svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--muted-foreground); }
+.metadata { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: var(--primary); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+.card :global(.ans-preview-caption), .card :global(.ans-preview-paper > p), .card :global(.ans-preview-paper > div) { display: none; }

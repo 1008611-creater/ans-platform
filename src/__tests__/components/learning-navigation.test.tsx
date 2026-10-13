@@ -15,11 +15,15 @@ vi.mock("next-intl/server", () => ({ getLocale: async () => "zh", getTranslation
 vi.mock("@/components/homepage/homepage-cta-link", () => ({
   HomepageCtaLink: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a>,
 }));
+vi.mock("@/components/catalog/project-card", () => ({ ProjectCard: ({ project }: { project: { slug: string } }) => <article><Link href={`/explore/${project.slug}`}>{project.slug}</Link></article> }));
 vi.mock("@/components/catalog/project-preview", () => ({ ProjectPreview: () => <div data-testid="project-preview" /> }));
 vi.mock("@/components/catalog/official-workflows", () => ({ OfficialWorkflows: () => <Link href="/workflows/toonflow">Toonflow</Link> }));
 vi.mock("@/components/homepage/project-coverflow", () => ({ ProjectCoverflow: ({ projects }: { projects: { href: string; title: string }[] }) => <Link href={projects[0].href}>{projects[0].title}</Link> }));
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import HomePage from "@/app/page";
+import ExplorePage from "@/app/explore/page";
+import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
+import { CATALOG_PAGE_SIZE } from "@/domain/catalog/browse";
 
 describe("product discovery entry points", () => {
   beforeEach(() => { state.pathname = "/"; state.user = null; });
@@ -40,14 +44,33 @@ describe("product discovery entry points", () => {
     expect(screen.getAllByRole("link")).toHaveLength(6);
   });
 
-  it("offers discovery, workflow, category and community entry points", async () => {
+  it("offers a complete paged project directory without workflow or promotional sections", async () => {
     render(await HomePage());
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("home.title");
-    expect(screen.getByRole("link", { name: /exploreAction/ })).toHaveAttribute("href", "/explore");
+    expect(screen.getByRole("link", { name: /exploreAction/ })).toHaveAttribute("href", "#home-projects-title");
     expect(screen.getByRole("link", { name: "workflowAction" })).toHaveAttribute("href", "/hubs");
-    expect(screen.getByRole("link", { name: "communityAction" })).toHaveAttribute("href", "/community");
-    expect(screen.getByRole("link", { name: "categories.aigc" })).toHaveAttribute("href", "/explore?category=aigc");
-    expect(screen.getByRole("link", { name: /个人简历与作品集/ })).toHaveAttribute("href", "/explore/liu-resume");
+    expect(screen.queryByRole("link", { name: "communityAction" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "workflowTitle" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "stepsTitle" })).toBeNull();
+    expect(document.querySelectorAll("article")).toHaveLength(Math.min(CATALOG_PROJECTS.length, CATALOG_PAGE_SIZE));
+    expect(screen.getByRole("link", { name: /categories.aigc/ })).toHaveAttribute("href", "/?category=aigc#home-projects-title");
+    expect(screen.getByRole("link", { name: "liu-resume" })).toHaveAttribute("href", "/explore/liu-resume");
+  });
+
+  it("keeps category selection in the homepage directory and resets paging", async () => {
+    render(await HomePage({ searchParams: Promise.resolve({ category: "aigc", page: "999" }) }));
+    const expected = CATALOG_PROJECTS.filter(project => project.category === "aigc");
+    expect(screen.getByRole("link", { name: /categories.aigc/ })).toHaveAttribute("aria-current", "page");
+    expect(document.querySelectorAll("article")).toHaveLength(expected.length % CATALOG_PAGE_SIZE || CATALOG_PAGE_SIZE);
+    expect(screen.getByRole("link", { name: /categories.web/ }).getAttribute("href")).not.toContain("page=");
+  });
+
+  it("keeps explore as a project-only directory and retains filtered paging links", async () => {
+    render(await ExplorePage({ searchParams: Promise.resolve({ page: "2", source: "github" }) }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("nav.explore");
+    expect(screen.queryByRole("link", { name: "market.browse" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "market.creator" })).toBeNull();
+    for (const link of screen.getAllByRole("link", { name: /categories./ })) expect(link.getAttribute("href")).toContain("source=github");
   });
 
   it("keeps Chinese and English learning keys and placeholders aligned", () => {

@@ -3043,5 +3043,13 @@
     "olderHistory": "读取更早记录",
     "versionPreliminaryFrozen": "原 48H 冻结版本",
     "externalHint": "外部链接可能变化，不代表已备份。"
+  },
+  "catalogBrowse": {
+    "info": "了解「{title}」",
+    "introduction": "查看介绍",
+    "pagination": "项目分页",
+    "previous": "上一页",
+    "next": "下一页",
+    "page": "第 {page} 页"
   }
 }

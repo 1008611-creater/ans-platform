@@ -1,16 +1,12 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Home, ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { Home } from "lucide-react";
+import { RecoveryBackButton } from "@/components/layout/recovery-back-button";
 import { Button } from "@/components/ui/button";
 
-export default function NotFound() {
-  const router = useRouter();
-  const t = useTranslations("notFound");
-  const nav = useTranslations("hubs.nav");
+export default async function NotFound() {
+  const [t, nav] = await Promise.all([getTranslations("notFound"), getTranslations("hubs.nav")]);
 
   return (
     <div className="container flex flex-col items-center justify-center min-h-[60vh] py-12">
@@ -44,10 +40,7 @@ export default function NotFound() {
               {t("goHome")}
             </Link>
           </Button>
-          <Button variant="outline" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("goBack")}
-          </Button>
+          <RecoveryBackButton label={t("goBack")} />
         </div>
 
         {/* Helpful Links */}
@@ -62,6 +55,9 @@ export default function NotFound() {
             <Link href="/hubs" className="text-primary hover:underline">
               {nav("hubs")}
             </Link>
+            <Link href="/community" className="text-primary hover:underline">{nav("community")}</Link>
+            <Link href="/competitions" className="text-primary hover:underline">{nav("competitions")}</Link>
+            <Link href="/market" className="text-primary hover:underline">{nav("market")}</Link>
             <Link href="/workspace" className="text-primary hover:underline">
               {nav("workspace")}
             </Link>

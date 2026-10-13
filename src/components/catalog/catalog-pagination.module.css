@@ -1,0 +1,9 @@
+.root { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 32px; padding-inline-end: 88px; font-size: 13px; }
+.root a, .root > span { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
+.root > span { opacity: .45; }
+.root a:hover { border-color: var(--primary); color: var(--primary); }
+.root a[aria-current="page"] { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+.root a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.pages, .item { display: flex; align-items: center; gap: 6px; }
+.gap { padding: 6px; color: var(--muted-foreground); }
+@media (max-width: 760px) { .root { justify-content: flex-start; padding-inline-end: 88px; margin-bottom: 92px; gap: 8px; } .root a, .root > span { padding: 8px 10px; } }
