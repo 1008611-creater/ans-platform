@@ -131,7 +131,9 @@ async function scanPage(page, axeSource, store, failures, baseUrl, pathname, lab
   if (expectText) {
     // 页面没渲染出预期内容时，扫描结果没有意义（可能扫的是错误页）。
     const rendered = await page
-      .waitForFunction((text) => document.body.innerText.includes(text), { timeout: 15_000 }, expectText)
+      .waitForFunction(({ text, route }) => route === "/explore"
+        ? document.querySelector("main h1")?.textContent?.trim() === text
+        : document.body.innerText.includes(text), { timeout: 15_000 }, { text: expectText, route: pathname })
       .then(() => true)
       .catch(() => false);
     if (!rendered) failures.push(`${label} ${pathname} 未渲染预期文案「${expectText}」`);
