@@ -52,7 +52,7 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
  */
 const PUBLIC_PAGES = [
   ["/", "首页", "长成你的作品。"],
-  ["/explore", "项目发现", "发现好项目"],
+  ["/explore", "项目发现", "项目广场"],
   ["/explore/liu-resume", "项目详情", "个人简历与作品集"],
   ["/workflows/toonflow", "视频工作流", "AIGC 工作台"],
   ["/hubs", "Hub 目录", "找到你的 Hub"],
@@ -76,7 +76,7 @@ const PRIVATE_PAGES = [
 /** 移动视口只扫最容易暴露问题的三个入口，避免门禁时间翻倍。 */
 const MOBILE_PAGES = [
   ["/", "移动端 首页", "长成你的作品。"],
-  ["/explore", "移动端 项目发现", "发现好项目"],
+  ["/explore", "移动端 项目发现", "项目广场"],
   ["/hubs", "移动端 Hub 目录", "找到你的 Hub"],
   ["/workflows", "移动端 工作流广场", "工作流"],
 ];
