@@ -1,3 +1,4 @@
+import { WorkflowHubAssociations } from "@/components/workflows/workflow-hub-associations";
 import { WorkflowMarketUpload } from "@/components/workflows/workflow-market-upload";
 import { isWorkflowMarketAvailable } from "@/server/marketplace/workflow-binding";
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
@@ -99,7 +100,7 @@ export default async function WorkflowDetailPage({
         </div>
       </header>
 
-      {owner && <MarketAccountBoundary actorId={userId!}><WorkflowMarketUpload slug={workflow.slug} version={version} available={marketAvailable} /></MarketAccountBoundary>}
+      {owner && <MarketAccountBoundary actorId={userId!}><WorkflowHubAssociations actorId={userId!} slug={workflow.slug} /><WorkflowMarketUpload slug={workflow.slug} version={version} available={marketAvailable} /></MarketAccountBoundary>}
       {workflow.description && (
         <section>
           <h2 className="mb-3 text-lg font-semibold">使用说明</h2>

@@ -32,6 +32,7 @@ export default async function AdminPage() {
   const marketT = await getTranslations("product.market");
   const quotaT = await getTranslations("product.quotaAdmin");
   const catalogT = await getTranslations("product.catalogAdmin");
+  const hubT = await getTranslations("hubs.associations");
   const mediaT = await getTranslations("product.mediaReview");
 
   // Check if user is admin
@@ -202,6 +203,7 @@ export default async function AdminPage() {
       {/* 管理工具：模板与工作流审核队列 / 邀请码（ANS P1/P0） */}
       <div className="mb-4 flex flex-wrap gap-2">
         {can("USERS_MANAGE") && <Link href="/admin/media-generations" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"><HistoryIcon className="h-4 w-4" />{mediaT("title")}</Link>}
+        {can("CATALOG_MANAGE") && <Link href="/admin/hub-associations" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm">{hubT("queueTitle")}</Link>}
         {can("CATALOG_MANAGE") && <Link href="/admin/catalog" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted"><FolderTree className="h-4 w-4" />{catalogT("title")}</Link>}
         {can("USERS_MANAGE") && <Link href="/admin/credits" className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-card-foreground shadow-sm transition-colors hover:bg-muted">{quotaT("title")}</Link>}
         {can("MARKETPLACE_MANAGE") && (
