@@ -129,7 +129,7 @@ export async function readHubMemberWorkflows(hubSlug:WorkflowHubSlug,cursor?:str
   // use one qualification predicate in the same repeatable-read snapshot.
   const page=rows.slice(0,24).map(row=>{const definition=workflowDefinitionSchema.parse(row.definition);if(!validateWorkflow(definition).ok)throw new WorkflowHubError("INTERNAL_ERROR",500);assertSupportedRecipe(definition);return{cursor:row.cursor,w:{id:row.id,slug:row.slug,title:row.title,summary:row.summary,authorId:row.authorId,estimatedCost:row.estimatedCost},v:{id:row.versionId,version:row.version},definition};});
   const slugs=page.map(({w,v})=>`workflow-${marketHash(w.id).slice(0,24)}-v${v.version}`);
-  const listings=await tx.marketListing.findMany({where:{slug:{in:slugs},status:"PUBLISHED",seller:{deletedAt:null,flagged:false}},include:{versions:true}});
+  const listings=slugs.length ? await tx.marketListing.findMany({where:{slug:{in:slugs},status:"PUBLISHED",seller:{deletedAt:null,flagged:false}},include:{versions:true}}) : [];
   const items=page.map(({w,v,definition})=>{const slug=`workflow-${marketHash(w.id).slice(0,24)}-v${v.version}`,listing=listings.find(l=>l.slug===slug&&l.sellerId===w.authorId),published=listing?.versions.find(v=>v.version===listing.publishedVersion),parsed=marketListingInputSchema.safeParse(published?.payload),binding=parsed.success?parsed.data.execution:null;
    const exact=published?.reviewedAt&&binding&&binding.workflowId===w.id&&binding.versionId===v.id&&binding.version===v.version&&binding.definitionHash===workflowDefinitionHash(definition);
    return{id:w.id,slug:w.slug,title:w.title,summary:w.summary,versionId:v.id,version:v.version,estimatedCost:w.estimatedCost,marketPath:exact?`/market/${slug}`:null};});
