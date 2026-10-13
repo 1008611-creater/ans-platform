@@ -25,14 +25,14 @@ it("keeps unknown project counts unknown while showing real Hub links", async ()
 });
 it("keeps CAU explicit and does not claim generic runnable projects", async () => {
   render(await HubDetailPage({ params: Promise.resolve({ slug: "cauhub" }) }));
-  expect(screen.getByText("noRunnable")).toBeVisible();
+  expect(screen.getByText("noOfficialWorkflows")).toBeVisible();
   expect(screen.getByText("noProjects")).toBeVisible();
   expect(screen.getByRole("link", { name: "resources.agrihackathon.title" })).toHaveAttribute("href", "/competitions/agrihackathon");
   expect(screen.queryByRole("link", { name: /prepareWorkflow/ })).toBeNull();
 });
 it("omits executable claims and generic preparation when the real registration is absent", async () => {
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
-  expect(screen.getByText("noRunnable")).toBeVisible();
+  expect(screen.getByText("noOfficialWorkflows")).toBeVisible();
   expect(screen.queryByRole("link", { name: "prepareWorkflow" })).toBeNull();
   expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(mocks.list).toHaveBeenCalledExactlyOnceWith();
@@ -84,7 +84,7 @@ it("shows unknown execution availability without losing references after attesta
   mocks.platform.mockRejectedValue(new Error("private connection detail"));
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
   expect(screen.getByRole("status")).toHaveTextContent("workflowsUnavailable");
-  expect(screen.queryByText("noRunnable")).toBeNull();
+  expect(screen.queryByText("noOfficialWorkflows")).toBeNull();
   expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(screen.queryByRole("link", { name: "prepareWorkflow" })).toBeNull();
   expect(screen.getByRole("link", { name: "Hello \u7b97\u6cd5" })).toBeVisible();

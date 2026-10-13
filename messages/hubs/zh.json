@@ -194,6 +194,9 @@
     },
     "withdrawPending": "撤回此待审申请",
     "withdrawApproved": "撤回此已批准关联",
-    "technicalDetails": "技术详情"
-  }
+    "technicalDetails": "技术详情",
+    "authorOnly": "仅作者可提交新的归属申请。"
+  },
+  "officialWorkflowsTitle": "官方工作流",
+  "noOfficialWorkflows": "这个 Hub 还没有关联的官方工作流。"
 }

@@ -194,6 +194,9 @@
     },
     "withdrawPending": "Withdraw this pending request",
     "withdrawApproved": "Withdraw this approved association",
-    "technicalDetails": "Technical details"
-  }
+    "technicalDetails": "Technical details",
+    "authorOnly": "Only the author can submit a new Hub association request."
+  },
+  "officialWorkflowsTitle": "Official workflows",
+  "noOfficialWorkflows": "This Hub has no associated official workflows yet."
 }
