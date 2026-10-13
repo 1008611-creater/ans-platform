@@ -4,9 +4,26 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowUpRight } from "lucide-react";
 import type { CatalogProject } from "@/domain/catalog/projects";
 import { ProjectPreview } from "./project-preview";
+import { RevealDetails } from "./reveal-details";
+import styles from "./project-card.module.css";
 
-export async function ProjectCard({ project }: { project: CatalogProject }) {
+export async function ProjectCard({ project, compact = false }: { project: CatalogProject; compact?: boolean }) {
   const [t, locale] = await Promise.all([getTranslations("product"), getLocale()]);
+  if (compact) {
+    const title = catalogText(project, t, "title", locale);
+    const descriptionId = `project-${project.slug}-info`;
+    return <RevealDetails id={descriptionId} label={t("catalogBrowse.info", { title })} className={styles.card} details={<>
+      <div className={styles.metadata}><span>{t(`categories.${project.category}`)}</span><span>{t(catalogSourceLabel(project.source))}</span></div>
+      {project.creator && <p>{project.creator}</p>}
+      <p>{catalogText(project, t, "summary", locale)}</p>
+      <p>{t(project.workflowId ? "ready" : project.memberHref ? "realProject.member" : project.source === "official" ? "realProject.externalProduct" : "reference")}</p>
+    </>}>
+      <Link href={project.memberHref ?? `/explore/${project.slug}`} prefetch={false} className={styles.link} aria-describedby={descriptionId}>
+        <ProjectPreview project={project} />
+        <div className={styles.title}><h3>{title}</h3><ArrowUpRight aria-hidden="true" /></div>
+      </Link>
+    </RevealDetails>;
+  }
   return <article className="ans-project-card">
     <Link href={project.memberHref ?? `/explore/${project.slug}`} className="ans-card-link">
       <ProjectPreview project={project} />

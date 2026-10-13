@@ -52,7 +52,7 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
  */
 const PUBLIC_PAGES = [
   ["/", "首页", "长成你的作品。"],
-  ["/explore", "项目发现", "发现好项目"],
+  ["/explore", "项目发现", "项目广场"],
   ["/explore/liu-resume", "项目详情", "个人简历与作品集"],
   ["/workflows/toonflow", "视频工作流", "AIGC 工作台"],
   ["/hubs", "Hub 目录", "找到你的 Hub"],
@@ -76,7 +76,7 @@ const PRIVATE_PAGES = [
 /** 移动视口只扫最容易暴露问题的三个入口，避免门禁时间翻倍。 */
 const MOBILE_PAGES = [
   ["/", "移动端 首页", "长成你的作品。"],
-  ["/explore", "移动端 项目发现", "发现好项目"],
+  ["/explore", "移动端 项目发现", "项目广场"],
   ["/hubs", "移动端 Hub 目录", "找到你的 Hub"],
   ["/workflows", "移动端 工作流广场", "工作流"],
 ];
@@ -131,7 +131,9 @@ async function scanPage(page, axeSource, store, failures, baseUrl, pathname, lab
   if (expectText) {
     // 页面没渲染出预期内容时，扫描结果没有意义（可能扫的是错误页）。
     const rendered = await page
-      .waitForFunction((text) => document.body.innerText.includes(text), { timeout: 15_000 }, expectText)
+      .waitForFunction(({ text, route }) => route === "/explore"
+        ? document.querySelector("main h1")?.textContent?.trim() === text
+        : document.body.innerText.includes(text), { timeout: 15_000 }, { text: expectText, route: pathname })
       .then(() => true)
       .catch(() => false);
     if (!rendered) failures.push(`${label} ${pathname} 未渲染预期文案「${expectText}」`);

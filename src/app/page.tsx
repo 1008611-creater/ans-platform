@@ -7,8 +7,10 @@ import { listPublishedCatalog } from "@/server/catalog/service";
 import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
 import { catalogText } from "@/domain/catalog/content";
 import { homepageProjects } from "@/domain/catalog/homepage";
-import { ProjectPreview } from "@/components/catalog/project-preview";
-import { OfficialWorkflows } from "@/components/catalog/official-workflows";
+import { browseCatalog, catalogBrowseHref, type CatalogBrowseQuery } from "@/domain/catalog/browse";
+import { ProjectCard } from "@/components/catalog/project-card";
+import { CatalogPagination } from "@/components/catalog/catalog-pagination";
+import { RevealDetails } from "@/components/catalog/reveal-details";
 import { ProjectCoverflow } from "@/components/homepage/project-coverflow";
 import { HomepageCtaLink } from "@/components/homepage/homepage-cta-link";
 import styles from "./home.module.css";
@@ -16,24 +18,27 @@ import styles from "./home.module.css";
 export const dynamic = "force-dynamic";
 const categoryIcons = { learning: BookOpen, career: BriefcaseBusiness, aigc: Clapperboard, web: Code2, github: Github, business: Store, productivity: Zap, competition: Trophy };
 
-export default async function HomePage() {
-  const [t, locale, catalog] = await Promise.all([getTranslations("product"), getLocale(), listPublishedCatalog()]);
-  const { hero, featured, showcase } = homepageProjects(catalog);
+export default async function HomePage({ searchParams }: { searchParams?: Promise<CatalogBrowseQuery> }) {
+  const [params, t, locale, catalog] = await Promise.all([searchParams ?? Promise.resolve({}), getTranslations("product"), getLocale(), listPublishedCatalog()]);
+  const { hero, projects, showcase } = homepageProjects(catalog);
+  const browse = browseCatalog(projects, params, project => [catalogText(project, t, "title", locale), catalogText(project, t, "summary", locale), t(`categories.${project.category}`), t(`children.${project.subcategory}`)].join(" "));
+  const filterHref = (updates: Parameters<typeof catalogBrowseHref>[2] = {}, page = 1) => catalogBrowseHref("/", browse.filters, updates, page);
   return <div className={`ans-product-shell ans-home-page ${styles.page}`}>
     <section className={styles.hero} aria-labelledby="home-title">
       <div className={`ans-product-container ${styles.intro}`}>
         <div className={styles.copy}>
-          <p className={styles.eyebrow}>{t("home.eyebrow")}</p>
-          <h1 id="home-title" className={styles.title}>{t("home.title")}</h1>
-          <p className={styles.description}>{t("home.description")}</p>
-          <form action="/explore" method="get" role="search" className={styles.search} aria-label={t("searchLabel")}>
+          <RevealDetails id="home-introduction" label={t("catalogBrowse.introduction")} kind="heading" className={styles.titleBlock} details={<p>{t("home.description")}</p>}>
+            <h1 id="home-title" className={styles.title}>{t("home.title")}</h1>
+          </RevealDetails>
+          <form action="/#home-projects-title" method="get" role="search" className={styles.search} aria-label={t("searchLabel")}>
             <label className="sr-only" htmlFor="home-project-search">{t("searchLabel")}</label>
             <Search className={styles.searchIcon} aria-hidden="true" />
-            <Input id="home-project-search" name="q" type="search" maxLength={200} autoComplete="off" placeholder={t("home.searchPlaceholder")} />
+            <Input id="home-project-search" name="q" type="search" maxLength={200} autoComplete="off" defaultValue={browse.filters.q} placeholder={t("home.searchPlaceholder")} />
+            {Object.entries(browse.filters).map(([key, value]) => key !== "q" && value && <input key={key} type="hidden" name={key} value={value} />)}
             <Button type="submit" aria-label={t("search")}><ArrowRight aria-hidden="true" /></Button>
           </form>
           <div className={styles.actions}>
-            <HomepageCtaLink href="/explore" eventName="primary_cta">{t("exploreAction")}<ArrowRight aria-hidden="true" /></HomepageCtaLink>
+            <HomepageCtaLink href="#home-projects-title" eventName="primary_cta">{t("exploreAction")}<ArrowRight aria-hidden="true" /></HomepageCtaLink>
             <HomepageCtaLink href="/hubs" eventName="workflow_cta">{t("workflowAction")}<ArrowUpRight aria-hidden="true" /></HomepageCtaLink>
           </div>
         </div>
@@ -44,29 +49,21 @@ export default async function HomePage() {
           summary: catalogText(project, t, "summary", locale),
           category: t(`categories.${project.category}`),
           coverUrl: project.coverUrl,
-        }))} labels={{ title: t("home.spotlight"), previous: t("home.previousProject"), next: t("home.nextProject"), pause: t("home.pauseProjects"), play: t("home.playProjects"), open: t("detail"), select: t("home.selectProject"), carousel: t("home.projectCarousel") }} /> : <div className={styles.empty}><BookOpen aria-hidden="true" /><h2>{t("emptyTitle")}</h2><p>{t("emptyBody")}</p><Link href="/hubs" className="ans-text-link">{t("workflowAction")}<ArrowRight aria-hidden="true" /></Link></div>}
+        }))} labels={{ title: t("home.spotlight"), open: t("detail"), carousel: t("home.projectCarousel"), info: t("catalogBrowse.introduction"), pause: t("home.pauseProjects"), play: t("home.playProjects") }} /> : <div className={styles.empty}><BookOpen aria-hidden="true" /><h2>{t("emptyTitle")}</h2><p>{t("emptyBody")}</p></div>}
       </div>
     </section>
-    <div className={`ans-product-container ${styles.directions}`}>
-      <span className={styles.directionLabel}>{t("home.directions")}</span>
-      <nav aria-label={t("categoriesLabel")} className={styles.categoryRail}>{PROJECT_CATEGORIES.map(category => { const Icon = categoryIcons[category.id]; return <Link key={category.id} href={`/explore?category=${category.id}`}><Icon aria-hidden="true" />{t(`categories.${category.id}`)}</Link>; })}</nav>
-    </div>
-    {featured.length > 0 && <section className={`ans-product-container ${styles.selection}`} aria-labelledby="home-projects-title">
-      <div className={styles.sectionHeading}><div><p className={styles.kicker}>{t("home.selectionLabel")}</p><h2 id="home-projects-title">{t("selectionTitle")}</h2></div><Link href="/explore" className="ans-text-link">{t("viewAll")}<ArrowUpRight aria-hidden="true" /></Link></div>
-      <div className={`ans-catalog-grid ${styles.projects}`}>{featured.map(project => <article key={project.slug} className={styles.project}>
-        <Link href={project.memberHref ?? `/explore/${project.slug}`}>
-          <div className={styles.projectCopy}><div className={styles.projectMeta}><span>{t(`categories.${project.category}`)}</span><span>{t(project.workflowId ? "ready" : project.memberHref ? "realProject.member" : project.source === "official" ? "realProject.externalProduct" : "reference")}</span></div><h3>{catalogText(project, t, "title", locale)}<ArrowUpRight aria-hidden="true" /></h3><p>{catalogText(project, t, "summary", locale)}</p></div>
-          <ProjectPreview project={project} />
-        </Link>
-      </article>)}</div>
-    </section>}
-    <section className={styles.workflowSection} aria-labelledby="home-workflows-title"><div className={`ans-product-container ${styles.section}`}>
-      <div className={styles.sectionHeading}><div><p className={styles.kicker}>{t("home.workflowLabel")}</p><h2 id="home-workflows-title">{t("workflowTitle")}</h2><p>{t("home.workflowDescription")}</p></div><Link href="/hubs" className="ans-text-link">{t("nav.workflows")}<ArrowUpRight aria-hidden="true" /></Link></div>
-      <OfficialWorkflows compact />
-    </div></section>
-    <section className={`ans-product-container ${styles.section} ${styles.bottom}`} aria-labelledby="home-steps-title">
-      <div className={styles.steps}><p className={styles.kicker}>{t("home.stepsLabel")}</p><h2 id="home-steps-title">{t("stepsTitle")}</h2><ol>{[1, 2, 3].map(step => <li key={step}><span aria-hidden="true">0{step}</span><div><h3>{t(`steps.${step}.title`)}</h3><p>{t(`steps.${step}.body`)}</p></div></li>)}</ol></div>
-      <div className={styles.community}><BookOpen aria-hidden="true" /><p className={styles.kicker}>{t("home.communityLabel")}</p><h2>{t("communityTitle")}</h2><p>{t("communityBody")}</p><div className={styles.communityLinks}><Link href="/community" className="ans-text-link">{t("communityAction")}<ArrowRight aria-hidden="true" /></Link><Link href="/hubs/vibehub" className="ans-text-link">ANS VibeHub<ArrowUpRight aria-hidden="true" /></Link></div></div>
+    <section className={`ans-product-container ${styles.selection}`} aria-labelledby="home-projects-title">
+      <div className={styles.sectionHeading}><h2 id="home-projects-title">{t("nav.explore")}</h2><span className={styles.count}>{t("results", { count: browse.total })}</span></div>
+      <nav aria-label={t("categoriesLabel")} className={styles.categoryRail}>
+        <Link href={filterHref({ category: undefined, subcategory: undefined })} aria-current={!browse.category ? "page" : undefined}>{t("all")}</Link>
+        {PROJECT_CATEGORIES.map(category => { const Icon = categoryIcons[category.id]; return <Link key={category.id} href={filterHref({ category: category.id, subcategory: undefined })} aria-current={browse.category?.id === category.id ? "page" : undefined}><Icon aria-hidden="true" />{t(`categories.${category.id}`)}<span>{catalog.filter(project => project.category === category.id).length}</span></Link>; })}
+      </nav>
+      {browse.category && <nav aria-label={t("subcategoriesLabel")} className={styles.subcategories}>
+        <Link href={filterHref({ subcategory: undefined })} aria-current={!browse.subcategory ? "page" : undefined}>{t("allChildren")}</Link>
+        {browse.category.children.map(child => <Link key={child} href={filterHref({ subcategory: child })} aria-current={browse.subcategory === child ? "page" : undefined}>{t(`children.${child}`)}</Link>)}
+      </nav>}
+      {browse.projects.length ? <div className={`ans-catalog-grid ${styles.projects}`}>{browse.projects.map(project => <ProjectCard key={project.slug} project={project} compact />)}</div> : <div className="ans-empty"><h3>{t("emptyTitle")}</h3><p>{t("emptyBody")}</p><Link href="/#home-projects-title" className="ans-text-link">{t("clear")}</Link></div>}
+      <CatalogPagination page={browse.page} pages={browse.pages} href={page => filterHref({}, page)} labels={{ navigation: t("catalogBrowse.pagination"), previous: t("catalogBrowse.previous"), next: t("catalogBrowse.next"), page: page => t("catalogBrowse.page", { page }) }} />
     </section>
   </div>;
 }

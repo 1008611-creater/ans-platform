@@ -1,5 +1,5 @@
 ﻿import type { Metadata } from "next";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -14,6 +14,7 @@ import { listPublishedMarketListingsBySeller } from "@/server/marketplace/listin
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AvatarFrame } from "@/components/growth/avatar-frame";
 import { ProfileGrowthPanel } from "@/components/growth/profile-growth-panel";
+import UserProfileLoading from "@/components/profile/profile-loading";
 import { MarketOfferCard } from "@/components/marketplace/offer-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,11 @@ export async function generateMetadata({ params }: ProfileProps): Promise<Metada
 export default async function UserProfilePage({ params }: ProfileProps) {
   const username = profileName((await params).username); if (!username) notFound();
   const user = await getProfileUser(username); if (!user) notFound();
+  // Resolve profile existence before streaming a loading response so missing
+  // profiles keep an HTTP 404 status. Valid profiles still show the skeleton.
+  return <Suspense fallback={<UserProfileLoading />}><UserProfileContent user={user} /></Suspense>;
+}
+async function UserProfileContent({ user }: { user: NonNullable<Awaited<ReturnType<typeof getProfileUser>>> }) {
   const session = await auth(), t = await getTranslations("retirement"), p = await getTranslations("product.profile"), g = await getTranslations("product.growth");
   const isOwner = session?.user?.id === user.id;
   const [publications, offers, growth] = await Promise.all([

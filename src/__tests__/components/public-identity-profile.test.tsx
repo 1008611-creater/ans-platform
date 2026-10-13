@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { isValidElement, type ReactNode } from "react";
+import { cloneElement, isValidElement, type ReactNode } from "react";
 import UserProfilePage, { generateMetadata } from "@/app/[username]/page";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
@@ -47,6 +47,17 @@ function walk(node: ReactNode, visit: (props: Record<string, unknown>, type: unk
   visit(node.props, node.type); walk(node.props.children as ReactNode, visit);
 }
 function serialize(tree: ReactNode) { return JSON.stringify(tree, (_key, value) => isValidElement(value) ? value.props : value); }
+// Resolve the async server child behind Suspense before checking the actual
+// rendered client props. Its input row is server-only and is not client output.
+async function renderedProfile() {
+  const boundary = await UserProfilePage(props());
+  const child = boundary.props.children;
+  expect(isValidElement(child)).toBe(true);
+  if (!isValidElement<Record<string, unknown>>(child) || typeof child.type !== "function") throw new Error("Expected the profile server content");
+  const renderContent = child.type as (props: Record<string, unknown>) => Promise<ReactNode>;
+  return cloneElement(boundary, undefined, await renderContent(child.props));
+}
+
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -93,7 +104,7 @@ describe("profile metadata 公开身份", () => {
 describe("profile 服务端到 client 的身份与发布边界", () => {
   it.each([false, true])("owner=%s：仅传递公开作品、已发布服务和安全身份", async owner => {
     if (owner) vi.mocked(auth).mockResolvedValue({ user: { id: rawIdentity.id } } as never);
-    const tree = await UserProfilePage(props()), serialized = serialize(tree);
+    const tree = await renderedProfile(), serialized = serialize(tree);
     for (const secret of [rawIdentity.name, rawIdentity.email, rawIdentity.githubUsername, "https://private.example.test/me", '"email"', '"customLinks"', '"bio"', "不应公开的项目名", "未发布服务草稿"]) expect(serialized).not.toContain(secret);
     expect(serialized).toContain("星河"); expect(serialized).toContain("已审核公开作品");
     const links: string[] = [], cards: Array<Record<string, unknown>> = [], growth: Array<Record<string, unknown>> = [];
@@ -119,12 +130,12 @@ describe("profile 服务端到 client 的身份与发布边界", () => {
   });
   it("另一个登录账号不取得主页所有者的私密成长历史", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "different-member" } } as never);
-    const serialized = serialize(await UserProfilePage(props()));
+    const serialized = serialize(await renderedProfile());
     expect(getGrowthProfile).not.toHaveBeenCalled(); expect(serialized).not.toContain(privateEvent.id);
     expect(serialized).not.toContain("/settings"); expect(serialized).toContain('"editable":false');
   });
   it("严格查询投影只读正常公开账号和审核后未撤回的作品", async () => {
-    await UserProfilePage(props());
+    await renderedProfile();
     expect(vi.mocked(db.user.findFirst).mock.calls[0][0]).toEqual({
       where: { username: { equals: rawIdentity.username, mode: "insensitive" }, deletedAt: null, flagged: false },
       orderBy: { createdAt: "asc" },
@@ -142,7 +153,7 @@ describe("profile 服务端到 client 的身份与发布边界", () => {
   });
   it("无公开成果时真实空态不补示例项目或服务", async () => {
     vi.mocked(db.artifactPublication.findMany).mockResolvedValue([]); vi.mocked(db.marketListing.findMany).mockResolvedValue([]);
-    const serialized = serialize(await UserProfilePage(props()));
+    const serialized = serialize(await renderedProfile());
     expect(serialized).toContain("noPublicWorks"); expect(serialized).toContain("noPublicOffers");
     expect(serialized).not.toContain("public-version"); expect(serialized).not.toContain("public-offer");
   });

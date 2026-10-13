@@ -3043,5 +3043,13 @@
     "olderHistory": "Load earlier history",
     "versionPreliminaryFrozen": "Original 48H frozen version",
     "externalHint": "External links can change and are not backups."
+  },
+  "catalogBrowse": {
+    "info": "About {title}",
+    "introduction": "About this",
+    "pagination": "Project pages",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}"
   }
 }
