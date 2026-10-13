@@ -14,6 +14,7 @@ interface ErrorProps {
 export default function Error({ reset }: ErrorProps) {
   const router = useRouter();
   const t = useTranslations("serverError");
+  const nav = useTranslations("hubs.nav");
 
   return (
     <div className="container flex flex-col items-center justify-center min-h-[60vh] py-12">
@@ -56,14 +57,14 @@ export default function Error({ reset }: ErrorProps) {
             {t("helpfulLinks")}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
-            <Link href="/prompts" className="text-primary hover:underline">
-              {t("browsePrompts")}
+            <Link href="/explore" className="text-primary hover:underline">
+              {nav("explore")}
             </Link>
-            <Link href="/categories" className="text-primary hover:underline">
-              {t("categories")}
+            <Link href="/hubs" className="text-primary hover:underline">
+              {nav("hubs")}
             </Link>
-            <Link href="/prompts/new" className="text-primary hover:underline">
-              {t("createPrompt")}
+            <Link href="/workspace" className="text-primary hover:underline">
+              {nav("workspace")}
             </Link>
           </div>
         </div>
