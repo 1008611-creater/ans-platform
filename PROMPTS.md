@@ -173034,3 +173034,16 @@ Photoreal architectural interior photograph of a High Victorian glass conservato
 
 </details>
 
+<details>
+<summary><strong>Earn Extra Income With a Spare Home PC</strong></summary>
+
+## Earn Extra Income With a Spare Home PC
+
+Contributed by @anonymous
+
+```md
+I Have intel 7 pc with 32 gb ram and  1TB HDD at home. How i can i use this for earn additional income. 
+```
+
+</details>
+
