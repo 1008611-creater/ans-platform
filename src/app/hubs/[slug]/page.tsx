@@ -24,24 +24,28 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function HubDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: Promise<{cursor?:string}> }) {
   const { slug } = await params, hub = getHub(slug); if (!hub) notFound();
   const [t, product, locale] = await Promise.all([getTranslations("hubs"), getTranslations("product"), getLocale()]);
-  let published: Awaited<ReturnType<typeof listPublishedCatalog>> | null = null;
-  try { published = await listPublishedCatalog(); } catch { /* Publication status is unknown, so omit project cards. */ }
-  const query=await searchParams;const cursor=typeof query?.cursor==="string"&&query.cursor.length<=80?query.cursor:undefined;
-  const members=await readHubMemberWorkflows(hub.slug,cursor).catch(()=>null);
-  const projects = published ? hubProjects(hub, published) : [];
-  let platform: Awaited<ReturnType<typeof findPublishedPlatformRecipe>> = null;
-  let workflowsUnavailable = false;
-  if (hub.workflowRecipeIds.includes("resume-website")) {
+  const query = await searchParams;
+  const cursor = typeof query?.cursor === "string" && query.cursor.length <= 80 ? query.cursor : undefined;
+  // Independent public reads must not serialize database network round trips.
+  // Each service retains its own publication, ownership and snapshot checks.
+  const platformRead = async () => {
+    if (!hub.workflowRecipeIds.includes("resume-website")) return { platform: null, workflowsUnavailable: false, marketPath: null, marketUnavailable: false };
+    let platform: Awaited<ReturnType<typeof findPublishedPlatformRecipe>>;
     try { platform = await findPublishedPlatformRecipe(); }
-    catch { workflowsUnavailable = true; }
-  }
+    catch { return { platform: null, workflowsUnavailable: true, marketPath: null, marketUnavailable: false }; }
+    if (!platform) return { platform, workflowsUnavailable: false, marketPath: null, marketUnavailable: false };
+    try {
+      const marketPath = await publishedRecipeMarketPath(platform.workflow, platform.version, platform.recipe.definitionHash);
+      return { platform, workflowsUnavailable: false, marketPath, marketUnavailable: false };
+    } catch { return { platform, workflowsUnavailable: false, marketPath: null, marketUnavailable: true }; }
+  };
+  const [published, members, { platform, workflowsUnavailable, marketPath, marketUnavailable }] = await Promise.all([
+    listPublishedCatalog().catch(() => null),
+    readHubMemberWorkflows(hub.slug, cursor).catch(() => null),
+    platformRead(),
+  ]);
+  const projects = published ? hubProjects(hub, published) : [];
   const recipes = hubWorkflowRecipes(hub, workflowsUnavailable ? null : platform ? [platform.recipe.catalogRecipeId] : []);
-  let marketPath: string | null = null;
-  let marketUnavailable = false;
-  if (platform) {
-    try { marketPath = await publishedRecipeMarketPath(platform.workflow, platform.version, platform.recipe.definitionHash); }
-    catch { marketUnavailable = true; }
-  }
   return <div className="ans-product-shell"><div className={`ans-product-container ${styles.container}`}>
     <Link href="/hubs" className={styles.back}><ArrowLeft className="size-4" aria-hidden="true" />{t("back")}</Link>
     <PageHeading eyebrow={t(`types.${hub.organization.type}`)} title={t(`items.${hub.slug}.name`)} description={t(`items.${hub.slug}.description`)} />
