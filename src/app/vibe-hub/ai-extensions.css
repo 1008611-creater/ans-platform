@@ -1,0 +1,81 @@
+﻿/* Local AI diagrams inherit ANS tokens; they illustrate concepts, not live executions. */
+.vibehub-source .ans-ai-diagram {
+  width: min(360px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+  padding: 6px 0;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+}
+.vibehub-source .ans-ai-diagram :is(span, strong, p, small) { overflow-wrap: anywhere; }
+.vibehub-source .ans-ai-diagram small { color: var(--text-2); font-size: 11px; }
+.vibehub-source .ans-ai-diagram .ans-ai-caption { margin: 0; text-align: center; color: var(--text-2); font-size: 11px; }
+.vibehub-source .ans-ai-space { width: 100%; height: auto; max-height: 128px; }
+.vibehub-source .ans-ai-space path { stroke: var(--border); fill: none; }
+.vibehub-source .ans-ai-space .ans-ai-link { stroke: var(--brand); stroke-dasharray: 4 4; }
+.vibehub-source .ans-ai-space circle { fill: var(--brand); }
+.vibehub-source .ans-ai-space .ans-ai-distant { fill: var(--text-2); }
+.vibehub-source .ans-ai-space text { fill: var(--text); font: 12px var(--font-sans, sans-serif); }
+.vibehub-source .ans-ai-question { padding: 8px 12px; background: var(--brand-light); border-radius: 8px; }
+.vibehub-source .ans-ai-results { display: grid; gap: 7px; }
+.vibehub-source .ans-ai-results span { display: flex; gap: 12px; border-bottom: 1px solid var(--border); padding: 4px 0; }
+.vibehub-source .ans-ai-results b { color: var(--text-2); font-variant-numeric: tabular-nums; }
+.vibehub-source .ans-ai-document { width: 68%; margin: auto; padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; }
+.vibehub-source .ans-ai-diagram i { display: block; }
+.vibehub-source :is(.ans-ai-document, .ans-ai-chunks, .ans-ai-evidence) i { height: 3px; background: var(--border); margin: 6px 0; border-radius: 2px; }
+.vibehub-source .ans-ai-chunks { display: flex; justify-content: center; gap: 10px; }
+.vibehub-source .ans-ai-chunks span { width: 43%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; }
+.vibehub-source .ans-ai-chunks i { background: color-mix(in oklch, var(--brand) 30%, var(--bg)); }
+.vibehub-source .ans-ai-ranks { display: grid; grid-template-columns: minmax(0,1fr) 16px minmax(0,1fr); align-items: center; gap: 10px; }
+.vibehub-source .ans-ai-ranks > div { display: grid; gap: 7px; }
+.vibehub-source .ans-ai-ranks span { border: 1px solid var(--border); border-radius: 6px; padding: 7px 8px; }
+.vibehub-source .ans-ai-ranks .ans-ai-selected { background: var(--brand-light); border-color: var(--border-hover); }
+.vibehub-source .ans-ai-evidence { display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: 18px; }
+.vibehub-source .ans-ai-evidence > div:first-child { padding: 12px; border: 1px solid var(--border); border-radius: 6px; }
+.vibehub-source .ans-ai-evidence > div:last-child { display: grid; gap: 16px; }
+.vibehub-source .ans-ai-uncertain { color: var(--text-2); }
+.vibehub-source .ans-ai-compact { display: grid; grid-template-columns: 1fr 18px 1fr; gap: 14px; align-items: center; }
+.vibehub-source .ans-ai-compact > div:first-child { display: grid; gap: 5px; }
+.vibehub-source .ans-ai-compact i { height: 8px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 3px; }
+.vibehub-source .ans-ai-compact i:nth-child(3) { width: 84%; }
+.vibehub-source .ans-ai-summary { display: grid; gap: 8px; }
+.vibehub-source .ans-ai-summary strong { padding: 12px 8px; background: var(--brand-light); border-radius: 6px; }
+.vibehub-source .ans-ai-summary span { border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; }
+.vibehub-source .ans-ai-cache { display: grid; grid-template-columns: 1.6fr 1fr; align-items: stretch; gap: 6px; }
+.vibehub-source .ans-ai-cache span { padding: 8px; border-radius: 5px; background: var(--brand-light); border: 1px solid var(--border-hover); }
+.vibehub-source .ans-ai-cache b { padding: 8px; border: 1px dashed var(--border); border-radius: 5px; font-weight: 500; }
+.vibehub-source .ans-ai-criteria { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.vibehub-source .ans-ai-trace { list-style: none; margin: auto; width: 88%; display: grid; gap: 0; }
+.vibehub-source .ans-ai-trace li { display: flex; gap: 14px; align-items: center; padding: 10px 0; }
+.vibehub-source .ans-ai-trace li:not(:last-child) { border-bottom: 1px solid var(--border); }
+.vibehub-source .ans-ai-trace i { width: 7px; height: 7px; background: var(--brand); border-radius: 50%; flex-shrink: 0; }
+.vibehub-source .ans-ai-screen { position: relative; width: 76%; border: 1px solid var(--border); border-radius: 8px; margin: auto; }
+.vibehub-source .ans-ai-screen > div { display: flex; gap: 4px; padding: 7px; border-bottom: 1px solid var(--border); }
+.vibehub-source .ans-ai-screen i { width: 4px; height: 4px; border-radius: 50%; background: var(--text-2); }
+.vibehub-source .ans-ai-screen p { margin: 0; padding: 14px 12px; }
+.vibehub-source .ans-ai-screen > span { position: absolute; bottom: 3px; right: 16px; font-size: 22px; color: var(--brand); }
+.vibehub-source .ans-ai-cycle { display: flex; gap: 12px; justify-content: center; align-items: center; }
+.vibehub-source .ans-ai-routing { display: grid; grid-template-columns: 1fr 20px 1.7fr; align-items: center; gap: 12px; }
+.vibehub-source .ans-ai-routing > strong { padding: 12px; border: 1px solid var(--border); border-radius: 6px; text-align: center; }
+.vibehub-source .ans-ai-routing > div { display: grid; gap: 5px; }
+.vibehub-source .ans-ai-routing span { padding: 5px 10px; background: var(--bg-soft); border-radius: 4px; }
+.vibehub-source .ans-ai-detail { max-width: 860px; margin: auto; }
+.vibehub-source .ans-ai-detail-visual { padding: 28px 20px; margin: 18px 0 32px; border-radius: 12px; background: var(--bg-soft); }
+.vibehub-source .ans-ai-detail-visual .ans-ai-diagram { width: min(520px, 100%); font-size: 14px; gap: 18px; }
+.vibehub-source .ans-ai-detail-visual .ans-ai-space { max-height: 180px; }
+.vibehub-source .ans-ai-detail :is(.ans-ai-explanation, .ans-ai-request, .ans-ai-related) { margin: 0 0 28px; }
+.vibehub-source .ans-ai-detail h2 { font-size: 18px; font-weight: 650; line-height: 1.4; margin: 24px 0 10px; }
+.vibehub-source .ans-ai-explanation p { color: var(--text-2); line-height: 1.85; max-width: 72ch; }
+.vibehub-source .ans-ai-request blockquote { padding: 18px 20px; border-radius: 10px; background: var(--brand-light); line-height: 1.85; }
+.vibehub-source .ans-ai-related nav { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.vibehub-source .ans-ai-related a { color: var(--text); text-underline-offset: 4px; text-decoration: underline; }
+.vibehub-source .ans-ai-related a:focus-visible { outline: 2px solid var(--brand); outline-offset: 4px; }
+@media (max-width: 480px) {
+  .vibehub-source .ans-ai-detail-visual { padding: 20px 14px; }
+  .vibehub-source .ans-ai-diagram { font-size: 11px; }
+  .vibehub-source .ans-ai-ranks { gap: 6px; }
+  .vibehub-source .ans-ai-detail-visual .ans-ai-diagram { font-size: 12px; }
+}

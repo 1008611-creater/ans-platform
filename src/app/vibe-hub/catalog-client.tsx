@@ -32,7 +32,7 @@ export function Catalog({ data, initialTopic, initialQuery = "" }: { data: Catal
   const [activeGroup, setActiveGroup] = useState<number | null>(null);
   useEffect(() => {
     let frame = 0;
-    const update = () => { frame = 0; let active: number | null = null; groups.forEach((_, index) => { const top = document.getElementById(`group-${index}`)?.getBoundingClientRect().top; if (top !== undefined && top <= 160) active = index; }); setActiveGroup(active); };
+    const update = () => { frame = 0; let active: number | null = null; groups.forEach((_, index) => { const section = document.getElementById(`group-${index}`); if (!section) return; const top = section.getBoundingClientRect().top; const offset = parseFloat(getComputedStyle(section).scrollMarginTop) || 160; if (top <= offset + 1) active = index; }); setActiveGroup(active); };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     schedule(); window.addEventListener("scroll", schedule, { passive: true }); window.addEventListener("resize", schedule);
     return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule); };

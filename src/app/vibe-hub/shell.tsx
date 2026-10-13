@@ -16,6 +16,7 @@ import { VibeFavoritesProvider } from "./favorite-button";
 import { usePersistedSetting } from "./use-persisted-setting";
 import "../../../public/vibe-hub/source/scoped.css";
 import "./ans-knowledge.css";
+import "./ai-extensions.css";
 
 function Navigation() {
   const t = useTranslations("vibehub");

@@ -1,5 +1,8 @@
 // Derived from public VibeHub presentation code. Source hashes: src/data/vibehub/interaction-sources.json.
 import * as eg from "./catalog-source.js";
+import ansAiEntries from "../../../data/vibehub/ans-ai-search.json";
+// ANS-authored terms share the retained ranking, aliases and category matching.
+const catalogEntries = [...eg.sg, ...ansAiEntries];
 let ef = new Set(["a", "an", "and", "or", "the", "versus", "vs", "for", "to", "of", "in", "on", "with", "is", "are", "be", "和", "或", "还是", "以及", "一个", "一种", "这个", "那个", "什么", "怎么", "如何", "可以", "需要", "帮我", "一下", "就是", "那种"]);
 let ev = Object.freeze({
   "back-top": ["返回顶部", "回到顶部", "回顶部", "一键回顶", "back to top"],
@@ -396,7 +399,7 @@ function ek(e) {
 let eN = null;
 let eC = null;
 function eS(e) {
-  let t = e || eg.sg;
+  let t = e || catalogEntries;
   return eN && eC === t ? eN : (eC = t, eN = t.map(ek));
 }
 function eE() {
@@ -409,7 +412,7 @@ function eE() {
         limit: r = 1 / 0,
         minScore: n = 1
       } = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : {},
-      a = t || eg.sg,
+      a = t || catalogEntries,
       s = i ? a.filter(e => e.cat === i) : a,
       l = eS(a).filter(e => !i || e.entry.cat === i),
       o = String(e || "").trim();
