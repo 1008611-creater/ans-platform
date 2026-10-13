@@ -17,12 +17,13 @@ permissions:
 engine:
   id: copilot
   version: "1.0.96"
-  env:
-    GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 tools:
   github:
     toolsets: [issues, pull_requests, repos]
 safe-outputs:
+  threat-detection:
+    continue-on-error: false
+    report-as-issue: false
   add-labels:
     allowed: [wontfix]
     max: 5
