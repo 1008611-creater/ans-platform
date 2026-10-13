@@ -526,6 +526,24 @@
           "sha256": "19accb2bb927969317b8832a8562de5f19350d89dafac37becf6b64d574993b5"
         }
       ]
+    },
+    {
+      "name": "shell-deployment",
+      "source": "ans-shell-deploy",
+      "server": "kaogong",
+      "sourcePath": "/opt/ans",
+      "relationship": "Sanitized deployment configuration for shell; runtime credentials excluded",
+      "excludedSensitiveAndRuntimeFiles": true,
+      "files": [
+        {
+          "path": "compose.yaml",
+          "sha256": "1397ad296b2add140071991f2d260b33553b42eaffbbfed4d83dbd6a0f01c9e7"
+        },
+        {
+          "path": "migrate.yml",
+          "sha256": "c8eaf4e6794fccf1aeb8272a2747fde7de223839f7b7198e8b14d789c976fbbd"
+        }
+      ]
     }
   ]
 }
