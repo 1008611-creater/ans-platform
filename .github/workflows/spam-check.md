@@ -17,7 +17,7 @@ permissions:
 engine:
   id: copilot
   version: "1.0.96"
-  model: copilot/gpt-5-mini
+  model: copilot/auto
 tools:
   github:
     toolsets: [issues, pull_requests, repos]
@@ -26,7 +26,7 @@ safe-outputs:
     engine:
       id: copilot
       version: "1.0.96"
-      model: copilot/gpt-5-mini
+      model: copilot/auto
     continue-on-error: false
     report-as-issue: false
   add-labels:
