@@ -924,6 +924,7 @@ model WorkflowVersion {
   runs        WorkflowRun[]
 
   @@unique([workflowId, version])
+  @@unique([id, workflowId])
   @@index([createdById])
   @@map("workflow_versions")
 }
@@ -2798,4 +2799,51 @@ model AgriPublicationReceipt {
   createdAt DateTime @db.Timestamptz(3)
   @@unique([competitionId, actorId, operation, idempotencyKey])
   @@map("agri_publication_receipts")
+}
+
+/// Curated Hub membership does not publish a workflow or grant execution privileges.
+model WorkflowHubAssociation {
+  id String @id
+  workflowId String
+  hubSlug String
+  revision Int @default(0)
+  requestEventId String?
+  approvedEventId String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
+  @@unique([workflowId, hubSlug])
+  @@unique([id, workflowId, hubSlug])
+  @@index([hubSlug, id], map: "workflow_hub_discovery")
+  @@map("workflow_hub_associations")
+}
+model WorkflowHubEvent {
+  id String @id
+  associationId String
+  workflowId String
+  hubSlug String
+  revision Int
+  action String
+  versionId String
+  actorId String
+  requestEventId String?
+  reason String @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  @@unique([associationId, revision])
+  @@unique([id, associationId, workflowId, hubSlug])
+  @@index([associationId, revision(sort: Desc)], map: "workflow_hub_event_history")
+  @@map("workflow_hub_events")
+}
+model WorkflowHubReceipt {
+  id String @id
+  associationId String
+  workflowId String
+  hubSlug String
+  actorId String
+  idempotencyKey String @db.Uuid
+  requestHash String
+  eventId String
+  appliedRevision Int
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  @@unique([actorId, idempotencyKey])
+  @@map("workflow_hub_receipts")
 }

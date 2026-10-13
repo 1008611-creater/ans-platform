@@ -5,7 +5,9 @@ import HubDetailPage from "@/app/hubs/[slug]/page";
 import { HUBS, getHub } from "@/domain/hubs/registry";
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 
-const mocks = vi.hoisted(() => ({ list: vi.fn(), platform: vi.fn(), market: vi.fn() }));
+const mocks = vi.hoisted(() => ({ members: vi.fn(), list: vi.fn(), platform: vi.fn(), market: vi.fn() }));
+vi.mock("@/server/hubs/workflows", () => ({ readHubMemberWorkflows: mocks.members }));
+vi.mock("@/components/hubs/hub-member-workflows", () => ({ HubMemberWorkflowList: () => null }));
 vi.mock("@/server/workflows/platform-recipes", () => ({ findPublishedPlatformRecipe: mocks.platform }));
 vi.mock("@/server/marketplace/workflows", () => ({ publishedRecipeMarketPath: mocks.market }));
 vi.mock("@/server/integrations/metered-cost", () => ({ unifiedModelBilling: () => process.env.ANS_UNIFIED_POINTS_ENABLED === "1" }));
@@ -13,7 +15,7 @@ vi.mock("@/server/catalog/service", () => ({ listPublishedCatalog: mocks.list })
 vi.mock("next/image", () => ({ default: ({ alt }: { alt: string }) => <span data-testid="real-project-cover">{alt}</span> }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "zh", getTranslations: async () => (key: string, values?: Record<string, string | number>) => values ? `${key}:${Object.values(values).join(",")}` : key }));
-beforeEach(() => { vi.unstubAllEnvs(); mocks.platform.mockReset(); mocks.platform.mockResolvedValue(null); mocks.market.mockReset(); mocks.market.mockResolvedValue(null); mocks.list.mockReset(); mocks.list.mockResolvedValue(CATALOG_PROJECTS); });
+beforeEach(() => { mocks.members.mockReset(); mocks.members.mockResolvedValue({items:[],total:0,nextCursor:null}); vi.unstubAllEnvs(); mocks.platform.mockReset(); mocks.platform.mockResolvedValue(null); mocks.market.mockReset(); mocks.market.mockResolvedValue(null); mocks.list.mockReset(); mocks.list.mockResolvedValue(CATALOG_PROJECTS); });
 afterEach(cleanup);
 
 it("keeps unknown project counts unknown while showing real Hub links", async () => {
@@ -23,14 +25,14 @@ it("keeps unknown project counts unknown while showing real Hub links", async ()
 });
 it("keeps CAU explicit and does not claim generic runnable projects", async () => {
   render(await HubDetailPage({ params: Promise.resolve({ slug: "cauhub" }) }));
-  expect(screen.getByText("noRunnable")).toBeVisible();
+  expect(screen.getByText("noOfficialWorkflows")).toBeVisible();
   expect(screen.getByText("noProjects")).toBeVisible();
   expect(screen.getByRole("link", { name: "resources.agrihackathon.title" })).toHaveAttribute("href", "/competitions/agrihackathon");
   expect(screen.queryByRole("link", { name: /prepareWorkflow/ })).toBeNull();
 });
 it("omits executable claims and generic preparation when the real registration is absent", async () => {
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
-  expect(screen.getByText("noRunnable")).toBeVisible();
+  expect(screen.getByText("noOfficialWorkflows")).toBeVisible();
   expect(screen.queryByRole("link", { name: "prepareWorkflow" })).toBeNull();
   expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(mocks.list).toHaveBeenCalledExactlyOnceWith();
@@ -82,7 +84,7 @@ it("shows unknown execution availability without losing references after attesta
   mocks.platform.mockRejectedValue(new Error("private connection detail"));
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
   expect(screen.getByRole("status")).toHaveTextContent("workflowsUnavailable");
-  expect(screen.queryByText("noRunnable")).toBeNull();
+  expect(screen.queryByText("noOfficialWorkflows")).toBeNull();
   expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(screen.queryByRole("link", { name: "prepareWorkflow" })).toBeNull();
   expect(screen.getByRole("link", { name: "Hello \u7b97\u6cd5" })).toBeVisible();
@@ -104,4 +106,12 @@ it("shows failed recipe counts as unknown only for Hubs which actually configure
   expect(screen.getAllByText("unavailable")).toHaveLength(1);
   const full = screen.getByRole("link", { name: "items.full-stack.name" }).closest("article")!;
   expect(within(full).getByText("unavailable")).toBeVisible();
+});
+
+it("adds approved member counts and never converts failed availability to zero", async () => {
+ render(await HubDirectory({hubs:HUBS,published:[],publishedRecipeIds:[],memberCounts:{cauhub:3,vibehub:0,aigc:null,"full-stack":2}}));
+ const cau=screen.getByRole("link",{name:"items.cauhub.name"}).closest("article")!;
+ expect(within(cau).getByText("3")).toBeVisible();
+ const aigc=screen.getByRole("link",{name:"items.aigc.name"}).closest("article")!;
+ expect(within(aigc).getByText("unavailable")).toBeVisible();
 });

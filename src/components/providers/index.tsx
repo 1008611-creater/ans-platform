@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { WorkflowHubSessionBoundary } from "@/components/workflows/workflow-hub-recovery";
 import { VibeHubReturnNavigation } from "./vibehub-return-navigation";
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
@@ -48,6 +49,7 @@ interface ProvidersProps {
 export function Providers({ children, locale, timeZone, messages, theme, branding }: ProvidersProps) {
   return (
     <SessionProvider>
+      <WorkflowHubSessionBoundary />
       <Suspense fallback={null}><VibeHubReturnNavigation /></Suspense>
       <AgriTaskSessionBoundary />
       <AgriSubmissionSessionBoundary />

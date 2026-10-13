@@ -1,3 +1,4 @@
+import { WorkflowHubAssociations } from "@/components/workflows/workflow-hub-associations";
 import { getTranslations } from "next-intl/server";
 import { unifiedModelBilling } from "@/server/integrations/metered-cost";
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
@@ -155,7 +156,7 @@ export default async function EditWorkflowPage({
         </Card>
       )}
 
-      {isOwner && <MarketAccountBoundary actorId={session.user.id}><WorkflowMarketUpload slug={workflow.slug} version={workflow.publishedVersion ?? latest?.version ?? 1} available={marketAvailable} /></MarketAccountBoundary>}
+      {isOwner && <MarketAccountBoundary actorId={session.user.id}><WorkflowHubAssociations actorId={session.user.id} slug={workflow.slug} /><WorkflowMarketUpload slug={workflow.slug} version={workflow.publishedVersion ?? latest?.version ?? 1} available={marketAvailable} /></MarketAccountBoundary>}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">版本历史</h2>
         <p className="text-sm text-muted-foreground">
