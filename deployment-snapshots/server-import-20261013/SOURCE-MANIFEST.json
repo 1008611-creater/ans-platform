@@ -232,17 +232,13 @@
       "excludedSensitiveAndRuntimeFiles": true,
       "files": [
         {
-          "path": "Caddyfile.candidate.bytes",
-          "sha256": "d9a7dcdbe9b741a751682b00e48ecdcba15454e316dcbe9d522da8ac4b2af2bb"
-        },
-        {
-          "path": "deployment-20261013T043158433271Z.json",
-          "sha256": "6d33edb680ebf0d1e20d29cf2e99460f43b50711a94391fca251e78d9cbfdc43"
-        },
-        {
           "path": "hub-buffer.mjs",
           "sha256": "82ec8fb250be9e0c97b038bff082f56f0418269233f88b820599617f0c5d463d"
         }
+      ],
+      "excludedOperationalRecords": [
+        "Shared full reverse-proxy configuration",
+        "Runtime deployment/container/network identities"
       ]
     },
     {
