@@ -23,7 +23,7 @@
 #
 # Detects spam, self-promotion, and direct prompts.csv edits in issues and PRs. Automatically labels detected items as wontfix and closes them with an explanatory comment.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9f5cbf065c274be1f3990590d4380d418d228e9d2167851362f1a3290bdf6af0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d4b8f700803a491294b336736a25fd55286e3b47f567782d784ba4271b4f52e1"}
 
 name: "Spam & Self-Promotion Check"
 "on":
@@ -749,6 +749,7 @@ jobs:
           GH_AW_MODEL_AGENT_COPILOT: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || '' }}
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
@@ -1066,6 +1067,7 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           GH_AW_MODEL_DETECTION_COPILOT: ${{ vars.GH_AW_MODEL_DETECTION_COPILOT || '' }}
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
