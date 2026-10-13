@@ -1,0 +1,50 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>ANS 小恐龙 · 动作工作台</title>
+<link rel="stylesheet" href="./preview.css">
+<script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body>
+<main class="studio">
+  <header class="page-header">
+    <div class="heading">
+      <span class="wordmark" aria-label="ANS">ANS<span class="brand-dot" aria-hidden="true"></span></span>
+      <span class="heading-divider" aria-hidden="true"></span>
+      <div><h1>小恐龙，准备好和你一起动起来</h1><p class="page-intro">保留原始模型比例与材质，把动作、表情和声音放进同一个空间。</p></div>
+    </div>
+    <span class="preview-badge"><span aria-hidden="true"></span>线上互动工作台</span>
+  </header>
+  <div class="workspace">
+    <div class="viewer">
+      <section id="stage" class="stage" aria-label="ANS 小恐龙三维预览。拖动旋转 360 度，滚轮或双指缩放。">
+        <div class="stage-caption"><span class="stage-eyebrow">ANS MASCOT / LIVE RIG</span><span id="performance-label" class="performance-label">自然待机</span></div>
+        <div class="companion-check"><button type="button" id="companion-size" aria-pressed="false" aria-controls="mini-stage">网站实际大小</button><div id="mini-stage" hidden role="img" aria-label="网站实际大小的小恐龙预览"><span class="mini-size-label" aria-hidden="true">88 × 88 px</span></div></div>
+        <p class="orbit-hint">拖动看 360°<span aria-hidden="true"> · </span>滚轮缩放 · 方向键微调</p>
+      </section>
+      <nav class="camera-bar" aria-label="模型视角与缩放">
+        <div class="view-buttons" role="group" aria-label="切换视角"><button type="button" data-view="front" aria-pressed="false">正面</button><button type="button" data-view="back" aria-pressed="false">背面</button><button type="button" data-view="left" aria-pressed="false">左侧</button><button type="button" data-view="right" aria-pressed="false">右侧</button><button type="button" data-view="threeQuarter" aria-pressed="true">斜侧</button></div>
+        <div class="camera-actions" role="group" aria-label="缩放与复位"><button type="button" id="zoom-out" class="icon-button" aria-label="缩小">−</button><button type="button" id="zoom-in" class="icon-button" aria-label="放大">+</button><button type="button" id="reset-camera">复位视角</button></div>
+      </nav>
+    </div>
+    <aside class="controls" aria-label="模型、动作和声音控制">
+      <section class="control-section model-section" aria-labelledby="model-heading"><div class="section-heading"><h2 id="model-heading">模型与表情</h2><span class="section-index">01</span></div><label class="field-label" for="mode">预览模式</label><select id="mode" aria-describedby="mode-note"><option value="enhanced" selected>增强动作 + 表情</option><option value="baseline">原线上动作</option><option value="original">原始 GLB</option></select><p id="mode-note" class="caption">同一只小恐龙，新增眨眼、口型和更完整的动作串联。</p></section>
+      <section class="control-section motion-section" aria-labelledby="motion-heading"><div class="section-heading"><h2 id="motion-heading">让它回应你</h2><span class="section-index">02</span></div><button type="button" id="play-reel" class="reel-button" aria-pressed="false" aria-describedby="reel-status"><span class="reel-play" aria-hidden="true"></span>连续看一遍动作串</button><p id="reel-status" class="caption reel-status" role="status" aria-live="polite">从打招呼到庆祝，完整走一遍。</p><div class="gesture-groups" aria-describedby="gesture-note">
+        <fieldset class="gesture-group"><legend>与你互动</legend><div class="gesture-grid"><button type="button" data-gesture="hello">打招呼</button><button type="button" data-gesture="listen">认真听</button><button type="button" data-gesture="nod">点头确认</button><button type="button" data-gesture="no">摇头疑惑</button></div></fieldset>
+        <fieldset class="gesture-group"><legend>小小情绪</legend><div class="gesture-grid"><button type="button" data-gesture="think">想一想</button><button type="button" data-gesture="curious">好奇探头</button><button type="button" data-gesture="shy">有点害羞</button><button type="button" data-gesture="surprise">惊喜</button></div></fieldset>
+        <fieldset class="gesture-group"><legend>日常陪伴</legend><div class="gesture-grid"><button type="button" data-gesture="idle" aria-pressed="true">自然待机</button><button type="button" data-gesture="celebrate">小庆祝</button><button type="button" data-gesture="stretch">伸个懒腰</button><button type="button" data-gesture="sleep">打个盹</button></div></fieldset>
+      </div><p id="gesture-note" class="caption">点一个动作，再拖动模型看看它的回应。</p><button type="button" id="pause" class="pause-button" aria-pressed="false"><span class="pause-symbol" aria-hidden="true"></span>暂停动作</button><fieldset id="pose-check" class="pose-check" hidden><legend class="visually-hidden">动作帧检查</legend><div class="pose-heading"><label for="pose-progress">检查动作帧</label><output id="pose-progress-value" for="pose-progress">0%</output></div><input type="range" id="pose-progress" min="0" max="100" step="1" value="0" aria-describedby="pose-check-note"><p id="pose-check-note" class="caption">拖动到动作中间，旋转查看姿态。</p></fieldset></section>
+      <section class="control-section voice-section" aria-labelledby="voice-heading"><div class="section-heading"><h2 id="voice-heading">让它说话</h2><span class="section-index">03</span></div><label class="field-label" for="voice-text">输入一句话</label><textarea id="voice-text" rows="3" maxlength="240">你好，我是 ANS 的小恐龙。一起把想法做出来吧！</textarea><div class="voice-actions"><button type="button" id="speak">▶ 用 Mimo 说出来</button><button type="button" id="stop-speech">停止</button><span id="voice-state" role="status">准备就绪</span></div><p class="caption">声音来自 Mimo TTS，播放时嘴部会跟着音量开合。</p></section>
+      <section class="control-section display-section" aria-labelledby="display-heading"><h2 id="display-heading" class="visually-hidden">显示设置</h2><div class="background-row"><span class="field-label" id="background-label">预览背景</span><div class="background-buttons" role="group" aria-labelledby="background-label"><button type="button" data-background="light" aria-pressed="true"><span class="background-swatch swatch-light" aria-hidden="true"></span>浅色</button><button type="button" data-background="dark" aria-pressed="false"><span class="background-swatch swatch-dark" aria-hidden="true"></span>深色</button></div></div><label class="reduce-label" for="reduced-motion"><input type="checkbox" id="reduced-motion"><span>减少动效</span></label><p id="reduce-note" class="caption reduce-note">关闭自动动作，仍可旋转查看。</p></section>
+      <div class="load-status"><span class="status-dot" aria-hidden="true"></span><p id="status" role="status" aria-live="polite" aria-atomic="true">正在准备模型与动作…</p></div>
+    </aside>
+  </div>
+  <footer class="page-footer"><div class="footer-notes"><p>模型、比例、颜色和贴图保持原始版本；动作与表情在网页运行时叠加，360°查看不受限制。</p><nav class="download-links" aria-label="下载模型文件"><a href="./original-dinosaur.glb" download>下载原始 GLB</a><a href="./dinosaur.glb" download>下载骨骼动作 GLB</a></nav></div><details class="diagnostics-panel"><summary>查看运行信息</summary><pre id="diagnostics" tabindex="0">正在读取…</pre></details></footer>
+</main>
+<noscript><p class="noscript-note">需要启用 JavaScript 才能查看小恐龙的三维模型与动作。</p></noscript>
+<script type="module" src="./studio.js"></script>
+</body>
+</html>

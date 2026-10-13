@@ -1,0 +1,545 @@
+{
+  "date": "2026-10-13",
+  "scope": "Sanitized source snapshots recovered from running deployments; production untouched; excluded environment credentials, user data, runtime storage, generated/build output and unreviewed media.",
+  "repository": "1008611-creater/ans-platform",
+  "variants": [
+    {
+      "name": "shell-runtime",
+      "source": "ans-shell",
+      "server": "kaogong",
+      "sourcePath": "docker:ans-app:/app",
+      "relationship": "Current deployed source snapshot; runtime data excluded",
+      "excludedSensitiveAndRuntimeFiles": true,
+      "files": [
+        {
+          "path": "ans-bg-closing-v1.webp",
+          "sha256": "823f25951d7010c5c21ca11bb1822c1820dea3740ad3befc02c951490fc412fa"
+        },
+        {
+          "path": "ans-bg-feelings-v1.webp",
+          "sha256": "bd2b921264365396a03496cd9b24ac72ac298c51ac13f675d00defc407281c6a"
+        },
+        {
+          "path": "ans-bg-people-v1.webp",
+          "sha256": "776955df238fb25a0e753bb1c83e32e26733a29ed03cce5bdb69760a39e316ba"
+        },
+        {
+          "path": "ans-bg-routes-v1.webp",
+          "sha256": "30c5de323b688d1f06da3ab929e44c335d911159a65b868f468e4c949c7592a3"
+        },
+        {
+          "path": "ans-bg-together-v1.webp",
+          "sha256": "716ee56a118b28223676fb415337356baf5bbc6d6a83a835d3a1d9dc538478e0"
+        },
+        {
+          "path": "ans-bg-topic-v1.webp",
+          "sha256": "b87e9ce6239f112061264305d2296236c2cbdd0e10c489dae535e91681b6d007"
+        },
+        {
+          "path": "ans-logo-light.svg",
+          "sha256": "83e2867d25843dcab578e4a0f4adfe6a0bb4ce3d3c17a0f3d9b4fd29d53ba847"
+        },
+        {
+          "path": "ans-night-lamp-hero-square-lite-v1.webp",
+          "sha256": "34f0f42e7944f4835a1db113f39d7b202fcb6a2144f3ecc7474b760d18d4c21c"
+        },
+        {
+          "path": "app.js",
+          "sha256": "0bf25aa617f9fb2ea2a3d610e2d196fd83ea4400dce98947fce2ac5e04433686"
+        },
+        {
+          "path": "codexfast-core.mjs",
+          "sha256": "69750bf85a197b46c2a7b1fe7e09a0b31c07464ee14c46926f621994f372965c"
+        },
+        {
+          "path": "codexfast.css",
+          "sha256": "32a5c473a80ec68d64d81d90ee630487aa0c35de19138a35a78d08ad9c1aabb7"
+        },
+        {
+          "path": "codexfast.js",
+          "sha256": "8beee90fecf1988b4097cb8e98cb20d1f8438d18cc5639908b5fd27b2755d176"
+        },
+        {
+          "path": "favicon.svg",
+          "sha256": "9c42174b051907c1b3bd1c8c88c482ef487fb44f5989a9d1374b4a3c06ef0124"
+        },
+        {
+          "path": "index.html",
+          "sha256": "f440c6351637c4d256022fb0ec840f8d7438ef41ac467670cc0fb639fcee6247"
+        },
+        {
+          "path": "mascot/3d/baseline/controller.mjs",
+          "sha256": "58e03c1598e0b19ed7d787383f2cb611f832f81441c77e3eb38e8040c348779f"
+        },
+        {
+          "path": "mascot/3d/baseline/performance.mjs",
+          "sha256": "cbb85553cedfcab6c76e48ee7611f07465a59106cb40f452deaa8462ed3d975b"
+        },
+        {
+          "path": "mascot/3d/controller.mjs",
+          "sha256": "b8690bf52fa0102d045da6ce6f04696a3050a4e40d49310f68c35426a837546a"
+        },
+        {
+          "path": "mascot/3d/dino-scene.js",
+          "sha256": "b942933d98c3fff5fb2d21bb0a2730598c8699d45ecd405af4c6dab3bc8bc59b"
+        },
+        {
+          "path": "mascot/3d/dinosaur.glb",
+          "sha256": "f4be8ba420e58ac3304d8d9f5f6a6b984f7bab11ebb15c7895af7cfb5574cb93"
+        },
+        {
+          "path": "mascot/3d/embed.css",
+          "sha256": "8aa384021560f4d34cf5d3f3514242cb8b12270f9d6c934129cf16267dca6daa"
+        },
+        {
+          "path": "mascot/3d/embed.html",
+          "sha256": "fb5ddceb8245181ceb243b18d5e75dacd86d0ecc98e87f98a8459dc2a040407c"
+        },
+        {
+          "path": "mascot/3d/face-voice.mjs",
+          "sha256": "d1e93038a90d70bad3dd180d29c0accd471c44bf407e8df45d05c5a7b0b4685c"
+        },
+        {
+          "path": "mascot/3d/index.html",
+          "sha256": "762f7148d74012f665ccd3004795119a59570b4d81def15863121d39df60ffa4"
+        },
+        {
+          "path": "mascot/3d/live.html",
+          "sha256": "762f7148d74012f665ccd3004795119a59570b4d81def15863121d39df60ffa4"
+        },
+        {
+          "path": "mascot/3d/motion-director.mjs",
+          "sha256": "a6431904235b34ff73e27326f541d73fa7bf7f5967a539480ea8942340c20a4b"
+        },
+        {
+          "path": "mascot/3d/original-dinosaur.glb",
+          "sha256": "05323eb7c6bd195aa6657828b338ee9cc2fc91c2e5990f449b7f76687f47308e"
+        },
+        {
+          "path": "mascot/3d/performance.mjs",
+          "sha256": "5aec642e6f361ff501bdfb88873fa362ed0783a17ad4f956b99f229aa7d7bcb5"
+        },
+        {
+          "path": "mascot/3d/preview.css",
+          "sha256": "5942f0f41cd33d02f9e033bbfd9a634871851717cd51381472ffe874a5f08bdc"
+        },
+        {
+          "path": "mascot/3d/studio.js",
+          "sha256": "f9b46a0ab7457f840242517f960970096f4870ab32763490b6d53cec459b7786"
+        },
+        {
+          "path": "mascot/3d/vendor/BufferGeometryUtils.js",
+          "sha256": "fda7e946b8e0b5ab39b779206589e7a1079a22eb24efb89d7223e03fdfb1f751"
+        },
+        {
+          "path": "mascot/3d/vendor/GLTFLoader.js",
+          "sha256": "adbbafe8ce40416525b6be0ee5cac0d3782482bcf0122c8ca8ec1ffa77d3440b"
+        },
+        {
+          "path": "mascot/3d/vendor/LICENSE",
+          "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+        },
+        {
+          "path": "mascot/3d/vendor/OrbitControls.js",
+          "sha256": "b97879c748170baadeb3fb84cea1ffdf4674e283dc06042f34e2acb95a76042c"
+        },
+        {
+          "path": "mascot/3d/vendor/three.core.js",
+          "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20"
+        },
+        {
+          "path": "mascot/3d/vendor/three.module.js",
+          "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a"
+        },
+        {
+          "path": "og-ans.png",
+          "sha256": "e845ae6466c632fc42e3f74c9690fe00659ec3500176d36d9934ad040fc1add7"
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "4799fe3c8a784124285405a4f113eb6cb1255265304ac4cd1c94e7e1a11878a5"
+        },
+        {
+          "path": "package.json",
+          "sha256": "1ccc48122ba81ee9802e98fd078d489774508be1a0957ba23360537e71827862"
+        },
+        {
+          "path": "robots.txt",
+          "sha256": "4c33ccc857b9417ff011bf2f83a6f64d1f00ddc8e6d9788333890de36b5c7fbd"
+        },
+        {
+          "path": "scripts/backup-app-state-r2.sh",
+          "sha256": "0d611f3b66dcbe9bb29a342536318b547cedd820bf4f2d1638e5455f6046a953"
+        },
+        {
+          "path": "scripts/backup-app-state.sh",
+          "sha256": "f7a3aaa64e380eea67c604122d4f894d703cbe26f3bf79c705592d992e6b3f06"
+        },
+        {
+          "path": "scripts/preflight-production.mjs",
+          "sha256": "291770eb7aee09e31063eb4842249bed77eb093af8a5d3113b3d9d52655d8dc6"
+        },
+        {
+          "path": "server.mjs",
+          "sha256": "987ac0b5da91da1012e739db94acb3a2239c8cc07556d7b8f8f3b75bcc83e865"
+        },
+        {
+          "path": "sop.css",
+          "sha256": "22c93220db450568859863e518141bf5e2318c515aaf387636b00568723a664e"
+        },
+        {
+          "path": "sop.html",
+          "sha256": "8e168ff7444ffbc687cf6504a33450c6b5193bcae63e650f9b195abb8be1ce60"
+        },
+        {
+          "path": "sop.js",
+          "sha256": "31ba531bf64fbd7c5b2b54c6d81865a4600c2bc89e2d5a1850c82f86774054ef"
+        },
+        {
+          "path": "styles.css",
+          "sha256": "0999d282fc2ab47ec40b49071b0cb678089b236826856483384b10da78e9824b"
+        },
+        {
+          "path": "warm-ui.js",
+          "sha256": "3f2b39ba31e887093251fa9ffbece3ed5dc7c8c06aeee1c30fe0bc167e3488b9"
+        }
+      ]
+    },
+    {
+      "name": "sites-oidc",
+      "source": "ans-sites-oidc",
+      "server": "kaogong",
+      "sourcePath": "/opt/ans-sites-oidc",
+      "relationship": "Current deployed source snapshot; runtime data excluded",
+      "excludedSensitiveAndRuntimeFiles": true,
+      "files": [
+        {
+          "path": "oidc.mjs",
+          "sha256": "613b2cd349cdeceab3283d2bff8d597099031a4e62e1ca376625a955acd70a9e"
+        },
+        {
+          "path": "server.mjs",
+          "sha256": "9ed70616c4b6cb08bfc90562dbf4ca61ee5d6c848952fbfe3e4c026f2531e5a6"
+        }
+      ]
+    },
+    {
+      "name": "hub-buffer",
+      "source": "ans-hub-buffer",
+      "server": "haika-1757",
+      "sourcePath": "/opt/ans-hub-html-buffer-20261013",
+      "relationship": "Current deployed source snapshot; runtime data excluded",
+      "excludedSensitiveAndRuntimeFiles": true,
+      "files": [
+        {
+          "path": "hub-buffer.mjs",
+          "sha256": "82ec8fb250be9e0c97b038bff082f56f0418269233f88b820599617f0c5d463d"
+        }
+      ],
+      "excludedOperationalRecords": [
+        "Shared full reverse-proxy configuration",
+        "Runtime deployment/container/network identities"
+      ]
+    },
+    {
+      "name": "read-coalescer",
+      "source": "ans-read-proxy",
+      "server": "haika-1757",
+      "sourcePath": "/srv/ans-releases/ans-public-read-proxy-20261009",
+      "relationship": "Current deployed source snapshot; runtime data excluded",
+      "excludedSensitiveAndRuntimeFiles": true,
+      "files": [
+        {
+          "path": "proxy.mjs",
+          "sha256": "5b0c945cd331092b4bd8aefeae583f10f916e3f6ce14774a1912d7368b600e61"
+        }
+      ]
+    },
+    {
+      "name": "exam-quota",
+      "source": "ans-exam-bridge",
+      "server": "haika-1757",
+      "sourcePath": "/srv/ans-releases/ans-exam-quota-20261011",
+      "relationship": "Current deployed source snapshot; runtime data excluded",
+      "excludedSensitiveAndRuntimeFiles": true,
+      "files": [
+        {
+          "path": "bridge-server.js",
+          "sha256": "83600fc698d730c1c3443178b77b40d569cf181d846d25204593c83686c34c7f"
+        }
+      ]
+    },
+    {
+      "name": "hypit-engine",
+      "source": "ans-hypit",
+      "server": "haika-1757",
+      "sourcePath": "/srv/ans-hypit/engine",
+      "relationship": "Current deployed source snapshot; runtime data excluded",
+      "excludedSensitiveAndRuntimeFiles": true,
+      "files": [
+        {
+          "path": ".dockerignore",
+          "sha256": "1adb2dd28f480f4969447be12d66ec3f814f86cb2597dcb6d39fe8f8dea4ded8"
+        },
+        {
+          "path": "compose.yml",
+          "sha256": "23ef32de8b4bb54a7c632753fd554c1fbd70a03eb1bb1d207137a8269253ee57"
+        },
+        {
+          "path": "Dockerfile",
+          "sha256": "17396ea1cc49049f060b10ec580b162839bd1fa27186530b0fecc932a74b1e22"
+        },
+        {
+          "path": "HYPIT-LICENSE",
+          "sha256": "ed7bd598743c93dd27349eab6921e4e86884c785a33aef8ea2caeb541df8b912"
+        },
+        {
+          "path": "install.exit",
+          "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+        },
+        {
+          "path": "install2.exit",
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "cc21b937f608930ae13c014665a90af9ca3d71b00e06e4cc2b7d25c80728ae75"
+        },
+        {
+          "path": "package.json",
+          "sha256": "7e1cec64b71d39ff254a87a1c1ef8bf82f3d3a473928546525c3a109b5f11f3d"
+        },
+        {
+          "path": "public/app.js",
+          "sha256": "4e4bfdbd85c15670c9792dcc198434767a151fe0babe897229a4416bf096d2fe"
+        },
+        {
+          "path": "public/index.html",
+          "sha256": "6b1ea04b8355bd302655d4bb1bd3fc6ba7f4c5f0ce95f3aa9222f9ccf0101da6"
+        },
+        {
+          "path": "public/style.css",
+          "sha256": "a1900bd6b76cdb8d668e39e6ea27bff044f5642ec65dad973d29bf825ba90eaa"
+        },
+        {
+          "path": "server.mjs",
+          "sha256": "2f27318c3366ae77085c128a282e5d5a23cda526915ad3521896c3c874f16ed6"
+        },
+        {
+          "path": "server.test.mjs",
+          "sha256": "233068dbeea61b60aa871a90af2b8c69b1376f7d37d624f8c3e3238c1c69398a"
+        },
+        {
+          "path": "templates/chat/chat.svml",
+          "sha256": "cc6e088069475b7d787ed8ee573f1f62d4b37f5390c66f55f209789f85c59a5d"
+        },
+        {
+          "path": "templates/chat/chat.svrun",
+          "sha256": "c7543f209d5ce4ecfa32195b241c18c6fd3aa57e85ac4d309bc4730479797ccb"
+        },
+        {
+          "path": "templates/chat/chat.svs",
+          "sha256": "4b28044983988f57637bbbae6f21e1022a89c4cad994e492318f9d50ed00c0d9"
+        },
+        {
+          "path": "templates/chat/hypit.runtime.json",
+          "sha256": "7b11ffa2e01e40cd662fcd0a7a55f35a116e37a1d893cac948a77343093d7f27"
+        },
+        {
+          "path": "templates/chat/packages/chat-scene/package.json",
+          "sha256": "87982eabeff33924196cca185ed6a1e645db1c395799ca2eea1b68d5e40ce444"
+        },
+        {
+          "path": "templates/chat/packages/chat-scene/README.md",
+          "sha256": "c4ada1ead67f4b43ca5fb9b5a4dc6cf6d98e8216c68302e6327daae305702ec3"
+        },
+        {
+          "path": "templates/chat/packages/chat-scene/src/activation.ts",
+          "sha256": "4c17164a9d7899d5e4fc1de5f79cb44a828d7c239c9cb99b394953366a50384d"
+        },
+        {
+          "path": "templates/chat/packages/chat-scene/src/render.ts",
+          "sha256": "058c1fa85bea44f421b03fe50d0ba4a0c88049347b8da6cd95fbc6eed1b9ad7c"
+        },
+        {
+          "path": "templates/chat/packages/chat-scene/test/render.test.ts",
+          "sha256": "2884fbab4fa4e5ee7aa996d67cf5349989d2a4474461e05192680eb14a2df8ac"
+        },
+        {
+          "path": "templates/chat/packages/chat-scene/tsconfig.json",
+          "sha256": "2c9909256c5679b87d0261759b5c0861ffb6cf39ccbe225f73cba40a4bc1561c"
+        },
+        {
+          "path": "templates/interview/ada-tracking.svs",
+          "sha256": "b27fd5757e167542a3cb28400576918daba05a83b73c328e66a58b2e4e450ce5"
+        },
+        {
+          "path": "templates/interview/recipes.svs",
+          "sha256": "c8167bff099b4758b07b8e1977aa136e083e1cd46dba38d7bcdc8fb86998d683"
+        },
+        {
+          "path": "templates/interview/reference.svml",
+          "sha256": "fe809d92ad8191359b8bde402f768b64e9bcfc804d3444889bd7b429e3ca1714"
+        },
+        {
+          "path": "templates/interview/reference.svrun",
+          "sha256": "249726f563f2fb2b8b1ed52952f4f3cb5a9e845997ba599cba6e95cd9ec0c34b"
+        },
+        {
+          "path": "templates/interview/reference.svs",
+          "sha256": "81b8cf0e220b93ad51b1dcb74de49909057915f27b59d522f67613313f55a4f1"
+        },
+        {
+          "path": "templates/interview/spanish-tracking.svs",
+          "sha256": "5897469e7e52412512a2839c48813629815e62f4333b101246a0399ee1bc7fa0"
+        },
+        {
+          "path": "templates/interview/swap-host.svml",
+          "sha256": "a54cad9c75336064dd415080f3d5d12957ba4e413eb98ad56d4a6dbe1f355a8a"
+        },
+        {
+          "path": "templates/interview/swap-host.svrun",
+          "sha256": "82f2018b5f115cd2ace381fea1a77878a677a3919206926cbcc1190aa600a31c"
+        },
+        {
+          "path": "templates/interview/swap-lang.svml",
+          "sha256": "63762eb6ab87418c6f6b6b8413a96cd8e0a9e50858cdb524353f90bdab5986ae"
+        },
+        {
+          "path": "templates/interview/swap-lang.svrun",
+          "sha256": "793eb54eb4c03c9f681ad634ce2190d1829cab53a90caf1c0717a12900ed4d6f"
+        },
+        {
+          "path": "templates/interview/swap-ride.svml",
+          "sha256": "2ce96904c2b5e3098ce44f204e27cba7e741679a70c677ee31b679198c81ca30"
+        },
+        {
+          "path": "templates/interview/swap-ride.svrun",
+          "sha256": "fed4d24a9643a3d39c65a67c21d8aa0951dadb3816bfe2f32319a5d5e83142f8"
+        },
+        {
+          "path": "templates/interview/tracking.svs",
+          "sha256": "7e5eab5e9e30fceac57815dceac852cdd180143975522196124e4074326b9b94"
+        },
+        {
+          "path": "templates/interview/wojak-tracking.svs",
+          "sha256": "54932293b456300fed8fd40f05a61ddba2057a97ec0676da09734851cbc21e63"
+        },
+        {
+          "path": "templates/podcast/recipes.svs",
+          "sha256": "0ace4a9649ca518792d5e2cd84ca78f27a6a44c39d831c6456ee6c3612f62cf6"
+        },
+        {
+          "path": "templates/podcast/reference.svml",
+          "sha256": "3a75c759787555fbc3465afeded2fa7ed494c27cb6b4b8bb4bf0ac666c707d7b"
+        },
+        {
+          "path": "templates/podcast/reference.svrun",
+          "sha256": "f2432bd7e194baebb9269f12f5e6f6edf41846fbf519d92e4d03af10f590547a"
+        },
+        {
+          "path": "templates/podcast/reference.svs",
+          "sha256": "f0a0f960baebdc54f4a825e5b99c55fc17aaef5d6bfde747b2a5e044438b17e1"
+        },
+        {
+          "path": "templates/podcast/swap-app.svml",
+          "sha256": "7e0921f2c72ad5b040245e700c94e20eaf2b60904d6be1027dae06b2ac73a7b0"
+        },
+        {
+          "path": "templates/podcast/swap-app.svrun",
+          "sha256": "4ba62a3d3711df7d9d1b8c18042b678a5e72169ec2fe3df3194613271e9b538e"
+        },
+        {
+          "path": "templates/podcast/swap-host.svml",
+          "sha256": "4c23dd9aee007cef2bf67190ff23f5995a033b58f1f5d64d2a28c8e44e2bc441"
+        },
+        {
+          "path": "templates/podcast/swap-host.svrun",
+          "sha256": "82f2018b5f115cd2ace381fea1a77878a677a3919206926cbcc1190aa600a31c"
+        },
+        {
+          "path": "templates/podcast/swap-item.svml",
+          "sha256": "61a0601a8fe34e593c07ca3aa28a3e165a0456c5afa51a093afb3fe44dcce740"
+        },
+        {
+          "path": "templates/podcast/swap-item.svrun",
+          "sha256": "764f5b1bf89e574143219c1d0d3eb951e885f7042ac7d879f23ea60748627a6d"
+        },
+        {
+          "path": "templates/ranking-football/column-recipes.svs",
+          "sha256": "2217d81561ba3496169f4fa70bf331e559207f6889597cf66fca89b251e422c1"
+        },
+        {
+          "path": "templates/ranking-football/recipes.svs",
+          "sha256": "19accb2bb927969317b8832a8562de5f19350d89dafac37becf6b64d574993b5"
+        },
+        {
+          "path": "templates/ranking-football/reference-gpt.svml",
+          "sha256": "f9679834d1685b21c7873e61c9bab9440ec813805d6dce555abb4f7a7d8696a8"
+        },
+        {
+          "path": "templates/ranking-football/reference-gpt.svrun",
+          "sha256": "05a96fdeba93b381c3762af8e22f4073dd1530ea0302f527e0ccd97996c1d886"
+        },
+        {
+          "path": "templates/ranking-football/reference.svml",
+          "sha256": "64031a1ac6bf78e7f0ea0424b8df8b6d49e643f0c24b1c27a8c6714c9e147e73"
+        },
+        {
+          "path": "templates/ranking-football/reference.svrun",
+          "sha256": "249726f563f2fb2b8b1ed52952f4f3cb5a9e845997ba599cba6e95cd9ec0c34b"
+        },
+        {
+          "path": "templates/ranking-football/swap-effect.svml",
+          "sha256": "e4519a76e57f7e08ee42a8dae4951b630d23bd25684825372b6bbc4e760e8205"
+        },
+        {
+          "path": "templates/ranking-football/swap-effect.svrun",
+          "sha256": "b84b578eb60f19c1554945726fd70c230f75c8220faf5b3b04c19adaa3c45ba0"
+        },
+        {
+          "path": "templates/ranking-football/swap-host.svml",
+          "sha256": "d612167445678d8eb3a114c9b32d947d6da5bf2a69ca5b832a2cd148bd9e3fc5"
+        },
+        {
+          "path": "templates/ranking-football/swap-host.svrun",
+          "sha256": "82f2018b5f115cd2ace381fea1a77878a677a3919206926cbcc1190aa600a31c"
+        },
+        {
+          "path": "templates/ranking-football/swap-topic.svml",
+          "sha256": "93a7ad84d934bf401af44cf0c21b72ac671fd3aa6da24456ff948f068b767569"
+        },
+        {
+          "path": "templates/ranking-football/swap-topic.svrun",
+          "sha256": "bc74427c3b78715008690328362a8021e963c4c02e336d0e526d7ee2dde01638"
+        },
+        {
+          "path": "templates/ranking-football/tech-tier-recipes.svs",
+          "sha256": "95117684cd675ffa2896c7fc224662979dab5d9894b3ee66f7449baa5d9d3499"
+        },
+        {
+          "path": "templates/ranking-football/tier-banana-recipes.svs",
+          "sha256": "19accb2bb927969317b8832a8562de5f19350d89dafac37becf6b64d574993b5"
+        }
+      ]
+    },
+    {
+      "name": "shell-deployment",
+      "source": "ans-shell-deploy",
+      "server": "kaogong",
+      "sourcePath": "/opt/ans",
+      "relationship": "Sanitized deployment configuration for shell; runtime credentials excluded",
+      "excludedSensitiveAndRuntimeFiles": true,
+      "files": [
+        {
+          "path": "compose.yaml",
+          "sha256": "1397ad296b2add140071991f2d260b33553b42eaffbbfed4d83dbd6a0f01c9e7"
+        },
+        {
+          "path": "migrate.yml",
+          "sha256": "c8eaf4e6794fccf1aeb8272a2747fde7de223839f7b7198e8b14d789c976fbbd"
+        }
+      ]
+    }
+  ]
+}
