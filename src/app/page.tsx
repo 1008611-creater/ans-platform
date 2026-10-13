@@ -18,7 +18,7 @@ import styles from "./home.module.css";
 export const dynamic = "force-dynamic";
 const categoryIcons = { learning: BookOpen, career: BriefcaseBusiness, aigc: Clapperboard, web: Code2, github: Github, business: Store, productivity: Zap, competition: Trophy };
 
-export default async function HomePage({ searchParams }: { searchParams?: Promise<CatalogBrowseQuery> } = {}) {
+export default async function HomePage({ searchParams }: { searchParams?: Promise<CatalogBrowseQuery> }) {
   const [params, t, locale, catalog] = await Promise.all([searchParams ?? Promise.resolve({}), getTranslations("product"), getLocale(), listPublishedCatalog()]);
   const { hero, projects, showcase } = homepageProjects(catalog);
   const browse = browseCatalog(projects, params, project => [catalogText(project, t, "title", locale), catalogText(project, t, "summary", locale), t(`categories.${project.category}`), t(`children.${project.subcategory}`)].join(" "));

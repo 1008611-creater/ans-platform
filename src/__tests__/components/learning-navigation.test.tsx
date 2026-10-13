@@ -45,7 +45,7 @@ describe("product discovery entry points", () => {
   });
 
   it("offers a complete paged project directory without workflow or promotional sections", async () => {
-    render(await HomePage());
+    render(await HomePage({}));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("home.title");
     expect(screen.getByRole("link", { name: /exploreAction/ })).toHaveAttribute("href", "#home-projects-title");
     expect(screen.getByRole("link", { name: "workflowAction" })).toHaveAttribute("href", "/hubs");
