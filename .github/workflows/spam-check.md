@@ -17,11 +17,16 @@ permissions:
 engine:
   id: copilot
   version: "1.0.96"
+  model: gpt-5-mini
 tools:
   github:
     toolsets: [issues, pull_requests, repos]
 safe-outputs:
   threat-detection:
+    engine:
+      id: copilot
+      version: "1.0.96"
+      model: gpt-5-mini
     continue-on-error: false
     report-as-issue: false
   add-labels:
