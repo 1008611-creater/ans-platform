@@ -60,6 +60,7 @@
     "ai-video-skills-source",
     "plugins",
     "android",
-    "android-web-assets"
+    "android-web-assets",
+    "deployment-snapshots"
   ]
 }
