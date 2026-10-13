@@ -1,0 +1,80 @@
+{
+  "readonly": false,
+  "ready": true,
+  "image": "sha256:de42a889cd24dc276052f333daebe61089f4b838bb4cc0db3e1e253caeb91b62",
+  "imageEnvNames": [
+    "HOSTNAME",
+    "NEXT_TELEMETRY_DISABLED",
+    "NODE_ENV",
+    "NODE_VERSION",
+    "PATH",
+    "PORT",
+    "YARN_VERSION"
+  ],
+  "network": "prompts-chat_default",
+  "networkId": "d2919429f0697e4481e0c2bf999a0694d7a6397887c8429bdaa24106b4410848",
+  "container": "ans-hub-html-buffer",
+  "sharedDeployLock": "/var/lock/ans-platform-deploy.lock",
+  "labels": {
+    "org.ans.component": "hub-html-buffer",
+    "org.ans.change": "hub-html-20261013",
+    "org.ans.source-sha256": "82ec8fb250be9e0c97b038bff082f56f0418269233f88b820599617f0c5d463d"
+  },
+  "sourceSha256": "82ec8fb250be9e0c97b038bff082f56f0418269233f88b820599617f0c5d463d",
+  "caddyBeforeSha256": "be4243596536417fb426bbed816117d5d637438a2d98593401de71dedb76b2c6",
+  "caddyAfterSha256": "d9a7dcdbe9b741a751682b00e48ecdcba15454e316dcbe9d522da8ac4b2af2bb",
+  "candidateAdaptSha256": "f21fa4bca6c3ca1b109277d3fa4bfd422448cef3cb7431081f3e83df6c916f62",
+  "existing3010Before": {
+    "containerId": "f83a63c48eee3a4f8a7cc861cd53edcbd11632a39235d6bd20bc67db4e7eeda3",
+    "imageId": "sha256:de42a889cd24dc276052f333daebe61089f4b838bb4cc0db3e1e253caeb91b62",
+    "startedAt": "2026-10-11T06:50:46.591297028Z",
+    "health": "healthy",
+    "sourceSha256": "5b0c945cd331092b4bd8aefeae583f10f916e3f6ce14774a1912d7368b600e61",
+    "runtimeCommandSha256": "1feb057c0cd66df717d7e535736e56e93c8bc78b27c8d60b21fb7c9b0c83d09b"
+  },
+  "appBefore": {
+    "containerId": "5012e3229addffcd3b3ff447b3da2938a71e23880fd8429850b18b02a359b3f1",
+    "image": "sha256:c9e20cf6f99c4415e3a4721ee777061dde993204c55c24f6b067997c633be801",
+    "startedAt": "2026-10-13T03:20:03.430916529Z",
+    "health": "healthy",
+    "release": "ans-agri-public-results-r7-20261013"
+  },
+  "productionWrites": 3,
+  "providerCalls": 0,
+  "sidecarHealth": {
+    "status": 200,
+    "healthy": true
+  },
+  "sidecarHubDocument": {
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "contentLength": "360636",
+    "bytes": 360636,
+    "lengthMatches": true,
+    "doctype": true,
+    "closingHtml": true,
+    "sha256": "60588fbf85991b60c62c54744a667142e13fdd64a2144e9a0dd574fc99d4a008"
+  },
+  "deployed": true,
+  "routingReloaded": true,
+  "backupPath": "/opt/ans-hub-html-buffer-20261013/Caddyfile.before.bytes",
+  "existing3010After": {
+    "containerId": "f83a63c48eee3a4f8a7cc861cd53edcbd11632a39235d6bd20bc67db4e7eeda3",
+    "imageId": "sha256:de42a889cd24dc276052f333daebe61089f4b838bb4cc0db3e1e253caeb91b62",
+    "startedAt": "2026-10-11T06:50:46.591297028Z",
+    "health": "healthy",
+    "sourceSha256": "5b0c945cd331092b4bd8aefeae583f10f916e3f6ce14774a1912d7368b600e61",
+    "runtimeCommandSha256": "1feb057c0cd66df717d7e535736e56e93c8bc78b27c8d60b21fb7c9b0c83d09b"
+  },
+  "appAfter": {
+    "containerId": "5012e3229addffcd3b3ff447b3da2938a71e23880fd8429850b18b02a359b3f1",
+    "image": "sha256:c9e20cf6f99c4415e3a4721ee777061dde993204c55c24f6b067997c633be801",
+    "startedAt": "2026-10-13T03:20:03.430916529Z",
+    "health": "healthy",
+    "release": "ans-agri-public-results-r7-20261013"
+  },
+  "sidecarContainerId": "73c5b89581fdbd7a1af1808a829bdc69c06f72268b23413bb1de8bc2322a73cc",
+  "sidecarImageId": "sha256:de42a889cd24dc276052f333daebe61089f4b838bb4cc0db3e1e253caeb91b62",
+  "cdnVerified": false,
+  "transportRootCauseProven": false
+}

@@ -1,0 +1,23 @@
+{
+  "name": "ans-public-local",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:og": "node scripts/generate-og-image.mjs",
+    "audit:a11y": "node scripts/run-accessibility-audit.mjs",
+    "preflight:production": "node scripts/preflight-production.mjs",
+    "test:ui-contract": "node scripts/test-public-ui-contract.mjs",
+    "start": "node server.mjs",
+    "test": "node --check warm-ui.js && node --check app.js && node --check codexfast.js && node --check codexfast-core.mjs && node --check server.mjs && node --check scripts/preflight-production.mjs && node test-server.mjs && node test-codexfast.mjs && node scripts/test-production-preflight.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1085.0",
+    "nodemailer": "^9.0.3"
+  },
+  "devDependencies": {
+    "axe-core": "^4.12.1",
+    "playwright-core": "^1.61.1",
+    "sharp": "^0.35.3"
+  }
+}
