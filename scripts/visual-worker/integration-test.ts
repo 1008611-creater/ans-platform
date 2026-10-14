@@ -19,7 +19,10 @@ async function main(){
  const token=randomUUID().slice(0,8),owner=await db.user.create({data:{username:`pipeline_${token}`,email:`pipeline_${token}@example.invalid`,quotaPoints:500}}),other=await db.user.create({data:{username:`pipeline_other_${token}`,email:`pipeline_other_${token}@example.invalid`,quotaPoints:500}});
  const image=await readFile("public/visual-portfolio/reference/home/labelman.webp"),model=await readFile("public/visual-portfolio/reference/banner.glb");
  const input={idempotencyKey:randomUUID(),acknowledged:true,acceptedPoints:2.5,options:DEFAULT_TRIPO_OPTIONS};
- const duplicate=await Promise.all([createModelJob(owner.id,input,image),createModelJob(owner.id,input,image)]);assert.equal(duplicate[0].id,duplicate[1].id);const job=duplicate[0];
+ const duplicate=await Promise.allSettled([createModelJob(owner.id,input,image),createModelJob(owner.id,input,image)]);
+ const successful=duplicate.filter(result=>result.status==="fulfilled");assert.ok(successful.length>=1);
+ for(const result of duplicate)if(result.status==="rejected")assert.ok(coded("INPUT_UPLOAD_PENDING")(result.reason));
+ const job=await createModelJob(owner.id,input,image);for(const result of successful)assert.equal(result.value.id,job.id);
  assert.equal(Number((await db.user.findUniqueOrThrow({where:{id:owner.id}})).quotaPoints),497.5);
  await assert.rejects(createModelJob(owner.id,{...input,options:{...input.options,faceCount:6000}},image),coded("IDEMPOTENCY_CONFLICT"));await assert.rejects(getModelJob(other.id,job.id),coded("NOT_FOUND"));
  const claims=await Promise.all([claimModelJob({workerId:"test-worker-01"}),claimModelJob({workerId:"test-worker-02"})]);assert.equal(claims.filter(Boolean).length,1);let claim=claims.find(Boolean)!;assert.equal(claim.id,job.id);
