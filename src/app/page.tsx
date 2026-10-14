@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowRight, ArrowUpRight, Search, BookOpen, BriefcaseBusiness, Clapperboard, Code2, Github, Store, Zap, Trophy } from "lucide-react";
+import { ArrowRight, Plus, Search, BookOpen, BriefcaseBusiness, Clapperboard, Code2, Github, Store, Zap, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { listPublishedCatalog } from "@/server/catalog/service";
@@ -12,7 +12,6 @@ import { ProjectCard } from "@/components/catalog/project-card";
 import { CatalogPagination } from "@/components/catalog/catalog-pagination";
 import { RevealDetails } from "@/components/catalog/reveal-details";
 import { ProjectCoverflow } from "@/components/homepage/project-coverflow";
-import { HomepageCtaLink } from "@/components/homepage/homepage-cta-link";
 import styles from "./home.module.css";
 
 export const dynamic = "force-dynamic";
@@ -37,10 +36,6 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
             {Object.entries(browse.filters).map(([key, value]) => key !== "q" && value && <input key={key} type="hidden" name={key} value={value} />)}
             <Button type="submit" aria-label={t("search")}><ArrowRight aria-hidden="true" /></Button>
           </form>
-          <div className={styles.actions}>
-            <HomepageCtaLink href="#home-projects-title" eventName="primary_cta">{t("exploreAction")}<ArrowRight aria-hidden="true" /></HomepageCtaLink>
-            <HomepageCtaLink href="/hubs" eventName="workflow_cta">{t("workflowAction")}<ArrowUpRight aria-hidden="true" /></HomepageCtaLink>
-          </div>
         </div>
         {hero ? <ProjectCoverflow projects={(showcase.length ? showcase : [hero]).map(project => ({
           slug: project.slug,
@@ -53,7 +48,10 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
       </div>
     </section>
     <section className={`ans-product-container ${styles.selection}`} aria-labelledby="home-projects-title">
-      <div className={styles.sectionHeading}><h2 id="home-projects-title">{t("nav.explore")}</h2><span className={styles.count}>{t("results", { count: browse.total })}</span></div>
+      <div className={styles.sectionHeading}>
+        <div className={styles.sectionTitle}><h2 id="home-projects-title">{t("nav.explore")}</h2><span className={styles.count}>{t("results", { count: browse.total })}</span></div>
+        <Button asChild variant="outline" className={styles.submit}><Link href="/explore/submit"><Plus aria-hidden="true" />{t("realProject.submit")}</Link></Button>
+      </div>
       <nav aria-label={t("categoriesLabel")} className={styles.categoryRail}>
         <Link href={filterHref({ category: undefined, subcategory: undefined })} aria-current={!browse.category ? "page" : undefined}>{t("all")}</Link>
         {PROJECT_CATEGORIES.map(category => { const Icon = categoryIcons[category.id]; return <Link key={category.id} href={filterHref({ category: category.id, subcategory: undefined })} aria-current={browse.category?.id === category.id ? "page" : undefined}><Icon aria-hidden="true" />{t(`categories.${category.id}`)}<span>{catalog.filter(project => project.category === category.id).length}</span></Link>; })}

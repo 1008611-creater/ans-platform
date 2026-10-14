@@ -47,8 +47,9 @@ describe("product discovery entry points", () => {
   it("offers a complete paged project directory without workflow or promotional sections", async () => {
     render(await HomePage({}));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("home.title");
-    expect(screen.getByRole("link", { name: /exploreAction/ })).toHaveAttribute("href", "#home-projects-title");
-    expect(screen.getByRole("link", { name: "workflowAction" })).toHaveAttribute("href", "/hubs");
+    expect(screen.queryByRole("link", { name: /exploreAction/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: "workflowAction" })).toBeNull();
+    expect(screen.getByRole("link", { name: "realProject.submit" })).toHaveAttribute("href", "/explore/submit");
     expect(screen.queryByRole("link", { name: "communityAction" })).toBeNull();
     expect(screen.queryByRole("heading", { name: "workflowTitle" })).toBeNull();
     expect(screen.queryByRole("heading", { name: "stepsTitle" })).toBeNull();
@@ -68,6 +69,7 @@ describe("product discovery entry points", () => {
   it("keeps explore as a project-only directory and retains filtered paging links", async () => {
     render(await ExplorePage({ searchParams: Promise.resolve({ page: "2", source: "github" }) }));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("nav.explore");
+    expect(screen.getByRole("link", { name: "realProject.submit" })).toHaveAttribute("href", "/explore/submit");
     expect(screen.queryByRole("link", { name: "market.browse" })).toBeNull();
     expect(screen.queryByRole("link", { name: "market.creator" })).toBeNull();
     for (const link of screen.getAllByRole("link", { name: /categories./ })) expect(link.getAttribute("href")).toContain("source=github");
