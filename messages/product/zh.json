@@ -1528,8 +1528,8 @@
     "current": "当前提交",
     "frozen": "已固化提交",
     "openSource": "打开来源",
-    "submissionContent": "所提交的说明",
-    "materialCount": "关联 {count} 份材料；完整详情见来源记录或授权导出。",
+    "submissionContent": "提交材料",
+    "materialCount": "关联材料（{count}）",
     "empty": "当前范围没有可读记录。",
     "result": {
       "PASS": "技术检查通过",
@@ -1570,7 +1570,60 @@
       "PRIVATE_MATERIALS": "私密材料依据"
     },
     "correctedFrom": "更正原提交 {id}：{reason}",
-    "correctionAuthority": "许可 {permit}；确认账号 {id}；{at}（北京时间）"
+    "correctionAuthority": "许可 {permit}；确认账号 {id}；{at}（北京时间）",
+    "details": {
+      "repository": "项目仓库",
+      "repositoryRef": "仓库截止版本",
+      "refKind": {
+        "COMMIT_SHA": "提交 SHA",
+        "TAG": "标签"
+      },
+      "demoUrl": "Demo 链接",
+      "artifactVersion": "ANS 成果版本 ID",
+      "noMaterials": "没有关联材料。",
+      "materialKind": {
+        "TEXT": "文本",
+        "LINK": "链接",
+        "ARTIFACT": "成果版本"
+      },
+      "notRecorded": "未记录",
+      "notIncluded": "该记录未包含逐项详情。",
+      "newTab": "在新标签页打开",
+      "invalidLink": "不是支持的稳定 HTTPS 地址",
+      "externalHint": "这里显示当时记录的地址与版本。外部链接不代表内容已备份或已通过核验。",
+      "mode": "演示方式",
+      "demoMode": {
+        "LIVE": "现场演示",
+        "VIDEO": "视频",
+        "HYBRID": "现场与视频结合",
+        "OTHER": "其他"
+      },
+      "demoSequence": "第 {sequence} 次 Demo 检查",
+      "recheckOf": "复查原记录 {id}",
+      "condition": {
+        "device": "设备",
+        "compatibility": "兼容性",
+        "network": "网络",
+        "audio": "音频",
+        "backup": "备用方案"
+      },
+      "itemStatus": {
+        "PASS": "通过",
+        "NEEDS_ACTION": "需要处理",
+        "UNREACHABLE": "不可访问",
+        "NOT_APPLICABLE": "不适用",
+        "NOT_TESTED": "尚未检查"
+      },
+      "backupUrl": "备用演示链接",
+      "backupArtifact": "备用 ANS 成果版本 ID",
+      "recheckDue": "复查时间",
+      "dateState": {
+        "UNKNOWN": "时间未确定",
+        "TENTATIVE": "暂定",
+        "CONFIRMED": "已确认"
+      },
+      "beijingTime": "{at}（北京时间）"
+    }
   },
   "agriOnsite": {
     "title": "农客松现场协作",

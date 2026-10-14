@@ -13,6 +13,7 @@ vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: (namespace
   t.has = (key: string) => typeof lookup(key) === "string"; return t;
 } }));
 vi.mock("@/components/providers/workspace-navigation", () => ({ WorkspaceLink: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
+import { withSyntheticRecordDetails } from "./fixtures/agri-record-summary";
 const copy = messages.agriArchives;
 const invalidate = vi.fn(), click = vi.fn(), objectUrl = vi.fn(() => "blob:synthetic-archive");
 function detail(privateScope = false, submissionId = "submission-a", id = "archive-a"): AgriRecordArchiveDetail {
@@ -35,6 +36,26 @@ async function save() { fireEvent.click(screen.getByRole("button", { name: copy.
 describe("saved archives: exact source, immutable scopes and unknown saves", () => {
   it("loads only on open, sends the actor and makes onsite exclusion clear", async () => { mount(); expect(fetcher).not.toHaveBeenCalled(); await open(); expect(fetcher.mock.calls[0]).toMatchObject(["/api/competitions/agrihackathon/records/submission-a/archives", { headers: { "x-ans-submission-actor": "actor-a" }, cache: "no-store" }]); expect(screen.getByText(copy.onsiteHint)).toBeInTheDocument(); });
   it("shows a verified private snapshot without describing it as a live report", async () => { fetcher.mockResolvedValueOnce(envelope(listing(detail(true)))); mount(); await open(); fetcher.mockResolvedValueOnce(envelope(detail(true))); fireEvent.click(screen.getByRole("button", { name: "View v1" })); await screen.findByText("PRIVATE_ARCHIVE_MARKER"); expect(screen.queryByText(messages.agriSummary.notArchive)).toBeNull(); });
+  it("renders full saved materials and check details from the verified snapshot without a live refresh", async () => {
+    const value = detail(true);
+    value.snapshot.record = withSyntheticRecordDetails(value.snapshot.record);
+    value.archive.selection = value.snapshot.record.selection;
+    const canonical = canonicalAgriArchiveJSON(value.snapshot);
+    value.archive.sha256 = createHash("sha256").update(canonical).digest("hex");
+    value.archive.byteLength = Buffer.byteLength(canonical);
+    fetcher.mockResolvedValueOnce(envelope(listing(value)));
+    mount(); await open();
+    fetcher.mockResolvedValueOnce(envelope(value));
+    fireEvent.click(screen.getByRole("button", { name: "View v1" }));
+    await screen.findByText("SAVED_SUMMARY_MARKER");
+    expect(screen.getByText("SAVED_REPOSITORY_CHECK")).toBeInTheDocument();
+    expect(screen.getByText("SAVED_BACKUP_CHECK")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /https:\/\/github.com\/example\/synthetic-record/ })).toHaveAttribute("href", "https://github.com/example/synthetic-record");
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      "/api/competitions/agrihackathon/records/submission-a/archives",
+      "/api/competitions/agrihackathon/archives/archive-a?mode=view",
+    ]);
+  });
   it("rejects tampered content before rendering or downloading", async () => { mount(); await open(); const value = detail(true); value.snapshot.record.content!.summary = "TAMPERED_PRIVATE_MARKER"; fetcher.mockResolvedValueOnce(envelope(value)); fireEvent.click(screen.getByRole("button", { name: "View v1" })); await screen.findByText(copy.errors.AGRI_ARCHIVE_INTEGRITY_FAILED); expect(screen.queryByText("TAMPERED_PRIVATE_MARKER")).toBeNull(); expect(objectUrl).not.toHaveBeenCalled(); });
   it.each(["competitionId", "entryStageId", "artifactVersionId", "ruleVersionId", "previousArchiveId", "createdById", "collectedAt"])("rejects contradictory %s provenance before downloading", async field => { mount(); await open(); const value = detail(); Object.assign(value.archive, { [field]: "other" }); fetcher.mockResolvedValueOnce(new Response(JSON.stringify(value), { headers: { "Content-Type": "application/json" } })); fireEvent.click(screen.getByRole("button", { name: "Download v1 JSON" })); await screen.findByText(copy.errors.AGRI_ARCHIVE_INTEGRITY_FAILED); expect(click).not.toHaveBeenCalled(); });
   it("refuses a different submission even when the snapshot hash is valid", async () => { mount(); await open(); fetcher.mockResolvedValueOnce(envelope(detail(true, "submission-other"))); fireEvent.click(screen.getByRole("button", { name: "View v1" })); await screen.findByText(copy.errors.INTERNAL_ERROR); expect(screen.queryByText("PRIVATE_ARCHIVE_MARKER")).toBeNull(); });
