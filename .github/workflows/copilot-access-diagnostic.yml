@@ -27,9 +27,9 @@ jobs:
             console.log('COPILOT_DIAGNOSTIC: missing credential');
             process.exit(1);
           }
-          async function get(url, accept) {
+          async function get(url, accept, extraHeaders = {}) {
             return fetch(url, {
-              headers: { Authorization: `Bearer ${token}`, Accept: accept, 'User-Agent': 'ANS-read-only-access-diagnostic' },
+              headers: { Authorization: `Bearer ${token}`, Accept: accept, 'User-Agent': 'ANS-read-only-access-diagnostic', ...extraHeaders },
               redirect: 'error', signal: AbortSignal.timeout(15000)
             });
           }
@@ -41,7 +41,7 @@ jobs:
             if (typeof account.login !== 'string') throw new Error('IDENTITY_FORMAT_INVALID');
             // Never publish the secret owner's login, account profile or raw response.
             console.log('COPILOT_OWNER_MATCHES_REPOSITORY:', account.login.toLowerCase() === process.env.EXPECTED_OWNER.toLowerCase());
-            const models = await get('https://api.githubcopilot.com/models', 'application/json');
+            const models = await get('https://api.githubcopilot.com/models', 'application/json', { 'X-GitHub-Api-Version': '2026-07-01', 'Copilot-Integration-Id': 'agentic-workflows' });
             console.log('COPILOT_MODELS_HTTP:', models.status);
             if (!models.ok) throw new Error('MODEL_INVENTORY_LOOKUP_FAILED');
             const inventory = await models.json();
