@@ -83,5 +83,6 @@
   "previewFailed": "The model preview could not load.",
   "previewHint": "Drag to rotate and scroll to zoom. Previewing does not replace your portfolio model.",
   "refreshPreview": "Reload preview",
-  "unsupportedModel": "The generated model format cannot yet be used in the portfolio. The task is retained for review; no paid conversion is started automatically."
+  "unsupportedModel": "The generated model format cannot yet be used in the portfolio. The task is retained for review; no paid conversion is started automatically.",
+  "quadUnavailable": "Quad generation is unavailable: delivery currently supports native GLB only, while quad output is FBX."
 }

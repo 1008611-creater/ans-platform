@@ -5,6 +5,7 @@ import { createModelJobSchema, workerClaimSchema, workerEventSchema, type ModelJ
 import { canAdvanceStage, canRefund, safeToRetry, STAGE_PROGRESS } from "@/domain/projects/model-job";
 import { durableStorageReady, putVisualInput, sha256 } from "./storage";
 import { z } from "zod";
+import { modelRequestHashes } from "./request-hash";
 import { prepareGenerationInput } from "./generation-input";
 import { VisualPortfolioError } from "./errors";
 import { clearInputUpload, clearTerminalInputs, compensateInputUpload, cleanupOwnerInputs, lockVisualInputs, type InputUpload } from "./input-retention";
@@ -24,15 +25,17 @@ export async function modelJobView(job:ModelJobRecord):Promise<ModelJobView> { c
 export async function createModelJob(ownerId: string, raw: unknown, image: Uint8Array|Array<Uint8Array|null>) {
  const input = createModelJobSchema.parse(raw), cfg = generationConfig();
  if (!cfg.available) throw new VisualPortfolioError("GENERATION_NOT_CONFIGURED", 503);
+ if(input.options.quad)throw new VisualPortfolioError("QUAD_DELIVERY_UNSUPPORTED",400);
  const quoted=generationPrice(cfg,input.options);
- if (quoted===null)throw new VisualPortfolioError("PRICE_NOT_CONFIGURED",503);
- if (input.acceptedPoints !== quoted) throw new VisualPortfolioError("PRICE_CHANGED", 409);
- const preparedInput=await prepareGenerationInput(input.options,image,input.prompt), type=preparedInput, cost=quoted;
- const hash = sha256(JSON.stringify({ image: sha256(preparedInput.bytes), options: input.options, projectId: input.projectId ?? null, points: input.acceptedPoints }));
+ const preparedInput=await prepareGenerationInput(input.options,image,input.prompt), type=preparedInput;
+ const hashes=modelRequestHashes(preparedInput.bytes,input.options,input.projectId,input.acceptedPoints), hash=hashes.current;
  const prepared = await db.$transaction(async tx => {
   await lockVisualInputs(tx, ownerId); await requireVisualOwner(tx, ownerId, input.projectId);
   const previous = (await tx.$queryRaw<ModelJobRecord[]>`SELECT * FROM visual_model_jobs WHERE "ownerId"=${ownerId} AND "idempotencyKey"=${input.idempotencyKey}`)[0];
-  if (previous) { if (previous.requestHash !== hash) throw new VisualPortfolioError("IDEMPOTENCY_CONFLICT", 409); return { previous }; }
+  if (previous) { if (previous.requestHash !== hash && previous.requestHash !== hashes.legacy) throw new VisualPortfolioError("IDEMPOTENCY_CONFLICT", 409); return { previous }; }
+  if (quoted===null)throw new VisualPortfolioError("PRICE_NOT_CONFIGURED",503);
+  if (input.acceptedPoints !== quoted) throw new VisualPortfolioError("PRICE_CHANGED", 409);
+  const cost=quoted;
   const pendingUpload = (await tx.$queryRaw<InputUpload[]>`SELECT * FROM visual_input_uploads WHERE "ownerId"=${ownerId} FOR UPDATE`)[0];
   if (pendingUpload) {
    if (pendingUpload.expiresAt.getTime() > Date.now()) {
@@ -52,11 +55,11 @@ export async function createModelJob(ownerId: string, raw: unknown, image: Uint8
   const expiresAt = new Date(Date.now() + 120000), storageMode = process.env.ANS_VISUAL_STORAGE_MODE!;
   await tx.$executeRaw`INSERT INTO visual_input_uploads (id,"ownerId","inputKey","requestHash","idempotencyKey","expiresAt","storageMode") VALUES (${id}::uuid,${ownerId},${inputKey},${hash},${input.idempotencyKey},${expiresAt},${storageMode})`;
   reserveInputWriter(id);
-  return { upload: { id, ownerId, inputKey, requestHash: hash, idempotencyKey: input.idempotencyKey, expiresAt, storageMode } };
+  return { upload: { id, ownerId, inputKey, requestHash: hash, idempotencyKey: input.idempotencyKey, expiresAt, storageMode }, cost };
  }, { maxWait: 10000, timeout: 45000 });
  if (prepared.previous) return modelJobView(prepared.previous);
  if (!prepared.upload) throw new VisualPortfolioError("INPUT_CLEANUP_PENDING", 503);
- const upload = prepared.upload;
+ const upload = prepared.upload, cost = prepared.cost;
  let result: ModelJobRecord;
  try {
   result = await db.$transaction(async tx => {
@@ -64,7 +67,7 @@ export async function createModelJob(ownerId: string, raw: unknown, image: Uint8
    try {
    await lockVisualInputs(tx, ownerId); await requireVisualOwner(tx, ownerId, input.projectId);
    const previous = (await tx.$queryRaw<ModelJobRecord[]>`SELECT * FROM visual_model_jobs WHERE "ownerId"=${ownerId} AND "idempotencyKey"=${input.idempotencyKey}`)[0];
-   if (previous) { if (previous.requestHash !== hash) throw new VisualPortfolioError("IDEMPOTENCY_CONFLICT", 409); return previous; }
+   if (previous) { if (previous.requestHash !== hash && previous.requestHash !== hashes.legacy) throw new VisualPortfolioError("IDEMPOTENCY_CONFLICT", 409); return previous; }
    const current = (await tx.$queryRaw<InputUpload[]>`SELECT * FROM visual_input_uploads WHERE id=${upload.id}::uuid AND "ownerId"=${ownerId} AND "inputKey"=${upload.inputKey} AND "requestHash"=${hash} FOR UPDATE`)[0];
    if (!current || current.expiresAt.getTime() <= Date.now()) throw new VisualPortfolioError("INPUT_UPLOAD_PENDING", 409);
    await assertAccountCanSpend(tx, ownerId, cost);

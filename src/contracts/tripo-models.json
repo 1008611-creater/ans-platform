@@ -4,34 +4,39 @@
     "family": "mesh",
     "minFaces": 500,
     "maxFaces": 25000,
-    "quadMax": 25000
+    "quadMax": 25000,
+    "standardMaxFaces": 25000
   },
   {
     "id": "P1-20260311",
     "family": "mesh",
     "minFaces": 50,
     "maxFaces": 20000,
-    "quadMax": 0
+    "quadMax": 0,
+    "standardMaxFaces": 20000
   },
   {
     "id": "v3.1-20260211",
     "family": "detail",
     "minFaces": 500,
     "maxFaces": 2000000,
-    "quadMax": 150000
+    "quadMax": 150000,
+    "standardMaxFaces": 1500000
   },
   {
     "id": "v3.0-20250812",
     "family": "detail",
     "minFaces": 500,
     "maxFaces": 2000000,
-    "quadMax": 150000
+    "quadMax": 150000,
+    "standardMaxFaces": 1000000
   },
   {
     "id": "v2.5-20250123",
     "family": "detail",
     "minFaces": 500,
-    "maxFaces": 2000000,
-    "quadMax": 150000
+    "maxFaces": 500000,
+    "quadMax": 0,
+    "standardMaxFaces": 500000
   }
 ]

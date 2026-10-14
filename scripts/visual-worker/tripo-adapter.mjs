@@ -10,13 +10,16 @@ export async function readCredential(){
 }
 export function providerManifest(options,input,mime){
  const model=models.find(item=>item.id===options.model),source=options.source??"image";
- const max=options.quad?model?.quadMax:model?.maxFaces;
+ const quality=options.geometryQuality??"standard";
+ const max=options.quad?model?.quadMax:quality==="detailed"?model?.maxFaces:model?.standardMaxFaces;
  if(!model||!Number.isInteger(options.faceCount)||options.faceCount<model.minFaces||options.faceCount>max||!["2K","4K","8K"].includes(options.textureResolution)||!["image","text","multiview"].includes(source))throw new ProviderError("INPUT_REJECTED");
- if(options.generateParts&&(model.family!=="detail"||options.texture||options.pbr))throw new ProviderError("INPUT_REJECTED");
+ if(!["standard","detailed"].includes(quality)||quality==="detailed"&&(model.family!=="detail"||options.model==="v2.5-20250123"))throw new ProviderError("INPUT_REJECTED");
+ if(options.model==="v2.5-20250123"&&options.textureResolution!=="2K")throw new ProviderError("INPUT_REJECTED");
+ if(options.generateParts&&(model.family!=="detail"||options.model==="v2.5-20250123"||options.texture||options.pbr||options.quad))throw new ProviderError("INPUT_REJECTED");
  if(options.autoFix&&source!=="image")throw new ProviderError("INPUT_REJECTED");
  const result={model:options.model,face_limit:options.faceCount,texture:options.texture,pbr:options.texture&&options.pbr,
   ...(options.quad?{quad:true}:{}),
-  ...(options.texture?{texture_quality:({"2K":"standard","4K":"detailed","8K":"extreme"})[options.textureResolution]}:{}),
+  ...(options.texture&&options.model!=="v2.5-20250123"?{texture_quality:({"2K":"standard","4K":"detailed","8K":"extreme"})[options.textureResolution]}:{}),
   ...(model.family==="detail"&&options.model!=="v2.5-20250123"?{geometry_quality:options.geometryQuality??"standard"}:{}),
   ...(options.generateParts?{generate_parts:true}:{})};
  const file=(token,type)=>{const extension=({"image/png":"png","image/jpeg":"jpg","image/webp":"webp"})[type];if(typeof token!=="string"||!token||!extension)throw new ProviderError("INPUT_REJECTED");return {type:extension,file_token:token};};

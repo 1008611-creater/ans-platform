@@ -83,5 +83,6 @@
   "previewFailed": "模型预览暂时无法加载。",
   "previewHint": "拖动旋转、滚轮缩放。预览不会替换作品集中的模型。",
   "refreshPreview": "重新加载",
-  "unsupportedModel": "生成服务返回的模型暂不能直接用于作品集，已保留任务等待处理，不会自动收费转换格式。"
+  "unsupportedModel": "生成服务返回的模型暂不能直接用于作品集，已保留任务等待处理，不会自动收费转换格式。",
+  "quadUnavailable": "四边面暂不可提交：当前只交付原生 GLB，四边面输出 FBX。"
 }

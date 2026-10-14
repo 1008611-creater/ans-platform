@@ -50,6 +50,18 @@ describe("generation and publication controls",()=>{
   fireEvent.click(screen.getByLabelText(generation.autoFix));await screen.findByText(generation.priceUnavailable);expect(screen.getByRole("button",{name:generation.generate})).toBeDisabled();
   fireEvent.change(screen.getByLabelText(generation.model,{exact:false}),{target:{value:"v3.1-20260211"}});fireEvent.click(screen.getByLabelText(generation.parts));expect(screen.getByLabelText(generation.texture)).not.toBeChecked();expect(screen.getByLabelText(generation.pbr)).not.toBeChecked();
  });
+ it("8K and 4K never display the ordinary price without an exact quote",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:true,costPoints:2}})));mountGeneration();await screen.findByText(generation.price.replace("{points}","2"));
+  for(const value of ["4K","8K"]){fireEvent.change(screen.getByLabelText(generation.resolution),{target:{value}});await screen.findByText(generation.priceUnavailable);expect(screen.getByRole("button",{name:generation.generate})).toBeDisabled();}
+ });
+ it("disables undeliverable quad and respects geometry-specific face ranges",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:true,costPoints:2}})));mountGeneration();await screen.findByText(generation.price.replace("{points}","2"));
+  expect(screen.getByLabelText(generation.quad)).toBeDisabled();expect(screen.getByText(generation.quadUnavailable)).toBeVisible();
+  fireEvent.change(screen.getByLabelText(generation.model,{exact:false}),{target:{value:"v3.0-20250812"}});expect(screen.getByLabelText(generation.faces)).toHaveAttribute("max","1000000");
+  fireEvent.click(screen.getByLabelText(generation.geometry));expect(screen.getByLabelText(generation.faces)).toHaveAttribute("max","2000000");
+  fireEvent.change(screen.getByLabelText(generation.faces),{target:{value:"2000000"}});fireEvent.click(screen.getByLabelText(generation.geometry));expect(screen.getByLabelText(generation.faces)).toHaveValue(1000000);
+  fireEvent.change(screen.getByLabelText(generation.model,{exact:false}),{target:{value:"v2.5-20250123"}});expect(screen.getByLabelText(generation.faces)).toHaveAttribute("max","500000");expect(screen.getByLabelText(generation.faces)).toHaveValue(500000);expect(screen.queryByLabelText(generation.parts)).toBeNull();expect(screen.queryByLabelText(generation.quad)).toBeNull();
+ });
  it("multiview submits fixed view slots and refuses a missing front image",async()=>{
   const submitted:FormData[]=[];vi.stubGlobal("fetch",vi.fn(async(_url:string,init?:RequestInit)=>{if(init?.method==="POST"){submitted.push(init.body as FormData);return Response.json({ok:true,data:completed});}return Response.json({ok:true,data:{available:true,costPoints:2,quotes:[{options:{...DEFAULT_TRIPO_OPTIONS,source:"multiview"},costPoints:3}]}});}));mountGeneration();await screen.findByText(generation.price.replace("{points}","2"));fireEvent.click(screen.getByRole("button",{name:generation.sources.multiview}));
   const image=()=>new File(["fixture"],"image.png",{type:"image/png"});fireEvent.change(screen.getByLabelText(generation.views["2"]),{target:{files:[image()]}});fireEvent.click(screen.getByLabelText(generation.acknowledge));expect(screen.getByRole("button",{name:generation.generate})).toBeDisabled();

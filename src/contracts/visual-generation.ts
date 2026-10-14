@@ -14,10 +14,14 @@ export const tripoOptionsSchema = z.object({
  generateParts: z.boolean().default(false), autoFix: z.boolean().default(false)
 }).strict().superRefine((options, context) => {
  const model = TRIPO_MODELS.find(item => item.id === options.model)!;
- const max = options.quad ? model.quadMax : model.maxFaces;
+ const max = options.quad ? model.quadMax : options.geometryQuality === "detailed" ? model.maxFaces : model.standardMaxFaces;
  if (options.faceCount < model.minFaces || options.faceCount > max)
   context.addIssue({code:"custom", path:["faceCount"], message:"INVALID_FACE_COUNT"});
- if (options.generateParts && (model.family !== "detail" || options.texture || options.pbr))
+ if (options.geometryQuality === "detailed" && (model.family !== "detail" || options.model === "v2.5-20250123"))
+  context.addIssue({code:"custom", path:["geometryQuality"], message:"INCOMPATIBLE_GEOMETRY"});
+ if (options.model === "v2.5-20250123" && options.textureResolution !== "2K")
+  context.addIssue({code:"custom", path:["textureResolution"], message:"INCOMPATIBLE_TEXTURE_QUALITY"});
+ if (options.generateParts && (model.family !== "detail" || options.model === "v2.5-20250123" || options.texture || options.pbr || options.quad))
   context.addIssue({code:"custom", path:["generateParts"], message:"INCOMPATIBLE_PARTS"});
  if (options.autoFix && options.source !== "image")
   context.addIssue({code:"custom", path:["autoFix"], message:"INCOMPATIBLE_AUTOFIX"});
@@ -41,11 +45,17 @@ export interface GenerationConfig {
  available:boolean; costPoints:number|null; quotes?:GenerationQuote[];
  models?:typeof TRIPO_MODELS;
 }
-/** Legacy price applies only to single-image P2 jobs. Other combinations need an exact configured quote. */
+/** Legacy price applies only to ordinary 2K single-image P2 jobs. Other combinations need an exact quote. */
 export function generationPrice(config:GenerationConfig,options:TripoOptions):number|null {
+ // Quad output is FBX; the current delivery path accepts only native GLB.
+ if(options.quad)return null;
  const quote=config.quotes?.find(item=>Object.entries(item.options).every(([key,value])=>options[key as keyof TripoOptions]===value));
  if(quote)return quote.costPoints;
- return options.model==="P2-20260801"&&options.source==="image"&&!options.quad&&!options.autoFix?config.costPoints:null;
+ return options.model==="P2-20260801"&&options.source==="image"&&options.textureResolution==="2K"&&options.geometryQuality==="standard"&&!options.generateParts&&!options.autoFix?config.costPoints:null;
+}
+export function tripoFaceLimit(options: Pick<TripoOptions,"model"|"quad"|"geometryQuality">):number {
+ const model=TRIPO_MODELS.find(item=>item.id===options.model)!;
+ return options.quad?model.quadMax:options.geometryQuality==="detailed"?model.maxFaces:model.standardMaxFaces;
 }
 export type TripoOptions = z.infer<typeof tripoOptionsSchema>;
 export type ModelJobStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED" | "NEEDS_REVIEW";

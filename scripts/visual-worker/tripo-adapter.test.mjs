@@ -35,14 +35,15 @@ test("allows the storage host observed in the signed-in provider response",async
 });
 
 test("maps all observed models and advanced options without confusing mesh families",()=>{
- const manifest=providerManifest({...options,model:"v3.1-20260211",faceCount:150000,quad:true,texture:false,pbr:false,generateParts:true,geometryQuality:"detailed"},"token","image/webp");
- assert.equal(manifest.geometry_quality,"detailed");assert.equal(manifest.generate_parts,true);assert.equal(manifest.quad,true);
+ const manifest=providerManifest({...options,model:"v3.1-20260211",faceCount:150000,quad:false,texture:false,pbr:false,generateParts:true,geometryQuality:"detailed"},"token","image/webp");
+ assert.equal(manifest.geometry_quality,"detailed");assert.equal(manifest.generate_parts,true);assert.equal(manifest.quad,undefined);
+ assert.equal(providerManifest({...options,model:"v3.1-20260211",quad:true,faceCount:150000},"token","image/png").quad,true);
  assert.equal(manifest.file.type,"webp");assert.equal(manifest.texture_quality,undefined);
  assert.throws(()=>providerManifest({...options,quad:true,faceCount:25001},"token","image/png"));
  assert.throws(()=>providerManifest({...options,model:"P1-20260311",quad:true},"token","image/png"));
  assert.equal(providerManifest({...options,textureResolution:"8K",autoFix:true},"token","image/png").texture_quality,"extreme");
  assert.equal(providerManifest({...options,autoFix:true},"token","image/png").enable_image_autofix,true);
- assert.equal(providerManifest({...options,model:"v2.5-20250123"},"token","image/png").geometry_quality,undefined);
+ assert.equal(providerManifest({...options,model:"v2.5-20250123",textureResolution:"2K"},"token","image/png").geometry_quality,undefined);
 });
 test("text input contains no image token and multiview preserves empty slots",()=>{
  const text=providerManifest({...options,source:"text"},"a red toy robot");assert.equal(text.type,"text_to_model");assert.equal(text.prompt,"a red toy robot");assert.equal(text.file,undefined);
@@ -59,4 +60,23 @@ test("durable multiview envelope uploads original bytes in fixed view order",asy
 test("invalid input is rejected before paid provider submission",async()=>{
  let calls=0;const adapter=new TripoAdapter({fetcher:async()=>{calls++;return success({task_id:"task"});}});adapter.token="test-only";
  await assert.rejects(adapter.submit({...options,source:"text"},""),error=>error.code==="INPUT_REJECTED");assert.equal(calls,0);
+});
+
+test("rejects invalid H-model capabilities before paid submission",async()=>{
+ const invalid=[
+  {model:"v2.5-20250123",textureResolution:"2K",faceCount:500001},
+  {model:"v2.5-20250123",textureResolution:"2K",quad:true},
+  {model:"v2.5-20250123",textureResolution:"2K",generateParts:true,texture:false,pbr:false},
+  {model:"v2.5-20250123",textureResolution:"2K",geometryQuality:"detailed"},
+  {model:"v3.0-20250812",faceCount:1000001},
+  {model:"v3.1-20260211",faceCount:1500001},
+  {model:"v3.1-20260211",quad:true,generateParts:true,texture:false,pbr:false}
+ ];
+ let calls=0;const adapter=new TripoAdapter({fetcher:async()=>{calls++;return success({task_id:"task"});}});adapter.token="test-only";
+ for(const added of invalid)await assert.rejects(adapter.submit({...options,...added},"token","image/png"),error=>error.code==="INPUT_REJECTED");
+ assert.equal(calls,0);
+ for(const model of ["v3.0-20250812","v3.1-20260211"])
+  assert.equal(providerManifest({...options,model,faceCount:2000000,geometryQuality:"detailed"},"token","image/png").face_limit,2000000);
+ const v25=providerManifest({...options,model:"v2.5-20250123",textureResolution:"2K",faceCount:500000},"token","image/png");
+ assert.equal(v25.geometry_quality,undefined);assert.equal(v25.texture_quality,undefined);
 });
