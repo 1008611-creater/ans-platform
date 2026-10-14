@@ -72,7 +72,8 @@ try{
  Assert ((Read-State).phase -eq 'stopped') 'manual-stop'
  & (Join-Path $config.postgresBin 'pg_ctl.exe') status -D (Join-Path $StateDirectory 'postgres') *> $null
  Assert ($LASTEXITCODE -ne 0) 'owned-database-stopped'
- Start-ScheduledTask -TaskName 'ANS Local 3D Service'
+ & $psExe -NoProfile -NonInteractive -File $launcher -Mode start
+ if($LASTEXITCODE -ne 0){throw 'START_COMMAND_FAILED'}
  $after=Wait-State {param($s) $s.phase -eq 'running' -and $s.appPid -and $s.workerPid} 60
  $health=Invoke-RestMethod -Uri ($base+'/api/health') -TimeoutSec 10
  Assert ($health.status -eq 'healthy') 'cold-start-including-database'
