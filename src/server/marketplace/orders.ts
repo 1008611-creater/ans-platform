@@ -4,6 +4,8 @@ import { marketListingInputSchema, marketMessageSchema, marketOrderActionSchema,
 import { buildMarketQuote, completionPostings, MarketRuleError, nextOrderStatus, selectMarketPricingTier } from "@/domain/marketplace/order";
 import { appendCashJournal, marketHash, marketTransaction, requireMarketActor } from "./shared";
 
+import { marketHistoryPageSize } from "@/contracts/marketplace-history";
+import { presentHistoryPage, presentOrderEvent, presentOrderMessage } from "./history";
 import { marketPointsOnly } from "./policy";
 import { pointsPricingPolicy, settleMarketPoints } from "./points";
 import { availableCashProviders, cashListingPolicy, configuredCashProvider } from "./providers/config";
@@ -17,9 +19,9 @@ export function marketCheckoutAvailability() {
 function configuredPricingPolicy(): MarketPricingPolicy { return pointsPricingPolicy(); }
 
 const orderDetails = {
-  events: { orderBy: [{ createdAt: "desc" as const }, { id: "desc" as const }], take: 100 },
+  events: { orderBy: [{ createdAt: "desc" as const }, { id: "desc" as const }], take: marketHistoryPageSize + 1 },
   deliveries: { orderBy: { orderRevision: "desc" as const } },
-  messages: { orderBy: [{ createdAt: "desc" as const }, { id: "desc" as const }], take: 100 },
+  messages: { orderBy: [{ createdAt: "desc" as const }, { id: "desc" as const }], take: marketHistoryPageSize + 1 },
   review: true,
 } satisfies Prisma.MarketOrderInclude;
 
@@ -30,9 +32,10 @@ function presentOrder(order: Prisma.MarketOrderGetPayload<{ include: typeof orde
     revisionRequests: order.revisionRequests, requirements: order.requirements,
     paidAt: order.paidAt?.toISOString() ?? null, completedAt: order.completedAt?.toISOString() ?? null,
     createdAt: order.createdAt.toISOString(), updatedAt: order.updatedAt.toISOString(),
-    events: order.events.toReversed().map((event) => ({ id: event.id, actorId: event.actorId, action: event.action, fromStatus: event.fromStatus, toStatus: event.toStatus, revision: event.revision, message: event.action.startsWith("CASH_CHECKOUT_") ? "" : event.message, createdAt: event.createdAt.toISOString() })),
+    events: presentHistoryPage(order.events.map(presentOrderEvent)).items,
     deliveries: order.deliveries.map((delivery) => ({ id: delivery.id, revision: delivery.orderRevision, markdown: delivery.contentMarkdown, createdAt: delivery.createdAt.toISOString() })),
-    messages: order.messages.toReversed().map((message) => ({ id: message.id, authorId: message.authorId, content: message.content, createdAt: message.createdAt.toISOString() })),
+    messages: presentHistoryPage(order.messages.map(presentOrderMessage)).items,
+    history: { messagesBefore: presentHistoryPage(order.messages).nextCursor, eventsBefore: presentHistoryPage(order.events).nextCursor },
     review: order.review ? { rating: order.review.rating, content: order.review.content, createdAt: order.review.createdAt.toISOString() } : null,
   };
 }

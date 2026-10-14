@@ -17,3 +17,13 @@ describe("market request certainty", () => {
     expect(error).toBeInstanceOf(Error); expect(error).not.toBeInstanceOf(MarketRequestRejection);
   });
 });
+
+describe("account-bound history GET", () => {
+  it("omits the body and retains the actor header", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true, data: { items: [] } })));
+    vi.stubGlobal("fetch", fetcher);
+    await marketRequest("/history", "GET", undefined, { actorId: "buyer" });
+    expect(fetcher.mock.calls[0][1]).not.toHaveProperty("body");
+    expect(fetcher.mock.calls[0][1].headers["x-ans-actor"]).toBe("buyer");
+  });
+});

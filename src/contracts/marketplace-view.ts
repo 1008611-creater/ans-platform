@@ -8,6 +8,7 @@ export type MarketOfferView = {
 export type MarketOrderSummary = { id: string; buyerId: string; sellerId: string; status: MarketOrderStatus; quote: MarketQuote; revision: number; updatedAt: string };
 export type MarketOrderView = MarketOrderSummary & {
   paymentMethod?: string; listingId: string; revisionRequests: number; requirements: string; paidAt: string | null; completedAt: string | null; createdAt: string;
+  history?: { messagesBefore: string | null; eventsBefore: string | null };
   events: { id: string; actorId: string | null; action: string; fromStatus: MarketOrderStatus | null; toStatus: MarketOrderStatus; revision: number; message: string; createdAt: string }[];
   deliveries: { id: string; revision: number; markdown: string; createdAt: string }[];
   messages: { id: string; authorId: string; content: string; createdAt: string }[];

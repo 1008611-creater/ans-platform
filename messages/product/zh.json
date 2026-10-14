@@ -381,6 +381,10 @@
     }
   },
   "market": {
+    "olderMessages": "查看更早的消息",
+    "olderEvents": "查看更早的订单记录",
+    "historyLoading": "正在加载历史记录…",
+    "historyLoadError": "历史记录加载失败，当前内容仍保留。请重试。",
     "navigation": "交易导航",
     "eyebrow": "ANS MARKET · 让创造产生价值",
     "title": "把会做的，变成值得买的。",

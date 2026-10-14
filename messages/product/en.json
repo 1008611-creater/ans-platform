@@ -381,6 +381,10 @@
     }
   },
   "market": {
+    "olderMessages": "Load earlier messages",
+    "olderEvents": "Load earlier activity",
+    "historyLoading": "Loading history…",
+    "historyLoadError": "History could not be loaded. Your current records are unchanged. Try again.",
     "navigation": "Market navigation",
     "eyebrow": "ANS MARKET · Value through creation",
     "title": "Turn your craft into someone’s next step.",
