@@ -4,6 +4,7 @@ import type { CatalogEntry } from "@/contracts/catalog-content";
 export const REAL_CATALOG_PROJECTS = [
   {
     "slug": "liu-resume",
+    "workflowSlugs": ["ans-portfolio-website"],
     "category": "career",
     "subcategory": "portfolio",
     "goal": "career",

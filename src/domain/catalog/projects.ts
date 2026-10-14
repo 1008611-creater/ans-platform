@@ -15,7 +15,7 @@ type CatalogProjectBase = {
   preview: "document" | "code" | "plan" | "character" | "site" | "video" | "agent";
 };
 
-export type CatalogProject = CatalogProjectBase & { source: CatalogEntry["source"]; sourceUrl?: string; licenseUrl?: string; workflowId?: CatalogWorkflowId; content?: CatalogEntry["content"]; discoveryUrl?: string; coverUrl?: string; coverNote?: string; memberHref?: string; creator?: string };
+export type CatalogProject = CatalogProjectBase & { source: CatalogEntry["source"]; sourceUrl?: string; licenseUrl?: string; workflowId?: CatalogWorkflowId; workflowSlugs?: string[]; marketSlugs?: string[]; content?: CatalogEntry["content"]; discoveryUrl?: string; coverUrl?: string; coverNote?: string; memberHref?: string; creator?: string };
 
 export const WORKFLOW_RECIPES: readonly CatalogProject[] = [
   { slug: "resume-website", category: "career", subcategory: "portfolio", goal: "portfolio", workflowId: "resume-website", source: "official", preview: "site" },

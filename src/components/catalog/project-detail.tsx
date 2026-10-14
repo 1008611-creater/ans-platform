@@ -9,23 +9,28 @@ import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { Button } from "@/components/ui/button";
 import { ProjectPreview } from "./project-preview";
 import { ProjectCard } from "./project-card";
+import type { ProductConnections as Connections } from "@/contracts/product-connections";
+import { ProductConnectionsSection } from "./product-connections";
 import styles from "./project-detail.module.css";
 
-export async function CatalogProjectDetail({ project, guide, related = [], accountId, favorited }: {
+export async function CatalogProjectDetail({ project, guide, related = [], connections = { projects: [], workflows: [], offers: [] }, accountId, favorited }: {
   project: CatalogProject;
   guide?: ProjectGuide;
   related?: readonly CatalogProject[];
+  connections?: Connections;
   accountId: string | null;
   favorited: boolean;
 }) {
-  const [t, d, locale] = await Promise.all([getTranslations("product"), getTranslations("product.projectDetail"), getLocale()]);
+  const [t, d, ct, locale] = await Promise.all([getTranslations("product"), getTranslations("product.projectDetail"), getTranslations("product.connections"), getLocale()]);
   const text = (field: Parameters<typeof catalogText>[2]) => catalogText(project, t, field, locale);
   const advice = guide ? (locale.startsWith("zh") ? guide.zh : guide.en) : undefined;
   const startHref = projectStartHref(project);
   const isGithub = project.source === "github";
-  const primaryHref = project.memberHref ?? startHref ?? guide?.experienceUrl ?? project.sourceUrl;
-  const isExternal = !project.memberHref && !startHref;
-  const primaryLabel = project.memberHref ? d("viewOffer") : startHref ? d("prepareWorkflow") : guide?.experienceUrl ? d("tryOnline") : isGithub ? d("viewRepository") : d("openProject");
+  const primaryConnection = connections.workflows[0] ?? connections.offers[0];
+  const primaryHref = primaryConnection?.href ?? project.memberHref ?? startHref ?? guide?.experienceUrl ?? project.sourceUrl;
+  const isExternal = !primaryConnection && !project.memberHref && !startHref;
+  const primaryLabel = primaryConnection ? ct(`actions.${primaryConnection.kind === "workflow-offer" ? "workflowOffer" : primaryConnection.kind}`) : project.memberHref ? d("viewOffer") : startHref ? d("prepareWorkflow") : guide?.experienceUrl ? d("tryOnline") : isGithub ? d("viewRepository") : d("openProject");
+  const otherActions: Connections = { projects: [], workflows: connections.workflows.filter(item => item !== primaryConnection), offers: connections.offers.filter(item => item !== primaryConnection) };
   const sourceName = project.sourceUrl ? new URL(project.sourceUrl).hostname : t(catalogSourceLabel(project.source));
   const steps = advice?.steps ?? [
     { title: d("fallbackSteps.inspect"), body: text("output"), href: project.sourceUrl },
@@ -51,13 +56,15 @@ export async function CatalogProjectDetail({ project, guide, related = [], accou
       <div className={styles.showcase}><ProjectPreview project={project} large /></div>
       <aside className={styles.start} aria-label={d("startHere")}>
         <p className={styles.kicker}>{d("startHere")}</p>
-        <h2>{d(project.memberHref ? "creatorProject" : startHref ? "ansWorkflow" : "sourceProject")}</h2>
-        <p>{advice?.access ?? d(project.memberHref ? "memberAccess" : startHref ? "workflowAccess" : isGithub ? "githubAccess" : "websiteAccess")}</p>
-        {primaryHref && <Button asChild size="lg" className={styles.primary}>
+        <h2>{primaryConnection ? ct(primaryConnection.kind === "workflow" || primaryConnection.kind === "workflow-offer" ? "startWithWorkflow" : "startWithOffer") : d(project.memberHref ? "creatorProject" : startHref ? "ansWorkflow" : "sourceProject")}</h2>
+        <p>{primaryConnection ? ct("prepareNote") : advice?.access ?? d(project.memberHref ? "memberAccess" : startHref ? "workflowAccess" : isGithub ? "githubAccess" : "websiteAccess")}</p>
+        {primaryHref && <Button asChild size="lg" className={`${styles.primary} h-auto min-h-11 whitespace-normal py-3 text-center`}>
           {isExternal ? <a href={primaryHref} target="_blank" rel="noopener noreferrer">{primaryLabel}<ArrowUpRight size={18} aria-hidden="true" /></a> : <Link href={primaryHref}>{primaryLabel}<ArrowRight size={18} aria-hidden="true" /></Link>}
         </Button>}
+        <ProductConnectionsSection connections={otherActions} compact />
+        {primaryConnection && (guide?.experienceUrl || project.sourceUrl) && <Button asChild variant="outline" className="mt-2 w-full"><a href={guide?.experienceUrl ?? project.sourceUrl} target="_blank" rel="noopener noreferrer">{guide?.experienceUrl ? d("tryOnline") : isGithub ? d("viewRepository") : d("openProject")}<ArrowUpRight size={16} aria-hidden="true" /></a></Button>}
         {guide?.experienceUrl && project.sourceUrl && <a href={project.sourceUrl} target="_blank" rel="noopener noreferrer" className="ans-text-link"><Github size={15} aria-hidden="true" />{d("viewRepository")}</a>}
-        <div className={styles.startNote}><Info size={15} aria-hidden="true" /><span>{startHref ? t("cost", { points: PROJECT_WORKFLOW_COST_POINTS }) + " · " + t("costNote") : d("browseNote")}</span></div>
+        {!primaryConnection && <div className={styles.startNote}><Info size={15} aria-hidden="true" /><span>{startHref ? t("cost", { points: PROJECT_WORKFLOW_COST_POINTS }) + " · " + t("costNote") : d("browseNote")}</span></div>}
         {project.creator && <p className={styles.creator}>{d("by", { name: project.creator })}</p>}
       </aside>
     </div>
@@ -106,6 +113,7 @@ export async function CatalogProjectDetail({ project, guide, related = [], accou
         <Link href="/explore/submit" className="ans-text-link">{d("shareProject")}<ArrowRight size={15} aria-hidden="true" /></Link>
       </aside>
     </div>
+    <ProductConnectionsSection connections={connections} />
     {related.length > 0 && <section className={styles.related} aria-labelledby="related-projects-title">
       <div className={styles.relatedHeading}><h2 id="related-projects-title">{d("related")}</h2><Link href={`/explore?category=${project.category}`} className="ans-text-link">{d("seeCategory")}<ArrowRight size={15} aria-hidden="true" /></Link></div>
       <div className={styles.relatedGrid}>{related.map(item => <ProjectCard key={item.slug} project={item} compact />)}</div>

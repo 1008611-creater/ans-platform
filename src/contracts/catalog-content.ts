@@ -24,6 +24,7 @@ const publicUrl = z.string().url().max(2000).refine((value) => {
     return url.protocol === "https:" && !url.username && !url.password;
   } catch { return false; }
 }, "HTTPS URL without embedded credentials required");
+const relatedSlugs = z.array(z.string().min(3).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)).max(8).refine(items => new Set(items).size === items.length, "Duplicate association");
 export const catalogEntrySchema = z.object({
   slug: z.string().min(3).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   category: z.enum(["learning", "career", "aigc", "web", "github", "business", "productivity", "competition"]),
@@ -31,6 +32,7 @@ export const catalogEntrySchema = z.object({
   preview: z.enum(["document", "code", "plan", "character", "site", "video", "agent"]),
   source: z.enum(CATALOG_SOURCES), sourceUrl: publicUrl.optional(), licenseUrl: publicUrl.optional(),
   workflowId: catalogWorkflowIdSchema.optional(),
+  workflowSlugs: relatedSlugs.optional(), marketSlugs: relatedSlugs.optional(),
   discoveryUrl: publicUrl.optional(), coverUrl: z.union([publicUrl, z.string().regex(/^\/catalog\/(?:[a-z0-9][a-z0-9-]*\/)*[a-z0-9][a-z0-9.-]*\.(?:webp|png|jpg|jpeg|svg)$/)]).optional(), coverNote: text.max(160).optional(),
   content: z.object({ zh: catalogTextSchema, en: catalogTextSchema.optional() }).strict(),
 }).strict().superRefine((entry, ctx) => {
