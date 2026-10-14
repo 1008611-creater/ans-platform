@@ -1,5 +1,5 @@
-﻿import type { ComponentProps } from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import type { ComponentProps } from "react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { AgentTurnStatus } from "@/components/mascot/agent-turn-status";
 import type { useCompanionAgent } from "@/components/mascot/use-companion-agent";
@@ -19,7 +19,13 @@ it("makes metered consent explicit without exposing spend or balance numbers", (
   };
   const view = render(<AgentTurnStatus agent={agent} />);
   expect(screen.getByText(companion.agentBillingNotice)).toBeInTheDocument();
+  const details = view.container.querySelector("details.ans-agent-details")!;
+  expect(details).not.toHaveAttribute("open");
+  expect(view.container.querySelector("blockquote")).toHaveTextContent(agent.question);
+  fireEvent.click(screen.getByText(companion.agentConsentDetails));
+  expect(details).toHaveAttribute("open");
   expect(screen.getByRole("link", { name: companion.agentBillingDetails })).toHaveAttribute("href", "/workspace/credits");
+  expect(screen.getByText(companion.agentPrivacy)).toBeVisible();
   expect(view.container).not.toHaveTextContent("123.456");
   expect(view.container).not.toHaveTextContent("999.321");
   expect(screen.getByRole("button", { name: companion.agentConfirm })).toBeEnabled();
@@ -48,4 +54,14 @@ it("explains a capacity failure while keeping the submitted turn's usage recover
   expect(screen.getByRole("alert")).toHaveTextContent(companion.agentError.capacity);
   expect(screen.getByRole("button", { name: companion.agentCheckReceipt })).toBeEnabled();
   expect(screen.queryByRole("button", { name: companion.agentRetryQuote })).not.toBeInTheDocument();
+});
+
+it.each(["SETTLED", "UNCERTAIN", "RUNNING", "RELEASED"])("only labels a fully settled successful turn with its actual cost (%s)", state => {
+  const agent: ReturnType<typeof useCompanionAgent> = {
+    phase: "complete", quote: null, error: null, receipts: [{ requestId: "call-a", state: "SETTLED", reservedPoints: 1, settledPoints: .00049 }, { requestId: "call-b", state, reservedPoints: 1, settledPoints: state === "SETTLED" ? .00052 : null }], tools: [], activeTool: null, busy: false, privateAccess: false,
+    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "public-help", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {},
+  };
+  const view = render(<AgentTurnStatus agent={agent} />);
+  if (state === "SETTLED") expect(view.container.querySelector(".ans-agent-usage")).toHaveTextContent("0.00101");
+  else expect(view.container.querySelector(".ans-agent-usage")).toBeNull();
 });

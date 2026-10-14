@@ -17,10 +17,25 @@ export function AgentTurnStatus({ agent }: { agent: ReturnType<typeof useCompani
   if (agent.phase === "idle") return null;
   const pending = agent.receipts.some(item => ["RUNNING", "UNCERTAIN"].includes(item.state));
   const quotedModel = agent.quote ? getRunModel(agent.quote.model) : undefined;
+  const settled = agent.phase === "complete" && agent.receipts.length > 0 && agent.receipts.every(item => item.state === "SETTLED" && item.settledPoints !== null && Number.isFinite(item.settledPoints) && item.settledPoints >= 0);
+  const usedPoints = settled ? agent.receipts.reduce((sum, item) => sum + item.settledPoints!, 0) : null;
+  const usedLabel = usedPoints === null ? null : new Intl.NumberFormat(undefined, { maximumFractionDigits: 6 }).format(usedPoints);
   return <section className="ans-agent-turn" aria-label={t("agentTurn")}>
     {agent.busy && <div className="ans-agent-progress" role="status"><Search aria-hidden="true" /><span>{agent.phase === "reading" ? t(toolKey(agent.activeTool)) : t(`agentPhase.${agent.phase}`)}</span></div>}
     {!!agent.tools.length && <details className="ans-agent-tools"><summary>{t("agentSources", { count: agent.tools.length })}</summary><ul>{agent.tools.map((tool, index) => <li key={index}>{tool.ok ? <Check aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}<span>{t(toolKey(tool.name))}</span><small>{t(tool.ok ? "agentReadDone" : "agentReadFailed")}</small></li>)}</ul></details>}
-    {agent.quote && <div className="ans-agent-quote"><strong>{t("agentQuoteTitle")}</strong><blockquote>{agent.question}</blockquote><p>{quotedModel && t("agentQuoteModel", { model: quotedModel.label, multiplier: RUN_MODEL_METERING[quotedModel.key].consumptionMultiplier })}</p><small>{t("agentModelRateNote")}</small><p className="ans-agent-privacy">{t("agentBillingNotice")}</p><WorkspaceLink href="/workspace/credits">{t("agentBillingDetails")}<ArrowUpRight aria-hidden="true" /></WorkspaceLink><label><input type="checkbox" checked={agent.privateAccess} onChange={event => agent.allowPrivate(event.target.checked)} /><span>{t("agentPrivateConsent")}</span></label><p className="ans-agent-privacy">{t("agentPrivacy")}</p><div><button type="button" onClick={() => void agent.confirm()} disabled={agent.quote.balance < agent.quote.maxPoints}>{t("agentConfirm")}</button><button type="button" onClick={agent.cancelQuote}>{t("agentCancel")}</button></div>{agent.quote.balance < agent.quote.maxPoints && <WorkspaceLink href="/workspace/credits">{t("agentTopUp")}<ArrowUpRight aria-hidden="true" /></WorkspaceLink>}</div>}
+    {agent.quote && <div className="ans-agent-quote">
+      <div className="ans-agent-quote-heading"><strong>{t("agentQuoteTitle")}</strong><span>{t("agentBillingNotice")}</span></div>
+      <blockquote>{agent.question}</blockquote>
+      <label><input type="checkbox" checked={agent.privateAccess} onChange={event => agent.allowPrivate(event.target.checked)} /><span>{t("agentPrivateConsent")}</span></label>
+      <details className="ans-agent-details"><summary>{t("agentConsentDetails")}</summary>
+        {quotedModel && <p>{t("agentQuoteModel", { model: quotedModel.label, multiplier: RUN_MODEL_METERING[quotedModel.key].consumptionMultiplier })}</p>}
+        <p>{t("agentModelRateNote")}</p><p>{t("agentPrivacy")}</p>
+        <WorkspaceLink href="/workspace/credits">{t("agentBillingDetails")}<ArrowUpRight aria-hidden="true" /></WorkspaceLink>
+      </details>
+      <div className="ans-agent-quote-actions"><button type="button" onClick={() => void agent.confirm()} disabled={agent.quote.balance < agent.quote.maxPoints}>{t("agentConfirm")}</button><button type="button" onClick={agent.cancelQuote}>{t("agentCancel")}</button></div>
+      {agent.quote.balance < agent.quote.maxPoints && <WorkspaceLink href="/workspace/credits">{t("agentTopUp")}<ArrowUpRight aria-hidden="true" /></WorkspaceLink>}
+    </div>}
+    {usedLabel !== null && <div className="ans-agent-usage" role="status"><span>{t("agentUsedPoints", { points: usedLabel })}</span><WorkspaceLink href="/workspace/credits">{t("agentBillingDetails")}<ArrowUpRight aria-hidden="true" /></WorkspaceLink></div>}
     {agent.error && <p role="alert" className="ans-agent-error">{t(`agentError.${errorKeys[agent.error] ?? "unavailable"}`)}</p>}
     {agent.phase === "stopped" && <p role="status" className="ans-agent-error">{t(agent.hasTicket ? "agentStopped" : "agentStoppedBeforeExecution")}</p>}
     {agent.canRetryQuote && <div className="ans-agent-retry"><button type="button" onClick={() => void agent.retryQuote()}>{t("agentRetryQuote")}</button><small>{t("agentRetryQuoteHint")}</small></div>}
