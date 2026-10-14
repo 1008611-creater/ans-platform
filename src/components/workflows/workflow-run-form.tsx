@@ -81,6 +81,7 @@ export function WorkflowRunForm({
   const activeRun = useRef<{ id: string | null; terminal: boolean }>({ id: null, terminal: false });
   const intent = useRef<{ fingerprint: string; key: string } | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const portalRoot = useRef<HTMLDivElement>(null);
   const cancelWait = useRef<(() => void) | null>(null);
   useEffect(() => {
     alive.current = true;
@@ -243,6 +244,7 @@ export function WorkflowRunForm({
         </CardDescription>
       </CardHeader>}
       <Content className="space-y-5">
+        <div ref={portalRoot} className="contents">
         {embedded && <p className="text-xs leading-6 text-muted-foreground">{estimatedCost === null ? workflowBilling("meteredCost") : billing("billingExplanation", { points: estimatedCost })}</p>}
         {variables.length === 0 ? (
           <p className="text-sm text-muted-foreground">这个工作流不需要额外输入，直接运行即可。</p>
@@ -287,7 +289,7 @@ export function WorkflowRunForm({
               <SelectTrigger id="workflow-run-model" className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent container={portalRoot.current}>
                 {RUN_MODEL_OPTIONS.map((model) => (
                   <SelectItem key={model.key} value={model.key}>
                     {model.label}
@@ -302,7 +304,7 @@ export function WorkflowRunForm({
               <SelectTrigger id="workflow-run-reasoning" className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent container={portalRoot.current}>
                 {RUN_REASONING_EFFORTS.map((effort) => (
                   <SelectItem key={effort} value={effort}>
                     {RUN_REASONING_EFFORT_LABELS[effort]}
@@ -318,7 +320,7 @@ export function WorkflowRunForm({
                 <SelectTrigger id="workflow-run-credential" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent container={portalRoot.current}>
                   <SelectItem value="platform">平台模型池</SelectItem>
                   {credentials.map((credential) => (
                     <SelectItem key={credential.id} value={credential.id}>
@@ -340,6 +342,7 @@ export function WorkflowRunForm({
             <span className="text-xs text-muted-foreground">还需填写：{missing.join("、")}</span>
           )}
           {runId && <span className="text-xs text-muted-foreground">运行编号 {runId.slice(0, 8)}…</span>}
+        </div>
         </div>
 
         {error && (

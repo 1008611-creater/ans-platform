@@ -241,12 +241,9 @@ Optional features:
 OPENAI_API_KEY=         # For AI-powered semantic search
 ```
 
-## Testing
+## Verification
 
-Automated tests use Vitest under `src/__tests__`; run relevant tests and type checks. When implementing:
-- Place tests adjacent to source files or in `__tests__/` directories
-- Use descriptive test names
-- Mock external services (database, OAuth)
+Automated tests use Vitest under `src/__tests__`; run relevant tests and type checks when the change warrants them. Choose validation from risk and affected surface instead of repeating the full suite. Place meaningful regression tests adjacent to source files or in `__tests__/`, use descriptive names, and mock external services such as the database and OAuth. Record verified and unverified areas.
 
 ## Common Tasks
 
@@ -270,6 +267,18 @@ Automated tests use Vitest under `src/__tests__`; run relevant tests and type ch
 1. Update `prisma/schema.prisma`
 2. Run `npm run db:migrate` to create migration
 3. Update related TypeScript types if needed
+
+## GPT-6.1 task routing and workflow architecture principles
+
+See [`docs/adr/0003-agent-operating-model-gpt6.md`](docs/adr/0003-agent-operating-model-gpt6.md). Root rules define durable boundaries; implementation work loads the relevant modules, contracts, and ADRs on demand instead of reading the entire repository unconditionally.
+
+- Route work as S/M/L/XL: local changes get local checks; cross-module changes confirm data flow, permissions, and state boundaries; permissions, billing, migrations, external integrations, and production release retain review, idempotency, failure handling, and rollback evidence.
+- Definition of Done includes the requested behavior, risk-appropriate verification, fixed or recorded failures, clear unverified areas, and a known rollback entry. Continue authorized local work to that point without repeated approval requests.
+- Choose lint, type checks, affected tests, builds, browser checks, or smoke checks from risk and impact. Do not repeat the full suite by default; repair failures caused by the current change and rerun affected checks.
+- Keep project, workflow, and marketplace details and state separate. Workflows use immutable versions, reviewed publication, run snapshots, and real results; marketplace entries bind an explicit runnable version and service or purchase conditions.
+- Use a shared result landing page, staged studio, and real result preview as the workflow shell. Specialized capabilities enter through adapters. Every stage maps to real nodes and persisted state.
+- Project-to-workflow conversion creates a private draft from public project material. It never executes external code or README instructions. Public projections contain bounded presentation only; prompts, private configuration, review drafts, and user input stay private.
+- Show outcomes and next actions before steps and advanced settings. Mobile behavior, keyboard access, reduced motion, unsaved-exit protection, and error recovery are delivery requirements.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

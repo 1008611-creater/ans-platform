@@ -157,13 +157,24 @@ export async function listPublishedMarketListingsBySeller(sellerId: string, view
 }
 
 export async function getMarketListing(slug: string, viewerId?: string) {
-  const listing = await db.marketListing.findFirst({
+  let listing = await db.marketListing.findFirst({
     where: { slug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false } },
     include: listingReadInclude(viewerId),
   });
+  // Keep the canonical product route stable while the immutable platform listing retains its generated slug.
+  if (!listing && slug === "resume-website") {
+    const source = await db.workflow.findFirst({ where: { slug: "ans-portfolio-website", status: "PUBLISHED", isOfficial: true }, select: { id: true } });
+    if (source) {
+      listing = await db.marketListing.findFirst({
+        where: { status: "PUBLISHED", seller: { deletedAt: null, flagged: false }, versions: { some: { payload: { path: ["execution", "workflowId"], equals: source.id } } } },
+        include: listingReadInclude(viewerId),
+        orderBy: { updatedAt: "desc" },
+      });
+    }
+  }
   const version = listing?.versions.find((item) => item.version === listing.publishedVersion);
   if (!listing || !version) throw new MarketRuleError("NOT_FOUND", 404);
-  return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null };
+  return { id: listing.id, slug: slug === "resume-website" ? slug : listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null };
 }
 
 export async function getOwnedMarketListing(id: string, sellerId: string) {
