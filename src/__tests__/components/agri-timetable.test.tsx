@@ -307,3 +307,146 @@ describe("personal timetable interaction", () => {
   });
 
 });
+
+function historyEvents(highest: number, count: number) {
+  return Array.from({ length: count }, (_, index) => {
+    const revision = highest - index;
+    return { revision, action: "update", createdAt: "2026-10-14T00:00:00Z", task: {
+      ...agriTaskTemplates("zh")[0].task, title: "Historical revision " + revision,
+      ...(revision === 2 ? { status: "DONE" as const, completionResult: "Early completion evidence" } : {}),
+    } };
+  });
+}
+function seedHistory(highest = 123) {
+  task = { ...task, revision: highest }; detail = { ...detail, task, history: historyEvents(highest, 50), historyTruncated: true, historyNextBeforeRevision: highest - 49 };
+}
+function historyPage(highest: number, count: number, nextBeforeRevision: number | null = null) {
+  return { taskId: "task-a", ownerId: "owner-a", competitionId: "edition", history: historyEvents(highest, count), nextBeforeRevision };
+}
+const historyUrl = api + "/task-a/history";
+describe("owner history window", () => {
+  it("appends 123 real version snapshots including the old completion without changing an unsaved form", async () => {
+    seedHistory(); const normal = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url, init) => url === historyUrl + "?beforeRevision=74" ? envelope(historyPage(73, 50, 24)) : url === historyUrl + "?beforeRevision=24" ? envelope(historyPage(23, 23)) : normal(url, init));
+    await open(); fireEvent.change(screen.getByLabelText(copy.titleField), { target: { value: "My unsaved current draft" } });
+    fireEvent.change(screen.getByLabelText(copy.statusField), { target: { value: "DONE" } });
+    fireEvent.change(screen.getByLabelText(copy.complete), { target: { value: "Current accepted delivery" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: copy.acknowledge }));
+    fireEvent.click(screen.getByRole("button", { name: copy.moreHistory })); await screen.findByText("Historical revision 24");
+    fireEvent.click(screen.getByRole("button", { name: copy.moreHistory })); await screen.findByText("Historical revision 1");
+    expect(screen.getByText(copy.outcome + ": Early completion evidence")).toBeInTheDocument();
+    expect(document.querySelectorAll("details")).toHaveLength(123);
+    expect(screen.queryByRole("button", { name: copy.moreHistory })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(copy.titleField)).toHaveValue("My unsaved current draft");
+    expect(screen.getByLabelText(copy.complete)).toHaveValue("Current accepted delivery");
+    expect(screen.getByRole("checkbox", { name: copy.acknowledge })).toBeChecked();
+    expect(fetchMock.mock.calls.some(call => call[1]?.method === "POST")).toBe(false);
+    for (const call of fetchMock.mock.calls.filter(call => call[0].includes("/history"))) expect(new Headers(call[1]?.headers).get("x-ans-task-actor")).toBe("owner-a");
+    fireEvent.click(screen.getByRole("button", { name: copy.save })); await screen.findByText(copy.saved);
+    const command = JSON.parse(fetchMock.mock.calls.find(call => call[1]?.method === "POST")![1]!.body as string);
+    expect(command.expectedRevision).toBe(123); expect(command.task.title).toBe("My unsaved current draft");
+  });
+  it("retains history and draft after a network error and retries the exact page", async () => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!; let attempts = 0;
+    fetchMock.mockImplementation(async (url, init) => {
+      if (url === historyUrl + "?beforeRevision=2") { if (attempts++ === 0) throw new TypeError("offline"); return envelope(historyPage(1, 1)); }
+      return normal(url, init);
+    });
+    await open(); fireEvent.change(screen.getByLabelText(copy.titleField), { target: { value: "Retain edited title" } });
+    fireEvent.click(screen.getByRole("button", { name: copy.moreHistory })); await screen.findByRole("alert");
+    expect(screen.getByText("Historical revision 2")).toBeInTheDocument(); expect(document.querySelectorAll("details")).toHaveLength(50);
+    expect(screen.getByLabelText(copy.titleField)).toHaveValue("Retain edited title");
+    fireEvent.click(screen.getByRole("button", { name: copy.retry })); await screen.findByText("Historical revision 1");
+    expect(document.querySelectorAll("details")).toHaveLength(51); expect(attempts).toBe(2);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+  it("prevents two synchronous pagination clicks from issuing duplicate requests", async () => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!;
+    let settle!: (response: Response) => void; const pending = new Promise<Response>(resolve => { settle = resolve; });
+    fetchMock.mockImplementation(async (url, init) => url === historyUrl + "?beforeRevision=2" ? pending : normal(url, init));
+    await open(); const button = screen.getByRole("button", { name: copy.moreHistory });
+    act(() => { fireEvent.click(button); fireEvent.click(button); });
+    expect(fetchMock.mock.calls.filter(call => call[0] === historyUrl + "?beforeRevision=2")).toHaveLength(1);
+    expect(button).toBeDisabled();
+    await act(async () => { settle(envelope(historyPage(1, 1))); await pending; });
+    expect(screen.getByText("Historical revision 1")).toBeInTheDocument();
+  });
+  it("refreshes only the history window, starts from the newest page and preserves current input", async () => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url, init) => url === historyUrl + "?beforeRevision=2" ? envelope(historyPage(1, 1)) : url === historyUrl ? envelope(historyPage(52, 50, 3)) : normal(url, init));
+    await open(); fireEvent.click(screen.getByRole("button", { name: copy.moreHistory })); await screen.findByText("Historical revision 1");
+    fireEvent.change(screen.getByLabelText(copy.titleField), { target: { value: "Keep current input" } });
+    fireEvent.click(screen.getByRole("button", { name: copy.refreshHistory })); await screen.findByText("Historical revision 52");
+    expect(screen.queryByText("Historical revision 1")).not.toBeInTheDocument(); expect(screen.queryByText("Historical revision 2")).not.toBeInTheDocument();
+    expect(document.querySelectorAll("details")).toHaveLength(50); expect(screen.getByLabelText(copy.titleField)).toHaveValue("Keep current input");
+    expect(fetchMock.mock.calls.filter(call => call[0] === api + "/task-a")).toHaveLength(1);
+  });
+  it("drops the old history window on detail refresh and ignores its late successful page", async () => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!;
+    let settle!: (response: Response) => void; const pending = new Promise<Response>(resolve => { settle = resolve; });
+    fetchMock.mockImplementation(async (url, init) => url === historyUrl + "?beforeRevision=2" ? pending : normal(url, init));
+    await open(); fireEvent.change(screen.getByLabelText(copy.titleField), { target: { value: "Preserved on refresh" } });
+    fireEvent.click(screen.getByRole("button", { name: copy.moreHistory }));
+    detail = { ...detail, history: historyEvents(52, 50), historyNextBeforeRevision: 3 };
+    fireEvent.click(screen.getByRole("button", { name: copy.refreshDetail })); await screen.findByText("Historical revision 52");
+    await act(async () => { settle(envelope(historyPage(1, 1))); await pending; });
+    expect(screen.queryByText("Historical revision 1")).not.toBeInTheDocument(); expect(document.querySelectorAll("details")).toHaveLength(50);
+    expect(screen.getByLabelText(copy.titleField)).toHaveValue("Preserved on refresh");
+  });
+  it("resets previously appended history even when detail refresh keeps the same task revision", async () => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url, init) => url === historyUrl + "?beforeRevision=2" ? envelope(historyPage(1, 1)) : normal(url, init));
+    await open(); fireEvent.click(screen.getByRole("button", { name: copy.moreHistory })); await screen.findByText("Historical revision 1");
+    fireEvent.click(screen.getByRole("button", { name: copy.refreshDetail })); await waitFor(() => expect(screen.queryByText("Historical revision 1")).not.toBeInTheDocument());
+    expect(document.querySelectorAll("details")).toHaveLength(50); expect(screen.getByRole("button", { name: copy.moreHistory })).not.toBeDisabled();
+  });
+  it.each(["owner", "task", "edition", "order", "cursor", "shape"] as const)("rejects a malformed or foreign %s page without replacing any current history or input", async kind => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!; const page = historyPage(1, 1);
+    const invalid = kind === "owner" ? { ...page, ownerId: "other" } : kind === "task" ? { ...page, taskId: "other" } : kind === "edition" ? { ...page, competitionId: "other" } : kind === "order" ? { ...page, history: [...page.history, ...page.history] } : kind === "cursor" ? { ...page, history: historyEvents(2, 1) } : { ...page, nextBeforeRevision: 1 };
+    fetchMock.mockImplementation(async (url, init) => url.includes("/history") ? envelope(invalid) : normal(url, init));
+    await open(); fireEvent.change(screen.getByLabelText(copy.titleField), { target: { value: "Do not replace" } });
+    fireEvent.click(screen.getByRole("button", { name: copy.moreHistory })); await screen.findByRole("alert");
+    expect(document.querySelectorAll("details")).toHaveLength(50); expect(screen.getByText("Historical revision 51")).toBeInTheDocument();
+    expect(screen.getByLabelText(copy.titleField)).toHaveValue("Do not replace"); expect(screen.getByRole("button", { name: copy.retry })).not.toBeDisabled();
+  });
+  it("clears inaccessible history on 404 while preserving the private draft", async () => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url, init) => url.includes("/history") ? new Response(JSON.stringify({ ok: false, error: { code: "NOT_FOUND" } }), { status: 404 }) : normal(url, init));
+    await open(); fireEvent.change(screen.getByLabelText(copy.titleField), { target: { value: "Still editable draft" } });
+    fireEvent.click(screen.getByRole("button", { name: copy.moreHistory })); await screen.findByRole("alert");
+    expect(document.querySelectorAll("details")).toHaveLength(0); expect(screen.queryByRole("button", { name: copy.retry })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(copy.titleField)).toHaveValue("Still editable draft"); expect(screen.getByRole("alert")).not.toHaveTextContent(copy.historyLoadError);
+  });
+  it("ignores old-account history errors without clearing the new account's unsaved draft", async () => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!;
+    let settle!: (response: Response) => void; const pending = new Promise<Response>(resolve => { settle = resolve; });
+    fetchMock.mockImplementation(async (url, init) => url.includes("/history") ? pending : normal(url, init));
+    const view = render(<><AgriTaskSessionBoundary /><AgriTimetable /></>);
+    fireEvent.click(await screen.findByRole("button", { name: copy.edit })); await screen.findByLabelText(copy.titleField);
+    fireEvent.click(screen.getByRole("button", { name: copy.moreHistory }));
+    mocks.session = { status: "authenticated", data: { user: { id: "owner-b" } } };
+    view.rerender(<><AgriTaskSessionBoundary /><AgriTimetable /></>);
+    fireEvent.click(await screen.findByRole("button", { name: copy.add }));
+    fireEvent.change(screen.getByLabelText(copy.titleField), { target: { value: "New account input" } });
+    await act(async () => { settle(new Response(JSON.stringify({ ok: false, error: { code: "ACCOUNT_CHANGED" } }), { status: 409 })); await pending; });
+    expect(screen.getByLabelText(copy.titleField)).toHaveValue("New account input");
+    expect(screen.queryByText(copy.errors.ACCOUNT_CHANGED)).not.toBeInTheDocument(); expect(document.querySelectorAll("details")).toHaveLength(0);
+  });
+});
+
+describe("history refresh recovery", () => {
+  it("retries a failed refresh from the newest page rather than continuing the older cursor", async () => {
+    seedHistory(51); const normal = fetchMock.getMockImplementation()!; let refreshAttempts = 0;
+    fetchMock.mockImplementation(async (url, init) => {
+      if (url === historyUrl) { if (refreshAttempts++ === 0) throw new TypeError("offline"); return envelope(historyPage(52, 50, 3)); }
+      return normal(url, init);
+    });
+    await open(); fireEvent.change(screen.getByLabelText(copy.titleField), { target: { value: "Preserve through refresh retry" } });
+    fireEvent.click(screen.getByRole("button", { name: copy.refreshHistory })); await screen.findByRole("alert");
+    expect(document.querySelectorAll("details")).toHaveLength(50);
+    fireEvent.click(screen.getByRole("button", { name: copy.retry })); await screen.findByText("Historical revision 52");
+    expect(fetchMock.mock.calls.filter(call => call[0] === historyUrl)).toHaveLength(2);
+    expect(fetchMock.mock.calls.filter(call => call[0] === historyUrl + "?beforeRevision=2")).toHaveLength(0);
+    expect(screen.getByLabelText(copy.titleField)).toHaveValue("Preserve through refresh retry");
+  });
+});

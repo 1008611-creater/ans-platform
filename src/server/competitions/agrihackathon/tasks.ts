@@ -3,13 +3,13 @@ import type { DbTransaction } from "@/lib/db";
 import { Prisma, type AgriPersonalTask } from "@prisma/client";
 import { db } from "@/lib/db";
 import { agriTaskCommandSchema, agriTaskEditableSchema, agriTaskFiltersSchema, type AgriTaskFilters, agriTaskViewSchema, agriInputRequirementsSchema,
-  agriInputRequirementSchema, agriTaskCursorSchema, agriTaskShareChangeSchema, type AgriTaskShareChange, type AgriTaskEditable, type AgriTaskList, type AgriTaskMutation, type AgriTaskDetail } from "@/contracts/agri-tasks";
+  agriInputRequirementSchema, agriTaskCursorSchema, type AgriTaskShareChange, type AgriTaskEditable, type AgriTaskList, type AgriTaskMutation, type AgriTaskDetail, type AgriTaskHistoryPage, agriTaskHistoryEventSchema } from "@/contracts/agri-tasks";
 import { deriveAgriTaskDueState } from "@/domain/competitions/agrihackathon";
 import { agriTaskTemplates } from "@/domain/competitions/agri-task-templates";
 import { AgriTaskError } from "./error";
 import { lockAgriWorkspace, assertAgriAuthorityCurrent } from "./workspace";
 import { attachAgriTaskReference, detachAgriTaskReference, readAgriTaskReferences, type resolveAgriTaskReference } from "./task-references";
-import { agriReferenceChangeSchema, type AgriReferenceChange } from "@/contracts/agri-task-references";
+import { type AgriReferenceChange } from "@/contracts/agri-task-references";
 // Personal planning still works before a workspace exists. If present, use the same
 // workspace-before-account lock order as grants/issues to avoid cross-module deadlocks.
 async function lockEditionWorkspace(tx: DbTransaction, competitionId: string) {
@@ -110,6 +110,33 @@ export async function listAgriTasks(actorId: string, cursor?: string, rawFilters
       nextCursor: rows.length > taskLimit && last ? JSON.stringify({ createdAt: last.createdAt.toISOString(), id: last.id }) : null };
   }, { maxWait: 10_000, timeout: 20_000 });
 }
+function historyEvent(event: { revision: number; action: string; snapshot: Prisma.JsonValue; createdAt: Date }) {
+  const snapshot = event.snapshot as { schemaVersion?: unknown; task?: unknown; shareChange?: unknown; referenceChange?: unknown };
+  if (!snapshot || snapshot.schemaVersion !== 1) throw new AgriTaskError("AGRI_TASK_HISTORY_INVALID", 500);
+  const parsed = agriTaskHistoryEventSchema.safeParse({ revision: event.revision, action: event.action, task: snapshot.task,
+    ...(snapshot.shareChange ? { shareChange: snapshot.shareChange } : {}),
+    ...(snapshot.referenceChange ? { referenceChange: snapshot.referenceChange } : {}), createdAt: event.createdAt.toISOString() });
+  if (!parsed.success) throw new AgriTaskError("AGRI_TASK_HISTORY_INVALID", 500);
+  return parsed.data;
+}
+// History is private to the owner, even when the current task is shared.
+export async function getAgriTaskHistory(actorId: string, taskId: string, beforeRevision?: number): Promise<AgriTaskHistoryPage> {
+  const competitionId = boundCompetitionId();
+  if (beforeRevision !== undefined && (!Number.isInteger(beforeRevision) || beforeRevision < 1 || beforeRevision > 2147483646)) throw new AgriTaskError("INVALID_INPUT", 400);
+  return db.$transaction(async tx => {
+    await lockEditionWorkspace(tx, competitionId); await lockAccount(tx, actorId); await ensureEdition(tx, competitionId);
+    const row = await lockTask(tx, competitionId, taskId);
+    if (row.ownerId !== actorId) throw new AgriTaskError("NOT_FOUND", 404);
+    if (beforeRevision !== undefined && !await tx.agriTaskEvent.findUnique({
+      where: { taskId_revision: { taskId, revision: beforeRevision } }, select: { revision: true },
+    })) throw new AgriTaskError("INVALID_INPUT", 400);
+    const events = await tx.agriTaskEvent.findMany({ where: { taskId, ...(beforeRevision !== undefined ? { revision: { lt: beforeRevision } } : {}) },
+      orderBy: { revision: "desc" }, take: 51, select: { revision: true, action: true, snapshot: true, createdAt: true } });
+    const page = events.slice(0, 50);
+    return { taskId, competitionId, ownerId: actorId, history: page.map(historyEvent),
+      nextBeforeRevision: events.length > 50 ? page.at(-1)!.revision : null };
+  }, { maxWait: 10_000, timeout: 20_000 });
+}
 export async function getAgriTask(actorId: string, taskId: string): Promise<AgriTaskDetail> {
   const competitionId = boundCompetitionId();
   return db.$transaction(async tx => {
@@ -117,7 +144,7 @@ export async function getAgriTask(actorId: string, taskId: string): Promise<Agri
     const row = await lockTask(tx, competitionId, taskId); const now = await clock(tx);
     await readable(tx, row, actorId, now);
     const owner = row.ownerId === actorId;
-    const history = owner ? await tx.agriTaskEvent.findMany({ where: { taskId }, orderBy: { revision: "desc" }, take: 50,
+    const history = owner ? await tx.agriTaskEvent.findMany({ where: { taskId }, orderBy: { revision: "desc" }, take: 51,
       select: { revision: true, action: true, snapshot: true, createdAt: true } }) : [];
     const shares = owner ? await tx.agriTaskShare.findMany({ where: { taskId, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
       select: { userId: true, expiresAt: true, sharedAt: true }, orderBy: { sharedAt: "desc" }, take: sharingLimit }) : [];
@@ -125,12 +152,8 @@ export async function getAgriTask(actorId: string, taskId: string): Promise<Agri
     const linked = hasReferences.present ? await readAgriTaskReferences(tx, await lockAgriWorkspace(tx, actorId), taskId, owner) : { references: [], authorities: [] };
     await assertAgriAuthorityCurrent(tx, ...linked.authorities);
     const finalNow = await clock(tx); await readable(tx, row, actorId, finalNow);
-    return { task: view(row, actorId, finalNow), references: linked.references, history: history.map(event => {
-      const snapshot = event.snapshot as { schemaVersion?: unknown; task?: unknown; shareChange?: unknown; referenceChange?: unknown };
-      if (snapshot.schemaVersion !== 1) throw new AgriTaskError("AGRI_TASK_HISTORY_INVALID", 500);
-      return { revision: event.revision, action: event.action, task: agriTaskEditableSchema.parse(snapshot.task), ...(snapshot.shareChange ? { shareChange: agriTaskShareChangeSchema.parse(snapshot.shareChange) } : {}), ...(snapshot.referenceChange ? { referenceChange: agriReferenceChangeSchema.parse(snapshot.referenceChange) } : {}), createdAt: event.createdAt.toISOString() };
-    }), shares: shares.map(share => ({ ...share, sharedAt: share.sharedAt.toISOString(), expiresAt: share.expiresAt?.toISOString() ?? null })),
-      historyTruncated: owner && row.revision > 50 };
+    return { task: view(row, actorId, finalNow), references: linked.references, history: history.slice(0, 50).map(historyEvent), shares: shares.map(share => ({ ...share, sharedAt: share.sharedAt.toISOString(), expiresAt: share.expiresAt?.toISOString() ?? null })),
+      historyTruncated: history.length > 50, historyNextBeforeRevision: history.length > 50 ? history[49].revision : null };
   });
 }
 export async function executeAgriTaskCommand(actorId: string, raw: unknown): Promise<AgriTaskMutation> {

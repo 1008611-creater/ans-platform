@@ -9,7 +9,6 @@ import {
   ClipboardCheck,
   Compass,
   FileCheck2,
-  Layers3,
   ListChecks,
   Medal,
   Rocket,
@@ -81,6 +80,7 @@ export default async function AgriHackathonPage() {
   const locale = await getLocale();
   const formatDate = (value: string) => new Intl.DateTimeFormat(locale, { timeZone: "Asia/Shanghai", dateStyle: "medium", timeStyle: "medium" }).format(new Date(value));
   const pending = await getTranslations("product.agrihackathon");
+  const nav = await getTranslations("product.nav");
   const tasks = await getTranslations("product.agriTasks");
   const submissions = await getTranslations("product.agriSubmissions");
   const works = await getTranslations("product.agriWorks");
@@ -179,30 +179,28 @@ export default async function AgriHackathonPage() {
                 </Button>
               )}
               <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/showcase">{publications("showcaseTitle")}</Link></Button>
-              <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/publication-review">{publications("reviewTitle")}</Link></Button>
               <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/submissions"><FileCheck2 className="h-4 w-4" />{submissions("title")}</Link></Button>
-              <Button asChild size="lg" variant="outline"><Link href="/competitions/agrihackathon/works"><ClipboardCheck className="h-4 w-4" />{works("title")}</Link></Button>
-              <Button asChild size="lg" variant="outline"><Link href="/competitions/agrihackathon/onsite"><ClipboardCheck className="h-4 w-4" />{onsite("title")}</Link></Button>
-              <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/manage"><ShieldCheck className="h-4 w-4" />{management("title")}</Link></Button>
               <Button asChild variant="outline" size="lg">
                 <Link href="/competitions/agrihackathon/tasks">
                   <ListChecks className="h-4 w-4" />
                   {tasks("title")}
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/teams">
-                  <Boxes className="h-4 w-4" />
-                  {t("openTeams")}
-                </Link>
-              </Button>
-              <Button asChild variant="ghost" size="lg">
-                <Link href="/competitions">
-                  <ArrowUpRight className="h-4 w-4" />
-                  {t("backToHub")}
-                </Link>
-              </Button>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button asChild variant="ghost" size="sm"><Link href="/teams"><Boxes className="h-4 w-4" />{t("openTeams")}</Link></Button>
+              <Button asChild variant="ghost" size="sm"><Link href="/competitions"><ArrowUpRight className="h-4 w-4" />{t("backToHub")}</Link></Button>
+            </div>
+            <details className="rounded-xl border bg-muted/20 p-4">
+              <summary className="cursor-pointer rounded text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">{pending("organizerTools")}</summary>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">{pending("organizerToolsBody")}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/works"><ClipboardCheck className="h-4 w-4" />{works("title")}</Link></Button>
+                <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/onsite"><ClipboardCheck className="h-4 w-4" />{onsite("title")}</Link></Button>
+                <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/publication-review">{publications("reviewTitle")}</Link></Button>
+                <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/manage"><ShieldCheck className="h-4 w-4" />{management("title")}</Link></Button>
+              </div>
+            </details>
           </div>
 
           <Card className="overflow-hidden border-primary/20 bg-background/75 shadow-xl shadow-primary/5 backdrop-blur">
@@ -420,14 +418,14 @@ export default async function AgriHackathonPage() {
           <Card className="border-primary/20 bg-primary/[0.035]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary" />{t("workflowTitle")}</CardTitle>
-              <CardDescription className="leading-6">{t("workflowDescription")}</CardDescription>
+              <CardDescription className="leading-6">{pending("workspaceLinksBody")}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {[
-                ["/projects", t("openProjects"), FileCheck2],
-                ["/workflows", t("openWorkflows"), Workflow],
-                ["/templates", t("openTemplates"), Layers3],
-                ["/skills", t("openSkills"), Sprout],
+                ["/explore", nav("explore"), Compass],
+                ["/hubs", pending("openHubs"), Boxes],
+                ["/workspace", nav("workspace"), FileCheck2],
+                ["/competitions/agrihackathon/tasks", tasks("title"), ListChecks],
               ].map(([href, label, Icon]) => (
                 <Button key={href as string} asChild variant="outline" className="justify-between bg-background/80">
                   <Link href={href as string}>

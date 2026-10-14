@@ -51,6 +51,10 @@ export async function ComputeHistory({ history, filter, paged, userId }: { userI
       <Clock3 className="mt-1 size-5 shrink-0 text-primary" aria-hidden="true" />
       <div><h2 className="text-sm font-semibold">{t("holdTitle")}</h2><p className="mt-1 max-w-3xl text-sm leading-7 text-muted-foreground">{t("holdBody")}</p></div>
     </aside>}
+    <aside className="flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius)] border p-5">
+      <div className="max-w-3xl"><h2 className="text-sm font-semibold">{t("deliveryTitle")}</h2><p className="mt-1 text-sm leading-7 text-muted-foreground">{t("deliveryBody")}</p></div>
+      <Button asChild variant="outline" size="sm"><Link href="/workflows/toonflow">{t("viewResults")}</Link></Button>
+    </aside>
     <section aria-labelledby="compute-history-heading" className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 id="compute-history-heading" className="flex items-center gap-2 text-lg font-semibold"><ReceiptText className="size-5" aria-hidden="true" />{t("records")}</h2>

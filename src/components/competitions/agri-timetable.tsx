@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { agriTaskCommandSchema, agriTaskEditableSchema, agriTaskMutationSchema, type AgriTaskFilters, type AgriTaskEditable, type AgriTaskView, type AgriTaskList, type AgriTaskDetail, type AgriTaskCommand, type AgriTaskMutation, type AgriTaskShareChange } from "@/contracts/agri-tasks";
+import { agriTaskCommandSchema, agriTaskEditableSchema, agriTaskMutationSchema, agriTaskHistoryPageSchema, type AgriTaskHistoryPage, type AgriTaskFilters, type AgriTaskEditable, type AgriTaskView, type AgriTaskList, type AgriTaskDetail, type AgriTaskCommand, type AgriTaskMutation } from "@/contracts/agri-tasks";
 import { clearAgriRecoveries, readAgriRecovery, writeAgriRecovery, type AgriTaskRecovery } from "./agri-task-recovery";
 import { AgriTaskReferences } from "./agri-task-references";
 import type { AgriTargetDate } from "@/contracts/agrihackathon";
@@ -147,6 +147,7 @@ function TaskList({ actorId, onAccountChanged }: { actorId: string; onAccountCha
 function TaskEditor({ initial, onClose, actorId, competitionId, recovery, onAccountChanged }: { actorId: string; competitionId: string; recovery: AgriTaskRecovery | null; onAccountChanged: () => void; initial: AgriTaskDetail | null; onClose: () => void }) {
   const t = useTranslations("product.agriTasks"); const locale = useLocale();
   const [detail, setDetail] = useState(recovery?.detail ?? initial);
+  const [historyGeneration, setHistoryGeneration] = useState(0);
   const [draft, setDraft] = useState<AgriTaskEditable>(() => recovery?.draft ?? (initial ? agriTaskEditableSchema.parse(Object.fromEntries(Object.keys(freshTask()).map(key => [key, initial.task[key as keyof AgriTaskEditable]]))) : freshTask()));
   const [baseline, setBaseline] = useState(recovery?.baseline ?? JSON.stringify(draft));
   const [pending, setPending] = useState<AgriTaskCommand | null>(recovery?.pending ?? null);
@@ -181,7 +182,7 @@ function TaskEditor({ initial, onClose, actorId, competitionId, recovery, onAcco
   async function reload(replace: boolean) {
     if (!detail || inFlight.current || pendingRef.current || (replace && !window.confirm(t("confirmLatest")))) return;
     inFlight.current = true; setBusy(true);
-    try { const latest = await request<AgriTaskDetail>(api + "/" + encodeURIComponent(detail.task.id), actorId); if (!alive.current) return; setDetail(latest); setStaleDetail(false); if (latest.task.revision !== detail.task.revision && !replace) setConflict(true); if (replace) { const next = agriTaskEditableSchema.parse(Object.fromEntries(Object.keys(freshTask()).map(key => [key, latest.task[key as keyof AgriTaskEditable]]))); setDraft(next); setBaseline(JSON.stringify(next)); setConflict(false); pendingRef.current = null; setPending(null); setAcknowledged(false); setError(""); } }
+    try { const latest = await request<AgriTaskDetail>(api + "/" + encodeURIComponent(detail.task.id), actorId); if (!alive.current) return; setDetail(latest); setHistoryGeneration(value => value + 1); setStaleDetail(false); if (latest.task.revision !== detail.task.revision && !replace) setConflict(true); if (replace) { const next = agriTaskEditableSchema.parse(Object.fromEntries(Object.keys(freshTask()).map(key => [key, latest.task[key as keyof AgriTaskEditable]]))); setDraft(next); setBaseline(JSON.stringify(next)); setConflict(false); pendingRef.current = null; setPending(null); setAcknowledged(false); setError(""); } }
     catch (e) { if (!alive.current) return; if (e instanceof TaskRequestError && ["ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE", "UNAUTHORIZED"].includes(e.code)) { onAccountChanged(); return; } if (alive.current) setError(e instanceof TaskRequestError ? e.code : "INTERNAL_ERROR"); }
     finally { inFlight.current = false; if (alive.current) setBusy(false); }
   }
@@ -204,9 +205,10 @@ function TaskEditor({ initial, onClose, actorId, competitionId, recovery, onAcco
         setNote(t(command.action === "share" || command.action === "revokeShare" ? "shareSaved" : "saved"));
       }
       setStaleDetail(false);
-      setDetail(old => ({ task: result.task!, history: old?.history ?? [], shares: old?.shares ?? [], historyTruncated: old?.historyTruncated ?? false, references: old?.references ?? [] }));
+      setDetail(old => ({ task: result.task!, history: old?.history ?? [], shares: old?.shares ?? [], historyTruncated: old?.historyTruncated ?? false, historyNextBeforeRevision: old?.historyNextBeforeRevision, references: old?.references ?? [] }));
+      setHistoryGeneration(value => value + 1);
       // A confirmed write remains confirmed even if the follow-up read fails.
-      try { const latest = await request<AgriTaskDetail>(api + "/" + encodeURIComponent(result.task.id), actorId); if (alive.current) { setDetail(latest); if (latest.task.revision !== result.appliedRevision) { setConflict(true); setNote(t("recoveredLater")); } } } catch (e) { if (!alive.current) return; if (e instanceof TaskRequestError && ["ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE", "UNAUTHORIZED"].includes(e.code)) onAccountChanged(); else if (alive.current) setStaleDetail(true); /* Confirmed write is retained. */ }
+      try { const latest = await request<AgriTaskDetail>(api + "/" + encodeURIComponent(result.task.id), actorId); if (alive.current) { setDetail(latest); setHistoryGeneration(value => value + 1); if (latest.task.revision !== result.appliedRevision) { setConflict(true); setNote(t("recoveredLater")); } } } catch (e) { if (!alive.current) return; if (e instanceof TaskRequestError && ["ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE", "UNAUTHORIZED"].includes(e.code)) onAccountChanged(); else if (alive.current) setStaleDetail(true); /* Confirmed write is retained. */ }
     } catch (e) {
       if (!alive.current) return;
       if (e instanceof TaskRequestError && ["ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE", "UNAUTHORIZED"].includes(e.code)) { onAccountChanged(); return; }
@@ -221,7 +223,7 @@ function TaskEditor({ initial, onClose, actorId, competitionId, recovery, onAcco
     const task = agriTaskEditableSchema.safeParse(draft); if (!task.success) { setError("VALIDATION"); return; }
     await mutate(detail ? { action: "update", taskId: detail.task.id, expectedRevision: detail.task.revision, task: task.data, idempotencyKey: crypto.randomUUID() } : { action: "create", task: task.data, idempotencyKey: crypto.randomUUID() });
   }
-  function shareChangeText(change: AgriTaskShareChange) { return change.recipientId + " · " + (change.expiresAt ? time(change.expiresAt, locale) : t("date.UNKNOWN")); }
+
   return <div className="space-y-6">
     <Button variant="ghost" disabled={busy || !!pending} onClick={() => { if (!dirty || window.confirm(t("confirmLeave"))) onClose(); }}>{t("close")}</Button>
     {detail && <p className="break-all text-sm">{t("ownerLabel", { id: detail.task.ownerId })}</p>}{readonly && <p role="status">{t("readonly")}</p>}{error && <p role="alert">{message(error)}</p>}{note && <p role="status">{note}</p>}
@@ -252,6 +254,45 @@ function TaskEditor({ initial, onClose, actorId, competitionId, recovery, onAcco
     {detail && !readonly && <section className="space-y-4 rounded-xl border p-4"><h2 className="font-semibold">{t("share")}</h2><p className="text-sm">{t("privacy")}</p><fieldset disabled={!!locked || dirty} className="min-w-0 space-y-3"><Field label={t("recipient")}>{id => <Input id={id} maxLength={80} value={recipient} onChange={e => setRecipient(e.target.value)} />}</Field><p className="text-sm text-muted-foreground">{t("recipientHint")}</p><Field label={t("expiry")}>{id => <Input id={id} type="datetime-local" value={expiry} onChange={e => setExpiry(e.target.value)} />}</Field><Button onClick={() => void mutate({ action: "share", taskId: detail.task.id, expectedRevision: detail.task.revision, recipientId: recipient.trim(), expiresAt: expiry ? inputInstant(expiry) : null, idempotencyKey: crypto.randomUUID() })}>{t("grant")}</Button></fieldset>
       {!detail.shares.length && <p className="text-sm">{t("noShares")}</p>}{detail.shares.map(share => <div key={share.userId} className="flex flex-wrap items-center justify-between gap-2"><span className="break-all text-sm">{share.userId}{share.expiresAt ? " · " + time(share.expiresAt, locale) : ""}</span><Button variant="outline" disabled={!!locked || dirty} onClick={() => void mutate({ action: "revokeShare", taskId: detail.task.id, expectedRevision: detail.task.revision, recipientId: share.userId, idempotencyKey: crypto.randomUUID() })}>{t("revoke")}</Button></div>)}
     </section>}
-    {detail && !readonly && <section className="space-y-3"><h2 className="font-semibold">{t("history")}</h2><p className="text-sm text-muted-foreground">{t("historyNote")}</p>{detail.history.map(event => <details key={event.revision} className="rounded-xl border p-3"><summary className="cursor-pointer text-sm">{t("version", { revision: event.revision })} · {t("actions." + event.action)} · {time(event.createdAt, locale)}</summary><div className="mt-3 space-y-2 whitespace-pre-wrap break-words text-sm"><p>{event.task.title}</p><p>{t("status." + event.task.status)} · {t("date." + event.task.due.state)}{event.task.due.at ? " · " + time(event.task.due.at, locale) : ""}</p><p>{event.task.acceptanceCriteria}</p><p>{event.task.collaborationNotes}</p>{event.task.inputRequirements.items.map((item, i) => <p key={i}>{item.from}: {item.needed}{item.latestAt.at ? " · " + time(item.latestAt.at, locale) : ""}</p>)}{event.task.blockingInput && <p>{t("block")}: {event.task.blockingInput.from}: {event.task.blockingInput.needed}</p>}{event.task.completionResult && <p>{t("outcome")}: {event.task.completionResult}</p>}{event.shareChange && <p>{shareChangeText(event.shareChange)}</p>}{event.referenceChange && <p>{t("references.history." + event.referenceChange.action)}</p>}</div></details>)}{detail.historyTruncated && <p>{t("historyTruncated")}</p>}</section>}
+    {detail && !readonly && <TaskHistory key={JSON.stringify([actorId, competitionId, detail.task.id, historyGeneration])} detail={detail} actorId={actorId} competitionId={competitionId} disabled={busy || !!pending || staleDetail} onAccountChanged={onAccountChanged} />}
   </div>;
+}
+
+// The history window owns its reads only: pagination never replaces an unsaved
+// draft, its CAS revision, pending receipt or completion acknowledgement.
+function TaskHistory({ detail, actorId, competitionId, disabled, onAccountChanged }: { detail: AgriTaskDetail; actorId: string; competitionId: string; disabled: boolean; onAccountChanged: () => void }) {
+  const t = useTranslations("product.agriTasks"); const locale = useLocale();
+  const [history, setHistory] = useState(detail.history);
+  const [cursor, setCursor] = useState(detail.historyNextBeforeRevision ?? (detail.historyTruncated ? detail.history.at(-1)?.revision ?? null : null));
+  const [busy, setBusy] = useState(false); const [error, setError] = useState("");
+  const alive = useRef(true); const inFlight = useRef(false); const retryBefore = useRef<number | undefined>(undefined);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+  async function load(beforeRevision?: number) {
+    if (disabled || inFlight.current) return;
+    inFlight.current = true; retryBefore.current = beforeRevision; setBusy(true); setError("");
+    try {
+      const raw = await request<unknown>(api + "/" + encodeURIComponent(detail.task.id) + "/history" + (beforeRevision === undefined ? "" : "?beforeRevision=" + beforeRevision), actorId);
+      if (!alive.current) return;
+      const parsed = agriTaskHistoryPageSchema.safeParse(raw);
+      if (!parsed.success) throw new TaskRequestError("INTERNAL_ERROR");
+      const page: AgriTaskHistoryPage = parsed.data;
+      if (page.ownerId !== actorId || page.taskId !== detail.task.id || page.competitionId !== competitionId
+        || (beforeRevision !== undefined && page.history.some(event => event.revision >= beforeRevision))) throw new TaskRequestError("INTERNAL_ERROR");
+      setHistory(old => beforeRevision === undefined ? page.history : [...old, ...page.history].filter((event, index, all) => all.findIndex(other => other.revision === event.revision) === index));
+      setCursor(page.nextBeforeRevision);
+    } catch (e) {
+      if (!alive.current) return;
+      if (e instanceof TaskRequestError && ["ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE", "UNAUTHORIZED"].includes(e.code)) { onAccountChanged(); return; }
+      if (e instanceof TaskRequestError && e.code === "NOT_FOUND") { setHistory([]); setCursor(null); }
+      setError(e instanceof TaskRequestError ? e.code : "INTERNAL_ERROR");
+    } finally { inFlight.current = false; if (alive.current) setBusy(false); }
+  }
+  return <section className="space-y-3" aria-busy={busy}>
+    <h2 className="font-semibold">{t("history")}</h2><p className="text-sm text-muted-foreground">{t("historyNote")}</p>
+    <Button variant="ghost" disabled={disabled || busy} onClick={() => void load()}>{t("refreshHistory")}</Button>
+    {history.map(event => <details key={event.revision} className="rounded-xl border p-3"><summary className="cursor-pointer text-sm">{t("version", { revision: event.revision })} · {t("actions." + event.action)} · {time(event.createdAt, locale)}</summary><div className="mt-3 space-y-2 whitespace-pre-wrap break-words text-sm"><p>{event.task.title}</p><p>{t("status." + event.task.status)} · {t("date." + event.task.due.state)}{event.task.due.at ? " · " + time(event.task.due.at, locale) : ""}</p><p>{event.task.acceptanceCriteria}</p><p>{event.task.collaborationNotes}</p>{event.task.inputRequirements.items.map((item, i) => <p key={i}>{item.from}: {item.needed}{item.latestAt.at ? " · " + time(item.latestAt.at, locale) : ""}</p>)}{event.task.blockingInput && <p>{t("block")}: {event.task.blockingInput.from}: {event.task.blockingInput.needed}</p>}{event.task.completionResult && <p>{t("outcome")}: {event.task.completionResult}</p>}{event.shareChange && <p>{event.shareChange.recipientId + " · " + (event.shareChange.expiresAt ? time(event.shareChange.expiresAt, locale) : t("date.UNKNOWN"))}</p>}{event.referenceChange && <p>{t("references.history." + event.referenceChange.action)}</p>}</div></details>)}
+    {error && <p role="alert">{error !== "NOT_FOUND" && t("historyLoadError")} {t.has("errors." + error) ? t("errors." + error) : t("errors.INTERNAL_ERROR")}</p>}
+    {busy && <p role="status">{t("historyLoading")}</p>}
+    {error && error !== "NOT_FOUND" ? <Button variant="outline" disabled={disabled || busy} onClick={() => void load(retryBefore.current)}>{t("retry")}</Button> : cursor !== null && <Button variant="outline" disabled={disabled || busy} onClick={() => void load(cursor)}>{t("moreHistory")}</Button>}
+  </section>;
 }

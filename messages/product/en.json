@@ -381,6 +381,10 @@
     }
   },
   "market": {
+    "olderMessages": "Load earlier messages",
+    "olderEvents": "Load earlier activity",
+    "historyLoading": "Loading history…",
+    "historyLoadError": "History could not be loaded. Your current records are unchanged. Try again.",
     "navigation": "Market navigation",
     "eyebrow": "ANS MARKET · Value through creation",
     "title": "Turn your craft into someone’s next step.",
@@ -790,7 +794,11 @@
   },
   "agrihackathon": {
     "rulesPendingTitle": "Edition plan defined; official dates pending",
-    "rulesPendingBody": "The first-edition plan is shown below. Official dates are not confirmed. Registration, preliminary submissions and final materials open only through the edition’s separate published windows. This overview does not open registration or publish technical guidance."
+    "rulesPendingBody": "The first-edition plan is shown below. Official dates are not confirmed. Registration, preliminary submissions and final materials open only through the edition’s separate published windows. This overview does not open registration or publish technical guidance.",
+    "organizerTools": "Organizer tools",
+    "organizerToolsBody": "For authorized staff: manage submissions, on-site support, showcase review and technical guidance. Access is checked on each page.",
+    "workspaceLinksBody": "Find project ideas in the project square, use Hub workflows, and keep your projects and preparation tasks in your workspace. Official participation follows the published edition rules.",
+    "openHubs": "Hubs and workflows"
   },
   "agriTasks": {
     "ownerLabel": "Owner: {id}",
@@ -852,7 +860,11 @@
     "noShares": "No active read-only shares.",
     "shareSaved": "Sharing saved.",
     "history": "Change history",
-    "historyNote": "Owner only. Shows up to 50 recent events.",
+    "historyNote": "Only you can see this history. Load earlier pages to review all saved records.",
+    "moreHistory": "Load earlier records",
+    "refreshHistory": "Refresh history",
+    "historyLoading": "Loading history...",
+    "historyLoadError": "Could not load history. Loaded records and your current edits are preserved. Please retry.",
     "historyTruncated": "Earlier records remain stored on the server.",
     "version": "Record {revision}",
     "created": "Created",
@@ -1524,8 +1536,8 @@
     "current": "Current submission",
     "frozen": "Frozen submission",
     "openSource": "Open source record",
-    "submissionContent": "Submitted description",
-    "materialCount": "{count} linked materials. Review full details in the source record or an authorized export.",
+    "submissionContent": "Submitted materials",
+    "materialCount": "Materials ({count})",
     "empty": "No readable records in this scope.",
     "result": {
       "PASS": "Technical check passed",
@@ -1566,7 +1578,65 @@
       "PRIVATE_MATERIALS": "Private materials basis"
     },
     "correctedFrom": "Corrects submission {id}: {reason}",
-    "correctionAuthority": "Permit {permit}; authorized by {id}; {at} (Beijing time)"
+    "correctionAuthority": "Permit {permit}; authorized by {id}; {at} (Beijing time)",
+    "details": {
+      "repository": "Repository address",
+      "repositoryRef": "External repository version",
+      "refKind": {
+        "COMMIT_SHA": "Commit SHA",
+        "TAG": "Tag"
+      },
+      "demoUrl": "Demo address",
+      "artifactVersion": "ANS artifact version ID",
+      "noMaterials": "No additional materials were recorded.",
+      "materialKind": {
+        "TEXT": "Text",
+        "LINK": "Link",
+        "ARTIFACT": "Artifact version"
+      },
+      "notRecorded": "Not recorded",
+      "notIncluded": "Detailed fields were not included in this record.",
+      "newTab": "(opens in a new tab)",
+      "invalidLink": "Not a supported stable HTTPS address",
+      "externalHint": "These are saved addresses and version references. They do not verify availability or back up external files; external content may change.",
+      "mode": "Presentation mode",
+      "demoMode": {
+        "LIVE": "Live demo",
+        "VIDEO": "Video",
+        "HYBRID": "Live demo and video",
+        "OTHER": "Other"
+      },
+      "demoSequence": "Demo check {sequence}",
+      "recheckOf": "Rechecks record {id}",
+      "condition": {
+        "device": "Device",
+        "compatibility": "Compatibility",
+        "network": "Network",
+        "audio": "Audio",
+        "backup": "Fallback plan"
+      },
+      "itemStatus": {
+        "PASS": "Passed",
+        "NEEDS_ACTION": "Action needed",
+        "UNREACHABLE": "Unreachable",
+        "NOT_APPLICABLE": "Not applicable",
+        "NOT_TESTED": "Not tested"
+      },
+      "backupUrl": "Fallback material address",
+      "backupArtifact": "Fallback ANS artifact version ID",
+      "recheckDue": "Recheck deadline",
+      "dateState": {
+        "UNKNOWN": "Date unconfirmed",
+        "TENTATIVE": "Tentative",
+        "CONFIRMED": "Confirmed"
+      },
+      "beijingTime": "{at} (Beijing time)"
+    },
+    "issueDates": {
+      "created": "Issue created",
+      "updated": "Issue updated",
+      "completed": "Processing completed"
+    }
   },
   "agriOnsite": {
     "title": "AgriHackathon onsite coordination",
@@ -1792,6 +1862,9 @@
     "summaryScope": "Totals cover all {count} AIGC Workspace tasks for this account and do not change with filters or pagination.",
     "holdTitle": "A reservation is not the final cost",
     "holdBody": "A task reserves its budget first, then settles verified usage and returns the remainder. An interruption or timeout does not prove that no cost occurred. Unresolved tasks retain their reservation; avoid starting the same task again.",
+    "deliveryTitle": "Settlement and delivery are separate",
+    "deliveryBody": "These statements confirm usage and charges, not whether a file was saved or is ready to collect. Check your results in AIGC Workspace. If a result is missing, inspect the original task before generating again.",
+    "viewResults": "View workspace results",
     "records": "Task statements",
     "timezone": "All times are China Standard Time (UTC+8)",
     "filtersLabel": "Filter statement status",
@@ -1825,8 +1898,8 @@
     "budget": "Usage limit",
     "outcome": "Execution result",
     "outcomes": {
-      "succeeded": "Completed",
-      "partial": "Partially completed",
+      "succeeded": "Supplier execution succeeded",
+      "partial": "Supplier execution partially succeeded",
       "failed": "Execution failed (actual usage settled)"
     },
     "units": {

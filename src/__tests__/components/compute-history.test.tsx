@@ -48,6 +48,15 @@ describe("member compute statements", () => {
     expect(row.getByText("已退回").nextElementSibling?.textContent).toBe("30 点");
     expect(row.getByText("700 Token")).toBeInTheDocument();
   });
+  it("does not present settled supplier success as confirmed file delivery", async () => {
+    const settled = { ...baseTask, state: "SETTLED" as const, settledPoints: 70, refundedPoints: 30, units: 700,
+      outcome: "succeeded" as const, finishedAt: "2026-10-09T00:02:00.000Z" };
+    render(await ComputeHistory({ history: history([settled]), filter: "settled", paged: false }));
+    expect(screen.getByText("上游执行成功")).toBeInTheDocument();
+    expect(screen.queryByText("已完成")).not.toBeInTheDocument();
+    expect(screen.getByText(/不确认文件已保存或可领取/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "查看工作台作品" })).toHaveAttribute("href", "/workflows/toonflow");
+  });
   it("shows verified unused release as zero consumed, not unknown usage", async () => {
     const released = { ...baseTask, state: "RELEASED" as const, settledPoints: 0, refundedPoints: 100, units: null,
       outcome: null, finishedAt: "2026-10-09T00:02:00.000Z" };

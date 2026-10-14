@@ -7,12 +7,13 @@ import { canonicalAgriArchiveJSON, type AgriRecordArchiveDetail } from "@/contra
 import type { AgriRecordSummary } from "@/contracts/agri-record-summary";
 import messages from "../../../messages/product/en.json";
 vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: (namespace: string) => {
-  const root = namespace === "product.agriArchives" ? messages.agriArchives : messages.agriSummary;
+  const root = namespace === "product.agriArchives" ? messages.agriArchives : namespace === "product.agriIssues" ? messages.agriIssues : messages.agriSummary;
   const lookup = (key: string) => key.split(".").reduce<unknown>((value, part) => value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined, root);
   const t = (key: string, values?: Record<string, string | number>) => { let value = String(lookup(key) ?? key); for (const [name, item] of Object.entries(values ?? {})) value = value.replace("{" + name + "}", String(item)); return value; };
   t.has = (key: string) => typeof lookup(key) === "string"; return t;
 } }));
 vi.mock("@/components/providers/workspace-navigation", () => ({ WorkspaceLink: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
+import { withSyntheticRecordDetails, withSyntheticIssueMetadata } from "./fixtures/agri-record-summary";
 const copy = messages.agriArchives;
 const invalidate = vi.fn(), click = vi.fn(), objectUrl = vi.fn(() => "blob:synthetic-archive");
 function detail(privateScope = false, submissionId = "submission-a", id = "archive-a"): AgriRecordArchiveDetail {
@@ -35,6 +36,54 @@ async function save() { fireEvent.click(screen.getByRole("button", { name: copy.
 describe("saved archives: exact source, immutable scopes and unknown saves", () => {
   it("loads only on open, sends the actor and makes onsite exclusion clear", async () => { mount(); expect(fetcher).not.toHaveBeenCalled(); await open(); expect(fetcher.mock.calls[0]).toMatchObject(["/api/competitions/agrihackathon/records/submission-a/archives", { headers: { "x-ans-submission-actor": "actor-a" }, cache: "no-store" }]); expect(screen.getByText(copy.onsiteHint)).toBeInTheDocument(); });
   it("shows a verified private snapshot without describing it as a live report", async () => { fetcher.mockResolvedValueOnce(envelope(listing(detail(true)))); mount(); await open(); fetcher.mockResolvedValueOnce(envelope(detail(true))); fireEvent.click(screen.getByRole("button", { name: "View v1" })); await screen.findByText("PRIVATE_ARCHIVE_MARKER"); expect(screen.queryByText(messages.agriSummary.notArchive)).toBeNull(); });
+  it("renders full saved materials and check details from the verified snapshot without a live refresh", async () => {
+    const value = detail(true);
+    value.snapshot.record = withSyntheticRecordDetails(value.snapshot.record);
+    value.archive.selection = value.snapshot.record.selection;
+    const canonical = canonicalAgriArchiveJSON(value.snapshot);
+    value.archive.sha256 = createHash("sha256").update(canonical).digest("hex");
+    value.archive.byteLength = Buffer.byteLength(canonical);
+    fetcher.mockResolvedValueOnce(envelope(listing(value)));
+    mount(); await open();
+    fetcher.mockResolvedValueOnce(envelope(value));
+    fireEvent.click(screen.getByRole("button", { name: "View v1" }));
+    await screen.findByText("SAVED_SUMMARY_MARKER");
+    expect(screen.getByText("SAVED_REPOSITORY_CHECK")).toBeInTheDocument();
+    expect(screen.getByText("SAVED_BACKUP_CHECK")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /https:\/\/github.com\/example\/synthetic-record/ })).toHaveAttribute("href", "https://github.com/example/synthetic-record");
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      "/api/competitions/agrihackathon/records/submission-a/archives",
+      "/api/competitions/agrihackathon/archives/archive-a?mode=view",
+    ]);
+  });
+  it("reads issue metadata and tentative deadlines from the immutable verified archive", async () => {
+    const value = detail();
+    value.snapshot.record = withSyntheticIssueMetadata(value.snapshot.record);
+    value.snapshot.record.issues[0].dueState = "TENTATIVE";
+    delete value.snapshot.record.issues[0].completedAt;
+    const canonical = canonicalAgriArchiveJSON(value.snapshot);
+    value.archive.sha256 = createHash("sha256").update(canonical).digest("hex");
+    value.archive.byteLength = Buffer.byteLength(canonical);
+    fetcher.mockResolvedValueOnce(envelope(listing(value)));
+    mount(); await open();
+    fetcher.mockResolvedValueOnce(envelope(value));
+    fireEvent.click(screen.getByRole("button", { name: "View v1" }));
+    await screen.findByText(messages.agriIssues.typeOptions.ENVIRONMENT);
+    const field = (label: string) => screen.getByText(label).nextElementSibling;
+    expect(field(messages.agriIssues.severity)).toHaveTextContent(messages.agriIssues.severityOptions.HIGH);
+    expect(field(messages.agriIssues.visibility)).toHaveTextContent(messages.agriIssues.visibilityOptions.TEAM);
+    expect(field(messages.agriIssues.basis)).toHaveTextContent(messages.agriIssues.basisOptions.METADATA);
+    expect(field(messages.agriIssues.dueState)).toHaveTextContent(messages.agriIssues.dueStateOptions.TENTATIVE);
+    expect(field(messages.agriIssues.dueAt)).toHaveTextContent("9 Oct 2026, 09:30");
+    expect(field(messages.agriSummary.issueDates.created)).toHaveTextContent("8 Oct 2026, 09:00 (Beijing time)");
+    expect(field(messages.agriSummary.issueDates.updated)).toHaveTextContent("8 Oct 2026, 11:00 (Beijing time)");
+    expect(field(messages.agriSummary.issueDates.completed)).toHaveTextContent(messages.agriSummary.details.notRecorded);
+    expect(screen.queryByText(/PRIVATE_ARCHIVE_MARKER/)).toBeNull();
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      "/api/competitions/agrihackathon/records/submission-a/archives",
+      "/api/competitions/agrihackathon/archives/archive-a?mode=view",
+    ]);
+  });
   it("rejects tampered content before rendering or downloading", async () => { mount(); await open(); const value = detail(true); value.snapshot.record.content!.summary = "TAMPERED_PRIVATE_MARKER"; fetcher.mockResolvedValueOnce(envelope(value)); fireEvent.click(screen.getByRole("button", { name: "View v1" })); await screen.findByText(copy.errors.AGRI_ARCHIVE_INTEGRITY_FAILED); expect(screen.queryByText("TAMPERED_PRIVATE_MARKER")).toBeNull(); expect(objectUrl).not.toHaveBeenCalled(); });
   it.each(["competitionId", "entryStageId", "artifactVersionId", "ruleVersionId", "previousArchiveId", "createdById", "collectedAt"])("rejects contradictory %s provenance before downloading", async field => { mount(); await open(); const value = detail(); Object.assign(value.archive, { [field]: "other" }); fetcher.mockResolvedValueOnce(new Response(JSON.stringify(value), { headers: { "Content-Type": "application/json" } })); fireEvent.click(screen.getByRole("button", { name: "Download v1 JSON" })); await screen.findByText(copy.errors.AGRI_ARCHIVE_INTEGRITY_FAILED); expect(click).not.toHaveBeenCalled(); });
   it("refuses a different submission even when the snapshot hash is valid", async () => { mount(); await open(); fetcher.mockResolvedValueOnce(envelope(detail(true, "submission-other"))); fireEvent.click(screen.getByRole("button", { name: "View v1" })); await screen.findByText(copy.errors.INTERNAL_ERROR); expect(screen.queryByText("PRIVATE_ARCHIVE_MARKER")).toBeNull(); });
