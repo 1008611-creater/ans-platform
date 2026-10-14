@@ -292,6 +292,31 @@ describe("本人数据与贡献榜隐私", () => {
     expect(result.checkInStreak).toBe(1);
   });
 
+  it("uses one Shanghai day even when a read crosses midnight", async () => {
+    vi.setSystemTime(new Date("2026-09-08T15:59:59.999Z"));
+    users[0].lastCheckInAt = new Date("2026-09-07T00:00:00Z"); users[0].checkInStreak = 9;
+    tx.checkIn.findUnique.mockImplementationOnce(async () => {
+      vi.setSystemTime(new Date("2026-09-08T16:00:00Z"));
+      return null;
+    });
+    const snapshot = await getCommunityMe("self");
+    expect(snapshot.checkInStreak).toBe(9); expect(snapshot.todayCheckIn).toBeNull();
+    expect(tx.checkIn.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { userId_day: { userId: "self", day: "2026-09-08" } } }));
+    expect((await getCommunityMe("self")).checkInStreak).toBe(0);
+    expect(users[0].checkInStreak).toBe(9);
+  });
+
+  it("read-only community profile expires a broken streak and keeps its stored counter", async () => {
+    users[0].lastCheckInAt = new Date("2026-09-06T00:00:00Z");
+    users[0].checkInStreak = 9;
+    expect((await getCommunityMe("self")).checkInStreak).toBe(0);
+    expect(users[0].checkInStreak).toBe(9);
+    expect(checkIns).toHaveLength(0);
+    users[0].lastCheckInAt = new Date("2026-09-07T15:59:59Z");
+    expect((await getCommunityMe("self")).checkInStreak).toBe(9);
+  });
+
+
   it("榜单最多20条，昵称空匿名，同分相同竞赛名次、id稳定，返回榜外本人位置", async () => {
     const self = { ...users[0], xp: 1 };
     users = [self, ...Array.from({ length: 25 }, (_, i) => ({ ...self, id: `u-${String(i).padStart(2, "0")}`, xp: 100 - Math.floor(i / 2), nickname: i === 1 ? " 小林 " : i === 2 ? "" : "  " })), { ...self, id: "banned", xp: 999, flagged: true }, { ...self, id: "deleted", xp: 999, deletedAt: new Date() }, { ...self, id: "unverified", xp: 999, emailVerified: null, verified: true }];
