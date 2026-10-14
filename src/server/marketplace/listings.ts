@@ -1,3 +1,4 @@
+import { lockAgriPopularityForListing, assertAgriListingRevision } from "@/server/competitions/agrihackathon/popularity";
 import { assertMarketWorkflowBinding } from "./workflow-binding";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { Prisma } from "@prisma/client";
@@ -47,11 +48,13 @@ export async function reviseMarketListing(listingId: string, sellerId: string, r
   const input = marketListingRevisionSchema.parse(raw);
   const data = parseListing(input.listing);
   return marketTransaction(async (tx) => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketActor(tx, sellerId);
     if (data.execution) await assertMarketWorkflowBinding(tx, sellerId, data.execution);
     const listing = await tx.marketListing.findFirst({ where: { id: listingId, sellerId } });
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
     if (listing.currentVersion !== input.expectedVersion) throw new MarketRuleError("VERSION_CONFLICT");
+    await assertAgriListingRevision(tx, listingId, data);
     if (listing.slug !== data.slug) throw new MarketRuleError("SLUG_IMMUTABLE", 400);
     await requireMarketCoverOwnership(tx, sellerId, data.coverUrl);
     const changed = await tx.marketListing.updateMany({
@@ -67,12 +70,14 @@ export async function reviseMarketListing(listingId: string, sellerId: string, r
 
 export async function submitMarketListing(listingId: string, sellerId: string, expectedVersion: number) {
   return marketTransaction(async (tx) => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketActor(tx, sellerId);
     const listing = await tx.marketListing.findFirst({ where: { id: listingId, sellerId } });
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
     if (listing.currentVersion !== expectedVersion) throw new MarketRuleError("VERSION_CONFLICT");
     const version = await tx.marketListingVersion.findUniqueOrThrow({ where: { listingId_version: { listingId, version: expectedVersion } } });
     const payload = parseListing(version.payload);
+    await assertAgriListingRevision(tx, listingId, payload);
     if (payload.execution) await assertMarketWorkflowBinding(tx, sellerId, payload.execution);
     if (version.submittedAt || version.reviewedAt) throw new MarketRuleError("INVALID_LISTING_STATE");
     await tx.marketListingVersion.update({ where: { id: version.id }, data: { submittedAt: new Date() } });
@@ -85,6 +90,7 @@ export async function submitMarketListing(listingId: string, sellerId: string, e
 export async function reviewMarketListing(listingId: string, reviewerId: string, versionNumber: number, approve: boolean, note: string) {
   if (!Number.isSafeInteger(versionNumber) || versionNumber < 1 || !note.trim() || note.length > 2000) throw new MarketRuleError("INVALID_INPUT", 400);
   return marketTransaction(async (tx) => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketModerator(tx, reviewerId);
     const listing = await tx.marketListing.findUnique({ where: { id: listingId } });
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
@@ -94,6 +100,7 @@ export async function reviewMarketListing(listingId: string, reviewerId: string,
     const version = await tx.marketListingVersion.findUniqueOrThrow({ where: { listingId_version: { listingId, version: versionNumber } } });
     if (!version.submittedAt || version.reviewedAt) throw new MarketRuleError("INVALID_LISTING_STATE");
     const reviewed = parseListing(version.payload);
+    if (approve) await assertAgriListingRevision(tx, listingId, reviewed);
     if (approve && reviewed.execution) await assertMarketWorkflowBinding(tx, listing.sellerId, reviewed.execution);
     if (approve) await requireMarketCoverOwnership(tx, listing.sellerId, reviewed.coverUrl);
     await tx.marketListingVersion.update({ where: { id: version.id }, data: { reviewedAt: new Date(), reviewedById: reviewerId, reviewNote: note.trim() } });
@@ -111,6 +118,7 @@ export async function reviewMarketListing(listingId: string, reviewerId: string,
 
 export async function withdrawMarketListing(listingId: string, sellerId: string) {
   return marketTransaction(async (tx) => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketActor(tx, sellerId);
     const updated = await tx.marketListing.updateMany({ where: { id: listingId, sellerId }, data: { status: "WITHDRAWN" } });
     if (!updated.count) throw new MarketRuleError("NOT_FOUND", 404);

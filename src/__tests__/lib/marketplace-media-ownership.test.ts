@@ -1,10 +1,11 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ actor: vi.fn(), moderator: vi.fn(), find: vi.fn(), unique: vi.fn(), listingCreate: vi.fn(), update: vi.fn(), updateMany: vi.fn(), versionFind: vi.fn(), versionCreate: vi.fn(), versionUpdate: vi.fn(), media: vi.fn(), audit: vi.fn() }));
+const m = vi.hoisted(() => ({ raw: vi.fn(), actor: vi.fn(), moderator: vi.fn(), find: vi.fn(), unique: vi.fn(), listingCreate: vi.fn(), update: vi.fn(), updateMany: vi.fn(), versionFind: vi.fn(), versionCreate: vi.fn(), versionUpdate: vi.fn(), media: vi.fn(), audit: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: {} }));
 vi.mock("@/server/growth/service", () => ({ safeAwardGrowthEvent: vi.fn() }));
 vi.mock("@/server/marketplace/shared", () => ({ requireMarketActor: m.actor, requireMarketModerator: m.moderator,
   marketTransaction: (run: (tx: unknown) => Promise<unknown>) => run({
+    $queryRaw: m.raw,
     marketListing: { findFirst: m.find, findUnique: m.unique, create: m.listingCreate, update: m.update, updateMany: m.updateMany },
     marketListingVersion: { findUniqueOrThrow: m.versionFind, create: m.versionCreate, update: m.versionUpdate },
     marketMedia: { findFirst: m.media }, auditLog: { create: m.audit },
@@ -14,7 +15,7 @@ import { createMarketListing, reviseMarketListing, reviewMarketListing } from "@
 const coverUrl = "https://ans.example/api/market/media/image-1";
 const payload = { slug: "owned-cover", title: "Owned cover project", summary: "An isolated fixture covering seller media access.", description: "This isolated resource checks uploaded media ownership before saving or publication.", category: "web", subcategory: "documentation", fulfillment: "resource", priceMinor: 0, currency: "CNY", deliveryDays: 1, revisionLimit: 0, computeIncluded: false, deliverables: ["Repository"], licenseTerms: "Use according to the stated repository license.", githubUrl: "https://github.com/example/project", coverUrl };
 beforeEach(() => {
-  vi.resetAllMocks(); vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://ans.example"); vi.stubEnv("AUTH_URL", "");
+  vi.resetAllMocks(); m.raw.mockResolvedValue([]); vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://ans.example"); vi.stubEnv("AUTH_URL", "");
   m.unique.mockImplementation(async ({ where }) => where.slug ? null : { id: "listing", sellerId: "seller", currentVersion: 1, official: false });
   m.find.mockResolvedValue({ id: "listing", sellerId: "seller", currentVersion: 1, slug: payload.slug });
   m.listingCreate.mockResolvedValue({ id: "listing" }); m.updateMany.mockResolvedValue({ count: 1 });

@@ -10,6 +10,8 @@ datasource db {
 }
 
 model User {
+  agriPopularityVotes AgriPopularityVote[]
+  agriPopularityConfigurations AgriPopularityRound[]
   visualInputUploads VisualInputUpload[]
   visualModelJobs VisualModelJob[]
   visualModelAssets VisualModelAsset[]
@@ -1180,6 +1182,7 @@ model Competition {
 }
 
 model TeamCompetition {
+  agriWallEntry AgriWallEntry?
   id            String      @id @default(cuid())
   teamId        String
   team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -1291,6 +1294,7 @@ enum ArtifactKind {
 
 /// 学生项目包。默认私密，归档后不再接受新的生成�?
 model Project {
+  agriWallEntries AgriWallEntry[]
   visualModelJobs VisualModelJob[]
   visualWebsiteReleases VisualWebsiteRelease[]
   visualWebsiteDomains VisualWebsiteDomain[]
@@ -1358,6 +1362,7 @@ model Artifact {
 }
 
 model ArtifactVersion {
+  agriWallEntries AgriWallEntry[]
   id                String    @id @default(cuid())
   artifactId        String
   artifact          Artifact  @relation(fields: [artifactId], references: [id], onDelete: Cascade)
@@ -1488,6 +1493,7 @@ enum MarketCashAccount {
 }
 
 model MarketListing {
+  agriWallEntries AgriWallEntry[]
   id String @id @default(cuid())
   slug String @unique
   sellerId String
@@ -1521,6 +1527,7 @@ model MarketListingStar {
 
 /// Append-only offers. A published revision stays live while a new draft is reviewed.
 model MarketListingVersion {
+  agriWallSnapshots AgriWallEntry[]
   id String @id @default(cuid())
   listingId String
   listing MarketListing @relation(fields: [listingId], references: [id], onDelete: Restrict)
@@ -1943,6 +1950,8 @@ model AgriTaskCommandReceipt {
 }
 // P1 foundation: an edition must be explicitly configured; no users or rules are seeded by this migration.
 model AgriWorkspace {
+  wallEntries AgriWallEntry[]
+  popularityRound AgriPopularityRound?
   id String @id @default(cuid())
   competitionId String @unique
   competition Competition @relation(fields: [competitionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
@@ -3037,4 +3046,57 @@ model VisualInputUpload {
   storageMode String @db.VarChar(8)
   createdAt DateTime @default(now())
   @@map("visual_input_uploads")
+}
+
+// External projects use reviewed marketplace snapshots and a private manual project record.
+model AgriWallEntry {
+  id String @id
+  competitionId String
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  teamCompetitionId String @unique
+  entry TeamCompetition @relation(fields: [teamCompetitionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  listingId String
+  listing MarketListing @relation(fields: [listingId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  artifactVersionId String
+  artifactVersion ArtifactVersion @relation(fields: [artifactVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  listingVersion Int
+  listingSnapshot MarketListingVersion @relation(fields: [listingId, listingVersion], references: [listingId, version], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  updatedAt DateTime @db.Timestamptz(3)
+  votes AgriPopularityVote[]
+  @@unique([teamCompetitionId, competitionId])
+  @@unique([competitionId, listingId])
+  @@unique([id, competitionId])
+  @@map("agri_wall_entries")
+}
+model AgriPopularityRound {
+  id String @id
+  competitionId String @unique
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  revision Int @default(1)
+  opensAt DateTime @db.Timestamptz(3)
+  closesAt DateTime @db.Timestamptz(3)
+  configuredById String
+  configuredBy User @relation(fields: [configuredById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  frozenAt DateTime? @db.Timestamptz(3)
+  results Json?
+  votes AgriPopularityVote[]
+  @@unique([id, competitionId])
+  @@map("agri_popularity_rounds")
+}
+model AgriPopularityVote {
+  id String @id
+  competitionId String
+  roundId String
+  round AgriPopularityRound @relation(fields: [roundId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  wallEntryId String
+  wallEntry AgriWallEntry @relation(fields: [wallEntryId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([roundId, wallEntryId, userId])
+  @@index([roundId, wallEntryId])
+  @@map("agri_popularity_votes")
 }

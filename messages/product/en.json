@@ -229,6 +229,7 @@
     "competition": "Competitions"
   },
   "children": {
+    "agri-wall": "AgriHackathon wall",
     "methods": "AI methods",
     "notes": "Notes & courses",
     "research": "Research",
@@ -533,7 +534,10 @@
       "REVIEW_ALREADY_SUBMITTED": "This order already has a review.",
       "INSUFFICIENT_QUOTA": "Insufficient credits. Add credits and retry.",
       "SELLER_REVERSAL_REQUIRES_REVIEW": "Seller credits cannot cover the reversal. Manual review is required; no refund has been applied.",
-      "POINTS_ONLY": "On-site purchases use points only. Refresh the listing and pay with points."
+      "POINTS_ONLY": "On-site purchases use points only. Refresh the listing and pay with points.",
+      "AGRI_WALL_CATEGORY_LOCKED": "A linked entry must remain a free project in the AgriHackathon wall category.",
+      "AGRI_POPULARITY_VOTING_CLOSED": "The voting window just ended. Refresh and retry; later Stars do not change the award results.",
+      "RATE_LIMITED": "Too many requests. Please try again shortly."
     },
     "pendingRequest": "The last operation has not been confirmed. Check the original request before making another change. Refreshing or leaving loses this page’s temporary recovery information.",
     "recoverRequest": "Check original request",
@@ -1101,7 +1105,11 @@
       "AGRI_PERMIT_INACTIVE": "Permit used, revoked or expired. Contact the responsible manager.",
       "AGRI_FIELD_NOT_ALLOWED": "A changed field is outside the permit.",
       "AGRI_PROJECT_CHANGE_FORBIDDEN": "A correction cannot change the project.",
-      "AGRI_NO_CHANGE": "Correction content is unchanged."
+      "AGRI_NO_CHANGE": "Correction content is unchanged.",
+      "AGRI_WALL_REQUIRED": "Publish your project and link it to your team on the AgriHackathon wall first.",
+      "AGRI_WALL_PUBLIC_PROJECT_REQUIRED": "The project must pass review and remain published.",
+      "AGRI_WALL_PROJECT_MISMATCH": "The project owner must submit the same project linked on the wall.",
+      "AGRI_WALL_VERSION_CONFLICT": "The published project changed. Sync its latest version on the wall first."
     },
     "obsoleteMaterial": "Material {key} no longer matches the current rules. Its content is preserved. Remove it and fill the updated requirement.",
     "removeMaterial": "Remove outdated material {key}",

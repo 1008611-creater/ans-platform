@@ -1,6 +1,7 @@
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import zh from "../../../messages/zh.json";
+import agriWall from "../../../messages/agri-wall/zh.json";
 import product from "../../../messages/product/zh.json";
 import AgriHackathonPage from "@/app/competitions/agrihackathon/page";
 
@@ -10,7 +11,7 @@ vi.mock("@/server/competitions/agrihackathon/workspace", () => ({ readAgriPublic
 vi.mock("next-intl/server", () => ({
   getLocale: async () => "zh",
   getTranslations: async (namespace: string) => {
-    const messages: unknown = { ...zh, product };
+    const messages: unknown = { ...zh, product, agriWall };
     const read = (key: string): unknown => `${namespace}.${key}`.split(".").reduce<unknown>(
       (value, part) => (value as Record<string, unknown>)[part], messages,
     );
@@ -26,7 +27,8 @@ it("shows the historical-rules notice and no edition entry when no competition i
   const notice = screen.getByRole("complementary", { name: product.agrihackathon.rulesPendingTitle });
   expect(within(notice).getByText(product.agrihackathon.rulesPendingBody)).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: zh.agriHackathon.enterWorkbench })).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: zh.agriHackathon.createProject })).toHaveAttribute("href", "/projects");
+  expect(screen.getByRole("link", { name: agriWall.publishTitle })).toHaveAttribute("href", "/explore/submit?event=agrihackathon");
+  expect(screen.getByRole("link", { name: agriWall.title })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
 });
 
 it("keeps historical rules marked pending even when the exact edition is bound", async () => {
