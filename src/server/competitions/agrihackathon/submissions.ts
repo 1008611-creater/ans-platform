@@ -7,7 +7,7 @@ import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { agriPrepareStageSchema, agriStageDraftSchema, agriStageSubmissionCommandSchema,
   agriStageSubmissionContentSchema, agriSubmissionListQuerySchema, agriWorksExportQuerySchema, agriSubmissionRequirementsSchema, agriSubmissionVersionsQuerySchema, type AgriSubmissionHistoryItem } from "@/contracts/agri-submissions";
 import { agriSubmissionWindowSchema } from "@/contracts/agrihackathon";
-import { getAgriSubmissionLifecycleDecision, getAgriSubmissionMaterialIssues, getAgriCorrectionDecision } from "@/domain/competitions/agri-submissions";
+import { getAgriSubmissionLifecycleDecision, getAgriSubmissionMaterialIssues, getAgriCorrectionDecision, projectAgriSubmissionFreeze } from "@/domain/competitions/agri-submissions";
 import { agriCsv } from "@/domain/competitions/agri-works-export";
 import { getAgriWindowState } from "@/domain/competitions/agrihackathon";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent, agriDatabaseClock, type AgriWorkspaceContext } from "./workspace";
@@ -84,19 +84,16 @@ async function rule(tx: Tx, competitionId: string, ruleId: string | null, stage:
         confirmedById: row.confirmedById, confirmedAt: row.confirmedAt.toISOString() }) };
 }
 async function priorClosed(tx: Tx, stage: Pick<Stage, "id" | "competitionId" | "stage" | "currentSubmissionId" | "frozenSubmissionId">, now: Date) {
-  if (stage.frozenSubmissionId) return true;
-  if (!stage.currentSubmissionId) return false;
-  const [prior] = await tx.$queryRaw<Array<{ ruleVersionId: string }>>`SELECT "ruleVersionId" FROM agri_stage_submissions
-    WHERE id=${stage.currentSubmissionId} AND "entryStageId"=${stage.id} AND "competitionId"=${stage.competitionId}`;
-  if (!prior) return fail("AGRI_STAGE_INVALID", 500);
-  return getAgriWindowState((await rule(tx, stage.competitionId, prior.ruleVersionId, stage.stage)).window, now) === "CLOSED";
+  return (await projectAgriStageFreeze(tx, stage, now)).frozenSubmissionId !== null;
 }
 /** Effective deadline freeze is a read projection, never a persisted stage transition.
  * Always use the current submission's adopted rule; a replacement publication cannot reopen it. */
 export async function projectAgriStageFreeze(tx: Tx, stage: Pick<Stage, "id" | "competitionId" | "stage" | "currentSubmissionId" | "frozenSubmissionId">, now: Date) {
-  const frozenByDeadline = !stage.frozenSubmissionId && await priorClosed(tx, stage, now);
-  return { frozenSubmissionId: stage.frozenSubmissionId ?? (frozenByDeadline ? stage.currentSubmissionId : null),
-    recordedFrozenSubmissionId: stage.frozenSubmissionId, frozenByDeadline };
+  if (stage.frozenSubmissionId || !stage.currentSubmissionId) return projectAgriSubmissionFreeze(stage, null, now);
+  const [prior] = await tx.$queryRaw<Array<{ ruleVersionId: string }>>`SELECT "ruleVersionId" FROM agri_stage_submissions
+    WHERE id=${stage.currentSubmissionId} AND "entryStageId"=${stage.id} AND "competitionId"=${stage.competitionId}`;
+  if (!prior) return fail("AGRI_STAGE_INVALID", 500);
+  return projectAgriSubmissionFreeze(stage, (await rule(tx, stage.competitionId, prior.ruleVersionId, stage.stage)).window, now);
 }
 async function validateVersions(tx: Tx, ctx: AgriWorkspaceContext, entry: Entry, content: z.infer<typeof agriStageDraftSchema>) {
   const [project] = await tx.$queryRaw<Array<{ ownerId: string; teamId: string | null; status: string }>>`
@@ -371,21 +368,41 @@ export async function exportAgriWorks(actorId: string, rawQuery: unknown = {}) {
     const privateAuthority = query.mode === "materials" ? await requireAgriScope(tx, ctx, "PRIVATE_MATERIALS_READ") : null;
     const rows = await tx.$queryRaw<Array<{ id: string; teamId: string; teamCompetitionId: string; teamName: string; stage: StageName;
       revision: number; frozenSubmissionId: string | null; currentSubmissionId: string | null; sequence: number | null;
-      ruleVersionId: string | null; acceptedAt: Date | null; content: unknown }>>`
+      ruleVersionId: string | null; acceptedAt: Date | null; content: unknown;
+      adoptedSubmissionId: string | null; adoptedRuleId: string | null; windowState: string | null;
+      windowOpensAt: Date | null; windowClosesAt: Date | null; windowIncludesDeadline: boolean | null;
+      ruleConfirmedById: string | null; ruleConfirmedAt: Date | null }>>`
       SELECT es.id,tc."teamId",es."teamCompetitionId",t.name AS "teamName",es.stage,es.revision,es."frozenSubmissionId",es."currentSubmissionId",
-        sub.sequence,sub."ruleVersionId",sub."acceptedAt",
+        sub.sequence,sub."ruleVersionId",sub."acceptedAt",sub.id AS "adoptedSubmissionId",rv.id AS "adoptedRuleId",
+        w.state AS "windowState",w."opensAt" AS "windowOpensAt",w."closesAt" AS "windowClosesAt",w."includesDeadline" AS "windowIncludesDeadline",
+        rv."confirmedById" AS "ruleConfirmedById",rv."confirmedAt" AS "ruleConfirmedAt",
         CASE WHEN ${query.mode === "materials"} AND sub.id IS NOT NULL THEN jsonb_build_object(
           'projectId',sub."projectId",'artifactVersionId',sub."artifactVersionId",'repository',sub.repository,
           'demoUrl',sub."demoUrl",'summary',sub.summary,'materials',sub.materials) ELSE NULL END AS content
       FROM agri_entry_stages es JOIN team_competitions tc ON tc.id=es."teamCompetitionId" JOIN teams t ON t.id=tc."teamId"
       LEFT JOIN agri_stage_submissions sub ON sub.id=es."currentSubmissionId" AND sub."entryStageId"=es.id AND sub."competitionId"=es."competitionId"
+      LEFT JOIN agri_rule_versions rv ON rv.id=sub."ruleVersionId" AND rv."competitionId"=es."competitionId"
+      LEFT JOIN agri_stage_windows w ON w."ruleVersionId"=rv.id AND w."competitionId"=es."competitionId" AND w.stage=es.stage
       WHERE ${stageFilter(ctx.workspace.competitionId, actorId, { ...query, scope: "staff" })}
       ORDER BY es."createdAt" DESC,es.id DESC LIMIT 5001`;
     if (rows.length > 5000) return fail("AGRI_EXPORT_TOO_LARGE", 422);
     const now = await agriDatabaseClock(tx);
     const head = ["source", "exported_at_utc", "competition_id", "scope", "stage_filter", "status_filter", "team_query", "team_id", "team_name", "entry_id", "stage_id", "stage", "revision", "current_submission_id", "sequence", "rule_version_id", "accepted_at_utc", "recorded_frozen_submission_id"];
     if (query.mode === "materials") head.push("project_id", "artifact_version_id", "summary", "repository_url", "repository_ref_kind", "repository_ref", "demo_url", "materials_json");
+    // Append to preserve every existing metadata/material column position and meaning.
+    head.push("effective_frozen_submission_id", "frozen_by_deadline");
     const csv = agriCsv([head, ...rows.map(row => {
+      let adoptedWindow: unknown = null;
+      if (!row.frozenSubmissionId && row.currentSubmissionId) {
+        if (!row.adoptedSubmissionId) return fail("AGRI_STAGE_INVALID", 500);
+        if (!row.adoptedRuleId || !row.windowState) return fail("AGRI_RULE_INVALID", 500);
+        adoptedWindow = agriSubmissionWindowSchema.parse(row.windowState === "PENDING"
+          ? { stage: row.stage, state: "PENDING", opensAt: row.windowOpensAt?.toISOString() ?? null, closesAt: row.windowClosesAt?.toISOString() ?? null }
+          : { stage: row.stage, state: row.windowState, opensAt: row.windowOpensAt?.toISOString() ?? null,
+            closesAt: row.windowClosesAt?.toISOString() ?? null, includesDeadline: row.windowIncludesDeadline,
+            confirmedById: row.ruleConfirmedById, confirmedAt: row.ruleConfirmedAt?.toISOString() ?? null });
+      }
+      const freeze = projectAgriSubmissionFreeze(row, adoptedWindow, now);
       const cells: unknown[] = ["ANS agri stage submissions snapshot", now.toISOString(), ctx.workspace.competitionId, query.mode,
         query.stage ?? "ALL", query.status, query.q, row.teamId, row.teamName, row.teamCompetitionId, row.id, row.stage, row.revision,
         row.currentSubmissionId, row.sequence, row.ruleVersionId, row.acceptedAt?.toISOString(), row.frozenSubmissionId];
@@ -394,6 +411,7 @@ export async function exportAgriWorks(actorId: string, rawQuery: unknown = {}) {
         cells.push(content?.projectId, content?.artifactVersionId, content?.summary, content?.repository?.url,
           content?.repository?.ref?.kind, content?.repository?.ref?.value, content?.demoUrl, content ? JSON.stringify(content.materials) : null);
       }
+      cells.push(freeze.frozenSubmissionId, freeze.frozenByDeadline);
       return cells;
     })]);
     await tx.auditLog.create({ data: { actorId, action: "AGRI_EXPORT_WORKS", resourceType: "agri_workspace", resourceId: ctx.workspace.id,

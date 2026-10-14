@@ -8,9 +8,25 @@ for (const value of [process.env.DATABASE_URL, process.env.DIRECT_URL]) {
   const url = new URL(value ?? "http://invalid");
   const local = url.hostname === "127.0.0.1" && url.port === "55438" && url.pathname === "/ans_product_verify_agri_submissions_r1";
   const dedicated = process.env.ANS_AGRI_ROSTER_VERIFY === "true" && url.hostname === "ans-agri-roster-db" && url.port === "5432" && url.pathname === "/ans_agri_roster_verify_20261014";
-  if (!local && !dedicated) throw new Error("Non-isolated submission writes refused");
+  const freezeDedicated = process.env.ANS_AGRI_FREEZE_VERIFY === "true" && url.hostname === "ans-agri-roster-db" && url.port === "5432" && url.pathname === "/ans_agri_freeze_verify_20261014";
+  if (!local && !dedicated && !freezeDedicated) throw new Error("Non-isolated submission writes refused");
 }
 const dir = process.env.AGRI_SUBMISSIONS_EVIDENCE_DIR ?? ".workbuddy/evidence/agri-submissions";
+// Decode fully quoted CSV cells, including commas, doubled quotes and embedded newlines.
+function csvRecords(csv: string): Array<Record<string, string>> {
+  const rows: string[][] = []; let row: string[] = [], cell = "", quoted = false;
+  for (let i = 1; i < csv.length; i++) {
+    const char = csv[i];
+    if (char === '"') {
+      if (quoted && csv[i + 1] === '"') { cell += '"'; i++; } else quoted = !quoted;
+    } else if (!quoted && char === ",") { row.push(cell); cell = ""; }
+    else if (!quoted && char === "\r" && csv[i + 1] === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; i++; }
+    else cell += char;
+  }
+  assert.equal(quoted, false); assert.equal(row.length, 0); assert.equal(cell, "");
+  const [head, ...values] = rows;
+  return values.map(cells => { assert.equal(cells.length, head.length); return Object.fromEntries(head.map((key, i) => [key, cells[i]])); });
+}
 async function main() {
   const { db } = await import("../src/lib/db");
   await mkdir(dir, { recursive: true });
@@ -48,11 +64,12 @@ async function main() {
     const otherEdition = await db.competition.create({ data: { title: prefix + " OTHER FIXTURE" }, select: { id: true } });
     const ordinaryEdition = await db.competition.create({ data: { title: prefix + " ORDINARY FIXTURE" }, select: { id: true } });
     const makeUser = (suffix: string, role: "USER" | "ADMIN" = "USER") => db.user.create({ data: { email: prefix + suffix + "@example.invalid", username: prefix + suffix, role, quotaPoints: 111 }, select: { id: true, xp: true, quotaPoints: true } });
-    const [owner, teammate, outsider, admin, staff, fullStaff] = await Promise.all([makeUser("owner"), makeUser("teammate"), makeUser("outsider"), makeUser("admin", "ADMIN"), makeUser("staff"), makeUser("full")]);
+    const [owner, teammate, outsider, admin, staff, fullStaff, freezeStaff] = await Promise.all([makeUser("owner"), makeUser("teammate"), makeUser("outsider"), makeUser("admin", "ADMIN"), makeUser("staff"), makeUser("full"), makeUser("freeze-export")]);
     await db.$executeRaw`INSERT INTO agri_workspaces (id,"competitionId") VALUES (${randomUUID()},${edition.id}),(${randomUUID()},${otherEdition.id})`;
     process.env.ANS_AGRIHACKATHON_COMPETITION_ID = edition.id;
     const root = async (userId: string, scope: string) => db.$executeRaw`INSERT INTO agri_access_grants (id,"competitionId","userId",scope,"grantedById","grantedAt") VALUES (${randomUUID()},${edition.id},${userId},${scope},${owner.id},clock_timestamp())`;
     await root(owner.id, "RULES_CONFIRM"); await root(staff.id, "WORKS_READ"); await root(fullStaff.id, "WORKS_READ"); await root(fullStaff.id, "PRIVATE_MATERIALS_READ"); await root(fullStaff.id, "EXPORT");
+    for (const scope of ["WORKS_READ", "PRIVATE_MATERIALS_READ", "EXPORT"]) await root(freezeStaff.id, scope);
     const publish = async (closeOffset = 120000, finalReady = false) => {
       const now = await clock();
       const draft: AgriRulesDraft = { schemaVersion: 1, guidanceMarkdown: "LOCAL FIXTURE guidance " + randomUUID(),
@@ -165,6 +182,17 @@ async function main() {
       assert.match(String((outcomes.find(row => row.status === "rejected") as PromiseRejectedResult).reason), /AGRI_REVISION_CONFLICT/);
       const view = await get(owner.id, stageId); revision = view.revision; currentId = view.current!.id;
       assert.deepEqual(view.history.map(row => row.sequence), [2, 1]); assert.equal(view.frozenSubmissionId, null);
+    });
+    await check("open-stage CSV appends an empty effective freeze without changing existing current or material fields", async () => {
+      for (const mode of ["metadata", "materials"] as const) {
+        const result = await exportWorks(freezeStaff.id, { mode });
+        const row = csvRecords(result.csv).find(value => value.stage_id === stageId)!;
+        assert.equal(row.current_submission_id, currentId); assert.equal(row.recorded_frozen_submission_id, "");
+        assert.equal(row.effective_frozen_submission_id, ""); assert.equal(row.frozen_by_deadline, "false");
+        if (mode === "metadata") assert.ok(!result.csv.includes("PRIVATE_FIXTURE"));
+        else assert.equal(row.project_id, own.projectId);
+        assert.ok(result.csv.split("\r\n")[0].endsWith('"effective_frozen_submission_id","frozen_by_deadline"'));
+      }
     });
     await check("staff basic projection omits private fields and drafts; dual scopes permit exact snapshot only", async () => {
       const basic = await get(staff.id, stageId), full = await get(fullStaff.id, stageId);
@@ -293,6 +321,23 @@ async function main() {
       const [stored] = await db.$queryRaw<Array<{ revision: number; frozenSubmissionId: string | null }>>`SELECT revision,"frozenSubmissionId" FROM agri_entry_stages WHERE id=${raceStage.entryStageId}`;
       assert.deepEqual(stored, { revision: 2, frozenSubmissionId: null });
     });
+    await check("CSV reflects old adopted deadline after replacement rules and adds only its existing audit event", async () => {
+      const before = (await databaseSnapshot()).filter(row => row.table !== "audit_logs");
+      const beforeAudits = await db.auditLog.count({ where: { actorId: freezeStaff.id, action: "AGRI_EXPORT_WORKS" } });
+      for (const mode of ["metadata", "materials"] as const) {
+        const result = await exportWorks(freezeStaff.id, { mode });
+        const row = csvRecords(result.csv).find(value => value.stage_id === raceStage.entryStageId)!;
+        assert.equal(row.current_submission_id, acceptedRaceId!); assert.equal(row.recorded_frozen_submission_id, "");
+        assert.equal(row.effective_frozen_submission_id, acceptedRaceId!); assert.equal(row.frozen_by_deadline, "true");
+        const detail = await get(owner.id, raceStage.entryStageId);
+        assert.equal(row.effective_frozen_submission_id, detail.frozenSubmissionId);
+        assert.equal(row.frozen_by_deadline, String(detail.frozenByDeadline));
+        assert.equal(row.rule_version_id, acceptedRaceCommand!.expectedRuleVersionId);
+      }
+      const after = (await databaseSnapshot()).filter(row => row.table !== "audit_logs"); assert.deepEqual(after, before);
+      assert.equal(await db.auditLog.count({ where: { actorId: freezeStaff.id, action: "AGRI_EXPORT_WORKS" } }), beforeAudits + 2);
+      report.readonlySnapshots.push({ before, after });
+    });
     await check("valid accepted replay after deadline returns original immutable receipt without another sequence", async () => {
       const before = await get(owner.id, raceStage.entryStageId);
       assert.equal(before.frozenSubmissionId, acceptedRaceId!);
@@ -316,6 +361,13 @@ async function main() {
       assert.equal(view.revision, 3); assert.equal(view.current?.id, corrected.submissionId); assert.equal(view.history.length, 2);
       assert.equal(view.frozenSubmissionId, acceptedRaceId!); assert.equal(view.recordedFrozenSubmissionId, acceptedRaceId!); assert.equal(view.frozenByDeadline, false);
       assert.equal(view.current?.correction?.previousSubmissionId, acceptedRaceId!);
+      for (const mode of ["metadata", "materials"] as const) {
+        const exported = await exportWorks(freezeStaff.id, { mode });
+        const row = csvRecords(exported.csv).find(value => value.stage_id === raceStage.entryStageId)!;
+        assert.equal(row.current_submission_id, corrected.submissionId); assert.equal(row.recorded_frozen_submission_id, acceptedRaceId!);
+        assert.equal(row.effective_frozen_submission_id, acceptedRaceId!); assert.equal(row.frozen_by_deadline, "false");
+        if (mode === "materials") assert.equal(row.summary, "PRIVATE_FIXTURE permitted correction");
+      }
       await assert.rejects(db.$executeRaw`UPDATE agri_entry_stages SET "frozenSubmissionId"=NULL,revision=revision+1 WHERE id=${raceStage.entryStageId}`, /AGRI_STAGE_REVISION_OR_FROZEN/);
       const [eventCounts] = await db.$queryRaw<Array<{ correction: bigint; freeze: bigint }>>`SELECT count(*) FILTER(WHERE action='correctSubmission') AS correction,count(*) FILTER(WHERE action='freezeStage') AS freeze FROM agri_submission_events WHERE "entryStageId"=${raceStage.entryStageId}`;
       assert.deepEqual(eventCounts, { correction: BigInt(1), freeze: BigInt(0) });
@@ -393,6 +445,9 @@ async function main() {
       await db.team.update({ where: { id: ids.at(-1)! }, data: { name: "OUTSIDE_BOUNDARY" } });
       const bounded = await exportWorks(staff.id, { q: "LIMIT_FIXTURE ", stage: "PRELIMINARY" });
       assert.equal(bounded.rows, 5000); assert.equal(bounded.csv.split("\r\n").length, 5002);
+      const decoded = csvRecords(bounded.csv); assert.equal(decoded.length, 5000);
+      assert.ok(decoded.every(row => row.effective_frozen_submission_id === "" && row.frozen_by_deadline === "false"));
+      assert.equal(new Set(decoded.map(row => row.exported_at_utc)).size, 1);
     });
     await check("technical submissions do not change competition approval, member XP/quota, public consent or publication", async () => {
       for (const user of [owner, teammate, outsider, admin, staff, fullStaff]) {

@@ -14,6 +14,7 @@ import {
   getAgriSubmissionLifecycleDecision,
   getAgriSubmissionMaterialIssues,
   projectAgriTeamCheckFeedback,
+  projectAgriSubmissionFreeze,
 } from "@/domain/competitions/agri-submissions";
 
 const key = "3fc3f069-eaaa-49ba-ac0d-a898f4062a59";
@@ -319,5 +320,34 @@ describe("official member identity contract", () => {
   });
   it("rejects empty, oversized, blank and duplicate selections", () => {
     for (const ids of [[], [""], ["a", "a"], ["a", "b", "c", "d", "e", "f"]]) expect(agriOfficialMemberIdsSchema.safeParse(ids).success).toBe(false);
+  });
+});
+
+describe("effective submission freeze projection", () => {
+  const stage = { currentSubmissionId: "current", frozenSubmissionId: null };
+  it.each([true, false])("uses the exact adopted deadline boundary (inclusive=%s)", includesDeadline => {
+    const adopted = { ...window, includesDeadline };
+    expect(projectAgriSubmissionFreeze(stage, adopted, new Date(now.getTime() - 1))).toEqual({
+      frozenSubmissionId: null, recordedFrozenSubmissionId: null, frozenByDeadline: false,
+    });
+    expect(projectAgriSubmissionFreeze(stage, adopted, now)).toEqual({
+      frozenSubmissionId: includesDeadline ? null : "current", recordedFrozenSubmissionId: null, frozenByDeadline: !includesDeadline,
+    });
+    expect(projectAgriSubmissionFreeze(stage, adopted, new Date(now.getTime() + 1))).toEqual({
+      frozenSubmissionId: "current", recordedFrozenSubmissionId: null, frozenByDeadline: true,
+    });
+  });
+  it("keeps recorded original freeze distinct from a corrected current submission", () => {
+    expect(projectAgriSubmissionFreeze({ currentSubmissionId: "corrected", frozenSubmissionId: "original" }, null, now)).toEqual({
+      frozenSubmissionId: "original", recordedFrozenSubmissionId: "original", frozenByDeadline: false,
+    });
+  });
+  it("never invents a freeze for no submission, pending, invalid or not-open windows", () => {
+    for (const adopted of [null, { stage: "PRELIMINARY", state: "PENDING", opensAt: null, closesAt: null }, { ...window, opensAt: new Date(now.getTime() + 1).toISOString(), closesAt: new Date(now.getTime() + 1000).toISOString() }]) {
+      expect(projectAgriSubmissionFreeze(stage, adopted, now).frozenSubmissionId).toBeNull();
+    }
+    expect(projectAgriSubmissionFreeze({ currentSubmissionId: null, frozenSubmissionId: null }, window, new Date(now.getTime() + 1))).toEqual({
+      frozenSubmissionId: null, recordedFrozenSubmissionId: null, frozenByDeadline: false,
+    });
   });
 });
