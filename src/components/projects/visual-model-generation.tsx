@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { WorkspaceLink } from "@/components/providers/workspace-navigation";
 import { useMarketActorId, useMarketRequest } from "@/components/marketplace/account-boundary";
 import { DEFAULT_TRIPO_OPTIONS, IMAGE_LIMIT, TRIPO_MODELS, tripoOptionsSchema, tripoFaceLimit, generationPrice, type GenerationConfig, type TripoOptions, type ModelAssetRef, type ModelJobView } from "@/contracts/visual-generation";
+import { FourViewPreparation } from "./four-view-preparation";
 import { VisualModelPreview } from "./visual-model-preview";
 import styles from "./visual-tour-editor.module.css";
 const active=(job:ModelJobView)=>["QUEUED","RUNNING"].includes(job.status);
@@ -70,6 +71,7 @@ export function VisualModelGeneration({projectId,onApply}:{projectId?:string;onA
      {urls[index]&&<><Image unoptimized width={240} height={170} className={styles.generationImage} src={urls[index]} alt={options.source==="image"?t("selectedImage"):t(`views.${index}`)}/><Button variant="ghost" size="sm" onClick={()=>{setFiles(previous=>previous.map((file,i)=>i===index?null:file));invalidate();}}>{t("removeImage")}</Button></>}
     </div>)}</div>
    </>}
+   {options.source==="image"&&<FourViewPreparation file={files[0]} onApply={values=>{setFiles(values);revise({...options,source:"multiview",autoFix:false});}}/>}
    <label className={styles.field}>{t("model")}<select value={options.model} onChange={event=>chooseModel(event.target.value as TripoOptions["model"])}>{TRIPO_MODELS.map(item=><option key={item.id} value={item.id}>{t(`models.${item.id.replaceAll(".","_")}`)}</option>)}</select></label>
    <label className={styles.field}>{t("faces")}<Input aria-label={t("faces")} type="number" min={model.minFaces} max={faceLimit} step={1} value={options.faceCount} onChange={event=>revise({...options,faceCount:Number(event.target.value)})}/><small>{t("faceRange",{min:model.minFaces,max:faceLimit})}</small></label>
    {model.quadMax>0&&<><label className={styles.check}><input type="checkbox" disabled checked={false}/>{t("quad")}</label><p className={styles.note}>{t("quadUnavailable")}</p></>}

@@ -1,0 +1,8 @@
+{
+  "intent": "A technical four-view sheet for 3D reconstruction from the reference.",
+  "subject": "Same subject in all cells. Keep identity, proportions, shape, clothes, accessories, colors and materials. Infer unseen surfaces conservatively.",
+  "composition": "Strict equal 2x2 grid: top-left front; top-right back; bottom-left subject left; bottom-right subject right. Orthographic full-body views, same upright pose, scale and vertical center. Each complete silhouette fills its cell with a small safety margin.",
+  "text": "No text, labels, logos or watermarks.",
+  "style": "Reference appearance, neutral solid background, soft even studio light, sharp edges.",
+  "constraints": "Four subjects total, one per cell. No perspective, three-quarter angles, changed poses, cropped parts, overlap, separators, gutters, scenery or large blank margins. Exact requested canvas size. Cells will be cut at geometric midpoints."
+}

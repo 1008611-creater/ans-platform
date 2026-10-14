@@ -1,0 +1,39 @@
+{
+  "title": "Prepare four views first",
+  "description": "Original image ? grid and crops for 5 points ? review front, back, left and right ? 3D for 10 points. Total: 15 points. Direct single-image modeling is also available.",
+  "ratio": "Grid aspect ratio",
+  "dimensions": "Full canvas: {width} ? {height} pixels, split at the midpoint into four views. Landscape and portrait are 4K; other ratios show their actual dimensions.",
+  "acknowledge": "I confirm {points} points for four-view preparation. Modeling requires a separate confirmation.",
+  "generate": "Prepare four views",
+  "submitting": "Submitting?",
+  "unavailable": "Four-view service is not ready to accept tasks.",
+  "insufficient": "Insufficient points. Check your compute balance.",
+  "requestFailed": "The request was not confirmed. Check task status first; retrying the same image and ratio will not charge twice.",
+  "loadFailed": "Unable to load four views. Please try later.",
+  "loading": "Loading the four reference images?",
+  "reviewHint": "Check that all four images preserve the same subject, directions, pose and details. Hidden surfaces are inferred by the model.",
+  "confirmViews": "I checked these four reference images and approve them for modeling.",
+  "apply": "Use these views and confirm modeling",
+  "preview": "Review four views",
+  "close": "Close four views",
+  "discard": "Cancel or clear this task",
+  "refunded": "5 points refunded.",
+  "reviewNote": "Submission needs review. No repeat paid generation will occur. Returned images are retained for recovery.",
+  "views": {
+    "front": "Front",
+    "back": "Back",
+    "left": "Left",
+    "right": "Right"
+  },
+  "statuses": {
+    "UPLOADING": "Saving original image",
+    "QUEUED": "Waiting for preparation",
+    "RUNNING": "Preparing four views",
+    "SUCCEEDED": "Four views saved, awaiting your approval",
+    "FAILED": "Preparation incomplete",
+    "NEEDS_REVIEW": "Needs review",
+    "CANCELLED": "Cancelled",
+    "ARCHIVED": "Cleared"
+  },
+  "dimensionMismatch": "The returned dimensions do not match your selected ratio. Images are retained for review; no repeat paid generation will occur."
+}
