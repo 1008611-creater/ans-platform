@@ -186,3 +186,30 @@ export async function listPendingMarketListings(reviewerId: string) {
     return version ? [{ id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, starCount: row._count.stars, starred: row.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt!.toISOString(), reviewedAt: null, reviewNote: null }] : [];
   });
 }
+
+/** Target associations rather than the discovery page's first 100 listings. */
+export async function listRelatedPublishedMarketListings(input: { slugs?: string[]; workflowIds?: string[] }) {
+  const slugs = [...new Set(input.slugs ?? [])];
+  const workflowIds = [...new Set(input.workflowIds ?? [])];
+  if (!slugs.length && !workflowIds.length) return [];
+  const rows = await db.marketListing.findMany({
+    where: {
+      status: "PUBLISHED", seller: { deletedAt: null, flagged: false },
+      OR: [
+        ...(slugs.length ? [{ slug: { in: slugs } }] : []),
+        ...workflowIds.map(id => ({ versions: { some: { payload: { path: ["execution", "workflowId"], equals: id } } } })),
+      ],
+    },
+    include: listingReadInclude(), orderBy: { updatedAt: "desc" },
+  });
+  return rows.flatMap(row => {
+    const version = row.versions.find(item => item.version === row.publishedVersion);
+    if (!version?.reviewedAt) return [];
+    const listing = marketListingInputSchema.parse(version.payload);
+    // Historical versions select candidates only; the current reviewed snapshot decides linkage.
+    if (!slugs.includes(row.slug) && (!listing.execution || !workflowIds.includes(listing.execution.workflowId))) return [];
+    return [{ id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version,
+      seller: row.seller, starCount: row._count.stars, starred: false, listing,
+      submittedAt: null, reviewedAt: null, reviewNote: null }];
+  });
+}

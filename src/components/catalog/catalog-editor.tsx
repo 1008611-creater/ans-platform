@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { AssociationPicker, type AssociationChoice } from "./association-picker";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -19,8 +20,8 @@ async function catalogRequest<T>(url: string, body: unknown): Promise<T> {
 }
 function blankText(): CatalogText { return Object.fromEntries(CATALOG_TEXT_FIELDS.map(field => [field, ""])) as CatalogText; }
 function blankEntry(): CatalogEntry { return { slug: "", category: "learning", subcategory: "methods", goal: "career", preview: "document", source: "official", content: { zh: blankText() } }; }
-export function CatalogEditor({ entries: initialEntries, builtins }: { entries: CatalogAdminEntry[]; builtins: CatalogEntry[] }) {
-  const t = useTranslations("product.catalogAdmin"); const p = useTranslations("product"); const router = useRouter();
+export function CatalogEditor({ entries: initialEntries, builtins, workflowChoices = [], offerChoices = [] }: { entries: CatalogAdminEntry[]; builtins: CatalogEntry[]; workflowChoices?: AssociationChoice[]; offerChoices?: AssociationChoice[] }) {
+  const c = useTranslations("product.connectionsAdmin"); const t = useTranslations("product.catalogAdmin"); const p = useTranslations("product"); const router = useRouter();
   const [entries, setEntries] = useState(initialEntries);
   const [form, setForm] = useState<CatalogEntry | null>(null); const [base, setBase] = useState<CatalogAdminEntry | null>(null);
   const [saved, setSaved] = useState(""); const [language, setLanguage] = useState<"zh" | "en">("zh");
@@ -108,6 +109,10 @@ export function CatalogEditor({ entries: initialEntries, builtins }: { entries: 
               <label className="block space-y-2 text-sm"><span className="block font-medium">{t("sourceUrl")}</span><Input type="url" value={form.sourceUrl ?? ""} onChange={event => patch({ sourceUrl: event.target.value || undefined })} placeholder="https://" maxLength={2000} /></label>
               <label className="block space-y-2 text-sm"><span className="block font-medium">{t("licenseUrl")}</span><Input type="url" value={form.licenseUrl ?? ""} onChange={event => patch({ licenseUrl: event.target.value || undefined })} placeholder="https://" maxLength={2000} /></label>
               <label className="block space-y-2 text-sm"><span className="block font-medium">{t("workflow")}</span><select disabled={form.source !== "official"} className={selectStyle} value={form.workflowId ?? ""} onChange={event => patch({ workflowId: (event.target.value || undefined) as CatalogEntry["workflowId"] })}><option value="">{t("reference")}</option>{catalogWorkflowIdSchema.options.map(id => <option key={id} value={id}>{t("workflows." + id)}</option>)}</select><span className="block text-xs leading-6 text-muted-foreground">{t("workflowHint")}</span></label>
+              <section className="space-y-5 border-t pt-5" aria-label={c("title")}><div><h3 className="font-semibold">{c("title")}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{c("body")}</p></div>
+                <AssociationPicker key={form.slug + "-workflows"} kind="workflows" selected={form.workflowSlugs ?? []} choices={workflowChoices} onChange={workflowSlugs => patch({ workflowSlugs })} />
+                <AssociationPicker key={form.slug + "-offers"} kind="offers" selected={form.marketSlugs ?? []} choices={offerChoices} onChange={marketSlugs => patch({ marketSlugs })} />
+              </section>
               <div className="flex flex-wrap items-center gap-3 border-t pt-5"><Button type="button" variant={language === "zh" ? "default" : "outline"} onClick={() => setLanguage("zh")}>{t("zh")}</Button><Button type="button" variant={language === "en" ? "default" : "outline"} onClick={() => { if (!form.content.en) patch({ content: { ...form.content, en: blankText() } }); setLanguage("en"); }}>{t("en")}</Button>{form.content.en && <Button type="button" variant="ghost" onClick={() => { patch({ content: { zh: form.content.zh } }); setLanguage("zh"); }}>{t("removeEnglish")}</Button>}</div>
               <p className="text-xs leading-6 text-muted-foreground">{t("languageHint")}</p>
               {CATALOG_TEXT_FIELDS.map(field => <label key={field} className="block space-y-2 text-sm"><span className="block font-medium">{t("fields." + field)}</span>{field === "title" ? <Input data-testid="catalog-title" value={form.content[language]?.[field] ?? ""} onChange={event => text(field, event.target.value)} maxLength={100} /> : <Textarea data-testid={"catalog-" + field} value={form.content[language]?.[field] ?? ""} onChange={event => text(field, event.target.value)} rows={field === "prompt" ? 5 : 3} maxLength={field === "summary" ? 600 : field === "sample" ? 1000 : 4000} className="resize-y" />}</label>)}

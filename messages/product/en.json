@@ -3336,5 +3336,40 @@
     "chooseAndBuy": "Choose a tier and view checkout",
     "viewAndBuy": "View checkout options",
     "sellerTitle": "Publisher"
+  },
+  "connectionsAdmin": {
+    "title": "Connect workflows and market offers",
+    "body": "Link this project to published workflows, resources or services. Project details will show the links, with a return path from each workflow or offer.",
+    "workflows": "Available workflows",
+    "offers": "Market resources and services",
+    "placeholder": "Select a published item or enter its exact slug",
+    "add": "Add",
+    "hint": "Up to 8 links per type. Enter an exact slug if it is absent from the suggestions. Preview checks publication status; withdrawn, unreviewed and unavailable items stay hidden.",
+    "invalid": "Use a 3–80 character slug with lowercase letters, numbers and hyphens.",
+    "remove": "Remove {slug}",
+    "unavailable": "These links are currently unavailable and will not appear publicly: {slugs}. Check publication status and version bindings."
+  },
+  "connections": {
+    "title": "Continue from here",
+    "navigationNote": "Use a workflow yourself, or explore related resources and services in the market.",
+    "prepareNote": "Make your own result with a published workflow, or inspect the publisher's actual product and delivery scope.",
+    "startWithWorkflow": "Make your own version in ANS",
+    "startWithOffer": "See delivery and usage options",
+    "groups": {
+      "projects": "Related projects",
+      "workflows": "Available workflows",
+      "offers": "Published products and services"
+    },
+    "actions": {
+      "project": "Back to project overview",
+      "workflow": "Use workflow",
+      "service": "Buy a custom service",
+      "resource": "View resource and access options",
+      "workflowOffer": "Prepare this workflow run"
+    },
+    "version": "Version {version}",
+    "confirmCompute": "Confirm compute cost before running",
+    "free": "Shared for free",
+    "price": "From {points} points"
   }
 }

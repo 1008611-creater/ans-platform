@@ -1,3 +1,5 @@
+import { ProductConnectionsSection } from "@/components/catalog/product-connections";
+import { getWorkflowConnections } from "@/server/catalog/connections";
 import { WorkflowHubAssociations } from "@/components/workflows/workflow-hub-associations";
 import { WorkflowMarketUpload } from "@/components/workflows/workflow-market-upload";
 import { WorkflowDetailFlow } from "@/components/workflows/workflow-detail-flow";
@@ -50,10 +52,10 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
   const userId = session?.user?.id ?? null;
   const definition = readableDefinition(workflow.publishedDefinition);
   const variables = definition ? extractInputVariables(definition) : [];
-  const [credentials, favorited, t, billing, w] = await Promise.all([
+  const [credentials, favorited, t, billing, w, connections] = await Promise.all([
     userId && process.env.ANS_APIC_BILLING_ENABLED !== "1" ? listCredentials(userId).catch(() => []) : Promise.resolve([]),
     userId ? isFavorited(userId, "WORKFLOW", workflow.id) : Promise.resolve(false),
-    getTranslations("product.workflowDetail"), getTranslations("learning"), getTranslations("marketWorkflow"),
+    getTranslations("product.workflowDetail"), getTranslations("learning"), getTranslations("marketWorkflow"), getWorkflowConnections(workflow),
   ]);
   const version = workflow.publishedVersion ?? 1;
   const cost = process.env.ANS_APIC_BILLING_ENABLED === "1" ? Math.max(0.25, (definition?.nodes.filter(node => node.type === "model").length ?? 1) * 0.25) : Math.max(1, workflow.estimatedCost);
@@ -84,6 +86,7 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
       </div>
     </header>
 
+    <ProductConnectionsSection connections={connections} />
     <nav className={styles.sectionNav} aria-label={t("sections")}>
       <Link href="#workflow-preparation">{t("preparationTitle")}</Link>
       {definition && <Link href="#workflow-process">{t("processTitle")}</Link>}

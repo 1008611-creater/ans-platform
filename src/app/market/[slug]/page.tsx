@@ -1,3 +1,5 @@
+import { ProductConnectionsSection } from "@/components/catalog/product-connections";
+import { getMarketConnections } from "@/server/catalog/connections";
 import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -55,7 +57,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
     getTranslations("marketWorkflow"), auth(),
   ]);
   const offer = await publishedListing(slug, session?.user?.id);
-  const runnable = await marketWorkflowDetails(offer);
+  const [runnable, connections] = await Promise.all([marketWorkflowDetails(offer), getMarketConnections(offer)]);
   const listing = offer.listing;
   const tiers = listing.pricingTiers ?? [];
   const minimum = tiers.length ? Math.min(...tiers.map(tier => tier.priceMinor)) : listing.priceMinor;
@@ -72,7 +74,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
   // This reviewed recipe retains its complete editor and existing account/run boundary.
   if (runnable?.available && runnable.recipe === "resume-website-v1") {
     const editor = <VisualWebsiteExperience publicationAvailable={publicationConfig().available} execution={{ listingId: offer.id, version: offer.version, details: runnable }} licenseTerms={listing.licenseTerms} />;
-    return session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>{editor}</MarketAccountBoundary> : editor;
+    return <><div className="ans-product-container"><ProductConnectionsSection connections={connections} /></div><div id="market-run" className="scroll-mt-24">{session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>{editor}</MarketAccountBoundary> : editor}</div></>;
   }
 
   return <div className="ans-product-shell"><div className="ans-product-container ans-page-content ans-market-page">
@@ -87,6 +89,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
       <ChevronRight aria-hidden="true" className="h-3 w-3" /><span>{p("categories." + listing.category)}</span>
       <ChevronRight aria-hidden="true" className="h-3 w-3" /><span>{p("children." + listing.subcategory)}</span>
     </nav>
+    <ProductConnectionsSection connections={connections} />
     <div className={styles.layout}>
       <div className={styles.content}>
         <MarketDetailPreview listing={listing} />
@@ -129,10 +132,10 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
           <h2>{purchaseHeading}</h2>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">{runnable ? td("runPreparation") : td("purchasePreparation")}</p>
           <div className={styles.checkout}>
-            {runnable ? runnable.available ? session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketWorkflowRun listingId={offer.id} version={offer.version} details={runnable} /></MarketAccountBoundary> : <Button asChild className="w-full"><Link href={loginHref}>{td("loginToPrepare")}</Link></Button> : <p className="text-sm leading-7 text-muted-foreground">{w("unavailable")}</p> : session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>
+            {runnable ? runnable.available ? session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketWorkflowRun listingId={offer.id} version={offer.version} details={runnable} /></MarketAccountBoundary> : <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}>{td("loginToPrepare")}</Link></Button> : <p className="text-sm leading-7 text-muted-foreground">{w("unavailable")}</p> : session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>
               <CreatePointsOrder key={`${offer.id}-${offer.version}`} listingId={offer.id} version={offer.version} available={availability.checkoutAvailable} tiers={tiers} priceMinor={listing.priceMinor} isOwner={isOwner} />
               {cashOffer && !isOwner && <CreateCashOrder listingId={offer.id} version={offer.version} offer={cashOffer} />}
-            </MarketAccountBoundary> : <Button asChild className="w-full"><Link href={loginHref}>{tp("loginToBuy")}</Link></Button>}
+            </MarketAccountBoundary> : <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}>{tp("loginToBuy")}</Link></Button>}
           </div>
         </section>}
       </div>
@@ -147,10 +150,10 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
           <div><dt>{td("licenseShortTitle")}</dt><dd><a href="#market-terms" className="underline underline-offset-4">{td("readTerms")}</a></dd></div>
         </dl>
         <div className="space-y-3">
-          {runnable ? runnable.available ? <Button asChild className="w-full"><a href={`#${purchaseAnchor}`}>{td("prepareRun")}<ChevronRight aria-hidden="true" /></a></Button> : <p className="text-sm leading-7 text-muted-foreground">{w("unavailable")}</p> : isFree && freeUrl ? <Button asChild className="w-full"><a href={freeUrl} target="_blank" rel="noopener noreferrer">{p("realProject.visitProduct")}<ArrowUpRight aria-hidden="true" /></a></Button> : <Button asChild className="w-full"><a href={`#${purchaseAnchor}`}>{isOwner ? tp("ownProject") : td(tiers.length ? "chooseAndBuy" : "viewAndBuy")}<ChevronRight aria-hidden="true" /></a></Button>}
-          {session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketStar listingId={offer.id} initialCount={offer.starCount ?? 0} initialStarred={offer.starred ?? false} /></MarketAccountBoundary> : <Button asChild variant="outline" className="w-full"><Link href={loginHref}><Star aria-hidden="true" />{tp("loginToStar", { count: offer.starCount ?? 0 })}</Link></Button>}
+          {runnable ? runnable.available ? <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><a href={`#${purchaseAnchor}`}>{td("prepareRun")}<ChevronRight aria-hidden="true" /></a></Button> : <p className="text-sm leading-7 text-muted-foreground">{w("unavailable")}</p> : isFree && freeUrl ? <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><a href={freeUrl} target="_blank" rel="noopener noreferrer">{p("realProject.visitProduct")}<ArrowUpRight aria-hidden="true" /></a></Button> : <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><a href={`#${purchaseAnchor}`}>{isOwner ? tp("ownProject") : td(tiers.length ? "chooseAndBuy" : "viewAndBuy")}<ChevronRight aria-hidden="true" /></a></Button>}
+          {session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketStar listingId={offer.id} initialCount={offer.starCount ?? 0} initialStarred={offer.starred ?? false} /></MarketAccountBoundary> : <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}><Star aria-hidden="true" />{tp("loginToStar", { count: offer.starCount ?? 0 })}</Link></Button>}
           {!runnable && !isFree && listing.usageUrl && <ProjectUsageEntry usageUrl={listing.usageUrl} />}
-          {!runnable && isOwner && <Button asChild variant="outline" className="w-full"><Link href={`/market/creator/${offer.id}/integration`}>{tp("integrationAction")}</Link></Button>}
+          {!runnable && isOwner && <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={`/market/creator/${offer.id}/integration`}>{tp("integrationAction")}</Link></Button>}
           <p className="text-xs leading-6 text-muted-foreground">{runnable ? td("runPriceNote") : isFree ? p("realProject.freeNote") : t("paymentNotice")}</p>
         </div>
         <Link href={"/@" + offer.seller.username} className={styles.seller}>

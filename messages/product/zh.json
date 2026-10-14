@@ -3336,5 +3336,40 @@
     "chooseAndBuy": "选档位，查看购买方式",
     "viewAndBuy": "查看购买方式",
     "sellerTitle": "发布者"
+  },
+  "connectionsAdmin": {
+    "title": "关联工作流与市场",
+    "body": "为项目关联已经发布的工作流、资源或服务。发布后会出现在项目详情，同时在对应工作流与商品中提供项目入口。",
+    "workflows": "可用工作流",
+    "offers": "市场资源与服务",
+    "placeholder": "选择已发布项，或填写准确的 slug",
+    "add": "添加",
+    "hint": "每类最多 8 项。列表未出现时可输入准确 slug；预览会检查当前发布状态，撤回、未审核或失效项不会展示。",
+    "invalid": "请填写 3–80 位小写字母、数字与连字符组成的 slug。",
+    "remove": "移除 {slug}",
+    "unavailable": "以下关联当前不可用，公开详情不会展示：{slugs}。请检查发布状态与版本绑定。"
+  },
+  "connections": {
+    "title": "从这里继续",
+    "navigationNote": "选择工作流自己完成，或查看市场上的资源与服务。",
+    "prepareNote": "用已发布的工作流完成自己的成果，或查看发布者的真实商品与交付范围。",
+    "startWithWorkflow": "在 ANS 做出自己的版本",
+    "startWithOffer": "查看实际交付与使用方式",
+    "groups": {
+      "projects": "关联项目",
+      "workflows": "可用工作流",
+      "offers": "已发布商品与服务"
+    },
+    "actions": {
+      "project": "返回项目介绍",
+      "workflow": "使用工作流",
+      "service": "购买定制服务",
+      "resource": "查看资源与获取方式",
+      "workflowOffer": "准备运行此工作流"
+    },
+    "version": "版本 {version}",
+    "confirmCompute": "运行前确认算力费用",
+    "free": "免费分享",
+    "price": "{points} 积分起"
   }
 }

@@ -1,0 +1,30 @@
+.section { margin-block: 2rem; padding-block: 1.75rem; border-block: 1px solid var(--border); min-width: 0; scroll-margin-top: 7rem; }
+.heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .75rem 2rem; margin-bottom: 1.4rem; }
+.heading h2 { font-size: 1.25rem; font-weight: 650; letter-spacing: -.025em; }
+.heading p { max-width: 60ch; font-size: .8rem; line-height: 1.75; color: var(--muted-foreground); }
+.groups { display: grid; gap: 1.5rem; }
+.group { min-width: 0; }
+.group h3 { font-size: .8rem; font-weight: 600; margin-bottom: .5rem; color: var(--muted-foreground); }
+.links { display: grid; }
+.link { display: flex; align-items: flex-start; gap: .85rem; min-width: 0; min-height: 44px; padding-block: 1rem; border-bottom: 1px solid var(--border); }
+.link:last-child { border-bottom: 0; }
+.icon { margin-top: .25rem; color: var(--primary); flex-shrink: 0; }
+.copy { display: grid; gap: .35rem; flex: 1; min-width: 0; }
+.linkHeading { display: flex; flex-wrap: wrap; gap: .4rem .75rem; align-items: baseline; }
+.linkHeading strong { font-size: .9rem; font-weight: 600; line-height: 1.6; overflow-wrap: anywhere; }
+.version { font-size: .7rem; color: var(--muted-foreground); }
+.summary { font-size: .8rem; color: var(--muted-foreground); line-height: 1.8; overflow-wrap: anywhere; max-width: 70ch; }
+.action { display: flex; flex-wrap: wrap; gap: .3rem .75rem; font-size: .8rem; color: var(--primary); line-height: 1.7; }
+.meta { font-size: .72rem; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.arrow { margin-top: .4rem; flex-shrink: 0; color: var(--muted-foreground); }
+.link:hover .linkHeading strong { color: var(--primary); }
+.link:hover .arrow { color: var(--primary); }
+.link:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; border-radius: .3rem; }
+.compact { width: 100%; min-width: 0; margin-top: .5rem; }
+.compact .groups { gap: 0; }
+.compact .link { gap: .65rem; padding-block: .8rem; }
+.compact .linkHeading strong { font-size: .82rem; }
+.compact .action { font-size: .75rem; }
+.compact .meta { font-size: .7rem; }
+.compact .version { display: none; }
+@media (max-width: 600px) { .section { margin-block: 1.5rem; padding-block: 1.4rem; } .heading { display: block; } .heading h2 { font-size: 1.15rem; } .heading p { margin-top: .65rem; } }

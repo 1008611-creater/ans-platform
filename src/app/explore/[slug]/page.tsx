@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { isFavorited } from "@/server/favorites/service";
 import { listPublishedCatalog } from "@/server/catalog/service";
+import { getProjectConnections } from "@/server/catalog/connections";
 import { catalogText } from "@/domain/catalog/content";
 import { getProjectGuide, relatedCatalogProjects } from "@/domain/catalog/project-detail";
 import { CatalogProjectDetail } from "@/components/catalog/project-detail";
@@ -24,6 +24,6 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
   const project = catalog.find(item => item.slug === slug);
   if (!project) notFound();
   const accountId = session?.user?.id ?? null;
-  const saved = accountId ? await isFavorited(accountId, "PROJECT", project.slug) : false;
-  return <CatalogProjectDetail project={project} guide={getProjectGuide(project)} related={relatedCatalogProjects(project, catalog)} accountId={accountId} favorited={saved} />;
+  const [saved, connections] = await Promise.all([accountId ? isFavorited(accountId, "PROJECT", project.slug) : Promise.resolve(false), getProjectConnections(project)]);
+  return <CatalogProjectDetail project={project} guide={getProjectGuide(project)} related={relatedCatalogProjects(project, catalog)} connections={connections} accountId={accountId} favorited={saved} />;
 }
