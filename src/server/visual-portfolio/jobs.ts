@@ -15,9 +15,13 @@ export function generationConfig() {
  const raw = process.env.ANS_TRIPO_PRICE_POINTS?.trim();
  const price = raw && /^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(raw) ? Number(raw) : null;
  const valid = price !== null && Number.isFinite(price) && price > 0 && price <= 10000;
+ const flatRaw=process.env.ANS_TRIPO_FLAT_PRICE_POINTS===undefined?"10":process.env.ANS_TRIPO_FLAT_PRICE_POINTS.trim();
+ const flatPrice=flatRaw&&/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(flatRaw)?Number(flatRaw):null;
+ const flatValid=flatPrice!==null&&Number.isFinite(flatPrice)&&flatPrice>0&&flatPrice<=10000;
+ const pricingValid=flatValid;
  const table = z.array(z.object({options:tripoOptionsSchema,costPoints:z.number().positive().max(10000).refine(value=>Number.isInteger(value*1_000_000))}).strict()).max(500).safeParse((()=>{try{return JSON.parse(process.env.ANS_TRIPO_PRICE_TABLE||"[]");}catch{return null;}})());
  const quotes=table.success?table.data:[];
- return { models:TRIPO_MODELS, quotes, available:table.success&&process.env.ANS_TRIPO_ACCEPTING_JOBS==="true"&&durableStorageReady()&&(process.env.ANS_VISUAL_WORKER_KEY?.length??0)>=32&&(process.env.ANS_VISUAL_SIGNING_SECRET?.length??0)>=32&&(valid||quotes.length>0), costPoints:valid?price:null, provider:"tripo3d.uk", limits:{imageBytes:20_000_000,modelBytes:30_000_000} };
+ return { models:TRIPO_MODELS, quotes, flatCostPoints:flatValid?flatPrice:null, available:pricingValid&&table.success&&process.env.ANS_TRIPO_ACCEPTING_JOBS==="true"&&durableStorageReady()&&(process.env.ANS_VISUAL_WORKER_KEY?.length??0)>=32&&(process.env.ANS_VISUAL_SIGNING_SECRET?.length??0)>=32&&(flatValid||valid||quotes.length>0), costPoints:valid?price:null, provider:"tripo3d.uk", limits:{imageBytes:20_000_000,modelBytes:30_000_000} };
 }
 export async function requireVisualOwner(tx:DbTransaction,ownerId:string,projectId?:string) { const user=await tx.user.findFirst({where:{id:ownerId,deletedAt:null,flagged:false},select:{id:true}});if(!user)throw new VisualPortfolioError("FORBIDDEN",403);if(projectId&&!await tx.project.findFirst({where:{id:projectId,ownerId,status:"ACTIVE"},select:{id:true}}))throw new VisualPortfolioError("NOT_FOUND",404); }
 async function record(tx:DbTransaction,id:string,ownerId?:string,lock=false) { const rows=ownerId?await tx.$queryRaw<ModelJobRecord[]>`SELECT * FROM visual_model_jobs WHERE id=${id}::uuid AND "ownerId"=${ownerId}`:await tx.$queryRaw<ModelJobRecord[]>`SELECT * FROM visual_model_jobs WHERE id=${id}::uuid FOR UPDATE`;const found=rows[0];if(!found)throw new VisualPortfolioError("NOT_FOUND",404);if(lock&&ownerId)await tx.$queryRaw`SELECT id FROM visual_model_jobs WHERE id=${id}::uuid FOR UPDATE`;return found; }

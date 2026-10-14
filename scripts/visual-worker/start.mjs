@@ -3,17 +3,19 @@ import { resolve, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { TripoAdapter, uploadGenerationInput } from "./tripo-adapter.mjs";
+import { processFourViewJob, FourViewJournal } from "./four-view-adapter.mjs";
 const server=new URL(process.env.ANS_WORKER_SERVER||"http://localhost:3096");
 if(server.username||server.password||server.search||server.hash||server.pathname!=="/"||!(server.protocol==="https:"||(server.protocol==="http:"&&["localhost","127.0.0.1"].includes(server.hostname))))throw new Error("INVALID_SERVER");
 const key=process.env.ANS_VISUAL_WORKER_KEY;
 const mode=process.argv[2]||"preflight";
 const adapter=new TripoAdapter({allowedHosts:(process.env.ANS_TRIPO_DOWNLOAD_HOSTS||"").split(",").map(x=>x.trim()).filter(Boolean)});
 const journal=resolve(process.env.ANS_WORKER_JOURNAL||join(process.env.LOCALAPPDATA||".workbuddy","ANS","tripo-journal"));
+const fourViewJournal=new FourViewJournal();
 const workerId=process.env.ANS_WORKER_ID||"tripo-local-worker";
 async function checkpoint(id,value){await mkdir(journal,{recursive:true});const target=join(journal,id+".json"),temp=target+"."+randomUUID()+".tmp";await writeFile(temp,JSON.stringify(value),{flag:"wx"});await rename(temp,target);}
 async function api(path,{method="POST",body,lease,binary=false}={}){
  const response=await fetch(new URL(`/api/visual-worker${path}`,server),{method,headers:{authorization:`Bearer ${key}`,...(lease?{"x-ans-lease":lease}:{}),...(body&&!binary?{"content-type":"application/json"}:{})},body:binary?body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(60000)});
- if(!response.ok){let envelope;try{envelope=await response.json();}catch{}const code=envelope?.error?.code;throw new Error(["MODEL_UNSUPPORTED","INVALID_MODEL","LEASE_LOST"].includes(code)?code:"ANS_REQUEST_FAILED");}
+ if(!response.ok){let envelope;try{envelope=await response.json();}catch{}const code=envelope?.error?.code;throw new Error(["MODEL_UNSUPPORTED","INVALID_MODEL","LEASE_LOST","GRID_DIMENSIONS_INVALID","INVALID_IMAGE","GRID_TOO_LARGE"].includes(code)?code:"ANS_REQUEST_FAILED");}
  if(binary&&method==="GET")return Buffer.from(await response.arrayBuffer());
  const envelope=await response.json();if(envelope.ok!==true)throw new Error("ANS_REQUEST_FAILED");return envelope.data;
 }
@@ -70,7 +72,7 @@ try{
    process.exitCode=completed?0:1;
   }else{
   console.log("Local task service ready.");
-  for(;;){await recover();const job=await api("/claim",{body:{workerId}});if(job)await work(job);else await delay(5000);}
+  for(;;){await recover();if(process.env.ANS_FOUR_VIEW_ENABLED==="true")await fourViewJournal.recover(api);const job=await api("/claim",{body:{workerId}});if(job)await work(job);else if(process.env.ANS_FOUR_VIEW_ENABLED==="true"&&process.env.ANS_FOUR_VIEW_API_CONFIRMED==="true"){const preparation=await api("/four-views/claim",{body:{workerId}});if(preparation)await processFourViewJob(preparation,{api,journal:fourViewJournal});else await delay(5000);}else await delay(5000);}
   }
  }else if(mode!=="preflight")throw new Error("INVALID_MODE");
 }catch{console.error("Service could not start or lost its connection. Check local credentials and service configuration.");process.exitCode=1;}

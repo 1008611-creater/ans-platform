@@ -28,20 +28,21 @@ import { CATALOG_PAGE_SIZE } from "@/domain/catalog/browse";
 describe("product discovery entry points", () => {
   beforeEach(() => { state.pathname = "/"; state.user = null; });
 
-  it("uses the same six primary destinations on mobile", () => {
+  it("uses the two public primary destinations on mobile", () => {
     render(<MobileTabBar />);
     expect(screen.getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual([
-      "/explore", "/hubs", "/community", "/competitions", "/market", "/workspace",
+      "/explore", "/market",
     ]);
     expect(screen.getByRole("link", { name: "nav.explore" })).toHaveAttribute("aria-current", "page");
   });
 
-  it("marks project results under workspace without adding a seventh account destination", () => {
+  it("keeps private project results out of public discovery navigation", () => {
     state.pathname = "/projects/project-1";
     state.user = { username: "learner" };
     render(<MobileTabBar />);
-    expect(screen.getByRole("link", { name: "nav.workspace" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getAllByRole("link")).toHaveLength(6);
+    expect(screen.queryByRole("link", { name: "nav.workspace" })).toBeNull();
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+    expect(document.querySelector("[aria-current=page]")).toBeNull();
   });
 
   it("offers a complete paged project directory without workflow or promotional sections", async () => {

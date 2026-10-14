@@ -1,4 +1,6 @@
 import { assertMarketWorkflowBinding } from "./workflow-binding";
+import { findPublishedPlatformRecipe } from "@/server/workflows/platform-recipes";
+import { marketHash } from "./shared";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -157,24 +159,23 @@ export async function listPublishedMarketListingsBySeller(sellerId: string, view
 }
 
 export async function getMarketListing(slug: string, viewerId?: string) {
-  let listing = await db.marketListing.findFirst({
-    where: { slug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false } },
+  // The product alias resolves only the attested official recipe and its exact immutable listing.
+  // Neither a historical payload nor an arbitrary newer listing can take over this URL.
+  const recipe = slug === "resume-website" ? await findPublishedPlatformRecipe() : null;
+  if (slug === "resume-website" && !recipe) throw new MarketRuleError("NOT_FOUND", 404);
+  const actualSlug = recipe ? `workflow-${marketHash(recipe.workflow.id).slice(0, 24)}-v${recipe.version.version}` : slug;
+  const listing = await db.marketListing.findFirst({
+    where: { slug: actualSlug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false }, ...(recipe ? { sellerId: recipe.workflow.authorId, official: true } : {}) },
     include: listingReadInclude(viewerId),
   });
-  // Keep the canonical product route stable while the immutable platform listing retains its generated slug.
-  if (!listing && slug === "resume-website") {
-    const source = await db.workflow.findFirst({ where: { slug: "ans-portfolio-website", status: "PUBLISHED", isOfficial: true }, select: { id: true } });
-    if (source) {
-      listing = await db.marketListing.findFirst({
-        where: { status: "PUBLISHED", seller: { deletedAt: null, flagged: false }, versions: { some: { payload: { path: ["execution", "workflowId"], equals: source.id } } } },
-        include: listingReadInclude(viewerId),
-        orderBy: { updatedAt: "desc" },
-      });
-    }
-  }
   const version = listing?.versions.find((item) => item.version === listing.publishedVersion);
   if (!listing || !version) throw new MarketRuleError("NOT_FOUND", 404);
-  return { id: listing.id, slug: slug === "resume-website" ? slug : listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null };
+  const payload = marketListingInputSchema.parse(version.payload);
+  if (recipe) {
+    const binding = payload.execution;
+    if (!version.reviewedAt || !binding || binding.workflowId !== recipe.workflow.id || binding.versionId !== recipe.version.id || binding.version !== recipe.version.version || binding.definitionHash !== recipe.recipe.definitionHash) throw new MarketRuleError("NOT_FOUND", 404);
+  }
+  return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: payload, submittedAt: null, reviewedAt: null, reviewNote: null };
 }
 
 export async function getOwnedMarketListing(id: string, sellerId: string) {

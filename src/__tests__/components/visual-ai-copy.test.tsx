@@ -1,3 +1,5 @@
+import { createHash, webcrypto } from "node:crypto";
+import { stableWorkflowInput } from "@/domain/workflows/recipes";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
@@ -8,7 +10,7 @@ vi.mock("@/components/marketplace/account-boundary",()=>({useMarketActorId:()=>"
 const details={recipe:"resume-website-v1" as const,variables:[],estimatedCost:2,version:1};
 const copy={summary:"Reviewed introduction",projects:RESUME_WEBSITE_EXAMPLE.projects.map(()=>({description:"Reviewed project"}))};
 const artifact=(name=RESUME_WEBSITE_EXAMPLE.fullName)=>({kind:"resume-website",mediaType:"text/html",content:renderResumeWebsite({...RESUME_WEBSITE_EXAMPLE,fullName:name},copy)});
-beforeEach(()=>{vi.clearAllMocks();sessionStorage.clear();m.request.mockResolvedValue({runs:[]});});afterEach(cleanup);
+beforeEach(()=>{vi.clearAllMocks();sessionStorage.clear();vi.stubGlobal("crypto",webcrypto);m.request.mockResolvedValue({runs:[]});});afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 it("invalidates cost acknowledgement when the parent editor changes its personal facts",async()=>{
  const view=render(<MarketWorkflowRun listingId="resume" version={1} details={details} profileInput={RESUME_WEBSITE_EXAMPLE}/>);
  await screen.findByText("noRuns");fireEvent.click(screen.getByRole("checkbox"));expect(screen.getByRole("button",{name:"confirmRun"})).toBeEnabled();
@@ -17,9 +19,16 @@ it("invalidates cost acknowledgement when the parent editor changes its personal
  fireEvent.submit(screen.getByRole("checkbox").closest("form")!);expect(m.request.mock.calls.filter(x=>x[1]==="POST")).toHaveLength(0);
 });
 it.each([true,false])("only adopts explicitly selected copy for a matching personal profile (%s)",async matching=>{
- const apply=vi.fn();m.request.mockResolvedValue({runs:[{id:"run",status:"SUCCEEDED",costPoints:2,output:artifact(matching?undefined:"Different creator"),error:null,createdAt:"2026-10-13T00:00:00Z"}]});
+ const apply=vi.fn();m.request.mockResolvedValue({runs:[{id:"run",status:"SUCCEEDED",inputFingerprint:createHash("sha256").update(stableWorkflowInput({profile:RESUME_WEBSITE_EXAMPLE})).digest("hex"),costPoints:2,output:artifact(matching?undefined:"Different creator"),error:null,createdAt:"2026-10-13T00:00:00Z"}]});
  render(<MarketWorkflowRun listingId="resume" version={1} details={details} profileInput={RESUME_WEBSITE_EXAMPLE} onUseCopy={apply}/>);
  const button=await screen.findByRole("button",{name:"applyCopy"});expect(apply).not.toHaveBeenCalled();fireEvent.click(button);
  if(matching)await waitFor(()=>expect(apply).toHaveBeenCalledWith(copy));else{expect(await screen.findByRole("alert")).toHaveTextContent("copyMismatch");expect(apply).not.toHaveBeenCalled();}
  expect(m.request.mock.calls.filter(x=>x[1]==="POST")).toHaveLength(0);
+});
+
+it("rejects copy generated for older facts even when the name and project titles match",async()=>{
+ const apply=vi.fn();m.request.mockResolvedValue({runs:[{id:"old",status:"SUCCEEDED",inputFingerprint:createHash("sha256").update(stableWorkflowInput({profile:RESUME_WEBSITE_EXAMPLE})).digest("hex"),costPoints:2,output:artifact(),error:null,createdAt:"2026-10-13T00:00:00Z"}]});
+ render(<MarketWorkflowRun listingId="resume" version={1} details={details} profileInput={{...RESUME_WEBSITE_EXAMPLE,about:"Updated experience"}} onUseCopy={apply}/>);
+ fireEvent.click(await screen.findByRole("button",{name:"applyCopy"}));
+ expect(await screen.findByRole("alert")).toHaveTextContent("copyMismatch");expect(apply).not.toHaveBeenCalled();
 });

@@ -15,6 +15,8 @@ import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/compon
 import { openSiteSettings, updateSitePreferences, useSitePreferences } from "@/lib/site-preferences";
 import { useCompanionAgent, type CompanionMessage } from "./use-companion-agent";
 import { AgentTurnStatus } from "./agent-turn-status";
+import { activateCompanionActor, readCompanionConversation, saveCompanionConversation } from "./companion-session";
+import { AgentRecoveryStatus } from "./agent-recovery-status";
 import { CompanionModelSelect } from "./companion-model-select";
 import { DEFAULT_RUN_MODEL, getRunModel, type RunModelKey } from "@/lib/run-models";
 import { useCompanionSize } from "./use-companion-size";
@@ -27,14 +29,16 @@ type Thread = { draft: string; messages: CompanionMessage[]; recommendations: Gu
 const freshThread = (): Thread => ({ draft: "", messages: [], recommendations: null });
 export function DinoGuide() {
   const { data, status } = useSession();
-  return <Companion key={status === "authenticated" ? data?.user?.id : status} actor={status === "authenticated" ? data?.user?.id ?? null : null} />;
+  useEffect(() => { if (status !== "loading") activateCompanionActor(status === "authenticated" ? data?.user?.id ?? null : null); }, [status, data?.user?.id]);
+  return <Companion storageReady={status !== "loading"} key={status === "authenticated" ? data?.user?.id : status} actor={status === "authenticated" ? data?.user?.id ?? null : null} />;
 }
-function Companion({ actor }: { actor: string | null }) {
+function Companion({ actor, storageReady }: { actor: string | null; storageReady: boolean }) {
   const t = useTranslations("product.mascot"), ui = useTranslations("companion");
   const pathname = usePathname(), locale = useLocale() === "zh" ? "zh" : "en";
   const [model, setModel] = useState<RunModelKey>(DEFAULT_RUN_MODEL);
   const [mode, setMode] = useState<Mode>(actor ? "agent" : "guide");
   const [threads, setThreads] = useState<Record<Mode, Thread>>(() => ({ agent: freshThread(), guide: freshThread() }));
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   const { draft, messages, recommendations } = threads[mode];
   function updateThread(which: Mode, update: (thread: Thread) => Thread) {
     setThreads(current => ({ ...current, [which]: update(current[which]) }));
@@ -55,7 +59,18 @@ function Companion({ actor }: { actor: string | null }) {
     scrollState.current.agent.follow = true;
     updateThread("agent", current => ({ ...current, draft: current.draft.trim() === text ? "" : current.draft, messages: [...current.messages, { id: ++sequence.current, role: "user" as const, text }].slice(-40) }));
     setUndo(null);
-  }, model);
+  }, model, storageReady);
+  useEffect(() => {
+    if (!storageReady) return;
+    const saved = readCompanionConversation(actor);
+    if (saved) {
+      setThreads({ agent: { ...saved.threads.agent, recommendations: null }, guide: { ...saved.threads.guide, recommendations: null } });
+      setMode(saved.mode === "agent" && !actor ? "guide" : saved.mode);
+      sequence.current = Math.max(0, ...Object.values(saved.threads).flatMap(thread => thread.messages.map(item => item.id)));
+    }
+    setSessionLoaded(true);
+  }, [actor, storageReady]);
+  useEffect(() => { if (sessionLoaded && storageReady) saveCompanionConversation(actor, mode, threads); }, [actor, sessionLoaded, storageReady, mode, threads]);
   const greeting = ui(mode === "agent" ? "agentGreeting" : "whatWouldYouLikeToMakeTell");
   const nextActions = recommendations ?? pageActions(pathname, ui);
   const blocked = mode === "agent" && (agent.busy || agent.phase === "confirm" || agent.checkingReceipts);
@@ -198,7 +213,7 @@ function Companion({ actor }: { actor: string | null }) {
               {!messages.length && !agent.quote && <div className="ans-companion-welcome"><Sparkles aria-hidden="true" /><div><small>{ui("currentPage", { page: ui(pageContextKey(pathname)) })}</small><p>{greeting}</p></div></div>}
               {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} /></Suspense>}</div>)}
               {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
-              {mode === "agent" && <AgentTurnStatus agent={agent} />}
+              {mode === "agent" && <><AgentRecoveryStatus turns={agent.recovery.turns.filter(turn => turn.ticket !== agent.currentTicket)} onCheck={agent.recovery.check} /><AgentTurnStatus agent={agent} /></>}
             </div>
             {prefs.suggestions && !blocked && nextActions.length > 0 && <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}><h3>{ui("suggestedNextSteps")}</h3>{nextActions.map(action => { const Icon = icons[action.icon]; return <Link href={action.href} key={action.href} onClick={() => changeOpen(false)}><span className="ans-companion-action-icon"><Icon aria-hidden="true" /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight className="ans-companion-action-arrow" aria-hidden="true" /></Link>; })}</nav>}
           </div>

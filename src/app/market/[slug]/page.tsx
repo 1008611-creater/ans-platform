@@ -1,11 +1,12 @@
-﻿import { ProductConnectionsSection } from "@/components/catalog/product-connections";
+import { marketProductPath } from "@/domain/marketplace/product-route";
+import { ProductConnectionsSection } from "@/components/catalog/product-connections";
 import { getMarketConnections } from "@/server/catalog/connections";
 import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Star } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
@@ -56,6 +57,8 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
     getTranslations("marketWorkflow"), auth(),
   ]);
   const offer = await publishedListing(slug, session?.user?.id);
+  const productPath = marketProductPath(offer);
+  if (productPath !== `/market/${slug}`) redirect(productPath);
   const [runnable, connections] = await Promise.all([marketWorkflowDetails(offer), getMarketConnections(offer)]);
   const listing = offer.listing;
   const tiers = listing.pricingTiers ?? [];

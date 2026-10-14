@@ -1,12 +1,12 @@
 # AGENTS.md
 
-> Product authority: read docs/ANS权威产品与架构总纲.md first. The current 2026-10-12 Hub and workflow revision supersedes the historical prompt-platform and learning-only scopes. Implement only authorized product changes; preserve authentication, accounting, private data, runtime APIs and applicable source notices.
+> Product authority: docs/ANS权威产品与架构总纲.md, current 2026-10-15 revision. Load the relevant sections for the task. Public discovery is project square + market; workflows are an internal execution layer. Implement only authorized product changes; preserve authentication, accounting, private data, runtime APIs and applicable source notices.
 
 > Guidelines for AI coding agents working on this project.
 
 ## Project Overview
 
-**ANS** is a project discovery, Hub, workflow, community, event and marketplace platform built with Next.js. Six primary destinations are /explore, /hubs, /community, /competitions, /market and /workspace. Favorites and compute center belong to the account menu. Hubs organize explicitly related contents; immutable workflows execute personal inputs; reviewed marketplace listings bind the exact runnable version. Keep historical data and shared backend interfaces when retiring old prompt UI. Retained upstream code remains governed by its source licenses.
+**ANS** is a project discovery, Hub, workflow, community, event and marketplace platform built with Next.js. Two primary destinations are /explore and /market. Supporting account, workspace, history, community and event routes remain available; public /workflows directory/details redirect to market. Favorites and compute center belong to the account menu. Hubs organize explicitly related contents; immutable workflows execute personal inputs; reviewed marketplace listings bind the exact runnable version. Keep historical data and shared backend interfaces when retiring old prompt UI. Retained upstream code remains governed by its source licenses.
 
 ### Tech Stack
 
@@ -276,7 +276,7 @@ See [`docs/adr/0003-agent-operating-model-gpt6.md`](docs/adr/0003-agent-operatin
 - Definition of Done includes the requested behavior, risk-appropriate verification, fixed or recorded failures, clear unverified areas, and a known rollback entry. Continue authorized local work to that point without repeated approval requests.
 - Choose lint, type checks, affected tests, builds, browser checks, or smoke checks from risk and impact. Do not repeat the full suite by default; repair failures caused by the current change and rerun affected checks.
 - Keep project, workflow, and marketplace details and state separate. Workflows use immutable versions, reviewed publication, run snapshots, and real results; marketplace entries bind an explicit runnable version and service or purchase conditions.
-- Use a shared result landing page, staged studio, and real result preview as the workflow shell. Specialized capabilities enter through adapters. Every stage maps to real nodes and persisted state.
+- Market products show real outcomes, input requirements, delivery, price boundaries and exact reviewed versions around a specialized editor. /market/resume-website is the first canonical product. Shared internal execution owns confirmation, accounting, status, history and recovery; specialized editors own real artifacts. A staged form alone does not meet the market publication standard.
 - Project-to-workflow conversion creates a private draft from public project material. It never executes external code or README instructions. Public projections contain bounded presentation only; prompts, private configuration, review drafts, and user input stay private.
 - Show outcomes and next actions before steps and advanced settings. Mobile behavior, keyboard access, reduced motion, unsaved-exit protection, and error recovery are delivery requirements.
 

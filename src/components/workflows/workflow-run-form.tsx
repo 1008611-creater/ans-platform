@@ -80,12 +80,11 @@ export function WorkflowRunForm({
   const alive = useRef(true), submitting = useRef(false);
   const activeRun = useRef<{ id: string | null; terminal: boolean }>({ id: null, terminal: false });
   const intent = useRef<{ fingerprint: string; key: string } | null>(null);
-  const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const runRecoverySlot = actorId ? `ans:workflow-run-id:${encodeURIComponent(actorId)}:${encodeURIComponent(slug)}` : null;
   const portalRoot = useRef<HTMLDivElement>(null);
-  const cancelWait = useRef<(() => void) | null>(null);
   useEffect(() => {
     alive.current = true;
-    return () => { alive.current = false; if (pollTimer.current) clearTimeout(pollTimer.current); cancelWait.current?.(); };
+    return () => { alive.current = false; };
   }, []);
   const billing = useTranslations("learning");
   const workflowBilling = useTranslations("marketWorkflow");
@@ -96,18 +95,40 @@ export function WorkflowRunForm({
   const [modelKey, setModelKey] = useState(defaultModelKey);
   const [credentialId, setCredentialId] = useState("platform");
   const [reasoningEffort, setReasoningEffort] = useState<RunReasoningEffort>("none");
-  const [busy, setBusy] = useState(false);
+  const [recovery] = useState(() => {
+    try {
+      const raw = runRecoverySlot ? sessionStorage.getItem(runRecoverySlot) : null;
+      if (!raw) return null;
+      const stored = raw.startsWith("{") ? JSON.parse(raw) : { id: raw };
+      return typeof stored.id === "string" && /^[a-zA-Z0-9_-]{1,100}$/.test(stored.id)
+        ? { id: stored.id as string, intentSlot: typeof stored.intentSlot === "string" && stored.intentSlot.startsWith(`ans:workflow-run:${encodeURIComponent(actorId!)}:${encodeURIComponent(slug)}:`) ? stored.intentSlot as string : null }
+        : null;
+    } catch { return null; }
+  });
+  const pendingIntentSlot = useRef<string | null>(recovery?.intentSlot ?? null);
+  const [busy, setBusy] = useState(Boolean(recovery));
   const [error, setError] = useState("");
   const [output, setOutput] = useState<string | null>(null);
   const [nodeRuns, setNodeRuns] = useState<NodeRunSummary[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
-  const [status, setStatus] = useState("IDLE");
+  const [status, setStatus] = useState(recovery ? "PREPARING" : "IDLE");
   useEffect(() => {
     onStateChange?.({ busy, status, error, output, nodeRuns, runId });
   }, [busy, status, error, output, nodeRuns, runId, onStateChange]);
   const readStatus = useEffectEvent(async (id: string) => request<{ run: PersistedRunSummary }>(`/api/workflows/runs/${id}`, "GET", undefined));
+  const recoveryFailed = useEffectEvent(() => studio("failed"));
+  function clearRecovery() {
+    try {
+      if (runRecoverySlot) sessionStorage.removeItem(runRecoverySlot);
+      if (pendingIntentSlot.current) sessionStorage.removeItem(pendingIntentSlot.current);
+    } catch { /* Optional recovery storage. */ }
+    pendingIntentSlot.current = null;
+    intent.current = null;
+  }
+  const completeRecovery = useEffectEvent(clearRecovery);
   useEffect(() => {
-    if (!busy || !runId || !["PENDING", "QUEUED", "RUNNING", "UNKNOWN"].includes(status)) return;
+    // A single status loop follows live, restored, and disconnected runs.
+    if (!runId || !["PENDING", "QUEUED", "RUNNING", "UNKNOWN"].includes(status)) return;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     async function poll() {
@@ -116,17 +137,38 @@ export function WorkflowRunForm({
         if (stopped || !alive.current || activeRun.current.id !== runId || activeRun.current.terminal) return;
         if (["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.run.status)) {
           activeRun.current.terminal = true;
-          if (detail.run.status === "SUCCEEDED") setOutput(outputText(detail.run.output));
-          else setError(detail.run.error ?? studio("failed"));
+          if (detail.run.status === "SUCCEEDED") { setOutput(outputText(detail.run.output)); setError(""); }
+          else setError(detail.run.error ?? recoveryFailed());
+          setBusy(false);
+          completeRecovery();
         }
-        setNodeRuns(detail.run.nodeRuns ?? []);
+        if (detail.run.nodeRuns) setNodeRuns(detail.run.nodeRuns);
         setStatus(detail.run.status);
       } catch { /* Execution response remains authoritative if status reads fail. */ }
       if (!stopped) timer = setTimeout(() => void poll(), 1500);
     }
     timer = setTimeout(() => void poll(), 400);
     return () => { stopped = true; if (timer) clearTimeout(timer); };
-  }, [busy, runId, status, studio]);
+  }, [runId, status]);
+  useEffect(() => {
+    if (!recovery) return;
+    let cancelled = false;
+    void readStatus(recovery.id).then((detail) => {
+      if (cancelled || !alive.current) return;
+      const terminal = ["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.run.status);
+      activeRun.current = { id: recovery.id, terminal };
+      setRunId(recovery.id);
+      setStatus(detail.run.status);
+      setBusy(false);
+      if (detail.run.status === "SUCCEEDED") { setOutput(outputText(detail.run.output)); setError(""); }
+      else if (terminal) setError(detail.run.error ?? recoveryFailed());
+      if (detail.run.nodeRuns) setNodeRuns(detail.run.nodeRuns);
+      if (terminal) completeRecovery();
+    }).catch(() => {
+      if (!cancelled && alive.current) { activeRun.current = { id: recovery.id, terminal: false }; setRunId(recovery.id); setStatus("UNKNOWN"); setBusy(false); }
+    });
+    return () => { cancelled = true; };
+  }, [recovery]);
   useEffect(() => {
     if (!busy) return;
     const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -142,21 +184,8 @@ export function WorkflowRunForm({
     const detail = await request<{ run: PersistedRunSummary }>(`/api/workflows/runs/${id}`, "GET", undefined);
     return detail.run;
   }
-  async function waitForRunCompletion(id: string, maxPolls = 150): Promise<PersistedRunSummary | null> {
-    for (let attempt = 0; alive.current && attempt < maxPolls; attempt += 1) {
-      const detail = await fetchRunDetail(id).catch(() => null);
-      if (!alive.current) return null;
-      if (detail && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.status)) return detail;
-      await new Promise<void>((resolve) => {
-        cancelWait.current = resolve;
-        pollTimer.current = setTimeout(() => { pollTimer.current = null; cancelWait.current = null; resolve(); }, 1000);
-      });
-    }
-    return null;
-  }
-
   async function run() {
-    if (submitting.current || !alive.current || missing.length) return;
+    if (submitting.current || busy || ["UNKNOWN", "PENDING", "QUEUED", "RUNNING"].includes(status) || !alive.current || missing.length) return;
     submitting.current = true;
     // Capture both inputs and execution choices before any asynchronous work.
     const input = { ...values };
@@ -194,6 +223,8 @@ export function WorkflowRunForm({
       createdRunId = id;
       activeRun.current = { id, terminal: false };
       setRunId(id);
+      pendingIntentSlot.current = recoverySlot;
+      try { if (runRecoverySlot) sessionStorage.setItem(runRecoverySlot, JSON.stringify({ id, intentSlot: recoverySlot })); } catch { /* Optional recovery storage. */ }
       setStatus("PENDING");
       // 模型与额度来源随执行请求提交；服务端再次校验凭证归属。
       const executed = await request<{ result: { status: string; output?: unknown; error?: string } }>(`/api/workflows/runs/${id}/execute`, "POST", options);
@@ -204,24 +235,30 @@ export function WorkflowRunForm({
       else { setStatus("SUCCEEDED"); setOutput(outputText(executed.result.output)); }
       const detail = await fetchRunDetail(id).catch(() => null);
       if (!alive.current) return;
-      setNodeRuns(detail?.nodeRuns ?? []);
+      if (detail?.nodeRuns) setNodeRuns(detail.nodeRuns);
       if (detail && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.status)) setStatus(detail.status);
+      try { if (runRecoverySlot) sessionStorage.removeItem(runRecoverySlot); } catch { /* Optional recovery storage. */ }
       finishIntent();
       router.refresh();
     } catch (cause) {
       if (!alive.current) return;
-      // Recover acknowledgements with read-only polling; never retry a charge automatically.
-      const completed = createdRunId ? await waitForRunCompletion(createdRunId) : null;
+      if (activeRun.current.terminal) return;
+      // Pause live polling while reconciling the lost execution acknowledgement.
+      if (createdRunId) setStatus("PREPARING");
+      // Recover with reads only; never retry a charge automatically.
+      const completed = createdRunId ? await fetchRunDetail(createdRunId).catch(() => null) : null;
       if (!alive.current) return;
-      if (completed) {
+      if (completed && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(completed.status)) {
         activeRun.current.terminal = true;
-        setNodeRuns(completed.nodeRuns ?? []);
+        if (completed.nodeRuns) setNodeRuns(completed.nodeRuns);
         setStatus(completed.status);
         if (completed.status === "SUCCEEDED") { setError(""); setOutput(outputText(completed.output)); }
         else { setOutput(null); setError(completed.error ?? "工作流执行未完成，请查看运行记录与额度流水。"); }
         finishIntent();
+        try { if (runRecoverySlot) sessionStorage.removeItem(runRecoverySlot); } catch { /* Optional recovery storage. */ }
         router.refresh();
       } else {
+        if (completed?.nodeRuns) setNodeRuns(completed.nodeRuns);
         setStatus(createdRunId ? "UNKNOWN" : "FAILED");
         setError(cause instanceof Error ? cause.message : studio("failed"));
       }
@@ -334,7 +371,7 @@ export function WorkflowRunForm({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button className={embedded ? "w-full" : undefined} disabled={busy || missing.length > 0} onClick={run}>
+          <Button className={embedded ? "w-full" : undefined} disabled={busy || ["UNKNOWN", "PENDING", "QUEUED", "RUNNING"].includes(status) || missing.length > 0} onClick={run}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             {busy ? "运行中…" : estimatedCost === null ? workflowBilling("confirmRun") : billing("billingRun", { points: estimatedCost })}
           </Button>

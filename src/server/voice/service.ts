@@ -11,7 +11,8 @@ const hash = (value: string | Uint8Array) => createHash("sha256").update(value).
 const requestSelect = { id: true, state: true, settledPoints: true, policyVersion: true, modelId: true, maxUnits: true, createdAt: true, finishedAt: true } as const;
 
 export async function readVoiceOffer(userId: string) {
-  await db.$transaction(tx => assertAccountCanSpend(tx, userId, 0));
+  // One account SELECT needs no interactive transaction or held connection.
+  await assertAccountCanSpend(db, userId, 0);
   return voiceOffer();
 }
 
@@ -122,14 +123,33 @@ export async function readVoiceRequest(userId: string, key: string, withAudio = 
   }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
 }
 
+type VoiceSweepResult = { expiredAudio: number; interrupted: number; pending: number };
+const globalVoiceSweep = globalThis as typeof globalThis & {
+  ansVoiceSweepInFlight?: Promise<VoiceSweepResult>;
+};
+
 /** Maintenance only: retain uncertainty, never infer supplier rejection from elapsed time. */
-export async function sweepVoiceUsage() {
-  return db.$transaction(async tx => {
-    const expired = await tx.voiceResult.deleteMany({ where: { expiresAt: { lte: new Date() } } });
-    const interrupted = await tx.apiComputeRequest.updateMany({ where: { provider: VOICE_PROVIDER, state: "RUNNING", startedAt: { lt: new Date(Date.now() - 2 * VOICE_TIMEOUT_MS) } }, data: { state: "UNCERTAIN", outcome: "VOICE_INTERRUPTED_UNKNOWN" } });
-    const pending = await tx.apiComputeRequest.count({ where: { provider: VOICE_PROVIDER, state: "UNCERTAIN" } });
-    return { expiredAudio: expired.count, interrupted: interrupted.count, pending };
+export function sweepVoiceUsage(): Promise<VoiceSweepResult> {
+  // Route bundles share the same process and pool. Coalesce overlapping sweeps
+  // even when Next loads this module more than once; never cache a failed result.
+  if (globalVoiceSweep.ansVoiceSweepInFlight) return globalVoiceSweep.ansVoiceSweepInFlight;
+  const current = sweepVoiceBatch().finally(() => {
+    if (globalVoiceSweep.ansVoiceSweepInFlight === current) delete globalVoiceSweep.ansVoiceSweepInFlight;
   });
+  globalVoiceSweep.ansVoiceSweepInFlight = current;
+  return current;
+}
+
+async function sweepVoiceBatch(): Promise<VoiceSweepResult> {
+  // These independent, retry-safe maintenance statements move no balance and
+  // need no shared snapshot. Autocommit releases the connection between them,
+  // instead of keeping an interactive transaction open through all round trips.
+  // Errors propagate; a partial sweep can safely be retried by maintenance.
+  const now = new Date();
+  const expired = await db.voiceResult.deleteMany({ where: { expiresAt: { lte: now } } });
+  const interrupted = await db.apiComputeRequest.updateMany({ where: { provider: VOICE_PROVIDER, state: "RUNNING", startedAt: { lt: new Date(now.getTime() - 2 * VOICE_TIMEOUT_MS) } }, data: { state: "UNCERTAIN", outcome: "VOICE_INTERRUPTED_UNKNOWN" } });
+  const pending = await db.apiComputeRequest.count({ where: { provider: VOICE_PROVIDER, state: "UNCERTAIN" } });
+  return { expiredAudio: expired.count, interrupted: interrupted.count, pending };
 }
 
 async function boundedBody(response: Response, limit: number) {

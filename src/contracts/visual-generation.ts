@@ -42,11 +42,15 @@ export const createModelJobSchema = z.object({
 });
 export interface GenerationQuote { options:TripoOptions; costPoints:number; }
 export interface GenerationConfig {
- available:boolean; costPoints:number|null; quotes?:GenerationQuote[];
+ available:boolean; costPoints:number|null; flatCostPoints?:number|null; quotes?:GenerationQuote[];
  models?:typeof TRIPO_MODELS;
 }
-/** Legacy price applies only to ordinary 2K single-image P2 jobs. Other combinations need an exact quote. */
+/** A configured flat price covers the validated 3D modeling path; exact quotes remain supported. */
 export function generationPrice(config:GenerationConfig,options:TripoOptions):number|null {
+ if(config.flatCostPoints!==undefined&&config.flatCostPoints!==null) {
+  const price=config.flatCostPoints;
+  return Number.isFinite(price)&&price>0&&price<=10000&&Number.isInteger(price*1_000_000)?price:null;
+ }
  // Quad output is FBX; the current delivery path accepts only native GLB.
  if(options.quad)return null;
  const quote=config.quotes?.find(item=>Object.entries(item.options).every(([key,value])=>options[key as keyof TripoOptions]===value));

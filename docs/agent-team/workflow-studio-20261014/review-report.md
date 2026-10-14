@@ -1,4 +1,6 @@
-﻿# Review Report
+# Review Report — 历史审查记录
+
+> 本报告审查的是 `c8b856f6` 的早期独立工作流方案，不是当前市场产品的最终结论。公开通用工作室已退役；后续版本为 SelectContent 传入表单内部 portal 容器，修复下述静态问题。当前实现与验证以 worker-report.md 为准，未冒充独立复审通过。
 
 ## 验收结论
 

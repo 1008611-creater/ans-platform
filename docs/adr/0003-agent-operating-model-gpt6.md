@@ -29,11 +29,13 @@ Verification may combine boundary checks, lint, type checks, affected tests, bui
 
 A task is complete when the requested behavior is implemented, relevant verification is complete, errors are fixed or recorded, changed scope and unverified areas are clear, and a rollback entry is known where relevant. Authorized local work continues to that point. Push, PR, merge, publication, payment, and production deployment remain separately authorized external actions.
 
-### 5. Shared workflow shell and specialized adapters
+### 5. Market products and specialized adapters
 
-Workflow definitions use immutable versions. Only reviewed and published versions enter the public directory. Runs bind the actual version, input snapshot, node state, intermediate artifacts, permissions, and cost. The default product shape is a result landing page plus a staged studio plus a real result preview; each stage maps to real nodes and persisted state rather than fake progress.
+Updated 2026-10-15: public discovery has project square and market only. Public workflow directory/details retire to market; execution, review, accounting and run history remain. `/market/resume-website` is the first complete market-product reference, retaining its specialist 3D editor. Every later market workflow requires a truthful outcome, usable input/editor flow, explicit costs, recoverable execution and actual artifact delivery.
 
-The shared studio shell owns variable validation, run/save/resume, state, errors, and results. 3D, video, reports, and other specialized capabilities connect through adapters. Project detail presents outcome and context; workflow detail presents executable definition and versions; marketplace detail presents service, price, delivery, purchase, and order boundaries. Stable IDs, public projections, run records, and orders connect these objects.
+Workflow definitions use immutable versions. Only reviewed and published versions enter market products. Runs bind the actual version, input snapshot, node state, intermediate artifacts, permissions, and cost. The default product shape is a result landing page plus a staged studio plus a real result preview; each stage maps to real nodes and persisted state rather than fake progress.
+
+The shared studio shell owns variable validation, run/save/resume, state, errors, and results. 3D, video, reports, and other specialized capabilities connect through adapters. Project detail presents outcome and context; market detail presents the real specialist editor, executable version, delivery and separate compute/service price boundaries. Stable IDs, public projections, run records, and orders connect these objects.
 
 Project-to-workflow conversion reads public project material and creates a private draft. It never executes external code or README instructions. Public projections expose bounded presentation only; prompts, private configuration, review drafts, and user input remain private. Domain rules belong in contracts, domain, and server layers. External integrations require a capability registry, least privilege, audit, idempotency, timeouts, failure handling, and rollback.
 
