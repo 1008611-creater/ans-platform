@@ -3140,6 +3140,8 @@
     "page": "Page {page}"
   },
   "computeDelivery": {
+    "openResult": "View and download result",
+    "availableToOpen": "Your result is saved. Open the AIGC workspace to view and download it.",
     "view": "View file status",
     "loading": "Checking file status…",
     "refresh": "Refresh file status",
