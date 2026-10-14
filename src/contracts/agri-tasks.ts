@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { agriReferenceTargetSchema, type AgriTaskReferenceView, type AgriReferenceChange } from "./agri-task-references";
+import { agriReferenceTargetSchema, type AgriTaskReferenceView, agriReferenceChangeSchema } from "./agri-task-references";
 import { agriTargetDateSchema, agriTaskStatusSchema } from "./agrihackathon";
 
 const id = z.string().trim().min(1).max(80);
@@ -69,9 +69,30 @@ export const agriTaskMutationSchema = z.object({
 });
 export type AgriTaskMutation = z.infer<typeof agriTaskMutationSchema>;
 
-export type AgriTaskDetail = { task: AgriTaskView; history: Array<{ revision: number; action: string; task: AgriTaskEditable; shareChange?: AgriTaskShareChange; referenceChange?: AgriReferenceChange; createdAt: string }>; shares: Array<{ userId: string; expiresAt: string | null; sharedAt: string }>; historyTruncated: boolean; references?: AgriTaskReferenceView[] };
+export type AgriTaskDetail = { task: AgriTaskView; history: AgriTaskHistoryEvent[]; shares: Array<{ userId: string; expiresAt: string | null; sharedAt: string }>; historyTruncated: boolean; historyNextBeforeRevision?: number | null; references?: AgriTaskReferenceView[] };
 
 export const agriTaskCursorSchema = z.object({ createdAt: z.string().datetime({ offset: true }), id }).strict();
 
 export const agriTaskShareChangeSchema = z.object({ recipientId: id, expiresAt: z.string().datetime({ offset: true }).nullable(), previousExpiresAt: z.string().datetime({ offset: true }).nullable(), previouslyActive: z.boolean() }).strict();
 export type AgriTaskShareChange = z.infer<typeof agriTaskShareChangeSchema>;
+
+// Strict keyset cursors: no coercion of whitespace, decimals, exponents or signs.
+export const agriTaskHistoryQuerySchema = z.object({
+  beforeRevision: z.string().regex(/^[1-9]\d{0,9}$/).transform(Number).pipe(revision).optional(),
+}).strict();
+export const agriTaskHistoryEventSchema = z.object({
+  revision, action: z.string().min(1).max(80), task: agriTaskEditableSchema,
+  shareChange: agriTaskShareChangeSchema.optional(), referenceChange: agriReferenceChangeSchema.optional(),
+  createdAt: z.string().datetime({ offset: true }),
+}).strict();
+export type AgriTaskHistoryEvent = z.infer<typeof agriTaskHistoryEventSchema>;
+export const agriTaskHistoryPageSchema = z.object({
+  taskId: id, competitionId: id, ownerId: id,
+  history: z.array(agriTaskHistoryEventSchema).max(50), nextBeforeRevision: revision.nullable(),
+}).strict().superRefine((page, ctx) => {
+  if (page.history.some((event, index) => index > 0 && event.revision >= page.history[index - 1].revision)
+    || (page.nextBeforeRevision !== null && (page.history.length !== 50 || page.nextBeforeRevision !== page.history.at(-1)?.revision))) {
+    ctx.addIssue({ code: "custom", message: "INVALID_HISTORY_PAGE" });
+  }
+});
+export type AgriTaskHistoryPage = z.infer<typeof agriTaskHistoryPageSchema>;

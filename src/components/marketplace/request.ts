@@ -12,7 +12,7 @@ const confirmedRejectionCodes = new Set([
 
 export async function marketRequest<T>(url: string, method: string, body: unknown, account: { actorId: string; signal?: AbortSignal }): Promise<T> {
   if (!account.actorId || account.signal?.aborted) throw new MarketRequestRejection("ACCOUNT_CHANGED", 409);
-  const response = await fetch(url, { method, signal: account.signal, credentials: "same-origin", headers: { "Content-Type": "application/json", "x-ans-actor": account.actorId }, body: JSON.stringify(body) });
+  const response = await fetch(url, { method, signal: account.signal, credentials: "same-origin", headers: { "Content-Type": "application/json", "x-ans-actor": account.actorId }, ...(method.toUpperCase() === "GET" || method.toUpperCase() === "HEAD" ? {} : { body: JSON.stringify(body) }) });
   if (account.signal?.aborted) throw new MarketRequestRejection("ACCOUNT_CHANGED", 409);
   const envelope = await response.json().catch(() => null);
   if (!response.ok && envelope?.ok === false && typeof envelope.error?.code === "string" && response.status >= 400 && response.status < 500 && confirmedRejectionCodes.has(envelope.error.code)) {

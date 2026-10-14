@@ -44,5 +44,5 @@ export default async function ComputeHistoryPage({ searchParams }: {
       <Button asChild variant="outline" className="mt-5"><a href={`/workspace/compute?filter=${filter}`}>{t("reload")}</a></Button>
     </div>
   </div></div>;
-  return <ComputeHistory history={history} filter={filter} paged={!!cursor} />;
+  return <ComputeHistory userId={session.user.id} history={history} filter={filter} paged={!!cursor} />;
 }

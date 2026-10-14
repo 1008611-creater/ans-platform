@@ -5,11 +5,12 @@ import type { ComputeHistory as History, ComputeHistoryFilter } from "@/server/c
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ComputeDeliveryStatus } from "@/components/workspace/compute-delivery-status";
 
 const filters: ComputeHistoryFilter[] = ["all", "active", "settled", "released"];
 const stateVariants = { AUTHORIZED: "outline", RUNNING: "secondary", UNCERTAIN: "outline", SETTLED: "default", RELEASED: "secondary" } as const;
 
-export async function ComputeHistory({ history, filter, paged }: { history: History; filter: ComputeHistoryFilter; paged: boolean }) {
+export async function ComputeHistory({ history, filter, paged, userId }: { userId: string; history: History; filter: ComputeHistoryFilter; paged: boolean }) {
   const [t, locale] = await Promise.all([getTranslations("product.computeHistory"), getLocale()]);
   const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
@@ -50,6 +51,10 @@ export async function ComputeHistory({ history, filter, paged }: { history: Hist
       <Clock3 className="mt-1 size-5 shrink-0 text-primary" aria-hidden="true" />
       <div><h2 className="text-sm font-semibold">{t("holdTitle")}</h2><p className="mt-1 max-w-3xl text-sm leading-7 text-muted-foreground">{t("holdBody")}</p></div>
     </aside>}
+    <aside className="flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius)] border p-5">
+      <div className="max-w-3xl"><h2 className="text-sm font-semibold">{t("deliveryTitle")}</h2><p className="mt-1 text-sm leading-7 text-muted-foreground">{t("deliveryBody")}</p></div>
+      <Button asChild variant="outline" size="sm"><Link href="/workflows/toonflow">{t("viewResults")}</Link></Button>
+    </aside>
     <section aria-labelledby="compute-history-heading" className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 id="compute-history-heading" className="flex items-center gap-2 text-lg font-semibold"><ReceiptText className="size-5" aria-hidden="true" />{t("records")}</h2>
@@ -74,6 +79,7 @@ export async function ComputeHistory({ history, filter, paged }: { history: Hist
             <div><dt className="text-xs text-muted-foreground">{t("returned")}</dt><dd className="mt-1 font-medium tabular-nums">{points(task.refundedPoints)}</dd></div>
           </dl>
           <p className="mt-4 text-sm leading-7 text-muted-foreground">{t(`stateBody.${task.state}`)}</p>
+          {(task.unit === "image" || task.unit === "second") && <ComputeDeliveryStatus userId={userId} taskId={task.taskId} unit={task.unit} />}
           <details className="mt-3 text-xs"><summary className="w-fit cursor-pointer py-2 text-muted-foreground">{t("details")}</summary>
             <dl className="grid gap-3 rounded-[var(--radius)] bg-muted/40 p-4 sm:grid-cols-2">
               <div className="min-w-0"><dt className="text-muted-foreground">{t("taskId")}</dt><dd className="mt-1 break-all font-mono">{task.taskId}</dd></div>

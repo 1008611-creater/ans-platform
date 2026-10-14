@@ -381,6 +381,10 @@
     }
   },
   "market": {
+    "olderMessages": "查看更早的消息",
+    "olderEvents": "查看更早的订单记录",
+    "historyLoading": "正在加载历史记录…",
+    "historyLoadError": "历史记录加载失败，当前内容仍保留。请重试。",
     "navigation": "交易导航",
     "eyebrow": "ANS MARKET · 让创造产生价值",
     "title": "把会做的，变成值得买的。",
@@ -790,7 +794,11 @@
   },
   "agrihackathon": {
     "rulesPendingTitle": "首届方案已明确，正式日程待确认",
-    "rulesPendingBody": "以下为首届活动方案，正式日期尚未确认。报名、初赛提交与决赛材料仅按本届已发布的独立窗口开放；本页方案说明不代表已经开报或发布技术规范。"
+    "rulesPendingBody": "以下为首届活动方案，正式日期尚未确认。报名、初赛提交与决赛材料仅按本届已发布的独立窗口开放；本页方案说明不代表已经开报或发布技术规范。",
+    "organizerTools": "工作人员入口",
+    "organizerToolsBody": "作品检查、现场支持、展示审核与技术规范管理。需要本届对应权限。",
+    "workspaceLinksBody": "在项目广场找灵感，在 Hub 使用工作流，回到工作台继续自己的项目与准备任务。正式参赛以本届已发布规则为准。",
+    "openHubs": "Hub与工作流"
   },
   "agriTasks": {
     "ownerLabel": "负责人：{id}",
@@ -852,7 +860,11 @@
     "noShares": "没有有效的只读分享。",
     "shareSaved": "分享设置已保存。",
     "history": "修改历史",
-    "historyNote": "仅本人可见，最多显示最近 50 次。",
+    "historyNote": "仅本人可见，可继续加载更早的全部记录。",
+    "moreHistory": "加载更早记录",
+    "refreshHistory": "刷新历史",
+    "historyLoading": "正在加载历史…",
+    "historyLoadError": "历史加载失败，已加载记录和当前编辑仍保留，请重试。",
     "historyTruncated": "还有更早记录保存在服务器。",
     "version": "第 {revision} 次记录",
     "created": "创建时间",
@@ -1524,8 +1536,8 @@
     "current": "当前提交",
     "frozen": "已固化提交",
     "openSource": "打开来源",
-    "submissionContent": "所提交的说明",
-    "materialCount": "关联 {count} 份材料；完整详情见来源记录或授权导出。",
+    "submissionContent": "提交材料",
+    "materialCount": "关联材料（{count}）",
     "empty": "当前范围没有可读记录。",
     "result": {
       "PASS": "技术检查通过",
@@ -1566,7 +1578,65 @@
       "PRIVATE_MATERIALS": "私密材料依据"
     },
     "correctedFrom": "更正原提交 {id}：{reason}",
-    "correctionAuthority": "许可 {permit}；确认账号 {id}；{at}（北京时间）"
+    "correctionAuthority": "许可 {permit}；确认账号 {id}；{at}（北京时间）",
+    "details": {
+      "repository": "项目仓库",
+      "repositoryRef": "仓库截止版本",
+      "refKind": {
+        "COMMIT_SHA": "提交 SHA",
+        "TAG": "标签"
+      },
+      "demoUrl": "Demo 链接",
+      "artifactVersion": "ANS 成果版本 ID",
+      "noMaterials": "没有关联材料。",
+      "materialKind": {
+        "TEXT": "文本",
+        "LINK": "链接",
+        "ARTIFACT": "成果版本"
+      },
+      "notRecorded": "未记录",
+      "notIncluded": "该记录未包含逐项详情。",
+      "newTab": "在新标签页打开",
+      "invalidLink": "不是支持的稳定 HTTPS 地址",
+      "externalHint": "这里显示当时记录的地址与版本。外部链接不代表内容已备份或已通过核验。",
+      "mode": "演示方式",
+      "demoMode": {
+        "LIVE": "现场演示",
+        "VIDEO": "视频",
+        "HYBRID": "现场与视频结合",
+        "OTHER": "其他"
+      },
+      "demoSequence": "第 {sequence} 次 Demo 检查",
+      "recheckOf": "复查原记录 {id}",
+      "condition": {
+        "device": "设备",
+        "compatibility": "兼容性",
+        "network": "网络",
+        "audio": "音频",
+        "backup": "备用方案"
+      },
+      "itemStatus": {
+        "PASS": "通过",
+        "NEEDS_ACTION": "需要处理",
+        "UNREACHABLE": "不可访问",
+        "NOT_APPLICABLE": "不适用",
+        "NOT_TESTED": "尚未检查"
+      },
+      "backupUrl": "备用演示链接",
+      "backupArtifact": "备用 ANS 成果版本 ID",
+      "recheckDue": "复查时间",
+      "dateState": {
+        "UNKNOWN": "时间未确定",
+        "TENTATIVE": "暂定",
+        "CONFIRMED": "已确认"
+      },
+      "beijingTime": "{at}（北京时间）"
+    },
+    "issueDates": {
+      "created": "问题创建时间",
+      "updated": "问题更新时间",
+      "completed": "处理完成时间"
+    }
   },
   "agriOnsite": {
     "title": "农客松现场协作",
@@ -1792,6 +1862,9 @@
     "summaryScope": "累计数据包含本账号全部 {count} 个 AIGC 工作台任务，不随筛选或分页变化。",
     "holdTitle": "预占不等于最终花费",
     "holdBody": "任务先预占预算，核实用量后结算并退回差额。中断或超时无法证明没有产生费用；待核对时保留预占，避免重复执行或重复扣点。",
+    "deliveryTitle": "结算与作品交付分别确认",
+    "deliveryBody": "本页记录核实用量和费用，不确认文件已保存或可领取。请进入 AIGC 工作台查看作品；没拿到结果时，先查看原任务，避免重复生成。",
+    "viewResults": "查看工作台作品",
     "records": "任务账单",
     "timezone": "时间均为北京时间（UTC+8）",
     "filtersLabel": "筛选账单状态",
@@ -1825,8 +1898,8 @@
     "budget": "用量上限",
     "outcome": "执行结果",
     "outcomes": {
-      "succeeded": "已完成",
-      "partial": "部分完成",
+      "succeeded": "上游执行成功",
+      "partial": "上游部分执行",
       "failed": "执行失败（按实际用量结算）"
     },
     "units": {
@@ -3051,5 +3124,26 @@
     "previous": "上一页",
     "next": "下一页",
     "page": "第 {page} 页"
+  },
+  "computeDelivery": {
+    "view": "查看文件状态",
+    "loading": "正在核对文件状态…",
+    "refresh": "刷新文件状态",
+    "retry": "重试文件状态",
+    "checkingAccount": "正在确认账号…",
+    "sessionExpired": "登录已失效，请重新登录后查看文件。",
+    "accountChanged": "账号已变化，请重新加载本页后查看文件。",
+    "failed": "文件状态未能核实，请重试查询。",
+    "noRecord": "尚无交付记录。账单已结算不代表文件已保存。",
+    "states": {
+      "PENDING": "尚未确认文件已保存，可稍后再次查询。",
+      "FAILED": "服务报告交付失败，尚未确认有已保存的文件。",
+      "UNAVAILABLE": "此前保存的文件当前不可用。",
+      "AVAILABLE": "AIGC 工作台确认文件已保存。领取入口尚未接通，这不代表你已收到文件。"
+    },
+    "fileName": "相对文件名",
+    "fileType": "文件类型",
+    "fileSize": "文件大小",
+    "bytes": "{value} 字节"
   }
 }

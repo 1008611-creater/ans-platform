@@ -1,3 +1,4 @@
+import { publicationConfig } from "@/server/visual-portfolio/publication";
 import { VisualWebsiteExperience } from "@/components/projects/visual-website-experience";
 import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
 import { marketWorkflowDetails } from "@/server/marketplace/workflows";
@@ -31,7 +32,7 @@ export default async function MarketDetail({ params }: { params: Promise<{ slug:
   const freeUrl = listing.usageUrl ?? listing.sourceUrl ?? listing.githubUrl ?? listing.previewUrl;
   const loginHref = "/login?callbackUrl=" + encodeURIComponent("/market/" + slug);
   if (runnable?.available && runnable.recipe === "resume-website-v1") {
-    const editor = <VisualWebsiteExperience execution={{ listingId: offer.id, version: offer.version, details: runnable }} licenseTerms={listing.licenseTerms}/>;
+    const editor = <VisualWebsiteExperience publicationAvailable={publicationConfig().available} execution={{ listingId: offer.id, version: offer.version, details: runnable }} licenseTerms={listing.licenseTerms}/>;
     return session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>{editor}</MarketAccountBoundary> : editor;
   }
   return <MarketFrame title={listing.title} description={listing.summary} actions={<Button asChild variant="outline"><Link href="/market">{tp("backToMarket")}</Link></Button>}>

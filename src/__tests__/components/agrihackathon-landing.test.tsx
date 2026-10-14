@@ -45,5 +45,5 @@ it("shows only explicitly published guidance and links to authorized management"
   render(await AgriHackathonPage());
   expect(screen.getByText("Published technical guidance")).toBeInTheDocument();
   expect(screen.queryByText(product.agrihackathon.rulesPendingBody)).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: product.agriWorkspace.title })).toHaveAttribute("href", "/competitions/agrihackathon/manage");
+  expect(screen.getByText(product.agriWorkspace.title).closest("a")).toHaveAttribute("href", "/competitions/agrihackathon/manage");
 });
