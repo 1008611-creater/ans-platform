@@ -1,0 +1,4 @@
+{
+ "title":"在线发布","description":"选择一个已保存的版本公开发布。未保存的编辑不会出现在公开网站上。","unavailable":"在线发布服务尚未配置，当前可以下载独立 HTML。","version":"发布版本","slug":"网站地址名称","acknowledge":"我已检查该版本的个人资料、图片和链接，同意公开发布。","publish":"发布这个版本","open":"打开公开网站 · v{version}","withdraw":"撤回公开网站","domainTitle":"自己的域名","domainsUnavailable":"域名服务尚未配置。","hostname":"域名","bind":"添加域名","dnsNote":"在域名服务商处添加以下 DNS 记录。检查归属会向托管服务申请证书；记录生效后再次检查。","verify":"检查归属与证书","pause":"暂停域名访问","failed":"操作未完成，请检查服务配置或稍后重试。","slugTaken":"这个网站地址已被使用，请换一个。",
+ "statuses":{"PENDING":"等待 DNS 归属验证","PROVISIONING":"等待域名与证书就绪","ACTIVE":"域名与证书已就绪","PAUSED":"域名访问已暂停","NEEDS_REVIEW":"申请结果需要核对，已暂停重复申请"}
+}

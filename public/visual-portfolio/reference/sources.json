@@ -1,0 +1,94 @@
+{
+  "purpose": "Local visual reproduction requested by user. Reference demonstration assets, not AI generated user output. No open-source license asserted for reference media.",
+  "source": "https://intro3d.com/",
+  "assets": [
+    {
+      "path": "home/labelman.webp",
+      "url": "https://intro3d.com/images/home/labelman.webp"
+    },
+    {
+      "path": "styles/clay-figure.webp",
+      "url": "https://intro3d.com/images/styles/clay-figure.webp"
+    },
+    {
+      "path": "banner/01.webp",
+      "url": "https://intro3d.com/images/banner/01.webp"
+    },
+    {
+      "path": "banner/05.webp",
+      "url": "https://intro3d.com/images/banner/05.webp"
+    },
+    {
+      "path": "banner/04.webp",
+      "url": "https://intro3d.com/images/banner/04.webp"
+    },
+    {
+      "path": "banner/02.webp",
+      "url": "https://intro3d.com/images/banner/02.webp"
+    },
+    {
+      "path": "banner/06.webp",
+      "url": "https://intro3d.com/images/banner/06.webp"
+    },
+    {
+      "path": "banner/03.webp",
+      "url": "https://intro3d.com/images/banner/03.webp"
+    },
+    {
+      "path": "banner/07.webp",
+      "url": "https://intro3d.com/images/banner/07.webp"
+    },
+    {
+      "path": "banner/09.webp",
+      "url": "https://intro3d.com/images/banner/09.webp"
+    },
+    {
+      "path": "banner/10.webp",
+      "url": "https://intro3d.com/images/banner/10.webp"
+    },
+    {
+      "path": "styles/pixel-voxel.webp",
+      "url": "https://intro3d.com/images/styles/pixel-voxel.webp"
+    },
+    {
+      "path": "banner/11.webp",
+      "url": "https://intro3d.com/images/banner/11.webp"
+    },
+    {
+      "path": "styles/vinyl-figure.webp",
+      "url": "https://intro3d.com/images/styles/vinyl-figure.webp"
+    },
+    {
+      "path": "styles/picasso.webp",
+      "url": "https://intro3d.com/images/styles/picasso.webp"
+    },
+    {
+      "path": "banner/12.webp",
+      "url": "https://intro3d.com/images/banner/12.webp"
+    },
+    {
+      "path": "banner/13.webp",
+      "url": "https://intro3d.com/images/banner/13.webp"
+    },
+    {
+      "path": "steps/01.webp",
+      "url": "https://intro3d.com/images/steps/01.webp"
+    },
+    {
+      "path": "steps/02.webp",
+      "url": "https://intro3d.com/images/steps/02.webp"
+    },
+    {
+      "path": "steps/03.webp",
+      "url": "https://intro3d.com/images/steps/03.webp"
+    },
+    {
+      "path": "steps/04.webp",
+      "url": "https://intro3d.com/images/steps/04.webp"
+    },
+    {
+      "path": "banner.glb",
+      "url": "https://intro3d.com/models/banner.glb"
+    }
+  ]
+}

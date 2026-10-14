@@ -1,3 +1,4 @@
+import { VisualWebsiteExperience } from "@/components/projects/visual-website-experience";
 import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
 import { marketWorkflowDetails } from "@/server/marketplace/workflows";
 import { auth } from "@/lib/auth";
@@ -29,6 +30,10 @@ export default async function MarketDetail({ params }: { params: Promise<{ slug:
   const availability = marketCheckoutAvailability(); const cashOffer = runnable ? null : marketCashOffer(offer.id, offer.version, offer.seller.id);
   const freeUrl = listing.usageUrl ?? listing.sourceUrl ?? listing.githubUrl ?? listing.previewUrl;
   const loginHref = "/login?callbackUrl=" + encodeURIComponent("/market/" + slug);
+  if (runnable?.available && runnable.recipe === "resume-website-v1") {
+    const editor = <VisualWebsiteExperience execution={{ listingId: offer.id, version: offer.version, details: runnable }} licenseTerms={listing.licenseTerms}/>;
+    return session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>{editor}</MarketAccountBoundary> : editor;
+  }
   return <MarketFrame title={listing.title} description={listing.summary} actions={<Button asChild variant="outline"><Link href="/market">{tp("backToMarket")}</Link></Button>}>
     <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.65fr)]"><div className="min-w-0 space-y-6">
       {listing.coverUrl && <div className="overflow-hidden rounded-2xl border bg-muted/30"><Image unoptimized src={listing.coverUrl} width={1200} height={675} alt={tp("projectCover", { title: listing.title })} className="aspect-video w-full object-cover" priority/></div>}

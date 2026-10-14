@@ -1,0 +1,5 @@
+# Add only this host to the existing Caddy config after DNS and release verification.
+sites.cauai.fun {
+    encode gzip
+    reverse_proxy visual-sites:3102
+}
