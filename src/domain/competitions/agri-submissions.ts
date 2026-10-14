@@ -112,3 +112,15 @@ export function getAgriSubmissionMaterialIssues(rawRequirements: unknown, rawCon
   }
   return issues;
 }
+
+/** Shared read projection; never persist a deadline freeze during listing/export. */
+export function projectAgriSubmissionFreeze(
+  stage: { currentSubmissionId: string | null; frozenSubmissionId: string | null },
+  adoptedWindow: unknown,
+  now: Date,
+) {
+  const frozenByDeadline = !stage.frozenSubmissionId && !!stage.currentSubmissionId &&
+    getAgriWindowState(adoptedWindow, now) === "CLOSED";
+  return { frozenSubmissionId: stage.frozenSubmissionId ?? (frozenByDeadline ? stage.currentSubmissionId : null),
+    recordedFrozenSubmissionId: stage.frozenSubmissionId, frozenByDeadline };
+}
