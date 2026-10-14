@@ -8,17 +8,17 @@ import { PREFERENCES_KEY, resetSitePreferences } from "@/lib/site-preferences";
 import { COMPANION_SIZE_KEY, clampCompanionSize, defaultCompanionSize, useCompanionSize } from "@/components/mascot/use-companion-size";
 import type { DinoTaskSnapshot } from "@/components/mascot/dino-task-context";
 
-const state = vi.hoisted(() => ({ task: null as DinoTaskSnapshot | null }));
+const state = vi.hoisted(() => ({ task: null as DinoTaskSnapshot | null, actor: "member" as string | null, status: "authenticated" }));
 vi.mock("@/components/mascot/dino-task-context", () => ({ useDinoTask: () => state.task }));
 vi.mock("@/components/mascot/dino-avatar", () => ({ DinoAvatar: () => null }));
 vi.mock("@/components/providers/workspace-navigation", () => ({ WorkspaceLink: (props: ComponentProps<"a">) => <a {...props} /> }));
-vi.mock("next-auth/react", () => ({ useSession: () => ({ data: { user: { id: "member" } }, status: "authenticated" }) }));
+vi.mock("next-auth/react", () => ({ useSession: () => ({ data: state.actor ? { user: { id: state.actor } } : null, status: state.status }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/explore" }));
 vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: (namespace: string) => (key: string) => {
   const source = namespace === "companion" ? companionMessages : mascotMessages.mascot;
   return key.split(".").reduce<unknown>((value, part) => value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined, source) ?? key;
 } }));
-afterEach(() => { cleanup(); state.task = null; resetSitePreferences(); localStorage.removeItem(COMPANION_SIZE_KEY); });
+afterEach(() => { cleanup(); sessionStorage.clear(); state.task = null; state.actor = "member"; state.status = "authenticated"; resetSitePreferences(); localStorage.removeItem(COMPANION_SIZE_KEY); });
 
 it.each([false, true])("names the companion dialog from its visible heading (task=%s)", hasTask => {
   state.task = hasTask ? { phase: "working", step: 2, costPoints: 2 } : null;
@@ -94,7 +94,7 @@ it("preserves independent mode drafts and supports undo without submitting them"
 });
 it("keeps the next draft while an answer arrives and offers stop at the composer", async () => {
   let respond: (response: Response) => void = () => {};
-  const quote = { ticket: "local-approval", requestId: "local-request", model: "deepseek-v4.1-flash", maxPoints: 1, balance: 2, expiresAt: Date.now() + 300000 };
+  const quote = { ticket: "isolated-local-approval-ticket", requestId: "local-request", model: "deepseek-v4.1-flash", maxPoints: 1, balance: 2, expiresAt: Date.now() + 300000 };
   const fetch = vi.fn().mockResolvedValueOnce(Response.json(quote)).mockImplementationOnce(() => new Promise<Response>(resolve => { respond = resolve; }));
   vi.stubGlobal("fetch", fetch); render(<DinoGuide />);
   fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
@@ -128,4 +128,45 @@ it("fits the visual keyboard viewport without overwriting desktop sizing", () =>
   Object.defineProperty(window, "visualViewport", { configurable: true, value: undefined });
   Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
   Object.defineProperty(window, "innerHeight", { configurable: true, value: height });
+});
+
+
+it("restores both mode drafts and received conversation after a full remount without sending", async () => {
+  const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+  let view = render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  fireEvent.click(screen.getByRole("button", { name: companionMessages.guideMode }));
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "帮我找工作流" } });
+  fireEvent.click(screen.getByRole("button", { name: companionMessages.sendMessage }));
+  const reply = document.querySelector(".ans-companion-message.guide")?.textContent;
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "向导未发送" } });
+  fireEvent.click(screen.getByRole("button", { name: companionMessages.agentMode }));
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "Agent 未发送" } });
+  view.unmount(); view = render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  expect(screen.getByRole("textbox")).toHaveValue("Agent 未发送");
+  fireEvent.click(screen.getByRole("button", { name: companionMessages.guideMode }));
+  expect(screen.getByRole("textbox")).toHaveValue("向导未发送");
+  expect(document.querySelector(".ans-companion-message.guide")?.textContent).toBe(reply);
+  const ids = [...document.querySelectorAll("[data-message-id]")].map(node => Number(node.getAttribute("data-message-id")));
+  fireEvent.click(screen.getByRole("button", { name: companionMessages.sendMessage }));
+  const newIds = [...document.querySelectorAll("[data-message-id]")].map(node => Number(node.getAttribute("data-message-id")));
+  expect(new Set(newIds).size).toBe(newIds.length); expect(Math.max(...newIds)).toBeGreaterThan(Math.max(...ids));
+  expect(fetch).not.toHaveBeenCalled(); vi.unstubAllGlobals();
+});
+it("preserves a saved conversation while authentication loads and clears it after logout", () => {
+  let view = render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "本账号私密草稿" } });
+  view.unmount(); state.status = "loading"; state.actor = null;
+  view = render(<DinoGuide />);
+  expect(sessionStorage.getItem("ans.companion-session.v1:conversation:user%3Amember")).toContain("本账号私密草稿");
+  state.actor = "member"; state.status = "authenticated"; view.rerender(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  expect(screen.getByRole("textbox")).toHaveValue("本账号私密草稿");
+  state.actor = null; state.status = "unauthenticated"; view.rerender(<DinoGuide />);
+  expect(sessionStorage.getItem("ans.companion-session.v1:conversation:user%3Amember")).toBeNull();
+  state.actor = "member"; state.status = "authenticated"; view.rerender(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  expect(screen.getByRole("textbox")).toHaveValue("");
 });
