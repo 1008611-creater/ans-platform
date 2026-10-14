@@ -17,8 +17,11 @@ RUN npm run build
 
 FROM base AS runner
 ARG ANS_SOURCE_REVISION
-LABEL org.opencontainers.image.source="https://github.com/1008611-creater/ans-platform" org.opencontainers.image.revision=$ANS_SOURCE_REVISION
+ARG ANS_SOURCE_SHA256
+ARG ANS_RELEASE_NAME
+LABEL org.opencontainers.image.source="https://github.com/1008611-creater/ans-platform" org.opencontainers.image.revision=$ANS_SOURCE_REVISION org.ans.source-sha256=$ANS_SOURCE_SHA256 org.ans.release=$ANS_RELEASE_NAME
 RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 --gid nodejs nextjs
+COPY --from=builder --chown=nextjs:nodejs /app/LICENSE /app/LICENSE-MIT /app/LICENSE-CC0 ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public

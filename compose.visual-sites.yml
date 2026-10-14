@@ -3,6 +3,7 @@ services:
   app:
     environment:
       ANS_TRIPO_ACCEPTING_JOBS: "${ANS_TRIPO_ACCEPTING_JOBS:-false}"
+      ANS_VISUAL_MAX_RETAINED_INPUTS: "${ANS_VISUAL_MAX_RETAINED_INPUTS:-32}"
       ANS_TRIPO_PRICE_POINTS: "${ANS_TRIPO_PRICE_POINTS:-}"
       ANS_VISUAL_WORKER_KEY: "${ANS_VISUAL_WORKER_KEY:?A shared local-worker key is required}"
       ANS_VISUAL_SIGNING_SECRET: "${ANS_VISUAL_SIGNING_SECRET:?An asset signing secret is required}"

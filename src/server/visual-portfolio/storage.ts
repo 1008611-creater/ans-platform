@@ -1,7 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { mkdir, readFile, rename, writeFile, stat } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile, stat, unlink } from "node:fs/promises";
 import { resolve, dirname, sep } from "node:path";
-import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { VisualPortfolioError } from "./errors";
 function storageKey(key: string) { if (!/^visual\/[a-f0-9-]{36}\/(input\.(png|jpg|webp)|model\.glb|site\.html)$/.test(key)) throw new VisualPortfolioError("INVALID_ASSET_KEY", 400); return key; }
 function localPath(key: string) { const root=resolve(process.env.ANS_VISUAL_STORAGE_DIR || ".workbuddy/visual-assets"); const target=resolve(root,storageKey(key)); if(!target.startsWith(root+sep))throw new VisualPortfolioError("INVALID_ASSET_KEY",400);return target; }
@@ -13,3 +13,36 @@ export const sha256=(bytes:Uint8Array|string)=>createHash("sha256").update(bytes
 function signingSecret() { const secret=process.env.ANS_VISUAL_SIGNING_SECRET;if(!secret || secret.length<32)throw new VisualPortfolioError("SIGNING_NOT_CONFIGURED",503);return secret; }
 export function signAsset(id:string,ownerId:string,expires=Date.now()+60*60*1000) { const payload=Buffer.from(JSON.stringify({id,ownerId,expires})).toString("base64url");return payload+"."+createHmac("sha256",signingSecret()).update(payload).digest("base64url"); }
 export function verifyAssetToken(token:string,id:string) { if(token.length>2000)return null;const [payload,signature,...extra]=token.split(".");if(!payload||!signature||extra.length)return null;const expected=createHmac("sha256",signingSecret()).update(payload).digest();const actual=Buffer.from(signature,"base64url");if(actual.length!==expected.length||!timingSafeEqual(actual,expected))return null;try{const value=JSON.parse(Buffer.from(payload,"base64url").toString("utf8")) as {id:string;ownerId:string;expires:number};return value.id===id&&typeof value.ownerId==="string"&&Number.isFinite(value.expires)&&value.expires>Date.now()?value:null;}catch{return null;} }
+
+const inputTimeoutMs = 8000;
+/** This API can only remove the exact input of a recorded job/upload intent. */
+export function visualInputKey(id: string, key: string) {
+  if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id)
+    || !["png", "jpg", "webp"].some(extension => key === "visual/" + id + "/input." + extension))
+    throw new VisualPortfolioError("INVALID_INPUT_KEY", 400);
+  return storageKey(key);
+}
+export async function deleteVisualInput(id: string, key: string) {
+  visualInputKey(id, key);
+  if (!durableStorageReady()) throw new VisualPortfolioError("STORAGE_NOT_CONFIGURED", 503);
+  if (process.env.ANS_VISUAL_STORAGE_MODE === "s3") {
+    await client().send(new DeleteObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key }), { abortSignal: AbortSignal.timeout(inputTimeoutMs) });
+  } else {
+    try { await unlink(localPath(key)); } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
+  }
+}
+/** New inputs never replace another object. Retries must verify identical bytes. */
+export async function putVisualInput(id: string, key: string, bytes: Uint8Array, mime: string) {
+  visualInputKey(id, key);
+  if (!durableStorageReady()) throw new VisualPortfolioError("STORAGE_NOT_CONFIGURED", 503);
+  const signal = AbortSignal.timeout(inputTimeoutMs);
+  try {
+    if (process.env.ANS_VISUAL_STORAGE_MODE === "s3") {
+      await client().send(new PutObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key, Body: bytes, ContentType: mime, IfNoneMatch: "*" }), { abortSignal: signal });
+    } else { const target = localPath(key); await mkdir(dirname(target), { recursive: true }); await writeFile(target, bytes, { flag: "wx", signal }); }
+  } catch (error) {
+    const collision = (error as NodeJS.ErrnoException).code === "EEXIST" || (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 412;
+    if (!collision) throw error;
+    if (sha256(await readVisualObject(key, 20_000_000)) !== sha256(bytes)) throw new VisualPortfolioError("INPUT_OBJECT_CONFLICT", 409);
+  }
+}

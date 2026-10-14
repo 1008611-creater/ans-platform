@@ -10,6 +10,7 @@ datasource db {
 }
 
 model User {
+  visualInputUploads VisualInputUpload[]
   visualModelJobs VisualModelJob[]
   visualModelAssets VisualModelAsset[]
   visualWebsiteReleases VisualWebsiteRelease[]
@@ -2866,6 +2867,7 @@ model VisualModelJob {
   requestHash String @db.VarChar(64)
   inputKey String @db.VarChar(240)
   inputMime String @db.VarChar(40)
+  inputDeletedAt DateTime?
   options Json
   status String @default("QUEUED") @db.VarChar(24)
   stage String @default("queued") @db.VarChar(16)
@@ -2936,4 +2938,17 @@ model VisualWebsiteDomain {
   updatedAt DateTime @updatedAt
   @@index([ownerId, createdAt])
   @@map("visual_website_domains")
+}
+
+model VisualInputUpload {
+  id String @id @db.Uuid
+  ownerId String @unique
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  inputKey String @unique @db.VarChar(240)
+  requestHash String @db.VarChar(64)
+  idempotencyKey String @db.VarChar(80)
+  expiresAt DateTime
+  storageMode String @db.VarChar(8)
+  createdAt DateTime @default(now())
+  @@map("visual_input_uploads")
 }
