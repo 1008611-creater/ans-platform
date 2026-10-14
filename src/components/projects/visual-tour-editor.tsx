@@ -264,7 +264,7 @@ export function VisualTourEditor({ initial, onReturn }: {
     }
     function resetModel() { if (!tour.model && !tour.modelAsset)
         return; rememberUndo(); setThumbnails({}); liveCamera.current = null; change({ ...tour, model: undefined, modelAsset: undefined, stickers: [], hero: { ...tour.hero, camera: undefined }, nodes: tour.nodes.map(node => ({ ...node, camera: undefined })) }); }
-    function applyGeneratedModel(asset:ModelAssetRef){rememberUndo();setThumbnails({});liveCamera.current=null;change({...tour,model:undefined,modelAsset:asset,stickers:[],hero:{...tour.hero,camera:undefined},nodes:tour.nodes.map(node=>({...node,camera:undefined}))});}
+    function applyGeneratedModel(asset:ModelAssetRef){rememberUndo();setThumbnails({});liveCamera.current=null;change({...tour,model:undefined,modelAsset:asset,fitModel:true,stickers:[],hero:{...tour.hero,camera:undefined},nodes:tour.nodes.map(node=>({...node,camera:undefined}))});}
     function moveNode(offset: number) { if (nodeIndex < 0)
         return; const next = nodeIndex + offset; if (next < 0 || next >= tour.nodes.length)
         return; const nodes = [...tour.nodes]; nodes.splice(next, 0, nodes.splice(nodeIndex, 1)[0]); change({ ...tour, nodes }); }

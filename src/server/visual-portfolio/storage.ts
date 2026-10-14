@@ -2,8 +2,9 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { mkdir, readFile, rename, writeFile, stat, unlink } from "node:fs/promises";
 import { resolve, dirname, sep } from "node:path";
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { INPUT_LIMIT } from "@/contracts/visual-generation";
 import { VisualPortfolioError } from "./errors";
-function storageKey(key: string) { if (!/^visual\/[a-f0-9-]{36}\/(input\.(png|jpg|webp)|model\.glb|site\.html)$/.test(key)) throw new VisualPortfolioError("INVALID_ASSET_KEY", 400); return key; }
+function storageKey(key: string) { if (!/^visual\/[a-f0-9-]{36}\/(input\.(png|jpg|webp|json)|model\.glb|site\.html)$/.test(key)) throw new VisualPortfolioError("INVALID_ASSET_KEY", 400); return key; }
 function localPath(key: string) { const root=resolve(process.env.ANS_VISUAL_STORAGE_DIR || ".workbuddy/visual-assets"); const target=resolve(root,storageKey(key)); if(!target.startsWith(root+sep))throw new VisualPortfolioError("INVALID_ASSET_KEY",400);return target; }
 function client() { if (!process.env.S3_BUCKET || !process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY) throw new VisualPortfolioError("STORAGE_NOT_CONFIGURED",503);return new S3Client({region:process.env.S3_REGION||"auto",endpoint:process.env.S3_ENDPOINT,forcePathStyle:!!process.env.S3_ENDPOINT,credentials:{accessKeyId:process.env.S3_ACCESS_KEY_ID,secretAccessKey:process.env.S3_SECRET_ACCESS_KEY}}); }
 export function durableStorageReady() { return process.env.ANS_VISUAL_STORAGE_MODE === "local" || (process.env.ANS_VISUAL_STORAGE_MODE === "s3" && !!process.env.S3_BUCKET && !!process.env.S3_ACCESS_KEY_ID && !!process.env.S3_SECRET_ACCESS_KEY); }
@@ -18,7 +19,7 @@ const inputTimeoutMs = 8000;
 /** This API can only remove the exact input of a recorded job/upload intent. */
 export function visualInputKey(id: string, key: string) {
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id)
-    || !["png", "jpg", "webp"].some(extension => key === "visual/" + id + "/input." + extension))
+    || !["png", "jpg", "webp", "json"].some(extension => key === "visual/" + id + "/input." + extension))
     throw new VisualPortfolioError("INVALID_INPUT_KEY", 400);
   return storageKey(key);
 }
@@ -43,6 +44,6 @@ export async function putVisualInput(id: string, key: string, bytes: Uint8Array,
   } catch (error) {
     const collision = (error as NodeJS.ErrnoException).code === "EEXIST" || (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 412;
     if (!collision) throw error;
-    if (sha256(await readVisualObject(key, 20_000_000)) !== sha256(bytes)) throw new VisualPortfolioError("INPUT_OBJECT_CONFLICT", 409);
+    if (sha256(await readVisualObject(key, INPUT_LIMIT)) !== sha256(bytes)) throw new VisualPortfolioError("INPUT_OBJECT_CONFLICT", 409);
   }
 }

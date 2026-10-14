@@ -28,6 +28,8 @@ export function isSelfContainedVisualModel(value: string): boolean {
 }
 export const visualTourSchema = z.object({
     modelAsset: modelAssetRefSchema.optional(),
+    // Opt in for newly applied generated assets; older camera/sticker coordinates stay unchanged.
+    fitModel: z.boolean().optional(),
     model: z.string().max(7000000).regex(/^data:model\/gltf-binary;base64,[A-Za-z0-9+/=]+$/).refine(isSelfContainedVisualModel).optional(),
     hero: z.object({ title: z.string().max(120), body: z.string().max(3000), byline: z.string().max(80), issue: z.string().max(40), tagline: z.string().max(120), location: z.string().max(100), layout: z.enum(["editorial", "minimal"]), camera: tourCameraSchema.optional() }).strict(),
     nodes: z.array(z.object({ id: z.string().max(50), title: z.string().max(100), eyebrow: z.string().max(100), subtitle: z.string().max(120), body: z.string().max(2000), url: resumeWebsiteInputSchema.shape.contactUrl, camera: tourCameraSchema.optional() }).strict()).max(10),

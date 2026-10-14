@@ -5,6 +5,17 @@ import { createVisualTour, profileFromTour, prepareVisualDocument } from "@/lib/
 import { renderVisualWebsite } from "@/lib/projects/visual-website";
 import { RESUME_WEBSITE_EXAMPLE } from "@/domain/projects/resume-website";
 describe("visual tour documents",()=>{
+ it("preserves explicit generated model framing and leaves legacy assets unchanged",()=>{
+  const tour=createVisualTour(RESUME_WEBSITE_EXAMPLE);
+  tour.modelAsset={id:"442be0b3-ddea-4bf7-a340-94490b67fb35",sha256:"a".repeat(64),size:100};
+  expect(visualTourSchema.parse(tour).fitModel).toBeUndefined();
+  tour.fitModel=true;tour.hero.camera={position:[2,1,3],target:[0,0,0]};
+  const parsed=visualTourSchema.parse(tour);
+  const dom=new DOMParser().parseFromString(renderVisualWebsite(RESUME_WEBSITE_EXAMPLE,{...DEFAULT_APPEARANCE,tour:parsed}),"text/html");
+  const config=JSON.parse(dom.getElementById("site-config")!.textContent!);
+  expect(config.tour.fitModel).toBe(true);expect(config.tour.hero.camera).toEqual(tour.hero.camera);
+ });
+
  it("retains legacy facts when opening the new editor",()=>{const tour=createVisualTour(RESUME_WEBSITE_EXAMPLE);expect(tour.nodes.map(n=>n.title)).toEqual(RESUME_WEBSITE_EXAMPLE.projects.map(p=>p.name));expect(profileFromTour(RESUME_WEBSITE_EXAMPLE,tour)).toMatchObject({fullName:RESUME_WEBSITE_EXAMPLE.fullName,about:RESUME_WEBSITE_EXAMPLE.about,projects:RESUME_WEBSITE_EXAMPLE.projects});});
  it("exports the exact hero, ordered stops, sections, stickers and camera captures",()=>{const tour=createVisualTour(RESUME_WEBSITE_EXAMPLE);tour.nodes.reverse();tour.nodes[0].camera={position:[2,1,3],target:[0,0,0]};tour.sections=[{id:"section",title:"Portfolio",body:"Work details",url:"https://example.com"}];tour.stickers=[{id:"sticker",text:"ANS",color:"#cafa2a",position:[0,0,1],normal:[0,0,1],size:.1,rotation:0,visible:true}];const dom=new DOMParser().parseFromString(renderVisualWebsite(RESUME_WEBSITE_EXAMPLE,{...DEFAULT_APPEARANCE,tour}),"text/html");expect(dom.querySelectorAll("[data-panel]")).toHaveLength(tour.nodes.length+1);expect(dom.querySelector("[data-section]")?.textContent).toContain("Work details");const config=JSON.parse(dom.getElementById("site-config")!.textContent!);expect(config.tour.nodes).toEqual(tour.nodes);expect(config.tour.stickers).toEqual(tour.stickers);expect(dom.querySelector(".masthead")?.textContent).toContain(tour.hero.byline);});
  it("rejects unsafe links, nonfinite camera positions and oversized timeline imports",()=>{const tour=createVisualTour(RESUME_WEBSITE_EXAMPLE);expect(visualTourSchema.safeParse({...tour,nodes:[{...tour.nodes[0],url:"javascript:alert(1)"}]}).success).toBe(false);expect(visualTourSchema.safeParse({...tour,hero:{...tour.hero,camera:{position:[Infinity,0,0],target:[0,0,0]}}}).success).toBe(false);expect(visualTourSchema.safeParse({...tour,nodes:Array(11).fill(tour.nodes[0])}).success).toBe(false);});

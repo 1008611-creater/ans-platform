@@ -8,7 +8,7 @@ import { DEFAULT_TRIPO_OPTIONS } from "@/contracts/visual-generation";
 import { reserveInputWriter, beginInputWriter, settleInputWriter, fenceInputWriter, forgetInputWriter } from "@/server/visual-portfolio/input-writer";
 vi.unmock("@/lib/db");
 const databaseUrl=process.env.ANS_VISUAL_TEST_DATABASE_URL;
-let safe=false;try{const u=new URL(databaseUrl??"");safe=u.protocol==="postgresql:"&&u.port==="50817"&&u.hostname==="127.0.0.1"&&u.username==="visual_fixture"&&u.pathname==="/visual_fixture"&&process.env.ANS_VISUAL_TEST_ALLOW_DISPOSABLE_WRITE==="yes";}catch{}
+let safe=false;try{const u=new URL(databaseUrl??"");safe=u.protocol==="postgresql:"&&["50817","55438"].includes(u.port)&&u.hostname==="127.0.0.1"&&u.username==="visual_fixture"&&u.pathname==="/visual_fixture"&&process.env.ANS_VISUAL_TEST_ALLOW_DISPOSABLE_WRITE==="yes";}catch{}
 let db:typeof import("@/lib/db")["db"], jobs:typeof import("@/server/visual-portfolio/jobs"), storage:typeof import("@/server/visual-portfolio/storage"), retention:typeof import("@/server/visual-portfolio/input-retention"), assets:typeof import("@/server/visual-portfolio/assets");
 let root:string,image:Buffer,model:Buffer;
 const input=()=>({idempotencyKey:randomUUID(),acceptedPoints:2.5,acknowledged:true,options:DEFAULT_TRIPO_OPTIONS});
