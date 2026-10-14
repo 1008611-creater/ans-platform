@@ -54,6 +54,8 @@ describe("stage submission recovery and consent", () => {
   });
   it("does not show a leave dialog after an acknowledged draft save", async () => {
     await open(); fill(); fireEvent.click(screen.getByRole("button", { name: copy.save })); await screen.findByText(copy.saved);
+    // Acknowledgement precedes the readback and navigation-guard cleanup.
+    await waitFor(() => expect(screen.getByRole("button", { name: copy.save })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: copy.chooseTeam })); await screen.findByRole("button", { name: copy.open });
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
