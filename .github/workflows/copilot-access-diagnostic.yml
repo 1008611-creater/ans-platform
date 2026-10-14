@@ -1,0 +1,57 @@
+name: Copilot access diagnostic
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - .github/workflows/copilot-access-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Inspect credential identity and model compatibility without inference
+        env:
+          COPILOT_DIAGNOSTIC_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          EXPECTED_OWNER: ${{ github.repository_owner }}
+        run: |
+          node <<'NODE'
+          const token = process.env.COPILOT_DIAGNOSTIC_TOKEN;
+          if (!token) {
+            console.log('COPILOT_DIAGNOSTIC: missing credential');
+            process.exit(1);
+          }
+          async function get(url, accept) {
+            return fetch(url, {
+              headers: { Authorization: `Bearer ${token}`, Accept: accept, 'User-Agent': 'ANS-read-only-access-diagnostic' },
+              redirect: 'error', signal: AbortSignal.timeout(15000)
+            });
+          }
+          async function main() {
+            const identity = await get('https://api.github.com/user', 'application/vnd.github+json');
+            console.log('COPILOT_IDENTITY_HTTP:', identity.status);
+            if (!identity.ok) throw new Error('IDENTITY_LOOKUP_FAILED');
+            const account = await identity.json();
+            if (typeof account.login !== 'string') throw new Error('IDENTITY_FORMAT_INVALID');
+            // Never publish the secret owner's login, account profile or raw response.
+            console.log('COPILOT_OWNER_MATCHES_REPOSITORY:', account.login.toLowerCase() === process.env.EXPECTED_OWNER.toLowerCase());
+            const models = await get('https://api.githubcopilot.com/models', 'application/json');
+            console.log('COPILOT_MODELS_HTTP:', models.status);
+            if (!models.ok) throw new Error('MODEL_INVENTORY_LOOKUP_FAILED');
+            const inventory = await models.json();
+            if (!Array.isArray(inventory.data)) throw new Error('MODEL_INVENTORY_FORMAT_INVALID');
+            // Publish model compatibility only; no identity, quota or billing fields.
+            console.log('COPILOT_MODEL_COMPATIBILITY:', JSON.stringify(inventory.data.map(model => ({
+              id: model.id,
+              pickerEnabled: model.model_picker_enabled === true,
+              endpoints: Array.isArray(model.supported_endpoints) ? model.supported_endpoints : []
+            }))));
+          }
+          main().catch(() => { console.log('COPILOT_DIAGNOSTIC: lookup failed; no response body or credential printed'); process.exitCode = 1; });
+          NODE
