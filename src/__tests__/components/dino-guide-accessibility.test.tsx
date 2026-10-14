@@ -43,7 +43,7 @@ it("places the direct voice toggle in the header and places the model selector i
   expect(voice).toHaveAttribute("aria-pressed", "false");
   expect(within(dialog).queryByText(companionMessages.agentMetered)).not.toBeInTheDocument();
   expect(within(dialog).queryByText(companionMessages.voiceOff)).not.toBeInTheDocument();
-  const model = within(dialog).getByRole("combobox", { name: companionMessages.agentModelLabel });
+  const model = within(dialog).getByRole("combobox", { name: new RegExp(companionMessages.agentModelLabel) });
   expect(model.closest("footer")).toBeNull();
   expect(model.parentElement).toBe(within(dialog).getByRole("button", { name: companionMessages.sendMessage }).parentElement);
   expect(model.parentElement?.lastElementChild).toBe(within(dialog).getByRole("button", { name: companionMessages.sendMessage }));

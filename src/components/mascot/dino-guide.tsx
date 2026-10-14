@@ -157,7 +157,6 @@ function Companion({ actor }: { actor: string | null }) {
   const voiceLabel = ui(prefs.voice ? "disableDinoVoice" : "enableDinoVoice");
   const voiceHint = !actor ? ui("voiceSignIn") : prefs.voice && !voiceOffer ? ui("voiceUnavailable") : !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceFree");
   const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
-  const modeHint = mode === "agent" && agent.busy ? ui(`agentPhase.${agent.phase}`) : ui(mode === "agent" ? "agentModeHint" : "guideModeHint");
   return <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={changeOpen}>
       <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger"><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
@@ -188,7 +187,6 @@ function Companion({ actor }: { actor: string | null }) {
         <div className="ans-companion-mode" role="group" aria-label={ui("conversationMode")}>
           <button type="button" aria-pressed={mode === "agent"} onClick={() => changeMode("agent")} disabled={!actor || agent.busy || agent.checkingReceipts}>{ui("agentMode")}</button>
           <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>{ui("guideMode")}</button>
-          <span role="status">{modeHint}</span>
         </div>
         {prefs.voice && <p className="px-4 pb-2 text-xs text-muted-foreground" role="status">{voiceHint}</p>}
         {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
