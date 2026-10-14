@@ -18,14 +18,14 @@ export async function ProjectCard({ project, compact = false }: { project: Catal
       <p>{catalogText(project, t, "summary", locale)}</p>
       <p>{t(project.workflowId ? "ready" : project.memberHref ? "realProject.member" : project.source === "official" ? "realProject.externalProduct" : "reference")}</p>
     </>}>
-      <Link href={project.memberHref ?? `/explore/${project.slug}`} prefetch={false} className={styles.link} aria-describedby={descriptionId}>
+      <Link href={`/explore/${project.slug}`} prefetch={false} className={styles.link} aria-describedby={descriptionId}>
         <ProjectPreview project={project} />
         <div className={styles.title}><h3>{title}</h3><ArrowUpRight aria-hidden="true" /></div>
       </Link>
     </RevealDetails>;
   }
   return <article className="ans-project-card">
-    <Link href={project.memberHref ?? `/explore/${project.slug}`} className="ans-card-link">
+    <Link href={`/explore/${project.slug}`} className="ans-card-link">
       <ProjectPreview project={project} />
       <div className="p-5 sm:p-6">
         <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{t(`categories.${project.category}`)}</span><span aria-hidden="true">/</span><span>{t(catalogSourceLabel(project.source))}</span></div>

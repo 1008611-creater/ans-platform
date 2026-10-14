@@ -1,0 +1,4 @@
+[
+  {"id":"REVIEW-001","priority":"P2","status":"resolved","requirement":"REQ-003","summary":"统一计费通用运行表单固定费用文案与服务端实际计费不符","resolution":"统一计费传null并显示实际模型结算说明及费用确认按钮；已代码复查"},
+  {"id":"REVIEW-002","priority":"P2","status":"resolved","requirement":"REQ-003","summary":"通用入口启动时读取最新发布版本，新增锁定当前页面版本文案需澄清","resolution":"本页版本标记与中英文说明明确启动读取最新发布版本、创建后固定；已代码复查"}
+]
