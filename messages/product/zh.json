@@ -1862,6 +1862,9 @@
     "summaryScope": "累计数据包含本账号全部 {count} 个 AIGC 工作台任务，不随筛选或分页变化。",
     "holdTitle": "预占不等于最终花费",
     "holdBody": "任务先预占预算，核实用量后结算并退回差额。中断或超时无法证明没有产生费用；待核对时保留预占，避免重复执行或重复扣点。",
+    "deliveryTitle": "结算与作品交付分别确认",
+    "deliveryBody": "本页记录核实用量和费用，不确认文件已保存或可领取。请进入 AIGC 工作台查看作品；没拿到结果时，先查看原任务，避免重复生成。",
+    "viewResults": "查看工作台作品",
     "records": "任务账单",
     "timezone": "时间均为北京时间（UTC+8）",
     "filtersLabel": "筛选账单状态",
@@ -1895,8 +1898,8 @@
     "budget": "用量上限",
     "outcome": "执行结果",
     "outcomes": {
-      "succeeded": "已完成",
-      "partial": "部分完成",
+      "succeeded": "上游执行成功",
+      "partial": "上游部分执行",
       "failed": "执行失败（按实际用量结算）"
     },
     "units": {

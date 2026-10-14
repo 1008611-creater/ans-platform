@@ -1862,6 +1862,9 @@
     "summaryScope": "Totals cover all {count} AIGC Workspace tasks for this account and do not change with filters or pagination.",
     "holdTitle": "A reservation is not the final cost",
     "holdBody": "A task reserves its budget first, then settles verified usage and returns the remainder. An interruption or timeout does not prove that no cost occurred. Unresolved tasks retain their reservation; avoid starting the same task again.",
+    "deliveryTitle": "Settlement and delivery are separate",
+    "deliveryBody": "These statements confirm usage and charges, not whether a file was saved or is ready to collect. Check your results in AIGC Workspace. If a result is missing, inspect the original task before generating again.",
+    "viewResults": "View workspace results",
     "records": "Task statements",
     "timezone": "All times are China Standard Time (UTC+8)",
     "filtersLabel": "Filter statement status",
@@ -1895,8 +1898,8 @@
     "budget": "Usage limit",
     "outcome": "Execution result",
     "outcomes": {
-      "succeeded": "Completed",
-      "partial": "Partially completed",
+      "succeeded": "Supplier execution succeeded",
+      "partial": "Supplier execution partially succeeded",
       "failed": "Execution failed (actual usage settled)"
     },
     "units": {
