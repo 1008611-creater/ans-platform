@@ -41,6 +41,7 @@ const nextConfig: NextConfig = {
     "/vibe-hub/**/*": ["./src/data/vibehub/**/*"],
     "/vibe-hub": ["./src/data/vibehub/**/*"],
     "/api/vibe-hub/**/*": ["./src/data/vibehub/**/*"],
+    "/api/visual-websites/publication": ["./public/mascot/3d/vendor/**/*", "./public/visual-portfolio/scene.mjs", "./public/visual-portfolio/reference/banner.glb"],
   },
   // Experimental features
   experimental: {
@@ -61,6 +62,8 @@ const nextConfig: NextConfig = {
   // Baseline security headers for all application responses.
   async headers() {
     return [
+      // Public renderer assets are readable by the sandboxed, opaque-origin preview.
+      ...["/visual-portfolio/:path*", "/mascot/3d/vendor/:path*"].map(source => ({source, headers: [{key: "Access-Control-Allow-Origin", value: "*"}]})),
       {
         source: "/(.*)",
         headers: [

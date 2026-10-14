@@ -38,6 +38,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     ".next-vault/**",
+    ".next-compute-history/**",
+    ".next-compute-history-build/**",
     ".next-agri-tasks/**",
     ".next-agri-submissions/**",
     ".next-agri-reviews/**",

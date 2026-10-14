@@ -53,6 +53,7 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
   const router = useRouter();
   const t = useTranslations("learning");
   const product = useTranslations("product");
+  const visual = useTranslations("visualWebsite");
   const locale = useLocale();
   const [facts, setFacts] = useState(project.facts);
   const [message, setMessage] = useState("");
@@ -298,6 +299,7 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
       <div className="min-w-0 space-y-4">
         {activeRuns.length > 0 && <p role="status" className="rounded-xl border bg-muted/40 p-3 text-sm">{isZh ? "\u540e\u53f0\u6b63\u5728\u751f\u6210\u6210\u679c\uff0c\u5173\u95ed\u9875\u9762\u4e0d\u4f1a\u53d6\u6d88\u4efb\u52a1\u3002" : "Generating in the background. Closing this page will not cancel the task."}</p>}
         {runReadError && <p role="status" className="text-sm text-muted-foreground">{isZh ? "\u4efb\u52a1\u72b6\u6001\u6682\u65f6\u65e0\u6cd5\u8bfb\u53d6\uff0c\u6b63\u5728\u91cd\u65b0\u8fde\u63a5\u3002\u8bf7\u5148\u4e0d\u8981\u91cd\u590d\u63d0\u4ea4\u3002" : "Reconnecting to task status. Please avoid submitting again."}</p>}
+        {project.artifacts.some(a => a.workflowId === "visual-portfolio-v1") && <Button asChild variant="outline"><Link href={`/projects/${project.id}/visual-website`}>{visual("savedLink")}</Link></Button>}
         <Button asChild variant="outline"><Link href={`/projects/${project.id}/website`}>{product("website.openStudio")}</Link></Button>
         {selectedWorkflow && <Card id="selected-workflow" className="scroll-mt-24 border-primary/40"><CardHeader><CardTitle className="text-base">{product("selectedWorkflow")}</CardTitle><CardDescription>{product("selectedWorkflowHint")}</CardDescription></CardHeader><CardContent className="grid"><WorkflowButton workflow={selectedWorkflow} /></CardContent></Card>}
         <Card>
