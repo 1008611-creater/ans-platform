@@ -27,7 +27,8 @@ async function loadPublishedCatalog() {
     })));
   }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   const retired = new Set(["resume-website", "resume-story", "project-page", "readme-kit", "competition-starter", "pitch-kit", "learning-retrospective", "grok-motion-lab", "open-resume", "dify-agent"]);
-  const members = (await listMarketListings()).map(memberCatalogProject);
+  // Runnable recipe listings belong to workflows and market, not project discovery.
+  const members = (await listMarketListings()).filter(offer => !offer.listing.execution).map(memberCatalogProject);
   return [...official.filter(entry => !retired.has(entry.slug)), ...members];
 }
 // Share only in-flight public reads. Do not cache completed data or private queries.
