@@ -1,4 +1,4 @@
-﻿export type ProjectGuideLocale = {
+export type ProjectGuideLocale = {
   audience: string;
   difficulty: string;
   access: string;
@@ -18,4 +18,3 @@ export type ProjectGuide = {
   zh: ProjectGuideLocale;
   en: ProjectGuideLocale;
 };
-
