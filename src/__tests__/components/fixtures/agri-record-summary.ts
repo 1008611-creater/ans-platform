@@ -43,3 +43,14 @@ export function withSyntheticRecordDetails(base: AgriRecordSummary): AgriRecordS
     }],
   };
 }
+
+
+/** Synthetic metadata-only issue; bodies remain absent from this saved projection. */
+export function withSyntheticIssueMetadata(base: AgriRecordSummary): AgriRecordSummary {
+  return { ...base, issues: [{
+    id: "synthetic-issue", revision: 3, status: "RESOLVED", severity: "HIGH", type: "ENVIRONMENT",
+    basis: "METADATA", visibility: "TEAM", dueState: "CONFIRMED", dueAt: "2026-10-09T01:30:00Z",
+    createdAt: "2026-10-08T01:00:00Z", updatedAt: "2026-10-08T03:00:00Z",
+    completedAt: "2026-10-08T02:00:00Z", completedById: "synthetic-processor", assigneeId: "synthetic-assignee",
+  }] };
+}

@@ -1627,6 +1627,11 @@
         "CONFIRMED": "Confirmed"
       },
       "beijingTime": "{at} (Beijing time)"
+    },
+    "issueDates": {
+      "created": "Issue created",
+      "updated": "Issue updated",
+      "completed": "Processing completed"
     }
   },
   "agriOnsite": {
