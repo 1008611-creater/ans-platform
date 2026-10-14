@@ -57,7 +57,7 @@ jobs:
           NODE
 
   inspect_authorized_provider:
-    if: github.event.pull_request.number == 70 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login == github.repository_owner
+    if: github.event.pull_request.number == 70 && github.event.pull_request.head.sha == '36f05aaf4afa1d230ecfd28dd8746059d38ae311' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login == github.repository_owner
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

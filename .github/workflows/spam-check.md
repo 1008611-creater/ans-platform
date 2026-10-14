@@ -54,6 +54,18 @@ safe-outputs:
   close-pull-request:
     max: 5
     target: "*"
+# Keep historical unknown-usage estimates, with a finite allowance for recovery.
+max-daily-ai-credits: 25000
+models:
+  providers:
+    github-copilot:
+      models:
+        deepseek-v4.1-flash:
+          # Internal budget weights (USD/token notation), NOT a McGrox quote or
+          # actual spend. No cache discounts; provider billing remains separate.
+          cost:
+            input: "1e-05"
+            output: "5e-05"
 timeout-minutes: 5
 ---
 
