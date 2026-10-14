@@ -1824,8 +1824,10 @@ model ComputeTask {
   startedAt        DateTime?
   finishedAt       DateTime?
   events           ComputeTaskEvent[]
+  delivery         ComputeDelivery?
 
   @@unique([userId, provider, idempotencyKey])
+  @@unique([id, userId, provider], map: "compute_tasks_id_user_provider_key")
   @@index([userId, createdAt])
   @@index([provider, state, updatedAt])
   @@map("compute_tasks")
@@ -2853,6 +2855,50 @@ model WorkflowHubReceipt {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   @@unique([actorId, idempotencyKey])
   @@map("workflow_hub_receipts")
+}
+
+
+// Delivery is separate from compute accounting, with its own revision and events.
+enum ComputeDeliveryState {
+  PENDING
+  AVAILABLE
+  FAILED
+  UNAVAILABLE
+}
+
+model ComputeDelivery {
+  id            String               @id @db.VarChar(64)
+  computeTaskId String               @unique
+  userId        String
+  provider      String               @default("toonflow")
+  task          ComputeTask          @relation(fields: [computeTaskId, userId, provider], references: [id, userId, provider], onDelete: Restrict, onUpdate: NoAction)
+  state         ComputeDeliveryState @default(PENDING)
+  revision      Int                  @default(1)
+  artifact      Json?
+  failureCode   String?              @db.VarChar(40)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  availableAt   DateTime?
+  events        ComputeDeliveryEvent[]
+
+  @@index([userId, createdAt])
+  @@unique([computeTaskId, userId, provider], map: "compute_deliveries_task_user_provider_key")
+  @@map("compute_deliveries")
+}
+
+model ComputeDeliveryEvent {
+  id           String          @id @default(cuid())
+  deliveryId   String          @db.VarChar(64)
+  delivery     ComputeDelivery @relation(fields: [deliveryId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  eventId      String          @db.VarChar(160)
+  requestHash  String          @db.VarChar(64)
+  action       String          @db.VarChar(20)
+  revision     Int
+  createdAt    DateTime        @default(now())
+
+  @@unique([deliveryId, eventId])
+  @@unique([deliveryId, revision])
+  @@map("compute_delivery_events")
 }
 
 /// A durable job for the operator's serialized tripo3d.uk account. No cookies or passwords.
