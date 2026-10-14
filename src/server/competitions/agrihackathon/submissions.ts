@@ -5,7 +5,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { agriPrepareStageSchema, agriStageDraftSchema, agriStageSubmissionCommandSchema,
-  agriStageSubmissionContentSchema, agriSubmissionListQuerySchema, agriWorksExportQuerySchema, agriSubmissionRequirementsSchema, agriSubmissionVersionsQuerySchema } from "@/contracts/agri-submissions";
+  agriStageSubmissionContentSchema, agriSubmissionListQuerySchema, agriWorksExportQuerySchema, agriSubmissionRequirementsSchema, agriSubmissionVersionsQuerySchema, type AgriSubmissionHistoryItem } from "@/contracts/agri-submissions";
 import { agriSubmissionWindowSchema } from "@/contracts/agrihackathon";
 import { getAgriSubmissionLifecycleDecision, getAgriSubmissionMaterialIssues, getAgriCorrectionDecision } from "@/domain/competitions/agri-submissions";
 import { agriCsv } from "@/domain/competitions/agri-works-export";
@@ -20,7 +20,7 @@ interface Stage { id: string; competitionId: string; teamCompetitionId: string; 
   revision: number; draft: unknown; currentSubmissionId: string | null; frozenSubmissionId: string | null; createdAt: Date }
 interface Submission { id: string; competitionId: string; entryStageId: string; sequence: number; ruleVersionId: string;
   projectId: string; artifactVersionId: string; repository: unknown; demoUrl: string | null; summary: string; materials: unknown;
-  submittedById: string; acceptedAt: Date }
+  submittedById: string; acceptedAt: Date; officialRosterId: string | null; preliminarySubmissionId: string | null }
 interface Receipt { entryStageId: string; requestHash: string; submissionId: string | null; appliedRevision: number }
 type Authority = Awaited<ReturnType<typeof requireAgriScope>>;
 const fail = (code: string, status = 409): never => { throw new AgriWorkspaceError(code, status); };
@@ -113,6 +113,70 @@ async function validateVersions(tx: Tx, ctx: AgriWorkspaceContext, entry: Entry,
     if (!artifact || artifact.projectId !== content.projectId || !version || version.artifactId !== target.artifactId) return fail("AGRI_ARTIFACT_UNAVAILABLE", 403);
   }
 }
+interface RosterRow { id: string; projectId: string; confirmedById: string; confirmedAt: Date; memberUserIds: string[] }
+async function officialRoster(tx: Tx, entryId: string) {
+  const [row] = await tx.$queryRaw<RosterRow[]>`SELECT * FROM agri_official_rosters WHERE "teamCompetitionId"=${entryId}`;
+  return row ?? null;
+}
+async function rosterMembers(tx: Tx, rosterId: string) {
+  return tx.$queryRaw<Array<{ userId: string; username: string; name: string | null }>>`
+    SELECT "userId",username,name FROM agri_official_roster_members WHERE "rosterId"=${rosterId} ORDER BY "userId"`;
+}
+async function preliminaryBaseline(tx: Tx, entry: Entry, now: Date) {
+  const [prelim] = await tx.$queryRaw<Stage[]>`SELECT * FROM agri_entry_stages
+    WHERE "teamCompetitionId"=${entry.id} AND "competitionId"=${entry.competitionId} AND stage='PRELIMINARY' FOR UPDATE`;
+  if (!prelim) return null;
+  const freeze = await projectAgriStageFreeze(tx, prelim, now);
+  if (!freeze.frozenSubmissionId) return null;
+  const [baseline] = await tx.$queryRaw<Submission[]>`SELECT * FROM agri_stage_submissions
+    WHERE id=${freeze.frozenSubmissionId} AND "entryStageId"=${prelim.id} AND "competitionId"=${entry.competitionId}`;
+  return baseline ?? null;
+}
+async function ensureOfficialIdentity(tx: Tx, ctx: AgriWorkspaceContext, entry: Entry, stage: Stage,
+  projectId: string, selectedIds: string[] | undefined, now: Date) {
+  let roster = await officialRoster(tx, entry.id);
+  if (!roster) {
+    const [history] = await tx.$queryRaw<Array<{ exists: boolean }>>`SELECT EXISTS (SELECT 1 FROM agri_stage_submissions s
+      JOIN agri_entry_stages es ON es.id=s."entryStageId" WHERE es."teamCompetitionId"=${entry.id}) AS exists`;
+    if (history.exists) return fail("AGRI_LEGACY_ROSTER_REQUIRED");
+    if (stage.stage === "FINAL") return fail("AGRI_PRELIMINARY_BASELINE_REQUIRED");
+    if (!selectedIds) return fail("AGRI_ROSTER_REQUIRED", 422);
+    const ids = [...selectedIds].sort();
+    if (!ids.includes(ctx.actorId)) return fail("AGRI_ROSTER_ACTOR_REQUIRED", 422);
+    // Hold both accounts and membership rows in stable ID order through commit.
+    const accounts = await tx.$queryRaw<Array<{ userId: string; username: string; name: string | null }>>`
+      SELECT u.id AS "userId",u.username,u.name FROM users u JOIN team_members tm ON tm."userId"=u.id
+      WHERE u.id=ANY(${ids}::text[]) AND NOT u.flagged AND u."deletedAt" IS NULL AND tm."teamId"=${entry.teamId}
+        AND tm.status='ACTIVE' ORDER BY u.id FOR SHARE OF u,tm`;
+    if (accounts.length !== ids.length) return fail("AGRI_ROSTER_MEMBER_UNAVAILABLE", 422);
+    const conflicts = await tx.$queryRaw<Array<{ userId: string }>>`SELECT "userId" FROM agri_official_roster_members
+      WHERE "competitionId"=${entry.competitionId} AND "userId"=ANY(${ids}::text[])`;
+    if (conflicts.length) return fail("AGRI_ROSTER_MEMBER_CONFLICT");
+    roster = { id: randomUUID(), projectId, confirmedById: ctx.actorId, confirmedAt: now, memberUserIds: ids };
+    await tx.$executeRaw`INSERT INTO agri_official_rosters (id,"competitionId","teamCompetitionId","projectId","memberUserIds","confirmedById","confirmedAt")
+      VALUES (${roster.id},${entry.competitionId},${entry.id},${projectId},${JSON.stringify(ids)}::jsonb,${ctx.actorId},${now})`;
+    for (const account of accounts) await tx.$executeRaw`INSERT INTO agri_official_roster_members ("rosterId","competitionId","userId",username,name)
+      VALUES (${roster.id},${entry.competitionId},${account.userId},${account.username},${account.name})`;
+    await tx.auditLog.create({ data: { actorId: ctx.actorId, action: "AGRI_CONFIRM_OFFICIAL_ROSTER", resourceType: "agri_official_roster",
+      resourceId: roster.id, metadata: { competitionId: entry.competitionId, teamCompetitionId: entry.id, projectId, memberCount: ids.length } } });
+  } else {
+    if (selectedIds && JSON.stringify([...selectedIds].sort()) !== JSON.stringify(roster.memberUserIds)) return fail("AGRI_ROSTER_CHANGE_FORBIDDEN");
+    if (roster.projectId !== projectId) return fail("AGRI_ROSTER_PROJECT_MISMATCH");
+    if (!roster.memberUserIds.includes(ctx.actorId)) return fail("AGRI_ROSTER_ACTOR_REQUIRED", 403);
+    const accounts = await tx.$queryRaw<Array<{ id: string; flagged: boolean; deletedAt: Date | null }>>`
+      SELECT id,flagged,"deletedAt" FROM users WHERE id=ANY(${roster.memberUserIds}::text[]) ORDER BY id FOR SHARE`;
+    if (accounts.length !== roster.memberUserIds.length || accounts.some(row => row.flagged || row.deletedAt)) return fail("AGRI_ROSTER_MEMBER_UNAVAILABLE", 422);
+  }
+  const baseline = stage.stage === "FINAL" ? await preliminaryBaseline(tx, entry, now) : null;
+  if (stage.stage === "FINAL") {
+    if (!baseline?.officialRosterId) return fail("AGRI_PRELIMINARY_BASELINE_REQUIRED");
+    if (baseline.projectId !== projectId || baseline.officialRosterId !== roster.id) return fail("AGRI_FINAL_PROJECT_MISMATCH");
+    const [existing] = await tx.$queryRaw<Array<{ preliminarySubmissionId: string | null }>>`SELECT "preliminarySubmissionId"
+      FROM agri_stage_submissions WHERE "entryStageId"=${stage.id} ORDER BY sequence LIMIT 1`;
+    if (existing && existing.preliminarySubmissionId !== baseline.id) return fail("AGRI_FINAL_BASELINE_CHANGE_FORBIDDEN");
+  }
+  return { rosterId: roster.id, preliminarySubmissionId: baseline?.id ?? null };
+}
 export async function prepareAgriStage(actorId: string, raw: unknown) {
   const command = agriPrepareStageSchema.parse(raw);
   return db.$transaction(async tx => {
@@ -182,11 +246,13 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
       decision(now);
       const issues = getAgriSubmissionMaterialIssues(adopted.requirements, command.content);
       if (issues.length) return fail("AGRI_" + issues[0].code, 422);
+      const identity = await ensureOfficialIdentity(tx, ctx, target.entry, stage, content.projectId,
+        command.action === "submit" ? command.officialMemberIds : undefined, now);
       const [last] = await tx.$queryRaw<Array<{ sequence: number }>>`SELECT COALESCE(max(sequence),0)::integer AS sequence FROM agri_stage_submissions WHERE "entryStageId"=${stage.id}`;
       submissionId = randomUUID();
-      await tx.$executeRaw`INSERT INTO agri_stage_submissions (id,"competitionId","entryStageId",sequence,"ruleVersionId","projectId","artifactVersionId",repository,"demoUrl",summary,materials,"submittedById","acceptedAt")
+      await tx.$executeRaw`INSERT INTO agri_stage_submissions (id,"competitionId","entryStageId",sequence,"ruleVersionId","projectId","artifactVersionId",repository,"demoUrl",summary,materials,"submittedById","acceptedAt","officialRosterId","preliminarySubmissionId")
         VALUES (${submissionId},${stage.competitionId},${stage.id},${last.sequence + 1},${adopted.id},${content.projectId},${content.artifactVersionId},
-          ${content.repository ? JSON.stringify(content.repository) : null}::jsonb,${content.demoUrl},${content.summary},${JSON.stringify(content.materials)}::jsonb,${actorId},${now})`;
+          ${content.repository ? JSON.stringify(content.repository) : null}::jsonb,${content.demoUrl},${content.summary},${JSON.stringify(content.materials)}::jsonb,${actorId},${now},${identity.rosterId},${identity.preliminarySubmissionId})`;
       for (const material of content.materials.items) if (material.kind === "ARTIFACT") {
         await tx.$executeRaw`INSERT INTO agri_submission_material_refs (id,"competitionId","entryStageId","submissionId",key,"artifactVersionId")
           VALUES (${randomUUID()},${stage.competitionId},${stage.id},${submissionId},${material.key},${material.artifactVersionId})`;
@@ -211,10 +277,10 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
     return { entryStageId: stage.id, submissionId, appliedRevision: stage.revision, duplicate: false };
   }, { timeout: 15000 });
 }
-function projectSubmission(row: Submission, privateMaterials: boolean) {
+function projectSubmission(row: Submission, privateMaterials: boolean): AgriSubmissionHistoryItem {
   const base = { id: row.id, entryStageId: row.entryStageId, sequence: row.sequence, ruleVersionId: row.ruleVersionId, acceptedAt: row.acceptedAt.toISOString() };
   if (!privateMaterials) return base;
-  return { ...base, submittedById: row.submittedById, content: agriStageSubmissionContentSchema.parse({ projectId: row.projectId,
+  return { ...base, officialRosterId: row.officialRosterId, preliminarySubmissionId: row.preliminarySubmissionId, submittedById: row.submittedById, content: agriStageSubmissionContentSchema.parse({ projectId: row.projectId,
     artifactVersionId: row.artifactVersionId, repository: row.repository, demoUrl: row.demoUrl, summary: row.summary, materials: row.materials }) };
 }
 export async function readAgriStage(actorId: string, rawId: string, rawQuery: unknown = {}) {
@@ -232,9 +298,21 @@ export async function readAgriStage(actorId: string, rawId: string, rawQuery: un
     const project = (row: Submission) => { const correction = corrections.find(item => item.submissionId === row.id); return { ...projectSubmission(row, target.privateMaterials), ...(correction ? { correction: { previousSubmissionId: correction.previousSubmissionId, permitId: correction.permitId, reason: correction.reason } } : {}) }; };
     const serverNow = await agriDatabaseClock(tx);
     const freeze = await projectAgriStageFreeze(tx, stage, serverNow);
+    const roster = target.privateMaterials ? await officialRoster(tx, target.entry.id) : null;
+    const members = roster ? await rosterMembers(tx, roster.id) : [];
+    const choices = target.teamMember && !roster ? await tx.$queryRaw<Array<{ userId: string; username: string; name: string | null }>>`
+      SELECT u.id AS "userId",u.username,u.name FROM users u JOIN team_members tm ON tm."userId"=u.id
+      WHERE tm."teamId"=${target.entry.teamId} AND tm.status='ACTIVE' AND NOT u.flagged AND u."deletedAt" IS NULL
+      ORDER BY u.username,u.id` : [];
+    const baseline = target.privateMaterials && stage.stage === "FINAL" ? await preliminaryBaseline(tx, target.entry, serverNow) : null;
+    const [legacy] = target.privateMaterials && !roster ? await tx.$queryRaw<Array<{ exists: boolean }>>`SELECT EXISTS (
+      SELECT 1 FROM agri_stage_submissions s JOIN agri_entry_stages es ON es.id=s."entryStageId" WHERE es."teamCompetitionId"=${target.entry.id}) AS exists` : [];
     await assertAgriAuthorityCurrent(tx, ...target.authorities);
     return { competitionId: stage.competitionId, id, teamCompetitionId: stage.teamCompetitionId, stage: stage.stage, revision: stage.revision,
       ...freeze, workspaceEnabled: ctx.workspace.enabled, hasPrivateMaterials: target.privateMaterials,
+      ...(target.privateMaterials ? { officialRoster: roster ? { id: roster.id, projectId: roster.projectId, confirmedAt: roster.confirmedAt.toISOString(),
+        confirmedById: roster.confirmedById, members } : null, officialMemberChoices: choices, legacyRosterRequired: legacy?.exists ?? false,
+        preliminaryBaseline: baseline?.officialRosterId ? { submissionId: baseline.id, projectId: baseline.projectId } : null } : {}),
       draft: target.teamMember && stage.draft !== null ? agriStageDraftSchema.parse(stage.draft) : null,
       current: current ? project(current) : null,
       history: rows.slice(0, 30).map(project),

@@ -54,11 +54,15 @@ export const agriStageSubmissionContentSchema = agriStageDraftSchema.extend({
 });
 export type AgriStageSubmissionContent = z.infer<typeof agriStageSubmissionContentSchema>;
 
+export const agriOfficialMemberIdsSchema = z.array(id).min(1).max(5).superRefine((ids, ctx) => {
+  if (new Set(ids).size !== ids.length) ctx.addIssue({ code: "custom", message: "DUPLICATE_OFFICIAL_MEMBER" });
+});
+
 export const agriStageSubmissionCommandSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("saveDraft"), idempotencyKey: key, entryStageId: id,
     expectedRevision: revision, draft: agriStageDraftSchema }).strict(),
   z.object({ action: z.literal("submit"), idempotencyKey: key, entryStageId: id,
-    expectedRevision: revision, expectedRuleVersionId: id, content: agriStageSubmissionContentSchema }).strict(),
+    expectedRevision: revision, expectedRuleVersionId: id, officialMemberIds: agriOfficialMemberIdsSchema.optional(), content: agriStageSubmissionContentSchema }).strict(),
   z.object({ action: z.literal("correctSubmission"), idempotencyKey: key, entryStageId: id,
     expectedRevision: revision, expectedRuleVersionId: id, previousSubmissionId: id,
     correctionPermitId: id, content: agriStageSubmissionContentSchema }).strict(),
@@ -175,12 +179,21 @@ export interface AgriSubmissionVersionChoice {
 }
 export interface AgriSubmissionHistoryItem {
   id: string; entryStageId: string; sequence: number; ruleVersionId: string; acceptedAt: string;
+  officialRosterId?: string | null; preliminarySubmissionId?: string | null;
   correction?: { previousSubmissionId: string; permitId: string; reason: string };
   submittedById?: string; content?: AgriStageSubmissionContent;
+}
+export interface AgriOfficialRoster {
+  id: string; projectId: string; confirmedAt: string; confirmedById: string;
+  members: Array<{ userId: string; username: string; name: string | null }>;
 }
 export interface AgriStageDetail {
   competitionId: string; id: string; teamCompetitionId: string; stage: "PRELIMINARY" | "FINAL";
   revision: number; frozenSubmissionId: string | null; recordedFrozenSubmissionId?: string | null; frozenByDeadline?: boolean; workspaceEnabled: boolean; hasPrivateMaterials: boolean;
+  officialRoster?: AgriOfficialRoster | null;
+  officialMemberChoices?: Array<{ userId: string; username: string; name: string | null }>;
+  legacyRosterRequired?: boolean;
+  preliminaryBaseline?: { submissionId: string; projectId: string } | null;
   draft: AgriStageDraft | null; current: AgriSubmissionHistoryItem | null; history: AgriSubmissionHistoryItem[];
   nextBeforeSequence: number | null;
   publishedRule: { id: string; guidanceMarkdown: string; requirements: AgriSubmissionRequirements; window: z.infer<typeof agriSubmissionWindowSchema> } | null;

@@ -34,7 +34,7 @@ async function request<T>(url: string, actorId: string, command?: unknown): Prom
 }
 const accountErrors = new Set(["ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE", "UNAUTHORIZED"]);
 // On retries only a rejection after receipt lookup establishes that the original write did not commit.
-const receiptRejections = new Set(["AGRI_REVISION_CONFLICT", "AGRI_IDEMPOTENCY_CONFLICT", "AGRI_WORKSPACE_DISABLED", "AGRI_PROJECT_UNAVAILABLE", "AGRI_ARTIFACT_UNAVAILABLE", "AGRI_FROZEN", "AGRI_RULES_UNPUBLISHED", "AGRI_RULE_VERSION_CONFLICT", "AGRI_RULES_PENDING", "AGRI_NOT_OPEN", "AGRI_CLOSED", "AGRI_FINAL_ELIGIBILITY_REQUIRED", "AGRI_MATERIAL_REQUIRED", "AGRI_MATERIAL_KIND_MISMATCH", "AGRI_UNRECOGNIZED_MATERIAL", "AGRI_INVALID", "AGRI_REPOSITORY_REQUIRED", "AGRI_REPOSITORY_REF_REQUIRED", "AGRI_DEMO_REQUIRED", "AGRI_PERMIT_MISMATCH", "AGRI_PERMIT_NOT_FOUND", "AGRI_PERMIT_INACTIVE", "AGRI_FIELD_NOT_ALLOWED", "AGRI_PROJECT_CHANGE_FORBIDDEN", "AGRI_NO_CHANGE"]);
+const receiptRejections = new Set(["AGRI_ROSTER_REQUIRED", "AGRI_LEGACY_ROSTER_REQUIRED", "AGRI_ROSTER_MEMBER_UNAVAILABLE", "AGRI_ROSTER_MEMBER_CONFLICT", "AGRI_ROSTER_ACTOR_REQUIRED", "AGRI_ROSTER_CHANGE_FORBIDDEN", "AGRI_ROSTER_PROJECT_MISMATCH", "AGRI_PRELIMINARY_BASELINE_REQUIRED", "AGRI_FINAL_PROJECT_MISMATCH", "AGRI_FINAL_BASELINE_CHANGE_FORBIDDEN", "AGRI_REVISION_CONFLICT", "AGRI_IDEMPOTENCY_CONFLICT", "AGRI_WORKSPACE_DISABLED", "AGRI_PROJECT_UNAVAILABLE", "AGRI_ARTIFACT_UNAVAILABLE", "AGRI_FROZEN", "AGRI_RULES_UNPUBLISHED", "AGRI_RULE_VERSION_CONFLICT", "AGRI_RULES_PENDING", "AGRI_NOT_OPEN", "AGRI_CLOSED", "AGRI_FINAL_ELIGIBILITY_REQUIRED", "AGRI_MATERIAL_REQUIRED", "AGRI_MATERIAL_KIND_MISMATCH", "AGRI_UNRECOGNIZED_MATERIAL", "AGRI_INVALID", "AGRI_REPOSITORY_REQUIRED", "AGRI_REPOSITORY_REF_REQUIRED", "AGRI_DEMO_REQUIRED", "AGRI_PERMIT_MISMATCH", "AGRI_PERMIT_NOT_FOUND", "AGRI_PERMIT_INACTIVE", "AGRI_FIELD_NOT_ALLOWED", "AGRI_PROJECT_CHANGE_FORBIDDEN", "AGRI_NO_CHANGE"]);
 const selectClass = "w-full min-w-0 rounded-md border bg-background p-2 text-sm";
 function Field({ label, children }: { label: string; children: (id: string) => ReactNode }) {
   const id = useId(); return <div className="min-w-0 space-y-2"><label className="text-sm font-medium" htmlFor={id}>{label}</label>{children(id)}</div>;
@@ -103,7 +103,8 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
   const saved = readSubmissionRecovery(actorId, initial.id);
   const [detail, setDetail] = useState(saved?.detail ?? initial);
   const [draft, setDraft] = useState<AgriStageDraft>(saved?.draft ?? initial.draft ?? initial.current?.content ?? emptyDraft());
-  const [baseline, setBaseline] = useState(saved?.baseline ?? JSON.stringify(draft));
+  const [officialMemberIds, setOfficialMemberIds] = useState<string[]>(saved?.officialMemberIds ?? initial.officialRoster?.members.map(row => row.userId) ?? (initial.officialMemberChoices?.some(row => row.userId === actorId) ? [actorId] : []));
+  const [baseline, setBaseline] = useState(saved?.baseline ?? JSON.stringify({ draft, officialMemberIds }));
   const [pending, setPending] = useState<AgriStageSubmissionCommand | null>(saved?.pending ?? null);
   const pendingRef = useRef(pending); const flight = useRef(false); const alive = useRef(true);
   const [permitId, setPermitId] = useState("");
@@ -117,7 +118,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
   const leaveAction = useRef<(() => void) | null>(null);
   const cancelLeave = useRef<(() => void) | null>(null);
   const leaveFocus = useRef<HTMLElement | null>(null);
-  const dirty = JSON.stringify(draft) !== baseline;
+  const dirty = JSON.stringify({ draft, officialMemberIds }) !== baseline;
   useEffect(() => {
     if (!dirty && !pending) return;
     return navigation.register((action, cancel) => {
@@ -129,7 +130,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
   }, [navigation, dirty, pending]);
   const locked = busy || !!pending || conflict || stale || !manager || !detail.workspaceEnabled || (!!detail.frozenSubmissionId && !correcting);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
-  useEffect(() => { writeSubmissionRecovery(actorId, initial.id, dirty || pending || conflict || stale ? { detail, draft, baseline, pending, conflict: conflict || stale } : null); }, [actorId, initial.id, detail, draft, baseline, pending, conflict, dirty, stale]);
+  useEffect(() => { writeSubmissionRecovery(actorId, initial.id, dirty || pending || conflict || stale ? { detail, draft, baseline, pending, officialMemberIds, conflict: conflict || stale } : null); }, [actorId, initial.id, detail, draft, baseline, pending, conflict, dirty, stale, officialMemberIds]);
   useEffect(() => { if (!dirty && !pending) return; const guard = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; }; window.addEventListener("beforeunload", guard); return () => window.removeEventListener("beforeunload", guard); }, [dirty, pending]);
   const handleError = useCallback((e: unknown) => { if (!alive.current) return; if (e instanceof SubmissionError && accountErrors.has(e.code)) { invalidate(); return; } setError(e instanceof SubmissionError ? e.code : "INTERNAL_ERROR"); }, [invalidate]);
   const versions = useCallback(async (page?: string) => {
@@ -144,7 +145,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     try { const result = await request<AgriStageDetail>(api + "/" + encodeURIComponent(initial.id) + (before ? "?beforeSequence=" + before : ""), actorId);
       if (!alive.current) return;
       if (before) { setDetail(old => ({ ...old, history: [...old.history, ...result.history].filter((item, i, all) => all.findIndex(row => row.id === item.id) === i), nextBeforeSequence: result.nextBeforeSequence })); }
-      else { setDetail(result); setStale(false); if (!preserve) { const next = result.draft ?? result.current?.content ?? emptyDraft(); setDraft(next); setBaseline(JSON.stringify(next)); } setConflict(false); setAck(false); setConfirmed(false); }
+      else { setDetail(result); setStale(false); if (!preserve) { const next = result.draft ?? result.current?.content ?? emptyDraft(); setDraft(next); setBaseline(JSON.stringify({ draft: next, officialMemberIds })); } setConflict(false); setAck(false); setConfirmed(false); }
     } catch (e) { handleError(e); } finally { if (alive.current) setBusy(false); }
   }
   function edit(next: AgriStageDraft) { setDraft(next); setConfirmed(false); setNote(""); }
@@ -152,20 +153,23 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     if (flight.current || (!pendingRef.current && locked)) return;
     const retry = !!pendingRef.current;
     const parsed = agriStageSubmissionCommandSchema.safeParse(pendingRef.current ?? { action, idempotencyKey: crypto.randomUUID(), entryStageId: detail.id, expectedRevision: detail.revision,
-      ...(action === "saveDraft" ? { draft } : { content: draft, expectedRuleVersionId: action === "correctSubmission" ? permit?.ruleVersionId : detail.publishedRule?.id, ...(action === "correctSubmission" ? { previousSubmissionId: detail.current?.id, correctionPermitId: permit?.id } : {}) }) });
+      ...(action === "saveDraft" ? { draft } : { content: draft, ...(action === "submit" && !detail.officialRoster ? { officialMemberIds } : {}), expectedRuleVersionId: action === "correctSubmission" ? permit?.ruleVersionId : detail.publishedRule?.id, ...(action === "correctSubmission" ? { previousSubmissionId: detail.current?.id, correctionPermitId: permit?.id } : {}) }) });
     if (!parsed.success) { setError("INVALID_INPUT"); return; }
     const command = parsed.data; flight.current = true; pendingRef.current = command; setPending(command); setBusy(true); setError("");
     // Save the exact command before awaiting the network, including navigation away during a write.
-    writeSubmissionRecovery(actorId, initial.id, { detail, draft, baseline, pending: command, conflict });
+    writeSubmissionRecovery(actorId, initial.id, { detail, draft, baseline, pending: command, conflict, officialMemberIds });
     try { const result = await request<{ appliedRevision: number }>(api, actorId, command); if (!alive.current) return;
-      pendingRef.current = null; setPending(null); setDetail(old => ({ ...old, revision: result.appliedRevision })); setBaseline(JSON.stringify(draft)); setConfirmed(false); setStale(true); setNote(t(command.action === "saveDraft" ? "saved" : "submitted"));
+      pendingRef.current = null; setPending(null); setDetail(old => ({ ...old, revision: result.appliedRevision })); setBaseline(JSON.stringify({ draft, officialMemberIds })); setConfirmed(false); setStale(true); setNote(t(command.action === "saveDraft" ? "saved" : "submitted"));
       try { const next = await request<AgriStageDetail>(api + "/" + encodeURIComponent(initial.id), actorId); if (alive.current) { setDetail(next); setStale(false); } } catch (e) { handleError(e); }
     } catch (e) { if (!alive.current) return; if (e instanceof SubmissionError && !e.uncertain && (!retry || receiptRejections.has(e.code))) { pendingRef.current = null; setPending(null); if (["AGRI_REVISION_CONFLICT", "AGRI_RULE_VERSION_CONFLICT"].includes(e.code)) setConflict(true); } handleError(e); }
     finally { flight.current = false; if (alive.current) setBusy(false); }
   }
   const rule = correcting ? detail.correctionRule : detail.publishedRule; const requirements = rule?.requirements;
   const issues = requirements ? getAgriSubmissionMaterialIssues(requirements, draft) : [];
-  const canSubmit = !locked && (correcting || (detail.windowState === "OPEN" && (detail.stage !== "FINAL" || detail.finalEligibility?.state === "ELIGIBLE"))) && !!rule && confirmed && !!draft.artifactVersionId && !!draft.summary.trim() && !issues.length;
+  const rosterReady = !!detail.officialRoster || (officialMemberIds.length >= 1 && officialMemberIds.length <= 5 && officialMemberIds.includes(actorId));
+  const baselineReady = detail.stage !== "FINAL" || (!!detail.preliminaryBaseline && detail.preliminaryBaseline.projectId === draft.projectId);
+  const projectReady = !detail.officialRoster || detail.officialRoster.projectId === draft.projectId;
+  const canSubmit = rosterReady && projectReady && baselineReady && !detail.legacyRosterRequired && !locked && (correcting || (detail.windowState === "OPEN" && (detail.stage !== "FINAL" || detail.finalEligibility?.state === "ELIGIBLE"))) && !!rule && confirmed && !!draft.artifactVersionId && !!draft.summary.trim() && !issues.length;
   const ruleWindow = rule?.window;
   const message = (code: string) => t.has("errors." + code) ? t("errors." + code) : t("errors.INTERNAL_ERROR");
   function material(key: string, kind: "TEXT" | "LINK" | "ARTIFACT", value: string) {
@@ -173,7 +177,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     if (value.trim()) items.push(kind === "TEXT" ? { key, kind, text: value } : kind === "LINK" ? { key, kind, url: value } : { key, kind, artifactVersionId: value });
     edit({ ...draft, materials: { schemaVersion: 1, items } });
   }
-  const versionOptions = choices.map(value => <option key={value.id} value={value.id}>{value.projectTitle} · {value.artifactTitle} · v{value.version}</option>);
+  const versionOptions = choices.filter(row => !detail.officialRoster || row.projectId === detail.officialRoster.projectId).map(value => <option key={value.id} value={value.id}>{value.projectTitle} · {value.artifactTitle} · v{value.version}</option>);
   return <div className="space-y-5">
     <AlertDialog open={leaveOpen} onOpenChange={open => { setLeaveOpen(open); if (!open && leaveAction.current) { leaveAction.current = null; cancelLeave.current?.(); cancelLeave.current = null; } }}>
       <AlertDialogContent onCloseAutoFocus={event => { event.preventDefault(); if (leaveFocus.current?.isConnected) leaveFocus.current.focus(); }}>
@@ -198,9 +202,16 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     {stale && !pending && <div className="space-y-3 rounded-xl border p-4"><p role="status">{t("stale")}</p><Button disabled={busy} onClick={() => void reload(true)}>{t("refresh")}</Button></div>}
     {conflict && !pending && <div className="space-y-3 rounded-xl border p-4"><p role="alert">{t("conflict")}</p><label className="flex items-start gap-2"><input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} /><span>{t("adoptRevision")}</span></label><Button disabled={busy || !ack} onClick={() => void reload(true)}>{t("reloadPreserve")}</Button></div>}
     {manager && !!detail.correctionPermits?.length && <Card><CardHeader><CardTitle>{t("correctionTitle")}</CardTitle></CardHeader><CardContent className="space-y-3"><p className="text-sm leading-6 text-muted-foreground">{t("correctionHelp")}</p><Field label={t("correctionPermit")}>{id => <select id={id} className={selectClass} disabled={busy || !!pending || conflict || stale} value={permitId} onChange={e => { setPermitId(e.target.value); setConfirmed(false); }}><option value="">{t("normalSubmission")}</option>{(detail.correctionPermits ?? []).map(row => <option key={row.id} value={row.id}>{row.reason} · {time(row.expiresAt, locale)}</option>)}</select>}</Field>{permit && <p className="text-sm">{t("allowedFields")}: {permit.allowedFields.map(field => t("correctable." + field)).join(" · ")}</p>}</CardContent></Card>}
+    <Card><CardHeader><CardTitle>{t("officialRosterTitle")}</CardTitle></CardHeader><CardContent className="space-y-3">
+      <p className="text-sm text-muted-foreground">{t(detail.officialRoster ? "officialRosterLocked" : "officialRosterHelp")}</p>
+      {detail.legacyRosterRequired && <p role="alert">{t("errors.AGRI_LEGACY_ROSTER_REQUIRED")}</p>}
+      {detail.officialRoster ? <ul className="space-y-2">{detail.officialRoster.members.map(member => <li key={member.userId} className="text-sm">{member.name ?? member.username} <span className="text-muted-foreground">@{member.username}</span></li>)}</ul>
+        : manager && <fieldset disabled={locked || !!detail.legacyRosterRequired || detail.stage === "FINAL"} className="space-y-2"><legend className="sr-only">{t("officialRosterTitle")}</legend>{(detail.officialMemberChoices ?? []).map(member => <label key={member.userId} className="flex items-center gap-2 text-sm"><input type="checkbox" disabled={!officialMemberIds.includes(member.userId) && officialMemberIds.length >= 5} checked={officialMemberIds.includes(member.userId)} onChange={e => { setOfficialMemberIds(old => e.target.checked ? [...old, member.userId] : old.filter(id => id !== member.userId)); setConfirmed(false); }} />{member.name ?? member.username} <span className="text-muted-foreground">@{member.username}</span></label>)}</fieldset>}
+      {detail.stage === "FINAL" && <p className="break-all text-sm">{detail.preliminaryBaseline ? t("preliminaryBaseline", { id: detail.preliminaryBaseline.submissionId }) : t("errors.AGRI_PRELIMINARY_BASELINE_REQUIRED")}</p>}
+    </CardContent></Card>
     <Card><CardHeader><CardTitle>{t("materials")}</CardTitle></CardHeader><CardContent className="space-y-5">
       <p className="text-sm text-muted-foreground">{t(manager ? "ownVersions" : "readOnlyMaterials")}</p>{choiceError && <Button variant="outline" disabled={busy} onClick={() => void versions()}>{t("retryVersions")}</Button>}
-      <Field label={t("version")}>{id => <select id={id} value={draft.artifactVersionId ?? ""} disabled={locked} className={selectClass} onChange={e => { const choice = choices.find(row => row.id === e.target.value); if (choice) edit({ ...draft, projectId: choice.projectId, artifactVersionId: choice.id }); }}><option value="">{t("selectVersion")}</option>{draft.artifactVersionId && !choices.some(row => row.id === draft.artifactVersionId) && <option value={draft.artifactVersionId}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>}</Field>
+      <Field label={t("version")}>{id => <select id={id} value={draft.artifactVersionId ?? ""} disabled={locked} className={selectClass} onChange={e => { const choice = choices.find(row => row.id === e.target.value && (!detail.officialRoster || row.projectId === detail.officialRoster.projectId)); if (choice) edit({ ...draft, projectId: choice.projectId, artifactVersionId: choice.id }); }}><option value="">{t("selectVersion")}</option>{draft.artifactVersionId && !choices.some(row => row.id === draft.artifactVersionId) && <option value={draft.artifactVersionId}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>}</Field>
       {cursor && <Button variant="outline" disabled={busy || versionsLoading} onClick={() => void versions(cursor)}>{t("moreVersions")}</Button>}
       {versionsLoading && <p role="status">{t("loading")}</p>}
       {manager && !versionsLoading && !choices.length && !choiceError && <p className="text-sm">{t("noVersions")}</p>}

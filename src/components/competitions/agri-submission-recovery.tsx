@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import type { AgriStageDetail, AgriStageDraft, AgriStageSubmissionCommand } from "@/contracts/agri-submissions";
-export type SubmissionRecovery = { detail: AgriStageDetail; draft: AgriStageDraft; baseline: string; pending: AgriStageSubmissionCommand | null; conflict: boolean };
+export type SubmissionRecovery = { detail: AgriStageDetail; draft: AgriStageDraft; baseline: string; pending: AgriStageSubmissionCommand | null; conflict: boolean; officialMemberIds?: string[] };
 // Private inputs stay in tab memory. Never persist them in URLs or browser storage.
 const recoveries = new Map<string, SubmissionRecovery>();
 let actor: string | null = null;

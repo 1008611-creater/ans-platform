@@ -19,7 +19,7 @@ let detail: AgriStageDetail;
 let fetchMock: ReturnType<typeof vi.fn<(url: string, init?: RequestInit) => Promise<Response>>>;
 beforeEach(() => {
   clearSubmissionRecoveries(); mocks.session = { status: "authenticated", data: { user: { id: "actor-a" } } };
-  detail = { competitionId: "competition", id: "stage", teamCompetitionId: "entry", stage: "PRELIMINARY", revision: 1,
+  detail = { officialMemberChoices: [{ userId: "actor-a", username: "actor-a", name: null }], competitionId: "competition", id: "stage", teamCompetitionId: "entry", stage: "PRELIMINARY", revision: 1,
     frozenSubmissionId: null, workspaceEnabled: true, hasPrivateMaterials: true, draft: null, current: null, history: [], nextBeforeSequence: null,
     publishedRule: { id: "rule", guidanceMarkdown: "Fixture guidance", requirements: { schemaVersion: 1, repositoryRequired: false, repositoryRefRequired: false, demoRequired: false, materials: [] },
       window: { stage: "PRELIMINARY", state: "CONFIRMED", opensAt: "2026-10-07T00:00:00Z", closesAt: "2027-01-01T00:00:00Z", includesDeadline: false, confirmedById: "staff", confirmedAt: "2026-10-06T00:00:00Z" } }, windowState: "OPEN", serverNow: "2026-10-08T00:00:00Z" };
@@ -162,5 +162,36 @@ describe("entry-point selection and read-only stage history", () => {
     fireEvent.click(await screen.findByRole("button", { name: copy.open }));
     expect(await screen.findByLabelText(copy.version)).toBeDisabled();
     expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+  });
+});
+
+
+describe("official roster and final baseline", () => {
+  it("includes the explicit selected real-account roster in the first formal command", async () => {
+    await open(); fill();
+    expect(screen.getByLabelText(/actor-a @actor-a/)).toBeChecked();
+    fireEvent.click(screen.getByLabelText(copy.confirm)); fireEvent.click(screen.getByRole("button", { name: copy.submit }));
+    await screen.findByText(copy.submitted);
+    const command = fetchMock.mock.calls.map(([, init]) => init?.body ? JSON.parse(String(init.body)) : null).find(row => row?.action === "submit");
+    expect(command.officialMemberIds).toEqual(["actor-a"]);
+  });
+  it("requires the submitting manager and invalidates consent when the roster changes", async () => {
+    await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
+    fireEvent.click(screen.getByLabelText(/actor-a @actor-a/));
+    expect(screen.getByLabelText(copy.confirm)).not.toBeChecked();
+    fireEvent.click(screen.getByLabelText(copy.confirm)); expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
+  });
+  it("blocks official actions on historical entries with no confirmed roster", async () => {
+    detail.legacyRosterRequired = true; await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
+    expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
+    expect(screen.getByRole("alert")).toHaveTextContent(copy.errors.AGRI_LEGACY_ROSTER_REQUIRED);
+  });
+  it("keeps a qualified final closed without a frozen preliminary baseline", async () => {
+    detail.stage = "FINAL"; detail.finalEligibility = { state: "ELIGIBLE", sourceId: "decision" };
+    detail.officialRoster = { id: "roster", projectId: "project", confirmedById: "actor-a", confirmedAt: detail.serverNow,
+      members: [{ userId: "actor-a", username: "actor-a", name: null }] };
+    await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
+    expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
+    expect(screen.getByText(copy.errors.AGRI_PRELIMINARY_BASELINE_REQUIRED)).toBeInTheDocument();
   });
 });

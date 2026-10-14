@@ -1,3 +1,4 @@
+import { agriOfficialMemberIdsSchema } from "@/contracts/agri-submissions";
 import { describe, expect, it } from "vitest";
 import {
   agriCheckFeedbackCommandSchema,
@@ -307,5 +308,16 @@ describe("candidate versioned material requirements", () => {
       { ...content, materials: { ...content.materials, items: [...content.materials.items, ...content.materials.items] } }]) {
       expect(getAgriSubmissionMaterialIssues(requirements, malformed)).toEqual([{ code: "INVALID" }]);
     }
+  });
+});
+
+
+describe("official member identity contract", () => {
+  it("accepts one through five distinct real-account IDs without inserting defaults", () => {
+    expect(agriOfficialMemberIdsSchema.parse(["user-a"])).toEqual(["user-a"]);
+    expect(agriOfficialMemberIdsSchema.safeParse(["a", "b", "c", "d", "e"]).success).toBe(true);
+  });
+  it("rejects empty, oversized, blank and duplicate selections", () => {
+    for (const ids of [[], [""], ["a", "a"], ["a", "b", "c", "d", "e", "f"]]) expect(agriOfficialMemberIdsSchema.safeParse(ids).success).toBe(false);
   });
 });

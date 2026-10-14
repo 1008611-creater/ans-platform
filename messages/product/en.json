@@ -978,6 +978,10 @@
     }
   },
   "agriSubmissions": {
+    "officialRosterTitle": "Official team members",
+    "officialRosterHelp": "Select 1-5 active team accounts, including yourself. The first accepted submission locks this roster and project for both stages. Each account can belong to only one official project in this edition.",
+    "officialRosterLocked": "This official roster is fixed for the preliminary and final stages. Later team membership changes do not rewrite it.",
+    "preliminaryBaseline": "Frozen preliminary submission: {id}",
     "title": "Team stage submissions",
     "description": "Choose a saved work version, prepare technical materials and review the rules and deadline. Drafts can be refined; formal submissions create immutable history.",
     "back": "Back to Agrihackathon",
@@ -1054,6 +1058,16 @@
     "versionId": "Work version: {id}",
     "moreHistory": "Load earlier submissions",
     "errors": {
+      "AGRI_ROSTER_REQUIRED": "Select the official team members before submitting.",
+      "AGRI_LEGACY_ROSTER_REQUIRED": "This historical entry has no confirmed official roster. Formal submissions are blocked until the organizer resolves the historical record; existing history is preserved.",
+      "AGRI_ROSTER_MEMBER_UNAVAILABLE": "A selected member is no longer an eligible account. Reload the team list.",
+      "AGRI_ROSTER_MEMBER_CONFLICT": "A selected account is already on another official project in this edition.",
+      "AGRI_ROSTER_ACTOR_REQUIRED": "The submitting manager must be an official team member.",
+      "AGRI_ROSTER_CHANGE_FORBIDDEN": "The confirmed official roster cannot be changed.",
+      "AGRI_ROSTER_PROJECT_MISMATCH": "Use a version of the project locked with this official roster.",
+      "AGRI_PRELIMINARY_BASELINE_REQUIRED": "A frozen preliminary submission with a confirmed roster is required for the final.",
+      "AGRI_FINAL_PROJECT_MISMATCH": "The final must use the same project and roster as the frozen preliminary submission.",
+      "AGRI_FINAL_BASELINE_CHANGE_FORBIDDEN": "The final cannot change its recorded preliminary baseline.",
       "INTERNAL_ERROR": "Unable to complete the operation. Try again later.",
       "ACCOUNT_CHANGED": "The signed-in account changed. Previous account materials are hidden. Refresh your session.",
       "INVALID_INPUT": "Check the work version, introduction, HTTPS URLs and full SHA / Tag.",

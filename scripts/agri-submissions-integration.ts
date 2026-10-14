@@ -6,7 +6,9 @@ import type { AgriRulesDraft } from "../src/contracts/agri-workspace";
 import type { AgriStageSubmissionContent } from "../src/contracts/agri-submissions";
 for (const value of [process.env.DATABASE_URL, process.env.DIRECT_URL]) {
   const url = new URL(value ?? "http://invalid");
-  if (url.hostname !== "127.0.0.1" || url.port !== "55438" || url.pathname !== "/ans_product_verify_agri_submissions_r1") throw new Error("Non-isolated submission writes refused");
+  const local = url.hostname === "127.0.0.1" && url.port === "55438" && url.pathname === "/ans_product_verify_agri_submissions_r1";
+  const dedicated = process.env.ANS_AGRI_ROSTER_VERIFY === "true" && url.hostname === "ans-agri-roster-db" && url.port === "5432" && url.pathname === "/ans_agri_roster_verify_20261014";
+  if (!local && !dedicated) throw new Error("Non-isolated submission writes refused");
 }
 const dir = process.env.AGRI_SUBMISSIONS_EVIDENCE_DIR ?? ".workbuddy/evidence/agri-submissions";
 async function main() {
@@ -44,6 +46,7 @@ async function main() {
     const prefix = "agri-submit-" + randomUUID();
     const edition = await db.competition.create({ data: { title: prefix + " LOCAL FIXTURE", status: "ONGOING" }, select: { id: true } });
     const otherEdition = await db.competition.create({ data: { title: prefix + " OTHER FIXTURE" }, select: { id: true } });
+    const ordinaryEdition = await db.competition.create({ data: { title: prefix + " ORDINARY FIXTURE" }, select: { id: true } });
     const makeUser = (suffix: string, role: "USER" | "ADMIN" = "USER") => db.user.create({ data: { email: prefix + suffix + "@example.invalid", username: prefix + suffix, role, quotaPoints: 111 }, select: { id: true, xp: true, quotaPoints: true } });
     const [owner, teammate, outsider, admin, staff, fullStaff] = await Promise.all([makeUser("owner"), makeUser("teammate"), makeUser("outsider"), makeUser("admin", "ADMIN"), makeUser("staff"), makeUser("full")]);
     await db.$executeRaw`INSERT INTO agri_workspaces (id,"competitionId") VALUES (${randomUUID()},${edition.id}),(${randomUUID()},${otherEdition.id})`;
@@ -69,7 +72,7 @@ async function main() {
     await db.teamMember.createMany({ data: [{ teamId: team.id, userId: owner.id, role: "OWNER" }, { teamId: team.id, userId: teammate.id, role: "MEMBER" }, { teamId: otherTeam.id, userId: outsider.id, role: "OWNER" }] });
     const entry = await db.teamCompetition.create({ data: { teamId: team.id, competitionId: edition.id }, select: { id: true } });
     const otherEntry = await db.teamCompetition.create({ data: { teamId: otherTeam.id, competitionId: edition.id }, select: { id: true } });
-    const ordinaryEntry = await db.teamCompetition.create({ data: { teamId: team.id, competitionId: otherEdition.id }, select: { id: true } });
+    const ordinaryEntry = await db.teamCompetition.create({ data: { teamId: team.id, competitionId: ordinaryEdition.id }, select: { id: true } });
     const makeVersion = async (userId: string, teamId: string) => {
       const project = await db.project.create({ data: { title: prefix + " PRIVATE PROJECT", ownerId: userId, teamId, goal: "CONTEST" }, select: { id: true } });
       const artifact = await db.artifact.create({ data: { projectId: project.id, workflowId: "local-fixture", kind: "CONTEST_MVP", title: "LOCAL FIXTURE", createdById: userId }, select: { id: true } });
@@ -80,7 +83,7 @@ async function main() {
     const content: AgriStageSubmissionContent = { ...own, repository: { url: "https://example.invalid/PRIVATE_FIXTURE", ref: { kind: "COMMIT_SHA", value: "a".repeat(40) } },
       demoUrl: "https://example.invalid/PRIVATE_FIXTURE/demo", summary: "PRIVATE_FIXTURE submission", materials: { schemaVersion: 1, items: [{ key: "proof", kind: "ARTIFACT", artifactVersionId: own.artifactVersionId }] } };
     let stageId = "", ruleId = "", revision = 1, currentId = "";
-    const command = (extra: Record<string, unknown> = {}) => ({ action: "submit", entryStageId: stageId, expectedRevision: revision, expectedRuleVersionId: ruleId, idempotencyKey: randomUUID(), content, ...extra });
+    const command = (extra: Record<string, unknown> = {}) => ({ action: "submit", entryStageId: stageId, expectedRevision: revision, expectedRuleVersionId: ruleId, idempotencyKey: randomUUID(), officialMemberIds: [owner.id], content, ...extra });
     await check("disabled workspace refuses preparation; enabled edition requires confirmed published rules", async () => {
       await assert.rejects(prepare(owner.id, { action: "prepareStage", teamCompetitionId: entry.id, stage: "PRELIMINARY" }), /AGRI_WORKSPACE_DISABLED/);
       ruleId = await publish(); const rev = (await getRules(owner.id)).revision;
@@ -225,7 +228,7 @@ async function main() {
       const final = await prepare(owner.id, { action: "prepareStage", teamCompetitionId: entry.id, stage: "FINAL" });
       ruleId = await publish(120000, true);
       await assert.rejects(run(owner.id, command({ entryStageId: final.entryStageId, expectedRevision: 1 })), /AGRI_FINAL_ELIGIBILITY_REQUIRED/);
-      await assert.rejects(run(owner.id, { ...command(), action: "correctSubmission", previousSubmissionId: currentId, correctionPermitId: "unissued" }), /AGRI_PERMIT_MISMATCH/);
+      await assert.rejects(run(owner.id, { action: "correctSubmission", idempotencyKey: randomUUID(), entryStageId: stageId, expectedRevision: revision, expectedRuleVersionId: ruleId, content, previousSubmissionId: currentId, correctionPermitId: "unissued" }), /AGRI_PERMIT_MISMATCH/);
       assert.equal((await get(owner.id, stageId)).history.length, 2);
     });
     await check("account and membership rechecked on replays; withdrawn members cannot replay accepted commands", async () => {
@@ -236,18 +239,20 @@ async function main() {
       await db.teamMember.update({ where: { teamId_userId: { teamId: team.id, userId: owner.id } }, data: { status: "ACTIVE" } });
     });
     // Dedicated second stage with no previous adopted window allows deterministic deadline races.
-    const raceTeam = await db.team.create({ data: { name: prefix + " RACE", slug: prefix + "-race", ownerId: owner.id }, select: { id: true } });
-    await db.teamMember.create({ data: { teamId: raceTeam.id, userId: owner.id, role: "OWNER" } });
+    const raceOwner = await makeUser("race-owner");
+    const raceTeam = await db.team.create({ data: { name: prefix + " RACE", slug: prefix + "-race", ownerId: raceOwner.id }, select: { id: true } });
+    await db.teamMember.create({ data: { teamId: raceTeam.id, userId: raceOwner.id, role: "OWNER" } });
+    await db.teamMember.create({ data: { teamId: raceTeam.id, userId: owner.id, role: "ADMIN" } });
     const raceEntry = await db.teamCompetition.create({ data: { teamId: raceTeam.id, competitionId: edition.id }, select: { id: true } });
     const raceStage = await prepare(owner.id, { action: "prepareStage", teamCompetitionId: raceEntry.id, stage: "PRELIMINARY" });
-    const raceVersion = await makeVersion(owner.id, raceTeam.id);
+    const raceVersion = await makeVersion(raceOwner.id, raceTeam.id);
     const raceContent = { ...content, ...raceVersion, materials: { schemaVersion: 1, items: [{ key: "proof", kind: "ARTIFACT", artifactVersionId: raceVersion.artifactVersionId }] } };
     await check("lock wait across deadline uses the post-lock database clock, not click or transaction-start time", async () => {
       const raceRule = await publish(850);
       let release!: () => void, locked!: () => void;
       const gate = new Promise<void>(resolve => { release = resolve; }), ready = new Promise<void>(resolve => { locked = resolve; });
       const holder = db.$transaction(async tx => { await tx.$queryRaw`SELECT id FROM agri_workspaces WHERE "competitionId"=${edition.id} FOR UPDATE`; locked(); await gate; }, { timeout: 15000 }); await ready;
-      const pending = assert.rejects(run(owner.id, command({ entryStageId: raceStage.entryStageId, expectedRevision: 1, expectedRuleVersionId: raceRule, content: raceContent })), /AGRI_CLOSED/);
+      const pending = assert.rejects(run(raceOwner.id, command({ entryStageId: raceStage.entryStageId, expectedRevision: 1, expectedRuleVersionId: raceRule, content: raceContent, officialMemberIds: [raceOwner.id] })), /AGRI_CLOSED/);
       await new Promise(resolve => setTimeout(resolve, 1100)); release(); await holder; await pending;
       assert.equal((await get(owner.id, raceStage.entryStageId)).history.length, 0);
     });
@@ -256,7 +261,7 @@ async function main() {
       const before = await db.auditLog.count({ where: { resourceId: raceStage.entryStageId } });
       await db.$executeRawUnsafe(`CREATE OR REPLACE FUNCTION fixture_agri_submission_pause() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action='AGRI_SUBMIT' THEN PERFORM pg_sleep(1.1); END IF; RETURN NEW; END; $$`);
       await db.$executeRawUnsafe(`CREATE TRIGGER fixture_agri_submission_pause BEFORE INSERT ON audit_logs FOR EACH ROW EXECUTE FUNCTION fixture_agri_submission_pause()`);
-      try { await assert.rejects(run(owner.id, command({ entryStageId: raceStage.entryStageId, expectedRevision: 1, expectedRuleVersionId: raceRule, content: raceContent })), /AGRI_CLOSED/); }
+      try { await assert.rejects(run(raceOwner.id, command({ entryStageId: raceStage.entryStageId, expectedRevision: 1, expectedRuleVersionId: raceRule, content: raceContent, officialMemberIds: [raceOwner.id] })), /AGRI_CLOSED/); }
       finally { await db.$executeRawUnsafe(`DROP TRIGGER fixture_agri_submission_pause ON audit_logs`); }
       const view = await get(owner.id, raceStage.entryStageId); assert.equal(view.revision, 1); assert.equal(view.history.length, 0);
       assert.equal(await db.auditLog.count({ where: { resourceId: raceStage.entryStageId } }), before);
@@ -266,8 +271,8 @@ async function main() {
     let acceptedRaceCommand: ReturnType<typeof command>, acceptedRaceId: string;
     await check("old adopted deadline remains frozen after replacement rules reopen; consecutive history GETs do not write", async () => {
       const raceRule = await publish(1600);
-      acceptedRaceCommand = command({ entryStageId: raceStage.entryStageId, expectedRevision: 1, expectedRuleVersionId: raceRule, content: raceContent });
-      const accepted = await run(owner.id, acceptedRaceCommand); acceptedRaceId = accepted.submissionId!;
+      acceptedRaceCommand = command({ entryStageId: raceStage.entryStageId, expectedRevision: 1, expectedRuleVersionId: raceRule, content: raceContent, officialMemberIds: [raceOwner.id] });
+      const accepted = await run(raceOwner.id, acceptedRaceCommand); acceptedRaceId = accepted.submissionId!;
       const extendedRule = await publish(120000);
       await new Promise(resolve => setTimeout(resolve, 1750));
       const before = await databaseSnapshot();
@@ -283,8 +288,8 @@ async function main() {
         assert.equal(record.submission.isFrozen, true); assert.equal(record.submission.isRecordedFrozen, false); assert.equal(record.submission.frozenByDeadline, true);
       }
       const after = await databaseSnapshot(); assert.deepEqual(after, before); report.readonlySnapshots.push({ before, after });
-      await assert.rejects(run(owner.id, command({ entryStageId: raceStage.entryStageId, expectedRevision: 2, expectedRuleVersionId: extendedRule, content: raceContent })), /AGRI_FROZEN/);
-      await assert.rejects(run(owner.id, { action: "saveDraft", entryStageId: raceStage.entryStageId, expectedRevision: 2, idempotencyKey: randomUUID(), draft: raceContent }), /AGRI_FROZEN/);
+      await assert.rejects(run(raceOwner.id, command({ entryStageId: raceStage.entryStageId, expectedRevision: 2, expectedRuleVersionId: extendedRule, content: raceContent, officialMemberIds: [raceOwner.id] })), /AGRI_FROZEN/);
+      await assert.rejects(run(raceOwner.id, { action: "saveDraft", entryStageId: raceStage.entryStageId, expectedRevision: 2, idempotencyKey: randomUUID(), draft: raceContent }), /AGRI_FROZEN/);
       const [stored] = await db.$queryRaw<Array<{ revision: number; frozenSubmissionId: string | null }>>`SELECT revision,"frozenSubmissionId" FROM agri_entry_stages WHERE id=${raceStage.entryStageId}`;
       assert.deepEqual(stored, { revision: 2, frozenSubmissionId: null });
     });
@@ -294,7 +299,7 @@ async function main() {
       const [adoptedWindow] = await db.$queryRaw<Array<{ closed: boolean }>>`SELECT w."closesAt" < clock_timestamp() AS closed
         FROM agri_stage_windows w WHERE w."ruleVersionId"=${acceptedRaceCommand!.expectedRuleVersionId} AND stage='PRELIMINARY'`;
       assert.equal(adoptedWindow.closed, true);
-      const replay = await run(owner.id, acceptedRaceCommand!);
+      const replay = await run(raceOwner.id, acceptedRaceCommand!);
       assert.equal(replay.duplicate, true); assert.equal(replay.submissionId, acceptedRaceId!); assert.equal(replay.appliedRevision, 2);
       const after = await get(owner.id, raceStage.entryStageId);
       assert.equal(after.history.length, 1); assert.equal(after.revision, before.revision);
@@ -304,7 +309,7 @@ async function main() {
       const permit = await decide(owner.id, { action: "issueCorrectionPermit", idempotencyKey: randomUUID(), entryStageId: raceStage.entryStageId,
         expectedRevision: 2, previousSubmissionId: acceptedRaceId!, allowedFields: ["summary"], reason: "LOCAL FIXTURE permitted summary correction",
         expiresAt: new Date((await clock()).getTime() + 120000).toISOString() });
-      const corrected = await run(owner.id, { action: "correctSubmission", idempotencyKey: randomUUID(), entryStageId: raceStage.entryStageId,
+      const corrected = await run(raceOwner.id, { action: "correctSubmission", idempotencyKey: randomUUID(), entryStageId: raceStage.entryStageId,
         expectedRevision: 2, previousSubmissionId: acceptedRaceId!, correctionPermitId: permit.resourceId,
         expectedRuleVersionId: acceptedRaceCommand!.expectedRuleVersionId, content: { ...raceContent, summary: "PRIVATE_FIXTURE permitted correction" } });
       const view = await get(owner.id, raceStage.entryStageId);
