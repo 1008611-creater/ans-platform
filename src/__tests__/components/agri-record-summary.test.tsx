@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AgriRecordSummary } from "@/components/competitions/agri-record-summary";
+import { AgriRecordSummary, AgriRecordSummaryContents } from "@/components/competitions/agri-record-summary";
 import type { AgriRecordSummary as Summary } from "@/contracts/agri-record-summary";
 import messages from "../../../messages/product/en.json";
 vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: () => {
@@ -9,6 +9,7 @@ vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: () => {
   t.has = (key: string) => typeof lookup(key) === "string"; return t;
 } }));
 vi.mock("@/components/providers/workspace-navigation", () => ({ WorkspaceLink: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
+import { withSyntheticRecordDetails } from "./fixtures/agri-record-summary";
 const copy = messages.agriSummary;
 const invalidate = vi.fn();
 function summary(privateScope = false, internalScope = false, submissionId = "submission-a"): Summary {
@@ -38,4 +39,72 @@ describe("live summary privacy and exact-source boundary", () => {
   it("unmounting the account panel prevents an in-flight download", async () => { const view = mount(); await open(); const late = deferred(); fetcher.mockReturnValueOnce(late.promise); fireEvent.click(screen.getByRole("button", { name: copy.export })); view.unmount(); await act(async () => late.resolve(exportResponse(summary()))); expect(objectUrl).not.toHaveBeenCalled(); });
   it("a fresh authorized JSON export downloads and remains clearly a live summary", async () => { mount(); await open(); fetcher.mockResolvedValueOnce(exportResponse(summary())); fireEvent.click(screen.getByRole("button", { name: copy.export })); await screen.findByText(copy.notArchive); expect(objectUrl).toHaveBeenCalledOnce(); expect(click).toHaveBeenCalledOnce(); });
   it("closing clears optional scopes and requests metadata next time", async () => { mount(); await open(); fireEvent.click(screen.getByLabelText(copy.includePrivate)); fireEvent.click(screen.getByRole("button", { name: copy.close })); await open(); expect(screen.getByLabelText(copy.includePrivate)).not.toBeChecked(); expect(fetcher.mock.calls[1][0]).toContain("includePrivate=false"); });
+});
+
+
+describe("saved record details rendering", () => {
+  it("renders exact materials, versions, individual checks and fallback/recheck details without fetching", () => {
+    render(<AgriRecordSummaryContents data={withSyntheticRecordDetails(summary())} />);
+    for (const value of ["SAVED_SUMMARY_MARKER", "SAVED_REPOSITORY_CHECK", "SAVED_DEMO_CHECK", "SAVED_VIDEO_CHECK", "SAVED_FEEDBACK_MARKER", "SAVED_INTERNAL_MARKER", "SAVED_DEMO_DESCRIPTION", "SAVED_DEVICE_CHECK", "SAVED_COMPATIBILITY_CHECK", "SAVED_NETWORK_CHECK", "SAVED_AUDIO_CHECK", "SAVED_BACKUP_CHECK", "synthetic-artifact-version", "synthetic-backup-version", "a".repeat(40)]) {
+      expect(screen.getByText(value)).toBeInTheDocument();
+    }
+    expect(screen.getByText("SAVED_TEXT_MARKER <script>alert(1)</script>")).toBeInTheDocument();
+    expect(document.querySelector("script")).toBeNull();
+    expect(screen.getByText(/synthetic-slides-version/)).toBeInTheDocument();
+    for (const url of ["https://github.com/example/synthetic-record", "https://demo.example.invalid/saved-demo", "https://video.example.invalid/saved-video", "https://backup.example.invalid/saved-demo"]) {
+      expect(screen.getByRole("link", { name: url + " " + copy.details.newTab })).toHaveAttribute("href", url);
+    }
+    expect(screen.getByText(/Demo check 2.*Rechecks record demo-synthetic-previous/)).toBeInTheDocument();
+    expect(screen.getByText("Fallback plan \u00b7 Not tested")).toBeInTheDocument();
+    expect(screen.getByText(/Tentative.*9 Oct 2026, 08:30.*Beijing time/)).toBeInTheDocument();
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it.each([false, true])("never renders private details in metadata scope (internal scope %s)", internal => {
+    const data = withSyntheticRecordDetails(summary());
+    data.selection = { includePrivate: false, includeInternal: internal };
+    render(<AgriRecordSummaryContents data={data} />);
+    expect(screen.queryByText(/SAVED_/)).toBeNull();
+    expect(screen.queryByText("a".repeat(40))).toBeNull();
+    expect(screen.queryByRole("link", { name: /https:/ })).toBeNull();
+  });
+  it("renders internal metadata notes only with the internal selection", () => {
+    const data = withSyntheticRecordDetails(summary());
+    data.selection = { includePrivate: false, includeInternal: true };
+    data.technicalChecks[0].basis = "METADATA";
+    const view = render(<AgriRecordSummaryContents data={data} />);
+    expect(screen.getByText("SAVED_INTERNAL_MARKER")).toBeInTheDocument();
+    expect(screen.queryByText("SAVED_REPOSITORY_CHECK")).toBeNull();
+    data.selection = { includePrivate: true, includeInternal: false };
+    view.rerender(<AgriRecordSummaryContents data={data} />);
+    expect(screen.queryByText("SAVED_INTERNAL_MARKER")).toBeNull();
+    expect(screen.getByText("SAVED_REPOSITORY_CHECK")).toBeInTheDocument();
+  });
+  it("keeps missing historical fields and unknown dates explicit", () => {
+    const data = withSyntheticRecordDetails(summary());
+    delete data.technicalChecks[0].checklist;
+    data.content!.repository = null;
+    data.content!.demoUrl = null;
+    data.content!.materials.items = [];
+    data.demoChecks[0].demo!.recheckDue = { state: "UNKNOWN", at: null };
+    const view = render(<AgriRecordSummaryContents data={data} />);
+    expect(screen.getByText(copy.details.notIncluded)).toBeInTheDocument();
+    expect(screen.getAllByText(copy.details.notRecorded)).toHaveLength(3);
+    expect(screen.getByText(copy.details.noMaterials)).toBeInTheDocument();
+    expect(screen.getByText(copy.details.dateState.UNKNOWN)).toBeInTheDocument();
+    expect(screen.queryByText(/Tentative.*Beijing time/)).toBeNull();
+    data.content!.repository = { url: "https://github.com/example/synthetic-record", ref: { kind: "TAG", value: "v1-saved" } };
+    view.rerender(<AgriRecordSummaryContents data={data} />);
+    expect(screen.getByText("v1-saved")).toBeInTheDocument();
+    expect(screen.getByText("Tag:")).toBeInTheDocument();
+  });
+  it.each(["javascript:alert(1)", "https://user:secret@example.invalid/private", "https://example.invalid/video?token=secret", "https://example.invalid/video#secret", "http://example.invalid/video"])("does not turn an invalid saved address into a link: %s", value => {
+    const data = withSyntheticRecordDetails(summary());
+    data.content!.repository!.url = value;
+    data.content!.demoUrl = value;
+    data.content!.materials.items = [{ key: "video", kind: "LINK", url: value }];
+    data.demoChecks[0].demo!.backup.url = value;
+    render(<AgriRecordSummaryContents data={data} />);
+    expect(screen.queryByRole("link", { name: /opens in a new tab/ })).toBeNull();
+    expect(screen.getAllByText(copy.details.invalidLink, { exact: false })).toHaveLength(4);
+  });
 });

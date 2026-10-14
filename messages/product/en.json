@@ -1524,8 +1524,8 @@
     "current": "Current submission",
     "frozen": "Frozen submission",
     "openSource": "Open source record",
-    "submissionContent": "Submitted description",
-    "materialCount": "{count} linked materials. Review full details in the source record or an authorized export.",
+    "submissionContent": "Submitted materials",
+    "materialCount": "Materials ({count})",
     "empty": "No readable records in this scope.",
     "result": {
       "PASS": "Technical check passed",
@@ -1566,7 +1566,60 @@
       "PRIVATE_MATERIALS": "Private materials basis"
     },
     "correctedFrom": "Corrects submission {id}: {reason}",
-    "correctionAuthority": "Permit {permit}; authorized by {id}; {at} (Beijing time)"
+    "correctionAuthority": "Permit {permit}; authorized by {id}; {at} (Beijing time)",
+    "details": {
+      "repository": "Repository address",
+      "repositoryRef": "External repository version",
+      "refKind": {
+        "COMMIT_SHA": "Commit SHA",
+        "TAG": "Tag"
+      },
+      "demoUrl": "Demo address",
+      "artifactVersion": "ANS artifact version ID",
+      "noMaterials": "No additional materials were recorded.",
+      "materialKind": {
+        "TEXT": "Text",
+        "LINK": "Link",
+        "ARTIFACT": "Artifact version"
+      },
+      "notRecorded": "Not recorded",
+      "notIncluded": "Detailed fields were not included in this record.",
+      "newTab": "(opens in a new tab)",
+      "invalidLink": "Not a supported stable HTTPS address",
+      "externalHint": "These are saved addresses and version references. They do not verify availability or back up external files; external content may change.",
+      "mode": "Presentation mode",
+      "demoMode": {
+        "LIVE": "Live demo",
+        "VIDEO": "Video",
+        "HYBRID": "Live demo and video",
+        "OTHER": "Other"
+      },
+      "demoSequence": "Demo check {sequence}",
+      "recheckOf": "Rechecks record {id}",
+      "condition": {
+        "device": "Device",
+        "compatibility": "Compatibility",
+        "network": "Network",
+        "audio": "Audio",
+        "backup": "Fallback plan"
+      },
+      "itemStatus": {
+        "PASS": "Passed",
+        "NEEDS_ACTION": "Action needed",
+        "UNREACHABLE": "Unreachable",
+        "NOT_APPLICABLE": "Not applicable",
+        "NOT_TESTED": "Not tested"
+      },
+      "backupUrl": "Fallback material address",
+      "backupArtifact": "Fallback ANS artifact version ID",
+      "recheckDue": "Recheck deadline",
+      "dateState": {
+        "UNKNOWN": "Date unconfirmed",
+        "TENTATIVE": "Tentative",
+        "CONFIRMED": "Confirmed"
+      },
+      "beijingTime": "{at} (Beijing time)"
+    }
   },
   "agriOnsite": {
     "title": "AgriHackathon onsite coordination",

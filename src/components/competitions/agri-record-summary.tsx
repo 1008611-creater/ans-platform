@@ -6,7 +6,8 @@ import { ClipboardList, Download, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WorkspaceLink } from "@/components/providers/workspace-navigation";
-import type { AgriRecordSummary as Summary } from "@/contracts/agri-record-summary";
+import type { AgriRecordSummary as Summary, AgriSummaryCheck, AgriSummaryDemo } from "@/contracts/agri-record-summary";
+import { agriMaterialUrlSchema } from "@/contracts/agri-submissions";
 
 const accountErrors = new Set(["UNAUTHORIZED", "ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE"]);
 type Selection = { includePrivate: boolean; includeInternal: boolean };
@@ -75,9 +76,58 @@ export function AgriRecordSummaryContents({ data }: { data: Summary }) {
         <div className="space-y-2 rounded-lg border p-4"><h3 className="text-sm font-medium">{t("selectedSubmission")}</h3><p className="text-sm">{t("submission", { stage: t("stage." + data.submission.stage), sequence: data.submission.sequence, version: data.submission.artifactVersion })}</p><p className="text-xs text-muted-foreground">{t("rule", { version: data.rule.version, at: at(data.rule.confirmedAt) })}</p>{!data.submission.isCurrent && <p className="text-xs text-muted-foreground">{t("historical")}</p>}</div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{([["history", data.stageHistory.length], ["technical", data.technicalChecks.length], ["demo", data.demoChecks.length], ["issues", data.issues.length]] as const).map(([name, count]) => <div key={name} className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">{t(name)}</p><p className="mt-1 text-2xl font-semibold tabular-nums">{count}</p></div>)}</div>
         <div className="space-y-3"><h3 className="font-medium">{t("history")}</h3><ul className="space-y-2">{data.stageHistory.map(row => <li key={row.id} className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-lg border p-3"><div className="min-w-0 space-y-1"><p className="text-sm">{t("submission", { stage: t("stage." + row.stage), sequence: row.sequence, version: row.artifactVersion })}</p><p className="text-xs text-muted-foreground">{at(row.acceptedAt)}</p>{row.correction && <div className="space-y-1"><p className="whitespace-pre-wrap break-words text-sm">{t("correctedFrom", { id: row.correction.previousSubmissionId, reason: row.correction.reason })}</p><p className="break-all text-xs text-muted-foreground">{t("correctionAuthority", { id: row.correction.authorizedById, at: at(row.correction.authorizedAt), permit: row.correction.permitId })}</p></div>}<div className="flex flex-wrap gap-2">{row.isCurrent && <Badge variant="outline">{t("current")}</Badge>}{row.isFrozen && <Badge variant="outline">{t("frozen")}</Badge>}</div></div><Button asChild variant="ghost" size="sm"><WorkspaceLink href={"/competitions/agrihackathon/records/" + encodeURIComponent(row.id) + "?scope=staff"}>{t("openSource")}</WorkspaceLink></Button></li>)}</ul></div>
-        {data.content && <div className="space-y-2 rounded-lg border p-4"><h3 className="font-medium">{t("submissionContent")}</h3><p className="whitespace-pre-wrap break-words text-sm">{data.content.summary}</p><p className="text-xs text-muted-foreground">{t("materialCount", { count: data.content.materials.items.length })}</p></div>}
-        {([['technical', data.technicalChecks], ['demo', data.demoChecks]] as const).map(([name, checks]) => <div key={name} className="space-y-3"><h3 className="font-medium">{t(name)}</h3>{!checks.length && <p className="text-sm text-muted-foreground">{t("empty")}</p>}<ul className="space-y-2">{checks.map(check => <li key={check.id} className="space-y-2 rounded-lg border p-3"><div className="flex flex-wrap items-center gap-2"><Badge variant="outline">{t("result." + check.result)}</Badge><Badge variant="secondary">{t("basis." + check.basis)}</Badge><span className="text-xs text-muted-foreground">{at(check.checkedAt)}</span><Badge variant="secondary">{t(check.feedback ? "published" : "unpublished")}</Badge></div>{check.checkedById && <p className="break-all text-xs text-muted-foreground">{t("checkedBy", { id: check.checkedById })}</p>}{check.feedback?.body && <p className="whitespace-pre-wrap break-words text-sm">{check.feedback.body}</p>}{check.internalNote && <div className="space-y-1"><p className="text-xs text-muted-foreground">{t("internalNote")}</p><p className="whitespace-pre-wrap break-words text-sm">{check.internalNote}</p></div>}</li>)}</ul></div>)}
+        {data.selection.includePrivate && data.content && <SubmittedMaterials content={data.content} />}
+        {([['technical', data.technicalChecks], ['demo', data.demoChecks]] as const).map(([name, checks]) => <div key={name} className="space-y-3"><h3 className="font-medium">{t(name)}</h3>{!checks.length && <p className="text-sm text-muted-foreground">{t("empty")}</p>}<ul className="space-y-2">{checks.map(check => <li key={check.id} className="space-y-2 rounded-lg border p-3"><div className="flex flex-wrap items-center gap-2"><Badge variant="outline">{t("result." + check.result)}</Badge><Badge variant="secondary">{t("basis." + check.basis)}</Badge><span className="text-xs text-muted-foreground">{at(check.checkedAt)}</span><Badge variant="secondary">{t(check.feedback ? "published" : "unpublished")}</Badge></div>{check.checkedById && <p className="break-all text-xs text-muted-foreground">{t("checkedBy", { id: check.checkedById })}</p>}{data.selection.includePrivate && <CheckDetails check={check} at={at} />}{data.selection.includePrivate && check.feedback?.body && <p className="whitespace-pre-wrap break-words text-sm">{check.feedback.body}</p>}{data.selection.includeInternal && (check.basis === "METADATA" || data.selection.includePrivate) && check.internalNote && <div className="space-y-1"><p className="text-xs text-muted-foreground">{t("internalNote")}</p><p className="whitespace-pre-wrap break-words text-sm">{check.internalNote}</p></div>}</li>)}</ul></div>)}
         <div className="space-y-3"><h3 className="font-medium">{t("issues")}</h3>{!data.issues.length && <p className="text-sm text-muted-foreground">{t("empty")}</p>}<ul className="space-y-2">{data.issues.map(issue => <li key={issue.id} className="min-w-0 space-y-2 rounded-lg border p-3"><p className="break-words text-sm font-medium">{issue.title ?? t("issueMetadata", { revision: issue.revision })}</p><p className="text-xs text-muted-foreground">{t("issueStatus." + issue.status)} · {at(issue.updatedAt)}</p>{issue.assigneeId && <p className="break-all text-xs text-muted-foreground">{t("assignedTo", { id: issue.assigneeId })}</p>}{issue.completedById && <p className="break-all text-xs text-muted-foreground">{t("completedBy", { id: issue.completedById })}</p>}{issue.body && <p className="whitespace-pre-wrap break-words text-sm">{issue.body}</p>}{issue.processingSummary && <p className="whitespace-pre-wrap break-words text-sm">{issue.processingSummary}</p>}</li>)}</ul><p className="text-xs text-muted-foreground">{t("eventCount", { count: data.issueEvents.length })}</p><ul className="space-y-2">{data.issueEvents.map(event => <li key={event.id} className="space-y-2 rounded-lg border p-3"><p className="break-all text-xs text-muted-foreground">{at(event.createdAt)}{event.actorId ? " · " + t("eventActor", { id: event.actorId }) : ""}</p>{event.body && <p className="whitespace-pre-wrap break-words text-sm">{event.body}</p>}</li>)}</ul></div>
         <p className="text-xs leading-6 text-muted-foreground">{t("limit", { count: data.limits.maxPerCollection })}</p>
+  </div>;
+}
+
+/** Render saved values only. Links never fetch, verify or substitute current external content. */
+function RecordLink({ value }: { value: string }) {
+  const t = useTranslations("product.agriSummary");
+  return agriMaterialUrlSchema.safeParse(value).success
+    ? <a className="break-all underline underline-offset-4" href={value} target="_blank" rel="noreferrer noopener">{value}<span className="sr-only"> {t("details.newTab")}</span></a>
+    : <span className="break-all">{value} <span className="text-muted-foreground">({t("details.invalidLink")})</span></span>;
+}
+function SubmittedMaterials({ content }: { content: NonNullable<Summary["content"]> }) {
+  const t = useTranslations("product.agriSummary");
+  return <section className="min-w-0 space-y-4 border-t pt-4">
+    <h3 className="font-medium">{t("submissionContent")}</h3>
+    <p className="max-w-prose whitespace-pre-wrap break-words text-sm">{content.summary}</p>
+    <dl className="space-y-3 text-sm">
+      <div className="space-y-1"><dt className="font-medium">{t("details.repository")}</dt><dd>{content.repository ? <RecordLink value={content.repository.url} /> : t("details.notRecorded")}</dd></div>
+      <div className="space-y-1"><dt className="font-medium">{t("details.repositoryRef")}</dt><dd className="break-all">{content.repository?.ref ? <><span>{t("details.refKind." + content.repository.ref.kind)}: </span><code>{content.repository.ref.value}</code></> : t("details.notRecorded")}</dd></div>
+      <div className="space-y-1"><dt className="font-medium">{t("details.demoUrl")}</dt><dd>{content.demoUrl ? <RecordLink value={content.demoUrl} /> : t("details.notRecorded")}</dd></div>
+      <div className="space-y-1"><dt className="font-medium">{t("details.artifactVersion")}</dt><dd className="break-all font-mono text-xs">{content.artifactVersionId}</dd></div>
+    </dl>
+    <div className="space-y-3"><h4 className="text-sm font-medium">{t("materialCount", { count: content.materials.items.length })}</h4>
+      {content.materials.items.length === 0 && <p className="text-sm text-muted-foreground">{t("details.noMaterials")}</p>}
+      <dl className="divide-y">{content.materials.items.map(material => <div key={material.key} className="min-w-0 space-y-2 py-3 text-sm">
+        <dt className="break-words font-medium">{material.key} <span className="font-normal text-muted-foreground">· {t("details.materialKind." + material.kind)}</span></dt>
+        <dd className="max-w-prose whitespace-pre-wrap break-words">{material.kind === "TEXT" ? material.text : material.kind === "LINK" ? <RecordLink value={material.url} /> : <span className="break-all font-mono text-xs">{t("details.artifactVersion")}: {material.artifactVersionId}</span>}</dd>
+      </div>)}</dl>
+    </div>
+    <p className="max-w-prose text-xs leading-6 text-muted-foreground">{t("details.externalHint")}</p>
+  </section>;
+}
+function CheckDetails({ check, at }: { check: AgriSummaryCheck | AgriSummaryDemo; at: (value: string) => string }) {
+  const t = useTranslations("product.agriSummary");
+  const checklist = "checklist" in check ? check.checklist : undefined;
+  const demo = "demo" in check ? check.demo : undefined;
+  return <div className="space-y-4">
+    {checklist && <dl className="divide-y">{checklist.items.map(item => <div key={item.key} className="space-y-1 py-2 text-sm"><dt className="break-words font-medium">{item.key} · {t("details.itemStatus." + item.result)}</dt><dd className="max-w-prose whitespace-pre-wrap break-words text-muted-foreground">{item.note || t("details.notRecorded")}</dd></div>)}</dl>}
+    {demo && <div className="space-y-4 text-sm">
+      <p>{t("details.mode")}: {t("details.demoMode." + demo.mode)}</p>
+      <p className="max-w-prose whitespace-pre-wrap break-words">{demo.description}</p>
+      {"sequence" in check && <p className="text-xs text-muted-foreground">{t("details.demoSequence", { sequence: check.sequence })}{check.recheckOfId ? " · " + t("details.recheckOf", { id: check.recheckOfId }) : ""}</p>}
+      <dl className="divide-y">{(["device", "compatibility", "network", "audio", "backup"] as const).map(key => <div key={key} className="space-y-1 py-2"><dt className="font-medium">{t("details.condition." + key)} · {t("details.itemStatus." + demo[key].status)}</dt><dd className="max-w-prose whitespace-pre-wrap break-words text-muted-foreground">{demo[key].note || t("details.notRecorded")}</dd></div>)}</dl>
+      <dl className="space-y-3">
+        <div className="space-y-1"><dt className="font-medium">{t("details.backupUrl")}</dt><dd>{demo.backup.url ? <RecordLink value={demo.backup.url} /> : t("details.notRecorded")}</dd></div>
+        <div className="space-y-1"><dt className="font-medium">{t("details.backupArtifact")}</dt><dd className="break-all font-mono text-xs">{demo.backup.artifactVersionId || t("details.notRecorded")}</dd></div>
+        <div className="space-y-1"><dt className="font-medium">{t("details.recheckDue")}</dt><dd>{t("details.dateState." + demo.recheckDue.state)}{demo.recheckDue.at ? " · " + t("details.beijingTime", { at: at(demo.recheckDue.at) }) : ""}</dd></div>
+      </dl>
+    </div>}
+    {!checklist && !demo && <p className="text-xs text-muted-foreground">{t("details.notIncluded")}</p>}
   </div>;
 }
