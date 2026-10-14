@@ -58,7 +58,7 @@ export function WorkflowRunForm({
 }: {
   slug: string;
   variables: WorkflowInputVariable[];
-  estimatedCost: number;
+  estimatedCost: number | null;
   credentials?: CredentialOption[];
   defaultModelKey?: string;
 }) {
@@ -73,6 +73,7 @@ export function WorkflowRunForm({
     return () => { alive.current = false; if (pollTimer.current) clearTimeout(pollTimer.current); cancelWait.current?.(); };
   }, []);
   const billing = useTranslations("learning");
+  const workflowBilling = useTranslations("marketWorkflow");
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(variables.map((variable) => [variable.key, ""])),
   );
@@ -180,7 +181,7 @@ export function WorkflowRunForm({
           <Sparkles className="h-4 w-4" /> 运行这个工作流
         </CardTitle>
         <CardDescription>
-          {billing("billingExplanation", { points: estimatedCost })}
+          {estimatedCost === null ? workflowBilling("meteredCost") : billing("billingExplanation", { points: estimatedCost })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -274,7 +275,7 @@ export function WorkflowRunForm({
         <div className="flex flex-wrap items-center gap-3">
           <Button disabled={busy || missing.length > 0} onClick={run}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            {busy ? "运行中…" : billing("billingRun", { points: estimatedCost })}
+            {busy ? "运行中…" : estimatedCost === null ? workflowBilling("confirmRun") : billing("billingRun", { points: estimatedCost })}
           </Button>
           {missing.length > 0 && (
             <span className="text-xs text-muted-foreground">还需填写：{missing.join("、")}</span>

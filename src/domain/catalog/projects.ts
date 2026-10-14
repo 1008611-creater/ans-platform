@@ -1,4 +1,5 @@
 import { REAL_CATALOG_PROJECTS } from "./real-projects";
+import { CURATED_CATALOG_PROJECTS } from "./curated-projects";
 import type { CatalogWorkflowId } from "@/contracts/catalog";
 import type { ProjectGoal } from "@/contracts/projects";
 
@@ -26,7 +27,7 @@ export const WORKFLOW_RECIPES: readonly CatalogProject[] = [
   { slug: "learning-retrospective", category: "learning", subcategory: "methods", goal: "portfolio", workflowId: "project-retrospective", source: "official", preview: "document" },
 ];
 
-export const CATALOG_PROJECTS: readonly CatalogProject[] = REAL_CATALOG_PROJECTS;
+export const CATALOG_PROJECTS: readonly CatalogProject[] = [...REAL_CATALOG_PROJECTS, ...CURATED_CATALOG_PROJECTS];
 
 export const FEATURED_PROJECT_SLUGS = ["liu-resume", "image2-library", "vibephoto"] as const;
 
