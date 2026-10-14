@@ -1,3 +1,4 @@
+import { stickerTexturePaths } from "@/contracts/visual-stickers";
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -32,7 +33,11 @@ export async function renderStoredWebsite(ownerId:string,raw:unknown){
   const files={core:"mascot/3d/vendor/three.core.js",module:"mascot/3d/vendor/three.module.js",utility:"mascot/3d/vendor/BufferGeometryUtils.js",loader:"mascot/3d/vendor/GLTFLoader.js",scene:"visual-portfolio/scene.mjs"};
   const entries=await Promise.all(Object.entries(files).map(async([key,file])=>[key,await readFile(resolve("public",file),"utf8")]));
   const defaultModel=model??await readFile(resolve("public/visual-portfolio/reference/banner.glb"));
-  assets={...Object.fromEntries(entries),model:defaultModel.toString("base64")} as VisualRuntimeAssets;
+  const textures=await Promise.all(Object.entries(stickerTexturePaths(doc.appearance.tour?.stickers ?? [])).map(async([id,path])=>{
+   const bytes=await readFile(resolve("public",path.slice(1)));if(bytes.length>100000||bytes.subarray(0,4).toString()!=="RIFF"||bytes.subarray(8,12).toString()!=="WEBP")throw new VisualPortfolioError("ASSET_CORRUPT",503);
+   return [id,"data:image/webp;base64,"+bytes.toString("base64")] as const;
+  }));
+  assets={...Object.fromEntries(entries),model:defaultModel.toString("base64"),stickerTextures:Object.fromEntries(textures)} as VisualRuntimeAssets;
  }
  const bytes=Buffer.from(renderVisualWebsite(doc.profile,doc.appearance,0,assets));if(bytes.length>HTML_LIMIT)throw new VisualPortfolioError("SITE_TOO_LARGE",413);return bytes;
 }

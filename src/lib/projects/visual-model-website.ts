@@ -1,3 +1,4 @@
+import { stickerTexturePaths } from "@/contracts/visual-stickers";
 import type { ResumeWebsiteInput } from "@/contracts/resume-website";
 import type { VisualAppearance } from "@/contracts/visual-website";
 import type { VisualRuntimeAssets } from "./visual-website-assets";
@@ -6,8 +7,8 @@ function escape(value:string){return value.replace(/[&<>"']/g,c=>({"&":"&amp;","
 function encodedModule(value:string){return "data:text/javascript;base64,"+btoa(unescape(encodeURIComponent(value)));}
 export function renderVisualModelWebsite(profile:ResumeWebsiteInput,appearance:VisualAppearance,panels:string[],output:typeof outputZh,initialStop:number,assets?:VisualRuntimeAssets,modelUrl?:string){
  const color=appearance.tour?.settings.accent || {lime:"#cafa2a",lavender:"#c3adff",coral:"#ffa891"}[appearance.palette];
- const config={...appearance,initialStop,modelUrl:appearance.tour?.model || modelUrl || (assets?"data:model/gltf-binary;base64,"+assets.model:"/visual-portfolio/reference/banner.glb")};
- let mapping:Record<string,string>={three:"/mascot/3d/vendor/three.module.js"},script='<script type="module" src="/visual-portfolio/scene.mjs?v=8"></script>';
+ const config={...appearance,initialStop,stickerTextures:assets?.stickerTextures ?? stickerTexturePaths(appearance.tour?.stickers ?? []),modelUrl:appearance.tour?.model || modelUrl || (assets?"data:model/gltf-binary;base64,"+assets.model:"/visual-portfolio/reference/banner.glb")};
+ let mapping:Record<string,string>={three:"/mascot/3d/vendor/three.module.js"},script='<script type="module" src="/visual-portfolio/scene.mjs?v=9"></script>';
  if(assets){
   const core=encodedModule(assets.core);
   const main=encodedModule(assets.module.replaceAll("'./three.core.js'",JSON.stringify(core)));

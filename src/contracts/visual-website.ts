@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { presetSticker } from "./visual-stickers";
 import { resumeWebsiteInputSchema } from "./resume-website";
 import { modelAssetRefSchema } from "./visual-generation";
 export const VISUAL_WEBSITE_ID = "visual-portfolio-v1";
@@ -34,7 +35,7 @@ export const visualTourSchema = z.object({
     hero: z.object({ title: z.string().max(120), body: z.string().max(3000), byline: z.string().max(80), issue: z.string().max(40), tagline: z.string().max(120), location: z.string().max(100), layout: z.enum(["editorial", "minimal"]), camera: tourCameraSchema.optional() }).strict(),
     nodes: z.array(z.object({ id: z.string().max(50), title: z.string().max(100), eyebrow: z.string().max(100), subtitle: z.string().max(120), body: z.string().max(2000), url: resumeWebsiteInputSchema.shape.contactUrl, camera: tourCameraSchema.optional() }).strict()).max(10),
     sections: z.array(z.object({ id: z.string().max(50), title: z.string().max(100), body: z.string().max(2000), url: resumeWebsiteInputSchema.shape.contactUrl }).strict()).max(4),
-    stickers: z.array(z.object({ id: z.string().max(50), text: z.string().max(24), color: z.string().regex(/^#[0-9a-f]{6}$/i), position: vector, normal: vector, size: z.number().min(.01).max(2), rotation: z.number().min(-180).max(180), visible: z.boolean() }).strict()).max(24),
+    stickers: z.array(z.object({ preset: z.string().max(100).refine(id => !!presetSticker(id)).optional(), id: z.string().max(50), text: z.string().max(24), color: z.string().regex(/^#[0-9a-f]{6}$/i), position: vector, normal: vector, size: z.number().min(.01).max(2), rotation: z.number().min(-180).max(180), visible: z.boolean() }).strict()).max(24),
     settings: z.object({ font: z.enum(["sans", "serif", "mono"]).optional(), ambientColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), keyColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), keyAngle: z.number().min(-180).max(180).optional(), keyHeight: z.number().min(.1).max(6).optional(), bloom: z.number().min(0).max(2).optional(), bloomThreshold: z.number().min(0).max(1).optional(), accent: z.string().regex(/^#[0-9a-f]{6}$/i), text: z.string().regex(/^#[0-9a-f]{6}$/i), background: z.string().regex(/^#[0-9a-f]{6}$/i), ambient: z.number().min(0).max(4), key: z.number().min(0).max(6), exposure: z.number().min(.2).max(2), fov: z.number().min(20).max(75), vignette: z.number().min(0).max(1), grayscale: z.number().min(0).max(1) }).strict(),
     loading: z.object({ title: z.string().max(100), subtitle: z.string().max(200) }).strict(),
 }).strict().superRefine((tour, ctx) => {

@@ -1,0 +1,1962 @@
+[
+  {
+    "id": "doodle-mbti-intj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-intj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/intj.webp"
+  },
+  {
+    "id": "doodle-mbti-intp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-intp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/intp.webp"
+  },
+  {
+    "id": "doodle-mbti-entj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-entj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/entj.webp"
+  },
+  {
+    "id": "doodle-mbti-entp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-entp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/entp.webp"
+  },
+  {
+    "id": "doodle-mbti-infj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-infj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/infj.webp"
+  },
+  {
+    "id": "doodle-mbti-infp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-infp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/infp.webp"
+  },
+  {
+    "id": "doodle-mbti-enfj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-enfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/enfj.webp"
+  },
+  {
+    "id": "doodle-mbti-enfp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-enfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/enfp.webp"
+  },
+  {
+    "id": "doodle-mbti-istj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-istj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/istj.webp"
+  },
+  {
+    "id": "doodle-mbti-isfj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-isfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/isfj.webp"
+  },
+  {
+    "id": "doodle-mbti-estj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-estj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/estj.webp"
+  },
+  {
+    "id": "doodle-mbti-esfj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-esfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/esfj.webp"
+  },
+  {
+    "id": "doodle-mbti-istp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-istp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/istp.webp"
+  },
+  {
+    "id": "doodle-mbti-isfp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-isfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/isfp.webp"
+  },
+  {
+    "id": "doodle-mbti-estp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-estp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/estp.webp"
+  },
+  {
+    "id": "doodle-mbti-esfp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-esfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/esfp.webp"
+  },
+  {
+    "id": "doodle-career-programmer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-programmer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/programmer.webp"
+  },
+  {
+    "id": "doodle-career-designer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-designer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/designer.webp"
+  },
+  {
+    "id": "doodle-career-product-manager",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-product-manager",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/product-manager.webp"
+  },
+  {
+    "id": "doodle-career-doctor",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-doctor",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/doctor.webp"
+  },
+  {
+    "id": "doodle-career-teacher",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-teacher",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/teacher.webp"
+  },
+  {
+    "id": "doodle-career-lawyer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-lawyer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/lawyer.webp"
+  },
+  {
+    "id": "doodle-career-finance",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-finance",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/finance.webp"
+  },
+  {
+    "id": "doodle-career-marketing",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-marketing",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/marketing.webp"
+  },
+  {
+    "id": "doodle-career-photographer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-photographer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/photographer.webp"
+  },
+  {
+    "id": "doodle-career-musician",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-musician",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/musician.webp"
+  },
+  {
+    "id": "doodle-career-writer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-writer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/writer.webp"
+  },
+  {
+    "id": "doodle-career-scientist",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-scientist",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/scientist.webp"
+  },
+  {
+    "id": "doodle-career-architect",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-architect",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/architect.webp"
+  },
+  {
+    "id": "doodle-career-chef",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-chef",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/chef.webp"
+  },
+  {
+    "id": "doodle-career-entrepreneur",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-entrepreneur",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/entrepreneur.webp"
+  },
+  {
+    "id": "doodle-career-freelancer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-freelancer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/freelancer.webp"
+  },
+  {
+    "id": "doodle-hobby-gaming",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-gaming",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/gaming.webp"
+  },
+  {
+    "id": "doodle-hobby-reading",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-reading",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/reading.webp"
+  },
+  {
+    "id": "doodle-hobby-photography",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-photography",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/photography.webp"
+  },
+  {
+    "id": "doodle-hobby-painting",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-painting",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/painting.webp"
+  },
+  {
+    "id": "doodle-hobby-guitar",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-guitar",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/guitar.webp"
+  },
+  {
+    "id": "doodle-hobby-baking",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-baking",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/baking.webp"
+  },
+  {
+    "id": "doodle-hobby-gardening",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-gardening",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/gardening.webp"
+  },
+  {
+    "id": "doodle-hobby-fishing",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-fishing",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/fishing.webp"
+  },
+  {
+    "id": "doodle-hobby-boardgames",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-boardgames",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/boardgames.webp"
+  },
+  {
+    "id": "doodle-hobby-anime",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-anime",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/anime.webp"
+  },
+  {
+    "id": "doodle-hobby-movies",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-movies",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/movies.webp"
+  },
+  {
+    "id": "doodle-hobby-karaoke",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-karaoke",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/karaoke.webp"
+  },
+  {
+    "id": "doodle-hobby-crafts",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-crafts",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/crafts.webp"
+  },
+  {
+    "id": "doodle-hobby-camping",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-camping",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/camping.webp"
+  },
+  {
+    "id": "doodle-hobby-skateboard",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-skateboard",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/skateboard.webp"
+  },
+  {
+    "id": "doodle-hobby-figures",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-figures",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/figures.webp"
+  },
+  {
+    "id": "doodle-pets-orange-cat",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-orange-cat",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/orange-cat.webp"
+  },
+  {
+    "id": "doodle-pets-black-cat",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-black-cat",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/black-cat.webp"
+  },
+  {
+    "id": "doodle-pets-siamese",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-siamese",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/siamese.webp"
+  },
+  {
+    "id": "doodle-pets-ragdoll",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-ragdoll",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/ragdoll.webp"
+  },
+  {
+    "id": "doodle-pets-corgi",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-corgi",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/corgi.webp"
+  },
+  {
+    "id": "doodle-pets-shiba",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-shiba",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/shiba.webp"
+  },
+  {
+    "id": "doodle-pets-golden",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-golden",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/golden.webp"
+  },
+  {
+    "id": "doodle-pets-husky",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-husky",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/husky.webp"
+  },
+  {
+    "id": "doodle-pets-poodle",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-poodle",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/poodle.webp"
+  },
+  {
+    "id": "doodle-pets-hamster",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-hamster",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/hamster.webp"
+  },
+  {
+    "id": "doodle-pets-bunny",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-bunny",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/bunny.webp"
+  },
+  {
+    "id": "doodle-pets-parrot",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-parrot",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/parrot.webp"
+  },
+  {
+    "id": "doodle-pets-goldfish",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-goldfish",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/goldfish.webp"
+  },
+  {
+    "id": "doodle-pets-turtle",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-turtle",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/turtle.webp"
+  },
+  {
+    "id": "doodle-pets-hedgehog",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-hedgehog",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/hedgehog.webp"
+  },
+  {
+    "id": "doodle-pets-lizard",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-lizard",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/lizard.webp"
+  },
+  {
+    "id": "doodle-sports-basketball",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-basketball",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/basketball.webp"
+  },
+  {
+    "id": "doodle-sports-soccer",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-soccer",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/soccer.webp"
+  },
+  {
+    "id": "doodle-sports-badminton",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-badminton",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/badminton.webp"
+  },
+  {
+    "id": "doodle-sports-pingpong",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-pingpong",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/pingpong.webp"
+  },
+  {
+    "id": "doodle-sports-tennis",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-tennis",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/tennis.webp"
+  },
+  {
+    "id": "doodle-sports-swimming",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-swimming",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/swimming.webp"
+  },
+  {
+    "id": "doodle-sports-running",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-running",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/running.webp"
+  },
+  {
+    "id": "doodle-sports-cycling",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-cycling",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/cycling.webp"
+  },
+  {
+    "id": "doodle-sports-gym",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-gym",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/gym.webp"
+  },
+  {
+    "id": "doodle-sports-yoga",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-yoga",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/yoga.webp"
+  },
+  {
+    "id": "doodle-sports-skiing",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-skiing",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/skiing.webp"
+  },
+  {
+    "id": "doodle-sports-surfing",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-surfing",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/surfing.webp"
+  },
+  {
+    "id": "doodle-sports-climbing",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-climbing",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/climbing.webp"
+  },
+  {
+    "id": "doodle-sports-hiking",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-hiking",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/hiking.webp"
+  },
+  {
+    "id": "doodle-sports-boxing",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-boxing",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/boxing.webp"
+  },
+  {
+    "id": "doodle-sports-dance",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-dance",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/dance.webp"
+  },
+  {
+    "id": "doodle-vibes-worker",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-worker",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/worker.webp"
+  },
+  {
+    "id": "doodle-vibes-slacking",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-slacking",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/slacking.webp"
+  },
+  {
+    "id": "doodle-vibes-overachiever",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-overachiever",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/overachiever.webp"
+  },
+  {
+    "id": "doodle-vibes-lying-flat",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-lying-flat",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/lying-flat.webp"
+  },
+  {
+    "id": "doodle-vibes-grinding",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-grinding",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/grinding.webp"
+  },
+  {
+    "id": "doodle-vibes-coffee",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-coffee",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/coffee.webp"
+  },
+  {
+    "id": "doodle-vibes-boba",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-boba",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/boba.webp"
+  },
+  {
+    "id": "doodle-vibes-foodie",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-foodie",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/foodie.webp"
+  },
+  {
+    "id": "doodle-vibes-introvert",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-introvert",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/introvert.webp"
+  },
+  {
+    "id": "doodle-vibes-social",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-social",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/social.webp"
+  },
+  {
+    "id": "doodle-vibes-zen",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-zen",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/zen.webp"
+  },
+  {
+    "id": "doodle-vibes-night-owl",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-night-owl",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/night-owl.webp"
+  },
+  {
+    "id": "doodle-vibes-studying",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-studying",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/studying.webp"
+  },
+  {
+    "id": "doodle-vibes-in-love",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-in-love",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/in-love.webp"
+  },
+  {
+    "id": "doodle-vibes-single",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-single",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/single.webp"
+  },
+  {
+    "id": "doodle-vibes-rich",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-rich",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/rich.webp"
+  },
+  {
+    "id": "doodle-zodiac-aries",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-aries",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/aries.webp"
+  },
+  {
+    "id": "doodle-zodiac-taurus",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-taurus",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/taurus.webp"
+  },
+  {
+    "id": "doodle-zodiac-gemini",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-gemini",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/gemini.webp"
+  },
+  {
+    "id": "doodle-zodiac-cancer",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-cancer",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/cancer.webp"
+  },
+  {
+    "id": "doodle-zodiac-leo",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-leo",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/leo.webp"
+  },
+  {
+    "id": "doodle-zodiac-virgo",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-virgo",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/virgo.webp"
+  },
+  {
+    "id": "doodle-zodiac-libra",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-libra",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/libra.webp"
+  },
+  {
+    "id": "doodle-zodiac-scorpio",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-scorpio",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/scorpio.webp"
+  },
+  {
+    "id": "doodle-zodiac-sagittarius",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-sagittarius",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/sagittarius.webp"
+  },
+  {
+    "id": "doodle-zodiac-capricorn",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-capricorn",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/capricorn.webp"
+  },
+  {
+    "id": "doodle-zodiac-aquarius",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-aquarius",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/aquarius.webp"
+  },
+  {
+    "id": "doodle-zodiac-pisces",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-pisces",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/pisces.webp"
+  },
+  {
+    "id": "doodle-food-hotpot",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-hotpot",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/hotpot.webp"
+  },
+  {
+    "id": "doodle-food-boba",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-boba",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/boba.webp"
+  },
+  {
+    "id": "doodle-food-coffee",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-coffee",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/coffee.webp"
+  },
+  {
+    "id": "doodle-food-pizza",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-pizza",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/pizza.webp"
+  },
+  {
+    "id": "doodle-food-sushi",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-sushi",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/sushi.webp"
+  },
+  {
+    "id": "doodle-food-ramen",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-ramen",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/ramen.webp"
+  },
+  {
+    "id": "doodle-food-burger",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-burger",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/burger.webp"
+  },
+  {
+    "id": "doodle-food-fried-chicken",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-fried-chicken",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/fried-chicken.webp"
+  },
+  {
+    "id": "doodle-food-bbq",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-bbq",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/bbq.webp"
+  },
+  {
+    "id": "doodle-food-cake",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-cake",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/cake.webp"
+  },
+  {
+    "id": "doodle-food-icecream",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-icecream",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/icecream.webp"
+  },
+  {
+    "id": "doodle-food-fruit",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-fruit",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/fruit.webp"
+  },
+  {
+    "id": "doodle-food-beer",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-beer",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/beer.webp"
+  },
+  {
+    "id": "doodle-food-dumpling",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-dumpling",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/dumpling.webp"
+  },
+  {
+    "id": "doodle-food-crayfish",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-crayfish",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/crayfish.webp"
+  },
+  {
+    "id": "doodle-food-bento",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-bento",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/bento.webp"
+  },
+  {
+    "id": "doodle-decor-star",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-star",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/star.webp"
+  },
+  {
+    "id": "doodle-decor-heart",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-heart",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/heart.webp"
+  },
+  {
+    "id": "doodle-decor-lightning",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-lightning",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/lightning.webp"
+  },
+  {
+    "id": "doodle-decor-rainbow",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-rainbow",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/rainbow.webp"
+  },
+  {
+    "id": "doodle-decor-crown",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-crown",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/crown.webp"
+  },
+  {
+    "id": "doodle-decor-flame",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-flame",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/flame.webp"
+  },
+  {
+    "id": "doodle-decor-bubble",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-bubble",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/bubble.webp"
+  },
+  {
+    "id": "doodle-decor-arrow",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-arrow",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/arrow.webp"
+  },
+  {
+    "id": "doodle-decor-sun",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-sun",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/sun.webp"
+  },
+  {
+    "id": "doodle-decor-moon",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-moon",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/moon.webp"
+  },
+  {
+    "id": "doodle-decor-flower",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-flower",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/flower.webp"
+  },
+  {
+    "id": "doodle-decor-bow",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-bow",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/bow.webp"
+  },
+  {
+    "id": "doodle-decor-check",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-check",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/check.webp"
+  },
+  {
+    "id": "doodle-decor-note",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-note",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/note.webp"
+  },
+  {
+    "id": "doodle-decor-bang",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-bang",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/bang.webp"
+  },
+  {
+    "id": "doodle-decor-smiley",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-smiley",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/smiley.webp"
+  },
+  {
+    "id": "retro-mbti-intj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-intj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/intj.webp"
+  },
+  {
+    "id": "retro-mbti-intp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-intp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/intp.webp"
+  },
+  {
+    "id": "retro-mbti-entj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-entj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/entj.webp"
+  },
+  {
+    "id": "retro-mbti-entp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-entp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/entp.webp"
+  },
+  {
+    "id": "retro-mbti-infj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-infj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/infj.webp"
+  },
+  {
+    "id": "retro-mbti-infp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-infp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/infp.webp"
+  },
+  {
+    "id": "retro-mbti-enfj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-enfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/enfj.webp"
+  },
+  {
+    "id": "retro-mbti-enfp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-enfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/enfp.webp"
+  },
+  {
+    "id": "retro-mbti-istj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-istj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/istj.webp"
+  },
+  {
+    "id": "retro-mbti-isfj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-isfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/isfj.webp"
+  },
+  {
+    "id": "retro-mbti-estj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-estj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/estj.webp"
+  },
+  {
+    "id": "retro-mbti-esfj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-esfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/esfj.webp"
+  },
+  {
+    "id": "retro-mbti-istp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-istp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/istp.webp"
+  },
+  {
+    "id": "retro-mbti-isfp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-isfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/isfp.webp"
+  },
+  {
+    "id": "retro-mbti-estp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-estp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/estp.webp"
+  },
+  {
+    "id": "retro-mbti-esfp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-esfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/esfp.webp"
+  },
+  {
+    "id": "retro-career-programmer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-programmer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/programmer.webp"
+  },
+  {
+    "id": "retro-career-designer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-designer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/designer.webp"
+  },
+  {
+    "id": "retro-career-product-manager",
+    "category": "career",
+    "style": "retro",
+    "key": "career-product-manager",
+    "path": "/visual-portfolio/stickers/presets/career/v2/product-manager.webp"
+  },
+  {
+    "id": "retro-career-doctor",
+    "category": "career",
+    "style": "retro",
+    "key": "career-doctor",
+    "path": "/visual-portfolio/stickers/presets/career/v2/doctor.webp"
+  },
+  {
+    "id": "retro-career-teacher",
+    "category": "career",
+    "style": "retro",
+    "key": "career-teacher",
+    "path": "/visual-portfolio/stickers/presets/career/v2/teacher.webp"
+  },
+  {
+    "id": "retro-career-lawyer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-lawyer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/lawyer.webp"
+  },
+  {
+    "id": "retro-career-finance",
+    "category": "career",
+    "style": "retro",
+    "key": "career-finance",
+    "path": "/visual-portfolio/stickers/presets/career/v2/finance.webp"
+  },
+  {
+    "id": "retro-career-marketing",
+    "category": "career",
+    "style": "retro",
+    "key": "career-marketing",
+    "path": "/visual-portfolio/stickers/presets/career/v2/marketing.webp"
+  },
+  {
+    "id": "retro-career-photographer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-photographer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/photographer.webp"
+  },
+  {
+    "id": "retro-career-musician",
+    "category": "career",
+    "style": "retro",
+    "key": "career-musician",
+    "path": "/visual-portfolio/stickers/presets/career/v2/musician.webp"
+  },
+  {
+    "id": "retro-career-writer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-writer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/writer.webp"
+  },
+  {
+    "id": "retro-career-scientist",
+    "category": "career",
+    "style": "retro",
+    "key": "career-scientist",
+    "path": "/visual-portfolio/stickers/presets/career/v2/scientist.webp"
+  },
+  {
+    "id": "retro-career-architect",
+    "category": "career",
+    "style": "retro",
+    "key": "career-architect",
+    "path": "/visual-portfolio/stickers/presets/career/v2/architect.webp"
+  },
+  {
+    "id": "retro-career-chef",
+    "category": "career",
+    "style": "retro",
+    "key": "career-chef",
+    "path": "/visual-portfolio/stickers/presets/career/v2/chef.webp"
+  },
+  {
+    "id": "retro-career-entrepreneur",
+    "category": "career",
+    "style": "retro",
+    "key": "career-entrepreneur",
+    "path": "/visual-portfolio/stickers/presets/career/v2/entrepreneur.webp"
+  },
+  {
+    "id": "retro-career-freelancer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-freelancer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/freelancer.webp"
+  },
+  {
+    "id": "retro-hobby-gaming",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-gaming",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/gaming.webp"
+  },
+  {
+    "id": "retro-hobby-reading",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-reading",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/reading.webp"
+  },
+  {
+    "id": "retro-hobby-photography",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-photography",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/photography.webp"
+  },
+  {
+    "id": "retro-hobby-painting",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-painting",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/painting.webp"
+  },
+  {
+    "id": "retro-hobby-guitar",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-guitar",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/guitar.webp"
+  },
+  {
+    "id": "retro-hobby-baking",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-baking",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/baking.webp"
+  },
+  {
+    "id": "retro-hobby-gardening",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-gardening",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/gardening.webp"
+  },
+  {
+    "id": "retro-hobby-fishing",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-fishing",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/fishing.webp"
+  },
+  {
+    "id": "retro-hobby-boardgames",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-boardgames",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/boardgames.webp"
+  },
+  {
+    "id": "retro-hobby-anime",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-anime",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/anime.webp"
+  },
+  {
+    "id": "retro-hobby-movies",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-movies",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/movies.webp"
+  },
+  {
+    "id": "retro-hobby-karaoke",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-karaoke",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/karaoke.webp"
+  },
+  {
+    "id": "retro-hobby-crafts",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-crafts",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/crafts.webp"
+  },
+  {
+    "id": "retro-hobby-camping",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-camping",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/camping.webp"
+  },
+  {
+    "id": "retro-hobby-skateboard",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-skateboard",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/skateboard.webp"
+  },
+  {
+    "id": "retro-hobby-figures",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-figures",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/figures.webp"
+  },
+  {
+    "id": "retro-pets-orange-cat",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-orange-cat",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/orange-cat.webp"
+  },
+  {
+    "id": "retro-pets-black-cat",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-black-cat",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/black-cat.webp"
+  },
+  {
+    "id": "retro-pets-siamese",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-siamese",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/siamese.webp"
+  },
+  {
+    "id": "retro-pets-ragdoll",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-ragdoll",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/ragdoll.webp"
+  },
+  {
+    "id": "retro-pets-corgi",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-corgi",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/corgi.webp"
+  },
+  {
+    "id": "retro-pets-shiba",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-shiba",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/shiba.webp"
+  },
+  {
+    "id": "retro-pets-golden",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-golden",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/golden.webp"
+  },
+  {
+    "id": "retro-pets-husky",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-husky",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/husky.webp"
+  },
+  {
+    "id": "retro-pets-poodle",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-poodle",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/poodle.webp"
+  },
+  {
+    "id": "retro-pets-hamster",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-hamster",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/hamster.webp"
+  },
+  {
+    "id": "retro-pets-bunny",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-bunny",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/bunny.webp"
+  },
+  {
+    "id": "retro-pets-parrot",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-parrot",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/parrot.webp"
+  },
+  {
+    "id": "retro-pets-goldfish",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-goldfish",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/goldfish.webp"
+  },
+  {
+    "id": "retro-pets-turtle",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-turtle",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/turtle.webp"
+  },
+  {
+    "id": "retro-pets-hedgehog",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-hedgehog",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/hedgehog.webp"
+  },
+  {
+    "id": "retro-pets-lizard",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-lizard",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/lizard.webp"
+  },
+  {
+    "id": "retro-sports-basketball",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-basketball",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/basketball.webp"
+  },
+  {
+    "id": "retro-sports-soccer",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-soccer",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/soccer.webp"
+  },
+  {
+    "id": "retro-sports-badminton",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-badminton",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/badminton.webp"
+  },
+  {
+    "id": "retro-sports-pingpong",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-pingpong",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/pingpong.webp"
+  },
+  {
+    "id": "retro-sports-tennis",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-tennis",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/tennis.webp"
+  },
+  {
+    "id": "retro-sports-swimming",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-swimming",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/swimming.webp"
+  },
+  {
+    "id": "retro-sports-running",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-running",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/running.webp"
+  },
+  {
+    "id": "retro-sports-cycling",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-cycling",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/cycling.webp"
+  },
+  {
+    "id": "retro-sports-gym",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-gym",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/gym.webp"
+  },
+  {
+    "id": "retro-sports-yoga",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-yoga",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/yoga.webp"
+  },
+  {
+    "id": "retro-sports-skiing",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-skiing",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/skiing.webp"
+  },
+  {
+    "id": "retro-sports-surfing",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-surfing",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/surfing.webp"
+  },
+  {
+    "id": "retro-sports-climbing",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-climbing",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/climbing.webp"
+  },
+  {
+    "id": "retro-sports-hiking",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-hiking",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/hiking.webp"
+  },
+  {
+    "id": "retro-sports-boxing",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-boxing",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/boxing.webp"
+  },
+  {
+    "id": "retro-sports-dance",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-dance",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/dance.webp"
+  },
+  {
+    "id": "retro-vibes-worker",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-worker",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/worker.webp"
+  },
+  {
+    "id": "retro-vibes-slacking",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-slacking",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/slacking.webp"
+  },
+  {
+    "id": "retro-vibes-overachiever",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-overachiever",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/overachiever.webp"
+  },
+  {
+    "id": "retro-vibes-lying-flat",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-lying-flat",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/lying-flat.webp"
+  },
+  {
+    "id": "retro-vibes-grinding",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-grinding",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/grinding.webp"
+  },
+  {
+    "id": "retro-vibes-coffee",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-coffee",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/coffee.webp"
+  },
+  {
+    "id": "retro-vibes-boba",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-boba",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/boba.webp"
+  },
+  {
+    "id": "retro-vibes-foodie",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-foodie",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/foodie.webp"
+  },
+  {
+    "id": "retro-vibes-introvert",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-introvert",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/introvert.webp"
+  },
+  {
+    "id": "retro-vibes-social",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-social",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/social.webp"
+  },
+  {
+    "id": "retro-vibes-zen",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-zen",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/zen.webp"
+  },
+  {
+    "id": "retro-vibes-night-owl",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-night-owl",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/night-owl.webp"
+  },
+  {
+    "id": "retro-vibes-studying",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-studying",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/studying.webp"
+  },
+  {
+    "id": "retro-vibes-in-love",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-in-love",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/in-love.webp"
+  },
+  {
+    "id": "retro-vibes-single",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-single",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/single.webp"
+  },
+  {
+    "id": "retro-vibes-rich",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-rich",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/rich.webp"
+  },
+  {
+    "id": "retro-zodiac-aries",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-aries",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/aries.webp"
+  },
+  {
+    "id": "retro-zodiac-taurus",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-taurus",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/taurus.webp"
+  },
+  {
+    "id": "retro-zodiac-gemini",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-gemini",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/gemini.webp"
+  },
+  {
+    "id": "retro-zodiac-cancer",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-cancer",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/cancer.webp"
+  },
+  {
+    "id": "retro-zodiac-leo",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-leo",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/leo.webp"
+  },
+  {
+    "id": "retro-zodiac-virgo",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-virgo",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/virgo.webp"
+  },
+  {
+    "id": "retro-zodiac-libra",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-libra",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/libra.webp"
+  },
+  {
+    "id": "retro-zodiac-scorpio",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-scorpio",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/scorpio.webp"
+  },
+  {
+    "id": "retro-zodiac-sagittarius",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-sagittarius",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/sagittarius.webp"
+  },
+  {
+    "id": "retro-zodiac-capricorn",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-capricorn",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/capricorn.webp"
+  },
+  {
+    "id": "retro-zodiac-aquarius",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-aquarius",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/aquarius.webp"
+  },
+  {
+    "id": "retro-zodiac-pisces",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-pisces",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/pisces.webp"
+  },
+  {
+    "id": "retro-food-hotpot",
+    "category": "food",
+    "style": "retro",
+    "key": "food-hotpot",
+    "path": "/visual-portfolio/stickers/presets/food/v1/hotpot.webp"
+  },
+  {
+    "id": "retro-food-boba",
+    "category": "food",
+    "style": "retro",
+    "key": "food-boba",
+    "path": "/visual-portfolio/stickers/presets/food/v1/boba.webp"
+  },
+  {
+    "id": "retro-food-coffee",
+    "category": "food",
+    "style": "retro",
+    "key": "food-coffee",
+    "path": "/visual-portfolio/stickers/presets/food/v1/coffee.webp"
+  },
+  {
+    "id": "retro-food-pizza",
+    "category": "food",
+    "style": "retro",
+    "key": "food-pizza",
+    "path": "/visual-portfolio/stickers/presets/food/v1/pizza.webp"
+  },
+  {
+    "id": "retro-food-sushi",
+    "category": "food",
+    "style": "retro",
+    "key": "food-sushi",
+    "path": "/visual-portfolio/stickers/presets/food/v1/sushi.webp"
+  },
+  {
+    "id": "retro-food-ramen",
+    "category": "food",
+    "style": "retro",
+    "key": "food-ramen",
+    "path": "/visual-portfolio/stickers/presets/food/v1/ramen.webp"
+  },
+  {
+    "id": "retro-food-burger",
+    "category": "food",
+    "style": "retro",
+    "key": "food-burger",
+    "path": "/visual-portfolio/stickers/presets/food/v1/burger.webp"
+  },
+  {
+    "id": "retro-food-fried-chicken",
+    "category": "food",
+    "style": "retro",
+    "key": "food-fried-chicken",
+    "path": "/visual-portfolio/stickers/presets/food/v1/fried-chicken.webp"
+  },
+  {
+    "id": "retro-food-bbq",
+    "category": "food",
+    "style": "retro",
+    "key": "food-bbq",
+    "path": "/visual-portfolio/stickers/presets/food/v1/bbq.webp"
+  },
+  {
+    "id": "retro-food-cake",
+    "category": "food",
+    "style": "retro",
+    "key": "food-cake",
+    "path": "/visual-portfolio/stickers/presets/food/v1/cake.webp"
+  },
+  {
+    "id": "retro-food-icecream",
+    "category": "food",
+    "style": "retro",
+    "key": "food-icecream",
+    "path": "/visual-portfolio/stickers/presets/food/v1/icecream.webp"
+  },
+  {
+    "id": "retro-food-fruit",
+    "category": "food",
+    "style": "retro",
+    "key": "food-fruit",
+    "path": "/visual-portfolio/stickers/presets/food/v1/fruit.webp"
+  },
+  {
+    "id": "retro-food-beer",
+    "category": "food",
+    "style": "retro",
+    "key": "food-beer",
+    "path": "/visual-portfolio/stickers/presets/food/v1/beer.webp"
+  },
+  {
+    "id": "retro-food-dumpling",
+    "category": "food",
+    "style": "retro",
+    "key": "food-dumpling",
+    "path": "/visual-portfolio/stickers/presets/food/v1/dumpling.webp"
+  },
+  {
+    "id": "retro-food-crayfish",
+    "category": "food",
+    "style": "retro",
+    "key": "food-crayfish",
+    "path": "/visual-portfolio/stickers/presets/food/v1/crayfish.webp"
+  },
+  {
+    "id": "retro-food-bento",
+    "category": "food",
+    "style": "retro",
+    "key": "food-bento",
+    "path": "/visual-portfolio/stickers/presets/food/v1/bento.webp"
+  },
+  {
+    "id": "retro-decor-star",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-star",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/star.webp"
+  },
+  {
+    "id": "retro-decor-heart",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-heart",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/heart.webp"
+  },
+  {
+    "id": "retro-decor-lightning",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-lightning",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/lightning.webp"
+  },
+  {
+    "id": "retro-decor-rainbow",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-rainbow",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/rainbow.webp"
+  },
+  {
+    "id": "retro-decor-crown",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-crown",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/crown.webp"
+  },
+  {
+    "id": "retro-decor-flame",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-flame",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/flame.webp"
+  },
+  {
+    "id": "retro-decor-bubble",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-bubble",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/bubble.webp"
+  },
+  {
+    "id": "retro-decor-arrow",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-arrow",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/arrow.webp"
+  },
+  {
+    "id": "retro-decor-sun",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-sun",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/sun.webp"
+  },
+  {
+    "id": "retro-decor-moon",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-moon",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/moon.webp"
+  },
+  {
+    "id": "retro-decor-flower",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-flower",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/flower.webp"
+  },
+  {
+    "id": "retro-decor-bow",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-bow",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/bow.webp"
+  },
+  {
+    "id": "retro-decor-check",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-check",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/check.webp"
+  },
+  {
+    "id": "retro-decor-note",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-note",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/note.webp"
+  },
+  {
+    "id": "retro-decor-bang",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-bang",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/bang.webp"
+  },
+  {
+    "id": "retro-decor-smiley",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-smiley",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/smiley.webp"
+  }
+]

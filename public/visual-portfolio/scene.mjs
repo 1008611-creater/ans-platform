@@ -111,8 +111,15 @@ function addSticker(sticker,layerOrder){
  if(!positions.length)return;
  const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect x="8" y="8" width="240" height="240" rx="60" fill="'+sticker.color+'" stroke="white" stroke-width="10"/><text x="128" y="139" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="'+(sticker.text.length>4?32:66)+'" fill="#181818">'+escape(sticker.text)+'</text></svg>';
- const texture=new T.TextureLoader().load('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg),()=>{dirty=true;requestDraw();});texture.colorSpace=T.SRGBColorSpace;
+ const textureSource=sticker.preset?cfg.stickerTextures?.[sticker.preset]:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+ if(!textureSource)return;
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.computeVertexNormals();
- const material=new T.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4});material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','if(vMapUv.x<0.0||vMapUv.x>1.0||vMapUv.y<0.0||vMapUv.y>1.0)discard;\n#include <map_fragment>');};
+ const material=new T.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-4});material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','if(vMapUv.x<0.0||vMapUv.x>1.0||vMapUv.y<0.0||vMapUv.y>1.0)discard;\n#include <map_fragment>');};
  const decal=new T.Mesh(geometry,material);decal.renderOrder=layerOrder+1;scene.add(decal);
+ // Sandboxed previews allow image data/blob URLs. Fetch allowlisted presets
+ // through connect-src, then load a blob without broadening the image policy.
+ const loadTexture=(url,revoke=()=>{})=>{const texture=new T.TextureLoader().load(url,()=>{revoke();material.opacity=1;dirty=true;requestDraw();},undefined,()=>{revoke();console.warn('Sticker texture unavailable.');});texture.colorSpace=T.SRGBColorSpace;material.map=texture;material.needsUpdate=true;};
+ if(sticker.preset&&!textureSource.startsWith('data:image/webp;base64,')){
+  fetch(textureSource,{credentials:'omit'}).then(response=>{if(!response.ok)throw new Error('STICKER_UNAVAILABLE');return response.blob();}).then(blob=>{const url=URL.createObjectURL(blob);loadTexture(url,()=>URL.revokeObjectURL(url));}).catch(()=>console.warn('Sticker texture unavailable.'));
+ }else loadTexture(textureSource);
 }
