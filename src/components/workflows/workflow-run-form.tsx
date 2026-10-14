@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useMarketActorId, useMarketRequest } from "@/components/marketplace/account-boundary";
 import { useRouter } from "next/navigation";
@@ -23,12 +23,21 @@ import type { WorkflowInputVariable } from "@/domain/workflows/variables";
 
 type CredentialOption = { id: string; label: string; keyMasked: string };
 
-type NodeRunSummary = {
+export type NodeRunSummary = {
   nodeId: string;
   status: string;
   attempts: number;
   error: string | null;
   output?: unknown;
+};
+
+export type WorkflowRunSnapshot = {
+  busy: boolean;
+  status: string;
+  error: string;
+  output: string | null;
+  nodeRuns: NodeRunSummary[];
+  runId: string | null;
 };
 
 type PersistedRunSummary = {
@@ -55,16 +64,21 @@ export function WorkflowRunForm({
   estimatedCost,
   credentials = [],
   defaultModelKey = DEFAULT_RUN_MODEL,
+  embedded = false,
+  onStateChange,
 }: {
   slug: string;
   variables: WorkflowInputVariable[];
   estimatedCost: number | null;
   credentials?: CredentialOption[];
   defaultModelKey?: string;
+  embedded?: boolean;
+  onStateChange?: (snapshot: WorkflowRunSnapshot) => void;
 }) {
   const router = useRouter();
   const request = useMarketRequest(), actorId = useMarketActorId();
   const alive = useRef(true), submitting = useRef(false);
+  const activeRun = useRef<{ id: string | null; terminal: boolean }>({ id: null, terminal: false });
   const intent = useRef<{ fingerprint: string; key: string } | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cancelWait = useRef<(() => void) | null>(null);
@@ -74,6 +88,7 @@ export function WorkflowRunForm({
   }, []);
   const billing = useTranslations("learning");
   const workflowBilling = useTranslations("marketWorkflow");
+  const studio = useTranslations("workflowStudio");
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(variables.map((variable) => [variable.key, ""])),
   );
@@ -85,6 +100,38 @@ export function WorkflowRunForm({
   const [output, setOutput] = useState<string | null>(null);
   const [nodeRuns, setNodeRuns] = useState<NodeRunSummary[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
+  const [status, setStatus] = useState("IDLE");
+  useEffect(() => {
+    onStateChange?.({ busy, status, error, output, nodeRuns, runId });
+  }, [busy, status, error, output, nodeRuns, runId, onStateChange]);
+  const readStatus = useEffectEvent(async (id: string) => request<{ run: PersistedRunSummary }>(`/api/workflows/runs/${id}`, "GET", undefined));
+  useEffect(() => {
+    if (!busy || !runId || !["PENDING", "QUEUED", "RUNNING", "UNKNOWN"].includes(status)) return;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    async function poll() {
+      try {
+        const detail = await readStatus(runId!);
+        if (stopped || !alive.current || activeRun.current.id !== runId || activeRun.current.terminal) return;
+        if (["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.run.status)) {
+          activeRun.current.terminal = true;
+          if (detail.run.status === "SUCCEEDED") setOutput(outputText(detail.run.output));
+          else setError(detail.run.error ?? studio("failed"));
+        }
+        setNodeRuns(detail.run.nodeRuns ?? []);
+        setStatus(detail.run.status);
+      } catch { /* Execution response remains authoritative if status reads fail. */ }
+      if (!stopped) timer = setTimeout(() => void poll(), 1500);
+    }
+    timer = setTimeout(() => void poll(), 400);
+    return () => { stopped = true; if (timer) clearTimeout(timer); };
+  }, [busy, runId, status, studio]);
+  useEffect(() => {
+    if (!busy) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [busy]);
 
   const missing = variables
     .filter((variable) => variable.required && !(values[variable.key] ?? "").trim())
@@ -113,7 +160,8 @@ export function WorkflowRunForm({
     // Capture both inputs and execution choices before any asynchronous work.
     const input = { ...values };
     const options = { modelKey, reasoningEffort, ...(credentialId === "platform" ? {} : { credentialId }) };
-    setBusy(true); setError(""); setOutput(null); setNodeRuns([]);
+    activeRun.current = { id: null, terminal: false };
+    setBusy(true); setStatus("PREPARING"); setRunId(null); setError(""); setOutput(null); setNodeRuns([]);
     let createdRunId: string | null = null;
     let recoverySlot: string | null = null;
     function finishIntent() {
@@ -143,15 +191,20 @@ export function WorkflowRunForm({
       const id = created.run?.id;
       if (!id) throw new Error("服务端未返回运行编号。");
       createdRunId = id;
+      activeRun.current = { id, terminal: false };
       setRunId(id);
+      setStatus("PENDING");
       // 模型与额度来源随执行请求提交；服务端再次校验凭证归属。
       const executed = await request<{ result: { status: string; output?: unknown; error?: string } }>(`/api/workflows/runs/${id}/execute`, "POST", options);
       if (!alive.current) return;
-      if (executed.result?.status === "failed") setError(executed.result.error ?? "工作流执行失败，请查看运行记录与额度流水。");
-      else setOutput(outputText(executed.result?.output));
+      if (!["succeeded", "failed"].includes(executed.result?.status ?? "")) throw new Error(studio("unknownRun"));
+      activeRun.current.terminal = true;
+      if (executed.result.status === "failed") { setStatus("FAILED"); setError(executed.result.error ?? studio("failed")); }
+      else { setStatus("SUCCEEDED"); setOutput(outputText(executed.result.output)); }
       const detail = await fetchRunDetail(id).catch(() => null);
       if (!alive.current) return;
       setNodeRuns(detail?.nodeRuns ?? []);
+      if (detail && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.status)) setStatus(detail.status);
       finishIntent();
       router.refresh();
     } catch (cause) {
@@ -160,13 +213,16 @@ export function WorkflowRunForm({
       const completed = createdRunId ? await waitForRunCompletion(createdRunId) : null;
       if (!alive.current) return;
       if (completed) {
+        activeRun.current.terminal = true;
         setNodeRuns(completed.nodeRuns ?? []);
+        setStatus(completed.status);
         if (completed.status === "SUCCEEDED") { setError(""); setOutput(outputText(completed.output)); }
         else { setOutput(null); setError(completed.error ?? "工作流执行未完成，请查看运行记录与额度流水。"); }
         finishIntent();
         router.refresh();
       } else {
-        setError(cause instanceof Error ? cause.message : "运行未完成，请稍后重试。");
+        setStatus(createdRunId ? "UNKNOWN" : "FAILED");
+        setError(cause instanceof Error ? cause.message : studio("failed"));
       }
     } finally {
       submitting.current = false;
@@ -174,17 +230,20 @@ export function WorkflowRunForm({
     }
   }
 
+  const Frame = embedded ? "div" : Card;
+  const Content = embedded ? "div" : CardContent;
   return (
-    <Card>
-      <CardHeader>
+    <Frame>
+      {!embedded && <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4" /> 运行这个工作流
         </CardTitle>
         <CardDescription>
           {estimatedCost === null ? workflowBilling("meteredCost") : billing("billingExplanation", { points: estimatedCost })}
         </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </CardHeader>}
+      <Content className="space-y-5">
+        {embedded && <p className="text-xs leading-6 text-muted-foreground">{estimatedCost === null ? workflowBilling("meteredCost") : billing("billingExplanation", { points: estimatedCost })}</p>}
         {variables.length === 0 ? (
           <p className="text-sm text-muted-foreground">这个工作流不需要额外输入，直接运行即可。</p>
         ) : (
@@ -221,7 +280,7 @@ export function WorkflowRunForm({
           ))
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={embedded ? "grid gap-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"}>
           <div className="space-y-1.5">
             <Label htmlFor="workflow-run-model">模型</Label>
             <Select disabled={busy} value={modelKey} onValueChange={setModelKey}>
@@ -273,7 +332,7 @@ export function WorkflowRunForm({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button disabled={busy || missing.length > 0} onClick={run}>
+          <Button className={embedded ? "w-full" : undefined} disabled={busy || missing.length > 0} onClick={run}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             {busy ? "运行中…" : estimatedCost === null ? workflowBilling("confirmRun") : billing("billingRun", { points: estimatedCost })}
           </Button>
@@ -291,7 +350,7 @@ export function WorkflowRunForm({
           </Alert>
         )}
 
-        {output !== null && (
+        {!embedded && output !== null && (
           <div className="space-y-2">
             <h3 className="text-sm font-medium">运行结果</h3>
             <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg border bg-muted/30 p-4 text-sm leading-7">
@@ -300,7 +359,7 @@ export function WorkflowRunForm({
           </div>
         )}
 
-        {nodeRuns.length > 0 && (
+        {!embedded && nodeRuns.length > 0 && (
           <details className="rounded-lg border p-4">
             <summary className="cursor-pointer text-sm font-medium">逐节点执行记录</summary>
             <ul className="mt-3 space-y-2 text-xs">
@@ -321,7 +380,7 @@ export function WorkflowRunForm({
             </ul>
           </details>
         )}
-      </CardContent>
-    </Card>
+      </Content>
+    </Frame>
   );
 }

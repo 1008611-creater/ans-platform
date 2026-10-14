@@ -21,7 +21,7 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
   accountId: string | null;
   favorited: boolean;
 }) {
-  const [t, d, ct, locale] = await Promise.all([getTranslations("product"), getTranslations("product.projectDetail"), getTranslations("product.connections"), getLocale()]);
+  const [t, d, ct, wt, locale] = await Promise.all([getTranslations("product"), getTranslations("product.projectDetail"), getTranslations("product.connections"), getTranslations("workflowCatalog"), getLocale()]);
   const text = (field: Parameters<typeof catalogText>[2]) => catalogText(project, t, field, locale);
   const advice = guide ? (locale.startsWith("zh") ? guide.zh : guide.en) : undefined;
   const startHref = projectStartHref(project);
@@ -62,6 +62,7 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
           {isExternal ? <a href={primaryHref} target="_blank" rel="noopener noreferrer">{primaryLabel}<ArrowUpRight size={18} aria-hidden="true" /></a> : <Link href={primaryHref}>{primaryLabel}<ArrowRight size={18} aria-hidden="true" /></Link>}
         </Button>}
         <ProductConnectionsSection connections={otherActions} compact />
+        <Button asChild variant="outline" className="mt-2 h-auto min-h-11 w-full whitespace-normal py-3"><Link href={`/workflows/new?${new URLSearchParams({ project: project.slug })}`}>{wt("createFromProject")}<ArrowRight size={16} aria-hidden="true" /></Link></Button>
         {primaryConnection && (guide?.experienceUrl || project.sourceUrl) && <Button asChild variant="outline" className="mt-2 w-full"><a href={guide?.experienceUrl ?? project.sourceUrl} target="_blank" rel="noopener noreferrer">{guide?.experienceUrl ? d("tryOnline") : isGithub ? d("viewRepository") : d("openProject")}<ArrowUpRight size={16} aria-hidden="true" /></a></Button>}
         {guide?.experienceUrl && project.sourceUrl && <a href={project.sourceUrl} target="_blank" rel="noopener noreferrer" className="ans-text-link"><Github size={15} aria-hidden="true" />{d("viewRepository")}</a>}
         {!primaryConnection && <div className={styles.startNote}><Info size={15} aria-hidden="true" /><span>{startHref ? t("cost", { points: PROJECT_WORKFLOW_COST_POINTS }) + " · " + t("costNote") : d("browseNote")}</span></div>}

@@ -16,7 +16,8 @@ import { ArrowLeft, ArrowRight, FileOutput, Play, ShieldCheck } from "lucide-rea
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
-import { WorkflowRunForm } from "@/components/workflows/workflow-run-form";
+import { WorkflowStudio } from "@/components/workflows/workflow-studio";
+import { workflowExperience } from "@/domain/workflows/experience";
 import { auth } from "@/lib/auth";
 import { getPublicDisplayName } from "@/lib/public-identity";
 import { extractInputVariables } from "@/domain/workflows/variables";
@@ -65,6 +66,8 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
   const order = definition ? validateWorkflow(definition).executionOrder : [];
   const finalNode = definition?.nodes.find(node => node.id === order.at(-1));
   const isResume = definition?.recipe === "resume-website-v1";
+  const experience = definition ? workflowExperience(definition) : null;
+  const studio = await getTranslations("workflowStudio");
   const loginHref = `/login?callbackUrl=${encodeURIComponent(`/workflows/${workflow.slug}`)}`;
 
   return <div className="ans-product-shell"><article className={`ans-product-container ans-page-content ${styles.page}`}>
@@ -77,19 +80,21 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
         <p className={styles.author}>{workflow.isOfficial ? w("platformMaintained") : t("author", { name: getPublicDisplayName(workflow.author) })}<span aria-hidden="true">·</span>{t("runCount", { count: workflow.useCount })}</p>
         <div className={styles.heroActions}><FavoriteButton accountId={userId} targetType="WORKFLOW" targetId={workflow.id} initialFavorited={favorited} /><Link href="/workflows/runs">{t("records")}<ArrowRight size={14} aria-hidden="true" /></Link></div>
       </div>
-      <div className={styles.delivery}>
-        <FileOutput size={24} className={styles.deliveryIcon} aria-hidden="true" />
+      <div className={`${styles.delivery} ${styles.artifactStage}`}>
+        <div className={styles.artifactTop}><span>{studio("processEyebrow")}</span><span>v{version}</span></div>
+        {experience && <ol className={styles.artifactSteps}>{experience.stages.slice(0, 4).map((stage, index) => <li key={stage.id}><span>{String(index + 1).padStart(2, "0")}</span><strong>{stage.title}</strong></li>)}</ol>}
+        <FileOutput size={28} className={styles.deliveryIcon} aria-hidden="true" />
         <p className={styles.kicker}>{t("deliveryEyebrow")}</p>
-        <h2>{isResume ? t("resumeOutput") : finalNode?.label ?? t("unavailableOutput")}</h2>
+        <h2>{isResume ? t("resumeOutput") : experience?.output.label ?? finalNode?.label ?? t("unavailableOutput")}</h2>
         <p className={styles.deliveryBody}>{isResume ? t("resumeOutputBody") : definition ? t("genericOutputBody") : t("unavailableBody")}</p>
-        {definition && <><div className={styles.deliveryMeta}><span>{t("immutableVersion", { version })}</span><span>{metered ? w("computeOnRun") : billing("billingReservation", { points: cost })}</span></div><Button asChild className={styles.runLink}><Link href="#workflow-run"><Play size={15} aria-hidden="true" />{t("prepareRun")}</Link></Button></>}
+        {definition && <><div className={styles.deliveryMeta}><span>{t("immutableVersion", { version })}</span><span>{metered ? w("computeOnRun") : billing("billingReservation", { points: cost })}</span></div><Button asChild className={styles.runLink}><Link href="#workflow-run"><Play size={15} aria-hidden="true" />{studio("prepare")}</Link></Button></>}
       </div>
     </header>
 
     <ProductConnectionsSection connections={connections} />
     <nav className={styles.sectionNav} aria-label={t("sections")}>
       <Link href="#workflow-preparation">{t("preparationTitle")}</Link>
-      {definition && <Link href="#workflow-process">{t("processTitle")}</Link>}
+      {definition?.recipe && <Link href="#workflow-process">{t("processTitle")}</Link>}
       <Link href="#workflow-run">{t("runTitle")}</Link>
       <Link href="#workflow-conditions">{t("conditionsTitle")}</Link>
     </nav>
@@ -97,7 +102,7 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
     <div className={styles.overview}>
       <div className={styles.mainColumn}>
         {workflow.description && <section className={styles.section} aria-labelledby="workflow-description-title"><div className={styles.sectionHeading}><div><p className={styles.kicker}>{t("instructionsEyebrow")}</p><h2 id="workflow-description-title">{t("instructionsTitle")}</h2></div></div><p className={styles.description}>{workflow.description}</p></section>}
-        {definition ? <WorkflowDetailFlow definition={definition} /> : <section className={styles.unavailable} role="status"><h2>{t("unavailableTitle")}</h2><p>{t("unavailableBody")}</p></section>}
+        {definition?.recipe ? <WorkflowDetailFlow definition={definition} /> : !definition ? <section className={styles.unavailable} role="status"><h2>{t("unavailableTitle")}</h2><p>{t("unavailableBody")}</p></section> : null}
       </div>
       <aside id="workflow-preparation" className={styles.preparation} aria-labelledby="workflow-preparation-title">
         <p className={styles.kicker}>{t("preparationEyebrow")}</p><h2 id="workflow-preparation-title">{t("preparationTitle")}</h2>
@@ -110,7 +115,7 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
 
     <section id="workflow-run" className={styles.runSection} aria-labelledby="workflow-run-title">
       <div className={styles.sectionHeading}><div><p className={styles.kicker}>{t("runEyebrow")}</p><h2 id="workflow-run-title">{t("runTitle")}</h2></div><span className={styles.smallMeta}>{t("immutableVersion", { version })}</span></div>
-      {!definition ? <p className={styles.unavailable}>{t("unavailableBody")}</p> : userId ? <MarketAccountBoundary actorId={userId}>{definition.recipe ? <MarketWorkflowRun listingId={workflow.id} workflowSlug={workflow.slug} version={version} details={{ recipe: definition.recipe, variables, version, estimatedCost: metered ? null : cost }} /> : <WorkflowRunForm slug={workflow.slug} variables={variables} estimatedCost={metered ? null : cost} credentials={credentials.map(credential => ({ id: credential.id, label: credential.label, keyMasked: credential.keyMasked }))} />}</MarketAccountBoundary> : <div className={styles.loginPanel}><div><h3>{t("loginTitle")}</h3><p>{t("loginBody")}</p><p className={styles.smallMeta}>{metered ? w("meteredCost") : billing("billingExplanation", { points: cost })}</p></div><Button asChild><Link href={loginHref}>{t("loginAction")}<ArrowRight size={15} aria-hidden="true" /></Link></Button></div>}
+      {!definition ? <p className={styles.unavailable}>{t("unavailableBody")}</p> : !definition.recipe ? userId ? <MarketAccountBoundary actorId={userId}><WorkflowStudio slug={workflow.slug} title={workflow.title} version={version} definition={definition} estimatedCost={metered ? null : cost} authenticated credentials={credentials.map(credential => ({ id: credential.id, label: credential.label, keyMasked: credential.keyMasked }))} /></MarketAccountBoundary> : <WorkflowStudio slug={workflow.slug} title={workflow.title} version={version} definition={definition} estimatedCost={metered ? null : cost} authenticated={false} /> : userId ? <MarketAccountBoundary actorId={userId}><MarketWorkflowRun listingId={workflow.id} workflowSlug={workflow.slug} version={version} details={{ recipe: definition.recipe, variables, version, estimatedCost: metered ? null : cost }} /></MarketAccountBoundary> : <div className={styles.loginPanel}><div><h3>{t("loginTitle")}</h3><p>{t("loginBody")}</p><p className={styles.smallMeta}>{metered ? w("meteredCost") : billing("billingExplanation", { points: cost })}</p></div><Button asChild><Link href={loginHref}>{t("loginAction")}<ArrowRight size={15} aria-hidden="true" /></Link></Button></div>}
     </section>
 
     <section id="workflow-conditions" className={styles.conditions} aria-labelledby="workflow-conditions-title"><h2 id="workflow-conditions-title">{t("conditionsTitle")}</h2><ul><li>{metered ? w("meteredCost") : billing("billingExplanation", { points: cost })}</li><li>{t("executionLimit")}</li><li>{t("versionNotice")}</li><li>{t("privacyNotice")}</li><li>{t("reviewNotice")}</li></ul></section>
