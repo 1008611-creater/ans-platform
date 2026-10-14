@@ -7,6 +7,7 @@ vi.mock("@/server/quota/service",()=>({debitQuota:mocks.debit,refundQuota:mocks.
 vi.mock("@/server/integrations/apic-billing",()=>({readApicCharge:mocks.charge}));
 vi.mock("@/server/integrations/gateway-evidence",()=>({lockGatewayBillingAccount:vi.fn(),recordGatewayEvidence:mocks.evidence,hasNonexecutionEvidence:mocks.rejectedEvidence}));
 import {codexResponses,codexModels,validateCodexPayload,meteredResponses} from "@/server/integrations/codex-gateway";
+import { upstreamFailureCode } from "@/server/integrations/upstream-rejection";
 const key="pchat_"+"a".repeat(64);
 function request(body:unknown,token=key){return new Request("https://ans.invalid/api/codex/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});}
 beforeEach(()=>{vi.resetAllMocks();mocks.transaction.mockImplementation((fn,tx)=>fn(tx));mocks.unique.mockResolvedValue(null);mocks.count.mockResolvedValue(0);process.env.ANS_CODEX_GATEWAY_ENABLED="1";process.env.RUN_BASE_URL="https://apic.cauai.fun/v1";process.env.RUN_API_KEY="private-test-only";mocks.user.mockResolvedValue({id:"u"});mocks.find.mockResolvedValue([]);mocks.create.mockImplementation(({data})=>{mocks.current.mockResolvedValue({...data,id:"task"});return Promise.resolve({id:"task"});});mocks.rejectedEvidence.mockImplementation((_tx,_owner,id)=>Promise.resolve(mocks.evidence.mock.calls.find(call=>call[2]===id)?.[3].kind===undefined ? null : mocks.evidence.mock.calls.some(call=>call[2]===id && call[3].kind==="REJECTED")));mocks.update.mockResolvedValue({count:1});mocks.charge.mockResolvedValue({points:0.001,requestId:"request123456",quota:500});vi.stubGlobal("fetch",mocks.fetch);});
@@ -17,6 +18,42 @@ describe("Codex sole-ledger gateway",()=>{
  it("reserves then settles the authoritative quota once",async()=>{mocks.fetch.mockResolvedValue(new Response('{"output":[]}',{headers:{"x-oneapi-request-id":"request123456"}}));const response=await codexResponses(request({model:"gpt-6.1-sol",input:"hello"}));expect(response.status).toBe(200);expect(mocks.debit).toHaveBeenCalledTimes(1);expect(mocks.refund).toHaveBeenCalledTimes(1);expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({state:"SETTLED",settledPoints:0.001})}));});
  it("records supplier excess while keeping user debit inside original authorization",async()=>{mocks.charge.mockResolvedValue({points:2,requestId:"request123456",quota:1000000});mocks.fetch.mockResolvedValue(new Response('{"output":[]}',{headers:{"x-oneapi-request-id":"request123456"}}));const response=await codexResponses(request({model:"gpt-6.1-sol",input:"hello"}));expect(response.status).toBe(200);expect(mocks.debit).toHaveBeenCalledTimes(1);expect(mocks.refund).not.toHaveBeenCalled();expect(mocks.evidence).toHaveBeenCalledWith(expect.anything(),"u","task",expect.objectContaining({kind:"VERIFIED",charge:expect.objectContaining({points:2}),billedPoints:validateCodexPayload({model:"gpt-6.1-sol",input:"hello"}).reserve}));});
  it("does not turn ambiguous upstream failure into free credit",async()=>{mocks.fetch.mockRejectedValue(new Error("timeout"));const response=await codexResponses(request({model:"gpt-6.1-sol"}));expect(response.status).toBe(502);expect(mocks.refund).not.toHaveBeenCalled();expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({state:"UNCERTAIN"})}));});
+ it.each(["system_cpu_overloaded", "system_memory_overloaded", "system_disk_overloaded"])("explains %s without claiming zero cost or allowing an automatic retry", async code => {
+  mocks.fetch.mockResolvedValue(Response.json({ error: { code, message: "supplier-private-diagnostic" } }, { status: 503, headers: { "x-oneapi-request-id": "request123456" } }));
+  const response = await codexResponses(request({ model: "deepseek-v4.1-flash" }));
+  expect(response.status).toBe(503);
+  expect(await response.json()).toEqual({ error: { code: "UPSTREAM_CAPACITY_UNAVAILABLE", message: "UPSTREAM_CAPACITY_UNAVAILABLE", type: "ans_gateway_error" } });
+  expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ state: "UNCERTAIN", settledPoints: null, outcome: "request123456" }) }));
+  expect(mocks.debit).toHaveBeenCalledTimes(1);
+  expect(mocks.refund).not.toHaveBeenCalled();
+  expect(mocks.charge).not.toHaveBeenCalled();
+  expect(mocks.evidence).not.toHaveBeenCalled();
+  expect(mocks.fetch).toHaveBeenCalledTimes(1);
+ });
+ it.each([
+  [503, '{"error":{"code":"other_provider_error"}}'],
+  [503, '{"error":{"code":"system_disk_overloaded-extra"}}'],
+  [503, '{"error":[] }'],
+  [503, '{'],
+  [500, '{"error":{"code":"system_disk_overloaded"}}'],
+ ])("does not classify status %s and unknown or malformed errors as capacity failures", async (status, body) => {
+  expect(await upstreamFailureCode(new Response(body, { status }))).toBe("UPSTREAM_REJECTED");
+ });
+ it("bounds diagnostic reads and cancels an oversized body", async () => {
+  const cancel = vi.fn();
+  const body = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new Uint8Array(8193)); }, cancel });
+  expect(await upstreamFailureCode(new Response(body, { status: 503 }))).toBe("UPSTREAM_REJECTED");
+  expect(cancel).toHaveBeenCalledTimes(1);
+ });
+ it("fails closed on locked, broken, or invalid UTF-8 diagnostic bodies", async () => {
+  const locked = Response.json({ error: { code: "system_disk_overloaded" } }, { status: 503 });
+  const reader = locked.body!.getReader();
+  expect(await upstreamFailureCode(locked)).toBe("UPSTREAM_REJECTED");
+  reader.releaseLock();
+  const broken = new ReadableStream<Uint8Array>({ start(controller) { controller.error(new Error("isolated-read-error")); } });
+  expect(await upstreamFailureCode(new Response(broken, { status: 503 }))).toBe("UPSTREAM_REJECTED");
+  expect(await upstreamFailureCode(new Response(new Uint8Array([255]), { status: 503 }))).toBe("UPSTREAM_REJECTED");
+ });
  it("returns streamed tool events unchanged and settles",async()=>{const text='event: response.output_item.added\ndata: {"type":"function_call","name":"test"}\n\n';mocks.fetch.mockResolvedValue(new Response(text,{headers:{"x-oneapi-request-id":"request123456"}}));const response=await codexResponses(request({model:"gpt-6.1-sol",stream:true}));expect(await response.text()).toBe(text);expect(mocks.refund).toHaveBeenCalledTimes(1);});
  it("releases reservation for explicit upstream validation rejection",async()=>{mocks.fetch.mockResolvedValue(new Response("bad",{status:400}));expect((await codexResponses(request({model:"gpt-6.1-sol"}))).status).toBe(400);expect(mocks.refund).toHaveBeenCalledTimes(1);});
 });

@@ -124,6 +124,7 @@
     "pending": "The result or cost is still being checked. Success or a refund is not confirmed. Update the usage record.",
     "interrupted": "The connection broke. The request was not automatically resent. Check usage before starting another turn.",
     "incomplete": "The reply was incomplete. No further call was made. Check the bill for actual usage.",
+    "capacity": "The model service is temporarily busy and no reply was obtained. Check the usage record before starting another turn later.",
     "unavailable": "No reply was obtained. There was no automatic retry; check usage if a request was submitted."
   },
   "agentRoutes": {

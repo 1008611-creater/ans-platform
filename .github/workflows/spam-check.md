@@ -24,7 +24,9 @@ engine:
     COPILOT_PROVIDER_API_KEY: ${{ secrets.ANS_PR_REVIEW_API_KEY }}
     COPILOT_PROVIDER_TYPE: openai
     COPILOT_PROVIDER_WIRE_API: responses
-    COPILOT_PROVIDER_MAX_PROMPT_TOKENS: "32768"
+    # The CLI system prompt and tool schemas use about 30k tokens before work.
+    # Leave room for tool results so compaction cannot restart the first turn.
+    COPILOT_PROVIDER_MAX_PROMPT_TOKENS: "131072"
     COPILOT_PROVIDER_MAX_OUTPUT_TOKENS: "4096"
 sandbox:
   agent:
