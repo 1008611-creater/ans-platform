@@ -39,6 +39,7 @@ export default getRequestConfig(async () => {
       marketCash: (await import(`@/../messages/market-cash/${locale === "zh" ? "zh" : "en"}.json`)).default,
       companion: (await import(`@/../messages/companion/${locale === "zh" ? "zh" : "en"}.json`)).default,
       visualWebsite: (await import(`@/../messages/visual-website/${locale === "zh" ? "zh" : "en"}.json`)).default,
+      fourView: (await import(`@/../messages/four-view/${locale === "zh" ? "zh" : "en"}.json`)).default,
       visualGeneration: (await import(`@/../messages/visual-generation/${locale === "zh" ? "zh" : "en"}.json`)).default,
       visualPublication: (await import(`@/../messages/visual-publication/${locale === "zh" ? "zh" : "en"}.json`)).default,
       marketWorkflow: (await import(`@/../messages/market-workflow/${locale === "zh" ? "zh" : "en"}.json`)).default,

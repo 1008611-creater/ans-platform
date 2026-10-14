@@ -2,6 +2,7 @@ import { cleanup,fireEvent,render,screen,waitFor } from "@testing-library/react"
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach,beforeEach,describe,expect,it,vi } from "vitest";
 import generation from "../../../messages/visual-generation/zh.json";
+import fourView from "../../../messages/four-view/zh.json";
 import publication from "../../../messages/visual-publication/zh.json";
 import { VisualModelGeneration } from "@/components/projects/visual-model-generation";
 import { DEFAULT_TRIPO_OPTIONS } from "@/contracts/visual-generation";
@@ -11,7 +12,7 @@ const mocked=vi.hoisted(()=>({request:vi.fn(),actor:"test-owner"}));
 vi.mock("@/components/marketplace/account-boundary",()=>({useMarketActorId:()=>mocked.actor,useMarketRequest:()=>mocked.request}));
 const asset={id:"12345678-1234-4234-8234-123456789abc",sha256:"a".repeat(64),size:100};
 const completed={id:"job",status:"SUCCEEDED",stage:"persist",progress:100,costPoints:2,refunded:false,cancelRequested:false,errorCode:null,createdAt:"2026-10-13T00:00:00Z",asset};
-function mountGeneration(onApply=vi.fn()){return render(<NextIntlClientProvider locale="zh" messages={{visualGeneration:generation}}><VisualModelGeneration onApply={onApply}/></NextIntlClientProvider>);}
+function mountGeneration(onApply=vi.fn()){return render(<NextIntlClientProvider locale="zh" messages={{visualGeneration:generation,fourView}}><VisualModelGeneration onApply={onApply}/></NextIntlClientProvider>);}
 beforeEach(()=>{vi.clearAllMocks();mocked.actor="test-owner";URL.createObjectURL=vi.fn(()=>"blob:fixture");URL.revokeObjectURL=vi.fn();mocked.request.mockResolvedValue([]);});
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 describe("generation and publication controls",()=>{

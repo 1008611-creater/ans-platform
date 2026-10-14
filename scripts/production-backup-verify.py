@@ -30,6 +30,10 @@ GUARD_SQL_SHA256 = "8f131b98090069b85c4f7a3c1477f8588accde3c55f1e2a32b61dc94419e
 VISUAL_MIGRATION = "20261013122000_visual_model_jobs_and_websites"
 VISUAL_SQL_SHA256 = "b9920e8a3fac10db3e8f215262098a44942e29c4c644bed94c1964ae4defbba5"
 VISUAL_TABLES = {"visual_model_jobs", "visual_model_assets", "visual_website_releases", "visual_website_domains"}
+FOUR_VIEW_MIGRATION = "20261014194000_private_four_view_jobs"
+FOUR_VIEW_SQL_SHA256 = "343b4afeeff7fa2eb65124d465743f065f86c56a35b58d741a2f7702e73b6787"
+TABLE_MIGRATIONS = {VISUAL_MIGRATION: (VISUAL_SQL_SHA256, VISUAL_TABLES),
+                    FOUR_VIEW_MIGRATION: (FOUR_VIEW_SQL_SHA256, {"visual_four_view_jobs"})}
 # Exact reviewed LF bytes, not an arbitrary operator-supplied SQL file/hash.
 GUARD_SQL = """-- A managed edition stays managed while disabled or before its first stage exists.
 -- No rows or historical migration checksums are modified. Keep pure registration,
@@ -104,9 +108,9 @@ def reviewed_pending_sql(pending, migration_path):
         expected = GUARD_SQL.encode("utf-8")
         if hashlib.sha256(expected).hexdigest() != GUARD_SQL_SHA256:
             raise RuntimeError("Reviewed guard SQL attestation changed")
-    elif pending == [VISUAL_MIGRATION]:
-        expected = (migration_path / VISUAL_MIGRATION / "migration.sql").read_bytes().replace(b"\r\n", b"\n")
-        if hashlib.sha256(expected).hexdigest() != VISUAL_SQL_SHA256:
+    elif len(pending) == 1 and pending[0] in TABLE_MIGRATIONS:
+        expected = (migration_path / pending[0] / "migration.sql").read_bytes().replace(b"\r\n", b"\n")
+        if hashlib.sha256(expected).hexdigest() != TABLE_MIGRATIONS[pending[0]][0]:
             raise RuntimeError("Reviewed visual SQL attestation changed")
     else:
         raise RuntimeError("Unapproved pending migration rehearsal")
@@ -305,6 +309,7 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
         migration_rehearsal = []
         if pending:
             expected_sql = reviewed_pending_sql(pending, migration_path)
+            new_tables = TABLE_MIGRATIONS.get(pending[0], (None, set()))[1]
             guard_expected = None
             if pending == [GUARD_MIGRATION]:
                 if len(guard_functions) != 1:
@@ -317,7 +322,7 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                     raise RuntimeError("Guard replacement changed function metadata")
                 if [{"item": item} for item in sql(GUARD_FUNCTION_SQL)] != guard_functions or [{"item": item} for item in sql(TRIGGER_SQL)] != triggers:
                     raise RuntimeError("Guard parser witness did not roll back")
-            elif pending != [VISUAL_MIGRATION]:
+            elif not new_tables:
                 before_enum = sql("SELECT jsonb_agg(enumlabel ORDER BY enumsortorder) FROM pg_enum WHERE enumtypid='public.\"FavoriteTargetType\"'::regtype")[0]
             run(["docker", "exec", "-i", restored, "psql", "-X", "-U", "ans_restore", "-d", "ans_restore", "-v", "ON_ERROR_STOP=1"], input="BEGIN;\n" + expected_sql.decode() + "\nCOMMIT;\n")
             after_functions = [{"item": item} for item in sql(GUARD_FUNCTION_SQL)]
@@ -327,13 +332,13 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
             if guard_expected is not None:
                 if after_functions != guard_expected:
                     raise RuntimeError("Guard rehearsal differs from parsed reviewed SQL")
-            elif pending == [VISUAL_MIGRATION]:
+            elif new_tables:
                 if after_functions != guard_functions:
                     raise RuntimeError("Visual rehearsal changed guard function")
                 tables_after = set(sql("SELECT to_json(tablename) FROM pg_tables WHERE schemaname='public' ORDER BY tablename"))
-                if tables_after != set(restored_tables) | VISUAL_TABLES or VISUAL_TABLES & set(restored_tables):
+                if tables_after != set(restored_tables) | new_tables or new_tables & set(restored_tables):
                     raise RuntimeError("Visual rehearsal changed unexpected tables")
-                for table in VISUAL_TABLES:
+                for table in new_tables:
                     if sql("SELECT to_json(count(*)::text) FROM public." + quote(table))[0] != "0":
                         raise RuntimeError("Visual rehearsal inserted unexpected data")
             else:
@@ -347,9 +352,9 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                 if after != before: raise RuntimeError("Migration rehearsal changed application data")
             constraints_after = [{"item": item} for item in sql(CONSTRAINT_SQL)]
             indexes_after = [{"item": item} for item in sql(INDEX_SQL)]
-            if pending == [VISUAL_MIGRATION]:
-                constraints_after = [item for item in constraints_after if item["item"]["table"] not in VISUAL_TABLES]
-                indexes_after = [item for item in indexes_after if item["item"]["table"] not in VISUAL_TABLES]
+            if new_tables:
+                constraints_after = [item for item in constraints_after if item["item"]["table"] not in new_tables]
+                indexes_after = [item for item in indexes_after if item["item"]["table"] not in new_tables]
             if constraints_after != constraints or indexes_after != indexes:
                 raise RuntimeError("Migration rehearsal changed constraints or indexes")
             if sql("SELECT row_to_json(t) FROM (" + MIGRATION_SQL + ") t") != migrations:
@@ -363,8 +368,8 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                                   "functionAfterSha256": definition_sha(after_functions), "functionExpectedSha256": definition_sha(guard_expected),
                                   "functionMetadataPreserved": True, "functionParserWitnessRolledBack": True,
                                   "functionBefore": guard_functions[0]["item"], "functionAfter": after_functions[0]["item"]})
-            elif pending == [VISUAL_MIGRATION]:
-                rehearsal["newEmptyTables"] = sorted(VISUAL_TABLES)
+            elif new_tables:
+                rehearsal["newEmptyTables"] = sorted(new_tables)
             else:
                 rehearsal["values"] = after_enum
             migration_rehearsal = [rehearsal]

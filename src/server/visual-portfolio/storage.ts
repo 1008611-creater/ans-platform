@@ -4,7 +4,7 @@ import { resolve, dirname, sep } from "node:path";
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { INPUT_LIMIT } from "@/contracts/visual-generation";
 import { VisualPortfolioError } from "./errors";
-function storageKey(key: string) { if (!/^visual\/[a-f0-9-]{36}\/(input\.(png|jpg|webp|json)|model\.glb|site\.html)$/.test(key)) throw new VisualPortfolioError("INVALID_ASSET_KEY", 400); return key; }
+function storageKey(key: string) { if (!/^visual\/[a-f0-9-]{36}\/(input\.(png|jpg|webp|json)|model\.glb|site\.html|grid\.bin|view-(front|back|left|right)\.png)$/.test(key)) throw new VisualPortfolioError("INVALID_ASSET_KEY", 400); return key; }
 function localPath(key: string) { const root=resolve(process.env.ANS_VISUAL_STORAGE_DIR || ".workbuddy/visual-assets"); const target=resolve(root,storageKey(key)); if(!target.startsWith(root+sep))throw new VisualPortfolioError("INVALID_ASSET_KEY",400);return target; }
 function client() { if (!process.env.S3_BUCKET || !process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY) throw new VisualPortfolioError("STORAGE_NOT_CONFIGURED",503);return new S3Client({region:process.env.S3_REGION||"auto",endpoint:process.env.S3_ENDPOINT,forcePathStyle:!!process.env.S3_ENDPOINT,credentials:{accessKeyId:process.env.S3_ACCESS_KEY_ID,secretAccessKey:process.env.S3_SECRET_ACCESS_KEY}}); }
 export function durableStorageReady() { return process.env.ANS_VISUAL_STORAGE_MODE === "local" || (process.env.ANS_VISUAL_STORAGE_MODE === "s3" && !!process.env.S3_BUCKET && !!process.env.S3_ACCESS_KEY_ID && !!process.env.S3_SECRET_ACCESS_KEY); }
@@ -46,4 +46,13 @@ export async function putVisualInput(id: string, key: string, bytes: Uint8Array,
     if (!collision) throw error;
     if (sha256(await readVisualObject(key, INPUT_LIMIT)) !== sha256(bytes)) throw new VisualPortfolioError("INPUT_OBJECT_CONFLICT", 409);
   }
+}
+
+/** Delete only a job-scoped four-view result. Originals use the existing input deletion API. */
+export async function deleteFourViewResult(id:string,name:string) {
+ if(!/^[a-f0-9-]{36}$/.test(id)||!["grid.bin","view-front.png","view-back.png","view-left.png","view-right.png"].includes(name))throw new VisualPortfolioError("INVALID_ASSET_KEY",400);
+ const key=storageKey(`visual/${id}/${name}`);
+ if(!durableStorageReady())throw new VisualPortfolioError("STORAGE_NOT_CONFIGURED",503);
+ if(process.env.ANS_VISUAL_STORAGE_MODE==="s3")await client().send(new DeleteObjectCommand({Bucket:process.env.S3_BUCKET,Key:key}),{abortSignal:AbortSignal.timeout(inputTimeoutMs)});
+ else try{await unlink(localPath(key));}catch(error){if((error as NodeJS.ErrnoException).code!=="ENOENT")throw error;}
 }
