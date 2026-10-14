@@ -55,3 +55,63 @@ jobs:
           }
           main().catch(() => { console.log('COPILOT_DIAGNOSTIC: lookup failed; no response body or credential printed'); process.exitCode = 1; });
           NODE
+
+  inspect_authorized_provider:
+    if: github.event.pull_request.number == 70 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Verify the authorized model and one bounded Responses tool call
+        env:
+          ANS_PROVIDER_PROBE_KEY: ${{ secrets.ANS_PR_REVIEW_API_KEY }}
+        run: |
+          node <<'NODE'
+          const key = process.env.ANS_PROVIDER_PROBE_KEY;
+          const base = 'https://www.mcgrox.top/v1';
+          const model = 'deepseek-v4.1-flash';
+          const fail = code => { throw new Error(code); };
+          async function request(path, body) {
+            const result = await fetch(base + path, {
+              method: body ? 'POST' : 'GET',
+              headers: { Authorization: `Bearer ${key}`, Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+              ...(body ? { body: JSON.stringify(body) } : {}),
+              redirect: 'error', signal: AbortSignal.timeout(45000)
+            });
+            console.log('ANS_PROVIDER_PROBE_HTTP:', path, result.status);
+            if (!result.ok) fail(path === '/models' ? 'MODEL_LIST_HTTP_FAILED' : 'RESPONSES_HTTP_FAILED');
+            return result.json();
+          }
+          async function main() {
+            if (!key) fail('CREDENTIAL_MISSING');
+            const inventory = await request('/models');
+            if (!Array.isArray(inventory.data)) fail('MODEL_LIST_INVALID');
+            const listed = inventory.data.some(item => item?.id === model);
+            console.log('ANS_PROVIDER_PROBE_EXACT_MODEL_LISTED:', listed);
+            if (!listed) fail('EXACT_MODEL_NOT_LISTED');
+            // One fixed synthetic request, no PR contents/user data, no tools executed,
+            // no model retries/fallbacks and at most 512 output tokens.
+            const result = await request('/responses', {
+              model, store: false, max_output_tokens: 512,
+              input: 'Call ans_review_probe once with marker ANS_REVIEW_OK. Do not output prose.',
+              tools: [{ type: 'function', name: 'ans_review_probe', description: 'A non-executing compatibility probe.',
+                parameters: { type: 'object', properties: { marker: { type: 'string', enum: ['ANS_REVIEW_OK'] } }, required: ['marker'], additionalProperties: false }, strict: true }],
+              tool_choice: { type: 'function', name: 'ans_review_probe' }, parallel_tool_calls: false
+            });
+            const calls = Array.isArray(result.output) ? result.output.filter(item => item?.type === 'function_call') : [];
+            if (calls.length !== 1 || calls[0].name !== 'ans_review_probe') fail('TOOL_CALL_INVALID');
+            let args;
+            try { args = JSON.parse(calls[0].arguments); } catch { fail('TOOL_ARGUMENTS_INVALID'); }
+            if (args?.marker !== 'ANS_REVIEW_OK' || Object.keys(args).length !== 1) fail('TOOL_ARGUMENTS_INVALID');
+            console.log('ANS_PROVIDER_PROBE_RESPONSES_TOOL_CALL: passed');
+            console.log('ANS_PROVIDER_PROBE_REPORTED_MODEL_MATCHES:', result.model === model);
+            for (const field of ['input_tokens', 'output_tokens', 'total_tokens']) {
+              const value = result.usage?.[field];
+              if (Number.isSafeInteger(value) && value >= 0) console.log('ANS_PROVIDER_PROBE_USAGE:', field, value);
+            }
+          }
+          main().catch(error => {
+            const known = ['CREDENTIAL_MISSING', 'MODEL_LIST_HTTP_FAILED', 'MODEL_LIST_INVALID', 'EXACT_MODEL_NOT_LISTED', 'RESPONSES_HTTP_FAILED', 'TOOL_CALL_INVALID', 'TOOL_ARGUMENTS_INVALID'];
+            console.log('ANS_PROVIDER_PROBE_FAILURE:', known.includes(error?.message) ? error.message : 'NETWORK_OR_RESPONSE_FAILED');
+            process.exitCode = 1;
+          });
+          NODE
