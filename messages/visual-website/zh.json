@@ -295,7 +295,7 @@
     "closingDescription": "不再从空白表单开始。先看见作品，再亲手把它变成自己的。",
     "closingNote": "免费开始 · 无需代码 · 约 5 分钟上手",
     "footer": "ANS 3D 个人主页 · 参考 intro3d.com",
-    "referenceNote": "本地复刻预览 · 人物与图片采用参考站公开演示素材",
+    "referenceNote": "人物与图片采用参考站公开演示素材",
     "returnPreview": "返回效果展示",
     "editorTitle": "制作我的 3D 主页",
     "navPricing": "价格与能力",
@@ -358,7 +358,19 @@
       "隐私政策",
       "服务条款"
     ],
-    "footerCopyright": "2026 ANS · 3D 个人主页"
+    "footerCopyright": "2026 ANS · 3D 个人主页",
+    "publicationAvailable": {
+      "description": "编辑、下载和私密保存免费。已保存版本可在线发布；图片生成与自定义域名暂未开放。",
+      "status": "已开放",
+      "cta": "制作并发布",
+      "features": [
+        "发布已保存作品版本",
+        "独立链接与 HTTPS 访问",
+        "可随时撤回公开版本",
+        "自定义域名：待开放"
+      ],
+      "sharingAnswer": "登录后保存作品版本，即可在编辑器中确认发布，获得独立 HTTPS 链接，也可随时撤回。完整 HTML 仍可下载后自行托管；自定义域名暂未开放。"
+    }
   },
   "leaveConfirm": "这份作品还没有保存。离开后将丢失当前修改，确认离开吗？",
   "tour": {

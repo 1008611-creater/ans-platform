@@ -295,7 +295,7 @@
     "closingDescription": "Start with something you can see, then make it your own.",
     "closingNote": "FREE TO START ? NO CODE ? ~5 MIN",
     "footer": "ANS 3D personal pages ? Reference: intro3d.com",
-    "referenceNote": "Local reproduction preview ? Demo images and character from the reference site",
+    "referenceNote": "Demo images and character from the reference site",
     "returnPreview": "Back to the preview",
     "editorTitle": "Create my 3D homepage",
     "navPricing": "Plans & capabilities",
@@ -358,7 +358,19 @@
       "Privacy policy",
       "Terms of service"
     ],
-    "footerCopyright": "2026 ANS · 3D personal pages"
+    "footerCopyright": "2026 ANS · 3D personal pages",
+    "publicationAvailable": {
+      "description": "Editing, downloads and private saves are free. Publish saved versions online; image generation and custom domains are not available yet.",
+      "status": "Available",
+      "cta": "Create and publish",
+      "features": [
+        "Publish saved website versions",
+        "Independent links with HTTPS",
+        "Withdraw public versions at any time",
+        "Custom domains: opening soon"
+      ],
+      "sharingAnswer": "Sign in, save a version, then confirm publication in the editor to get an independent HTTPS link. You can withdraw it at any time or download standalone HTML. Custom domains are not available yet."
+    }
   },
   "leaveConfirm": "This work has not been saved. Leaving will discard your changes. Leave now?",
   "tour": {
