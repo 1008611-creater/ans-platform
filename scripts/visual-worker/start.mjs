@@ -2,7 +2,7 @@ import { mkdir, writeFile, rename, readdir, readFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
-import { TripoAdapter } from "./tripo-adapter.mjs";
+import { TripoAdapter, uploadGenerationInput } from "./tripo-adapter.mjs";
 const server=new URL(process.env.ANS_WORKER_SERVER||"http://localhost:3096");
 if(server.username||server.password||server.search||server.hash||server.pathname!=="/"||!(server.protocol==="https:"||(server.protocol==="http:"&&["localhost","127.0.0.1"].includes(server.hostname))))throw new Error("INVALID_SERVER");
 const key=process.env.ANS_VISUAL_WORKER_KEY;
@@ -24,7 +24,10 @@ async function work(job){
  const event=(body)=>api(`/jobs/${job.id}/event`,{body:{leaseToken:job.leaseToken,...body}});
  const heartbeat=(async()=>{while(!stopped){await delay(20000,undefined,{signal:stopHeartbeat.signal}).catch(()=>{});if(stopped)break;try{await event({type:"heartbeat"});}catch{heartbeatFailure=true;break;}}})();
  try{
-  if(!taskId){const bytes=await api(`/jobs/${job.id}/input`,{method:"GET",lease:job.leaseToken,binary:true});const token=await adapter.upload(bytes,job.inputMime);
+  if(!taskId){const bytes=await api(`/jobs/${job.id}/input`,{method:"GET",lease:job.leaseToken,binary:true});const catalog=await adapter.request("/api/gen-models");
+   const current=[...(catalog.h??[]),...(catalog.p??[])].find(item=>item.value===job.options.model);
+   if(!current||job.options.faceCount<current.face_min||job.options.faceCount>(job.options.quad?current.quad_max:current.face_max))throw new Error("MODEL_UNSUPPORTED");
+   const token=await uploadGenerationInput(adapter,bytes,job.inputMime,job.options);
    if(heartbeatFailure)throw new Error("LEASE_LOST");
    const transition=await event({type:"stage",stage:"submit"});if(transition?.cancelled)return;
    submitted=true;await checkpoint(job.id,{intent:true,workerId});
@@ -43,7 +46,7 @@ async function work(job){
   let completed=false;for(let attempt=0;attempt<3;attempt++){try{await api(`/jobs/${job.id}/complete`,{body:bytes,binary:true,lease:job.leaseToken});completed=true;break;}catch(error){if(["MODEL_UNSUPPORTED","INVALID_MODEL","LEASE_LOST"].includes(error.message))throw error;await delay(1000);}}
   if(!completed)throw new Error("DOWNLOAD_FAILED");await checkpoint(job.id,{taskId,workerId,done:true});console.log("Model saved to ANS.");return true;
  }catch(error){const allowed=["LOGIN_REQUIRED","INPUT_REJECTED","PROVIDER_FAILED","SUBMISSION_UNCERTAIN","DOWNLOAD_FAILED","MODEL_UNSUPPORTED","WORKER_INTERRUPTED"];const code=allowed.includes(error.code||error.message)?error.code||error.message:submitted?"WORKER_INTERRUPTED":"INPUT_REJECTED";
-  const uncertain=submitted&&(!taskId||!["PROVIDER_FAILED","MODEL_UNSUPPORTED"].includes(code));
+  const uncertain=submitted&&(!taskId||code!=="PROVIDER_FAILED");
   await event({type:uncertain?"review":"failed",errorCode:code}).catch(()=>{});console.log(uncertain?"Task paused for review; no repeated submission.":"Task stopped. Check its status in ANS.");return false;
  }finally{stopped=true;stopHeartbeat.abort();await heartbeat;}
 }

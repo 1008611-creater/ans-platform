@@ -6,7 +6,7 @@ let bundle: Promise<VisualRuntimeAssets> | null = null;
 function base64(bytes: Uint8Array) { let value=""; for(let offset=0;offset<bytes.length;offset+=32768)value+=String.fromCharCode(...bytes.subarray(offset,offset+32768)); return btoa(value); }
 export function loadVisualRuntimeAssets(): Promise<VisualRuntimeAssets> {
  if(bundle)return bundle;
- const files={core:"/mascot/3d/vendor/three.core.js",module:"/mascot/3d/vendor/three.module.js",utility:"/mascot/3d/vendor/BufferGeometryUtils.js",loader:"/mascot/3d/vendor/GLTFLoader.js",scene:"/visual-portfolio/scene.mjs?v=7",model:"/visual-portfolio/reference/banner.glb"};
+ const files={core:"/mascot/3d/vendor/three.core.js",module:"/mascot/3d/vendor/three.module.js",utility:"/mascot/3d/vendor/BufferGeometryUtils.js",loader:"/mascot/3d/vendor/GLTFLoader.js",scene:"/visual-portfolio/scene.mjs?v=8",model:"/visual-portfolio/reference/banner.glb"};
  bundle=Promise.all(Object.entries(files).map(async([key,url])=>{const response=await fetch(url,{cache:key==="scene"?"no-cache":"force-cache"});if(!response.ok)throw new Error("EXPORT_ASSET_UNAVAILABLE");return [key,key==="model"?base64(new Uint8Array(await response.arrayBuffer())):await response.text()] as const;})).then(entries=>Object.fromEntries(entries) as unknown as VisualRuntimeAssets).catch(error=>{bundle=null;throw error;});
  return bundle;
 }

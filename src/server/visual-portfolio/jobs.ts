@@ -1,10 +1,12 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { db, type DbTransaction } from "@/lib/db";
 import { assertAccountCanSpend, debitQuota, refundQuota } from "@/server/quota/service";
-import { createModelJobSchema, workerClaimSchema, workerEventSchema, type ModelJobStage, type ModelJobStatus, type ModelJobView, type TripoOptions } from "@/contracts/visual-generation";
+import { createModelJobSchema, workerClaimSchema, workerEventSchema, type ModelJobStage, type ModelJobStatus, type ModelJobView, type TripoOptions, TRIPO_MODELS, tripoOptionsSchema, generationPrice } from "@/contracts/visual-generation";
 import { canAdvanceStage, canRefund, safeToRetry, STAGE_PROGRESS } from "@/domain/projects/model-job";
 import { durableStorageReady, putVisualInput, sha256 } from "./storage";
-import { validateInputImage } from "./media";
+import { z } from "zod";
+import { modelRequestHashes } from "./request-hash";
+import { prepareGenerationInput } from "./generation-input";
 import { VisualPortfolioError } from "./errors";
 import { clearInputUpload, clearTerminalInputs, compensateInputUpload, cleanupOwnerInputs, lockVisualInputs, type InputUpload } from "./input-retention";
 import { reserveInputWriter, beginInputWriter, settleInputWriter, forgetInputWriter } from "./input-writer";
@@ -13,21 +15,27 @@ export function generationConfig() {
  const raw = process.env.ANS_TRIPO_PRICE_POINTS?.trim();
  const price = raw && /^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(raw) ? Number(raw) : null;
  const valid = price !== null && Number.isFinite(price) && price > 0 && price <= 10000;
- return { available:process.env.ANS_TRIPO_ACCEPTING_JOBS==="true"&&durableStorageReady()&&(process.env.ANS_VISUAL_WORKER_KEY?.length??0)>=32&&(process.env.ANS_VISUAL_SIGNING_SECRET?.length??0)>=32&&valid, costPoints:valid?price:null, provider:"tripo3d.uk", limits:{imageBytes:20_000_000,modelBytes:30_000_000} };
+ const table = z.array(z.object({options:tripoOptionsSchema,costPoints:z.number().positive().max(10000).refine(value=>Number.isInteger(value*1_000_000))}).strict()).max(500).safeParse((()=>{try{return JSON.parse(process.env.ANS_TRIPO_PRICE_TABLE||"[]");}catch{return null;}})());
+ const quotes=table.success?table.data:[];
+ return { models:TRIPO_MODELS, quotes, available:table.success&&process.env.ANS_TRIPO_ACCEPTING_JOBS==="true"&&durableStorageReady()&&(process.env.ANS_VISUAL_WORKER_KEY?.length??0)>=32&&(process.env.ANS_VISUAL_SIGNING_SECRET?.length??0)>=32&&(valid||quotes.length>0), costPoints:valid?price:null, provider:"tripo3d.uk", limits:{imageBytes:20_000_000,modelBytes:30_000_000} };
 }
 export async function requireVisualOwner(tx:DbTransaction,ownerId:string,projectId?:string) { const user=await tx.user.findFirst({where:{id:ownerId,deletedAt:null,flagged:false},select:{id:true}});if(!user)throw new VisualPortfolioError("FORBIDDEN",403);if(projectId&&!await tx.project.findFirst({where:{id:projectId,ownerId,status:"ACTIVE"},select:{id:true}}))throw new VisualPortfolioError("NOT_FOUND",404); }
 async function record(tx:DbTransaction,id:string,ownerId?:string,lock=false) { const rows=ownerId?await tx.$queryRaw<ModelJobRecord[]>`SELECT * FROM visual_model_jobs WHERE id=${id}::uuid AND "ownerId"=${ownerId}`:await tx.$queryRaw<ModelJobRecord[]>`SELECT * FROM visual_model_jobs WHERE id=${id}::uuid FOR UPDATE`;const found=rows[0];if(!found)throw new VisualPortfolioError("NOT_FOUND",404);if(lock&&ownerId)await tx.$queryRaw`SELECT id FROM visual_model_jobs WHERE id=${id}::uuid FOR UPDATE`;return found; }
-export async function modelJobView(job:ModelJobRecord):Promise<ModelJobView> { const assets=await db.$queryRaw<Array<{id:string;sha256:string;size:number}>>`SELECT id,sha256,size FROM visual_model_assets WHERE "jobId"=${job.id}::uuid AND "ownerId"=${job.ownerId}`;return {id:job.id,status:job.status,stage:job.stage,progress:job.progress,costPoints:Number(job.costPoints),refunded:job.refunded,cancelRequested:job.cancelRequested,errorCode:job.errorCode,createdAt:job.createdAt.toISOString(),updatedAt:job.updatedAt.toISOString(),asset:assets[0]??null}; }
-export async function createModelJob(ownerId: string, raw: unknown, image: Uint8Array) {
+export async function modelJobView(job:ModelJobRecord):Promise<ModelJobView> { const assets=await db.$queryRaw<Array<{id:string;sha256:string;size:number}>>`SELECT id,sha256,size FROM visual_model_assets WHERE "jobId"=${job.id}::uuid AND "ownerId"=${job.ownerId}`;return {id:job.id,status:job.status,stage:job.stage,progress:job.progress,costPoints:Number(job.costPoints),refunded:job.refunded,cancelRequested:job.cancelRequested,errorCode:job.errorCode,createdAt:job.createdAt.toISOString(),updatedAt:job.updatedAt.toISOString(),asset:assets[0]??null,options:job.options}; }
+export async function createModelJob(ownerId: string, raw: unknown, image: Uint8Array|Array<Uint8Array|null>) {
  const input = createModelJobSchema.parse(raw), cfg = generationConfig();
  if (!cfg.available) throw new VisualPortfolioError("GENERATION_NOT_CONFIGURED", 503);
- if (input.acceptedPoints !== cfg.costPoints) throw new VisualPortfolioError("PRICE_CHANGED", 409);
- const type = await validateInputImage(image), cost = cfg.costPoints!;
- const hash = sha256(JSON.stringify({ image: sha256(image), options: input.options, projectId: input.projectId ?? null, points: input.acceptedPoints }));
+ if(input.options.quad)throw new VisualPortfolioError("QUAD_DELIVERY_UNSUPPORTED",400);
+ const quoted=generationPrice(cfg,input.options);
+ const preparedInput=await prepareGenerationInput(input.options,image,input.prompt), type=preparedInput;
+ const hashes=modelRequestHashes(preparedInput.bytes,input.options,input.projectId,input.acceptedPoints), hash=hashes.current;
  const prepared = await db.$transaction(async tx => {
   await lockVisualInputs(tx, ownerId); await requireVisualOwner(tx, ownerId, input.projectId);
   const previous = (await tx.$queryRaw<ModelJobRecord[]>`SELECT * FROM visual_model_jobs WHERE "ownerId"=${ownerId} AND "idempotencyKey"=${input.idempotencyKey}`)[0];
-  if (previous) { if (previous.requestHash !== hash) throw new VisualPortfolioError("IDEMPOTENCY_CONFLICT", 409); return { previous }; }
+  if (previous) { if (previous.requestHash !== hash && previous.requestHash !== hashes.legacy) throw new VisualPortfolioError("IDEMPOTENCY_CONFLICT", 409); return { previous }; }
+  if (quoted===null)throw new VisualPortfolioError("PRICE_NOT_CONFIGURED",503);
+  if (input.acceptedPoints !== quoted) throw new VisualPortfolioError("PRICE_CHANGED", 409);
+  const cost=quoted;
   const pendingUpload = (await tx.$queryRaw<InputUpload[]>`SELECT * FROM visual_input_uploads WHERE "ownerId"=${ownerId} FOR UPDATE`)[0];
   if (pendingUpload) {
    if (pendingUpload.expiresAt.getTime() > Date.now()) {
@@ -47,11 +55,11 @@ export async function createModelJob(ownerId: string, raw: unknown, image: Uint8
   const expiresAt = new Date(Date.now() + 120000), storageMode = process.env.ANS_VISUAL_STORAGE_MODE!;
   await tx.$executeRaw`INSERT INTO visual_input_uploads (id,"ownerId","inputKey","requestHash","idempotencyKey","expiresAt","storageMode") VALUES (${id}::uuid,${ownerId},${inputKey},${hash},${input.idempotencyKey},${expiresAt},${storageMode})`;
   reserveInputWriter(id);
-  return { upload: { id, ownerId, inputKey, requestHash: hash, idempotencyKey: input.idempotencyKey, expiresAt, storageMode } };
+  return { upload: { id, ownerId, inputKey, requestHash: hash, idempotencyKey: input.idempotencyKey, expiresAt, storageMode }, cost };
  }, { maxWait: 10000, timeout: 45000 });
  if (prepared.previous) return modelJobView(prepared.previous);
  if (!prepared.upload) throw new VisualPortfolioError("INPUT_CLEANUP_PENDING", 503);
- const upload = prepared.upload;
+ const upload = prepared.upload, cost = prepared.cost;
  let result: ModelJobRecord;
  try {
   result = await db.$transaction(async tx => {
@@ -59,12 +67,12 @@ export async function createModelJob(ownerId: string, raw: unknown, image: Uint8
    try {
    await lockVisualInputs(tx, ownerId); await requireVisualOwner(tx, ownerId, input.projectId);
    const previous = (await tx.$queryRaw<ModelJobRecord[]>`SELECT * FROM visual_model_jobs WHERE "ownerId"=${ownerId} AND "idempotencyKey"=${input.idempotencyKey}`)[0];
-   if (previous) { if (previous.requestHash !== hash) throw new VisualPortfolioError("IDEMPOTENCY_CONFLICT", 409); return previous; }
+   if (previous) { if (previous.requestHash !== hash && previous.requestHash !== hashes.legacy) throw new VisualPortfolioError("IDEMPOTENCY_CONFLICT", 409); return previous; }
    const current = (await tx.$queryRaw<InputUpload[]>`SELECT * FROM visual_input_uploads WHERE id=${upload.id}::uuid AND "ownerId"=${ownerId} AND "inputKey"=${upload.inputKey} AND "requestHash"=${hash} FOR UPDATE`)[0];
    if (!current || current.expiresAt.getTime() <= Date.now()) throw new VisualPortfolioError("INPUT_UPLOAD_PENDING", 409);
    await assertAccountCanSpend(tx, ownerId, cost);
-   await debitQuota(tx, { userId: ownerId, costPoints: cost, ref: { type: "visual-model", id: upload.id }, note: "Image to 3D reservation" });
-   await putVisualInput(upload.id, upload.inputKey, image, type.mime);
+   await debitQuota(tx, { userId: ownerId, costPoints: cost, ref: { type: "visual-model", id: upload.id }, note: "3D generation reservation" });
+   await putVisualInput(upload.id, upload.inputKey, preparedInput.bytes, type.mime);
    await tx.$executeRaw`INSERT INTO visual_model_jobs (id,"ownerId","projectId","idempotencyKey","requestHash","inputKey","inputMime",options,"costPoints","updatedAt") VALUES (${upload.id}::uuid,${ownerId},${input.projectId??null},${input.idempotencyKey},${hash},${upload.inputKey},${type.mime},${JSON.stringify(input.options)}::jsonb,${cost},NOW())`;
    await tx.$executeRaw`DELETE FROM visual_input_uploads WHERE id=${upload.id}::uuid AND "ownerId"=${ownerId}`;
    return await record(tx, upload.id);

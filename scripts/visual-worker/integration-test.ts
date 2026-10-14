@@ -42,8 +42,27 @@ async function main(){
  const firstTarget=await createModelJob(owner.id,{...input,idempotencyKey:randomUUID()},image),secondTarget=await createModelJob(owner.id,{...input,idempotencyKey:randomUUID()},image);
  const targetedClaim=await claimModelJob({workerId:"test-worker-target",jobId:secondTarget.id});assert.equal(targetedClaim?.id,secondTarget.id);assert.equal((await getModelJob(owner.id,firstTarget.id)).status,"QUEUED");
  await updateModelJob(secondTarget.id,{leaseToken:targetedClaim!.leaseToken,type:"failed",errorCode:"INPUT_REJECTED"});await cancelModelJob(owner.id,firstTarget.id);
- const projectId=randomUUID(),document:VisualWebsite={format:"ans-visual-website",version:1,profile:RESUME_WEBSITE_EXAMPLE,appearance:{...DEFAULT_APPEARANCE,tour:{...createVisualTour(RESUME_WEBSITE_EXAMPLE),modelAsset:asset}}};
- await saveVisualWebsite(owner.id,{projectId,expectedVersion:0,document});assert.equal((await getVisualWebsite(projectId,owner.id)).versions[0].document.appearance.tour?.modelAsset?.id,asset.id);
+ // New envelope types reuse the same private queue, single debit and cleanup fence.
+ const textOptions={...DEFAULT_TRIPO_OPTIONS,source:"text" as const},multiOptions={...DEFAULT_TRIPO_OPTIONS,source:"multiview" as const};
+ process.env.ANS_TRIPO_PRICE_TABLE=JSON.stringify([{options:textOptions,costPoints:3},{options:multiOptions,costPoints:4}]);
+ const textInput={...input,idempotencyKey:randomUUID(),acceptedPoints:3,options:textOptions,prompt:"A red toy robot"};
+ const textJob=await createModelJob(owner.id,textInput,[]);assert.equal((await createModelJob(owner.id,textInput,[])).id,textJob.id);
+ const textRecord=(await db.$queryRaw<Array<{inputKey:string;inputMime:string}>>`SELECT "inputKey","inputMime" FROM visual_model_jobs WHERE id=${textJob.id}::uuid`)[0];assert.ok(textRecord.inputKey.endsWith("/input.json"));assert.equal(textRecord.inputMime,"application/json");
+ await cancelModelJob(owner.id,textJob.id);assert.equal((await getModelJob(owner.id,textJob.id)).refunded,true);
+ const multiJob=await createModelJob(owner.id,{...input,idempotencyKey:randomUUID(),acceptedPoints:4,options:multiOptions},[image,null,image,null]);
+ assert.equal((await getModelJob(owner.id,multiJob.id)).options?.source,"multiview");await cancelModelJob(owner.id,multiJob.id);assert.equal((await getModelJob(owner.id,multiJob.id)).refunded,true);
+ await assert.rejects(createModelJob(owner.id,{...input,idempotencyKey:randomUUID(),acceptedPoints:4,options:multiOptions},[null,image,image,null]),coded("MULTIVIEW_REQUIRED"));
+ delete process.env.ANS_TRIPO_PRICE_TABLE;
+ const unsupported=await createModelJob(owner.id,{...input,idempotencyKey:randomUUID()},image);
+ const unsupportedLease=(await claimModelJob({workerId:"test-format-review",jobId:unsupported.id}))!;
+ await updateModelJob(unsupported.id,{leaseToken:unsupportedLease.leaseToken,type:"stage",stage:"submit"});
+ await updateModelJob(unsupported.id,{leaseToken:unsupportedLease.leaseToken,type:"accepted",providerTaskId:"synthetic-native-fbx"});
+ await updateModelJob(unsupported.id,{leaseToken:unsupportedLease.leaseToken,type:"review",errorCode:"MODEL_UNSUPPORTED"});
+ assert.equal((await getModelJob(owner.id,unsupported.id)).status,"NEEDS_REVIEW");assert.equal((await getModelJob(owner.id,unsupported.id)).refunded,false);
+ const formatRecord=(await db.$queryRaw<Array<{inputDeletedAt:Date|null;providerTaskId:string}>>`SELECT "inputDeletedAt","providerTaskId" FROM visual_model_jobs WHERE id=${unsupported.id}::uuid`)[0];
+ assert.equal(formatRecord.inputDeletedAt,null);assert.equal(formatRecord.providerTaskId,"synthetic-native-fbx");
+ const projectId=randomUUID(),document:VisualWebsite={format:"ans-visual-website",version:1,profile:RESUME_WEBSITE_EXAMPLE,appearance:{...DEFAULT_APPEARANCE,tour:{...createVisualTour(RESUME_WEBSITE_EXAMPLE),modelAsset:asset,fitModel:true}}};
+ await saveVisualWebsite(owner.id,{projectId,expectedVersion:0,document});assert.equal((await getVisualWebsite(projectId,owner.id)).versions[0].document.appearance.tour?.modelAsset?.id,asset.id);assert.equal((await getVisualWebsite(projectId,owner.id)).versions[0].document.appearance.tour?.fitModel,true);
  const publish={projectId,version:1,slug:"pipeline-"+token,acknowledged:true};const release=await publishVisualWebsite(owner.id,publish);assert.equal((await publishVisualWebsite(owner.id,publish)).id,release.id);const initialPublic=await publicWebsiteBytes(publish.slug,null);
  const changed={...document,appearance:{...document.appearance,tour:{...document.appearance.tour!,hero:{...document.appearance.tour!.hero,title:"NEW PRIVATE EDIT"}}}};await saveVisualWebsite(owner.id,{projectId,expectedVersion:1,document:changed});assert.equal(sha256(await publicWebsiteBytes(publish.slug,null)),sha256(initialPublic));
  const otherProject=randomUUID();await saveVisualWebsite(other.id,{projectId:otherProject,expectedVersion:0,document:{...document,appearance:{...DEFAULT_APPEARANCE,tour:createVisualTour(RESUME_WEBSITE_EXAMPLE)}}});await assert.rejects(publishVisualWebsite(other.id,{...publish,projectId:otherProject}),coded("SLUG_TAKEN"));await assert.rejects(withdrawVisualWebsite(other.id,projectId),coded("NOT_FOUND"));
@@ -59,7 +78,7 @@ async function main(){
  await pauseWebsiteDomain(owner.id,binding.id);await assert.rejects(publicWebsiteBytes(null,binding.hostname),coded("NOT_FOUND"));
  const unsure=await bindWebsiteDomain(owner.id,projectId,{hostname:`unsure-${token}.example.invalid`});const unsureProof=unsure.records[0].value;let uncertainPosts=0;const uncertainProvider=async(_path:string,body?:unknown)=>{if(body){uncertainPosts++;throw new Error("timeout");}return [];};
  for(let i=0;i<2;i++)assert.equal((await verifyWebsiteDomain(owner.id,unsure.id,{txt:async()=>[[unsureProof]],cname,provider:uncertainProvider})).status,"NEEDS_REVIEW");assert.equal(uncertainPosts,1);
- const result={database:"isolated",migration:true,duplicateReservation:"one debit",parallelClaim:"one worker",leaseRecovery:"original provider task",uncertainSubmit:"review without refund or resubmit",cancelRefund:"once",modelOwnership:true,signedModelIntegrity:true,privateModelRoundTrip:true,publication:"immutable, retry-safe, withdrawable",domains:"mock DNS and provider, ownership/TLS/CNAME required",uncertainDomain:"one creation attempt",providerGenerationSubmitted:false,externalDomainsWritten:false};
+ const result={database:"isolated",migration:true,textAndMultiviewReservation:true,legacyImagePreserved:true,unsupportedFormatRetainedForReview:true,duplicateReservation:"one debit",parallelClaim:"one worker",leaseRecovery:"original provider task",uncertainSubmit:"review without refund or resubmit",cancelRefund:"once",modelOwnership:true,signedModelIntegrity:true,privateModelRoundTrip:true,publication:"immutable, retry-safe, withdrawable",domains:"mock DNS and provider, ownership/TLS/CNAME required",uncertainDomain:"one creation attempt",providerGenerationSubmitted:false,externalDomainsWritten:false};
  await writeFile(".workbuddy/visual-portfolio/pipeline-result.json",JSON.stringify(result,null,2));console.log(JSON.stringify(result));await db.$disconnect();
 }
 main().catch(async(error:unknown)=>{console.error(error instanceof Error?error.message:"INTEGRATION_FAILED");await db.$disconnect();process.exitCode=1;});

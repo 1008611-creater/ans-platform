@@ -7,7 +7,7 @@ function encodedModule(value:string){return "data:text/javascript;base64,"+btoa(
 export function renderVisualModelWebsite(profile:ResumeWebsiteInput,appearance:VisualAppearance,panels:string[],output:typeof outputZh,initialStop:number,assets?:VisualRuntimeAssets,modelUrl?:string){
  const color=appearance.tour?.settings.accent || {lime:"#cafa2a",lavender:"#c3adff",coral:"#ffa891"}[appearance.palette];
  const config={...appearance,initialStop,modelUrl:appearance.tour?.model || modelUrl || (assets?"data:model/gltf-binary;base64,"+assets.model:"/visual-portfolio/reference/banner.glb")};
- let mapping:Record<string,string>={three:"/mascot/3d/vendor/three.module.js"},script='<script type="module" src="/visual-portfolio/scene.mjs?v=7"></script>';
+ let mapping:Record<string,string>={three:"/mascot/3d/vendor/three.module.js"},script='<script type="module" src="/visual-portfolio/scene.mjs?v=8"></script>';
  if(assets){
   const core=encodedModule(assets.core);
   const main=encodedModule(assets.module.replaceAll("'./three.core.js'",JSON.stringify(core)));

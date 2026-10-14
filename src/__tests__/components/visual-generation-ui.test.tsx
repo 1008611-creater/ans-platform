@@ -4,6 +4,7 @@ import { afterEach,beforeEach,describe,expect,it,vi } from "vitest";
 import generation from "../../../messages/visual-generation/zh.json";
 import publication from "../../../messages/visual-publication/zh.json";
 import { VisualModelGeneration } from "@/components/projects/visual-model-generation";
+import { DEFAULT_TRIPO_OPTIONS } from "@/contracts/visual-generation";
 import { VisualWebsitePublication } from "@/components/projects/visual-website-publication";
 vi.mock("next-intl",async original=>await original<typeof import("next-intl")>());
 const mocked=vi.hoisted(()=>({request:vi.fn(),actor:"test-owner"}));
@@ -29,8 +30,42 @@ describe("generation and publication controls",()=>{
  it("restores completed jobs and applies only the owned model reference",async()=>{
   vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:false,costPoints:null}})));mocked.request.mockResolvedValue([completed]);const apply=vi.fn();mountGeneration(apply);await screen.findByRole("button",{name:generation.apply});fireEvent.click(screen.getByRole("button",{name:generation.apply}));expect(apply).toHaveBeenCalledWith(asset);
  });
+ it("explains an unsupported paid result without showing an automatic conversion action",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:false,costPoints:null}})));
+  mocked.request.mockResolvedValue([{...completed,status:"NEEDS_REVIEW",asset:null,errorCode:"MODEL_UNSUPPORTED"}]);mountGeneration();
+  await screen.findByText(generation.unsupportedModel);expect(screen.queryByRole("button",{name:generation.download})).toBeNull();
+ });
  it("keeps generation disabled while the service is not configured",async()=>{
   vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:false,costPoints:null}})));mountGeneration();await screen.findByText(generation.unavailable);expect(screen.getByRole("button",{name:generation.generate})).toBeDisabled();
+ });
+ it("requires an exact quote before a text job and submits its prompt without images",async()=>{
+  const submitted:FormData[]=[];const textOptions={...DEFAULT_TRIPO_OPTIONS,source:"text"};
+  vi.stubGlobal("fetch",vi.fn(async(_url:string,init?:RequestInit)=>{if(init?.method==="POST"){submitted.push(init.body as FormData);return Response.json({ok:true,data:completed});}return Response.json({ok:true,data:{available:true,costPoints:2,quotes:[{options:textOptions,costPoints:3}]}});}));mountGeneration();
+  await screen.findByText(generation.price.replace("{points}","2"));fireEvent.click(screen.getByRole("button",{name:generation.sources.text}));
+  await screen.findByText(generation.price.replace("{points}","3"));fireEvent.change(screen.getByLabelText(generation.prompt,{exact:false}),{target:{value:"A red toy robot"}});fireEvent.click(screen.getByLabelText(generation.acknowledge));fireEvent.click(screen.getByRole("button",{name:generation.generate}));
+  await waitFor(()=>expect(submitted).toHaveLength(1));expect(submitted[0].get("image")).toBeNull();expect(JSON.parse(submitted[0].get("manifest") as string)).toMatchObject({prompt:"A red toy robot",acceptedPoints:3,options:{source:"text"}});
+ });
+ it("advanced settings cannot reuse an unconfirmed price and parts disable materials",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:true,costPoints:2}})));mountGeneration();await screen.findByText(generation.price.replace("{points}","2"));
+  fireEvent.click(screen.getByLabelText(generation.autoFix));await screen.findByText(generation.priceUnavailable);expect(screen.getByRole("button",{name:generation.generate})).toBeDisabled();
+  fireEvent.change(screen.getByLabelText(generation.model,{exact:false}),{target:{value:"v3.1-20260211"}});fireEvent.click(screen.getByLabelText(generation.parts));expect(screen.getByLabelText(generation.texture)).not.toBeChecked();expect(screen.getByLabelText(generation.pbr)).not.toBeChecked();
+ });
+ it("8K and 4K never display the ordinary price without an exact quote",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:true,costPoints:2}})));mountGeneration();await screen.findByText(generation.price.replace("{points}","2"));
+  for(const value of ["4K","8K"]){fireEvent.change(screen.getByLabelText(generation.resolution),{target:{value}});await screen.findByText(generation.priceUnavailable);expect(screen.getByRole("button",{name:generation.generate})).toBeDisabled();}
+ });
+ it("disables undeliverable quad and respects geometry-specific face ranges",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:true,costPoints:2}})));mountGeneration();await screen.findByText(generation.price.replace("{points}","2"));
+  expect(screen.getByLabelText(generation.quad)).toBeDisabled();expect(screen.getByText(generation.quadUnavailable)).toBeVisible();
+  fireEvent.change(screen.getByLabelText(generation.model,{exact:false}),{target:{value:"v3.0-20250812"}});expect(screen.getByLabelText(generation.faces)).toHaveAttribute("max","1000000");
+  fireEvent.click(screen.getByLabelText(generation.geometry));expect(screen.getByLabelText(generation.faces)).toHaveAttribute("max","2000000");
+  fireEvent.change(screen.getByLabelText(generation.faces),{target:{value:"2000000"}});fireEvent.click(screen.getByLabelText(generation.geometry));expect(screen.getByLabelText(generation.faces)).toHaveValue(1000000);
+  fireEvent.change(screen.getByLabelText(generation.model,{exact:false}),{target:{value:"v2.5-20250123"}});expect(screen.getByLabelText(generation.faces)).toHaveAttribute("max","500000");expect(screen.getByLabelText(generation.faces)).toHaveValue(500000);expect(screen.queryByLabelText(generation.parts)).toBeNull();expect(screen.queryByLabelText(generation.quad)).toBeNull();
+ });
+ it("multiview submits fixed view slots and refuses a missing front image",async()=>{
+  const submitted:FormData[]=[];vi.stubGlobal("fetch",vi.fn(async(_url:string,init?:RequestInit)=>{if(init?.method==="POST"){submitted.push(init.body as FormData);return Response.json({ok:true,data:completed});}return Response.json({ok:true,data:{available:true,costPoints:2,quotes:[{options:{...DEFAULT_TRIPO_OPTIONS,source:"multiview"},costPoints:3}]}});}));mountGeneration();await screen.findByText(generation.price.replace("{points}","2"));fireEvent.click(screen.getByRole("button",{name:generation.sources.multiview}));
+  const image=()=>new File(["fixture"],"image.png",{type:"image/png"});fireEvent.change(screen.getByLabelText(generation.views["2"]),{target:{files:[image()]}});fireEvent.click(screen.getByLabelText(generation.acknowledge));expect(screen.getByRole("button",{name:generation.generate})).toBeDisabled();
+  fireEvent.change(screen.getByLabelText(generation.views["0"]),{target:{files:[image()]}});fireEvent.click(screen.getByLabelText(generation.acknowledge));fireEvent.click(screen.getByRole("button",{name:generation.generate}));await waitFor(()=>expect(submitted).toHaveLength(1));expect(submitted[0].has("image0")).toBe(true);expect(submitted[0].has("image1")).toBe(false);expect(submitted[0].has("image2")).toBe(true);
  });
  it("publishes only the selected saved version after explicit confirmation",async()=>{
   vi.stubGlobal("fetch",vi.fn(async()=>Response.json({ok:true,data:{available:true}})));mocked.request.mockImplementation(async(url:string,method:string)=>method==="POST"?{id:"release",slug:"my-site",version:3,url:"https://portfolio.example.invalid/sites/my-site"}:url.endsWith("/domains")?{available:false,domains:[]}:null);

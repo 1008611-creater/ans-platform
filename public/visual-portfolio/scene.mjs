@@ -77,11 +77,12 @@ new ResizeObserver(setSize).observe(canvas);
 addEventListener('visibilitychange',()=>{visible=!document.hidden;if(visible){dirty=true;requestDraw();}});
 new GLTFLoader().load(cfg.modelUrl || '/visual-portfolio/reference/banner.glb',gltf=>{
  model=gltf.scene;scene.add(gltf.scene);
- if(cfg.tour?.model){const bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3()),scale=2/Math.max(size.x,size.y,size.z,.001);model.scale.multiplyScalar(scale);model.position.sub(center.multiplyScalar(scale));}
+ const fitModel=!!cfg.tour?.model||!!(cfg.tour?.modelAsset&&cfg.tour.fitModel);
+ if(fitModel){const bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3()),scale=2/Math.max(size.x,size.y,size.z,.001);model.scale.multiplyScalar(scale);model.position.sub(center.multiplyScalar(scale));}
  gltf.scene.updateMatrixWorld(true);
  for(let i=0;i<5;i++){
   const c=gltf.scene.getObjectByName('cam-'+i), f=gltf.scene.getObjectByName('focus-'+i);
-  if(c&&f&&!cfg.tour?.model)stops.push({position:c.getWorldPosition(new T.Vector3()),quaternion:c.getWorldQuaternion(new T.Quaternion()),target:f.getWorldPosition(new T.Vector3())});else{const position=new T.Vector3(Math.sin(i*1.1)*5.5,.2,Math.cos(i*1.1)*5.5),focus=new T.Vector3(),temp=camera.clone();temp.position.copy(position);temp.lookAt(focus);stops.push({position,quaternion:temp.quaternion,target:focus});}
+  if(c&&f&&!fitModel)stops.push({position:c.getWorldPosition(new T.Vector3()),quaternion:c.getWorldQuaternion(new T.Quaternion()),target:f.getWorldPosition(new T.Vector3())});else{const position=new T.Vector3(Math.sin(i*1.1)*5.5,.2,Math.cos(i*1.1)*5.5),focus=new T.Vector3(),temp=camera.clone();temp.position.copy(position);temp.lookAt(focus);stops.push({position,quaternion:temp.quaternion,target:focus});}
  }
  if(cfg.tour){
   const original=[...stops],cameraList=[cfg.tour.hero.camera,...cfg.tour.nodes.map(n=>n.camera)];
