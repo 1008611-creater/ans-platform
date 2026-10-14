@@ -1,4 +1,5 @@
 import { refreshMeteredParentCost } from "./metered-cost";
+import { upstreamFailureCode } from "./upstream-rejection";
 import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
@@ -169,7 +170,7 @@ export async function meteredResponses(request: Request, userId: string, parent?
   if(!upstream.ok){
     // Only explicit validation/auth rejection is known not to have generated output.
     await transition([400,401,403,404,422,429].includes(upstream.status)?"RELEASED":"UNCERTAIN",[400,401,403,404,422,429].includes(upstream.status)?0:null,requestId || undefined,upstream.status);
-    return failure("UPSTREAM_REJECTED",upstream.status);
+    return failure(await upstreamFailureCode(upstream),upstream.status);
   }
   const settle=async()=>{
     if(!requestId)throw new Error("BILLING_REQUEST_ID_MISSING");

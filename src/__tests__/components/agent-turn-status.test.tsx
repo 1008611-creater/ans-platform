@@ -35,3 +35,17 @@ it("names public-page verification without implying a private read", () => {
   expect(screen.getByRole("status")).toHaveTextContent(companion.agentTool.current_page);
   expect(screen.getByRole("status")).not.toHaveTextContent(companion.agentTool.my_projects);
 });
+
+it("explains a capacity failure while keeping the submitted turn's usage recovery available", () => {
+  const agent: ReturnType<typeof useCompanionAgent> = {
+    phase: "error", quote: null, error: "UPSTREAM_CAPACITY_UNAVAILABLE",
+    receipts: [{ requestId: "isolated-request", state: "UNCERTAIN", reservedPoints: 0.01, settledPoints: null }],
+    tools: [], activeTool: null, busy: false, privateAccess: false,
+    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {},
+    question: "", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {},
+  };
+  render(<AgentTurnStatus agent={agent} />);
+  expect(screen.getByRole("alert")).toHaveTextContent(companion.agentError.capacity);
+  expect(screen.getByRole("button", { name: companion.agentCheckReceipt })).toBeEnabled();
+  expect(screen.queryByRole("button", { name: companion.agentRetryQuote })).not.toBeInTheDocument();
+});

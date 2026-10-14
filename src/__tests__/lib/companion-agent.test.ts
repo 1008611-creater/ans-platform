@@ -120,6 +120,15 @@ describe("companion real tool loop and cancellation", () => {
     await expect(executeAgent("alice", input, issueAgentTicket("alice", input).ticket, new AbortController().signal, () => {})).rejects.toThrow("AGENT_RESPONSE_UNAVAILABLE");
     expect(mocks.gateway).toHaveBeenCalledTimes(1);
   });
+  it("preserves the safe capacity code and receipt recovery without retrying the model", async () => {
+    mocks.gateway.mockResolvedValueOnce(Response.json({ error: { code: "UPSTREAM_CAPACITY_UNAVAILABLE" } }, { status: 503 }));
+    const events: AgentEvent[] = [];
+    await expect(executeAgent("alice", input, issueAgentTicket("alice", input).ticket, new AbortController().signal, event => events.push(event)))
+      .rejects.toThrow("UPSTREAM_CAPACITY_UNAVAILABLE");
+    expect(mocks.gateway).toHaveBeenCalledTimes(1);
+    expect(events.at(-1)?.type).toBe("receipt");
+    expect(events.some(event => event.type === "answer")).toBe(false);
+  });
   it("uses account-filtered receipts to recover billing without another model call", async () => {
     const ticket = issueAgentTicket("alice", input); await readAgentStatus("alice", ticket.ticket);
     const query = mocks.receipts.mock.calls[0][0]; expect(query.where.userId).toBe("alice");
