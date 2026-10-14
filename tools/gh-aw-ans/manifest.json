@@ -5,7 +5,7 @@
     "upstreamCommit":  "c35393777e5604a63721d09512263b1383301d4f",
     "upstreamVersion":  "v0.89.21",
     "license":  "MIT",
-    "patchSha256":  "8d722d806684b8de50e5b163c1dcd9b9accc9f647045d9a9446b61d885265d29",
+    "patchSha256":  "e7cb065ccee120738ec41320bcd98ec9000c47460e2375de3a9129927bf900cc",
     "testSha256":  "465517c20e469216e3707cd844160e223620c8fbb438f0fc2a4d9e0c489635d9",
     "regressionPattern":  "TestANSDetectionModelPolicy|TestExternalDetector|TestBuildAWFConfigJSON",
     "actionsTag":  "v0.89.21",
