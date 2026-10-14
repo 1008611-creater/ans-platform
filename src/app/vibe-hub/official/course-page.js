@@ -1,9 +1,11 @@
 // Derived from public VibeHub presentation code. Source hashes: src/data/vibehub/interaction-sources.json.
 "use client";
 
+import { CourseLearningActions, CourseReaderContext } from "../courses/course-learning-actions";
 import { EmbeddedCourseTerm } from "../courses/embedded-term";
 import * as a from "react/jsx-runtime";
 import * as t from "react";
+import {useCourseProgress as j,emptyChapterProgress as m} from "../courses/course-progress";
 import * as n from "./course-catalog.js";
 import * as i from "./course-cache.js";
 import * as l from "next/image";
@@ -27,139 +29,6 @@ function c(e) {
     ...e,
     alt: e.alt
   });
-}
-let d = {
-  "product-website": ["vibehub.course.product-website.v2"],
-  "git-workflow": ["vibehub.course.git-workflow.v1"]
-};
-function u(e) {
-  return "vibehub.course.".concat(e, ".v3");
-}
-let h = {
-  version: 3,
-  chapters: {},
-  views: {}
-};
-function m() {
-  return {
-    status: "not-started",
-    readCompleted: !1,
-    updatedAt: 0
-  };
-}
-function p(e) {
-  return "object" == typeof e && null !== e && !Array.isArray(e);
-}
-function x(e, s) {
-  try {
-    window.localStorage.setItem(u(e), JSON.stringify(s));
-  } catch (e) {}
-}
-function j(e) {
-  let [s, r] = (0, t.useState)(h),
-    [a, n] = (0, t.useState)(!1),
-    i = (0, t.useRef)(s);
-  (0, t.useEffect)(() => {
-    n(!1);
-    let s = function (e) {
-      try {
-        var s, r;
-        let a = null != (r = null != (s = window.localStorage.getItem(u(e))) ? s : d[e].map(e => window.localStorage.getItem(e)).find(e => null !== e)) ? r : null;
-        if (!a) return h;
-        let t = JSON.parse(a),
-          n = p(t) && 3 === t.version && p(t.chapters) && p(t.views) && Object.values(t.chapters).every(e => p(e) && ["not-started", "in-progress", "completed"].includes(String(e.status)) && "boolean" == typeof e.readCompleted && "number" == typeof e.updatedAt) && Object.values(t.views).every(e => p(e) && "number" == typeof e.articleScrollTop && (null === e.selectedTermId || "string" == typeof e.selectedTermId) && p(e.termScrollTopById) && Object.values(e.termScrollTopById).every(e => "number" == typeof e)) ? t : function (e) {
-            if (!p(e) || 2 !== e.version || !p(e.chapters) || !p(e.views)) return null;
-            let s = {};
-            for (let [r, a] of Object.entries(e.chapters)) {
-              if (!p(a) || "number" != typeof a.updatedAt) continue;
-              let e = !0 === a.exercisePassed || "completed" === a.status;
-              s[r] = {
-                status: e ? "completed" : "not-started" === a.status ? "not-started" : "in-progress",
-                readCompleted: e,
-                updatedAt: a.updatedAt
-              };
-            }
-            let r = {};
-            for (let [s, a] of Object.entries(e.views)) p(a) && "number" == typeof a.articleScrollTop && (null === a.selectedTermId || "string" == typeof a.selectedTermId) && p(a.termScrollTopById) && Object.values(a.termScrollTopById).every(e => "number" == typeof e) && (r[s] = {
-              articleScrollTop: a.articleScrollTop,
-              selectedTermId: a.selectedTermId,
-              termScrollTopById: a.termScrollTopById
-            });
-            return {
-              version: 3,
-              chapters: s,
-              views: r
-            };
-          }(t);
-        if (!n) return h;
-        return {
-          ...n,
-          chapters: Object.fromEntries(Object.entries(n.chapters).map(e => {
-            let [s, r] = e;
-            return [s, {
-              ...r,
-              status: r.readCompleted ? "completed" : "not-started" === r.status && 0 === r.updatedAt ? "not-started" : "in-progress"
-            }];
-          }))
-        };
-      } catch (e) {
-        return h;
-      }
-    }(e);
-    i.current = s, r(s), n(!0);
-  }, [e]), (0, t.useEffect)(() => {
-    a && x(e, s);
-  }, [e, a, s]);
-  let l = (0, t.useCallback)((e, s) => {
-      var a;
-      let t = i.current,
-        n = null != (a = t.chapters[e]) ? a : m(),
-        l = {
-          ...n,
-          ...s,
-          status: {
-            ...n,
-            ...s
-          }.readCompleted ? "completed" : "in-progress",
-          updatedAt: Date.now()
-        },
-        c = {
-          ...t,
-          chapters: {
-            ...t.chapters,
-            [e]: l
-          }
-        };
-      i.current = c, r(c);
-    }, []),
-    c = (0, t.useCallback)((s, r) => {
-      var a, t;
-      let n = i.current,
-        l = null != (a = n.views[s]) ? a : {
-          articleScrollTop: 0,
-          selectedTermId: null,
-          termScrollTopById: {}
-        },
-        c = {
-          ...l,
-          ...r,
-          termScrollTopById: null != (t = r.termScrollTopById) ? t : l.termScrollTopById
-        },
-        o = {
-          ...n,
-          views: {
-            ...n.views,
-            [s]: c
-          }
-        };
-      return i.current = o, x(e, o), c;
-    }, [e]);
-  return (0, t.useMemo)(() => ({
-    hydrated: a,
-    progress: s,
-    updateChapter: l,
-    updateView: c
-  }), [a, s, l, c]);
 }
 function f(e) {
   let {
@@ -2346,6 +2215,7 @@ function em(e) {
     } = e,
     {
       hydrated: y,
+      persisted: progressPersisted,
       progress: T,
       updateChapter: C,
       updateView: S
@@ -2544,7 +2414,7 @@ function em(e) {
         t = document.getElementById(s);
       a && t && (a.scrollTo({
         top: a.scrollTop + t.getBoundingClientRect().top - a.getBoundingClientRect().top - 24,
-        behavior: "smooth"
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"
       }), null == (r = e.currentTarget.closest("details")) || r.removeAttribute("open"), F(s));
     },
     eA = e => {
@@ -2588,9 +2458,7 @@ function em(e) {
                 s && s.getBoundingClientRect().top - a <= 128 && (t = e.id);
               }
               F(e => e === t ? e : t);
-            })(), a && !ex.readCompleted && a.scrollTop + a.clientHeight >= a.scrollHeight - 120 && C(l.id, {
-              readCompleted: !0
-            }), Z.current = window.setTimeout(() => {
+            })(), Z.current = window.setTimeout(() => {
               eT({
                 articleScrollTop: r
               });
@@ -2632,10 +2500,7 @@ function em(e) {
               className: "course-article-inner",
               children: [(0, a.jsxs)("header", {
                 className: "course-chapter-hero",
-                children: [(0, a.jsxs)("span", {
-                  className: "course-section-eyebrow",
-                  children: ["第 ", l.order, " ", b]
-                }), (0, a.jsx)("h1", {
+                children: [(0, a.jsx)(CourseReaderContext, {order: l.order, total: c.length}), (0, a.jsx)("h1", {
                   children: l.title
                 }), (0, a.jsx)("p", {
                   className: "course-chapter-intro",
@@ -2668,7 +2533,7 @@ function em(e) {
                     }))
                   }, "".concat(e.id, "-block-").concat(r));
                 })]
-              }, e.id)), (0, a.jsxs)("nav", {
+              }, e.id)), (0, a.jsx)(CourseLearningActions, {course: d, chapter: l.id, complete: ex.readCompleted, persisted: progressPersisted, onComplete: () => C(l.id, {readCompleted: !0})}), (0, a.jsxs)("nav", {
                 className: "course-bottom-nav",
                 "aria-label": "上一".concat(b, "和下一").concat(b),
                 children: [eg ? (0, a.jsxs)("a", {
