@@ -237,5 +237,9 @@
   "replyCommunity": "The community is for sharing work and talking. Check the visibility before sharing anything.",
   "replyMarket": "Review the listing for actual deliverables, inputs and usage. Workflow execution has a separate cost confirmation.",
   "voiceSignIn": "Sign in to use voice.",
-  "voiceFree": "Voice is currently free (0 credits). Private audio replay is kept for 24 hours."
+  "voiceFree": "Voice is currently free (0 credits). Private audio replay is kept for 24 hours.",
+  "agentRecoveredTurns": "Billing status of submitted turns",
+  "agentRecoveryHint": "This tab keeps up to 8 receipt links for 24 hours. Refreshing only checks billing and never resends a request. Answers not received before the refresh cannot be recovered.",
+  "agentRecoveryUnavailable": "Billing could not be checked. Try again later or open Credits & usage.",
+  "agentRecoveryNoReceipt": "No call record was found yet. This does not confirm a zero charge. Check again later."
 }

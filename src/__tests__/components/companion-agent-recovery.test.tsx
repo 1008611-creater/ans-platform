@@ -10,7 +10,7 @@ function mount() {
 }
 const failure = () => Response.json({ error: "AGENT_UNAVAILABLE" }, { status: 503 });
 const ndjson = (events: unknown[]) => new Response(events.map(event => JSON.stringify(event)).join("\n"), { headers: { "content-type": "application/x-ndjson" } });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); sessionStorage.clear(); vi.unstubAllGlobals(); });
 it("offers a quote-only retry before execution and accepts a final event without newline", async () => {
   const fetch = vi.fn().mockResolvedValueOnce(failure()).mockResolvedValueOnce(Response.json(quote)).mockResolvedValueOnce(ndjson([{ type: "answer", text: "回复", links: [] }, { type: "done" }]));
   vi.stubGlobal("fetch", fetch); const view = mount();
