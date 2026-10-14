@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import type { DbTransaction } from "@/lib/db";
+import { activeCheckInStreak, getCommunityDay } from "@/domain/growth/check-in";
 import { LEVELS } from "@/domain/growth/levels";
 import { db } from "@/lib/db";
 import { getLevelProgress, XP_RULES, type XpRuleKey } from "@/lib/level";
@@ -18,13 +19,7 @@ export type GrowthEventInput = {
   dailyCap?: number;
 };
 
-const dayFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" });
-function getGrowthDay(now = new Date()) {
-  const parts = dayFormatter.formatToParts(now);
-  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "00";
-  return `${value("year")}-${value("month")}-${value("day")}`;
-}
-function startOfCommunityDay(now = new Date()) { return new Date(`${getGrowthDay(now)}T00:00:00+08:00`); }
+function startOfCommunityDay(now = new Date()) { return new Date(`${getCommunityDay(now)}T00:00:00+08:00`); }
 
 export function levelUpPointsBetween(previousXp: number, nextXp: number) {
   const before = getLevelProgress(previousXp).level.index;
@@ -126,9 +121,11 @@ export async function getGrowthProfile(userId: string) {
   const { recentEvents: rawEvents, checkIns: rawCheckIns, ...user } = snapshot;
   const recentEvents = rawEvents.map((event) => ({ ...event, createdAt: new Date(event.createdAt) }));
   const checkIns = rawCheckIns.map((record) => ({ ...record, createdAt: new Date(record.createdAt) }));
-  const progress = getLevelProgress(user.xp);
+  const progress = getLevelProgress(user.xp), now = new Date();
   return {
     ...user,
+    checkInStreak: activeCheckInStreak(user.checkInStreak, user.lastCheckInAt, now),
+    growthDay: getCommunityDay(now),
     level: progress,
     unlockedRewards: getUnlockedRewards(progress.level.index),
     nextReward: progress.nextLevel ? {
