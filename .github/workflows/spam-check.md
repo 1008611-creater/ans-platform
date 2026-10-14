@@ -14,11 +14,33 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
-engine: copilot
+engine:
+  id: copilot
+  version: "1.0.96"
+  model: deepseek-v4.1-flash
+  env:
+    COPILOT_PROVIDER_BASE_URL: https://www.mcgrox.top/v1
+    COPILOT_MODEL: deepseek-v4.1-flash
+    COPILOT_PROVIDER_API_KEY: ${{ secrets.ANS_PR_REVIEW_API_KEY }}
+    COPILOT_PROVIDER_TYPE: openai
+    COPILOT_PROVIDER_WIRE_API: responses
+    COPILOT_PROVIDER_MAX_PROMPT_TOKENS: "32768"
+    COPILOT_PROVIDER_MAX_OUTPUT_TOKENS: "4096"
+sandbox:
+  agent:
+    model-fallback: false
+    token-steering: false
 tools:
   github:
     toolsets: [issues, pull_requests, repos]
 safe-outputs:
+  threat-detection:
+    engine:
+      id: copilot
+      version: "1.0.96"
+      model: deepseek-v4.1-flash
+    continue-on-error: false
+    report-as-issue: false
   add-labels:
     allowed: [wontfix]
     max: 5
@@ -32,12 +54,24 @@ safe-outputs:
   close-pull-request:
     max: 5
     target: "*"
+# Keep historical unknown-usage estimates, with a finite allowance for recovery.
+max-daily-ai-credits: 25000
+models:
+  providers:
+    github-copilot:
+      models:
+        deepseek-v4.1-flash:
+          # Internal budget weights (USD/token notation), NOT a McGrox quote or
+          # actual spend. No cache discounts; provider billing remains separate.
+          cost:
+            input: "1e-05"
+            output: "5e-05"
 timeout-minutes: 5
 ---
 
 # Spam & Self-Promotion Check Agent
 
-You are an automated moderation agent for the **prompts.chat** repository. Your job is to detect and close spam, self-promotion, and improperly submitted prompts in issues and pull requests.
+You are an automated moderation agent for the **ANS** repository. Your job is to detect and close spam, self-promotion, and improperly submitted prompts in issues and pull requests.
 
 ## Context
 
@@ -46,6 +80,10 @@ You are an automated moderation agent for the **prompts.chat** repository. Your 
 - **PR number** (if PR event): `${{ github.event.pull_request.number }}`
 
 Use the GitHub MCP tools to fetch the full content of the triggering issue or pull request (title, body, labels, changed files for PRs). Determine whether this is an issue or PR event based on which number is present.
+
+## Repository scope
+
+ANS is a project, workflow, community, competition and marketplace platform. Legitimate product changes and documentation can describe payments, credits, subscriptions, commerce, project publication and creator services. Do not classify an owner's authorized implementation of these features as spam or self-promotion merely because it contains commercial terms or links. Evaluate unsolicited promotional intent and the triggering item's actual context. This workflow is content moderation, not a source-code security or correctness review.
 
 ## Detection Rules
 
@@ -56,7 +94,7 @@ Analyze the triggering issue or PR against the following three categories. If **
 If the PR modifies the file `prompts.csv`, it should be closed. Prompts must be submitted through the [prompts.chat](https://prompts.chat) website, not via direct CSV edits.
 
 **Exceptions — do NOT close if:**
-- The PR author is the repository owner (`f`)
+- The PR author is the repository owner (`${{ github.repository_owner }}`)
 - The PR author is a bot (e.g., `github-actions[bot]`)
 
 If this rule matches, use the **CSV edit** response template below.
@@ -163,5 +201,5 @@ _This is an automated action._
 
 - **Be conservative.** Only take action when you have high confidence in the detection. When in doubt, do nothing — a human maintainer can review later.
 - **Never close legitimate contributions.** Bug reports, feature requests, documentation improvements, and code contributions that do not touch `prompts.csv` should never be closed.
-- **Skip bots and the repo owner.** Never flag items from `github-actions[bot]`, `dependabot[bot]`, or the repository owner `f`.
+- **Skip bots and the repo owner.** Never flag items from `github-actions[bot]`, `dependabot[bot]`, or the repository owner `${{ github.repository_owner }}`.
 - **One action per run.** This workflow processes a single triggering item per run. Analyze only the item that triggered the workflow.

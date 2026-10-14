@@ -10,6 +10,10 @@ datasource db {
 }
 
 model User {
+  visualModelJobs VisualModelJob[]
+  visualModelAssets VisualModelAsset[]
+  visualWebsiteReleases VisualWebsiteRelease[]
+  visualWebsiteDomains VisualWebsiteDomain[]
   communityPoints Int       @default(0)
   avatarFrameKey  String    @default("default") @db.VarChar(64)
   chatBubbleKey   String    @default("default") @db.VarChar(64)
@@ -1283,6 +1287,9 @@ enum ArtifactKind {
 
 /// 学生项目包。默认私密，归档后不再接受新的生成�?
 model Project {
+  visualModelJobs VisualModelJob[]
+  visualWebsiteReleases VisualWebsiteRelease[]
+  visualWebsiteDomains VisualWebsiteDomain[]
   id          String             @id @default(cuid())
   ownerId     String
   owner       User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -2892,4 +2899,87 @@ model ComputeDeliveryEvent {
   @@unique([deliveryId, eventId])
   @@unique([deliveryId, revision])
   @@map("compute_delivery_events")
+}
+
+/// A durable job for the operator's serialized tripo3d.uk account. No cookies or passwords.
+model VisualModelJob {
+  id String @id @db.Uuid
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  projectId String?
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  idempotencyKey String @db.VarChar(80)
+  requestHash String @db.VarChar(64)
+  inputKey String @db.VarChar(240)
+  inputMime String @db.VarChar(40)
+  options Json
+  status String @default("QUEUED") @db.VarChar(24)
+  stage String @default("queued") @db.VarChar(16)
+  progress Int @default(0)
+  costPoints Decimal @default(0) @db.Decimal(18, 6)
+  refunded Boolean @default(false)
+  cancelRequested Boolean @default(false)
+  providerTaskId String? @unique @db.VarChar(120)
+  workerId String? @db.VarChar(80)
+  leaseToken String? @db.Uuid
+  leaseUntil DateTime?
+  errorCode String? @db.VarChar(40)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  asset VisualModelAsset?
+  @@unique([ownerId, idempotencyKey])
+  @@index([status, createdAt])
+  @@index([ownerId, createdAt])
+  @@map("visual_model_jobs")
+}
+model VisualModelAsset {
+  id String @id @db.Uuid
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  jobId String? @unique @db.Uuid
+  job VisualModelJob? @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  releases VisualWebsiteRelease[]
+  objectKey String @unique @db.VarChar(240)
+  sha256 String @db.VarChar(64)
+  size Int
+  createdAt DateTime @default(now())
+  @@index([ownerId, createdAt])
+  @@map("visual_model_assets")
+}
+/// Immutable release bytes. Only the active release is publicly readable.
+model VisualWebsiteRelease {
+  id String @id @db.Uuid
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  version Int
+  slug String @db.VarChar(48)
+  htmlKey String @unique @db.VarChar(240)
+  sha256 String @db.VarChar(64)
+  modelAssetId String? @db.Uuid
+  modelAsset VisualModelAsset? @relation(fields: [modelAssetId], references: [id], onDelete: Restrict)
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  withdrawnAt DateTime?
+  @@index([slug, active])
+  @@index([projectId, createdAt])
+  @@map("visual_website_releases")
+}
+model VisualWebsiteDomain {
+  id String @id @db.Uuid
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  hostname String @unique @db.VarChar(253)
+  token String @db.VarChar(80)
+  status String @default("PENDING") @db.VarChar(24)
+  providerId String? @db.VarChar(120)
+  validation Json?
+  verifiedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([ownerId, createdAt])
+  @@map("visual_website_domains")
 }

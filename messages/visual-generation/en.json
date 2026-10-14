@@ -1,0 +1,11 @@
+{
+ "title":"Image to 3D", "description":"Generate your own character from an image, then edit stickers, cameras and portfolio content.",
+ "login":"Sign in to generate", "image":"Reference image", "selectedImage":"Selected reference image", "imageLimit":"Choose a JPG, PNG or WEBP image under 20MB.",
+ "faces":"Face count", "texture":"Generate texture", "resolution":"Texture resolution", "pbr":"PBR materials", "price":"This generation costs {points} ANS compute points",
+ "acknowledge":"I have permission to use this image, agree to send it to tripo3d.uk, and confirm this cost.", "unavailable":"Image generation will be available after service setup is complete.",
+ "generate":"Generate model", "submitting":"Submitting…", "cancelNote":"Cancellation before provider submission refunds points. After submission, the result will still be saved and charges need review.",
+ "connectionFailed":"Task updates are temporarily unavailable. They will refresh automatically.", "requestFailed":"Submission was not confirmed. Check the task list; clicking again checks the original request.", "insufficient":"Insufficient ANS compute points.", "priceChanged":"The price changed. Refresh and confirm again.",
+ "progress":"Generation progress", "apply":"Use this model", "cancel":"Cancel task", "cancelRequested":"Cancellation requested. A submitted generation will still save its result.", "reviewNote":"This task needs review. Automatic submission is paused to avoid duplicate generation.", "failedNote":"The task did not complete. Contact an administrator to review its result and charges.", "refunded":"Reserved points have been refunded.",
+ "statuses":{"QUEUED":"Queued","RUNNING":"Generating","SUCCEEDED":"Model ready","FAILED":"Incomplete","CANCELLED":"Cancelled","NEEDS_REVIEW":"Needs review"},
+ "stages":{"queued":"Waiting for the local service","upload":"Uploading image","submit":"Submitting generation","wait":"Waiting for the model","download":"Downloading model","persist":"Saving to your account"}
+}

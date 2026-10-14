@@ -1,0 +1,19 @@
+diff --git a/pkg/workflow/threat_detection_external.go b/pkg/workflow/threat_detection_external.go
+index 5227e16..3bf30a0 100644
+--- a/pkg/workflow/threat_detection_external.go
++++ b/pkg/workflow/threat_detection_external.go
+@@ -136,0 +137,14 @@ func buildThreatDetectionWorkflowData(data *WorkflowData, engineID string) *Work
++	// Preserve explicit model-routing policies without inheriting the main
++	// agent's mounts, environment, command or ability to disable isolation.
++	if data.SandboxConfig != nil && data.SandboxConfig.Agent != nil {
++		parentAgent := data.SandboxConfig.Agent
++		if parentAgent.TokenSteering != nil {
++			steering := *parentAgent.TokenSteering
++			detectionData.SandboxConfig.Agent.TokenSteering = &steering
++		}
++		if parentAgent.ModelFallback != nil {
++			fallback := *parentAgent.ModelFallback
++			detectionData.SandboxConfig.Agent.ModelFallback = &fallback
++		}
++	}
++

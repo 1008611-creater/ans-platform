@@ -1,0 +1,26 @@
+{
+  "labels": [
+    "关于我",
+    "作品与经历",
+    "技能与学习",
+    "联系我"
+  ],
+  "fallbackName": "你的名字",
+  "fallbackHeadline": "一句话，让别人记住你。",
+  "fallbackAbout": "在左侧写下你的介绍，这里会立即变成你的个人主页。",
+  "fallbackProject": "你的项目",
+  "viewProject": "查看作品",
+  "contactHeading": "下一个故事，<br>一起开始。",
+  "online": "我的更多链接",
+  "portfolio": "个人主页",
+  "welcome": "欢迎来到我的世界",
+  "canvasLabel": "3D 形象，可拖动旋转；方向键调整视角",
+  "explore": "拖动探索 · 点击标签，换个角度认识我",
+  "navigation": "了解我",
+  "footer": "真实经历，亲手表达。",
+  "madeWith": "Made with ANS",
+  "referenceCharacter": "参考演示人物",
+  "ownCharacter": "自有模型",
+  "hero": "首屏",
+  "scrollPrompt": "向下探索"
+}
