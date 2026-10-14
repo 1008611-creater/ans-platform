@@ -978,6 +978,10 @@
     }
   },
   "agriSubmissions": {
+    "officialRosterTitle": "正式参赛名单",
+    "officialRosterHelp": "选择 1—5 个本队有效账号，并包含你自己。首次正式提交后，名单和项目在初、决赛中保持一致。每人在本届只能属于一个正式项目。",
+    "officialRosterLocked": "初、决赛共用这份已确认名单。队伍后续的成员变动不会改写历史名单。",
+    "preliminaryBaseline": "初赛冻结提交：{id}",
     "title": "本队阶段提交",
     "description": "选定作品版本，准备技术材料，核对规范与截止时间。保存草稿后可以继续完善，正式提交会留下不可改写的版本记录。",
     "back": "返回农客松",
@@ -1054,6 +1058,16 @@
     "versionId": "作品版本：{id}",
     "moreHistory": "加载更早的提交",
     "errors": {
+      "AGRI_ROSTER_REQUIRED": "请先选择正式参赛成员。",
+      "AGRI_LEGACY_ROSTER_REQUIRED": "这个历史参赛记录没有已确认的正式名单。请联系赛事方核实，处理前无法继续正式提交，原有记录保留。",
+      "AGRI_ROSTER_MEMBER_UNAVAILABLE": "所选成员的账号或队伍状态不可用，请刷新名单。",
+      "AGRI_ROSTER_MEMBER_CONFLICT": "所选成员已属于本届另一个正式项目。",
+      "AGRI_ROSTER_ACTOR_REQUIRED": "提交人必须在正式参赛名单中。",
+      "AGRI_ROSTER_CHANGE_FORBIDDEN": "已确认的正式名单不能更改。",
+      "AGRI_ROSTER_PROJECT_MISMATCH": "请选择与正式名单绑定的项目版本。",
+      "AGRI_PRELIMINARY_BASELINE_REQUIRED": "决赛需要本队已冻结且有正式名单的初赛提交。",
+      "AGRI_FINAL_PROJECT_MISMATCH": "决赛必须使用初赛冻结版本的同一项目和名单。",
+      "AGRI_FINAL_BASELINE_CHANGE_FORBIDDEN": "决赛不能更换已记录的初赛基线。",
       "INTERNAL_ERROR": "暂时无法完成操作，请稍后重试。",
       "ACCOUNT_CHANGED": "登录账号已改变，原账号材料已隐藏。请刷新会话后再操作。",
       "INVALID_INPUT": "请检查必填项和格式：作品版本、介绍、HTTPS 地址与完整 SHA / Tag。",

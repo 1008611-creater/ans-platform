@@ -65,6 +65,8 @@ model User {
   agriRecordArchives AgriRecordArchive[] @relation("AgriArchiveCreator")
   agriRecordArchiveReceipts AgriRecordArchiveReceipt[] @relation("AgriArchiveReceiptActor")
   agriStageSubmissions AgriStageSubmission[] @relation("AgriStageSubmitter")
+  agriConfirmedRosters AgriOfficialRoster[]
+  agriOfficialMemberships AgriOfficialRosterMember[]
   agriSubmissionEvents AgriSubmissionEvent[] @relation("AgriSubmissionEventActor")
   agriSubmissionReceipts AgriSubmissionReceipt[] @relation("AgriSubmissionReceiptActor")
   agriWorkspaceUpdates AgriWorkspace[] @relation("AgriWorkspaceUpdater")
@@ -1201,6 +1203,7 @@ model TeamCompetition {
   awardedXp Int @default(0)
   agriFinalDecisions AgriFinalDecision[]
   agriStages AgriEntryStage[]
+  agriOfficialRoster AgriOfficialRoster?
   contributions TeamCompetitionContribution[]
   createdAt     DateTime    @default(now())
 
@@ -1303,6 +1306,7 @@ model Project {
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   agriSubmissions AgriStageSubmission[]
+  agriOfficialRosters AgriOfficialRoster[]
   facts       ProjectFact[]
   artifacts   Artifact[]
   workflowInputs ProjectWorkflowInput[]
@@ -2098,6 +2102,11 @@ model AgriStageSubmission {
   submittedById String
   submittedBy User @relation("AgriStageSubmitter", fields: [submittedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
   acceptedAt DateTime @db.Timestamptz(3)
+  officialRosterId String?
+  officialRoster AgriOfficialRoster? @relation(fields: [officialRosterId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction, map: "agri_submission_roster_same_edition")
+  preliminarySubmissionId String?
+  preliminarySubmission AgriStageSubmission? @relation("AgriPreliminaryBaseline", fields: [preliminarySubmissionId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "agri_submission_preliminary_baseline")
+  finalSubmissions AgriStageSubmission[] @relation("AgriPreliminaryBaseline")
   publicationEvents AgriPublicationEvent[]
   issues AgriIssue[]
   technicalChecks AgriTechnicalCheck[]
@@ -2117,7 +2126,38 @@ model AgriStageSubmission {
   @@unique([entryStageId, sequence])
   @@unique([id, entryStageId, competitionId])
   @@index([competitionId, acceptedAt, id])
+  @@index([officialRosterId])
+  @@index([preliminarySubmissionId])
   @@map("agri_stage_submissions")
+}
+model AgriOfficialRoster {
+  id String @id
+  competitionId String
+  teamCompetitionId String @unique
+  entry TeamCompetition @relation(fields: [teamCompetitionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  memberUserIds Json
+  confirmedById String
+  confirmedBy User @relation(fields: [confirmedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  confirmedAt DateTime @db.Timestamptz(3)
+  members AgriOfficialRosterMember[]
+  submissions AgriStageSubmission[]
+  @@unique([teamCompetitionId, competitionId])
+  @@unique([id, competitionId])
+  @@map("agri_official_rosters")
+}
+model AgriOfficialRosterMember {
+  rosterId String
+  competitionId String
+  roster AgriOfficialRoster @relation(fields: [rosterId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  username String
+  name String?
+  @@id([rosterId, userId])
+  @@unique([competitionId, userId])
+  @@map("agri_official_roster_members")
 }
 model AgriSubmissionMaterialRef {
   id String @id @default(cuid())
