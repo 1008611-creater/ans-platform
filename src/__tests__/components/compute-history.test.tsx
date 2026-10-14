@@ -51,7 +51,7 @@ describe("member compute statements", () => {
   it("does not present settled supplier success as confirmed file delivery", async () => {
     const settled = { ...baseTask, state: "SETTLED" as const, settledPoints: 70, refundedPoints: 30, units: 700,
       outcome: "succeeded" as const, finishedAt: "2026-10-09T00:02:00.000Z" };
-    render(await ComputeHistory({ history: history([settled]), filter: "settled", paged: false }));
+    render(await ComputeHistory({ userId: "authenticated-member", history: history([settled]), filter: "settled", paged: false }));
     expect(screen.getByText("上游执行成功")).toBeInTheDocument();
     expect(screen.queryByText("已完成")).not.toBeInTheDocument();
     expect(screen.getByText(/不确认文件已保存或可领取/)).toBeInTheDocument();
