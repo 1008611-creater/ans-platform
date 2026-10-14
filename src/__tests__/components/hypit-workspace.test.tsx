@@ -82,7 +82,7 @@ it("collapses creation after opening a project and restores the unfinished new-p
   fireEvent.change(screen.getByLabelText("name"), { target: { value: "Unfinished next project" } });
   await openFixture();
   expect(document.getElementById("hypit-new-project")).not.toBeVisible();
-  expect(screen.getByRole("heading", { name: fixture.title })).toHaveFocus();
+  await waitFor(() => expect(screen.getByRole("heading", { name: fixture.title })).toHaveFocus());
   fireEvent.click(screen.getByRole("button", { name: "newProject" }));
   expect(screen.getByDisplayValue("Unfinished next project")).toBeVisible();
 });
