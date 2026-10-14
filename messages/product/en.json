@@ -3051,5 +3051,26 @@
     "previous": "Previous",
     "next": "Next",
     "page": "Page {page}"
+  },
+  "computeDelivery": {
+    "view": "View file status",
+    "loading": "Checking file status…",
+    "refresh": "Refresh file status",
+    "retry": "Retry file status",
+    "checkingAccount": "Checking your account…",
+    "sessionExpired": "Your session expired. Sign in again before checking files.",
+    "accountChanged": "The account changed. Reload this page before checking files.",
+    "failed": "File status could not be verified. Retry to check again.",
+    "noRecord": "No delivery record yet. Settlement alone does not confirm a file was saved.",
+    "states": {
+      "PENDING": "The file has not been confirmed saved. Check again later.",
+      "FAILED": "The service reported a delivery failure. No saved file has been confirmed.",
+      "UNAVAILABLE": "The previously saved file is currently unavailable.",
+      "AVAILABLE": "The AIGC workspace confirmed that this file was saved. Retrieval is not connected yet; this does not confirm you received it."
+    },
+    "fileName": "Relative file name",
+    "fileType": "File type",
+    "fileSize": "File size",
+    "bytes": "{value} bytes"
   }
 }

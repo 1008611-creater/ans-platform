@@ -3051,5 +3051,26 @@
     "previous": "上一页",
     "next": "下一页",
     "page": "第 {page} 页"
+  },
+  "computeDelivery": {
+    "view": "查看文件状态",
+    "loading": "正在核对文件状态…",
+    "refresh": "刷新文件状态",
+    "retry": "重试文件状态",
+    "checkingAccount": "正在确认账号…",
+    "sessionExpired": "登录已失效，请重新登录后查看文件。",
+    "accountChanged": "账号已变化，请重新加载本页后查看文件。",
+    "failed": "文件状态未能核实，请重试查询。",
+    "noRecord": "尚无交付记录。账单已结算不代表文件已保存。",
+    "states": {
+      "PENDING": "尚未确认文件已保存，可稍后再次查询。",
+      "FAILED": "服务报告交付失败，尚未确认有已保存的文件。",
+      "UNAVAILABLE": "此前保存的文件当前不可用。",
+      "AVAILABLE": "AIGC 工作台确认文件已保存。领取入口尚未接通，这不代表你已收到文件。"
+    },
+    "fileName": "相对文件名",
+    "fileType": "文件类型",
+    "fileSize": "文件大小",
+    "bytes": "{value} 字节"
   }
 }

@@ -27,7 +27,7 @@ describe("compute statement page boundary", () => {
  it("only queries the session account, ignores authority query fields and selects a known filter", async () => {
   const page = await ComputeHistoryPage({ searchParams: Promise.resolve({ filter: "settled", cursor: "valid-cursor", userId: "victim" } as { filter: string; cursor: string }) });
   expect(mocks.history).toHaveBeenCalledWith("authenticated-member", { filter: "settled", cursor: "valid-cursor" });
-  expect(page.props).toMatchObject({ filter: "settled", paged: true });
+  expect(page.props).toMatchObject({ userId: "authenticated-member", filter: "settled", paged: true });
  });
  it("does not render database diagnostics or invent zero balances when reading fails", async () => {
   mocks.history.mockRejectedValue(new Error("PRIVATE_DATABASE_DIAGNOSTIC"));
