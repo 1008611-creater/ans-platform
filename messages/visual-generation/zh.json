@@ -1,0 +1,11 @@
+{
+ "title":"图片生成 3D", "description":"上传一张图片，生成自己的角色，再继续贴纸、镜头与作品集编辑。",
+ "login":"登录后生成", "image":"参考图片", "selectedImage":"已选参考图片", "imageLimit":"请选择 20MB 以内的 JPG、PNG 或 WEBP 图片。",
+ "faces":"模型面数", "texture":"生成纹理", "resolution":"纹理分辨率", "pbr":"PBR 材质", "price":"本次需要 {points} ANS 算力积分",
+ "acknowledge":"我有权使用这张图片，同意发送给 tripo3d.uk 生成，并确认本次费用。", "unavailable":"图片生成服务尚未开放，接入配置完成后可使用。",
+ "generate":"开始生成", "submitting":"正在提交…", "cancelNote":"提交到生成服务前取消会退回积分。提交后会继续保存结果，费用需要核对。",
+ "connectionFailed":"任务状态暂时无法连接，稍后会自动更新。", "requestFailed":"提交未获确认。请查看任务列表；再次点击会核对原请求。", "insufficient":"ANS 算力积分不足。", "priceChanged":"费用已变化，请刷新后重新确认。",
+ "progress":"生成进度", "apply":"使用这个模型", "cancel":"取消任务", "cancelRequested":"已请求取消；已提交的生成会继续保存结果。", "reviewNote":"任务需要核对，系统已暂停，不会自动重复生成。", "failedNote":"任务未完成，请联系管理员核对结果与费用。", "refunded":"本次预扣积分已退回。",
+ "statuses":{"QUEUED":"排队中","RUNNING":"生成中","SUCCEEDED":"模型已完成","FAILED":"任务未完成","CANCELLED":"已取消","NEEDS_REVIEW":"等待核对"},
+ "stages":{"queued":"等待本机服务接收","upload":"上传图片","submit":"提交生成","wait":"等待模型完成","download":"下载模型","persist":"保存到你的账号"}
+}

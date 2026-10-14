@@ -1,0 +1,26 @@
+{
+  "labels": [
+    "About",
+    "Selected work",
+    "Skills & learning",
+    "Contact"
+  ],
+  "fallbackName": "Your name",
+  "fallbackHeadline": "A little introduction. A lasting impression.",
+  "fallbackAbout": "Tell your story in the editor. See it come to life here.",
+  "fallbackProject": "Your project",
+  "viewProject": "View project",
+  "contactHeading": "Let’s make<br>something together.",
+  "online": "Find me online",
+  "portfolio": "Portfolio",
+  "welcome": "Welcome to my world",
+  "canvasLabel": "3D character. Drag to rotate, or use arrow keys.",
+  "explore": "Drag to explore · Pick a tag, meet another side of me",
+  "navigation": "Explore my story",
+  "footer": "Real experience. Your own story.",
+  "madeWith": "Made with ANS",
+  "referenceCharacter": "Reference demo character",
+  "ownCharacter": "Custom model",
+  "hero": "Hero",
+  "scrollPrompt": "SCROLL DOWN"
+}

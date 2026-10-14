@@ -1,0 +1,7 @@
+{
+ "name":"ans-visual-sites",
+ "main":"worker.mjs",
+ "compatibility_date":"2026-10-13",
+ "vars":{"ANS_API_ORIGIN":"https://ans.example.com","ANS_PUBLICATION_ORIGIN":"https://portfolio.example.net","ANS_CUSTOM_DOMAINS_ENABLED":"false"},
+ "routes":[{"pattern":"portfolio.example.net","custom_domain":true}]
+}

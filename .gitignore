@@ -16,6 +16,8 @@
 # next.js
 /.next/
 /.next-vault/
+/.next-compute-history/
+/.next-compute-history-build/
 /out/
 
 # production

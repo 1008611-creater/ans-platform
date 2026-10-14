@@ -1,0 +1,41 @@
+# Add to the existing production Compose project after the reviewed release is merged.
+services:
+  app:
+    environment:
+      ANS_TRIPO_ACCEPTING_JOBS: "${ANS_TRIPO_ACCEPTING_JOBS:-false}"
+      ANS_TRIPO_PRICE_POINTS: "${ANS_TRIPO_PRICE_POINTS:-}"
+      ANS_VISUAL_WORKER_KEY: "${ANS_VISUAL_WORKER_KEY:?A shared local-worker key is required}"
+      ANS_VISUAL_SIGNING_SECRET: "${ANS_VISUAL_SIGNING_SECRET:?An asset signing secret is required}"
+      ANS_VISUAL_STORAGE_MODE: local
+      ANS_VISUAL_STORAGE_DIR: /var/lib/ans-visual
+      ANS_VISUAL_PUBLISH_ENABLED: "${ANS_VISUAL_PUBLISH_ENABLED:-false}"
+      ANS_VISUAL_PUBLIC_ORIGIN: "${ANS_VISUAL_PUBLIC_ORIGIN:-https://sites.cauai.fun}"
+      ANS_VISUAL_PUBLICATION_KEY: "${ANS_VISUAL_PUBLICATION_KEY:?A publication reader key is required}"
+      ANS_VISUAL_DOMAINS_ENABLED: "${ANS_VISUAL_DOMAINS_ENABLED:-false}"
+      CLOUDFLARE_SAAS_ZONE_ID: "${CLOUDFLARE_SAAS_ZONE_ID:-}"
+      CLOUDFLARE_SAAS_TOKEN: "${CLOUDFLARE_SAAS_TOKEN:-}"
+      ANS_VISUAL_CNAME_TARGET: "${ANS_VISUAL_CNAME_TARGET:-}"
+    volumes:
+      - type: bind
+        source: "${ANS_VISUAL_ASSETS_HOST_DIR:?Choose a backed-up persistent asset directory}"
+        target: /var/lib/ans-visual
+  visual-sites:
+    image: "ans-visual-sites:${ANS_VISUAL_RELEASE:?Use the reviewed main revision or release tag}"
+    build:
+      context: ./deploy/visual-sites
+      args:
+        ANS_VISUAL_SOURCE_REVISION: "${ANS_VISUAL_SOURCE_REVISION:?Use the reviewed main revision}"
+    environment:
+      ANS_API_ORIGIN: http://ans-platform-app:3000
+      ANS_PUBLICATION_ORIGIN: "${ANS_VISUAL_PUBLIC_ORIGIN:-https://sites.cauai.fun}"
+      ANS_PUBLICATION_KEY: "${ANS_VISUAL_PUBLICATION_KEY:?A publication reader key is required}"
+      ANS_CUSTOM_DOMAINS_ENABLED: "${ANS_VISUAL_DOMAINS_ENABLED:-false}"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [prompts-chat-shared]
+networks:
+  prompts-chat-shared:
+    external: true
+    name: prompts-chat_default

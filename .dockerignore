@@ -7,6 +7,8 @@ npm-debug.log*
 out
 dist
 .next-vault
+.next-compute-history
+.next-compute-history-build
 
 # Local mobile build artifacts (not required by the web image)
 android/.gradle

@@ -21,7 +21,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams?: Pr
   const selection = resolveProjectSelection(await searchParams ?? {});
   const session = await auth();
   if (!session?.user?.id) redirect(`/login?callbackUrl=${encodeURIComponent(selection.callbackPath)}`);
-  const [projects, t, p] = await Promise.all([listProjects(session.user.id), getTranslations("learning"), getTranslations("product")]);
+  const [projects, t, p, v] = await Promise.all([listProjects(session.user.id), getTranslations("learning"), getTranslations("product"), getTranslations("visualWebsite")]);
   const initialGoal: ProjectGoal = selection.goal;
   return (
     <div className="ans-product-container ans-page-content ans-projects-page">
@@ -30,7 +30,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams?: Pr
       <ol className="ans-project-steps">{[1, 2, 3].map((step) => <li key={step}><span className="ans-project-step-number" aria-hidden="true">0{step}</span><div><h2>{t(`step${step}Title`)}</h2><p>{t(`step${step}Body`)}</p></div></li>)}</ol>
       <div className="ans-private-project-grid">
         <Card id="new-project" className="scroll-mt-20"><CardHeader><CardTitle>{t("newProject")}</CardTitle></CardHeader><CardContent><CreateProjectForm key={`${initialGoal}-${selection.workflowId}`} initialGoal={initialGoal} initialWorkflowId={selection.workflowId} /></CardContent></Card>
-        <div className="space-y-3">{projects.length === 0 ? <Card className="border-dashed"><CardContent className="space-y-2 py-10"><p className="font-medium">{t("emptyTitle")}</p><p className="text-sm text-muted-foreground">{t("emptyBody")}</p></CardContent></Card> : projects.map((project) => <Link key={project.id} href={`/projects/${project.id}`} className="block"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="text-base">{project.title}</CardTitle><Badge variant="secondary">{t(project.goal)}</Badge></div><CardDescription>{t("progress", { count: projectPackWorkflowIds.filter((id) => project.artifacts.some((artifact) => artifact.workflowId === id && artifact.versions.length > 0)).length })}</CardDescription></CardHeader></Card></Link>)}</div>
+        <div className="space-y-3">{projects.length === 0 ? <Card className="border-dashed"><CardContent className="space-y-2 py-10"><p className="font-medium">{t("emptyTitle")}</p><p className="text-sm text-muted-foreground">{t("emptyBody")}</p></CardContent></Card> : projects.map((project) => <Link key={project.id} href={project.artifacts.some(a => a.workflowId === "visual-portfolio-v1") ? `/projects/${project.id}/visual-website` : `/projects/${project.id}`} className="block"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="text-base">{project.title}</CardTitle><Badge variant="secondary">{t(project.goal)}</Badge></div><CardDescription>{project.artifacts.some(a => a.workflowId === "visual-portfolio-v1") ? v("saved", {version: project.artifacts.find(a => a.workflowId === "visual-portfolio-v1")!.currentVersion}) : t("progress", { count: projectPackWorkflowIds.filter((id) => project.artifacts.some((artifact) => artifact.workflowId === id && artifact.versions.length > 0)).length })}</CardDescription></CardHeader></Card></Link>)}</div>
       </div>
     </div>
   );
