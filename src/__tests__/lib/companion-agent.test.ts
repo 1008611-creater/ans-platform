@@ -11,7 +11,7 @@ vi.mock("@/server/integrations/codex-gateway", async () => {
 });
 import { agentInputSchema, type AgentEvent, type AgentInput } from "@/contracts/companion-agent";
 import { issueAgentTicket, verifyAgentTicket, AGENT_MAX_POINTS, AGENT_BODY_LIMIT, AGENT_MODEL, AGENT_OUTPUT_LIMIT, checkAgentPayload, agentKey, agentMaxPoints } from "@/server/companion/policy";
-import { RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
+import { DEFAULT_COMPANION_MODEL, DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
 import { executeAgent, prepareAgentQuote, readAgentStatus } from "@/server/companion/service";
 import { executeAgentTool } from "@/server/companion/tools";
 const input: AgentInput = { messages: [{ role: "user", content: "帮我查一下项目" }], pathname: "/explore", locale: "zh", privateAccess: false, model: AGENT_MODEL };
@@ -42,7 +42,7 @@ describe("companion authorization and budget", () => {
   });
   it("allows a free quote without calling the supplier", async () => {
     const quote = await prepareAgentQuote("quote-user", input);
-    expect(quote.balance).toBe(12); expect(quote.maxPoints).toBeLessThan(0.1); expect(mocks.gateway).not.toHaveBeenCalled();
+    expect(quote.balance).toBe(12); expect(quote.maxPoints).toBeLessThan(0.3); expect(mocks.gateway).not.toHaveBeenCalled();
   });
   it("does not quote a model call when authoritative billing is unconfigured", async () => {
     vi.stubEnv("APIC_COST_BRIDGE_SECRET", "");
@@ -153,10 +153,19 @@ describe("selected companion model authorization", () => {
     const other = { ...selected, model: model.key === "gpt-6-astra" ? "deepseek-v4.1-flash" as const : "gpt-6-astra" as const };
     expect(() => verifyAgentTicket(quote.ticket, "model-" + model.key, other)).toThrow("QUOTE_CHANGED");
   });
-  it("rejects an unavailable model and defaults old callers to DeepSeek", () => {
+  it("rejects an unavailable model and defaults omitted choices to Sol", () => {
     expect(agentInputSchema.safeParse({ ...input, model: "forged-free-model" }).success).toBe(false);
     const old = { messages: input.messages, pathname: input.pathname, locale: input.locale, privateAccess: input.privateAccess };
     expect(agentInputSchema.parse(old).model).toBe(AGENT_MODEL);
+  });
+  it("keeps the companion default separate from workflows and honors existing DeepSeek tickets", () => {
+    expect(DEFAULT_COMPANION_MODEL).toBe("gpt-6.1-sol");
+    expect(DEFAULT_RUN_MODEL).toBe("deepseek-v4.1-flash");
+    const selected = agentInputSchema.parse({ ...input, model: "deepseek-v4.1-flash" });
+    const quote = issueAgentTicket("alice", selected, 1000);
+    expect(verifyAgentTicket(quote.ticket, "alice", selected, 2000).model).toBe("deepseek-v4.1-flash");
+    expect(verifyAgentTicket(quote.ticket, "alice", undefined, 2000).maxPoints).toBe(agentMaxPoints("deepseek-v4.1-flash"));
+    expect(() => verifyAgentTicket(quote.ticket, "alice", { ...selected, model: DEFAULT_COMPANION_MODEL }, 2000)).toThrow("QUOTE_CHANGED");
   });
   it("uses the shared consumption factors without equating unlike base prices", () => {
     expect(RUN_MODEL_METERING["gpt-6-astra"].consumptionMultiplier).toBe(0.16);

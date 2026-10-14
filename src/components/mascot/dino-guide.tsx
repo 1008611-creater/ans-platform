@@ -18,7 +18,7 @@ import { AgentTurnStatus } from "./agent-turn-status";
 import { activateCompanionActor, readCompanionConversation, saveCompanionConversation } from "./companion-session";
 import { AgentRecoveryStatus } from "./agent-recovery-status";
 import { CompanionModelSelect } from "./companion-model-select";
-import { DEFAULT_RUN_MODEL, getRunModel, type RunModelKey } from "@/lib/run-models";
+import { DEFAULT_COMPANION_MODEL, getRunModel, type RunModelKey } from "@/lib/run-models";
 import { useCompanionSize } from "./use-companion-size";
 import "./companion.css";
 
@@ -35,7 +35,7 @@ export function DinoGuide() {
 function Companion({ actor, storageReady }: { actor: string | null; storageReady: boolean }) {
   const t = useTranslations("product.mascot"), ui = useTranslations("companion");
   const pathname = usePathname(), locale = useLocale() === "zh" ? "zh" : "en";
-  const [model, setModel] = useState<RunModelKey>(DEFAULT_RUN_MODEL);
+  const [model, setModel] = useState<RunModelKey>(DEFAULT_COMPANION_MODEL);
   const [mode, setMode] = useState<Mode>(actor ? "agent" : "guide");
   const [threads, setThreads] = useState<Record<Mode, Thread>>(() => ({ agent: freshThread(), guide: freshThread() }));
   const [sessionLoaded, setSessionLoaded] = useState(false);
