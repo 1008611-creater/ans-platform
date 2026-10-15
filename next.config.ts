@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
     "/vibe-hub/**/*": ["./src/data/vibehub/**/*"],
     "/vibe-hub": ["./src/data/vibehub/**/*"],
     "/api/vibe-hub/**/*": ["./src/data/vibehub/**/*"],
-    "/api/visual-websites/publication": ["./public/mascot/3d/vendor/**/*", "./public/visual-portfolio/scene.mjs", "./public/visual-portfolio/reference/banner.glb"],
+    "/api/visual-websites/publication": ["./public/mascot/3d/vendor/**/*", "./public/visual-portfolio/scene.mjs", "./public/visual-portfolio/reference/banner.glb", "./public/visual-portfolio/stickers/presets/**/*.webp", "./public/visual-portfolio/stickers/fluent/*.png"],
   },
   // Experimental features
   experimental: {

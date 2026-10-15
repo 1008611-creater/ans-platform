@@ -35,3 +35,10 @@
  :global([data-market-studio]) .top{top:3.5rem}
  .notice{bottom:calc(176px + env(safe-area-inset-bottom))}
 }
+.stickerStyles{display:flex;gap:6px;margin-bottom:14px}.stickerStyles button{flex:1;padding:9px 5px;border:1px solid var(--line)!important;border-radius:7px}.stickerStyles button[aria-pressed=true]{background:var(--acid);color:oklch(.22 .01 110)}.stickerGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.imageSticker{min-width:0;border:1px solid var(--line)!important;background:oklch(.26 .005 110)!important;border-radius:9px;padding:7px!important;display:grid;justify-items:center;gap:5px}.imageSticker[aria-pressed=true]{border-color:var(--acid)!important;background:oklch(.3 .035 110)!important}.imageSticker img{width:100%;height:auto;aspect-ratio:1;object-fit:contain}.imageSticker span{font-size:9px;line-height:1.4;text-align:center;overflow-wrap:anywhere}.stickerExpand{width:100%;padding:9px!important;font-size:10px!important;color:var(--acid)!important;margin-top:6px}@media(max-width:650px){.stickerGrid{grid-template-columns:repeat(4,minmax(0,1fr))}.imageSticker span{font-size:11px}}
+
+.stickerStyles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.stickerFilters{display:grid;gap:8px}.stickerFilters select{width:100%;min-width:0;min-height:38px;border:1px solid var(--line);border-radius:7px;background:oklch(.22 .005 110);color:inherit;padding:7px;font:inherit;font-size:12px}
+.stickerSelected{display:block;margin-top:6px;color:var(--acid);overflow-wrap:anywhere}.stickerGroupCount{font-size:10px;font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.stickerEmpty{padding:16px 0;font-size:12px}.stickerEmpty button{color:var(--acid);text-decoration:underline}.stickerAttribution{display:block;margin-top:18px;color:var(--muted);font-size:10px;line-height:1.6;text-decoration:underline}
+.imageSticker:focus-visible,.stickerStyles button:focus-visible,.stickerFilters select:focus-visible,.stickerExpand:focus-visible,.stickerEmpty button:focus-visible,.stickerAttribution:focus-visible{outline:2px solid var(--acid);outline-offset:3px}

@@ -1,0 +1,2738 @@
+[
+  {
+    "id": "doodle-mbti-intj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-intj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/intj.webp",
+    "keywords": "INTJ 建筑师 INTJ Architect MBTI",
+    "code": "6043ee2d96ff"
+  },
+  {
+    "id": "doodle-mbti-intp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-intp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/intp.webp",
+    "keywords": "INTP 逻辑学家 INTP Logician MBTI",
+    "code": "8dac7fa4f254"
+  },
+  {
+    "id": "doodle-mbti-entj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-entj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/entj.webp",
+    "keywords": "ENTJ 指挥官 ENTJ Commander MBTI",
+    "code": "597bae8ab861"
+  },
+  {
+    "id": "doodle-mbti-entp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-entp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/entp.webp",
+    "keywords": "ENTP 辩论家 ENTP Debater MBTI",
+    "code": "d19a99371f6b"
+  },
+  {
+    "id": "doodle-mbti-infj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-infj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/infj.webp",
+    "keywords": "INFJ 提倡者 INFJ Advocate MBTI",
+    "code": "0a02447a40e9"
+  },
+  {
+    "id": "doodle-mbti-infp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-infp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/infp.webp",
+    "keywords": "INFP 调停者 INFP Mediator MBTI",
+    "code": "97d7cb0fc80a"
+  },
+  {
+    "id": "doodle-mbti-enfj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-enfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/enfj.webp",
+    "keywords": "ENFJ 主人公 ENFJ Protagonist MBTI",
+    "code": "25e153aa4580"
+  },
+  {
+    "id": "doodle-mbti-enfp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-enfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/enfp.webp",
+    "keywords": "ENFP 竞选者 ENFP Campaigner MBTI",
+    "code": "3feb8d78e0d5"
+  },
+  {
+    "id": "doodle-mbti-istj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-istj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/istj.webp",
+    "keywords": "ISTJ 物流师 ISTJ Logistician MBTI",
+    "code": "6dcba2d08851"
+  },
+  {
+    "id": "doodle-mbti-isfj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-isfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/isfj.webp",
+    "keywords": "ISFJ 守卫者 ISFJ Defender MBTI",
+    "code": "3ef8cd5ef519"
+  },
+  {
+    "id": "doodle-mbti-estj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-estj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/estj.webp",
+    "keywords": "ESTJ 总经理 ESTJ Executive MBTI",
+    "code": "46981d6b1a8f"
+  },
+  {
+    "id": "doodle-mbti-esfj",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-esfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/esfj.webp",
+    "keywords": "ESFJ 执政官 ESFJ Consul MBTI",
+    "code": "3795fb6031ee"
+  },
+  {
+    "id": "doodle-mbti-istp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-istp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/istp.webp",
+    "keywords": "ISTP 鉴赏家 ISTP Virtuoso MBTI",
+    "code": "29e1255ebb29"
+  },
+  {
+    "id": "doodle-mbti-isfp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-isfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/isfp.webp",
+    "keywords": "ISFP 探险家 ISFP Adventurer MBTI",
+    "code": "f6dbfd8bad64"
+  },
+  {
+    "id": "doodle-mbti-estp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-estp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/estp.webp",
+    "keywords": "ESTP 企业家 ESTP Entrepreneur MBTI",
+    "code": "c7cc703b9204"
+  },
+  {
+    "id": "doodle-mbti-esfp",
+    "category": "mbti",
+    "style": "doodle",
+    "key": "mbti-esfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/doodle-v2/esfp.webp",
+    "keywords": "ESFP 表演者 ESFP Entertainer MBTI",
+    "code": "ee0bc0d310be"
+  },
+  {
+    "id": "doodle-career-programmer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-programmer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/programmer.webp",
+    "keywords": "程序员 Programmer 职业 Career",
+    "code": "cc3593f6be1a"
+  },
+  {
+    "id": "doodle-career-designer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-designer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/designer.webp",
+    "keywords": "设计师 Designer 职业 Career",
+    "code": "393283f3efe7"
+  },
+  {
+    "id": "doodle-career-product-manager",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-product-manager",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/product-manager.webp",
+    "keywords": "产品经理 Product Manager 职业 Career",
+    "code": "4d8cdc6c0d29"
+  },
+  {
+    "id": "doodle-career-doctor",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-doctor",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/doctor.webp",
+    "keywords": "医生 Doctor 职业 Career",
+    "code": "0d221b6869cc"
+  },
+  {
+    "id": "doodle-career-teacher",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-teacher",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/teacher.webp",
+    "keywords": "教师 Teacher 职业 Career",
+    "code": "fc687d6fc046"
+  },
+  {
+    "id": "doodle-career-lawyer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-lawyer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/lawyer.webp",
+    "keywords": "律师 Lawyer 职业 Career",
+    "code": "717fd5ba0f3a"
+  },
+  {
+    "id": "doodle-career-finance",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-finance",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/finance.webp",
+    "keywords": "金融 Finance 职业 Career",
+    "code": "06fa61a51628"
+  },
+  {
+    "id": "doodle-career-marketing",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-marketing",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/marketing.webp",
+    "keywords": "市场营销 Marketing 职业 Career",
+    "code": "ff8de6a81d06"
+  },
+  {
+    "id": "doodle-career-photographer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-photographer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/photographer.webp",
+    "keywords": "摄影师 Photographer 职业 Career",
+    "code": "ae15127cfe53"
+  },
+  {
+    "id": "doodle-career-musician",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-musician",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/musician.webp",
+    "keywords": "音乐人 Musician 职业 Career",
+    "code": "019ddc395df7"
+  },
+  {
+    "id": "doodle-career-writer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-writer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/writer.webp",
+    "keywords": "作家 Writer 职业 Career",
+    "code": "8befd7785625"
+  },
+  {
+    "id": "doodle-career-scientist",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-scientist",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/scientist.webp",
+    "keywords": "科学家 Scientist 职业 Career",
+    "code": "5a29259643e5"
+  },
+  {
+    "id": "doodle-career-architect",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-architect",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/architect.webp",
+    "keywords": "建筑师 Architect 职业 Career",
+    "code": "756a3f6e35b0"
+  },
+  {
+    "id": "doodle-career-chef",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-chef",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/chef.webp",
+    "keywords": "厨师 Chef 职业 Career",
+    "code": "2c95b3d5ba8d"
+  },
+  {
+    "id": "doodle-career-entrepreneur",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-entrepreneur",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/entrepreneur.webp",
+    "keywords": "创业者 Entrepreneur 职业 Career",
+    "code": "01b68e817634"
+  },
+  {
+    "id": "doodle-career-freelancer",
+    "category": "career",
+    "style": "doodle",
+    "key": "career-freelancer",
+    "path": "/visual-portfolio/stickers/presets/career/doodle-v1/freelancer.webp",
+    "keywords": "自由职业 Freelancer 职业 Career",
+    "code": "f9722252e67b"
+  },
+  {
+    "id": "doodle-hobby-gaming",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-gaming",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/gaming.webp",
+    "keywords": "游戏 Gaming 爱好 Hobbies",
+    "code": "61113e40b74a"
+  },
+  {
+    "id": "doodle-hobby-reading",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-reading",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/reading.webp",
+    "keywords": "阅读 Reading 爱好 Hobbies",
+    "code": "020e4911a56e"
+  },
+  {
+    "id": "doodle-hobby-photography",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-photography",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/photography.webp",
+    "keywords": "摄影 Photography 爱好 Hobbies",
+    "code": "29f0e6c2bb1d"
+  },
+  {
+    "id": "doodle-hobby-painting",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-painting",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/painting.webp",
+    "keywords": "绘画 Painting 爱好 Hobbies",
+    "code": "7856d7804c99"
+  },
+  {
+    "id": "doodle-hobby-guitar",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-guitar",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/guitar.webp",
+    "keywords": "吉他 Guitar 爱好 Hobbies",
+    "code": "be317857a830"
+  },
+  {
+    "id": "doodle-hobby-baking",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-baking",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/baking.webp",
+    "keywords": "烘焙 Baking 爱好 Hobbies",
+    "code": "7b7937dab314"
+  },
+  {
+    "id": "doodle-hobby-gardening",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-gardening",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/gardening.webp",
+    "keywords": "园艺 Gardening 爱好 Hobbies",
+    "code": "9f1190d417e3"
+  },
+  {
+    "id": "doodle-hobby-fishing",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-fishing",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/fishing.webp",
+    "keywords": "钓鱼 Fishing 爱好 Hobbies",
+    "code": "19f771552963"
+  },
+  {
+    "id": "doodle-hobby-boardgames",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-boardgames",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/boardgames.webp",
+    "keywords": "桌游 Board Games 爱好 Hobbies",
+    "code": "a34f9e8d4861"
+  },
+  {
+    "id": "doodle-hobby-anime",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-anime",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/anime.webp",
+    "keywords": "动漫 Anime 爱好 Hobbies",
+    "code": "e6b959460e48"
+  },
+  {
+    "id": "doodle-hobby-movies",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-movies",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/movies.webp",
+    "keywords": "电影 Movies 爱好 Hobbies",
+    "code": "a07b5a170006"
+  },
+  {
+    "id": "doodle-hobby-karaoke",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-karaoke",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/karaoke.webp",
+    "keywords": "唱歌 Karaoke 爱好 Hobbies",
+    "code": "c086c5c0e762"
+  },
+  {
+    "id": "doodle-hobby-crafts",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-crafts",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/crafts.webp",
+    "keywords": "手工 Crafts 爱好 Hobbies",
+    "code": "0f4f33e44157"
+  },
+  {
+    "id": "doodle-hobby-camping",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-camping",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/camping.webp",
+    "keywords": "露营 Camping 爱好 Hobbies",
+    "code": "a9d8b4d547a4"
+  },
+  {
+    "id": "doodle-hobby-skateboard",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-skateboard",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/skateboard.webp",
+    "keywords": "滑板 Skateboarding 爱好 Hobbies",
+    "code": "e5887420f596"
+  },
+  {
+    "id": "doodle-hobby-figures",
+    "category": "hobby",
+    "style": "doodle",
+    "key": "hobby-figures",
+    "path": "/visual-portfolio/stickers/presets/hobby/doodle-v1/figures.webp",
+    "keywords": "手办收藏 Figure Collecting 爱好 Hobbies",
+    "code": "6f8af2811f3d"
+  },
+  {
+    "id": "doodle-pets-orange-cat",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-orange-cat",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/orange-cat.webp",
+    "keywords": "橘猫 Orange Cat 宠物 Pets",
+    "code": "9b6adf6e1205"
+  },
+  {
+    "id": "doodle-pets-black-cat",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-black-cat",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/black-cat.webp",
+    "keywords": "黑猫 Black Cat 宠物 Pets",
+    "code": "b274a2989db0"
+  },
+  {
+    "id": "doodle-pets-siamese",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-siamese",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/siamese.webp",
+    "keywords": "暹罗猫 Siamese 宠物 Pets",
+    "code": "3985e419031d"
+  },
+  {
+    "id": "doodle-pets-ragdoll",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-ragdoll",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/ragdoll.webp",
+    "keywords": "布偶猫 Ragdoll 宠物 Pets",
+    "code": "1e2bc17b14bd"
+  },
+  {
+    "id": "doodle-pets-corgi",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-corgi",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/corgi.webp",
+    "keywords": "柯基 Corgi 宠物 Pets",
+    "code": "33f5485d0243"
+  },
+  {
+    "id": "doodle-pets-shiba",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-shiba",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/shiba.webp",
+    "keywords": "柴犬 Shiba Inu 宠物 Pets",
+    "code": "fece572677fc"
+  },
+  {
+    "id": "doodle-pets-golden",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-golden",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/golden.webp",
+    "keywords": "金毛 Golden Retriever 宠物 Pets",
+    "code": "8e92b639bb81"
+  },
+  {
+    "id": "doodle-pets-husky",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-husky",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/husky.webp",
+    "keywords": "哈士奇 Husky 宠物 Pets",
+    "code": "ffa2f689a5c5"
+  },
+  {
+    "id": "doodle-pets-poodle",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-poodle",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/poodle.webp",
+    "keywords": "贵宾犬 Poodle 宠物 Pets",
+    "code": "1da499ad80d6"
+  },
+  {
+    "id": "doodle-pets-hamster",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-hamster",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/hamster.webp",
+    "keywords": "仓鼠 Hamster 宠物 Pets",
+    "code": "3edf21227997"
+  },
+  {
+    "id": "doodle-pets-bunny",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-bunny",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/bunny.webp",
+    "keywords": "兔子 Bunny 宠物 Pets",
+    "code": "dc6e569132c5"
+  },
+  {
+    "id": "doodle-pets-parrot",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-parrot",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/parrot.webp",
+    "keywords": "鹦鹉 Parrot 宠物 Pets",
+    "code": "cf8fed6247e2"
+  },
+  {
+    "id": "doodle-pets-goldfish",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-goldfish",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/goldfish.webp",
+    "keywords": "金鱼 Goldfish 宠物 Pets",
+    "code": "75e1e70c5c9a"
+  },
+  {
+    "id": "doodle-pets-turtle",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-turtle",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/turtle.webp",
+    "keywords": "乌龟 Turtle 宠物 Pets",
+    "code": "94902b0860e5"
+  },
+  {
+    "id": "doodle-pets-hedgehog",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-hedgehog",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/hedgehog.webp",
+    "keywords": "刺猬 Hedgehog 宠物 Pets",
+    "code": "1b46d058861a"
+  },
+  {
+    "id": "doodle-pets-lizard",
+    "category": "pets",
+    "style": "doodle",
+    "key": "pets-lizard",
+    "path": "/visual-portfolio/stickers/presets/pets/doodle-v1/lizard.webp",
+    "keywords": "蜥蜴 Lizard 宠物 Pets",
+    "code": "41e3f478fd1c"
+  },
+  {
+    "id": "doodle-sports-basketball",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-basketball",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/basketball.webp",
+    "keywords": "篮球 Basketball 运动 Sports",
+    "code": "e3dcda478916"
+  },
+  {
+    "id": "doodle-sports-soccer",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-soccer",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/soccer.webp",
+    "keywords": "足球 Soccer 运动 Sports",
+    "code": "d7c3853f5158"
+  },
+  {
+    "id": "doodle-sports-badminton",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-badminton",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/badminton.webp",
+    "keywords": "羽毛球 Badminton 运动 Sports",
+    "code": "6cfbb88b43ac"
+  },
+  {
+    "id": "doodle-sports-pingpong",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-pingpong",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/pingpong.webp",
+    "keywords": "乒乓球 Ping Pong 运动 Sports",
+    "code": "9c20517833b6"
+  },
+  {
+    "id": "doodle-sports-tennis",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-tennis",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/tennis.webp",
+    "keywords": "网球 Tennis 运动 Sports",
+    "code": "9ad67c5d8088"
+  },
+  {
+    "id": "doodle-sports-swimming",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-swimming",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/swimming.webp",
+    "keywords": "游泳 Swimming 运动 Sports",
+    "code": "a630cab27933"
+  },
+  {
+    "id": "doodle-sports-running",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-running",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/running.webp",
+    "keywords": "跑步 Running 运动 Sports",
+    "code": "42eac135862e"
+  },
+  {
+    "id": "doodle-sports-cycling",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-cycling",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/cycling.webp",
+    "keywords": "骑行 Cycling 运动 Sports",
+    "code": "f6dcbc8bdee1"
+  },
+  {
+    "id": "doodle-sports-gym",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-gym",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/gym.webp",
+    "keywords": "健身 Gym 运动 Sports",
+    "code": "c699fca83c80"
+  },
+  {
+    "id": "doodle-sports-yoga",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-yoga",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/yoga.webp",
+    "keywords": "瑜伽 Yoga 运动 Sports",
+    "code": "93d54da2ac08"
+  },
+  {
+    "id": "doodle-sports-skiing",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-skiing",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/skiing.webp",
+    "keywords": "滑雪 Skiing 运动 Sports",
+    "code": "ef29e2f61645"
+  },
+  {
+    "id": "doodle-sports-surfing",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-surfing",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/surfing.webp",
+    "keywords": "冲浪 Surfing 运动 Sports",
+    "code": "2229356ed114"
+  },
+  {
+    "id": "doodle-sports-climbing",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-climbing",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/climbing.webp",
+    "keywords": "攀岩 Climbing 运动 Sports",
+    "code": "2c53c997fdff"
+  },
+  {
+    "id": "doodle-sports-hiking",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-hiking",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/hiking.webp",
+    "keywords": "徒步 Hiking 运动 Sports",
+    "code": "a911794334b8"
+  },
+  {
+    "id": "doodle-sports-boxing",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-boxing",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/boxing.webp",
+    "keywords": "拳击 Boxing 运动 Sports",
+    "code": "3d62361f3624"
+  },
+  {
+    "id": "doodle-sports-dance",
+    "category": "sports",
+    "style": "doodle",
+    "key": "sports-dance",
+    "path": "/visual-portfolio/stickers/presets/sports/doodle-v1/dance.webp",
+    "keywords": "舞蹈 Dance 运动 Sports",
+    "code": "6c57a0b63f5c"
+  },
+  {
+    "id": "doodle-vibes-worker",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-worker",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/worker.webp",
+    "keywords": "打工人 Worker Bee 生活状态 Vibes",
+    "code": "b96580ba8798"
+  },
+  {
+    "id": "doodle-vibes-slacking",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-slacking",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/slacking.webp",
+    "keywords": "摸鱼 Slacking Off 生活状态 Vibes",
+    "code": "7a9c649bc377"
+  },
+  {
+    "id": "doodle-vibes-overachiever",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-overachiever",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/overachiever.webp",
+    "keywords": "卷王 Overachiever 生活状态 Vibes",
+    "code": "27226be45fb2"
+  },
+  {
+    "id": "doodle-vibes-lying-flat",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-lying-flat",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/lying-flat.webp",
+    "keywords": "躺平 Lying Flat 生活状态 Vibes",
+    "code": "ed8057af1995"
+  },
+  {
+    "id": "doodle-vibes-grinding",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-grinding",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/grinding.webp",
+    "keywords": "努力奋斗 Grinding 生活状态 Vibes",
+    "code": "ebd3df215aca"
+  },
+  {
+    "id": "doodle-vibes-coffee",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-coffee",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/coffee.webp",
+    "keywords": "咖啡续命 Coffee Powered 生活状态 Vibes",
+    "code": "ae905f434ef9"
+  },
+  {
+    "id": "doodle-vibes-boba",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-boba",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/boba.webp",
+    "keywords": "奶茶爱好者 Boba Lover 生活状态 Vibes",
+    "code": "cc85f404ab0e"
+  },
+  {
+    "id": "doodle-vibes-foodie",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-foodie",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/foodie.webp",
+    "keywords": "吃货 Foodie 生活状态 Vibes",
+    "code": "3147f1552162"
+  },
+  {
+    "id": "doodle-vibes-introvert",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-introvert",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/introvert.webp",
+    "keywords": "社恐 Introvert 生活状态 Vibes",
+    "code": "e12d54a49666"
+  },
+  {
+    "id": "doodle-vibes-social",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-social",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/social.webp",
+    "keywords": "社牛 Social Butterfly 生活状态 Vibes",
+    "code": "78084445e7f0"
+  },
+  {
+    "id": "doodle-vibes-zen",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-zen",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/zen.webp",
+    "keywords": "佛系 Zen Mode 生活状态 Vibes",
+    "code": "00d086b6e200"
+  },
+  {
+    "id": "doodle-vibes-night-owl",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-night-owl",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/night-owl.webp",
+    "keywords": "夜猫子 Night Owl 生活状态 Vibes",
+    "code": "deae75d14991"
+  },
+  {
+    "id": "doodle-vibes-studying",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-studying",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/studying.webp",
+    "keywords": "学习中 Studying 生活状态 Vibes",
+    "code": "46e1d24fd00e"
+  },
+  {
+    "id": "doodle-vibes-in-love",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-in-love",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/in-love.webp",
+    "keywords": "恋爱中 In Love 生活状态 Vibes",
+    "code": "6452143eaad8"
+  },
+  {
+    "id": "doodle-vibes-single",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-single",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/single.webp",
+    "keywords": "单身万岁 Single & Proud 生活状态 Vibes",
+    "code": "f45a4efce22b"
+  },
+  {
+    "id": "doodle-vibes-rich",
+    "category": "vibes",
+    "style": "doodle",
+    "key": "vibes-rich",
+    "path": "/visual-portfolio/stickers/presets/vibes/doodle-v1/en/rich.webp",
+    "keywords": "搞钱 Getting Rich 生活状态 Vibes",
+    "code": "b4a95d093e96"
+  },
+  {
+    "id": "doodle-zodiac-aries",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-aries",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/aries.webp",
+    "keywords": "白羊座 Aries 星座 Zodiac",
+    "code": "9401312b2cd2"
+  },
+  {
+    "id": "doodle-zodiac-taurus",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-taurus",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/taurus.webp",
+    "keywords": "金牛座 Taurus 星座 Zodiac",
+    "code": "e7ae927a0a97"
+  },
+  {
+    "id": "doodle-zodiac-gemini",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-gemini",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/gemini.webp",
+    "keywords": "双子座 Gemini 星座 Zodiac",
+    "code": "d437fd9784ba"
+  },
+  {
+    "id": "doodle-zodiac-cancer",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-cancer",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/cancer.webp",
+    "keywords": "巨蟹座 Cancer 星座 Zodiac",
+    "code": "877f6e793903"
+  },
+  {
+    "id": "doodle-zodiac-leo",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-leo",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/leo.webp",
+    "keywords": "狮子座 Leo 星座 Zodiac",
+    "code": "2f246b64bfeb"
+  },
+  {
+    "id": "doodle-zodiac-virgo",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-virgo",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/virgo.webp",
+    "keywords": "处女座 Virgo 星座 Zodiac",
+    "code": "e8ed8f49cb47"
+  },
+  {
+    "id": "doodle-zodiac-libra",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-libra",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/libra.webp",
+    "keywords": "天秤座 Libra 星座 Zodiac",
+    "code": "040d3f1b86b2"
+  },
+  {
+    "id": "doodle-zodiac-scorpio",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-scorpio",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/scorpio.webp",
+    "keywords": "天蝎座 Scorpio 星座 Zodiac",
+    "code": "e76e42d74936"
+  },
+  {
+    "id": "doodle-zodiac-sagittarius",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-sagittarius",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/sagittarius.webp",
+    "keywords": "射手座 Sagittarius 星座 Zodiac",
+    "code": "13468898e9d2"
+  },
+  {
+    "id": "doodle-zodiac-capricorn",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-capricorn",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/capricorn.webp",
+    "keywords": "摩羯座 Capricorn 星座 Zodiac",
+    "code": "d12f8ccb4bde"
+  },
+  {
+    "id": "doodle-zodiac-aquarius",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-aquarius",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/aquarius.webp",
+    "keywords": "水瓶座 Aquarius 星座 Zodiac",
+    "code": "be98b4cb2070"
+  },
+  {
+    "id": "doodle-zodiac-pisces",
+    "category": "zodiac",
+    "style": "doodle",
+    "key": "zodiac-pisces",
+    "path": "/visual-portfolio/stickers/presets/zodiac/doodle-v1/pisces.webp",
+    "keywords": "双鱼座 Pisces 星座 Zodiac",
+    "code": "e9a4e9f8b66f"
+  },
+  {
+    "id": "doodle-food-hotpot",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-hotpot",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/hotpot.webp",
+    "keywords": "火锅 Hot Pot 美食 Food",
+    "code": "6f3195d807eb"
+  },
+  {
+    "id": "doodle-food-boba",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-boba",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/boba.webp",
+    "keywords": "奶茶 Boba 美食 Food",
+    "code": "1524531abe3a"
+  },
+  {
+    "id": "doodle-food-coffee",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-coffee",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/coffee.webp",
+    "keywords": "咖啡 Coffee 美食 Food",
+    "code": "9b972a0ef516"
+  },
+  {
+    "id": "doodle-food-pizza",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-pizza",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/pizza.webp",
+    "keywords": "披萨 Pizza 美食 Food",
+    "code": "eec16d01c4c5"
+  },
+  {
+    "id": "doodle-food-sushi",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-sushi",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/sushi.webp",
+    "keywords": "寿司 Sushi 美食 Food",
+    "code": "3ebb64082a8d"
+  },
+  {
+    "id": "doodle-food-ramen",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-ramen",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/ramen.webp",
+    "keywords": "拉面 Ramen 美食 Food",
+    "code": "68826e63ace4"
+  },
+  {
+    "id": "doodle-food-burger",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-burger",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/burger.webp",
+    "keywords": "汉堡 Burger 美食 Food",
+    "code": "d739b7338e7e"
+  },
+  {
+    "id": "doodle-food-fried-chicken",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-fried-chicken",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/fried-chicken.webp",
+    "keywords": "炸鸡 Fried Chicken 美食 Food",
+    "code": "5cc2e72dd1fb"
+  },
+  {
+    "id": "doodle-food-bbq",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-bbq",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/bbq.webp",
+    "keywords": "烧烤 BBQ 美食 Food",
+    "code": "8b0b5d148947"
+  },
+  {
+    "id": "doodle-food-cake",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-cake",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/cake.webp",
+    "keywords": "蛋糕 Cake 美食 Food",
+    "code": "09cdbe675b3c"
+  },
+  {
+    "id": "doodle-food-icecream",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-icecream",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/icecream.webp",
+    "keywords": "冰淇淋 Ice Cream 美食 Food",
+    "code": "47ba245d2e17"
+  },
+  {
+    "id": "doodle-food-fruit",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-fruit",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/fruit.webp",
+    "keywords": "水果 Fruit 美食 Food",
+    "code": "fb3ac7d8a5a9"
+  },
+  {
+    "id": "doodle-food-beer",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-beer",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/beer.webp",
+    "keywords": "啤酒 Beer 美食 Food",
+    "code": "17d3e6fe0343"
+  },
+  {
+    "id": "doodle-food-dumpling",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-dumpling",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/dumpling.webp",
+    "keywords": "饺子 Dumplings 美食 Food",
+    "code": "1f0a308c53b0"
+  },
+  {
+    "id": "doodle-food-crayfish",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-crayfish",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/crayfish.webp",
+    "keywords": "小龙虾 Crayfish 美食 Food",
+    "code": "03ac9b152333"
+  },
+  {
+    "id": "doodle-food-bento",
+    "category": "food",
+    "style": "doodle",
+    "key": "food-bento",
+    "path": "/visual-portfolio/stickers/presets/food/doodle-v1/bento.webp",
+    "keywords": "便当 Bento 美食 Food",
+    "code": "3dfbee47becc"
+  },
+  {
+    "id": "doodle-decor-star",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-star",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/star.webp",
+    "keywords": "星星 Star 装饰 Decor",
+    "code": "41ebcac4c116"
+  },
+  {
+    "id": "doodle-decor-heart",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-heart",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/heart.webp",
+    "keywords": "爱心 Heart 装饰 Decor",
+    "code": "7af932ea9dc7"
+  },
+  {
+    "id": "doodle-decor-lightning",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-lightning",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/lightning.webp",
+    "keywords": "闪电 Lightning 装饰 Decor",
+    "code": "4ec722b24ce4"
+  },
+  {
+    "id": "doodle-decor-rainbow",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-rainbow",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/rainbow.webp",
+    "keywords": "彩虹 Rainbow 装饰 Decor",
+    "code": "778f8276f4f5"
+  },
+  {
+    "id": "doodle-decor-crown",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-crown",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/crown.webp",
+    "keywords": "皇冠 Crown 装饰 Decor",
+    "code": "b56a8e7dab7d"
+  },
+  {
+    "id": "doodle-decor-flame",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-flame",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/flame.webp",
+    "keywords": "火焰 Flame 装饰 Decor",
+    "code": "97811720b5ef"
+  },
+  {
+    "id": "doodle-decor-bubble",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-bubble",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/bubble.webp",
+    "keywords": "对话框 Speech Bubble 装饰 Decor",
+    "code": "f58a8501be5e"
+  },
+  {
+    "id": "doodle-decor-arrow",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-arrow",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/arrow.webp",
+    "keywords": "箭头 Arrow 装饰 Decor",
+    "code": "b2c9803f4664"
+  },
+  {
+    "id": "doodle-decor-sun",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-sun",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/sun.webp",
+    "keywords": "太阳 Sun 装饰 Decor",
+    "code": "e0a691d59608"
+  },
+  {
+    "id": "doodle-decor-moon",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-moon",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/moon.webp",
+    "keywords": "月亮 Moon 装饰 Decor",
+    "code": "00953c06832d"
+  },
+  {
+    "id": "doodle-decor-flower",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-flower",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/flower.webp",
+    "keywords": "花朵 Flower 装饰 Decor",
+    "code": "d3a8603211e2"
+  },
+  {
+    "id": "doodle-decor-bow",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-bow",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/bow.webp",
+    "keywords": "蝴蝶结 Bow 装饰 Decor",
+    "code": "5d1cb3335546"
+  },
+  {
+    "id": "doodle-decor-check",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-check",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/check.webp",
+    "keywords": "对勾 Check 装饰 Decor",
+    "code": "f8c4d07add9a"
+  },
+  {
+    "id": "doodle-decor-note",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-note",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/note.webp",
+    "keywords": "音符 Music Note 装饰 Decor",
+    "code": "7da7b5a5716b"
+  },
+  {
+    "id": "doodle-decor-bang",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-bang",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/bang.webp",
+    "keywords": "感叹号 Exclamation 装饰 Decor",
+    "code": "8c504293eac4"
+  },
+  {
+    "id": "doodle-decor-smiley",
+    "category": "decor",
+    "style": "doodle",
+    "key": "decor-smiley",
+    "path": "/visual-portfolio/stickers/presets/decor/doodle-v1/smiley.webp",
+    "keywords": "笑脸 Smiley 装饰 Decor",
+    "code": "bc71205c6629"
+  },
+  {
+    "id": "retro-mbti-intj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-intj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/intj.webp",
+    "keywords": "INTJ 建筑师 INTJ Architect MBTI",
+    "code": "912ebed9f404"
+  },
+  {
+    "id": "retro-mbti-intp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-intp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/intp.webp",
+    "keywords": "INTP 逻辑学家 INTP Logician MBTI",
+    "code": "3f4c623da95e"
+  },
+  {
+    "id": "retro-mbti-entj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-entj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/entj.webp",
+    "keywords": "ENTJ 指挥官 ENTJ Commander MBTI",
+    "code": "95a5546dcddc"
+  },
+  {
+    "id": "retro-mbti-entp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-entp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/entp.webp",
+    "keywords": "ENTP 辩论家 ENTP Debater MBTI",
+    "code": "d75965f0a2ee"
+  },
+  {
+    "id": "retro-mbti-infj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-infj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/infj.webp",
+    "keywords": "INFJ 提倡者 INFJ Advocate MBTI",
+    "code": "e3cfa3161cb7"
+  },
+  {
+    "id": "retro-mbti-infp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-infp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/infp.webp",
+    "keywords": "INFP 调停者 INFP Mediator MBTI",
+    "code": "9100cba6ac28"
+  },
+  {
+    "id": "retro-mbti-enfj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-enfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/enfj.webp",
+    "keywords": "ENFJ 主人公 ENFJ Protagonist MBTI",
+    "code": "b62350390888"
+  },
+  {
+    "id": "retro-mbti-enfp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-enfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/enfp.webp",
+    "keywords": "ENFP 竞选者 ENFP Campaigner MBTI",
+    "code": "54579c9a47b5"
+  },
+  {
+    "id": "retro-mbti-istj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-istj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/istj.webp",
+    "keywords": "ISTJ 物流师 ISTJ Logistician MBTI",
+    "code": "89c29fbfe320"
+  },
+  {
+    "id": "retro-mbti-isfj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-isfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/isfj.webp",
+    "keywords": "ISFJ 守卫者 ISFJ Defender MBTI",
+    "code": "4305f4d96d5e"
+  },
+  {
+    "id": "retro-mbti-estj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-estj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/estj.webp",
+    "keywords": "ESTJ 总经理 ESTJ Executive MBTI",
+    "code": "06fd732ac955"
+  },
+  {
+    "id": "retro-mbti-esfj",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-esfj",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/esfj.webp",
+    "keywords": "ESFJ 执政官 ESFJ Consul MBTI",
+    "code": "7b4e6ef826d0"
+  },
+  {
+    "id": "retro-mbti-istp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-istp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/istp.webp",
+    "keywords": "ISTP 鉴赏家 ISTP Virtuoso MBTI",
+    "code": "64341e398e92"
+  },
+  {
+    "id": "retro-mbti-isfp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-isfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/isfp.webp",
+    "keywords": "ISFP 探险家 ISFP Adventurer MBTI",
+    "code": "c7ff02764bec"
+  },
+  {
+    "id": "retro-mbti-estp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-estp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/estp.webp",
+    "keywords": "ESTP 企业家 ESTP Entrepreneur MBTI",
+    "code": "f859db05dd86"
+  },
+  {
+    "id": "retro-mbti-esfp",
+    "category": "mbti",
+    "style": "retro",
+    "key": "mbti-esfp",
+    "path": "/visual-portfolio/stickers/presets/mbti/retro-v1/esfp.webp",
+    "keywords": "ESFP 表演者 ESFP Entertainer MBTI",
+    "code": "14af168ff018"
+  },
+  {
+    "id": "retro-career-programmer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-programmer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/programmer.webp",
+    "keywords": "程序员 Programmer 职业 Career",
+    "code": "d5909ce53836"
+  },
+  {
+    "id": "retro-career-designer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-designer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/designer.webp",
+    "keywords": "设计师 Designer 职业 Career",
+    "code": "308b16aee889"
+  },
+  {
+    "id": "retro-career-product-manager",
+    "category": "career",
+    "style": "retro",
+    "key": "career-product-manager",
+    "path": "/visual-portfolio/stickers/presets/career/v2/product-manager.webp",
+    "keywords": "产品经理 Product Manager 职业 Career",
+    "code": "28fdee99d694"
+  },
+  {
+    "id": "retro-career-doctor",
+    "category": "career",
+    "style": "retro",
+    "key": "career-doctor",
+    "path": "/visual-portfolio/stickers/presets/career/v2/doctor.webp",
+    "keywords": "医生 Doctor 职业 Career",
+    "code": "82a30cb37b09"
+  },
+  {
+    "id": "retro-career-teacher",
+    "category": "career",
+    "style": "retro",
+    "key": "career-teacher",
+    "path": "/visual-portfolio/stickers/presets/career/v2/teacher.webp",
+    "keywords": "教师 Teacher 职业 Career",
+    "code": "3c596f5d7390"
+  },
+  {
+    "id": "retro-career-lawyer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-lawyer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/lawyer.webp",
+    "keywords": "律师 Lawyer 职业 Career",
+    "code": "d38ad1f55598"
+  },
+  {
+    "id": "retro-career-finance",
+    "category": "career",
+    "style": "retro",
+    "key": "career-finance",
+    "path": "/visual-portfolio/stickers/presets/career/v2/finance.webp",
+    "keywords": "金融 Finance 职业 Career",
+    "code": "74f345be72dc"
+  },
+  {
+    "id": "retro-career-marketing",
+    "category": "career",
+    "style": "retro",
+    "key": "career-marketing",
+    "path": "/visual-portfolio/stickers/presets/career/v2/marketing.webp",
+    "keywords": "市场营销 Marketing 职业 Career",
+    "code": "c51985dcd035"
+  },
+  {
+    "id": "retro-career-photographer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-photographer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/photographer.webp",
+    "keywords": "摄影师 Photographer 职业 Career",
+    "code": "65b1f290ab07"
+  },
+  {
+    "id": "retro-career-musician",
+    "category": "career",
+    "style": "retro",
+    "key": "career-musician",
+    "path": "/visual-portfolio/stickers/presets/career/v2/musician.webp",
+    "keywords": "音乐人 Musician 职业 Career",
+    "code": "cf4fdcdd40f1"
+  },
+  {
+    "id": "retro-career-writer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-writer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/writer.webp",
+    "keywords": "作家 Writer 职业 Career",
+    "code": "635f94505898"
+  },
+  {
+    "id": "retro-career-scientist",
+    "category": "career",
+    "style": "retro",
+    "key": "career-scientist",
+    "path": "/visual-portfolio/stickers/presets/career/v2/scientist.webp",
+    "keywords": "科学家 Scientist 职业 Career",
+    "code": "f7e07e1bafca"
+  },
+  {
+    "id": "retro-career-architect",
+    "category": "career",
+    "style": "retro",
+    "key": "career-architect",
+    "path": "/visual-portfolio/stickers/presets/career/v2/architect.webp",
+    "keywords": "建筑师 Architect 职业 Career",
+    "code": "de921c05b1ab"
+  },
+  {
+    "id": "retro-career-chef",
+    "category": "career",
+    "style": "retro",
+    "key": "career-chef",
+    "path": "/visual-portfolio/stickers/presets/career/v2/chef.webp",
+    "keywords": "厨师 Chef 职业 Career",
+    "code": "51bd587c806d"
+  },
+  {
+    "id": "retro-career-entrepreneur",
+    "category": "career",
+    "style": "retro",
+    "key": "career-entrepreneur",
+    "path": "/visual-portfolio/stickers/presets/career/v2/entrepreneur.webp",
+    "keywords": "创业者 Entrepreneur 职业 Career",
+    "code": "f49a07788d6e"
+  },
+  {
+    "id": "retro-career-freelancer",
+    "category": "career",
+    "style": "retro",
+    "key": "career-freelancer",
+    "path": "/visual-portfolio/stickers/presets/career/v2/freelancer.webp",
+    "keywords": "自由职业 Freelancer 职业 Career",
+    "code": "d4c36604d92c"
+  },
+  {
+    "id": "retro-hobby-gaming",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-gaming",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/gaming.webp",
+    "keywords": "游戏 Gaming 爱好 Hobbies",
+    "code": "7955a05f6b2a"
+  },
+  {
+    "id": "retro-hobby-reading",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-reading",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/reading.webp",
+    "keywords": "阅读 Reading 爱好 Hobbies",
+    "code": "71042da54d93"
+  },
+  {
+    "id": "retro-hobby-photography",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-photography",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/photography.webp",
+    "keywords": "摄影 Photography 爱好 Hobbies",
+    "code": "6cbcddb0deb1"
+  },
+  {
+    "id": "retro-hobby-painting",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-painting",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/painting.webp",
+    "keywords": "绘画 Painting 爱好 Hobbies",
+    "code": "28563885ef6e"
+  },
+  {
+    "id": "retro-hobby-guitar",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-guitar",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/guitar.webp",
+    "keywords": "吉他 Guitar 爱好 Hobbies",
+    "code": "e9c5f2d5b4d6"
+  },
+  {
+    "id": "retro-hobby-baking",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-baking",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/baking.webp",
+    "keywords": "烘焙 Baking 爱好 Hobbies",
+    "code": "0b4a8ecac650"
+  },
+  {
+    "id": "retro-hobby-gardening",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-gardening",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/gardening.webp",
+    "keywords": "园艺 Gardening 爱好 Hobbies",
+    "code": "a760dceced01"
+  },
+  {
+    "id": "retro-hobby-fishing",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-fishing",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/fishing.webp",
+    "keywords": "钓鱼 Fishing 爱好 Hobbies",
+    "code": "f1cf15ff993d"
+  },
+  {
+    "id": "retro-hobby-boardgames",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-boardgames",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/boardgames.webp",
+    "keywords": "桌游 Board Games 爱好 Hobbies",
+    "code": "a4b9a41aaf26"
+  },
+  {
+    "id": "retro-hobby-anime",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-anime",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/anime.webp",
+    "keywords": "动漫 Anime 爱好 Hobbies",
+    "code": "3e30650b72ea"
+  },
+  {
+    "id": "retro-hobby-movies",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-movies",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/movies.webp",
+    "keywords": "电影 Movies 爱好 Hobbies",
+    "code": "6d52c610a444"
+  },
+  {
+    "id": "retro-hobby-karaoke",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-karaoke",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/karaoke.webp",
+    "keywords": "唱歌 Karaoke 爱好 Hobbies",
+    "code": "931d08a17b79"
+  },
+  {
+    "id": "retro-hobby-crafts",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-crafts",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/crafts.webp",
+    "keywords": "手工 Crafts 爱好 Hobbies",
+    "code": "7d1ce7c8e534"
+  },
+  {
+    "id": "retro-hobby-camping",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-camping",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/camping.webp",
+    "keywords": "露营 Camping 爱好 Hobbies",
+    "code": "c66e5e9341bd"
+  },
+  {
+    "id": "retro-hobby-skateboard",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-skateboard",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/skateboard.webp",
+    "keywords": "滑板 Skateboarding 爱好 Hobbies",
+    "code": "bccc68d2e45f"
+  },
+  {
+    "id": "retro-hobby-figures",
+    "category": "hobby",
+    "style": "retro",
+    "key": "hobby-figures",
+    "path": "/visual-portfolio/stickers/presets/hobby/v1/figures.webp",
+    "keywords": "手办收藏 Figure Collecting 爱好 Hobbies",
+    "code": "266ee4c6329c"
+  },
+  {
+    "id": "retro-pets-orange-cat",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-orange-cat",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/orange-cat.webp",
+    "keywords": "橘猫 Orange Cat 宠物 Pets",
+    "code": "6b103f55e1e3"
+  },
+  {
+    "id": "retro-pets-black-cat",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-black-cat",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/black-cat.webp",
+    "keywords": "黑猫 Black Cat 宠物 Pets",
+    "code": "b29e69c3de7a"
+  },
+  {
+    "id": "retro-pets-siamese",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-siamese",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/siamese.webp",
+    "keywords": "暹罗猫 Siamese 宠物 Pets",
+    "code": "471fd4ec6a14"
+  },
+  {
+    "id": "retro-pets-ragdoll",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-ragdoll",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/ragdoll.webp",
+    "keywords": "布偶猫 Ragdoll 宠物 Pets",
+    "code": "18b8ac069b50"
+  },
+  {
+    "id": "retro-pets-corgi",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-corgi",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/corgi.webp",
+    "keywords": "柯基 Corgi 宠物 Pets",
+    "code": "a1040198d0c2"
+  },
+  {
+    "id": "retro-pets-shiba",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-shiba",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/shiba.webp",
+    "keywords": "柴犬 Shiba Inu 宠物 Pets",
+    "code": "edb176ae7b02"
+  },
+  {
+    "id": "retro-pets-golden",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-golden",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/golden.webp",
+    "keywords": "金毛 Golden Retriever 宠物 Pets",
+    "code": "3b32964c64ac"
+  },
+  {
+    "id": "retro-pets-husky",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-husky",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/husky.webp",
+    "keywords": "哈士奇 Husky 宠物 Pets",
+    "code": "ed234169c9f7"
+  },
+  {
+    "id": "retro-pets-poodle",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-poodle",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/poodle.webp",
+    "keywords": "贵宾犬 Poodle 宠物 Pets",
+    "code": "6398e4732143"
+  },
+  {
+    "id": "retro-pets-hamster",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-hamster",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/hamster.webp",
+    "keywords": "仓鼠 Hamster 宠物 Pets",
+    "code": "879cd8774777"
+  },
+  {
+    "id": "retro-pets-bunny",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-bunny",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/bunny.webp",
+    "keywords": "兔子 Bunny 宠物 Pets",
+    "code": "a651361079cc"
+  },
+  {
+    "id": "retro-pets-parrot",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-parrot",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/parrot.webp",
+    "keywords": "鹦鹉 Parrot 宠物 Pets",
+    "code": "c5711866d17a"
+  },
+  {
+    "id": "retro-pets-goldfish",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-goldfish",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/goldfish.webp",
+    "keywords": "金鱼 Goldfish 宠物 Pets",
+    "code": "c97795fedc56"
+  },
+  {
+    "id": "retro-pets-turtle",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-turtle",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/turtle.webp",
+    "keywords": "乌龟 Turtle 宠物 Pets",
+    "code": "254e72afedc7"
+  },
+  {
+    "id": "retro-pets-hedgehog",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-hedgehog",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/hedgehog.webp",
+    "keywords": "刺猬 Hedgehog 宠物 Pets",
+    "code": "b89e65605ada"
+  },
+  {
+    "id": "retro-pets-lizard",
+    "category": "pets",
+    "style": "retro",
+    "key": "pets-lizard",
+    "path": "/visual-portfolio/stickers/presets/pets/v1/lizard.webp",
+    "keywords": "蜥蜴 Lizard 宠物 Pets",
+    "code": "bd69f237df09"
+  },
+  {
+    "id": "retro-sports-basketball",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-basketball",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/basketball.webp",
+    "keywords": "篮球 Basketball 运动 Sports",
+    "code": "2673a5be9e29"
+  },
+  {
+    "id": "retro-sports-soccer",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-soccer",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/soccer.webp",
+    "keywords": "足球 Soccer 运动 Sports",
+    "code": "2d7d8a8902e3"
+  },
+  {
+    "id": "retro-sports-badminton",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-badminton",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/badminton.webp",
+    "keywords": "羽毛球 Badminton 运动 Sports",
+    "code": "774388a98430"
+  },
+  {
+    "id": "retro-sports-pingpong",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-pingpong",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/pingpong.webp",
+    "keywords": "乒乓球 Ping Pong 运动 Sports",
+    "code": "7b4dcb8b56b2"
+  },
+  {
+    "id": "retro-sports-tennis",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-tennis",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/tennis.webp",
+    "keywords": "网球 Tennis 运动 Sports",
+    "code": "622948458175"
+  },
+  {
+    "id": "retro-sports-swimming",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-swimming",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/swimming.webp",
+    "keywords": "游泳 Swimming 运动 Sports",
+    "code": "ba37e2a77ce5"
+  },
+  {
+    "id": "retro-sports-running",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-running",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/running.webp",
+    "keywords": "跑步 Running 运动 Sports",
+    "code": "35e254b4832e"
+  },
+  {
+    "id": "retro-sports-cycling",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-cycling",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/cycling.webp",
+    "keywords": "骑行 Cycling 运动 Sports",
+    "code": "3f51aba31cc4"
+  },
+  {
+    "id": "retro-sports-gym",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-gym",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/gym.webp",
+    "keywords": "健身 Gym 运动 Sports",
+    "code": "e1c017dcf44f"
+  },
+  {
+    "id": "retro-sports-yoga",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-yoga",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/yoga.webp",
+    "keywords": "瑜伽 Yoga 运动 Sports",
+    "code": "41f918858812"
+  },
+  {
+    "id": "retro-sports-skiing",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-skiing",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/skiing.webp",
+    "keywords": "滑雪 Skiing 运动 Sports",
+    "code": "a718561fcdf2"
+  },
+  {
+    "id": "retro-sports-surfing",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-surfing",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/surfing.webp",
+    "keywords": "冲浪 Surfing 运动 Sports",
+    "code": "218e179eb6c6"
+  },
+  {
+    "id": "retro-sports-climbing",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-climbing",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/climbing.webp",
+    "keywords": "攀岩 Climbing 运动 Sports",
+    "code": "1b0511f038cd"
+  },
+  {
+    "id": "retro-sports-hiking",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-hiking",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/hiking.webp",
+    "keywords": "徒步 Hiking 运动 Sports",
+    "code": "6abc96b602b7"
+  },
+  {
+    "id": "retro-sports-boxing",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-boxing",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/boxing.webp",
+    "keywords": "拳击 Boxing 运动 Sports",
+    "code": "7596e306d19c"
+  },
+  {
+    "id": "retro-sports-dance",
+    "category": "sports",
+    "style": "retro",
+    "key": "sports-dance",
+    "path": "/visual-portfolio/stickers/presets/sports/v1/dance.webp",
+    "keywords": "舞蹈 Dance 运动 Sports",
+    "code": "534b302abec6"
+  },
+  {
+    "id": "retro-vibes-worker",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-worker",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/worker.webp",
+    "keywords": "打工人 Worker Bee 生活状态 Vibes",
+    "code": "d0adbee4df67"
+  },
+  {
+    "id": "retro-vibes-slacking",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-slacking",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/slacking.webp",
+    "keywords": "摸鱼 Slacking Off 生活状态 Vibes",
+    "code": "fe79e610b5a1"
+  },
+  {
+    "id": "retro-vibes-overachiever",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-overachiever",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/overachiever.webp",
+    "keywords": "卷王 Overachiever 生活状态 Vibes",
+    "code": "cda25c91ac2a"
+  },
+  {
+    "id": "retro-vibes-lying-flat",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-lying-flat",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/lying-flat.webp",
+    "keywords": "躺平 Lying Flat 生活状态 Vibes",
+    "code": "9d1b46b02ea2"
+  },
+  {
+    "id": "retro-vibes-grinding",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-grinding",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/grinding.webp",
+    "keywords": "努力奋斗 Grinding 生活状态 Vibes",
+    "code": "34effd60bd93"
+  },
+  {
+    "id": "retro-vibes-coffee",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-coffee",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/coffee.webp",
+    "keywords": "咖啡续命 Coffee Powered 生活状态 Vibes",
+    "code": "a1093d558dbd"
+  },
+  {
+    "id": "retro-vibes-boba",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-boba",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/boba.webp",
+    "keywords": "奶茶爱好者 Boba Lover 生活状态 Vibes",
+    "code": "5e491e74f7f8"
+  },
+  {
+    "id": "retro-vibes-foodie",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-foodie",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/foodie.webp",
+    "keywords": "吃货 Foodie 生活状态 Vibes",
+    "code": "6533b775c267"
+  },
+  {
+    "id": "retro-vibes-introvert",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-introvert",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/introvert.webp",
+    "keywords": "社恐 Introvert 生活状态 Vibes",
+    "code": "930d36756d5c"
+  },
+  {
+    "id": "retro-vibes-social",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-social",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/social.webp",
+    "keywords": "社牛 Social Butterfly 生活状态 Vibes",
+    "code": "4a8133cc9b1f"
+  },
+  {
+    "id": "retro-vibes-zen",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-zen",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/zen.webp",
+    "keywords": "佛系 Zen Mode 生活状态 Vibes",
+    "code": "68fc502d8044"
+  },
+  {
+    "id": "retro-vibes-night-owl",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-night-owl",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/night-owl.webp",
+    "keywords": "夜猫子 Night Owl 生活状态 Vibes",
+    "code": "7eca0269adff"
+  },
+  {
+    "id": "retro-vibes-studying",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-studying",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/studying.webp",
+    "keywords": "学习中 Studying 生活状态 Vibes",
+    "code": "e2a6024abdcd"
+  },
+  {
+    "id": "retro-vibes-in-love",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-in-love",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/in-love.webp",
+    "keywords": "恋爱中 In Love 生活状态 Vibes",
+    "code": "21a78ad8fb54"
+  },
+  {
+    "id": "retro-vibes-single",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-single",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/single.webp",
+    "keywords": "单身万岁 Single & Proud 生活状态 Vibes",
+    "code": "723ded8b66dd"
+  },
+  {
+    "id": "retro-vibes-rich",
+    "category": "vibes",
+    "style": "retro",
+    "key": "vibes-rich",
+    "path": "/visual-portfolio/stickers/presets/vibes/v1/en/rich.webp",
+    "keywords": "搞钱 Getting Rich 生活状态 Vibes",
+    "code": "8e2ce9b977b8"
+  },
+  {
+    "id": "retro-zodiac-aries",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-aries",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/aries.webp",
+    "keywords": "白羊座 Aries 星座 Zodiac",
+    "code": "7a828cb3324c"
+  },
+  {
+    "id": "retro-zodiac-taurus",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-taurus",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/taurus.webp",
+    "keywords": "金牛座 Taurus 星座 Zodiac",
+    "code": "6d33ac2e553b"
+  },
+  {
+    "id": "retro-zodiac-gemini",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-gemini",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/gemini.webp",
+    "keywords": "双子座 Gemini 星座 Zodiac",
+    "code": "543b0f2e0aef"
+  },
+  {
+    "id": "retro-zodiac-cancer",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-cancer",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/cancer.webp",
+    "keywords": "巨蟹座 Cancer 星座 Zodiac",
+    "code": "f68ae0accf9e"
+  },
+  {
+    "id": "retro-zodiac-leo",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-leo",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/leo.webp",
+    "keywords": "狮子座 Leo 星座 Zodiac",
+    "code": "405003a53d27"
+  },
+  {
+    "id": "retro-zodiac-virgo",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-virgo",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/virgo.webp",
+    "keywords": "处女座 Virgo 星座 Zodiac",
+    "code": "9370fe7820bc"
+  },
+  {
+    "id": "retro-zodiac-libra",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-libra",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/libra.webp",
+    "keywords": "天秤座 Libra 星座 Zodiac",
+    "code": "02e2d21415a9"
+  },
+  {
+    "id": "retro-zodiac-scorpio",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-scorpio",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/scorpio.webp",
+    "keywords": "天蝎座 Scorpio 星座 Zodiac",
+    "code": "f21cf90553a6"
+  },
+  {
+    "id": "retro-zodiac-sagittarius",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-sagittarius",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/sagittarius.webp",
+    "keywords": "射手座 Sagittarius 星座 Zodiac",
+    "code": "61efe81d4b62"
+  },
+  {
+    "id": "retro-zodiac-capricorn",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-capricorn",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/capricorn.webp",
+    "keywords": "摩羯座 Capricorn 星座 Zodiac",
+    "code": "0739f4ca14ab"
+  },
+  {
+    "id": "retro-zodiac-aquarius",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-aquarius",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/aquarius.webp",
+    "keywords": "水瓶座 Aquarius 星座 Zodiac",
+    "code": "0f21fff103f7"
+  },
+  {
+    "id": "retro-zodiac-pisces",
+    "category": "zodiac",
+    "style": "retro",
+    "key": "zodiac-pisces",
+    "path": "/visual-portfolio/stickers/presets/zodiac/v1/pisces.webp",
+    "keywords": "双鱼座 Pisces 星座 Zodiac",
+    "code": "c3fca8a89f5c"
+  },
+  {
+    "id": "retro-food-hotpot",
+    "category": "food",
+    "style": "retro",
+    "key": "food-hotpot",
+    "path": "/visual-portfolio/stickers/presets/food/v1/hotpot.webp",
+    "keywords": "火锅 Hot Pot 美食 Food",
+    "code": "99eb12f9dbfa"
+  },
+  {
+    "id": "retro-food-boba",
+    "category": "food",
+    "style": "retro",
+    "key": "food-boba",
+    "path": "/visual-portfolio/stickers/presets/food/v1/boba.webp",
+    "keywords": "奶茶 Boba 美食 Food",
+    "code": "73c3d56c0465"
+  },
+  {
+    "id": "retro-food-coffee",
+    "category": "food",
+    "style": "retro",
+    "key": "food-coffee",
+    "path": "/visual-portfolio/stickers/presets/food/v1/coffee.webp",
+    "keywords": "咖啡 Coffee 美食 Food",
+    "code": "840f126d57d9"
+  },
+  {
+    "id": "retro-food-pizza",
+    "category": "food",
+    "style": "retro",
+    "key": "food-pizza",
+    "path": "/visual-portfolio/stickers/presets/food/v1/pizza.webp",
+    "keywords": "披萨 Pizza 美食 Food",
+    "code": "ebfc1323dae7"
+  },
+  {
+    "id": "retro-food-sushi",
+    "category": "food",
+    "style": "retro",
+    "key": "food-sushi",
+    "path": "/visual-portfolio/stickers/presets/food/v1/sushi.webp",
+    "keywords": "寿司 Sushi 美食 Food",
+    "code": "9dea301efca4"
+  },
+  {
+    "id": "retro-food-ramen",
+    "category": "food",
+    "style": "retro",
+    "key": "food-ramen",
+    "path": "/visual-portfolio/stickers/presets/food/v1/ramen.webp",
+    "keywords": "拉面 Ramen 美食 Food",
+    "code": "b9f6f641d04c"
+  },
+  {
+    "id": "retro-food-burger",
+    "category": "food",
+    "style": "retro",
+    "key": "food-burger",
+    "path": "/visual-portfolio/stickers/presets/food/v1/burger.webp",
+    "keywords": "汉堡 Burger 美食 Food",
+    "code": "4acf6a8705a7"
+  },
+  {
+    "id": "retro-food-fried-chicken",
+    "category": "food",
+    "style": "retro",
+    "key": "food-fried-chicken",
+    "path": "/visual-portfolio/stickers/presets/food/v1/fried-chicken.webp",
+    "keywords": "炸鸡 Fried Chicken 美食 Food",
+    "code": "d4174fcb13d7"
+  },
+  {
+    "id": "retro-food-bbq",
+    "category": "food",
+    "style": "retro",
+    "key": "food-bbq",
+    "path": "/visual-portfolio/stickers/presets/food/v1/bbq.webp",
+    "keywords": "烧烤 BBQ 美食 Food",
+    "code": "85bfa07989f6"
+  },
+  {
+    "id": "retro-food-cake",
+    "category": "food",
+    "style": "retro",
+    "key": "food-cake",
+    "path": "/visual-portfolio/stickers/presets/food/v1/cake.webp",
+    "keywords": "蛋糕 Cake 美食 Food",
+    "code": "caba4c493727"
+  },
+  {
+    "id": "retro-food-icecream",
+    "category": "food",
+    "style": "retro",
+    "key": "food-icecream",
+    "path": "/visual-portfolio/stickers/presets/food/v1/icecream.webp",
+    "keywords": "冰淇淋 Ice Cream 美食 Food",
+    "code": "698fcf58aeb9"
+  },
+  {
+    "id": "retro-food-fruit",
+    "category": "food",
+    "style": "retro",
+    "key": "food-fruit",
+    "path": "/visual-portfolio/stickers/presets/food/v1/fruit.webp",
+    "keywords": "水果 Fruit 美食 Food",
+    "code": "a3a4eb8724a2"
+  },
+  {
+    "id": "retro-food-beer",
+    "category": "food",
+    "style": "retro",
+    "key": "food-beer",
+    "path": "/visual-portfolio/stickers/presets/food/v1/beer.webp",
+    "keywords": "啤酒 Beer 美食 Food",
+    "code": "7bfc667492b5"
+  },
+  {
+    "id": "retro-food-dumpling",
+    "category": "food",
+    "style": "retro",
+    "key": "food-dumpling",
+    "path": "/visual-portfolio/stickers/presets/food/v1/dumpling.webp",
+    "keywords": "饺子 Dumplings 美食 Food",
+    "code": "87ffb03a01f7"
+  },
+  {
+    "id": "retro-food-crayfish",
+    "category": "food",
+    "style": "retro",
+    "key": "food-crayfish",
+    "path": "/visual-portfolio/stickers/presets/food/v1/crayfish.webp",
+    "keywords": "小龙虾 Crayfish 美食 Food",
+    "code": "e4a6779e8056"
+  },
+  {
+    "id": "retro-food-bento",
+    "category": "food",
+    "style": "retro",
+    "key": "food-bento",
+    "path": "/visual-portfolio/stickers/presets/food/v1/bento.webp",
+    "keywords": "便当 Bento 美食 Food",
+    "code": "959dd03d0454"
+  },
+  {
+    "id": "retro-decor-star",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-star",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/star.webp",
+    "keywords": "星星 Star 装饰 Decor",
+    "code": "0e456d758470"
+  },
+  {
+    "id": "retro-decor-heart",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-heart",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/heart.webp",
+    "keywords": "爱心 Heart 装饰 Decor",
+    "code": "e6b4c2957e54"
+  },
+  {
+    "id": "retro-decor-lightning",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-lightning",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/lightning.webp",
+    "keywords": "闪电 Lightning 装饰 Decor",
+    "code": "af40785c3691"
+  },
+  {
+    "id": "retro-decor-rainbow",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-rainbow",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/rainbow.webp",
+    "keywords": "彩虹 Rainbow 装饰 Decor",
+    "code": "e88fb4d80ae9"
+  },
+  {
+    "id": "retro-decor-crown",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-crown",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/crown.webp",
+    "keywords": "皇冠 Crown 装饰 Decor",
+    "code": "2df9045a121b"
+  },
+  {
+    "id": "retro-decor-flame",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-flame",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/flame.webp",
+    "keywords": "火焰 Flame 装饰 Decor",
+    "code": "fa7722bb75b4"
+  },
+  {
+    "id": "retro-decor-bubble",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-bubble",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/bubble.webp",
+    "keywords": "对话框 Speech Bubble 装饰 Decor",
+    "code": "555c859d7bf1"
+  },
+  {
+    "id": "retro-decor-arrow",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-arrow",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/arrow.webp",
+    "keywords": "箭头 Arrow 装饰 Decor",
+    "code": "5366f5c14f4f"
+  },
+  {
+    "id": "retro-decor-sun",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-sun",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/sun.webp",
+    "keywords": "太阳 Sun 装饰 Decor",
+    "code": "37c18b71f3e0"
+  },
+  {
+    "id": "retro-decor-moon",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-moon",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/moon.webp",
+    "keywords": "月亮 Moon 装饰 Decor",
+    "code": "bad86c847f91"
+  },
+  {
+    "id": "retro-decor-flower",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-flower",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/flower.webp",
+    "keywords": "花朵 Flower 装饰 Decor",
+    "code": "c799e6e263c3"
+  },
+  {
+    "id": "retro-decor-bow",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-bow",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/bow.webp",
+    "keywords": "蝴蝶结 Bow 装饰 Decor",
+    "code": "e2bac4324226"
+  },
+  {
+    "id": "retro-decor-check",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-check",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/check.webp",
+    "keywords": "对勾 Check 装饰 Decor",
+    "code": "72163c7d1034"
+  },
+  {
+    "id": "retro-decor-note",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-note",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/note.webp",
+    "keywords": "音符 Music Note 装饰 Decor",
+    "code": "6d3a974932c3"
+  },
+  {
+    "id": "retro-decor-bang",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-bang",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/bang.webp",
+    "keywords": "感叹号 Exclamation 装饰 Decor",
+    "code": "cb4143b445ea"
+  },
+  {
+    "id": "retro-decor-smiley",
+    "category": "decor",
+    "style": "retro",
+    "key": "decor-smiley",
+    "path": "/visual-portfolio/stickers/presets/decor/v1/smiley.webp",
+    "keywords": "笑脸 Smiley 装饰 Decor",
+    "code": "a8a239ab4ab2"
+  },
+  {
+    "id": "fluent-rocket",
+    "key": "fluent-rocket",
+    "category": "hobby",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/rocket.png",
+    "keywords": "火箭 Rocket 爱好 Hobbies",
+    "code": "8741da498f0b"
+  },
+  {
+    "id": "fluent-light-bulb",
+    "key": "fluent-light-bulb",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/light-bulb.png",
+    "keywords": "灵感灯泡 Light bulb 装饰 Decor",
+    "code": "352590c4538d"
+  },
+  {
+    "id": "fluent-artist-palette",
+    "key": "fluent-artist-palette",
+    "category": "hobby",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/artist-palette.png",
+    "keywords": "画画 Artist palette 爱好 Hobbies",
+    "code": "be8af008b45a"
+  },
+  {
+    "id": "fluent-laptop",
+    "key": "fluent-laptop",
+    "category": "hobby",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/laptop.png",
+    "keywords": "编程 Laptop 爱好 Hobbies",
+    "code": "d2fc513e3001"
+  },
+  {
+    "id": "fluent-camera",
+    "key": "fluent-camera",
+    "category": "hobby",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/camera.png",
+    "keywords": "摄影 Camera 爱好 Hobbies",
+    "code": "4c453cbbfdba"
+  },
+  {
+    "id": "fluent-musical-note",
+    "key": "fluent-musical-note",
+    "category": "hobby",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/musical-note.png",
+    "keywords": "音乐 Musical note 爱好 Hobbies",
+    "code": "3cc83ff5ca06"
+  },
+  {
+    "id": "fluent-smiling-face-with-heart-eyes",
+    "key": "fluent-smiling-face-with-heart-eyes",
+    "category": "vibes",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/smiling-face-with-heart-eyes.png",
+    "keywords": "心动 Smiling face with heart-eyes 生活状态 Vibes",
+    "code": "602d96122694"
+  },
+  {
+    "id": "fluent-star-struck",
+    "key": "fluent-star-struck",
+    "category": "vibes",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/star-struck.png",
+    "keywords": "星星眼 Star-struck 生活状态 Vibes",
+    "code": "c88369701fb6"
+  },
+  {
+    "id": "fluent-smiling-face-with-sunglasses",
+    "key": "fluent-smiling-face-with-sunglasses",
+    "category": "vibes",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/smiling-face-with-sunglasses.png",
+    "keywords": "酷酷的 Smiling face with sunglasses 生活状态 Vibes",
+    "code": "d3cca29ae6af"
+  },
+  {
+    "id": "fluent-party-popper",
+    "key": "fluent-party-popper",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/party-popper.png",
+    "keywords": "庆祝 Party popper 装饰 Decor",
+    "code": "f15e537d3148"
+  },
+  {
+    "id": "fluent-sparkles",
+    "key": "fluent-sparkles",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/sparkles.png",
+    "keywords": "闪光 Sparkles 装饰 Decor",
+    "code": "4e870a4f36ed"
+  },
+  {
+    "id": "fluent-red-heart",
+    "key": "fluent-red-heart",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/red-heart.png",
+    "keywords": "爱心 Red heart 装饰 Decor",
+    "code": "0dbb4f98caed"
+  },
+  {
+    "id": "fluent-fire",
+    "key": "fluent-fire",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/fire.png",
+    "keywords": "火焰 Fire 装饰 Decor",
+    "code": "dbc8351cc3ed"
+  },
+  {
+    "id": "fluent-rainbow",
+    "key": "fluent-rainbow",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/rainbow.png",
+    "keywords": "彩虹 Rainbow 装饰 Decor",
+    "code": "26e66fb569e8"
+  },
+  {
+    "id": "fluent-sun",
+    "key": "fluent-sun",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/sun.png",
+    "keywords": "太阳 Sun 装饰 Decor",
+    "code": "32b8d9e34f23"
+  },
+  {
+    "id": "fluent-crescent-moon",
+    "key": "fluent-crescent-moon",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/crescent-moon.png",
+    "keywords": "月亮 Crescent moon 装饰 Decor",
+    "code": "0d013f14eec7"
+  },
+  {
+    "id": "fluent-seedling",
+    "key": "fluent-seedling",
+    "category": "decor",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/seedling.png",
+    "keywords": "新芽 Seedling 装饰 Decor",
+    "code": "1ca7675105d9"
+  },
+  {
+    "id": "fluent-hot-beverage",
+    "key": "fluent-hot-beverage",
+    "category": "food",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/hot-beverage.png",
+    "keywords": "热咖啡 Hot beverage 美食 Food",
+    "code": "9eba2f968ba5"
+  },
+  {
+    "id": "fluent-pizza",
+    "key": "fluent-pizza",
+    "category": "food",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/pizza.png",
+    "keywords": "披萨 Pizza 美食 Food",
+    "code": "72e93685a564"
+  },
+  {
+    "id": "fluent-hamburger",
+    "key": "fluent-hamburger",
+    "category": "food",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/hamburger.png",
+    "keywords": "汉堡 Hamburger 美食 Food",
+    "code": "d2481c7aa0b8"
+  },
+  {
+    "id": "fluent-shortcake",
+    "key": "fluent-shortcake",
+    "category": "food",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/shortcake.png",
+    "keywords": "小蛋糕 Shortcake 美食 Food",
+    "code": "abe96cc85a5e"
+  },
+  {
+    "id": "fluent-dog-face",
+    "key": "fluent-dog-face",
+    "category": "pets",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/dog-face.png",
+    "keywords": "小狗 Dog face 宠物 Pets",
+    "code": "d750efb2d47b"
+  },
+  {
+    "id": "fluent-cat-face",
+    "key": "fluent-cat-face",
+    "category": "pets",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/cat-face.png",
+    "keywords": "小猫 Cat face 宠物 Pets",
+    "code": "41a13f16982d"
+  },
+  {
+    "id": "fluent-books",
+    "key": "fluent-books",
+    "category": "hobby",
+    "style": "fluent",
+    "path": "/visual-portfolio/stickers/fluent/books.png",
+    "keywords": "读书 Books 爱好 Hobbies",
+    "code": "72e712b8c5ba"
+  }
+]
