@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   WorkflowDefinition,
   WorkflowEdge,
   WorkflowValidationIssue,
@@ -100,6 +100,26 @@ export function validateWorkflow(
     });
   }
 
+  if (definition.experience) {
+    const seenStages = new Set<string>();
+    const assignments = new Map<string, number>();
+    const issue = (message: string) => issues.push({ code: "invalid_experience", message, path: "experience.stages" });
+    definition.experience.stages.forEach((stage, index) => {
+      if (seenStages.has(stage.id)) issue(`Stage '${stage.id}' is duplicated.`);
+      seenStages.add(stage.id);
+      for (const id of stage.nodeIds) {
+        if (!nodeIds.has(id)) issue(`Stage '${stage.id}' references unknown node '${id}'.`);
+        if (assignments.has(id)) issue(`Node '${id}' belongs to more than one stage.`);
+        assignments.set(id, index);
+      }
+    });
+    for (const id of nodeIds) if (!assignments.has(id)) issue(`Node '${id}' must belong to a stage.`);
+    for (const edge of definition.edges) {
+      const from = assignments.get(edge.from), to = assignments.get(edge.to);
+      if (from !== undefined && to !== undefined && from > to) issue(`Stage order contradicts edge '${edge.id}'.`);
+    }
+  }
+
   return {
     ok: issues.length === 0,
     issues,
@@ -108,4 +128,3 @@ export function validateWorkflow(
       : executionOrder,
   };
 }
-

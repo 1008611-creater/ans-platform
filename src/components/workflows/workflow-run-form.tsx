@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useMarketActorId, useMarketRequest } from "@/components/marketplace/account-boundary";
 import { useRouter } from "next/navigation";
@@ -23,12 +23,21 @@ import type { WorkflowInputVariable } from "@/domain/workflows/variables";
 
 type CredentialOption = { id: string; label: string; keyMasked: string };
 
-type NodeRunSummary = {
+export type NodeRunSummary = {
   nodeId: string;
   status: string;
   attempts: number;
   error: string | null;
   output?: unknown;
+};
+
+export type WorkflowRunSnapshot = {
+  busy: boolean;
+  status: string;
+  error: string;
+  output: string | null;
+  nodeRuns: NodeRunSummary[];
+  runId: string | null;
 };
 
 type PersistedRunSummary = {
@@ -55,36 +64,117 @@ export function WorkflowRunForm({
   estimatedCost,
   credentials = [],
   defaultModelKey = DEFAULT_RUN_MODEL,
+  embedded = false,
+  onStateChange,
 }: {
   slug: string;
   variables: WorkflowInputVariable[];
   estimatedCost: number | null;
   credentials?: CredentialOption[];
   defaultModelKey?: string;
+  embedded?: boolean;
+  onStateChange?: (snapshot: WorkflowRunSnapshot) => void;
 }) {
   const router = useRouter();
   const request = useMarketRequest(), actorId = useMarketActorId();
   const alive = useRef(true), submitting = useRef(false);
+  const activeRun = useRef<{ id: string | null; terminal: boolean }>({ id: null, terminal: false });
   const intent = useRef<{ fingerprint: string; key: string } | null>(null);
-  const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cancelWait = useRef<(() => void) | null>(null);
+  const runRecoverySlot = actorId ? `ans:workflow-run-id:${encodeURIComponent(actorId)}:${encodeURIComponent(slug)}` : null;
+  const portalRoot = useRef<HTMLDivElement>(null);
   useEffect(() => {
     alive.current = true;
-    return () => { alive.current = false; if (pollTimer.current) clearTimeout(pollTimer.current); cancelWait.current?.(); };
+    return () => { alive.current = false; };
   }, []);
   const billing = useTranslations("learning");
   const workflowBilling = useTranslations("marketWorkflow");
+  const studio = useTranslations("workflowStudio");
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(variables.map((variable) => [variable.key, ""])),
   );
   const [modelKey, setModelKey] = useState(defaultModelKey);
   const [credentialId, setCredentialId] = useState("platform");
   const [reasoningEffort, setReasoningEffort] = useState<RunReasoningEffort>("none");
-  const [busy, setBusy] = useState(false);
+  const [recovery] = useState(() => {
+    try {
+      const raw = runRecoverySlot ? sessionStorage.getItem(runRecoverySlot) : null;
+      if (!raw) return null;
+      const stored = raw.startsWith("{") ? JSON.parse(raw) : { id: raw };
+      return typeof stored.id === "string" && /^[a-zA-Z0-9_-]{1,100}$/.test(stored.id)
+        ? { id: stored.id as string, intentSlot: typeof stored.intentSlot === "string" && stored.intentSlot.startsWith(`ans:workflow-run:${encodeURIComponent(actorId!)}:${encodeURIComponent(slug)}:`) ? stored.intentSlot as string : null }
+        : null;
+    } catch { return null; }
+  });
+  const pendingIntentSlot = useRef<string | null>(recovery?.intentSlot ?? null);
+  const [busy, setBusy] = useState(Boolean(recovery));
   const [error, setError] = useState("");
   const [output, setOutput] = useState<string | null>(null);
   const [nodeRuns, setNodeRuns] = useState<NodeRunSummary[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
+  const [status, setStatus] = useState(recovery ? "PREPARING" : "IDLE");
+  useEffect(() => {
+    onStateChange?.({ busy, status, error, output, nodeRuns, runId });
+  }, [busy, status, error, output, nodeRuns, runId, onStateChange]);
+  const readStatus = useEffectEvent(async (id: string) => request<{ run: PersistedRunSummary }>(`/api/workflows/runs/${id}`, "GET", undefined));
+  const recoveryFailed = useEffectEvent(() => studio("failed"));
+  function clearRecovery() {
+    try {
+      if (runRecoverySlot) sessionStorage.removeItem(runRecoverySlot);
+      if (pendingIntentSlot.current) sessionStorage.removeItem(pendingIntentSlot.current);
+    } catch { /* Optional recovery storage. */ }
+    pendingIntentSlot.current = null;
+    intent.current = null;
+  }
+  const completeRecovery = useEffectEvent(clearRecovery);
+  useEffect(() => {
+    // A single status loop follows live, restored, and disconnected runs.
+    if (!runId || !["PENDING", "QUEUED", "RUNNING", "UNKNOWN"].includes(status)) return;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    async function poll() {
+      try {
+        const detail = await readStatus(runId!);
+        if (stopped || !alive.current || activeRun.current.id !== runId || activeRun.current.terminal) return;
+        if (["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.run.status)) {
+          activeRun.current.terminal = true;
+          if (detail.run.status === "SUCCEEDED") { setOutput(outputText(detail.run.output)); setError(""); }
+          else setError(detail.run.error ?? recoveryFailed());
+          setBusy(false);
+          completeRecovery();
+        }
+        if (detail.run.nodeRuns) setNodeRuns(detail.run.nodeRuns);
+        setStatus(detail.run.status);
+      } catch { /* Execution response remains authoritative if status reads fail. */ }
+      if (!stopped) timer = setTimeout(() => void poll(), 1500);
+    }
+    timer = setTimeout(() => void poll(), 400);
+    return () => { stopped = true; if (timer) clearTimeout(timer); };
+  }, [runId, status]);
+  useEffect(() => {
+    if (!recovery) return;
+    let cancelled = false;
+    void readStatus(recovery.id).then((detail) => {
+      if (cancelled || !alive.current) return;
+      const terminal = ["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.run.status);
+      activeRun.current = { id: recovery.id, terminal };
+      setRunId(recovery.id);
+      setStatus(detail.run.status);
+      setBusy(false);
+      if (detail.run.status === "SUCCEEDED") { setOutput(outputText(detail.run.output)); setError(""); }
+      else if (terminal) setError(detail.run.error ?? recoveryFailed());
+      if (detail.run.nodeRuns) setNodeRuns(detail.run.nodeRuns);
+      if (terminal) completeRecovery();
+    }).catch(() => {
+      if (!cancelled && alive.current) { activeRun.current = { id: recovery.id, terminal: false }; setRunId(recovery.id); setStatus("UNKNOWN"); setBusy(false); }
+    });
+    return () => { cancelled = true; };
+  }, [recovery]);
+  useEffect(() => {
+    if (!busy) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [busy]);
 
   const missing = variables
     .filter((variable) => variable.required && !(values[variable.key] ?? "").trim())
@@ -94,26 +184,14 @@ export function WorkflowRunForm({
     const detail = await request<{ run: PersistedRunSummary }>(`/api/workflows/runs/${id}`, "GET", undefined);
     return detail.run;
   }
-  async function waitForRunCompletion(id: string, maxPolls = 150): Promise<PersistedRunSummary | null> {
-    for (let attempt = 0; alive.current && attempt < maxPolls; attempt += 1) {
-      const detail = await fetchRunDetail(id).catch(() => null);
-      if (!alive.current) return null;
-      if (detail && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.status)) return detail;
-      await new Promise<void>((resolve) => {
-        cancelWait.current = resolve;
-        pollTimer.current = setTimeout(() => { pollTimer.current = null; cancelWait.current = null; resolve(); }, 1000);
-      });
-    }
-    return null;
-  }
-
   async function run() {
-    if (submitting.current || !alive.current || missing.length) return;
+    if (submitting.current || busy || ["UNKNOWN", "PENDING", "QUEUED", "RUNNING"].includes(status) || !alive.current || missing.length) return;
     submitting.current = true;
     // Capture both inputs and execution choices before any asynchronous work.
     const input = { ...values };
     const options = { modelKey, reasoningEffort, ...(credentialId === "platform" ? {} : { credentialId }) };
-    setBusy(true); setError(""); setOutput(null); setNodeRuns([]);
+    activeRun.current = { id: null, terminal: false };
+    setBusy(true); setStatus("PREPARING"); setRunId(null); setError(""); setOutput(null); setNodeRuns([]);
     let createdRunId: string | null = null;
     let recoverySlot: string | null = null;
     function finishIntent() {
@@ -143,30 +221,46 @@ export function WorkflowRunForm({
       const id = created.run?.id;
       if (!id) throw new Error("服务端未返回运行编号。");
       createdRunId = id;
+      activeRun.current = { id, terminal: false };
       setRunId(id);
+      pendingIntentSlot.current = recoverySlot;
+      try { if (runRecoverySlot) sessionStorage.setItem(runRecoverySlot, JSON.stringify({ id, intentSlot: recoverySlot })); } catch { /* Optional recovery storage. */ }
+      setStatus("PENDING");
       // 模型与额度来源随执行请求提交；服务端再次校验凭证归属。
       const executed = await request<{ result: { status: string; output?: unknown; error?: string } }>(`/api/workflows/runs/${id}/execute`, "POST", options);
       if (!alive.current) return;
-      if (executed.result?.status === "failed") setError(executed.result.error ?? "工作流执行失败，请查看运行记录与额度流水。");
-      else setOutput(outputText(executed.result?.output));
+      if (!["succeeded", "failed"].includes(executed.result?.status ?? "")) throw new Error(studio("unknownRun"));
+      activeRun.current.terminal = true;
+      if (executed.result.status === "failed") { setStatus("FAILED"); setError(executed.result.error ?? studio("failed")); }
+      else { setStatus("SUCCEEDED"); setOutput(outputText(executed.result.output)); }
       const detail = await fetchRunDetail(id).catch(() => null);
       if (!alive.current) return;
-      setNodeRuns(detail?.nodeRuns ?? []);
+      if (detail?.nodeRuns) setNodeRuns(detail.nodeRuns);
+      if (detail && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(detail.status)) setStatus(detail.status);
+      try { if (runRecoverySlot) sessionStorage.removeItem(runRecoverySlot); } catch { /* Optional recovery storage. */ }
       finishIntent();
       router.refresh();
     } catch (cause) {
       if (!alive.current) return;
-      // Recover acknowledgements with read-only polling; never retry a charge automatically.
-      const completed = createdRunId ? await waitForRunCompletion(createdRunId) : null;
+      if (activeRun.current.terminal) return;
+      // Pause live polling while reconciling the lost execution acknowledgement.
+      if (createdRunId) setStatus("PREPARING");
+      // Recover with reads only; never retry a charge automatically.
+      const completed = createdRunId ? await fetchRunDetail(createdRunId).catch(() => null) : null;
       if (!alive.current) return;
-      if (completed) {
-        setNodeRuns(completed.nodeRuns ?? []);
+      if (completed && ["SUCCEEDED", "FAILED", "CANCELLED"].includes(completed.status)) {
+        activeRun.current.terminal = true;
+        if (completed.nodeRuns) setNodeRuns(completed.nodeRuns);
+        setStatus(completed.status);
         if (completed.status === "SUCCEEDED") { setError(""); setOutput(outputText(completed.output)); }
         else { setOutput(null); setError(completed.error ?? "工作流执行未完成，请查看运行记录与额度流水。"); }
         finishIntent();
+        try { if (runRecoverySlot) sessionStorage.removeItem(runRecoverySlot); } catch { /* Optional recovery storage. */ }
         router.refresh();
       } else {
-        setError(cause instanceof Error ? cause.message : "运行未完成，请稍后重试。");
+        if (completed?.nodeRuns) setNodeRuns(completed.nodeRuns);
+        setStatus(createdRunId ? "UNKNOWN" : "FAILED");
+        setError(cause instanceof Error ? cause.message : studio("failed"));
       }
     } finally {
       submitting.current = false;
@@ -174,17 +268,21 @@ export function WorkflowRunForm({
     }
   }
 
+  const Frame = embedded ? "div" : Card;
+  const Content = embedded ? "div" : CardContent;
   return (
-    <Card>
-      <CardHeader>
+    <Frame>
+      {!embedded && <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4" /> 运行这个工作流
         </CardTitle>
         <CardDescription>
           {estimatedCost === null ? workflowBilling("meteredCost") : billing("billingExplanation", { points: estimatedCost })}
         </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </CardHeader>}
+      <Content className="space-y-5">
+        <div ref={portalRoot} className="contents">
+        {embedded && <p className="text-xs leading-6 text-muted-foreground">{estimatedCost === null ? workflowBilling("meteredCost") : billing("billingExplanation", { points: estimatedCost })}</p>}
         {variables.length === 0 ? (
           <p className="text-sm text-muted-foreground">这个工作流不需要额外输入，直接运行即可。</p>
         ) : (
@@ -221,14 +319,14 @@ export function WorkflowRunForm({
           ))
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={embedded ? "grid gap-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"}>
           <div className="space-y-1.5">
             <Label htmlFor="workflow-run-model">模型</Label>
             <Select disabled={busy} value={modelKey} onValueChange={setModelKey}>
               <SelectTrigger id="workflow-run-model" className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent container={portalRoot.current}>
                 {RUN_MODEL_OPTIONS.map((model) => (
                   <SelectItem key={model.key} value={model.key}>
                     {model.label}
@@ -243,7 +341,7 @@ export function WorkflowRunForm({
               <SelectTrigger id="workflow-run-reasoning" className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent container={portalRoot.current}>
                 {RUN_REASONING_EFFORTS.map((effort) => (
                   <SelectItem key={effort} value={effort}>
                     {RUN_REASONING_EFFORT_LABELS[effort]}
@@ -259,7 +357,7 @@ export function WorkflowRunForm({
                 <SelectTrigger id="workflow-run-credential" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent container={portalRoot.current}>
                   <SelectItem value="platform">平台模型池</SelectItem>
                   {credentials.map((credential) => (
                     <SelectItem key={credential.id} value={credential.id}>
@@ -273,7 +371,7 @@ export function WorkflowRunForm({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button disabled={busy || missing.length > 0} onClick={run}>
+          <Button className={embedded ? "w-full" : undefined} disabled={busy || ["UNKNOWN", "PENDING", "QUEUED", "RUNNING"].includes(status) || missing.length > 0} onClick={run}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             {busy ? "运行中…" : estimatedCost === null ? workflowBilling("confirmRun") : billing("billingRun", { points: estimatedCost })}
           </Button>
@@ -281,6 +379,7 @@ export function WorkflowRunForm({
             <span className="text-xs text-muted-foreground">还需填写：{missing.join("、")}</span>
           )}
           {runId && <span className="text-xs text-muted-foreground">运行编号 {runId.slice(0, 8)}…</span>}
+        </div>
         </div>
 
         {error && (
@@ -291,7 +390,7 @@ export function WorkflowRunForm({
           </Alert>
         )}
 
-        {output !== null && (
+        {!embedded && output !== null && (
           <div className="space-y-2">
             <h3 className="text-sm font-medium">运行结果</h3>
             <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg border bg-muted/30 p-4 text-sm leading-7">
@@ -300,7 +399,7 @@ export function WorkflowRunForm({
           </div>
         )}
 
-        {nodeRuns.length > 0 && (
+        {!embedded && nodeRuns.length > 0 && (
           <details className="rounded-lg border p-4">
             <summary className="cursor-pointer text-sm font-medium">逐节点执行记录</summary>
             <ul className="mt-3 space-y-2 text-xs">
@@ -321,7 +420,7 @@ export function WorkflowRunForm({
             </ul>
           </details>
         )}
-      </CardContent>
-    </Card>
+      </Content>
+    </Frame>
   );
 }

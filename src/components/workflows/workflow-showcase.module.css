@@ -1,0 +1,26 @@
+.showcase { min-width: 0; position: relative; }
+.main { display: block; border-radius: 1rem; outline-offset: 5px; }
+.main:focus-visible { outline: 2px solid var(--primary); }
+.stage { border: 1px solid var(--border); border-radius: 1rem; overflow: hidden; background: var(--muted); transition: border-color 180ms ease-out; }
+.main:hover .stage { border-color: var(--primary); }
+.stageTop { display: flex; justify-content: space-between; gap: 1rem; padding: .85rem 1.1rem; border-bottom: 1px solid var(--border); color: var(--muted-foreground); font-size: .7rem; letter-spacing: .06em; }
+.outcome { display: flex; flex-direction: column; align-items: flex-start; gap: .85rem; padding: 1.5rem 1.25rem; min-height: 10rem; background: var(--background); }
+.outcome svg { color: var(--primary); }
+.outcome p { max-width: 25ch; margin: 0; font-size: 1.2rem; font-weight: 650; line-height: 1.45; overflow-wrap: anywhere; }
+.outcome > span { font-size: .7rem; color: var(--muted-foreground); }
+.steps { list-style: none; margin: 0; padding: .95rem 1.15rem; display: flex; flex-wrap: wrap; gap: .75rem 1rem; font-size: .72rem; }
+.steps li { display: flex; gap: .4rem; min-width: 0; max-width: 100%; }
+.steps li > span:first-child { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.steps li > span:last-child { max-width: 17ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.remaining { color: var(--muted-foreground); }
+.caption { padding: 1.05rem .15rem .7rem; }
+.title { display: flex; gap: 1rem; justify-content: space-between; align-items: flex-start; }
+.title h3 { margin: 0; font-size: 1.05rem; font-weight: 650; overflow-wrap: anywhere; line-height: 1.5; }
+.title svg { flex: none; margin-top: .25rem; color: var(--muted-foreground); }
+.summary { margin: .5rem 0 0; color: var(--muted-foreground); font-size: .83rem; line-height: 1.65; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.meta { display: flex; flex-wrap: wrap; gap: .35rem .7rem; margin-top: .85rem; font-size: .7rem; color: var(--muted-foreground); }
+.meta > span { overflow-wrap: anywhere; }
+.meta > span:last-child { margin-left: auto; color: var(--primary); }
+.market { display: inline-flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--primary); padding: .35rem .15rem; outline-offset: 3px; }
+.market:focus-visible { outline: 2px solid var(--primary); }
+@media (prefers-reduced-motion: reduce) { .stage { transition: none; } }

@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { resumeWebsiteInputSchema } from "@/contracts/resume-website";
+import { stableWorkflowInput } from "@/domain/workflows/recipes";
 import { db } from "@/lib/db";
 import type { MarketListingInput } from "@/contracts/marketplace";
 import { marketListingInputSchema } from "@/contracts/marketplace";
@@ -94,11 +97,16 @@ export async function runMarketWorkflow(listingId: string, actorId: string, raw:
   }
 }
 
+function copyInputFingerprint(input: unknown) {
+  const parsed = resumeWebsiteInputSchema.safeParse(input && typeof input === "object" && "profile" in input ? input.profile : null);
+  return parsed.success ? createHash("sha256").update(stableWorkflowInput({ profile: parsed.data })).digest("hex") : null;
+}
+
 /** Owner-only read for reload/lost acknowledgements; navigation never enqueues a run. */
 export async function listMarketWorkflowRuns(listingId: string, actorId: string) {
   await requireMarketActor(db, actorId);
-  const runs = await db.workflowRun.findMany({ where: { userId: actorId, idempotencyKey: { startsWith: `market/${listingId}/` } }, orderBy: { createdAt: "desc" }, take: 12, select: { id: true, status: true, costPoints: true, error: true, output: true, createdAt: true, finishedAt: true, version: { select: { version: true } } } });
-  return { runs: runs.map(run => ({ id: run.id, status: run.status, costPoints: run.costPoints, error: run.error ? "EXECUTION_FAILED" : null, output: run.status === "SUCCEEDED" ? run.output : null, createdAt: run.createdAt.toISOString(), workflowVersion: run.version.version })) };
+  const runs = await db.workflowRun.findMany({ where: { userId: actorId, idempotencyKey: { startsWith: `market/${listingId}/` } }, orderBy: { createdAt: "desc" }, take: 12, select: { id: true, status: true, input: true, costPoints: true, error: true, output: true, createdAt: true, finishedAt: true, version: { select: { version: true } } } });
+  return { runs: runs.map(run => ({ id: run.id, status: run.status, inputFingerprint: copyInputFingerprint(run.input), costPoints: run.costPoints, error: run.error ? "EXECUTION_FAILED" : null, output: run.status === "SUCCEEDED" ? run.output : null, createdAt: run.createdAt.toISOString(), workflowVersion: run.version.version })) };
 }
 
 /** Fixed recipes also run from their Hub detail page, using the same review and confirmation gate. */
@@ -128,8 +136,8 @@ export async function listReviewedRecipeRuns(slug: string, actorId: string) {
   await requireMarketActor(db, actorId);
   const source = await db.workflow.findUnique({ where: { slug }, select: { id: true } });
   if (!source) throw new MarketRuleError("NOT_FOUND", 404);
-  const runs = await db.workflowRun.findMany({ where: { userId: actorId, idempotencyKey: { startsWith: `reviewed/${source.id}/` } }, orderBy: { createdAt: "desc" }, take: 12, select: { id: true, status: true, costPoints: true, error: true, output: true, createdAt: true, version: { select: { version: true } } } });
-  return { runs: runs.map(run => ({ id: run.id, status: run.status, costPoints: run.costPoints, error: run.error ? "EXECUTION_FAILED" : null, output: run.status === "SUCCEEDED" ? run.output : null, createdAt: run.createdAt.toISOString(), workflowVersion: run.version.version })) };
+  const runs = await db.workflowRun.findMany({ where: { userId: actorId, idempotencyKey: { startsWith: `reviewed/${source.id}/` } }, orderBy: { createdAt: "desc" }, take: 12, select: { id: true, status: true, input: true, costPoints: true, error: true, output: true, createdAt: true, version: { select: { version: true } } } });
+  return { runs: runs.map(run => ({ id: run.id, status: run.status, inputFingerprint: copyInputFingerprint(run.input), costPoints: run.costPoints, error: run.error ? "EXECUTION_FAILED" : null, output: run.status === "SUCCEEDED" ? run.output : null, createdAt: run.createdAt.toISOString(), workflowVersion: run.version.version })) };
 }
 
 /** Discover only the real, published market card bound to this exact platform version. */

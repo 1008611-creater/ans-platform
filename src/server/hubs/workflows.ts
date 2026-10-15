@@ -5,6 +5,7 @@ import { hasAdminPermission } from "@/lib/admin-permission-values";
 import { hasWorkflowManualApproval } from "@/server/workflows/approval";
 import { marketListingInputSchema } from "@/contracts/marketplace";
 import { validateWorkflow } from "@/domain/workflows/graph";
+import { workflowPresentation } from "@/domain/workflows/experience";
 import { assertSupportedRecipe } from "@/domain/workflows/recipes";
 import { marketHash } from "@/server/marketplace/shared";
 import { workflowDefinitionHash } from "@/server/marketplace/workflow-binding";
@@ -132,7 +133,7 @@ export async function readHubMemberWorkflows(hubSlug:WorkflowHubSlug,cursor?:str
   const listings=slugs.length ? await tx.marketListing.findMany({where:{slug:{in:slugs},status:"PUBLISHED",seller:{deletedAt:null,flagged:false}},include:{versions:true}}) : [];
   const items=page.map(({w,v,definition})=>{const slug=`workflow-${marketHash(w.id).slice(0,24)}-v${v.version}`,listing=listings.find(l=>l.slug===slug&&l.sellerId===w.authorId),published=listing?.versions.find(v=>v.version===listing.publishedVersion),parsed=marketListingInputSchema.safeParse(published?.payload),binding=parsed.success?parsed.data.execution:null;
    const exact=published?.reviewedAt&&binding&&binding.workflowId===w.id&&binding.versionId===v.id&&binding.version===v.version&&binding.definitionHash===workflowDefinitionHash(definition);
-   return{id:w.id,slug:w.slug,title:w.title,summary:w.summary,versionId:v.id,version:v.version,estimatedCost:w.estimatedCost,marketPath:exact?`/market/${slug}`:null};});
+   return{id:w.id,slug:w.slug,title:w.title,summary:w.summary,versionId:v.id,version:v.version,estimatedCost:w.estimatedCost,presentation:workflowPresentation(definition),marketPath:exact?`/market/${slug}`:null};});
   return {items,total:count.total,nextCursor:rows.length>24?page[23].cursor:null};
  },{timeout:15000,isolationLevel:"RepeatableRead"});
 }

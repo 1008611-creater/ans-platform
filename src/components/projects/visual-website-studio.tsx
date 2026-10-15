@@ -21,7 +21,7 @@ const newProject = () => ({ name: "", role: "", description: "", url: "" });
 function emptyProfile(language: "zh" | "en"): ResumeWebsiteInput { return { fullName: "", headline: "", about: "", location: "", email: "", contactUrl: "", education: "", skills: [], projects: [newProject()], style: "editorial", accent: "emerald", language }; }
 function saveFile(content: string, name: string, type: string) { const url = URL.createObjectURL(new Blob([content], { type })); const link = document.createElement("a"); link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
 interface StudioProps { onReturn?:()=>void; immersive?: boolean; beginEditing?: boolean; initial?: VisualWebsiteState; execution?: { listingId: string; version: number; details: MarketRunDetails }; }
-export function VisualWebsiteStudio(props: StudioProps) { return props.immersive ? <VisualTourEditor initial={props.initial} onReturn={props.onReturn}/> : <LegacyVisualWebsiteStudio {...props}/>; }
+export function VisualWebsiteStudio(props: StudioProps) { return props.immersive ? <VisualTourEditor initial={props.initial} onReturn={props.onReturn} execution={props.execution}/> : <LegacyVisualWebsiteStudio {...props}/>; }
 function LegacyVisualWebsiteStudio({ initial, execution, immersive = false, beginEditing = false }: StudioProps) {
  const t = useTranslations("visualWebsite"), locale = useLocale(), actorId = useMarketActorId(), request = useMarketRequest();
  const { register } = useWorkspaceNavigation();

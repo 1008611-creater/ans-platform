@@ -1,5 +1,7 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createHash } from "node:crypto";
+import { stableWorkflowInput } from "@/domain/workflows/recipes";
 import { Prisma } from "@prisma/client";
 import { marketListingInputSchema, type MarketListingInput } from "@/contracts/marketplace";
 import { MarketRuleError } from "@/domain/marketplace/order";
@@ -259,4 +261,11 @@ describe("workflow upload metadata and duplicate recovery (HR05)", () => {
     expect(mocks.listingCreate).toHaveBeenCalledTimes(2); expect(mocks.listingSubmit).toHaveBeenCalledTimes(1);
     expect(mocks.debit).not.toHaveBeenCalled(); expect(mocks.db.workflowRun.create).not.toHaveBeenCalled();
   });
+});
+
+it("history returns only a fingerprint of the normalized source facts for safe copy adoption",async()=>{
+ mocks.db.workflowRun.findMany.mockResolvedValue([{id:"done",status:"SUCCEEDED",input:{profile:resumeProfile},costPoints:2,error:null,output:"Result",createdAt:new Date("2026-10-12"),version:{version:1}}]);
+ const result=await listMarketWorkflowRuns(listing.id,"buyer");
+ expect(result.runs[0].inputFingerprint).toBe(createHash("sha256").update(stableWorkflowInput({profile:resumeProfile})).digest("hex"));
+ expect(JSON.stringify(result)).not.toContain("My experience");expect(result.runs[0]).not.toHaveProperty("input");
 });

@@ -54,12 +54,12 @@ const PUBLIC_PAGES = [
   ["/", "首页", "长成你的作品。"],
   ["/explore", "项目发现", "项目广场"],
   ["/explore/liu-resume", "项目详情", "个人简历与作品集"],
-  ["/workflows/toonflow", "视频工作流", "AIGC 工作台"],
+  ["/workflows/toonflow", "旧工作流跳转", null],
   ["/hubs", "Hub 目录", "找到你的 Hub"],
   ["/hubs/full-stack", "全栈开发 Hub", "全栈开发 Hub"],
   ["/competitions", "赛事活动", null],
   ["/market", "市场", null],
-  ["/workflows", "工作流广场", "工作流"],
+  ["/workflows", "旧工作流目录跳转", null],
   ["/login", "登录页", null],
 ];
 
@@ -78,7 +78,7 @@ const MOBILE_PAGES = [
   ["/", "移动端 首页", "长成你的作品。"],
   ["/explore", "移动端 项目发现", "项目广场"],
   ["/hubs", "移动端 Hub 目录", "找到你的 Hub"],
-  ["/workflows", "移动端 工作流广场", "工作流"],
+  ["/market", "移动端 市场", null],
 ];
 
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"];

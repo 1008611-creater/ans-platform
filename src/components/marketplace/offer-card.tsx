@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { marketProductPath } from "@/domain/marketplace/product-route";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { ArrowUpRight, Check, Github, PackageCheck, Star } from "lucide-react";
@@ -11,7 +12,7 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
   const listing = offer.listing; const tiers = listing.pricingTiers ?? [];
   const minimum = tiers.length ? Math.min(...tiers.map(tier => tier.priceMinor)) : listing.priceMinor;
   const status = offer.submittedAt && !offer.reviewedAt ? "PENDING" : offer.status;
-  return <Link href={owner ? "/market/creator/" + offer.id : "/market/" + offer.slug} className="ans-project-card flex min-w-0 flex-col overflow-hidden">
+  return <Link href={owner ? "/market/creator/" + offer.id : marketProductPath(offer)} className="ans-project-card flex min-w-0 flex-col overflow-hidden">
     {listing.coverUrl && <div className="aspect-video overflow-hidden border-b bg-muted/30"><Image unoptimized src={listing.coverUrl} width={960} height={540} alt={tp("projectCover", { title: listing.title })} className="h-full w-full object-cover"/></div>}
     <div className="flex flex-1 flex-col p-6"><div className="flex items-center justify-between gap-3"><span className="text-xs font-medium text-primary">{p("categories." + listing.category)} · {p("children." + listing.subcategory)}</span><ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true"/></div>
       <Heading className="mt-5 break-words text-xl font-semibold">{listing.title}</Heading><p className="mt-3 flex-1 break-words text-sm leading-7 text-muted-foreground">{listing.summary}</p>

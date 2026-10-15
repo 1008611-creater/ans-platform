@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const workflowNodeTypeSchema = z.enum([
   "prompt",
@@ -24,7 +24,25 @@ export const workflowEdgeSchema = z.object({
   mapping: z.record(z.string(), z.string()).default({}),
 });
 
+export const workflowExperienceSchema = z.object({
+  version: z.literal(1),
+  output: z.object({
+    label: z.string().trim().min(1).max(120),
+    format: z.enum(["text", "markdown", "json"]).default("markdown"),
+  }).strict(),
+  stages: z.array(z.object({
+    id: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/),
+    title: z.string().trim().min(1).max(120),
+    description: z.string().trim().max(240).optional(),
+    nodeIds: z.array(z.string().min(1).max(64)).min(1).max(50),
+  }).strict()).min(1).max(50),
+  sourceProjectSlug: z.string().regex(/^[a-z0-9][a-z0-9-]{0,95}$/).optional(),
+}).strict();
+
+export type WorkflowExperience = z.infer<typeof workflowExperienceSchema>;
+
 export const workflowDefinitionSchema = z.object({
+  experience: workflowExperienceSchema.optional(),
   recipe: z.literal("resume-website-v1").optional(),
   version: z.literal(1),
   maxNodes: z.number().int().min(1).max(50).default(20),
@@ -64,7 +82,8 @@ export type WorkflowValidationIssue = {
     | "duplicate_edge"
     | "self_reference"
     | "cycle"
-    | "node_limit";
+    | "node_limit"
+    | "invalid_experience";
   message: string;
   path?: string;
 };
