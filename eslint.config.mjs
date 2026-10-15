@@ -59,6 +59,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Vendored Three.js bundles keep their upstream source and license.
     "public/mascot/3d/vendor/**",
+    // Third-party distribution bundles; sources and licenses are recorded beside them.
+    "public/showcase/ans-3d/assets/pkg-react.js",
+    "public/showcase/ans-3d/assets/pkg-three.js",
+    "public/showcase/ans-3d/assets/pkg-motion.js",
     // Compiled outputs
     "packages/*/dist/**",
     // Packages with their own ESLint config
