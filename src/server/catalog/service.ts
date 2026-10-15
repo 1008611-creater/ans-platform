@@ -6,6 +6,7 @@ import { catalogActionSchema, catalogEntrySchema, catalogSaveSchema, type Catalo
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 import { listMarketListings } from "@/server/marketplace/listings";
 import { memberCatalogProject } from "@/domain/catalog/member-project";
+import { readAgriWall } from "@/server/competitions/agrihackathon/wall";
 import { mergeCatalog } from "@/domain/catalog/content";
 
 export class CatalogError extends Error {
@@ -28,8 +29,10 @@ async function loadPublishedCatalog() {
   }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   const retired = new Set(["resume-website", "resume-story", "project-page", "readme-kit", "competition-starter", "pitch-kit", "learning-retrospective", "grok-motion-lab", "open-resume", "dify-agent"]);
   // Runnable recipe listings belong to workflows and market, not project discovery.
-  const members = (await listMarketListings()).filter(offer => !offer.listing.execution).map(memberCatalogProject);
-  return [...official.filter(entry => !retired.has(entry.slug)), ...members];
+  const [offers, wall] = await Promise.all([listMarketListings(), readAgriWall()]);
+  const members = offers.filter(offer => !offer.listing.execution && offer.listing.subcategory !== "agri-wall").map(memberCatalogProject);
+  members.push(...wall.entries.map(entry => memberCatalogProject(entry.offer)));
+  return [...official.filter(entry => !retired.has(entry.slug) && entry.subcategory !== "agri-wall"), ...members];
 }
 // Share only in-flight public reads. Do not cache completed data or private queries.
 let publishedInFlight: ReturnType<typeof loadPublishedCatalog> | null = null;

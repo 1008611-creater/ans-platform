@@ -1,3 +1,4 @@
+import { assertAgriWallSubmission } from "./wall";
 import type { DbTransaction } from "@/lib/db";
 import { createHash, randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
@@ -239,6 +240,7 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
     };
     let submissionId: string | null = null;
     if (command.action !== "saveDraft") {
+      await assertAgriWallSubmission(tx, ctx, target.entry.id, command.content);
       adopted = await rule(tx, stage.competitionId, command.action === "correctSubmission" ? permit!.ruleVersionId : ctx.workspace.publishedRuleVersionId, stage.stage);
       decision(now);
       const issues = getAgriSubmissionMaterialIssues(adopted.requirements, command.content);
@@ -304,9 +306,17 @@ export async function readAgriStage(actorId: string, rawId: string, rawQuery: un
     const baseline = target.privateMaterials && stage.stage === "FINAL" ? await preliminaryBaseline(tx, target.entry, serverNow) : null;
     const [legacy] = target.privateMaterials && !roster ? await tx.$queryRaw<Array<{ exists: boolean }>>`SELECT EXISTS (
       SELECT 1 FROM agri_stage_submissions s JOIN agri_entry_stages es ON es.id=s."entryStageId" WHERE es."teamCompetitionId"=${target.entry.id}) AS exists` : [];
+    const [wallRow] = target.teamMember ? await tx.$queryRaw<Array<{ id: string; listingId: string; projectId: string; artifactVersionId: string; published: boolean; synchronized: boolean; isOwner: boolean; slug: string }>>`
+      SELECT w.id,w."listingId",w."projectId",w."artifactVersionId",l.slug,
+        (l.status='PUBLISHED' AND NOT u.flagged AND u."deletedAt" IS NULL AND lv."reviewedAt" IS NOT NULL AND lv.payload->>'category'='competition' AND lv.payload->>'subcategory'='agri-wall') AS published,
+        (w."listingVersion"=l."publishedVersion") AS synchronized,(p."ownerId"=${actorId}) AS "isOwner"
+      FROM agri_wall_entries w JOIN market_listings l ON l.id=w."listingId" JOIN users u ON u.id=l."sellerId" JOIN projects p ON p.id=w."projectId"
+      LEFT JOIN market_listing_versions lv ON lv."listingId"=l.id AND lv.version=l."publishedVersion"
+      WHERE w."teamCompetitionId"=${target.entry.id} AND w."competitionId"=${stage.competitionId}` : [];
     await assertAgriAuthorityCurrent(tx, ...target.authorities);
     return { competitionId: stage.competitionId, id, teamCompetitionId: stage.teamCompetitionId, stage: stage.stage, revision: stage.revision,
       ...freeze, workspaceEnabled: ctx.workspace.enabled, hasPrivateMaterials: target.privateMaterials,
+      ...(target.teamMember ? { wall: wallRow ? { id: wallRow.id, listingId: wallRow.listingId, projectId: wallRow.projectId, artifactVersionId: wallRow.artifactVersionId, published: Boolean(wallRow.published), synchronized: Boolean(wallRow.synchronized), isOwner: wallRow.isOwner, href: "/market/" + wallRow.slug } : null } : {}),
       ...(target.privateMaterials ? { officialRoster: roster ? { id: roster.id, projectId: roster.projectId, confirmedAt: roster.confirmedAt.toISOString(),
         confirmedById: roster.confirmedById, members } : null, officialMemberChoices: choices, legacyRosterRequired: legacy?.exists ?? false,
         preliminaryBaseline: baseline?.officialRosterId ? { submissionId: baseline.id, projectId: baseline.projectId } : null } : {}),

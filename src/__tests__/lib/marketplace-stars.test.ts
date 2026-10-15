@@ -1,13 +1,13 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ actor: vi.fn(), listing: vi.fn(), count: vi.fn(), find: vi.fn(), upsert: vi.fn(), remove: vi.fn() }));
+const m = vi.hoisted(() => ({ raw: vi.fn(), actor: vi.fn(), listing: vi.fn(), count: vi.fn(), find: vi.fn(), upsert: vi.fn(), remove: vi.fn() }));
 vi.mock("@/server/marketplace/shared", () => ({
   requireMarketActor: m.actor,
-  marketTransaction: (run: (tx: unknown) => Promise<unknown>) => run({ marketListing: { findFirst: m.listing }, marketListingStar: { count: m.count, findUnique: m.find, upsert: m.upsert, deleteMany: m.remove } }),
+  marketTransaction: (run: (tx: unknown) => Promise<unknown>) => run({ $queryRaw: m.raw, marketListing: { findFirst: m.listing }, marketListingStar: { count: m.count, findUnique: m.find, upsert: m.upsert, deleteMany: m.remove } }),
 }));
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { getMarketListingStar, setMarketListingStar } from "@/server/marketplace/stars";
-beforeEach(() => { vi.resetAllMocks(); m.actor.mockResolvedValue({ id: "buyer" }); m.listing.mockResolvedValue({ id: "listing" }); m.count.mockResolvedValue(2); m.find.mockResolvedValue({ id: "star" }); });
+beforeEach(() => { vi.resetAllMocks(); m.raw.mockResolvedValue([]); m.actor.mockResolvedValue({ id: "buyer" }); m.listing.mockResolvedValue({ id: "listing" }); m.count.mockResolvedValue(2); m.find.mockResolvedValue({ id: "star" }); });
 describe("public project stars", () => {
   it("reads an anonymous count without inventing viewer state", async () => {
     expect(await getMarketListingStar("listing")).toEqual({ starCount: 2, starred: false });

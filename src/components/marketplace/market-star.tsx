@@ -20,6 +20,7 @@ export function MarketStar({ listingId, initialCount, initialStarred }: { listin
     try {
       const result = await request<{ starCount: number; starred: boolean }>(`/api/market/listings/${listingId}/star`, "PUT", { starred: pending.current });
       setState(result); pending.current = null;
+      window.dispatchEvent(new CustomEvent("ans:market-star-changed", { detail: { listingId } }));
     } catch { setError(t("starFailed")); }
     finally { flight.current = false; setBusy(false); }
   }

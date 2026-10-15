@@ -229,6 +229,7 @@
     "competition": "比赛与团队"
   },
   "children": {
+    "agri-wall": "农客松作品墙",
     "methods": "AI 方法",
     "notes": "课程与笔记",
     "research": "资料与研究",
@@ -533,7 +534,10 @@
       "REVIEW_ALREADY_SUBMITTED": "这份订单已经提交过评价。",
       "INSUFFICIENT_QUOTA": "积分不足，请补充积分后重试。",
       "SELLER_REVERSAL_REQUIRES_REVIEW": "卖家积分不足以追回已结算收入，请人工核对，退款尚未执行。",
-      "POINTS_ONLY": "站内交易仅支持积分支付，请刷新商品页后使用积分购买。"
+      "POINTS_ONLY": "站内交易仅支持积分支付，请刷新商品页后使用积分购买。",
+      "AGRI_WALL_CATEGORY_LOCKED": "已绑定参赛的作品必须保持农客松作品墙分类与免费展示。",
+      "AGRI_POPULARITY_VOTING_CLOSED": "计票时间刚已结束，请刷新后重试。后续 Star 不改变人气奖结果。",
+      "RATE_LIMITED": "操作有点频繁，请稍后再试。"
     },
     "pendingRequest": "上次操作还没确认。请先核对原请求，再继续填写。刷新或离开会丢失本页的临时恢复信息。",
     "recoverRequest": "核对原请求",
@@ -1101,7 +1105,11 @@
       "AGRI_PERMIT_INACTIVE": "许可已使用、撤回或到期，请联系负责人。",
       "AGRI_FIELD_NOT_ALLOWED": "修改包含许可范围之外的字段。",
       "AGRI_PROJECT_CHANGE_FORBIDDEN": "更正不能更换项目。",
-      "AGRI_NO_CHANGE": "更正内容与原提交相同。"
+      "AGRI_NO_CHANGE": "更正内容与原提交相同。",
+      "AGRI_WALL_REQUIRED": "请先发布作品并在农客松作品墙绑定本队。",
+      "AGRI_WALL_PUBLIC_PROJECT_REQUIRED": "作品必须通过审核并保持公开发布。",
+      "AGRI_WALL_PROJECT_MISMATCH": "请由作品负责人提交已绑定的同一项目。",
+      "AGRI_WALL_VERSION_CONFLICT": "公开作品已更新，请先回作品墙同步最新版本。"
     },
     "obsoleteMaterial": "材料 {key} 不符合最新规范，原内容仍保留。请移除后按新要求填写。",
     "removeMaterial": "移除不适用材料 {key}",

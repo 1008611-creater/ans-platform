@@ -34,7 +34,7 @@ async function request<T>(url: string, actorId: string, command?: unknown): Prom
 }
 const accountErrors = new Set(["ACCOUNT_CHANGED", "ACCOUNT_UNAVAILABLE", "UNAUTHORIZED"]);
 // On retries only a rejection after receipt lookup establishes that the original write did not commit.
-const receiptRejections = new Set(["AGRI_ROSTER_REQUIRED", "AGRI_LEGACY_ROSTER_REQUIRED", "AGRI_ROSTER_MEMBER_UNAVAILABLE", "AGRI_ROSTER_MEMBER_CONFLICT", "AGRI_ROSTER_ACTOR_REQUIRED", "AGRI_ROSTER_CHANGE_FORBIDDEN", "AGRI_ROSTER_PROJECT_MISMATCH", "AGRI_PRELIMINARY_BASELINE_REQUIRED", "AGRI_FINAL_PROJECT_MISMATCH", "AGRI_FINAL_BASELINE_CHANGE_FORBIDDEN", "AGRI_REVISION_CONFLICT", "AGRI_IDEMPOTENCY_CONFLICT", "AGRI_WORKSPACE_DISABLED", "AGRI_PROJECT_UNAVAILABLE", "AGRI_ARTIFACT_UNAVAILABLE", "AGRI_FROZEN", "AGRI_RULES_UNPUBLISHED", "AGRI_RULE_VERSION_CONFLICT", "AGRI_RULES_PENDING", "AGRI_NOT_OPEN", "AGRI_CLOSED", "AGRI_FINAL_ELIGIBILITY_REQUIRED", "AGRI_MATERIAL_REQUIRED", "AGRI_MATERIAL_KIND_MISMATCH", "AGRI_UNRECOGNIZED_MATERIAL", "AGRI_INVALID", "AGRI_REPOSITORY_REQUIRED", "AGRI_REPOSITORY_REF_REQUIRED", "AGRI_DEMO_REQUIRED", "AGRI_PERMIT_MISMATCH", "AGRI_PERMIT_NOT_FOUND", "AGRI_PERMIT_INACTIVE", "AGRI_FIELD_NOT_ALLOWED", "AGRI_PROJECT_CHANGE_FORBIDDEN", "AGRI_NO_CHANGE"]);
+const receiptRejections = new Set(["AGRI_WALL_REQUIRED", "AGRI_WALL_PUBLIC_PROJECT_REQUIRED", "AGRI_WALL_PROJECT_MISMATCH", "AGRI_WALL_VERSION_CONFLICT", "AGRI_ROSTER_REQUIRED", "AGRI_LEGACY_ROSTER_REQUIRED", "AGRI_ROSTER_MEMBER_UNAVAILABLE", "AGRI_ROSTER_MEMBER_CONFLICT", "AGRI_ROSTER_ACTOR_REQUIRED", "AGRI_ROSTER_CHANGE_FORBIDDEN", "AGRI_ROSTER_PROJECT_MISMATCH", "AGRI_PRELIMINARY_BASELINE_REQUIRED", "AGRI_FINAL_PROJECT_MISMATCH", "AGRI_FINAL_BASELINE_CHANGE_FORBIDDEN", "AGRI_REVISION_CONFLICT", "AGRI_IDEMPOTENCY_CONFLICT", "AGRI_WORKSPACE_DISABLED", "AGRI_PROJECT_UNAVAILABLE", "AGRI_ARTIFACT_UNAVAILABLE", "AGRI_FROZEN", "AGRI_RULES_UNPUBLISHED", "AGRI_RULE_VERSION_CONFLICT", "AGRI_RULES_PENDING", "AGRI_NOT_OPEN", "AGRI_CLOSED", "AGRI_FINAL_ELIGIBILITY_REQUIRED", "AGRI_MATERIAL_REQUIRED", "AGRI_MATERIAL_KIND_MISMATCH", "AGRI_UNRECOGNIZED_MATERIAL", "AGRI_INVALID", "AGRI_REPOSITORY_REQUIRED", "AGRI_REPOSITORY_REF_REQUIRED", "AGRI_DEMO_REQUIRED", "AGRI_PERMIT_MISMATCH", "AGRI_PERMIT_NOT_FOUND", "AGRI_PERMIT_INACTIVE", "AGRI_FIELD_NOT_ALLOWED", "AGRI_PROJECT_CHANGE_FORBIDDEN", "AGRI_NO_CHANGE"]);
 const selectClass = "w-full min-w-0 rounded-md border bg-background p-2 text-sm";
 function Field({ label, children }: { label: string; children: (id: string) => ReactNode }) {
   const id = useId(); return <div className="min-w-0 space-y-2"><label className="text-sm font-medium" htmlFor={id}>{label}</label>{children(id)}</div>;
@@ -99,10 +99,10 @@ function TeamStages({ actorId, invalidate, initialSelection }: { actorId: string
   </CardContent></Card>;
 }
 function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { actorId: string; initial: AgriStageDetail; manager: boolean; invalidate: () => void; onBack: () => void }) {
-  const t = useTranslations("product.agriSubmissions"); const locale = useLocale();
+  const t = useTranslations("product.agriSubmissions"); const wall = useTranslations("agriWall"); const locale = useLocale();
   const saved = readSubmissionRecovery(actorId, initial.id);
   const [detail, setDetail] = useState(saved?.detail ?? initial);
-  const [draft, setDraft] = useState<AgriStageDraft>(saved?.draft ?? initial.draft ?? initial.current?.content ?? emptyDraft());
+  const [draft, setDraft] = useState<AgriStageDraft>(saved?.draft ?? initial.draft ?? initial.current?.content ?? (initial.wall ? { ...emptyDraft(), projectId: initial.wall.projectId, artifactVersionId: initial.wall.artifactVersionId } : emptyDraft()));
   const [officialMemberIds, setOfficialMemberIds] = useState<string[]>(saved?.officialMemberIds ?? initial.officialRoster?.members.map(row => row.userId) ?? (initial.officialMemberChoices?.some(row => row.userId === actorId) ? [actorId] : []));
   const [baseline, setBaseline] = useState(saved?.baseline ?? JSON.stringify({ draft, officialMemberIds }));
   const [pending, setPending] = useState<AgriStageSubmissionCommand | null>(saved?.pending ?? null);
@@ -169,7 +169,8 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
   const rosterReady = !!detail.officialRoster || (officialMemberIds.length >= 1 && officialMemberIds.length <= 5 && officialMemberIds.includes(actorId));
   const baselineReady = detail.stage !== "FINAL" || (!!detail.preliminaryBaseline && detail.preliminaryBaseline.projectId === draft.projectId);
   const projectReady = !detail.officialRoster || detail.officialRoster.projectId === draft.projectId;
-  const canSubmit = rosterReady && projectReady && baselineReady && !detail.legacyRosterRequired && !locked && (correcting || (detail.windowState === "OPEN" && (detail.stage !== "FINAL" || detail.finalEligibility?.state === "ELIGIBLE"))) && !!rule && confirmed && !!draft.artifactVersionId && !!draft.summary.trim() && !issues.length;
+  const wallReady = detail.wall === undefined || (!!detail.wall?.published && detail.wall.synchronized && detail.wall.isOwner && detail.wall.projectId === draft.projectId);
+  const canSubmit = wallReady && rosterReady && projectReady && baselineReady && !detail.legacyRosterRequired && !locked && (correcting || (detail.windowState === "OPEN" && (detail.stage !== "FINAL" || detail.finalEligibility?.state === "ELIGIBLE"))) && !!rule && confirmed && !!draft.artifactVersionId && !!draft.summary.trim() && !issues.length;
   const ruleWindow = rule?.window;
   const message = (code: string) => t.has("errors." + code) ? t("errors." + code) : t("errors.INTERNAL_ERROR");
   function material(key: string, kind: "TEXT" | "LINK" | "ARTIFACT", value: string) {
@@ -177,7 +178,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     if (value.trim()) items.push(kind === "TEXT" ? { key, kind, text: value } : kind === "LINK" ? { key, kind, url: value } : { key, kind, artifactVersionId: value });
     edit({ ...draft, materials: { schemaVersion: 1, items } });
   }
-  const versionOptions = choices.filter(row => !detail.officialRoster || row.projectId === detail.officialRoster.projectId).map(value => <option key={value.id} value={value.id}>{value.projectTitle} · {value.artifactTitle} · v{value.version}</option>);
+  const versionOptions = choices.filter(row => (!detail.wall || row.projectId === detail.wall.projectId) && (!detail.officialRoster || row.projectId === detail.officialRoster.projectId)).map(value => <option key={value.id} value={value.id}>{value.projectTitle} · {value.artifactTitle} · v{value.version}</option>);
   return <div className="space-y-5">
     <AlertDialog open={leaveOpen} onOpenChange={open => { setLeaveOpen(open); if (!open && leaveAction.current) { leaveAction.current = null; cancelLeave.current?.(); cancelLeave.current = null; } }}>
       <AlertDialogContent onCloseAutoFocus={event => { event.preventDefault(); if (leaveFocus.current?.isConnected) leaveFocus.current.focus(); }}>
@@ -191,6 +192,13 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     </AlertDialog>
     <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="ghost" disabled={busy} onClick={() => navigation.run(onBack)}>{t("chooseTeam")}</Button><Badge variant="secondary">{t("stage." + detail.stage)}</Badge></div>
     <ol className="grid gap-2 text-sm sm:grid-cols-3">{["chooseVersion", "fillMaterials", "reviewSubmit"].map((key, i) => <li key={key} className="rounded-xl border bg-muted/30 p-3"><span className="mr-2 font-semibold">{i + 1}</span>{t(key)}</li>)}</ol>
+    <Card className="border-primary/25"><CardHeader><CardTitle>{wall("submissionWallTitle")}</CardTitle></CardHeader><CardContent className="space-y-3 text-sm leading-7">
+      <p>{wall(detail.wall?.published ? detail.wall.synchronized ? "submissionWallReady" : "submissionWallSync" : "submissionWallMissing")}</p>
+      {detail.wall && !detail.wall.isOwner && <p>{wall("submissionOwnerHint")}</p>}
+      <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><Link href="/explore/agrihackathon/submit">{wall("continueEntry")}</Link></Button>
+      {detail.wall && <Button asChild variant="ghost"><Link href={detail.wall.href}>{wall("viewProject")}</Link></Button>}
+      {detail.wall?.published && detail.wall.isOwner && <Button variant="outline" disabled={locked || !detail.wall.synchronized} onClick={() => edit({ ...draft, projectId: detail.wall!.projectId, artifactVersionId: detail.wall!.artifactVersionId })}>{wall("useWallVersion")}</Button>}</div>
+    </CardContent></Card>
     <Card><CardHeader><CardTitle>{t("rules")}</CardTitle></CardHeader><CardContent className="space-y-2 text-sm leading-6">
       <p>{t("window." + (detail.windowState === "INVALID" ? "RULES_PENDING" : detail.windowState))}</p>{ruleWindow?.state === "CONFIRMED" && <><p>{t("dates", { opens: time(ruleWindow.opensAt, locale), closes: time(ruleWindow.closesAt, locale) })}</p><p>{t(ruleWindow.includesDeadline ? "inclusive" : "exclusive")}</p></>}
       {rule?.guidanceMarkdown && <p className="whitespace-pre-wrap break-words">{rule.guidanceMarkdown}</p>}
@@ -211,7 +219,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     </CardContent></Card>
     <Card><CardHeader><CardTitle>{t("materials")}</CardTitle></CardHeader><CardContent className="space-y-5">
       <p className="text-sm text-muted-foreground">{t(manager ? "ownVersions" : "readOnlyMaterials")}</p>{choiceError && <Button variant="outline" disabled={busy} onClick={() => void versions()}>{t("retryVersions")}</Button>}
-      <Field label={t("version")}>{id => <select id={id} value={draft.artifactVersionId ?? ""} disabled={locked} className={selectClass} onChange={e => { const choice = choices.find(row => row.id === e.target.value && (!detail.officialRoster || row.projectId === detail.officialRoster.projectId)); if (choice) edit({ ...draft, projectId: choice.projectId, artifactVersionId: choice.id }); }}><option value="">{t("selectVersion")}</option>{draft.artifactVersionId && !choices.some(row => row.id === draft.artifactVersionId) && <option value={draft.artifactVersionId}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>}</Field>
+      <Field label={t("version")}>{id => <select id={id} value={draft.artifactVersionId ?? ""} disabled={locked} className={selectClass} onChange={e => { const choice = choices.find(row => row.id === e.target.value && (!detail.wall || row.projectId === detail.wall.projectId) && (!detail.officialRoster || row.projectId === detail.officialRoster.projectId)); if (choice) edit({ ...draft, projectId: choice.projectId, artifactVersionId: choice.id }); }}><option value="">{t("selectVersion")}</option>{draft.artifactVersionId && !choices.some(row => row.id === draft.artifactVersionId) && <option value={draft.artifactVersionId}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>}</Field>
       {cursor && <Button variant="outline" disabled={busy || versionsLoading} onClick={() => void versions(cursor)}>{t("moreVersions")}</Button>}
       {versionsLoading && <p role="status">{t("loading")}</p>}
       {manager && !versionsLoading && !choices.length && !choiceError && <p className="text-sm">{t("noVersions")}</p>}

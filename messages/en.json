@@ -2666,9 +2666,9 @@
         "description": "Strongest on innovation"
       },
       "popular": {
-        "label": "On-site popularity award",
+        "label": "Popularity award",
         "amount": "Honorary",
-        "description": "Selected separately on site, distinct from preliminary public scoring."
+        "description": "Selected by valid ANS Stars on the AgriHackathon wall during the announced window, independently of jury scoring. Results are sealed at the deadline; tied leaders share the award, and no award is given if every project has zero votes."
       }
     },
     "rulesTitle": "Rules and compliance",

@@ -16,7 +16,7 @@ export async function marketTransaction<T>(run: (tx: DbTransaction) => Promise<T
       return await db.$transaction(run, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, timeout: 10000 });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2002"].includes(error.code)
-        || (error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code))))) {
+        || (error.code === "P2010" && ["40001", "40P01", "55P03"].includes(String(error.meta?.code))))) {
         if (attempt < 2) continue;
         throw new MarketRuleError("CONFLICT");
       }

@@ -1,3 +1,4 @@
+import { lockAgriPopularityForListing, syncAgriPopularityStar } from "@/server/competitions/agrihackathon/popularity";
 import type { DbTransaction } from "@/lib/db";
 import { marketStarInputSchema } from "@/contracts/marketplace";
 import { MarketRuleError } from "@/domain/marketplace/order";
@@ -31,6 +32,7 @@ export async function getMarketListingStar(listingId: string, userId?: string) {
 export async function setMarketListingStar(listingId: string, userId: string, raw: unknown) {
   const input = marketStarInputSchema.parse(raw);
   return marketTransaction(async tx => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketActor(tx, userId);
     await requirePublicListing(tx, listingId);
     if (input.starred) {
@@ -41,6 +43,7 @@ export async function setMarketListingStar(listingId: string, userId: string, ra
     } else {
       await tx.marketListingStar.deleteMany({ where: { userId, listingId } });
     }
+    await syncAgriPopularityStar(tx, listingId, userId, input.starred);
     return starState(tx, listingId, userId);
   });
 }
