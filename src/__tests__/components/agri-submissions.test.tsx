@@ -4,12 +4,13 @@ import { WorkspaceNavigationProvider, useWorkspaceNavigation } from "@/component
 import { AgriSubmissions } from "@/components/competitions/agri-submissions";
 import { clearSubmissionRecoveries, AgriSubmissionSessionBoundary } from "@/components/competitions/agri-submission-recovery";
 import type { AgriStageDetail } from "@/contracts/agri-submissions";
+import wallMessages from "../../../messages/agri-wall/zh.json";
 import messages from "../../../messages/product/zh.json";
 const mocks = vi.hoisted(() => ({ session: { status: "authenticated", data: { user: { id: "actor-a" } } }, update: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ ...mocks.session, update: mocks.update }) }));
-vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: () => {
-  const lookup = (key: string) => key.split(".").reduce<unknown>((value, part) => value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined, messages.agriSubmissions);
+vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: (namespace: string) => {
+  const lookup = (key: string) => key.split(".").reduce<unknown>((value, part) => value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined, namespace === "agriWall" ? wallMessages : messages.agriSubmissions);
   const t = (key: string, values?: Record<string, string | number>) => { let result = String(lookup(key) ?? key); for (const [name, value] of Object.entries(values ?? {})) result = result.replace("{" + name + "}", String(value)); return result; }; t.has = (key: string) => typeof lookup(key) === "string"; return t;
 } }));
 const copy = messages.agriSubmissions; const api = "/api/competitions/agrihackathon/submissions";
@@ -20,6 +21,7 @@ let fetchMock: ReturnType<typeof vi.fn<(url: string, init?: RequestInit) => Prom
 beforeEach(() => {
   clearSubmissionRecoveries(); mocks.session = { status: "authenticated", data: { user: { id: "actor-a" } } };
   detail = { officialMemberChoices: [{ userId: "actor-a", username: "actor-a", name: null }], competitionId: "competition", id: "stage", teamCompetitionId: "entry", stage: "PRELIMINARY", revision: 1,
+    wall: { id: "wall", listingId: "listing", projectId: "project", artifactVersionId: "version", published: true, synchronized: true, isOwner: true, href: "/market/fixture" },
     frozenSubmissionId: null, workspaceEnabled: true, hasPrivateMaterials: true, draft: null, current: null, history: [], nextBeforeSequence: null,
     publishedRule: { id: "rule", guidanceMarkdown: "Fixture guidance", requirements: { schemaVersion: 1, repositoryRequired: false, repositoryRefRequired: false, demoRequired: false, materials: [] },
       window: { stage: "PRELIMINARY", state: "CONFIRMED", opensAt: "2026-10-07T00:00:00Z", closesAt: "2027-01-01T00:00:00Z", includesDeadline: false, confirmedById: "staff", confirmedAt: "2026-10-06T00:00:00Z" } }, windowState: "OPEN", serverNow: "2026-10-08T00:00:00Z" };
@@ -193,5 +195,28 @@ describe("official roster and final baseline", () => {
     await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
     expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
     expect(screen.getByText(copy.errors.AGRI_PRELIMINARY_BASELINE_REQUIRED)).toBeInTheDocument();
+  });
+});
+
+
+describe("wall publication requirement", () => {
+  it("blocks formal submission without a wall while keeping drafts usable", async () => {
+    detail.wall = null;
+    await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
+    expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
+    expect(screen.getByRole("button", { name: copy.save })).toBeEnabled();
+    expect(screen.getByText(wallMessages.submissionWallMissing)).toBeInTheDocument();
+  });
+  it("preselects the free imported wall version without an AI generation step", async () => {
+    await open();
+    expect(screen.getByLabelText(copy.version)).toHaveValue("version");
+    expect(screen.getByText(wallMessages.submissionWallReady)).toBeInTheDocument();
+  });
+  it("requires a current published snapshot and the linked project owner", async () => {
+    detail.wall = { ...detail.wall!, synchronized: false, isOwner: false };
+    await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
+    expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
+    expect(screen.getByText(wallMessages.submissionWallSync)).toBeInTheDocument();
+    expect(screen.getByText(wallMessages.submissionOwnerHint)).toBeInTheDocument();
   });
 });

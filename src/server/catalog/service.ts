@@ -6,6 +6,7 @@ import { catalogActionSchema, catalogEntrySchema, catalogSaveSchema, type Catalo
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 import { listMarketListings } from "@/server/marketplace/listings";
 import { memberCatalogProject } from "@/domain/catalog/member-project";
+import { readAgriWall } from "@/server/competitions/agrihackathon/wall";
 import { mergeCatalog } from "@/domain/catalog/content";
 
 export class CatalogError extends Error {
@@ -17,19 +18,29 @@ async function requireEditor(tx: DbTransaction, userId: string) {
 }
 async function loadPublishedCatalog() {
   // No catch/fallback: an unavailable DB must not silently resurrect withdrawn content.
-  const official = await db.$transaction(async (tx) => {
-    const rows = await tx.catalogProject.findMany({ select: { id: true, slug: true, withdrawn: true, publishedRevision: true }, orderBy: { createdAt: "asc" } });
-    const pointers = rows.flatMap(row => row.publishedRevision === null || row.withdrawn ? [] : [{ projectId: row.id, revision: row.publishedRevision }]);
-    const versions = pointers.length ? await tx.catalogProjectVersion.findMany({ where: { OR: pointers }, select: { projectId: true, revision: true, payload: true } }) : [];
-    const snapshots = new Map(versions.map(version => [version.projectId + ":" + version.revision, version.payload]));
-    return mergeCatalog(CATALOG_PROJECTS, rows.map(row => ({ slug: row.slug, withdrawn: row.withdrawn,
-      published: row.publishedRevision === null || row.withdrawn ? null : catalogEntrySchema.parse(snapshots.get(row.id + ":" + row.publishedRevision)),
-    })));
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  // One statement reads the publication pointer and its immutable version in one
+  // PostgreSQL snapshot, without an interactive transaction crossing pooler calls.
+  const rows = await db.$queryRaw<{
+    slug: string; withdrawn: boolean; publishedRevision: number | null; payload: unknown;
+  }[]>`
+    SELECT p."slug", p."withdrawn", p."publishedRevision", v."payload"
+    FROM "catalog_projects" AS p
+    LEFT JOIN "catalog_project_versions" AS v
+      ON v."projectId" = p."id" AND v."revision" = p."publishedRevision"
+      AND p."withdrawn" = false
+    ORDER BY p."createdAt" ASC
+  `;
+  const official = mergeCatalog(CATALOG_PROJECTS, rows.map(row => ({
+    slug: row.slug,
+    withdrawn: row.withdrawn,
+    published: row.publishedRevision === null || row.withdrawn ? null : catalogEntrySchema.parse(row.payload),
+  })));
   const retired = new Set(["resume-website", "resume-story", "project-page", "readme-kit", "competition-starter", "pitch-kit", "learning-retrospective", "grok-motion-lab", "open-resume", "dify-agent"]);
   // Runnable recipe listings belong to workflows and market, not project discovery.
-  const members = (await listMarketListings()).filter(offer => !offer.listing.execution).map(memberCatalogProject);
-  return [...official.filter(entry => !retired.has(entry.slug)), ...members];
+  const [offers, wall] = await Promise.all([listMarketListings(), readAgriWall()]);
+  const members = offers.filter(offer => !offer.listing.execution && offer.listing.subcategory !== "agri-wall").map(memberCatalogProject);
+  members.push(...wall.entries.map(entry => memberCatalogProject(entry.offer)));
+  return [...official.filter(entry => !retired.has(entry.slug) && entry.subcategory !== "agri-wall"), ...members];
 }
 // Share only in-flight public reads. Do not cache completed data or private queries.
 let publishedInFlight: ReturnType<typeof loadPublishedCatalog> | null = null;

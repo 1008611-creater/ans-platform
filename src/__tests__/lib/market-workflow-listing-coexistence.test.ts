@@ -1,12 +1,13 @@
 ﻿// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ actor: vi.fn(), moderator: vi.fn(), binding: vi.fn(), cover: vi.fn(), find: vi.fn(), unique: vi.fn(), create: vi.fn(), update: vi.fn(), updateMany: vi.fn(), versionFind: vi.fn(), versionCreate: vi.fn(), versionUpdate: vi.fn(), audit: vi.fn() }));
+const m = vi.hoisted(() => ({ raw: vi.fn(), actor: vi.fn(), moderator: vi.fn(), binding: vi.fn(), cover: vi.fn(), find: vi.fn(), unique: vi.fn(), create: vi.fn(), update: vi.fn(), updateMany: vi.fn(), versionFind: vi.fn(), versionCreate: vi.fn(), versionUpdate: vi.fn(), audit: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: {} }));
 vi.mock("@/server/growth/service", () => ({ safeAwardGrowthEvent: vi.fn() }));
 vi.mock("@/server/marketplace/workflow-binding", () => ({ assertMarketWorkflowBinding: m.binding }));
 vi.mock("@/server/marketplace/media-access", () => ({ requireMarketCoverOwnership: m.cover }));
 vi.mock("@/server/marketplace/shared", () => ({ requireMarketActor: m.actor, requireMarketModerator: m.moderator,
   marketTransaction: (run: (tx: unknown) => Promise<unknown>) => run({
+    $queryRaw: m.raw,
     marketListing: { findFirst: m.find, findUnique: m.unique, create: m.create, update: m.update, updateMany: m.updateMany },
     marketListingVersion: { findUniqueOrThrow: m.versionFind, create: m.versionCreate, update: m.versionUpdate }, auditLog: { create: m.audit },
   }),
@@ -17,7 +18,7 @@ const payload = { slug: "workflow-resource", title: "Workflow resource", summary
 const tier = { id: "paid", title: "Paid", description: "Paid delivery", priceMinor: 100, deliverables: ["Source"] };
 const writes = () => [m.create, m.update, m.updateMany, m.versionCreate, m.versionUpdate, m.audit];
 beforeEach(() => {
-  vi.resetAllMocks();
+  vi.resetAllMocks(); m.raw.mockResolvedValue([]);
   m.unique.mockImplementation(async ({ where }) => where.slug ? null : { id: "listing", sellerId: "seller", currentVersion: 1, official: false });
   m.find.mockResolvedValue({ id: "listing", sellerId: "seller", currentVersion: 1, slug: payload.slug });
   m.create.mockResolvedValue({ id: "listing" }); m.updateMany.mockResolvedValue({ count: 1 }); m.versionCreate.mockResolvedValue({ id: "version-2", version: 2 });

@@ -1,3 +1,4 @@
+import type { AgriWallBinding } from "./agri-wall";
 import { z } from "zod";
 import type { AgriCorrectionPermitView } from "./agri-decisions";
 import { agriSubmissionWindowSchema } from "./agrihackathon";
@@ -190,6 +191,7 @@ export interface AgriOfficialRoster {
 export interface AgriStageDetail {
   competitionId: string; id: string; teamCompetitionId: string; stage: "PRELIMINARY" | "FINAL";
   revision: number; frozenSubmissionId: string | null; recordedFrozenSubmissionId?: string | null; frozenByDeadline?: boolean; workspaceEnabled: boolean; hasPrivateMaterials: boolean;
+  wall?: AgriWallBinding | null;
   officialRoster?: AgriOfficialRoster | null;
   officialMemberChoices?: Array<{ userId: string; username: string; name: string | null }>;
   legacyRosterRequired?: boolean;

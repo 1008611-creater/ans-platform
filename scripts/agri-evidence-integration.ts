@@ -52,11 +52,22 @@ async function main() {
         )::text AS snapshot`;
         return row.snapshot;
     };
+    const wallSnapshot = async (competitionId: string) => {
+        const [row] = await db.$queryRaw<Array<{ snapshot: string }>>`SELECT jsonb_build_object(
+            'wall',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM agri_wall_entries t WHERE "competitionId"=${competitionId}),
+            'rounds',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM agri_popularity_rounds t WHERE "competitionId"=${competitionId}),
+            'votes',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM agri_popularity_votes t WHERE "competitionId"=${competitionId})
+        )::text AS snapshot`;
+        return row.snapshot;
+    };
     const { executeAgriWorkspaceCommand: rules, readAgriWorkspaceRules: getRules, lockAgriWorkspace } = await import("../src/server/competitions/agrihackathon/workspace");
     const { prepareAgriStage: prepare, executeAgriSubmissionCommand: submit, exportAgriWorks: csv, listAgriStages, readAgriStage } = await import("../src/server/competitions/agrihackathon/submissions");
     const { createEvidence, listEvidence, executeEvidenceCommand: command, authorizedEvidenceDownload: download, evidenceTransition, evidenceRequest, bindEvidenceIntents, evidenceBudget } = await import("../src/server/competitions/agrihackathon/evidence");
     const { uploadEvidence, runEvidenceWorkerOnce } = await import("../src/server/competitions/agrihackathon/evidence-worker");
     const { readEvidence, storeEvidence, inspectEvidence, evidenceObjectKey } = await import("../src/server/competitions/agrihackathon/evidence-storage");
+    const { executeAgriWallCommand: wallCommand, readAgriWall: wall } = await import("../src/server/competitions/agrihackathon/wall");
+    const { createMarketListing, submitMarketListing, reviewMarketListing, withdrawMarketListing } = await import("../src/server/marketplace/listings");
+    const { setMarketListingStar } = await import("../src/server/marketplace/stars");
     const { createAgriRecordArchive: createArchive, readAgriRecordArchive: archive } = await import("../src/server/competitions/agrihackathon/record-archive");
     const { canonicalAgriArchiveJSON } = await import("../src/contracts/agri-record-archive");
     const { reconcileEvidenceReservations } = await import("../src/server/competitions/agrihackathon/evidence-maintenance");
@@ -127,6 +138,12 @@ async function main() {
                     assert.ok(actual.task.blockingInput);
                 }
             });
+            await check("fresh Node retains nonempty wall, votes and frozen round alongside v1/v2/v3 evidence", async () => {
+                assert.equal(await wallSnapshot(f.competitionId), f.wallSnapshot);
+                const snapshot = JSON.parse(f.wallSnapshot);
+                assert.ok(snapshot.wall.length > 0); assert.equal(snapshot.rounds.length, 1); assert.ok(snapshot.votes.length > 0);
+                assert.ok(snapshot.rounds[0].frozenAt); assert.ok(snapshot.rounds[0].results.length > 0);
+            });
             passed = true;
             return;
         }
@@ -157,7 +174,27 @@ async function main() {
         const rule = await rules(owner.id, { action: "confirmRules", idempotencyKey: randomUUID(), expectedRevision: rev++ });
         await rules(owner.id, { action: "publishRules", idempotencyKey: randomUUID(), expectedRevision: rev++, ruleVersionId: rule.resourceId });
         await rules(owner.id, { action: "setEnabled", idempotencyKey: randomUUID(), expectedRevision: rev, enabled: true });
-        async function teamFixture(actor: string, label: string) { const team = await db.team.create({ data: { name: prefix + label, slug: prefix + label, ownerId: actor }, select: { id: true } }); await db.teamMember.create({ data: { teamId: team.id, userId: actor, role: "OWNER" } }); const entry = await db.teamCompetition.create({ data: { teamId: team.id, competitionId: edition.id }, select: { id: true } }); const project = await db.project.create({ data: { title: "LOCAL ONLY", ownerId: actor, teamId: team.id, goal: "CONTEST" }, select: { id: true } }); const artifact = await db.artifact.create({ data: { projectId: project.id, createdById: actor, kind: "CONTEST_MVP", workflowId: "local-evidence-fixture", title: "LOCAL ONLY" }, select: { id: true } }); const version = await db.artifactVersion.create({ data: { artifactId: artifact.id, createdById: actor, version: 1, contentJson: { fixture: true }, contentMarkdown: "LOCAL ONLY", factSnapshotHash: "fixture" }, select: { id: true } }); const stage = await prepare(actor, { action: "prepareStage", teamCompetitionId: entry.id, stage: "PRELIMINARY" }); return { team, entry, project, version, stage }; }
+        async function teamFixture(actor: string, label: string, bind = true) {
+            const team = await db.team.create({ data: { name: prefix + label, slug: prefix + label, ownerId: actor }, select: { id: true } });
+            await db.teamMember.create({ data: { teamId: team.id, userId: actor, role: "OWNER" } });
+            const entry = await db.teamCompetition.create({ data: { teamId: team.id, competitionId: edition.id }, select: { id: true } });
+            const listing = await createMarketListing(actor, { slug: prefix + label, title: "LOCAL ONLY " + label, summary: "Synthetic local competition entry for combined evidence verification.", description: "Synthetic public project created and reviewed only in a guarded disposable database.", category: "competition", subcategory: "agri-wall", fulfillment: "resource", priceMinor: 0, currency: "CNY", deliveryDays: 1, revisionLimit: 0, computeIncluded: false, deliverables: ["Local synthetic demo"], licenseTerms: "Synthetic isolated fixture only.", usageUrl: "https://example.invalid/demo" });
+            await submitMarketListing(listing.id, actor, 1);
+            await reviewMarketListing(listing.id, outsider.id, 1, true, "LOCAL ONLY independent fixture review");
+            let projectId: string, versionId: string;
+            if (bind) {
+                const binding = await wallCommand(actor, { action: "bind", teamCompetitionId: entry.id, listingId: listing.id, expectedVersion: 1 });
+                assert.ok("projectId" in binding && typeof binding.projectId === "string" && "artifactVersionId" in binding && typeof binding.artifactVersionId === "string");
+                projectId = binding.projectId; versionId = binding.artifactVersionId;
+            } else {
+                const project = await db.project.create({ data: { title: "LOCAL unbound project", ownerId: actor, teamId: team.id, goal: "CONTEST" }, select: { id: true } });
+                const artifact = await db.artifact.create({ data: { projectId: project.id, createdById: actor, kind: "CONTEST_MVP", workflowId: "local-unbound-evidence-fixture", title: "LOCAL ONLY" }, select: { id: true } });
+                const version = await db.artifactVersion.create({ data: { artifactId: artifact.id, createdById: actor, version: 1, contentJson: { fixture: true }, contentMarkdown: "LOCAL ONLY", factSnapshotHash: "fixture" }, select: { id: true } });
+                projectId = project.id; versionId = version.id;
+            }
+            const stage = await prepare(actor, { action: "prepareStage", teamCompetitionId: entry.id, stage: "PRELIMINARY" });
+            return { team, entry, listing, project: { id: projectId }, version: { id: versionId }, stage };
+        }
         const a = await teamFixture(owner.id, "a"), b = await teamFixture(other.id, "b");
         const intent = { action: "create", idempotencyKey: randomUUID(), entryStageId: a.stage.entryStageId, submissionId: null, projectId: a.project.id, artifactVersionId: a.version.id, mode: "UPLOAD", kind: "SUPPORTING_FILE", fileName: "LOCAL ??.txt", sourceUrl: null, originalRef: null };
         let requestId = "", objectId = "", submissionId = "", archiveId = "", archiveHash = "";
@@ -176,6 +213,28 @@ async function main() {
             const accepted = await submit(ordinaryUser.id, { action: "submit", idempotencyKey: randomUUID(), entryStageId: ordinary.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [ordinaryUser.id], content: { ...content, projectId: ordinary.project.id, artifactVersionId: ordinary.version.id } });
             assert.ok(accepted.submissionId);
             process.env.ANS_AGRI_EVIDENCE_ENABLED = "true";
+        });
+        await check("unbound and withdrawn wall reject submit without consuming prepared evidence or creating receipts", async () => {
+            const unboundUser = await user("unbound"), f = await teamFixture(unboundUser.id, "unbound", false);
+            const unboundIntent = await createEvidence(unboundUser.id, { ...intent, idempotencyKey: randomUUID(), entryStageId: f.stage.entryStageId, projectId: f.project.id, artifactVersionId: f.version.id });
+            await upload(unboundUser.id, unboundIntent.requestId);
+            const input = { action: "submit", idempotencyKey: randomUUID(), entryStageId: f.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [unboundUser.id], evidenceIntentIds: [unboundIntent.requestId], content: { projectId: f.project.id, artifactVersionId: f.version.id, repository: null, demoUrl: null, summary: "LOCAL unbound", materials: { schemaVersion: 1, items: [] } } };
+            const before = await db.agriStageSubmission.count();
+            await assert.rejects(submit(unboundUser.id, input), /AGRI_WALL_REQUIRED/);
+            assert.equal(await db.agriStageSubmission.count(), before);
+            assert.equal((await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: unboundIntent.requestId } })).state, "UPLOADED");
+            const withdrawnUser = await user("withdrawn"), w = await teamFixture(withdrawnUser.id, "withdrawn");
+            const withdrawnIntent = await createEvidence(withdrawnUser.id, { ...intent, idempotencyKey: randomUUID(), entryStageId: w.stage.entryStageId, projectId: w.project.id, artifactVersionId: w.version.id });
+            await upload(withdrawnUser.id, withdrawnIntent.requestId);
+            await withdrawMarketListing(w.listing.id, withdrawnUser.id);
+            const withdrawn = { ...input, idempotencyKey: randomUUID(), entryStageId: w.stage.entryStageId, officialMemberIds: [withdrawnUser.id], evidenceIntentIds: [withdrawnIntent.requestId], content: { ...input.content, projectId: w.project.id, artifactVersionId: w.version.id } };
+            await assert.rejects(submit(withdrawnUser.id, withdrawn), /AGRI_WALL_PUBLIC_PROJECT_REQUIRED/);
+            assert.equal(await db.agriStageSubmission.count(), before);
+            for (const id of [unboundIntent.requestId, withdrawnIntent.requestId]) {
+                const row = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id } });
+                assert.equal(row.state, "UPLOADED"); assert.equal(row.submissionId, null); assert.equal(row.bindingState, "PREPARED");
+            }
+            assert.equal(await db.agriSubmissionReceipt.count({ where: { actorId: { in: [unboundUser.id, withdrawnUser.id] }, operation: "submit" } }), 0);
         });
         await check("formal submission binds same-team exact-version uploaded bytes atomically", async () => { const content = { projectId: a.project.id, artifactVersionId: a.version.id, repository: { url: "https://github.com/ans-local-fixture/no-external-calls", ref: { kind: "COMMIT_SHA", value: "a".repeat(40) } }, demoUrl: null, summary: "LOCAL ONLY fixture", materials: { schemaVersion: 1, items: [] } }; const result = await submit(owner.id, { action: "submit", idempotencyKey: randomUUID(), entryStageId: a.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [owner.id], evidenceIntentIds: [requestId], content }); assert.ok(result.submissionId); submissionId = result.submissionId; const row = await db.agriEvidenceObject.findUniqueOrThrow({ where: { id: objectId } }); assert.equal(row.submissionId, submissionId); assert.equal(row.sha256, hash); });
         const before = await db.user.findMany({ where: { id: { in: [owner.id, staff.id] } }, select: { id: true, xp: true, quotaPoints: true }, orderBy: { id: "asc" } });
@@ -504,7 +563,19 @@ async function main() {
                 assert.ok(created.task);
             }
         });
-        await writeFile(resolve(dir, "fixture.json"), JSON.stringify({ competitionId: edition.id, ownerId: owner.id, staffId: staff.id, objectId, archiveId, archiveHash, taskSnapshot: await taskSnapshot(edition.id) }));
+        await check("wall popularity freezes real isolated votes without rewriting evidence or fixed archives", async () => {
+            const voter = await user("combined-voter");
+            const [now] = await db.$queryRaw<Array<{ now: Date }>>`SELECT clock_timestamp() AS now`;
+            const opensAt = new Date(now.now.getTime() + 300), closesAt = new Date(now.now.getTime() + 3000);
+            await wallCommand(owner.id, { action: "configurePopularity", expectedRevision: 0, opensAt: opensAt.toISOString(), closesAt: closesAt.toISOString() });
+            await new Promise(resolve => setTimeout(resolve, Math.max(0, opensAt.getTime() - Date.now()) + 50));
+            await setMarketListingStar(a.listing.id, voter.id, { starred: true });
+            await new Promise(resolve => setTimeout(resolve, Math.max(0, closesAt.getTime() - Date.now()) + 50));
+            const result = await wall(); assert.equal(result.round?.state, "CLOSED");
+            assert.equal(result.round?.results.find(row => row.listingId === a.listing.id)?.votes, 1);
+            assert.equal((await archive(staff.id, archiveId)).archive.sha256, archiveHash);
+        });
+        await writeFile(resolve(dir, "fixture.json"), JSON.stringify({ competitionId: edition.id, ownerId: owner.id, staffId: staff.id, objectId, archiveId, archiveHash, taskSnapshot: await taskSnapshot(edition.id), wallSnapshot: await wallSnapshot(edition.id) }));
         passed = true;
     }
     finally {

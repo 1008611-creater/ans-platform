@@ -1,3 +1,4 @@
+import { agriWallErrorCode } from "./wall-http";
 import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { fail, ok } from "@/server/http/respond";
@@ -13,6 +14,8 @@ export async function agriSubmissionResponse<T>(request: Request, run: (actorId:
   } catch (error) {
     if (error instanceof ZodError) return fail("INVALID_INPUT", "INVALID_INPUT", { status: 400 });
     if (error instanceof AgriWorkspaceError || error instanceof HttpRequestError) return fail(error.code, error.code, { status: error.status });
+    const guard = agriWallErrorCode(error);
+    if (guard) return fail(guard, guard, { status: 409 });
     return fail("INTERNAL_ERROR", "INTERNAL_ERROR", { status: 500 });
   }
 }
