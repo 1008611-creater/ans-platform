@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { DEFAULT_COMPANION_MODEL } from "./companion-model";
 const message = z.object({ role: z.enum(["user", "assistant"]), content: z.string().trim().min(1).max(2400) }).strict();
 export const agentInputSchema = z.object({
   messages: z.array(message).min(1).max(12),
   pathname: z.string().max(180).regex(/^\/(?:[A-Za-z0-9_/-]*|@[A-Za-z0-9_-]+)$/).refine(path => !path.includes("//")),
   locale: z.enum(["zh", "en"]),
   privateAccess: z.boolean().default(false),
-  model: z.enum(["deepseek-v4.1-flash", "gpt-6-astra", "gpt-6.1-sol"]).default("deepseek-v4.1-flash"),
+  model: z.enum(["deepseek-v4.1-flash", "gpt-6-astra", "gpt-6.1-sol"]).default(DEFAULT_COMPANION_MODEL),
 }).strict().refine(input => input.messages.at(-1)?.role === "user", { message: "Last turn must be a user message" })
   .refine(input => input.messages.reduce((sum, item) => sum + item.content.length, 0) <= 9000, { message: "Conversation too large" });
 export const agentRequestSchema = z.discriminatedUnion("action", [

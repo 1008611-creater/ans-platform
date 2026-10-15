@@ -23,6 +23,7 @@ export const RUN_REASONING_EFFORT_LABELS: Record<RunReasoningEffort, string> = {
 };
 
 export const DEFAULT_RUN_MODEL: RunModelKey = "deepseek-v4.1-flash";
+export { DEFAULT_COMPANION_MODEL } from "@/contracts/companion-model";
 
 export function getRunModel(key: string): RunModelOption | undefined {
   return RUN_MODEL_OPTIONS.find((model) => model.key === key);

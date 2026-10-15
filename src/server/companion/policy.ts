@@ -2,8 +2,8 @@ import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto
 import { z } from "zod";
 import type { AgentInput } from "@/contracts/companion-agent";
 import { validateCodexPayload } from "@/server/integrations/codex-gateway";
-import { DEFAULT_RUN_MODEL, RUN_MODEL_METERING, type RunModelKey } from "@/lib/run-models";
-export const AGENT_MODEL = DEFAULT_RUN_MODEL;
+import { DEFAULT_COMPANION_MODEL, RUN_MODEL_METERING, type RunModelKey } from "@/lib/run-models";
+export const AGENT_MODEL = DEFAULT_COMPANION_MODEL;
 export const AGENT_CALL_LIMIT = 3;
 export const AGENT_OUTPUT_LIMIT = 900;
 export const AGENT_BODY_LIMIT = 48000;

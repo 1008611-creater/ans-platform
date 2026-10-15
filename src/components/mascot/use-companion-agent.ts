@@ -1,17 +1,17 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AgentEvent, AgentInput, AgentLink, AgentQuote, AgentReceipt } from "@/contracts/companion-agent";
-import { DEFAULT_RUN_MODEL, type RunModelKey } from "@/lib/run-models";
+import { DEFAULT_COMPANION_MODEL, type RunModelKey } from "@/lib/run-models";
 import { useAgentRecovery } from "./use-agent-recovery";
 export type AgentPhase = "idle" | "quoting" | "confirm" | "thinking" | "reading" | "answering" | "complete" | "error" | "stopped";
 export type CompanionMessage = { id: number; role: "guide" | "user"; text: string };
-export function conversationInput(messages: CompanionMessage[], text: string, pathname: string, locale: "zh" | "en", privateAccess: boolean, model: RunModelKey = DEFAULT_RUN_MODEL): AgentInput {
+export function conversationInput(messages: CompanionMessage[], text: string, pathname: string, locale: "zh" | "en", privateAccess: boolean, model: RunModelKey = DEFAULT_COMPANION_MODEL): AgentInput {
   const history = [...messages.filter(item => item.text.trim()).map(item => ({ role: item.role === "guide" ? "assistant" as const : "user" as const, content: item.text.slice(0, 2400) })), { role: "user" as const, content: text.trim().slice(0, 1200) }].slice(-12);
   while (history.length > 1 && history.reduce((sum, item) => sum + item.content.length, 0) > 9000) history.shift();
   // Send a route hint only. Search strings, document content and form values stay out.
   return { messages: history, pathname, locale, privateAccess, model };
 }
-export function useCompanionAgent(actor: string | null, pathname: string, locale: "zh" | "en", onAnswer: (text: string, links: AgentLink[]) => void, onUser: (text: string) => void, model: RunModelKey = DEFAULT_RUN_MODEL, storageReady = true) {
+export function useCompanionAgent(actor: string | null, pathname: string, locale: "zh" | "en", onAnswer: (text: string, links: AgentLink[]) => void, onUser: (text: string) => void, model: RunModelKey = DEFAULT_COMPANION_MODEL, storageReady = true) {
   const recovery = useAgentRecovery(actor, storageReady);
   const [phase, setPhase] = useState<AgentPhase>("idle");
   const [quote, setQuote] = useState<AgentQuote | null>(null);
