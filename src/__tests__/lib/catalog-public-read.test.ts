@@ -7,6 +7,8 @@ const database = vi.hoisted(() => ({ $queryRaw: vi.fn(), $transaction: vi.fn() }
 vi.mock("@/lib/db", () => ({ db: database }));
 vi.mock("@/server/marketplace/listings", () => ({ listMarketListings: vi.fn(async () => []) }));
 vi.mock("@/server/competitions/agrihackathon/wall", () => ({ readAgriWall: vi.fn(async () => ({ entries: [] })) }));
+import { listMarketListings } from "@/server/marketplace/listings";
+import { readAgriWall } from "@/server/competitions/agrihackathon/wall";
 import { listPublishedCatalog } from "@/server/catalog/service";
 
 const text = Object.fromEntries(CATALOG_TEXT_FIELDS.map(field => [field, "Published " + field])) as CatalogEntry["content"]["zh"];
@@ -64,6 +66,16 @@ describe("public catalog snapshot reads", () => {
     database.$queryRaw.mockResolvedValueOnce([row({ withdrawn: true, payload: null })]);
     expect((await listPublishedCatalog()).some(project => project.slug === entry.slug)).toBe(false);
     expect(database.$queryRaw).toHaveBeenCalledTimes(2);
+  });
+
+  it("starts independent market and wall reads while the publication snapshot is pending", async () => {
+    let resolveRows!: (rows: ReturnType<typeof row>[]) => void;
+    database.$queryRaw.mockReturnValueOnce(new Promise(resolve => { resolveRows = resolve; }));
+    const pending = listPublishedCatalog();
+    expect(listMarketListings).toHaveBeenCalledTimes(1);
+    expect(readAgriWall).toHaveBeenCalledTimes(1);
+    resolveRows([row()]);
+    expect(await pending).toContainEqual(entry);
   });
 
   it("propagates a database failure and clears it for the next request", async () => {

@@ -22,18 +22,15 @@ export async function GET() {
   }
 
   try {
-    // Count pending change requests on user's prompts
-    const pendingCount = await db.changeRequest.count({
+    // Independent account-scoped reads must not wait for one another.
+    const [pendingCount, commentNotifications] = await Promise.all([db.changeRequest.count({
       where: {
         status: "PENDING",
         prompt: {
           authorId: session.user.id,
         },
       },
-    });
-
-    // Get unread comment notifications
-    const commentNotifications = await db.notification.findMany({
+    }), db.notification.findMany({
       where: {
         userId: session.user.id,
         read: false,
@@ -51,14 +48,14 @@ export async function GET() {
       },
       orderBy: { createdAt: "desc" },
       take: 10,
-    });
+    })]);
 
     // Get prompt titles for notifications
     const promptIds = [...new Set(commentNotifications.map(n => n.promptId).filter(Boolean))] as string[];
-    const prompts = await db.prompt.findMany({
+    const prompts = promptIds.length ? await db.prompt.findMany({
       where: { id: { in: promptIds } },
       select: { id: true, title: true },
-    });
+    }) : [];
     const promptMap = new Map(prompts.map(p => [p.id, p.title]));
 
     const formattedNotifications = commentNotifications.map(n => ({

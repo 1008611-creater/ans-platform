@@ -1,14 +1,12 @@
 import { marketProductPath } from "@/domain/marketplace/product-route";
-import { ProductConnectionsSection } from "@/components/catalog/product-connections";
-import { getMarketConnections } from "@/server/catalog/connections";
-import { cache } from "react";
+import { MarketProductConnections } from "@/components/marketplace/market-product-connections";
+import { cache, Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Star } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { auth } from "@/lib/auth";
 import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
 import { marketWorkflowDetails } from "@/server/marketplace/workflows";
 import { CreateCashOrder } from "@/components/marketplace/cash-payment";
@@ -17,7 +15,7 @@ import { ProjectUsageEntry } from "@/components/marketplace/project-usage-entry"
 import { MarketStar } from "@/components/marketplace/market-star";
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketDetailPreview } from "@/components/marketplace/market-detail-preview";
-import { getMarketListing } from "@/server/marketplace/listings";
+import { readMarketPage } from "@/server/marketplace/product-read";
 import { marketCheckoutAvailability, marketCashOffer } from "@/server/marketplace/orders";
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { Button } from "@/components/ui/button";
@@ -27,8 +25,8 @@ import { ResumeWebsiteMarketProduct } from "@/components/marketplace/resume-webs
 export const dynamic = "force-dynamic";
 type MarketDetailProps = { params: Promise<{ slug: string }> };
 
-const publishedListing = cache(async (slug: string, viewerId?: string) => {
-  try { return await getMarketListing(slug, viewerId); }
+const publishedListing = cache(async (slug: string) => {
+  try { return await readMarketPage(slug); }
   catch (error) {
     if (error instanceof MarketRuleError && error.code === "NOT_FOUND") notFound();
     throw error;
@@ -37,7 +35,7 @@ const publishedListing = cache(async (slug: string, viewerId?: string) => {
 
 export async function generateMetadata({ params }: MarketDetailProps): Promise<Metadata> {
   const { slug } = await params;
-  const offer = await publishedListing(slug);
+  const { offer } = await publishedListing(slug);
   return {
     title: offer.listing.title,
     description: offer.listing.summary,
@@ -51,15 +49,17 @@ export async function generateMetadata({ params }: MarketDetailProps): Promise<M
 
 export default async function MarketDetail({ params }: MarketDetailProps) {
   const { slug } = await params;
-  const [t, tp, p, td, w, session] = await Promise.all([
+  const [t, tp, p, td, w, { session, offer }] = await Promise.all([
     getTranslations("product.market"), getTranslations("product.marketProject"),
     getTranslations("product"), getTranslations("product.marketDetail"),
-    getTranslations("marketWorkflow"), auth(),
+    getTranslations("marketWorkflow"), publishedListing(slug),
   ]);
-  const offer = await publishedListing(slug, session?.user?.id);
   const productPath = marketProductPath(offer);
   if (productPath !== `/market/${slug}`) redirect(productPath);
-  const [runnable, connections] = await Promise.all([marketWorkflowDetails(offer), getMarketConnections(offer)]);
+  const runnable = await marketWorkflowDetails(offer);
+  if (runnable?.available && runnable.recipe === "resume-website-v1") {
+    return <ResumeWebsiteMarketProduct offer={offer} session={session} runnable={runnable} />;
+  }
   const listing = offer.listing;
   const tiers = listing.pricingTiers ?? [];
   const minimum = tiers.length ? Math.min(...tiers.map(tier => tier.priceMinor)) : listing.priceMinor;
@@ -73,10 +73,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
   const purchaseHeading = runnable ? td("runHeading") : isFree ? td("freeHeading") : td("purchaseHeading");
   const purchaseAnchor = runnable ? "market-run" : "market-checkout";
 
-  if (runnable?.available && runnable.recipe === "resume-website-v1") {
-    return <ResumeWebsiteMarketProduct offer={offer} session={session} />;
-  }
-
   return <div className="ans-product-shell"><div className="ans-product-container ans-page-content ans-market-page">
     <nav aria-label={t("navigation")} className="ans-market-nav">
       <Link className="ans-subcategory" href="/market">{t("browse")}</Link>
@@ -89,7 +85,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
       <ChevronRight aria-hidden="true" className="h-3 w-3" /><span>{p("categories." + listing.category)}</span>
       <ChevronRight aria-hidden="true" className="h-3 w-3" /><span>{p("children." + listing.subcategory)}</span>
     </nav>
-    <ProductConnectionsSection connections={connections} />
     <div className={styles.layout}>
       <div className={styles.content}>
         <MarketDetailPreview listing={listing} />
@@ -162,5 +157,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
         </Link>
       </aside>
     </div>
+    <Suspense fallback={null}><MarketProductConnections offer={offer} /></Suspense>
   </div></div>;
 }

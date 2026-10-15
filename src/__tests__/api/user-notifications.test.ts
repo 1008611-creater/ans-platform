@@ -124,6 +124,48 @@ describe("GET /api/user/notifications", () => {
 
     expect(data.commentNotifications).toEqual([]);
     expect(data.unreadComments).toBe(0);
+    expect(db.prompt.findMany).not.toHaveBeenCalled();
+  });
+
+  it("starts both account queries before the pending count resolves", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
+    let resolveCount!: (value: number) => void;
+    vi.mocked(db.changeRequest.count).mockReturnValueOnce(new Promise<number>(resolve => { resolveCount = resolve; }) as never);
+    vi.mocked(db.notification.findMany).mockResolvedValueOnce([]);
+    const pending = GET();
+    await vi.waitFor(() => expect(db.notification.findMany).toHaveBeenCalledTimes(1));
+    expect(db.changeRequest.count).toHaveBeenCalledTimes(1);
+    resolveCount(2);
+    expect((await (await pending).json()).pendingChangeRequests).toBe(2);
+  });
+
+  it("skips prompt lookups for notifications without a prompt", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
+    vi.mocked(db.changeRequest.count).mockResolvedValueOnce(0);
+    vi.mocked(db.notification.findMany).mockResolvedValueOnce([
+      { id: "notification", type: "COMMENT", promptId: null, actor: null, createdAt: new Date() },
+    ] as never);
+    const data = await (await GET()).json();
+    expect(data.commentNotifications[0].promptTitle).toBeNull();
+    expect(db.prompt.findMany).not.toHaveBeenCalled();
+  });
+
+  it("scopes each request to its own account without reusing another account's result", async () => {
+    for (const userId of ["user1", "user2"]) {
+      vi.mocked(auth).mockResolvedValueOnce({ user: { id: userId } } as never);
+      vi.mocked(db.changeRequest.count).mockResolvedValueOnce(0);
+      vi.mocked(db.notification.findMany).mockResolvedValueOnce([]);
+      await GET();
+      expect(db.changeRequest.count).toHaveBeenLastCalledWith({ where: { status: "PENDING", prompt: { authorId: userId } } });
+      expect(db.notification.findMany).toHaveBeenLastCalledWith(expect.objectContaining({ where: { userId, read: false, type: { in: ["COMMENT", "REPLY"] } } }));
+    }
+  });
+
+  it("preserves the default response when either parallel query fails", async () => {
+    vi.mocked(auth).mockResolvedValueOnce({ user: { id: "user1" } } as never);
+    vi.mocked(db.changeRequest.count).mockRejectedValueOnce(new Error("unavailable"));
+    vi.mocked(db.notification.findMany).mockResolvedValueOnce([]);
+    expect(await (await GET()).json()).toEqual({ pendingChangeRequests: 0, unreadComments: 0, commentNotifications: [] });
   });
 });
 
