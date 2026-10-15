@@ -7,7 +7,7 @@ import { z } from "zod";
 import { computeDeliveryReadSchema, type ComputeDeliveryView } from "@/contracts/compute-delivery";
 import { Button } from "@/components/ui/button";
 
-type Props = { userId: string; taskId: string; unit: "image" | "second" };
+type Props = { userId: string; taskId: string; unit: "image" | "second"; resultUrl?: string | null };
 type State = { kind: "idle" | "loading" } | { kind: "loaded"; delivery: ComputeDeliveryView | null }
   | { kind: "error"; reason: "failed" | "accountChanged" | "sessionExpired" };
 const responseSchema = z.object({ ok: z.literal(true), data: computeDeliveryReadSchema, requestId: z.string().uuid() }).strict();
@@ -22,7 +22,7 @@ export function ComputeDeliveryStatus(props: Props) {
   return <OwnerDeliveryStatus key={JSON.stringify([props.userId, props.taskId, props.unit])} {...props} />;
 }
 
-function OwnerDeliveryStatus({ userId, taskId, unit }: Props) {
+function OwnerDeliveryStatus({ userId, taskId, unit, resultUrl }: Props) {
   const t = useTranslations("product.computeDelivery"), locale = useLocale(), regionId = useId();
   const [state, setState] = useState<State>({ kind: "idle" });
   const flight = useRef<{ controller: AbortController; timer: ReturnType<typeof setTimeout> } | null>(null);
@@ -68,9 +68,12 @@ function OwnerDeliveryStatus({ userId, taskId, unit }: Props) {
     </Button>
     <div id={regionId} aria-busy={state.kind === "loading"} className="mt-2 min-w-0 text-xs leading-6">
       <p role="status" aria-live="polite" aria-atomic="true" className="text-muted-foreground">
-        {state.kind === "loading" ? t("loading") : loaded ? t(delivery ? "states." + delivery.state : "noRecord") : null}
+        {state.kind === "loading" ? t("loading") : loaded ? t(delivery ? delivery.state === "AVAILABLE" && resultUrl ? "availableToOpen" : "states." + delivery.state : "noRecord") : null}
       </p>
       {state.kind === "error" && <p role="alert" className="text-destructive">{t(state.reason)}</p>}
+      {loaded && delivery?.state === "AVAILABLE" && artifact && resultUrl && <Button asChild variant="outline" size="sm" className="mt-3">
+        <a href={resultUrl} target="_blank" rel="noopener noreferrer">{t("openResult")}</a>
+      </Button>}
       {loaded && artifact && <dl className="mt-3 grid min-w-0 gap-3 rounded-[var(--radius)] bg-muted/40 p-3 sm:grid-cols-2">
         <div className="min-w-0 sm:col-span-2"><dt className="text-muted-foreground">{t("fileName")}</dt><dd className="mt-1 break-all [overflow-wrap:anywhere]"><bdi>{artifact.relativePath}</bdi></dd></div>
         <div className="min-w-0"><dt className="text-muted-foreground">{t("fileType")}</dt><dd className="mt-1 break-all">{artifact.mimeType}</dd></div>
