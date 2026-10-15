@@ -73,3 +73,6 @@ __pycache__/
 *-private.json
 .env.*
 !.env.example
+
+# Local provider credentials must never be committed.
+AGNES_API_KEY.txt
