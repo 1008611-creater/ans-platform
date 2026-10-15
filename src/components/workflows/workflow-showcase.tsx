@@ -7,7 +7,7 @@ import styles from "./workflow-showcase.module.css";
 export async function WorkflowShowcase({ title, summary, href, version, presentation, author, useCount, marketPath }: {
   title: string;
   summary: string | null;
-  href: string;
+  href?: string;
   version: number;
   presentation?: WorkflowPresentation;
   author?: string;
@@ -18,8 +18,8 @@ export async function WorkflowShowcase({ title, summary, href, version, presenta
   const format = presentation?.output.format ?? "text";
   const Icon = format === "json" ? Braces : format === "markdown" ? FileText : AlignLeft;
   const stages = presentation?.stages ?? [];
-  return <article className={styles.showcase}>
-    <Link href={href} className={styles.main}>
+  const primaryHref = marketPath ?? href;
+  const content = <>
       <div className={styles.stage}>
         <div className={styles.stageTop}><span>{t("structure")}</span><span>v{version}</span></div>
         <div className={styles.outcome}><Icon size={26} strokeWidth={1.5} aria-hidden="true" /><p>{presentation?.output.label ?? title}</p><span>{t(`formats.${format}`)}</span></div>
@@ -29,11 +29,13 @@ export async function WorkflowShowcase({ title, summary, href, version, presenta
         </ol>
       </div>
       <div className={styles.caption}>
-        <div className={styles.title}><h3>{title}</h3><ArrowUpRight size={18} aria-hidden="true" /></div>
+        <div className={styles.title}><h3>{title}</h3>{primaryHref && <ArrowUpRight size={18} aria-hidden="true" />}</div>
         {summary && <p className={styles.summary}>{summary}</p>}
-        <div className={styles.meta}>{author && <span>{author}</span>}{presentation && <span>{t("nodes", { count: presentation.nodeCount })}</span>}{typeof useCount === "number" && <span>{t("uses", { count: useCount })}</span>}<span>{t("start")}</span></div>
+        <div className={styles.meta}>{author && <span>{author}</span>}{presentation && <span>{t("nodes", { count: presentation.nodeCount })}</span>}{typeof useCount === "number" && <span>{t("uses", { count: useCount })}</span>}<span>{t(marketPath ? "viewMarket" : primaryHref ? "start" : "notListed")}</span></div>
       </div>
-    </Link>
+    </>;
+  return <article className={styles.showcase}>
+    {primaryHref ? <Link href={primaryHref} className={styles.main}>{content}</Link> : <div className={styles.main}>{content}</div>}
     {marketPath && <Link href={marketPath} className={styles.market}>{t("market")}<ArrowUpRight size={14} aria-hidden="true" /></Link>}
   </article>;
 }
