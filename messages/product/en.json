@@ -3498,5 +3498,17 @@
     "privacyNote": "Inputs are saved with their private version or task. AI tasks send the required material to the selected model service. Avoid identity numbers, home addresses and other sensitive data. Saving does not publish your work; check contact details and asset permissions before sharing.",
     "versionNote": "This contract binds published listing version {version}. Website editing versions are saved separately; edits do not replace historical runs.",
     "publishedSpec": "Read the published recipe specification"
+  },
+  "communityPage": {
+    "title": "Community growth",
+    "description": "Share your work, exchange ideas and grow through participation.",
+    "workspace": "Back to workspace",
+    "participate": "Join the community",
+    "works": "Works and conversations",
+    "worksBody": "Explore real creations, leave a like or comment, and share your favorites.",
+    "profile": "My profile",
+    "profileBody": "Show your work, projects and unlocked growth rewards.",
+    "publish": "Publish a project",
+    "publishBody": "Share what you have built so others can discover and use it."
   }
 }

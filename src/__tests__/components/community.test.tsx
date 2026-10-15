@@ -133,3 +133,12 @@ it("换号后迟到的奖励申诉回执不重新请求旧账号流水", async (
   await act(async () => task.resolve({ ok: true, json: async () => ({ ok: true, data: { id: "appeal-a" } }) }));
   expect(fetchMock).toHaveBeenCalledTimes(count); expect(screen.queryByText(/申诉已提交/)).not.toBeInTheDocument();
 });
+
+
+it("history-only mode retains ledger and leaderboard without another check-in control", async () => {
+  render(<AccountContentBoundary actorId="self"><CommunityPanel actorId="self" showGrowth={false} /></AccountContentBoundary>);
+  await screen.findByRole("table");
+  expect(screen.queryByRole("button", { name: "\u6bcf\u65e5\u7b7e\u5230" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "\u6211\u7684\u793e\u533a\u6210\u957f" })).not.toBeInTheDocument();
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+});

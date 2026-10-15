@@ -1,4 +1,7 @@
 {
+  "viewPublishedMarket": "View market listing",
+  "notListedMarket": "This version is not listed in the market yet",
+  "backToHub": "Back to Hubs",
   "uploadTitle": "Publish to market",
   "uploadNotice": "Pin v{version} and submit for market review. Compute is charged on run; there is no resource purchase fee.",
   "category": "Category",

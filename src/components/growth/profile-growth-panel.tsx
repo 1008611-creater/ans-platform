@@ -164,6 +164,7 @@ function ProfileGrowthState({ user, editable = false, avatarFallback = "A", acto
       } catch { /* The committed check-in remains visible using its response. */ }
       if (!alive.current) return;
       setNotice(alreadyCheckedIn ? t("alreadyCheckedIn") : t("checkInSuccess", { xp: xpAwarded }));
+      router.refresh();
     } catch {
       if (alive.current) setNotice(t("checkInFailed"));
     } finally { if (alive.current) setBusy(false); }

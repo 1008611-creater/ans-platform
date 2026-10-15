@@ -16,7 +16,7 @@ function errorMessage(status: number, fallback: string) {
   return fallback;
 }
 
-export function CommunityPanel({ actorId }: { actorId?: string }) {
+export function CommunityPanel({ actorId, showGrowth = true }: { actorId?: string; showGrowth?: boolean }) {
   const request = useCommunityRequest(actorId);
   const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
@@ -111,7 +111,7 @@ export function CommunityPanel({ actorId }: { actorId?: string }) {
       {notice && <p role="status" className="ans-inline-notice"><CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />{notice}</p>}
       {loading && !me && <div className="ans-loading-region" role="status"><p className="text-sm text-muted-foreground">正在加载社区数据…</p><div className="ans-loading-block ans-loading-block-wide" aria-hidden="true" /><div className="ans-loading-grid" aria-hidden="true"><div className="ans-loading-block" /><div className="ans-loading-block" /></div></div>}
       {me && contributions && <>
-        <Card>
+        {showGrowth && <Card>
           <CardHeader><h2 className="text-lg font-semibold">我的社区成长</h2></CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -131,7 +131,7 @@ export function CommunityPanel({ actorId }: { actorId?: string }) {
               每日签到基础经验 {XP_RULES.CHECK_IN.base} XP，连续签到奖励按社区规则累计。
             </p>
           </CardContent>
-        </Card>
+        </Card>}
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader><h2 className="text-lg font-semibold">最近经验流水</h2><p className="text-sm text-muted-foreground">仅自己可见，最多展示最近 50 条。</p></CardHeader>
