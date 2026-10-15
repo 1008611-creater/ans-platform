@@ -676,6 +676,7 @@ class MotionDirector {
             cursor: pointer;
             user-select: none;
             transform: translate3d(-50%, -100%, 0);
+            transform-origin: 50% 100%;
             transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
             will-change: left, top, transform, opacity;
           }
@@ -1038,6 +1039,28 @@ class MotionDirector {
             transition: left 0.44s cubic-bezier(0.22, 1, 0.36, 1), top 0.44s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.44s ease, opacity 0.44s ease;
           }
 
+          #ans-dino-interact-hud[hidden] { display: none !important; }
+          body.ans-dino-motion-paused #ans-dino-live-bubble,
+          body.ans-dino-motion-paused #ans-dino-live-bubble *,
+          body.ans-dino-motion-paused #ans-dino-interact-hud,
+          body.ans-dino-motion-paused #ans-dino-interact-hud *,
+          body.ans-dino-motion-paused #ans-dino-fx-layer * {
+            animation-play-state: paused !important;
+            transition: none !important;
+          }
+          body.ans-dino-motion-paused #ans-dino-fx-layer {
+            display: none !important;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            #ans-dino-live-bubble, #ans-dino-live-bubble *,
+            #ans-dino-interact-hud, #ans-dino-interact-hud *,
+            #ans-dino-fx-layer * {
+              animation: none !important;
+              transition: none !important;
+            }
+            #ans-dino-fx-layer { display: none !important; }
+          }
+
           body.showcase-static #ans-dino-live-bubble,
           body.showcase-static #ans-dino-interact-hud,
           body.showcase-static #ans-dino-fx-layer {
@@ -1053,6 +1076,7 @@ class MotionDirector {
         bubbleEl.id = "ans-dino-live-bubble";
         bubbleEl.setAttribute("role", "button");
         bubbleEl.setAttribute("tabindex", "0");
+        bubbleEl.setAttribute("aria-expanded", "false");
         bubbleEl.setAttribute("aria-label", "展开小恐龙碎碎念");
         bubbleEl.setAttribute("data-bubble-state", "alert");
         bubbleEl.setAttribute("data-idle-dim", "false");
@@ -1093,6 +1117,9 @@ class MotionDirector {
         if (!hudEl) {
           hudEl = document.createElement("aside");
           hudEl.id = "ans-dino-interact-hud";
+          hudEl.hidden = true;
+          hudEl.inert = true;
+          hudEl.setAttribute("aria-hidden", "true");
           hudEl.setAttribute("aria-label", "小恐龙训龙互动台");
           hudEl.innerHTML = `
             <div class="dino-hud-top">
@@ -1290,6 +1317,7 @@ class MotionDirector {
       bubbleState = "expanded";
       expandedAt = nowMs();
       el.setAttribute("data-bubble-state", "expanded");
+      el.setAttribute("aria-expanded", "true");
       el.setAttribute("data-idle-dim", "false");
     }
 
@@ -1299,6 +1327,7 @@ class MotionDirector {
       bubbleState = "alert";
       alertShownAt = nowMs();
       el.setAttribute("data-bubble-state", "alert");
+      el.setAttribute("aria-expanded", "false");
       el.setAttribute("data-idle-dim", "false");
       if (withBounce) {
         el.classList.remove("is-intro-bounce");
@@ -1317,7 +1346,13 @@ class MotionDirector {
         document.body.classList.toggle("ans-dino-interactive-mode", interactiveOpen);
       }
       if (hudEl) {
+        const focusWasInside = hudEl.contains(document.activeElement);
+        if (!interactiveOpen && focusWasInside) bubbleEl?.focus({ preventScroll: true });
+        hudEl.hidden = !interactiveOpen;
+        hudEl.inert = !interactiveOpen;
+        hudEl.setAttribute("aria-hidden", String(!interactiveOpen));
         hudEl.classList.toggle("is-visible", interactiveOpen);
+        if (interactiveOpen && !focusWasInside) hudEl.querySelector(".dino-hud-close")?.focus({ preventScroll: true });
       }
       if (interactiveOpen) {
         expandBubble();
@@ -1375,23 +1410,24 @@ class MotionDirector {
       const isAlert = bubbleState === "alert";
       const bw = isAlert ? 48 : (el.offsetWidth || 380);
       const bh = isAlert ? 48 : (el.offsetHeight || 58);
-      const marginX = isAlert ? 36 : Math.max(bw * 0.5 + 16, 195);
-      const clampedX = Math.max(marginX, Math.min(vw - marginX, rawX));
-
-      // Strict top and bottom bounds so the bubble is NEVER clipped at the top or overlapping the bottom HUD!
-      const minTopY = bh + 18;
-      const maxBottomY = vh - (interactiveOpen ? 185 : 82);
-      let targetY = rawY - (isAlert ? 12 : 16);
-      let flipBelow = false;
-      if (targetY < minTopY) {
-        targetY = minTopY;
-      } else if (targetY > maxBottomY) {
-        targetY = maxBottomY;
-      }
+      const edge = Math.min(16, vw / 4);
+      const topEdge = Math.min(18, vh / 4);
+      const bottomEdge = Math.min(interactiveOpen ? 185 : 82, vh / 3);
+      const availableWidth = Math.max(1, vw - edge * 2);
+      const availableHeight = Math.max(1, vh - topEdge - bottomEdge);
+      const requestedScale = Number.isFinite(scaleBoost) ? Math.max(0.1, scaleBoost) : 1;
+      const boundedScale = Math.floor(Math.min(requestedScale, availableWidth / bw, availableHeight / bh) * 1e6) / 1e6;
+      const renderedHalfWidth = bw * boundedScale * 0.5;
+      const clampedX = Math.max(edge + renderedHalfWidth, Math.min(vw - edge - renderedHalfWidth, rawX));
+      // The bottom-center origin keeps scale-aware bounds valid on narrow and short screens.
+      const minTopY = bh * boundedScale + topEdge;
+      const maxBottomY = vh - bottomEdge;
+      const targetY = Math.max(minTopY, Math.min(maxBottomY, rawY - (isAlert ? 12 : 16)));
+      const flipBelow = false;
       el.setAttribute("data-flip", flipBelow ? "below" : "above");
       el.style.left = `${clampedX.toFixed(1)}px`;
       el.style.top = `${targetY.toFixed(1)}px`;
-      el.style.transform = `translate3d(-50%, -100%, 0) scale(${scaleBoost.toFixed(3)})`;
+      el.style.transform = `translate3d(-50%, -100%, 0) scale(${boundedScale.toFixed(6)})`;
       if (arrowEl && !isAlert) {
         const arrowShift = Math.max(-bw * 0.34, Math.min(bw * 0.34, rawX - clampedX));
         arrowEl.style.left = `calc(50% + ${arrowShift.toFixed(1)}px)`;
@@ -1911,17 +1947,33 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     ev.stopPropagation();
     triggerDinoClick(true);
   };
+  const onKeyDown=ev=>{
+    if(ev.key!=="Enter" && ev.key!==" ")return;
+    ev.preventDefault();
+    if(!ev.repeat)onClick(ev);
+  };
+  const syncDomMotion=()=>document.body.classList.toggle("ans-dino-motion-paused", scenePaused || document.hidden);
+  let scenePaused=document.getElementById("scene-toggle")?.getAttribute("aria-pressed")==="true";
+  const onScenePause=ev=>{scenePaused=Boolean(ev.detail);syncDomMotion();};
+  syncDomMotion();
+  window.addEventListener("ans-scene-pause",onScenePause);
+  document.addEventListener("visibilitychange",syncDomMotion);
   if(bubbleEl){
     bubbleEl.addEventListener("pointerenter",onEnter);
     bubbleEl.addEventListener("pointerleave",onLeave);
     bubbleEl.addEventListener("click",onClick);
+    bubbleEl.addEventListener("keydown",onKeyDown);
   }
   return()=>{
+    window.removeEventListener("ans-scene-pause",onScenePause);
+    document.removeEventListener("visibilitychange",syncDomMotion);
+    document.body.classList.remove("ans-dino-motion-paused");
     window.removeEventListener("ans-dino-greet",onGreetBtn);
     if(bubbleEl){
       bubbleEl.removeEventListener("pointerenter",onEnter);
       bubbleEl.removeEventListener("pointerleave",onLeave);
       bubbleEl.removeEventListener("click",onClick);
+      bubbleEl.removeEventListener("keydown",onKeyDown);
     }
   };
 },[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
