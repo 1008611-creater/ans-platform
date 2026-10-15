@@ -73,10 +73,28 @@
       "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/three-stdlib/master/LICENSE",
       "noticeSha256": "28eb7edf059a39094aa3d169db1fec46ac4a6279c921a90f965828d92ec86e79",
       "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "Mansalva",
+      "license": "SIL Open Font License 1.1",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/google/fonts/4e5f06dbb274a27ebe71ed54ea706b3ee40eabd9/ofl/mansalva/OFL.txt",
+      "noticeSha256": "14ac0a5413a923c9ad11b6f541df17207fb7a0e0725e43eb29c88eb04c3ea2aa",
+      "noticePath": "licenses/mansalva-OFL.txt",
+      "embeddedFont": {
+        "origin": "Restored author-supplied inline WOFF2 in ANS PR116 a08c21a4bbec04e6b779d0a0eba05b97f72af4d9; binary retained unchanged.",
+        "bytes": 53644,
+        "sha256": "a820ef1f04311e07e966acda399e66c9d186a74c85d4cc24d0d8d342c7338765",
+        "nameTableFamily": "Mansalva",
+        "nameTableFullName": "Mansalva Regular",
+        "nameTablePostScriptName": "Mansalva-Regular",
+        "copyright": "Copyright 2022 The Mansalva Project Authors (https://github.com/carolinashort/mansalva)",
+        "licenseUrl": "https://scripts.sil.org/OFL"
+      },
+      "identityEvidenceUrl": "https://raw.githubusercontent.com/google/fonts/4e5f06dbb274a27ebe71ed54ea706b3ee40eabd9/ofl/mansalva/METADATA.pb",
+      "referenceVersion": "Internal WOFF2 name table matches upstream family/style/PostScript/copyright metadata; exact webfont conversion version is not established. Official OFL text is copied unmodified."
     }
   ],
   "removed": [
-    "Mansalva embedded font removed, uses system fallback.",
     "Unused markdown module and old personal project archive removed."
   ],
   "licenseStatus": "Any missing notices listed explicitly; remaining resources require reviewer acceptance before publication."

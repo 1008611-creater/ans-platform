@@ -8,7 +8,7 @@ import { installCompanion } from './companion-widget.mjs?v=settings-20261012-2';
 
 const VERSION = 'ans-mascot-settings-20261012-2';
 const DOCK = new URLSearchParams(location.search).get('dock') === '1';
-const SOURCE_SHA256 = 'f4be8ba420e58ac3304d8d9f5f6a6b984f7bab11ebb15c7895af7cfb5574cb93';
+const SOURCE_SHA256 = 'e420b1580e76a5871e0427e8b2fe1756532692af377b9f30c67d7038517efa51';
 const SETTINGS = Object.freeze({
   modelUrl: new URL('./dinosaur.glb', import.meta.url).href,
   maxFps: 30, maxPixelRatio: 1.75, verticalFrame: 1.48,
