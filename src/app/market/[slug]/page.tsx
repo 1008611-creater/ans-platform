@@ -1,3 +1,4 @@
+import { marketProductPath } from "@/domain/marketplace/product-route";
 import { ProductConnectionsSection } from "@/components/catalog/product-connections";
 import { getMarketConnections } from "@/server/catalog/connections";
 import { cache } from "react";
@@ -5,24 +6,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Star } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
-import { publicationConfig } from "@/server/visual-portfolio/publication";
-import { VisualWebsiteExperience } from "@/components/projects/visual-website-experience";
 import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
 import { marketWorkflowDetails } from "@/server/marketplace/workflows";
-import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { CreateCashOrder } from "@/components/marketplace/cash-payment";
 import { CreatePointsOrder } from "@/components/marketplace/create-points-order";
 import { ProjectUsageEntry } from "@/components/marketplace/project-usage-entry";
 import { MarketStar } from "@/components/marketplace/market-star";
+import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketDetailPreview } from "@/components/marketplace/market-detail-preview";
 import { getMarketListing } from "@/server/marketplace/listings";
 import { marketCheckoutAvailability, marketCashOffer } from "@/server/marketplace/orders";
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { Button } from "@/components/ui/button";
 import styles from "@/components/marketplace/market-detail.module.css";
+import { ResumeWebsiteMarketProduct } from "@/components/marketplace/resume-website-market-product";
 
 export const dynamic = "force-dynamic";
 type MarketDetailProps = { params: Promise<{ slug: string }> };
@@ -57,6 +57,8 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
     getTranslations("marketWorkflow"), auth(),
   ]);
   const offer = await publishedListing(slug, session?.user?.id);
+  const productPath = marketProductPath(offer);
+  if (productPath !== `/market/${slug}`) redirect(productPath);
   const [runnable, connections] = await Promise.all([marketWorkflowDetails(offer), getMarketConnections(offer)]);
   const listing = offer.listing;
   const tiers = listing.pricingTiers ?? [];
@@ -71,10 +73,8 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
   const purchaseHeading = runnable ? td("runHeading") : isFree ? td("freeHeading") : td("purchaseHeading");
   const purchaseAnchor = runnable ? "market-run" : "market-checkout";
 
-  // This reviewed recipe retains its complete editor and existing account/run boundary.
   if (runnable?.available && runnable.recipe === "resume-website-v1") {
-    const editor = <VisualWebsiteExperience publicationAvailable={publicationConfig().available} execution={{ listingId: offer.id, version: offer.version, details: runnable }} licenseTerms={listing.licenseTerms} />;
-    return <><div className="ans-product-container"><ProductConnectionsSection connections={connections} /></div><div id="market-run" className="scroll-mt-24">{session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>{editor}</MarketAccountBoundary> : editor}</div></>;
+    return <ResumeWebsiteMarketProduct offer={offer} session={session} />;
   }
 
   return <div className="ans-product-shell"><div className="ans-product-container ans-page-content ans-market-page">

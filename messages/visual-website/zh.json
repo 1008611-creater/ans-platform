@@ -1,12 +1,12 @@
 {
   "eyebrow": "ANS / PERSONAL WEBSITE STUDIO",
-  "title": "五分钟，做一个会动的自己。",
+  "title": "做一个会动的自己。",
   "subtitle": "从一份看得见的作品开始。选形象、写故事、排镜头，亲手完成你的简历与作品集网站。",
   "start": "做我的同款",
   "example": "正在体验虚构示例 · 示例资料不会写入你的项目",
   "editing": "你的作品 · 修改会实时出现在右侧",
   "free": "编辑与导出免费",
-  "minutes": "约 5 分钟上手",
+  "minutes": "从演示模型开始",
   "noCode": "无需写代码",
   "steps": [
     "选择形象",
@@ -160,7 +160,7 @@
     "login": "登录",
     "back": "返回 ANS 市场",
     "brand": "3D 个人主页",
-    "heroTop": "5 分钟，做一个会动的",
+    "heroTop": "做一个会动的",
     "heroAccent": "3D 个人主页",
     "heroDescription": "无需代码，无需建模，创建你的 3D 个人主页",
     "cta": "免费开始制作",
@@ -293,7 +293,7 @@
     "closingKicker": "READY WHEN YOU ARE",
     "closingTitle": "给自己一个，会动的主页",
     "closingDescription": "不再从空白表单开始。先看见作品，再亲手把它变成自己的。",
-    "closingNote": "免费开始 · 无需代码 · 约 5 分钟上手",
+    "closingNote": "免费开始 · 无需代码 · 随时继续编辑",
     "footer": "ANS 3D 个人主页 · 参考 intro3d.com",
     "referenceNote": "人物与图片采用参考站公开演示素材",
     "returnPreview": "返回效果展示",
@@ -370,6 +370,17 @@
         "自定义域名：待开放"
       ],
       "sharingAnswer": "登录后保存作品版本，即可在编辑器中确认发布，获得独立 HTTPS 链接，也可随时撤回。完整 HTML 仍可下载后自行托管；自定义域名暂未开放。"
+    },
+    "capabilityDescription": "编辑和导出免费。AI 生成按当前服务配置开放，启动前确认积分；在线发布状态见本页说明。",
+    "generationAvailable": {
+      "status": "按次确认积分",
+      "cta": "进入编辑器查看报价",
+      "features": [
+        "图片、文字或多视图输入",
+        "按所选模型与参数显示报价",
+        "明确确认上传与费用后启动",
+        "任务记录、模型预览与主动应用"
+      ]
     }
   },
   "leaveConfirm": "这份作品还没有保存。离开后将丢失当前修改，确认离开吗？",
@@ -507,5 +518,7 @@
     "demoModelSize": "GLB · 1.2 MB",
     "retryScene": "重新加载画布"
   },
-  "preparingDownload": "正在打包网站…"
+  "preparingDownload": "正在打包网站…",
+  "downloadCopy": "下载文案网页（非 3D 成品）",
+  "previewCopy": "预览 AI 文案"
 }

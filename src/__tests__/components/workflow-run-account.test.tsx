@@ -142,3 +142,48 @@ it("相同输入切换模型后使用独立请求摘要，不复用原模型的�
   expect(sessionStorage.length).toBe(2);
   for (let index = 0; index < sessionStorage.length; index += 1) expect(sessionStorage.key(index)).not.toMatch(/gpt|原账号输入/);
 });
+
+
+describe("accepted run recovery", () => {
+  it("blocks creation while restoring, then resumes an unknown connection with reads only", async () => {
+    vi.useFakeTimers();
+    try {
+      sessionStorage.setItem("ans:workflow-run-id:member-a:weekly", "accepted-run");
+      const restore = deferred();
+      fetchMock.mockReturnValueOnce(restore.promise).mockResolvedValueOnce(reply({ run: { id: "accepted-run", status: "SUCCEEDED", output: "Recovered result", nodeRuns: [{ nodeId: "copy", status: "SUCCEEDED", attempts: 1, error: null }] } }));
+      render(wrap()); fill();
+      expect(screen.getByRole("button", { name: /运行中/ })).toBeDisabled();
+      await act(async () => restore.resolve(Promise.reject(new Error("network offline"))));
+      expect(screen.getByRole("button", { name: "billingRun" })).toBeDisabled();
+      await act(async () => { await vi.advanceTimersByTimeAsync(400); });
+      expect(screen.getByText("Recovered result")).toBeVisible();
+      expect(screen.getByText("copy")).toBeInTheDocument();
+      expect(fetchMock.mock.calls.every(([, init]) => init.method === "GET")).toBe(true);
+      expect(sessionStorage.length).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+  it("reload restores the accepted run and removes its exact intent after completion", async () => {
+    const intentSlot = "ans:workflow-run:member-a:weekly:" + "a".repeat(64);
+    sessionStorage.setItem(intentSlot, "pending-key");
+    sessionStorage.setItem("ans:workflow-run-id:member-a:weekly", JSON.stringify({ id: "accepted-run", intentSlot }));
+    fetchMock.mockResolvedValueOnce(reply({ run: { id: "accepted-run", status: "SUCCEEDED", output: "Saved result", nodeRuns: [] } }));
+    render(wrap()); expect(await screen.findByText("Saved result")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledTimes(1);expect(fetchMock.mock.calls[0][1].method).toBe("GET");
+    expect(sessionStorage.length).toBe(0);
+  });
+  it("keeps known node records if the final detail read fails", async () => {
+    vi.useFakeTimers();
+    try {
+      const executed = deferred();
+      fetchMock.mockResolvedValueOnce(reply({ run: { id: "run-a" } })).mockReturnValueOnce(executed.promise)
+        .mockResolvedValueOnce(reply({ run: { id: "run-a", status: "RUNNING", nodeRuns: [{ nodeId: "copy", status: "SUCCEEDED", attempts: 1, error: null }] } }))
+        .mockRejectedValueOnce(new Error("final read offline"));
+      render(wrap()); fill(); clickRun(); await act(async () => {});
+      await act(async () => { await vi.advanceTimersByTimeAsync(400); });
+      expect(screen.getByText("copy")).toBeInTheDocument();
+      await act(async () => executed.resolve(reply({ result: { status: "succeeded", output: "Delivered" } })));
+      expect(screen.getByText("Delivered")).toBeVisible();expect(screen.getByText("copy")).toBeInTheDocument();
+      expect(m.refresh).toHaveBeenCalledTimes(1);
+    } finally { vi.useRealTimers(); }
+  });
+});

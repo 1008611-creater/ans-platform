@@ -1,12 +1,12 @@
 {
   "eyebrow": "ANS / PERSONAL WEBSITE STUDIO",
-  "title": "Five minutes. A page that feels like you.",
+  "title": "A page that feels like you.",
   "subtitle": "Start with something you can see. Choose a character, tell your story and direct the camera to build your personal portfolio.",
   "start": "Make my own",
   "example": "Fictional example · These details never become your project",
   "editing": "Your work · Changes appear in the preview",
   "free": "Free editing & export",
-  "minutes": "About 5 minutes to get started",
+  "minutes": "Start with the demo model",
   "noCode": "No code needed",
   "steps": [
     "Choose a character",
@@ -31,7 +31,7 @@
     "studio": "Studio",
     "vinyl": "Vinyl toy",
     "faceted": "Faceted",
-    "reference": "Reference character"
+    "reference": "Detailed GLB · Rotatable"
   },
   "avatarNotes": {
     "clay": "Soft · Rounded",
@@ -160,9 +160,9 @@
     "login": "Log in",
     "back": "Back to ANS market",
     "brand": "3D personal page",
-    "heroTop": "A living 3D page in",
-    "heroAccent": "5 minutes",
-    "heroDescription": "No code, no modeling ? make a personal page that moves.",
+    "heroTop": "Make it yours.",
+    "heroAccent": "A living 3D page.",
+    "heroDescription": "No code or modeling needed. Create a personal page that moves.",
     "cta": "Start free",
     "heroAlt": "3D character style example {index}",
     "benefits": [
@@ -196,21 +196,21 @@
     "tagDescriptions": [
       "Turning real problems into useful products, one project at a time.",
       "Photography, music and hiking. Finding the next idea in everyday life.",
-      "INFP ? Curious, patient, and always making something.",
+      "INFP · Curious, patient, and always making something.",
       "Between campus and the city, collecting moments worth remembering."
     ],
-    "more": "More?",
-    "moreDescription": "Projects, photos, experiences ? give each story its own tag.",
+    "more": "More",
+    "moreDescription": "Give your projects, photos and experiences their own tags.",
     "sceneTitle": "Interactive 3D camera tour",
     "sourcePhoto": "SOURCE PHOTO",
     "liveModel": "LIVE 3D",
     "modelNote": "Public reference demo model",
-    "loading": "Loading the 3D character?",
+    "loading": "Loading the 3D character…",
     "usesKicker": "USE IT FOR",
     "usesTitle": "One page, many possibilities",
     "usesDescription": "A link with more to say than an introduction.",
     "uses": [
-      "R?sum?",
+      "Resume",
       "Portfolio",
       "Link in bio",
       "Freelance"
@@ -256,7 +256,7 @@
       "Rotatable GLB demo",
       "Every step is visible"
     ],
-    "howKicker": "HOW IT WORKS ? 4 STEPS",
+    "howKicker": "HOW IT WORKS · 4 STEPS",
     "howTitle": "Four steps to a page that moves",
     "howDescription": "See the result first. Make each decision yourself.",
     "howTitles": [
@@ -293,8 +293,8 @@
     "closingKicker": "READY WHEN YOU ARE",
     "closingTitle": "Give your story a page that moves",
     "closingDescription": "Start with something you can see, then make it your own.",
-    "closingNote": "FREE TO START ? NO CODE ? ~5 MIN",
-    "footer": "ANS 3D personal pages ? Reference: intro3d.com",
+    "closingNote": "FREE TO START · NO CODE · KEEP EDITING",
+    "footer": "ANS 3D personal pages · Reference: intro3d.com",
     "referenceNote": "Demo images and character from the reference site",
     "returnPreview": "Back to the preview",
     "editorTitle": "Create my 3D homepage",
@@ -370,6 +370,17 @@
         "Custom domains: opening soon"
       ],
       "sharingAnswer": "Sign in, save a version, then confirm publication in the editor to get an independent HTTPS link. You can withdraw it at any time or download standalone HTML. Custom domains are not available yet."
+    },
+    "capabilityDescription": "Editing and export are free. AI generation depends on service configuration and requires a points confirmation. Publishing availability is shown on this page.",
+    "generationAvailable": {
+      "status": "Confirm points per task",
+      "cta": "View pricing in the editor",
+      "features": [
+        "Image, text or multiple views",
+        "Pricing for the selected model and settings",
+        "Confirm upload and cost before starting",
+        "Task history, model preview and explicit application"
+      ]
     }
   },
   "leaveConfirm": "This work has not been saved. Leaving will discard your changes. Leave now?",
@@ -507,5 +518,7 @@
     "demoModelSize": "GLB · 1.2 MB",
     "retryScene": "Reload canvas"
   },
-  "preparingDownload": "Preparing website…"
+  "preparingDownload": "Preparing website…",
+  "downloadCopy": "Download copy page (not the 3D website)",
+  "previewCopy": "Preview AI copy"
 }

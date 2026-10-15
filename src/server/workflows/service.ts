@@ -17,6 +17,7 @@ import {
 } from "@/contracts/workflow";
 import { assertSupportedRecipe, normalizeRecipeInput, stableWorkflowInput } from "@/domain/workflows/recipes";
 import { validateWorkflow } from "@/domain/workflows/graph";
+import { workflowPresentation } from "@/domain/workflows/experience";
 import { debitQuota, QuotaError } from "@/server/quota/service";
 import { canPublishAfterReview, reviewWorkflowDefinition } from "@/server/workflows/review";
 import { RUN_REASONING_EFFORTS, type RunReasoningEffort } from "@/lib/run-models";
@@ -299,6 +300,7 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
       status: "PUBLISHED",
       publishedVersion: { not: null },
       isOfficial: false,
+      author: { deletedAt: null, flagged: false },
       ...(query
         ? {
             OR: [
@@ -310,7 +312,7 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
     },
     orderBy: [{ useCount: "desc" }, { updatedAt: "desc" }],
     take: Math.min(Math.max(options.take ?? 24, 1), 60),
-    // Public cards never hydrate workflow definitions or review data.
+    // Card rows load version pointers only. Definitions are fetched only for exact published pointers and stripped below.
     select: {
       id: true,
       slug: true,
@@ -327,17 +329,22 @@ export async function listPublishedWorkflows(options: { query?: string; take?: n
       versions: { select: { id: true, version: true, createdAt: true } },
     },
   });
+  const pointers = rows.flatMap(row => row.versions.filter(version => version.version === row.publishedVersion).map(version => ({ id: version.id, workflowId: row.id, version: version.version })));
+  const definitions = pointers.length ? await db.workflowVersion.findMany({ where: { OR: pointers }, select: { id: true, definition: true } }) : [];
   const approvedRows = (await Promise.all(rows.map(async row => {
     const version = row.versions.find(item => item.version === row.publishedVersion);
     if (!version || !await hasWorkflowManualApproval(db, row, version)) return null;
+    const parsed = workflowDefinitionSchema.safeParse(definitions.find(item => item.id === version.id)?.definition);
+    if (!parsed.success || !validateWorkflow(parsed.data).ok) return null;
+    try { assertSupportedRecipe(parsed.data); } catch { return null; }
     const { versions, ...card } = row;
     void versions;
-    return card;
+    return { ...card, presentation: workflowPresentation(parsed.data) };
   }))).filter(row => row !== null);
   const platform = await findPublishedPlatformRecipe();
   if (!platform || query && !`${platform.workflow.title} ${platform.workflow.summary ?? ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())) return approvedRows;
   const { id, slug, title, summary, status, publishedVersion, useCount, estimatedCost, isOfficial, createdAt, updatedAt, author } = platform.workflow;
-  return [{ id, slug, title, summary, status, publishedVersion, useCount, estimatedCost, isOfficial, createdAt, updatedAt, author }, ...approvedRows].slice(0, Math.min(Math.max(options.take ?? 24, 1), 60));
+  return [{ id, slug, title, summary, status, publishedVersion, useCount, estimatedCost, isOfficial, createdAt, updatedAt, author, presentation: workflowPresentation(platform.definition) }, ...approvedRows].slice(0, Math.min(Math.max(options.take ?? 24, 1), 60));
 }
 export async function listOwnWorkflows(authorId: string) {
   const rows = await db.workflow.findMany({
