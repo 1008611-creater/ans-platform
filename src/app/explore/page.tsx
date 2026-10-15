@@ -11,6 +11,7 @@ import { CatalogPagination } from "@/components/catalog/catalog-pagination";
 import { RevealDetails } from "@/components/catalog/reveal-details";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AgriWall } from "@/components/competitions/agri-wall";
 import styles from "./explore.module.css";
 
 export const dynamic = "force-dynamic";
@@ -23,9 +24,10 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   const [params, t, locale, catalog] = await Promise.all([searchParams, getTranslations("product"), getLocale(), listPublishedCatalog()]);
   const browse = browseCatalog(catalog, params, project => [catalogText(project, t, "title", locale), catalogText(project, t, "summary", locale), t(`categories.${project.category}`), t(`children.${project.subcategory}`)].join(" "));
   const { category, subcategory, filters } = browse;
+  const isAgriWall = category?.id === "competition" && subcategory === "agri-wall";
   const filterHref = (updates: Partial<CatalogBrowseFilters> = {}, page = 1) => catalogBrowseHref("/explore", filters, updates, page);
   return <div className="ans-product-shell"><div className={`ans-product-container ans-page-content ${styles.page}`}>
-    <header className="ans-page-heading ans-page-heading-with-tools">
+    {!isAgriWall && <header className="ans-page-heading ans-page-heading-with-tools">
       <div className="ans-page-heading-copy"><RevealDetails id="explore-introduction" label={t("catalogBrowse.introduction")} kind="heading" className={styles.titleBlock} details={<p>{t("exploreBody")}</p>}><h1 className="ans-page-title">{t("nav.explore")}</h1></RevealDetails></div>
       <div className="ans-page-heading-tools">
         <form action="/explore#project-results" className={styles.search}>
@@ -36,7 +38,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
         </form>
         <div className="ans-page-actions"><Button asChild variant="outline"><Link href="/explore/submit">{t("realProject.submit")}</Link></Button></div>
       </div>
-    </header>
+    </header>}
     <nav aria-label={t("categoriesLabel")} className={`ans-category-row ${styles.categories}`}>
       <Link href={filterHref({ category: undefined, subcategory: undefined })} aria-current={!category ? "page" : undefined} className="ans-category-pill">{t("all")}</Link>
       {PROJECT_CATEGORIES.map(item => <Link key={item.id} href={filterHref({ category: item.id, subcategory: undefined })} aria-current={category?.id === item.id ? "page" : undefined} className="ans-category-pill">{t(`categories.${item.id}`)}<span className="ms-2 text-xs opacity-70">{catalog.filter(project => project.category === item.id).length}</span></Link>)}
@@ -45,6 +47,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
       <Link href={filterHref({ subcategory: undefined })} aria-current={!subcategory ? "page" : undefined} className="ans-subcategory">{t("allChildren")}</Link>
       {category.children.map(child => <Link key={child} href={filterHref({ subcategory: child })} aria-current={subcategory === child ? "page" : undefined} className="ans-subcategory">{t(`children.${child}`)}</Link>)}
     </nav>}
+    {isAgriWall ? <AgriWall /> : <>
     <div className={styles.filters}>
       <nav aria-label={t("sourceFilter")} className="flex flex-wrap items-center gap-1">
         <span className="me-2 text-xs text-muted-foreground">{t("sourceFilter")}</span>
@@ -58,5 +61,6 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
     <h2 id="project-results" className="mb-5 text-sm font-normal text-muted-foreground">{t("results", { count: browse.total })}</h2>
     {browse.projects.length ? <div className={styles.projects}>{browse.projects.map(project => <ProjectCard key={project.slug} project={project} compact />)}</div> : <div className="ans-empty"><h3 className="text-xl font-semibold">{t("emptyTitle")}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{t("emptyBody")}</p><div className="mt-6"><Button asChild variant="outline"><Link href="/explore">{t("clear")}</Link></Button></div></div>}
     <CatalogPagination page={browse.page} pages={browse.pages} href={page => filterHref({}, page)} labels={{ navigation: t("catalogBrowse.pagination"), previous: t("catalogBrowse.previous"), next: t("catalogBrowse.next"), page: page => t("catalogBrowse.page", { page }) }} />
+    </>}
   </div></div>;
 }

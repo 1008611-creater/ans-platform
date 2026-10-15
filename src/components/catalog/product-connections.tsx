@@ -13,7 +13,6 @@ const actionKeys = { project: "actions.project", workflow: "actions.workflow", s
 export function ProductConnectionsSection({ connections, compact = false }: { connections: Connections; compact?: boolean }) {
   const t = useTranslations("product.connections");
   const groups = [
-    { key: "workflows", entries: connections.workflows },
     { key: "offers", entries: connections.offers },
     { key: "projects", entries: connections.projects },
   ].filter(group => group.entries.length > 0);

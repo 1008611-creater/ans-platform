@@ -2650,9 +2650,9 @@
         "description": "创新性维度表现突出"
       },
       "popular": {
-        "label": "现场人气奖",
+        "label": "人气奖",
         "amount": "荣誉奖",
-        "description": "现场单独评选，不与初赛大众评分混为一项。"
+        "description": "按农客松作品墙在公布计票时段内的有效 ANS Star 评选，与专业评审分开。截止后封存；同票第一并列，全部零票不授奖。"
       }
     },
     "rulesTitle": "参赛规则与合规红线",

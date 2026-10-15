@@ -229,6 +229,7 @@
     "competition": "Competitions"
   },
   "children": {
+    "agri-wall": "AgriHackathon wall",
     "methods": "AI methods",
     "notes": "Notes & courses",
     "research": "Research",
@@ -533,7 +534,10 @@
       "REVIEW_ALREADY_SUBMITTED": "This order already has a review.",
       "INSUFFICIENT_QUOTA": "Insufficient credits. Add credits and retry.",
       "SELLER_REVERSAL_REQUIRES_REVIEW": "Seller credits cannot cover the reversal. Manual review is required; no refund has been applied.",
-      "POINTS_ONLY": "On-site purchases use points only. Refresh the listing and pay with points."
+      "POINTS_ONLY": "On-site purchases use points only. Refresh the listing and pay with points.",
+      "AGRI_WALL_CATEGORY_LOCKED": "A linked entry must remain a free project in the AgriHackathon wall category.",
+      "AGRI_POPULARITY_VOTING_CLOSED": "The voting window just ended. Refresh and retry; later Stars do not change the award results.",
+      "RATE_LIMITED": "Too many requests. Please try again shortly."
     },
     "pendingRequest": "The last operation has not been confirmed. Check the original request before making another change. Refreshing or leaving loses this page’s temporary recovery information.",
     "recoverRequest": "Check original request",
@@ -1101,7 +1105,11 @@
       "AGRI_PERMIT_INACTIVE": "Permit used, revoked or expired. Contact the responsible manager.",
       "AGRI_FIELD_NOT_ALLOWED": "A changed field is outside the permit.",
       "AGRI_PROJECT_CHANGE_FORBIDDEN": "A correction cannot change the project.",
-      "AGRI_NO_CHANGE": "Correction content is unchanged."
+      "AGRI_NO_CHANGE": "Correction content is unchanged.",
+      "AGRI_WALL_REQUIRED": "Publish your project and link it to your team on the AgriHackathon wall first.",
+      "AGRI_WALL_PUBLIC_PROJECT_REQUIRED": "The project must pass review and remain published.",
+      "AGRI_WALL_PROJECT_MISMATCH": "The project owner must submit the same project linked on the wall.",
+      "AGRI_WALL_VERSION_CONFLICT": "The published project changed. Sync its latest version on the wall first."
     },
     "obsoleteMaterial": "Material {key} no longer matches the current rules. Its content is preserved. Remove it and fill the updated requirement.",
     "removeMaterial": "Remove outdated material {key}",
@@ -3140,6 +3148,8 @@
     "page": "Page {page}"
   },
   "computeDelivery": {
+    "openResult": "View and download result",
+    "availableToOpen": "Your result is saved. Open the AIGC workspace to view and download it.",
     "view": "View file status",
     "loading": "Checking file status…",
     "refresh": "Refresh file status",
@@ -3351,7 +3361,7 @@
   },
   "connections": {
     "title": "Continue from here",
-    "navigationNote": "Use a workflow yourself, or explore related resources and services in the market.",
+    "navigationNote": "Explore related projects, products and services in the market.",
     "prepareNote": "Make your own result with a published workflow, or inspect the publisher's actual product and delivery scope.",
     "startWithWorkflow": "Make your own version in ANS",
     "startWithOffer": "See delivery and usage options",
@@ -3371,5 +3381,37 @@
     "confirmCompute": "Confirm compute cost before running",
     "free": "Shared for free",
     "price": "From {points} points"
+  },
+  "marketStudio": {
+    "title": "3D personal website",
+    "summary": "Turn your experience, projects and personality into a website people can explore. See the result, arrange your model, stickers and camera stops, then take your work with you.",
+    "tryEditor": "Explore & create",
+    "freeEditing": "Free editing & export",
+    "costNote": "AI model generation and copy assistance require separate compute confirmation.",
+    "aiCopy": "AI copy assistance",
+    "copyReady": "Published version connected",
+    "copyUnavailable": "Temporarily unavailable",
+    "sharing": "Website sharing",
+    "sharingReady": "Publish explicitly after saving",
+    "sharingUnavailable": "File export available",
+    "copyUnavailableNote": "Copy assistance is temporarily unavailable. You can still edit, preview and export your website.",
+    "editorTitle": "3D website demo and editor",
+    "deliverableWebsite": "A downloadable HTML website with your model, camera stops, stickers and personal content.",
+    "deliverableDraft": "An editable JSON draft you can import again without regenerating your model.",
+    "deliverableAccount": "Sign in to save and restore private versions. Uploaded local GLB models are included in local drafts but cannot yet be saved to your account.",
+    "howTitle": "From experience to a finished website",
+    "prepareTitle": "Start with your actual story",
+    "prepareBody": "Write your name, introduction and project experience. Use the demo model, upload your own GLB, or confirm the cost to generate an avatar.",
+    "composeTitle": "Make the page your own",
+    "composeBody": "Arrange stickers, camera stops and content cards. Copy assistance lives under Animation → Home → Content. Confirm a run, then explicitly apply its output.",
+    "deliverTitle": "Review, save, take it with you",
+    "deliverBody": "Review the delivery panel and export HTML plus an editable draft. Sign in to save versions. Publish explicitly when sharing is available.",
+    "inputTitle": "What to prepare",
+    "inputNote": "Your name, introduction, at least one project and contact details you want to share. Use only images and models you have permission to use. Copy assistance supports up to 6 projects; additional content remains manually editable.",
+    "costBoundary": "Editing, preview and file export do not call a model. Avatar generation and copy assistance each require cost confirmation and keep separate task records. Opening this page starts no task. Copy runs return reusable text and standard HTML; the 3D website is exported separately by the editor.",
+    "privacyTitle": "Your data and sharing",
+    "privacyNote": "Inputs are saved with their private version or task. AI tasks send the required material to the selected model service. Avoid identity numbers, home addresses and other sensitive data. Saving does not publish your work; check contact details and asset permissions before sharing.",
+    "versionNote": "This contract binds published listing version {version}. Website editing versions are saved separately; edits do not replace historical runs.",
+    "publishedSpec": "Read the published recipe specification"
   }
 }

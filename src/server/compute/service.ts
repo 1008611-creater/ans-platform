@@ -23,10 +23,13 @@ export function computeTaskView(task: Omit<ComputeTask, "authorizedPoints" | "se
     maxUnits: task.maxUnits, units: task.units, unit: computePriceSchema.parse(task.price).unit,
     outcome: task.outcome, policyVersion: task.policyVersion, createdAt: task.createdAt.toISOString(), finishedAt: task.finishedAt?.toISOString() ?? null };
 }
-async function reserve(command: Extract<ComputeCommand, { action: "reserve" }>) {
-  const requestHash = command.expectedPolicyVersion !== undefined || command.maxAuthorizedPoints !== undefined || command.expectedUnit !== undefined
+function reservationHash(command: Extract<ComputeCommand, { action: "reserve" | "reservation" }>) {
+  return command.expectedPolicyVersion !== undefined || command.maxAuthorizedPoints !== undefined || command.expectedUnit !== undefined
     ? digest([command.modelId, command.maxUnits, command.expectedPolicyVersion, command.maxAuthorizedPoints, command.expectedUnit])
     : digest([command.modelId, command.maxUnits]);
+}
+async function reserve(command: Extract<ComputeCommand, { action: "reserve" }>) {
+  const requestHash = reservationHash(command);
   return db.$transaction(async tx => {
     const account = await lockAccount(tx, command.userId);
     const previous = await tx.computeTask.findUnique({ where: { userId_provider_idempotencyKey: { userId: command.userId, provider, idempotencyKey: command.idempotencyKey } } });
@@ -110,7 +113,13 @@ export async function executeComputeCommand(raw: unknown) {
   if (command.action === "reserve") return reserve(command);
   if ("eventId" in command) return transition(command);
   return db.$transaction(async tx => {
-    const user = await lockAccount(tx, command.userId, command.action === "quote");
+    const user = await lockAccount(tx, command.userId, command.action === "quote", command.action === "reservation");
+    if (command.action === "reservation") {
+      // Read only, independent of current pricing and spending flags; never creates a reservation.
+      const task = await tx.computeTask.findUnique({ where: { userId_provider_idempotencyKey: { userId: command.userId, provider, idempotencyKey: command.idempotencyKey } } });
+      if (task && task.requestHash !== reservationHash(command)) throw new ComputeError("COMPUTE_REQUEST_CONFLICT");
+      return { task: task ? computeTaskView(task) : null };
+    }
     if (command.action === "balance") return { unit: "point", balance: user.quotaPoints, spendingEnabled: computeEnabled() && !user.flagged };
     if (command.action === "quote") return { ...computeQuote(command.modelId, command.maxUnits), balance: user.quotaPoints };
     if (command.action === "history") return { tasks: (await tx.computeTask.findMany({ where: { userId: command.userId, provider }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: command.limit })).map(computeTaskView) };

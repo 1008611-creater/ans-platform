@@ -53,10 +53,22 @@ describe("expanded generation inputs and quoted costs",()=>{
   expect(generationPrice(cfg,{...DEFAULT_TRIPO_OPTIONS,textureResolution:"4K"})).toBeNull();expect(generationPrice(cfg,{...DEFAULT_TRIPO_OPTIONS,textureResolution:"8K"})).toBeNull();expect(generationPrice(cfg,{...DEFAULT_TRIPO_OPTIONS,geometryQuality:"detailed"})).toBeNull();expect(generationPrice(cfg,{...DEFAULT_TRIPO_OPTIONS,generateParts:true})).toBeNull();
   expect(generationPrice(cfg,{...DEFAULT_TRIPO_OPTIONS,source:"text"})).toBeNull();expect(generationPrice(cfg,{...DEFAULT_TRIPO_OPTIONS,quad:true})).toBeNull();expect(generationPrice(cfg,{...DEFAULT_TRIPO_OPTIONS,model:"v3.1-20260211"})).toBeNull();
  });
- it("accepts exact configured quotes and fails closed for a malformed price table",()=>{
+ it("applies the confirmed 10-point default over legacy quotes and rejects a malformed table",()=>{
   Object.assign(process.env,{ANS_TRIPO_ACCEPTING_JOBS:"true",ANS_VISUAL_STORAGE_MODE:"local",ANS_VISUAL_WORKER_KEY:"w".repeat(32),ANS_VISUAL_SIGNING_SECRET:"s".repeat(32),ANS_TRIPO_PRICE_POINTS:"2"});
   const options={...DEFAULT_TRIPO_OPTIONS,source:"text" as const};process.env.ANS_TRIPO_PRICE_TABLE=JSON.stringify([{options,costPoints:3}]);
-  const config=generationConfig();expect(config.available).toBe(true);expect(generationPrice(config,options)).toBe(3);
+  delete process.env.ANS_TRIPO_FLAT_PRICE_POINTS;const config=generationConfig();expect(config.available).toBe(true);expect(generationPrice(config,options)).toBe(10);
   process.env.ANS_TRIPO_PRICE_TABLE="invalid";expect(generationConfig().available).toBe(false);
  });
+ it("uses the explicit uniform price for image, text and multiview without inheriting legacy quotes",()=>{
+  const config={available:true,costPoints:2,flatCostPoints:10,quotes:[{options:DEFAULT_TRIPO_OPTIONS,costPoints:3}]};
+  for(const source of ["image","text","multiview"] as const)
+   expect(generationPrice(config,{...DEFAULT_TRIPO_OPTIONS,source,model:"v3.1-20260211",faceCount:50000})).toBe(10);
+  expect(generationPrice({...config,flatCostPoints:-1},DEFAULT_TRIPO_OPTIONS)).toBeNull();
+ });
+ it("an invalid uniform price disables submissions instead of silently using the legacy price",()=>{
+  Object.assign(process.env,{ANS_TRIPO_ACCEPTING_JOBS:"true",ANS_VISUAL_STORAGE_MODE:"local",ANS_VISUAL_WORKER_KEY:"w".repeat(32),ANS_VISUAL_SIGNING_SECRET:"s".repeat(32),ANS_TRIPO_PRICE_POINTS:"2",ANS_TRIPO_FLAT_PRICE_POINTS:"10"});
+  const config=generationConfig();expect(config.available).toBe(true);expect(generationPrice(config,{...DEFAULT_TRIPO_OPTIONS,source:"multiview"})).toBe(10);
+  process.env.ANS_TRIPO_FLAT_PRICE_POINTS="ten";expect(generationConfig().available).toBe(false);
+ });
+
 });

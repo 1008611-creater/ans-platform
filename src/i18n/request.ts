@@ -35,12 +35,17 @@ export default getRequestConfig(async () => {
       // Publish one current rule set until translations of the revised event are available.
       agriHackathon: (await import(`@/../messages/${locale === "zh" ? "zh" : "en"}.json`)).default.agriHackathon,
       // The first lesson ships in Chinese and English; other locales explicitly use English.
+      agriWall: (await import(`@/../messages/agri-wall/${locale === "zh" ? "zh" : "en"}.json`)).default,
       learning: (await import(`@/../messages/learning/${locale === "zh" ? "zh" : "en"}.json`)).default,
       marketCash: (await import(`@/../messages/market-cash/${locale === "zh" ? "zh" : "en"}.json`)).default,
       companion: (await import(`@/../messages/companion/${locale === "zh" ? "zh" : "en"}.json`)).default,
       visualWebsite: (await import(`@/../messages/visual-website/${locale === "zh" ? "zh" : "en"}.json`)).default,
+      fourView: (await import(`@/../messages/four-view/${locale === "zh" ? "zh" : "en"}.json`)).default,
       visualGeneration: (await import(`@/../messages/visual-generation/${locale === "zh" ? "zh" : "en"}.json`)).default,
       visualPublication: (await import(`@/../messages/visual-publication/${locale === "zh" ? "zh" : "en"}.json`)).default,
+      workflowAuthor: (await import(`@/../messages/workflow-author/${locale === "zh" ? "zh" : "en"}.json`)).default,
+      workflowCatalog: (await import(`@/../messages/workflow-catalog/${locale === "zh" ? "zh" : "en"}.json`)).default,
+      workflowStudio: (await import(`@/../messages/workflow-studio/${locale === "zh" ? "zh" : "en"}.json`)).default,
       marketWorkflow: (await import(`@/../messages/market-workflow/${locale === "zh" ? "zh" : "en"}.json`)).default,
       retirement: (await import(`@/../messages/retirement/${locale === "zh" ? "zh" : "en"}.json`)).default,
       hubs: (await import(`@/../messages/hubs/${locale === "zh" ? "zh" : "en"}.json`)).default,

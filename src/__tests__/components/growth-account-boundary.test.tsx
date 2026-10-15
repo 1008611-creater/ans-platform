@@ -18,10 +18,11 @@ const reply = (data: unknown) => ({ ok: true, json: async () => data });
 const checkInRecord = { id: "committed-checkin", day: "2026-10-12", streak: 3, xpAwarded: 5, createdAt: "2026-10-12T00:00:00Z" };
 
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(new Date("2026-10-12T00:00:00Z"));
   vi.clearAllMocks(); m.actor = "member-a"; m.status = "authenticated";
   fetchMock.mockReset(); vi.stubGlobal("fetch", fetchMock);
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe("个人成长与装扮的账号边界", () => {
   it("签到与服务端成长重读都发送渲染账号，使用已提交余额", async () => {
@@ -91,5 +92,44 @@ describe("个人成长与装扮的账号边界", () => {
     expect(screen.queryByRole("list", { name: "checkInCalendarTitle" })).not.toBeInTheDocument();
     expect(screen.queryByText("+37 XP")).not.toBeInTheDocument(); expect(screen.getAllByText("privateGrowthHint")).toHaveLength(2);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("Shanghai midnight refresh", () => {
+  it("reopens today's check-in and rolls the calendar without a request", async () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-12T15:59:59Z"));
+    render(panel("member-a", { ...initial, checkedInToday: true }));
+    expect(screen.getByRole("button", { name: "checkedIn" })).toBeDisabled();
+    await act(async () => { vi.advanceTimersByTime(1002); });
+    expect(screen.getByRole("button", { name: "checkIn" })).toBeEnabled();
+    expect(screen.getByText('streakHeadline{"days":2}')).toBeInTheDocument();
+    expect(screen.getByRole("listitem", { name: 'calendarDayEmpty{"day":"2026-10-13"}' })).toHaveAttribute("aria-current", "date");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it("expires yesterday's streak on the next midnight while preserving history", async () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-12T15:59:59Z"));
+    render(panel()); expect(screen.getByText('streakHeadline{"days":2}')).toBeInTheDocument();
+    await act(async () => { vi.advanceTimersByTime(1002); });
+    expect(screen.getByText('streakHeadline{"days":0}')).toBeInTheDocument();
+    expect(screen.getByRole("listitem", { name: 'calendarDayChecked{"day":"2026-10-11","xp":5}' })).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it("catches up on focus after a tab was suspended over several days", async () => {
+    render(panel("member-a", { ...initial, checkedInToday: true }));
+    vi.setSystemTime(new Date("2026-10-15T01:00:00Z"));
+    act(() => { window.dispatchEvent(new Event("focus")); });
+    expect(screen.getByRole("button", { name: "checkIn" })).toBeEnabled();
+    expect(screen.getByText('streakHeadline{"days":0}')).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it("does not treat a previous-day committed response as today's check-in", async () => {
+    vi.setSystemTime(new Date("2026-10-12T16:00:00Z"));
+    fetchMock.mockResolvedValueOnce(reply({ alreadyCheckedIn: false, checkIn: checkInRecord }))
+      .mockResolvedValueOnce(reply({ xp: 130, communityPoints: 20, checkInStreak: 3, growthDay: "2026-10-13", recentEvents: [], checkIns: [checkInRecord] }));
+    render(panel()); fireEvent.click(screen.getByRole("button", { name: "checkIn" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByRole("button", { name: "checkIn" })).toBeEnabled());
+    expect(screen.queryByRole("button", { name: "checkedIn" })).not.toBeInTheDocument();
+    expect(screen.getByText('streakHeadline{"days":3}')).toBeInTheDocument();
   });
 });

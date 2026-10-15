@@ -1,0 +1,24 @@
+[
+  {
+    "id": "ISSUE-001",
+    "severity": "P2",
+    "type": "交互",
+    "status": "RESOLVED_STATIC",
+    "requirement": "REQ-001",
+    "acceptance_item": "AC-001",
+    "steps": [
+      "登录后打开任一普通工作流工作室",
+      "点击工具栏专注展开进入原生全屏",
+      "打开模型、思考强度或额度来源下拉菜单"
+    ],
+    "expected": "下拉选项在工作室中可见且可选择，Escape 仍能退出",
+    "actual": "静态复核：全屏目标为工作室 section；SelectContent 默认 Portal 挂 document.body，在全屏元素子树外，原生全屏时菜单不属于可呈现子树。尚未完成浏览器复现。",
+    "evidence": [
+      "src/components/workflows/workflow-studio.tsx:59",
+      "src/components/ui/select.tsx:61",
+      "src/components/workflows/workflow-run-form.tsx"
+    ],
+    "suggestion": "改为 CSS 专注模式，或给运行表单下拉菜单传入位于工作室内部的 Portal container；补齐全屏选择与返回的浏览器交互核验。",
+    "resolution": "后续提交为三个运行表单 SelectContent 指定 portalRoot.current，使菜单属于表单子树；公开通用工作室同时退役。未宣称已完成该历史全屏场景的浏览器复验。"
+  }
+]

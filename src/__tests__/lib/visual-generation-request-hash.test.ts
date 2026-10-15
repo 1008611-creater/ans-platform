@@ -31,9 +31,9 @@ describe("legacy paid request recovery",()=>{
   const bytes=await readFile("public/visual-portfolio/reference/home/labelman.webp");mocks.query.mockImplementation(async(strings:TemplateStringsArray)=>strings.join("").includes("FROM visual_model_jobs")?[{requestHash:oldHash(bytes)}]:[]);
   await expect(createModelJob("owner",{idempotencyKey:"legacy_retry_key_123",acknowledged:true,acceptedPoints:2,options:{...oldOptions,faceCount:6000}},bytes)).rejects.toMatchObject({code:"IDEMPOTENCY_CONFLICT"});expect(mocks.write).not.toHaveBeenCalled();expect(mocks.debit).not.toHaveBeenCalled();
  });
- it("rejects unquoted 8K and FBX-only quad before reservation",async()=>{
+ it("rejects a stale flat-price 8K request and FBX-only quad before reservation",async()=>{
   const bytes=await readFile("public/visual-portfolio/reference/home/labelman.webp");mocks.query.mockResolvedValue([]);
-  await expect(createModelJob("owner",{idempotencyKey:"new_request_key_123",acknowledged:true,acceptedPoints:2,options:{...DEFAULT_TRIPO_OPTIONS,textureResolution:"8K"}},bytes)).rejects.toMatchObject({code:"PRICE_NOT_CONFIGURED"});
+  await expect(createModelJob("owner",{idempotencyKey:"new_request_key_123",acknowledged:true,acceptedPoints:2,options:{...DEFAULT_TRIPO_OPTIONS,textureResolution:"8K"}},bytes)).rejects.toMatchObject({code:"PRICE_CHANGED"});
   mocks.transaction.mockClear();
   await expect(createModelJob("owner",{idempotencyKey:"new_request_key_123",acknowledged:true,acceptedPoints:2,options:{...DEFAULT_TRIPO_OPTIONS,quad:true}},bytes)).rejects.toMatchObject({code:"QUAD_DELIVERY_UNSUPPORTED"});expect(mocks.transaction).not.toHaveBeenCalled();expect(mocks.write).not.toHaveBeenCalled();expect(mocks.debit).not.toHaveBeenCalled();
  });

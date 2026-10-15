@@ -1,4 +1,7 @@
+import { lockAgriPopularityForListing, assertAgriListingRevision } from "@/server/competitions/agrihackathon/popularity";
 import { assertMarketWorkflowBinding } from "./workflow-binding";
+import { findPublishedPlatformRecipe } from "@/server/workflows/platform-recipes";
+import { marketHash } from "./shared";
 import { safeAwardGrowthEvent } from "@/server/growth/service";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -47,11 +50,13 @@ export async function reviseMarketListing(listingId: string, sellerId: string, r
   const input = marketListingRevisionSchema.parse(raw);
   const data = parseListing(input.listing);
   return marketTransaction(async (tx) => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketActor(tx, sellerId);
     if (data.execution) await assertMarketWorkflowBinding(tx, sellerId, data.execution);
     const listing = await tx.marketListing.findFirst({ where: { id: listingId, sellerId } });
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
     if (listing.currentVersion !== input.expectedVersion) throw new MarketRuleError("VERSION_CONFLICT");
+    await assertAgriListingRevision(tx, listingId, data);
     if (listing.slug !== data.slug) throw new MarketRuleError("SLUG_IMMUTABLE", 400);
     await requireMarketCoverOwnership(tx, sellerId, data.coverUrl);
     const changed = await tx.marketListing.updateMany({
@@ -67,12 +72,14 @@ export async function reviseMarketListing(listingId: string, sellerId: string, r
 
 export async function submitMarketListing(listingId: string, sellerId: string, expectedVersion: number) {
   return marketTransaction(async (tx) => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketActor(tx, sellerId);
     const listing = await tx.marketListing.findFirst({ where: { id: listingId, sellerId } });
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
     if (listing.currentVersion !== expectedVersion) throw new MarketRuleError("VERSION_CONFLICT");
     const version = await tx.marketListingVersion.findUniqueOrThrow({ where: { listingId_version: { listingId, version: expectedVersion } } });
     const payload = parseListing(version.payload);
+    await assertAgriListingRevision(tx, listingId, payload);
     if (payload.execution) await assertMarketWorkflowBinding(tx, sellerId, payload.execution);
     if (version.submittedAt || version.reviewedAt) throw new MarketRuleError("INVALID_LISTING_STATE");
     await tx.marketListingVersion.update({ where: { id: version.id }, data: { submittedAt: new Date() } });
@@ -85,6 +92,7 @@ export async function submitMarketListing(listingId: string, sellerId: string, e
 export async function reviewMarketListing(listingId: string, reviewerId: string, versionNumber: number, approve: boolean, note: string) {
   if (!Number.isSafeInteger(versionNumber) || versionNumber < 1 || !note.trim() || note.length > 2000) throw new MarketRuleError("INVALID_INPUT", 400);
   return marketTransaction(async (tx) => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketModerator(tx, reviewerId);
     const listing = await tx.marketListing.findUnique({ where: { id: listingId } });
     if (!listing) throw new MarketRuleError("NOT_FOUND", 404);
@@ -94,6 +102,7 @@ export async function reviewMarketListing(listingId: string, reviewerId: string,
     const version = await tx.marketListingVersion.findUniqueOrThrow({ where: { listingId_version: { listingId, version: versionNumber } } });
     if (!version.submittedAt || version.reviewedAt) throw new MarketRuleError("INVALID_LISTING_STATE");
     const reviewed = parseListing(version.payload);
+    if (approve) await assertAgriListingRevision(tx, listingId, reviewed);
     if (approve && reviewed.execution) await assertMarketWorkflowBinding(tx, listing.sellerId, reviewed.execution);
     if (approve) await requireMarketCoverOwnership(tx, listing.sellerId, reviewed.coverUrl);
     await tx.marketListingVersion.update({ where: { id: version.id }, data: { reviewedAt: new Date(), reviewedById: reviewerId, reviewNote: note.trim() } });
@@ -111,6 +120,7 @@ export async function reviewMarketListing(listingId: string, reviewerId: string,
 
 export async function withdrawMarketListing(listingId: string, sellerId: string) {
   return marketTransaction(async (tx) => {
+    await lockAgriPopularityForListing(tx, listingId);
     await requireMarketActor(tx, sellerId);
     const updated = await tx.marketListing.updateMany({ where: { id: listingId, sellerId }, data: { status: "WITHDRAWN" } });
     if (!updated.count) throw new MarketRuleError("NOT_FOUND", 404);
@@ -157,13 +167,23 @@ export async function listPublishedMarketListingsBySeller(sellerId: string, view
 }
 
 export async function getMarketListing(slug: string, viewerId?: string) {
+  // The product alias resolves only the attested official recipe and its exact immutable listing.
+  // Neither a historical payload nor an arbitrary newer listing can take over this URL.
+  const recipe = slug === "resume-website" ? await findPublishedPlatformRecipe() : null;
+  if (slug === "resume-website" && !recipe) throw new MarketRuleError("NOT_FOUND", 404);
+  const actualSlug = recipe ? `workflow-${marketHash(recipe.workflow.id).slice(0, 24)}-v${recipe.version.version}` : slug;
   const listing = await db.marketListing.findFirst({
-    where: { slug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false } },
+    where: { slug: actualSlug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false }, ...(recipe ? { sellerId: recipe.workflow.authorId, official: true } : {}) },
     include: listingReadInclude(viewerId),
   });
   const version = listing?.versions.find((item) => item.version === listing.publishedVersion);
   if (!listing || !version) throw new MarketRuleError("NOT_FOUND", 404);
-  return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null };
+  const payload = marketListingInputSchema.parse(version.payload);
+  if (recipe) {
+    const binding = payload.execution;
+    if (!version.reviewedAt || !binding || binding.workflowId !== recipe.workflow.id || binding.versionId !== recipe.version.id || binding.version !== recipe.version.version || binding.definitionHash !== recipe.recipe.definitionHash) throw new MarketRuleError("NOT_FOUND", 404);
+  }
+  return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: payload, submittedAt: null, reviewedAt: null, reviewNote: null };
 }
 
 export async function getOwnedMarketListing(id: string, sellerId: string) {

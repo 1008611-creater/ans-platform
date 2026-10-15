@@ -229,6 +229,7 @@
     "competition": "比赛与团队"
   },
   "children": {
+    "agri-wall": "农客松作品墙",
     "methods": "AI 方法",
     "notes": "课程与笔记",
     "research": "资料与研究",
@@ -533,7 +534,10 @@
       "REVIEW_ALREADY_SUBMITTED": "这份订单已经提交过评价。",
       "INSUFFICIENT_QUOTA": "积分不足，请补充积分后重试。",
       "SELLER_REVERSAL_REQUIRES_REVIEW": "卖家积分不足以追回已结算收入，请人工核对，退款尚未执行。",
-      "POINTS_ONLY": "站内交易仅支持积分支付，请刷新商品页后使用积分购买。"
+      "POINTS_ONLY": "站内交易仅支持积分支付，请刷新商品页后使用积分购买。",
+      "AGRI_WALL_CATEGORY_LOCKED": "已绑定参赛的作品必须保持农客松作品墙分类与免费展示。",
+      "AGRI_POPULARITY_VOTING_CLOSED": "计票时间刚已结束，请刷新后重试。后续 Star 不改变人气奖结果。",
+      "RATE_LIMITED": "操作有点频繁，请稍后再试。"
     },
     "pendingRequest": "上次操作还没确认。请先核对原请求，再继续填写。刷新或离开会丢失本页的临时恢复信息。",
     "recoverRequest": "核对原请求",
@@ -1101,7 +1105,11 @@
       "AGRI_PERMIT_INACTIVE": "许可已使用、撤回或到期，请联系负责人。",
       "AGRI_FIELD_NOT_ALLOWED": "修改包含许可范围之外的字段。",
       "AGRI_PROJECT_CHANGE_FORBIDDEN": "更正不能更换项目。",
-      "AGRI_NO_CHANGE": "更正内容与原提交相同。"
+      "AGRI_NO_CHANGE": "更正内容与原提交相同。",
+      "AGRI_WALL_REQUIRED": "请先发布作品并在农客松作品墙绑定本队。",
+      "AGRI_WALL_PUBLIC_PROJECT_REQUIRED": "作品必须通过审核并保持公开发布。",
+      "AGRI_WALL_PROJECT_MISMATCH": "请由作品负责人提交已绑定的同一项目。",
+      "AGRI_WALL_VERSION_CONFLICT": "公开作品已更新，请先回作品墙同步最新版本。"
     },
     "obsoleteMaterial": "材料 {key} 不符合最新规范，原内容仍保留。请移除后按新要求填写。",
     "removeMaterial": "移除不适用材料 {key}",
@@ -3140,6 +3148,8 @@
     "page": "第 {page} 页"
   },
   "computeDelivery": {
+    "openResult": "查看与下载成果",
+    "availableToOpen": "成果已保存，可在 AIGC 工作台查看和下载。",
     "view": "查看文件状态",
     "loading": "正在核对文件状态…",
     "refresh": "刷新文件状态",
@@ -3351,7 +3361,7 @@
   },
   "connections": {
     "title": "从这里继续",
-    "navigationNote": "选择工作流自己完成，或查看市场上的资源与服务。",
+    "navigationNote": "查看关联项目，或使用市场中的产品与服务。",
     "prepareNote": "用已发布的工作流完成自己的成果，或查看发布者的真实商品与交付范围。",
     "startWithWorkflow": "在 ANS 做出自己的版本",
     "startWithOffer": "查看实际交付与使用方式",
@@ -3371,5 +3381,37 @@
     "confirmCompute": "运行前确认算力费用",
     "free": "免费分享",
     "price": "{points} 积分起"
+  },
+  "marketStudio": {
+    "title": "3D 个人网站",
+    "summary": "把自己的经历、项目与个性，放进一座可以探索的个人网站。先看效果，再编排模型、贴纸和镜头，最后带走你的作品。",
+    "tryEditor": "探索与制作",
+    "freeEditing": "免费编辑与导出",
+    "costNote": "AI 形象生成与文案整理单独确认算力费用。",
+    "aiCopy": "AI 文案整理",
+    "copyReady": "已绑定发布版本",
+    "copyUnavailable": "暂不可用",
+    "sharing": "分享网站",
+    "sharingReady": "保存后可主动发布",
+    "sharingUnavailable": "当前提供文件导出",
+    "copyUnavailableNote": "文案整理暂不可用；你仍可手动编辑、预览与导出网站。",
+    "editorTitle": "3D 网站演示与编辑器",
+    "deliverableWebsite": "可预览、下载的个人网站 HTML，包含你编排的模型、镜头、贴纸和个人内容。",
+    "deliverableDraft": "可再次导入编辑器的草稿 JSON；修改过程不必重新生成模型。",
+    "deliverableAccount": "登录后可保存私密版本并恢复；本地上传的 GLB 模型随本地草稿导出，暂不支持账号保存。",
+    "howTitle": "从经历到作品",
+    "prepareTitle": "准备真实内容",
+    "prepareBody": "写下姓名、个人介绍和项目经历。使用演示人物、上传自己的 GLB，或明确确认费用后生成形象。",
+    "composeTitle": "让页面长成你的样子",
+    "composeBody": "编排贴纸、镜头与内容卡片。文案整理在「动画 → 首页 → 内容」中使用，确认后运行，再主动选择应用结果。",
+    "deliverTitle": "核对，保存，带走",
+    "deliverBody": "在交付面板检查内容，下载 HTML 与可编辑草稿。登录可保存版本；分享功能可用时，再主动发布。",
+    "inputTitle": "需要准备什么",
+    "inputNote": "自己的姓名、介绍、至少一个项目与可公开的联系方式。图像或模型只使用你有权使用的素材。文案整理最多处理 6 个项目，更多内容仍可手动编辑。",
+    "costBoundary": "编辑、预览与文件导出不触发模型计费。AI 形象生成和文案整理各自确认费用、分别记录任务；打开页面不会启动任务。文案任务返回可回填的内容与普通 HTML，3D 网站由编辑器单独导出。",
+    "privacyTitle": "资料与分享",
+    "privacyNote": "输入随对应私密版本或任务记录保存；启动 AI 任务会将所需资料发给对应模型服务。不要填写身份证号、住址等敏感信息。保存不等于公开，发布前请核对联系方式与素材权限。",
+    "versionNote": "市场契约绑定已发布商品第 {version} 版。网站编辑版本独立保存；修改编辑内容不会替换历史任务。",
+    "publishedSpec": "查看已发布配方说明"
   }
 }

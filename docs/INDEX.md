@@ -26,6 +26,7 @@
 
 - [ADR 0001：工作流采用有限 DAG](./adr/0001-workflow-dag.md)
 - [ADR 0002：工作流采用「AI 初审 + 人工复核」双层把关](./adr/0002-workflow-ai-review.md)
+- [ADR 0003: GPT-6.1 agent operating model and workflow architecture](./adr/0003-agent-operating-model-gpt6.md)
 - [ADR 0003：农客松技术工作区、阶段提交和最小权限](./adr/0003-agrihackathon-technical-workspace.md)：分阶段设计与实施记录；当前生产 P2 和未启用范围见权威总纲。
 
 架构和数据模型的重大变化记录在 `docs/adr/`。

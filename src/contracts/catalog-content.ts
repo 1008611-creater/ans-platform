@@ -10,7 +10,7 @@ export const PROJECT_CATEGORIES = [
   { id: "github", children: ["agents", "creative-tools", "automation"] },
   { id: "business", children: ["services", "content", "validation"] },
   { id: "productivity", children: ["knowledge", "automation", "collaboration"] },
-  { id: "competition", children: ["proposal", "pitch", "delivery"] },
+  { id: "competition", children: ["proposal", "pitch", "delivery", "agri-wall"] },
 ] as const;
 export const CATALOG_SOURCES = ["official", "github", "bilibili", "web"] as const;
 export const CATALOG_TEXT_FIELDS = ["title", "summary", "sample", "output", "inputs", "decisions", "model", "prompt", "skill", "sourceNote"] as const;

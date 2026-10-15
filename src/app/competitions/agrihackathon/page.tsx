@@ -77,6 +77,7 @@ const trackStyles = {
 
 export default async function AgriHackathonPage() {
   const t = await getTranslations("agriHackathon");
+  const wall = await getTranslations("agriWall");
   const locale = await getLocale();
   const formatDate = (value: string) => new Intl.DateTimeFormat(locale, { timeZone: "Asia/Shanghai", dateStyle: "medium", timeStyle: "medium" }).format(new Date(value));
   const pending = await getTranslations("product.agrihackathon");
@@ -163,21 +164,8 @@ export default async function AgriHackathonPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              {competition ? (
-                <Button asChild size="lg">
-                  <Link href={`/competitions/${competition.id}`}>
-                    <Rocket className="h-4 w-4" />
-                    {t("enterWorkbench")}
-                  </Link>
-                </Button>
-              ) : (
-                <Button asChild size="lg">
-                  <Link href="/projects">
-                    <Rocket className="h-4 w-4" />
-                    {t("createProject")}
-                  </Link>
-                </Button>
-              )}
+              <Button asChild size="lg"><Link href="/explore/submit?event=agrihackathon"><Rocket className="h-4 w-4" />{wall("publishTitle")}</Link></Button>
+              <Button asChild variant="outline" size="lg"><Link href="/explore?category=competition&subcategory=agri-wall">{wall("title")}</Link></Button>
               <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/showcase">{publications("showcaseTitle")}</Link></Button>
               <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/submissions"><FileCheck2 className="h-4 w-4" />{submissions("title")}</Link></Button>
               <Button asChild variant="outline" size="lg">
@@ -187,7 +175,9 @@ export default async function AgriHackathonPage() {
                 </Link>
               </Button>
             </div>
+            <p className="max-w-2xl text-sm leading-7 text-muted-foreground">{wall("entryFlow")}</p>
             <div className="flex flex-wrap items-center gap-2">
+              {competition && <Button asChild variant="ghost" size="sm"><Link href={`/competitions/${competition.id}`}>{t("enterWorkbench")}</Link></Button>}
               <Button asChild variant="ghost" size="sm"><Link href="/teams"><Boxes className="h-4 w-4" />{t("openTeams")}</Link></Button>
               <Button asChild variant="ghost" size="sm"><Link href="/competitions"><ArrowUpRight className="h-4 w-4" />{t("backToHub")}</Link></Button>
             </div>
@@ -198,6 +188,7 @@ export default async function AgriHackathonPage() {
                 <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/works"><ClipboardCheck className="h-4 w-4" />{works("title")}</Link></Button>
                 <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/onsite"><ClipboardCheck className="h-4 w-4" />{onsite("title")}</Link></Button>
                 <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/publication-review">{publications("reviewTitle")}</Link></Button>
+                <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/popularity">{wall("managementTitle")}</Link></Button>
                 <Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/manage"><ShieldCheck className="h-4 w-4" />{management("title")}</Link></Button>
               </div>
             </details>
