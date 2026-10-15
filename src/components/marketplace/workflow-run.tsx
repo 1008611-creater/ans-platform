@@ -82,7 +82,7 @@ export function MarketWorkflowRun({ listingId, version, details, workflowSlug, p
     if (source !== latestProfile.current || fingerprint !== run.inputFingerprint) { setError(tv("copyMismatch")); return; }
     const doc = new DOMParser().parseFromString(artifact.content, "text/html");
     const entries = Array.from(doc.querySelectorAll(".project"));
-    if (doc.querySelector("h1")?.textContent !== profile.fullName || entries.length !== profile.projects.length || entries.some((item, i) => item.querySelector("h3")?.textContent !== profile.projects[i].name)) { setError(tv("copyMismatch")); return; }
+    if (doc.querySelector("h1")?.textContent !== parsed.data.fullName || entries.length !== parsed.data.projects.length || entries.some((item, i) => item.querySelector("h3")?.textContent !== parsed.data.projects[i].name)) { setError(tv("copyMismatch")); return; }
     const summary = doc.querySelector(".about")?.textContent;
     const descriptions = entries.map(item => item.querySelector(".description")?.textContent);
     if (summary && descriptions.every(Boolean)) onUseCopy({ summary, projects: descriptions.map(description => ({ description: description! })) });

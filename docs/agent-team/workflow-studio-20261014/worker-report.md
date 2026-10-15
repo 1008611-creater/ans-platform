@@ -33,3 +33,13 @@
 - 沿用现有 three.js 运行时和既有参考素材，无新增依赖、第三方代码拷贝或生产图片修改。本轮核查 three.js 编辑器历史序列化与 Reactive Resume 的编辑/导出结构作为方法参考，不宣称移植其实现。来源：https://github.com/mrdoob/three.js/blob/dev/editor/js/History.js ，https://github.com/reactive-resume/reactive-resume 。
 - 本地 DB、合成账号、脚本、截图、构建和日志均位于 Git ignored `.workbuddy/evidence/market-maturity/`，不上传。
 - 主控按 PR 的精确 head 审查，适用 CI 通过后合并 main；部署明确 main SHA，保留前一生产镜像/发布目录为回滚入口。本轮相对当前 main 无新增数据库迁移。发布前核对规范配方登记、模型 worker、费用配置、独立发布域名与未开放能力的呈现；发布后验收项目→市场→保存/导出及任务恢复。PR 与本地完成不代表已上线。
+
+## 主控增量修复 2026-10-15
+
+原作者线程停在工具审批，主控用独立树接手 PR91 的 WS-R07 和五个旧导航断言，同步 main113392ec，保留原工作树。生产代码仅把 HTML 姓名/项目比较改为本次 parsed.data，完整指纹与 source/latestProfile 防异步变化守卫保留。新增首尾空白合法输入与 digest 过程中资料变化拒绝验证，沿用既有应用/撤销编辑器回归。
+
+四个定向文件84项通过，10项 actual sibling child 验证因未提供显式源目录按既有条件跳过；未把跳过项写成通过。定向 ESLint 0 errors、1既有未使用参数 warning，1151文件分层六类通过。首次直接复用共享依赖的全量 types 因该依赖旧Prisma client及缺Next生成声明失败；不修改共享依赖，后续使用已核对等价schema的隔离现有client与ignored Next声明重验。最终类型结果和精确head由增量审查记录，不能将此前失败写成通过。
+
+本地合成资料只用于隔离回归，无生产创建、签到、模型收费调用、迁移或部署。当前增量仍待独立审查和准确head CI，通过后由主控统一发布。
+
+最终增量全量生产/测试类型检查已通过（exit0），使用每个model/enum/datasource逐块规范化对比一致的既有隔离client；不更改共享node_modules。类型声明与配置均在ignored范围。

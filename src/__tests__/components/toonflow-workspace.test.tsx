@@ -374,7 +374,7 @@ it("saves before global navigation and keeps the first destination during repeat
   fireEvent.click(screen.getByRole("link", { name: "global-explore" }));
   const request = send.mock.calls.at(-1)![0];
   expect(request.type).toBe("ans.toonflow.prepareLeave");
-  fireEvent.click(screen.getByRole("link", { name: "nav.workspace" }));
+  fireEvent.click(screen.getByRole("link", { name: "nav.market" }));
   expect(send.mock.calls.at(-1)![0]).toBe(request);
   expect(mocks.push).not.toHaveBeenCalled();
   leaveResult(frame, nonce, request.requestId);
@@ -382,14 +382,14 @@ it("saves before global navigation and keeps the first destination during repeat
 });
 it("protects actual mobile navigation and retains the iframe after save failure", () => {
   const { frame, nonce, send } = setup(true); message(frame, nonce);
-  fireEvent.click(screen.getByRole("link", { name: "nav.workspace" }));
+  fireEvent.click(screen.getByRole("link", { name: "nav.market" }));
   leaveResult(frame, nonce, send.mock.calls.at(-1)![0].requestId, "failed");
   expect(mocks.push).not.toHaveBeenCalled();
   expect(screen.getByTitle("frameTitle")).toBe(frame);
   expect(screen.getByRole("alert")).toHaveTextContent("saveFailed");
-  fireEvent.click(screen.getByRole("link", { name: "nav.workspace" }));
+  fireEvent.click(screen.getByRole("link", { name: "nav.market" }));
   leaveResult(frame, nonce, send.mock.calls.at(-1)![0].requestId);
-  expect(mocks.push).toHaveBeenCalledExactlyOnceWith("/workspace", { scroll: undefined });
+  expect(mocks.push).toHaveBeenCalledExactlyOnceWith("/market", { scroll: undefined });
 });
 it("does not request saving for same-document, cancelled or modified global links", () => {
   window.history.replaceState(null, "", "/workflows/toonflow");

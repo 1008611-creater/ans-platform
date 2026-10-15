@@ -63,7 +63,7 @@ it("links the registered platform recipe and its published market version withou
   mocks.market.mockResolvedValue("/market/real-published-card");
   vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1");
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
-  expect(screen.getByRole("link", { name: "openWorkflow" })).toHaveAttribute("href", "/workflows/ans-portfolio-website");
+  expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(screen.getByRole("link", { name: "viewMarketCard" })).toHaveAttribute("href", "/market/real-published-card");
   expect(screen.getByText("recipeMeteredCost:2")).toBeVisible();
   expect(mocks.market).toHaveBeenCalledWith(expect.objectContaining({ id: "real-recipe-id" }), { id: "immutable-version", version: 1 }, "verified-hash");
@@ -72,7 +72,7 @@ it("links the registered platform recipe and its published market version withou
 it("does not claim a withdrawn market card exists or add a generic recipe to CAU", async () => {
   mocks.platform.mockResolvedValue({ workflow: { id: "real-recipe-id", authorId: "real-owner", slug: "ans-portfolio-website" }, version: { id: "immutable-version", version: 1 }, recipe: { catalogRecipeId: "resume-website", definitionHash: "verified-hash" } });
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
-  expect(screen.getByRole("link", { name: "openWorkflow" })).toBeVisible();
+  expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(screen.queryByRole("link", { name: "viewMarketCard" })).toBeNull();
   cleanup(); mocks.platform.mockClear();
   render(await HubDetailPage({ params: Promise.resolve({ slug: "cauhub" }) }));
@@ -91,11 +91,11 @@ it("shows unknown execution availability without losing references after attesta
   expect(document.body.textContent).not.toContain("private connection detail");
   expect(mocks.market).not.toHaveBeenCalled();
 });
-it("keeps an attested workflow and references available when only its market read fails", async () => {
+it("keeps attested recipe information and references without an execution shortcut when its market read fails", async () => {
   mocks.platform.mockResolvedValue({ workflow: { id: "real-recipe-id", authorId: "real-owner", slug: "ans-portfolio-website" }, version: { id: "immutable-version", version: 1 }, recipe: { catalogRecipeId: "resume-website", definitionHash: "verified-hash" } });
   mocks.market.mockRejectedValue(new Error("private market connection detail"));
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
-  expect(screen.getByRole("link", { name: "openWorkflow" })).toHaveAttribute("href", "/workflows/ans-portfolio-website");
+  expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(screen.queryByRole("link", { name: "viewMarketCard" })).toBeNull();
   expect(screen.getByRole("status")).toHaveTextContent("marketUnavailable");
   expect(screen.getByRole("link", { name: "Hello \u7b97\u6cd5" })).toBeVisible();
