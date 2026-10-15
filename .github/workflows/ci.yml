@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+# New commits supersede checks for the same PR. Main releases keep distinct runs.
+concurrency:
+  group: ans-ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   DATABASE_URL: "postgresql://test:test@localhost:5432/test"
   DIRECT_URL: "postgresql://test:test@localhost:5432/test"
@@ -54,6 +59,16 @@ jobs:
         with:
           path: ~/.cache/puppeteer
           key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # Cache compiler work only. Prisma generation, migrations, tests and build
+      # still run; lockfile, schema and generator/config changes split the cache.
+      - name: Cache Next.js compiler work
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-node24-${{ runner.os }}-${{ hashFiles('package.json', 'package-lock.json', 'prisma/schema.prisma', 'prisma.config.ts', 'tsconfig.json', 'next.config.*', 'prompts.config.ts', 'postcss.config.*') }}-${{ github.sha }}
+          restore-keys: |
+            next-node24-${{ runner.os }}-${{ hashFiles('package.json', 'package-lock.json', 'prisma/schema.prisma', 'prisma.config.ts', 'tsconfig.json', 'next.config.*', 'prompts.config.ts', 'postcss.config.*') }}-
 
       - name: Install dependencies
         run: npm ci
