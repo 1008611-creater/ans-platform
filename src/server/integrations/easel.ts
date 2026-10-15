@@ -8,6 +8,6 @@ export function getEaselEmbedConfig(userId: string): EaselEmbedConfig | null {
     const url = new URL(raw);
     const ansOrigin = new URL(process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun").origin;
     if (url.protocol !== "https:" || raw !== url.origin || url.origin === ansOrigin || url.username || url.password || url.hostname.includes("*")) return null;
-    return { origin: url.origin, src: `${url.origin}/ans/embed?expected=${encodeURIComponent(userId)}`, loginUrl: `${url.origin}/ans/oidc/start` };
+    return { origin: url.origin, src: `${url.origin}/ans/embed?expected=${encodeURIComponent(userId)}`, loginUrl: `${url.origin}/ans/oidc/start?expected=${encodeURIComponent(userId)}` };
   } catch { return null; }
 }

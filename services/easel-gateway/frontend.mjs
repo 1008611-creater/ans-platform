@@ -1,4 +1,18 @@
 export function workspaceBootstrap(owner) {
+  const loaded = () => {
+    if (window.parent === window) return;
+    const root = document.getElementById("root");
+    if (!root) return;
+    let reported = false;
+    const ready = () => {
+      if (reported || !root.childElementCount) return;
+      reported = true; observer.disconnect();
+      window.parent.postMessage({type:"ans:easel:workspace-ready",userId:owner}, location.origin);
+    };
+    const observer = new MutationObserver(ready);
+    observer.observe(root, {childList:true}); ready();
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", loaded, {once:true}); else loaded();
   const prefix = "ans_easel:" + encodeURIComponent(owner) + ":";
   for (const name of ["localStorage", "sessionStorage"]) {
     try {

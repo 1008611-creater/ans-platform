@@ -64,6 +64,16 @@ await (async function () {
     assert.equal(new URLSearchParams(calls[0].options.body).get('code_verifier'), transaction.verifier);
     assert.equal((await fetch(callback, { redirect: 'manual', headers: { cookie: txCookie } })).status, 401); assert.equal(f.tenants.length, 0);
   });
+  test('a failed standalone OIDC login displays a localized recovery page',async t=>{
+    const f=await fixture(t);
+    for(const [language,title] of [['zh','\u9700\u8981\u8854\u63a5 ANS \u767b\u5f55'],['en','Connect your ANS sign-in']]) {
+      const start=await fetch(f.base+'/ans/oidc/start?expected=user-a',{redirect:'manual'});
+      const authorization=new URL(start.headers.get('location'));const cookie=start.headers.get('set-cookie').split(';')[0];
+      const result=await fetch(f.base+'/ans/oidc/callback?error=login_required&state='+authorization.searchParams.get('state'),{headers:{cookie,'accept-language':language}});
+      const html=await result.text();assert.equal(result.status,200);assert(html.includes('<main>'));assert(html.includes(title));assert(html.includes(config.issuer+'/workflows/easel'));
+      assert(result.headers.getSetCookie().some(value=>value.startsWith(config.sessionCookie+'=')&&value.includes('Max-Age=0')));
+    }
+  });
   test('old workspace cannot read or write using a newly switched session', async t => {
     const f = await fixture(t);
     for (const method of ['GET','POST']) assert.equal((await fetch(f.base + '/api/accounts', {method, headers:{cookie:session('user-b'),'x-ans-easel-workspace':'user-a',origin:config.publicOrigin}})).status,401);
@@ -73,6 +83,21 @@ await (async function () {
     const f = await fixture(t); const response = await fetch(f.base + '/ans/embed?expected=user-a', {headers:{cookie:session('user-a')}});
     const html=await response.text(); const {Script}=await import('node:vm'); new Script(html.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1]);
     assert(html.includes('ans:easel:renewed')); assert(response.headers.get('content-security-policy').includes("frame-src 'self' " + config.issuer));
+  });
+  test('ready waits for the loaded workspace, validates its source and schedules renewal once',async t=>{
+    const f=await fixture(t);const html=await(await fetch(f.base+'/ans/embed?expected=user-a',{headers:{cookie:session('user-a')}})).text();
+    const messages=[],frames=[],timers=[];let receive;
+    const window={parent:{postMessage:data=>messages.push(data)},addEventListener:(type,listener)=>{assert.equal(type,'message');receive=listener;}};
+    const document={createElement:()=>({contentWindow:{},remove(){this.removed=true;}}),body:{append:frame=>frames.push(frame)}};
+    const {runInNewContext}=await import('node:vm');
+    runInNewContext(html.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1],{window,document,fetch:async()=>({ok:true}),setTimeout:(fn,delay)=>{timers.push({fn,delay});return timers.length;},clearTimeout:()=>{}});
+    await new Promise(resolve=>setImmediate(resolve));assert.equal(frames.length,1);assert.equal(messages.length,0);
+    const data={type:'ans:easel:workspace-ready',userId:'user-a'};
+    for(const event of [{origin:'https://evil.test',source:frames[0].contentWindow,data},{origin:config.publicOrigin,source:{},data},{origin:config.publicOrigin,source:frames[0].contentWindow,data:{...data,userId:'user-b'}}])receive(event);
+    assert.equal(messages.length,0);
+    receive({origin:config.publicOrigin,source:frames[0].contentWindow,data});receive({origin:config.publicOrigin,source:frames[0].contentWindow,data});
+    assert.deepEqual(JSON.parse(JSON.stringify(messages)),[{type:'ans:easel:ready',userId:'user-a'}]);
+    assert.equal(timers.filter(timer=>timer.delay===180000).length,1);
   });
   test('unbound callbacks never exchange a code', async t => { let calls = 0; const f = await fixture(t, async () => { calls++; return {}; }); assert.equal((await fetch(f.base + '/ans/oidc/callback?state=forged&code=stolen')).status, 401); assert.equal(calls, 0); });
   test('browser media selects only its owner and carries a sandbox policy',async t=>{

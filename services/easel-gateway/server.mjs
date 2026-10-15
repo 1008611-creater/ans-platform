@@ -1,3 +1,5 @@
+import zh from "../../messages/easel/zh.json" with { type: "json" };
+import en from "../../messages/easel/en.json" with { type: "json" };
 import { bootstrapScript } from "./frontend.mjs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -34,17 +36,22 @@ function embedHtml(config, expected, session) {
   const nonce = random();
   const script = `const issuer=${serialize(config.issuer)},expected=${serialize(expected)},ready=${ready},subject=${serialize(ready ? session.sub : null)};
     const signal=(type,value)=>{if(window.parent!==window)window.parent.postMessage(type==='ans:easel:error'?{type,code:value}:{type,userId:value},issuer);};
-    if(ready){let workspace,renewal,renewalTimeout;
-      const reconnect=()=>{signal('ans:easel:refresh',subject);renewal=document.createElement('iframe');renewal.hidden=true;renewal.src='/ans/oidc/start?silent=1&renew=1&expected='+encodeURIComponent(subject);document.body.append(renewal);renewalTimeout=setTimeout(()=>{workspace?.remove();renewal?.remove();signal('ans:easel:error','login_required');},45000);};
-      window.addEventListener('message',event=>{if(event.origin!==${serialize(config.publicOrigin)}||event.source!==renewal?.contentWindow)return;
-        const data=event.data;if(data?.type==='ans:easel:renewed'&&data.userId===subject){clearTimeout(renewalTimeout);renewal.remove();renewal=null;signal('ans:easel:ready',subject);setTimeout(reconnect,180000);}
-        else if(data?.type==='ans:easel:error'){clearTimeout(renewalTimeout);workspace?.remove();renewal?.remove();signal('ans:easel:error',data.code||'login_required');}});
-      fetch('/ans/runtime',{method:'POST',headers:{'X-ANS-Easel-Workspace':subject}}).then(async response=>{if(!response.ok)throw new Error();workspace=document.createElement('iframe');workspace.src='/?ans_owner='+encodeURIComponent(subject);workspace.title='Easel';workspace.style='border:0;width:100%;height:100dvh';document.body.append(workspace);signal('ans:easel:ready',subject);setTimeout(reconnect,180000);}).catch(()=>signal('ans:easel:error','runtime_unavailable'));
+    if(ready){let workspace,workspaceReady=false,renewal,renewalTimeout,loadTimeout;
+      const reconnect=()=>{signal('ans:easel:refresh',subject);renewal=document.createElement('iframe');renewal.hidden=true;renewal.src='/ans/oidc/start?silent=1&renew=1&expected='+encodeURIComponent(subject);document.body.append(renewal);renewalTimeout=setTimeout(()=>{workspace?.remove();workspace=null;renewal?.remove();signal('ans:easel:error','login_required');},45000);};
+      window.addEventListener('message',event=>{if(event.origin!==${serialize(config.publicOrigin)})return;
+        const data=event.data;
+        if(event.source===workspace?.contentWindow&&data?.type==='ans:easel:workspace-ready'&&data.userId===subject){if(workspaceReady)return;workspaceReady=true;clearTimeout(loadTimeout);signal('ans:easel:ready',subject);setTimeout(reconnect,180000);return;}
+        if(event.source!==renewal?.contentWindow)return;if(data?.type==='ans:easel:renewed'&&data.userId===subject){clearTimeout(renewalTimeout);renewal.remove();renewal=null;signal('ans:easel:ready',subject);setTimeout(reconnect,180000);}
+        else if(data?.type==='ans:easel:error'){clearTimeout(renewalTimeout);workspace?.remove();workspace=null;renewal?.remove();signal('ans:easel:error',data.code||'login_required');}});
+      fetch('/ans/runtime',{method:'POST',headers:{'X-ANS-Easel-Workspace':subject}}).then(async response=>{if(!response.ok)throw new Error();workspace=document.createElement('iframe');workspace.src='/?ans_owner='+encodeURIComponent(subject);workspace.title='Easel';workspace.style='border:0;width:100%;height:100dvh';document.body.append(workspace);loadTimeout=setTimeout(()=>{workspace?.remove();workspace=null;signal('ans:easel:error','runtime_unavailable');},45000);}).catch(()=>signal('ans:easel:error','runtime_unavailable'));
     }else{location.replace('/ans/oidc/start?silent=1&expected='+encodeURIComponent(expected));}`;
   return { nonce, html: `<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Easel</title><style>body{margin:0}iframe{display:block}</style><body><script nonce="${nonce}">${script}</script></body></html>` };
 }
-function errorHtml(config, code, renewal = false) {
-  const nonce = random(); return { nonce, html: `<!doctype html><html lang="zh"><meta charset="utf-8"><body><script nonce="${nonce}">if(window.parent!==window)window.parent.postMessage({type:'ans:easel:error',code:${serialize(code)}},${serialize(renewal ? config.publicOrigin : config.issuer)});</script></body></html>` };
+function escapeHtml(value) { return value.replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[character]); }
+function errorHtml(config, code, renewal = false, language = "zh") {
+  const strings = language === "en" ? en : zh;
+  const message = strings.connection[code] ?? strings.connection.unavailable;
+  const nonce = random(); return { nonce, html: `<!doctype html><html lang="${language}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(message.title)}</title><body><main><h1>${escapeHtml(message.title)}</h1><p>${escapeHtml(message.body)}</p><a href="${escapeHtml(config.issuer + "/workflows/easel")}" target="_blank" rel="noopener noreferrer">${escapeHtml(strings.back)}</a></main><script nonce="${nonce}">if(window.parent!==window)window.parent.postMessage({type:'ans:easel:error',code:${serialize(code)}},${serialize(renewal ? config.publicOrigin : config.issuer)});</script></body></html>` };
 }
 
 export function createGateway(config, { containers = new Containers(config), remote = remoteJson } = {}) {
@@ -89,7 +96,7 @@ export function createGateway(config, { containers = new Containers(config), rem
         response.setHeader("Set-Cookie", cookie(config, config.transactionCookie, "", 0));
         if (url.searchParams.has("error")) {
           response.setHeader("Set-Cookie", [cookie(config, config.transactionCookie, "", 0), cookie(config, config.sessionCookie, "", 0)]);
-          const result = errorHtml(config, "login_required", transaction.renew); response.setHeader("Content-Security-Policy", `default-src 'none'; script-src 'nonce-${result.nonce}'; frame-ancestors 'self' ${config.issuer}`); page(response, result.html, 200); return;
+          const result = errorHtml(config, "login_required", transaction.renew, request.headers["accept-language"]?.startsWith("en") ? "en" : "zh"); response.setHeader("Content-Security-Policy", `default-src 'none'; script-src 'nonce-${result.nonce}'; frame-ancestors 'self' ${config.issuer}`); page(response, result.html, 200); return;
         }
         if (url.searchParams.getAll("code").length !== 1 || !url.searchParams.get("code") || url.searchParams.get("code").length > 1024) throw new GatewayError("INVALID_TRANSACTION", 401);
         const token = await remote(config.issuer + "/api/oidc/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Authorization: "Basic " + Buffer.from(encodeURIComponent(config.clientId) + ":" + encodeURIComponent(config.clientSecret)).toString("base64") },
@@ -98,7 +105,7 @@ export function createGateway(config, { containers = new Containers(config), rem
         const claims = verifyIdToken(token.id_token, jwks.keys, { issuer: config.issuer, clientId: config.clientId, nonce: transaction.nonce });
         if (transaction.expected && !same(transaction.expected, claims.sub)) {
           response.setHeader("Set-Cookie", [cookie(config, config.transactionCookie, "", 0), cookie(config, config.sessionCookie, "", 0)]);
-          const result = errorHtml(config, "account_mismatch", transaction.renew); response.setHeader("Content-Security-Policy", `default-src 'none'; script-src 'nonce-${result.nonce}'; frame-ancestors 'self' ${config.issuer}`); page(response, result.html); return;
+          const result = errorHtml(config, "account_mismatch", transaction.renew, request.headers["accept-language"]?.startsWith("en") ? "en" : "zh"); response.setHeader("Content-Security-Policy", `default-src 'none'; script-src 'nonce-${result.nonce}'; frame-ancestors 'self' ${config.issuer}`); page(response, result.html); return;
         }
         if (typeof token.access_token !== "string" || token.access_token.length > 8000 || !Number.isFinite(token.expires_in) || token.expires_in < 1) throw new GatewayError("INVALID_IDENTITY_RESPONSE");
         const expires = Math.min(claims.exp, now() + 240, now() + token.expires_in);

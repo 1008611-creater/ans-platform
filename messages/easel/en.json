@@ -38,7 +38,7 @@
     },
     "login_required": {
       "title": "Connect your ANS sign-in",
-      "body": "Complete sign-in in a new window, then reconnect."
+      "body": "Sign in with your current ANS account in a separate window. If your browser restricts embedded sign-in, continue creating in that window."
     },
     "account_mismatch": {
       "title": "The accounts do not match",
@@ -46,7 +46,11 @@
     },
     "unavailable": {
       "title": "Workspace unavailable",
-      "body": "The service may be starting, at capacity or temporarily unavailable. Reconnect later. Check uncertain publication results before repeating an action."
+      "body": "The service may be starting or at capacity. If your browser restricts embedded sign-in, continue in a separate window. Verify any unconfirmed publishing result before retrying."
     }
-  }
+  },
+  "openStandalone": "Open in a separate window",
+  "renewing": "Renewing your session; current work is preserved",
+  "setupTitle": "Before your first draft",
+  "setupBody": "In Easel settings, choose a runtime and model provider, then enter your own endpoint, model name and key. Complete your account profile, generate a draft and review it. Check the destination account and content before connecting a social account or publishing."
 }

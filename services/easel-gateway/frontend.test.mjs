@@ -10,7 +10,7 @@ function browser(owner,local,session) {
     BroadcastChannel:class {constructor(name){channels.push(name);}},fetch:(input,options)=>{requests.push({input,options});return Promise.resolve();}};
   const location={href:"https://easel.example.test/",origin:"https://easel.example.test"};
   const script=bootstrapScript(owner).slice("<script>".length,-"</script>".length);
-  runInNewContext(script,{window,location,URL,Headers,Request});return {window,channels,requests};
+  window.parent=window; runInNewContext(script,{window,location,document:{readyState:"complete"},URL,Headers,Request});return {window,channels,requests};
 }
 test("drafts, conversations and storage clear are confined to the loaded account",()=>{
   const local=storage(),session=storage();local.setItem("easel_sessions","legacy-private-data");
@@ -31,4 +31,15 @@ test("cross-tab channels and API requests retain the original owner",async()=>{
 test("a subject cannot break out of the injected script",()=>{
   const payload="</script><script>alert(1)</script>";const value=bootstrapScript(payload);
   assert.equal(value.split("</script>").length,2);const a=browser(payload,storage(),storage());assert(a.window.localStorage);
+});
+
+test("the workspace signals ready only after its loaded frontend has rendered",()=>{
+  const messages=[];let loaded,mutated,disconnected=false;const root={childElementCount:0};
+  const window={parent:{postMessage:(message,target)=>messages.push({message,target})},fetch:()=>{}};
+  const script=bootstrapScript("user-a").slice("<script>".length,-"</script>".length);
+  const MutationObserver=class {constructor(callback){mutated=callback;}observe(target){assert.equal(target,root);}disconnect(){disconnected=true;}};
+  runInNewContext(script,{window,MutationObserver,location:{origin:"https://easel.example.test"},document:{readyState:"loading",getElementById:id=>{assert.equal(id,"root");return root;},addEventListener:(event,listener)=>{assert.equal(event,"DOMContentLoaded");loaded=listener;}}});
+  assert.equal(messages.length,0);loaded();assert.equal(messages.length,0);
+  root.childElementCount=1;mutated();mutated();assert.equal(disconnected,true);
+  assert.deepEqual(JSON.parse(JSON.stringify(messages)),[{message:{type:"ans:easel:workspace-ready",userId:"user-a"},target:"https://easel.example.test"}]);
 });

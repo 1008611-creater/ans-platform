@@ -26,7 +26,7 @@ export default async function EaselPage() {
       </div>
       <a className="ans-text-link text-sm" href="https://github.com/ZJU-REAL/Easel" target="_blank" rel="noopener noreferrer">{t("source")}<ExternalLink className="size-4" aria-hidden="true" /></a>
     </div>
-    {config ? <EaselWorkspace {...config} userId={session.user.id} /> : <Card>
+    {config ? <><details className="mb-5 rounded-xl border bg-muted/20 p-4"><summary className="cursor-pointer text-sm font-medium">{t("setupTitle")}</summary><p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">{t("setupBody")}</p></details><EaselWorkspace {...config} userId={session.user.id} /></> : <Card>
       <CardHeader><CardTitle>{t("pendingTitle")}</CardTitle></CardHeader>
       <CardContent><p className="max-w-3xl text-sm leading-7 text-muted-foreground">{t("pendingBody")}</p>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{["discover", "plan", "create", "publish", "review"].map(step => <div key={step} className="rounded-xl border p-4"><h2 className="text-sm font-semibold">{t(`steps.${step}.title`)}</h2><p className="mt-2 text-xs leading-6 text-muted-foreground">{t(`steps.${step}.body`)}</p></div>)}</div>

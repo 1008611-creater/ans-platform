@@ -37,13 +37,15 @@ ANS cookie、access token、Authorization 和用户指定的身份头不转发�
 
 本地已实现页面、登录、owner 绑定代理、隔离调度、出网代理与部署模板。上游 Web 已在独立预览环境启动，前端构建成功；该预览为无模型、无社媒账号的 API 模式，并不代表 OpenClaw 工具链可用。上游前端锁文件修复后 npm audit 报告零漏洞；ANS 原有依赖安装仍报告七项审计问题，未跨范围升级。
 
-本地相关测试共 44 项通过（网关 33 项，ANS 11 项），相关 ESLint 零警告，分层边界检查通过，ANS 类型检查及同步 main 后的生产构建已通过；完整 lint 为零错误（355 条既有警告），PR #101 的同步 main 提交 a7951455 已通过 GitHub CI；追加前端素材补丁再次完成 TypeScript/Vite 构建，并通过干净原文件的 git apply --check。这些单元测试和构建与下面的真实 Docker 验收分别记录。
+本地相关测试共 48 项通过（网关 36 项，ANS 12 项），相关 ESLint 零警告，分层边界检查通过，ANS 类型检查及同步 main 后的生产构建已通过；完整 lint 为零错误（355 条既有警告），PR #101 的同步 main 提交 a7951455 已通过 GitHub CI；追加前端素材补丁再次完成 TypeScript/Vite 构建，并通过干净原文件的 git apply --check。这些单元测试和构建与下面的真实 Docker 验收分别记录。
 
-网关/身份/网络策略单元测试使用真实 HTTP 服务和临时 RSA 密钥，模拟 ANS provider 与 Docker，不替代真实容器和生产 OIDC 的验收。2026-10-15 早先本机 Docker 引擎查询超时，稍后再次查询已成功（Engine 29.5.2），未重启 Docker 或改动已有容器。固定前端的真实 Linux TypeScript/Vite 构建及导出成功；egress 镜像构建成功，本地 digest 为 sha256:c4b2bf2b197ab5e499a5f690d30114c9f5e3e2c1356293dc19ec0a1293417575。worker 镜像已构建成功，本地 digest 为 sha256:0cc945e828d9aa594455e80fdf51324aca896a6b03f52ca7d190cbbca4211635。模型生成、平台发布和生产 OIDC 未验证，不能开启 ANS_EASEL_ENABLED。
+网关/身份/网络策略单元测试使用真实 HTTP 服务和临时 RSA 密钥，模拟 ANS provider 与 Docker，不替代真实容器和生产 OIDC 的验收。2026-10-15 早先本机 Docker 引擎查询超时，稍后再次查询已成功（Engine 29.5.2），未重启 Docker 或改动已有容器。固定前端的真实 Linux TypeScript/Vite 构建及导出成功；egress 镜像构建成功，本地 digest 为 sha256:c4b2bf2b197ab5e499a5f690d30114c9f5e3e2c1356293dc19ec0a1293417575。worker 镜像已构建成功，本地 digest 为 sha256:0cc945e828d9aa594455e80fdf51324aca896a6b03f52ca7d190cbbca4211635。模型生成、平台发布和目标部署环境的 OIDC 未验证；生产 ANS_EASEL_ENABLED 仍保持关闭。
 
 2026-10-15 执行 runtime-smoke.mjs --run，真实 Docker 联调 11 项全部通过：两个独立 worker 的 API 与 OpenClaw 健康检查；不继承 ANS/本机模型和认证凭据；独立 workspace/home 卷；受限 worker 中 Chromium 启动；匿名、旧账号请求及跨账号素材访问被拒绝；worker 无法直连另一租户、正在监听的宿主机服务和公网；代理拒绝云元数据；经代理访问公共 HTTPS；第三个活动用户触发容量限制；worker/egress 停止后恢复数据；gateway 调度器重建后安全接管既有容器。测试使用加密的合成会话与模拟 userinfo，不代表真实 ANS OIDC 或浏览器跨域登录通过。临时 namespace 的测试容器、卷与网络均已清理，未操作其他容器。
 
-仍须在目标部署环境验收真实 OIDC、第三方 cookie 限制、静默续期、长 SSE 与未保存输入、手机布局；验证出网代理覆盖各平台浏览器脚本、宿主机桥接/DNS/IPv6 策略及持久卷备份。当前只有用户数量和运行资源限制，未实现磁盘硬配额。上游媒体工具的真实生成/发布、依赖审计与端到端平台流程仍待对应授权后验证。
+2026-10-15 新增 browser-smoke.mjs，并在本地独立 PostgreSQL + ANS 生产构建 + 两个实际 Easel Docker worker 上完成浏览器联调，八项通过：匿名入口转真实登录；两名合成用户通过真实 credentials 与 OIDC code/PKCE/token/JWKS/userinfo 打开固定前端；静默续期保留可见 iframe、原 DOM 和未保存文字；390px ANS 外层页面无横向溢出；真实退出后移除旧私密页面；换号隔离浏览器草稿和真实 worker 素材，旧 owner 被拒绝；模拟嵌入 Cookie 不可用时关闭旧页面并显示独立窗口入口，该入口可用当前账号打开实际工作台；启动失败或前端未渲染时不提前报告 ready，并提供绑定账号的重试入口。使用一次性 localhost 自签 HTTPS 证书和不同端口的两个 origin，未导入系统信任；网关仅信任此次测试证书，未模拟身份签发/验证。续期计时器从三分钟加速到十二秒，Cookie 丢失通过拦截测试页面的 gateway 请求模拟，不等于生产域名下所有浏览器第三方 Cookie 策略均已验证。截图已人工检查。临时数据库、容器、卷、网络、服务和证书已清理，保留脱敏报告和合成账号截图于本机临时证据目录。未配置真实模型或社媒账号，未调用生成/发布。完整生产构建、类型、分层、48 项测试通过；完整 lint 为零错误、355 条既有警告。新增首次使用说明，续期用轻提示保留编辑页面；独立窗口登录失败显示中英文恢复提示，避免空白页。生产入口仍默认关闭。PR 最新提交的 CI 状态以 GitHub 为准。此前提交 18467be4 的 GitHub CI 已全部通过。
+
+仍须在目标部署环境验收 DNS/证书、真实配置下的 OIDC 和浏览器 Cookie 策略、长 SSE 到期/重连与长任务恢复，以及实际手机的内层编辑与导出；验证出网代理覆盖各平台浏览器脚本、宿主机桥接/DNS/IPv6 策略及持久卷备份。本地 Cookie 丢失模拟不能替代这些检查。当前只有用户数量和运行资源限制，未实现磁盘硬配额。上游媒体工具的真实生成/发布、依赖审计与端到端平台流程仍待对应授权后验证。
 
 持久 workspace 卷包含上游代码和用户数据，镜像升级不会自动替换旧卷内代码；升级前必须做分版本卷迁移、备份和回滚，不能仅换镜像标签宣称所有用户完成升级。当前进程仅支持单 gateway 实例，事务和调度锁在内存；不得直接部署多副本。
 
@@ -73,6 +75,8 @@ ANS OIDC_CLIENTS_FILE 注册表中追加 Easel 客户端，保留已有客户端
 node --test services/easel-gateway/*.test.mjs
 # 仅在已授权的本地 Docker 验收环境执行；创建并清理独立的合成账号测试资源
 node services/easel-gateway/runtime-smoke.mjs --run
+# 本地真实 ANS/OIDC 浏览器验收：临时数据库、随机 HTTPS 端口与独立测试资源；需预先构建镜像和固定前端
+node services/easel-gateway/browser-smoke.mjs --run /absolute/path/to/fixed/frontend
 npx vitest run src/__tests__/lib/easel-embed.test.ts src/__tests__/components/easel-workspace.test.tsx
 npm run typecheck
 npm run build
