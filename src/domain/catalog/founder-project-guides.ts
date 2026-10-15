@@ -1,11 +1,48 @@
-﻿import type { ProjectGuide } from "./project-guide-types";
+import type { ProjectGuide } from "./project-guide-types";
 
 export const FOUNDER_PROJECT_GUIDES: readonly ProjectGuide[] = [{
+  slug: "ans-3d-showcase",
+  sourceUrl: "https://ans.cauai.fun/showcase/ans-3d/index.html",
+  checkedAt: "2026-10-15",
+  evidence: [
+    { label: "3D 双模型互动展示 / Live 3D Showcase", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
+    { label: "原版 3D 个人作品集 / Author 3D Portfolio", href: "https://resume.cauai.fun/" },
+  ],
+  zh: {
+    audience: "想体验 ANS 产品全景导览，或希望在 3D 个人网站中加入吉祥物伴飞、微距贴脸表情与鼠标互动的创作者。",
+    difficulty: "打开网页即可直接用鼠标滚轮、悬停与点击交互体验。",
+    access: "ANS 站内原生托管展示页，直接同源复用站内 3D 吉祥物模型。",
+    cost: "浏览与 3D 实时交互完全免费，不消耗算力积分。",
+    result: "在一个 3D 舞台中同时呈现主理人建模与顺时针绕头飞行的小恐龙吉祥物，转到脸前时自动飞入摄像机超微距镜头前做表情并发碎碎念，支持鼠标摸头与点击互动。",
+    steps: [
+      { title: "滚动滚轮体验顺时针绕头伴飞", body: "向下滚动页面，观察小恐龙沿 9点→12点→3点→6点 顺时针围绕主理人头部飞行，并在章节切换时配合镜头呼吸拉远。", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
+      { title: "在脸前触发摄像机超微距贴脸杀", body: "当小恐龙顺时针绕到主理人脸前（如第 01 章节及章节过渡段），会靠近虚拟摄像机，正对镜头眨眼、脸红并发出碎碎念颜文字。" },
+      { title: "鼠标移上去摸头 & 点击投喂互动", body: "把鼠标移到小恐龙或头顶气泡上即可触发摸头反应（转头盯鼠标、Q 弹放大与专属悬停碎碎念）；点击小恐龙可轮换触发蹦跳、转头和表情等六组互动反应。" },
+      { title: "浏览 ANS 产品入口", body: "点击章节中的链接或底部项目卡片，可进入 ANS 主站、项目广场、Hub 和 3D 个人网站工作室。", href: "https://ans.cauai.fun/market/resume-website" },
+    ],
+    cautions: ["页面内主理人 3D 肖像与贴纸归原作者所有，复用工作流建站时请替换为自己的模型与作品素材。", "页面包含实时 3D 渲染，体验取决于设备性能；可使用暂停动效与静态入口，页面也会尊重系统的减弱动态效果偏好。"],
+  },
+  en: {
+    audience: "Creators exploring the ANS product tour or looking to add an interactive 3D mascot companion to their personal site.",
+    difficulty: "Open directly in the browser and interact via scroll wheel, mouse hover, and click.",
+    access: "Hosted natively on ANS, sharing the same-origin 3D dinosaur mascot model.",
+    cost: "Browsing and 3D interaction are completely free and use no compute credits.",
+    result: "A dual-model 3D stage featuring the founder avatar and a clockwise-orbiting ANS dinosaur mascot that swoops into a camera super-macro close-up with live facial shaders and interactive kaomoji ramblings.",
+    steps: [
+      { title: "Scroll to fly the mascot clockwise around the head", body: "Scroll down to drive the dinosaur along a clockwise 3D orbit (9h -> 12h -> 3h -> 6h) around the avatar's head.", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
+      { title: "Trigger the Camera Super-Macro Close-Up", body: "When the orbit reaches the front of the face, the mascot swoops right up to the camera lens with auto-focus DoF, facing the camera dead-on with dynamic expressions." },
+      { title: "Hover to pet & click to interact", body: "Move your cursor over the dinosaur to make it turn toward you, blush, and pop interactive hover ramblings; click to cycle through six gesture and expression presets." },
+      { title: "Explore live ANS product links", body: "Use chapter links or the bottom project cards to visit ANS, Explore, Hubs and the 3D website studio.", href: "https://ans.cauai.fun/market/resume-website" },
+    ],
+    cautions: ["The founder's 3D likeness and decals belong to the author; replace them with your own assets when building your site.", "Real-time 3D performance depends on your device. Pause motion or use the static links; system reduced-motion preferences are respected."],
+  },
+}, {
   slug: "liu-resume",
   sourceUrl: "https://resume.cauai.fun/",
   checkedAt: "2026-10-14",
   evidence: [
     { label: "公开作品集 / Public portfolio", href: "https://resume.cauai.fun/" },
+    { label: "ANS 3D 双模型互动版 / ANS 3D Duo Showcase", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
     { label: "视频作品档案 / Video archive", href: "https://resume.cauai.fun/portfolio/" },
   ],
   zh: {
