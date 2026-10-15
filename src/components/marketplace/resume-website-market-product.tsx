@@ -1,27 +1,29 @@
+import { Suspense } from "react";
 import { ArrowLeft, ArrowUpRight, ChevronRight, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { getMarketConnections } from "@/server/catalog/connections";
-import { marketWorkflowDetails } from "@/server/marketplace/workflows";
+import type { marketWorkflowDetails } from "@/server/marketplace/workflows";
 import { generationConfig } from "@/server/visual-portfolio/jobs";
 import { publicationConfig } from "@/server/visual-portfolio/publication";
 import { VisualWebsiteExperience } from "@/components/projects/visual-website-experience";
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketStar } from "@/components/marketplace/market-star";
-import { ProductConnectionsSection } from "@/components/catalog/product-connections";
+import { MarketProductConnections } from "@/components/marketplace/market-product-connections";
 import { Button } from "@/components/ui/button";
 import type { MarketOfferView } from "@/contracts/marketplace-view";
 import styles from "./market-detail.module.css";
 
+type WorkflowDetails = Awaited<ReturnType<typeof marketWorkflowDetails>>;
+
 type SessionLike = { user?: { id?: string | null } | null } | null;
 
 /** A truthful marketplace contract surrounds the full-width specialist studio. */
-export async function ResumeWebsiteMarketProduct({ offer, session }: { offer: MarketOfferView; session: SessionLike }) {
-  const [t, tp, p, td, ts, connections, runnable] = await Promise.all([
+export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: { offer: MarketOfferView; session: SessionLike; runnable: WorkflowDetails }) {
+  const [t, tp, p, td, ts] = await Promise.all([
     getTranslations("product.market"), getTranslations("product.marketProject"),
     getTranslations("product"), getTranslations("product.marketDetail"),
-    getTranslations("product.marketStudio"), getMarketConnections(offer), marketWorkflowDetails(offer),
+    getTranslations("product.marketStudio"),
   ]);
   const listing = offer.listing;
   const readyDetails = runnable?.available && runnable.recipe === "resume-website-v1" ? runnable : null;
@@ -73,7 +75,7 @@ export async function ResumeWebsiteMarketProduct({ offer, session }: { offer: Ma
           <h2>{ts("howTitle")}</h2>
           <ol className={styles.studioSteps}>{["prepare", "compose", "deliver"].map((key, index) => <li key={key}><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{ts(key + "Title")}</h3><p>{ts(key + "Body")}</p></div></li>)}</ol>
         </section>
-        <ProductConnectionsSection connections={connections} />
+        <Suspense fallback={null}><MarketProductConnections offer={offer} /></Suspense>
       </div>
       <section id="market-terms" className={styles.section}>
         <h2>{td("termsTitle")}</h2>

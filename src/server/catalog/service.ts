@@ -20,7 +20,7 @@ async function loadPublishedCatalog() {
   // No catch/fallback: an unavailable DB must not silently resurrect withdrawn content.
   // One statement reads the publication pointer and its immutable version in one
   // PostgreSQL snapshot, without an interactive transaction crossing pooler calls.
-  const rows = await db.$queryRaw<{
+  const [rows, offers, wall] = await Promise.all([db.$queryRaw<{
     slug: string; withdrawn: boolean; publishedRevision: number | null; payload: unknown;
   }[]>`
     SELECT p."slug", p."withdrawn", p."publishedRevision", v."payload"
@@ -29,7 +29,7 @@ async function loadPublishedCatalog() {
       ON v."projectId" = p."id" AND v."revision" = p."publishedRevision"
       AND p."withdrawn" = false
     ORDER BY p."createdAt" ASC
-  `;
+  `, listMarketListings(), readAgriWall()]);
   const official = mergeCatalog(CATALOG_PROJECTS, rows.map(row => ({
     slug: row.slug,
     withdrawn: row.withdrawn,
@@ -37,7 +37,6 @@ async function loadPublishedCatalog() {
   })));
   const retired = new Set(["resume-website", "resume-story", "project-page", "readme-kit", "competition-starter", "pitch-kit", "learning-retrospective", "grok-motion-lab", "open-resume", "dify-agent"]);
   // Runnable recipe listings belong to workflows and market, not project discovery.
-  const [offers, wall] = await Promise.all([listMarketListings(), readAgriWall()]);
   const members = offers.filter(offer => !offer.listing.execution && offer.listing.subcategory !== "agri-wall").map(memberCatalogProject);
   members.push(...wall.entries.map(entry => memberCatalogProject(entry.offer)));
   return [...official.filter(entry => !retired.has(entry.slug) && entry.subcategory !== "agri-wall"), ...members];

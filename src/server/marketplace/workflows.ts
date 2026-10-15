@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createHash } from "node:crypto";
 import { resumeWebsiteInputSchema } from "@/contracts/resume-website";
 import { stableWorkflowInput } from "@/domain/workflows/recipes";
@@ -53,17 +54,23 @@ export async function uploadWorkflowToMarket(slug: string, actorId: string, raw:
     throw error;
   }
 }
-export async function marketWorkflowDetails(listing: { seller: { id: string }; listing: MarketListingInput }) {
-  const binding = listing.listing.execution;
-  if (!binding) return null;
+// Presentation only, scoped to one server render. Primitive keys also deduplicate
+// equivalent listing objects. Mutations below always recheck the live binding.
+const readMarketWorkflowDetails = cache(async (sellerId: string, workflowId: string, versionId: string, version: number, definitionHash: string) => {
+  const binding = { workflowId, versionId, version, definitionHash };
   try {
-    const { workflow, definition } = await assertMarketWorkflowBinding(db, listing.seller.id, binding);
+    const { workflow, definition } = await assertMarketWorkflowBinding(db, sellerId, binding);
     const estimate = unifiedModelBilling() ? null : process.env.ANS_APIC_BILLING_ENABLED === "1" ? Math.max(.25, definition.nodes.filter(n => n.type === "model").length * .25) : Math.max(1, workflow.estimatedCost || 1);
     return { available: true as const, recipe: definition.recipe ?? null, variables: extractInputVariables(definition), estimatedCost: estimate, version: binding.version };
   } catch (error) {
     if (error instanceof MarketRuleError) return { available: false as const, reason: error.code, version: binding.version };
     throw error;
   }
+});
+export async function marketWorkflowDetails(listing: { seller: { id: string }; listing: MarketListingInput }) {
+  const binding = listing.listing.execution;
+  if (!binding) return null;
+  return readMarketWorkflowDetails(listing.seller.id, binding.workflowId, binding.versionId, binding.version, binding.definitionHash);
 }
 export async function runMarketWorkflow(listingId: string, actorId: string, raw: unknown) {
   const input = marketWorkflowRunSchema.parse(raw);
