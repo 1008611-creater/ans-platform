@@ -1,0 +1,16 @@
+{
+  "upstreamRepository": "1008611-creater/jianli-3d",
+  "upstreamCommit": "b99e67867192b8b3617465f4609fc057086d3973",
+  "upstreamPath": "public/assets/models/me.bin",
+  "upstreamBytes": 13880668,
+  "upstreamSha256": "7aa5737aad8c19e38ff6667437206b89629186b0f521c593aed8870068a5388f",
+  "packagedBytes": 13882608,
+  "packagedSha256": "a161ffa607cfba9e80ed72f2f7dbf97b88e5be169c5d16ae4b23fda9bfce674c",
+  "geometryAndTextureBinaryPrefixPreservedExactly": true,
+  "changes": [
+    "Original 3D person geometry, texture bytes, compressed bufferViews and mesh attributes preserved.",
+    "Scene hierarchy and focus nodes retained from PR112 supplied JSON header.",
+    "Missing 224 bytes of camera time/translation/quaternion tracks authored deterministically and appended; accessors updated to actual bounds.",
+    "No pixel editing or image generation."
+  ]
+}

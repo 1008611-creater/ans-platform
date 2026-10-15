@@ -1,0 +1,83 @@
+{
+  "artifactOrigin": "Extracted compiled modules from original ANS PR112 b1bb26374d87cc84e4b9da2329b319bfa125a966. Original source headers retained.",
+  "embeddedVersionEvidence": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "three": "169",
+    "motion": "11.18.2"
+  },
+  "bundledVersionLimit": "No original build manifest/source map supplied for compiled R3F/Drei utilities. Do not claim source repository lock versions equal bundled versions.",
+  "notices": [
+    {
+      "name": "react-three-fiber",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/LICENSE",
+      "noticeSha256": "9c35b5de7b7493a707fffe4eb23bd2f7f449153c1911f7c6eefb4e591fd5349a",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "drei",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/drei/master/LICENSE",
+      "noticeSha256": "2e36b208b403882158daf95cae207087bbb830db4d434a79ebafffca177244c8",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "meshoptimizer",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/zeux/meshoptimizer/master/LICENSE.md",
+      "noticeSha256": "f03037ca7bad1e3eb7f4a63fa6084a8baabd5ba30d3c239a9a7f35705d873e26",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "zustand",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/zustand/main/LICENSE",
+      "noticeSha256": "c1e6e266563517467b1bf874817d23e426f3149252bd7d42758cd697514b8417",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "react-use-measure",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/react-use-measure/master/LICENSE",
+      "noticeSha256": "9c35b5de7b7493a707fffe4eb23bd2f7f449153c1911f7c6eefb4e591fd5349a",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "suspend-react",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/suspend-react/main/LICENSE",
+      "noticeSha256": "997e79b828d8b85d6f18730c8dbf58074811360a199506bd84e1263e17c227a2",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "its-fine",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/its-fine/main/LICENSE",
+      "noticeSha256": "643123eeb38f154d93cb8323e1289a648d3f343b411a9340453c010e325d0c82",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "react-composer",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/jamesplease/react-composer/master/LICENSE",
+      "noticeSha256": "02dbac7304c820b57e3485e58855ff77d7d23cc8dc733cff6dca73c580832c23",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "react-spring",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/react-spring/main/LICENSE",
+      "noticeSha256": "51863a051d919d260e725327cb58df68d04289919d90fa64283beb9c646a2b02",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "use-gesture",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/use-gesture/main/LICENSE",
+      "noticeSha256": "b99672ef9af57432e6d025a66d34f8b968564e4e0a1e2005ea9018457a7e38dc",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    },
+    {
+      "name": "three-stdlib",
+      "noticeSourceUrl": "https://raw.githubusercontent.com/pmndrs/three-stdlib/master/LICENSE",
+      "noticeSha256": "28eb7edf059a39094aa3d169db1fec46ac4a6279c921a90f965828d92ec86e79",
+      "referenceVersion": "upstream current branch; exact embedded module version not independently known"
+    }
+  ],
+  "removed": [
+    "Mansalva embedded font removed, uses system fallback.",
+    "Unused markdown module and old personal project archive removed."
+  ],
+  "licenseStatus": "Any missing notices listed explicitly; remaining resources require reviewer acceptance before publication."
+}

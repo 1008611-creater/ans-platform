@@ -3,6 +3,32 @@ import type { CatalogEntry } from "@/contracts/catalog-content";
 // Verified project sources; GitGlow layouts use real project material or project typography.
 export const REAL_CATALOG_PROJECTS = [
   {
+    "slug": "ans-3d-showcase",
+    "workflowSlugs": ["ans-portfolio-website"],
+    "category": "web",
+    "subcategory": "personal-site",
+    "goal": "portfolio",
+    "preview": "site",
+    "source": "official",
+    "sourceUrl": "https://ans.cauai.fun/showcase/ans-3d/index.html",
+    "content": {
+      "zh": {
+        "title": "ANS × 小恐龙 3D 双模型互动展示",
+        "summary": "主理人 3D 建模与 ANS 吉祥物小恐龙同台展示：滚轮驱动顺时针绕头飞行、脸前超微距贴脸表情与鼠标悬停/点击碎碎念交互。",
+        "sample": "ans.cauai.fun/showcase/ans-3d/index.html",
+        "output": "双 3D 模型实时交互网页、顺时针伴飞运镜与线上产品亮点导览",
+        "inputs": "鼠标滚轮控制飞行轨迹，鼠标悬停或点击小恐龙触发摸头与碎碎念互动",
+        "decisions": "基于个人 3D 作品集底座叠加吉祥物骨骼动画、GLSL 表情着色器与微距镜头调度",
+        "model": "浏览与互动无需消耗 AI 算力。",
+        "prompt": "在 3D 个人网站工作流中替换个人文案与 3D 资产。",
+        "skill": "进入项目即可直接滚动与点击体验。",
+        "sourceNote": "ANS 官方互动展示项目。直接同源复用站内 3D 吉祥物资产。"
+      }
+    },
+    "coverUrl": "/catalog/gitglow-v1/liu-resume.webp",
+    "coverNote": "3D 双模型互动展示 · 主理人 × 小恐龙"
+  },
+  {
     "slug": "liu-resume",
     "workflowSlugs": ["ans-portfolio-website"],
     "category": "career",
