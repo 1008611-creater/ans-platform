@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { activeCheckInStreak, getCommunityDay } from "@/domain/growth/check-in";
 import { LEVELS } from "@/domain/growth/levels";
 import { getLevelPointReward } from "@/domain/growth/rewards";
 import type { DbTransaction } from "@/lib/db";
@@ -14,17 +15,8 @@ import type {
 const eligibleUser = { deletedAt: null, flagged: false, emailVerified: { not: null } } as const;
 const checkInSelect = { id: true, day: true, streak: true, xpAwarded: true, createdAt: true } as const;
 const contributionSelect = { id: true, nickname: true, xp: true } as const;
-const dayFormatter = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit",
-});
-
 export { CommunityError } from "@/server/community/errors";
-
-export function getCommunityDay(now: Date): string {
-  const parts = dayFormatter.formatToParts(now);
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)!.value;
-  return `${part("year")}-${part("month")}-${part("day")}`;
-}
+export { getCommunityDay } from "@/domain/growth/check-in";
 
 async function requireCommunityUser(tx: DbTransaction, userId: string) {
   const user = await tx.user.findFirst({
@@ -104,10 +96,11 @@ export async function getCommunityMe(userId: string) {
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       select: { id: true, amount: true, reason: true, note: true, createdAt: true, appeal: { select: { status: true } } },
     });
+    const now = new Date();
     const todayCheckIn = await tx.checkIn.findUnique({
-      where: { userId_day: { userId, day: getCommunityDay(new Date()) } }, select: checkInSelect,
+      where: { userId_day: { userId, day: getCommunityDay(now) } }, select: checkInSelect,
     });
-    return { xp: user.xp, communityPoints: user.communityPoints, avatarFrameKey: user.avatarFrameKey, chatBubbleKey: user.chatBubbleKey, level: getLevelProgress(user.xp), checkInStreak: user.checkInStreak, todayCheckIn, ledger };
+    return { xp: user.xp, communityPoints: user.communityPoints, avatarFrameKey: user.avatarFrameKey, chatBubbleKey: user.chatBubbleKey, level: getLevelProgress(user.xp), checkInStreak: activeCheckInStreak(user.checkInStreak, user.lastCheckInAt, now), todayCheckIn, ledger };
   }, { isolationLevel: "RepeatableRead" });
 }
 

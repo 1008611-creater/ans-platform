@@ -28,6 +28,8 @@ import {
 
 import { LEVELS, getLevelProgress } from "@/domain/growth/levels";
 import { AVATAR_FRAMES, CHAT_BUBBLES, getLevelPointReward } from "@/domain/growth/rewards";
+import { communityCalendarDays, getCommunityDay, shiftCommunityDay } from "@/domain/growth/check-in";
+import { useCommunityDay } from "./use-community-day";
 import { XP_RULES } from "@/lib/level";
 import { AvatarFrame } from "@/components/growth/avatar-frame";
 import { ChatBubble } from "@/components/growth/chat-bubble";
@@ -45,6 +47,7 @@ type ProfileGrowthProps = {
     avatarFrameKey: string;
     chatBubbleKey: string;
     checkedInToday?: boolean;
+    growthDay?: string;
     recentEvents?: GrowthEvent[];
     checkIns?: CheckInRecord[];
   };
@@ -75,12 +78,6 @@ const actionCards = [
   { key: "SHARE", xp: XP_RULES.SHARE.base, icon: Share2, color: "from-sky-500/15 to-sky-500/5" },
 ] as const;
 
-function shanghaiDay(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
-  const pick = (type: string) => parts.find((part) => part.type === type)?.value ?? "00";
-  return `${pick("year")}-${pick("month")}-${pick("day")}`;
-}
-
 function formatShortDate(value: string | Date, locale: string) {
   return new Date(value).toLocaleDateString(locale, { month: "numeric", day: "numeric", timeZone: "Asia/Shanghai" });
 }
@@ -102,22 +99,21 @@ function ProfileGrowthState({ user, editable = false, avatarFallback = "A", acto
   const locale = useLocale();
   const [xp, setXp] = useState(user.xp);
   const [points, setPoints] = useState(user.communityPoints);
-  const [streak, setStreak] = useState(user.checkInStreak);
+  const initialDay = user.growthDay ?? getCommunityDay(new Date());
+  const today = useCommunityDay(initialDay);
+  const [streakSnapshot, setStreakSnapshot] = useState({ count: user.checkInStreak, validThrough: shiftCommunityDay(initialDay, user.checkedInToday ? 1 : 0) });
+  const streak = today <= streakSnapshot.validThrough ? streakSnapshot.count : 0;
   const [frame, setFrame] = useState(user.avatarFrameKey);
   const [bubble, setBubble] = useState(user.chatBubbleKey);
-  const [checked, setChecked] = useState(Boolean(user.checkedInToday));
+  const [checkedDay, setCheckedDay] = useState<string | null>(user.checkedInToday ? initialDay : null);
+  const checked = checkedDay === today;
   const [checkIns, setCheckIns] = useState<CheckInRecord[]>(user.checkIns ?? []);
   const [recentEvents, setRecentEvents] = useState<GrowthEvent[]>(user.recentEvents ?? []);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const progress = useMemo(() => getLevelProgress(xp), [xp]);
   const checkInMap = useMemo(() => new Map(checkIns.map((entry) => [entry.day, entry])), [checkIns]);
-  const calendarDays = useMemo(() => Array.from({ length: 28 }, (_, index) => {
-    const date = new Date();
-    date.setHours(12, 0, 0, 0);
-    date.setDate(date.getDate() - (27 - index));
-    return shanghaiDay(date);
-  }), []);
+  const calendarDays = useMemo(() => communityCalendarDays(today), [today]);
   const levelName = t(`levels.${progress.level.key}.name`);
   const nextLevelName = progress.nextLevel ? t(`levels.${progress.nextLevel.key}.name`) : null;
   const rewardLabel = (key: string) => t(`rewards.${key}.label`);
@@ -140,6 +136,8 @@ function ProfileGrowthState({ user, editable = false, avatarFallback = "A", acto
       const record = data.checkIn as CheckInRecord | undefined;
       const xpAwarded = Number(record?.xpAwarded ?? 0);
       if (record) {
+        setCheckedDay(record.day);
+        setStreakSnapshot({ count: record.streak, validThrough: shiftCommunityDay(record.day, 1) });
         setCheckIns((current) => current.some((entry) => entry.id === record.id || entry.day === record.day)
           ? current
           : [record, ...current].slice(0, 35));
@@ -155,14 +153,16 @@ function ProfileGrowthState({ user, editable = false, avatarFallback = "A", acto
       // Reload balances and ledgers from the committed server state. Another tab
       // may have earned XP while this page was open.
       try {
-        const profile = await request<{ xp: number; communityPoints: number; checkInStreak: number; checkIns: CheckInRecord[]; recentEvents: GrowthEvent[] }>("/api/community/growth", "GET", undefined);
+        const profile = await request<{ xp: number; communityPoints: number; checkInStreak: number; growthDay?: string; checkIns: CheckInRecord[]; recentEvents: GrowthEvent[] }>("/api/community/growth", "GET", undefined);
         if (!alive.current) return;
-        setXp(profile.xp); setPoints(profile.communityPoints); setStreak(profile.checkInStreak);
+        const profileDay = profile.growthDay ?? getCommunityDay(new Date());
+        const checkedOnProfileDay = profile.checkIns.some(entry => entry.day === profileDay);
+        setXp(profile.xp); setPoints(profile.communityPoints);
+        setCheckedDay(checkedOnProfileDay ? profileDay : null);
+        setStreakSnapshot({ count: profile.checkInStreak, validThrough: shiftCommunityDay(profileDay, checkedOnProfileDay ? 1 : 0) });
         setCheckIns(profile.checkIns); setRecentEvents(profile.recentEvents);
       } catch { /* The committed check-in remains visible using its response. */ }
       if (!alive.current) return;
-      setChecked(true);
-      setStreak(Number(record?.streak ?? streak));
       setNotice(alreadyCheckedIn ? t("alreadyCheckedIn") : t("checkInSuccess", { xp: xpAwarded }));
     } catch {
       if (alive.current) setNotice(t("checkInFailed"));
@@ -217,7 +217,7 @@ function ProfileGrowthState({ user, editable = false, avatarFallback = "A", acto
           <div className="flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">{t("checkInCalendarEyebrow")}</p><h3 className="mt-2 text-lg font-bold">{t("checkInCalendarTitle")}</h3></div><span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{editable ? `${checkIns.length} ${t("recentCheckIns")}` : t("privateGrowth")}</span></div>
           {editable ? <>
             <div className="mt-5 grid grid-cols-7 gap-1.5" role="list" aria-label={t("checkInCalendarTitle")}>
-              {calendarDays.map((day) => { const record = checkInMap.get(day); const isToday = day === shanghaiDay(); return <div key={day} title={record ? `${day} · ${record.xpAwarded} XP` : day} role="listitem" aria-current={isToday ? "date" : undefined} aria-label={record ? t("calendarDayChecked", { day, xp: record.xpAwarded }) : t("calendarDayEmpty", { day })} className={cn("relative aspect-square rounded-md border bg-muted/35", record && "border-emerald-400/50 bg-emerald-400/75", isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background")}><span className="sr-only">{record ? t("calendarDayChecked", { day, xp: record.xpAwarded }) : t("calendarDayEmpty", { day })}</span>{record && <Check className="absolute inset-0 m-auto h-3.5 w-3.5 text-white" aria-hidden="true" />}</div>; })}
+              {calendarDays.map((day) => { const record = checkInMap.get(day); const isToday = day === today; return <div key={day} title={record ? `${day} · ${record.xpAwarded} XP` : day} role="listitem" aria-current={isToday ? "date" : undefined} aria-label={record ? t("calendarDayChecked", { day, xp: record.xpAwarded }) : t("calendarDayEmpty", { day })} className={cn("relative aspect-square rounded-md border bg-muted/35", record && "border-emerald-400/50 bg-emerald-400/75", isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background")}><span className="sr-only">{record ? t("calendarDayChecked", { day, xp: record.xpAwarded }) : t("calendarDayEmpty", { day })}</span>{record && <Check className="absolute inset-0 m-auto h-3.5 w-3.5 text-white" aria-hidden="true" />}</div>; })}
             </div>
             <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground"><span>{t("calendarHint")}</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-muted" />{t("notCheckedIn")}<span className="ml-2 h-2.5 w-2.5 rounded-sm bg-emerald-400" />{t("checkedInShort")}</span></div>
           </> : <p className="mt-5 rounded-2xl border border-dashed bg-background/40 px-4 py-6 text-sm leading-6 text-muted-foreground">{t("privateGrowthHint")}</p>}

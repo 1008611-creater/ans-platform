@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { marketProductPath } from "@/domain/marketplace/product-route";
 import { getLocale, getTranslations } from "next-intl/server";
 import { db } from "@/lib/db";
 import type { ProductConnection, ProductConnections } from "@/contracts/product-connections";
@@ -56,7 +57,7 @@ function offerLink(offer: MarketOfferView): ProductConnection {
   const kind = offer.listing.execution ? "workflow-offer" : offer.listing.fulfillment === "service" ? "service" : "resource";
   const anchor = kind === "workflow-offer" ? "market-run" : points > 0 ? "market-checkout" : "market-deliverables";
   return { slug: offer.slug, title: offer.listing.title, summary: offer.listing.summary, version: offer.version,
-    kind, pricePoints: points, href: `/market/${offer.slug}#${anchor}` };
+    kind, pricePoints: points, href: `${marketProductPath(offer)}#${anchor}` };
 }
 async function connections(projects: CatalogProject[], workflows: PublicWorkflow[], offers: MarketOfferView[]): Promise<ProductConnections> {
   const [locale, t] = await Promise.all([getLocale(), getTranslations("product")]);

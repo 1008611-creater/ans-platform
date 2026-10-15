@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { WorkflowExperience } from "./workflow";
+export interface HubWorkflowPresentation { output: WorkflowExperience["output"]; stages: Array<{ title: string }>; nodeCount: number; }
 export const workflowHubSlugSchema=z.enum(["cauhub","vibehub","aigc","full-stack"]);
 export type WorkflowHubSlug=z.infer<typeof workflowHubSlugSchema>;
 const id=z.string().trim().min(1).max(80),reason=z.string().trim().min(10).max(2000);
@@ -16,5 +18,5 @@ export type WorkflowHubManagement=z.infer<typeof workflowHubManagementSchema>;
 export const workflowHubResultSchema=z.object({associationId:id,eventId:id,appliedRevision:z.number().int().min(1),duplicate:z.boolean()}).strict();
 export const workflowHubQueueSchema=z.object({items:z.array(workflowHubManagementSchema),nextCursor:id.nullable()}).strict();
 export const workflowHubQuerySchema=z.object({hubSlug:workflowHubSlugSchema.optional(),beforeRevision:z.coerce.number().int().min(1).optional(),cursor:id.optional()}).strict();
-export interface HubWorkflowCard {id:string;slug:string;title:string;summary:string|null;versionId:string;version:number;estimatedCost:number;marketPath:string|null;}
+export interface HubWorkflowCard {id:string;slug:string;title:string;summary:string|null;versionId:string;version:number;estimatedCost:number;marketPath:string|null;presentation?:HubWorkflowPresentation;}
 export interface HubWorkflowPage {items:HubWorkflowCard[];total:number;nextCursor:string|null;}

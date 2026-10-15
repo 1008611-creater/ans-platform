@@ -7,7 +7,7 @@
  * 跑两轮：
  *   - 桌面视口（1280×900）：完整核心路径，含登录与登录后的页面。
  *   - 移动视口（390×844）：确认主导航按屏宽收敛后，核心入口仍然可达——
- *     底部六入口与抽屉六入口一致，旧公共深链退役，页面没有横向溢出。
+ *     底部两入口与抽屉两入口一致，旧公共深链退役，页面没有横向溢出。
  *
  * 三种退出形态见 `scripts/lib/preview-server.mjs`。
  *
@@ -36,7 +36,7 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
 /** 允许 1px 的亚像素误差，超过才算真实横向溢出。 */
 const OVERFLOW_TOLERANCE = 1;
 // Product acceptance is explicit here, independent of the implementation registry.
-const PRIMARY_PATHS = ["/explore", "/hubs", "/community", "/competitions", "/market", "/workspace"];
+const PRIMARY_PATHS = ["/explore", "/market"];
 
 /**
  * 把页面的异常采集挂到某个 page 上。桌面轮和移动轮各挂一次，
@@ -128,7 +128,10 @@ async function runDesktop(page, { baseUrl, seed }, checks, problems) {
     checks.push({ label: "旧入口转入批准的发现页面", pathname: retired, status: 200, matched: redirected, newProblems: 0 });
     if (!redirected) pageProblems.push(`${retired} 未转入 ${expectedDestination}（实际 ${destination}）`);
   }
-  await visit("/workflows", "工作流广场", "工作流");
+  await visit("/workflows", "旧工作流目录跳转");
+  const workflowRedirect = new URL(page.url()).pathname === "/market";
+  checks.push({ label: "工作流目录转入市场", pathname: "/workflows", status: 200, matched: workflowRedirect, newProblems: 0 });
+  if (!workflowRedirect) pageProblems.push("旧工作流目录未转入市场");
   await visit("/login", "登录页");
   await visit("/register", "注册页");
   if (!registrationConfigured()) {
@@ -170,7 +173,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
     ["/community", "移动端 社区成长"],
     ["/competitions", "移动端 赛事活动"],
     ["/market", "移动端 市场"],
-    ["/workflows", "移动端 工作流广场"],
+    ["/workflows", "移动端 旧工作流跳转"],
     ["/login", "移动端 登录页"],
   ];
   if (seed.created) MOBILE_PAGES.push(["/workspace", "移动端 工作台"], ["/collection", "移动端 我的收藏"]);
@@ -207,7 +210,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
   checks.push({ label: "移动端底部 Tab 栏", pathname: "/", status: 200, matched: tabOk, newProblems: 0 });
   if (!tabOk) pageProblems.push(`移动端底部 Tab 栏异常（可见=${tabs.found}，链接=${tabs.hrefs.join(",") || "无"}）`);
 
-  // 窄屏六主导航收进抽屉，全部入口仍可到达。
+  // 窄屏两项主导航收进抽屉，全部入口仍可到达。
   const collapsed = await page.evaluate(paths =>
     [...document.querySelectorAll("header nav a")].filter(a => paths.includes(new URL(a.href).pathname) && a.offsetParent).length, PRIMARY_PATHS);
   checks.push({ label: "移动端 主导航按屏宽收敛", pathname: "/", status: 200, matched: collapsed === 0, newProblems: 0 });

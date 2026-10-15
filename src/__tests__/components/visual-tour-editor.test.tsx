@@ -6,11 +6,13 @@ import messages from "../../../messages/visual-website/zh.json";
 import { DEFAULT_APPEARANCE, type VisualWebsite, type VisualWebsiteState } from "@/contracts/visual-website";
 import { RESUME_WEBSITE_EXAMPLE } from "@/domain/projects/resume-website";
 import { createVisualTour } from "@/lib/projects/visual-tour";
+import { VisualWebsiteStudio } from "@/components/projects/visual-website-studio";
 import { VisualTourEditor } from "@/components/projects/visual-tour-editor";
 vi.mock("next-intl", async original => await original<typeof import("next-intl")>());
-const m=vi.hoisted(()=>({request:vi.fn(),actor:"owner",export:vi.fn()}));
+const m=vi.hoisted(()=>({request:vi.fn(),actor:"owner",export:vi.fn(),execution:vi.fn()}));
 vi.mock("@/components/marketplace/account-boundary",()=>({useMarketActorId:()=>m.actor,useMarketRequest:()=>m.request}));
 vi.mock("@/lib/projects/visual-website-assets",()=>({exportVisualWebsite:m.export}));
+vi.mock("@/components/marketplace/workflow-run",()=>({MarketWorkflowRun:(props: {profileInput: typeof RESUME_WEBSITE_EXAMPLE; onUseCopy: (copy: {summary: string; projects: {description: string}[]}) => void})=>{m.execution(props);return <button onClick={()=>props.onUseCopy({summary:"Reviewed personal story",projects:props.profileInput.projects.map(()=>({description:"Reviewed contribution"}))})}>Apply reviewed copy</button>;}}));
 vi.mock("@/components/projects/visual-model-generation",()=>({VisualModelGeneration:()=>null}));
 vi.mock("@/components/projects/visual-website-publication",()=>({VisualWebsitePublication:()=>null}));
 const projectId="442be0b3-ddea-4bf7-a340-94490b67fb35";
@@ -36,4 +38,20 @@ describe("immersive tour editor",()=>{
  it("keeps a loaded canvas usable when capturing the already displayed camera",async()=>{mount();stage(3);const camera=document().appearance.tour!.hero.camera!;const frame=message("ready"),post=vi.spyOn(frame.contentWindow!,"postMessage");fireEvent.click(screen.getByRole("button",{name:messages.tour.camera}));fireEvent.click(screen.getByRole("button",{name:messages.tour.capture}));const request=post.mock.calls.find(call=>call[0].type==="capture")![0];message("camera",{requestId:request.requestId,camera});await new Promise(resolve=>setTimeout(resolve,220));expect(screen.getByRole("button",{name:messages.tour.capture})).toBeEnabled();});
  it("offers a canvas reload after a scene failure without removing content",()=>{mount();message("failed");fireEvent.click(screen.getByRole("button",{name:messages.tour.retryScene}));message("ready");expect(screen.queryByRole("button",{name:messages.tour.retryScene})).toBeNull();stage(3);expect(screen.getByLabelText(messages.tour.heroTitle)).toHaveValue(document().appearance.tour!.hero.title);});
  it("does not send an oversized account save and retains local export",()=>{const doc=document(),tour=doc.appearance.tour!;tour.nodes=Array.from({length:10},(_,i)=>({...tour.nodes[0],id:`n${i}`,body:"中".repeat(2000)}));tour.sections=Array.from({length:4},(_,i)=>({id:`s${i}`,title:"Work",body:"中".repeat(2000),url:""}));mount(doc);delivery();fireEvent.click(screen.getByRole("button",{name:messages.save}));expect(m.request).not.toHaveBeenCalled();expect(screen.getByText(messages.tour.saveSizeLimit)).toBeVisible();});
+});
+
+it("the immersive market studio forwards execution and applies copy without replacing the visual scene", async()=>{
+ const doc=document(), execution={listingId:"real-listing",version:3,details:{recipe:"resume-website-v1" as const,variables:[],estimatedCost:2,version:1}};
+ render(<NextIntlClientProvider locale="zh" messages={{visualWebsite:messages}}><VisualWebsiteStudio immersive execution={execution} initial={{projectId,currentVersion:4,versions:[{version:4,createdAt:"2026-10-13",document:doc}]}}/></NextIntlClientProvider>);
+ stage(3);expect(m.execution).toHaveBeenLastCalledWith(expect.objectContaining(execution));expect(m.request).not.toHaveBeenCalled();
+ delivery();expect(screen.getByLabelText(messages.review)).toBeChecked();
+ fireEvent.click(within(screen.getByRole("dialog")).getByRole("button",{name:"Apply reviewed copy"}));
+ expect(screen.getByLabelText(messages.review)).not.toBeChecked();
+ fireEvent.click(screen.getByLabelText(messages.review));fireEvent.click(screen.getByRole("button",{name:messages.save}));
+ await waitFor(()=>expect(m.request).toHaveBeenCalledTimes(1));
+ const saved=m.request.mock.calls[0][2].document;
+ expect(saved.profile.about).toBe("Reviewed personal story");expect(saved.profile.projects[0].description).toBe("Reviewed contribution");
+ expect(saved.appearance.tour.hero.camera).toEqual(doc.appearance.tour!.hero.camera);expect(saved.appearance.tour.stickers).toEqual(doc.appearance.tour!.stickers);expect(saved.appearance.avatar).toBe(doc.appearance.avatar);
+ fireEvent.click(within(screen.getByRole("dialog")).getByRole("button",{name:messages.tour.close}));
+ fireEvent.click(screen.getByRole("button",{name:messages.tour.undoReplacement}));expect(screen.getByLabelText(messages.tour.heroBody)).toHaveValue(doc.appearance.tour!.hero.body);
 });

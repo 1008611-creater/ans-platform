@@ -172,3 +172,35 @@ AI 服务故障时保持待审，不会静默放开审核。
 ### 外部接口与客户端
 
 Web 是当前产品事实源，先保证响应式体验。未来 MCP、CLI、移动客户端复用版本化 contracts 和应用用例，不直接访问 Prisma/数据库；集成需支持最小作用域、限流、配额、密钥撤销及审计。接口稳定与实际需求出现之前，不为“多端/生态”提前拆服务。
+
+## GPT-6.1 system collaboration architecture
+
+Agent rules, Skills, applications, components, contracts, domain code, and services have separate responsibilities:
+
+```text
+AGENTS / ADR
+  -> task routing, authorization, Definition of Done
+Skill
+  -> on-demand domain methods
+app
+  -> page and route adaptation
+components
+  -> interaction and visual studio
+contracts
+  -> input, output, schema, public projection
+domain
+  -> DAG, versions, state, pure business rules
+server
+  -> auth, db, quota, integrations, audit, real execution
+evidence
+  -> verification, release traceability, rollback
+```
+
+Architecture constraints:
+
+- Domain rules do not live in pages or Route Handlers. Display metadata and execution definitions remain separate.
+- Real run state comes from persisted run records. Client timers must not fabricate completion.
+- External integrations use a capability registry with least privilege, rate limits, quota, audit, idempotency, failure handling, and rollback.
+- Public discovery has two primary destinations: projects and market. Workflows remain the internal versioned execution layer; author tools and private run history are retained. Market products combine a reviewed execution binding with a specialized artifact editor; `/market/resume-website` defines the first full product experience. Stable IDs connect project introductions, market offers, private runs, artifacts and orders without implicit execution.
+- New durable constraints belong in boundary checks, contracts, or ADRs instead of being added to a global prompt.
+- Accessibility, mobile behavior, reduced motion, unsaved-exit protection, and error recovery are completion criteria, not post-release patches.

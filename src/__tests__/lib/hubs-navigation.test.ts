@@ -30,16 +30,16 @@ describe("explicit real Hub associations", () => {
   });
 });
 describe("unified finite primary navigation", () => {
-  it("has exactly six canonical destinations", () => {
-    expect(PRIMARY_NAVIGATION.map(item => item.href)).toEqual(["/explore", "/hubs", "/community", "/competitions", "/market", "/workspace"]);
+  it("keeps only project discovery and marketplace as public destinations", () => {
+    expect(PRIMARY_NAVIGATION.map(item => item.href)).toEqual(["/explore", "/market"]);
   });
-  it.each(["/hubs", "/hubs/cauhub", "/workflows", "/workflows/hypit", "/vibe-hub", "/vibe-hub/learn"])("marks %s under Hub", path => {
-    expect(PRIMARY_NAVIGATION.filter(item => isPrimaryNavigationActive(item.id, path)).map(item => item.id)).toEqual(["hubs"]);
+  it.each(["/hubs", "/workflows", "/workflows/hypit", "/workspace", "/projects/private/website"])("does not highlight retired public navigation for %s", path => {
+    expect(PRIMARY_NAVIGATION.filter(item => isPrimaryNavigationActive(item.id, path))).toEqual([]);
   });
-  it("matches boundaries and private workspace projects without swallowing lookalikes", () => {
-    expect(isPrimaryNavigationActive("hubs", "/hubs-not-a-route")).toBe(false);
-    expect(isPrimaryNavigationActive("workspace", "/projects/project-a/website")).toBe(true);
-    expect(isPrimaryNavigationActive("workspace", "/workspace/credits")).toBe(true);
+  it("matches route boundaries and the home page", () => {
+    expect(isPrimaryNavigationActive("market", "/market/resume-website")).toBe(true);
+    expect(isPrimaryNavigationActive("market", "/marketplace")).toBe(false);
+    expect(isPrimaryNavigationActive("explore", "/explore/liu-resume")).toBe(true);
     expect(isPrimaryNavigationActive("explore", "/")).toBe(true);
   });
 });
