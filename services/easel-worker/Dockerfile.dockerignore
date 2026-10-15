@@ -1,0 +1,9 @@
+# Only these integration inputs are sent to the worker build.
+**
+!services/
+!services/easel-worker/
+!services/easel-worker/Dockerfile
+!services/easel-worker/entrypoint.py
+!services/easel-worker/frontend-lock.patch
+!services/easel-worker/frontend-owner.patch
+!services/easel-worker/constraints.txt

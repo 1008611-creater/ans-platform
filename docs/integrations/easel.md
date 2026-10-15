@@ -2,7 +2,7 @@
 
 ## 本次确认与交付边界
 
-用户确认将 Easel 接入 ANS，并开放给 ANS 用户逐人独立使用；已允许新增 Easel 登录衔接和每用户独立容器。当前仅授权本地实施。提交、推送、PR、合并、测试服务器及生产部署需各自明确授权。
+用户确认将 Easel 接入 ANS，并开放给 ANS 用户逐人独立使用；已允许新增 Easel 登录衔接和每用户独立容器。已授权本地实施、提交、推送任务分支及创建草稿 PR（#101）。合并、测试服务器及生产部署仍需各自明确授权。
 
 本地入口为 /workflows/easel，工作台创作工具增加入口。开关默认关闭，未通过部署验收时显示“多用户接入准备中”，不宣称服务已可用。ANS 现有认证、数据库结构、算力计费与主导航未改动。
 
@@ -37,17 +37,19 @@ ANS cookie、access token、Authorization 和用户指定的身份头不转发�
 
 本地已实现页面、登录、owner 绑定代理、隔离调度、出网代理与部署模板。上游 Web 已在独立预览环境启动，前端构建成功；该预览为无模型、无社媒账号的 API 模式，并不代表 OpenClaw 工具链可用。上游前端锁文件修复后 npm audit 报告零漏洞；ANS 原有依赖安装仍报告七项审计问题，未跨范围升级。
 
-本地相关测试共 43 项通过（网关 32 项，ANS 11 项），相关 ESLint 零警告，分层边界检查通过，ANS 类型检查及生产构建已通过；追加前端素材补丁再次完成 TypeScript/Vite 构建，并通过干净原文件的 git apply --check。这些结果不包含真实 Docker 运行。
+本地相关测试共 44 项通过（网关 33 项，ANS 11 项），相关 ESLint 零警告，分层边界检查通过，ANS 类型检查及同步 main 后的生产构建已通过；完整 lint 为零错误（355 条既有警告），PR #101 的同步 main 提交 a7951455 已通过 GitHub CI；追加前端素材补丁再次完成 TypeScript/Vite 构建，并通过干净原文件的 git apply --check。这些单元测试和构建与下面的真实 Docker 验收分别记录。
 
-网关/身份/网络策略测试使用真实 HTTP 服务和临时 RSA 密钥，模拟 ANS provider 与 Docker，不替代真实容器和生产 OIDC 的验收。Docker Desktop 进程存在但本机引擎查询超时；worker/egress image 构建、真实两用户容器网络、持久恢复、模型生成和平台发布仍未验证。2026-10-15 再次查询引擎，10 秒内无响应，未重启 Docker 或影响已有容器。不能开启 ANS_EASEL_ENABLED。
+网关/身份/网络策略单元测试使用真实 HTTP 服务和临时 RSA 密钥，模拟 ANS provider 与 Docker，不替代真实容器和生产 OIDC 的验收。2026-10-15 早先本机 Docker 引擎查询超时，稍后再次查询已成功（Engine 29.5.2），未重启 Docker 或改动已有容器。固定前端的真实 Linux TypeScript/Vite 构建及导出成功；egress 镜像构建成功，本地 digest 为 sha256:c4b2bf2b197ab5e499a5f690d30114c9f5e3e2c1356293dc19ec0a1293417575。worker 镜像已构建成功，本地 digest 为 sha256:0cc945e828d9aa594455e80fdf51324aca896a6b03f52ca7d190cbbca4211635。模型生成、平台发布和生产 OIDC 未验证，不能开启 ANS_EASEL_ENABLED。
 
-还须实测 Docker isolated 内部网络与回环 sidecar 中继在目标环境可用；出网代理覆盖各平台浏览器脚本；宿主机默认桥接/DNS/IPv6策略；持久卷硬磁盘配额与备份。当前只有用户数量和运行资源限制，未实现磁盘硬配额。上游媒体处理依赖与 OpenClaw 需构建后的审计和运行验证。
+2026-10-15 执行 runtime-smoke.mjs --run，真实 Docker 联调 11 项全部通过：两个独立 worker 的 API 与 OpenClaw 健康检查；不继承 ANS/本机模型和认证凭据；独立 workspace/home 卷；受限 worker 中 Chromium 启动；匿名、旧账号请求及跨账号素材访问被拒绝；worker 无法直连另一租户、正在监听的宿主机服务和公网；代理拒绝云元数据；经代理访问公共 HTTPS；第三个活动用户触发容量限制；worker/egress 停止后恢复数据；gateway 调度器重建后安全接管既有容器。测试使用加密的合成会话与模拟 userinfo，不代表真实 ANS OIDC 或浏览器跨域登录通过。临时 namespace 的测试容器、卷与网络均已清理，未操作其他容器。
+
+仍须在目标部署环境验收真实 OIDC、第三方 cookie 限制、静默续期、长 SSE 与未保存输入、手机布局；验证出网代理覆盖各平台浏览器脚本、宿主机桥接/DNS/IPv6 策略及持久卷备份。当前只有用户数量和运行资源限制，未实现磁盘硬配额。上游媒体工具的真实生成/发布、依赖审计与端到端平台流程仍待对应授权后验证。
 
 持久 workspace 卷包含上游代码和用户数据，镜像升级不会自动替换旧卷内代码；升级前必须做分版本卷迁移、备份和回滚，不能仅换镜像标签宣称所有用户完成升级。当前进程仅支持单 gateway 实例，事务和调度锁在内存；不得直接部署多副本。
 
-## 部署模板（尚未执行）
+## 部署模板（尚未部署）
 
-- services/easel-worker/Dockerfile：固定上游源码、前端补丁、完整 Python 媒体依赖、Chromium、OpenClaw 2026.10.3。
+- services/easel-worker/Dockerfile：固定上游源码、前端补丁、完整 Python 媒体依赖、Chromium、OpenClaw 2026.10.3；最小构建上下文避免上传无关本机文件。constraints.txt 将 biliup 固定为上游允许范围内提供预编译安装包的 1.2.9，避免 1.2.11 的源码构建准备卡住。
 - services/easel-gateway/Dockerfile.egress：出网代理和固定入站中继 sidecar。
 - services/easel-worker/Dockerfile 的 frontend target：构建固定前端制品，包含素材账号绑定补丁；设置 EASEL_FRONTEND_DIR 到只允许部署用户写入的版本目录。gateway 用户只读，worker 不挂载该目录。
 - services/easel-gateway/.env.example：空凭据模板；真实文件放在 Git 外，权限 0600。COOKIE_KEY 可独立轮换；TENANT_KEY 必须稳定保存，否则租户卷映射改变。
@@ -69,6 +71,8 @@ ANS OIDC_CLIENTS_FILE 注册表中追加 Easel 客户端，保留已有客户端
 
 ```sh
 node --test services/easel-gateway/*.test.mjs
+# 仅在已授权的本地 Docker 验收环境执行；创建并清理独立的合成账号测试资源
+node services/easel-gateway/runtime-smoke.mjs --run
 npx vitest run src/__tests__/lib/easel-embed.test.ts src/__tests__/components/easel-workspace.test.tsx
 npm run typecheck
 npm run build

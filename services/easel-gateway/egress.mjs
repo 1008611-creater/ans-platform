@@ -20,6 +20,9 @@ export async function destination(host, resolver = lookup) {
   if (!addresses.length || addresses.some(item => !publicAddress(item.address))) throw new Error("PRIVATE_DESTINATION");
   return addresses.find(item => item.family === 4) ?? addresses[0]; // Pin the checked address instead of resolving again during connection.
 }
+export function pinnedLookup(ip) {
+  return (_host, options, callback) => options?.all ? callback(null, [ip]) : callback(null, ip.address, ip.family);
+}
 export function createEgressServer(resolve = destination) {
   const server = http.createServer(async (request, response) => {
     try {
@@ -27,7 +30,7 @@ export function createEgressServer(resolve = destination) {
       if (url.username || url.password || !["http:", "https:"].includes(url.protocol) || url.port && url.port !== (url.protocol === "https:" ? "443" : "80")) throw new Error();
       const ip = await resolve(url.hostname);
       const headers = { ...request.headers, host: url.host }; delete headers["proxy-authorization"]; delete headers["proxy-connection"];
-      const upstream = (url.protocol === "https:" ? https : http).request(url, { headers, method: request.method, lookup: (_host, _options, callback) => callback(null, ip.address, ip.family) }, result => {
+      const upstream = (url.protocol === "https:" ? https : http).request(url, { headers, method: request.method, lookup: pinnedLookup(ip) }, result => {
         response.writeHead(result.statusCode, result.headers); result.pipe(response);
       });
       upstream.setTimeout(120000, () => upstream.destroy());
