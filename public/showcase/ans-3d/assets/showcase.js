@@ -482,39 +482,39 @@ class MotionDirector {
     const th = deg * (Math.PI / 180.0);
     const dth = 270.0 * (Math.PI / 180.0);
 
-    // Compact clockwise orbit around your head center (0.28, 0.08, 0.06) in M local space so the dinosaur stays well inside the viewport:
-    // Behind/above head (cos(th) = +1, 12h): halo arc (x = -0.06, y = +0.24, z = +0.06)
-    // Right ear         (sin(th) = +1, 3h):  right side (x = +0.28, y = +0.08, z = -0.38)
-    // Front of face     (cos(th) = -1, 6h):  front face (x = +0.62, y = -0.08, z = +0.06) -> swoops to Camera Super Macro!
-    // Left ear          (sin(th) = -1, 9h):  left side  (x = +0.28, y = +0.08, z = +0.50)
-    const ox = 0.28 - 0.34 * Math.cos(th);
-    const oy = 0.08 + 0.16 * Math.cos(th);
-    const oz = 0.06 - 0.44 * Math.sin(th);
+    // Wide, sweeping clockwise 3D orbit around your head center (0.26, 0.16, 0.06) in M local space (scale 2.25 -> ~1.76m world radius!):
+    // Behind/above head (cos(th) = +1, 12h): high halo arc (x = -0.30, y = +0.42, z = +0.06)
+    // Right side        (sin(th) = +1, 3h):  wide right sweep (x = +0.26, y = +0.16, z = -0.72)
+    // Front of face     (cos(th) = -1, 6h):  front of face (x = +0.82, y = -0.10, z = +0.06) -> swoops to Camera Super Macro!
+    // Left side         (sin(th) = -1, 9h):  wide left sweep  (x = +0.26, y = +0.16, z = +0.84)
+    const ox = 0.26 - 0.56 * Math.cos(th);
+    const oy = 0.16 + 0.26 * Math.cos(th);
+    const oz = 0.06 - 0.78 * Math.sin(th);
 
-    const tx =  0.34 * Math.sin(th) * dth;
-    const ty = -0.16 * Math.sin(th) * dth;
-    const tz = -0.44 * Math.cos(th) * dth;
+    const tx =  0.56 * Math.sin(th) * dth;
+    const ty = -0.26 * Math.sin(th) * dth;
+    const tz = -0.78 * Math.cos(th) * dth;
 
     // Front-of-face detector: frontness = -cos(th) is +1.0 when directly in front of your face (180 deg / 6h)
     const frontness = -Math.cos(th);
-    const macroRaw = Math.max(0.0, Math.min(1.0, (frontness - 0.38) / 0.62));
+    const macroRaw = Math.max(0.0, Math.min(1.0, (frontness - 0.42) / 0.58));
     // Smooth quintic bell curve for diving from head-orbit right up to the Camera Super Macro lens!
     const macroWeight = macroRaw * macroRaw * macroRaw * (macroRaw * (macroRaw * 6.0 - 15.0) + 10.0);
 
-    return { pos: [ox, oy, oz], tangent: [tx, ty, tz], macroWeight, deg };
+    return { pos: [ox, oy, oz], tangent: [tx, ty, tz], macroWeight, deg, th };
   }
 
   // Rich Kaomoji Rambling Presets (Normal Orbit + Super Macro Close-Up + Mouse Hover + Mouse Click)
   const MOOD_PRESETS = {
     // 8 Autonomous Orbiting Ramblings (Natural random changes)
-    happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 顺时针绕着主理人头顶巡航中", sub: "💡 鼠标移到我身上可以摸头互动哦" },
+    happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 顺时针绕着主理人头顶大圈巡航中", sub: "💡 鼠标移到我或气泡上可以摸头互动哦" },
     curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看... 这个工作流能抄作业！", sub: "✨ 向下滚动，看看 ANS 的产品入口" },
     starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个 3D 展示有点意思", sub: "🦖 我是 ANS 创作搭子小恐龙" },
-    cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在主理人耳边兜风，灵感慢慢来~", sub: "🍃 看看风景，想想下一个作品" },
+    cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在主理人耳边兜大圈兜风，灵感慢慢来~", sub: "🍃 看看风景，想想下一个作品" },
     cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感永不停歇", sub: "🎯 点击章节链接可直达线上页面" },
     focused_think:  { happy: 0.16, star: 0.38, blush: 0.30, mouth: 0.14, gesture: "think",     kaomoji: "( •̀ ω •́ ) ⚡", text: "帮你盯着呢，绝不让收藏夹吃灰！", sub: "🔍 看懂项目，再动手做点东西" },
     sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "绕圈飞累了伸个懒腰，继续满血护航", sub: "💫 移上鼠标或点我一下试试看~" },
-    aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚在主理人脑门上抓到一个新灵感", sub: "🚀 滑到脸前我会飞到镜头前找你玩！" },
+    aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚在主理人头顶抓到一个新灵感", sub: "🚀 滑到脸前我会飞到镜头前找你玩！" },
 
     // 4 Camera Super Macro Close-Up Ramblings (When orbiting in front of face -> flies right up to camera lens!)
     macro0:         { happy: 0.96, star: 0.95, blush: 0.94, mouth: 0.85, gesture: "hello",     kaomoji: "( ✧∀✧ ) 📸", text: "贴脸杀！飞到超微距镜头前逮住你啦~", sub: "✨ 快来摸摸我或点我互动一下！", badgeType: "macro" },
@@ -539,111 +539,188 @@ class MotionDirector {
   };
 
   function createExpressionBadgeTexture() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 680;
-    canvas.height = 164;
     const dummyPng = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
-    const tex = new $e().load(dummyPng, t => {
-      t.image = canvas;
-      t.colorSpace = qe;
-      t.needsUpdate = true;
-    });
-    tex.image = canvas;
-    tex.colorSpace = qe;
+    const tex = new $e().load(dummyPng);
+    let bubbleEl = null;
+    let kaoEl = null;
+    let txtEl = null;
+    let subEl = null;
+    let arrowEl = null;
+
+    function ensureDomBubble() {
+      if (typeof document === "undefined") return null;
+      if (bubbleEl && document.body.contains(bubbleEl)) return bubbleEl;
+      if (!document.getElementById("ans-dino-bubble-style")) {
+        const st = document.createElement("style");
+        st.id = "ans-dino-bubble-style";
+        st.textContent = `
+          #ans-dino-live-bubble {
+            position: fixed;
+            left: 50%;
+            top: 28%;
+            z-index: 65;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px 10px 12px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(10, 20, 26, 0.92), rgba(18, 34, 32, 0.90));
+            border: 1.8px solid rgba(185, 225, 212, 0.82);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.52), 0 0 20px rgba(185, 225, 212, 0.18);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #f7f0e5;
+            font-family: Helvetica Neue, PingFang SC, -apple-system, system-ui, sans-serif;
+            pointer-events: auto;
+            cursor: pointer;
+            user-select: none;
+            transform: translate3d(-50%, -100%, 0);
+            transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+            max-width: min(430px, calc(100vw - 24px));
+            will-change: left, top, transform;
+          }
+          #ans-dino-live-bubble[data-mode="interactive"] {
+            background: linear-gradient(135deg, rgba(24, 38, 36, 0.95), rgba(40, 26, 34, 0.94));
+            border-color: #ffd9b3;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.58), 0 0 24px rgba(255, 217, 179, 0.38);
+          }
+          #ans-dino-live-bubble[data-mode="macro"] {
+            background: linear-gradient(135deg, rgba(14, 32, 34, 0.95), rgba(24, 44, 38, 0.93));
+            border-color: #ffe4b5;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.56), 0 0 24px rgba(185, 225, 212, 0.34);
+          }
+          #ans-dino-live-bubble .dino-b-kao {
+            flex-shrink: 0;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(185, 225, 212, 0.16);
+            color: #ffd9b3;
+            font-weight: 700;
+            font-size: clamp(13px, 1.15vw, 15px);
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+          }
+          #ans-dino-live-bubble[data-mode="interactive"] .dino-b-kao {
+            background: rgba(255, 217, 179, 0.24);
+            color: #ffe4b5;
+          }
+          #ans-dino-live-bubble .dino-b-body {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+          }
+          #ans-dino-live-bubble .dino-b-txt {
+            font-weight: 600;
+            font-size: clamp(13px, 1.1vw, 15px);
+            line-height: 1.25;
+            color: #f7f5f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          #ans-dino-live-bubble .dino-b-sub {
+            font-weight: 500;
+            font-size: clamp(11px, 0.9vw, 12px);
+            line-height: 1.2;
+            color: #b9e1d4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          #ans-dino-live-bubble[data-mode="interactive"] .dino-b-sub {
+            color: #ffd9b3;
+          }
+          #ans-dino-live-bubble .dino-b-arrow {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: rgba(16, 30, 30, 0.92);
+            border-right: 1.8px solid rgba(185, 225, 212, 0.82);
+            border-bottom: 1.8px solid rgba(185, 225, 212, 0.82);
+            bottom: -7px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            pointer-events: none;
+          }
+          #ans-dino-live-bubble[data-flip="below"] .dino-b-arrow {
+            bottom: auto;
+            top: -7px;
+            transform: translateX(-50%) rotate(225deg);
+          }
+          body.showcase-static #ans-dino-live-bubble {
+            display: none !important;
+          }
+        `;
+        document.head.appendChild(st);
+      }
+      bubbleEl = document.getElementById("ans-dino-live-bubble");
+      if (!bubbleEl) {
+        bubbleEl = document.createElement("div");
+        bubbleEl.id = "ans-dino-live-bubble";
+        bubbleEl.setAttribute("role", "status");
+        bubbleEl.setAttribute("aria-live", "polite");
+        bubbleEl.innerHTML = `
+          <span class="dino-b-kao"></span>
+          <span class="dino-b-body">
+            <span class="dino-b-txt"></span>
+            <span class="dino-b-sub"></span>
+          </span>
+          <span class="dino-b-arrow"></span>
+        `;
+        document.body.appendChild(bubbleEl);
+      }
+      kaoEl = bubbleEl.querySelector(".dino-b-kao");
+      txtEl = bubbleEl.querySelector(".dino-b-txt");
+      subEl = bubbleEl.querySelector(".dino-b-sub");
+      arrowEl = bubbleEl.querySelector(".dino-b-arrow");
+      return bubbleEl;
+    }
 
     function drawBadge(presetKey) {
       const p = MOOD_PRESETS[presetKey] || MOOD_PRESETS.happy_smile;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+      const el = ensureDomBubble();
+      if (!el) return;
       const isInteractive = p.badgeType === "hover" || p.badgeType === "click";
       const isMacro = p.badgeType === "macro";
+      el.setAttribute("data-mode", isInteractive ? "interactive" : isMacro ? "macro" : "orbit");
+      if (kaoEl) kaoEl.textContent = p.kaomoji;
+      if (txtEl) txtEl.textContent = p.text;
+      if (subEl) subEl.textContent = p.sub || "✨ 移上鼠标或点击小恐龙即可互动";
+    }
 
-      const x = 16, y = 12, w = 648, h = 122, r = 36;
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, r);
-      const grad = ctx.createLinearGradient(x, y, x + w, y + h);
-      if (isInteractive) {
-        grad.addColorStop(0, "rgba(22, 38, 36, 0.94)");
-        grad.addColorStop(1, "rgba(38, 28, 34, 0.92)");
-      } else if (isMacro) {
-        grad.addColorStop(0, "rgba(16, 32, 34, 0.92)");
-        grad.addColorStop(1, "rgba(24, 42, 38, 0.90)");
-      } else {
-        grad.addColorStop(0, "rgba(11, 20, 24, 0.88)");
-        grad.addColorStop(1, "rgba(18, 32, 30, 0.85)");
+    function updateScreenPosition(ndcX, ndcY, scaleBoost = 1.0) {
+      const el = ensureDomBubble();
+      if (!el || typeof window === "undefined") return;
+      const vw = window.innerWidth || 1280;
+      const vh = window.innerHeight || 800;
+      const rawX = (ndcX * 0.5 + 0.5) * vw;
+      const rawY = (-ndcY * 0.5 + 0.5) * vh;
+      const bw = el.offsetWidth || 340;
+      const bh = el.offsetHeight || 56;
+      const marginX = Math.max(bw * 0.5 + 16, 180);
+      const clampedX = Math.max(marginX, Math.min(vw - marginX, rawX));
+      let targetY = rawY - 18;
+      let flipBelow = false;
+      if (targetY - bh < 64) {
+        // Dinosaur is near the top of the screen: place bubble cleanly below/beside head so it is 100% visible!
+        targetY = Math.min(vh - 76, rawY + 96);
+        flipBelow = true;
+      } else if (targetY > vh - 76) {
+        targetY = vh - 76;
       }
-      ctx.fillStyle = grad;
-      ctx.shadowColor = isInteractive ? "rgba(255, 205, 145, 0.45)" : "rgba(0, 0, 0, 0.48)";
-      ctx.shadowBlur = isInteractive ? 18 : 14;
-      ctx.shadowOffsetY = 5;
-      ctx.fill();
-      ctx.restore();
-
-      // Glowing border
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, r);
-      ctx.lineWidth = isInteractive ? 3.2 : 2.4;
-      const bGrad = ctx.createLinearGradient(x, y, x + w, y);
-      if (isInteractive) {
-        bGrad.addColorStop(0, "#ffd9b3");
-        bGrad.addColorStop(0.5, "#ff9eb5");
-        bGrad.addColorStop(1, "#b9e1d4");
-      } else if (isMacro) {
-        bGrad.addColorStop(0, "#b9e1d4");
-        bGrad.addColorStop(0.5, "#ffe4b5");
-        bGrad.addColorStop(1, "#b9e1d4");
-      } else {
-        bGrad.addColorStop(0, "rgba(185, 225, 212, 0.78)");
-        bGrad.addColorStop(0.5, "rgba(255, 217, 179, 0.85)");
-        bGrad.addColorStop(1, "rgba(185, 225, 212, 0.78)");
+      el.setAttribute("data-flip", flipBelow ? "below" : "above");
+      el.style.left = `${clampedX.toFixed(1)}px`;
+      el.style.top = `${targetY.toFixed(1)}px`;
+      el.style.transform = `translate3d(-50%, ${flipBelow ? "0%" : "-100%"}, 0) scale(${scaleBoost.toFixed(3)})`;
+      if (arrowEl) {
+        const arrowShift = Math.max(-bw * 0.34, Math.min(bw * 0.34, rawX - clampedX));
+        arrowEl.style.left = `calc(50% + ${arrowShift.toFixed(1)}px)`;
       }
-      ctx.strokeStyle = bGrad;
-      ctx.stroke();
-
-      // Speech pointer triangle at bottom center
-      ctx.beginPath();
-      ctx.moveTo(324, y + h);
-      ctx.lineTo(340, y + h + 16);
-      ctx.lineTo(356, y + h);
-      ctx.closePath();
-      ctx.fillStyle = isInteractive ? "rgba(30, 33, 35, 0.94)" : "rgba(15, 26, 28, 0.90)";
-      ctx.fill();
-      ctx.restore();
-
-      // Kaomoji badge pill on left
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(x + 14, y + 16, 178, h - 32, 26);
-      ctx.fillStyle = isInteractive ? "rgba(255, 217, 179, 0.22)" : "rgba(185, 225, 212, 0.16)";
-      ctx.fill();
-      ctx.font = "700 24px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
-      ctx.fillStyle = isInteractive ? "#ffe4b5" : "#ffd9b3";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(p.kaomoji, x + 103, y + h / 2);
-
-      // Primary rambling line
-      ctx.font = "600 23px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
-      ctx.fillStyle = "#f7f5f0";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText(p.text, x + 208, y + 44, w - 224);
-
-      // Secondary interactive hint / rambling sub-line
-      ctx.font = "500 17px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
-      ctx.fillStyle = isInteractive ? "#ffd9b3" : "#b9e1d4";
-      ctx.fillText(p.sub || "✨ 移上鼠标或点击小恐龙即可互动", x + 208, y + 84, w - 224);
-      ctx.restore();
-
-      tex.needsUpdate = true;
     }
 
     drawBadge("happy_smile");
-    return { texture: tex, drawBadge, presets: MOOD_PRESETS };
+    return { texture: tex, drawBadge, updateScreenPosition, getElement: ensureDomBubble, presets: MOOD_PRESETS };
   }
 
   // GLSL Shader Injection for 3D Dinosaur Facial Expressions (Complements the Blender-sculpted & textured dinosaur!)
@@ -1064,14 +1141,92 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
         haloUniforms={uTime:{value:0},uFlight:{value:0}};
   return{
     root:dinoRawScene,perf,dir,faceUniforms,badge,haloUniforms,
-    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.0,saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
+    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.30,camPatrolX:0,camPatrolY:0,camPatrolYaw:0,camPatrolPitch:0,saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
     nextBlink:2.2,blinkStart:-99,yaw:Math.PI*0.58,pitch:0,roll:0
   };
-},[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),keyboardGesture=n.useEffect(()=>{const play=()=>{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;dinoState.clickIdx=(dinoState.clickIdx+1)%6;dinoState.clickUntil=dinoState.time+4.0;const cp=dinoState.badge.presets["click"+dinoState.clickIdx];if(cp&&cp.gesture)dinoState.dir.onGesture(cp.gesture,dinoState.time)};window.addEventListener("ans-dino-greet",play);return()=>window.removeEventListener("ans-dino-greet",play)},[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
+},[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),keyboardGesture=n.useEffect(()=>{
+  const play=()=>{
+    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    dinoState.clickIdx=(dinoState.clickIdx+1)%6;
+    dinoState.clickUntil=dinoState.time+4.0;
+    const cp=dinoState.badge.presets["click"+dinoState.clickIdx];
+    if(cp&&cp.gesture)dinoState.dir.onGesture(cp.gesture,dinoState.time);
+  };
+  window.addEventListener("ans-dino-greet",play);
+  const bubbleEl=dinoState.badge.getElement?dinoState.badge.getElement():null;
+  const onEnter=()=>{
+    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    if(!dinoState.hovered){
+      dinoState.hovered=true;
+      dinoState.hoverIdx=(dinoState.hoverIdx+1)%5;
+      const hp=dinoState.badge.presets["hover"+(dinoState.hoverIdx%5)];
+      if(hp&&hp.gesture)dinoState.dir.onGesture(hp.gesture,dinoState.time);
+    }
+  };
+  const onLeave=()=>{
+    dinoState.hovered=false;
+  };
+  const onClick=ev=>{
+    ev.stopPropagation();
+    play();
+  };
+  if(bubbleEl){
+    bubbleEl.addEventListener("pointerenter",onEnter);
+    bubbleEl.addEventListener("pointerleave",onLeave);
+    bubbleEl.addEventListener("click",onClick);
+  }
+  return()=>{
+    window.removeEventListener("ans-dino-greet",play);
+    if(bubbleEl){
+      bubbleEl.removeEventListener("pointerenter",onEnter);
+      bubbleEl.removeEventListener("pointerleave",onLeave);
+      bubbleEl.removeEventListener("click",onClick);
+    }
+  };
+},[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeL));
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeR));`).replace("#include <begin_vertex>",`#include <begin_vertex>
           transformed += (uEyeL + eyeSpin(transformed - uEyeL) - transformed) * eyeWeight(transformed, uEyeL);
-          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);if(Ue.current.set(-$.current.y*m,-$.current.x*m,0),ke.current.setFromEuler(Ue.current),K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current),ce.current&&K.current.multiplyScalar(l.mobilePullback),(dinoState.camPullback+=((1.16+Math.sin(((de?0:f.clamp(L+1,0,4))-Math.floor(de?0:f.clamp(L+1,0,4)))*Math.PI)*.16+f.clamp(Math.abs(J-q)/12,0,1)*.10)-dinoState.camPullback)*Math.min(1,y*5.5)),K.current.multiplyScalar(dinoState.camPullback),K.current.add(t.current),_.position.copy(K.current),_.quaternion.multiplyQuaternions(ke.current,_e.current),ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
+          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}
+const scrollS = de ? 4.0 + f.clamp((q - te) / Math.max(1, ae - te), 0, 1) : f.clamp(L + 1, 0, 4);
+const spline = __ansDinoPatch.sampleFlightSpline(scrollS);
+const macroW = de ? 0 : spline.macroWeight;
+const flightRaw = Math.abs(J - q);
+const flightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
+const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
+// Dual-Subject Camera Patrol:
+// 1) Dynamic pullback: pull back generously (1.28x..1.52x) during wide 3D orbit so the wide orbit + founder stay framed, and glide in (1.14x) during Super Macro Close-Up!
+const orbitPull = 1.30 + 0.16 * (1.0 - macroW) + 0.08 * Math.sin(scrollS * Math.PI) + 0.10 * flightSpeed;
+const macroPull = 1.14;
+const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
+dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
+
+// 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit around the founder!
+const patrolEase = Math.min(1, y * 4.5);
+const orbitOffsetX = spline.pos[0] - 0.26;
+const orbitOffsetY = spline.pos[1] - 0.16;
+const orbitOffsetZ = spline.pos[2] - 0.06;
+const patrolWeight = de ? 0.15 : (1.0 - macroW * 0.65);
+const targetPatrolX = orbitOffsetX * 0.42 * patrolWeight;
+const targetPatrolY = orbitOffsetY * 0.30 * patrolWeight + 0.06 * (1.0 - macroW);
+const targetPatrolYaw = f.clamp(-orbitOffsetX * 0.22 * patrolWeight - orbitOffsetZ * 0.06 * patrolWeight, -0.16, 0.16);
+const targetPatrolPitch = f.clamp(orbitOffsetY * 0.18 * patrolWeight, -0.10, 0.10);
+dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
+dinoState.camPatrolY += (targetPatrolY - dinoState.camPatrolY) * patrolEase;
+dinoState.camPatrolYaw += (targetPatrolYaw - dinoState.camPatrolYaw) * patrolEase;
+dinoState.camPatrolPitch += (targetPatrolPitch - dinoState.camPatrolPitch) * patrolEase;
+
+Ue.current.set(-$.current.y*m + dinoState.camPatrolPitch, -$.current.x*m + dinoState.camPatrolYaw, 0);
+ke.current.setFromEuler(Ue.current);
+K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current);
+ce.current&&K.current.multiplyScalar(l.mobilePullback);
+K.current.multiplyScalar(dinoState.camPullback);
+K.current.add(t.current);
+_.position.copy(K.current);
+_.quaternion.multiplyQuaternions(ke.current,_e.current);
+_.translateX(dinoState.camPatrolX);
+_.translateY(dinoState.camPatrolY);
+if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
 {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
   if (!reduced) {
@@ -1082,20 +1237,15 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   dinoState.perf.look(ne.current.x, -ne.current.y, tNow);
   dinoState.faceUniforms.uDinoGaze.value.set(ne.current.x, ne.current.y);
 
-  // 1. Clockwise 3D Orbit Around Your Head + Front-of-Face Dive to Camera Super Macro Close-Up!
-  const scrollS = de ? 4.0 + f.clamp((q - te) / Math.max(1, ae - te), 0, 1) : f.clamp(L + 1, 0, 4);
-  const flightRaw = Math.abs(J - q);
-  const flightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
+  // 1. Wide Clockwise 3D Orbit Around Your Head + Front-of-Face Dive to Camera Super Macro Close-Up!
   dinoState.haloUniforms.uFlight.value += (flightSpeed - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
 
-  const spline = __ansDinoPatch.sampleFlightSpline(scrollS);
-  const macroW = de ? 0 : spline.macroWeight;
   const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
   dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
 
-  const bobY = Math.sin(tNow * 2.4) * (0.018 * (1 - macroW * 0.4)) + Math.cos(tNow * 1.3) * 0.005;
-  const swayX = Math.cos(tNow * 1.6) * 0.008;
-  const swayZ = Math.sin(tNow * 1.4) * 0.010;
+  const bobY = Math.sin(tNow * 2.4) * (0.024 * (1 - macroW * 0.4)) + Math.cos(tNow * 1.3) * 0.008;
+  const swayX = Math.cos(tNow * 1.6) * 0.012;
+  const swayZ = Math.sin(tNow * 1.4) * 0.014;
   let fx = spline.pos[0] + swayX;
   let fy = spline.pos[1] + bobY;
   let fz = spline.pos[2] + swayZ;
@@ -1105,49 +1255,49 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(_.quaternion);
   const camUp    = ye.current.set(0, 1, 0).applyQuaternion(_.quaternion);
   const camRight = ot.current.set(1, 0, 0).applyQuaternion(_.quaternion);
-  // 1.56m in front of camera lens, slightly left (-0.15m) so right-side timeline text stays 100% unobstructed,
-  // and -0.24m down so the dinosaur's face & rambling kaomoji sit right in the center-left golden close-up spot!
-  const macroDist = 1.56 - dinoState.hoverBlend * 0.12;
-  const macroWorldX = _.position.x + camFwd.x * macroDist - camRight.x * 0.15 - camUp.x * 0.24;
-  const macroWorldY = _.position.y + camFwd.y * macroDist - camRight.y * 0.15 - camUp.y * 0.24;
-  const macroWorldZ = _.position.z + camFwd.z * macroDist - camRight.z * 0.15 - camUp.z * 0.24;
+  // 1.52m in front of camera lens, slightly left (-0.14m) so right-side timeline text stays 100% unobstructed,
+  // and -0.22m down so the dinosaur's face & rambling kaomoji sit right in the center-left golden close-up spot!
+  const macroDist = 1.52 - dinoState.hoverBlend * 0.12;
+  const macroWorldX = _.position.x + camFwd.x * macroDist - camRight.x * 0.14 - camUp.x * 0.22;
+  const macroWorldY = _.position.y + camFwd.y * macroDist - camRight.y * 0.14 - camUp.y * 0.22;
+  const macroWorldZ = _.position.z + camFwd.z * macroDist - camRight.z * 0.14 - camUp.z * 0.22;
 
   const macroLocalX = (macroWorldX - 0.0) / 2.25;
   const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.6;
   const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
 
-  // Blend smoothly from Clockwise Head-Orbit into Camera Super Macro Close-Up when orbiting in front of your face!
+  // Blend smoothly from Wide Clockwise Head-Orbit into Camera Super Macro Close-Up when orbiting in front of your face!
   fx = f.lerp(fx, macroLocalX, macroW);
   fy = f.lerp(fy, macroLocalY, macroW);
   fz = f.lerp(fz, macroLocalZ, macroW);
 
   // If hovered while on the normal orbit, lean gently toward the camera lens
   if (dinoState.hoverBlend > 0.01 && macroW < 0.5) {
-    fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.22);
-    fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.22);
-    fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.22);
+    fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.25);
+    fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.25);
+    fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.25);
   }
 
-  // Real-time Camera-Frustum Screen-Space Clamping Guard:
-  // Project dinosaur torso + top kaomoji badge into NDC [-1, 1] and clamp smoothly so the dinosaur can NEVER go off-screen!
+  // Wide Camera-Frustum Screen-Space Safety Guard:
+  // Preserves the wide 3D clockwise orbit radius while preventing the dinosaur from ever exiting the viewport edges!
   _.updateMatrixWorld();
   const wPosX = fx * 2.25;
-  const wPosY = (fy + 0.34) * 2.25 + 0.4;
+  const wPosY = (fy + 0.30) * 2.25 + 0.4;
   const wPosZ = fz * 2.25 - 0.7;
   ve.current.set(wPosX, wPosY, wPosZ).project(_);
   if (ve.current.z > -1.0 && ve.current.z < 1.0) {
-    const safeMinX = ce.current ? -0.58 : -0.64;
-    const safeMaxX = ce.current ?  0.54 :  0.56;
-    const safeMinY = -0.52;
-    const safeMaxY =  0.38; // leaves headroom above for the dinosaur's head & kaomoji speech bubble!
+    const safeMinX = ce.current ? -0.74 : -0.80;
+    const safeMaxX = ce.current ?  0.72 :  0.76;
+    const safeMinY = -0.70;
+    const safeMaxY =  0.62;
     const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
     const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
     if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
-      ve.current.x = f.lerp(ve.current.x, clampedX, 0.88);
-      ve.current.y = f.lerp(ve.current.y, clampedY, 0.88);
+      ve.current.x = f.lerp(ve.current.x, clampedX, 0.78);
+      ve.current.y = f.lerp(ve.current.y, clampedY, 0.78);
       ve.current.unproject(_);
       fx = (ve.current.x - 0.0) / 2.25;
-      fy = (ve.current.y - 0.4) / 2.25 - 0.34;
+      fy = (ve.current.y - 0.4) / 2.25 - 0.30;
       fz = (ve.current.z - (-0.7)) / 2.25;
     }
   }
@@ -1161,14 +1311,14 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     t.current.x = f.lerp(t.current.x, dinoWorldX, focusAssist * 0.88);
     t.current.y = f.lerp(t.current.y, dinoWorldY, focusAssist * 0.88);
     t.current.z = f.lerp(t.current.z, dinoWorldZ, focusAssist * 0.88);
-    if (a) a.current = Math.max(a.current, 1.8 * focusAssist);
+    if (a) a.current = Math.max(a.current, 2.2 * focusAssist);
   }
 
   // Elastic scale pop on hover or click!
   const clickActive = tNow < dinoState.clickUntil;
   const clickAge = clickActive ? (4.0 - (dinoState.clickUntil - tNow)) : 99;
   const clickHop = clickAge < 0.55 ? Math.sin((clickAge / 0.55) * Math.PI) * 0.08 : 0;
-  const targetScale = 0.48 * (1.0 + dinoState.hoverBlend * 0.10 + (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.14 : 0));
+  const targetScale = 0.48 * (1.0 + dinoState.hoverBlend * 0.12 + (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.15 : 0));
   dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
 
   if (dinoFlightRef.current) {
@@ -1190,16 +1340,16 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
 
     // When in Super Macro Close-Up (macroW -> 1) or Hovered (hoverBlend -> 1), face the camera 100% dead-on!
     const faceCamLock = Math.max(macroW, dinoState.hoverBlend);
-    const orbitBankBlend = flightSpeed * 0.48 * (1.0 - faceCamLock);
+    const orbitBankBlend = flightSpeed * 0.52 * (1.0 - faceCamLock);
     const targetYaw = toCamYaw + diffTang * orbitBankBlend + (dinoState.hovered ? ne.current.x * 0.18 : 0);
     let yawDelta = targetYaw - dinoState.yaw;
     while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
     while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
     dinoState.yaw += yawDelta * Math.min(1, dt * 9);
 
-    const orbitPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.32 + flightSpeed * 0.12, -0.28, 0.28);
+    const orbitPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.34 + flightSpeed * 0.12, -0.28, 0.28);
     const targetPitch = f.lerp(orbitPitch, toCamPitch, faceCamLock) + Math.sin(tNow * 2.4 - 0.8) * 0.03;
-    const orbitRoll = f.clamp(-yawDelta * 0.40 + Math.sin(tNow * 6.0) * 0.05 * flightSpeed, -0.32, 0.32);
+    const orbitRoll = f.clamp(-yawDelta * 0.42 + Math.sin(tNow * 6.0) * 0.05 * flightSpeed, -0.32, 0.32);
     const macroCuteTilt = Math.sin(tNow * 2.8) * 0.075 + (dinoState.hovered ? -ne.current.x * 0.10 : 0);
     const targetRoll = f.lerp(orbitRoll, macroCuteTilt, faceCamLock);
 
@@ -1234,7 +1384,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     if (tNow >= dinoState.nextMoodAt || moodKey.startsWith("click") || moodKey.startsWith("hover") || moodKey.startsWith("macro")) {
       const candidates = naturalPool.filter(k => k !== dinoState.activeBadge);
       moodKey = candidates[Math.floor(Math.random() * candidates.length)];
-      dinoState.nextMoodAt = tNow + 3.2 + Math.random() * 2.6;
+      dinoState.nextMoodAt = tNow + 3.0 + Math.random() * 2.2;
       const chosen = dinoState.badge.presets[moodKey];
       if (chosen && chosen.gesture && chosen.gesture !== "idle") {
         dinoState.dir.onGesture(chosen.gesture, tNow);
@@ -1292,19 +1442,25 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   uF.uDinoBlush.value += (waveBlush - uF.uDinoBlush.value) * Math.min(1, dt * 4.0);
   uF.uDinoMouth.value += (waveMouth - uF.uDinoMouth.value) * Math.min(1, dt * 6.5);
 
-  // 3. Billboard the Kaomoji Rambling Bubble above the dinosaur's head toward the camera
-  if (dinoBadgeRef.current && dinoFlightRef.current) {
-    dinoBadgeRef.current.position.y = 1.12 + Math.sin(tNow * 3.2) * 0.022;
+  // 3. Project the dinosaur's head top into 2D screen space and update the Always-Visible Kaomoji Speech Bubble!
+  if (dinoState.badge.updateScreenPosition) {
+    _.updateMatrixWorld();
+    const headWorldX = fx * 2.25;
+    const headWorldY = (fy + clickHop + 0.50) * 2.25 + 0.4;
+    const headWorldZ = fz * 2.25 - 0.7;
+    ve.current.set(headWorldX, headWorldY, headWorldZ).project(_);
     const badgeScale = 1.0 + dinoState.hoverBlend * 0.08 + macroW * 0.06;
-    dinoBadgeRef.current.scale.setScalar(badgeScale);
-    dinoFlightRef.current.updateWorldMatrix(true, false);
-    dinoFlightRef.current.getWorldQuaternion(ze.current).invert();
-    dinoBadgeRef.current.quaternion.copy(ze.current).multiply(_.quaternion);
+    dinoState.badge.updateScreenPosition(ve.current.x, ve.current.y, badgeScale);
   }
   } else {
     dinoState.perf.update(dinoState.time, 0, true, 0);
     dinoState.haloUniforms.uFlight.value = 0;
-    if (dinoFlightRef.current) { dinoFlightRef.current.position.set(.38,-.18,.64); dinoFlightRef.current.rotation.set(0,Math.PI*.58,0); dinoFlightRef.current.scale.setScalar(.48); }
+    if (dinoFlightRef.current) { dinoFlightRef.current.position.set(spline.pos[0],spline.pos[1],spline.pos[2]); dinoFlightRef.current.rotation.set(0,Math.PI*.58,0); dinoFlightRef.current.scale.setScalar(.48); }
+    if (dinoState.badge.updateScreenPosition) {
+      _.updateMatrixWorld();
+      ve.current.set(spline.pos[0]*2.25, (spline.pos[1]+0.50)*2.25+0.4, spline.pos[2]*2.25-0.7).project(_);
+      dinoState.badge.updateScreenPosition(ve.current.x, ve.current.y, 1.0);
+    }
   }
 }
 if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)c.obj.getWorldPosition(K.current).project(_),s+=K.current.x,Q+=K.current.y;s/=S.length,Q/=S.length;const G=ne.current.x-s,ee=ne.current.y-Q,Y=me*G*f.degToRad(x.maxYaw)*x.gain,be=pe*-ee*f.degToRad(x.maxPitch)*x.gain,we=Math.hypot(G,ee),je=f.clamp(1-we/x.crossRadius,0,1),at=f.degToRad(x.crossEye)*je;for(const c of S){const m=c.sx??c.side??0,h=Y-m*at;Le.current.set(be,h,0),ze.current.setFromEuler(Le.current),Be.current.copy(ze.current).multiply(c.base),c.obj.quaternion.slerp(Be.current,x.smooth)}}),e.jsxs("group",{position:[0,.4,-.7],rotation:[0,0*Math.PI/180,0],scale:2.25,children:[
@@ -1351,6 +1507,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
       }),
       e.jsxs("mesh",{
         ref:dinoBadgeRef,
+        visible:!1,
         position:[0,1.12,0.04],
         renderOrder:25,
         children:[
