@@ -51,11 +51,11 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
  * 什么都没测到」。扫描前会写入固定规模的探针数据，这里再确认它确实上了屏。
  */
 const PUBLIC_PAGES = [
-  ["/", "首页", "长成你的作品。"],
+  ["/", "首页", "长成看得见的作品。"],
   ["/explore", "项目发现", "项目广场"],
   ["/explore/liu-resume", "项目详情", "个人简历与作品集"],
   ["/workflows/toonflow", "旧工作流跳转", null],
-  ["/hubs", "Hub 目录", "找到你的 Hub"],
+  ["/hubs", "Hub 目录", "找到属于你的创作与学习 Hub"],
   ["/hubs/full-stack", "全栈开发 Hub", "全栈开发 Hub"],
   ["/competitions", "赛事活动", null],
   ["/market", "市场", null],
@@ -75,9 +75,9 @@ const PRIVATE_PAGES = [
 
 /** 移动视口只扫最容易暴露问题的三个入口，避免门禁时间翻倍。 */
 const MOBILE_PAGES = [
-  ["/", "移动端 首页", "长成你的作品。"],
+  ["/", "移动端 首页", "长成看得见的作品。"],
   ["/explore", "移动端 项目发现", "项目广场"],
-  ["/hubs", "移动端 Hub 目录", "找到你的 Hub"],
+  ["/hubs", "移动端 Hub 目录", "找到属于你的创作与学习 Hub"],
   ["/market", "移动端 市场", null],
 ];
 

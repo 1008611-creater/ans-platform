@@ -22,27 +22,27 @@
   "navigationDescription": "项目、Hub、社区、赛事、市场与工作台",
   "mobileNavigation": "主要导航",
   "eyebrow": "ANS / HUBS",
-  "title": "找到你的 Hub",
-  "description": "按学校、知识与创作方向，找到项目、工作流和真正可用的入口。",
-  "allWorkflows": "查看全部工作流",
+  "title": "找到属于你的创作与学习 Hub",
+  "description": "按高校社群、Vibe Coding 知识库与创作赛道，一站聚合可运行工作流、实战项目与创作工具入口。",
+  "allWorkflows": "浏览全部工作流",
   "searchLabel": "查找 Hub",
-  "searchPlaceholder": "学校、知识、AIGC、全栈开发",
+  "searchPlaceholder": "搜索高校、Vibe Coding、AIGC 或全栈开发…",
   "search": "查找",
-  "emptySearch": "没有找到匹配的 Hub。",
+  "emptySearch": "没有找到匹配的 Hub，换个关键词试试吧。",
   "clear": "清除筛选",
   "unavailable": "暂不可用",
-  "catalogUnavailable": "项目目录暂时无法读取，已隐藏项目和未知数量。稍后重试即可。",
-  "directoryNote": "数量来自当前明确关联的内容。参考项目、工具入口与可运行工作流分别展示，不代表学校入驻人数或官方认证。",
+  "catalogUnavailable": "项目目录暂时无法读取，已隐藏项目和未知数量，稍后刷新即可。",
+  "directoryNote": "各 Hub 展示当前已明确收录的参考项目、工具入口与可运行工作流数量（不代表高校入驻人数或官方校籍认证）。",
   "back": "返回 Hub 目录",
-  "universityNote": "ANS × {university}，目前展示已明确关联的校内赛事；其他学校尚未开放，不做入驻承诺。",
+  "universityNote": "ANS × {university} 专区：当前展示已关联的校内赛事与协作内容；其他高校专区筹备中，不做入驻承诺。",
   "runnableTitle": "可运行工作流",
-  "runnableNote": "填写自己的资料，确认费用后运行。打开页面不会自动生成或扣费。",
-  "noRunnable": "这个 Hub 还没有已关联的可运行工作流。",
-  "resourcesTitle": "工具与内容入口",
-  "projectsTitle": "项目与参考",
-  "projectsNote": "打开项目详情了解来源和使用方式。外部工具的登录、费用和交付以原站为准；开源参考不等于 ANS 已接入运行。",
-  "noProjects": "目前没有已发布并明确关联的项目。",
-  "recipeCost": "本流程确认运行消耗 {points} 积分，修改与保存方式见准备页。",
+  "runnableNote": "填入你的真实素材，确认积分后再运行——浏览页面绝不会自动生成或扣费。",
+  "noRunnable": "这个 Hub 暂时还没有收录可直接运行的工作流。",
+  "resourcesTitle": "核心工具与内容入口",
+  "projectsTitle": "精选项目与开源参考",
+  "projectsNote": "点开项目卡片即可查看作品拆解与使用方式。外部工具的账号登录与计费以原站为准；开源参考代表推荐学习方案，不等于 ANS 已内置托管运行。",
+  "noProjects": "目前还没有已发布并关联到此 Hub 的项目。",
+  "recipeCost": "本流程确认运行消耗 {points} 积分，修改与导出方式详见准备页。",
   "prepareWorkflow": "准备我的项目",
   "counts": {
     "workflows": "可运行",
@@ -50,7 +50,7 @@
     "resources": "入口"
   },
   "types": {
-    "university": "学校 Hub",
+    "university": "高校 Hub",
     "knowledge": "知识 Hub",
     "topic": "主题 Hub"
   },
@@ -64,19 +64,19 @@
   "items": {
     "cauhub": {
       "name": "CAUHub",
-      "description": "面向中国农业大学的赛事与校内协作入口，内容按真实关联收录。"
+      "description": "面向中国农业大学师生的赛事活动与校内创客协作入口，按真实关联收录。"
     },
     "vibehub": {
       "name": "ANS VibeHub",
-      "description": "从概念到实践，找到现有术语、课程、学习路径与方法。"
+      "description": "从零基础概念到实战交付：系统整理 Vibe Coding 术语库、课程、学习路径与 Skill 方法。"
     },
     "aigc": {
       "name": "AIGC Hub",
-      "description": "图像、视频与音频创作工具，配套真实项目和开源参考。"
+      "description": "汇聚图像、漫剧视频与多模态创作工具，配套官方实战拆解与精选开源工作流。"
     },
     "full-stack": {
       "name": "全栈开发 Hub",
-      "description": "从可运行的个人网站流程，到开发、部署和开源项目参考。"
+      "description": "从一键生成的 3D 个人作品集网站，到前后端开发、静态部署与高星开源项目参考。"
     }
   },
   "kinds": {
@@ -90,32 +90,32 @@
   "resources": {
     "agrihackathon": {
       "title": "AgriHackathon · 农客松",
-      "description": "查看当前赛事方案、作品提交要求和活动信息。报名及时间以赛事页实际状态为准。"
+      "description": "查看农客松赛事规则、赛道命题、作品提交要求与路演日程（报名状态以赛事页为准）。"
     },
     "vibehub": {
-      "title": "进入 VibeHub",
-      "description": "浏览现有课程、术语、学习路径、实践与 Skill 方法。"
+      "title": "进入 VibeHub 知识库",
+      "description": "系统浏览 Vibe Coding 课程、高频术语、成长路径、实战练习与 Skill 编写方法。"
     },
     "aigc": {
-      "title": "AIGC 工作台",
-      "description": "进入视频创作工具页面，核对连接、账号、模型和费用后使用。"
+      "title": "AIGC 漫剧与视频工作台",
+      "description": "前往 Toonflow 漫剧与视频创作工作台，核对服务连接、模型与积分费用后即可开始创作。"
     },
     "hypit": {
       "title": "Hypit 创作工作区",
-      "description": "查看官方演示与当前工作区入口；实际工具按页面账号权限开放。"
+      "description": "查看 Hypit 交互演示与工作区入口；具体生成工具按当前账号权限开放。"
     }
   },
   "recipes": {
     "resume-website": {
       "title": "个人简历与作品集网站",
-      "description": "复用固定网站模板，将自己的真实经历和项目组织成可预览、修改和导出的个人网站。"
+      "description": "把你的真实经历、代表作品与个人故事装进可实时预览、自由调色并一键导出源码的个人网站。"
     }
   },
-  "recipeMeteredCost": "确认运行后，按实际模型用量结算积分。¥1＝10 积分。",
+  "recipeMeteredCost": "确认运行后，按实际模型用量结算积分（¥1＝10 积分）。",
   "openWorkflow": "填写资料并使用",
   "viewMarketCard": "查看市场卡",
-  "workflowsUnavailable": "工作流状态暂时无法读取，稍后重试。",
-  "marketUnavailable": "市场卡暂时无法读取，仍可以从工作流入口使用。",
+  "workflowsUnavailable": "工作流状态暂时无法读取，请稍后重试。",
+  "marketUnavailable": "市场卡暂时无法读取，你依然可以从工作流入口正常使用。",
   "associations": {
     "title": "归属 Hub",
     "hint": "同一工作流可申请多个 Hub，无需复制。归属审核不会发布工作流、上架市场或发放经验。",
