@@ -8,7 +8,7 @@ export const evidenceCreateSchema = target.extend({ action: z.literal("create"),
     mode: evidenceModeSchema, kind: evidenceKindSchema, fileName: z.string().trim().min(1).max(180),
     sourceUrl: agriMaterialUrlSchema.nullable(), originalRef: agriRepositoryRefSchema.nullable(),
 }).strict().superRefine((v, c) => {
-    if (v.mode !== "UPLOAD" && (!v.submissionId || !v.sourceUrl))
+    if (v.mode !== "UPLOAD" && (!v.sourceUrl || v.mode === "ALLOWED_HTTP_CAPTURE" && !v.submissionId))
         c.addIssue({ code: "custom", message: "FORMAL_SOURCE_REQUIRED" });
     if (v.mode === "GITHUB_ARCHIVE" && (v.kind !== "REPOSITORY" || !v.originalRef))
         c.addIssue({ code: "custom", message: "REPOSITORY_REF_REQUIRED" });
@@ -27,7 +27,7 @@ export type EvidenceCreate = z.infer<typeof evidenceCreateSchema>;
 export type EvidenceCommand = z.infer<typeof evidenceCommandSchema>;
 export type EvidenceKind = z.infer<typeof evidenceKindSchema>;
 export type EvidenceMode = z.infer<typeof evidenceModeSchema>;
-export type EvidenceState = "PREPARED" | "QUEUED" | "RUNNING" | "UPLOADED" | "STORED" | "RETRY_WAIT" | "FAILED" | "CANCELLED" | "NEEDS_REVIEW";
+export type EvidenceState = "PREPARED" | "QUEUED" | "RUNNING" | "UPLOADED" | "RESOLVED" | "STORED" | "RETRY_WAIT" | "FAILED" | "CANCELLED" | "NEEDS_REVIEW";
 export interface EvidenceDescriptor {
     id: string;
     requestId: string;
@@ -44,7 +44,7 @@ export interface EvidenceDescriptor {
     deadlineAt: string | null;
     temporalStatus: "CUTOFF_UNKNOWN" | "CAPTURED_AFTER_DEADLINE" | "CAPTURED_BEFORE_DEADLINE";
     coverage: string;
-    sourceTiming: "DECLARED_FIXED_COMMIT_BEFORE_CUTOFF" | "MUTABLE_SOURCE_AT_CAPTURE" | "UNVERIFIED_SOURCE";
+    sourceTiming: "PRE_SUBMISSION_FIXED_REF_BEFORE_CUTOFF" | "DECLARED_FIXED_COMMIT_BEFORE_CUTOFF" | "MUTABLE_SOURCE_AT_CAPTURE" | "UNVERIFIED_SOURCE";
 }
 export interface EvidenceRequestView {
     id: string;
@@ -61,6 +61,7 @@ export interface EvidenceRequestView {
     canManage: boolean;
     expiresAt: string | null;
     fileName: string;
+    resolution?: { repositoryUrl: string; originalRef: NonNullable<EvidenceCreate["originalRef"]>; sha: string; resolvedAt: string } | null;
     object: EvidenceDescriptor | null;
     cutoffVerification: {
         at: string;

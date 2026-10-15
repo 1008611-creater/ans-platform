@@ -3425,7 +3425,8 @@
       "RETRY_WAIT": "等待重试",
       "FAILED": "失败",
       "CANCELLED": "已取消",
-      "NEEDS_REVIEW": "需要工作人员处理"
+      "NEEDS_REVIEW": "需要工作人员处理",
+      "RESOLVED": "版本已固定 · 待正式提交"
     },
     "temporal": {
       "CUTOFF_UNKNOWN": "正式截止尚未确认",
@@ -3435,7 +3436,8 @@
     "sourceTiming": {
       "DECLARED_FIXED_COMMIT_BEFORE_CUTOFF": "截止前已提交声明的固定 commit，实际留存时间如上",
       "MUTABLE_SOURCE_AT_CAPTURE": "可变来源仅反映获取时的内容",
-      "UNVERIFIED_SOURCE": "来源与截止真实性待人工核验"
+      "UNVERIFIED_SOURCE": "来源与截止真实性待人工核验",
+      "PRE_SUBMISSION_FIXED_REF_BEFORE_CUTOFF": "提交前已解析并锁定 Commit，正式提交在截止前接受；原始字节抓取时间另行记录。"
     },
     "coverage": {
       "CODE_TREE_NO_GIT_HISTORY_LFS_OR_SUBMODULES": "仅代码树，不含 Git 历史、LFS 实体或子模块内容",
@@ -3449,8 +3451,11 @@
       "AGRI_EVIDENCE_STORAGE_NOT_CONFIGURED": "请先配置私有持久存储。",
       "AGRI_EVIDENCE_TEAM_CUTOFF_CLOSED": "窗口已关闭，请联系获授权技术负责人补充留存。",
       "AGRI_EVIDENCE_TOO_LARGE": "文件超过当前字节上限。",
-      "AGRI_EVIDENCE_ACTIVE_REQUEST_EXISTS": "已有相同任务，请继续或取消已有任务。"
-    }
+      "AGRI_EVIDENCE_ACTIVE_REQUEST_EXISTS": "已有相同任务，请继续或取消已有任务。",
+      "AGRI_EVIDENCE_STORAGE_RECONCILIATION_REQUIRED": "无法确认临时存储清理结果，已暂停处理，需核对后恢复。"
+    },
+    "resolveRef": "提交前固定仓库版本",
+    "resolution": "已于 {at} 固定引用 {ref}；正式提交将采用此 Commit。"
   },
   "marketStudio": {
     "title": "3D 个人网站",

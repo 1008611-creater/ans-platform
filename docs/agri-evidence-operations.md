@@ -4,9 +4,9 @@
 
 ## 默认关闭与授权
 
-`ANS_AGRI_EVIDENCE_ENABLED` 默认关闭；只有精确值 `true` 接收新任务/上传/claim。关闭不删除数据库、对象、清单或 v3 档案，获授权读取仍可用。`ANS_AGRI_EVIDENCE_WORKER_DISABLED=true` 只停独立归档 worker，不影响其他工作流。
+`ANS_AGRI_EVIDENCE_ENABLED` 默认关闭；只有精确值 `true` 接收新任务/上传/claim/正式绑定/finalize。关闭后带 evidence handle 的正式提交事务整体拒绝、保留原预上传或固定引用；不带 evidence 的正常提交继续可用。关闭不删除数据库、对象、清单或 v3 档案，获授权读取仍可用。`ANS_AGRI_EVIDENCE_WORKER_DISABLED=true` 只停独立归档 worker，不影响其他工作流。
 
-队伍只有本届 ACTIVE OWNER/ADMIN 能准备自己的精确项目版本，普通本队成员可读。预上传 24 小时有效；正式提交在同一数据库事务绑定。正式提交后队伍仅在已确认窗口截止前补资料；截止后技术负责人须 WORKS_READ + PRIVATE_MATERIALS_READ + ARCHIVE_WRITE，不默认开放队伍。全站 ADMIN、EXPORT 或任务共享不会授予外部文件权限。人工截止核验还须 INTERNAL_NOTES_READ；固定清单/档案沿用 ONSITE_READ。两项能力分别投影，内部理由不返回队伍。汇总列表仅展示当前正式提交的数量和晚留存状态，不含来源 URL、对象 Key 或内部理由。
+队伍只有本届 ACTIVE OWNER/ADMIN 能准备自己的精确项目版本，普通本队成员可读。预上传和预解析 handle 均 24 小时有效；正式提交在同一数据库事务按本队、操作者、项目、artifactVersion、原仓库 URL/ref 精确绑定。GitHub 预解析由受控队列取得 SHA、服务器 resolvedAt 和响应证明哈希，进入 `RESOLVED`，没有原始字节也没有成功对象。解析 provenance 由数据库保护为首次写后不可变。正式提交采用 handle 后进入 `QUEUED`，仅抓固定 SHA；TAG 再移动不会改变已采用目标。正式 submission 保留原始 TAG，不无痕改写旧记录。过期、撤权、解析失败、跨队或跨版本不能采用；绑定后 handle 的期限不再限制已正式接受的字节抓取。正式提交后队伍仅在已确认窗口截止前补资料；截止后技术负责人须 WORKS_READ + PRIVATE_MATERIALS_READ + ARCHIVE_WRITE，不默认开放队伍。全站 ADMIN、EXPORT 或任务共享不会授予外部文件权限。人工截止核验还须 INTERNAL_NOTES_READ；固定清单/档案沿用 ONSITE_READ。两项能力分别投影，内部理由不返回队伍。汇总列表仅展示当前正式提交的数量和晚留存状态，不含来源 URL、对象 Key 或内部理由。
 
 ## 持久存储配置
 
@@ -19,7 +19,7 @@ namespace 为 `agri-evidence/v1/{edition}/{request}/{object}.bin`，永不交给
 
 默认上限：仓库64MiB、视频256MiB、Demo主文档10MiB、辅助32MiB；单submission512MiB、entry1GiB、actor2GiB、edition及总量10GiB。对应变量 `ANS_AGRI_EVIDENCE_{KIND}_LIMIT_BYTES`、`ANS_AGRI_EVIDENCE_{SUBMISSION|ENTRY|ACTOR|EDITION|TOTAL}_QUOTA_BYTES`。所有值须正安全整数。单对象底层为 PostgreSQL integer，不能配置超过 2GiB；实际生产仍应保持默认限额。
 
-local 默认预测使用率低于90%、预留后剩余5GiB；变量 `ANS_AGRI_EVIDENCE_LOCAL_MAX_USED_PERCENT` / `ANS_AGRI_EVIDENCE_LOCAL_MIN_FREE_BYTES`。数据库预算包含失败、取消与尚未绑定任务，不能仅统计成功对象。只在核对清理完成后释放 reservation。
+local 默认预测使用率低于90%、预留后剩余5GiB；变量 `ANS_AGRI_EVIDENCE_LOCAL_MAX_USED_PERCENT` / `ANS_AGRI_EVIDENCE_LOCAL_MIN_FREE_BYTES`。数据库预算包含失败、取消与尚未绑定任务，不能仅统计成功对象。只在核对清理完成后释放 reservation。失败或失联请求未完成协调时按整份 maxBytes 保留剩余预算（实际遗留字节另体现在 statfs），不沿用已删除 partial 的旧进度。持全局预算锁和请求锁，确认精确 part/multipart 删除并读回已发布 final 后才调整进度；删除失败或占用未知会暂停/拒绝 claim。已发布未 finalize 对象保留、先核验后恢复，避免在接近阈值时重复预留同一批实际字节。
 
 `ANS_AGRI_EVIDENCE_HTTP_HOSTS` 为逗号分隔的精确 HTTPS hostname；默认空，不接受 wildcard、IP、userinfo、query、片段、非443端口。GitHub 只匿名固定 api.github.com/codeload.github.com。每跳重验全部 DNS 答案并把实际 TCP lookup 固定到已审核 IP，TLS 验证原 host；不继承 Cookie/供应商 Key/HTTP 代理。总获取120秒，DNS/headers10秒、流idle15秒，重试最多3次；失败显示真实状态。
 
@@ -33,7 +33,7 @@ local 默认预测使用率低于90%、预留后剩余5GiB；变量 `ANS_AGRI_EV
 
 ## 持久任务与维护
 
-claim/heartbeat/finalize 均重验账号、scope/队伍及 lease fencing。后台同一时刻最多两项；撤权队首会隔离，不拖住后续任务。最多3次尝试；失联lease恢复先检查不可变key是否已存在且字节有效，避免完整对象已写好而DB未完成时重复下载。取消/失败留独立事件。尚未绑定原文件保持私有，不进入公开列表、XP、订单、积分账本。
+claim/heartbeat/finalize 均重验账号、scope/队伍及 lease fencing。后台同一时刻最多两项；撤权队首会隔离，不拖住后续任务。预解析和绑定后的字节抓取分别最多3次尝试，BIND 事件记录阶段转换并把执行计数清零，预解析尝试仍保存在不可变事件中；失联lease恢复先检查不可变key是否已存在且字节有效，避免完整对象已写好而DB未完成时重复下载。取消/失败留独立事件。尚未绑定原文件保持私有，不进入公开列表、XP、订单、积分账本。
 
 默认不自动删除任何文件。维护入口 `scripts/agri-evidence-maintenance.ts` 默认只返回有限 inventory，不返回存储Key。获批准的维护使用 `--apply` 且环境显式 `ANS_AGRI_EVIDENCE_MAINTENANCE_CONFIRM=retire-unbound-after-48h`：仅处理创建超过48小时、无有效lease、无成功object引用的终止任务或过期预上传；持锁核对精确namespace，删除该任务未绑定文件/part/multipart后才保存不可变清理事件与释放预算。已成功对象只清理同namespace遗留part，不删最终字节。维护错误保留reservation，不能全桶/全盘清理。S3版本bucket拒绝清理。
 
@@ -42,6 +42,8 @@ claim/heartbeat/finalize 均重验账号、scope/队伍及 lease fencing。后�
 数据库与原文件必须成对备份：停新受理及 worker，等在途任务停稳，导出数据库并记录固定manifest/object id、hash、size及backend的inventory；复制精确namespace原文件或使用bucket备份策略。受控恢复到隔离DB与独立对象根，逐manifest和对象校验实际字节哈希、size、外键与fixed archive hash，再批准切换。只列文件名或只恢复DB不算成功。
 
 隔离工具 `scripts/agri-evidence-local-runner.cjs` 使用自己的loopback PostgreSQL18、随机临时密码、非55439空闲端口、明确fixture数据库与独立对象目录；不读生产env或供应商凭据。它执行fresh全部migration、实际bytes集成、fresh Node读取、pg_dump/pg_restore到第二个隔离DB与独立对象目录再读回。测试资料是合成fixture，不是生产参赛数据。首次失败日志保留。
+
+增量迁移 `20261015190000_agri_evidence_reconciliation` 扩展 RESOLVED 状态和不可变解析 guard，原六表迁移 `20261015173000_agri_external_evidence` 字节/checksum 保持不变。回滚仍保留两份迁移与新 reader，不能把新增状态交给不认识它的旧 writer。
 
 v1/v2 canonical JSON与hash不重写。v3显式选择不可变manifest，未来live补交不改变旧档案。回滚先 `ANS_AGRI_EVIDENCE_ENABLED=false` 停写，保留新schema和所有字节。**v3一旦存在，旧镜像只支持1/2的档案列表会失败；不能无条件回滚旧镜像。** 回滚应保留支持v3读取的新reader镜像，仅停新writer/worker；或先单独发布reader兼容版，再启用v3。首次默认关闭且无v3产生时旧镜像可继续读旧数据。回滚不得DROP表、删除v3或对象。
 

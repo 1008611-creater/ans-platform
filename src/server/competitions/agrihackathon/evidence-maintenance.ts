@@ -5,7 +5,7 @@ import { evidenceFail } from "./evidence-config";
 import { agriDatabaseClock } from "./workspace";
 /** Explicit server maintenance, never an HTTP API or a team command. Default is inventory only. */
 export async function reconcileEvidenceReservations(apply = false) {
-    const rows = await db.$queryRaw<EvidenceRow[]> `SELECT r.* FROM agri_evidence_requests r WHERE r."cleanupCompletedAt" IS NULL AND r.state IN ('FAILED','CANCELLED','NEEDS_REVIEW','PREPARED','UPLOADED') AND r."createdAt"<clock_timestamp()-interval '48 hours' AND (r."submissionId" IS NOT NULL OR r."expiresAt"<clock_timestamp()) AND NOT EXISTS(SELECT 1 FROM agri_evidence_objects o WHERE o."requestId"=r.id) ORDER BY r."createdAt",r.id LIMIT 100`;
+    const rows = await db.$queryRaw<EvidenceRow[]> `SELECT r.* FROM agri_evidence_requests r WHERE r."cleanupCompletedAt" IS NULL AND r.state IN ('FAILED','CANCELLED','NEEDS_REVIEW','PREPARED','UPLOADED','RESOLVED') AND r."createdAt"<clock_timestamp()-interval '48 hours' AND (r."submissionId" IS NOT NULL OR r."expiresAt"<clock_timestamp()) AND NOT EXISTS(SELECT 1 FROM agri_evidence_objects o WHERE o."requestId"=r.id) ORDER BY r."createdAt",r.id LIMIT 100`;
     const result: {
         requestId: string;
         reservedBytes: number;
@@ -21,7 +21,7 @@ export async function reconcileEvidenceReservations(apply = false) {
             await tx.$executeRaw `SELECT pg_advisory_xact_lock(310151730)`;
             const [row] = await tx.$queryRaw<EvidenceRow[]> `SELECT * FROM agri_evidence_requests WHERE id=${candidate.id} FOR UPDATE`;
             const now = await agriDatabaseClock(tx);
-            if (!row || row.cleanupCompletedAt || row.createdAt.getTime() > now.getTime() - 48 * 3600000 || !["FAILED", "CANCELLED", "NEEDS_REVIEW", "PREPARED", "UPLOADED"].includes(row.state) || row.leaseToken || row.leaseExpiresAt && row.leaseExpiresAt > now || !row.submissionId && (!row.expiresAt || row.expiresAt >= now))
+            if (!row || row.cleanupCompletedAt || row.createdAt.getTime() > now.getTime() - 48 * 3600000 || !["FAILED", "CANCELLED", "NEEDS_REVIEW", "PREPARED", "UPLOADED", "RESOLVED"].includes(row.state) || row.leaseToken || row.leaseExpiresAt && row.leaseExpiresAt > now || !row.submissionId && (!row.expiresAt || row.expiresAt >= now))
                 return;
             const [linked] = await tx.$queryRaw<Array<{
                 id: string;

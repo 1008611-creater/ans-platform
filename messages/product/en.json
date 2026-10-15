@@ -3425,7 +3425,8 @@
       "RETRY_WAIT": "Waiting to retry",
       "FAILED": "Failed",
       "CANCELLED": "Cancelled",
-      "NEEDS_REVIEW": "Staff review needed"
+      "NEEDS_REVIEW": "Staff review needed",
+      "RESOLVED": "Version fixed · awaiting submission"
     },
     "temporal": {
       "CUTOFF_UNKNOWN": "Cutoff unknown",
@@ -3435,7 +3436,8 @@
     "sourceTiming": {
       "DECLARED_FIXED_COMMIT_BEFORE_CUTOFF": "Fixed commit declared before cutoff; retained at the shown time",
       "MUTABLE_SOURCE_AT_CAPTURE": "Mutable source reflects capture time only",
-      "UNVERIFIED_SOURCE": "Origin and cutoff require human review"
+      "UNVERIFIED_SOURCE": "Origin and cutoff require human review",
+      "PRE_SUBMISSION_FIXED_REF_BEFORE_CUTOFF": "Commit resolved before formal acceptance within the deadline; byte capture time is separate."
     },
     "coverage": {
       "CODE_TREE_NO_GIT_HISTORY_LFS_OR_SUBMODULES": "Code tree only; no Git history, LFS objects or submodule contents",
@@ -3449,8 +3451,11 @@
       "AGRI_EVIDENCE_STORAGE_NOT_CONFIGURED": "Private durable storage must be configured first.",
       "AGRI_EVIDENCE_TEAM_CUTOFF_CLOSED": "Window closed. Authorized technical staff can save supplements.",
       "AGRI_EVIDENCE_TOO_LARGE": "File exceeds the configured byte limit.",
-      "AGRI_EVIDENCE_ACTIVE_REQUEST_EXISTS": "A matching request is active. Continue or cancel it first."
-    }
+      "AGRI_EVIDENCE_ACTIVE_REQUEST_EXISTS": "A matching request is active. Continue or cancel it first.",
+      "AGRI_EVIDENCE_STORAGE_RECONCILIATION_REQUIRED": "Storage cleanup could not be confirmed. Processing is paused for review."
+    },
+    "resolveRef": "Fix repository version before submitting",
+    "resolution": "Ref {ref} fixed at {at}; this commit will be adopted when submitted."
   },
   "marketStudio": {
     "title": "3D personal website",

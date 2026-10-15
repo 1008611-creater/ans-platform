@@ -184,9 +184,9 @@ export async function storeEvidence(key: string, source: AsyncIterable<Uint8Arra
     finally {
         await file?.close();
         if (temporary)
-            await unlink(temporary).catch(() => { });
+            await unlink(temporary).catch((error: NodeJS.ErrnoException) => { if (error.code !== "ENOENT") throw error; });
         if (client && uploadId && !succeeded)
-            await client.send(new AbortMultipartUploadCommand({ Bucket: bucket(), Key: key, UploadId: uploadId }), { abortSignal: AbortSignal.timeout(10000) }).catch(() => { });
+            await client.send(new AbortMultipartUploadCommand({ Bucket: bucket(), Key: key, UploadId: uploadId }), { abortSignal: AbortSignal.timeout(10000) }).catch((error: { name?: string }) => { if (error.name !== "NoSuchUpload") throw error; });
         client?.destroy();
     }
 }
@@ -280,5 +280,17 @@ export async function disposeUnboundEvidence(meta: Pick<StoredEvidence, "key" | 
     }
     finally {
         client.destroy();
+    }
+}
+
+/** Caller holds the request lease/fence and global capacity lock. Never remove a published final object. */
+export async function reconcileEvidenceStorage(meta: Pick<StoredEvidence, "key" | "backend" | "namespaceVersion">, limit: number, kind: string) {
+    await disposeUnboundEvidence(meta, false);
+    try { return await inspectEvidence(meta, limit, kind, AbortSignal.timeout(20000)); }
+    catch (error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+        if (code === "ENOENT" || status === 404) return null;
+        throw error;
     }
 }

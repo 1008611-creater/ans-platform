@@ -4,8 +4,8 @@ import { db } from "@/lib/db";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { lockAgriWorkspace, configuredAgriEditionId, agriDatabaseClock, assertAgriAuthorityCurrent } from "./workspace";
 import { evidenceEnabled, evidenceFail, EvidenceRetryError, evidenceAfterCutoff, evidenceConfig } from "./evidence-config";
-import { evidenceRequest, evidenceAuthority, evidenceTransition, evidenceBudget, evidenceSource, finalizeEvidenceObject, type EvidenceRow } from "./evidence";
-import { storeEvidence, inspectEvidence, type StoredEvidence } from "./evidence-storage";
+import { evidenceRequest, evidenceAuthority, evidenceTransition, evidenceBudget, evidenceSource, finalizeEvidenceObject, type EvidenceRow, requireEvidenceWriter } from "./evidence";
+import { storeEvidence, inspectEvidence, reconcileEvidenceStorage, type StoredEvidence } from "./evidence-storage";
 import { resolveGithubEvidence, githubArchiveGET, pinnedEvidenceGET, evidenceHttpHosts } from "./evidence-network";
 const workerId = "agri-evidence:" + randomUUID();
 const leaseMs = 60000;
@@ -17,12 +17,13 @@ async function claim(id: string, actorId?: string) {
         const ctx = await lockAgriWorkspace(tx, actorId ?? candidate.actorId);
         if (actorId && candidate.actorId !== actorId)
             return evidenceFail("AGRI_EVIDENCE_INTENT_INVALID", 403);
-        const auth = await evidenceAuthority(tx, ctx, candidate.entryStageId, true, candidate.authority), row = await evidenceRequest(tx, ctx, id), now = await agriDatabaseClock(tx);
+        const auth = await evidenceAuthority(tx, ctx, candidate.entryStageId, true, candidate.authority), initial = await evidenceRequest(tx, ctx, id), now = await agriDatabaseClock(tx);
+        let row = initial;
         if (!evidenceEnabled() || !ctx.workspace.enabled)
             return evidenceFail("AGRI_EVIDENCE_DISABLED", 503);
-        if (row.cancelRequested || row.state === "CANCELLED" || row.state === "STORED" || row.state === "UPLOADED")
+        if (row.cancelRequested || row.state === "CANCELLED" || row.state === "STORED" || row.state === "UPLOADED" || row.state === "RESOLVED")
             return evidenceFail("AGRI_EVIDENCE_NOT_QUEUED");
-        if (row.expiresAt && row.expiresAt <= now)
+        if (!row.submissionId && row.expiresAt && row.expiresAt <= now)
             return evidenceFail("AGRI_EVIDENCE_INTENT_EXPIRED");
         if (row.state === "RUNNING" && row.leaseExpiresAt && row.leaseExpiresAt > now)
             return evidenceFail("AGRI_EVIDENCE_BUSY");
@@ -43,9 +44,15 @@ async function claim(id: string, actorId?: string) {
         }>> `SELECT count(*)::bigint AS count FROM agri_evidence_requests WHERE state='RUNNING' AND "leaseExpiresAt">${now}`;
         if (Number(concurrency.count) >= 2)
             return evidenceFail("AGRI_EVIDENCE_BUSY", 429);
-        if (row.state !== "RUNNING")
-            await evidenceBudget(tx, row.competitionId, row.entryStageId, row.actorId, row.submissionId);
+        // Reconcile the exact abandoned namespace before granting a new lease. A final object is kept
+        // and read back; only confirmed removed partials release progress. Unknown cleanup blocks claim.
+        const recovered = await reconcileEvidenceStorage({ key: row.storageKey, backend: row.backend, namespaceVersion: row.namespaceVersion }, row.maxBytes, row.kind);
+        if (recovered || row.storedBytes !== 0 || row.checkpoint) {
+            if (!recovered && row.checkpoint) return evidenceFail("AGRI_EVIDENCE_INTEGRITY_FAILED", 503);
+            row = await evidenceTransition(tx, row, "STORAGE_RECONCILED", null, workerId, { storedBytes: recovered?.byteLength ?? 0, checkpoint: recovered, captureFinishedAt: recovered ? row.captureFinishedAt ?? now : null });
+        }
         const claimed = await evidenceTransition(tx, row, row.state === "RUNNING" ? "RECOVER_CLAIM" : "CLAIM", actorId ?? null, actorId ? null : workerId, { state: "RUNNING", storedBytes: row.checkpoint?.byteLength ?? 0, attempt: Math.min(row.attempt + 1, row.maxAttempts), leaseToken: randomUUID(), leaseExpiresAt: new Date(now.getTime() + leaseMs), captureStartedAt: row.captureStartedAt ?? now, errorCode: row.attempt >= row.maxAttempts ? "AGRI_EVIDENCE_RECOVERY_ONLY" : null });
+        await evidenceBudget(tx, row.competitionId, row.entryStageId, row.actorId, row.submissionId);
         await assertAgriAuthorityCurrent(tx, ...auth.grants);
         return claimed;
     }, { timeout: 20000 });
@@ -62,8 +69,8 @@ async function heartbeat(row: EvidenceRow, provenance?: Record<string, unknown>,
         }
         // Detect quota/free-space competition during both download and upload, without admitting unreserved bytes.
         await evidenceBudget(tx, row.competitionId, row.entryStageId, row.actorId, row.submissionId);
-        if (provenance)
-            await evidenceTransition(tx, current, "SOURCE_RESOLVED", null, workerId, { provenance, leaseExpiresAt: new Date(now.getTime() + leaseMs) });
+        if (provenance && !current.provenance)
+            await evidenceTransition(tx, current, "SOURCE_RESOLVED", null, workerId, { provenance: { ...provenance, resolvedAt: now.toISOString(), fixedBeforeSubmission: current.submissionId === null }, leaseExpiresAt: new Date(now.getTime() + leaseMs) });
         else if (progress === undefined)
             await tx.$executeRaw `UPDATE agri_evidence_requests SET "leaseExpiresAt"=${new Date(now.getTime() + leaseMs)} WHERE id=${row.id} AND "leaseToken"=${row.leaseToken}`;
         await assertAgriAuthorityCurrent(tx, ...auth.grants);
@@ -93,9 +100,15 @@ async function failed(row: EvidenceRow, error: unknown) {
         const [current] = await tx.$queryRaw<EvidenceRow[]> `SELECT * FROM agri_evidence_requests WHERE id=${row.id} FOR UPDATE`;
         if (!current || current.leaseToken !== row.leaseToken || current.state !== "RUNNING")
             return;
-        const code = errorCode(error), now = await agriDatabaseClock(tx), retry = retryable.has(code) && current.attempt < current.maxAttempts;
-        const quarantined = ["AGRI_SCOPE_REQUIRED", "ACCOUNT_UNAVAILABLE", "AGRI_TEAM_PERMISSION_REQUIRED", "AGRI_EVIDENCE_LEASE_LOST"].includes(code);
-        await evidenceTransition(tx, current, quarantined ? "AUTHORITY_QUARANTINED" : "FAILED_ATTEMPT", null, workerId, { state: quarantined ? "NEEDS_REVIEW" : retry ? "RETRY_WAIT" : "FAILED", errorCode: code, leaseToken: null, leaseExpiresAt: null, nextRunAt: retry ? new Date(now.getTime() + Math.max([30000, 120000, 600000][current.attempt - 1], error instanceof EvidenceRetryError ? error.retryAfterSeconds * 1000 : 0)) : null });
+        await tx.$executeRaw `SELECT pg_advisory_xact_lock(310151730)`;
+        let meta: StoredEvidence | null = null, reconciled = false;
+        try {
+            meta = await reconcileEvidenceStorage({ key: current.storageKey, backend: current.backend, namespaceVersion: current.namespaceVersion }, current.maxBytes, current.kind);
+            reconciled = !current.checkpoint || meta !== null;
+        } catch { /* Preserve old progress and reserve the full budget; unknown storage is quarantined. */ }
+        const code = reconciled ? errorCode(error) : "AGRI_EVIDENCE_STORAGE_RECONCILIATION_REQUIRED", now = await agriDatabaseClock(tx), retry = retryable.has(code) && current.attempt < current.maxAttempts;
+        const quarantined = !reconciled || ["AGRI_SCOPE_REQUIRED", "ACCOUNT_UNAVAILABLE", "AGRI_TEAM_PERMISSION_REQUIRED", "AGRI_EVIDENCE_LEASE_LOST"].includes(code);
+        await evidenceTransition(tx, current, quarantined ? "AUTHORITY_QUARANTINED" : "FAILED_ATTEMPT", null, workerId, { ...(reconciled ? { storedBytes: meta?.byteLength ?? 0, checkpoint: meta, captureFinishedAt: meta ? current.captureFinishedAt ?? now : null } : {}), state: quarantined ? "NEEDS_REVIEW" : retry ? "RETRY_WAIT" : "FAILED", errorCode: code, leaseToken: null, leaseExpiresAt: null, nextRunAt: retry ? new Date(now.getTime() + Math.max([30000, 120000, 600000][current.attempt - 1], error instanceof EvidenceRetryError ? error.retryAfterSeconds * 1000 : 0)) : null });
     }, { timeout: 15000 });
 }
 async function existing(row: EvidenceRow, signal: AbortSignal) { try {
@@ -175,6 +188,19 @@ async function capture(row: EvidenceRow) {
     timer.unref();
     let stream: Readable | undefined;
     try {
+        if (!row.submissionId && row.mode === "GITHUB_ARCHIVE") {
+            const resolved = row.provenance ?? await resolveGithubEvidence(row.sourceUrl!, row.originalRef!, signal);
+            await heartbeat(row, resolved);
+            return await db.$transaction(async (tx) => {
+                const ctx = await lockAgriWorkspace(tx, row.actorId), auth = await evidenceAuthority(tx, ctx, row.entryStageId, true, row.authority), current = await evidenceRequest(tx, ctx, row.id), now = await agriDatabaseClock(tx);
+                requireEvidenceWriter(ctx);
+                if (current.state !== "RUNNING" || current.cancelRequested || current.leaseToken !== row.leaseToken || !current.leaseExpiresAt || current.leaseExpiresAt <= now || !current.expiresAt || current.expiresAt <= now || !current.provenance)
+                    return evidenceFail("AGRI_EVIDENCE_LEASE_LOST");
+                await evidenceTransition(tx, current, "REF_FIXED", null, workerId, { state: "RESOLVED", leaseToken: null, leaseExpiresAt: null, captureStartedAt: null, errorCode: null });
+                await assertAgriAuthorityCurrent(tx, ...auth.grants);
+                return { requestId: row.id, state: "RESOLVED" };
+            }, { timeout: 20000 });
+        }
         const prior = await existing(row, signal);
         if (prior)
             return await finish(row, prior);

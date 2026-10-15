@@ -2,9 +2,37 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { randomUUID, createHash } from "node:crypto";
-import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
+import { mkdir, readFile, writeFile, readdir, statfs } from "node:fs/promises";
 import { resolve } from "node:path";
 import { Readable } from "node:stream";
+import { EventEmitter } from "node:events";
+import https from "node:https";
+import dns from "node:dns/promises";
+import fsPromises from "node:fs/promises";
+import { syncBuiltinESMExports } from "node:module";
+/** Built-in transport fixture only. No production switch, provider request, or real DNS/socket. */
+async function githubFixture(run: (fixture: { urls: string[]; sha: string; fail: boolean }) => Promise<void>) {
+    const request = https.request, lookup = dns.lookup;
+    const fixture = { urls: [] as string[], sha: "a".repeat(40), fail: false };
+    dns.lookup = (async () => [{ address: "8.8.8.8", family: 4 }]) as unknown as typeof dns.lookup;
+    https.request = ((url: URL, options: { lookup: (host: string, options: object, callback: (error: Error | null, address: string, family: number) => void) => void }, receive: (response: unknown) => void) => {
+        assert.ok(["api.github.com", "codeload.github.com"].includes(url.hostname));
+        fixture.urls.push(url.href);
+        const req = new EventEmitter() as EventEmitter & { end: () => void; destroy: (e: Error) => void };
+        req.destroy = e => { req.emit("error", e); };
+        req.end = () => queueMicrotask(() => options.lookup(url.hostname, {}, (error, address) => {
+            assert.equal(error, null); assert.equal(address, "8.8.8.8");
+            const body = url.hostname === "codeload.github.com" ? Buffer.from([0x1f,0x8b,0x08,0,0,0,0,0,0,0]) : Buffer.from(JSON.stringify(url.pathname.includes("/git/ref/tags/") ? { object: { type: "commit", sha: fixture.sha } } : { sha: url.pathname.split("/").pop() }));
+            const response = Readable.from([body]);
+            Object.assign(response, { statusCode: fixture.fail ? 503 : 200, headers: { "content-length": String(body.length) }, socket: { remoteAddress: "8.8.8.8" }, setTimeout: () => {} });
+            receive(response);
+        }));
+        return req;
+    }) as unknown as typeof https.request;
+    syncBuiltinESMExports();
+    try { await run(fixture); } finally { https.request = request; dns.lookup = lookup; syncBuiltinESMExports(); }
+}
+
 import type { AgriRulesDraft } from "../src/contracts/agri-workspace";
 for (const raw of [process.env.DATABASE_URL, process.env.DIRECT_URL]) {
     const u = new URL(raw ?? "http://invalid");
@@ -15,8 +43,8 @@ const dir = process.env.AGRI_EVIDENCE_REPORT_DIR!;
 async function main() {
     const { db } = await import("../src/lib/db");
     const { executeAgriWorkspaceCommand: rules, readAgriWorkspaceRules: getRules, lockAgriWorkspace } = await import("../src/server/competitions/agrihackathon/workspace");
-    const { prepareAgriStage: prepare, executeAgriSubmissionCommand: submit, exportAgriWorks: csv, listAgriStages } = await import("../src/server/competitions/agrihackathon/submissions");
-    const { createEvidence, listEvidence, executeEvidenceCommand: command, authorizedEvidenceDownload: download, evidenceTransition, evidenceRequest } = await import("../src/server/competitions/agrihackathon/evidence");
+    const { prepareAgriStage: prepare, executeAgriSubmissionCommand: submit, exportAgriWorks: csv, listAgriStages, readAgriStage } = await import("../src/server/competitions/agrihackathon/submissions");
+    const { createEvidence, listEvidence, executeEvidenceCommand: command, authorizedEvidenceDownload: download, evidenceTransition, evidenceRequest, bindEvidenceIntents, evidenceBudget } = await import("../src/server/competitions/agrihackathon/evidence");
     const { uploadEvidence, runEvidenceWorkerOnce } = await import("../src/server/competitions/agrihackathon/evidence-worker");
     const { readEvidence, storeEvidence, inspectEvidence, evidenceObjectKey } = await import("../src/server/competitions/agrihackathon/evidence-storage");
     const { createAgriRecordArchive: createArchive, readAgriRecordArchive: archive } = await import("../src/server/competitions/agrihackathon/record-archive");
@@ -112,6 +140,19 @@ async function main() {
         const upload = (actor: string, id: string, body: Buffer = bytes) => uploadEvidence(actor, id, new Request("http://127.0.0.1:9/isolated-upload", { method: "PUT", body: new Uint8Array(body), headers: { "content-type": "application/octet-stream" } }));
         await check("same-key concurrent intent creation has one durable request, event and receipt", async () => { const results = await Promise.all([createEvidence(owner.id, intent), createEvidence(owner.id, intent)]); assert.equal(results[0].requestId, results[1].requestId); assert.equal(results.filter(r => !r.duplicate).length, 1); requestId = results[0].requestId; await assert.rejects(createEvidence(owner.id, { ...intent, fileName: "different.txt" }), /AGRI_IDEMPOTENCY_CONFLICT/); });
         await check("pre-upload stores actual original bytes but cannot be read as formal evidence", async () => { const result = await upload(owner.id, requestId); assert.equal(result.state, "UPLOADED"); const row = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: requestId } }); objectId = row.objectId; assert.equal(await db.agriEvidenceObject.count({ where: { requestId } }), 0); assert.equal((await inspectEvidence({ key: row.storageKey, backend: "local_private", namespaceVersion: 1 }, 4096, "SUPPORTING_FILE", AbortSignal.timeout(5000))).sha256, hash); await assert.rejects(download(owner.id, objectId), /AGRI_EVIDENCE_NOT_FOUND/); });
+        await check("feature-off rejects bind/finalize atomically but leaves uploaded bytes and ordinary submit/read available", async () => {
+            process.env.ANS_AGRI_EVIDENCE_ENABLED = "false";
+            const content = { projectId: a.project.id, artifactVersionId: a.version.id, repository: null, demoUrl: null, summary: "LOCAL ONLY", materials: { schemaVersion: 1, items: [] } };
+            const before = await db.agriStageSubmission.count();
+            await assert.rejects(submit(owner.id, { action: "submit", idempotencyKey: randomUUID(), entryStageId: a.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [owner.id], evidenceIntentIds: [requestId], content }), /AGRI_EVIDENCE_DISABLED/);
+            assert.equal(await db.agriStageSubmission.count(), before);
+            assert.equal((await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: requestId } })).state, "UPLOADED");
+            assert.equal(await db.agriEvidenceObject.count(), 0);
+            const ordinaryUser = await user("feature-off"), ordinary = await teamFixture(ordinaryUser.id, "feature-off");
+            const accepted = await submit(ordinaryUser.id, { action: "submit", idempotencyKey: randomUUID(), entryStageId: ordinary.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [ordinaryUser.id], content: { ...content, projectId: ordinary.project.id, artifactVersionId: ordinary.version.id } });
+            assert.ok(accepted.submissionId);
+            process.env.ANS_AGRI_EVIDENCE_ENABLED = "true";
+        });
         await check("formal submission binds same-team exact-version uploaded bytes atomically", async () => { const content = { projectId: a.project.id, artifactVersionId: a.version.id, repository: { url: "https://github.com/ans-local-fixture/no-external-calls", ref: { kind: "COMMIT_SHA", value: "a".repeat(40) } }, demoUrl: null, summary: "LOCAL ONLY fixture", materials: { schemaVersion: 1, items: [] } }; const result = await submit(owner.id, { action: "submit", idempotencyKey: randomUUID(), entryStageId: a.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [owner.id], evidenceIntentIds: [requestId], content }); assert.ok(result.submissionId); submissionId = result.submissionId; const row = await db.agriEvidenceObject.findUniqueOrThrow({ where: { id: objectId } }); assert.equal(row.submissionId, submissionId); assert.equal(row.sha256, hash); });
         const before = await db.user.findMany({ where: { id: { in: [owner.id, staff.id] } }, select: { id: true, xp: true, quotaPoints: true }, orderBy: { id: "asc" } });
         const beforeOtherEntry = await db.teamCompetition.findUniqueOrThrow({ where: { id: b.entry.id } });
@@ -222,6 +263,7 @@ async function main() {
                     const object = await db.agriEvidenceObject.findUniqueOrThrow({ where: { requestId: row.id } });
                     assert.equal(object.sha256, hash);
                     assert.equal(object.byteLength, bytes.length);
+                    assert.equal((await readdir(resolve(storage, row.storageKey, ".."))).some(name => name.endsWith(".part")), false);
                     await upload(owner.id, row.id).then(() => assert.fail("stored request must not be claimed twice"), () => { });
                     assert.equal(await db.agriEvidenceObject.count({ where: { requestId: row.id } }), 1);
                 }
@@ -275,6 +317,138 @@ async function main() {
             assert.throws(() => allowedEvidenceURL(url, new Set(["github.com"]))); });
         await check("storage absent/unsafe names and feature-off stop new work while preserving authorized reads", async () => { process.env.ANS_AGRI_EVIDENCE_ENABLED = "false"; await assert.rejects(createEvidence(owner.id, { ...intent, idempotencyKey: randomUUID(), submissionId }), /AGRI_EVIDENCE_DISABLED/); assert.equal((await download(owner.id, objectId)).descriptor.sha256, hash); process.env.ANS_AGRI_EVIDENCE_ENABLED = "true"; process.env.ANS_AGRI_EVIDENCE_LOCAL_DURABLE = "false"; await assert.rejects(createEvidence(owner.id, { ...intent, idempotencyKey: randomUUID(), submissionId }), /AGRI_EVIDENCE_STORAGE_NOT_CONFIGURED/); process.env.ANS_AGRI_EVIDENCE_LOCAL_DURABLE = "true"; });
         await check("evidence actions leave XP, quota ledger, publications and entry status unchanged", async () => { assert.equal(JSON.stringify(await db.user.findMany({ where: { id: { in: [owner.id, staff.id] } }, select: { id: true, xp: true, quotaPoints: true }, orderBy: { id: "asc" } })), JSON.stringify(before)); assert.deepEqual([await db.marketOrder.count(), await db.marketPayment.count(), await db.ldxpRechargeOrder.count()], paymentCounts); assert.equal(await db.quotaLedger.count(), ledgers); assert.equal(await db.artifactPublication.count(), publications); assert.deepEqual(await db.teamCompetition.findUniqueOrThrow({ where: { id: a.entry.id } }), beforeEntry); });
+        await check("pre-submit TAG snapshot survives moved TAG and binds exact immutable handle before byte capture", async () => {
+            await githubFixture(async fixture => {
+                const refOwner = await user("pre-ref"), f = await teamFixture(refOwner.id, "pre-ref");
+                const repository = { url: "https://github.com/ans-local-fixture/pre-ref", ref: { kind: "TAG", value: "v1" } };
+                const c = await createEvidence(refOwner.id, { ...intent, idempotencyKey: randomUUID(), entryStageId: f.stage.entryStageId, projectId: f.project.id, artifactVersionId: f.version.id, mode: "GITHUB_ARCHIVE", kind: "REPOSITORY", sourceUrl: repository.url, originalRef: repository.ref, fileName: "LOCAL pre-ref.tar.gz" });
+                for (let attempt = 0; attempt < 2; attempt++) {
+                    fixture.fail = true;
+                    assert.equal(await runEvidenceWorkerOnce(), true);
+                    const failed = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: c.requestId } });
+                    assert.equal(failed.state, "RETRY_WAIT"); assert.equal(failed.provenance, null);
+                    await command(refOwner.id, { action: "retry", requestId: c.requestId, idempotencyKey: randomUUID() });
+                }
+                fixture.fail = false;
+                assert.equal(await runEvidenceWorkerOnce(), true);
+                const fixed = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: c.requestId } });
+                assert.equal(fixed.attempt, 3);
+                assert.equal(fixed.state, "RESOLVED"); assert.equal(fixed.checkpoint, null); assert.equal(fixed.storedBytes, 0);
+                assert.equal(await db.agriEvidenceObject.count({ where: { requestId: fixed.id } }), 0);
+                const proof = fixed.provenance as { sha: string; resolvedAt: string; proof: object[] };
+                assert.equal(proof.sha, "a".repeat(40)); assert.equal(proof.proof.length, 2);
+                assert.equal((await listEvidence(refOwner.id, { entryStageId: f.stage.entryStageId, artifactVersionId: f.version.id })).requests[0].resolution?.sha, proof.sha);
+                await assert.rejects(db.$transaction(async tx => { const ctx = await lockAgriWorkspace(tx, refOwner.id), row = await evidenceRequest(tx, ctx, fixed.id); await evidenceTransition(tx, row, "ISOLATED_TAMPER", refOwner.id, null, { provenance: { ...proof, sha: "b".repeat(40) } }); }), /AGRI_EVIDENCE_RESOLUTION_(IMMUTABLE|INVALID)/);
+                const content = { projectId: f.project.id, artifactVersionId: f.version.id, repository, demoUrl: null, summary: "LOCAL TAG snapshot", materials: { schemaVersion: 1, items: [] } };
+                fixture.sha = "b".repeat(40);
+                const wrongVersion = await db.artifactVersion.create({ data: { artifactId: (await db.artifactVersion.findUniqueOrThrow({ where: { id: f.version.id } })).artifactId, createdById: refOwner.id, version: 2, contentJson: {}, contentMarkdown: "LOCAL ONLY", factSnapshotHash: "fixture" } });
+                const base = { action: "submit", idempotencyKey: randomUUID(), entryStageId: f.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [refOwner.id], evidenceIntentIds: [fixed.id], content };
+                await assert.rejects(submit(refOwner.id, { ...base, content: { ...content, artifactVersionId: wrongVersion.id } }), /AGRI_EVIDENCE_INTENT_INVALID/);
+                await assert.rejects(submit(refOwner.id, { ...base, content: { ...content, repository: { ...repository, ref: { kind: "TAG", value: "v2" } } } }), /AGRI_EVIDENCE_INTENT_INVALID/);
+                await db.teamMember.updateMany({ where: { teamId: f.team.id, userId: refOwner.id }, data: { status: "LEFT" } });
+                await assert.rejects(submit(refOwner.id, base));
+                await db.teamMember.updateMany({ where: { teamId: f.team.id, userId: refOwner.id }, data: { status: "ACTIVE" } });
+                const accepted = await submit(refOwner.id, base);
+                const bound = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: fixed.id } });
+                assert.equal(bound.submissionId, accepted.submissionId); assert.equal(bound.state, "QUEUED"); assert.equal(bound.attempt, 0); assert.deepEqual(bound.provenance, fixed.provenance);
+                assert.deepEqual((await db.agriStageSubmission.findUniqueOrThrow({ where: { id: accepted.submissionId! } })).repository, repository);
+                assert.equal(await runEvidenceWorkerOnce(), true);
+                const object = await db.agriEvidenceObject.findUniqueOrThrow({ where: { requestId: fixed.id } });
+                assert.equal((object.descriptor as { resolvedSha: string }).resolvedSha, "a".repeat(40));
+                assert.equal((object.descriptor as { sourceTiming: string }).sourceTiming, "PRE_SUBMISSION_FIXED_REF_BEFORE_CUTOFF");
+                assert.equal(fixture.urls.filter(u => u.includes("/git/ref/tags/")).length, 3);
+                assert.ok(fixture.urls.at(-1)?.endsWith("/tar.gz/" + "a".repeat(40)));
+                assert.ok(await download(refOwner.id, object.id));
+                await assert.rejects(db.$transaction(async tx => { const ctx = await lockAgriWorkspace(tx, other.id); await bindEvidenceIntents(tx, ctx, [fixed.id], accepted.submissionId!); }), /AGRI_TEAM_PERMISSION_REQUIRED/);
+            });
+        });
+        await check("failed TAG resolution cannot be adopted or reported as stored", async () => {
+            await githubFixture(async fixture => {
+                fixture.fail = true;
+                const refOwner = await user("failed-ref"), f = await teamFixture(refOwner.id, "failed-ref"), repository = { url: "https://github.com/ans-local-fixture/failed-ref", ref: { kind: "TAG", value: "v1" } };
+                const c = await createEvidence(refOwner.id, { ...intent, idempotencyKey: randomUUID(), entryStageId: f.stage.entryStageId, projectId: f.project.id, artifactVersionId: f.version.id, mode: "GITHUB_ARCHIVE", kind: "REPOSITORY", sourceUrl: repository.url, originalRef: repository.ref, fileName: "LOCAL failed-ref.tar.gz" });
+                await runEvidenceWorkerOnce();
+                const row = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: c.requestId } });
+                assert.equal(row.state, "RETRY_WAIT"); assert.equal(row.provenance, null); assert.equal(row.checkpoint, null);
+                await assert.rejects(submit(refOwner.id, { action: "submit", idempotencyKey: randomUUID(), entryStageId: f.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [refOwner.id], evidenceIntentIds: [row.id], content: { projectId: f.project.id, artifactVersionId: f.version.id, repository, demoUrl: null, summary: "LOCAL ONLY", materials: { schemaVersion: 1, items: [] } } }), /AGRI_EVIDENCE_INTENT_INVALID/);
+                assert.equal(await db.agriEvidenceObject.count({ where: { requestId: row.id } }), 0);
+                await command(refOwner.id, { action: "cancel", requestId: row.id, idempotencyKey: randomUUID() });
+            });
+        });
+        await check("expired pre-resolved handle is rejected while old TAG-only submissions remain readable unchanged", async () => {
+            await githubFixture(async fixture => {
+                const refOwner = await user("expired-ref"), f = await teamFixture(refOwner.id, "expired-ref"), repository = { url: "https://github.com/ans-local-fixture/expired-ref", ref: { kind: "TAG", value: "v1" } };
+                const id = randomUUID(), oid = randomUUID(), key = evidenceObjectKey(edition.id, id, oid);
+                // Short-lived synthetic row is created initially with its true expiry; no immutable identity is edited.
+                await db.$transaction(async tx => {
+                    await tx.$executeRaw`INSERT INTO agri_evidence_requests(id,"competitionId","entryStageId","projectId","artifactVersionId","actorId",authority,mode,kind,"bindingState",state,"sourceUrl","originalRef","fileName","maxBytes","requestHash","createdAt","expiresAt","objectId","storageKey",backend) VALUES(${id},${edition.id},${f.stage.entryStageId},${f.project.id},${f.version.id},${refOwner.id},'TEAM','GITHUB_ARCHIVE','REPOSITORY','PREPARED','QUEUED',${repository.url},${JSON.stringify(repository.ref)}::jsonb,'LOCAL expiring handle',67108864,${"c".repeat(64)},clock_timestamp(),clock_timestamp()+interval '2 seconds',${oid},${key},'local_private')`;
+                    await tx.$executeRaw`INSERT INTO agri_evidence_events(id,"requestId","competitionId","actorId",action,revision,state,attempt,provenance,"serverAt") VALUES(${randomUUID()},${id},${edition.id},${refOwner.id},'ISOLATED_EXPIRY_FIXTURE',1,'QUEUED',0,'{}'::jsonb,clock_timestamp())`;
+                });
+                assert.equal(await runEvidenceWorkerOnce(), true);
+                assert.equal((await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id } })).state, "RESOLVED");
+                await new Promise(resolve => setTimeout(resolve, 2100));
+                const base = { action: "submit", idempotencyKey: randomUUID(), entryStageId: f.stage.entryStageId, expectedRevision: 1, expectedRuleVersionId: rule.resourceId, officialMemberIds: [refOwner.id], content: { projectId: f.project.id, artifactVersionId: f.version.id, repository, demoUrl: null, summary: "LOCAL old TAG", materials: { schemaVersion: 1, items: [] } } };
+                await assert.rejects(submit(refOwner.id, { ...base, evidenceIntentIds: [id] }), /AGRI_EVIDENCE_INTENT_INVALID/);
+                assert.equal(await db.agriStageSubmission.count({ where: { entryStageId: f.stage.entryStageId } }), 0);
+                const accepted = await submit(refOwner.id, base);
+                assert.deepEqual((await readAgriStage(refOwner.id, f.stage.entryStageId)).current?.content?.repository, repository);
+                fixture.sha = "b".repeat(40);
+                assert.deepEqual((await db.agriStageSubmission.findUniqueOrThrow({ where: { id: accepted.submissionId! } })).repository, repository);
+                assert.equal(await db.agriEvidenceObject.count({ where: { submissionId: accepted.submissionId! } }), 0);
+                assert.equal(fixture.urls.filter(u => u.includes("/git/ref/tags/")).length, 1);
+            });
+        });
+        await check("partial stream cleanup resets confirmed progress and reserves the entire retry budget", async () => {
+            const c = await createEvidence(owner.id, { ...intent, idempotencyKey: randomUUID(), submissionId, kind: "DEMO_DOCUMENT", fileName: "LOCAL failed partial.txt" });
+            const claimCandidate = await createEvidence(owner.id, { ...intent, idempotencyKey: randomUUID(), submissionId, kind: "SUPPORTING_FILE", fileName: "LOCAL threshold claim.txt" });
+            let sent = false;
+            await assert.rejects(uploadEvidence(owner.id, c.requestId, new Request("http://127.0.0.1:9/isolated-partial", { method: "PUT", duplex: "half", body: new ReadableStream<Uint8Array>({ async pull(controller) { if (!sent) { sent = true; controller.enqueue(Buffer.alloc(65536)); } else { await new Promise(resolve => setTimeout(resolve, 20)); controller.error(new Error("LOCAL stream failure")); } } }) } as RequestInit)));
+            const row = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: c.requestId } });
+            assert.equal(row.state, "RETRY_WAIT"); assert.equal(row.storedBytes, 0); assert.equal(row.checkpoint, null);
+            assert.deepEqual(await readdir(resolve(storage, row.storageKey, "..")), []);
+            const f = await statfs(storage, { bigint: true }), free = Number(f.bavail * f.bsize);
+            const [reservation] = await db.$queryRaw<Array<{ remaining: bigint }>>`SELECT COALESCE(sum(CASE WHEN state<>'STORED' THEN CASE WHEN state='UPLOADED' OR (state='RUNNING' AND "leaseExpiresAt">clock_timestamp()) THEN "maxBytes"-"storedBytes" ELSE "maxBytes" END ELSE 0 END),0)::bigint AS remaining FROM agri_evidence_requests WHERE "cleanupCompletedAt" IS NULL`;
+            assert.ok(Number(reservation.remaining) >= row.maxBytes);
+            process.env.ANS_AGRI_EVIDENCE_LOCAL_MIN_FREE_BYTES = String(Math.max(1, free - Number(reservation.remaining) + 32768));
+            await assert.rejects(createEvidence(owner.id, { ...intent, idempotencyKey: randomUUID(), submissionId, kind: "DEMO_VIDEO", fileName: "LOCAL over remaining threshold" }), /AGRI_EVIDENCE_STORAGE_CAPACITY_REQUIRED/);
+            await assert.rejects(db.$transaction(tx => evidenceBudget(tx, edition.id, a.stage.entryStageId, owner.id, submissionId)), /AGRI_EVIDENCE_STORAGE_CAPACITY_REQUIRED/);
+            await assert.rejects(upload(owner.id, claimCandidate.requestId), /AGRI_EVIDENCE_STORAGE_CAPACITY_REQUIRED/);
+            process.env.ANS_AGRI_EVIDENCE_LOCAL_MIN_FREE_BYTES = "1";
+            await command(owner.id, { action: "cancel", requestId: row.id, idempotencyKey: randomUUID() });
+            await command(owner.id, { action: "cancel", requestId: claimCandidate.requestId, idempotencyKey: randomUUID() });
+        });
+        await check("delete failure retains old progress, full reservation and quarantine until exact cleanup succeeds", async () => {
+            const c = await createEvidence(owner.id, { ...intent, idempotencyKey: randomUUID(), submissionId, kind: "DEMO_DOCUMENT", fileName: "LOCAL cleanup blocked.txt" });
+            const unlink = fsPromises.unlink;
+            let sent = false;
+            fsPromises.unlink = (async (path) => { if (String(path).endsWith(".part")) throw Object.assign(new Error("LOCAL EACCES fixture"), { code: "EACCES" }); return unlink(path); }) as typeof unlink;
+            syncBuiltinESMExports();
+            try {
+                await assert.rejects(uploadEvidence(owner.id, c.requestId, new Request("http://127.0.0.1:9/cleanup-failure", { method: "PUT", duplex: "half", body: new ReadableStream<Uint8Array>({ async pull(controller) { if (!sent) { sent = true; controller.enqueue(Buffer.alloc(65536)); } else { await new Promise(resolve => setTimeout(resolve, 20)); controller.error(new Error("LOCAL stream failure")); } } }) } as RequestInit)));
+                const row = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: c.requestId } });
+                assert.equal(row.state, "NEEDS_REVIEW"); assert.equal(row.storedBytes, 65536); assert.equal(row.checkpoint, null);
+                assert.equal(row.errorCode, "AGRI_EVIDENCE_STORAGE_RECONCILIATION_REQUIRED");
+                assert.ok((await readdir(resolve(storage, row.storageKey, ".."))).some(name => name.endsWith(".part")));
+                await assert.rejects(upload(owner.id, row.id), /LOCAL EACCES/);
+                assert.equal(await db.agriEvidenceObject.count({ where: { requestId: row.id } }), 0);
+            } finally { fsPromises.unlink = unlink; syncBuiltinESMExports(); }
+            await upload(owner.id, c.requestId);
+            const row = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: c.requestId } });
+            assert.equal(row.state, "STORED"); assert.equal(row.storedBytes, bytes.length);
+            assert.equal((await readdir(resolve(storage, row.storageKey, ".."))).some(name => name.endsWith(".part")), false);
+        });
+        await check("complete published object recovers near capacity without double-reserving or reading replacement bytes", async () => {
+            const c = await createEvidence(owner.id, { ...intent, idempotencyKey: randomUUID(), submissionId, kind: "DEMO_DOCUMENT", fileName: "LOCAL near-capacity published.txt" }), row = await db.agriEvidenceRequest.findUniqueOrThrow({ where: { id: c.requestId } });
+            const original = Buffer.alloc(2 * 1024 * 1024, 0x62);
+            await storeEvidence(row.storageKey, Readable.from([original]), row.maxBytes, "DEMO_DOCUMENT", AbortSignal.timeout(5000), async () => {});
+            const [r] = await db.$queryRaw<Array<{ remaining: bigint }>>`SELECT COALESCE(sum(CASE WHEN state<>'STORED' THEN CASE WHEN state='UPLOADED' OR (state='RUNNING' AND "leaseExpiresAt">clock_timestamp()) THEN "maxBytes"-"storedBytes" ELSE "maxBytes" END ELSE 0 END),0)::bigint AS remaining FROM agri_evidence_requests WHERE "cleanupCompletedAt" IS NULL`;
+            const st = await statfs(storage, { bigint: true });
+            process.env.ANS_AGRI_EVIDENCE_LOCAL_MIN_FREE_BYTES = String(Number(st.bavail * st.bsize) - Number(r.remaining) + 1024 * 1024);
+            try { await upload(owner.id, row.id, Buffer.from("MUST NOT REPLACE")); }
+            finally { process.env.ANS_AGRI_EVIDENCE_LOCAL_MIN_FREE_BYTES = "1"; }
+            const object = await db.agriEvidenceObject.findUniqueOrThrow({ where: { requestId: row.id } });
+            assert.equal(object.byteLength, original.length); assert.equal(object.sha256, createHash("sha256").update(original).digest("hex"));
+        });
         await check("explicit inventory cleanup retires only old unbound failed bytes and releases reservation after exact removal", async () => {
             const id = randomUUID(), oid = randomUUID(), when = new Date(Date.now() - 72 * 3600000), key = evidenceObjectKey(edition.id, id, oid);
             await db.$transaction(async (tx) => {

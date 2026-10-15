@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AgriEvidence } from "@/components/competitions/agri-evidence";
 import copy from "../../../messages/product/en.json";
@@ -26,4 +26,25 @@ describe("private evidence panel", () => {
         expect(screen.queryByRole("button", { name: copy.agriEvidence.archive })).toBeNull();
     });
     it("unmounts private contents on account change and rejects late earlier-account results", async () => { let done!: (r: Response) => void; fetcher.mockImplementationOnce(() => new Promise<Response>(r => { done = r; })); const view = render(<AgriEvidence actorId="old" submissionId="submission" invalidate={() => { }}/>); fireEvent.click(screen.getByRole("button", { name: copy.agriEvidence.open })); view.rerender(<AgriEvidence actorId="new" submissionId="submission" invalidate={() => { }}/>); done(new Response(JSON.stringify({ ok: true, data: { ...listing(), requests: [{ id: "x", fileName: "PRIVATE_OLD_ACCOUNT" }] } }))); await Promise.resolve(); expect(screen.queryByText("PRIVATE_OLD_ACCOUNT")).toBeNull(); expect(screen.getByRole("button", { name: copy.agriEvidence.open })).toBeInTheDocument(); });
+    it("fixes the draft repository ref before a submission exists and adopts only the exact current ref", async () => {
+        const repository = { url: "https://github.com/fixture/repo", ref: { kind: "TAG" as const, value: "v1" } }, prepared = vi.fn();
+        const resolved = { id: "fixed-ref", submissionId: null, fileName: "repository.tar.gz", kind: "REPOSITORY", mode: "GITHUB_ARCHIVE", state: "RESOLVED", createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 3600000).toISOString(), attempt: 1, maxAttempts: 3, canManage: true, resolution: { repositoryUrl: repository.url, originalRef: repository.ref, sha: "a".repeat(40), resolvedAt: new Date().toISOString() }, object: null };
+        let hasResolved = false;
+        fetcher.mockImplementation((_url, init) => {
+            if (init?.method === "POST") { hasResolved = true; return response({ requestId: "fixed-ref" }); }
+            return response({ ...listing(), submissionId: null, target: null, requests: hasResolved ? [resolved] : [] });
+        });
+        const view = render(<AgriEvidence actorId="owner" entryStageId="stage" projectId="project" artifactVersionId="version" repository={repository} invalidate={() => {}} onPrepared={prepared} />);
+        fireEvent.click(screen.getByRole("button", { name: copy.agriEvidence.open }));
+        fireEvent.click(await screen.findByRole("button", { name: copy.agriEvidence.resolveRef }));
+        await screen.findByText("a".repeat(40));
+        const post = fetcher.mock.calls.find((call: unknown[]) => (call[1] as RequestInit)?.method === "POST")!;
+        expect(JSON.parse(post[1].body)).toMatchObject({ submissionId: null, mode: "GITHUB_ARCHIVE", originalRef: repository.ref, projectId: "project", artifactVersionId: "version" });
+        await waitFor(() => expect(prepared).toHaveBeenLastCalledWith(["fixed-ref"]));
+        view.rerender(<AgriEvidence actorId="owner" entryStageId="stage" projectId="project" artifactVersionId="version" repository={{ ...repository, ref: { kind: "TAG", value: "v2" } }} invalidate={() => {}} onPrepared={prepared} />);
+        fireEvent.click(screen.getByRole("button", { name: copy.agriEvidence.open }));
+        await screen.findByText("a".repeat(40));
+        expect(prepared).toHaveBeenLastCalledWith([]);
+    });
+
 });

@@ -349,7 +349,7 @@ export async function listAgriStages(actorId: string, rawQuery: unknown = {}) {
       LEFT JOIN LATERAL (SELECT id,result,"checkedAt" FROM agri_technical_checks WHERE "competitionId"=es."competitionId" AND "submissionId"=es."currentSubmissionId" ORDER BY "checkedAt" DESC,id DESC LIMIT 1) ch ON true
       LEFT JOIN LATERAL (SELECT jsonb_build_object(
         'stored',count(o.id)::integer,
-        'pending',count(*) FILTER (WHERE r.state IN ('PREPARED','QUEUED','RUNNING','UPLOADED','RETRY_WAIT'))::integer,
+        'pending',count(*) FILTER (WHERE r.state IN ('PREPARED','QUEUED','RUNNING','UPLOADED','RESOLVED','RETRY_WAIT'))::integer,
         'failed',count(*) FILTER (WHERE r.state IN ('FAILED','NEEDS_REVIEW'))::integer,
         'cancelled',count(*) FILTER (WHERE r.state='CANCELLED')::integer,
         'late',count(*) FILTER (WHERE o.descriptor->>'temporalStatus'='CAPTURED_AFTER_DEADLINE')::integer) AS summary
