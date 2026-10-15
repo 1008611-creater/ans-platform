@@ -1,0 +1,14 @@
+# Include only in a TLS server for EASEL_PUBLIC_ORIGIN, after validating the real DNS/certificate.
+# The gateway, Docker socket and worker ports stay inaccessible from the public Internet.
+location / {
+    proxy_pass http://127.0.0.1:7871;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_buffering off;
+    proxy_read_timeout 300s;
+    client_max_body_size 64m;
+    # Inputs, callback codes and credentials must not appear in access logs.
+    access_log off;
+}

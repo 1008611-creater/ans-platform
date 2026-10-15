@@ -1,0 +1,79 @@
+# Easel 接入 ANS：实现、验收与发布边界
+
+## 本次确认与交付边界
+
+用户确认将 Easel 接入 ANS，并开放给 ANS 用户逐人独立使用；已允许新增 Easel 登录衔接和每用户独立容器。当前仅授权本地实施。提交、推送、PR、合并、测试服务器及生产部署需各自明确授权。
+
+本地入口为 /workflows/easel，工作台创作工具增加入口。开关默认关闭，未通过部署验收时显示“多用户接入准备中”，不宣称服务已可用。ANS 现有认证、数据库结构、算力计费与主导航未改动。
+
+首版使用各用户自行配置的模型连接，不继承 ANS 或 Windows 用户级模型密钥，尚未统一扣除 ANS 算力积分。不得将本地网页启动、模型配置、容器参数测试写成真实生成、发布或上线完成。
+
+## 模块边界
+
+- ANS 页面和客户端：仅从服务端读取部署开关、公开来源和当前用户 ID；只接受配置来源、目标 iframe window 的消息，匹配服务端身份后显示工作台，退出或换号移除旧私密 DOM。
+- services/easel-gateway：独立 Node 服务，使用内置库。复用现有 ANS OIDC Authorization Code + PKCE，验证 RS256、issuer、audience、nonce、state 和 token 时间；使用独立短期加密 HttpOnly cookie。每次请求从已验证 subject 派生稳定租户 ID，不接受浏览器指定租户。
+- Docker 调度：每用户单独 workspace/home 持久卷、内部 bridge 网络和 worker；worker 非 root，根文件系统只读，无 Docker socket，无 ANS 密钥，限制内存/CPU/进程数。只有 gateway 有 Docker 访问权。worker 没有宿主端口，内部 bridge 使用 IPv4/IPv6 isolated gateway mode，拒绝有宿主桥接地址的旧网络；Docker Engine 至少 28。每用户 sidecar 的固定 worker 中继 8091 仅绑定宿主回环。已有容器、卷、网络的标签和安全配置不符时拒绝使用。
+- egress sidecar：每用户独立代理，仅允许公网 HTTP/HTTPS；解析 DNS 后固定检查过的目标地址，拒绝私网、回环、元数据和重绑定结果。worker 内部网络不能直接出网。Node/常见 Python HTTP 库走代理；某些浏览器或主动清除代理的上游技能须另行适配和验证，不能为了“可用”开放宿主机网络。
+- 上游 Easel：固定 bb3c8ff0463f36c202454d74171682ba6e470cb1，保留 LICENSE 与来源说明。Docker 构建使用稀疏检出，不引入展示视频。前端锁文件补丁修复该版本的依赖审计问题，前端素材地址补丁绑定原始 owner；聊天、发布草稿、平台缓存与跨标签通信按用户隔离。前端制品由 gateway 从固定目录读取，不能从可被 Agent 改写的用户容器提供页面或脚本。生成 HTML/API 文档使用 opaque-origin sandbox，不能继承登录网关权限。
+
+## 身份与草稿保护
+
+公开 origin 必须是独立 HTTPS origin，不能与 ANS 同源。注册 OIDC 客户端只需要 openid/profile，不索取 email。回调固定为 EASEL_PUBLIC_ORIGIN/ans/oidc/callback，不能跟随用户提供的回跳。
+
+会话不超过四分钟，userinfo 最多缓存三十秒。长 SSE 到原会话有效期会主动断开，即使页面已续期；上游已有按 turnId/lastEventId 恢复机制，但长任务恢复仍需真实环境验收。嵌入工作台每三分钟通过隐藏 iframe 静默续登录，保留原创作 DOM；续登录失败或身份不符会移除工作台并提示重新登录。实际 API 请求附带加载页面的 owner，gateway 要求 owner 等于当前已验证 session，防止旧标签在换号后把操作发到新账号。owner 是一致性检查，不是鉴权凭证。图片、音频、视频和下载使用 /ans/media/{owner}/ 地址，必须同时匹配已验证会话；未标识 owner 的旧素材地址拒绝访问。静默续期超时 45 秒即移除内层工作台。
+
+ANS cookie、access token、Authorization 和用户指定的身份头不转发给 worker；worker Set-Cookie 不返回浏览器。动态与私密响应禁止缓存，SSE 禁止代理缓冲；上游重定向不透传，写请求必须来自 Easel origin，上传上限 64 MiB。
+
+## 验收目标
+
+1. 已登录用户从 ANS 工作台进入自己唯一的 Easel 环境；匿名、伪造 cookie/header、过期/撤销身份、错误 nonce/state/签名被拒绝。
+2. 用户 A/B 的画像、素材、平台凭据、模型配置、进程与网络互不共享；旧标签或账号切换不能操作另一个用户。
+3. 初次创建、重复进入、并发、容量耗尽、服务重启和工作空间停止/恢复均可验证；持久数据不被自动删除。
+4. 静默续登录、长 SSE、未保存输入、浏览器第三方 cookie 限制、手机布局都通过浏览器验收。
+5. 模型使用前由用户配置并确认费用；实际生成和各平台登录/发布需任务对应授权，逐个平台验证。不能依据宣传文案承诺自动发布成功。
+6. 部署版本可以追溯到 ANS main/PR、上游 commit、补丁与 image digest；磁盘额度、备份、资源容量、网络和回滚方案已检查。
+
+## 已完成与待验证
+
+本地已实现页面、登录、owner 绑定代理、隔离调度、出网代理与部署模板。上游 Web 已在独立预览环境启动，前端构建成功；该预览为无模型、无社媒账号的 API 模式，并不代表 OpenClaw 工具链可用。上游前端锁文件修复后 npm audit 报告零漏洞；ANS 原有依赖安装仍报告七项审计问题，未跨范围升级。
+
+本地相关测试共 43 项通过（网关 32 项，ANS 11 项），相关 ESLint 零警告，分层边界检查通过，ANS 类型检查及生产构建已通过；追加前端素材补丁再次完成 TypeScript/Vite 构建，并通过干净原文件的 git apply --check。这些结果不包含真实 Docker 运行。
+
+网关/身份/网络策略测试使用真实 HTTP 服务和临时 RSA 密钥，模拟 ANS provider 与 Docker，不替代真实容器和生产 OIDC 的验收。Docker Desktop 进程存在但本机引擎查询超时；worker/egress image 构建、真实两用户容器网络、持久恢复、模型生成和平台发布仍未验证。2026-10-15 再次查询引擎，10 秒内无响应，未重启 Docker 或影响已有容器。不能开启 ANS_EASEL_ENABLED。
+
+还须实测 Docker isolated 内部网络与回环 sidecar 中继在目标环境可用；出网代理覆盖各平台浏览器脚本；宿主机默认桥接/DNS/IPv6策略；持久卷硬磁盘配额与备份。当前只有用户数量和运行资源限制，未实现磁盘硬配额。上游媒体处理依赖与 OpenClaw 需构建后的审计和运行验证。
+
+持久 workspace 卷包含上游代码和用户数据，镜像升级不会自动替换旧卷内代码；升级前必须做分版本卷迁移、备份和回滚，不能仅换镜像标签宣称所有用户完成升级。当前进程仅支持单 gateway 实例，事务和调度锁在内存；不得直接部署多副本。
+
+## 部署模板（尚未执行）
+
+- services/easel-worker/Dockerfile：固定上游源码、前端补丁、完整 Python 媒体依赖、Chromium、OpenClaw 2026.10.3。
+- services/easel-gateway/Dockerfile.egress：出网代理和固定入站中继 sidecar。
+- services/easel-worker/Dockerfile 的 frontend target：构建固定前端制品，包含素材账号绑定补丁；设置 EASEL_FRONTEND_DIR 到只允许部署用户写入的版本目录。gateway 用户只读，worker 不挂载该目录。
+- services/easel-gateway/.env.example：空凭据模板；真实文件放在 Git 外，权限 0600。COOKIE_KEY 可独立轮换；TENANT_KEY 必须稳定保存，否则租户卷映射改变。
+- ans-easel.service.example：宿主机回环 Node gateway，独立系统用户；Docker group 相当于高权限，仅给该服务。
+- nginx.conf.example：独立 HTTPS 入口，不记录回调/输入/凭据，不缓冲 SSE。
+
+构建示例（必须在验收环境进行）：
+
+```sh
+docker build --target frontend --output type=local,dest=/opt/ans-easel/frontend/bb3c8ff -f services/easel-worker/Dockerfile .
+docker build -f services/easel-worker/Dockerfile -t ans-easel-worker:bb3c8ff .
+docker build -f services/easel-gateway/Dockerfile.egress -t ans-easel-egress:1 .
+node --env-file=/etc/ans-easel/gateway.env services/easel-gateway/server.mjs
+```
+
+ANS OIDC_CLIENTS_FILE 注册表中追加 Easel 客户端，保留已有客户端与秘密，不改写既有登录。精确 callback 和 client secret 在私有配置里登记。验收通过后才设置 ANS_EASEL_ENABLED=1 与 ANS_EASEL_ORIGIN；示例域名 easel.cauai.fun 尚未验证 DNS/证书或用户占用，不能据此直接上线。
+
+## 检查与回滚
+
+```sh
+node --test services/easel-gateway/*.test.mjs
+npx vitest run src/__tests__/lib/easel-embed.test.ts src/__tests__/components/easel-workspace.test.tsx
+npm run typecheck
+npm run build
+```
+
+部署前审查所有未跟踪文件与实际差异，不上传 .env、密钥、日志、素材、截图或用户数据。发布授权后按项目规定提交分支、PR、审查、main 构建和测试部署；生产部署仍需独立授权。
+
+回滚首先关闭 ANS_EASEL_ENABLED，拒绝新进入；停止仅标有对应 namespace 的 gateway/worker/egress，保留所有持久卷和租户密钥。恢复前一个已验证的 ANS main 构建、固定前端目录与 Easel image；任何需要改动卷内代码的回滚先还原对应备份。不得删除卷、重置 TENANT_KEY、停止其他 namespace 或强推 main。

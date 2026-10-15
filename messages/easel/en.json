@@ -1,0 +1,52 @@
+{
+  "title": "Easel social workspace",
+  "body": "Manage trends, planning, content creation, publishing and review in your own private workspace.",
+  "back": "Back to ANS workspace",
+  "source": "Source project and license",
+  "pendingTitle": "Multi-user integration in preparation",
+  "pendingBody": "The ANS entry is prepared. Private workspaces open after authentication and isolation checks pass. This page does not start model tasks, spend compute credits or publish content.",
+  "costs": "For the first release, configure models in your own workspace; your chosen provider bills usage. ANS compute credits are not connected yet. Review content and the destination account before publishing.",
+  "login": "Connect ANS sign-in",
+  "retry": "Reconnect",
+  "sessionChanged": "Your ANS session changed. The previous private workspace is hidden. Refresh this page to continue.",
+  "steps": {
+    "discover": {
+      "title": "Discover",
+      "body": "Find trends and content opportunities"
+    },
+    "plan": {
+      "title": "Plan",
+      "body": "Set account positioning, scripts and calendar"
+    },
+    "create": {
+      "title": "Create",
+      "body": "Prepare copy, images and video assets"
+    },
+    "publish": {
+      "title": "Prepare publication",
+      "body": "Check the platform format, content and account"
+    },
+    "review": {
+      "title": "Review",
+      "body": "Review engagement and lessons learned"
+    }
+  },
+  "connection": {
+    "connecting": {
+      "title": "Connecting your workspace",
+      "body": "The first launch prepares an isolated environment. Please wait."
+    },
+    "login_required": {
+      "title": "Connect your ANS sign-in",
+      "body": "Complete sign-in in a new window, then reconnect."
+    },
+    "account_mismatch": {
+      "title": "The accounts do not match",
+      "body": "The old workspace is hidden. Reconnect using your current ANS account."
+    },
+    "unavailable": {
+      "title": "Workspace unavailable",
+      "body": "The service may be starting, at capacity or temporarily unavailable. Reconnect later. Check uncertain publication results before repeating an action."
+    }
+  }
+}

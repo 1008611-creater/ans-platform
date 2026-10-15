@@ -1,0 +1,21 @@
+[Unit]
+Description=ANS Easel isolated workspace gateway
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+# This service alone needs Docker access. Workers and egress sidecars never receive the socket.
+Type=simple
+User=ans-easel-gateway
+Group=docker
+WorkingDirectory=/srv/ans-easel/current
+EnvironmentFile=/etc/ans-easel/gateway.env
+ExecStart=/usr/bin/node services/easel-gateway/server.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

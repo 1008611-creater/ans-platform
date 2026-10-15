@@ -45,6 +45,7 @@ export default getRequestConfig(async () => {
       retirement: (await import(`@/../messages/retirement/${locale === "zh" ? "zh" : "en"}.json`)).default,
       hubs: (await import(`@/../messages/hubs/${locale === "zh" ? "zh" : "en"}.json`)).default,
       favorites: (await import(`@/../messages/favorites/${locale === "zh" ? "zh" : "en"}.json`)).default,
+      easel: (await import(`@/../messages/easel/${locale === "zh" ? "zh" : "en"}.json`)).default,
       product: (await import(`@/../messages/product/${locale === "zh" ? "zh" : "en"}.json`)).default,
     },
     timeZone: "UTC",
