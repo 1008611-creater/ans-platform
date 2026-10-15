@@ -7,7 +7,7 @@
  * 跑两轮：
  *   - 桌面视口（1280×900）：完整核心路径，含登录与登录后的页面。
  *   - 移动视口（390×844）：确认主导航按屏宽收敛后，核心入口仍然可达——
- *     底部两入口与抽屉两入口一致，旧公共深链退役，页面没有横向溢出。
+ *     底部六入口与抽屉六入口一致，旧公共深链退役，页面没有横向溢出。
  *
  * 三种退出形态见 `scripts/lib/preview-server.mjs`。
  *
@@ -36,7 +36,7 @@ const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, 
 /** 允许 1px 的亚像素误差，超过才算真实横向溢出。 */
 const OVERFLOW_TOLERANCE = 1;
 // Product acceptance is explicit here, independent of the implementation registry.
-const PRIMARY_PATHS = ["/explore", "/market"];
+const PRIMARY_PATHS = ["/explore", "/hubs", "/community", "/competitions", "/market", "/workspace"];
 
 /**
  * 把页面的异常采集挂到某个 page 上。桌面轮和移动轮各挂一次，
@@ -210,7 +210,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
   checks.push({ label: "移动端底部 Tab 栏", pathname: "/", status: 200, matched: tabOk, newProblems: 0 });
   if (!tabOk) pageProblems.push(`移动端底部 Tab 栏异常（可见=${tabs.found}，链接=${tabs.hrefs.join(",") || "无"}）`);
 
-  // 窄屏两项主导航收进抽屉，全部入口仍可到达。
+  // 窄屏主导航收进抽屉，全部入口仍可到达。
   const collapsed = await page.evaluate(paths =>
     [...document.querySelectorAll("header nav a")].filter(a => paths.includes(new URL(a.href).pathname) && a.offsetParent).length, PRIMARY_PATHS);
   checks.push({ label: "移动端 主导航按屏宽收敛", pathname: "/", status: 200, matched: collapsed === 0, newProblems: 0 });
