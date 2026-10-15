@@ -13,10 +13,11 @@ function labels(config, tenant, kind) {
 function owned(state, config, tenant, kind) {
   return state?.["ans.easel.namespace"] === config.namespace && state?.["ans.easel.tenant"] === tenant && state?.["ans.easel.kind"] === kind;
 }
-export function runtimeArgs(config, tenant) {
+export function runtimeArgs(config, tenant, imageId) {
+  if (!/^sha256:[a-f0-9]{64}$/.test(imageId ?? "")) throw new GatewayError("UNRESOLVED_RUNTIME_IMAGE");
   const name = config.namespace + "-" + tenant;
   return ["run", "--pull", "never", "--detach", "--name", name, ...labels(config, tenant, "worker"),
-    "--network", name, "--network-alias", "worker", "--read-only", "--init", "--user", "10001:10001",
+    "--network", name, "--network-alias", "worker", "--read-only", "--init", "--ipc", "private", "--cgroupns", "private", "--user", "10001:10001",
     "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true", "--pids-limit", "256",
     "--log-opt", "max-size=10m", "--log-opt", "max-file=3", "--memory", "4g", "--memory-swap", "4g", "--cpus", "1.5", "--restart", "no",
     "--tmpfs", "/tmp:rw,nosuid,nodev,size=512m,mode=1777", "--shm-size", "256m",
@@ -27,23 +28,73 @@ export function runtimeArgs(config, tenant) {
     "--env", "HTTP_PROXY=http://egress:8090", "--env", "HTTPS_PROXY=http://egress:8090",
     "--env", "http_proxy=http://egress:8090", "--env", "https_proxy=http://egress:8090",
     "--env", "NO_PROXY=127.0.0.1,localhost", "--env", "no_proxy=127.0.0.1,localhost",
-    "--env", "NODE_USE_ENV_PROXY=1", "--env", "EASEL_PROXY=http://egress:8090", config.image];
+    "--env", "NODE_USE_ENV_PROXY=1", "--env", "EASEL_PROXY=http://egress:8090", imageId];
 }
-export function validateWorker(config, tenant, state) {
+function environment(values) {
+  if (!Array.isArray(values)) throw new GatewayError("UNSAFE_RUNTIME_ENVIRONMENT");
+  const result = Object.create(null);
+  for (const item of values) {
+    if (typeof item !== "string" || !item.includes("=")) throw new GatewayError("UNSAFE_RUNTIME_ENVIRONMENT");
+    const split = item.indexOf("="), key = item.slice(0, split);
+    if (!key || Object.hasOwn(result, key)) throw new GatewayError("UNSAFE_RUNTIME_ENVIRONMENT");
+    result[key] = item.slice(split + 1);
+  }
+  return result;
+}
+function equal(a, b) { return JSON.stringify(a ?? null) === JSON.stringify(b ?? null); }
+function sameEnvironment(actual, expected) {
+  const actualKeys = Object.keys(actual).sort(), expectedKeys = Object.keys(expected).sort();
+  return equal(actualKeys, expectedKeys) && actualKeys.every(key => actual[key] === expected[key]);
+}
+function workerEnvironment(config) {
+  return { EASEL_PORT:"7860", EASEL_EXTRA_HOSTS:"127.0.0.1,localhost", EASEL_EXTRA_ORIGINS:config.publicOrigin,
+    HTTP_PROXY:"http://egress:8090", HTTPS_PROXY:"http://egress:8090", http_proxy:"http://egress:8090", https_proxy:"http://egress:8090",
+    NO_PROXY:"127.0.0.1,localhost", no_proxy:"127.0.0.1,localhost", NODE_USE_ENV_PROXY:"1", EASEL_PROXY:"http://egress:8090" };
+}
+function executionMatches(state, image, overrides = {}) {
+  if (!/^sha256:[a-f0-9]{64}$/.test(image?.Id ?? "") || state.Image !== image.Id || !state.Config || !image.Config) return false;
+  const actual = state.Config, expected = image.Config;
+  return ["Entrypoint", "Cmd", "WorkingDir", "StopSignal", "Healthcheck"].every(key => equal(actual[key], expected[key])) &&
+    sameEnvironment(environment(actual.Env ?? []), { ...environment(expected.Env ?? []), ...overrides });
+}
+function isolated(host, memory, swap, cpus, pids) {
+  return host && host.ReadonlyRootfs === true && !host.Privileged && host.Init === true &&
+    (host.PidMode ?? "") === "" && host.IpcMode === "private" && (host.UTSMode ?? "") === "" &&
+    (host.UsernsMode ?? "") === "" && host.CgroupnsMode === "private" && !(host.CgroupParent ?? "") &&
+    !(host.Devices?.length || host.DeviceRequests?.length || host.DeviceCgroupRules?.length || host.GroupAdd?.length || host.Binds?.length || host.VolumesFrom?.length || host.Links?.length) &&
+    !host.CapAdd?.length && equal(host.CapDrop, ["ALL"]) && equal(host.SecurityOpt, ["no-new-privileges:true"]) &&
+    host.Memory === memory && host.MemorySwap === swap && host.NanoCpus === cpus && host.PidsLimit === pids &&
+    !(host.CpuPeriod || host.CpuQuota || host.CpuShares || host.CpuRealtimePeriod || host.CpuRealtimeRuntime || host.CpusetCpus || host.CpusetMems || host.MemoryReservation || host.OomKillDisable) &&
+    !host.PublishAllPorts && !host.ExtraHosts?.length && !host.Dns?.length && !host.DnsOptions?.length && !host.DnsSearch?.length && !Object.keys(host.StorageOpt ?? {}).length &&
+    !Object.keys(host.Ulimits ?? {}).length && (host.RestartPolicy?.Name ?? "no") === "no";
+}
+export function validateWorker(config, tenant, state, image) {
   const name = config.namespace + "-" + tenant;
   const networks = Object.keys(state.NetworkSettings?.Networks ?? {});
   const host = state.HostConfig;
-  const mounts = (state.Mounts ?? []).filter(m => m.Type !== "tmpfs");
-  if (!host?.ReadonlyRootfs || host.Privileged || host.NetworkMode !== name || state.Config.User !== "10001:10001" ||
+  const mounts = state.Mounts ?? [];
+  if (!executionMatches(state, image, workerEnvironment(config)) || !isolated(host, 4294967296, 4294967296, 1500000000, 256) ||
+      host.NetworkMode !== name || state.Config.User !== "10001:10001" || Object.keys(host.Sysctls ?? {}).length ||
+      host.ShmSize !== 268435456 || !equal(host.Tmpfs, {"/tmp":"rw,nosuid,nodev,size=512m,mode=1777"}) ||
       networks.length !== 1 || networks[0] !== name || Object.keys(host.PortBindings ?? {}).length ||
-      host.CapAdd?.length || !host.CapDrop?.includes("ALL") || !host.SecurityOpt?.includes("no-new-privileges:true") ||
-      mounts.length !== 2 || ["workspace", "home"].some(kind => !mounts.some(m => m.Type === "volume" && m.Name === name + "-" + kind && m.Destination === (kind === "workspace" ? "/workspace" : "/home/easel"))))
+      mounts.length !== 2 || ["workspace", "home"].some(kind => !mounts.some(m => m.Type === "volume" && m.Name === name + "-" + kind && m.RW === true && m.Destination === (kind === "workspace" ? "/workspace" : "/home/easel"))))
     throw new GatewayError("UNSAFE_EXISTING_WORKER");
+}
+export function validateEgress(config, tenant, state, image) {
+  const name = config.namespace + "-" + tenant, publicNetwork = config.namespace + "-outbound";
+  const host = state.HostConfig, networks = Object.keys(state.NetworkSettings?.Networks ?? {});
+  const ports = host?.PortBindings;
+  if (!executionMatches(state, image) || !isolated(host, 134217728, 268435456, 250000000, 32) ||
+      host.NetworkMode !== publicNetwork || state.Config.User !== "1000:1000" || state.Mounts?.length ||
+      host.ShmSize !== 67108864 || Object.keys(host.Tmpfs ?? {}).length || !equal(host.Sysctls, {"net.ipv4.ip_forward":"0"}) ||
+      networks.some(item => item !== name && item !== publicNetwork) || !networks.includes(publicNetwork) ||
+      Object.keys(ports ?? {}).join() !== "8091/tcp" || ports["8091/tcp"]?.length !== 1 || ports["8091/tcp"][0].HostIp !== "127.0.0.1")
+    throw new GatewayError("UNSAFE_EXISTING_EGRESS");
 }
 export class Containers {
   constructor(config, run = docker) {
     this.config = config; this.run = run; this.touched = new Map(); this.queue = Promise.resolve();
-    this.pending = new Map(); this.leases = new Map(); this.engineChecked = false;
+    this.pending = new Map(); this.leases = new Map(); this.engineChecked = false; this.images = null;
   }
   resolve(tenant) {
     if (!/^[a-f0-9]{64}$/.test(tenant)) return Promise.reject(new GatewayError("INVALID_TENANT", 401));
@@ -58,6 +109,22 @@ export class Containers {
     const version = await this.run(["version", "--format", "{{.Server.Version}}"]);
     if (!/^\d+\./.test(version) || Number(version.split(".")[0]) < 28) throw new GatewayError("UNSUPPORTED_DOCKER_VERSION");
     this.engineChecked = true;
+  }
+  async resolveImages() {
+    if (this.images) return this.images;
+    const result = {};
+    for (const [role, reference] of [["worker", this.config.image], ["egress", this.config.egressImage]]) {
+      let images;
+      try { images = JSON.parse(await this.run(["image", "inspect", reference])); }
+      catch { throw new GatewayError("UNRESOLVED_RUNTIME_IMAGE"); }
+      if (!Array.isArray(images) || images.length !== 1 || !/^sha256:[a-f0-9]{64}$/.test(images[0]?.Id ?? "") || images[0].Os !== "linux" || !images[0].Config)
+        throw new GatewayError("UNRESOLVED_RUNTIME_IMAGE");
+      result[role] = images[0];
+    }
+    // Pin both references once for this gateway lifetime. A tag move cannot
+    // silently replace an adopted runtime or change the next user's image.
+    this.images = result;
+    return result;
   }
   async ensureResources(tenant) {
     const config = this.config; const name = config.namespace + "-" + tenant;
@@ -78,21 +145,22 @@ export class Containers {
   }
   async provision(tenant) {
     await this.checkEngine();
+    const images = await this.resolveImages();
     const config = this.config; const name = config.namespace + "-" + tenant;
     const existing = await this.run(["ps", "-a", "--filter", "name=^/" + name + "$", "--format", "{{.Names}}"]);
     if (existing) {
       const state = JSON.parse(await this.run(["inspect", name]))[0];
       if (!owned(state.Config.Labels, config, tenant, "worker")) throw new GatewayError("RUNTIME_OWNERSHIP_CONFLICT");
-      validateWorker(config, tenant, state); await this.ensureResources(tenant);
-      await this.ensureEgress(tenant);
+      validateWorker(config, tenant, state, images.worker); await this.ensureResources(tenant);
+      await this.ensureEgress(tenant, images.egress);
       if (!state.State.Running) { await this.capacity(); await this.run(["start", name]); }
     } else {
       await this.capacity();
       const count = (await this.run(["volume", "ls", "--filter", "label=ans.easel.namespace=" + config.namespace, "--filter", "label=ans.easel.kind=workspace", "--format", "{{.Name}}"])).split("\n").filter(Boolean).length;
       const ownVolume = await this.run(["volume", "ls", "--filter", "name=^" + name + "-workspace$", "--format", "{{.Name}}"]);
       if (!ownVolume && count >= config.maxUsers) throw new GatewayError("USER_CAPACITY", 429);
-      await this.ensureResources(tenant); await this.ensureEgress(tenant);
-      await this.run(runtimeArgs(config, tenant));
+      await this.ensureResources(tenant); await this.ensureEgress(tenant, images.egress);
+      await this.run(runtimeArgs(config, tenant, images.worker.Id));
     }
     const state = JSON.parse(await this.run(["inspect", name + "-egress"]))[0];
     const bindings = state.NetworkSettings?.Ports?.["8091/tcp"];
@@ -105,7 +173,8 @@ export class Containers {
     }
     throw new GatewayError("RUNTIME_STARTING");
   }
-  async ensureEgress(tenant) {
+  async ensureEgress(tenant, image = null) {
+    image ??= (await this.resolveImages()).egress;
     const config = this.config; const name = config.namespace + "-" + tenant; const proxy = name + "-egress";
     const publicNetwork = config.namespace + "-outbound";
     if (!await this.run(["network", "ls", "--filter", "name=^" + publicNetwork + "$", "--format", "{{.Name}}"]))
@@ -117,18 +186,14 @@ export class Containers {
     if (found) {
       const state = JSON.parse(await this.run(["inspect", proxy]))[0];
       if (!owned(state.Config.Labels, config, tenant, "egress")) throw new GatewayError("EGRESS_OWNERSHIP_CONFLICT");
-      const host = state.HostConfig; const networks = Object.keys(state.NetworkSettings?.Networks ?? {});
-      if (!host?.ReadonlyRootfs || host.Privileged || host.Sysctls?.["net.ipv4.ip_forward"] !== "0" || state.Config.User !== "1000:1000" ||
-          state.Mounts?.length || host.CapAdd?.length || !host.CapDrop?.includes("ALL") || !host.SecurityOpt?.includes("no-new-privileges:true") ||
-          networks.some(item => item !== name && item !== publicNetwork) || !networks.includes(publicNetwork) ||
-          Object.keys(host.PortBindings ?? {}).join() !== "8091/tcp" || host.PortBindings["8091/tcp"]?.[0]?.HostIp !== "127.0.0.1")
-        throw new GatewayError("UNSAFE_EXISTING_EGRESS");
+      validateEgress(config, tenant, state, image);
+      const networks = Object.keys(state.NetworkSettings?.Networks ?? {});
       if (!networks.includes(name)) await this.run(["network", "connect", "--alias", "egress", name, proxy]);
       if (!state.State.Running) await this.run(["start", proxy]);
     } else {
       await this.run(["run", "--pull", "never", "--detach", "--name", proxy, ...labels(config, tenant, "egress"), "--network", publicNetwork, "--publish", "127.0.0.1::8091",
-        "--log-opt", "max-size=10m", "--log-opt", "max-file=3", "--read-only", "--init", "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
-        "--sysctl", "net.ipv4.ip_forward=0", "--user", "1000:1000", "--memory", "128m", "--pids-limit", "32", "--cpus", "0.25", config.egressImage]);
+        "--log-opt", "max-size=10m", "--log-opt", "max-file=3", "--read-only", "--init", "--ipc", "private", "--cgroupns", "private", "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
+        "--sysctl", "net.ipv4.ip_forward=0", "--user", "1000:1000", "--memory", "128m", "--memory-swap", "256m", "--shm-size", "64m", "--pids-limit", "32", "--cpus", "0.25", image.Id]);
       await this.run(["network", "connect", "--alias", "egress", name, proxy]);
     }
   }
