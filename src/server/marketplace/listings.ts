@@ -166,11 +166,24 @@ export async function listPublishedMarketListingsBySeller(sellerId: string, view
   });
 }
 
+type PublishedPlatformRecipe = NonNullable<Awaited<ReturnType<typeof findPublishedPlatformRecipe>>>;
+
+/** Resolve the official product and its proof together; callers cannot supply a trusted binding. */
+export async function getPublishedResumeMarketListing(viewerId?: string) {
+  const recipe = await findPublishedPlatformRecipe();
+  if (!recipe) throw new MarketRuleError("NOT_FOUND", 404);
+  const offer = await readPublishedMarketListing("resume-website", viewerId, recipe);
+  return { offer, recipe };
+}
+
 export async function getMarketListing(slug: string, viewerId?: string) {
+  if (slug === "resume-website") return (await getPublishedResumeMarketListing(viewerId)).offer;
+  return readPublishedMarketListing(slug, viewerId, null);
+}
+
+async function readPublishedMarketListing(slug: string, viewerId: string | undefined, recipe: PublishedPlatformRecipe | null) {
   // The product alias resolves only the attested official recipe and its exact immutable listing.
   // Neither a historical payload nor an arbitrary newer listing can take over this URL.
-  const recipe = slug === "resume-website" ? await findPublishedPlatformRecipe() : null;
-  if (slug === "resume-website" && !recipe) throw new MarketRuleError("NOT_FOUND", 404);
   const actualSlug = recipe ? `workflow-${marketHash(recipe.workflow.id).slice(0, 24)}-v${recipe.version.version}` : slug;
   const listing = await db.marketListing.findFirst({
     where: { slug: actualSlug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false }, ...(recipe ? { sellerId: recipe.workflow.authorId, official: true } : {}) },

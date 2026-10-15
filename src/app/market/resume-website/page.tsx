@@ -1,7 +1,6 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { readMarketPage } from "@/server/marketplace/product-read";
-import { marketWorkflowDetails } from "@/server/marketplace/workflows";
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { ResumeWebsiteMarketProduct } from "@/components/marketplace/resume-website-market-product";
 
@@ -21,7 +20,6 @@ export async function generateMetadata() {
 }
 
 export default async function ResumeWebsiteMarketPage() {
-  const { session, offer } = await publishedResume();
-  const runnable = await marketWorkflowDetails(offer);
+  const { session, offer, runnable } = await publishedResume();
   return <ResumeWebsiteMarketProduct offer={offer} session={session} runnable={runnable} />;
 }

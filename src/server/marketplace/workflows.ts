@@ -9,7 +9,7 @@ import { marketWorkflowUploadSchema, marketWorkflowRunSchema } from "@/contracts
 import { missingRequiredVariables, extractInputVariables } from "@/domain/workflows/variables";
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { createWorkflowRun, WorkflowServiceError } from "@/server/workflows/service";
-import { unifiedModelBilling } from "@/server/integrations/metered-cost";
+import { presentMarketWorkflow } from "./workflow-presentation";
 import { createMarketListing, submitMarketListing } from "./listings";
 import { readReviewedWorkflow, assertMarketWorkflowBinding, workflowDefinitionHash } from "./workflow-binding";
 import { marketHash, requireMarketActor } from "./shared";
@@ -60,8 +60,7 @@ const readMarketWorkflowDetails = cache(async (sellerId: string, workflowId: str
   const binding = { workflowId, versionId, version, definitionHash };
   try {
     const { workflow, definition } = await assertMarketWorkflowBinding(db, sellerId, binding);
-    const estimate = unifiedModelBilling() ? null : process.env.ANS_APIC_BILLING_ENABLED === "1" ? Math.max(.25, definition.nodes.filter(n => n.type === "model").length * .25) : Math.max(1, workflow.estimatedCost || 1);
-    return { available: true as const, recipe: definition.recipe ?? null, variables: extractInputVariables(definition), estimatedCost: estimate, version: binding.version };
+    return presentMarketWorkflow(definition, workflow.estimatedCost, binding.version);
   } catch (error) {
     if (error instanceof MarketRuleError) return { available: false as const, reason: error.code, version: binding.version };
     throw error;
