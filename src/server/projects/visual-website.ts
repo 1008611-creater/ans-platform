@@ -35,13 +35,18 @@ export async function saveVisualWebsite(userId: string, raw: unknown) {
   let artifact = await tx.artifact.findUnique({ where: { projectId_workflowId: { projectId: input.projectId, workflowId: VISUAL_WEBSITE_ID } }, select: { id: true, currentVersion: true, versions: { orderBy: { version: "desc" }, take: 1, select: { factSnapshotHash: true } } } });
   if (artifact && artifact.currentVersion === input.expectedVersion + 1 && artifact.versions[0]?.factSnapshotHash === hash) return { projectId: input.projectId, version: artifact.currentVersion };
   if ((artifact?.currentVersion ?? 0) !== input.expectedVersion) throw new ProjectServiceError("VERSION_CONFLICT", "VERSION_CONFLICT", 409);
-  if (!artifact) artifact = await tx.artifact.create({ data: { projectId: input.projectId, workflowId: VISUAL_WEBSITE_ID, kind: "RESUME_WEBSITE", title: input.document.profile.fullName, visibility: "PRIVATE", createdById: userId }, select: { id: true, currentVersion: true, versions: { take: 1, select: { factSnapshotHash: true } } } });
+  if (!artifact) {
+   const created = await tx.artifact.create({ data: { projectId: input.projectId, workflowId: VISUAL_WEBSITE_ID, kind: "RESUME_WEBSITE", title: input.document.profile.fullName, visibility: "PRIVATE", createdById: userId }, select: { id: true, currentVersion: true } });
+   artifact = { ...created, versions: [] };
+  }
   const version = input.expectedVersion + 1;
   await tx.artifactVersion.create({ data: { artifactId: artifact.id, version, contentJson: input.document as Prisma.InputJsonValue, contentMarkdown: resumeWebsiteMarkdown(input.document.profile, plainResumeWebsiteCopy(input.document.profile)), factSnapshotHash: hash, createdById: userId, workflowRunId: null } });
   await tx.artifact.update({ where: { id: artifact.id }, data: { currentVersion: version, title: input.document.profile.fullName } });
   await tx.project.update({ where: { id: input.projectId }, data: { updatedAt: new Date() } });
   return { projectId: input.projectId, version };
- });
+ // Remote PostgreSQL round trips can exceed Prisma's 5s default even for a
+ // small document. Keep this atomic operation bounded without changing other transactions.
+ }, { maxWait: 5_000, timeout: 15_000 });
  } catch (error) {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new ProjectServiceError("VERSION_CONFLICT", "VERSION_CONFLICT", 409);
   throw error;
