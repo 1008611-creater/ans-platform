@@ -15,6 +15,7 @@ import { agriStageSubmissionCommandSchema, type AgriStageDraft, type AgriStageDe
   type AgriSubmissionVersionChoice, type AgriStageSubmissionCommand } from "@/contracts/agri-submissions";
 import { getAgriSubmissionMaterialIssues } from "@/domain/competitions/agri-submissions";
 import { clearSubmissionRecoveries, readSubmissionRecovery, writeSubmissionRecovery } from "./agri-submission-recovery";
+import { AgriEvidence } from "./agri-evidence";
 import { AgriReviews } from "./agri-reviews";
 import { AgriPublications } from "./agri-publications";
 import { AgriDemoChecks } from "./agri-demo-checks";
@@ -107,6 +108,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
   const [baseline, setBaseline] = useState(saved?.baseline ?? JSON.stringify({ draft, officialMemberIds }));
   const [pending, setPending] = useState<AgriStageSubmissionCommand | null>(saved?.pending ?? null);
   const pendingRef = useRef(pending); const flight = useRef(false); const alive = useRef(true);
+  const [preparedEvidenceIds, setPreparedEvidenceIds] = useState<string[]>([]);
   const [permitId, setPermitId] = useState("");
   const permit = detail.correctionPermits?.find(row => row.id === permitId);
   const correcting = !!permit;
@@ -148,12 +150,12 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
       else { setDetail(result); setStale(false); if (!preserve) { const next = result.draft ?? result.current?.content ?? emptyDraft(); setDraft(next); setBaseline(JSON.stringify({ draft: next, officialMemberIds })); } setConflict(false); setAck(false); setConfirmed(false); }
     } catch (e) { handleError(e); } finally { if (alive.current) setBusy(false); }
   }
-  function edit(next: AgriStageDraft) { setDraft(next); setConfirmed(false); setNote(""); }
+  function edit(next: AgriStageDraft) { if (next.artifactVersionId !== draft.artifactVersionId) setPreparedEvidenceIds([]); setDraft(next); setConfirmed(false); setNote(""); }
   async function mutate(action: "saveDraft" | "submit" | "correctSubmission") {
     if (flight.current || (!pendingRef.current && locked)) return;
     const retry = !!pendingRef.current;
     const parsed = agriStageSubmissionCommandSchema.safeParse(pendingRef.current ?? { action, idempotencyKey: crypto.randomUUID(), entryStageId: detail.id, expectedRevision: detail.revision,
-      ...(action === "saveDraft" ? { draft } : { content: draft, ...(action === "submit" && !detail.officialRoster ? { officialMemberIds } : {}), expectedRuleVersionId: action === "correctSubmission" ? permit?.ruleVersionId : detail.publishedRule?.id, ...(action === "correctSubmission" ? { previousSubmissionId: detail.current?.id, correctionPermitId: permit?.id } : {}) }) });
+      ...(action === "saveDraft" ? { draft } : { content: draft, ...(preparedEvidenceIds.length ? { evidenceIntentIds: preparedEvidenceIds } : {}), ...(action === "submit" && !detail.officialRoster ? { officialMemberIds } : {}), expectedRuleVersionId: action === "correctSubmission" ? permit?.ruleVersionId : detail.publishedRule?.id, ...(action === "correctSubmission" ? { previousSubmissionId: detail.current?.id, correctionPermitId: permit?.id } : {}) }) });
     if (!parsed.success) { setError("INVALID_INPUT"); return; }
     const command = parsed.data; flight.current = true; pendingRef.current = command; setPending(command); setBusy(true); setError("");
     // Save the exact command before awaiting the network, including navigation away during a write.
@@ -224,10 +226,11 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
         return <Field key={requirement.key} label={t(requirement.required ? "requiredItem" : "optionalItem", { key: requirement.key })}>{id => requirement.kind === "TEXT" ? <Textarea id={id} maxLength={4000} disabled={locked} value={value} onChange={e => material(requirement.key, requirement.kind, e.target.value)} /> : requirement.kind === "LINK" ? <Input id={id} type="url" disabled={locked} value={value} onChange={e => material(requirement.key, requirement.kind, e.target.value)} /> : <select id={id} className={selectClass} disabled={locked} value={value} onChange={e => material(requirement.key, requirement.kind, e.target.value)}><option value="">{t("selectVersion")}</option>{value && !choices.some(row => row.id === value) && <option value={value}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>}</Field>;
       })}
       {requirements && draft.materials.items.filter(item => !requirements.materials.some(requirement => requirement.key === item.key && requirement.kind === item.kind)).map(item => <div key={item.key} className="space-y-2 rounded-xl border p-3"><p className="break-words text-sm">{t("obsoleteMaterial", { key: item.key })}</p><Button variant="outline" disabled={locked} onClick={() => edit({ ...draft, materials: { schemaVersion: 1, items: draft.materials.items.filter(row => row.key !== item.key) } })}>{t("removeMaterial", { key: item.key })}</Button></div>)}
+      {manager && draft.projectId && draft.artifactVersionId && !locked && <AgriEvidence actorId={actorId} entryStageId={detail.id} projectId={draft.projectId} artifactVersionId={draft.artifactVersionId} invalidate={invalidate} onPrepared={setPreparedEvidenceIds} />}
       {!!issues.length && <p role="status">{t("missingMaterials")}</p>}
       <div className="space-y-3 rounded-xl border bg-muted/30 p-4"><label className="flex items-start gap-2"><input type="checkbox" disabled={locked} checked={confirmed} onChange={e => setConfirmed(e.target.checked)} /><span className="text-sm leading-6">{t("confirm")}</span></label><div className="flex flex-wrap gap-3"><Button variant="outline" disabled={locked || correcting || !draft.projectId} onClick={() => void mutate("saveDraft")}>{t("save")}</Button><Button disabled={!canSubmit} onClick={() => void mutate(correcting ? "correctSubmission" : "submit")}>{t(correcting ? "correctSubmit" : "submit")}</Button></div><p className="text-sm text-muted-foreground">{t(correcting ? "correctionSaveHint" : "draftHint")}</p></div>
     </CardContent></Card>
-    {detail.current && <><AgriPublications actorId={actorId} entryStageId={detail.id} scope="team" invalidate={invalidate} /><AgriReviews actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /><AgriIssues actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /><AgriDemoChecks actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /></>}
+    {detail.current && <><AgriEvidence actorId={actorId} submissionId={detail.current.id} invalidate={invalidate} /><AgriPublications actorId={actorId} entryStageId={detail.id} scope="team" invalidate={invalidate} /><AgriReviews actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /><AgriIssues actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /><AgriDemoChecks actorId={actorId} submissionId={detail.current.id} scope="team" invalidate={invalidate} /></>}
     <Card><CardHeader><CardTitle>{t("history")}</CardTitle></CardHeader><CardContent className="space-y-4">
       {!detail.history.length && <p>{t("noHistory")}</p>}{detail.history.map(row => <div key={row.id} className="space-y-2 rounded-xl border p-4 text-sm">{row.correction && <p className="whitespace-pre-wrap break-words">{t("correctedFrom", { id: row.correction.previousSubmissionId, reason: row.correction.reason })}</p>}<p className="font-medium">{t("submissionNumber", { number: row.sequence })} · {time(row.acceptedAt, locale)}</p><p className="break-all text-muted-foreground">{t("ruleVersion", { id: row.ruleVersionId })}</p>{row.content && <><p className="whitespace-pre-wrap break-words">{row.content.summary}</p><p className="break-all">{t("versionId", { id: row.content.artifactVersionId })}</p>{row.content.repository && <p className="break-all">{t("repository")}: {row.content.repository.url} {row.content.repository.ref?.value}</p>}{row.content.demoUrl && <p className="break-all">{t("demo")}: {row.content.demoUrl}</p>}</>}</div>)}
       {detail.nextBeforeSequence && <Button variant="outline" disabled={busy} onClick={() => void reload(true, detail.nextBeforeSequence!)}>{t("moreHistory")}</Button>}

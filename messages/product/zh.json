@@ -1215,7 +1215,10 @@
     },
     "entryId": "参赛记录：{id}",
     "stageId": "阶段记录：{id}",
-    "correctedFrom": "更正原提交 {id}：{reason}"
+    "correctedFrom": "更正原提交 {id}：{reason}",
+    "evidenceSummary": "文件留存 {stored} · 待处理 {pending} · 需处理 {failed} · 已取消 {cancelled}",
+    "evidenceReferenceOnly": "仅记录引用，尚未留存外部文件。",
+    "evidenceLate": "其中 {count} 份文件在截止后留存，留存本身不能证明截止版本。"
   },
   "agriReviews": {
     "title": "技术检查与队伍反馈",
@@ -1854,7 +1857,8 @@
       "RATE_LIMITED": "请求过于频繁，请稍后重试原保存。",
       "INVALID_INPUT": "请求内容无效，请刷新记录后重试。",
       "AGRI_CURSOR_INVALID": "历史分页已失效，请刷新列表。"
-    }
+    },
+    "externalEvidence": "外部材料留存"
   },
   "computeHistory": {
     "title": "算力账单",
@@ -3371,5 +3375,81 @@
     "confirmCompute": "运行前确认算力费用",
     "free": "免费分享",
     "price": "{points} 积分起"
+  },
+  "agriEvidence": {
+    "title": "外部材料留存",
+    "intro": "保存原始字节与校验哈希。已留存不等于已证明截止时的内容。",
+    "open": "查看留存",
+    "close": "收起",
+    "loading": "正在读取…",
+    "working": "正在保存…",
+    "privacy": "仅本队和获授权工作人员可查看，不会公开项目、增加积分或改变参赛状态。",
+    "disabled": "留存功能尚未启用，已有获准记录仍可读取。",
+    "upload": "留存原文件",
+    "kindLabel": "材料类型",
+    "fileLabel": "选择文件",
+    "supplementHint": "补充材料绑定本次提交，不改变原内容与截止记录。",
+    "intentHint": "先上传，再正式提交当前项目版本。仅上传文件不等于正式提交。",
+    "github": "留存已提交的 GitHub 版本",
+    "captureDemo": "留存 Demo 主响应",
+    "refresh": "刷新",
+    "empty": "暂无原文件留存，现有链接仅为引用。",
+    "attempt": "第 {attempt} / {max} 次尝试",
+    "captured": "实际留存：{at} · {bytes} 字节",
+    "verifiedCutoff": "工作人员于 {at} 记录了截止核验",
+    "download": "下载原文件",
+    "select": "加入固定档案",
+    "continueUpload": "使用已选文件继续上传",
+    "retry": "重试",
+    "cancel": "取消任务",
+    "verify": "记录截止核验",
+    "reason": "判断依据与证据说明",
+    "more": "加载更多",
+    "manifest": "固定留存档案",
+    "manifestHint": "选定文件生成不可变清单与 v3 档案，后续补交不会改变本次档案。",
+    "archive": "保存固定档案",
+    "manifestVersion": "留存清单第 {sequence} 版",
+    "archiveSaved": "已保存档案：{id}",
+    "kind": {
+      "REPOSITORY": "仓库快照",
+      "DEMO_DOCUMENT": "Demo 主响应",
+      "DEMO_VIDEO": "演示视频",
+      "SUPPORTING_FILE": "补充文件"
+    },
+    "state": {
+      "PREPARED": "待上传",
+      "QUEUED": "排队中",
+      "RUNNING": "正在留存",
+      "UPLOADED": "已上传，待正式提交绑定",
+      "STORED": "原始字节已留存",
+      "RETRY_WAIT": "等待重试",
+      "FAILED": "失败",
+      "CANCELLED": "已取消",
+      "NEEDS_REVIEW": "需要工作人员处理"
+    },
+    "temporal": {
+      "CUTOFF_UNKNOWN": "正式截止尚未确认",
+      "CAPTURED_AFTER_DEADLINE": "实际留存在截止之后",
+      "CAPTURED_BEFORE_DEADLINE": "实际留存在截止之前"
+    },
+    "sourceTiming": {
+      "DECLARED_FIXED_COMMIT_BEFORE_CUTOFF": "截止前已提交声明的固定 commit，实际留存时间如上",
+      "MUTABLE_SOURCE_AT_CAPTURE": "可变来源仅反映获取时的内容",
+      "UNVERIFIED_SOURCE": "来源与截止真实性待人工核验"
+    },
+    "coverage": {
+      "CODE_TREE_NO_GIT_HISTORY_LFS_OR_SUBMODULES": "仅代码树，不含 Git 历史、LFS 实体或子模块内容",
+      "MAIN_RESPONSE_ONLY_NOT_RUNNING_SITE": "仅 HTTP 主响应，不代表完整可运行网站",
+      "ORIGINAL_VIDEO_BYTES": "视频原始字节",
+      "ORIGINAL_FILE_BYTES": "上传文件原始字节"
+    },
+    "errors": {
+      "OTHER": "操作未完成（{code}），此前记录仍保留。",
+      "AGRI_EVIDENCE_SOURCE_NOT_ALLOWED": "该域名未获准抓取，请上传原始文件。",
+      "AGRI_EVIDENCE_STORAGE_NOT_CONFIGURED": "请先配置私有持久存储。",
+      "AGRI_EVIDENCE_TEAM_CUTOFF_CLOSED": "窗口已关闭，请联系获授权技术负责人补充留存。",
+      "AGRI_EVIDENCE_TOO_LARGE": "文件超过当前字节上限。",
+      "AGRI_EVIDENCE_ACTIVE_REQUEST_EXISTS": "已有相同任务，请继续或取消已有任务。"
+    }
   }
 }

@@ -18,10 +18,10 @@ export function assertSameOrigin(request: Request): void {
   }
 }
 
-export async function readSameOriginJson(request: Request): Promise<unknown> {
+export async function readSameOriginJson(request: Request, limit = 100_000): Promise<unknown> {
   assertSameOrigin(request);
   if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") throw new HttpRequestError("INVALID_INPUT", 415);
-  const limit = 100_000;
+  if (!Number.isSafeInteger(limit) || limit <= 0) throw new HttpRequestError("INVALID_INPUT", 400);
   if (Number(request.headers.get("content-length")) > limit) throw new HttpRequestError("REQUEST_TOO_LARGE", 413);
   const reader = request.body?.getReader();
   if (!reader) throw new HttpRequestError("INVALID_JSON", 400);

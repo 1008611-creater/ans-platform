@@ -62,10 +62,10 @@ export const agriStageSubmissionCommandSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("saveDraft"), idempotencyKey: key, entryStageId: id,
     expectedRevision: revision, draft: agriStageDraftSchema }).strict(),
   z.object({ action: z.literal("submit"), idempotencyKey: key, entryStageId: id,
-    expectedRevision: revision, expectedRuleVersionId: id, officialMemberIds: agriOfficialMemberIdsSchema.optional(), content: agriStageSubmissionContentSchema }).strict(),
+    expectedRevision: revision, expectedRuleVersionId: id, officialMemberIds: agriOfficialMemberIdsSchema.optional(), evidenceIntentIds: z.array(key).max(20).optional(), content: agriStageSubmissionContentSchema }).strict(),
   z.object({ action: z.literal("correctSubmission"), idempotencyKey: key, entryStageId: id,
     expectedRevision: revision, expectedRuleVersionId: id, previousSubmissionId: id,
-    correctionPermitId: id, content: agriStageSubmissionContentSchema }).strict(),
+    correctionPermitId: id, evidenceIntentIds: z.array(key).max(20).optional(), content: agriStageSubmissionContentSchema }).strict(),
 ]);
 export type AgriStageSubmissionCommand = z.infer<typeof agriStageSubmissionCommandSchema>;
 export type AgriFormalSubmissionCommand = Extract<AgriStageSubmissionCommand, { action: "submit" }>;
@@ -214,6 +214,7 @@ export interface AgriStageListRow {
   id: string; teamCompetitionId: string; teamId: string; teamName: string; stage: "PRELIMINARY" | "FINAL";
   revision: number; currentSubmissionId: string | null; frozenSubmissionId: string | null; recordedFrozenSubmissionId?: string | null; frozenByDeadline?: boolean;
   latestTechnicalCheck?: { id: string; result: "PASS" | "NEEDS_ACTION" | "UNREACHABLE"; checkedAt: string } | null;
+  evidenceSummary?: { stored: number; pending: number; failed: number; cancelled: number; late: number } | null;
 }
 export interface AgriStageList {
   competitionId: string; stages: AgriStageListRow[]; nextCursor: string | null;

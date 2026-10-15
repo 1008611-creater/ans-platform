@@ -13,6 +13,7 @@ import { getAgriWindowState } from "@/domain/competitions/agrihackathon";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent, agriDatabaseClock, type AgriWorkspaceContext } from "./workspace";
 import { finalEligibility, correctionPermit, activeCorrectionPermits, type PermitRow } from "./decisions";
 
+import { bindEvidenceIntents } from "./evidence";
 type Tx = DbTransaction;
 type StageName = "PRELIMINARY" | "FINAL";
 interface Entry { id: string; teamId: string; competitionId: string }
@@ -259,6 +260,7 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
         await tx.$executeRaw`INSERT INTO agri_correction_permit_events(id,"competitionId","entryStageId","permitId",action,"submissionId","actorId",reason,"createdAt") VALUES(${randomUUID()},${stage.competitionId},${stage.id},${command.correctionPermitId},'USE',${submissionId},${actorId},${permit!.reason},${now})`;
         stage.frozenSubmissionId ??= stage.currentSubmissionId;
       }
+      if (command.evidenceIntentIds?.length) await bindEvidenceIntents(tx, ctx, command.evidenceIntentIds, submissionId);
       stage.currentSubmissionId = submissionId;
     }
     stage.revision++;
@@ -341,10 +343,18 @@ export async function listAgriStages(actorId: string, rawQuery: unknown = {}) {
     const exportAuthority = query.scope === "staff" ? await optionalScope(tx, ctx, "EXPORT") : null;
     const privateAuthority = query.scope === "staff" ? await optionalScope(tx, ctx, "PRIVATE_MATERIALS_READ") : null;
     if (query.scope === "team") await tx.$queryRaw`SELECT id FROM team_members WHERE "userId"=${actorId} ORDER BY id FOR SHARE`;
-    const rows = await tx.$queryRaw<Array<Omit<Stage, "draft" | "competitionId"> & { teamId: string; teamName: string; checkId: string | null; checkResult: "PASS" | "NEEDS_ACTION" | "UNREACHABLE" | null; checkedAt: Date | null }>>`
-      SELECT es.id,es."teamCompetitionId",es.stage,es.revision,es."currentSubmissionId",es."frozenSubmissionId",es."createdAt",tc."teamId",t.name AS "teamName",ch.id AS "checkId",ch.result AS "checkResult",ch."checkedAt"
+    const rows = await tx.$queryRaw<Array<Omit<Stage, "draft" | "competitionId"> & { teamId: string; teamName: string; checkId: string | null; checkResult: "PASS" | "NEEDS_ACTION" | "UNREACHABLE" | null; checkedAt: Date | null; evidenceSummary: { stored: number; pending: number; failed: number; cancelled: number; late: number } }>>`
+      SELECT es.id,es."teamCompetitionId",es.stage,es.revision,es."currentSubmissionId",es."frozenSubmissionId",es."createdAt",tc."teamId",t.name AS "teamName",ch.id AS "checkId",ch.result AS "checkResult",ch."checkedAt",ev.summary AS "evidenceSummary"
       FROM agri_entry_stages es JOIN team_competitions tc ON tc.id=es."teamCompetitionId" JOIN teams t ON t.id=tc."teamId"
       LEFT JOIN LATERAL (SELECT id,result,"checkedAt" FROM agri_technical_checks WHERE "competitionId"=es."competitionId" AND "submissionId"=es."currentSubmissionId" ORDER BY "checkedAt" DESC,id DESC LIMIT 1) ch ON true
+      LEFT JOIN LATERAL (SELECT jsonb_build_object(
+        'stored',count(o.id)::integer,
+        'pending',count(*) FILTER (WHERE r.state IN ('PREPARED','QUEUED','RUNNING','UPLOADED','RETRY_WAIT'))::integer,
+        'failed',count(*) FILTER (WHERE r.state IN ('FAILED','NEEDS_REVIEW'))::integer,
+        'cancelled',count(*) FILTER (WHERE r.state='CANCELLED')::integer,
+        'late',count(*) FILTER (WHERE o.descriptor->>'temporalStatus'='CAPTURED_AFTER_DEADLINE')::integer) AS summary
+        FROM agri_evidence_requests r LEFT JOIN agri_evidence_objects o ON o."requestId"=r.id
+        WHERE r."competitionId"=es."competitionId" AND r."submissionId"=es."currentSubmissionId") ev ON true
       WHERE ${stageFilter(competitionId, actorId, query)}
       AND (${cursor?.id ?? null}::text IS NULL OR (es."createdAt",es.id)<(${cursor ? new Date(cursor.createdAt) : null}::timestamptz,${cursor?.id ?? null}::text))
       ORDER BY es."createdAt" DESC,es.id DESC LIMIT 31`;
@@ -352,7 +362,7 @@ export async function listAgriStages(actorId: string, rawQuery: unknown = {}) {
     const now = await agriDatabaseClock(tx);
     const projected = await Promise.all(page.map(async row => ({ row, freeze: await projectAgriStageFreeze(tx, { ...row, competitionId }, now) })));
     await assertAgriAuthorityCurrent(tx, authority, exportAuthority, privateAuthority);
-    return { competitionId, stages: projected.map(({ row, freeze }) => ({ id: row.id, teamCompetitionId: row.teamCompetitionId, teamId: row.teamId, teamName: row.teamName, stage: row.stage, revision: row.revision, currentSubmissionId: row.currentSubmissionId, ...freeze, latestTechnicalCheck: row.checkId && row.checkResult && row.checkedAt ? { id: row.checkId, result: row.checkResult, checkedAt: row.checkedAt.toISOString() } : null })),
+    return { competitionId, stages: projected.map(({ row, freeze }) => ({ id: row.id, teamCompetitionId: row.teamCompetitionId, teamId: row.teamId, teamName: row.teamName, stage: row.stage, revision: row.revision, currentSubmissionId: row.currentSubmissionId, ...freeze, latestTechnicalCheck: row.checkId && row.checkResult && row.checkedAt ? { id: row.checkId, result: row.checkResult, checkedAt: row.checkedAt.toISOString() } : null, evidenceSummary: row.currentSubmissionId ? row.evidenceSummary : null })),
       canExport: !!exportAuthority, hasPrivateMaterials: !!privateAuthority,
       nextCursor: rows.length > 30 && last ? Buffer.from(JSON.stringify({ id: last.id,
         createdAt: last.createdAt.toISOString(), competitionId, stage: query.stage ?? null, scope: query.scope,
@@ -387,10 +397,16 @@ export async function exportAgriWorks(actorId: string, rawQuery: unknown = {}) {
       ORDER BY es."createdAt" DESC,es.id DESC LIMIT 5001`;
     if (rows.length > 5000) return fail("AGRI_EXPORT_TOO_LARGE", 422);
     const now = await agriDatabaseClock(tx);
+    const ids = rows.flatMap(row => row.currentSubmissionId ? [row.currentSubmissionId] : []);
+    const evidenceRows = ids.length ? await tx.$queryRaw<Array<{submissionId:string; states:unknown}>>`SELECT "submissionId",jsonb_object_agg(state,total) AS states FROM (SELECT "submissionId",state,count(*)::integer AS total FROM agri_evidence_requests WHERE "submissionId"=ANY(${ids}::text[]) AND "competitionId"=${ctx.workspace.competitionId} GROUP BY "submissionId",state) counted GROUP BY "submissionId"` : [];
+    const evidenceBySubmission = new Map(evidenceRows.map(row => [row.submissionId,row.states]));
+    const manifests = query.mode === "materials" && ids.length ? await tx.$queryRaw<Array<{submissionId:string; id:string; sha256:string; canonicalJSON:string}>>`SELECT DISTINCT ON ("submissionId") "submissionId",id,sha256,"canonicalJSON" FROM agri_evidence_manifests WHERE "submissionId"=ANY(${ids}::text[]) AND "competitionId"=${ctx.workspace.competitionId} ORDER BY "submissionId",sequence DESC` : [];
+    const manifestBySubmission = new Map(manifests.map(row => [row.submissionId,row]));
     const head = ["source", "exported_at_utc", "competition_id", "scope", "stage_filter", "status_filter", "team_query", "team_id", "team_name", "entry_id", "stage_id", "stage", "revision", "current_submission_id", "sequence", "rule_version_id", "accepted_at_utc", "recorded_frozen_submission_id"];
     if (query.mode === "materials") head.push("project_id", "artifact_version_id", "summary", "repository_url", "repository_ref_kind", "repository_ref", "demo_url", "materials_json");
     // Append to preserve every existing metadata/material column position and meaning.
-    head.push("effective_frozen_submission_id", "frozen_by_deadline");
+    head.push("effective_frozen_submission_id", "frozen_by_deadline", "evidence_states_json");
+    if (query.mode === "materials") head.push("evidence_manifest_id", "evidence_manifest_sha256", "evidence_descriptors_json");
     const csv = agriCsv([head, ...rows.map(row => {
       let adoptedWindow: unknown = null;
       if (!row.frozenSubmissionId && row.currentSubmissionId) {
@@ -411,7 +427,11 @@ export async function exportAgriWorks(actorId: string, rawQuery: unknown = {}) {
         cells.push(content?.projectId, content?.artifactVersionId, content?.summary, content?.repository?.url,
           content?.repository?.ref?.kind, content?.repository?.ref?.value, content?.demoUrl, content ? JSON.stringify(content.materials) : null);
       }
-      cells.push(freeze.frozenSubmissionId, freeze.frozenByDeadline);
+      cells.push(freeze.frozenSubmissionId, freeze.frozenByDeadline, JSON.stringify(evidenceBySubmission.get(row.currentSubmissionId ?? "") ?? {REFERENCE_ONLY:1}));
+      if (query.mode === "materials") {
+        const manifest = manifestBySubmission.get(row.currentSubmissionId ?? "");
+        cells.push(manifest?.id,manifest?.sha256,manifest ? JSON.stringify(JSON.parse(manifest.canonicalJSON).objects) : null);
+      }
       return cells;
     })]);
     await tx.auditLog.create({ data: { actorId, action: "AGRI_EXPORT_WORKS", resourceType: "agri_workspace", resourceId: ctx.workspace.id,

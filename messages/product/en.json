@@ -1215,7 +1215,10 @@
     },
     "entryId": "Competition entry: {id}",
     "stageId": "Stage record: {id}",
-    "correctedFrom": "Corrects submission {id}: {reason}"
+    "correctedFrom": "Corrects submission {id}: {reason}",
+    "evidenceSummary": "Files retained: {stored} · Pending: {pending} · Need attention: {failed} · Cancelled: {cancelled}",
+    "evidenceReferenceOnly": "References recorded; external files have not been retained.",
+    "evidenceLate": "{count} file(s) retained after the cutoff; retention alone does not verify cutoff provenance."
   },
   "agriReviews": {
     "title": "Technical checks and team feedback",
@@ -1854,7 +1857,8 @@
       "RATE_LIMITED": "Too many requests. Wait, then retry the same save.",
       "INVALID_INPUT": "The request is invalid. Refresh the record and try again.",
       "AGRI_CURSOR_INVALID": "The history cursor is invalid. Refresh the list."
-    }
+    },
+    "externalEvidence": "Retained external evidence"
   },
   "computeHistory": {
     "title": "Compute statements",
@@ -3371,5 +3375,81 @@
     "confirmCompute": "Confirm compute cost before running",
     "free": "Shared for free",
     "price": "From {points} points"
+  },
+  "agriEvidence": {
+    "title": "External evidence",
+    "intro": "Save original bytes and hashes. Retention does not prove the contents existed at the deadline.",
+    "open": "View evidence",
+    "close": "Close",
+    "loading": "Loading…",
+    "working": "Saving…",
+    "privacy": "Private to this team and authorized staff. No publication, points or eligibility changes.",
+    "disabled": "Collection is disabled; existing authorized records remain readable.",
+    "upload": "Save original file",
+    "kindLabel": "Material type",
+    "fileLabel": "Choose a file",
+    "supplementHint": "Adds evidence to this submission without changing submitted content or deadline.",
+    "intentHint": "Upload first, then formally submit this exact project version. Upload alone is not submission.",
+    "github": "Save submitted GitHub version",
+    "captureDemo": "Capture Demo main response",
+    "refresh": "Refresh",
+    "empty": "No retained bytes yet. Links remain references only.",
+    "attempt": "Attempt {attempt} of {max}",
+    "captured": "Retained {at} · {bytes} bytes",
+    "verifiedCutoff": "Staff cutoff review on {at}",
+    "download": "Download original",
+    "select": "Include in fixed archive",
+    "continueUpload": "Continue with selected file",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "verify": "Record cutoff review",
+    "reason": "Evidence and rationale for this judgment",
+    "more": "Load more",
+    "manifest": "Fixed evidence archive",
+    "manifestHint": "Create an immutable manifest and v3 record from selected files. Later uploads never change it.",
+    "archive": "Save fixed archive",
+    "manifestVersion": "Manifest {sequence}",
+    "archiveSaved": "Saved archive {id}",
+    "kind": {
+      "REPOSITORY": "Repository snapshot",
+      "DEMO_DOCUMENT": "Demo main response",
+      "DEMO_VIDEO": "Demo video",
+      "SUPPORTING_FILE": "Supporting file"
+    },
+    "state": {
+      "PREPARED": "Awaiting file",
+      "QUEUED": "Queued",
+      "RUNNING": "Saving bytes",
+      "UPLOADED": "Uploaded; awaiting formal submission",
+      "STORED": "Original bytes retained",
+      "RETRY_WAIT": "Waiting to retry",
+      "FAILED": "Failed",
+      "CANCELLED": "Cancelled",
+      "NEEDS_REVIEW": "Staff review needed"
+    },
+    "temporal": {
+      "CUTOFF_UNKNOWN": "Cutoff unknown",
+      "CAPTURED_AFTER_DEADLINE": "Retained after cutoff",
+      "CAPTURED_BEFORE_DEADLINE": "Retained before cutoff"
+    },
+    "sourceTiming": {
+      "DECLARED_FIXED_COMMIT_BEFORE_CUTOFF": "Fixed commit declared before cutoff; retained at the shown time",
+      "MUTABLE_SOURCE_AT_CAPTURE": "Mutable source reflects capture time only",
+      "UNVERIFIED_SOURCE": "Origin and cutoff require human review"
+    },
+    "coverage": {
+      "CODE_TREE_NO_GIT_HISTORY_LFS_OR_SUBMODULES": "Code tree only; no Git history, LFS objects or submodule contents",
+      "MAIN_RESPONSE_ONLY_NOT_RUNNING_SITE": "Main HTTP response only; not a running website",
+      "ORIGINAL_VIDEO_BYTES": "Original video bytes",
+      "ORIGINAL_FILE_BYTES": "Original uploaded bytes"
+    },
+    "errors": {
+      "OTHER": "Request failed ({code}). Existing records remain saved.",
+      "AGRI_EVIDENCE_SOURCE_NOT_ALLOWED": "Host is not allowed. Upload original files instead.",
+      "AGRI_EVIDENCE_STORAGE_NOT_CONFIGURED": "Private durable storage must be configured first.",
+      "AGRI_EVIDENCE_TEAM_CUTOFF_CLOSED": "Window closed. Authorized technical staff can save supplements.",
+      "AGRI_EVIDENCE_TOO_LARGE": "File exceeds the configured byte limit.",
+      "AGRI_EVIDENCE_ACTIVE_REQUEST_EXISTS": "A matching request is active. Continue or cancel it first."
+    }
   }
 }

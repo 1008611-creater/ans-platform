@@ -5,6 +5,10 @@ export async function register() {
     const { startProjectWorker } = await import("@/server/projects/worker");
     startProjectWorker();
   }
+  if (process.env.NEXT_RUNTIME === "nodejs" && process.env.NEXT_PHASE !== "phase-production-build" && process.env.NODE_ENV !== "test" && process.env.ANS_AGRI_EVIDENCE_ENABLED === "true") {
+    const { startEvidenceWorker } = await import("@/server/competitions/agrihackathon/evidence-worker");
+    startEvidenceWorker();
+  }
 }
 
 export function onRequestError() {}
