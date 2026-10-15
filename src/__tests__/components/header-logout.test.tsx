@@ -149,9 +149,9 @@ it.each(["http-error", "still-authenticated", "network-error"])("does not fake s
 });
 
 
-it("exposes only two primary destinations and account utilities after language", () => {
+it("restores all six primary destinations and account utilities after language", () => {
   render(<App />);
-  const expected = ["/explore", "/market"];
+  const expected = ["/explore", "/hubs", "/community", "/competitions", "/market", "/workspace"];
   for (const label of ["a11y.mainNav", "a11y.mobileNav"]) {
     const nav = screen.getByRole("navigation", { name: label });
     expect(Array.from(nav.querySelectorAll("a")).map(link => link.getAttribute("href"))).toEqual(expected);
