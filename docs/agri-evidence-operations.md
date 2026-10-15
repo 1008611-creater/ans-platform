@@ -1,4 +1,4 @@
-﻿# 农客松私有外部证据：配置、恢复与发布门
+# 农客松私有外部证据：配置、恢复与发布门
 
 本模块保存原始文件字节，不执行、解压、转码参赛项目。对象留存、来源真实性和截止核验是三个不同事实。`STORED` 仅表示原样字节已落盘、读回哈希一致。Demo 抓取只包含主 HTTP 响应，GitHub tar 只包含代码树，不含 Git 历史、LFS 实体或子模块目标内容。人工核验有独立操作者、时间和理由事件，不改原对象。
 
@@ -41,9 +41,9 @@ claim/heartbeat/finalize 均重验账号、scope/队伍及 lease fencing。后�
 
 数据库与原文件必须成对备份：停新受理及 worker，等在途任务停稳，导出数据库并记录固定manifest/object id、hash、size及backend的inventory；复制精确namespace原文件或使用bucket备份策略。受控恢复到隔离DB与独立对象根，逐manifest和对象校验实际字节哈希、size、外键与fixed archive hash，再批准切换。只列文件名或只恢复DB不算成功。
 
-隔离工具 `scripts/agri-evidence-local-runner.cjs` 使用自己的loopback PostgreSQL18、随机临时密码、非55439空闲端口、明确fixture数据库与独立对象目录；不读生产env或供应商凭据。它执行fresh全部migration、实际bytes集成、fresh Node读取、pg_dump/pg_restore到第二个隔离DB与独立对象目录再读回。测试资料是合成fixture，不是生产参赛数据。首次失败日志保留。
+隔离工具 `scripts/agri-evidence-local-runner.cjs` 使用自己的loopback PostgreSQL18、随机临时密码、非55439空闲端口、明确fixture数据库与独立对象目录；不读生产env或供应商凭据。它执行fresh全部migration、实际bytes集成，并通过真实task服务创建UNKNOWN/TENTATIVE/CONFIRMED三种依赖日期的非空BLOCKED任务及事件/回执；fresh Node读取后，以标准pg_dump/pg_restore --exit-on-error恢复到第二个隔离DB与独立对象目录，再核对原字节、v1/v2/v3档案和完整任务历史。pg_ctl日志使用文件句柄，避免Windows后台PostgreSQL继承捕获管道使启动/停止检查超时。测试资料是合成fixture，不是生产参赛数据。首次失败日志保留。
 
-增量迁移 `20261015190000_agri_evidence_reconciliation` 扩展 RESOLVED 状态和不可变解析 guard，原六表迁移 `20261015173000_agri_external_evidence` 字节/checksum 保持不变。回滚仍保留两份迁移与新 reader，不能把新增状态交给不认识它的旧 writer。
+增量迁移 `20261015190000_agri_evidence_reconciliation` 扩展 RESOLVED 状态和不可变解析 guard，原六表迁移 `20261015173000_agri_external_evidence` 字节/checksum 保持不变。回滚仍保留两份迁移与新 reader，不能把新增状态交给不认识它的旧 writer。 main的独立修复 `20261015210000_agri_task_restore_helpers` 为任务CHECK helper内部调用显式限定public schema，必须一并保留；否则标准恢复的空search_path会使带非空输入依赖的任务COPY失败。组合候选当前90项迁移，不改原有历史checksum。旧备份含旧helper时应按已验证的分段恢复顺序先恢复pre-data、应用准确helper修复、再恢复data/post-data并用Prisma对齐迁移记录，不改写导出SQL或放宽CHECK。
 
 v1/v2 canonical JSON与hash不重写。v3显式选择不可变manifest，未来live补交不改变旧档案。回滚先 `ANS_AGRI_EVIDENCE_ENABLED=false` 停写，保留新schema和所有字节。**v3一旦存在，旧镜像只支持1/2的档案列表会失败；不能无条件回滚旧镜像。** 回滚应保留支持v3读取的新reader镜像，仅停新writer/worker；或先单独发布reader兼容版，再启用v3。首次默认关闭且无v3产生时旧镜像可继续读旧数据。回滚不得DROP表、删除v3或对象。
 

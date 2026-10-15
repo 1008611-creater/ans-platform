@@ -42,6 +42,16 @@ for (const raw of [process.env.DATABASE_URL, process.env.DIRECT_URL]) {
 const dir = process.env.AGRI_EVIDENCE_REPORT_DIR!;
 async function main() {
     const { db } = await import("../src/lib/db");
+    const { executeAgriTaskCommand: task, getAgriTask: taskDetail } = await import("../src/server/competitions/agrihackathon/tasks");
+    const { agriTaskTemplates } = await import("../src/domain/competitions/agri-task-templates");
+    const taskSnapshot = async (competitionId: string) => {
+        const [row] = await db.$queryRaw<Array<{ snapshot: string }>>`SELECT jsonb_build_object(
+            'tasks',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM agri_personal_tasks t WHERE "competitionId"=${competitionId}),
+            'events',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM agri_task_events t WHERE "taskId" IN (SELECT id FROM agri_personal_tasks WHERE "competitionId"=${competitionId})),
+            'receipts',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM agri_task_command_receipts t WHERE "competitionId"=${competitionId})
+        )::text AS snapshot`;
+        return row.snapshot;
+    };
     const { executeAgriWorkspaceCommand: rules, readAgriWorkspaceRules: getRules, lockAgriWorkspace } = await import("../src/server/competitions/agrihackathon/workspace");
     const { prepareAgriStage: prepare, executeAgriSubmissionCommand: submit, exportAgriWorks: csv, listAgriStages, readAgriStage } = await import("../src/server/competitions/agrihackathon/submissions");
     const { createEvidence, listEvidence, executeEvidenceCommand: command, authorizedEvidenceDownload: download, evidenceTransition, evidenceRequest, bindEvidenceIntents, evidenceBudget } = await import("../src/server/competitions/agrihackathon/evidence");
@@ -101,6 +111,20 @@ async function main() {
                 }
                 for (const old of await db.agriRecordArchive.findMany({ where: { snapshotSchemaVersion: { in: [1, 2] } } })) {
                     assert.equal(createHash("sha256").update(old.snapshotCanonical).digest("hex"), old.snapshotHash);
+                }
+            });
+            await check("fresh Node retains nonempty BLOCKED dependencies, history and receipts after standard restore", async () => {
+                assert.equal(await taskSnapshot(f.competitionId), f.taskSnapshot);
+                const snapshot = JSON.parse(f.taskSnapshot);
+                assert.equal(snapshot.tasks.length, 3);
+                assert.equal(snapshot.events.length, 3);
+                assert.equal(snapshot.receipts.length, 3);
+                assert.deepEqual(snapshot.tasks.map((t: { dueState: string }) => t.dueState).sort(), ["CONFIRMED", "TENTATIVE", "UNKNOWN"]);
+                for (const row of snapshot.tasks) {
+                    const actual = await taskDetail(f.ownerId, row.id);
+                    assert.equal(actual.task.status, "BLOCKED");
+                    assert.equal(actual.task.inputRequirements.items.length, 1);
+                    assert.ok(actual.task.blockingInput);
                 }
             });
             passed = true;
@@ -468,7 +492,19 @@ async function main() {
             assert.equal((await reconcileEvidenceReservations(true)).requests.some(r => r.requestId === id), false);
         });
         await check("private CSV retains authorized material export and never exposes storage keys", async () => { const result = await csv(staff.id, { mode: "materials" }); assert.ok(!result.csv.includes("agri-evidence/v1/")); });
-        await writeFile(resolve(dir, "fixture.json"), JSON.stringify({ competitionId: edition.id, ownerId: owner.id, staffId: staff.id, objectId, archiveId, archiveHash }));
+        await check("standard restore fixture includes BLOCKED tasks with UNKNOWN, TENTATIVE and CONFIRMED nonempty dependencies", async () => {
+            const at = new Date(Date.now() + 3600000).toISOString();
+            const dates = [{ state: "UNKNOWN" as const, at: null }, { state: "TENTATIVE" as const, at }, { state: "CONFIRMED" as const, at }];
+            for (const due of dates) {
+                const dependency = { from: "LOCAL FIXTURE", needed: "Restore dependency", latestAt: due };
+                const created = await task(owner.id, { action: "create", idempotencyKey: randomUUID(), task: {
+                    ...agriTaskTemplates("en")[0].task, status: "BLOCKED", due,
+                    inputRequirements: { schemaVersion: 1, items: [dependency] }, blockingInput: dependency,
+                } });
+                assert.ok(created.task);
+            }
+        });
+        await writeFile(resolve(dir, "fixture.json"), JSON.stringify({ competitionId: edition.id, ownerId: owner.id, staffId: staff.id, objectId, archiveId, archiveHash, taskSnapshot: await taskSnapshot(edition.id) }));
         passed = true;
     }
     finally {
