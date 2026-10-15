@@ -141,4 +141,23 @@ describe("owner media file status", () => {
     const signal = mocks.fetch.mock.calls[0][1].signal as AbortSignal; ui.unmount(); expect(signal.aborted).toBe(true);
     await act(async () => pending.resolve(response(payload(receipt("AVAILABLE"))))); expect(mocks.fetch).toHaveBeenCalledTimes(1);
   });
+  it("offers the server task URL only for a verified available receipt", async () => {
+    const resultUrl = "https://toonflow.cauai.fun/compute/result?taskId=compute-task-a";
+    mocks.fetch.mockResolvedValue(response(payload(receipt("AVAILABLE"))));
+    const ui = render(<ComputeDeliveryStatus {...props} resultUrl={resultUrl} />); view();
+    const link = await screen.findByRole("link", { name: zh.computeDelivery.openResult });
+    expect(link).toHaveAttribute("href", resultUrl);
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(screen.getByRole("status")).toHaveTextContent(zh.computeDelivery.availableToOpen);
+    mocks.session.mockReturnValue({ status: "authenticated", data: { user: { id: "owner-b" } } });
+    ui.rerender(<ComputeDeliveryStatus {...props} resultUrl={resultUrl} />);
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+  it.each(["PENDING", "FAILED", "UNAVAILABLE"] as const)("never links a %s receipt", async state => {
+    mocks.fetch.mockResolvedValue(response(payload(receipt(state))));
+    render(<ComputeDeliveryStatus {...props} resultUrl="https://toonflow.cauai.fun/compute/result?taskId=compute-task-a" />); view();
+    await screen.findByText(zh.computeDelivery.states[state]);
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
 });

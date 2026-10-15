@@ -8,6 +8,7 @@ export const computeCommandSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("balance"), userId }).strict(),
   z.object({ action: z.literal("quote"), userId, modelId, maxUnits: z.number().int().min(1).max(1_000_000_000) }).strict(),
   z.object({ action: z.literal("reserve"), userId, modelId, maxUnits: z.number().int().min(1).max(1_000_000_000), idempotencyKey: identifier, expectedPolicyVersion: identifier.optional(), expectedUnit: z.enum(["token", "image", "second"]).optional(), maxAuthorizedPoints: z.number().int().min(1).max(2_000_000_000).optional() }).strict(),
+  z.object({ action: z.literal("reservation"), userId, modelId, maxUnits: z.number().int().min(1).max(1_000_000_000), idempotencyKey: identifier, expectedPolicyVersion: identifier.optional(), expectedUnit: z.enum(["token", "image", "second"]).optional(), maxAuthorizedPoints: z.number().int().min(1).max(2_000_000_000).optional() }).strict(),
   z.object({ action: z.literal("read"), userId, taskId: identifier }).strict(),
   z.object({ action: z.literal("history"), userId, limit: z.number().int().min(1).max(100).default(30) }).strict(),
   z.object({ action: z.literal("start"), ...taskFields }).strict(),
