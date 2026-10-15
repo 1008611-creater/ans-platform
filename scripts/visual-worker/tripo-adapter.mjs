@@ -1,9 +1,26 @@
 import models from "../../src/contracts/tripo-models.json" with {type:"json"};
 import { execFile } from "node:child_process";
+import { open } from "node:fs/promises";
+import { constants } from "node:fs";
+import { isAbsolute } from "node:path";
 import { promisify } from "node:util";
 const run=promisify(execFile);
 export class ProviderError extends Error {constructor(code){super(code);this.code=code;}}
+/** Linux services mount a private JSON secret; Windows keeps its DPAPI default. */
+export async function readCredentialFile(file){
+ let handle;
+ try {
+  if(!isAbsolute(file))throw new Error();
+  handle=await open(file,constants.O_RDONLY|(constants.O_NOFOLLOW||0));
+  const info=await handle.stat();
+  if(!info.isFile()||info.size<2||info.size>16384||(process.platform!=="win32"&&(info.mode&0o077)!==0))throw new Error();
+  const value=JSON.parse(await handle.readFile("utf8"));
+  if(typeof value.username!=="string"||!value.username.trim()||value.username.length>1024||typeof value.password!=="string"||!value.password||value.password.length>4096)throw new Error();
+  return {username:value.username,password:value.password};
+ }catch{throw new ProviderError("CREDENTIAL_UNAVAILABLE");}finally{await handle?.close();}
+}
 export async function readCredential(){
+ if(process.env.ANS_TRIPO_CREDENTIAL_FILE)return readCredentialFile(process.env.ANS_TRIPO_CREDENTIAL_FILE);
  if(process.platform!=="win32")throw new ProviderError("CREDENTIAL_UNAVAILABLE");
  const script=`$ErrorActionPreference='Stop'; $OutputEncoding=[System.Text.UTF8Encoding]::new($false); [Console]::OutputEncoding=$OutputEncoding; $p=Join-Path $env:LOCALAPPDATA 'ANS/credentials/tripo3d.credential.xml'; $c=Import-Clixml -LiteralPath $p; @{username=$c.UserName;password=$c.GetNetworkCredential().Password}|ConvertTo-Json -Compress`;
  try {const result=await run("powershell.exe",["-NoProfile","-NonInteractive","-Command",script],{windowsHide:true,encoding:"utf8",maxBuffer:20000});const value=JSON.parse(result.stdout);if(!value.username||!value.password)throw new Error();return value;}catch{throw new ProviderError("CREDENTIAL_UNAVAILABLE");}
@@ -60,9 +77,9 @@ export class TripoAdapter {
   if(body&&!(body instanceof FormData))headers["content-type"]="application/json";
   const response=await this.fetch(`https://tripo3d.uk${path}`,{method,headers,body:body instanceof FormData?body:body?JSON.stringify(body):undefined,redirect:"error",signal:AbortSignal.timeout(60000)});
   if(response.status===401&&auth){this.token=null;if(method==="GET"&&authRetry)return this.request(path,{method,body,auth,authRetry:false});}
-  if(!response.ok)throw new ProviderError(response.status===401?"LOGIN_REQUIRED":"PROVIDER_FAILED");
-  let envelope;try{envelope=JSON.parse((await limited(response,2000000)).toString("utf8"));}catch(error){if(error instanceof ProviderError)throw error;throw new ProviderError("PROVIDER_FAILED");}
-  if(envelope.code!==0)throw new ProviderError("PROVIDER_FAILED");return envelope.data??envelope;
+  if(!response.ok)throw new ProviderError(response.status===401?"LOGIN_REQUIRED":"PROVIDER_UNAVAILABLE");
+  let envelope;try{envelope=JSON.parse((await limited(response,2000000)).toString("utf8"));}catch(error){if(error instanceof ProviderError)throw error;throw new ProviderError("PROVIDER_UNAVAILABLE");}
+  if(envelope.code!==0)throw new ProviderError("PROVIDER_UNAVAILABLE");return envelope.data??envelope;
  }
  async login(){let credentials=await this.credential();try{const value=await this.request("/api/auth/login",{method:"POST",body:credentials,auth:false});if(typeof value.access_token!=="string")throw new ProviderError("LOGIN_REQUIRED");this.token=value.access_token;}finally{credentials=null;}}
  async preflight(){await this.login();const models=await this.request("/api/gen-models");if(!models.p?.some(item=>item.value==="P2-20260801"))throw new ProviderError("MODEL_UNSUPPORTED");return {authenticated:true,model:"P2-20260801",submission:false};}
