@@ -24,6 +24,7 @@ const steps = [
   // 测试变红，但会把数据库/凭证代码拖进浏览器 bundle，或让分层约束悄悄腐化。
   ["boundaries", "npm", ["run", "check:boundaries"]],
   ["unit tests", "npm", ["run", "test:unit"]],
+  ["Easel gateway tests", "node", ["--test", "services/easel-gateway/*.test.mjs"]],
   ["security audit", "npm", ["run", "audit:security"]],
   ["build", "npm", ["run", "build"]],
   ["browser smoke", "npm", ["run", "smoke"]],

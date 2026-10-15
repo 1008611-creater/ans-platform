@@ -1,0 +1,6 @@
+FROM node:24-bookworm-slim
+WORKDIR /app
+COPY services/easel-gateway/egress.mjs /app/egress.mjs
+USER node
+EXPOSE 8090 8091
+ENTRYPOINT ["node", "/app/egress.mjs"]

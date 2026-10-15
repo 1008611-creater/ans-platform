@@ -1,0 +1,70 @@
+diff --git a/web/frontend/src/lib/api.ts b/web/frontend/src/lib/api.ts
+--- a/web/frontend/src/lib/api.ts
++++ b/web/frontend/src/lib/api.ts
+@@ -1,3 +1,4 @@
++import { privateMediaUrl } from './ans-owner';
+ function getBasePath(): string {
+   const path = window.location.pathname;
+   const cleaned = path.replace(/\/index\.html$/, '').replace(/\/$/, '');
+@@ -324,7 +325,7 @@ export function fetchOutputContent(path: string): Promise<OutputContent> {
+
+ /** 媒体文件（图片/视频/音频/HTML/PDF）的原样 URL，用于 <img>/<video>/iframe/下载。 */
+ export function mediaUrl(path: string): string {
+-  return `${BASE}/api/media/${path.split('/').map(encodeURIComponent).join('/')}`;
++  return privateMediaUrl(`${BASE}/api/media/${path.split('/').map(encodeURIComponent).join('/')}`);
+ }
+
+ /** 删除内容库里的文件或整个项目目录（系统数据受保护，后端会拒）。 */
+diff --git a/web/frontend/src/lib/artifacts.ts b/web/frontend/src/lib/artifacts.ts
+--- a/web/frontend/src/lib/artifacts.ts
++++ b/web/frontend/src/lib/artifacts.ts
+@@ -1,3 +1,4 @@
++import { mediaPrefix, privateMediaUrl } from './ans-owner';
+ export interface Artifact {
+   url: string;
+   name: string;
+@@ -9,8 +10,7 @@ function hasUnsafeCharacters(value: string): boolean {
+ }
+
+ export function artifactFromUrl(url: string): Artifact | null {
+-  const prefix = url.startsWith('/api/media/') ? '/api/media/'
+-    : url.startsWith('#/outputs/') ? '#/outputs/' : null;
++  const prefix = mediaPrefix(url) ?? (url.startsWith('#/outputs/') ? '#/outputs/' : null);
+   if (!prefix || hasUnsafeCharacters(url)) return null;
+   try {
+     const encodedPath = url.slice(prefix.length).split(/[?#]/)[0];
+@@ -26,7 +26,7 @@ export function artifactFromUrl(url: string): Artifact | null {
+       : extension === 'pdf' ? 'pdf' : null;
+     const target = prefix === '#/outputs/'
+       ? '/api/media/' + path.split('/').map(encodeURIComponent).join('/') : url;
+-    return kind ? { url: target, name, kind } : null;
++    return kind ? { url: privateMediaUrl(target), name, kind } : null;
+   } catch {
+     return null;
+   }
+@@ -62,8 +62,7 @@ export function extractArtifacts(html: string): { html: string; artifacts: Artif
+ }
+
+ export function archiveFromUrl(url: string): string | null {
+-  const prefix = url.startsWith('/api/media/') ? '/api/media/'
+-    : url.startsWith('#/outputs/') ? '#/outputs/' : null;
++  const prefix = mediaPrefix(url) ?? (url.startsWith('#/outputs/') ? '#/outputs/' : null);
+   if (!prefix || hasUnsafeCharacters(url)) return null;
+   try {
+     const path = decodeURIComponent(url.slice(prefix.length).split(/[?#]/)[0]);
+diff --git a/web/frontend/src/lib/ans-owner.ts b/web/frontend/src/lib/ans-owner.ts
+new file mode 100644
+--- /dev/null
++++ b/web/frontend/src/lib/ans-owner.ts
+@@ -0,0 +1,11 @@
++// Bind browser media requests to the account that originally opened this page.
++const owner = new URLSearchParams(window.location.search).get('ans_owner');
++export function privateMediaUrl(value: string): string {
++  if (!owner) return value;
++  const url = new URL(value, window.location.origin);
++  if (url.origin !== window.location.origin || !url.pathname.startsWith('/api/media/')) return value;
++  return '/ans/media/' + encodeURIComponent(owner) + '/' + url.pathname.slice('/api/media/'.length) + url.search + url.hash;
++}
++export function mediaPrefix(value: string): string | null {
++  return value.match(/^\/ans\/media\/[^/]+\//)?.[0] ?? (value.startsWith('/api/media/') ? '/api/media/' : null);
++}
