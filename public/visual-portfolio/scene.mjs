@@ -111,7 +111,8 @@ function addSticker(sticker,layerOrder){
  if(!positions.length)return;
  const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect x="8" y="8" width="240" height="240" rx="60" fill="'+sticker.color+'" stroke="white" stroke-width="10"/><text x="128" y="139" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="'+(sticker.text.length>4?32:66)+'" fill="#181818">'+escape(sticker.text)+'</text></svg>';
- const imageTexture=cfg.stickerTextures?.[sticker.id];
+ const candidateTexture=cfg.stickerTextures && Object.hasOwn(cfg.stickerTextures,sticker.id) ? cfg.stickerTextures[sticker.id] : undefined;
+ const imageTexture=typeof candidateTexture==="string" ? candidateTexture : undefined;
  const textureSource=imageTexture||'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.computeVertexNormals();
  const material=new T.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-4});material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','if(vMapUv.x<0.0||vMapUv.x>1.0||vMapUv.y<0.0||vMapUv.y>1.0)discard;\n#include <map_fragment>');};
