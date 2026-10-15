@@ -30,11 +30,19 @@ describe("explicit real Hub associations", () => {
   });
 });
 describe("unified finite primary navigation", () => {
-  it("keeps only project discovery and marketplace as public destinations", () => {
-    expect(PRIMARY_NAVIGATION.map(item => item.href)).toEqual(["/explore", "/market"]);
+  it("keeps the six requested destinations without a standalone workflow directory", () => {
+    expect(PRIMARY_NAVIGATION.map(item => item.href)).toEqual(["/explore", "/hubs", "/community", "/competitions", "/market", "/workspace"]);
   });
-  it.each(["/hubs", "/workflows", "/workflows/hypit", "/workspace", "/projects/private/website"])("does not highlight retired public navigation for %s", path => {
+  it.each(["/workflows", "/workflows/hypit"])("does not highlight retired public navigation for %s", path => {
     expect(PRIMARY_NAVIGATION.filter(item => isPrimaryNavigationActive(item.id, path))).toEqual([]);
+  });
+  it.each([
+    ["hubs", "/hubs/cauhub"], ["hubs", "/vibe-hub"], ["community", "/community/members"],
+    ["competitions", "/competitions/agrihackathon"], ["workspace", "/workspace/credits"],
+    ["workspace", "/projects/private/website"], ["workspace", "/teams/example"],
+  ] as const)("highlights the restored %s destination on nested routes", (id, path) => {
+    expect(PRIMARY_NAVIGATION.filter(item => isPrimaryNavigationActive(item.id, path)).map(item => item.id)).toEqual([id]);
+    expect(isPrimaryNavigationActive(id, `${PRIMARY_NAVIGATION.find(item => item.id === id)!.href}-unrelated`)).toBe(false);
   });
   it("matches route boundaries and the home page", () => {
     expect(isPrimaryNavigationActive("market", "/market/resume-website")).toBe(true);
