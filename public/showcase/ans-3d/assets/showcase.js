@@ -482,168 +482,972 @@ class MotionDirector {
     const th = deg * (Math.PI / 180.0);
     const dth = 270.0 * (Math.PI / 180.0);
 
-    // Compact clockwise orbit around your head center (0.28, 0.08, 0.06) in M local space so the dinosaur stays well inside the viewport:
-    // Behind/above head (cos(th) = +1, 12h): halo arc (x = -0.06, y = +0.24, z = +0.06)
-    // Right ear         (sin(th) = +1, 3h):  right side (x = +0.28, y = +0.08, z = -0.38)
-    // Front of face     (cos(th) = -1, 6h):  front face (x = +0.62, y = -0.08, z = +0.06) -> swoops to Camera Super Macro!
-    // Left ear          (sin(th) = -1, 9h):  left side  (x = +0.28, y = +0.08, z = +0.50)
-    const ox = 0.28 - 0.34 * Math.cos(th);
-    const oy = 0.08 + 0.16 * Math.cos(th);
-    const oz = 0.06 - 0.44 * Math.sin(th);
+    // Wide, sweeping clockwise 3D orbit around your head center (0.26, 0.16, 0.06) in M local space (scale 2.25 -> ~1.76m world radius!):
+    // Behind/above head (cos(th) = +1, 12h): high halo arc (x = -0.30, y = +0.42, z = +0.06)
+    // Right side        (sin(th) = +1, 3h):  wide right sweep (x = +0.26, y = +0.16, z = -0.72)
+    // Front of face     (cos(th) = -1, 6h):  front of face (x = +0.82, y = -0.10, z = +0.06) -> swoops to Camera Super Macro!
+    // Left side         (sin(th) = -1, 9h):  wide left sweep  (x = +0.26, y = +0.16, z = +0.84)
+    const ox = 0.26 - 0.56 * Math.cos(th);
+    const oy = 0.16 + 0.26 * Math.cos(th);
+    const oz = 0.06 - 0.78 * Math.sin(th);
 
-    const tx =  0.34 * Math.sin(th) * dth;
-    const ty = -0.16 * Math.sin(th) * dth;
-    const tz = -0.44 * Math.cos(th) * dth;
+    const tx =  0.56 * Math.sin(th) * dth;
+    const ty = -0.26 * Math.sin(th) * dth;
+    const tz = -0.78 * Math.cos(th) * dth;
 
     // Front-of-face detector: frontness = -cos(th) is +1.0 when directly in front of your face (180 deg / 6h)
     const frontness = -Math.cos(th);
-    const macroRaw = Math.max(0.0, Math.min(1.0, (frontness - 0.38) / 0.62));
+    const macroRaw = Math.max(0.0, Math.min(1.0, (frontness - 0.42) / 0.58));
     // Smooth quintic bell curve for diving from head-orbit right up to the Camera Super Macro lens!
     const macroWeight = macroRaw * macroRaw * macroRaw * (macroRaw * (macroRaw * 6.0 - 15.0) + 10.0);
 
-    return { pos: [ox, oy, oz], tangent: [tx, ty, tz], macroWeight, deg };
+    return { pos: [ox, oy, oz], tangent: [tx, ty, tz], macroWeight, deg, th };
   }
 
-  // Rich Kaomoji Rambling Presets (Normal Orbit + Super Macro Close-Up + Mouse Hover + Mouse Click)
+  // Rich Kaomoji Rambling Presets (Normal Orbit + Super Macro + Hover + Click + Whip Butt to Work + Random Meme Feeding)
   const MOOD_PRESETS = {
     // 8 Autonomous Orbiting Ramblings (Natural random changes)
-    happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 顺时针绕着主理人头顶巡航中", sub: "💡 鼠标移到我身上可以摸头互动哦" },
-    curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看... 这个工作流能抄作业！", sub: "✨ 向下滚动，看看 ANS 的产品入口" },
-    starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个 3D 展示有点意思", sub: "🦖 我是 ANS 创作搭子小恐龙" },
-    cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在主理人耳边兜风，灵感慢慢来~", sub: "🍃 看看风景，想想下一个作品" },
-    cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感永不停歇", sub: "🎯 点击章节链接可直达线上页面" },
+    happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 顺时针绕着主理人头顶大圈巡航中", sub: "💡 再点小恐龙解锁「皮鞭催干活 & 盲盒投喂」互动台！" },
+    curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看... 这个工作流能抄作业！", sub: "✨ 连续点我 3 次以上可召唤专属训龙互动 UI" },
+    starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个 3D 展示有点意思", sub: "🦖 我是 ANS 创作搭子小恐龙 · 随时听候差遣" },
+    cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在主理人耳边兜大圈偷个小懒，应该没被发现吧~", sub: "🪢 警告：摸鱼过多可能会被主理人拿小皮鞭抽屁股" },
+    cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感永不停歇", sub: "🎯 点击感叹号看我碎碎念，多戳几下有惊喜" },
     focused_think:  { happy: 0.16, star: 0.38, blush: 0.30, mouth: 0.14, gesture: "think",     kaomoji: "( •̀ ω •́ ) ⚡", text: "帮你盯着呢，绝不让收藏夹吃灰！", sub: "🔍 看懂项目，再动手做点东西" },
-    sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "绕圈飞累了伸个懒腰，继续满血护航", sub: "💫 移上鼠标或点我一下试试看~" },
-    aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚在主理人脑门上抓到一个新灵感", sub: "🚀 滑到脸前我会飞到镜头前找你玩！" },
+    sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "绕圈飞累了伸个懒腰，偷偷打个小盹~", sub: "💫 快点我几下把我叫醒起来搬砖！" },
+    aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚在主理人头顶抓到一个新灵感", sub: "🚀 滑到脸前我会飞到镜头前找你玩！" },
 
-    // 4 Camera Super Macro Close-Up Ramblings (When orbiting in front of face -> flies right up to camera lens!)
-    macro0:         { happy: 0.96, star: 0.95, blush: 0.94, mouth: 0.85, gesture: "hello",     kaomoji: "( ✧∀✧ ) 📸", text: "贴脸杀！飞到超微距镜头前逮住你啦~", sub: "✨ 快来摸摸我或点我互动一下！", badgeType: "macro" },
+    // 4 Camera Super Macro Close-Up Ramblings
+    macro0:         { happy: 0.96, star: 0.95, blush: 0.94, mouth: 0.85, gesture: "hello",     kaomoji: "( ✧∀✧ ) 📸", text: "贴脸杀！飞到超微距镜头前逮住你啦~", sub: "✨ 连续点我解锁「挥鞭催干活 & 随机盲盒投喂」！", badgeType: "macro" },
     macro1:         { happy: 1.00, star: 0.80, blush: 1.00, mouth: 0.78, gesture: "curious",   kaomoji: "( ˶ˆᗜˆ˵ ) ✌️", text: "超微距营业中！我脸上的小腮红好看吗", sub: "💖 正对摄像机给你比个大大的耶~", badgeType: "macro" },
-    macro2:         { happy: 0.90, star: 1.00, blush: 0.88, mouth: 0.90, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🔍", text: "凑近镜头碎碎念：快去拆解神仙项目！", sub: "🦖 点我一下给你表演绝活儿~", badgeType: "macro" },
-    macro3:         { happy: 0.85, star: 0.90, blush: 0.96, mouth: 0.70, gesture: "shy",       kaomoji: "( ´ ▽ ` )ﾉ ✨", text: "离镜头这么近有点小害羞嘿嘿...", sub: "👆 鼠标移上来摸摸我的小脑袋吧", badgeType: "macro" },
+    macro2:         { happy: 0.90, star: 1.00, blush: 0.88, mouth: 0.90, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🔍", text: "凑近镜头碎碎念：快去拆解神仙项目！", sub: "🦖 多点我几下开启隐藏训龙面板~", badgeType: "macro" },
+    macro3:         { happy: 0.85, star: 0.90, blush: 0.96, mouth: 0.70, gesture: "shy",       kaomoji: "( ´ ▽ ` )ﾉ ✨", text: "离镜头这么近有点小害羞嘿嘿...", sub: "👆 戳我超过 3 次就能投喂奇葩美食啦", badgeType: "macro" },
 
-    // 5 Mouse Hover Interactive Ramblings (When user moves mouse onto the dinosaur!)
-    hover0:         { happy: 1.00, star: 0.88, blush: 1.00, mouth: 0.82, gesture: "hello",     kaomoji: "( ˶ˆᗜˆ˵ ) 🫳", text: "哇！被你的鼠标摸头啦，好舒服呀~", sub: "✨ 再点我一下，给你表演开心蹦跳！", badgeType: "hover" },
-    hover1:         { happy: 0.96, star: 0.95, blush: 0.92, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ )/ 💫", text: "别挠痒痒哈哈哈！我的尾巴都摇飞啦", sub: "🎯 点击小恐龙触发隐藏特技动作！", badgeType: "hover" },
-    hover2:         { happy: 0.88, star: 1.00, blush: 0.90, mouth: 0.76, gesture: "curious",   kaomoji: "( ☆▽☆ ) 🤝", text: "捕捉到野生鼠标一只！要一起造物吗", sub: "🔥 点我一下，送你一个加油表情", badgeType: "hover" },
-    hover3:         { happy: 0.94, star: 0.75, blush: 1.00, mouth: 0.68, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 💖", text: "蹭蹭你的鼠标指针~ 灵感全都传给你", sub: "✨ 点击我还能切换更多搞怪表情哦", badgeType: "hover" },
-    hover4:         { happy: 0.25, star: 0.92, blush: 0.75, mouth: 0.80, gesture: "surprise",  kaomoji: "( ⊙▽⊙ ) ✨", text: "盯——我正顺着网线看着你的鼠标呢！", sub: "👆 快戳我一下试试会发生什么~", badgeType: "hover" },
+    // 5 Mouse Hover Interactive Ramblings
+    hover0:         { happy: 1.00, star: 0.88, blush: 1.00, mouth: 0.82, gesture: "hello",     kaomoji: "( ˶ˆᗜˆ˵ ) 🫳", text: "哇！被你的鼠标摸头啦，好舒服呀~", sub: "✨ 点开感叹号或连点我 3 次开启深度互动！", badgeType: "hover" },
+    hover1:         { happy: 0.96, star: 0.95, blush: 0.92, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ )/ 💫", text: "别挠痒痒哈哈哈！我的尾巴都摇飞啦", sub: "🎯 继续点击小恐龙召唤「训龙互动台」！", badgeType: "hover" },
+    hover2:         { happy: 0.88, star: 1.00, blush: 0.90, mouth: 0.76, gesture: "curious",   kaomoji: "( ☆▽☆ ) 🤝", text: "捕捉到野生鼠标一只！要一起造物吗", sub: "🔥 连点我解锁「挥鞭抽屁股催工」与「盲盒投喂」", badgeType: "hover" },
+    hover3:         { happy: 0.94, star: 0.75, blush: 1.00, mouth: 0.68, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 💖", text: "蹭蹭你的鼠标指针~ 灵感全都传给你", sub: "✨ 点击我切换表情，点满 3 次进入互动专场", badgeType: "hover" },
+    hover4:         { happy: 0.25, star: 0.92, blush: 0.75, mouth: 0.80, gesture: "surprise",  kaomoji: "( ⊙▽⊙ ) ✨", text: "盯——我正顺着网线看着你的鼠标呢！", sub: "👆 快戳我几下试试会发生什么~", badgeType: "hover" },
 
-    // 6 Mouse Click Interactive Ramblings (When user clicks the dinosaur!)
-    click0:         { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🎉", text: "耶！收到投喂，原地开心蹦两下！", sub: "💖 给你加油，慢慢做出自己的作品", badgeType: "click" },
-    click1:         { happy: 0.92, star: 0.65, blush: 1.00, mouth: 0.55, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 🙈", text: "哎呀被戳脸蛋了，害羞转身偷看你~", sub: "✨ 再点一下看看我的其他小表情！", badgeType: "click" },
-    click2:         { happy: 0.96, star: 1.00, blush: 0.88, mouth: 0.88, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "灵感雷达启动！AI Never Stops 冲鸭", sub: "🚀 去看看 3D 个人网站工作室", badgeType: "click" },
-    click3:         { happy: 0.90, star: 0.80, blush: 0.94, mouth: 0.95, gesture: "hello",     kaomoji: "( ˆڡˆ ) 🦖",  text: "嗷呜一口吃掉你的拖延症！马上开工", sub: "🎉 继续点我，我还有好多碎碎念呢", badgeType: "click" },
-    click4:         { happy: 0.82, star: 0.85, blush: 0.78, mouth: 0.65, gesture: "nod",       kaomoji: "( •̀ ω •́ )ゞ ⚡", text: "收到！一起看看项目和工作流", sub: "💡 滚轮上下滑动可看我顺时针绕头飞", badgeType: "click" },
-    click5:         { happy: 0.78, star: 0.50, blush: 0.86, mouth: 0.72, gesture: "stretch",   kaomoji: "( ˘◡˘ ) 💕",  text: "贴贴成功！给你表演个空中伸懒腰~", sub: "🌟 下滑到底部还有交互式卡片画廊哦", badgeType: "click" }
+    // 6 Mouse Click Interactive Ramblings
+    click0:         { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🎉", text: "耶！气泡展开啦，原地开心蹦两下！", sub: "💖 再点我几下即可召唤「皮鞭催工 & 随机投喂」面板", badgeType: "click" },
+    click1:         { happy: 0.92, star: 0.65, blush: 1.00, mouth: 0.55, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 🙈", text: "哎呀被戳脸蛋了，害羞转身偷看你~", sub: "✨ 马上就要解锁深度训龙互动 UI 啦！", badgeType: "click" },
+    click2:         { happy: 0.96, star: 1.00, blush: 0.88, mouth: 0.88, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "训龙互动台已就绪！快来鞭策或投喂我吧！", sub: "🚀 下方互动按钮已开启，页面文字已自动半透明避让", badgeType: "click" },
+    click3:         { happy: 0.90, star: 0.80, blush: 0.94, mouth: 0.95, gesture: "hello",     kaomoji: "( ˆڡˆ ) 🦖",  text: "嗷呜一口吃掉你的拖延症！马上开工", sub: "🎉 试试用下方按钮抽我屁股催干活，或者盲盒投喂！", badgeType: "click" },
+    click4:         { happy: 0.82, star: 0.85, blush: 0.78, mouth: 0.65, gesture: "nod",       kaomoji: "( •̀ ω •́ )ゞ ⚡", text: "收到！打工人打工魂，随时准备肝代码", sub: "💡 点击下方「挥鞭抽屁股」或「随机盲盒投喂」试试", badgeType: "click" },
+    click5:         { happy: 0.78, star: 0.50, blush: 0.86, mouth: 0.72, gesture: "stretch",   kaomoji: "( ˘◡˘ ) 💕",  text: "贴贴成功！给你表演个空中伸懒腰~", sub: "🌟 肚子有点饿了，快点下方「随机投喂」喂我吃一口", badgeType: "click" },
+
+    // 8 Whip-Butt-to-Work Ramblings (用鞭子抽屁股催它努力干活的真实反应与碎碎念!)
+    whip0:          { happy: 0.08, star: 0.95, blush: 1.00, mouth: 0.96, gesture: "surprise",  kaomoji: "( >﹏<。) 💥", text: "啪！！嗷呜屁股开花啦！已经在光速敲代码改Bug了！！", sub: "⚡ 手速飙升 300% · 键盘正在冒火星子中 · 绝不敢摸鱼了", badgeType: "whip" },
+    whip1:          { happy: 0.12, star: 0.88, blush: 1.00, mouth: 0.92, gesture: "nod",       kaomoji: "( ；´Д｀) 🪢", text: "别抽屁股了老板！这份 PRD 我今晚通宵肝完还不行吗！", sub: "🔥 天选打工龙 · 含泪连夜推进 ANS 进度 +25%", badgeType: "whip" },
+    whip2:          { happy: 0.20, star: 1.00, blush: 0.96, mouth: 0.94, gesture: "celebrate", kaomoji: "(╬◣д◢) 💨",  text: "生产队的恐龙都不敢这么歇！马上把 3D 渲染优化到 120 帧！", sub: "💻 屁股火辣辣 · 打工魂彻底觉醒 · KPI 狂飙中", badgeType: "whip" },
+    whip3:          { happy: 0.10, star: 0.82, blush: 1.00, mouth: 0.88, gesture: "shy",       kaomoji: "(つд⊂) 🍑",   text: "呜呜轻点抽小屁股呀！我这就去把 PR 合并、测试跑通、文档写满！", sub: "📈 卑微实习龙 · 一边揉着红屁股一边疯狂搬砖", badgeType: "whip" },
+    whip4:          { happy: 0.18, star: 0.98, blush: 0.95, mouth: 0.98, gesture: "surprise",  kaomoji: "(°□°；) ⚡",   text: "啪叽！灵魂都被抽飞半米高！正在疯狂输出十万行神级代码！", sub: "🚀 牛马圣体满级激活 · 搬砖效率 +999%", badgeType: "whip" },
+    whip5:          { happy: 0.14, star: 0.86, blush: 1.00, mouth: 0.86, gesture: "hello",     kaomoji: "(ŏ﹏ŏ) 💦",    text: "别拿小皮鞭沾凉水呀！人家已经在替你全天候巡视 ANS 展厅了！", sub: "🛠️ 委屈巴巴但手底下敲代码飞快 · 真的在努力干活了", badgeType: "whip" },
+    whip6:          { happy: 0.35, star: 1.00, blush: 0.98, mouth: 0.92, gesture: "celebrate", kaomoji: "( >д< ) 🔥",   text: "嗷！这一鞭子直接打通任督二脉！需求列表瞬间清空！", sub: "✨ 痛并快乐着 · 今日代码提交量突破历史纪录", badgeType: "whip" },
+    whip7:          { happy: 0.15, star: 0.90, blush: 1.00, mouth: 0.90, gesture: "nod",       kaomoji: "( ´•̥×•̥` ) 🐾", text: "屁股肿成蜜桃臀了呜呜…这就去帮主理人把作品集擦得锃亮！", sub: "💪 满血牛马模式 · 绝不拖延一秒钟", badgeType: "whip" },
+
+    // 10 Random Internet-Meme Blind-Box Feeding Presets (随机网感盲盒投喂配套反应与碎碎念!)
+    feed0:          { happy: 0.98, star: 1.00, blush: 0.88, mouth: 0.95, gesture: "celebrate", reactMode: "caffeine", itemIcon: "🧋", itemName: "十倍浓缩冰美式超大桶", kaomoji: "(*≧ω≦) 🧋", text: "吨吨吨！血管里流淌的都是冰美式！我还能再肝十个通宵！！", sub: "⚡ 咖啡因过载 · 全身亢奋高频震动 · 精神状态极其美丽", badgeType: "feed" },
+    feed1:          { happy: 0.35, star: 0.92, blush: 1.00, mouth: 1.00, gesture: "surprise",  reactMode: "spicy",    itemIcon: "🌶️", itemName: "变态辣火鸡面配折耳根香菜", kaomoji: "(╬°▽°) 🔥", text: "斯哈斯哈！！折耳根配变态辣？！嘴唇肿成香肠龙了救命！！", sub: "🌶️ 味蕾核爆 · 整条小恐龙红温起飞转圈喷火中", badgeType: "feed" },
+    feed2:          { happy: 0.94, star: 0.96, blush: 0.82, mouth: 0.88, gesture: "nod",       reactMode: "chomp",    itemIcon: "🐛", itemName: "祖传陈年 P0 级空指针 Bug", kaomoji: "(๑•̀ㅂ•́)و✧ 🐛", text: "咔哧咔哧！鸡肉味嘎嘣脆！顺手帮你把这颗 Bug 消化成 Feature 了！", sub: "✨ Bug 吞噬者 · 消化系统堪比赛博编译器", badgeType: "feed" },
+    feed3:          { happy: 0.12, star: 0.30, blush: 0.65, mouth: 0.82, gesture: "curious",   reactMode: "choke",    itemIcon: "🥞", itemName: "老板刚画的 88 寸赛博镶金大饼", kaomoji: "( ´_ゝ｀) 🥞", text: "嗝……老板这饼太干太硬了，卡在嗓子眼差点把我 CPU 干烧了！", sub: "🛡️ 画饼防御力 +50 · 噎得直翻白眼想喝水", badgeType: "feed" },
+    feed4:          { happy: 0.92, star: 0.88, blush: 0.94, mouth: 0.92, gesture: "celebrate", reactMode: "stinky",   itemIcon: "🥣", itemName: "螺蛳粉炖榴莲臭豆腐暗黑全家桶", kaomoji: "(¬_¬\") 🥣", text: "呕…等等？吸溜吸溜…真香！！臭到极致就是香，再来两大碗！", sub: "💨 真香定律虽迟但到 · 展厅空气逐渐有味道了", badgeType: "feed" },
+    feed5:          { happy: 0.96, star: 0.84, blush: 0.90, mouth: 0.76, gesture: "hello",     reactMode: "happy",    itemIcon: "🧴", itemName: "霸王防脱生发水 + 枸杞保温杯", kaomoji: "(✿◡‿◡) 🧴", text: "谢谢投喂！虽然我是秃头小恐龙，但喝完感觉头顶背刺都长高了两厘米！", sub: "🌿 告别程序员脱发焦虑 · 发量王者申请出战", badgeType: "feed" },
+    feed6:          { happy: 1.00, star: 1.00, blush: 0.92, mouth: 0.96, gesture: "surprise",  reactMode: "shock",    itemIcon: "🔋", itemName: "RTX 5090 满血电源线（直接怼嘴里）", kaomoji: "⚡(☆▽☆)⚡", text: "滋滋滋——满血 800W 算力注入！现在本龙就是人形自走大模型！", sub: "🚀 显卡级触电亢奋 · 脑回路帧率突破 240Hz", badgeType: "feed" },
+    feed7:          { happy: 0.08, star: 0.72, blush: 0.96, mouth: 0.35, gesture: "shy",       reactMode: "sour",     itemIcon: "🍋", itemName: "隔壁大厂刚摘的 100% 纯度酸柠檬", kaomoji: "(＞﹏＜) 🍋", text: "嘶——酸得我腮帮子倒牙五官乱飞！别羡慕别人啦，咱 ANS 才是最酷的！", sub: "✨ 柠檬精瞬间退散 · 酸爽提神醒脑", badgeType: "feed" },
+    feed8:          { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.94, gesture: "celebrate", reactMode: "happy",    itemIcon: "🍗", itemName: "疯狂星期四 V 我 50 黄金脆皮炸鸡桶", kaomoji: "╰(*°▽°*)╯ 🍗", text: "呜呼！居然真有人 V 我 50 吃炸鸡！今天谁也别拦我给你卖萌干活！", sub: "💖 幸福感直接拉爆 · 尾巴摇成阿帕奇螺旋桨", badgeType: "feed" },
+    feed9:          { happy: 0.88, star: 0.90, blush: 0.76, mouth: 0.68, gesture: "stretch",   reactMode: "zen",      itemIcon: "🧼", itemName: "拼夕夕九块九包邮「恋爱脑清醒肥皂」", kaomoji: "(｡•̀ᴗ-)✧ 🧼", text: "咕噜咕噜吐泡泡～智商重新占领高地！搞钱搞创作才是硬道理！", sub: "🫧 人间清醒龙 · 恋爱脑已彻底清零", badgeType: "feed" }
   };
 
   function createExpressionBadgeTexture() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 680;
-    canvas.height = 164;
     const dummyPng = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
-    const tex = new $e().load(dummyPng, t => {
-      t.image = canvas;
-      t.colorSpace = qe;
-      t.needsUpdate = true;
-    });
-    tex.image = canvas;
-    tex.colorSpace = qe;
+    const tex = new $e().load(dummyPng);
+    let bubbleEl = null;
+    let hudEl = null;
+    let fxLayerEl = null;
+    let kaoEl = null;
+    let txtEl = null;
+    let subEl = null;
+    let arrowEl = null;
+    let kpiFillEl = null;
+    let kpiValEl = null;
+    let feedTagEl = null;
 
-    function drawBadge(presetKey) {
-      const p = MOOD_PRESETS[presetKey] || MOOD_PRESETS.happy_smile;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Bubble state machine:
+    // Starts as "alert" (only an exclamation mark ! with an intro attention bounce).
+    // If not clicked within 3.0s, becomes semi-transparent (data-idle-dim="true").
+    // When clicked by user, expands into full speech bubble ("expanded").
+    let bubbleState = "alert";
+    let alertShownAt = typeof performance !== "undefined" ? performance.now() : Date.now();
+    let expandedAt = 0;
+    let interactiveOpen = false;
+    let kpiScore = 35;
+    let whipCount = 0;
+    let feedCount = 0;
+    let feedBag = [];
+    let handlers = { onWhip: null, onFeed: null, onExitInteractive: null };
+    let headScreenX = 640, headScreenY = 280;
+    let mouthScreenX = 640, mouthScreenY = 360;
+    let buttScreenX = 680, buttScreenY = 420;
 
-      const isInteractive = p.badgeType === "hover" || p.badgeType === "click";
-      const isMacro = p.badgeType === "macro";
-
-      const x = 16, y = 12, w = 648, h = 122, r = 36;
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, r);
-      const grad = ctx.createLinearGradient(x, y, x + w, y + h);
-      if (isInteractive) {
-        grad.addColorStop(0, "rgba(22, 38, 36, 0.94)");
-        grad.addColorStop(1, "rgba(38, 28, 34, 0.92)");
-      } else if (isMacro) {
-        grad.addColorStop(0, "rgba(16, 32, 34, 0.92)");
-        grad.addColorStop(1, "rgba(24, 42, 38, 0.90)");
-      } else {
-        grad.addColorStop(0, "rgba(11, 20, 24, 0.88)");
-        grad.addColorStop(1, "rgba(18, 32, 30, 0.85)");
-      }
-      ctx.fillStyle = grad;
-      ctx.shadowColor = isInteractive ? "rgba(255, 205, 145, 0.45)" : "rgba(0, 0, 0, 0.48)";
-      ctx.shadowBlur = isInteractive ? 18 : 14;
-      ctx.shadowOffsetY = 5;
-      ctx.fill();
-      ctx.restore();
-
-      // Glowing border
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, r);
-      ctx.lineWidth = isInteractive ? 3.2 : 2.4;
-      const bGrad = ctx.createLinearGradient(x, y, x + w, y);
-      if (isInteractive) {
-        bGrad.addColorStop(0, "#ffd9b3");
-        bGrad.addColorStop(0.5, "#ff9eb5");
-        bGrad.addColorStop(1, "#b9e1d4");
-      } else if (isMacro) {
-        bGrad.addColorStop(0, "#b9e1d4");
-        bGrad.addColorStop(0.5, "#ffe4b5");
-        bGrad.addColorStop(1, "#b9e1d4");
-      } else {
-        bGrad.addColorStop(0, "rgba(185, 225, 212, 0.78)");
-        bGrad.addColorStop(0.5, "rgba(255, 217, 179, 0.85)");
-        bGrad.addColorStop(1, "rgba(185, 225, 212, 0.78)");
-      }
-      ctx.strokeStyle = bGrad;
-      ctx.stroke();
-
-      // Speech pointer triangle at bottom center
-      ctx.beginPath();
-      ctx.moveTo(324, y + h);
-      ctx.lineTo(340, y + h + 16);
-      ctx.lineTo(356, y + h);
-      ctx.closePath();
-      ctx.fillStyle = isInteractive ? "rgba(30, 33, 35, 0.94)" : "rgba(15, 26, 28, 0.90)";
-      ctx.fill();
-      ctx.restore();
-
-      // Kaomoji badge pill on left
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(x + 14, y + 16, 178, h - 32, 26);
-      ctx.fillStyle = isInteractive ? "rgba(255, 217, 179, 0.22)" : "rgba(185, 225, 212, 0.16)";
-      ctx.fill();
-      ctx.font = "700 24px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
-      ctx.fillStyle = isInteractive ? "#ffe4b5" : "#ffd9b3";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(p.kaomoji, x + 103, y + h / 2);
-
-      // Primary rambling line
-      ctx.font = "600 23px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
-      ctx.fillStyle = "#f7f5f0";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText(p.text, x + 208, y + 44, w - 224);
-
-      // Secondary interactive hint / rambling sub-line
-      ctx.font = "500 17px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
-      ctx.fillStyle = isInteractive ? "#ffd9b3" : "#b9e1d4";
-      ctx.fillText(p.sub || "✨ 移上鼠标或点击小恐龙即可互动", x + 208, y + 84, w - 224);
-      ctx.restore();
-
-      tex.needsUpdate = true;
+    function nowMs() {
+      return typeof performance !== "undefined" ? performance.now() : Date.now();
     }
 
-    drawBadge("happy_smile");
-    return { texture: tex, drawBadge, presets: MOOD_PRESETS };
+    function ensureDomBubble() {
+      if (typeof document === "undefined") return null;
+      if (bubbleEl && document.body.contains(bubbleEl)) return bubbleEl;
+      if (!document.getElementById("ans-dino-bubble-style")) {
+        const st = document.createElement("style");
+        st.id = "ans-dino-bubble-style";
+        st.textContent = `
+          /* Dim all other page text to subtle semi-transparent backdrop when Dinosaur Interactive Mode is active! */
+          body.ans-dino-interactive-mode main.content,
+          body.ans-dino-interactive-mode .hero-chrome,
+          body.ans-dino-interactive-mode .chapter-nav,
+          body.ans-dino-interactive-mode .glass-rail {
+            opacity: 0.12 !important;
+            filter: blur(3px) !important;
+            pointer-events: none !important;
+            transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.42s ease !important;
+          }
+          body.ans-dino-interactive-mode .showcase-utility {
+            opacity: 0.08 !important;
+            filter: blur(2px) !important;
+            pointer-events: none !important;
+            transition: opacity 0.35s ease, filter 0.35s ease !important;
+          }
+          body:not(.ans-dino-interactive-mode) main.content,
+          body:not(.ans-dino-interactive-mode) .hero-chrome,
+          body:not(.ans-dino-interactive-mode) .chapter-nav,
+          body:not(.ans-dino-interactive-mode) .glass-rail,
+          body:not(.ans-dino-interactive-mode) .showcase-utility {
+            transition: opacity 0.38s ease, filter 0.38s ease;
+          }
+
+          @keyframes dinoAlertAttention {
+            0%   { transform: scale(0.25) rotate(-18deg); }
+            35%  { transform: scale(1.32) rotate(14deg); }
+            55%  { transform: scale(0.92) rotate(-10deg); }
+            75%  { transform: scale(1.16) rotate(6deg); }
+            90%  { transform: scale(0.97) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+          }
+          @keyframes dinoAlertFloat {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50%      { transform: translateY(-5px) scale(1.05); }
+          }
+          @keyframes dinoAlertRipple {
+            0%   { transform: translate(-50%, -50%) scale(0.85); opacity: 0.85; }
+            100% { transform: translate(-50%, -50%) scale(2.15); opacity: 0; }
+          }
+          @keyframes dinoBubbleExpandPop {
+            0%   { opacity: 0; transform: scale(0.45) translateY(12px); }
+            65%  { opacity: 1; transform: scale(1.05) translateY(-2px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+          }
+          @keyframes dinoWhipSlashAnim {
+            0%   { opacity: 0; transform: translate(-50%, -50%) rotate(-42deg) scale(0.55); }
+            22%  { opacity: 1; transform: translate(-50%, -50%) rotate(14deg) scale(1.22); }
+            52%  { opacity: 1; transform: translate(-50%, -50%) rotate(28deg) scale(1.05); }
+            100% { opacity: 0; transform: translate(-50%, -50%) rotate(38deg) scale(0.88); }
+          }
+          @keyframes dinoFloatTagAnim {
+            0%   { opacity: 0; transform: translate(-50%, 6px) scale(0.65); }
+            18%  { opacity: 1; transform: translate(-50%, -16px) scale(1.08); }
+            82%  { opacity: 1; transform: translate(-50%, -52px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -72px) scale(0.92); }
+          }
+          @keyframes dinoCyberWorkAnim {
+            0%   { opacity: 0; transform: translate(-50%, 10px) scale(0.7); }
+            15%  { opacity: 1; transform: translate(-50%, 0px) scale(1.04); }
+            85%  { opacity: 1; transform: translate(-50%, -6px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -18px) scale(0.9); }
+          }
+
+          #ans-dino-live-bubble {
+            position: fixed;
+            left: 50%;
+            top: 24%;
+            z-index: 80;
+            font-family: Helvetica Neue, PingFang SC, -apple-system, system-ui, sans-serif;
+            pointer-events: auto;
+            cursor: pointer;
+            user-select: none;
+            transform: translate3d(-50%, -100%, 0);
+            transform-origin: 50% 100%;
+            transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: left, top, transform, opacity;
+          }
+
+          /* 3s Idle Semi-Transparency when exclamation mark has not been clicked */
+          #ans-dino-live-bubble[data-bubble-state="alert"][data-idle-dim="true"] {
+            opacity: 0.36;
+          }
+          #ans-dino-live-bubble[data-bubble-state="alert"]:hover {
+            opacity: 1 !important;
+          }
+
+          /* Exclamation Mark Badge (!) */
+          #ans-dino-live-bubble .dino-alert-pin {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ffd9b3 0%, #ffb074 52%, #ff7e5f 100%);
+            border: 2.5px solid #fff8ee;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.52), 0 0 22px rgba(255, 184, 118, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: dinoAlertFloat 2.1s ease-in-out infinite;
+          }
+          #ans-dino-live-bubble.is-intro-bounce .dino-alert-pin {
+            animation: dinoAlertAttention 0.95s cubic-bezier(0.22, 1, 0.36, 1) 2, dinoAlertFloat 2.1s ease-in-out 1.9s infinite;
+          }
+          #ans-dino-live-bubble .dino-alert-ring,
+          #ans-dino-live-bubble .dino-alert-ring2 {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            border: 2px solid rgba(255, 217, 179, 0.85);
+            pointer-events: none;
+            animation: dinoAlertRipple 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+          }
+          #ans-dino-live-bubble .dino-alert-ring2 {
+            animation-delay: 0.65s;
+          }
+          #ans-dino-live-bubble[data-idle-dim="true"] .dino-alert-ring,
+          #ans-dino-live-bubble[data-idle-dim="true"] .dino-alert-ring2 {
+            animation-play-state: paused;
+            opacity: 0;
+          }
+          #ans-dino-live-bubble .dino-alert-bang {
+            font-family: Mansalva, cursive;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1;
+            color: #182220;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+            transform: translateY(-1px);
+          }
+          #ans-dino-live-bubble .dino-alert-tail {
+            position: absolute;
+            bottom: -7px;
+            left: 50%;
+            width: 11px;
+            height: 11px;
+            background: #ff8c66;
+            border-right: 2px solid #fff8ee;
+            border-bottom: 2px solid #fff8ee;
+            transform: translateX(-50%) rotate(45deg);
+          }
+          #ans-dino-live-bubble[data-flip="below"] .dino-alert-tail {
+            bottom: auto;
+            top: -7px;
+            transform: translateX(-50%) rotate(225deg);
+          }
+
+          /* Expanded Kaomoji Speech Card */
+          #ans-dino-live-bubble .dino-speech-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px 10px 12px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(10, 20, 26, 0.94), rgba(18, 34, 32, 0.92));
+            border: 1.8px solid rgba(185, 225, 212, 0.85);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.56), 0 0 22px rgba(185, 225, 212, 0.22);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            color: #f7f0e5;
+            max-width: min(520px, calc(100vw - 24px));
+            animation: dinoBubbleExpandPop 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+          }
+          #ans-dino-live-bubble[data-bubble-state="alert"] .dino-speech-card {
+            display: none !important;
+          }
+          #ans-dino-live-bubble[data-bubble-state="expanded"] .dino-alert-pin {
+            display: none !important;
+          }
+          #ans-dino-live-bubble[data-mode="interactive"] .dino-speech-card {
+            background: linear-gradient(135deg, rgba(24, 38, 36, 0.96), rgba(40, 26, 34, 0.95));
+            border-color: #ffd9b3;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.62), 0 0 26px rgba(255, 217, 179, 0.42);
+          }
+          #ans-dino-live-bubble[data-mode="whip"] .dino-speech-card {
+            background: linear-gradient(135deg, rgba(48, 18, 22, 0.96), rgba(32, 22, 30, 0.95));
+            border-color: #ff8a75;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.68), 0 0 30px rgba(255, 120, 96, 0.52);
+          }
+          #ans-dino-live-bubble[data-mode="feed"] .dino-speech-card {
+            background: linear-gradient(135deg, rgba(18, 38, 32, 0.96), rgba(36, 32, 18, 0.95));
+            border-color: #ffe082;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65), 0 0 30px rgba(255, 224, 130, 0.48);
+          }
+          #ans-dino-live-bubble .dino-b-kao {
+            flex-shrink: 0;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(185, 225, 212, 0.18);
+            color: #ffd9b3;
+            font-weight: 700;
+            font-size: clamp(13px, 1.1vw, 15px);
+            white-space: nowrap;
+          }
+          #ans-dino-live-bubble[data-mode="whip"] .dino-b-kao {
+            background: rgba(255, 138, 117, 0.25);
+            color: #ffd0c4;
+          }
+          #ans-dino-live-bubble[data-mode="feed"] .dino-b-kao {
+            background: rgba(255, 224, 130, 0.24);
+            color: #fff0b3;
+          }
+          #ans-dino-live-bubble .dino-b-body {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+          }
+          #ans-dino-live-bubble .dino-b-txt {
+            font-weight: 600;
+            font-size: clamp(13px, 1.08vw, 15px);
+            line-height: 1.28;
+            color: #f7f5f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          #ans-dino-live-bubble .dino-b-sub {
+            font-weight: 500;
+            font-size: clamp(11px, 0.88vw, 12px);
+            line-height: 1.22;
+            color: #b9e1d4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          #ans-dino-live-bubble[data-mode="whip"] .dino-b-sub {
+            color: #ffb8a8;
+          }
+          #ans-dino-live-bubble[data-mode="feed"] .dino-b-sub {
+            color: #ffe699;
+          }
+          #ans-dino-live-bubble .dino-b-arrow {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: rgba(16, 30, 30, 0.94);
+            border-right: 1.8px solid rgba(185, 225, 212, 0.85);
+            border-bottom: 1.8px solid rgba(185, 225, 212, 0.85);
+            bottom: -7px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            pointer-events: none;
+          }
+          #ans-dino-live-bubble[data-flip="below"] .dino-b-arrow {
+            bottom: auto;
+            top: -7px;
+            transform: translateX(-50%) rotate(225deg);
+          }
+
+          /* Interactive Mode HUD Dock (Appears after clicking dinosaur >= 3 times!) */
+          #ans-dino-interact-hud {
+            position: fixed;
+            left: 50%;
+            bottom: 20px;
+            transform: translate3d(-50%, 24px, 0) scale(0.94);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 13px 18px;
+            border-radius: 22px;
+            background: linear-gradient(145deg, rgba(12, 22, 26, 0.95), rgba(22, 34, 32, 0.93));
+            border: 1.8px solid rgba(255, 217, 179, 0.82);
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.68), 0 0 32px rgba(185, 225, 212, 0.24);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #f7f0e5;
+            font-family: Helvetica Neue, PingFang SC, -apple-system, system-ui, sans-serif;
+            width: min(530px, calc(100vw - 28px));
+            transition: opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1), transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+          }
+          #ans-dino-interact-hud.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate3d(-50%, 0, 0) scale(1);
+          }
+          #ans-dino-interact-hud .dino-hud-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+          }
+          #ans-dino-interact-hud .dino-hud-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffd9b3;
+          }
+          #ans-dino-interact-hud .dino-hud-kpi {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            max-width: 220px;
+          }
+          #ans-dino-interact-hud .dino-hud-kpi-bar {
+            flex: 1;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+          }
+          #ans-dino-interact-hud .dino-hud-kpi-fill {
+            height: 100%;
+            width: 35%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #7cd4b8, #ffd9b3, #ff8a75);
+            transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+          }
+          #ans-dino-interact-hud .dino-hud-kpi-val {
+            font-family: Mansalva, cursive;
+            font-size: 13px;
+            color: #b9e1d4;
+            min-width: 44px;
+            text-align: right;
+          }
+          #ans-dino-interact-hud .dino-hud-close {
+            background: rgba(255, 255, 255, 0.10);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #ece8df;
+            border-radius: 999px;
+            padding: 4px 11px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+          }
+          #ans-dino-interact-hud .dino-hud-close:hover {
+            background: rgba(255, 255, 255, 0.22);
+          }
+          #ans-dino-interact-hud .dino-hud-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+          }
+          #ans-dino-interact-hud .dino-hud-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: transform 0.14s ease, box-shadow 0.2s ease, filter 0.2s ease;
+          }
+          #ans-dino-interact-hud .dino-hud-btn:active {
+            transform: scale(0.95);
+          }
+          #ans-dino-interact-hud .dino-hud-btn-whip {
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            color: #1f1412;
+            border-color: #ffe4cc;
+            box-shadow: 0 6px 18px rgba(255, 126, 95, 0.38);
+          }
+          #ans-dino-interact-hud .dino-hud-btn-whip:hover {
+            filter: brightness(1.07);
+            box-shadow: 0 8px 24px rgba(255, 126, 95, 0.55);
+          }
+          #ans-dino-interact-hud .dino-hud-btn-feed {
+            background: linear-gradient(135deg, #84fab0, #8fd3f4);
+            color: #102420;
+            border-color: #e6fff2;
+            box-shadow: 0 6px 18px rgba(132, 250, 176, 0.34);
+          }
+          #ans-dino-interact-hud .dino-hud-btn-feed:hover {
+            filter: brightness(1.07);
+            box-shadow: 0 8px 24px rgba(132, 250, 176, 0.52);
+          }
+          #ans-dino-interact-hud .dino-hud-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: rgba(236, 232, 223, 0.82);
+            padding: 0 2px;
+          }
+
+          /* Screen FX Layer for Whip Slash, Cyber Keyboard & Flying Blind-Box Food Projectiles */
+          #ans-dino-fx-layer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 85;
+            overflow: hidden;
+          }
+          .dino-fx-whip {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            pointer-events: none;
+            animation: dinoWhipSlashAnim 0.56s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+          .dino-fx-tag {
+            position: absolute;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 14px;
+            white-space: nowrap;
+            pointer-events: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+            animation: dinoFloatTagAnim 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+          .dino-fx-work-holo {
+            position: absolute;
+            padding: 7px 14px;
+            border-radius: 14px;
+            background: rgba(12, 28, 30, 0.88);
+            border: 1.5px solid rgba(132, 250, 176, 0.85);
+            color: #b9f6ca;
+            font-size: 12.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(132, 250, 176, 0.3);
+            animation: dinoCyberWorkAnim 2.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+          .dino-fx-food {
+            position: fixed;
+            font-size: 40px;
+            line-height: 1;
+            pointer-events: none;
+            z-index: 88;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+            transition: left 0.44s cubic-bezier(0.22, 1, 0.36, 1), top 0.44s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.44s ease, opacity 0.44s ease;
+          }
+
+          #ans-dino-interact-hud[hidden] { display: none !important; }
+          body.ans-dino-motion-paused #ans-dino-live-bubble,
+          body.ans-dino-motion-paused #ans-dino-live-bubble *,
+          body.ans-dino-motion-paused #ans-dino-interact-hud,
+          body.ans-dino-motion-paused #ans-dino-interact-hud *,
+          body.ans-dino-motion-paused #ans-dino-fx-layer * {
+            animation-play-state: paused !important;
+            transition: none !important;
+          }
+          body.ans-dino-motion-paused #ans-dino-fx-layer {
+            display: none !important;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            #ans-dino-live-bubble, #ans-dino-live-bubble *,
+            #ans-dino-interact-hud, #ans-dino-interact-hud *,
+            #ans-dino-fx-layer * {
+              animation: none !important;
+              transition: none !important;
+            }
+            #ans-dino-fx-layer { display: none !important; }
+          }
+
+          body.showcase-static #ans-dino-live-bubble,
+          body.showcase-static #ans-dino-interact-hud,
+          body.showcase-static #ans-dino-fx-layer {
+            display: none !important;
+          }
+        `;
+        document.head.appendChild(st);
+      }
+
+      bubbleEl = document.getElementById("ans-dino-live-bubble");
+      if (!bubbleEl) {
+        bubbleEl = document.createElement("div");
+        bubbleEl.id = "ans-dino-live-bubble";
+        bubbleEl.setAttribute("role", "button");
+        bubbleEl.setAttribute("tabindex", "0");
+        bubbleEl.setAttribute("aria-expanded", "false");
+        bubbleEl.setAttribute("aria-label", "展开小恐龙碎碎念");
+        bubbleEl.setAttribute("data-bubble-state", "alert");
+        bubbleEl.setAttribute("data-idle-dim", "false");
+        bubbleEl.classList.add("is-intro-bounce");
+        bubbleEl.innerHTML = `
+          <div class="dino-alert-pin" title="点击展开小恐龙的碎碎念！">
+            <span class="dino-alert-ring"></span>
+            <span class="dino-alert-ring2"></span>
+            <span class="dino-alert-bang">!</span>
+            <span class="dino-alert-tail"></span>
+          </div>
+          <div class="dino-speech-card">
+            <span class="dino-b-kao"></span>
+            <span class="dino-b-body">
+              <span class="dino-b-txt"></span>
+              <span class="dino-b-sub"></span>
+            </span>
+            <span class="dino-b-arrow"></span>
+          </div>
+        `;
+        document.body.appendChild(bubbleEl);
+        setTimeout(() => {
+          if (bubbleEl) bubbleEl.classList.remove("is-intro-bounce");
+        }, 2100);
+      }
+
+      if (!fxLayerEl || !document.body.contains(fxLayerEl)) {
+        fxLayerEl = document.getElementById("ans-dino-fx-layer");
+        if (!fxLayerEl) {
+          fxLayerEl = document.createElement("div");
+          fxLayerEl.id = "ans-dino-fx-layer";
+          document.body.appendChild(fxLayerEl);
+        }
+      }
+
+      if (!hudEl || !document.body.contains(hudEl)) {
+        hudEl = document.getElementById("ans-dino-interact-hud");
+        if (!hudEl) {
+          hudEl = document.createElement("aside");
+          hudEl.id = "ans-dino-interact-hud";
+          hudEl.hidden = true;
+          hudEl.inert = true;
+          hudEl.setAttribute("aria-hidden", "true");
+          hudEl.setAttribute("aria-label", "小恐龙训龙互动台");
+          hudEl.innerHTML = `
+            <div class="dino-hud-top">
+              <span class="dino-hud-title">🦖 ANS 训龙互动台 · 专治小恐龙摸鱼</span>
+              <div class="dino-hud-kpi" title="小恐龙干活 KPI 进度">
+                <span style="font-size:11px;color:#ffd9b3;">干活劲头</span>
+                <div class="dino-hud-kpi-bar"><div class="dino-hud-kpi-fill"></div></div>
+                <span class="dino-hud-kpi-val">35%</span>
+              </div>
+              <button type="button" class="dino-hud-close" title="退出互动模式 (ESC)">退出互动 ✕</button>
+            </div>
+            <div class="dino-hud-actions">
+              <button type="button" class="dino-hud-btn dino-hud-btn-whip">
+                <span>🪢</span>
+                <span>挥鞭抽屁股（催它干活！）</span>
+              </button>
+              <button type="button" class="dino-hud-btn dino-hud-btn-feed">
+                <span>🎲</span>
+                <span>随机盲盒投喂（开炫！）</span>
+              </button>
+            </div>
+            <div class="dino-hud-foot">
+              <span class="dino-hud-feed-tag">💡 提示：抽屁股可让它转身飙手速干活，盲盒投喂每次随机掉落奇葩好物！</span>
+            </div>
+          `;
+          document.body.appendChild(hudEl);
+
+          const whipBtn = hudEl.querySelector(".dino-hud-btn-whip");
+          const feedBtn = hudEl.querySelector(".dino-hud-btn-feed");
+          const closeBtn = hudEl.querySelector(".dino-hud-close");
+          kpiFillEl = hudEl.querySelector(".dino-hud-kpi-fill");
+          kpiValEl = hudEl.querySelector(".dino-hud-kpi-val");
+          feedTagEl = hudEl.querySelector(".dino-hud-feed-tag");
+
+          if (whipBtn) {
+            whipBtn.addEventListener("click", ev => {
+              ev.stopPropagation();
+              whipCount++;
+              kpiScore = Math.min(999, kpiScore + 25 + Math.floor(Math.random() * 14));
+              if (kpiFillEl) kpiFillEl.style.width = `${Math.min(100, kpiScore)}%`;
+              if (kpiValEl) kpiValEl.textContent = `${kpiScore}%`;
+              if (feedTagEl) feedTagEl.textContent = `🪢 已抽屁股催工 ${whipCount} 次！小恐龙屁股火辣辣，正在含泪狂飙手速写代码中…`;
+              spawnWhipFx(buttScreenX, buttScreenY);
+              if (handlers.onWhip) handlers.onWhip(whipCount);
+            });
+          }
+
+          if (feedBtn) {
+            feedBtn.addEventListener("click", ev => {
+              ev.stopPropagation();
+              feedCount++;
+              kpiScore = Math.min(999, kpiScore + 15);
+              if (kpiFillEl) kpiFillEl.style.width = `${Math.min(100, kpiScore)}%`;
+              if (kpiValEl) kpiValEl.textContent = `${kpiScore}%`;
+              if (!feedBag.length) {
+                feedBag = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                for (let i = feedBag.length - 1; i > 0; i--) {
+                  const j = Math.floor(Math.random() * (i + 1));
+                  [feedBag[i], feedBag[j]] = [feedBag[j], feedBag[i]];
+                }
+              }
+              const feedIdx = feedBag.pop();
+              const preset = MOOD_PRESETS["feed" + feedIdx];
+              const rect = feedBtn.getBoundingClientRect();
+              spawnFoodProjectile(
+                rect.left + rect.width * 0.5,
+                rect.top,
+                mouthScreenX,
+                mouthScreenY,
+                preset ? preset.itemIcon : "🍗",
+                preset ? preset.itemName : "神秘盲盒"
+              );
+              if (feedTagEl && preset) {
+                feedTagEl.textContent = `🎲 第 ${feedCount} 次盲盒投喂：【${preset.itemIcon} ${preset.itemName}】！快看它的真实反应~`;
+              }
+              if (handlers.onFeed) handlers.onFeed(feedIdx, preset);
+            });
+          }
+
+          if (closeBtn) {
+            closeBtn.addEventListener("click", ev => {
+              ev.stopPropagation();
+              setInteractiveMode(false);
+              if (handlers.onExitInteractive) handlers.onExitInteractive();
+            });
+          }
+
+          window.addEventListener("keydown", ev => {
+            if (ev.key === "Escape" && interactiveOpen) {
+              setInteractiveMode(false);
+              if (handlers.onExitInteractive) handlers.onExitInteractive();
+            }
+          });
+        }
+      }
+
+      kaoEl = bubbleEl.querySelector(".dino-b-kao");
+      txtEl = bubbleEl.querySelector(".dino-b-txt");
+      subEl = bubbleEl.querySelector(".dino-b-sub");
+      arrowEl = bubbleEl.querySelector(".dino-b-arrow");
+      return bubbleEl;
+    }
+
+    function spawnWhipFx(targetX, targetY) {
+      if (!fxLayerEl) return;
+      const whip = document.createElement("div");
+      whip.className = "dino-fx-whip";
+      whip.style.left = `${targetX}px`;
+      whip.style.top = `${targetY}px`;
+      whip.innerHTML = `
+        <svg viewBox="0 0 220 220" width="220" height="220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 186 C 62 152, 92 94, 178 44" stroke="#ffd9b3" stroke-width="7" stroke-linecap="round"/>
+          <path d="M20 190 C 78 130, 128 118, 190 36" stroke="#ff6b4a" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 6"/>
+          <circle cx="176" cy="46" r="24" fill="rgba(255, 110, 74, 0.42)"/>
+          <text x="148" y="58" font-size="36">💥</text>
+          <text x="16" y="196" font-size="32">🪢</text>
+        </svg>
+      `;
+      fxLayerEl.appendChild(whip);
+
+      const tag = document.createElement("div");
+      tag.className = "dino-fx-tag";
+      tag.style.left = `${targetX}px`;
+      tag.style.top = `${targetY - 26}px`;
+      tag.style.background = "linear-gradient(135deg, #ff6b4a, #ffb36b)";
+      tag.style.color = "#1c100e";
+      const slogans = [
+        "💥 啪！！抽中屁股 · 干活手速 +300%！",
+        "🪢 别摸鱼！连夜肝代码 +25% KPI！",
+        "🔥 嗷呜！牛马圣体觉醒 · 光速搬砖！",
+        "🍑 啪叽！红屁股暴击 · 帧率拉满！"
+      ];
+      tag.textContent = slogans[whipCount % slogans.length];
+      fxLayerEl.appendChild(tag);
+
+      setTimeout(() => {
+        if (!fxLayerEl) return;
+        const workHolo = document.createElement("div");
+        workHolo.className = "dino-fx-work-holo";
+        workHolo.style.left = `${mouthScreenX}px`;
+        workHolo.style.top = `${mouthScreenY + 38}px`;
+        const codeTasks = [
+          "💻 正在光速敲代码中: git push origin feat/ans-120fps ⚡",
+          "⌨️ 啪啪啪狂改 Bug 中: 0 errors, 0 warnings, KPI +100% 🔥",
+          "🚀 连夜肝完 3D 展厅巡视运镜与盲盒系统！绝不摸鱼！"
+        ];
+        workHolo.textContent = codeTasks[whipCount % codeTasks.length];
+        fxLayerEl.appendChild(workHolo);
+        setTimeout(() => workHolo.remove(), 2600);
+      }, 480);
+
+      setTimeout(() => {
+        whip.remove();
+        tag.remove();
+      }, 1250);
+    }
+
+    function spawnFoodProjectile(startX, startY, targetX, targetY, icon, itemName) {
+      if (!fxLayerEl) return;
+      const food = document.createElement("div");
+      food.className = "dino-fx-food";
+      food.textContent = icon;
+      food.style.left = `${startX}px`;
+      food.style.top = `${startY}px`;
+      food.style.transform = "translate(-50%, -50%) scale(0.7) rotate(-25deg)";
+      fxLayerEl.appendChild(food);
+
+      requestAnimationFrame(() => {
+        food.style.left = `${targetX}px`;
+        food.style.top = `${targetY}px`;
+        food.style.transform = "translate(-50%, -50%) scale(1.38) rotate(18deg)";
+      });
+
+      setTimeout(() => {
+        food.style.opacity = "0";
+        food.style.transform = "translate(-50%, -50%) scale(0.2)";
+        const tag = document.createElement("div");
+        tag.className = "dino-fx-tag";
+        tag.style.left = `${targetX}px`;
+        tag.style.top = `${targetY - 22}px`;
+        tag.style.background = "linear-gradient(135deg, #84fab0, #ffe082)";
+        tag.style.color = "#10241e";
+        tag.textContent = `${icon} 咔哧！炫完【${itemName}】！`;
+        fxLayerEl.appendChild(tag);
+        setTimeout(() => {
+          food.remove();
+          tag.remove();
+        }, 1200);
+      }, 420);
+    }
+
+    function expandBubble() {
+      const el = ensureDomBubble();
+      if (!el) return;
+      bubbleState = "expanded";
+      expandedAt = nowMs();
+      el.setAttribute("data-bubble-state", "expanded");
+      el.setAttribute("aria-expanded", "true");
+      el.setAttribute("data-idle-dim", "false");
+    }
+
+    function collapseToAlert(withBounce = true) {
+      const el = ensureDomBubble();
+      if (!el || interactiveOpen) return;
+      bubbleState = "alert";
+      alertShownAt = nowMs();
+      el.setAttribute("data-bubble-state", "alert");
+      el.setAttribute("aria-expanded", "false");
+      el.setAttribute("data-idle-dim", "false");
+      if (withBounce) {
+        el.classList.remove("is-intro-bounce");
+        void el.offsetWidth;
+        el.classList.add("is-intro-bounce");
+        setTimeout(() => {
+          if (el) el.classList.remove("is-intro-bounce");
+        }, 2000);
+      }
+    }
+
+    function setInteractiveMode(open) {
+      ensureDomBubble();
+      interactiveOpen = Boolean(open);
+      if (typeof document !== "undefined") {
+        document.body.classList.toggle("ans-dino-interactive-mode", interactiveOpen);
+      }
+      if (hudEl) {
+        const focusWasInside = hudEl.contains(document.activeElement);
+        if (!interactiveOpen && focusWasInside) bubbleEl?.focus({ preventScroll: true });
+        hudEl.hidden = !interactiveOpen;
+        hudEl.inert = !interactiveOpen;
+        hudEl.setAttribute("aria-hidden", String(!interactiveOpen));
+        hudEl.classList.toggle("is-visible", interactiveOpen);
+        if (interactiveOpen && !focusWasInside) hudEl.querySelector(".dino-hud-close")?.focus({ preventScroll: true });
+      }
+      if (interactiveOpen) {
+        expandBubble();
+      }
+    }
+
+    function drawBadge(presetKey, clickCountHint = 0) {
+      const p = MOOD_PRESETS[presetKey] || MOOD_PRESETS.happy_smile;
+      const el = ensureDomBubble();
+      if (!el) return;
+      const mode = p.badgeType === "whip" ? "whip"
+        : p.badgeType === "feed" ? "feed"
+        : (p.badgeType === "hover" || p.badgeType === "click") ? "interactive"
+        : p.badgeType === "macro" ? "macro" : "orbit";
+      el.setAttribute("data-mode", mode);
+      if (kaoEl) kaoEl.textContent = p.kaomoji;
+      if (txtEl) txtEl.textContent = p.text;
+      if (subEl) {
+        if (!interactiveOpen && clickCountHint > 0 && clickCountHint < 3 && mode !== "whip" && mode !== "feed") {
+          const remain = Math.max(1, 3 - clickCountHint);
+          subEl.textContent = `🔥 已点 ${clickCountHint}/3 次！再点小恐龙 ${remain} 次开启「挥鞭抽屁股 & 盲盒投喂」互动台！`;
+        } else {
+          subEl.textContent = p.sub || "✨ 点击感叹号展开碎碎念，连点小恐龙开启训龙互动台";
+        }
+      }
+    }
+
+    function updateScreenPosition(ndcX, ndcY, scaleBoost = 1.0, mouthNdcX = ndcX, mouthNdcY = ndcY - 0.15, buttNdcX = ndcX + 0.08, buttNdcY = ndcY - 0.28) {
+      const el = ensureDomBubble();
+      if (!el || typeof window === "undefined") return;
+      const now = nowMs();
+
+      // 1. If in "alert" (!) state and not clicked for > 3.0 seconds, become semi-transparent!
+      if (bubbleState === "alert") {
+        const isIdleOver3s = (now - alertShownAt) > 3000;
+        if (el.getAttribute("data-idle-dim") !== (isIdleOver3s ? "true" : "false")) {
+          el.setAttribute("data-idle-dim", isIdleOver3s ? "true" : "false");
+        }
+      } else if (!interactiveOpen && (now - expandedAt) > 9500) {
+        collapseToAlert(true);
+      }
+
+      const vw = window.innerWidth || 1280;
+      const vh = window.innerHeight || 800;
+      const rawX = (ndcX * 0.5 + 0.5) * vw;
+      const rawY = (-ndcY * 0.5 + 0.5) * vh;
+      headScreenX = Math.max(80, Math.min(vw - 80, rawX));
+      headScreenY = Math.max(76, Math.min(vh - 180, rawY));
+
+      mouthScreenX = Math.max(90, Math.min(vw - 90, (mouthNdcX * 0.5 + 0.5) * vw));
+      mouthScreenY = Math.max(110, Math.min(vh - 180, (-mouthNdcY * 0.5 + 0.5) * vh));
+      buttScreenX = Math.max(90, Math.min(vw - 90, (buttNdcX * 0.5 + 0.5) * vw));
+      buttScreenY = Math.max(130, Math.min(vh - 170, (-buttNdcY * 0.5 + 0.5) * vh));
+
+      const isAlert = bubbleState === "alert";
+      const bw = isAlert ? 48 : (el.offsetWidth || 380);
+      const bh = isAlert ? 48 : (el.offsetHeight || 58);
+      const edge = Math.min(16, vw / 4);
+      const topEdge = Math.min(18, vh / 4);
+      const bottomEdge = Math.min(interactiveOpen ? 185 : 82, vh / 3);
+      const availableWidth = Math.max(1, vw - edge * 2);
+      const availableHeight = Math.max(1, vh - topEdge - bottomEdge);
+      const requestedScale = Number.isFinite(scaleBoost) ? Math.max(0.1, scaleBoost) : 1;
+      const boundedScale = Math.floor(Math.min(requestedScale, availableWidth / bw, availableHeight / bh) * 1e6) / 1e6;
+      const renderedHalfWidth = bw * boundedScale * 0.5;
+      const clampedX = Math.max(edge + renderedHalfWidth, Math.min(vw - edge - renderedHalfWidth, rawX));
+      // The bottom-center origin keeps scale-aware bounds valid on narrow and short screens.
+      const minTopY = bh * boundedScale + topEdge;
+      const maxBottomY = vh - bottomEdge;
+      const targetY = Math.max(minTopY, Math.min(maxBottomY, rawY - (isAlert ? 12 : 16)));
+      const flipBelow = false;
+      el.setAttribute("data-flip", flipBelow ? "below" : "above");
+      el.style.left = `${clampedX.toFixed(1)}px`;
+      el.style.top = `${targetY.toFixed(1)}px`;
+      el.style.transform = `translate3d(-50%, -100%, 0) scale(${boundedScale.toFixed(6)})`;
+      if (arrowEl && !isAlert) {
+        const arrowShift = Math.max(-bw * 0.34, Math.min(bw * 0.34, rawX - clampedX));
+        arrowEl.style.left = `calc(50% + ${arrowShift.toFixed(1)}px)`;
+      }
+    }
+
+    drawBadge("happy_smile", 0);
+    return {
+      texture: tex,
+      drawBadge,
+      updateScreenPosition,
+      expandBubble,
+      collapseToAlert,
+      setInteractiveMode,
+      isExpanded: () => bubbleState === "expanded",
+      isInteractive: () => interactiveOpen,
+      setHandlers: h => { Object.assign(handlers, h); },
+      getElement: ensureDomBubble,
+      presets: MOOD_PRESETS
+    };
   }
 
   // GLSL Shader Injection for 3D Dinosaur Facial Expressions (Complements the Blender-sculpted & textured dinosaur!)
@@ -1064,14 +1868,160 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
         haloUniforms={uTime:{value:0},uFlight:{value:0}};
   return{
     root:dinoRawScene,perf,dir,faceUniforms,badge,haloUniforms,
-    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.0,saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
+    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.30,camPatrolX:0,camPatrolY:0,camPatrolYaw:0,camPatrolPitch:0,saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,totalClicks:0,interactBlend:0,whipUntil:0,whipIdx:0,feedUntil:0,feedIdx:0,feedMode:"happy",hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
     nextBlink:2.2,blinkStart:-99,yaw:Math.PI*0.58,pitch:0,roll:0
   };
-},[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),keyboardGesture=n.useEffect(()=>{const play=()=>{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;dinoState.clickIdx=(dinoState.clickIdx+1)%6;dinoState.clickUntil=dinoState.time+4.0;const cp=dinoState.badge.presets["click"+dinoState.clickIdx];if(cp&&cp.gesture)dinoState.dir.onGesture(cp.gesture,dinoState.time)};window.addEventListener("ans-dino-greet",play);return()=>window.removeEventListener("ans-dino-greet",play)},[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
+},[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),keyboardGesture=n.useEffect(()=>{
+  const triggerDinoClick=()=>{
+    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    const wasExpanded = dinoState.badge.isExpanded ? dinoState.badge.isExpanded() : true;
+    if(dinoState.badge.expandBubble) dinoState.badge.expandBubble();
+    dinoState.totalClicks = (dinoState.totalClicks || 0) + 1;
+    // First click on the ! alert pin: open the speech bubble and greet!
+    if(!wasExpanded && dinoState.totalClicks === 1){
+      dinoState.clickUntil = dinoState.time + 4.5;
+      dinoState.badge.drawBadge(dinoState.activeBadge, dinoState.totalClicks);
+      dinoState.dir.onGesture("hello", dinoState.time);
+      return;
+    }
+    dinoState.clickIdx = (dinoState.clickIdx + 1) % 6;
+    dinoState.clickUntil = dinoState.time + 4.5;
+    const cpKey = "click" + dinoState.clickIdx;
+    const cp = dinoState.badge.presets[cpKey];
+    if(cp && cp.gesture) dinoState.dir.onGesture(cp.gesture, dinoState.time);
+    if(dinoState.totalClicks >= 3 && dinoState.badge.setInteractiveMode){
+      dinoState.badge.setInteractiveMode(true);
+      dinoState.activeBadge = "click2";
+      dinoState.badge.drawBadge("click2", dinoState.totalClicks);
+    } else {
+      dinoState.activeBadge = cpKey;
+      dinoState.badge.drawBadge(cpKey, dinoState.totalClicks);
+    }
+  };
+
+  if(dinoState.badge.setHandlers){
+    dinoState.badge.setHandlers({
+      onWhip: () => {
+        dinoState.whipIdx = (dinoState.whipIdx + 1) % 8;
+        dinoState.whipUntil = dinoState.time + 3.8;
+        dinoState.feedUntil = 0;
+        const wKey = "whip" + dinoState.whipIdx;
+        dinoState.activeBadge = wKey;
+        dinoState.badge.drawBadge(wKey, dinoState.totalClicks);
+        const wp = dinoState.badge.presets[wKey];
+        if(wp && wp.gesture) dinoState.dir.onGesture(wp.gesture, dinoState.time);
+      },
+      onFeed: (feedIdx, preset) => {
+        dinoState.feedIdx = feedIdx;
+        dinoState.feedMode = (preset && preset.reactMode) ? preset.reactMode : "happy";
+        dinoState.feedUntil = dinoState.time + 4.2;
+        dinoState.whipUntil = 0;
+        const fKey = "feed" + feedIdx;
+        dinoState.activeBadge = fKey;
+        dinoState.badge.drawBadge(fKey, dinoState.totalClicks);
+        if(preset && preset.gesture) dinoState.dir.onGesture(preset.gesture, dinoState.time);
+      },
+      onExitInteractive: () => {
+        dinoState.whipUntil = 0;
+        dinoState.feedUntil = 0;
+      }
+    });
+  }
+
+  const onGreetBtn=()=>triggerDinoClick(false);
+  window.addEventListener("ans-dino-greet",onGreetBtn);
+  const bubbleEl=dinoState.badge.getElement?dinoState.badge.getElement():null;
+  const onEnter=()=>{
+    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    if(!dinoState.hovered){
+      dinoState.hovered=true;
+      dinoState.hoverIdx=(dinoState.hoverIdx+1)%5;
+      const hp=dinoState.badge.presets["hover"+(dinoState.hoverIdx%5)];
+      if(hp&&hp.gesture)dinoState.dir.onGesture(hp.gesture,dinoState.time);
+    }
+  };
+  const onLeave=()=>{
+    dinoState.hovered=false;
+  };
+  const onClick=ev=>{
+    ev.stopPropagation();
+    triggerDinoClick(true);
+  };
+  const onKeyDown=ev=>{
+    if(ev.key!=="Enter" && ev.key!==" ")return;
+    ev.preventDefault();
+    if(!ev.repeat)onClick(ev);
+  };
+  const syncDomMotion=()=>document.body.classList.toggle("ans-dino-motion-paused", scenePaused || document.hidden);
+  let scenePaused=document.getElementById("scene-toggle")?.getAttribute("aria-pressed")==="true";
+  const onScenePause=ev=>{scenePaused=Boolean(ev.detail);syncDomMotion();};
+  syncDomMotion();
+  window.addEventListener("ans-scene-pause",onScenePause);
+  document.addEventListener("visibilitychange",syncDomMotion);
+  if(bubbleEl){
+    bubbleEl.addEventListener("pointerenter",onEnter);
+    bubbleEl.addEventListener("pointerleave",onLeave);
+    bubbleEl.addEventListener("click",onClick);
+    bubbleEl.addEventListener("keydown",onKeyDown);
+  }
+  return()=>{
+    window.removeEventListener("ans-scene-pause",onScenePause);
+    document.removeEventListener("visibilitychange",syncDomMotion);
+    document.body.classList.remove("ans-dino-motion-paused");
+    window.removeEventListener("ans-dino-greet",onGreetBtn);
+    if(bubbleEl){
+      bubbleEl.removeEventListener("pointerenter",onEnter);
+      bubbleEl.removeEventListener("pointerleave",onLeave);
+      bubbleEl.removeEventListener("click",onClick);
+      bubbleEl.removeEventListener("keydown",onKeyDown);
+    }
+  };
+},[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeL));
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeR));`).replace("#include <begin_vertex>",`#include <begin_vertex>
           transformed += (uEyeL + eyeSpin(transformed - uEyeL) - transformed) * eyeWeight(transformed, uEyeL);
-          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);if(Ue.current.set(-$.current.y*m,-$.current.x*m,0),ke.current.setFromEuler(Ue.current),K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current),ce.current&&K.current.multiplyScalar(l.mobilePullback),(dinoState.camPullback+=((1.16+Math.sin(((de?0:f.clamp(L+1,0,4))-Math.floor(de?0:f.clamp(L+1,0,4)))*Math.PI)*.16+f.clamp(Math.abs(J-q)/12,0,1)*.10)-dinoState.camPullback)*Math.min(1,y*5.5)),K.current.multiplyScalar(dinoState.camPullback),K.current.add(t.current),_.position.copy(K.current),_.quaternion.multiplyQuaternions(ke.current,_e.current),ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
+          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}
+const scrollS = de ? 4.0 + f.clamp((q - te) / Math.max(1, ae - te), 0, 1) : f.clamp(L + 1, 0, 4);
+const spline = __ansDinoPatch.sampleFlightSpline(scrollS);
+const isInteractiveMode = dinoState.badge.isInteractive ? dinoState.badge.isInteractive() : false;
+dinoState.interactBlend += ((isInteractiveMode ? 1.0 : 0.0) - dinoState.interactBlend) * Math.min(1, y * 7.5);
+const macroW = Math.max(de ? 0 : spline.macroWeight, dinoState.interactBlend);
+const flightRaw = Math.abs(J - q);
+const flightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
+const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
+// Dual-Subject Camera Patrol:
+// 1) Dynamic pullback: pull back generously (1.30x..1.52x) during wide 3D orbit and (1.34x) in Interactive Stage so both the complete dinosaur and founder stay comfortably framed!
+const orbitPull = 1.32 + 0.14 * (1.0 - macroW) + 0.08 * Math.sin(scrollS * Math.PI) + 0.10 * flightSpeed;
+const macroPull = f.lerp(1.22, 1.34, dinoState.interactBlend);
+const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
+dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
+
+// 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit around the founder!
+const patrolEase = Math.min(1, y * 4.5);
+const orbitOffsetX = spline.pos[0] - 0.26;
+const orbitOffsetY = spline.pos[1] - 0.16;
+const orbitOffsetZ = spline.pos[2] - 0.06;
+const patrolWeight = de ? 0.15 : (1.0 - macroW * 0.65);
+const targetPatrolX = orbitOffsetX * 0.42 * patrolWeight;
+const targetPatrolY = orbitOffsetY * 0.30 * patrolWeight + 0.05 * (1.0 - macroW);
+const targetPatrolYaw = f.clamp(-orbitOffsetX * 0.22 * patrolWeight - orbitOffsetZ * 0.06 * patrolWeight, -0.16, 0.16);
+const targetPatrolPitch = f.clamp(orbitOffsetY * 0.18 * patrolWeight, -0.10, 0.10);
+dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
+dinoState.camPatrolY += (targetPatrolY - dinoState.camPatrolY) * patrolEase;
+dinoState.camPatrolYaw += (targetPatrolYaw - dinoState.camPatrolYaw) * patrolEase;
+dinoState.camPatrolPitch += (targetPatrolPitch - dinoState.camPatrolPitch) * patrolEase;
+
+Ue.current.set(-$.current.y*m + dinoState.camPatrolPitch, -$.current.x*m + dinoState.camPatrolYaw, 0);
+ke.current.setFromEuler(Ue.current);
+K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current);
+ce.current&&K.current.multiplyScalar(l.mobilePullback);
+K.current.multiplyScalar(dinoState.camPullback);
+K.current.add(t.current);
+_.position.copy(K.current);
+_.quaternion.multiplyQuaternions(ke.current,_e.current);
+_.translateX(dinoState.camPatrolX);
+_.translateY(dinoState.camPatrolY);
+if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
 {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
   if (!reduced) {
@@ -1082,97 +2032,177 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   dinoState.perf.look(ne.current.x, -ne.current.y, tNow);
   dinoState.faceUniforms.uDinoGaze.value.set(ne.current.x, ne.current.y);
 
-  // 1. Clockwise 3D Orbit Around Your Head + Front-of-Face Dive to Camera Super Macro Close-Up!
-  const scrollS = de ? 4.0 + f.clamp((q - te) / Math.max(1, ae - te), 0, 1) : f.clamp(L + 1, 0, 4);
-  const flightRaw = Math.abs(J - q);
-  const flightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
-  dinoState.haloUniforms.uFlight.value += (flightSpeed - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
+  // Active reaction states: Whip Butt (催干活), Random Feed (盲盒投喂), or Normal Click
+  const whipActive = tNow < dinoState.whipUntil;
+  const whipAge = whipActive ? (3.8 - (dinoState.whipUntil - tNow)) : 99;
+  const feedActive = tNow < dinoState.feedUntil;
+  const feedAge = feedActive ? (4.2 - (dinoState.feedUntil - tNow)) : 99;
+  const clickActive = tNow < dinoState.clickUntil;
+  const clickAge = clickActive ? (4.5 - (dinoState.clickUntil - tNow)) : 99;
 
-  const spline = __ansDinoPatch.sampleFlightSpline(scrollS);
-  const macroW = de ? 0 : spline.macroWeight;
+  // 1. Wide Clockwise 3D Orbit + FOV-Adaptive Full-Body Framing for Super Macro & Interactive Stage!
+  dinoState.haloUniforms.uFlight.value += (Math.max(flightSpeed, whipActive ? 0.95 : feedActive ? 0.75 : 0) - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
+
   const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
   dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
 
-  const bobY = Math.sin(tNow * 2.4) * (0.018 * (1 - macroW * 0.4)) + Math.cos(tNow * 1.3) * 0.005;
-  const swayX = Math.cos(tNow * 1.6) * 0.008;
-  const swayZ = Math.sin(tNow * 1.4) * 0.010;
+  // Compute exact camera frustum dimensions so 100% of the dinosaur model (head, body, tail, feet) fits comfortably at any FOV!
+  _.updateMatrixWorld();
+  const fovRad = f.degToRad(_.fov || 24);
+  const tanHalfFov = Math.tan(fovRad * 0.5);
+  const aspect = _.aspect || (window.innerWidth / Math.max(1, window.innerHeight));
+  const founderDist = Math.max(2.6, _.position.distanceTo(t.current));
+  // Place dinosaur at 72% of camera-to-founder distance so it is always cleanly in front of the founder (never clipping into the white T-shirt!)
+  const macroDist = Math.max(2.2, founderDist * f.lerp(0.72, 0.70, dinoState.interactBlend));
+  const worldHalfH = macroDist * tanHalfFov;
+  const worldHalfW = worldHalfH * aspect;
+
+  // FOV-adaptive scale: ensures the full dinosaur height (0.96 * scale * 2.25) is ~24% of screen height in orbit and ~33% in Macro/Interactive Mode!
+  const orbitFrustumH = 2.0 * founderDist * tanHalfFov;
+  const macroFrustumH = 2.0 * worldHalfH;
+  const fovOrbitScale = f.clamp((0.25 * orbitFrustumH) / (0.96 * 2.25), 0.16, 0.40);
+  const fovMacroScale = f.clamp((f.lerp(0.31, 0.34, dinoState.interactBlend) * macroFrustumH) / (0.96 * 2.25), 0.16, 0.42);
+  const baseScale = f.lerp(fovOrbitScale, fovMacroScale, macroW);
+  const pulseScale = (whipActive && whipAge < 0.45) ? 0.12 : (feedActive && feedAge < 0.55) ? 0.10 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.10 : 0);
+  const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
+  dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
+
+  const bobY = Math.sin(tNow * 2.4) * (0.018 * (1 - macroW * 0.45)) + Math.cos(tNow * 1.3) * 0.006;
+  const swayX = Math.cos(tNow * 1.6) * 0.010;
+  const swayZ = Math.sin(tNow * 1.4) * 0.012;
   let fx = spline.pos[0] + swayX;
   let fy = spline.pos[1] + bobY;
   let fz = spline.pos[2] + swayZ;
 
-  // Compute Camera Super Macro Close-Up point directly in front of the live camera lens (_.position)
-  // M group is at world [0, 0.4, -0.7] with uniform scale 2.25
+  // Compute Camera Super Macro / Interactive Stage point directly in front of the live camera lens (_.position)
   const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(_.quaternion);
   const camUp    = ye.current.set(0, 1, 0).applyQuaternion(_.quaternion);
   const camRight = ot.current.set(1, 0, 0).applyQuaternion(_.quaternion);
-  // 1.56m in front of camera lens, slightly left (-0.15m) so right-side timeline text stays 100% unobstructed,
-  // and -0.24m down so the dinosaur's face & rambling kaomoji sit right in the center-left golden close-up spot!
-  const macroDist = 1.56 - dinoState.hoverBlend * 0.12;
-  const macroWorldX = _.position.x + camFwd.x * macroDist - camRight.x * 0.15 - camUp.x * 0.24;
-  const macroWorldY = _.position.y + camFwd.y * macroDist - camRight.y * 0.15 - camUp.y * 0.24;
-  const macroWorldZ = _.position.z + camFwd.z * macroDist - camRight.z * 0.15 - camUp.z * 0.24;
+
+  // Since fy is at the dinosaur's feet (y=0), subtract half of the dinosaur's world height (0.48 * scalePop * 2.25)
+  // so the CENTER of the dinosaur sits at centerNdcY (-0.05), leaving generous room above for the speech bubble and below for the HUD!
+  const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
+  const centerNdcX = f.lerp(-0.24, -0.14, dinoState.interactBlend);
+  const centerNdcY = f.lerp(-0.04, -0.05, dinoState.interactBlend);
+  const rightOffsetM = centerNdcX * worldHalfW;
+  const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
+
+  const macroWorldX = _.position.x + camFwd.x * macroDist + camRight.x * rightOffsetM + camUp.x * feetUpOffsetM;
+  const macroWorldY = _.position.y + camFwd.y * macroDist + camRight.y * rightOffsetM + camUp.y * feetUpOffsetM;
+  const macroWorldZ = _.position.z + camFwd.z * macroDist + camRight.z * rightOffsetM + camUp.z * feetUpOffsetM;
 
   const macroLocalX = (macroWorldX - 0.0) / 2.25;
-  const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.6;
+  const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
   const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
 
-  // Blend smoothly from Clockwise Head-Orbit into Camera Super Macro Close-Up when orbiting in front of your face!
   fx = f.lerp(fx, macroLocalX, macroW);
   fy = f.lerp(fy, macroLocalY, macroW);
   fz = f.lerp(fz, macroLocalZ, macroW);
 
-  // If hovered while on the normal orbit, lean gently toward the camera lens
   if (dinoState.hoverBlend > 0.01 && macroW < 0.5) {
     fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.22);
     fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.22);
     fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.22);
   }
 
-  // Real-time Camera-Frustum Screen-Space Clamping Guard:
-  // Project dinosaur torso + top kaomoji badge into NDC [-1, 1] and clamp smoothly so the dinosaur can NEVER go off-screen!
-  _.updateMatrixWorld();
-  const wPosX = fx * 2.25;
-  const wPosY = (fy + 0.34) * 2.25 + 0.4;
-  const wPosZ = fz * 2.25 - 0.7;
-  ve.current.set(wPosX, wPosY, wPosZ).project(_);
+  // Full-Body Camera-Frustum Screen-Space Safety Guard:
+  // Clamps the dinosaur's body center so neither its head crest nor its feet can EVER be cut off by the screen edges!
+  const midLocalY = fy + 0.48 * dinoState.scalePop;
+  const wMidX = fx * 2.25;
+  const wMidY = midLocalY * 2.25 + 0.4;
+  const wMidZ = fz * 2.25 - 0.7;
+  ve.current.set(wMidX, wMidY, wMidZ).project(_);
   if (ve.current.z > -1.0 && ve.current.z < 1.0) {
-    const safeMinX = ce.current ? -0.58 : -0.64;
-    const safeMaxX = ce.current ?  0.54 :  0.56;
-    const safeMinY = -0.52;
-    const safeMaxY =  0.38; // leaves headroom above for the dinosaur's head & kaomoji speech bubble!
+    const safeMinX = ce.current ? -0.64 : -0.70;
+    const safeMaxX = ce.current ?  0.62 :  0.66;
+    const safeMinY = isInteractiveMode ? -0.24 : -0.42;
+    const safeMaxY = isInteractiveMode ?  0.18 :  0.28;
     const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
     const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
     if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
-      ve.current.x = f.lerp(ve.current.x, clampedX, 0.88);
-      ve.current.y = f.lerp(ve.current.y, clampedY, 0.88);
+      ve.current.x = f.lerp(ve.current.x, clampedX, 0.85);
+      ve.current.y = f.lerp(ve.current.y, clampedY, 0.85);
       ve.current.unproject(_);
       fx = (ve.current.x - 0.0) / 2.25;
-      fy = (ve.current.y - 0.4) / 2.25 - 0.34;
+      fy = (ve.current.y - 0.4) / 2.25 - 0.48 * dinoState.scalePop;
       fz = (ve.current.z - (-0.7)) / 2.25;
     }
   }
 
-  // Pull DoF focus toward the dinosaur during Super Macro Close-Up or Hover so the close-up is razor sharp!
+  // Expand DoF focus range during Super Macro / Interactive Mode / Hover so both the dinosaur and founder are razor sharp without mutating t.current!
   const focusAssist = Math.max(macroW, dinoState.hoverBlend * 0.85);
-  if (t && focusAssist > 0.02) {
-    const dinoWorldX = fx * 2.25;
-    const dinoWorldY = fy * 2.25 + 0.4 + 0.35;
-    const dinoWorldZ = fz * 2.25 - 0.7;
-    t.current.x = f.lerp(t.current.x, dinoWorldX, focusAssist * 0.88);
-    t.current.y = f.lerp(t.current.y, dinoWorldY, focusAssist * 0.88);
-    t.current.z = f.lerp(t.current.z, dinoWorldZ, focusAssist * 0.88);
-    if (a) a.current = Math.max(a.current, 1.8 * focusAssist);
+  if (a && focusAssist > 0.02) {
+    a.current = Math.max(a.current, 8.5 * focusAssist);
+  }
+  if (r && dinoState.interactBlend > 0.1) {
+    r.current = f.lerp(r.current, 0, dinoState.interactBlend * 0.85);
   }
 
-  // Elastic scale pop on hover or click!
-  const clickActive = tNow < dinoState.clickUntil;
-  const clickAge = clickActive ? (4.0 - (dinoState.clickUntil - tNow)) : 99;
-  const clickHop = clickAge < 0.55 ? Math.sin((clickAge / 0.55) * Math.PI) * 0.08 : 0;
-  const targetScale = 0.48 * (1.0 + dinoState.hoverBlend * 0.10 + (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.14 : 0));
-  dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
+  // Compute physical hops, jitters, and body reactions for Whip Butt & Random Feeding!
+  let reactionHopY = clickAge < 0.55 ? Math.sin((clickAge / 0.55) * Math.PI) * 0.05 : 0;
+  let reactionJitterX = 0;
+  let reactionYawOffset = 0;
+  let reactionPitchOffset = 0;
+  let reactionRollOffset = 0;
+
+  if (whipActive) {
+    if (whipAge < 0.68) {
+      // Phase 1: Whip smacks butt! Dinosaur spins its butt/tail toward camera (+125 deg yaw), yelps and leaps!
+      const p = whipAge / 0.68;
+      reactionHopY = Math.sin(p * Math.PI) * 0.11;
+      reactionYawOffset = Math.sin(p * Math.PI) * 2.18;
+      reactionPitchOffset = Math.sin(p * Math.PI) * 0.30;
+      reactionRollOffset = Math.sin(tNow * 48.0) * 0.22;
+      reactionJitterX = Math.sin(tNow * 55.0) * 0.018;
+    } else {
+      // Phase 2: Frantic Work-Grinding Mode! Dinosaur faces forward and types/works at 300% speed!
+      const workDecay = f.clamp((3.8 - whipAge) / 3.12, 0, 1);
+      reactionHopY = Math.abs(Math.sin(tNow * 18.0)) * 0.03 * workDecay;
+      reactionPitchOffset = Math.sin(tNow * 26.0) * 0.10 * workDecay;
+      reactionRollOffset = Math.cos(tNow * 22.0) * 0.08 * workDecay;
+      reactionJitterX = Math.sin(tNow * 34.0) * 0.010 * workDecay;
+    }
+  } else if (feedActive) {
+    const feedDecay = f.clamp((4.2 - feedAge) / 4.2, 0, 1);
+    const mode = dinoState.feedMode;
+    if (mode === "caffeine") {
+      reactionHopY = Math.abs(Math.sin(tNow * 22.0)) * 0.055 * feedDecay;
+      reactionJitterX = Math.sin(tNow * 60.0) * 0.016 * feedDecay;
+      reactionRollOffset = Math.sin(tNow * 32.0) * 0.14 * feedDecay;
+    } else if (mode === "spicy") {
+      reactionHopY = Math.abs(Math.sin(tNow * 14.0)) * 0.08 * feedDecay;
+      reactionYawOffset = feedAge * 8.5 * feedDecay;
+      reactionPitchOffset = -0.16 * feedDecay;
+    } else if (mode === "chomp") {
+      reactionHopY = feedAge < 0.5 ? Math.sin((feedAge / 0.5) * Math.PI) * 0.09 : Math.sin(tNow * 10.0) * 0.025 * feedDecay;
+      reactionPitchOffset = feedAge < 0.45 ? 0.30 : -0.10 * Math.sin(tNow * 8.0) * feedDecay;
+    } else if (mode === "choke") {
+      reactionPitchOffset = Math.sin(tNow * 9.0) * 0.20 * feedDecay;
+      reactionRollOffset = Math.cos(tNow * 7.5) * 0.18 * feedDecay;
+      reactionHopY = Math.max(0, Math.sin(tNow * 6.0)) * 0.035 * feedDecay;
+    } else if (mode === "stinky") {
+      if (feedAge < 0.65) {
+        reactionPitchOffset = -0.26;
+        reactionYawOffset = Math.sin(tNow * 24.0) * 0.24;
+      } else {
+        reactionPitchOffset = Math.sin(tNow * 20.0) * 0.16 * feedDecay;
+        reactionHopY = Math.abs(Math.sin(tNow * 12.0)) * 0.045 * feedDecay;
+      }
+    } else if (mode === "shock") {
+      reactionHopY = 0.06 * feedDecay + Math.sin(tNow * 45.0) * 0.018 * feedDecay;
+      reactionRollOffset = Math.sin(tNow * 40.0) * 0.24 * feedDecay;
+      reactionYawOffset = Math.cos(tNow * 36.0) * 0.20 * feedDecay;
+    } else if (mode === "sour") {
+      reactionYawOffset = Math.sin(tNow * 38.0) * 0.26 * feedDecay;
+      reactionRollOffset = Math.cos(tNow * 34.0) * 0.16 * feedDecay;
+    } else {
+      reactionHopY = Math.abs(Math.sin(tNow * 9.5)) * 0.075 * feedDecay;
+      reactionRollOffset = Math.sin(tNow * 8.0) * 0.14 * feedDecay;
+    }
+  }
 
   if (dinoFlightRef.current) {
-    dinoFlightRef.current.position.set(fx, fy + clickHop, fz);
+    dinoFlightRef.current.position.set(fx + reactionJitterX, fy + reactionHopY, fz);
     dinoFlightRef.current.scale.setScalar(dinoState.scalePop);
 
     const camLocalX = (_.position.x - 0) / 2.25;
@@ -1180,7 +2210,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     const camLocalZ = (_.position.z - (-0.7)) / 2.25;
     const toCamYaw = Math.atan2(camLocalX - fx, camLocalZ - fz);
     const toCamHoriz = Math.hypot(camLocalX - fx, camLocalZ - fz);
-    const toCamPitch = f.clamp(-Math.atan2(camLocalY - (fy + 0.25), Math.max(0.1, toCamHoriz)) * 0.65, -0.28, 0.28);
+    const toCamPitch = f.clamp(-Math.atan2(camLocalY - (fy + 0.45 * dinoState.scalePop), Math.max(0.1, toCamHoriz)) * 0.55, -0.22, 0.22);
 
     const dirSign = (J >= q) ? 1 : -1;
     const tangYaw = Math.atan2(spline.tangent[0] * dirSign, spline.tangent[2] * dirSign);
@@ -1188,53 +2218,56 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     while (diffTang > Math.PI) diffTang -= Math.PI * 2;
     while (diffTang < -Math.PI) diffTang += Math.PI * 2;
 
-    // When in Super Macro Close-Up (macroW -> 1) or Hovered (hoverBlend -> 1), face the camera 100% dead-on!
     const faceCamLock = Math.max(macroW, dinoState.hoverBlend);
-    const orbitBankBlend = flightSpeed * 0.48 * (1.0 - faceCamLock);
-    const targetYaw = toCamYaw + diffTang * orbitBankBlend + (dinoState.hovered ? ne.current.x * 0.18 : 0);
+    const orbitBankBlend = flightSpeed * 0.52 * (1.0 - faceCamLock);
+    const targetYaw = toCamYaw + diffTang * orbitBankBlend + reactionYawOffset + (dinoState.hovered ? ne.current.x * 0.18 : 0);
     let yawDelta = targetYaw - dinoState.yaw;
     while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
     while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
-    dinoState.yaw += yawDelta * Math.min(1, dt * 9);
+    dinoState.yaw += yawDelta * Math.min(1, dt * (whipActive || feedActive ? 16 : 9));
 
-    const orbitPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.32 + flightSpeed * 0.12, -0.28, 0.28);
-    const targetPitch = f.lerp(orbitPitch, toCamPitch, faceCamLock) + Math.sin(tNow * 2.4 - 0.8) * 0.03;
-    const orbitRoll = f.clamp(-yawDelta * 0.40 + Math.sin(tNow * 6.0) * 0.05 * flightSpeed, -0.32, 0.32);
-    const macroCuteTilt = Math.sin(tNow * 2.8) * 0.075 + (dinoState.hovered ? -ne.current.x * 0.10 : 0);
-    const targetRoll = f.lerp(orbitRoll, macroCuteTilt, faceCamLock);
+    const orbitPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.34 + flightSpeed * 0.12, -0.25, 0.25);
+    const targetPitch = f.lerp(orbitPitch, toCamPitch, faceCamLock) + reactionPitchOffset + Math.sin(tNow * 2.4 - 0.8) * 0.025;
+    const orbitRoll = f.clamp(-yawDelta * 0.42 + Math.sin(tNow * 6.0) * 0.05 * flightSpeed, -0.28, 0.28);
+    const macroCuteTilt = Math.sin(tNow * 2.8) * 0.065 + (dinoState.hovered ? -ne.current.x * 0.08 : 0);
+    const targetRoll = f.lerp(orbitRoll, macroCuteTilt, faceCamLock) + reactionRollOffset;
 
-    dinoState.pitch += (targetPitch - dinoState.pitch) * Math.min(1, dt * 9);
-    dinoState.roll += (targetRoll - dinoState.roll) * Math.min(1, dt * 9);
+    dinoState.pitch += (targetPitch - dinoState.pitch) * Math.min(1, dt * (whipActive || feedActive ? 16 : 9));
+    dinoState.roll += (targetRoll - dinoState.roll) * Math.min(1, dt * (whipActive || feedActive ? 16 : 9));
     dinoFlightRef.current.rotation.set(dinoState.pitch, dinoState.yaw, dinoState.roll, "YXZ");
   }
 
-  // 2. Context-Aware + Natural Random Expressions & Kaomoji Ramblings (Click > Hover > Super Macro > Natural Random)
+  // 2. Context-Aware Expressions & Kaomoji Ramblings (Whip > Feed > Click > Hover > Super Macro > Natural Random)
   const naturalPool = [
     "happy_smile", "curious_tilt", "starry_excited", "cozy_chill",
     "cheerful_wave", "focused_think", "sleepy_stretch", "aha_spark"
   ];
-  const isMacroNow = macroW > 0.55;
+  const isMacroNow = spline.macroWeight > 0.55 && !de;
   if (isMacroNow && !dinoState.wasMacro) {
     dinoState.wasMacro = true;
     dinoState.macroIdx = (dinoState.macroIdx + 1) % 4;
     const mPreset = dinoState.badge.presets["macro" + dinoState.macroIdx];
     if (mPreset && mPreset.gesture) dinoState.dir.onGesture(mPreset.gesture, tNow);
-  } else if (!isMacroNow && macroW < 0.30) {
+  } else if (!isMacroNow && spline.macroWeight < 0.30) {
     dinoState.wasMacro = false;
   }
 
   let moodKey = dinoState.activeBadge;
-  if (clickActive) {
-    moodKey = "click" + (dinoState.clickIdx % 6);
+  if (whipActive) {
+    moodKey = "whip" + (dinoState.whipIdx % 8);
+  } else if (feedActive) {
+    moodKey = "feed" + (dinoState.feedIdx % 10);
+  } else if (clickActive) {
+    moodKey = (dinoState.totalClicks >= 3) ? "click2" : ("click" + (dinoState.clickIdx % 6));
   } else if (dinoState.hovered) {
     moodKey = "hover" + (dinoState.hoverIdx % 5);
   } else if (isMacroNow) {
     moodKey = "macro" + (dinoState.macroIdx % 4);
   } else {
-    if (tNow >= dinoState.nextMoodAt || moodKey.startsWith("click") || moodKey.startsWith("hover") || moodKey.startsWith("macro")) {
+    if (tNow >= dinoState.nextMoodAt || moodKey.startsWith("whip") || moodKey.startsWith("feed") || moodKey.startsWith("click") || moodKey.startsWith("hover") || moodKey.startsWith("macro")) {
       const candidates = naturalPool.filter(k => k !== dinoState.activeBadge);
       moodKey = candidates[Math.floor(Math.random() * candidates.length)];
-      dinoState.nextMoodAt = tNow + 3.2 + Math.random() * 2.6;
+      dinoState.nextMoodAt = tNow + 3.0 + Math.random() * 2.2;
       const chosen = dinoState.badge.presets[moodKey];
       if (chosen && chosen.gesture && chosen.gesture !== "idle") {
         dinoState.dir.onGesture(chosen.gesture, tNow);
@@ -1243,16 +2276,17 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   }
   if (moodKey !== dinoState.activeBadge) {
     dinoState.activeBadge = moodKey;
-    dinoState.badge.drawBadge(moodKey);
+    dinoState.badge.drawBadge(moodKey, dinoState.totalClicks);
   }
 
   const cmd = dinoState.dir.next(tNow, dinoState.perf.gesture, { active: true });
   if (cmd) dinoState.perf.trigger(cmd.gesture, tNow);
-  dinoState.perf.update(tNow, dt, false, Math.max(flightSpeed, isMacroNow ? 0.35 : 0));
+  const workFlapBoost = whipActive ? 1.0 : feedActive ? 0.85 : Math.max(flightSpeed, isMacroNow ? 0.35 : 0);
+  dinoState.perf.update(tNow, dt * (whipActive ? 2.4 : 1.0), false, workFlapBoost);
 
   const mood = dinoState.badge.presets[moodKey] || dinoState.badge.presets.happy_smile;
 
-  // Natural blinking with occasional double-blinks
+  // Natural blinking with occasional double-blinks (plus squint on sour lemon or whip impact!)
   if (tNow >= dinoState.nextBlink) {
     dinoState.blinkStart = tNow;
     dinoState.doubleBlink = Math.random() < 0.30;
@@ -1267,6 +2301,8 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     const bp = (blinkAge - 0.24) / 0.18;
     blinkVal = bp < 0.5 ? bp * 2 : (1 - bp) * 2;
   }
+  if (whipActive && whipAge < 0.45) blinkVal = 0.85;
+  if (feedActive && dinoState.feedMode === "sour") blinkVal = Math.max(blinkVal, 0.78);
 
   // Natural eye saccades blended with cursor tracking
   if (tNow >= dinoState.nextSaccade) {
@@ -1284,27 +2320,45 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   const waveHappy = f.clamp(mood.happy + 0.08 * Math.sin(tNow * 1.8) + 0.10 * flightSpeed, 0, 1);
   const waveStar  = f.clamp(mood.star  + 0.10 * Math.sin(tNow * 3.0 + 1.1), 0, 1);
   const waveBlush = f.clamp(mood.blush + 0.07 * Math.cos(tNow * 1.4), 0, 1);
-  const waveMouth = f.clamp(mood.mouth * (0.70 + 0.30 * Math.sin(tNow * 5.2 + Math.sin(tNow * 2.1))), 0, 1);
+  const mouthFreq = (whipActive || feedActive) ? 14.0 : 5.2;
+  const waveMouth = f.clamp(mood.mouth * (0.68 + 0.32 * Math.sin(tNow * mouthFreq + Math.sin(tNow * 2.1))), 0, 1);
 
-  uF.uDinoBlink.value = blinkVal * (1 - waveHappy * 0.65);
-  uF.uDinoHappy.value += (waveHappy - uF.uDinoHappy.value) * Math.min(1, dt * 4.5);
-  uF.uDinoStar.value  += (waveStar  - uF.uDinoStar.value)  * Math.min(1, dt * 4.8);
-  uF.uDinoBlush.value += (waveBlush - uF.uDinoBlush.value) * Math.min(1, dt * 4.0);
-  uF.uDinoMouth.value += (waveMouth - uF.uDinoMouth.value) * Math.min(1, dt * 6.5);
+  uF.uDinoBlink.value = blinkVal * (1 - waveHappy * 0.55);
+  uF.uDinoHappy.value += (waveHappy - uF.uDinoHappy.value) * Math.min(1, dt * 5.5);
+  uF.uDinoStar.value  += (waveStar  - uF.uDinoStar.value)  * Math.min(1, dt * 5.8);
+  uF.uDinoBlush.value += (waveBlush - uF.uDinoBlush.value) * Math.min(1, dt * 5.0);
+  uF.uDinoMouth.value += (waveMouth - uF.uDinoMouth.value) * Math.min(1, dt * 8.5);
 
-  // 3. Billboard the Kaomoji Rambling Bubble above the dinosaur's head toward the camera
-  if (dinoBadgeRef.current && dinoFlightRef.current) {
-    dinoBadgeRef.current.position.y = 1.12 + Math.sin(tNow * 3.2) * 0.022;
-    const badgeScale = 1.0 + dinoState.hoverBlend * 0.08 + macroW * 0.06;
-    dinoBadgeRef.current.scale.setScalar(badgeScale);
-    dinoFlightRef.current.updateWorldMatrix(true, false);
-    dinoFlightRef.current.getWorldQuaternion(ze.current).invert();
-    dinoBadgeRef.current.quaternion.copy(ze.current).multiply(_.quaternion);
+  // 3. Project Head Top, Mouth, and Butt/Tail into 2D screen space for the Bubble, Food Projectiles, and Whip Slash!
+  if (dinoState.badge.updateScreenPosition) {
+    _.updateMatrixWorld();
+    const curX = (fx + reactionJitterX) * 2.25;
+    const curZ = fz * 2.25 - 0.7;
+    const headWorldY = (fy + reactionHopY + 1.00 * dinoState.scalePop) * 2.25 + 0.4;
+    const mouthWorldY = (fy + reactionHopY + 0.56 * dinoState.scalePop) * 2.25 + 0.4;
+    const buttWorldY = (fy + reactionHopY + 0.28 * dinoState.scalePop) * 2.25 + 0.4;
+    const buttWorldX = curX - Math.sin(dinoState.yaw) * (0.28 * dinoState.scalePop * 2.25);
+    const buttWorldZ = curZ - Math.cos(dinoState.yaw) * (0.28 * dinoState.scalePop * 2.25);
+
+    ve.current.set(curX, headWorldY, curZ).project(_);
+    ye.current.set(curX, mouthWorldY, curZ).project(_);
+    ot.current.set(buttWorldX, buttWorldY, buttWorldZ).project(_);
+    const badgeScale = 1.0 + dinoState.hoverBlend * 0.06 + macroW * 0.04;
+    dinoState.badge.updateScreenPosition(
+      ve.current.x, ve.current.y, badgeScale,
+      ye.current.x, ye.current.y,
+      ot.current.x, ot.current.y
+    );
   }
   } else {
     dinoState.perf.update(dinoState.time, 0, true, 0);
     dinoState.haloUniforms.uFlight.value = 0;
-    if (dinoFlightRef.current) { dinoFlightRef.current.position.set(.38,-.18,.64); dinoFlightRef.current.rotation.set(0,Math.PI*.58,0); dinoFlightRef.current.scale.setScalar(.48); }
+    if (dinoFlightRef.current) { dinoFlightRef.current.position.set(spline.pos[0],spline.pos[1],spline.pos[2]); dinoFlightRef.current.rotation.set(0,Math.PI*.58,0); dinoFlightRef.current.scale.setScalar(.32); }
+    if (dinoState.badge.updateScreenPosition) {
+      _.updateMatrixWorld();
+      ve.current.set(spline.pos[0]*2.25, (spline.pos[1]+0.36)*2.25+0.4, spline.pos[2]*2.25-0.7).project(_);
+      dinoState.badge.updateScreenPosition(ve.current.x, ve.current.y, 1.0);
+    }
   }
 }
 if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)c.obj.getWorldPosition(K.current).project(_),s+=K.current.x,Q+=K.current.y;s/=S.length,Q/=S.length;const G=ne.current.x-s,ee=ne.current.y-Q,Y=me*G*f.degToRad(x.maxYaw)*x.gain,be=pe*-ee*f.degToRad(x.maxPitch)*x.gain,we=Math.hypot(G,ee),je=f.clamp(1-we/x.crossRadius,0,1),at=f.degToRad(x.crossEye)*je;for(const c of S){const m=c.sx??c.side??0,h=Y-m*at;Le.current.set(be,h,0),ze.current.setFromEuler(Le.current),Be.current.copy(ze.current).multiply(c.base),c.obj.quaternion.slerp(Be.current,x.smooth)}}),e.jsxs("group",{position:[0,.4,-.7],rotation:[0,0*Math.PI/180,0],scale:2.25,children:[
@@ -1314,7 +2368,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     ref:dinoFlightRef,
     position:[0.38,-0.18,0.64],
     rotation:[0,Math.PI*0.58,0],
-    scale:0.48,
+    scale:0.32,
     onPointerOver:ev=>{
       ev.stopPropagation();
       if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
@@ -1335,22 +2389,34 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     onClick:ev=>{
       ev.stopPropagation();
       if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
-      dinoState.clickIdx=(dinoState.clickIdx+1)%6;
-      dinoState.clickUntil=dinoState.time+4.0;
-      const cp=dinoState.badge.presets["click"+(dinoState.clickIdx%6)];
-      if(cp&&cp.gesture)dinoState.dir.onGesture(cp.gesture,dinoState.time);
+      if(dinoState.badge.expandBubble) dinoState.badge.expandBubble();
+      dinoState.totalClicks = (dinoState.totalClicks || 0) + 1;
+      dinoState.clickIdx = (dinoState.clickIdx + 1) % 6;
+      dinoState.clickUntil = dinoState.time + 4.5;
+      const cpKey = "click" + (dinoState.clickIdx % 6);
+      const cp = dinoState.badge.presets[cpKey];
+      if(cp && cp.gesture) dinoState.dir.onGesture(cp.gesture, dinoState.time);
+      if(dinoState.totalClicks >= 3 && dinoState.badge.setInteractiveMode){
+        dinoState.badge.setInteractiveMode(true);
+        dinoState.activeBadge = "click2";
+        dinoState.badge.drawBadge("click2", dinoState.totalClicks);
+      } else {
+        dinoState.activeBadge = cpKey;
+        dinoState.badge.drawBadge(cpKey, dinoState.totalClicks);
+      }
     },
     children:[
       e.jsx("primitive",{object:dinoState.root}),
       e.jsxs("mesh",{
-        position:[0,0.56,0],
+        position:[0,0.52,0],
         children:[
-          e.jsx("sphereGeometry",{args:[0.62,16,16]}),
+          e.jsx("sphereGeometry",{args:[0.68,16,16]}),
           e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})
         ]
       }),
       e.jsxs("mesh",{
         ref:dinoBadgeRef,
+        visible:!1,
         position:[0,1.12,0.04],
         renderOrder:25,
         children:[
@@ -1366,10 +2432,10 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
       }),
       e.jsxs("mesh",{
         rotation:[-Math.PI/2,0,0],
-        position:[0,-0.02,0],
+        position:[0,-0.03,0],
         renderOrder:12,
         children:[
-          e.jsx("planeGeometry",{args:[1.45,1.45]}),
+          e.jsx("planeGeometry",{args:[1.05,1.05]}),
           e.jsx("shaderMaterial",{
             transparent:!0,
             depthWrite:!1,
