@@ -587,8 +587,9 @@ class MotionDirector {
     let feedCount = 0;
     let feedBag = [];
     let handlers = { onWhip: null, onFeed: null, onExitInteractive: null };
-    let lastScreenX = 640;
-    let lastScreenY = 320;
+    let headScreenX = 640, headScreenY = 280;
+    let mouthScreenX = 640, mouthScreenY = 360;
+    let buttScreenX = 680, buttScreenY = 420;
 
     function nowMs() {
       return typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -601,15 +602,21 @@ class MotionDirector {
         const st = document.createElement("style");
         st.id = "ans-dino-bubble-style";
         st.textContent = `
-          /* Dim all other page text to semi-transparent when Dinosaur Interactive Mode is active! */
+          /* Dim all other page text to subtle semi-transparent backdrop when Dinosaur Interactive Mode is active! */
           body.ans-dino-interactive-mode main.content,
           body.ans-dino-interactive-mode .hero-chrome,
           body.ans-dino-interactive-mode .chapter-nav,
-          body.ans-dino-interactive-mode .glass-rail,
-          body.ans-dino-interactive-mode .showcase-utility {
-            opacity: 0.20 !important;
-            filter: blur(1.5px);
+          body.ans-dino-interactive-mode .glass-rail {
+            opacity: 0.12 !important;
+            filter: blur(3px) !important;
+            pointer-events: none !important;
             transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.42s ease !important;
+          }
+          body.ans-dino-interactive-mode .showcase-utility {
+            opacity: 0.08 !important;
+            filter: blur(2px) !important;
+            pointer-events: none !important;
+            transition: opacity 0.35s ease, filter 0.35s ease !important;
           }
           body:not(.ans-dino-interactive-mode) main.content,
           body:not(.ans-dino-interactive-mode) .hero-chrome,
@@ -642,21 +649,27 @@ class MotionDirector {
           }
           @keyframes dinoWhipSlashAnim {
             0%   { opacity: 0; transform: translate(-50%, -50%) rotate(-42deg) scale(0.55); }
-            25%  { opacity: 1; transform: translate(-50%, -50%) rotate(12deg) scale(1.18); }
-            55%  { opacity: 1; transform: translate(-50%, -50%) rotate(28deg) scale(1.04); }
+            22%  { opacity: 1; transform: translate(-50%, -50%) rotate(14deg) scale(1.22); }
+            52%  { opacity: 1; transform: translate(-50%, -50%) rotate(28deg) scale(1.05); }
             100% { opacity: 0; transform: translate(-50%, -50%) rotate(38deg) scale(0.88); }
           }
           @keyframes dinoFloatTagAnim {
-            0%   { opacity: 0; transform: translate(-50%, 0px) scale(0.6); }
-            20%  { opacity: 1; transform: translate(-50%, -18px) scale(1.08); }
-            80%  { opacity: 1; transform: translate(-50%, -54px) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -74px) scale(0.92); }
+            0%   { opacity: 0; transform: translate(-50%, 6px) scale(0.65); }
+            18%  { opacity: 1; transform: translate(-50%, -16px) scale(1.08); }
+            82%  { opacity: 1; transform: translate(-50%, -52px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -72px) scale(0.92); }
+          }
+          @keyframes dinoCyberWorkAnim {
+            0%   { opacity: 0; transform: translate(-50%, 10px) scale(0.7); }
+            15%  { opacity: 1; transform: translate(-50%, 0px) scale(1.04); }
+            85%  { opacity: 1; transform: translate(-50%, -6px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -18px) scale(0.9); }
           }
 
           #ans-dino-live-bubble {
             position: fixed;
             left: 50%;
-            top: 28%;
+            top: 24%;
             z-index: 80;
             font-family: Helvetica Neue, PingFang SC, -apple-system, system-ui, sans-serif;
             pointer-events: auto;
@@ -752,7 +765,7 @@ class MotionDirector {
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
             color: #f7f0e5;
-            max-width: min(510px, calc(100vw - 24px));
+            max-width: min(520px, calc(100vw - 24px));
             animation: dinoBubbleExpandPop 0.34s cubic-bezier(0.22, 1, 0.36, 1);
           }
           #ans-dino-live-bubble[data-bubble-state="alert"] .dino-speech-card {
@@ -842,11 +855,11 @@ class MotionDirector {
             transform: translateX(-50%) rotate(225deg);
           }
 
-          /* Interactive Mode HUD Dock (Appears after clicking dinosaur > 3 times!) */
+          /* Interactive Mode HUD Dock (Appears after clicking dinosaur >= 3 times!) */
           #ans-dino-interact-hud {
             position: fixed;
             left: 50%;
-            bottom: 26px;
+            bottom: 20px;
             transform: translate3d(-50%, 24px, 0) scale(0.94);
             opacity: 0;
             pointer-events: none;
@@ -854,16 +867,16 @@ class MotionDirector {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            padding: 14px 18px;
-            border-radius: 24px;
-            background: linear-gradient(145deg, rgba(12, 22, 26, 0.94), rgba(22, 34, 32, 0.92));
-            border: 1.8px solid rgba(255, 217, 179, 0.78);
+            padding: 13px 18px;
+            border-radius: 22px;
+            background: linear-gradient(145deg, rgba(12, 22, 26, 0.95), rgba(22, 34, 32, 0.93));
+            border: 1.8px solid rgba(255, 217, 179, 0.82);
             box-shadow: 0 18px 48px rgba(0, 0, 0, 0.68), 0 0 32px rgba(185, 225, 212, 0.24);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             color: #f7f0e5;
             font-family: Helvetica Neue, PingFang SC, -apple-system, system-ui, sans-serif;
-            width: min(540px, calc(100vw - 28px));
+            width: min(530px, calc(100vw - 28px));
             transition: opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1), transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
           }
           #ans-dino-interact-hud.is-visible {
@@ -972,11 +985,11 @@ class MotionDirector {
             align-items: center;
             justify-content: space-between;
             font-size: 11.5px;
-            color: rgba(236, 232, 223, 0.78);
+            color: rgba(236, 232, 223, 0.82);
             padding: 0 2px;
           }
 
-          /* Screen FX Layer for Whip Slash & Flying Blind-Box Food Projectiles */
+          /* Screen FX Layer for Whip Slash, Cyber Keyboard & Flying Blind-Box Food Projectiles */
           #ans-dino-fx-layer {
             position: fixed;
             inset: 0;
@@ -989,7 +1002,7 @@ class MotionDirector {
             width: 220px;
             height: 220px;
             pointer-events: none;
-            animation: dinoWhipSlashAnim 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: dinoWhipSlashAnim 0.56s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           }
           .dino-fx-tag {
             position: absolute;
@@ -1000,16 +1013,29 @@ class MotionDirector {
             white-space: nowrap;
             pointer-events: none;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
-            animation: dinoFloatTagAnim 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: dinoFloatTagAnim 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+          .dino-fx-work-holo {
+            position: absolute;
+            padding: 7px 14px;
+            border-radius: 14px;
+            background: rgba(12, 28, 30, 0.88);
+            border: 1.5px solid rgba(132, 250, 176, 0.85);
+            color: #b9f6ca;
+            font-size: 12.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(132, 250, 176, 0.3);
+            animation: dinoCyberWorkAnim 2.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           }
           .dino-fx-food {
             position: fixed;
-            font-size: 38px;
+            font-size: 40px;
             line-height: 1;
             pointer-events: none;
             z-index: 88;
             filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
-            transition: left 0.46s cubic-bezier(0.22, 1, 0.36, 1), top 0.46s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.46s ease, opacity 0.46s ease;
+            transition: left 0.44s cubic-bezier(0.22, 1, 0.36, 1), top 0.44s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.44s ease, opacity 0.44s ease;
           }
 
           body.showcase-static #ans-dino-live-bubble,
@@ -1105,11 +1131,11 @@ class MotionDirector {
             whipBtn.addEventListener("click", ev => {
               ev.stopPropagation();
               whipCount++;
-              kpiScore = Math.min(999, kpiScore + 22 + Math.floor(Math.random() * 14));
+              kpiScore = Math.min(999, kpiScore + 25 + Math.floor(Math.random() * 14));
               if (kpiFillEl) kpiFillEl.style.width = `${Math.min(100, kpiScore)}%`;
               if (kpiValEl) kpiValEl.textContent = `${kpiScore}%`;
               if (feedTagEl) feedTagEl.textContent = `🪢 已抽屁股催工 ${whipCount} 次！小恐龙屁股火辣辣，正在含泪狂飙手速写代码中…`;
-              spawnWhipFx(lastScreenX, lastScreenY + 46);
+              spawnWhipFx(buttScreenX, buttScreenY);
               if (handlers.onWhip) handlers.onWhip(whipCount);
             });
           }
@@ -1134,8 +1160,8 @@ class MotionDirector {
               spawnFoodProjectile(
                 rect.left + rect.width * 0.5,
                 rect.top,
-                lastScreenX,
-                lastScreenY + 34,
+                mouthScreenX,
+                mouthScreenY,
                 preset ? preset.itemIcon : "🍗",
                 preset ? preset.itemName : "神秘盲盒"
               );
@@ -1180,9 +1206,9 @@ class MotionDirector {
         <svg viewBox="0 0 220 220" width="220" height="220" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M24 186 C 62 152, 92 94, 178 44" stroke="#ffd9b3" stroke-width="7" stroke-linecap="round"/>
           <path d="M20 190 C 78 130, 128 118, 190 36" stroke="#ff6b4a" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 6"/>
-          <circle cx="176" cy="46" r="22" fill="rgba(255, 110, 74, 0.38)"/>
-          <text x="150" y="56" font-size="34">💥</text>
-          <text x="18" y="196" font-size="32">🪢</text>
+          <circle cx="176" cy="46" r="24" fill="rgba(255, 110, 74, 0.42)"/>
+          <text x="148" y="58" font-size="36">💥</text>
+          <text x="16" y="196" font-size="32">🪢</text>
         </svg>
       `;
       fxLayerEl.appendChild(whip);
@@ -1190,11 +1216,11 @@ class MotionDirector {
       const tag = document.createElement("div");
       tag.className = "dino-fx-tag";
       tag.style.left = `${targetX}px`;
-      tag.style.top = `${targetY - 22}px`;
+      tag.style.top = `${targetY - 26}px`;
       tag.style.background = "linear-gradient(135deg, #ff6b4a, #ffb36b)";
       tag.style.color = "#1c100e";
       const slogans = [
-        "💥 啪！！屁股开花 · 手速 +300%！",
+        "💥 啪！！抽中屁股 · 干活手速 +300%！",
         "🪢 别摸鱼！连夜肝代码 +25% KPI！",
         "🔥 嗷呜！牛马圣体觉醒 · 光速搬砖！",
         "🍑 啪叽！红屁股暴击 · 帧率拉满！"
@@ -1203,9 +1229,25 @@ class MotionDirector {
       fxLayerEl.appendChild(tag);
 
       setTimeout(() => {
+        if (!fxLayerEl) return;
+        const workHolo = document.createElement("div");
+        workHolo.className = "dino-fx-work-holo";
+        workHolo.style.left = `${mouthScreenX}px`;
+        workHolo.style.top = `${mouthScreenY + 38}px`;
+        const codeTasks = [
+          "💻 正在光速敲代码中: git push origin feat/ans-120fps ⚡",
+          "⌨️ 啪啪啪狂改 Bug 中: 0 errors, 0 warnings, KPI +100% 🔥",
+          "🚀 连夜肝完 3D 展厅巡视运镜与盲盒系统！绝不摸鱼！"
+        ];
+        workHolo.textContent = codeTasks[whipCount % codeTasks.length];
+        fxLayerEl.appendChild(workHolo);
+        setTimeout(() => workHolo.remove(), 2600);
+      }, 480);
+
+      setTimeout(() => {
         whip.remove();
         tag.remove();
-      }, 1200);
+      }, 1250);
     }
 
     function spawnFoodProjectile(startX, startY, targetX, targetY, icon, itemName) {
@@ -1221,7 +1263,7 @@ class MotionDirector {
       requestAnimationFrame(() => {
         food.style.left = `${targetX}px`;
         food.style.top = `${targetY}px`;
-        food.style.transform = "translate(-50%, -50%) scale(1.35) rotate(18deg)";
+        food.style.transform = "translate(-50%, -50%) scale(1.38) rotate(18deg)";
       });
 
       setTimeout(() => {
@@ -1230,16 +1272,16 @@ class MotionDirector {
         const tag = document.createElement("div");
         tag.className = "dino-fx-tag";
         tag.style.left = `${targetX}px`;
-        tag.style.top = `${targetY - 16}px`;
+        tag.style.top = `${targetY - 22}px`;
         tag.style.background = "linear-gradient(135deg, #84fab0, #ffe082)";
         tag.style.color = "#10241e";
-        tag.textContent = `${icon} 投喂【${itemName}】！`;
+        tag.textContent = `${icon} 咔哧！炫完【${itemName}】！`;
         fxLayerEl.appendChild(tag);
         setTimeout(() => {
           food.remove();
           tag.remove();
-        }, 1150);
-      }, 430);
+        }, 1200);
+      }, 420);
     }
 
     function expandBubble() {
@@ -1294,16 +1336,16 @@ class MotionDirector {
       if (kaoEl) kaoEl.textContent = p.kaomoji;
       if (txtEl) txtEl.textContent = p.text;
       if (subEl) {
-        if (!interactiveOpen && clickCountHint > 0 && clickCountHint <= 3 && mode !== "whip" && mode !== "feed") {
-          const remain = Math.max(1, 4 - clickCountHint);
-          subEl.textContent = `🔥 已点 ${clickCountHint} 次！再点小恐龙 ${remain} 次召唤「挥鞭抽屁股 & 盲盒投喂」互动台！`;
+        if (!interactiveOpen && clickCountHint > 0 && clickCountHint < 3 && mode !== "whip" && mode !== "feed") {
+          const remain = Math.max(1, 3 - clickCountHint);
+          subEl.textContent = `🔥 已点 ${clickCountHint}/3 次！再点小恐龙 ${remain} 次开启「挥鞭抽屁股 & 盲盒投喂」互动台！`;
         } else {
           subEl.textContent = p.sub || "✨ 点击感叹号展开碎碎念，连点小恐龙开启训龙互动台";
         }
       }
     }
 
-    function updateScreenPosition(ndcX, ndcY, scaleBoost = 1.0) {
+    function updateScreenPosition(ndcX, ndcY, scaleBoost = 1.0, mouthNdcX = ndcX, mouthNdcY = ndcY - 0.15, buttNdcX = ndcX + 0.08, buttNdcY = ndcY - 0.28) {
       const el = ensureDomBubble();
       if (!el || typeof window === "undefined") return;
       const now = nowMs();
@@ -1315,7 +1357,6 @@ class MotionDirector {
           el.setAttribute("data-idle-dim", isIdleOver3s ? "true" : "false");
         }
       } else if (!interactiveOpen && (now - expandedAt) > 9500) {
-        // Gently fold back to ! after 9.5s of idle when not in Interactive Mode
         collapseToAlert(true);
       }
 
@@ -1323,26 +1364,34 @@ class MotionDirector {
       const vh = window.innerHeight || 800;
       const rawX = (ndcX * 0.5 + 0.5) * vw;
       const rawY = (-ndcY * 0.5 + 0.5) * vh;
-      lastScreenX = Math.max(80, Math.min(vw - 80, rawX));
-      lastScreenY = Math.max(80, Math.min(vh - 140, rawY));
+      headScreenX = Math.max(80, Math.min(vw - 80, rawX));
+      headScreenY = Math.max(76, Math.min(vh - 180, rawY));
+
+      mouthScreenX = Math.max(90, Math.min(vw - 90, (mouthNdcX * 0.5 + 0.5) * vw));
+      mouthScreenY = Math.max(110, Math.min(vh - 180, (-mouthNdcY * 0.5 + 0.5) * vh));
+      buttScreenX = Math.max(90, Math.min(vw - 90, (buttNdcX * 0.5 + 0.5) * vw));
+      buttScreenY = Math.max(130, Math.min(vh - 170, (-buttNdcY * 0.5 + 0.5) * vh));
 
       const isAlert = bubbleState === "alert";
-      const bw = isAlert ? 48 : (el.offsetWidth || 360);
+      const bw = isAlert ? 48 : (el.offsetWidth || 380);
       const bh = isAlert ? 48 : (el.offsetHeight || 58);
-      const marginX = isAlert ? 36 : Math.max(bw * 0.5 + 16, 190);
+      const marginX = isAlert ? 36 : Math.max(bw * 0.5 + 16, 195);
       const clampedX = Math.max(marginX, Math.min(vw - marginX, rawX));
-      let targetY = rawY - (isAlert ? 10 : 18);
+
+      // Strict top and bottom bounds so the bubble is NEVER clipped at the top or overlapping the bottom HUD!
+      const minTopY = bh + 18;
+      const maxBottomY = vh - (interactiveOpen ? 185 : 82);
+      let targetY = rawY - (isAlert ? 12 : 16);
       let flipBelow = false;
-      if (targetY - bh < 58) {
-        targetY = Math.min(vh - 84, rawY + (isAlert ? 72 : 96));
-        flipBelow = true;
-      } else if (targetY > vh - (interactiveOpen ? 165 : 76)) {
-        targetY = vh - (interactiveOpen ? 165 : 76);
+      if (targetY < minTopY) {
+        targetY = minTopY;
+      } else if (targetY > maxBottomY) {
+        targetY = maxBottomY;
       }
       el.setAttribute("data-flip", flipBelow ? "below" : "above");
       el.style.left = `${clampedX.toFixed(1)}px`;
       el.style.top = `${targetY.toFixed(1)}px`;
-      el.style.transform = `translate3d(-50%, ${flipBelow ? "0%" : "-100%"}, 0) scale(${scaleBoost.toFixed(3)})`;
+      el.style.transform = `translate3d(-50%, -100%, 0) scale(${scaleBoost.toFixed(3)})`;
       if (arrowEl && !isAlert) {
         const arrowShift = Math.max(-bw * 0.34, Math.min(bw * 0.34, rawX - clampedX));
         arrowEl.style.left = `calc(50% + ${arrowShift.toFixed(1)}px)`;
@@ -1889,9 +1938,9 @@ const flightRaw = Math.abs(J - q);
 const flightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
 const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
 // Dual-Subject Camera Patrol:
-// 1) Dynamic pullback: pull back generously (1.28x..1.52x) during wide 3D orbit so the wide orbit + founder stay framed, and glide in (1.14x) during Super Macro Close-Up!
-const orbitPull = 1.30 + 0.16 * (1.0 - macroW) + 0.08 * Math.sin(scrollS * Math.PI) + 0.10 * flightSpeed;
-const macroPull = 1.14;
+// 1) Dynamic pullback: pull back generously (1.30x..1.52x) during wide 3D orbit and (1.34x) in Interactive Stage so both the complete dinosaur and founder stay comfortably framed!
+const orbitPull = 1.32 + 0.14 * (1.0 - macroW) + 0.08 * Math.sin(scrollS * Math.PI) + 0.10 * flightSpeed;
+const macroPull = f.lerp(1.22, 1.34, dinoState.interactBlend);
 const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
 dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
 
@@ -1902,7 +1951,7 @@ const orbitOffsetY = spline.pos[1] - 0.16;
 const orbitOffsetZ = spline.pos[2] - 0.06;
 const patrolWeight = de ? 0.15 : (1.0 - macroW * 0.65);
 const targetPatrolX = orbitOffsetX * 0.42 * patrolWeight;
-const targetPatrolY = orbitOffsetY * 0.30 * patrolWeight + 0.06 * (1.0 - macroW);
+const targetPatrolY = orbitOffsetY * 0.30 * patrolWeight + 0.05 * (1.0 - macroW);
 const targetPatrolYaw = f.clamp(-orbitOffsetX * 0.22 * patrolWeight - orbitOffsetZ * 0.06 * patrolWeight, -0.16, 0.16);
 const targetPatrolPitch = f.clamp(orbitOffsetY * 0.18 * patrolWeight, -0.10, 0.10);
 dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
@@ -1939,15 +1988,36 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   const clickActive = tNow < dinoState.clickUntil;
   const clickAge = clickActive ? (4.5 - (dinoState.clickUntil - tNow)) : 99;
 
-  // 1. Wide Clockwise 3D Orbit Around Your Head + Front-of-Face Dive to Camera Super Macro / Interactive Stage!
+  // 1. Wide Clockwise 3D Orbit + FOV-Adaptive Full-Body Framing for Super Macro & Interactive Stage!
   dinoState.haloUniforms.uFlight.value += (Math.max(flightSpeed, whipActive ? 0.95 : feedActive ? 0.75 : 0) - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
 
   const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
   dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
 
-  const bobY = Math.sin(tNow * 2.4) * (0.024 * (1 - macroW * 0.4)) + Math.cos(tNow * 1.3) * 0.008;
-  const swayX = Math.cos(tNow * 1.6) * 0.012;
-  const swayZ = Math.sin(tNow * 1.4) * 0.014;
+  // Compute exact camera frustum dimensions so 100% of the dinosaur model (head, body, tail, feet) fits comfortably at any FOV!
+  _.updateMatrixWorld();
+  const fovRad = f.degToRad(_.fov || 24);
+  const tanHalfFov = Math.tan(fovRad * 0.5);
+  const aspect = _.aspect || (window.innerWidth / Math.max(1, window.innerHeight));
+  const founderDist = Math.max(2.6, _.position.distanceTo(t.current));
+  // Place dinosaur at 72% of camera-to-founder distance so it is always cleanly in front of the founder (never clipping into the white T-shirt!)
+  const macroDist = Math.max(2.2, founderDist * f.lerp(0.72, 0.70, dinoState.interactBlend));
+  const worldHalfH = macroDist * tanHalfFov;
+  const worldHalfW = worldHalfH * aspect;
+
+  // FOV-adaptive scale: ensures the full dinosaur height (0.96 * scale * 2.25) is ~24% of screen height in orbit and ~33% in Macro/Interactive Mode!
+  const orbitFrustumH = 2.0 * founderDist * tanHalfFov;
+  const macroFrustumH = 2.0 * worldHalfH;
+  const fovOrbitScale = f.clamp((0.25 * orbitFrustumH) / (0.96 * 2.25), 0.16, 0.40);
+  const fovMacroScale = f.clamp((f.lerp(0.31, 0.34, dinoState.interactBlend) * macroFrustumH) / (0.96 * 2.25), 0.16, 0.42);
+  const baseScale = f.lerp(fovOrbitScale, fovMacroScale, macroW);
+  const pulseScale = (whipActive && whipAge < 0.45) ? 0.12 : (feedActive && feedAge < 0.55) ? 0.10 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.10 : 0);
+  const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
+  dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
+
+  const bobY = Math.sin(tNow * 2.4) * (0.018 * (1 - macroW * 0.45)) + Math.cos(tNow * 1.3) * 0.006;
+  const swayX = Math.cos(tNow * 1.6) * 0.010;
+  const swayZ = Math.sin(tNow * 1.4) * 0.012;
   let fx = spline.pos[0] + swayX;
   let fy = spline.pos[1] + bobY;
   let fz = spline.pos[2] + swayZ;
@@ -1956,16 +2026,21 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(_.quaternion);
   const camUp    = ye.current.set(0, 1, 0).applyQuaternion(_.quaternion);
   const camRight = ot.current.set(1, 0, 0).applyQuaternion(_.quaternion);
-  // In Interactive Mode, center the dinosaur slightly more (-0.05m right offset, -0.18m vertical offset, 1.44m distance)
-  const stageRightOffset = f.lerp(0.14, 0.04, dinoState.interactBlend);
-  const stageUpOffset = f.lerp(0.22, 0.17, dinoState.interactBlend);
-  const macroDist = f.lerp(1.52, 1.42, dinoState.interactBlend) - dinoState.hoverBlend * 0.10;
-  const macroWorldX = _.position.x + camFwd.x * macroDist - camRight.x * stageRightOffset - camUp.x * stageUpOffset;
-  const macroWorldY = _.position.y + camFwd.y * macroDist - camRight.y * stageRightOffset - camUp.y * stageUpOffset;
-  const macroWorldZ = _.position.z + camFwd.z * macroDist - camRight.z * stageRightOffset - camUp.z * stageUpOffset;
+
+  // Since fy is at the dinosaur's feet (y=0), subtract half of the dinosaur's world height (0.48 * scalePop * 2.25)
+  // so the CENTER of the dinosaur sits at centerNdcY (-0.05), leaving generous room above for the speech bubble and below for the HUD!
+  const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
+  const centerNdcX = f.lerp(-0.24, -0.14, dinoState.interactBlend);
+  const centerNdcY = f.lerp(-0.04, -0.05, dinoState.interactBlend);
+  const rightOffsetM = centerNdcX * worldHalfW;
+  const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
+
+  const macroWorldX = _.position.x + camFwd.x * macroDist + camRight.x * rightOffsetM + camUp.x * feetUpOffsetM;
+  const macroWorldY = _.position.y + camFwd.y * macroDist + camRight.y * rightOffsetM + camUp.y * feetUpOffsetM;
+  const macroWorldZ = _.position.z + camFwd.z * macroDist + camRight.z * rightOffsetM + camUp.z * feetUpOffsetM;
 
   const macroLocalX = (macroWorldX - 0.0) / 2.25;
-  const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.6;
+  const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
   const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
 
   fx = f.lerp(fx, macroLocalX, macroW);
@@ -1973,48 +2048,46 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   fz = f.lerp(fz, macroLocalZ, macroW);
 
   if (dinoState.hoverBlend > 0.01 && macroW < 0.5) {
-    fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.25);
-    fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.25);
-    fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.25);
+    fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.22);
+    fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.22);
+    fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.22);
   }
 
-  // Wide Camera-Frustum Screen-Space Safety Guard:
-  _.updateMatrixWorld();
-  const wPosX = fx * 2.25;
-  const wPosY = (fy + 0.30) * 2.25 + 0.4;
-  const wPosZ = fz * 2.25 - 0.7;
-  ve.current.set(wPosX, wPosY, wPosZ).project(_);
+  // Full-Body Camera-Frustum Screen-Space Safety Guard:
+  // Clamps the dinosaur's body center so neither its head crest nor its feet can EVER be cut off by the screen edges!
+  const midLocalY = fy + 0.48 * dinoState.scalePop;
+  const wMidX = fx * 2.25;
+  const wMidY = midLocalY * 2.25 + 0.4;
+  const wMidZ = fz * 2.25 - 0.7;
+  ve.current.set(wMidX, wMidY, wMidZ).project(_);
   if (ve.current.z > -1.0 && ve.current.z < 1.0) {
-    const safeMinX = ce.current ? -0.74 : -0.80;
-    const safeMaxX = ce.current ?  0.72 :  0.76;
-    const safeMinY = -0.70;
-    const safeMaxY =  0.62;
+    const safeMinX = ce.current ? -0.64 : -0.70;
+    const safeMaxX = ce.current ?  0.62 :  0.66;
+    const safeMinY = isInteractiveMode ? -0.24 : -0.42;
+    const safeMaxY = isInteractiveMode ?  0.18 :  0.28;
     const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
     const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
     if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
-      ve.current.x = f.lerp(ve.current.x, clampedX, 0.78);
-      ve.current.y = f.lerp(ve.current.y, clampedY, 0.78);
+      ve.current.x = f.lerp(ve.current.x, clampedX, 0.85);
+      ve.current.y = f.lerp(ve.current.y, clampedY, 0.85);
       ve.current.unproject(_);
       fx = (ve.current.x - 0.0) / 2.25;
-      fy = (ve.current.y - 0.4) / 2.25 - 0.30;
+      fy = (ve.current.y - 0.4) / 2.25 - 0.48 * dinoState.scalePop;
       fz = (ve.current.z - (-0.7)) / 2.25;
     }
   }
 
-  // Pull DoF focus toward the dinosaur during Super Macro / Interactive Mode / Hover so the dinosaur is razor sharp!
+  // Expand DoF focus range during Super Macro / Interactive Mode / Hover so both the dinosaur and founder are razor sharp without mutating t.current!
   const focusAssist = Math.max(macroW, dinoState.hoverBlend * 0.85);
-  if (t && focusAssist > 0.02) {
-    const dinoWorldX = fx * 2.25;
-    const dinoWorldY = fy * 2.25 + 0.4 + 0.35;
-    const dinoWorldZ = fz * 2.25 - 0.7;
-    t.current.x = f.lerp(t.current.x, dinoWorldX, focusAssist * 0.90);
-    t.current.y = f.lerp(t.current.y, dinoWorldY, focusAssist * 0.90);
-    t.current.z = f.lerp(t.current.z, dinoWorldZ, focusAssist * 0.90);
-    if (a) a.current = Math.max(a.current, 2.5 * focusAssist);
+  if (a && focusAssist > 0.02) {
+    a.current = Math.max(a.current, 8.5 * focusAssist);
+  }
+  if (r && dinoState.interactBlend > 0.1) {
+    r.current = f.lerp(r.current, 0, dinoState.interactBlend * 0.85);
   }
 
   // Compute physical hops, jitters, and body reactions for Whip Butt & Random Feeding!
-  let reactionHopY = clickAge < 0.55 ? Math.sin((clickAge / 0.55) * Math.PI) * 0.08 : 0;
+  let reactionHopY = clickAge < 0.55 ? Math.sin((clickAge / 0.55) * Math.PI) * 0.05 : 0;
   let reactionJitterX = 0;
   let reactionYawOffset = 0;
   let reactionPitchOffset = 0;
@@ -2022,72 +2095,59 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
 
   if (whipActive) {
     if (whipAge < 0.68) {
-      // Phase 1: Whip smacks butt! Dinosaur spins its butt/tail toward camera (+125 deg yaw), yelps and leaps high!
+      // Phase 1: Whip smacks butt! Dinosaur spins its butt/tail toward camera (+125 deg yaw), yelps and leaps!
       const p = whipAge / 0.68;
-      reactionHopY = Math.sin(p * Math.PI) * 0.19;
+      reactionHopY = Math.sin(p * Math.PI) * 0.11;
       reactionYawOffset = Math.sin(p * Math.PI) * 2.18;
-      reactionPitchOffset = Math.sin(p * Math.PI) * 0.32;
-      reactionRollOffset = Math.sin(tNow * 48.0) * 0.24;
-      reactionJitterX = Math.sin(tNow * 55.0) * 0.025;
+      reactionPitchOffset = Math.sin(p * Math.PI) * 0.30;
+      reactionRollOffset = Math.sin(tNow * 48.0) * 0.22;
+      reactionJitterX = Math.sin(tNow * 55.0) * 0.018;
     } else {
       // Phase 2: Frantic Work-Grinding Mode! Dinosaur faces forward and types/works at 300% speed!
       const workDecay = f.clamp((3.8 - whipAge) / 3.12, 0, 1);
-      reactionHopY = Math.abs(Math.sin(tNow * 18.0)) * 0.045 * workDecay;
-      reactionPitchOffset = Math.sin(tNow * 26.0) * 0.11 * workDecay;
-      reactionRollOffset = Math.cos(tNow * 22.0) * 0.09 * workDecay;
-      reactionJitterX = Math.sin(tNow * 34.0) * 0.012 * workDecay;
+      reactionHopY = Math.abs(Math.sin(tNow * 18.0)) * 0.03 * workDecay;
+      reactionPitchOffset = Math.sin(tNow * 26.0) * 0.10 * workDecay;
+      reactionRollOffset = Math.cos(tNow * 22.0) * 0.08 * workDecay;
+      reactionJitterX = Math.sin(tNow * 34.0) * 0.010 * workDecay;
     }
   } else if (feedActive) {
     const feedDecay = f.clamp((4.2 - feedAge) / 4.2, 0, 1);
     const mode = dinoState.feedMode;
     if (mode === "caffeine") {
-      // 🧋 Iced Americano: high-frequency caffeine buzz + rapid hops
-      reactionHopY = Math.abs(Math.sin(tNow * 22.0)) * 0.08 * feedDecay;
-      reactionJitterX = Math.sin(tNow * 60.0) * 0.022 * feedDecay;
+      reactionHopY = Math.abs(Math.sin(tNow * 22.0)) * 0.055 * feedDecay;
+      reactionJitterX = Math.sin(tNow * 60.0) * 0.016 * feedDecay;
       reactionRollOffset = Math.sin(tNow * 32.0) * 0.14 * feedDecay;
     } else if (mode === "spicy") {
-      // 🌶️ Spicy noodles + Houttuynia: frantic 360 spinning + jumping!
-      reactionHopY = Math.abs(Math.sin(tNow * 14.0)) * 0.12 * feedDecay;
+      reactionHopY = Math.abs(Math.sin(tNow * 14.0)) * 0.08 * feedDecay;
       reactionYawOffset = feedAge * 8.5 * feedDecay;
-      reactionPitchOffset = -0.18 * feedDecay;
+      reactionPitchOffset = -0.16 * feedDecay;
     } else if (mode === "chomp") {
-      // 🐛 Bug chomp: forward lunge bite then belly bounce
-      reactionHopY = feedAge < 0.5 ? Math.sin((feedAge / 0.5) * Math.PI) * 0.14 : Math.sin(tNow * 10.0) * 0.03 * feedDecay;
-      reactionPitchOffset = feedAge < 0.45 ? 0.32 : -0.10 * Math.sin(tNow * 8.0) * feedDecay;
+      reactionHopY = feedAge < 0.5 ? Math.sin((feedAge / 0.5) * Math.PI) * 0.09 : Math.sin(tNow * 10.0) * 0.025 * feedDecay;
+      reactionPitchOffset = feedAge < 0.45 ? 0.30 : -0.10 * Math.sin(tNow * 8.0) * feedDecay;
     } else if (mode === "choke") {
-      // 🥞 Boss's giant pancake: comic neck stretch & hiccup wobble
-      reactionPitchOffset = Math.sin(tNow * 9.0) * 0.22 * feedDecay;
-      reactionRollOffset = Math.cos(tNow * 7.5) * 0.20 * feedDecay;
-      reactionHopY = Math.max(0, Math.sin(tNow * 6.0)) * 0.05 * feedDecay;
+      reactionPitchOffset = Math.sin(tNow * 9.0) * 0.20 * feedDecay;
+      reactionRollOffset = Math.cos(tNow * 7.5) * 0.18 * feedDecay;
+      reactionHopY = Math.max(0, Math.sin(tNow * 6.0)) * 0.035 * feedDecay;
     } else if (mode === "stinky") {
-      // 🥣 Stinky luosifen + durian: recoil first 0.65s, then frantic happy nodding!
       if (feedAge < 0.65) {
-        reactionPitchOffset = -0.28;
-        reactionYawOffset = Math.sin(tNow * 24.0) * 0.25;
+        reactionPitchOffset = -0.26;
+        reactionYawOffset = Math.sin(tNow * 24.0) * 0.24;
       } else {
-        reactionPitchOffset = Math.sin(tNow * 20.0) * 0.18 * feedDecay;
-        reactionHopY = Math.abs(Math.sin(tNow * 12.0)) * 0.06 * feedDecay;
+        reactionPitchOffset = Math.sin(tNow * 20.0) * 0.16 * feedDecay;
+        reactionHopY = Math.abs(Math.sin(tNow * 12.0)) * 0.045 * feedDecay;
       }
     } else if (mode === "shock") {
-      // 🔋 RTX 5090 power cable: electric disco levitation & shock wiggle!
-      reactionHopY = 0.10 * feedDecay + Math.sin(tNow * 45.0) * 0.025 * feedDecay;
-      reactionRollOffset = Math.sin(tNow * 40.0) * 0.26 * feedDecay;
-      reactionYawOffset = Math.cos(tNow * 36.0) * 0.22 * feedDecay;
+      reactionHopY = 0.06 * feedDecay + Math.sin(tNow * 45.0) * 0.018 * feedDecay;
+      reactionRollOffset = Math.sin(tNow * 40.0) * 0.24 * feedDecay;
+      reactionYawOffset = Math.cos(tNow * 36.0) * 0.20 * feedDecay;
     } else if (mode === "sour") {
-      // 🍋 100% Sour lemon: whole-body pucker & rapid head-shiver shake!
-      reactionYawOffset = Math.sin(tNow * 38.0) * 0.28 * feedDecay;
-      reactionRollOffset = Math.cos(tNow * 34.0) * 0.18 * feedDecay;
+      reactionYawOffset = Math.sin(tNow * 38.0) * 0.26 * feedDecay;
+      reactionRollOffset = Math.cos(tNow * 34.0) * 0.16 * feedDecay;
     } else {
-      // 🍗 Fried chicken / 🧴 Hair tonic / 🧼 Zen soap: joyful double jumps & happy sway
-      reactionHopY = Math.abs(Math.sin(tNow * 9.5)) * 0.11 * feedDecay;
-      reactionRollOffset = Math.sin(tNow * 8.0) * 0.15 * feedDecay;
+      reactionHopY = Math.abs(Math.sin(tNow * 9.5)) * 0.075 * feedDecay;
+      reactionRollOffset = Math.sin(tNow * 8.0) * 0.14 * feedDecay;
     }
   }
-
-  const baseScale = f.lerp(0.48, 0.54, dinoState.interactBlend);
-  const pulseScale = (whipActive && whipAge < 0.45) ? 0.18 : (feedActive && feedAge < 0.55) ? 0.16 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.14 : 0);
-  const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.10 + pulseScale);
-  dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
 
   if (dinoFlightRef.current) {
     dinoFlightRef.current.position.set(fx + reactionJitterX, fy + reactionHopY, fz);
@@ -2098,7 +2158,7 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
     const camLocalZ = (_.position.z - (-0.7)) / 2.25;
     const toCamYaw = Math.atan2(camLocalX - fx, camLocalZ - fz);
     const toCamHoriz = Math.hypot(camLocalX - fx, camLocalZ - fz);
-    const toCamPitch = f.clamp(-Math.atan2(camLocalY - (fy + 0.25), Math.max(0.1, toCamHoriz)) * 0.65, -0.28, 0.28);
+    const toCamPitch = f.clamp(-Math.atan2(camLocalY - (fy + 0.45 * dinoState.scalePop), Math.max(0.1, toCamHoriz)) * 0.55, -0.22, 0.22);
 
     const dirSign = (J >= q) ? 1 : -1;
     const tangYaw = Math.atan2(spline.tangent[0] * dirSign, spline.tangent[2] * dirSign);
@@ -2114,10 +2174,10 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
     while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
     dinoState.yaw += yawDelta * Math.min(1, dt * (whipActive || feedActive ? 16 : 9));
 
-    const orbitPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.34 + flightSpeed * 0.12, -0.28, 0.28);
-    const targetPitch = f.lerp(orbitPitch, toCamPitch, faceCamLock) + reactionPitchOffset + Math.sin(tNow * 2.4 - 0.8) * 0.03;
-    const orbitRoll = f.clamp(-yawDelta * 0.42 + Math.sin(tNow * 6.0) * 0.05 * flightSpeed, -0.32, 0.32);
-    const macroCuteTilt = Math.sin(tNow * 2.8) * 0.075 + (dinoState.hovered ? -ne.current.x * 0.10 : 0);
+    const orbitPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.34 + flightSpeed * 0.12, -0.25, 0.25);
+    const targetPitch = f.lerp(orbitPitch, toCamPitch, faceCamLock) + reactionPitchOffset + Math.sin(tNow * 2.4 - 0.8) * 0.025;
+    const orbitRoll = f.clamp(-yawDelta * 0.42 + Math.sin(tNow * 6.0) * 0.05 * flightSpeed, -0.28, 0.28);
+    const macroCuteTilt = Math.sin(tNow * 2.8) * 0.065 + (dinoState.hovered ? -ne.current.x * 0.08 : 0);
     const targetRoll = f.lerp(orbitRoll, macroCuteTilt, faceCamLock) + reactionRollOffset;
 
     dinoState.pitch += (targetPitch - dinoState.pitch) * Math.min(1, dt * (whipActive || feedActive ? 16 : 9));
@@ -2217,23 +2277,34 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   uF.uDinoBlush.value += (waveBlush - uF.uDinoBlush.value) * Math.min(1, dt * 5.0);
   uF.uDinoMouth.value += (waveMouth - uF.uDinoMouth.value) * Math.min(1, dt * 8.5);
 
-  // 3. Project the dinosaur's head top into 2D screen space and update the ! / Kaomoji Speech Bubble!
+  // 3. Project Head Top, Mouth, and Butt/Tail into 2D screen space for the Bubble, Food Projectiles, and Whip Slash!
   if (dinoState.badge.updateScreenPosition) {
     _.updateMatrixWorld();
-    const headWorldX = (fx + reactionJitterX) * 2.25;
-    const headWorldY = (fy + reactionHopY + 0.50) * 2.25 + 0.4;
-    const headWorldZ = fz * 2.25 - 0.7;
-    ve.current.set(headWorldX, headWorldY, headWorldZ).project(_);
-    const badgeScale = 1.0 + dinoState.hoverBlend * 0.08 + macroW * 0.06;
-    dinoState.badge.updateScreenPosition(ve.current.x, ve.current.y, badgeScale);
+    const curX = (fx + reactionJitterX) * 2.25;
+    const curZ = fz * 2.25 - 0.7;
+    const headWorldY = (fy + reactionHopY + 1.00 * dinoState.scalePop) * 2.25 + 0.4;
+    const mouthWorldY = (fy + reactionHopY + 0.56 * dinoState.scalePop) * 2.25 + 0.4;
+    const buttWorldY = (fy + reactionHopY + 0.28 * dinoState.scalePop) * 2.25 + 0.4;
+    const buttWorldX = curX - Math.sin(dinoState.yaw) * (0.28 * dinoState.scalePop * 2.25);
+    const buttWorldZ = curZ - Math.cos(dinoState.yaw) * (0.28 * dinoState.scalePop * 2.25);
+
+    ve.current.set(curX, headWorldY, curZ).project(_);
+    ye.current.set(curX, mouthWorldY, curZ).project(_);
+    ot.current.set(buttWorldX, buttWorldY, buttWorldZ).project(_);
+    const badgeScale = 1.0 + dinoState.hoverBlend * 0.06 + macroW * 0.04;
+    dinoState.badge.updateScreenPosition(
+      ve.current.x, ve.current.y, badgeScale,
+      ye.current.x, ye.current.y,
+      ot.current.x, ot.current.y
+    );
   }
   } else {
     dinoState.perf.update(dinoState.time, 0, true, 0);
     dinoState.haloUniforms.uFlight.value = 0;
-    if (dinoFlightRef.current) { dinoFlightRef.current.position.set(spline.pos[0],spline.pos[1],spline.pos[2]); dinoFlightRef.current.rotation.set(0,Math.PI*.58,0); dinoFlightRef.current.scale.setScalar(.48); }
+    if (dinoFlightRef.current) { dinoFlightRef.current.position.set(spline.pos[0],spline.pos[1],spline.pos[2]); dinoFlightRef.current.rotation.set(0,Math.PI*.58,0); dinoFlightRef.current.scale.setScalar(.32); }
     if (dinoState.badge.updateScreenPosition) {
       _.updateMatrixWorld();
-      ve.current.set(spline.pos[0]*2.25, (spline.pos[1]+0.50)*2.25+0.4, spline.pos[2]*2.25-0.7).project(_);
+      ve.current.set(spline.pos[0]*2.25, (spline.pos[1]+0.36)*2.25+0.4, spline.pos[2]*2.25-0.7).project(_);
       dinoState.badge.updateScreenPosition(ve.current.x, ve.current.y, 1.0);
     }
   }
@@ -2245,7 +2316,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     ref:dinoFlightRef,
     position:[0.38,-0.18,0.64],
     rotation:[0,Math.PI*0.58,0],
-    scale:0.48,
+    scale:0.32,
     onPointerOver:ev=>{
       ev.stopPropagation();
       if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
@@ -2285,9 +2356,9 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     children:[
       e.jsx("primitive",{object:dinoState.root}),
       e.jsxs("mesh",{
-        position:[0,0.56,0],
+        position:[0,0.52,0],
         children:[
-          e.jsx("sphereGeometry",{args:[0.62,16,16]}),
+          e.jsx("sphereGeometry",{args:[0.68,16,16]}),
           e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})
         ]
       }),
@@ -2309,10 +2380,10 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
       }),
       e.jsxs("mesh",{
         rotation:[-Math.PI/2,0,0],
-        position:[0,-0.02,0],
+        position:[0,-0.03,0],
         renderOrder:12,
         children:[
-          e.jsx("planeGeometry",{args:[1.45,1.45]}),
+          e.jsx("planeGeometry",{args:[1.05,1.05]}),
           e.jsx("shaderMaterial",{
             transparent:!0,
             depthWrite:!1,
