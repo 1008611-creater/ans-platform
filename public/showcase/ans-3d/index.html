@@ -23,59 +23,47 @@
         };
         window.Request.prototype = OrigRequest.prototype;
 
-        function b64ToBuffer(b64) {
+        function b64ToBytes(b64) {
           const bin = atob(b64);
           const len = bin.length;
           const bytes = new Uint8Array(len);
           for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
-          return bytes.buffer;
+          return bytes;
         }
-        const meGlbJsonB64 = "Z2xURgIAAACQ1NMAMBIAAEpTT057ImFzc2V0Ijp7ImdlbmVyYXRvciI6ImdsVEYtVHJhbnNmb3JtIHY0LjQuMSIsInZlcnNpb24iOiIyLjAifSwiYWNjZXNzb3JzIjpbeyJ0eXBlIjoiU0NBTEFSIiwiY29tcG9uZW50VHlwZSI6NTEyNSwiY291bnQiOjU4MTkxNzgsIm5vcm1hbGl6ZWQiOmZhbHNlLCJieXRlT2Zmc2V0IjowLCJidWZmZXJWaWV3IjozfSx7InR5cGUiOiJWRUMzIiwiY29tcG9uZW50VHlwZSI6NTEyMCwiY291bnQiOjEwMjE5NDEsIm5vcm1hbGl6ZWQiOnRydWUsImJ5dGVPZmZzZXQiOjAsImJ1ZmZlclZpZXciOjR9LHsidHlwZSI6IlZFQzMiLCJjb21wb25lbnRUeXBlIjo1MTIyLCJjb3VudCI6MTAyMTk0MSwibWF4IjpbMjE0NzAsMzI3NjcsMzIzNzFdLCJtaW4iOlstMjE0NzAsLTMyNzY3LC0zMjM3MV0sIm5vcm1hbGl6ZWQiOnRydWUsImJ5dGVPZmZzZXQiOjAsImJ1ZmZlclZpZXciOjV9LHsidHlwZSI6IlZFQzIiLCJjb21wb25lbnRUeXBlIjo1MTIzLCJjb3VudCI6MTAyMTk0MSwibm9ybWFsaXplZCI6dHJ1ZSwiYnl0ZU9mZnNldCI6MCwiYnVmZmVyVmlldyI6Nn0seyJidWZmZXJWaWV3Ijo3LCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6NywidHlwZSI6IlNDQUxBUiIsIm1pbiI6WzBdLCJtYXgiOlsxNC41ODMzMzMzMzMzMzMzMzRdfSx7ImJ1ZmZlclZpZXciOjgsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50Ijo3LCJ0eXBlIjoiVkVDMyIsIm1pbiI6WzEuNjgsMC4xOCwtMS4zNV0sIm1heCI6WzMuMSwzLjg1LDEuNF19LHsiYnVmZmVyVmlldyI6OSwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjcsInR5cGUiOiJWRUM0IiwibWluIjpbLTAuMjk3NTk4MTEwNTkwMDQ2MTUsMC40MjM0NzY3NTk1NTk5MjcxNCwwLjAxMTQ2MjU0NDg2Njc3ODUzMiwwLjQ0NzU1OTg0MTE1Nzc1NTkzXSwibWF4IjpbLTAuMDI0NTA5ODg0MzUwNjA5ODIsMC44OTA1MzQwNDc1NDAxNzE0LDAuMzQwNzcxMTA0NTcwMDkzOTYsMC45MDU1MDI3OTM4OTIzODgxXX1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozMDgwNzQ0fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MzA4MDc0NCwiYnl0ZUxlbmd0aCI6MzQ5MzQxfSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MzQzMDA4OCwiYnl0ZUxlbmd0aCI6Mjc4ODM2fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6MjMyNzY3MTIsInRhcmdldCI6MzQ5NjMsImV4dGVuc2lvbnMiOnsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iOnsiYnVmZmVyIjowLCJieXRlT2Zmc2V0IjozNzA4OTI4LCJieXRlTGVuZ3RoIjoyMjQxMDE5LCJtb2RlIjoiVFJJQU5HTEVTIiwiYnl0ZVN0cmlkZSI6NCwiY291bnQiOjU4MTkxNzh9fX0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjAsImJ5dGVMZW5ndGgiOjQwODc3NjQsInRhcmdldCI6MzQ5NjIsImJ5dGVTdHJpZGUiOjQsImV4dGVuc2lvbnMiOnsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iOnsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo1OTQ5OTQ4LCJieXRlTGVuZ3RoIjoxNTAwMTIzLCJtb2RlIjoiQVRUUklCVVRFUyIsImZpbHRlciI6Ik9DVEFIRURSQUwiLCJieXRlU3RyaWRlIjo0LCJjb3VudCI6MTAyMTk0MX19fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6ODE3NTUyOCwidGFyZ2V0IjozNDk2MiwiYnl0ZVN0cmlkZSI6OCwiZXh0ZW5zaW9ucyI6eyJFWFRfbWVzaG9wdF9jb21wcmVzc2lvbiI6eyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjc0NTAwNzIsImJ5dGVMZW5ndGgiOjM5MDE3OTMsIm1vZGUiOiJBVFRSSUJVVEVTIiwiYnl0ZVN0cmlkZSI6OCwiY291bnQiOjEwMjE5NDF9fX0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjAsImJ5dGVMZW5ndGgiOjQwODc3NjQsInRhcmdldCI6MzQ5NjIsImJ5dGVTdHJpZGUiOjQsImV4dGVuc2lvbnMiOnsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iOnsiYnVmZmVyIjowLCJieXRlT2Zmc2V0IjoxMTM1MTg2OCwiYnl0ZUxlbmd0aCI6MjUyNTczNSwibW9kZSI6IkFUVFJJQlVURVMiLCJieXRlU3RyaWRlIjo0LCJjb3VudCI6MTAyMTk0MX19fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MTM4Nzc2MDQsImJ5dGVMZW5ndGgiOjI4fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MTM4Nzc2MzIsImJ5dGVMZW5ndGgiOjg0fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MTM4Nzc3MTYsImJ5dGVMZW5ndGgiOjExMn1dLCJzYW1wbGVycyI6W3sid3JhcFMiOjEwNDk3LCJ3cmFwVCI6MTA0OTd9XSwidGV4dHVyZXMiOlt7InNvdXJjZSI6MCwic2FtcGxlciI6MH0seyJzb3VyY2UiOjIsInNhbXBsZXIiOjB9LHsic291cmNlIjoxLCJzYW1wbGVyIjowfV0sImltYWdlcyI6W3sibmFtZSI6IkNvbG9yX2IyMDQ4YzljLTNjMzctNGMwYS05MDY4LTM3YTY3YTIyZWZmYyIsIm1pbWVUeXBlIjoiaW1hZ2UvanBlZyIsImJ1ZmZlclZpZXciOjB9LHsibmFtZSI6Ik9STV9iMjA0OGM5Yy0zYzM3LTRjMGEtOTA2OC0zN2E2N2EyMmVmZmMiLCJtaW1lVHlwZSI6ImltYWdlL2pwZWciLCJidWZmZXJWaWV3IjoxfSx7Im5hbWUiOiJOb3JtYWxHTF9iMjA0OGM5Yy0zYzM3LTRjMGEtOTA2OC0zN2E2N2EyMmVmZmMiLCJtaW1lVHlwZSI6ImltYWdlL2pwZWciLCJidWZmZXJWaWV3IjoyfV0sImJ1ZmZlcnMiOlt7ImJ5dGVMZW5ndGgiOjEzODc3ODI4fV0sIm1hdGVyaWFscyI6W3sibmFtZSI6InRyaXBvX21hdGVyaWFsX2IyMDQ4YzljLTNjMzctNGMwYS05MDY4LTM3YTY3YTIyZWZmYyIsInBick1ldGFsbGljUm91Z2huZXNzIjp7ImJhc2VDb2xvclRleHR1cmUiOnsiaW5kZXgiOjB9LCJtZXRhbGxpY1JvdWdobmVzc1RleHR1cmUiOnsiaW5kZXgiOjJ9fSwibm9ybWFsVGV4dHVyZSI6eyJpbmRleCI6MX19XSwibWVzaGVzIjpbeyJuYW1lIjoidHJpcG9fbWVzaF9iMjA0OGM5Yy0zYzM3LTRjMGEtOTA2OC0zN2E2N2EyMmVmZmMiLCJleHRyYXMiOnsibmFtZSI6InRyaXBvX21lc2hfYjIwNDhjOWMtM2MzNy00YzBhLTkwNjgtMzdhNjdhMjJlZmZjIn0sInByaW1pdGl2ZXMiOlt7ImF0dHJpYnV0ZXMiOnsiTk9STUFMIjoxLCJQT1NJVElPTiI6MiwiVEVYQ09PUkRfMCI6M30sIm1vZGUiOjQsIm1hdGVyaWFsIjowLCJpbmRpY2VzIjowfV19XSwibm9kZXMiOlt7Im5hbWUiOiJ0cmlwb19ub2RlX2IyMDQ4YzljLTNjMzctNGMwYS05MDY4LTM3YTY3YTIyZWZmYyIsInRyYW5zbGF0aW9uIjpbMC4wMDAzMzU1Mjk0NDY2MDE4Njc3LDAuMDAwMzI2NDU0NjM5NDM0ODE0NDUsMS4wNTIwMjE5ODAyODU2NDQ1ZS0wNV0sInNjYWxlIjpbMC40OTAwMDg4OTA2Mjg4MTQ3LDAuNDkwMDA4ODkwNjI4ODE0NywwLjQ5MDAwODg5MDYyODgxNDddLCJtZXNoIjowfSx7Im5hbWUiOiJtYW4iLCJjaGlsZHJlbiI6WzBdLCJ0cmFuc2xhdGlvbiI6Wy0wLjAwMDY4NDc0MTU0ODYxMDA1MSwtMC4wMDA2NjYyMjE4NzAwMDcwNjEyLC0yLjE0Njk0NDY3ODc3MDI0NDdlLTA1XSwic2NhbGUiOlsyLjA4MjM5MDA3MjI3NTU3MTUsMi4wODIzOTAwNzIyNzU1NzE1LDIuMDgyMzkwMDcyMjc1NTcxNV19LHsibmFtZSI6InJpZyIsImNoaWxkcmVuIjpbMyw0LDUsNiw3LDhdfSx7Im5hbWUiOiJmb2N1cy0wIiwidHJhbnNsYXRpb24iOlstMC4xLC0wLjAyLDAuNDJdfSx7Im5hbWUiOiJmb2N1cy0xIiwidHJhbnNsYXRpb24iOlstMC4wNSwtMC4wMiwtMC4zMl19LHsibmFtZSI6ImZvY3VzLTIiLCJ0cmFuc2xhdGlvbiI6WzAuMDUsMC4wMiwwLjI4XX0seyJuYW1lIjoiZm9jdXMtMyIsInRyYW5zbGF0aW9uIjpbMC4xOCwwLjAzLDAuMjRdfSx7Im5hbWUiOiJmb2N1cy00IiwidHJhbnNsYXRpb24iOlswLjE0LDAuMSwwLjE4XX0seyJuYW1lIjoiZm9jdXMtd29ya3MiLCJ0cmFuc2xhdGlvbiI6Wy0wLjEyLDAuMDIsMC4zXX0seyJuYW1lIjoiQ2FtZXJhIiwiY2FtZXJhIjowLCJ0cmFuc2xhdGlvbiI6WzIuMiwwLjM4LDAuMThdLCJyb3RhdGlvbiI6Wy0wLjA0OTUyMTc0MTY5MTAxMTkxLDAuNzM1ODMxODIxMjcyMTMzNSwwLjA1NDEzMDc5MjU3NzAzMDk1NSwwLjY3MzE3ODI3MTQ4NDAxNDldfV0sInNjZW5lcyI6W3sibmFtZSI6IlNjZW5lIiwibm9kZXMiOlsxLDIsOV19XSwic2NlbmUiOjAsImV4dGVuc2lvbnNVc2VkIjpbIkVYVF9tZXNob3B0X2NvbXByZXNzaW9uIiwiS0hSX21lc2hfcXVhbnRpemF0aW9uIl0sImV4dGVuc2lvbnNSZXF1aXJlZCI6WyJFWFRfbWVzaG9wdF9jb21wcmVzc2lvbiIsIktIUl9tZXNoX3F1YW50aXphdGlvbiJdLCJjYW1lcmFzIjpbeyJuYW1lIjoiQ2FtZXJhLjAwMSIsInR5cGUiOiJwZXJzcGVjdGl2ZSIsInBlcnNwZWN0aXZlIjp7Inlmb3YiOjAuNzg1Mzk4MTYzMzk3NDQ4Mywiem5lYXIiOjAuMSwiemZhciI6MTAwLCJhc3BlY3RSYXRpbyI6MS43Nzc3Nzc3Nzc3Nzc3Nzc3fX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiQ2FtZXJhQWN0aW9uIiwiY2hhbm5lbHMiOlt7InNhbXBsZXIiOjAsInRhcmdldCI6eyJub2RlIjo5LCJwYXRoIjoidHJhbnNsYXRpb24ifX0seyJzYW1wbGVyIjoxLCJ0YXJnZXQiOnsibm9kZSI6OSwicGF0aCI6InJvdGF0aW9uIn19XSwic2FtcGxlcnMiOlt7ImlucHV0Ijo0LCJpbnRlcnBvbGF0aW9uIjoiTElORUFSIiwib3V0cHV0Ijo1fSx7ImlucHV0Ijo0LCJpbnRlcnBvbGF0aW9uIjoiTElORUFSIiwib3V0cHV0Ijo2fV19XX0gICBEwtMAQklOAA==";
-function b64ToBytes(b64) {
-  const bin = atob(b64);
-  const len = bin.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
-  return bytes;
-}
-const meHeaderBytes = b64ToBytes(meGlbJsonB64);
-let meBlobUrlPromise = null;
-function getPatchedMeUrl() {
-  if (!meBlobUrlPromise) {
-    meBlobUrlPromise = fetch("https://raw.githubusercontent.com/1008611-creater/jianli-3d/main/public/models/me.glb")
-      .then(r => r.arrayBuffer())
-      .then(buf => {
-        const orig = new Uint8Array(buf);
-        const origJsonLen = new DataView(buf, 12, 4).getUint32(0, true);
-        const binChunk = orig.subarray(20 + origJsonLen + 8);
-        const combined = new Uint8Array(meHeaderBytes.length + binChunk.length);
-        combined.set(meHeaderBytes, 0);
-        combined.set(binChunk, meHeaderBytes.length);
-        const dv = new DataView(combined.buffer);
-        dv.setUint32(8, combined.length, true);
-        dv.setUint32(meHeaderBytes.length - 8, binChunk.length, true);
-        return URL.createObjectURL(new Blob([combined], { type: "model/gltf-binary" }));
-      });
-  }
-  return meBlobUrlPromise;
-}
-const DINO_CDN_URL = "/mascot/3d/dinosaur.glb";
-const origFetch = window.fetch.bind(window);
+        const meHeaderBytes = b64ToBytes("Z2xURgIAAACI1NMAKBIAAEpTT057ImFzc2V0Ijp7ImdlbmVyYXRvciI6ImdsVEYtVHJhbnNmb3JtIHY0LjQuMSIsInZlcnNpb24iOiIyLjAifSwiYWNjZXNzb3JzIjpbeyJ0eXBlIjoiU0NBTEFSIiwiY29tcG9uZW50VHlwZSI6NTEyNSwiY291bnQiOjU4MTkxNzgsIm5vcm1hbGl6ZWQiOmZhbHNlLCJieXRlT2Zmc2V0IjowLCJidWZmZXJWaWV3IjozfSx7InR5cGUiOiJWRUMzIiwiY29tcG9uZW50VHlwZSI6NTEyMCwiY291bnQiOjEwMjE5NDEsIm5vcm1hbGl6ZWQiOnRydWUsImJ5dGVPZmZzZXQiOjAsImJ1ZmZlclZpZXciOjR9LHsidHlwZSI6IlZFQzMiLCJjb21wb25lbnRUeXBlIjo1MTIyLCJjb3VudCI6MTAyMTk0MSwibWF4IjpbMjE0NzAsMzI3NjcsMzIzNzFdLCJtaW4iOlstMjE0NzAsLTMyNzY3LC0zMjM3MV0sIm5vcm1hbGl6ZWQiOnRydWUsImJ5dGVPZmZzZXQiOjAsImJ1ZmZlclZpZXciOjV9LHsidHlwZSI6IlZFQzIiLCJjb21wb25lbnRUeXBlIjo1MTIzLCJjb3VudCI6MTAyMTk0MSwibm9ybWFsaXplZCI6dHJ1ZSwiYnl0ZU9mZnNldCI6MCwiYnVmZmVyVmlldyI6Nn0seyJidWZmZXJWaWV3Ijo3LCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6NywidHlwZSI6IlNDQUxBUiIsIm1pbiI6WzBdLCJtYXgiOlsxNC41ODMzMzMzMzMzMzMzMzRdfSx7ImJ1ZmZlclZpZXciOjgsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50Ijo3LCJ0eXBlIjoiVkVDMyIsIm1pbiI6WzEuNjIsMC4xNiwtMS4zNV0sIm1heCI6WzIuOTUsMy42OCwxLjMyXX0seyJidWZmZXJWaWV3Ijo5LCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6NywidHlwZSI6IlZFQzQiLCJtaW4iOlstMC4yOTY5MjYyOTE4MDYyOTc5LDAuNDIyOTY2MzA0MDYwMzM1NSwwLjAwODEwMzY4MDY4Mzg3NzI1MiwwLjQ1NTY4MzgxNDUwMjg1ODU1XSwibWF4IjpbLTAuMDE3MzU3MTA4NjgwNjIzODM1LDAuODg2ODcxMzkzMzUzOTkwOCwwLjM0MTMyNjUxODkyNDI0ODQsMC45MDU5NDI5MTU4NDM1NzcxXX1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozMDgwNzQ0fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MzA4MDc0NCwiYnl0ZUxlbmd0aCI6MzQ5MzQxfSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MzQzMDA4OCwiYnl0ZUxlbmd0aCI6Mjc4ODM2fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6MjMyNzY3MTIsInRhcmdldCI6MzQ5NjMsImV4dGVuc2lvbnMiOnsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iOnsiYnVmZmVyIjowLCJieXRlT2Zmc2V0IjozNzA4OTI4LCJieXRlTGVuZ3RoIjoyMjQxMDE5LCJtb2RlIjoiVFJJQU5HTEVTIiwiYnl0ZVN0cmlkZSI6NCwiY291bnQiOjU4MTkxNzh9fX0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjAsImJ5dGVMZW5ndGgiOjQwODc3NjQsInRhcmdldCI6MzQ5NjIsImJ5dGVTdHJpZGUiOjQsImV4dGVuc2lvbnMiOnsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iOnsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo1OTQ5OTQ4LCJieXRlTGVuZ3RoIjoxNTAwMTIzLCJtb2RlIjoiQVRUUklCVVRFUyIsImZpbHRlciI6Ik9DVEFIRURSQUwiLCJieXRlU3RyaWRlIjo0LCJjb3VudCI6MTAyMTk0MX19fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6ODE3NTUyOCwidGFyZ2V0IjozNDk2MiwiYnl0ZVN0cmlkZSI6OCwiZXh0ZW5zaW9ucyI6eyJFWFRfbWVzaG9wdF9jb21wcmVzc2lvbiI6eyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjc0NTAwNzIsImJ5dGVMZW5ndGgiOjM5MDE3OTMsIm1vZGUiOiJBVFRSSUJVVEVTIiwiYnl0ZVN0cmlkZSI6OCwiY291bnQiOjEwMjE5NDF9fX0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjAsImJ5dGVMZW5ndGgiOjQwODc3NjQsInRhcmdldCI6MzQ5NjIsImJ5dGVTdHJpZGUiOjQsImV4dGVuc2lvbnMiOnsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iOnsiYnVmZmVyIjowLCJieXRlT2Zmc2V0IjoxMTM1MTg2OCwiYnl0ZUxlbmd0aCI6MjUyNTczNSwibW9kZSI6IkFUVFJJQlVURVMiLCJieXRlU3RyaWRlIjo0LCJjb3VudCI6MTAyMTk0MX19fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MTM4Nzc2MDQsImJ5dGVMZW5ndGgiOjI4fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MTM4Nzc2MzIsImJ5dGVMZW5ndGgiOjg0fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MTM4Nzc3MTYsImJ5dGVMZW5ndGgiOjExMn1dLCJzYW1wbGVycyI6W3sid3JhcFMiOjEwNDk3LCJ3cmFwVCI6MTA0OTd9XSwidGV4dHVyZXMiOlt7InNvdXJjZSI6MCwic2FtcGxlciI6MH0seyJzb3VyY2UiOjIsInNhbXBsZXIiOjB9LHsic291cmNlIjoxLCJzYW1wbGVyIjowfV0sImltYWdlcyI6W3sibmFtZSI6IkNvbG9yX2IyMDQ4YzljLTNjMzctNGMwYS05MDY4LTM3YTY3YTIyZWZmYyIsIm1pbWVUeXBlIjoiaW1hZ2UvanBlZyIsImJ1ZmZlclZpZXciOjB9LHsibmFtZSI6Ik9STV9iMjA0OGM5Yy0zYzM3LTRjMGEtOTA2OC0zN2E2N2EyMmVmZmMiLCJtaW1lVHlwZSI6ImltYWdlL2pwZWciLCJidWZmZXJWaWV3IjoxfSx7Im5hbWUiOiJOb3JtYWxHTF9iMjA0OGM5Yy0zYzM3LTRjMGEtOTA2OC0zN2E2N2EyMmVmZmMiLCJtaW1lVHlwZSI6ImltYWdlL2pwZWciLCJidWZmZXJWaWV3IjoyfV0sImJ1ZmZlcnMiOlt7ImJ5dGVMZW5ndGgiOjEzODc3ODI4fV0sIm1hdGVyaWFscyI6W3sibmFtZSI6InRyaXBvX21hdGVyaWFsX2IyMDQ4YzljLTNjMzctNGMwYS05MDY4LTM3YTY3YTIyZWZmYyIsInBick1ldGFsbGljUm91Z2huZXNzIjp7ImJhc2VDb2xvclRleHR1cmUiOnsiaW5kZXgiOjB9LCJtZXRhbGxpY1JvdWdobmVzc1RleHR1cmUiOnsiaW5kZXgiOjJ9fSwibm9ybWFsVGV4dHVyZSI6eyJpbmRleCI6MX19XSwibWVzaGVzIjpbeyJuYW1lIjoidHJpcG9fbWVzaF9iMjA0OGM5Yy0zYzM3LTRjMGEtOTA2OC0zN2E2N2EyMmVmZmMiLCJleHRyYXMiOnsibmFtZSI6InRyaXBvX21lc2hfYjIwNDhjOWMtM2MzNy00YzBhLTkwNjgtMzdhNjdhMjJlZmZjIn0sInByaW1pdGl2ZXMiOlt7ImF0dHJpYnV0ZXMiOnsiTk9STUFMIjoxLCJQT1NJVElPTiI6MiwiVEVYQ09PUkRfMCI6M30sIm1vZGUiOjQsIm1hdGVyaWFsIjowLCJpbmRpY2VzIjowfV19XSwibm9kZXMiOlt7Im5hbWUiOiJ0cmlwb19ub2RlX2IyMDQ4YzljLTNjMzctNGMwYS05MDY4LTM3YTY3YTIyZWZmYyIsInRyYW5zbGF0aW9uIjpbMC4wMDAzMzU1Mjk0NDY2MDE4Njc3LDAuMDAwMzI2NDU0NjM5NDM0ODE0NDUsMS4wNTIwMjE5ODAyODU2NDQ1ZS0wNV0sInNjYWxlIjpbMC40OTAwMDg4OTA2Mjg4MTQ3LDAuNDkwMDA4ODkwNjI4ODE0NywwLjQ5MDAwODg5MDYyODgxNDddLCJtZXNoIjowfSx7Im5hbWUiOiJtYW4iLCJjaGlsZHJlbiI6WzBdLCJ0cmFuc2xhdGlvbiI6Wy0wLjAwMDY4NDc0MTU0ODYxMDA1MSwtMC4wMDA2NjYyMjE4NzAwMDcwNjEyLC0yLjE0Njk0NDY3ODc3MDI0NDdlLTA1XSwic2NhbGUiOlsyLjA4MjM5MDA3MjI3NTU3MTUsMi4wODIzOTAwNzIyNzU1NzE1LDIuMDgyMzkwMDcyMjc1NTcxNV19LHsibmFtZSI6InJpZyIsImNoaWxkcmVuIjpbMyw0LDUsNiw3LDhdfSx7Im5hbWUiOiJmb2N1cy0wIiwidHJhbnNsYXRpb24iOlswLjEsMC4wNiwwLjM0XX0seyJuYW1lIjoiZm9jdXMtMSIsInRyYW5zbGF0aW9uIjpbMC4xMiwwLjA0LC0wLjI4XX0seyJuYW1lIjoiZm9jdXMtMiIsInRyYW5zbGF0aW9uIjpbMC4xLDAuMDgsMC4yMl19LHsibmFtZSI6ImZvY3VzLTMiLCJ0cmFuc2xhdGlvbiI6WzAuMiwwLjA2LDAuMThdfSx7Im5hbWUiOiJmb2N1cy00IiwidHJhbnNsYXRpb24iOlswLjE2LDAuMTIsMC4xNl19LHsibmFtZSI6ImZvY3VzLXdvcmtzIiwidHJhbnNsYXRpb24iOlstMC4xMiwwLjAyLDAuM119LHsibmFtZSI6IkNhbWVyYSIsImNhbWVyYSI6MCwidHJhbnNsYXRpb24iOlsyLjA1LDAuMzYsMC4xNl0sInJvdGF0aW9uIjpbLTAuMDQ2OTc5NDM4Mjg2OTEwNTM1LDAuNzM1MTU5MjY0MzM3Mzg0LDAuMDUxMjE3ODk4NTQ3NjMwMjYsMC42NzQzMjIyNjM2ODgxNjIzXX1dLCJzY2VuZXMiOlt7Im5hbWUiOiJTY2VuZSIsIm5vZGVzIjpbMSwyLDldfV0sInNjZW5lIjowLCJleHRlbnNpb25zVXNlZCI6WyJFWFRfbWVzaG9wdF9jb21wcmVzc2lvbiIsIktIUl9tZXNoX3F1YW50aXphdGlvbiJdLCJleHRlbnNpb25zUmVxdWlyZWQiOlsiRVhUX21lc2hvcHRfY29tcHJlc3Npb24iLCJLSFJfbWVzaF9xdWFudGl6YXRpb24iXSwiY2FtZXJhcyI6W3sibmFtZSI6IkNhbWVyYS4wMDEiLCJ0eXBlIjoicGVyc3BlY3RpdmUiLCJwZXJzcGVjdGl2ZSI6eyJ5Zm92IjowLjc4NTM5ODE2MzM5NzQ0ODMsInpuZWFyIjowLjEsInpmYXIiOjEwMCwiYXNwZWN0UmF0aW8iOjEuNzc3Nzc3Nzc3Nzc3Nzc3N319XSwiYW5pbWF0aW9ucyI6W3sibmFtZSI6IkNhbWVyYUFjdGlvbiIsImNoYW5uZWxzIjpbeyJzYW1wbGVyIjowLCJ0YXJnZXQiOnsibm9kZSI6OSwicGF0aCI6InRyYW5zbGF0aW9uIn19LHsic2FtcGxlciI6MSwidGFyZ2V0Ijp7Im5vZGUiOjksInBhdGgiOiJyb3RhdGlvbiJ9fV0sInNhbXBsZXJzIjpbeyJpbnB1dCI6NCwiaW50ZXJwb2xhdGlvbiI6IkxJTkVBUiIsIm91dHB1dCI6NX0seyJpbnB1dCI6NCwiaW50ZXJwb2xhdGlvbiI6IkxJTkVBUiIsIm91dHB1dCI6Nn1dfV19RMLTAEJJTgA=");
+        let mePatchedBufPromise = null;
+        function getPatchedMeBuf() {
+          if (!mePatchedBufPromise) {
+            mePatchedBufPromise = origFetch("https://raw.githubusercontent.com/1008611-creater/jianli-3d/main/public/assets/me.glb")
+              .then(r => r.ok ? r.arrayBuffer() : origFetch("https://ans.cauai.fun/models/me.glb?v=5-hires").then(r2 => r2.arrayBuffer()))
+              .then(buf => {
+                const orig = new Uint8Array(buf);
+                const origJsonLen = new DataView(buf, 12, 4).getUint32(0, true);
+                const binChunk = orig.subarray(20 + origJsonLen + 8);
+                const combined = new Uint8Array(meHeaderBytes.length + binChunk.length);
+                combined.set(meHeaderBytes, 0);
+                combined.set(binChunk, meHeaderBytes.length);
+                const dv = new DataView(combined.buffer);
+                dv.setUint32(8, combined.length, true);
+                dv.setUint32(meHeaderBytes.length - 8, binChunk.length, true);
+                return combined.buffer;
+              });
+          }
+          return mePatchedBufPromise;
+        }
+        const DINO_CDN_URL = "/mascot/3d/dinosaur.glb";
+        const origFetch = window.fetch.bind(window);
         window.fetch = async function(input, init) {
           const url = typeof input === "string" ? input : (input && input.url) || "";
           if (url.includes("models/me.glb")) {
-            if (!meBuf) meBuf = b64ToBuffer(meB64);
-            return new Response(meBuf.slice(0), {
+            const buf = await getPatchedMeBuf();
+            return new Response(buf.slice(0), {
               status: 200,
-              headers: { "Content-Type": "model/gltf-binary", "Content-Length": String(meBuf.byteLength) }
+              headers: { "Content-Type": "model/gltf-binary", "Content-Length": String(buf.byteLength) }
             });
           }
           if (url.includes("models/dinosaur.glb")) {
-            if (!dinoBuf) dinoBuf = b64ToBuffer(dinoB64);
-            return new Response(dinoBuf.slice(0), {
-              status: 200,
-              headers: { "Content-Type": "model/gltf-binary", "Content-Length": String(dinoBuf.byteLength) }
-            });
+            return origFetch(DINO_CDN_URL);
           }
           return origFetch(input, init);
         };
@@ -550,90 +538,78 @@ class MotionDirector {
   const RIG_AXES = ['x', 'y', 'z', 'rx', 'ry', 'rz'];
 
   // 11-waypoint 360-degree 3D Orbital Flight Path around the user (s = 0.0, 0.5, 1.0, ..., 5.0)
-  const FLIGHT_WAYPOINTS = [
-    [0.32, -0.10,  0.88], // s=0.0 (Stop 0 Hero): Wide left-front
-    [0.16,  0.86,  0.14], // s=0.5 (Mid 0->1): High overhead sky arc (well above head!)
-    [0.36,  0.00, -0.78], // s=1.0 (Stop 1 Ch01): Wide right-front side
-    [-0.54, 0.72,  0.12], // s=1.5 (Mid 1->2): High behind-the-shoulders sky arc
-    [0.28,  0.14,  1.02], // s=2.0 (Stop 2 Ch02): Wide upper-left side
-    [0.38,  0.86,  0.66], // s=2.5 (Mid 2->3): High left-sky arc (never crosses chest!)
-    [0.44, -0.06,  0.94], // s=3.0 (Stop 3 Ch03): Wide left-foreground
-    [0.24,  0.78,  0.88], // s=3.5 (Mid 3->4): High left-side spiral
-    [0.36,  0.28,  0.88], // s=4.0 (Stop 4 Ch04): Wide high-left beside head
-    [0.46,  0.58,  0.64], // s=4.5 (Mid 4->5): High sky glide
-    [0.42,  0.28,  0.82]  // s=5.0 (Stop 5 Works): Wide aerial companion
-  ];
-
-  function catmullRom(p0, p1, p2, p3, t) {
-    const t2 = t * t, t3 = t2 * t;
-    return 0.5 * (
-      (2 * p1) +
-      (-p0 + p2) * t +
-      (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
-      (-p0 + 3 * p1 - 3 * p2 + p3) * t3
-    );
-  }
-
-  function catmullRomDeriv(p0, p1, p2, p3, t) {
-    const t2 = t * t;
-    return 0.5 * (
-      (-p0 + p2) +
-      (4 * p0 - 10 * p1 + 8 * p2 - 2 * p3) * t +
-      (-3 * p0 + 9 * p1 - 9 * p2 + 3 * p3) * t2
-    );
-  }
-
+  // Clockwise 3D Head-Orbit + Front-of-Face Super-Macro Camera Close-Up Sampler
   function sampleFlightSpline(s) {
-    const maxIdx = FLIGHT_WAYPOINTS.length - 1;
-    const u = Math.max(0, Math.min(maxIdx - 0.0001, s * 2.0));
-    const idx = Math.floor(u);
-    const frac = u - idx;
-    const w0 = FLIGHT_WAYPOINTS[Math.max(0, idx - 1)];
-    const w1 = FLIGHT_WAYPOINTS[idx];
-    const w2 = FLIGHT_WAYPOINTS[Math.min(maxIdx, idx + 1)];
-    const w3 = FLIGHT_WAYPOINTS[Math.min(maxIdx, idx + 2)];
-    let x = catmullRom(w0[0], w1[0], w2[0], w3[0], frac);
-    let y = catmullRom(w0[1], w1[1], w2[1], w3[1], frac);
-    let z = catmullRom(w0[2], w1[2], w2[2], w3[2], frac);
-    const tx = catmullRomDeriv(w0[0], w1[0], w2[0], w3[0], frac);
-    const ty = catmullRomDeriv(w0[1], w1[1], w2[1], w3[1], frac);
-    const tz = catmullRomDeriv(w0[2], w1[2], w2[2], w3[2], frac);
-    // Elliptical safe-zone shield so the flying dinosaur never clips the human head/shoulders
-    if (y < 0.44) {
-      const cx = 0.06, cz = 0.04;
-      const dx = x - cx, dz = z - cz;
-      const r = Math.hypot(dx, dz);
-      const minR = y < -0.05 ? 0.58 : 0.50;
-      if (r < minR && r > 1e-4) {
-        const push = minR / r;
-        x = cx + dx * push;
-        z = cz + dz * push;
-      }
-    }
-    return { pos: [x, y, z], tangent: [tx, ty, tz] };
+    // s in [0..5]:
+    // At s=0.0 (Hero): deg = 270 deg (9 o'clock, left side of your head)
+    // Advancing s increases deg clockwise:
+    //   270 deg (9h Left) -> 360 deg (12h Top/Behind Head) -> 90 deg (3h Right) -> 180 deg (6h Front of Face -> Super Macro!)
+    // Every +1.333 scroll units is a full 360-degree clockwise revolution around your head!
+    // Macro close-ups occur at s = 1.00 (Ch 01), s = 2.33 (Mid Ch 02->03), s = 3.67 (Mid Ch 03->04)
+    const deg = 270.0 + s * 270.0;
+    const th = deg * (Math.PI / 180.0);
+    const dth = 270.0 * (Math.PI / 180.0);
+
+    // Circular clockwise orbit around your head center (0.30, 0.22, 0.08) in M local space:
+    // Behind head (cos(th) = +1, 12h): elevated halo arc (x = -0.18, y = +0.46)
+    // Right ear  (sin(th) = +1, 3h):  right side of head (x = +0.30, y = +0.22, z = -0.58)
+    // Front face (cos(th) = -1, 6h):  in front of face   (x = +0.78, y = -0.02, z = +0.08) -> swoops to Camera Macro!
+    // Left ear   (sin(th) = -1, 9h):  left side of head  (x = +0.30, y = +0.22, z = +0.74)
+    const ox = 0.30 - 0.48 * Math.cos(th);
+    const oy = 0.22 + 0.24 * Math.cos(th);
+    const oz = 0.08 - 0.66 * Math.sin(th);
+
+    const tx =  0.48 * Math.sin(th) * dth;
+    const ty = -0.24 * Math.sin(th) * dth;
+    const tz = -0.66 * Math.cos(th) * dth;
+
+    // Front-of-face detector: frontness = -cos(th) is +1.0 when directly in front of your face (180 deg / 6h)
+    const frontness = -Math.cos(th);
+    const macroRaw = Math.max(0.0, Math.min(1.0, (frontness - 0.42) / 0.58));
+    // Smooth quintic bell curve for diving from head-orbit right up to the Camera Super Macro lens!
+    const macroWeight = macroRaw * macroRaw * macroRaw * (macroRaw * (macroRaw * 6.0 - 15.0) + 10.0);
+
+    return { pos: [ox, oy, oz], tangent: [tx, ty, tz], macroWeight, deg };
   }
 
-  // Autonomous natural expression presets & billboard badge drawing
+  // Rich Kaomoji Rambling Presets (Normal Orbit + Super Macro Close-Up + Mouse Hover + Mouse Click)
   const MOOD_PRESETS = {
-    happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "哼着小曲 · 灵感满格" },
-    curious_tilt:   { happy: 0.12, star: 0.55, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头观察 · 发现新点子" },
-    starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个工作流太酷了" },
-    cozy_chill:     { happy: 0.78, star: 0.12, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "悠闲伴飞 · 算力稳稳的" },
-    cheerful_wave:  { happy: 0.90, star: 0.60, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops~" },
-    focused_think:  { happy: 0.18, star: 0.35, blush: 0.30, mouth: 0.14, gesture: "think",     kaomoji: "( •̀ ω •́ ) ⚡", text: "正在拆解神仙项目..." },
-    shy_blush:      { happy: 0.84, star: 0.42, blush: 1.00, mouth: 0.44, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 💖", text: "被你盯得有点害羞啦~" },
-    playful_wink:   { happy: 0.96, star: 0.72, blush: 0.84, mouth: 0.86, gesture: "nod",       kaomoji: "( ˆڡˆ ) 🦖",  text: "随时待命 · 3分钟出作品" },
-    sleepy_stretch: { happy: 0.65, star: 0.10, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "伸个懒腰 · 继续满血创作" },
-    aha_spark:      { happy: 0.42, star: 0.95, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！捕捉到一个绝妙灵感" },
-    click0:         { happy: 1.00, star: 0.92, blush: 1.00, mouth: 0.88, gesture: "celebrate", kaomoji: "( ´ ▽ ` ) 💖", text: "贴贴主理人！灵感永不停歇~" },
-    click1:         { happy: 0.95, star: 1.00, blush: 0.86, mouth: 0.82, gesture: "hello",     kaomoji: "( ✧∀✧ ) 🌟", text: "AI Never Stops · 满格算力！" },
-    click2:         { happy: 0.90, star: 0.75, blush: 0.94, mouth: 0.90, gesture: "surprise",  kaomoji: "( ˆڡˆ ) 🦖",  text: "嗷呜~ 点我随时给你加油！" }
+    // 8 Autonomous Orbiting Ramblings (Natural random changes)
+    happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 顺时针绕着主理人头顶巡航中", sub: "💡 鼠标移到我身上可以摸头互动哦" },
+    curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看... 这个工作流能抄作业！", sub: "✨ 滚轮往下滑，带你看遍 5 大亮点" },
+    starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！3 分钟就能端出同款 3D 网站", sub: "🦖 我是 ANS 创作搭子小恐龙" },
+    cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在主理人耳边兜风，算力稳稳的~", sub: "⚡ 1 元 = 10 积分 · 账单全透明" },
+    cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感永不停歇", sub: "🎯 点击下方紫色胶囊可直达线上页" },
+    focused_think:  { happy: 0.16, star: 0.38, blush: 0.30, mouth: 0.14, gesture: "think",     kaomoji: "( •̀ ω •́ ) ⚡", text: "帮你盯着呢，绝不让收藏夹吃灰！", sub: "🔍 拆解 + 工作流 + 算力合三为一" },
+    sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "绕圈飞累了伸个懒腰，继续满血护航", sub: "💫 移上鼠标或点我一下试试看~" },
+    aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚在主理人脑门上抓到一个新灵感", sub: "🚀 滑到脸前我会飞到镜头前找你玩！" },
+
+    // 4 Camera Super Macro Close-Up Ramblings (When orbiting in front of face -> flies right up to camera lens!)
+    macro0:         { happy: 0.96, star: 0.95, blush: 0.94, mouth: 0.85, gesture: "hello",     kaomoji: "( ✧∀✧ ) 📸", text: "贴脸杀！飞到超微距镜头前逮住你啦~", sub: "✨ 快来摸摸我或点我互动一下！", badgeType: "macro" },
+    macro1:         { happy: 1.00, star: 0.80, blush: 1.00, mouth: 0.78, gesture: "curious",   kaomoji: "( ˶ˆᗜˆ˵ ) ✌️", text: "超微距营业中！我脸上的小腮红好看吗", sub: "💖 正对摄像机给你比个大大的耶~", badgeType: "macro" },
+    macro2:         { happy: 0.90, star: 1.00, blush: 0.88, mouth: 0.90, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🔍", text: "凑近镜头碎碎念：快去拆解神仙项目！", sub: "🦖 点我一下给你表演绝活儿~", badgeType: "macro" },
+    macro3:         { happy: 0.85, star: 0.90, blush: 0.96, mouth: 0.70, gesture: "shy",       kaomoji: "( ´ ▽ ` )ﾉ ✨", text: "离镜头这么近有点小害羞嘿嘿...", sub: "👆 鼠标移上来摸摸我的小脑袋吧", badgeType: "macro" },
+
+    // 5 Mouse Hover Interactive Ramblings (When user moves mouse onto the dinosaur!)
+    hover0:         { happy: 1.00, star: 0.88, blush: 1.00, mouth: 0.82, gesture: "hello",     kaomoji: "( ˶ˆᗜˆ˵ ) 🫳", text: "哇！被你的鼠标摸头啦，好舒服呀~", sub: "✨ 再点我一下，给你表演开心蹦跳！", badgeType: "hover" },
+    hover1:         { happy: 0.96, star: 0.95, blush: 0.92, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ )/ 💫", text: "别挠痒痒哈哈哈！我的尾巴都摇飞啦", sub: "🎯 点击小恐龙触发隐藏特技动作！", badgeType: "hover" },
+    hover2:         { happy: 0.88, star: 1.00, blush: 0.90, mouth: 0.76, gesture: "curious",   kaomoji: "( ☆▽☆ ) 🤝", text: "捕捉到野生鼠标一只！要一起造物吗", sub: "🔥 点我一下，给你加满今日算力 Buff", badgeType: "hover" },
+    hover3:         { happy: 0.94, star: 0.75, blush: 1.00, mouth: 0.68, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 💖", text: "蹭蹭你的鼠标指针~ 灵感全都传给你", sub: "✨ 点击我还能切换更多搞怪表情哦", badgeType: "hover" },
+    hover4:         { happy: 0.25, star: 0.92, blush: 0.75, mouth: 0.80, gesture: "surprise",  kaomoji: "( ⊙▽⊙ ) ✨", text: "盯——我正顺着网线看着你的鼠标呢！", sub: "👆 快戳我一下试试会发生什么~", badgeType: "hover" },
+
+    // 6 Mouse Click Interactive Ramblings (When user clicks the dinosaur!)
+    click0:         { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🎉", text: "耶！收到投喂，原地开心蹦两下！", sub: "💖 算力 +999 · 祝你 3 分钟出代表作", badgeType: "click" },
+    click1:         { happy: 0.92, star: 0.65, blush: 1.00, mouth: 0.55, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 🙈", text: "哎呀被戳脸蛋了，害羞转身偷看你~", sub: "✨ 再点一下看看我的其他小表情！", badgeType: "click" },
+    click2:         { happy: 0.96, star: 1.00, blush: 0.88, mouth: 0.88, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "满格算力注入！AI Never Stops 冲鸭", sub: "🚀 主理人同款 3D 网站模板等你复用", badgeType: "click" },
+    click3:         { happy: 0.90, star: 0.80, blush: 0.94, mouth: 0.95, gesture: "hello",     kaomoji: "( ˆڡˆ ) 🦖",  text: "嗷呜一口吃掉你的拖延症！马上开工", sub: "🎉 继续点我，我还有好多碎碎念呢", badgeType: "click" },
+    click4:         { happy: 0.82, star: 0.85, blush: 0.78, mouth: 0.65, gesture: "nod",       kaomoji: "( •̀ ω •́ )ゞ ⚡", text: "收到指令！全套拆解与工作流已就绪", sub: "💡 滚轮上下滑动可看我顺时针绕头飞", badgeType: "click" },
+    click5:         { happy: 0.78, star: 0.50, blush: 0.86, mouth: 0.72, gesture: "stretch",   kaomoji: "( ˘◡˘ ) 💕",  text: "贴贴成功！给你表演个空中伸懒腰~", sub: "🌟 下滑到底部还有交互式卡片画廊哦", badgeType: "click" }
   };
 
   function createExpressionBadgeTexture() {
     const canvas = document.createElement("canvas");
-    canvas.width = 560;
-    canvas.height = 128;
+    canvas.width = 680;
+    canvas.height = 164;
     const dummyPng = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
     const tex = new $e().load(dummyPng, t => {
       t.image = canvas;
@@ -649,18 +625,28 @@ class MotionDirector {
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Pill background with glass gradient
-      const x = 14, y = 14, w = 532, h = 88, r = 44;
+      const isInteractive = p.badgeType === "hover" || p.badgeType === "click";
+      const isMacro = p.badgeType === "macro";
+
+      const x = 16, y = 12, w = 648, h = 122, r = 36;
       ctx.save();
       ctx.beginPath();
       ctx.roundRect(x, y, w, h, r);
       const grad = ctx.createLinearGradient(x, y, x + w, y + h);
-      grad.addColorStop(0, "rgba(11, 20, 24, 0.86)");
-      grad.addColorStop(1, "rgba(18, 32, 30, 0.82)");
+      if (isInteractive) {
+        grad.addColorStop(0, "rgba(22, 38, 36, 0.94)");
+        grad.addColorStop(1, "rgba(38, 28, 34, 0.92)");
+      } else if (isMacro) {
+        grad.addColorStop(0, "rgba(16, 32, 34, 0.92)");
+        grad.addColorStop(1, "rgba(24, 42, 38, 0.90)");
+      } else {
+        grad.addColorStop(0, "rgba(11, 20, 24, 0.88)");
+        grad.addColorStop(1, "rgba(18, 32, 30, 0.85)");
+      }
       ctx.fillStyle = grad;
-      ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
-      ctx.shadowBlur = 14;
-      ctx.shadowOffsetY = 6;
+      ctx.shadowColor = isInteractive ? "rgba(255, 205, 145, 0.45)" : "rgba(0, 0, 0, 0.48)";
+      ctx.shadowBlur = isInteractive ? 18 : 14;
+      ctx.shadowOffsetY = 5;
       ctx.fill();
       ctx.restore();
 
@@ -668,52 +654,67 @@ class MotionDirector {
       ctx.save();
       ctx.beginPath();
       ctx.roundRect(x, y, w, h, r);
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = isInteractive ? 3.2 : 2.4;
       const bGrad = ctx.createLinearGradient(x, y, x + w, y);
-      bGrad.addColorStop(0, "rgba(185, 225, 212, 0.78)");
-      bGrad.addColorStop(0.5, "rgba(255, 217, 179, 0.85)");
-      bGrad.addColorStop(1, "rgba(185, 225, 212, 0.78)");
+      if (isInteractive) {
+        bGrad.addColorStop(0, "#ffd9b3");
+        bGrad.addColorStop(0.5, "#ff9eb5");
+        bGrad.addColorStop(1, "#b9e1d4");
+      } else if (isMacro) {
+        bGrad.addColorStop(0, "#b9e1d4");
+        bGrad.addColorStop(0.5, "#ffe4b5");
+        bGrad.addColorStop(1, "#b9e1d4");
+      } else {
+        bGrad.addColorStop(0, "rgba(185, 225, 212, 0.78)");
+        bGrad.addColorStop(0.5, "rgba(255, 217, 179, 0.85)");
+        bGrad.addColorStop(1, "rgba(185, 225, 212, 0.78)");
+      }
       ctx.strokeStyle = bGrad;
       ctx.stroke();
 
-      // Little pointer triangle at bottom center
+      // Speech pointer triangle at bottom center
       ctx.beginPath();
-      ctx.moveTo(266, y + h);
-      ctx.lineTo(280, y + h + 14);
-      ctx.lineTo(294, y + h);
+      ctx.moveTo(324, y + h);
+      ctx.lineTo(340, y + h + 16);
+      ctx.lineTo(356, y + h);
       ctx.closePath();
-      ctx.fillStyle = "rgba(15, 26, 28, 0.88)";
+      ctx.fillStyle = isInteractive ? "rgba(30, 33, 35, 0.94)" : "rgba(15, 26, 28, 0.90)";
       ctx.fill();
       ctx.restore();
 
-      // Kaomoji pill on left
+      // Kaomoji badge pill on left
       ctx.save();
       ctx.beginPath();
-      ctx.roundRect(x + 12, y + 12, 166, h - 24, 32);
-      ctx.fillStyle = "rgba(185, 225, 212, 0.16)";
+      ctx.roundRect(x + 14, y + 16, 178, h - 32, 26);
+      ctx.fillStyle = isInteractive ? "rgba(255, 217, 179, 0.22)" : "rgba(185, 225, 212, 0.16)";
       ctx.fill();
-      ctx.font = "600 24px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
-      ctx.fillStyle = "#ffd9b3";
+      ctx.font = "700 24px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
+      ctx.fillStyle = isInteractive ? "#ffe4b5" : "#ffd9b3";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(p.kaomoji, x + 95, y + h / 2 + 1);
+      ctx.fillText(p.kaomoji, x + 103, y + h / 2);
 
-      // Status text on right
-      ctx.font = "600 24px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
-      ctx.fillStyle = "#f4f1ea";
+      // Primary rambling line
+      ctx.font = "600 23px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
+      ctx.fillStyle = "#f7f5f0";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(p.text, x + 194, y + h / 2 + 1);
+      ctx.fillText(p.text, x + 208, y + 44);
+
+      // Secondary interactive hint / rambling sub-line
+      ctx.font = "500 17px 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif";
+      ctx.fillStyle = isInteractive ? "#ffd9b3" : "#b9e1d4";
+      ctx.fillText(p.sub || "✨ 移上鼠标或点击小恐龙即可互动", x + 208, y + 84);
       ctx.restore();
 
-      tex.image = canvas;
       tex.needsUpdate = true;
     }
 
     drawBadge("happy_smile");
-    return { tex, drawBadge, presets: MOOD_PRESETS };
+    return { texture: tex, drawBadge, presets: MOOD_PRESETS };
   }
 
+  // GLSL Shader Injection for 3D Dinosaur Facial Expressions (Calibrated to exact Linear-sRGB skin color!)
   const DINO_FACE_VERT_HEADER = `#include <common>
 varying vec3 vDinoObjPos;`;
 
@@ -728,18 +729,24 @@ uniform vec2 uDinoGaze;`;
 
   const DINO_FACE_FRAG_BODY = `#include <map_fragment>
 if (vDinoObjPos.z > 0.14) {
-  vec3 skinMint = vec3(0.66, 0.84, 0.74);
+  // Exact Linear-sRGB mint skin color measured from dinosaur.glb around eye socket: (0.423, 0.682, 0.480)
+  vec3 skinMint = vec3(0.423, 0.682, 0.480);
+  vec3 lashDark = vec3(0.035, 0.055, 0.045);
   vec2 pR = vDinoObjPos.xy - vec2(-0.1740, 0.6467);
   vec2 pL = vDinoObjPos.xy - vec2(0.1684, 0.6480);
   vec2 pEye = (length(pR) < length(pL)) ? pR : pL;
   float dEye = length(pEye);
-  if (dEye < 0.036) {
+  if (dEye < 0.0365) {
     float lidY = 0.035 - uDinoBlink * 0.072;
-    float blinkMask = smoothstep(lidY - 0.004, lidY + 0.004, pEye.y);
+    float blinkMask = smoothstep(lidY - 0.0035, lidY + 0.0035, pEye.y);
     float archY = -0.036 + uDinoHappy * 0.052 - 11.0 * pEye.x * pEye.x;
-    float happyMask = (1.0 - smoothstep(archY - 0.004, archY + 0.004, pEye.y)) * step(0.05, uDinoHappy);
+    float happyMask = (1.0 - smoothstep(archY - 0.0035, archY + 0.0035, pEye.y)) * step(0.05, uDinoHappy);
     float cover = clamp(max(blinkMask, happyMask), 0.0, 1.0);
     diffuseColor.rgb = mix(diffuseColor.rgb, skinMint, cover);
+    // Crisp dark smiling lash arc when happy or blinking
+    float archLine = (1.0 - smoothstep(0.0, 0.0042, abs(pEye.y - archY))) * smoothstep(0.15, 0.55, uDinoHappy);
+    float blinkLine = (1.0 - smoothstep(0.0, 0.0038, abs(pEye.y - lidY))) * smoothstep(0.15, 0.65, uDinoBlink);
+    diffuseColor.rgb = mix(diffuseColor.rgb, lashDark, clamp(max(archLine, blinkLine), 0.0, 1.0));
     if (cover < 0.5 && dEye < 0.030) {
       vec2 hl1 = pEye - (vec2(-0.008, 0.009) + uDinoGaze * 0.007);
       vec2 hl2 = pEye - (vec2(0.010, -0.009) + uDinoGaze * 0.004);
@@ -748,27 +755,29 @@ if (vDinoObjPos.z > 0.14) {
       vec2 st = pEye - (uDinoGaze * 0.005);
       float star = (1.0 - smoothstep(0.0, 0.016, length(st))) * (1.0 - smoothstep(0.0014, 0.0035, min(abs(st.x), abs(st.y)))) * uDinoStar;
       float hi = clamp(c1 + c2 * 0.85 + star, 0.0, 1.0);
-      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.99, 0.97), hi);
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.98, 0.96, 0.92), hi);
     }
   }
-  vec2 bR = (vDinoObjPos.xy - vec2(-0.195, 0.592)) / vec2(0.045, 0.025);
-  vec2 bL = (vDinoObjPos.xy - vec2(0.190, 0.592)) / vec2(0.045, 0.025);
-  float blush = max(1.0 - smoothstep(0.15, 1.0, length(bR)), 1.0 - smoothstep(0.15, 1.0, length(bL)));
-  float bLineR = (1.0 - smoothstep(0.0, 0.60, length(bR))) * smoothstep(0.35, 0.75, sin((vDinoObjPos.x + vDinoObjPos.y * 0.6) * 420.0));
-  float bLineL = (1.0 - smoothstep(0.0, 0.60, length(bL))) * smoothstep(0.35, 0.75, sin((vDinoObjPos.x + vDinoObjPos.y * 0.6) * 420.0));
-  float totalBlush = clamp(blush * 0.52 + max(bLineR, bLineL) * 0.25, 0.0, 1.0) * uDinoBlush;
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.98, 0.44, 0.52), totalBlush);
-  if (uDinoMouth > 0.02 && vDinoObjPos.z > 0.25) {
-    vec2 mP = vDinoObjPos.xy - vec2(-0.003, 0.558);
-    float mW = 0.035 * (0.75 + 0.25 * uDinoMouth);
-    float mH = 0.028 * uDinoMouth;
-    float topEdge = 0.006 - 2.5 * mP.x * mP.x;
+  // Soft Linear-sRGB coral blush on cheeks
+  vec2 bR = (vDinoObjPos.xy - vec2(-0.195, 0.592)) / vec2(0.046, 0.026);
+  vec2 bL = (vDinoObjPos.xy - vec2(0.190, 0.592)) / vec2(0.046, 0.026);
+  float blush = max(1.0 - smoothstep(0.10, 1.0, length(bR)), 1.0 - smoothstep(0.10, 1.0, length(bL)));
+  float bLineR = (1.0 - smoothstep(0.0, 0.58, length(bR))) * smoothstep(0.40, 0.80, sin((vDinoObjPos.x + vDinoObjPos.y * 0.6) * 420.0));
+  float bLineL = (1.0 - smoothstep(0.0, 0.58, length(bL))) * smoothstep(0.40, 0.80, sin((vDinoObjPos.x + vDinoObjPos.y * 0.6) * 420.0));
+  float totalBlush = clamp(blush * 0.42 + max(bLineR, bLineL) * 0.18, 0.0, 1.0) * uDinoBlush;
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.78, 0.14, 0.22), totalBlush);
+  // Expressive open mouth & warm tongue directly centered on textured mouth (y=0.574)
+  if (uDinoMouth > 0.05 && vDinoObjPos.z > 0.25) {
+    vec2 mP = vDinoObjPos.xy - vec2(-0.001, 0.573);
+    float mW = 0.036 * (0.70 + 0.30 * uDinoMouth);
+    float mH = 0.026 * uDinoMouth;
+    float topEdge = 0.003 - 1.8 * mP.x * mP.x;
     float botEdge = topEdge - mH * sqrt(max(0.0, 1.0 - (mP.x * mP.x) / (mW * mW)));
     if (abs(mP.x) < mW && mP.y < topEdge && mP.y > botEdge) {
-      float edgeSoft = smoothstep(botEdge, botEdge + 0.003, mP.y) * smoothstep(topEdge, topEdge - 0.003, mP.y);
-      vec3 mouthCol = vec3(0.14, 0.07, 0.08);
-      if (mP.y < botEdge + mH * 0.54 - 3.0 * mP.x * mP.x) {
-        mouthCol = vec3(0.95, 0.52, 0.56);
+      float edgeSoft = smoothstep(botEdge, botEdge + 0.0025, mP.y) * smoothstep(topEdge, topEdge - 0.0025, mP.y);
+      vec3 mouthCol = vec3(0.04, 0.015, 0.02);
+      if (mP.y < botEdge + mH * 0.55 - 2.5 * mP.x * mP.x) {
+        mouthCol = vec3(0.68, 0.14, 0.20);
       }
       diffuseColor.rgb = mix(diffuseColor.rgb, mouthCol, edgeSoft);
     }
@@ -1118,14 +1127,14 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
         haloUniforms={uTime:{value:0},uFlight:{value:0}};
   return{
     root:dinoRawScene,perf,dir,faceUniforms,badge,haloUniforms,
-    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.0,saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,
+    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.0,saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,hovered:false,hoverIdx:0,hoverBlend:0,scalePop:1.0,macroIdx:0,wasMacro:false,
     nextBlink:2.2,blinkStart:-99,yaw:Math.PI*0.58,pitch:0,roll:0
   };
 },[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeL));
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeR));`).replace("#include <begin_vertex>",`#include <begin_vertex>
           transformed += (uEyeL + eyeSpin(transformed - uEyeL) - transformed) * eyeWeight(transformed, uEyeL);
-          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);if(Ue.current.set(-$.current.y*m,-$.current.x*m,0),ke.current.setFromEuler(Ue.current),K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current),ce.current&&K.current.multiplyScalar(l.mobilePullback),(dinoState.camPullback+=((1+Math.sin(((de?0:f.clamp(L+1,0,4))-Math.floor(de?0:f.clamp(L+1,0,4)))*Math.PI)*.28+f.clamp(Math.abs(J-q)/12,0,1)*.18)-dinoState.camPullback)*Math.min(1,y*5.5)),K.current.multiplyScalar(dinoState.camPullback),K.current.add(t.current),_.position.copy(K.current),_.quaternion.multiplyQuaternions(ke.current,_e.current),ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
+          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);if(Ue.current.set(-$.current.y*m,-$.current.x*m,0),ke.current.setFromEuler(Ue.current),K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current),ce.current&&K.current.multiplyScalar(l.mobilePullback),(dinoState.camPullback+=((1+Math.sin(((de?0:f.clamp(L+1,0,4))-Math.floor(de?0:f.clamp(L+1,0,4)))*Math.PI)*.10+f.clamp(Math.abs(J-q)/12,0,1)*.08)-dinoState.camPullback)*Math.min(1,y*5.5)),K.current.multiplyScalar(dinoState.camPullback),K.current.add(t.current),_.position.copy(K.current),_.quaternion.multiplyQuaternions(ke.current,_e.current),ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
 {
   const dt = Math.min(Math.max(y, 0), 0.08);
   dinoState.time += dt;
@@ -1134,83 +1143,135 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   dinoState.perf.look(ne.current.x, -ne.current.y, tNow);
   dinoState.faceUniforms.uDinoGaze.value.set(ne.current.x, ne.current.y);
 
-  // 1. Scroll-driven 3D Orbital Flight position & tangent + 2D Camera-Plane Anti-Overlap Capsule Shield
+  // 1. Clockwise 3D Orbit Around Your Head + Front-of-Face Dive to Camera Super Macro Close-Up!
   const scrollS = de ? 4.0 + f.clamp((q - te) / Math.max(1, ae - te), 0, 1) : f.clamp(L + 1, 0, 4);
   const flightRaw = Math.abs(J - q);
   const flightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
   dinoState.haloUniforms.uFlight.value += (flightSpeed - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
 
   const spline = __ansDinoPatch.sampleFlightSpline(scrollS);
-  const bobY = Math.sin(tNow * 2.2) * 0.026 + Math.cos(tNow * 1.3) * 0.008;
-  const swayX = Math.cos(tNow * 1.6) * 0.014 + (de ? Math.sin(tNow * 0.85) * 0.07 : 0);
-  const swayZ = Math.sin(tNow * 1.3) * 0.016 + (de ? Math.cos(tNow * 0.85) * 0.10 : 0);
+  const macroW = de ? 0 : spline.macroWeight;
+  const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
+  dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
+
+  const bobY = Math.sin(tNow * 2.4) * (0.022 * (1 - macroW * 0.4)) + Math.cos(tNow * 1.3) * 0.006;
+  const swayX = Math.cos(tNow * 1.6) * 0.010;
+  const swayZ = Math.sin(tNow * 1.4) * 0.012;
   let fx = spline.pos[0] + swayX;
   let fy = spline.pos[1] + bobY;
   let fz = spline.pos[2] + swayZ;
 
-  // Real-Time 2D Camera-Plane Capsule Repulsor: guarantees zero screen-space overlap with human model!
-  {
-    const camRight = ve.current.set(1, 0, 0).applyQuaternion(_.quaternion);
-    const camUp    = ye.current.set(0, 1, 0).applyQuaternion(_.quaternion);
-    // Human spine from waist A=(0.30, -0.42, 0.06) to head top B=(0.42, 0.26, 0.08) in M local space
-    const ax = 0.30, ay = -0.42, az = 0.06;
-    const abx = 0.12, aby = 0.68, abz = 0.02;
-    const abU = abx * camRight.x + aby * camRight.y + abz * camRight.z;
-    const abV = abx * camUp.x    + aby * camUp.y    + abz * camUp.z;
-    const abLen2 = Math.max(1e-5, abU * abU + abV * abV);
-    const dx = fx - ax, dy = (fy + 0.25) - ay, dz = fz - az;
-    const u = dx * camRight.x + dy * camRight.y + dz * camRight.z;
-    const v = dx * camUp.x    + dy * camUp.y    + dz * camUp.z;
-    const tProj = f.clamp((u * abU + v * abV) / abLen2, 0, 1);
-    const du = u - tProj * abU;
-    const dv = v - tProj * abV;
-    const rx = 0.74, ry = 0.68;
-    const norm = Math.hypot(du / rx, dv / ry);
-    if (norm < 1.0 && norm > 1e-4) {
-      const pu = (du / norm) - du;
-      const pv = (dv / norm) - dv;
-      fx += camRight.x * pu + camUp.x * pv;
-      fy += camRight.y * pu + camUp.y * pv;
-      fz += camRight.z * pu + camUp.z * pv;
-    }
+  // Compute Camera Super Macro Close-Up point directly in front of the live camera lens (_.position)
+  // M group is at world [0, 0.4, -0.7] with uniform scale 2.25
+  const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(_.quaternion);
+  const camUp    = ye.current.set(0, 1, 0).applyQuaternion(_.quaternion);
+  const camRight = ot.current.set(1, 0, 0).applyQuaternion(_.quaternion);
+  // 1.50m in front of camera lens, slightly left (-0.16m) so right-side timeline text stays 100% unobstructed,
+  // and -0.22m down so the dinosaur's face & rambling kaomoji sit right in the center-left golden close-up spot!
+  const macroDist = 1.48 - dinoState.hoverBlend * 0.14;
+  const macroWorldX = _.position.x + camFwd.x * macroDist - camRight.x * 0.16 - camUp.x * 0.22;
+  const macroWorldY = _.position.y + camFwd.y * macroDist - camRight.y * 0.16 - camUp.y * 0.22;
+  const macroWorldZ = _.position.z + camFwd.z * macroDist - camRight.z * 0.16 - camUp.z * 0.22;
+
+  const macroLocalX = (macroWorldX - 0.0) / 2.25;
+  const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.6;
+  const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
+
+  // Blend smoothly from Clockwise Head-Orbit into Camera Super Macro Close-Up when orbiting in front of your face!
+  fx = f.lerp(fx, macroLocalX, macroW);
+  fy = f.lerp(fy, macroLocalY, macroW);
+  fz = f.lerp(fz, macroLocalZ, macroW);
+
+  // If hovered while on the normal orbit, lean gently toward the camera lens
+  if (dinoState.hoverBlend > 0.01 && macroW < 0.5) {
+    fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.22);
+    fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.22);
+    fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.22);
   }
 
+  // Pull DoF focus toward the dinosaur during Super Macro Close-Up or Hover so the close-up is razor sharp!
+  const focusAssist = Math.max(macroW, dinoState.hoverBlend * 0.85);
+  if (t && focusAssist > 0.02) {
+    const dinoWorldX = fx * 2.25;
+    const dinoWorldY = fy * 2.25 + 0.4 + 0.35;
+    const dinoWorldZ = fz * 2.25 - 0.7;
+    t.current.x = f.lerp(t.current.x, dinoWorldX, focusAssist * 0.88);
+    t.current.y = f.lerp(t.current.y, dinoWorldY, focusAssist * 0.88);
+    t.current.z = f.lerp(t.current.z, dinoWorldZ, focusAssist * 0.88);
+    if (a) a.current = Math.max(a.current, 1.8 * focusAssist);
+  }
+
+  // Elastic scale pop on hover or click!
+  const clickActive = tNow < dinoState.clickUntil;
+  const clickAge = clickActive ? (4.0 - (dinoState.clickUntil - tNow)) : 99;
+  const clickHop = clickAge < 0.55 ? Math.sin((clickAge / 0.55) * Math.PI) * 0.08 : 0;
+  const targetScale = 0.48 * (1.0 + dinoState.hoverBlend * 0.10 + (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.14 : 0));
+  dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
+
   if (dinoFlightRef.current) {
-    dinoFlightRef.current.position.set(fx, fy, fz);
+    dinoFlightRef.current.position.set(fx, fy + clickHop, fz);
+    dinoFlightRef.current.scale.setScalar(dinoState.scalePop);
+
     const camLocalX = (_.position.x - 0) / 2.25;
+    const camLocalY = (_.position.y - 0.4) / 2.25;
     const camLocalZ = (_.position.z - (-0.7)) / 2.25;
     const toCamYaw = Math.atan2(camLocalX - fx, camLocalZ - fz);
+    const toCamHoriz = Math.hypot(camLocalX - fx, camLocalZ - fz);
+    const toCamPitch = f.clamp(-Math.atan2(camLocalY - (fy + 0.25), Math.max(0.1, toCamHoriz)) * 0.65, -0.28, 0.28);
+
     const dirSign = (J >= q) ? 1 : -1;
     const tangYaw = Math.atan2(spline.tangent[0] * dirSign, spline.tangent[2] * dirSign);
     let diffTang = tangYaw - toCamYaw;
     while (diffTang > Math.PI) diffTang -= Math.PI * 2;
     while (diffTang < -Math.PI) diffTang += Math.PI * 2;
-    const targetYaw = toCamYaw + diffTang * (flightSpeed * 0.42);
+
+    // When in Super Macro Close-Up (macroW -> 1) or Hovered (hoverBlend -> 1), face the camera 100% dead-on!
+    const faceCamLock = Math.max(macroW, dinoState.hoverBlend);
+    const orbitBankBlend = flightSpeed * 0.48 * (1.0 - faceCamLock);
+    const targetYaw = toCamYaw + diffTang * orbitBankBlend + (dinoState.hovered ? ne.current.x * 0.18 : 0);
     let yawDelta = targetYaw - dinoState.yaw;
     while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
     while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
-    dinoState.yaw += yawDelta * Math.min(1, dt * 7);
+    dinoState.yaw += yawDelta * Math.min(1, dt * 9);
 
-    const targetPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.36 + flightSpeed * 0.15 + Math.sin(tNow * 2.2 - 0.8) * 0.035, -0.32, 0.32);
-    const targetRoll = f.clamp(-yawDelta * 0.42 + Math.sin(tNow * 6.2) * 0.06 * flightSpeed, -0.35, 0.35);
-    dinoState.pitch += (targetPitch - dinoState.pitch) * Math.min(1, dt * 8);
-    dinoState.roll += (targetRoll - dinoState.roll) * Math.min(1, dt * 8);
+    const orbitPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.32 + flightSpeed * 0.12, -0.28, 0.28);
+    const targetPitch = f.lerp(orbitPitch, toCamPitch, faceCamLock) + Math.sin(tNow * 2.4 - 0.8) * 0.03;
+    const orbitRoll = f.clamp(-yawDelta * 0.40 + Math.sin(tNow * 6.0) * 0.05 * flightSpeed, -0.32, 0.32);
+    const macroCuteTilt = Math.sin(tNow * 2.8) * 0.075 + (dinoState.hovered ? -ne.current.x * 0.10 : 0);
+    const targetRoll = f.lerp(orbitRoll, macroCuteTilt, faceCamLock);
+
+    dinoState.pitch += (targetPitch - dinoState.pitch) * Math.min(1, dt * 9);
+    dinoState.roll += (targetRoll - dinoState.roll) * Math.min(1, dt * 9);
     dinoFlightRef.current.rotation.set(dinoState.pitch, dinoState.yaw, dinoState.roll, "YXZ");
   }
 
-  // 2. Autonomous Random Natural Expressions & Micro-Gestures
+  // 2. Context-Aware + Natural Random Expressions & Kaomoji Ramblings (Click > Hover > Super Macro > Natural Random)
   const naturalPool = [
-    "happy_smile", "curious_tilt", "starry_excited", "cozy_chill", "cheerful_wave",
-    "focused_think", "shy_blush", "playful_wink", "sleepy_stretch", "aha_spark"
+    "happy_smile", "curious_tilt", "starry_excited", "cozy_chill",
+    "cheerful_wave", "focused_think", "sleepy_stretch", "aha_spark"
   ];
+  const isMacroNow = macroW > 0.55;
+  if (isMacroNow && !dinoState.wasMacro) {
+    dinoState.wasMacro = true;
+    dinoState.macroIdx = (dinoState.macroIdx + 1) % 4;
+    const mPreset = dinoState.badge.presets["macro" + dinoState.macroIdx];
+    if (mPreset && mPreset.gesture) dinoState.dir.onGesture(mPreset.gesture, tNow);
+  } else if (!isMacroNow && macroW < 0.30) {
+    dinoState.wasMacro = false;
+  }
+
   let moodKey = dinoState.activeBadge;
-  if (tNow < dinoState.clickUntil) {
-    moodKey = "click" + (dinoState.clickIdx % 3);
+  if (clickActive) {
+    moodKey = "click" + (dinoState.clickIdx % 6);
+  } else if (dinoState.hovered) {
+    moodKey = "hover" + (dinoState.hoverIdx % 5);
+  } else if (isMacroNow) {
+    moodKey = "macro" + (dinoState.macroIdx % 4);
   } else {
-    if (tNow >= dinoState.nextMoodAt || moodKey.startsWith("click")) {
+    if (tNow >= dinoState.nextMoodAt || moodKey.startsWith("click") || moodKey.startsWith("hover") || moodKey.startsWith("macro")) {
       const candidates = naturalPool.filter(k => k !== dinoState.activeBadge);
       moodKey = candidates[Math.floor(Math.random() * candidates.length)];
-      dinoState.nextMoodAt = tNow + 3.2 + Math.random() * 2.8;
+      dinoState.nextMoodAt = tNow + 3.2 + Math.random() * 2.6;
       const chosen = dinoState.badge.presets[moodKey];
       if (chosen && chosen.gesture && chosen.gesture !== "idle") {
         dinoState.dir.onGesture(chosen.gesture, tNow);
@@ -1224,15 +1285,15 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
 
   const cmd = dinoState.dir.next(tNow, dinoState.perf.gesture, { active: true });
   if (cmd) dinoState.perf.trigger(cmd.gesture, tNow);
-  dinoState.perf.update(tNow, dt, false, flightSpeed);
+  dinoState.perf.update(tNow, dt, false, Math.max(flightSpeed, isMacroNow ? 0.35 : 0));
 
   const mood = dinoState.badge.presets[moodKey] || dinoState.badge.presets.happy_smile;
 
-  // Natural blinking with occasional cute double-blinks
+  // Natural blinking with occasional double-blinks
   if (tNow >= dinoState.nextBlink) {
     dinoState.blinkStart = tNow;
-    dinoState.doubleBlink = Math.random() < 0.28;
-    dinoState.nextBlink = tNow + 2.2 + Math.random() * 3.4;
+    dinoState.doubleBlink = Math.random() < 0.30;
+    dinoState.nextBlink = tNow + 2.2 + Math.random() * 3.2;
   }
   let blinkVal = 0;
   const blinkAge = tNow - dinoState.blinkStart;
@@ -1244,33 +1305,35 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     blinkVal = bp < 0.5 ? bp * 2 : (1 - bp) * 2;
   }
 
-  // Natural eye saccades (micro-glances) blended with cursor tracking
+  // Natural eye saccades blended with cursor tracking
   if (tNow >= dinoState.nextSaccade) {
-    dinoState.saccadeX = (Math.random() - 0.5) * 0.45;
-    dinoState.saccadeY = (Math.random() - 0.5) * 0.30;
-    dinoState.nextSaccade = tNow + 1.4 + Math.random() * 2.2;
+    dinoState.saccadeX = (Math.random() - 0.5) * 0.42;
+    dinoState.saccadeY = (Math.random() - 0.5) * 0.28;
+    dinoState.nextSaccade = tNow + 1.4 + Math.random() * 2.0;
   }
   const uF = dinoState.faceUniforms;
-  const gx = f.clamp(ne.current.x * 0.7 + dinoState.saccadeX, -1, 1);
-  const gy = f.clamp(ne.current.y * 0.7 + dinoState.saccadeY, -1, 1);
-  uF.uDinoGaze.value.x += (gx - uF.uDinoGaze.value.x) * Math.min(1, dt * 8);
-  uF.uDinoGaze.value.y += (gy - uF.uDinoGaze.value.y) * Math.min(1, dt * 8);
+  const gx = f.clamp(ne.current.x * 0.78 + dinoState.saccadeX * (1 - dinoState.hoverBlend * 0.7), -1, 1);
+  const gy = f.clamp(ne.current.y * 0.78 + dinoState.saccadeY * (1 - dinoState.hoverBlend * 0.7), -1, 1);
+  uF.uDinoGaze.value.x += (gx - uF.uDinoGaze.value.x) * Math.min(1, dt * 10);
+  uF.uDinoGaze.value.y += (gy - uF.uDinoGaze.value.y) * Math.min(1, dt * 10);
 
-  // Organic continuous micro-fluctuations on top of the active mood preset
-  const waveHappy = f.clamp(mood.happy + 0.08 * Math.sin(tNow * 1.7) + 0.12 * flightSpeed, 0, 1);
-  const waveStar  = f.clamp(mood.star  + 0.10 * Math.sin(tNow * 2.9 + 1.1), 0, 1);
-  const waveBlush = f.clamp(mood.blush + 0.07 * Math.cos(tNow * 1.3), 0, 1);
-  const waveMouth = f.clamp(mood.mouth * (0.72 + 0.28 * Math.sin(tNow * 4.8 + Math.sin(tNow * 1.9))), 0, 1);
+  // Organic continuous micro-fluctuations on facial expression uniforms
+  const waveHappy = f.clamp(mood.happy + 0.08 * Math.sin(tNow * 1.8) + 0.10 * flightSpeed, 0, 1);
+  const waveStar  = f.clamp(mood.star  + 0.10 * Math.sin(tNow * 3.0 + 1.1), 0, 1);
+  const waveBlush = f.clamp(mood.blush + 0.07 * Math.cos(tNow * 1.4), 0, 1);
+  const waveMouth = f.clamp(mood.mouth * (0.70 + 0.30 * Math.sin(tNow * 5.2 + Math.sin(tNow * 2.1))), 0, 1);
 
-  uF.uDinoBlink.value = blinkVal * (1 - waveHappy * 0.68);
-  uF.uDinoHappy.value += (waveHappy - uF.uDinoHappy.value) * Math.min(1, dt * 3.6);
-  uF.uDinoStar.value  += (waveStar  - uF.uDinoStar.value)  * Math.min(1, dt * 3.8);
-  uF.uDinoBlush.value += (waveBlush - uF.uDinoBlush.value) * Math.min(1, dt * 3.2);
-  uF.uDinoMouth.value += (waveMouth - uF.uDinoMouth.value) * Math.min(1, dt * 5.5);
+  uF.uDinoBlink.value = blinkVal * (1 - waveHappy * 0.65);
+  uF.uDinoHappy.value += (waveHappy - uF.uDinoHappy.value) * Math.min(1, dt * 4.5);
+  uF.uDinoStar.value  += (waveStar  - uF.uDinoStar.value)  * Math.min(1, dt * 4.8);
+  uF.uDinoBlush.value += (waveBlush - uF.uDinoBlush.value) * Math.min(1, dt * 4.0);
+  uF.uDinoMouth.value += (waveMouth - uF.uDinoMouth.value) * Math.min(1, dt * 6.5);
 
-  // 3. Billboard the compact floating expression badge above the dinosaur's head toward camera
+  // 3. Billboard the Kaomoji Rambling Bubble above the dinosaur's head toward the camera
   if (dinoBadgeRef.current && dinoFlightRef.current) {
-    dinoBadgeRef.current.position.y = 1.15 + Math.sin(tNow * 3.0) * 0.022;
+    dinoBadgeRef.current.position.y = 1.12 + Math.sin(tNow * 3.2) * 0.022;
+    const badgeScale = 1.0 + dinoState.hoverBlend * 0.08 + macroW * 0.06;
+    dinoBadgeRef.current.scale.setScalar(badgeScale);
     dinoFlightRef.current.updateWorldMatrix(true, false);
     dinoFlightRef.current.getWorldQuaternion(ze.current).invert();
     dinoBadgeRef.current.quaternion.copy(ze.current).multiply(_.quaternion);
@@ -1281,124 +1344,49 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
   e.jsx(At,{target:V,coordinateFrame:M}),
   e.jsxs("group",{
     ref:dinoFlightRef,
-    position:[0.38,-0.18,0.64],
-    rotation:[0,Math.PI*0.58,0],
-    scale:0.62,
+    position:[0.30,0.22,0.74],
+    scale:0.48,
+    onPointerOver:ev=>{
+      ev.stopPropagation();
+      if(typeof document<"u")document.body.style.cursor="pointer";
+      if(!dinoState.hovered){
+        dinoState.hovered=true;
+        dinoState.hoverIdx=(dinoState.hoverIdx+1)%5;
+        const hp=dinoState.badge.presets["hover"+(dinoState.hoverIdx%5)];
+        if(hp&&hp.gesture)dinoState.dir.onGesture(hp.gesture,dinoState.time);
+      }
+    },
+    onPointerOut:ev=>{
+      ev.stopPropagation();
+      if(typeof document<"u")document.body.style.cursor="auto";
+      dinoState.hovered=false;
+    },
     onClick:ev=>{
       ev.stopPropagation();
-      dinoState.clickIdx=(dinoState.clickIdx+1)%3;
-      dinoState.clickUntil=dinoState.time+3.4;
-      dinoState.dir.onGesture("celebrate",dinoState.time);
-      const cmd=dinoState.dir.next(dinoState.time,dinoState.perf.gesture,{active:!0});
-      if(cmd)dinoState.perf.trigger(cmd.gesture,dinoState.time);
+      dinoState.clickIdx=(dinoState.clickIdx+1)%6;
+      dinoState.clickUntil=dinoState.time+4.0;
+      const cp=dinoState.badge.presets["click"+(dinoState.clickIdx%6)];
+      if(cp&&cp.gesture)dinoState.dir.onGesture(cp.gesture,dinoState.time);
     },
     children:[
       e.jsx("primitive",{object:dinoState.root}),
       e.jsxs("mesh",{
-        ref:dinoBadgeRef,
-        position:[0,1.16,0.04],
-        renderOrder:25,
+        position:[0,0.56,0],
         children:[
-          e.jsx("planeGeometry",{args:[1.08,0.247]}),
-          e.jsx("meshBasicMaterial",{
-            map:dinoState.badge.tex,
-            transparent:!0,
-            depthTest:!1,
-            depthWrite:!1,
-            toneMapped:!1
-          })
+          e.jsx("sphereGeometry",{args:[0.62,16,16]}),
+          e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})
         ]
       }),
       e.jsxs("mesh",{
-        rotation:[-Math.PI/2,0,0],
-        position:[0,-0.02,0],
-        renderOrder:12,
+        ref:dinoBadgeRef,
+        position:[0,1.12,0],
         children:[
-          e.jsx("planeGeometry",{args:[1.45,1.45]}),
-          e.jsx("shaderMaterial",{
-            transparent:!0,
-            depthWrite:!1,
-            toneMapped:!1,
-            side:Qe,
-            uniforms:dinoState.haloUniforms,
-            vertexShader:"varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
-            fragmentShader:`
-              varying vec2 vUv;
-              uniform float uTime;
-              uniform float uFlight;
-              void main() {
-                vec2 p = (vUv - 0.5) * 2.0;
-                float r = length(p);
-                float ang = atan(p.y, p.x);
-                // Inner levitation glow
-                float core = pow(max(0.0, 1.0 - r * 1.35), 2.4) * (0.22 + 0.25 * uFlight);
-                // Rotating inner mint ring
-                float ring1 = exp(-pow((r - 0.54) * 26.0, 2.0)) * (0.55 + 0.45 * sin(ang * 4.0 - uTime * (3.0 + uFlight * 6.0)));
-                // Counter-rotating outer gold starlight ring
-                float ring2 = exp(-pow((r - 0.78) * 32.0, 2.0)) * smoothstep(-0.2, 0.8, cos(ang * 6.0 + uTime * (2.2 + uFlight * 5.0)));
-                // 6 orbiting starlight sparkles
-                float spark = 0.0;
-                for (int i = 0; i < 6; i++) {
-                  float fi = float(i);
-                  float a = fi * 1.0471975 + uTime * (1.8 + uFlight * 3.5);
-                  float rad = 0.66 + 0.08 * sin(uTime * 3.0 + fi);
-                  vec2 sp = vec2(cos(a), sin(a)) * rad;
-                  spark += exp(-length(p - sp) * 28.0);
-                }
-                vec3 col = mix(vec3(0.72, 0.88, 0.83), vec3(1.0, 0.85, 0.68), clamp(ring2 + spark * 0.6, 0.0, 1.0));
-                float alpha = clamp(core + ring1 * 0.55 + ring2 * (0.45 + 0.45 * uFlight) + spark * (0.55 + 0.45 * uFlight), 0.0, 0.88) * (1.0 - smoothstep(0.88, 1.0, r));
-                gl_FragColor = vec4(col, alpha);
-              }
-            `
-          })
+          e.jsx("planeGeometry",{args:[1.08,0.26]}),
+          e.jsx("meshBasicMaterial",{map:dinoState.badge.texture,transparent:!0,depthTest:!1,depthWrite:!1,toneMapped:!1})
         ]
       })
     ]
-  })
-]})}function _t(){const t=n.useRef(new B(0,1.3,0)),o=n.useRef(0),r=n.useRef(-1),a=n.useRef(.15);return e.jsxs(e.Fragment,{children:[e.jsx(zt,{}),e.jsxs(n.Suspense,{fallback:null,children:[e.jsx(Bt,{}),e.jsx(Ot,{focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a})]}),Lt]})}const Pe={zIndex:100,opacity:.4,alpha:1},tt="noise-v1",Ut=t=>t.toFixed(3),Wt=`
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    gl_Position = vec4(position.xy, 0.0, 1.0);
-  }
-`,Ft=`
-  uniform float uTime;
-  uniform vec2 uResolution;
-  varying vec2 vUv;
-
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
-  }
-
-  float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    float a = hash(i);
-    float b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0));
-    float d = hash(i + vec2(1.0, 1.0));
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(a, b, u.x)
-      + (c - a) * u.y * (1.0 - u.x)
-      + (d - b) * u.x * u.y;
-  }
-
-  void main() {
-    vec2 pixel = gl_FragCoord.xy;
-    float frame = uTime;
-    float mask = noise(pixel / uResolution.y * 30.0 + 1000.0*hash(vec2(frame * 0.1))) * 0.2;
-    mask = smoothstep(0.005, 0.03, mask);
-    float b = noise(pixel / uResolution.y * 30.0 + 1000.0*hash(vec2(frame * 0.1))) * 0.2;
-    b += noise(pixel / uResolution.y * 60.0 + 1000.0*hash(vec2(frame * 0.2))) * 0.5;
-    b = clamp(b, 0.0, 1.0);
-    b = smoothstep(0.1, 0.12, b);
-    vec3 color = mix(vec3(0.2, 0.4, 0.45), vec3(1.0, 1.4, 1.3), b);
-    color += vec3(mask);
-    color *= hash(pixel / uResolution.y * 200.0 + 1000.0*hash(vec2(frame * 0.3))) * 4.0;
-    color = clamp(color, 0.0, 1.0);
-    gl_FragColor = vec4(color, ${Ut(Pe.alpha)});
-  }
-`;function Gt(){const t=n.useRef(null),o=n.useMemo(()=>new Ke,[]),r=n.useRef(-999),a=1;Ze(({clock:u,size:b})=>{t.current&&(u.elapsedTime-r.current<1/a*.5||(r.current=u.elapsedTime,t.current.uniforms.uTime.value=u.elapsedTime%1e4,o.set(b.width,b.height),t.current.uniforms.uResolution.value=o))}),n.useEffect(()=>{const u=setInterval(()=>xt(),1e3/a);return()=>clearInterval(u)},[]);const d=n.useMemo(()=>({uTime:{value:0},uResolution:{value:o}}),[o]);return e.jsxs("mesh",{frustumCulled:!1,children:[e.jsx("planeGeometry",{args:[2,2]}),e.jsx("shaderMaterial",{ref:t,transparent:!0,depthTest:!1,depthWrite:!1,side:Qe,uniforms:d,vertexShader:Wt,fragmentShader:Ft},tt)]})}function Dt(){const[t,o]=n.useState(!1);return n.useEffect(()=>o(!0),[]),t?e.jsx("div",{"aria-hidden":"true","data-three-noise-overlay":tt,style:{position:"fixed",inset:0,overflow:"hidden",pointerEvents:"none",zIndex:Pe.zIndex,mixBlendMode:"multiply"},children:e.jsx(Je,{style:{width:"100%",height:"100%",opacity:Pe.opacity,pointerEvents:"none"},frameloop:"demand",camera:{position:[0,0,1]},gl:{alpha:!0,antialias:!1,powerPreference:"high-performance"},children:e.jsx(Gt,{})})}):null}function Ht(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M13 3h3a5 5 0 0 0 4.6 4.98V11A8 8 0 0 1 16 9.6V15a6 6 0 1 1-6-6c.34 0 .67.03 1 .08v3.12A3 3 0 1 0 13 15V3z"})})}function Yt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("path",{d:"M7 3l3 3M17 3l-3 3"}),e.jsx("rect",{x:"3",y:"6",width:"18",height:"13",rx:"3.5"}),e.jsx("path",{d:"M9 11v2M15 11v2"})]})}function Vt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("rect",{x:"3",y:"3",width:"18",height:"18",rx:"5",fill:"none",stroke:"currentColor",strokeWidth:"2"}),e.jsx("path",{d:"M12 16.2c-2.1-1.5-4-3-4-5.1A2.1 2.1 0 0 1 12 9.9a2.1 2.1 0 0 1 4 1.2c0 2.1-1.9 3.6-4 5.1z",fill:"currentColor"})]})}function $t(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"})})}const nt={douyin:Ht,bilibili:Yt,xiaohongshu:Vt,github:$t},st={"zh": {"title": "ANS 造物闭环", "entries": [{"period": "01 · 核心线上入口（主站 + 3D 建站工作室）", "place": "ANS 主站 & 3D 网站工作室", "role": "把零散经历变成可交互的 3D 个人主页与 PDF 简历", "points": ["【主站 3D 画廊与小恐龙搭子】首屏 3D Coverflow 精选作品画廊 + 右下角常驻「小恐龙」AI 搭子（支持免费向导指路、Agent 算力报价确认与恐龙语音播报）。", "【3D 个人简历网站工作室】四步零门槛可视化造物：选择 3D 形象（支持正反侧顶四视图检查）→ 写入真实经历 → 编排 3D 环绕镜头与贴纸关键帧 → 在线免费改字并一键导出单文件 HTML 与 PDF。"], "groups": [{"heading": "1. 打开 ANS 平台主站 (ans.cauai.fun) ↗", "sub": "3D Coverflow 画廊 · 小恐龙陪伴助手", "link": "https://ans.cauai.fun/"}, {"heading": "2. 体验 3D 个人网站工作室 (/market/resume-website) ↗", "sub": "核心可运行工作流 · 实时 3D 运镜预览", "link": "https://ans.cauai.fun/market/resume-website"}]}, {"period": "02 · 拆解广场与去 AI 味知识库", "place": "项目拆解广场 & VibeHub", "role": "治好「AI 收藏夹吃灰症」，从看懂配方到亲手出片", "points": ["【44 个精选项目五维拆解】拒绝只丢一个外部链接！每个项目均按「成品长什么样 → 需要什么输入 → 关键人工判断 → 模型与提示词 → 核心技巧」五维拆解，看完一键切换同款工作流。", "【VibeHub 与独家「去 AI 味」指南】系统沉淀高频术语词典、分阶段学习路径、Skill 配方与「去 AI 味（Anti-AI-Flavor）」实战准则，消灭套话连篇与廉价渐变色排版。"], "groups": [{"heading": "3. 浏览项目拆解广场 (/explore) ↗", "sub": "44 个精选项目 · 五维全链路拆解", "link": "https://ans.cauai.fun/explore"}, {"heading": "4. 查看 VibeHub「去 AI 味」实战指南 ↗", "sub": "Vibe Coding 课程 · 术语 · 去 AI 味实验室", "link": "https://ans.cauai.fun/vibe-hub/anti-ai-flavor"}]}, {"period": "03 · 高校赛事落地与透明算力底座", "place": "农客松专区 & 算力网关", "role": "真实承载中国农业大学黑客松全流程，自研 ans-points-sdk 透明积分结算", "points": ["【AgriHackathon · 农客松全链路系统】为中国农业大学农客松定制从赛事日程、组队大厅、赛道任务看板（Tasks）、现场签到（Onsite）到作品提交与评审公示的完整工程闭环。", "【透明算力护栏与幂等账本】自研独立算力网关 ans-points-sdk（¥1＝10 积分），坚持「先看报价确认、再扣费运行、异常自动退回、全程生成模型与 Token 审计回执」。"], "groups": [{"heading": "5. 查看中国农大「农客松」赛事专区 ↗", "sub": "真实高校落地 · 赛事全链路系统", "link": "https://ans.cauai.fun/competitions/agrihackathon"}, {"heading": "浏览四大垂直主题 Hub 矩阵 (/hubs) ↗", "sub": "CAUHub · VibeHub · AIGC Hub · 全栈开发 Hub", "link": "https://ans.cauai.fun/hubs"}]}, {"period": "04 · 现场 5 天阶跃星辰（StepFun）迭代计划", "place": "ANS × 阶跃星辰全模态闭环", "role": "Step-2 + Step-1V/1o + Step-Audio + Step-Video 深度接入", "points": ["【阶跃迭代 1：统一算力网关接入】将阶跃星辰 Step-2 文本、Step-1o/1V 视觉、Step-Audio 语音与 Step-Video 视频模型全量接入 ans-points-sdk，实现流式输出与按量透明积分结算。", "【阶跃迭代 2 & 3：多模态一键 3D 建站 + 小恐龙实时语音搭子】上传一张照片/旧简历截图 → Step-1V 自动提取亮点 + Step-2 生成作品集叙事 + Step-Audio 生成 3D 展厅实时语音导览旁白；并将站内小恐龙升级为能看懂画布草稿、实时自然语音对话的创作搭子！"], "groups": [{"heading": "三大阶跃迭代底座已就绪", "sub": "Next.js 16 · React 19 · Three.js · Prisma · ans-points-sdk"}, {"heading": "现场 5 天核心交付闭环", "items": ["Step-1V/1o 简历截图视觉提取 → Step-2 去 AI 味润色 → Step-Audio 3D 展厅语音导览 → 小恐龙实时语音副驾"]}]}]}, "en": {"title": "ANS 造物闭环", "entries": [{"period": "01 · 核心线上入口（主站 + 3D 建站工作室）", "place": "ANS 主站 & 3D 网站工作室", "role": "把零散经历变成可交互的 3D 个人主页与 PDF 简历", "points": ["【主站 3D 画廊与小恐龙搭子】首屏 3D Coverflow 精选作品画廊 + 右下角常驻「小恐龙」AI 搭子（支持免费向导指路、Agent 算力报价确认与恐龙语音播报）。", "【3D 个人简历网站工作室】四步零门槛可视化造物：选择 3D 形象（支持正反侧顶四视图检查）→ 写入真实经历 → 编排 3D 环绕镜头与贴纸关键帧 → 在线免费改字并一键导出单文件 HTML 与 PDF。"], "groups": [{"heading": "1. 打开 ANS 平台主站 (ans.cauai.fun) ↗", "sub": "3D Coverflow 画廊 · 小恐龙陪伴助手", "link": "https://ans.cauai.fun/"}, {"heading": "2. 体验 3D 个人网站工作室 (/market/resume-website) ↗", "sub": "核心可运行工作流 · 实时 3D 运镜预览", "link": "https://ans.cauai.fun/market/resume-website"}]}, {"period": "02 · 拆解广场与去 AI 味知识库", "place": "项目拆解广场 & VibeHub", "role": "治好「AI 收藏夹吃灰症」，从看懂配方到亲手出片", "points": ["【44 个精选项目五维拆解】拒绝只丢一个外部链接！每个项目均按「成品长什么样 → 需要什么输入 → 关键人工判断 → 模型与提示词 → 核心技巧」五维拆解，看完一键切换同款工作流。", "【VibeHub 与独家「去 AI 味」指南】系统沉淀高频术语词典、分阶段学习路径、Skill 配方与「去 AI 味（Anti-AI-Flavor）」实战准则，消灭套话连篇与廉价渐变色排版。"], "groups": [{"heading": "3. 浏览项目拆解广场 (/explore) ↗", "sub": "44 个精选项目 · 五维全链路拆解", "link": "https://ans.cauai.fun/explore"}, {"heading": "4. 查看 VibeHub「去 AI 味」实战指南 ↗", "sub": "Vibe Coding 课程 · 术语 · 去 AI 味实验室", "link": "https://ans.cauai.fun/vibe-hub/anti-ai-flavor"}]}, {"period": "03 · 高校赛事落地与透明算力底座", "place": "农客松专区 & 算力网关", "role": "真实承载中国农业大学黑客松全流程，自研 ans-points-sdk 透明积分结算", "points": ["【AgriHackathon · 农客松全链路系统】为中国农业大学农客松定制从赛事日程、组队大厅、赛道任务看板（Tasks）、现场签到（Onsite）到作品提交与评审公示的完整工程闭环。", "【透明算力护栏与幂等账本】自研独立算力网关 ans-points-sdk（¥1＝10 积分），坚持「先看报价确认、再扣费运行、异常自动退回、全程生成模型与 Token 审计回执」。"], "groups": [{"heading": "5. 查看中国农大「农客松」赛事专区 ↗", "sub": "真实高校落地 · 赛事全链路系统", "link": "https://ans.cauai.fun/competitions/agrihackathon"}, {"heading": "浏览四大垂直主题 Hub 矩阵 (/hubs) ↗", "sub": "CAUHub · VibeHub · AIGC Hub · 全栈开发 Hub", "link": "https://ans.cauai.fun/hubs"}]}, {"period": "04 · 现场 5 天阶跃星辰（StepFun）迭代计划", "place": "ANS × 阶跃星辰全模态闭环", "role": "Step-2 + Step-1V/1o + Step-Audio + Step-Video 深度接入", "points": ["【阶跃迭代 1：统一算力网关接入】将阶跃星辰 Step-2 文本、Step-1o/1V 视觉、Step-Audio 语音与 Step-Video 视频模型全量接入 ans-points-sdk，实现流式输出与按量透明积分结算。", "【阶跃迭代 2 & 3：多模态一键 3D 建站 + 小恐龙实时语音搭子】上传一张照片/旧简历截图 → Step-1V 自动提取亮点 + Step-2 生成作品集叙事 + Step-Audio 生成 3D 展厅实时语音导览旁白；并将站内小恐龙升级为能看懂画布草稿、实时自然语音对话的创作搭子！"], "groups": [{"heading": "三大阶跃迭代底座已就绪", "sub": "Next.js 16 · React 19 · Three.js · Prisma · ans-points-sdk"}, {"heading": "现场 5 天核心交付闭环", "items": ["Step-1V/1o 简历截图视觉提取 → Step-2 去 AI 味润色 → Step-Audio 3D 展厅语音导览 → 小恐龙实时语音副驾"]}]}]}},qt=Te,rt=[.22,1,.36,1],Qt={hidden:{},show:{transition:{staggerChildren:.09,delayChildren:.04}}},re={hidden:{opacity:0,y:26},show:{opacity:1,y:0,transition:{duration:.75,ease:rt}}};function Xt({group:t}){const o=t.link?e.jsx("a",{className:"about-link",href:t.link,target:"_blank",rel:"noopener noreferrer",children:t.heading}):e.jsx("span",{children:t.heading});return e.jsxs(R.div,{className:"tl-group",variants:re,children:[e.jsxs("div",{className:"tl-group-head",children:[o,t.sub&&e.jsx("span",{className:"tl-group-sub",children:t.sub})]}),t.items&&e.jsx("ul",{className:"tl-points",children:t.items.map((r,a)=>e.jsx("li",{children:r},a))}),t.links&&e.jsx("div",{className:"tl-logos",children:t.links.map(r=>{const a=nt[r.id];return e.jsx("a",{className:"tl-logo",href:r.href,target:"_blank",rel:"noopener noreferrer","aria-label":r.label,title:r.label,children:e.jsx(a,{})},r.id)})})]})}function Kt({entry:t,index:o}){return e.jsxs(R.div,{className:"tl-entry","data-point":qt[o],variants:Qt,initial:"hidden",whileInView:"show",viewport:{once:!0,margin:"-12% 0px -12% 0px"},children:[e.jsx(R.span,{className:"tl-dot",variants:re,"aria-hidden":"true"}),e.jsxs("div",{className:"tl-body",children:[e.jsx(R.div,{className:"tl-period",variants:re,children:t.period}),e.jsx(R.div,{className:"tl-head",variants:re,children:e.jsx("h3",{className:"tl-place",children:t.place})}),t.role&&e.jsx(R.div,{className:"tl-role",variants:re,children:t.role}),t.points&&e.jsx(R.ul,{className:"tl-points",variants:re,children:t.points.map((r,a)=>e.jsx("li",{children:r},a))}),t.groups&&t.groups.map((r,a)=>e.jsx(Xt,{group:r},a))]})]})}function Zt({lang:t}){const o=st[t];return e.jsxs("section",{className:"resume",lang:t,children:[e.jsxs(R.div,{className:"resume-heading",initial:{opacity:0,y:20},whileInView:{opacity:1,y:0},viewport:{once:!0,margin:"-10% 0px"},transition:{duration:.7,ease:rt},children:[e.jsx("span",{className:"resume-kicker",children:t==="en"?"Selected trajectory":"五大亮点界面 & 阶跃迭代方案"}),e.jsx("h2",{className:"resume-title",children:o.title}),e.jsx("p",{className:"resume-deck",children:t==="en"?"From generative craft to shipped systems — a practice built in public.":"点击各章节紫色链接可直接打开 ANS 线上真实页面；下滑到底部可展开交互式拆解卡片。"})]}),e.jsx("div",{className:"timeline",children:o.entries.map((r,a)=>e.jsx(Kt,{entry:r,index:a},a))})]})}function Jt({lang:t,activeIndex:o,onJump:r,visible:a}){const[d,u]=n.useState(null),b=st[t].entries,i=[{label:t==="en"?"Intro":"封面"},...b.map(g=>({label:g.place}))];return e.jsx("nav",{className:`chapter-nav${a?" is-visible":""}`,"aria-label":t==="en"?"Section navigation":"章节导航",children:e.jsx("div",{className:"chapter-nav-list",children:i.map((g,l)=>{const x=o===l;return e.jsxs("button",{type:"button",className:`chapter-nav-node${x?" is-active":""}`,onClick:()=>r(l),onMouseEnter:()=>u(l),onMouseLeave:()=>u(null),"aria-label":g.label,"aria-current":x?"true":void 0,children:[e.jsx("span",{className:"chapter-nav-label",children:d===l||x?g.label:String(l).padStart(2,"0")}),e.jsx("span",{className:"chapter-nav-dot","aria-hidden":"true"})]},l)})})})}function en(){return __liuLoadingPatch.LoadingScreen()}const tn=yt(t=>({active:null,hovered:null,entered:!1,setActive:o=>t({active:o}),setHovered:o=>t({hovered:o}),enter:()=>t({entered:!0})})),nn=n.lazy(()=>import("pkg-works"));function sn(){const t=tn(o=>o.setActive);return e.jsxs("mesh",{position:[0,0,-40],onClick:()=>t(null),children:[e.jsx("planeGeometry",{args:[600,300]}),e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})]})}const rn={"zh": {"title": "ANS · AI Never Stops", "paragraphs": ["帮青年创作者治好「AI 收藏夹吃灰症」的 AI 作品化交付平台——将神仙项目拆解、同款可复用工作流与透明算力合三为一，让你 3 分钟端出 3D 个人网站与 AI 代表作，把每一次 AI 调用都沉淀为署着你名字的个人资产。"]}, "en": {"title": "ANS · AI Never Stops", "paragraphs": ["帮青年创作者治好「AI 收藏夹吃灰症」的 AI 作品化交付平台——将神仙项目拆解、同款可复用工作流与透明算力合三为一，让你 3 分钟端出 3D 个人网站与 AI 代表作，把每一次 AI 调用都沉淀为署着你名字的个人资产。"]}},fe={"tlName": "ANS · AI Never Stops", "tlSub": "刘曙宾 · ANS＆CAU HUB 创始人", "tr": "2026·10 · STEPFUN", "bl": "AI never stops", "right": "ans.cauai.fun"},on=[{id:"github",label:"GitHub",href:"https://github.com/1008611-creater"}];function an({lang:t,cueOpacity:o}){const{title:r,paragraphs:a}=rn[t],d=n.useRef(null),{scrollYProgress:u}=Ce({target:d,offset:["start start","end start"]}),i=z(u,[.06,.4],[1,0]),g=z(u,[0,1],[0,-96]),l=z(u,[0,1],[0,-52]),x=z(u,[0,1],["0.01em","0.42em"]);return e.jsxs("section",{className:"hero",ref:d,children:[e.jsx(R.div,{className:"about",lang:t,style:{opacity:i},children:e.jsxs("div",{className:"about-intro",children:[e.jsxs("div",{className:"about-kicker",children:[e.jsx("span",{className:"about-kicker-line"}),e.jsx("span",{children:"AI Never Stops / Product & Demo Showcase"}),e.jsx("span",{className:"about-kicker-line"})]}),e.jsx(R.h1,{className:"about-title",style:{y:g,letterSpacing:x},children:r}),a.map((w,E)=>e.jsx(R.p,{className:"about-body",style:{y:l},children:w},E)),e.jsxs("div",{className:"about-footnote",children:[e.jsx("span",{children:"01 — 04"}),e.jsx("span",{children:t==="en"?"Scroll to compose the story":"向下滚动，浏览 5 大线上亮点入口与阶跃迭代方案"})]})]})}),e.jsxs(R.div,{className:"scroll-cue",style:{opacity:o},"aria-hidden":"true",children:[e.jsx("span",{className:"scroll-cue-label",children:t==="en"?"SCROLL":"向下滚动"}),e.jsx("span",{className:"scroll-cue-track",children:e.jsx("span",{className:"scroll-cue-dot"})})]})]})}function cn(){var k;const[t,o]=n.useState("zh"),{scrollY:r}=Ce(),a=n.useRef(null),{scrollYProgress:d}=Ce({target:a,offset:["start end","start center"]}),u=z(d,[0,1],["rgba(8, 11, 18, 0)","rgba(8, 11, 18, 0.41)"]);z(d,[0,1],["blur(0px)","blur(10px)"]);const b=z(r,[0,520],[0,.4]),i=z(r,[0,160],[1,0]);z(r,[0,240],[1,0]);const g=typeof window<"u"?window.innerHeight:800,l=z(r,[g*.5,g*1.1],[0,1]),x=z(r,[0,280],[1,0]),w=.3,E=n.useRef([]),[A,M]=n.useState(0),[V,S]=n.useState(!1);n.useEffect(()=>{const v=()=>{const H=Te.map(j=>{const C=document.querySelector(`[data-point="${j}"]`);return C?C.getBoundingClientRect().top+window.scrollY:null}).filter(j=>j!==null);E.current=[0,...H]};v();const p=new ResizeObserver(v);return p.observe(document.documentElement),window.addEventListener("resize",v),()=>{p.disconnect(),window.removeEventListener("resize",v)}},[]),Nt(r,"change",v=>{const p=E.current;if(p.length>1){const j=v+window.innerHeight*w;let C=0;for(let P=0;P<p.length;P++)j>=p[P]&&(C=P);M(P=>P===C?P:C)}const H=v>window.innerHeight*.5;S(j=>j===H?j:H)});const D=n.useCallback(v=>{const p=E.current;window.scrollTo({top:p[Math.min(v,p.length-1)]??0,behavior:"smooth"})},[]);return e.jsxs(e.Fragment,{children:[e.jsx(en,{}),e.jsx("div",{className:"scene-bg",children:e.jsxs(Je,{shadows:{type:jt},dpr:typeof window<"u"&&((k=window.matchMedia)!=null&&k.call(window,"(pointer: coarse)").matches)?[1,1.5]:[1,2],camera:{position:[0,5,19],fov:39,near:.1,far:500},gl:{antialias:!0,stencil:!1,depth:!0,toneMapping:wt},children:[e.jsx("color",{attach:"background",args:["#0a0e16"]}),e.jsxs(n.Suspense,{fallback:null,children:[e.jsx(sn,{}),e.jsx(_t,{})]})]})}),e.jsx(R.div,{className:"scrim",style:{opacity:b},"aria-hidden":"true"}),e.jsx(R.div,{className:"stage-fog",style:{background:u},"aria-hidden":"true"}),e.jsx(R.div,{className:"glass-rail",style:{opacity:l},"aria-hidden":"true"}),e.jsxs(R.div,{className:"hero-chrome",style:{opacity:x},"aria-hidden":"true",children:[e.jsx("div",{className:"hero-frame"}),e.jsx("span",{className:"hero-mark tl",children:"+"}),e.jsx("span",{className:"hero-mark tr",children:"+"}),e.jsx("span",{className:"hero-mark bl",children:"+"}),e.jsx("span",{className:"hero-mark br",children:"+"}),e.jsxs("div",{className:"hero-meta hm-tl",children:[e.jsx("span",{className:"hm-name",children:fe.tlName}),e.jsx("span",{children:fe.tlSub})]}),e.jsx("div",{className:"hero-meta hm-tr",children:fe.tr}),e.jsx("div",{className:"hero-meta hm-bl",children:fe.bl}),e.jsx("div",{className:"hero-meta hm-right",children:fe.right}),e.jsx("div",{className:"hero-social",children:on.map(v=>{const p=nt[v.id];return e.jsx("a",{className:"tl-logo",href:v.href,target:"_blank",rel:"noopener noreferrer","aria-label":v.label,title:v.label,children:e.jsx(p,{})},v.id)})})]}),e.jsx(Dt,{}),e.jsx(Jt,{lang:t,activeIndex:A,onJump:D,visible:V}),e.jsxs("main",{className:"content",children:[e.jsx(an,{lang:t,cueOpacity:i}),e.jsx(Zt,{lang:t}),e.jsx(n.Suspense,{fallback:e.jsx("div",{className:"works-loading","aria-label":"Loading works",children:"Loading works…"}),children:e.jsx(nn,{lang:t,innerRef:a})})]})]})}ct(document.getElementById("root")).render(e.jsx(cn,{}));
+  })]})}function Vt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("rect",{x:"3",y:"3",width:"18",height:"18",rx:"5",fill:"none",stroke:"currentColor",strokeWidth:"2"}),e.jsx("path",{d:"M12 16.2c-2.1-1.5-4-3-4-5.1A2.1 2.1 0 0 1 12 9.9a2.1 2.1 0 0 1 4 1.2c0 2.1-1.9 3.6-4 5.1z",fill:"currentColor"})]})}function $t(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"})})}const nt={douyin:Ht,bilibili:Yt,xiaohongshu:Vt,github:$t},st={"zh": {"title": "ANS 造物闭环", "entries": [{"period": "01 · 核心线上入口（主站 + 3D 建站工作室）", "place": "ANS 主站 & 3D 网站工作室", "role": "把零散经历变成可交互的 3D 个人主页与 PDF 简历", "points": ["【主站 3D 画廊与小恐龙搭子】首屏 3D Coverflow 精选作品画廊 + 右下角常驻「小恐龙」AI 搭子（支持免费向导指路、Agent 算力报价确认与恐龙语音播报）。", "【3D 个人简历网站工作室】四步零门槛可视化造物：选择 3D 形象（支持正反侧顶四视图检查）→ 写入真实经历 → 编排 3D 环绕镜头与贴纸关键帧 → 在线免费改字并一键导出单文件 HTML 与 PDF。"], "groups": [{"heading": "1. 打开 ANS 平台主站 (ans.cauai.fun) ↗", "sub": "3D Coverflow 画廊 · 小恐龙陪伴助手", "link": "https://ans.cauai.fun/"}, {"heading": "2. 体验 3D 个人网站工作室 (/market/resume-website) ↗", "sub": "核心可运行工作流 · 实时 3D 运镜预览", "link": "https://ans.cauai.fun/market/resume-website"}]}, {"period": "02 · 拆解广场与去 AI 味知识库", "place": "项目拆解广场 & VibeHub", "role": "治好「AI 收藏夹吃灰症」，从看懂配方到亲手出片", "points": ["【44 个精选项目五维拆解】拒绝只丢一个外部链接！每个项目均按「成品长什么样 → 需要什么输入 → 关键人工判断 → 模型与提示词 → 核心技巧」五维拆解，看完一键切换同款工作流。", "【VibeHub 与独家「去 AI 味」指南】系统沉淀高频术语词典、分阶段学习路径、Skill 配方与「去 AI 味（Anti-AI-Flavor）」实战准则，消灭套话连篇与廉价渐变色排版。"], "groups": [{"heading": "3. 浏览项目拆解广场 (/explore) ↗", "sub": "44 个精选项目 · 五维全链路拆解", "link": "https://ans.cauai.fun/explore"}, {"heading": "4. 查看 VibeHub「去 AI 味」实战指南 ↗", "sub": "Vibe Coding 课程 · 术语 · 去 AI 味实验室", "link": "https://ans.cauai.fun/vibe-hub/anti-ai-flavor"}]}, {"period": "03 · 高校赛事落地与透明算力底座", "place": "农客松专区 & 算力网关", "role": "真实承载中国农业大学黑客松全流程，自研 ans-points-sdk 透明积分结算", "points": ["【AgriHackathon · 农客松全链路系统】为中国农业大学农客松定制从赛事日程、组队大厅、赛道任务看板（Tasks）、现场签到（Onsite）到作品提交与评审公示的完整工程闭环。", "【透明算力护栏与幂等账本】自研独立算力网关 ans-points-sdk（¥1＝10 积分），坚持「先看报价确认、再扣费运行、异常自动退回、全程生成模型与 Token 审计回执」。"], "groups": [{"heading": "5. 查看中国农大「农客松」赛事专区 ↗", "sub": "真实高校落地 · 赛事全链路系统", "link": "https://ans.cauai.fun/competitions/agrihackathon"}, {"heading": "浏览四大垂直主题 Hub 矩阵 (/hubs) ↗", "sub": "CAUHub · VibeHub · AIGC Hub · 全栈开发 Hub", "link": "https://ans.cauai.fun/hubs"}]}, {"period": "04 · 现场 5 天阶跃星辰（StepFun）迭代计划", "place": "ANS × 阶跃星辰全模态闭环", "role": "Step-2 + Step-1V/1o + Step-Audio + Step-Video 深度接入", "points": ["【阶跃迭代 1：统一算力网关接入】将阶跃星辰 Step-2 文本、Step-1o/1V 视觉、Step-Audio 语音与 Step-Video 视频模型全量接入 ans-points-sdk，实现流式输出与按量透明积分结算。", "【阶跃迭代 2 & 3：多模态一键 3D 建站 + 小恐龙实时语音搭子】上传一张照片/旧简历截图 → Step-1V 自动提取亮点 + Step-2 生成作品集叙事 + Step-Audio 生成 3D 展厅实时语音导览旁白；并将站内小恐龙升级为能看懂画布草稿、实时自然语音对话的创作搭子！"], "groups": [{"heading": "三大阶跃迭代底座已就绪", "sub": "Next.js 16 · React 19 · Three.js · Prisma · ans-points-sdk"}, {"heading": "现场 5 天核心交付闭环", "items": ["Step-1V/1o 简历截图视觉提取 → Step-2 去 AI 味润色 → Step-Audio 3D 展厅语音导览 → 小恐龙实时语音副驾"]}]}]}, "en": {"title": "ANS 造物闭环", "entries": [{"period": "01 · 核心线上入口（主站 + 3D 建站工作室）", "place": "ANS 主站 & 3D 网站工作室", "role": "把零散经历变成可交互的 3D 个人主页与 PDF 简历", "points": ["【主站 3D 画廊与小恐龙搭子】首屏 3D Coverflow 精选作品画廊 + 右下角常驻「小恐龙」AI 搭子（支持免费向导指路、Agent 算力报价确认与恐龙语音播报）。", "【3D 个人简历网站工作室】四步零门槛可视化造物：选择 3D 形象（支持正反侧顶四视图检查）→ 写入真实经历 → 编排 3D 环绕镜头与贴纸关键帧 → 在线免费改字并一键导出单文件 HTML 与 PDF。"], "groups": [{"heading": "1. 打开 ANS 平台主站 (ans.cauai.fun) ↗", "sub": "3D Coverflow 画廊 · 小恐龙陪伴助手", "link": "https://ans.cauai.fun/"}, {"heading": "2. 体验 3D 个人网站工作室 (/market/resume-website) ↗", "sub": "核心可运行工作流 · 实时 3D 运镜预览", "link": "https://ans.cauai.fun/market/resume-website"}]}, {"period": "02 · 拆解广场与去 AI 味知识库", "place": "项目拆解广场 & VibeHub", "role": "治好「AI 收藏夹吃灰症」，从看懂配方到亲手出片", "points": ["【44 个精选项目五维拆解】拒绝只丢一个外部链接！每个项目均按「成品长什么样 → 需要什么输入 → 关键人工判断 → 模型与提示词 → 核心技巧」五维拆解，看完一键切换同款工作流。", "【VibeHub 与独家「去 AI 味」指南】系统沉淀高频术语词典、分阶段学习路径、Skill 配方与「去 AI 味（Anti-AI-Flavor）」实战准则，消灭套话连篇与廉价渐变色排版。"], "groups": [{"heading": "3. 浏览项目拆解广场 (/explore) ↗", "sub": "44 个精选项目 · 五维全链路拆解", "link": "https://ans.cauai.fun/explore"}, {"heading": "4. 查看 VibeHub「去 AI 味」实战指南 ↗", "sub": "Vibe Coding 课程 · 术语 · 去 AI 味实验室", "link": "https://ans.cauai.fun/vibe-hub/anti-ai-flavor"}]}, {"period": "03 · 高校赛事落地与透明算力底座", "place": "农客松专区 & 算力网关", "role": "真实承载中国农业大学黑客松全流程，自研 ans-points-sdk 透明积分结算", "points": ["【AgriHackathon · 农客松全链路系统】为中国农业大学农客松定制从赛事日程、组队大厅、赛道任务看板（Tasks）、现场签到（Onsite）到作品提交与评审公示的完整工程闭环。", "【透明算力护栏与幂等账本】自研独立算力网关 ans-points-sdk（¥1＝10 积分），坚持「先看报价确认、再扣费运行、异常自动退回、全程生成模型与 Token 审计回执」。"], "groups": [{"heading": "5. 查看中国农大「农客松」赛事专区 ↗", "sub": "真实高校落地 · 赛事全链路系统", "link": "https://ans.cauai.fun/competitions/agrihackathon"}, {"heading": "浏览四大垂直主题 Hub 矩阵 (/hubs) ↗", "sub": "CAUHub · VibeHub · AIGC Hub · 全栈开发 Hub", "link": "https://ans.cauai.fun/hubs"}]}, {"period": "04 · 现场 5 天阶跃星辰（StepFun）迭代计划", "place": "ANS × 阶跃星辰全模态闭环", "role": "Step-2 + Step-1V/1o + Step-Audio + Step-Video 深度接入", "points": ["【阶跃迭代 1：统一算力网关接入】将阶跃星辰 Step-2 文本、Step-1o/1V 视觉、Step-Audio 语音与 Step-Video 视频模型全量接入 ans-points-sdk，实现流式输出与按量透明积分结算。", "【阶跃迭代 2 & 3：多模态一键 3D 建站 + 小恐龙实时语音搭子】上传一张照片/旧简历截图 → Step-1V 自动提取亮点 + Step-2 生成作品集叙事 + Step-Audio 生成 3D 展厅实时语音导览旁白；并将站内小恐龙升级为能看懂画布草稿、实时自然语音对话的创作搭子！"], "groups": [{"heading": "三大阶跃迭代底座已就绪", "sub": "Next.js 16 · React 19 · Three.js · Prisma · ans-points-sdk"}, {"heading": "现场 5 天核心交付闭环", "items": ["Step-1V/1o 简历截图视觉提取 → Step-2 去 AI 味润色 → Step-Audio 3D 展厅语音导览 → 小恐龙实时语音副驾"]}]}]}},qt=Te,rt=[.22,1,.36,1],Qt={hidden:{},show:{transition:{staggerChildren:.09,delayChildren:.04}}},re={hidden:{opacity:0,y:26},show:{opacity:1,y:0,transition:{duration:.75,ease:rt}}};function Xt({group:t}){const o=t.link?e.jsx("a",{className:"about-link",href:t.link,target:"_blank",rel:"noopener noreferrer",children:t.heading}):e.jsx("span",{children:t.heading});return e.jsxs(R.div,{className:"tl-group",variants:re,children:[e.jsxs("div",{className:"tl-group-head",children:[o,t.sub&&e.jsx("span",{className:"tl-group-sub",children:t.sub})]}),t.items&&e.jsx("ul",{className:"tl-points",children:t.items.map((r,a)=>e.jsx("li",{children:r},a))}),t.links&&e.jsx("div",{className:"tl-logos",children:t.links.map(r=>{const a=nt[r.id];return e.jsx("a",{className:"tl-logo",href:r.href,target:"_blank",rel:"noopener noreferrer","aria-label":r.label,title:r.label,children:e.jsx(a,{})},r.id)})})]})}function Kt({entry:t,index:o}){return e.jsxs(R.div,{className:"tl-entry","data-point":qt[o],variants:Qt,initial:"hidden",whileInView:"show",viewport:{once:!0,margin:"-12% 0px -12% 0px"},children:[e.jsx(R.span,{className:"tl-dot",variants:re,"aria-hidden":"true"}),e.jsxs("div",{className:"tl-body",children:[e.jsx(R.div,{className:"tl-period",variants:re,children:t.period}),e.jsx(R.div,{className:"tl-head",variants:re,children:e.jsx("h3",{className:"tl-place",children:t.place})}),t.role&&e.jsx(R.div,{className:"tl-role",variants:re,children:t.role}),t.points&&e.jsx(R.ul,{className:"tl-points",variants:re,children:t.points.map((r,a)=>e.jsx("li",{children:r},a))}),t.groups&&t.groups.map((r,a)=>e.jsx(Xt,{group:r},a))]})]})}function Zt({lang:t}){const o=st[t];return e.jsxs("section",{className:"resume",lang:t,children:[e.jsxs(R.div,{className:"resume-heading",initial:{opacity:0,y:20},whileInView:{opacity:1,y:0},viewport:{once:!0,margin:"-10% 0px"},transition:{duration:.7,ease:rt},children:[e.jsx("span",{className:"resume-kicker",children:t==="en"?"Selected trajectory":"五大亮点界面 & 阶跃迭代方案"}),e.jsx("h2",{className:"resume-title",children:o.title}),e.jsx("p",{className:"resume-deck",children:t==="en"?"From generative craft to shipped systems — a practice built in public.":"点击各章节紫色链接可直接打开 ANS 线上真实页面；下滑到底部可展开交互式拆解卡片。"})]}),e.jsx("div",{className:"timeline",children:o.entries.map((r,a)=>e.jsx(Kt,{entry:r,index:a},a))})]})}function Jt({lang:t,activeIndex:o,onJump:r,visible:a}){const[d,u]=n.useState(null),b=st[t].entries,i=[{label:t==="en"?"Intro":"封面"},...b.map(g=>({label:g.place}))];return e.jsx("nav",{className:`chapter-nav${a?" is-visible":""}`,"aria-label":t==="en"?"Section navigation":"章节导航",children:e.jsx("div",{className:"chapter-nav-list",children:i.map((g,l)=>{const x=o===l;return e.jsxs("button",{type:"button",className:`chapter-nav-node${x?" is-active":""}`,onClick:()=>r(l),onMouseEnter:()=>u(l),onMouseLeave:()=>u(null),"aria-label":g.label,"aria-current":x?"true":void 0,children:[e.jsx("span",{className:"chapter-nav-label",children:d===l||x?g.label:String(l).padStart(2,"0")}),e.jsx("span",{className:"chapter-nav-dot","aria-hidden":"true"})]},l)})})})}function en(){return __liuLoadingPatch.LoadingScreen()}const tn=yt(t=>({active:null,hovered:null,entered:!1,setActive:o=>t({active:o}),setHovered:o=>t({hovered:o}),enter:()=>t({entered:!0})})),nn=n.lazy(()=>import("pkg-works"));function sn(){const t=tn(o=>o.setActive);return e.jsxs("mesh",{position:[0,0,-40],onClick:()=>t(null),children:[e.jsx("planeGeometry",{args:[600,300]}),e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})]})}const rn={"zh": {"title": "ANS · AI Never Stops", "paragraphs": ["帮青年创作者治好「AI 收藏夹吃灰症」的 AI 作品化交付平台——将神仙项目拆解、同款可复用工作流与透明算力合三为一，让你 3 分钟端出 3D 个人网站与 AI 代表作，把每一次 AI 调用都沉淀为署着你名字的个人资产。"]}, "en": {"title": "ANS · AI Never Stops", "paragraphs": ["帮青年创作者治好「AI 收藏夹吃灰症」的 AI 作品化交付平台——将神仙项目拆解、同款可复用工作流与透明算力合三为一，让你 3 分钟端出 3D 个人网站与 AI 代表作，把每一次 AI 调用都沉淀为署着你名字的个人资产。"]}},fe={"tlName": "ANS · AI Never Stops", "tlSub": "刘曙宾 · ANS＆CAU HUB 创始人", "tr": "2026·10 · STEPFUN", "bl": "AI never stops", "right": "ans.cauai.fun"},on=[{id:"github",label:"GitHub",href:"https://github.com/1008611-creater"}];function an({lang:t,cueOpacity:o}){const{title:r,paragraphs:a}=rn[t],d=n.useRef(null),{scrollYProgress:u}=Ce({target:d,offset:["start start","end start"]}),i=z(u,[.06,.4],[1,0]),g=z(u,[0,1],[0,-96]),l=z(u,[0,1],[0,-52]),x=z(u,[0,1],["0.01em","0.42em"]);return e.jsxs("section",{className:"hero",ref:d,children:[e.jsx(R.div,{className:"about",lang:t,style:{opacity:i},children:e.jsxs("div",{className:"about-intro",children:[e.jsxs("div",{className:"about-kicker",children:[e.jsx("span",{className:"about-kicker-line"}),e.jsx("span",{children:"AI Never Stops / Product & Demo Showcase"}),e.jsx("span",{className:"about-kicker-line"})]}),e.jsx(R.h1,{className:"about-title",style:{y:g,letterSpacing:x},children:r}),a.map((w,E)=>e.jsx(R.p,{className:"about-body",style:{y:l},children:w},E)),e.jsxs("div",{className:"about-footnote",children:[e.jsx("span",{children:"01 — 04"}),e.jsx("span",{children:t==="en"?"Scroll to compose the story":"向下滚动，浏览 5 大线上亮点入口与阶跃迭代方案"})]})]})}),e.jsxs(R.div,{className:"scroll-cue",style:{opacity:o},"aria-hidden":"true",children:[e.jsx("span",{className:"scroll-cue-label",children:t==="en"?"SCROLL":"向下滚动"}),e.jsx("span",{className:"scroll-cue-track",children:e.jsx("span",{className:"scroll-cue-dot"})})]})]})}function cn(){var k;const[t,o]=n.useState("zh"),{scrollY:r}=Ce(),a=n.useRef(null),{scrollYProgress:d}=Ce({target:a,offset:["start end","start center"]}),u=z(d,[0,1],["rgba(8, 11, 18, 0)","rgba(8, 11, 18, 0.41)"]);z(d,[0,1],["blur(0px)","blur(10px)"]);const b=z(r,[0,520],[0,.4]),i=z(r,[0,160],[1,0]);z(r,[0,240],[1,0]);const g=typeof window<"u"?window.innerHeight:800,l=z(r,[g*.5,g*1.1],[0,1]),x=z(r,[0,280],[1,0]),w=.3,E=n.useRef([]),[A,M]=n.useState(0),[V,S]=n.useState(!1);n.useEffect(()=>{const v=()=>{const H=Te.map(j=>{const C=document.querySelector(`[data-point="${j}"]`);return C?C.getBoundingClientRect().top+window.scrollY:null}).filter(j=>j!==null);E.current=[0,...H]};v();const p=new ResizeObserver(v);return p.observe(document.documentElement),window.addEventListener("resize",v),()=>{p.disconnect(),window.removeEventListener("resize",v)}},[]),Nt(r,"change",v=>{const p=E.current;if(p.length>1){const j=v+window.innerHeight*w;let C=0;for(let P=0;P<p.length;P++)j>=p[P]&&(C=P);M(P=>P===C?P:C)}const H=v>window.innerHeight*.5;S(j=>j===H?j:H)});const D=n.useCallback(v=>{const p=E.current;window.scrollTo({top:p[Math.min(v,p.length-1)]??0,behavior:"smooth"})},[]);return e.jsxs(e.Fragment,{children:[e.jsx(en,{}),e.jsx("div",{className:"scene-bg",children:e.jsxs(Je,{shadows:{type:jt},dpr:typeof window<"u"&&((k=window.matchMedia)!=null&&k.call(window,"(pointer: coarse)").matches)?[1,1.5]:[1,2],camera:{position:[0,5,19],fov:39,near:.1,far:500},gl:{antialias:!0,stencil:!1,depth:!0,toneMapping:wt},children:[e.jsx("color",{attach:"background",args:["#0a0e16"]}),e.jsxs(n.Suspense,{fallback:null,children:[e.jsx(sn,{}),e.jsx(_t,{})]})]})}),e.jsx(R.div,{className:"scrim",style:{opacity:b},"aria-hidden":"true"}),e.jsx(R.div,{className:"stage-fog",style:{background:u},"aria-hidden":"true"}),e.jsx(R.div,{className:"glass-rail",style:{opacity:l},"aria-hidden":"true"}),e.jsxs(R.div,{className:"hero-chrome",style:{opacity:x},"aria-hidden":"true",children:[e.jsx("div",{className:"hero-frame"}),e.jsx("span",{className:"hero-mark tl",children:"+"}),e.jsx("span",{className:"hero-mark tr",children:"+"}),e.jsx("span",{className:"hero-mark bl",children:"+"}),e.jsx("span",{className:"hero-mark br",children:"+"}),e.jsxs("div",{className:"hero-meta hm-tl",children:[e.jsx("span",{className:"hm-name",children:fe.tlName}),e.jsx("span",{children:fe.tlSub})]}),e.jsx("div",{className:"hero-meta hm-tr",children:fe.tr}),e.jsx("div",{className:"hero-meta hm-bl",children:fe.bl}),e.jsx("div",{className:"hero-meta hm-right",children:fe.right}),e.jsx("div",{className:"hero-social",children:on.map(v=>{const p=nt[v.id];return e.jsx("a",{className:"tl-logo",href:v.href,target:"_blank",rel:"noopener noreferrer","aria-label":v.label,title:v.label,children:e.jsx(p,{})},v.id)})})]}),e.jsx(Dt,{}),e.jsx(Jt,{lang:t,activeIndex:A,onJump:D,visible:V}),e.jsxs("main",{className:"content",children:[e.jsx(an,{lang:t,cueOpacity:i}),e.jsx(Zt,{lang:t}),e.jsx(n.Suspense,{fallback:e.jsx("div",{className:"works-loading","aria-label":"Loading works",children:"Loading works…"}),children:e.jsx(nn,{lang:t,innerRef:a})})]})]})}ct(document.getElementById("root")).render(e.jsx(cn,{}));
 
     </script>
   </body>
