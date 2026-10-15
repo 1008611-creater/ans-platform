@@ -7,6 +7,7 @@ import { DEFAULT_APPEARANCE, type VisualWebsite, type VisualWebsiteState } from 
 import { RESUME_WEBSITE_EXAMPLE } from "@/domain/projects/resume-website";
 import { createVisualTour } from "@/lib/projects/visual-tour";
 import { VisualWebsiteStudio } from "@/components/projects/visual-website-studio";
+import { presetForSticker } from "@/contracts/visual-stickers";
 import { VisualTourEditor } from "@/components/projects/visual-tour-editor";
 vi.mock("next-intl", async original => await original<typeof import("next-intl")>());
 const m=vi.hoisted(()=>({request:vi.fn(),actor:"owner",export:vi.fn(),execution:vi.fn()}));
@@ -25,6 +26,25 @@ async function save(){delivery();fireEvent.click(screen.getByRole("button",{name
 beforeEach(()=>{vi.clearAllMocks();m.actor="owner";m.request.mockResolvedValue({projectId,version:5});m.export.mockResolvedValue("<html>Export</html>");Object.defineProperty(HTMLElement.prototype,"scrollIntoView",{value:vi.fn(),configurable:true});Object.defineProperty(HTMLElement.prototype,"scrollTo",{value:vi.fn(),configurable:true});vi.stubGlobal("Blob",NodeBlob);URL.createObjectURL=vi.fn(()=>"blob:download");URL.revokeObjectURL=vi.fn();vi.spyOn(HTMLAnchorElement.prototype,"click").mockImplementation(()=>{});});
 afterEach(()=>{cleanup();vi.restoreAllMocks();vi.unstubAllGlobals();});
 describe("immersive tour editor",()=>{
+ it("searches both image collections and saves image placement, duplication and visibility alongside legacy text",async()=>{
+  mount();stage(2);
+  fireEvent.change(screen.getByLabelText(messages.tour.stickerSearch),{target:{value:"programmer"}});
+  fireEvent.click(screen.getByRole("button",{name:messages.tour.stickerStyles.retro}));
+  fireEvent.click(screen.getByRole("button",{name:`${messages.tour.stickerLabels["career-programmer"]} · ${messages.tour.stickerStyles.retro}`}));
+  message("surface",{position:[.1,.2,.3],normal:[0,0,1]});
+  const layer=screen.getByRole("button",{name:`${messages.tour.stickerLabels["career-programmer"]} ${messages.tour.layer.replace("{index}","2")}`}).closest("div")!;
+  fireEvent.click(within(layer).getByRole("button",{name:messages.tour.duplicate}));
+  fireEvent.click(within(layer).getByRole("button",{name:messages.tour.hideLayer}));
+  const payload=await save(),stickers=payload.document.appearance.tour.stickers;
+  expect(stickers).toHaveLength(3);expect(stickers[0].preset).toBeUndefined();
+  expect(stickers[1]).toMatchObject({visible:false,position:[.1,.2,.3]});
+  expect(stickers[2]).toMatchObject({visible:true});
+  expect(stickers[2].id).not.toBe(stickers[1].id);
+  expect(stickers.every((sticker:Record<string,unknown>)=>!("preset" in sticker))).toBe(true);
+  expect(presetForSticker(stickers[1].id)?.id).toBe("retro-career-programmer");
+  expect(presetForSticker(stickers[2].id)?.id).toBe("retro-career-programmer");
+ });
+
  it("reselecting the current model keeps camera captures and stickers",async()=>{const doc=document();mount(doc);fireEvent.click(screen.getByRole("button",{name:/参考演示人物 GLB/}));expect(m.request).not.toHaveBeenCalled();const payload=await save();expect(payload.document.appearance.tour.hero.camera).toEqual(doc.appearance.tour!.hero.camera);expect(payload.document.appearance.tour.stickers).toEqual(doc.appearance.tour!.stickers);});
  it("aligns input limits with persisted fields",()=>{mount();stage(3);for(const [key,limit]of [["byline",80],["issue",40],["location",100],["email",254],["heroBody",3000]]as const)expect(screen.getByLabelText(messages.tour[key])).toHaveAttribute("maxlength",String(limit));});
  it("supports keyboard-accessible stop reordering and saves the order",async()=>{const doc=document();mount(doc);stage(3);fireEvent.click(screen.getByRole("button",{name:`1 ${doc.appearance.tour!.nodes[0].title}`}));fireEvent.click(screen.getByRole("button",{name:messages.tour.moveStopLater}));const payload=await save();expect(payload.document.appearance.tour.nodes[1].id).toBe(doc.appearance.tour!.nodes[0].id);});
