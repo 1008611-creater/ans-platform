@@ -85,7 +85,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
       <ChevronRight aria-hidden="true" className="h-3 w-3" /><span>{p("categories." + listing.category)}</span>
       <ChevronRight aria-hidden="true" className="h-3 w-3" /><span>{p("children." + listing.subcategory)}</span>
     </nav>
-    <Suspense fallback={null}><MarketProductConnections offer={offer} /></Suspense>
     <div className={styles.layout}>
       <div className={styles.content}>
         <MarketDetailPreview listing={listing} />
@@ -158,5 +157,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
         </Link>
       </aside>
     </div>
+    <Suspense fallback={null}><MarketProductConnections offer={offer} /></Suspense>
   </div></div>;
 }
