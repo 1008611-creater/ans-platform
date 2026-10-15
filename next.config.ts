@@ -45,6 +45,8 @@ const nextConfig: NextConfig = {
   },
   // Experimental features
   experimental: {
+    // Release Webpack compilation memory when its worker exits.
+    webpackBuildWorker: true,
     // Enable server actions
     serverActions: {
       bodySizeLimit: "2mb",
