@@ -14,7 +14,7 @@ const MODES = {
 };
 const ASSETS = { rig: './dinosaur.glb', original: './original-dinosaur.glb' };
 const HASHES = {
-  rig: 'f4be8ba420e58ac3304d8d9f5f6a6b984f7bab11ebb15c7895af7cfb5574cb93',
+  rig: 'e420b1580e76a5871e0427e8b2fe1756532692af377b9f30c67d7038517efa51',
   original: '05323eb7c6bd195aa6657828b338ee9cc2fc91c2e5990f449b7f76687f47308e',
 };
 const VIEWS = {
