@@ -10,6 +10,10 @@ datasource db {
 }
 
 model User {
+  agriEvidenceRequests AgriEvidenceRequest[]
+  agriEvidenceEvents AgriEvidenceEvent[]
+  agriEvidenceManifests AgriEvidenceManifest[]
+  agriEvidenceReceipts AgriEvidenceCommandReceipt[]
   agriPopularityVotes AgriPopularityVote[]
   agriPopularityConfigurations AgriPopularityRound[]
   visualInputUploads VisualInputUpload[]
@@ -1294,6 +1298,7 @@ enum ArtifactKind {
 
 /// 学生项目包。默认私密，归档后不再接受新的生成�?
 model Project {
+  agriEvidenceRequests AgriEvidenceRequest[]
   agriWallEntries AgriWallEntry[]
   visualModelJobs VisualModelJob[]
   visualWebsiteReleases VisualWebsiteRelease[]
@@ -1362,6 +1367,7 @@ model Artifact {
 }
 
 model ArtifactVersion {
+  agriEvidenceRequests AgriEvidenceRequest[]
   agriWallEntries AgriWallEntry[]
   id                String    @id @default(cuid())
   artifactId        String
@@ -1950,6 +1956,7 @@ model AgriTaskCommandReceipt {
 }
 // P1 foundation: an edition must be explicitly configured; no users or rules are seeded by this migration.
 model AgriWorkspace {
+  evidenceRequests AgriEvidenceRequest[]
   wallEntries AgriWallEntry[]
   popularityRound AgriPopularityRound?
   id String @id @default(cuid())
@@ -2069,6 +2076,8 @@ model AgriCommandReceipt {
 }
 // Each stage has a mutable draft/revision; accepted versions and receipts are append-only.
 model AgriEntryStage {
+  evidenceRequests AgriEvidenceRequest[]
+  evidenceReceipts AgriEvidenceCommandReceipt[]
   id String @id @default(cuid())
   competitionId String
   workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
@@ -2093,6 +2102,9 @@ model AgriEntryStage {
   @@map("agri_entry_stages")
 }
 model AgriStageSubmission {
+  evidenceRequests AgriEvidenceRequest[]
+  evidenceObjects AgriEvidenceObject[]
+  evidenceManifests AgriEvidenceManifest[]
   id String @id @default(cuid())
   competitionId String
   entryStageId String
@@ -2505,6 +2517,8 @@ model AgriOnsiteReceipt {
 
 // Fixed private archival versions; exact canonical bytes are hashed and immutable in SQL.
 model AgriRecordArchive {
+  evidenceManifestId String?
+  evidenceManifest AgriEvidenceManifest? @relation(fields: [evidenceManifestId, submissionId, entryStageId, competitionId], references: [id, submissionId, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
   id String @id @default(cuid())
   competitionId String
   submissionId String
@@ -3046,6 +3060,164 @@ model VisualInputUpload {
   storageMode String @db.VarChar(8)
   createdAt DateTime @default(now())
   @@map("visual_input_uploads")
+}
+
+// Private external bytes are distinct from competition URLs and all compute ledgers.
+model AgriEvidenceRequest {
+ id String @id
+ competitionId String
+ workspace AgriWorkspace @relation(fields:[competitionId], references:[competitionId], onDelete:Restrict, onUpdate:NoAction)
+ entryStageId String
+ entryStage AgriEntryStage @relation(fields:[entryStageId,competitionId], references:[id,competitionId], onDelete:Restrict, onUpdate:NoAction)
+ submissionId String?
+ submission AgriStageSubmission? @relation(fields:[submissionId,entryStageId,competitionId], references:[id,entryStageId,competitionId], onDelete:Restrict, onUpdate:NoAction)
+ projectId String
+ project Project @relation(fields:[projectId], references:[id], onDelete:Restrict, onUpdate:NoAction)
+ artifactVersionId String
+ artifactVersion ArtifactVersion @relation(fields:[artifactVersionId], references:[id], onDelete:Restrict, onUpdate:NoAction)
+ actorId String
+ actor User @relation(fields:[actorId], references:[id], onDelete:Restrict, onUpdate:NoAction)
+ authority String
+ mode String
+ kind String
+ bindingState String
+ state String
+ sourceUrl String?
+ originalRef Json?
+ provenance Json?
+ fileName String
+ maxBytes Int
+ storedBytes Int @default(0)
+ requestHash String @db.VarChar(64)
+ revision Int @default(1)
+ attempt Int @default(0)
+ maxAttempts Int @default(3)
+ createdAt DateTime @db.Timestamptz(3)
+ expiresAt DateTime? @db.Timestamptz(3)
+ nextRunAt DateTime? @db.Timestamptz(3)
+ leaseToken String?
+ leaseExpiresAt DateTime? @db.Timestamptz(3)
+ objectId String
+ storageKey String
+ backend String
+ namespaceVersion Int @default(1)
+ errorCode String?
+ captureStartedAt DateTime? @db.Timestamptz(3)
+ captureFinishedAt DateTime? @db.Timestamptz(3)
+ checkpoint Json?
+ cleanupCompletedAt DateTime? @db.Timestamptz(3)
+ cancelRequested Boolean @default(false)
+ objects AgriEvidenceObject[]
+ events AgriEvidenceEvent[]
+ receipts AgriEvidenceCommandReceipt[]
+ @@unique([id,competitionId])
+ @@unique([id,entryStageId,competitionId])
+ @@unique([id,submissionId,entryStageId,competitionId])
+ @@index([submissionId,state])
+ @@index([state,nextRunAt,createdAt])
+ @@index([leaseExpiresAt,state])
+ @@map("agri_evidence_requests")
+}
+model AgriEvidenceObject {
+ id String @id
+ requestId String @unique
+ submissionId String
+ entryStageId String
+ competitionId String
+ request AgriEvidenceRequest @relation(fields:[requestId,submissionId,entryStageId,competitionId], references:[id,submissionId,entryStageId,competitionId], onDelete:Restrict, onUpdate:NoAction)
+ submission AgriStageSubmission @relation(fields:[submissionId,entryStageId,competitionId], references:[id,entryStageId,competitionId], onDelete:Restrict, onUpdate:NoAction)
+ backend String
+ namespaceVersion Int
+ storageKey String
+ sha256 String @db.VarChar(64)
+ byteLength Int
+ mime String
+ descriptor Json
+ capturedAt DateTime @db.Timestamptz(3)
+ events AgriEvidenceEvent[]
+ references AgriEvidenceManifestObject[]
+ @@unique([id,competitionId])
+ @@unique([id,submissionId,entryStageId,competitionId])
+ @@unique([id,requestId,competitionId])
+ @@unique([backend,namespaceVersion,storageKey])
+ @@map("agri_evidence_objects")
+}
+model AgriEvidenceEvent {
+ id String @id
+ requestId String
+ competitionId String
+ request AgriEvidenceRequest @relation(fields:[requestId,competitionId],references:[id,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ objectId String?
+ object AgriEvidenceObject? @relation(fields:[objectId,requestId,competitionId],references:[id,requestId,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ actorId String?
+ actor User? @relation(fields:[actorId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+ workerId String?
+ action String
+ revision Int
+ state String
+ attempt Int
+ errorCode String?
+ provenance Json
+ serverAt DateTime @db.Timestamptz(3)
+ @@unique([requestId,revision])
+ @@map("agri_evidence_events")
+}
+model AgriEvidenceManifest {
+ id String @id
+ competitionId String
+ entryStageId String
+ submissionId String
+ submission AgriStageSubmission @relation(fields:[submissionId,entryStageId,competitionId],references:[id,entryStageId,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ sequence Int
+ previousManifestId String?
+ previous AgriEvidenceManifest? @relation("AgriEvidenceManifestChain",fields:[previousManifestId,submissionId,entryStageId,competitionId],references:[id,submissionId,entryStageId,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ next AgriEvidenceManifest[] @relation("AgriEvidenceManifestChain")
+ createdById String
+ createdBy User @relation(fields:[createdById],references:[id],onDelete:Restrict,onUpdate:NoAction)
+ createdAt DateTime @db.Timestamptz(3)
+ canonicalJSON String
+ sha256 String @db.VarChar(64)
+ byteLength Int
+ includePrivate Boolean @default(true)
+ schemaVersion Int @default(1)
+ objects AgriEvidenceManifestObject[]
+ receipts AgriEvidenceCommandReceipt[]
+ archives AgriRecordArchive[]
+ @@unique([id,competitionId])
+ @@unique([id,submissionId,entryStageId,competitionId])
+ @@unique([submissionId,sequence])
+ @@map("agri_evidence_manifests")
+}
+model AgriEvidenceManifestObject {
+ manifestId String
+ objectId String
+ submissionId String
+ entryStageId String
+ competitionId String
+ manifest AgriEvidenceManifest @relation(fields:[manifestId,submissionId,entryStageId,competitionId],references:[id,submissionId,entryStageId,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ object AgriEvidenceObject @relation(fields:[objectId,submissionId,entryStageId,competitionId],references:[id,submissionId,entryStageId,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ @@id([manifestId,objectId])
+ @@map("agri_evidence_manifest_objects")
+}
+model AgriEvidenceCommandReceipt {
+ id String @id
+ competitionId String
+ actorId String
+ actor User @relation(fields:[actorId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+ entryStageId String
+ entryStage AgriEntryStage @relation(fields:[entryStageId,competitionId],references:[id,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ operation String
+ idempotencyKey String @db.VarChar(36)
+ requestHash String @db.VarChar(64)
+ requestId String?
+ request AgriEvidenceRequest? @relation(fields:[requestId,entryStageId,competitionId],references:[id,entryStageId,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ submissionId String?
+ manifestId String?
+ manifest AgriEvidenceManifest? @relation(fields:[manifestId,submissionId,entryStageId,competitionId],references:[id,submissionId,entryStageId,competitionId],onDelete:Restrict,onUpdate:NoAction)
+ revision Int
+ createdAt DateTime @db.Timestamptz(3)
+ @@unique([competitionId,actorId,operation,idempotencyKey])
+ @@map("agri_evidence_command_receipts")
 }
 
 // External projects use reviewed marketplace snapshots and a private manual project record.

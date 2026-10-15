@@ -10,6 +10,7 @@ import { AgriDemoChecks } from "./agri-demo-checks";
 import { AgriIssues } from "./agri-issues";
 import { AgriOnsiteStaffLink } from "./agri-onsite";
 import { AgriRecordSummary } from "./agri-record-summary";
+import { AgriEvidence } from "./agri-evidence";
 import { AgriRecordArchives } from "./agri-record-archives";
 export function AgriReferenceRecord({ submissionId, issueId, demoCheckId = null, scope }: { submissionId: string; issueId: string | null; demoCheckId?: string | null; scope: "team" | "staff" }) {
   const { data, status } = useSession(); const t = useTranslations("product.agriTasks");
@@ -43,6 +44,7 @@ function RecordWorkspace({ actorId, submissionId, issueId, demoCheckId, scope }:
   const at = new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-GB", { timeZone: "Asia/Shanghai", dateStyle: "medium", timeStyle: "short" }).format(new Date(record.acceptedAt));
   return <div className="min-w-0 space-y-5"><section className="space-y-3 rounded-xl border p-5"><h2 className="break-words text-xl font-semibold">{record.teamName} · {t("references.stage." + record.stage)}</h2><p>{t("references.version", { sequence: record.sequence, version: record.artifactVersion })}</p><p className="text-sm text-muted-foreground">{t("references.acceptedAt", { at })}</p>{record.demoCheck && <p className="text-sm">{t("references.demoLabel", { sequence: record.demoCheck.sequence })} · {record.demoCheck.id}</p>}{record.issue && <h3 className="break-words font-medium">{record.issue.title}</h3>}<p className="text-sm leading-6 text-muted-foreground">{t("references.recordHint")}</p></section>
     {scope === "staff" && <><AgriOnsiteStaffLink submissionId={submissionId} /><AgriRecordSummary actorId={actorId} submissionId={submissionId} invalidate={invalidate} /><AgriRecordArchives actorId={actorId} submissionId={submissionId} invalidate={invalidate} /></>}
+    <AgriEvidence actorId={actorId} submissionId={submissionId} invalidate={invalidate} />
     <AgriReviews actorId={actorId} submissionId={submissionId} scope={scope} invalidate={invalidate} />
     <AgriIssues actorId={actorId} submissionId={submissionId} scope={scope} invalidate={invalidate} initialIssueId={record.issue?.id} />
     <AgriDemoChecks actorId={actorId} submissionId={submissionId} scope={scope} invalidate={invalidate} />

@@ -109,7 +109,7 @@ async function main() {
           if (property !== "user") return Reflect.get(target, property, receiver);
           return new Proxy(target.user, { get(delegate, method, delegateReceiver) {
             if (method !== "findUnique") return Reflect.get(delegate, method, delegateReceiver);
-            return async (args: Prisma.UserFindUniqueArgs) => {
+            return async (args: Parameters<typeof delegate.findUnique>[0]) => {
               const account = await delegate.findUnique(args);
               if (!intercepted) {
                 intercepted = true;

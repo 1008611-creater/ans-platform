@@ -1,11 +1,13 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 import { agriOnsiteFieldsSchema } from "./agri-onsite";
+import type { EvidenceDescriptor } from "./agri-evidence";
 import type { AgriRecordSummary } from "./agri-record-summary";
 const identifier = z.string().trim().min(1).max(80);
 export const agriRecordArchiveSelectionSchema = z.object({ includePrivate: z.boolean().default(false), includeInternal: z.boolean().default(false) }).strict();
 export const agriRecordArchiveCommandSchema = z.object({
   action: z.literal("createArchive"), submissionId: identifier,
   selection: agriRecordArchiveSelectionSchema.default({ includePrivate: false, includeInternal: false }),
+  evidenceManifestId: identifier.optional(),
   idempotencyKey: z.string().uuid(),
 }).strict();
 export const agriRecordArchiveListQuerySchema = z.object({ cursor: z.string().max(1500).optional() }).strict();
@@ -22,12 +24,12 @@ interface AgriRecordArchiveBase {
   record: AgriRecordSummary;
 }
 export type AgriRecordArchiveSnapshot = AgriRecordArchiveBase & (
-  { schemaVersion: 1; includesOnsite: false } | { schemaVersion: 2; includesOnsite: true; onsite: AgriArchiveOnsite }
+  { schemaVersion: 1; includesOnsite: false } | { schemaVersion: 2; includesOnsite: true; onsite: AgriArchiveOnsite } | { schemaVersion: 3; includesOnsite: true; onsite: AgriArchiveOnsite; evidence: { manifestId: string; manifestSchemaVersion: 1; manifestHash: string; selectedObjects: EvidenceDescriptor[] } }
 );
 export interface AgriRecordArchiveDescriptor {
   id: string; competitionId: string; submissionId: string; entryStageId: string; artifactVersionId: string; ruleVersionId: string;
   sequence: number; previousArchiveId: string | null; createdById: string; collectedAt: string;
-  selection: AgriRecordArchiveSelection; snapshotSchemaVersion: 1 | 2; includesOnsite: boolean;
+  selection: AgriRecordArchiveSelection; snapshotSchemaVersion: 1 | 2 | 3; evidenceManifestId?: string; includesOnsite: boolean;
   sha256: string; byteLength: number;
 }
 export interface AgriRecordArchiveList { competitionId: string; submissionId: string; workspaceEnabled: boolean; canCreate: boolean; items: AgriRecordArchiveDescriptor[]; nextCursor: string | null }

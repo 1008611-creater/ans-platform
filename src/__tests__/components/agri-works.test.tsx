@@ -34,6 +34,14 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 async function open() { const view = render(<AgriWorks />); await screen.findByRole("heading", { name: "Fixture team" }); return view; }
 async function openDetail() { await open(); fireEvent.click(screen.getByRole("button", { name: "查看Fixture team的初赛材料与版本" })); await screen.findByText(copy.privateVisible); }
 describe("internal works permission and request boundaries", () => {
+  it("shows actual retained-file counts and flags late capture without claiming cutoff verification", async () => {
+    const listed = page();
+    listed.stages[0].evidenceSummary = { stored: 2, pending: 1, failed: 1, cancelled: 0, late: 1 };
+    fetchMock.mockResolvedValueOnce(envelope(listed));
+    await open();
+    expect(screen.getByText(copy.evidenceSummary.replace("{stored}", "2").replace("{pending}", "1").replace("{failed}", "1").replace("{cancelled}", "0"))).toBeInTheDocument();
+    expect(screen.getByText(copy.evidenceLate.replace("{count}", "1"))).toBeInTheDocument();
+  });
   it("requests staff scope and applies search/stage/status on the server, ignoring a late old response", async () => {
     const late = deferred<Response>(); fetchMock.mockReturnValueOnce(late.promise); render(<AgriWorks />);
     fireEvent.change(screen.getByLabelText(copy.searchLabel), { target: { value: "  Other  " } }); fireEvent.change(screen.getByLabelText(copy.stageLabel), { target: { value: "FINAL" } }); fireEvent.change(screen.getByLabelText(copy.statusLabel), { target: { value: "SUBMITTED" } });

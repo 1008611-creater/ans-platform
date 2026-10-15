@@ -9,11 +9,13 @@ import { agriRecordArchiveCommandSchema, agriRecordArchiveListQuerySchema, agriR
 import { collectAgriArchiveOnsite } from "./archive-onsite";
 import { collectAgriRecordSummary } from "./record-summary";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent, type AgriWorkspaceContext } from "./workspace";
+import { readEvidenceManifest } from "./evidence";
+import { evidenceEnabled } from "./evidence-config";
 type Tx = DbTransaction;
 type Authority = Awaited<ReturnType<typeof requireAgriScope>>;
 const identifier = z.string().trim().min(1).max(80), fail = (code: string, status = 409): never => { throw new AgriWorkspaceError(code, status); };
 const digest = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
-interface Row { id: string; competitionId: string; submissionId: string; entryStageId: string; artifactVersionId: string; ruleVersionId: string; sequence: number; previousArchiveId: string | null; createdById: string; collectedAt: Date; includePrivate: boolean; includeInternal: boolean; snapshotSchemaVersion: number; snapshotCanonical: string; snapshotHash: string; byteLength: number }
+interface Row { id: string; competitionId: string; submissionId: string; entryStageId: string; artifactVersionId: string; ruleVersionId: string; sequence: number; previousArchiveId: string | null; createdById: string; collectedAt: Date; includePrivate: boolean; includeInternal: boolean; snapshotSchemaVersion: number; evidenceManifestId: string | null; snapshotCanonical: string; snapshotHash: string; byteLength: number }
 const cursorSchema = z.object({ actorId: identifier, competitionId: identifier, submissionId: identifier, sequence: z.number().int().positive(), id: identifier }).strict();
 function cursorValue(raw: string | undefined, ctx: AgriWorkspaceContext, submissionId: string) {
   if (!raw) return null;
@@ -30,23 +32,26 @@ async function optional(tx: Tx, ctx: AgriWorkspaceContext, scope: "PRIVATE_MATER
 function descriptor(row: Row): AgriRecordArchiveDescriptor {
   return { id: row.id, competitionId: row.competitionId, submissionId: row.submissionId, entryStageId: row.entryStageId, artifactVersionId: row.artifactVersionId, ruleVersionId: row.ruleVersionId,
     sequence: row.sequence, previousArchiveId: row.previousArchiveId, createdById: row.createdById, collectedAt: row.collectedAt.toISOString(), selection: { includePrivate: row.includePrivate, includeInternal: row.includeInternal },
-    snapshotSchemaVersion: row.snapshotSchemaVersion as 1 | 2, includesOnsite: row.snapshotSchemaVersion === 2, sha256: row.snapshotHash, byteLength: row.byteLength };
+    snapshotSchemaVersion: row.snapshotSchemaVersion as 1 | 2 | 3, includesOnsite: row.snapshotSchemaVersion >= 2, ...(row.snapshotSchemaVersion === 3 ? { evidenceManifestId: row.evidenceManifestId! } : {}), sha256: row.snapshotHash, byteLength: row.byteLength };
 }
 /** Stored selection is indivisible. Verify exact bytes and provenance before returning any content. */
 function verifiedSnapshot(row: Row): AgriRecordArchiveSnapshot {
   try {
-    if (![1, 2].includes(row.snapshotSchemaVersion) || Buffer.byteLength(row.snapshotCanonical, "utf8") !== row.byteLength || digest(row.snapshotCanonical) !== row.snapshotHash) throw new Error();
+    if (![1, 2, 3].includes(row.snapshotSchemaVersion) || Buffer.byteLength(row.snapshotCanonical, "utf8") !== row.byteLength || digest(row.snapshotCanonical) !== row.snapshotHash) throw new Error();
     const value = JSON.parse(row.snapshotCanonical) as AgriRecordArchiveSnapshot;
-    if (canonicalAgriArchiveJSON(value) !== row.snapshotCanonical || value.schemaVersion !== row.snapshotSchemaVersion || value.source !== "ANS_AGRI_SAVED_RECORD_ARCHIVE" || value.includesOnsite !== (row.snapshotSchemaVersion === 2) || value.archiveId !== row.id || value.sequence !== row.sequence || value.previousArchiveId !== row.previousArchiveId || value.createdById !== row.createdById || value.collectedAt !== row.collectedAt.toISOString()) throw new Error();
+    if (canonicalAgriArchiveJSON(value) !== row.snapshotCanonical || value.schemaVersion !== row.snapshotSchemaVersion || value.source !== "ANS_AGRI_SAVED_RECORD_ARCHIVE" || value.includesOnsite !== (row.snapshotSchemaVersion >= 2) || value.archiveId !== row.id || value.sequence !== row.sequence || value.previousArchiveId !== row.previousArchiveId || value.createdById !== row.createdById || value.collectedAt !== row.collectedAt.toISOString()) throw new Error();
     const record = value.record;
     if (record.schemaVersion !== 1 || record.source !== "ANS_AGRI_LIVE_RECORD_SUMMARY" || record.generatedAt !== value.collectedAt || record.competitionId !== row.competitionId || record.submission.id !== row.submissionId || record.submission.entryStageId !== row.entryStageId || record.submission.artifactVersionId !== row.artifactVersionId || record.submission.ruleVersionId !== row.ruleVersionId || record.rule.id !== row.ruleVersionId || record.selection.includePrivate !== row.includePrivate || record.selection.includeInternal !== row.includeInternal || record.limits.complete !== true || record.limits.maxPerCollection !== 100) throw new Error();
     for (const collection of [record.stageHistory, record.technicalChecks, record.demoChecks, record.issues, record.issueEvents]) if (!Array.isArray(collection) || collection.length > 100) throw new Error();
     if (value.schemaVersion === 1 && "onsite" in value) throw new Error();
-    if (value.schemaVersion === 2) {
+    if (value.schemaVersion >= 2) {
+      if (!("onsite" in value)) throw new Error();
       const onsite = agriArchiveOnsiteSchema.parse(value.onsite);
       const identities = new Map(onsite.items.map(item => [item.id, item]));
       if (identities.size !== onsite.items.length || onsite.events.some(event => !identities.has(event.itemId) || event.revision > identities.get(event.itemId)!.revision)) throw new Error();
     }
+    if (value.schemaVersion === 3 && (value.evidence.manifestId !== row.evidenceManifestId || !row.includePrivate || value.evidence.manifestSchemaVersion !== 1 || !/^[a-f0-9]{64}$/.test(value.evidence.manifestHash) || !Array.isArray(value.evidence.selectedObjects) || value.evidence.selectedObjects.length > 100)) throw new Error();
+    if (value.schemaVersion < 3 && "evidence" in value) throw new Error();
     return value;
   } catch { return fail("AGRI_ARCHIVE_INTEGRITY_FAILED", 500); }
 }
@@ -65,7 +70,7 @@ export async function createAgriRecordArchive(actorId: string, raw: unknown): Pr
         if (prior.requestHash !== requestHash) return fail("AGRI_IDEMPOTENCY_CONFLICT");
         const [row] = await tx.$queryRaw<Row[]>`SELECT * FROM agri_record_archives WHERE id=${prior.archiveId} AND "competitionId"=${ctx.workspace.competitionId}`;
         if (!row) return fail("AGRI_ARCHIVE_INTEGRITY_FAILED", 500);
-        verifiedSnapshot(row); if (row.snapshotSchemaVersion === 2) grants.push(await requireAgriScope(tx, ctx, "ONSITE_READ")); await assertAgriAuthorityCurrent(tx, ...grants);
+        verifiedSnapshot(row); if (row.snapshotSchemaVersion >= 2) grants.push(await requireAgriScope(tx, ctx, "ONSITE_READ")); await assertAgriAuthorityCurrent(tx, ...grants);
         return { archiveId: row.id, sequence: row.sequence, sha256: row.snapshotHash, duplicate: true };
       }
       grants.push(await requireAgriScope(tx, ctx, "ONSITE_READ"));
@@ -75,9 +80,12 @@ export async function createAgriRecordArchive(actorId: string, raw: unknown): Pr
       const sequence = (previous?.sequence ?? 0) + 1;
       if (sequence > 2147483646) return fail("AGRI_ARCHIVE_HISTORY_LIMIT");
       const archiveId = randomUUID(), collectedAt = new Date(record.generatedAt);
-      const snapshot: AgriRecordArchiveSnapshot = { schemaVersion: 2, source: "ANS_AGRI_SAVED_RECORD_ARCHIVE", includesOnsite: true, onsite, archiveId, sequence, previousArchiveId: previous?.id ?? null, createdById: actorId, collectedAt: record.generatedAt, record };
+      const selectedEvidence = command.evidenceManifestId ? await readEvidenceManifest(tx, ctx, command.evidenceManifestId) : null;
+      if (selectedEvidence && (!evidenceEnabled() || !command.selection.includePrivate || selectedEvidence.value.submissionId !== command.submissionId)) return fail("AGRI_ARCHIVE_EVIDENCE_MISMATCH", 409);
+      const evidencePart = selectedEvidence ? { manifestId: selectedEvidence.value.id, manifestSchemaVersion: 1 as const, manifestHash: selectedEvidence.sha256, selectedObjects: selectedEvidence.value.objects } : null;
+      const snapshot: AgriRecordArchiveSnapshot = evidencePart ? { schemaVersion: 3, source: "ANS_AGRI_SAVED_RECORD_ARCHIVE", includesOnsite: true, onsite, archiveId, sequence, previousArchiveId: previous?.id ?? null, createdById: actorId, collectedAt: record.generatedAt, record, evidence: evidencePart } : { schemaVersion: 2, source: "ANS_AGRI_SAVED_RECORD_ARCHIVE", includesOnsite: true, onsite, archiveId, sequence, previousArchiveId: previous?.id ?? null, createdById: actorId, collectedAt: record.generatedAt, record };
       const canonical = canonicalAgriArchiveJSON(snapshot), sha256 = digest(canonical), byteLength = Buffer.byteLength(canonical, "utf8");
-      await tx.$executeRaw`INSERT INTO agri_record_archives (id,"competitionId","submissionId","entryStageId","artifactVersionId","ruleVersionId",sequence,"previousArchiveId","createdById","collectedAt","includePrivate","includeInternal","snapshotSchemaVersion","snapshotCanonical","snapshotHash","byteLength") VALUES (${archiveId},${record.competitionId},${record.submission.id},${record.submission.entryStageId},${record.submission.artifactVersionId},${record.rule.id},${sequence},${previous?.id ?? null},${actorId},${collectedAt},${command.selection.includePrivate},${command.selection.includeInternal},2,${canonical},${sha256},${byteLength})`;
+      await tx.$executeRaw`INSERT INTO agri_record_archives (id,"competitionId","submissionId","entryStageId","artifactVersionId","ruleVersionId",sequence,"previousArchiveId","createdById","collectedAt","includePrivate","includeInternal","snapshotSchemaVersion","snapshotCanonical","snapshotHash","byteLength","evidenceManifestId") VALUES (${archiveId},${record.competitionId},${record.submission.id},${record.submission.entryStageId},${record.submission.artifactVersionId},${record.rule.id},${sequence},${previous?.id ?? null},${actorId},${collectedAt},${command.selection.includePrivate},${command.selection.includeInternal},${snapshot.schemaVersion},${canonical},${sha256},${byteLength},${selectedEvidence?.value.id ?? null})`;
       await tx.$executeRaw`INSERT INTO agri_record_archive_receipts (id,"competitionId","archiveId","actorId","idempotencyKey","requestHash","createdAt") VALUES (${randomUUID()},${record.competitionId},${archiveId},${actorId},${command.idempotencyKey},${requestHash},${collectedAt})`;
       await tx.auditLog.create({ data: { actorId, action: "AGRI_CREATE_RECORD_ARCHIVE", resourceType: "agri_record_archive", resourceId: archiveId,
         metadata: { competitionId: record.competitionId, submissionId: record.submission.id, sequence, includePrivate: command.selection.includePrivate, includeInternal: command.selection.includeInternal, sha256, byteLength, includesOnsite: true } } });
@@ -116,7 +124,7 @@ export async function readAgriRecordArchive(actorId: string, rawArchiveId: strin
     if (!row) return fail("AGRI_ARCHIVE_NOT_FOUND", 404);
     await selectionAuthority(tx, ctx, { includePrivate: row.includePrivate, includeInternal: row.includeInternal }, grants);
     if (query.mode === "exportJSON") grants.push(await requireAgriScope(tx, ctx, "EXPORT"));
-    if (row.snapshotSchemaVersion === 2) grants.push(await requireAgriScope(tx, ctx, "ONSITE_READ"));
+    if (row.snapshotSchemaVersion >= 2) grants.push(await requireAgriScope(tx, ctx, "ONSITE_READ"));
     const snapshot = verifiedSnapshot(row);
     if (query.mode === "exportJSON") await tx.auditLog.create({ data: { actorId, action: "AGRI_EXPORT_RECORD_ARCHIVE", resourceType: "agri_record_archive", resourceId: archiveId, metadata: { competitionId: row.competitionId, sequence: row.sequence, sha256: row.snapshotHash, includePrivate: row.includePrivate, includeInternal: row.includeInternal } } });
     await assertAgriAuthorityCurrent(tx, ...grants);
