@@ -35,3 +35,26 @@
 .checkout { margin-top: 1.5rem; padding: 1.5rem; border: 1px solid var(--border); border-radius: 1rem; }
 @media (max-width: 1050px) { .layout { gap: 1.75rem; grid-template-columns: minmax(0, 1.3fr) minmax(18rem, 1fr); } .decision { padding: 1.4rem; } }
 @media (max-width: 767px) { .layout { display: flex; flex-direction: column; gap: 1.5rem; } .decision { position: static; width: 100%; order: -1; } .content { width: 100%; } .decision h1 { font-size: 1.65rem; } .price { margin-top: 1.25rem; } .previewToolbar { align-items: flex-start; flex-direction: column; gap: .5rem; } .section { padding-block: 1.5rem; } .checkout { padding: 1rem; } }
+
+.studioOverview{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.6fr);gap:3rem;align-items:start;padding:1rem 0 2rem}
+.studioOverview h1{font-size:2.75rem;line-height:1.2;font-weight:700;letter-spacing:-.045em;margin-top:1rem;text-wrap:balance}
+.studioLead{font-size:1rem;line-height:1.8;color:var(--muted-foreground);max-width:48ch;margin-top:1rem}
+.workflowMeta{display:flex;align-items:center;flex-wrap:wrap;gap:.75rem;font-size:.75rem;color:var(--muted-foreground)}
+.workflowBadge{color:var(--primary);font-weight:600}
+.studioActions{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:1.5rem}
+.studioContract{padding:1.5rem;border:1px solid var(--border);border-radius:1rem;min-width:0}
+.studioContract>strong{font-size:1.35rem;letter-spacing:-.03em}
+.studioContract>p{font-size:.8rem;line-height:1.75;color:var(--muted-foreground);margin-top:.5rem}
+.studioContract dl{display:grid;gap:.75rem;font-size:.8rem;padding:1rem 0;margin-top:.5rem}
+.studioContract dl>div{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:space-between}
+.studioContract dt{color:var(--muted-foreground)}
+.studioPublisher{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:1rem}
+.workflowStage{min-width:0;border-radius:1.25rem;overflow:clip;scroll-margin-top:5rem;background:#181818}
+.studioDetails{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:4rem;margin-top:1.5rem}
+.studioAvailability{padding:1rem;border:1px solid var(--border);margin-bottom:1rem;font-size:.85rem;line-height:1.8}
+.studioSteps{display:grid;gap:1.5rem;margin-top:1.5rem}
+.studioSteps li{display:flex;gap:1rem}
+.studioSteps li>span{font: .75rem ui-monospace,monospace;color:var(--primary);padding-top:.25rem}
+.studioSteps h3{font-weight:600;font-size:.9rem}
+.studioSteps p{font-size:.85rem;color:var(--muted-foreground);line-height:1.8;margin-top:.4rem}
+@media(max-width:767px){.studioOverview,.studioDetails{grid-template-columns:1fr;gap:1.5rem}.studioOverview h1{font-size:2rem}.studioContract{padding:1.25rem}.studioDetails{gap:0}.workflowStage{border-radius:.75rem}}

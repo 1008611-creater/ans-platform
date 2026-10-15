@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://ans.cauai.fun";
 
-  const staticPages: MetadataRoute.Sitemap = ["", "/explore", "/hubs", "/community", "/competitions", "/competitions/agrihackathon", "/market", "/workflows", "/showcase", "/vibeplan", ...HUBS.map(hub => `/hubs/${hub.slug}`)].map(path => ({ url: baseUrl + path, changeFrequency: "weekly", priority: path ? 0.8 : 1 }));
+  const staticPages: MetadataRoute.Sitemap = ["", "/explore", "/hubs", "/community", "/competitions", "/competitions/agrihackathon", "/market", "/showcase", "/vibeplan", ...HUBS.map(hub => `/hubs/${hub.slug}`)].map(path => ({ url: baseUrl + path, changeFrequency: "weekly", priority: path ? 0.8 : 1 }));
 
   const vibeStaticPages: MetadataRoute.Sitemap = ["vibe-hub", "vibe-hub/practice", "vibe-hub/anti-ai-flavor", "vibe-hub/vibehub-skill", "vibe-hub/guides", "vibe-hub/lab", "vibe-hub/updates"].map((path) => ({ url: `${baseUrl}/${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: path === "vibe-hub" ? 0.9 : 0.6 }));
   const vibeTermPages: MetadataRoute.Sitemap = vibeTerms.map((term) => ({ url: `${baseUrl}/vibe-hub/${term.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 }));

@@ -26,11 +26,11 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
   const advice = guide ? (locale.startsWith("zh") ? guide.zh : guide.en) : undefined;
   const startHref = projectStartHref(project);
   const isGithub = project.source === "github";
-  const primaryConnection = connections.workflows[0] ?? connections.offers[0];
+  const primaryConnection = connections.offers[0] ?? null;
   const primaryHref = primaryConnection?.href ?? project.memberHref ?? startHref ?? guide?.experienceUrl ?? project.sourceUrl;
   const isExternal = !primaryConnection && !project.memberHref && !startHref;
   const primaryLabel = primaryConnection ? ct(`actions.${primaryConnection.kind === "workflow-offer" ? "workflowOffer" : primaryConnection.kind}`) : project.memberHref ? d("viewOffer") : startHref ? d("prepareWorkflow") : guide?.experienceUrl ? d("tryOnline") : isGithub ? d("viewRepository") : d("openProject");
-  const otherActions: Connections = { projects: [], workflows: connections.workflows.filter(item => item !== primaryConnection), offers: connections.offers.filter(item => item !== primaryConnection) };
+  const otherActions: Connections = { projects: [], workflows: [], offers: connections.offers.filter(item => item !== primaryConnection) };
   const sourceName = project.sourceUrl ? new URL(project.sourceUrl).hostname : t(catalogSourceLabel(project.source));
   const steps = advice?.steps ?? [
     { title: d("fallbackSteps.inspect"), body: text("output"), href: project.sourceUrl },
