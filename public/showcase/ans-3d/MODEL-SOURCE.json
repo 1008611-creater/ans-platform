@@ -4,8 +4,8 @@
   "upstreamPath": "public/assets/models/me.bin",
   "upstreamBytes": 13880668,
   "upstreamSha256": "7aa5737aad8c19e38ff6667437206b89629186b0f521c593aed8870068a5388f",
-  "packagedBytes": 13882608,
-  "packagedSha256": "a161ffa607cfba9e80ed72f2f7dbf97b88e5be169c5d16ae4b23fda9bfce674c",
+  "packagedBytes": 13882612,
+  "packagedSha256": "5e64dab58c55d495408d70b08dda8af13559345b8b2ed8c2e456cb3d6fc284c8",
   "geometryAndTextureBinaryPrefixPreservedExactly": true,
   "changes": [
     "Original 3D person geometry, texture bytes, compressed bufferViews and mesh attributes preserved.",

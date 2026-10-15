@@ -482,22 +482,22 @@ class MotionDirector {
     const th = deg * (Math.PI / 180.0);
     const dth = 270.0 * (Math.PI / 180.0);
 
-    // Circular clockwise orbit around your head center (0.30, 0.22, 0.08) in M local space:
-    // Behind head (cos(th) = +1, 12h): elevated halo arc (x = -0.18, y = +0.46)
-    // Right ear  (sin(th) = +1, 3h):  right side of head (x = +0.30, y = +0.22, z = -0.58)
-    // Front face (cos(th) = -1, 6h):  in front of face   (x = +0.78, y = -0.02, z = +0.08) -> swoops to Camera Macro!
-    // Left ear   (sin(th) = -1, 9h):  left side of head  (x = +0.30, y = +0.22, z = +0.74)
-    const ox = 0.30 - 0.48 * Math.cos(th);
-    const oy = 0.22 + 0.24 * Math.cos(th);
-    const oz = 0.08 - 0.66 * Math.sin(th);
+    // Compact clockwise orbit around your head center (0.28, 0.08, 0.06) in M local space so the dinosaur stays well inside the viewport:
+    // Behind/above head (cos(th) = +1, 12h): halo arc (x = -0.06, y = +0.24, z = +0.06)
+    // Right ear         (sin(th) = +1, 3h):  right side (x = +0.28, y = +0.08, z = -0.38)
+    // Front of face     (cos(th) = -1, 6h):  front face (x = +0.62, y = -0.08, z = +0.06) -> swoops to Camera Super Macro!
+    // Left ear          (sin(th) = -1, 9h):  left side  (x = +0.28, y = +0.08, z = +0.50)
+    const ox = 0.28 - 0.34 * Math.cos(th);
+    const oy = 0.08 + 0.16 * Math.cos(th);
+    const oz = 0.06 - 0.44 * Math.sin(th);
 
-    const tx =  0.48 * Math.sin(th) * dth;
-    const ty = -0.24 * Math.sin(th) * dth;
-    const tz = -0.66 * Math.cos(th) * dth;
+    const tx =  0.34 * Math.sin(th) * dth;
+    const ty = -0.16 * Math.sin(th) * dth;
+    const tz = -0.44 * Math.cos(th) * dth;
 
     // Front-of-face detector: frontness = -cos(th) is +1.0 when directly in front of your face (180 deg / 6h)
     const frontness = -Math.cos(th);
-    const macroRaw = Math.max(0.0, Math.min(1.0, (frontness - 0.42) / 0.58));
+    const macroRaw = Math.max(0.0, Math.min(1.0, (frontness - 0.38) / 0.62));
     // Smooth quintic bell curve for diving from head-orbit right up to the Camera Super Macro lens!
     const macroWeight = macroRaw * macroRaw * macroRaw * (macroRaw * (macroRaw * 6.0 - 15.0) + 10.0);
 
@@ -646,7 +646,7 @@ class MotionDirector {
     return { texture: tex, drawBadge, presets: MOOD_PRESETS };
   }
 
-  // GLSL Shader Injection for 3D Dinosaur Facial Expressions (Calibrated to exact Linear-sRGB skin color!)
+  // GLSL Shader Injection for 3D Dinosaur Facial Expressions (Complements the Blender-sculpted & textured dinosaur!)
   const DINO_FACE_VERT_HEADER = `#include <common>
 varying vec3 vDinoObjPos;`;
 
@@ -660,58 +660,63 @@ uniform float uDinoMouth;
 uniform vec2 uDinoGaze;`;
 
   const DINO_FACE_FRAG_BODY = `#include <map_fragment>
-if (vDinoObjPos.z > 0.14) {
-  // Exact Linear-sRGB mint skin color measured from dinosaur.glb around eye socket: (0.423, 0.682, 0.480)
-  vec3 skinMint = vec3(0.423, 0.682, 0.480);
-  vec3 lashDark = vec3(0.035, 0.055, 0.045);
+if (vDinoObjPos.z > 0.16) {
+  // Exact Linear-sRGB sage-green forehead & warm-cream muzzle colors matching the Blender-refined dinosaur.glb
+  vec3 skinGreen = vec3(0.415, 0.665, 0.475);
+  vec3 skinCream = vec3(0.960, 0.905, 0.765);
+  float bY = 0.630 - 0.52 * vDinoObjPos.x * vDinoObjPos.x;
+  vec3 localSkin = mix(skinCream, skinGreen, smoothstep(bY - 0.006, bY + 0.006, vDinoObjPos.y));
+  vec3 lashDark = vec3(0.025, 0.038, 0.032);
   vec2 pR = vDinoObjPos.xy - vec2(-0.1740, 0.6467);
   vec2 pL = vDinoObjPos.xy - vec2(0.1684, 0.6480);
   vec2 pEye = (length(pR) < length(pL)) ? pR : pL;
   float dEye = length(pEye);
-  if (dEye < 0.0365) {
-    float lidY = 0.035 - uDinoBlink * 0.072;
-    float blinkMask = smoothstep(lidY - 0.0035, lidY + 0.0035, pEye.y);
-    float archY = -0.036 + uDinoHappy * 0.052 - 11.0 * pEye.x * pEye.x;
-    float happyMask = (1.0 - smoothstep(archY - 0.0035, archY + 0.0035, pEye.y)) * step(0.05, uDinoHappy);
+  if (dEye < 0.0345) {
+    // Upper eyelid blink & subtle lower happy smile eyelid arch
+    float lidY = 0.034 - uDinoBlink * 0.068;
+    float blinkMask = smoothstep(lidY - 0.0030, lidY + 0.0030, pEye.y) * step(0.02, uDinoBlink);
+    float archY = -0.036 + max(0.0, uDinoHappy - 0.62) * 0.055 - 10.0 * pEye.x * pEye.x;
+    float happyMask = (1.0 - smoothstep(archY - 0.0030, archY + 0.0030, pEye.y)) * smoothstep(0.62, 0.95, uDinoHappy);
     float cover = clamp(max(blinkMask, happyMask), 0.0, 1.0);
-    diffuseColor.rgb = mix(diffuseColor.rgb, skinMint, cover);
-    // Crisp dark smiling lash arc when happy or blinking
-    float archLine = (1.0 - smoothstep(0.0, 0.0042, abs(pEye.y - archY))) * smoothstep(0.15, 0.55, uDinoHappy);
-    float blinkLine = (1.0 - smoothstep(0.0, 0.0038, abs(pEye.y - lidY))) * smoothstep(0.15, 0.65, uDinoBlink);
-    diffuseColor.rgb = mix(diffuseColor.rgb, lashDark, clamp(max(archLine, blinkLine), 0.0, 1.0));
-    if (cover < 0.5 && dEye < 0.030) {
-      vec2 hl1 = pEye - (vec2(-0.008, 0.009) + uDinoGaze * 0.007);
-      vec2 hl2 = pEye - (vec2(0.010, -0.009) + uDinoGaze * 0.004);
-      float c1 = 1.0 - smoothstep(0.0065, 0.0095, length(hl1));
-      float c2 = 1.0 - smoothstep(0.0030, 0.0050, length(hl2));
-      vec2 st = pEye - (uDinoGaze * 0.005);
-      float star = (1.0 - smoothstep(0.0, 0.016, length(st))) * (1.0 - smoothstep(0.0014, 0.0035, min(abs(st.x), abs(st.y)))) * uDinoStar;
-      float hi = clamp(c1 + c2 * 0.85 + star, 0.0, 1.0);
-      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.98, 0.96, 0.92), hi);
+    diffuseColor.rgb = mix(diffuseColor.rgb, skinGreen, cover);
+    float blinkLine = (1.0 - smoothstep(0.0, 0.0032, abs(pEye.y - lidY))) * smoothstep(0.12, 0.55, uDinoBlink);
+    float archLine = (1.0 - smoothstep(0.0, 0.0032, abs(pEye.y - archY))) * smoothstep(0.65, 0.95, uDinoHappy);
+    diffuseColor.rgb = mix(diffuseColor.rgb, lashDark, clamp(max(blinkLine, archLine), 0.0, 1.0));
+    if (cover < 0.45 && dEye < 0.029) {
+      // Dynamic gaze-reactive star sparkle & micro-catchlight boost over the Blender glossy eye texture
+      vec2 hlDyn = pEye - (vec2(-0.007, 0.009) + uDinoGaze * 0.0055);
+      float cDyn = (1.0 - smoothstep(0.0040, 0.0068, length(hlDyn))) * 0.65;
+      vec2 st = pEye - (vec2(0.003, -0.002) + uDinoGaze * 0.0045);
+      float star = (1.0 - smoothstep(0.0, 0.013, length(st))) * (1.0 - smoothstep(0.0010, 0.0026, min(abs(st.x), abs(st.y)))) * smoothstep(0.45, 1.0, uDinoStar);
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.99, 0.96), clamp(cDyn + star * 0.85, 0.0, 1.0));
     }
   }
-  // Soft Linear-sRGB coral blush on cheeks
-  vec2 bR = (vDinoObjPos.xy - vec2(-0.195, 0.592)) / vec2(0.046, 0.026);
-  vec2 bL = (vDinoObjPos.xy - vec2(0.190, 0.592)) / vec2(0.046, 0.026);
-  float blush = max(1.0 - smoothstep(0.10, 1.0, length(bR)), 1.0 - smoothstep(0.10, 1.0, length(bL)));
-  float bLineR = (1.0 - smoothstep(0.0, 0.58, length(bR))) * smoothstep(0.40, 0.80, sin((vDinoObjPos.x + vDinoObjPos.y * 0.6) * 420.0));
-  float bLineL = (1.0 - smoothstep(0.0, 0.58, length(bL))) * smoothstep(0.40, 0.80, sin((vDinoObjPos.x + vDinoObjPos.y * 0.6) * 420.0));
-  float totalBlush = clamp(blush * 0.42 + max(bLineR, bLineL) * 0.18, 0.0, 1.0) * uDinoBlush;
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.78, 0.14, 0.22), totalBlush);
-  // Expressive open mouth & warm tongue directly centered on textured mouth (y=0.574)
-  if (uDinoMouth > 0.05 && vDinoObjPos.z > 0.25) {
-    vec2 mP = vDinoObjPos.xy - vec2(-0.001, 0.573);
-    float mW = 0.036 * (0.70 + 0.30 * uDinoMouth);
-    float mH = 0.026 * uDinoMouth;
-    float topEdge = 0.003 - 1.8 * mP.x * mP.x;
-    float botEdge = topEdge - mH * sqrt(max(0.0, 1.0 - (mP.x * mP.x) / (mW * mW)));
-    if (abs(mP.x) < mW && mP.y < topEdge && mP.y > botEdge) {
-      float edgeSoft = smoothstep(botEdge, botEdge + 0.0025, mP.y) * smoothstep(topEdge, topEdge - 0.0025, mP.y);
-      vec3 mouthCol = vec3(0.04, 0.015, 0.02);
-      if (mP.y < botEdge + mH * 0.55 - 2.5 * mP.x * mP.x) {
-        mouthCol = vec3(0.68, 0.14, 0.20);
+  // Subtle reactive warm blush boost when hovered/clicked (blends with the airbrushed Blender blush)
+  vec2 bR = (vDinoObjPos.xy - vec2(-0.168, 0.592)) / vec2(0.042, 0.025);
+  vec2 bL = (vDinoObjPos.xy - vec2(0.163, 0.592)) / vec2(0.042, 0.025);
+  float blushBoost = max(1.0 - smoothstep(0.15, 1.0, length(bR)), 1.0 - smoothstep(0.15, 1.0, length(bL)));
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.24, 0.28), blushBoost * max(0.0, uDinoBlush - 0.55) * 0.42);
+  // Razor-sharp screen-pixel anti-aliased smile curve & expressive talking/laughing open mouth (centered on y=0.569)
+  if (vDinoObjPos.z > 0.22) {
+    vec2 mP = vDinoObjPos.xy - vec2(-0.002, 0.5690);
+    float smileCurveY = 2.65 * mP.x * mP.x;
+    float dSmile = length(vec2(max(0.0, abs(mP.x) - 0.028) * 1.5, mP.y - smileCurveY));
+    float smileLine = (1.0 - smoothstep(0.0012, 0.0028, dSmile)) * step(abs(mP.x), 0.033);
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.045, 0.022, 0.020), smileLine * 0.85);
+    if (uDinoMouth > 0.35) {
+      float openAmt = (uDinoMouth - 0.35) / 0.65;
+      float mW = 0.026 * (0.75 + 0.25 * openAmt);
+      float mH = 0.017 * openAmt;
+      float topEdge = smileCurveY;
+      float botEdge = topEdge - mH * sqrt(max(0.0, 1.0 - (mP.x * mP.x) / (mW * mW + 1e-6)));
+      if (abs(mP.x) < mW && mP.y < topEdge && mP.y > botEdge) {
+        float edgeSoft = smoothstep(botEdge, botEdge + 0.0018, mP.y) * smoothstep(topEdge, topEdge - 0.0018, mP.y);
+        vec3 mouthCol = vec3(0.05, 0.018, 0.022);
+        if (mP.y < botEdge + mH * 0.58 - 2.2 * mP.x * mP.x) {
+          mouthCol = vec3(0.76, 0.22, 0.26);
+        }
+        diffuseColor.rgb = mix(diffuseColor.rgb, mouthCol, edgeSoft * 0.94);
       }
-      diffuseColor.rgb = mix(diffuseColor.rgb, mouthCol, edgeSoft);
     }
   }
 }`;
@@ -1066,7 +1071,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeL));
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeR));`).replace("#include <begin_vertex>",`#include <begin_vertex>
           transformed += (uEyeL + eyeSpin(transformed - uEyeL) - transformed) * eyeWeight(transformed, uEyeL);
-          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);if(Ue.current.set(-$.current.y*m,-$.current.x*m,0),ke.current.setFromEuler(Ue.current),K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current),ce.current&&K.current.multiplyScalar(l.mobilePullback),(dinoState.camPullback+=((1+Math.sin(((de?0:f.clamp(L+1,0,4))-Math.floor(de?0:f.clamp(L+1,0,4)))*Math.PI)*.10+f.clamp(Math.abs(J-q)/12,0,1)*.08)-dinoState.camPullback)*Math.min(1,y*5.5)),K.current.multiplyScalar(dinoState.camPullback),K.current.add(t.current),_.position.copy(K.current),_.quaternion.multiplyQuaternions(ke.current,_e.current),ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
+          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);if(Ue.current.set(-$.current.y*m,-$.current.x*m,0),ke.current.setFromEuler(Ue.current),K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current),ce.current&&K.current.multiplyScalar(l.mobilePullback),(dinoState.camPullback+=((1.16+Math.sin(((de?0:f.clamp(L+1,0,4))-Math.floor(de?0:f.clamp(L+1,0,4)))*Math.PI)*.16+f.clamp(Math.abs(J-q)/12,0,1)*.10)-dinoState.camPullback)*Math.min(1,y*5.5)),K.current.multiplyScalar(dinoState.camPullback),K.current.add(t.current),_.position.copy(K.current),_.quaternion.multiplyQuaternions(ke.current,_e.current),ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
 {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
   if (!reduced) {
@@ -1088,9 +1093,9 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
   dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
 
-  const bobY = Math.sin(tNow * 2.4) * (0.022 * (1 - macroW * 0.4)) + Math.cos(tNow * 1.3) * 0.006;
-  const swayX = Math.cos(tNow * 1.6) * 0.010;
-  const swayZ = Math.sin(tNow * 1.4) * 0.012;
+  const bobY = Math.sin(tNow * 2.4) * (0.018 * (1 - macroW * 0.4)) + Math.cos(tNow * 1.3) * 0.005;
+  const swayX = Math.cos(tNow * 1.6) * 0.008;
+  const swayZ = Math.sin(tNow * 1.4) * 0.010;
   let fx = spline.pos[0] + swayX;
   let fy = spline.pos[1] + bobY;
   let fz = spline.pos[2] + swayZ;
@@ -1100,12 +1105,12 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(_.quaternion);
   const camUp    = ye.current.set(0, 1, 0).applyQuaternion(_.quaternion);
   const camRight = ot.current.set(1, 0, 0).applyQuaternion(_.quaternion);
-  // 1.50m in front of camera lens, slightly left (-0.16m) so right-side timeline text stays 100% unobstructed,
-  // and -0.22m down so the dinosaur's face & rambling kaomoji sit right in the center-left golden close-up spot!
-  const macroDist = 1.48 - dinoState.hoverBlend * 0.14;
-  const macroWorldX = _.position.x + camFwd.x * macroDist - camRight.x * 0.16 - camUp.x * 0.22;
-  const macroWorldY = _.position.y + camFwd.y * macroDist - camRight.y * 0.16 - camUp.y * 0.22;
-  const macroWorldZ = _.position.z + camFwd.z * macroDist - camRight.z * 0.16 - camUp.z * 0.22;
+  // 1.56m in front of camera lens, slightly left (-0.15m) so right-side timeline text stays 100% unobstructed,
+  // and -0.24m down so the dinosaur's face & rambling kaomoji sit right in the center-left golden close-up spot!
+  const macroDist = 1.56 - dinoState.hoverBlend * 0.12;
+  const macroWorldX = _.position.x + camFwd.x * macroDist - camRight.x * 0.15 - camUp.x * 0.24;
+  const macroWorldY = _.position.y + camFwd.y * macroDist - camRight.y * 0.15 - camUp.y * 0.24;
+  const macroWorldZ = _.position.z + camFwd.z * macroDist - camRight.z * 0.15 - camUp.z * 0.24;
 
   const macroLocalX = (macroWorldX - 0.0) / 2.25;
   const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.6;
@@ -1121,6 +1126,30 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.22);
     fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.22);
     fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.22);
+  }
+
+  // Real-time Camera-Frustum Screen-Space Clamping Guard:
+  // Project dinosaur torso + top kaomoji badge into NDC [-1, 1] and clamp smoothly so the dinosaur can NEVER go off-screen!
+  _.updateMatrixWorld();
+  const wPosX = fx * 2.25;
+  const wPosY = (fy + 0.34) * 2.25 + 0.4;
+  const wPosZ = fz * 2.25 - 0.7;
+  ve.current.set(wPosX, wPosY, wPosZ).project(_);
+  if (ve.current.z > -1.0 && ve.current.z < 1.0) {
+    const safeMinX = ce.current ? -0.58 : -0.64;
+    const safeMaxX = ce.current ?  0.54 :  0.56;
+    const safeMinY = -0.52;
+    const safeMaxY =  0.38; // leaves headroom above for the dinosaur's head & kaomoji speech bubble!
+    const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
+    const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
+    if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
+      ve.current.x = f.lerp(ve.current.x, clampedX, 0.88);
+      ve.current.y = f.lerp(ve.current.y, clampedY, 0.88);
+      ve.current.unproject(_);
+      fx = (ve.current.x - 0.0) / 2.25;
+      fy = (ve.current.y - 0.4) / 2.25 - 0.34;
+      fz = (ve.current.z - (-0.7)) / 2.25;
+    }
   }
 
   // Pull DoF focus toward the dinosaur during Super Macro Close-Up or Hover so the close-up is razor sharp!
