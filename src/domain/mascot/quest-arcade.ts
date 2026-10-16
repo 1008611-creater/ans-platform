@@ -6,6 +6,14 @@ import {
 
 export const QUEST_ARCADE_STORAGE_KEY = "ans_quest_arcade_v1";
 export const QUEST_ARCADE_EVENT = "ans:quest-arcade-updated";
+export const QUEST_ARCADE_SERVER_CREDITED_EVENT = "ans:quest-arcade-server-credited";
+
+export interface ArcadeServerCreditedDetail {
+  grantedPoints: number;
+  balanceAfter: number;
+  duplicate: boolean;
+  operationKey: string;
+}
 
 /**
  * Approved billing & benefit ratio:
@@ -519,6 +527,40 @@ export function isQuestClaimedToday(state: QuestArcadeState, quest: QuestDefinit
   return Boolean(stamp);
 }
 
+export async function syncArcadeRewardToServer(
+  payload:
+    | { kind: "quest"; questId: string }
+    | { kind: "draw"; prizeId: string; drawId: string; mode: "claw" | "roulette" },
+  actorId?: string | null,
+): Promise<ArcadeServerCreditedDetail | null> {
+  if (
+    typeof window === "undefined" ||
+    typeof fetch !== "function" ||
+    process.env.NODE_ENV === "test"
+  ) {
+    return null;
+  }
+  try {
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+    };
+    if (actorId) {
+      headers["x-ans-actor"] = actorId;
+    }
+    const res = await fetch("/api/compute-benefits/arcade", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as ArcadeServerCreditedDetail;
+    window.dispatchEvent(new CustomEvent(QUEST_ARCADE_SERVER_CREDITED_EVENT, { detail: data }));
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export function advanceAndClaimQuest(
   questId: string,
   actorId?: string | null,
@@ -569,6 +611,7 @@ export function advanceAndClaimQuest(
   };
 
   saveQuestArcadeState(next, actorId);
+  void syncArcadeRewardToServer({ kind: "quest", questId: quest.id }, actorId);
 
   // Sync Star Beans, XP, Arcade Tokens & Secret Quest status to the Dino Sanctuary state
   try {
@@ -656,6 +699,10 @@ export function drawArcadePrize(
   };
 
   saveQuestArcadeState(next, actorId);
+  void syncArcadeRewardToServer(
+    { kind: "draw", prizeId: selected.id, drawId: record.id, mode },
+    actorId,
+  );
 
   try {
     const sanctuary = loadSanctuaryState();

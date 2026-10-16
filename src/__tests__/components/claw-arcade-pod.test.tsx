@@ -72,6 +72,7 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     render(<ComputeQuestArcade actorId="u-ui" />);
     expect(screen.getByText(/1 积分 = ¥0.10 元 = \$0.10 USD/i)).toBeTruthy();
     expect(screen.getByTestId("arcade-token-count").textContent).toContain("3");
+    expect(screen.getByTestId("gateway-live-points").textContent).toContain("500");
 
     // Claim daily check-in quest
     const claimCheckin = screen.getByTestId("claim-quest-daily_checkin");
@@ -83,5 +84,25 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     expect(screen.getByText(/硅基胃穿孔/i)).toBeTruthy();
     expect(screen.getByText(/生产队的驴也得休假/i)).toBeTruthy();
     expect(screen.getByText(/赛博活菩萨/i)).toBeTruthy();
+  });
+
+  it("aligns server-side ARCADE_QUEST_REWARDS and ARCADE_PRIZE_REWARDS with client definitions", async () => {
+    const { ARCADE_QUEST_REWARDS, ARCADE_PRIZE_REWARDS } = await import(
+      "@/server/compute-benefits/arcade"
+    );
+    const { ARCADE_PRIZES } = await import("@/domain/mascot/quest-arcade");
+
+    for (const q of QUEST_DEFINITIONS) {
+      const serverReward = ARCADE_QUEST_REWARDS[q.id];
+      expect(serverReward).toBeDefined();
+      expect(serverReward.points).toBe(q.unlockUsd * POINTS_PER_USD);
+      expect(serverReward.tokens).toBe(q.rewardTokens);
+    }
+
+    for (const p of ARCADE_PRIZES) {
+      const serverPrize = ARCADE_PRIZE_REWARDS[p.id];
+      expect(serverPrize).toBeDefined();
+      expect(serverPrize.points).toBe(p.unlockUsd * POINTS_PER_USD);
+    }
   });
 });

@@ -8,6 +8,7 @@ import {
   CNY_PER_POINT,
   POINTS_PER_USD,
   QUEST_ARCADE_EVENT,
+  QUEST_ARCADE_SERVER_CREDITED_EVENT,
   QUEST_DEFINITIONS,
   USD_PER_POINT,
   advanceAndClaimQuest,
@@ -16,6 +17,7 @@ import {
   loadQuestArcadeState,
   saveQuestArcadeState,
   type ArcadePrize,
+  type ArcadeServerCreditedDetail,
   type PrizeRarity,
   type QuestArcadeState,
   type QuestCategory,
@@ -371,6 +373,8 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
   // Prize / Toast banner state
   const [lastWonPrize, setLastWonPrize] = useState<ArcadePrize | null>(null);
   const [bannerMessage, setBannerMessage] = useState<string>("");
+  const [serverBalancePoints, setServerBalancePoints] = useState<number | null>(null);
+  const [lastServerCredit, setLastServerCredit] = useState<ArcadeServerCreditedDetail | null>(null);
   const timersRef = useRef<number[]>([]);
 
   useEffect(() => {
@@ -378,13 +382,34 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
       setState(loadQuestArcadeState(actorId));
       setStarBeans(loadSanctuaryState().starBeans);
     };
+    const onServerCredited = (ev: Event) => {
+      const detail = (ev as CustomEvent<ArcadeServerCreditedDetail>).detail;
+      if (detail && typeof detail.balanceAfter === "number") {
+        setServerBalancePoints(detail.balanceAfter);
+        setLastServerCredit(detail);
+      }
+    };
     window.addEventListener(QUEST_ARCADE_EVENT, syncAll);
     window.addEventListener(SANCTUARY_EVENT_NAME, syncAll);
+    window.addEventListener(QUEST_ARCADE_SERVER_CREDITED_EVENT, onServerCredited);
     window.addEventListener("storage", syncAll);
+
+    if (process.env.NODE_ENV !== "test" && typeof fetch === "function") {
+      void fetch("/api/compute-benefits/arcade")
+        .then(res => (res.ok ? res.json() : null))
+        .then((data: { balancePoints?: number } | null) => {
+          if (data && typeof data.balancePoints === "number") {
+            setServerBalancePoints(data.balancePoints);
+          }
+        })
+        .catch(() => {});
+    }
+
     const timers = timersRef.current;
     return () => {
       window.removeEventListener(QUEST_ARCADE_EVENT, syncAll);
       window.removeEventListener(SANCTUARY_EVENT_NAME, syncAll);
+      window.removeEventListener(QUEST_ARCADE_SERVER_CREDITED_EVENT, onServerCredited);
       window.removeEventListener("storage", syncAll);
       timers.forEach(id => window.clearTimeout(id));
     };
@@ -587,6 +612,22 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
 
         {/* Wallet Counters */}
         <div className="flex flex-wrap items-center gap-2">
+          <div className="rounded-2xl border border-emerald-400/50 bg-emerald-500/15 px-3.5 py-2 text-center">
+            <div className="text-[11px] font-medium text-emerald-200">
+              {isEn ? "API Gateway Live Points" : "API 网关真实可扣费积分"}
+            </div>
+            <div className="text-lg font-black text-emerald-300" data-testid="gateway-live-points">
+              💳{" "}
+              {serverBalancePoints !== null
+                ? serverBalancePoints.toLocaleString()
+                : ((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD).toLocaleString()}
+              {lastServerCredit && !lastServerCredit.duplicate ? (
+                <span className="ml-1.5 rounded-full bg-emerald-400/25 px-1.5 py-0.5 text-[10px] font-bold text-emerald-200">
+                  +{lastServerCredit.grantedPoints}
+                </span>
+              ) : null}
+            </div>
+          </div>
           <div className="rounded-2xl border border-amber-400/40 bg-amber-500/15 px-3.5 py-2 text-center">
             <div className="text-[11px] font-medium text-amber-200">{isEn ? "Arcade Tokens" : "游乐场抓娃娃币"}</div>
             <div className="text-lg font-black text-amber-300" data-testid="arcade-token-count">
