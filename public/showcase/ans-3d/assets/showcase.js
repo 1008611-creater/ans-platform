@@ -471,17 +471,17 @@ class MotionDirector {
 
   // 8-Waypoint Closed C² Catmull-Rom 3D Planned Flight Trajectory in Founder-Centered Camera-Aligned Frame (r, u, d):
   //   r: lateral offset along camera-right (- = screen left golden perch, + = screen right wing sweep)
-  //   u: vertical offset along World/M Up (+0.60 at W2 soars high above founder's crown with 0% head occlusion!)
-  //   d: forward depth toward base camera (+1.06 at W6 swoops into Front-Center Super-Macro Stage!)
+  //   u: vertical offset along World/M Up (+0.52..+0.64 at W2 & W6 arches high above founder's flower crown with 0% face/title occlusion!)
+  //   d: forward depth toward base camera (+0.82 at W5/W7 swoops close on the open right/left flanks!)
   const FLIGHT_WAYPOINTS = [
-    [-0.84,  0.02,  0.48,  0.00], // W0 (0.000): 9:00 Wide Left Golden Perch (beside left shoulder)
-    [-0.58,  0.38,  0.28,  0.00], // W1 (0.125): 10:30 Upper-Left Temple Ascent
-    [ 0.00,  0.60,  0.18,  0.00], // W2 (0.250): 12:00 Crown Halo Zenith (soaring over founder's crown, zero occlusion)
-    [ 0.58,  0.38,  0.28,  0.00], // W3 (0.375): 1:30 Upper-Right Temple Descent
-    [ 0.84,  0.02,  0.48,  0.00], // W4 (0.500): 3:00 Wide Right Wing Sweep (beside right shoulder)
-    [ 0.50, -0.12,  0.82,  0.35], // W5 (0.625): 4:30 Front-Right Swoop Approach
-    [-0.06, -0.15,  1.06,  1.00], // W6 (0.750): 6:00 Front-Center Super-Macro Stage (closest to camera!)
-    [-0.52, -0.10,  0.80,  0.30]  // W7 (0.875): 7:30 Front-Left Swoop Return
+    [-0.88,  0.02,  0.54,  0.35], // W0 (0.000): 9:00 Wide Left Golden Perch (open left flank, clear of portrait & title)
+    [-0.66,  0.40,  0.30,  0.00], // W1 (0.125): 10:30 Upper-Left Temple Ascent
+    [ 0.00,  0.64,  0.18,  0.00], // W2 (0.250): 12:00 High Crown Halo Zenith (soaring above flower crown, zero occlusion)
+    [ 0.66,  0.40,  0.30,  0.00], // W3 (0.375): 1:30 Upper-Right Temple Descent
+    [ 0.90,  0.06,  0.56,  0.45], // W4 (0.500): 3:00 Wide Right Wing Sweep (open right flank)
+    [ 0.74, -0.02,  0.84,  1.00], // W5 (0.625): 4:30 Front-Right Close-Up Showcase Perch (close to camera on right flank!)
+    [ 0.00,  0.52,  0.48,  0.15], // W6 (0.750): 12:00 Front-Crown High Arch Pass (crosses center high above flower crown!)
+    [-0.74,  0.00,  0.80,  0.65]  // W7 (0.875): 7:30 Front-Left Close-Up Perch (close to camera on left flank!)
   ];
 
   function sampleFlightSpline(s, camAzimuthYaw = 1.56) {
@@ -649,43 +649,59 @@ class MotionDirector {
         const st = document.createElement("style");
         st.id = "ans-dino-bubble-style";
         st.textContent = `
-          /* Dim all other page text to subtle semi-transparent backdrop when Dinosaur Interactive Mode is active! */
+          /* Dim all other page text to subtle semi-transparent backdrop when Dinosaur Interactive Mode or Sanctuary Modal is active! */
           body.ans-dino-interactive-mode main.content,
           body.ans-dino-interactive-mode .hero-chrome,
           body.ans-dino-interactive-mode .chapter-nav,
           body.ans-dino-interactive-mode .glass-rail,
-          body.ans-dino-interactive-mode .lang-toggle {
+          body.ans-dino-interactive-mode .lang-toggle,
+          body.ans-sanctuary-open main.content,
+          body.ans-sanctuary-open .hero-chrome,
+          body.ans-sanctuary-open .chapter-nav,
+          body.ans-sanctuary-open .glass-rail,
+          body.ans-sanctuary-open .lang-toggle {
             opacity: 0.12 !important;
             filter: blur(3px) !important;
             pointer-events: none !important;
             transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.42s ease !important;
           }
-          body.ans-dino-interactive-mode .showcase-utility {
+          body.ans-dino-interactive-mode .showcase-utility,
+          body.ans-sanctuary-open .showcase-utility {
             opacity: 0.08 !important;
             filter: blur(2px) !important;
             pointer-events: none !important;
             transition: opacity 0.35s ease, filter 0.35s ease !important;
           }
-          body:not(.ans-dino-interactive-mode) main.content,
-          body:not(.ans-dino-interactive-mode) .hero-chrome,
-          body:not(.ans-dino-interactive-mode) .chapter-nav,
-          body:not(.ans-dino-interactive-mode) .glass-rail,
-          body:not(.ans-dino-interactive-mode) .lang-toggle,
-          body:not(.ans-dino-interactive-mode) .showcase-utility {
+          body.ans-dino-interactive-mode #ans-agent-companion-dock,
+          body.ans-sanctuary-open #ans-agent-companion-dock {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(16px) !important;
+            transition: opacity 0.28s ease, transform 0.28s ease !important;
+          }
+          body:not(.ans-dino-interactive-mode):not(.ans-sanctuary-open) main.content,
+          body:not(.ans-dino-interactive-mode):not(.ans-sanctuary-open) .hero-chrome,
+          body:not(.ans-dino-interactive-mode):not(.ans-sanctuary-open) .chapter-nav,
+          body:not(.ans-dino-interactive-mode):not(.ans-sanctuary-open) .glass-rail,
+          body:not(.ans-dino-interactive-mode):not(.ans-sanctuary-open) .lang-toggle,
+          body:not(.ans-dino-interactive-mode):not(.ans-sanctuary-open) .showcase-utility {
             transition: opacity 0.38s ease, filter 0.38s ease;
           }
           #ans-dino-body-hitbox {
             position: fixed;
-            left: 50%;
-            top: 45%;
-            width: 160px;
-            height: 200px;
+            left: 72%;
+            top: 42%;
+            width: 140px;
+            height: 170px;
             transform: translate3d(-50%, 0, 0);
             border-radius: 48% 48% 42% 42%;
             z-index: 79;
             cursor: pointer;
             pointer-events: auto;
             background: transparent;
+          }
+          body.ans-sanctuary-open #ans-dino-body-hitbox {
+            pointer-events: none !important;
           }
 
           @keyframes dinoAlertAttention {
@@ -1108,63 +1124,81 @@ class MotionDirector {
             user-select: none !important;
             -webkit-user-select: none !important;
           }
+          /* Top-Center Camera & Zoom Control Pill (zero overlap with top-left/top-right chrome, bottom-left .showcase-utility, or bottom-right Companion Dock) */
           #ans-cam-ctrl-pill {
             position: fixed;
-            left: 20px;
-            bottom: 18px;
+            top: 16px;
+            left: 50%;
+            right: auto;
+            bottom: auto;
+            transform: translate3d(-50%, 0, 0);
             z-index: 86;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 7px 12px;
+            gap: 6px;
+            padding: 6px 12px;
             border-radius: 999px;
             background: rgba(12, 20, 26, 0.86);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(164, 244, 218, 0.34);
+            border: 1px solid rgba(185, 225, 212, 0.32);
             box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
             font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
-            font-size: 12px;
-            color: #eefcf7;
+            font-size: 11.5px;
+            color: #f7f0e5;
             pointer-events: auto;
             user-select: none;
-            transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+            transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease, opacity 0.25s ease;
+          }
+          body.ans-sanctuary-open #ans-cam-ctrl-pill,
+          body.ans-dino-interactive-mode #ans-cam-ctrl-pill {
+            opacity: 0 !important;
+            pointer-events: none !important;
           }
           body.ans-cam-dragging #ans-cam-ctrl-pill {
             border-color: rgba(255, 212, 130, 0.92);
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 22px rgba(255, 200, 110, 0.35);
-            transform: scale(1.03);
+            transform: translate3d(-50%, 0, 0) scale(1.03);
           }
           #ans-cam-ctrl-pill .cam-pill-status {
-            font-weight: 700;
-            color: #d6fff0;
+            font-weight: 600;
+            color: #b9e1d4;
             white-space: nowrap;
           }
           #ans-cam-ctrl-pill .cam-pill-btn {
             appearance: none;
-            border: 1px solid rgba(255, 255, 255, 0.20);
-            background: rgba(255, 255, 255, 0.08);
-            color: #ffffff;
+            border: 1px solid rgba(244, 241, 234, 0.22);
+            background: rgba(244, 241, 234, 0.08);
+            color: #f7f0e5;
             font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
-            font-size: 11.5px;
-            font-weight: 700;
-            padding: 3px 9px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
             border-radius: 999px;
             cursor: pointer;
             transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
           }
           #ans-cam-ctrl-pill .cam-pill-btn:hover {
-            background: rgba(132, 250, 176, 0.22);
-            border-color: rgba(132, 250, 176, 0.68);
+            background: rgba(185, 225, 212, 0.22);
+            border-color: rgba(185, 225, 212, 0.68);
             transform: translateY(-1px);
           }
           @media (max-width: 820px) {
             #ans-cam-ctrl-pill {
-              left: 12px;
-              bottom: 12px;
-              padding: 5px 10px;
-              font-size: 11px;
+              top: 10px;
+              left: 50%;
+              padding: 4px 8px;
+              font-size: 10.5px;
             }
+          }
+          /* Keep bottom-left .hero-social and .hm-bl cleanly above .showcase-utility so nothing collides */
+          .hero-chrome .hm-bl {
+            bottom: 72px !important;
+            left: 74px !important;
+          }
+          .hero-chrome .hero-social {
+            bottom: 68px !important;
+            left: 20px !important;
           }
           body.ans-dino-motion-paused #ans-dino-live-bubble,
           body.ans-dino-motion-paused #ans-dino-live-bubble *,
@@ -1210,7 +1244,7 @@ class MotionDirector {
         bubbleEl.setAttribute("data-idle-dim", "false");
         bubbleEl.classList.add("is-intro-bounce");
         bubbleEl.innerHTML = `
-          <div class="dino-alert-pin" title="点击展开小恐龙的碎碎念！">
+          <div class="dino-alert-pin">
             <span class="dino-alert-ring"></span>
             <span class="dino-alert-ring2"></span>
             <span class="dino-alert-bang">!</span>
@@ -1239,7 +1273,6 @@ class MotionDirector {
           hitboxEl.setAttribute("role", "button");
           hitboxEl.setAttribute("tabindex", "0");
           hitboxEl.setAttribute("aria-label", "点击小恐龙互动（连点3次开启训龙互动台）");
-          hitboxEl.setAttribute("title", "戳一戳小恐龙！（连点 3 次开启挥鞭抽屁股 & 随机盲盒投喂互动台）");
           document.body.appendChild(hitboxEl);
         }
       }
@@ -1553,7 +1586,7 @@ class MotionDirector {
     const WARDROBE_ITEMS = [
       // HEADWEAR
       { id: "none", slot: "headwear", name: "清爽裸头", icon: "✨", rarity: "R", styleTag: "极客", styleScore: 10, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "露出 Blender 精雕的圆润脑门与高光大眼睛" },
-      { id: "starter_antenna", slot: "headwear", name: "初心灵感小天线", icon: "📡", rarity: "R", styleTag: "极客", styleScore: 35, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "领养即送！随时接收全站 AI 灵感电波的发光天线" },
+      { id: "starter_antenna", slot: "headwear", name: "初心灵感小天线", icon: "📡", rarity: "R", styleTag: "极客", styleScore: 45, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "领养即送！随时接收全站 AI 灵感电波的发光天线" },
       { id: "beret_cloud", slot: "headwear", name: "云朵画师贝雷帽", icon: "🎨", rarity: "SR", styleTag: "甜酷", styleScore: 68, minUserLevel: 1, minAffectionLevel: 1, priceBeans: 80, desc: "斜戴在头顶的樱粉软糯贝雷帽，简历排版审美 +50%" },
       { id: "cyber_visor", slot: "headwear", name: "4090 全息战术目镜", icon: "🥽", rarity: "SR", styleTag: "赛博", styleScore: 76, minUserLevel: 2, minAffectionLevel: 2, priceBeans: 120, desc: "实时投射 120FPS 帧率与 Bug 扫描网格的霓虹护目冠" },
       { id: "phd_mortarboard", slot: "headwear", name: "常春藤满绩学士帽", icon: "🎓", rarity: "SSR", styleTag: "学院", styleScore: 115, minUserLevel: 3, minAffectionLevel: 3, priceBeans: 220, desc: "金穗垂落的顶会学霸方帽，戴上后拒稿率归零！" },
@@ -1565,7 +1598,7 @@ class MotionDirector {
       { id: "star_monocle", slot: "eyewear", name: "星轨检索单片镜", icon: "🧐", rarity: "SSR", styleTag: "星神", styleScore: 120, minUserLevel: 4, minAffectionLevel: 3, priceBeans: 240, desc: "垂挂玫瑰金细链的魔法单片镜，一眼看穿代码底层架构" },
       // NECKWEAR / BACK
       { id: "none", slot: "neckwear", name: "轻装上阵", icon: "🍃", rarity: "R", styleTag: "极客", styleScore: 10, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "展示圆鼓鼓的奶油色小肚皮与灵动小尾巴" },
-      { id: "starter_scarf", slot: "neckwear", name: "薄荷极客小围巾", icon: "🧣", rarity: "R", styleTag: "学院", styleScore: 38, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "领养即送！实验室空调太冷时的保暖神器" },
+      { id: "starter_scarf", slot: "neckwear", name: "薄荷极客小围巾", icon: "🧣", rarity: "R", styleTag: "极客", styleScore: 48, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "领养即送！实验室空调太冷时的保暖神器" },
       { id: "boba_jetpack", slot: "neckwear", name: "双管冰美式喷射背包", icon: "🚀", rarity: "SR", styleTag: "极客", styleScore: 84, minUserLevel: 2, minAffectionLevel: 2, priceBeans: 140, desc: "以高浓度冰美式与黑糖波霸为燃料的涡轮飞行背包" },
       { id: "cyber_wings", slot: "neckwear", name: "六翼霓虹量子光翼", icon: "🦋", rarity: "SSR", styleTag: "赛博", styleScore: 135, minUserLevel: 4, minAffectionLevel: 3, priceBeans: 280, desc: "由半透明流光矩阵构成的六片悬浮能量羽翼" },
       { id: "pioneer_cape", slot: "neckwear", name: "破界领航员星芒披风", icon: "🦸", rarity: "UR", styleTag: "星神", styleScore: 190, minUserLevel: 6, minAffectionLevel: 5, priceBeans: 520, desc: "织入整片银河星尘的流光披风，飞行时自带王者气场" },
@@ -1576,7 +1609,7 @@ class MotionDirector {
       { id: "floating_grimoire", slot: "handheld", name: "全知 AI 悬浮魔导书", icon: "📖", rarity: "UR", styleTag: "星神", styleScore: 175, minUserLevel: 5, minAffectionLevel: 4, priceBeans: 460, desc: "记载着 Transformer 与宇宙终极Prompt的环绕式魔导书" },
       // AURA
       { id: "none", slot: "aura", name: "隐匿气场", icon: "⭕", rarity: "R", styleTag: "极客", styleScore: 5, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "低调潜行模式" },
-      { id: "aura_mint", slot: "aura", name: "薄荷引力波纹", icon: "💚", rarity: "R", styleTag: "极客", styleScore: 40, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "脚底环绕翡翠薄荷与暖金交织的双层呼吸星环" },
+      { id: "aura_mint", slot: "aura", name: "薄荷引力波纹", icon: "💚", rarity: "R", styleTag: "极客", styleScore: 45, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "脚底环绕翡翠薄荷与暖金交织的双层呼吸星环" },
       { id: "aura_sakura", slot: "aura", name: "樱吹雪星云阵", icon: "🌸", rarity: "SR", styleTag: "甜酷", styleScore: 80, minUserLevel: 1, minAffectionLevel: 2, priceBeans: 110, desc: "脚下绽放粉色星云与浪漫微光，甜酷值直接拉满" },
       { id: "aura_gold", slot: "aura", name: "算力暴走黄金阵", icon: "☀️", rarity: "SSR", styleTag: "赛博", styleScore: 130, minUserLevel: 2, minAffectionLevel: 3, priceBeans: 230, desc: "如同超频法阵般高速旋转的曜金星环，算力爆表" },
       { id: "aura_aurora", slot: "aura", name: "ANS 创世极光星环", icon: "🌌", rarity: "UR", styleTag: "星神", styleScore: 185, minUserLevel: 4, minAffectionLevel: 4, priceBeans: 420, desc: "流淌着北极光青紫渐变与六芒星轨迹的传说级光环" }
@@ -1768,6 +1801,14 @@ class MotionDirector {
     let activeCompanionTab = "pet"; // "pet" | "wardrobe" | "agent"
     let agentOutputHtml = "👋 你好呀训龙师！我是你的全站随身 AI Agent 伴侣。点击上方技能按钮或在下方输入问题，我不仅能帮你改简历、找项目、算算力，还能陪你聊天赚取「灵感星豆 🪙」解锁奇迹暖暖新衣服哦！";
 
+    function syncSanctuaryBodyClass() {
+      if (typeof document === "undefined") return;
+      const adoptModal = document.getElementById("ans-sanctuary-adopt-modal");
+      const wardrobeModal = document.getElementById("ans-sanctuary-wardrobe-modal");
+      const isOpen = Boolean((adoptModal && !adoptModal.hidden) || (wardrobeModal && !wardrobeModal.hidden));
+      document.body.classList.toggle("ans-sanctuary-open", isOpen);
+    }
+
     function openSanctuaryModal(which) {
       ensureSanctuarySystemDom();
       const adoptModal = document.getElementById("ans-sanctuary-adopt-modal");
@@ -1775,14 +1816,17 @@ class MotionDirector {
       if (which === "adopt" && adoptModal) {
         if (wardrobeModal) wardrobeModal.hidden = true;
         adoptModal.hidden = false;
+        syncSanctuaryBodyClass();
         renderSanctuaryUi();
       } else if (which === "wardrobe" && wardrobeModal) {
         if (adoptModal) adoptModal.hidden = true;
         wardrobeModal.hidden = false;
+        syncSanctuaryBodyClass();
         renderSanctuaryUi();
       } else {
         if (adoptModal) adoptModal.hidden = true;
         if (wardrobeModal) wardrobeModal.hidden = true;
+        syncSanctuaryBodyClass();
       }
     }
 
@@ -1805,30 +1849,19 @@ class MotionDirector {
             box-sizing: border-box;
             font-family: inherit;
           }
-          /* Top Utility Bar Sanctuary Triggers */
-          .showcase-utility .sanctuary-nav-btn {
-            background: linear-gradient(135deg, rgba(132, 250, 176, 0.22), rgba(143, 211, 244, 0.18)) !important;
-            border: 1px solid rgba(132, 250, 176, 0.58) !important;
-            color: #eafff5 !important;
-            font-weight: 700 !important;
-          }
-          .showcase-utility .sanctuary-nav-btn.is-nikki {
-            background: linear-gradient(135deg, rgba(255, 133, 192, 0.25), rgba(211, 173, 247, 0.22)) !important;
-            border-color: rgba(255, 133, 192, 0.68) !important;
-            color: #fff0f6 !important;
-          }
 
           /* Bottom-Right QQ-Pet x Miracle Nikki x AI Agent Companion Dock */
           #ans-agent-companion-dock {
             position: fixed;
             right: 20px;
-            bottom: 18px;
+            bottom: 16px;
             z-index: 89;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
             pointer-events: none;
+            transition: opacity 0.28s ease, transform 0.28s ease;
           }
           #ans-agent-companion-dock > * {
             pointer-events: auto;
@@ -1837,53 +1870,53 @@ class MotionDirector {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 12px;
-            border-radius: 22px;
-            background: linear-gradient(135deg, rgba(11, 20, 26, 0.92), rgba(18, 32, 38, 0.90));
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(14, 22, 24, 0.90);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
-            border: 1.5px solid rgba(132, 250, 176, 0.48);
-            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 0 24px rgba(132, 250, 176, 0.16);
-            color: #f0fdf9;
+            border: 1px solid rgba(185, 225, 212, 0.42);
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(185, 225, 212, 0.12);
+            color: #f7f0e5;
             transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
           }
           .ans-comp-bar:hover {
-            border-color: rgba(255, 224, 130, 0.82);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 28px rgba(255, 224, 130, 0.24);
+            border-color: rgba(255, 217, 179, 0.78);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 24px rgba(255, 217, 179, 0.20);
           }
           .ans-comp-avatar {
             position: relative;
-            width: 44px;
-            height: 44px;
-            border-radius: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 21px;
             cursor: pointer;
-            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.25);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.22);
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
           }
           .ans-comp-avatar:hover {
-            transform: scale(1.1) rotate(-6deg);
+            transform: scale(1.08) rotate(-5deg);
           }
           .ans-comp-avatar-lv {
             position: absolute;
-            bottom: -4px;
+            bottom: -3px;
             right: -4px;
-            padding: 1px 6px;
+            padding: 1px 5px;
             border-radius: 999px;
-            background: #10241e;
-            border: 1px solid #84fab0;
-            color: #84fab0;
-            font-size: 10px;
+            background: #14221e;
+            border: 1px solid #b9e1d4;
+            color: #b9e1d4;
+            font-size: 9.5px;
             font-weight: 800;
           }
           .ans-comp-meta {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            min-width: 145px;
+            gap: 2px;
+            min-width: 138px;
           }
           .ans-comp-name-row {
             display: flex;
@@ -1892,15 +1925,15 @@ class MotionDirector {
           }
           .ans-comp-name {
             font-size: 13px;
-            font-weight: 800;
-            color: #ffffff;
+            font-weight: 700;
+            color: #f7f0e5;
           }
           .ans-comp-rank-pill {
             padding: 1px 7px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #ff85c0, #b37feb);
-            color: #16091c;
-            font-size: 10.5px;
+            background: linear-gradient(135deg, #ffd9b3, #f0ad72);
+            color: #1c1610;
+            font-size: 10px;
             font-weight: 800;
           }
           .ans-comp-stats-row {
@@ -1908,7 +1941,7 @@ class MotionDirector {
             align-items: center;
             gap: 8px;
             font-size: 11px;
-            color: rgba(235, 250, 245, 0.86);
+            color: rgba(247, 240, 229, 0.82);
           }
           .ans-comp-btns {
             display: flex;
@@ -1917,13 +1950,13 @@ class MotionDirector {
           }
           .ans-comp-qbtn {
             appearance: none;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.08);
-            color: #ffffff;
-            padding: 6px 10px;
-            border-radius: 13px;
+            border: 1px solid rgba(244, 241, 234, 0.22);
+            background: rgba(244, 241, 234, 0.08);
+            color: #f7f0e5;
+            padding: 6px 11px;
+            border-radius: 999px;
             font-size: 11.5px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -1931,24 +1964,24 @@ class MotionDirector {
             transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
           }
           .ans-comp-qbtn:hover {
-            transform: translateY(-2px);
-            background: rgba(132, 250, 176, 0.22);
-            border-color: rgba(132, 250, 176, 0.75);
+            transform: translateY(-1px);
+            background: rgba(185, 225, 212, 0.20);
+            border-color: rgba(185, 225, 212, 0.72);
           }
           .ans-comp-qbtn.is-nikki {
-            background: linear-gradient(135deg, rgba(255, 133, 192, 0.26), rgba(179, 127, 235, 0.24));
-            border-color: rgba(255, 133, 192, 0.65);
-            color: #fff0f6;
+            background: rgba(255, 182, 213, 0.16);
+            border-color: rgba(255, 182, 213, 0.52);
+            color: #ffeef6;
           }
           .ans-comp-qbtn.is-adopt {
-            background: linear-gradient(135deg, rgba(132, 250, 176, 0.24), rgba(92, 219, 211, 0.22));
-            border-color: rgba(132, 250, 176, 0.65);
-            color: #e6fffb;
+            background: rgba(185, 225, 212, 0.18);
+            border-color: rgba(185, 225, 212, 0.56);
+            color: #ebfff8;
           }
           .ans-comp-qbtn.is-agent {
-            background: linear-gradient(135deg, rgba(255, 214, 102, 0.26), rgba(255, 122, 69, 0.22));
-            border-color: rgba(255, 214, 102, 0.72);
-            color: #fffbe6;
+            background: rgba(255, 217, 179, 0.18);
+            border-color: rgba(255, 217, 179, 0.58);
+            color: #fff6eb;
           }
 
           /* Companion Expandable Drawer (QQ Pet + Quick Dress + AI Agent) */
@@ -1958,10 +1991,10 @@ class MotionDirector {
             background: linear-gradient(160deg, rgba(10, 18, 24, 0.96), rgba(17, 29, 36, 0.95));
             backdrop-filter: blur(22px);
             -webkit-backdrop-filter: blur(22px);
-            border: 1.5px solid rgba(132, 250, 176, 0.52);
-            box-shadow: 0 20px 52px rgba(0, 0, 0, 0.72), 0 0 32px rgba(132, 250, 176, 0.18);
+            border: 1.5px solid rgba(185, 225, 212, 0.48);
+            box-shadow: 0 20px 52px rgba(0, 0, 0, 0.72), 0 0 32px rgba(185, 225, 212, 0.16);
             padding: 14px 16px;
-            color: #f2fbf8;
+            color: #f7f0e5;
             display: flex;
             flex-direction: column;
             gap: 11px;
@@ -1991,8 +2024,8 @@ class MotionDirector {
             cursor: pointer;
           }
           .ans-comp-tab.is-active {
-            background: linear-gradient(135deg, #84fab0, #8fd3f4);
-            color: #0b1c18;
+            background: linear-gradient(135deg, #b9e1d4, #ffd9b3);
+            color: #12201b;
             border-color: transparent;
           }
           .ans-comp-grid2 {
@@ -2016,8 +2049,8 @@ class MotionDirector {
           }
           .ans-comp-act-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(132, 250, 176, 0.75);
-            background: rgba(132, 250, 176, 0.14);
+            border-color: rgba(185, 225, 212, 0.75);
+            background: rgba(185, 225, 212, 0.14);
           }
           .ans-comp-act-title {
             font-size: 12.5px;
@@ -2031,7 +2064,7 @@ class MotionDirector {
             padding: 10px 12px;
             border-radius: 14px;
             background: rgba(6, 12, 16, 0.78);
-            border: 1px solid rgba(132, 250, 176, 0.32);
+            border: 1px solid rgba(185, 225, 212, 0.32);
             font-size: 12px;
             line-height: 1.55;
             color: #dffef2;
@@ -2055,8 +2088,8 @@ class MotionDirector {
             appearance: none;
             border: none;
             border-radius: 12px;
-            background: linear-gradient(135deg, #84fab0, #8fd3f4);
-            color: #0b1e19;
+            background: linear-gradient(135deg, #b9e1d4, #ffd9b3);
+            color: #12201b;
             font-weight: 800;
             font-size: 12px;
             padding: 0 13px;
@@ -2085,18 +2118,18 @@ class MotionDirector {
             overflow-y: auto;
             border-radius: 26px;
             background: linear-gradient(155deg, rgba(12, 21, 28, 0.96), rgba(20, 32, 42, 0.95));
-            border: 1.5px solid rgba(132, 250, 176, 0.52);
-            box-shadow: 0 24px 68px rgba(0, 0, 0, 0.78), 0 0 42px rgba(132, 250, 176, 0.2);
+            border: 1.5px solid rgba(185, 225, 212, 0.52);
+            box-shadow: 0 24px 68px rgba(0, 0, 0, 0.78), 0 0 42px rgba(185, 225, 212, 0.18);
             padding: 20px 22px;
-            color: #f4fcf9;
+            color: #f7f0e5;
             display: flex;
             flex-direction: column;
             gap: 14px;
           }
           #ans-sanctuary-wardrobe-modal .ans-sanctuary-dialog {
             width: min(530px, 95vw);
-            border-color: rgba(255, 133, 192, 0.65);
-            box-shadow: 0 24px 68px rgba(0, 0, 0, 0.82), 0 0 42px rgba(255, 133, 192, 0.25);
+            border-color: rgba(255, 182, 213, 0.58);
+            box-shadow: 0 24px 68px rgba(0, 0, 0, 0.82), 0 0 42px rgba(255, 182, 213, 0.22);
           }
           .ans-sanc-header {
             display: flex;
@@ -2132,8 +2165,8 @@ class MotionDirector {
             align-items: center;
             padding: 14px;
             border-radius: 20px;
-            background: radial-gradient(circle at 22% 50%, rgba(132, 250, 176, 0.18), rgba(10, 18, 24, 0.72));
-            border: 1px solid rgba(132, 250, 176, 0.32);
+            background: radial-gradient(circle at 22% 50%, rgba(185, 225, 212, 0.18), rgba(10, 18, 24, 0.72));
+            border: 1px solid rgba(185, 225, 212, 0.32);
           }
           @media (max-width: 720px) {
             .ans-egg-stage { grid-template-columns: 1fr; }
@@ -2191,9 +2224,9 @@ class MotionDirector {
             transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
           }
           .ans-species-card.is-selected {
-            background: linear-gradient(135deg, rgba(132, 250, 176, 0.18), rgba(143, 211, 244, 0.14));
-            border-color: #84fab0;
-            box-shadow: 0 0 20px rgba(132, 250, 176, 0.25);
+            background: linear-gradient(135deg, rgba(185, 225, 212, 0.20), rgba(255, 217, 179, 0.14));
+            border-color: #b9e1d4;
+            box-shadow: 0 0 20px rgba(185, 225, 212, 0.25);
           }
           .ans-contract-bar {
             display: flex;
@@ -2203,7 +2236,7 @@ class MotionDirector {
             gap: 10px;
             padding: 12px 14px;
             border-radius: 18px;
-            background: linear-gradient(135deg, rgba(255, 224, 130, 0.14), rgba(132, 250, 176, 0.12));
+            background: linear-gradient(135deg, rgba(255, 224, 130, 0.14), rgba(185, 225, 212, 0.12));
             border: 1px solid rgba(255, 224, 130, 0.45);
           }
           .ans-wardrobe-items {
@@ -2227,12 +2260,12 @@ class MotionDirector {
           }
           .ans-w-item:hover {
             transform: translateY(-2px);
-            border-color: rgba(255, 133, 192, 0.72);
+            border-color: rgba(255, 182, 213, 0.72);
           }
           .ans-w-item.is-equipped {
-            background: linear-gradient(135deg, rgba(255, 133, 192, 0.22), rgba(132, 250, 176, 0.18));
-            border-color: #ff85c0;
-            box-shadow: 0 0 18px rgba(255, 133, 192, 0.28);
+            background: linear-gradient(135deg, rgba(255, 182, 213, 0.22), rgba(185, 225, 212, 0.18));
+            border-color: #ffb6d5;
+            box-shadow: 0 0 18px rgba(255, 182, 213, 0.28);
           }
           .ans-rarity-badge {
             padding: 1px 6px;
@@ -2240,7 +2273,7 @@ class MotionDirector {
             font-size: 10px;
             font-weight: 800;
           }
-          .ans-rarity-R { background: rgba(132, 250, 176, 0.22); color: #84fab0; }
+          .ans-rarity-R { background: rgba(185, 225, 212, 0.22); color: #b9e1d4; }
           .ans-rarity-SR { background: rgba(105, 192, 255, 0.25); color: #69c0ff; }
           .ans-rarity-SSR { background: rgba(255, 133, 192, 0.28); color: #ff85c0; }
           .ans-rarity-UR { background: linear-gradient(135deg, #ffd666, #ff85c0); color: #1f0c1d; }
@@ -2254,31 +2287,10 @@ class MotionDirector {
         document.head.appendChild(st);
       }
 
-      // Inject Top Utility Bar buttons ("🥚 领养灵龙" & "👗 暖暖衣橱") so they are immediately visible at the top too!
+      // Remove any legacy duplicate Sanctuary buttons from .showcase-utility so bottom-left stays clean
       const utilNav = document.querySelector(".showcase-utility");
-      if (utilNav && !utilNav.querySelector("[data-sanctuary-btn]")) {
-        const adoptNavBtn = document.createElement("button");
-        adoptNavBtn.type = "button";
-        adoptNavBtn.className = "sanctuary-nav-btn";
-        adoptNavBtn.setAttribute("data-sanctuary-btn", "adopt");
-        adoptNavBtn.textContent = "🥚 注册领养灵龙";
-        adoptNavBtn.addEventListener("click", () => openSanctuaryModal("adopt"));
-
-        const nikkiNavBtn = document.createElement("button");
-        nikkiNavBtn.type = "button";
-        nikkiNavBtn.className = "sanctuary-nav-btn is-nikki";
-        nikkiNavBtn.setAttribute("data-sanctuary-btn", "wardrobe");
-        nikkiNavBtn.textContent = "👗 奇迹暖暖衣橱";
-        nikkiNavBtn.addEventListener("click", () => openSanctuaryModal("wardrobe"));
-
-        const greetBtn = document.getElementById("dino-greet");
-        if (greetBtn) {
-          utilNav.insertBefore(adoptNavBtn, greetBtn);
-          utilNav.insertBefore(nikkiNavBtn, greetBtn);
-        } else {
-          utilNav.appendChild(adoptNavBtn);
-          utilNav.appendChild(nikkiNavBtn);
-        }
+      if (utilNav) {
+        utilNav.querySelectorAll("[data-sanctuary-btn]").forEach(btn => btn.remove());
       }
 
       // Create Bottom-Right Companion Dock (#ans-agent-companion-dock)
@@ -2331,11 +2343,11 @@ class MotionDirector {
             const sp = DINO_SPECIES_MAP[sanctuaryState.speciesId] || DINO_SPECIES_MAP.mint_star;
             const skill = act.replace("agent-skill-", "");
             if (skill === "resume") {
-              agentOutputHtml = `<b>📄 [${sp.name} · 简历高定诊断]</b><br/>已扫描当前创作轨道：建议在「简历与作品集工作室」采用 <b>STAR 法则 + 3D 交互作品链接</b>，量化你的模型帧率与工程指标！<a href="/market/resume-website" style="color:#84fab0;margin-left:6px;text-decoration:underline;">立即打开简历编辑器 →</a>`;
+              agentOutputHtml = `<b>📄 [${sp.name} · 简历高定诊断]</b><br/>已扫描当前创作轨道：建议在「简历与作品集工作室」采用 <b>STAR 法则 + 3D 交互作品链接</b>，量化你的模型帧率与工程指标！<a href="/market/resume-website" style="color:#b9e1d4;margin-left:6px;text-decoration:underline;">立即打开简历编辑器 →</a>`;
             } else if (skill === "project") {
-              agentOutputHtml = `<b>🧭 [${sp.name} · 项目灵感与组队雷达]</b><br/>为你匹配 3 个高契合方向：① 多模态 Agent 科研工作流 ② WebGL 实时数字人交互 ③ 农业/科学 AI 赛事课题。<a href="/explore" style="color:#84fab0;margin-left:6px;text-decoration:underline;">去项目广场组队 →</a>`;
+              agentOutputHtml = `<b>🧭 [${sp.name} · 项目灵感与组队雷达]</b><br/>为你匹配 3 个高契合方向：① 多模态 Agent 科研工作流 ② WebGL 实时数字人交互 ③ 农业/科学 AI 赛事课题。<a href="/explore" style="color:#b9e1d4;margin-left:6px;text-decoration:underline;">去项目广场组队 →</a>`;
             } else if (skill === "compete") {
-              agentOutputHtml = `<b>🏆 [${sp.name} · 赛事与算力精算师]</b><br/>近期 ANS 创客赛火热报名中！微调 7B 模型预计仅需 2.5 小时 A100 算力，记得领用学生算力补贴~ <a href="/competitions" style="color:#84fab0;margin-left:6px;text-decoration:underline;">查看赛事专区 →</a>`;
+              agentOutputHtml = `<b>🏆 [${sp.name} · 赛事与算力精算师]</b><br/>近期 ANS 创客赛火热报名中！微调 7B 模型预计仅需 2.5 小时 A100 算力，记得领用学生算力补贴~ <a href="/competitions" style="color:#b9e1d4;margin-left:6px;text-decoration:underline;">查看赛事专区 →</a>`;
             } else if (skill === "fortune") {
               agentOutputHtml = `<b>🍀 [${sp.name} · 今日科研/干活运势]</b><br/>宜：合并 PR、投喂小恐龙、换新穿搭（Bug 退散率 99.8%）；忌：周五下午空腹改底层架构！`;
             }
@@ -2346,7 +2358,7 @@ class MotionDirector {
             const q = inp && inp.value ? inp.value.trim() : "";
             if (!q) return;
             const sp = DINO_SPECIES_MAP[sanctuaryState.speciesId] || DINO_SPECIES_MAP.mint_star;
-            agentOutputHtml = `<b>💬 你问：</b>「${q.replace(/[<>&]/g, "")}」<br/><b>${sp.icon} ${sanctuaryState.dinoName} (${sp.mbti})：</b>收到！本龙已用「${sp.element}」算力替你拆解完毕——先拆成最小 MVP 验证闭环，需要改简历随时去 <a href="/market/resume-website" style="color:#84fab0;">简历工作室</a>，需要找搭子去 <a href="/hubs" style="color:#84fab0;">Hub 社区</a>！`;
+            agentOutputHtml = `<b>💬 你问：</b>「${q.replace(/[<>&]/g, "")}」<br/><b>${sp.icon} ${sanctuaryState.dinoName} (${sp.mbti})：</b>收到！本龙已用「${sp.element}」算力替你拆解完毕——先拆成最小 MVP 验证闭环，需要改简历随时去 <a href="/market/resume-website" style="color:#b9e1d4;">简历工作室</a>，需要找搭子去 <a href="/hubs" style="color:#b9e1d4;">Hub 社区</a>！`;
             inp.value = "";
             rewardSanctuary(15, 15, 20, "💬 灵龙 Agent 解答 +15🪙 +15♥");
             renderSanctuaryUi();
@@ -2367,6 +2379,7 @@ class MotionDirector {
         adoptModal.addEventListener("click", ev => {
           if (ev.target === adoptModal) {
             adoptModal.hidden = true;
+            syncSanctuaryBodyClass();
             return;
           }
           const btn = ev.target.closest("[data-adopt-act]");
@@ -2375,6 +2388,7 @@ class MotionDirector {
           const act = btn.getAttribute("data-adopt-act");
           if (act === "close") {
             adoptModal.hidden = true;
+            syncSanctuaryBodyClass();
           } else if (act === "rotate-left") {
             saveSanctuary({ ...sanctuaryState, turntableSpin: false, turntableYaw: (sanctuaryState.turntableYaw || 0) - Math.PI * 0.28 });
           } else if (act === "rotate-right") {
@@ -2425,6 +2439,7 @@ class MotionDirector {
             });
             rewardSanctuary(100, 40, 60, `🎉 缔结契约成功！【${nextName}】已入驻全站右下角！`);
             adoptModal.hidden = true;
+            syncSanctuaryBodyClass();
           }
         });
       }
@@ -2440,12 +2455,18 @@ class MotionDirector {
         wardrobeModal.setAttribute("aria-label", "奇迹暖暖·灵龙 3D 换装衣橱");
         document.body.appendChild(wardrobeModal);
         wardrobeModal.addEventListener("click", ev => {
+          if (ev.target === wardrobeModal) {
+            wardrobeModal.hidden = true;
+            syncSanctuaryBodyClass();
+            return;
+          }
           const btn = ev.target.closest("[data-wardrobe-act]");
           if (!btn) return;
           ev.stopPropagation();
           const act = btn.getAttribute("data-wardrobe-act");
           if (act === "close") {
             wardrobeModal.hidden = true;
+            syncSanctuaryBodyClass();
           } else if (act === "rotate-left") {
             saveSanctuary({ ...sanctuaryState, turntableSpin: false, turntableYaw: (sanctuaryState.turntableYaw || 0) - Math.PI * 0.28 });
           } else if (act === "rotate-right") {
@@ -4022,7 +4043,7 @@ if (dinoState.badge.updateCamStatus) {
   const orbitFrustumH = 2.0 * baseFounderDist * tanHalfFov;
   const macroFrustumH = 2.0 * worldHalfH;
   const fovOrbitScale = f.clamp((0.20 * orbitFrustumH) / (1.00 * 2.25), 0.22, 0.68);
-  const fovMacroScale = f.clamp((f.lerp(0.30, 0.35, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)) * macroFrustumH) / (1.00 * 2.25), 0.22, 0.58);
+  const fovMacroScale = f.clamp((f.lerp(0.28, 0.34, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)) * macroFrustumH) / (1.00 * 2.25), 0.22, 0.56);
   const baseScale = f.lerp(fovOrbitScale, fovMacroScale, macroW) * f.lerp(1.0, 0.78, dinoState.dockBlend * (1.0 - dinoState.wardrobeBlend));
   const pulseScale = (whipActive && whipAge < 0.45) ? 0.12 : (feedActive && feedAge < 0.55) ? 0.10 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.10 : 0);
   const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
@@ -4035,20 +4056,20 @@ if (dinoState.badge.updateCamStatus) {
   let fy = spline.pos[1] + bobY;
   let fz = spline.pos[2] + swayZ;
 
-  // Compute Super Macro / Interactive / Wardrobe / Bottom-Right Dock Stage point in 3D world space using baseCamPos & baseCamQuat:
+  // Compute Interactive / Wardrobe / Bottom-Right Dock Stage point in 3D world space using baseCamPos & baseCamQuat:
   const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(dinoState.baseCamQuat);
   const camUp    = ye.current.set(0, 1, 0).applyQuaternion(dinoState.baseCamQuat);
   const camRight = ot.current.set(1, 0, 0).applyQuaternion(dinoState.baseCamQuat);
 
   const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
-  let centerNdcX = f.lerp(-0.18, -0.14, dinoState.interactBlend);
-  let centerNdcY = f.lerp(-0.02, -0.02, dinoState.interactBlend);
+  let centerNdcX = 0.0;
+  let centerNdcY = 0.02;
   // If in Bottom-Right Companion Dock mode ("停靠右下角"), hover right above the bottom-right Agent dock!
-  centerNdcX = f.lerp(centerNdcX, 0.52, dinoState.dockBlend);
-  centerNdcY = f.lerp(centerNdcY, -0.16, dinoState.dockBlend);
-  // If Miracle Nikki Wardrobe is open on the right, showcase the dinosaur on the left-center stage!
-  centerNdcX = f.lerp(centerNdcX, -0.32, dinoState.wardrobeBlend);
-  centerNdcY = f.lerp(centerNdcY, -0.02, dinoState.wardrobeBlend);
+  centerNdcX = f.lerp(centerNdcX, 0.56, dinoState.dockBlend);
+  centerNdcY = f.lerp(centerNdcY, -0.14, dinoState.dockBlend);
+  // If Miracle Nikki Wardrobe is open on the right, showcase the dinosaur on the left-center podium!
+  centerNdcX = f.lerp(centerNdcX, -0.34, dinoState.wardrobeBlend);
+  centerNdcY = f.lerp(centerNdcY, 0.00, dinoState.wardrobeBlend);
 
   const rightOffsetM = centerNdcX * worldHalfW;
   const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
@@ -4061,16 +4082,12 @@ if (dinoState.badge.updateCamStatus) {
   const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
   const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
 
-  const stagePinWeight = f.clamp(specialPin + (de ? 0 : spline.macroWeight * 0.25) * (1.0 - specialPin), 0, 1);
+  // Only pin to screen stage during explicit Interactive Stage, Bottom-Right Dock, or Miracle Nikki Wardrobe!
+  // During normal 3D patrol orbit, follow the Crown-Halo & Wide-Flank trajectory cleanly so the dinosaur never crosses the founder's face.
+  const stagePinWeight = f.clamp(specialPin, 0, 1);
   fx = f.lerp(fx, macroLocalX, stagePinWeight);
   fy = f.lerp(fy, macroLocalY, stagePinWeight);
   fz = f.lerp(fz, macroLocalZ, stagePinWeight);
-
-  if (dinoState.hoverBlend > 0.01 && stagePinWeight < 0.5) {
-    fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.18);
-    fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.18);
-    fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.18);
-  }
 
   // Full-Body Camera-Frustum Screen-Space Safety Guard:
   const userNeutralWeight = f.clamp(1.0 - (Math.abs(dinoState.userZoom - 1.0) * 2.2 + Math.hypot(dinoState.userYaw, dinoState.userPitch) * 1.8), 0, 1);
@@ -4081,10 +4098,10 @@ if (dinoState.badge.updateCamStatus) {
     const wMidZ = fz * 2.25 - 0.7;
     ve.current.set(wMidX, wMidY, wMidZ).project(_);
     if (ve.current.z > -1.0 && ve.current.z < 1.0) {
-      const safeMinX = ce.current ? -0.60 : -0.66;
-      const safeMaxX = ce.current ?  0.58 :  0.64;
-      const safeMinY = isInteractiveMode ? -0.18 : -0.36;
-      const safeMaxY = isInteractiveMode ?  0.16 :  0.46;
+      const safeMinX = ce.current ? -0.64 : -0.72;
+      const safeMaxX = ce.current ?  0.64 :  0.72;
+      const safeMinY = isInteractiveMode ? -0.18 : -0.38;
+      const safeMaxY = isInteractiveMode ?  0.16 :  0.54;
       const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
       const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
       if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
@@ -4324,8 +4341,8 @@ if (dinoState.badge.updateCamStatus) {
     _.updateMatrixWorld();
     const curX = (fx + reactionJitterX) * 2.25;
     const curZ = fz * 2.25 - 0.7;
-    const headWorldY = (fy + reactionHopY + 1.00 * dinoState.scalePop) * 2.25 + 0.4;
-    const mouthWorldY = (fy + reactionHopY + 0.56 * dinoState.scalePop) * 2.25 + 0.4;
+    const headWorldY = (fy + reactionHopY + 1.22 * dinoState.scalePop) * 2.25 + 0.4;
+    const mouthWorldY = (fy + reactionHopY + 0.58 * dinoState.scalePop) * 2.25 + 0.4;
     const buttWorldY = (fy + reactionHopY + 0.28 * dinoState.scalePop) * 2.25 + 0.4;
     const feetWorldY = (fy + reactionHopY) * 2.25 + 0.4;
     const buttWorldX = curX - Math.sin(dinoState.yaw) * (0.28 * dinoState.scalePop * 2.25);
@@ -4351,8 +4368,13 @@ if (dinoState.badge.updateCamStatus) {
     if (dinoFlightRef.current) { dinoFlightRef.current.position.set(spline.pos[0],spline.pos[1],spline.pos[2]); dinoFlightRef.current.rotation.set(0,Math.PI*.58,0); dinoFlightRef.current.scale.setScalar(.32); }
     if (dinoState.badge.updateScreenPosition) {
       _.updateMatrixWorld();
-      ve.current.set(spline.pos[0]*2.25, (spline.pos[1]+0.36)*2.25+0.4, spline.pos[2]*2.25-0.7).project(_);
-      dinoState.badge.updateScreenPosition(ve.current.x, ve.current.y, 1.0);
+      const rx = spline.pos[0]*2.25, rz = spline.pos[2]*2.25-0.7;
+      ve.current.set(rx, (spline.pos[1]+0.40)*2.25+0.4, rz).project(_);
+      const rHeadX = ve.current.x, rHeadY = ve.current.y;
+      ye.current.set(rx, (spline.pos[1]+0.18)*2.25+0.4, rz).project(_);
+      ot.current.set(rx, (spline.pos[1]+0.09)*2.25+0.4, rz).project(_);
+      ve.current.set(rx, spline.pos[1]*2.25+0.4, rz).project(_);
+      dinoState.badge.updateScreenPosition(rHeadX, rHeadY, 1.0, ye.current.x, ye.current.y, ot.current.x, ot.current.y, ve.current.y);
     }
   }
 }
@@ -4458,119 +4480,119 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     },
     children:[
       e.jsx("primitive",{object:dinoState.root}),
-      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Miracle Nikki Wardrobe) */
+      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Calibrated to dinosaur.glb head bone local bounds: crown y=0.415,z=-0.02; eyes x=±0.168,y=0.098,z=0.268) */
       e.jsxs("group",{
         ref:dinoHeadMountRef,
         position:[0,0.55,0],
         children:[
           /* Species Distinct 3D Head Features */
           spId==="cyber_gold"&&e.jsxs("group",{children:[
-            e.jsxs("mesh",{position:[-0.12,0.34,0.04],rotation:[0.2,0,0.35],children:[e.jsx("coneGeometry",{args:[0.038,0.13,6]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff7a45",emissiveIntensity:0.55,metalness:0.8,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0.12,0.34,0.04],rotation:[0.2,0,-0.35],children:[e.jsx("coneGeometry",{args:[0.038,0.13,6]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff7a45",emissiveIntensity:0.55,metalness:0.8,roughness:0.2})]})
+            e.jsxs("mesh",{position:[-0.13,0.40,-0.01],rotation:[0.18,0,0.34],children:[e.jsx("coneGeometry",{args:[0.042,0.15,6]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff7a45",emissiveIntensity:0.55,metalness:0.8,roughness:0.2})]}),
+            e.jsxs("mesh",{position:[0.13,0.40,-0.01],rotation:[0.18,0,-0.34],children:[e.jsx("coneGeometry",{args:[0.042,0.15,6]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff7a45",emissiveIntensity:0.55,metalness:0.8,roughness:0.2})]})
           ]}),
           spId==="sakura_mochi"&&e.jsxs("group",{children:[
-            e.jsxs("mesh",{position:[-0.21,0.25,0.02],rotation:[0,0,0.45],scale:[1.2,0.75,0.9],children:[e.jsx("sphereGeometry",{args:[0.055,16,16]}),e.jsx("meshStandardMaterial",{color:"#ffadd2",emissive:"#ff85c0",emissiveIntensity:0.25,roughness:0.4})]}),
-            e.jsxs("mesh",{position:[0.21,0.25,0.02],rotation:[0,0,-0.45],scale:[1.2,0.75,0.9],children:[e.jsx("sphereGeometry",{args:[0.055,16,16]}),e.jsx("meshStandardMaterial",{color:"#ffadd2",emissive:"#ff85c0",emissiveIntensity:0.25,roughness:0.4})]})
+            e.jsxs("mesh",{position:[-0.22,0.34,0.00],rotation:[0,0,0.45],scale:[1.25,0.78,0.92],children:[e.jsx("sphereGeometry",{args:[0.062,16,16]}),e.jsx("meshStandardMaterial",{color:"#ffadd2",emissive:"#ff85c0",emissiveIntensity:0.28,roughness:0.4})]}),
+            e.jsxs("mesh",{position:[0.22,0.34,0.00],rotation:[0,0,-0.45],scale:[1.25,0.78,0.92],children:[e.jsx("sphereGeometry",{args:[0.062,16,16]}),e.jsx("meshStandardMaterial",{color:"#ffadd2",emissive:"#ff85c0",emissiveIntensity:0.28,roughness:0.4})]})
           ]}),
           spId==="aurora_ice"&&e.jsxs("group",{children:[
-            e.jsxs("mesh",{position:[-0.13,0.35,0.01],rotation:[-0.15,0,0.28],scale:[0.6,1.8,0.6],children:[e.jsx("octahedronGeometry",{args:[0.048,0]}),e.jsx("meshStandardMaterial",{color:"#87e8de",emissive:"#5cdbd3",emissiveIntensity:0.65,metalness:0.5,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0.13,0.35,0.01],rotation:[-0.15,0,-0.28],scale:[0.6,1.8,0.6],children:[e.jsx("octahedronGeometry",{args:[0.048,0]}),e.jsx("meshStandardMaterial",{color:"#87e8de",emissive:"#5cdbd3",emissiveIntensity:0.65,metalness:0.5,roughness:0.15})]})
+            e.jsxs("mesh",{position:[-0.14,0.41,-0.02],rotation:[-0.15,0,0.28],scale:[0.65,1.9,0.65],children:[e.jsx("octahedronGeometry",{args:[0.052,0]}),e.jsx("meshStandardMaterial",{color:"#87e8de",emissive:"#5cdbd3",emissiveIntensity:0.65,metalness:0.5,roughness:0.15})]}),
+            e.jsxs("mesh",{position:[0.14,0.41,-0.02],rotation:[-0.15,0,-0.28],scale:[0.65,1.9,0.65],children:[e.jsx("octahedronGeometry",{args:[0.052,0]}),e.jsx("meshStandardMaterial",{color:"#87e8de",emissive:"#5cdbd3",emissiveIntensity:0.65,metalness:0.5,roughness:0.15})]})
           ]}),
           /* HEADWEAR SLOT */
-          eq.headwear==="starter_antenna"&&e.jsxs("group",{position:[0,0.38,0.02],children:[
-            e.jsxs("mesh",{position:[0,0,0],children:[e.jsx("cylinderGeometry",{args:[0.042,0.052,0.024,16]}),e.jsx("meshStandardMaterial",{color:"#5cdbd3",metalness:0.5,roughness:0.3})]}),
-            e.jsxs("mesh",{position:[0,0.065,0],children:[e.jsx("cylinderGeometry",{args:[0.008,0.010,0.12,12]}),e.jsx("meshStandardMaterial",{color:"#e6fffb",metalness:0.8,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0,0.135,0],children:[e.jsx("sphereGeometry",{args:[0.032,16,16]}),e.jsx("meshStandardMaterial",{color:"#84fab0",emissive:"#84fab0",emissiveIntensity:0.95,roughness:0.1})]})
+          eq.headwear==="starter_antenna"&&e.jsxs("group",{position:[0,0.415,-0.02],children:[
+            e.jsxs("mesh",{position:[0,0,0],children:[e.jsx("cylinderGeometry",{args:[0.048,0.060,0.026,16]}),e.jsx("meshStandardMaterial",{color:"#5cdbd3",metalness:0.5,roughness:0.3})]}),
+            e.jsxs("mesh",{position:[0,0.072,0],children:[e.jsx("cylinderGeometry",{args:[0.009,0.012,0.135,12]}),e.jsx("meshStandardMaterial",{color:"#e6fffb",metalness:0.8,roughness:0.2})]}),
+            e.jsxs("mesh",{position:[0,0.150,0],children:[e.jsx("sphereGeometry",{args:[0.036,16,16]}),e.jsx("meshStandardMaterial",{color:"#84fab0",emissive:"#84fab0",emissiveIntensity:0.95,roughness:0.1})]})
           ]}),
-          eq.headwear==="beret_cloud"&&e.jsxs("group",{position:[0.04,0.36,0.01],rotation:[0.08,0,-0.22],children:[
-            e.jsxs("mesh",{scale:[1.25,0.46,1.22],children:[e.jsx("sphereGeometry",{args:[0.175,24,16]}),e.jsx("meshStandardMaterial",{color:"#ff85c0",emissive:"#eb2f96",emissiveIntensity:0.22,roughness:0.55})]}),
-            e.jsxs("mesh",{position:[0,0.085,0],children:[e.jsx("cylinderGeometry",{args:[0.012,0.012,0.04,8]}),e.jsx("meshStandardMaterial",{color:"#fff0f6"})]})
+          eq.headwear==="beret_cloud"&&e.jsxs("group",{position:[0.05,0.405,-0.02],rotation:[0.08,0,-0.22],children:[
+            e.jsxs("mesh",{scale:[1.32,0.48,1.28],children:[e.jsx("sphereGeometry",{args:[0.195,24,16]}),e.jsx("meshStandardMaterial",{color:"#ff85c0",emissive:"#eb2f96",emissiveIntensity:0.24,roughness:0.55})]}),
+            e.jsxs("mesh",{position:[0,0.095,0],children:[e.jsx("cylinderGeometry",{args:[0.014,0.014,0.045,8]}),e.jsx("meshStandardMaterial",{color:"#fff0f6"})]})
           ]}),
-          eq.headwear==="cyber_visor"&&e.jsxs("group",{position:[0,0.14,0.20],children:[
-            e.jsxs("mesh",{scale:[1.45,0.32,0.55],children:[e.jsx("boxGeometry",{args:[0.28,0.16,0.14]}),e.jsx("meshStandardMaterial",{color:"#36cfc9",emissive:"#13c2c2",emissiveIntensity:0.85,transparent:!0,opacity:0.86,metalness:0.7,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[-0.21,0,-0.02],children:[e.jsx("boxGeometry",{args:[0.04,0.07,0.09]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0.21,0,-0.02],children:[e.jsx("boxGeometry",{args:[0.04,0.07,0.09]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]})
+          eq.headwear==="cyber_visor"&&e.jsxs("group",{position:[0,0.145,0.295],children:[
+            e.jsxs("mesh",{scale:[1.62,0.34,0.52],children:[e.jsx("boxGeometry",{args:[0.30,0.16,0.14]}),e.jsx("meshStandardMaterial",{color:"#36cfc9",emissive:"#13c2c2",emissiveIntensity:0.85,transparent:!0,opacity:0.86,metalness:0.7,roughness:0.15})]}),
+            e.jsxs("mesh",{position:[-0.25,0,-0.03],children:[e.jsx("boxGeometry",{args:[0.045,0.075,0.10]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]}),
+            e.jsxs("mesh",{position:[0.25,0,-0.03],children:[e.jsx("boxGeometry",{args:[0.045,0.075,0.10]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]})
           ]}),
-          eq.headwear==="phd_mortarboard"&&e.jsxs("group",{position:[0,0.39,0.02],children:[
-            e.jsxs("mesh",{position:[0,-0.02,0],children:[e.jsx("cylinderGeometry",{args:[0.13,0.145,0.055,20]}),e.jsx("meshStandardMaterial",{color:"#1f2937",roughness:0.5})]}),
-            e.jsxs("mesh",{position:[0,0.015,0],rotation:[0,Math.PI*0.25,0],children:[e.jsx("boxGeometry",{args:[0.36,0.018,0.36]}),e.jsx("meshStandardMaterial",{color:"#111827",metalness:0.3,roughness:0.4})]}),
-            e.jsxs("mesh",{position:[0.16,-0.03,0.12],children:[e.jsx("cylinderGeometry",{args:[0.008,0.016,0.12,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.5})]})
+          eq.headwear==="phd_mortarboard"&&e.jsxs("group",{position:[0,0.425,-0.02],children:[
+            e.jsxs("mesh",{position:[0,-0.02,0],children:[e.jsx("cylinderGeometry",{args:[0.145,0.165,0.06,20]}),e.jsx("meshStandardMaterial",{color:"#1f2937",roughness:0.5})]}),
+            e.jsxs("mesh",{position:[0,0.018,0],rotation:[0,Math.PI*0.25,0],children:[e.jsx("boxGeometry",{args:[0.40,0.020,0.40]}),e.jsx("meshStandardMaterial",{color:"#111827",metalness:0.3,roughness:0.4})]}),
+            e.jsxs("mesh",{position:[0.18,-0.03,0.14],children:[e.jsx("cylinderGeometry",{args:[0.009,0.018,0.13,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.5})]})
           ]}),
-          eq.headwear==="crown_aurora"&&e.jsxs("group",{position:[0,0.39,0.02],children:[
-            e.jsxs("mesh",{rotation:[Math.PI/2,0,0],children:[e.jsx("torusGeometry",{args:[0.125,0.020,12,28]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.65,metalness:0.9,roughness:0.15})]}),
+          eq.headwear==="crown_aurora"&&e.jsxs("group",{position:[0,0.425,-0.02],children:[
+            e.jsxs("mesh",{rotation:[Math.PI/2,0,0],children:[e.jsx("torusGeometry",{args:[0.140,0.022,12,28]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.65,metalness:0.9,roughness:0.15})]}),
             [0,1,2,3,4,5].map(idx=>{
               const ang = (idx / 6) * Math.PI * 2;
-              return e.jsxs("mesh",{key:idx,position:[Math.cos(ang)*0.12,0.055,Math.sin(ang)*0.12],children:[
-                e.jsx("coneGeometry",{args:[0.026,0.095,6]}),
+              return e.jsxs("mesh",{key:idx,position:[Math.cos(ang)*0.135,0.06,Math.sin(ang)*0.135],children:[
+                e.jsx("coneGeometry",{args:[0.028,0.105,6]}),
                 e.jsx("meshStandardMaterial",{color:idx%2===0?"#ffd666":"#5cdbd3",emissive:idx%2===0?"#faad14":"#36cfc9",emissiveIntensity:0.75,metalness:0.85,roughness:0.1})
               ]});
             })
           ]}),
-          /* EYEWEAR SLOT */
-          eq.eyewear==="gold_glasses"&&e.jsxs("group",{position:[0,0.098,0.228],children:[
-            e.jsxs("mesh",{position:[-0.165,0,0],children:[e.jsx("torusGeometry",{args:[0.048,0.0065,10,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.45,metalness:0.9,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0.165,0,0],children:[e.jsx("torusGeometry",{args:[0.048,0.0065,10,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.45,metalness:0.9,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0,0.006,0.01],rotation:[0,0,Math.PI/2],children:[e.jsx("cylinderGeometry",{args:[0.005,0.005,0.24,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.9,roughness:0.15})]})
+          /* EYEWEAR SLOT (Eyes at x=±0.168, y=0.098, z=0.268 in head bone space) */
+          eq.eyewear==="gold_glasses"&&e.jsxs("group",{position:[0,0.102,0.286],children:[
+            e.jsxs("mesh",{position:[-0.168,0,0],children:[e.jsx("torusGeometry",{args:[0.056,0.0075,10,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.45,metalness:0.9,roughness:0.15})]}),
+            e.jsxs("mesh",{position:[0.168,0,0],children:[e.jsx("torusGeometry",{args:[0.056,0.0075,10,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.45,metalness:0.9,roughness:0.15})]}),
+            e.jsxs("mesh",{position:[0,0.008,0.012],rotation:[0,0,Math.PI/2],children:[e.jsx("cylinderGeometry",{args:[0.0055,0.0055,0.23,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.9,roughness:0.15})]})
           ]}),
-          eq.eyewear==="pixel_shades"&&e.jsxs("group",{position:[0,0.102,0.232],children:[
-            e.jsxs("mesh",{position:[0,0.018,0],children:[e.jsx("boxGeometry",{args:[0.44,0.022,0.028]}),e.jsx("meshStandardMaterial",{color:"#111827",roughness:0.2})]}),
-            e.jsxs("mesh",{position:[-0.16,0,0],children:[e.jsx("boxGeometry",{args:[0.11,0.056,0.026]}),e.jsx("meshStandardMaterial",{color:"#090d16",roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0.16,0,0],children:[e.jsx("boxGeometry",{args:[0.11,0.056,0.026]}),e.jsx("meshStandardMaterial",{color:"#090d16",roughness:0.15})]}),
-            e.jsxs("mesh",{position:[-0.175,0.006,0.015],children:[e.jsx("boxGeometry",{args:[0.022,0.022,0.01]}),e.jsx("meshBasicMaterial",{color:"#ffffff"})]}),
-            e.jsxs("mesh",{position:[0.145,0.006,0.015],children:[e.jsx("boxGeometry",{args:[0.022,0.022,0.01]}),e.jsx("meshBasicMaterial",{color:"#ffffff"})]})
+          eq.eyewear==="pixel_shades"&&e.jsxs("group",{position:[0,0.105,0.292],children:[
+            e.jsxs("mesh",{position:[0,0.020,0],children:[e.jsx("boxGeometry",{args:[0.48,0.024,0.030]}),e.jsx("meshStandardMaterial",{color:"#111827",roughness:0.2})]}),
+            e.jsxs("mesh",{position:[-0.168,0,0],children:[e.jsx("boxGeometry",{args:[0.125,0.062,0.028]}),e.jsx("meshStandardMaterial",{color:"#090d16",roughness:0.15})]}),
+            e.jsxs("mesh",{position:[0.168,0,0],children:[e.jsx("boxGeometry",{args:[0.125,0.062,0.028]}),e.jsx("meshStandardMaterial",{color:"#090d16",roughness:0.15})]}),
+            e.jsxs("mesh",{position:[-0.185,0.008,0.016],children:[e.jsx("boxGeometry",{args:[0.024,0.024,0.01]}),e.jsx("meshBasicMaterial",{color:"#ffffff"})]}),
+            e.jsxs("mesh",{position:[0.150,0.008,0.016],children:[e.jsx("boxGeometry",{args:[0.024,0.024,0.01]}),e.jsx("meshBasicMaterial",{color:"#ffffff"})]})
           ]}),
-          eq.eyewear==="star_monocle"&&e.jsxs("group",{position:[-0.168,0.098,0.232],children:[
-            e.jsxs("mesh",{children:[e.jsx("torusGeometry",{args:[0.052,0.008,12,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff85c0",emissiveIntensity:0.55,metalness:0.9,roughness:0.1})]}),
-            e.jsxs("mesh",{position:[-0.04,-0.07,-0.01],children:[e.jsx("cylinderGeometry",{args:[0.0035,0.0035,0.11,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.5})]})
+          eq.eyewear==="star_monocle"&&e.jsxs("group",{position:[-0.168,0.102,0.290],children:[
+            e.jsxs("mesh",{children:[e.jsx("torusGeometry",{args:[0.058,0.0085,12,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff85c0",emissiveIntensity:0.55,metalness:0.9,roughness:0.1})]}),
+            e.jsxs("mesh",{position:[-0.045,-0.075,-0.01],children:[e.jsx("cylinderGeometry",{args:[0.004,0.004,0.12,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.5})]})
           ]})
         ]
       }),
-      /* 3D Body-Bone Mounted Neckwear / Back Wings / Jetpack / Cape + Handheld Items */
+      /* 3D Body-Bone Mounted Neckwear / Back Wings / Jetpack / Cape + Handheld Items (Calibrated to dinosaur.glb body bone bounds: neck radius=0.345 at y=0.27,z=-0.045; back z=-0.38; front hands z=+0.32) */
       e.jsxs("group",{
         ref:dinoBodyMountRef,
         position:[0,0.18,0],
         children:[
           /* NECKWEAR / BACK SLOT */
-          eq.neckwear==="starter_scarf"&&e.jsxs("group",{position:[0,0.28,0.02],children:[
-            e.jsxs("mesh",{rotation:[Math.PI/2+0.12,0,0],scale:[1.15,1.05,0.9],children:[e.jsx("torusGeometry",{args:[0.21,0.042,14,28]}),e.jsx("meshStandardMaterial",{color:"#73d13d",emissive:"#389e0d",emissiveIntensity:0.22,roughness:0.65})]}),
-            e.jsxs("mesh",{position:[0.09,-0.09,0.21],rotation:[0.15,0,-0.18],children:[e.jsx("boxGeometry",{args:[0.065,0.15,0.032]}),e.jsx("meshStandardMaterial",{color:"#95de64",roughness:0.6})]})
+          eq.neckwear==="starter_scarf"&&e.jsxs("group",{position:[0,0.27,-0.045],children:[
+            e.jsxs("mesh",{rotation:[Math.PI/2+0.08,0,0],scale:[1.04,1.00,0.92],children:[e.jsx("torusGeometry",{args:[0.348,0.036,16,36]}),e.jsx("meshStandardMaterial",{color:"#73d13d",emissive:"#389e0d",emissiveIntensity:0.24,roughness:0.62})]}),
+            e.jsxs("mesh",{position:[0.10,-0.06,0.35],rotation:[-0.12,0.15,-0.16],children:[e.jsx("boxGeometry",{args:[0.068,0.14,0.032]}),e.jsx("meshStandardMaterial",{color:"#95de64",roughness:0.58})]})
           ]}),
-          eq.neckwear==="boba_jetpack"&&e.jsxs("group",{position:[0,0.18,-0.21],children:[
-            e.jsxs("mesh",{position:[-0.09,0,0],children:[e.jsx("cylinderGeometry",{args:[0.055,0.055,0.22,16]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.75,roughness:0.25})]}),
-            e.jsxs("mesh",{position:[0.09,0,0],children:[e.jsx("cylinderGeometry",{args:[0.055,0.055,0.22,16]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.75,roughness:0.25})]}),
-            e.jsxs("mesh",{position:[-0.09,-0.14,0],rotation:[Math.PI,0,0],children:[e.jsx("coneGeometry",{args:[0.042,0.09,12]}),e.jsx("meshBasicMaterial",{color:"#36cfc9"})]}),
-            e.jsxs("mesh",{position:[0.09,-0.14,0],rotation:[Math.PI,0,0],children:[e.jsx("coneGeometry",{args:[0.042,0.09,12]}),e.jsx("meshBasicMaterial",{color:"#36cfc9"})]})
+          eq.neckwear==="boba_jetpack"&&e.jsxs("group",{position:[0,0.20,-0.38],children:[
+            e.jsxs("mesh",{position:[-0.10,0,0],children:[e.jsx("cylinderGeometry",{args:[0.062,0.062,0.24,16]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.75,roughness:0.25})]}),
+            e.jsxs("mesh",{position:[0.10,0,0],children:[e.jsx("cylinderGeometry",{args:[0.062,0.062,0.24,16]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.75,roughness:0.25})]}),
+            e.jsxs("mesh",{position:[-0.10,-0.15,0],rotation:[Math.PI,0,0],children:[e.jsx("coneGeometry",{args:[0.046,0.10,12]}),e.jsx("meshBasicMaterial",{color:"#36cfc9"})]}),
+            e.jsxs("mesh",{position:[0.10,-0.15,0],rotation:[Math.PI,0,0],children:[e.jsx("coneGeometry",{args:[0.046,0.10,12]}),e.jsx("meshBasicMaterial",{color:"#36cfc9"})]})
           ]}),
-          eq.neckwear==="cyber_wings"&&e.jsxs("group",{position:[0,0.22,-0.18],children:[
-            [-1,1].map(side=>e.jsxs("group",{key:side,position:[side*0.14,0,0],children:[
+          eq.neckwear==="cyber_wings"&&e.jsxs("group",{position:[0,0.24,-0.36],children:[
+            [-1,1].map(side=>e.jsxs("group",{key:side,position:[side*0.16,0,0],children:[
               [0,1,2].map(wIdx=>e.jsxs("mesh",{
                 key:wIdx,
-                position:[side*(0.14+wIdx*0.05),0.08-wIdx*0.07,-0.02],
+                position:[side*(0.16+wIdx*0.055),0.09-wIdx*0.075,-0.02],
                 rotation:[0,side*-0.22,side*(0.35-wIdx*0.24)],
                 children:[
-                  e.jsx("boxGeometry",{args:[0.26-wIdx*0.03,0.048,0.016]}),
+                  e.jsx("boxGeometry",{args:[0.28-wIdx*0.03,0.052,0.018]}),
                   e.jsx("meshStandardMaterial",{color:wIdx%2===0?"#5cdbd3":"#ff85c0",emissive:wIdx%2===0?"#36cfc9":"#eb2f96",emissiveIntensity:0.85,transparent:!0,opacity:0.88})
                 ]
               }))
             ]}))
           ]}),
-          eq.neckwear==="pioneer_cape"&&e.jsxs("group",{position:[0,0.24,-0.19],children:[
-            e.jsxs("mesh",{position:[0,0.04,0.06],rotation:[Math.PI/2,0,0],children:[e.jsx("torusGeometry",{args:[0.20,0.028,12,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.55,metalness:0.85,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0,-0.14,-0.04],rotation:[0.28,0,0],children:[e.jsx("boxGeometry",{args:[0.42,0.38,0.022]}),e.jsx("meshStandardMaterial",{color:"#cf1322",emissive:"#722ed1",emissiveIntensity:0.38,roughness:0.45})]})
+          eq.neckwear==="pioneer_cape"&&e.jsxs("group",{position:[0,0.26,-0.045],children:[
+            e.jsxs("mesh",{position:[0,0.01,0],rotation:[Math.PI/2+0.06,0,0],children:[e.jsx("torusGeometry",{args:[0.352,0.028,14,32]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.55,metalness:0.85,roughness:0.2})]}),
+            e.jsxs("mesh",{position:[0,-0.16,-0.34],rotation:[0.30,0,0],children:[e.jsx("boxGeometry",{args:[0.48,0.42,0.024]}),e.jsx("meshStandardMaterial",{color:"#cf1322",emissive:"#722ed1",emissiveIntensity:0.38,roughness:0.45})]})
           ]}),
           /* HANDHELD SLOT */
-          eq.handheld==="magic_wand"&&e.jsxs("group",{position:[-0.35,0.20,0.16],rotation:[0.35,0,0.28],children:[
-            e.jsxs("mesh",{children:[e.jsx("cylinderGeometry",{args:[0.012,0.012,0.26,10]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0,0.15,0],children:[e.jsx("octahedronGeometry",{args:[0.058,0]}),e.jsx("meshStandardMaterial",{color:"#ff85c0",emissive:"#ff85c0",emissiveIntensity:0.9,metalness:0.4,roughness:0.1})]})
+          eq.handheld==="magic_wand"&&e.jsxs("group",{position:[-0.38,0.20,0.22],rotation:[0.35,0,0.28],children:[
+            e.jsxs("mesh",{children:[e.jsx("cylinderGeometry",{args:[0.014,0.014,0.28,10]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]}),
+            e.jsxs("mesh",{position:[0,0.16,0],children:[e.jsx("octahedronGeometry",{args:[0.062,0]}),e.jsx("meshStandardMaterial",{color:"#ff85c0",emissive:"#ff85c0",emissiveIntensity:0.9,metalness:0.4,roughness:0.1})]})
           ]}),
-          eq.handheld==="gold_keyboard"&&e.jsxs("group",{position:[0,0.14,0.32],rotation:[-0.45,0,0],children:[
-            e.jsxs("mesh",{children:[e.jsx("boxGeometry",{args:[0.28,0.026,0.12]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.55,metalness:0.9,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0,0.016,0],children:[e.jsx("boxGeometry",{args:[0.25,0.010,0.095]}),e.jsx("meshStandardMaterial",{color:"#5cdbd3",emissive:"#36cfc9",emissiveIntensity:0.75})]})
+          eq.handheld==="gold_keyboard"&&e.jsxs("group",{position:[0,0.14,0.38],rotation:[-0.45,0,0],children:[
+            e.jsxs("mesh",{children:[e.jsx("boxGeometry",{args:[0.30,0.028,0.13]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.55,metalness:0.9,roughness:0.15})]}),
+            e.jsxs("mesh",{position:[0,0.018,0],children:[e.jsx("boxGeometry",{args:[0.26,0.010,0.10]}),e.jsx("meshStandardMaterial",{color:"#5cdbd3",emissive:"#36cfc9",emissiveIntensity:0.75})]})
           ]}),
-          eq.handheld==="floating_grimoire"&&e.jsxs("group",{position:[-0.38,0.26,0.18],rotation:[0.3,0.4,-0.2],children:[
-            e.jsxs("mesh",{position:[-0.055,0,0],rotation:[0,0,0.25],children:[e.jsx("boxGeometry",{args:[0.12,0.022,0.16]}),e.jsx("meshStandardMaterial",{color:"#722ed1",emissive:"#9254de",emissiveIntensity:0.65})]}),
-            e.jsxs("mesh",{position:[0.055,0,0],rotation:[0,0,-0.25],children:[e.jsx("boxGeometry",{args:[0.12,0.022,0.16]}),e.jsx("meshStandardMaterial",{color:"#722ed1",emissive:"#9254de",emissiveIntensity:0.65})]}),
-            e.jsxs("mesh",{position:[0,0.045,0],children:[e.jsx("octahedronGeometry",{args:[0.036,0]}),e.jsx("meshBasicMaterial",{color:"#84fab0"})]})
+          eq.handheld==="floating_grimoire"&&e.jsxs("group",{position:[-0.42,0.26,0.24],rotation:[0.3,0.4,-0.2],children:[
+            e.jsxs("mesh",{position:[-0.058,0,0],rotation:[0,0,0.25],children:[e.jsx("boxGeometry",{args:[0.13,0.024,0.17]}),e.jsx("meshStandardMaterial",{color:"#722ed1",emissive:"#9254de",emissiveIntensity:0.65})]}),
+            e.jsxs("mesh",{position:[0.058,0,0],rotation:[0,0,-0.25],children:[e.jsx("boxGeometry",{args:[0.13,0.024,0.17]}),e.jsx("meshStandardMaterial",{color:"#722ed1",emissive:"#9254de",emissiveIntensity:0.65})]}),
+            e.jsxs("mesh",{position:[0,0.048,0],children:[e.jsx("octahedronGeometry",{args:[0.038,0]}),e.jsx("meshBasicMaterial",{color:"#84fab0"})]})
           ]})
         ]
       }),

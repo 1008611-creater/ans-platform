@@ -27,8 +27,8 @@ it("shows the historical-rules notice and no edition entry when no competition i
   const notice = screen.getByRole("complementary", { name: product.agrihackathon.rulesPendingTitle });
   expect(within(notice).getByText(product.agrihackathon.rulesPendingBody)).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: zh.agriHackathon.enterWorkbench })).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: agriWall.publishTitle })).toHaveAttribute("href", "/explore/submit?event=agrihackathon");
-  expect(screen.getByRole("link", { name: agriWall.title })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
+  expect(screen.getByRole("link", { name: agriWall.publish })).toHaveAttribute("href", "/explore/submit?event=agrihackathon");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.star.cta })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
 });
 
 it("keeps historical rules marked pending even when the exact edition is bound", async () => {
@@ -49,3 +49,35 @@ it("shows only explicitly published guidance and links to authorized management"
   expect(screen.queryByText(product.agrihackathon.rulesPendingBody)).not.toBeInTheDocument();
   expect(screen.getByText(product.agriWorkspace.title).closest("a")).toHaveAttribute("href", "/competitions/agrihackathon/manage");
 });
+
+
+it("keeps every scoring criterion, rule and operational entry behind optional disclosures", async () => {
+  mocks.find.mockResolvedValue(null);
+  const { container } = render(await AgriHackathonPage());
+  const scoring = screen.getByText(zh.agriHackathon.scoringTitle).closest("details");
+  expect(scoring).not.toHaveAttribute("open");
+  for (const item of Object.values(zh.agriHackathon.scoring)) {
+    expect(within(scoring!).getByText(item.label)).toBeInTheDocument();
+    expect(within(scoring!).getByText(item.description)).toBeInTheDocument();
+  }
+  for (const rule of Object.values(zh.agriHackathon.rules)) expect(screen.getByText(rule)).toBeInTheDocument();
+  for (const href of ["/explore/agrihackathon/submit", "/competitions/agrihackathon/submissions", "/competitions/agrihackathon/tasks", "/competitions/agrihackathon/works", "/competitions/agrihackathon/onsite", "/competitions/agrihackathon/popularity", "/competitions/agrihackathon/publication-review", "/competitions/agrihackathon/manage"]) {
+    expect(container.querySelector(`a[href="${href}"]`)).toBeInTheDocument();
+  }
+  expect(container.querySelectorAll("h1")).toHaveLength(1);
+  expect(container.querySelectorAll('[data-slot="button"].bg-primary')).toHaveLength(1);
+});
+
+it("renders the 5-step unified competition loop and direct compute credit CTA", async () => {
+  mocks.find.mockResolvedValue(null);
+  const { container } = render(await AgriHackathonPage());
+  for (const href of ["/workspace/credits", "/competitions/agrihackathon/submissions", "/explore?category=competition&subcategory=agri-wall", "/competitions/agrihackathon/showcase"]) {
+    expect(container.querySelectorAll(`a[href="${href}"]`)).toHaveLength(1);
+  }
+  expect(screen.getByRole("heading", { name: zh.agriHackathon.pipelineTitle })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.compute.cta })).toHaveAttribute("href", "/workspace/credits");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.submit.cta })).toHaveAttribute("href", "/competitions/agrihackathon/submissions");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.star.cta })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.ranking.cta })).toHaveAttribute("href", "/competitions/agrihackathon/showcase");
+});
+

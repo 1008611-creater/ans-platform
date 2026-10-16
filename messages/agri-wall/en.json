@@ -146,5 +146,17 @@
   "bindingDone": "Project and team linked. Check the receipt and continue your formal stage submission.",
   "continueEntry": "Continue to team binding",
   "freeDisplayTitle": "Free showcase, direct access",
-  "freeDisplayBody": "The wall introduces public projects for discovery and judging. Visitors can open your demo or repository directly. Wall publication and entry records are free."
+  "freeDisplayBody": "The wall introduces public projects for discovery and judging. Visitors can open your demo or repository directly. Wall publication and entry records are free.",
+  "shareVote": "Share to rally Stars",
+  "shareCopied": "Share message copied",
+  "shareText": "Explore our AgriHackathon project \"{title}\" by {team}, with {stars} valid event Stars. Project and demo: {url}",
+  "rankTop": "TOP {rank}",
+  "rankLabel": "Rank #{rank}",
+  "gapHint": "{gap} votes behind previous rank",
+  "leaderHint": "Current popularity leader",
+  "claimCompute": "Compute center",
+  "viewShowcase": "Finalists & showcase",
+  "rankingListTitle": "Final valid vote rankings",
+  "rankVotes": "{count} votes",
+  "shareFailed": "Could not copy. Try again or copy the message below."
 }
