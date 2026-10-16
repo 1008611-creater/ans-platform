@@ -12,3 +12,4 @@
 body.showcase-static .scene-bg,body.showcase-static .loading-screen{display:none!important}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.scroll-cue,.glass-rail,.stage-fog{display:none!important}}
 @media(max-width:640px){.showcase-utility{bottom:8px;left:8px}.showcase-utility a,.showcase-utility button{padding:9px 11px}}
+html{overflow-x:clip!important;overflow-y:auto!important;scroll-behavior:auto!important}body{overflow-x:clip!important;overflow-y:visible!important;touch-action:pan-y}

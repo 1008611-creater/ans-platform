@@ -748,6 +748,16 @@ class MotionDirector {
             100% { opacity: 0; transform: translate(-50%, -18px) scale(0.9); }
           }
 
+          html {
+            overflow-x: clip !important;
+            overflow-y: auto !important;
+            scroll-behavior: auto !important;
+          }
+          body {
+            overflow-x: clip !important;
+            overflow-y: visible !important;
+            touch-action: pan-y;
+          }
           #ans-dino-live-bubble {
             position: fixed;
             left: 50%;
@@ -4058,20 +4068,30 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     });
   }
 
-  // Mouse Wheel Zoom (Active in Zoom & Camera Adjustment Mode, or via Ctrl/Cmd+Wheel / Trackpad Pinch, or on the 3D Stage while Wardrobe/Adopt Drawer is open! Normal page scroll is 100% untouched!)
+  // Mouse Wheel Zoom (ONLY active in Zoom & Camera Adjustment Mode! In Normal Mode, wheel always scrolls the page, including over fixed overlays!)
   const isUiControlTarget = el => {
     if (!el || !el.closest) return false;
-    return Boolean(el.closest("a, button, input, textarea, select, #ans-dino-live-bubble, #ans-dino-body-hitbox, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, .ans-sanctuary-dialog, .chapter-nav, .showcase-utility, .wk-card"));
+    return Boolean(el.closest("a, button, input, textarea, select, #ans-dino-live-bubble, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, .ans-sanctuary-dialog, .chapter-nav, .showcase-utility, .wk-card"));
   };
 
   const onWheelZoom = ev => {
     if (ev.shiftKey) return;
-    if (ev.target && ev.target.closest && ev.target.closest(".chapter-nav, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, .ans-sanctuary-dialog")) return;
-    const isSanctuaryStageZoom = typeof document !== "undefined" && document.body.classList.contains("ans-sanctuary-open");
-    const isModifierZoom = Boolean(ev.ctrlKey || ev.metaKey);
-    if (!dinoState.wheelZoomEnabled && !isSanctuaryStageZoom && !isModifierZoom) return;
+    const tgt = ev.target && ev.target.closest ? ev.target : null;
+    if (tgt && tgt.closest(".ans-sanctuary-dialog, .ans-wardrobe-items, .ans-agent-console-box, .wk-detail, .wk-card-body")) return;
+    const rawDelta = ev.deltaMode === 1 ? ev.deltaY * 32 : ev.deltaMode === 2 ? ev.deltaY * window.innerHeight : ev.deltaY;
+
+    if (!dinoState.wheelZoomEnabled) {
+      // In Normal Mode: if cursor is over a position:fixed overlay (e.g., #ans-dino-body-hitbox or #ans-dino-live-bubble in the center of the screen),
+      // browsers do not chain wheel scroll to window. Forward wheel delta to window.scrollBy so scrolling down ALWAYS works everywhere!
+      if (tgt && tgt.closest("#ans-dino-body-hitbox, #ans-dino-live-bubble, #ans-cam-ctrl-pill, #ans-agent-companion-dock, #ans-dino-interact-hud, .chapter-nav, .showcase-utility, .ans-sanctuary-backdrop")) {
+        ev.preventDefault();
+        window.scrollBy(0, rawDelta);
+      }
+      return;
+    }
+
+    if (tgt && tgt.closest(".chapter-nav, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock")) return;
     ev.preventDefault();
-    const rawDelta = ev.deltaMode === 1 ? ev.deltaY * 32 : ev.deltaY;
     const step = f.clamp(rawDelta, -140, 140) * (ev.ctrlKey ? 0.0028 : 0.0014);
     dinoState.userZoomTarget = f.clamp(dinoState.userZoomTarget * Math.exp(step), 0.36, 2.40);
   };
@@ -4187,8 +4207,13 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
           dinoState.isCamDragging = true;
           document.body.classList.add("ans-cam-dragging");
         }
-        dinoState.userYawTarget = f.clamp(dinoState.userYawTarget - dx * 0.0066, -2.15, 2.15);
-        dinoState.userPitchTarget = f.clamp(dinoState.userPitchTarget + dy * 0.0052, -0.58, 0.68);
+        // Camera movement direction aligned with mouse drag (+dx moves camera right, -dy moves camera up / tilts down):
+        dinoState.userYawTarget = f.clamp(dinoState.userYawTarget + dx * 0.0066, -2.15, 2.15);
+        dinoState.userPitchTarget = f.clamp(dinoState.userPitchTarget - dy * 0.0052, -0.58, 0.68);
+      } else if (!dinoState.wheelZoomEnabled && !holdTriggered) {
+        // In Normal Mode, quick vertical drag also scrolls the page smoothly!
+        didDragCam = true;
+        window.scrollBy(0, -dy * 1.35);
       }
     }
   };
