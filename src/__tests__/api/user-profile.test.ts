@@ -30,7 +30,7 @@ let user: ReturnType<typeof current>;
 
 function patch(body: unknown) {
   return PATCH(new NextRequest("http://localhost:3000/api/user/profile", {
-    method: "PATCH", body: JSON.stringify(body),
+    method: "PATCH", headers: { "x-ans-actor": "user1" }, body: JSON.stringify(body),
   }));
 }
 
@@ -54,18 +54,18 @@ afterEach(() => vi.useRealTimers());
 describe("本人 GET profile", () => {
   it("无会话返回 401", async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
-    expect((await GET()).status).toBe(401);
+    expect((await GET(new Request("http://localhost:3000/api/user/profile", { headers: { "x-ans-actor": "user1" } }))).status).toBe(401);
   });
   it("无用户返回 404", async () => {
     vi.mocked(db.user.findUnique).mockResolvedValue(null);
-    expect((await GET()).status).toBe(404);
+    expect((await GET(new Request("http://localhost:3000/api/user/profile", { headers: { "x-ans-actor": "user1" } }))).status).toBe(404);
   });
   it.each(["deletedAt", "flagged"])("会话有效仍拒绝 %s 账号", async (field) => {
     Object.assign(user, { [field]: field === "deletedAt" ? now : true });
-    expect((await GET()).status).toBe(403);
+    expect((await GET(new Request("http://localhost:3000/api/user/profile", { headers: { "x-ans-actor": "user1" } }))).status).toBe(403);
   });
   it("保留本人 email、昵称和冷却，不返回内部状态字段", async () => {
-    const response = await GET();
+    const response = await GET(new Request("http://localhost:3000/api/user/profile", { headers: { "x-ans-actor": "user1" } }));
     expect(response.status).toBe(200);
     const result = await response.json();
     expect(result).toMatchObject({ id: user.id, email: user.email, nickname: user.nickname });
@@ -90,7 +90,7 @@ describe("PATCH profile 昵称回归", () => {
   });
   it("非法 JSON 返回 400 而不是 500", async () => {
     const response = await PATCH(new NextRequest("http://localhost:3000/api/user/profile", {
-      method: "PATCH", body: "{",
+      method: "PATCH", headers: { "x-ans-actor": "user1" }, body: "{",
     }));
     expect(response.status).toBe(400);
     expect((await response.json()).error).toBe("validation_error");

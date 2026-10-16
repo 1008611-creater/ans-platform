@@ -25,8 +25,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { useSettingsRequest } from "./account-request";
 
 interface ApiKeySettingsProps {
+  actorId: string;
   /**
    * A real plaintext key held in memory (only right after generating one).
    * Keys are stored hashed server-side, so on initial load this is always
@@ -41,10 +43,12 @@ interface ApiKeySettingsProps {
 const HIDDEN_KEY_MASK = `${"pchat_"}${"•".repeat(24)}`;
 
 export function ApiKeySettings({
+  actorId,
   initialApiKey = null,
   hasExistingKey,
   initialPublicByDefault,
 }: ApiKeySettingsProps) {
+  const { request, isActive } = useSettingsRequest(actorId);
   const [origin, setOrigin] = useState("https://ans.cauai.fun");
   useEffect(() => setOrigin(window.location.origin), []);
   const t = useTranslations("apiKey");
@@ -58,71 +62,59 @@ export function ApiKeySettings({
   const generateKey = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/user/api-key", {
-        method: "POST",
-      });
-      if (!response.ok) throw new Error("Failed to generate API key");
-      const data = await response.json();
+      const data = await request<{ apiKey: string }>("/api/user/api-key", "POST");
+      if (!isActive()) return;
       setApiKey(data.apiKey);
       setHasKey(true);
       setShowKey(true);
       toast.success(t("keyGenerated"));
     } catch {
-      toast.error(tCommon("error"));
+      if (isActive()) toast.error(tCommon("error"));
     } finally {
-      setIsLoading(false);
+      if (isActive()) setIsLoading(false);
     }
   };
 
   const regenerateKey = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/user/api-key", {
-        method: "POST",
-      });
-      if (!response.ok) throw new Error("Failed to regenerate API key");
-      const data = await response.json();
+      const data = await request<{ apiKey: string }>("/api/user/api-key", "POST");
+      if (!isActive()) return;
       setApiKey(data.apiKey);
       setHasKey(true);
       setShowKey(true);
       toast.success(t("keyRegenerated"));
     } catch {
-      toast.error(tCommon("error"));
+      if (isActive()) toast.error(tCommon("error"));
     } finally {
-      setIsLoading(false);
+      if (isActive()) setIsLoading(false);
     }
   };
 
   const revokeKey = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/user/api-key", {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to revoke API key");
+      await request("/api/user/api-key", "DELETE");
+      if (!isActive()) return;
       setApiKey(null);
       setHasKey(false);
       setShowKey(false);
       toast.success(t("keyRevoked"));
     } catch {
-      toast.error(tCommon("error"));
+      if (isActive()) toast.error(tCommon("error"));
     } finally {
-      setIsLoading(false);
+      if (isActive()) setIsLoading(false);
     }
   };
 
   const updatePublicDefault = async (value: boolean) => {
     try {
-      const response = await fetch("/api/user/api-key", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mcpPromptsPublicByDefault: value }),
-      });
-      if (!response.ok) throw new Error("Failed to update setting");
+      await request("/api/user/api-key", "PATCH", { mcpPromptsPublicByDefault: value });
+      if (!isActive()) return;
       setPublicByDefault(value);
       toast.success(t("settingUpdated"));
     } catch {
-      toast.error(tCommon("error"));
+      if (isActive()) toast.error(tCommon("error"));
     }
   };
 
