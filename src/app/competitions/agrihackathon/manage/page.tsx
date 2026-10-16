@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { WorkspaceLink } from "@/components/providers/workspace-navigation";
 import { Button } from "@/components/ui/button";
 import { AgriWorkspaceManager } from "@/components/competitions/agri-workspace-manager";
 import { agriDecisionQuerySchema } from "@/contracts/agri-decisions";
 
+export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> { const t = await getTranslations("product.agriWorkspace"); return { title: t("title"), description: t("description") }; }
 export default async function AgriWorkspaceManagementPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const query = await searchParams ?? {};
   const hasSelection = Object.keys(query).length > 0;

@@ -36,6 +36,7 @@ echo "[prompts.chat] Running database migrations..."
 npx prisma migrate deploy
 echo "[prompts.chat] Migrations applied successfully."
 
+
 # Start the application
 echo "[prompts.chat] Starting application on port ${PORT:-3000}..."
 exec node server.js

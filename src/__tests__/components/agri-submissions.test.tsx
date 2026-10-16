@@ -215,7 +215,7 @@ describe("private stage submission", () => {
     await screen.findByText(copy.submitted);
     const commands = fetchMock.mock.calls.filter(([,init]) => init?.body).map(([,init]) => JSON.parse(String(init!.body)));
     expect(commands.find(row => row.action === "submit")).not.toHaveProperty("syncToAgriWall");
-    expect(screen.queryByText(copy.syncToWall)).not.toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: /同步公开|sync.*public/i })).not.toBeInTheDocument();
   });
   it("can reuse an already published imported version", async () => {
     await open();

@@ -2505,15 +2505,15 @@
       },
       "agrihackathon": {
         "name": "AgriHackathon",
-        "tagline": "All-in-One AI Hackathon Hub by CAUHub",
-        "description": "An AI hackathon by CAUHub for China Agricultural University students and alumni within 3 years of graduation. Read rules, claim compute credits, submit projects, rally Stars on the wall, and track Finalist rankings in one place.",
+        "tagline": "First CAUHub AI Hackathon",
+        "description": "For China Agricultural University students and recent alumni (teams of 1–5). Five steps from compute credits and submissions to project wall voting and Demo Day finals.",
         "status": "In preparation",
         "highlights": [
-          "3 tracks · Compute credits",
-          "Project wall · Star voting",
-          "Top 10 Finalists · ¥3,300+ prize pool"
+          "3 tracks · Teams of 1–5",
+          "Project wall Stars (20% prelim weight)",
+          "Top 10 Finalists · ¥3,300 prize pool"
         ],
-        "cta": "Enter AgriHackathon Hub"
+        "cta": "Open AgriHackathon"
       }
     },
     "chooseEvent": "Choose an event",
@@ -2522,12 +2522,12 @@
   },
   "agriHackathon": {
     "boundaryNextOpen": "View stage schedule",
-    "enterWorkbench": "Enter competition workbench",
+    "enterWorkbench": "Team registration & progress",
     "boundaryDescriptionOpen": "The competition workbench is live. Claim compute credits, register your team, submit deliverables, publish to the project wall, and track rankings in one flow.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON · ALL-IN-ONE HUB",
     "title": "AgriHackathon | 农客松",
-    "description": "Organized by CAUHub for China Agricultural University students and alumni within 3 years of graduation (teams of 1–5). Read rules, claim compute credits, submit your 48h build, rally Stars on the project wall, and track Top 10 Finalists and Demo Day rankings.",
+    "description": "First CAUHub AI hackathon for China Agricultural University students and recent alumni (teams of 1–5).",
     "createProject": "Create a competition project",
     "openTeams": "Register / Join a team",
     "backToHub": "Back to competition hub",
@@ -2706,7 +2706,7 @@
       "next": "Transparent advancement: 80% jury + 20% public score"
     },
     "syncNote": "Specific stage windows open dynamically according to the active competition schedule.",
-    "intro": "An AI hackathon organized by CAUHub for CAU students and recent alumni. Read rules, claim compute credits, publish to the project wall to rally Stars, and submit your team deliverables in one place.",
+    "intro": "For CAU students and recent alumni (teams of 1–5) — run the entire hackathon workflow in five steps.",
     "nextAction": "Choose your next step",
     "alreadyEntering": "Already entering?",
     "entryHint": "Publishing is the first step. Link your team, then formally submit your materials.",
@@ -2720,8 +2720,8 @@
     "bindProject": "Link your project",
     "claimCompute": "Claim compute credits",
     "pipelineSectionLabel": "00 / ALL-IN-ONE FLOW",
-    "pipelineTitle": "Where would you like to start?",
-    "pipelineDescription": "From reading rules and claiming compute credits to submitting your build, rallying Stars on the wall, and checking Finalist rankings.",
+    "pipelineTitle": "5-Step Competition Loop",
+    "pipelineDescription": "Read rules, prepare compute, submit builds, rally Stars, and check rankings.",
     "pipeline": {
       "rules": {
         "step": "STEP 01",
