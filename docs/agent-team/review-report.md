@@ -459,9 +459,13 @@ AC-WS04????head CI????????Linux?????????????????????????????????????????????????
 
 独审覆盖非审查者本人实现的算力、提交同步、迁移及计分公示，44 项定向测试通过。检查同届外键、不可变历史、幂等、旧回执哈希兼容、公开投影隐私、撤回、锁顺序和精确排名。已关闭跨截止写入、无关项目受缺失赛事配置影响、并发报名反向锁、拒队提交、未上墙参评及数学同分被拆分问题，当前无已知阻塞。Star 与分享实现由主控结合服务、组件测试及真实 PostgreSQL 封榜流程交叉验证，未以实现者自审代替。
 
-已审查迁移 SHA256：4E683BACF556A57FDA0DC58BF80AFBCAD08F1B6790444A8DE540264F5F6326A6。主控补齐 Prisma 对应外键关系与实际索引名，保持数据模型和 SQL 一致，未改变迁移 SQL。最终集成的提交与检查绑定 PR 回执；生产迁移仍待授权。
+已审查迁移 `20261016090000_agri_unified_closure/migration.sql` 原始含 UTF-8 BOM 摘要为 `4e683bacf556a57fda0dc58bf80afbcad08f1b6790444a8de540264f5f6326a6`，去除首字节 BOM 后的标准 LF 字节 SHA256 为 `3f3f3fd690c5044c2ce2b0f597090a02d6d12688d21a9ce2d7ef87f945ec98e3`。主控补齐 Prisma 对应外键关系与实际索引名，保持数据模型和 SQL 一致，未改变迁移 SQL 语义。
 
+## 2026-10-16 R32 结论更正与 91→92 生产备份演练独审通过
 
-## 2026-10-16 R32 结论更正
+前段“无已知阻塞”只对应原作者当时范围；后续独审确认默认公开及内部候选依赖公开墙两项P1。修复后聚焦源码独审通过，报告绑定精确文件摘要；真实PG92迁移与5流程成功。
 
-前段“无已知阻塞”只对应原作者当时范围；后续独审确认默认公开及内部候选依赖公开墙两项P1。修复后聚焦源码独审通过，报告绑定精确文件摘要；真实PG92迁移与5流程成功。最终head、CI、生产备份恢复及发布仍须分别记录，原PR129 head不能直接合并。
+独立审查已复核 `scripts/production-backup-verify.py`（SHA256 `2a096f2671a93438a1db713114012b3961baeb8479bba3bc218639a8cb5d9cd5`）对生产父版本（`cf9360e8ba13cfb2e3b52eb9e8c25ad0459a587d`，91 项已应用迁移）升级至第 92 项迁移 `20261016090000_agri_unified_closure`（LF SHA256 `3f3f3fd690c5044c2ce2b0f597090a02d6d12688d21a9ce2d7ef87f945ec98e3`）的隔离恢复演练门禁：
+- 仅允许唯一待迁移 `20261016090000_agri_unified_closure`，校验新增 3 张空表（`agri_team_compute_grants`、`agri_judge_scores`、`agri_ranking_publications`）及 4 个新增触发器（`agri_judge_scores_immutable`、`agri_ranking_publications_immutable`、`agri_team_compute_guard`、`agri_judge_score_guard`），既有触发器、约束、索引、函数与 91 条历史迁移记录逐项保持不变。
+- 对 `agri_submission_receipts` 新增可空列 `"wallSync" JSONB`，校验全表 `"wallSync" IS NULL` 且原有 10 列（`id` 至 `createdAt`）行级 `row_to_json` 摘要与恢复前逐行完全一致。
+- 独审结论：`PASS`，批准在目标机器执行 fresh 生产备份隔离恢复与 91→92 迁移演练后正式发布上线。

@@ -32,8 +32,13 @@ VISUAL_SQL_SHA256 = "b9920e8a3fac10db3e8f215262098a44942e29c4c644bed94c1964ae4de
 VISUAL_TABLES = {"visual_model_jobs", "visual_model_assets", "visual_website_releases", "visual_website_domains"}
 FOUR_VIEW_MIGRATION = "20261014194000_private_four_view_jobs"
 FOUR_VIEW_SQL_SHA256 = "343b4afeeff7fa2eb65124d465743f065f86c56a35b58d741a2f7702e73b6787"
+AGRI_UNIFIED_MIGRATION = "20261016090000_agri_unified_closure"
+AGRI_UNIFIED_SQL_SHA256 = "3f3f3fd690c5044c2ce2b0f597090a02d6d12688d21a9ce2d7ef87f945ec98e3"
+AGRI_UNIFIED_TABLES = {"agri_team_compute_grants", "agri_judge_scores", "agri_ranking_publications"}
+AGRI_UNIFIED_TRIGGERS = {"agri_judge_scores_immutable", "agri_ranking_publications_immutable", "agri_team_compute_guard", "agri_judge_score_guard"}
 TABLE_MIGRATIONS = {VISUAL_MIGRATION: (VISUAL_SQL_SHA256, VISUAL_TABLES),
-                    FOUR_VIEW_MIGRATION: (FOUR_VIEW_SQL_SHA256, {"visual_four_view_jobs"})}
+                    FOUR_VIEW_MIGRATION: (FOUR_VIEW_SQL_SHA256, {"visual_four_view_jobs"}),
+                    AGRI_UNIFIED_MIGRATION: (AGRI_UNIFIED_SQL_SHA256, AGRI_UNIFIED_TABLES)}
 # Exact reviewed LF bytes, not an arbitrary operator-supplied SQL file/hash.
 GUARD_SQL = """-- A managed edition stays managed while disabled or before its first stage exists.
 -- No rows or historical migration checksums are modified. Keep pure registration,
@@ -324,10 +329,16 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                     raise RuntimeError("Guard parser witness did not roll back")
             elif not new_tables:
                 before_enum = sql("SELECT jsonb_agg(enumlabel ORDER BY enumsortorder) FROM pg_enum WHERE enumtypid='public.\"FavoriteTargetType\"'::regtype")[0]
-            run(["docker", "exec", "-i", restored, "psql", "-X", "-U", "ans_restore", "-d", "ans_restore", "-v", "ON_ERROR_STOP=1"], input="BEGIN;\n" + expected_sql.decode() + "\nCOMMIT;\n")
+            rehearsal_sql = expected_sql.decode() if expected_sql.decode().lstrip().startswith("BEGIN;") else "BEGIN;\n" + expected_sql.decode() + "\nCOMMIT;\n"
+            run(["docker", "exec", "-i", restored, "psql", "-X", "-U", "ans_restore", "-d", "ans_restore", "-v", "ON_ERROR_STOP=1"], input=rehearsal_sql)
             after_functions = [{"item": item} for item in sql(GUARD_FUNCTION_SQL)]
             after_triggers = [{"item": item} for item in sql(TRIGGER_SQL)]
-            if after_triggers != triggers:
+            if pending == [AGRI_UNIFIED_MIGRATION]:
+                existing_triggers = [item for item in after_triggers if item["item"]["table"] not in new_tables]
+                added_triggers = {item["item"]["name"] for item in after_triggers if item["item"]["table"] in new_tables}
+                if existing_triggers != triggers or added_triggers != AGRI_UNIFIED_TRIGGERS:
+                    raise RuntimeError("Migration rehearsal changed triggers")
+            elif after_triggers != triggers:
                 raise RuntimeError("Migration rehearsal changed triggers")
             if guard_expected is not None:
                 if after_functions != guard_expected:
@@ -348,7 +359,12 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                 if after_enum != before_enum + (["PROJECT"] if "PROJECT" not in before_enum else []):
                     raise RuntimeError("Enum rehearsal changed unexpected values")
             for name, before in restored_tables.items():
-                after = sql("SELECT jsonb_build_object('count',count(*)::text,'digest',md5(COALESCE(string_agg(md5(row_to_json(t)::text),'' ORDER BY md5(row_to_json(t)::text)),''))) FROM public." + quote(name) + " t")[0]
+                if pending == [AGRI_UNIFIED_MIGRATION] and name == "agri_submission_receipts":
+                    if sql('SELECT to_json(COALESCE(bool_and("wallSync" IS NULL), true)) FROM public."agri_submission_receipts"')[0] is not True:
+                        raise RuntimeError("Migration rehearsal populated unexpected wallSync values")
+                    after = sql('SELECT jsonb_build_object(\'count\',count(*)::text,\'digest\',md5(COALESCE(string_agg(md5(row_to_json(t)::text),\'\' ORDER BY md5(row_to_json(t)::text)),\'\'))) FROM (SELECT "id","competitionId","entryStageId","actorId","operation","idempotencyKey","requestHash","submissionId","appliedRevision","createdAt" FROM public."agri_submission_receipts") t')[0]
+                else:
+                    after = sql("SELECT jsonb_build_object('count',count(*)::text,'digest',md5(COALESCE(string_agg(md5(row_to_json(t)::text),'' ORDER BY md5(row_to_json(t)::text)),''))) FROM public." + quote(name) + " t")[0]
                 if after != before: raise RuntimeError("Migration rehearsal changed application data")
             constraints_after = [{"item": item} for item in sql(CONSTRAINT_SQL)]
             indexes_after = [{"item": item} for item in sql(INDEX_SQL)]
@@ -370,6 +386,8 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                                   "functionBefore": guard_functions[0]["item"], "functionAfter": after_functions[0]["item"]})
             elif new_tables:
                 rehearsal["newEmptyTables"] = sorted(new_tables)
+                if pending == [AGRI_UNIFIED_MIGRATION]:
+                    rehearsal["newTriggers"] = sorted(AGRI_UNIFIED_TRIGGERS)
             else:
                 rehearsal["values"] = after_enum
             migration_rehearsal = [rehearsal]
