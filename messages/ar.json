@@ -2677,7 +2677,7 @@
     "boundaryDescription": "يعرض هذا الإصدار القواعد والمسارات السابقة وقائمة التسليم. قواعد ومواعيد وتسجيل النسخة الحالية تنتظر التأكيد.",
     "boundaryItems": {
       "entry": "نقطة دخول واحدة على ANS",
-      "links": "المسارات والتقييم والجوائز السابقة للمرجع فقط",
+      "links": "Compute credits: check available balance, pricing rules, and redeem credit codes",
       "ownership": "تصرّح الفرق بعملها وبتراخيص بياناتها",
       "next": "ربط التسجيل والتسليم والنتائج بعد تأكيد ترتيبات النسخة"
     },

@@ -53,7 +53,7 @@ export function AgriSubmissions({ initialSelection }: { initialSelection?: { tea
   return <TeamStages key={`${data.user.id}:${initialSelection?.teamCompetitionId ?? ""}:${initialSelection?.stage ?? ""}`} actorId={data.user.id} invalidate={invalidate} initialSelection={initialSelection} />;
 }
 function TeamStages({ actorId, invalidate, initialSelection }: { actorId: string; invalidate: () => void; initialSelection?: { teamCompetitionId: string; stage: "PRELIMINARY" | "FINAL" } }) {
-  const t = useTranslations("product.agriSubmissions");
+  const t = useTranslations("product.agriSubmissions"); const wall = useTranslations("agriWall");
   const [data, setData] = useState<AgriSubmissionEntries | null>(null); const [entryId, setEntryId] = useState("");
   const [stage, setStage] = useState<"PRELIMINARY" | "FINAL">(initialSelection?.stage ?? "PRELIMINARY");
   const requestedEntryId = initialSelection?.teamCompetitionId;
@@ -86,12 +86,13 @@ function TeamStages({ actorId, invalidate, initialSelection }: { actorId: string
     finally { flight.current = false; if (alive.current) setBusy(false); }
   }
   const entry = data?.entries.find(row => row.id === entryId);
+  const registrationHref = data?.competitionId ? `/competitions/${encodeURIComponent(data.competitionId)}` : "/competitions/agrihackathon";
   if (detail) return <SubmissionEditor key={detail.id} actorId={actorId} initial={detail} manager={["OWNER", "ADMIN"].includes(entry?.role ?? "")} invalidate={invalidate} onBack={() => setDetail(null)} />;
   return <Card><CardHeader><CardTitle>{t("chooseTeam")}</CardTitle></CardHeader><CardContent className="space-y-5">
     <p className="text-sm leading-6 text-muted-foreground">{t("privacy")}</p>
     {error && <p role="alert">{t.has("errors." + error) ? t("errors." + error) : t("errors.INTERNAL_ERROR")}</p>}
     {busy && <p role="status">{t("loading")}</p>}
-    {data && !data.workspaceEnabled && <p role="status">{t("disabled")}</p>}{data && !data.entries.length && <p>{t("noTeam")}</p>}
+    {data && !data.workspaceEnabled && <p role="status">{t("disabled")}</p>}{data && !data.entries.length && <div className="space-y-3 rounded-xl border bg-muted/30 p-4"><p className="text-sm leading-6">{t("noTeam")}</p><div className="flex flex-wrap gap-2"><Button asChild size="sm"><Link href={registrationHref}>{wall("registration")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/teams">{wall("openTeams")}</Link></Button><Button asChild variant="ghost" size="sm"><Link href="/explore/agrihackathon/submit">{wall("continueEntry")}</Link></Button></div></div>}
     {data && data.entries.length > 0 && <><div className="grid gap-4 sm:grid-cols-2"><Field label={t("team")}>{id => <select id={id} className={selectClass} disabled={busy} value={entryId} onChange={e => setEntryId(e.target.value)}><option value="">{t("chooseTeam")}</option>{data.entries.map(row => <option key={row.id} value={row.id}>{row.teamName}</option>)}</select>}</Field>
     <Field label={t("stageField")}>{id => <select id={id} className={selectClass} disabled={busy} value={stage} onChange={e => setStage(e.target.value as typeof stage)}>{(["PRELIMINARY", "FINAL"] as const).map(value => <option key={value} value={value}>{t("stage." + value)}</option>)}</select>}</Field></div>
     {entry && !["OWNER", "ADMIN"].includes(entry.role) && <p>{t("managerOnly")}</p>}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import {
@@ -52,6 +53,8 @@ const hubEntries = [
 export default async function CompetitionsPage() {
   const t = await getTranslations("competitionsHub");
   const p = await getTranslations("product");
+  const nav = await getTranslations("product.agrihackathon");
+  const wall = await getTranslations("agriWall");
 
   const entries = hubEntries.map((entry) => ({
     ...entry,
@@ -79,6 +82,16 @@ export default async function CompetitionsPage() {
                 key={entry.id}
                 className="ans-competition-card group relative flex flex-col overflow-hidden"
               >
+                {entry.id === "agrihackathon" && (
+                  <Image
+                    src="/competitions/agrihackathon/gitglow-hub.webp"
+                    alt=""
+                    width={1440}
+                    height={900}
+                    unoptimized
+                    className="aspect-[16/10] w-full border-b bg-slate-950/90 object-cover"
+                  />
+                )}
                 <CardHeader className="relative gap-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${entry.iconClass}`}>
@@ -105,12 +118,24 @@ export default async function CompetitionsPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button asChild size="lg" className="mt-auto w-full justify-between">
-                    <Link href={entry.href}>
-                      {entry.cta}
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                    </Link>
-                  </Button>
+                  <div className="mt-auto space-y-2">
+                    <Button asChild size="lg" className="w-full justify-between">
+                      <Link href={entry.href}>
+                        {entry.cta}
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                      </Link>
+                    </Button>
+                    {entry.id === "agrihackathon" && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <Button asChild variant="outline" size="sm" className="flex-1">
+                          <Link href="/explore?category=competition&subcategory=agri-wall">{nav("crossNav.wall")}</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="flex-1">
+                          <Link href="/explore/submit?event=agrihackathon">{wall("publish")}</Link>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );

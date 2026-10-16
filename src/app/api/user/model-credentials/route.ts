@@ -1,3 +1,4 @@
+import { assertRequestActor } from "@/server/http/json";
 import { auth } from "@/lib/auth";
 import { fail, ok, readJson, respondWithError } from "@/server/http/respond";
 import { createCredential, listCredentials } from "@/server/credentials/service";
@@ -6,10 +7,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** GET /api/user/model-credentials —— 只返回掩码后的凭证列表。 */
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return fail("UNAUTHORIZED", "请先登录。", { status: 401 });
   try {
+    assertRequestActor(request, session.user.id);
     return ok({ credentials: await listCredentials(session.user.id) });
   } catch (error) {
     return respondWithError(error);
@@ -21,6 +23,7 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return fail("UNAUTHORIZED", "请先登录。", { status: 401 });
   try {
+    assertRequestActor(request, session.user.id);
     const credential = await createCredential(session.user.id, await readJson(request));
     return ok({ credential }, { status: 201 });
   } catch (error) {

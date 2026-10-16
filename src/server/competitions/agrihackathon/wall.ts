@@ -52,7 +52,7 @@ export async function readAgriWallMine(actorId:string):Promise<AgriWallMine> {
    (SELECT count(*)::integer FROM market_listing_stars ms WHERE ms."listingId"=l.id) AS "starCount",EXISTS(SELECT 1 FROM market_listing_stars ms WHERE ms."listingId"=l.id AND ms."userId"=${actorId}) AS starred
    FROM market_listings l JOIN market_listing_versions lv ON lv."listingId"=l.id AND lv.version=l."publishedVersion" JOIN users u ON u.id=l."sellerId"
    WHERE l."sellerId"=${actorId} AND l.status='PUBLISHED' AND lv."reviewedAt" IS NOT NULL AND lv.payload->>'category'='competition' AND lv.payload->>'subcategory'='agri-wall' ORDER BY l."updatedAt" DESC`;
-  return {entries:rows.map(row=>({id:row.id,teamName:row.teamName,wall:row.wallId ? {id:row.wallId,listingId:row.listingId!,projectId:row.projectId!,artifactVersionId:row.artifactVersionId!,title:row.title??row.teamName,published:Boolean(row.published)}:null})),listings:listings.map(offer).filter(item=>item.listing.priceMinor===0 && item.listing.fulfillment==='resource' && !item.listing.execution && !item.listing.computeIncluded && !item.listing.pricingTiers?.length),canConfigure,round};
+  return {competitionId,entries:rows.map(row=>({id:row.id,teamName:row.teamName,wall:row.wallId ? {id:row.wallId,listingId:row.listingId!,projectId:row.projectId!,artifactVersionId:row.artifactVersionId!,title:row.title??row.teamName,published:Boolean(row.published)}:null})),listings:listings.map(offer).filter(item=>item.listing.priceMinor===0 && item.listing.fulfillment==='resource' && !item.listing.execution && !item.listing.computeIncluded && !item.listing.pricingTiers?.length),canConfigure,round};
  });
 }
 export async function executeAgriWallCommand(actorId:string,raw:unknown) {

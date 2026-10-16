@@ -9,6 +9,26 @@ vi.mock("@/components/auth/account-content-boundary",()=>({AccountContentBoundar
 const billing={rechargeYuanPerPoint:0.1,usdQuotaPerPoint:1,gptConsumptionMultiplier:0.16,deepseekConsumptionMultiplier:1,rechargeEnabled:false};
 beforeEach(()=>{vi.clearAllMocks();vi.stubGlobal("fetch",mocks.fetch);});afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 describe("live voucher offers",()=>{
+ it("shows one balance and reservation summary, keeps costs visible and reveals redemption help on demand",async()=>{
+  render(<CreditsCenter actorId="current-user" billing={billing} availablePoints={123.456789} reservedPoints={0.125001} pendingCount={2}/>);
+  expect(screen.getAllByText("balance")).toHaveLength(1);
+  expect(screen.getAllByText("reserved")).toHaveLength(1);
+  expect(screen.getByText("123.456789")).toBeVisible();
+  expect(screen.getByText("0.125001")).toBeVisible();
+  expect(screen.getByText('pending{"count":2}')).toBeVisible();
+  expect(screen.getByText("hold")).toBeVisible();
+  expect(screen.getByText('rules{"gpt":0.16,"deepseek":1}')).toBeVisible();
+  expect(screen.getByText("checkoutFees")).toBeVisible();
+  expect(screen.getByText("accountNote")).toBeVisible();
+  expect(screen.queryByRole("dialog")).toBeNull();
+  fireEvent.click(screen.getByRole("button",{name:"redemptionGuide"}));
+  const help=await screen.findByRole("dialog",{name:"redemptionGuide"});
+  expect(help).toHaveTextContent("buyStep");
+  expect(help).toHaveTextContent("receiveStep");
+  expect(help).toHaveTextContent("redeemStep");
+  expect(mocks.fetch).not.toHaveBeenCalled();
+ });
+
  it("shows six verified denominations and the full balance precision without changing purchase currency",()=>{const products=getCreditProducts({ANS_CREDIT_PRODUCT_100_URL:"https://wzyp.cn/item/gear3z",ANS_CREDIT_PRODUCT_500_URL:"https://wzyp.cn/item/tme6gj",ANS_CREDIT_PRODUCT_1000_URL:"https://wzyp.cn/item/fjg7om",ANS_CREDIT_PRODUCT_2000_URL:"https://wzyp.cn/item/vzgq9f",ANS_CREDIT_PRODUCT_5000_URL:"https://wzyp.cn/item/yz6ej2"});render(<CreditsCenter actorId="current-user" billing={billing} availablePoints={0.997336} products={products}/>);expect(screen.getByText("0.997336")).toBeVisible();expect(screen.getAllByRole("radio")).toHaveLength(6);expect(screen.getByRole("link",{name:"purchase"})).toHaveAttribute("href","https://wzyp.cn/item/gear3z");fireEvent.click(screen.getByRole("radio",{name:/10 pointsUnit/}));expect(screen.getByRole("link",{name:"purchase"})).toHaveAttribute("href","https://wzyp.cn/item/zkm211");products.forEach(p=>expect(p.points/p.faceValueYuan).toBe(10));expect(mocks.fetch).not.toHaveBeenCalled();});
  it("does not reuse the10-point SKU for a different denomination",()=>{const products=getCreditProducts({ANS_CREDIT_PRODUCT_100_URL:"https://wzyp.cn/item/zkm211"});expect(products.find(p=>p.points===100)?.purchaseUrl).toBeNull();expect(products.find(p=>p.points===10)?.purchaseUrl).toBe("https://wzyp.cn/item/zkm211");});
  it("keeps account binding and prevents a second in-flight redemption",async()=>{let resolve!: (v:unknown)=>void;mocks.fetch.mockReturnValue(new Promise(r=>{resolve=r;}));render(<CreditsCenter actorId="current-user" billing={billing} availablePoints={0}/>);fireEvent.change(screen.getByLabelText("code"),{target:{value:"ANS-PRIVATE"}});fireEvent.submit(screen.getByLabelText("code").closest("form")!);fireEvent.submit(screen.getByLabelText("code").closest("form")!);expect(mocks.fetch).toHaveBeenCalledOnce();expect(mocks.fetch.mock.calls[0][1].headers["x-ans-actor"]).toBe("current-user");resolve({ok:true,json:async()=>({points:10,duplicate:false})});await waitFor(()=>expect(mocks.refresh).toHaveBeenCalledOnce());expect(screen.getByLabelText("code")).toHaveValue("");});

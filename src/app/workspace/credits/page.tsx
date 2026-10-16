@@ -21,6 +21,8 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
   if (!session?.user?.id) redirect("/login?callbackUrl=%2Fworkspace%2Fcredits");
   const [t, locale, query] = await Promise.all([getTranslations("product.quotaHistory"), getLocale(), searchParams ?? Promise.resolve({} as { cursor?: string | string[] })]);
   const voiceText = await getTranslations("product.voiceUsage");
+  const agriNav = await getTranslations("product.agrihackathon");
+  const agriWall = await getTranslations("agriWall");
   const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
   let history;
@@ -32,7 +34,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
   }
   const giftOffer = history ? await readCreditGiftOffer(session.user.id).catch(() => null) : null;
   return <AccountContentBoundary actorId={session.user.id}><div className="ans-product-shell"><div className="ans-product-container space-y-7 py-8 sm:py-12">
-    <Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground">{t("back")}</Link>
+    <div className="flex flex-wrap items-center gap-3"><Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground">{t("back")}</Link><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon">{agriNav("crossNav.hub")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/explore/submit?event=agrihackathon">{agriWall("publish")}</Link></Button></div>
     <header className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1><p className="mt-3 text-muted-foreground">{t("description")}</p></div><Button asChild variant="outline"><Link href="/workspace/credits" prefetch={false}>{t("refresh")}</Link></Button></header>
     {!history ? <p role="alert" className="rounded-[var(--radius)] border p-5">{t(invalid ? "invalid" : "unavailable")}</p> : <>
       {giftOffer && <CreditGiftClaim actorId={session.user.id} offer={giftOffer} />}

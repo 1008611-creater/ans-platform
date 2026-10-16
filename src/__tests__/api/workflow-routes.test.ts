@@ -111,7 +111,7 @@ describe("auth guard on workflow routes", () => {
       await cancelRun(request(), params({ id: "run1" })),
       await addFavoriteRoute(json({})),
       await removeFavoriteRoute(request()),
-      await listCredentialsRoute(),
+      await listCredentialsRoute(request()),
       await createCredentialRoute(json({})),
       await patchCredentialRoute(json({}), params({ id: "cred1" })),
       await deleteCredentialRoute(request(), params({ id: "cred1" })),
@@ -370,7 +370,7 @@ describe("model credential routes", () => {
       { id: "cred1", label: "我的网关", baseUrl: "https://x.test/v1", keyMasked: "********1234", keyLast4: "1234", active: true },
     ]);
 
-    const response = await listCredentialsRoute();
+    const response = await listCredentialsRoute(request());
     const body = await response.json();
 
     expect(response.status).toBe(200);
