@@ -10,8 +10,8 @@ const enFile = path.join(messagesDir, 'en.json');
 // Read English (source) translations
 const en = JSON.parse(fs.readFileSync(enFile, 'utf8'));
 
-// Get all translation files
-const files = fs.readdirSync(messagesDir).filter(f => f.endsWith('.json') && f !== 'en.json');
+// Only check Chinese (zh.json) against English (en.json) — ANS is strictly zh/en bilingual
+const files = ['zh.json'];
 
 // Flatten nested object keys
 function flattenKeys(obj, prefix = '') {

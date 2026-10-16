@@ -19,14 +19,8 @@ export default getRequestConfig(async () => {
     locale = defaultLocale;
   }
   
-  // Load messages for the locale
-  let messages;
-  try {
-    messages = (await import(`@/../messages/${locale}.json`)).default;
-  } catch {
-    // Fall back to default locale messages
-    messages = (await import(`@/../messages/${defaultLocale}.json`)).default;
-  }
+  // Load messages for the locale (strictly zh/en bilingual)
+  const messages = (await import(`@/../messages/${locale === "zh" ? "zh" : "en"}.json`)).default;
   
   return {
     locale,

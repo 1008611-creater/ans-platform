@@ -11,22 +11,8 @@ import { Settings, X, Globe, Trash2, Check, Volume2 } from "lucide-react";
 import { MusicVolumeSlider } from "./background-music";
 
 const SUPPORTED_LOCALES = [
-  { code: "en", label: "English", flag: "🇺🇸" },
   { code: "zh", label: "中文", flag: "🇨🇳" },
-  { code: "es", label: "Español", flag: "🇪🇸" },
-  { code: "pt", label: "Português", flag: "🇧🇷" },
-  { code: "fr", label: "Français", flag: "🇫🇷" },
-  { code: "de", label: "Deutsch", flag: "🇩🇪" },
-  { code: "nl", label: "Dutch", flag: "🇳🇱" },
-  { code: "it", label: "Italiano", flag: "🇮🇹" },
-  { code: "ja", label: "日本語", flag: "🇯🇵" },
-  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
-  { code: "az", label: "Azərbaycan", flag: "🇦🇿" },
-  { code: "ko", label: "한국어", flag: "🇰🇷" },
-  { code: "ar", label: "العربية", flag: "🇸🇦" },
-  { code: "fa", label: "فارسی", flag: "🇮🇷" },
-  { code: "ru", label: "Русский", flag: "🇷🇺" },
-  { code: "el", label: "Ελληνικά", flag: "🇬🇷" },
+  { code: "en", label: "English", flag: "🇺🇸" },
 ];
 
 export function SettingsButton() {

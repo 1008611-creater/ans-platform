@@ -1,13 +1,13 @@
 // Cookie name for storing locale preference
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
-// Supported locales - keep in sync with prompts.config.ts
-export const supportedLocales = ["en", "tr", "es", "zh", "ja", "ar", "pt", "fr", "it", "de", "nl", "ko", "ru", "he", "el", "fa", "az"];
+// Supported locales - keep in sync with prompts.config.ts (Chinese & English bilingual only)
+export const supportedLocales = ["zh", "en"];
 // 念念技能库默认中文；用户仍可在右上角一键切换英文。
 export const defaultLocale = "zh";
 
 // RTL locales
-export const rtlLocales = ["ar", "he", "fa"];
+export const rtlLocales: string[] = [];
 
 // Check if a locale is RTL
 export function isRtlLocale(locale: string): boolean {

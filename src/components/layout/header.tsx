@@ -50,23 +50,8 @@ import { analyticsAuth, analyticsSettings } from "@/lib/analytics";
 import { PRIMARY_NAVIGATION, isPrimaryNavigationActive } from "@/domain/navigation/primary";
 
 const languages = [
-  { code: "en", name: "English" },
   { code: "zh", name: "中文" },
-  { code: "es", name: "Español" },
-  { code: "pt", name: "Português" },
-  { code: "fr", name: "Français" },
-  { code: "de", name: "Deutsch" },
-  { code: "nl", name: "Dutch" },
-  { code: "it", name: "Italiano" },
-  { code: "ja", name: "日本語" },
-  { code: "tr", name: "Türkçe" },
-  { code: "az", name: "Azərbaycan dili" },
-  { code: "ko", name: "한국어" },
-  { code: "ar", name: "العربية" },
-  { code: "fa", name: "فارسی" },
-  { code: "ru", name: "Русский" },
-  { code: "he", name: "עברית" },
-  { code: "el", name: "Ελληνικά" }
+  { code: "en", name: "English" },
 ];
 
 interface HeaderProps {

@@ -16,7 +16,7 @@
 - **Authentication:** NextAuth.js 5 (beta) with pluggable providers (credentials, GitHub, Google, Azure)
 - **Styling:** Tailwind CSS 4 with Radix UI primitives
 - **UI Components:** shadcn/ui pattern (components in `src/components/ui/`)
-- **Internationalization:** next-intl with 11 supported locales
+- **Internationalization:** next-intl with 2 supported locales (`zh`, `en` — Chinese & English bilingual only)
 - **Icons:** Lucide React
 - **Forms:** React Hook Form with Zod validation
 
@@ -176,11 +176,9 @@ Authentication and storage use a plugin architecture:
 
 ## Internationalization
 
-- Translation files are in `messages/{locale}.json`
-- Currently supported: en, tr, es, zh, ja, ar, pt, fr, de, ko, it
-- Add new locales to `prompts.config.ts` i18n.locales array
-- Create corresponding translation file in `messages/`
-- Add language to selector in `src/components/layout/header.tsx`
+- Translation files are in `messages/{locale}.json` (and namespace subfolders under `messages/*/zh.json` & `en.json`)
+- Strictly supported across the entire ANS platform (including AgriHackathon): `zh`, `en` (Chinese & English bilingual only; never waste time editing or syncing legacy `ar/az/de/el/es/fa/fr/he/it/ja/ko/nl/pt/ru/tr` JSON files)
+- Default locale is `zh`, switchable to `en` in header (`src/components/layout/header.tsx`)
 
 ## Key Files
 
