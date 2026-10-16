@@ -1,4 +1,8 @@
-import { loadSanctuaryState, saveSanctuaryState } from "./sanctuary";
+import {
+  ARCADE_TO_SECRET_QUEST_ID,
+  loadSanctuaryState,
+  saveSanctuaryState,
+} from "./sanctuary";
 
 export const QUEST_ARCADE_STORAGE_KEY = "ans_quest_arcade_v1";
 export const QUEST_ARCADE_EVENT = "ans:quest-arcade-updated";
@@ -566,14 +570,23 @@ export function advanceAndClaimQuest(
 
   saveQuestArcadeState(next, actorId);
 
-  // Sync Star Beans & XP to the Dino Sanctuary state so the Mascot reflects rewards immediately
+  // Sync Star Beans, XP, Arcade Tokens & Secret Quest status to the Dino Sanctuary state
   try {
     const sanctuary = loadSanctuaryState();
+    const mappedSecretId = ARCADE_TO_SECRET_QUEST_ID[quest.id];
+    const nextUnlockedSecrets =
+      mappedSecretId && !sanctuary.unlockedSecretQuests.includes(mappedSecretId)
+        ? [...sanctuary.unlockedSecretQuests, mappedSecretId]
+        : sanctuary.unlockedSecretQuests;
     saveSanctuaryState({
       ...sanctuary,
+      arcadeTokens: next.arcadeTokens,
       starBeans: sanctuary.starBeans + quest.rewardStarBeans,
       userXp: sanctuary.userXp + quest.rewardXp,
       affectionXp: sanctuary.affectionXp + 10,
+      unlockedSecretQuests: nextUnlockedSecrets,
+      lastSecretQuestId: mappedSecretId ?? sanctuary.lastSecretQuestId,
+      lastSecretQuestAt: mappedSecretId ? Date.now() : sanctuary.lastSecretQuestAt,
     });
   } catch {
     // Ignore if sanctuary storage unavailable
