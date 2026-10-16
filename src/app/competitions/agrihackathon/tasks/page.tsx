@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
@@ -8,5 +9,5 @@ export async function generateMetadata(): Promise<Metadata> { const t = await ge
 export default async function AgriTasksPage() {
   const t = await getTranslations("product.agriTasks");
   const nav = await getTranslations("product.agrihackathon");
-  return <div className="container max-w-5xl space-y-6 py-8"><div className="flex flex-wrap items-center gap-2"><Button asChild variant="ghost"><Link href="/competitions/agrihackathon">{t("back")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{nav("crossNav.credits")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/explore/agrihackathon/submit">{nav("crossNav.bindWall")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/submissions">{nav("crossNav.submissions")}</Link></Button></div><div className="space-y-3"><h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1><p className="max-w-3xl leading-7 text-muted-foreground">{t("description")}</p></div><AgriTimetable /></div>;
+  return <div className="container max-w-5xl space-y-6 py-8"><div className="flex flex-wrap items-center gap-2"><Button asChild variant="ghost"><Link href="/competitions/agrihackathon">{t("back")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{nav("crossNav.credits")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/explore/agrihackathon/submit">{nav("crossNav.bindWall")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/submissions">{nav("crossNav.submissions")}</Link></Button></div><div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-center"><div className="space-y-3"><h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1><p className="max-w-2xl text-sm leading-6 text-muted-foreground">{t("description")}</p></div><figure className="overflow-hidden rounded-2xl border bg-slate-950/90 shadow-sm"><Image src="/competitions/agrihackathon/gitglow-workflow.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" /></figure></div><AgriTimetable /></div>;
 }

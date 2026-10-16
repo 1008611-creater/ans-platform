@@ -69,11 +69,14 @@ it("keeps every scoring criterion, rule and operational entry behind optional di
   expect(container.querySelectorAll('[data-slot="button"].bg-primary')).toHaveLength(1);
 });
 
-it("renders the 5-step unified competition loop and direct compute credit CTA", async () => {
+it("renders the 5-step unified competition loop, GitGlow visual cards, and direct compute credit CTA", async () => {
   mocks.find.mockResolvedValue(null);
   const { container } = render(await AgriHackathonPage());
   for (const href of ["/workspace/credits", "/competitions/agrihackathon/submissions", "/explore?category=competition&subcategory=agri-wall", "/competitions/agrihackathon/showcase"]) {
     expect(container.querySelectorAll(`a[href="${href}"]`)).toHaveLength(1);
+  }
+  for (const asset of ["gitglow-hub.webp", "gitglow-wall.webp", "gitglow-tracks.webp", "gitglow-workflow.webp", "gitglow-scoring.webp", "gitglow-awards.webp"]) {
+    expect(container.querySelector(`img[src="/competitions/agrihackathon/${asset}"]`)).toBeInTheDocument();
   }
   expect(screen.getByRole("heading", { name: zh.agriHackathon.pipelineTitle })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.compute.cta })).toHaveAttribute("href", "/workspace/credits");
