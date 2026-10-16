@@ -1,7 +1,7 @@
 import { WorkspaceLink } from "@/components/providers/workspace-navigation";
 import { Button } from "@/components/ui/button";
 
-export type AgriOrganizerTab = "manage" | "market" | "popularity" | "works" | "onsite" | "publication-review";
+export type AgriOrganizerTab = "manage" | "market" | "popularity" | "works" | "onsite" | "publication-review" | "rankings";
 
 const TABS: Array<{ id: AgriOrganizerTab; href: string; key: string }> = [
   { id: "manage", href: "/competitions/agrihackathon/manage", key: "organizerNav.manage" },
@@ -10,6 +10,7 @@ const TABS: Array<{ id: AgriOrganizerTab; href: string; key: string }> = [
   { id: "works", href: "/competitions/agrihackathon/works", key: "organizerNav.works" },
   { id: "onsite", href: "/competitions/agrihackathon/onsite", key: "organizerNav.onsite" },
   { id: "publication-review", href: "/competitions/agrihackathon/publication-review", key: "organizerNav.publicationReview" },
+  { id: "rankings", href: "/competitions/agrihackathon/rankings", key: "organizerNav.rankings" },
 ];
 
 export function AgriOrganizerNav({

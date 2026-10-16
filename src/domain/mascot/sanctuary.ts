@@ -839,7 +839,7 @@ export function isContrastMixOutfit(
   const nonDefaultIds = new Set(["none", "none_head", "starter_antenna", "starter_scarf", "aura_mint"]);
   const activeItems = (Object.keys(equipped) as WardrobeSlot[])
     .map(slot => DINO_WARDROBE_ITEMS.find(item => item.id === equipped[slot]))
-    .filter((item): item is WardrobeItemDef => Boolean(item) && !nonDefaultIds.has(item.id));
+    .filter((item): item is WardrobeItemDef => item !== undefined && !nonDefaultIds.has(item.id));
 
   if (activeItems.length >= 3) return true;
   if (activeItems.length < 2) return false;

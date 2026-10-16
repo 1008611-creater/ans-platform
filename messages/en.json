@@ -2513,7 +2513,9 @@
           "Project wall Stars (20% prelim weight)",
           "Top 10 Finalists · ¥3,300 prize pool"
         ],
-        "cta": "Open AgriHackathon"
+        "cta": "Open AgriHackathon",
+        "wallCta": "Project wall",
+        "submitCta": "Publish work"
       }
     },
     "chooseEvent": "Choose an event",
