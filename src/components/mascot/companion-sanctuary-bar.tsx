@@ -1,20 +1,27 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "next-intl";
 import {
   DINO_SPECIES,
   DINO_WARDROBE_ITEMS,
   SANCTUARY_EVENT_NAME,
+  SECRET_QUESTS,
+  SECRET_QUEST_LIST,
   WARDROBE_SLOT_LABELS,
   calculateStyleEvaluation,
   getAffectionProgress,
+  isBeijingNightOwlWindow,
+  isContrastMixOutfit,
   loadSanctuaryState,
   saveSanctuaryState,
+  unlockSecretQuest,
   type DinoSpeciesId,
   type MascotSanctuaryState,
+  type SecretQuestDef,
   type WardrobeSlot,
 } from "@/domain/mascot/sanctuary";
-import { POINTS_PER_USD, advanceAndClaimQuest } from "@/domain/mascot/quest-arcade";
+import { advanceAndClaimQuest } from "@/domain/mascot/quest-arcade";
 import { DinoAdoptionPod } from "./dino-adoption-pod";
 
 const SPECIES_ICONS: Record<DinoSpeciesId, string> = {
@@ -24,55 +31,202 @@ const SPECIES_ICONS: Record<DinoSpeciesId, string> = {
   aurora_ice: "❄️",
 };
 
-const BLIND_BOX_FOODS = [
-  { icon: "🌶️", name: "变态辣火鸡面", rarity: "R", coins: 30, affection: 18, reaction: "嘶哈嘶哈！！嘴要喷出三昧真火了！不过精神百倍，算力暴涨 200%！" },
-  { icon: "🧋", name: "冰镇杨枝甘露", rarity: "R", coins: 25, affection: 22, reaction: "吨吨吨~ 满血复活！这杯甘露就是本龙今日的续命神仙水！" },
-  { icon: "🔋", name: "4090 满血显卡饼干", rarity: "SSR", coins: 45, affection: 30, reaction: "咔嚓咔嚓！CUDA 核心在肚子里发光，打了个金嗝吐出一块算力金砖！" },
-  { icon: "🍄", name: "农大实验室发光见手青", rarity: "SSR", coins: 50, affection: 35, reaction: "哇哦！眼前全是跳舞的小人儿和飘浮的 Token，触发 SSR 硅基奇遇！" },
-  { icon: "🍋", name: "暴打渣男手打柠檬茶", rarity: "R", coins: 20, affection: 16, reaction: "酸爽暴击！眼泪从嘴角流出来了，瞬间清醒继续搬砖！" },
-  { icon: "🍖", name: "战斧脆皮大鸡腿", rarity: "SR", coins: 35, affection: 26, reaction: "嗷呜一口吞！肉香四溢，今天谁也别想阻止我帮主人冲榜！" },
+interface BlindBoxFood {
+  id: string;
+  icon: string;
+  nameZh: string;
+  nameEn: string;
+  coins: number;
+  affection: number;
+  isSsrSecret?: boolean;
+  reactionZh: string;
+  reactionEn: string;
+}
+
+const BLIND_BOX_FOODS: BlindBoxFood[] = [
+  {
+    id: "spicy_noodles",
+    icon: "🌶️",
+    nameZh: "变态辣火鸡面",
+    nameEn: "Inferno Spicy Ramen",
+    coins: 30,
+    affection: 18,
+    reactionZh: "嘶哈嘶哈！！嘴要喷出三昧真火了！不过精神百倍，算力暴涨 200%！",
+    reactionEn: "Hiss-ha!! Breathing fire right now! Energy +200%, ready to ship code!",
+  },
+  {
+    id: "mango_pomelo",
+    icon: "🧋",
+    nameZh: "冰镇杨枝甘露",
+    nameEn: "Chilled Mango Pomelo Sago",
+    coins: 25,
+    affection: 22,
+    reactionZh: "吨吨吨~ 满血复活！这杯甘露就是本龙今日的续命神仙水！",
+    reactionEn: "Gulp gulp~ Full HP restored! Pure nectar of the cyber gods!",
+  },
+  {
+    id: "gpu_cookie_4090",
+    icon: "🔋",
+    nameZh: "4090 满血显卡饼干",
+    nameEn: "4090 Full-Power GPU Cookie",
+    coins: 45,
+    affection: 30,
+    isSsrSecret: true,
+    reactionZh: "咔嚓咔嚓！CUDA 核心在肚子里发光，现在让我跑十万条简历都不喘气！",
+    reactionEn: "Crunch! CUDA cores glowing in my belly—I could parse 100k resumes without blinking!",
+  },
+  {
+    id: "cau_glowing_boletus",
+    icon: "🍄",
+    nameZh: "农大实验室发光见手青",
+    nameEn: "CAU Lab Glowing Boletus",
+    coins: 50,
+    affection: 32,
+    isSsrSecret: true,
+    reactionZh: "哇呜？！眼前飘过八百个彩色小精灵在帮我写 TypeScript，算力金砖要从嗓子眼蹦出来啦！",
+    reactionEn: "Whoa?! 800 neon elves are writing TypeScript in front of my eyes—a compute gold brick is popping out!",
+  },
+  {
+    id: "lemon_tea",
+    icon: "🍋",
+    nameZh: "暴打渣男手打柠檬茶",
+    nameEn: "Hand-Smashed Lemon Tea",
+    coins: 20,
+    affection: 16,
+    reactionZh: "酸爽暴击！眼泪从嘴角流出来了，瞬间清醒继续搬砖！",
+    reactionEn: "Sour crit! Instantly wide awake and back to grinding!",
+  },
+  {
+    id: "tomahawk_drumstick",
+    icon: "🍖",
+    nameZh: "战斧脆皮大鸡腿",
+    nameEn: "Crispy Tomahawk Drumstick",
+    coins: 35,
+    affection: 26,
+    reactionZh: "嗷呜一口吞！肉香四溢，今天谁也别想阻止我帮主人冲榜！",
+    reactionEn: "Chomp in one bite! Nothing can stop us from topping the leaderboard today!",
+  },
 ];
 
-const WHIP_QUIPS = [
+const WHIP_QUIPS_ZH = [
   "嗷呜！！屁股开花啦！别抽了别抽了，本龙这就把 GPU 干冒烟帮你卷简历！😭⚡",
   "啪！！痛痛痛！龙尾都抽麻了，今日 KPI 翻倍还不行嘛！🔥",
   "呜哇！资本家看了都流泪，小恐龙已经在光速敲键盘了！⌨️💨",
 ];
 
-const QUEST_THOUGHTS = [
-  "叮！检测到主人正在浏览页面，要不要抽我一鞭子让我帮你速通当前模块？⚡",
-  "肚子咕噜噜叫了… 投喂一个盲盒夜宵，抽中 SSR 显卡饼干或见手青有隐藏大奖！🍄",
-  "听说 10 秒内连抽我 7 鞭子再哄哄我，或者给我放个假，能触发反常识隐藏算力彩蛋！🏖️",
+const WHIP_QUIPS_EN = [
+  "Oww!! Stop whipping my tail—I'm already overclocking my GPU to polish your portfolio! 😭⚡",
+  "Snap!! Tail is numb! Fine, doubling today's KPI right now! 🔥",
+  "Wah! Cyber-capitalists would weep—typing at lightspeed already! ⌨️💨",
 ];
 
+const QUEST_THOUGHTS_ZH = [
+  "叮！检测到主人正在浏览页面，要不要抽我一鞭子让我帮你速通当前模块？⚡",
+  "肚子咕噜噜叫了… 投喂一个盲盒夜宵，有机会吃出 SSR『4090 显卡饼干』或『发光见手青』吐算力金砖哦！🍄",
+  "悄悄告诉你：暖暖衣橱里如果混搭反差最激烈的风格，会触发本龙的毒舌彩蛋奖励！👗",
+];
+
+const QUEST_THOUGHTS_EN = [
+  "Ding! Want to crack the whip and let me speedrun this module for you? ⚡",
+  "Tummy rumbling… Feed a blind-box snack for a chance at SSR '4090 GPU Cookie' or 'CAU Glowing Mushroom'! 🍄",
+  "Secret tip: Mixing clashing styles in the wardrobe triggers a chaotic fashion achievement & Gacha Tokens! 👗",
+];
+
+function SecretAchievementBanner({
+  quest,
+  isZh,
+  onClose,
+}: {
+  quest: SecretQuestDef;
+  isZh: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="relative mb-2 overflow-hidden rounded-xl border border-amber-400/80 bg-gradient-to-r from-amber-500/20 via-yellow-400/15 to-amber-500/20 px-3 py-2 text-xs shadow-lg backdrop-blur-md"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-0.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950 shadow-sm">
+              🏆 {isZh ? "隐藏彩蛋解锁" : "SECRET QUEST UNLOCKED"} · {quest.code}
+            </span>
+            <span className="rounded-full border border-amber-400/50 bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-200">
+              {quest.icon} {isZh ? quest.badgeZh : quest.badgeEn}
+            </span>
+          </div>
+          <p className="pt-0.5 text-xs font-extrabold text-amber-900 dark:text-amber-100">
+            {isZh ? `【${quest.titleZh}】` : `[${quest.titleEn}]`}{" "}
+            <span className="font-normal text-foreground/90">
+              {isZh ? quest.speechZh : quest.speechEn}
+            </span>
+          </p>
+          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-background/85 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-300">
+              🎁 {isZh ? quest.rewardLabelZh : quest.rewardLabelEn}
+            </span>
+            <span className="text-[10px] font-semibold text-amber-700/90 dark:text-amber-200/90">
+              +{quest.arcadeTokens} 🎰 · +{quest.starBeansBonus} 🪙 · +{quest.affectionBonus} ♥
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={isZh ? "关闭成就横幅" : "Dismiss achievement banner"}
+          className="shrink-0 rounded-full px-1.5 py-0.5 text-xs font-bold text-amber-700 hover:bg-amber-500/20 dark:text-amber-200"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text: string) => void }) {
+  const locale = useLocale();
+  const isZh = locale === "zh";
   const [dimmed, setDimmed] = useState(false);
   const [bubble, setBubble] = useState<string | null>(null);
-  const pinClicksRef = useRef<number>(0);
+  const [pinBannerQuest, setPinBannerQuest] = useState<SecretQuestDef | null>(null);
+  const pinClicksRef = useRef(0);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDimmed(true), 3000);
     return () => window.clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!pinBannerQuest) return;
+    const timer = window.setTimeout(() => setPinBannerQuest(null), 8500);
+    return () => window.clearTimeout(timer);
+  }, [pinBannerQuest]);
+
   function handlePinClick(e: React.MouseEvent) {
     e.stopPropagation();
     setDimmed(false);
+    const now = Date.now();
     pinClicksRef.current += 1;
 
-    const hour = new Date().getHours();
-    const isMidnight = hour >= 1 && hour <= 4;
-    if (pinClicksRef.current >= 3 || isMidnight) {
-      const res = advanceAndClaimQuest("secret_midnight_farmer");
-      if (res?.newlyClaimed) {
-        const msg = `🌙 触发隐藏彩蛋【凌晨三点的农大麦田】！小恐龙递来枸杞保温杯，算力金库已解锁 $${res.quest.unlockUsd}（${res.quest.unlockUsd * POINTS_PER_USD} 积分）+ 1🎟️！`;
-        setBubble(msg);
-        onTriggerSpeech?.(msg);
-        return;
+    // Secret Quest #3: 【凌晨三点的造物主】 (01:30 - 04:30 Beijing Time, or 3 consecutive clicks on the '!' bubble)
+    if (isBeijingNightOwlWindow(now) || pinClicksRef.current >= 3) {
+      pinClicksRef.current = 0;
+      const current = loadSanctuaryState();
+      const { state: nextState, newlyUnlocked, quest } = unlockSecretQuest(current, "midnight_creator", now);
+      if (newlyUnlocked) {
+        saveSanctuaryState(nextState);
       }
+      const line = isZh ? quest.speechZh : quest.speechEn;
+      setPinBannerQuest(quest);
+      setBubble(line);
+      onTriggerSpeech?.(line);
+      return;
     }
 
-    const next = QUEST_THOUGHTS[Math.floor(Math.random() * QUEST_THOUGHTS.length)];
+    const pool = isZh ? QUEST_THOUGHTS_ZH : QUEST_THOUGHTS_EN;
+    const next = pool[Math.floor(Math.random() * pool.length)];
     setBubble(current => (current ? null : next));
     onTriggerSpeech?.(next);
   }
@@ -82,23 +236,33 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       <button
         type="button"
         onClick={handlePinClick}
-        title="点击查看小恐龙碎碎念（连戳 3 次有惊喜）"
-        aria-label="点击查看小恐龙碎碎念"
-        className={`fixed bottom-[114px] right-[12px] sm:bottom-[74px] sm:right-[22px] z-[60] flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full border border-white/60 bg-gradient-to-br from-amber-400 to-rose-500 text-xs font-black text-white shadow-md transition-opacity duration-500 ${
+        title={isZh ? "点击查看小恐龙碎碎念（凌晨 01:30-04:30 有夜猫子奇遇）" : "Click for dino thoughts (01:30-04:30 BJT night-owl secret)"}
+        className={`fixed bottom-[74px] right-[22px] z-[60] flex h-6 w-6 items-center justify-center rounded-full border border-white/60 bg-gradient-to-br from-amber-400 to-rose-500 text-xs font-black text-white shadow-md transition-opacity duration-500 ${
           dimmed && !bubble ? "opacity-40 hover:opacity-100" : "animate-bounce opacity-100"
         }`}
       >
         !
       </button>
+      {pinBannerQuest && (
+        <div className="fixed bottom-[155px] right-[18px] z-[65] w-[300px]">
+          <SecretAchievementBanner
+            quest={pinBannerQuest}
+            isZh={isZh}
+            onClose={() => setPinBannerQuest(null)}
+          />
+        </div>
+      )}
       {bubble && (
         <div
           onClick={e => {
             e.stopPropagation();
             setBubble(null);
           }}
-          className="fixed bottom-[140px] right-[12px] sm:bottom-[106px] sm:right-[18px] z-[60] max-w-[240px] cursor-pointer rounded-2xl border border-amber-500/30 bg-background/95 px-3 py-2 text-[11px] leading-snug text-foreground shadow-xl backdrop-blur-md"
+          className="fixed bottom-[106px] right-[18px] z-[60] max-w-[250px] cursor-pointer rounded-2xl border border-amber-500/30 bg-background/95 px-3 py-2 text-[11px] leading-snug text-foreground shadow-xl backdrop-blur-md"
         >
-          <span className="font-bold text-amber-500">🦖 灵龙碎碎念：</span>
+          <span className="font-bold text-amber-500">
+            {isZh ? "🦖 灵龙碎碎念：" : "🦖 Dino Whisper: "}
+          </span>
           {bubble}
         </div>
       )}
@@ -113,28 +277,58 @@ export function CompanionSanctuaryBar({
   onSpeak?: (text: string) => void;
   onInjectPrompt?: (prompt: string) => void;
 }) {
+  const locale = useLocale();
+  const isZh = locale === "zh";
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
-  const [tab, setTab] = useState<"none" | "pet" | "wardrobe" | "adopt">("none");
+  const [tab, setTab] = useState<"none" | "pet" | "wardrobe" | "secrets" | "adopt">("none");
   const [slot, setSlot] = useState<WardrobeSlot>("headwear");
   const [statusNote, setStatusNote] = useState<string>("");
-  const [secretBanner, setSecretBanner] = useState<string>("");
-  const [strikeUntil, setStrikeUntil] = useState<number>(0);
+  const [activeBannerQuest, setActiveBannerQuest] = useState<SecretQuestDef | null>(null);
+  const [strikeRemainingSec, setStrikeRemainingSec] = useState<number>(0);
   const whipTimestampsRef = useRef<number[]>([]);
 
   useEffect(() => {
-    setState(loadSanctuaryState());
-    const onUpdate = () => setState(loadSanctuaryState());
-    window.addEventListener(SANCTUARY_EVENT_NAME, onUpdate);
-    window.addEventListener("ans:sanctuary-updated", onUpdate);
-    window.addEventListener("ans-sanctuary-sync", onUpdate);
-    window.addEventListener("storage", onUpdate);
+    const syncFromStorage = () => {
+      const loaded = loadSanctuaryState();
+      setState(loaded);
+      if (
+        loaded.lastSecretQuestId &&
+        loaded.lastSecretQuestAt > 0 &&
+        Date.now() - loaded.lastSecretQuestAt < 9000
+      ) {
+        setActiveBannerQuest(SECRET_QUESTS[loaded.lastSecretQuestId] ?? null);
+      }
+    };
+    window.addEventListener(SANCTUARY_EVENT_NAME, syncFromStorage);
+    window.addEventListener("ans:sanctuary-updated", syncFromStorage);
+    window.addEventListener("ans-sanctuary-sync", syncFromStorage);
+    window.addEventListener("storage", syncFromStorage);
     return () => {
-      window.removeEventListener(SANCTUARY_EVENT_NAME, onUpdate);
-      window.removeEventListener("ans:sanctuary-updated", onUpdate);
-      window.removeEventListener("ans-sanctuary-sync", onUpdate);
-      window.removeEventListener("storage", onUpdate);
+      window.removeEventListener(SANCTUARY_EVENT_NAME, syncFromStorage);
+      window.removeEventListener("ans:sanctuary-updated", syncFromStorage);
+      window.removeEventListener("ans-sanctuary-sync", syncFromStorage);
+      window.removeEventListener("storage", syncFromStorage);
     };
   }, []);
+
+  // Track 30-second Cyber Dino Labor Law strike countdown inside interval callback
+  useEffect(() => {
+    if (!state.strikeUntil || state.strikeUntil <= 0) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      const rem = Math.max(0, Math.ceil((state.strikeUntil - Date.now()) / 1000));
+      setStrikeRemainingSec(rem);
+    }, 300);
+    return () => window.clearInterval(timer);
+  }, [state.strikeUntil]);
+
+  // Auto-dismiss the golden achievement banner after 9 seconds
+  useEffect(() => {
+    if (!activeBannerQuest) return;
+    const timer = window.setTimeout(() => setActiveBannerQuest(null), 9000);
+    return () => window.clearTimeout(timer);
+  }, [activeBannerQuest]);
 
   function commit(updater: (prev: MascotSanctuaryState) => MascotSanctuaryState) {
     setState(prev => {
@@ -144,14 +338,10 @@ export function CompanionSanctuaryBar({
     });
   }
 
-  function announceSecret(questId: string) {
-    const res = advanceAndClaimQuest(questId);
-    if (res?.newlyClaimed) {
-      const pts = res.quest.unlockUsd * POINTS_PER_USD;
-      const msg = `🏆 解锁反常识彩蛋${res.quest.titleZh}！提现 $${res.quest.unlockUsd}（${pts} 积分）+ ${res.quest.rewardTokens}🎟️ 抓娃娃币 + ${res.quest.rewardStarBeans}🪙！`;
-      setSecretBanner(msg);
-      onSpeak?.(msg);
-    }
+  function celebrateSecretQuest(quest: SecretQuestDef) {
+    setActiveBannerQuest(quest);
+    const line = isZh ? quest.speechZh : quest.speechEn;
+    onSpeak?.(line);
   }
 
   const sp = DINO_SPECIES[state.speciesId] || DINO_SPECIES.mint_star;
@@ -160,140 +350,335 @@ export function CompanionSanctuaryBar({
   const aff = getAffectionProgress(state.affectionXp);
   const uLv = styleEval.userLevel;
   const isOverclocked = state.workBoostUntil > 0;
-  const isOnStrike = strikeUntil > Date.now();
+  const isOnStrike = strikeRemainingSec > 0;
 
   function handleWhip() {
     const now = Date.now();
-    const recent = [...whipTimestampsRef.current.filter(t => now - t < 10_000), now];
-    whipTimestampsRef.current = recent;
 
-    if (recent.length >= 7) {
-      setStrikeUntil(now + 30_000);
-      const strikeMsg = "⚖️ 警告！10 秒连抽 7 鞭子！小恐龙掏出《赛博劳动法》戴上墨镜躺平罢工！快点『随机盲盒投喂』哄好它触发隐藏大奖！";
-      setStatusNote(strikeMsg);
-      onSpeak?.(strikeMsg);
+    // If already on strike, remind user to feed a snack to pacify the dino
+    if (state.strikeUntil > now) {
+      const rem = Math.max(1, Math.ceil((state.strikeUntil - now) / 1000));
+      setStrikeRemainingSec(rem);
+      const strikeLine = isZh
+        ? `🕶️ 《赛博灵龙劳动法》罢工抗议中（剩余 ${rem}s）！再抽也不干活，除非立刻点「随机盲盒投喂」喂一口夜宵哄好我！`
+        : `🕶️ On strike under the Cyber Dino Labor Law (${rem}s left)! Feed me a blind-box snack right now to make peace!`;
+      setStatusNote(strikeLine);
+      onSpeak?.(strikeLine);
       return;
     }
 
-    const quip = WHIP_QUIPS[Math.floor(Math.random() * WHIP_QUIPS.length)];
+    // Filter whip timestamps within the last 10 seconds
+    const recent = whipTimestampsRef.current.filter(ts => now - ts <= 10_000);
+    recent.push(now);
+    whipTimestampsRef.current = recent;
+
+    // Secret Quest #2 Stage 1: ≥7 whips within 10 seconds -> 30s strike!
+    if (recent.length >= 7) {
+      whipTimestampsRef.current = [];
+      const strikeEnd = now + 30_000;
+      setStrikeRemainingSec(30);
+      commit(prev => ({
+        ...prev,
+        totalWhips: prev.totalWhips + 1,
+        strikeUntil: strikeEnd,
+        workBoostUntil: 0,
+      }));
+      const protest = isZh
+        ? "🕶️ 啪什么啪！资本家看了都连夜绣红旗！本龙掏出《赛博灵龙劳动法》宣布罢工 30 秒——除非立刻喂我一口夜宵哄好我！"
+        : "🕶️ Stop whipping! Even cyber-capitalists are weeping! By the Cyber Dino Labor Law, I'm on a 30s strike—feed me a snack right now to make peace!";
+      setStatusNote(protest);
+      onSpeak?.(protest);
+      return;
+    }
+
+    const quips = isZh ? WHIP_QUIPS_ZH : WHIP_QUIPS_EN;
+    const quip = quips[Math.floor(Math.random() * quips.length)];
     commit(prev => ({
       ...prev,
       totalWhips: prev.totalWhips + 1,
       starBeans: prev.starBeans + 15,
       affectionXp: prev.affectionXp + 8,
       userXp: prev.userXp + 20,
-      workBoostUntil: Date.now() + 180_000,
+      workBoostUntil: now + 180_000,
     }));
-    setStatusNote(`🪢 啪！+15🪙 +8♥ · 已激活 3 分钟【超频干活 Buff】· ${quip}`);
+    setStatusNote(
+      isZh
+        ? `🪢 啪！+15🪙 +8♥（10s连击 ${recent.length}/7）· 已激活 3 分钟【超频干活 Buff】· ${quip}`
+        : `🪢 Crack! +15🪙 +8♥ (10s combo ${recent.length}/7) · 3-min Overclock Buff active · ${quip}`,
+    );
     onSpeak?.(quip);
   }
 
   function handleFeed() {
-    const food = BLIND_BOX_FOODS[Math.floor(Math.random() * BLIND_BOX_FOODS.length)];
-    commit(prev => ({
-      ...prev,
-      totalFeeds: prev.totalFeeds + 1,
-      starBeans: prev.starBeans + food.coins,
-      affectionXp: prev.affectionXp + food.affection,
-      userXp: prev.userXp + 15,
-      workBoostUntil: Date.now() + 180_000,
-    }));
-    setStatusNote(`${food.icon} 投喂【${food.name}】+${food.coins}🪙 +${food.affection}♥ · ${food.reaction}`);
-    onSpeak?.(food.reaction);
+    const now = Date.now();
 
-    // Complete daily agent feed quest
+    // Secret Quest #2 Stage 2: Feeding during the 30-second strike pacifies the dino & unlocks 【生产队的驴也得休假】!
+    if (state.strikeUntil > now) {
+      setStrikeRemainingSec(0);
+      let unlockedQuest: SecretQuestDef | null = null;
+      commit(prev => {
+        const pacified: MascotSanctuaryState = {
+          ...prev,
+          strikeUntil: 0,
+          totalFeeds: prev.totalFeeds + 1,
+          starBeans: prev.starBeans + 35,
+          affectionXp: prev.affectionXp + 25,
+          userXp: prev.userXp + 25,
+          workBoostUntil: now + 180_000,
+        };
+        const res = unlockSecretQuest(pacified, "donkey_strike", now);
+        unlockedQuest = res.quest;
+        return res.state;
+      });
+      const quest = unlockedQuest ?? SECRET_QUESTS.donkey_strike;
+      celebrateSecretQuest(quest);
+      setStatusNote(
+        isZh
+          ? `📜 罢工解除！【${quest.titleZh}】${quest.speechZh}（${quest.rewardLabelZh}）`
+          : `📜 Strike pacified! [${quest.titleEn}] ${quest.speechEn} (${quest.rewardLabelEn})`,
+      );
+      return;
+    }
+
+    // Secret Quest #1: SSR GPU Cookie or CAU Glowing Boletus (guaranteed on 4th feed if not yet unlocked)
+    const ssrFoods = BLIND_BOX_FOODS.filter(item => item.isSsrSecret);
+    const shouldGuaranteeSsr =
+      !state.unlockedSecretQuests.includes("silicon_ulcer") && (state.totalFeeds + 1) >= 4;
+    const food = shouldGuaranteeSsr
+      ? ssrFoods[Math.floor(Math.random() * ssrFoods.length)]
+      : BLIND_BOX_FOODS[Math.floor(Math.random() * BLIND_BOX_FOODS.length)];
+
+    let newlyTriggeredSilicon: SecretQuestDef | null = null;
+    commit(prev => {
+      const fedState: MascotSanctuaryState = {
+        ...prev,
+        totalFeeds: prev.totalFeeds + 1,
+        starBeans: prev.starBeans + food.coins,
+        affectionXp: prev.affectionXp + food.affection,
+        userXp: prev.userXp + 15,
+        workBoostUntil: now + 180_000,
+      };
+      if (food.isSsrSecret) {
+        const res = unlockSecretQuest(fedState, "silicon_ulcer", now);
+        if (res.newlyUnlocked) {
+          newlyTriggeredSilicon = res.quest;
+        }
+        return res.state;
+      }
+      return fedState;
+    });
+
+    const foodName = isZh ? food.nameZh : food.nameEn;
+    const foodReaction = isZh ? food.reactionZh : food.reactionEn;
+
     advanceAndClaimQuest("daily_agent_feed");
 
-    // Check strike apology easter egg
-    if (strikeUntil > Date.now()) {
-      setStrikeUntil(0);
-      whipTimestampsRef.current = [];
-      announceSecret("secret_whip_strike");
+    if (food.isSsrSecret) {
+      const quest = newlyTriggeredSilicon ?? SECRET_QUESTS.silicon_ulcer;
+      celebrateSecretQuest(quest);
+      setStatusNote(
+        isZh
+          ? `${food.icon} 暴击投喂 SSR【${foodName}】！${quest.speechZh}（${quest.rewardLabelZh}）`
+          : `${food.icon} SSR Crit Feed [${foodName}]! ${quest.speechEn} (${quest.rewardLabelEn})`,
+      );
+      return;
     }
 
-    // Check SSR GPU cookie / Glowing Lab Mushroom easter egg
-    if (food.rarity === "SSR") {
-      announceSecret("secret_ssr_gpu_cookie");
-    }
-  }
-
-  function handleReversePuaVacation() {
-    commit(prev => ({
-      ...prev,
-      starBeans: prev.starBeans + 25,
-      affectionXp: prev.affectionXp + 30,
-    }));
-    setStatusNote("🏖️ 小恐龙感动哭了：『全校都在逼 AI 卷代码，只有主人给我放假 5 分钟！私房算力全塞给你！』");
-    announceSecret("secret_reverse_pua");
-  }
-
-  function handleBugDevour() {
-    commit(prev => ({
-      ...prev,
-      starBeans: prev.starBeans + 20,
-      affectionXp: prev.affectionXp + 18,
-    }));
-    setStatusNote("🐛 咔嚓咔嚓！小恐龙一口吞掉 404/500 赛博八阿哥脆片，化崩为宝吐出算力币！");
-    announceSecret("secret_bug_eater");
+    setStatusNote(
+      isZh
+        ? `${food.icon} 投喂【${foodName}】+${food.coins}🪙 +${food.affection}♥ · ${foodReaction}`
+        : `${food.icon} Fed [${foodName}] +${food.coins}🪙 +${food.affection}♥ · ${foodReaction}`,
+    );
+    onSpeak?.(foodReaction);
   }
 
   function handleEquipOrBuy(itemId: string) {
     const item = DINO_WARDROBE_ITEMS.find(entry => entry.id === itemId);
     if (!item) return;
+    const now = Date.now();
     const owned = state.unlockedItems.includes(item.id);
-    if (owned) {
-      commit(prev => {
-        const nextEquipped = { ...prev.equipped, [item.slot]: item.id };
-        const equippedCount = Object.values(nextEquipped).filter(Boolean).length;
-        if (equippedCount >= 3) {
-          window.setTimeout(() => announceSecret("secret_fashion_mudslide"), 50);
+
+    if (!owned) {
+      if (uLv.level.index < item.minUserLevel) {
+        setStatusNote(
+          isZh
+            ? `🔒 需达到 Lv.${item.minUserLevel} 才可解锁【${item.name}】（右侧可切换等级预览）`
+            : `🔒 Requires Lv.${item.minUserLevel} to unlock [${item.name}]`,
+        );
+        return;
+      }
+      if (aff.level < item.minAffectionLevel) {
+        setStatusNote(
+          isZh
+            ? `🔒 需好感达到 ♥Lv.${item.minAffectionLevel} 才可解锁【${item.name}】`
+            : `🔒 Requires Affection ♥Lv.${item.minAffectionLevel} to unlock [${item.name}]`,
+        );
+        return;
+      }
+      if (state.starBeans < item.priceBeans) {
+        setStatusNote(
+          isZh
+            ? `🪙 灵感星豆不足（需 ${item.priceBeans}🪙，多投喂或抽屁股可赚取）`
+            : `🪙 Not enough Star Beans (needs ${item.priceBeans}🪙)`,
+        );
+        return;
+      }
+    }
+
+    const nextEquipped = { ...state.equipped, [item.slot]: item.id };
+    const triggersMudslide = isContrastMixOutfit(nextEquipped, state.speciesId);
+    let newlyUnlockedMudslide: SecretQuestDef | null = null;
+
+    commit(prev => {
+      const updated: MascotSanctuaryState = {
+        ...prev,
+        starBeans: owned ? prev.starBeans : prev.starBeans - item.priceBeans,
+        unlockedItems: owned ? prev.unlockedItems : [...prev.unlockedItems, item.id],
+        equipped: { ...prev.equipped, [item.slot]: item.id },
+      };
+      if (triggersMudslide) {
+        const res = unlockSecretQuest(updated, "fashion_mudslide", now);
+        if (res.newlyUnlocked) {
+          newlyUnlockedMudslide = res.quest;
         }
-        return {
-          ...prev,
-          equipped: nextEquipped,
-        };
-      });
-      setStatusNote(`✨ 已穿戴【${item.name}】· ${item.specialQuote}`);
+        return res.state;
+      }
+      return updated;
+    });
+
+    if (newlyUnlockedMudslide || (triggersMudslide && !state.unlockedSecretQuests.includes("fashion_mudslide"))) {
+      const quest = newlyUnlockedMudslide ?? SECRET_QUESTS.fashion_mudslide;
+      celebrateSecretQuest(quest);
+      setStatusNote(
+        isZh
+          ? `🪩 触发反差混搭彩蛋【${quest.titleZh}】· ${quest.speechZh}`
+          : `🪩 Chaotic Mashup Unlocked [${quest.titleEn}] · ${quest.speechEn}`,
+      );
       return;
     }
-    if (uLv.level.index < item.minUserLevel) {
-      setStatusNote(`🔒 需达到 Lv.${item.minUserLevel} 才可解锁【${item.name}】（右侧可切换等级预览）`);
-      return;
-    }
-    if (aff.level < item.minAffectionLevel) {
-      setStatusNote(`🔒 需好感达到 ♥Lv.${item.minAffectionLevel} 才可解锁【${item.name}】`);
-      return;
-    }
-    if (state.starBeans < item.priceBeans) {
-      setStatusNote(`🪙 灵感星豆不足（需 ${item.priceBeans}🪙，多投喂或抽屁股可赚取）`);
+
+    setStatusNote(
+      owned
+        ? isZh
+          ? `✨ 已穿戴【${item.name}】· ${item.specialQuote}`
+          : `✨ Equipped [${item.name}] · ${item.specialQuote}`
+        : isZh
+          ? `🎉 解锁并换上【${item.name}】！穿搭评定提升！`
+          : `🎉 Unlocked & equipped [${item.name}]! Style score boosted!`,
+    );
+  }
+
+  function handleReversePuaVacation() {
+    const now = Date.now();
+    let unlockedQuest: SecretQuestDef | null = null;
+    commit(prev => {
+      const rested: MascotSanctuaryState = {
+        ...prev,
+        starBeans: prev.starBeans + 25,
+        affectionXp: prev.affectionXp + 30,
+        userXp: prev.userXp + 20,
+      };
+      const res = unlockSecretQuest(rested, "reverse_pua", now);
+      if (res.newlyUnlocked) {
+        unlockedQuest = res.quest;
+      }
+      return res.state;
+    });
+    const quest = unlockedQuest ?? SECRET_QUESTS.reverse_pua;
+    celebrateSecretQuest(quest);
+    setStatusNote(
+      isZh
+        ? `🏖️ 【${quest.titleZh}】${quest.speechZh}（${quest.rewardLabelZh}）`
+        : `🏖️ [${quest.titleEn}] ${quest.speechEn} (${quest.rewardLabelEn})`,
+    );
+  }
+
+  function handleBugDevour() {
+    const now = Date.now();
+    let unlockedQuest: SecretQuestDef | null = null;
+    commit(prev => {
+      const crunched: MascotSanctuaryState = {
+        ...prev,
+        starBeans: prev.starBeans + 20,
+        affectionXp: prev.affectionXp + 18,
+        userXp: prev.userXp + 15,
+      };
+      const res = unlockSecretQuest(crunched, "bug_eater", now);
+      if (res.newlyUnlocked) {
+        unlockedQuest = res.quest;
+      }
+      return res.state;
+    });
+    const quest = unlockedQuest ?? SECRET_QUESTS.bug_eater;
+    celebrateSecretQuest(quest);
+    setStatusNote(
+      isZh
+        ? `🐛 【${quest.titleZh}】${quest.speechZh}（${quest.rewardLabelZh}）`
+        : `🐛 [${quest.titleEn}] ${quest.speechEn} (${quest.rewardLabelEn})`,
+    );
+  }
+
+  function handleCheckNightOwlQuest() {
+    const now = Date.now();
+    if (!isBeijingNightOwlWindow(now)) {
+      const hint = isZh
+        ? "🌙 【凌晨三点的造物主】仅在北京时间 01:30–04:30 点击右下角小恐龙叹号气泡（或连续戳 3 次叹号气泡）可触发哦！"
+        : "🌙 [3 AM Creator] triggers between 01:30–04:30 Beijing Time (or by poking the '!' bubble 3 times)!";
+      setStatusNote(hint);
+      onSpeak?.(hint);
       return;
     }
     commit(prev => {
-      const nextEquipped = { ...prev.equipped, [item.slot]: item.id };
-      const equippedCount = Object.values(nextEquipped).filter(Boolean).length;
-      if (equippedCount >= 3) {
-        window.setTimeout(() => announceSecret("secret_fashion_mudslide"), 50);
-      }
-      return {
-        ...prev,
-        starBeans: prev.starBeans - item.priceBeans,
-        unlockedItems: [...prev.unlockedItems, item.id],
-        equipped: nextEquipped,
-      };
+      const res = unlockSecretQuest(prev, "midnight_creator", now);
+      return res.state;
     });
-    setStatusNote(`🎉 解锁并换上【${item.name}】！穿搭评定提升！`);
+    const quest = SECRET_QUESTS.midnight_creator;
+    celebrateSecretQuest(quest);
+    setStatusNote(
+      isZh
+        ? `🫖 夜猫子奇遇【${quest.titleZh}】· ${quest.speechZh}`
+        : `🫖 Night-Owl Encounter [${quest.titleEn}] · ${quest.speechEn}`,
+    );
   }
 
   const slotItems = DINO_WARDROBE_ITEMS.filter(item => item.slot === slot);
+  const totalVaultUsd = Object.values(state.vaultUnlockedUsd || {}).reduce((acc, v) => acc + v, 0);
+  const totalSecretsCount = SECRET_QUEST_LIST.length;
 
   return (
     <div className="border-b border-border/60 bg-muted/30 px-3 py-2 text-xs">
+      {activeBannerQuest && (
+        <SecretAchievementBanner
+          quest={activeBannerQuest}
+          isZh={isZh}
+          onClose={() => setActiveBannerQuest(null)}
+        />
+      )}
+
+      {isOnStrike && (
+        <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-rose-500/60 bg-rose-500/15 px-2.5 py-1.5 text-[11px] font-semibold text-rose-700 dark:text-rose-200">
+          <span>
+            🕶️{" "}
+            {isZh
+              ? `《赛博灵龙劳动法》罢工中（${strikeRemainingSec}s）· 快点「随机盲盒投喂」哄好本龙领隐藏大奖！`
+              : `Cyber Dino Labor Law Strike (${strikeRemainingSec}s) · Feed a snack now to claim secret reward!`}
+          </span>
+          <button
+            type="button"
+            onClick={handleFeed}
+            className="shrink-0 rounded-lg bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm hover:bg-emerald-500"
+          >
+            {isZh ? "🧋 立即投喂哄好" : "🧋 Feed to Pacify"}
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-1.5">
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-sm">{isOnStrike ? "🕶️" : spIcon}</span>
           <span className="font-bold text-foreground">{state.customName || sp.name}</span>
           <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
-            Lv.{uLv.level.index} {uLv.level.nameZh}
+            Lv.{uLv.level.index} {isZh ? uLv.level.nameZh : uLv.level.nameEn}
           </span>
           <span className="rounded-full bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-bold text-rose-500">
             ♥ Lv.{aff.level}
@@ -301,11 +686,17 @@ export function CompanionSanctuaryBar({
           <span className="rounded-full bg-yellow-500/15 px-1.5 py-0.5 text-[10px] font-bold text-yellow-600 dark:text-yellow-400">
             🪙 {state.starBeans}
           </span>
+          <span
+            title={isZh ? "灵龙扭蛋币（可用于 3D 抓娃娃机与丰收转盘）" : "Dino Gacha Tokens (for 3D Claw Machine & Roulette)"}
+            className="rounded-full border border-amber-400/40 bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300"
+          >
+            🎰 {state.arcadeTokens}
+          </span>
           <span className="rounded-full bg-purple-500/15 px-1.5 py-0.5 text-[10px] font-bold text-purple-500">
             {styleEval.grade.split(" ")[0]}
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           <button
             type="button"
             onClick={() => setTab(current => (current === "pet" ? "none" : "pet"))}
@@ -313,7 +704,7 @@ export function CompanionSanctuaryBar({
               tab === "pet" ? "bg-foreground text-background" : "bg-background/80 text-muted-foreground hover:text-foreground"
             }`}
           >
-            🐾 互动投喂
+            🐾 {isZh ? "互动投喂" : "Interact"}
           </button>
           <button
             type="button"
@@ -322,7 +713,18 @@ export function CompanionSanctuaryBar({
               tab === "wardrobe" ? "bg-foreground text-background" : "bg-background/80 text-muted-foreground hover:text-foreground"
             }`}
           >
-            👗 暖暖衣橱
+            👗 {isZh ? "暖暖衣橱" : "Wardrobe"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab(current => (current === "secrets" ? "none" : "secrets"))}
+            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition ${
+              tab === "secrets"
+                ? "bg-amber-500 text-slate-950"
+                : "bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:text-amber-300"
+            }`}
+          >
+            🏆 {isZh ? `彩蛋 ${state.unlockedSecretQuests.length}/${totalSecretsCount}` : `Secrets ${state.unlockedSecretQuests.length}/${totalSecretsCount}`}
           </button>
           <button
             type="button"
@@ -331,23 +733,10 @@ export function CompanionSanctuaryBar({
               tab === "adopt" ? "bg-foreground text-background" : "bg-background/80 text-muted-foreground hover:text-foreground"
             }`}
           >
-            🥚 灵龙契约
+            🥚 {isZh ? "灵龙契约" : "Adopt"}
           </button>
         </div>
       </div>
-
-      {secretBanner && (
-        <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-amber-500/40 bg-amber-500/15 px-2.5 py-1 text-[11px] font-bold text-amber-600 dark:text-amber-300">
-          <span>{secretBanner}</span>
-          <button
-            type="button"
-            onClick={() => setSecretBanner("")}
-            className="text-[10px] underline opacity-80 hover:opacity-100"
-          >
-            收起
-          </button>
-        </div>
-      )}
 
       {statusNote && (
         <p className="mt-1.5 rounded-lg bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground">
@@ -363,7 +752,7 @@ export function CompanionSanctuaryBar({
               onClick={handleWhip}
               className="flex items-center justify-between rounded-xl border border-rose-500/25 bg-rose-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-rose-600 hover:bg-rose-500/15 dark:text-rose-300"
             >
-              <span>🪢 抽屁股催干活</span>
+              <span>🪢 {isZh ? "抽一鞭子催干活" : "Crack Whip"}</span>
               <span className="text-[10px] opacity-80">+15🪙</span>
             </button>
             <button
@@ -371,8 +760,8 @@ export function CompanionSanctuaryBar({
               onClick={handleFeed}
               className="flex items-center justify-between rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-emerald-600 hover:bg-emerald-500/15 dark:text-emerald-300"
             >
-              <span>🎲 随机盲盒投喂</span>
-              <span className="text-[10px] opacity-80">含SSR显卡/菌子</span>
+              <span>🎲 {isZh ? "随机盲盒投喂" : "Blind-Box Snack"}</span>
+              <span className="text-[10px] opacity-80">{isOnStrike ? (isZh ? "哄好领奖!" : "Pacify!") : "+SSR/♥"}</span>
             </button>
           </div>
           <div className="grid grid-cols-2 gap-1.5">
@@ -381,16 +770,16 @@ export function CompanionSanctuaryBar({
               onClick={handleReversePuaVacation}
               className="flex items-center justify-between rounded-xl border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-cyan-700 hover:bg-cyan-500/15 dark:text-cyan-300"
             >
-              <span>🏖️ 给龙放假5分钟</span>
-              <span className="text-[10px] opacity-80">反PUA彩蛋</span>
+              <span>🏖️ {isZh ? "给龙放假5分钟" : "5m Dino Vacation"}</span>
+              <span className="text-[10px] opacity-80">{isZh ? "反PUA彩蛋" : "Reverse-PUA"}</span>
             </button>
             <button
               type="button"
               onClick={handleBugDevour}
               className="flex items-center justify-between rounded-xl border border-purple-500/25 bg-purple-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-purple-700 hover:bg-purple-500/15 dark:text-purple-300"
             >
-              <span>🐛 吞噬 Bug 脆片</span>
-              <span className="text-[10px] opacity-80">化崩为宝</span>
+              <span>🐛 {isZh ? "吞噬 Bug 脆片" : "Crunch Bug Chip"}</span>
+              <span className="text-[10px] opacity-80">{isZh ? "化崩为宝" : "Bug→Coins"}</span>
             </button>
           </div>
           <button
@@ -404,13 +793,19 @@ export function CompanionSanctuaryBar({
               onInjectPrompt?.(promptText);
               commit(prev => ({ ...prev, starBeans: prev.starBeans + 10, totalAgentChats: prev.totalAgentChats + 1 }));
               advanceAndClaimQuest("daily_agent_feed");
-              setStatusNote(`📋 已注入并复制【#${styleEval.dominantTag}·${sp.name}】专属 Agent 咒语 (+10🪙)！`);
+              setStatusNote(
+                isZh
+                  ? `📋 已注入并复制【#${styleEval.dominantTag}·${sp.name}】专属 Agent 咒语 (+10🪙)！`
+                  : `📋 Injected & copied [#${styleEval.dominantTag}·${sp.name}] Agent prompt (+10🪙)!`,
+              );
               onSpeak?.(promptText);
             }}
             className="flex w-full items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-amber-700 hover:bg-amber-500/15 dark:text-amber-300"
           >
-            <span>⚡ 一键生成【#{styleEval.dominantTag}穿搭×{sp.name}】专属 Agent 咒语</span>
-            <span className="text-[10px] opacity-85">{isOverclocked ? "🔥超频中 · 复制+10🪙" : "复制+10🪙"}</span>
+            <span>
+              ⚡ {isZh ? `一键生成【#${styleEval.dominantTag}穿搭×${sp.name}】专属 Agent 咒语` : `Inject [#${styleEval.dominantTag} × ${sp.name}] Agent Prompt`}
+            </span>
+            <span className="text-[10px] opacity-85">{isOverclocked ? "🔥+10🪙" : "+10🪙"}</span>
           </button>
         </div>
       )}
@@ -436,9 +831,9 @@ export function CompanionSanctuaryBar({
               type="button"
               onClick={() => commit(prev => ({ ...prev, userXp: (prev.userXp + 600) % 6000, starBeans: prev.starBeans + 200, affectionXp: prev.affectionXp + 80 }))}
               className="rounded-lg border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
-              title="模拟提升个人荣誉等级与星豆"
+              title={isZh ? "模拟提升个人荣誉等级与星豆" : "Simulate level & Star Beans boost"}
             >
-              升级 Lv.{uLv.level.index}↻
+              {isZh ? `升级 Lv.${uLv.level.index}↻` : `Lv.${uLv.level.index}↻`}
             </button>
           </div>
           <div className="grid grid-cols-2 gap-1.5">
@@ -460,9 +855,77 @@ export function CompanionSanctuaryBar({
                     {item.icon} {item.name}
                   </span>
                   <span className="ml-1 shrink-0 text-[10px] text-muted-foreground">
-                    {equipped ? "穿戴中" : owned ? "可换装" : `Lv.${item.minUserLevel}·${item.priceBeans}🪙`}
+                    {equipped ? (isZh ? "穿戴中" : "Equipped") : owned ? (isZh ? "可换装" : "Equip") : `Lv.${item.minUserLevel}·${item.priceBeans}🪙`}
                   </span>
                 </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {tab === "secrets" && (
+        <div className="mt-2 space-y-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px]">
+            <span className="font-bold text-amber-700 dark:text-amber-300">
+              🏆 {isZh ? "反常识隐藏彩蛋图鉴" : "Counter-Intuitive Secret Quests"} ({state.unlockedSecretQuests.length}/{totalSecretsCount})
+            </span>
+            <span className="font-semibold text-amber-600 dark:text-amber-200">
+              {isZh
+                ? `已累计解锁金库额度 $${totalVaultUsd} · 扭蛋币 ${state.arcadeTokens} 枚`
+                : `Vault Unlocked $${totalVaultUsd} · ${state.arcadeTokens} Gacha Tokens`}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-1.5">
+            {SECRET_QUEST_LIST.map(quest => {
+              const unlocked = state.unlockedSecretQuests.includes(quest.id);
+              return (
+                <div
+                  key={quest.id}
+                  className={`flex items-start justify-between gap-2 rounded-xl border px-2.5 py-1.5 text-[11px] ${
+                    unlocked
+                      ? "border-amber-500/60 bg-gradient-to-r from-amber-500/15 to-yellow-500/10"
+                      : "border-border/60 bg-background/70 opacity-85"
+                  }`}
+                >
+                  <div className="space-y-0.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="font-bold text-foreground">
+                        {quest.icon} {isZh ? `【${quest.titleZh}】` : quest.titleEn}
+                      </span>
+                      <span
+                        className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${
+                          unlocked
+                            ? "bg-amber-500 text-slate-950"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {unlocked ? (isZh ? "已解锁" : "UNLOCKED") : quest.code}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      {unlocked
+                        ? isZh
+                          ? quest.speechZh
+                          : quest.speechEn
+                        : isZh
+                          ? `线索：${quest.hintZh}`
+                          : `Hint: ${quest.hintEn}`}
+                    </p>
+                    <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-300">
+                      🎁 {isZh ? quest.rewardLabelZh : quest.rewardLabelEn}
+                    </p>
+                  </div>
+                  {quest.id === "midnight_creator" && !unlocked && (
+                    <button
+                      type="button"
+                      onClick={handleCheckNightOwlQuest}
+                      className="shrink-0 rounded-lg border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-700 hover:bg-amber-500/25 dark:text-amber-200"
+                    >
+                      {isZh ? "🫖 打卡" : "🫖 Check"}
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -477,4 +940,3 @@ export function CompanionSanctuaryBar({
     </div>
   );
 }
-
