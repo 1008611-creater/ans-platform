@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MarketPage from "@/app/market/page";
