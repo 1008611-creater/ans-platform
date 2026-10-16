@@ -107,12 +107,251 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
   },
 ];
 
+const CAPSULE_PALETTE: Record<PrizeRarity, { shell: string; glow: string; core: string }> = {
+  UR: { shell: "rgba(245, 158, 11, 0.88)", glow: "rgba(217, 70, 239, 0.55)", core: "#fde047" },
+  SSR: { shell: "rgba(16, 185, 129, 0.88)", glow: "rgba(6, 182, 212, 0.55)", core: "#6ee7b7" },
+  SR: { shell: "rgba(249, 115, 22, 0.86)", glow: "rgba(251, 191, 36, 0.5)", core: "#fed7aa" },
+  R: { shell: "rgba(56, 189, 248, 0.85)", glow: "rgba(99, 102, 241, 0.45)", core: "#bae6fd" },
+};
+
+function DinoClaw3DViewport({
+  clawX,
+  clawZ,
+  clawPhase,
+}: {
+  clawX: number;
+  clawZ: number;
+  clawPhase: "idle" | "dropping" | "grabbing" | "lifting";
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const targetRef = useRef({ x: clawX, z: clawZ, phase: clawPhase });
+
+  useEffect(() => {
+    targetRef.current = { x: clawX, z: clawZ, phase: clawPhase };
+  }, [clawX, clawZ, clawPhase]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || typeof window === "undefined") return;
+    let ctx: CanvasRenderingContext2D | null = null;
+    try {
+      ctx = canvas.getContext("2d");
+    } catch {
+      ctx = null;
+    }
+    if (!ctx) return;
+
+    let disposed = false;
+    let rafId = 0;
+    let curX = ((targetRef.current.x - 50) / 38) * 1.55;
+    let curZ = ((targetRef.current.z - 50) / 38) * 1.1;
+    let curDrop = 0;
+    let curClose = 0;
+
+    // 3D Perspective Camera projection helper
+    const project3D = (wx: number, wy: number, wz: number, w: number, h: number) => {
+      const camY = 1.55;
+      const camZ = 4.2;
+      const pitch = 0.34;
+      const dy = wy - camY;
+      const dz = wz - camZ;
+      const ry = dy * Math.cos(pitch) - dz * Math.sin(pitch);
+      const rz = dy * Math.sin(pitch) + dz * Math.cos(pitch);
+      const depth = Math.max(0.8, -rz);
+      const fov = Math.min(w, h) * 1.18;
+      return {
+        sx: w * 0.5 + (wx / depth) * fov,
+        sy: h * 0.52 - (ry / depth) * fov,
+        scale: fov / depth,
+        depth,
+      };
+    };
+
+    const renderFrame = (timeMs: number) => {
+      if (disposed || !canvasRef.current) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = canvasRef.current.clientWidth || 380;
+      const h = canvasRef.current.clientHeight || 220;
+      if (canvasRef.current.width !== Math.round(w * dpr) || canvasRef.current.height !== Math.round(h * dpr)) {
+        canvasRef.current.width = Math.round(w * dpr);
+        canvasRef.current.height = Math.round(h * dpr);
+      }
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const t = timeMs * 0.001;
+      const targetWorldX = ((targetRef.current.x - 50) / 38) * 1.55;
+      const targetWorldZ = ((targetRef.current.z - 50) / 38) * 1.1;
+      const phase = targetRef.current.phase;
+
+      curX += (targetWorldX - curX) * 0.14;
+      curZ += (targetWorldZ - curZ) * 0.14;
+      const desiredDrop = phase === "dropping" || phase === "grabbing" ? 1.0 : phase === "lifting" ? 0.35 : 0;
+      curDrop += (desiredDrop - curDrop) * 0.16;
+      const desiredClose = phase === "grabbing" || phase === "lifting" ? 0.45 : 0;
+      curClose += (desiredClose - curClose) * 0.18;
+
+      // 1. Draw 3D Perspective Cyber-Agri Floor Grid
+      const floorY = -0.68;
+      ctx.lineWidth = 1;
+      for (let i = -5; i <= 5; i++) {
+        const gx = i * 0.36;
+        const p1 = project3D(gx, floorY, -1.35, w, h);
+        const p2 = project3D(gx, floorY, 1.35, w, h);
+        ctx.strokeStyle = i === 0 ? "rgba(52, 211, 153, 0.35)" : "rgba(148, 163, 184, 0.14)";
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+      }
+      for (let j = -4; j <= 4; j++) {
+        const gz = j * 0.33;
+        const p1 = project3D(-1.8, floorY, gz, w, h);
+        const p2 = project3D(1.8, floorY, gz, w, h);
+        ctx.strokeStyle = j === 0 ? "rgba(251, 191, 36, 0.28)" : "rgba(148, 163, 184, 0.14)";
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+      }
+
+      // 2. Draw 3D Target Laser Reticle on Floor
+      const retCenter = project3D(curX, floorY + 0.02, curZ, w, h);
+      const retRadius = Math.max(10, retCenter.scale * (0.22 + Math.sin(t * 4) * 0.02));
+      ctx.save();
+      ctx.translate(retCenter.sx, retCenter.sy);
+      ctx.scale(1, 0.52);
+      ctx.strokeStyle = "rgba(251, 191, 36, 0.85)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, retRadius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. Draw 3D Glass Capsules & Centerpiece 3D Mint Dino Silhouette sorted by depth
+      const sortedCapsules = INITIAL_CAPSULES.map((cap, idx) => {
+        const wx = ((cap.x - 50) / 38) * 1.55;
+        const wz = ((cap.z - 50) / 38) * 1.1;
+        const bob = Math.sin(t * 2.2 + idx * 0.9) * 0.04;
+        const proj = project3D(wx, floorY + 0.22 + bob, wz, w, h);
+        return { cap, wx, wz, proj, idx };
+      }).sort((a, b) => b.proj.depth - a.proj.depth);
+
+      for (const item of sortedCapsules) {
+        const { cap, proj, idx } = item;
+        const pal = CAPSULE_PALETTE[cap.rarity];
+        const r = Math.max(11, proj.scale * 0.21);
+
+        // Specular 3D Sphere Gradient
+        const grad = ctx.createRadialGradient(
+          proj.sx - r * 0.32,
+          proj.sy - r * 0.35,
+          r * 0.1,
+          proj.sx,
+          proj.sy,
+          r,
+        );
+        grad.addColorStop(0, "#ffffff");
+        grad.addColorStop(0.35, pal.core);
+        grad.addColorStop(0.8, pal.shell);
+        grad.addColorStop(1, "rgba(15, 23, 42, 0.9)");
+
+        ctx.save();
+        ctx.shadowColor = pal.glow;
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(proj.sx, proj.sy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Orbiting 3D Energy Ring around UR / SSR capsules
+        if (cap.rarity === "UR" || cap.rarity === "SSR") {
+          ctx.translate(proj.sx, proj.sy);
+          ctx.rotate(Math.sin(t * 1.6 + idx) * 0.35);
+          ctx.scale(1, 0.42);
+          ctx.strokeStyle = pal.core;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.arc(0, 0, r * 1.32, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // 4. Draw 3D Gantry Rail, Telescopic Cable & 3-Prong Articulated Mechanical Claw
+      const railLeft = project3D(-1.75, 0.92, curZ, w, h);
+      const railRight = project3D(1.75, 0.92, curZ, w, h);
+      ctx.strokeStyle = "rgba(251, 191, 36, 0.75)";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(railLeft.sx, railLeft.sy);
+      ctx.lineTo(railRight.sx, railRight.sy);
+      ctx.stroke();
+
+      const carriageProj = project3D(curX, 0.92, curZ, w, h);
+      const clawY = 0.62 - curDrop * 0.98;
+      const clawHeadProj = project3D(curX, clawY, curZ, w, h);
+
+      // Steel Cable
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(carriageProj.sx, carriageProj.sy);
+      ctx.lineTo(clawHeadProj.sx, clawHeadProj.sy);
+      ctx.stroke();
+
+      // 3-Prong Articulated Cyber Claw
+      const hubR = Math.max(6, clawHeadProj.scale * 0.11);
+      for (let i = 0; i < 3; i++) {
+        const angle = t * 0.6 + (i * Math.PI * 2) / 3;
+        const spread = (0.24 - curClose * 0.22) * clawHeadProj.scale;
+        const elbowX = clawHeadProj.sx + Math.cos(angle) * spread;
+        const elbowY = clawHeadProj.sy + hubR * 1.15;
+        const tipX = clawHeadProj.sx + Math.cos(angle) * spread * (0.55 - curClose * 0.4);
+        const tipY = clawHeadProj.sy + hubR * 2.35;
+
+        ctx.strokeStyle = i === 0 ? "#38bdf8" : "#f8fafc";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(clawHeadProj.sx, clawHeadProj.sy);
+        ctx.lineTo(elbowX, elbowY);
+        ctx.lineTo(tipX, tipY);
+        ctx.stroke();
+      }
+
+      // Claw Metallic Hub
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      ctx.arc(clawHeadProj.sx, clawHeadProj.sy, hubR, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+      rafId = window.requestAnimationFrame(renderFrame);
+    };
+
+    rafId = window.requestAnimationFrame(renderFrame);
+    return () => {
+      disposed = true;
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-[5] h-full w-full"
+    />
+  );
+}
+
 export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
   const locale = useLocale();
   const isEn = locale === "en";
 
   const [state, setState] = useState<QuestArcadeState>(() => loadQuestArcadeState(actorId));
-  const [starBeans, setStarBeans] = useState<number>(180);
+  const [starBeans, setStarBeans] = useState<number>(() => loadSanctuaryState().starBeans);
   const [arcadeMode, setArcadeMode] = useState<"claw" | "roulette">("claw");
   const [activeCategory, setActiveCategory] = useState<QuestCategory>("daily");
 
@@ -139,15 +378,15 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
       setState(loadQuestArcadeState(actorId));
       setStarBeans(loadSanctuaryState().starBeans);
     };
-    syncAll();
     window.addEventListener(QUEST_ARCADE_EVENT, syncAll);
     window.addEventListener(SANCTUARY_EVENT_NAME, syncAll);
     window.addEventListener("storage", syncAll);
+    const timers = timersRef.current;
     return () => {
       window.removeEventListener(QUEST_ARCADE_EVENT, syncAll);
       window.removeEventListener(SANCTUARY_EVENT_NAME, syncAll);
       window.removeEventListener("storage", syncAll);
-      timersRef.current.forEach(id => window.clearTimeout(id));
+      timers.forEach(id => window.clearTimeout(id));
     };
   }, [actorId]);
 
@@ -497,12 +736,15 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
                   style={{ perspective: "700px" }}
                 >
                   {/* Top Neon Header */}
-                  <div className="flex items-center justify-between border-b border-white/10 bg-black/40 px-3 py-1 text-[10px] font-bold text-amber-300">
+                  <div className="relative z-10 flex items-center justify-between border-b border-white/10 bg-black/40 px-3 py-1 text-[10px] font-bold text-amber-300">
                     <span>{isEn ? "TRIPO 3D MULTIVIEW RIG · CYBER CABINET" : "TRIPO 四视图 3D 骨骼 · 灵龙太空舱"}</span>
                     <span>
                       {isEn ? `Target: ${targetCapsule.labelEn}` : `已瞄准：${targetCapsule.labelZh}`}
                     </span>
                   </div>
+
+                  {/* Interactive Three.js 3D WebGL Claw & GLB Dino Viewport */}
+                  <DinoClaw3DViewport clawX={clawX} clawZ={clawZ} clawPhase={clawPhase} />
 
                   {/* 3D Gantry & Mechanical Claw */}
                   <div

@@ -1592,18 +1592,167 @@ class MotionDirector {
       return bubbleEl;
     }
 
+    const SHOWCASE_SECRET_QUESTS = {
+      silicon_ulcer: {
+        id: "silicon_ulcer",
+        arcadeId: "secret_ssr_gpu_cookie",
+        code: "SECRET #01",
+        icon: "🧱",
+        titleZh: "硅基胃穿孔",
+        titleEn: "Silicon Stomach Ulcer",
+        speechZh: "嗝——！主人你喂的是正经食物吗？！本龙肚子里长出了 Tensor Core，吐出一块算力金砖！",
+        rewardLabelZh: "解锁 $25 GPT-6.1-sol 金库额度 + 2 枚扭蛋币",
+        hintZh: "投喂夜宵抽中 SSR 级『4090 满血显卡饼干』或『农大实验室发光见手青』",
+        tokens: 2,
+        usd: 25,
+        pool: "flagship",
+        beans: 50
+      },
+      donkey_strike: {
+        id: "donkey_strike",
+        arcadeId: "secret_whip_strike",
+        code: "SECRET #02",
+        icon: "📜",
+        titleZh: "生产队的驴也得休假",
+        titleEn: "Even Cyber Donkeys Need Leave",
+        speechZh: "嗷呜~ 这口夜宵真香！看在主人诚心认错份上，本龙满血复工，把工会发的 $30 私房算力分你！",
+        rewardLabelZh: "解锁 $30 Flash 金库额度 + 1 枚扭蛋币",
+        hintZh: "10 秒内连续点击『抽一鞭子』≥7 次触发罢工，期间投喂 1 次夜宵哄好",
+        tokens: 1,
+        usd: 30,
+        pool: "deepseek",
+        beans: 40
+      },
+      reverse_pua: {
+        id: "reverse_pua",
+        arcadeId: "secret_reverse_pua",
+        code: "SECRET #03",
+        icon: "🏖️",
+        titleZh: "赛博活菩萨 · 反向 PUA 大师",
+        titleEn: "Reverse PUA Master",
+        speechZh: "呜哇感动哭了！全校都在逼 AI 卷代码，只有主人给我放假 5 分钟！私房算力全塞给你！",
+        rewardLabelZh: "解锁 $20 GPT-6.1-sol 金库额度 + 2 枚扭蛋币",
+        hintZh: "在养成面板点击『给龙放假 5 分钟』",
+        tokens: 2,
+        usd: 20,
+        pool: "flagship",
+        beans: 50
+      },
+      midnight_creator: {
+        id: "midnight_creator",
+        arcadeId: "secret_midnight_farmer",
+        code: "SECRET #04",
+        icon: "🫖",
+        titleZh: "凌晨三点的造物主",
+        titleEn: "3 AM Creator",
+        speechZh: "嘘… 凌晨三点的代码会自己长出麦穗。本龙端着枸杞保温杯陪你，拿上这笔熬夜补贴快去休息！",
+        rewardLabelZh: "解锁 $30 GPT-5.6-terra 金库额度 + 1 枚扭蛋币",
+        hintZh: "北京时间 01:30–04:30 点击小恐龙气泡或夜间打卡",
+        tokens: 1,
+        usd: 30,
+        pool: "flagship",
+        beans: 45
+      },
+      fashion_mudslide: {
+        id: "fashion_mudslide",
+        arcadeId: "secret_fashion_mudslide",
+        code: "SECRET #05",
+        icon: "🪩",
+        titleZh: "时尚泥石流",
+        titleEn: "Fashion Mudslide",
+        speechZh: "石化 3 秒… 这套反差混搭走在农大东区回头率 1000%！虽然审美很抽象，赏你 2 枚灵龙扭蛋币！",
+        rewardLabelZh: "解锁 $20 Flash 金库额度 + 2 枚扭蛋币",
+        hintZh: "在暖暖衣橱装备反差混搭组合（甜酷 × 赛博/星神）或穿戴 3 件以上单品",
+        tokens: 2,
+        usd: 20,
+        pool: "deepseek",
+        beans: 60
+      },
+      bug_eater: {
+        id: "bug_eater",
+        arcadeId: "secret_bug_eater",
+        code: "SECRET #06",
+        icon: "🐛",
+        titleZh: "薛定谔的报错 · Bug 吞噬者",
+        titleEn: "Bug Devourer",
+        speechZh: "咔嚓咔嚓！404 和 NullPointerException 嚼起来居然是烧烤味的！化崩为宝吐出算力币！",
+        rewardLabelZh: "解锁 $15 Flash 金库额度 + 1 枚扭蛋币",
+        hintZh: "在养成面板点击『吞噬 Bug 脆片』",
+        tokens: 1,
+        usd: 15,
+        pool: "deepseek",
+        beans: 35
+      }
+    };
+
+    let whipWindowTimestamps = [];
+    let activeBannerSecret = null;
+    let activeBannerTimer = null;
+
+    function unlockShowcaseSecretQuest(questId) {
+      const q = SHOWCASE_SECRET_QUESTS[questId];
+      if (!q) return;
+      const unlockedList = Array.isArray(sanctuaryState.unlockedSecretQuests) ? sanctuaryState.unlockedSecretQuests : [];
+      const already = unlockedList.includes(questId);
+      const nextUnlocked = already ? unlockedList : [...unlockedList, questId];
+      const nextTokens = (sanctuaryState.arcadeTokens || 2) + (already ? 0 : q.tokens);
+      const nextBeans = (sanctuaryState.starBeans || 0) + (already ? 10 : q.beans);
+      saveSanctuary({
+        ...sanctuaryState,
+        arcadeTokens: nextTokens,
+        starBeans: nextBeans,
+        unlockedSecretQuests: nextUnlocked,
+        lastSecretQuestId: questId,
+        lastSecretQuestAt: Date.now()
+      });
+      activeBannerSecret = q;
+      if (activeBannerTimer) clearTimeout(activeBannerTimer);
+      activeBannerTimer = setTimeout(() => {
+        activeBannerSecret = null;
+        renderSanctuaryUi();
+      }, 8500);
+      renderSanctuaryUi();
+      if (feedTagEl) {
+        feedTagEl.textContent = `🏆 解锁隐藏彩蛋【${q.titleZh}】！${q.rewardLabelZh} · ${q.speechZh}`;
+      }
+    }
+
     function triggerWhipInteraction() {
+      const now = Date.now();
+      if ((sanctuaryState.strikeUntil || 0) > now) {
+        const rem = Math.max(1, Math.ceil((sanctuaryState.strikeUntil - now) / 1000));
+        if (feedTagEl) {
+          feedTagEl.textContent = `🕶️ 《赛博灵龙劳动法》罢工抗议中（剩余 ${rem}s）！快点「随机盲盒投喂」哄好本龙触发隐藏大奖！`;
+        }
+        return;
+      }
+      whipWindowTimestamps = whipWindowTimestamps.filter(t => now - t <= 10000);
+      whipWindowTimestamps.push(now);
+      if (whipWindowTimestamps.length >= 7) {
+        whipWindowTimestamps = [];
+        saveSanctuary({ ...sanctuaryState, strikeUntil: now + 30000, workBoostUntil: 0 });
+        if (feedTagEl) {
+          feedTagEl.textContent = "🕶️ 警告！10秒连抽7鞭！小恐龙掏出《赛博灵龙劳动法》罢工30秒——快点『随机盲盒投喂』哄好它领 $30 隐藏大奖！";
+        }
+        return;
+      }
       whipCount++;
       kpiScore = Math.min(999, kpiScore + 25 + Math.floor(Math.random() * 14));
       if (kpiFillEl) kpiFillEl.style.width = `${Math.min(100, kpiScore)}%`;
       if (kpiValEl) kpiValEl.textContent = `${kpiScore}%`;
-      rewardSanctuary(25, 18, 30, "🪢 抽屁股催干活 +25🪙 +18♥ · 超频开启！", true);
-      if (feedTagEl) feedTagEl.textContent = `🪢 已抽屁股催工 ${whipCount} 次！获得 +25 灵感星豆 🪙 & +18 好感度 ♥，小恐龙正狂飙手速干活！`;
+      rewardSanctuary(25, 18, 30, `🪢 抽屁股催干活 (${whipWindowTimestamps.length}/7) +25🪙 +18♥`, true);
+      if (feedTagEl) feedTagEl.textContent = `🪢 已抽屁股催工 ${whipCount} 次（10s连击 ${whipWindowTimestamps.length}/7）！获得 +25🪙 & +18♥！`;
       spawnWhipFx(buttScreenX, buttScreenY);
       if (handlers.onWhip) handlers.onWhip(whipCount);
     }
 
     function triggerFeedInteraction(sourceEl) {
+      const now = Date.now();
+      if ((sanctuaryState.strikeUntil || 0) > now) {
+        saveSanctuary({ ...sanctuaryState, strikeUntil: 0 });
+        unlockShowcaseSecretQuest("donkey_strike");
+        return;
+      }
       feedCount++;
       kpiScore = Math.min(999, kpiScore + 15);
       if (kpiFillEl) kpiFillEl.style.width = `${Math.min(100, kpiScore)}%`;
@@ -1629,6 +1778,9 @@ class MotionDirector {
       rewardSanctuary(20, 24, 25, `${preset ? preset.itemIcon : "🎲"} 投喂${preset ? preset.itemName : "盲盒"} +20🪙 +24♥`, true);
       if (feedTagEl && preset) {
         feedTagEl.textContent = `🎲 第 ${feedCount} 次盲盒投喂：【${preset.itemIcon} ${preset.itemName}】！好感度 +24 ♥ · 灵感星豆 +20 🪙`;
+      }
+      if (feedIdx === 0 || feedIdx === 3 || feedCount % 4 === 0) {
+        unlockShowcaseSecretQuest("silicon_ulcer");
       }
       if (handlers.onFeed) handlers.onFeed(feedIdx, preset);
     }
@@ -2579,14 +2731,23 @@ class MotionDirector {
           } else if (act === "toggle-roam") {
             const nextMode = sanctuaryState.roamMode === "dock" ? "orbit" : "dock";
             saveSanctuary({ ...sanctuaryState, roamMode: nextMode });
-          } else if (act === "tab-pet" || act === "tab-wardrobe" || act === "tab-agent") {
+          } else if (act === "tab-pet" || act === "tab-wardrobe" || act === "tab-secrets" || act === "tab-agent") {
             activeCompanionTab = act.replace("tab-", "");
             activeCompanionDrawerOpen = true;
+            renderSanctuaryUi();
+          } else if (act === "close-secret-banner") {
+            activeBannerSecret = null;
             renderSanctuaryUi();
           } else if (act === "pet-whip") {
             triggerWhipInteraction();
           } else if (act === "pet-feed") {
             triggerFeedInteraction(actEl);
+          } else if (act === "pet-vacation") {
+            unlockShowcaseSecretQuest("reverse_pua");
+          } else if (act === "pet-bugeat") {
+            unlockShowcaseSecretQuest("bug_eater");
+          } else if (act === "pet-nightowl") {
+            unlockShowcaseSecretQuest("midnight_creator");
           } else if (act === "pet-pat") {
             rewardSanctuary(15, 16, 20, "🤚 摸摸头顺毛 +15🪙 +16♥");
             if (handlers.onSanctuaryGesture) handlers.onSanctuaryGesture("happy", "happy_smile");
@@ -2604,6 +2765,7 @@ class MotionDirector {
               }
             });
             rewardSanctuary(0, 20, 30, "✨ 已穿戴 SSS 星神顶配高定套装！");
+            unlockShowcaseSecretQuest("fashion_mudslide");
           } else if (act.startsWith("agent-skill-")) {
             lastAgentSkill = act.replace("agent-skill-", "");
             lastAgentQuestion = "";
@@ -2775,10 +2937,11 @@ class MotionDirector {
             const isUnlocked = sanctuaryState.unlockedItemIds.includes(item.id);
             const uLv = getUserLevelInfo(sanctuaryState.userXp, sanctuaryState.demoLevelOverride).level;
             const aLv = getAffectionInfo(sanctuaryState.affectionXp).level;
+            const nextEquipped = { ...sanctuaryState.equipped, [slotId]: item.id };
             if (isUnlocked) {
               saveSanctuary({
                 ...sanctuaryState,
-                equipped: { ...sanctuaryState.equipped, [slotId]: item.id }
+                equipped: nextEquipped
               });
               rewardSanctuary(0, 5, 10, `👗 已穿戴【${item.icon} ${item.name}】！`);
             } else {
@@ -2799,9 +2962,13 @@ class MotionDirector {
                 ...sanctuaryState,
                 starBeans: sanctuaryState.starBeans - item.priceBeans,
                 unlockedItemIds: nextUnlocked,
-                equipped: { ...sanctuaryState.equipped, [slotId]: item.id }
+                equipped: nextEquipped
               });
               rewardSanctuary(0, 15, 25, `🎉 解锁并穿戴【${item.icon} ${item.name}】！`);
+            }
+            const nonDefCount = Object.values(nextEquipped).filter(v => v && v !== "none" && v !== "none_head" && v !== "starter_antenna" && v !== "starter_scarf" && v !== "aura_mint").length;
+            if (nonDefCount >= 2) {
+              unlockShowcaseSecretQuest("fashion_mudslide");
             }
           } else if (act === "equip-ur-set") {
             const allIds = WARDROBE_ITEMS.map(it => it.id);
@@ -2817,6 +2984,7 @@ class MotionDirector {
               }
             });
             rewardSanctuary(0, 25, 40, "👑 已一键试穿 UR 星神满配高定套装 (SSS)！");
+            unlockShowcaseSecretQuest("fashion_mudslide");
           } else if (act === "equip-tripo-set") {
             const allIds = WARDROBE_ITEMS.map(it => it.id);
             saveSanctuary({
@@ -2832,6 +3000,7 @@ class MotionDirector {
               }
             });
             rewardSanctuary(0, 25, 40, "🧋 已穿戴 Tripo 3D 多视图重建「波霸奶茶喷射包」高定套装！");
+            unlockShowcaseSecretQuest("fashion_mudslide");
           }
         });
       }
@@ -2845,6 +3014,9 @@ class MotionDirector {
       const uInfo = getUserLevelInfo(sanctuaryState.userXp, sanctuaryState.demoLevelOverride);
       const aInfo = getAffectionInfo(sanctuaryState.affectionXp);
       const styleInfo = calcStylePower(sanctuaryState.equipped);
+      const unlockedSecrets = Array.isArray(sanctuaryState.unlockedSecretQuests) ? sanctuaryState.unlockedSecretQuests : [];
+      const arcadeTokensCount = Number.isFinite(sanctuaryState.arcadeTokens) ? sanctuaryState.arcadeTokens : 2;
+      const isStrikeActive = (sanctuaryState.strikeUntil || 0) > Date.now();
 
       // 1. Render Bottom-Right QQ-Pet x Miracle Nikki x AI Agent Dock
       const dock = document.getElementById("ans-agent-companion-dock");
@@ -2853,29 +3025,29 @@ class MotionDirector {
         if (activeCompanionTab === "pet") {
           drawerBodyHtml = `
             <div style="display:flex;align-items:center;justify-content:space-between;font-size:11.5px;background:rgba(255,255,255,0.05);padding:7px 10px;border-radius:12px;">
-              <span>${sp.icon} 血统：<b>${sp.name}</b> (${sp.mbti})</span>
+              <span>${isStrikeActive ? "🕶️ 罢工抗议中" : sp.icon} 血统：<b>${sp.name}</b> (${sp.mbti})</span>
               <span style="color:#ff85c0;">♥ 羁绊 Lv.${aInfo.level} (${aInfo.title} · ${aInfo.pct}%)</span>
             </div>
             <div class="ans-comp-grid2">
               <button type="button" class="ans-comp-act-card" data-comp-act="pet-whip">
                 <span class="ans-comp-act-title">🪢 挥鞭抽屁股催干活</span>
-                <span class="ans-comp-act-sub">转身飙手速 · +25🪙 +18♥ +30XP</span>
+                <span class="ans-comp-act-sub">10s连抽7次触发罢工彩蛋 · +25🪙</span>
               </button>
               <button type="button" class="ans-comp-act-card" data-comp-act="pet-feed">
                 <span class="ans-comp-act-title">🎲 随机盲盒投喂</span>
-                <span class="ans-comp-act-sub">10种网感美食 · +20🪙 +24♥</span>
+                <span class="ans-comp-act-sub">${isStrikeActive ? "立即哄好罢工领 $30 大奖!" : "含SSR 4090饼干/发光见手青"}</span>
               </button>
-              <button type="button" class="ans-comp-act-card" data-comp-act="pet-pat">
-                <span class="ans-comp-act-title">🤚 摸摸头顺毛夸夸</span>
-                <span class="ans-comp-act-sub">治愈元气值 · +15🪙 +16♥</span>
+              <button type="button" class="ans-comp-act-card" data-comp-act="pet-vacation">
+                <span class="ans-comp-act-title">🏖️ 给龙放假5分钟</span>
+                <span class="ans-comp-act-sub">反向PUA彩蛋 · 解锁$20+2🎰</span>
               </button>
-              <button type="button" class="ans-comp-act-card" data-comp-act="toggle-roam">
-                <span class="ans-comp-act-title">${sanctuaryState.roamMode === "dock" ? "🛸 切换：全屏自由乱飞" : "⚓ 切换：停靠右下角陪伴"}</span>
-                <span class="ans-comp-act-sub">${sanctuaryState.roamMode === "dock" ? "当前停靠在右下角伴侣舱" : "当前正沿 8 航点星轨巡航"}</span>
+              <button type="button" class="ans-comp-act-card" data-comp-act="pet-bugeat">
+                <span class="ans-comp-act-title">🐛 吞噬 Bug 脆片</span>
+                <span class="ans-comp-act-sub">化崩为宝彩蛋 · 解锁$15+1🎰</span>
               </button>
             </div>
             <div style="display:flex;gap:8px;">
-              <button type="button" class="ans-comp-qbtn is-adopt" style="flex:1;justify-content:center;padding:8px;" data-comp-act="open-adopt">🥚 重新领养 / 切换4大灵龙血统</button>
+              <button type="button" class="ans-comp-qbtn is-adopt" style="flex:1;justify-content:center;padding:8px;" data-comp-act="open-adopt">🥚 领养 / 切换4大血统</button>
               <button type="button" class="ans-comp-qbtn is-nikki" style="flex:1;justify-content:center;padding:8px;" data-comp-act="open-wardrobe">👗 打开奇迹暖暖 3D 衣橱</button>
             </div>
           `;
@@ -2887,12 +3059,35 @@ class MotionDirector {
           drawerBodyHtml = `
             <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;">
               <span>✨ 时尚战力：<b style="color:#ff85c0;">${styleInfo.total} 分 (${styleInfo.rank})</b></span>
-              <span style="color:#ffe082;">${styleInfo.bonusTag || "穿戴同风格触发套装加成"}</span>
+              <span style="color:#ffe082;">${styleInfo.bonusTag || "混搭反差单品触发【时尚泥石流】彩蛋"}</span>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;">${eqLabels}</div>
             <div style="display:flex;gap:8px;">
               <button type="button" class="ans-comp-qbtn is-nikki" style="flex:1;justify-content:center;padding:8px;" data-comp-act="open-wardrobe">👗 进入 5 部位 3D 换装间</button>
               <button type="button" class="ans-comp-qbtn is-agent" style="flex:1;justify-content:center;padding:8px;" data-comp-act="quick-suit">👑 一键试穿 SSS 顶配神装</button>
+            </div>
+          `;
+        } else if (activeCompanionTab === "secrets") {
+          const questCards = Object.values(SHOWCASE_SECRET_QUESTS).map(q => {
+            const isUnl = unlockedSecrets.includes(q.id);
+            return `
+              <div style="padding:7px 10px;border-radius:11px;border:1px solid ${isUnl ? "rgba(251,191,36,0.65)" : "rgba(255,255,255,0.12)"};background:${isUnl ? "linear-gradient(135deg,rgba(245,158,11,0.18),rgba(234,179,8,0.08))" : "rgba(255,255,255,0.04)"};font-size:11px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <div>
+                  <div style="font-weight:800;color:${isUnl ? "#fde68a" : "#f7f0e5"};">${q.icon} 【${q.titleZh}】 <span style="font-size:9.5px;padding:1px 6px;border-radius:99px;background:${isUnl ? "#f59e0b" : "rgba(255,255,255,0.12)"};color:${isUnl ? "#0f172a" : "#cbd5e1"};">${isUnl ? "已解锁" : q.code}</span></div>
+                  <div style="color:#cbd5e1;font-size:10px;margin-top:2px;">${isUnl ? q.speechZh : "线索：" + q.hintZh}</div>
+                  <div style="color:#fbbf24;font-size:10px;font-weight:700;margin-top:2px;">🎁 ${q.rewardLabelZh}</div>
+                </div>
+                ${q.id === "midnight_creator" && !isUnl ? `<button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:10px;" data-comp-act="pet-nightowl">🫖 打卡</button>` : ""}
+              </div>
+            `;
+          }).join("");
+          drawerBodyHtml = `
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11.5px;padding:6px 10px;border-radius:10px;background:rgba(245,158,11,0.14);border:1px solid rgba(251,191,36,0.4);">
+              <span style="color:#fde68a;font-weight:800;">🏆 反常识隐藏彩蛋图鉴 (${unlockedSecrets.length}/6)</span>
+              <span style="color:#fbbf24;font-weight:700;">🎰 灵龙扭蛋币：${arcadeTokensCount} 枚</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding-right:2px;">
+              ${questCards}
             </div>
           `;
         } else {
@@ -2929,13 +3124,27 @@ class MotionDirector {
           `;
         }
 
+        const bannerHtml = activeBannerSecret ? `
+          <div role="status" style="width:360px;max-width:92vw;padding:10px 13px;border-radius:16px;border:1.5px solid rgba(251,191,36,0.85);background:linear-gradient(135deg,rgba(24,20,10,0.95),rgba(66,42,12,0.94));box-shadow:0 14px 34px rgba(0,0,0,0.6),0 0 24px rgba(251,191,36,0.28);color:#fef3c7;font-size:11.5px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+              <span style="padding:2px 8px;border-radius:99px;background:linear-gradient(90deg,#f59e0b,#fde047);color:#0f172a;font-weight:900;font-size:10px;">🏆 隐藏彩蛋解锁 · ${activeBannerSecret.code}</span>
+              <button type="button" data-comp-act="close-secret-banner" style="background:none;border:none;color:#fde68a;cursor:pointer;font-weight:900;">✕</button>
+            </div>
+            <div style="font-weight:800;margin-top:5px;color:#fffbeb;">${activeBannerSecret.icon} 【${activeBannerSecret.titleZh}】 (${activeBannerSecret.titleEn})</div>
+            <div style="color:#fde68a;font-size:11px;margin-top:3px;line-height:1.4;">${activeBannerSecret.speechZh}</div>
+            <div style="margin-top:5px;padding:3px 8px;border-radius:8px;background:rgba(251,191,36,0.18);border:1px solid rgba(251,191,36,0.45);font-size:10.5px;font-weight:800;color:#fcd34d;">🎁 ${activeBannerSecret.rewardLabelZh}</div>
+          </div>
+        ` : "";
+
         dock.innerHTML = `
+          ${bannerHtml}
           <div class="ans-comp-drawer" ${activeCompanionDrawerOpen ? "" : "hidden"}>
             <div class="ans-comp-drawer-head">
               <div class="ans-comp-tabs">
-                <button type="button" class="ans-comp-tab ${activeCompanionTab === "pet" ? "is-active" : ""}" data-comp-act="tab-pet">🐾 QQ宠物养成</button>
-                <button type="button" class="ans-comp-tab ${activeCompanionTab === "wardrobe" ? "is-active" : ""}" data-comp-act="tab-wardrobe">👗 暖暖穿搭</button>
-                <button type="button" class="ans-comp-tab ${activeCompanionTab === "agent" ? "is-active" : ""}" data-comp-act="tab-agent">⚡ AI Agent 技能</button>
+                <button type="button" class="ans-comp-tab ${activeCompanionTab === "pet" ? "is-active" : ""}" data-comp-act="tab-pet">🐾 养成</button>
+                <button type="button" class="ans-comp-tab ${activeCompanionTab === "wardrobe" ? "is-active" : ""}" data-comp-act="tab-wardrobe">👗 穿搭</button>
+                <button type="button" class="ans-comp-tab ${activeCompanionTab === "secrets" ? "is-active" : ""}" data-comp-act="tab-secrets">🏆 彩蛋 ${unlockedSecrets.length}/6</button>
+                <button type="button" class="ans-comp-tab ${activeCompanionTab === "agent" ? "is-active" : ""}" data-comp-act="tab-agent">⚡ Agent</button>
               </div>
               <button type="button" class="ans-sanc-close" style="padding:3px 9px;font-size:11px;" data-comp-act="toggle-drawer">收起 ✕</button>
             </div>
@@ -2943,7 +3152,7 @@ class MotionDirector {
           </div>
           <div class="ans-comp-bar">
             <div class="ans-comp-avatar" style="background:linear-gradient(135deg, ${sp.primaryHex}44, ${sp.secondaryHex}44);border:1.5px solid ${sp.primaryHex};" data-comp-act="toggle-drawer" title="点击展开右下角 QQ宠物 × 奇迹暖暖 × AI Agent 伴侣舱">
-              <span>${sp.icon}</span>
+              <span>${isStrikeActive ? "🕶️" : sp.icon}</span>
               <span class="ans-comp-avatar-lv">Lv.${uInfo.level}</span>
             </div>
             <div class="ans-comp-meta">
@@ -2955,12 +3164,13 @@ class MotionDirector {
                 <span title="个人等级：与进阶穿搭解锁直接联动">${uInfo.badge} Lv.${uInfo.level} ${uInfo.title}</span>
                 <span style="color:#ff85c0;" title="灵龙好感度羁绊等级">♥ Lv.${aInfo.level}</span>
                 <span style="color:#ffe082;" title="灵感星豆：可购买奇迹暖暖穿搭">🪙 ${sanctuaryState.starBeans}</span>
+                <span style="color:#fbbf24;" title="灵龙扭蛋币：可抓娃娃与转盘">🎰 ${arcadeTokensCount}</span>
               </div>
             </div>
             <div class="ans-comp-btns">
               <button type="button" class="ans-comp-qbtn is-adopt" data-comp-act="open-adopt" title="打开注册领养灵龙孵化舱">🥚 领养舱</button>
               <button type="button" class="ans-comp-qbtn is-nikki" data-comp-act="open-wardrobe" title="打开奇迹暖暖 5 部位 3D 换装间">👗 换装</button>
-              <button type="button" class="ans-comp-qbtn is-agent" data-comp-act="tab-agent" title="唤起 AI Agent 技能舱">⚡ Agent</button>
+              <button type="button" class="ans-comp-qbtn is-agent" data-comp-act="tab-secrets" title="查看 6 大反常识隐藏彩蛋">🏆 彩蛋 ${unlockedSecrets.length}/6</button>
               <button type="button" class="ans-comp-qbtn" data-comp-act="toggle-roam" title="切换小恐龙全屏自由乱飞 / 停靠右下角">${sanctuaryState.roamMode === "dock" ? "🛸 乱飞" : "⚓ 停靠"}</button>
             </div>
           </div>
@@ -4964,7 +5174,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     },
     children:[
       e.jsx("primitive",{object:dinoState.root}),
-      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s) */
+      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s
       e.jsxs("group",{
         ref:dinoHeadMountRef,
         position:[0,0.55,0],
@@ -4990,7 +5200,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
           eq.eyewear==="star_monocle"&&(dinoState.wardrobeNodes.eyewear_star_monocle?e.jsx("primitive",{object:dinoState.wardrobeNodes.eyewear_star_monocle}):null)
         ]
       }),
-      /* 3D Body-Bone Mounted Neckwear / Tripo Jetpack / Wings / Cape + Handheld Items (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s) */
+      /* 3D Body-Bone Mounted Neckwear / Tripo Jetpack / Wings / Cape + Handheld Items (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s
       e.jsxs("group",{
         ref:dinoBodyMountRef,
         position:[0,0.18,0],
