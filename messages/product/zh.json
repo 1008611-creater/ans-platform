@@ -805,10 +805,10 @@
   "agrihackathon": {
     "rulesPendingTitle": "首届方案已明确，正式日程待确认",
     "rulesPendingBody": "以下为首届活动方案，正式日期尚未确认。报名、初赛提交与决赛材料仅按本届已发布的独立窗口开放；本页方案说明不代表已经开报或发布技术规范。",
-    "organizerTools": "工作人员入口",
-    "organizerToolsBody": "作品检查、现场支持、展示审核与技术规范管理。需要本届对应权限。",
-    "workspaceLinksBody": "在项目广场找灵感，在 Hub 使用工作流，回到工作台继续自己的项目与准备任务。正式参赛以本届已发布规则为准。",
-    "openHubs": "Hub与工作流"
+    "organizerTools": "组委会与评委入口",
+    "organizerToolsBody": "供授权人员执行作品核验、现场排期、公开审核与计票配置。",
+    "workspaceLinksBody": "领算力、跑 AI 工作流、管理战队与备忘清单，一站式备战农客松。",
+    "openHubs": "Hub 与 AI 工作流"
   },
   "agriTasks": {
     "ownerLabel": "负责人：{id}",
@@ -1972,6 +1972,7 @@
     "freeNote": "免费项目。使用范围以创作者说明为准。"
   },
   "quotaHistory": {
+    "pageTitle": "算力中心",
     "title": "积分账单",
     "entry": "积分账单",
     "description": "查看统一积分余额、预占额度和每笔变动。",
@@ -2519,6 +2520,8 @@
     "revoke": "停用未兑换卡密",
     "revokeConfirm": "确认停用本批次剩余卡密",
     "catalogTitle": "选择积分卡",
+    "redemptionGuide": "卡密怎么兑换？",
+    "purchaseGuide": "第一次买积分卡？",
     "oneTime": "一次性购买",
     "catalogDescription": "买卡、收卡密、回这里兑换。积分入账到当前账号。",
     "chooseAmount": "选择积分面值",
@@ -2535,7 +2538,7 @@
     "redeemStep": "粘贴卡密，兑换到当前 ANS 账号。",
     "accountNote": "请先确认登录的是要充值的账号。已兑换卡密无法用于另一个账号。",
     "planStatus": "准备中",
-    "planDescription": "周卡、月卡、季卡，看看 VibePlan 的新界面。",
+    "planDescription": "比较周卡、月卡、季卡的价格与规划权益。",
     "planExplore": "了解 VibePlan",
     "quickAmounts": "快捷选择面值"
   },

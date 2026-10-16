@@ -28,7 +28,7 @@ it("shows the historical-rules notice and no edition entry when no competition i
   expect(within(notice).getByText(product.agrihackathon.rulesPendingBody)).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: zh.agriHackathon.enterWorkbench })).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: agriWall.publish })).toHaveAttribute("href", "/explore/submit?event=agrihackathon");
-  expect(screen.getByRole("link", { name: agriWall.title })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.star.cta })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
 });
 
 it("keeps historical rules marked pending even when the exact edition is bound", async () => {
@@ -67,3 +67,17 @@ it("keeps every scoring criterion, rule and operational entry behind optional di
   expect(container.querySelectorAll("h1")).toHaveLength(1);
   expect(container.querySelectorAll('[data-slot="button"].bg-primary')).toHaveLength(1);
 });
+
+it("renders the 5-step unified competition loop and direct compute credit CTA", async () => {
+  mocks.find.mockResolvedValue(null);
+  const { container } = render(await AgriHackathonPage());
+  for (const href of ["/workspace/credits", "/competitions/agrihackathon/submissions", "/explore?category=competition&subcategory=agri-wall", "/competitions/agrihackathon/showcase"]) {
+    expect(container.querySelectorAll(`a[href="${href}"]`)).toHaveLength(1);
+  }
+  expect(screen.getByRole("heading", { name: zh.agriHackathon.pipelineTitle })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.compute.cta })).toHaveAttribute("href", "/workspace/credits");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.submit.cta })).toHaveAttribute("href", "/competitions/agrihackathon/submissions");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.star.cta })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.ranking.cta })).toHaveAttribute("href", "/competitions/agrihackathon/showcase");
+});
+
