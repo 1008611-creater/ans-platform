@@ -904,7 +904,7 @@
 .ans-product-shell :is(a, button, summary):focus-visible, .ans-dino-trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
 .ans-product-shell :is(a, button, summary), .ans-dino-trigger { touch-action: manipulation; }
 @keyframes ans-dino-hello { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-12deg) translateY(-5px); } 65% { transform: rotate(8deg); } }
-@media (min-width: 1024px) { .ans-dino-guide { bottom: 24px; } }
+@media (min-width: 1280px) { .ans-dino-guide { bottom: 24px; } }
 @media (max-width: 640px) { .ans-product-container { width: calc(100% - 32px); } .ans-hero-character { max-width: 280px; } .ans-preview-large { min-height: 290px; } .ans-community-banner { padding: 24px; } }
 @media (prefers-reduced-motion: reduce) { .ans-product-shell *, .ans-dino-trigger, .ans-dino-trigger * { animation: none !important; transition: none !important; } .ans-project-card:hover, .ans-dino-trigger:hover { transform: none; } }
 

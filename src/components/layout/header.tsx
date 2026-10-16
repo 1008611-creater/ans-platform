@@ -143,31 +143,31 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
 
   return (
     <header className="sticky top-[0px] z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-12 items-center gap-1 sm:gap-2 xl:gap-4">
+      <div className="container flex h-12 items-center gap-0.5 sm:gap-2 xl:gap-4">
         {/* Mobile menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild className="xl:hidden">
-            <Button variant="ghost" size="icon" className="-ml-2 h-8 w-8" data-testid="mobile-menu-trigger">
-              <Menu className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="-ml-2 h-11 w-11 shrink-0" data-testid="mobile-menu-trigger">
+              <Menu className="h-4 w-4" aria-hidden="true" />
               <span className="sr-only">{t("product.menu")}</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[280px] p-0">
-            <div className="flex flex-col h-full">
+          <SheetContent side="left" className="w-[min(320px,calc(100vw-2rem))] gap-0 p-0">
+            <div className="flex min-h-0 flex-1 flex-col pb-[env(safe-area-inset-bottom)]">
               {/* Header */}
-              <div className="flex items-center gap-3 p-6 border-b">
+              <div className="flex shrink-0 items-center gap-3 border-b py-5 ps-5 pe-14">
                 {branding.logo && (
                   <>
                     <Image
                       src={branding.logo}
-                      alt={branding.name}
+                      alt=""
                       width={32}
                       height={32}
                       className="h-8 w-8 object-contain dark:hidden"
                     />
                     <Image
                       src={branding.logoDark || branding.logo}
-                      alt={branding.name}
+                      alt=""
                       width={32}
                       height={32}
                       className="h-8 w-8 object-contain hidden dark:block"
@@ -176,20 +176,13 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
                 )}
                 {/* Radix 要求抽屉有可访问的标题与描述；标题直接用可见品牌名，
                     描述对视觉隐藏，只供读屏使用。 */}
-                <SheetTitle className="text-lg font-semibold mt-2">{branding.name}</SheetTitle>
+                <SheetTitle className="min-w-0 break-words text-lg font-semibold">{branding.name}</SheetTitle>
                 <SheetDescription className="sr-only">{hubText("navigationDescription")}</SheetDescription>
               </div>
 
-              <nav aria-label={t("a11y.mobileNav")} className="flex-1 overflow-y-auto p-4">
-                <div className="space-y-1">{productLinks.map(({ id, href, label }) => <Link key={href} href={href} aria-current={isPrimaryNavigationActive(id, pathname) ? "page" : undefined} onClick={() => setMobileMenuOpen(false)} className="block rounded-md px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary">{label}</Link>)}</div>
+              <nav aria-label={t("a11y.mobileNav")} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+                <div className="space-y-1">{productLinks.map(({ id, href, label }) => <Link key={href} href={href} aria-current={isPrimaryNavigationActive(id, pathname) ? "page" : undefined} onClick={() => setMobileMenuOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary">{label}</Link>)}</div>
               </nav>
-
-              {/* Footer */}
-              <div className="p-4 border-t">
-                <p className="text-xs text-muted-foreground text-center">
-                  {branding.name}
-                </p>
-              </div>
             </div>
           </SheetContent>
         </Sheet>
@@ -238,7 +231,7 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
 
         {/* Right side actions */}
         <div className="flex shrink-0 items-center gap-1">
-          <BilingualToggle />
+          <div className="hidden sm:block"><BilingualToggle /></div>
           {/* Primary creation action follows the learning project flow. */}
           {user && (
             <Button asChild variant="ghost" size="icon" className="h-8 w-8">
@@ -258,7 +251,7 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 min-w-0 max-w-40 gap-2 px-2 lg:max-w-32 xl:max-w-40">
+                <Button variant="ghost" aria-label={t("nav.profile")} className="relative h-11 min-w-11 max-w-40 gap-2 px-2 lg:max-w-32 xl:max-w-40">
                   <Avatar className="h-6 w-6 shrink-0">
                     <AvatarImage src={user.image || undefined} alt={user.name || ""} />
                     <AvatarFallback className="text-xs">
