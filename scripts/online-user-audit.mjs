@@ -95,7 +95,7 @@ async function main() {
       failures.push(`/support 被静默重定向到了首页 /`);
     }
     if (res.ttfbMs > TTFB_BUDGET_MS) {
-      warnings.push(`${route} 预热后 TTFB 为 ${res.ttfbMs}ms（超过预算 ${TTFB_BUDGET_MS}ms）`);
+      failures.push(`${route} 预热后 TTFB 为 ${res.ttfbMs}ms（超过预算 ${TTFB_BUDGET_MS}ms）`);
     }
   }
 

@@ -1,4 +1,4 @@
-import { readHubMemberWorkflows } from "@/server/hubs/workflows";
+import { readHubMemberWorkflowCounts } from "@/server/hubs/workflows";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { CatalogWorkflowId } from "@/contracts/catalog";
@@ -25,9 +25,9 @@ export default async function HubsPage({ searchParams }: { searchParams: Promise
           .then(platform => (platform ? ([platform.recipe.catalogRecipeId] as readonly CatalogWorkflowId[]) : ([] as readonly CatalogWorkflowId[])))
           .catch(() => null)
       : Promise.resolve([] as readonly CatalogWorkflowId[]),
-    Promise.all(
-      hubs.map(async hub => [hub.slug, await readHubMemberWorkflows(hub.slug).then(page => page.total).catch(() => null)] as const),
-    ).then(entries => Object.fromEntries(entries)),
+    readHubMemberWorkflowCounts(hubs.map(hub => hub.slug)).catch(() =>
+      Object.fromEntries(hubs.map(hub => [hub.slug, null] as const)),
+    ),
   ]);
   return <div className="ans-product-shell"><div className={`ans-product-container ${styles.container}`}><header className="ans-page-heading"><RevealDetails id="hub-directory-guide" kind="heading" label={t("guideLabel")} className="ans-page-heading-copy pe-12" details={<><p>{t("description")}</p><p>{t("directoryNote")}</p></>}><h1 className="ans-page-title">{t("title")}</h1></RevealDetails><div className="ans-page-actions"><Button asChild variant="outline"><Link href="/market">{t("allWorkflows")}</Link></Button></div></header><form action="/hubs" role="search" className={styles.search}><label htmlFor="hub-search">{t("searchLabel")}<Input id="hub-search" name="q" type="search" defaultValue={query} placeholder={t("searchPlaceholder")} /></label><Button type="submit" variant="outline">{t("search")}</Button></form>{hubs.length ? <HubDirectory hubs={hubs} published={published} publishedRecipeIds={publishedRecipeIds} memberCounts={memberCounts} /> : <div className={styles.empty}>{t("emptySearch")} <Link href="/hubs" className="underline">{t("clear")}</Link></div>}{publishedRecipeIds === null && <p className={styles.note} role="status">{t("workflowsUnavailable")}</p>}{published === null && <p className={styles.note} role="status">{t("catalogUnavailable")}</p>}</div></div>;
 }

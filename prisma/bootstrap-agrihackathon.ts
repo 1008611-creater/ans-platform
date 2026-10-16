@@ -14,6 +14,7 @@ function parseArgValue(flag: string): string | undefined {
 
 async function main() {
   const draftOnly = process.argv.includes("--draft-only") || process.env.AGRI_BOOTSTRAP_DRAFT_ONLY === "true";
+  const provisionInitial = !process.argv.includes("--pending-only") && process.env.AGRI_BOOTSTRAP_PENDING_ONLY !== "true";
   const competitionId = (
     parseArgValue("--competition-id") ||
     process.env.ANS_AGRIHACKATHON_COMPETITION_ID ||
@@ -27,7 +28,7 @@ async function main() {
 
   await prisma.$transaction(
     async tx => {
-      await bootstrapAgriEditionInTx(tx, { competitionId, draftOnly, silent: false });
+      await bootstrapAgriEditionInTx(tx, { competitionId, draftOnly, provisionInitial, silent: false });
     },
     { maxWait: 30000, timeout: 60000 },
   );

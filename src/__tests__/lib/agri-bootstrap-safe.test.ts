@@ -18,4 +18,25 @@ describe("safe edition initialization", () => {
     expect(result.enabled).toBe(false);
     expect(result.publishedRuleVersionId).toBeNull();
   });
+
+  it("provisions initial root grants and rule v1 only when provisionInitial is true and zero grants/revisions exist", async () => {
+    const statements: string[] = [];
+    const execute = vi.fn(async (parts: TemplateStringsArray) => {
+      statements.push(parts.join("?"));
+      return 1;
+    });
+    const query = vi.fn()
+      .mockResolvedValueOnce([{ now: new Date("2026-10-16T00:00:00Z") }])
+      .mockResolvedValueOnce([{ id: "workspace", competitionId: "agrihackathon-2026", enabled: false, draftRevision: 0, confirmedRuleVersionId: null, publishedRuleVersionId: null }])
+      .mockResolvedValueOnce([{ id: "admin-1", email: "admin@ans.cauai.fun", username: "admin" }])
+      .mockResolvedValueOnce([{ count: 0 }]);
+    const result = await bootstrapAgriEditionInTx({ $executeRaw: execute, $queryRaw: query } as never, {
+      provisionInitial: true,
+      silent: true,
+    });
+    expect(result.enabled).toBe(true);
+    expect(result.publishedRuleVersionId).toBeTruthy();
+    expect(statements.join(" ")).toContain("INSERT INTO agri_access_grants");
+    expect(statements.join(" ")).toContain("INSERT INTO agri_rule_versions");
+  });
 });

@@ -9,8 +9,10 @@ import { catalogText } from "@/domain/catalog/content";
 import { workflowDefinitionSchema } from "@/contracts/workflow";
 import { validateWorkflow } from "@/domain/workflows/graph";
 import { assertSupportedRecipe } from "@/domain/workflows/recipes";
+import { getPlatformRecipe } from "@/domain/workflows/platform-recipes";
 import { getPublishedWorkflow } from "@/server/workflows/service";
 import { listRelatedPublishedMarketListings } from "@/server/marketplace/listings";
+import { workflowDefinitionHash } from "@/server/marketplace/workflow-binding";
 import { marketWorkflowDetails } from "@/server/marketplace/workflows";
 import { listPublishedCatalog } from "./service";
 
@@ -18,8 +20,10 @@ type PublicWorkflow = NonNullable<Awaited<ReturnType<typeof getPublishedWorkflow
 const readWorkflow = cache(async (slug: string) => {
   const workflow = await getPublishedWorkflow(slug);
   if (!workflow) return null;
-  const actor = await db.user.findFirst({ where: { id: workflow.author.id, deletedAt: null, flagged: false }, select: { id: true } });
-  if (!actor) return null;
+  if (!getPlatformRecipe(slug)) {
+    const actor = await db.user.findFirst({ where: { id: workflow.author.id, deletedAt: null, flagged: false }, select: { id: true } });
+    if (!actor) return null;
+  }
   const parsed = workflowDefinitionSchema.safeParse(workflow.publishedDefinition);
   if (!parsed.success || !validateWorkflow(parsed.data).ok) return null;
   try { assertSupportedRecipe(parsed.data); } catch { return null; }
@@ -45,7 +49,20 @@ async function workflowsFor(projects: CatalogProject[]) {
 }
 async function offersFor(projects: CatalogProject[], workflows: PublicWorkflow[]) {
   const offers = await listRelatedPublishedMarketListings({ slugs: marketSlugs(projects), workflowIds: workflows.map(workflow => workflow.id) });
-  return (await Promise.all(offers.map(readableOffer))).filter(offer => offer !== null);
+  return (await Promise.all(offers.map(async offer => {
+    const exec = offer.listing.execution;
+    if (exec) {
+      const matched = workflows.find(
+        w =>
+          w.id === exec.workflowId &&
+          w.author.id === offer.seller.id &&
+          w.publishedVersion === exec.version &&
+          workflowDefinitionHash(w.publishedDefinition) === exec.definitionHash,
+      );
+      if (matched) return offer;
+    }
+    return readableOffer(offer);
+  }))).filter(offer => offer !== null);
 }
 function workflowLink(workflow: PublicWorkflow): ProductConnection {
   return { slug: workflow.slug, title: workflow.title, summary: workflow.summary, version: workflow.publishedVersion ?? undefined,

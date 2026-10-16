@@ -137,3 +137,32 @@ export async function readHubMemberWorkflows(hubSlug:WorkflowHubSlug,cursor?:str
   return {items,total:count.total,nextCursor:rows.length>24?page[23].cursor:null};
  },{timeout:15000,isolationLevel:"RepeatableRead"});
 }
+
+export async function readHubMemberWorkflowCounts(hubSlugs: readonly WorkflowHubSlug[]): Promise<Record<string, number>> {
+ if (!hubSlugs.length) return {};
+ const rows = await db.$queryRaw<Array<{ hubSlug: string; total: number }>>`
+  SELECT h."hubSlug", count(*)::integer AS total
+  FROM workflow_hub_associations h
+  JOIN workflow_hub_events a ON a.id=h."approvedEventId" AND a.action='APPROVE'
+  JOIN workflow_hub_events r ON r.id=a."requestEventId" AND r.action='REQUEST' AND r."actorId"<>a."actorId"
+  JOIN workflows w ON w.id=h."workflowId" AND w."authorId"=r."actorId" AND w.status='PUBLISHED' AND NOT w."isOfficial"
+  JOIN users u ON u.id=w."authorId" AND NOT u.flagged AND u."deletedAt" IS NULL
+  JOIN workflow_versions v ON v.id=a."versionId" AND v."workflowId"=w.id AND v.version=w."publishedVersion"
+  WHERE h."hubSlug" = ANY(${[...hubSlugs]}::text[])
+    AND workflow_hub_definition_valid(v.definition)
+    AND EXISTS(
+      SELECT 1 FROM (
+        SELECT "createdAt", after FROM audit_logs
+        WHERE "resourceType"='workflow' AND "resourceId"=w.id AND action='WORKFLOW_APPROVED' AND "createdAt">=v."createdAt"
+        ORDER BY "createdAt" DESC LIMIT 100
+      ) approval
+      WHERE after->>'status'='PUBLISHED' AND CASE
+        WHEN jsonb_typeof(after->'publishedVersion')='number' THEN (after->>'publishedVersion')::numeric=v.version AND (NOT(after ? 'versionId') OR (jsonb_typeof(after->'versionId')='string' AND after->>'versionId'=v.id))
+        ELSE v.id=(SELECT id FROM workflow_versions historical WHERE historical."workflowId"=w.id AND historical."createdAt"<=approval."createdAt" ORDER BY historical.version DESC LIMIT 1)
+      END
+    )
+  GROUP BY h."hubSlug"
+ `;
+ const bySlug = new Map(rows.map(row => [row.hubSlug, row.total]));
+ return Object.fromEntries(hubSlugs.map(slug => [slug, bySlug.get(slug) ?? 0]));
+}

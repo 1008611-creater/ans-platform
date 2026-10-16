@@ -82,6 +82,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
 # Runtime prompt files are loaded from disk by src/lib/ai/load-prompt.ts.
 COPY --from=builder --chown=nextjs:nodejs /app/src/lib/ai/*.prompt.yml ./src/lib/ai/
 COPY --from=builder --chown=nextjs:nodejs /app/src/app/api/prompt-builder/chat/*.prompt.yml ./src/app/api/prompt-builder/chat/
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db.ts ./src/lib/db.ts
+COPY --from=builder --chown=nextjs:nodejs /app/src/server/competitions/agrihackathon/bootstrap.ts ./src/server/competitions/agrihackathon/bootstrap.ts
 
 # Reuse the dependency stage for runtime migrations. Installing here would
 # require a second network access during the runner stage and can fail on

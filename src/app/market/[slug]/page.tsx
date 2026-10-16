@@ -49,14 +49,14 @@ export async function generateMetadata({ params }: MarketDetailProps): Promise<M
 
 export default async function MarketDetail({ params }: MarketDetailProps) {
   const { slug } = await params;
-  const [t, tp, p, td, w, { session, offer }] = await Promise.all([
+  const [t, tp, p, td, w, { session, offer, runnable: precomputedRunnable }] = await Promise.all([
     getTranslations("product.market"), getTranslations("product.marketProject"),
     getTranslations("product"), getTranslations("product.marketDetail"),
     getTranslations("marketWorkflow"), publishedListing(slug),
   ]);
   const productPath = marketProductPath(offer);
   if (productPath !== `/market/${slug}`) redirect(productPath);
-  const runnable = await marketWorkflowDetails(offer);
+  const runnable = precomputedRunnable ?? await marketWorkflowDetails(offer);
   if (runnable?.available && runnable.recipe === "resume-website-v1") {
     return <ResumeWebsiteMarketProduct offer={offer} session={session} runnable={runnable} />;
   }

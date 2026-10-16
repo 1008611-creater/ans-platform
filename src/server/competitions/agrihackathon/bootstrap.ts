@@ -30,6 +30,7 @@ export const DEFAULT_AGRI_GUIDANCE_MARKDOWN = [
 
 export const DEFAULT_AGRI_REQUIREMENTS = {
   schemaVersion: 1 as const,
+  computeGrantPoints: 100,
   repositoryRequired: false,
   repositoryRefRequired: false,
   demoRequired: false,
@@ -52,6 +53,7 @@ interface WorkspaceBootstrapRow {
 export interface AgriBootstrapOptions {
   competitionId?: string;
   draftOnly?: boolean;
+  provisionInitial?: boolean;
   targetEmail?: string;
   silent?: boolean;
 }
@@ -110,10 +112,143 @@ export async function bootstrapAgriEditionInTx(
     throw new Error(`Failed to lock agri_workspaces for ${competitionId}`);
   }
 
-  // Initialization preserves existing rules and grants; publication requires organizer confirmation.
-  const enabled = workspace.enabled;
-  const publishedRuleVersionId = workspace.publishedRuleVersionId;
-  log("[agri-bootstrap] Workspace initialized; published rules and permissions preserved.");
+  let enabled = workspace.enabled;
+  let publishedRuleVersionId = workspace.publishedRuleVersionId;
+
+  if (options.provisionInitial) {
+    const targetEmail = (
+      options.targetEmail ??
+      process.env.AGRI_ORGANIZER_EMAIL ??
+      process.env.ADMIN_EMAIL ??
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const admins = await tx.$queryRaw<Array<{ id: string; email: string | null; username: string }>>`
+      SELECT id, email, username
+      FROM users
+      WHERE (role = 'ADMIN' OR (${targetEmail} <> '' AND lower(email) = ${targetEmail}))
+        AND flagged = false
+        AND "deletedAt" IS NULL
+      ORDER BY "createdAt" ASC
+    `;
+
+    const [{ count: grantCount }] = await tx.$queryRaw<Array<{ count: number }>>`
+      SELECT count(*)::integer AS count
+      FROM agri_access_grants
+      WHERE "competitionId" = ${competitionId}
+    `;
+
+    if (grantCount === 0 && admins.length > 0) {
+      for (const admin of admins) {
+        const scopeIds = AGRI_BOOTSTRAP_SCOPES.map(() => randomUUID());
+        await tx.$executeRaw`
+          INSERT INTO agri_access_grants (
+            id, "competitionId", "userId", scope, "grantedById", "grantedAt",
+            "revokedAt", "expiresAt", delegable, revision,
+            "sourceGrantId", "sourceRevision", "managerGrantId", "managerRevision"
+          )
+          SELECT
+            u.id, ${competitionId}, ${admin.id}, u.scope, ${admin.id}, ${now},
+            NULL, NULL, true, 1,
+            NULL, NULL, NULL, NULL
+          FROM unnest(${scopeIds}::text[], ${[...AGRI_BOOTSTRAP_SCOPES]}::text[]) AS u(id, scope)
+          ON CONFLICT ("competitionId", "userId", scope) DO NOTHING
+        `;
+      }
+      log(`[agri-bootstrap] Seeded initial root scopes for ${admins.length} admin account(s).`);
+    }
+
+    if (!workspace.publishedRuleVersionId && workspace.draftRevision === 0 && !options.draftOnly && admins.length > 0) {
+      const actorId = admins[0].id;
+      const opensAt = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const prelimClosesAt = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+      const finalClosesAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+      const draftPayload = {
+        schemaVersion: 1 as const,
+        guidanceMarkdown: DEFAULT_AGRI_GUIDANCE_MARKDOWN,
+        requirements: DEFAULT_AGRI_REQUIREMENTS,
+        windows: [
+          {
+            stage: "REGISTRATION" as const,
+            state: "READY" as const,
+            opensAt: opensAt.toISOString(),
+            closesAt: prelimClosesAt.toISOString(),
+            includesDeadline: true,
+          },
+          {
+            stage: "PRELIMINARY" as const,
+            state: "READY" as const,
+            opensAt: opensAt.toISOString(),
+            closesAt: prelimClosesAt.toISOString(),
+            includesDeadline: true,
+          },
+          {
+            stage: "FINAL" as const,
+            state: "READY" as const,
+            opensAt: opensAt.toISOString(),
+            closesAt: finalClosesAt.toISOString(),
+            includesDeadline: true,
+          },
+        ],
+      };
+
+      const ruleId = randomUUID();
+      await tx.$executeRaw`
+        INSERT INTO agri_rule_versions (
+          id, "competitionId", version, requirements, "guidanceMarkdown", "confirmedById", "confirmedAt", "createdAt"
+        ) VALUES (
+          ${ruleId}, ${competitionId}, 1, ${JSON.stringify(DEFAULT_AGRI_REQUIREMENTS)}::jsonb,
+          ${DEFAULT_AGRI_GUIDANCE_MARKDOWN}, ${actorId}, ${now}, ${now}
+        )
+      `;
+
+      await tx.$executeRaw`
+        INSERT INTO agri_stage_windows (
+          id, "competitionId", "ruleVersionId", stage, state, "opensAt", "closesAt", "includesDeadline"
+        ) VALUES
+          (${randomUUID()}, ${competitionId}, ${ruleId}, 'REGISTRATION', 'CONFIRMED', ${opensAt}, ${prelimClosesAt}, true),
+          (${randomUUID()}, ${competitionId}, ${ruleId}, 'PRELIMINARY', 'CONFIRMED', ${opensAt}, ${prelimClosesAt}, true),
+          (${randomUUID()}, ${competitionId}, ${ruleId}, 'FINAL', 'CONFIRMED', ${opensAt}, ${finalClosesAt}, true)
+      `;
+
+      await tx.$executeRaw`
+        UPDATE agri_workspaces
+        SET "rulesDraft" = ${JSON.stringify(draftPayload)}::jsonb,
+            "confirmedRuleVersionId" = ${ruleId},
+            "publishedRuleVersionId" = ${ruleId},
+            enabled = true,
+            "draftRevision" = 1,
+            "updatedById" = ${actorId},
+            "updatedAt" = ${now}
+        WHERE id = ${workspace.id}
+      `;
+
+      await tx.$executeRaw`
+        INSERT INTO agri_workspace_events (
+          id, "competitionId", revision, action, "ruleVersionId", "actorId", "createdAt"
+        ) VALUES (
+          ${randomUUID()}, ${competitionId}, 1, 'publishRules', ${ruleId}, ${actorId}, ${now}
+        )
+      `;
+
+      await tx.$executeRaw`
+        UPDATE competitions
+        SET status = 'ONGOING'::"CompetitionStatus",
+            "startsAt" = COALESCE("startsAt", ${opensAt}),
+            "endsAt" = COALESCE("endsAt", ${finalClosesAt}),
+            "rewardXp" = CASE WHEN "rewardXp" = 0 THEN 500 ELSE "rewardXp" END
+        WHERE id = ${competitionId}
+      `;
+
+      enabled = true;
+      publishedRuleVersionId = ruleId;
+      log(`[agri-bootstrap] Provisioned initial Rule v1 (${ruleId}) and enabled workspace for ${competitionId}.`);
+    }
+  } else {
+    log("[agri-bootstrap] Workspace initialized; published rules and permissions preserved.");
+  }
 
   return { competitionId, workspaceId: workspace.id, enabled, publishedRuleVersionId };
 }
