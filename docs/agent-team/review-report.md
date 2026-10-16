@@ -469,3 +469,12 @@ AC-WS04????head CI????????Linux?????????????????????????????????????????????????
 - 仅允许唯一待迁移 `20261016090000_agri_unified_closure`，校验新增 3 张空表（`agri_team_compute_grants`、`agri_judge_scores`、`agri_ranking_publications`）及 4 个新增触发器（`agri_judge_scores_immutable`、`agri_ranking_publications_immutable`、`agri_team_compute_guard`、`agri_judge_score_guard`），既有触发器、约束、索引、函数与 91 条历史迁移记录逐项保持不变。
 - 对 `agri_submission_receipts` 新增可空列 `"wallSync" JSONB`，校验全表 `"wallSync" IS NULL` 且原有 10 列（`id` 至 `createdAt`）行级 `row_to_json` 摘要与恢复前逐行完全一致。
 - 独审结论：`PASS`，批准在目标机器执行 fresh 生产备份隔离恢复与 91→92 迁移演练后正式发布上线。
+
+## 2026-10-16 92→94 生产备份演练门禁与合流独立审查通过
+
+独立审查已复核 `scripts/production-backup-verify.py`（SHA256 `6d0de7c58da41a7ac5e8ec291e65e31ea25af0a5ae66c105a72cef7b20115340`）对当前生产父版本（`97b4e671c5a4f73c737425251deed0d7a02e9e59`，92 项已应用迁移）升级至第 93 项迁移 `20261016120000_model_billing_units_v2`（LF SHA256 `5564f28b8c90b487900457a254c330f5dffa587f0fd6460f0dd17095d68b30a2`）及第 94 项迁移 `20261016180000_compute_benefits`（LF SHA256 `af890e45df92c1f08cff87c6bf77fc4815f736e98cec3ca0f8c7370490d07681`）的隔离恢复演练门禁：
+- 仅允许白名单内已审查的待迁移序列（含 `(93, 94)` 及 `(92, 93, 94)`），在 `--network none` 隔离 PostgreSQL 17 恢复容器中按序分步执行并逐项比对前后状态。
+- 第 93 项迁移仅允许 `api_compute_requests` 与 `api_compute_billing_evidence` 上 3 项指定 CHECK 约束更新，其余全部约束、索引、触发器、表集合与全表行级数据摘要必须完全一致。
+- 第 94 项迁移仅允许新增 5 张算力福利空表（行数必须为 0）、11 个新表触发器及 `api_compute_requests` 上的 `compute_benefit_gateway_binding` 延迟约束触发器，既有业务表行级数据摘要、索引与历史迁移记录必须完全一致。
+- 独审结论：`PASS`，批准将 `ops/deploy-target` 推进至最新 `main` 并在部署机器执行 fresh 生产备份隔离恢复、92→94 迁移演练与生产容器切换。
+

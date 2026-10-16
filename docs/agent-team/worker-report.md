@@ -291,3 +291,13 @@ Validation: 24 directed Hub tests passed; full application and test typecheck ex
 修复默认公开和内部评审依赖公开墙问题，保留明确申请与独立审核；移除无截止版本证据的人气作品链接，保留团队人气结果。运行与测试类型检查通过，9文件171项定向检查通过，随后UI24项含新增回归通过。本机全新隔离PostgreSQL执行92迁移与5项真实流程成功。
 
 已同步更新 `scripts/production-backup-verify.py`（SHA256 `2a096f2671a93438a1db713114012b3961baeb8479bba3bc218639a8cb5d9cd5`），绑定当前线上 91 迁移父版本（`cf9360e8ba13cfb2e3b52eb9e8c25ad0459a587d`）至第 92 项迁移 `20261016090000_agri_unified_closure`（标准 LF SHA256 `3f3f3fd690c5044c2ce2b0f597090a02d6d12688d21a9ce2d7ef87f945ec98e3`）的隔离恢复与增量演练白名单，验证新增 3 张空表、4 个不可变/校验触发器及 `agri_submission_receipts` 原有 10 列数据摘要完全一致。生产发布门禁与独审已就绪，由部署机器执行构建、备份恢复演练与正式容器切换。
+
+
+## 2026-10-16 92→94 生产备份验证门禁升级与全量合流（Secret Quests + 3D 抓手 + 农客松安全兜底 + 算力福利）
+
+已完成 PR #135（算力计费单位 v2）、PR #136（算力福利与问卷）、PR #137（农客松报名安全兜底与测试收口）及 6 项小恐龙反常识隐藏彩蛋（Secret Quests）+ 金色成就横幅 + 3D 抓手视口在 `main` 的完整合流，GitHub Actions `CI` 与 `Build and Publish Docker Image` 全绿通过。
+
+同步升级 `scripts/production-backup-verify.py`（SHA256 `6d0de7c58da41a7ac5e8ec291e65e31ea25af0a5ae66c105a72cef7b20115340`），支持当前线上 92 迁移父版本（`97b4e671c5a4f73c737425251deed0d7a02e9e59`）及 91 迁移基线向第 93 项迁移 `20261016120000_model_billing_units_v2`（标准 LF SHA256 `5564f28b8c90b487900457a254c330f5dffa587f0fd6460f0dd17095d68b30a2`）与第 94 项迁移 `20261016180000_compute_benefits`（标准 LF SHA256 `af890e45df92c1f08cff87c6bf77fc4815f736e98cec3ca0f8c7370490d07681`）的分步隔离恢复演练：
+- 第 93 项迁移验证 3 项计费 CHECK 约束（`api_compute_request_quote_valid`、`api_compute_request_state_valid`、`api_compute_billing_evidence_valid`）原地升级与 `ans_guard_api_billing_evidence` 触发器函数更新，其余所有约束、索引、触发器及全表行级数据摘要 100% 保持不变。
+- 第 94 项迁移验证新增 5 张算力福利空表（`compute_benefit_questionnaires`、`compute_benefit_applications`、`compute_benefit_review_events`、`compute_benefit_grants`、`compute_benefit_reservations`）、新表 11 个守卫触发器及 `api_compute_requests` 上的延迟约束触发器 `compute_benefit_gateway_binding`，既有业务表行级数据摘要、索引与历史迁移记录 100% 保持不变。
+

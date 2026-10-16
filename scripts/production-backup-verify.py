@@ -36,9 +36,58 @@ AGRI_UNIFIED_MIGRATION = "20261016090000_agri_unified_closure"
 AGRI_UNIFIED_SQL_SHA256 = "3f3f3fd690c5044c2ce2b0f597090a02d6d12688d21a9ce2d7ef87f945ec98e3"
 AGRI_UNIFIED_TABLES = {"agri_team_compute_grants", "agri_judge_scores", "agri_ranking_publications"}
 AGRI_UNIFIED_TRIGGERS = {"agri_judge_scores_immutable", "agri_ranking_publications_immutable", "agri_team_compute_guard", "agri_judge_score_guard"}
+MODEL_BILLING_UNITS_MIGRATION = "20261016120000_model_billing_units_v2"
+MODEL_BILLING_UNITS_SQL_SHA256 = "5564f28b8c90b487900457a254c330f5dffa587f0fd6460f0dd17095d68b30a2"
+MODEL_BILLING_UPDATED_CONSTRAINTS = {
+    ("api_compute_requests", "api_compute_request_quote_valid"),
+    ("api_compute_requests", "api_compute_request_state_valid"),
+    ("api_compute_billing_evidence", "api_compute_billing_evidence_valid"),
+}
+COMPUTE_BENEFITS_MIGRATION = "20261016180000_compute_benefits"
+COMPUTE_BENEFITS_SQL_SHA256 = "af890e45df92c1f08cff87c6bf77fc4815f736e98cec3ca0f8c7370490d07681"
+COMPUTE_BENEFITS_TABLES = {
+    "compute_benefit_questionnaires",
+    "compute_benefit_applications",
+    "compute_benefit_review_events",
+    "compute_benefit_grants",
+    "compute_benefit_reservations",
+}
+COMPUTE_BENEFITS_NEW_TABLE_TRIGGERS = {
+    "compute_benefit_questionnaires_immutable",
+    "compute_benefit_review_events_immutable",
+    "compute_benefit_grants_immutable",
+    "compute_benefit_reservations_immutable",
+    "compute_benefit_applications_immutable",
+    "compute_benefit_review_proof",
+    "compute_benefit_grant_proof",
+    "compute_benefit_reservation_proof",
+    "compute_benefit_grant_conservation",
+    "compute_benefit_reservation_conservation",
+    "compute_benefit_request_binding",
+}
+COMPUTE_BENEFITS_EXISTING_TABLE_TRIGGERS = {
+    ("api_compute_requests", "compute_benefit_gateway_binding"),
+}
+REVIEWED_MIGRATION_SHAS = {
+    VISUAL_MIGRATION: VISUAL_SQL_SHA256,
+    FOUR_VIEW_MIGRATION: FOUR_VIEW_SQL_SHA256,
+    AGRI_UNIFIED_MIGRATION: AGRI_UNIFIED_SQL_SHA256,
+    MODEL_BILLING_UNITS_MIGRATION: MODEL_BILLING_UNITS_SQL_SHA256,
+    COMPUTE_BENEFITS_MIGRATION: COMPUTE_BENEFITS_SQL_SHA256,
+}
 TABLE_MIGRATIONS = {VISUAL_MIGRATION: (VISUAL_SQL_SHA256, VISUAL_TABLES),
                     FOUR_VIEW_MIGRATION: (FOUR_VIEW_SQL_SHA256, {"visual_four_view_jobs"}),
-                    AGRI_UNIFIED_MIGRATION: (AGRI_UNIFIED_SQL_SHA256, AGRI_UNIFIED_TABLES)}
+                    AGRI_UNIFIED_MIGRATION: (AGRI_UNIFIED_SQL_SHA256, AGRI_UNIFIED_TABLES),
+                    COMPUTE_BENEFITS_MIGRATION: (COMPUTE_BENEFITS_SQL_SHA256, COMPUTE_BENEFITS_TABLES)}
+APPROVED_PENDING_SEQUENCES = {
+    (VISUAL_MIGRATION,),
+    (FOUR_VIEW_MIGRATION,),
+    (AGRI_UNIFIED_MIGRATION,),
+    (MODEL_BILLING_UNITS_MIGRATION,),
+    (COMPUTE_BENEFITS_MIGRATION,),
+    (MODEL_BILLING_UNITS_MIGRATION, COMPUTE_BENEFITS_MIGRATION),
+    (AGRI_UNIFIED_MIGRATION, MODEL_BILLING_UNITS_MIGRATION, COMPUTE_BENEFITS_MIGRATION),
+}
 # Exact reviewed LF bytes, not an arbitrary operator-supplied SQL file/hash.
 GUARD_SQL = """-- A managed edition stays managed while disabled or before its first stage exists.
 -- No rows or historical migration checksums are modified. Keep pure registration,
@@ -104,25 +153,36 @@ TRIGGER_SQL = """SELECT jsonb_build_object('schema', n.nspname, 'table', r.relna
  WHERE n.nspname='public' AND NOT t.tgisinternal ORDER BY r.relname,t.tgname"""
 
 
-def reviewed_pending_sql(pending, migration_path):
+def reviewed_pending_steps(pending, migration_path):
     enum_name = "20261012180000_project_favorites"
     enum_sql = b"ALTER TYPE \"FavoriteTargetType\" ADD VALUE IF NOT EXISTS 'PROJECT';\n"
     if pending == [enum_name]:
-        expected = enum_sql
-    elif pending == [GUARD_MIGRATION]:
+        actual = (migration_path / enum_name / "migration.sql").read_bytes().replace(b"\r\n", b"\n")
+        if actual != enum_sql:
+            raise RuntimeError("Unapproved pending migration SQL")
+        return [(enum_name, enum_sql)]
+    if pending == [GUARD_MIGRATION]:
         expected = GUARD_SQL.encode("utf-8")
         if hashlib.sha256(expected).hexdigest() != GUARD_SQL_SHA256:
             raise RuntimeError("Reviewed guard SQL attestation changed")
-    elif len(pending) == 1 and pending[0] in TABLE_MIGRATIONS:
-        expected = (migration_path / pending[0] / "migration.sql").read_bytes().replace(b"\r\n", b"\n")
-        if hashlib.sha256(expected).hexdigest() != TABLE_MIGRATIONS[pending[0]][0]:
-            raise RuntimeError("Reviewed visual SQL attestation changed")
-    else:
-        raise RuntimeError("Unapproved pending migration rehearsal")
-    actual = (migration_path / pending[0] / "migration.sql").read_bytes().replace(b"\r\n", b"\n")
-    if actual != expected:
-        raise RuntimeError("Unapproved pending migration SQL")
-    return expected
+        actual = (migration_path / GUARD_MIGRATION / "migration.sql").read_bytes().replace(b"\r\n", b"\n")
+        if actual != expected:
+            raise RuntimeError("Unapproved pending migration SQL")
+        return [(GUARD_MIGRATION, expected)]
+    if tuple(pending) in APPROVED_PENDING_SEQUENCES:
+        steps = []
+        for name in pending:
+            actual = (migration_path / name / "migration.sql").read_bytes().replace(b"\r\n", b"\n")
+            if hashlib.sha256(actual).hexdigest() != REVIEWED_MIGRATION_SHAS[name]:
+                raise RuntimeError("Reviewed visual SQL attestation changed")
+            steps.append((name, actual))
+        return steps
+    raise RuntimeError("Unapproved pending migration rehearsal")
+
+
+def reviewed_pending_sql(pending, migration_path):
+    steps = reviewed_pending_steps(pending, migration_path)
+    return steps[0][1] if len(steps) == 1 else b"\n".join(sql_bytes for _, sql_bytes in steps)
 
 
 def run(args, *, env=None, input=None, timeout=120):
@@ -309,88 +369,133 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
         for label, actual in [("tables", restored_tables), ("constraints", constraints), ("indexes", indexes), ("migrations", migrations), ("guardFunctions", guard_functions), ("triggers", triggers)]:
             if actual != (expected_constraints if label == "constraints" else source[label]):
                 raise RuntimeError("Restore mismatch: " + label)
-        # Only one exact approved migration may be rehearsed in this network-none
-        # restore. Do not broaden this into arbitrary pending-migration execution.
+        # Only exact approved migrations or sequences may be rehearsed in this
+        # network-none restore. Do not broaden into arbitrary migration execution.
         migration_rehearsal = []
         if pending:
-            expected_sql = reviewed_pending_sql(pending, migration_path)
-            new_tables = TABLE_MIGRATIONS.get(pending[0], (None, set()))[1]
-            guard_expected = None
-            if pending == [GUARD_MIGRATION]:
-                if len(guard_functions) != 1:
-                    raise RuntimeError("Original guard function unavailable")
-                # Parse the reviewed replacement on the actual restore engine and
-                # roll it back before the real rehearsal. No text simplification.
-                parsed = sql("BEGIN;\n" + expected_sql.decode() + "\n" + GUARD_FUNCTION_SQL + "; ROLLBACK")
-                guard_expected = [{"item": item} for item in parsed]
-                if len(guard_expected) != 1 or {k: v for k, v in guard_expected[0]["item"].items() if k != "definition"} != {k: v for k, v in guard_functions[0]["item"].items() if k != "definition"}:
-                    raise RuntimeError("Guard replacement changed function metadata")
-                if [{"item": item} for item in sql(GUARD_FUNCTION_SQL)] != guard_functions or [{"item": item} for item in sql(TRIGGER_SQL)] != triggers:
-                    raise RuntimeError("Guard parser witness did not roll back")
-            elif not new_tables:
-                before_enum = sql("SELECT jsonb_agg(enumlabel ORDER BY enumsortorder) FROM pg_enum WHERE enumtypid='public.\"FavoriteTargetType\"'::regtype")[0]
-            rehearsal_sql = expected_sql.decode() if expected_sql.decode().lstrip().startswith("BEGIN;") else "BEGIN;\n" + expected_sql.decode() + "\nCOMMIT;\n"
-            run(["docker", "exec", "-i", restored, "psql", "-X", "-U", "ans_restore", "-d", "ans_restore", "-v", "ON_ERROR_STOP=1"], input=rehearsal_sql)
-            after_functions = [{"item": item} for item in sql(GUARD_FUNCTION_SQL)]
-            after_triggers = [{"item": item} for item in sql(TRIGGER_SQL)]
-            if pending == [AGRI_UNIFIED_MIGRATION]:
-                existing_triggers = [item for item in after_triggers if item["item"]["table"] not in new_tables]
-                added_triggers = {item["item"]["name"] for item in after_triggers if item["item"]["table"] in new_tables}
-                if existing_triggers != triggers or added_triggers != AGRI_UNIFIED_TRIGGERS:
+            steps = reviewed_pending_steps(pending, migration_path)
+            current_tables = dict(restored_tables)
+            current_constraints = list(constraints)
+            current_indexes = list(indexes)
+            current_guard_functions = list(guard_functions)
+            current_triggers = list(triggers)
+            for step_name, expected_sql in steps:
+                new_tables = TABLE_MIGRATIONS.get(step_name, (None, set()))[1]
+                guard_expected = None
+                before_enum = None
+                if step_name == GUARD_MIGRATION:
+                    if len(current_guard_functions) != 1:
+                        raise RuntimeError("Original guard function unavailable")
+                    # Parse the reviewed replacement on the actual restore engine and
+                    # roll it back before the real rehearsal. No text simplification.
+                    parsed = sql("BEGIN;\n" + expected_sql.decode() + "\n" + GUARD_FUNCTION_SQL + "; ROLLBACK")
+                    guard_expected = [{"item": item} for item in parsed]
+                    if len(guard_expected) != 1 or {k: v for k, v in guard_expected[0]["item"].items() if k != "definition"} != {k: v for k, v in current_guard_functions[0]["item"].items() if k != "definition"}:
+                        raise RuntimeError("Guard replacement changed function metadata")
+                    if [{"item": item} for item in sql(GUARD_FUNCTION_SQL)] != current_guard_functions or [{"item": item} for item in sql(TRIGGER_SQL)] != current_triggers:
+                        raise RuntimeError("Guard parser witness did not roll back")
+                elif step_name == "20261012180000_project_favorites":
+                    before_enum = sql("SELECT jsonb_agg(enumlabel ORDER BY enumsortorder) FROM pg_enum WHERE enumtypid='public.\"FavoriteTargetType\"'::regtype")[0]
+                rehearsal_sql = expected_sql.decode() if expected_sql.decode().lstrip().startswith("BEGIN;") else "BEGIN;\n" + expected_sql.decode() + "\nCOMMIT;\n"
+                run(["docker", "exec", "-i", restored, "psql", "-X", "-U", "ans_restore", "-d", "ans_restore", "-v", "ON_ERROR_STOP=1"], input=rehearsal_sql)
+                after_functions = [{"item": item} for item in sql(GUARD_FUNCTION_SQL)]
+                after_triggers = [{"item": item} for item in sql(TRIGGER_SQL)]
+                if step_name == AGRI_UNIFIED_MIGRATION:
+                    existing_triggers = [item for item in after_triggers if item["item"]["table"] not in new_tables]
+                    added_triggers = {item["item"]["name"] for item in after_triggers if item["item"]["table"] in new_tables}
+                    if existing_triggers != current_triggers or added_triggers != AGRI_UNIFIED_TRIGGERS:
+                        raise RuntimeError("Migration rehearsal changed triggers")
+                elif step_name == COMPUTE_BENEFITS_MIGRATION:
+                    existing_triggers = [item for item in after_triggers if item["item"]["table"] not in new_tables and (item["item"]["table"], item["item"]["name"]) not in COMPUTE_BENEFITS_EXISTING_TABLE_TRIGGERS]
+                    added_new_table_triggers = {item["item"]["name"] for item in after_triggers if item["item"]["table"] in new_tables}
+                    added_existing_table_triggers = {(item["item"]["table"], item["item"]["name"]) for item in after_triggers if item["item"]["table"] not in new_tables and item not in current_triggers}
+                    if existing_triggers != current_triggers or added_new_table_triggers != COMPUTE_BENEFITS_NEW_TABLE_TRIGGERS or added_existing_table_triggers != COMPUTE_BENEFITS_EXISTING_TABLE_TRIGGERS:
+                        raise RuntimeError("Migration rehearsal changed triggers")
+                elif after_triggers != current_triggers:
                     raise RuntimeError("Migration rehearsal changed triggers")
-            elif after_triggers != triggers:
-                raise RuntimeError("Migration rehearsal changed triggers")
-            if guard_expected is not None:
-                if after_functions != guard_expected:
-                    raise RuntimeError("Guard rehearsal differs from parsed reviewed SQL")
-            elif new_tables:
-                if after_functions != guard_functions:
-                    raise RuntimeError("Visual rehearsal changed guard function")
-                tables_after = set(sql("SELECT to_json(tablename) FROM pg_tables WHERE schemaname='public' ORDER BY tablename"))
-                if tables_after != set(restored_tables) | new_tables or new_tables & set(restored_tables):
-                    raise RuntimeError("Visual rehearsal changed unexpected tables")
-                for table in new_tables:
-                    if sql("SELECT to_json(count(*)::text) FROM public." + quote(table))[0] != "0":
-                        raise RuntimeError("Visual rehearsal inserted unexpected data")
-            else:
-                if after_functions != guard_functions:
-                    raise RuntimeError("Enum rehearsal changed guard function")
-                after_enum = sql("SELECT jsonb_agg(enumlabel ORDER BY enumsortorder) FROM pg_enum WHERE enumtypid='public.\"FavoriteTargetType\"'::regtype")[0]
-                if after_enum != before_enum + (["PROJECT"] if "PROJECT" not in before_enum else []):
-                    raise RuntimeError("Enum rehearsal changed unexpected values")
-            for name, before in restored_tables.items():
-                if pending == [AGRI_UNIFIED_MIGRATION] and name == "agri_submission_receipts":
-                    if sql('SELECT to_json(COALESCE(bool_and("wallSync" IS NULL), true)) FROM public."agri_submission_receipts"')[0] is not True:
-                        raise RuntimeError("Migration rehearsal populated unexpected wallSync values")
-                    after = sql('SELECT jsonb_build_object(\'count\',count(*)::text,\'digest\',md5(COALESCE(string_agg(md5(row_to_json(t)::text),\'\' ORDER BY md5(row_to_json(t)::text)),\'\'))) FROM (SELECT "id","competitionId","entryStageId","actorId","operation","idempotencyKey","requestHash","submissionId","appliedRevision","createdAt" FROM public."agri_submission_receipts") t')[0]
+                if guard_expected is not None:
+                    if after_functions != guard_expected:
+                        raise RuntimeError("Guard rehearsal differs from parsed reviewed SQL")
+                elif new_tables:
+                    if after_functions != current_guard_functions:
+                        raise RuntimeError("Visual rehearsal changed guard function")
+                    tables_after = set(sql("SELECT to_json(tablename) FROM pg_tables WHERE schemaname='public' ORDER BY tablename"))
+                    if tables_after != set(current_tables) | new_tables or new_tables & set(current_tables):
+                        raise RuntimeError("Visual rehearsal changed unexpected tables")
+                    for table in new_tables:
+                        if sql("SELECT to_json(count(*)::text) FROM public." + quote(table))[0] != "0":
+                            raise RuntimeError("Visual rehearsal inserted unexpected data")
+                elif step_name == MODEL_BILLING_UNITS_MIGRATION:
+                    if after_functions != current_guard_functions:
+                        raise RuntimeError("Billing rehearsal changed guard function")
+                    tables_after = set(sql("SELECT to_json(tablename) FROM pg_tables WHERE schemaname='public' ORDER BY tablename"))
+                    if tables_after != set(current_tables):
+                        raise RuntimeError("Billing rehearsal changed unexpected tables")
                 else:
-                    after = sql("SELECT jsonb_build_object('count',count(*)::text,'digest',md5(COALESCE(string_agg(md5(row_to_json(t)::text),'' ORDER BY md5(row_to_json(t)::text)),''))) FROM public." + quote(name) + " t")[0]
-                if after != before: raise RuntimeError("Migration rehearsal changed application data")
-            constraints_after = [{"item": item} for item in sql(CONSTRAINT_SQL)]
-            indexes_after = [{"item": item} for item in sql(INDEX_SQL)]
-            if new_tables:
-                constraints_after = [item for item in constraints_after if item["item"]["table"] not in new_tables]
-                indexes_after = [item for item in indexes_after if item["item"]["table"] not in new_tables]
-            if constraints_after != constraints or indexes_after != indexes:
-                raise RuntimeError("Migration rehearsal changed constraints or indexes")
-            if sql("SELECT row_to_json(t) FROM (" + MIGRATION_SQL + ") t") != migrations:
-                raise RuntimeError("Migration rehearsal changed historical migration records")
-            rehearsal = {"name": pending[0], "sqlSha256": hashlib.sha256(expected_sql).hexdigest(), "isolatedNetwork": "none", "passed": True,
-                         "applicationDataPreserved": True, "constraintsPreserved": True, "indexesPreserved": True,
-                         "triggersPreserved": True, "historicalMigrationsPreserved": True, "triggersSha256": digest(triggers)}
-            if guard_expected is not None:
-                definition_sha = lambda value: hashlib.sha256(value[0]["item"]["definition"].encode("utf-8")).hexdigest()
-                rehearsal.update({"functionIdentity": "public.agri_legacy_entry_guard()", "functionBeforeSha256": definition_sha(guard_functions),
-                                  "functionAfterSha256": definition_sha(after_functions), "functionExpectedSha256": definition_sha(guard_expected),
-                                  "functionMetadataPreserved": True, "functionParserWitnessRolledBack": True,
-                                  "functionBefore": guard_functions[0]["item"], "functionAfter": after_functions[0]["item"]})
-            elif new_tables:
-                rehearsal["newEmptyTables"] = sorted(new_tables)
-                if pending == [AGRI_UNIFIED_MIGRATION]:
-                    rehearsal["newTriggers"] = sorted(AGRI_UNIFIED_TRIGGERS)
-            else:
-                rehearsal["values"] = after_enum
-            migration_rehearsal = [rehearsal]
+                    if after_functions != current_guard_functions:
+                        raise RuntimeError("Enum rehearsal changed guard function")
+                    after_enum = sql("SELECT jsonb_agg(enumlabel ORDER BY enumsortorder) FROM pg_enum WHERE enumtypid='public.\"FavoriteTargetType\"'::regtype")[0]
+                    if after_enum != before_enum + (["PROJECT"] if "PROJECT" not in before_enum else []):
+                        raise RuntimeError("Enum rehearsal changed unexpected values")
+                for name, before in current_tables.items():
+                    if step_name == AGRI_UNIFIED_MIGRATION and name == "agri_submission_receipts":
+                        if sql('SELECT to_json(COALESCE(bool_and("wallSync" IS NULL), true)) FROM public."agri_submission_receipts"')[0] is not True:
+                            raise RuntimeError("Migration rehearsal populated unexpected wallSync values")
+                        after = sql('SELECT jsonb_build_object(\'count\',count(*)::text,\'digest\',md5(COALESCE(string_agg(md5(row_to_json(t)::text),\'\' ORDER BY md5(row_to_json(t)::text)),\'\'))) FROM (SELECT "id","competitionId","entryStageId","actorId","operation","idempotencyKey","requestHash","submissionId","appliedRevision","createdAt" FROM public."agri_submission_receipts") t')[0]
+                    else:
+                        after = sql("SELECT jsonb_build_object('count',count(*)::text,'digest',md5(COALESCE(string_agg(md5(row_to_json(t)::text),'' ORDER BY md5(row_to_json(t)::text)),''))) FROM public." + quote(name) + " t")[0]
+                    if after != before: raise RuntimeError("Migration rehearsal changed application data")
+                all_constraints_after = [{"item": item} for item in sql(CONSTRAINT_SQL)]
+                all_indexes_after = [{"item": item} for item in sql(INDEX_SQL)]
+                constraints_after = list(all_constraints_after)
+                indexes_after = list(all_indexes_after)
+                if new_tables:
+                    constraints_after = [item for item in constraints_after if item["item"]["table"] not in new_tables]
+                    indexes_after = [item for item in indexes_after if item["item"]["table"] not in new_tables]
+                if step_name == MODEL_BILLING_UNITS_MIGRATION:
+                    unchanged_before = [item for item in current_constraints if (item["item"]["table"], item["item"]["name"]) not in MODEL_BILLING_UPDATED_CONSTRAINTS]
+                    unchanged_after = [item for item in constraints_after if (item["item"]["table"], item["item"]["name"]) not in MODEL_BILLING_UPDATED_CONSTRAINTS]
+                    updated_after = {(item["item"]["table"], item["item"]["name"]): item["item"] for item in constraints_after if (item["item"]["table"], item["item"]["name"]) in MODEL_BILLING_UPDATED_CONSTRAINTS}
+                    if unchanged_after != unchanged_before or set(updated_after.keys()) != MODEL_BILLING_UPDATED_CONSTRAINTS or any(v.get("type") != "c" or not v.get("validated") for v in updated_after.values()) or indexes_after != current_indexes:
+                        raise RuntimeError("Migration rehearsal changed constraints or indexes")
+                elif step_name == COMPUTE_BENEFITS_MIGRATION:
+                    expected_trigger_constraints = {(item["item"]["table"], item["item"]["constraint"]) for item in after_triggers if (item["item"]["table"], item["item"]["name"]) in COMPUTE_BENEFITS_EXISTING_TABLE_TRIGGERS and item["item"].get("constraint")} | COMPUTE_BENEFITS_EXISTING_TABLE_TRIGGERS
+                    unchanged_after = [item for item in constraints_after if (item["item"]["table"], item["item"]["name"]) not in expected_trigger_constraints]
+                    added_trigger_constraints = [item for item in constraints_after if (item["item"]["table"], item["item"]["name"]) in expected_trigger_constraints]
+                    if unchanged_after != current_constraints or any(item["item"].get("type") != "t" for item in added_trigger_constraints) or indexes_after != current_indexes:
+                        raise RuntimeError("Migration rehearsal changed constraints or indexes")
+                elif constraints_after != current_constraints or indexes_after != current_indexes:
+                    raise RuntimeError("Migration rehearsal changed constraints or indexes")
+                if sql("SELECT row_to_json(t) FROM (" + MIGRATION_SQL + ") t") != migrations:
+                    raise RuntimeError("Migration rehearsal changed historical migration records")
+                rehearsal = {"name": step_name, "sqlSha256": hashlib.sha256(expected_sql).hexdigest(), "isolatedNetwork": "none", "passed": True,
+                             "applicationDataPreserved": True, "constraintsPreserved": True, "indexesPreserved": True,
+                             "triggersPreserved": True, "historicalMigrationsPreserved": True, "triggersSha256": digest(current_triggers)}
+                if guard_expected is not None:
+                    definition_sha = lambda value: hashlib.sha256(value[0]["item"]["definition"].encode("utf-8")).hexdigest()
+                    rehearsal.update({"functionIdentity": "public.agri_legacy_entry_guard()", "functionBeforeSha256": definition_sha(current_guard_functions),
+                                      "functionAfterSha256": definition_sha(after_functions), "functionExpectedSha256": definition_sha(guard_expected),
+                                      "functionMetadataPreserved": True, "functionParserWitnessRolledBack": True,
+                                      "functionBefore": current_guard_functions[0]["item"], "functionAfter": after_functions[0]["item"]})
+                elif new_tables:
+                    rehearsal["newEmptyTables"] = sorted(new_tables)
+                    if step_name == AGRI_UNIFIED_MIGRATION:
+                        rehearsal["newTriggers"] = sorted(AGRI_UNIFIED_TRIGGERS)
+                    elif step_name == COMPUTE_BENEFITS_MIGRATION:
+                        rehearsal["newTriggers"] = sorted(COMPUTE_BENEFITS_NEW_TABLE_TRIGGERS | {name for _, name in COMPUTE_BENEFITS_EXISTING_TABLE_TRIGGERS})
+                elif step_name == MODEL_BILLING_UNITS_MIGRATION:
+                    rehearsal["updatedCheckConstraints"] = sorted(f"{t}.{c}" for t, c in MODEL_BILLING_UPDATED_CONSTRAINTS)
+                else:
+                    rehearsal["values"] = after_enum
+                migration_rehearsal.append(rehearsal)
+                for table in new_tables:
+                    current_tables[table] = sql("SELECT jsonb_build_object('count',count(*)::text,'digest',md5(COALESCE(string_agg(md5(row_to_json(t)::text),'' ORDER BY md5(row_to_json(t)::text)),''))) FROM public." + quote(table) + " t")[0]
+                if step_name == AGRI_UNIFIED_MIGRATION and "agri_submission_receipts" in current_tables:
+                    current_tables["agri_submission_receipts"] = sql("SELECT jsonb_build_object('count',count(*)::text,'digest',md5(COALESCE(string_agg(md5(row_to_json(t)::text),'' ORDER BY md5(row_to_json(t)::text)),''))) FROM public.\"agri_submission_receipts\" t")[0]
+                current_constraints = all_constraints_after
+                current_indexes = all_indexes_after
+                current_guard_functions = after_functions
+                current_triggers = after_triggers
         report = {"release": release_id, "sourceImage": info["Image"], "backupBytes": dump.stat().st_size,
                   "backupSha256": hashlib.sha256(dump.read_bytes()).hexdigest(), "schema": "public",
                   "snapshotConsistent": True, "restorePassed": True, "restorePostgresImage": IMAGE,
