@@ -28,13 +28,17 @@ beforeEach(() => { state.actor = "actor-one"; });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("AgriHackathon wall", () => {
-  it("separates eligible event votes from all-time Stars and links the real project", async () => {
+  it("separates eligible event votes from all-time Stars, shows rank badge, and supports one-click share rally", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => respond(view())));
     render(<AgriWall />);
     expect(await screen.findByText(zh.validStars)).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("TOP 1")).toBeInTheDocument();
+    expect(screen.getByText(zh.leaderHint)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /star 12/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "真实田间项目" })).toHaveAttribute("href", "/explore/member-field-project");
+    fireEvent.click(screen.getByRole("button", { name: zh.shareVote }));
+    expect(await screen.findByRole("button", { name: zh.shareCopied })).toBeInTheDocument();
   });
   it("actively confirms an existing Star without toggling it off", async () => {
     const data = view(); data.entries[0].offer.starred = true;

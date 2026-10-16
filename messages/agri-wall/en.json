@@ -125,7 +125,7 @@
     "CONFLICT": "The record changed. Refresh and check it before continuing."
   },
   "managementTitle": "Popularity voting settings",
-  "entryFlow": "Projects built elsewhere are welcome: publish ? pass review ? bind your team ? submit your stage entry. Publication alone does not complete event registration.",
+  "entryFlow": "All-in-one flow: Read rules & claim compute → Register & publish to wall → Share to rally Stars → Compete for Top 10 Finalists & final rankings.",
   "submissionWallTitle": "Check your project wall link",
   "submissionWallReady": "Your team is linked to a public project. Use its entry material version, check the stage requirements, then submit.",
   "submissionWallMissing": "Your team has no wall project yet. Publish a free project, pass review and ask the team owner or administrator to bind it.",
@@ -146,5 +146,16 @@
   "bindingDone": "Project and team linked. Check the receipt and continue your formal stage submission.",
   "continueEntry": "Continue to team binding",
   "freeDisplayTitle": "Free showcase, direct access",
-  "freeDisplayBody": "The wall introduces public projects for discovery and judging. Visitors can open your demo or repository directly. Wall publication and entry records are free."
+  "freeDisplayBody": "The wall introduces public projects for discovery and judging. Visitors can open your demo or repository directly. Wall publication and entry records are free.",
+  "shareVote": "Share to rally Stars",
+  "shareCopied": "Rally message copied! Share it with friends to collect Stars",
+  "shareText": "🔥 Check out our AgriHackathon project \"{title}\" by team {team} ({stars} valid Stars so far)! Give us a Star to help us reach the Top 10 Finalists 👉 {url}",
+  "rankTop": "TOP {rank}",
+  "rankLabel": "Rank #{rank}",
+  "gapHint": "{gap} votes behind previous rank",
+  "leaderHint": "Current popularity leader",
+  "claimCompute": "Claim compute credits",
+  "viewShowcase": "Finalists & showcase",
+  "rankingListTitle": "Final valid vote rankings",
+  "rankVotes": "{count} votes"
 }

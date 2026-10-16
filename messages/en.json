@@ -2505,15 +2505,15 @@
       },
       "agrihackathon": {
         "name": "AgriHackathon",
-        "tagline": "The first AI hackathon organized by CAUHub",
-        "description": "An AI hackathon organized by CAUHub for China Agricultural University students and alumni within three years of graduation. Build outside ANS if you prefer. Dates are pending.",
+        "tagline": "All-in-One AI Hackathon Hub by CAUHub",
+        "description": "An AI hackathon by CAUHub for China Agricultural University students and alumni within 3 years of graduation. Read rules, claim compute credits, submit projects, rally Stars on the wall, and track Finalist rankings in one place.",
         "status": "In preparation",
         "highlights": [
-          "3 tracks",
-          "60-80 offline participants",
-          "CNY 5,000 budget"
+          "3 tracks · Compute credits",
+          "Project wall · Star voting",
+          "Top 10 Finalists · ¥3,300+ prize pool"
         ],
-        "cta": "Explore AgriHackathon"
+        "cta": "Enter AgriHackathon Hub"
       }
     },
     "chooseEvent": "Choose an event",
@@ -2521,30 +2521,30 @@
     "eventOverview": "At a glance"
   },
   "agriHackathon": {
-    "boundaryNextOpen": "View separate edition windows",
-    "enterWorkbench": "View edition progress",
-    "boundaryDescriptionOpen": "The edition workspace is connected. Registration, preliminary and final materials follow separate published windows.",
+    "boundaryNextOpen": "View stage schedule",
+    "enterWorkbench": "Enter competition workbench",
+    "boundaryDescriptionOpen": "The competition workbench is live. Claim compute credits, register your team, submit deliverables, publish to the project wall, and track rankings in one flow.",
     "navLabel": "AgriHackathon",
-    "eyebrow": "AGRIHACKATHON",
+    "eyebrow": "AGRIHACKATHON · ALL-IN-ONE HUB",
     "title": "AgriHackathon | 农客松",
-    "description": "The first AI hackathon initiated and organized by CAUHub, for current undergraduate and postgraduate students and alumni within three years of graduation. Create for 48 continuous hours, showcase and review for a week, then present at Demo Day the following weekend. Name provisional; official dates pending.",
+    "description": "Organized by CAUHub for China Agricultural University students and alumni within 3 years of graduation (teams of 1–5). Read rules, claim compute credits, submit your 48h build, rally Stars on the project wall, and track Top 10 Finalists and Demo Day rankings.",
     "createProject": "Create a competition project",
-    "openTeams": "Open teams and competitions",
-    "backToHub": "Back to the competition hub",
-    "statusTitle": "First-edition plan · Dates pending",
-    "statusDescription": "Three tracks, teams of 1–5, and 10 Finalists. Actions open only within published stage windows.",
+    "openTeams": "Register / Join a team",
+    "backToHub": "Back to competition hub",
+    "statusTitle": "3 Tracks · 48h Build · Top 10 Finalists",
+    "statusDescription": "Teams of 1–5 · Claim compute credits · Rally Stars on the project wall · Top 10 advance to Demo Day.",
     "stats": {
       "tracks": "Tracks",
       "tracksValue": "3",
       "scale": "Team size",
       "scaleValue": "1–5",
-      "phases": "Activity steps",
-      "phasesValue": "4",
-      "deliverables": "Materials",
-      "deliverablesValue": "Published guidance"
+      "phases": "Core loop",
+      "phasesValue": "5 steps",
+      "deliverables": "Total prize pool",
+      "deliverablesValue": "¥3,300+"
     },
     "tracksTitle": "Three tracks",
-    "tracksDescription": "People, Discovery and Action. Choose the track after completing the project.",
+    "tracksDescription": "People, Discovery, and Action. Build first and lock in the best-fitting track upon submission.",
     "tracksSectionLabel": "01 / TRACKS",
     "rulesSectionLabel": "03 / RULES",
     "openTrack": "Read the track",
@@ -2553,160 +2553,160 @@
       "people": {
         "name": "AI for People",
         "code": "TRACK 01 · AI FOR PEOPLE",
-        "role": "Use AI to improve a real situation for a real group of people",
-        "description": "Use AI to improve learning, creation, work, social experiences or everyday life for specific people.",
-        "status": "Published",
-        "detail": "Judges look at whether the problem is real, who the users are, and whether a runnable minimum version is achievable in 48 hours."
+        "role": "Improve a real situation for a real group of people",
+        "description": "Use AI to improve learning, creation, work, social experiences, or everyday life for specific users.",
+        "status": "Open",
+        "detail": "Focus: real user pain points, clear target users, and a runnable MVP within 48 hours."
       },
       "discovery": {
         "name": "AI for Discovery",
         "code": "TRACK 02 · AI FOR DISCOVERY",
-        "role": "Use AI to help people understand a complex problem",
-        "description": "Use AI in research, life sciences, agriculture, food, environment or data analysis to understand and discover complex problems.",
-        "status": "Published",
-        "detail": "Judges look at whether data sources are compliant, whether the reasoning is explainable, and whether others can reproduce the result."
+        "role": "Understand and uncover complex problems with AI",
+        "description": "Apply AI in research, life sciences, agriculture, food, environment, or data analysis.",
+        "status": "Open",
+        "detail": "Focus: compliant data sources, explainable reasoning, and reproducible results."
       },
       "action": {
         "name": "AI for Action",
         "code": "TRACK 03 · AI FOR ACTION",
-        "role": "Use AI to push one concrete action into practice",
-        "description": "Build agents, automated workflows, enterprise tools, robotics or smart hardware that use AI to complete real tasks.",
-        "status": "Published",
-        "detail": "Judges look at whether the plan can be executed in the field, whether the cost is controllable, and whether others can take over the deliverables."
+        "role": "Drive concrete real-world actions into practice",
+        "description": "Build agents, automated workflows, enterprise tools, robotics, or smart hardware that complete real tasks.",
+        "status": "Open",
+        "detail": "Focus: field executability, controllable cost, and handoff-ready deliverables."
       }
     },
-    "phasesTitle": "Four-phase path",
-    "phasesDescription": "Register a team → 48 continuous hours → One week of showcase and review → Demo Day the following weekend. Official dates will be confirmed separately.",
+    "phasesTitle": "Four-phase schedule",
+    "phasesDescription": "Team up & claim compute → 48h build & submission → 1-week project wall Star rally & review → Demo Day final & awards.",
     "phases": {
       "discover": {
-        "label": "01 · Register and team up",
-        "description": "Current undergraduate and postgraduate students and alumni within three years of graduation form teams of 1–5. Choose a track after completing the project.",
-        "state": "Dates pending"
+        "label": "01 · Team up & claim compute",
+        "description": "Students and recent alumni form teams of 1–5, claim compute credits, and prepare their workspace.",
+        "state": "Step 1"
       },
       "plan": {
-        "label": "02 · 48 hours of building",
-        "description": "Create for 48 continuous hours. Submit a working demonstration, public GitHub repository and required materials.",
-        "state": "Dates pending"
+        "label": "02 · 48h build & submission",
+        "description": "Build for 48 hours, submit a runnable Demo and public GitHub repo, and publish to the project wall.",
+        "state": "Step 2"
       },
       "produce": {
-        "label": "03 · Preliminary judging and preparation",
-        "description": "One week of showcase and review; three reviewers per project, 80% professional and 20% public score. Select 10 Finalists.",
-        "state": "Dates pending"
+        "label": "03 · Wall Star rally & prelim review",
+        "description": "Share your work to rally Stars (20% public + 80% jury score) as the Top 10 Finalists are selected.",
+        "state": "Step 3"
       },
       "submit": {
-        "label": "04 · One-day on-site final",
-        "description": "Demo Day the following weekend. Seven judges, drop the highest and lowest scores, average five. Five-minute demo and three-minute Q&A per team.",
-        "state": "Dates pending"
+        "label": "04 · Demo Day & final rankings",
+        "description": "Top 10 teams pitch on Demo Day (5-min demo + 3-min Q&A) before 7 judges for final awards.",
+        "state": "Step 4"
       }
     },
     "deliverablesTitle": "Submission checklist",
-    "deliverablesDescription": "Preparation references only. Required and optional materials come from this edition’s published technical guidance.",
+    "deliverablesDescription": "Core items required when submitting your work and publishing to the project wall.",
     "deliverables": {
-      "brief": "Project name, team, track and summary",
-      "plan": "Team roles and development plan",
-      "storyboard": "Technical approach and architecture",
-      "source": "Data sources and authorisation notes",
-      "iterations": "Key iterations and review records",
-      "final": "Runnable demo and demo video or link",
-      "evidence": "Public GitHub repository with a licence",
-      "package": "Submission package and final check"
+      "brief": "Project name, team, track, and one-line summary",
+      "plan": "Team roles and 48h iteration log",
+      "storyboard": "Technical architecture and workflow diagram",
+      "source": "Data sources and compliance notes",
+      "iterations": "Core prompts, workflows, and iteration records",
+      "final": "Runnable Demo URL and demonstration video",
+      "evidence": "Public GitHub repository (with open-source license)",
+      "package": "Project wall cover and showcase card"
     },
-    "scoringTitle": "Scoring dimensions",
-    "scoringDescription": "Preliminary: three reviewers per project, 80% professional and 20% public score. Final: seven judges, discard the highest and lowest scores and average the remaining five.",
+    "scoringTitle": "Scoring & advancement",
+    "scoringDescription": "Preliminary: 3 reviewers per work (80% jury + 20% public score) → Top 10 Finalists. Final: 7 judges (drop highest & lowest, average 5).",
     "scoringSectionLabel": "02 / SCORING",
     "scoring": {
       "innovation": {
-        "label": "Innovation \u00b7 30 points",
-        "description": "Whether the problem framing or the solution path is new."
+        "label": "Innovation · 30 pts",
+        "description": "Novelty of problem framing or technical approach."
       },
       "technical": {
-        "label": "Technical depth and implementation \u00b7 25 points",
-        "description": "Technology choices, implementation quality and engineering completeness."
+        "label": "Technical depth · 25 pts",
+        "description": "Model orchestration, engineering quality, and completeness."
       },
       "completeness": {
-        "label": "Product completeness and Demo \u00b7 20 points",
-        "description": "Whether the demo runs and the flow closes end to end."
+        "label": "Completeness & Demo · 20 pts",
+        "description": "Runnable Demo and end-to-end user experience."
       },
       "problem": {
-        "label": "Real problem and future value \u00b7 15 points",
-        "description": "Whether the need comes from a real scenario and real users."
+        "label": "Real-world value · 15 pts",
+        "description": "Authentic scenario and potential for real user adoption."
       },
       "fit": {
-        "label": "Track fit \u00b7 10 points",
-        "description": "How well the work matches the chosen track."
+        "label": "Track fit · 10 pts",
+        "description": "Alignment with the chosen track's core mission."
       }
     },
-    "advanceTitle": "Finalist selection and Demo Day",
-    "advanceDescription": "Select 10 Finalists. Each final team has five minutes to demonstrate and three minutes for questions. Technical checks are separate from advancement.",
-    "advanceNote": "Preliminary public scoring contributes 20%. The on-site popularity award is separate. Only a recorded eligibility decision grants Finalist status.",
+    "advanceTitle": "Top 10 Finalists & Demo Day",
+    "advanceDescription": "Top 10 teams advance to Demo Day (5-min live demo + 3-min Q&A), with final rankings and awards published on the showcase hub.",
+    "advanceNote": "Preliminary public score counts for 20%, while the Popularity Award is ranked independently by valid project wall Stars.",
     "advanceItems": {
-      "professional": "Preliminary: three reviewers, 80% professional and 20% public",
-      "pool": "Select 10 Finalists; choose a track after completing the project",
-      "panel": "Final: seven judges, discard the highest and lowest, average five",
-      "review": "Five-minute demo plus three-minute Q&A per team"
+      "professional": "Preliminary: 3 reviewers (80% jury + 20% public score)",
+      "pool": "Top 10 Finalists advance to Demo Day",
+      "panel": "Final: 7 judges (drop highest & lowest, average 5)",
+      "review": "Roadshow: 5-min live demo + 3-min Q&A per team"
     },
-    "awardsTitle": "Prizes",
-    "awardsDescription": "First prize: ¥1,500; second: ¥1,000; third: ¥800. Additional technical, innovation and on-site popularity awards.",
+    "awardsTitle": "Awards & honors",
+    "awardsDescription": "Cash prizes for Top 3 overall, plus Best Technical, Best Innovation, and Project Wall Popularity awards.",
     "awards": {
       "first": {
         "label": "First prize",
         "amount": "CNY 1,500",
-        "description": "Highest overall score"
+        "description": "Ranked #1 in Final overall score"
       },
       "second": {
         "label": "Second prize",
         "amount": "CNY 1,000",
-        "description": "Second highest overall score"
+        "description": "Ranked #2 in Final overall score"
       },
       "third": {
         "label": "Third prize",
         "amount": "CNY 800",
-        "description": "Third highest overall score"
+        "description": "Ranked #3 in Final overall score"
       },
       "tech": {
         "label": "Best technical implementation",
         "amount": "Honorary",
-        "description": "Strongest on technical depth"
+        "description": "Highest technical depth score"
       },
       "innovation": {
         "label": "Best innovation",
         "amount": "Honorary",
-        "description": "Strongest on innovation"
+        "description": "Highest innovation score"
       },
       "popular": {
-        "label": "Popularity award",
+        "label": "Project wall popularity award",
         "amount": "Honorary",
-        "description": "Selected by valid ANS Stars on the AgriHackathon wall during the announced window, independently of jury scoring. Results are sealed at the deadline; tied leaders share the award, and no award is given if every project has zero votes."
+        "description": "Ranked #1 by valid Stars on the AgriHackathon project wall at the voting deadline (ties share the award)."
       }
     },
-    "rulesTitle": "Rules and compliance",
-    "rulesDescription": "All official projects use public GitHub repositories. Never upload credentials or private data. IP belongs to the team; organizers have non-exclusive display and distribution rights.",
+    "rulesTitle": "Core rules",
+    "rulesDescription": "Open-source repositories, original 48-hour builds, data compliance, and team IP ownership.",
     "rules": {
-      "opensource": "All official projects use public GitHub repositories with specific versions and licensing information.",
-      "data": "Never upload credentials or personal privacy. Data and materials require lawful sources and permissions.",
-      "originality": "Work must be built during the event; previous or third-party projects are not accepted",
-      "team": "Teams of 1–5, for current undergraduate and postgraduate students and alumni within three years of graduation.",
-      "demo": "Present a working Demo. Prepare live, video or hybrid presentation and backup materials according to the published requirements.",
-      "conduct": "Respect judges and other participants; no vote manipulation or review interference",
-      "rights": "IP belongs to the team. Organizers have non-exclusive display and distribution rights.",
-      "frozen": "After freezing, only approved Bug, UI, stability or presentation changes are allowed. Core functionality cannot be rebuilt."
+      "opensource": "Public GitHub repo required with clear version history and open-source license.",
+      "data": "Never upload API keys or private data; third-party datasets must be compliant.",
+      "originality": "Core code and work must be built during the 48h window.",
+      "team": "Teams of 1–5, for China Agricultural University students and alumni within three years of graduation.",
+      "demo": "Submissions must include a runnable Demo and video/slide backup.",
+      "conduct": "Fair competition; vote manipulation or review interference is prohibited.",
+      "rights": "IP belongs to the team; organizers receive non-exclusive showcase rights.",
+      "frozen": "After code freeze, only stability and presentation fixes are allowed."
     },
-    "workflowTitle": "ANS workspace shortcuts",
-    "workflowDescription": "Keep project records on ANS; registration, review and publication follow in later phases.",
+    "workflowTitle": "ANS creation & compute toolkit",
+    "workflowDescription": "Claim compute credits and jump straight into ANS project spaces, workflows, templates, and skills.",
     "openProjects": "Projects",
     "openWorkflows": "Workflows",
     "openTemplates": "Templates",
     "openSkills": "Skills",
-    "boundaryTitle": "First edition boundaries",
-    "boundaryDescription": "Registration, stage submissions, technical checks and internal records are integrated. Official windows and scoped access still require edition-specific configuration.",
+    "boundaryTitle": "All-in-One platform guarantees",
+    "boundaryDescription": "Rules, compute credits, registration, project wall Star voting, and Finalist rankings are unified in one hub.",
     "boundaryItems": {
-      "entry": "One ANS entry point",
-      "links": "The edition plan and published technical guidance are distinct",
-      "ownership": "Team-owned IP; non-exclusive organizer display rights",
-      "next": "Actions open only within separate published edition windows"
+      "entry": "Unified entry: Rules · Compute · Submission · Project Wall · Rankings",
+      "links": "Dual showcase: Stage submission packages + public project wall",
+      "ownership": "100% team-owned IP + open-source community stars",
+      "next": "Transparent advancement: 80% jury + 20% public score"
     },
-    "syncNote": "All official dates remain unconfirmed. Visual milestones are not registration or submission deadlines.",
-    "intro": "An AI hackathon organized by CAUHub. Build outside ANS if you prefer, then publish to the project wall and link your team to enter.",
+    "syncNote": "Specific stage windows open dynamically according to the active competition schedule.",
+    "intro": "An AI hackathon organized by CAUHub for CAU students and recent alumni. Read rules, claim compute credits, publish to the project wall to rally Stars, and submit your team deliverables in one place.",
     "nextAction": "Choose your next step",
     "alreadyEntering": "Already entering?",
     "entryHint": "Publishing is the first step. Link your team, then formally submit your materials.",
@@ -2717,7 +2717,48 @@
     "browseProjects": "Browse projects",
     "myWorkspace": "My workspace",
     "readPublishedRules": "Read published rules",
-    "bindProject": "Link your project"
+    "bindProject": "Link your project",
+    "claimCompute": "Claim compute credits",
+    "pipelineSectionLabel": "00 / ALL-IN-ONE FLOW",
+    "pipelineTitle": "5-Step Competition Loop",
+    "pipelineDescription": "From reading rules and claiming compute credits to submitting your build, rallying Stars on the wall, and checking Finalist rankings.",
+    "pipeline": {
+      "rules": {
+        "step": "STEP 01",
+        "title": "Read rules & pick a track",
+        "description": "Explore People, Discovery, and Action tracks alongside the 100-point rubric and open-source checklist.",
+        "cta": "View tracks & rules",
+        "href": "#tracks"
+      },
+      "compute": {
+        "step": "STEP 02",
+        "title": "Claim compute & prototype",
+        "description": "Claim ANS compute credits and use ready-to-run templates and workflows to build your 48h MVP.",
+        "cta": "Go to compute center",
+        "href": "/workspace/credits"
+      },
+      "submit": {
+        "step": "STEP 03",
+        "title": "Register & submit work",
+        "description": "Form a team of 1–5 and submit your runnable Demo, public GitHub repository, and project summary.",
+        "cta": "Submit deliverables",
+        "href": "/competitions/agrihackathon/submissions"
+      },
+      "star": {
+        "step": "STEP 04",
+        "title": "Publish to wall & rally Stars",
+        "description": "Showcase your work on the AgriHackathon project wall and share a one-click link to rally community Stars.",
+        "cta": "Open project wall",
+        "href": "/explore?category=competition&subcategory=agri-wall"
+      },
+      "ranking": {
+        "step": "STEP 05",
+        "title": "Finalists & final rankings",
+        "description": "Track Top 10 Finalists (80% jury + 20% public score), Demo Day presentations, and final awards.",
+        "cta": "View Finalists & rankings",
+        "href": "/competitions/agrihackathon/showcase"
+      }
+    }
   },
   "templates": {
     "metadataTitle": "Templates",
