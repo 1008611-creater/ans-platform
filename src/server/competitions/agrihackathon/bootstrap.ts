@@ -66,8 +66,10 @@ export interface AgriBootstrapOptions {
   silent?: boolean;
 }
 
+export type AgriRawSqlTx = Pick<DbTransaction, "$queryRaw" | "$executeRaw">;
+
 export async function bootstrapAgriEditionInTx(
-  tx: DbTransaction,
+  tx: AgriRawSqlTx,
   options: AgriBootstrapOptions = {},
 ) {
   const competitionId = (
