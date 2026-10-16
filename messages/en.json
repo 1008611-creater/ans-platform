@@ -2610,7 +2610,7 @@
       "source": "Data sources and compliance notes",
       "iterations": "Core prompts, workflows, and iteration records",
       "final": "Runnable Demo URL and demonstration video",
-      "evidence": "Public GitHub repository (with open-source license)",
+      "evidence": "Unified platform code hosting (source archive upload or GitHub commit snapshot)",
       "package": "Project wall cover and showcase card"
     },
     "scoringTitle": "Scoring & advancement",
@@ -2741,9 +2741,9 @@
       },
       "submit": {
         "step": "STEP 03",
-        "title": "Register & submit work",
-        "description": "Form a team of 1–5 and submit your runnable Demo, public GitHub repository, and project summary.",
-        "cta": "Submit deliverables",
+        "title": "Register · Host code · Submit",
+        "description": "Form a team of 1–5, upload source code archives or snapshot Git commits for unified platform hosting, and submit your build.",
+        "cta": "Host code & submit",
         "href": "/competitions/agrihackathon/submissions"
       },
       "star": {

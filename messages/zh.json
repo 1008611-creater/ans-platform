@@ -2594,7 +2594,7 @@
       "source": "数据来源与合规说明",
       "iterations": "版本迭代记录",
       "final": "在线 Demo 或演示视频",
-      "evidence": "公开 GitHub 仓库（含开源协议）",
+      "evidence": "平台统一代码托管（支持源码包上传或 GitHub 仓库版本快照）",
       "package": "作品墙绑定与版本核验"
     },
     "scoringTitle": "评分权重与晋级",
@@ -2725,9 +2725,9 @@
       },
       "submit": {
         "step": "STEP 03",
-        "title": "报名 · 交作品",
-        "description": "绑定战队，按初赛与决赛窗口提交版本。",
-        "cta": "阶段提交",
+        "title": "报名 · 托管代码 · 交作品",
+        "description": "绑定战队，上传源码包或拉取 Git 快照由平台统一托管，并提交阶段版本。",
+        "cta": "代码托管与提交",
         "href": "/competitions/agrihackathon/submissions"
       },
       "star": {

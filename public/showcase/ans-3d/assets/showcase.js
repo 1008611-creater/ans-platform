@@ -4964,7 +4964,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     },
     children:[
       e.jsx("primitive",{object:dinoState.root}),
-      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s
+      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s) */
       e.jsxs("group",{
         ref:dinoHeadMountRef,
         position:[0,0.55,0],
@@ -4990,7 +4990,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
           eq.eyewear==="star_monocle"&&(dinoState.wardrobeNodes.eyewear_star_monocle?e.jsx("primitive",{object:dinoState.wardrobeNodes.eyewear_star_monocle}):null)
         ]
       }),
-      /* 3D Body-Bone Mounted Neckwear / Tripo Jetpack / Wings / Cape + Handheld Items (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s
+      /* 3D Body-Bone Mounted Neckwear / Tripo Jetpack / Wings / Cape + Handheld Items (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s) */
       e.jsxs("group",{
         ref:dinoBodyMountRef,
         position:[0,0.18,0],

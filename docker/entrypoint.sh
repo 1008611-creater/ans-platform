@@ -36,6 +36,16 @@ echo "[prompts.chat] Running database migrations..."
 npx prisma migrate deploy
 echo "[prompts.chat] Migrations applied successfully."
 
+# Ensure local durable storage directory for AgriHackathon code hosting & evidence
+if [ -n "${ANS_AGRI_EVIDENCE_LOCAL_DIR:-/var/lib/ans-agri-evidence}" ]; then
+  mkdir -p "${ANS_AGRI_EVIDENCE_LOCAL_DIR:-/var/lib/ans-agri-evidence}" 2>/dev/null || true
+fi
+
+# Bootstrap AgriHackathon 2026 competition & workspace (idempotent)
+if [ -n "${ANS_AGRIHACKATHON_COMPETITION_ID:-agrihackathon-2026}" ]; then
+  echo "[prompts.chat] Ensuring AgriHackathon competition workspace (${ANS_AGRIHACKATHON_COMPETITION_ID:-agrihackathon-2026})..."
+  npx tsx prisma/bootstrap-agrihackathon.ts --competition-id "${ANS_AGRIHACKATHON_COMPETITION_ID:-agrihackathon-2026}" || echo "[prompts.chat] WARN: AgriHackathon bootstrap skipped or deferred."
+fi
 
 # Start the application
 echo "[prompts.chat] Starting application on port ${PORT:-3000}..."
