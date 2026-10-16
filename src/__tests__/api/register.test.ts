@@ -97,7 +97,7 @@ afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals();
 
 describe("REQ-AUTH 注册安全", () => {
   it("仅返回 public site key", async () => {
-    expect(await (await publicConfig()).json()).toEqual({ siteKey: "test-public" });
+    expect(await (await publicConfig(new Request("https://community.example/api/auth/register/config"))).json()).toEqual({ siteKey: "test-public" });
   });
   it("支持 ?fallback=1 签发受 HMAC 保护的站内备用人机验证令牌并拒绝篡改", async () => {
     const configRes = await publicConfig(new Request("https://community.example/api/auth/register/config?fallback=1"));

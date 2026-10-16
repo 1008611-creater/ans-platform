@@ -4,7 +4,7 @@ import { issueFallbackRegistrationChallenge } from "@/lib/registration-delivery"
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(request?: Request) {
+export async function GET(request: Request) {
   try {
     const { siteKey } = await ensureRegistrationEnabled();
     const isFallback = request?.url ? new URL(request.url, "http://localhost").searchParams.get("fallback") === "1" : false;
