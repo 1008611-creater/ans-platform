@@ -147,7 +147,7 @@ export default async function AigcCompetitionPage() {
             <ul className="list-disc space-y-2 ps-5">{deliverables.map(item => <li key={item.id}>{item.label}</li>)}</ul>
           </CompetitionDetails>
           <CompetitionDetails title={t("resourcesTitle")}>
-            <div className="flex flex-wrap gap-x-5">{[["/projects",t("openProjects")],["/workflows",t("openWorkflows")],["/templates",t("openTemplates")],["/skills",t("openSkills")]].map(([href,label]) => <Link key={href} href={href} className="inline-flex min-h-11 items-center rounded underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}</Link>)}</div>
+            <div className="flex flex-wrap gap-x-5">{[["/projects",t("openProjects")],["/market",t("openWorkflows")],["/hubs",t("openTemplates")],["/hubs/vibehub",t("openSkills")]].map(([href,label]) => <Link key={href} href={href} className="inline-flex min-h-11 items-center rounded underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{label}</Link>)}</div>
           </CompetitionDetails>
         </section>
       </div>
