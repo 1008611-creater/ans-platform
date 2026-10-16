@@ -7,6 +7,7 @@ import { QuotaError } from "@/server/quota/service";
 import { Button } from "@/components/ui/button";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import { ComputeBenefits } from "@/components/workspace/compute-benefits";
+import { ComputeQuestArcade } from "@/components/workspace/claw-arcade-pod";
 import { CreditsCenter } from "@/components/workspace/credits-center";
 import { CreditGiftClaim } from "@/components/workspace/credit-gift-claim";
 import { readCreditGiftOffer } from "@/server/quota/gift-offer";
@@ -43,6 +44,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
     <header className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-tight">{t("centerTitle")}</h1><p className="mt-3 max-w-2xl leading-7 text-muted-foreground">{t("centerDescription")}</p></div><Button asChild variant="outline"><Link href="/workspace/credits" prefetch={false}>{t("refresh")}</Link></Button></header>
     {!history ? <p role="alert" className="rounded-[var(--radius)] border p-5">{t(invalid ? "invalid" : "unavailable")}</p> : <>
       {process.env.ANS_COMPUTE_BENEFITS_ENABLED === "1" && <ComputeBenefits actorId={session.user.id} compact />}
+      <ComputeQuestArcade actorId={session.user.id} />
       {giftOffer && <CreditGiftClaim actorId={session.user.id} offer={giftOffer} />}
       <CreditsCenter actorId={session.user.id} billing={history.billing} availablePoints={Number(history.availablePoints)} reservedPoints={history.reservedPoints} pendingCount={history.pendingCount} apiHistory={apiHistory} products={getCreditProducts(process.env)} />
       <section aria-labelledby="credit-ledger-heading" className="space-y-4">
