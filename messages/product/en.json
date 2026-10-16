@@ -803,11 +803,11 @@
     "oldAllowance": "Confirmed not accepted. Its original daily allowance ended; today's balance was not increased."
   },
   "agrihackathon": {
-    "rulesPendingTitle": "Edition plan defined; official dates pending",
-    "rulesPendingBody": "The first-edition plan is shown below. Official dates are not confirmed. Registration, preliminary submissions and final materials open only through the edition’s separate published windows. This overview does not open registration or publish technical guidance.",
-    "organizerTools": "Organizer tools",
-    "organizerToolsBody": "For authorized staff: manage submissions, on-site support, showcase review and technical guidance. Access is checked on each page.",
-    "workspaceLinksBody": "Find project ideas in the project square, use Hub workflows, and keep your projects and preparation tasks in your workspace. Official participation follows the published edition rules.",
+    "rulesPendingTitle": "Event channels and stage schedule",
+    "rulesPendingBody": "You can form a team, claim compute credits, and publish projects to the wall now; formal preliminary and final submissions open on the published stage schedule.",
+    "organizerTools": "Organizer & jury tools",
+    "organizerToolsBody": "For authorized staff: review submissions, coordinate on-site demos, approve public showcase entries and configure voting windows.",
+    "workspaceLinksBody": "Claim compute credits, run Hub workflows, and manage your team and checklist in one place.",
     "openHubs": "Hubs and workflows"
   },
   "agriTasks": {

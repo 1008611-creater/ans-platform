@@ -67,3 +67,15 @@ it("keeps every scoring criterion, rule and operational entry behind optional di
   expect(container.querySelectorAll("h1")).toHaveLength(1);
   expect(container.querySelectorAll('[data-slot="button"].bg-primary')).toHaveLength(1);
 });
+
+it("renders the 5-step unified competition loop and direct compute credit CTA", async () => {
+  mocks.find.mockResolvedValue(null);
+  render(await AgriHackathonPage());
+  expect(screen.getByRole("link", { name: zh.agriHackathon.claimCompute })).toHaveAttribute("href", "/workspace/credits");
+  expect(screen.getByRole("heading", { name: zh.agriHackathon.pipelineTitle })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.compute.cta })).toHaveAttribute("href", "/workspace/credits");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.submit.cta })).toHaveAttribute("href", "/competitions/agrihackathon/submissions");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.star.cta })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
+  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.ranking.cta })).toHaveAttribute("href", "/competitions/agrihackathon/showcase");
+});
+

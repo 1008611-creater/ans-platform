@@ -2698,7 +2698,60 @@
       "ownership": "Les équipes déclarent elles-mêmes leur travail et leurs autorisations de données",
       "next": "Connecter inscriptions, dépôts et résultats après confirmation de l’organisation"
     },
-    "syncNote": "Le plan précédent demandait 5 000 CNY. Le budget, les dates, inscriptions et résultats de cette édition suivent l’annonce officielle."
+    "syncNote": "Le plan précédent demandait 5 000 CNY. Le budget, les dates, inscriptions et résultats de cette édition suivent l’annonce officielle.",
+    "intro": "An AI hackathon organized by CAUHub for CAU students and recent alumni. Read rules, claim compute credits, publish to the project wall to rally Stars, and submit your team deliverables in one place.",
+    "nextAction": "Choose your next step",
+    "alreadyEntering": "Already entering?",
+    "entryHint": "Publishing is the first step. Link your team, then formally submit your materials.",
+    "justLooking": "Explore the projects",
+    "trackFocus": "What reviewers look for",
+    "guideTitle": "Entry guide",
+    "toolsTitle": "Tools and projects",
+    "browseProjects": "Browse projects",
+    "myWorkspace": "My workspace",
+    "readPublishedRules": "Read published rules",
+    "bindProject": "Link your project",
+    "claimCompute": "Claim compute credits",
+    "pipelineSectionLabel": "00 / ALL-IN-ONE FLOW",
+    "pipelineTitle": "5-Step Competition Loop",
+    "pipelineDescription": "From reading rules and claiming compute credits to submitting your build, rallying Stars on the wall, and checking Finalist rankings.",
+    "pipeline": {
+      "rules": {
+        "step": "STEP 01",
+        "title": "Read rules & pick a track",
+        "description": "Explore People, Discovery, and Action tracks alongside the 100-point rubric and open-source checklist.",
+        "cta": "View tracks & rules",
+        "href": "#tracks"
+      },
+      "compute": {
+        "step": "STEP 02",
+        "title": "Claim compute & prototype",
+        "description": "Claim ANS compute credits and use ready-to-run templates and workflows to build your 48h MVP.",
+        "cta": "Go to compute center",
+        "href": "/workspace/credits"
+      },
+      "submit": {
+        "step": "STEP 03",
+        "title": "Register & submit work",
+        "description": "Form a team of 1–5 and submit your runnable Demo, public GitHub repository, and project summary.",
+        "cta": "Submit deliverables",
+        "href": "/competitions/agrihackathon/submissions"
+      },
+      "star": {
+        "step": "STEP 04",
+        "title": "Publish to wall & rally Stars",
+        "description": "Showcase your work on the AgriHackathon project wall and share a one-click link to rally community Stars.",
+        "cta": "Open project wall",
+        "href": "/explore?category=competition&subcategory=agri-wall"
+      },
+      "ranking": {
+        "step": "STEP 05",
+        "title": "Finalists & final rankings",
+        "description": "Track Top 10 Finalists (80% jury + 20% public score), Demo Day presentations, and final awards.",
+        "cta": "View Finalists & rankings",
+        "href": "/competitions/agrihackathon/showcase"
+      }
+    }
   },
   "templates": {
     "metadataTitle": "Templates",

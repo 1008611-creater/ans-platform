@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowRight, Sprout, Telescope, Compass } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Compass, Cpu, FileCheck2, Sprout, Star, Telescope, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeading } from "@/components/layout/page-heading";
@@ -16,6 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title"), description: t("description") };
 }
 const SCORING_KEYS = ["innovation", "technical", "completeness", "problem", "fit"] as const;
+const PIPELINE_KEYS = ["rules", "compute", "submit", "star", "ranking"] as const;
+const pipelineIcons = { rules: Compass, compute: Cpu, submit: FileCheck2, star: Star, ranking: Trophy } as const;
 const trackStyles = { people: { icon: Sprout }, discovery: { icon: Telescope }, action: { icon: Compass } };
 const linkClass = "inline-flex min-h-11 items-center gap-2 rounded-md py-2 text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -33,6 +35,21 @@ export default async function AgriHackathonPage() {
   const management = await getTranslations("product.agriWorkspace");
   const competition = await findAgriHackathonCompetition();
   const guide = await readAgriPublicGuide().catch(() => null);
+
+  const pipelineSteps = PIPELINE_KEYS.map((key) => {
+    const copy = t.raw(`pipeline.${key}`) as {
+      step: string;
+      title: string;
+      description: string;
+      cta: string;
+      href: string;
+    };
+    return {
+      id: key,
+      ...copy,
+      icon: pipelineIcons[key],
+    };
+  });
 
   const tracks = AGRI_TRACKS.map((track) => {
     const copy = t.raw(`tracks.${track.id}`) as {
@@ -93,8 +110,47 @@ export default async function AgriHackathonPage() {
         </> : <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">{pending("rulesPendingBody")}</p>}
       </aside>
 
+      <section aria-labelledby="agri-pipeline-heading" className="space-y-4">
+        <div className="space-y-1">
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{t("pipelineSectionLabel")}</p>
+          <h2 id="agri-pipeline-heading" className="text-xl font-semibold">{t("pipelineTitle")}</h2>
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{t("pipelineDescription")}</p>
+        </div>
+        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {pipelineSteps.map((step) => {
+            const StepIcon = step.icon;
+            return (
+              <li key={step.id} className="flex min-w-0 flex-col justify-between rounded-xl border bg-card p-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <StepIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    <Badge variant="outline" className="font-mono text-[10px]">{step.step}</Badge>
+                  </div>
+                  <h3 className="text-sm font-semibold">{step.title}</h3>
+                  <p className="text-xs leading-5 text-muted-foreground">{step.description}</p>
+                </div>
+                <div className="mt-3 pt-2">
+                  {step.href.startsWith("#") ? (
+                    <a href={step.href} className={linkClass}>
+                      <span>{step.cta}</span>
+                      <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
+                    </a>
+                  ) : (
+                    <Link href={step.href} className={linkClass}>
+                      <span>{step.cta}</span>
+                      <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
+                    </Link>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
       <nav aria-label={t("nextAction")} className="grid gap-x-8 gap-y-4 border-y py-5 sm:grid-cols-2">
         <div className="min-w-0"><h2 className="font-medium">{t("alreadyEntering")}</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">{t("entryHint")}</p><div className="flex flex-wrap gap-x-5">
+          <Link href="/workspace/credits" className={linkClass}>{t("claimCompute")}</Link>
           <Link href="/explore/agrihackathon/submit" className={linkClass}>{t("bindProject")}</Link>
           <Link href="/competitions/agrihackathon/submissions" className={linkClass}>{submissions("title")}</Link>
           <Link href="/competitions/agrihackathon/tasks" className={linkClass}>{tasks("title")}</Link>
@@ -107,7 +163,7 @@ export default async function AgriHackathonPage() {
         </div></div>
       </nav>
 
-      <section aria-labelledby="agri-tracks-title" className="space-y-4">
+      <section id="tracks" aria-labelledby="agri-tracks-title" className="scroll-mt-24 space-y-4">
         <h2 id="agri-tracks-title" className="text-2xl font-semibold">{t("tracksTitle")}</h2>
         <p className="max-w-3xl text-sm leading-7 text-muted-foreground">{t("tracksDescription")}</p>
         <div className="divide-y">{tracks.map(track => { const Icon = track.icon; return <article key={track.id} id={`track-${track.id}`} className="grid min-w-0 gap-3 py-5 sm:grid-cols-[11rem_1fr]">

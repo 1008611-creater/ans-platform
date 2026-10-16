@@ -803,12 +803,12 @@
     "oldAllowance": "已确认未受理。原预留属于已结束的每日额度，不增加今天的次数。"
   },
   "agrihackathon": {
-    "rulesPendingTitle": "首届方案已明确，正式日程待确认",
-    "rulesPendingBody": "以下为首届活动方案，正式日期尚未确认。报名、初赛提交与决赛材料仅按本届已发布的独立窗口开放；本页方案说明不代表已经开报或发布技术规范。",
-    "organizerTools": "工作人员入口",
-    "organizerToolsBody": "作品检查、现场支持、展示审核与技术规范管理。需要本届对应权限。",
-    "workspaceLinksBody": "在项目广场找灵感，在 Hub 使用工作流，回到工作台继续自己的项目与准备任务。正式参赛以本届已发布规则为准。",
-    "openHubs": "Hub与工作流"
+    "rulesPendingTitle": "赛事通道与阶段时间表",
+    "rulesPendingBody": "当前可先行组建战队、前往算力中心领取算力或发布作品上墙拉票；初赛与决赛正式提交将按已发布阶段窗口开启。",
+    "organizerTools": "组委会与评委入口",
+    "organizerToolsBody": "供授权人员执行作品核验、现场排期、公开审核与计票配置。",
+    "workspaceLinksBody": "领算力、跑 AI 工作流、管理战队与备忘清单，一站式备战农客松。",
+    "openHubs": "Hub 与 AI 工作流"
   },
   "agriTasks": {
     "ownerLabel": "负责人：{id}",
