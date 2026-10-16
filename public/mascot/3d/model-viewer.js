@@ -168,8 +168,12 @@ function startInspector() {
       if (resolved) nextActive.add(resolved);
     }
     activeWardrobeIds = [...nextActive];
+    const hatTuck = eq.headwear === 'beret_cloud' || eq.headwear === 'phd_mortarboard';
     for (const [nodeName, nodeObj] of wardrobeNodes.entries()) {
       nodeObj.visible = nextActive.has(nodeName);
+      if (nodeName.startsWith('species_')) {
+        nodeObj.scale.set(hatTuck ? 0.68 : 1, hatTuck ? 0.62 : 1, hatTuck ? 0.68 : 1);
+      }
     }
     requestFrame();
   }

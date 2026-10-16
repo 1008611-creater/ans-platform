@@ -680,15 +680,42 @@ export function loadSanctuaryState(): MascotSanctuaryState {
   try {
     const raw = window.localStorage.getItem(SANCTUARY_STORAGE_KEY);
     if (!raw) return createDefaultSanctuaryState();
-    const parsed = JSON.parse(raw) as Partial<MascotSanctuaryState>;
-    const speciesId: DinoSpeciesId = parsed.speciesId && DINO_SPECIES[parsed.speciesId] ? parsed.speciesId : "mint_star";
+    const parsed = JSON.parse(raw) as Partial<MascotSanctuaryState> & {
+      dinoName?: string;
+      unlockedItemIds?: string[];
+      roamMode?: string;
+    };
+    const speciesAlias: Record<string, DinoSpeciesId> = {
+      mint_star: "mint_star",
+      mint_sky: "mint_star",
+      cyber_gold: "cyber_gold",
+      sakura_mochi: "sakura_mochi",
+      sakura_puff: "sakura_mochi",
+      aurora_ice: "aurora_ice",
+      aurora_frost: "aurora_ice",
+    };
+    const mappedSpecies = parsed.speciesId ? speciesAlias[String(parsed.speciesId)] : undefined;
+    const speciesId: DinoSpeciesId = mappedSpecies && DINO_SPECIES[mappedSpecies] ? mappedSpecies : "mint_star";
     const base = createDefaultSanctuaryState(speciesId);
+    const mergedName = (parsed.customName || parsed.dinoName || base.customName).trim();
+    const mergedUnlocked = Array.from(
+      new Set([
+        ...base.unlockedItems,
+        ...(Array.isArray(parsed.unlockedItems) ? parsed.unlockedItems : []),
+        ...(Array.isArray(parsed.unlockedItemIds) ? parsed.unlockedItemIds : []),
+      ])
+    );
+    const rawEquipped = { ...base.equipped, ...(parsed.equipped || {}) };
+    if (rawEquipped.headwear === "none") rawEquipped.headwear = "none_head";
+    const normalizedRoam: "roam" | "dock" = parsed.roamMode === "dock" ? "dock" : "roam";
     return {
       ...base,
       ...parsed,
       speciesId,
-      equipped: { ...base.equipped, ...(parsed.equipped || {}) },
-      unlockedItems: Array.from(new Set([...base.unlockedItems, ...(parsed.unlockedItems || [])])),
+      customName: mergedName,
+      roamMode: normalizedRoam,
+      equipped: rawEquipped,
+      unlockedItems: mergedUnlocked,
     };
   } catch {
     return createDefaultSanctuaryState();
@@ -698,8 +725,18 @@ export function loadSanctuaryState(): MascotSanctuaryState {
 export function saveSanctuaryState(next: MascotSanctuaryState): MascotSanctuaryState {
   if (typeof window === "undefined") return next;
   try {
-    window.localStorage.setItem(SANCTUARY_STORAGE_KEY, JSON.stringify(next));
-    window.dispatchEvent(new CustomEvent(SANCTUARY_EVENT_NAME, { detail: next }));
+    const unlocked = Array.from(new Set(next.unlockedItems || []));
+    const compatPayload = {
+      ...next,
+      customName: next.customName,
+      dinoName: next.customName,
+      unlockedItems: unlocked,
+      unlockedItemIds: unlocked,
+    };
+    window.localStorage.setItem(SANCTUARY_STORAGE_KEY, JSON.stringify(compatPayload));
+    window.dispatchEvent(new CustomEvent(SANCTUARY_EVENT_NAME, { detail: compatPayload }));
+    window.dispatchEvent(new CustomEvent("ans:sanctuary-updated", { detail: compatPayload }));
+    window.dispatchEvent(new CustomEvent("ans-sanctuary-sync", { detail: compatPayload }));
   } catch {
     /* Ignore storage quota errors in private browsing */
   }

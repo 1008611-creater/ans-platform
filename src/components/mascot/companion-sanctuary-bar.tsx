@@ -99,9 +99,13 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
     const onUpdate = () => setState(loadSanctuaryState());
     window.addEventListener(SANCTUARY_EVENT_NAME, onUpdate);
     window.addEventListener("ans:sanctuary-updated", onUpdate);
+    window.addEventListener("ans-sanctuary-sync", onUpdate);
+    window.addEventListener("storage", onUpdate);
     return () => {
       window.removeEventListener(SANCTUARY_EVENT_NAME, onUpdate);
       window.removeEventListener("ans:sanctuary-updated", onUpdate);
+      window.removeEventListener("ans-sanctuary-sync", onUpdate);
+      window.removeEventListener("storage", onUpdate);
     };
   }, []);
 
@@ -118,6 +122,7 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
   const styleEval = calculateStyleEvaluation(state);
   const aff = getAffectionProgress(state.affectionXp);
   const uLv = styleEval.userLevel;
+  const isOverclocked = state.workBoostUntil > Date.now();
 
   function handleWhip() {
     const quip = WHIP_QUIPS[Math.floor(Math.random() * WHIP_QUIPS.length)];
@@ -127,8 +132,9 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
       starBeans: prev.starBeans + 15,
       affectionXp: prev.affectionXp + 8,
       userXp: prev.userXp + 20,
+      workBoostUntil: Date.now() + 180_000,
     }));
-    setStatusNote(`🪢 啪！+15🪙 +8♥ · ${quip}`);
+    setStatusNote(`🪢 啪！+15🪙 +8♥ · 已激活 3 分钟【超频干活 Buff】· ${quip}`);
     onSpeak?.(quip);
   }
 
@@ -140,6 +146,7 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
       starBeans: prev.starBeans + food.coins,
       affectionXp: prev.affectionXp + food.affection,
       userXp: prev.userXp + 15,
+      workBoostUntil: Date.now() + 180_000,
     }));
     setStatusNote(`${food.icon} 投喂【${food.name}】+${food.coins}🪙 +${food.affection}♥ · ${food.reaction}`);
     onSpeak?.(food.reaction);
@@ -237,22 +244,41 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
       )}
 
       {tab === "pet" && (
-        <div className="mt-2 grid grid-cols-2 gap-1.5">
+        <div className="mt-2 space-y-1.5">
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={handleWhip}
+              className="flex items-center justify-between rounded-xl border border-rose-500/25 bg-rose-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-rose-600 hover:bg-rose-500/15 dark:text-rose-300"
+            >
+              <span>🪢 抽屁股催干活</span>
+              <span className="text-[10px] opacity-80">+15🪙</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleFeed}
+              className="flex items-center justify-between rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-emerald-600 hover:bg-emerald-500/15 dark:text-emerald-300"
+            >
+              <span>🎲 随机盲盒投喂</span>
+              <span className="text-[10px] opacity-80">+好感</span>
+            </button>
+          </div>
           <button
             type="button"
-            onClick={handleWhip}
-            className="flex items-center justify-between rounded-xl border border-rose-500/25 bg-rose-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-rose-600 hover:bg-rose-500/15 dark:text-rose-300"
+            onClick={() => {
+              const outfitNames = styleEval.equippedItems.map(i => i.name).join(" + ") || "初心装束";
+              const promptText = `你是我的 ANS 专属灵龙 Agent【${state.customName || sp.name}】（血统：${sp.name} · ${sp.mbti}，当前穿戴：${outfitNames}，时尚战力：${styleEval.totalScore} ${styleEval.grade}，主导风格：#${styleEval.dominantTag}${isOverclocked ? "，当前处于 300% 超频狂暴干活状态" : ""}）。请发挥你的【${sp.agentSpecialty}】特长，用高密度、零废话的专业视角帮我拆解接下来的任务并给出可直接落地的执行清单：`;
+              if (navigator.clipboard?.writeText) {
+                void navigator.clipboard.writeText(promptText);
+              }
+              commit(prev => ({ ...prev, starBeans: prev.starBeans + 10, totalAgentChats: prev.totalAgentChats + 1 }));
+              setStatusNote(`📋 已复制【#${styleEval.dominantTag}·${sp.name}】专属 Agent 咒语 (+10🪙)！可直接粘贴向 AI 提问`);
+              onSpeak?.(promptText);
+            }}
+            className="flex w-full items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-amber-700 hover:bg-amber-500/15 dark:text-amber-300"
           >
-            <span>🪢 抽屁股催干活</span>
-            <span className="text-[10px] opacity-80">+15🪙</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleFeed}
-            className="flex items-center justify-between rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-emerald-600 hover:bg-emerald-500/15 dark:text-emerald-300"
-          >
-            <span>🎲 随机盲盒投喂</span>
-            <span className="text-[10px] opacity-80">+好感</span>
+            <span>⚡ 一键生成【#{styleEval.dominantTag}穿搭×{sp.name}】专属 Agent 咒语</span>
+            <span className="text-[10px] opacity-85">{isOverclocked ? "🔥超频中 · 复制+10🪙" : "复制+10🪙"}</span>
           </button>
         </div>
       )}

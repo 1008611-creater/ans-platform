@@ -674,11 +674,14 @@ class MotionDirector {
             transition: opacity 0.35s ease, filter 0.35s ease !important;
           }
           body.ans-dino-interactive-mode #ans-agent-companion-dock,
-          body.ans-sanctuary-open #ans-agent-companion-dock {
+          body.ans-dino-interactive-mode #ans-agent-companion-dock *,
+          body.ans-sanctuary-open #ans-agent-companion-dock,
+          body.ans-sanctuary-open #ans-agent-companion-dock * {
             opacity: 0 !important;
+            visibility: hidden !important;
             pointer-events: none !important;
             transform: translateY(16px) !important;
-            transition: opacity 0.28s ease, transform 0.28s ease !important;
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease !important;
           }
           body:not(.ans-dino-interactive-mode):not(.ans-sanctuary-open) main.content,
           body:not(.ans-dino-interactive-mode):not(.ans-sanctuary-open) .hero-chrome,
@@ -1584,7 +1587,7 @@ class MotionDirector {
       kpiScore = Math.min(999, kpiScore + 25 + Math.floor(Math.random() * 14));
       if (kpiFillEl) kpiFillEl.style.width = `${Math.min(100, kpiScore)}%`;
       if (kpiValEl) kpiValEl.textContent = `${kpiScore}%`;
-      rewardSanctuary(25, 18, 30, "🪢 抽屁股催干活 +25🪙 +18♥");
+      rewardSanctuary(25, 18, 30, "🪢 抽屁股催干活 +25🪙 +18♥ · 超频开启！", true);
       if (feedTagEl) feedTagEl.textContent = `🪢 已抽屁股催工 ${whipCount} 次！获得 +25 灵感星豆 🪙 & +18 好感度 ♥，小恐龙正狂飙手速干活！`;
       spawnWhipFx(buttScreenX, buttScreenY);
       if (handlers.onWhip) handlers.onWhip(whipCount);
@@ -1613,7 +1616,7 @@ class MotionDirector {
         preset ? preset.itemIcon : "🍗",
         preset ? preset.itemName : "神秘盲盒"
       );
-      rewardSanctuary(20, 24, 25, `${preset ? preset.itemIcon : "🎲"} 投喂${preset ? preset.itemName : "盲盒"} +20🪙 +24♥`);
+      rewardSanctuary(20, 24, 25, `${preset ? preset.itemIcon : "🎲"} 投喂${preset ? preset.itemName : "盲盒"} +20🪙 +24♥`, true);
       if (feedTagEl && preset) {
         feedTagEl.textContent = `🎲 第 ${feedCount} 次盲盒投喂：【${preset.itemIcon} ${preset.itemName}】！好感度 +24 ♥ · 灵感星豆 +20 🪙`;
       }
@@ -1815,14 +1818,15 @@ class MotionDirector {
       aurora_ice: "aurora_ice"
     };
     const SPECIES_3D_TO_DOMAIN = {
-      mint_star: "mint_sky",
+      mint_star: "mint_star",
       cyber_gold: "cyber_gold",
-      sakura_mochi: "sakura_puff",
-      aurora_ice: "aurora_frost"
+      sakura_mochi: "sakura_mochi",
+      aurora_ice: "aurora_ice"
     };
 
     function loadSanctuary() {
       const def = {
+        version: 1,
         adopted: true,
         speciesId: "mint_star",
         dinoName: "薄荷小星龙",
@@ -1834,12 +1838,13 @@ class MotionDirector {
         affection: 120,
         userXp: 260,
         userLevel: 2,
+        workBoostUntil: 0,
         demoLevelOverride: null,
-        roamMode: "orbit", // "orbit" (自由乱飞) or "dock" (停靠右下角)
+        roamMode: "orbit", // "orbit"/"roam" (自由乱飞) or "dock" (停靠右下角)
         turntableSpin: false,
         turntableYaw: 0,
         unlockedItemIds: [
-          "none", "starter_antenna", "starter_scarf", "aura_mint",
+          "none", "none_head", "starter_antenna", "starter_scarf", "aura_mint",
           "gold_glasses", "beret_cloud", "cyber_visor", "aura_gold", "aura_sakura", "magic_wand"
         ],
         equipped: {
@@ -1863,6 +1868,9 @@ class MotionDirector {
           ...(parsed.unlockedItemIds || []),
           ...(parsed.unlockedItems || [])
         ]));
+        const rawEq = { ...def.equipped, ...(parsed.equipped || {}) };
+        if (rawEq.headwear === "none_head") rawEq.headwear = "none";
+        const normRoam = parsed.roamMode === "dock" ? "dock" : "orbit";
         return {
           ...def,
           ...parsed,
@@ -1871,7 +1879,8 @@ class MotionDirector {
           customName: mergedName,
           affectionXp: mergedAff,
           affection: mergedAff,
-          equipped: { ...def.equipped, ...(parsed.equipped || {}) },
+          roamMode: normRoam,
+          equipped: rawEq,
           unlockedItemIds: mergedUnlocked,
           unlockedItems: mergedUnlocked
         };
@@ -1884,22 +1893,35 @@ class MotionDirector {
 
     function saveSanctuary(next) {
       const uLv = getUserLevelInfo(next.userXp ?? 260, next.demoLevelOverride).level;
+      const mergedName = next.dinoName || next.customName || "薄荷小星龙";
+      const mergedUnlocked = Array.from(new Set([
+        ...(next.unlockedItemIds || []),
+        ...(next.unlockedItems || []),
+        "none", "none_head"
+      ]));
+      const normEq = { ...(next.equipped || {}) };
+      if (normEq.headwear === "none_head") normEq.headwear = "none";
       sanctuaryState = {
         ...next,
-        customName: next.dinoName || next.customName || "薄荷小星龙",
+        version: 1,
+        dinoName: mergedName,
+        customName: mergedName,
         affection: next.affectionXp ?? next.affection ?? 120,
         userLevel: uLv,
-        unlockedItems: next.unlockedItemIds || []
+        equipped: normEq,
+        unlockedItemIds: mergedUnlocked,
+        unlockedItems: mergedUnlocked
       };
       try {
         if (typeof localStorage !== "undefined") {
           const toStore = {
             ...sanctuaryState,
-            domainSpeciesId: SPECIES_3D_TO_DOMAIN[sanctuaryState.speciesId] || "mint_sky"
+            domainSpeciesId: SPECIES_3D_TO_DOMAIN[sanctuaryState.speciesId] || "mint_star"
           };
           localStorage.setItem(SANCTUARY_STORAGE_KEY, JSON.stringify(toStore));
         }
         if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("ans:mascot-sanctuary-sync", { detail: sanctuaryState }));
           window.dispatchEvent(new CustomEvent("ans-sanctuary-sync", { detail: sanctuaryState }));
           window.dispatchEvent(new CustomEvent("ans:sanctuary-updated", { detail: sanctuaryState }));
         }
@@ -1911,17 +1933,28 @@ class MotionDirector {
     function calcStylePower(equipped = sanctuaryState.equipped) {
       let total = 100;
       const counts = {};
+      const activeItems = [];
       for (const slot of ["headwear", "eyewear", "neckwear", "handheld", "aura"]) {
-        const itemId = equipped[slot] || "none";
+        const rawId = equipped[slot] || "none";
+        const itemId = rawId === "none_head" ? "none" : rawId;
         const item = WARDROBE_ITEMS.find(it => it.slot === slot && it.id === itemId);
         if (item) {
           total += item.styleScore;
-          if (item.id !== "none") counts[item.styleTag] = (counts[item.styleTag] || 0) + 1;
+          if (item.id !== "none") {
+            counts[item.styleTag] = (counts[item.styleTag] || 0) + 1;
+            activeItems.push(item);
+          }
         }
       }
       let bonusTag = null;
       let bonusScore = 0;
+      let dominantTag = "极客";
+      let maxCnt = 0;
       for (const [tag, cnt] of Object.entries(counts)) {
+        if (cnt > maxCnt) {
+          maxCnt = cnt;
+          dominantTag = tag;
+        }
         if (cnt >= 3) {
           bonusTag = `「${tag}共鸣·三件套」`;
           bonusScore = 85;
@@ -1936,15 +1969,66 @@ class MotionDirector {
         : total >= 320 ? "S · 甜酷潮龙"
         : total >= 210 ? "A · 新锐穿搭"
         : "B · 初心萌龙";
-      return { total, rank, bonusTag, bonusScore };
+      return { total, rank, bonusTag, bonusScore, dominantTag, activeItems };
     }
 
-    function rewardSanctuary(beansDelta, affDelta, xpDelta, toastMsg) {
+    function buildWardrobeAgentContext(skill = "general", userQuestion = "") {
+      const sp = DINO_SPECIES_MAP[sanctuaryState.speciesId] || DINO_SPECIES_MAP.mint_star;
+      const st = calcStylePower(sanctuaryState.equipped);
+      const eq = sanctuaryState.equipped || {};
+      const itemNames = st.activeItems.map(it => `${it.icon}${it.name}`).join(" + ") || "🌱初心裸装";
+      const isOverclocked = (sanctuaryState.workBoostUntil || 0) > Date.now() || whipCount > 0 || feedCount > 0;
+      const overclockLabel = isOverclocked ? `🔥 超频运转中 (干活劲头 ${kpiScore}%)` : `✨ 常态待命 (干活劲头 ${kpiScore}%)`;
+
+      // Gear-specific tactical buffs
+      const gearPerks = [];
+      if (eq.headwear === "phd_mortarboard" || eq.eyewear === "gold_glasses") gearPerks.push("🎓 顶会审稿人严谨逻辑加成");
+      if (eq.headwear === "cyber_visor" || eq.handheld === "gold_keyboard") gearPerks.push("⚡ 4090 零报错极速代码架构加成");
+      if (eq.headwear === "crown_aurora" || eq.handheld === "floating_grimoire" || eq.neckwear === "pioneer_cape") gearPerks.push("👑 UR星神高维 Prompt 咒语加成");
+      if (eq.neckwear === "boba_jetpack" || eq.handheld === "magic_wand" || eq.headwear === "beret_cloud") gearPerks.push("🎨 高定视觉排版与去 AI 味润色加成");
+      const perkStr = gearPerks.length ? gearPerks.join(" · ") : `🌟 #${st.dominantTag}风格灵感加成`;
+
+      let promptToCopy = "";
+      let html = "";
+      if (skill === "resume") {
+        promptToCopy = `你是我的 ANS 专属灵龙 Agent【${sanctuaryState.dinoName}】（血统：${sp.name} · ${sp.mbti}，穿戴：${itemNames}，加成：${perkStr}）。请用 STAR 法则 + 量化工程指标（帧率/延迟/转化率）帮我精修以下简历经历，去除空洞套话并突出核心技术壁垒：`;
+        html = `<b>📄 [${sp.name} × #${st.dominantTag}高定简历诊断]</b> <span style="color:#ffd666;font-size:11px;">${overclockLabel}</span><br/>` +
+               `👗 <b>当前穿戴加持：</b>${itemNames}（${perkStr}）<br/>` +
+               `💡 <b>诊断建议：</b>把项目描述改为「痛点场景 → 核心架构 → 量化收益（如 WebGL 120FPS / 推理提速 3.2x）」，并附上 <a href="/market/resume-website" style="color:#84fab0;text-decoration:underline;">ANS 简历工作室</a> 在线交互链接！`;
+      } else if (skill === "project") {
+        promptToCopy = `你是我的 ANS 专属灵龙 Agent【${sanctuaryState.dinoName}】（血统：${sp.name} · ${sp.mbti}，穿戴：${itemNames}，特长：${sp.agentSpecialty}）。我想在 ANS 做一个兼具技术深度与视觉冲击力的 AI 创新项目，请给我 3 个可在 48 小时内跑通 MVP 的选题及技术栈拆解：`;
+        html = `<b>🧭 [${sp.name} × #${st.dominantTag}项目组队雷达]</b> <span style="color:#ffd666;font-size:11px;">${overclockLabel}</span><br/>` +
+               `👗 <b>当前穿戴加持：</b>${itemNames}（战力 ${st.total} · ${st.rank}）<br/>` +
+               `🚀 <b>高契合选题：</b>① 3D 数字人实时多模态伴侣 ② 垂直学科互动实验生成工作流 ③ 农业/科学 AI 自动化评测。<a href="/explore" style="color:#84fab0;text-decoration:underline;">去项目广场匹配搭子 →</a>`;
+      } else if (skill === "compete") {
+        promptToCopy = `你是我的 ANS 专属灵龙 Agent【${sanctuaryState.dinoName}】（血统：${sp.name} · 算力 ${sp.stats.compute}，穿戴：${itemNames}）。请帮我规划黑客松冲榜路演方案：1. 核心 Demo 30秒抓人开场；2. 最小算力开销方案；3. 评委最高频 3 个追问及防御回答：`;
+        html = `<b>🏆 [${sp.name} × #${st.dominantTag}赛事与算力精算]</b> <span style="color:#ffd666;font-size:11px;">${overclockLabel}</span><br/>` +
+               `⚡ <b>算力评估：</b>依托【${perkStr}】，推荐采用 LoRA 轻量化微调 + WebGPU 端侧推理，预计节省 65% 算力成本！<a href="/competitions" style="color:#84fab0;text-decoration:underline;">查看近期赛事专区 →</a>`;
+      } else if (skill === "fortune") {
+        promptToCopy = `你是我的 ANS 专属灵龙 Agent【${sanctuaryState.dinoName}】（血统：${sp.name}，穿戴：${itemNames}，时尚评分：${st.total}）。请为我生成今日专属「代码零 Bug 护体符」与 3 条高效推进创作的微习惯建议：`;
+        html = `<b>🍀 [${sp.name} · 今日穿搭欧气签]</b> <span style="color:#ff85c0;font-size:11px;">时尚战力 ${st.total} (${st.rank})</span><br/>` +
+               `✨ <b>护体穿搭：</b>${itemNames}<br/>` +
+               `🎯 <b>今日运势：</b>编译一次通过率 <b>${Math.min(99.9, 88 + st.total * 0.018).toFixed(1)}%</b>！宜：提交核心代码、去 <a href="/hubs" style="color:#84fab0;text-decoration:underline;">Hub 社区</a> 发帖拿星豆；忌：不写注释直接强推分支！`;
+      } else if (skill === "chat" && userQuestion) {
+        const cleanQ = userQuestion.replace(/[<>&]/g, "");
+        promptToCopy = `【${sanctuaryState.dinoName} · ${sp.name} (${perkStr})】针对「${cleanQ}」的深度拆解方案：\n1. 核心目标拆解与最小可行闭环（MVP）；\n2. 关键工程/设计避坑清单；\n3. 下一步立即执行的 15 分钟行动项。`;
+        html = `<b>💬 你问：</b>「${cleanQ}」<br/>` +
+               `<b>${sp.icon} ${sanctuaryState.dinoName}（穿戴 ${st.activeItems.length} 件 #${st.dominantTag} 装备 · ${overclockLabel}）：</b><br/>` +
+               `已启用【${perkStr}】为你拆解：① 先用最小原型验证核心交互；② 借助 <a href="/market/resume-website" style="color:#84fab0;text-decoration:underline;">简历工作室</a> 与 <a href="/explore" style="color:#84fab0;text-decoration:underline;">项目广场</a> 沉淀可交互展示资产；③ 点击下方按钮可一键复制完整定制 Prompt！`;
+      } else {
+        promptToCopy = `你是我的 ANS 专属灵龙 Agent【${sanctuaryState.dinoName}】（血统：${sp.name} · ${sp.mbti}，当前穿戴：${itemNames}，加成：${perkStr}）。请帮我高效拆解今日创作任务：`;
+        html = `👋 <b>[${sanctuaryState.dinoName} · ${sp.name}]</b> 已就绪！当前穿戴 <b>${itemNames}</b>（${st.rank}），激活 <b>${perkStr}</b>。点击上方技能或下方复制专属咒语，穿搭越强、抽屁股超频越高，生成的 Prompt 越硬核！`;
+      }
+      return { html, promptToCopy, perkStr, styleInfo: st };
+    }
+
+    function rewardSanctuary(beansDelta, affDelta, xpDelta, toastMsg, boostWork = false) {
       const next = {
         ...sanctuaryState,
         starBeans: Math.max(0, (sanctuaryState.starBeans || 0) + beansDelta),
         affectionXp: Math.max(0, (sanctuaryState.affectionXp || 0) + affDelta),
-        userXp: Math.max(0, (sanctuaryState.userXp || 0) + xpDelta)
+        userXp: Math.max(0, (sanctuaryState.userXp || 0) + xpDelta),
+        workBoostUntil: boostWork ? (Date.now() + 180000) : (sanctuaryState.workBoostUntil || 0)
       };
       saveSanctuary(next);
       if (toastMsg && fxLayerEl) {
@@ -1965,7 +2049,9 @@ class MotionDirector {
     let eggCrackClicks = 0;
     let activeCompanionDrawerOpen = false;
     let activeCompanionTab = "pet"; // "pet" | "wardrobe" | "agent"
-    let agentOutputHtml = "👋 你好呀训龙师！我是你的全站随身 AI Agent 伴侣。点击上方技能按钮或在下方输入问题，我不仅能帮你改简历、找项目、算算力，还能陪你聊天赚取「灵感星豆 🪙」解锁奇迹暖暖新衣服哦！";
+    let lastAgentSkill = "general";
+    let lastAgentQuestion = "";
+    let agentOutputHtml = "";
 
     function syncSanctuaryBodyClass() {
       if (typeof document === "undefined") return;
@@ -1980,11 +2066,13 @@ class MotionDirector {
       const adoptModal = document.getElementById("ans-sanctuary-adopt-modal");
       const wardrobeModal = document.getElementById("ans-sanctuary-wardrobe-modal");
       if (which === "adopt" && adoptModal) {
+        activeCompanionDrawerOpen = false;
         if (wardrobeModal) wardrobeModal.hidden = true;
         adoptModal.hidden = false;
         syncSanctuaryBodyClass();
         renderSanctuaryUi();
       } else if (which === "wardrobe" && wardrobeModal) {
+        activeCompanionDrawerOpen = false;
         if (adoptModal) adoptModal.hidden = true;
         wardrobeModal.hidden = false;
         syncSanctuaryBodyClass();
@@ -1993,6 +2081,7 @@ class MotionDirector {
         if (adoptModal) adoptModal.hidden = true;
         if (wardrobeModal) wardrobeModal.hidden = true;
         syncSanctuaryBodyClass();
+        renderSanctuaryUi();
       }
     }
 
@@ -2506,28 +2595,44 @@ class MotionDirector {
             });
             rewardSanctuary(0, 20, 30, "✨ 已穿戴 SSS 星神顶配高定套装！");
           } else if (act.startsWith("agent-skill-")) {
-            const sp = DINO_SPECIES_MAP[sanctuaryState.speciesId] || DINO_SPECIES_MAP.mint_star;
-            const skill = act.replace("agent-skill-", "");
-            if (skill === "resume") {
-              agentOutputHtml = `<b>📄 [${sp.name} · 简历高定诊断]</b><br/>已扫描当前创作轨道：建议在「简历与作品集工作室」采用 <b>STAR 法则 + 3D 交互作品链接</b>，量化你的模型帧率与工程指标！<a href="/market/resume-website" style="color:#b9e1d4;margin-left:6px;text-decoration:underline;">立即打开简历编辑器 →</a>`;
-            } else if (skill === "project") {
-              agentOutputHtml = `<b>🧭 [${sp.name} · 项目灵感与组队雷达]</b><br/>为你匹配 3 个高契合方向：① 多模态 Agent 科研工作流 ② WebGL 实时数字人交互 ③ 农业/科学 AI 赛事课题。<a href="/explore" style="color:#b9e1d4;margin-left:6px;text-decoration:underline;">去项目广场组队 →</a>`;
-            } else if (skill === "compete") {
-              agentOutputHtml = `<b>🏆 [${sp.name} · 赛事与算力精算师]</b><br/>近期 ANS 创客赛火热报名中！微调 7B 模型预计仅需 2.5 小时 A100 算力，记得领用学生算力补贴~ <a href="/competitions" style="color:#b9e1d4;margin-left:6px;text-decoration:underline;">查看赛事专区 →</a>`;
-            } else if (skill === "fortune") {
-              agentOutputHtml = `<b>🍀 [${sp.name} · 今日科研/干活运势]</b><br/>宜：合并 PR、投喂小恐龙、换新穿搭（Bug 退散率 99.8%）；忌：周五下午空腹改底层架构！`;
+            lastAgentSkill = act.replace("agent-skill-", "");
+            lastAgentQuestion = "";
+            const ctx = buildWardrobeAgentContext(lastAgentSkill, "");
+            agentOutputHtml = ctx.html;
+            rewardSanctuary(20, 12, 25, `⚡ [${ctx.styleInfo.dominantTag}穿搭加成] Agent 技能执行 +20🪙`);
+            renderSanctuaryUi();
+          } else if (act === "agent-copy-prompt") {
+            const ctx = buildWardrobeAgentContext(lastAgentSkill, lastAgentQuestion);
+            if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(ctx.promptToCopy).catch(() => {});
             }
-            rewardSanctuary(20, 12, 25, "⚡ Agent 技能执行完毕 +20🪙");
+            rewardSanctuary(15, 10, 15, `📋 已复制【#${ctx.styleInfo.dominantTag}×${sanctuaryState.dinoName}】专属咒语 +15🪙！`);
             renderSanctuaryUi();
           } else if (act === "agent-chat-send") {
             const inp = dock.querySelector(".ans-agent-chat-input");
             const q = inp && inp.value ? inp.value.trim() : "";
             if (!q) return;
-            const sp = DINO_SPECIES_MAP[sanctuaryState.speciesId] || DINO_SPECIES_MAP.mint_star;
-            agentOutputHtml = `<b>💬 你问：</b>「${q.replace(/[<>&]/g, "")}」<br/><b>${sp.icon} ${sanctuaryState.dinoName} (${sp.mbti})：</b>收到！本龙已用「${sp.element}」算力替你拆解完毕——先拆成最小 MVP 验证闭环，需要改简历随时去 <a href="/market/resume-website" style="color:#b9e1d4;">简历工作室</a>，需要找搭子去 <a href="/hubs" style="color:#b9e1d4;">Hub 社区</a>！`;
+            lastAgentSkill = "chat";
+            lastAgentQuestion = q;
+            const ctx = buildWardrobeAgentContext("chat", q);
+            agentOutputHtml = ctx.html;
             inp.value = "";
             rewardSanctuary(15, 15, 20, "💬 灵龙 Agent 解答 +15🪙 +15♥");
             renderSanctuaryUi();
+          }
+        });
+        dock.addEventListener("keydown", ev => {
+          if (ev.key === "Enter" && ev.target && ev.target.classList && ev.target.classList.contains("ans-agent-chat-input")) {
+            ev.preventDefault();
+            const sendBtn = dock.querySelector('[data-comp-act="agent-chat-send"]');
+            if (sendBtn) sendBtn.click();
+          }
+        });
+        window.addEventListener("storage", ev => {
+          if (!ev.key || ev.key === SANCTUARY_STORAGE_KEY) {
+            sanctuaryState = loadSanctuary();
+            renderSanctuaryUi();
+            if (handlers.onSanctuaryChange) handlers.onSanctuaryChange(sanctuaryState);
           }
         });
       }
@@ -2781,28 +2886,34 @@ class MotionDirector {
             </div>
           `;
         } else {
+          const agentCtx = buildWardrobeAgentContext(lastAgentSkill, lastAgentQuestion);
+          const displayHtml = agentOutputHtml || agentCtx.html;
           drawerBodyHtml = `
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px;border-radius:11px;background:rgba(255,217,179,0.08);border:1px solid rgba(255,217,179,0.28);font-size:11px;">
+              <span style="color:#ffd9b3;font-weight:700;">⚡ 装备赋能：${agentCtx.perkStr}</span>
+              <button type="button" class="ans-comp-qbtn is-agent" style="padding:2px 8px;font-size:10.5px;" data-comp-act="agent-copy-prompt" title="复制融合了当前 3D 穿搭与灵龙血统的专属 AI 提示词">📋 复制专属咒语 +15🪙</button>
+            </div>
             <div class="ans-comp-grid2">
               <button type="button" class="ans-comp-act-card" data-comp-act="agent-skill-resume">
                 <span class="ans-comp-act-title">📄 简历高定诊断</span>
-                <span class="ans-comp-act-sub">STAR法则润色与作品集建议</span>
+                <span class="ans-comp-act-sub">#${styleInfo.dominantTag}风 STAR 法则精修</span>
               </button>
               <button type="button" class="ans-comp-act-card" data-comp-act="agent-skill-project">
                 <span class="ans-comp-act-title">🧭 项目灵感与组队</span>
-                <span class="ans-comp-act-sub">匹配 ANS 热门项目与搭子</span>
+                <span class="ans-comp-act-sub">${sp.name}定制 MVP 选题</span>
               </button>
               <button type="button" class="ans-comp-act-card" data-comp-act="agent-skill-compete">
                 <span class="ans-comp-act-title">🏆 赛事与算力精算</span>
-                <span class="ans-comp-act-sub">近期 AI 赛事与 GPU 估价</span>
+                <span class="ans-comp-act-sub">冲榜路演与 GPU 成本精算</span>
               </button>
               <button type="button" class="ans-comp-act-card" data-comp-act="agent-skill-fortune">
-                <span class="ans-comp-act-title">🍀 今日科研欧气签</span>
-                <span class="ans-comp-act-sub">测测今日写码/发论文运势</span>
+                <span class="ans-comp-act-title">🍀 今日穿搭欧气签</span>
+                <span class="ans-comp-act-sub">战力 ${styleInfo.total} · 零Bug护体</span>
               </button>
             </div>
-            <div class="ans-agent-console-box">${agentOutputHtml}</div>
+            <div class="ans-agent-console-box">${displayHtml}</div>
             <div class="ans-agent-chat-row">
-              <input type="text" class="ans-agent-chat-input" placeholder="向 ${sanctuaryState.dinoName} 提问（如：怎么写好 AI 简历？）" />
+              <input type="text" class="ans-agent-chat-input" placeholder="向 ${sanctuaryState.dinoName} 提问（回车发送，支持复制定制Prompt）" />
               <button type="button" class="ans-agent-chat-send" data-comp-act="agent-chat-send">发送 +15🪙</button>
             </div>
           `;
@@ -3848,13 +3959,17 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     } else {
       promptEl.innerHTML = `
         <div class="cam-prompt-title">🎥 是否进入「缩放大小 & 机位调整」模式？</div>
-        <div class="cam-prompt-desc">开启后：<b>滚轮</b>可自由放大/缩小画面，<b>拖拽</b>可环视改变机位视角；再次<b>长按画面 0.5 秒</b>即可取消该模式并恢复正常向下滑动。</div>
+        <div class="cam-prompt-desc">开启后：<b>滚轮</b>可自由放大/缩小画面，<b>拖拽</b>可环视改变机位视角；再次<b>原地长按 0.5 秒</b>即可取消该模式并恢复正常向下滑动。</div>
         <div class="cam-prompt-actions">
           <button type="button" class="cam-prompt-btn cam-prompt-enter" data-cam-prompt-act="enter">✨ 进入缩放与机位模式</button>
           <button type="button" class="cam-prompt-btn cam-prompt-cancel" data-cam-prompt-act="cancel">保持正常滑动</button>
         </div>
       `;
       promptEl.hidden = false;
+      setTimeout(() => {
+        const enterBtn = promptEl.querySelector(".cam-prompt-enter");
+        if (enterBtn && enterBtn.focus) enterBtn.focus({ preventScroll: true });
+      }, 20);
     }
   };
 
@@ -3943,15 +4058,18 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     });
   }
 
-  // Mouse Wheel Zoom (ONLY active when in Zoom & Camera Adjustment Mode! Default normal scroll is 100% untouched!)
+  // Mouse Wheel Zoom (Active in Zoom & Camera Adjustment Mode, or via Ctrl/Cmd+Wheel / Trackpad Pinch, or on the 3D Stage while Wardrobe/Adopt Drawer is open! Normal page scroll is 100% untouched!)
   const isUiControlTarget = el => {
     if (!el || !el.closest) return false;
-    return Boolean(el.closest("a, button, input, textarea, select, #ans-dino-live-bubble, #ans-dino-body-hitbox, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, #ans-sanctuary-adopt-modal, #ans-sanctuary-wardrobe-modal, .chapter-nav, .showcase-utility, .wk-card"));
+    return Boolean(el.closest("a, button, input, textarea, select, #ans-dino-live-bubble, #ans-dino-body-hitbox, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, .ans-sanctuary-dialog, .chapter-nav, .showcase-utility, .wk-card"));
   };
 
   const onWheelZoom = ev => {
-    if (!dinoState.wheelZoomEnabled || ev.shiftKey) return;
-    if (ev.target && ev.target.closest && ev.target.closest(".chapter-nav, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, #ans-sanctuary-adopt-modal, #ans-sanctuary-wardrobe-modal")) return;
+    if (ev.shiftKey) return;
+    if (ev.target && ev.target.closest && ev.target.closest(".chapter-nav, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, .ans-sanctuary-dialog")) return;
+    const isSanctuaryStageZoom = typeof document !== "undefined" && document.body.classList.contains("ans-sanctuary-open");
+    const isModifierZoom = Boolean(ev.ctrlKey || ev.metaKey);
+    if (!dinoState.wheelZoomEnabled && !isSanctuaryStageZoom && !isModifierZoom) return;
     ev.preventDefault();
     const rawDelta = ev.deltaMode === 1 ? ev.deltaY * 32 : ev.deltaY;
     const step = f.clamp(rawDelta, -140, 140) * (ev.ctrlKey ? 0.0028 : 0.0014);
@@ -4057,12 +4175,13 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     lastX = ev.clientX;
     lastY = ev.clientY;
     const distFromStart = Math.hypot(ev.clientX - downX, ev.clientY - downY);
+    const dragThreshold = dinoState.wheelZoomEnabled ? 3.5 : 7.0;
 
-    // If user moves mouse significantly before long-press threshold finishes:
-    if (distFromStart > 7) {
+    // If user moves mouse before long-press threshold finishes, immediately cancel hold timer so slow drags never misfire:
+    if (distFromStart > dragThreshold) {
       hideHoldRing();
-      // Only orbit camera if Camera & Zoom Adjustment Mode is currently active!
-      if (dinoState.wheelZoomEnabled && !holdTriggered) {
+      const canDragStage = dinoState.wheelZoomEnabled || (typeof document !== "undefined" && document.body.classList.contains("ans-sanctuary-open"));
+      if (canDragStage && !holdTriggered) {
         if (!didDragCam) {
           didDragCam = true;
           dinoState.isCamDragging = true;
@@ -4825,10 +4944,15 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
         ref:dinoHeadMountRef,
         position:[0,0.55,0],
         children:[
-          /* Species Distinct 3D Head Features */
-          spId==="cyber_gold"&&(dinoState.wardrobeNodes.species_cyber_horns?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_cyber_horns}):null),
-          spId==="sakura_mochi"&&(dinoState.wardrobeNodes.species_sakura_ears?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_sakura_ears}):null),
-          spId==="aurora_ice"&&(dinoState.wardrobeNodes.species_aurora_crystals?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_aurora_crystals}):null),
+          /* Species Distinct 3D Head Features (Auto-tucked when full-crown hats are equipped) */
+          e.jsxs("group",{
+            scale:(eq.headwear==="beret_cloud"||eq.headwear==="phd_mortarboard")?[0.68,0.62,0.68]:[1,1,1],
+            children:[
+              spId==="cyber_gold"&&(dinoState.wardrobeNodes.species_cyber_horns?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_cyber_horns}):null),
+              spId==="sakura_mochi"&&(dinoState.wardrobeNodes.species_sakura_ears?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_sakura_ears}):null),
+              spId==="aurora_ice"&&(dinoState.wardrobeNodes.species_aurora_crystals?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_aurora_crystals}):null)
+            ]
+          }),
           /* HEADWEAR SLOT */
           eq.headwear==="starter_antenna"&&(dinoState.wardrobeNodes.headwear_starter_antenna?e.jsx("primitive",{object:dinoState.wardrobeNodes.headwear_starter_antenna}):null),
           eq.headwear==="beret_cloud"&&(dinoState.wardrobeNodes.headwear_beret_cloud?e.jsx("primitive",{object:dinoState.wardrobeNodes.headwear_beret_cloud}):null),
