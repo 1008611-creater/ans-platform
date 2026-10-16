@@ -11,9 +11,55 @@ const DOCK = new URLSearchParams(location.search).get('dock') === '1';
 const SOURCE_SHA256 = 'e420b1580e76a5871e0427e8b2fe1756532692af377b9f30c67d7038517efa51';
 const SETTINGS = Object.freeze({
   modelUrl: new URL('./dinosaur.glb', import.meta.url).href,
+  wardrobeUrl: new URL('./sanctuary-wardrobe.glb', import.meta.url).href,
   maxFps: 30, maxPixelRatio: 1.75, verticalFrame: 1.48,
   shadowOpacity: 0.12,
 });
+const SPECIES_TINTS = Object.freeze({
+  mint_star:   { color: 0xffffff, emissive: 0x000000, emissiveIntensity: 0.0, roughnessDelta: 0.0 },
+  cyber_gold:  { color: 0xd4be98, emissive: 0x3b2306, emissiveIntensity: 0.16, roughnessDelta: -0.14 },
+  sakura_mochi:{ color: 0xffd0e2, emissive: 0x380c1e, emissiveIntensity: 0.12, roughnessDelta: 0.04 },
+  aurora_ice:  { color: 0xc8e4ff, emissive: 0x0b1f47, emissiveIntensity: 0.15, roughnessDelta: -0.08 },
+});
+const HEAD_NODES = new Set([
+  'species_cyber_horns', 'species_sakura_ears', 'species_aurora_crystals',
+  'headwear_starter_antenna', 'headwear_beret_cloud', 'headwear_cyber_visor',
+  'headwear_phd_mortarboard', 'headwear_crown_aurora',
+  'eyewear_gold_glasses', 'eyewear_pixel_shades', 'eyewear_star_monocle',
+]);
+const BODY_NODES = new Set([
+  'neckwear_starter_scarf', 'neckwear_boba_jetpack', 'neckwear_cyber_wings', 'neckwear_pioneer_cape',
+  'handheld_magic_wand', 'handheld_gold_keyboard', 'handheld_floating_grimoire',
+]);
+const SPECIES_HEAD_NODE = Object.freeze({
+  cyber_gold: 'species_cyber_horns',
+  sakura_mochi: 'species_sakura_ears',
+  aurora_ice: 'species_aurora_crystals',
+});
+const CANONICAL_NODE_MAP = Object.freeze({
+  starter_antenna: 'headwear_starter_antenna',
+  beret_cloud: 'headwear_beret_cloud',
+  cyber_visor: 'headwear_cyber_visor',
+  phd_mortarboard: 'headwear_phd_mortarboard',
+  crown_aurora: 'headwear_crown_aurora',
+  gold_glasses: 'eyewear_gold_glasses',
+  pixel_shades: 'eyewear_pixel_shades',
+  star_monocle: 'eyewear_star_monocle',
+  starter_scarf: 'neckwear_starter_scarf',
+  boba_jetpack: 'neckwear_boba_jetpack',
+  handheld_boba_jetpack: 'neckwear_boba_jetpack',
+  cyber_wings: 'neckwear_cyber_wings',
+  pioneer_cape: 'neckwear_pioneer_cape',
+  magic_wand: 'handheld_magic_wand',
+  gold_keyboard: 'handheld_gold_keyboard',
+  floating_grimoire: 'handheld_floating_grimoire',
+});
+function resolveWardrobeNodeId(rawId) {
+  if (!rawId || rawId === 'none' || rawId === 'none_head') return null;
+  if (CANONICAL_NODE_MAP[rawId]) return CANONICAL_NODE_MAP[rawId];
+  if (HEAD_NODES.has(rawId) || BODY_NODES.has(rawId)) return rawId;
+  return null;
+}
 // Lifecycle test harness fallback; the live companion keeps its own scoped controller.
 
 const PHASES = new Set([
@@ -58,6 +104,11 @@ function startCompanion() {
   scene.add(actor);
 
   let renderer, model, performer, faceVoice, pendingModel;
+  let wardrobeLoaded = false;
+  const wardrobeNodes = new Map();
+  const baseSkinMaterials = [];
+  let sanctuarySpeciesId = 'mint_star';
+  let activeWardrobeIds = [];
   let sourceClips = [];
   let phase = 'idle';
   let parentVisible = true;
@@ -73,6 +124,73 @@ function startCompanion() {
   let orbit = null;
   let lastReportedGesture = null;
   let themeObserver;
+
+  function readSanctuaryStorage() {
+    try {
+      const raw = localStorage.getItem('ans.mascot.sanctuary.v1');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  function syncSanctuaryAppearance(overrideState = null) {
+    if (disposed || failed || !model) return;
+    const st = overrideState || readSanctuaryStorage();
+    const speciesId = (st && SPECIES_TINTS[st.speciesId]) ? st.speciesId : 'mint_star';
+    sanctuarySpeciesId = speciesId;
+    const tint = SPECIES_TINTS[speciesId];
+    for (const entry of baseSkinMaterials) {
+      const { mat, baseColor, baseEmissive, baseRoughness } = entry;
+      if (mat.color && baseColor) mat.color.copy(baseColor).multiply(new T.Color(tint.color));
+      if (mat.emissive && baseEmissive) {
+        mat.emissive.copy(baseEmissive).add(new T.Color(tint.emissive));
+        mat.emissiveIntensity = tint.emissiveIntensity;
+      }
+      if (typeof mat.roughness === 'number' && typeof baseRoughness === 'number') {
+        mat.roughness = Math.max(0.12, Math.min(0.95, baseRoughness + tint.roughnessDelta));
+      }
+    }
+    const eq = st?.equipped || {
+      headwear: 'starter_antenna',
+      eyewear: 'none',
+      neckwear: 'starter_scarf',
+      handheld: 'none',
+      aura: 'aura_mint',
+    };
+    const nextActive = new Set();
+    if (SPECIES_HEAD_NODE[speciesId]) nextActive.add(SPECIES_HEAD_NODE[speciesId]);
+    for (const rawVal of Object.values(eq)) {
+      const resolved = resolveWardrobeNodeId(rawVal);
+      if (resolved) nextActive.add(resolved);
+    }
+    activeWardrobeIds = [...nextActive];
+    for (const [nodeName, nodeObj] of wardrobeNodes.entries()) {
+      nodeObj.visible = nextActive.has(nodeName);
+    }
+    wake();
+  }
+
+  function animateWardrobeNodes(nowSec) {
+    if (!wardrobeLoaded || !wardrobeNodes.size) return;
+    const grimoire = wardrobeNodes.get('handheld_floating_grimoire');
+    if (grimoire?.visible) {
+      grimoire.position.y = (grimoire.userData.baseY ?? 0.16) + Math.sin(nowSec * 3.1) * 0.022;
+      grimoire.rotation.y = (grimoire.userData.baseRY ?? 0) + Math.sin(nowSec * 1.7) * 0.12;
+    }
+    const wand = wardrobeNodes.get('handheld_magic_wand');
+    if (wand?.visible) {
+      wand.rotation.z = (wand.userData.baseRZ ?? 0) + Math.sin(nowSec * 3.8) * 0.08;
+    }
+    const crown = wardrobeNodes.get('headwear_crown_aurora');
+    if (crown?.visible) {
+      crown.position.y = (crown.userData.baseY ?? 0) + Math.sin(nowSec * 2.6) * 0.008;
+    }
+    for (const auraKey of ['aura_mint', 'aura_gold', 'aura_sakura', 'aura_aurora']) {
+      const auraNode = wardrobeNodes.get(auraKey);
+      if (auraNode?.visible) {
+        auraNode.rotation.y = nowSec * 0.65;
+      }
+    }
+  }
 
   function tellParent(type, extra = {}) {
     parent.postMessage({ type, ...extra }, location.origin);
@@ -204,6 +322,9 @@ function startCompanion() {
       if (faceVoice) { faceVoice.volume = voiceVolume; if (faceVoice.audio) faceVoice.audio.volume = voiceVolume; if (!voiceEnabled) faceVoice.stopAudio(); }
       suspend(); wake();
     }
+    if (data.event === 'sanctuary') {
+      syncSanctuaryAppearance(data.state || null);
+    }
     if (data.event === 'hello') hello();
     if (data.event === 'autoplay' && typeof data.enabled === 'boolean') {
       director.setAutoplay(data.enabled, time); applyNextGesture(); wake();
@@ -250,6 +371,7 @@ function startCompanion() {
     if (failed || disposed || (!initialFrame && !isVisible())) return false;
     try {
       updatePose();
+      animateWardrobeNodes(time);
       const jump = performer?.rigTransform.jumpHeight || 0;
       const spread = 1 + jump * 3;
       contact.scale.set(spread, spread, 1);
@@ -316,11 +438,21 @@ function startCompanion() {
     resize();
   }
   function onContextLost(event) { event.preventDefault(); fail('WEBGL_CONTEXT_LOST'); }
+  const onSanctuarySync = () => syncSanctuaryAppearance();
   function dispose() {
     if (disposed) return;
     disposed = true;
     stopFrames();
     removeEventListener('message', receiveMessage);
+    removeEventListener('storage', onSanctuarySync);
+    removeEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
+    removeEventListener('ans:sanctuary-updated', onSanctuarySync);
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.removeEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
+        window.parent.removeEventListener('ans:sanctuary-updated', onSanctuarySync);
+      }
+    } catch {}
     removeEventListener('resize', resize);
     removeEventListener('pagehide', onPageHide);
     removeEventListener('pageshow', onPageShow);
@@ -340,6 +472,15 @@ function startCompanion() {
   }
 
   addEventListener('message', receiveMessage);
+  addEventListener('storage', onSanctuarySync);
+  addEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
+  addEventListener('ans:sanctuary-updated', onSanctuarySync);
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.addEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
+      window.parent.addEventListener('ans:sanctuary-updated', onSanctuarySync);
+    }
+  } catch {}
   addEventListener('resize', resize);
   addEventListener('pagehide', onPageHide);
   addEventListener('pageshow', onPageShow);
@@ -357,13 +498,19 @@ function startCompanion() {
   resize();
   Object.defineProperty(window, '__ANS_DINO__', {
     configurable: true,
-    value: Object.freeze({ activateAudio: () => faceVoice?.activateAudio(), snapshot: () => {
+    value: Object.freeze({ activateAudio: () => faceVoice?.activateAudio(), syncSanctuary: syncSanctuaryAppearance, snapshot: () => {
       const motion = performer?.snapshot() || null;
       return {
         version: VERSION, sourceSHA256: SOURCE_SHA256, modelLoaded, ready, failed, disposed,
         phase, currentClip: performer?.gesture === 'hello' ? 'Wave-arms-only' : null,
         performance: motion?.gesture || 'idle', performanceState: motion,
         face: faceVoice?.snapshot() || null,
+        sanctuary: {
+          speciesId: sanctuarySpeciesId,
+          wardrobeLoaded,
+          activeWardrobeIds: [...activeWardrobeIds],
+          totalWardrobeNodes: wardrobeNodes.size,
+        },
         visible: isVisible(), reducedMotion, animating: Boolean(rafId),
         time: Number(time.toFixed(3)), frames, fpsLimit: SETTINGS.maxFps,
         gaze: {
@@ -382,11 +529,64 @@ function startCompanion() {
     } }),
   });
 
+  function loadWardrobeAssets() {
+    if (!performer || disposed || failed) return;
+    const headBone = performer.bones.get('head');
+    const bodyBone = performer.bones.get('body');
+    if (!headBone || !bodyBone) return;
+    const headMount = new T.Group();
+    headMount.name = 'SanctuaryHeadWardrobeMount';
+    const bodyMount = new T.Group();
+    bodyMount.name = 'SanctuaryBodyWardrobeMount';
+    headBone.add(headMount);
+    bodyBone.add(bodyMount);
+
+    new GLTFLoader().load(SETTINGS.wardrobeUrl, gltf => {
+      if (disposed || failed || !gltf?.scene) return;
+      for (const child of gltf.scene.children) {
+        const name = child.name;
+        if (!HEAD_NODES.has(name) && !BODY_NODES.has(name)) continue;
+        const cloned = child.clone(true);
+        cloned.traverse(sub => {
+          if (sub.isMesh && sub.material) {
+            sub.material = Array.isArray(sub.material)
+              ? sub.material.map(m => m.clone())
+              : sub.material.clone();
+          }
+        });
+        cloned.userData.baseY = cloned.position.y;
+        cloned.userData.baseRY = cloned.rotation.y;
+        cloned.userData.baseRZ = cloned.rotation.z;
+        cloned.visible = false;
+        if (HEAD_NODES.has(name)) headMount.add(cloned);
+        else bodyMount.add(cloned);
+        wardrobeNodes.set(name, cloned);
+      }
+      wardrobeLoaded = true;
+      syncSanctuaryAppearance();
+    }, undefined, () => {
+      // Wardrobe is an enhancement; never fail the core companion if unavailable.
+    });
+  }
+
   function installModel() {
     if (!pendingModel || !resourcesComplete || failed || disposed) return;
     const gltf = pendingModel;
     pendingModel = null;
     model = gltf.scene;
+    model.traverse(node => {
+      if (!node.isMesh || !node.material) return;
+      const mats = Array.isArray(node.material) ? node.material.map(m => m.clone()) : [node.material.clone()];
+      node.material = Array.isArray(node.material) ? mats : mats[0];
+      for (const mat of mats) {
+        baseSkinMaterials.push({
+          mat,
+          baseColor: mat.color ? mat.color.clone() : null,
+          baseEmissive: mat.emissive ? mat.emissive.clone() : new T.Color(0x000000),
+          baseRoughness: typeof mat.roughness === 'number' ? mat.roughness : 0.65,
+        });
+      }
+    });
     framing.add(model);
     model.updateMatrixWorld(true);
     const box = new T.Box3().setFromObject(model);
@@ -403,6 +603,8 @@ function startCompanion() {
     sourceClips = gltf.animations.map(clip => clip.name);
     performer.phase = phase;
     modelLoaded = true;
+    syncSanctuaryAppearance();
+    loadWardrobeAssets();
     resize();
   }
   const manager = new T.LoadingManager();

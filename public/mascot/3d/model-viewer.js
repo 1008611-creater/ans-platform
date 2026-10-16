@@ -8,7 +8,53 @@ const SETTINGS = Object.freeze({
   pixelRatio: 1.75,
   exposure: 0.98,
   clipFade: 0.2,
+  wardrobeUrl: new URL('./sanctuary-wardrobe.glb', import.meta.url).href,
 });
+const SPECIES_TINTS = Object.freeze({
+  mint_star:   { color: 0xffffff, emissive: 0x000000, emissiveIntensity: 0.0, roughnessDelta: 0.0 },
+  cyber_gold:  { color: 0xd4be98, emissive: 0x3b2306, emissiveIntensity: 0.16, roughnessDelta: -0.14 },
+  sakura_mochi:{ color: 0xffd0e2, emissive: 0x380c1e, emissiveIntensity: 0.12, roughnessDelta: 0.04 },
+  aurora_ice:  { color: 0xc8e4ff, emissive: 0x0b1f47, emissiveIntensity: 0.15, roughnessDelta: -0.08 },
+});
+const HEAD_NODES = new Set([
+  'species_cyber_horns', 'species_sakura_ears', 'species_aurora_crystals',
+  'headwear_starter_antenna', 'headwear_beret_cloud', 'headwear_cyber_visor',
+  'headwear_phd_mortarboard', 'headwear_crown_aurora',
+  'eyewear_gold_glasses', 'eyewear_pixel_shades', 'eyewear_star_monocle',
+]);
+const BODY_NODES = new Set([
+  'neckwear_starter_scarf', 'neckwear_boba_jetpack', 'neckwear_cyber_wings', 'neckwear_pioneer_cape',
+  'handheld_magic_wand', 'handheld_gold_keyboard', 'handheld_floating_grimoire',
+]);
+const SPECIES_HEAD_NODE = Object.freeze({
+  cyber_gold: 'species_cyber_horns',
+  sakura_mochi: 'species_sakura_ears',
+  aurora_ice: 'species_aurora_crystals',
+});
+const CANONICAL_NODE_MAP = Object.freeze({
+  starter_antenna: 'headwear_starter_antenna',
+  beret_cloud: 'headwear_beret_cloud',
+  cyber_visor: 'headwear_cyber_visor',
+  phd_mortarboard: 'headwear_phd_mortarboard',
+  crown_aurora: 'headwear_crown_aurora',
+  gold_glasses: 'eyewear_gold_glasses',
+  pixel_shades: 'eyewear_pixel_shades',
+  star_monocle: 'eyewear_star_monocle',
+  starter_scarf: 'neckwear_starter_scarf',
+  boba_jetpack: 'neckwear_boba_jetpack',
+  handheld_boba_jetpack: 'neckwear_boba_jetpack',
+  cyber_wings: 'neckwear_cyber_wings',
+  pioneer_cape: 'neckwear_pioneer_cape',
+  magic_wand: 'handheld_magic_wand',
+  gold_keyboard: 'handheld_gold_keyboard',
+  floating_grimoire: 'handheld_floating_grimoire',
+});
+function resolveWardrobeNodeId(rawId) {
+  if (!rawId || rawId === 'none' || rawId === 'none_head') return null;
+  if (CANONICAL_NODE_MAP[rawId]) return CANONICAL_NODE_MAP[rawId];
+  if (HEAD_NODES.has(rawId) || BODY_NODES.has(rawId)) return rawId;
+  return null;
+}
 const SOURCES = Object.freeze({
   original: { url: new URL('./original-dinosaur.glb', import.meta.url).href, label: '原始模型', rotationY: -Math.PI / 2 },
   animated: { url: new URL('./dinosaur.glb', import.meta.url).href, label: '原模型·骨骼动作', rotationY: 0 },
@@ -78,6 +124,55 @@ function startInspector() {
   const fadeOuts = new Map();
   const morphs = { Blink: [], Happy: [] };
   const closedImages = new WeakSet();
+  let wardrobeLoaded = false;
+  const wardrobeNodes = new Map();
+  const baseSkinMaterials = [];
+  let sanctuarySpeciesId = 'mint_star';
+  let activeWardrobeIds = [];
+
+  function readSanctuaryStorage() {
+    try {
+      const raw = localStorage.getItem('ans.mascot.sanctuary.v1');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  function syncSanctuaryAppearance(overrideState = null) {
+    if (disposed || failed || !model) return;
+    const st = overrideState || readSanctuaryStorage();
+    const speciesId = (st && SPECIES_TINTS[st.speciesId]) ? st.speciesId : 'mint_star';
+    sanctuarySpeciesId = speciesId;
+    const tint = SPECIES_TINTS[speciesId];
+    for (const entry of baseSkinMaterials) {
+      const { mat, baseColor, baseEmissive, baseRoughness } = entry;
+      if (mat.color && baseColor) mat.color.copy(baseColor).multiply(new T.Color(tint.color));
+      if (mat.emissive && baseEmissive) {
+        mat.emissive.copy(baseEmissive).add(new T.Color(tint.emissive));
+        mat.emissiveIntensity = tint.emissiveIntensity;
+      }
+      if (typeof mat.roughness === 'number' && typeof baseRoughness === 'number') {
+        mat.roughness = Math.max(0.12, Math.min(0.95, baseRoughness + tint.roughnessDelta));
+      }
+    }
+    const eq = st?.equipped || {
+      headwear: 'starter_antenna',
+      eyewear: 'none',
+      neckwear: 'starter_scarf',
+      handheld: 'none',
+      aura: 'aura_mint',
+    };
+    const nextActive = new Set();
+    if (SPECIES_HEAD_NODE[speciesId]) nextActive.add(SPECIES_HEAD_NODE[speciesId]);
+    for (const rawVal of Object.values(eq)) {
+      const resolved = resolveWardrobeNodeId(rawVal);
+      if (resolved) nextActive.add(resolved);
+    }
+    activeWardrobeIds = [...nextActive];
+    for (const [nodeName, nodeObj] of wardrobeNodes.entries()) {
+      nodeObj.visible = nextActive.has(nodeName);
+    }
+    requestFrame();
+  }
 
   function tellParent(type, details = {}) {
     parent.postMessage({ type, source, paused, ...details }, location.origin);
@@ -403,6 +498,10 @@ function startInspector() {
     currentClip = null;
     actions.clear();
     fadeOuts.clear();
+    wardrobeNodes.clear();
+    baseSkinMaterials.length = 0;
+    wardrobeLoaded = false;
+    activeWardrobeIds = [];
     morphs.Blink.length = 0;
     morphs.Happy.length = 0;
     boneCount = 0;
@@ -419,6 +518,8 @@ function startInspector() {
     renderer.renderLists?.dispose();
   }
 
+  const onSanctuarySync = () => syncSanctuaryAppearance();
+
   function receiveMessage(event) {
     if (event.origin !== location.origin || event.source !== parent) return;
     const data = event.data;
@@ -427,6 +528,7 @@ function startInspector() {
     if (data.event === 'view' && ['front', 'back', 'left', 'right'].includes(data.view)) setView(data.view);
     if (data.event === 'clip' && typeof data.name === 'string') playClip(data.name);
     if (data.event === 'pause' && typeof data.paused === 'boolean') setPaused(data.paused);
+    if (data.event === 'sanctuary') syncSanctuaryAppearance(data.state || null);
     if (data.event === 'state') reportState();
     if (data.event === 'background' && typeof data.color === 'string' && /^#(?:[\da-fA-F]{3}|[\da-fA-F]{6})$/.test(data.color)) {
       scene.background.set(data.color);
@@ -445,6 +547,9 @@ function startInspector() {
     renderer.dispose();
     removeEventListener('resize', resize);
     removeEventListener('message', receiveMessage);
+    removeEventListener('storage', onSanctuarySync);
+    removeEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
+    removeEventListener('ans:sanctuary-updated', onSanctuarySync);
     document.removeEventListener('visibilitychange', onVisibility);
     motionPreference.removeEventListener('change', onReducedMotion);
   }
@@ -467,6 +572,9 @@ function startInspector() {
   resizeObserver?.observe(stage);
   addEventListener('resize', resize);
   addEventListener('message', receiveMessage);
+  addEventListener('storage', onSanctuarySync);
+  addEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
+  addEventListener('ans:sanctuary-updated', onSanctuarySync);
   addEventListener('pagehide', dispose, { once: true });
   document.addEventListener('visibilitychange', onVisibility);
   motionPreference.addEventListener('change', onReducedMotion);
@@ -476,13 +584,19 @@ function startInspector() {
 
   Object.defineProperty(window, '__ANS_MODEL_INSPECTOR__', {
     configurable: true,
-    value: Object.freeze({ snapshot: () => ({
+    value: Object.freeze({ syncSanctuary: syncSanctuaryAppearance, snapshot: () => ({
       source, loaded, ready, failed, disposed, paused, view, currentClip, expression,
       frames, time: Number(elapsed.toFixed(3)), cameraPosition: camera.position.toArray(),
       cameraZoom: camera.zoom, bones: boneCount, meshes: meshCount,
       clips: [...actions.keys()],
       expressions: hasExpressions(), background: `#${scene.background.getHexString()}`,
       morphs: { Blink: blinkWeight, Happy: happyWeight, totalEyeClosure: blinkWeight + happyWeight },
+      sanctuary: {
+        speciesId: sanctuarySpeciesId,
+        wardrobeLoaded,
+        activeWardrobeIds: [...activeWardrobeIds],
+        totalWardrobeNodes: wardrobeNodes.size,
+      },
       actionWeights: Object.fromEntries([...actions].map(([name, action]) => [name, action.isScheduled() ? action.getEffectiveWeight() : 0])),
     }) }),
   });
@@ -520,10 +634,29 @@ function startInspector() {
     display.scale.setScalar(scale);
     display.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
     modelWidth = (framing.max.x - framing.min.x) * scale;
+    let headBone = null;
+    let bodyBone = null;
     model.traverse(node => {
-      if (node.isBone) boneCount += 1;
+      if (node.isBone) {
+        boneCount += 1;
+        const bName = node.userData?.name || node.name;
+        if (bName === 'head') headBone = node;
+        if (bName === 'body') bodyBone = node;
+      }
       if (!node.isMesh) return;
       meshCount += 1;
+      if (node.material) {
+        const mats = Array.isArray(node.material) ? node.material.map(m => m.clone()) : [node.material.clone()];
+        node.material = Array.isArray(node.material) ? mats : mats[0];
+        for (const mat of mats) {
+          baseSkinMaterials.push({
+            mat,
+            baseColor: mat.color ? mat.color.clone() : null,
+            baseEmissive: mat.emissive ? mat.emissive.clone() : new T.Color(0x000000),
+            baseRoughness: typeof mat.roughness === 'number' ? mat.roughness : 0.65,
+          });
+        }
+      }
       for (const name of Object.keys(morphs)) {
         const index = node.morphTargetDictionary?.[name];
         if (index !== undefined && node.morphTargetInfluences) morphs[name].push({ mesh: node, index });
@@ -537,6 +670,30 @@ function startInspector() {
       });
     }
     loaded = true;
+    syncSanctuaryAppearance();
+    if (headBone && bodyBone) {
+      const activeToken = loadToken;
+      const headMount = new T.Group();
+      headMount.name = 'SanctuaryHeadWardrobeMount';
+      const bodyMount = new T.Group();
+      bodyMount.name = 'SanctuaryBodyWardrobeMount';
+      headBone.add(headMount);
+      bodyBone.add(bodyMount);
+      new GLTFLoader().load(SETTINGS.wardrobeUrl, wGltf => {
+        if (disposed || failed || activeToken !== loadToken || !wGltf?.scene) return;
+        for (const child of wGltf.scene.children) {
+          const name = child.name;
+          if (!HEAD_NODES.has(name) && !BODY_NODES.has(name)) continue;
+          const cloned = child.clone(true);
+          cloned.visible = false;
+          if (HEAD_NODES.has(name)) headMount.add(cloned);
+          else bodyMount.add(cloned);
+          wardrobeNodes.set(name, cloned);
+        }
+        wardrobeLoaded = true;
+        syncSanctuaryAppearance();
+      }, undefined, () => {});
+    }
     if (actions.size) playClip(actions.has('Idle') ? 'Idle' : actions.keys().next().value);
     if (hasExpressions()) setExpression(morphs.Blink.length ? 'auto' : 'open');
     updateAvailableControls();
