@@ -1,15 +1,17 @@
 import { randomUUID } from "node:crypto";
 import type { DbTransaction } from "@/lib/db";
 import type { ApicCharge } from "./apic-billing";
+import { receiptToMemberPoints } from "./model-billing-policy";
 import { QuotaError, normalizeQuotaAmount } from "@/server/quota/service";
 
 export async function recordGatewayEvidence(tx: DbTransaction, owner: string, requestId: string,
  command: { kind: "VERIFIED"; charge: ApicCharge; billedPoints: number } | { kind: "REJECTED"; status: number; upstreamRequestId?: string } | { kind: "WAIVER"; actorId: string }) {
- const task = await tx.apiComputeRequest.findFirstOrThrow({ where: { id: requestId, userId: owner, provider: "apic-codex" }, select: { policyVersion: true } });
+ const task = await tx.apiComputeRequest.findFirstOrThrow({ where: { id: requestId, userId: owner, provider: "apic-codex" }, select: { policyVersion: true, price: true } });
  const charge = command.kind === "VERIFIED" ? command.charge : null;
  const billed = command.kind === "VERIFIED" ? normalizeQuotaAmount(command.billedPoints).toFixed(6) : "0.000000";
- const upstream = charge ? normalizeQuotaAmount(charge.points).toFixed(6) : null;
- const coveredMicros = charge ? BigInt(Math.round(normalizeQuotaAmount(charge.points)*1e6)) - BigInt(Math.round(normalizeQuotaAmount(command.kind === "VERIFIED" ? command.billedPoints : 0)*1e6)) : null;
+ const converted = charge ? receiptToMemberPoints(task.price, charge.quota) : null;
+ const upstream = converted === null ? null : normalizeQuotaAmount(converted).toFixed(6);
+ const coveredMicros = charge ? BigInt(Math.round(normalizeQuotaAmount(converted!)*1e6)) - BigInt(Math.round(normalizeQuotaAmount(command.kind === "VERIFIED" ? command.billedPoints : 0)*1e6)) : null;
  if (coveredMicros !== null && coveredMicros < BigInt(0)) throw new Error("INVALID_BILLED_CHARGE");
  const covered = coveredMicros === null ? null : `${coveredMicros / BigInt(1000000)}.${(coveredMicros % BigInt(1000000)).toString().padStart(6,"0")}`;
  const rawRequestId = charge?.requestId ?? (command.kind === "REJECTED" ? command.upstreamRequestId : undefined);

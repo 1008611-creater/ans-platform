@@ -10,7 +10,7 @@ function setup(body: unknown, status=200) {
 describe("APIC final charge",()=>{
   it("uses final quota rather than recalculating token prices",async()=>{
     const fetchMock=setup({requestId:"request0001",quota:960});
-    await expect(readApicCharge("request0001")).resolves.toEqual({requestId:"request0001",quota:960,points:0.00192});
+    await expect(readApicCharge("request0001")).resolves.toEqual({requestId:"request0001",quota:960,points:0.00192,usdCredit:0.00192});
     expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe("Bearer test-secret");
   });
   it("rejects another request's fee",async()=>{setup({requestId:"request0002",quota:960});await expect(readApicCharge("request0001")).rejects.toThrow("APIC_BILLING_INVALID");});

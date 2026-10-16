@@ -162,6 +162,8 @@ export async function callModelTextWithUsage(args: {
   idempotencyKey?: string;
 }): Promise<ModelTextResult> {
   if (isApicTarget(args.target.baseUrl) && Buffer.byteLength(args.prompt, "utf8") > 112000) throw new ModelClientError("MODEL_INPUT_TOO_LARGE", "MODEL_INPUT_TOO_LARGE");
+  if (isApicTarget(args.target.baseUrl) && process.env.ANS_UNIFIED_POINTS_ENABLED !== "1")
+    throw new ModelClientError("METERED_ACCOUNT_REQUIRED", "METERED_ACCOUNT_REQUIRED");
   if (isApicTarget(args.target.baseUrl) && process.env.ANS_UNIFIED_POINTS_ENABLED === "1") {
     if (!args.userId || !args.chargeRef || !args.idempotencyKey) throw new ModelClientError("METERED_ACCOUNT_REQUIRED", "METERED_ACCOUNT_REQUIRED");
     await reconcileCodexCharges(args.userId);
@@ -181,12 +183,16 @@ export async function callModelTextWithUsage(args: {
     }
     const body = await response.json() as { output?: { type?: string; content?: { type?: string; text?: string }[] }[]; usage?: unknown };
     const text = (body.output ?? []).filter(item => item.type === "message").flatMap(item => item.content ?? []).filter(item => item.type === "output_text").map(item => item.text ?? "").join("");
-    const record = await db.apiComputeRequest.findFirst({ where: { id: response.headers.get("x-ans-request-id") || "", userId: args.userId, state: "SETTLED" }, select: { settledPoints: true, outcome: true } });
+    const record = await db.apiComputeRequest.findFirst({ where: { id: response.headers.get("x-ans-request-id") || "", userId: args.userId, state: "SETTLED" }, select: { settledPoints: true, outcome: true, billingEvidence: { where: { kind: "VERIFIED" }, select: { upstreamQuota: true }, take: 1 } } });
     if (!record || record.settledPoints === null || !record.outcome) throw new ModelClientError("MODEL_BILLING_PENDING", "MODEL_BILLING_PENDING");
     // A malformed/empty output still incurred verified upstream cost; never refund it here.
     if (!text) throw new ModelClientError("MODEL_EMPTY_OUTPUT", "MODEL_EMPTY_OUTPUT");
+    const receiptQuota = record.billingEvidence?.[0]?.upstreamQuota;
     return { text: text.slice(0, MAX_MODEL_OUTPUT), usage: parseUsage(body.usage), metered: true,
-      charge: { requestId: record.outcome, points: Number(record.settledPoints), quota: Math.round(Number(record.settledPoints) * 500000) } };
+      ...(receiptQuota !== undefined && receiptQuota !== null ? { charge: {
+        requestId: record.outcome, quota: Number(receiptQuota), usdCredit: Number(receiptQuota) / 500000,
+        points: Number(receiptQuota) / 500000, memberPoints: Number(record.settledPoints),
+      } } : {}) };
   }
   const timeoutMs = args.timeoutMs ?? MODEL_TIMEOUT_MS;
   const initial = await post(args.target, args.prompt, false, timeoutMs, args.signal, args.reasoningEffort, async (response) => {

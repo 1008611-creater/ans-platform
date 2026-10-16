@@ -14,6 +14,7 @@ import { parseSkillFiles, serializeSkillFiles, sanitizeFilename, DEFAULT_SKILL_F
 import { officialWorkflowIds } from "@/contracts/projects";
 import { runProjectPack, runProjectWorkflow, ProjectServiceError } from "@/server/projects/service";
 import appConfig from "@/../prompts.config";
+import { blockUnmeteredConsumerAI } from "@/server/integrations/legacy-consumer-ai";
 import {
   mcpGeneralLimiter,
   mcpToolCallLimiter,
@@ -734,6 +735,14 @@ function createServer(options: ServerOptions = {}) {
       if (!authenticatedUser) {
         return {
           content: [{ type: "text" as const, text: JSON.stringify({ error: "Authentication required. Please provide an API key." }) }],
+          isError: true,
+        };
+      }
+
+      const pointsBoundary = blockUnmeteredConsumerAI();
+      if (pointsBoundary) {
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(await pointsBoundary.json()) }],
           isError: true,
         };
       }

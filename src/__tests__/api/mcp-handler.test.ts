@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock all heavy dependencies before importing the route handlers.
 vi.mock("@/lib/db", () => ({
@@ -25,7 +25,8 @@ vi.mock("@/lib/public-identity", () => ({
 // 来切换 feature flag：模块注册表的失效时机与动态 import 存在竞态，会让同一个
 // 用例偶发拿到旧配置（表现为 404 变成 SDK 的 406）。路由在调用时才读取
 // `appConfig.features.mcp`，因此改写同一个对象即可确定性地覆盖两种分支。
-const { appConfigState, projectServiceMocks } = vi.hoisted(() => ({
+const { appConfigState, projectServiceMocks, improveMock } = vi.hoisted(() => ({
+  improveMock: vi.fn(),
   appConfigState: { features: { mcp: true } },
   projectServiceMocks: { runProjectPack: vi.fn(), runProjectWorkflow: vi.fn() },
 }));
@@ -33,6 +34,8 @@ const { appConfigState, projectServiceMocks } = vi.hoisted(() => ({
 vi.mock("@/../prompts.config", () => ({
   default: appConfigState,
 }));
+
+vi.mock("@/lib/ai/improve-prompt", () => ({ improvePrompt: improveMock }));
 
 vi.mock("@/server/projects/service", () => ({
   ...projectServiceMocks,
@@ -63,6 +66,8 @@ describe("MCP API route - HTTP method routing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+
+  afterEach(() => vi.unstubAllEnvs());
 
   describe("GET requests", () => {
     it("should return 405 Method Not Allowed per MCP Streamable HTTP spec", async () => {
@@ -223,4 +228,40 @@ describe("MCP API route - HTTP method routing", () => {
     expect(projectServiceMocks.runProjectPack).not.toHaveBeenCalled();
   });
 
+});
+
+describe("MCP improve prompt authoritative points boundary", () => {
+  beforeEach(() => {
+    vi.clearAllMocks(); vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1");
+    vi.mocked(isValidApiKeyFormat).mockReturnValue(true);
+    vi.mocked(db.user.findUnique).mockResolvedValue({ id: "improve-member", username: "member", mcpPromptsPublicByDefault: false } as never);
+    improveMock.mockResolvedValue({ improved: "legacy improved" });
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  const call = (apiKey?: string) => mcpRoute.POST(new Request("https://ans.example.invalid/api/mcp", {
+    method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json, text/event-stream", ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}) },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "improve_prompt", arguments: { prompt: "fixture prompt" } } }),
+  }));
+
+  it("returns a tool error before importing or invoking the unmetered provider", async () => {
+    const response = await call("fixture-unified-improve-key");
+    const rpc = await response.json();
+    expect(response.status).toBe(200); expect(rpc.result.isError).toBe(true);
+    expect(JSON.parse(rpc.result.content[0].text)).toEqual({ error: "POINTS_INTEGRATION_REQUIRED" });
+    expect(improveMock).not.toHaveBeenCalled();
+  });
+  it("retains the authenticated-tool boundary", async () => {
+    const response = await call(); const rpc = await response.json();
+    expect(rpc.result.isError).toBe(true);
+    expect(JSON.parse(rpc.result.content[0].text).error).toContain("Authentication required");
+    expect(improveMock).not.toHaveBeenCalled();
+  });
+  it("keeps legacy MCP behavior on non-unified installations", async () => {
+    vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "0");
+    const response = await call("fixture-legacy-improve-key"); const rpc = await response.json();
+    expect(rpc.result.isError).toBeUndefined();
+    expect(JSON.parse(rpc.result.content[0].text)).toEqual({ improved: "legacy improved" });
+    expect(improveMock).toHaveBeenCalledWith({ prompt: "fixture prompt", outputType: "text", outputFormat: "text" });
+  });
 });

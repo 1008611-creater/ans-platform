@@ -1229,6 +1229,10 @@
     }
   },
   "apiKey": {
+    "spendWarning": "此密钥也能消耗你的 ANS 积分。仅在自己信任的客户端使用，不要发给他人或提交到代码仓库。",
+    "showKey": "显示密钥",
+    "hideKey": "隐藏密钥",
+    "copyKey": "复制密钥",
     "title": "MCP API 密钥",
     "description": "生成 API 密钥以通过 MCP 保存提示词并访问您的私有提示词。",
     "yourApiKey": "您的 API 密钥",

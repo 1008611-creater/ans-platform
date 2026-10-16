@@ -1,0 +1,20 @@
+{
+  "containerId": "fb6bb452871029943416aa1cad3bfda0154aeeac0d6ec447395777896c5a6858",
+  "database": "ans_compute_benefits_20261016",
+  "copiedProductionData": false,
+  "createdService": false,
+  "passed": true,
+  "migrations": 93,
+  "migrationSha256": "0497219730859352c5db00befc19eaa216563cdb289464353c9b108cdca1f40b",
+  "assertions": [
+    "official USD gift settles through real verified receipt without paid wallet debit",
+    "official charge capped at reservation; platform excess retained",
+    "explicit nonexecution restores original model gift hold",
+    "wrong owner cross-model expired holds, missing questionnaire, ledger drift and renewal rejected",
+    "nullable settled released amounts and nullable approval reviewNote rejected",
+    "forged settlement amount and unbound reservation denied",
+    "authorized signup approval source, Astra Sol share pool, receipt .16 undone once; paid wallet unchanged",
+    "grant lifetime exactly 720 hours from immutable database timestamps"
+  ],
+  "cleanup": true
+}

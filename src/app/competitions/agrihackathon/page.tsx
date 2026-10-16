@@ -36,6 +36,7 @@ export default async function AgriHackathonPage() {
   const onsite = await getTranslations("product.agriOnsite");
   const management = await getTranslations("product.agriWorkspace");
   const rankings = await getTranslations("product.agriRankings");
+  const benefits = await getTranslations("product.computeBenefits");
   const competition = await findAgriHackathonCompetition();
   const guide = await readAgriPublicGuide().catch(() => null);
 

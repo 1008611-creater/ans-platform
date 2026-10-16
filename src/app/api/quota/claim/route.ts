@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { benefitsEnabled } from "@/server/compute-benefits/service";
 import { db } from "@/lib/db";
 import { assertRequestActor, readSameOriginJson, HttpRequestError } from "@/server/http/json";
 
@@ -25,6 +26,8 @@ export async function POST(request: Request) {
     if (error instanceof HttpRequestError) return NextResponse.json({ error: error.code }, { status: error.status });
     throw error;
   }
+
+  if (benefitsEnabled()) return NextResponse.json({ error: "QUESTIONNAIRE_REQUIRED", href: "/workspace/benefits" }, { status: 409 });
 
   try {
     const result = await db.$transaction(async (tx) => {

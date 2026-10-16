@@ -22,3 +22,9 @@ it("refreshes only finished parents after late settlement and never makes active
   await refreshMeteredParentCost(tx, "member", { parent: { type: "workflow_run", id: "run1" } });
   expect(updateMany).toHaveBeenCalledWith({ where: { id: "run1", userId: "member", status: { in: ["SUCCEEDED", "FAILED", "CANCELLED"] } }, data: { costPoints: 0.02 } });
 });
+
+it("keeps gift holds out of the paid workflow cost total",async()=>{
+ const price={benefitFunding:{version:"official-usd-gift-v1",grantId:"11111111-1111-4111-8111-111111111111",reservedUsdMicros:"1000000"}};
+ const findMany=vi.fn().mockResolvedValue([{state:"RUNNING",authorizedPoints:10,settledPoints:null,price},{state:"SETTLED",authorizedPoints:10,settledPoints:0,price}]);
+ expect(await readMeteredRunCost({apiComputeRequest:{findMany}} as unknown as DbTransaction,"member",{type:"run",id:"run1"})).toEqual({settledPoints:0,pendingPoints:0,requestCount:2});
+});
