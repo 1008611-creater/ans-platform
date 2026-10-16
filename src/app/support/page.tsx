@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useBranding } from "@/components/providers/branding-provider";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ExternalLink, MessageCircleQuestion, ChevronDown } from "lucide-react";
+import { ExternalLink, MessageCircleQuestion, ChevronDown, Activity, BookOpen, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const GITHUB_ISSUE_BASE_URL = "https://github.com/1008611-creater/ans-platform/issues/new";
@@ -98,22 +97,17 @@ function SupportForm({ t }: SupportFormProps) {
 }
 
 export default function SupportPage() {
-  const branding = useBranding();
   const t = useTranslations("support");
 
-  if (branding.useCloneBranding) {
-    redirect("/");
-  }
-
   const faqItems = [
-    { question: t("faq.whatIsPrompt.question"), answer: t("faq.whatIsPrompt.answer") },
-    { question: t("faq.whyPromptsMatter.question"), answer: t("faq.whyPromptsMatter.answer") },
     { question: t("faq.whatIsPromptschat.question"), answer: t("faq.whatIsPromptschat.answer") },
     { question: t("faq.howToUse.question"), answer: t("faq.howToUse.answer") },
-    { question: t("faq.license.question"), answer: t("faq.license.answer") },
-    { question: t("faq.selfHost.question"), answer: t("faq.selfHost.answer") },
-    { question: t("faq.verification.question"), answer: t("faq.verification.answer") },
     { question: t("faq.aiCredits.question"), answer: t("faq.aiCredits.answer") },
+    { question: t("faq.license.question"), answer: t("faq.license.answer") },
+    { question: t("faq.whatIsPrompt.question"), answer: t("faq.whatIsPrompt.answer") },
+    { question: t("faq.whyPromptsMatter.question"), answer: t("faq.whyPromptsMatter.answer") },
+    { question: t("faq.verification.question"), answer: t("faq.verification.answer") },
+    { question: t("faq.selfHost.question"), answer: t("faq.selfHost.answer") },
     { question: t("faq.attribution.question"), answer: t("faq.attribution.answer") },
   ];
 
@@ -122,6 +116,26 @@ export default function SupportPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
         <p className="text-muted-foreground">{t("description")}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/status" className="inline-flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5" />
+              <span>/status</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/vibe-hub" className="inline-flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5" />
+              <span>VibeHub</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/privacy" className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>/privacy · /terms</span>
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <section className="mb-10">

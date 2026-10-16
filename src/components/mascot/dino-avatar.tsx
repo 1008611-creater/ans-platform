@@ -149,7 +149,7 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   return <span className="ans-dino-avatar" aria-hidden="true">
     <Image src="/mascot/ans-mascot.png" width={88} height={88} alt="" className={animated ? "invisible" : ""} />
     {/* The fixed companion is already in view; lazy loading must not consume its ready timeout. */}
-    {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=voice-points-20261013-1" title="" tabIndex={-1} loading="eager" className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
+    {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=voice-points-20261013-1" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
   </span>;
 }
 

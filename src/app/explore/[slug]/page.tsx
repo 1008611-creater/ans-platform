@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
@@ -10,9 +11,11 @@ import { CatalogProjectDetail } from "@/components/catalog/project-detail";
 
 export const dynamic = "force-dynamic";
 
+const getRequestCatalog = cache(() => listPublishedCatalog());
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [catalog, t, locale] = await Promise.all([listPublishedCatalog(), getTranslations("product"), getLocale()]);
+  const [catalog, t, locale] = await Promise.all([getRequestCatalog(), getTranslations("product"), getLocale()]);
   const project = catalog.find(item => item.slug === slug);
   if (!project) notFound();
   return { title: catalogText(project, t, "title", locale), description: catalogText(project, t, "summary", locale) };
@@ -20,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CatalogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [catalog, session] = await Promise.all([listPublishedCatalog(), auth()]);
+  const [catalog, session] = await Promise.all([getRequestCatalog(), auth()]);
   const project = catalog.find(item => item.slug === slug);
   if (!project) notFound();
   const accountId = session?.user?.id ?? null;

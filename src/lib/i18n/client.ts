@@ -7,9 +7,15 @@ import { LOCALE_COOKIE } from "./config";
  * This updates the cookie and forces a hard navigation to apply the new locale
  */
 export function setLocale(locale: string): void {
+  const normalized = locale.startsWith("en") ? "en" : "zh";
   // Set cookie with 1 year expiry
-  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
-  
+  document.cookie = `${LOCALE_COOKIE}=${normalized}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  try {
+    window.localStorage?.setItem("vibehub:language", normalized);
+  } catch {
+    // Ignore storage quota or private mode restrictions
+  }
+
   // Force a hard navigation to ensure server re-renders with new locale
   // Using reload() to ensure proper refresh even with hash URLs
   window.location.reload();

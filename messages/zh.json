@@ -112,7 +112,19 @@
     "emailTaken": "该邮箱已被使用",
     "usernameTaken": "该用户名已被使用",
     "registrationFailed": "注册失败",
-    "githubAttributionHint": "使用 GitHub 登录，将您的贡献与开源社区关联"
+    "githubAttributionHint": "使用 GitHub 登录，将您的贡献与开源社区关联",
+    "forgotPassword": "忘记密码？",
+    "nickname": "昵称",
+    "nicknamePlaceholder": "你希望大家如何称呼你（无需真实姓名）",
+    "emailCode": "邮箱验证码",
+    "emailCodePlaceholder": "6 位验证码，10 分钟有效",
+    "sendCode": "发送验证码",
+    "sendingCode": "正在发送",
+    "resendCodeIn": "{seconds} 秒后重发",
+    "retryHumanVerification": "重新进行人机验证",
+    "humanVerificationRequiredHint": "请先完成下方人机验证，验证通过后即可发送验证码或提交注册",
+    "humanVerificationPassed": "人机验证已通过，可发送验证码或提交注册",
+    "humanVerificationStalled": "人机验证组件响应缓慢或被浏览器拦截，请点击「重新进行人机验证」或关闭广告拦截插件后刷新重试"
   },
   "prompts": {
     "title": "提示词",
@@ -1163,57 +1175,57 @@
     "confirmReject": "是的，拒绝"
   },
   "support": {
-    "title": "支持",
-    "description": "查找常见问题的答案或从我们的社区获得帮助。",
+    "title": "帮助与支持",
+    "description": "查找 ANS 平台常见问题的解答，或提交反馈与工单获取社区及工程团队支持。",
     "faq": {
       "title": "常见问题",
       "whatIsPrompt": {
-        "question": "什么是提示词？",
-        "answer": "提示词是您向AI模型（如ChatGPT、Claude、Gemini等）提供的指令或输入，用于引导其响应。这本质上是您与AI沟通您想要它做什么的方式。精心设计的提示词能够从AI系统获得更好、更有用的输出。"
+        "question": "什么是提示词（Prompt）与工作流（Workflow）？",
+        "answer": "提示词是向 AI 模型提供的结构化指令；而 ANS 工作流则把多步 Prompt、事实提取、视觉生成与模板渲染串联成可直接复用的工程流程，帮助你在几分钟内交付完整作品。"
       },
       "whyPromptsMatter": {
-        "question": "为什么提示词很重要？我不能随便问AI任何问题吗？",
-        "answer": "虽然高级AI模型可以很好地处理随意的问题，但在以下情况下提示词变得至关重要：\n\n• 在应用程序中通过API使用AI时——通常只有一次机会（\"一次性提示\"），没有来回对话\n• 使用需要更精确指令的较小、经济型模型时\n• 构建一致性和可靠性很重要的生产系统时\n\n优化的提示词帮助您获得更好的结果，节省令牌（和金钱），并创建更可靠的AI驱动应用程序。"
+        "question": "为什么要使用结构化工作流与商品工具？",
+        "answer": "相比零散地向聊天模型提问，结构化工作流在以下场景中至关重要：\n\n• 制作 3D 个人网站、开源项目 README 路演页或 AIGC 分镜时，确保排版与视觉风格稳定可控\n• 先免费编辑与预览，仅在明确确认模型调用时才消耗算力积分\n• 支持保存草稿 JSON 与导出 HTML，随时二次微调而不必重复付费生成"
       },
       "whatIsPromptschat": {
         "question": "ANS 是什么？",
-        "answer": "ANS 是一个社区驱动的平台，人们在这里分享、发现和收集AI提示词。四年多来，用户一直在这里分享他们的提示词优化技术。社区互相帮助改进提示词，学习与AI系统协作的新方法。"
+        "answer": "ANS（AI Native Studio）是面向高校创作者与开发者的 AI 共创与作品交付平台，集成了项目广场（Explore）、工作流与商品市场（Market）、VibeHub 交互设计知识库以及黑客松战队算力协作中心。"
       },
       "howToUse": {
-        "question": "如何使用这个平台的提示词？",
-        "answer": "只需浏览提示词，找到您喜欢的，然后复制它。然后您可以将它粘贴到您喜欢的AI工具（ChatGPT、Claude、Gemini等）中，或通过API在您的应用程序中使用它。许多提示词包含您可以在复制前自定义的变量。"
+        "question": "如何在 ANS 上开始制作我的第一个作品？",
+        "answer": "你可以从「浏览项目（/explore）」或「市场（/market）」挑选感兴趣的模板（例如 3D 个人网站），直接进入在线编辑器免费体验、修改文字与镜头，并在确认满意后导出 HTML 或登录保存到个人工作台。"
       },
       "license": {
-        "question": "我可以商业使用这些提示词吗？",
-        "answer": "是的！ANS 上的所有提示词都在CC0（Creative Commons Zero）许可证下发布，这意味着它们属于公共领域。您可以自由使用、修改和分发它们用于任何目的，包括商业用途，无需注明出处。"
+        "question": "我在 ANS 上制作的个人简历、作品与工作流版权归谁？",
+        "answer": "你对自己上传与创作的个人简历、3D 个人网站、私密工作流及参赛作品享有 100% 完整著作权与所有权。公开市场商品与开源项目拆解遵循各自标注的开源或许可协议，绝不会将你的个人作品强制纳入公共领域。"
       },
       "selfHost": {
-        "question": "我可以自托管这个平台吗？",
-        "answer": "当然可以！ANS 是完全开源的。您可以为您的团队或组织部署自己的私有实例。请查看我们的自托管文档了解设置说明。"
+        "question": "如何参加高校比赛并领取团队算力包？",
+        "answer": "前往「团队与比赛（/teams）」或「赛事中心（/competitions）」创建或加入战队，队长可在赛事算力周期开启后一键领取战队专属算力额度，供全队成员在私密工作流中共用。"
       },
       "verification": {
-        "question": "如何成为认证用户？",
-        "answer": "认证由管理员授予持续分享高质量提示词的用户。没有严格的规则——如果您为社区贡献了有价值的提示词，管理员可能会选择您为认证用户。专注于创建有用且精心制作的提示词，认可自然会到来。"
+        "question": "如何将我的真实项目分享到项目广场或作品集？",
+        "answer": "登录后点击右上角「+ 上传我的项目（/submit）」或进入「社区（/community）」，填写项目亮点数、在线预览链接或 GitHub 仓库地址，即可发布并获得社区成长经验（XP）。"
       },
       "aiCredits": {
-        "question": "AI预览生成积分如何运作？",
-        "answer": "每位用户默认每天获得3个AI生成积分。这些积分允许您使用AI为提示词生成预览图片、视频或音频。管理员可以根据需要调整个别用户的每日积分限制。"
+        "question": "ANS 算力积分（Points）是如何计费与退款的？",
+        "answer": "手动改字、切换预设模型、实时预览和导出 HTML/JSON 完全免费（0 积分）。只有当你主动发起 AI 形象生成、四视图准备或 AI 文案整理等任务并点击确认后才会预占积分；若上游任务失败或未完成，预占积分将自动原路退回。"
       },
       "attribution": {
-        "question": "如果提示词的署名有误怎么办？",
-        "answer": "如果您发现提示词上的署名不正确（例如，您是原作者但未被署名），请在我们的GitHub仓库中开一个issue。您可以使用下面的表单提交您的问题，我们会尽快审核并更正。"
+        "question": "如果遇到页面异常、验证码拦截或署名问题怎么办？",
+        "answer": "你可以先查看「系统与算力状态（/status）」，或使用下方表单直接在 GitHub 仓库提交 Issue，工程团队会第一时间跟进排查。"
       }
     },
     "contact": {
       "title": "需要更多帮助？",
-      "description": "如果您没有找到问题的答案，请填写下面的表单，我们将在GitHub上为您提供帮助。",
+      "description": "如果您没有找到问题的答案，请填写下面的表单，我们将在 GitHub 上为您提供支持。",
       "form": {
-        "title": "Issue标题",
-        "titlePlaceholder": "简要描述您的问题",
-        "description": "描述",
-        "descriptionPlaceholder": "请详细描述您的问题..."
+        "title": "问题标题",
+        "titlePlaceholder": "简要描述您遇到的问题或建议",
+        "description": "详细描述",
+        "descriptionPlaceholder": "请附上页面路径、操作步骤或截图说明..."
       },
-      "openIssue": "在GitHub上开Issue"
+      "openIssue": "在 GitHub 上提交反馈"
     }
   },
   "apiKey": {

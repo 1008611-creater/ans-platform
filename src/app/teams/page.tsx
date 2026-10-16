@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { PageHeading } from "@/components/layout/page-heading";
 import { Trophy } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -18,18 +18,23 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-const COMPETITION_STATUS: Record<string, { text: string; variant: "default" | "secondary" | "outline" }> = {
-  UPCOMING: { text: "即将开始", variant: "outline" },
-  ONGOING: { text: "进行中", variant: "default" },
-  ENDED: { text: "已结束", variant: "secondary" },
+const COMPETITION_STATUS: Record<string, { zh: string; en: string; variant: "default" | "secondary" | "outline" }> = {
+  UPCOMING: { zh: "即将开始", en: "Upcoming", variant: "outline" },
+  ONGOING: { zh: "进行中", en: "Ongoing", variant: "default" },
+  ENDED: { zh: "已结束", en: "Ended", variant: "secondary" },
 };
 
-const ROLE_LABEL: Record<string, string> = { OWNER: "队长", ADMIN: "管理员", MEMBER: "成员" };
+const ROLE_LABEL: Record<string, { zh: string; en: string }> = {
+  OWNER: { zh: "队长", en: "Owner" },
+  ADMIN: { zh: "管理员", en: "Admin" },
+  MEMBER: { zh: "成员", en: "Member" },
+};
 
 export default async function TeamsPage() {
-  const session = await auth();
-  const p = await getTranslations("product");
+  const [session, p, locale] = await Promise.all([auth(), getTranslations("product"), getLocale()]);
+  const isEn = locale.startsWith("en");
   const viewerId = session?.user?.id ?? null;
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
 
   const [mine, competitions] = await Promise.all([
     viewerId ? listMyTeams(viewerId) : Promise.resolve({ teams: [], invites: [] }),
@@ -42,18 +47,25 @@ export default async function TeamsPage() {
 
   return (
     <div className="ans-product-container ans-page-content ans-teams-page">
-      <PageHeading eyebrow="ANS 团队" title="组队参赛，平台给算力"
-        description="我们组织参加北京及全国高校的 AI、AIGC、黑客松赛事。平台负责组队、发放比赛算力包、沉淀作品。"
-        actions={<Button asChild variant="outline"><Link href="/competitions">{p("nav.competitions")}</Link></Button>} />
+      <PageHeading
+        eyebrow={isEn ? "ANS Teams" : "ANS 团队"}
+        title={isEn ? "Team Up & Claim Competition Compute" : "组队参赛，平台给算力"}
+        description={
+          isEn
+            ? "Join campus AI, AIGC, and hackathon competitions across universities. Form teams, claim shared compute grants, and ship real projects."
+            : "我们组织参加北京及全国高校的 AI、AIGC、黑客松赛事。平台负责组队、发放比赛算力包、沉淀作品。"
+        }
+        actions={<Button asChild variant="outline"><Link href="/competitions">{p("nav.competitions")}</Link></Button>}
+      />
 
       <section className="mb-12">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">我的团队</h2>
+          <h2 className="text-lg font-semibold">{isEn ? "My Teams" : "我的团队"}</h2>
           {viewerId ? (
             <CreateTeamForm />
           ) : (
             <Button asChild size="sm">
-              <Link href="/login?callbackUrl=/teams">登录后查看</Link>
+              <Link href="/login?callbackUrl=/teams">{isEn ? "Sign in to view" : "登录后查看"}</Link>
             </Button>
           )}
         </div>
@@ -61,14 +73,16 @@ export default async function TeamsPage() {
         {!viewerId ? (
           <Card className="border-dashed">
             <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              登录后可以创建团队、接受邀请并管理成员额度。
+              {isEn
+                ? "Sign in to create a team, accept invitations, and manage member compute allowances."
+                : "登录后可以创建团队、接受邀请并管理成员额度。"}
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-6">
             {mine.invites.length > 0 ? (
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold">待处理的邀请</h3>
+                <h3 className="text-sm font-semibold">{isEn ? "Pending Invitations" : "待处理的邀请"}</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {mine.invites.map((invite) => (
                     <Card key={invite.id} className="border-primary/40">
@@ -79,7 +93,9 @@ export default async function TeamsPage() {
                               {invite.team.name}
                             </Link>
                           </CardTitle>
-                          <Badge variant="outline">{ROLE_LABEL[invite.role] ?? invite.role}</Badge>
+                          <Badge variant="outline">
+                            {isEn ? ROLE_LABEL[invite.role]?.en ?? invite.role : ROLE_LABEL[invite.role]?.zh ?? invite.role}
+                          </Badge>
                         </div>
                         {invite.team.description ? (
                           <CardDescription className="line-clamp-2">{invite.team.description}</CardDescription>
@@ -97,7 +113,9 @@ export default async function TeamsPage() {
             {mine.teams.length === 0 ? (
               <Card className="border-dashed">
                 <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                  还没有加入团队。创建团队后可邀请同学一起参赛。
+                  {isEn
+                    ? "You haven't joined any team yet. Create a team to invite teammates and compete together."
+                    : "还没有加入团队。创建团队后可邀请同学一起参赛。"}
                 </CardContent>
               </Card>
             ) : (
@@ -112,7 +130,7 @@ export default async function TeamsPage() {
                           </Link>
                         </CardTitle>
                         <Badge variant={m.role === "OWNER" ? "default" : "secondary"}>
-                          {ROLE_LABEL[m.role] ?? m.role}
+                          {isEn ? ROLE_LABEL[m.role]?.en ?? m.role : ROLE_LABEL[m.role]?.zh ?? m.role}
                         </Badge>
                       </div>
                       {m.team.description ? (
@@ -120,8 +138,12 @@ export default async function TeamsPage() {
                       ) : null}
                     </CardHeader>
                     <CardContent className="space-y-1 pt-0 text-sm text-muted-foreground">
-                      <p>{m.team._count.members} 位成员</p>
-                      <p>我的团队额度 {m.quotaAllowance} 点 · 已用 {m.quotaUsed} 点</p>
+                      <p>{isEn ? `${m.team._count.members} members` : `${m.team._count.members} 位成员`}</p>
+                      <p>
+                        {isEn
+                          ? `Team allowance ${m.quotaAllowance} pts · Used ${m.quotaUsed} pts`
+                          : `我的团队额度 ${m.quotaAllowance} 点 · 已用 ${m.quotaUsed} 点`}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -133,34 +155,48 @@ export default async function TeamsPage() {
 
       <section>
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-          <Trophy className="h-4 w-4" /> 相关比赛
+          <Trophy className="h-4 w-4" /> {isEn ? "Partner & Campus Competitions" : "相关比赛"}
         </h2>
 
         {competitions.length === 0 ? (
           <Card className="border-dashed">
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              还没有登记比赛。管理员可在后台录入外部赛事信息。
+            <CardContent className="space-y-3 py-10 text-center text-sm text-muted-foreground">
+              <p>
+                {isEn
+                  ? "Official campus hackathons are hosted in the Competition Hub. External partner competitions will also appear here as they open."
+                  : "当前暂无外部合作赛事登记，您可前往「赛事中心」参与正在进行的官方黑客松与高校赛事。"}
+              </p>
+              {isAdmin && (
+                <p className="text-xs text-muted-foreground/80">
+                  {isEn ? "Admin note: External competitions can be added in the admin console." : "管理员提示：可在管理后台录入外部合作赛事信息。"}
+                </p>
+              )}
+              <div>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/competitions">{isEn ? "Go to Competition Hub (/competitions)" : "前往赛事中心 (/competitions)"}</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {competitions.map((c) => {
-              const st = COMPETITION_STATUS[c.status] ?? { text: c.status, variant: "outline" as const };
+              const st = COMPETITION_STATUS[c.status] ?? { zh: c.status, en: c.status, variant: "outline" as const };
               return (
                 <Card key={c.id}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-base">{c.title}</CardTitle>
-                      <Badge variant={st.variant}>{st.text}</Badge>
+                      <Badge variant={st.variant}>{isEn ? st.en : st.zh}</Badge>
                     </div>
                     {c.organizer ? (
-                      <CardDescription>主办：{c.organizer}</CardDescription>
+                      <CardDescription>{isEn ? `Organizer: ${c.organizer}` : `主办：${c.organizer}`}</CardDescription>
                     ) : null}
                   </CardHeader>
                   <CardContent className="flex items-center justify-between pt-0">
                     <span className="text-xs text-muted-foreground">
-                      {c.startsAt ? c.startsAt.toLocaleDateString("zh-CN") : "待定"}
-                      {c.endsAt ? " ~ " + c.endsAt.toLocaleDateString("zh-CN") : ""}
+                      {c.startsAt ? c.startsAt.toLocaleDateString(isEn ? "en-US" : "zh-CN") : isEn ? "TBD" : "待定"}
+                      {c.endsAt ? " ~ " + c.endsAt.toLocaleDateString(isEn ? "en-US" : "zh-CN") : ""}
                     </span>
                     {c.url ? (
                       <a
@@ -169,7 +205,7 @@ export default async function TeamsPage() {
                         rel="noopener noreferrer"
                         className="text-xs text-primary hover:underline"
                       >
-                        赛事详情
+                        {isEn ? "Event details" : "赛事详情"}
                       </a>
                     ) : null}
                   </CardContent>

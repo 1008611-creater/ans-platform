@@ -112,7 +112,19 @@
     "emailTaken": "Email is already taken",
     "usernameTaken": "Username is already taken",
     "registrationFailed": "Registration failed",
-    "githubAttributionHint": "Sign in with GitHub to link your contributions to the Open Source Community"
+    "githubAttributionHint": "Sign in with GitHub to link your contributions to the Open Source Community",
+    "forgotPassword": "Forgot password?",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "How should we call you (real name not required)",
+    "emailCode": "Email Verification Code",
+    "emailCodePlaceholder": "6-digit code, valid for 10 minutes",
+    "sendCode": "Send verification code",
+    "sendingCode": "Sending...",
+    "resendCodeIn": "Resend in {seconds}s",
+    "retryHumanVerification": "Retry human verification",
+    "humanVerificationRequiredHint": "Please complete the human verification below to enable sending the code and registering",
+    "humanVerificationPassed": "Human verification passed. You can now send the code or submit registration",
+    "humanVerificationStalled": "Human verification is taking longer than expected or was blocked by the browser. Click \"Retry human verification\" or disable content blockers and refresh."
   },
   "prompts": {
     "title": "Prompts",
@@ -1163,55 +1175,55 @@
     "confirmReject": "Yes, reject"
   },
   "support": {
-    "title": "Support",
-    "description": "Find answers to common questions or get help from our community.",
+    "title": "Help & Support",
+    "description": "Find answers to common questions about ANS or reach out to our engineering and community team.",
     "faq": {
       "title": "Frequently Asked Questions",
       "whatIsPrompt": {
-        "question": "What is a prompt?",
-        "answer": "A prompt is an instruction or input you give to an AI model (like ChatGPT, Claude, Gemini, etc.) to guide its response. It's essentially how you communicate what you want the AI to do. Well-crafted prompts lead to better, more useful outputs from AI systems."
+        "question": "What are Prompts and Workflows on ANS?",
+        "answer": "A prompt is a structured instruction for an AI model, while an ANS Workflow chains fact extraction, visual generation, and template rendering into a reusable pipeline so you can ship complete projects in minutes."
       },
       "whyPromptsMatter": {
-        "question": "Why do prompts matter? Can't I just ask the AI anything?",
-        "answer": "While advanced AI models can handle casual questions well, prompts become critical when:\n\n• Using AI via API in applications — you often get only one chance to get it right (\"one-shot prompting\"), with no back-and-forth dialogue\n• Working with smaller, cost-effective models that need more precise instructions\n• Building production systems where consistency and reliability matter\n\nOptimized prompts help you get better results, save tokens (and money), and create more reliable AI-powered applications."
+        "question": "Why use structured workflows and studio tools?",
+        "answer": "Compared with ad-hoc chat prompts, structured studio workflows matter when:\n\n• Building 3D personal websites, open-source README showcases, or AIGC storyboards with consistent layout quality\n• Editing and previewing for free before confirming any paid model execution\n• Exporting HTML and JSON drafts that you can tweak anytime without re-running paid tasks"
       },
       "whatIsPromptschat": {
         "question": "What is ANS?",
-        "answer": "ANS is a community-driven platform where people share, discover, and collect AI prompts. For over 4 years, users have been sharing their prompt optimization techniques here. The community helps each other improve their prompts and learn new approaches to working with AI systems."
+        "answer": "ANS (AI Native Studio) is an AI co-creation and project delivery platform for students, builders, and developers—combining Project Explore (/explore), Workflow & Studio Market (/market), VibeHub design knowledge, and Hackathon team compute grants."
       },
       "howToUse": {
-        "question": "How do I use prompts from this platform?",
-        "answer": "Simply browse the prompts, find one you like, and copy it. You can then paste it into your preferred AI tool (ChatGPT, Claude, Gemini, etc.) or use it in your applications via API. Many prompts include variables you can customize before copying."
+        "question": "How do I start building my first project on ANS?",
+        "answer": "Browse Projects (/explore) or the Market (/market) to pick a studio or workflow (such as the 3D Personal Website Studio), launch the interactive editor to customize text and camera stops for free, and export your HTML or sign in to save versions."
       },
       "license": {
-        "question": "Can I use these prompts commercially?",
-        "answer": "Yes! All prompts on ANS are released under the CC0 (Creative Commons Zero) license, which means they are in the public domain. You can use, modify, and distribute them freely for any purpose, including commercial use, without attribution."
+        "question": "Who owns the resumes, websites, and workflows I create on ANS?",
+        "answer": "You retain 100% ownership and copyright over your personal resumes, 3D personal websites, private workflows, and competition submissions. Public marketplace listings and open-source breakdowns follow the license specified by their authors—your personal work is never forced into the public domain."
       },
       "selfHost": {
-        "question": "Can I self-host this platform?",
-        "answer": "Absolutely! ANS is fully open source. You can deploy your own private instance for your team or organization. Check out our self-hosting documentation for setup instructions."
+        "question": "How do team competitions and compute grants work?",
+        "answer": "Visit Teams (/teams) or Competitions (/competitions) to create or join a team. Once an event's compute window opens, the team owner can claim shared team compute credits for private workflow runs."
       },
       "verification": {
-        "question": "How can I become a verified user?",
-        "answer": "Verification is granted by administrators to users who consistently share quality prompts. There are no strict rules — if you contribute valuable prompts to the community, an admin may select you as verified. Focus on creating helpful, well-crafted prompts and the recognition will follow."
+        "question": "How can I publish my own project to the Showcase or Explore?",
+        "answer": "Sign in and click '+ Submit Project' (/submit) or visit the Community Hub (/community) to share your project highlights, live preview URL, or GitHub repository and earn community XP."
       },
       "aiCredits": {
-        "question": "How do AI preview generation credits work?",
-        "answer": "Each user receives 3 AI generation credits per day by default. These credits allow you to generate preview images, videos, or audio for your prompts using AI. Administrators can adjust the daily credit limit for individual users if needed."
+        "question": "How do ANS compute points and refunds work?",
+        "answer": "Manual text edits, preset switching, live previews, and HTML/JSON exports are completely free (0 points). Compute points are only reserved after you explicitly confirm a paid AI task (such as 3D avatar generation, four-view preparation, or AI copywriting) and are automatically refunded if an upstream task fails."
       },
       "attribution": {
-        "question": "What if the attribution on a prompt is wrong?",
-        "answer": "If you notice incorrect attribution on a prompt (for example, if you're the original author but not credited), please open an issue on our GitHub repository. You can use the form below to submit your issue, and we'll review and correct it as soon as possible."
+        "question": "What if I encounter a page issue, verification block, or attribution error?",
+        "answer": "Check live service health on /status first, or use the form below to open an issue on our GitHub repository so the engineering team can investigate promptly."
       }
     },
     "contact": {
       "title": "Need More Help?",
-      "description": "If you couldn't find an answer to your question, fill out the form below and we'll help you on GitHub.",
+      "description": "If you couldn't find an answer above, fill out the form below to open a support ticket on GitHub.",
       "form": {
         "title": "Issue Title",
-        "titlePlaceholder": "Brief summary of your issue or question",
+        "titlePlaceholder": "Brief summary of your issue or suggestion",
         "description": "Description",
-        "descriptionPlaceholder": "Please describe your issue or question in detail..."
+        "descriptionPlaceholder": "Please include the page URL, steps to reproduce, or details..."
       },
       "openIssue": "Open GitHub Issue"
     }
