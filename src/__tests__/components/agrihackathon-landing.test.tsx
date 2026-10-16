@@ -74,7 +74,7 @@ it("renders the 5-step unified competition loop and direct compute credit CTA", 
   expect(screen.getByRole("link", { name: zh.agriHackathon.claimCompute })).toHaveAttribute("href", "/workspace/credits");
   expect(screen.getByRole("heading", { name: zh.agriHackathon.pipelineTitle })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.compute.cta })).toHaveAttribute("href", "/workspace/credits");
-  expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.submit.cta })).toHaveAttribute("href", "/competitions/agrihackathon/submissions");
+  for (const link of screen.getAllByRole("link", { name: zh.agriHackathon.pipeline.submit.cta })) expect(link).toHaveAttribute("href", "/competitions/agrihackathon/submissions");
   expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.star.cta })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
   expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.ranking.cta })).toHaveAttribute("href", "/competitions/agrihackathon/showcase");
 });

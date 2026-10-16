@@ -44,6 +44,25 @@ describe("project market account and commands", () => {
     fireEvent.click(screen.getByRole("button", { name: /star 7/ })); await act(async () => {}); fireEvent.click(screen.getByRole("button", { name: /star 7/ })); await act(async () => {});
     expect(m.request.mock.calls.map(call => call[2])).toEqual([{ starred: true }, { starred: true }]); expect(screen.getByRole("button", { name: /starred 9/ })).toHaveAttribute("aria-pressed", "true");
   });
+  it("uses one click on a previous Star to cast its event vote, then permits cancellation", async () => {
+    m.request.mockResolvedValueOnce({ starCount: 7, starred: true, eventVote: { open: true, eligible: true, voted: false } })
+      .mockResolvedValueOnce({ starCount: 7, starred: true, eventVote: { open: true, eligible: true, voted: true } })
+      .mockResolvedValueOnce({ starCount: 7, starred: true, eventVote: { open: true, eligible: true, voted: true } })
+      .mockResolvedValueOnce({ starCount: 6, starred: false, eventVote: { open: true, eligible: true, voted: false } });
+    render(wrap(<MarketStar listingId="listing" initialCount={7} initialStarred/>));
+    fireEvent.click(screen.getByRole("button", { name: /starred 7/ })); await act(async () => {});
+    expect(m.request.mock.calls.map(call => [call[1], call[2]])).toEqual([["GET", undefined], ["PUT", { starred: true }]]);
+    fireEvent.click(screen.getByRole("button", { name: /starred 7/ })); await act(async () => {});
+    expect(m.request.mock.calls[3][2]).toEqual({ starred: false });
+    expect(screen.getByRole("button", { name: /confirmVote 6/ })).toHaveAttribute("aria-pressed", "false");
+  });
+  it("does not turn an own-team or closed-window Star action into a new vote", async () => {
+    m.request.mockResolvedValueOnce({ starCount: 7, starred: true, eventVote: { open: true, eligible: false, voted: false } })
+      .mockResolvedValueOnce({ starCount: 6, starred: false });
+    render(wrap(<MarketStar listingId="listing" initialCount={7} initialStarred/>));
+    fireEvent.click(screen.getByRole("button", { name: /starred 7/ })); await act(async () => {});
+    expect(m.request.mock.calls[1][2]).toEqual({ starred: false });
+  });
   it("sends original cover bytes as FormData with the current actor and no JSON content-type", async () => {
     m.fetch.mockResolvedValue({ ok: true, json: async () => ({ ok: true, data: { url: "https://ans.cauai.fun/media/cover.png" } }) }); render(wrap(<Upload/>)); fireEvent.click(screen.getByRole("button", { name: "upload" })); await act(async () => {});
     const options = m.fetch.mock.calls[0][1]; expect(options.headers).toEqual({ "x-ans-actor": "buyer" }); expect(options.body).toBeInstanceOf(FormData); const file = options.body.get("file") as File; expect(file.name).toBe("cover.png"); expect(file.size).toBe(8); expect(m.push).toHaveBeenCalledWith("https://ans.cauai.fun/media/cover.png");

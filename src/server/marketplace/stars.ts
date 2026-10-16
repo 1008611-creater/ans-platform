@@ -1,4 +1,4 @@
-import { lockAgriPopularityForListing, syncAgriPopularityStar } from "@/server/competitions/agrihackathon/popularity";
+import { lockAgriPopularityForListing, readAgriPopularityStarState, syncAgriPopularityStar } from "@/server/competitions/agrihackathon/popularity";
 import type { DbTransaction } from "@/lib/db";
 import { marketStarInputSchema } from "@/contracts/marketplace";
 import { MarketRuleError } from "@/domain/marketplace/order";
@@ -17,7 +17,8 @@ async function starState(tx: DbTransaction, listingId: string, userId?: string) 
     tx.marketListingStar.count({ where: { listingId } }),
     userId ? tx.marketListingStar.findUnique({ where: { userId_listingId: { userId, listingId } }, select: { id: true } }) : Promise.resolve(null),
   ]);
-  return { starCount, starred: Boolean(star) };
+  const eventVote = userId ? await readAgriPopularityStarState(tx, listingId, userId) : undefined;
+  return { starCount, starred: Boolean(star), ...(eventVote ? { eventVote } : {}) };
 }
 
 export async function getMarketListingStar(listingId: string, userId?: string) {

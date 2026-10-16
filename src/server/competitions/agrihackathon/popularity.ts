@@ -60,7 +60,24 @@ export async function assertAgriListingRevision(tx: DbTransaction,listingId: str
   const [wall]=await tx.$queryRaw<Array<{id:string}>>`SELECT id FROM agri_wall_entries WHERE "listingId"=${listingId} LIMIT 1`;
   if (wall && (payload.category!=="competition" || payload.subcategory!=="agri-wall" || payload.priceMinor!==0 || payload.fulfillment!=="resource" || payload.execution || payload.computeIncluded || payload.pricingTiers?.length)) wallFailure("AGRI_WALL_CATEGORY_LOCKED");
 }
-/** An existing pre-window Star only enters the round when the visitor confirms it during the window. */
+export interface AgriPopularityStarState { open: boolean; eligible: boolean; voted: boolean }
+/** Read-only metadata for the one Star action. Reading never backfills pre-window Stars. */
+export async function readAgriPopularityStarState(tx: DbTransaction, listingId: string, userId: string): Promise<AgriPopularityStarState | undefined> {
+  const [state] = await tx.$queryRaw<AgriPopularityStarState[]>`SELECT
+    (r."frozenAt" IS NULL AND clock_timestamp()>=r."opensAt" AND clock_timestamp()<r."closesAt") AS open,
+    (NOT u.flagged AND u."deletedAt" IS NULL AND l."sellerId"<>${userId}
+      AND NOT EXISTS(SELECT 1 FROM team_members tm WHERE tm."teamId"=tc."teamId" AND tm."userId"=${userId} AND tm.status='ACTIVE')
+      AND NOT EXISTS(SELECT 1 FROM agri_official_roster_members m JOIN agri_official_rosters roster ON roster.id=m."rosterId" WHERE roster."teamCompetitionId"=tc.id AND m."userId"=${userId})) AS eligible,
+    EXISTS(SELECT 1 FROM agri_popularity_votes v WHERE v."roundId"=r.id AND v."wallEntryId"=w.id AND v."userId"=${userId}) AS voted
+    FROM agri_wall_entries w JOIN agri_popularity_rounds r ON r."competitionId"=w."competitionId"
+    JOIN team_competitions tc ON tc.id=w."teamCompetitionId" JOIN market_listings l ON l.id=w."listingId"
+    JOIN market_listing_versions lv ON lv."listingId"=l.id AND lv.version=l."publishedVersion"
+    JOIN users u ON u.id=${userId}
+    WHERE w."listingId"=${listingId} AND l.status='PUBLISHED' AND lv."reviewedAt" IS NOT NULL
+      AND lv.payload->>'category'='competition' AND lv.payload->>'subcategory'='agri-wall' LIMIT 1`;
+  return state;
+}
+/** The actual OPEN-window Star write casts a vote, including an explicit repeat of an older Star. */
 export async function syncAgriPopularityStar(tx: DbTransaction,listingId: string,userId: string,starred: boolean) {
   const rounds=await lockAgriPopularityForListing(tx,listingId);
   for (const round of rounds) {

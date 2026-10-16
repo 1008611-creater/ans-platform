@@ -200,23 +200,34 @@ describe("official roster and final baseline", () => {
 
 
 describe("wall publication requirement", () => {
-  it("blocks formal submission without a wall while keeping drafts usable", async () => {
+  it("submits an unbound project with wall sync enabled by default", async () => {
     detail.wall = null;
     await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
-    expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
+    expect(screen.getByRole("button", { name: copy.submit })).toBeEnabled();
     expect(screen.getByRole("button", { name: copy.save })).toBeEnabled();
-    expect(screen.getByText(wallMessages.submissionWallMissing)).toBeInTheDocument();
+    expect(screen.getByLabelText(copy.syncToWall)).toBeChecked();
+    fireEvent.click(screen.getByRole("button", { name: copy.submit }));
+    await screen.findByText(copy.submitted);
+    const commands = fetchMock.mock.calls.filter(([,init]) => init?.body).map(([,init]) => JSON.parse(String(init!.body)));
+    expect(commands.find(row => row.action === "submit")).toMatchObject({ syncToAgriWall: true });
   });
   it("preselects the free imported wall version without an AI generation step", async () => {
     await open();
     expect(screen.getByLabelText(copy.version)).toHaveValue("version");
-    expect(screen.getByText(wallMessages.submissionWallReady)).toBeInTheDocument();
+    expect(screen.getByLabelText(copy.syncToWall)).toBeChecked();
   });
   it("requires a current published snapshot and the linked project owner", async () => {
     detail.wall = { ...detail.wall!, synchronized: false, isOwner: false };
     await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
     expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
-    expect(screen.getByText(wallMessages.submissionWallSync)).toBeInTheDocument();
     expect(screen.getByText(wallMessages.submissionOwnerHint)).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText(copy.syncToWall));
+    expect(screen.getByLabelText(copy.confirm)).not.toBeChecked();
+    fireEvent.click(screen.getByLabelText(copy.confirm));
+    expect(screen.getByRole("button", { name: copy.submit })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: copy.submit }));
+    await screen.findByText(copy.submitted);
+    const command = fetchMock.mock.calls.filter(([,init]) => init?.body).map(([,init]) => JSON.parse(String(init!.body))).find(row => row.action === "submit");
+    expect(command.syncToAgriWall).toBe(false);
   });
 });

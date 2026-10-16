@@ -1,3 +1,5 @@
+import { agriSubmissionWallListing, type AgriWallSyncCopy } from "@/domain/competitions/agri-wall-sync";
+import type { AgriWallSyncResult } from "@/contracts/agri-submissions";
 import type { DbTransaction } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { createHash,randomUUID } from "node:crypto";
@@ -8,7 +10,7 @@ import type { AgriStageSubmissionContent } from "@/contracts/agri-submissions";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { marketTransaction,requireMarketActor } from "@/server/marketplace/shared";
 import { agriDatabaseClock,lockAgriWorkspace,requireAgriScope,assertAgriAuthorityCurrent,type AgriWorkspaceContext } from "./workspace";
-import { wallFailure,lockPopularityRound,popularityView,assertAgriListingRevision } from "./popularity";
+import { wallFailure,lockPopularityRound,popularityView,assertAgriListingRevision,freezePopularityRound } from "./popularity";
 
 interface WallRow {id:string;competitionId:string;teamCompetitionId:string;listingId:string;projectId:string;artifactVersionId:string;listingVersion:number}
 interface PublicRow {id:string;slug:string;official:boolean;status:string;version:number;payload:unknown;sellerId:string;username:string;nickname:string|null;avatar:string|null;starCount:number;starred:boolean}
@@ -124,4 +126,51 @@ export async function assertAgriWallSubmission(tx:DbTransaction,ctx:AgriWorkspac
  if(payload.category!=='competition'||payload.subcategory!=='agri-wall')wallFailure('AGRI_WALL_PUBLIC_PROJECT_REQUIRED',422);
  if(wall.projectId!==content.projectId||wall.sellerId!==ctx.actorId)wallFailure('AGRI_WALL_PROJECT_MISMATCH',403);
  if(wall.listingVersion!==wall.publishedVersion)wallFailure('AGRI_WALL_VERSION_CONFLICT');
+}
+
+/** Transactional projection used only after a valid, consented stage submission.
+ * A closed first-bind window never rolls back an otherwise valid submission. */
+export async function syncAgriSubmissionWall(tx: DbTransaction, ctx: AgriWorkspaceContext,
+  teamCompetitionId: string, content: AgriStageSubmissionContent, copy: AgriWallSyncCopy): Promise<AgriWallSyncResult> {
+ const round = await lockPopularityRound(tx, ctx.workspace.competitionId);
+ if (round) await freezePopularityRound(tx, round);
+ const [prior] = await tx.$queryRaw<WallRow[]>`SELECT * FROM agri_wall_entries
+   WHERE "competitionId"=${ctx.workspace.competitionId} AND "teamCompetitionId"=${teamCompetitionId} FOR UPDATE`;
+ const now = await agriDatabaseClock(tx);
+ if (!prior && round && now >= round.opensAt) return { state: "BINDING_CLOSED" };
+ if (prior && prior.projectId !== content.projectId) wallFailure("AGRI_WALL_PROJECT_MISMATCH", 403);
+ const [project] = await tx.$queryRaw<Array<{title: string}>>`SELECT title FROM projects
+   WHERE id=${content.projectId} AND "ownerId"=${ctx.actorId} AND status='ACTIVE' FOR SHARE`;
+ if (!project) wallFailure("AGRI_PROJECT_UNAVAILABLE", 403);
+ const [listing] = prior ? await tx.$queryRaw<Array<{id: string; slug: string; currentVersion: number; sellerId: string; status: string; payload: unknown}>>`
+   SELECT l.id,l.slug,l."currentVersion",l."sellerId",l.status,v.payload FROM market_listings l
+   JOIN market_listing_versions v ON v."listingId"=l.id AND v.version=l."publishedVersion"
+   WHERE l.id=${prior.listingId} FOR UPDATE OF l` : [];
+ if (prior && (!listing || listing.sellerId !== ctx.actorId)) wallFailure("AGRI_WALL_PROJECT_MISMATCH", 403);
+ // An explicit moderator withdrawal cannot be bypassed by syncing a new submission.
+ if (listing && listing.status !== "PUBLISHED") wallFailure("AGRI_WALL_PUBLIC_PROJECT_REQUIRED", 422);
+ const existing = listing ? marketListingInputSchema.parse(listing.payload) : undefined;
+ const listingId = prior?.listingId ?? randomUUID();
+ const slug = listing?.slug ?? "agri-" + createHash("sha256").update(ctx.workspace.competitionId + ":" + teamCompetitionId).digest("hex").slice(0, 40);
+ const payload = agriSubmissionWallListing({ slug, title: project.title, content, copy, existing });
+ const version = (listing?.currentVersion ?? 0) + 1;
+ if (!listing) await tx.marketListing.create({ data: { id: listingId, slug, sellerId: ctx.actorId, status: "DRAFT", currentVersion: 1 } });
+ // This free event-only projection is published by the consented submission policy.
+ // It does not impersonate a human moderator or publish the underlying private artifact.
+ await tx.marketListingVersion.create({ data: { listingId, version, payload: payload as Prisma.InputJsonValue,
+   submittedAt: now, reviewedAt: now, reviewedById: null, reviewNote: "AGRI_CONSENTED_SUBMISSION_PROJECTION" } });
+ await tx.marketListing.update({ where: { id: listingId }, data: { currentVersion: version, publishedVersion: version, status: "PUBLISHED" } });
+ const id = prior?.id ?? randomUUID();
+ const acceptedAt = await agriDatabaseClock(tx);
+ if (!prior && round && acceptedAt >= round.opensAt) {
+   // The first-bind trigger enforces the same deadline at insertion; callers use
+   // a savepoint so an elapsed window rolls back only this public projection.
+   wallFailure("AGRI_WALL_BINDING_CLOSED");
+ }
+ if (prior) await tx.$executeRaw`UPDATE agri_wall_entries SET "artifactVersionId"=${content.artifactVersionId},"listingVersion"=${version},"updatedAt"=${acceptedAt} WHERE id=${id}`;
+ else await tx.$executeRaw`INSERT INTO agri_wall_entries(id,"competitionId","teamCompetitionId","listingId","projectId","artifactVersionId","listingVersion","createdAt","updatedAt")
+   VALUES(${id},${ctx.workspace.competitionId},${teamCompetitionId},${listingId},${content.projectId},${content.artifactVersionId},${version},${acceptedAt},${acceptedAt})`;
+ await tx.auditLog.create({ data: { actorId: ctx.actorId, action: "AGRI_SUBMISSION_WALL_SYNCED", resourceType: "agri_wall_entry", resourceId: id,
+   metadata: { competitionId: ctx.workspace.competitionId, teamCompetitionId, listingId, listingVersion: version, artifactVersionId: content.artifactVersionId } } });
+ return { state: "SYNCED", listingId, listingVersion: version, href: "/explore/member-" + slug };
 }

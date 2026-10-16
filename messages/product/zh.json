@@ -1140,7 +1140,11 @@
       "demoUrl": "Demo 链接",
       "summary": "项目介绍",
       "materials": "适用材料"
-    }
+    },
+    "syncToWall": "同步公开至农客松作品墙，参与 Star 人气评选",
+    "syncToWallHint": "仅公开本次提交的项目标题、摘要和链接，不公开私密材料。取消勾选仍可保存阶段提交；投票开启后新队伍无法首次绑定上墙，已上墙作品继续同步。",
+    "submittedAndSynced": "阶段作品已提交，并已同步至农客松作品墙。",
+    "submittedWallClosed": "阶段作品已提交；作品墙首次绑定时间已结束，本次未上墙。"
   },
   "agriWorks": {
     "manageDecisions": "晋级与更正管理",
@@ -2393,7 +2397,9 @@
       "UNKNOWN": "尚未确认",
       "ELIGIBLE": "已获决赛资格",
       "INELIGIBLE": "未获决赛资格／已撤回"
-    }
+    },
+    "computeGrantPoints": "每队参赛算力（点）",
+    "computeGrantUnconfigured": "留空或 0：不发放"
   },
   "agriPhases": {
     "eyebrow": "本届参赛工作区",
@@ -3567,5 +3573,116 @@
       "market": "找工具、资源或服务",
       "orders": "查看购买与交付进度"
     }
+  },
+  "agriCredits": {
+    "title": "参赛算力包",
+    "loading": "正在查询…",
+    "unconfigured": "主办方尚未配置参赛算力，当前不会发放。",
+    "available": "队长可领取本届战队算力。",
+    "waiting": "等待队长领取，或赛事进入已确认的使用周期。",
+    "amount": "总额度",
+    "used": "已使用",
+    "remaining": "剩余额度",
+    "usage": "用于本队私密项目中的工作流运行，优先使用参赛算力；额度不足时不会扣个人余额。",
+    "paused": "当前暂停使用；已产生请求的退款仍原路退回。",
+    "claim": "领取参赛算力",
+    "refresh": "刷新额度",
+    "errors": {
+      "INTERNAL_ERROR": "暂时无法查询，请重试。",
+      "AGRI_TEAM_PERMISSION_REQUIRED": "你已不在这支队伍中，请刷新队伍。",
+      "AGRI_ENTRY_NOT_FOUND": "当前赛事中找不到这支队伍。",
+      "AGRI_CREDITS_ENTRY_INACTIVE": "该队伍当前不具备参赛资格。",
+      "AGRI_CREDITS_CYCLE_CLOSED": "算力使用周期尚未开始或已经结束。",
+      "AGRI_TEAM_MANAGER_REQUIRED": "仅队长可领取参赛算力。",
+      "RATE_LIMITED": "操作较频繁，请稍后重试。"
+    }
+  },
+  "agriRankings": {
+    "adminTitle": "评委录分与榜单确认",
+    "back": "返回公开审核",
+    "loading": "正在读取",
+    "login": "登录后继续",
+    "refresh": "刷新",
+    "stage": {
+      "PRELIMINARY": "初赛",
+      "FINAL": "决赛"
+    },
+    "panelTitle": "指定本阶段评委",
+    "panelHint": "填写 {count} 位已有评分权限的评委账号 ID，每行一个。首份评分提交后名单锁定。",
+    "savePanel": "确认评委名单",
+    "candidateTitle": "待确认排名",
+    "scoreTitle": "评委录分",
+    "preliminaryFormula": "五维按 30% / 25% / 20% / 15% / 10% 合成评委分，3 位评委均值占 80%，封榜有效 Star 归一化占 20%。",
+    "finalFormula": "7 位评委各自完成五维评分，去掉一个最高分和一个最低分，取其余 5 人均值。",
+    "judgeCount": "已录入 {count} / {required} 位评委",
+    "total": "综合分 {score}",
+    "score": "录入评分",
+    "select": "入选确认名单",
+    "scoreImmutable": "评分绑定截止冻结作品版本，提交后不能改写。请核对五项分数后提交。",
+    "dimension": {
+      "innovation": "创新性 · 30%（0–100）",
+      "technical": "技术深度 · 25%（0–100）",
+      "completeness": "Demo 完成度 · 20%（0–100）",
+      "problem": "真实价值 · 15%（0–100）",
+      "fit": "赛道契合度 · 10%（0–100）"
+    },
+    "recordScore": "提交本人的评分",
+    "confirmTitle": "确认正式榜单",
+    "orderHint": "勾选入选队伍并调整最终顺序。初赛选 10 强（不足 10 队时全部入选）；同分由主办方明确确认，不能将较低分排在较高分之前。",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "noSpecialAward": "暂不授予",
+    "confirmConsent": "我已核对完整评分、封榜票数、入选名单和同分顺序，确认发布后保存为不可改写快照。",
+    "publish": "确认并公布榜单",
+    "withdrawReason": "撤回原因",
+    "withdraw": "撤回公开榜单",
+    "pending": "操作结果尚未确认。请使用同一请求重试，避免重复操作。",
+    "retry": "核对并重试原请求",
+    "finalistsTitle": "初赛 10 强 Finalist 路演名单",
+    "finalTitle": "Demo Day 终审获奖总榜",
+    "publicUnavailable": "榜单暂时无法读取，请稍后刷新。",
+    "noPublicWorks": "榜单已确认；作品仍需队伍授权及公开审核后才能展示。",
+    "scoreLine": "专业分 {professional} · 综合分 {total} · 有效 Star {votes}",
+    "demo": "在线 Demo",
+    "repository": "GitHub / 代码仓库",
+    "wall": "作品墙详情",
+    "award": {
+      "FIRST": "一等奖",
+      "SECOND": "二等奖",
+      "THIRD": "三等奖",
+      "TECHNICAL": "最佳技术实现奖",
+      "CREATIVE": "最佳创意奖",
+      "POPULARITY": "最佳人气奖",
+      "FINALIST": "10 强 Finalist"
+    },
+    "errors": {
+      "INTERNAL_ERROR": "暂时无法完成，请刷新后重试。",
+      "INVALID_INPUT": "请检查填写内容和分数范围。",
+      "AGRI_SCOPE_REQUIRED": "当前账号没有本操作权限。",
+      "AGRI_SCORE_PANEL_MEMBERSHIP_REQUIRED": "你不在本阶段指定评委名单中。",
+      "AGRI_SCORE_ALREADY_RECORDED": "你已为这个冻结作品提交过评分，不能重复改写。",
+      "AGRI_SCORE_JUDGES_COMPLETE": "该作品已录满所需评委评分。",
+      "AGRI_SCORE_INDEPENDENT_JUDGE_REQUIRED": "不能为自己所在队伍评分。",
+      "AGRI_SCORE_FROZEN_SUBMISSION_REQUIRED": "阶段尚未截止或作品未冻结，暂不能正式录分。",
+      "AGRI_RANKING_PANEL_REQUIRED": "请先指定本阶段评委名单。",
+      "AGRI_RANKING_PANEL_INVALID": "评委人数必须为初赛 3 人、决赛 7 人，且不能重复。",
+      "AGRI_RANKING_PANEL_LOCKED": "已有评分或已确认榜单，评委名单不能修改。",
+      "AGRI_RANKING_VOTES_NOT_FROZEN": "人气投票尚未封榜，不能生成正式榜单。",
+      "AGRI_RANKING_NO_ENTRIES": "本阶段尚无有效作品。",
+      "AGRI_RANKING_JUDGES_INCOMPLETE": "仍有队伍缺少完整评委评分。",
+      "AGRI_RANKING_SOURCE_CHANGED": "评分或候选数据已变化，请刷新后重新确认。",
+      "AGRI_RANKING_ORDER_INVALID": "入选数量或排序不符合评分结果，请检查同分选择。",
+      "AGRI_RANKING_AWARD_INVALID": "专项奖只能授予本次确认名单中的队伍。",
+      "AGRI_RANKING_ALREADY_CONFIRMED": "本阶段榜单已经确认，不能覆盖历史快照。",
+      "AGRI_RANKING_REVISION_CONFLICT": "榜单状态已变化，请刷新。",
+      "AGRI_WORKSPACE_DISABLED": "赛事工作区当前暂停。",
+      "AGRI_IDEMPOTENCY_CONFLICT": "同一请求标识对应不同内容，请刷新。",
+      "ACCOUNT_CHANGED": "登录账号已变化，请重新打开页面。",
+      "ACCOUNT_UNAVAILABLE": "当前账号无法使用该功能。",
+      "UNAUTHORIZED": "请先登录。",
+      "RATE_LIMITED": "操作过于频繁，请稍后再试。"
+    },
+    "popularityVotes": "封榜有效 Star {votes}",
+    "wallEligibility": "只有已发布到本届农客松作品墙、且未撤回的有效参赛项目进入正式排名。仅保存阶段提交不会取得参评资格。"
   }
 }

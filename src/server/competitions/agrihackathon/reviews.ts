@@ -1,6 +1,6 @@
-import type { DbTransaction } from "@/lib/db";
+﻿import type { DbTransaction } from "@/lib/db";
 import { createHash, randomUUID } from "node:crypto";
-import { Prisma } from "@prisma/client";
+
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
@@ -124,4 +124,33 @@ export async function executeAgriReviewCommand(actorId: string, raw: unknown): P
     await assertAgriAuthorityCurrent(tx,read,technical,...additional);
     return { checkId, feedbackEventId, appliedSequence, duplicate: false };
   }, { timeout: 15000 });
+}
+import { agriJudgeScoreCommandSchema,agriScoreDimensionsSchema } from "@/contracts/agri-rankings";
+/** A judge's ballot is append-only and tied to the exact frozen submission. */
+export async function executeAgriJudgeScoreCommand(actorId:string,raw:unknown) {
+ const command=agriJudgeScoreCommandSchema.parse(raw);
+ return db.$transaction(async tx=>{
+  const ctx=await lockAgriWorkspace(tx,actorId);
+  if(!ctx.workspace.enabled)return fail("AGRI_WORKSPACE_DISABLED");
+  const read=await requireAgriScope(tx,ctx,"WORKS_READ"),authority=await requireAgriScope(tx,ctx,"TECHNICAL_WRITE");
+  const item=await target(tx,ctx,command.submissionId,false);
+  const [stage]=await tx.$queryRaw<Array<{id:string;stage:"PRELIMINARY"|"FINAL";currentSubmissionId:string|null;frozenSubmissionId:string|null}>>`SELECT id,stage,"currentSubmissionId","frozenSubmissionId" FROM agri_entry_stages WHERE id=${item.entryStageId} FOR UPDATE`;
+  const { projectAgriStageFreeze }=await import("./submissions");
+  const { agriJudgePanel }=await import("./rankings");
+  if(!(await agriJudgePanel(tx,item.competitionId,stage.stage)).includes(actorId))return fail("AGRI_SCORE_PANEL_MEMBERSHIP_REQUIRED",403);
+  const freeze=await projectAgriStageFreeze(tx,{...stage,competitionId:item.competitionId},await agriDatabaseClock(tx));
+  if(freeze.frozenSubmissionId!==item.id)return fail("AGRI_SCORE_FROZEN_SUBMISSION_REQUIRED");
+  const [self]=await tx.$queryRaw<Array<{blocked:boolean}>>`SELECT (EXISTS(SELECT 1 FROM team_members WHERE "teamId"=${item.teamId} AND "userId"=${actorId} AND status='ACTIVE') OR EXISTS(SELECT 1 FROM agri_official_roster_members m JOIN agri_official_rosters r ON r.id=m."rosterId" WHERE r."teamCompetitionId"=${item.teamCompetitionId} AND m."userId"=${actorId})) AS blocked`;
+  if(self?.blocked)return fail("AGRI_SCORE_INDEPENDENT_JUDGE_REQUIRED",403);
+  const requestHash=hash(command);
+  const [prior]=await tx.$queryRaw<Array<{id:string;requestHash:string}>>`SELECT id,"requestHash" FROM agri_judge_scores WHERE "competitionId"=${item.competitionId} AND "judgeId"=${actorId} AND "idempotencyKey"=${command.idempotencyKey}`;
+  if(prior){if(prior.requestHash!==requestHash)return fail("AGRI_IDEMPOTENCY_CONFLICT");await assertAgriAuthorityCurrent(tx,read,authority);return {scoreId:prior.id,duplicate:true};}
+  const existing=await tx.$queryRaw<Array<{judgeId:string}>>`SELECT "judgeId" FROM agri_judge_scores WHERE "competitionId"=${item.competitionId} AND "submissionId"=${item.id}`;
+  if(existing.some(s=>s.judgeId===actorId))return fail("AGRI_SCORE_ALREADY_RECORDED");
+  if(existing.length>=(stage.stage==="PRELIMINARY"?3:7))return fail("AGRI_SCORE_JUDGES_COMPLETE");
+  const scoreId=randomUUID(),now=await agriDatabaseClock(tx);
+  await tx.$executeRaw`INSERT INTO agri_judge_scores(id,"competitionId","entryStageId","submissionId",stage,"judgeId",dimensions,"requestHash","idempotencyKey","createdAt") VALUES(${scoreId},${item.competitionId},${item.entryStageId},${item.id},${stage.stage},${actorId},${JSON.stringify(agriScoreDimensionsSchema.parse(command.dimensions))}::jsonb,${requestHash},${command.idempotencyKey},${now})`;
+  await tx.auditLog.create({data:{actorId,action:"AGRI_RECORD_SCORE",resourceType:"agri_judge_score",resourceId:scoreId,metadata:{competitionId:item.competitionId,submissionId:item.id}}});
+  await assertAgriAuthorityCurrent(tx,read,authority);return {scoreId,duplicate:false};
+ },{timeout:15000});
 }

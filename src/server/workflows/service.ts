@@ -1,3 +1,5 @@
+import { assertAgriChargeWindowCurrent } from "@/server/competitions/agrihackathon/credits";
+import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { hasWorkflowManualApproval } from "./approval";
 import { extractInputVariables, missingRequiredVariables } from "@/domain/workflows/variables";
 import { randomUUID } from "node:crypto";
@@ -772,10 +774,12 @@ export async function createWorkflowRun(
           metadata: { slug, version: version.version, costPoints, ...(options.confirmedSource ? { source: options.confirmedSource, confirmationScope: options.idempotencyScope } : {}) },
         },
       });
-      return tx.workflowRun.findUniqueOrThrow({
+      const queued = await tx.workflowRun.findUniqueOrThrow({
         where: { id: run.id },
         include: { nodeRuns: { orderBy: { nodeId: "asc" } } },
       });
+      await assertAgriChargeWindowCurrent(tx, userId, { type: "workflow_run", id: run.id });
+      return queued;
     });
   } catch (error) {
     if (idempotencyKey && error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -788,6 +792,7 @@ export async function createWorkflowRun(
     if (error instanceof QuotaError) {
       throw new WorkflowServiceError(error.message, error.code, error.status);
     }
+    if (error instanceof AgriWorkspaceError) throw new WorkflowServiceError(error.code, error.code, error.status);
     throw error;
   }
 }

@@ -1,4 +1,6 @@
-import { assertAgriWallSubmission } from "./wall";
+import { syncAgriSubmissionWall } from "./wall";
+import { lockPopularityRound, freezePopularityRound } from "./popularity";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { DbTransaction } from "@/lib/db";
 import { createHash, randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
@@ -6,7 +8,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { agriPrepareStageSchema, agriStageDraftSchema, agriStageSubmissionCommandSchema,
-  agriStageSubmissionContentSchema, agriSubmissionListQuerySchema, agriWorksExportQuerySchema, agriSubmissionRequirementsSchema, agriSubmissionVersionsQuerySchema, type AgriSubmissionHistoryItem } from "@/contracts/agri-submissions";
+  agriStageSubmissionContentSchema, agriSubmissionListQuerySchema, agriWorksExportQuerySchema, agriSubmissionRequirementsSchema, agriSubmissionVersionsQuerySchema, type AgriSubmissionHistoryItem, type AgriWallSyncResult } from "@/contracts/agri-submissions";
 import { agriSubmissionWindowSchema } from "@/contracts/agrihackathon";
 import { getAgriSubmissionLifecycleDecision, getAgriSubmissionMaterialIssues, getAgriCorrectionDecision, projectAgriSubmissionFreeze } from "@/domain/competitions/agri-submissions";
 import { agriCsv } from "@/domain/competitions/agri-works-export";
@@ -17,16 +19,21 @@ import { finalEligibility, correctionPermit, activeCorrectionPermits, type Permi
 import { bindEvidenceIntents } from "./evidence";
 type Tx = DbTransaction;
 type StageName = "PRELIMINARY" | "FINAL";
-interface Entry { id: string; teamId: string; competitionId: string }
+interface Entry { id: string; teamId: string; competitionId: string; entryStatus: string }
 interface Stage { id: string; competitionId: string; teamCompetitionId: string; stage: StageName;
   revision: number; draft: unknown; currentSubmissionId: string | null; frozenSubmissionId: string | null; createdAt: Date }
 interface Submission { id: string; competitionId: string; entryStageId: string; sequence: number; ruleVersionId: string;
   projectId: string; artifactVersionId: string; repository: unknown; demoUrl: string | null; summary: string; materials: unknown;
   submittedById: string; acceptedAt: Date; officialRosterId: string | null; preliminarySubmissionId: string | null }
-interface Receipt { entryStageId: string; requestHash: string; submissionId: string | null; appliedRevision: number }
+interface Receipt { entryStageId: string; requestHash: string; submissionId: string | null; appliedRevision: number; wallSync: AgriWallSyncResult | null }
 type Authority = Awaited<ReturnType<typeof requireAgriScope>>;
 const fail = (code: string, status = 409): never => { throw new AgriWorkspaceError(code, status); };
-const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const hash = (value: unknown) => {
+  // Preserve pre-upgrade receipt hashes: the default true command option is implicit.
+  const canonical = value && typeof value === "object" && "syncToAgriWall" in value && value.syncToAgriWall === true
+    ? Object.fromEntries(Object.entries(value).filter(([key]) => key !== "syncToAgriWall")) : value;
+  return createHash("sha256").update(JSON.stringify(canonical)).digest("hex");
+};
 const identifier = z.string().trim().min(1).max(80);
 const historyQuery = z.object({ beforeSequence: z.coerce.number().int().min(1).optional() }).strict();
 const pageCursor = z.object({ id: identifier, createdAt: z.string().datetime(), competitionId: identifier,
@@ -61,7 +68,7 @@ async function lockTarget(tx: Tx, ctx: AgriWorkspaceContext, id: string, write: 
     try { authorities.push(await requireAgriScope(tx, ctx, "PRIVATE_MATERIALS_READ")); privateMaterials = true; }
     catch (error) { if (!(error instanceof AgriWorkspaceError) || error.code !== "AGRI_SCOPE_REQUIRED") throw error; }
   }
-  const [entry] = await tx.$queryRaw<Entry[]>`SELECT id,"teamId","competitionId" FROM team_competitions
+  const [entry] = await tx.$queryRaw<Entry[]>`SELECT id,"teamId","competitionId","entryStatus" FROM team_competitions
     WHERE id=${candidate.id} AND "competitionId"=${ctx.workspace.competitionId} FOR UPDATE`;
   if (!entry || entry.teamId !== candidate.teamId) return fail("AGRI_STAGE_NOT_FOUND", 404);
   const [stage] = await tx.$queryRaw<Stage[]>`SELECT * FROM agri_entry_stages WHERE id=${id}
@@ -198,14 +205,20 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
   const command = agriStageSubmissionCommandSchema.parse(raw);
   return db.$transaction(async tx => {
     const ctx = await lockAgriWorkspace(tx, actorId);
+    // Same lock order as marketplace writes; freeze before roster/publication changes.
+    if (command.action !== "saveDraft") {
+      const round = await lockPopularityRound(tx, ctx.workspace.competitionId);
+      if (round) await freezePopularityRound(tx, round);
+    }
     const target = await lockTarget(tx, ctx, command.entryStageId, true), stage = target.stage;
-    const [receipt] = await tx.$queryRaw<Receipt[]>`SELECT "entryStageId","requestHash","submissionId","appliedRevision" FROM agri_submission_receipts
+    const [receipt] = await tx.$queryRaw<Receipt[]>`SELECT "entryStageId","requestHash","submissionId","appliedRevision","wallSync" FROM agri_submission_receipts
       WHERE "competitionId"=${ctx.workspace.competitionId} AND "actorId"=${actorId} AND operation=${command.action} AND "idempotencyKey"=${command.idempotencyKey}`;
     if (receipt) {
       if (receipt.requestHash !== hash(command) || receipt.entryStageId !== stage.id) return fail("AGRI_IDEMPOTENCY_CONFLICT");
-      return { entryStageId: stage.id, submissionId: receipt.submissionId, appliedRevision: receipt.appliedRevision, duplicate: true };
+      return { entryStageId: stage.id, submissionId: receipt.submissionId, appliedRevision: receipt.appliedRevision, duplicate: true, wallSync: receipt.wallSync ?? { state: "NOT_REQUESTED" } };
     }
     if (!ctx.workspace.enabled) return fail("AGRI_WORKSPACE_DISABLED");
+    if (target.entry.entryStatus === "REJECTED") return fail("AGRI_TEAM_PERMISSION_REQUIRED", 403);
     if (stage.revision !== command.expectedRevision) return fail("AGRI_REVISION_CONFLICT");
     const content = command.action === "saveDraft" ? command.draft : command.content;
     await validateVersions(tx, ctx, target.entry, content);
@@ -240,8 +253,8 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
       if (result !== "ALLOW") return fail("AGRI_" + result);
     };
     let submissionId: string | null = null;
+    let wallSync: AgriWallSyncResult = { state: "NOT_REQUESTED" };
     if (command.action !== "saveDraft") {
-      await assertAgriWallSubmission(tx, ctx, target.entry.id, command.content);
       adopted = await rule(tx, stage.competitionId, command.action === "correctSubmission" ? permit!.ruleVersionId : ctx.workspace.publishedRuleVersionId, stage.stage);
       decision(now);
       const issues = getAgriSubmissionMaterialIssues(adopted.requirements, command.content);
@@ -263,19 +276,40 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
         stage.frozenSubmissionId ??= stage.currentSubmissionId;
       }
       if (command.evidenceIntentIds?.length) await bindEvidenceIntents(tx, ctx, command.evidenceIntentIds, submissionId);
+      if (command.syncToAgriWall) {
+        const locale = await getLocale();
+        const t = await getTranslations({ locale: locale === "zh" ? "zh" : "en", namespace: "agriWall" });
+        await tx.$executeRawUnsafe("SAVEPOINT agri_submission_wall_sync");
+        try {
+          wallSync = await syncAgriSubmissionWall(tx, ctx, target.entry.id, command.content, {
+            stage: t(stage.stage === "PRELIMINARY" ? "autoPreliminary" : "autoFinal"),
+            summary: summary => t("autoSummary", { summary }),
+            description: summary => t("autoDescription", { summary }),
+            license: t("autoLicense"), deliverable: t("autoDeliverable"),
+          });
+          await tx.$executeRawUnsafe("RELEASE SAVEPOINT agri_submission_wall_sync");
+        } catch (error) {
+          await tx.$executeRawUnsafe("ROLLBACK TO SAVEPOINT agri_submission_wall_sync");
+          await tx.$executeRawUnsafe("RELEASE SAVEPOINT agri_submission_wall_sync");
+          const message = error instanceof AgriWorkspaceError ? error.code
+            : error instanceof Prisma.PrismaClientKnownRequestError ? String(error.meta?.message ?? "") : "";
+          if (!message.includes("AGRI_WALL_BINDING_CLOSED")) throw error;
+          wallSync = { state: "BINDING_CLOSED" };
+        }
+      }
       stage.currentSubmissionId = submissionId;
     }
     stage.revision++;
     await tx.$executeRaw`UPDATE agri_entry_stages SET draft=${command.action === "saveDraft" ? JSON.stringify(content) : null}::jsonb,
       "currentSubmissionId"=${stage.currentSubmissionId},"frozenSubmissionId"=${stage.frozenSubmissionId},revision=${stage.revision},"updatedAt"=${now} WHERE id=${stage.id}`;
     await event(tx, ctx, stage, command.action, submissionId, now, command.action === "submit" && stage.stage === "FINAL" && eligibility.state === "ELIGIBLE" ? eligibility.sourceId : undefined);
-    await tx.$executeRaw`INSERT INTO agri_submission_receipts (id,"competitionId","entryStageId","actorId",operation,"idempotencyKey","requestHash","submissionId","appliedRevision","createdAt")
-      VALUES (${randomUUID()},${stage.competitionId},${stage.id},${actorId},${command.action},${command.idempotencyKey},${hash(command)},${submissionId},${stage.revision},${now})`;
+    await tx.$executeRaw`INSERT INTO agri_submission_receipts (id,"competitionId","entryStageId","actorId",operation,"idempotencyKey","requestHash","submissionId","appliedRevision","createdAt","wallSync")
+      VALUES (${randomUUID()},${stage.competitionId},${stage.id},${actorId},${command.action},${command.idempotencyKey},${hash(command)},${submissionId},${stage.revision},${now},${JSON.stringify(wallSync)}::jsonb)`;
     // Time can advance while writing, even with account and row locks held.
     const end = await agriDatabaseClock(tx); decision(end);
     if (command.action !== "correctSubmission" && await priorClosed(tx, priorStage, end)) return fail("AGRI_FROZEN");
     if (command.action === "saveDraft" && await priorClosed(tx, stage, end)) return fail("AGRI_FROZEN");
-    return { entryStageId: stage.id, submissionId, appliedRevision: stage.revision, duplicate: false };
+    return { entryStageId: stage.id, submissionId, appliedRevision: stage.revision, duplicate: false, wallSync };
   }, { timeout: 15000 });
 }
 function projectSubmission(row: Submission, privateMaterials: boolean): AgriSubmissionHistoryItem {

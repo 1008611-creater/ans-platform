@@ -49,15 +49,13 @@ function ShareVoteButton({ slug, title, teamName, validStars }: { slug: string; 
   const [copied, setCopied] = useState(false);
   async function handleShare() {
     const origin = typeof window !== "undefined" && window.location?.origin ? window.location.origin : "";
-    const url = `${origin}/explore/member-${slug}`;
+    const url = `${origin}/competitions/agrihackathon/wall/${encodeURIComponent(slug)}`;
     const text = t("shareText", { title, team: teamName, stars: validStars, url });
     try {
-      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-      }
+      await navigator.clipboard.writeText(text);
       setCopied(true);
     } catch {
-      setCopied(true);
+      setCopied(false);
     }
   }
   return (
@@ -68,25 +66,11 @@ function ShareVoteButton({ slug, title, teamName, validStars }: { slug: string; 
   );
 }
 
-function EventStarConfirmation({ listingId, viewerEligible, viewerVoted, starred, open }: { listingId: string; viewerEligible: boolean | null; viewerVoted: boolean; starred: boolean; open: boolean }) {
-  const t = useTranslations("agriWall"); const request = useMarketRequest();
-  const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [confirmed, setConfirmed] = useState(false);
-  const flight = useRef(false); const alive = useRef(true);
-  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
-  async function confirm() {
-    if (flight.current) return;
-    flight.current = true; setBusy(true); setError("");
-    try {
-      await request(`/api/market/listings/${listingId}/star`, "PUT", { starred: true });
-      if (alive.current) { setConfirmed(true); window.dispatchEvent(new CustomEvent("ans:market-star-changed", { detail: { listingId } })); }
-    } catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : "INTERNAL_ERROR"); }
-    finally { flight.current = false; if (alive.current) setBusy(false); }
-  }
+function EventVoteStatus({ eligible, voted, open }: { eligible: boolean | null; voted: boolean; open: boolean }) {
+  const t = useTranslations("agriWall");
   if (!open) return null;
-  if (viewerEligible === false) return <p className="text-xs leading-6 text-muted-foreground">{t("ownTeamVote")}</p>;
-  if (viewerVoted) return <p role="status" className="flex items-center gap-2 text-xs leading-6 text-primary"><CheckCircle2 className="size-3.5 shrink-0" aria-hidden="true" />{t("voted")}</p>;
-  if (!starred || !viewerEligible) return null;
-  return <div className="space-y-2"><p className="text-xs leading-6 text-muted-foreground">{t("voteConfirmHint")}</p><Button type="button" variant="outline" disabled={busy || confirmed} onClick={() => void confirm()} className="h-auto min-h-11 w-full whitespace-normal">{t(busy ? "confirmingVote" : "confirmVote")}</Button>{confirmed && <p role="status" className="text-xs leading-6 text-primary">{t("voteConfirmed")}</p>}{error && <ErrorNotice code={error} />}</div>;
+  if (eligible === false) return <p className="text-xs leading-6 text-muted-foreground">{t("ownTeamVote")}</p>;
+  return voted ? <p role="status" className="flex items-center gap-2 text-xs leading-6 text-primary"><CheckCircle2 className="size-3.5 shrink-0" aria-hidden="true" />{t("voted")}</p> : null;
 }
 
 export function AgriWall({ initialView }: { initialView?: AgriWallView } = {}) {
@@ -131,8 +115,8 @@ export function AgriWall({ initialView }: { initialView?: AgriWallView } = {}) {
           const rank = sorted.findIndex(item => item.validStars === entry.validStars) + 1;
           const higherStars = sorted.slice(0, index).reverse().find(item => item.validStars > entry.validStars)?.validStars;
           const rankBadge = rank <= 3 ? t("rankTop", { rank }) : t("rankLabel", { rank });
-          const rankHint = higherStars !== undefined ? t("gapHint", { diff: higherStars - entry.validStars }) : (rank === 1 && entry.validStars > 0 ? t("leaderHint") : null);
-          return <article key={entry.id} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/40">{entry.offer.listing.coverUrl && <Link href={`/explore/member-${entry.offer.slug}`} tabIndex={-1} aria-hidden="true"><Image src={entry.offer.listing.coverUrl} alt="" width={720} height={450} unoptimized className="aspect-[8/5] w-full border-b object-cover" /></Link>}<div className="flex flex-1 flex-col p-5 sm:p-6"><div className="mb-4 flex flex-wrap items-center justify-between gap-2"><span className="min-w-0 break-words text-sm text-muted-foreground">{entry.teamName}</span><div className="flex flex-wrap items-center gap-1.5"><Badge variant={rank <= 3 ? "default" : "secondary"}>{rankBadge}</Badge>{entry.eligible ? <Badge variant="outline">{t("entry")}</Badge> : <Badge variant="secondary">{t("ineligible")}</Badge>}</div></div><h3 className="break-words text-xl font-semibold leading-snug"><Link className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href={`/explore/member-${entry.offer.slug}`}>{entry.offer.listing.title}</Link></h3><p className="mt-3 break-words text-sm leading-7 text-muted-foreground">{entry.offer.listing.summary}</p><div className="mt-5 flex flex-wrap gap-4 text-sm">{entry.offer.listing.githubUrl && <a href={entry.offer.listing.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline-offset-4 hover:underline">GitHub<ExternalLink className="size-3.5" aria-hidden="true" /></a>}{(entry.offer.listing.previewUrl || entry.offer.listing.usageUrl) && <a href={entry.offer.listing.previewUrl || entry.offer.listing.usageUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline-offset-4 hover:underline">{t("demo")}<ExternalLink className="size-3.5" aria-hidden="true" /></a>}<Link className="ms-auto inline-flex items-center gap-1 font-medium text-primary underline-offset-4 hover:underline" href={`/explore/member-${entry.offer.slug}`}>{t("details")}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></div></div><div className="space-y-3 border-t bg-muted/20 p-5 sm:px-6"><div className="flex flex-wrap items-baseline justify-between gap-2"><div className="space-y-0.5"><span className="text-sm text-muted-foreground">{t(frozen ? "frozenStars" : "validStars")}</span>{rankHint && <p className="text-xs text-primary">{rankHint}</p>}</div><span className="text-xl font-semibold tabular-nums">{entry.validStars}</span></div>{actorId ? <MarketAccountBoundary actorId={actorId}><MarketStar key={`${actorId}:${entry.offer.id}:${entry.offer.starCount}:${entry.offer.starred}`} listingId={entry.offer.id} initialCount={entry.offer.starCount ?? 0} initialStarred={entry.offer.starred ?? false} /><EventStarConfirmation key={`${actorId}:${entry.offer.id}:${entry.viewerVoted}`} listingId={entry.offer.id} viewerEligible={entry.viewerEligible} viewerVoted={entry.viewerVoted} starred={entry.offer.starred ?? false} open={view.round?.state === "OPEN"} /></MarketAccountBoundary> : <Button asChild variant="outline" className="w-full"><Link href={`/login?callbackUrl=${encodeURIComponent(WALL)}`}><Star aria-hidden="true" />{t("loginStar")}</Link></Button>}<ShareVoteButton slug={entry.offer.slug} title={entry.offer.listing.title} teamName={entry.teamName} validStars={entry.validStars} /></div></article>;
+          const rankHint = higherStars !== undefined ? t("gapHint", { gap: higherStars - entry.validStars }) : (rank === 1 && entry.validStars > 0 ? t("leaderHint") : null);
+          return <article key={entry.id} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/40">{entry.offer.listing.coverUrl && <Link href={`/explore/member-${entry.offer.slug}`} tabIndex={-1} aria-hidden="true"><Image src={entry.offer.listing.coverUrl} alt="" width={720} height={450} unoptimized className="aspect-[8/5] w-full border-b object-cover" /></Link>}<div className="flex flex-1 flex-col p-5 sm:p-6"><div className="mb-4 flex flex-wrap items-center justify-between gap-2"><span className="min-w-0 break-words text-sm text-muted-foreground">{entry.teamName}</span><div className="flex flex-wrap items-center gap-1.5"><Badge variant={rank <= 3 ? "default" : "secondary"}>{rankBadge}</Badge>{entry.eligible ? <Badge variant="outline">{t("entry")}</Badge> : <Badge variant="secondary">{t("ineligible")}</Badge>}</div></div><h3 className="break-words text-xl font-semibold leading-snug"><Link className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href={`/explore/member-${entry.offer.slug}`}>{entry.offer.listing.title}</Link></h3><p className="mt-3 break-words text-sm leading-7 text-muted-foreground">{entry.offer.listing.summary}</p><div className="mt-5 flex flex-wrap gap-4 text-sm">{entry.offer.listing.githubUrl && <a href={entry.offer.listing.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline-offset-4 hover:underline">GitHub<ExternalLink className="size-3.5" aria-hidden="true" /></a>}{(entry.offer.listing.previewUrl || entry.offer.listing.usageUrl) && <a href={entry.offer.listing.previewUrl || entry.offer.listing.usageUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline-offset-4 hover:underline">{t("demo")}<ExternalLink className="size-3.5" aria-hidden="true" /></a>}<Link className="ms-auto inline-flex items-center gap-1 font-medium text-primary underline-offset-4 hover:underline" href={`/explore/member-${entry.offer.slug}`}>{t("details")}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></div></div><div className="space-y-3 border-t bg-muted/20 p-5 sm:px-6"><div className="flex flex-wrap items-baseline justify-between gap-2"><div className="space-y-0.5"><span className="text-sm text-muted-foreground">{t(frozen ? "frozenStars" : "validStars")}</span>{rankHint && <p className="text-xs text-primary">{rankHint}</p>}</div><span className="text-xl font-semibold tabular-nums">{entry.validStars}</span></div>{actorId ? <MarketAccountBoundary actorId={actorId}><MarketStar key={`${actorId}:${entry.offer.id}:${entry.offer.starCount}:${entry.offer.starred}`} listingId={entry.offer.id} initialCount={entry.offer.starCount ?? 0} initialStarred={entry.offer.starred ?? false} initialEventVote={{ open: view.round?.state === "OPEN", eligible: entry.viewerEligible === true, voted: entry.viewerVoted }} /><EventVoteStatus eligible={entry.viewerEligible} voted={entry.viewerVoted} open={view.round?.state === "OPEN"} /></MarketAccountBoundary> : <Button asChild variant="outline" className="w-full"><Link href={`/login?callbackUrl=${encodeURIComponent(WALL)}`}><Star aria-hidden="true" />{t("loginStar")}</Link></Button>}<ShareVoteButton slug={entry.offer.slug} title={entry.offer.listing.title} teamName={entry.teamName} validStars={entry.validStars} /></div></article>;
         })}</div> : <div className="rounded-2xl border border-dashed px-6 py-14 text-center"><Sprout className="mx-auto mb-4 size-8 text-primary" aria-hidden="true" /><h3 className="text-lg font-semibold">{t(query ? "noSearch" : "emptyTitle")}</h3><p className="mx-auto mt-3 max-w-md text-sm leading-7 text-muted-foreground">{t(query ? "noSearchHint" : "emptyBody")}</p><Button className="mt-6" variant="outline" onClick={query ? () => setQuery("") : undefined} asChild={!query}>{query ? t("clearSearch") : <Link href={SUBMIT}>{t("join")}</Link>}</Button></div>}
       </section>
     </>}

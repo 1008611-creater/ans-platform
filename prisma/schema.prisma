@@ -10,6 +10,9 @@ datasource db {
 }
 
 model User {
+  agriComputeGrants AgriTeamComputeGrant[]
+  agriJudgeScores AgriJudgeScore[]
+  agriRankingPublications AgriRankingPublication[]
   agriEvidenceRequests AgriEvidenceRequest[]
   agriEvidenceEvents AgriEvidenceEvent[]
   agriEvidenceManifests AgriEvidenceManifest[]
@@ -1186,6 +1189,7 @@ model Competition {
 }
 
 model TeamCompetition {
+  agriComputeGrants AgriTeamComputeGrant[]
   agriWallEntry AgriWallEntry?
   id            String      @id @default(cuid())
   teamId        String
@@ -1956,6 +1960,8 @@ model AgriTaskCommandReceipt {
 }
 // P1 foundation: an edition must be explicitly configured; no users or rules are seeded by this migration.
 model AgriWorkspace {
+  judgeScores AgriJudgeScore[]
+  rankingPublications AgriRankingPublication[]
   evidenceRequests AgriEvidenceRequest[]
   wallEntries AgriWallEntry[]
   popularityRound AgriPopularityRound?
@@ -1984,6 +1990,7 @@ model AgriWorkspace {
   @@map("agri_workspaces")
 }
 model AgriRuleVersion {
+  computeGrants AgriTeamComputeGrant[]
   id String @id @default(cuid())
   competitionId String
   workspace AgriWorkspace @relation("AgriWorkspaceRules", fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
@@ -2102,6 +2109,7 @@ model AgriEntryStage {
   @@map("agri_entry_stages")
 }
 model AgriStageSubmission {
+  judgeScores AgriJudgeScore[]
   evidenceRequests AgriEvidenceRequest[]
   evidenceObjects AgriEvidenceObject[]
   evidenceManifests AgriEvidenceManifest[]
@@ -2219,6 +2227,7 @@ model AgriSubmissionReceipt {
   requestHash String @db.VarChar(64)
   submissionId String?
   submission AgriStageSubmission? @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  wallSync Json?
   appliedRevision Int
   createdAt DateTime @db.Timestamptz(3)
   @@unique([competitionId, actorId, operation, idempotencyKey])
@@ -3271,4 +3280,63 @@ model AgriPopularityVote {
   @@unique([roundId, wallEntryId, userId])
   @@index([roundId, wallEntryId])
   @@map("agri_popularity_votes")
+}
+
+/// Event-only compute wallet. Personal balance and cash ledgers remain separate.
+model AgriTeamComputeGrant {
+  entry TeamCompetition @relation(fields: [teamCompetitionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  rule AgriRuleVersion @relation(fields: [ruleVersionId, competitionId], references: [id, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  grantedBy User @relation(fields: [grantedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  id String @id
+  competitionId String
+  teamCompetitionId String
+  ruleVersionId String
+  amount Decimal @db.Decimal(24, 6)
+  used Decimal @default(0) @db.Decimal(24, 6)
+  grantedById String
+  grantedAt DateTime @default(now()) @db.Timestamptz(3)
+  @@unique([competitionId, teamCompetitionId], map: "agri_team_compute_grants_competitionid_teamcompetitionid_key")
+  @@map("agri_team_compute_grants")
+}
+
+/// Immutable individual scores against an exact frozen stage submission.
+model AgriJudgeScore {
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  submission AgriStageSubmission @relation(fields: [submissionId, entryStageId, competitionId], references: [id, entryStageId, competitionId], onDelete: Restrict, onUpdate: NoAction)
+  judge User @relation(fields: [judgeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  id String @id
+  competitionId String
+  entryStageId String
+  submissionId String
+  stage String
+  judgeId String
+  dimensions Json
+  requestHash String
+  idempotencyKey String
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, submissionId, judgeId])
+  @@unique([competitionId, judgeId, idempotencyKey])
+  @@map("agri_judge_scores")
+}
+
+/// Organizer-confirmed append-only judging panel and public result events.
+model AgriRankingPublication {
+  workspace AgriWorkspace @relation(fields: [competitionId], references: [competitionId], onDelete: Restrict, onUpdate: NoAction)
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  previous AgriRankingPublication? @relation("AgriRankingHistory", fields: [previousId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  next AgriRankingPublication[] @relation("AgriRankingHistory")
+  id String @id
+  competitionId String
+  stage String
+  action String
+  previousId String?
+  snapshot Json
+  sourceHash String
+  actorId String
+  idempotencyKey String
+  requestHash String
+  createdAt DateTime @db.Timestamptz(3)
+  @@unique([competitionId, actorId, idempotencyKey])
+  @@index([competitionId, stage, createdAt(sort: Desc), id(sort: Desc)], map: "agri_ranking_latest")
+  @@map("agri_ranking_publications")
 }

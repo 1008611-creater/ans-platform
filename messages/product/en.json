@@ -1140,7 +1140,11 @@
       "demoUrl": "Demo link",
       "summary": "Project summary",
       "materials": "Applicable materials"
-    }
+    },
+    "syncToWall": "Publish this submission to the AgriHackathon wall and join the Star vote",
+    "syncToWallHint": "Only the project title, submitted summary and links become public. Private materials stay private. You may submit without syncing; first-time wall binding closes when voting starts, while existing entries can still sync.",
+    "submittedAndSynced": "Submission received and synced to the AgriHackathon wall.",
+    "submittedWallClosed": "Submission received. First-time wall binding has closed, so this submission was not added to the wall."
   },
   "agriWorks": {
     "manageDecisions": "Manage eligibility and corrections",
@@ -2393,7 +2397,9 @@
       "UNKNOWN": "Not confirmed",
       "ELIGIBLE": "Eligible for finals",
       "INELIGIBLE": "Ineligible or eligibility withdrawn"
-    }
+    },
+    "computeGrantPoints": "Compute points per team",
+    "computeGrantUnconfigured": "Blank or 0: no grant"
   },
   "agriPhases": {
     "eyebrow": "Edition workspace",
@@ -3567,5 +3573,116 @@
       "market": "Find tools, resources or services",
       "orders": "Purchases and delivery progress"
     }
+  },
+  "agriCredits": {
+    "title": "Team compute grant",
+    "loading": "Loading team credits…",
+    "unconfigured": "The organizer has not configured a team grant. No credits will be issued yet.",
+    "available": "The team owner can claim this edition's compute grant.",
+    "waiting": "Waiting for the team owner to claim or for the confirmed compute period to open.",
+    "amount": "Granted",
+    "used": "Used",
+    "remaining": "Remaining",
+    "usage": "Used for workflows in your team's private projects. Team credits are used first; insufficient team credits will not charge your personal balance.",
+    "paused": "Spending is currently paused. Refunds for existing requests still return to the original wallet.",
+    "claim": "Claim team credits",
+    "refresh": "Refresh credits",
+    "errors": {
+      "INTERNAL_ERROR": "Credits are temporarily unavailable. Please retry.",
+      "AGRI_TEAM_PERMISSION_REQUIRED": "You are no longer an active member of this team. Refresh your team.",
+      "AGRI_ENTRY_NOT_FOUND": "This team entry was not found in the current edition.",
+      "AGRI_CREDITS_ENTRY_INACTIVE": "This team is not currently eligible.",
+      "AGRI_CREDITS_CYCLE_CLOSED": "The compute period has not started or has ended.",
+      "AGRI_TEAM_MANAGER_REQUIRED": "Only the team owner can claim credits.",
+      "RATE_LIMITED": "Too many requests. Please try again shortly."
+    }
+  },
+  "agriRankings": {
+    "adminTitle": "Judge scores and result confirmation",
+    "back": "Back to publication review",
+    "loading": "Loading",
+    "login": "Sign in to continue",
+    "refresh": "Refresh",
+    "stage": {
+      "PRELIMINARY": "Preliminary",
+      "FINAL": "Final"
+    },
+    "panelTitle": "Assign judges",
+    "panelHint": "Enter {count} authorized judge account IDs, one per line. The panel locks after its first ballot.",
+    "savePanel": "Confirm judge panel",
+    "candidateTitle": "Results awaiting confirmation",
+    "scoreTitle": "Judge ballot",
+    "preliminaryFormula": "Five dimensions weigh 30% / 25% / 20% / 15% / 10%. The mean of 3 judges contributes 80%; normalized frozen Stars contribute 20%.",
+    "finalFormula": "Seven judges score five dimensions. Discard one highest and one lowest total, then average the remaining five.",
+    "judgeCount": "{count} / {required} judge ballots",
+    "total": "Total {score}",
+    "score": "Record ballot",
+    "select": "Include in confirmed results",
+    "scoreImmutable": "Ballots bind to the deadline-frozen submission and cannot be overwritten. Verify all five scores before submitting.",
+    "dimension": {
+      "innovation": "Innovation · 30% (0–100)",
+      "technical": "Technical depth · 25% (0–100)",
+      "completeness": "Demo completeness · 20% (0–100)",
+      "problem": "Real value · 15% (0–100)",
+      "fit": "Track fit · 10% (0–100)"
+    },
+    "recordScore": "Submit my ballot",
+    "confirmTitle": "Confirm official results",
+    "orderHint": "Select teams and confirm their order. Select ten preliminary finalists (all if fewer than ten). Organizers must explicitly resolve ties; lower scores cannot outrank higher scores.",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "noSpecialAward": "Do not award yet",
+    "confirmConsent": "I verified ballots, frozen votes, selected teams and tie order. Publication saves an immutable result snapshot.",
+    "publish": "Confirm and publish results",
+    "withdrawReason": "Withdrawal reason",
+    "withdraw": "Withdraw public results",
+    "pending": "The outcome is not confirmed. Retry the original request to avoid a duplicate action.",
+    "retry": "Check and retry original request",
+    "finalistsTitle": "Preliminary Top 10 Finalists",
+    "finalTitle": "Demo Day Final Awards",
+    "publicUnavailable": "Results are temporarily unavailable. Refresh later.",
+    "noPublicWorks": "Results are confirmed. Projects appear only after team consent and publication review.",
+    "scoreLine": "Professional {professional} · Total {total} · Valid Stars {votes}",
+    "demo": "Live Demo",
+    "repository": "GitHub / repository",
+    "wall": "Project wall",
+    "award": {
+      "FIRST": "First prize",
+      "SECOND": "Second prize",
+      "THIRD": "Third prize",
+      "TECHNICAL": "Best technical implementation",
+      "CREATIVE": "Best creative concept",
+      "POPULARITY": "Popularity award",
+      "FINALIST": "Top 10 Finalist"
+    },
+    "errors": {
+      "INTERNAL_ERROR": "Unable to complete this action. Refresh and retry.",
+      "INVALID_INPUT": "Check the input and score ranges.",
+      "AGRI_SCOPE_REQUIRED": "This account lacks permission.",
+      "AGRI_SCORE_PANEL_MEMBERSHIP_REQUIRED": "You are not assigned to this judge panel.",
+      "AGRI_SCORE_ALREADY_RECORDED": "Your ballot for this frozen submission is already recorded.",
+      "AGRI_SCORE_JUDGES_COMPLETE": "All required judge ballots have been recorded.",
+      "AGRI_SCORE_INDEPENDENT_JUDGE_REQUIRED": "You cannot judge your own team.",
+      "AGRI_SCORE_FROZEN_SUBMISSION_REQUIRED": "The stage must close and the submission must freeze first.",
+      "AGRI_RANKING_PANEL_REQUIRED": "Assign the judge panel first.",
+      "AGRI_RANKING_PANEL_INVALID": "Assign exactly 3 preliminary or 7 final judges without duplicates.",
+      "AGRI_RANKING_PANEL_LOCKED": "The panel is locked after a ballot or confirmed results.",
+      "AGRI_RANKING_VOTES_NOT_FROZEN": "Popularity voting has not frozen yet.",
+      "AGRI_RANKING_NO_ENTRIES": "No eligible submissions for this stage.",
+      "AGRI_RANKING_JUDGES_INCOMPLETE": "Some teams are missing required judge ballots.",
+      "AGRI_RANKING_SOURCE_CHANGED": "Scores or candidates changed. Refresh before confirming.",
+      "AGRI_RANKING_ORDER_INVALID": "Check the selected teams, count and tie ordering.",
+      "AGRI_RANKING_AWARD_INVALID": "Special awards require a selected team.",
+      "AGRI_RANKING_ALREADY_CONFIRMED": "Confirmed snapshots cannot be overwritten.",
+      "AGRI_RANKING_REVISION_CONFLICT": "Result status changed. Refresh.",
+      "AGRI_WORKSPACE_DISABLED": "The event workspace is paused.",
+      "AGRI_IDEMPOTENCY_CONFLICT": "This request key is bound to different content.",
+      "ACCOUNT_CHANGED": "Your signed-in account changed. Reopen this page.",
+      "ACCOUNT_UNAVAILABLE": "This account cannot use this feature.",
+      "UNAUTHORIZED": "Sign in first.",
+      "RATE_LIMITED": "Too many requests. Try again shortly."
+    },
+    "popularityVotes": "{votes} valid Stars at close",
+    "wallEligibility": "Official rankings include only eligible projects published on the project wall for this edition and not withdrawn. Saving a stage submission alone does not qualify it for ranking."
   }
 }

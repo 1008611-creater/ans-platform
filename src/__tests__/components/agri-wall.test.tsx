@@ -37,16 +37,20 @@ describe("AgriHackathon wall", () => {
     expect(screen.getByText(zh.leaderHint)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /star 12/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "真实田间项目" })).toHaveAttribute("href", "/explore/member-field-project");
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     fireEvent.click(screen.getByRole("button", { name: zh.shareVote }));
     expect(await screen.findByRole("button", { name: zh.shareCopied })).toBeInTheDocument();
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/competitions/agrihackathon/wall/field-project"));
   });
   it("actively confirms an existing Star without toggling it off", async () => {
     const data = view(); data.entries[0].offer.starred = true;
     data.round = { revision: 1, opensAt: "2026-10-01T00:00:00Z", closesAt: "2026-10-20T00:00:00Z", state: "OPEN", frozenAt: null, results: [] };
-    const fetcher = vi.fn(async (_url: string, init?: RequestInit) => respond(init?.method === "PUT" ? { starred: true, starCount: 12 } : data));
+    const eventVote = { open: true, eligible: true, voted: false };
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => respond(url.endsWith("/star") ? { starred: true, starCount: 12, eventVote: { ...eventVote, voted: init?.method === "PUT" } } : data));
     vi.stubGlobal("fetch", fetcher);
     render(<AgriWall />);
-    fireEvent.click(await screen.findByRole("button", { name: zh.confirmVote }));
+    fireEvent.click(await screen.findByRole("button", { name: new RegExp(zh.confirmVote) }));
     await waitFor(() => expect(fetcher.mock.calls.some(([, init]) => init?.method === "PUT")).toBe(true));
     const command = fetcher.mock.calls.find(([, init]) => init?.method === "PUT")![1]!;
     expect(JSON.parse(String(command.body))).toEqual({ starred: true });

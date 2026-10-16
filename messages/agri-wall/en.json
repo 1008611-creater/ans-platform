@@ -157,5 +157,11 @@
   "claimCompute": "Claim compute credits",
   "viewShowcase": "Finalists & showcase",
   "rankingListTitle": "Final valid vote rankings",
-  "rankVotes": "{count} votes"
+  "rankVotes": "{count} votes",
+  "autoPreliminary": "Preliminary entry",
+  "autoFinal": "Final entry",
+  "autoSummary": "AgriHackathon project: {summary}",
+  "autoDescription": "The participant chose to publish this project to the AgriHackathon wall for the event showcase.\n\nSubmitted summary:\n{summary}",
+  "autoLicense": "Public display does not grant an open-source or commercial license. Contact the author before reuse.",
+  "autoDeliverable": "Public project summary and experience links"
 }

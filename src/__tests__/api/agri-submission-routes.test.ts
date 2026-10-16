@@ -31,7 +31,7 @@ describe("stage submissions HTTP", () => {
   it("uses session identity and separates preparation from formal submission", async () => {
     expect((await POST(write(prepare))).status).toBe(200); expect(prepareAgriStage).toHaveBeenCalledWith(actor, prepare);
     expect(executeAgriSubmissionCommand).not.toHaveBeenCalled();
-    expect((await POST(write())).status).toBe(200); expect(executeAgriSubmissionCommand).toHaveBeenCalledWith(actor, submit);
+    expect((await POST(write())).status).toBe(200); expect(executeAgriSubmissionCommand).toHaveBeenCalledWith(actor, { ...submit, syncToAgriWall: true });
   });
   it("rejects forged actors, dates, roles, publication and XP instructions", async () => {
     for (const extra of [{ submittedById: "forged" }, { acceptedAt: "2026-10-07T00:00:00Z" }, { role: "OWNER" }, { publicConsent: true }, { awardedXp: 99 }]) expect((await POST(write({ ...submit, ...extra }))).status).toBe(400);

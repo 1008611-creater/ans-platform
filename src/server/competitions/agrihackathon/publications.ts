@@ -1,4 +1,4 @@
-import type { DbTransaction } from "@/lib/db";
+﻿import type { DbTransaction } from "@/lib/db";
 import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
@@ -200,4 +200,55 @@ export async function readAgriPublications(raw:unknown={}):Promise<AgriPublicati
 export async function readAgriPublicPublication(publicationId:string):Promise<AgriPublicPublication> {
   agriPublicationsListQuerySchema.parse({cursor:publicationId});
   return db.$transaction(async tx=>{const ctx=await publicContext(tx);const [row]=ctx.enabled ? await publicRows(tx,ctx.competitionId,null,publicationId) : [];if(!row)return fail("AGRI_PUBLICATION_NOT_FOUND",404);return publicView(row);},{timeout:15000});
+}
+
+
+import { agriPublicRankingsSchema,type AgriPublicRankings } from "@/contracts/agri-rankings";
+import { marketListingInputSchema } from "@/contracts/marketplace";
+import { latestAgriRankingEvent } from "./rankings";
+interface RankingSnapshotItem {entryStageId:string;submissionId:string;artifactVersionId:string|null;listingVersion:number|null;rank:number;professionalScore:number;publicScore:number|null;totalScore:number;validStars:number;awards:AgriPublicRankings["boards"][number]["items"][number]["awards"];prizeMinor:number;listingId:string|null}
+/** Accept the same public-safe, versioned wall consent as one-click submissions; never load artifact bodies or private materials. */
+async function rankingWallProjection(tx:Tx,competitionId:string,item:Pick<RankingSnapshotItem,"entryStageId"|"submissionId"|"artifactVersionId"|"listingId"|"listingVersion">){
+ if(!item.listingId||!item.listingVersion||!item.artifactVersionId)return null;
+ const [row]=await tx.$queryRaw<Array<{slug:string;payload:unknown;teamName:string}>>`SELECT l.slug,lv.payload,t.name AS "teamName" FROM agri_stage_submissions s
+  JOIN agri_entry_stages es ON es.id=s."entryStageId" AND es."competitionId"=s."competitionId"
+  JOIN team_competitions tc ON tc.id=es."teamCompetitionId" AND tc."entryStatus"<>'REJECTED' JOIN teams t ON t.id=tc."teamId"
+  JOIN agri_wall_entries w ON w."teamCompetitionId"=tc.id AND w."listingId"=${item.listingId}
+  JOIN market_listings l ON l.id=w."listingId" AND l.status='PUBLISHED'
+  JOIN market_listing_versions lv ON lv."listingId"=l.id AND lv.version=${item.listingVersion} AND lv."reviewedAt" IS NOT NULL
+  JOIN users seller ON seller.id=l."sellerId" AND NOT seller.flagged AND seller."deletedAt" IS NULL
+  JOIN projects p ON p.id=s."projectId" AND p."ownerId"=seller.id AND p."teamId"=tc."teamId" AND p.status='ACTIVE'
+  JOIN team_members member ON member."teamId"=tc."teamId" AND member."userId"=seller.id AND member.status='ACTIVE' AND member.role IN('OWNER','ADMIN')
+  WHERE s.id=${item.submissionId} AND s."competitionId"=${competitionId} AND s."entryStageId"=${item.entryStageId} AND s."artifactVersionId"=${item.artifactVersionId}
+  AND lv.payload->>'category'='competition' AND lv.payload->>'subcategory'='agri-wall' FOR SHARE OF s,es,tc,w,l,lv,seller,p,member`;
+ if(!row)return null;
+ const parsed=marketListingInputSchema.safeParse(row.payload);if(!parsed.success||parsed.data.priceMinor!==0)return null;
+ const listing=parsed.data,href="/explore/member-"+encodeURIComponent(row.slug);
+ return {detailHref:href,wallHref:href,content:{title:listing.title,summary:listing.summary,teamName:row.teamName,track:"",repositoryUrl:safe(listing.githubUrl??listing.sourceUrl),demoUrl:safe(listing.usageUrl??listing.previewUrl)}};
+}
+/** Public leaderboards project immutable results through live consent, account and withdrawal checks. */
+export async function readAgriPublicRankings():Promise<AgriPublicRankings>{
+ return db.$transaction(async tx=>{
+  const ctx=await publicContext(tx);const boards:AgriPublicRankings["boards"]=[];
+  if(!ctx.enabled)return {competitionId:ctx.competitionId,boards};
+  for(const stage of ["PRELIMINARY","FINAL"] as const){
+   const event=await latestAgriRankingEvent(tx,ctx.competitionId,stage);if(event?.action!=="CONFIRM")continue;
+   const snapshot=event.snapshot as {items:RankingSnapshotItem[];popularityAwards?:Array<Pick<RankingSnapshotItem,"entryStageId"|"submissionId"|"artifactVersionId"|"listingId"|"listingVersion">&{validStars:number}>};
+   const items:AgriPublicRankings["boards"][number]["items"]=[];
+   for(const candidate of snapshot.items){
+    const projection=await rankingWallProjection(tx,ctx.competitionId,candidate);
+    const [publication]=await tx.$queryRaw<Array<{id:string}>>`SELECT id FROM agri_publications WHERE "competitionId"=${ctx.competitionId} AND "entryStageId"=${candidate.entryStageId}`;
+    const [row]=publication?await publicRows(tx,ctx.competitionId,null,publication.id):[];
+    const exactPublic=row?.submissionId===candidate.submissionId?publicView(row):null;
+    // An explicit publication withdrawal must never resurrect through the wall fallback.
+    const [withdrawal]=publication?await tx.$queryRaw<Array<{action:string}>>`SELECT action FROM agri_publication_events WHERE "publicationId"=${publication.id} ORDER BY revision DESC LIMIT 1`:[];
+    if(withdrawal?.action==="WITHDRAW"||(!exactPublic&&!projection))continue;
+    items.push({rank:candidate.rank,professionalScore:candidate.professionalScore,publicScore:candidate.publicScore,totalScore:candidate.totalScore,validStars:candidate.validStars,awards:candidate.awards,prizeMinor:candidate.prizeMinor,publicationId:exactPublic?.id??null,detailHref:exactPublic?"/competitions/agrihackathon/showcase/"+encodeURIComponent(exactPublic.id):projection!.detailHref,listingId:projection?candidate.listingId:null,wallHref:projection?.wallHref??null,content:exactPublic?.content??projection!.content});
+   }
+   const popularityAwards:AgriPublicRankings["boards"][number]["popularityAwards"]=[];
+   for(const winner of snapshot.popularityAwards??[]){const projection=await rankingWallProjection(tx,ctx.competitionId,winner);if(projection)popularityAwards.push({title:projection.content.title,teamName:projection.content.teamName,validStars:winner.validStars,detailHref:projection.detailHref});}
+   boards.push({id:event.id,stage,publishedAt:event.createdAt.toISOString(),items,popularityAwards});
+  }
+  return agriPublicRankingsSchema.parse({competitionId:ctx.competitionId,boards});
+ },{timeout:20000});
 }

@@ -14,6 +14,16 @@ describe("public project stars", () => {
     expect(m.find).not.toHaveBeenCalled(); expect(m.actor).not.toHaveBeenCalled();
     expect(m.listing).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "listing", status: "PUBLISHED", publishedVersion: { not: null }, seller: { deletedAt: null, flagged: false } } }));
   });
+  it("exposes only the current viewer's event action state without writing votes on GET", async () => {
+    const eventVote = { open: true, eligible: true, voted: false };
+    m.raw.mockResolvedValueOnce([eventVote]);
+    expect(await getMarketListingStar("listing", "buyer")).toEqual({ starCount: 2, starred: true, eventVote });
+    expect(m.upsert).not.toHaveBeenCalled(); expect(m.remove).not.toHaveBeenCalled();
+    const sql = m.raw.mock.calls[0][0].join("");
+    expect(sql).toContain("clock_timestamp()");
+    expect(sql).toContain("agri_official_roster_members");
+    expect(sql).not.toMatch(/INSERT|UPDATE|DELETE/);
+  });
   it("upserts the same unique desired star for request retries", async () => {
     expect(await setMarketListingStar("listing", "buyer", { starred: true })).toEqual({ starCount: 2, starred: true });
     await setMarketListingStar("listing", "buyer", { starred: true });

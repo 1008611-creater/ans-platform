@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
     apiComputeRequest: { findMany: vi.fn() },
     userModelCredential: { findFirst: vi.fn() },
     user: { update: vi.fn() },
-    quotaLedger: { create: vi.fn() },
+    quotaLedger: { create: vi.fn(), findUnique: vi.fn() },
     workflow: { findUnique: vi.fn() },
     auditLog: { create: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
     $queryRaw: vi.fn(),
@@ -69,6 +69,7 @@ beforeEach(() => {
   mocks.db.workflowNodeRun.updateMany.mockResolvedValue({ count: 1 });
   mocks.db.user.update.mockResolvedValue({ quotaPoints: 13 });
   mocks.db.quotaLedger.create.mockResolvedValue({ id: "ledger1" });
+  mocks.db.quotaLedger.findUnique.mockResolvedValue(null);
   mocks.db.auditLog.create.mockResolvedValue({ id: "audit1" });
   mocks.db.$transaction.mockImplementation(async (fn: (tx: typeof mocks.db) => unknown) => fn(mocks.db));
 });

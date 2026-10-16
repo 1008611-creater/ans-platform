@@ -63,10 +63,10 @@ export const agriStageSubmissionCommandSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("saveDraft"), idempotencyKey: key, entryStageId: id,
     expectedRevision: revision, draft: agriStageDraftSchema }).strict(),
   z.object({ action: z.literal("submit"), idempotencyKey: key, entryStageId: id,
-    expectedRevision: revision, expectedRuleVersionId: id, officialMemberIds: agriOfficialMemberIdsSchema.optional(), evidenceIntentIds: z.array(key).max(20).optional(), content: agriStageSubmissionContentSchema }).strict(),
+    expectedRevision: revision, expectedRuleVersionId: id, syncToAgriWall: z.boolean().default(true), officialMemberIds: agriOfficialMemberIdsSchema.optional(), evidenceIntentIds: z.array(key).max(20).optional(), content: agriStageSubmissionContentSchema }).strict(),
   z.object({ action: z.literal("correctSubmission"), idempotencyKey: key, entryStageId: id,
     expectedRevision: revision, expectedRuleVersionId: id, previousSubmissionId: id,
-    correctionPermitId: id, evidenceIntentIds: z.array(key).max(20).optional(), content: agriStageSubmissionContentSchema }).strict(),
+    correctionPermitId: id, syncToAgriWall: z.boolean().default(true), evidenceIntentIds: z.array(key).max(20).optional(), content: agriStageSubmissionContentSchema }).strict(),
 ]);
 export type AgriStageSubmissionCommand = z.infer<typeof agriStageSubmissionCommandSchema>;
 export type AgriFormalSubmissionCommand = Extract<AgriStageSubmissionCommand, { action: "submit" }>;
@@ -147,6 +147,7 @@ export type AgriSubmissionLifecycleSnapshot = z.infer<typeof agriSubmissionLifec
 // All choices must come from an explicitly confirmed version; there are no historical defaults.
 export const agriSubmissionRequirementsSchema = z.object({
   schemaVersion: z.literal(1),
+  computeGrantPoints: z.number().min(0).max(1_000_000).multipleOf(0.000001).optional(),
   repositoryRequired: z.boolean(), repositoryRefRequired: z.boolean(), demoRequired: z.boolean(),
   materials: z.array(z.object({ key: itemKey, kind: z.enum(["TEXT", "LINK", "ARTIFACT"]), required: z.boolean() }).strict()).max(20),
 }).strict().superRefine((requirements, ctx) => {
@@ -222,3 +223,5 @@ export interface AgriStageList {
   competitionId: string; stages: AgriStageListRow[]; nextCursor: string | null;
   canExport: boolean; hasPrivateMaterials: boolean;
 }
+
+export type AgriWallSyncResult = { state: "NOT_REQUESTED" | "BINDING_CLOSED" } | { state: "SYNCED"; listingId: string; listingVersion: number; href: string };
