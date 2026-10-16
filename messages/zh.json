@@ -2279,8 +2279,8 @@
   "aigcCompetition": {
     "navLabel": "AIGC 比赛中心",
     "eyebrow": "AIGC CONTEST CLUSTER",
-    "title": "AIGC 比赛中心",
-    "description": "面向参赛团队的统一入口：在 ANS 里规划比赛、进入生产工作台、追踪过程证据，并准备最终提交物。",
+    "title": "AIGC 创作工具",
+    "description": "准备比赛作品，先建立项目，再按需要选择工具。",
     "createProject": "创建比赛项目",
     "openTeams": "进入团队与比赛",
     "statusTitle": "集群入口已就绪",
@@ -2295,8 +2295,8 @@
       "deliverables": "核心交付物",
       "deliverablesValue": "8"
     },
-    "connectorsTitle": "比赛工具集群",
-    "connectorsDescription": "把 ANS 作为共同地图和项目边界，需要进入专业工作台时再打开对应系统。",
+    "connectorsTitle": "你现在要做什么？",
+    "connectorsDescription": "选一个与你当前任务相符的工作台，无需把所有工具都用一遍。",
     "clusterSectionLabel": "01 / 工具集群",
     "openTool": "打开工作台",
     "integrationLabel": "外部工作台",
@@ -2310,7 +2310,7 @@
       "solara": {
         "name": "Solara",
         "host": "plan.cauai.fun",
-        "role": "计划与任务编排",
+        "role": "拆计划、分任务",
         "description": "把比赛说明拆成里程碑、负责人、截止时间和可见的执行计划。",
         "status": "需要登录",
         "detail": "该服务会跳转到自己的登录页。ANS 只保留受控入口，不保存外部凭据。"
@@ -2318,16 +2318,16 @@
       "plane": {
         "name": "Plane",
         "host": "plane.cauai.fun",
-        "role": "备用项目管理与审计",
-        "description": "需要追溯、交接或审计时，使用第二套事项看板保存上下文。",
+        "role": "复查过程、交接项目",
+        "description": "需要单独记录事项、复查过程或交接时使用。",
         "status": "可作为备用",
         "detail": "Plane 不是本次比赛的默认任务源，需要独立审计轨迹时再使用。"
       },
       "toonflow": {
         "name": "AIGC 工作台",
         "host": "toonflow.cauai.fun",
-        "role": "创意生产工作台",
-        "description": "从已确认的计划进入素材生成、迭代和生产交接。",
+        "role": "制作素材、修改作品",
+        "description": "按已确认的方案制作素材、修改作品并准备交付。",
         "status": "生产入口",
         "detail": "制作阶段使用这个工作台。ANS 页面负责保留共同入口和提交检查清单。"
       }
@@ -2381,7 +2381,12 @@
       "links": "已核验的外部链接",
       "ownership": "凭据仍由各系统保管",
       "next": "比赛流程验证后再增加 API 同步"
-    }
+    },
+    "toolDetails": "使用前了解一下",
+    "externalNotice": "外部工作台需单独登录，项目和进度不会自动同步回 ANS。",
+    "preparationTitle": "参赛准备",
+    "resourcesTitle": "项目与素材入口",
+    "openNamedTool": "打开 {name}（新标签页）"
   },
   "homepageNext": {
     "eyebrow": "让 AI 工作真正走到结果",
@@ -2466,35 +2471,38 @@
   },
   "competitionsHub": {
     "eyebrow": "比赛",
-    "title": "比赛中心",
-    "description": "ANS 的比赛入口。先在这里选赛事，再进入对应页面查看赛道、赛制与提交要求。",
+    "title": "赛事活动",
+    "description": "看看有哪些活动，或继续你的参赛项目。",
     "openLabel": "进入",
     "items": {
       "aigc": {
-        "name": "AIGC 比赛集群",
+        "name": "AIGC 创作工具",
         "tagline": "面向 AIGC 创作团队的比赛工作台",
-        "description": "以 ANS 作为共同地图，需要专业能力时再打开对应系统：计划、生产与审计各用各的工作台。",
+        "description": "准备 AIGC 比赛作品时，按需要选择计划、创作或项目管理工具。",
         "status": "已开放",
         "highlights": [
           "3 个外部工作台",
           "4 个比赛阶段",
           "8 项提交检查"
         ],
-        "cta": "进入 AIGC 比赛中心"
+        "cta": "选择创作工具"
       },
       "agrihackathon": {
         "name": "AgriHackathon 农客松",
         "tagline": "CAUHub 发起组织的首届 AI Hackathon",
-        "description": "连续 48 小时共创，一周线上展示和评审，选出 10 支队伍参加下周末 Demo Day。正式日期待确认。",
+        "description": "CAUHub 发起的 AI 黑客松，面向中国农业大学在校学生和毕业三年内校友。项目可在 ANS 外完成；正式日期待确认。",
         "status": "筹备中",
         "highlights": [
           "3 条赛道",
           "线下 60–80 人",
           "预算 5000 元"
         ],
-        "cta": "查看农客松赛制"
+        "cta": "了解农客松"
       }
-    }
+    },
+    "chooseEvent": "选择活动",
+    "continueTeam": "已有队伍？继续参赛",
+    "eventOverview": "活动概况"
   },
   "agriHackathon": {
     "boundaryNextOpen": "查看本届独立阶段窗口",
@@ -2681,7 +2689,19 @@
       "ownership": "知识产权归团队，官方非独占展示传播",
       "next": "仅按本届已发布的独立窗口开放操作"
     },
-    "syncNote": "所有正式日期待确认，视觉时间节点不作为报名或提交截止。"
+    "syncNote": "所有正式日期待确认，视觉时间节点不作为报名或提交截止。",
+    "intro": "CAUHub 发起的 AI 黑客松。项目可在 ANS 外完成，参赛前需发布到作品墙并绑定队伍。",
+    "nextAction": "选择下一步",
+    "alreadyEntering": "已经在参赛？",
+    "entryHint": "发布只是第一步，绑定队伍后还需正式提交材料。",
+    "justLooking": "先看看作品",
+    "trackFocus": "评审关注什么",
+    "guideTitle": "参赛指南",
+    "toolsTitle": "找工具与项目",
+    "browseProjects": "浏览项目",
+    "myWorkspace": "我的工作台",
+    "readPublishedRules": "阅读已发布规则",
+    "bindProject": "绑定参赛项目"
   },
   "templates": {
     "metadataTitle": "模板广场",
