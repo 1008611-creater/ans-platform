@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { RevealDetails } from "@/components/catalog/reveal-details";
 
 function errorMessage(status: number, fallback: string) {
   if (status === 401) return "请先登录后参与社区。";
@@ -17,6 +19,7 @@ function errorMessage(status: number, fallback: string) {
 }
 
 export function CommunityPanel({ actorId, showGrowth = true }: { actorId?: string; showGrowth?: boolean }) {
+  const t = useTranslations("product.communityPage");
   const request = useCommunityRequest(actorId);
   const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
@@ -101,9 +104,6 @@ export function CommunityPanel({ actorId, showGrowth = true }: { actorId?: strin
 
   return (
     <div className="ans-community-data space-y-6">
-      <p className="text-sm text-muted-foreground">
-        等级记录你的参与和成长；项目上架与管理权限按实际审核与授权执行。
-      </p>
       {error && <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-destructive p-4 text-sm">
         <p>{error}</p><Button variant="outline" onClick={() => void load()} disabled={loading || pending}>重试</Button>
         <Link href="/login?callbackUrl=/community" className="underline">前往登录</Link>
@@ -134,12 +134,12 @@ export function CommunityPanel({ actorId, showGrowth = true }: { actorId?: strin
         </Card>}
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
-            <CardHeader><h2 className="text-lg font-semibold">最近经验流水</h2><p className="text-sm text-muted-foreground">仅自己可见，最多展示最近 50 条。</p></CardHeader>
+            <CardHeader><RevealDetails id="community-history-guide" kind="heading" className="pe-12" label={t("historyGuide")} details={<p>{t("historyDetails")}</p>}><h2 className="text-lg font-semibold">最近经验流水</h2></RevealDetails></CardHeader>
             <CardContent>
               {me.ledger.length === 0 ? <p className="text-sm text-muted-foreground">暂无经验流水，完成首次签到留下成长记录。</p> :
-                <ul className="max-h-96 divide-y overflow-auto">
-                  {me.ledger.map((entry) => <li key={entry.id} className="flex items-start justify-between gap-3 py-3">
-                    <div className="min-w-0"><p className="break-words text-sm">{entry.note || (entry.reason in XP_RULES ? XP_RULES[entry.reason as keyof typeof XP_RULES].note : "经验调整")}</p>
+                <ul className="max-h-96 divide-y overflow-auto [overflow-wrap:anywhere]">
+                  {me.ledger.map((entry) => <li key={entry.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
+                    <div className="min-w-0 flex-1"><p className="break-words text-sm">{entry.note || (entry.reason in XP_RULES ? XP_RULES[entry.reason as keyof typeof XP_RULES].note : "经验调整")}</p>
                       <time dateTime={entry.createdAt} className="text-xs text-muted-foreground">{new Date(entry.createdAt).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })}</time>
                     </div>
                     <div className="shrink-0 text-right"><span className="text-sm font-medium">{entry.amount > 0 ? "+" : ""}{entry.amount} XP</span>
@@ -168,7 +168,7 @@ export function CommunityPanel({ actorId, showGrowth = true }: { actorId?: strin
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><h2 className="text-lg font-semibold">贡献榜</h2><p className="text-sm text-muted-foreground">经验前 20 位，同分同名次。</p></CardHeader>
+            <CardHeader><RevealDetails id="community-board-guide" kind="heading" className="pe-12" label={t("boardGuide")} details={<p>{t("boardDetails")}</p>}><h2 className="text-lg font-semibold">贡献榜</h2></RevealDetails></CardHeader>
             <CardContent className="space-y-4">
               <p className="rounded-lg bg-muted p-3 text-sm">我的名次：第 {contributions.me.rank} 名 · {contributions.me.xp.toLocaleString()} XP</p>
               <div className="max-h-96 overflow-auto">

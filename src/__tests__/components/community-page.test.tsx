@@ -29,11 +29,11 @@ it("restores full private growth and real community destinations without a secon
   expect(screen.getByTestId("complete-growth")).toBeInTheDocument();
   expect(screen.getByTestId("community-history")).toBeInTheDocument();
   expect(mocks.growth).toHaveBeenCalledExactlyOnceWith("self");
-  expect(mocks.growthPanel).toHaveBeenCalledWith(expect.objectContaining({ actorId: "self", editable: true, user: { ...profile, checkedInToday: true } }));
+  expect(mocks.growthPanel).toHaveBeenCalledWith(expect.objectContaining({ actorId: "self", editable: true, showActivity: false, user: { ...profile, checkedInToday: true } }));
   expect(mocks.communityPanel).toHaveBeenCalledWith({ actorId: "self", showGrowth: false });
-  expect(screen.getByRole("link", { name: "works worksBody" })).toHaveAttribute("href", "/showcase");
-  expect(screen.getByRole("link", { name: "profile profileBody" })).toHaveAttribute("href", "/@real-member");
-  expect(screen.getByRole("link", { name: "publish publishBody" })).toHaveAttribute("href", "/explore/submit");
+  expect(screen.getByRole("link", { name: "works" })).toHaveAttribute("href", "/showcase");
+  expect(screen.getByRole("link", { name: "profile" })).toHaveAttribute("href", "/@real-member");
+  expect(screen.getByRole("link", { name: "publish" })).toHaveAttribute("href", "/explore/submit");
 });
 it("does not manufacture growth for a removed or unavailable account", async () => {
   mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member" } });

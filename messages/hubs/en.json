@@ -22,26 +22,26 @@
   "navigationDescription": "Projects, hubs, community, events, market and workspace",
   "mobileNavigation": "Primary navigation",
   "eyebrow": "ANS / HUBS",
-  "title": "Find your Hub",
-  "description": "Discover projects, workflows and available tools by university, knowledge and creative direction.",
-  "allWorkflows": "All workflows",
+  "title": "Where would you like to start?",
+  "description": "A Hub brings together projects, tools and workflows for a university or topic. Choose one to explore.",
+  "allWorkflows": "Browse market",
   "searchLabel": "Find a Hub",
   "searchPlaceholder": "University, knowledge, AIGC, full-stack development",
   "search": "Search",
   "emptySearch": "No matching Hub found.",
   "clear": "Clear filters",
   "unavailable": "Unavailable",
-  "catalogUnavailable": "The project directory could not be loaded. Projects and unknown counts are hidden. Try again later.",
-  "directoryNote": "Counts reflect explicitly linked content. References, tool entries and runnable workflows are separate, not university enrollment figures or official accreditation.",
+  "catalogUnavailable": "Projects could not be loaded. Please refresh later.",
+  "directoryNote": "Counts describe listed content, not members or verified university enrollment.",
   "back": "Back to Hubs",
   "universityNote": "ANS × {university}. Currently includes explicitly linked campus events. Other universities are not open for enrollment.",
   "runnableTitle": "Runnable workflows",
-  "runnableNote": "Provide your own information and confirm the cost before running. Opening a page does not start work or charge points.",
+  "runnableNote": "Ready to make something? Add your information and confirm the cost before running. Browsing is free.",
   "noRunnable": "No runnable workflow has been linked to this Hub yet.",
   "resourcesTitle": "Tools and content",
-  "projectsTitle": "Projects and references",
-  "projectsNote": "Open a project to check its source and use. External tools set their own login, costs and delivery terms. Open-source references are not proof of ANS runtime integration.",
-  "noProjects": "No published project has been explicitly linked yet.",
+  "projectsTitle": "Projects and open-source references",
+  "projectsNote": "Want to learn or deploy a project? Open it for instructions. External services have their own accounts and pricing. Open-source references must be used according to their documentation.",
+  "noProjects": "No related projects yet.",
   "recipeCost": "Confirmed execution costs {points} points. See the preparation page for editing and saving.",
   "prepareWorkflow": "Prepare my project",
   "counts": {
@@ -64,28 +64,28 @@
   "items": {
     "cauhub": {
       "name": "CAUHub",
-      "description": "Events and campus collaboration for China Agricultural University, with explicitly linked content."
+      "description": "Events, projects and makers at China Agricultural University."
     },
     "vibehub": {
       "name": "ANS VibeHub",
-      "description": "Existing concepts, courses, learning paths and practical methods."
+      "description": "Learn AI coding with terms, courses, practice and Skills."
     },
     "aigc": {
       "name": "AIGC Hub",
-      "description": "Image, video and audio tools with real projects and open-source references."
+      "description": "Tools for images, animated stories and video."
     },
     "full-stack": {
       "name": "Full-stack Development Hub",
-      "description": "A runnable personal website recipe, development, deployment and open-source references."
+      "description": "Build websites and apps, from portfolios to open-source projects."
     }
   },
   "kinds": {
     "runnable": "Runnable on ANS",
-    "hosted-tool": "Tool entry; page permissions apply",
+    "hosted-tool": "Tool",
     "knowledge": "Knowledge and learning",
     "event": "Event entry",
     "reference": "Open-source or external reference",
-    "external": "External product; original terms apply"
+    "external": "External product"
   },
   "resources": {
     "agrihackathon": {
@@ -97,8 +97,8 @@
       "description": "Browse existing courses, concepts, learning paths, practices and skill methods."
     },
     "aigc": {
-      "title": "AIGC Workbench",
-      "description": "Open the video tool page and check connection, account, models and costs before use."
+      "title": "AIGC Workspace",
+      "description": "Create stories and videos. Review models and pricing before use."
     },
     "hypit": {
       "title": "Hypit creation workspace",
@@ -108,14 +108,14 @@
   "recipes": {
     "resume-website": {
       "title": "Resume and portfolio website",
-      "description": "Reuse a fixed website template to organize your real experience and projects into a site you can preview, edit and export."
+      "description": "Add your experience and work, then preview, edit and export a personal website."
     }
   },
   "recipeMeteredCost": "Confirm to run. Points settle from actual model usage. CNY 1 = 10 points.",
   "openWorkflow": "Open and personalize",
   "viewMarketCard": "View market card",
   "workflowsUnavailable": "Workflow availability could not be loaded. Please try again shortly.",
-  "marketUnavailable": "The market card could not be loaded. The workflow remains available through its own entry.",
+  "marketUnavailable": "The market listing could not be loaded. Please try again later.",
   "associations": {
     "title": "Hub associations",
     "hint": "A workflow can belong to multiple Hubs without duplication. Association review does not publish the workflow, list it in the market or award experience.",
@@ -156,7 +156,7 @@
     "next": "Next page",
     "memberTitle": "Member workflows",
     "loadUnavailable": "Member workflows are unavailable; their count is unknown. Try again later.",
-    "emptyMembers": "No reviewed, published member workflows explicitly belong to this Hub yet.",
+    "emptyMembers": "No member workflows yet.",
     "publicVersion": "Fixed reviewed version v{version}",
     "use": "Enter your details and use",
     "market": "View this exact version in the market",
@@ -198,5 +198,8 @@
     "authorOnly": "Only the author can submit a new Hub association request."
   },
   "officialWorkflowsTitle": "Official workflows",
-  "noOfficialWorkflows": "This Hub has no associated official workflows yet."
+  "noOfficialWorkflows": "No official workflows yet.",
+  "guideLabel": "What is a Hub?",
+  "workflowGuideLabel": "How do workflows work?",
+  "projectGuideLabel": "How do I use these projects?"
 }
