@@ -2710,7 +2710,7 @@
     "bindProject": "Link your project",
     "claimCompute": "Claim compute credits",
     "pipelineSectionLabel": "00 / ALL-IN-ONE FLOW",
-    "pipelineTitle": "5-Step Competition Loop",
+    "pipelineTitle": "Where would you like to start?",
     "pipelineDescription": "From reading rules and claiming compute credits to submitting your build, rallying Stars on the wall, and checking Finalist rankings.",
     "pipeline": {
       "rules": {
@@ -2722,9 +2722,9 @@
       },
       "compute": {
         "step": "STEP 02",
-        "title": "Claim compute & prototype",
-        "description": "Claim ANS compute credits and use ready-to-run templates and workflows to build your 48h MVP.",
-        "cta": "Go to compute center",
+        "title": "Prepare compute & prototype",
+        "description": "Check available credits and pricing, or redeem a credit voucher you already have.",
+        "cta": "Open compute center",
         "href": "/workspace/credits"
       },
       "submit": {
@@ -2737,7 +2737,7 @@
       "star": {
         "step": "STEP 04",
         "title": "Publish to wall & rally Stars",
-        "description": "Showcase your work on the AgriHackathon project wall and share a one-click link to rally community Stars.",
+        "description": "Reviewed public projects can join the wall after team linking. Check the wall for valid Star counting status.",
         "cta": "Open project wall",
         "href": "/explore?category=competition&subcategory=agri-wall"
       },

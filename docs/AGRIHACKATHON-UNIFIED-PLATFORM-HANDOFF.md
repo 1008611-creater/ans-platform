@@ -1,7 +1,7 @@
 # 农客松一体化赛事平台（AgriHackathon All-in-One Hub）后端与深层机制交接规范（Codex Handoff）
 
 > **当前状态**：前端文案收敛、五步一站式参赛闭环（`读规则 → 拿算力 → 报名传作品 → 上作品墙拉 Star → 入围汇报与最终排名`）、作品墙实时排名角标与距上一名差额提示、一键复制拉 Star 口令等功能已在 [`src/app/competitions/agrihackathon/page.tsx`](../src/app/competitions/agrihackathon/page.tsx) 与 [`src/components/competitions/agri-wall.tsx`](../src/components/competitions/agri-wall.tsx) 落地。
-> 本文档面向 **GPT-6.1-sol (Codex)**，定义需要改动数据库事务、服务端状态机与 API 契约的 **4 项深层工程闭环任务**。
+> 本轮已依据用户明确授权完成四项开发及隔离数据库验证。默认勾选同步公开、即时有效 Star 和阶段计分口径以本轮确认要求为准；本地实现、PR 审查和生产上线为不同状态，生产迁移与部署未执行。
 
 ## 2026-10-16 实施与验收记录
 
