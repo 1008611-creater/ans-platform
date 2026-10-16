@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
@@ -13,6 +13,8 @@ import { setLocale } from "@/lib/i18n/client";
 import { resetSitePreferences, updateSitePreferences, useSitePreferences } from "@/lib/site-preferences";
 import "./site-settings.css";
 
+const subscribeMounted = () => () => {};
+
 export function SiteSettings() {
   const zh = useLocale().startsWith("zh");
   const ui = useTranslations("companion");
@@ -21,9 +23,9 @@ export function SiteSettings() {
   const { data: session } = useSession();
   const navigation = useWorkspaceNavigation();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeMounted, () => true, () => false);
   const [saved, setSaved] = useState(false);
-  useEffect(() => { setMounted(true); const show = () => setOpen(true); window.addEventListener("ans:open-settings", show); return () => window.removeEventListener("ans:open-settings", show); }, []);
+  useEffect(() => { const show = () => setOpen(true); window.addEventListener("ans:open-settings", show); return () => window.removeEventListener("ans:open-settings", show); }, []);
   useEffect(() => { document.documentElement.dataset.ansMotion = prefs.motion; }, [prefs.motion]);
   useEffect(() => { if (!saved) return; const timer = setTimeout(() => setSaved(false), 2200); return () => clearTimeout(timer); }, [saved]);
   return <Sheet open={open} onOpenChange={setOpen}>
