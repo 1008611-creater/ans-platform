@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import type { VoiceOffer } from "@/contracts/voice";
+import { SANCTUARY_EVENT_NAME, loadSanctuaryState } from "@/domain/mascot/sanctuary";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSitePreferences } from "@/lib/site-preferences";
 
@@ -14,7 +15,8 @@ type AvatarMessage =
   | { event: "stop-speech" }
   | { event: "hello" }
   | { event: "pointer"; x: number; y: number }
-  | { event: "visibility"; visible: boolean };
+  | { event: "visibility"; visible: boolean }
+  | { event: "sanctuary"; state: unknown };
 
 /** Sends public guide replies and a bound actor ID; no credentials or private task records. */
 export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, speech, onVoiceStatus }: { actor?: string | null; voicePolicy?: VoiceOffer | null; phase: string; open: boolean; speech?: SpeechRequest | null; onVoiceStatus?: (status: string) => void }) {
@@ -116,6 +118,21 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   useEffect(() => {
     if (animated && open) send({ event: "hello" });
   }, [animated, open, send]);
+  useEffect(() => {
+    if (!animated) return;
+    const syncSanctuary = () => {
+      send({ event: "sanctuary", state: loadSanctuaryState() });
+    };
+    syncSanctuary();
+    window.addEventListener(SANCTUARY_EVENT_NAME, syncSanctuary);
+    window.addEventListener("ans-sanctuary-sync", syncSanctuary);
+    window.addEventListener("storage", syncSanctuary);
+    return () => {
+      window.removeEventListener(SANCTUARY_EVENT_NAME, syncSanctuary);
+      window.removeEventListener("ans-sanctuary-sync", syncSanctuary);
+      window.removeEventListener("storage", syncSanctuary);
+    };
+  }, [animated, send]);
   useEffect(() => {
     if (!animated) return;
     let last = 0;

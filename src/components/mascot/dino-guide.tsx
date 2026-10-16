@@ -205,7 +205,13 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           <button type="button" aria-pressed={mode === "agent"} onClick={() => changeMode("agent")} disabled={!actor || agent.busy || agent.checkingReceipts}>{ui("agentMode")}</button>
           <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>{ui("guideMode")}</button>
         </div>
-        <CompanionSanctuaryBar onSpeak={text => setSpeech({ id: ++sequence.current, text })} />
+        <CompanionSanctuaryBar
+          onSpeak={text => setSpeech({ id: ++sequence.current, text })}
+          onInjectPrompt={promptText => {
+            updateThread(mode, current => ({ ...current, draft: promptText }));
+            requestAnimationFrame(() => composer.current?.focus());
+          }}
+        />
         {prefs.voice && <p className="px-4 pb-2 text-xs text-muted-foreground" role="status">{voiceHint}</p>}
         {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
         {undo?.mode === mode && <div className="ans-companion-undo" role="status"><span>{ui("conversationCleared")}</span><button type="button" onClick={restoreConversation}>{ui("undoClear")}</button></div>}

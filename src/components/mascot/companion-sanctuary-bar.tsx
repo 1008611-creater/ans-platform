@@ -88,7 +88,13 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
   );
 }
 
-export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) => void }) {
+export function CompanionSanctuaryBar({
+  onSpeak,
+  onInjectPrompt,
+}: {
+  onSpeak?: (text: string) => void;
+  onInjectPrompt?: (prompt: string) => void;
+}) {
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [tab, setTab] = useState<"none" | "pet" | "wardrobe" | "adopt">("none");
   const [slot, setSlot] = useState<WardrobeSlot>("headwear");
@@ -271,8 +277,9 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
               if (navigator.clipboard?.writeText) {
                 void navigator.clipboard.writeText(promptText);
               }
+              onInjectPrompt?.(promptText);
               commit(prev => ({ ...prev, starBeans: prev.starBeans + 10, totalAgentChats: prev.totalAgentChats + 1 }));
-              setStatusNote(`📋 已复制【#${styleEval.dominantTag}·${sp.name}】专属 Agent 咒语 (+10🪙)！可直接粘贴向 AI 提问`);
+              setStatusNote(`📋 已注入并复制【#${styleEval.dominantTag}·${sp.name}】专属 Agent 咒语 (+10🪙)！`);
               onSpeak?.(promptText);
             }}
             className="flex w-full items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-left text-[11px] font-semibold text-amber-700 hover:bg-amber-500/15 dark:text-amber-300"

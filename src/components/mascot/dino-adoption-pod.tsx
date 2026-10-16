@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DINO_SPECIES,
   DINO_SPECIES_LIST,
@@ -45,13 +45,43 @@ export function DinoAdoptionPod({
   const [crackStep, setCrackStep] = useState<number>(3);
   const [isCracking, setIsCracking] = useState<boolean>(false);
   const [expanded, setExpanded] = useState<boolean>(!compact);
+  const [frameReady, setFrameReady] = useState<boolean>(false);
+  const previewFrameRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     setSanctuary(loadSanctuaryState());
     const sync = () => setSanctuary(loadSanctuaryState());
     window.addEventListener(SANCTUARY_EVENT_NAME, sync);
-    return () => window.removeEventListener(SANCTUARY_EVENT_NAME, sync);
+    window.addEventListener("ans-sanctuary-sync", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(SANCTUARY_EVENT_NAME, sync);
+      window.removeEventListener("ans-sanctuary-sync", sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.source !== previewFrameRef.current?.contentWindow) return;
+      if (event.data?.type === "ans-dino-ready") {
+        setFrameReady(true);
+        previewFrameRef.current?.contentWindow?.postMessage(
+          { type: "ans-dino", event: "sanctuary", state: loadSanctuaryState() },
+          window.location.origin,
+        );
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  useEffect(() => {
+    previewFrameRef.current?.contentWindow?.postMessage(
+      { type: "ans-dino", event: "sanctuary", state: sanctuary },
+      window.location.origin,
+    );
+  }, [sanctuary]);
 
   const currentSpecies = DINO_SPECIES[sanctuary.speciesId] ?? DINO_SPECIES.mint_star;
   const currentIcon = SPECIES_ICONS[currentSpecies.id] ?? "🦖";
@@ -212,7 +242,7 @@ export function DinoAdoptionPod({
                 appearance: "none",
                 border: `1.5px dashed ${currentSpecies.palette.eyeGlowHex}`,
                 borderRadius: "16px",
-                padding: "10px 6px",
+                padding: "8px 6px",
                 background: `radial-gradient(circle at 35% 30%, ${currentSpecies.palette.skinHex}44, ${currentSpecies.palette.crestHex}22, rgba(8,14,20,0.85))`,
                 color: "#fff",
                 cursor: "pointer",
@@ -220,13 +250,52 @@ export function DinoAdoptionPod({
                 flexDirection: "column",
                 alignItems: "center",
                 gap: "4px",
+                position: "relative",
+                overflow: "hidden",
                 transform: isCracking ? "scale(0.92) rotate(-5deg)" : "scale(1)",
                 transition: "transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
             >
-              <span style={{ fontSize: "32px", lineHeight: 1.1 }}>
-                {crackStep >= 3 ? currentIcon : "🥚"}
-              </span>
+              {crackStep >= 3 ? (
+                <span
+                  style={{
+                    position: "relative",
+                    width: "88px",
+                    height: "72px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "28px",
+                      lineHeight: 1.1,
+                      opacity: frameReady ? 0.18 : 1,
+                      transition: "opacity 0.25s ease",
+                    }}
+                  >
+                    {currentIcon}
+                  </span>
+                  <iframe
+                    ref={previewFrameRef}
+                    src="/mascot/3d/embed.html"
+                    title="3D 灵龙实时预览"
+                    tabIndex={-1}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      border: 0,
+                      pointerEvents: "none",
+                      background: "transparent",
+                    }}
+                  />
+                </span>
+              ) : (
+                <span style={{ fontSize: "34px", lineHeight: 1.2, padding: "12px 0" }}>🥚</span>
+              )}
               <span
                 style={{
                   fontSize: "10.5px",
