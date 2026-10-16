@@ -9,6 +9,10 @@ export async function register() {
     const { startEvidenceWorker } = await import("@/server/competitions/agrihackathon/evidence-worker");
     startEvidenceWorker();
   }
+  if (process.env.NEXT_RUNTIME === "nodejs" && process.env.NEXT_PHASE !== "phase-production-build" && process.env.NODE_ENV !== "test") {
+    const { ensureDefaultAgriEditionBootstrapped } = await import("@/server/competitions/agrihackathon/bootstrap");
+    void ensureDefaultAgriEditionBootstrapped();
+  }
 }
 
 export function onRequestError() {}

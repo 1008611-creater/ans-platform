@@ -14,6 +14,7 @@ import { publicReviewBlockers } from "@/domain/projects/review";
 import type { FactRecord } from "@/domain/projects/pack";
 import { db } from "@/lib/db";
 import { lockCompetitionRegistrationWindow, assertAgriRegistrationOpen } from "./agrihackathon/registration";
+import { ensureDefaultAgriEditionBootstrapped, shouldAutoBootstrapAgriEdition } from "./agrihackathon/bootstrap";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 
 export class CompetitionError extends Error {
@@ -107,10 +108,19 @@ export async function updateCompetition(actorId: string, competitionId: string, 
 }
 
 export async function listCompetitions() {
-  return db.competition.findMany({
+  const configuredId = process.env.ANS_AGRIHACKATHON_COMPETITION_ID?.trim();
+  const rows = await db.competition.findMany({
     orderBy: [{ status: "asc" }, { startsAt: "asc" }, { createdAt: "desc" }],
     include: { _count: { select: { teams: true } } },
   });
+  if (shouldAutoBootstrapAgriEdition(configuredId) && !rows.some((row) => row.id === configuredId)) {
+    await ensureDefaultAgriEditionBootstrapped(configuredId);
+    return db.competition.findMany({
+      orderBy: [{ status: "asc" }, { startsAt: "asc" }, { createdAt: "desc" }],
+      include: { _count: { select: { teams: true } } },
+    });
+  }
+  return rows;
 }
 
 /**
@@ -121,10 +131,18 @@ export async function findAgriHackathonCompetition() {
   const competitionId = process.env.ANS_AGRIHACKATHON_COMPETITION_ID?.trim();
   if (!competitionId || competitionId.length > 80) return null;
   try {
-    return await db.competition.findUnique({
+    let found = await db.competition.findUnique({
       where: { id: competitionId },
       select: { id: true, status: true, startsAt: true, endsAt: true },
     });
+    if (!found && shouldAutoBootstrapAgriEdition(competitionId)) {
+      await ensureDefaultAgriEditionBootstrapped(competitionId);
+      found = await db.competition.findUnique({
+        where: { id: competitionId },
+        select: { id: true, status: true, startsAt: true, endsAt: true },
+      });
+    }
+    return found;
   } catch {
     console.error("competition: agrihackathon binding lookup failed");
     return null;
@@ -132,21 +150,27 @@ export async function findAgriHackathonCompetition() {
 }
 
 export async function getCompetition(competitionId: string, viewerId?: string | null) {
-  const competition = await db.competition.findUnique({
-    where: { id: competitionId },
-    include: {
-      teams: {
-        where: { entryStatus: { not: "REJECTED" } },
-        orderBy: { createdAt: "asc" },
-        include: {
-          team: { select: { id: true, name: true, slug: true, ownerId: true } },
-          submissionVersion: {
-            select: { id: true, version: true, publication: { select: { status: true, withdrawnAt: true } }, artifact: { select: { title: true, projectId: true } } },
+  const queryCompetition = () =>
+    db.competition.findUnique({
+      where: { id: competitionId },
+      include: {
+        teams: {
+          where: { entryStatus: { not: "REJECTED" } },
+          orderBy: { createdAt: "asc" },
+          include: {
+            team: { select: { id: true, name: true, slug: true, ownerId: true } },
+            submissionVersion: {
+              select: { id: true, version: true, publication: { select: { status: true, withdrawnAt: true } }, artifact: { select: { title: true, projectId: true } } },
+            },
           },
         },
       },
-    },
-  });
+    });
+  let competition = await queryCompetition();
+  if (!competition && shouldAutoBootstrapAgriEdition(competitionId)) {
+    await ensureDefaultAgriEditionBootstrapped(competitionId);
+    competition = await queryCompetition();
+  }
   if (!competition) throw new CompetitionError(404, "NOT_FOUND", "赛事不存在。");
   const viewerTeamIds = viewerId
     ? await db.teamMember.findMany({

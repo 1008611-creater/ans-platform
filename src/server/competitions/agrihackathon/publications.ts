@@ -6,6 +6,7 @@ import { agriPublicationCommandSchema, agriPublicationContentSchema, agriPublica
   agriPublicationsListQuerySchema, agriPublicPublicationSchema, agriPublicUrlSchema,
   type AgriPublicationManagement, type AgriPublicationResult, type AgriPublicationsList, type AgriPublicPublication } from "@/contracts/agri-publications";
 import { configuredAgriEditionId, lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent, agriDatabaseClock, type AgriWorkspaceContext } from "./workspace";
+import { bootstrapAgriEditionInTx, shouldAutoBootstrapAgriEdition } from "./bootstrap";
 import { projectAgriStageFreeze } from "./submissions";
 type Tx = DbTransaction;
 type Authority = Awaited<ReturnType<typeof requireAgriScope>>;
@@ -185,7 +186,11 @@ async function publicRows(tx:Tx,competitionId:string,cursor:string|null,id:strin
 async function publicContext(tx:Tx) {
   const competitionId=configuredAgriEditionId();
   // Shared workspace lock linearizes every read against explicit withdrawal/correction.
-  const [workspace]=await tx.$queryRaw<Array<{enabled:boolean;publishedRuleVersionId:string|null}>>`SELECT enabled,"publishedRuleVersionId" FROM agri_workspaces WHERE "competitionId"=${competitionId} FOR SHARE`;
+  let [workspace]=await tx.$queryRaw<Array<{enabled:boolean;publishedRuleVersionId:string|null}>>`SELECT enabled,"publishedRuleVersionId" FROM agri_workspaces WHERE "competitionId"=${competitionId} FOR SHARE`;
+  if(!workspace && shouldAutoBootstrapAgriEdition(competitionId)) {
+    await bootstrapAgriEditionInTx(tx,{competitionId,silent:true});
+    [workspace]=await tx.$queryRaw<Array<{enabled:boolean;publishedRuleVersionId:string|null}>>`SELECT enabled,"publishedRuleVersionId" FROM agri_workspaces WHERE "competitionId"=${competitionId} FOR SHARE`;
+  }
   if(!workspace) return fail("AGRI_WORKSPACE_NOT_CONFIGURED",503);
   return {competitionId,enabled:workspace.enabled && !!workspace.publishedRuleVersionId};
 }

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { agriWorkspaceScopeSchema, type AgriWorkspaceScope } from "@/contracts/agrihackathon";
 import { agriRulesDraftSchema, agriWorkspaceCommandSchema, agriGrantCommandSchema, AgriWorkspaceError, type AgriRulesDraft, type AgriGrantManagementView } from "@/contracts/agri-workspace";
 import { agriSubmissionRequirementsSchema } from "@/contracts/agri-submissions";
+import { bootstrapAgriEditionInTx, ensureDefaultAgriEditionBootstrapped, shouldAutoBootstrapAgriEdition } from "./bootstrap";
 
 type Tx = DbTransaction;
 interface WorkspaceRow { id: string; competitionId: string; enabled: boolean; draftRevision: number; rulesDraft: unknown; confirmedRuleVersionId: string | null; publishedRuleVersionId: string | null }
@@ -26,7 +27,11 @@ export async function agriDatabaseClock(tx: Tx) {
 /** Shared workspace-first lock order for rules, grants and future stage submissions. */
 export async function lockAgriWorkspace(tx: Tx, actorId: string): Promise<AgriWorkspaceContext> {
   const competitionId = configuredAgriEditionId();
-  const [workspace] = await tx.$queryRaw<WorkspaceRow[]>`SELECT * FROM agri_workspaces WHERE "competitionId" = ${competitionId} FOR UPDATE`;
+  let [workspace] = await tx.$queryRaw<WorkspaceRow[]>`SELECT * FROM agri_workspaces WHERE "competitionId" = ${competitionId} FOR UPDATE`;
+  if (!workspace && shouldAutoBootstrapAgriEdition(competitionId)) {
+    await bootstrapAgriEditionInTx(tx, { competitionId, silent: true });
+    [workspace] = await tx.$queryRaw<WorkspaceRow[]>`SELECT * FROM agri_workspaces WHERE "competitionId" = ${competitionId} FOR UPDATE`;
+  }
   if (!workspace) return fail("AGRI_WORKSPACE_NOT_CONFIGURED", 503);
   const [actor] = await tx.$queryRaw<Array<{ flagged: boolean; deletedAt: Date | null }>>`SELECT flagged, "deletedAt" FROM users WHERE id = ${actorId} FOR SHARE`;
   if (!actor || actor.flagged || actor.deletedAt) return fail("ACCOUNT_UNAVAILABLE", 403);
@@ -116,12 +121,16 @@ async function ruleView(tx: Tx, competitionId: string, ruleId: string) {
 }
 export async function readAgriPublicGuide() {
   const competitionId = configuredAgriEditionId();
-  // One consistent snapshot: a publication switch cannot mix pointers and content.
-  return db.$transaction(async tx => {
-    const [workspace] = await tx.$queryRaw<WorkspaceRow[]>`SELECT * FROM agri_workspaces WHERE "competitionId" = ${competitionId}`;
-    if (!workspace || !workspace.publishedRuleVersionId) return null;
-    return { competitionId, enabled: workspace.enabled, rule: await ruleView(tx, competitionId, workspace.publishedRuleVersionId) };
-  }, { isolationLevel: "RepeatableRead" });
+  const readOnce = () =>
+    db.$transaction(async tx => {
+      const [workspace] = await tx.$queryRaw<WorkspaceRow[]>`SELECT * FROM agri_workspaces WHERE "competitionId" = ${competitionId}`;
+      if (!workspace || !workspace.publishedRuleVersionId) return null;
+      return { competitionId, enabled: workspace.enabled, rule: await ruleView(tx, competitionId, workspace.publishedRuleVersionId) };
+    }, { isolationLevel: "RepeatableRead" });
+  const initial = await readOnce();
+  if (initial || !shouldAutoBootstrapAgriEdition(competitionId)) return initial;
+  await ensureDefaultAgriEditionBootstrapped(competitionId);
+  return readOnce();
 }
 export async function readAgriWorkspaceRules(actorId: string) {
   return db.$transaction(async tx => {

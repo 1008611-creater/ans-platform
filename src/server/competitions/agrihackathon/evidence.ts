@@ -172,7 +172,7 @@ export async function createEvidence(actorId: string, raw: unknown) {
         if (command.mode !== "UPLOAD") {
             if (command.mode === "GITHUB_ARCHIVE") {
                 githubRepository(command.sourceUrl!);
-                if (source && (source.repository?.url !== command.sourceUrl || (command.originalRef !== null && JSON.stringify(source.repository.ref) !== JSON.stringify(command.originalRef))))
+                if (source && (source.repository?.url !== command.sourceUrl || (command.originalRef !== null && !sameRepositoryRef(source.repository.ref, command.originalRef))))
                     return evidenceFail("AGRI_EVIDENCE_SOURCE_MISMATCH", 400);
             }
             else {
@@ -193,12 +193,20 @@ export async function createEvidence(actorId: string, raw: unknown) {
         await tx.$executeRaw `SELECT pg_advisory_xact_lock(310151730)`;
         await evidenceBudget(tx, ctx.workspace.competitionId, command.entryStageId, actorId, command.submissionId, maxBytes);
         const id = randomUUID(), objectId = randomUUID(), now = await agriDatabaseClock(tx), state = command.mode === "UPLOAD" ? "PREPARED" : "QUEUED";
-        await tx.$executeRaw `INSERT INTO agri_evidence_requests(id,"competitionId","entryStageId","submissionId","projectId","artifactVersionId","actorId",authority,mode,kind,"bindingState",state,"sourceUrl","originalRef","fileName","maxBytes","requestHash","createdAt","expiresAt","objectId","storageKey",backend) VALUES(${id},${ctx.workspace.competitionId},${command.entryStageId},${command.submissionId},${command.projectId},${command.artifactVersionId},${actorId},${authority.kind},${command.mode},${command.kind},${command.submissionId ? "BOUND" : "PREPARED"},${state},${command.sourceUrl},${command.originalRef ? JSON.stringify(command.originalRef) : null}::jsonb,${safeFileName(command.fileName)},${maxBytes},${hash},${now},${command.submissionId ? null : new Date(now.getTime() + 24 * 3600000)},${objectId},${evidenceObjectKey(ctx.workspace.competitionId, id, objectId)},${c.mode})`;
+        const effectiveRef = command.mode === "GITHUB_ARCHIVE" ? (command.originalRef ?? { kind: "TAG" as const, value: "HEAD" }) : command.originalRef;
+        await tx.$executeRaw `INSERT INTO agri_evidence_requests(id,"competitionId","entryStageId","submissionId","projectId","artifactVersionId","actorId",authority,mode,kind,"bindingState",state,"sourceUrl","originalRef","fileName","maxBytes","requestHash","createdAt","expiresAt","objectId","storageKey",backend) VALUES(${id},${ctx.workspace.competitionId},${command.entryStageId},${command.submissionId},${command.projectId},${command.artifactVersionId},${actorId},${authority.kind},${command.mode},${command.kind},${command.submissionId ? "BOUND" : "PREPARED"},${state},${command.sourceUrl},${effectiveRef ? JSON.stringify(effectiveRef) : null}::jsonb,${safeFileName(command.fileName)},${maxBytes},${hash},${now},${command.submissionId ? null : new Date(now.getTime() + 24 * 3600000)},${objectId},${evidenceObjectKey(ctx.workspace.competitionId, id, objectId)},${c.mode})`;
         await tx.$executeRaw `INSERT INTO agri_evidence_events(id,"requestId","competitionId","actorId",action,revision,state,attempt,provenance,"serverAt") VALUES(${randomUUID()},${id},${ctx.workspace.competitionId},${actorId},'CREATE',1,${state},0,'{}'::jsonb,${now})`;
         await saveReceipt(tx, ctx, "create", command.idempotencyKey, hash, command.entryStageId, command.submissionId, id, null, 1);
         await assertAgriAuthorityCurrent(tx, ...authority.grants);
         return { requestId: id, duplicate: false };
     }, { timeout: 20000 });
+}
+function isDefaultHeadRef(ref: EvidenceCreate["originalRef"] | null | undefined) {
+    return !ref || (ref.kind === "TAG" && ref.value === "HEAD");
+}
+function sameRepositoryRef(a: EvidenceCreate["originalRef"] | null | undefined, b: EvidenceCreate["originalRef"] | null | undefined) {
+    if (isDefaultHeadRef(a) && isDefaultHeadRef(b)) return true;
+    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 export function requireEvidenceWriter(ctx: AgriWorkspaceContext) {
     if (!evidenceEnabled() || !ctx.workspace.enabled) return evidenceFail("AGRI_EVIDENCE_DISABLED", 503);
@@ -224,7 +232,7 @@ export async function bindEvidenceIntents(tx: EvidenceTx, ctx: AgriWorkspaceCont
         let row = await evidenceRequest(tx, ctx, id);
         const auth = await evidenceAuthority(tx, ctx, row.entryStageId, true, "TEAM");
         const now = await agriDatabaseClock(tx);
-        if (row.actorId !== ctx.actorId || row.submissionId || row.bindingState !== "PREPARED" || row.entryStageId !== source.entryStageId || row.projectId !== source.projectId || row.artifactVersionId !== source.artifactVersionId || !(row.mode === "UPLOAD" && row.state === "UPLOADED" && row.checkpoint || row.mode === "GITHUB_ARCHIVE" && row.state === "RESOLVED" && row.provenance?.fixedBeforeSubmission === true && source.repository?.url === row.sourceUrl && (!row.originalRef || JSON.stringify(source.repository.ref) === JSON.stringify(row.originalRef))) || !row.expiresAt || row.expiresAt <= now)
+        if (row.actorId !== ctx.actorId || row.submissionId || row.bindingState !== "PREPARED" || row.entryStageId !== source.entryStageId || row.projectId !== source.projectId || row.artifactVersionId !== source.artifactVersionId || !(row.mode === "UPLOAD" && row.state === "UPLOADED" && row.checkpoint || row.mode === "GITHUB_ARCHIVE" && row.state === "RESOLVED" && row.provenance?.fixedBeforeSubmission === true && source.repository?.url === row.sourceUrl && (isDefaultHeadRef(row.originalRef) || sameRepositoryRef(source.repository.ref, row.originalRef))) || !row.expiresAt || row.expiresAt <= now)
             return evidenceFail("AGRI_EVIDENCE_INTENT_INVALID");
         row = await evidenceTransition(tx, row, "BIND", ctx.actorId, null, { submissionId, bindingState: "BOUND", ...(row.mode === "GITHUB_ARCHIVE" ? { state: "QUEUED" as const, nextRunAt: null, attempt: 0 } : {}) });
         if (row.mode === "UPLOAD") await finalizeEvidenceObject(tx, ctx, row);
@@ -259,10 +267,11 @@ export async function autoQueueRepositoryEvidence(
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(310151730)`;
         await evidenceBudget(tx, ctx.workspace.competitionId, entryStageId, ctx.actorId, submissionId, maxBytes);
         const id = randomUUID(), objectId = randomUUID();
-        const reqHash = evidenceHash({ action: "autoQueueRepository", submissionId, url: repository.url, ref: repository.ref });
+        const effectiveRef = repository.ref ?? { kind: "TAG" as const, value: "HEAD" };
+        const reqHash = evidenceHash({ action: "autoQueueRepository", submissionId, url: repository.url, ref: effectiveRef });
         await tx.$executeRaw`
             INSERT INTO agri_evidence_requests(id,"competitionId","entryStageId","submissionId","projectId","artifactVersionId","actorId",authority,mode,kind,"bindingState",state,"sourceUrl","originalRef","fileName","maxBytes","requestHash","createdAt","expiresAt","objectId","storageKey",backend)
-            VALUES(${id},${ctx.workspace.competitionId},${entryStageId},${submissionId},${projectId},${artifactVersionId},${ctx.actorId},'TEAM','GITHUB_ARCHIVE','REPOSITORY','BOUND','QUEUED',${repository.url},${repository.ref ? JSON.stringify(repository.ref) : null}::jsonb,'repository.tar.gz',${maxBytes},${reqHash},${now},${null},${objectId},${evidenceObjectKey(ctx.workspace.competitionId, id, objectId)},${c.mode})
+            VALUES(${id},${ctx.workspace.competitionId},${entryStageId},${submissionId},${projectId},${artifactVersionId},${ctx.actorId},'TEAM','GITHUB_ARCHIVE','REPOSITORY','BOUND','QUEUED',${repository.url},${JSON.stringify(effectiveRef)}::jsonb,'repository.tar.gz',${maxBytes},${reqHash},${now},${null},${objectId},${evidenceObjectKey(ctx.workspace.competitionId, id, objectId)},${c.mode})
         `;
         await tx.$executeRaw`
             INSERT INTO agri_evidence_events(id,"requestId","competitionId","actorId",action,revision,state,attempt,provenance,"serverAt")
