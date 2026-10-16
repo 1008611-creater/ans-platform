@@ -61,6 +61,7 @@ it("keeps every scoring criterion, rule and operational entry behind optional di
     expect(within(scoring!).getByText(item.description)).toBeInTheDocument();
   }
   for (const rule of Object.values(zh.agriHackathon.rules)) expect(screen.getByText(rule)).toBeInTheDocument();
+  for (const description of Object.values(product.agrihackathon.organizerToolDescriptions)) expect(screen.getByText(description)).toBeInTheDocument();
   for (const href of ["/explore/agrihackathon/submit", "/competitions/agrihackathon/submissions", "/competitions/agrihackathon/tasks", "/competitions/agrihackathon/works", "/competitions/agrihackathon/onsite", "/competitions/agrihackathon/popularity", "/competitions/agrihackathon/publication-review", "/competitions/agrihackathon/manage"]) {
     expect(container.querySelector(`a[href="${href}"]`)).toBeInTheDocument();
   }

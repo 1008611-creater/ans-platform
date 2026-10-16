@@ -197,9 +197,12 @@ export default async function AgriHackathonPage() {
         </CompetitionDetails>
         <CompetitionDetails title={pending("organizerTools")}>
           <p className="max-w-3xl text-muted-foreground">{pending("organizerToolsBody")}</p>
-          <div className="flex flex-wrap gap-x-5">{[
+          <div className="grid gap-3 pt-1 sm:grid-cols-2">{([
             ["works", works("title")], ["onsite", onsite("title")], ["publication-review", publications("reviewTitle")], ["popularity", wall("managementTitle")], ["manage", management("title")],
-          ].map(([path,label]) => <Link key={path} href={`/competitions/agrihackathon/${path}`} className={linkClass}>{label}</Link>)}</div>
+          ] as const).map(([path, label]) => <div key={path} className="rounded-lg border bg-background/60 p-3.5">
+            <Link href={`/competitions/agrihackathon/${path}`} className={linkClass}><span>{label}</span><ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" /></Link>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{pending(`organizerToolDescriptions.${path}`)}</p>
+          </div>)}</div>
         </CompetitionDetails>
       </section>
     </div>

@@ -807,6 +807,22 @@
     "rulesPendingBody": "The first-edition plan is shown below. Official dates are not confirmed. Registration, preliminary submissions and final materials open only through the edition’s separate published windows. This overview does not open registration or publish technical guidance.",
     "organizerTools": "Organizer & jury tools",
     "organizerToolsBody": "For authorized staff: review submissions, coordinate on-site demos, approve public showcase entries and configure voting windows.",
+    "organizerToolDescriptions": {
+      "works": "Browse submitted versions by team and stage, run technical checks, and export review CSVs.",
+      "onsite": "Record device, network, and audio checks and share live Demo Day schedule cards.",
+      "publication-review": "Independently review team publication requests and publish approved entries to the showcase.",
+      "popularity": "Set the Beijing-time voting window for the Star popularity award and freeze final rankings.",
+      "manage": "Publish stage windows and technical rules, delegate staff permissions, and record finalist decisions."
+    },
+    "crossNav": {
+      "hub": "Back to AgriHackathon hub",
+      "credits": "02 Compute center",
+      "bindWall": "03 Bind project to wall",
+      "submissions": "03 Stage submissions",
+      "tasks": "My timetable",
+      "wall": "04 Project wall & Star rank",
+      "showcase": "05 Finalists & showcase"
+    },
     "workspaceLinksBody": "Browse the project gallery, AI workflows, and your personal workspace.",
     "openHubs": "Hubs and workflows"
   },
