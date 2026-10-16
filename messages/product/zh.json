@@ -1019,7 +1019,7 @@
     "officialRosterLocked": "初、决赛共用这份已确认名单。队伍后续的成员变动不会改写历史名单。",
     "preliminaryBaseline": "初赛冻结提交：{id}",
     "title": "本队阶段提交",
-    "description": "绑定作品版本，提交初赛与决赛材料，留存不可篡改的评审快照。",
+    "description": "绑定作品版本，上传参赛源码包或锁定 GitHub 代码快照由平台统一托管，并提交初赛与决赛材料。",
     "back": "返回农客松",
     "loading": "正在读取…",
     "login": "登录后准备提交",
@@ -1078,7 +1078,7 @@
     "refValue": "仓库 SHA / Tag",
     "demo": "Demo 地址",
     "demoRequired": "Demo 地址（必填）",
-    "urlHint": "使用稳定的 HTTPS 地址，不含密码、查询参数或临时签名。提交地址不代表已备份仓库或已验证 Demo 可运行。",
+    "urlHint": "使用稳定的 HTTPS 地址，不含密码、查询参数或临时签名。填写外部仓库地址后，可在下方「赛事代码托管与材料存证」面板一键拉取固定版本或直接上传源码压缩包至平台统一托管。",
     "requiredItem": "{key}（必交材料）",
     "optionalItem": "{key}（选交材料）",
     "missingMaterials": "作品介绍、版本、地址格式或必交材料尚不完整，请核对后再提交。",
@@ -1170,8 +1170,8 @@
   },
   "agriWorks": {
     "manageDecisions": "晋级与更正管理",
-    "title": "内部作品汇总",
-    "description": "技术负责人和赛事运营共用的作品数据。按队伍、阶段和提交状态定位材料，查看固定版本与历史；内部访问和导出分别授权。",
+    "title": "参赛作品与托管代码总览",
+    "description": "技术负责人和赛事运营共用的作品与托管代码管理中心。按队伍、阶段和提交状态定位材料，查看固定版本、平台托管源码快照与提交历史；内部访问和导出分别授权。",
     "back": "返回农客松",
     "login": "登录后查看内部作品",
     "loading": "正在读取作品数据…",
@@ -1246,8 +1246,8 @@
       "RATE_LIMITED": "读取太频繁，请稍后再试。",
       "INTERNAL_ERROR": "暂时无法读取作品，请重试。"
     },
-    "reviewCurrent": "检查当前提交",
-    "reviewVersion": "检查第 {number} 次提交",
+    "reviewCurrent": "管理托管代码与核验当前提交",
+    "reviewVersion": "查看托管代码与核验第 {number} 次提交",
     "technicalResult": {
       "PASS": "技术检查通过",
       "NEEDS_ACTION": "技术待处理",
@@ -1256,8 +1256,8 @@
     "entryId": "参赛记录：{id}",
     "stageId": "阶段记录：{id}",
     "correctedFrom": "更正原提交 {id}：{reason}",
-    "evidenceSummary": "文件留存 {stored} · 待处理 {pending} · 需处理 {failed} · 已取消 {cancelled}",
-    "evidenceReferenceOnly": "仅记录引用，尚未留存外部文件。",
+    "evidenceSummary": "已托管代码/存证 {stored} · 处理中 {pending} · 需处理 {failed} · 已取消 {cancelled}",
+    "evidenceReferenceOnly": "仅提交仓库链接引用，尚未在平台托管源码包或快照。",
     "evidenceLate": "其中 {count} 份文件在截止后留存，留存本身不能证明截止版本。"
   },
   "agriReviews": {
@@ -1898,7 +1898,7 @@
       "INVALID_INPUT": "请求内容无效，请刷新记录后重试。",
       "AGRI_CURSOR_INVALID": "历史分页已失效，请刷新列表。"
     },
-    "externalEvidence": "外部材料留存"
+    "externalEvidence": "平台托管代码与材料存证"
   },
   "computeHistory": {
     "title": "算力账单",

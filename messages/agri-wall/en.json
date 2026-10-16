@@ -128,7 +128,7 @@
     "CONFLICT": "The record changed. Refresh and check it before continuing."
   },
   "managementTitle": "Popularity voting settings",
-  "entryFlow": "Projects built elsewhere are welcome: publish ? pass review ? bind your team ? submit your stage entry. Publication alone does not complete event registration.",
+  "entryFlow": "Projects built elsewhere are welcome: publish → pass review → bind your team → submit your stage entry. Publication alone does not complete event registration.",
   "submissionWallTitle": "Check your project wall link",
   "submissionWallReady": "Your team is linked to a public project. Use its entry material version, check the stage requirements, then submit.",
   "submissionWallMissing": "Your team has no wall project yet. Publish a free project, pass review and ask the team owner or administrator to bind it.",
