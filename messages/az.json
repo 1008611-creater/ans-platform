@@ -2691,7 +2691,7 @@
     "boundaryDescription": "Bu versiya əvvəlki qaydaları, istiqamətləri və təqdimetmə siyahısını göstərir. Cari qaydalar, tarixlər və qeydiyyat təsdiq gözləyir.",
     "boundaryItems": {
       "entry": "Bir ANS giriş nöqtəsi",
-      "links": "Əvvəlki istiqamətlər, qiymətləndirmə və mükafatlar yalnız istinad üçündür",
+      "links": "Compute credits: check available balance, pricing rules, and redeem credit codes",
       "ownership": "Komandalar öz işlərini və məlumat icazələrini bəyan edir",
       "next": "Buraxılışın planı təsdiqləndikdən sonra qeydiyyat, təqdimetmə və nəticələri qoşmaq"
     },

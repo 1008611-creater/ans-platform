@@ -166,7 +166,6 @@ export default async function AgriHackathonPage() {
         <h2 id="agri-guide-title" className="mb-4 text-2xl font-semibold">{t("guideTitle")}</h2>
         <CompetitionDetails title={t("phasesTitle")}>
           <p className="max-w-3xl text-muted-foreground">{t("phasesDescription")}</p>
-          <p className="max-w-3xl text-muted-foreground">{t("description")}</p>
           <dl className="grid gap-4 sm:grid-cols-2">{(["tracks", "scale", "phases", "deliverables"] as const).map(key => <div key={key}><dt className="text-muted-foreground">{t(`stats.${key}`)}</dt><dd className="font-medium">{t(`stats.${key}Value`)}</dd></div>)}</dl>
           <ol className="space-y-4">{phases.map(phase => <li key={phase.id}><div className="flex flex-wrap items-center gap-2"><h3 className="font-medium">{phase.label}</h3><Badge variant="secondary">{phase.state}</Badge></div><p className="mt-1 max-w-3xl text-muted-foreground">{phase.description}</p></li>)}</ol>
         </CompetitionDetails>

@@ -2690,7 +2690,7 @@
     "boundaryDescription": "Bu sürüm önceki kuralları, kategorileri ve teslim listesini gösterir. Güncel kurallar, tarihler ve kayıt onay bekliyor.",
     "boundaryItems": {
       "entry": "Tek bir ANS giriş noktası",
-      "links": "Önceki kategoriler, puanlama ve ödüller referans içindir",
+      "links": "Compute credits: check available balance, pricing rules, and redeem credit codes",
       "ownership": "Takımlar kendi çalışmalarını ve veri izinlerini beyan eder",
       "next": "Dönemin planı onaylandıktan sonra kayıt, teslim ve sonuçları bağlamak"
     },

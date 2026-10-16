@@ -2489,15 +2489,15 @@
       },
       "agrihackathon": {
         "name": "AgriHackathon 农客松",
-        "tagline": "CAUHub 发起的农客松一体化赛事平台",
-        "description": "CAUHub 发起的 AI 黑客松，面向中国农业大学在校学生和毕业三年内校友。一站式读规则、领算力、组队传作品、上作品墙拉 Star 并查看 10 强入围与终审排名。",
+        "tagline": "CAUHub 发起的首届 AI 创客马拉松",
+        "description": "面向中国农业大学在校学生和毕业三年内校友（1–5 人组队）。从准备算力、提交作品、上作品墙拉 Star 到查看十强入围与终审排名。",
         "status": "筹备中",
         "highlights": [
-          "3 大赛道 · 领算力参赛",
+          "3 大赛道 · 1–5 人组队",
           "作品墙展示 · 分享拉 Star",
-          "10 强入围 · 3300 元总奖金池"
+          "10 强进决赛 · ¥3,300 奖金池"
         ],
-        "cta": "进入农客松一体化平台"
+        "cta": "进入农客松"
       }
     },
     "chooseEvent": "选择活动",
@@ -2509,9 +2509,9 @@
     "enterWorkbench": "查看本届参赛进度",
     "boundaryDescriptionOpen": "本届参赛通道已打通。算力领取、阶段提交、作品墙拉票与入围榜单均按已发布窗口运行。",
     "navLabel": "农客松比赛",
-    "eyebrow": "AGRIHACKATHON · 一体化赛事平台",
+    "eyebrow": "AGRIHACKATHON · 农客松",
     "title": "AgriHackathon｜农客松",
-    "description": "由 CAUHub 发起的首届 AI 创客马拉松（面向中国农业大学在校本硕博学生及毕业三年内校友，1–5 人组队）。一站式完成：读规则、拿算力、报名传作品、上作品墙找人点 Star、查看十强入围与最终排名。",
+    "description": "CAUHub 发起的首届 AI 创客马拉松，面向中国农业大学在校本硕博学生及毕业三年内校友（1–5 人组队）。",
     "createProject": "创建参赛项目",
     "openTeams": "组建与管理战队",
     "backToHub": "返回比赛中心",
@@ -2524,8 +2524,8 @@
       "scaleValue": "1–5 人",
       "phases": "核心环节",
       "phasesValue": "5 步闭环",
-      "deliverables": "算力支持",
-      "deliverablesValue": "可领算力包"
+      "deliverables": "算力与积分",
+      "deliverablesValue": "算力中心"
     },
     "tracksTitle": "三大赛道（完赛后自选）",
     "tracksDescription": "People、Discovery、Action 三个方向。先把作品跑通，提交时再选择最契合的赛道。",
@@ -2560,11 +2560,11 @@
       }
     },
     "phasesTitle": "四阶段赛程节奏",
-    "phasesDescription": "组队领算力 → 48H 极限共创 → 作品墙拉 Star 与初审 → Demo Day 终审放榜",
+    "phasesDescription": "组队与准备算力 → 48H 开发与交作品 → 作品墙拉 Star 与初审 → Demo Day 终审放榜",
     "phases": {
       "discover": {
-        "label": "01 · 组队报名与领算力",
-        "description": "1–5 人组建战队并领取参赛算力，完赛后再定赛道。",
+        "label": "01 · 组队报名与准备算力",
+        "description": "1–5 人组建战队并准备开发算力，完赛提交时再选赛道。",
         "state": "STEP 1"
       },
       "plan": {
@@ -2681,16 +2681,16 @@
     "openWorkflows": "工作流程",
     "openTemplates": "模板广场",
     "openSkills": "技能",
-    "boundaryTitle": "一体化平台参赛保障",
-    "boundaryDescription": "已全面打通算力中心、组队报名、阶段版本提交、作品墙 Star 拉票与入围公示机制。",
+    "boundaryTitle": "赛事机制与数据边界",
+    "boundaryDescription": "报名、阶段提交、作品墙计票与公开展示分别按各自规则与权限运行。",
     "boundaryItems": {
-      "entry": "一站式主控台：规则、算力、交作品与拉票同屏闭环",
-      "links": "算力直通赋能：支持免费算力池领取与赛事算力券兑换",
-      "ownership": "团队产权保护：私密材料严格隔离，仅公开授权展示内容",
-      "next": "全链路可追溯：有效 Star 计票、10 强入围与最终排名透明公示"
+      "entry": "阶段提交：按初赛与决赛窗口提交固定作品版本与材料",
+      "links": "算力中心：查看可用积分与计费规则，支持兑换已有卡密",
+      "ownership": "隐私隔离：私密参赛材料仅授权人员可见，公开展示须团队单独授权",
+      "next": "人气计票：作品墙有效 Star 按公布窗口独立统计并截止封存"
     },
     "syncNote": "各阶段开启与截止时间均以顶部赛事公示窗口为准。",
-    "intro": "CAUHub 发起的 AI 黑客松（面向中国农业大学在校学生及毕业三年内校友）。一站式读规则、领参赛算力、提交作品并上作品墙分享拉 Star。",
+    "intro": "CAUHub 发起的首届 AI 黑客松，面向中国农业大学在校学生及毕业三年内校友（1–5 人组队）。",
     "nextAction": "选择下一步",
     "alreadyEntering": "已经在参赛？",
     "entryHint": "发布只是第一步，绑定队伍后还需正式提交材料。",
@@ -2705,7 +2705,7 @@
     "claimCompute": "领取参赛算力",
     "pipelineSectionLabel": "00 / 一站式参赛闭环",
     "pipelineTitle": "准备从哪一步开始？",
-    "pipelineDescription": "告别多处跳转。读规则、拿算力、交作品、拉 Star 与查入围全部集成在同一主线。",
+    "pipelineDescription": "读规则、准备算力、交作品、上作品墙拉 Star 与查看入围结果。",
     "pipeline": {
       "rules": {
         "step": "STEP 01",

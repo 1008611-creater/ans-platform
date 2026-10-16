@@ -2679,7 +2679,7 @@
     "boundaryDescription": "이 버전은 이전 규칙, 분야 및 제출 체크리스트를 보여 줍니다. 이번 대회의 규칙, 일정 및 등록은 확인 대기 중입니다.",
     "boundaryItems": {
       "entry": "ANS 진입점 하나",
-      "links": "이전 분야, 평가 및 시상은 참고용입니다",
+      "links": "Compute credits: check available balance, pricing rules, and redeem credit codes",
       "ownership": "작품과 데이터 허가는 팀이 직접 밝힘",
       "next": "이번 대회 계획 확정 후 등록, 제출 및 결과 공개 연결"
     },
