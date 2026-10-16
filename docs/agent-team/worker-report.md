@@ -279,3 +279,13 @@ Release evidence: C:/Users/lsb/.workbuddy/ans-dino-agent-20261012/delivery-r11/r
 REQ-HUB-COUNT / AC-HUB-COUNT: directory and detail availability now derive from the currently attested published platform recipe. Configured recipe IDs alone do not establish runnable availability. Missing attestation omits execution and generic private-project fallback; unknown read state is translated separately from an empty Hub. Marketplace lookup failure preserves the attested workflow and references while withholding the unavailable market link. GET paths perform no registration, execution or billing mutation.
 
 Validation: 24 directed Hub tests passed; full application and test typecheck exited 0; targeted lint, full repository lint and six architecture boundaries passed. Independent review r2 passed and closed the three r1 issues (Chinese text, updated test callers, market lookup failure). Evidence is retained in the existing delivery-r11 directory. Production build and browser verification remain release gates, not implied by this local report.
+
+
+## 2026-10-16 农客松四项闭环（未部署）
+
+完成算力钱包、默认同步上墙、Star 单步计票及分享、精确初决赛计分与确认榜单。未配置额度不发放。专用本地库完整迁移与五项真实流程通过；最终整合 main 后全量 Vitest 3963 通过 / 47 跳过，应用与测试类型检查及 Next.js 生产构建通过，完整 npm run lint 0 错误（410 条警告），六类边界及 134 个文档链接检查通过。独审发现的锁顺序、跨截止、同分精度、拒队及未上墙参评边界已修复。PR #129 接续已合并的 #127，并保留 #126 的权威排名、搜索排名不变、零票封榜和复制失败手动回退；最终 head 以 PR 回执为准。未合并或生产部署。
+
+
+## 2026-10-16 R32 审查修复
+
+修复默认公开和内部评审依赖公开墙问题，保留明确申请与独立审核；移除无截止版本证据的人气作品链接，保留团队人气结果。运行与测试类型检查通过，9文件171项定向检查通过，随后UI24项含新增回归通过。本机全新隔离PostgreSQL执行92迁移与5项真实流程成功；未访问生产。独审及生产上线记录以发布回执为准，不能将原PR129 head视为修复后版本。

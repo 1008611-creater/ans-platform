@@ -1,4 +1,3 @@
-import { assertAgriWallSubmission } from "./wall";
 import type { DbTransaction } from "@/lib/db";
 import { createHash, randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
@@ -17,7 +16,7 @@ import { finalEligibility, correctionPermit, activeCorrectionPermits, type Permi
 import { bindEvidenceIntents } from "./evidence";
 type Tx = DbTransaction;
 type StageName = "PRELIMINARY" | "FINAL";
-interface Entry { id: string; teamId: string; competitionId: string }
+interface Entry { id: string; teamId: string; competitionId: string; entryStatus: string }
 interface Stage { id: string; competitionId: string; teamCompetitionId: string; stage: StageName;
   revision: number; draft: unknown; currentSubmissionId: string | null; frozenSubmissionId: string | null; createdAt: Date }
 interface Submission { id: string; competitionId: string; entryStageId: string; sequence: number; ruleVersionId: string;
@@ -48,7 +47,7 @@ async function event(tx: Tx, ctx: AgriWorkspaceContext, stage: Stage, action: st
 }
 /** Locks are always workspace -> actor/grants -> entry -> stage -> membership -> project/artifact/version. */
 async function lockTarget(tx: Tx, ctx: AgriWorkspaceContext, id: string, write: boolean) {
-  const [candidate] = await tx.$queryRaw<Array<Entry & { entryStageId: string }>>`SELECT tc.id,tc."teamId",tc."competitionId",es.id AS "entryStageId"
+  const [candidate] = await tx.$queryRaw<Array<Entry & { entryStageId: string }>>`SELECT tc.id,tc."teamId",tc."competitionId",tc."entryStatus",es.id AS "entryStageId"
     FROM agri_entry_stages es JOIN team_competitions tc ON tc.id=es."teamCompetitionId"
     WHERE es.id=${id} AND es."competitionId"=${ctx.workspace.competitionId}`;
   if (!candidate) return fail("AGRI_STAGE_NOT_FOUND", 404);
@@ -61,7 +60,7 @@ async function lockTarget(tx: Tx, ctx: AgriWorkspaceContext, id: string, write: 
     try { authorities.push(await requireAgriScope(tx, ctx, "PRIVATE_MATERIALS_READ")); privateMaterials = true; }
     catch (error) { if (!(error instanceof AgriWorkspaceError) || error.code !== "AGRI_SCOPE_REQUIRED") throw error; }
   }
-  const [entry] = await tx.$queryRaw<Entry[]>`SELECT id,"teamId","competitionId" FROM team_competitions
+  const [entry] = await tx.$queryRaw<Entry[]>`SELECT id,"teamId","competitionId","entryStatus" FROM team_competitions
     WHERE id=${candidate.id} AND "competitionId"=${ctx.workspace.competitionId} FOR UPDATE`;
   if (!entry || entry.teamId !== candidate.teamId) return fail("AGRI_STAGE_NOT_FOUND", 404);
   const [stage] = await tx.$queryRaw<Stage[]>`SELECT * FROM agri_entry_stages WHERE id=${id}
@@ -181,7 +180,7 @@ export async function prepareAgriStage(actorId: string, raw: unknown) {
   return db.$transaction(async tx => {
     const ctx = await lockAgriWorkspace(tx, actorId);
     if (!ctx.workspace.enabled) return fail("AGRI_WORKSPACE_DISABLED");
-    const [entry] = await tx.$queryRaw<Entry[]>`SELECT id,"teamId","competitionId" FROM team_competitions
+    const [entry] = await tx.$queryRaw<Entry[]>`SELECT id,"teamId","competitionId","entryStatus" FROM team_competitions
       WHERE id=${command.teamCompetitionId} AND "competitionId"=${ctx.workspace.competitionId} FOR UPDATE`;
     if (!entry) return fail("AGRI_ENTRY_NOT_FOUND", 404);
     const [prior] = await tx.$queryRaw<Stage[]>`SELECT * FROM agri_entry_stages WHERE "teamCompetitionId"=${entry.id} AND stage=${command.stage} FOR UPDATE`;
@@ -206,6 +205,7 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
       return { entryStageId: stage.id, submissionId: receipt.submissionId, appliedRevision: receipt.appliedRevision, duplicate: true };
     }
     if (!ctx.workspace.enabled) return fail("AGRI_WORKSPACE_DISABLED");
+    if (target.entry.entryStatus === "REJECTED") return fail("AGRI_TEAM_PERMISSION_REQUIRED", 403);
     if (stage.revision !== command.expectedRevision) return fail("AGRI_REVISION_CONFLICT");
     const content = command.action === "saveDraft" ? command.draft : command.content;
     await validateVersions(tx, ctx, target.entry, content);
@@ -241,7 +241,6 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
     };
     let submissionId: string | null = null;
     if (command.action !== "saveDraft") {
-      await assertAgriWallSubmission(tx, ctx, target.entry.id, command.content);
       adopted = await rule(tx, stage.competitionId, command.action === "correctSubmission" ? permit!.ruleVersionId : ctx.workspace.publishedRuleVersionId, stage.stage);
       decision(now);
       const issues = getAgriSubmissionMaterialIssues(adopted.requirements, command.content);

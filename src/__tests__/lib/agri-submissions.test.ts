@@ -44,6 +44,12 @@ const event = { id: "feedback-1", competitionId: "edition-a", checkId: "check-1"
   actorId: "reviewer", createdAt: now.toISOString(), action: "PUBLISH", body: "Please add a backup Demo" };
 
 describe("candidate stage write commands", () => {
+  it("keeps submission private and rejects automatic publication instructions", () => {
+    expect(agriStageSubmissionCommandSchema.parse(submit)).not.toHaveProperty("syncToAgriWall");
+    for (const syncToAgriWall of [true, false]) {
+      expect(agriStageSubmissionCommandSchema.safeParse({ ...submit, syncToAgriWall }).success).toBe(false);
+    }
+  });
   it("allows an incomplete draft, but requires a selected artifact and summary for formal submission", () => {
     const draft = { ...content, artifactVersionId: null, summary: "" };
     expect(agriStageSubmissionCommandSchema.safeParse({ action: "saveDraft", idempotencyKey: key,

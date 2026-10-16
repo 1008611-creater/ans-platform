@@ -201,3 +201,33 @@ export async function readAgriPublicPublication(publicationId:string):Promise<Ag
   agriPublicationsListQuerySchema.parse({cursor:publicationId});
   return db.$transaction(async tx=>{const ctx=await publicContext(tx);const [row]=ctx.enabled ? await publicRows(tx,ctx.competitionId,null,publicationId) : [];if(!row)return fail("AGRI_PUBLICATION_NOT_FOUND",404);return publicView(row);},{timeout:15000});
 }
+
+
+import { agriPublicRankingsSchema,type AgriPublicRankings } from "@/contracts/agri-rankings";
+import { latestAgriRankingEvent } from "./rankings";
+interface RankingSnapshotItem {entryStageId:string;submissionId:string;artifactVersionId:string|null;listingVersion:number|null;rank:number;professionalScore:number;publicScore:number|null;totalScore:number;validStars:number;awards:AgriPublicRankings["boards"][number]["items"][number]["awards"];prizeMinor:number;listingId:string|null}
+/** Public leaderboards project immutable results through live consent, account and withdrawal checks. */
+export async function readAgriPublicRankings():Promise<AgriPublicRankings>{
+ return db.$transaction(async tx=>{
+  const ctx=await publicContext(tx);const boards:AgriPublicRankings["boards"]=[];
+  if(!ctx.enabled)return {competitionId:ctx.competitionId,boards};
+  for(const stage of ["PRELIMINARY","FINAL"] as const){
+   const event=await latestAgriRankingEvent(tx,ctx.competitionId,stage);if(event?.action!=="CONFIRM")continue;
+   const snapshot=event.snapshot as {items:RankingSnapshotItem[];popularityAwards?:Array<Pick<RankingSnapshotItem,"entryStageId"|"submissionId"|"artifactVersionId"|"listingId"|"listingVersion">&{validStars:number}>};
+   const items:AgriPublicRankings["boards"][number]["items"]=[];
+   for(const candidate of snapshot.items){
+    const [publication]=await tx.$queryRaw<Array<{id:string}>>`SELECT id FROM agri_publications WHERE "competitionId"=${ctx.competitionId} AND "entryStageId"=${candidate.entryStageId}`;
+    const [row]=publication?await publicRows(tx,ctx.competitionId,null,publication.id):[];
+    const exactPublic=row?.submissionId===candidate.submissionId && row?.artifactVersionId===candidate.artifactVersionId?publicView(row):null;
+    if(!exactPublic)continue;
+    items.push({rank:candidate.rank,professionalScore:candidate.professionalScore,publicScore:candidate.publicScore,totalScore:candidate.totalScore,validStars:candidate.validStars,awards:candidate.awards,prizeMinor:candidate.prizeMinor,publicationId:exactPublic.id,detailHref:"/competitions/agrihackathon/showcase/"+encodeURIComponent(exactPublic.id),listingId:null,wallHref:null,content:exactPublic.content});
+   }
+   const popularityAwards:AgriPublicRankings["boards"][number]["popularityAwards"]=[];
+   // Legacy vote snapshots have no immutable submission binding. Do not attach
+   // their votes to a newer current wall artifact or disclose unapproved material.
+
+   boards.push({id:event.id,stage,publishedAt:event.createdAt.toISOString(),items,popularityAwards});
+  }
+  return agriPublicRankingsSchema.parse({competitionId:ctx.competitionId,boards});
+ },{timeout:20000});
+}

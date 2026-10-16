@@ -57,8 +57,8 @@ services:
       RUN_BASE_URL: "${RUN_BASE_URL}"
       RUN_API_KEY: "${RUN_API_KEY}"
 
-      # ---- AgriHackathon 农客松赛事绑定与证据留存（默认绑定 agrihackathon-2026，可由服务器 .env 覆盖）----
-      ANS_AGRIHACKATHON_COMPETITION_ID: "${ANS_AGRIHACKATHON_COMPETITION_ID:-agrihackathon-2026}"
+      # ---- AgriHackathon：只绑定已确认的真实届次；证据留存须显式配置 ----
+      ANS_AGRIHACKATHON_COMPETITION_ID: "${ANS_AGRIHACKATHON_COMPETITION_ID:-}"
       ANS_AGRI_EVIDENCE_ENABLED: "${ANS_AGRI_EVIDENCE_ENABLED:-}"
       ANS_AGRI_EVIDENCE_STORAGE_MODE: "${ANS_AGRI_EVIDENCE_STORAGE_MODE:-}"
       ANS_AGRI_EVIDENCE_LOCAL_DIR: "${ANS_AGRI_EVIDENCE_LOCAL_DIR:-}"

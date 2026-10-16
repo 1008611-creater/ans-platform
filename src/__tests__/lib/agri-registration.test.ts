@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  grantCredits: vi.fn(),
   db: {
     teamMember: { findFirst: vi.fn() },
     competition: { findUnique: vi.fn() },
@@ -11,13 +12,14 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
+vi.mock("@/server/competitions/agrihackathon/credits", () => ({ grantAgriRegistrationCredits: mocks.grantCredits }));
 import { registerCompetitionTeam } from "@/server/competitions/service";
 
 const opensAt = new Date("2030-01-01T00:00:00.000Z");
 const closesAt = new Date("2030-01-02T00:00:00.000Z");
 const workspace = { competitionId: "edition", enabled: true, publishedRuleVersionId: "published-rule" };
 let currentWorkspace: { competitionId: string; enabled: boolean; publishedRuleVersionId: string | null } | null;
-let currentWindow: { state: string; opensAt: Date | null; closesAt: Date | null; includesDeadline: boolean | null; confirmedById: string; confirmedAt: Date } | null;
+let currentWindow: { state: string; opensAt: Date | null; closesAt: Date | null; includesDeadline: boolean | null; confirmedById: string; confirmedAt: Date; requirements?: unknown } | null;
 let clocks: Date[];
 let account: { flagged: boolean; deletedAt: Date | null } | null;
 let stageHistory: Array<{ id: string }>;
@@ -46,6 +48,7 @@ beforeEach(() => {
   mocks.db.teamCompetition.findUnique.mockResolvedValue(null);
   mocks.db.teamCompetition.create.mockResolvedValue({ id: "registration", entryStatus: "REGISTERED" });
   mocks.db.auditLog.create.mockResolvedValue({ id: "audit" });
+  mocks.grantCredits.mockResolvedValue({ state: "GRANTED" });
 });
 afterEach(() => vi.unstubAllEnvs());
 const register = () => registerCompetitionTeam("captain", "edition", { teamId: "team" });
@@ -57,6 +60,22 @@ function expectRejectedBeforeWrite() {
 }
 
 describe("managed-edition registration", () => {
+  it("automatically grants only the published configured amount inside the registration transaction", async () => {
+    currentWindow!.requirements = { schemaVersion: 1, repositoryRequired: false, repositoryRefRequired: false, demoRequired: false, materials: [], computeGrantPoints: 12.5 };
+    await expect(register()).resolves.toMatchObject({ created: true });
+    expect(mocks.grantCredits).toHaveBeenCalledExactlyOnceWith(mocks.db, "captain", "edition", "registration");
+  });
+  it("also repairs a missed grant on an existing valid registration without creating another entry", async () => {
+    currentWindow!.requirements = { schemaVersion: 1, repositoryRequired: false, repositoryRefRequired: false, demoRequired: false, materials: [], computeGrantPoints: 12.5 };
+    mocks.db.teamCompetition.findUnique.mockResolvedValue({ id: "existing", entryStatus: "REGISTERED" });
+    await expect(register()).resolves.toMatchObject({ created: false });
+    expect(mocks.grantCredits).toHaveBeenCalledExactlyOnceWith(mocks.db, "captain", "edition", "existing");
+    expect(mocks.db.teamCompetition.create).not.toHaveBeenCalled();
+  });
+  it("does not request an invented grant while the published policy omits the amount", async () => {
+    await register();
+    expect(mocks.grantCredits).not.toHaveBeenCalled();
+  });
   it("accepts only the published registration window, independently of competition start and submission dates", async () => {
     await expect(register()).resolves.toMatchObject({ created: true });
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({

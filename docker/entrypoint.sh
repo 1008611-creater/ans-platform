@@ -36,10 +36,6 @@ echo "[prompts.chat] Running database migrations..."
 npx prisma migrate deploy
 echo "[prompts.chat] Migrations applied successfully."
 
-if [ -n "${ANS_AGRIHACKATHON_COMPETITION_ID:-}" ]; then
-  echo "[prompts.chat] Ensuring AgriHackathon edition (${ANS_AGRIHACKATHON_COMPETITION_ID})..."
-  npx tsx prisma/bootstrap-agrihackathon.ts || echo "[prompts.chat] WARN: AgriHackathon bootstrap skipped."
-fi
 
 # Start the application
 echo "[prompts.chat] Starting application on port ${PORT:-3000}..."
