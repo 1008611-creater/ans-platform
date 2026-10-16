@@ -1057,6 +1057,70 @@ class MotionDirector {
           }
 
           #ans-dino-interact-hud[hidden] { display: none !important; }
+          body.ans-cam-dragging,
+          body.ans-cam-dragging * {
+            cursor: grabbing !important;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+          }
+          #ans-cam-ctrl-pill {
+            position: fixed;
+            left: 20px;
+            bottom: 18px;
+            z-index: 86;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(12, 20, 26, 0.86);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(164, 244, 218, 0.34);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+            font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
+            font-size: 12px;
+            color: #eefcf7;
+            pointer-events: auto;
+            user-select: none;
+            transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+          }
+          body.ans-cam-dragging #ans-cam-ctrl-pill {
+            border-color: rgba(255, 212, 130, 0.92);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 22px rgba(255, 200, 110, 0.35);
+            transform: scale(1.03);
+          }
+          #ans-cam-ctrl-pill .cam-pill-status {
+            font-weight: 700;
+            color: #d6fff0;
+            white-space: nowrap;
+          }
+          #ans-cam-ctrl-pill .cam-pill-btn {
+            appearance: none;
+            border: 1px solid rgba(255, 255, 255, 0.20);
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+          }
+          #ans-cam-ctrl-pill .cam-pill-btn:hover {
+            background: rgba(132, 250, 176, 0.22);
+            border-color: rgba(132, 250, 176, 0.68);
+            transform: translateY(-1px);
+          }
+          @media (max-width: 820px) {
+            #ans-cam-ctrl-pill {
+              left: 12px;
+              bottom: 12px;
+              padding: 5px 10px;
+              font-size: 11px;
+            }
+          }
           body.ans-dino-motion-paused #ans-dino-live-bubble,
           body.ans-dino-motion-paused #ans-dino-live-bubble *,
           body.ans-dino-motion-paused #ans-dino-interact-hud,
@@ -1081,7 +1145,8 @@ class MotionDirector {
           body.showcase-static #ans-dino-live-bubble,
           body.showcase-static #ans-dino-body-hitbox,
           body.showcase-static #ans-dino-interact-hud,
-          body.showcase-static #ans-dino-fx-layer {
+          body.showcase-static #ans-dino-fx-layer,
+          body.showcase-static #ans-cam-ctrl-pill {
             display: none !important;
           }
         `;
@@ -1245,6 +1310,27 @@ class MotionDirector {
             }
           });
         }
+      }
+
+      if (!document.getElementById("ans-cam-ctrl-pill")) {
+        const camPill = document.createElement("div");
+        camPill.id = "ans-cam-ctrl-pill";
+        camPill.setAttribute("aria-label", "3D 机位视角与缩放控制");
+        camPill.innerHTML = `
+          <span class="cam-pill-status">🎥 100% · 滚轮缩放 / 长按拖拽换机位</span>
+          <button type="button" class="cam-pill-btn" data-cam-act="zoom-out" title="缩小画面 (滚轮向下)">－</button>
+          <button type="button" class="cam-pill-btn" data-cam-act="zoom-in" title="放大画面 (滚轮向上)">＋</button>
+          <button type="button" class="cam-pill-btn" data-cam-act="reset" title="复位默认机位与缩放 (也可双击背景)">复位机位</button>
+          <button type="button" class="cam-pill-btn" data-cam-act="toggle-wheel" title="切换滚轮行为：缩放画面 或 页面滚动">滚轮:缩放</button>
+        `;
+        document.body.appendChild(camPill);
+        camPill.addEventListener("click", ev => {
+          const btn = ev.target.closest("[data-cam-act]");
+          if (!btn) return;
+          ev.stopPropagation();
+          const act = btn.getAttribute("data-cam-act");
+          if (handlers.onCamAction) handlers.onCamAction(act, btn);
+        });
       }
 
       kaoEl = bubbleEl.querySelector(".dino-b-kao");
@@ -1479,11 +1565,38 @@ class MotionDirector {
       }
     }
 
+    let lastStatusText = "";
+    function updateCamStatus(userZoom = 1.0, userYaw = 0, userPitch = 0, isDragging = false, wheelZoomEnabled = true) {
+      if (typeof document === "undefined") return;
+      const pill = document.getElementById("ans-cam-ctrl-pill");
+      if (!pill) return;
+      const statusEl = pill.querySelector(".cam-pill-status");
+      if (!statusEl) return;
+      const zoomPct = Math.round((1.0 / Math.max(0.25, userZoom)) * 100);
+      const yawDeg = Math.round((userYaw * 180) / Math.PI);
+      const pitchDeg = Math.round((userPitch * 180) / Math.PI);
+      let txt = "";
+      if (isDragging) {
+        txt = `🎥 正在拖拽机位 · 缩放 ${zoomPct}% · 视角 (${yawDeg >= 0 ? "+" : ""}${yawDeg}°, ${pitchDeg >= 0 ? "+" : ""}${pitchDeg}°)`;
+      } else if (Math.abs(zoomPct - 100) > 2 || Math.abs(yawDeg) > 1 || Math.abs(pitchDeg) > 1) {
+        txt = `🎥 画面 ${zoomPct}% · 机位 (${yawDeg >= 0 ? "+" : ""}${yawDeg}°, ${pitchDeg >= 0 ? "+" : ""}${pitchDeg}°) · 长按拖拽/滚轮缩放`;
+      } else {
+        txt = wheelZoomEnabled
+          ? "🎥 100% · 滚轮放大缩小 / 长按拖拽改变机位"
+          : "🎥 100% · 长按拖拽改变机位 (滚轮:页面滚动)";
+      }
+      if (txt !== lastStatusText) {
+        lastStatusText = txt;
+        statusEl.textContent = txt;
+      }
+    }
+
     drawBadge("happy_smile", 0);
     return {
       texture: tex,
       drawBadge,
       updateScreenPosition,
+      updateCamStatus,
       expandBubble,
       collapseToAlert,
       setInteractiveMode,
@@ -1914,11 +2027,16 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
         haloUniforms={uTime:{value:0},uFlight:{value:0}};
   return{
     root:dinoRawScene,perf,dir,faceUniforms,badge,haloUniforms,
-    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.30,camPatrolX:0,camPatrolY:0,camPatrolYaw:0,camPatrolPitch:0,saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,totalClicks:0,interactBlend:0,whipUntil:0,whipIdx:0,feedUntil:0,feedIdx:0,feedMode:"happy",hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
+    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.30,camPatrolX:0,camPatrolY:0,camPatrolYaw:0,camPatrolPitch:0,
+    userZoom:1.0,userZoomTarget:1.0,userYaw:0,userYawTarget:0,userPitch:0,userPitchTarget:0,wheelZoomEnabled:true,isCamDragging:false,suppressClickUntil:0,
+    baseCamPos:new B(6.41,1.21,-0.385),baseCamQuat:new oe(),
+    saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,totalClicks:0,interactBlend:0,whipUntil:0,whipIdx:0,feedUntil:0,feedIdx:0,feedMode:"happy",hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
     nextBlink:2.2,blinkStart:-99,yaw:Math.PI*0.58,pitch:0,roll:0
   };
 },[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),keyboardGesture=n.useEffect(()=>{
   const triggerDinoClick=()=>{
+    const nowT = typeof performance !== "undefined" ? performance.now() : Date.now();
+    if(nowT < (dinoState.suppressClickUntil || 0)) return;
     if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
     const wasExpanded = dinoState.badge.isExpanded ? dinoState.badge.isExpanded() : true;
     if(dinoState.badge.expandBubble) dinoState.badge.expandBubble();
@@ -1970,9 +2088,147 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
       onExitInteractive: () => {
         dinoState.whipUntil = 0;
         dinoState.feedUntil = 0;
+      },
+      onCamAction: (act, btn) => {
+        if (act === "zoom-in") {
+          dinoState.userZoomTarget = f.clamp(dinoState.userZoomTarget * 0.80, 0.36, 2.40);
+        } else if (act === "zoom-out") {
+          dinoState.userZoomTarget = f.clamp(dinoState.userZoomTarget * 1.25, 0.36, 2.40);
+        } else if (act === "reset") {
+          dinoState.userZoomTarget = 1.0;
+          dinoState.userYawTarget = 0;
+          dinoState.userPitchTarget = 0;
+        } else if (act === "toggle-wheel") {
+          dinoState.wheelZoomEnabled = !dinoState.wheelZoomEnabled;
+          if (btn) btn.textContent = dinoState.wheelZoomEnabled ? "滚轮:缩放" : "滚轮:翻页";
+        }
+        if (dinoState.badge.updateCamStatus) {
+          dinoState.badge.updateCamStatus(dinoState.userZoomTarget, dinoState.userYawTarget, dinoState.userPitchTarget, dinoState.isCamDragging, dinoState.wheelZoomEnabled);
+        }
       }
     });
   }
+
+  // Mouse Wheel Zoom (放大 / 缩小画面) + Long-Press Drag Orbit (长按拖拽改变机位视角)
+  const isUiControlTarget = el => {
+    if (!el || !el.closest) return false;
+    return Boolean(el.closest("a, button, input, textarea, select, #ans-dino-interact-hud, #ans-cam-ctrl-pill, .chapter-nav, .showcase-utility, .wk-card"));
+  };
+
+  const onWheelZoom = ev => {
+    if (!dinoState.wheelZoomEnabled || ev.shiftKey) return;
+    if (ev.target && ev.target.closest && ev.target.closest(".chapter-nav, #ans-dino-interact-hud, #ans-cam-ctrl-pill")) return;
+    const wkGallery = document.querySelector(".wk-gallery");
+    if (wkGallery && wkGallery.getBoundingClientRect().top < window.innerHeight * 0.35 && ev.deltaY > 0) return;
+    ev.preventDefault();
+    const rawDelta = ev.deltaMode === 1 ? ev.deltaY * 32 : ev.deltaY;
+    const step = f.clamp(rawDelta, -140, 140) * (ev.ctrlKey ? 0.0028 : 0.0014);
+    dinoState.userZoomTarget = f.clamp(dinoState.userZoomTarget * Math.exp(step), 0.36, 2.40);
+  };
+
+  let pointerDown = false;
+  let activePointerId = null;
+  let downX = 0, downY = 0, lastX = 0, lastY = 0;
+  let downAt = 0;
+  let longPressReady = false;
+  let didDragCam = false;
+  let longPressTimer = null;
+
+  const stopCamDrag = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+    if (didDragCam || (longPressReady && (performance.now() - downAt) > 220)) {
+      dinoState.suppressClickUntil = performance.now() + 200;
+    }
+    pointerDown = false;
+    activePointerId = null;
+    longPressReady = false;
+    didDragCam = false;
+    dinoState.isCamDragging = false;
+    document.body.classList.remove("ans-cam-dragging");
+  };
+
+  const onStagePointerDown = ev => {
+    if (ev.button !== undefined && ev.button !== 0) return;
+    if (isUiControlTarget(ev.target)) return;
+    pointerDown = true;
+    activePointerId = ev.pointerId;
+    downX = lastX = ev.clientX;
+    downY = lastY = ev.clientY;
+    downAt = performance.now();
+    longPressReady = false;
+    didDragCam = false;
+    if (longPressTimer) clearTimeout(longPressTimer);
+    longPressTimer = setTimeout(() => {
+      if (!pointerDown) return;
+      longPressReady = true;
+      dinoState.isCamDragging = true;
+      document.body.classList.add("ans-cam-dragging");
+    }, 130);
+  };
+
+  const onStagePointerMove = ev => {
+    if (!pointerDown || (activePointerId !== null && ev.pointerId !== activePointerId)) return;
+    const dx = ev.clientX - lastX;
+    const dy = ev.clientY - lastY;
+    lastX = ev.clientX;
+    lastY = ev.clientY;
+    const distFromStart = Math.hypot(ev.clientX - downX, ev.clientY - downY);
+    if (longPressReady || distFromStart > 5) {
+      if (!didDragCam) {
+        didDragCam = true;
+        dinoState.isCamDragging = true;
+        document.body.classList.add("ans-cam-dragging");
+      }
+      dinoState.userYawTarget = f.clamp(dinoState.userYawTarget - dx * 0.0066, -2.15, 2.15);
+      dinoState.userPitchTarget = f.clamp(dinoState.userPitchTarget + dy * 0.0052, -0.58, 0.68);
+    }
+  };
+
+  const onStagePointerUp = ev => {
+    if (!pointerDown || (activePointerId !== null && ev.pointerId !== activePointerId)) return;
+    stopCamDrag();
+  };
+
+  let pinchDist0 = 0;
+  let pinchZoom0 = 1.0;
+  const onTouchStartPinch = ev => {
+    if (ev.touches && ev.touches.length === 2) {
+      stopCamDrag();
+      const dx = ev.touches[0].clientX - ev.touches[1].clientX;
+      const dy = ev.touches[0].clientY - ev.touches[1].clientY;
+      pinchDist0 = Math.max(20, Math.hypot(dx, dy));
+      pinchZoom0 = dinoState.userZoomTarget;
+    }
+  };
+  const onTouchMovePinch = ev => {
+    if (ev.touches && ev.touches.length === 2 && pinchDist0 > 0) {
+      ev.preventDefault();
+      const dx = ev.touches[0].clientX - ev.touches[1].clientX;
+      const dy = ev.touches[0].clientY - ev.touches[1].clientY;
+      const dist = Math.max(20, Math.hypot(dx, dy));
+      dinoState.userZoomTarget = f.clamp(pinchZoom0 * (pinchDist0 / dist), 0.36, 2.40);
+    }
+  };
+
+  const onStageDblClick = ev => {
+    if (isUiControlTarget(ev.target)) return;
+    if (ev.target && ev.target.closest && ev.target.closest("#ans-dino-live-bubble, #ans-dino-body-hitbox")) return;
+    dinoState.userZoomTarget = 1.0;
+    dinoState.userYawTarget = 0;
+    dinoState.userPitchTarget = 0;
+  };
+
+  window.addEventListener("wheel", onWheelZoom, { passive: false });
+  window.addEventListener("pointerdown", onStagePointerDown);
+  window.addEventListener("pointermove", onStagePointerMove);
+  window.addEventListener("pointerup", onStagePointerUp);
+  window.addEventListener("pointercancel", onStagePointerUp);
+  window.addEventListener("touchstart", onTouchStartPinch, { passive: true });
+  window.addEventListener("touchmove", onTouchMovePinch, { passive: false });
+  window.addEventListener("dblclick", onStageDblClick);
 
   const onGreetBtn=()=>triggerDinoClick(false);
   window.addEventListener("ans-dino-greet",onGreetBtn);
@@ -1991,6 +2247,8 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     dinoState.hovered=false;
   };
   const onClick=ev=>{
+    const nowT = typeof performance !== "undefined" ? performance.now() : Date.now();
+    if(nowT < (dinoState.suppressClickUntil || 0)) return;
     ev.stopPropagation();
     triggerDinoClick(true);
   };
@@ -2018,6 +2276,15 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     hitboxEl.addEventListener("keydown",onKeyDown);
   }
   return()=>{
+    stopCamDrag();
+    window.removeEventListener("wheel", onWheelZoom);
+    window.removeEventListener("pointerdown", onStagePointerDown);
+    window.removeEventListener("pointermove", onStagePointerMove);
+    window.removeEventListener("pointerup", onStagePointerUp);
+    window.removeEventListener("pointercancel", onStagePointerUp);
+    window.removeEventListener("touchstart", onTouchStartPinch);
+    window.removeEventListener("touchmove", onTouchMovePinch);
+    window.removeEventListener("dblclick", onStageDblClick);
     window.removeEventListener("ans-scene-pause",onScenePause);
     document.removeEventListener("visibilitychange",syncDomMotion);
     document.body.classList.remove("ans-dino-motion-paused");
@@ -2056,8 +2323,6 @@ const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
 dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
 
 // 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit in CAMERA-LOCAL space!
-// Note: person.glb Camera looks along -X in world space, so rotating Ue.current.x in world space caused camera roll.
-// Instead, we apply patrol pan/tilt and translation directly in camera-local coordinates (_.translateX/Y & _.rotateY/X).
 const patrolEase = Math.min(1, y * 4.5);
 const orbitOffsetX = spline.pos[0] - 0.26;
 const orbitOffsetY = spline.pos[1] - 0.08;
@@ -2084,7 +2349,48 @@ _.translateX(dinoState.camPatrolX);
 _.translateY(dinoState.camPatrolY);
 _.rotateY(dinoState.camPatrolYaw);
 _.rotateX(dinoState.camPatrolPitch);
-if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
+if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}
+
+// Save the Base Stage Camera transform BEFORE applying user manual Wheel Zoom & Long-Press Drag Orbit!
+// This ensures the dinosaur stays anchored in 3D world stage space so zooming magnifies it and dragging orbits around it!
+dinoState.baseCamPos.copy(_.position);
+dinoState.baseCamQuat.copy(_.quaternion);
+
+// 3) Apply User Mouse-Wheel Zoom (放大/缩小画面) & Long-Press Drag Turntable Orbit (长按拖拽改变机位视角)!
+const userCtrlEase = Math.min(1, y * 12.0);
+dinoState.userZoom += (dinoState.userZoomTarget - dinoState.userZoom) * userCtrlEase;
+dinoState.userYaw += (dinoState.userYawTarget - dinoState.userYaw) * userCtrlEase;
+dinoState.userPitch += (dinoState.userPitchTarget - dinoState.userPitch) * userCtrlEase;
+
+if (Math.abs(dinoState.userZoom - 1.0) > 0.001 || Math.abs(dinoState.userYaw) > 0.001 || Math.abs(dinoState.userPitch) > 0.001) {
+  K.current.copy(_.position).sub(t.current);
+  // Dolly zoom distance
+  K.current.multiplyScalar(dinoState.userZoom);
+  // Horizontal turntable orbit around World Y (0, 1, 0) - keeps horizon 100% level!
+  ve.current.set(0, 1, 0);
+  ze.current.setFromAxisAngle(ve.current, dinoState.userYaw);
+  K.current.applyQuaternion(ze.current);
+  _.quaternion.premultiply(ze.current);
+  // Vertical elevation orbit around camera's horizontal right axis
+  ye.current.set(1, 0, 0).applyQuaternion(_.quaternion);
+  ye.current.y = 0;
+  if (ye.current.lengthSq() > 1e-5) ye.current.normalize(); else ye.current.set(0, 0, 1);
+  Be.current.setFromAxisAngle(ye.current, dinoState.userPitch);
+  K.current.applyQuaternion(Be.current);
+  _.quaternion.premultiply(Be.current);
+  _.position.copy(t.current).add(K.current);
+}
+
+const baseFov = p.fov || 45;
+const zoomedFov = f.clamp(baseFov * f.lerp(1.0, dinoState.userZoom, 0.28), 18, 68);
+if (Math.abs(_.fov - zoomedFov) > 0.02) {
+  _.fov = zoomedFov;
+  _.updateProjectionMatrix();
+}
+if (dinoState.badge.updateCamStatus) {
+  dinoState.badge.updateCamStatus(dinoState.userZoom, dinoState.userYaw, dinoState.userPitch, dinoState.isCamDragging, dinoState.wheelZoomEnabled);
+}
+}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
 {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
   if (!reduced) {
@@ -2109,21 +2415,20 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
   dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
 
-  // Compute exact camera frustum dimensions (person.glb camera yfov = 45 deg, founderDist ≈ 8.6m..9.5m)
-  // so 100% of the dinosaur model (head crest, eyes, blush, mouth, arms, belly, tail, feet) fits comfortably at any FOV!
+  // Compute stage frustum dimensions from baseCamPos / baseCamQuat (person.glb camera yfov = 45 deg, baseFounderDist ≈ 8.6m..9.5m)
+  // so 100% of the dinosaur model fits at 100% zoom, AND mouse-wheel zoom genuinely magnifies/shrinks the dinosaur while long-press drag orbits around it!
   _.updateMatrixWorld();
-  const fovRad = f.degToRad(_.fov || 45);
-  const tanHalfFov = Math.tan(fovRad * 0.5);
+  const baseFovRad = f.degToRad(p ? p.fov : 45);
+  const tanHalfFov = Math.tan(baseFovRad * 0.5);
   const aspect = _.aspect || (window.innerWidth / Math.max(1, window.innerHeight));
-  const founderDist = Math.max(3.2, _.position.distanceTo(t.current));
-  // Place dinosaur at 42%..46% of camera-to-founder distance (~3.69m from camera, ~5.0m in front of the founder's chest!)
-  // so it is 100% unobstructed in front of the founder and NEVER clips into the founder's white T-shirt!
-  const macroDist = Math.max(2.6, founderDist * f.lerp(0.46, 0.42, dinoState.interactBlend));
+  const baseFounderDist = Math.max(3.2, dinoState.baseCamPos.distanceTo(t.current));
+  // Place dinosaur at 42%..46% of base camera-to-founder distance (~3.69m from base camera, ~5.0m in front of the founder's chest!)
+  const macroDist = Math.max(2.6, baseFounderDist * f.lerp(0.46, 0.42, dinoState.interactBlend));
   const worldHalfH = macroDist * tanHalfFov;
   const worldHalfW = worldHalfH * aspect;
 
-  // FOV-adaptive scale: ensures the full dinosaur height (1.00 * scale * 2.25) is ~21% of screen height in orbit and ~33% in Macro/Interactive Mode!
-  const orbitFrustumH = 2.0 * founderDist * tanHalfFov;
+  // FOV-adaptive scale referenced to baseFounderDist so user wheel-zoom genuinely magnifies and shrinks the dinosaur!
+  const orbitFrustumH = 2.0 * baseFounderDist * tanHalfFov;
   const macroFrustumH = 2.0 * worldHalfH;
   const fovOrbitScale = f.clamp((0.20 * orbitFrustumH) / (1.00 * 2.25), 0.22, 0.68);
   const fovMacroScale = f.clamp((f.lerp(0.30, 0.33, dinoState.interactBlend) * macroFrustumH) / (1.00 * 2.25), 0.22, 0.54);
@@ -2139,22 +2444,21 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   let fy = spline.pos[1] + bobY;
   let fz = spline.pos[2] + swayZ;
 
-  // Compute Camera Super Macro / Interactive Stage point directly in front of the live camera lens (_.position)
-  const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(_.quaternion);
-  const camUp    = ye.current.set(0, 1, 0).applyQuaternion(_.quaternion);
-  const camRight = ot.current.set(1, 0, 0).applyQuaternion(_.quaternion);
+  // Compute Super Macro / Interactive Stage point in 3D world space using baseCamPos & baseCamQuat
+  // so that long-press dragging the camera orbits AROUND the dinosaur in 3D space!
+  const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(dinoState.baseCamQuat);
+  const camUp    = ye.current.set(0, 1, 0).applyQuaternion(dinoState.baseCamQuat);
+  const camRight = ot.current.set(1, 0, 0).applyQuaternion(dinoState.baseCamQuat);
 
-  // Since fy is at the dinosaur's feet (y=0), subtract half of the dinosaur's world height (0.48 * scalePop * 2.25)
-  // so the CENTER of the dinosaur sits at centerNdcY (-0.02), leaving generous room above for the speech bubble and below for the HUD!
   const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
   const centerNdcX = f.lerp(-0.22, -0.14, dinoState.interactBlend);
   const centerNdcY = f.lerp(-0.02, -0.02, dinoState.interactBlend);
   const rightOffsetM = centerNdcX * worldHalfW;
   const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
 
-  const macroWorldX = _.position.x + camFwd.x * macroDist + camRight.x * rightOffsetM + camUp.x * feetUpOffsetM;
-  const macroWorldY = _.position.y + camFwd.y * macroDist + camRight.y * rightOffsetM + camUp.y * feetUpOffsetM;
-  const macroWorldZ = _.position.z + camFwd.z * macroDist + camRight.z * rightOffsetM + camUp.z * feetUpOffsetM;
+  const macroWorldX = dinoState.baseCamPos.x + camFwd.x * macroDist + camRight.x * rightOffsetM + camUp.x * feetUpOffsetM;
+  const macroWorldY = dinoState.baseCamPos.y + camFwd.y * macroDist + camRight.y * rightOffsetM + camUp.y * feetUpOffsetM;
+  const macroWorldZ = dinoState.baseCamPos.z + camFwd.z * macroDist + camRight.z * rightOffsetM + camUp.z * feetUpOffsetM;
 
   const macroLocalX = (macroWorldX - 0.0) / 2.25;
   const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
@@ -2170,37 +2474,40 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
     fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.22);
   }
 
-  // Full-Body Camera-Frustum Screen-Space Safety Guard:
-  // Clamps the dinosaur's body center so neither its head crest nor its feet can EVER be cut off by the screen edges!
-  const midLocalY = fy + 0.48 * dinoState.scalePop;
-  const wMidX = fx * 2.25;
-  const wMidY = midLocalY * 2.25 + 0.4;
-  const wMidZ = fz * 2.25 - 0.7;
-  ve.current.set(wMidX, wMidY, wMidZ).project(_);
-  if (ve.current.z > -1.0 && ve.current.z < 1.0) {
-    const safeMinX = ce.current ? -0.60 : -0.66;
-    const safeMaxX = ce.current ?  0.58 :  0.62;
-    const safeMinY = isInteractiveMode ? -0.18 : -0.34;
-    const safeMaxY = isInteractiveMode ?  0.16 :  0.24;
-    const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
-    const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
-    if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
-      ve.current.x = f.lerp(ve.current.x, clampedX, 0.85);
-      ve.current.y = f.lerp(ve.current.y, clampedY, 0.85);
-      ve.current.unproject(_);
-      fx = (ve.current.x - 0.0) / 2.25;
-      fy = (ve.current.y - 0.4) / 2.25 - 0.48 * dinoState.scalePop;
-      fz = (ve.current.z - (-0.7)) / 2.25;
+  // Full-Body Camera-Frustum Screen-Space Safety Guard (active at default view; yields smoothly when user manually zooms or orbits camera):
+  const userNeutralWeight = f.clamp(1.0 - (Math.abs(dinoState.userZoom - 1.0) * 2.2 + Math.hypot(dinoState.userYaw, dinoState.userPitch) * 1.8), 0, 1);
+  if (userNeutralWeight > 0.05) {
+    const midLocalY = fy + 0.48 * dinoState.scalePop;
+    const wMidX = fx * 2.25;
+    const wMidY = midLocalY * 2.25 + 0.4;
+    const wMidZ = fz * 2.25 - 0.7;
+    ve.current.set(wMidX, wMidY, wMidZ).project(_);
+    if (ve.current.z > -1.0 && ve.current.z < 1.0) {
+      const safeMinX = ce.current ? -0.60 : -0.66;
+      const safeMaxX = ce.current ?  0.58 :  0.62;
+      const safeMinY = isInteractiveMode ? -0.18 : -0.34;
+      const safeMaxY = isInteractiveMode ?  0.16 :  0.24;
+      const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
+      const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
+      if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
+        ve.current.x = f.lerp(ve.current.x, clampedX, 0.85 * userNeutralWeight);
+        ve.current.y = f.lerp(ve.current.y, clampedY, 0.85 * userNeutralWeight);
+        ve.current.unproject(_);
+        fx = (ve.current.x - 0.0) / 2.25;
+        fy = (ve.current.y - 0.4) / 2.25 - 0.48 * dinoState.scalePop;
+        fz = (ve.current.z - (-0.7)) / 2.25;
+      }
     }
   }
 
-  // Expand DoF focus range during Super Macro / Interactive Mode / Hover so both the dinosaur and founder are razor sharp without mutating t.current!
-  const focusAssist = Math.max(macroW, dinoState.hoverBlend * 0.85);
+  // Expand DoF focus range during Super Macro / Interactive Mode / Hover / User Camera Zoom & Orbit so the 3D scene stays razor sharp!
+  const userCamActive = f.clamp(Math.abs(dinoState.userZoom - 1.0) * 1.8 + Math.hypot(dinoState.userYaw, dinoState.userPitch) * 1.5, 0, 1);
+  const focusAssist = Math.max(macroW, dinoState.hoverBlend * 0.85, userCamActive);
   if (a && focusAssist > 0.02) {
-    a.current = Math.max(a.current, 8.5 * focusAssist);
+    a.current = Math.max(a.current, 14.0 * focusAssist);
   }
-  if (r && dinoState.interactBlend > 0.1) {
-    r.current = f.lerp(r.current, 0, dinoState.interactBlend * 0.85);
+  if (r && (dinoState.interactBlend > 0.1 || userCamActive > 0.1)) {
+    r.current = f.lerp(r.current, 0, Math.max(dinoState.interactBlend, userCamActive) * 0.88);
   }
 
   // Compute physical hops, jitters, and body reactions for Whip Butt & Random Feeding!
@@ -2270,12 +2577,12 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
     dinoFlightRef.current.position.set(fx + reactionJitterX, fy + reactionHopY, fz);
     dinoFlightRef.current.scale.setScalar(dinoState.scalePop);
 
-    const camLocalX = (_.position.x - 0) / 2.25;
-    const camLocalY = (_.position.y - 0.4) / 2.25;
-    const camLocalZ = (_.position.z - (-0.7)) / 2.25;
-    const toCamYaw = Math.atan2(camLocalX - fx, camLocalZ - fz);
+    const camLocalX = (dinoState.baseCamPos.x - 0) / 2.25;
+    const camLocalY = (dinoState.baseCamPos.y - 0.4) / 2.25;
+    const camLocalZ = (dinoState.baseCamPos.z - (-0.7)) / 2.25;
+    const toCamYaw = Math.atan2(camLocalX - fx, camLocalZ - fz) + dinoState.userYaw * 0.22;
     const toCamHoriz = Math.hypot(camLocalX - fx, camLocalZ - fz);
-    const toCamPitch = f.clamp(-Math.atan2(camLocalY - (fy + 0.45 * dinoState.scalePop), Math.max(0.1, toCamHoriz)) * 0.55, -0.22, 0.22);
+    const toCamPitch = f.clamp(-Math.atan2(camLocalY - (fy + 0.45 * dinoState.scalePop), Math.max(0.1, toCamHoriz)) * 0.55 + dinoState.userPitch * 0.18, -0.25, 0.25);
 
     const dirSign = (J >= q) ? 1 : -1;
     const tangYaw = Math.atan2(spline.tangent[0] * dirSign, spline.tangent[2] * dirSign);
@@ -2589,12 +2896,12 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     color = clamp(color, 0.0, 1.0);
     gl_FragColor = vec4(color, ${Ut(Pe.alpha)});
   }
-`;function Gt(){const t=n.useRef(null),o=n.useMemo(()=>new Ke,[]),r=n.useRef(-999),a=1;Ze(({clock:u,size:b})=>{t.current&&(u.elapsedTime-r.current<1/a*.5||(r.current=u.elapsedTime,t.current.uniforms.uTime.value=u.elapsedTime%1e4,o.set(b.width,b.height),t.current.uniforms.uResolution.value=o))}),n.useEffect(()=>{const u=setInterval(()=>xt(),1e3/a);return()=>clearInterval(u)},[]);const d=n.useMemo(()=>({uTime:{value:0},uResolution:{value:o}}),[o]);return e.jsxs("mesh",{frustumCulled:!1,children:[e.jsx("planeGeometry",{args:[2,2]}),e.jsx("shaderMaterial",{ref:t,transparent:!0,depthTest:!1,depthWrite:!1,side:Qe,uniforms:d,vertexShader:Wt,fragmentShader:Ft},tt)]})}function Dt(){const[t,o]=n.useState(!1);return n.useEffect(()=>o(!0),[]),t?e.jsx("div",{"aria-hidden":"true","data-three-noise-overlay":tt,style:{position:"fixed",inset:0,overflow:"hidden",pointerEvents:"none",zIndex:Pe.zIndex,mixBlendMode:"multiply"},children:e.jsx(Je,{style:{width:"100%",height:"100%",opacity:Pe.opacity,pointerEvents:"none"},frameloop:"demand",camera:{position:[0,0,1]},gl:{alpha:!0,antialias:!1,powerPreference:"high-performance"},children:e.jsx(Gt,{})})}):null}function Ht(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M13 3h3a5 5 0 0 0 4.6 4.98V11A8 8 0 0 1 16 9.6V15a6 6 0 1 1-6-6c.34 0 .67.03 1 .08v3.12A3 3 0 1 0 13 15V3z"})})}function Yt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("path",{d:"M7 3l3 3M17 3l-3 3"}),e.jsx("rect",{x:"3",y:"6",width:"18",height:"13",rx:"3.5"}),e.jsx("path",{d:"M9 11v2M15 11v2"})]})}function Vt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("rect",{x:"3",y:"3",width:"18",height:"18",rx:"5",fill:"none",stroke:"currentColor",strokeWidth:"2"}),e.jsx("path",{d:"M12 16.2c-2.1-1.5-4-3-4-5.1A2.1 2.1 0 0 1 12 9.9a2.1 2.1 0 0 1 4 1.2c0 2.1-1.9 3.6-4 5.1z",fill:"currentColor"})]})}function $t(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"})})}const nt={douyin:Ht,bilibili:Yt,xiaohongshu:Vt,github:$t},st={"zh":{"title":"从发现到创作","entries":[{"period":"01","place":"项目广场","role":"查看真实项目，找到感兴趣的方向。","points":[],"groups":[{"heading":"浏览项目","link":"/explore"}]},{"period":"02","place":"简历与作品集工作室","role":"打开专用编辑器，整理自己的经历与作品。","points":[],"groups":[{"heading":"打开编辑器","link":"/market/resume-website"}]},{"period":"03","place":"Hub 与社区","role":"按主题与高校浏览内容。","points":[],"groups":[{"heading":"浏览 Hub","link":"/hubs"}]},{"period":"04","place":"赛事与算力","role":"赛事信息以赛事专区公布为准；算力价格以运行前的实际报价为准。","points":[],"groups":[{"heading":"查看赛事","link":"/competitions"}]}]},"en":{"title":"Explore and create","entries":[{"period":"01","place":"项目广场","role":"查看真实项目，找到感兴趣的方向。","points":[],"groups":[{"heading":"浏览项目","link":"/explore"}]},{"period":"02","place":"简历与作品集工作室","role":"打开专用编辑器，整理自己的经历与作品。","points":[],"groups":[{"heading":"打开编辑器","link":"/market/resume-website"}]},{"period":"03","place":"Hub 与社区","role":"按主题与高校浏览内容。","points":[],"groups":[{"heading":"浏览 Hub","link":"/hubs"}]},{"period":"04","place":"赛事与算力","role":"赛事信息以赛事专区公布为准；算力价格以运行前的实际报价为准。","points":[],"groups":[{"heading":"查看赛事","link":"/competitions"}]}]}},qt=Te,rt=[.22,1,.36,1],Qt={hidden:{},show:{transition:{staggerChildren:.09,delayChildren:.04}}},re={hidden:{opacity:0,y:26},show:{opacity:1,y:0,transition:{duration:.75,ease:rt}}};function Xt({group:t}){const o=t.link?e.jsx("a",{className:"about-link",href:t.link,target:"_blank",rel:"noopener noreferrer",children:t.heading}):e.jsx("span",{children:t.heading});return e.jsxs(R.div,{className:"tl-group",variants:re,children:[e.jsxs("div",{className:"tl-group-head",children:[o,t.sub&&e.jsx("span",{className:"tl-group-sub",children:t.sub})]}),t.items&&e.jsx("ul",{className:"tl-points",children:t.items.map((r,a)=>e.jsx("li",{children:r},a))}),t.links&&e.jsx("div",{className:"tl-logos",children:t.links.map(r=>{const a=nt[r.id];return e.jsx("a",{className:"tl-logo",href:r.href,target:"_blank",rel:"noopener noreferrer","aria-label":r.label,title:r.label,children:e.jsx(a,{})},r.id)})})]})}function Kt({entry:t,index:o}){return e.jsxs(R.div,{className:"tl-entry","data-point":qt[o],variants:Qt,initial:"hidden",whileInView:"show",viewport:{once:!0,margin:"-12% 0px -12% 0px"},children:[e.jsx(R.span,{className:"tl-dot",variants:re,"aria-hidden":"true"}),e.jsxs("div",{className:"tl-body",children:[e.jsx(R.div,{className:"tl-period",variants:re,children:t.period}),e.jsx(R.div,{className:"tl-head",variants:re,children:e.jsx("h3",{className:"tl-place",children:t.place})}),t.role&&e.jsx(R.div,{className:"tl-role",variants:re,children:t.role}),t.points&&e.jsx(R.ul,{className:"tl-points",variants:re,children:t.points.map((r,a)=>e.jsx("li",{children:r},a))}),t.groups&&t.groups.map((r,a)=>e.jsx(Xt,{group:r},a))]})]})}function Zt({lang:t}){const o=st[t];return e.jsxs("section",{className:"resume",lang:t,children:[e.jsxs(R.div,{className:"resume-heading",initial:{opacity:0,y:20},whileInView:{opacity:1,y:0},viewport:{once:!0,margin:"-10% 0px"},transition:{duration:.7,ease:rt},children:[e.jsx("span",{className:"resume-kicker",children:t==="en"?"Selected trajectory":"探索 ANS"}),e.jsx("h2",{className:"resume-title",children:o.title}),e.jsx("p",{className:"resume-deck",children:t==="en"?"From generative craft to shipped systems — a practice built in public.":"选择章节入口，或继续下滑查看详情。"})]}),e.jsx("div",{className:"timeline",children:o.entries.map((r,a)=>e.jsx(Kt,{entry:r,index:a},a))})]})}function Jt({lang:t,activeIndex:o,onJump:r,visible:a}){const[d,u]=n.useState(null),b=st[t].entries,i=[{label:t==="en"?"Intro":"封面"},...b.map(g=>({label:g.place}))];return e.jsx("nav",{className:`chapter-nav${a?" is-visible":""}`,"aria-label":t==="en"?"Section navigation":"章节导航",children:e.jsx("div",{className:"chapter-nav-list",children:i.map((g,l)=>{const x=o===l;return e.jsxs("button",{type:"button",className:`chapter-nav-node${x?" is-active":""}`,onClick:()=>r(l),onMouseEnter:()=>u(l),onMouseLeave:()=>u(null),"aria-label":g.label,"aria-current":x?"true":void 0,children:[e.jsx("span",{className:"chapter-nav-label",children:d===l||x?g.label:String(l).padStart(2,"0")}),e.jsx("span",{className:"chapter-nav-dot","aria-hidden":"true"})]},l)})})})}function en(){return e.jsx(ShowcaseLoading,{})}const tn=yt(t=>({active:null,hovered:null,entered:!1,setActive:o=>t({active:o}),setHovered:o=>t({hovered:o}),enter:()=>t({entered:!0})})),nn=n.lazy(()=>import("pkg-works"));function sn(){const t=tn(o=>o.setActive);return e.jsxs("mesh",{position:[0,0,-40],onClick:()=>t(null),children:[e.jsx("planeGeometry",{args:[600,300]}),e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})]})}const rn={"zh":{"title":"ANS · AI Never Stops","paragraphs":["发现真实项目，走进创作现场。"]},"en":{"title":"ANS · AI Never Stops","paragraphs":["Discover projects. Make something of your own."]}},fe={"tlName":"ANS · AI Never Stops","tlSub":"项目 · 创作 · 社区","tr":"3D SHOWCASE","bl":"AI never stops","right":"ans.cauai.fun"},on=[{id:"github",label:"GitHub",href:"https://github.com/1008611-creater"}];function an({lang:t,cueOpacity:o}){const{title:r,paragraphs:a}=rn[t],d=n.useRef(null),{scrollYProgress:u}=Ce({target:d,offset:["start start","end start"]}),i=z(u,[.06,.4],[1,0]),g=z(u,[0,1],[0,-96]),l=z(u,[0,1],[0,-52]),x=z(u,[0,1],["0.01em","0.42em"]);return e.jsxs("section",{className:"hero",ref:d,children:[e.jsx(R.div,{className:"about",lang:t,style:{opacity:i},children:e.jsxs("div",{className:"about-intro",children:[e.jsxs("div",{className:"about-kicker",children:[e.jsx("span",{className:"about-kicker-line"}),e.jsx("span",{children:"AI Never Stops / Product & Demo Showcase"}),e.jsx("span",{className:"about-kicker-line"})]}),e.jsx(R.h1,{className:"about-title",style:{y:g,letterSpacing:x},children:r}),a.map((w,E)=>e.jsx(R.p,{className:"about-body",style:{y:l},children:w},E)),e.jsxs("div",{className:"about-footnote",children:[e.jsx("span",{children:"01 — 04"}),e.jsx("span",{children:t==="en"?"Scroll to compose the story":"向下滚动，发现项目与创作入口"})]})]})}),e.jsxs(R.div,{className:"scroll-cue",style:{opacity:o},"aria-hidden":"true",children:[e.jsx("span",{className:"scroll-cue-label",children:t==="en"?"SCROLL":"向下滚动"}),e.jsx("span",{className:"scroll-cue-track",children:e.jsx("span",{className:"scroll-cue-dot"})})]})]})}class SceneBoundary extends n.Component {
+`;function Gt(){const t=n.useRef(null),o=n.useMemo(()=>new Ke,[]),r=n.useRef(-999),a=1;Ze(({clock:u,size:b})=>{t.current&&(u.elapsedTime-r.current<1/a*.5||(r.current=u.elapsedTime,t.current.uniforms.uTime.value=u.elapsedTime%1e4,o.set(b.width,b.height),t.current.uniforms.uResolution.value=o))}),n.useEffect(()=>{const u=setInterval(()=>xt(),1e3/a);return()=>clearInterval(u)},[]);const d=n.useMemo(()=>({uTime:{value:0},uResolution:{value:o}}),[o]);return e.jsxs("mesh",{frustumCulled:!1,children:[e.jsx("planeGeometry",{args:[2,2]}),e.jsx("shaderMaterial",{ref:t,transparent:!0,depthTest:!1,depthWrite:!1,side:Qe,uniforms:d,vertexShader:Wt,fragmentShader:Ft},tt)]})}function Dt(){const[t,o]=n.useState(!1);return n.useEffect(()=>o(!0),[]),t?e.jsx("div",{"aria-hidden":"true","data-three-noise-overlay":tt,style:{position:"fixed",inset:0,overflow:"hidden",pointerEvents:"none",zIndex:Pe.zIndex,mixBlendMode:"multiply"},children:e.jsx(Je,{style:{width:"100%",height:"100%",opacity:Pe.opacity,pointerEvents:"none"},frameloop:"demand",camera:{position:[0,0,1]},gl:{alpha:!0,antialias:!1,powerPreference:"high-performance"},children:e.jsx(Gt,{})})}):null}function Ht(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M13 3h3a5 5 0 0 0 4.6 4.98V11A8 8 0 0 1 16 9.6V15a6 6 0 1 1-6-6c.34 0 .67.03 1 .08v3.12A3 3 0 1 0 13 15V3z"})})}function Yt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("path",{d:"M7 3l3 3M17 3l-3 3"}),e.jsx("rect",{x:"3",y:"6",width:"18",height:"13",rx:"3.5"}),e.jsx("path",{d:"M9 11v2M15 11v2"})]})}function Vt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("rect",{x:"3",y:"3",width:"18",height:"18",rx:"5",fill:"none",stroke:"currentColor",strokeWidth:"2"}),e.jsx("path",{d:"M12 16.2c-2.1-1.5-4-3-4-5.1A2.1 2.1 0 0 1 12 9.9a2.1 2.1 0 0 1 4 1.2c0 2.1-1.9 3.6-4 5.1z",fill:"currentColor"})]})}function $t(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"})})}const nt={douyin:Ht,bilibili:Yt,xiaohongshu:Vt,github:$t},st={"zh":{"title":"从发现到创作","entries":[{"period":"01","place":"项目广场","role":"查看真实项目，找到感兴趣的方向。","points":[],"groups":[{"heading":"浏览项目","link":"/explore"}]},{"period":"02","place":"简历与作品集工作室","role":"打开专用编辑器，整理自己的经历与作品。","points":[],"groups":[{"heading":"打开编辑器","link":"/market/resume-website"}]},{"period":"03","place":"Hub 与社区","role":"按主题与高校浏览内容。","points":[],"groups":[{"heading":"浏览 Hub","link":"/hubs"}]},{"period":"04","place":"赛事与算力","role":"赛事信息以赛事专区公布为准；算力价格以运行前的实际报价为准。","points":[],"groups":[{"heading":"查看赛事","link":"/competitions"}]}]},"en":{"title":"Explore and create","entries":[{"period":"01","place":"项目广场","role":"查看真实项目，找到感兴趣的方向。","points":[],"groups":[{"heading":"浏览项目","link":"/explore"}]},{"period":"02","place":"简历与作品集工作室","role":"打开专用编辑器，整理自己的经历与作品。","points":[],"groups":[{"heading":"打开编辑器","link":"/market/resume-website"}]},{"period":"03","place":"Hub 与社区","role":"按主题与高校浏览内容。","points":[],"groups":[{"heading":"浏览 Hub","link":"/hubs"}]},{"period":"04","place":"赛事与算力","role":"赛事信息以赛事专区公布为准；算力价格以运行前的实际报价为准。","points":[],"groups":[{"heading":"查看赛事","link":"/competitions"}]}]}},qt=Te,rt=[.22,1,.36,1],Qt={hidden:{},show:{transition:{staggerChildren:.09,delayChildren:.04}}},re={hidden:{opacity:0,y:26},show:{opacity:1,y:0,transition:{duration:.75,ease:rt}}};function Xt({group:t}){const o=t.link?e.jsx("a",{className:"about-link",href:t.link,target:"_blank",rel:"noopener noreferrer",children:t.heading}):e.jsx("span",{children:t.heading});return e.jsxs(R.div,{className:"tl-group",variants:re,children:[e.jsxs("div",{className:"tl-group-head",children:[o,t.sub&&e.jsx("span",{className:"tl-group-sub",children:t.sub})]}),t.items&&e.jsx("ul",{className:"tl-points",children:t.items.map((r,a)=>e.jsx("li",{children:r},a))}),t.links&&e.jsx("div",{className:"tl-logos",children:t.links.map(r=>{const a=nt[r.id];return e.jsx("a",{className:"tl-logo",href:r.href,target:"_blank",rel:"noopener noreferrer","aria-label":r.label,title:r.label,children:e.jsx(a,{})},r.id)})})]})}function Kt({entry:t,index:o}){return e.jsxs(R.div,{className:"tl-entry","data-point":qt[o],variants:Qt,initial:"hidden",whileInView:"show",viewport:{once:!0,margin:"-12% 0px -12% 0px"},children:[e.jsx(R.span,{className:"tl-dot",variants:re,"aria-hidden":"true"}),e.jsxs("div",{className:"tl-body",children:[e.jsx(R.div,{className:"tl-period",variants:re,children:t.period}),e.jsx(R.div,{className:"tl-head",variants:re,children:e.jsx("h3",{className:"tl-place",children:t.place})}),t.role&&e.jsx(R.div,{className:"tl-role",variants:re,children:t.role}),t.points&&e.jsx(R.ul,{className:"tl-points",variants:re,children:t.points.map((r,a)=>e.jsx("li",{children:r},a))}),t.groups&&t.groups.map((r,a)=>e.jsx(Xt,{group:r},a))]})]})}function Zt({lang:t}){const o=st[t];return e.jsxs("section",{className:"resume",lang:t,children:[e.jsxs(R.div,{className:"resume-heading",initial:{opacity:0,y:20},whileInView:{opacity:1,y:0},viewport:{once:!0,margin:"-10% 0px"},transition:{duration:.7,ease:rt},children:[e.jsx("span",{className:"resume-kicker",children:t==="en"?"Selected trajectory":"探索 ANS"}),e.jsx("h2",{className:"resume-title",children:o.title}),e.jsx("p",{className:"resume-deck",children:t==="en"?"From generative craft to shipped systems — a practice built in public.":"选择章节入口，或继续下滑查看详情。"})]}),e.jsx("div",{className:"timeline",children:o.entries.map((r,a)=>e.jsx(Kt,{entry:r,index:a},a))})]})}function Jt({lang:t,activeIndex:o,onJump:r,visible:a}){const[d,u]=n.useState(null),b=st[t].entries,i=[{label:t==="en"?"Intro":"封面"},...b.map(g=>({label:g.place}))];return e.jsx("nav",{className:`chapter-nav${a?" is-visible":""}`,"aria-label":t==="en"?"Section navigation":"章节导航",children:e.jsx("div",{className:"chapter-nav-list",children:i.map((g,l)=>{const x=o===l;return e.jsxs("button",{type:"button",className:`chapter-nav-node${x?" is-active":""}`,onClick:()=>r(l),onMouseEnter:()=>u(l),onMouseLeave:()=>u(null),"aria-label":g.label,"aria-current":x?"true":void 0,children:[e.jsx("span",{className:"chapter-nav-label",children:d===l||x?g.label:String(l).padStart(2,"0")}),e.jsx("span",{className:"chapter-nav-dot","aria-hidden":"true"})]},l)})})})}function en(){return e.jsx(ShowcaseLoading,{})}const tn=yt(t=>({active:null,hovered:null,entered:!1,setActive:o=>t({active:o}),setHovered:o=>t({hovered:o}),enter:()=>t({entered:!0})})),nn=n.lazy(()=>import("pkg-works"));function sn(){const t=tn(o=>o.setActive);return e.jsxs("mesh",{position:[0,0,-40],onClick:()=>t(null),children:[e.jsx("planeGeometry",{args:[600,300]}),e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})]})}const rn={"zh":{"title":"ANS · AI Never Stops","paragraphs":["发现真实项目，走进创作现场。"]},"en":{"title":"ANS · AI Never Stops","paragraphs":["Discover projects. Make something of your own."]}},fe={"tlName":"ANS · AI Never Stops","tlSub":"项目 · 创作 · 社区","tr":"3D SHOWCASE","bl":"AI never stops","right":"ans.cauai.fun"},on=[{id:"github",label:"GitHub",href:"https://github.com/1008611-creater"}];function an({lang:t,cueOpacity:o}){const{title:r,paragraphs:a}=rn[t],d=n.useRef(null),{scrollYProgress:u}=Ce({target:d,offset:["start start","end start"]}),i=z(u,[.06,.4],[1,0]),g=z(u,[0,1],[0,-96]),l=z(u,[0,1],[0,-52]),x=z(u,[0,1],["0.01em","0.42em"]);return e.jsxs("section",{className:"hero",ref:d,children:[e.jsx(R.div,{className:"about",lang:t,style:{opacity:i},children:e.jsxs("div",{className:"about-intro",children:[e.jsxs("div",{className:"about-kicker",children:[e.jsx("span",{className:"about-kicker-line"}),e.jsx("span",{children:"AI Never Stops / Product & Demo Showcase"}),e.jsx("span",{className:"about-kicker-line"})]}),e.jsx(R.h1,{className:"about-title",style:{y:g,letterSpacing:x},children:r}),a.map((w,E)=>e.jsx(R.p,{className:"about-body",style:{y:l},children:w},E)),e.jsxs("div",{className:"about-footnote",children:[e.jsx("span",{children:"01 — 04"}),e.jsx("span",{children:t==="en"?"Scroll to compose the story":"向下滚动，发现项目与创作入口"})]})]})}),e.jsxs(R.div,{className:"scroll-cue",style:{opacity:o,cursor:"pointer",pointerEvents:"auto"},onClick:()=>{const el=document.querySelector("[data-point]");if(el)el.scrollIntoView({behavior:"smooth"});},"aria-hidden":"true",children:[e.jsx("span",{className:"scroll-cue-label",children:t==="en"?"SCROLL":"向下滚动"}),e.jsx("span",{className:"scroll-cue-track",children:e.jsx("span",{className:"scroll-cue-dot"})})]})]})}class SceneBoundary extends n.Component {
   constructor(props){super(props);this.state={failed:false};}
   static getDerivedStateFromError(){return {failed:true};}
   componentDidCatch(){window.dispatchEvent(new Event("ans-showcase-failure"));}
   render(){return this.state.failed?null:this.props.children;}
 }
-function cn(){var k;const[scenePaused,setScenePaused]=n.useState(false);n.useEffect(()=>{const change=event=>setScenePaused(Boolean(event.detail));window.addEventListener("ans-scene-pause",change);return()=>window.removeEventListener("ans-scene-pause",change)},[]);const[t,o]=n.useState("zh"),{scrollY:r}=Ce(),a=n.useRef(null),{scrollYProgress:d}=Ce({target:a,offset:["start end","start center"]}),u=z(d,[0,1],["rgba(8, 11, 18, 0)","rgba(8, 11, 18, 0.41)"]);z(d,[0,1],["blur(0px)","blur(10px)"]);const b=z(r,[0,520],[0,.4]),i=z(r,[0,160],[1,0]);z(r,[0,240],[1,0]);const g=typeof window<"u"?window.innerHeight:800,l=z(r,[g*.5,g*1.1],[0,1]),x=z(r,[0,280],[1,0]),w=.3,E=n.useRef([]),[A,M]=n.useState(0),[V,S]=n.useState(!1);n.useEffect(()=>{const v=()=>{const H=Te.map(j=>{const C=document.querySelector(`[data-point="${j}"]`);return C?C.getBoundingClientRect().top+window.scrollY:null}).filter(j=>j!==null);E.current=[0,...H]};v();const p=new ResizeObserver(v);return p.observe(document.documentElement),window.addEventListener("resize",v),()=>{p.disconnect(),window.removeEventListener("resize",v)}},[]),Nt(r,"change",v=>{const p=E.current;if(p.length>1){const j=v+window.innerHeight*w;let C=0;for(let P=0;P<p.length;P++)j>=p[P]&&(C=P);M(P=>P===C?P:C)}const H=v>window.innerHeight*.5;S(j=>j===H?j:H)});const D=n.useCallback(v=>{const p=E.current;window.scrollTo({top:p[Math.min(v,p.length-1)]??0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"})},[]);return e.jsxs(e.Fragment,{children:[e.jsx(en,{}),e.jsx("div",{className:"scene-bg",children:e.jsx(SceneBoundary,{children:e.jsxs(Je,{eventSource:document.body,eventPrefix:"client",frameloop:scenePaused||window.matchMedia("(prefers-reduced-motion: reduce)").matches?"demand":"always",fallback:e.jsx("span",{children:"当前设备未能启用 3D，仍可使用页面入口。"}),onCreated:({gl})=>{gl.domElement.addEventListener("webglcontextlost",()=>window.dispatchEvent(new Event("ans-showcase-failure")));window.dispatchEvent(new Event("ans-showcase-ready"));},shadows:{type:jt},dpr:[1,1.5],camera:{position:[0,5,19],fov:39,near:.1,far:500},gl:{antialias:!0,stencil:!1,depth:!0,toneMapping:wt},children:[e.jsx("color",{attach:"background",args:["#0a0e16"]}),e.jsxs(n.Suspense,{fallback:null,children:[e.jsx(sn,{}),e.jsx(_t,{})]})]})})}),e.jsx(R.div,{className:"scrim",style:{opacity:b},"aria-hidden":"true"}),e.jsx(R.div,{className:"stage-fog",style:{background:u},"aria-hidden":"true"}),e.jsx(R.div,{className:"glass-rail",style:{opacity:l},"aria-hidden":"true"}),e.jsxs(R.div,{className:"hero-chrome",style:{opacity:x},"aria-hidden":"true",children:[e.jsx("div",{className:"hero-frame"}),e.jsx("span",{className:"hero-mark tl",children:"+"}),e.jsx("span",{className:"hero-mark tr",children:"+"}),e.jsx("span",{className:"hero-mark bl",children:"+"}),e.jsx("span",{className:"hero-mark br",children:"+"}),e.jsxs("div",{className:"hero-meta hm-tl",children:[e.jsx("span",{className:"hm-name",children:fe.tlName}),e.jsx("span",{children:fe.tlSub})]}),e.jsx("div",{className:"hero-meta hm-tr",children:fe.tr}),e.jsx("div",{className:"hero-meta hm-bl",children:fe.bl}),e.jsx("div",{className:"hero-meta hm-right",children:fe.right}),e.jsx("div",{className:"hero-social",children:on.map(v=>{const p=nt[v.id];return e.jsx("a",{className:"tl-logo",href:v.href,target:"_blank",rel:"noopener noreferrer","aria-label":v.label,title:v.label,children:e.jsx(p,{})},v.id)})})]}),null,e.jsx(Jt,{lang:t,activeIndex:A,onJump:D,visible:V}),e.jsxs("main",{className:"content",children:[e.jsx(an,{lang:t,cueOpacity:i}),e.jsx(Zt,{lang:t}),e.jsx(n.Suspense,{fallback:e.jsx("div",{className:"works-loading","aria-label":"Loading works",children:"Loading works…"}),children:e.jsx(nn,{lang:t,innerRef:a})})]})]})}ct(document.getElementById("root")).render(e.jsx(cn,{}));
+function cn(){var k;const[scenePaused,setScenePaused]=n.useState(false);n.useEffect(()=>{const change=event=>setScenePaused(Boolean(event.detail));window.addEventListener("ans-scene-pause",change);return()=>window.removeEventListener("ans-scene-pause",change)},[]);const[t,o]=n.useState("zh"),{scrollY:r}=Ce(),a=n.useRef(null),{scrollYProgress:d}=Ce({target:a,offset:["start end","start center"]}),u=z(d,[0,1],["rgba(8, 11, 18, 0)","rgba(8, 11, 18, 0.41)"]);z(d,[0,1],["blur(0px)","blur(10px)"]);const b=z(r,[0,520],[0,.4]),i=z(r,[0,160],[1,0]);z(r,[0,240],[1,0]);const g=typeof window<"u"?window.innerHeight:800,l=z(r,[g*.5,g*1.1],[0,1]),x=z(r,[0,280],[1,0]),w=.3,E=n.useRef([]),[A,M]=n.useState(0),[V,S]=n.useState(!1);n.useEffect(()=>{const v=()=>{const H=Te.map(j=>{const C=document.querySelector(`[data-point="${j}"]`);return C?C.getBoundingClientRect().top+window.scrollY:null}).filter(j=>j!==null);E.current=[0,...H]};v();const p=new ResizeObserver(v);return p.observe(document.documentElement),window.addEventListener("resize",v),()=>{p.disconnect(),window.removeEventListener("resize",v)}},[]),Nt(r,"change",v=>{const p=E.current;if(p.length>1){const j=v+window.innerHeight*w;let C=0;for(let P=0;P<p.length;P++)j>=p[P]&&(C=P);M(P=>P===C?P:C)}const H=v>window.innerHeight*.5;S(j=>j===H?j:H)});const D=n.useCallback(v=>{const p=E.current;window.scrollTo({top:p[Math.min(v,p.length-1)]??0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"})},[]);return e.jsxs(e.Fragment,{children:[e.jsx(en,{}),e.jsx("div",{className:"scene-bg",children:e.jsx(SceneBoundary,{children:e.jsxs(Je,{eventSource:document.body,eventPrefix:"client",frameloop:scenePaused||window.matchMedia("(prefers-reduced-motion: reduce)").matches?"demand":"always",fallback:e.jsx("span",{children:"当前设备未能启用 3D，仍可使用页面入口。"}),onCreated:({gl})=>{gl.domElement.addEventListener("webglcontextlost",()=>window.dispatchEvent(new Event("ans-showcase-failure")));window.dispatchEvent(new Event("ans-showcase-ready"));},shadows:{type:jt},dpr:[1,1.5],camera:{position:[0,5,19],fov:39,near:.1,far:500},gl:{antialias:!0,stencil:!1,depth:!0,toneMapping:wt},children:[e.jsx("color",{attach:"background",args:["#0a0e16"]}),e.jsxs(n.Suspense,{fallback:null,children:[e.jsx(sn,{}),e.jsx(_t,{})]})]})})}),e.jsx(R.div,{className:"scrim",style:{opacity:b},"aria-hidden":"true"}),e.jsx(R.div,{className:"stage-fog",style:{background:u},"aria-hidden":"true"}),e.jsx(R.div,{className:"glass-rail",style:{opacity:l},"aria-hidden":"true"}),e.jsxs(R.div,{className:"hero-chrome",style:{opacity:x},"aria-hidden":"true",children:[e.jsx("div",{className:"hero-frame"}),e.jsx("span",{className:"hero-mark tl",children:"+"}),e.jsx("span",{className:"hero-mark tr",children:"+"}),e.jsx("span",{className:"hero-mark bl",children:"+"}),e.jsx("span",{className:"hero-mark br",children:"+"}),e.jsxs("div",{className:"hero-meta hm-tl",children:[e.jsx("span",{className:"hm-name",children:fe.tlName}),e.jsx("span",{children:fe.tlSub})]}),e.jsx("div",{className:"hero-meta hm-tr",children:fe.tr}),e.jsx("div",{className:"hero-meta hm-bl",children:fe.bl}),e.jsx("div",{className:"hero-meta hm-right",children:fe.right}),e.jsx("div",{className:"hero-social",children:on.map(v=>{const p=nt[v.id];return e.jsx("a",{className:"tl-logo",href:v.href,target:"_blank",rel:"noopener noreferrer","aria-label":v.label,title:v.label,children:e.jsx(p,{})},v.id)})})]}),null,e.jsx(Jt,{lang:t,activeIndex:A,onJump:D,visible:!0}),e.jsxs("main",{className:"content",children:[e.jsx(an,{lang:t,cueOpacity:i}),e.jsx(Zt,{lang:t}),e.jsx(n.Suspense,{fallback:e.jsx("div",{className:"works-loading","aria-label":"Loading works",children:"Loading works…"}),children:e.jsx(nn,{lang:t,innerRef:a})})]})]})}ct(document.getElementById("root")).render(e.jsx(cn,{}));
 
     
