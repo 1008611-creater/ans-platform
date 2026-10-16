@@ -2522,7 +2522,7 @@
   },
   "agriHackathon": {
     "boundaryNextOpen": "View stage schedule",
-    "enterWorkbench": "Enter competition workbench",
+    "enterWorkbench": "Team registration & progress",
     "boundaryDescriptionOpen": "The competition workbench is live. Claim compute credits, register your team, submit deliverables, publish to the project wall, and track rankings in one flow.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON · ALL-IN-ONE HUB",

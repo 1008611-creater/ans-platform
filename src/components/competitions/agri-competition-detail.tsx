@@ -17,12 +17,15 @@ export async function AgriCompetitionDetail({ view, actorId }: { view: AgriCompe
   const stageHref = (entryId: string, stage: string) => `/competitions/agrihackathon/submissions?teamCompetitionId=${encodeURIComponent(entryId)}&stage=${stage}`;
   return <main className="container max-w-6xl space-y-9 py-7 sm:py-11">
     <Link href="/competitions/agrihackathon" className="text-sm text-muted-foreground underline-offset-4 hover:underline">{t("back")}</Link>
-    <header className="space-y-4 border-b pb-7">
-      <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{t("eyebrow")}</Badge><Badge variant="outline">{t("configuration." + view.configuration)}</Badge></div>
-      <h1 className="max-w-4xl break-words text-3xl font-semibold tracking-tight sm:text-4xl">{view.title}</h1>
-      <p className="max-w-3xl text-sm leading-7 text-muted-foreground">{t("intro")}</p>
-      <p className="text-sm text-muted-foreground">{t("organizer", { name: view.organizer || "CAUHub" })}</p>
-      <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><Link href="/competitions/agrihackathon#agri-rules-pending">{t("guide")}<ArrowRight className="size-4" /></Link></Button><Button asChild variant="ghost"><Link href="/teams"><UsersRound className="size-4" />{t("teams")}</Link></Button></div>
+    <header className="grid gap-6 border-b pb-7 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center">
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{t("eyebrow")}</Badge><Badge variant="outline">{t("configuration." + view.configuration)}</Badge></div>
+        <h1 className="max-w-4xl break-words text-3xl font-semibold tracking-tight sm:text-4xl">{view.title}</h1>
+        <p className="max-w-3xl text-sm leading-7 text-muted-foreground">{t("intro")}</p>
+        <p className="text-sm text-muted-foreground">{t("organizer", { name: view.organizer || "CAUHub" })}</p>
+        <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><Link href="/competitions/agrihackathon#agri-rules-pending">{t("guide")}<ArrowRight className="size-4" /></Link></Button><Button asChild variant="ghost"><Link href="/teams"><UsersRound className="size-4" />{t("teams")}</Link></Button></div>
+      </div>
+      <div className="overflow-hidden rounded-2xl border bg-slate-950/90 shadow-sm"><img src="/competitions/agrihackathon/gitglow-workflow.webp" alt={view.title} width={1440} height={900} className="h-auto w-full object-cover" loading="lazy" /></div>
     </header>
 
     <section aria-labelledby="agri-phase-title" className="space-y-4">
