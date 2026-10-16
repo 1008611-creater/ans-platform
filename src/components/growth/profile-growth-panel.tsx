@@ -7,13 +7,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Activity,
-  ArrowUpRight,
   CalendarCheck2,
   Check,
   CheckCircle2,
   ChevronRight,
   CircleGauge,
-  Coins,
   Flame,
   Heart,
   Lock,
@@ -23,7 +21,6 @@ import {
   Sparkles,
   Target,
   Trophy,
-  Zap,
 } from "lucide-react";
 
 import { LEVELS, getLevelProgress } from "@/domain/growth/levels";
@@ -34,6 +31,7 @@ import { XP_RULES } from "@/lib/level";
 import { AvatarFrame } from "@/components/growth/avatar-frame";
 import { ChatBubble } from "@/components/growth/chat-bubble";
 import { Button } from "@/components/ui/button";
+import { RevealDetails } from "@/components/catalog/reveal-details";
 import { cn } from "@/lib/utils";
 
 type GrowthEvent = { id: string; type: string; xp: number; points: number; sourceType: string; createdAt: string | Date };
@@ -52,6 +50,7 @@ type ProfileGrowthProps = {
     checkIns?: CheckInRecord[];
   };
   editable?: boolean;
+  showActivity?: boolean;
   actorId?: string;
   avatarFallback?: string;
 };
@@ -90,7 +89,7 @@ export function ProfileGrowthPanel(props: ProfileGrowthProps) {
   if (props.editable) return props.actorId ? <MarketAccountBoundary actorId={props.actorId}><ProfileGrowthState key={props.actorId} {...props} /></MarketAccountBoundary> : null;
   return <ProfileGrowthState {...props} editable={false} />;
 }
-function ProfileGrowthState({ user, editable = false, avatarFallback = "A", actorId }: ProfileGrowthProps) {
+function ProfileGrowthState({ user, editable = false, showActivity = true, avatarFallback = "A", actorId }: ProfileGrowthProps) {
   const request = useCommunityRequest(actorId); const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
 
@@ -114,6 +113,9 @@ function ProfileGrowthState({ user, editable = false, avatarFallback = "A", acto
   const progress = useMemo(() => getLevelProgress(xp), [xp]);
   const checkInMap = useMemo(() => new Map(checkIns.map((entry) => [entry.day, entry])), [checkIns]);
   const calendarDays = useMemo(() => communityCalendarDays(today), [today]);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const activeDay = selectedDay && calendarDays.includes(selectedDay) ? selectedDay : today;
+  const activeRecord = checkInMap.get(activeDay);
   const levelName = t(`levels.${progress.level.key}.name`);
   const nextLevelName = progress.nextLevel ? t(`levels.${progress.nextLevel.key}.name`) : null;
   const rewardLabel = (key: string) => t(`rewards.${key}.label`);
@@ -183,29 +185,22 @@ function ProfileGrowthState({ user, editable = false, avatarFallback = "A", acto
   }
 
   return (
-    <section className="relative mb-10 overflow-hidden rounded-[32px] border border-primary/15 bg-card shadow-[0_20px_70px_-30px_rgba(79,70,229,.45)]" aria-labelledby="profile-growth-title">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,hsl(var(--primary)/.16),transparent_32%),radial-gradient(circle_at_90%_10%,rgba(236,72,153,.12),transparent_28%)]" aria-hidden="true" />
+    <section className="relative mb-10 rounded-3xl border bg-card" aria-labelledby="profile-growth-title">
       <div className="relative grid gap-0 xl:grid-cols-[1.2fr_.8fr]">
         <div className="p-5 md:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.24em] text-primary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" />ANS GROWTH SYSTEM</p>
-              <h2 id="profile-growth-title" className="mt-3 text-3xl font-black tracking-tight md:text-4xl">{levelName}</h2>
-              <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><span className={cn("rounded-full bg-gradient-to-r px-2.5 py-1 text-xs font-bold text-white", levelColor(progress.level.index))}>LV.{progress.level.index + 1}</span>{progress.level.nameEn}{progress.gradeLabel ? <><span className="text-border">/</span><span>{progress.gradeLabel}</span></> : null}</p>
+
+              <h2 id="profile-growth-title" className="text-3xl font-bold tracking-tight md:text-4xl">{levelName}</h2>
+              <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><span className={cn("rounded-full bg-gradient-to-r px-2.5 py-1 text-xs font-bold text-white", levelColor(progress.level.index))}>LV.{progress.level.index + 1}</span>{progress.gradeLabel ? <><span>{progress.gradeLabel}</span></> : null}</p>
             </div>
-            <div className="rounded-2xl border border-primary/15 bg-background/75 px-4 py-3 text-right backdrop-blur"><p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("availablePoints")}</p><p className="mt-1 text-2xl font-black tabular-nums">{points.toLocaleString()}</p><p className="text-[11px] text-muted-foreground">{t("pointsUnit")}</p></div>
+            <div className="rounded-2xl border border-primary/15 bg-background px-4 py-3 text-right"><p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("availablePoints")}</p><p className="mt-1 text-2xl font-black tabular-nums">{points.toLocaleString()}</p></div>
           </div>
 
           <div className="mt-8 rounded-3xl border bg-background/55 p-4 md:p-5">
             <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-semibold text-muted-foreground">{t("levelProgress")}</p><p className="mt-1 text-xl font-black tabular-nums">{xp.toLocaleString()} <span className="text-sm font-medium text-muted-foreground">XP</span></p></div><p className="text-right text-xs text-muted-foreground">{progress.nextLevel ? <>{t("nextLevel", { level: nextLevelName ?? "", xp: progress.xpToNext })}</> : t("maxLevel")}</p></div>
             <div className="mt-3 h-3 overflow-hidden rounded-full bg-primary/10" role="progressbar" aria-label={t("xp")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.progress * 100)}><div className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-700 motion-reduce:transition-none", levelColor(progress.level.index))} style={{ width: `${Math.round(progress.progress * 100)}%` }} /></div>
-            <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground"><span>{Math.round(progress.progress * 100)}% {t("completed")}</span>{progress.nextLevel ? <span>{t("nextRewardAt", { level: progress.nextLevel.index + 1 })}</span> : <span>{t("topLevel")}</span>}</div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-2 md:gap-3">
-            <div className="rounded-2xl border bg-background/55 p-3"><Flame className="h-4 w-4 text-orange-500" aria-hidden="true" /><p className="mt-3 text-xl font-black tabular-nums">{streak}</p><p className="text-[11px] text-muted-foreground">{t("streakDays")}</p></div>
-            <div className="rounded-2xl border bg-background/55 p-3"><Zap className="h-4 w-4 text-primary" aria-hidden="true" /><p className="mt-3 text-xl font-black tabular-nums">{progress.xpToNext || "—"}</p><p className="text-[11px] text-muted-foreground">{t("xpToNext")}</p></div>
-            <div className="rounded-2xl border bg-background/55 p-3"><Coins className="h-4 w-4 text-amber-500" aria-hidden="true" /><p className="mt-3 text-xl font-black tabular-nums">{getLevelPointReward(progress.level.index)}</p><p className="text-[11px] text-muted-foreground">{t("currentReward")}</p></div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span>{Math.round(progress.progress * 100)}% {t("completed")}</span>{progress.nextLevel ? <span>{t("nextRewardAt", { level: progress.nextLevel.index + 1 })}</span> : <span>{t("topLevel")}</span>}</div>
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -215,45 +210,46 @@ function ProfileGrowthState({ user, editable = false, avatarFallback = "A", acto
         </div>
 
         <div className="border-t bg-background/35 p-5 xl:border-l xl:border-t-0 md:p-8">
-          <div className="flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">{t("checkInCalendarEyebrow")}</p><h3 className="mt-2 text-lg font-bold">{t("checkInCalendarTitle")}</h3></div><span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{editable ? `${checkIns.length} ${t("recentCheckIns")}` : t("privateGrowth")}</span></div>
+          <RevealDetails id="growth-calendar-guide" kind="heading" label={t("calendarGuide")} className="pe-12" details={<p>{t("streakHint")}</p>}><h3 className="text-lg font-bold">{t("checkInCalendarTitle")}</h3><p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground"><Flame className="h-4 w-4 text-orange-500" aria-hidden="true" />{t("streakHeadline", { days: streak })}</p></RevealDetails>
           {editable ? <>
-            <div className="mt-5 grid grid-cols-7 gap-1.5" role="list" aria-label={t("checkInCalendarTitle")}>
-              {calendarDays.map((day) => { const record = checkInMap.get(day); const isToday = day === today; return <div key={day} title={record ? `${day} · ${record.xpAwarded} XP` : day} role="listitem" aria-current={isToday ? "date" : undefined} aria-label={record ? t("calendarDayChecked", { day, xp: record.xpAwarded }) : t("calendarDayEmpty", { day })} className={cn("relative aspect-square rounded-md border bg-muted/35", record && "border-emerald-400/50 bg-emerald-400/75", isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background")}><span className="sr-only">{record ? t("calendarDayChecked", { day, xp: record.xpAwarded }) : t("calendarDayEmpty", { day })}</span>{record && <Check className="absolute inset-0 m-auto h-3.5 w-3.5 text-white" aria-hidden="true" />}</div>; })}
+            <div className="mt-5 grid grid-cols-7 gap-1.5" role="group" aria-label={t("checkInCalendarTitle")}>
+              {calendarDays.map((day) => { const record = checkInMap.get(day); const isToday = day === today; return <button type="button" key={day} aria-pressed={activeDay === day} onClick={() => setSelectedDay(day)} title={record ? `${day} · ${record.xpAwarded} XP` : day} aria-current={isToday ? "date" : undefined} aria-label={record ? t("calendarDayChecked", { day, xp: record.xpAwarded }) : t("calendarDayEmpty", { day })} className={cn("relative aspect-square min-h-8 rounded-md border bg-muted/35 text-xs tabular-nums focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2", record && "border-emerald-400/50 bg-emerald-400/75", isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background")}><span aria-hidden="true">{Number(day.slice(-2))}</span></button>; })}
             </div>
-            <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground"><span>{t("calendarHint")}</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-muted" />{t("notCheckedIn")}<span className="ml-2 h-2.5 w-2.5 rounded-sm bg-emerald-400" />{t("checkedInShort")}</span></div>
+            <p className="mt-3 text-xs text-muted-foreground" role="status">{activeRecord ? t("calendarDayChecked", { day: activeDay, xp: activeRecord.xpAwarded }) : t("calendarDayEmpty", { day: activeDay })}</p>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span>{t("calendarHint")}</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-muted" />{t("notCheckedIn")}<span className="ml-2 h-2.5 w-2.5 rounded-sm bg-emerald-400" />{t("checkedInShort")}</span></div>
           </> : <p className="mt-5 rounded-2xl border border-dashed bg-background/40 px-4 py-6 text-sm leading-6 text-muted-foreground">{t("privateGrowthHint")}</p>}
-          <div className="mt-6 rounded-2xl border border-orange-400/20 bg-orange-400/5 p-4"><div className="flex items-center gap-2"><Flame className="h-4 w-4 text-orange-500" aria-hidden="true" /><p className="text-sm font-bold">{t("streakHeadline", { days: streak })}</p></div><p className="mt-2 text-xs leading-5 text-muted-foreground">{t("streakHint")}</p></div>
+
         </div>
       </div>
 
-      <div className="relative grid gap-6 border-t p-5 md:p-8 xl:grid-cols-[1.05fr_.95fr]">
+      <div className={cn("relative grid gap-6 border-t p-5 md:p-8", showActivity && "xl:grid-cols-[1.05fr_.95fr]")}>
         <div>
-          <div className="flex items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">{t("earnEyebrow")}</p><h3 className="mt-2 text-xl font-bold">{t("earnTitle")}</h3></div><Target className="h-5 w-5 text-primary" aria-hidden="true" /></div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            {actionCards.map((action) => { const Icon = action.icon; return <div key={action.key} className={cn("rounded-2xl border bg-gradient-to-br p-3", action.color)}><div className="flex items-center justify-between"><Icon className="h-4 w-4 text-foreground/70" aria-hidden="true" /><span className="text-xs font-bold text-primary">+{action.xp} XP</span></div><p className="mt-3 text-sm font-semibold">{t(`actions.${action.key}`)}</p><p className="mt-1 text-[11px] text-muted-foreground">{t("dailyCap", { count: XP_RULES[action.key].dailyCap })}</p></div>; })}
+          <div className="flex items-end justify-between gap-3"><RevealDetails id="growth-earn-guide" kind="heading" label={t("earnGuide")} className="flex-1 pe-12" details={<p>{t("qualityHint")}</p>}><h3 className="text-xl font-bold">{t("earnTitle")}</h3></RevealDetails><Target className="h-5 w-5 text-primary" aria-hidden="true" /></div>
+          <div className={cn("mt-4 grid grid-cols-2 gap-2", !showActivity && "lg:grid-cols-3")}>
+            {actionCards.map((action) => { const Icon = action.icon; return <div key={action.key} className="rounded-xl border p-3"><div className="flex items-center justify-between"><Icon className="h-4 w-4 text-foreground/70" aria-hidden="true" /><span className="text-xs font-bold text-primary">+{action.xp} XP</span></div><p className="mt-3 text-sm font-semibold">{t(`actions.${action.key}`)}</p><p className="mt-1 text-[11px] text-muted-foreground">{t("dailyCap", { count: XP_RULES[action.key].dailyCap })}</p></div>; })}
           </div>
-          <div className="mt-5 flex items-center gap-2 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs text-muted-foreground"><ArrowUpRight className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />{t("qualityHint")}</div>
+
         </div>
 
-        <div>
-          <div className="flex items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">{t("activityEyebrow")}</p><h3 className="mt-2 text-xl font-bold">{t("activityTitle")}</h3></div><Activity className="h-5 w-5 text-primary" aria-hidden="true" /></div>
+        {showActivity && <div>
+          <div className="flex items-end justify-between gap-3"><h3 className="text-xl font-bold">{t("activityTitle")}</h3><Activity className="h-5 w-5 text-primary" aria-hidden="true" /></div>
           {editable ? <div className="mt-4 divide-y rounded-2xl border bg-background/45">
             {recentEvents.slice(0, 5).map((event) => { const meta = eventMeta[event.type] ?? { labelKey: "UNKNOWN", icon: Sparkles, tone: "text-primary" }; const Icon = meta.icon; return <div key={event.id} className="flex items-center gap-3 px-4 py-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-muted"><Icon className={cn("h-4 w-4", meta.tone)} aria-hidden="true" /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{t(`events.${meta.labelKey}`)}</p><p className="text-[11px] text-muted-foreground">{formatShortDate(event.createdAt, locale)}</p></div><span className="text-sm font-bold text-primary">{event.xp > 0 ? `+${event.xp} XP` : `+${event.points} ${t("pointsUnit")}`}</span></div>; })}
             {recentEvents.length === 0 && <div className="px-4 py-8 text-center text-sm text-muted-foreground">{t("noActivity")}</div>}
           </div> : <p className="mt-4 rounded-2xl border border-dashed bg-background/40 px-4 py-6 text-sm leading-6 text-muted-foreground">{t("privateGrowthHint")}</p>}
-        </div>
+        </div>}
       </div>
 
       <div className="relative border-t p-5 md:p-8">
-        <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">{t("roadmapEyebrow")}</p><h3 className="mt-2 text-xl font-bold">{t("roadmapTitle")}</h3></div><p className="text-xs text-muted-foreground">{t("roadmapHint")}</p></div>
+        <div className="flex flex-wrap items-end justify-between gap-3"><h3 className="text-xl font-bold">{t("roadmapTitle")}</h3></div>
         <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
           {LEVELS.map((level) => { const reached = level.index <= progress.level.index; const current = level.index === progress.level.index; return <div key={level.key} className={cn("relative rounded-2xl border p-3 transition", reached && "border-primary/25 bg-primary/5", current && "border-primary bg-primary/10 shadow-sm")}><div className="flex items-center justify-between"><span className={cn("grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br text-[10px] font-black text-white", levelColor(level.index))}>L{level.index + 1}</span>{reached ? <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" /> : <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />}</div><p className="mt-3 text-xs font-semibold">{t(`levels.${level.key}.name`)}</p><p className="mt-1 text-[10px] text-foreground">{level.minXp.toLocaleString()} XP</p>{getLevelPointReward(level.index) > 0 && <p className="mt-1 text-[10px] font-medium text-primary">+{getLevelPointReward(level.index)} {t("pointsUnit")}</p>}{current && <span className="mt-2 inline-flex rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">{t("currentLevel")}</span>}</div>; })}
         </div>
       </div>
 
       <div className="relative grid gap-6 border-t p-5 md:p-8 lg:grid-cols-2">
-        <div><div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" aria-hidden="true" /><h3 className="font-bold">{t("unlockedTitle")}</h3></div><div className="mt-4 flex items-center gap-4"><AvatarFrame frameKey={frame} className="h-16 w-16"><span className="grid h-full w-full place-items-center rounded-full bg-muted text-xl" aria-hidden="true">{avatarFallback}</span></AvatarFrame><ChatBubble bubbleKey={bubble} className="flex-1">{t("identityPreview")}</ChatBubble></div>{editable && <div className="mt-5 space-y-4"><div><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("avatarFrames")}</p><div className="grid grid-cols-3 gap-2">{AVATAR_FRAMES.map((reward) => { const unlocked = reward.levelIndex <= progress.level.index; const label = rewardLabel(reward.key); return <button key={reward.key} type="button" disabled={!unlocked || busy} aria-pressed={frame === reward.key} aria-label={`${label}${unlocked ? "" : `, ${t("locked")}`}`} title={`${rewardDescription(reward.key)} · Lv.${reward.levelIndex + 1}`} onClick={() => equip("avatar-frame", reward.key)} className={cn("rounded-xl border p-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2", frame === reward.key && "border-primary bg-primary/5", !unlocked && "cursor-not-allowed opacity-45")}><div className="flex items-center gap-2"><AvatarFrame frameKey={reward.key}><span className="block h-7 w-7 rounded-full bg-muted" aria-hidden="true" /></AvatarFrame>{unlocked ? frame === reward.key ? <Check className="ml-auto h-3.5 w-3.5 text-primary" aria-hidden="true" /> : null : <Lock className="ml-auto h-3.5 w-3.5" aria-hidden="true" />}</div><p className="mt-1 text-[11px] font-medium">{label}</p></button>; })}</div></div><div><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("chatBubbles")}</p><div className="grid grid-cols-2 gap-2">{CHAT_BUBBLES.map((reward) => { const unlocked = reward.levelIndex <= progress.level.index; const label = t(`bubbleLabels.${reward.key}`); return <button key={reward.key} type="button" disabled={!unlocked || busy} aria-pressed={bubble === reward.key} aria-label={`${label}${unlocked ? "" : `, ${t("locked")}`}`} title={`${rewardDescription(reward.key)} · Lv.${reward.levelIndex + 1}`} onClick={() => equip("chat-bubble", reward.key)} className={cn("rounded-xl border p-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2", bubble === reward.key && "border-primary bg-primary/5", !unlocked && "cursor-not-allowed opacity-45")}><ChatBubble bubbleKey={reward.key} className="truncate px-2 py-1 text-xs">{label}</ChatBubble><div className="mt-1 flex justify-end">{unlocked ? bubble === reward.key ? <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> : null : <Lock className="h-3.5 w-3.5" aria-hidden="true" />}</div></button>; })}</div></div></div>}</div>
-        <div className="rounded-3xl border bg-gradient-to-br from-primary/10 via-background/60 to-fuchsia-500/10 p-5"><div className="flex items-center gap-2"><Trophy className="h-5 w-5 text-amber-500" aria-hidden="true" /><h3 className="font-bold">{t("nextRewardTitle")}</h3></div>{progress.nextLevel ? <><p className="mt-4 text-2xl font-black">{t(`levels.${progress.nextLevel.key}.name`)}</p><p className="mt-2 text-sm text-muted-foreground">{t("nextRewardDescription", { xp: progress.xpToNext, points: getLevelPointReward(progress.nextLevel.index) })}</p><div className="mt-5 space-y-2">{[...AVATAR_FRAMES, ...CHAT_BUBBLES].filter((reward) => reward.levelIndex === progress.nextLevel?.index).map((reward) => <div key={`${reward.kind}-${reward.key}`} className="flex items-center gap-3 rounded-2xl border bg-background/60 px-3 py-2"><span className="grid h-8 w-8 place-items-center rounded-xl bg-muted">{reward.kind === "avatar-frame" ? <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" /> : <MessageCircle className="h-4 w-4 text-fuchsia-500" aria-hidden="true" />}</span><div><p className="text-sm font-semibold">{reward.kind === "chat-bubble" ? t(`bubbleLabels.${reward.key}`) : rewardLabel(reward.key)}</p><p className="text-[11px] text-muted-foreground">{rewardDescription(reward.key)}</p></div><ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" aria-hidden="true" /></div>)}<div className="flex items-center justify-between rounded-2xl bg-primary/10 px-3 py-2 text-sm"><span>{t("levelReward", { points: getLevelPointReward(progress.nextLevel.index) })}</span><span className="font-black text-primary">+{getLevelPointReward(progress.nextLevel.index)}</span></div></div></> : <p className="mt-4 text-sm text-muted-foreground">{t("maxLevel")}</p>}</div>
+        <div><div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" aria-hidden="true" /><h3 className="font-bold">{t("unlockedTitle")}</h3></div><div className="mt-4 flex items-center gap-4"><AvatarFrame frameKey={frame} className="h-16 w-16"><span className="grid h-full w-full place-items-center rounded-full bg-muted text-xl" aria-hidden="true">{avatarFallback}</span></AvatarFrame><ChatBubble bubbleKey={bubble} className="flex-1">{t("identityPreview")}</ChatBubble></div>{editable && <div className="mt-5 space-y-4"><div><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("avatarFrames")}</p><div className="grid grid-cols-3 gap-2">{AVATAR_FRAMES.map((reward) => { const unlocked = reward.levelIndex <= progress.level.index; const label = rewardLabel(reward.key); return <button key={reward.key} type="button" disabled={!unlocked || busy} aria-pressed={frame === reward.key} aria-label={`${label}${unlocked ? "" : `, ${t("locked")}`}`} title={`${rewardDescription(reward.key)} · Lv.${reward.levelIndex + 1}`} onClick={() => equip("avatar-frame", reward.key)} className={cn("rounded-xl border p-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2", frame === reward.key && "border-primary bg-primary/5", !unlocked && "cursor-not-allowed opacity-45")}><div className="flex items-center gap-2"><AvatarFrame frameKey={reward.key}><span className="block h-7 w-7 rounded-full bg-muted" aria-hidden="true" /></AvatarFrame>{unlocked ? frame === reward.key ? <Check className="ml-auto h-3.5 w-3.5 text-primary" aria-hidden="true" /> : null : <Lock className="ml-auto h-3.5 w-3.5" aria-hidden="true" />}</div><p className="mt-1 text-xs font-medium">{label}</p><p className="text-xs text-muted-foreground">Lv.{reward.levelIndex + 1}</p></button>; })}</div></div><div><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("chatBubbles")}</p><div className="grid grid-cols-2 gap-2">{CHAT_BUBBLES.map((reward) => { const unlocked = reward.levelIndex <= progress.level.index; const label = t(`bubbleLabels.${reward.key}`); return <button key={reward.key} type="button" disabled={!unlocked || busy} aria-pressed={bubble === reward.key} aria-label={`${label}${unlocked ? "" : `, ${t("locked")}`}`} title={`${rewardDescription(reward.key)} · Lv.${reward.levelIndex + 1}`} onClick={() => equip("chat-bubble", reward.key)} className={cn("rounded-xl border p-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2", bubble === reward.key && "border-primary bg-primary/5", !unlocked && "cursor-not-allowed opacity-45")}><ChatBubble bubbleKey={reward.key} className="truncate px-2 py-1 text-xs">{label}</ChatBubble><div className="mt-1 flex items-center justify-between text-xs text-muted-foreground"><span>Lv.{reward.levelIndex + 1}</span>{unlocked ? bubble === reward.key ? <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> : null : <Lock className="h-3.5 w-3.5" aria-hidden="true" />}</div></button>; })}</div></div></div>}</div>
+        <div className="rounded-2xl border bg-primary/5 p-5"><div className="flex items-center gap-2"><Trophy className="h-5 w-5 text-amber-500" aria-hidden="true" /><h3 className="font-bold">{t("nextRewardTitle")}</h3></div>{progress.nextLevel ? <><p className="mt-4 text-2xl font-black">{t(`levels.${progress.nextLevel.key}.name`)}</p><p className="mt-2 text-sm text-muted-foreground">{t("nextRewardDescription", { xp: progress.xpToNext, points: getLevelPointReward(progress.nextLevel.index) })}</p><div className="mt-5 space-y-2">{[...AVATAR_FRAMES, ...CHAT_BUBBLES].filter((reward) => reward.levelIndex === progress.nextLevel?.index).map((reward) => <div key={`${reward.kind}-${reward.key}`} className="flex items-center gap-3 rounded-2xl border bg-background/60 px-3 py-2"><span className="grid h-8 w-8 place-items-center rounded-xl bg-muted">{reward.kind === "avatar-frame" ? <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" /> : <MessageCircle className="h-4 w-4 text-fuchsia-500" aria-hidden="true" />}</span><div><p className="text-sm font-semibold">{reward.kind === "chat-bubble" ? t(`bubbleLabels.${reward.key}`) : rewardLabel(reward.key)}</p><p className="text-[11px] text-muted-foreground">{rewardDescription(reward.key)}</p></div><ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" aria-hidden="true" /></div>)}<div className="flex items-center justify-between rounded-2xl bg-primary/10 px-3 py-2 text-sm"><span>{t("levelReward", { points: getLevelPointReward(progress.nextLevel.index) })}</span></div></div></> : <p className="mt-4 text-sm text-muted-foreground">{t("maxLevel")}</p>}</div>
       </div>
     </section>
   );

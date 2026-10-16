@@ -55,7 +55,7 @@ const PUBLIC_PAGES = [
   ["/explore", "项目发现", "项目广场"],
   ["/explore/liu-resume", "项目详情", "个人简历与作品集"],
   ["/workflows/toonflow", "旧工作流跳转", null],
-  ["/hubs", "Hub 目录", "找到属于你的创作与学习 Hub"],
+  ["/hubs", "Hub 目录", "想从哪个方向开始？"],
   ["/hubs/full-stack", "全栈开发 Hub", "全栈开发 Hub"],
   ["/competitions", "赛事活动", null],
   ["/market", "市场", null],
@@ -77,7 +77,7 @@ const PRIVATE_PAGES = [
 const MOBILE_PAGES = [
   ["/", "移动端 首页", "长成看得见的作品。"],
   ["/explore", "移动端 项目发现", "项目广场"],
-  ["/hubs", "移动端 Hub 目录", "找到属于你的创作与学习 Hub"],
+  ["/hubs", "移动端 Hub 目录", "想从哪个方向开始？"],
   ["/market", "移动端 市场", null],
 ];
 

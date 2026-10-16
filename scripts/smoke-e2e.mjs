@@ -117,7 +117,7 @@ async function runDesktop(page, { baseUrl, seed }, checks, problems) {
 
   await visit("/", "首页");
   await visit("/explore", "项目广场");
-  await visit("/hubs", "Hub 目录", "找到属于你的创作与学习 Hub");
+  await visit("/hubs", "Hub 目录", "想从哪个方向开始？");
   await visit("/community", "社区成长");
   await visit("/competitions", "赛事活动");
   await visit("/market", "市场");

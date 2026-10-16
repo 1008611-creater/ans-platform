@@ -29,7 +29,7 @@
   "templates": "Template library",
   "workflows": "Advanced workflows",
   "projectsTitle": "My projects and results",
-  "projectsDescription": "One set of facts, three useful drafts. Finish one project before starting the next method.",
+  "projectsDescription": "Continue a project, or create one to organize facts and results.",
   "newProject": "New project",
   "privateHint": "Project facts are owner-only. Generation and editing never publish your results automatically.",
   "projectName": "Project name",
@@ -98,5 +98,7 @@
   "busy": "Working…",
   "billingExplanation": "This run reserves up to {points} points. See run history for charges and refunds. CNY 1 = 10 points; current platform model pricing applies.",
   "billingRun": "Run (reserve up to {points} credits)",
-  "billingReservation": "Reserve up to {points} credits"
+  "billingReservation": "Reserve up to {points} credits",
+  "goalQuestion": "What is this project for?",
+  "projectGuideQuestion": "Not sure where to start?"
 }

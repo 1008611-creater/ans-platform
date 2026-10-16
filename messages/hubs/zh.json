@@ -22,27 +22,27 @@
   "navigationDescription": "项目、Hub、社区、赛事、市场与工作台",
   "mobileNavigation": "主要导航",
   "eyebrow": "ANS / HUBS",
-  "title": "找到属于你的创作与学习 Hub",
-  "description": "按高校社群、Vibe Coding 知识库与创作赛道，一站聚合可运行工作流、实战项目与创作工具入口。",
-  "allWorkflows": "浏览全部工作流",
+  "title": "想从哪个方向开始？",
+  "description": "Hub 把同一高校或方向的项目、工具和工作流放在一起。选一个进去看看。",
+  "allWorkflows": "逛市场",
   "searchLabel": "查找 Hub",
-  "searchPlaceholder": "搜索高校、Vibe Coding、AIGC 或全栈开发…",
+  "searchPlaceholder": "高校、AI 创作、全栈开发…",
   "search": "查找",
   "emptySearch": "没有找到匹配的 Hub，换个关键词试试吧。",
   "clear": "清除筛选",
   "unavailable": "暂不可用",
-  "catalogUnavailable": "项目目录暂时无法读取，已隐藏项目和未知数量，稍后刷新即可。",
-  "directoryNote": "各 Hub 展示当前已明确收录的参考项目、工具入口与可运行工作流数量（不代表高校入驻人数或官方校籍认证）。",
+  "catalogUnavailable": "项目暂时无法加载，请稍后刷新。",
+  "directoryNote": "数量统计收录内容，不代表成员人数或校籍认证。",
   "back": "返回 Hub 目录",
-  "universityNote": "ANS × {university} 专区：当前展示已关联的校内赛事与协作内容；其他高校专区筹备中，不做入驻承诺。",
+  "universityNote": "面向{university}的赛事与协作专区；Hub 关联不代表校籍认证。",
   "runnableTitle": "可运行工作流",
-  "runnableNote": "填入你的真实素材，确认积分后再运行——浏览页面绝不会自动生成或扣费。",
+  "runnableNote": "想直接做出成品？填入你的资料，确认费用后再运行。浏览不会扣费。",
   "noRunnable": "这个 Hub 暂时还没有收录可直接运行的工作流。",
-  "resourcesTitle": "核心工具与内容入口",
-  "projectsTitle": "精选项目与开源参考",
-  "projectsNote": "点开项目卡片即可查看作品拆解与使用方式。外部工具的账号登录与计费以原站为准；开源参考代表推荐学习方案，不等于 ANS 已内置托管运行。",
-  "noProjects": "目前还没有已发布并关联到此 Hub 的项目。",
-  "recipeCost": "本流程确认运行消耗 {points} 积分，修改与导出方式详见准备页。",
+  "resourcesTitle": "工具与内容",
+  "projectsTitle": "项目与开源参考",
+  "projectsNote": "想看做法或自己部署？打开项目查看。外部工具的账号和费用以原站为准，开源参考需按项目说明自行使用。",
+  "noProjects": "还没有关联项目。",
+  "recipeCost": "确认运行消耗 {points} 积分。",
   "prepareWorkflow": "准备我的项目",
   "counts": {
     "workflows": "可运行",
@@ -64,58 +64,58 @@
   "items": {
     "cauhub": {
       "name": "CAUHub",
-      "description": "面向中国农业大学师生的赛事活动与校内创客协作入口，按真实关联收录。"
+      "description": "农大的赛事、项目与创客交流。"
     },
     "vibehub": {
       "name": "ANS VibeHub",
-      "description": "从零基础概念到实战交付：系统整理 Vibe Coding 术语库、课程、学习路径与 Skill 方法。"
+      "description": "学习 AI 编程：术语、课程、练习与 Skill。"
     },
     "aigc": {
       "name": "AIGC Hub",
-      "description": "汇聚图像、漫剧视频与多模态创作工具，配套官方实战拆解与精选开源工作流。"
+      "description": "图像、漫剧与视频创作工具。"
     },
     "full-stack": {
       "name": "全栈开发 Hub",
-      "description": "从一键生成的 3D 个人作品集网站，到前后端开发、静态部署与高星开源项目参考。"
+      "description": "网站与应用开发，从作品集到开源参考。"
     }
   },
   "kinds": {
     "runnable": "ANS 可运行",
-    "hosted-tool": "工具入口 · 按页面权限使用",
+    "hosted-tool": "工具入口",
     "knowledge": "知识与学习",
     "event": "赛事入口",
     "reference": "开源或外部参考",
-    "external": "外部产品 · 查看原站条件"
+    "external": "外部产品"
   },
   "resources": {
     "agrihackathon": {
       "title": "AgriHackathon · 农客松",
-      "description": "查看农客松赛事规则、赛道命题、作品提交要求与路演日程（报名状态以赛事页为准）。"
+      "description": "赛事规则、赛道、提交要求与日程。"
     },
     "vibehub": {
       "title": "进入 VibeHub 知识库",
-      "description": "系统浏览 Vibe Coding 课程、高频术语、成长路径、实战练习与 Skill 编写方法。"
+      "description": "从概念到实战，按自己的进度学习。"
     },
     "aigc": {
-      "title": "AIGC 漫剧与视频工作台",
-      "description": "前往 Toonflow 漫剧与视频创作工作台，核对服务连接、模型与积分费用后即可开始创作。"
+      "title": "AIGC 工作台",
+      "description": "创作漫剧与视频，使用前查看模型和费用。"
     },
     "hypit": {
       "title": "Hypit 创作工作区",
-      "description": "查看 Hypit 交互演示与工作区入口；具体生成工具按当前账号权限开放。"
+      "description": "进入 Hypit 演示与工作区，功能以账号权限为准。"
     }
   },
   "recipes": {
     "resume-website": {
       "title": "个人简历与作品集网站",
-      "description": "把你的真实经历、代表作品与个人故事装进可实时预览、自由调色并一键导出源码的个人网站。"
+      "description": "填入经历和作品，预览、修改并导出个人网站。"
     }
   },
-  "recipeMeteredCost": "确认运行后，按实际模型用量结算积分（¥1＝10 积分）。",
+  "recipeMeteredCost": "按实际模型用量结算，¥1＝10 积分。",
   "openWorkflow": "填写资料并使用",
   "viewMarketCard": "查看市场卡",
   "workflowsUnavailable": "工作流状态暂时无法读取，请稍后重试。",
-  "marketUnavailable": "市场卡暂时无法读取，你依然可以从工作流入口正常使用。",
+  "marketUnavailable": "市场卡暂时无法读取，请稍后重试。",
   "associations": {
     "title": "归属 Hub",
     "hint": "同一工作流可申请多个 Hub，无需复制。归属审核不会发布工作流、上架市场或发放经验。",
@@ -156,7 +156,7 @@
     "next": "下一页",
     "memberTitle": "成员工作流",
     "loadUnavailable": "成员工作流暂时无法读取，数量未知，请稍后重试。",
-    "emptyMembers": "暂无已审、已发布且明确归属此 Hub 的成员工作流。",
+    "emptyMembers": "还没有成员工作流。",
     "publicVersion": "固定已审版本 v{version}",
     "use": "填写资料并使用",
     "market": "查看准确版本市场卡",
@@ -198,5 +198,8 @@
     "authorOnly": "仅作者可提交新的归属申请。"
   },
   "officialWorkflowsTitle": "官方工作流",
-  "noOfficialWorkflows": "这个 Hub 还没有关联的官方工作流。"
+  "noOfficialWorkflows": "还没有官方工作流。",
+  "guideLabel": "Hub 是什么？",
+  "workflowGuideLabel": "工作流怎么用？",
+  "projectGuideLabel": "这些项目怎么用？"
 }

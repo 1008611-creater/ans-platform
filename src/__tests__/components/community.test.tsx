@@ -32,7 +32,7 @@ describe("社区面板", () => {
     render(panel());
     const button = await screen.findByRole("button", { name: "每日签到" });
     expect(button).toBeEnabled();
-    expect(screen.getByText(/项目上架与管理权限按实际审核与授权执行/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "historyGuide" })).toBeInTheDocument();
     fireEvent.click(button);
     await waitFor(() => expect(screen.getByRole("button", { name: "今日已签到" })).toBeDisabled());
     expect(screen.getByText("+5 XP")).toBeInTheDocument();

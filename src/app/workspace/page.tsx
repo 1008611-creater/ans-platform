@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Activity, Coins, FolderOpen, Heart, Users, Zap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -12,17 +12,13 @@ import { DisplayNameEditor } from "@/components/workspace/display-name-editor";
 import { CreationTools } from "@/components/workspace/creation-tools";
 import { PageHeading } from "@/components/layout/page-heading";
 
-export const metadata = {
-  title: "工作台 · ANS",
-  description: "正在运行的任务、产出库、算力余额与我的团队。",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("product.workspace");
+  return { title: t("metaTitle"), description: t("description") };
+}
 
-const RUN_STATUS_LABEL: Record<string, { text: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  QUEUED: { text: "排队中", variant: "outline" },
-  RUNNING: { text: "运行中", variant: "secondary" },
-  SUCCEEDED: { text: "已完成", variant: "default" },
-  FAILED: { text: "失败", variant: "destructive" },
-  CANCELLED: { text: "已取消", variant: "outline" },
+const RUN_STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  QUEUED: "outline", RUNNING: "secondary", SUCCEEDED: "default", FAILED: "destructive", CANCELLED: "outline",
 };
 
 type WorkspacePageProps = {
@@ -36,6 +32,8 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   }
 
   const retired = await getTranslations("retirement");
+  const t = await getTranslations("product.workspace");
+  const locale = await getLocale();
   const computeCopy = await getTranslations("product.computeHistory");
   const product = await getTranslations("product");
   const quotaCopy = await getTranslations("product.quotaHistory");
@@ -81,12 +79,12 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   const nextRunsCursor = hasMoreRuns ? runs[runs.length - 1]?.id : undefined;
   const xp = user?.xp ?? 0;
   const progress = getLevelProgress(xp);
-  const displayName = user?.nickname?.trim() || "匿名同学";
+  const displayName = user?.nickname?.trim() || t("anonymous");
 
   return (
     <div className="ans-product-container ans-page-content ans-workspace-page">
-      <PageHeading title="工作台"
-        description={<span className="ans-workspace-greeting">你好，{displayName} · {formatLevel(xp)}
+      <PageHeading title={t("title")}
+        description={<span className="ans-workspace-greeting">{t("greeting", { name: displayName })} · {locale === "zh" ? formatLevel(xp) : progress.level.nameEn}
           <DisplayNameEditor current={displayName} /></span>}
         actions={<><Button asChild><Link href="/projects">{product("myProjects")}</Link></Button><Button asChild variant="outline"><Link href="/explore">{product("nav.explore")}</Link></Button></>} />
 
@@ -95,11 +93,11 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         <Card>
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5">
-              <Coins className="h-3.5 w-3.5" /> 算力余额
+              <Coins className="h-3.5 w-3.5" /> {t("balance")}
             </CardDescription>
             <CardTitle className="text-2xl">
               {(user?.quotaPoints ?? 0).toLocaleString(undefined, { maximumFractionDigits: 6 })}
-              <span className="ms-1 text-sm font-normal text-muted-foreground">点</span>
+              <span className="ms-1 text-sm font-normal text-muted-foreground">{t("pointsUnit")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2 pt-0"><Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{quotaCopy("entry")}</Link></Button><Button asChild variant="ghost" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button></CardContent>
@@ -108,7 +106,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         <Card>
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5" /> 经验 / 等级
+              <Zap className="h-3.5 w-3.5" /> {t("experience")}
             </CardDescription>
             <CardTitle className="text-2xl">
               {xp.toLocaleString()}
@@ -124,11 +122,11 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
             </div>
             <p className="mt-1.5 text-xs text-muted-foreground">
               {progress.nextLevel
-                ? "距" + progress.nextLevel.nameZh + "还需 " + progress.xpToNext.toLocaleString() + " XP"
-                : "已达最高等级"}
+                ? t("nextLevel", { level: locale === "zh" ? progress.nextLevel.nameZh : progress.nextLevel.nameEn, xp: progress.xpToNext })
+                : t("maxLevel")}
             </p>
             <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link href="/community">社区签到 · 流水与贡献榜</Link>
+              <Link href="/community">{t("community")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -136,7 +134,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         <Card>
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5">
-              <Activity className="h-3.5 w-3.5" /> 运行次数
+              <Activity className="h-3.5 w-3.5" /> {t("runs")}
             </CardDescription>
             <CardTitle className="text-2xl">{runCount}</CardTitle>
           </CardHeader>
@@ -145,7 +143,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         <Card>
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5" /> 我的团队
+              <Users className="h-3.5 w-3.5" /> {t("myTeams")}
             </CardDescription>
             <CardTitle className="text-2xl">{memberships.length}</CardTitle>
           </CardHeader>
@@ -174,20 +172,21 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
             <CardContent className="p-0">
               <ul className="divide-y">
                 {runs.map((r) => {
-                  const st = RUN_STATUS_LABEL[r.status] ?? { text: r.status, variant: "outline" as const };
+                  const variant = RUN_STATUS_VARIANT[r.status] ?? "outline";
+                  const statusLabel = RUN_STATUS_VARIANT[r.status] ? t("status." + r.status) : r.status;
                   return (
-                    <li key={r.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                      <div className="min-w-0">
+                    <li key={r.id} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+                      <div className="min-w-0 flex-1 basis-48">
                         <p className="truncate font-medium">{r.template.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {r.createdAt.toLocaleString("zh-CN")}
+                          {r.createdAt.toLocaleString(locale)}
                         </p>
-                        {r.outputText && <details className="mt-2"><summary className="cursor-pointer text-sm">查看结果</summary><pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words text-sm">{r.outputText}</pre></details>}
+                        {r.outputText && <details className="mt-2"><summary className="cursor-pointer py-2 text-sm">{t("viewResult")}</summary><pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words text-sm">{r.outputText}</pre></details>}
                         {r.error && <p className="mt-2 text-sm text-destructive">{r.error}</p>}
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
-                        <span className="text-xs text-muted-foreground">-{r.costPoints} 点</span>
-                        <Badge variant={st.variant}>{st.text}</Badge>
+                        <span className="text-xs text-muted-foreground">{t("runCost", { points: r.costPoints.toLocaleString(locale, { maximumFractionDigits: 6 }) })}</span>
+                        <Badge variant={variant}>{statusLabel}</Badge>
                       </div>
                     </li>
                   );
@@ -200,12 +199,12 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
           <div className="mt-4 flex gap-2">
             {hasMoreRuns && nextRunsCursor && (
               <Button asChild variant="outline" size="sm">
-                <Link href={"/workspace?runsCursor=" + encodeURIComponent(nextRunsCursor)}>下一页</Link>
+                <Link href={"/workspace?runsCursor=" + encodeURIComponent(nextRunsCursor)}>{t("nextPage")}</Link>
               </Button>
             )}
             {runsCursor && (
               <Button asChild variant="ghost" size="sm">
-                <Link href="/workspace">回到第一页</Link>
+                <Link href="/workspace">{t("firstPage")}</Link>
               </Button>
             )}
           </div>
@@ -215,17 +214,17 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
       <section className="ans-workspace-section ans-workspace-teams">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Users className="h-4 w-4" /> 团队与算力
+            <Users className="h-4 w-4" /> {t("teamCredits")}
           </h2>
           <Button asChild variant="outline" size="sm">
-            <Link href="/teams">团队管理</Link>
+            <Link href="/teams">{t("manageTeams")}</Link>
           </Button>
         </div>
 
         {memberships.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              还没有加入团队。加入后可使用团队比赛算力包。
+              {t("noTeams")}
             </CardContent>
           </Card>
         ) : (
@@ -239,11 +238,11 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
                     </Link>
                   </CardTitle>
                   <CardDescription>
-                    {m.role === "OWNER" ? "队长" : m.role === "ADMIN" ? "管理员" : "成员"}
+                    {t(m.role === "OWNER" ? "owner" : m.role === "ADMIN" ? "admin" : "member")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 text-sm text-muted-foreground">
-                  队内额度 {m.quotaUsed.toLocaleString()} / {m.quotaAllowance.toLocaleString()} 点
+                  {t("teamAllowance", { used: m.quotaUsed, total: m.quotaAllowance })}
                 </CardContent>
               </Card>
             ))}
