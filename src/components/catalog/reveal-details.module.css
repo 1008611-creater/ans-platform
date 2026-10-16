@@ -1,14 +1,13 @@
-.root { position: relative; min-width: 0; }
+﻿.root { position: relative; min-width: 0; }
 .trigger { position: absolute; z-index: 4; top: 10px; inset-inline-end: 10px; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--border); border-radius: 50%; color: var(--muted-foreground); background: var(--card); cursor: pointer; opacity: 0; transition: opacity 140ms ease; }
 .trigger svg { width: 16px; height: 16px; }
 .root:hover .trigger, .root:focus-within .trigger, .root[data-revealed="true"] .trigger { opacity: 1; }
 .trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.panel { position: absolute; z-index: 5; inset-inline: 12px; bottom: 78px; max-height: min(260px, 65vh); overflow: auto; padding: 16px; border: 1px solid var(--border); border-radius: 12px; color: var(--muted-foreground); background: var(--card); box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 10%, transparent); font-size: 12px; line-height: 1.75; text-wrap: pretty; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(5px); transition: opacity 140ms ease, transform 140ms ease, visibility 140ms; }
-.root[data-revealed="true"] .panel { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); }
+.panel { z-index: 50; width: min(320px, calc(100vw - 24px)); max-height: min(320px, var(--radix-popover-content-available-height)); overflow: auto; overscroll-behavior: contain; padding: 16px; border: 1px solid var(--border); border-radius: 12px; color: var(--muted-foreground); background: var(--card); box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 10%, transparent); font-size: 12px; line-height: 1.75; overflow-wrap: anywhere; text-wrap: pretty; }
+.panel:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .panel p + p, .panel div + p { margin-top: 8px; }
+.root[data-reveal-kind="heading"] { padding-inline-end: 44px; }
 .root[data-reveal-kind="heading"] .trigger { top: 0; inset-inline-end: 0; }
-.root[data-reveal-kind="heading"] .panel { top: calc(100% + 8px); bottom: auto; inset-inline: 0; }
 .root[data-reveal-kind="caption"] .trigger { top: 0; inset-inline-end: 46px; width: 28px; height: 28px; }
-.root[data-reveal-kind="caption"] .panel { inset-inline: 0; bottom: calc(100% + 8px); }
-@media (hover: none), (pointer: coarse) { .trigger { opacity: 1; width: 44px; height: 44px; } .root[data-reveal-kind="caption"] .trigger { inset-inline-end: 96px; width: 44px; height: 44px; } }
-@media (prefers-reduced-motion: reduce) { .trigger, .panel { transition: none; transform: none; } }
+@media (hover: none), (pointer: coarse) { .trigger { opacity: 1; width: 44px; height: 44px; } .root[data-reveal-kind="caption"] .trigger { inset-inline-end: 64px; width: 44px; height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .trigger { transition: none; } .panel { animation: none !important; transition: none; } }
