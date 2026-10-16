@@ -2489,15 +2489,15 @@
       },
       "agrihackathon": {
         "name": "AgriHackathon 农客松",
-        "tagline": "CAUHub 发起组织的首届 AI Hackathon",
-        "description": "CAUHub 发起的 AI 黑客松，面向中国农业大学在校学生和毕业三年内校友。项目可在 ANS 外完成；正式日期待确认。",
+        "tagline": "CAUHub 发起的农客松一体化赛事平台",
+        "description": "CAUHub 发起的 AI 黑客松，面向中国农业大学在校学生和毕业三年内校友。一站式读规则、领算力、组队传作品、上作品墙拉 Star 并查看 10 强入围与终审排名。",
         "status": "筹备中",
         "highlights": [
-          "3 条赛道",
-          "线下 60–80 人",
-          "预算 5000 元"
+          "3 大赛道 · 领算力参赛",
+          "作品墙展示 · 分享拉 Star",
+          "10 强入围 · 3300 元总奖金池"
         ],
-        "cta": "了解农客松"
+        "cta": "进入农客松一体化平台"
       }
     },
     "chooseEvent": "选择活动",
@@ -2507,190 +2507,190 @@
   "agriHackathon": {
     "boundaryNextOpen": "查看本届独立阶段窗口",
     "enterWorkbench": "查看本届参赛进度",
-    "boundaryDescriptionOpen": "已接入本届工作区。报名、初赛和决赛材料分别以已发布窗口为准。",
+    "boundaryDescriptionOpen": "本届参赛通道已打通。算力领取、阶段提交、作品墙拉票与入围榜单均按已发布窗口运行。",
     "navLabel": "农客松比赛",
-    "eyebrow": "AGRIHACKATHON",
+    "eyebrow": "AGRIHACKATHON · 一体化赛事平台",
     "title": "AgriHackathon｜农客松",
-    "description": "由 CAUHub 发起组织的首届 AI 黑客松，面向校内本科生、研究生及毕业三年内校友。连续 48 小时共创，一周展示与评审，下周末 Demo Day。名称暂定，正式日期待确认。",
+    "description": "由 CAUHub 发起的首届 AI 创客马拉松（面向中国农业大学在校本硕博学生及毕业三年内校友，1–5 人组队）。一站式完成：读规则、拿算力、报名传作品、上作品墙找人点 Star、查看十强入围与最终排名。",
     "createProject": "创建参赛项目",
-    "openTeams": "进入团队与比赛",
+    "openTeams": "组建与管理战队",
     "backToHub": "返回比赛中心",
-    "statusTitle": "首届方案 · 日程待确认",
-    "statusDescription": "3 个赛道，团队 1–5 人；初赛选出 10 个 Finalist。报名及各阶段仅按正式发布窗口开放。",
+    "statusTitle": "首届赛事 · 一体化通道",
+    "statusDescription": "3 大赛道 · 1–5 人组队 · 作品墙 Star 占初赛 20% · 10 强晋级 Demo Day 终审",
     "stats": {
-      "tracks": "赛道",
+      "tracks": "自选赛道",
       "tracksValue": "3",
-      "scale": "团队规模",
+      "scale": "战队规模",
       "scaleValue": "1–5 人",
-      "phases": "活动环节",
-      "phasesValue": "4",
-      "deliverables": "材料要求",
-      "deliverablesValue": "按发布规范"
+      "phases": "核心环节",
+      "phasesValue": "5 步闭环",
+      "deliverables": "算力支持",
+      "deliverablesValue": "可领算力包"
     },
-    "tracksTitle": "三大赛道",
-    "tracksDescription": "People、Discovery、Action 三个方向。项目完成后选择赛道，让作品决定归属。",
-    "tracksSectionLabel": "01 / 赛道",
-    "rulesSectionLabel": "03 / 规则",
+    "tracksTitle": "三大赛道（完赛后自选）",
+    "tracksDescription": "People、Discovery、Action 三个方向。先把作品跑通，提交时再选择最契合的赛道。",
+    "tracksSectionLabel": "01 / 赛道方向",
+    "rulesSectionLabel": "03 / 极简红线",
     "openTrack": "查看赛道详情",
-    "trackLabel": "赛道",
+    "trackLabel": "评审焦点",
     "tracks": {
       "people": {
         "name": "AI 为人",
         "code": "TRACK 01 · AI FOR PEOPLE",
-        "role": "用 AI 改善具体人群的真实处境",
-        "description": "面向学习、创作、效率、社交与日常生活，用 AI 改善具体个人的体验。",
-        "status": "赛道已公布",
-        "detail": "评审关注问题是否真实、使用者是否明确，以及方案能否在 48 小时内做出可运行的最小版本。"
+        "role": "改善具体人群的日常与学习体验",
+        "description": "面向学习、创作、效率、校园生活与个人助手，做出真正好用的 AI 产品。",
+        "status": "开放选报",
+        "detail": "痛点真实、受众明确，48 小时内跑通可交互 MVP。"
       },
       "discovery": {
         "name": "AI 为知",
         "code": "TRACK 02 · AI FOR DISCOVERY",
-        "role": "用 AI 帮助人理解复杂问题",
-        "description": "面向科研、生命科学、农业、食品、环境与数据分析，用 AI 帮助理解、研究和发现复杂问题。",
-        "status": "赛道已公布",
-        "detail": "评审关注数据来源是否合规、推理过程是否可解释，以及结论能否被他人复现。"
+        "role": "辅助科研、农业与复杂数据分析",
+        "description": "面向农业、生命科学、食品、环境与科研发现，用 AI 加速理解与推导。",
+        "status": "开放选报",
+        "detail": "数据合规、推理可解释，结论支持他人复现。"
       },
       "action": {
         "name": "AI 为行",
         "code": "TRACK 03 · AI FOR ACTION",
-        "role": "用 AI 推动一个具体行动落地",
-        "description": "面向 Agent、工作流、企业工具、机器人与智能硬件，让 AI 真正执行任务。",
-        "status": "赛道已公布",
-        "detail": "评审关注方案能否在真实场景里被执行、成本是否可控，以及交付物是否方便他人接手。"
+        "role": "让 AI 自动执行真实任务落地",
+        "description": "面向 Agent、自动化工作流、行业工具与智能硬件，让 AI 真正动手干活。",
+        "status": "开放选报",
+        "detail": "场景可执行、算力成本可控，交付物易于复用。"
       }
     },
-    "phasesTitle": "四阶段参赛路径",
-    "phasesDescription": "组队报名 → 连续 48H 共创 → 一周展示与评审 → 下周末 Demo Day。正式日期另行确认。",
+    "phasesTitle": "四阶段赛程节奏",
+    "phasesDescription": "组队领算力 → 48H 极限共创 → 作品墙拉 Star 与初审 → Demo Day 终审放榜",
     "phases": {
       "discover": {
-        "label": "01 · 报名与组队",
-        "description": "校内本科生、研究生及毕业三年内校友组队，团队 1–5 人；项目完成后再选赛道。",
-        "state": "日期待确认"
+        "label": "01 · 组队报名与领算力",
+        "description": "1–5 人组建战队并领取参赛算力，完赛后再定赛道。",
+        "state": "STEP 1"
       },
       "plan": {
-        "label": "02 · 48 小时开发",
-        "description": "连续 48 小时共创，提交可演示的作品、公开 GitHub 仓库及规定材料。",
-        "state": "日期待确认"
+        "label": "02 · 48 小时极限开发",
+        "description": "完成核心功能开发，提交公开 GitHub 仓库、可运行 Demo 并上架作品墙。",
+        "state": "STEP 2"
       },
       "produce": {
-        "label": "03 · 初赛评审与准备",
-        "description": "一周项目展示与评审，每项目 3 位评委，专业 80%＋大众 20%，选出 10 个 Finalist。",
-        "state": "日期待确认"
+        "label": "03 · 作品墙拉 Star 与初审入围",
+        "description": "转发作品墙集 Star（占 20%）＋ 3 位评委初审（占 80%），公布 10 强 Finalist 入围名单。",
+        "state": "STEP 3"
       },
       "submit": {
-        "label": "04 · 一天线下决赛",
-        "description": "下周末 Demo Day；7 位评委去掉最高、最低分后取 5 人均值，每队演示 5 分钟、问答 3 分钟。",
-        "state": "日期待确认"
+        "label": "04 · Demo Day 决赛与总排名汇报",
+        "description": "每队 5 分钟演示＋3 分钟问答，7 位评委去高低分取均值，现场揭晓最终排名。",
+        "state": "STEP 4"
       }
     },
-    "deliverablesTitle": "提交检查清单",
-    "deliverablesDescription": "以下为材料准备参考，必交与选交项以本届已发布技术规范为准。",
+    "deliverablesTitle": "作品提交清单",
+    "deliverablesDescription": "初赛与决赛材料一键绑定 ANS 项目版本提交，清晰可追溯。",
     "deliverables": {
-      "brief": "项目名、团队、赛道与项目简介",
-      "plan": "团队分工与开发计划",
-      "storyboard": "技术方案与架构说明",
-      "source": "数据来源与授权说明",
-      "iterations": "关键迭代与评审记录",
-      "final": "可运行 Demo 与演示视频或链接",
-      "evidence": "公开 GitHub 仓库（含许可证）",
-      "package": "提交包与最终检查"
+      "brief": "项目名、战队、赛道与核心简介",
+      "plan": "团队成员分工与实现计划",
+      "storyboard": "技术架构与核心方案说明",
+      "source": "数据来源与合规授权说明",
+      "iterations": "关键迭代与版本演进记录",
+      "final": "在线可玩 Demo 或实录演示视频",
+      "evidence": "公开 GitHub 仓库（含开源协议）",
+      "package": "作品墙绑定与最终提交核验"
     },
-    "scoringTitle": "评分维度",
-    "scoringDescription": "初赛每项目由 3 位评委评审，专业评分占 80%，大众评分占 20%；决赛采用 7 位评委评分，去掉最高和最低分后取 5 人均值。",
-    "scoringSectionLabel": "02 / 评分",
+    "scoringTitle": "评分标准与权重",
+    "scoringDescription": "初赛：专业评委分（80%）＋作品墙大众 Star（20%）选出 10 强；决赛：7 位评委去最高最低分取 5 人均值排定座次。",
+    "scoringSectionLabel": "02 / 评审与晋级",
     "scoring": {
       "innovation": {
         "label": "创新性 · 30 分",
-        "description": "问题定义或解决路径是否有新意。"
+        "description": "问题切入独特，解决路径有新意。"
       },
       "technical": {
-        "label": "技术深度与实现难度 · 25 分",
-        "description": "技术选型、实现质量与工程完整度。"
+        "label": "技术深度 · 25 分",
+        "description": "架构选型合理，工程与模型实现扎实。"
       },
       "completeness": {
-        "label": "产品完成度与 Demo · 20 分",
-        "description": "Demo 是否可运行、流程是否闭环。"
+        "label": "Demo 完成度 · 20 分",
+        "description": "Demo 可在线运行，核心体验完整闭环。"
       },
       "problem": {
-        "label": "真实问题与后续价值 · 15 分",
-        "description": "需求是否来自真实场景与真实使用者。"
+        "label": "真实价值 · 15 分",
+        "description": "源自真实场景痛点，具备后续实用价值。"
       },
       "fit": {
         "label": "赛道契合度 · 10 分",
-        "description": "作品与所选赛道的匹配程度。"
+        "description": "高度契合所选赛道方向与交付要求。"
       }
     },
-    "advanceTitle": "初赛晋级与 Demo Day",
-    "advanceDescription": "初赛选出 10 个 Finalist。决赛每队 5 分钟演示、3 分钟问答，技术检查与晋级决定分开。",
-    "advanceNote": "初赛大众评分占 20%；现场人气奖单独评选。晋级以独立记录的决定为准，技术检查不会自动授予资格。",
+    "advanceTitle": "入围汇报与最终排名机制",
+    "advanceDescription": "作品墙拉票直通初赛计分，10 强入围名单与决赛总排名全程在本平台公示汇报。",
+    "advanceNote": "作品墙有效 Star 同时计入初赛 20% 权重与独立「最佳人气奖」评选；入围资格与最终获奖名次由组委会核定公示。",
     "advanceItems": {
-      "professional": "初赛：每项目 3 位评委，专业 80%＋大众 20%",
-      "pool": "初赛选出 10 个 Finalist，项目完成后选择赛道",
-      "panel": "决赛：7 位评委去最高、最低，取 5 人均值",
-      "review": "每队 5 分钟演示＋3 分钟问答"
+      "professional": "初赛计分：3 位评委专业分 80% ＋ 作品墙 Star 20%",
+      "pool": "入围公示：初赛总分 Top 10 晋级 Finalist 决赛名单",
+      "panel": "决赛排名：7 位评委去最高最低分，取 5 人均值定排名",
+      "review": "路演答辩：每队 5 分钟 Demo 演示 ＋ 3 分钟评委问答"
     },
-    "awardsTitle": "奖项设置",
-    "awardsDescription": "一等奖 1500 元、二等奖 1000 元、三等奖 800 元，另设技术、创新及现场人气奖。",
+    "awardsTitle": "奖金与荣誉榜单",
+    "awardsDescription": "决出冠亚季军现金大奖，并颁布最佳技术、最佳创新及作品墙 Star 人气王。",
     "awards": {
       "first": {
         "label": "一等奖",
-        "amount": "1500 元",
-        "description": "综合得分第一名"
+        "amount": "¥1,500",
+        "description": "决赛综合排名第 1 名"
       },
       "second": {
         "label": "二等奖",
-        "amount": "1000 元",
-        "description": "综合得分第二名"
+        "amount": "¥1,000",
+        "description": "决赛综合排名第 2 名"
       },
       "third": {
         "label": "三等奖",
-        "amount": "800 元",
-        "description": "综合得分第三名"
+        "amount": "¥800",
+        "description": "决赛综合排名第 3 名"
       },
       "tech": {
         "label": "最佳技术实现",
-        "amount": "荣誉奖",
-        "description": "技术深度维度表现突出"
+        "amount": "单项荣誉",
+        "description": "技术深度维度得分最高"
       },
       "innovation": {
-        "label": "最佳创新",
-        "amount": "荣誉奖",
-        "description": "创新性维度表现突出"
+        "label": "最佳创新奖",
+        "amount": "单项荣誉",
+        "description": "创新性维度得分最高"
       },
       "popular": {
-        "label": "人气奖",
-        "amount": "荣誉奖",
-        "description": "按农客松作品墙在公布计票时段内的有效 ANS Star 评选，与专业评审分开。截止后封存；同票第一并列，全部零票不授奖。"
+        "label": "最佳人气奖（Star 王）",
+        "amount": "单项荣誉",
+        "description": "计票期内农客松作品墙有效 Star 最高者斩获（截止封存，同票并列）。"
       }
     },
-    "rulesTitle": "参赛规则与合规红线",
-    "rulesDescription": "所有正式项目公开 GitHub，凭证和隐私不得入库。知识产权归团队，官方享有非独占展示与传播权。",
+    "rulesTitle": "参赛红线（8 条极简守则）",
+    "rulesDescription": "开源透明、限时原创、知识产权 100% 归参赛团队。",
     "rules": {
-      "opensource": "所有正式项目公开 GitHub，提交具体版本并保留开源与授权说明。",
-      "data": "禁止上传凭证或个人隐私，数据与素材须有合法来源和使用权限。",
-      "originality": "作品须在比赛期间完成，不得提交往届或他人成果",
-      "team": "每队 1–5 人，面向校内本科生、研究生及毕业三年内校友。",
-      "demo": "展示可运行的 Demo；现场、视频或混合演示须按已发布要求准备，备用方案一并记录。",
-      "conduct": "尊重评委与其他参赛者，不得刷票或干扰评审",
-      "rights": "知识产权归团队；官方享有非独占的展示与传播权。",
-      "frozen": "冻结后仅可获准调整 Bug、UI、稳定性或演示，核心功能不得重做。"
+      "opensource": "代码开源：正式提交须附公开 GitHub 仓库、具体版本及开源许可证。",
+      "data": "安全合规：严禁上传密钥或个人隐私，数据集与素材须来源合法。",
+      "originality": "限时原创：核心代码与成果须在比赛期间完成，严禁直接搬用旧项目。",
+      "team": "1–5 人组队，面向中国农业大学在校本硕博学生与毕业三年内校友。",
+      "demo": "可玩 Demo：须提供可运行的在线演示或实录视频，并准备现场备用方案。",
+      "conduct": "公平拉票：欢迎转发作品墙找人点 Star，严禁刷票或干扰评审。",
+      "rights": "产权归属：作品知识产权归参赛团队，官方享有非独占展示与传播权。",
+      "frozen": "版本冻结：截止封存后仅可获准修复演示 Bug，不得重做核心功能。"
     },
-    "workflowTitle": "ANS 工作区快捷入口",
-    "workflowDescription": "把项目记录留在 ANS，报名、评审与公示在后续阶段接入。",
+    "workflowTitle": "参赛算力与工具直通车",
+    "workflowDescription": "领算力、跑 AI 工作流、管战队、查入围，一站式备战。",
     "openProjects": "项目包",
     "openWorkflows": "工作流程",
     "openTemplates": "模板广场",
     "openSkills": "技能",
-    "boundaryTitle": "首届集成边界",
-    "boundaryDescription": "已接入报名、分阶段提交、技术检查和内部作品记录。正式窗口与人员授权仍须按本届信息配置。",
+    "boundaryTitle": "一体化平台参赛保障",
+    "boundaryDescription": "已全面打通算力中心、组队报名、阶段版本提交、作品墙 Star 拉票与入围公示机制。",
     "boundaryItems": {
-      "entry": "一个 ANS 入口",
-      "links": "首届方案与真实发布规范分开展示",
-      "ownership": "知识产权归团队，官方非独占展示传播",
-      "next": "仅按本届已发布的独立窗口开放操作"
+      "entry": "一站式主控台：规则、算力、交作品与拉票同屏闭环",
+      "links": "算力直通赋能：支持免费算力池领取与赛事算力券兑换",
+      "ownership": "团队产权保护：私密材料严格隔离，仅公开授权展示内容",
+      "next": "全链路可追溯：有效 Star 计票、10 强入围与最终排名透明公示"
     },
-    "syncNote": "所有正式日期待确认，视觉时间节点不作为报名或提交截止。",
-    "intro": "CAUHub 发起的 AI 黑客松。项目可在 ANS 外完成，参赛前需发布到作品墙并绑定队伍。",
+    "syncNote": "各阶段开启与截止时间均以顶部赛事公示窗口为准。",
+    "intro": "CAUHub 发起的 AI 黑客松（面向中国农业大学在校学生及毕业三年内校友）。一站式读规则、领参赛算力、提交作品并上作品墙分享拉 Star。",
     "nextAction": "选择下一步",
     "alreadyEntering": "已经在参赛？",
     "entryHint": "发布只是第一步，绑定队伍后还需正式提交材料。",
@@ -2701,7 +2701,48 @@
     "browseProjects": "浏览项目",
     "myWorkspace": "我的工作台",
     "readPublishedRules": "阅读已发布规则",
-    "bindProject": "绑定参赛项目"
+    "bindProject": "绑定参赛项目",
+    "claimCompute": "领取参赛算力",
+    "pipelineSectionLabel": "00 / 一站式参赛闭环",
+    "pipelineTitle": "五步跑通农客松：从领算力到冲进十强",
+    "pipelineDescription": "告别多处跳转。读规则、拿算力、交作品、拉 Star 与查入围全部集成在同一主线。",
+    "pipeline": {
+      "rules": {
+        "step": "STEP 01",
+        "title": "读规则 · 选赛道",
+        "description": "了解三大赛道与评分权重，先专注做出作品，提交时再定赛道。",
+        "cta": "查看赛道与规则",
+        "href": "#tracks"
+      },
+      "compute": {
+        "step": "STEP 02",
+        "title": "拿算力 · 搭原型",
+        "description": "前往算力中心领取免费算力或兑换赛事算力券，调用 AI 工作流加速开发。",
+        "cta": "去领参赛算力",
+        "href": "/workspace/credits"
+      },
+      "submit": {
+        "step": "STEP 03",
+        "title": "报名 · 传作品",
+        "description": "1–5 人组队报名，按初赛与决赛阶段提交作品版本、GitHub 仓库与可运行 Demo。",
+        "cta": "本队阶段提交",
+        "href": "/competitions/agrihackathon/submissions"
+      },
+      "star": {
+        "step": "STEP 04",
+        "title": "上作品墙 · 拉 Star",
+        "description": "作品免费上墙展示，一键复制拉票口令找人点 Star（占初赛 20% 权重＋最佳人气奖）。",
+        "cta": "打开农客松作品墙",
+        "href": "/explore?category=competition&subcategory=agri-wall"
+      },
+      "ranking": {
+        "step": "STEP 05",
+        "title": "入围汇报 · 最终排名",
+        "description": "初赛揭晓 10 强 Finalist 入围名单，Demo Day 终审后公示综合排名与获奖成果。",
+        "cta": "查看入围与展示",
+        "href": "/competitions/agrihackathon/showcase"
+      }
+    }
   },
   "templates": {
     "metadataTitle": "模板广场",
