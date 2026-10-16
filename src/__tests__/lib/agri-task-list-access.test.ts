@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AgriPersonalTask } from "@prisma/client";
 import type { DbTransaction } from "@/lib/db";

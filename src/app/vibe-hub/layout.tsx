@@ -1,4 +1,4 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { VibeHubFooter } from "./footer";
 import { VibeHubShell } from "./shell";

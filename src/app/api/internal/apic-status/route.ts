@@ -1,4 +1,4 @@
-﻿import { timingSafeEqual } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { saveApicStatus } from "@/lib/apic-status-cache";

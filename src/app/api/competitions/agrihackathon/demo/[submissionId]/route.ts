@@ -1,4 +1,4 @@
-﻿import { RateLimiter } from "@/lib/rate-limit";
+import { RateLimiter } from "@/lib/rate-limit";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { agriDemoQuerySchema } from "@/contracts/agri-demo";
 import { agriSubmissionResponse } from "@/server/competitions/agrihackathon/submissions-http";

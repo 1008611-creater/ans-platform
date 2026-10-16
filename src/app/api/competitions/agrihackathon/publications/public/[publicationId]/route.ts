@@ -1,4 +1,4 @@
-﻿import { agriPublicPublicationResponse,publicationQuery } from "@/server/competitions/agrihackathon/publications-http";
+import { agriPublicPublicationResponse,publicationQuery } from "@/server/competitions/agrihackathon/publications-http";
 import { readAgriPublicPublication } from "@/server/competitions/agrihackathon/publications";
 import { agriPublicationsListQuerySchema } from "@/contracts/agri-publications";
 export const dynamic="force-dynamic";

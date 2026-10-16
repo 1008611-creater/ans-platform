@@ -1,4 +1,4 @@
-﻿import { describe,it,expect } from "vitest";
+import { describe,it,expect } from "vitest";
 import { agriPublicationCommandSchema,agriPublicationContentSchema,agriPublicUrlSchema,agriPublicationQuerySchema } from "@/contracts/agri-publications";
 const content={title:"Explicit result",summary:"Explicit public description",teamName:"Team",track:"ACTION",repositoryUrl:null,demoUrl:null};
 const command={action:"requestPublication",entryStageId:"stage",expectedRevision:0,idempotencyKey:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",submissionId:"submission",artifactVersionId:"version",consentConfirmed:true,content};

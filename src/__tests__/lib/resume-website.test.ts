@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { resumeWebsiteInputSchema } from "@/contracts/resume-website";
 import { buildResumeWebsitePrompt, parseResumeWebsiteCopy, plainResumeWebsiteCopy, renderResumeWebsite, RESUME_WEBSITE_EXAMPLE } from "@/domain/projects/resume-website";

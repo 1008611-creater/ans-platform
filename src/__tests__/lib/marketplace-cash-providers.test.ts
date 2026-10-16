@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createCipheriv, generateKeyPairSync, sign, verify } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";

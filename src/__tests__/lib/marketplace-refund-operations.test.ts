@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m=vi.hoisted(()=>({user:vi.fn(),refunds:vi.fn(),orders:vi.fn()}));
 vi.mock("@/lib/db",()=>({db:{user:{findFirst:m.user},marketRefund:{findMany:m.refunds},marketOrder:{findMany:m.orders}}}));

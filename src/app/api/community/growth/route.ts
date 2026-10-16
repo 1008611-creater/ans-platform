@@ -1,5 +1,5 @@
 import { assertRequestActor } from "@/server/http/json";
-﻿import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { communityFailure, communityJson } from "../response";
 import { getGrowthProfile } from "@/server/growth/service";
 

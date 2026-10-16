@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useRef } from "react";
 /** The enclosing account boundary unmounts this hook when the active session changes. */
 export function useCommunityRequest(actorId: string | undefined) {

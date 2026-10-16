@@ -1,4 +1,4 @@
-﻿import { db } from "@/lib/db";
+import { db } from "@/lib/db";
 import type { CreditGiftOffer } from "@/contracts/credit-gift";
 export async function readCreditGiftOffer(userId: string): Promise<CreditGiftOffer> {
   const user = await db.user.findUnique({ where: { id: userId }, select: { quotaClaimedAt: true, flagged: true, deletedAt: true } });

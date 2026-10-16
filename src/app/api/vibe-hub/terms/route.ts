@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import terms from "./terms.json";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url); const q = (searchParams.get("q") || "").slice(0, 500).trim().toLowerCase();

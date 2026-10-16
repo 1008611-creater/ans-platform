@@ -1,4 +1,4 @@
-﻿.root { position: relative; min-width: 0; }
+.root { position: relative; min-width: 0; }
 .trigger { position: absolute; z-index: 4; top: 10px; inset-inline-end: 10px; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--border); border-radius: 50%; color: var(--muted-foreground); background: var(--card); cursor: pointer; opacity: 0; transition: opacity 140ms ease; }
 .trigger svg { width: 16px; height: 16px; }
 .root:hover .trigger, .root:focus-within .trigger, .root[data-revealed="true"] .trigger { opacity: 1; }

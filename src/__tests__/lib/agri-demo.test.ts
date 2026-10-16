@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { agriDemoCommandSchema, agriDemoSnapshotSchema, agriDemoDueSchema } from "@/contracts/agri-demo";
 const condition = { status: "PASS", note: "Manual check" };
 const demo = { schemaVersion: 1, mode: "LIVE", description: "Laptop screen demo", device: condition, compatibility: condition, network: condition, audio: condition,

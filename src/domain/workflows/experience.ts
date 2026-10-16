@@ -1,4 +1,4 @@
-﻿import type { WorkflowDefinition, WorkflowExperience } from "@/contracts/workflow";
+import type { WorkflowDefinition, WorkflowExperience } from "@/contracts/workflow";
 import { validateWorkflow } from "./graph";
 
 /** Display follows the validated engine graph. No additional execution semantics. */

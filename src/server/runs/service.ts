@@ -1,4 +1,4 @@
-﻿import { db } from "@/lib/db";
+import { db } from "@/lib/db";
 
 /** 「我的运行记录」列表：运行历史 + 当前额度余额。 */
 

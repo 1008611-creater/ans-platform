@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const mock = vi.hoisted(() => ({ auth: vi.fn(), add: vi.fn(), remove: vi.fn(), list: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ auth: mock.auth }));

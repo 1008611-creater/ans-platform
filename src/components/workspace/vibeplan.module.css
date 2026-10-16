@@ -1,4 +1,4 @@
-﻿/* A student chooses tools between classes, on a laptop or phone in daylight.
+/* A student chooses tools between classes, on a laptop or phone in daylight.
    Keep ANS theme tokens and its green accent; clear terms carry the page. */
 .shell { --plan-paper: oklch(0.97 0.012 150); }
 .container { padding-block: 2rem 4.5rem; max-width: 72rem; }

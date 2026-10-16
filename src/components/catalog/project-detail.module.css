@@ -1,4 +1,4 @@
-﻿.page { padding-block: 2.25rem 5rem; }
+.page { padding-block: 2.25rem 5rem; }
 .breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; font-size: .8125rem; color: var(--muted-foreground); }
 .breadcrumb a { display: inline-flex; align-items: center; gap: .5rem; color: var(--foreground); }
 .breadcrumb a:hover { color: var(--primary); }

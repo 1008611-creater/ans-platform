@@ -1,4 +1,4 @@
-﻿import { ok, respondWithError } from "@/server/http/respond";
+import { ok, respondWithError } from "@/server/http/respond";
 import { listPublishedArtifacts } from "@/server/projects/publication";
 
 export const dynamic = "force-dynamic";

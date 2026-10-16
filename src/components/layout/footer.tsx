@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import Image from "next/image";
 import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { useTranslations } from "next-intl";

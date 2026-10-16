@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useTranslations } from "next-intl";
 import { WorkspaceLink } from "@/components/providers/workspace-navigation";
 import { getRunModel } from "@/lib/run-models";

@@ -805,8 +805,8 @@
   "agrihackathon": {
     "rulesPendingTitle": "首届方案已明确 · 正式窗口待开启",
     "rulesPendingBody": "以下为首届赛事方案；报名、提交与计票按正式公布的时间窗开放。",
-    "organizerTools": "组委会与评委后台",
-    "organizerToolsBody": "供授权人员核验材料、排期路演、审核公开展示与配置计票：",
+    "organizerTools": "组委会与评委工作台（仅限授权考务人员）",
+    "organizerToolsBody": "参赛选手无需操作以下入口；供赛事负责人与评委核验材料、排期路演、审核公开展示及录入评分：",
     "organizerToolDescriptions": {
       "works": "查阅各队提交版本，执行技术检查并导出评审 CSV。",
       "onsite": "登记路演设备与网络核查，生成现场排期卡。",
@@ -1019,7 +1019,7 @@
     "officialRosterLocked": "初、决赛共用这份已确认名单。队伍后续的成员变动不会改写历史名单。",
     "preliminaryBaseline": "初赛冻结提交：{id}",
     "title": "本队阶段提交",
-    "description": "绑定作品版本，上传参赛源码包或锁定 GitHub 代码快照由平台统一托管，并提交初赛与决赛材料。",
+    "description": "正式参赛评审主通道（默认私密参评，无需先公开上墙）：申领战队 20 算力补贴、上传源码包或锁定 Git 快照托管，并提交初赛/决赛正式材料。",
     "back": "返回农客松",
     "loading": "正在读取…",
     "login": "登录后准备提交",

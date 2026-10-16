@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { readVibeData, languageParam, type AgentEnvelope } from "@/server/vibehub/content";
 import type { JourneySummary } from "@/app/vibe-hub/journeys/journeys-client";
 type Summary = JourneySummary & {intentExamples: string[]};

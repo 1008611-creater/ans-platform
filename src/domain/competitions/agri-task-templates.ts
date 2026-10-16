@@ -1,4 +1,4 @@
-﻿import type { AgriTaskEditable } from "@/contracts/agri-tasks";
+import type { AgriTaskEditable } from "@/contracts/agri-tasks";
 
 const zh = [
   ["submission-guide", "PREPARATION", "技术规范与提交模板", "确认必交材料、版本与补交说明，形成可填写模板", "总负责人 / 于闻博", "确认本届规则、必交材料和更正政策"],

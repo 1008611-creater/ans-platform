@@ -805,8 +805,8 @@
   "agrihackathon": {
     "rulesPendingTitle": "Inaugural plan ready · Official windows pending",
     "rulesPendingBody": "Below is the inaugural event plan; registration, submissions, and voting open according to published windows.",
-    "organizerTools": "Organizer & Jury Console",
-    "organizerToolsBody": "For authorized staff to verify works, schedule Demo Day, review public showcase requests, and configure voting:",
+    "organizerTools": "Organizer & Judge Console (Authorized Staff Only)",
+    "organizerToolsBody": "Contestants do not need these links; for organizers and judges to verify materials, schedule demos, review public showcase, and record scores:",
     "organizerToolDescriptions": {
       "works": "Browse submitted versions by team and stage, run technical checks, and export review CSVs.",
       "onsite": "Record device, network, and audio checks and share live Demo Day schedule cards.",
@@ -1019,7 +1019,7 @@
     "officialRosterLocked": "This official roster is fixed for the preliminary and final stages. Later team membership changes do not rewrite it.",
     "preliminaryBaseline": "Frozen preliminary submission: {id}",
     "title": "Team stage submissions",
-    "description": "Bind your project version, upload source archives or lock GitHub code snapshots for unified platform hosting, and submit preliminary and final materials.",
+    "description": "Official judging submission channel (private by default, no public Wall required): claim 20 team compute credits, upload source archive or pin Git snapshot, and submit preliminary/final materials.",
     "back": "Back to Agrihackathon",
     "loading": "Loading…",
     "login": "Sign in to prepare a submission",
