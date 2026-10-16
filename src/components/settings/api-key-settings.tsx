@@ -76,7 +76,8 @@ function ApiKeySettingsSession({
     const controller = new AbortController(); active.current = controller;
     try {
       const response = await fetch("/api/user/api-key", {
-        method, headers: { "Content-Type": "application/json", "x-ans-actor": actorId },
+        method, cache: "no-store", credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "x-ans-actor": actorId },
         ...(body ? { body: JSON.stringify(body) } : {}),
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20_000)]),
       });

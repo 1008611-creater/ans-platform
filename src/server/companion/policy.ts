@@ -2,7 +2,8 @@ import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto
 import { z } from "zod";
 import type { AgentInput } from "@/contracts/companion-agent";
 import { validateCodexPayload } from "@/server/integrations/codex-gateway";
-import { DEFAULT_COMPANION_MODEL, RUN_MODEL_METERING, type RunModelKey } from "@/lib/run-models";
+import { DEFAULT_COMPANION_MODEL, type RunModelKey } from "@/lib/run-models";
+import { ModelBillingError, readModelBillingSnapshot, reserveModelPoints } from "@/server/integrations/model-billing-policy";
 export const AGENT_MODEL = DEFAULT_COMPANION_MODEL;
 export const AGENT_CALL_LIMIT = 3;
 export const AGENT_OUTPUT_LIMIT = 900;
@@ -10,10 +11,15 @@ export const AGENT_BODY_LIMIT = 48000;
 // Same conservative rate calculation as the existing gateway, including its own
 // reserve headroom. A ticket approves one specific model and bounded loop.
 export function agentMaxPoints(model: RunModelKey) {
-  const rates = RUN_MODEL_METERING[model];
-  return AGENT_CALL_LIMIT * Math.ceil(((AGENT_BODY_LIMIT + 16384) * rates.inputReservePerMillion + AGENT_OUTPUT_LIMIT * rates.outputReservePerMillion) * rates.consumptionMultiplier) / 1e6;
+  try {
+    const billing = readModelBillingSnapshot(model);
+    const oneCall = reserveModelPoints(billing, AGENT_BODY_LIMIT + 16384, AGENT_OUTPUT_LIMIT);
+    return Math.round(oneCall * AGENT_CALL_LIMIT * 1e6) / 1e6;
+  } catch (error) {
+    if (error instanceof ModelBillingError) throw new AgentError("AGENT_UNAVAILABLE", 503);
+    throw error;
+  }
 }
-export const AGENT_MAX_POINTS = agentMaxPoints(AGENT_MODEL);
 export class AgentError extends Error {
   constructor(public readonly code: string, public readonly status = 409) { super(code); }
 }
