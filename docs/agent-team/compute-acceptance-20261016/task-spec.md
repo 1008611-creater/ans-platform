@@ -23,3 +23,14 @@
 - REQ-009 / AC-009：积分充值固定10积分/CNY；模型美元标价、汇率、采购折扣、消费倍率分别建模。新计价必须有可追溯的汇率和价格快照，预占与结算使用同一快照；配置不全拒绝新收费请求，历史请求按原快照恢复，不修改历史账单。Opus倍率1，采购0.8不得冒充用户售价。审计其余模型，不能把保守预占价声明为官方单价。
 - REQ-010 / AC-010：算力中心新增ANS站内模型广场入口；将APIC/New API公开模型广场的目录、筛选、单价、协议、模型详情功能迁入ANS本地页面。采用真实安全公开元数据，不迁入APIC认证、密钥、钱包和管理员权限；不可用或未核实模型不宣称已可用；保留适用来源说明。无新增依赖、无生产修改。
 - REQ-011 / AC-011：针对新计价单位、历史恢复、目录外部数据校验、失败降级和UI做定向验证，并独立复审。未批准真实汇率时不默认采用示例值；新付费请求、提交和上线仍保留授权边界。
+
+
+## 2026-10-16 Post-merge Agent budget and CI increment
+
+- REQ-012: Agent quote/ticket/payload caps use the configured model billing snapshot in ANS points, including the approved10points per credit-dollar denomination; no module-import billing configuration requirement and no runtime default pricing.
+- REQ-013: Existing tickets never increase their signed cap. A changed current cap rejects execution; status/receipt inspection remains possible without current billing configuration. No provider calls are authorized by this increment.
+- REQ-014: Synchronize stale template/workflow tests with rejection of non-unified APIC execution and durable VERIFIED receipt projections. API Key mutations explicitly use same-origin credentials and no-store, preserving cancellation/account isolation.
+- NON-012: No production configuration, schema, billing evidence, wallets, live calls, upstream activation or production deployment changes.
+- AC-012: At configured denomination1, Sol's three-call conservative authorization is2.84619ANS points; each actual request reserve fits its quote. Changed or missing policy cannot start a call. Status recovery remains available.
+- AC-013: All four failing CI test files pass with realistic explicit fixtures; legacy APIC bypass tests assert rejection/no upstream request rather than enabling the unsafe path. Missing VERIFIED quota never gets fabricated from ANS points.
+- AC-014: Existing account-switch, late-response and API Key tests pass; each mutation retains actor, cancellation, no-store and same-origin options. Relevant lint/types pass. Independent review binds exact frozen diff, with no production or paid verification claims.

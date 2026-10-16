@@ -1,5 +1,6 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fixtureModelBillingPolicy } from "./model-billing-fixture";
 const mocks = vi.hoisted(() => ({ user: vi.fn(), receipts: vi.fn(), gateway: vi.fn(), tool: vi.fn(), catalog: vi.fn(), workflowDetail: vi.fn(), workflows: vi.fn(), project: vi.fn(), tasks: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { user: { findFirst: mocks.user, findUnique: mocks.user }, apiComputeRequest: { findMany: mocks.receipts }, project: { findMany: mocks.project }, workflowRun: { findMany: mocks.tasks } } }));
 vi.mock("@/server/integrations/model-client", () => ({ platformModelConfigured: () => true }));
@@ -10,7 +11,7 @@ vi.mock("@/server/integrations/codex-gateway", async () => {
   return { ...real, meteredResponses: mocks.gateway };
 });
 import { agentInputSchema, type AgentEvent, type AgentInput } from "@/contracts/companion-agent";
-import { issueAgentTicket, verifyAgentTicket, AGENT_MAX_POINTS, AGENT_BODY_LIMIT, AGENT_MODEL, AGENT_OUTPUT_LIMIT, checkAgentPayload, agentKey, agentMaxPoints } from "@/server/companion/policy";
+import { issueAgentTicket, verifyAgentTicket, AGENT_BODY_LIMIT, AGENT_MODEL, AGENT_OUTPUT_LIMIT, checkAgentPayload, agentKey, agentMaxPoints } from "@/server/companion/policy";
 import { DEFAULT_COMPANION_MODEL, DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
 import { executeAgent, prepareAgentQuote, readAgentStatus } from "@/server/companion/service";
 import { executeAgentTool } from "@/server/companion/tools";
@@ -18,8 +19,10 @@ import { fixtureModelBillingPolicy } from "./model-billing-fixture";
 const input: AgentInput = { messages: [{ role: "user", content: "帮我查一下项目" }], pathname: "/explore", locale: "zh", privateAccess: false, model: AGENT_MODEL };
 const answer = () => Response.json({ status: "completed", output: [{ type: "message", role: "assistant", content: [{ type: "output_text", text: "找到真实资料，下一步先核对输入。" }] }] });
 const toolCall = (name = "site_help") => Response.json({ status: "completed", output: [{ type: "function_call", call_id: "call-1", name, arguments: '{"query":"video"}' }] });
+afterEach(() => vi.unstubAllEnvs());
 beforeEach(() => {
-  vi.clearAllMocks(); vi.stubEnv("AUTH_SECRET", "local-fixture-signing-secret-only"); vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1"); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("ANS_MODEL_BILLING_POLICY", JSON.stringify(fixtureModelBillingPolicy())); vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1"); vi.stubEnv("APIC_COST_BRIDGE_URL", "http://fixture.invalid"); vi.stubEnv("APIC_COST_BRIDGE_SECRET", "fixture-bridge-only");
+  vi.stubEnv("ANS_MODEL_BILLING_POLICY", JSON.stringify(fixtureModelBillingPolicy(1)));
+  vi.clearAllMocks(); vi.stubEnv("AUTH_SECRET", "local-fixture-signing-secret-only"); vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1"); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1"); vi.stubEnv("APIC_COST_BRIDGE_URL", "http://fixture.invalid"); vi.stubEnv("APIC_COST_BRIDGE_SECRET", "fixture-bridge-only");
   mocks.user.mockResolvedValue({ quotaPoints: 12 }); mocks.receipts.mockResolvedValue([]); mocks.gateway.mockImplementation(answer); mocks.catalog.mockResolvedValue([]); mocks.workflows.mockResolvedValue([]); mocks.workflowDetail.mockResolvedValue(null);
 });
 describe("companion authorization and budget", () => {
@@ -34,7 +37,7 @@ describe("companion authorization and budget", () => {
   });
   it("binds approval to the exact question, account, private-data grant and expiry", () => {
     const quote = issueAgentTicket("alice", input, 1000);
-    expect(verifyAgentTicket(quote.ticket, "alice", input, 2000)).toEqual(expect.objectContaining({ actor: "alice", model: AGENT_MODEL, maxPoints: AGENT_MAX_POINTS }));
+    expect(verifyAgentTicket(quote.ticket, "alice", input, 2000)).toEqual(expect.objectContaining({ actor: "alice", model: AGENT_MODEL, maxPoints: agentMaxPoints(AGENT_MODEL) }));
     expect(() => verifyAgentTicket(quote.ticket, "bob", input, 2000)).toThrow("ACCOUNT_CHANGED");
     expect(() => verifyAgentTicket(quote.ticket, "alice", { ...input, privateAccess: true }, 2000)).toThrow("QUOTE_CHANGED");
     expect(() => verifyAgentTicket(quote.ticket, "alice", input, 301001)).toThrow("QUOTE_EXPIRED");
@@ -43,7 +46,7 @@ describe("companion authorization and budget", () => {
   });
   it("allows a free quote without calling the supplier", async () => {
     const quote = await prepareAgentQuote("quote-user", input);
-    expect(quote.balance).toBe(12); expect(quote.maxPoints).toBeLessThan(0.3); expect(mocks.gateway).not.toHaveBeenCalled();
+    expect(quote.balance).toBe(12); expect(quote.maxPoints).toBe(2.84619); expect(mocks.gateway).not.toHaveBeenCalled();
   });
   it("does not quote a model call when authoritative billing is unconfigured", async () => {
     vi.stubEnv("APIC_COST_BRIDGE_SECRET", "");
@@ -52,10 +55,24 @@ describe("companion authorization and budget", () => {
   });
   it("rejects model switching, oversized bodies and higher output budgets", () => {
     const payload = { model: AGENT_MODEL, input: "hello", max_output_tokens: AGENT_OUTPUT_LIMIT };
-    expect(checkAgentPayload(payload).reserve * 3).toBeLessThanOrEqual(AGENT_MAX_POINTS);
+    expect(checkAgentPayload(payload).reserve * 3).toBeLessThanOrEqual(agentMaxPoints(AGENT_MODEL));
     expect(() => checkAgentPayload({ ...payload, model: "gpt-6-astra" })).toThrow("AGENT_BUDGET_LIMIT");
     expect(() => checkAgentPayload({ ...payload, input: "x".repeat(AGENT_BODY_LIMIT) })).toThrow("AGENT_BUDGET_LIMIT");
     expect(() => checkAgentPayload({ ...payload, max_output_tokens: AGENT_OUTPUT_LIMIT + 1 })).toThrow("AGENT_BUDGET_LIMIT");
+  });
+  it("rejects a missing pricing policy before quoting or calling upstream", async () => {
+    vi.stubEnv("ANS_MODEL_BILLING_POLICY", "");
+    await expect(prepareAgentQuote("missing-price-policy", input)).rejects.toThrow("AGENT_UNAVAILABLE");
+    expect(mocks.gateway).not.toHaveBeenCalled();
+  });
+  it("rejects a changed spending cap while preserving status recovery without current pricing", async () => {
+    const quoted = issueAgentTicket("alice", input);
+    vi.stubEnv("ANS_MODEL_BILLING_POLICY", JSON.stringify(fixtureModelBillingPolicy(0.1)));
+    expect(() => verifyAgentTicket(quoted.ticket, "alice", input)).toThrow("QUOTE_CHANGED");
+    vi.stubEnv("ANS_MODEL_BILLING_POLICY", "");
+    expect(verifyAgentTicket(quoted.ticket, "alice").maxPoints).toBe(2.84619);
+    await expect(readAgentStatus("alice", quoted.ticket)).resolves.toEqual({ receipts: [] });
+    expect(mocks.gateway).not.toHaveBeenCalled();
   });
   it("denies private tools before touching private tables", async () => {
     expect((await executeAgentTool("my_projects", '{"query":""}', "alice", input)).ok).toBe(false);

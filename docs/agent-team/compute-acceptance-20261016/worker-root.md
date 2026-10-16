@@ -44,3 +44,15 @@ Local candidate only. Baseline 9ceb01645020a1d172adb958476285f192135bb1; branch 
 - User confirmed1CNY=1USD credit=10points, retaining GPT.16 and DeepSeek/Opus1. Final one-list-dollar charge is1.6points for GPT and10points for multiplier1.
 - For the existing v2 snapshot schema, explicitly configured fx.usdCny1 represents commercial CNY per USD credit, not market FX. No fallback/default was introduced; missing policy still fails closed.
 - Five new focused assertions cover all four models across catalog, reserve and receipt conversion, plus full-price APIC receipt normalization and snapshot immutability. Production configuration and activation remain unchanged.
+
+
+## Post-merge integration increment (2026-10-16)
+
+Executable scope: REQ-012 through014/AC-012 through014 in task-spec.md. Baseline14670c66; branch codex/compute-integration-regressions-20261016. No production or model calls.
+
+- Agent spending caps now use readModelBillingSnapshot/reserveModelPoints, in the same ANS point unit as the gateway. There is no eager module-scope configuration read. Missing pricing rejects quotes; a changed signed cap rejects execution; receipt/status recovery does not require current pricing.
+- Tests use explicitly configured synthetic denomination1; Sol conservative three-call cap is2.84619points. This is a reserve ceiling, not advertised model pricing. Snapshot-only defaults are not introduced.
+- API Key mutations retain cancellation and actor binding, now explicitly no-store/same-origin.
+- Stale non-unified APIC template/workflow tests now verify the intended bypass rejection, with no upstream request; verified durable template receipt fixtures include raw quota evidence and the request summary rows instead of reconstructing quota from points.
+- Self-test:6 files137 assertions pass, including the4 CI failure files and billing/API Key safety. Source/type lint and independent review pending at this entry; later evidence supersedes only those pending statuses.
+- New runtime scope: companion/policy.ts and api-key-settings.tsx. No schema, provider config, keys, upstream calls, wallets or deployment changed. Current main is moving in other threads; do not overwrite their work.

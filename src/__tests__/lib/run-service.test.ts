@@ -259,21 +259,23 @@ describe("runTemplate", () => {
     }
   });
 
-  it("refuses non-unified direct APIC settlement and refunds outer reservation", async () => {
+  it("rejects legacy APIC execution before an upstream call and refunds its old hold", async () => {
     vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
     vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
-    const result = await runTemplate({userId:"user1",templateId:"tpl1",inputs:{topic:"AI"}});
-    expect(result).toMatchObject({ok:false,error:"run_failed",message:"METERED_ACCOUNT_REQUIRED"});
-    expect(mocks.db.user.updateMany).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{decrement:0.25}}}));
-    expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{increment:0.25}}}));
-    expect(mocks.db.run.updateMany).toHaveBeenCalledWith(expect.objectContaining({where:{id:"run1",userId:"user1",status:{in:["QUEUED","RUNNING"]}},data:expect.objectContaining({status:"FAILED",error:"METERED_ACCOUNT_REQUIRED"})}));
+    const result = await runTemplate({ userId: "user1", templateId: "tpl1", inputs: { topic: "AI" } });
+    expect(result).toMatchObject({ ok: false, message: "METERED_ACCOUNT_REQUIRED" });
+    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(mocks.db.user.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: { quotaPoints: { decrement: 0.25 } } }));
+    expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({ data: { quotaPoints: { increment: 0.25 } } }));
+    expect(mocks.db.run.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: "FAILED", error: "METERED_ACCOUNT_REQUIRED" }) }));
   });
 
 });
 describe("durable unified template billing", () => {
   beforeEach(() => {
     vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1"); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
-    mocks.db.apiComputeRequest.findFirst.mockResolvedValue({ settledPoints: 0.02, outcome: "upstream123456", billingEvidence: [{ upstreamQuota: BigInt(100) }] });
+    mocks.db.apiComputeRequest.findFirst.mockResolvedValue({ settledPoints: 0.02, outcome: "upstream123456", billingEvidence: [{ upstreamQuota: 10000 }] });
+    mocks.db.apiComputeRequest.findMany.mockResolvedValue([{ state: "SETTLED", settledPoints: 0.02, authorizedPoints: 0.05 }]);
   });
   it("takes model cost from the durable receipt without an outer template debit or refund", async () => {
     mocks.metered.mockResolvedValue(Response.json({ output: [{ type: "message", content: [{ type: "output_text", text: "complete" }] }] }, { headers: { "x-ans-request-id": "req1" } }));

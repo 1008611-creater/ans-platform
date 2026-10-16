@@ -41,13 +41,7 @@ describe("settings page private state belongs to its rendered account", () => {
     m.pageActor = "member-b"; view.rerender(await SettingsPage()); await loaded();
     expect(screen.getByLabelText("API Key *")).toHaveValue("");
     expect(screen.queryByText("synthetic-generated-key-a")).not.toBeInTheDocument();
-    for (const [url, options] of fetchMock.mock.calls) {
-      expect(options).toMatchObject(
-        url === "/api/user/profile"
-          ? { cache: "no-store", credentials: "same-origin", headers: { "x-ans-actor": expect.any(String) } }
-          : { headers: { "x-ans-actor": expect.any(String) } },
-      );
-    }
+    for (const [, options] of fetchMock.mock.calls) expect(options).toMatchObject({ cache: "no-store", credentials: "same-origin", headers: { "x-ans-actor": expect.any(String) } });
   });
 
   it.each(["fetch", "json"])("ignores a generated key whose %s finishes after switching accounts", async stage => {
