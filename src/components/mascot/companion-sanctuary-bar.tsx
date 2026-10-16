@@ -170,7 +170,7 @@ export function CompanionSanctuaryBar({
       setStatusNote(`✨ 已穿戴【${item.name}】· ${item.specialQuote}`);
       return;
     }
-    if (uLv.level < item.minUserLevel) {
+    if (uLv.level.index < item.minUserLevel) {
       setStatusNote(`🔒 需达到 Lv.${item.minUserLevel} 才可解锁【${item.name}】（右侧可切换等级预览）`);
       return;
     }
@@ -200,7 +200,7 @@ export function CompanionSanctuaryBar({
           <span className="text-sm">{spIcon}</span>
           <span className="font-bold text-foreground">{state.customName || sp.name}</span>
           <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
-            Lv.{uLv.level} {uLv.title}
+            Lv.{uLv.level.index} {uLv.level.nameZh}
           </span>
           <span className="rounded-full bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-bold text-rose-500">
             ♥ Lv.{aff.level}
@@ -313,7 +313,7 @@ export function CompanionSanctuaryBar({
               className="rounded-lg border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
               title="模拟提升个人荣誉等级与星豆"
             >
-              升级 Lv.{uLv.level}↻
+              升级 Lv.{uLv.level.index}↻
             </button>
           </div>
           <div className="grid grid-cols-2 gap-1.5">
