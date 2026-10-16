@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { createElement, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import {
@@ -34,6 +34,277 @@ interface CapsuleItem {
   x: number; // 12..88 (%)
   z: number; // 15..85 (%)
   colorClass: string;
+  glbId: TripoGlbAssetId;
+}
+
+export type TripoGlbAssetId =
+  | "claw-cabinet"
+  | "claw-arm"
+  | "ur-dragon-egg"
+  | "ssr-4090-cookie"
+  | "mint-star-dino";
+
+export interface TripoGlbAssetMeta {
+  id: TripoGlbAssetId;
+  icon: string;
+  nameZh: string;
+  nameEn: string;
+  roleZh: string;
+  roleEn: string;
+  glbUrl: string;
+  sheetUrl: string;
+  tripoTaskId: string;
+  sha256Prefix: string;
+  vertexCount: number;
+  faceCount: number;
+  fallbackRgb: [number, number, number];
+  promptZh: string;
+}
+
+export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
+  {
+    id: "claw-cabinet",
+    icon: "🕹️",
+    nameZh: "赛博农林太空抓娃娃机 · 机身舱体",
+    nameEn: "Cyber-Agri Space Claw Cabinet",
+    roleZh: "八角星轨街机底座 + 钛金透明拱顶展示舱",
+    roleEn: "Octagonal cyber base + titanium glass display dome",
+    glbUrl: "/arcade-3d/claw-cabinet.glb",
+    sheetUrl: "/arcade-3d/sheets/claw-cabinet.png",
+    tripoTaskId: "dc168408-327f-48bf-945d-7ebc53cfe331",
+    sha256Prefix: "bf044e9a0742",
+    vertexCount: 5959,
+    faceCount: 7142,
+    fallbackRgb: [16, 185, 129],
+    promptZh:
+      "生成用于三维重建的单个赛博农林科技风太空抓娃娃机机身舱体正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆润八角柱形街机机舱，下半部为深邃暗金与翠绿发光饰条底座（正面中央带内凹出物舱口与琥珀色摇杆凸台，背面为平整银灰散热装甲板），上半部为四根流线型钛金立柱支撑的透明拱顶展示舱框架。",
+  },
+  {
+    id: "claw-arm",
+    icon: "🦾",
+    nameZh: "青金动力核心 · 三爪机械臂",
+    nameEn: "Cyan-Gold Core 3-Prong Claw Arm",
+    roleZh: "天车悬吊环 + 墨绿琥珀动力盘 + 镀铬三爪",
+    roleEn: "Top suspension ring + emerald-gold core + 3 chrome prongs",
+    glbUrl: "/arcade-3d/claw-arm.glb",
+    sheetUrl: "/arcade-3d/sheets/claw-arm.png",
+    tripoTaskId: "c8a30ed7-0604-4138-bff0-bbb58fc7977f",
+    sha256Prefix: "9a1eb0b33023",
+    vertexCount: 5269,
+    faceCount: 7841,
+    fallbackRgb: [251, 191, 36],
+    promptZh:
+      "生成用于三维重建的单个三爪抓娃娃机械爪头正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为顶部银白金属圆柱吊环，中间为墨绿与琥珀金配色圆盘动力核心（正面镶嵌一颗青色圆形指示灯，背面为金色齿轮浮雕），下方对称垂落三根圆润微张的弧形镀铬机械爪指，爪尖包裹防滑软胶垫。",
+  },
+  {
+    id: "ur-dragon-egg",
+    icon: "🐉",
+    nameZh: "UR 紫金星云龙蛋 ($100 / 1000 积分)",
+    nameEn: "UR Violet-Gold Dragon Egg ($100 / 1000 Pts)",
+    roleZh: "紫金渐变龙鳞浮雕 + 琥珀金龙晶核心",
+    roleEn: "Violet-gold dragon scales + amber dragon crystal core",
+    glbUrl: "/arcade-3d/ur-dragon-egg.glb",
+    sheetUrl: "/arcade-3d/sheets/ur-dragon-egg.png",
+    tripoTaskId: "2fd1893b-732c-4fce-a557-cc00326c636a",
+    sha256Prefix: "176e90305784",
+    vertexCount: 5333,
+    faceCount: 7532,
+    fallbackRgb: [192, 132, 252],
+    promptZh:
+      "生成用于三维重建的单个UR级紫金星云龙蛋扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为饱满鹅蛋形3D潮玩盲盒巨蛋，表面覆盖立体层叠的紫金渐变龙鳞浮雕与金色闪电能量脉络，正面中央镶嵌一枚水滴形琥珀金龙晶宝石，背面为对称闭合的紫金龙鳞纹路。",
+  },
+  {
+    id: "ssr-4090-cookie",
+    icon: "🔋",
+    nameZh: "SSR 4090 显卡夹心饼干 ($50 / 500 积分)",
+    nameEn: "SSR RTX 4090 Sandwich Cookie ($50 / 500 Pts)",
+    roleZh: "双薄荷奶油涡轮风扇 + 华夫背板 + 金手指插脚",
+    roleEn: "Dual mint-cream turbo fans + waffle backplate + gold pins",
+    glbUrl: "/arcade-3d/ssr-4090-cookie.glb",
+    sheetUrl: "/arcade-3d/sheets/ssr-4090-cookie.png",
+    tripoTaskId: "81369246-175e-42c5-8737-62d167f3783b",
+    sha256Prefix: "17c182128a8c",
+    vertexCount: 5560,
+    faceCount: 7444,
+    fallbackRgb: [52, 211, 153],
+    promptZh:
+      "生成用于三维重建的单个SSR级显卡造型夹心饼干扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆角厚实长方体潮玩饼干造型，外层为烤金黄色曲奇脆皮与黑巧装甲边框，正面雕刻两个对称翠绿薄荷奶油涡轮风扇浮雕，底部边缘露出一排闪亮金色曲奇插脚，背面为方格华夫饼干背板纹路，中间夹有饱满翠绿荧光奶油层。",
+  },
+  {
+    id: "mint-star-dino",
+    icon: "🦖",
+    nameZh: "R 薄荷星龙潮玩手办 ($25 / 250 积分)",
+    nameEn: "R Mint Star Dino Figurine ($25 / 250 Pts)",
+    roleZh: "金麦穗皇冠 + 薄荷绿磨砂机身 + 琥珀金背棘",
+    roleEn: "Golden wheat crown + matte mint body + amber dorsal spines",
+    glbUrl: "/arcade-3d/mint-star-dino.glb",
+    sheetUrl: "/arcade-3d/sheets/mint-star-dino.png",
+    tripoTaskId: "b71d10d1-bc96-4a71-92b6-3f4f35bb4979",
+    sha256Prefix: "dbaaf20a2193",
+    vertexCount: 5145,
+    faceCount: 7980,
+    fallbackRgb: [110, 231, 183],
+    promptZh:
+      "生成用于三维重建的单个Q版薄荷绿小恐龙潮玩手办正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为二头身圆润站姿小恐龙盲盒公仔，通体薄荷翠绿哑光磨砂玩具材质，头顶佩戴一顶小巧金黄麦穗皇冠，正面有圆亮黑眼睛与奶油白圆肚皮，背部与短粗尾巴排列一列圆润琥珀金背棘。",
+  },
+] as const;
+
+export interface ParsedGlbTriangle {
+  v0: [number, number, number];
+  v1: [number, number, number];
+  v2: [number, number, number];
+  normal: [number, number, number];
+  rgb: [number, number, number];
+}
+
+export interface ParsedGlbMesh {
+  assetId: TripoGlbAssetId;
+  vertexCount: number;
+  triangleCount: number;
+  triangles: ParsedGlbTriangle[];
+}
+
+const glbMeshCache = new Map<TripoGlbAssetId, ParsedGlbMesh>();
+const glbLoadingPromises = new Map<TripoGlbAssetId, Promise<ParsedGlbMesh | null>>();
+
+export function parseGlbBinaryMesh(
+  assetId: TripoGlbAssetId,
+  buffer: ArrayBuffer,
+  fallbackRgb: [number, number, number],
+  maxRenderTriangles = 420,
+): ParsedGlbMesh | null {
+  if (buffer.byteLength < 28) return null;
+  const view = new DataView(buffer);
+  const magic = view.getUint32(0, true);
+  const version = view.getUint32(4, true);
+  if (magic !== 0x46546c67 || version !== 2) return null;
+
+  const jsonLen = view.getUint32(12, true);
+  const jsonType = view.getUint32(16, true);
+  if (jsonType !== 0x4e4f534a) return null;
+
+  const jsonBytes = new Uint8Array(buffer, 20, jsonLen);
+  const gltf = JSON.parse(new TextDecoder("utf-8").decode(jsonBytes));
+  const binChunkHeaderOffset = 20 + jsonLen;
+  if (binChunkHeaderOffset + 8 > buffer.byteLength) return null;
+  const binOffset = binChunkHeaderOffset + 8;
+
+  const prim = gltf.meshes?.[0]?.primitives?.[0];
+  if (!prim) return null;
+
+  const posAcc = gltf.accessors?.[prim.attributes?.POSITION];
+  const normAcc =
+    prim.attributes?.NORMAL !== undefined ? gltf.accessors?.[prim.attributes.NORMAL] : null;
+  const indAcc = prim.indices !== undefined ? gltf.accessors?.[prim.indices] : null;
+  if (!posAcc || !indAcc) return null;
+
+  const getBufferSlice = (acc: {
+    bufferView: number;
+    byteOffset?: number;
+    count: number;
+    type: string;
+    componentType: number;
+  }) => {
+    const bv = gltf.bufferViews[acc.bufferView];
+    const start = binOffset + (bv.byteOffset ?? 0) + (acc.byteOffset ?? 0);
+    const comps = acc.type === "VEC3" ? 3 : acc.type === "VEC2" ? 2 : 1;
+    const total = acc.count * comps;
+    if (acc.componentType === 5126) {
+      return new Float32Array(buffer, start, total);
+    }
+    if (acc.componentType === 5125) {
+      return new Uint32Array(buffer, start, total);
+    }
+    if (acc.componentType === 5123) {
+      return new Uint16Array(buffer, start, total);
+    }
+    return null;
+  };
+
+  const positions = getBufferSlice(posAcc) as Float32Array | null;
+  const normals = normAcc ? (getBufferSlice(normAcc) as Float32Array | null) : null;
+  const indices = getBufferSlice(indAcc) as Uint32Array | Uint16Array | null;
+  if (!positions || !indices) return null;
+
+  const totalTriCount = Math.floor(indices.length / 3);
+  const step = Math.max(1, Math.floor(totalTriCount / maxRenderTriangles));
+  const triangles: ParsedGlbTriangle[] = [];
+
+  for (let t = 0; t < totalTriCount; t += step) {
+    const i0 = indices[t * 3] * 3;
+    const i1 = indices[t * 3 + 1] * 3;
+    const i2 = indices[t * 3 + 2] * 3;
+
+    const v0: [number, number, number] = [positions[i0], positions[i0 + 1], positions[i0 + 2]];
+    const v1: [number, number, number] = [positions[i1], positions[i1 + 1], positions[i1 + 2]];
+    const v2: [number, number, number] = [positions[i2], positions[i2 + 1], positions[i2 + 2]];
+
+    let nx = 0;
+    let ny = 1;
+    let nz = 0;
+    if (normals) {
+      nx = (normals[i0] + normals[i1] + normals[i2]) / 3;
+      ny = (normals[i0 + 1] + normals[i1 + 1] + normals[i2 + 1]) / 3;
+      nz = (normals[i0 + 2] + normals[i1 + 2] + normals[i2 + 2]) / 3;
+    } else {
+      const ux = v1[0] - v0[0];
+      const uy = v1[1] - v0[1];
+      const uz = v1[2] - v0[2];
+      const vx = v2[0] - v0[0];
+      const vy = v2[1] - v0[1];
+      const vz = v2[2] - v0[2];
+      nx = uy * vz - uz * vy;
+      ny = uz * vx - ux * vz;
+      nz = ux * vy - uy * vx;
+    }
+    const len = Math.hypot(nx, ny, nz) || 1;
+    nx /= len;
+    ny /= len;
+    nz /= len;
+
+    // Height-based gradient accent on top of base color for rich 3D readability
+    const avgY = (v0[1] + v1[1] + v2[1]) / 3;
+    const lift = Math.max(0.72, Math.min(1.28, 1.0 + avgY * 0.45));
+    const rgb: [number, number, number] = [
+      Math.min(255, Math.round(fallbackRgb[0] * lift)),
+      Math.min(255, Math.round(fallbackRgb[1] * lift)),
+      Math.min(255, Math.round(fallbackRgb[2] * lift)),
+    ];
+
+    triangles.push({ v0, v1, v2, normal: [nx, ny, nz], rgb });
+  }
+
+  return {
+    assetId,
+    vertexCount: posAcc.count,
+    triangleCount: totalTriCount,
+    triangles,
+  };
+}
+
+async function fetchAndParseGlbAsset(meta: TripoGlbAssetMeta): Promise<ParsedGlbMesh | null> {
+  if (glbMeshCache.has(meta.id)) return glbMeshCache.get(meta.id)!;
+  if (
+    typeof window === "undefined" ||
+    typeof fetch !== "function" ||
+    process.env.NODE_ENV === "test"
+  ) {
+    return null;
+  }
+  const existing = glbLoadingPromises.get(meta.id);
+  if (existing) return existing;
+
+  const p = fetch(meta.glbUrl)
+    .then(res => (res.ok ? res.arrayBuffer() : null))
+    .then(buf => {
+      if (!buf) return null;
+      const parsed = parseGlbBinaryMesh(meta.id, buf, meta.fallbackRgb, 360);
+      if (parsed) glbMeshCache.set(meta.id, parsed);
+      return parsed;
+    })
+    .catch(() => null);
+  glbLoadingPromises.set(meta.id, p);
+  return p;
 }
 
 const INITIAL_CAPSULES: readonly CapsuleItem[] = [
@@ -46,6 +317,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 50,
     z: 52,
     colorClass: "from-amber-300 via-fuchsia-500 to-indigo-600 ring-amber-300/80",
+    glbId: "ur-dragon-egg",
   },
   {
     id: "cap-ssr-1",
@@ -56,6 +328,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 26,
     z: 36,
     colorClass: "from-emerald-300 via-teal-500 to-cyan-600 ring-emerald-300/80",
+    glbId: "ssr-4090-cookie",
   },
   {
     id: "cap-ssr-2",
@@ -66,6 +339,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 74,
     z: 64,
     colorClass: "from-cyan-300 via-teal-500 to-emerald-600 ring-cyan-300/80",
+    glbId: "ssr-4090-cookie",
   },
   {
     id: "cap-sr-1",
@@ -76,6 +350,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 34,
     z: 70,
     colorClass: "from-amber-300 via-orange-400 to-amber-600 ring-amber-200/70",
+    glbId: "mint-star-dino",
   },
   {
     id: "cap-sr-2",
@@ -86,6 +361,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 68,
     z: 30,
     colorClass: "from-orange-300 via-amber-500 to-yellow-600 ring-orange-200/70",
+    glbId: "ur-dragon-egg",
   },
   {
     id: "cap-r-1",
@@ -96,6 +372,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 20,
     z: 66,
     colorClass: "from-sky-300 via-blue-500 to-indigo-600 ring-sky-200/70",
+    glbId: "mint-star-dino",
   },
   {
     id: "cap-r-2",
@@ -106,6 +383,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 80,
     z: 42,
     colorClass: "from-indigo-300 via-sky-500 to-blue-600 ring-indigo-200/70",
+    glbId: "mint-star-dino",
   },
 ];
 
@@ -127,10 +405,21 @@ function DinoClaw3DViewport({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const targetRef = useRef({ x: clawX, z: clawZ, phase: clawPhase });
+  const meshesRef = useRef< Map<TripoGlbAssetId, ParsedGlbMesh> >(glbMeshCache);
 
   useEffect(() => {
     targetRef.current = { x: clawX, z: clawZ, phase: clawPhase };
   }, [clawX, clawZ, clawPhase]);
+
+  useEffect(() => {
+    for (const meta of TRIPO_GLB_ASSETS) {
+      void fetchAndParseGlbAsset(meta).then(mesh => {
+        if (mesh) {
+          meshesRef.current.set(meta.id, mesh);
+        }
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -169,6 +458,65 @@ function DinoClaw3DViewport({
       };
     };
 
+    const drawGlbInstance = (
+      mesh: ParsedGlbMesh,
+      cx: number,
+      cy: number,
+      cz: number,
+      scale: number,
+      yaw: number,
+      w: number,
+      h: number,
+      alpha = 0.92,
+    ) => {
+      if (!ctx) return;
+      const cosY = Math.cos(yaw);
+      const sinY = Math.sin(yaw);
+      const projectedTris: Array<{
+        p0: { sx: number; sy: number; depth: number };
+        p1: { sx: number; sy: number; depth: number };
+        p2: { sx: number; sy: number; depth: number };
+        avgDepth: number;
+        fill: string;
+      }> = [];
+
+      for (const tri of mesh.triangles) {
+        const rot = (v: [number, number, number]) => {
+          const rx = v[0] * cosY - v[2] * sinY;
+          const rz = v[0] * sinY + v[2] * cosY;
+          return project3D(cx + rx * scale, cy + v[1] * scale, cz + rz * scale, w, h);
+        };
+        const p0 = rot(tri.v0);
+        const p1 = rot(tri.v1);
+        const p2 = rot(tri.v2);
+        const rnx = tri.normal[0] * cosY - tri.normal[2] * sinY;
+        const rny = tri.normal[1];
+        const rnz = tri.normal[0] * sinY + tri.normal[2] * cosY;
+        const light = Math.max(0.38, Math.min(1.25, 0.58 + rnx * 0.28 + rny * 0.42 - rnz * 0.25));
+        const r = Math.min(255, Math.round(tri.rgb[0] * light));
+        const g = Math.min(255, Math.round(tri.rgb[1] * light));
+        const b = Math.min(255, Math.round(tri.rgb[2] * light));
+        projectedTris.push({
+          p0,
+          p1,
+          p2,
+          avgDepth: (p0.depth + p1.depth + p2.depth) / 3,
+          fill: `rgba(${r},${g},${b},${alpha})`,
+        });
+      }
+
+      projectedTris.sort((a, b) => b.avgDepth - a.avgDepth);
+      for (const pt of projectedTris) {
+        ctx.fillStyle = pt.fill;
+        ctx.beginPath();
+        ctx.moveTo(pt.p0.sx, pt.p0.sy);
+        ctx.lineTo(pt.p1.sx, pt.p1.sy);
+        ctx.lineTo(pt.p2.sx, pt.p2.sy);
+        ctx.closePath();
+        ctx.fill();
+      }
+    };
+
     const renderFrame = (timeMs: number) => {
       if (disposed || !canvasRef.current) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -193,6 +541,12 @@ function DinoClaw3DViewport({
       curDrop += (desiredDrop - curDrop) * 0.16;
       const desiredClose = phase === "grabbing" || phase === "lifting" ? 0.45 : 0;
       curClose += (desiredClose - curClose) * 0.18;
+
+      // 0. Draw Subtle 3D Cabinet Mesh Frame if claw-cabinet.glb is loaded
+      const cabinetMesh = meshesRef.current.get("claw-cabinet");
+      if (cabinetMesh) {
+        drawGlbInstance(cabinetMesh, 0, 0.12, -0.85, 2.35, 0, w, h, 0.16);
+      }
 
       // 1. Draw 3D Perspective Cyber-Agri Floor Grid
       const floorY = -0.68;
@@ -231,44 +585,52 @@ function DinoClaw3DViewport({
       ctx.stroke();
       ctx.restore();
 
-      // 3. Draw 3D Glass Capsules & Centerpiece 3D Mint Dino Silhouette sorted by depth
+      // 3. Draw 3D Tripo .glb Prize Capsules (or fallback spheres) sorted by depth
       const sortedCapsules = INITIAL_CAPSULES.map((cap, idx) => {
         const wx = ((cap.x - 50) / 38) * 1.55;
         const wz = ((cap.z - 50) / 38) * 1.1;
         const bob = Math.sin(t * 2.2 + idx * 0.9) * 0.04;
-        const proj = project3D(wx, floorY + 0.22 + bob, wz, w, h);
-        return { cap, wx, wz, proj, idx };
+        const wy = floorY + 0.24 + bob;
+        const proj = project3D(wx, wy, wz, w, h);
+        return { cap, wx, wy, wz, proj, idx };
       }).sort((a, b) => b.proj.depth - a.proj.depth);
 
       for (const item of sortedCapsules) {
-        const { cap, proj, idx } = item;
+        const { cap, wx, wy, wz, proj, idx } = item;
         const pal = CAPSULE_PALETTE[cap.rarity];
         const r = Math.max(11, proj.scale * 0.21);
+        const prizeGlb = meshesRef.current.get(cap.glbId);
 
-        // Specular 3D Sphere Gradient
-        const grad = ctx.createRadialGradient(
-          proj.sx - r * 0.32,
-          proj.sy - r * 0.35,
-          r * 0.1,
-          proj.sx,
-          proj.sy,
-          r,
-        );
-        grad.addColorStop(0, "#ffffff");
-        grad.addColorStop(0.35, pal.core);
-        grad.addColorStop(0.8, pal.shell);
-        grad.addColorStop(1, "rgba(15, 23, 42, 0.9)");
+        if (prizeGlb) {
+          drawGlbInstance(prizeGlb, wx, wy, wz, 0.46, t * 0.9 + idx * 1.1, w, h, 0.95);
+        } else {
+          // Specular 3D Sphere Gradient fallback while .glb streams in
+          const grad = ctx.createRadialGradient(
+            proj.sx - r * 0.32,
+            proj.sy - r * 0.35,
+            r * 0.1,
+            proj.sx,
+            proj.sy,
+            r,
+          );
+          grad.addColorStop(0, "#ffffff");
+          grad.addColorStop(0.35, pal.core);
+          grad.addColorStop(0.8, pal.shell);
+          grad.addColorStop(1, "rgba(15, 23, 42, 0.9)");
 
-        ctx.save();
-        ctx.shadowColor = pal.glow;
-        ctx.shadowBlur = 14;
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(proj.sx, proj.sy, r, 0, Math.PI * 2);
-        ctx.fill();
+          ctx.save();
+          ctx.shadowColor = pal.glow;
+          ctx.shadowBlur = 14;
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(proj.sx, proj.sy, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
 
         // Orbiting 3D Energy Ring around UR / SSR capsules
         if (cap.rarity === "UR" || cap.rarity === "SSR") {
+          ctx.save();
           ctx.translate(proj.sx, proj.sy);
           ctx.rotate(Math.sin(t * 1.6 + idx) * 0.35);
           ctx.scale(1, 0.42);
@@ -277,11 +639,11 @@ function DinoClaw3DViewport({
           ctx.beginPath();
           ctx.arc(0, 0, r * 1.32, 0, Math.PI * 2);
           ctx.stroke();
+          ctx.restore();
         }
-        ctx.restore();
       }
 
-      // 4. Draw 3D Gantry Rail, Telescopic Cable & 3-Prong Articulated Mechanical Claw
+      // 4. Draw 3D Gantry Rail, Telescopic Cable & Tripo claw-arm.glb 3D Mechanical Claw
       const railLeft = project3D(-1.75, 0.92, curZ, w, h);
       const railRight = project3D(1.75, 0.92, curZ, w, h);
       ctx.strokeStyle = "rgba(251, 191, 36, 0.75)";
@@ -303,30 +665,33 @@ function DinoClaw3DViewport({
       ctx.lineTo(clawHeadProj.sx, clawHeadProj.sy);
       ctx.stroke();
 
-      // 3-Prong Articulated Cyber Claw
-      const hubR = Math.max(6, clawHeadProj.scale * 0.11);
-      for (let i = 0; i < 3; i++) {
-        const angle = t * 0.6 + (i * Math.PI * 2) / 3;
-        const spread = (0.24 - curClose * 0.22) * clawHeadProj.scale;
-        const elbowX = clawHeadProj.sx + Math.cos(angle) * spread;
-        const elbowY = clawHeadProj.sy + hubR * 1.15;
-        const tipX = clawHeadProj.sx + Math.cos(angle) * spread * (0.55 - curClose * 0.4);
-        const tipY = clawHeadProj.sy + hubR * 2.35;
+      const clawArmMesh = meshesRef.current.get("claw-arm");
+      if (clawArmMesh) {
+        drawGlbInstance(clawArmMesh, curX, clawY - 0.16, curZ, 0.56, t * 0.5, w, h, 0.96);
+      } else {
+        // 3-Prong Articulated Cyber Claw procedural fallback
+        const hubR = Math.max(6, clawHeadProj.scale * 0.11);
+        for (let i = 0; i < 3; i++) {
+          const angle = t * 0.6 + (i * Math.PI * 2) / 3;
+          const spread = (0.24 - curClose * 0.22) * clawHeadProj.scale;
+          const elbowX = clawHeadProj.sx + Math.cos(angle) * spread;
+          const elbowY = clawHeadProj.sy + hubR * 1.15;
+          const tipX = clawHeadProj.sx + Math.cos(angle) * spread * (0.55 - curClose * 0.4);
+          const tipY = clawHeadProj.sy + hubR * 2.35;
 
-        ctx.strokeStyle = i === 0 ? "#38bdf8" : "#f8fafc";
-        ctx.lineWidth = 2.4;
+          ctx.strokeStyle = i === 0 ? "#38bdf8" : "#f8fafc";
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.moveTo(clawHeadProj.sx, clawHeadProj.sy);
+          ctx.lineTo(elbowX, elbowY);
+          ctx.lineTo(tipX, tipY);
+          ctx.stroke();
+        }
+        ctx.fillStyle = "#fbbf24";
         ctx.beginPath();
-        ctx.moveTo(clawHeadProj.sx, clawHeadProj.sy);
-        ctx.lineTo(elbowX, elbowY);
-        ctx.lineTo(tipX, tipY);
-        ctx.stroke();
+        ctx.arc(clawHeadProj.sx, clawHeadProj.sy, hubR, 0, Math.PI * 2);
+        ctx.fill();
       }
-
-      // Claw Metallic Hub
-      ctx.fillStyle = "#fbbf24";
-      ctx.beginPath();
-      ctx.arc(clawHeadProj.sx, clawHeadProj.sy, hubR, 0, Math.PI * 2);
-      ctx.fill();
 
       ctx.restore();
       rafId = window.requestAnimationFrame(renderFrame);
@@ -354,7 +719,8 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
 
   const [state, setState] = useState<QuestArcadeState>(() => loadQuestArcadeState(actorId));
   const [starBeans, setStarBeans] = useState<number>(() => loadSanctuaryState().starBeans);
-  const [arcadeMode, setArcadeMode] = useState<"claw" | "roulette">("claw");
+  const [arcadeMode, setArcadeMode] = useState<"claw" | "roulette" | "glb">("claw");
+  const [selectedGlbId, setSelectedGlbId] = useState<TripoGlbAssetId>("claw-cabinet");
   const [activeCategory, setActiveCategory] = useState<QuestCategory>("daily");
 
   // 3D Claw Machine state
@@ -739,29 +1105,54 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
         <div className="flex flex-col justify-between rounded-2xl border border-white/15 bg-slate-900/90 p-4 lg:col-span-5">
           <div>
             {/* Mode Switcher */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="inline-flex rounded-xl bg-slate-800 p-1">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="inline-flex flex-wrap rounded-xl bg-slate-800 p-1">
                 <button
                   type="button"
                   onClick={() => setArcadeMode("claw")}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                     arcadeMode === "claw"
                       ? "bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow"
                       : "text-slate-300 hover:text-white"
                   }`}
                 >
-                  {isEn ? "🕹️ 3D Dino Claw Machine" : "🕹️ 3D 灵龙太空抓娃娃机"}
+                  {isEn ? "🕹️ 3D Dino Claw" : "🕹️ 3D 灵龙抓娃娃机"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setArcadeMode("roulette")}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                     arcadeMode === "roulette"
                       ? "bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 shadow"
                       : "text-slate-300 hover:text-white"
                   }`}
                 >
                   {isEn ? "🎡 Starlight Roulette" : "🎡 丰收星轨大转盘"}
+                </button>
+                <button
+                  type="button"
+                  data-testid="arcade-mode-glb"
+                  onClick={() => {
+                    setArcadeMode("glb");
+                    if (
+                      typeof document !== "undefined" &&
+                      process.env.NODE_ENV !== "test" &&
+                      !document.getElementById("ans-model-viewer-script")
+                    ) {
+                      const s = document.createElement("script");
+                      s.id = "ans-model-viewer-script";
+                      s.type = "module";
+                      s.src = "https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js";
+                      document.head.appendChild(s);
+                    }
+                  }}
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
+                    arcadeMode === "glb"
+                      ? "bg-gradient-to-r from-fuchsia-400 via-cyan-400 to-emerald-400 text-slate-950 shadow"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  {isEn ? "🧊 4-View + .glb 3D" : "🧊 四视图 + .glb 3D 舱"}
                 </button>
               </div>
               <span className="rounded-lg border border-purple-400/30 bg-purple-500/15 px-2 py-1 text-[11px] font-bold text-purple-200">
@@ -778,13 +1169,13 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
                 >
                   {/* Top Neon Header */}
                   <div className="relative z-10 flex items-center justify-between border-b border-white/10 bg-black/40 px-3 py-1 text-[10px] font-bold text-amber-300">
-                    <span>{isEn ? "TRIPO 3D MULTIVIEW RIG · CYBER CABINET" : "TRIPO 四视图 3D 骨骼 · 灵龙太空舱"}</span>
+                    <span>{isEn ? "TRIPO v3.1 MULTIVIEW .GLB RIG · 5 MODELS ACTIVE" : "TRIPO v3.1 四视图 .GLB 实装 · 5 大 3D 资产已挂载"}</span>
                     <span>
                       {isEn ? `Target: ${targetCapsule.labelEn}` : `已瞄准：${targetCapsule.labelZh}`}
                     </span>
                   </div>
 
-                  {/* Interactive Three.js 3D WebGL Claw & GLB Dino Viewport */}
+                  {/* Interactive Three.js / glTF 2.0 .glb 3D Viewport */}
                   <DinoClaw3DViewport clawX={clawX} clawZ={clawZ} clawPhase={clawPhase} />
 
                   {/* 3D Gantry & Mechanical Claw */}
@@ -910,7 +1301,7 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : arcadeMode === "roulette" ? (
               /* Starlight Roulette Mode */
               <div className="mt-3">
                 <div className="relative flex h-64 flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-emerald-400/40 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-4">
@@ -965,6 +1356,87 @@ export function ComputeQuestArcade({ actorId }: { actorId?: string | null }) {
                   </button>
                 </div>
               </div>
+            ) : (
+              /* Tripo Four-View + Native .glb 3D Model Studio */
+              (() => {
+                const activeGlb =
+                  TRIPO_GLB_ASSETS.find(item => item.id === selectedGlbId) ?? TRIPO_GLB_ASSETS[0];
+                return (
+                  <div className="mt-3 space-y-2.5" data-testid="tripo-glb-studio">
+                    {/* 5 Asset Selector Pills */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {TRIPO_GLB_ASSETS.map(asset => (
+                        <button
+                          key={asset.id}
+                          type="button"
+                          onClick={() => setSelectedGlbId(asset.id)}
+                          className={`rounded-lg border px-2 py-1 text-[11px] font-bold transition ${
+                            selectedGlbId === asset.id
+                              ? "border-cyan-400 bg-cyan-500/20 text-cyan-200"
+                              : "border-white/10 bg-slate-800/80 text-slate-300 hover:text-white"
+                          }`}
+                        >
+                          {asset.icon} {asset.id}.glb
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Side-by-Side: Left = <model-viewer> 3D .glb Turntable, Right = OpenLux 2x2 Four-View Sheet */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="relative h-48 overflow-hidden rounded-xl border border-cyan-400/40 bg-slate-950 p-2">
+                        <div className="relative z-10 flex items-center justify-between text-[10px] font-bold text-cyan-300">
+                          <span>{isEn ? "3D PBR .GLB MESH" : "3D 原生 .glb 网格"}</span>
+                          <span>{activeGlb.faceCount} tris</span>
+                        </div>
+                        {createElement("model-viewer", {
+                          src: activeGlb.glbUrl,
+                          poster: activeGlb.sheetUrl,
+                          alt: isEn ? activeGlb.nameEn : activeGlb.nameZh,
+                          "camera-controls": "true",
+                          "auto-rotate": "true",
+                          "shadow-intensity": "1",
+                          style: { width: "100%", height: "152px", backgroundColor: "transparent" },
+                        })}
+                      </div>
+
+                      <div className="relative h-48 overflow-hidden rounded-xl border border-amber-400/40 bg-white p-1.5">
+                        <div className="rounded bg-slate-950/85 px-1.5 py-0.5 text-[10px] font-bold text-amber-300">
+                          {isEn ? "OpenLux 2×2 Four-View Sheet" : "OpenLux 2×2 正交四视图原图"}
+                        </div>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={activeGlb.sheetUrl}
+                          alt={isEn ? activeGlb.nameEn : activeGlb.nameZh}
+                          className="mx-auto mt-1 h-36 w-36 object-contain"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Metadata & Actions */}
+                    <div className="rounded-xl border border-white/10 bg-slate-950/80 p-2.5 text-[11px]">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-bold text-white">
+                          {activeGlb.icon} {isEn ? activeGlb.nameEn : activeGlb.nameZh}
+                        </span>
+                        <a
+                          href={activeGlb.glbUrl}
+                          download={`${activeGlb.id}.glb`}
+                          className="rounded-lg bg-cyan-500/20 px-2 py-0.5 font-bold text-cyan-300 hover:bg-cyan-500/30"
+                        >
+                          ⬇ {isEn ? `Download ${activeGlb.id}.glb` : `下载 ${activeGlb.id}.glb`}
+                        </a>
+                      </div>
+                      <div className="mt-1 text-slate-400">
+                        Tripo v3.1 Task: <code>{activeGlb.tripoTaskId.slice(0, 18)}...</code> · SHA256:{" "}
+                        <code>{activeGlb.sha256Prefix}</code> · {activeGlb.vertexCount} verts
+                      </div>
+                      <div className="mt-1 line-clamp-2 text-[10px] text-slate-300" title={activeGlb.promptZh}>
+                        Prompt: {activeGlb.promptZh}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()
             )}
           </div>
 

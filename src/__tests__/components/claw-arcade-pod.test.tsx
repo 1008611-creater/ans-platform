@@ -84,6 +84,33 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     expect(screen.getByText(/硅基胃穿孔/i)).toBeTruthy();
     expect(screen.getByText(/生产队的驴也得休假/i)).toBeTruthy();
     expect(screen.getByText(/赛博活菩萨/i)).toBeTruthy();
+
+    // Switch to Tripo Four-View + .glb 3D Studio tab
+    fireEvent.click(screen.getByTestId("arcade-mode-glb"));
+    expect(screen.getByTestId("tripo-glb-studio")).toBeTruthy();
+  });
+
+  it("loads and parses all 5 Tripo multiview .glb 3D models from public/arcade-3d", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { TRIPO_GLB_ASSETS, parseGlbBinaryMesh } = await import(
+      "@/components/workspace/claw-arcade-pod"
+    );
+
+    expect(TRIPO_GLB_ASSETS).toHaveLength(5);
+    for (const asset of TRIPO_GLB_ASSETS) {
+      const glbDiskPath = path.join(process.cwd(), "public", asset.glbUrl);
+      const sheetDiskPath = path.join(process.cwd(), "public", asset.sheetUrl);
+      expect(fs.existsSync(glbDiskPath)).toBe(true);
+      expect(fs.existsSync(sheetDiskPath)).toBe(true);
+
+      const bytes = fs.readFileSync(glbDiskPath);
+      const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      const parsed = parseGlbBinaryMesh(asset.id, ab, asset.fallbackRgb, 120);
+      expect(parsed).not.toBeNull();
+      expect(parsed?.vertexCount).toBe(asset.vertexCount);
+      expect(parsed?.triangles.length).toBeGreaterThan(50);
+    }
   });
 
   it("aligns server-side ARCADE_QUEST_REWARDS and ARCADE_PRIZE_REWARDS with client definitions", async () => {
