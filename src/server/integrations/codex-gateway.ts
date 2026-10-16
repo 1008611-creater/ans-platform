@@ -2,11 +2,19 @@ import { refreshMeteredParentCost } from "./metered-cost";
 import { upstreamFailureCode } from "./upstream-rejection";
 import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
+import { ClaudePolicyError } from "./claude-policy";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
-import { RUN_MODEL_OPTIONS, RUN_MODEL_METERING, type RunModelKey } from "@/lib/run-models";
+import { RUN_MODEL_OPTIONS } from "@/lib/run-models";
 import { debitQuota, refundQuota, QuotaError } from "@/server/quota/service";
 import { readApicCharge, type ApicCharge } from "./apic-billing";
 import { hasNonexecutionEvidence, recordGatewayEvidence, lockGatewayBillingAccount } from "./gateway-evidence";
+
+import { ModelBillingError, readModelBillingSnapshot, reserveModelPoints, receiptToMemberPoints, type ModelBillingSnapshot } from "./model-billing-policy";
+
+import { ComputeBenefitError } from "@/contracts/compute-benefits";
+import { benefitsEnabled, reserveBenefit, completeBenefit } from "@/server/compute-benefits/service";
+import { readBenefitFunding, officialUsdMicrosForPointsReserve, officialUsdMicrosFromReceipt } from "./benefit-billing";
 
 const PROVIDER = "apic-codex";
 const MAX_BODY = 524288;
@@ -26,18 +34,17 @@ export function validateCodexPayload(value: unknown) {
   const text = JSON.stringify(sanitized);
   const bytes = Buffer.byteLength(text);
   if (bytes > MAX_BODY) throw new Error("INPUT_LIMIT_EXCEEDED");
-  // Conservative reservation: UTF-8 bytes bound token count, including tool definitions.
-  // GPT long-context rates and 0.16 multiplier cover the highest supported tier.
-  const rates = RUN_MODEL_METERING[body.model as RunModelKey];
-  const reserve = Math.ceil(((bytes + 16384) * rates.inputReservePerMillion + limit * rates.outputReservePerMillion) * rates.consumptionMultiplier) / 1e6;
-  return { text, model: String(body.model), limit, reserve, streaming: body.stream === true };
+  const billing = readModelBillingSnapshot(String(body.model));
+  const reserve = reserveModelPoints(billing, bytes + 16384, limit);
+  return { text, model: String(body.model), limit, reserve, streaming: body.stream === true, billing };
+
 }
-export async function authenticateCodex(request: Request) {
+export async function authenticateCodex(request: Request, options: { reconcile?: boolean } = {}) {
   if (process.env.ANS_CODEX_GATEWAY_ENABLED !== "1") return null;
   const key = request.headers.get("authorization")?.replace(/^Bearer /i, "") || "";
   if (!isValidApiKeyFormat(key)) return null;
   const user = await db.user.findFirst({ where: { apiKey: hashApiKey(key), flagged: false, deletedAt: null }, select: { id: true } });
-  if(user) await reconcileCodexCharges(user.id);
+  if(user && options.reconcile !== false) await reconcileCodexCharges(user.id);
   return user;
 }
 /** An internal feature may cap the member's approved spend. Preserve the
@@ -59,15 +66,18 @@ export async function reconcileCodexCharges(userId: string, options = { limit: 5
   for(const task of pending){
     if(Date.now() >= options.deadline) break;
     if(!task.outcome || !/^[A-Za-z0-9_-]{8,128}$/.test(task.outcome) || task.outcome === "UNCERTAIN")continue;
-    try{const charge=await readApicCharge(task.outcome, 1);const member=cappedMemberCharge(task.price,charge.points,Number(task.authorizedPoints));
+    try{const charge=await readApicCharge(task.outcome, 1);const member=cappedMemberCharge(task.price,receiptToMemberPoints(task.price,charge.quota),Number(task.authorizedPoints));
       await db.$transaction(async tx=>{
         await lockGatewayBillingAccount(tx, userId, true);
         const current = await tx.apiComputeRequest.findFirst({ where: { id: task.id, userId, provider: PROVIDER, state: "UNCERTAIN" } });
         if (!current) return;
-        await recordGatewayEvidence(tx,userId,task.id,{kind:"VERIFIED",charge,billedPoints:member.billedPoints});
-        const changed=await tx.apiComputeRequest.updateMany({where:{id:task.id,userId,state:"UNCERTAIN"},data:{state:"SETTLED",settledPoints:member.billedPoints,finishedAt:new Date()}});
+        await recordGatewayEvidence(tx,userId,task.id,{kind:"VERIFIED",charge,billedPoints:readBenefitFunding(current.price)?0:member.billedPoints});
+        const changed=await tx.apiComputeRequest.updateMany({where:{id:task.id,userId,state:"UNCERTAIN"},data:{state:"SETTLED",settledPoints:readBenefitFunding(current.price)?0:member.billedPoints,finishedAt:new Date()}});
         if(changed.count!==1) throw new Error("REQUEST_CONFLICT");
-        if(member.billedPoints<Number(current.authorizedPoints)) await refundQuota(tx,{userId,costPoints:Number(current.authorizedPoints)-member.billedPoints,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
+        if (readBenefitFunding(current.price)) {
+          await completeBenefit(tx,{userId,requestId:task.id,actualUsdMicros:officialUsdMicrosFromReceipt(current.price,charge.quota),state:"SETTLED"});
+        }
+        if(!readBenefitFunding(current.price) && member.billedPoints<Number(current.authorizedPoints)) await refundQuota(tx,{userId,costPoints:Number(current.authorizedPoints)-member.billedPoints,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
         await refreshMeteredParentCost(tx,userId,task.price);
       });
     }catch{/* Preserve reservation until a verified receipt is available. */}
@@ -89,21 +99,50 @@ export async function codexResponses(request: Request) {
 /** Server-only entry: userId must come from an authenticated feature service.
  * Built-in runs share the exact durable reservation and settlement state machine. */
 export async function meteredResponses(request: Request, userId: string, parent?: { type: "run" | "workflow_run"; id: string }, budget?: { memberPointsCap: number; timeoutMs?: number }) {
+  return meteredGatewayRequest(request, userId, parent, budget);
+}
+
+/** Native protocol adapters share the same account lock, durable attempts,
+ * receipt evidence and wallet. Never call this with a user id from request data. */
+export interface MeteredGatewayAdapter {
+  idempotencyKey?: (request: Request, normalizedBody: string) => string;
+  parse(value: unknown): ReturnType<typeof validateCodexPayload>;
+  maxBodyBytes: number;
+  path: "messages";
+  policyVersion: string;
+  priceSnapshot: { protocol: "anthropic-messages"; policy: Prisma.InputJsonObject; billing: ModelBillingSnapshot };
+  maxConcurrent: 1;
+  rollingDayMaxPoints: number;
+  timeoutMs: number;
+}
+export async function meteredGatewayRequest(request: Request, userId: string, parent?: { type: "run" | "workflow_run"; id: string }, budget?: { memberPointsCap: number; timeoutMs?: number }, adapter?: MeteredGatewayAdapter) {
+  const failure = (message: string, status: number) => {
+    if (!adapter) return Response.json({ error: { message, type: "ans_gateway_error", code: message } }, { status, headers: { "Cache-Control": "no-store" } });
+    const type = status === 401 ? "authentication_error" : status === 429 ? "rate_limit_error" : status >= 500 ? "api_error" : "invalid_request_error";
+    return Response.json({ type: "error", error: { type, message } }, { status, headers: { "Cache-Control": "private, no-store" } });
+  };
+  const fundingMode = request.headers.get("x-ans-funding") ?? "auto";
+  if (!["auto", "gift", "paid"].includes(fundingMode)) return failure("INVALID_FUNDING_MODE",400);
+  if (fundingMode === "gift" && !benefitsEnabled()) return failure("BENEFITS_NOT_ENABLED",503);
+  const maxBody = adapter?.maxBodyBytes ?? MAX_BODY;
+  if (adapter && !budget) return failure("MEMBER_BUDGET_REQUIRED", 400);
   const user = { id: userId };
   if (request.signal.aborted) return failure("REQUEST_CANCELLED", 409);
-  if (Number(request.headers.get("content-length")) > MAX_BODY) return failure("INPUT_LIMIT_EXCEEDED",413);
+  if (Number(request.headers.get("content-length")) > maxBody) return failure("INPUT_LIMIT_EXCEEDED",413);
   let parsed: ReturnType<typeof validateCodexPayload>;
   try {
     const reader=request.body?.getReader(); if(!reader) return failure("INVALID_REQUEST",400);
     const chunks:Uint8Array[]=[];let size=0;
-    while(true){const next=await reader.read();if(next.done)break;size+=next.value.byteLength;if(size>MAX_BODY){await reader.cancel();return failure("INPUT_LIMIT_EXCEEDED",413);}chunks.push(next.value);}
-    parsed=validateCodexPayload(JSON.parse(Buffer.concat(chunks).toString("utf8")));
-  } catch { return failure("INVALID_REQUEST_OR_MODEL",400); }
+    while(true){const next=await reader.read();if(next.done)break;size+=next.value.byteLength;if(size>maxBody){await reader.cancel();return failure("INPUT_LIMIT_EXCEEDED",413);}chunks.push(next.value);}
+    parsed=(adapter?.parse ?? validateCodexPayload)(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks))));
+  } catch (error) { return error instanceof ClaudePolicyError || error instanceof ModelBillingError ? failure(error.code, error.status) : failure("INVALID_REQUEST_OR_MODEL",400); }
   if (budget && (!Number.isFinite(budget.memberPointsCap) || budget.memberPointsCap <= 0 || budget.memberPointsCap < parsed.reserve || (budget.timeoutMs !== undefined && (!Number.isSafeInteger(budget.timeoutMs) || budget.timeoutMs < 5000 || budget.timeoutMs > 300000)))) return failure("MEMBER_BUDGET_INVALID", 400);
-  const idempotency=request.headers.get("idempotency-key") || randomUUID();
+  let idempotency: string;
+  try { idempotency = adapter?.idempotencyKey?.(request, parsed.text) ?? request.headers.get("idempotency-key") ?? randomUUID(); }
+  catch (error) { return error instanceof ClaudePolicyError ? failure(error.code, error.status) : failure("INVALID_IDEMPOTENCY_KEY", 400); }
   if(idempotency.length>128 || idempotency.startsWith(RETRY_KEY_PREFIX)) return failure("INVALID_IDEMPOTENCY_KEY",400);
   const requestHash=createHash("sha256").update(parsed.text).digest("hex");
-  let reservation:{id:string;price:{source:string;quotaPerPoint:number;memberPointsCap?:number;parent?:{type:"run"|"workflow_run";id:string};retry?:{rootRequestId:string;previousRequestId:string}}};
+  let reservation:{id:string;price:Prisma.InputJsonObject};
   try {
     reservation=await db.$transaction(async tx=>{
       await lockGatewayBillingAccount(tx, user.id);
@@ -115,10 +154,14 @@ export async function meteredResponses(request: Request, userId: string, parent?
       while(true){
         const previous=await tx.apiComputeRequest.findUnique({
           where:{userId_provider_idempotencyKey:{userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey}},
-          select:{id:true,requestHash:true,state:true,settledPoints:true,finishedAt:true,price:true,outcome:true},
+          select:{id:true,requestHash:true,state:true,settledPoints:true,finishedAt:true,price:true,outcome:true,policyVersion:true},
         });
         if(!previous)break;
         if(previous.requestHash!==requestHash)throw new Error("REQUEST_HASH_CONFLICT");
+        const previousFundingMode = previous.price && typeof previous.price === "object" && !Array.isArray(previous.price)
+          ? (previous.price as { fundingMode?: unknown }).fundingMode ?? "auto" : "auto";
+        if (previousFundingMode !== fundingMode) throw new Error("REQUEST_FUNDING_CONFLICT");
+        if(adapter && previous.policyVersion!==adapter.policyVersion)throw new Error("REQUEST_POLICY_CHANGED");
         const previousParent=previous.price && typeof previous.price==="object" && !Array.isArray(previous.price)
           ? (previous.price as {parent?:{type?:unknown;id?:unknown}}).parent : undefined;
         const previousCap=previous.price && typeof previous.price==="object" && !Array.isArray(previous.price) ? (previous.price as {memberPointsCap?:unknown}).memberPointsCap : undefined;
@@ -137,33 +180,64 @@ export async function meteredResponses(request: Request, userId: string, parent?
         previousRequestId=previous.id;
         attemptKey=RETRY_KEY_PREFIX+createHash("sha256").update(JSON.stringify([idempotency,previous.id])).digest("hex");
       }
-      const active=await tx.apiComputeRequest.count({where:{userId:user.id,provider:PROVIDER,state:{in:["RUNNING","UNCERTAIN"]}}});
-      if(active>=4)throw new Error("TOO_MANY_ACTIVE_REQUESTS");
-      const price={source:"APIC",quotaPerPoint:500000,...(budget ? {memberPointsCap:budget.memberPointsCap} : {}),...(parent ? {parent} : {}),...(rootRequestId && previousRequestId ? {retry:{rootRequestId,previousRequestId}} : {})};
-      const task=await tx.apiComputeRequest.create({data:{userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey,requestHash,modelId:parsed.model,policyVersion:"apic-final-quota-v1",price,maxUnits:parsed.limit,authorizedPoints:parsed.reserve,state:"RUNNING",startedAt:new Date()},select:{id:true}});
-      await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:"Codex request reservation"});return {id:task.id,price};
+      const active=await tx.apiComputeRequest.count({where:{userId:user.id,provider:PROVIDER,...(adapter ? { modelId: parsed.model } : {}),state:{in:adapter ? ["AUTHORIZED","RUNNING","UNCERTAIN"] : ["RUNNING","UNCERTAIN"]}}});
+      if(active >= (adapter?.maxConcurrent ?? 4))throw new Error("TOO_MANY_ACTIVE_REQUESTS");
+      if (adapter) {
+        // Include old unresolved holds as liabilities even when older than the
+        // rolling window. A timed-out receipt must not reopen expensive credit.
+        const liabilities = await tx.apiComputeRequest.findMany({ where: {
+          userId: user.id, provider: PROVIDER, modelId: parsed.model,
+          OR: [{ state: "SETTLED", finishedAt: { gte: new Date(Date.now() - 86_400_000) } }, { state: { in: ["AUTHORIZED", "RUNNING", "UNCERTAIN"] } }],
+        }, select: { state: true, authorizedPoints: true, settledPoints: true, price: true } });
+        let micros = 0;
+        for (const row of liabilities) {
+          if (row.state === "SETTLED" && row.settledPoints === null) throw new Error("BUDGET_STATE_UNAVAILABLE");
+          const amount = row.state === "SETTLED" ? Number(readBenefitFunding(row.price) ? row.authorizedPoints : row.settledPoints)
+            : ["AUTHORIZED", "RUNNING", "UNCERTAIN"].includes(row.state) ? Number(row.authorizedPoints) : 0;
+          if (!Number.isFinite(amount) || amount < 0 || !Number.isSafeInteger(Math.round(amount * 1e6))) throw new Error("BUDGET_STATE_UNAVAILABLE");
+          micros += Math.round(amount * 1e6);
+        }
+        if (!Number.isSafeInteger(micros) || micros + Math.ceil(parsed.reserve * 1e6) > Math.floor(adapter.rollingDayMaxPoints * 1e6)) throw new Error("DAILY_BUDGET_EXCEEDED");
+      }
+      const requestTaskId = randomUUID();
+      const gift = fundingMode === "paid" ? null : await reserveBenefit(tx,{
+        userId:user.id,requestId:requestTaskId,modelId:parsed.model,
+        usdMicros:officialUsdMicrosForPointsReserve(parsed.billing,parsed.reserve),
+      });
+      if (fundingMode === "gift" && !gift) throw new ComputeBenefitError("BENEFIT_UNAVAILABLE",402);
+      const price={source:"APIC",quotaPerUsd:500000,billing:parsed.billing,fundingMode,
+        ...(gift ? {benefitFunding:{version:"official-usd-gift-v1",...gift}} : {}),...(adapter ? adapter.priceSnapshot : {}),...(budget ? {memberPointsCap:budget.memberPointsCap} : {}),...(parent ? {parent} : {}),...(rootRequestId && previousRequestId ? {retry:{rootRequestId,previousRequestId}} : {})};
+      const task=await tx.apiComputeRequest.create({data:{id:requestTaskId,userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey,requestHash,modelId:parsed.model,policyVersion:adapter?.policyVersion ?? "apic-usd-cny-points-v2",price,maxUnits:parsed.limit,authorizedPoints:parsed.reserve,state:"RUNNING",startedAt:new Date()},select:{id:true}});
+      if (!gift) await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:adapter ? "Claude request reservation" : "Codex request reservation"});return {id:task.id,price};
     });
   } catch(error){
-    const code=error instanceof QuotaError ? error.code : error instanceof Error && ["REQUEST_HASH_CONFLICT","REQUEST_PARENT_CONFLICT","TOO_MANY_ACTIVE_REQUESTS"].includes(error.message) ? error.message : "REQUEST_CONFLICT";
-    return failure(code,error instanceof QuotaError?error.status:409);
+    const code=error instanceof ComputeBenefitError ? error.code : error instanceof QuotaError ? error.code : error instanceof Error && ["REQUEST_HASH_CONFLICT","REQUEST_FUNDING_CONFLICT","REQUEST_PARENT_CONFLICT","REQUEST_POLICY_CHANGED","TOO_MANY_ACTIVE_REQUESTS","DAILY_BUDGET_EXCEEDED","BUDGET_STATE_UNAVAILABLE"].includes(error.message) ? error.message : "REQUEST_CONFLICT";
+    const status = error instanceof ComputeBenefitError ? error.status : error instanceof QuotaError ? error.status : adapter && ["TOO_MANY_ACTIVE_REQUESTS", "DAILY_BUDGET_EXCEEDED"].includes(code) ? 429 : adapter && code === "BUDGET_STATE_UNAVAILABLE" ? 503 : 409;
+    return failure(code, status);
   }
   const taskId=reservation.id;
   const transition=async(state:"SETTLED"|"RELEASED"|"UNCERTAIN",upstreamPoints:number|null,requestId?:string,rejectedUpstreamStatus?:number,charge?:ApicCharge)=>db.$transaction(async tx=>{
     await lockGatewayBillingAccount(tx, user.id, true);
     const current = await tx.apiComputeRequest.findFirst({ where: { id: taskId, userId: user.id, provider: PROVIDER, state: "RUNNING" } });
     if (!current) return;
-    const member=upstreamPoints!==null && state==="SETTLED" ? cappedMemberCharge(current.price,upstreamPoints,Number(current.authorizedPoints)) : null;
-    const points=member ? member.billedPoints : upstreamPoints;
-    if (state === "SETTLED" && member && charge) await recordGatewayEvidence(tx,user.id,taskId,{kind:"VERIFIED",charge,billedPoints:member.billedPoints});
+    const member=upstreamPoints!==null && state==="SETTLED" ? cappedMemberCharge(current.price,charge ? receiptToMemberPoints(current.price,charge.quota) : upstreamPoints,Number(current.authorizedPoints)) : null;
+    const gift = readBenefitFunding(current.price);
+    const points=gift && state === "SETTLED" ? 0 : member ? member.billedPoints : upstreamPoints;
+    if (gift && state !== "UNCERTAIN") {
+      if (state === "SETTLED" && !charge) throw new Error("BENEFIT_RECEIPT_REQUIRED");
+      await completeBenefit(tx,{userId:user.id,requestId:taskId,state,
+        actualUsdMicros:charge ? officialUsdMicrosFromReceipt(current.price,charge.quota) : BigInt(0)});
+    }
+    if (state === "SETTLED" && member && charge) await recordGatewayEvidence(tx,user.id,taskId,{kind:"VERIFIED",charge,billedPoints:gift?0:member.billedPoints});
     if (state === "RELEASED" && rejectedUpstreamStatus !== undefined) await recordGatewayEvidence(tx,user.id,taskId,{kind:"REJECTED",status:rejectedUpstreamStatus,upstreamRequestId:requestId});
     const changed=await tx.apiComputeRequest.updateMany({where:{id:taskId,userId:user.id,state:"RUNNING"},data:{state,settledPoints:points,outcome:requestId || state,finishedAt:state==="UNCERTAIN"?null:new Date()}});
     if(changed.count!==1) throw new Error("REQUEST_CONFLICT");
-    if(points!==null && points<Number(current.authorizedPoints)) await refundQuota(tx,{userId:user.id,costPoints:Number(current.authorizedPoints)-points,ref:{type:"api_compute_request",id:taskId},note:"Codex unused reservation settlement"});
+    if(!gift && points!==null && points<Number(current.authorizedPoints)) await refundQuota(tx,{userId:user.id,costPoints:Number(current.authorizedPoints)-points,ref:{type:"api_compute_request",id:taskId},note:adapter ? "Claude unused reservation settlement" : "Codex unused reservation settlement"});
     if(parent && state!=="UNCERTAIN")await refreshMeteredParentCost(tx,user.id,{parent});
   });
   let upstream:Response;
   try {
-    upstream=await fetch(`${process.env.RUN_BASE_URL?.replace(/\/$/,"")}/responses`,{method:"POST",headers:{Authorization:`Bearer ${process.env.RUN_API_KEY}`,"Content-Type":"application/json"},body:parsed.text,signal:AbortSignal.timeout(budget?.timeoutMs ?? 300000),redirect:"error"});
+    upstream=await fetch(`${process.env.RUN_BASE_URL?.replace(/\/$/,"")}/${adapter?.path ?? "responses"}`,{method:"POST",headers:{Authorization:`Bearer ${process.env.RUN_API_KEY}`,"Content-Type":"application/json",...(adapter ? { "anthropic-version": "2023-06-01" } : {})},body:parsed.text,signal:AbortSignal.timeout(budget?.timeoutMs ?? adapter?.timeoutMs ?? 300000),redirect:"error"});
   } catch {await transition("UNCERTAIN",null);return failure("UPSTREAM_RESULT_UNCERTAIN",502);}
   const requestId=upstream.headers.get("x-oneapi-request-id");
   if(requestId)await db.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{outcome:requestId}});
@@ -176,7 +250,7 @@ export async function meteredResponses(request: Request, userId: string, parent?
     if(!requestId)throw new Error("BILLING_REQUEST_ID_MISSING");
     const charge=await readApicCharge(requestId);
     
-    await transition("SETTLED",charge.points,requestId,undefined,charge);
+    await transition("SETTLED",receiptToMemberPoints(reservation.price,charge.quota),requestId,undefined,charge);
   };
   if(!parsed.streaming){
     try{const text=await upstream.text();await settle();return new Response(text,{headers:{"Content-Type":"application/json","Cache-Control":"no-store","x-ans-request-id":taskId}});}
@@ -190,7 +264,12 @@ export async function meteredResponses(request: Request, userId: string, parent?
         // Drain upstream even when client disconnects, then settle exactly once.
         while(true){const next=await reader.read();if(next.done)break;if(!disconnected)controller.enqueue(next.value);}
         await settle();if(!disconnected)controller.close();
-      }catch{await transition("UNCERTAIN",null,requestId || undefined);if(!disconnected)controller.error(new Error("BILLING_OR_UPSTREAM_PENDING"));}
+      }catch{await transition("UNCERTAIN",null,requestId || undefined);if(!disconnected) {
+          if (adapter) {
+            controller.enqueue(new TextEncoder().encode('event: error\ndata: ' + JSON.stringify({ type: "error", error: { type: "api_error", message: "BILLING_OR_UPSTREAM_PENDING" } }) + '\n\n'));
+            controller.close();
+          } else controller.error(new Error("BILLING_OR_UPSTREAM_PENDING"));
+        }}
     },cancel(){disconnected=true;}
   });
   return new Response(stream,{headers:{"Content-Type":"text/event-stream","Cache-Control":"no-cache, no-store","X-Accel-Buffering":"no","x-ans-request-id":taskId}});

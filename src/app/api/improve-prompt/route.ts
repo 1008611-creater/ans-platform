@@ -4,6 +4,7 @@ import { improvePrompt } from "@/lib/ai/improve-prompt";
 import { db } from "@/lib/db";
 import { isValidApiKeyFormat } from "@/lib/api-key";
 import { auth } from "@/lib/auth";
+import { blockUnmeteredConsumerAI } from "@/server/integrations/legacy-consumer-ai";
 
 const requestSchema = z.object({
   prompt: z.string().min(1, "Prompt is required").max(10000, "Prompt too long"),
@@ -45,6 +46,9 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    const pointsBoundary = blockUnmeteredConsumerAI();
+    if (pointsBoundary) return pointsBoundary;
 
     const body = await request.json();
     const validation = requestSchema.safeParse(body);

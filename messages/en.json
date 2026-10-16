@@ -1217,6 +1217,10 @@
     }
   },
   "apiKey": {
+    "spendWarning": "This key can also spend your ANS credits. Use it only in clients you trust; never share it or commit it to a repository.",
+    "showKey": "Show key",
+    "hideKey": "Hide key",
+    "copyKey": "Copy key",
     "title": "MCP API Key",
     "description": "Generate an API key to save prompts via MCP and access your private prompts.",
     "yourApiKey": "Your API Key",

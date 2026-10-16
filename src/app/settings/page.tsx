@@ -62,6 +62,7 @@ export default async function SettingsPage() {
 
         {config.features.mcp !== false && (
           <ApiKeySettings
+            actorId={user.id}
             hasExistingKey={!!user.apiKey}
             initialPublicByDefault={user.mcpPromptsPublicByDefault}
           />

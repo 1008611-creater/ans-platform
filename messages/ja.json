@@ -1217,6 +1217,10 @@
     }
   },
   "apiKey": {
+    "spendWarning": "This key can also spend your ANS credits. Use it only in clients you trust; never share it or commit it to a repository.",
+    "showKey": "Show key",
+    "hideKey": "Hide key",
+    "copyKey": "Copy key",
     "title": "MCP APIキー",
     "description": "MCP経由でプロンプトを保存し、プライベートプロンプトにアクセスするためのAPIキーを生成します。",
     "yourApiKey": "あなたのAPIキー",

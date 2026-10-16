@@ -2,15 +2,18 @@
 import { beforeEach, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ transaction: vi.fn(), readOnly: vi.fn(), user: vi.fn(), anchor: vi.fn(), rows: vi.fn(), workflow: vi.fn(), api: vi.fn(), voice: vi.fn(), market: vi.fn(), template: vi.fn(), legacyWorkflow: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { $transaction: m.transaction } }));
+vi.mock("@/server/quota/benefit-reservations",()=>({readPaidApiReservations:(_tx:unknown,id:string)=>m.api({where:{userId:id,state:{in:["AUTHORIZED","RUNNING","UNCERTAIN"]},authorizedPoints:{gt:0}}})}));
 import { readQuotaHistory } from "@/server/quota/history";
 import { quotaAdminOverview } from "@/server/quota/operations";
 vi.mock("@/server/integrations/ldxp-recharge", () => ({ listLdxpRechargeOrders: vi.fn().mockResolvedValue([]), ldxpRechargeEnabled: () => false }));
 import { personalQuotaLedgerWhere } from "@/server/quota/ledger-scope";
 const exam = vi.hoisted(() => ({ read: vi.fn() }));
 vi.mock("@/server/quota/exam-reservations", () => ({ readExamReservations: exam.read }));
+const visual = vi.hoisted(() => ({ read: vi.fn() }));
+vi.mock("@/server/quota/visual-reservations", () => ({ readVisualReservations: visual.read }));
 const date = new Date("2026-10-10T00:00:00Z");
 beforeEach(() => {
-  vi.resetAllMocks(); exam.read.mockResolvedValue({ reservedPoints: 0, pendingCount: 0, items: [] }); m.user.mockResolvedValue({ quotaPoints: 1.25, deletedAt: null });
+  vi.resetAllMocks(); visual.read.mockResolvedValue({ reservedPoints: 0, pendingCount: 0 }); exam.read.mockResolvedValue({ reservedPoints: 0, pendingCount: 0, items: [] }); m.user.mockResolvedValue({ quotaPoints: 1.25, deletedAt: null });
   m.voice.mockResolvedValue([]);
   m.anchor.mockResolvedValue({ id: "entry-anchor", createdAt: date }); m.rows.mockResolvedValue([]);
   m.workflow.mockResolvedValue({ _sum: { authorizedPoints: 0.25 }, _count: { _all: 1 } });
@@ -22,7 +25,7 @@ beforeEach(() => {
 });
 it("combines pending reservations with the authoritative spendable balance", async () => {
   expect(await readQuotaHistory("member")).toMatchObject({ availablePoints: 1.25, reservedPoints: 10.35, pendingCount: 4 });
-  expect(m.api).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: "member", state: { in: ["AUTHORIZED", "RUNNING", "UNCERTAIN"] } } }));
+  expect(m.api).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: "member", state: { in: ["AUTHORIZED", "RUNNING", "UNCERTAIN"] }, authorizedPoints: { gt: 0 } } }));
 });
 it.each([{ userId: "victim" }, { cursor: "bad" }, { limit: 100 }, null])("rejects invalid queries %j", async raw => {
   await expect(readQuotaHistory("member", raw)).rejects.toMatchObject({ status: 400 }); expect(m.transaction).not.toHaveBeenCalled();
@@ -119,4 +122,32 @@ it("keeps the expanded admin overview read-only and bounded while preserving num
  expect(sql).not.toMatch(/UPDATE|INSERT|DELETE/);
  expect(count).toHaveBeenCalledTimes(3);
  expect(stored).toHaveBeenCalledWith({ _sum: { byteLength: true } });
+});
+
+it("includes paid visual jobs once alongside independent workflow and API holds", async () => {
+ visual.read.mockResolvedValue({ reservedPoints: 7.500001, pendingCount: 2 });
+ const result = await readQuotaHistory("member");
+ expect(result).toMatchObject({ availablePoints: 1.25, reservedPoints: 17.850001, pendingCount: 6 });
+ expect(visual.read).toHaveBeenCalledTimes(1);
+ expect(visual.read).toHaveBeenCalledWith(expect.anything(), "member");
+ expect(m.workflow).toHaveBeenCalledTimes(1);
+ expect(m.api).toHaveBeenCalledTimes(1);
+ expect(m.readOnly).toHaveBeenCalledTimes(1);
+ expect(Array.from(m.readOnly.mock.calls[0][0]).join("")).toBe("SET TRANSACTION READ ONLY");
+});
+
+it("defines billing pending count as positive holds and leaves free voice usage in its separate activity history", async () => {
+ await readQuotaHistory("member");
+ for (const aggregate of [m.workflow, m.api]) {
+   expect(aggregate).toHaveBeenCalledWith(expect.objectContaining({ where: {
+     userId: "member", state: { in: ["AUTHORIZED", "RUNNING", "UNCERTAIN"] }, authorizedPoints: { gt: 0 },
+   } }));
+ }
+ expect(m.market).toHaveBeenCalledWith(expect.objectContaining({ where: { state: "HELD", amount: { gt: 0 }, order: { buyerId: "member" } } }));
+ expect(m.voice).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: "member", provider: "mimo-tts" } }));
+});
+
+
+it("never publishes a fixed dollar-per-point equivalence for the CNY wallet", async () => {
+  expect((await readQuotaHistory("member")).billing).toMatchObject({ rechargeYuanPerPoint: .1, pointsPerCny: 10, usdQuotaPerPoint: null });
 });

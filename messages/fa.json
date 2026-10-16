@@ -1217,6 +1217,10 @@
     }
   },
   "apiKey": {
+    "spendWarning": "This key can also spend your ANS credits. Use it only in clients you trust; never share it or commit it to a repository.",
+    "showKey": "Show key",
+    "hideKey": "Hide key",
+    "copyKey": "Copy key",
     "title": "کلید API MCP",
     "description": "کلید API برای ذخیره پرامپت‌ها از طریق MCP و دسترسی به پرامپت‌های خصوصی خود تولید کنید.",
     "yourApiKey": "کلید API شما",

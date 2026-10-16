@@ -1217,6 +1217,10 @@
     }
   },
   "apiKey": {
+    "spendWarning": "This key can also spend your ANS credits. Use it only in clients you trust; never share it or commit it to a repository.",
+    "showKey": "Show key",
+    "hideKey": "Hide key",
+    "copyKey": "Copy key",
     "title": "MCP API-ключ",
     "description": "Сгенерируйте API-ключ для сохранения промптов через MCP и доступа к вашим приватным промптам.",
     "yourApiKey": "Ваш API-ключ",

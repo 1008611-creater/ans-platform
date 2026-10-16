@@ -1,3 +1,4 @@
+import { readBenefitFunding } from "@/server/integrations/benefit-billing";
 import type { ResponseInputItem, ResponseOutputItem } from "openai/resources/responses/responses";
 import { db } from "@/lib/db";
 import type { AgentEvent, AgentInput, AgentLink, AgentReceipt } from "@/contracts/companion-agent";
@@ -25,8 +26,8 @@ export async function prepareAgentQuote(actor: string, input: AgentInput) {
 }
 export async function agentReceipts(actor: string, ticket: AgentTicket): Promise<AgentReceipt[]> {
   const records = await db.apiComputeRequest.findMany({ where: { userId: actor, provider: "apic-codex", idempotencyKey: { in: Array.from({ length: AGENT_CALL_LIMIT }, (_, index) => agentKey(ticket.nonce, index)) } },
-    orderBy: { createdAt: "asc" }, select: { id: true, state: true, authorizedPoints: true, settledPoints: true } });
-  return records.map(record => ({ requestId: record.id, state: record.state, reservedPoints: Number(record.authorizedPoints), settledPoints: record.settledPoints === null ? null : Number(record.settledPoints) }));
+    orderBy: { createdAt: "asc" }, select: { id: true, state: true, authorizedPoints: true, settledPoints: true, price: true } });
+  return records.map(record => ({ requestId: record.id, state: record.state, reservedPoints: readBenefitFunding(record.price) ? 0 : Number(record.authorizedPoints), settledPoints: record.settledPoints === null ? null : Number(record.settledPoints) }));
 }
 export async function readAgentStatus(actor: string, rawTicket: string) {
   await requireAgentActor(actor, false);

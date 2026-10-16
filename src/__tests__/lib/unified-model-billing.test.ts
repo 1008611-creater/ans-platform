@@ -7,12 +7,12 @@ import { callModelTextWithUsage } from "@/server/integrations/model-client";
 const args = { target: { baseUrl: "https://apic.cauai.fun/v1", apiKey: "never-directly-use-this", upstream: "gpt-6.1-sol", label: "sol" }, prompt: "hello", userId: "u", chargeRef: { type: "run" as const, id: "run1" }, idempotencyKey: "template:run1" };
 beforeEach(() => {
   vi.resetAllMocks(); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1");
-  m.record.mockResolvedValue({ settledPoints: 0.002, outcome: "upstream123456" });
+  m.record.mockResolvedValue({ settledPoints: 0.002, outcome: "upstream123456", billingEvidence: [{ upstreamQuota: BigInt(10) }] });
   m.response.mockImplementation(async () => Response.json({ output: [{ type: "reasoning", content: [{ text: "private" }] }, { type: "message", content: [{ type: "output_text", text: "answer" }] }], usage: { input_tokens: 10, output_tokens: 2 } }, { headers: { "x-ans-request-id": "req1" } }));
 });
 afterEach(() => vi.unstubAllEnvs());
 it("uses the authenticated member and durable parent, with no second direct upstream request", async () => {
-  expect(await callModelTextWithUsage(args)).toMatchObject({ text: "answer", metered: true, charge: { points: 0.002 }, usage: { inputTokens: 10, outputTokens: 2 } });
+  expect(await callModelTextWithUsage(args)).toMatchObject({ text: "answer", metered: true, charge: { points: 0.00002, usdCredit: 0.00002, quota: 10, memberPoints: 0.002 }, usage: { inputTokens: 10, outputTokens: 2 } });
   const [request, user, parent] = m.response.mock.calls[0];
   expect(user).toBe("u"); expect(parent).toEqual(args.chargeRef);
   expect(request.headers.get("idempotency-key")).toBe("template:run1");
@@ -32,4 +32,16 @@ it("empty output remains a paid settled request", async () => {
   m.response.mockResolvedValue(Response.json({ output: [] }, { headers: { "x-ans-request-id": "req1" } }));
   await expect(callModelTextWithUsage(args)).rejects.toMatchObject({ code: "MODEL_EMPTY_OUTPUT" });
   expect(m.record).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "req1", userId: "u", state: "SETTLED" } }));
+});
+
+it("does not manufacture upstream quota from an old settled ANS balance", async () => {
+  m.record.mockResolvedValue({ settledPoints: 0.002, outcome: "upstream123456" });
+  const result = await callModelTextWithUsage(args);
+  expect(result.metered).toBe(true);
+  expect(result).not.toHaveProperty("charge");
+});
+it("refuses new direct APIC charges through the old non-unified settlement path", async () => {
+  vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "0");
+  await expect(callModelTextWithUsage(args)).rejects.toMatchObject({ code: "METERED_ACCOUNT_REQUIRED" });
+  expect(m.response).not.toHaveBeenCalled();
 });

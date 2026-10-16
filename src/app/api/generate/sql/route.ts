@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateSQL, isAIGenerationEnabled } from "@/lib/ai/generation";
 import { auth } from "@/lib/auth";
+import { blockUnmeteredConsumerAI } from "@/server/integrations/legacy-consumer-ai";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +14,9 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    const pointsBoundary = blockUnmeteredConsumerAI();
+    if (pointsBoundary) return pointsBoundary;
+
     const enabled = await isAIGenerationEnabled();
     if (!enabled) {
       return NextResponse.json(

@@ -88,6 +88,7 @@ export default async function AgriHackathonPage() {
   const publications = await getTranslations("product.agriPublications");
   const onsite = await getTranslations("product.agriOnsite");
   const management = await getTranslations("product.agriWorkspace");
+  const benefits = await getTranslations("product.computeBenefits");
   const competition = await findAgriHackathonCompetition();
   const guide = await readAgriPublicGuide().catch(() => null);
 
@@ -164,6 +165,7 @@ export default async function AgriHackathonPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
+              {process.env.ANS_COMPUTE_BENEFITS_ENABLED === "1" && <Button asChild size="lg"><Link href="/workspace/benefits#benefits-agri">{benefits("agriTitle")}</Link></Button>}
               <Button asChild size="lg"><Link href="/explore/submit?event=agrihackathon"><Rocket className="h-4 w-4" />{wall("publishTitle")}</Link></Button>
               <Button asChild variant="outline" size="lg"><Link href="/explore?category=competition&subcategory=agri-wall">{wall("title")}</Link></Button>
               <Button asChild variant="outline" size="lg"><Link href="/competitions/agrihackathon/showcase">{publications("showcaseTitle")}</Link></Button>
