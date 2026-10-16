@@ -176960,7 +176960,7 @@ When emitting an example file, replace secret-looking values with placeholders a
 **Input (bad):**
 ```
 export DB_URL=postgres://app:SuperSecret123@db:5432/app
-API_KEY = YOUR_API_KEY
+API_KEY = sk-proj-abcdefghijklmnopqrstuvwxyz012345
 PORT=3000
 PORT=3001
 FEATURE_X=true
