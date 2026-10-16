@@ -1,4 +1,4 @@
-﻿export type AigcConnectorId = "solara" | "plane" | "toonflow";
+export type AigcConnectorId = "solara" | "plane" | "toonflow";
 
 export interface AigcConnector {
   id: AigcConnectorId;

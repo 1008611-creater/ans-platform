@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { readVibeData, languageParam } from "@/server/vibehub/content";
 export async function GET(request: Request, {params}: {params: Promise<{id:string}>}) {
   const {id} = await params; const lang = languageParam(new URL(request.url).searchParams.get("locale") || undefined);

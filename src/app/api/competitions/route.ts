@@ -1,4 +1,4 @@
-﻿import { ok, respondWithError } from "@/server/http/respond";
+import { ok, respondWithError } from "@/server/http/respond";
 import { listCompetitions } from "@/server/competitions/service";
 
 export const dynamic = "force-dynamic";

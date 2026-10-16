@@ -1,4 +1,4 @@
-﻿import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { ok, respondWithError } from "@/server/http/respond";
 import { getCompetition } from "@/server/competitions/service";
 

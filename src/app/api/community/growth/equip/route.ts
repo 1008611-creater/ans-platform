@@ -1,5 +1,5 @@
 import { assertRequestActor } from "@/server/http/json";
-﻿import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { communityFailure, communityJson } from "../../response";
 import { equipGrowthReward } from "@/server/growth/service";
 import { readSameOriginJson } from "@/server/http/json";

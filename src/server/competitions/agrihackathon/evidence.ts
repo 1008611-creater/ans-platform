@@ -172,7 +172,7 @@ export async function createEvidence(actorId: string, raw: unknown) {
         if (command.mode !== "UPLOAD") {
             if (command.mode === "GITHUB_ARCHIVE") {
                 githubRepository(command.sourceUrl!);
-                if (source && (source.repository?.url !== command.sourceUrl || JSON.stringify(source.repository.ref) !== JSON.stringify(command.originalRef)))
+                if (source && (source.repository?.url !== command.sourceUrl || (command.originalRef !== null && JSON.stringify(source.repository.ref) !== JSON.stringify(command.originalRef))))
                     return evidenceFail("AGRI_EVIDENCE_SOURCE_MISMATCH", 400);
             }
             else {
@@ -224,11 +224,53 @@ export async function bindEvidenceIntents(tx: EvidenceTx, ctx: AgriWorkspaceCont
         let row = await evidenceRequest(tx, ctx, id);
         const auth = await evidenceAuthority(tx, ctx, row.entryStageId, true, "TEAM");
         const now = await agriDatabaseClock(tx);
-        if (row.actorId !== ctx.actorId || row.submissionId || row.bindingState !== "PREPARED" || row.entryStageId !== source.entryStageId || row.projectId !== source.projectId || row.artifactVersionId !== source.artifactVersionId || !(row.mode === "UPLOAD" && row.state === "UPLOADED" && row.checkpoint || row.mode === "GITHUB_ARCHIVE" && row.state === "RESOLVED" && row.provenance?.fixedBeforeSubmission === true && source.repository?.url === row.sourceUrl && JSON.stringify(source.repository.ref) === JSON.stringify(row.originalRef)) || !row.expiresAt || row.expiresAt <= now)
+        if (row.actorId !== ctx.actorId || row.submissionId || row.bindingState !== "PREPARED" || row.entryStageId !== source.entryStageId || row.projectId !== source.projectId || row.artifactVersionId !== source.artifactVersionId || !(row.mode === "UPLOAD" && row.state === "UPLOADED" && row.checkpoint || row.mode === "GITHUB_ARCHIVE" && row.state === "RESOLVED" && row.provenance?.fixedBeforeSubmission === true && source.repository?.url === row.sourceUrl && (!row.originalRef || JSON.stringify(source.repository.ref) === JSON.stringify(row.originalRef))) || !row.expiresAt || row.expiresAt <= now)
             return evidenceFail("AGRI_EVIDENCE_INTENT_INVALID");
         row = await evidenceTransition(tx, row, "BIND", ctx.actorId, null, { submissionId, bindingState: "BOUND", ...(row.mode === "GITHUB_ARCHIVE" ? { state: "QUEUED" as const, nextRunAt: null, attempt: 0 } : {}) });
         if (row.mode === "UPLOAD") await finalizeEvidenceObject(tx, ctx, row);
         await assertAgriAuthorityCurrent(tx, ...auth.grants);
+    }
+}
+/** Automatically enqueue a repository archive pull on formal submission when a valid Git URL is supplied and no REPOSITORY evidence is bound yet. */
+export async function autoQueueRepositoryEvidence(
+    tx: EvidenceTx,
+    ctx: AgriWorkspaceContext,
+    entryStageId: string,
+    submissionId: string,
+    projectId: string,
+    artifactVersionId: string,
+    repository: { url: string; ref: EvidenceCreate["originalRef"] } | null,
+    now: Date,
+) {
+    if (!evidenceEnabled() || !ctx.workspace.enabled || !repository?.url) return;
+    try {
+        githubRepository(repository.url);
+    } catch {
+        return;
+    }
+    const [existingRepo] = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM agri_evidence_requests
+        WHERE "submissionId"=${submissionId} AND kind='REPOSITORY' AND state <> 'CANCELLED' LIMIT 1
+    `;
+    if (existingRepo) return;
+    await tx.$executeRaw`SAVEPOINT agri_auto_repo_evidence`;
+    try {
+        const c = evidenceConfig(), maxBytes = evidenceLimit("REPOSITORY");
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(310151730)`;
+        await evidenceBudget(tx, ctx.workspace.competitionId, entryStageId, ctx.actorId, submissionId, maxBytes);
+        const id = randomUUID(), objectId = randomUUID();
+        const reqHash = evidenceHash({ action: "autoQueueRepository", submissionId, url: repository.url, ref: repository.ref });
+        await tx.$executeRaw`
+            INSERT INTO agri_evidence_requests(id,"competitionId","entryStageId","submissionId","projectId","artifactVersionId","actorId",authority,mode,kind,"bindingState",state,"sourceUrl","originalRef","fileName","maxBytes","requestHash","createdAt","expiresAt","objectId","storageKey",backend)
+            VALUES(${id},${ctx.workspace.competitionId},${entryStageId},${submissionId},${projectId},${artifactVersionId},${ctx.actorId},'TEAM','GITHUB_ARCHIVE','REPOSITORY','BOUND','QUEUED',${repository.url},${repository.ref ? JSON.stringify(repository.ref) : null}::jsonb,'repository.tar.gz',${maxBytes},${reqHash},${now},${null},${objectId},${evidenceObjectKey(ctx.workspace.competitionId, id, objectId)},${c.mode})
+        `;
+        await tx.$executeRaw`
+            INSERT INTO agri_evidence_events(id,"requestId","competitionId","actorId",action,revision,state,attempt,provenance,"serverAt")
+            VALUES(${randomUUID()},${id},${ctx.workspace.competitionId},${ctx.actorId},'CREATE',1,'QUEUED',0,'{"autoQueued":true}'::jsonb,${now})
+        `;
+        await tx.$executeRaw`RELEASE SAVEPOINT agri_auto_repo_evidence`;
+    } catch {
+        await tx.$executeRaw`ROLLBACK TO SAVEPOINT agri_auto_repo_evidence`;
     }
 }
 export async function executeEvidenceCommand(actorId: string, raw: unknown) {
@@ -364,7 +406,7 @@ export async function listEvidence(actorId: string, raw: unknown): Promise<Evide
             id: string;
         }>> `SELECT id FROM agri_evidence_manifests WHERE "submissionId"=${source.id} ORDER BY sequence DESC LIMIT 1` : [];
         await assertAgriAuthorityCurrent(tx, ...auth.grants, ...(notesGrant ? [notesGrant] : []), ...(archiveGrant ? [archiveGrant] : []));
-        return { competitionId: ctx.workspace.competitionId, submissionId: source?.id ?? null, entryStageId: stage, enabled: evidenceEnabled() && ctx.workspace.enabled, canWrite, canArchive: canWrite && !!archiveGrant, canVerify: canWrite && !!notesGrant, target: source ? { projectId: source.projectId, artifactVersionId: source.artifactVersionId, repository: source.repository as NonNullable<EvidenceList["target"]>["repository"], demoUrl: source.demoUrl } : null, requests: rows.slice(0, 50).map((r): EvidenceRequestView => ({ id: r.id, submissionId: r.submissionId, kind: r.kind, mode: r.mode, state: r.state, createdAt: r.createdAt.toISOString(), errorCode: r.errorCode, attempt: r.attempt, maxAttempts: r.maxAttempts, nextRunAt: r.nextRunAt?.toISOString() ?? null, canUpload: canWrite && r.actorId === actorId && !r.cleanupCompletedAt && (!r.expiresAt || r.expiresAt > now), canManage: canWrite && (auth.kind === "STAFF" || r.actorId === actorId), expiresAt: r.expiresAt?.toISOString() ?? null, fileName: r.fileName, resolution: r.mode === "GITHUB_ARCHIVE" && r.originalRef && typeof r.provenance?.sha === "string" && typeof r.provenance.resolvedAt === "string" ? { repositoryUrl: r.sourceUrl!, originalRef: r.originalRef, sha: r.provenance.sha, resolvedAt: r.provenance.resolvedAt } : null, object: r.descriptor, cutoffVerification: notesGrant ? r.verification : null })), manifest: latest ? await readEvidenceManifest(tx, ctx, latest.id) : null, nextCursor: rows.length > 50 ? String(query.cursor + 50) : null };
+        return { competitionId: ctx.workspace.competitionId, submissionId: source?.id ?? null, entryStageId: stage, enabled: evidenceEnabled() && ctx.workspace.enabled, canWrite, canArchive: canWrite && !!archiveGrant, canVerify: canWrite && !!notesGrant, target: source ? { projectId: source.projectId, artifactVersionId: source.artifactVersionId, repository: source.repository as NonNullable<EvidenceList["target"]>["repository"], demoUrl: source.demoUrl } : null, requests: rows.slice(0, 50).map((r): EvidenceRequestView => ({ id: r.id, submissionId: r.submissionId, kind: r.kind, mode: r.mode, state: r.state, createdAt: r.createdAt.toISOString(), errorCode: r.errorCode, attempt: r.attempt, maxAttempts: r.maxAttempts, nextRunAt: r.nextRunAt?.toISOString() ?? null, canUpload: canWrite && r.actorId === actorId && !r.cleanupCompletedAt && (!r.expiresAt || r.expiresAt > now), canManage: canWrite && (auth.kind === "STAFF" || r.actorId === actorId), expiresAt: r.expiresAt?.toISOString() ?? null, fileName: r.fileName, resolution: r.mode === "GITHUB_ARCHIVE" && typeof r.provenance?.sha === "string" && typeof r.provenance.resolvedAt === "string" ? { repositoryUrl: r.sourceUrl!, originalRef: r.originalRef ?? { kind: "COMMIT_SHA", value: r.provenance.sha }, sha: r.provenance.sha, resolvedAt: r.provenance.resolvedAt } : null, object: r.descriptor, cutoffVerification: notesGrant ? r.verification : null })), manifest: latest ? await readEvidenceManifest(tx, ctx, latest.id) : null, nextCursor: rows.length > 50 ? String(query.cursor + 50) : null };
     }, { timeout: 15000 });
 }
 export async function authorizedEvidenceDownload(actorId: string, objectId: string, record = true) { return db.$transaction(async (tx) => { const ctx = await lockAgriWorkspace(tx, actorId); const [object] = await tx.$queryRaw<Array<{

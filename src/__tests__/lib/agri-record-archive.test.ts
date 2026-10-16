@@ -1,4 +1,4 @@
-﻿import { createHash } from "node:crypto";
+import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import { agriRecordArchiveCommandSchema, agriRecordArchiveReadQuerySchema, canonicalAgriArchiveJSON, type AgriRecordArchiveSnapshot } from "@/contracts/agri-record-archive";

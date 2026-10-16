@@ -189,7 +189,7 @@ async function capture(row: EvidenceRow) {
     let stream: Readable | undefined;
     try {
         if (!row.submissionId && row.mode === "GITHUB_ARCHIVE") {
-            const resolved = row.provenance ?? await resolveGithubEvidence(row.sourceUrl!, row.originalRef!, signal);
+            const resolved = row.provenance ?? await resolveGithubEvidence(row.sourceUrl!, row.originalRef ?? null, signal);
             await heartbeat(row, resolved);
             return await db.$transaction(async (tx) => {
                 const ctx = await lockAgriWorkspace(tx, row.actorId), auth = await evidenceAuthority(tx, ctx, row.entryStageId, true, row.authority), current = await evidenceRequest(tx, ctx, row.id), now = await agriDatabaseClock(tx);
@@ -210,7 +210,7 @@ async function capture(row: EvidenceRow) {
             return evidenceFail("AGRI_EVIDENCE_STORAGE_CONFIG_CHANGED", 503);
         let url = row.sourceUrl!;
         if (row.mode === "GITHUB_ARCHIVE") {
-            const resolved = row.provenance && typeof row.provenance.archiveUrl === "string" ? row.provenance : await resolveGithubEvidence(url, row.originalRef!, signal);
+            const resolved = row.provenance && typeof row.provenance.archiveUrl === "string" ? row.provenance : await resolveGithubEvidence(url, row.originalRef ?? null, signal);
             url = resolved.archiveUrl as string;
             await heartbeat(row, resolved);
         }

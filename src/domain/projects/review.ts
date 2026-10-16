@@ -1,4 +1,4 @@
-﻿import type { FactRecord } from "@/domain/projects/pack";
+import type { FactRecord } from "@/domain/projects/pack";
 
 export type SensitiveKind = "phone" | "email" | "id" | "secret" | "private-link";
 

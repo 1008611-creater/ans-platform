@@ -1,4 +1,4 @@
-﻿import { ZodError } from "zod";
+import { ZodError } from "zod";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { ok, fail } from "@/server/http/respond";
 export function publicationQuery(request: Request) {

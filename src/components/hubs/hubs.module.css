@@ -1,4 +1,4 @@
-﻿.container { padding-block:2rem 4rem; }
+.container { padding-block:2rem 4rem; }
 .search { display:flex; align-items:end; gap:.75rem; max-width:38rem; margin-block:1.5rem 2rem; }
 .search label { flex:1; display:grid; gap:.4rem; font-size:.8125rem; font-weight:500; }
 .directory { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border-block:1px solid var(--border); }

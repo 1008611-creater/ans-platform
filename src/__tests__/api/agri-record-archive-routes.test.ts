@@ -1,4 +1,4 @@
-﻿import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as list, POST } from "@/app/api/competitions/agrihackathon/records/[submissionId]/archives/route";
 import { GET } from "@/app/api/competitions/agrihackathon/archives/[archiveId]/route";
 import { auth } from "@/lib/auth";

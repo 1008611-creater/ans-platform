@@ -1,4 +1,4 @@
-﻿export interface ApicStatusRecord {
+export interface ApicStatusRecord {
   monitorName: string;
   model: string;
   status: "operational" | "degraded" | "failed" | "error";

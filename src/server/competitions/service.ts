@@ -1,7 +1,7 @@
 import { grantAgriRegistrationCredits } from "./agrihackathon/credits";
 import { grantReachedLevelRewards } from "@/server/growth/service";
 import type { DbTransaction } from "@/lib/db";
-﻿import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import {
   competitionCreateSchema,

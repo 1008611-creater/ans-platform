@@ -1,4 +1,4 @@
-﻿import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const mock = vi.hoisted(() => ({ session: { status: "authenticated", data: { user: { id: "a" } } } as { status: string; data: { user: { id: string } } | null }, fetch: vi.fn(), refresh: vi.fn(), push: vi.fn(), analytics: vi.fn() }));
 vi.mock("next-auth/react", () => ({ useSession: () => mock.session }));

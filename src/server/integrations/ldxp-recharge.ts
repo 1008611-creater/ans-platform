@@ -1,4 +1,4 @@
-﻿import { CENTS_PER_POINT } from "@/lib/credits-pricing";
+import { CENTS_PER_POINT } from "@/lib/credits-pricing";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { createHash } from "node:crypto";

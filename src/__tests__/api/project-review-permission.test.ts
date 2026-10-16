@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ permission: vi.fn(), decide: vi.fn() }));
 vi.mock("@/lib/admin-permissions", () => ({ requireAdminPermission: mocks.permission }));

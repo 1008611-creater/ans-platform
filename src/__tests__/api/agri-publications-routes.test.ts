@@ -1,4 +1,4 @@
-﻿import {afterEach,beforeEach,describe,expect,it,vi} from "vitest";
+import {afterEach,beforeEach,describe,expect,it,vi} from "vitest";
 import {POST,GET} from "@/app/api/competitions/agrihackathon/publications/route";
 import {GET as publicList} from "@/app/api/competitions/agrihackathon/publications/public/route";
 import {GET as publicDetail} from "@/app/api/competitions/agrihackathon/publications/public/[publicationId]/route";

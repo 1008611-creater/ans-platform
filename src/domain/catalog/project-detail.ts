@@ -1,4 +1,4 @@
-﻿import type { CatalogProject } from "./projects";
+import type { CatalogProject } from "./projects";
 import { PROJECT_GUIDES } from "./project-guides";
 import { FOUNDER_PROJECT_GUIDES } from "./founder-project-guides";
 

@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { beforeEach, expect, it, vi } from "vitest";
 const mocks=vi.hoisted(()=>({user:vi.fn(),pool:vi.fn()}));
 vi.mock("@/lib/db",()=>({db:{user:{findUnique:mocks.user},quotaPool:{findFirst:mocks.pool}}}));

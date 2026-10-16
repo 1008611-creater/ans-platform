@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ actor: vi.fn(), findUnique: vi.fn(), create: vi.fn(), audit: vi.fn(), read: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { marketListing: { findMany: m.read, findFirst: m.read } } }));

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { usePersistedSetting } from "./use-persisted-setting";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";

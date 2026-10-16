@@ -1,4 +1,4 @@
-﻿import { LEVELS, getLevelProgress } from "@/domain/growth/levels";
+import { LEVELS, getLevelProgress } from "@/domain/growth/levels";
 
 export type RewardKind = "avatar-frame" | "chat-bubble" | "badge";
 export type RewardDefinition = { key: string; kind: RewardKind; label: string; description: string; levelIndex: number };

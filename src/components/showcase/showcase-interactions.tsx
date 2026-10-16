@@ -3,7 +3,7 @@
 import { ChatBubble } from "@/components/growth/chat-bubble";
 import { AvatarFrame } from "@/components/growth/avatar-frame";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-﻿
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";

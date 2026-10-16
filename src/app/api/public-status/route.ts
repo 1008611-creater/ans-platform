@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getFreshApicStatus } from "@/lib/apic-status-cache";
 
 export const dynamic = "force-dynamic";

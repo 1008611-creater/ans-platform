@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";

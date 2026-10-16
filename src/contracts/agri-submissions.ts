@@ -218,6 +218,7 @@ export interface AgriStageListRow {
   revision: number; currentSubmissionId: string | null; frozenSubmissionId: string | null; recordedFrozenSubmissionId?: string | null; frozenByDeadline?: boolean;
   latestTechnicalCheck?: { id: string; result: "PASS" | "NEEDS_ACTION" | "UNREACHABLE"; checkedAt: string } | null;
   evidenceSummary?: { stored: number; pending: number; failed: number; cancelled: number; late: number } | null;
+  latestRepositoryObject?: { id: string; fileName: string; sha256: string; byteLength: number } | null;
 }
 export interface AgriStageList {
   competitionId: string; stages: AgriStageListRow[]; nextCursor: string | null;

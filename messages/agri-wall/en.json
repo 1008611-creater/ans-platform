@@ -50,7 +50,7 @@
   "noSearchHint": "Try a keyword from the project name or search for a team.",
   "clearSearch": "Clear search",
   "submitTitle": "Bring your project to the wall",
-  "submitDescription": "Two steps to join the wall: 01 Publish a free project → 02 Bind your registered team. Then rally Stars and complete stage submissions.",
+  "submitDescription": "This 2-step page is for public Wall display & Star voting (20% preliminary weight): 01 Publish free project -> 02 Bind team. For official stage judging & code hosting, go to \"03 Stage Submissions\".",
   "loginSubmitHint": "Sign in to choose your published project and registered team. Publication requires your explicit confirmation; private projects are never added automatically.",
   "loginManageHint": "Sign in with a staff account that can configure the event rules.",
   "login": "Sign in to ANS",
@@ -128,7 +128,7 @@
     "CONFLICT": "The record changed. Refresh and check it before continuing."
   },
   "managementTitle": "Popularity voting settings",
-  "entryFlow": "Projects built elsewhere are welcome: publish → pass review → bind your team → submit your stage entry. Publication alone does not complete event registration.",
+  "entryFlow": "Public voting flow: Publish free project -> Pass review -> Bind team on Wall for Stars. Note: Complete official judging materials & code archiving in \"Stage Submissions\" (private judging supported).",
   "submissionWallTitle": "Check your project wall link",
   "submissionWallReady": "Your team is linked to a public project. Use its entry material version, check the stage requirements, then submit.",
   "submissionWallMissing": "Your team has no wall project yet. Publish a free project, pass review and ask the team owner or administrator to bind it.",

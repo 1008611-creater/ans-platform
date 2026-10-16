@@ -1,4 +1,4 @@
-﻿import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { requireAdminPermission } from "@/lib/admin-permissions";
 import { fail, ok, readJson, respondWithError } from "@/server/http/respond";
 import { createCompetition, listCompetitions } from "@/server/competitions/service";
