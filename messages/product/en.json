@@ -823,6 +823,14 @@
       "wall": "04 Project wall & Star rank",
       "showcase": "05 Finalists & showcase"
     },
+    "organizerNav": {
+      "manage": "01 Rules & Advancement",
+      "market": "02 Wall Listing Review",
+      "popularity": "03 Popularity Window",
+      "works": "04 Works & CSV Export",
+      "onsite": "05 Demo Day Onsite",
+      "publicationReview": "06 Showcase Review"
+    },
     "workspaceLinksBody": "Browse the project gallery, AI workflows, and your personal workspace.",
     "openHubs": "Hubs and workflows"
   },

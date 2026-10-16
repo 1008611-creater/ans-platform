@@ -823,6 +823,14 @@
       "wall": "04 作品墙与人气榜",
       "showcase": "05 入围与作品展"
     },
+    "organizerNav": {
+      "manage": "01 赛事规范与晋级",
+      "market": "02 作品上墙审核",
+      "popularity": "03 人气奖计票窗",
+      "works": "04 作品核验与导出",
+      "onsite": "05 现场核查与排期",
+      "publicationReview": "06 成果公开审核"
+    },
     "workspaceLinksBody": "查看项目广场、AI 工作流与个人工作台。",
     "openHubs": "Hub 与 AI 工作流"
   },

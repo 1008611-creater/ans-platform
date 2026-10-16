@@ -165,12 +165,14 @@ describe("AgriHackathon wall", () => {
     expect(screen.getByText(zh.bindingClosed)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: zh.bind })).toBeDisabled();
   });
-  it("never offers a pending or paid listing as a project choice", async () => {
-    const data = mine(); data.listings[0].status = "PENDING_REVIEW";
+  it("never offers a pending or paid listing as a project choice and links to creator management", async () => {
+    const data = mine(); data.competitionId = "agrihackathon-2026"; data.listings[0].status = "PENDING_REVIEW";
     const paid = offer("paid"); paid.listing.priceMinor = 100; data.listings.push(paid);
     vi.stubGlobal("fetch", vi.fn(async () => respond(data)));
     render(<AgriWallSubmit />);
     expect(await screen.findByText(zh.noOffer)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: zh.manageUploads })).toHaveAttribute("href", "/market/creator");
+    expect(screen.getByRole("link", { name: zh.registration })).toHaveAttribute("href", "/competitions/agrihackathon-2026");
     expect(screen.queryByLabelText(zh.chooseProject)).toBeNull();
   });
   it("does not expose old-account private data when the session switches", async () => {
