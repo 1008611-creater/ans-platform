@@ -4,16 +4,24 @@ import { useEffect, useState } from "react";
 import {
   DINO_SPECIES,
   DINO_WARDROBE_ITEMS,
-  WARDROBE_SLOT_META,
+  SANCTUARY_EVENT_NAME,
+  WARDROBE_SLOT_LABELS,
   calculateStyleEvaluation,
   getAffectionProgress,
   loadSanctuaryState,
   saveSanctuaryState,
-  type SanctuarySaveState,
+  type DinoSpeciesId,
+  type MascotSanctuaryState,
   type WardrobeSlot,
 } from "@/domain/mascot/sanctuary";
-import { USER_LEVELS } from "@/domain/Honor/constants";
 import { DinoAdoptionPod } from "./dino-adoption-pod";
+
+const SPECIES_ICONS: Record<DinoSpeciesId, string> = {
+  mint_star: "🦖",
+  cyber_gold: "🐉",
+  sakura_mochi: "🦄",
+  aurora_ice: "❄️",
+};
 
 const BLIND_BOX_FOODS = [
   { icon: "🌶️", name: "变态辣火鸡面", coins: 30, affection: 18, reaction: "嘶哈嘶哈！！嘴要喷出三昧真火了！不过精神百倍，算力暴涨 200%！" },
@@ -48,7 +56,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     e.stopPropagation();
     setDimmed(false);
     const next = QUEST_THOUGHTS[Math.floor(Math.random() * QUEST_THOUGHTS.length)];
-    setBubble( current => (current ? null : next));
+    setBubble(current => (current ? null : next));
     onTriggerSpeech?.(next);
   }
 
@@ -81,7 +89,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
 }
 
 export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) => void }) {
-  const [state, setState] = useState<SanctuarySaveState>(() => loadSanctuaryState());
+  const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [tab, setTab] = useState<"none" | "pet" | "wardrobe" | "adopt">("none");
   const [slot, setSlot] = useState<WardrobeSlot>("headwear");
   const [statusNote, setStatusNote] = useState<string>("");
@@ -89,31 +97,36 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
   useEffect(() => {
     setState(loadSanctuaryState());
     const onUpdate = () => setState(loadSanctuaryState());
+    window.addEventListener(SANCTUARY_EVENT_NAME, onUpdate);
     window.addEventListener("ans:sanctuary-updated", onUpdate);
-    return () => window.removeEventListener("ans:sanctuary-updated", onUpdate);
+    return () => {
+      window.removeEventListener(SANCTUARY_EVENT_NAME, onUpdate);
+      window.removeEventListener("ans:sanctuary-updated", onUpdate);
+    };
   }, []);
 
-  function commit(updater: (prev: SanctuarySaveState) => SanctuarySaveState) {
+  function commit(updater: (prev: MascotSanctuaryState) => MascotSanctuaryState) {
     setState(prev => {
       const next = updater(prev);
       saveSanctuaryState(next);
-      window.dispatchEvent(new CustomEvent("ans:sanctuary-updated", { detail: next }));
       return next;
     });
   }
 
-  const sp = DINO_SPECIES[state.speciesId] || DINO_SPECIES.mint_sky;
+  const sp = DINO_SPECIES[state.speciesId] || DINO_SPECIES.mint_star;
+  const spIcon = SPECIES_ICONS[sp.id] ?? "🦖";
   const styleEval = calculateStyleEvaluation(state);
-  const aff = getAffectionProgress(state.affection);
-  const levelInfo = USER_LEVELS[state.userLevel] || USER_LEVELS[2];
+  const aff = getAffectionProgress(state.affectionXp);
+  const uLv = styleEval.userLevel;
 
   function handleWhip() {
     const quip = WHIP_QUIPS[Math.floor(Math.random() * WHIP_QUIPS.length)];
     commit(prev => ({
       ...prev,
-      whipCount: prev.whipCount + 1,
+      totalWhips: prev.totalWhips + 1,
       starBeans: prev.starBeans + 15,
-      affection: prev.affection + 8,
+      affectionXp: prev.affectionXp + 8,
+      userXp: prev.userXp + 20,
     }));
     setStatusNote(`🪢 啪！+15🪙 +8♥ · ${quip}`);
     onSpeak?.(quip);
@@ -123,9 +136,10 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
     const food = BLIND_BOX_FOODS[Math.floor(Math.random() * BLIND_BOX_FOODS.length)];
     commit(prev => ({
       ...prev,
-      feedCount: prev.feedCount + 1,
+      totalFeeds: prev.totalFeeds + 1,
       starBeans: prev.starBeans + food.coins,
-      affection: prev.affection + food.affection,
+      affectionXp: prev.affectionXp + food.affection,
+      userXp: prev.userXp + 15,
     }));
     setStatusNote(`${food.icon} 投喂【${food.name}】+${food.coins}🪙 +${food.affection}♥ · ${food.reaction}`);
     onSpeak?.(food.reaction);
@@ -140,11 +154,15 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
         ...prev,
         equipped: { ...prev.equipped, [item.slot]: item.id },
       }));
-      setStatusNote(`✨ 已穿戴【${item.name}】`);
+      setStatusNote(`✨ 已穿戴【${item.name}】· ${item.specialQuote}`);
       return;
     }
-    if (state.userLevel < item.requiredUserLevel) {
-      setStatusNote(`🔒 需达到 Lv.${item.requiredUserLevel} 才可解锁【${item.name}】（右侧可切换等级预览）`);
+    if (uLv.level < item.minUserLevel) {
+      setStatusNote(`🔒 需达到 Lv.${item.minUserLevel} 才可解锁【${item.name}】（右侧可切换等级预览）`);
+      return;
+    }
+    if (aff.level < item.minAffectionLevel) {
+      setStatusNote(`🔒 需好感达到 ♥Lv.${item.minAffectionLevel} 才可解锁【${item.name}】`);
       return;
     }
     if (state.starBeans < item.priceBeans) {
@@ -166,10 +184,10 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
     <div className="border-b border-border/60 bg-muted/30 px-3 py-2 text-xs">
       <div className="flex flex-wrap items-center justify-between gap-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm">{sp.icon}</span>
+          <span className="text-sm">{spIcon}</span>
           <span className="font-bold text-foreground">{state.customName || sp.name}</span>
           <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
-            Lv.{state.userLevel} {levelInfo.title}
+            Lv.{uLv.level} {uLv.title}
           </span>
           <span className="rounded-full bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-bold text-rose-500">
             ♥ Lv.{aff.level}
@@ -178,7 +196,7 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
             🪙 {state.starBeans}
           </span>
           <span className="rounded-full bg-purple-500/15 px-1.5 py-0.5 text-[10px] font-bold text-purple-500">
-            穿搭 {styleEval.rank}
+            {styleEval.grade.split(" ")[0]}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -243,7 +261,7 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
         <div className="mt-2 space-y-2">
           <div className="flex items-center justify-between gap-1">
             <div className="flex flex-wrap gap-1">
-              {(Object.keys(WARDROBE_SLOT_META) as WardrobeSlot[]).map(key => (
+              {(Object.keys(WARDROBE_SLOT_LABELS) as WardrobeSlot[]).map(key => (
                 <button
                   key={key}
                   type="button"
@@ -252,17 +270,17 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
                     slot === key ? "bg-amber-500/20 text-amber-600 dark:text-amber-300" : "bg-background/70 text-muted-foreground"
                   }`}
                 >
-                  {WARDROBE_SLOT_META[key].icon} {WARDROBE_SLOT_META[key].label}
+                  {WARDROBE_SLOT_LABELS[key].icon} {WARDROBE_SLOT_LABELS[key].label}
                 </button>
               ))}
             </div>
             <button
               type="button"
-              onClick={() => commit(prev => ({ ...prev, userLevel: (prev.userLevel + 1) % 8, starBeans: prev.starBeans + 200 }))}
+              onClick={() => commit(prev => ({ ...prev, userXp: (prev.userXp + 600) % 6000, starBeans: prev.starBeans + 200, affectionXp: prev.affectionXp + 80 }))}
               className="rounded-lg border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
               title="模拟提升个人荣誉等级与星豆"
             >
-              升级 Lv.{state.userLevel}↻
+              升级 Lv.{uLv.level}↻
             </button>
           </div>
           <div className="grid grid-cols-2 gap-1.5">
@@ -284,7 +302,7 @@ export function CompanionSanctuaryBar({ onSpeak }: { onSpeak?: (text: string) =>
                     {item.icon} {item.name}
                   </span>
                   <span className="ml-1 shrink-0 text-[10px] text-muted-foreground">
-                    {equipped ? "穿戴中" : owned ? "可换装" : `Lv.${item.requiredUserLevel}·${item.priceBeans}🪙`}
+                    {equipped ? "穿戴中" : owned ? "可换装" : `Lv.${item.minUserLevel}·${item.priceBeans}🪙`}
                   </span>
                 </button>
               );

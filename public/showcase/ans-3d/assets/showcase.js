@@ -1606,18 +1606,39 @@ class MotionDirector {
       return { ...cur, next, pct };
     }
 
+    const SPECIES_ALIAS_TO_3D = {
+      mint_sky: "mint_star",
+      mint_star: "mint_star",
+      cyber_gold: "cyber_gold",
+      sakura_puff: "sakura_mochi",
+      sakura_mochi: "sakura_mochi",
+      aurora_frost: "aurora_ice",
+      aurora_ice: "aurora_ice"
+    };
+    const SPECIES_3D_TO_DOMAIN = {
+      mint_star: "mint_sky",
+      cyber_gold: "cyber_gold",
+      sakura_mochi: "sakura_puff",
+      aurora_ice: "aurora_frost"
+    };
+
     function loadSanctuary() {
       const def = {
         adopted: true,
         speciesId: "mint_star",
         dinoName: "薄荷小星龙",
+        customName: "薄荷小星龙",
         trainerTitle: "首席训龙师",
         contractCode: "ANS-2026-8899",
         starBeans: 360,
         affectionXp: 120,
+        affection: 120,
         userXp: 260,
+        userLevel: 2,
         demoLevelOverride: null,
         roamMode: "orbit", // "orbit" (自由乱飞) or "dock" (停靠右下角)
+        turntableSpin: false,
+        turntableYaw: 0,
         unlockedItemIds: [
           "none", "starter_antenna", "starter_scarf", "aura_mint",
           "gold_glasses", "beret_cloud", "cyber_visor", "aura_gold", "aura_sakura", "magic_wand"
@@ -1634,13 +1655,26 @@ class MotionDirector {
         const raw = typeof localStorage !== "undefined" ? localStorage.getItem(SANCTUARY_STORAGE_KEY) : null;
         if (!raw) return def;
         const parsed = JSON.parse(raw);
-        const spId = DINO_SPECIES_MAP[parsed.speciesId] ? parsed.speciesId : "mint_star";
+        const mappedSp = SPECIES_ALIAS_TO_3D[parsed.speciesId] || "mint_star";
+        const spId = DINO_SPECIES_MAP[mappedSp] ? mappedSp : "mint_star";
+        const mergedName = parsed.dinoName || parsed.customName || DINO_SPECIES_MAP[spId].defaultNickname;
+        const mergedAff = Number.isFinite(parsed.affectionXp) ? parsed.affectionXp : (Number.isFinite(parsed.affection) ? parsed.affection : def.affectionXp);
+        const mergedUnlocked = Array.from(new Set([
+          ...def.unlockedItemIds,
+          ...(parsed.unlockedItemIds || []),
+          ...(parsed.unlockedItems || [])
+        ]));
         return {
           ...def,
           ...parsed,
           speciesId: spId,
+          dinoName: mergedName,
+          customName: mergedName,
+          affectionXp: mergedAff,
+          affection: mergedAff,
           equipped: { ...def.equipped, ...(parsed.equipped || {}) },
-          unlockedItemIds: Array.from(new Set([...def.unlockedItemIds, ...(parsed.unlockedItemIds || [])]))
+          unlockedItemIds: mergedUnlocked,
+          unlockedItems: mergedUnlocked
         };
       } catch (e) {
         return def;
@@ -1650,13 +1684,25 @@ class MotionDirector {
     let sanctuaryState = loadSanctuary();
 
     function saveSanctuary(next) {
-      sanctuaryState = next;
+      const uLv = getUserLevelInfo(next.userXp ?? 260, next.demoLevelOverride).level;
+      sanctuaryState = {
+        ...next,
+        customName: next.dinoName || next.customName || "薄荷小星龙",
+        affection: next.affectionXp ?? next.affection ?? 120,
+        userLevel: uLv,
+        unlockedItems: next.unlockedItemIds || []
+      };
       try {
         if (typeof localStorage !== "undefined") {
-          localStorage.setItem(SANCTUARY_STORAGE_KEY, JSON.stringify(sanctuaryState));
+          const toStore = {
+            ...sanctuaryState,
+            domainSpeciesId: SPECIES_3D_TO_DOMAIN[sanctuaryState.speciesId] || "mint_sky"
+          };
+          localStorage.setItem(SANCTUARY_STORAGE_KEY, JSON.stringify(toStore));
         }
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("ans-sanctuary-sync", { detail: sanctuaryState }));
+          window.dispatchEvent(new CustomEvent("ans:sanctuary-updated", { detail: sanctuaryState }));
         }
       } catch (e) {}
       renderSanctuaryUi();
@@ -2017,31 +2063,24 @@ class MotionDirector {
             cursor: pointer;
           }
 
-          /* Full-Screen Glass Modals for Adoption Pod & Miracle Nikki Wardrobe */
+          /* Right-Aligned Glass Drawers for Adoption Pod & Miracle Nikki Wardrobe so the live 3D dinosaur is crystal clear on the left stage! */
           .ans-sanctuary-backdrop {
             position: fixed;
             inset: 0;
             z-index: 95;
-            background: rgba(6, 11, 16, 0.62);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 18px;
-          }
-          .ans-sanctuary-backdrop[hidden] { display: none !important; }
-          /* For Wardrobe mode, align to right side so the live 3D dinosaur on stage is clearly visible on the left! */
-          #ans-sanctuary-wardrobe-modal.ans-sanctuary-backdrop {
-            background: rgba(6, 11, 16, 0.22);
+            background: rgba(6, 11, 16, 0.18);
             backdrop-filter: none;
             -webkit-backdrop-filter: none;
+            display: flex;
+            align-items: center;
             justify-content: flex-end;
+            padding: 18px;
             pointer-events: none;
           }
+          .ans-sanctuary-backdrop[hidden] { display: none !important; }
           .ans-sanctuary-dialog {
             pointer-events: auto;
-            width: min(880px, 96vw);
+            width: min(560px, 95vw);
             max-height: 88vh;
             overflow-y: auto;
             border-radius: 26px;
@@ -2055,7 +2094,7 @@ class MotionDirector {
             gap: 14px;
           }
           #ans-sanctuary-wardrobe-modal .ans-sanctuary-dialog {
-            width: min(520px, 95vw);
+            width: min(530px, 95vw);
             border-color: rgba(255, 133, 192, 0.65);
             box-shadow: 0 24px 68px rgba(0, 0, 0, 0.82), 0 0 42px rgba(255, 133, 192, 0.25);
           }
@@ -2336,8 +2375,18 @@ class MotionDirector {
           const act = btn.getAttribute("data-adopt-act");
           if (act === "close") {
             adoptModal.hidden = true;
+          } else if (act === "rotate-left") {
+            saveSanctuary({ ...sanctuaryState, turntableSpin: false, turntableYaw: (sanctuaryState.turntableYaw || 0) - Math.PI * 0.28 });
+          } else if (act === "rotate-right") {
+            saveSanctuary({ ...sanctuaryState, turntableSpin: false, turntableYaw: (sanctuaryState.turntableYaw || 0) + Math.PI * 0.28 });
+          } else if (act === "toggle-spin") {
+            saveSanctuary({ ...sanctuaryState, turntableSpin: !sanctuaryState.turntableSpin });
+          } else if (act === "pose-snap") {
+            if (handlers.onSanctuaryGesture) handlers.onSanctuaryGesture("celebrate", "starry_excited");
+            rewardSanctuary(10, 8, 10, "📸 咔嚓！灵龙定格街拍 Pose +10🪙！");
           } else if (act === "crack-egg") {
             eggCrackClicks = Math.min(3, eggCrackClicks + 1);
+            if (handlers.onSanctuaryGesture) handlers.onSanctuaryGesture("surprise", "aha_spark");
             if (eggCrackClicks >= 3) {
               rewardSanctuary(88, 35, 50, "🐣 咔嚓！灵龙破壳诞生 +88🪙！");
             } else {
@@ -2397,6 +2446,17 @@ class MotionDirector {
           const act = btn.getAttribute("data-wardrobe-act");
           if (act === "close") {
             wardrobeModal.hidden = true;
+          } else if (act === "rotate-left") {
+            saveSanctuary({ ...sanctuaryState, turntableSpin: false, turntableYaw: (sanctuaryState.turntableYaw || 0) - Math.PI * 0.28 });
+          } else if (act === "rotate-right") {
+            saveSanctuary({ ...sanctuaryState, turntableSpin: false, turntableYaw: (sanctuaryState.turntableYaw || 0) + Math.PI * 0.28 });
+          } else if (act === "toggle-spin") {
+            saveSanctuary({ ...sanctuaryState, turntableSpin: !sanctuaryState.turntableSpin });
+          } else if (act === "pose-snap") {
+            if (handlers.onSanctuaryGesture) handlers.onSanctuaryGesture("celebrate", "starry_excited");
+            rewardSanctuary(10, 8, 10, "📸 咔嚓！高定街拍 Pose +10🪙！");
+          } else if (act === "open-adopt-from-wardrobe") {
+            openSanctuaryModal("adopt");
           } else if (act === "switch-slot") {
             activeWardrobeSlot = btn.getAttribute("data-slot-id") || "headwear";
             renderSanctuaryUi();
@@ -2587,6 +2647,8 @@ class MotionDirector {
       // 2. Render Adoption Ceremony Modal (#ans-sanctuary-adopt-modal)
       const adoptModal = document.getElementById("ans-sanctuary-adopt-modal");
       if (adoptModal && !adoptModal.hidden) {
+        const prevInp = adoptModal.querySelector("#ans-adopt-name-input");
+        const preservedName = (prevInp && prevInp.value && prevInp === document.activeElement) ? prevInp.value : sanctuaryState.dinoName;
         const speciesCardsHtml = Object.values(DINO_SPECIES_MAP).map(item => {
           const sel = item.id === sanctuaryState.speciesId;
           return `
@@ -2608,7 +2670,7 @@ class MotionDirector {
         }).join("");
 
         const crackStageText = eggCrackClicks === 0
-          ? "👆 点击左侧灵龙基因蛋 3 次破壳唤醒（或直接挑选右侧血统实时预览 3D 形态）"
+          ? "👆 点击左侧灵龙基因蛋 3 次破壳唤醒（或直接挑选下方血统，左侧 3D 舞台实时预览变身！）"
           : eggCrackClicks === 1
           ? "⚡ 咔嚓（1/3）！蛋壳浮现星芒裂纹，小恐龙正在里面伸懒腰！"
           : eggCrackClicks === 2
@@ -2620,9 +2682,18 @@ class MotionDirector {
             <div class="ans-sanc-header">
               <div class="ans-sanc-title">
                 <span>🥚 ANS 注册即领养 · 灵龙基因孵化舱</span>
-                <span style="font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(132,250,176,0.18);color:#84fab0;">4大血统 × 专属初始穿搭 × 全站 Agent 伴侣</span>
               </div>
               <button type="button" class="ans-sanc-close" data-adopt-act="close">关闭 ✕</button>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:7px 11px;border-radius:12px;background:rgba(132,250,176,0.10);border:1px solid rgba(132,250,176,0.32);font-size:11.5px;">
+              <span style="color:#84fab0;font-weight:700;">🎥 左侧 3D 全息展台控制：</span>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:11px;" data-adopt-act="rotate-left">◀ 左转45°</button>
+                <button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:11px;${sanctuaryState.turntableSpin ? "background:rgba(132,250,176,0.28);border-color:#84fab0;" : ""}" data-adopt-act="toggle-spin">${sanctuaryState.turntableSpin ? "⏸ 停止旋转" : "🔄 360°旋转展示"}</button>
+                <button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:11px;" data-adopt-act="rotate-right">▶ 右转45°</button>
+                <button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:11px;" data-adopt-act="pose-snap">📸 街拍Pose</button>
+              </div>
             </div>
 
             <div class="ans-egg-stage">
@@ -2633,7 +2704,7 @@ class MotionDirector {
                 <div style="font-size:12.5px;font-weight:800;color:${sp.primaryHex};">
                   ${eggCrackClicks >= 3 ? `✨ ${sp.name} 已破壳唤醒` : `🔨 轻敲灵蛋破壳 (${eggCrackClicks}/3)`}
                 </div>
-                <div style="font-size:10.5px;color:rgba(255,255,255,0.72);">${sp.element} · 3D 舞台已实时同步预览</div>
+                <div style="font-size:10.5px;color:rgba(255,255,255,0.72);">${sp.element} · 左侧 3D 舞台实时预览</div>
               </div>
               <div style="display:flex;flex-direction:column;gap:8px;">
                 <div style="font-size:13px;font-weight:700;color:#ffe082;">${crackStageText}</div>
@@ -2644,20 +2715,20 @@ class MotionDirector {
               </div>
             </div>
 
-            <div style="font-size:13px;font-weight:800;color:#d6fff0;">🧬 第一步：挑选你的专属小恐龙血统（点击卡片即可在背后 3D 舞台实时预览变身！）</div>
+            <div style="font-size:13px;font-weight:800;color:#d6fff0;">🧬 第一步：挑选你的专属小恐龙血统（点击卡片即可在左侧 3D 舞台实时预览变身！）</div>
             <div class="ans-species-grid">${speciesCardsHtml}</div>
 
             <div class="ans-contract-bar">
               <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
                 <label style="font-size:12.5px;font-weight:700;">🏷️ 赐予爱宠昵称：</label>
-                <input id="ans-adopt-name-input" type="text" value="${sanctuaryState.dinoName}" maxlength="14" style="padding:6px 11px;border-radius:10px;border:1px solid rgba(132,250,176,0.6);background:rgba(0,0,0,0.4);color:#fff;font-size:13px;font-weight:700;width:140px;" />
+                <input id="ans-adopt-name-input" type="text" value="${preservedName}" maxlength="14" style="padding:6px 11px;border-radius:10px;border:1px solid rgba(132,250,176,0.6);background:rgba(0,0,0,0.4);color:#fff;font-size:13px;font-weight:700;width:130px;" />
                 <button type="button" class="ans-comp-qbtn" data-adopt-act="random-name">🎲 随机网感名</button>
                 <label style="font-size:12.5px;font-weight:700;margin-left:4px;">🪪 训龙师头衔：</label>
                 <select id="ans-adopt-title-select" style="padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.45);color:#fff;font-size:12.5px;">
                   ${["首席训龙师", "算力魔法师", "奇迹暖暖主理人", "摸鱼督导官", "ANS 创世先锋"].map(t => `<option value="${t}" ${t === sanctuaryState.trainerTitle ? "selected" : ""}>${t}</option>`).join("")}
                 </select>
               </div>
-              <div style="display:flex;align-items:center;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;width:100%;justify-content:space-between;">
                 <span style="font-size:11.5px;color:#ffe082;">契约编号 ${sanctuaryState.contractCode}</span>
                 <button type="button" class="ans-comp-qbtn is-adopt" style="padding:9px 18px;font-size:13px;background:linear-gradient(135deg,#84fab0,#8fd3f4);color:#09201a;border:none;" data-adopt-act="confirm-adopt">
                   ✨ 缔结灵魂契约 · 领养并同步全站 (+100🪙)
@@ -2725,6 +2796,16 @@ class MotionDirector {
               <button type="button" class="ans-sanc-close" data-wardrobe-act="close">完成穿搭 ✕</button>
             </div>
 
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:7px 11px;border-radius:12px;background:rgba(255,133,192,0.12);border:1px solid rgba(255,133,192,0.38);font-size:11.5px;">
+              <span style="color:#ff85c0;font-weight:700;">🎥 3D 试衣转台控制（可看背部光翼/喷射包）：</span>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:11px;" data-wardrobe-act="rotate-left">◀ 左转45°</button>
+                <button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:11px;${sanctuaryState.turntableSpin ? "background:rgba(255,133,192,0.28);border-color:#ff85c0;" : ""}" data-wardrobe-act="toggle-spin">${sanctuaryState.turntableSpin ? "⏸ 停止旋转" : "🔄 360°旋转展示"}</button>
+                <button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:11px;" data-wardrobe-act="rotate-right">▶ 右转45°</button>
+                <button type="button" class="ans-comp-qbtn" style="padding:3px 8px;font-size:11px;" data-wardrobe-act="pose-snap">📸 街拍Pose</button>
+              </div>
+            </div>
+
             <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:16px;background:linear-gradient(135deg,rgba(255,133,192,0.18),rgba(179,127,235,0.15));border:1px solid rgba(255,133,192,0.45);">
               <div>
                 <div style="font-size:13.5px;font-weight:800;color:#fff0f6;">✨ 时尚战力评分：<span style="color:#ffe082;font-size:16px;">${styleInfo.total}</span> · <span style="color:#ff85c0;">${styleInfo.rank}</span></div>
@@ -2747,8 +2828,8 @@ class MotionDirector {
             <div class="ans-comp-tabs" style="flex-wrap:wrap;">${slotTabsHtml}</div>
             <div class="ans-wardrobe-items">${itemsHtml}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:rgba(235,250,245,0.78);">
-              <span>👀 提示：左侧 3D 舞台中的小恐龙已实时穿戴所选 3D 配饰，可滚轮放大或长按拖拽 360° 欣赏！</span>
-              <button type="button" class="ans-comp-qbtn is-adopt" data-comp-act="open-adopt" onclick="document.getElementById('ans-sanctuary-wardrobe-modal').hidden=true;document.getElementById('ans-sanctuary-adopt-modal').hidden=false;">🥚 切换灵龙血统</button>
+              <span>👀 左侧 3D 舞台已实时穿戴所选配饰，支持 360° 试衣转盘与滚轮缩放！</span>
+              <button type="button" class="ans-comp-qbtn is-adopt" data-wardrobe-act="open-adopt-from-wardrobe">🥚 切换灵龙血统</button>
             </div>
           </div>
         `;
@@ -3761,7 +3842,8 @@ const isInteractiveMode = dinoState.badge.isInteractive ? dinoState.badge.isInte
 const curSanc = dinoState.badge.getSanctuaryState ? dinoState.badge.getSanctuaryState() : null;
 const isDockMode = curSanc && curSanc.roamMode === "dock";
 const wardrobeEl = typeof document !== "undefined" ? document.getElementById("ans-sanctuary-wardrobe-modal") : null;
-const isWardrobeOpen = Boolean(wardrobeEl && !wardrobeEl.hidden);
+const adoptEl = typeof document !== "undefined" ? document.getElementById("ans-sanctuary-adopt-modal") : null;
+const isWardrobeOpen = Boolean((wardrobeEl && !wardrobeEl.hidden) || (adoptEl && !adoptEl.hidden));
 dinoState.interactBlend += ((isInteractiveMode ? 1.0 : 0.0) - dinoState.interactBlend) * Math.min(1, y * 7.5);
 dinoState.dockBlend += ((isDockMode ? 1.0 : 0.0) - dinoState.dockBlend) * Math.min(1, y * 6.5);
 dinoState.wardrobeBlend += ((isWardrobeOpen ? 1.0 : 0.0) - dinoState.wardrobeBlend) * Math.min(1, y * 7.5);
@@ -4106,7 +4188,8 @@ if (dinoState.badge.updateCamStatus) {
 
     const faceCamLock = Math.max(macroW, dinoState.hoverBlend);
     const orbitHeadingBlend = (0.36 + 0.22 * scrollFlightSpeed) * (1.0 - faceCamLock);
-    const targetYaw = toCamYaw + diffTang * orbitHeadingBlend + reactionYawOffset + (dinoState.hovered ? ne.current.x * 0.18 : 0);
+    const turntableAngle = dinoState.wardrobeBlend * (((curSanc && curSanc.turntableYaw) || 0) + ((curSanc && curSanc.turntableSpin) ? tNow * 1.15 : 0));
+    const targetYaw = toCamYaw + diffTang * orbitHeadingBlend + reactionYawOffset + turntableAngle + (dinoState.hovered ? ne.current.x * 0.18 : 0);
     let yawDelta = targetYaw - dinoState.yaw;
     while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
     while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;

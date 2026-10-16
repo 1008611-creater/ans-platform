@@ -5,10 +5,11 @@ import {
   DINO_SPECIES,
   DINO_SPECIES_LIST,
   DINO_WARDROBE_ITEMS,
+  SANCTUARY_EVENT_NAME,
   loadSanctuaryState,
   saveSanctuaryState,
   type DinoSpeciesId,
-  type MascotSanctuaryState
+  type MascotSanctuaryState,
 } from "@/domain/mascot/sanctuary";
 
 const TRENDY_NAMES = [
@@ -19,8 +20,15 @@ const TRENDY_NAMES = [
   "芝士小泡芙",
   "顶会收割机",
   "不改需求龙",
-  "量子小冰龙"
+  "量子小冰龙",
 ];
+
+const SPECIES_ICONS: Record<DinoSpeciesId, string> = {
+  mint_star: "🦖",
+  cyber_gold: "🐉",
+  sakura_mochi: "🦄",
+  aurora_ice: "❄️",
+};
 
 export interface DinoAdoptionPodProps {
   trainerNicknameHint?: string;
@@ -31,7 +39,7 @@ export interface DinoAdoptionPodProps {
 export function DinoAdoptionPod({
   trainerNicknameHint,
   compact = false,
-  onAdoptedChange
+  onAdoptedChange,
 }: DinoAdoptionPodProps) {
   const [sanctuary, setSanctuary] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [crackStep, setCrackStep] = useState<number>(3);
@@ -39,16 +47,19 @@ export function DinoAdoptionPod({
   const [expanded, setExpanded] = useState<boolean>(!compact);
 
   useEffect(() => {
-    const loaded = loadSanctuaryState();
-    setSanctuary(loaded);
+    setSanctuary(loadSanctuaryState());
+    const sync = () => setSanctuary(loadSanctuaryState());
+    window.addEventListener(SANCTUARY_EVENT_NAME, sync);
+    return () => window.removeEventListener(SANCTUARY_EVENT_NAME, sync);
   }, []);
 
   const currentSpecies = DINO_SPECIES[sanctuary.speciesId] ?? DINO_SPECIES.mint_star;
+  const currentIcon = SPECIES_ICONS[currentSpecies.id] ?? "🦖";
 
   function updateSanctuary(patch: Partial<MascotSanctuaryState>) {
     const next: MascotSanctuaryState = {
       ...sanctuary,
-      ...patch
+      ...patch,
     };
     setSanctuary(next);
     saveSanctuaryState(next);
@@ -60,48 +71,50 @@ export function DinoAdoptionPod({
     if (!sp) return;
     const nextUnlocked = Array.from(
       new Set([
-        ...sanctuary.unlockedItemIds,
-        sp.starterOutfit.headwear,
-        sp.starterOutfit.eyewear,
-        sp.starterOutfit.neckwear,
-        sp.starterOutfit.handheld,
-        sp.starterOutfit.aura
-      ])
+        ...sanctuary.unlockedItems,
+        sp.starterEquipped.headwear,
+        sp.starterEquipped.eyewear,
+        sp.starterEquipped.neckwear,
+        sp.starterEquipped.handheld,
+        sp.starterEquipped.aura,
+      ]),
     );
     updateSanctuary({
       adopted: true,
+      adoptedAt: sanctuary.adoptedAt || new Date().toISOString(),
       speciesId: sp.id,
-      dinoNickname: sp.defaultNickname,
-      unlockedItemIds: nextUnlocked,
-      equipped: { ...sp.starterOutfit }
+      customName: sp.defaultNickname,
+      unlockedItems: nextUnlocked,
+      equipped: { ...sp.starterEquipped },
     });
     setCrackStep(3);
   }
 
   function handleTapEgg() {
     setIsCracking(true);
-    setTimeout(() => setIsCracking(false), 320);
+    window.setTimeout(() => setIsCracking(false), 320);
     const nextStep = crackStep >= 3 ? 1 : crackStep + 1;
     setCrackStep(nextStep);
     if (nextStep === 3) {
       updateSanctuary({
         adopted: true,
+        adoptedAt: sanctuary.adoptedAt || new Date().toISOString(),
         starBeans: sanctuary.starBeans + 30,
-        affectionXp: sanctuary.affectionXp + 15
+        affectionXp: sanctuary.affectionXp + 15,
       });
     }
   }
 
   function handleRandomDinoName() {
-    const candidates = TRENDY_NAMES.filter((n) => n !== sanctuary.dinoNickname);
+    const candidates = TRENDY_NAMES.filter(n => n !== sanctuary.customName);
     const pick = candidates[Math.floor(Math.random() * candidates.length)] ?? "薄荷小星龙";
-    updateSanctuary({ dinoNickname: pick });
+    updateSanctuary({ customName: pick });
   }
 
-  const starterItems = Object.entries(currentSpecies.starterOutfit)
-    .filter(([, itemId]) => itemId !== "none")
+  const starterItems = Object.entries(currentSpecies.starterEquipped)
+    .filter(([, itemId]) => itemId !== "none" && itemId !== "none_head")
     .map(([slot, itemId]) =>
-      DINO_WARDROBE_ITEMS.find((it) => it.slot === slot && it.id === itemId)
+      DINO_WARDROBE_ITEMS.find(it => it.slot === slot && it.id === itemId),
     )
     .filter(Boolean);
 
@@ -113,14 +126,14 @@ export function DinoAdoptionPod({
         padding: "16px",
         background:
           "linear-gradient(145deg, rgba(13, 25, 32, 0.94), rgba(20, 36, 44, 0.92))",
-        border: `1.5px solid ${currentSpecies.palette.primary}66`,
+        border: `1.5px solid ${currentSpecies.palette.skinHex}66`,
         boxShadow: "0 14px 36px rgba(0, 0, 0, 0.22)",
         color: "#f2fbf8",
         display: "flex",
         flexDirection: "column",
         gap: "12px",
         marginTop: "8px",
-        marginBottom: "8px"
+        marginBottom: "8px",
       }}
     >
       <div
@@ -129,7 +142,7 @@ export function DinoAdoptionPod({
           alignItems: "center",
           justifyContent: "space-between",
           gap: "8px",
-          flexWrap: "wrap"
+          flexWrap: "wrap",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -142,11 +155,11 @@ export function DinoAdoptionPod({
               width: "34px",
               height: "34px",
               borderRadius: "11px",
-              background: `${currentSpecies.palette.primary}26`,
-              border: `1px solid ${currentSpecies.palette.primary}`
+              background: `${currentSpecies.palette.skinHex}26`,
+              border: `1px solid ${currentSpecies.palette.skinHex}`,
             }}
           >
-            {currentSpecies.icon}
+            {currentIcon}
           </span>
           <div>
             <div style={{ fontSize: "14px", fontWeight: 800, color: "#ffffff" }}>
@@ -160,7 +173,7 @@ export function DinoAdoptionPod({
         {compact ? (
           <button
             type="button"
-            onClick={() => setExpanded((prev) => !prev)}
+            onClick={() => setExpanded(prev => !prev)}
             style={{
               borderRadius: "999px",
               padding: "4px 11px",
@@ -169,7 +182,7 @@ export function DinoAdoptionPod({
               border: "1px solid rgba(255,255,255,0.22)",
               background: "rgba(255,255,255,0.08)",
               color: "#fff",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             {expanded ? "收起孵化舱 ▲" : "展开挑选灵龙 ▼"}
@@ -179,7 +192,6 @@ export function DinoAdoptionPod({
 
       {expanded ? (
         <>
-          {/* Interactive Egg Hatching + Selected Species Preview */}
           <div
             style={{
               display: "grid",
@@ -189,7 +201,7 @@ export function DinoAdoptionPod({
               padding: "12px",
               borderRadius: "16px",
               background: "rgba(0, 0, 0, 0.28)",
-              border: "1px solid rgba(255, 255, 255, 0.1)"
+              border: "1px solid rgba(255, 255, 255, 0.1)",
             }}
           >
             <button
@@ -198,10 +210,10 @@ export function DinoAdoptionPod({
               title="点击敲击灵龙蛋体验破壳动效！"
               style={{
                 appearance: "none",
-                border: `1.5px dashed ${currentSpecies.palette.accent}`,
+                border: `1.5px dashed ${currentSpecies.palette.eyeGlowHex}`,
                 borderRadius: "16px",
                 padding: "10px 6px",
-                background: `radial-gradient(circle at 35% 30%, ${currentSpecies.palette.primary}44, ${currentSpecies.palette.secondary}22, rgba(8,14,20,0.85))`,
+                background: `radial-gradient(circle at 35% 30%, ${currentSpecies.palette.skinHex}44, ${currentSpecies.palette.crestHex}22, rgba(8,14,20,0.85))`,
                 color: "#fff",
                 cursor: "pointer",
                 display: "flex",
@@ -209,17 +221,17 @@ export function DinoAdoptionPod({
                 alignItems: "center",
                 gap: "4px",
                 transform: isCracking ? "scale(0.92) rotate(-5deg)" : "scale(1)",
-                transition: "transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                transition: "transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
             >
               <span style={{ fontSize: "32px", lineHeight: 1.1 }}>
-                {crackStep >= 3 ? currentSpecies.icon : "🥚"}
+                {crackStep >= 3 ? currentIcon : "🥚"}
               </span>
               <span
                 style={{
                   fontSize: "10.5px",
                   fontWeight: 800,
-                  color: currentSpecies.palette.primary
+                  color: currentSpecies.palette.skinHex,
                 }}
               >
                 {crackStep >= 3 ? "✨ 已破壳唤醒" : `🔨 敲击破壳 (${crackStep}/3)`}
@@ -233,17 +245,17 @@ export function DinoAdoptionPod({
                   alignItems: "center",
                   justifyContent: "space-between",
                   gap: "6px",
-                  flexWrap: "wrap"
+                  flexWrap: "wrap",
                 }}
               >
                 <span
                   style={{
                     fontSize: "13.5px",
                     fontWeight: 800,
-                    color: currentSpecies.palette.primary
+                    color: currentSpecies.palette.skinHex,
                   }}
                 >
-                  {currentSpecies.name} · {currentSpecies.codeName}
+                  {currentSpecies.name} · {currentSpecies.title}
                 </span>
                 <span
                   style={{
@@ -251,8 +263,8 @@ export function DinoAdoptionPod({
                     padding: "2px 8px",
                     borderRadius: "999px",
                     background: "rgba(255,255,255,0.12)",
-                    color: currentSpecies.palette.accent,
-                    fontWeight: 700
+                    color: currentSpecies.palette.eyeGlowHex,
+                    fontWeight: 700,
                   }}
                 >
                   {currentSpecies.mbti}
@@ -263,8 +275,7 @@ export function DinoAdoptionPod({
               </div>
               <div style={{ fontSize: "11px", color: "#ffe082" }}>
                 🎁 初始穿搭：
-                {starterItems.map((it) => `${it?.icon}${it?.name}`).join(" + ") ||
-                  "初心灵感套装"}
+                {starterItems.map(it => `${it?.icon}${it?.name}`).join(" + ") || "初心灵感套装"}
               </div>
               <div
                 style={{
@@ -273,27 +284,27 @@ export function DinoAdoptionPod({
                   gap: "4px",
                   fontSize: "10.5px",
                   color: "rgba(255,255,255,0.8)",
-                  marginTop: "2px"
+                  marginTop: "2px",
                 }}
               >
-                <span>💻算力 {currentSpecies.stats.compute}</span>
-                <span>🎨颜值 {currentSpecies.stats.style}</span>
-                <span>📚学术 {currentSpecies.stats.academic}</span>
-                <span>🍀欧气 {currentSpecies.stats.luck}</span>
+                <span>💡创意 {currentSpecies.stats.creativity}</span>
+                <span>⚡手速 {currentSpecies.stats.codingSpeed}</span>
+                <span>💖共情 {currentSpecies.stats.empathy}</span>
+                <span>🧠逻辑 {currentSpecies.stats.logic}</span>
               </div>
             </div>
           </div>
 
-          {/* 4 Adoptable Species Selector */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-              gap: "8px"
+              gap: "8px",
             }}
           >
-            {DINO_SPECIES_LIST.map((sp) => {
+            {DINO_SPECIES_LIST.map(sp => {
               const selected = sp.id === sanctuary.speciesId;
+              const icon = SPECIES_ICONS[sp.id] ?? "🦖";
               return (
                 <button
                   key={sp.id}
@@ -305,16 +316,16 @@ export function DinoAdoptionPod({
                     padding: "9px 11px",
                     borderRadius: "13px",
                     border: selected
-                      ? `1.5px solid ${sp.palette.primary}`
+                      ? `1.5px solid ${sp.palette.skinHex}`
                       : "1px solid rgba(255,255,255,0.14)",
                     background: selected
-                      ? `linear-gradient(135deg, ${sp.palette.primary}28, ${sp.palette.secondary}1f)`
+                      ? `linear-gradient(135deg, ${sp.palette.skinHex}28, ${sp.palette.crestHex}1f)`
                       : "rgba(255,255,255,0.04)",
                     color: "#ffffff",
                     cursor: "pointer",
                     display: "flex",
                     flexDirection: "column",
-                    gap: "3px"
+                    gap: "3px",
                   }}
                 >
                   <div
@@ -323,11 +334,11 @@ export function DinoAdoptionPod({
                       alignItems: "center",
                       justifyContent: "space-between",
                       fontSize: "12.5px",
-                      fontWeight: 800
+                      fontWeight: 800,
                     }}
                   >
-                    <span style={{ color: sp.palette.primary }}>
-                      {sp.icon} {sp.name}
+                    <span style={{ color: sp.palette.skinHex }}>
+                      {icon} {sp.name}
                     </span>
                     {selected ? (
                       <span style={{ fontSize: "10px", color: "#84fab0" }}>✓ 已选</span>
@@ -339,17 +350,16 @@ export function DinoAdoptionPod({
                       color: "rgba(235,250,245,0.75)",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
-                      textOverflow: "ellipsis"
+                      textOverflow: "ellipsis",
                     }}
                   >
-                    {sp.element} · {sp.mbti}
+                    {sp.title} · {sp.mbti}
                   </div>
                 </button>
               );
             })}
           </div>
 
-          {/* Custom Dino Name & Trainer Contract Bar */}
           <div
             style={{
               display: "flex",
@@ -360,7 +370,7 @@ export function DinoAdoptionPod({
               padding: "9px 11px",
               borderRadius: "13px",
               background: "rgba(255, 224, 130, 0.1)",
-              border: "1px solid rgba(255, 224, 130, 0.35)"
+              border: "1px solid rgba(255, 224, 130, 0.35)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1 }}>
@@ -370,9 +380,9 @@ export function DinoAdoptionPod({
               <input
                 type="text"
                 aria-label="小恐龙专属昵称"
-                value={sanctuary.dinoNickname}
+                value={sanctuary.customName}
                 maxLength={14}
-                onChange={(e) => updateSanctuary({ dinoNickname: e.target.value })}
+                onChange={e => updateSanctuary({ customName: e.target.value })}
                 style={{
                   flex: 1,
                   minWidth: "90px",
@@ -382,7 +392,7 @@ export function DinoAdoptionPod({
                   background: "rgba(0,0,0,0.35)",
                   color: "#fff",
                   fontSize: "12px",
-                  fontWeight: 700
+                  fontWeight: 700,
                 }}
               />
               <button
@@ -397,7 +407,7 @@ export function DinoAdoptionPod({
                   fontSize: "11px",
                   fontWeight: 700,
                   cursor: "pointer",
-                  whiteSpace: "nowrap"
+                  whiteSpace: "nowrap",
                 }}
               >
                 🎲 随机靓名
