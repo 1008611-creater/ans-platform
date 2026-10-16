@@ -1,7 +1,7 @@
 # 农客松一体化赛事平台（AgriHackathon All-in-One Hub）后端与深层机制交接规范（Codex Handoff）
 
 > **当前状态**：前端文案收敛、五步一站式参赛闭环（`读规则 → 拿算力 → 报名传作品 → 上作品墙拉 Star → 入围汇报与最终排名`）、作品墙实时排名角标与距上一名差额提示、一键复制拉 Star 口令等功能已在 [`src/app/competitions/agrihackathon/page.tsx`](../src/app/competitions/agrihackathon/page.tsx) 与 [`src/components/competitions/agri-wall.tsx`](../src/components/competitions/agri-wall.tsx) 落地。
-> 本文档面向 **GPT-6.1-sol (Codex)**，定义需要改动数据库事务、服务端状态机与 API 契约的 **4 项深层工程闭环任务**。
+> 以下四项是待确认的后续设计，不代表已实现、已上线或已有实施授权。涉及积分发放、赛事评分、公开发布与数据契约的变更，需单独确认政策和权限边界后走审查发布流程。
 
 ---
 
@@ -36,10 +36,10 @@
    - [`src/server/competitions/agrihackathon/submissions.ts`](../src/server/competitions/agrihackathon/submissions.ts)
    - [`src/server/competitions/agrihackathon/wall.ts`](../src/server/competitions/agrihackathon/wall.ts)
 2. **核心逻辑**：
-   - 在初赛/决赛阶段提交表单中增加可勾选开关：`syncToAgriWall: boolean`（默认勾选「同步公开至农客松作品墙参与人气 Star 评选」）。
-   - 当 `syncToAgriWall === true` 时，服务端在同一事务内自动创建或更新对应的免费作品墙条目（`category = "competition"`, `subcategory = "agri-wall"`, `priceMinor = 0`）并完成 `AgriWallEntry` 绑定与版本同步，无需队长再去 `/explore/submit` 填第二遍表单。
+   - 在初赛/决赛阶段提交表单中增加可勾选开关：`syncToAgriWall: boolean`（默认 `false`；由队长主动选择并检查公开内容后确认）。
+   - 仅从公开字段白名单创建免费作品草稿，展示将公开的具体字段；不得自动公开私密阶段材料、内部记录、联系方式或未审核版本。先由有权代表队伍的人员明确确认公开，再经过既有审核。绑定与同步必须指向该项目精确的已审核公开版本，并保留版本校验及回执。阶段提交成功不等于公开发布成功。
 3. **验收标准**：
-   - 若投票已开启（`round.state !== "NOT_OPEN"`），未绑定过的战队仅保存阶段提交并提示作品墙绑定已锁定；已绑定过的战队自动同步最新提交版本。
+   - 若投票已开启（`round.state !== "NOT_OPEN"`），未绑定过的战队仅保存阶段提交并提示作品墙绑定已锁定；已绑定过的战队仅在主动确认后同步同一项目的精确已审核公开版本，保留阶段历史快照。
 
 ---
 
@@ -69,6 +69,6 @@
    - [`src/server/competitions/agrihackathon/reviews.ts`](../src/server/competitions/agrihackathon/reviews.ts)
    - [`src/components/competitions/agri-publications.tsx`](../src/components/competitions/agri-publications.tsx)
 2. **核心逻辑**：
-   - **初赛综合分自动折算**：在 [`src/server/competitions/agrihackathon/reviews.ts`](../src/server/competitions/agrihackathon/reviews.ts) 中汇总 3 位评委的五维打分均值（占 80%）与作品墙封榜有效 Star 归一化得分（占 20%，$\text{PublicScore} = 100 \times \frac{\text{validStars}}{\max(\text{validStars})}$），生成初赛综合排名候选集供主办方确认 10 强 Finalist。
+   - **初赛综合分自动折算**：在 [`src/server/competitions/agrihackathon/reviews.ts`](../src/server/competitions/agrihackathon/reviews.ts) 中汇总 3 位评委的五维打分均值（占 80%）与作品墙封榜有效 Star 归一化得分（计划占 20%；归一化公式、全零票、并列、取消资格及截止后复核口径仍需赛事负责人确认，不得直接以本草案自动排名），生成初赛综合排名候选集供主办方确认 10 强 Finalist。
    - **决赛去极值均分**：汇总 7 位决赛评委打分，自动去掉 1 个最高分与 1 个最低分后取剩余 5 位均值，生成一等奖（¥1,500）、二等奖（¥1,000）、三等奖（¥800）及最佳技术实现奖、最佳创意奖、最佳人气奖榜单。
    - **公开展示页双榜视图**：在 `AgriShowcase` 顶部渲染「初赛 10 强 Finalist 路演名单」与「Demo Day 终审荣誉殿堂」，并支持一键跳转查看各获奖作品的在线 Demo、GitHub 开源仓库与作品墙详情。

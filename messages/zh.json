@@ -2704,7 +2704,7 @@
     "bindProject": "绑定参赛项目",
     "claimCompute": "领取参赛算力",
     "pipelineSectionLabel": "00 / 一站式参赛闭环",
-    "pipelineTitle": "五步跑通农客松：从领算力到冲进十强",
+    "pipelineTitle": "准备从哪一步开始？",
     "pipelineDescription": "告别多处跳转。读规则、拿算力、交作品、拉 Star 与查入围全部集成在同一主线。",
     "pipeline": {
       "rules": {
@@ -2716,9 +2716,9 @@
       },
       "compute": {
         "step": "STEP 02",
-        "title": "拿算力 · 搭原型",
-        "description": "前往算力中心领取免费算力或兑换赛事算力券，调用 AI 工作流加速开发。",
-        "cta": "去领参赛算力",
+        "title": "准备算力 · 搭原型",
+        "description": "查看可用积分与公开计费规则；已有卡密可在算力中心兑换。",
+        "cta": "打开算力中心",
         "href": "/workspace/credits"
       },
       "submit": {
@@ -2731,7 +2731,7 @@
       "star": {
         "step": "STEP 04",
         "title": "上作品墙 · 拉 Star",
-        "description": "作品免费上墙展示，一键复制拉票口令找人点 Star（占初赛 20% 权重＋最佳人气奖）。",
+        "description": "公开作品通过审核并绑定队伍后可上墙。有效 Star 的计票状态以作品墙为准。",
         "cta": "打开农客松作品墙",
         "href": "/explore?category=competition&subcategory=agri-wall"
       },

@@ -803,8 +803,8 @@
     "oldAllowance": "Confirmed not accepted. Its original daily allowance ended; today's balance was not increased."
   },
   "agrihackathon": {
-    "rulesPendingTitle": "Event channels and stage schedule",
-    "rulesPendingBody": "You can form a team, claim compute credits, and publish projects to the wall now; formal preliminary and final submissions open on the published stage schedule.",
+    "rulesPendingTitle": "Edition plan defined; official dates pending",
+    "rulesPendingBody": "The first-edition plan is shown below. Official dates are not confirmed. Registration, preliminary submissions and final materials open only through the edition’s separate published windows. This overview does not open registration or publish technical guidance.",
     "organizerTools": "Organizer & jury tools",
     "organizerToolsBody": "For authorized staff: review submissions, coordinate on-site demos, approve public showcase entries and configure voting windows.",
     "workspaceLinksBody": "Claim compute credits, run Hub workflows, and manage your team and checklist in one place.",
@@ -1972,6 +1972,7 @@
     "freeNote": "A free shared project: no order or payment required. Use and licensing conditions are defined by its creator and original source."
   },
   "quotaHistory": {
+    "pageTitle": "Compute center",
     "title": "Credit statement",
     "entry": "Credit statement",
     "description": "Your shared credit balance, reservations and transactions.",
@@ -2493,7 +2494,7 @@
     "rules": "Fixed recharge rate: CNY 1 = 10 points; each point corresponds to USD 1 in model pricing quota. GPT consumption ×{gpt}, DeepSeek ×{deepseek}.",
     "code": "Voucher code",
     "redeem": "Redeem points",
-    "busy": "Redeeming?",
+    "busy": "Redeeming…",
     "success": "Redeemed {points} points",
     "duplicate": "Already redeemed to your account: {points} points.",
     "VOUCHER_INVALID": "Invalid, expired or revoked voucher.",
@@ -2519,6 +2520,8 @@
     "revoke": "Revoke unused vouchers",
     "revokeConfirm": "Confirm revoking remaining vouchers",
     "catalogTitle": "Choose a points voucher",
+    "redemptionGuide": "How do I redeem a voucher?",
+    "purchaseGuide": "Buying a points voucher for the first time?",
     "oneTime": "One-time purchase",
     "catalogDescription": "Buy a voucher, receive its code, then redeem it here into this account.",
     "chooseAmount": "Choose a points amount",
@@ -2535,7 +2538,7 @@
     "redeemStep": "Paste the code to credit your current ANS account.",
     "accountNote": "Check that you are signed into the account you want to credit. A redeemed code cannot be used by another account.",
     "planStatus": "In preparation",
-    "planDescription": "Weekly, monthly and quarterly: explore the VibePlan interface.",
+    "planDescription": "Compare weekly, monthly and quarterly prices and planned benefits.",
     "planExplore": "Explore VibePlan",
     "quickAmounts": "Choose a face value"
   },

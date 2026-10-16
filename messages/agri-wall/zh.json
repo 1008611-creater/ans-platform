@@ -1,10 +1,10 @@
 {
-  "eyebrow": "农客松一体化平台 / 作品墙与人气榜",
+  "eyebrow": "项目广场 / 比赛与团队",
   "title": "农客松作品墙",
-  "description": "浏览参赛战队的 AI 创新作品，在线体验 Demo，为你看好的项目点亮 Star！转发作品给好友拉票，助力战队冲进决赛十强。",
+  "description": "把想法种进真实场景。发现参赛队的项目，看看他们解决了什么，用一颗 Star 支持你看好的作品。",
   "join": "上传作品上墙",
   "eventGuide": "返回农客松主会场",
-  "popularity": "Star 人气榜 & 初赛大众评分（20% 权重）",
+  "popularity": "Star 人气奖",
   "beijing": "北京时间",
   "states": {
     "UNCONFIGURED": "计票时间待公布",
@@ -13,25 +13,25 @@
     "CLOSED": "计票已结束"
   },
   "roundCopy": {
-    "UNCONFIGURED": "作品墙已开放展示与体验。计票时间公布后，点亮的 Star 将计入初赛大众分（20%）与最佳人气奖排名。",
-    "NOT_OPEN": "欢迎先行体验参赛项目。计票窗口内新增或主动确认的 Star 将计入本届有效票。",
-    "OPEN": "为你看好的作品点亮 Star 并转发拉票！「赛事有效 Star」实时决定人气奖排名与初赛 20% 大众得分。",
-    "CLOSED": "计票窗口已截止封存。继续点亮 Star 仍能鼓励团队，下方公示本届冻结的人气奖与排名结果。"
+    "UNCONFIGURED": "作品可以先展示。人气奖的计票时间尚未公布，现在的 Star 不自动计入赛事有效票。",
+    "NOT_OPEN": "先逛逛项目。计票时间内新增的 Star，或对已有 Star 的主动确认，才可能计入本届；结束前取消则不计票。",
+    "OPEN": "为你看好的作品点亮 Star。下方「赛事有效 Star」用于人气奖排名，按钮上的数字是项目累计 Star。",
+    "CLOSED": "计票窗口已关闭。继续 Star 仍能支持项目，但不会改变本届已冻结的人气奖结果。"
   },
   "rulesTitle": "有效 Star 计票规则",
   "rules": {
-    "window": "计票窗口内新增 Star，或对窗口前已有 Star 主动确认，即计入本届有效票；结束前取消不计票。",
-    "account": "每个 ANS 账号对同一作品最多计 1 票，可支持多个不同作品。",
-    "team": "项目发布者及本队参赛成员对本队作品的 Star 不计入人气奖。",
-    "total": "项目累计 Star 与赛事有效 Star 独立显示；作品保持公开且通过审核方可参评。",
-    "tie": "有效 Star 最高且大于 0 的作品获最佳人气奖（同票并列，全零票则空缺）。",
-    "frozen": "计票开始后锁定时间，截止瞬间自动封存最终票数与排名。"
+    "window": "计票窗口内新增 Star，或对窗口前已有 Star 主动确认，才计入本届。结束前取消的 Star 不计票。",
+    "account": "同一个 ANS 账号对同一作品最多计一票；可支持多个作品。",
+    "team": "项目发布者、参赛队当前有效成员及正式参赛名单中的成员，对本队作品的 Star 均不计入人气奖。",
+    "total": "项目累计 Star 与赛事有效 Star 分开显示。作品需保持公开、已审核状态，才具备参评资格。",
+    "tie": "有效 Star 最高且大于 0 的作品获人气奖；最高票相同则并列获奖。没有有效票则本奖空缺。",
+    "frozen": "计票开始后不再修改时间；截止结果冻结，后续 Star、取消 Star 或作品状态变化不改写冻结票数。"
   },
   "loading": "正在读取作品与计票状态…",
   "refresh": "刷新状态",
   "retry": "重新读取",
-  "eventUnconfigured": "本届赛事通道正在准备中，正式绑定即将开放。",
-  "finalResults": "本届人气奖与最终排名汇报",
+  "eventUnconfigured": "本届赛事尚未接入，正式绑定暂不可用。请以赛事指南公布的安排为准。",
+  "finalResults": "本届人气奖结果",
   "finalResultsHint": "以下为计票截止时封存的有效票结果与排名。",
   "winnerVotes": "获奖 · {count} 票",
   "noWinner": "本届暂无获得有效票的作品，人气奖空缺。",
@@ -125,7 +125,7 @@
     "CONFLICT": "记录正在被更新，请刷新后重试。"
   },
   "managementTitle": "人气奖计票设置",
-  "entryFlow": "参赛闭环：读规则领算力 → 报名并发布作品上墙 → 分享找人点 Star → 冲击十强入围与最终排名。",
+  "entryFlow": "站外开发也能参赛：公开发布 → 审核通过 → 绑定本队 → 正式提交。发布到作品墙不等于完成正式报名。",
   "submissionWallTitle": "确认作品墙关联",
   "submissionWallReady": "本队已关联公开作品。可直接使用对应版本核对阶段要求并正式提交。",
   "submissionWallMissing": "本队尚未绑定农客松作品墙项目。请先发布免费作品并通过审核，再由队长或管理员完成绑定。",
@@ -148,14 +148,15 @@
   "freeDisplayTitle": "免费展示，直接访问",
   "freeDisplayBody": "农客松作品墙用于公开展示与拉票评选。访客可直接体验你的 Demo 或查看仓库。",
   "shareVote": "分享拉 Star",
-  "shareCopied": "已复制拉票口令！快去微信群或朋友圈邀请好友点 Star",
-  "shareText": "🔥 我们在农客松做出了《{title}》（战队：{team}），当前已获 {stars} 颗有效 Star！求花 3 秒点亮 Star 助我们冲进决赛十强 👉 {url}",
+  "shareCopied": "已复制分享文案",
+  "shareText": "看看我们在农客松做的《{title}》（{team}），当前有 {stars} 颗赛事有效 Star。作品与演示：{url}",
   "rankTop": "TOP {rank}",
   "rankLabel": "第 {rank} 名",
   "gapHint": "距上一名差 {gap} 票",
   "leaderHint": "当前人气榜首",
-  "claimCompute": "领取参赛算力",
+  "claimCompute": "算力中心",
   "viewShowcase": "入围与公示榜",
   "rankingListTitle": "有效票最终排名榜",
-  "rankVotes": "{count} 票"
+  "rankVotes": "{count} 票",
+  "shareFailed": "未能复制，请重试或手动复制下方内容。"
 }
