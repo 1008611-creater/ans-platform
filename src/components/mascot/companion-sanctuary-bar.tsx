@@ -492,10 +492,9 @@ export function CompanionSanctuaryBar({
     onSpeak?.(foodReaction);
   }
 
-  function handleEquipOrBuy(itemId: string) {
+  function handleEquipOrBuy(itemId: string, now: number) {
     const item = DINO_WARDROBE_ITEMS.find(entry => entry.id === itemId);
     if (!item) return;
-    const now = Date.now();
     const owned = state.unlockedItems.includes(item.id);
 
     if (!owned) {
@@ -844,7 +843,7 @@ export function CompanionSanctuaryBar({
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => handleEquipOrBuy(item.id)}
+                  onClick={() => handleEquipOrBuy(item.id, Date.now())}
                   className={`flex items-center justify-between rounded-xl border px-2 py-1.5 text-left text-[11px] transition ${
                     equipped
                       ? "border-amber-500/60 bg-amber-500/10 font-bold"

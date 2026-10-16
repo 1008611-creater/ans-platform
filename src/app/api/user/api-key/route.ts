@@ -24,7 +24,7 @@ function keyError(error: unknown) {
   return reply({ error: "KEY_UPDATE_FAILED" }, 500);
 }
 
-export async function GET(request?: Request) {
+export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return reply({ error: "Unauthorized" }, 401);
   if (request) {

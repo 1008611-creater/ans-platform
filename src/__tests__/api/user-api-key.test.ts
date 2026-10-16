@@ -39,7 +39,7 @@ describe("GET /api/user/api-key", () => {
   it("should return 401 if not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
 
-    const response = await GET();
+    const response = await GET(keyRequest("GET"));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -49,7 +49,7 @@ describe("GET /api/user/api-key", () => {
   it("should return 401 if session has no user id", async () => {
     vi.mocked(auth).mockResolvedValue({ user: {} } as never);
 
-    const response = await GET();
+    const response = await GET(keyRequest("GET"));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -60,7 +60,7 @@ describe("GET /api/user/api-key", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.user.findUnique).mockResolvedValue(null);
 
-    const response = await GET();
+    const response = await GET(keyRequest("GET"));
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -74,7 +74,7 @@ describe("GET /api/user/api-key", () => {
       mcpPromptsPublicByDefault: true,
     } as never);
 
-    const response = await GET();
+    const response = await GET(keyRequest("GET"));
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -89,7 +89,7 @@ describe("GET /api/user/api-key", () => {
       mcpPromptsPublicByDefault: true,
     } as never);
 
-    const response = await GET();
+    const response = await GET(keyRequest("GET"));
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -104,7 +104,7 @@ describe("GET /api/user/api-key", () => {
       mcpPromptsPublicByDefault: false,
     } as never);
 
-    const response = await GET();
+    const response = await GET(keyRequest("GET"));
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -322,7 +322,7 @@ describe("key changes are bound to the displayed account and same origin", () =>
   it("never caches a generated plaintext key or private read", async () => {
     vi.mocked(generateApiKey).mockReturnValue("isolated-fixture-key");
     vi.mocked(db.user.findUnique).mockResolvedValue({ apiKey: "hash", mcpPromptsPublicByDefault: false } as never);
-    for (const response of [await POST(keyRequest("POST")), await GET()]) expect(response.headers.get("cache-control")).toBe("private, no-store");
+    for (const response of [await POST(keyRequest("POST")), await GET(keyRequest("GET"))]) expect(response.headers.get("cache-control")).toBe("private, no-store");
   });
   it("handles malformed JSON without a server error or mutation", async () => {
     const request = new NextRequest("http://localhost:3000/api/user/api-key", { method: "PATCH", headers: { "Content-Type": "application/json", Origin: "http://localhost:3000", "x-ans-actor": "user1" }, body: "{" });
