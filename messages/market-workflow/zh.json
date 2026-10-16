@@ -1,4 +1,7 @@
 {
+  "viewPublishedMarket": "查看市场项目",
+  "notListedMarket": "当前版本尚未上架市场",
+  "backToHub": "返回 Hub",
   "uploadTitle": "上架到市场",
   "uploadNotice": "当前绑定稳定版 v{version}，提交审核通过后即可公开展示。用户使用时按实际算力计费，不额外收取资源购买费。",
   "category": "大类",

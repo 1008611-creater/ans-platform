@@ -1,4 +1,6 @@
 {
+  "viewMarket": "查看并使用",
+  "notListed": "暂未上架市场",
   "structure": "流程结构",
   "formats": { "text": "文本成果", "markdown": "文档成果", "json": "结构化数据" },
   "stages": "制作阶段",

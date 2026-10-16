@@ -1,3 +1,5 @@
+import { marketProductPath } from "@/domain/marketplace/product-route";
+import { listRelatedPublishedMarketListings } from "@/server/marketplace/listings";
 import { WorkflowHubAssociations } from "@/components/workflows/workflow-hub-associations";
 import { getTranslations } from "next-intl/server";
 import { unifiedModelBilling } from "@/server/integrations/metered-cost";
@@ -72,6 +74,8 @@ export default async function EditWorkflowPage({
   const latest = workflow.versions[0] ?? null;
   const isOwner = workflow.authorId === session.user.id;
   const publishedManuallyApproved = await isWorkflowPublicationApproved(workflow);
+  const marketOffers = workflow.status === "PUBLISHED" ? await listRelatedPublishedMarketListings({ workflowIds: [workflow.id] }) : [];
+  const marketOffer = marketOffers.find(offer => offer.listing.execution?.workflowId === workflow.id && offer.listing.execution.version === workflow.publishedVersion);
   const marketAvailable = isOwner && workflow.status === "PUBLISHED" ? await isWorkflowMarketAvailable(workflow.id, session.user.id) : false;
 
 
@@ -93,9 +97,9 @@ export default async function EditWorkflowPage({
           {latest?.version ?? 0} · {unifiedModelBilling() ? w("computeOnRun") : w("fixedCost", { points: Math.max(1, workflow.estimatedCost) })}
         </p>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/workflows/${workflow.slug}`} className="text-sm text-primary underline">
-            查看公开详情
-          </Link>
+          {marketOffer ? <Link href={marketProductPath(marketOffer)} className="text-sm text-primary underline">
+            {w("viewPublishedMarket")}
+          </Link> : <span className="text-sm text-muted-foreground">{w("notListedMarket")}</span>}
           {workflow.status === "PUBLISHED" && workflow.publishedVersion !== null && (
             <span className="text-sm text-muted-foreground">
               线上运行的是 v{workflow.publishedVersion}

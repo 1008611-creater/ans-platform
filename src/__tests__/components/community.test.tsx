@@ -32,7 +32,7 @@ describe("社区面板", () => {
     render(panel());
     const button = await screen.findByRole("button", { name: "每日签到" });
     expect(button).toBeEnabled();
-    expect(screen.getByText(/项目上架与管理权限按实际审核与授权执行/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "historyGuide" })).toBeInTheDocument();
     fireEvent.click(button);
     await waitFor(() => expect(screen.getByRole("button", { name: "今日已签到" })).toBeDisabled());
     expect(screen.getByText("+5 XP")).toBeInTheDocument();
@@ -132,4 +132,13 @@ it("换号后迟到的奖励申诉回执不重新请求旧账号流水", async (
   const count = fetchMock.mock.calls.length;
   await act(async () => task.resolve({ ok: true, json: async () => ({ ok: true, data: { id: "appeal-a" } }) }));
   expect(fetchMock).toHaveBeenCalledTimes(count); expect(screen.queryByText(/申诉已提交/)).not.toBeInTheDocument();
+});
+
+
+it("history-only mode retains ledger and leaderboard without another check-in control", async () => {
+  render(<AccountContentBoundary actorId="self"><CommunityPanel actorId="self" showGrowth={false} /></AccountContentBoundary>);
+  await screen.findByRole("table");
+  expect(screen.queryByRole("button", { name: "\u6bcf\u65e5\u7b7e\u5230" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "\u6211\u7684\u793e\u533a\u6210\u957f" })).not.toBeInTheDocument();
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
 });

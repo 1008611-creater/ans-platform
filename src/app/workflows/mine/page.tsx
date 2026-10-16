@@ -1,3 +1,6 @@
+import { getTranslations } from "next-intl/server";
+import { marketProductPath } from "@/domain/marketplace/product-route";
+import { listRelatedPublishedMarketListings } from "@/server/marketplace/listings";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { GitBranch, Plus } from "lucide-react";
@@ -45,13 +48,15 @@ export default async function MyWorkflowsPage() {
   }
 
   const workflows = await listOwnWorkflows(session.user.id);
+  const w = await getTranslations("marketWorkflow");
+  const marketOffers = await listRelatedPublishedMarketListings({ workflowIds: workflows.filter(row => row.status === "PUBLISHED").map(row => row.id) });
 
   return (
     <div className="container max-w-5xl space-y-6 py-10">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link href="/workflows" className="text-sm text-primary">
-            返回工作流广场
+          <Link href="/hubs" className="text-sm text-primary">
+            {w("backToHub")}
           </Link>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">我的工作流</h1>
         </div>
@@ -79,6 +84,7 @@ export default async function MyWorkflowsPage() {
               label: workflow.status,
               variant: "secondary" as const,
             };
+            const marketOffer = marketOffers.find(offer => offer.listing.execution?.workflowId === workflow.id && offer.listing.execution.version === workflow.publishedVersion);
             const latestVersion = workflow.versions[0]?.version ?? 0;
             const editable = workflow.status === "DRAFT" || workflow.status === "REJECTED";
             return (
@@ -123,12 +129,12 @@ export default async function MyWorkflowsPage() {
                     )}
                     {workflow.status === "PUBLISHED" && (
                       <>
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/workflows/${workflow.slug}`}>
+                        {marketOffer ? <Button asChild variant="outline" size="sm">
+                          <Link href={marketProductPath(marketOffer)}>
                             <GitBranch className="me-1.5 h-3.5 w-3.5" />
-                            查看公开详情
+                            {w("viewPublishedMarket")}
                           </Link>
-                        </Button>
+                        </Button> : <p className="text-sm text-muted-foreground">{w("notListedMarket")}</p>}
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/workflows/mine/${workflow.slug}`}>追加新版本</Link>
                         </Button>

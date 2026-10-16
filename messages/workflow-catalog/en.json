@@ -1,4 +1,6 @@
 {
+  "viewMarket": "View and use",
+  "notListed": "Not listed in the market yet",
   "structure": "Workflow structure",
   "formats": { "text": "Text output", "markdown": "Document output", "json": "Structured data" },
   "stages": "Production stages",
