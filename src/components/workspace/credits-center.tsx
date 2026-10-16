@@ -11,7 +11,7 @@ import { AccountContentBoundary } from "@/components/auth/account-content-bounda
 import { Input } from "@/components/ui/input";
 import { getCreditProducts, LEGACY_CREDIT_PRODUCT, type CreditProduct } from "@/lib/credits-catalog";
 import { RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
-import type { PersonalApiHistory } from "@/server/quota/api-history";
+import type { PersonalApiHistory } from "@/contracts/compute-benefits";
 import { Badge } from "@/components/ui/badge";
 
 type Billing = { rechargeYuanPerPoint: number; usdQuotaPerPoint?: number | null; gptConsumptionMultiplier: number; deepseekConsumptionMultiplier: number; rechargeEnabled: boolean };

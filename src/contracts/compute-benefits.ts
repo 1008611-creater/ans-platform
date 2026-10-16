@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
 export const ONBOARDING_QUESTIONNAIRE_VERSION = "onboarding-v1" as const;
 export const AGRI_APPLICATION_VERSION = "agri-v1" as const;
@@ -53,3 +53,16 @@ export interface AdminComputeBenefitsList { enabled: boolean; applications: Admi
 export class ComputeBenefitError extends Error {
   constructor(public readonly code: string, public readonly status = 409) { super(code); this.name = "ComputeBenefitError"; }
 }
+export type PersonalApiRequestView = {
+  id: string;
+  modelId: string;
+  state: "AUTHORIZED" | "RUNNING" | "UNCERTAIN" | "SETTLED" | "RELEASED";
+  funding?: "gift" | "paid";
+  authorizedPoints: number;
+  settledPoints: number | null;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+};
+export type PersonalApiHistory = PersonalApiRequestView[];
+
