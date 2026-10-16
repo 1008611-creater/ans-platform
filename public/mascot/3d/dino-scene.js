@@ -11,7 +11,7 @@ const DOCK = new URLSearchParams(location.search).get('dock') === '1';
 const SOURCE_SHA256 = 'e420b1580e76a5871e0427e8b2fe1756532692af377b9f30c67d7038517efa51';
 const SETTINGS = Object.freeze({
   modelUrl: new URL('./dinosaur.glb', import.meta.url).href,
-  wardrobeUrl: new URL('./sanctuary-wardrobe.glb', import.meta.url).href,
+  wardrobeUrl: new URL('./sanctuary-wardrobe.glb?v=20261016s', import.meta.url).href,
   maxFps: 30, maxPixelRatio: 1.75, verticalFrame: 1.48,
   shadowOpacity: 0.12,
 });

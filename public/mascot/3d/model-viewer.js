@@ -8,7 +8,7 @@ const SETTINGS = Object.freeze({
   pixelRatio: 1.75,
   exposure: 0.98,
   clipFade: 0.2,
-  wardrobeUrl: new URL('./sanctuary-wardrobe.glb', import.meta.url).href,
+  wardrobeUrl: new URL('./sanctuary-wardrobe.glb?v=20261016s', import.meta.url).href,
 });
 const SPECIES_TINTS = Object.freeze({
   mint_star:   { color: 0xffffff, emissive: 0x000000, emissiveIntensity: 0.0, roughnessDelta: 0.0 },

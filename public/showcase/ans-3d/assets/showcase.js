@@ -9,7 +9,7 @@ import{r as n,j as e,b as ct}from"pkg-react";import{u as Ve,a as lt,T as $e,E as
 }
 Xe.preload("/showcase/ans-3d/models/person.glb", true, true);
 Xe.preload("/mascot/3d/dinosaur.glb", true, true);
-Xe.preload("/mascot/3d/sanctuary-wardrobe.glb", true, true);
+Xe.preload("/mascot/3d/sanctuary-wardrobe.glb?v=20261016s", true, true);
 
 var __ansDinoPatch = (() => {
   /**
@@ -3832,7 +3832,7 @@ vec3 eyeSpin(vec3 v) {
   vec3 a = vec3(v.x * cy + v.z * sy, v.y, -v.x * sy + v.z * cy);
   return vec3(a.x * cp - a.y * sp, a.x * sp + a.y * cp, a.z);
 }`;function w(){let t={x:0,y:0,active:!1},n={x:0,y:0},e,r,o,a=()=>{t.active=!1},s=i=>{i.pointerType==="mouse"&&(t.x=i.clientX/window.innerWidth*2-1,t.y=1-i.clientY/window.innerHeight*2,t.active=!0)},d=i=>{i.relatedTarget||a()},u=()=>{document.hidden&&a()};return{connect(){return r=window.matchMedia("(prefers-reduced-motion: reduce)"),o=window.matchMedia("(pointer: coarse)"),window.addEventListener("pointermove",s,{passive:!0}),window.addEventListener("pointerout",d),window.addEventListener("blur",a),document.addEventListener("visibilitychange",u),()=>{window.removeEventListener("pointermove",s),window.removeEventListener("pointerout",d),window.removeEventListener("blur",a),document.removeEventListener("visibilitychange",u)}},update(i,M,v,E,b){let y=0,m=0;if(i&&t.active&&!r?.matches&&!o?.matches&&window.innerWidth>640&&(e??(e=v.clone()),e.copy(v).add(E).multiplyScalar(.5),i.localToWorld(e).project(M),Math.abs(e.x)<1&&Math.abs(e.y)<1&&Math.abs(e.z)<1)){let p=t.x-e.x,h=t.y-e.y,x=g=>Math.max(-1,Math.min(1,g));y=x(p/Math.max(.25,p>=0?1-e.x:1+e.x))*Math.PI/15,m=x(h/Math.max(.25,h>=0?1-e.y:1+e.y))*Math.PI/30}let l=1-Math.exp(-10*Math.min(Math.max(b,0),.1));return n.x+=(y-n.x)*l,n.y+=(m-n.y)*l,n}}}return G(T);})();
-function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l={damping:.1,dwell:.35,parallax:window.matchMedia("(prefers-reduced-motion: reduce)").matches||window.location.search.includes("noparallax")?0:4,parallaxEase:.1,mobilePullback:1.65,mobileTimelineShift:-.03},x={gain:.8,maxYaw:6,maxPitch:4,smooth:.44,crossEye:2,crossRadius:.18},w=Ve(N=>N.get),{scene:E,animations:A}=Xe("/showcase/ans-3d/models/person.glb"),{scene:dinoRawScene,animations:dinoAnims}=Xe("/mascot/3d/dinosaur.glb"),{scene:wardrobeRawScene}=Xe("/mascot/3d/sanctuary-wardrobe.glb"),dinoState=n.useMemo(()=>{
+function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l={damping:.1,dwell:.35,parallax:window.matchMedia("(prefers-reduced-motion: reduce)").matches||window.location.search.includes("noparallax")?0:4,parallaxEase:.1,mobilePullback:1.65,mobileTimelineShift:-.03},x={gain:.8,maxYaw:6,maxPitch:4,smooth:.44,crossEye:2,crossRadius:.18},w=Ve(N=>N.get),{scene:E,animations:A}=Xe("/showcase/ans-3d/models/person.glb"),{scene:dinoRawScene,animations:dinoAnims}=Xe("/mascot/3d/dinosaur.glb"),{scene:wardrobeRawScene}=Xe("/mascot/3d/sanctuary-wardrobe.glb?v=20261016s"),dinoState=n.useMemo(()=>{
   const faceUniforms={
     uDinoBlink:{value:0},
     uDinoHappy:{value:0.55},
@@ -4964,7 +4964,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     },
     children:[
       e.jsx("primitive",{object:dinoState.root}),
-      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb) */
+      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s
       e.jsxs("group",{
         ref:dinoHeadMountRef,
         position:[0,0.55,0],
@@ -4990,7 +4990,7 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
           eq.eyewear==="star_monocle"&&(dinoState.wardrobeNodes.eyewear_star_monocle?e.jsx("primitive",{object:dinoState.wardrobeNodes.eyewear_star_monocle}):null)
         ]
       }),
-      /* 3D Body-Bone Mounted Neckwear / Tripo Jetpack / Wings / Cape + Handheld Items (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb) */
+      /* 3D Body-Bone Mounted Neckwear / Tripo Jetpack / Wings / Cape + Handheld Items (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb?v=20261016s
       e.jsxs("group",{
         ref:dinoBodyMountRef,
         position:[0,0.18,0],
