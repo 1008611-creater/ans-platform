@@ -9,6 +9,7 @@ import{r as n,j as e,b as ct}from"pkg-react";import{u as Ve,a as lt,T as $e,E as
 }
 Xe.preload("/showcase/ans-3d/models/person.glb", true, true);
 Xe.preload("/mascot/3d/dinosaur.glb", true, true);
+Xe.preload("/mascot/3d/sanctuary-wardrobe.glb", true, true);
 
 var __ansDinoPatch = (() => {
   /**
@@ -2701,6 +2702,21 @@ class MotionDirector {
               }
             });
             rewardSanctuary(0, 25, 40, "👑 已一键试穿 UR 星神满配高定套装 (SSS)！");
+          } else if (act === "equip-tripo-set") {
+            const allIds = WARDROBE_ITEMS.map(it => it.id);
+            saveSanctuary({
+              ...sanctuaryState,
+              turntableSpin: true,
+              unlockedItemIds: Array.from(new Set([...sanctuaryState.unlockedItemIds, ...allIds])),
+              equipped: {
+                headwear: "beret_cloud",
+                eyewear: "gold_glasses",
+                neckwear: "boba_jetpack",
+                handheld: "magic_wand",
+                aura: "aura_sakura"
+              }
+            });
+            rewardSanctuary(0, 25, 40, "🧋 已穿戴 Tripo 3D 多视图重建「波霸奶茶喷射包」高定套装！");
           }
         });
       }
@@ -2997,7 +3013,10 @@ class MotionDirector {
                 <div style="font-size:13.5px;font-weight:800;color:#fff0f6;">✨ 时尚战力评分：<span style="color:#ffe082;font-size:16px;">${styleInfo.total}</span> · <span style="color:#ff85c0;">${styleInfo.rank}</span></div>
                 <div style="font-size:11px;color:rgba(255,255,255,0.82);">${styleInfo.bonusTag ? `🎉 已激活套装共鸣：${styleInfo.bonusTag} (+${styleInfo.bonusScore}分)` : "💡 穿戴 2/3 件相同风格标签单品可触发奇迹暖暖套装共鸣加分！"}</div>
               </div>
-              <button type="button" class="ans-comp-qbtn is-agent" data-wardrobe-act="equip-ur-set" title="一键解锁并穿戴全套 UR 星神高定服饰">👑 一键试穿 UR 满配神装</button>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button type="button" class="ans-comp-qbtn is-nikki" data-wardrobe-act="equip-tripo-set" title="一键试穿由正交四视图 + Tripo P2 多视图重建 + Blender 5.2 精修的波霸奶茶喷气背包套装">🧋 试穿 Tripo 3D 喷射套装</button>
+                <button type="button" class="ans-comp-qbtn is-agent" data-wardrobe-act="equip-ur-set" title="一键解锁并穿戴全套 UR 星神高定服饰">👑 一键试穿 UR 满配神装</button>
+              </div>
             </div>
 
             <div style="display:flex;flex-direction:column;gap:6px;padding:9px 12px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);font-size:11.5px;">
@@ -3692,7 +3711,7 @@ vec3 eyeSpin(vec3 v) {
   vec3 a = vec3(v.x * cy + v.z * sy, v.y, -v.x * sy + v.z * cy);
   return vec3(a.x * cp - a.y * sp, a.x * sp + a.y * cp, a.z);
 }`;function w(){let t={x:0,y:0,active:!1},n={x:0,y:0},e,r,o,a=()=>{t.active=!1},s=i=>{i.pointerType==="mouse"&&(t.x=i.clientX/window.innerWidth*2-1,t.y=1-i.clientY/window.innerHeight*2,t.active=!0)},d=i=>{i.relatedTarget||a()},u=()=>{document.hidden&&a()};return{connect(){return r=window.matchMedia("(prefers-reduced-motion: reduce)"),o=window.matchMedia("(pointer: coarse)"),window.addEventListener("pointermove",s,{passive:!0}),window.addEventListener("pointerout",d),window.addEventListener("blur",a),document.addEventListener("visibilitychange",u),()=>{window.removeEventListener("pointermove",s),window.removeEventListener("pointerout",d),window.removeEventListener("blur",a),document.removeEventListener("visibilitychange",u)}},update(i,M,v,E,b){let y=0,m=0;if(i&&t.active&&!r?.matches&&!o?.matches&&window.innerWidth>640&&(e??(e=v.clone()),e.copy(v).add(E).multiplyScalar(.5),i.localToWorld(e).project(M),Math.abs(e.x)<1&&Math.abs(e.y)<1&&Math.abs(e.z)<1)){let p=t.x-e.x,h=t.y-e.y,x=g=>Math.max(-1,Math.min(1,g));y=x(p/Math.max(.25,p>=0?1-e.x:1+e.x))*Math.PI/15,m=x(h/Math.max(.25,h>=0?1-e.y:1+e.y))*Math.PI/30}let l=1-Math.exp(-10*Math.min(Math.max(b,0),.1));return n.x+=(y-n.x)*l,n.y+=(m-n.y)*l,n}}}return G(T);})();
-function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l={damping:.1,dwell:.35,parallax:window.matchMedia("(prefers-reduced-motion: reduce)").matches||window.location.search.includes("noparallax")?0:4,parallaxEase:.1,mobilePullback:1.65,mobileTimelineShift:-.03},x={gain:.8,maxYaw:6,maxPitch:4,smooth:.44,crossEye:2,crossRadius:.18},w=Ve(N=>N.get),{scene:E,animations:A}=Xe("/showcase/ans-3d/models/person.glb"),{scene:dinoRawScene,animations:dinoAnims}=Xe("/mascot/3d/dinosaur.glb"),dinoState=n.useMemo(()=>{
+function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l={damping:.1,dwell:.35,parallax:window.matchMedia("(prefers-reduced-motion: reduce)").matches||window.location.search.includes("noparallax")?0:4,parallaxEase:.1,mobilePullback:1.65,mobileTimelineShift:-.03},x={gain:.8,maxYaw:6,maxPitch:4,smooth:.44,crossEye:2,crossRadius:.18},w=Ve(N=>N.get),{scene:E,animations:A}=Xe("/showcase/ans-3d/models/person.glb"),{scene:dinoRawScene,animations:dinoAnims}=Xe("/mascot/3d/dinosaur.glb"),{scene:wardrobeRawScene}=Xe("/mascot/3d/sanctuary-wardrobe.glb"),dinoState=n.useMemo(()=>{
   const faceUniforms={
     uDinoBlink:{value:0},
     uDinoHappy:{value:0.55},
@@ -3722,6 +3741,23 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
       }
     }
   });
+  const wardrobeNodes={};
+  if(wardrobeRawScene){
+    for(const child of wardrobeRawScene.children){
+      if(!child||!child.name)continue;
+      const cloned=child.clone(!0);
+      cloned.position.set(0,0,0);
+      cloned.rotation.set(0,0,0);
+      cloned.scale.set(1,1,1);
+      cloned.traverse(m=>{
+        if(m.isMesh){
+          m.castShadow=!0;
+          m.receiveShadow=!0;
+        }
+      });
+      wardrobeNodes[child.name]=cloned;
+    }
+  }
   const perf=new __ansDinoPatch.DinoPerformance(dinoRawScene,dinoAnims),
         dir=new __ansDinoPatch.MotionDirector({autoplay:!0}),
         badge=__ansDinoPatch.createExpressionBadgeTexture(),
@@ -3734,14 +3770,14 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
         },
         orbitUniforms={uTime:{value:0},uPhase:{value:0},uAlpha:{value:1.0}};
   return{
-    root:dinoRawScene,perf,dir,faceUniforms,badge,haloUniforms,orbitUniforms,
+    root:dinoRawScene,wardrobeNodes,perf,dir,faceUniforms,badge,haloUniforms,orbitUniforms,
     time:0,autoPhase:0,orbitFrameYaw:1.56,prevMacroWeight:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.30,camPatrolX:0,camPatrolY:0,camPatrolYaw:0,camPatrolPitch:0,
     userZoom:1.0,userZoomTarget:1.0,userYaw:0,userYawTarget:0,userPitch:0,userPitchTarget:0,wheelZoomEnabled:false,isCamDragging:false,suppressClickUntil:0,
     baseCamPos:new B(6.41,1.21,-0.385),baseCamQuat:new oe(),
     saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,totalClicks:0,interactBlend:0,dockBlend:0,wardrobeBlend:0,whipUntil:0,whipIdx:0,feedUntil:0,feedIdx:0,feedMode:"happy",hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
     nextBlink:2.2,blinkStart:-99,yaw:Math.PI*0.58,pitch:0,roll:0
   };
-},[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),dinoOrbitGroupRef=n.useRef(null),dinoHeadMountRef=n.useRef(null),dinoBodyMountRef=n.useRef(null),[sanctuarySnap,setSanctuarySnap]=n.useState(()=>dinoState.badge.getSanctuaryState?dinoState.badge.getSanctuaryState():{speciesId:"mint_star",roamMode:"orbit",equipped:{headwear:"starter_antenna",eyewear:"none",neckwear:"starter_scarf",handheld:"none",aura:"aura_mint"}}),keyboardGesture=n.useEffect(()=>{
+},[dinoRawScene,dinoAnims,wardrobeRawScene]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),dinoOrbitGroupRef=n.useRef(null),dinoHeadMountRef=n.useRef(null),dinoBodyMountRef=n.useRef(null),[sanctuarySnap,setSanctuarySnap]=n.useState(()=>dinoState.badge.getSanctuaryState?dinoState.badge.getSanctuaryState():{speciesId:"mint_star",roamMode:"orbit",equipped:{headwear:"starter_antenna",eyewear:"none",neckwear:"starter_scarf",handheld:"none",aura:"aura_mint"}}),keyboardGesture=n.useEffect(()=>{
   const triggerDinoClick=()=>{
     const nowT = typeof performance !== "undefined" ? performance.now() : Date.now();
     if(nowT < (dinoState.suppressClickUntil || 0)) return;
@@ -4784,120 +4820,41 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     },
     children:[
       e.jsx("primitive",{object:dinoState.root}),
-      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Calibrated to dinosaur.glb head bone local bounds: crown y=0.415,z=-0.02; eyes x=±0.168,y=0.098,z=0.268) */
+      /* 3D Head-Bone Mounted Species Features + Headwear + Eyewear (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb) */
       e.jsxs("group",{
         ref:dinoHeadMountRef,
         position:[0,0.55,0],
         children:[
           /* Species Distinct 3D Head Features */
-          spId==="cyber_gold"&&e.jsxs("group",{children:[
-            e.jsxs("mesh",{position:[-0.13,0.40,-0.01],rotation:[0.18,0,0.34],children:[e.jsx("coneGeometry",{args:[0.042,0.15,6]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff7a45",emissiveIntensity:0.55,metalness:0.8,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0.13,0.40,-0.01],rotation:[0.18,0,-0.34],children:[e.jsx("coneGeometry",{args:[0.042,0.15,6]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff7a45",emissiveIntensity:0.55,metalness:0.8,roughness:0.2})]})
-          ]}),
-          spId==="sakura_mochi"&&e.jsxs("group",{children:[
-            e.jsxs("mesh",{position:[-0.22,0.34,0.00],rotation:[0,0,0.45],scale:[1.25,0.78,0.92],children:[e.jsx("sphereGeometry",{args:[0.062,16,16]}),e.jsx("meshStandardMaterial",{color:"#ffadd2",emissive:"#ff85c0",emissiveIntensity:0.28,roughness:0.4})]}),
-            e.jsxs("mesh",{position:[0.22,0.34,0.00],rotation:[0,0,-0.45],scale:[1.25,0.78,0.92],children:[e.jsx("sphereGeometry",{args:[0.062,16,16]}),e.jsx("meshStandardMaterial",{color:"#ffadd2",emissive:"#ff85c0",emissiveIntensity:0.28,roughness:0.4})]})
-          ]}),
-          spId==="aurora_ice"&&e.jsxs("group",{children:[
-            e.jsxs("mesh",{position:[-0.14,0.41,-0.02],rotation:[-0.15,0,0.28],scale:[0.65,1.9,0.65],children:[e.jsx("octahedronGeometry",{args:[0.052,0]}),e.jsx("meshStandardMaterial",{color:"#87e8de",emissive:"#5cdbd3",emissiveIntensity:0.65,metalness:0.5,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0.14,0.41,-0.02],rotation:[-0.15,0,-0.28],scale:[0.65,1.9,0.65],children:[e.jsx("octahedronGeometry",{args:[0.052,0]}),e.jsx("meshStandardMaterial",{color:"#87e8de",emissive:"#5cdbd3",emissiveIntensity:0.65,metalness:0.5,roughness:0.15})]})
-          ]}),
+          spId==="cyber_gold"&&(dinoState.wardrobeNodes.species_cyber_horns?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_cyber_horns}):null),
+          spId==="sakura_mochi"&&(dinoState.wardrobeNodes.species_sakura_ears?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_sakura_ears}):null),
+          spId==="aurora_ice"&&(dinoState.wardrobeNodes.species_aurora_crystals?e.jsx("primitive",{object:dinoState.wardrobeNodes.species_aurora_crystals}):null),
           /* HEADWEAR SLOT */
-          eq.headwear==="starter_antenna"&&e.jsxs("group",{position:[0,0.415,-0.02],children:[
-            e.jsxs("mesh",{position:[0,0,0],children:[e.jsx("cylinderGeometry",{args:[0.048,0.060,0.026,16]}),e.jsx("meshStandardMaterial",{color:"#5cdbd3",metalness:0.5,roughness:0.3})]}),
-            e.jsxs("mesh",{position:[0,0.072,0],children:[e.jsx("cylinderGeometry",{args:[0.009,0.012,0.135,12]}),e.jsx("meshStandardMaterial",{color:"#e6fffb",metalness:0.8,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0,0.150,0],children:[e.jsx("sphereGeometry",{args:[0.036,16,16]}),e.jsx("meshStandardMaterial",{color:"#84fab0",emissive:"#84fab0",emissiveIntensity:0.95,roughness:0.1})]})
-          ]}),
-          eq.headwear==="beret_cloud"&&e.jsxs("group",{position:[0.05,0.405,-0.02],rotation:[0.08,0,-0.22],children:[
-            e.jsxs("mesh",{scale:[1.32,0.48,1.28],children:[e.jsx("sphereGeometry",{args:[0.195,24,16]}),e.jsx("meshStandardMaterial",{color:"#ff85c0",emissive:"#eb2f96",emissiveIntensity:0.24,roughness:0.55})]}),
-            e.jsxs("mesh",{position:[0,0.095,0],children:[e.jsx("cylinderGeometry",{args:[0.014,0.014,0.045,8]}),e.jsx("meshStandardMaterial",{color:"#fff0f6"})]})
-          ]}),
-          eq.headwear==="cyber_visor"&&e.jsxs("group",{position:[0,0.145,0.295],children:[
-            e.jsxs("mesh",{scale:[1.62,0.34,0.52],children:[e.jsx("boxGeometry",{args:[0.30,0.16,0.14]}),e.jsx("meshStandardMaterial",{color:"#36cfc9",emissive:"#13c2c2",emissiveIntensity:0.85,transparent:!0,opacity:0.86,metalness:0.7,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[-0.25,0,-0.03],children:[e.jsx("boxGeometry",{args:[0.045,0.075,0.10]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0.25,0,-0.03],children:[e.jsx("boxGeometry",{args:[0.045,0.075,0.10]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]})
-          ]}),
-          eq.headwear==="phd_mortarboard"&&e.jsxs("group",{position:[0,0.425,-0.02],children:[
-            e.jsxs("mesh",{position:[0,-0.02,0],children:[e.jsx("cylinderGeometry",{args:[0.145,0.165,0.06,20]}),e.jsx("meshStandardMaterial",{color:"#1f2937",roughness:0.5})]}),
-            e.jsxs("mesh",{position:[0,0.018,0],rotation:[0,Math.PI*0.25,0],children:[e.jsx("boxGeometry",{args:[0.40,0.020,0.40]}),e.jsx("meshStandardMaterial",{color:"#111827",metalness:0.3,roughness:0.4})]}),
-            e.jsxs("mesh",{position:[0.18,-0.03,0.14],children:[e.jsx("cylinderGeometry",{args:[0.009,0.018,0.13,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.5})]})
-          ]}),
-          eq.headwear==="crown_aurora"&&e.jsxs("group",{position:[0,0.425,-0.02],children:[
-            e.jsxs("mesh",{rotation:[Math.PI/2,0,0],children:[e.jsx("torusGeometry",{args:[0.140,0.022,12,28]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.65,metalness:0.9,roughness:0.15})]}),
-            [0,1,2,3,4,5].map(idx=>{
-              const ang = (idx / 6) * Math.PI * 2;
-              return e.jsxs("mesh",{key:idx,position:[Math.cos(ang)*0.135,0.06,Math.sin(ang)*0.135],children:[
-                e.jsx("coneGeometry",{args:[0.028,0.105,6]}),
-                e.jsx("meshStandardMaterial",{color:idx%2===0?"#ffd666":"#5cdbd3",emissive:idx%2===0?"#faad14":"#36cfc9",emissiveIntensity:0.75,metalness:0.85,roughness:0.1})
-              ]});
-            })
-          ]}),
-          /* EYEWEAR SLOT (Eyes at x=±0.168, y=0.098, z=0.268 in head bone space) */
-          eq.eyewear==="gold_glasses"&&e.jsxs("group",{position:[0,0.102,0.286],children:[
-            e.jsxs("mesh",{position:[-0.168,0,0],children:[e.jsx("torusGeometry",{args:[0.056,0.0075,10,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.45,metalness:0.9,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0.168,0,0],children:[e.jsx("torusGeometry",{args:[0.056,0.0075,10,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.45,metalness:0.9,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0,0.008,0.012],rotation:[0,0,Math.PI/2],children:[e.jsx("cylinderGeometry",{args:[0.0055,0.0055,0.23,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.9,roughness:0.15})]})
-          ]}),
-          eq.eyewear==="pixel_shades"&&e.jsxs("group",{position:[0,0.105,0.292],children:[
-            e.jsxs("mesh",{position:[0,0.020,0],children:[e.jsx("boxGeometry",{args:[0.48,0.024,0.030]}),e.jsx("meshStandardMaterial",{color:"#111827",roughness:0.2})]}),
-            e.jsxs("mesh",{position:[-0.168,0,0],children:[e.jsx("boxGeometry",{args:[0.125,0.062,0.028]}),e.jsx("meshStandardMaterial",{color:"#090d16",roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0.168,0,0],children:[e.jsx("boxGeometry",{args:[0.125,0.062,0.028]}),e.jsx("meshStandardMaterial",{color:"#090d16",roughness:0.15})]}),
-            e.jsxs("mesh",{position:[-0.185,0.008,0.016],children:[e.jsx("boxGeometry",{args:[0.024,0.024,0.01]}),e.jsx("meshBasicMaterial",{color:"#ffffff"})]}),
-            e.jsxs("mesh",{position:[0.150,0.008,0.016],children:[e.jsx("boxGeometry",{args:[0.024,0.024,0.01]}),e.jsx("meshBasicMaterial",{color:"#ffffff"})]})
-          ]}),
-          eq.eyewear==="star_monocle"&&e.jsxs("group",{position:[-0.168,0.102,0.290],children:[
-            e.jsxs("mesh",{children:[e.jsx("torusGeometry",{args:[0.058,0.0085,12,24]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#ff85c0",emissiveIntensity:0.55,metalness:0.9,roughness:0.1})]}),
-            e.jsxs("mesh",{position:[-0.045,-0.075,-0.01],children:[e.jsx("cylinderGeometry",{args:[0.004,0.004,0.12,8]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.5})]})
-          ]})
+          eq.headwear==="starter_antenna"&&(dinoState.wardrobeNodes.headwear_starter_antenna?e.jsx("primitive",{object:dinoState.wardrobeNodes.headwear_starter_antenna}):null),
+          eq.headwear==="beret_cloud"&&(dinoState.wardrobeNodes.headwear_beret_cloud?e.jsx("primitive",{object:dinoState.wardrobeNodes.headwear_beret_cloud}):null),
+          eq.headwear==="cyber_visor"&&(dinoState.wardrobeNodes.headwear_cyber_visor?e.jsx("primitive",{object:dinoState.wardrobeNodes.headwear_cyber_visor}):null),
+          eq.headwear==="phd_mortarboard"&&(dinoState.wardrobeNodes.headwear_phd_mortarboard?e.jsx("primitive",{object:dinoState.wardrobeNodes.headwear_phd_mortarboard}):null),
+          eq.headwear==="crown_aurora"&&(dinoState.wardrobeNodes.headwear_crown_aurora?e.jsx("primitive",{object:dinoState.wardrobeNodes.headwear_crown_aurora}):null),
+          /* EYEWEAR SLOT */
+          eq.eyewear==="gold_glasses"&&(dinoState.wardrobeNodes.eyewear_gold_glasses?e.jsx("primitive",{object:dinoState.wardrobeNodes.eyewear_gold_glasses}):null),
+          eq.eyewear==="pixel_shades"&&(dinoState.wardrobeNodes.eyewear_pixel_shades?e.jsx("primitive",{object:dinoState.wardrobeNodes.eyewear_pixel_shades}):null),
+          eq.eyewear==="star_monocle"&&(dinoState.wardrobeNodes.eyewear_star_monocle?e.jsx("primitive",{object:dinoState.wardrobeNodes.eyewear_star_monocle}):null)
         ]
       }),
-      /* 3D Body-Bone Mounted Neckwear / Back Wings / Jetpack / Cape + Handheld Items (Calibrated to dinosaur.glb body bone bounds: neck radius=0.345 at y=0.27,z=-0.045; back z=-0.38; front hands z=+0.32) */
+      /* 3D Body-Bone Mounted Neckwear / Tripo Jetpack / Wings / Cape + Handheld Items (Authored in Blender 5.2 + Tripo 3D pipeline -> /mascot/3d/sanctuary-wardrobe.glb) */
       e.jsxs("group",{
         ref:dinoBodyMountRef,
         position:[0,0.18,0],
         children:[
           /* NECKWEAR / BACK SLOT */
-          eq.neckwear==="starter_scarf"&&e.jsxs("group",{position:[0,0.27,-0.045],children:[
-            e.jsxs("mesh",{rotation:[Math.PI/2+0.08,0,0],scale:[1.04,1.00,0.92],children:[e.jsx("torusGeometry",{args:[0.348,0.036,16,36]}),e.jsx("meshStandardMaterial",{color:"#73d13d",emissive:"#389e0d",emissiveIntensity:0.24,roughness:0.62})]}),
-            e.jsxs("mesh",{position:[0.10,-0.06,0.35],rotation:[-0.12,0.15,-0.16],children:[e.jsx("boxGeometry",{args:[0.068,0.14,0.032]}),e.jsx("meshStandardMaterial",{color:"#95de64",roughness:0.58})]})
-          ]}),
-          eq.neckwear==="boba_jetpack"&&e.jsxs("group",{position:[0,0.20,-0.38],children:[
-            e.jsxs("mesh",{position:[-0.10,0,0],children:[e.jsx("cylinderGeometry",{args:[0.062,0.062,0.24,16]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.75,roughness:0.25})]}),
-            e.jsxs("mesh",{position:[0.10,0,0],children:[e.jsx("cylinderGeometry",{args:[0.062,0.062,0.24,16]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.75,roughness:0.25})]}),
-            e.jsxs("mesh",{position:[-0.10,-0.15,0],rotation:[Math.PI,0,0],children:[e.jsx("coneGeometry",{args:[0.046,0.10,12]}),e.jsx("meshBasicMaterial",{color:"#36cfc9"})]}),
-            e.jsxs("mesh",{position:[0.10,-0.15,0],rotation:[Math.PI,0,0],children:[e.jsx("coneGeometry",{args:[0.046,0.10,12]}),e.jsx("meshBasicMaterial",{color:"#36cfc9"})]})
-          ]}),
-          eq.neckwear==="cyber_wings"&&e.jsxs("group",{position:[0,0.24,-0.36],children:[
-            [-1,1].map(side=>e.jsxs("group",{key:side,position:[side*0.16,0,0],children:[
-              [0,1,2].map(wIdx=>e.jsxs("mesh",{
-                key:wIdx,
-                position:[side*(0.16+wIdx*0.055),0.09-wIdx*0.075,-0.02],
-                rotation:[0,side*-0.22,side*(0.35-wIdx*0.24)],
-                children:[
-                  e.jsx("boxGeometry",{args:[0.28-wIdx*0.03,0.052,0.018]}),
-                  e.jsx("meshStandardMaterial",{color:wIdx%2===0?"#5cdbd3":"#ff85c0",emissive:wIdx%2===0?"#36cfc9":"#eb2f96",emissiveIntensity:0.85,transparent:!0,opacity:0.88})
-                ]
-              }))
-            ]}))
-          ]}),
-          eq.neckwear==="pioneer_cape"&&e.jsxs("group",{position:[0,0.26,-0.045],children:[
-            e.jsxs("mesh",{position:[0,0.01,0],rotation:[Math.PI/2+0.06,0,0],children:[e.jsx("torusGeometry",{args:[0.352,0.028,14,32]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.55,metalness:0.85,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0,-0.16,-0.34],rotation:[0.30,0,0],children:[e.jsx("boxGeometry",{args:[0.48,0.42,0.024]}),e.jsx("meshStandardMaterial",{color:"#cf1322",emissive:"#722ed1",emissiveIntensity:0.38,roughness:0.45})]})
-          ]}),
+          eq.neckwear==="starter_scarf"&&(dinoState.wardrobeNodes.neckwear_starter_scarf?e.jsx("primitive",{object:dinoState.wardrobeNodes.neckwear_starter_scarf}):null),
+          eq.neckwear==="boba_jetpack"&&(dinoState.wardrobeNodes.neckwear_boba_jetpack?e.jsx("primitive",{object:dinoState.wardrobeNodes.neckwear_boba_jetpack}):null),
+          eq.neckwear==="cyber_wings"&&(dinoState.wardrobeNodes.neckwear_cyber_wings?e.jsx("primitive",{object:dinoState.wardrobeNodes.neckwear_cyber_wings}):null),
+          eq.neckwear==="pioneer_cape"&&(dinoState.wardrobeNodes.neckwear_pioneer_cape?e.jsx("primitive",{object:dinoState.wardrobeNodes.neckwear_pioneer_cape}):null),
           /* HANDHELD SLOT */
-          eq.handheld==="magic_wand"&&e.jsxs("group",{position:[-0.38,0.20,0.22],rotation:[0.35,0,0.28],children:[
-            e.jsxs("mesh",{children:[e.jsx("cylinderGeometry",{args:[0.014,0.014,0.28,10]}),e.jsx("meshStandardMaterial",{color:"#ffd666",metalness:0.8,roughness:0.2})]}),
-            e.jsxs("mesh",{position:[0,0.16,0],children:[e.jsx("octahedronGeometry",{args:[0.062,0]}),e.jsx("meshStandardMaterial",{color:"#ff85c0",emissive:"#ff85c0",emissiveIntensity:0.9,metalness:0.4,roughness:0.1})]})
-          ]}),
-          eq.handheld==="gold_keyboard"&&e.jsxs("group",{position:[0,0.14,0.38],rotation:[-0.45,0,0],children:[
-            e.jsxs("mesh",{children:[e.jsx("boxGeometry",{args:[0.30,0.028,0.13]}),e.jsx("meshStandardMaterial",{color:"#ffd666",emissive:"#faad14",emissiveIntensity:0.55,metalness:0.9,roughness:0.15})]}),
-            e.jsxs("mesh",{position:[0,0.018,0],children:[e.jsx("boxGeometry",{args:[0.26,0.010,0.10]}),e.jsx("meshStandardMaterial",{color:"#5cdbd3",emissive:"#36cfc9",emissiveIntensity:0.75})]})
-          ]}),
-          eq.handheld==="floating_grimoire"&&e.jsxs("group",{position:[-0.42,0.26,0.24],rotation:[0.3,0.4,-0.2],children:[
-            e.jsxs("mesh",{position:[-0.058,0,0],rotation:[0,0,0.25],children:[e.jsx("boxGeometry",{args:[0.13,0.024,0.17]}),e.jsx("meshStandardMaterial",{color:"#722ed1",emissive:"#9254de",emissiveIntensity:0.65})]}),
-            e.jsxs("mesh",{position:[0.058,0,0],rotation:[0,0,-0.25],children:[e.jsx("boxGeometry",{args:[0.13,0.024,0.17]}),e.jsx("meshStandardMaterial",{color:"#722ed1",emissive:"#9254de",emissiveIntensity:0.65})]}),
-            e.jsxs("mesh",{position:[0,0.048,0],children:[e.jsx("octahedronGeometry",{args:[0.038,0]}),e.jsx("meshBasicMaterial",{color:"#84fab0"})]})
-          ]})
+          eq.handheld==="magic_wand"&&(dinoState.wardrobeNodes.handheld_magic_wand?e.jsx("primitive",{object:dinoState.wardrobeNodes.handheld_magic_wand}):null),
+          eq.handheld==="gold_keyboard"&&(dinoState.wardrobeNodes.handheld_gold_keyboard?e.jsx("primitive",{object:dinoState.wardrobeNodes.handheld_gold_keyboard}):null),
+          eq.handheld==="floating_grimoire"&&(dinoState.wardrobeNodes.handheld_floating_grimoire?e.jsx("primitive",{object:dinoState.wardrobeNodes.handheld_floating_grimoire}):null)
         ]
       }),
       e.jsxs("mesh",{
