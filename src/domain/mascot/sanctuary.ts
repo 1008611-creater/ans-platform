@@ -6,6 +6,34 @@ export const SANCTUARY_EVENT_NAME = "ans:mascot-sanctuary-sync";
 export type DinoSpeciesId = "mint_star" | "cyber_gold" | "sakura_mochi" | "aurora_ice";
 export type WardrobeSlot = "headwear" | "eyewear" | "neckwear" | "handheld" | "aura";
 export type ItemRarity = "R" | "SR" | "SSR" | "UR";
+export type SecretQuestId =
+  | "silicon_ulcer"
+  | "donkey_strike"
+  | "reverse_pua"
+  | "midnight_creator"
+  | "fashion_mudslide"
+  | "bug_eater";
+
+export interface SecretQuestDef {
+  id: SecretQuestId;
+  code: string;
+  icon: string;
+  titleZh: string;
+  titleEn: string;
+  badgeZh: string;
+  badgeEn: string;
+  speechZh: string;
+  speechEn: string;
+  rewardLabelZh: string;
+  rewardLabelEn: string;
+  hintZh: string;
+  hintEn: string;
+  arcadeTokens: number;
+  vaultBonusUsd: number;
+  vaultModelKey: "gpt-6.1-sol" | "deepseek-v4.1-flash" | "gpt-5.6-terra" | "none";
+  starBeansBonus: number;
+  affectionBonus: number;
+}
 
 export interface DinoSpeciesDef {
   id: DinoSpeciesId;
@@ -71,15 +99,21 @@ export interface MascotSanctuaryState {
   affectionXp: number;
   userXp: number;
   starBeans: number;
+  arcadeTokens: number;
   mood: number;
   energy: number;
   workBoostUntil: number;
+  strikeUntil: number;
   totalWhips: number;
   totalFeeds: number;
   totalAgentChats: number;
   roamMode: "roam" | "dock";
   equipped: Record<WardrobeSlot, string>;
   unlockedItems: string[];
+  unlockedSecretQuests: SecretQuestId[];
+  vaultUnlockedUsd: Record<string, number>;
+  lastSecretQuestId: SecretQuestId | null;
+  lastSecretQuestAt: number;
 }
 
 export const DINO_SPECIES: Record<DinoSpeciesId, DinoSpeciesDef> = {
@@ -647,6 +681,283 @@ export function getAffectionProgress(affectionXp: number) {
   };
 }
 
+export const SECRET_QUESTS: Record<SecretQuestId, SecretQuestDef> = {
+  silicon_ulcer: {
+    id: "silicon_ulcer",
+    code: "SECRET #01",
+    icon: "🧱",
+    titleZh: "硅基胃穿孔",
+    titleEn: "Silicon Stomach Ulcer",
+    badgeZh: "SSR 硬核投喂彩蛋",
+    badgeEn: "SSR Hardcore Feeding",
+    speechZh: "嗝——！主人你喂的是正经食物吗？！本龙肚子里长出了 Tensor Core，不小心吐出一块算力金砖！",
+    speechEn: "*Burp*—! Master, is this even real food?! A Tensor Core sprouted in my belly and I coughed up a compute gold brick!",
+    rewardLabelZh: "解锁 $25 GPT-6.1-sol 金库额度 + 2 枚灵龙扭蛋币",
+    rewardLabelEn: "Unlocked $25 GPT-6.1-sol Vault Credit + 2 Gacha Tokens",
+    hintZh: "投喂夜宵抽中 SSR 级『4090 满血显卡饼干』或『农大实验室发光见手青』",
+    hintEn: "Draw SSR '4090 GPU Cookie' or 'CAU Glowing Mushroom' when feeding snacks",
+    arcadeTokens: 2,
+    vaultBonusUsd: 25,
+    vaultModelKey: "gpt-6.1-sol",
+    starBeansBonus: 50,
+    affectionBonus: 30,
+  },
+  donkey_strike: {
+    id: "donkey_strike",
+    code: "SECRET #02",
+    icon: "📜",
+    titleZh: "生产队的驴也得休假",
+    titleEn: "Even Cyber Donkeys Need Leave",
+    badgeZh: "《赛博灵龙劳动法》反常识彩蛋",
+    badgeEn: "Cyber Dino Labor Law",
+    speechZh: "嗷呜~ 这口夜宵真香！看在主人诚心认错的份上，本龙满血复工，顺便把工会发的 $30 Flash 私房算力和扭蛋币分你！",
+    speechEn: "Nom nom~ Apology accepted! I'm back at 300% power and sharing my union's $30 Flash compute grant + 1 Gacha Token with you!",
+    rewardLabelZh: "解锁 $30 Flash 金库额度 + 1 枚灵龙扭蛋币",
+    rewardLabelEn: "Unlocked $30 Flash Vault Credit + 1 Gacha Token",
+    hintZh: "10 秒内连抽 7 鞭触发 30 秒罢工，期间投喂 1 次夜宵哄好小恐龙",
+    hintEn: "Whip ≥7 times within 10s to trigger a 30s strike, then feed 1 snack to make peace",
+    arcadeTokens: 1,
+    vaultBonusUsd: 30,
+    vaultModelKey: "deepseek-v4.1-flash",
+    starBeansBonus: 40,
+    affectionBonus: 25,
+  },
+  reverse_pua: {
+    id: "reverse_pua",
+    code: "SECRET #03",
+    icon: "🏖️",
+    titleZh: "赛博活菩萨 · 反向 PUA 大师",
+    titleEn: "Reverse PUA Master · AI Vacation",
+    badgeZh: "给 AI 放假的人类",
+    badgeEn: "Human Who Gives AI a Break",
+    speechZh: "呜哇感动哭了！全校都在逼 AI 卷代码，只有主人给我放假 5 分钟！本龙偷藏的私房算力全塞给你！",
+    speechEn: "Tears of joy! Everyone else overworks their AI, but you gave me a 5-minute break! Take my secret stash of flagship compute!",
+    rewardLabelZh: "解锁 $20 GPT-6.1-sol 金库额度 + 2 枚灵龙扭蛋币",
+    rewardLabelEn: "Unlocked $20 GPT-6.1-sol Vault Credit + 2 Gacha Tokens",
+    hintZh: "在『互动投喂』面板点击『给龙放假 5 分钟』，触发反向 PUA 感动暴击",
+    hintEn: "Click '5m Dino Vacation' in the Interact tab to give your hardworking AI a break",
+    arcadeTokens: 2,
+    vaultBonusUsd: 20,
+    vaultModelKey: "gpt-6.1-sol",
+    starBeansBonus: 50,
+    affectionBonus: 30,
+  },
+  midnight_creator: {
+    id: "midnight_creator",
+    code: "SECRET #04",
+    icon: "🫖",
+    titleZh: "凌晨三点的造物主",
+    titleEn: "3 AM Creator",
+    badgeZh: "夜猫子奇遇限定称号",
+    badgeEn: "Night-Owl Limited Title",
+    speechZh: "嘘… 主人，凌晨三点的代码会自己长出麦穗。本龙端着枸杞保温杯陪你，拿上这笔熬夜补贴，跑完这轮赶紧去睡！",
+    speechEn: "Shh… Master, code written at 3 AM grows golden wheat by itself. Take my thermos and this $30 GPT-5.6-terra night-owl subsidy, then get some rest!",
+    rewardLabelZh: "解锁 $30 GPT-5.6-terra 金库额度 + 1 枚灵龙扭蛋币",
+    rewardLabelEn: "Unlocked $30 GPT-5.6-terra Vault Credit + 1 Gacha Token",
+    hintZh: "北京时间 01:30–04:30 点击小恐龙叹号气泡（或连续戳 3 次叹号气泡）",
+    hintEn: "Click the dino's '!' bubble between 01:30–04:30 BJT (or poke it 3 times in a row)",
+    arcadeTokens: 1,
+    vaultBonusUsd: 30,
+    vaultModelKey: "gpt-5.6-terra",
+    starBeansBonus: 45,
+    affectionBonus: 28,
+  },
+  fashion_mudslide: {
+    id: "fashion_mudslide",
+    code: "SECRET #05",
+    icon: "🪩",
+    titleZh: "时尚泥石流",
+    titleEn: "Fashion Mudslide",
+    badgeZh: "暖暖衣橱反差混搭彩蛋",
+    badgeEn: "Chaotic Wardrobe Mashup",
+    speechZh: "石化 3 秒… 这套反差混搭走在农大东区回头率 1000%！虽然审美很抽象，但气场很嚣张，赏你 $20 算力 + 2 枚灵龙扭蛋币！",
+    speechEn: "Petrified for 3 seconds… This chaotic mashup turns 1000% of heads on campus! Abstract aesthetics, maximum aura—take $20 Flash + 2 Gacha Tokens!",
+    rewardLabelZh: "解锁 $20 Flash 金库额度 + 2 枚灵龙扭蛋币",
+    rewardLabelEn: "Unlocked $20 Flash Vault Credit + 2 Gacha Tokens",
+    hintZh: "在暖暖衣橱装备反差混搭单品（甜酷 × 赛博/学院/星神）或穿戴 3 件以上配饰",
+    hintEn: "Equip a high-contrast Sweet × Cyber/Academic/Astral outfit mix in the wardrobe",
+    arcadeTokens: 2,
+    vaultBonusUsd: 20,
+    vaultModelKey: "deepseek-v4.1-flash",
+    starBeansBonus: 60,
+    affectionBonus: 20,
+  },
+  bug_eater: {
+    id: "bug_eater",
+    code: "SECRET #06",
+    icon: "🐛",
+    titleZh: "薛定谔的报错 · Bug 吞噬者",
+    titleEn: "Bug Devourer · Crunch the Error",
+    badgeZh: "化崩为宝隐藏彩蛋",
+    badgeEn: "Turn Bugs into Treasure",
+    speechZh: "咔嚓咔嚓！404 和 NullPointerException 嚼起来居然是烧烤味的！报错已被本龙消化成 $15 算力与扭蛋币啦！",
+    speechEn: "Crunch crunch! 404 and NullPointerException taste like BBQ chips! Digested your runtime bugs into $15 Flash + 1 Gacha Token!",
+    rewardLabelZh: "解锁 $15 Flash 金库额度 + 1 枚灵龙扭蛋币",
+    rewardLabelEn: "Unlocked $15 Flash Vault Credit + 1 Gacha Token",
+    hintZh: "在『互动投喂』面板点击『吞噬 Bug 脆片』，让小恐龙把报错当薯片嚼碎",
+    hintEn: "Click 'Crunch Bug Chip' in the Interact tab to feed runtime errors to your Dino",
+    arcadeTokens: 1,
+    vaultBonusUsd: 15,
+    vaultModelKey: "deepseek-v4.1-flash",
+    starBeansBonus: 35,
+    affectionBonus: 18,
+  },
+};
+
+export const SECRET_QUEST_LIST: SecretQuestDef[] = [
+  SECRET_QUESTS.silicon_ulcer,
+  SECRET_QUESTS.donkey_strike,
+  SECRET_QUESTS.reverse_pua,
+  SECRET_QUESTS.midnight_creator,
+  SECRET_QUESTS.fashion_mudslide,
+  SECRET_QUESTS.bug_eater,
+];
+
+const VALID_SECRET_QUEST_IDS = new Set<SecretQuestId>([
+  "silicon_ulcer",
+  "donkey_strike",
+  "reverse_pua",
+  "midnight_creator",
+  "fashion_mudslide",
+  "bug_eater",
+]);
+
+export function isBeijingNightOwlWindow(nowMs: number = Date.now()): boolean {
+  // Beijing time is UTC+8
+  const beijingDate = new Date(nowMs + 8 * 3600_000);
+  const hours = beijingDate.getUTCHours();
+  const minutes = beijingDate.getUTCMinutes();
+  const totalMinutes = hours * 60 + minutes;
+  // 01:30 (90) to 04:30 (270) inclusive
+  return totalMinutes >= 90 && totalMinutes <= 270;
+}
+
+export function isContrastMixOutfit(
+  equipped: Record<WardrobeSlot, string>,
+  speciesId: DinoSpeciesId = "mint_star",
+): boolean {
+  const nonDefaultIds = new Set(["none", "none_head", "starter_antenna", "starter_scarf", "aura_mint"]);
+  const activeItems = (Object.keys(equipped) as WardrobeSlot[])
+    .map(slot => DINO_WARDROBE_ITEMS.find(item => item.id === equipped[slot]))
+    .filter((item): item is WardrobeItemDef => Boolean(item) && !nonDefaultIds.has(item.id));
+
+  if (activeItems.length >= 3) return true;
+  if (activeItems.length < 2) return false;
+
+  const tags = new Set(activeItems.map(item => item.styleTag));
+  const hasSweet = tags.has("甜酷");
+  const hasHardcore = tags.has("赛博") || tags.has("学院") || tags.has("星神");
+
+  // Trigger if mixing Sweet with Cyber/Academic/Astral, or Cyber Gold dragon wearing Sweet items, or 3+ distinct style tags
+  if (hasSweet && hasHardcore) return true;
+  if (speciesId === "cyber_gold" && hasSweet) return true;
+  if (speciesId === "sakura_mochi" && (tags.has("赛博") || tags.has("学院"))) return true;
+  return tags.size >= 3;
+}
+
+const QUEST_ARCADE_STORAGE_KEY = "ans_quest_arcade_v1";
+const QUEST_ARCADE_EVENT = "ans:quest-arcade-updated";
+
+export const SECRET_TO_ARCADE_QUEST_ID: Record<SecretQuestId, string> = {
+  silicon_ulcer: "secret_ssr_gpu_cookie",
+  donkey_strike: "secret_whip_strike",
+  reverse_pua: "secret_reverse_pua",
+  midnight_creator: "secret_midnight_farmer",
+  fashion_mudslide: "secret_fashion_mudslide",
+  bug_eater: "secret_bug_eater",
+};
+
+export const ARCADE_TO_SECRET_QUEST_ID: Record<string, SecretQuestId> = {
+  secret_ssr_gpu_cookie: "silicon_ulcer",
+  secret_whip_strike: "donkey_strike",
+  secret_reverse_pua: "reverse_pua",
+  secret_midnight_farmer: "midnight_creator",
+  secret_fashion_mudslide: "fashion_mudslide",
+  secret_bug_eater: "bug_eater",
+};
+
+function syncSecretQuestToArcadeStorage(quest: SecretQuestDef, nowMs: number) {
+  if (typeof window === "undefined") return;
+  try {
+    const arcadeQuestId = SECRET_TO_ARCADE_QUEST_ID[quest.id];
+    const raw = window.localStorage.getItem(QUEST_ARCADE_STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+    const questClaimed =
+      parsed.questClaimed && typeof parsed.questClaimed === "object"
+        ? { ...(parsed.questClaimed as Record<string, string>) }
+        : {};
+    if (questClaimed[arcadeQuestId]) return;
+
+    const questProgress =
+      parsed.questProgress && typeof parsed.questProgress === "object"
+        ? { ...(parsed.questProgress as Record<string, number>) }
+        : {};
+    const secretUnlockedAt =
+      parsed.secretUnlockedAt && typeof parsed.secretUnlockedAt === "object"
+        ? { ...(parsed.secretUnlockedAt as Record<string, string>) }
+        : {};
+
+    const prevTokens = typeof parsed.arcadeTokens === "number" ? parsed.arcadeTokens : 3;
+    const prevDeepseek = typeof parsed.deepseekUnlockedUsd === "number" ? parsed.deepseekUnlockedUsd : 50;
+    const prevFlagship = typeof parsed.flagshipUnlockedUsd === "number" ? parsed.flagshipUnlockedUsd : 0;
+
+    const isDeepseek = quest.vaultModelKey === "deepseek-v4.1-flash";
+    const isFlagship = quest.vaultModelKey === "gpt-6.1-sol" || quest.vaultModelKey === "gpt-5.6-terra";
+
+    const nextArcade = {
+      version: 1,
+      ...parsed,
+      arcadeTokens: prevTokens + quest.arcadeTokens,
+      deepseekUnlockedUsd: isDeepseek ? Math.min(1000, prevDeepseek + quest.vaultBonusUsd) : prevDeepseek,
+      flagshipUnlockedUsd: isFlagship ? Math.min(600, prevFlagship + quest.vaultBonusUsd) : prevFlagship,
+      questProgress: {
+        ...questProgress,
+        [arcadeQuestId]: 1,
+      },
+      questClaimed: {
+        ...questClaimed,
+        [arcadeQuestId]: "claimed",
+      },
+      secretUnlockedAt: {
+        ...secretUnlockedAt,
+        [arcadeQuestId]: new Date(nowMs).toISOString(),
+      },
+    };
+    window.localStorage.setItem(QUEST_ARCADE_STORAGE_KEY, JSON.stringify(nextArcade));
+    window.dispatchEvent(new CustomEvent(QUEST_ARCADE_EVENT, { detail: nextArcade }));
+  } catch {
+    /* Ignore storage errors */
+  }
+}
+
+export function unlockSecretQuest(
+  prev: MascotSanctuaryState,
+  questId: SecretQuestId,
+  nowMs: number = Date.now(),
+): { state: MascotSanctuaryState; newlyUnlocked: boolean; quest: SecretQuestDef } {
+  const quest = SECRET_QUESTS[questId];
+  const already = prev.unlockedSecretQuests.includes(questId);
+  if (already) {
+    return { state: prev, newlyUnlocked: false, quest };
+  }
+  const nextVault = { ...prev.vaultUnlockedUsd };
+  if (quest.vaultBonusUsd > 0 && quest.vaultModelKey !== "none") {
+    nextVault[quest.vaultModelKey] = (nextVault[quest.vaultModelKey] || 0) + quest.vaultBonusUsd;
+  }
+  const nextState: MascotSanctuaryState = {
+    ...prev,
+    arcadeTokens: prev.arcadeTokens + quest.arcadeTokens,
+    starBeans: prev.starBeans + quest.starBeansBonus,
+    affectionXp: prev.affectionXp + quest.affectionBonus,
+    unlockedSecretQuests: [...prev.unlockedSecretQuests, questId],
+    vaultUnlockedUsd: nextVault,
+    lastSecretQuestId: questId,
+    lastSecretQuestAt: nowMs,
+  };
+  syncSecretQuestToArcadeStorage(quest, nowMs);
+  return { state: nextState, newlyUnlocked: true, quest };
+}
+
 export function createDefaultSanctuaryState(speciesId: DinoSpeciesId = "mint_star"): MascotSanctuaryState {
   const sp = DINO_SPECIES[speciesId] || DINO_SPECIES.mint_star;
   const starterIds = Object.values(sp.starterEquipped);
@@ -663,15 +974,21 @@ export function createDefaultSanctuaryState(speciesId: DinoSpeciesId = "mint_sta
     affectionXp: 25,
     userXp: 120, // Starts at Explorer (Lv.1 探索者) so users can immediately experience Lv.1 unlocks & progress toward Lv.2..7!
     starBeans: 180,
+    arcadeTokens: 2,
     mood: 88,
     energy: 92,
     workBoostUntil: 0,
+    strikeUntil: 0,
     totalWhips: 0,
     totalFeeds: 0,
     totalAgentChats: 0,
     roamMode: "roam",
     equipped: { ...sp.starterEquipped },
     unlockedItems: baseUnlocked,
+    unlockedSecretQuests: [],
+    vaultUnlockedUsd: {},
+    lastSecretQuestId: null,
+    lastSecretQuestAt: 0,
   };
 }
 
@@ -705,17 +1022,50 @@ export function loadSanctuaryState(): MascotSanctuaryState {
         ...(Array.isArray(parsed.unlockedItemIds) ? parsed.unlockedItemIds : []),
       ])
     );
+    const mergedSecretQuests = Array.from(
+      new Set(
+        (Array.isArray(parsed.unlockedSecretQuests) ? parsed.unlockedSecretQuests : []).filter(
+          (id): id is SecretQuestId => VALID_SECRET_QUEST_IDS.has(id as SecretQuestId),
+        ),
+      ),
+    );
     const rawEquipped = { ...base.equipped, ...(parsed.equipped || {}) };
     if (rawEquipped.headwear === "none") rawEquipped.headwear = "none_head";
     const normalizedRoam: "roam" | "dock" = parsed.roamMode === "dock" ? "dock" : "roam";
+    const safeArcadeTokens =
+      typeof parsed.arcadeTokens === "number" && Number.isFinite(parsed.arcadeTokens)
+        ? Math.max(0, Math.floor(parsed.arcadeTokens))
+        : base.arcadeTokens;
+    const safeStrikeUntil =
+      typeof parsed.strikeUntil === "number" && Number.isFinite(parsed.strikeUntil)
+        ? parsed.strikeUntil
+        : 0;
+    const safeVault =
+      parsed.vaultUnlockedUsd && typeof parsed.vaultUnlockedUsd === "object"
+        ? { ...parsed.vaultUnlockedUsd }
+        : {};
+    const safeLastQuestId =
+      parsed.lastSecretQuestId && VALID_SECRET_QUEST_IDS.has(parsed.lastSecretQuestId)
+        ? parsed.lastSecretQuestId
+        : null;
+    const safeLastQuestAt =
+      typeof parsed.lastSecretQuestAt === "number" && Number.isFinite(parsed.lastSecretQuestAt)
+        ? parsed.lastSecretQuestAt
+        : 0;
     return {
       ...base,
       ...parsed,
       speciesId,
       customName: mergedName,
+      arcadeTokens: safeArcadeTokens,
+      strikeUntil: safeStrikeUntil,
       roamMode: normalizedRoam,
       equipped: rawEquipped,
       unlockedItems: mergedUnlocked,
+      unlockedSecretQuests: mergedSecretQuests,
+      vaultUnlockedUsd: safeVault,
+      lastSecretQuestId: safeLastQuestId,
+      lastSecretQuestAt: safeLastQuestAt,
     };
   } catch {
     return createDefaultSanctuaryState();
@@ -726,12 +1076,14 @@ export function saveSanctuaryState(next: MascotSanctuaryState): MascotSanctuaryS
   if (typeof window === "undefined") return next;
   try {
     const unlocked = Array.from(new Set(next.unlockedItems || []));
+    const unlockedQuests = Array.from(new Set(next.unlockedSecretQuests || []));
     const compatPayload = {
       ...next,
       customName: next.customName,
       dinoName: next.customName,
       unlockedItems: unlocked,
       unlockedItemIds: unlocked,
+      unlockedSecretQuests: unlockedQuests,
     };
     window.localStorage.setItem(SANCTUARY_STORAGE_KEY, JSON.stringify(compatPayload));
     window.dispatchEvent(new CustomEvent(SANCTUARY_EVENT_NAME, { detail: compatPayload }));
