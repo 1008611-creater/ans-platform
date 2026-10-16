@@ -1,15 +1,22 @@
 import { NextResponse } from "next/server";
+import { assertRequestActor, HttpRequestError } from "@/server/http/json";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateApiKey, hashApiKey } from "@/lib/api-key";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth();
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try { assertRequestActor(request, session.user.id); }
+  catch (error) {
+    if (error instanceof HttpRequestError) return NextResponse.json({ error: error.code }, { status: error.status });
+    throw error;
   }
 
   const user = await db.user.findUnique({
@@ -31,14 +38,20 @@ export async function GET() {
     hasApiKey: !!user.apiKey,
     apiKey: null,
     mcpPromptsPublicByDefault: user.mcpPromptsPublicByDefault,
-  });
+  }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   const session = await auth();
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try { assertRequestActor(request, session.user.id); }
+  catch (error) {
+    if (error instanceof HttpRequestError) return NextResponse.json({ error: error.code }, { status: error.status });
+    throw error;
   }
 
   const apiKey = generateApiKey();
@@ -49,14 +62,20 @@ export async function POST() {
   });
 
   // Plaintext is returned exactly once and never stored.
-  return NextResponse.json({ apiKey });
+  return NextResponse.json({ apiKey }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   const session = await auth();
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try { assertRequestActor(request, session.user.id); }
+  catch (error) {
+    if (error instanceof HttpRequestError) return NextResponse.json({ error: error.code }, { status: error.status });
+    throw error;
   }
 
   await db.user.update({
@@ -72,6 +91,12 @@ export async function PATCH(request: Request) {
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try { assertRequestActor(request, session.user.id); }
+  catch (error) {
+    if (error instanceof HttpRequestError) return NextResponse.json({ error: error.code }, { status: error.status });
+    throw error;
   }
 
   const body = await request.json();

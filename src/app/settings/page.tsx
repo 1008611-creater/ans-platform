@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import config from "@/../prompts.config";
+import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { ApiKeySettings } from "@/components/settings/api-key-settings";
 import { ModelCredentials } from "@/components/settings/model-credentials";
@@ -38,6 +39,7 @@ export default async function SettingsPage() {
   }
 
   return (
+    <AccountContentBoundary key={user.id} actorId={user.id}>
     <div className="container max-w-2xl py-6">
       <div className="mb-6">
         <h1 className="text-lg font-semibold">{t("title")}</h1>
@@ -62,13 +64,15 @@ export default async function SettingsPage() {
 
         {config.features.mcp !== false && (
           <ApiKeySettings
+            actorId={user.id}
             hasExistingKey={!!user.apiKey}
             initialPublicByDefault={user.mcpPromptsPublicByDefault}
           />
         )}
 
-        <ModelCredentials initialCredentials={await listCredentials(session.user.id)} />
+        <ModelCredentials actorId={user.id} initialCredentials={await listCredentials(session.user.id)} />
       </div>
     </div>
+    </AccountContentBoundary>
   );
 }

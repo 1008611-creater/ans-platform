@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { assertRequestActor, HttpRequestError } from "@/server/http/json";
 import { isUniqueConstraintViolation } from "@/lib/db-errors";
 import { assertNicknameChangeAllowed, assertValidNickname, DisplayNameError } from "@/lib/display-name";
 
@@ -35,6 +36,8 @@ export async function PATCH(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    assertRequestActor(request, session.user.id);
 
     let body: unknown;
     try {
@@ -128,6 +131,7 @@ export async function PATCH(request: NextRequest) {
       throw error;
     }
   } catch (error) {
+    if (error instanceof HttpRequestError) return NextResponse.json({ error: error.code, message: error.code }, { status: error.status });
     if (error instanceof DisplayNameError) {
       return NextResponse.json(
         { error: error.code, message: error.message },
@@ -142,7 +146,7 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -151,6 +155,8 @@ export async function GET() {
         { status: 401 }
       );
     }
+
+    assertRequestActor(request, session.user.id);
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
@@ -184,8 +190,9 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(profile);
+    return NextResponse.json(profile, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
+    if (error instanceof HttpRequestError) return NextResponse.json({ error: error.code, message: error.code }, { status: error.status });
     console.error("Get profile error:", error);
     return NextResponse.json(
       { error: "server_error", message: "Something went wrong" },

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSettingsRequest } from "./account-request";
 import { KeyRound, Loader2, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,11 +38,14 @@ const MAX_CREDENTIALS = 5;
  * 因此这里也永远无法把 Key 显示回来。
  */
 export function ModelCredentials({
+  actorId,
   initialCredentials,
 }: {
+  actorId: string;
   initialCredentials: ModelCredentialSummary[];
 }) {
   const router = useRouter();
+  const { request, isActive } = useSettingsRequest(actorId);
   const [credentials, setCredentials] = useState(initialCredentials);
   const [label, setLabel] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
@@ -57,13 +61,10 @@ export function ModelCredentials({
     setMessage("");
     setError("");
     try {
-      const response = await fetch("/api/user/model-credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: label.trim(), baseUrl: baseUrl.trim(), apiKey: apiKey.trim() }),
+      const body = await request<{ data: { credential: ModelCredentialSummary } }>("/api/user/model-credentials", "POST", {
+        label: label.trim(), baseUrl: baseUrl.trim(), apiKey: apiKey.trim(),
       });
-      const body = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(body?.error?.message ?? "绑定失败，请稍后重试。");
+      if (!isActive()) return;
       const created = body?.data?.credential as ModelCredentialSummary | undefined;
       if (created) setCredentials((prev) => [created, ...prev]);
       setLabel("");
@@ -72,9 +73,9 @@ export function ModelCredentials({
       setMessage("已绑定。运行工作流时可以在「模型额度来源」里选择它。");
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "绑定失败，请稍后重试。");
+      if (isActive()) setError(cause instanceof Error ? cause.message : "绑定失败，请稍后重试。");
     } finally {
-      setBusy(false);
+      if (isActive()) setBusy(false);
     }
   }
 
@@ -83,22 +84,19 @@ export function ModelCredentials({
     setMessage("");
     setError("");
     try {
-      const response = await fetch(`/api/user/model-credentials/${credential.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ active: !credential.active }),
+      const body = await request<{ data: { credential: ModelCredentialSummary } }>(`/api/user/model-credentials/${credential.id}`, "PATCH", {
+        active: !credential.active,
       });
-      const body = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(body?.error?.message ?? "更新失败，请稍后重试。");
+      if (!isActive()) return;
       const updated = body?.data?.credential as ModelCredentialSummary | undefined;
       if (updated) {
         setCredentials((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
       }
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "更新失败，请稍后重试。");
+      if (isActive()) setError(cause instanceof Error ? cause.message : "更新失败，请稍后重试。");
     } finally {
-      setBusy(false);
+      if (isActive()) setBusy(false);
     }
   }
 
@@ -107,18 +105,15 @@ export function ModelCredentials({
     setMessage("");
     setError("");
     try {
-      const response = await fetch(`/api/user/model-credentials/${id}`, { method: "DELETE" });
-      if (!response.ok) {
-        const body = await response.json().catch(() => null);
-        throw new Error(body?.error?.message ?? "解绑失败，请稍后重试。");
-      }
+      await request(`/api/user/model-credentials/${id}`, "DELETE");
+      if (!isActive()) return;
       setCredentials((prev) => prev.filter((item) => item.id !== id));
       setMessage("已解绑。");
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "解绑失败，请稍后重试。");
+      if (isActive()) setError(cause instanceof Error ? cause.message : "解绑失败，请稍后重试。");
     } finally {
-      setBusy(false);
+      if (isActive()) setBusy(false);
     }
   }
 

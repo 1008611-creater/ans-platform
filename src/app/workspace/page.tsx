@@ -85,7 +85,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
     <div className="ans-product-container ans-page-content ans-workspace-page">
       <PageHeading title={t("title")}
         description={<span className="ans-workspace-greeting">{t("greeting", { name: displayName })} · {locale === "zh" ? formatLevel(xp) : progress.level.nameEn}
-          <DisplayNameEditor current={displayName} /></span>}
+          <DisplayNameEditor actorId={session.user.id} current={displayName} /></span>}
         actions={<><Button asChild><Link href="/projects">{product("myProjects")}</Link></Button><Button asChild variant="outline"><Link href="/explore">{product("nav.explore")}</Link></Button></>} />
 
       <CreationTools />

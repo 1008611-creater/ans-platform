@@ -27,6 +27,7 @@ import type { CustomLink, CustomLinkType } from "@/components/user/profile-links
 import { toast } from "sonner";
 import { analyticsProfile } from "@/lib/analytics";
 import { assertValidNickname } from "@/lib/display-name";
+import { useSettingsRequest } from "./account-request";
 
 const customLinkSchema = z.object({
   type: z.enum(["website", "github", "twitter", "linkedin", "instagram", "youtube", "twitch", "discord", "mastodon", "bluesky", "sponsor"]),
@@ -83,6 +84,7 @@ interface ProfileFormProps {
 
 export function ProfileForm({ user }: ProfileFormProps) {
   const router = useRouter();
+  const { request, isActive } = useSettingsRequest(user.id);
   const { update } = useSession();
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
@@ -102,25 +104,23 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   const { setValue } = form;
   useEffect(() => {
-    const controller = new AbortController();
+    let cancelled = false;
     setProfileReady(false);
     // settings 页面只提供旧 name；从本人接口加载实际昵称，避免误触发改名。
     async function loadNickname() {
       try {
-        const response = await fetch("/api/user/profile", { signal: controller.signal });
-        if (!response.ok) throw new Error(tCommon("error"));
-        const profile = await response.json();
-        if (!controller.signal.aborted) {
+        const profile = await request<{ nickname?: string; name?: string }>("/api/user/profile");
+        if (!cancelled && isActive()) {
           setValue("nickname", profile.nickname ?? profile.name ?? "");
           setProfileReady(true);
         }
       } catch {
-        if (!controller.signal.aborted) toast.error(tCommon("error"));
+        if (!cancelled && isActive()) toast.error(tCommon("error"));
       }
     }
     void loadNickname();
-    return () => controller.abort();
-  }, [user.id, setValue, tCommon]);
+    return () => { cancelled = true; };
+  }, [user.id, setValue, tCommon, request, isActive]);
 
   const customLinks = form.watch("customLinks") || [];
   const bioValue = form.watch("bio") || "";
@@ -156,19 +156,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/user/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update profile");
-      }
+      await request("/api/user/profile", "PATCH", data);
+      if (!isActive()) return;
 
       // Trigger NextAuth session refresh - JWT callback will fetch updated data from DB
       await update({});
+      if (!isActive()) return;
 
       analyticsProfile.updateProfile();
       if (data.avatar !== user.avatar) {
@@ -182,9 +175,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
         router.push(`/@${data.username}`);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : tCommon("error"));
+      if (isActive()) toast.error(error instanceof Error ? error.message : tCommon("error"));
     } finally {
-      setIsLoading(false);
+      if (isActive()) setIsLoading(false);
     }
   }
 
@@ -258,7 +251,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             )}
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                {t("profileUrl")}: /{form.watch("username") || user.username}
+                {t("profileUrl")}: /@{form.watch("username") || user.username}
               </p>
             </div>
           </div>

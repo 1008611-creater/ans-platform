@@ -5,9 +5,18 @@ import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "next-auth/react";
+import { useSettingsRequest } from "@/components/settings/account-request";
 
 // 公开展示名（昵称）修改：30 天可改一次，与 username 解耦、不收集真实姓名。
-export function DisplayNameEditor({ current }: { current: string }) {
+export function DisplayNameEditor(props: { actorId: string; current: string }) {
+  const { data, status } = useSession();
+  if (status !== "authenticated" || data?.user?.id !== props.actorId) return null;
+  return <DisplayNameForm key={props.actorId} {...props} />;
+}
+
+function DisplayNameForm({ current, actorId }: { current: string; actorId: string }) {
+  const { request, isActive } = useSettingsRequest(actorId);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(current);
   const [saving, setSaving] = useState(false);
@@ -22,12 +31,12 @@ export function DisplayNameEditor({ current }: { current: string }) {
     setSaving(true);
     try {
       // 兼容现有 PATCH 契约：先取回资料再连同昵称一并提交。
-      const profileResponse = await fetch("/api/user/profile", { cache: "no-store" });
-      if (!profileResponse.ok) throw new Error();
-      const profile = await profileResponse.json();
+      const profile = await request<{ name?: string; username: string }>("/api/user/profile");
+      if (!isActive()) return;
       const response = await fetch("/api/user/profile", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-ans-actor": actorId },
+        cache: "no-store", credentials: "same-origin",
         body: JSON.stringify({
           name: profile.name ?? nickname,
           username: profile.username,
@@ -35,6 +44,7 @@ export function DisplayNameEditor({ current }: { current: string }) {
         }),
       });
       const result = await response.json();
+      if (!isActive()) return;
       if (!response.ok) {
         const retry = Number(response.headers.get("Retry-After") || 0);
         toast.error(`${result.message || "修改失败"}${retry ? `（约 ${Math.ceil(retry / 60)} 分钟后可再次修改）` : ""}`);
@@ -44,9 +54,9 @@ export function DisplayNameEditor({ current }: { current: string }) {
       setOpen(false);
       window.location.reload();
     } catch {
-      toast.error("修改失败，请稍后重试");
+      if (isActive()) toast.error("修改失败，请稍后重试");
     } finally {
-      setSaving(false);
+      if (isActive()) setSaving(false);
     }
   }
 

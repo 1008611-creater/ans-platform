@@ -24,6 +24,8 @@ vi.mock("@/lib/api-key", () => ({
   hashApiKey: vi.fn((key: string) => `hashed:${key}`),
 }));
 
+const actorRequest = () => new Request("http://localhost:3000/api/user/api-key", { headers: { "x-ans-actor": "user1" } });
+
 describe("GET /api/user/api-key", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -32,7 +34,7 @@ describe("GET /api/user/api-key", () => {
   it("should return 401 if not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
 
-    const response = await GET();
+    const response = await GET(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -42,7 +44,7 @@ describe("GET /api/user/api-key", () => {
   it("should return 401 if session has no user id", async () => {
     vi.mocked(auth).mockResolvedValue({ user: {} } as never);
 
-    const response = await GET();
+    const response = await GET(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -53,7 +55,7 @@ describe("GET /api/user/api-key", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.user.findUnique).mockResolvedValue(null);
 
-    const response = await GET();
+    const response = await GET(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -67,7 +69,7 @@ describe("GET /api/user/api-key", () => {
       mcpPromptsPublicByDefault: true,
     } as never);
 
-    const response = await GET();
+    const response = await GET(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -82,7 +84,7 @@ describe("GET /api/user/api-key", () => {
       mcpPromptsPublicByDefault: true,
     } as never);
 
-    const response = await GET();
+    const response = await GET(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -97,7 +99,7 @@ describe("GET /api/user/api-key", () => {
       mcpPromptsPublicByDefault: false,
     } as never);
 
-    const response = await GET();
+    const response = await GET(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -113,7 +115,7 @@ describe("POST /api/user/api-key", () => {
   it("should return 401 if not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
 
-    const response = await POST();
+    const response = await POST(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -125,7 +127,7 @@ describe("POST /api/user/api-key", () => {
     vi.mocked(generateApiKey).mockReturnValue("pchat_newkey123");
     vi.mocked(db.user.update).mockResolvedValue({} as never);
 
-    const response = await POST();
+    const response = await POST(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -137,7 +139,7 @@ describe("POST /api/user/api-key", () => {
     vi.mocked(generateApiKey).mockReturnValue("pchat_newkey123");
     vi.mocked(db.user.update).mockResolvedValue({} as never);
 
-    await POST();
+    await POST(actorRequest());
 
     expect(db.user.update).toHaveBeenCalledWith({
       where: { id: "user1" },
@@ -150,7 +152,7 @@ describe("POST /api/user/api-key", () => {
     vi.mocked(generateApiKey).mockReturnValue("pchat_test");
     vi.mocked(db.user.update).mockResolvedValue({} as never);
 
-    await POST();
+    await POST(actorRequest());
 
     expect(generateApiKey).toHaveBeenCalled();
   });
@@ -164,7 +166,7 @@ describe("DELETE /api/user/api-key", () => {
   it("should return 401 if not authenticated", async () => {
     vi.mocked(auth).mockResolvedValue(null as never);
 
-    const response = await DELETE();
+    const response = await DELETE(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -175,7 +177,7 @@ describe("DELETE /api/user/api-key", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.user.update).mockResolvedValue({} as never);
 
-    await DELETE();
+    await DELETE(actorRequest());
 
     expect(db.user.update).toHaveBeenCalledWith({
       where: { id: "user1" },
@@ -187,7 +189,7 @@ describe("DELETE /api/user/api-key", () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.user.update).mockResolvedValue({} as never);
 
-    const response = await DELETE();
+    const response = await DELETE(actorRequest());
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -205,6 +207,7 @@ describe("PATCH /api/user/api-key", () => {
 
     const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
+      headers: { "x-ans-actor": "user1" },
       body: JSON.stringify({ mcpPromptsPublicByDefault: true }),
     });
     const response = await PATCH(request);
@@ -219,6 +222,7 @@ describe("PATCH /api/user/api-key", () => {
 
     const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
+      headers: { "x-ans-actor": "user1" },
       body: JSON.stringify({}),
     });
     const response = await PATCH(request);
@@ -233,6 +237,7 @@ describe("PATCH /api/user/api-key", () => {
 
     const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
+      headers: { "x-ans-actor": "user1" },
       body: JSON.stringify({ mcpPromptsPublicByDefault: "true" }),
     });
     const response = await PATCH(request);
@@ -247,6 +252,7 @@ describe("PATCH /api/user/api-key", () => {
 
     const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
+      headers: { "x-ans-actor": "user1" },
       body: JSON.stringify({ mcpPromptsPublicByDefault: 1 }),
     });
     const response = await PATCH(request);
@@ -262,6 +268,7 @@ describe("PATCH /api/user/api-key", () => {
 
     const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
+      headers: { "x-ans-actor": "user1" },
       body: JSON.stringify({ mcpPromptsPublicByDefault: true }),
     });
     const response = await PATCH(request);
@@ -281,6 +288,7 @@ describe("PATCH /api/user/api-key", () => {
 
     const request = new NextRequest("http://localhost:3000/api/user/api-key", {
       method: "PATCH",
+      headers: { "x-ans-actor": "user1" },
       body: JSON.stringify({ mcpPromptsPublicByDefault: false }),
     });
     const response = await PATCH(request);
