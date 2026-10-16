@@ -482,18 +482,18 @@ class MotionDirector {
     const th = deg * (Math.PI / 180.0);
     const dth = 270.0 * (Math.PI / 180.0);
 
-    // Wide, sweeping clockwise 3D orbit around your head center (0.26, 0.16, 0.06) in M local space (scale 2.25 -> ~1.76m world radius!):
-    // Behind/above head (cos(th) = +1, 12h): high halo arc (x = -0.30, y = +0.42, z = +0.06)
-    // Right side        (sin(th) = +1, 3h):  wide right sweep (x = +0.26, y = +0.16, z = -0.72)
-    // Front of face     (cos(th) = -1, 6h):  front of face (x = +0.82, y = -0.10, z = +0.06) -> swoops to Camera Super Macro!
-    // Left side         (sin(th) = -1, 9h):  wide left sweep  (x = +0.26, y = +0.16, z = +0.84)
-    const ox = 0.26 - 0.56 * Math.cos(th);
-    const oy = 0.16 + 0.26 * Math.cos(th);
-    const oz = 0.06 - 0.78 * Math.sin(th);
+    // Wide, sweeping clockwise 3D orbit around your head center (0.26, 0.04, 0.06) in M local space (scale 2.25 -> ~2.79m world radius!):
+    // Behind/above head (cos(th) = +1, 12h): high halo arc (x = -0.42, y = +0.28, z = +0.06)
+    // Right side        (sin(th) = +1, 3h):  wide right sweep (x = +0.26, y = +0.04, z = -1.18)
+    // Front of face     (cos(th) = -1, 6h):  front of face (x = +0.94, y = -0.20, z = +0.06) -> swoops to Camera Super Macro!
+    // Left side         (sin(th) = -1, 9h):  wide left sweep  (x = +0.26, y = +0.04, z = +1.30)
+    const ox = 0.26 - 0.68 * Math.cos(th);
+    const oy = 0.04 + 0.24 * Math.cos(th);
+    const oz = 0.06 - 1.24 * Math.sin(th);
 
-    const tx =  0.56 * Math.sin(th) * dth;
-    const ty = -0.26 * Math.sin(th) * dth;
-    const tz = -0.78 * Math.cos(th) * dth;
+    const tx =  0.68 * Math.sin(th) * dth;
+    const ty = -0.24 * Math.sin(th) * dth;
+    const tz = -1.24 * Math.cos(th) * dth;
 
     // Front-of-face detector: frontness = -cos(th) is +1.0 when directly in front of your face (180 deg / 6h)
     const frontness = -Math.cos(th);
@@ -564,6 +564,7 @@ class MotionDirector {
     const dummyPng = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
     const tex = new $e().load(dummyPng);
     let bubbleEl = null;
+    let hitboxEl = null;
     let hudEl = null;
     let fxLayerEl = null;
     let kaoEl = null;
@@ -590,6 +591,7 @@ class MotionDirector {
     let headScreenX = 640, headScreenY = 280;
     let mouthScreenX = 640, mouthScreenY = 360;
     let buttScreenX = 680, buttScreenY = 420;
+    let feetScreenY = 520;
 
     function nowMs() {
       return typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -606,7 +608,8 @@ class MotionDirector {
           body.ans-dino-interactive-mode main.content,
           body.ans-dino-interactive-mode .hero-chrome,
           body.ans-dino-interactive-mode .chapter-nav,
-          body.ans-dino-interactive-mode .glass-rail {
+          body.ans-dino-interactive-mode .glass-rail,
+          body.ans-dino-interactive-mode .lang-toggle {
             opacity: 0.12 !important;
             filter: blur(3px) !important;
             pointer-events: none !important;
@@ -622,8 +625,22 @@ class MotionDirector {
           body:not(.ans-dino-interactive-mode) .hero-chrome,
           body:not(.ans-dino-interactive-mode) .chapter-nav,
           body:not(.ans-dino-interactive-mode) .glass-rail,
+          body:not(.ans-dino-interactive-mode) .lang-toggle,
           body:not(.ans-dino-interactive-mode) .showcase-utility {
             transition: opacity 0.38s ease, filter 0.38s ease;
+          }
+          #ans-dino-body-hitbox {
+            position: fixed;
+            left: 50%;
+            top: 45%;
+            width: 160px;
+            height: 200px;
+            transform: translate3d(-50%, 0, 0);
+            border-radius: 48% 48% 42% 42%;
+            z-index: 79;
+            cursor: pointer;
+            pointer-events: auto;
+            background: transparent;
           }
 
           @keyframes dinoAlertAttention {
@@ -1062,6 +1079,7 @@ class MotionDirector {
           }
 
           body.showcase-static #ans-dino-live-bubble,
+          body.showcase-static #ans-dino-body-hitbox,
           body.showcase-static #ans-dino-interact-hud,
           body.showcase-static #ans-dino-fx-layer {
             display: none !important;
@@ -1101,6 +1119,19 @@ class MotionDirector {
         setTimeout(() => {
           if (bubbleEl) bubbleEl.classList.remove("is-intro-bounce");
         }, 2100);
+      }
+
+      if (!hitboxEl || !document.body.contains(hitboxEl)) {
+        hitboxEl = document.getElementById("ans-dino-body-hitbox");
+        if (!hitboxEl) {
+          hitboxEl = document.createElement("div");
+          hitboxEl.id = "ans-dino-body-hitbox";
+          hitboxEl.setAttribute("role", "button");
+          hitboxEl.setAttribute("tabindex", "0");
+          hitboxEl.setAttribute("aria-label", "点击小恐龙互动（连点3次开启训龙互动台）");
+          hitboxEl.setAttribute("title", "戳一戳小恐龙！（连点 3 次开启挥鞭抽屁股 & 随机盲盒投喂互动台）");
+          document.body.appendChild(hitboxEl);
+        }
       }
 
       if (!fxLayerEl || !document.body.contains(fxLayerEl)) {
@@ -1380,7 +1411,7 @@ class MotionDirector {
       }
     }
 
-    function updateScreenPosition(ndcX, ndcY, scaleBoost = 1.0, mouthNdcX = ndcX, mouthNdcY = ndcY - 0.15, buttNdcX = ndcX + 0.08, buttNdcY = ndcY - 0.28) {
+    function updateScreenPosition(ndcX, ndcY, scaleBoost = 1.0, mouthNdcX = ndcX, mouthNdcY = ndcY - 0.15, buttNdcX = ndcX + 0.08, buttNdcY = ndcY - 0.28, feetNdcY = ndcY - 0.36) {
       const el = ensureDomBubble();
       if (!el || typeof window === "undefined") return;
       const now = nowMs();
@@ -1399,6 +1430,7 @@ class MotionDirector {
       const vh = window.innerHeight || 800;
       const rawX = (ndcX * 0.5 + 0.5) * vw;
       const rawY = (-ndcY * 0.5 + 0.5) * vh;
+      const rawFeetY = (-feetNdcY * 0.5 + 0.5) * vh;
       headScreenX = Math.max(80, Math.min(vw - 80, rawX));
       headScreenY = Math.max(76, Math.min(vh - 180, rawY));
 
@@ -1406,6 +1438,19 @@ class MotionDirector {
       mouthScreenY = Math.max(110, Math.min(vh - 180, (-mouthNdcY * 0.5 + 0.5) * vh));
       buttScreenX = Math.max(90, Math.min(vw - 90, (buttNdcX * 0.5 + 0.5) * vw));
       buttScreenY = Math.max(130, Math.min(vh - 170, (-buttNdcY * 0.5 + 0.5) * vh));
+
+      // Update transparent DOM hitbox over the 3D dinosaur body so clicking the dinosaur itself always works!
+      if (hitboxEl) {
+        const bodyH = Math.max(96, Math.min(340, Math.abs(rawFeetY - rawY) * 1.12));
+        const bodyW = Math.max(92, Math.min(280, bodyH * 0.88));
+        const centerX = Math.max(bodyW * 0.5 + 12, Math.min(vw - bodyW * 0.5 - 12, (rawX + mouthScreenX) * 0.5));
+        const topY = Math.max(60, Math.min(vh - bodyH - 80, rawY - 6));
+        hitboxEl.style.left = `${centerX.toFixed(1)}px`;
+        hitboxEl.style.top = `${topY.toFixed(1)}px`;
+        hitboxEl.style.width = `${bodyW.toFixed(1)}px`;
+        hitboxEl.style.height = `${bodyH.toFixed(1)}px`;
+        hitboxEl.style.transform = "translate3d(-50%, 0, 0)";
+      }
 
       const isAlert = bubbleState === "alert";
       const bw = isAlert ? 48 : (el.offsetWidth || 380);
@@ -1446,6 +1491,7 @@ class MotionDirector {
       isInteractive: () => interactiveOpen,
       setHandlers: h => { Object.assign(handlers, h); },
       getElement: ensureDomBubble,
+      getHitbox: () => { ensureDomBubble(); return hitboxEl; },
       presets: MOOD_PRESETS
     };
   }
@@ -1931,6 +1977,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   const onGreetBtn=()=>triggerDinoClick(false);
   window.addEventListener("ans-dino-greet",onGreetBtn);
   const bubbleEl=dinoState.badge.getElement?dinoState.badge.getElement():null;
+  const hitboxEl=dinoState.badge.getHitbox?dinoState.badge.getHitbox():null;
   const onEnter=()=>{
     if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
     if(!dinoState.hovered){
@@ -1964,6 +2011,12 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     bubbleEl.addEventListener("click",onClick);
     bubbleEl.addEventListener("keydown",onKeyDown);
   }
+  if(hitboxEl){
+    hitboxEl.addEventListener("pointerenter",onEnter);
+    hitboxEl.addEventListener("pointerleave",onLeave);
+    hitboxEl.addEventListener("click",onClick);
+    hitboxEl.addEventListener("keydown",onKeyDown);
+  }
   return()=>{
     window.removeEventListener("ans-scene-pause",onScenePause);
     document.removeEventListener("visibilitychange",syncDomMotion);
@@ -1974,6 +2027,12 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
       bubbleEl.removeEventListener("pointerleave",onLeave);
       bubbleEl.removeEventListener("click",onClick);
       bubbleEl.removeEventListener("keydown",onKeyDown);
+    }
+    if(hitboxEl){
+      hitboxEl.removeEventListener("pointerenter",onEnter);
+      hitboxEl.removeEventListener("pointerleave",onLeave);
+      hitboxEl.removeEventListener("click",onClick);
+      hitboxEl.removeEventListener("keydown",onKeyDown);
     }
   };
 },[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
@@ -1990,28 +2049,30 @@ const flightRaw = Math.abs(J - q);
 const flightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
 const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
 // Dual-Subject Camera Patrol:
-// 1) Dynamic pullback: pull back generously (1.30x..1.52x) during wide 3D orbit and (1.34x) in Interactive Stage so both the complete dinosaur and founder stay comfortably framed!
-const orbitPull = 1.32 + 0.14 * (1.0 - macroW) + 0.08 * Math.sin(scrollS * Math.PI) + 0.10 * flightSpeed;
-const macroPull = f.lerp(1.22, 1.34, dinoState.interactBlend);
+// 1) Dynamic pullback: pull back generously (1.28x..1.44x) during wide 3D orbit and (1.28x) in Interactive Stage so both the complete dinosaur and founder stay comfortably framed!
+const orbitPull = 1.28 + 0.12 * (1.0 - macroW) + 0.06 * Math.sin(scrollS * Math.PI) + 0.08 * flightSpeed;
+const macroPull = f.lerp(1.22, 1.28, dinoState.interactBlend);
 const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
 dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
 
-// 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit around the founder!
+// 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit in CAMERA-LOCAL space!
+// Note: person.glb Camera looks along -X in world space, so rotating Ue.current.x in world space caused camera roll.
+// Instead, we apply patrol pan/tilt and translation directly in camera-local coordinates (_.translateX/Y & _.rotateY/X).
 const patrolEase = Math.min(1, y * 4.5);
 const orbitOffsetX = spline.pos[0] - 0.26;
-const orbitOffsetY = spline.pos[1] - 0.16;
+const orbitOffsetY = spline.pos[1] - 0.08;
 const orbitOffsetZ = spline.pos[2] - 0.06;
-const patrolWeight = de ? 0.15 : (1.0 - macroW * 0.65);
-const targetPatrolX = orbitOffsetX * 0.42 * patrolWeight;
-const targetPatrolY = orbitOffsetY * 0.30 * patrolWeight + 0.05 * (1.0 - macroW);
-const targetPatrolYaw = f.clamp(-orbitOffsetX * 0.22 * patrolWeight - orbitOffsetZ * 0.06 * patrolWeight, -0.16, 0.16);
-const targetPatrolPitch = f.clamp(orbitOffsetY * 0.18 * patrolWeight, -0.10, 0.10);
+const patrolWeight = de ? 0.12 : (1.0 - macroW * 0.72);
+const targetPatrolX = -orbitOffsetZ * 0.28 * patrolWeight;
+const targetPatrolY = orbitOffsetY * 0.24 * patrolWeight;
+const targetPatrolYaw = f.clamp(orbitOffsetZ * 0.055 * patrolWeight, -0.09, 0.09);
+const targetPatrolPitch = f.clamp(orbitOffsetY * 0.065 * patrolWeight, -0.06, 0.06);
 dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
 dinoState.camPatrolY += (targetPatrolY - dinoState.camPatrolY) * patrolEase;
 dinoState.camPatrolYaw += (targetPatrolYaw - dinoState.camPatrolYaw) * patrolEase;
 dinoState.camPatrolPitch += (targetPatrolPitch - dinoState.camPatrolPitch) * patrolEase;
 
-Ue.current.set(-$.current.y*m + dinoState.camPatrolPitch, -$.current.x*m + dinoState.camPatrolYaw, 0);
+Ue.current.set(-$.current.y*m, -$.current.x*m, 0);
 ke.current.setFromEuler(Ue.current);
 K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current);
 ce.current&&K.current.multiplyScalar(l.mobilePullback);
@@ -2021,6 +2082,8 @@ _.position.copy(K.current);
 _.quaternion.multiplyQuaternions(ke.current,_e.current);
 _.translateX(dinoState.camPatrolX);
 _.translateY(dinoState.camPatrolY);
+_.rotateY(dinoState.camPatrolYaw);
+_.rotateX(dinoState.camPatrolPitch);
 if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}_.fov!==p.fov&&(_.fov=p.fov,_.updateProjectionMatrix())}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
 {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
@@ -2046,22 +2109,24 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
   dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
 
-  // Compute exact camera frustum dimensions so 100% of the dinosaur model (head, body, tail, feet) fits comfortably at any FOV!
+  // Compute exact camera frustum dimensions (person.glb camera yfov = 45 deg, founderDist ≈ 8.6m..9.5m)
+  // so 100% of the dinosaur model (head crest, eyes, blush, mouth, arms, belly, tail, feet) fits comfortably at any FOV!
   _.updateMatrixWorld();
-  const fovRad = f.degToRad(_.fov || 24);
+  const fovRad = f.degToRad(_.fov || 45);
   const tanHalfFov = Math.tan(fovRad * 0.5);
   const aspect = _.aspect || (window.innerWidth / Math.max(1, window.innerHeight));
-  const founderDist = Math.max(2.6, _.position.distanceTo(t.current));
-  // Place dinosaur at 72% of camera-to-founder distance so it is always cleanly in front of the founder (never clipping into the white T-shirt!)
-  const macroDist = Math.max(2.2, founderDist * f.lerp(0.72, 0.70, dinoState.interactBlend));
+  const founderDist = Math.max(3.2, _.position.distanceTo(t.current));
+  // Place dinosaur at 42%..46% of camera-to-founder distance (~3.69m from camera, ~5.0m in front of the founder's chest!)
+  // so it is 100% unobstructed in front of the founder and NEVER clips into the founder's white T-shirt!
+  const macroDist = Math.max(2.6, founderDist * f.lerp(0.46, 0.42, dinoState.interactBlend));
   const worldHalfH = macroDist * tanHalfFov;
   const worldHalfW = worldHalfH * aspect;
 
-  // FOV-adaptive scale: ensures the full dinosaur height (0.96 * scale * 2.25) is ~24% of screen height in orbit and ~33% in Macro/Interactive Mode!
+  // FOV-adaptive scale: ensures the full dinosaur height (1.00 * scale * 2.25) is ~21% of screen height in orbit and ~33% in Macro/Interactive Mode!
   const orbitFrustumH = 2.0 * founderDist * tanHalfFov;
   const macroFrustumH = 2.0 * worldHalfH;
-  const fovOrbitScale = f.clamp((0.25 * orbitFrustumH) / (0.96 * 2.25), 0.16, 0.40);
-  const fovMacroScale = f.clamp((f.lerp(0.31, 0.34, dinoState.interactBlend) * macroFrustumH) / (0.96 * 2.25), 0.16, 0.42);
+  const fovOrbitScale = f.clamp((0.20 * orbitFrustumH) / (1.00 * 2.25), 0.22, 0.68);
+  const fovMacroScale = f.clamp((f.lerp(0.30, 0.33, dinoState.interactBlend) * macroFrustumH) / (1.00 * 2.25), 0.22, 0.54);
   const baseScale = f.lerp(fovOrbitScale, fovMacroScale, macroW);
   const pulseScale = (whipActive && whipAge < 0.45) ? 0.12 : (feedActive && feedAge < 0.55) ? 0.10 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.10 : 0);
   const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
@@ -2080,10 +2145,10 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   const camRight = ot.current.set(1, 0, 0).applyQuaternion(_.quaternion);
 
   // Since fy is at the dinosaur's feet (y=0), subtract half of the dinosaur's world height (0.48 * scalePop * 2.25)
-  // so the CENTER of the dinosaur sits at centerNdcY (-0.05), leaving generous room above for the speech bubble and below for the HUD!
+  // so the CENTER of the dinosaur sits at centerNdcY (-0.02), leaving generous room above for the speech bubble and below for the HUD!
   const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
-  const centerNdcX = f.lerp(-0.24, -0.14, dinoState.interactBlend);
-  const centerNdcY = f.lerp(-0.04, -0.05, dinoState.interactBlend);
+  const centerNdcX = f.lerp(-0.22, -0.14, dinoState.interactBlend);
+  const centerNdcY = f.lerp(-0.02, -0.02, dinoState.interactBlend);
   const rightOffsetM = centerNdcX * worldHalfW;
   const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
 
@@ -2113,10 +2178,10 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   const wMidZ = fz * 2.25 - 0.7;
   ve.current.set(wMidX, wMidY, wMidZ).project(_);
   if (ve.current.z > -1.0 && ve.current.z < 1.0) {
-    const safeMinX = ce.current ? -0.64 : -0.70;
-    const safeMaxX = ce.current ?  0.62 :  0.66;
-    const safeMinY = isInteractiveMode ? -0.24 : -0.42;
-    const safeMaxY = isInteractiveMode ?  0.18 :  0.28;
+    const safeMinX = ce.current ? -0.60 : -0.66;
+    const safeMaxX = ce.current ?  0.58 :  0.62;
+    const safeMinY = isInteractiveMode ? -0.18 : -0.34;
+    const safeMaxY = isInteractiveMode ?  0.16 :  0.24;
     const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
     const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
     if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
@@ -2329,7 +2394,7 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
   uF.uDinoBlush.value += (waveBlush - uF.uDinoBlush.value) * Math.min(1, dt * 5.0);
   uF.uDinoMouth.value += (waveMouth - uF.uDinoMouth.value) * Math.min(1, dt * 8.5);
 
-  // 3. Project Head Top, Mouth, and Butt/Tail into 2D screen space for the Bubble, Food Projectiles, and Whip Slash!
+  // 3. Project Head Top, Mouth, Butt/Tail, and Feet into 2D screen space for the Bubble, Hitbox, Food Projectiles, and Whip Slash!
   if (dinoState.badge.updateScreenPosition) {
     _.updateMatrixWorld();
     const curX = (fx + reactionJitterX) * 2.25;
@@ -2337,17 +2402,22 @@ if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);i
     const headWorldY = (fy + reactionHopY + 1.00 * dinoState.scalePop) * 2.25 + 0.4;
     const mouthWorldY = (fy + reactionHopY + 0.56 * dinoState.scalePop) * 2.25 + 0.4;
     const buttWorldY = (fy + reactionHopY + 0.28 * dinoState.scalePop) * 2.25 + 0.4;
+    const feetWorldY = (fy + reactionHopY) * 2.25 + 0.4;
     const buttWorldX = curX - Math.sin(dinoState.yaw) * (0.28 * dinoState.scalePop * 2.25);
     const buttWorldZ = curZ - Math.cos(dinoState.yaw) * (0.28 * dinoState.scalePop * 2.25);
 
     ve.current.set(curX, headWorldY, curZ).project(_);
+    const headNdcX = ve.current.x, headNdcY = ve.current.y;
     ye.current.set(curX, mouthWorldY, curZ).project(_);
     ot.current.set(buttWorldX, buttWorldY, buttWorldZ).project(_);
+    ve.current.set(curX, feetWorldY, curZ).project(_);
+    const feetNdcY = ve.current.y;
     const badgeScale = 1.0 + dinoState.hoverBlend * 0.06 + macroW * 0.04;
     dinoState.badge.updateScreenPosition(
-      ve.current.x, ve.current.y, badgeScale,
+      headNdcX, headNdcY, badgeScale,
       ye.current.x, ye.current.y,
-      ot.current.x, ot.current.y
+      ot.current.x, ot.current.y,
+      feetNdcY
     );
   }
   } else {
