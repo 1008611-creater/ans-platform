@@ -1124,7 +1124,7 @@ class MotionDirector {
             user-select: none !important;
             -webkit-user-select: none !important;
           }
-          /* Top-Center Camera & Zoom Control Pill (zero overlap with top-left/top-right chrome, bottom-left .showcase-utility, or bottom-right Companion Dock) */
+          /* Top-Center Camera & Zoom Control Pill + Long-Press Hold Ring & Confirmation Prompt */
           #ans-cam-ctrl-pill {
             position: fixed;
             top: 16px;
@@ -1141,14 +1141,19 @@ class MotionDirector {
             background: rgba(12, 20, 26, 0.86);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(185, 225, 212, 0.32);
+            border: 1px solid rgba(185, 225, 212, 0.30);
             box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
             font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
             font-size: 11.5px;
             color: #f7f0e5;
             pointer-events: auto;
             user-select: none;
-            transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease, opacity 0.25s ease;
+            transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease, opacity 0.25s ease, background 0.22s ease;
+          }
+          body.ans-cam-mode-active #ans-cam-ctrl-pill {
+            background: rgba(14, 30, 34, 0.94);
+            border-color: rgba(132, 250, 176, 0.82);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 22px rgba(132, 250, 176, 0.28);
           }
           body.ans-sanctuary-open #ans-cam-ctrl-pill,
           body.ans-dino-interactive-mode #ans-cam-ctrl-pill {
@@ -1165,6 +1170,9 @@ class MotionDirector {
             color: #b9e1d4;
             white-space: nowrap;
           }
+          body.ans-cam-mode-active #ans-cam-ctrl-pill .cam-pill-status {
+            color: #84fab0;
+          }
           #ans-cam-ctrl-pill .cam-pill-btn {
             appearance: none;
             border: 1px solid rgba(244, 241, 234, 0.22);
@@ -1173,7 +1181,7 @@ class MotionDirector {
             font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
             font-size: 11px;
             font-weight: 600;
-            padding: 3px 8px;
+            padding: 3px 9px;
             border-radius: 999px;
             cursor: pointer;
             transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
@@ -1182,6 +1190,119 @@ class MotionDirector {
             background: rgba(185, 225, 212, 0.22);
             border-color: rgba(185, 225, 212, 0.68);
             transform: translateY(-1px);
+          }
+          #ans-cam-ctrl-pill .cam-pill-btn[data-cam-act="exit-mode"] {
+            background: rgba(255, 120, 117, 0.18);
+            border-color: rgba(255, 163, 158, 0.55);
+            color: #ffccc7;
+          }
+          #ans-cam-ctrl-pill .cam-pill-btn[data-cam-act="enter-mode"] {
+            background: rgba(132, 250, 176, 0.16);
+            border-color: rgba(132, 250, 176, 0.55);
+            color: #d9f7be;
+          }
+          #ans-cam-ctrl-pill[data-cam-mode="off"] .cam-only-active {
+            display: none !important;
+          }
+          #ans-cam-ctrl-pill[data-cam-mode="on"] .cam-only-inactive {
+            display: none !important;
+          }
+          /* Long-Press Radial Hold Progress Indicator around cursor */
+          #ans-cam-hold-ring {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 95;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transform: translate3d(-50%, -50%, 0);
+            opacity: 0;
+            transition: opacity 0.14s ease;
+          }
+          #ans-cam-hold-ring.is-visible {
+            opacity: 1;
+          }
+          #ans-cam-hold-ring .hold-ring-label {
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(10, 18, 24, 0.92);
+            border: 1px solid rgba(132, 250, 176, 0.65);
+            color: #e6fffb;
+            font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+          }
+          /* Floating Confirmation Prompt when Long-Press completes */
+          #ans-cam-mode-prompt {
+            position: fixed;
+            z-index: 96;
+            width: 316px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(12, 22, 28, 0.94);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1.5px solid rgba(132, 250, 176, 0.72);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.62), 0 0 28px rgba(132, 250, 176, 0.22);
+            font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
+            color: #f7f0e5;
+            pointer-events: auto;
+            user-select: none;
+            animation: dinoPopIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+          #ans-cam-mode-prompt[hidden] {
+            display: none !important;
+          }
+          #ans-cam-mode-prompt .cam-prompt-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #84fab0;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+          #ans-cam-mode-prompt .cam-prompt-desc {
+            font-size: 11.5px;
+            line-height: 1.48;
+            color: rgba(247, 240, 229, 0.84);
+            margin-bottom: 11px;
+          }
+          #ans-cam-mode-prompt .cam-prompt-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          #ans-cam-mode-prompt .cam-prompt-btn {
+            flex: 1;
+            appearance: none;
+            border-radius: 10px;
+            padding: 7px 10px;
+            font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.14s ease, filter 0.14s ease;
+          }
+          #ans-cam-mode-prompt .cam-prompt-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+          }
+          #ans-cam-mode-prompt .cam-prompt-enter {
+            background: linear-gradient(135deg, #84fab0, #5cdbd3);
+            border: none;
+            color: #09201d;
+            box-shadow: 0 6px 16px rgba(132, 250, 176, 0.32);
+          }
+          #ans-cam-mode-prompt .cam-prompt-cancel {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #f7f0e5;
           }
           @media (max-width: 820px) {
             #ans-cam-ctrl-pill {
@@ -1225,7 +1346,9 @@ class MotionDirector {
           body.showcase-static #ans-dino-body-hitbox,
           body.showcase-static #ans-dino-interact-hud,
           body.showcase-static #ans-dino-fx-layer,
-          body.showcase-static #ans-cam-ctrl-pill {
+          body.showcase-static #ans-cam-ctrl-pill,
+          body.showcase-static #ans-cam-hold-ring,
+          body.showcase-static #ans-cam-mode-prompt {
             display: none !important;
           }
         `;
@@ -1386,13 +1509,15 @@ class MotionDirector {
       if (!document.getElementById("ans-cam-ctrl-pill")) {
         const camPill = document.createElement("div");
         camPill.id = "ans-cam-ctrl-pill";
+        camPill.setAttribute("data-cam-mode", "off");
         camPill.setAttribute("aria-label", "3D 机位视角与缩放控制");
         camPill.innerHTML = `
-          <span class="cam-pill-status">🎥 100% · 滚轮缩放 / 长按拖拽换机位</span>
-          <button type="button" class="cam-pill-btn" data-cam-act="zoom-out" title="缩小画面 (滚轮向下)">－</button>
-          <button type="button" class="cam-pill-btn" data-cam-act="zoom-in" title="放大画面 (滚轮向上)">＋</button>
-          <button type="button" class="cam-pill-btn" data-cam-act="reset" title="复位默认机位与缩放 (也可双击背景)">复位机位</button>
-          <button type="button" class="cam-pill-btn" data-cam-act="toggle-wheel" title="切换滚轮行为：缩放画面 或 页面滚动">滚轮:缩放</button>
+          <span class="cam-pill-status">🖱️ 正常下滑模式 · 长按画面可开启缩放与机位调整</span>
+          <button type="button" class="cam-pill-btn cam-only-inactive" data-cam-act="enter-mode">🎥 开启机位调整</button>
+          <button type="button" class="cam-pill-btn cam-only-active" data-cam-act="zoom-out">－</button>
+          <button type="button" class="cam-pill-btn cam-only-active" data-cam-act="zoom-in">＋</button>
+          <button type="button" class="cam-pill-btn" data-cam-act="reset">复位机位</button>
+          <button type="button" class="cam-pill-btn cam-only-active" data-cam-act="exit-mode">退出机位模式 ✕</button>
         `;
         document.body.appendChild(camPill);
         camPill.addEventListener("click", ev => {
@@ -1401,6 +1526,46 @@ class MotionDirector {
           ev.stopPropagation();
           const act = btn.getAttribute("data-cam-act");
           if (handlers.onCamAction) handlers.onCamAction(act, btn);
+        });
+      }
+
+      if (!document.getElementById("ans-cam-hold-ring")) {
+        const holdRing = document.createElement("div");
+        holdRing.id = "ans-cam-hold-ring";
+        holdRing.innerHTML = `
+          <svg width="54" height="54" viewBox="0 0 54 54" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.55));">
+            <circle cx="27" cy="27" r="22" fill="rgba(10,18,24,0.68)" stroke="rgba(255,255,255,0.18)" stroke-width="4"/>
+            <circle class="hold-ring-arc" cx="27" cy="27" r="22" fill="none" stroke="#84fab0" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2" transform="rotate(-90 27 27)"/>
+          </svg>
+          <span class="hold-ring-label">继续按住进入「缩放 & 机位调整」...</span>
+        `;
+        document.body.appendChild(holdRing);
+      }
+
+      if (!document.getElementById("ans-cam-mode-prompt")) {
+        const promptEl = document.createElement("div");
+        promptEl.id = "ans-cam-mode-prompt";
+        promptEl.hidden = true;
+        promptEl.setAttribute("role", "dialog");
+        promptEl.setAttribute("aria-label", "进入缩放大小和机位调整模式确认");
+        promptEl.innerHTML = `
+          <div class="cam-prompt-title">🎥 是否进入「缩放大小 & 机位调整」模式？</div>
+          <div class="cam-prompt-desc">开启后：<b>滚轮</b>可自由放大/缩小画面，<b>拖拽</b>可环视改变机位视角；再次<b>长按画面 0.5 秒</b>即可退出并恢复正常向下滑动。</div>
+          <div class="cam-prompt-actions">
+            <button type="button" class="cam-prompt-btn cam-prompt-enter" data-cam-prompt-act="enter">✨ 进入缩放与机位模式</button>
+            <button type="button" class="cam-prompt-btn cam-prompt-cancel" data-cam-prompt-act="cancel">保持正常滑动</button>
+          </div>
+        `;
+        document.body.appendChild(promptEl);
+        promptEl.addEventListener("click", ev => {
+          const btn = ev.target.closest("[data-cam-prompt-act]");
+          if (!btn) return;
+          ev.stopPropagation();
+          const act = btn.getAttribute("data-cam-prompt-act");
+          promptEl.hidden = true;
+          if (act === "enter" && handlers.onCamAction) {
+            handlers.onCamAction("enter-mode", btn);
+          }
         });
       }
 
@@ -3083,24 +3248,32 @@ class MotionDirector {
     }
 
     let lastStatusText = "";
-    function updateCamStatus(userZoom = 1.0, userYaw = 0, userPitch = 0, isDragging = false, wheelZoomEnabled = true) {
+    let lastCamModeAttr = "";
+    function updateCamStatus(userZoom = 1.0, userYaw = 0, userPitch = 0, isDragging = false, camModeActive = false) {
       if (typeof document === "undefined") return;
       const pill = document.getElementById("ans-cam-ctrl-pill");
       if (!pill) return;
+      const modeAttr = camModeActive ? "on" : "off";
+      if (modeAttr !== lastCamModeAttr) {
+        lastCamModeAttr = modeAttr;
+        pill.setAttribute("data-cam-mode", modeAttr);
+        document.body.classList.toggle("ans-cam-mode-active", Boolean(camModeActive));
+      }
       const statusEl = pill.querySelector(".cam-pill-status");
       if (!statusEl) return;
       const zoomPct = Math.round((1.0 / Math.max(0.25, userZoom)) * 100);
       const yawDeg = Math.round((userYaw * 180) / Math.PI);
       const pitchDeg = Math.round((userPitch * 180) / Math.PI);
+      const hasCustomCam = Math.abs(zoomPct - 100) > 2 || Math.abs(yawDeg) > 1 || Math.abs(pitchDeg) > 1;
       let txt = "";
-      if (isDragging) {
+      if (!camModeActive) {
+        txt = hasCustomCam
+          ? `🖱️ 正常下滑模式（当前画面 ${zoomPct}%）· 长按画面 0.5s 调机位`
+          : "🖱️ 正常下滑模式 · 长按画面 0.5s 可开启缩放与机位调整";
+      } else if (isDragging) {
         txt = `🎥 正在拖拽机位 · 缩放 ${zoomPct}% · 视角 (${yawDeg >= 0 ? "+" : ""}${yawDeg}°, ${pitchDeg >= 0 ? "+" : ""}${pitchDeg}°)`;
-      } else if (Math.abs(zoomPct - 100) > 2 || Math.abs(yawDeg) > 1 || Math.abs(pitchDeg) > 1) {
-        txt = `🎥 画面 ${zoomPct}% · 机位 (${yawDeg >= 0 ? "+" : ""}${yawDeg}°, ${pitchDeg >= 0 ? "+" : ""}${pitchDeg}°) · 长按拖拽/滚轮缩放`;
       } else {
-        txt = wheelZoomEnabled
-          ? "🎥 100% · 滚轮放大缩小 / 长按拖拽改变机位"
-          : "🎥 100% · 长按拖拽改变机位 (滚轮:页面滚动)";
+        txt = `🎥 缩放与机位模式中 (${zoomPct}%) · 滚轮缩放 / 拖拽改视角 / 再长按退出`;
       }
       if (txt !== lastStatusText) {
         lastStatusText = txt;
@@ -3563,7 +3736,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   return{
     root:dinoRawScene,perf,dir,faceUniforms,badge,haloUniforms,orbitUniforms,
     time:0,autoPhase:0,orbitFrameYaw:1.56,prevMacroWeight:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.30,camPatrolX:0,camPatrolY:0,camPatrolYaw:0,camPatrolPitch:0,
-    userZoom:1.0,userZoomTarget:1.0,userYaw:0,userYawTarget:0,userPitch:0,userPitchTarget:0,wheelZoomEnabled:true,isCamDragging:false,suppressClickUntil:0,
+    userZoom:1.0,userZoomTarget:1.0,userYaw:0,userYawTarget:0,userPitch:0,userPitchTarget:0,wheelZoomEnabled:false,isCamDragging:false,suppressClickUntil:0,
     baseCamPos:new B(6.41,1.21,-0.385),baseCamQuat:new oe(),
     saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,totalClicks:0,interactBlend:0,dockBlend:0,wardrobeBlend:0,whipUntil:0,whipIdx:0,feedUntil:0,feedIdx:0,feedMode:"happy",hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
     nextBlink:2.2,blinkStart:-99,yaw:Math.PI*0.58,pitch:0,roll:0
@@ -3595,6 +3768,57 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     } else {
       dinoState.activeBadge = cpKey;
       dinoState.badge.drawBadge(cpKey, dinoState.totalClicks);
+    }
+  };
+
+  let promptAutoHideTimer = null;
+  const setCamMode = active => {
+    dinoState.wheelZoomEnabled = Boolean(active);
+    const promptEl = document.getElementById("ans-cam-mode-prompt");
+    if (promptEl && active) {
+      promptEl.hidden = true;
+    }
+    if (dinoState.badge.updateCamStatus) {
+      dinoState.badge.updateCamStatus(dinoState.userZoomTarget, dinoState.userYawTarget, dinoState.userPitchTarget, dinoState.isCamDragging, dinoState.wheelZoomEnabled);
+    }
+  };
+
+  const showCamPromptAt = (cx, cy, mode = "ask-enter") => {
+    const promptEl = document.getElementById("ans-cam-mode-prompt");
+    if (!promptEl) return;
+    if (promptAutoHideTimer) {
+      clearTimeout(promptAutoHideTimer);
+      promptAutoHideTimer = null;
+    }
+    const vw = window.innerWidth || 1280;
+    const vh = window.innerHeight || 800;
+    const left = Math.max(18, Math.min(vw - 334, cx - 158));
+    const top = Math.max(62, Math.min(vh - 180, cy - 135));
+    promptEl.style.left = `${left}px`;
+    promptEl.style.top = `${top}px`;
+    if (mode === "exited-toast") {
+      promptEl.innerHTML = `
+        <div class="cam-prompt-title" style="color:#ffd666;">🔓 已退出「缩放与机位调整」模式</div>
+        <div class="cam-prompt-desc">滚轮已恢复<b>正常向下滑动</b>！如需再次调整画面缩放或机位视角，随时长按画面 0.5 秒即可。</div>
+        <div class="cam-prompt-actions">
+          <button type="button" class="cam-prompt-btn cam-prompt-cancel" data-cam-prompt-act="reset-and-close">↺ 顺便复位默认机位</button>
+          <button type="button" class="cam-prompt-btn cam-prompt-enter" data-cam-prompt-act="cancel">知道了</button>
+        </div>
+      `;
+      promptEl.hidden = false;
+      promptAutoHideTimer = setTimeout(() => {
+        if (promptEl) promptEl.hidden = true;
+      }, 2800);
+    } else {
+      promptEl.innerHTML = `
+        <div class="cam-prompt-title">🎥 是否进入「缩放大小 & 机位调整」模式？</div>
+        <div class="cam-prompt-desc">开启后：<b>滚轮</b>可自由放大/缩小画面，<b>拖拽</b>可环视改变机位视角；再次<b>长按画面 0.5 秒</b>即可取消该模式并恢复正常向下滑动。</div>
+        <div class="cam-prompt-actions">
+          <button type="button" class="cam-prompt-btn cam-prompt-enter" data-cam-prompt-act="enter">✨ 进入缩放与机位模式</button>
+          <button type="button" class="cam-prompt-btn cam-prompt-cancel" data-cam-prompt-act="cancel">保持正常滑动</button>
+        </div>
+      `;
+      promptEl.hidden = false;
     }
   };
 
@@ -3637,18 +3861,21 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
         }
         if (gestureName) dinoState.dir.onGesture(gestureName, dinoState.time);
       },
-      onCamAction: (act, btn) => {
-        if (act === "zoom-in") {
+      onCamAction: (act) => {
+        if (act === "enter-mode") {
+          setCamMode(true);
+        } else if (act === "exit-mode") {
+          setCamMode(false);
+        } else if (act === "zoom-in") {
           dinoState.userZoomTarget = f.clamp(dinoState.userZoomTarget * 0.80, 0.36, 2.40);
         } else if (act === "zoom-out") {
           dinoState.userZoomTarget = f.clamp(dinoState.userZoomTarget * 1.25, 0.36, 2.40);
-        } else if (act === "reset") {
+        } else if (act === "reset" || act === "reset-and-close") {
           dinoState.userZoomTarget = 1.0;
           dinoState.userYawTarget = 0;
           dinoState.userPitchTarget = 0;
         } else if (act === "toggle-wheel") {
-          dinoState.wheelZoomEnabled = !dinoState.wheelZoomEnabled;
-          if (btn) btn.textContent = dinoState.wheelZoomEnabled ? "滚轮:缩放" : "滚轮:翻页";
+          setCamMode(!dinoState.wheelZoomEnabled);
         }
         if (dinoState.badge.updateCamStatus) {
           dinoState.badge.updateCamStatus(dinoState.userZoomTarget, dinoState.userYawTarget, dinoState.userPitchTarget, dinoState.isCamDragging, dinoState.wheelZoomEnabled);
@@ -3657,17 +3884,38 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     });
   }
 
-  // Mouse Wheel Zoom (放大 / 缩小画面) + Long-Press Drag Orbit (长按拖拽改变机位视角)
+  // Ensure clicking buttons inside #ans-cam-mode-prompt also handles reset-and-close
+  const promptDom = document.getElementById("ans-cam-mode-prompt");
+  if (promptDom && !promptDom.dataset.boundExtra) {
+    promptDom.dataset.boundExtra = "1";
+    promptDom.addEventListener("click", ev => {
+      const btn = ev.target.closest("[data-cam-prompt-act]");
+      if (!btn) return;
+      ev.stopPropagation();
+      const act = btn.getAttribute("data-cam-prompt-act");
+      promptDom.hidden = true;
+      if (act === "enter") {
+        setCamMode(true);
+      } else if (act === "reset-and-close") {
+        dinoState.userZoomTarget = 1.0;
+        dinoState.userYawTarget = 0;
+        dinoState.userPitchTarget = 0;
+        if (dinoState.badge.updateCamStatus) {
+          dinoState.badge.updateCamStatus(1.0, 0, 0, false, dinoState.wheelZoomEnabled);
+        }
+      }
+    });
+  }
+
+  // Mouse Wheel Zoom (ONLY active when in Zoom & Camera Adjustment Mode! Default normal scroll is 100% untouched!)
   const isUiControlTarget = el => {
     if (!el || !el.closest) return false;
-    return Boolean(el.closest("a, button, input, textarea, select, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-agent-companion-dock, #ans-sanctuary-adopt-modal, #ans-sanctuary-wardrobe-modal, .chapter-nav, .showcase-utility, .wk-card"));
+    return Boolean(el.closest("a, button, input, textarea, select, #ans-dino-live-bubble, #ans-dino-body-hitbox, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, #ans-sanctuary-adopt-modal, #ans-sanctuary-wardrobe-modal, .chapter-nav, .showcase-utility, .wk-card"));
   };
 
   const onWheelZoom = ev => {
     if (!dinoState.wheelZoomEnabled || ev.shiftKey) return;
-    if (ev.target && ev.target.closest && ev.target.closest(".chapter-nav, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-agent-companion-dock, #ans-sanctuary-adopt-modal, #ans-sanctuary-wardrobe-modal")) return;
-    const wkGallery = document.querySelector(".wk-gallery");
-    if (wkGallery && wkGallery.getBoundingClientRect().top < window.innerHeight * 0.35 && ev.deltaY > 0) return;
+    if (ev.target && ev.target.closest && ev.target.closest(".chapter-nav, #ans-dino-interact-hud, #ans-cam-ctrl-pill, #ans-cam-mode-prompt, #ans-agent-companion-dock, #ans-sanctuary-adopt-modal, #ans-sanctuary-wardrobe-modal")) return;
     ev.preventDefault();
     const rawDelta = ev.deltaMode === 1 ? ev.deltaY * 32 : ev.deltaY;
     const step = f.clamp(rawDelta, -140, 140) * (ev.ctrlKey ? 0.0028 : 0.0014);
@@ -3678,22 +3926,34 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   let activePointerId = null;
   let downX = 0, downY = 0, lastX = 0, lastY = 0;
   let downAt = 0;
-  let longPressReady = false;
   let didDragCam = false;
-  let longPressTimer = null;
+  let holdTriggered = false;
+  let holdRafId = null;
+  const HOLD_THRESHOLD_MS = 520;
+  const HOLD_SHOW_RING_MS = 110;
+
+  const hideHoldRing = () => {
+    if (holdRafId) {
+      cancelAnimationFrame(holdRafId);
+      holdRafId = null;
+    }
+    const ringEl = document.getElementById("ans-cam-hold-ring");
+    if (ringEl) {
+      ringEl.classList.remove("is-visible");
+      const arc = ringEl.querySelector(".hold-ring-arc");
+      if (arc) arc.setAttribute("stroke-dashoffset", "138.2");
+    }
+  };
 
   const stopCamDrag = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }
-    if (didDragCam || (longPressReady && (performance.now() - downAt) > 220)) {
-      dinoState.suppressClickUntil = performance.now() + 200;
+    hideHoldRing();
+    if (didDragCam || holdTriggered) {
+      dinoState.suppressClickUntil = performance.now() + 260;
     }
     pointerDown = false;
     activePointerId = null;
-    longPressReady = false;
     didDragCam = false;
+    holdTriggered = false;
     dinoState.isCamDragging = false;
     document.body.classList.remove("ans-cam-dragging");
   };
@@ -3701,20 +3961,57 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   const onStagePointerDown = ev => {
     if (ev.button !== undefined && ev.button !== 0) return;
     if (isUiControlTarget(ev.target)) return;
+    const promptEl = document.getElementById("ans-cam-mode-prompt");
+    if (promptEl && !promptEl.hidden) {
+      promptEl.hidden = true;
+    }
     pointerDown = true;
     activePointerId = ev.pointerId;
     downX = lastX = ev.clientX;
     downY = lastY = ev.clientY;
     downAt = performance.now();
-    longPressReady = false;
     didDragCam = false;
-    if (longPressTimer) clearTimeout(longPressTimer);
-    longPressTimer = setTimeout(() => {
-      if (!pointerDown) return;
-      longPressReady = true;
-      dinoState.isCamDragging = true;
-      document.body.classList.add("ans-cam-dragging");
-    }, 130);
+    holdTriggered = false;
+    hideHoldRing();
+
+    const tickHold = () => {
+      if (!pointerDown || didDragCam || holdTriggered) return;
+      const elapsed = performance.now() - downAt;
+      const ringEl = document.getElementById("ans-cam-hold-ring");
+      if (elapsed >= HOLD_SHOW_RING_MS && ringEl) {
+        ringEl.style.left = `${downX}px`;
+        ringEl.style.top = `${downY}px`;
+        ringEl.classList.add("is-visible");
+        const arc = ringEl.querySelector(".hold-ring-arc");
+        const lbl = ringEl.querySelector(".hold-ring-label");
+        const progress = f.clamp((elapsed - HOLD_SHOW_RING_MS) / (HOLD_THRESHOLD_MS - HOLD_SHOW_RING_MS), 0, 1);
+        if (arc) {
+          arc.setAttribute("stroke", dinoState.wheelZoomEnabled ? "#ffd666" : "#84fab0");
+          arc.setAttribute("stroke-dashoffset", (138.2 * (1.0 - progress)).toFixed(1));
+        }
+        if (lbl) {
+          lbl.textContent = dinoState.wheelZoomEnabled
+            ? "⏳ 继续按住取消「机位调整模式」..."
+            : "⏳ 继续按住进入「缩放 & 机位调整」...";
+        }
+      }
+      if (elapsed >= HOLD_THRESHOLD_MS) {
+        holdTriggered = true;
+        hideHoldRing();
+        dinoState.suppressClickUntil = performance.now() + 350;
+        if (dinoState.wheelZoomEnabled) {
+          // Long-press again cancels Camera & Zoom Mode and restores normal scrolling!
+          setCamMode(false);
+          showCamPromptAt(downX, downY, "exited-toast");
+        } else {
+          // Long-press in Normal Mode prompts user whether to enter Camera & Zoom Mode!
+          showCamPromptAt(downX, downY, "ask-enter");
+        }
+        return;
+      }
+      holdRafId = requestAnimationFrame(tickHold);
+    };
+    holdRafId = requestAnimationFrame(tickHold);
   };
 
   const onStagePointerMove = ev => {
@@ -3724,14 +4021,20 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     lastX = ev.clientX;
     lastY = ev.clientY;
     const distFromStart = Math.hypot(ev.clientX - downX, ev.clientY - downY);
-    if (longPressReady || distFromStart > 5) {
-      if (!didDragCam) {
-        didDragCam = true;
-        dinoState.isCamDragging = true;
-        document.body.classList.add("ans-cam-dragging");
+
+    // If user moves mouse significantly before long-press threshold finishes:
+    if (distFromStart > 7) {
+      hideHoldRing();
+      // Only orbit camera if Camera & Zoom Adjustment Mode is currently active!
+      if (dinoState.wheelZoomEnabled && !holdTriggered) {
+        if (!didDragCam) {
+          didDragCam = true;
+          dinoState.isCamDragging = true;
+          document.body.classList.add("ans-cam-dragging");
+        }
+        dinoState.userYawTarget = f.clamp(dinoState.userYawTarget - dx * 0.0066, -2.15, 2.15);
+        dinoState.userPitchTarget = f.clamp(dinoState.userPitchTarget + dy * 0.0052, -0.58, 0.68);
       }
-      dinoState.userYawTarget = f.clamp(dinoState.userYawTarget - dx * 0.0066, -2.15, 2.15);
-      dinoState.userPitchTarget = f.clamp(dinoState.userPitchTarget + dy * 0.0052, -0.58, 0.68);
     }
   };
 
@@ -3743,6 +4046,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   let pinchDist0 = 0;
   let pinchZoom0 = 1.0;
   const onTouchStartPinch = ev => {
+    if (!dinoState.wheelZoomEnabled) return;
     if (ev.touches && ev.touches.length === 2) {
       stopCamDrag();
       const dx = ev.touches[0].clientX - ev.touches[1].clientX;
@@ -3752,6 +4056,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
     }
   };
   const onTouchMovePinch = ev => {
+    if (!dinoState.wheelZoomEnabled) return;
     if (ev.touches && ev.touches.length === 2 && pinchDist0 > 0) {
       ev.preventDefault();
       const dx = ev.touches[0].clientX - ev.touches[1].clientX;
@@ -3763,7 +4068,6 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
 
   const onStageDblClick = ev => {
     if (isUiControlTarget(ev.target)) return;
-    if (ev.target && ev.target.closest && ev.target.closest("#ans-dino-live-bubble, #ans-dino-body-hitbox")) return;
     dinoState.userZoomTarget = 1.0;
     dinoState.userYawTarget = 0;
     dinoState.userPitchTarget = 0;
