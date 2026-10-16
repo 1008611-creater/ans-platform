@@ -15,7 +15,6 @@ import { issueAgentTicket, verifyAgentTicket, AGENT_BODY_LIMIT, AGENT_MODEL, AGE
 import { DEFAULT_COMPANION_MODEL, DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
 import { executeAgent, prepareAgentQuote, readAgentStatus } from "@/server/companion/service";
 import { executeAgentTool } from "@/server/companion/tools";
-import { fixtureModelBillingPolicy } from "./model-billing-fixture";
 const input: AgentInput = { messages: [{ role: "user", content: "帮我查一下项目" }], pathname: "/explore", locale: "zh", privateAccess: false, model: AGENT_MODEL };
 const answer = () => Response.json({ status: "completed", output: [{ type: "message", role: "assistant", content: [{ type: "output_text", text: "找到真实资料，下一步先核对输入。" }] }] });
 const toolCall = (name = "site_help") => Response.json({ status: "completed", output: [{ type: "function_call", call_id: "call-1", name, arguments: '{"query":"video"}' }] });

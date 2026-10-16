@@ -3,11 +3,10 @@ import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  metered: vi.fn(),
   db: {
     workflowRun: { findFirst: vi.fn(), updateMany: vi.fn(), findUniqueOrThrow: vi.fn(), update: vi.fn() },
     workflowNodeRun: { updateMany: vi.fn() },
-    apiComputeRequest: { findMany: vi.fn(), findFirst: vi.fn() },
+    apiComputeRequest: { findMany: vi.fn() },
     userModelCredential: { findFirst: vi.fn() },
     user: { update: vi.fn() },
     quotaLedger: { create: vi.fn(), findUnique: vi.fn() },
@@ -18,7 +17,6 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/server/integrations/codex-gateway", () => ({ meteredResponses: mocks.metered, reconcileCodexCharges: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import { executePersistedWorkflow, interpolate, createWorkflowHandlers, recoverInterruptedWorkflowRun, cancelWorkflowRun } from "@/server/workflows/runner";
@@ -136,7 +134,6 @@ describe("executePersistedWorkflow", () => {
 
   it("rejects legacy APIC execution without making an upstream request", async () => {
     vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
-    vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1");
     vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
     mocks.db.workflowRun.findFirst.mockResolvedValue({ ...run, costPoints: 0.25, version: { ...run.version, definition: { ...definition, nodes: [{ ...definition.nodes[0], type: "model" }, definition.nodes[1]] } } });
     const fetchMock = vi.fn();
