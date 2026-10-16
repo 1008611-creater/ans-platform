@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AgriPopularityManager, AgriWall, AgriWallSubmit, beijingDateTimeToIso } from "@/components/competitions/agri-wall";
 import type { AgriWallMine, AgriWallView } from "@/contracts/agri-wall";
@@ -29,7 +29,11 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("AgriHackathon wall", () => {
   it("separates eligible event votes from all-time Stars, shows rank badge, and supports one-click share rally", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => respond(view())));
+    const data = view();
+    data.round = { revision: 1, opensAt: "2026-10-01T00:00:00Z", closesAt: "2026-10-20T00:00:00Z", state: "OPEN", frozenAt: null, results: [{ entryId: "wall-one", listingId: "offer-one", title: "真实田间项目", teamName: "种子队", votes: 2, rank: 1, winner: true }] };
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", { clipboard: { writeText } });
+    vi.stubGlobal("fetch", vi.fn(async () => respond(data)));
     render(<AgriWall />);
     expect(await screen.findByText(zh.validStars)).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
@@ -39,6 +43,47 @@ describe("AgriHackathon wall", () => {
     expect(screen.getByRole("link", { name: "真实田间项目" })).toHaveAttribute("href", "/explore/member-field-project");
     fireEvent.click(screen.getByRole("button", { name: zh.shareVote }));
     expect(await screen.findByRole("button", { name: zh.shareCopied })).toBeInTheDocument();
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/explore/member-field-project"));
+  });
+  it.each(["unavailable", "rejected"])("offers manual copying after a %s clipboard instead of reporting success", async mode => {
+    vi.stubGlobal("navigator", mode === "unavailable" ? {} : { clipboard: { writeText: vi.fn().mockRejectedValue(new Error("denied")) } });
+    vi.stubGlobal("fetch", vi.fn(async () => respond(view())));
+    render(<AgriWall />);
+    fireEvent.click(await screen.findByRole("button", { name: zh.shareVote }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(zh.shareFailed);
+    expect(screen.queryByRole("button", { name: zh.shareCopied })).toBeNull();
+    expect((screen.getByRole("textbox", { name: zh.shareVote }) as HTMLTextAreaElement).value).toContain("/explore/member-field-project");
+  });
+  it("keeps the server rank and numeric vote gap when filtering the wall", async () => {
+    const data = view();
+    const second = structuredClone(data.entries[0]); second.id = "wall-two"; second.offer.id = "offer-two"; second.offer.listing.title = "Beta"; second.validStars = 4;
+    data.entries[0].validStars = 10; data.entries.push(second);
+    data.round = { revision: 1, opensAt: "2026-10-01T00:00:00Z", closesAt: "2026-10-20T00:00:00Z", state: "OPEN", frozenAt: null, results: [
+      { entryId: "wall-one", listingId: "offer-one", title: "真实田间项目", teamName: "种子队", votes: 10, rank: 1, winner: true },
+      { entryId: "wall-two", listingId: "offer-two", title: "Beta", teamName: "种子队", votes: 4, rank: 2, winner: false },
+    ] };
+    vi.stubGlobal("fetch", vi.fn(async () => respond(data)));
+    render(<AgriWall />);
+    await screen.findByText("Beta");
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Beta" } });
+    expect(screen.getByText("TOP 2")).toBeInTheDocument();
+    expect(screen.queryByText("TOP 1")).toBeNull();
+    expect(screen.getByText(zh.gapHint.replace("{gap}", "6"))).toBeInTheDocument();
+  });
+  it("shows every frozen result including zero votes and preserves ranks for hidden entries", async () => {
+    const data = view();
+    data.round = { revision: 1, opensAt: "2026-10-01T00:00:00Z", closesAt: "2026-10-02T00:00:00Z", state: "CLOSED", frozenAt: "2026-10-02T00:00:00Z", results: [
+      { entryId: "hidden", listingId: "hidden-offer", title: "Frozen winner", teamName: "A", votes: 9, rank: 1, winner: true },
+      { entryId: "wall-one", listingId: "offer-one", title: "真实田间项目", teamName: "种子队", votes: 2, rank: 2, winner: false },
+      { entryId: "zero", listingId: "zero-offer", title: "Zero votes", teamName: "C", votes: 0, rank: 3, winner: false },
+    ] };
+    vi.stubGlobal("fetch", vi.fn(async () => respond(data)));
+    render(<AgriWall />);
+    const ranking = await screen.findByRole("list", { name: zh.rankingListTitle });
+    expect(within(ranking).getAllByRole("listitem")).toHaveLength(3);
+    expect(within(ranking).getByText("Zero votes")).toBeInTheDocument();
+    expect(screen.getByText("TOP 2")).toBeInTheDocument();
+    expect(screen.queryByText(zh.leaderHint)).toBeNull();
   });
   it("actively confirms an existing Star without toggling it off", async () => {
     const data = view(); data.entries[0].offer.starred = true;

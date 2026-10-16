@@ -112,9 +112,7 @@ export default async function AgriHackathonPage() {
 
       <section aria-labelledby="agri-pipeline-heading" className="space-y-4">
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{t("pipelineSectionLabel")}</p>
           <h2 id="agri-pipeline-heading" className="text-xl font-semibold">{t("pipelineTitle")}</h2>
-          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{t("pipelineDescription")}</p>
         </div>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {pipelineSteps.map((step) => {
@@ -148,19 +146,11 @@ export default async function AgriHackathonPage() {
         </ol>
       </section>
 
-      <nav aria-label={t("nextAction")} className="grid gap-x-8 gap-y-4 border-y py-5 sm:grid-cols-2">
-        <div className="min-w-0"><h2 className="font-medium">{t("alreadyEntering")}</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">{t("entryHint")}</p><div className="flex flex-wrap gap-x-5">
-          <Link href="/workspace/credits" className={linkClass}>{t("claimCompute")}</Link>
+      <nav aria-label={t("nextAction")} className="flex flex-wrap gap-x-5 border-y py-3">
           <Link href="/explore/agrihackathon/submit" className={linkClass}>{t("bindProject")}</Link>
-          <Link href="/competitions/agrihackathon/submissions" className={linkClass}>{submissions("title")}</Link>
           <Link href="/competitions/agrihackathon/tasks" className={linkClass}>{tasks("title")}</Link>
           <Link href="/teams" className={linkClass}>{t("openTeams")}</Link>
           {competition && <Link href={`/competitions/${competition.id}`} className={linkClass}>{t("enterWorkbench")}</Link>}
-        </div></div>
-        <div className="min-w-0"><h2 className="font-medium">{t("justLooking")}</h2><div className="flex flex-wrap gap-x-5">
-          <Link href="/explore?category=competition&subcategory=agri-wall" className={linkClass}>{wall("title")}</Link>
-          <Link href="/competitions/agrihackathon/showcase" className={linkClass}>{publications("showcaseTitle")}</Link>
-        </div></div>
       </nav>
 
       <section id="tracks" aria-labelledby="agri-tracks-title" className="scroll-mt-24 space-y-4">
