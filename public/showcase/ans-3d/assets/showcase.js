@@ -469,39 +469,84 @@ class MotionDirector {
   const RAD = Math.PI / 180;
   const RIG_AXES = ['x', 'y', 'z', 'rx', 'ry', 'rz'];
 
-  // 11-waypoint 360-degree 3D Orbital Flight Path around the user (s = 0.0, 0.5, 1.0, ..., 5.0)
-  // Clockwise 3D Head-Orbit + Front-of-Face Super-Macro Camera Close-Up Sampler
-  function sampleFlightSpline(s) {
-    // s in [0..5]:
-    // At s=0.0 (Hero): deg = 270 deg (9 o'clock, left side of your head)
-    // Advancing s increases deg clockwise:
-    //   270 deg (9h Left) -> 360 deg (12h Top/Behind Head) -> 90 deg (3h Right) -> 180 deg (6h Front of Face -> Super Macro!)
-    // Every +1.333 scroll units is a full 360-degree clockwise revolution around your head!
-    // Macro close-ups occur at s = 1.00 (Ch 01), s = 2.33 (Mid Ch 02->03), s = 3.67 (Mid Ch 03->04)
-    const deg = 270.0 + s * 270.0;
-    const th = deg * (Math.PI / 180.0);
-    const dth = 270.0 * (Math.PI / 180.0);
+  // 8-Waypoint Closed C² Catmull-Rom 3D Planned Flight Trajectory in Founder-Centered Camera-Aligned Frame (r, u, d):
+  //   r: lateral offset along camera-right (- = screen left golden perch, + = screen right wing sweep)
+  //   u: vertical offset along World/M Up (+0.60 at W2 soars high above founder's crown with 0% head occlusion!)
+  //   d: forward depth toward base camera (+1.06 at W6 swoops into Front-Center Super-Macro Stage!)
+  const FLIGHT_WAYPOINTS = [
+    [-0.84,  0.02,  0.48,  0.00], // W0 (0.000): 9:00 Wide Left Golden Perch (beside left shoulder)
+    [-0.58,  0.38,  0.28,  0.00], // W1 (0.125): 10:30 Upper-Left Temple Ascent
+    [ 0.00,  0.60,  0.18,  0.00], // W2 (0.250): 12:00 Crown Halo Zenith (soaring over founder's crown, zero occlusion)
+    [ 0.58,  0.38,  0.28,  0.00], // W3 (0.375): 1:30 Upper-Right Temple Descent
+    [ 0.84,  0.02,  0.48,  0.00], // W4 (0.500): 3:00 Wide Right Wing Sweep (beside right shoulder)
+    [ 0.50, -0.12,  0.82,  0.35], // W5 (0.625): 4:30 Front-Right Swoop Approach
+    [-0.06, -0.15,  1.06,  1.00], // W6 (0.750): 6:00 Front-Center Super-Macro Stage (closest to camera!)
+    [-0.52, -0.10,  0.80,  0.30]  // W7 (0.875): 7:30 Front-Left Swoop Return
+  ];
 
-    // Wide, sweeping clockwise 3D orbit around your head center (0.26, 0.04, 0.06) in M local space (scale 2.25 -> ~2.79m world radius!):
-    // Behind/above head (cos(th) = +1, 12h): high halo arc (x = -0.42, y = +0.28, z = +0.06)
-    // Right side        (sin(th) = +1, 3h):  wide right sweep (x = +0.26, y = +0.04, z = -1.18)
-    // Front of face     (cos(th) = -1, 6h):  front of face (x = +0.94, y = -0.20, z = +0.06) -> swoops to Camera Super Macro!
-    // Left side         (sin(th) = -1, 9h):  wide left sweep  (x = +0.26, y = +0.04, z = +1.30)
-    const ox = 0.26 - 0.68 * Math.cos(th);
-    const oy = 0.04 + 0.24 * Math.cos(th);
-    const oz = 0.06 - 1.24 * Math.sin(th);
+  function sampleFlightSpline(s, camAzimuthYaw = 1.56) {
+    const nPts = FLIGHT_WAYPOINTS.length;
+    const phase = ((s % 1.0) + 1.0) % 1.0;
+    const seg = phase * nPts;
+    const idx = Math.floor(seg) % nPts;
+    const t = seg - Math.floor(seg);
+    const t2 = t * t;
+    const t3 = t2 * t;
 
-    const tx =  0.68 * Math.sin(th) * dth;
-    const ty = -0.24 * Math.sin(th) * dth;
-    const tz = -1.24 * Math.cos(th) * dth;
+    const p0 = FLIGHT_WAYPOINTS[(idx + nPts - 1) % nPts];
+    const p1 = FLIGHT_WAYPOINTS[idx];
+    const p2 = FLIGHT_WAYPOINTS[(idx + 1) % nPts];
+    const p3 = FLIGHT_WAYPOINTS[(idx + 2) % nPts];
 
-    // Front-of-face detector: frontness = -cos(th) is +1.0 when directly in front of your face (180 deg / 6h)
-    const frontness = -Math.cos(th);
-    const macroRaw = Math.max(0.0, Math.min(1.0, (frontness - 0.42) / 0.58));
-    // Smooth quintic bell curve for diving from head-orbit right up to the Camera Super Macro lens!
+    const rud = [0, 0, 0, 0];
+    const velRud = [0, 0, 0, 0];
+    const accRud = [0, 0, 0, 0];
+    for (let k = 0; k < 4; k++) {
+      const v0 = p0[k], v1 = p1[k], v2 = p2[k], v3 = p3[k];
+      const a0 = v1;
+      const a1 = 0.5 * (v2 - v0);
+      const a2 = v0 - 2.5 * v1 + 2.0 * v2 - 0.5 * v3;
+      const a3 = -0.5 * v0 + 1.5 * v1 - 1.5 * v2 + 0.5 * v3;
+      rud[k] = a0 + a1 * t + a2 * t2 + a3 * t3;
+      velRud[k] = (a1 + 2.0 * a2 * t + 3.0 * a3 * t2) * nPts;
+      accRud[k] = (2.0 * a2 + 6.0 * a3 * t) * (nPts * nPts);
+    }
+
+    const r = rud[0], u = rud[1], d = rud[2];
+    const vr = velRud[0], vu = velRud[1], vd = velRud[2];
+    const ar = accRud[0], au = accRud[1], ad = accRud[2];
+
+    // Transform from Founder-Centered Camera-Aligned Frame (r, u, d) around Anchor (0.16, 0.08, 0.08) into M local space:
+    const cosA = Math.cos(camAzimuthYaw);
+    const sinA = Math.sin(camAzimuthYaw);
+    const ox = 0.16 + r * cosA + d * sinA;
+    const oy = 0.08 + u;
+    const oz = 0.08 - r * sinA + d * cosA;
+
+    const tx = vr * cosA + vd * sinA;
+    const ty = vu;
+    const tz = -vr * sinA + vd * cosA;
+
+    const speedSq = vr * vr + vu * vu + vd * vd;
+    const bankCurvature = (vr * ad - vd * ar) / Math.max(1.0, speedSq);
+
+    const macroRaw = Math.max(0.0, Math.min(1.0, rud[3]));
     const macroWeight = macroRaw * macroRaw * macroRaw * (macroRaw * (macroRaw * 6.0 - 15.0) + 10.0);
+    const deg = (270.0 + phase * 360.0) % 360.0;
+    const th = deg * (Math.PI / 180.0);
 
-    return { pos: [ox, oy, oz], tangent: [tx, ty, tz], macroWeight, deg, th };
+    return {
+      pos: [ox, oy, oz],
+      tangent: [tx, ty, tz],
+      rud: [r, u, d],
+      velRud: [vr, vu, vd],
+      accRud: [ar, au, ad],
+      bankCurvature,
+      macroWeight,
+      phase,
+      deg,
+      th
+    };
   }
 
   // Rich Kaomoji Rambling Presets (Normal Orbit + Super Macro + Hover + Click + Whip Butt to Work + Random Meme Feeding)
@@ -2024,16 +2069,17 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
   const perf=new __ansDinoPatch.DinoPerformance(dinoRawScene,dinoAnims),
         dir=new __ansDinoPatch.MotionDirector({autoplay:!0}),
         badge=__ansDinoPatch.createExpressionBadgeTexture(),
-        haloUniforms={uTime:{value:0},uFlight:{value:0}};
+        haloUniforms={uTime:{value:0},uFlight:{value:0}},
+        orbitUniforms={uTime:{value:0},uPhase:{value:0},uAlpha:{value:1.0}};
   return{
-    root:dinoRawScene,perf,dir,faceUniforms,badge,haloUniforms,
-    time:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.30,camPatrolX:0,camPatrolY:0,camPatrolYaw:0,camPatrolPitch:0,
+    root:dinoRawScene,perf,dir,faceUniforms,badge,haloUniforms,orbitUniforms,
+    time:0,autoPhase:0,orbitFrameYaw:1.56,prevMacroWeight:0,lastStop:-99,activeBadge:"happy_smile",nextMoodAt:2.8,doubleBlink:false,camPullback:1.30,camPatrolX:0,camPatrolY:0,camPatrolYaw:0,camPatrolPitch:0,
     userZoom:1.0,userZoomTarget:1.0,userYaw:0,userYawTarget:0,userPitch:0,userPitchTarget:0,wheelZoomEnabled:true,isCamDragging:false,suppressClickUntil:0,
     baseCamPos:new B(6.41,1.21,-0.385),baseCamQuat:new oe(),
     saccadeX:0,saccadeY:0,nextSaccade:1.5,clickUntil:0,clickIdx:0,totalClicks:0,interactBlend:0,whipUntil:0,whipIdx:0,feedUntil:0,feedIdx:0,feedMode:"happy",hovered:false,hoverIdx:0,hoverBlend:0,scalePop:0.48,macroIdx:0,wasMacro:false,
     nextBlink:2.2,blinkStart:-99,yaw:Math.PI*0.58,pitch:0,roll:0
   };
-},[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),keyboardGesture=n.useEffect(()=>{
+},[dinoRawScene,dinoAnims]),dinoFlightRef=n.useRef(null),dinoBadgeRef=n.useRef(null),dinoOrbitGroupRef=n.useRef(null),keyboardGesture=n.useEffect(()=>{
   const triggerDinoClick=()=>{
     const nowT = typeof performance !== "undefined" ? performance.now() : Date.now();
     if(nowT < (dinoState.suppressClickUntil || 0)) return;
@@ -2308,30 +2354,61 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
           transformed += (uEyeL + eyeSpin(transformed - uEyeL) - transformed) * eyeWeight(transformed, uEyeL);
           transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}
 const scrollS = de ? 4.0 + f.clamp((q - te) / Math.max(1, ae - te), 0, 1) : f.clamp(L + 1, 0, 4);
-const spline = __ansDinoPatch.sampleFlightSpline(scrollS);
 const isInteractiveMode = dinoState.badge.isInteractive ? dinoState.badge.isInteractive() : false;
 dinoState.interactBlend += ((isInteractiveMode ? 1.0 : 0.0) - dinoState.interactBlend) * Math.min(1, y * 7.5);
+const _=w().camera;
+if(p&&_.isPerspectiveCamera){
+  p.updateWorldMatrix(!0,!1);
+  p.matrixWorld.decompose(Oe.current,_e.current,ot.current);
+  // Align the 3D Flight Trajectory Frame horizontally with the animated GLB camera azimuth around Founder Anchor (0.16, 0.08, 0.08) in M local space:
+  const glbCamLocalX = (Oe.current.x - 0.0) / 2.25;
+  const glbCamLocalZ = (Oe.current.z - (-0.7)) / 2.25;
+  const targetOrbitYaw = Math.atan2(glbCamLocalX - 0.16, glbCamLocalZ - 0.08);
+  let orbitYawDiff = targetOrbitYaw - dinoState.orbitFrameYaw;
+  while (orbitYawDiff > Math.PI) orbitYawDiff -= Math.PI * 2;
+  while (orbitYawDiff < -Math.PI) orbitYawDiff += Math.PI * 2;
+  dinoState.orbitFrameYaw += orbitYawDiff * Math.min(1, y * 6.0);
+}
+// Advance autonomous continuous 3D cruise phase (dwells smoothly at Front-Center Super-Macro Stage, pauses gently when hovered or in Interactive Mode):
+const reducedMotionNow = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
+const dwellMod = 1.0 - 0.40 * (dinoState.prevMacroWeight || 0);
+const reactBusy = (dinoState.time < dinoState.whipUntil || dinoState.time < dinoState.feedUntil) ? 0.12 : 1.0;
+const autoPauseMod = (1.0 - 0.85 * dinoState.hoverBlend) * (1.0 - 0.96 * dinoState.interactBlend) * reactBusy;
+if (!reducedMotionNow) {
+  dinoState.autoPhase = (dinoState.autoPhase + Math.min(Math.max(y, 0), 0.08) * 0.044 * dwellMod * autoPauseMod) % 1000.0;
+}
+const totalFlightS = dinoState.autoPhase + scrollS * 0.72;
+const spline = __ansDinoPatch.sampleFlightSpline(totalFlightS, dinoState.orbitFrameYaw);
+dinoState.prevMacroWeight = spline.macroWeight;
+if (dinoOrbitGroupRef.current) {
+  dinoOrbitGroupRef.current.rotation.y = dinoState.orbitFrameYaw;
+}
+dinoState.orbitUniforms.uTime.value = dinoState.time;
+dinoState.orbitUniforms.uPhase.value = spline.phase;
+dinoState.orbitUniforms.uAlpha.value = (de ? 0.22 : 1.0) * (1.0 - dinoState.interactBlend * 0.88);
+
 const macroW = Math.max(de ? 0 : spline.macroWeight, dinoState.interactBlend);
 const flightRaw = Math.abs(J - q);
-const flightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
-const _=w().camera;if(p&&_.isPerspectiveCamera){p.updateWorldMatrix(!0,!1),p.matrixWorld.decompose(Oe.current,_e.current,ot.current);const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
+const scrollFlightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
+const cruiseFlightSpeed = reducedMotionNow ? 0 : (0.36 * dwellMod * autoPauseMod);
+const flightSpeed = f.clamp(Math.max(scrollFlightSpeed, cruiseFlightSpeed), 0, 1);
+if(p&&_.isPerspectiveCamera){const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
 // Dual-Subject Camera Patrol:
-// 1) Dynamic pullback: pull back generously (1.28x..1.44x) during wide 3D orbit and (1.28x) in Interactive Stage so both the complete dinosaur and founder stay comfortably framed!
-const orbitPull = 1.28 + 0.12 * (1.0 - macroW) + 0.06 * Math.sin(scrollS * Math.PI) + 0.08 * flightSpeed;
+// 1) Dynamic pullback: pull back generously (1.28x..1.42x) during wide 3D orbit and (1.28x) in Interactive Stage so both the complete dinosaur and founder stay comfortably framed!
+const orbitPull = 1.28 + 0.10 * (1.0 - macroW) + 0.04 * Math.sin(spline.phase * Math.PI * 2.0) + 0.06 * scrollFlightSpeed;
 const macroPull = f.lerp(1.22, 1.28, dinoState.interactBlend);
 const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
 dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
 
-// 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit in CAMERA-LOCAL space!
+// 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit in CAMERA-ALIGNED (r, u, d) space!
 const patrolEase = Math.min(1, y * 4.5);
-const orbitOffsetX = spline.pos[0] - 0.26;
-const orbitOffsetY = spline.pos[1] - 0.08;
-const orbitOffsetZ = spline.pos[2] - 0.06;
-const patrolWeight = de ? 0.12 : (1.0 - macroW * 0.72);
-const targetPatrolX = -orbitOffsetZ * 0.28 * patrolWeight;
-const targetPatrolY = orbitOffsetY * 0.24 * patrolWeight;
-const targetPatrolYaw = f.clamp(orbitOffsetZ * 0.055 * patrolWeight, -0.09, 0.09);
-const targetPatrolPitch = f.clamp(orbitOffsetY * 0.065 * patrolWeight, -0.06, 0.06);
+const orbitR = spline.rud[0];
+const orbitU = spline.rud[1];
+const patrolWeight = de ? 0.10 : (1.0 - macroW * 0.72);
+const targetPatrolX = orbitR * 0.22 * patrolWeight;
+const targetPatrolY = orbitU * 0.22 * patrolWeight;
+const targetPatrolYaw = f.clamp(-orbitR * 0.048 * patrolWeight, -0.08, 0.08);
+const targetPatrolPitch = f.clamp(orbitU * 0.055 * patrolWeight, -0.06, 0.06);
 dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
 dinoState.camPatrolY += (targetPatrolY - dinoState.camPatrolY) * patrolEase;
 dinoState.camPatrolYaw += (targetPatrolYaw - dinoState.camPatrolYaw) * patrolEase;
@@ -2437,9 +2514,9 @@ if (dinoState.badge.updateCamStatus) {
   const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
   dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
 
-  const bobY = Math.sin(tNow * 2.4) * (0.018 * (1 - macroW * 0.45)) + Math.cos(tNow * 1.3) * 0.006;
-  const swayX = Math.cos(tNow * 1.6) * 0.010;
-  const swayZ = Math.sin(tNow * 1.4) * 0.012;
+  const bobY = Math.sin(tNow * 2.4) * (0.015 * (1 - dinoState.interactBlend * 0.45)) + Math.cos(tNow * 1.3) * 0.005;
+  const swayX = Math.cos(tNow * 1.6) * 0.008;
+  const swayZ = Math.sin(tNow * 1.4) * 0.009;
   let fx = spline.pos[0] + swayX;
   let fy = spline.pos[1] + bobY;
   let fz = spline.pos[2] + swayZ;
@@ -2451,7 +2528,7 @@ if (dinoState.badge.updateCamStatus) {
   const camRight = ot.current.set(1, 0, 0).applyQuaternion(dinoState.baseCamQuat);
 
   const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
-  const centerNdcX = f.lerp(-0.22, -0.14, dinoState.interactBlend);
+  const centerNdcX = f.lerp(-0.18, -0.14, dinoState.interactBlend);
   const centerNdcY = f.lerp(-0.02, -0.02, dinoState.interactBlend);
   const rightOffsetM = centerNdcX * worldHalfW;
   const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
@@ -2464,14 +2541,17 @@ if (dinoState.badge.updateCamStatus) {
   const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
   const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
 
-  fx = f.lerp(fx, macroLocalX, macroW);
-  fy = f.lerp(fy, macroLocalY, macroW);
-  fz = f.lerp(fz, macroLocalZ, macroW);
+  // Preserve 100% C² spline continuity during normal orbital flight (gentle 0.25 blend at W6 close-up),
+  // and lock 100% onto the Center-Stage point when the user enters the 3-click Interactive Mode!
+  const stagePinWeight = f.clamp(dinoState.interactBlend + (de ? 0 : spline.macroWeight * 0.25) * (1.0 - dinoState.interactBlend), 0, 1);
+  fx = f.lerp(fx, macroLocalX, stagePinWeight);
+  fy = f.lerp(fy, macroLocalY, stagePinWeight);
+  fz = f.lerp(fz, macroLocalZ, stagePinWeight);
 
-  if (dinoState.hoverBlend > 0.01 && macroW < 0.5) {
-    fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.22);
-    fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.22);
-    fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.22);
+  if (dinoState.hoverBlend > 0.01 && stagePinWeight < 0.5) {
+    fx = f.lerp(fx, macroLocalX, dinoState.hoverBlend * 0.18);
+    fy = f.lerp(fy, macroLocalY, dinoState.hoverBlend * 0.18);
+    fz = f.lerp(fz, macroLocalZ, dinoState.hoverBlend * 0.18);
   }
 
   // Full-Body Camera-Frustum Screen-Space Safety Guard (active at default view; yields smoothly when user manually zooms or orbits camera):
@@ -2485,8 +2565,8 @@ if (dinoState.badge.updateCamStatus) {
     if (ve.current.z > -1.0 && ve.current.z < 1.0) {
       const safeMinX = ce.current ? -0.60 : -0.66;
       const safeMaxX = ce.current ?  0.58 :  0.62;
-      const safeMinY = isInteractiveMode ? -0.18 : -0.34;
-      const safeMaxY = isInteractiveMode ?  0.16 :  0.24;
+      const safeMinY = isInteractiveMode ? -0.18 : -0.36;
+      const safeMaxY = isInteractiveMode ?  0.16 :  0.46;
       const clampedX = f.clamp(ve.current.x, safeMinX, safeMaxX);
       const clampedY = f.clamp(ve.current.y, safeMinY, safeMaxY);
       if (clampedX !== ve.current.x || clampedY !== ve.current.y) {
@@ -2584,23 +2664,26 @@ if (dinoState.badge.updateCamStatus) {
     const toCamHoriz = Math.hypot(camLocalX - fx, camLocalZ - fz);
     const toCamPitch = f.clamp(-Math.atan2(camLocalY - (fy + 0.45 * dinoState.scalePop), Math.max(0.1, toCamHoriz)) * 0.55 + dinoState.userPitch * 0.18, -0.25, 0.25);
 
-    const dirSign = (J >= q) ? 1 : -1;
+    const dirSign = (J >= q - 0.5) ? 1 : -1;
     const tangYaw = Math.atan2(spline.tangent[0] * dirSign, spline.tangent[2] * dirSign);
     let diffTang = tangYaw - toCamYaw;
     while (diffTang > Math.PI) diffTang -= Math.PI * 2;
     while (diffTang < -Math.PI) diffTang += Math.PI * 2;
 
     const faceCamLock = Math.max(macroW, dinoState.hoverBlend);
-    const orbitBankBlend = flightSpeed * 0.52 * (1.0 - faceCamLock);
-    const targetYaw = toCamYaw + diffTang * orbitBankBlend + reactionYawOffset + (dinoState.hovered ? ne.current.x * 0.18 : 0);
+    // Blend 38%..55% of the 3D Catmull-Rom tangent heading during orbital flight so the dinosaur visibly banks along its trajectory while keeping friendly eye contact!
+    const orbitHeadingBlend = (0.36 + 0.22 * scrollFlightSpeed) * (1.0 - faceCamLock);
+    const targetYaw = toCamYaw + diffTang * orbitHeadingBlend + reactionYawOffset + (dinoState.hovered ? ne.current.x * 0.18 : 0);
     let yawDelta = targetYaw - dinoState.yaw;
     while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
     while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
     dinoState.yaw += yawDelta * Math.min(1, dt * (whipActive || feedActive ? 16 : 9));
 
-    const orbitPitch = f.clamp(-spline.tangent[1] * dirSign * flightSpeed * 0.34 + flightSpeed * 0.12, -0.25, 0.25);
-    const targetPitch = f.lerp(orbitPitch, toCamPitch, faceCamLock) + reactionPitchOffset + Math.sin(tNow * 2.4 - 0.8) * 0.025;
-    const orbitRoll = f.clamp(-yawDelta * 0.42 + Math.sin(tNow * 6.0) * 0.05 * flightSpeed, -0.28, 0.28);
+    const climbVel = spline.velRud ? spline.velRud[1] : 0;
+    const orbitPitch = f.clamp(-climbVel * dirSign * 0.085 + flightSpeed * 0.08, -0.24, 0.24);
+    const targetPitch = f.lerp(orbitPitch, toCamPitch, faceCamLock) + reactionPitchOffset + Math.sin(tNow * 2.4 - 0.8) * 0.022;
+    const aeroCentripetalRoll = (spline.bankCurvature || 0) * 0.011 * flightSpeed;
+    const orbitRoll = f.clamp(-yawDelta * 0.38 - aeroCentripetalRoll + Math.sin(tNow * 5.2) * 0.035 * flightSpeed, -0.28, 0.28);
     const macroCuteTilt = Math.sin(tNow * 2.8) * 0.065 + (dinoState.hovered ? -ne.current.x * 0.08 : 0);
     const targetRoll = f.lerp(orbitRoll, macroCuteTilt, faceCamLock) + reactionRollOffset;
 
@@ -2741,6 +2824,62 @@ if (dinoState.badge.updateCamStatus) {
 if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)c.obj.getWorldPosition(K.current).project(_),s+=K.current.x,Q+=K.current.y;s/=S.length,Q/=S.length;const G=ne.current.x-s,ee=ne.current.y-Q,Y=me*G*f.degToRad(x.maxYaw)*x.gain,be=pe*-ee*f.degToRad(x.maxPitch)*x.gain,we=Math.hypot(G,ee),je=f.clamp(1-we/x.crossRadius,0,1),at=f.degToRad(x.crossEye)*je;for(const c of S){const m=c.sx??c.side??0,h=Y-m*at;Le.current.set(be,h,0),ze.current.setFromEuler(Le.current),Be.current.copy(ze.current).multiply(c.base),c.obj.quaternion.slerp(Be.current,x.smooth)}}),e.jsxs("group",{position:[0,.4,-.7],rotation:[0,0*Math.PI/180,0],scale:2.25,children:[
   e.jsx("primitive",{object:M}),
   e.jsx(At,{target:V,coordinateFrame:M}),
+  e.jsx("group",{
+    ref:dinoOrbitGroupRef,
+    position:[0.16,0.08,0.08],
+    children:e.jsxs("mesh",{
+      frustumCulled:!1,
+      renderOrder:8,
+      children:[
+        e.jsx("planeGeometry",{
+          args:[1,1,96,1],
+          onUpdate:geom=>{
+            const posAttr = geom.attributes.position;
+            if (!posAttr || geom.userData.orbitBuilt) return;
+            geom.userData.orbitBuilt = true;
+            const cols = 97;
+            for (let i = 0; i < cols; i++) {
+              const s = i / (cols - 1);
+              const sp = __ansDinoPatch.sampleFlightSpline(s, 0);
+              const r = sp.rud[0], u = sp.rud[1] + 0.12, d = sp.rud[2];
+              const halfW = 0.0085;
+              posAttr.setXYZ(i, r, u + halfW, d);
+              posAttr.setXYZ(cols + i, r, u - halfW, d);
+            }
+            posAttr.needsUpdate = true;
+            geom.computeBoundingSphere();
+          }
+        }),
+        e.jsx("shaderMaterial",{
+          transparent:!0,
+          depthWrite:!1,
+          toneMapped:!1,
+          side:Qe,
+          uniforms:dinoState.orbitUniforms,
+          vertexShader:"varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
+          fragmentShader:`
+            varying vec2 vUv;
+            uniform float uTime;
+            uniform float uPhase;
+            uniform float uAlpha;
+            void main() {
+              float cross = sin(clamp(vUv.y, 0.0, 1.0) * 3.14159265);
+              cross = pow(cross, 1.5);
+              float behind = fract(uPhase - vUv.x);
+              float wake = exp(-behind * 12.5) * smoothstep(0.30, 0.0, behind);
+              float dash = 0.45 + 0.55 * smoothstep(-0.2, 0.8, sin(vUv.x * 56.0 * 6.2831853 - uTime * 2.4));
+              float wpNode = pow(0.5 + 0.5 * cos(vUv.x * 8.0 * 6.2831853), 18.0) * 0.26;
+              vec3 baseCol = vec3(0.70, 0.90, 0.84);
+              vec3 wakeCol = vec3(1.00, 0.86, 0.64);
+              vec3 col = mix(baseCol, wakeCol, clamp(wake * 1.15 + wpNode, 0.0, 1.0));
+              float lineAlpha = (0.075 * dash + wpNode + wake * 0.46) * cross * uAlpha;
+              gl_FragColor = vec4(col, clamp(lineAlpha, 0.0, 0.68));
+            }
+          `
+        })
+      ]
+    })
+  }),
   e.jsxs("group",{
     ref:dinoFlightRef,
     position:[0.38,-0.18,0.64],
