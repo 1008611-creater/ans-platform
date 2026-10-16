@@ -1,4 +1,5 @@
 import type { DbTransaction } from "@/lib/db";
+import { readBenefitFunding } from "./benefit-billing";
 
 export function unifiedModelBilling() {
   return process.env.ANS_UNIFIED_POINTS_ENABLED === "1" && process.env.ANS_APIC_BILLING_ENABLED === "1";
@@ -10,10 +11,11 @@ export async function readMeteredRunCost(tx: DbTransaction, userId: string, pare
     where: { userId, provider: "apic-codex", AND: [
       { price: { path: ["parent", "type"], equals: parent.type } },
       { price: { path: ["parent", "id"], equals: parent.id } },
-    ] }, select: { state: true, settledPoints: true, authorizedPoints: true },
+    ] }, select: { state: true, settledPoints: true, authorizedPoints: true, price: true },
   });
   let settled = 0, pending = 0;
   for (const row of rows) {
+    if (readBenefitFunding(row.price)) continue; // Gift USD is recorded in the separate grant ledger.
     if (row.state === "SETTLED") settled += Number(row.settledPoints ?? 0);
     if (["AUTHORIZED", "RUNNING", "UNCERTAIN"].includes(row.state)) pending += Number(row.authorizedPoints);
   }

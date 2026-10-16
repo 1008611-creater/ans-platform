@@ -4,29 +4,36 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Coins, KeyRound, Loader2, ArrowUpRight, ArrowRight, Ticket } from "lucide-react";
+import { Coins, KeyRound, Loader2, ArrowUpRight, ArrowRight, Ticket, Clock3, Cpu, TerminalSquare, FolderOpen, ReceiptText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RevealDetails } from "@/components/catalog/reveal-details";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import { Input } from "@/components/ui/input";
 import { getCreditProducts, LEGACY_CREDIT_PRODUCT, type CreditProduct } from "@/lib/credits-catalog";
+import { RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
+import type { PersonalApiHistory } from "@/server/quota/api-history";
+import { Badge } from "@/components/ui/badge";
 
-type Billing = { rechargeYuanPerPoint: number; usdQuotaPerPoint: number; gptConsumptionMultiplier: number; deepseekConsumptionMultiplier: number; rechargeEnabled: boolean };
-type CreditsProps = { actorId: string; billing: Billing; availablePoints: number; reservedPoints?: number; pendingCount?: number; products?: readonly CreditProduct[] };
+type Billing = { rechargeYuanPerPoint: number; usdQuotaPerPoint?: number | null; gptConsumptionMultiplier: number; deepseekConsumptionMultiplier: number; rechargeEnabled: boolean };
+type CreditsProps = { actorId: string; billing: Billing; availablePoints: number; reservedPoints?: number; pendingCount?: number; apiHistory?: PersonalApiHistory | null; products?: readonly CreditProduct[] };
 
 export function CreditsCenter(props: CreditsProps) {
   return <AccountContentBoundary actorId={props.actorId}><CreditsCenterSession key={props.actorId} {...props} /></AccountContentBoundary>;
 }
 
-function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoints = 0, pendingCount = 0, products = getCreditProducts({}) }: CreditsProps) {
+function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoints = 0, pendingCount = 0, apiHistory, products = getCreditProducts({}) }: CreditsProps) {
   const t = useTranslations("product.vouchers");
   const historyText = useTranslations("product.quotaHistory");
   const locale = useLocale();
   const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
+  const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
   const router = useRouter();
-  const flight = useRef(false);
+  const flight = useRef<{ controller: AbortController; timer: ReturnType<typeof setTimeout> } | null>(null);
   const alive = useRef(true);
-  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+  useEffect(() => { alive.current = true; return () => {
+    alive.current = false;
+    if (flight.current) { clearTimeout(flight.current.timer); flight.current.controller.abort(); flight.current = null; }
+  }; }, []);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -36,34 +43,85 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
 
   async function redeem() {
     if (flight.current) return;
-    flight.current = true; setBusy(true); setMessage(""); setOk(false);
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      if (flight.current?.controller !== controller) return;
+      controller.abort(); flight.current = null;
+      if (alive.current) { setBusy(false); setOk(false); setMessage(t("unconfirmed")); }
+    }, 20_000);
+    flight.current = { controller, timer }; setBusy(true); setMessage(""); setOk(false);
     try {
       const response = await fetch("/api/quota/redeem", {
-        method: "POST", headers: { "Content-Type": "application/json", "x-ans-actor": actorId }, body: JSON.stringify({ code }),
+        method: "POST", signal: controller.signal,
+        headers: { "Content-Type": "application/json", "x-ans-actor": actorId }, body: JSON.stringify({ code }),
       });
       const data = await response.json();
-      if (!alive.current) return;
+      if (!alive.current || controller.signal.aborted || flight.current?.controller !== controller) return;
       if (!response.ok) throw new Error(data.error);
       setOk(true); setMessage(t(data.duplicate ? "duplicate" : "success", { points: data.points }));
       setCode(""); router.refresh();
     } catch (error) {
-      if (!alive.current) return;
+      if (!alive.current || controller.signal.aborted || flight.current?.controller !== controller) return;
       const key = error instanceof Error ? error.message : "";
       setMessage(t(["VOUCHER_INVALID", "VOUCHER_USED", "RATE_LIMITED"].includes(key) ? key : "failed"));
-    } finally { flight.current = false; if (alive.current) setBusy(false); }
+    } finally {
+      clearTimeout(timer);
+      if (flight.current?.controller === controller) { flight.current = null; if (alive.current) setBusy(false); }
+    }
   }
 
   return <div className="space-y-5">
+    <section aria-labelledby="credits-balance-heading" className="rounded-3xl border bg-card p-6 sm:p-8">
+      <h2 id="credits-balance-heading" className="text-sm font-medium text-muted-foreground">{t("balanceHeading")}</h2>
+      <dl className="mt-5 grid gap-6 sm:grid-cols-2">
+        <div className="min-w-0"><dt className="flex items-center gap-2 text-sm text-muted-foreground"><Coins className="size-4 text-primary" aria-hidden="true" />{t("balance")}</dt><dd className="mt-3 break-words text-4xl font-semibold tracking-tight tabular-nums [overflow-wrap:anywhere] sm:text-5xl">{numbers.format(availablePoints)}<span className="ms-2 text-base font-normal text-muted-foreground">{t("pointsUnit")}</span></dd></div>
+        <div className="min-w-0"><dt className="flex items-center gap-2 text-sm text-muted-foreground"><Clock3 className="size-4" aria-hidden="true" />{t("reserved")}</dt><dd className="mt-3 break-words text-3xl font-semibold tracking-tight tabular-nums [overflow-wrap:anywhere] sm:text-4xl">{numbers.format(reservedPoints)}<span className="ms-2 text-base font-normal text-muted-foreground">{t("pointsUnit")}</span></dd><p className="mt-2 text-xs leading-6 text-muted-foreground">{t("reservationExplanation")}</p></div>
+      </dl>
+      <p className="mt-5 max-w-3xl text-sm leading-6 text-muted-foreground">{t("rules", { gpt: billing.gptConsumptionMultiplier, deepseek: billing.deepseekConsumptionMultiplier })}</p>
+      {pendingCount > 0 && <aside className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4"><h3 className="text-sm font-medium">{t("pendingTitle", { count: pendingCount })}</h3><p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{t("pendingExplanation")}</p><span className="sr-only">{historyText("pending", { count: pendingCount })}</span><span className="sr-only">{historyText("hold")}</span></aside>}
+    </section>
+    <section aria-labelledby="credits-models-heading" className="rounded-3xl border bg-card p-6 sm:p-8">
+      <div className="flex items-center gap-2"><Cpu className="size-5 text-primary" aria-hidden="true" /><h2 id="credits-models-heading" className="font-semibold">{t("modelsTitle")}</h2></div>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{t("modelsDescription")}</p>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-3">{RUN_MODEL_OPTIONS.map(model => <li key={model.key} className="min-w-0 rounded-xl border p-4"><p className="font-medium">{model.label}</p><p className="mt-1 break-all font-mono text-xs text-muted-foreground">{model.key}</p><p className="mt-4 text-sm">{t("modelMultiplier", { multiplier: RUN_MODEL_METERING[model.key].consumptionMultiplier })}</p></li>)}</ul>
+      <p className="mt-3 text-xs leading-6 text-muted-foreground">{t("modelRatesNote")}</p>
+      <nav aria-label={t("entryPoints")} className="mt-5 grid gap-3 border-t pt-5 sm:grid-cols-2">
+        {([
+          { href: "/workspace/models", title: "plazaTitle", body: "plazaBody", icon: Cpu },
+          { href: "/settings", title: "connectionTitle", body: "connectionBody", icon: TerminalSquare },
+          { href: "/projects", title: "projectsTitle", body: "projectsBody", icon: FolderOpen },
+          { href: "/workflows/runs", title: "runsTitle", body: "runsBody", icon: ReceiptText },
+          { href: "/workspace/compute", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
+        ] as const).map(({ href, title, body, icon: Icon }) => <Link key={href} href={href} className="flex min-w-0 items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{t(title)}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{t(body)}</p></div><ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
+      </nav>
+    </section>
+    {apiHistory !== undefined && <section aria-labelledby="credits-api-history-heading" className="rounded-3xl border bg-card p-6 sm:p-8">
+      <h2 id="credits-api-history-heading" className="flex items-center gap-2 font-semibold"><ReceiptText className="size-5 text-primary" aria-hidden="true" />{t("apiHistoryTitle")}</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{t("apiHistoryScope")}</p>
+      <p className="mt-2 text-xs text-muted-foreground">{t("apiHistoryTimezone")}</p>
+      {apiHistory === null ? <p role="alert" className="mt-4 text-sm text-destructive">{t("apiHistoryUnavailable")}</p>
+        : apiHistory.length === 0 ? <p className="mt-4 text-sm text-muted-foreground">{t("apiHistoryEmpty")}</p>
+        : <ol className="mt-5 space-y-3">{apiHistory.map(request => {
+          const pending = request.state === "AUTHORIZED" || request.state === "RUNNING" || request.state === "UNCERTAIN";
+          return <li key={request.id} className="min-w-0 rounded-xl border p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3"><p className="min-w-0 break-all text-sm font-medium">{request.modelId}</p><Badge variant={pending ? "outline" : "secondary"}>{t(`apiStates.${request.state}`)}</Badge></div>
+            {request.funding === "gift" && <p className="mt-3 text-sm text-muted-foreground">{t("apiGiftFunding")}</p>}
+            <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
+              <div className="min-w-0 sm:col-span-2"><dt className="text-xs text-muted-foreground">{t("apiRequestId")}</dt><dd className="mt-1 break-all font-mono text-xs">{request.id}</dd></div>
+              <div><dt className="text-xs text-muted-foreground">{t("apiAuthorized")}</dt><dd className="mt-1 tabular-nums">{t("apiPoints", { points: numbers.format(request.authorizedPoints) })}</dd></div>
+              <div><dt className="text-xs text-muted-foreground">{t("apiSettled")}</dt><dd className="mt-1 tabular-nums">{pending || request.settledPoints === null ? t("apiUnconfirmed") : t("apiPoints", { points: numbers.format(request.settledPoints) })}</dd></div>
+              <div><dt className="text-xs text-muted-foreground">{t("apiCreatedAt")}</dt><dd className="mt-1"><time dateTime={request.createdAt}>{dates.format(new Date(request.createdAt))}</time></dd></div>
+              {request.startedAt && <div><dt className="text-xs text-muted-foreground">{t("apiStartedAt")}</dt><dd className="mt-1"><time dateTime={request.startedAt}>{dates.format(new Date(request.startedAt))}</time></dd></div>}
+              {!pending && request.finishedAt && <div><dt className="text-xs text-muted-foreground">{t("apiFinishedAt")}</dt><dd className="mt-1"><time dateTime={request.finishedAt}>{dates.format(new Date(request.finishedAt))}</time></dd></div>}
+            </dl>
+            {request.state === "UNCERTAIN" && <p className="mt-4 text-sm leading-6 text-muted-foreground">{t("apiUncertainBody")}</p>}
+          </li>;
+        })}</ol>}
+    </section>}
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-      <section className="rounded-3xl border bg-card p-6 sm:p-8" aria-labelledby="credits-balance-heading">
-        <dl className="grid min-w-0 gap-5 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="min-w-0"><dt id="credits-balance-heading" className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><Coins className="size-4 text-primary" aria-hidden="true" />{t("balance")}</dt><dd className="mt-4 break-all text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">{numbers.format(availablePoints)}</dd></div>
-          <div className="min-w-0"><dt className="text-sm text-muted-foreground">{historyText("reserved")}</dt><dd className="mt-4 break-all text-2xl font-semibold tabular-nums">{numbers.format(reservedPoints)}</dd></div>
-        </dl>
-        {pendingCount > 0 && <aside className="mt-5 space-y-1 text-sm"><p className="font-medium">{historyText("pending", { count: pendingCount })}</p><p className="max-w-xl leading-6 text-muted-foreground">{historyText("hold")}</p></aside>}
-        <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">{t("rules", { gpt: billing.gptConsumptionMultiplier, deepseek: billing.deepseekConsumptionMultiplier })}</p>
-        <div className="mt-7 border-t pt-5">
-          <RevealDetails id="credits-purchase-guide" kind="heading" label={t("purchaseGuide")} className="pe-12" details={<p>{t("catalogDescription")}</p>}><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-semibold">{t("catalogTitle")}</h2><span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">{t("oneTime")}</span></div></RevealDetails>
+      <section className="rounded-3xl border bg-card p-6 sm:p-8" aria-labelledby="credits-purchase-heading">
+        <div>
+          <RevealDetails id="credits-purchase-guide" kind="heading" label={t("purchaseGuide")} className="pe-12" details={<p>{t("catalogDescription")}</p>}><div className="flex flex-wrap items-center justify-between gap-3"><h2 id="credits-purchase-heading" className="font-semibold">{t("catalogTitle")}</h2><span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">{t("oneTime")}</span></div></RevealDetails>
           <fieldset className="mt-4"><legend className="sr-only">{t("chooseAmount")}</legend>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{products.map(product => <label key={product.points} className="relative cursor-pointer">
               <input className="peer sr-only" type="radio" name="credit-denomination" value={product.points} checked={selectedPoints === product.points} onChange={() => setSelectedPoints(product.points)} />

@@ -110,3 +110,25 @@ export interface EvidenceList {
     } | null;
     nextCursor: string | null;
 }
+export interface EvidenceArchiveEntry {
+    path: string;
+    size: number;
+    isText: boolean;
+}
+export interface EvidenceArchiveInspection {
+    objectId: string;
+    fileName: string;
+    sha256: string;
+    byteLength: number;
+    format: "tar.gz" | "zip" | "text" | "binary";
+    totalFiles: number;
+    entries: EvidenceArchiveEntry[];
+    selectedFile: {
+        path: string;
+        size: number;
+        content: string;
+        truncated: boolean;
+        isText: boolean;
+    } | null;
+}
+

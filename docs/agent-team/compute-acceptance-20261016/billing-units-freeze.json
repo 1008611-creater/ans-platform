@@ -1,0 +1,24 @@
+{
+  "baseline": "9ceb01645020a1d172adb958476285f192135bb1",
+  "status": "local-only-awaiting-independent-review",
+  "files": {
+    "src/server/integrations/model-billing-policy.ts": "1fb3076bb71f8d5996f9d0245b3fc588d58d8c50d906e916f522e394bbfd7d37",
+    "src/server/integrations/codex-gateway.ts": "539b977ab2e4dde1c1bedd1dd43a2466d3310fe2ac17e2f832fa6faa70ac484a",
+    "src/server/integrations/claude-policy.ts": "5eab99d99cf3976a9d6642e5c596c72bf350c9da55b3868f8b43d5f02fab2b23",
+    "src/server/integrations/claude-gateway.ts": "df09502f5fff883af292f58722c83d4ad504194c0cf1e5e58e5cafc869930a2b",
+    "src/server/integrations/apic-billing.ts": "020ffa0dffb229aa1cf0d998d8dc2fde0c25c49dbd15464b8e57b1ed9fcb130c",
+    "src/server/integrations/gateway-evidence.ts": "5caa62afcf2dfb530a93f67e66fe3d18a99fa441b854ff248f2c36c1a64d6a5e",
+    "src/server/integrations/model-client.ts": "6a9b6ac32a3db5472a553adf4d76347a9fd8c14a18eb7f8d7f53286ce1e0c392",
+    "prisma/migrations/20261016120000_model_billing_units_v2/migration.sql": "90de22506fc07ad1d41ed68a85db03e0797bde90b9ba9a9bedd403e54202b940",
+    "scripts/verify-model-billing-units.py": "80f8fb3ec3f61dc96bdfbc85e41d60dcd0d71325ff5ae37b3fa0037ab728f11d",
+    "scripts/fixtures/model-billing-units-before.sql": "bf421c093f96049a933c215bfbc136c5c64be495bf174389d9ce08a7cdf9bd34",
+    "scripts/fixtures/model-billing-units-after.sql": "cf911b7dc5ca2e40210092c029a375d112c02079d0477f89bb295634367eb8eb",
+    "src/__tests__/lib/model-billing-policy.test.ts": "6a1c515761ef1e883f1fdbe7e47b8d169351fa3649fa126cdf0bb5b5be5f89ec",
+    "src/__tests__/lib/gateway-billing-units.test.ts": "e25f31920d90f77d616d8689b302be6279cba59fb3d55937136f390eefbe8cf0",
+    "src/__tests__/lib/codex-gateway.test.ts": "d8bcb93686b2fbfa367029d23546638d29741a0b7c5701c1f45904bba2ec08d3",
+    "src/__tests__/lib/claude-policy.test.ts": "3e06e2b35960db8e2860791f1ab24477731db092070f32ae70c1ea9334b5835f",
+    "src/__tests__/lib/apic-billing.test.ts": "89743445a9fde3aa2761ee8442e7b251e9da7eaffdec1502bfa3f35b5a202716",
+    "src/__tests__/lib/unified-model-billing.test.ts": "e019246c73f890b677f4dc82438c56b77110dc3ca0b81e42e3162179a0a7c7ac",
+    "src/__tests__/lib/model-billing-fixture.ts": "0f31cddaf357fa3d5fd55dd6b557e862574a1c062f4baa8532df13e902a1e5e8"
+  }
+}

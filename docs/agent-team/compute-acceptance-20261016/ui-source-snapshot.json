@@ -1,0 +1,62 @@
+﻿[
+    {
+        "path":  "src/app/workspace/models/page.tsx",
+        "sha256":  "559b2fef0b26fa9f7b9efd7a8930e0991d2b0a4f349ae6c23c600d0f789ab8d3"
+    },
+    {
+        "path":  "src/components/workspace/model-plaza.tsx",
+        "sha256":  "0cbef19f47c9b56bc12024dc7559b13c4c608f084b5f59fe45b7c2f8a4291b93"
+    },
+    {
+        "path":  "src/components/workspace/credits-center.tsx",
+        "sha256":  "71295f1d587ecebf9936b20b9790e46f4f96024c1eeeedc8bd86a331aa6d3713"
+    },
+    {
+        "path":  "src/app/workspace/credits/page.tsx",
+        "sha256":  "cb1590b13a0d407df034271647c8275d22ba1101efbe02209dfbba2fc813f415"
+    },
+    {
+        "path":  "src/server/quota/api-history.ts",
+        "sha256":  "1b0c8bb419a1ef7255026c6ed013193ad1b2e80ed96161e5b1f27dd2aa54b200"
+    },
+    {
+        "path":  "src/__tests__/components/model-plaza.test.tsx",
+        "sha256":  "fe7204a0b1f41c859ee588c76140d54f69e3b6ae18e0ce244c522cb4d4606639"
+    },
+    {
+        "path":  "src/__tests__/components/credits-offers.test.tsx",
+        "sha256":  "8bd5a0630c2b9d0d62b286a85570582e32844950386025bec44e3eeada1a095a"
+    },
+    {
+        "path":  "src/__tests__/components/billing-copy.test.ts",
+        "sha256":  "f9b35020aaa2ec9a2b803ce24438c18ebcb5475ae6c6ad590f4d4c3d41e7c8ec"
+    },
+    {
+        "path":  "src/__tests__/lib/personal-api-history.test.ts",
+        "sha256":  "506e69ea93a2c03f8ca3e6b0d532aef9ed919cac58b5ace977a13d6e785f7a10"
+    },
+    {
+        "path":  "src/__tests__/lib/credits-catalog-ui.test.tsx",
+        "sha256":  "e33fe34a0cc55c4bfa01283269be923173ba0c21118d8903b041fb031aa35895"
+    },
+    {
+        "path":  "src/__tests__/lib/voucher-ui.test.tsx",
+        "sha256":  "22184f5d8f9702d1c0538e7e97b781b8c6951f615e2fab472f7c6ef6f2596a5d"
+    },
+    {
+        "path":  "messages/product/zh.json",
+        "sha256":  "08279cff3f3a99f92124916ad769cb4aed9fe7d4e34e6e9ea654e03c5e6f3653"
+    },
+    {
+        "path":  "messages/product/en.json",
+        "sha256":  "05fc964a2a69101b53086ade69b8b36ed41dfa3b3a4d3604fc63046c55f6ed71"
+    },
+    {
+        "path":  "messages/learning/zh.json",
+        "sha256":  "3e48bf604f04e5d43823edd439ebf4801ce39b692473db4bdfa9916a77ec12ac"
+    },
+    {
+        "path":  "messages/learning/en.json",
+        "sha256":  "b80e2db8dd5d3a5858ccd824f6807b3fe3735ca94a87c0f2db4a303e801aaae1"
+    }
+]

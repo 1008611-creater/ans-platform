@@ -1,30 +1,10 @@
 import { gunzipSync, inflateRawSync } from "node:zlib";
+import type { EvidenceArchiveEntry, EvidenceArchiveInspection } from "@/contracts/agri-evidence";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { authorizedEvidenceDownload } from "./evidence";
 import { readEvidence } from "./evidence-storage";
 
-export interface EvidenceArchiveEntry {
-  path: string;
-  size: number;
-  isText: boolean;
-}
-
-export interface EvidenceArchiveInspection {
-  objectId: string;
-  fileName: string;
-  sha256: string;
-  byteLength: number;
-  format: "tar.gz" | "zip" | "text" | "binary";
-  totalFiles: number;
-  entries: EvidenceArchiveEntry[];
-  selectedFile: {
-    path: string;
-    size: number;
-    content: string;
-    truncated: boolean;
-    isText: boolean;
-  } | null;
-}
+export type { EvidenceArchiveEntry, EvidenceArchiveInspection };
 
 const MAX_ARCHIVE_READ_BYTES = 64 * 1024 * 1024;
 const MAX_DECOMPRESSED_TAR_BYTES = 96 * 1024 * 1024;

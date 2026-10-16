@@ -1,0 +1,20 @@
+{
+  "containerId": "fb6bb452871029943416aa1cad3bfda0154aeeac0d6ec447395777896c5a6858",
+  "database": "ans_compute_units_20261016",
+  "copiedProductionData": false,
+  "createdService": false,
+  "passed": true,
+  "baseMigrations": 91,
+  "migrationSha256": "90de22506fc07ad1d41ed68a85db03e0797bde90b9ba9a9bedd403e54202b940",
+  "assertions": [
+    "historical rows and evidence unchanged",
+    "GPT .16 applied once; FX7; 10points/CNY; capped excess in same unit",
+    "Opus accepted by real quote constraint; retail1 independent of procurement.8",
+    "legacy request still reconciles after migration without FX",
+    "old Opus, over-budget and corrupt new snapshots fail closed",
+    "mixed-unit receipts, overspend, quote mutation, historical evidence deletion rejected",
+    "explicit nonexecution zero-refund evidence remains valid",
+    "free TTS branch preserved"
+  ],
+  "cleanup": true
+}

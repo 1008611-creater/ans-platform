@@ -2,7 +2,7 @@
  * an estimate, token count, client field, or the asynchronously updated balance.
  * The bridge scopes every lookup to the dedicated ANS infrastructure token.
  */
-export type ApicCharge = { requestId: string; quota: number; points: number };
+export type ApicCharge = { requestId: string; quota: number; /** Legacy USD-credit alias; never ANS retail points. */ points: number; usdCredit?: number; memberPoints?: number };
 export async function readApicCharge(requestId: string, attempts = 15): Promise<ApicCharge> {
   if (!/^[A-Za-z0-9_-]{8,128}$/.test(requestId)) throw new Error("APIC_BILLING_REQUEST_ID_INVALID");
   const base = process.env.APIC_COST_BRIDGE_URL;
@@ -18,8 +18,9 @@ export async function readApicCharge(requestId: string, attempts = 15): Promise<
     if (!charge || typeof charge !== "object") throw new Error("APIC_BILLING_INVALID");
     const value = charge as Record<string, unknown>;
     if (value.requestId !== requestId || !Number.isSafeInteger(value.quota) || Number(value.quota) < 0 || Number(value.quota) > 500_000_000) throw new Error("APIC_BILLING_INVALID");
-    // APIC quota unit is verified as 1 / 500000 USD credit (two micro-points).
-    return { requestId, quota: Number(value.quota), points: Number(value.quota) / 500000 };
+    // APIC quota is 1 / 500000 USD CREDIT, not an ANS point. Conversion
+    // belongs to the immutable request billing snapshot; old points is an alias.
+    return { requestId, quota: Number(value.quota), usdCredit: Number(value.quota) / 500000, points: Number(value.quota) / 500000 };
   }
   throw new Error("APIC_BILLING_PENDING");
 }

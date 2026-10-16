@@ -8,6 +8,7 @@ import { POST } from "@/app/api/quota/claim/route";
 const tx = { user: { findUnique: m.read, updateMany: m.update, findUniqueOrThrow: m.balance, update: m.credit }, quotaLedger: { create: m.ledger }, $queryRaw: m.lock, quotaPool: { findFirst: m.pool, updateMany: m.claimPool } };
 beforeEach(() => {
   vi.stubEnv("AUTH_URL", "https://ans.cauai.fun");
+  vi.stubEnv("ANS_COMPUTE_BENEFITS_ENABLED", "0");
   vi.resetAllMocks(); m.transaction.mockImplementation(fn => fn(tx));
   m.auth.mockResolvedValue({ user: { id: "member" } });
   m.read.mockResolvedValue({ role: "ADMIN", flagged: false, deletedAt: null, adminPermissions: ["USERS_MANAGE"], quotaClaimedAt: null });
@@ -18,6 +19,13 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 const claimRequest = (actor = "member", origin = "https://ans.cauai.fun") => new Request("https://ans.cauai.fun/api/quota/claim", { method: "POST", headers: { Origin: origin, "Content-Type": "application/json", "x-ans-actor": actor }, body: "{}" });
 describe("credit integrity", () => {
+  it("requires the questionnaire when model gifts replace the old public claim", async () => {
+    vi.stubEnv("ANS_COMPUTE_BENEFITS_ENABLED", "1");
+    const response = await POST(claimRequest());
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "QUESTIONNAIRE_REQUIRED", href: "/workspace/benefits" });
+    expect(m.transaction).not.toHaveBeenCalled();
+  });
   it.each([NaN, Infinity, -Infinity, Number.MAX_SAFE_INTEGER])("rejects unsafe amount %s", value => expect(() => normalizeQuotaAmount(value)).toThrow());
   it("keeps six-digit precision", () => expect(normalizeQuotaAmount(0.1234564)).toBe(0.123456));
   it.each([0, NaN, Infinity])("rejects invalid adjustment %s", async amount => {

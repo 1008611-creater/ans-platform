@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { blockUnmeteredConsumerAI } from "@/server/integrations/legacy-consumer-ai";
 import { translateContent } from "@/lib/ai/generation";
 import { z } from "zod";
 
@@ -17,6 +18,9 @@ export async function POST(request: NextRequest) {
       { status: 401 }
     );
   }
+
+  const pointsBoundary = blockUnmeteredConsumerAI();
+  if (pointsBoundary) return pointsBoundary;
 
   try {
     const body = await request.json();
