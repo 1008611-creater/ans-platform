@@ -1,5 +1,6 @@
 import { marketProductPath } from "@/domain/marketplace/product-route";
 import { MarketProductConnections } from "@/components/marketplace/market-product-connections";
+import { warmCatalogForRequest } from "@/server/catalog/connections";
 import { cache, Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -26,6 +27,7 @@ export const dynamic = "force-dynamic";
 type MarketDetailProps = { params: Promise<{ slug: string }> };
 
 const publishedListing = cache(async (slug: string) => {
+  warmCatalogForRequest();
   try { return await readMarketPage(slug); }
   catch (error) {
     if (error instanceof MarketRuleError && error.code === "NOT_FOUND") notFound();
