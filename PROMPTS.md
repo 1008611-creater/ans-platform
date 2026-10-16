@@ -176288,19 +176288,6 @@ In my library there are 4 or section 1-new admission after completion of 1 month
 </details>
 
 <details>
-<summary><strong>Pest Control</strong></summary>
-
-## Pest Control
-
-Contributed by @anonymous
-
-```md
-I wanna make a engaging and 1 month content for his social media, his company is pest control. Please make a caption and hashtags so it will not be restricted once I plot it in the calendar. It includes reels, carousel, and everything that must included
-```
-
-</details>
-
-<details>
 <summary><strong>Reverse Brief</strong></summary>
 
 ## Reverse Brief
