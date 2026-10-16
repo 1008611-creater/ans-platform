@@ -9,8 +9,7 @@ export default async function VibeHubPage({ searchParams }: Props) {
   const lang = languageParam(params.lang, await getLocale());
   const data = await readVibeData<CatalogData>("catalog.json");
   if (!data) return <main className="vh-page"><h1>{labels[lang].terms}</h1><p>{labels[lang].unavailable}</p></main>;
-  const localized = { ...data, entries: data.entries.map(entry => ({ ...entry, en: { ...entry.en, preview: lang === "en" ? entry.en.preview : "" }, zh: { ...entry.zh, preview: lang === "zh" ? entry.zh.preview : "" } })) };
-  return <Catalog key={`${params.topic || data.topics[0]?.slug || "ai"}:${params.q || ""}:${lang}`} data={localized} initialTopic={params.topic} initialQuery={params.q} />;
+  return <Catalog key={`${params.topic || data.topics[0]?.slug || "ai"}:${params.q || ""}:${lang}`} data={data} initialTopic={params.topic} initialQuery={params.q} />;
 }
 export async function generateMetadata({ searchParams }: Props) {
   const lang = languageParam((await searchParams).lang, await getLocale());

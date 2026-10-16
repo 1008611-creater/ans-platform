@@ -36,6 +36,7 @@ function Navigation() {
   function switchLanguage() {
     const nextLang = lang === "zh" ? "en" : "zh";
     setSavedLanguage(nextLang);
+    document.cookie = `NEXT_LOCALE=${nextLang}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     const next = new URLSearchParams(params.toString()); next.set("lang", nextLang);
     window.location.assign(`${pathname}?${next}${window.location.hash}`);
   }

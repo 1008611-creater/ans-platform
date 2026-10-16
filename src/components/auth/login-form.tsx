@@ -107,7 +107,7 @@ export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
           {isLoading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
           {t("login")}
         </Button>
-        <Link href="/reset-password" className="block text-center text-xs text-muted-foreground hover:underline">忘记密码？</Link>
+        <Link href="/reset-password" className="block text-center text-xs text-muted-foreground hover:underline">{t("forgotPassword")}</Link>
       </form>
     </Form>
   );

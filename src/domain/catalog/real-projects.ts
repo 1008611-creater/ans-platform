@@ -23,9 +23,21 @@ export const REAL_CATALOG_PROJECTS = [
         "prompt": "在 3D 个人网站工作流中替换个人文案与 3D 资产。",
         "skill": "进入项目即可直接滚动与点击体验。",
         "sourceNote": "ANS 官方互动展示项目。直接同源复用站内 3D 吉祥物资产。"
+      },
+      "en": {
+        "title": "ANS × Little Dino Dual 3D Interactive Showcase",
+        "summary": "Interactive WebGL stage featuring the creator 3D avatar and ANS mascot Little Dino with scroll-driven clockwise orbit flight, macro facial expressions, and hover/click chatter.",
+        "sample": "ans.cauai.fun/showcase/ans-3d/index.html",
+        "output": "Real-time dual-3D interactive webpage, clockwise companion camera rig, and live product tour",
+        "inputs": "Scroll wheel controls orbit flight path; hover or click Little Dino to trigger head-pats and playful chatter",
+        "decisions": "Combines a 3D portfolio base with mascot skeletal animation, GLSL expression shaders, and macro camera scheduling",
+        "model": "Browsing and interacting require zero AI compute points.",
+        "prompt": "Replace personal copy and 3D assets in the 3D Personal Website workflow.",
+        "skill": "Open the project to scroll and interact immediately in your browser.",
+        "sourceNote": "Official ANS interactive showcase reusing same-origin 3D mascot assets."
       }
     },
-    "coverUrl": "/catalog/gitglow-v1/liu-resume.webp",
+    "coverUrl": "/catalog/gitglow-v1/ans-3d-showcase.svg",
     "coverNote": "3D 双模型互动展示 · 主理人 × 小恐龙"
   },
   {
@@ -49,6 +61,18 @@ export const REAL_CATALOG_PROJECTS = [
         "prompt": "在项目中编辑内容与提示词。",
         "skill": "进入项目，按使用指南操作。",
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
+      },
+      "en": {
+        "title": "Personal Resume & Portfolio Website",
+        "summary": "Build a personal showcase website powered by your real experience, public products, and featured works.",
+        "sample": "resume.cauai.fun/",
+        "output": "Public profile, product catalog, and interactive portfolio entry",
+        "inputs": "Browse the live site; prepare your own experience and works to build your version",
+        "decisions": "Redesign around your authentic experience rather than copying someone else's resume",
+        "model": "No AI model compute required for browsing and local editing.",
+        "prompt": "Edit content and structured prompts directly inside the studio.",
+        "skill": "Open the project and follow the step-by-step guide.",
+        "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
     "coverUrl": "/catalog/gitglow-v1/liu-resume.webp",
@@ -74,6 +98,18 @@ export const REAL_CATALOG_PROJECTS = [
         "prompt": "在项目中编辑内容与提示词。",
         "skill": "进入项目，按使用指南操作。",
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
+      },
+      "en": {
+        "title": "Image2 Prompt Case Library",
+        "summary": "Inspect verified source images first, then study prompt structure, save favorites, and remix variations.",
+        "sample": "image2.cauai.fun/",
+        "output": "Provenance-backed image & prompt cases, collection tools, and creation entry",
+        "inputs": "Your creative direction and reference cases you want to study",
+        "decisions": "Verify original authorship and usage scope before adapting prompts",
+        "model": "Check available image models inside the project.",
+        "prompt": "Edit content and prompts inside the project.",
+        "skill": "Open the project and follow the usage guide.",
+        "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
     "coverUrl": "/catalog/gitglow-v1/image2-library.webp",
