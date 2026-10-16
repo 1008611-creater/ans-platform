@@ -71,21 +71,26 @@ export async function getProjectConnections(project: CatalogProject) {
   const workflows = await workflowsFor([project]);
   const offers = await offersFor([project], workflows);
   // An explicitly associated market workflow can expose its reviewed source too.
-  const bound = (await Promise.all(offers.flatMap(offer => offer.listing.execution ? [resolveWorkflowId(offer.listing.execution.workflowId)] : []))).filter(workflow => workflow !== null);
+  const knownIds = new Set(workflows.map(workflow => workflow.id));
+  const bound = (await Promise.all(offers.flatMap(offer => offer.listing.execution && !knownIds.has(offer.listing.execution.workflowId) ? [resolveWorkflowId(offer.listing.execution.workflowId)] : []))).filter(workflow => workflow !== null);
   return connections([], [...new Map([...workflows, ...bound].map(workflow => [workflow.slug, workflow])).values()], offers);
 }
 export async function getWorkflowConnections(workflow: PublicWorkflow) {
   if (!await readWorkflow(workflow.slug)) return connections([], [], []);
-  const boundOffers = await offersFor([], [workflow]);
+  const [boundOffers, catalog] = await Promise.all([offersFor([], [workflow]), listPublishedCatalog()]);
   const boundSlugs = new Set(boundOffers.map(offer => offer.slug));
-  const projects = (await listPublishedCatalog()).filter(project => project.workflowSlugs?.includes(workflow.slug) || marketSlugs([project]).some(slug => boundSlugs.has(slug)));
+  const projects = catalog.filter(project => project.workflowSlugs?.includes(workflow.slug) || marketSlugs([project]).some(slug => boundSlugs.has(slug)));
   const offers = await offersFor(projects, [workflow]);
   return connections(projects, [], offers);
 }
 export async function getMarketConnections(offer: MarketOfferView) {
-  if (!await readableOffer(offer)) return connections([], [], []);
-  const bound = offer.listing.execution ? await resolveWorkflowId(offer.listing.execution.workflowId) : null;
-  const projects = (await listPublishedCatalog()).filter(project => marketSlugs([project]).includes(offer.slug) || Boolean(bound && project.workflowSlugs?.includes(bound.slug)));
+  const [validOffer, bound, catalog] = await Promise.all([
+    readableOffer(offer),
+    offer.listing.execution ? resolveWorkflowId(offer.listing.execution.workflowId) : Promise.resolve(null),
+    listPublishedCatalog(),
+  ]);
+  if (!validOffer) return connections([], [], []);
+  const projects = catalog.filter(project => marketSlugs([project]).includes(offer.slug) || Boolean(bound && project.workflowSlugs?.includes(bound.slug)));
   const workflows = await workflowsFor(projects);
   if (bound && !workflows.some(workflow => workflow.slug === bound.slug)) workflows.unshift(bound);
   const offers = (await offersFor(projects, workflows)).filter(item => item.slug !== offer.slug);
