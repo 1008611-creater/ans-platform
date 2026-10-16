@@ -1,3 +1,4 @@
+import { prelockAgriTeamCharge } from "@/server/competitions/agrihackathon/credits";
 import { refreshMeteredParentCost } from "./metered-cost";
 import { upstreamFailureCode } from "./upstream-rejection";
 import { createHash, randomUUID } from "node:crypto";
@@ -145,6 +146,7 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
   let reservation:{id:string;price:Prisma.InputJsonObject};
   try {
     reservation=await db.$transaction(async tx=>{
+      const eventFunding = await prelockAgriTeamCharge(tx, user.id, parent);
       await lockGatewayBillingAccount(tx, user.id);
       let attemptKey=idempotency;
       let rootRequestId:string|undefined;
