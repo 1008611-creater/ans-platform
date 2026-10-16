@@ -64,7 +64,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 RUN groupadd --system --gid 1001 nodejs && \
-    useradd --system --uid 1001 --gid nodejs nextjs
+    useradd --system --uid 1001 --gid nodejs nextjs && \
+    mkdir -p -m 0700 /var/lib/ans-agri-evidence && \
+    chown nextjs:nodejs /var/lib/ans-agri-evidence
 
 # Copy standalone build output
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

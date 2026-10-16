@@ -55,9 +55,12 @@ services:
       # PCHAT_COLOR: "#6366f1"
       # PCHAT_AUTH_PROVIDERS: "credentials"
       # PCHAT_LOCALES: "en"
+    volumes:
+      - ans_agri_evidence:/var/lib/ans-agri-evidence
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   postgres_data:
+  ans_agri_evidence:

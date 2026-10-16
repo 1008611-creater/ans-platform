@@ -39,6 +39,7 @@ echo "[prompts.chat] Migrations applied successfully."
 # Ensure local durable storage directory for AgriHackathon code hosting & evidence
 if [ -n "${ANS_AGRI_EVIDENCE_LOCAL_DIR:-/var/lib/ans-agri-evidence}" ]; then
   mkdir -p "${ANS_AGRI_EVIDENCE_LOCAL_DIR:-/var/lib/ans-agri-evidence}" 2>/dev/null || true
+  chmod 0700 "${ANS_AGRI_EVIDENCE_LOCAL_DIR:-/var/lib/ans-agri-evidence}" 2>/dev/null || true
 fi
 
 # Bootstrap AgriHackathon 2026 competition & workspace (idempotent)

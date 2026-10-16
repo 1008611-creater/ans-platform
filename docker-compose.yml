@@ -80,9 +80,14 @@ services:
       PCHAT_FEATURE_AI_GENERATION: "false"
       PCHAT_FEATURE_MCP: "true"
       PCHAT_FEATURE_COMMENTS: "true"
+    volumes:
+      - ans_agri_evidence:/var/lib/ans-agri-evidence
     restart: unless-stopped
     networks:
       - prompts-chat-shared
+
+volumes:
+  ans_agri_evidence:
 
 networks:
   prompts-chat-shared:
