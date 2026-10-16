@@ -14,6 +14,7 @@ import { PasswordInput } from "@/components/auth/password-input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { analyticsAuth } from "@/lib/analytics";
+import { DinoAdoptionPod } from "@/components/mascot/dino-adoption-pod";
 
 type Turnstile = {
   render: (node: HTMLElement, options: { sitekey: string; action: string; language: string; callback: (token: string) => void; "expired-callback": () => void; "error-callback": () => void; "timeout-callback": () => void }) => string;
@@ -163,6 +164,7 @@ export function RegisterForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
             </FormItem>
           )} />
         ))}
+        <DinoAdoptionPod trainerNicknameHint={form.watch("name")} />
         <p className="text-xs text-muted-foreground">{t("openRegistrationNote")}</p>
         <div ref={widgetNode} />
         {configError && <p role="alert" className="text-xs text-destructive">{configError}</p>}
