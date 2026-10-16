@@ -26,6 +26,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "docs:check": "node scripts/check-docs.mjs",
+    "check:docs": "node scripts/check-docs.mjs",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "verify": "node scripts/verify.mjs",
     "smoke": "node scripts/smoke-e2e.mjs",

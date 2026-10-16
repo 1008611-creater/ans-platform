@@ -199,24 +199,32 @@ describe("official roster and final baseline", () => {
 });
 
 
-describe("wall publication requirement", () => {
-  it("blocks formal submission without a wall while keeping drafts usable", async () => {
+describe("private stage submission", () => {
+  it("keeps a valid private project selectable when an older wall points elsewhere", async () => {
+    detail.wall = { ...detail.wall!, projectId: "other-project", artifactVersionId: "other-version" };
+    await open();
+    expect(screen.getByRole("option", { name: /Fixture project/ })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(copy.version), { target: { value: "version" } });
+    expect(screen.getByLabelText(copy.version)).toHaveValue("version");
+  });
+  it("accepts a private unbound project without publishing it", async () => {
     detail.wall = null;
     await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
-    expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
-    expect(screen.getByRole("button", { name: copy.save })).toBeEnabled();
-    expect(screen.getByText(wallMessages.submissionWallMissing)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: copy.submit })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: copy.submit }));
+    await screen.findByText(copy.submitted);
+    const commands = fetchMock.mock.calls.filter(([,init]) => init?.body).map(([,init]) => JSON.parse(String(init!.body)));
+    expect(commands.find(row => row.action === "submit")).not.toHaveProperty("syncToAgriWall");
+    expect(screen.queryByText(copy.syncToWall)).not.toBeInTheDocument();
   });
-  it("preselects the free imported wall version without an AI generation step", async () => {
+  it("can reuse an already published imported version", async () => {
     await open();
     expect(screen.getByLabelText(copy.version)).toHaveValue("version");
-    expect(screen.getByText(wallMessages.submissionWallReady)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: wallMessages.viewProject })).toBeInTheDocument();
   });
-  it("requires a current published snapshot and the linked project owner", async () => {
+  it("does not make public-wall ownership a private submission permission", async () => {
     detail.wall = { ...detail.wall!, synchronized: false, isOwner: false };
     await open(); fill(); fireEvent.click(screen.getByLabelText(copy.confirm));
-    expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
-    expect(screen.getByText(wallMessages.submissionWallSync)).toBeInTheDocument();
-    expect(screen.getByText(wallMessages.submissionOwnerHint)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: copy.submit })).toBeEnabled();
   });
 });

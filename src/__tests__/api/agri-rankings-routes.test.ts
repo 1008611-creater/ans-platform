@@ -1,0 +1,24 @@
+﻿import { afterEach,beforeEach,describe,it,expect,vi } from "vitest";
+import { GET,POST } from "@/app/api/competitions/agrihackathon/rankings/route";
+import { GET as publicGet } from "@/app/api/competitions/agrihackathon/rankings/public/route";
+import { POST as recordScore } from "@/app/api/competitions/agrihackathon/scores/route";
+import { auth } from "@/lib/auth";
+import { executeAgriRankingCommand,readAgriRankingManagement } from "@/server/competitions/agrihackathon/rankings";
+import { executeAgriJudgeScoreCommand } from "@/server/competitions/agrihackathon/reviews";
+import { readAgriPublicRankings } from "@/server/competitions/agrihackathon/publications";
+vi.mock("@/lib/auth",()=>({auth:vi.fn()}));
+vi.mock("@/server/competitions/agrihackathon/rankings",()=>({executeAgriRankingCommand:vi.fn(),readAgriRankingManagement:vi.fn()}));
+vi.mock("@/server/competitions/agrihackathon/reviews",()=>({executeAgriJudgeScoreCommand:vi.fn()}));
+vi.mock("@/server/competitions/agrihackathon/publications",()=>({readAgriPublicRankings:vi.fn()}));
+const origin="https://ans.example.invalid",actor="judge",command={action:"configurePanel",stage:"PRELIMINARY",judgeIds:["j1","j2","j3"],idempotencyKey:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"};
+const read=(query="")=>new Request(origin+"/api/competitions/agrihackathon/rankings"+query,{headers:{"x-ans-submission-actor":actor}});
+const write=(body:unknown=command,from=origin)=>new Request(origin+"/api/competitions/agrihackathon/rankings",{method:"POST",headers:{origin:from,"content-type":"application/json","x-ans-submission-actor":actor},body:JSON.stringify(body)});
+beforeEach(()=>{vi.clearAllMocks();vi.stubEnv("AUTH_URL",origin);vi.stubEnv("NEXTAUTH_URL",origin);vi.stubEnv("NEXT_PUBLIC_APP_URL",origin);vi.mocked(auth).mockResolvedValue({user:{id:actor}} as never);vi.mocked(executeAgriRankingCommand).mockResolvedValue({publicationId:"result",duplicate:false});vi.mocked(readAgriRankingManagement).mockResolvedValue({} as never);vi.mocked(readAgriPublicRankings).mockResolvedValue({competitionId:"edition",boards:[]});vi.mocked(executeAgriJudgeScoreCommand).mockResolvedValue({scoreId:"ballot",duplicate:false});});afterEach(()=>vi.unstubAllEnvs());
+describe("ranking route security",()=>{
+ it("requires real session and exact actor intent",async()=>{vi.mocked(auth).mockResolvedValueOnce(null as never);expect((await POST(write())).status).toBe(401);expect((await GET(new Request(read().url))).status).toBe(409);expect(executeAgriRankingCommand).not.toHaveBeenCalled();});
+ it("rejects cross-origin writes and forged fields",async()=>{expect((await POST(write(command,"https://evil.invalid"))).status).toBe(403);expect((await POST(write({...command,judgeId:"forged"}))).status).toBe(400);expect(executeAgriRankingCommand).not.toHaveBeenCalled();});
+ it("rejects query expansion and duplicates before reading private candidates",async()=>{expect((await GET(read("?stage=FINAL&includePrivate=1"))).status).toBe(400);expect((await GET(read("?stage=FINAL&stage=PRELIMINARY"))).status).toBe(400);expect(readAgriRankingManagement).not.toHaveBeenCalled();});
+ it("binds validated requests to the current session and disables caching",async()=>{expect((await POST(write())).headers.get("cache-control")).toBe("no-store");expect(executeAgriRankingCommand).toHaveBeenCalledWith(actor,command);expect((await GET(read("?stage=FINAL"))).status).toBe(200);expect(readAgriRankingManagement).toHaveBeenCalledWith(actor,"FINAL");});
+ it("allows anonymous public snapshots but no private expansions",async()=>{vi.mocked(auth).mockResolvedValue(null as never);expect((await publicGet(new Request(origin+"/results"))).status).toBe(200);expect((await publicGet(new Request(origin+"/results?judgeIds=1"))).status).toBe(400);});
+ it("rejects out-of-range, unknown and identity-supplied ballots",async()=>{const ballot={action:"recordScore",submissionId:"submission",idempotencyKey:command.idempotencyKey,dimensions:{innovation:90,technical:80,completeness:75,problem:70,fit:100}};expect((await recordScore(write({...ballot,judgeId:"forged"}))).status).toBe(400);expect((await recordScore(write({...ballot,dimensions:{...ballot.dimensions,innovation:101}}))).status).toBe(400);expect((await recordScore(write(ballot))).status).toBe(200);expect(executeAgriJudgeScoreCommand).toHaveBeenCalledWith(actor,ballot);});
+});

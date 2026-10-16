@@ -1,3 +1,4 @@
+import { prelockAgriTeamCharge } from "@/server/competitions/agrihackathon/credits";
 import { refreshMeteredParentCost } from "./metered-cost";
 import { upstreamFailureCode } from "./upstream-rejection";
 import { createHash, randomUUID } from "node:crypto";
@@ -106,6 +107,7 @@ export async function meteredResponses(request: Request, userId: string, parent?
   let reservation:{id:string;price:{source:string;quotaPerPoint:number;memberPointsCap?:number;parent?:{type:"run"|"workflow_run";id:string};retry?:{rootRequestId:string;previousRequestId:string}}};
   try {
     reservation=await db.$transaction(async tx=>{
+      const eventFunding = await prelockAgriTeamCharge(tx, user.id, parent);
       await lockGatewayBillingAccount(tx, user.id);
       let attemptKey=idempotency;
       let rootRequestId:string|undefined;
@@ -141,7 +143,7 @@ export async function meteredResponses(request: Request, userId: string, parent?
       if(active>=4)throw new Error("TOO_MANY_ACTIVE_REQUESTS");
       const price={source:"APIC",quotaPerPoint:500000,...(budget ? {memberPointsCap:budget.memberPointsCap} : {}),...(parent ? {parent} : {}),...(rootRequestId && previousRequestId ? {retry:{rootRequestId,previousRequestId}} : {})};
       const task=await tx.apiComputeRequest.create({data:{userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey,requestHash,modelId:parsed.model,policyVersion:"apic-final-quota-v1",price,maxUnits:parsed.limit,authorizedPoints:parsed.reserve,state:"RUNNING",startedAt:new Date()},select:{id:true}});
-      await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:"Codex request reservation"});return {id:task.id,price};
+      await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:"Codex request reservation",...(eventFunding ? {eventFunding} : {})});return {id:task.id,price};
     });
   } catch(error){
     const code=error instanceof QuotaError ? error.code : error instanceof Error && ["REQUEST_HASH_CONFLICT","REQUEST_PARENT_CONFLICT","TOO_MANY_ACTIVE_REQUESTS"].includes(error.message) ? error.message : "REQUEST_CONFLICT";

@@ -1,3 +1,5 @@
+import { debitAgriTeamCredits, refundAgriTeamCredits } from "@/server/competitions/agrihackathon/credits";
+import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import type { DbTransaction } from "@/lib/db";
 import { hasAdminPermission } from "@/lib/admin-permission-values";
 import { db } from "@/lib/db";
@@ -51,10 +53,17 @@ export async function assertAccountCanSpend(
 /** 在事务内扣减额度并写流水，返回扣减后的余额。 */
 export async function debitQuota(
   tx: DbTransaction,
-  args: { userId: string; costPoints: number; ref: QuotaRef; note: string },
+  args: { userId: string; costPoints: number; ref: QuotaRef; note: string; eventFunding?: "PERSONAL" },
 ): Promise<number> {
   if (!Number.isFinite(args.costPoints) || args.costPoints < 0) throw new QuotaError("INVALID_CREDIT_AMOUNT");
   args = { ...args, costPoints: normalizeQuotaAmount(args.costPoints) };
+  try {
+    const eventBalance = args.eventFunding === "PERSONAL" ? null : await debitAgriTeamCredits(tx, args);
+    if (eventBalance !== null) return eventBalance;
+  } catch (error) {
+    if (error instanceof AgriWorkspaceError) throw new QuotaError(error.code, error.status === 402 ? "INSUFFICIENT_QUOTA" : "ACCOUNT_UNAVAILABLE", error.status);
+    throw error;
+  }
   await assertAccountCanSpend(tx, args.userId, args.costPoints);
   const debited = await tx.user.updateMany({
     where: { id: args.userId, quotaPoints: { gte: args.costPoints }, flagged: false, deletedAt: null },
@@ -92,6 +101,7 @@ export async function refundQuota(
   if (!Number.isFinite(args.costPoints) || args.costPoints < 0) throw new QuotaError("INVALID_CREDIT_AMOUNT");
   args = { ...args, costPoints: normalizeQuotaAmount(args.costPoints) };
   if (args.costPoints <= 0) return;
+  if (await refundAgriTeamCredits(tx, args)) return;
   const user = await tx.user.update({
     where: { id: args.userId },
     data: { quotaPoints: { increment: args.costPoints } },

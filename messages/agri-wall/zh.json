@@ -158,5 +158,11 @@
   "viewShowcase": "入围与公示榜",
   "rankingListTitle": "有效票最终排名榜",
   "rankVotes": "{count} 票",
+  "autoPreliminary": "初赛作品",
+  "autoFinal": "决赛作品",
+  "autoSummary": "农客松参赛作品：{summary}",
+  "autoDescription": "本作品由参赛者提交并选择公开至农客松作品墙，供赛事展示与交流。\n\n项目摘要：\n{summary}",
+  "autoLicense": "公开展示不等于授予开源或商用许可；使用前请向作品作者确认授权。",
+  "autoDeliverable": "参赛项目公开摘要与体验链接",
   "shareFailed": "未能复制，请重试或手动复制下方内容。"
 }

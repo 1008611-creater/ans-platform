@@ -1,3 +1,4 @@
+import { agriSubmissionRequirementsSchema } from "@/contracts/agri-submissions";
 import type { DbTransaction } from "@/lib/db";
 import { agriSubmissionWindowSchema } from "@/contracts/agrihackathon";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
@@ -6,10 +7,11 @@ import { agriDatabaseClock, configuredAgriEditionId, lockAgriWorkspace } from ".
 
 interface WindowRow {
   state: string; opensAt: Date | null; closesAt: Date | null; includesDeadline: boolean | null;
-  confirmedById: string; confirmedAt: Date;
+  confirmedById: string; confirmedAt: Date; requirements?: unknown;
 }
 export interface AgriRegistrationWindow {
   ruleVersionId: string;
+  computeGrantPoints?: number;
   window: ReturnType<typeof agriSubmissionWindowSchema.parse>;
 }
 const fail = (code: string, status = 409): never => { throw new AgriWorkspaceError(code, status); };
@@ -25,7 +27,7 @@ export async function lockCompetitionRegistrationWindow(tx: DbTransaction, actor
   if (!ctx.workspace.enabled) return fail("AGRI_WORKSPACE_DISABLED");
   const ruleVersionId = ctx.workspace.publishedRuleVersionId;
   if (!ruleVersionId) return fail("AGRI_RULES_UNPUBLISHED");
-  const [row] = await tx.$queryRaw<WindowRow[]>`SELECT w.state,w."opensAt",w."closesAt",w."includesDeadline",r."confirmedById",r."confirmedAt"
+  const [row] = await tx.$queryRaw<WindowRow[]>`SELECT w.state,w."opensAt",w."closesAt",w."includesDeadline",r."confirmedById",r."confirmedAt",r.requirements
     FROM agri_stage_windows w JOIN agri_rule_versions r ON r.id=w."ruleVersionId" AND r."competitionId"=w."competitionId"
     WHERE w."competitionId"=${competitionId} AND w."ruleVersionId"=${ruleVersionId} AND w.stage='REGISTRATION'`;
   if (!row) return fail("AGRI_RULE_INVALID", 500);
@@ -35,7 +37,8 @@ export async function lockCompetitionRegistrationWindow(tx: DbTransaction, actor
       closesAt: row.closesAt?.toISOString() ?? null, includesDeadline: row.includesDeadline,
       confirmedById: row.confirmedById, confirmedAt: row.confirmedAt.toISOString() });
   if (!parsed.success) return fail("AGRI_RULE_INVALID", 500);
-  return { ruleVersionId, window: parsed.data };
+  const requirements = agriSubmissionRequirementsSchema.safeParse(row.requirements);
+  return { ruleVersionId, window: parsed.data, ...(requirements.success && requirements.data.computeGrantPoints ? { computeGrantPoints: requirements.data.computeGrantPoints } : {}) };
 }
 
 /** Recheck at the last write: lock acquisition and auditing must not extend the agreed deadline. */

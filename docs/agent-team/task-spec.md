@@ -208,3 +208,27 @@ Current user priority is the deployed six-navigation / Hub to runnable-marketpla
 Also integrate the reviewed AO01 decision deep link and AO02 recipient readability checks, and the deterministic executor budget/cancellation fix. No schema or dependency change is planned; preserve all 79 migration SQL files, billing evidence, balances, source licenses, covers and mascot. Root owns exact source integration/PR/merge/deployment; independent review covers the final increment and precise release evidence. The isolated assignment integration may target only the original fixed loopback database or the explicit R6 fixed loopback database; reports can be redirected to preserve historical evidence.
 
 Acceptance: ordinary authors cannot grant themselves manual approval; approved immutable versions and the official platform recipe stay usable; unreviewed historical queued runs do not invoke suppliers; unknown personal or billing state is not fabricated. Budget/cancellation stops do not retry, while configured node timeouts retain retries within total budget. Assignment must not grant access or expose internal issues, and permission expiry must roll back the write. Exact CI, fresh backup restoration, no-pending-migration/catalog checks, Linux build and desktop/mobile production checks precede final completion claims. Formal event dates, roster eligibility and stage-publication lifecycle remain separate documented unfinished work.
+
+## 2026-10-16 农客松一体化后端闭环（基线 3dc0446e）
+
+- REQ-001：当前工作区有效报名队伍按已配置额度自动领算力，队长可幂等补领；赛事+战队为唯一身份，额度、已用、剩余可查询。未配置不虚构额度、不动个人余额。
+- REQ-002：正式阶段提交含默认开启的 syncToAgriWall；同事务创建/更新免费作品快照并绑定精确版本；公开范围仅已提交摘要与公开链接，不自动泄露私密材料。未开启时允许独立提交；投票开始后新绑定只提示锁定，已绑定仍同步。
+- REQ-003：OPEN 期间一次 Star 即完成有效投票；重复请求不增票，自队/异常账号不计票，撤星与截止快照保留既有规则。旧 Star 不追溯自动计票，新点击直接确认当前 Star。提供作品社交分享目的地。
+- REQ-004：初赛恰好 3 位独立评委五维分均值占 80%，封榜票归一化占 20%；决赛恰好 7 位独立评委去一高一低取 5 人均分。缺票快照、缺评分不生成正式榜。候选需主办方确认才公开；并列不靠随机顺序决定第十席/奖项。
+- RULE-AUTH-001：评委评分与发布复用当前工作区实时权限；不暴露私密材料或评委身份到公共接口；本人/本队不可评自己。算力不混入充值或个人余额。
+- NON-001：不部署、不生产迁移、不改认证/支付、不合并主分支；更新用户指定分支。新增表等待明确授权。
+- TASK-001：额度服务/报名与工作台；TASK-002：提交/作品墙/Star；TASK-003：评分/确认/双榜；TASK-004：独立审查及验证。
+- AC-001：并发重复领用至多一笔，跨赛事/非成员/拒绝队伍失败；真实消费更新剩余。
+- AC-002：新提交上墙免二次表单，取消同步保持私密，投票后新绑定跳过且提交成功，既有绑定精确更新；同幂等键只一版本。
+- AC-003：Star 与有效票同事务，重复/自队/越窗口/撤星/封榜与并发边界有覆盖。
+- AC-004：初赛全零票按零大众分处理；完整 3/7 人、封榜、同分边界与审核发布/撤回有覆盖；展示公开作品链接。
+- AC-005：全量 Vitest、check:boundaries、check:docs、类型与 lint；记录真实失败与修复，不弱化已有测试。check:docs 如不存在新增同义脚本。
+- 待确认：新增持久化表授权与每队额度。数据库改动仅获批后编写，隔离验证；不猜业务金额。
+
+## 2026-10-16 R32 审查修正
+
+REQ-R32-01：阶段提交默认私密，不接受自动公开指令；公开仍需主动申请、独立审核和准确版本。
+REQ-R32-02：合法冻结提交参与内部评审，不因未上墙或撤下公开展示而丧失资格；冻结投票无对应票记0。
+REQ-R32-03：旧人气结果仅证明团队票数，不推断其对应当前作品版本；保留团队人气结果。
+AC-R32-01：私密提交不创建公开listing；同意与审核、提交版本、撤回校验由现有公开服务执行。
+AC-R32-02：无墙有效队伍保留候选、缺评分阻塞、拒队不写入；真实隔离PG验证并发积分与初决赛流程。

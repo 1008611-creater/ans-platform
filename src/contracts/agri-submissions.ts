@@ -147,6 +147,7 @@ export type AgriSubmissionLifecycleSnapshot = z.infer<typeof agriSubmissionLifec
 // All choices must come from an explicitly confirmed version; there are no historical defaults.
 export const agriSubmissionRequirementsSchema = z.object({
   schemaVersion: z.literal(1),
+  computeGrantPoints: z.number().min(0).max(1_000_000).multipleOf(0.000001).optional(),
   repositoryRequired: z.boolean(), repositoryRefRequired: z.boolean(), demoRequired: z.boolean(),
   materials: z.array(z.object({ key: itemKey, kind: z.enum(["TEXT", "LINK", "ARTIFACT"]), required: z.boolean() }).strict()).max(20),
 }).strict().superRefine((requirements, ctx) => {

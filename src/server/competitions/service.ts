@@ -1,3 +1,4 @@
+import { grantAgriRegistrationCredits } from "./agrihackathon/credits";
 import { grantReachedLevelRewards } from "@/server/growth/service";
 import type { DbTransaction } from "@/lib/db";
 ﻿import { Prisma } from "@prisma/client";
@@ -202,7 +203,7 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
       });
       if (existing) {
         if (existing.entryStatus !== "REJECTED") {
-          if (registration) await assertAgriRegistrationOpen(tx, registration);
+          if (registration) { if (registration.computeGrantPoints) await grantAgriRegistrationCredits(tx, actorId, competitionId, existing.id); await assertAgriRegistrationOpen(tx, registration); }
           return { entry: existing, created: false };
         }
         if (competition.maxTeams !== null) {
@@ -225,7 +226,7 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
             metadata: { competitionId, teamId, artifactVersionId: null, ...(registration ? { registrationRuleVersionId: registration.ruleVersionId } : {}) },
           },
         });
-        if (registration) await assertAgriRegistrationOpen(tx, registration);
+        if (registration) { if (registration.computeGrantPoints) await grantAgriRegistrationCredits(tx, actorId, competitionId, reset.id); await assertAgriRegistrationOpen(tx, registration); }
         return { entry: reset, created: true };
       }
       if (competition.maxTeams !== null) {
@@ -244,7 +245,7 @@ export async function registerCompetitionTeam(actorId: string, competitionId: st
           metadata: { competitionId, teamId, artifactVersionId: null, ...(registration ? { registrationRuleVersionId: registration.ruleVersionId } : {}) },
         },
       });
-      if (registration) await assertAgriRegistrationOpen(tx, registration);
+      if (registration) { if (registration.computeGrantPoints) await grantAgriRegistrationCredits(tx, actorId, competitionId, entry.id); await assertAgriRegistrationOpen(tx, registration); }
       return { entry, created: true };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {

@@ -1,74 +1,13 @@
-# 农客松一体化赛事平台（AgriHackathon All-in-One Hub）后端与深层机制交接规范（Codex Handoff）
+# 农客松赛事闭环交接
 
-> **当前状态**：前端文案收敛、五步一站式参赛闭环（`读规则 → 拿算力 → 报名传作品 → 上作品墙拉 Star → 入围汇报与最终排名`）、作品墙实时排名角标与距上一名差额提示、一键复制拉 Star 口令等功能已在 [`src/app/competitions/agrihackathon/page.tsx`](../src/app/competitions/agrihackathon/page.tsx) 与 [`src/components/competitions/agri-wall.tsx`](../src/components/competitions/agri-wall.tsx) 落地。
-> 以下四项是待确认的后续设计，不代表已实现、已上线或已有实施授权。涉及积分发放、赛事评分、公开发布与数据契约的变更，需单独确认政策和权限边界后走审查发布流程。
+本轮实现战队算力、阶段提交、Star 计票、评委评分和排名。实现、审查、合并与生产部署分别以发布队列和实际回执为准。
 
----
+- 算力：管理员确认规则和每队额度后，有效报名队伍可幂等领取。同届同队只发一次；赛事钱包独立记账，余额不足不转扣个人余额。冻结、关闭和离队限制新消费，原交易仍可幂等退款。
+- 提交：阶段提交保持私密，不自动创建或发布市场作品。公开展示由成员主动申请、独立审核并绑定准确提交版本；合法私密提交仍参与内部评审，不以上墙作为资格条件。
+- Star：投票开放期一次明确点击同时记录有效票，旧 Star 不追溯计票；自队和无效账号不计票。截止快照固定团队票数，不推断其对应可变作品版本。团队人气结果保留，精确绑定作品版本的人气奖尚未实现。
+- 评分：初赛三位评委的专业均分占 80%，冻结票归一化占 20%；冻结后没有票按零计算，未冻结或缺评分阻止确认。决赛七位评委去掉一高一低后取五人均值。同分边界由主办明确裁决。评分不可覆盖，确认和撤回保留历史。
+- 公示：内部排名和公开名单分开；公开名单仅采用已主动申请并经独立审核的准确提交版本，继续校验成员、账号和撤回状态，禁止从市场作品墙推断公开许可。
 
-## 任务 1：战队报名成功自动发放「参赛算力包」（Compute Credit Grant）
+迁移 `20261016090000_agri_unified_closure` 新增赛事算力流水、评委评分、排名历史及兼容保留的回执字段。迁移采用事务和锁等待上限，保留既有数据。运行后的历史不能以删表回滚；代码回退必须保留记录并核实旧版本兼容性。
 
-### 背景与痛点
-目前页面已打通前往算力中心（`/workspace/credits`）的入口，但参赛队伍完成报名后，尚无自动绑定到赛事与战队的专属算力包发放流水，选手需要手动找主办方领券或与普通注册积分混用。
-
-### 工程实现要求
-1. **服务层位置**：
-   - [`src/server/competitions/agrihackathon/submissions.ts`](../src/server/competitions/agrihackathon/submissions.ts)
-   - [`src/server/competitions/service.ts`](../src/server/competitions/service.ts)
-2. **核心逻辑**：
-   - 当战队在本届农客松完成有效报名（创建 `TeamCompetition` 记录并确认参赛资格）或队长首次点击「领取参赛算力」时，在数据库事务内幂等写入一条绑定 `(competitionId, teamCompetitionId)` 的算力发放流水（`AGRIHACKATHON_TEAM_GRANT`）。
-   - 提供查询接口返回当前战队在农客松周期内的**专属算力额度、已消耗算力与剩余额度**，供参赛工作台与主会场状态卡实时展示。
-3. **验收标准**：
-   - 同一战队重复触发不重复发券（唯一键或幂等锁保证）。
-   - 非本届有效参赛队伍不可冒领赛事算力包。
-
----
-
-## 任务 2：阶段提交（Submission）与作品墙（AgriWall）一键同步上架
-
-### 背景与痛点
-当前参赛者需要在两个独立入口操作：
-1. 在 [`src/components/competitions/agri-submissions.tsx`](../src/components/competitions/agri-submissions.tsx) 提交初赛/决赛作品版本（`artifactVersionId`）；
-2. 再去 `/explore/submit?event=agrihackathon` 经过平台交易市场表单发布免费商品，最后回到 [`src/components/competitions/agri-wall.tsx`](../src/components/competitions/agri-wall.tsx) 手动绑定并勾选同意。
-
-### 工程实现要求
-1. **服务层与契约位置**：
-   - [`src/contracts/agri-submissions.ts`](../src/contracts/agri-submissions.ts)
-   - [`src/server/competitions/agrihackathon/submissions.ts`](../src/server/competitions/agrihackathon/submissions.ts)
-   - [`src/server/competitions/agrihackathon/wall.ts`](../src/server/competitions/agrihackathon/wall.ts)
-2. **核心逻辑**：
-   - 在初赛/决赛阶段提交表单中增加可勾选开关：`syncToAgriWall: boolean`（默认 `false`；由队长主动选择并检查公开内容后确认）。
-   - 仅从公开字段白名单创建免费作品草稿，展示将公开的具体字段；不得自动公开私密阶段材料、内部记录、联系方式或未审核版本。先由有权代表队伍的人员明确确认公开，再经过既有审核。绑定与同步必须指向该项目精确的已审核公开版本，并保留版本校验及回执。阶段提交成功不等于公开发布成功。
-3. **验收标准**：
-   - 若投票已开启（`round.state !== "NOT_OPEN"`），未绑定过的战队仅保存阶段提交并提示作品墙绑定已锁定；已绑定过的战队仅在主动确认后同步同一项目的精确已审核公开版本，保留阶段历史快照。
-
----
-
-## 任务 3：作品墙点 Star 即时计入有效参赛票（消除二次确认流失）
-
-### 背景与痛点
-当前 [`src/server/competitions/agrihackathon/wall.ts`](../src/server/competitions/agrihackathon/wall.ts) 与 [`src/components/competitions/agri-wall.tsx`](../src/components/competitions/agri-wall.tsx) 中，用户在投票期之前点过 Star 的作品，在投票开启后不会自动计票，还需要再次进入作品墙点击「将我的 Star 计入本届农客松投票」（`PUT /api/market/listings/[id]/star`），导致社交裂变拉票转化率折损。
-
-### 工程实现要求
-1. **服务层位置**：
-   - [`src/server/competitions/agrihackathon/wall.ts`](../src/server/competitions/agrihackathon/wall.ts)
-2. **核心逻辑**：
-   - 在投票窗口 `OPEN` 期间，任何符合条件（已登录、非本队成员）的用户在作品墙卡片或作品详情页点击 Star，直接原子写入/更新有效投票时间戳，一步完成「点 Star + 计入赛事有效人气票」。
-   - 提供公开动态 OG 海报或短链重定向路由（如 `/competitions/agrihackathon/wall/[slug]`），支持微信/社交卡片直接预览作品封面、战队名与当前实时有效 Star 数。
-
----
-
-## 任务 4：初赛 10 强 Finalist 入围榜与决赛终审总排名（80% 专业 + 20% 大众）聚合公示
-
-### 背景与痛点
-当前公开展示页 [`src/components/competitions/agri-publications.tsx`](../src/components/competitions/agri-publications.tsx) 与 [`src/server/competitions/agrihackathon/publications.ts`](../src/server/competitions/agrihackathon/publications.ts) 仅按发布记录展示已发布作品卡片，缺乏赛事高潮阶段最核心的**「初赛 10 强 Finalist 晋级名单」**与**「Demo Day 终审获奖总榜」**结构化视图。
-
-### 工程实现要求
-1. **服务层与组件位置**：
-   - [`src/contracts/agri-publications.ts`](../src/contracts/agri-publications.ts)
-   - [`src/server/competitions/agrihackathon/publications.ts`](../src/server/competitions/agrihackathon/publications.ts)
-   - [`src/server/competitions/agrihackathon/reviews.ts`](../src/server/competitions/agrihackathon/reviews.ts)
-   - [`src/components/competitions/agri-publications.tsx`](../src/components/competitions/agri-publications.tsx)
-2. **核心逻辑**：
-   - **初赛综合分自动折算**：在 [`src/server/competitions/agrihackathon/reviews.ts`](../src/server/competitions/agrihackathon/reviews.ts) 中汇总 3 位评委的五维打分均值（占 80%）与作品墙封榜有效 Star 归一化得分（计划占 20%；归一化公式、全零票、并列、取消资格及截止后复核口径仍需赛事负责人确认，不得直接以本草案自动排名），生成初赛综合排名候选集供主办方确认 10 强 Finalist。
-   - **决赛去极值均分**：汇总 7 位决赛评委打分，自动去掉 1 个最高分与 1 个最低分后取剩余 5 位均值，生成一等奖（¥1,500）、二等奖（¥1,000）、三等奖（¥800）及最佳技术实现奖、最佳创意奖、最佳人气奖榜单。
-   - **公开展示页双榜视图**：在 `AgriShowcase` 顶部渲染「初赛 10 强 Finalist 路演名单」与「Demo Day 终审荣誉殿堂」，并支持一键跳转查看各获奖作品的在线 Demo、GitHub 开源仓库与作品墙详情。
+隔离数据库已验证领取并发、扣退、拒队、私密提交、独立审核展示、计票封榜、初决赛评分及公示撤回。真实生产备份恢复、迁移演练、最终提交审查与部署仍是发布门禁，不能由隔离新库结果替代。
