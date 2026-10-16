@@ -36,8 +36,8 @@ export function CreateProjectForm({ initialGoal = "career", initialWorkflowId }:
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      <fieldset disabled={pending} className="space-y-2"><legend className="mb-2 text-sm font-medium">{t("goalQuestion")}</legend><div className="flex flex-wrap gap-2">{(["career", "contest", "portfolio"] as const).map((value) => <Button key={value} type="button" disabled={pending} aria-pressed={goal === value} variant={goal === value ? "default" : "outline"} onClick={() => setGoal(value)}>{t(value)}</Button>)}</div></fieldset>
       <label className="block space-y-2"><span className="text-sm font-medium">{t("projectName")}</span><Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder={t("projectPlaceholder")} required maxLength={80} disabled={pending} /></label>
-      <div className="flex flex-wrap gap-2">{(["career", "contest", "portfolio"] as const).map((value) => <Button key={value} type="button" disabled={pending} aria-pressed={goal === value} variant={goal === value ? "default" : "outline"} onClick={() => setGoal(value)}>{t(value)}</Button>)}</div>
       <p className="text-xs text-muted-foreground">{t("privateHint")}</p>
       {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
       <Button type="submit" disabled={pending || !title.trim()}>{t(pending ? "creating" : "create")}</Button>

@@ -29,7 +29,7 @@
   "templates": "模板资料",
   "workflows": "进阶工作流",
   "projectsTitle": "我的项目与成果",
-  "projectsDescription": "一份真实事实，三份实用草稿。先完成一个项目，再学下一个方法。",
+  "projectsDescription": "继续已有项目，或新建项目整理事实与成果。",
   "newProject": "新建项目",
   "privateHint": "项目事实仅自己可见。生成和编辑不会自动公开成果。",
   "projectName": "项目名称",
@@ -98,5 +98,7 @@
   "busy": "处理中…",
   "billingExplanation": "本次运行最多预占 {points} 积分，费用与退款见运行记录。¥1＝10 积分；模型计费按当前平台规则执行。",
   "billingRun": "运行（最多预占 {points} 积分）",
-  "billingReservation": "最多预占 {points} 积分"
+  "billingReservation": "最多预占 {points} 积分",
+  "goalQuestion": "这份项目主要用来做什么？",
+  "projectGuideQuestion": "不确定怎么开始？"
 }

@@ -71,10 +71,10 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
           <h2>{td("deliverablesTitle")}</h2>
           <ul className={styles.deliverables}>{["deliverableWebsite", "deliverableDraft", "deliverableAccount"].map((key, index) => <li key={key}><span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><span>{ts(key)}</span></li>)}</ul>
         </section>
-        <section id="market-details" className={styles.section}>
-          <h2>{ts("howTitle")}</h2>
+        <details id="market-details" className={styles.section}>
+          <summary className="cursor-pointer py-2 text-sm font-semibold">{ts("howTitle")}</summary>
           <ol className={styles.studioSteps}>{["prepare", "compose", "deliver"].map((key, index) => <li key={key}><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{ts(key + "Title")}</h3><p>{ts(key + "Body")}</p></div></li>)}</ol>
-        </section>
+        </details>
         <Suspense fallback={null}><MarketProductConnections offer={offer} /></Suspense>
       </div>
       <section id="market-terms" className={styles.section}>
