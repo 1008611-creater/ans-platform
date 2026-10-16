@@ -2295,8 +2295,8 @@
   "aigcCompetition": {
     "navLabel": "AIGC Contest",
     "eyebrow": "AIGC CONTEST CLUSTER",
-    "title": "AIGC Contest Center",
-    "description": "A unified launchpad for contest teams: plan the work, run production, track evidence, and prepare the final submission from one ANS workspace.",
+    "title": "AIGC creation tools",
+    "description": "Start a competition project, then choose tools for the work ahead.",
     "createProject": "Create a contest project",
     "openTeams": "Open teams & contests",
     "statusTitle": "Cluster ready",
@@ -2311,8 +2311,8 @@
       "deliverables": "Core deliverables",
       "deliverablesValue": "8"
     },
-    "connectorsTitle": "Contest tool cluster",
-    "connectorsDescription": "Use ANS as the shared map and project boundary, then open the specialist workspace when you need to work inside it.",
+    "connectorsTitle": "What are you working on?",
+    "connectorsDescription": "Choose the workspace that fits your task. You do not need to use every tool.",
     "clusterSectionLabel": "01 / Cluster",
     "openTool": "Open workspace",
     "integrationLabel": "External workspace",
@@ -2397,7 +2397,12 @@
       "links": "Verified external links",
       "ownership": "Credentials stay with each system",
       "next": "API sync can be added after the competition workflow is validated"
-    }
+    },
+    "toolDetails": "Before you open it",
+    "externalNotice": "External workspaces use separate logins. Projects and progress do not sync back to ANS automatically.",
+    "preparationTitle": "Prepare your entry",
+    "resourcesTitle": "Projects and resources",
+    "openNamedTool": "Open {name} (new tab)"
   },
   "homepageNext": {
     "eyebrow": "AI work, with a path to a finished result",
@@ -2482,35 +2487,38 @@
   },
   "competitionsHub": {
     "eyebrow": "COMPETITIONS",
-    "title": "Competition hub",
-    "description": "The competition entry point on ANS. Pick the contest you are joining and open its rules, tracks and submission checklist.",
+    "title": "Events",
+    "description": "Find an event or continue your team’s entry.",
     "openLabel": "Open",
     "items": {
       "aigc": {
-        "name": "AIGC Contest Cluster",
+        "name": "AIGC creation tools",
         "tagline": "A workspace cluster for AIGC production teams",
-        "description": "ANS stays the shared map, and each professional workspace opens in its own system: planning, production and audit.",
+        "description": "Choose planning, creation or project management tools for your AIGC competition entry.",
         "status": "Open",
         "highlights": [
           "3 external workspaces",
           "4 competition phases",
           "8 submission checks"
         ],
-        "cta": "Open the AIGC contest"
+        "cta": "Choose a tool"
       },
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "The first AI hackathon organized by CAUHub",
-        "description": "Create for 48 continuous hours, showcase and review online for a week, then hold Demo Day with 10 Finalists on the following weekend. Official dates are pending.",
+        "description": "An AI hackathon organized by CAUHub for current students and alumni within three years of graduation. Build outside ANS if you prefer. Dates are pending.",
         "status": "In preparation",
         "highlights": [
           "3 tracks",
           "60-80 offline participants",
           "CNY 5,000 budget"
         ],
-        "cta": "Read the AgriHackathon rules"
+        "cta": "Explore AgriHackathon"
       }
-    }
+    },
+    "chooseEvent": "Choose an event",
+    "continueTeam": "Already on a team? Continue your entry",
+    "eventOverview": "At a glance"
   },
   "agriHackathon": {
     "boundaryNextOpen": "View separate edition windows",
@@ -2697,7 +2705,19 @@
       "ownership": "Team-owned IP; non-exclusive organizer display rights",
       "next": "Actions open only within separate published edition windows"
     },
-    "syncNote": "All official dates remain unconfirmed. Visual milestones are not registration or submission deadlines."
+    "syncNote": "All official dates remain unconfirmed. Visual milestones are not registration or submission deadlines.",
+    "intro": "An AI hackathon organized by CAUHub. Build outside ANS if you prefer, then publish to the project wall and link your team to enter.",
+    "nextAction": "Choose your next step",
+    "alreadyEntering": "Already entering?",
+    "entryHint": "Publishing is the first step. Link your team, then formally submit your materials.",
+    "justLooking": "Explore the projects",
+    "trackFocus": "What reviewers look for",
+    "guideTitle": "Entry guide",
+    "toolsTitle": "Tools and projects",
+    "browseProjects": "Browse projects",
+    "myWorkspace": "My workspace",
+    "readPublishedRules": "Read published rules",
+    "bindProject": "Link your project"
   },
   "templates": {
     "metadataTitle": "Templates",
