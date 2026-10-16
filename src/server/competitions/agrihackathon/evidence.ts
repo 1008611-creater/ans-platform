@@ -201,10 +201,11 @@ export async function createEvidence(actorId: string, raw: unknown) {
         return { requestId: id, duplicate: false };
     }, { timeout: 20000 });
 }
-function isDefaultHeadRef(ref: EvidenceCreate["originalRef"] | null | undefined) {
+type RepoRefLike = { kind: string; value: string } | null | undefined;
+function isDefaultHeadRef(ref: RepoRefLike) {
     return !ref || (ref.kind === "TAG" && ref.value === "HEAD");
 }
-function sameRepositoryRef(a: EvidenceCreate["originalRef"] | null | undefined, b: EvidenceCreate["originalRef"] | null | undefined) {
+function sameRepositoryRef(a: RepoRefLike, b: RepoRefLike) {
     if (isDefaultHeadRef(a) && isDefaultHeadRef(b)) return true;
     return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
