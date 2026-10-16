@@ -262,7 +262,7 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
         stage.frozenSubmissionId ??= stage.currentSubmissionId;
       }
       if (command.evidenceIntentIds?.length) await bindEvidenceIntents(tx, ctx, command.evidenceIntentIds, submissionId);
-      await autoQueueRepositoryEvidence(tx, ctx, stage.id, submissionId, content.projectId, content.artifactVersionId, content.repository, now);
+      await autoQueueRepositoryEvidence(tx, ctx, stage.id, submissionId, command.content.projectId, command.content.artifactVersionId, command.content.repository, now);
       stage.currentSubmissionId = submissionId;
     }
     stage.revision++;

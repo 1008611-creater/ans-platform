@@ -143,7 +143,7 @@ export async function resolveGithubEvidence(raw: string, ref: z.infer<typeof agr
 
     const prefix = `/repos/${repo.owner}/${repo.repo}`;
     let sha = ref?.value ? ref.value.toLowerCase() : "";
-    if (!ref) {
+    if (!ref || (ref.kind === "TAG" && ref.value === "HEAD")) {
         const headCommit = await gitHostJSON(`https://api.github.com${prefix}/commits/HEAD`, signal);
         const headSha = typeof headCommit.value.sha === "string" ? headCommit.value.sha.toLowerCase() : "";
         if (!/^[a-f0-9]{40}$/.test(headSha))

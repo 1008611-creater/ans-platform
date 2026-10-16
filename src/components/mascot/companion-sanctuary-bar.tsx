@@ -83,7 +83,8 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         type="button"
         onClick={handlePinClick}
         title="点击查看小恐龙碎碎念（连戳 3 次有惊喜）"
-        className={`fixed bottom-[74px] right-[22px] z-[60] flex h-6 w-6 items-center justify-center rounded-full border border-white/60 bg-gradient-to-br from-amber-400 to-rose-500 text-xs font-black text-white shadow-md transition-opacity duration-500 ${
+        aria-label="点击查看小恐龙碎碎念"
+        className={`fixed bottom-[114px] right-[12px] sm:bottom-[74px] sm:right-[22px] z-[60] flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full border border-white/60 bg-gradient-to-br from-amber-400 to-rose-500 text-xs font-black text-white shadow-md transition-opacity duration-500 ${
           dimmed && !bubble ? "opacity-40 hover:opacity-100" : "animate-bounce opacity-100"
         }`}
       >
@@ -95,7 +96,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
             e.stopPropagation();
             setBubble(null);
           }}
-          className="fixed bottom-[106px] right-[18px] z-[60] max-w-[240px] cursor-pointer rounded-2xl border border-amber-500/30 bg-background/95 px-3 py-2 text-[11px] leading-snug text-foreground shadow-xl backdrop-blur-md"
+          className="fixed bottom-[140px] right-[12px] sm:bottom-[106px] sm:right-[18px] z-[60] max-w-[240px] cursor-pointer rounded-2xl border border-amber-500/30 bg-background/95 px-3 py-2 text-[11px] leading-snug text-foreground shadow-xl backdrop-blur-md"
         >
           <span className="font-bold text-amber-500">🦖 灵龙碎碎念：</span>
           {bubble}

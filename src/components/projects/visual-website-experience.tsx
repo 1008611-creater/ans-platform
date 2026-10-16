@@ -23,6 +23,7 @@ export function VisualWebsiteExperience({execution, licenseTerms, publicationAva
  const iframe=useRef<HTMLIFrameElement>(null);
  const send=(index:number)=>iframe.current?.contentWindow?.postMessage({channel:"ans-visual-scene",type:"select",index},window.location.origin);
  useEffect(()=>{const ready=(event:MessageEvent)=>{if(event.source===iframe.current?.contentWindow && event.origin===window.location.origin && event.data?.channel==="ans-visual-scene" && event.data?.type==="ready")send(stop);};window.addEventListener("message",ready);return()=>window.removeEventListener("message",ready);},[stop]);
+ useEffect(()=>{const syncHash=()=>{if(window.location.hash==="#visual-editor"||(embedded&&window.location.hash==="#market-run")){setStarted(true);setEditing(true);}};syncHash();window.addEventListener("hashchange",syncHash);return()=>window.removeEventListener("hashchange",syncHash);},[embedded]);
  function start(){setStarted(true);setEditing(true); if(embedded) document.getElementById("market-run")?.scrollIntoView({block:"start"}); else window.scrollTo({top:0,behavior:"instant"});}
  const Content = embedded ? "div" : "main", HeroTitle = embedded ? "h2" : "h1";
  return <div data-visual-experience className={styles.experience} data-embedded={embedded} data-editing={editing}>

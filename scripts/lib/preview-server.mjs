@@ -125,6 +125,43 @@ function headlessShellFromCache() {
   return null;
 }
 
+function playwrightBrowserFromCache() {
+  const home = process.env.HOME || process.env.USERPROFILE || "";
+  const roots = [
+    process.env.PLAYWRIGHT_BROWSERS_PATH,
+    path.join(home, "Library", "Caches", "ms-playwright"),
+    path.join(home, ".cache", "ms-playwright"),
+  ].filter(Boolean);
+  const wanted = process.platform === "win32"
+    ? new Set(["chrome.exe", "headless_shell.exe"])
+    : new Set(["Google Chrome for Testing", "chrome", "headless_shell", "chrome-headless-shell"]);
+  for (const root of roots) {
+    if (!existsSync(root)) continue;
+    const stack = [root];
+    while (stack.length) {
+      const current = stack.pop();
+      let entries = [];
+      try {
+        entries = readdirSync(current);
+      } catch {
+        continue;
+      }
+      for (const entry of entries) {
+        const full = path.join(current, entry);
+        let stats = null;
+        try {
+          stats = statSync(full);
+        } catch {
+          continue;
+        }
+        if (stats.isDirectory()) stack.push(full);
+        else if (wanted.has(entry)) return full;
+      }
+    }
+  }
+  return null;
+}
+
 export async function resolveBrowser() {
   const candidates = [process.env.PUPPETEER_EXECUTABLE_PATH];
   try {
@@ -133,6 +170,9 @@ export async function resolveBrowser() {
     candidates.push(await createRequire(import.meta.url)("puppeteer").executablePath());
   } catch { /* 未下载完整版 chrome 时忽略，继续找系统浏览器。 */ }
   candidates.push(
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
     "C:/Program Files/Google/Chrome/Application/chrome.exe",
     "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
     "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
@@ -143,7 +183,7 @@ export async function resolveBrowser() {
   for (const candidate of candidates) {
     if (typeof candidate === "string" && candidate && existsSync(candidate)) return candidate;
   }
-  return headlessShellFromCache();
+  return headlessShellFromCache() || playwrightBrowserFromCache();
 }
 
 /** 先探一次端口，避免数据库没起时白等一分钟才跳过。 */

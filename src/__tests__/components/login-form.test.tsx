@@ -4,7 +4,7 @@ import { LoginForm } from "@/components/auth/login-form";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock("next-auth/react", () => ({ signIn: vi.fn() }));
-vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => (({ email: "邮箱", password: "密码", login: "登录" } as Record<string, string>)[key] ?? key) }));
+vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => (({ email: "邮箱", password: "密码", login: "登录", forgotPassword: "忘记密码？" } as Record<string, string>)[key] ?? key) }));
 vi.mock("@/lib/analytics", () => ({ analyticsAuth: { login: vi.fn(), loginFailed: vi.fn() } }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 

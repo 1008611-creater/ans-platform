@@ -180,10 +180,12 @@
   .ans-agent-quote button, .ans-companion-undo button, .ans-agent-recover, .ans-agent-retry button { min-height: 44px; }
 }
 @media (max-width: 640px) {
-  .ans-companion-v2 .ans-dino-avatar { width: 82px; height: 104px; }
-  .ans-companion-v2 .ans-dino-avatar > img { width: 82px; height: 82px; }
-  .ans-companion-v2[data-open=true] .ans-dino-avatar { width: 90px; height: 112px; }
-  .ans-companion-v2[data-open=true] .ans-dino-avatar > img { width: 90px; height: 90px; }
+  .ans-companion-v2 { inset-inline-end: 10px; bottom: calc(66px + env(safe-area-inset-bottom)); }
+  .ans-companion-v2 .ans-dino-avatar { width: 52px; height: 56px; }
+  .ans-companion-v2 .ans-dino-avatar > img { width: 52px; height: 52px; }
+  .ans-companion-v2 .ans-dino-canvas { inset: -2px; width: calc(100% + 4px); height: calc(100% + 4px); }
+  .ans-companion-v2[data-open=true] .ans-dino-avatar { width: 60px; height: 64px; }
+  .ans-companion-v2[data-open=true] .ans-dino-avatar > img { width: 60px; height: 60px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ans-companion-panel { animation: none !important; }

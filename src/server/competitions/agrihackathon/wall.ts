@@ -8,6 +8,7 @@ import type { AgriStageSubmissionContent } from "@/contracts/agri-submissions";
 import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { marketTransaction,requireMarketActor } from "@/server/marketplace/shared";
 import { agriDatabaseClock,lockAgriWorkspace,requireAgriScope,assertAgriAuthorityCurrent,type AgriWorkspaceContext } from "./workspace";
+import { bootstrapAgriEditionInTx,shouldAutoBootstrapAgriEdition } from "./bootstrap";
 import { wallFailure,lockPopularityRound,popularityView,assertAgriListingRevision } from "./popularity";
 
 interface WallRow {id:string;competitionId:string;teamCompetitionId:string;listingId:string;projectId:string;artifactVersionId:string;listingVersion:number}
@@ -29,7 +30,11 @@ export async function readAgriWall(viewerId?:string):Promise<AgriWallView> {
  if(!competitionId) return {configured:false,competitionId:null,round:null,entries:[]};
  return marketTransaction(async tx=>{
   if(viewerId)await requireMarketActor(tx,viewerId);
-  const workspace=await tx.agriWorkspace.findUnique({where:{competitionId},select:{id:true}});
+  let workspace=await tx.agriWorkspace.findUnique({where:{competitionId},select:{id:true}});
+  if(!workspace && shouldAutoBootstrapAgriEdition(competitionId)) {
+   await bootstrapAgriEditionInTx(tx,{competitionId,silent:true});
+   workspace=await tx.agriWorkspace.findUnique({where:{competitionId},select:{id:true}});
+  }
   if(!workspace) return {configured:false,competitionId,round:null,entries:[]};
   const round=await popularityView(tx,await lockPopularityRound(tx,competitionId));
   const rows=await publicOffers(tx,competitionId,viewerId);

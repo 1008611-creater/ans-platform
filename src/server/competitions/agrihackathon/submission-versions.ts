@@ -53,14 +53,18 @@ export async function createAgriSubmissionVersion(
 
     const now = await agriDatabaseClock(tx);
 
+    const [wallBound] = await tx.$queryRaw<Array<{ projectId: string }>>`
+      SELECT "projectId" FROM agri_wall_entries WHERE "teamCompetitionId" = ${target.entryId}
+    `;
     const [roster] = await tx.$queryRaw<Array<{ projectId: string }>>`
       SELECT "projectId" FROM agri_official_rosters WHERE "teamCompetitionId" = ${target.entryId}
     `;
+    const boundProjectId = wallBound?.projectId ?? roster?.projectId;
 
     let project: { id: string; title: string } | undefined;
-    if (roster) {
+    if (boundProjectId) {
       const [bound] = await tx.$queryRaw<Array<{ id: string; title: string; ownerId: string; teamId: string | null; status: string }>>`
-        SELECT id, title, "ownerId", "teamId", status FROM projects WHERE id = ${roster.projectId} FOR UPDATE
+        SELECT id, title, "ownerId", "teamId", status FROM projects WHERE id = ${boundProjectId} FOR UPDATE
       `;
       if (!bound || bound.ownerId !== actorId || bound.teamId !== target.teamId || bound.status !== "ACTIVE") {
         return fail("AGRI_PROJECT_UNAVAILABLE", 403);
