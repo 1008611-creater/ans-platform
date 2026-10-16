@@ -308,7 +308,7 @@ export async function runTemplate(args: {
   try {
     const result = await callModelTextWithUsage({ target: { baseUrl, apiKey, upstream: model.upstream, label: model.key }, prompt, timeoutMs: RUN_TIMEOUT_MS, userId: args.userId, chargeRef: { type: "run", id: created.runId }, idempotencyKey: `template:${created.runId}` });
     outputText = result.text;
-    if (result.charge) { settledCostPoints = result.charge.points; chargeRequestId = result.charge.requestId; }
+    if (result.charge) { settledCostPoints = result.charge.memberPoints ?? result.charge.points; chargeRequestId = result.charge.requestId; }
     if (!unifiedModelBilling() && settledCostPoints > costPoints) throw new Error("APIC_USAGE_EXCEEDS_RESERVATION");
   } catch (failure) { error = failure instanceof ModelClientError ? failure.message : "APIC_BILLING_FAILED"; outputText = null; }
 

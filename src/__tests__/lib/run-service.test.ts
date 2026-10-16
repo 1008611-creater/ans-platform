@@ -259,25 +259,21 @@ describe("runTemplate", () => {
     }
   });
 
-  it("settles APIC micro-credit usage and refunds only unused reservation", async () => {
+  it("refuses non-unified direct APIC settlement and refunds outer reservation", async () => {
     vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
     vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
-    vi.stubEnv("APIC_COST_BRIDGE_URL", "http://bridge.internal:13021");
-    vi.stubEnv("APIC_COST_BRIDGE_SECRET", "test-secret");
-    mocks.fetch.mockResolvedValueOnce(Response.json({ choices: [{ message: { content: "settled draft" } }], usage: { prompt_tokens:1000,completion_tokens:1000 } }, {headers:{"x-oneapi-request-id":"request0001"}}))
-      .mockResolvedValueOnce(Response.json({requestId:"request0001",quota:960}));
     const result = await runTemplate({userId:"user1",templateId:"tpl1",inputs:{topic:"AI"}});
-    expect(result).toMatchObject({ok:true,costPoints:0.00192});
+    expect(result).toMatchObject({ok:false,error:"run_failed",message:"METERED_ACCOUNT_REQUIRED"});
     expect(mocks.db.user.updateMany).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{decrement:0.25}}}));
-    expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{increment:0.24808}}}));
-    expect(mocks.db.run.updateMany).toHaveBeenCalledWith(expect.objectContaining({where:{id:"run1",userId:"user1",status:"QUEUED"},data:expect.objectContaining({costPoints:0.00192,status:"SUCCEEDED"})}));
+    expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{increment:0.25}}}));
+    expect(mocks.db.run.updateMany).toHaveBeenCalledWith(expect.objectContaining({where:{id:"run1",userId:"user1",status:{in:["QUEUED","RUNNING"]}},data:expect.objectContaining({status:"FAILED",error:"METERED_ACCOUNT_REQUIRED"})}));
   });
 
 });
 describe("durable unified template billing", () => {
   beforeEach(() => {
     vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1"); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
-    mocks.db.apiComputeRequest.findFirst.mockResolvedValue({ settledPoints: 0.02, outcome: "upstream123456" });
+    mocks.db.apiComputeRequest.findFirst.mockResolvedValue({ settledPoints: 0.02, outcome: "upstream123456", billingEvidence: [{ upstreamQuota: BigInt(100) }] });
   });
   it("takes model cost from the durable receipt without an outer template debit or refund", async () => {
     mocks.metered.mockResolvedValue(Response.json({ output: [{ type: "message", content: [{ type: "output_text", text: "complete" }] }] }, { headers: { "x-ans-request-id": "req1" } }));

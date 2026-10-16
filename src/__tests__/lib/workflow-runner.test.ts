@@ -3,10 +3,11 @@ import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  metered: vi.fn(),
   db: {
     workflowRun: { findFirst: vi.fn(), updateMany: vi.fn(), findUniqueOrThrow: vi.fn(), update: vi.fn() },
     workflowNodeRun: { updateMany: vi.fn() },
-    apiComputeRequest: { findMany: vi.fn() },
+    apiComputeRequest: { findMany: vi.fn(), findFirst: vi.fn() },
     userModelCredential: { findFirst: vi.fn() },
     user: { update: vi.fn() },
     quotaLedger: { create: vi.fn(), findUnique: vi.fn() },
@@ -17,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("@/server/integrations/codex-gateway", () => ({ meteredResponses: mocks.metered, reconcileCodexCharges: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: mocks.db }));
 
 import { executePersistedWorkflow, interpolate, createWorkflowHandlers, recoverInterruptedWorkflowRun, cancelWorkflowRun } from "@/server/workflows/runner";
@@ -132,21 +134,20 @@ describe("executePersistedWorkflow", () => {
     expect(mocks.db.quotaLedger.create).not.toHaveBeenCalled();
   });
 
-  it("settles exactly once from APIC's final quota and releases fractional reservation", async () => {
+  it("settles unified APIC usage from durable receipts and releases legacy outer reservation", async () => {
     vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1");
+    vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1");
     vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1");
-    vi.stubEnv("APIC_COST_BRIDGE_URL", "http://bridge.internal:13021");
-    vi.stubEnv("APIC_COST_BRIDGE_SECRET", "test-secret");
     mocks.db.workflowRun.findFirst.mockResolvedValue({...run,costPoints:0.25,version:{...run.version,definition:{...definition,nodes:[{...definition.nodes[0],type:"model"},definition.nodes[1]]}}});
-    const fetchMock = vi.fn().mockResolvedValueOnce(Response.json({choices:[{message:{content:"final draft"}}],usage:{prompt_tokens:1000,completion_tokens:1000}},{headers:{"x-oneapi-request-id":"request0001"}}))
-      .mockResolvedValueOnce(Response.json({requestId:"request0001",quota:960}));
-    vi.stubGlobal("fetch",fetchMock);
+    mocks.metered.mockResolvedValueOnce(Response.json({output:[{type:"message",content:[{type:"output_text",text:"final draft"}]}],usage:{input_tokens:1000,output_tokens:1000}},{headers:{"x-ans-request-id":"req1"}}));
+    mocks.db.apiComputeRequest.findFirst.mockResolvedValueOnce({settledPoints:0.00192,outcome:"request0001",billingEvidence:[{upstreamQuota:BigInt(960)}]});
+    mocks.db.apiComputeRequest.findMany.mockResolvedValueOnce([{state:"SETTLED",settledPoints:0.00192,authorizedPoints:0.1}]);
     const result=await executePersistedWorkflow("run1","user1",{modelKey:"gpt-6.1-sol"});
     expect(result?.status).toBe("succeeded");
-    expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{increment:0.24808}}}));
+    expect(mocks.db.user.update).toHaveBeenCalledWith(expect.objectContaining({data:{quotaPoints:{increment:0.25}}}));
     expect(mocks.db.workflowRun.update).toHaveBeenCalledWith({where:{id:"run1"},data:{costPoints:0.00192}});
     expect(mocks.db.quotaLedger.create).toHaveBeenCalledTimes(1);
-    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({metadata:expect.objectContaining({costPoints:0.00192,apicCharges:[{requestId:"request0001",quota:960,points:0.00192}]})})}));
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({metadata:expect.objectContaining({costPoints:0.00192,apicCharges:[expect.objectContaining({requestId:"request0001",quota:960,points:0.00192})]})})}));
   });
 
   it("persists JSON null separately from a missing workflow output", async () => {

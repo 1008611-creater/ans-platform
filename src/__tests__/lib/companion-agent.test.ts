@@ -14,11 +14,12 @@ import { issueAgentTicket, verifyAgentTicket, AGENT_MAX_POINTS, AGENT_BODY_LIMIT
 import { DEFAULT_COMPANION_MODEL, DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
 import { executeAgent, prepareAgentQuote, readAgentStatus } from "@/server/companion/service";
 import { executeAgentTool } from "@/server/companion/tools";
+import { fixtureModelBillingPolicy } from "./model-billing-fixture";
 const input: AgentInput = { messages: [{ role: "user", content: "帮我查一下项目" }], pathname: "/explore", locale: "zh", privateAccess: false, model: AGENT_MODEL };
 const answer = () => Response.json({ status: "completed", output: [{ type: "message", role: "assistant", content: [{ type: "output_text", text: "找到真实资料，下一步先核对输入。" }] }] });
 const toolCall = (name = "site_help") => Response.json({ status: "completed", output: [{ type: "function_call", call_id: "call-1", name, arguments: '{"query":"video"}' }] });
 beforeEach(() => {
-  vi.clearAllMocks(); vi.stubEnv("AUTH_SECRET", "local-fixture-signing-secret-only"); vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1"); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1"); vi.stubEnv("APIC_COST_BRIDGE_URL", "http://fixture.invalid"); vi.stubEnv("APIC_COST_BRIDGE_SECRET", "fixture-bridge-only");
+  vi.clearAllMocks(); vi.stubEnv("AUTH_SECRET", "local-fixture-signing-secret-only"); vi.stubEnv("ANS_UNIFIED_POINTS_ENABLED", "1"); vi.stubEnv("ANS_APIC_BILLING_ENABLED", "1"); vi.stubEnv("ANS_MODEL_BILLING_POLICY", JSON.stringify(fixtureModelBillingPolicy())); vi.stubEnv("RUN_BASE_URL", "https://apic.cauai.fun/v1"); vi.stubEnv("APIC_COST_BRIDGE_URL", "http://fixture.invalid"); vi.stubEnv("APIC_COST_BRIDGE_SECRET", "fixture-bridge-only");
   mocks.user.mockResolvedValue({ quotaPoints: 12 }); mocks.receipts.mockResolvedValue([]); mocks.gateway.mockImplementation(answer); mocks.catalog.mockResolvedValue([]); mocks.workflows.mockResolvedValue([]); mocks.workflowDetail.mockResolvedValue(null);
 });
 describe("companion authorization and budget", () => {
