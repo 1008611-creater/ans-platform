@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createHash } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { db, type DbTransaction } from "@/lib/db";
@@ -18,8 +19,7 @@ const workflowInclude = {
 } as const;
 const hash = (value: unknown) => createHash("sha256").update(stableWorkflowInput(value)).digest("hex");
 
-/** Every read validates provenance and the owner's current authority. Reads never register or run. */
-export async function readPlatformRecipe(tx: DbTransaction, idOrSlug: string, ownerId?: string) {
+async function queryPlatformRecipe(tx: DbTransaction, idOrSlug: string, ownerId?: string) {
   const workflow = await tx.workflow.findFirst({
     where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }, { officialId: idOrSlug }] },
     include: workflowInclude,
@@ -53,6 +53,20 @@ export async function readPlatformRecipe(tx: DbTransaction, idOrSlug: string, ow
   const expected = { officialId: recipe.officialId, workflowId: workflow.id, ownerId: owner.id, version: recipe.version, versionId: version.id, definitionHash: recipe.definitionHash, sourceCodeHash: recipe.sourceCodeHash };
   if (Object.entries(expected).some(([key, value]) => metadata[key] !== value)) return null;
   return { recipe, workflow: { ...workflow, author: { id: owner.id, username: owner.username, nickname: owner.nickname, avatar: owner.avatar } }, version, definition: parsed.data };
+}
+
+const getRequestPlatformRecipe = cache(async () => queryPlatformRecipe(db, PLATFORM_RESUME_RECIPE.officialId));
+
+/** Every read validates provenance and the owner's current authority. Reads never register or run. */
+export async function readPlatformRecipe(tx: DbTransaction, idOrSlug: string, ownerId?: string) {
+  if (tx === db && process.env.NODE_ENV !== "test") {
+    const cached = await getRequestPlatformRecipe();
+    if (cached && (idOrSlug === cached.workflow.id || idOrSlug === cached.workflow.slug || idOrSlug === cached.recipe.officialId)) {
+      if (ownerId && ownerId !== cached.workflow.author.id) return null;
+      return cached;
+    }
+  }
+  return queryPlatformRecipe(tx, idOrSlug, ownerId);
 }
 
 export async function findPublishedPlatformRecipe(idOrSlug: string = PLATFORM_RESUME_RECIPE.officialId) {

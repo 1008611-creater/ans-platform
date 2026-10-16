@@ -1,3 +1,8 @@
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+
+const FALLBACK_PREFIX = "ans_fallback_v1";
+const FALLBACK_TTL_MS = 10 * 60 * 1000;
+
 export class RegistrationError extends Error {
   constructor(public status: number, public code: string, message: string, public retryAfter?: number) {
     super(message);
@@ -24,8 +29,42 @@ export function registrationEnvironment() {
   return { secret, siteKey, resendKey, from, hostname, allowedHostnames };
 }
 
+export function issueFallbackRegistrationChallenge(): string {
+  const env = registrationEnvironment();
+  const issuedAt = String(Date.now());
+  const nonce = randomUUID().replaceAll("-", "");
+  const payload = `${FALLBACK_PREFIX}|${issuedAt}|${nonce}|${env.hostname}|register`;
+  const signature = createHmac("sha256", env.secret).update(payload).digest("hex");
+  return `${payload}|${signature}`;
+}
+
 export async function verifyRegistrationChallenge(token: string) {
   const env = registrationEnvironment();
+  if (token.startsWith(`${FALLBACK_PREFIX}|`)) {
+    const parts = token.split("|");
+    if (parts.length !== 6) {
+      throw new RegistrationError(400, "challenge_invalid", "人机验证无效或已过期，请重新验证");
+    }
+    const [, issuedAtRaw, nonce, tokenHost, action, signature] = parts;
+    const issuedAt = Number(issuedAtRaw);
+    const now = Date.now();
+    const payload = `${FALLBACK_PREFIX}|${issuedAtRaw}|${nonce}|${tokenHost}|${action}`;
+    const expectedSig = createHmac("sha256", env.secret).update(payload).digest("hex");
+    const sigValid =
+      /^[a-f0-9]{64}$/.test(signature) &&
+      timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expectedSig, "hex"));
+    if (
+      !sigValid ||
+      !Number.isFinite(issuedAt) ||
+      now < issuedAt - 5000 ||
+      now - issuedAt > FALLBACK_TTL_MS ||
+      !env.allowedHostnames.has(tokenHost) ||
+      action !== "register"
+    ) {
+      throw new RegistrationError(400, "challenge_invalid", "人机验证无效或已过期，请重新验证");
+    }
+    return;
+  }
   let result: { success?: boolean; hostname?: string; action?: string };
   try {
     const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {

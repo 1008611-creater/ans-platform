@@ -73,7 +73,7 @@ export function RegisterForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
     setChallengeStalled(false);
     const stallTimer = window.setTimeout(() => {
       if (active && !resolved) setChallengeStalled(true);
-    }, 6000);
+    }, 3000);
     const invalidate = (message: string) => {
       resolved = true;
       if (active) { setChallenge(""); setChallengeStalled(false); setChallengeError(message); }
@@ -106,9 +106,29 @@ export function RegisterForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
     return () => window.clearTimeout(timeout);
   }, [cooldown]);
 
+  async function verifyWithFallback() {
+    try {
+      const response = await fetch("/api/auth/register/config?fallback=1", { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok || !result.fallbackToken) {
+        throw new Error(result.message || (isEn ? "Human verification unavailable" : "人机验证暂不可用"));
+      }
+      setChallenge(result.fallbackToken);
+      setChallengeStalled(false);
+      setChallengeError("");
+    } catch (error) {
+      setChallengeError(error instanceof Error ? error.message : (isEn ? "Human verification failed, please retry" : "人机验证失败，请重试"));
+    }
+  }
+
   function resetChallenge() {
+    const wasFallback = challenge.startsWith("ans_fallback_v1|");
     setChallenge("");
     setChallengeStalled(false);
+    if (wasFallback) {
+      void verifyWithFallback();
+      return;
+    }
     if (widgetId.current !== undefined) {
       try { turnstile()?.reset(widgetId.current); setChallengeError(""); }
       catch { setChallengeError(isEn ? "Failed to reset human verification, please refresh the page" : "人机验证重置失败，请刷新页面"); }
@@ -200,12 +220,27 @@ export function RegisterForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
             {isEn ? "✓ Human verification passed. You can now send the code or register." : "✓ 人机验证已通过，可发送验证码或提交注册"}
           </p>
         )}
-        {challengeStalled && !challenge && !challengeError && (
-          <p role="status" className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-300">
-            {isEn
-              ? "Human verification is taking longer than expected or was blocked by your browser. Click \"Retry human verification\" below or disable ad-blockers and refresh."
-              : "人机验证组件响应缓慢或被浏览器拦截，请点击下方「重新进行人机验证」，或关闭广告拦截插件后刷新页面重试。"}
-          </p>
+        {(challengeStalled || challengeError) && !challenge && (
+          <div role="status" className="flex flex-col gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-xs text-amber-700 dark:text-amber-300">
+            <p>
+              {isEn
+                ? "Human verification is taking longer than expected or was blocked on your network. You can pass verification directly below:"
+                : "人机验证组件响应缓慢或被当前网络拦截，可直接点击下方按钮完成站内人机验证："}
+            </p>
+            <div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                data-testid="fallback-human-verify"
+                className="h-7 text-xs font-medium"
+                disabled={disabled}
+                onClick={verifyWithFallback}
+              >
+                {isEn ? "✓ Pass built-in human verification" : "✓ 点击通过站内人机验证"}
+              </Button>
+            </div>
+          </div>
         )}
         {configError && <p role="alert" className="text-xs text-destructive">{configError}</p>}
         {challengeError && <p role="alert" className="text-xs text-destructive">{challengeError}</p>}

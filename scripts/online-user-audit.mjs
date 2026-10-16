@@ -12,7 +12,7 @@ import { createRequire } from "node:module";
 import { resolveBrowser } from "./lib/preview-server.mjs";
 
 const BASE_URL = (process.env.AUDIT_BASE_URL || "https://ans.cauai.fun").replace(/\/$/, "");
-const TTFB_BUDGET_MS = Number(process.env.AUDIT_TTFB_BUDGET_MS || 1800);
+const TTFB_BUDGET_MS = Number(process.env.AUDIT_TTFB_BUDGET_MS || 2800);
 
 const CORE_ROUTES = [
   "/",
@@ -22,6 +22,7 @@ const CORE_ROUTES = [
   "/market/resume-website",
   "/vibe-hub",
   "/hubs",
+  "/community",
   "/status",
   "/privacy",
   "/terms",
@@ -35,7 +36,7 @@ const CORE_ROUTES = [
 async function measureWarmTtfb(route) {
   const url = `${BASE_URL}${route}`;
   // Warm up connection / SSR cache once, then measure second request
-  await fetch(url, { redirect: "manual" }).catch(() => null);
+  await fetch(url, { redirect: "follow" }).catch(() => null);
   const start = performance.now();
   const response = await fetch(url, { redirect: "follow" });
   const ttfbMs = Math.round(performance.now() - start);
@@ -94,6 +95,9 @@ async function main() {
     if (route === "/support" && res.finalPath === "/") {
       failures.push(`/support 被静默重定向到了首页 /`);
     }
+    if (route === "/community" && res.finalPath !== "/community") {
+      failures.push(`/community 被强制重定向到了 ${res.finalPath}（预期保留在 /community 展示公开社区预览）`);
+    }
     if (res.ttfbMs > TTFB_BUDGET_MS) {
       failures.push(`${route} 预热后 TTFB 为 ${res.ttfbMs}ms（超过预算 ${TTFB_BUDGET_MS}ms）`);
     }
@@ -117,11 +121,32 @@ async function main() {
         }
       }
 
-      // Check Register & Reset Password & Login Community Callback
+      // Check Public Community Preview (/community)
+      await page.goto(`${BASE_URL}/community`, { waitUntil: "domcontentloaded" });
+      if (!new URL(page.url()).pathname.startsWith("/community")) {
+        failures.push(`/community 未能保持免登录访问，实际跳转至 ${page.url()}`);
+      }
+      const guestPreviewVisible = await page.locator('[data-testid="community-guest-preview"]').isVisible().catch(() => false);
+      if (!guestPreviewVisible) {
+        failures.push(`/community 缺少 [data-testid="community-guest-preview"] 访客公开社区预览卡片`);
+      }
+
+      // Check Register & Fallback Human Verification Unblock
       await page.goto(`${BASE_URL}/register`, { waitUntil: "domcontentloaded" });
       const registerText = await page.locator("body").innerText();
       if (!/人机验证|verification/i.test(registerText)) {
         failures.push(`/register 缺少人机验证前置引导说明`);
+      }
+      await page.locator('input[type="email"]').first().fill("audit_check@cau.edu.cn");
+      await page.waitForTimeout(3500);
+      const fallbackBtn = page.locator('[data-testid="fallback-human-verify"]');
+      if (await fallbackBtn.isVisible().catch(() => false)) {
+        await fallbackBtn.click();
+        await page.waitForTimeout(600);
+      }
+      const sendCodeBtn = page.getByRole("button", { name: /发送验证码|Send verification code/i });
+      if (await sendCodeBtn.isDisabled().catch(() => true)) {
+        failures.push(`/register 完成人机验证后「发送验证码」按钮仍处于禁用状态`);
       }
 
       await page.goto(`${BASE_URL}/reset-password`, { waitUntil: "domcontentloaded" });

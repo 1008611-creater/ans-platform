@@ -17,11 +17,16 @@ beforeEach(() => {
   mocks.growth.mockResolvedValue(profile);
 });
 afterEach(cleanup);
-it("redirects visitors before loading private growth", async () => {
+it("renders public community preview for visitors without loading private growth", async () => {
   mocks.auth.mockResolvedValue(null);
-  await expect(CommunityPage()).rejects.toThrow("REDIRECT");
-  expect(mocks.redirect).toHaveBeenCalledWith("/login?callbackUrl=/community");
+  render(await CommunityPage());
+  expect(mocks.redirect).not.toHaveBeenCalled();
   expect(mocks.growth).not.toHaveBeenCalled();
+  expect(mocks.growthPanel).not.toHaveBeenCalled();
+  expect(mocks.communityPanel).not.toHaveBeenCalled();
+  expect(screen.getByTestId("community-guest-preview")).toBeInTheDocument();
+  expect(screen.getAllByRole("link", { name: "works" })[0]).toHaveAttribute("href", "/showcase");
+  expect(screen.getByRole("link", { name: "publish" })).toHaveAttribute("href", "/explore/submit");
 });
 it("restores full private growth and real community destinations without a second check-in", async () => {
   mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member", xp: 0, role: "USER", verified: false } });

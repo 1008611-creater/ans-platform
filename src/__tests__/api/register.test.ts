@@ -99,6 +99,23 @@ describe("REQ-AUTH 注册安全", () => {
   it("仅返回 public site key", async () => {
     expect(await (await publicConfig()).json()).toEqual({ siteKey: "test-public" });
   });
+  it("支持 ?fallback=1 签发受 HMAC 保护的站内备用人机验证令牌并拒绝篡改", async () => {
+    const configRes = await publicConfig(new Request("https://community.example/api/auth/register/config?fallback=1"));
+    const configJson = await configRes.json();
+    expect(configJson.siteKey).toBe("test-public");
+    expect(configJson.fallbackToken).toMatch(/^ans_fallback_v1\|/);
+    mocks.fetch.mockImplementation(async (url: string, options: RequestInit) => {
+      if (url.includes("siteverify")) throw new Error("Fallback token must not depend on Cloudflare siteverify");
+      const body = JSON.parse(String(options.body));
+      lastCode = String(body.text).match(/\b\d{6}\b/)?.[0] ?? "";
+      return Response.json({ id: "mail-fallback" });
+    });
+    const codeRes = await sendCode(request({ email: input.email, turnstileToken: configJson.fallbackToken }));
+    expect(codeRes.status).toBe(200);
+    const regRes = await POST(request({ ...input, code: lastCode, turnstileToken: configJson.fallbackToken }));
+    expect(regRes.status).toBe(200);
+    expect((await sendCode(request({ email: "second@cau.edu.cn", turnstileToken: `${configJson.fallbackToken}0` }))).status).toBe(400);
+  });
   it.each([POST, sendCode])("关闭注册同时保护建号和发码", async (handler) => {
     mocks.config.mockResolvedValue({ auth: { allowRegistration: false } });
     expect((await handler(request())).status).toBe(403);
