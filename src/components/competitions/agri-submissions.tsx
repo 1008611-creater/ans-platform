@@ -117,7 +117,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
   const correcting = !!permit;
   const [conflict, setConflict] = useState(saved?.conflict ?? false); const [ack, setAck] = useState(false);
   const [confirmed, setConfirmed] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [note, setNote] = useState("");
-  const [stale, setStale] = useState(false); const [choices, setChoices] = useState<AgriSubmissionVersionChoice[]>([]); const [cursor, setCursor] = useState<string | null>(null); const [choiceError, setChoiceError] = useState(false); const [versionsLoading, setVersionsLoading] = useState(true);
+  const [stale, setStale] = useState(false); const [choices, setChoices] = useState<AgriSubmissionVersionChoice[]>([]); const [cursor, setCursor] = useState<string | null>(null); const [choiceError, setChoiceError] = useState(false); const [versionsLoading, setVersionsLoading] = useState(true); const [creatingVersion, setCreatingVersion] = useState(false);
   const navigation = useWorkspaceNavigation();
   const [leaveOpen, setLeaveOpen] = useState(false);
   const leaveAction = useRef<(() => void) | null>(null);
@@ -154,6 +154,19 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     } catch (e) { handleError(e); } finally { if (alive.current) setBusy(false); }
   }
   function edit(next: AgriStageDraft) { if (next.artifactVersionId !== draft.artifactVersionId) setPreparedEvidenceIds([]); setDraft(next); setConfirmed(false); setNote(""); }
+  async function createVersion() {
+    if (flight.current || locked || creatingVersion) return;
+    setCreatingVersion(true); setError(""); setNote("");
+    try {
+      const result = await request<{ version: AgriSubmissionVersionChoice }>(api + "/" + encodeURIComponent(initial.id) + "/versions", actorId, { summary: draft.summary.trim() || undefined });
+      if (!alive.current) return;
+      const v = result.version;
+      setChoices(old => [v, ...old.filter(row => row.id !== v.id)]);
+      edit({ ...draft, projectId: v.projectId, artifactVersionId: v.id });
+      setNote(t("versionCreated", { version: v.version }));
+    } catch (e) { handleError(e); }
+    finally { if (alive.current) setCreatingVersion(false); }
+  }
   async function mutate(action: "saveDraft" | "submit" | "correctSubmission") {
     if (flight.current || (!pendingRef.current && locked)) return;
     const retry = !!pendingRef.current;
@@ -220,7 +233,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
     </CardContent></Card>
     <Card><CardHeader><CardTitle>{t("materials")}</CardTitle></CardHeader><CardContent className="space-y-5">
       <p className="text-sm text-muted-foreground">{t(manager ? "ownVersions" : "readOnlyMaterials")}</p>{choiceError && <Button variant="outline" disabled={busy} onClick={() => void versions()}>{t("retryVersions")}</Button>}
-      <Field label={t("version")}>{id => <select id={id} value={draft.artifactVersionId ?? ""} disabled={locked} className={selectClass} onChange={e => { const choice = choices.find(row => row.id === e.target.value && (!detail.officialRoster || row.projectId === detail.officialRoster.projectId)); if (choice) edit({ ...draft, projectId: choice.projectId, artifactVersionId: choice.id }); }}><option value="">{t("selectVersion")}</option>{draft.artifactVersionId && !choices.some(row => row.id === draft.artifactVersionId) && <option value={draft.artifactVersionId}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>}</Field>
+      <Field label={t("version")}>{id => <div className="flex flex-wrap gap-2"><select id={id} value={draft.artifactVersionId ?? ""} disabled={locked} className={`flex-1 ${selectClass}`} onChange={e => { const choice = choices.find(row => row.id === e.target.value && (!detail.officialRoster || row.projectId === detail.officialRoster.projectId)); if (choice) edit({ ...draft, projectId: choice.projectId, artifactVersionId: choice.id }); }}><option value="">{t("selectVersion")}</option>{draft.artifactVersionId && !choices.some(row => row.id === draft.artifactVersionId) && <option value={draft.artifactVersionId}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>{manager && <Button type="button" variant="outline" disabled={locked || creatingVersion} onClick={() => void createVersion()}>{creatingVersion ? t("creatingVersion") : choices.length ? t("newVersionSnapshot") : t("quickCreateVersion")}</Button>}</div>}</Field>
       {cursor && <Button variant="outline" disabled={busy || versionsLoading} onClick={() => void versions(cursor)}>{t("moreVersions")}</Button>}
       {versionsLoading && <p role="status">{t("loading")}</p>}
       {manager && !versionsLoading && !choices.length && !choiceError && <p className="text-sm">{t("noVersions")}</p>}
@@ -229,6 +242,7 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
       {draft.repository && <div className="grid gap-4 sm:grid-cols-2"><Field label={t("refKind")}>{id => <select id={id} className={selectClass} disabled={locked} value={draft.repository?.ref?.kind ?? ""} onChange={e => edit({ ...draft, repository: { url: draft.repository!.url, ref: e.target.value ? { kind: e.target.value as "TAG" | "COMMIT_SHA", value: "" } : null } })}><option value="">{t("noRef")}</option><option value="COMMIT_SHA">{t("sha")}</option><option value="TAG">{t("tag")}</option></select>}</Field><Field label={t(requirements?.repositoryRefRequired ? "refRequired" : "refValue")}>{id => <Input id={id} disabled={locked || !draft.repository?.ref} value={draft.repository?.ref?.value ?? ""} onChange={e => edit({ ...draft, repository: { url: draft.repository!.url, ref: { kind: draft.repository!.ref!.kind, value: e.target.value } } })} />}</Field></div>}
       <Field label={t(requirements?.demoRequired ? "demoRequired" : "demo")}>{id => <Input id={id} type="url" disabled={locked} value={draft.demoUrl ?? ""} onChange={e => edit({ ...draft, demoUrl: e.target.value || null })} />}</Field>
       <p className="text-sm text-muted-foreground">{t("urlHint")}</p>
+      <p className="text-xs text-muted-foreground">{t("autoSnapshotHint")}</p>
       {requirements?.materials.map(requirement => { const item = draft.materials.items.find(row => row.key === requirement.key); const value = item ? item.kind === "TEXT" ? item.text : item.kind === "LINK" ? item.url : item.artifactVersionId : "";
         return <Field key={requirement.key} label={t(requirement.required ? "requiredItem" : "optionalItem", { key: requirement.key })}>{id => requirement.kind === "TEXT" ? <Textarea id={id} maxLength={4000} disabled={locked} value={value} onChange={e => material(requirement.key, requirement.kind, e.target.value)} /> : requirement.kind === "LINK" ? <Input id={id} type="url" disabled={locked} value={value} onChange={e => material(requirement.key, requirement.kind, e.target.value)} /> : <select id={id} className={selectClass} disabled={locked} value={value} onChange={e => material(requirement.key, requirement.kind, e.target.value)}><option value="">{t("selectVersion")}</option>{value && !choices.some(row => row.id === value) && <option value={value}>{t(manager ? "existingVersion" : "recordedVersion")}</option>}{versionOptions}</select>}</Field>;
       })}

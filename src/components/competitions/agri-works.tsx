@@ -56,6 +56,7 @@ export function AgriWorks() {
 function WorksWorkspace({ actorId, invalidate }: { actorId: string; invalidate: () => void }) {
   const t = useTranslations("product.agriWorks"); const navigation = useWorkspaceNavigation();
   const [filters, setFilters] = useState(initialFilters); const [applied, setApplied] = useState(initialFilters);
+  const [hostingFilter, setHostingFilter] = useState<"ALL" | "HOSTED" | "UNHOSTED" | "FAILED">("ALL");
   const [list, setList] = useState<AgriStageList | null>(null); const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false); const [error, setError] = useState(""); const [selected, setSelected] = useState<AgriStageListRow | null>(null);
   const alive = useRef(true); const generation = useRef(0); const exportFlight = useRef(false);
@@ -88,7 +89,20 @@ function WorksWorkspace({ actorId, invalidate }: { actorId: string; invalidate: 
     } catch (error) { handleError(error); }
     finally { exportFlight.current = false; if (alive.current) setExporting(false); }
   }
+  async function downloadCode(objectId: string, filename: string) {
+    try {
+      const response = await fetchWorks("/api/competitions/agrihackathon/evidence/objects/" + encodeURIComponent(objectId) + "/download", actorId);
+      const blob = await response.blob();
+      if (!alive.current) return;
+      const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = filename;
+      document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) { handleError(error); }
+  }
   const message = (code: string) => t.has("errors." + code) ? t("errors." + code) : t("errors.INTERNAL_ERROR");
+  const isHosted = (row: AgriStageListRow) => (row.evidenceSummary?.repositories ?? 0) > 0 || Boolean(row.latestRepositoryObject);
+  const isFailed = (row: AgriStageListRow) => (row.evidenceSummary?.failed ?? 0) > 0;
+  const isUnhosted = (row: AgriStageListRow) => Boolean(row.currentSubmissionId) && !isHosted(row);
+  const visibleStages = list ? list.stages.filter(row => hostingFilter === "ALL" ? true : hostingFilter === "HOSTED" ? isHosted(row) : hostingFilter === "FAILED" ? isFailed(row) : isUnhosted(row)) : [];
   return <div className="space-y-6">
     <Card><CardHeader><CardTitle className="flex items-center gap-2"><ClipboardList className="h-5 w-5" aria-hidden="true" />{t("filterTitle")}</CardTitle></CardHeader><CardContent className="space-y-4">
       <form onSubmit={event => { event.preventDefault(); navigation.run(() => void load(filters)); }} className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_12rem_12rem_auto]">
@@ -105,8 +119,12 @@ function WorksWorkspace({ actorId, invalidate }: { actorId: string; invalidate: 
     {error && <p role="alert" className="rounded-xl border p-4">{message(error)}</p>}
     {loading && <p role="status">{t("loading")}</p>}{exporting && <p role="status">{t("exporting")}</p>}
     {list && <section aria-labelledby="agri-works-results" className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-3"><h2 id="agri-works-results" className="text-xl font-semibold">{t("results")}</h2><span className="text-sm text-muted-foreground">{t("loaded", { count: list.stages.length })}</span></div>
-      {!list.stages.length && <Card><CardContent className="py-8 text-sm text-muted-foreground">{t("empty")}</CardContent></Card>}
-      <ul className="space-y-3">{list.stages.map(row => <li key={row.id}><Card><CardContent className="grid min-w-0 gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-center"><div className="min-w-0 space-y-3"><div className="flex flex-wrap items-center gap-2"><h3 className="break-words font-semibold">{row.teamName}</h3><Badge variant="secondary">{t("stage." + row.stage)}</Badge><Badge variant="outline">{t("status." + (row.currentSubmissionId ? "SUBMITTED" : "NOT_SUBMITTED"))}</Badge>{row.latestTechnicalCheck && <Badge variant="secondary">{t("technicalResult." + row.latestTechnicalCheck.result)}</Badge>}</div><p className="text-xs text-muted-foreground">{t("revision", { revision: row.revision })}{row.frozenSubmissionId ? " · " + t("recordedFrozen") : ""}</p>{row.evidenceSummary && <div className="space-y-1 text-xs leading-6 text-muted-foreground"><p>{Object.values(row.evidenceSummary).some(value => value > 0) ? t("evidenceSummary", row.evidenceSummary) : t("evidenceReferenceOnly")}</p>{row.evidenceSummary.late > 0 && <p>{t("evidenceLate", { count: row.evidenceSummary.late })}</p>}</div>}</div><Button variant="outline" aria-label={t("openTeam", { team: row.teamName, stage: t("stage." + row.stage) })} onClick={event => { detailTrigger.current = event.currentTarget; navigation.run(() => setSelected(row)); }}>{t("open")}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Button></CardContent></Card></li>)}</ul>
+      {list.hasPrivateMaterials && list.stages.length > 0 && <div className="flex flex-wrap items-center gap-2 text-xs"><span className="font-medium text-muted-foreground">{t("hostingFilterLabel")}：</span>{(["ALL", "HOSTED", "UNHOSTED", "FAILED"] as const).map(mode => {
+        const count = mode === "ALL" ? list.stages.length : mode === "HOSTED" ? list.stages.filter(isHosted).length : mode === "FAILED" ? list.stages.filter(isFailed).length : list.stages.filter(isUnhosted).length;
+        return <Button key={mode} type="button" size="sm" variant={hostingFilter === mode ? "default" : "outline"} onClick={() => setHostingFilter(mode)}>{t("hostingFilter." + mode, { count })}</Button>;
+      })}</div>}
+      {!visibleStages.length && <Card><CardContent className="py-8 text-sm text-muted-foreground">{t("empty")}</CardContent></Card>}
+      <ul className="space-y-3">{visibleStages.map(row => <li key={row.id}><Card><CardContent className="grid min-w-0 gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-center"><div className="min-w-0 space-y-3"><div className="flex flex-wrap items-center gap-2"><h3 className="break-words font-semibold">{row.teamName}</h3><Badge variant="secondary">{t("stage." + row.stage)}</Badge><Badge variant="outline">{t("status." + (row.currentSubmissionId ? "SUBMITTED" : "NOT_SUBMITTED"))}</Badge>{row.latestTechnicalCheck && <Badge variant="secondary">{t("technicalResult." + row.latestTechnicalCheck.result)}</Badge>}</div><p className="text-xs text-muted-foreground">{t("revision", { revision: row.revision })}{row.frozenSubmissionId ? " · " + t("recordedFrozen") : ""}</p>{row.evidenceSummary && <div className="space-y-1 text-xs leading-6 text-muted-foreground"><p>{Object.values(row.evidenceSummary).some(value => value > 0) ? t("evidenceSummary", row.evidenceSummary) : t("evidenceReferenceOnly")}</p>{row.evidenceSummary.late > 0 && <p>{t("evidenceLate", { count: row.evidenceSummary.late })}</p>}</div>}</div><div className="flex flex-wrap items-center gap-2">{row.latestRepositoryObject && <Button type="button" variant="secondary" size="sm" onClick={() => void downloadCode(row.latestRepositoryObject!.objectId, row.latestRepositoryObject!.originalFilename)}><Download className="h-4 w-4" aria-hidden="true" />{t("downloadLatestCode", { name: row.latestRepositoryObject.originalFilename })}</Button>}<Button variant="outline" aria-label={t("openTeam", { team: row.teamName, stage: t("stage." + row.stage) })} onClick={event => { detailTrigger.current = event.currentTarget; navigation.run(() => setSelected(row)); }}>{t("open")}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Button></div></CardContent></Card></li>)}</ul>
       {list.nextCursor && <Button variant="outline" disabled={loading} onClick={() => void load(applied, list.nextCursor!)}>{t("more")}</Button>}
     </section>}
     {selected && <WorksDetail key={selected.id} actorId={actorId} row={selected} invalidate={invalidate} close={() => navigation.run(() => { setSelected(null); detailTrigger.current?.focus(); })} />}

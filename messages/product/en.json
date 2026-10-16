@@ -1166,7 +1166,12 @@
       "demoUrl": "Demo link",
       "summary": "Project summary",
       "materials": "Applicable materials"
-    }
+    },
+    "quickCreateVersion": "One-click initialize team contest version",
+    "newVersionSnapshot": "Create new version snapshot",
+    "creatingVersion": "Initializing contest version…",
+    "versionCreated": "Created and selected contest version: v{version}",
+    "autoSnapshotHint": "If no source archive is uploaded before formal submission, the platform will automatically snapshot and host the Git repository above (GitHub / Gitee / GitLab)."
   },
   "agriWorks": {
     "manageDecisions": "Manage eligibility and corrections",
@@ -1258,7 +1263,15 @@
     "correctedFrom": "Corrects submission {id}: {reason}",
     "evidenceSummary": "Hosted code/evidence: {stored} · Processing: {pending} · Need attention: {failed} · Cancelled: {cancelled}",
     "evidenceReferenceOnly": "Repository URL reference only; no source archive or snapshot hosted on the platform yet.",
-    "evidenceLate": "{count} file(s) retained after the cutoff; retention alone does not verify cutoff provenance."
+    "evidenceLate": "{count} file(s) retained after the cutoff; retention alone does not verify cutoff provenance.",
+    "hostingFilterLabel": "Code hosting status",
+    "hostingFilter": {
+      "ALL": "All ({count})",
+      "HOSTED": "Hosted source ({count})",
+      "UNHOSTED": "Unhosted / link only ({count})",
+      "FAILED": "Failed ({count})"
+    },
+    "downloadLatestCode": "Download latest hosted source archive ({name})"
   },
   "agriReviews": {
     "title": "Technical checks and team feedback",
@@ -3429,7 +3442,7 @@
   },
   "agriEvidence": {
     "title": "Code repository hosting & evidence retention",
-    "intro": "Upload source code archives directly to the platform or snapshot submitted GitHub commits with SHA-256 verification and unified archive management.",
+    "intro": "Upload source code archives directly to the platform or snapshot submitted GitHub / Gitee / GitLab repositories with SHA-256 verification, online file tree browsing, and unified archive management.",
     "open": "Manage hosted code & evidence",
     "close": "Close",
     "loading": "Loading…",
@@ -3441,7 +3454,7 @@
     "fileLabel": "Choose source archive or file",
     "supplementHint": "Adds evidence to this submission without changing submitted content or deadline.",
     "intentHint": "Upload your source archive or fix the repository ref first, then formally submit this project version. Upload alone is not submission.",
-    "github": "Pull & host submitted GitHub repository snapshot",
+    "github": "Pull & host submitted Git repository snapshot",
     "captureDemo": "Capture Demo main response",
     "refresh": "Refresh",
     "empty": "No platform-hosted code archives or retained files yet. Links remain external references only.",
@@ -3512,7 +3525,15 @@
       "AGRI_EVIDENCE_STORAGE_RECONCILIATION_REQUIRED": "Storage cleanup could not be confirmed. Processing is paused for review."
     },
     "resolveRef": "Lock & host repository version before submitting",
-    "resolution": "Ref {ref} fixed at {at}; this commit will be adopted and hosted when submitted."
+    "resolution": "Ref {ref} fixed at {at}; this commit will be adopted and hosted when submitted.",
+    "inspectCode": "Browse code tree & source online",
+    "hideCode": "Hide code browser",
+    "inspecting": "Parsing source archive tree…",
+    "fileTree": "Source tree ({files} files · {dirs} directories)",
+    "treeTruncated": "Large archive; showing first 800 entries.",
+    "selectFileHint": "Select a file on the left to preview its source code.",
+    "previewTruncated": "Large file; showing first 96 KB. Download the archive for full source.",
+    "binaryFile": "Binary or non-UTF-8 file ({size} bytes). Download the archive to inspect."
   },
   "marketStudio": {
     "title": "3D personal website",
@@ -3716,6 +3737,15 @@
       "RATE_LIMITED": "Too many requests. Try again shortly."
     },
     "popularityVotes": "{votes} valid Stars at close",
-    "wallEligibility": "Official rankings include only eligible projects published on the project wall for this edition and not withdrawn. Saving a stage submission alone does not qualify it for ranking."
+    "wallEligibility": "Official rankings include only eligible projects published on the project wall for this edition and not withdrawn. Saving a stage submission alone does not qualify it for ranking.",
+    "quickPickTitle": "Select judges from platform users & authorize with one click",
+    "quickPickHint": "Automatically excludes registered team members. Select {count} accounts to grant scoring and works-read permissions and save the panel in one click.",
+    "loadCandidates": "Load eligible judge accounts",
+    "authorizeAndSavePanel": "Authorize & confirm judge panel ({selected} / {required})",
+    "judgeAuthorizedBadge": "Authorized to score",
+    "judgeNeedsGrantBadge": "Will grant on confirm",
+    "blockerSectionTitle": "Publication readiness check",
+    "blockerOpenPopularity": "Open Popularity Window to freeze",
+    "blockerOpenWorks": "Open Works Overview"
   }
 }

@@ -72,32 +72,87 @@ export async function pinnedEvidenceGET(raw: string, hosts: ReadonlySet<string>,
     }
     return { response, finalUrl: url.href };
 }
-const githubHosts = new Set(["api.github.com", "codeload.github.com"]);
-export function githubRepository(raw: string) { const url = allowedEvidenceURL(raw, new Set(["github.com"])); const match = /^\/([A-Za-z0-9][A-Za-z0-9-]{0,38})\/([A-Za-z0-9_.-]{1,100})\/?$/.exec(url.pathname); if (!match || match[2] === "." || match[2] === "..")
-    return evidenceFail("AGRI_EVIDENCE_REPOSITORY_INVALID", 400); return { owner: match[1], repo: match[2].replace(/\.git$/, ""), url: url.href }; }
-async function githubJSON(path: string, signal: AbortSignal) { const { response } = await pinnedEvidenceGET("https://api.github.com" + path, githubHosts, signal); const parts: Buffer[] = []; let size = 0; try {
-    for await (const b of response) {
-        size += b.length;
-        if (size > 1024 ** 2)
-            return evidenceFail("AGRI_EVIDENCE_SOURCE_TOO_LARGE", 413);
-        parts.push(b);
-    }
-    const body = Buffer.concat(parts).toString("utf8");
-    return { value: JSON.parse(body) as Record<string, unknown>, bodyHash: createHash("sha256").update(body).digest("hex") };
+const gitRepositoryHosts = new Set(["github.com", "gitee.com", "gitlab.com"]);
+const gitApiHosts = new Set(["api.github.com", "codeload.github.com", "gitee.com", "gitlab.com"]);
+const gitArchiveHosts = new Set(["codeload.github.com", "github.com", "gitee.com", "gitlab.com"]);
+
+export function githubRepository(raw: string) {
+    const url = allowedEvidenceURL(raw, gitRepositoryHosts);
+    const match = /^\/([A-Za-z0-9][A-Za-z0-9_.-]{0,63})\/([A-Za-z0-9_.-]{1,100})\/?$/.exec(url.pathname);
+    if (!match || match[1] === "." || match[1] === ".." || match[2] === "." || match[2] === "..")
+        return evidenceFail("AGRI_EVIDENCE_REPOSITORY_INVALID", 400);
+    return {
+        host: url.hostname as "github.com" | "gitee.com" | "gitlab.com",
+        owner: match[1],
+        repo: match[2].replace(/\.git$/, ""),
+        url: url.href,
+    };
 }
-finally {
-    response.destroy();
-} }
-export async function resolveGithubEvidence(raw: string, ref: z.infer<typeof agriRepositoryRefSchema>, signal: AbortSignal) {
-    const repo = githubRepository(raw), prefix = `/repos/${repo.owner}/${repo.repo}`;
+
+async function gitHostJSON(fullUrl: string, signal: AbortSignal) {
+    const { response } = await pinnedEvidenceGET(fullUrl, gitApiHosts, signal);
+    const parts: Buffer[] = [];
+    let size = 0;
+    try {
+        for await (const b of response) {
+            size += b.length;
+            if (size > 1024 ** 2)
+                return evidenceFail("AGRI_EVIDENCE_SOURCE_TOO_LARGE", 413);
+            parts.push(b);
+        }
+        const body = Buffer.concat(parts).toString("utf8");
+        return { value: JSON.parse(body) as Record<string, unknown>, bodyHash: createHash("sha256").update(body).digest("hex") };
+    }
+    finally {
+        response.destroy();
+    }
+}
+
+export async function resolveGithubEvidence(raw: string, ref: z.infer<typeof agriRepositoryRefSchema> | null | undefined, signal: AbortSignal) {
+    const repo = githubRepository(raw);
     const proof: Array<{
         type: string;
         sha: string;
         bodyHash: string;
     }> = [];
-    let sha = ref.value.toLowerCase();
+
+    if (repo.host === "gitee.com") {
+        const refTarget = ref?.value ? encodeURIComponent(ref.value) : "HEAD";
+        const commit = await gitHostJSON(`https://gitee.com/api/v5/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/commits/${refTarget}`, signal);
+        const sha = typeof commit.value.sha === "string" ? commit.value.sha.toLowerCase() : "";
+        if (!/^[a-f0-9]{40}$/.test(sha))
+            return evidenceFail("AGRI_EVIDENCE_REF_UNRESOLVED", 422);
+        if (ref?.kind === "COMMIT_SHA" && sha !== ref.value.toLowerCase())
+            return evidenceFail("AGRI_EVIDENCE_REF_UNRESOLVED", 422);
+        proof.push({ type: "commit", sha, bodyHash: commit.bodyHash });
+        return { sha, proof, resolvedAt: new Date().toISOString(), archiveUrl: `https://gitee.com/${repo.owner}/${repo.repo}/repository/archive/${sha}.tar.gz` };
+    }
+
+    if (repo.host === "gitlab.com") {
+        const projectPath = encodeURIComponent(`${repo.owner}/${repo.repo}`);
+        const refTarget = ref?.value ? encodeURIComponent(ref.value) : "HEAD";
+        const commit = await gitHostJSON(`https://gitlab.com/api/v4/projects/${projectPath}/repository/commits/${refTarget}`, signal);
+        const sha = typeof commit.value.id === "string" ? commit.value.id.toLowerCase() : "";
+        if (!/^[a-f0-9]{40}$/.test(sha))
+            return evidenceFail("AGRI_EVIDENCE_REF_UNRESOLVED", 422);
+        if (ref?.kind === "COMMIT_SHA" && sha !== ref.value.toLowerCase())
+            return evidenceFail("AGRI_EVIDENCE_REF_UNRESOLVED", 422);
+        proof.push({ type: "commit", sha, bodyHash: commit.bodyHash });
+        return { sha, proof, resolvedAt: new Date().toISOString(), archiveUrl: `https://gitlab.com/${repo.owner}/${repo.repo}/-/archive/${sha}/${repo.repo}-${sha}.tar.gz` };
+    }
+
+    const prefix = `/repos/${repo.owner}/${repo.repo}`;
+    let sha = ref?.value ? ref.value.toLowerCase() : "";
+    if (!ref) {
+        const headCommit = await gitHostJSON(`https://api.github.com${prefix}/commits/HEAD`, signal);
+        const headSha = typeof headCommit.value.sha === "string" ? headCommit.value.sha.toLowerCase() : "";
+        if (!/^[a-f0-9]{40}$/.test(headSha))
+            return evidenceFail("AGRI_EVIDENCE_REF_UNRESOLVED", 422);
+        proof.push({ type: "commit", sha: headSha, bodyHash: headCommit.bodyHash });
+        return { sha: headSha, proof, resolvedAt: new Date().toISOString(), archiveUrl: `https://codeload.github.com/${repo.owner}/${repo.repo}/tar.gz/${headSha}` };
+    }
     if (ref.kind === "TAG") {
-        const resolved = await githubJSON(prefix + "/git/ref/tags/" + encodeURIComponent(ref.value), signal);
+        const resolved = await gitHostJSON("https://api.github.com" + prefix + "/git/ref/tags/" + encodeURIComponent(ref.value), signal);
         let object = resolved.value.object as {
             type?: string;
             sha?: string;
@@ -107,7 +162,7 @@ export async function resolveGithubEvidence(raw: string, ref: z.infer<typeof agr
         while (object?.type === "tag" && depth++ < 3) {
             if (typeof object.sha !== "string" || !/^[a-f0-9]{40}$/i.test(object.sha))
                 return evidenceFail("AGRI_EVIDENCE_REF_UNRESOLVED", 422);
-            const tag = await githubJSON(prefix + "/git/tags/" + object.sha, signal);
+            const tag = await gitHostJSON("https://api.github.com" + prefix + "/git/tags/" + object.sha, signal);
             object = tag.value.object as typeof object;
             proof.push({ type: object?.type ?? "unknown", sha: object?.sha ?? "", bodyHash: tag.bodyHash });
         }
@@ -117,10 +172,10 @@ export async function resolveGithubEvidence(raw: string, ref: z.infer<typeof agr
     }
     if (!/^[a-f0-9]{40}$/.test(sha))
         return evidenceFail("AGRI_EVIDENCE_REF_UNRESOLVED", 422);
-    const commit = await githubJSON(prefix + "/commits/" + sha, signal);
+    const commit = await gitHostJSON("https://api.github.com" + prefix + "/commits/" + sha, signal);
     if (commit.value.sha !== sha)
         return evidenceFail("AGRI_EVIDENCE_REF_UNRESOLVED", 422);
     proof.push({ type: "commit", sha, bodyHash: commit.bodyHash });
     return { sha, proof, resolvedAt: new Date().toISOString(), archiveUrl: `https://codeload.github.com/${repo.owner}/${repo.repo}/tar.gz/${sha}` };
 }
-export function githubArchiveGET(url: string, signal: AbortSignal) { return pinnedEvidenceGET(url, new Set(["codeload.github.com"]), signal); }
+export function githubArchiveGET(url: string, signal: AbortSignal) { return pinnedEvidenceGET(url, gitArchiveHosts, signal, 2); }

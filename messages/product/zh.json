@@ -1166,7 +1166,12 @@
       "demoUrl": "Demo 链接",
       "summary": "项目介绍",
       "materials": "适用材料"
-    }
+    },
+    "quickCreateVersion": "一键初始化本队参赛版本",
+    "newVersionSnapshot": "新建版本快照",
+    "creatingVersion": "正在初始化作品版本…",
+    "versionCreated": "已为本队生成并选定参赛版本：v{version}",
+    "autoSnapshotHint": "正式提交时若尚未上传源码包，平台将自动拉取并托管上方 Git 仓库（支持 GitHub / Gitee / GitLab）最新快照。"
   },
   "agriWorks": {
     "manageDecisions": "晋级与更正管理",
@@ -1258,7 +1263,15 @@
     "correctedFrom": "更正原提交 {id}：{reason}",
     "evidenceSummary": "已托管代码/存证 {stored} · 处理中 {pending} · 需处理 {failed} · 已取消 {cancelled}",
     "evidenceReferenceOnly": "仅提交仓库链接引用，尚未在平台托管源码包或快照。",
-    "evidenceLate": "其中 {count} 份文件在截止后留存，留存本身不能证明截止版本。"
+    "evidenceLate": "其中 {count} 份文件在截止后留存，留存本身不能证明截止版本。",
+    "hostingFilterLabel": "代码托管状态",
+    "hostingFilter": {
+      "ALL": "全部（{count}）",
+      "HOSTED": "已托管源码（{count}）",
+      "UNHOSTED": "待托管/仅外链（{count}）",
+      "FAILED": "拉取异常（{count}）"
+    },
+    "downloadLatestCode": "直接下载最新托管源码包（{name}）"
   },
   "agriReviews": {
     "title": "技术检查与队伍反馈",
@@ -3429,7 +3442,7 @@
   },
   "agriEvidence": {
     "title": "赛事代码托管与材料存证",
-    "intro": "支持将参赛源码包直接上传托管至平台，或一键拉取固定 GitHub 代码版本，统一计算 SHA-256 哈希并归档管理。",
+    "intro": "支持将参赛源码包直接上传托管至平台，或一键拉取 GitHub / Gitee / GitLab 仓库快照，统一计算 SHA-256 哈希、在线浏览目录与源码并归档管理。",
     "open": "管理托管代码与存证",
     "close": "收起",
     "loading": "正在读取…",
@@ -3441,7 +3454,7 @@
     "fileLabel": "选择源码包或存证文件",
     "supplementHint": "补充材料绑定本次提交，不改变原内容与截止记录。",
     "intentHint": "先上传托管源码包或固定代码版本，再正式提交当前项目版本。仅上传文件不等于正式提交。",
-    "github": "一键拉取并托管已提交 GitHub 代码版本",
+    "github": "一键拉取并托管已提交 Git 仓库代码快照",
     "captureDemo": "留存 Demo 主响应",
     "refresh": "刷新",
     "empty": "暂无平台托管代码或原文件存证，现有链接仅为外部引用。",
@@ -3512,7 +3525,15 @@
       "AGRI_EVIDENCE_STORAGE_RECONCILIATION_REQUIRED": "无法确认临时存储清理结果，已暂停处理，需核对后恢复。"
     },
     "resolveRef": "提交前锁定并托管代码仓库版本",
-    "resolution": "已于 {at} 固定引用 {ref}；正式提交将采用此 Commit 并托管代码。"
+    "resolution": "已于 {at} 固定引用 {ref}；正式提交将采用此 Commit 并托管代码。",
+    "inspectCode": "在线浏览代码目录与源码",
+    "hideCode": "收起代码浏览",
+    "inspecting": "正在解析源码包目录…",
+    "fileTree": "源码目录树（共 {files} 个文件 · {dirs} 个目录）",
+    "treeTruncated": "目录项较多，仅展示前 800 项。",
+    "selectFileHint": "点击左侧文件可在线预览源码内容。",
+    "previewTruncated": "文件较大，仅预览前 96 KB 内容；完整源码请点击下载。",
+    "binaryFile": "该文件为二进制或非 UTF-8 编码文件（{size} 字节），请下载源码包查看。"
   },
   "marketStudio": {
     "title": "3D 个人网站",
@@ -3716,6 +3737,15 @@
       "RATE_LIMITED": "操作过于频繁，请稍后再试。"
     },
     "popularityVotes": "封榜有效 Star {votes}",
-    "wallEligibility": "只有已发布到本届农客松作品墙、且未撤回的有效参赛项目进入正式排名。仅保存阶段提交不会取得参评资格。"
+    "wallEligibility": "只有已发布到本届农客松作品墙、且未撤回的有效参赛项目进入正式排名。仅保存阶段提交不会取得参评资格。",
+    "quickPickTitle": "从系统用户可视化选择并一键授权评委",
+    "quickPickHint": "自动过滤已报名参赛队员，勾选满 {count} 人后可一键自动授予技术评分与作品读取权限并锁定本阶段评委名单。",
+    "loadCandidates": "加载可选评委账号",
+    "authorizeAndSavePanel": "一键授权并确认评委名单（已选 {selected} / {required}）",
+    "judgeAuthorizedBadge": "已获评分授权",
+    "judgeNeedsGrantBadge": "待一键授权",
+    "blockerSectionTitle": "放榜前置条件检查",
+    "blockerOpenPopularity": "前往人气奖计票窗封榜",
+    "blockerOpenWorks": "前往作品总览核验提交"
   }
 }

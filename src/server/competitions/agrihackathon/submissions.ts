@@ -13,7 +13,7 @@ import { getAgriWindowState } from "@/domain/competitions/agrihackathon";
 import { lockAgriWorkspace, requireAgriScope, assertAgriAuthorityCurrent, agriDatabaseClock, type AgriWorkspaceContext } from "./workspace";
 import { finalEligibility, correctionPermit, activeCorrectionPermits, type PermitRow } from "./decisions";
 
-import { bindEvidenceIntents } from "./evidence";
+import { bindEvidenceIntents, autoQueueRepositoryEvidence } from "./evidence";
 type Tx = DbTransaction;
 type StageName = "PRELIMINARY" | "FINAL";
 interface Entry { id: string; teamId: string; competitionId: string; entryStatus: string }
@@ -262,6 +262,7 @@ export async function executeAgriSubmissionCommand(actorId: string, raw: unknown
         stage.frozenSubmissionId ??= stage.currentSubmissionId;
       }
       if (command.evidenceIntentIds?.length) await bindEvidenceIntents(tx, ctx, command.evidenceIntentIds, submissionId);
+      await autoQueueRepositoryEvidence(tx, ctx, stage.id, submissionId, content.projectId, content.artifactVersionId, content.repository, now);
       stage.currentSubmissionId = submissionId;
     }
     stage.revision++;
@@ -352,8 +353,8 @@ export async function listAgriStages(actorId: string, rawQuery: unknown = {}) {
     const exportAuthority = query.scope === "staff" ? await optionalScope(tx, ctx, "EXPORT") : null;
     const privateAuthority = query.scope === "staff" ? await optionalScope(tx, ctx, "PRIVATE_MATERIALS_READ") : null;
     if (query.scope === "team") await tx.$queryRaw`SELECT id FROM team_members WHERE "userId"=${actorId} ORDER BY id FOR SHARE`;
-    const rows = await tx.$queryRaw<Array<Omit<Stage, "draft" | "competitionId"> & { teamId: string; teamName: string; checkId: string | null; checkResult: "PASS" | "NEEDS_ACTION" | "UNREACHABLE" | null; checkedAt: Date | null; evidenceSummary: { stored: number; pending: number; failed: number; cancelled: number; late: number } }>>`
-      SELECT es.id,es."teamCompetitionId",es.stage,es.revision,es."currentSubmissionId",es."frozenSubmissionId",es."createdAt",tc."teamId",t.name AS "teamName",ch.id AS "checkId",ch.result AS "checkResult",ch."checkedAt",ev.summary AS "evidenceSummary"
+    const rows = await tx.$queryRaw<Array<Omit<Stage, "draft" | "competitionId"> & { teamId: string; teamName: string; checkId: string | null; checkResult: "PASS" | "NEEDS_ACTION" | "UNREACHABLE" | null; checkedAt: Date | null; evidenceSummary: { stored: number; pending: number; failed: number; cancelled: number; late: number }; latestRepo: { id: string; fileName: string; sha256: string; byteLength: number } | null }>>`
+      SELECT es.id,es."teamCompetitionId",es.stage,es.revision,es."currentSubmissionId",es."frozenSubmissionId",es."createdAt",tc."teamId",t.name AS "teamName",ch.id AS "checkId",ch.result AS "checkResult",ch."checkedAt",ev.summary AS "evidenceSummary",repo.obj AS "latestRepo"
       FROM agri_entry_stages es JOIN team_competitions tc ON tc.id=es."teamCompetitionId" JOIN teams t ON t.id=tc."teamId"
       LEFT JOIN LATERAL (SELECT id,result,"checkedAt" FROM agri_technical_checks WHERE "competitionId"=es."competitionId" AND "submissionId"=es."currentSubmissionId" ORDER BY "checkedAt" DESC,id DESC LIMIT 1) ch ON true
       LEFT JOIN LATERAL (SELECT jsonb_build_object(
@@ -364,6 +365,11 @@ export async function listAgriStages(actorId: string, rawQuery: unknown = {}) {
         'late',count(*) FILTER (WHERE o.descriptor->>'temporalStatus'='CAPTURED_AFTER_DEADLINE')::integer) AS summary
         FROM agri_evidence_requests r LEFT JOIN agri_evidence_objects o ON o."requestId"=r.id
         WHERE r."competitionId"=es."competitionId" AND r."submissionId"=es."currentSubmissionId") ev ON true
+      LEFT JOIN LATERAL (SELECT jsonb_build_object(
+        'id',o.id,'fileName',r."fileName",'sha256',o.sha256,'byteLength',o."byteLength") AS obj
+        FROM agri_evidence_requests r JOIN agri_evidence_objects o ON o."requestId"=r.id
+        WHERE r."competitionId"=es."competitionId" AND r."submissionId"=es."currentSubmissionId" AND r.kind='REPOSITORY'
+        ORDER BY o."capturedAt" DESC,o.id DESC LIMIT 1) repo ON true
       WHERE ${stageFilter(competitionId, actorId, query)}
       AND (${cursor?.id ?? null}::text IS NULL OR (es."createdAt",es.id)<(${cursor ? new Date(cursor.createdAt) : null}::timestamptz,${cursor?.id ?? null}::text))
       ORDER BY es."createdAt" DESC,es.id DESC LIMIT 31`;
@@ -371,7 +377,7 @@ export async function listAgriStages(actorId: string, rawQuery: unknown = {}) {
     const now = await agriDatabaseClock(tx);
     const projected = await Promise.all(page.map(async row => ({ row, freeze: await projectAgriStageFreeze(tx, { ...row, competitionId }, now) })));
     await assertAgriAuthorityCurrent(tx, authority, exportAuthority, privateAuthority);
-    return { competitionId, stages: projected.map(({ row, freeze }) => ({ id: row.id, teamCompetitionId: row.teamCompetitionId, teamId: row.teamId, teamName: row.teamName, stage: row.stage, revision: row.revision, currentSubmissionId: row.currentSubmissionId, ...freeze, latestTechnicalCheck: row.checkId && row.checkResult && row.checkedAt ? { id: row.checkId, result: row.checkResult, checkedAt: row.checkedAt.toISOString() } : null, evidenceSummary: row.currentSubmissionId ? row.evidenceSummary : null })),
+    return { competitionId, stages: projected.map(({ row, freeze }) => ({ id: row.id, teamCompetitionId: row.teamCompetitionId, teamId: row.teamId, teamName: row.teamName, stage: row.stage, revision: row.revision, currentSubmissionId: row.currentSubmissionId, ...freeze, latestTechnicalCheck: row.checkId && row.checkResult && row.checkedAt ? { id: row.checkId, result: row.checkResult, checkedAt: row.checkedAt.toISOString() } : null, evidenceSummary: row.currentSubmissionId ? row.evidenceSummary : null, ...(privateAuthority && row.latestRepo ? { latestRepositoryObject: row.latestRepo } : {}) })),
       canExport: !!exportAuthority, hasPrivateMaterials: !!privateAuthority,
       nextCursor: rows.length > 30 && last ? Buffer.from(JSON.stringify({ id: last.id,
         createdAt: last.createdAt.toISOString(), competitionId, stage: query.stage ?? null, scope: query.scope,

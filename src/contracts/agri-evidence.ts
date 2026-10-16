@@ -10,7 +10,7 @@ export const evidenceCreateSchema = target.extend({ action: z.literal("create"),
 }).strict().superRefine((v, c) => {
     if (v.mode !== "UPLOAD" && (!v.sourceUrl || v.mode === "ALLOWED_HTTP_CAPTURE" && !v.submissionId))
         c.addIssue({ code: "custom", message: "FORMAL_SOURCE_REQUIRED" });
-    if (v.mode === "GITHUB_ARCHIVE" && (v.kind !== "REPOSITORY" || !v.originalRef))
+    if (v.mode === "GITHUB_ARCHIVE" && v.kind !== "REPOSITORY")
         c.addIssue({ code: "custom", message: "REPOSITORY_REF_REQUIRED" });
     if (v.mode !== "GITHUB_ARCHIVE" && v.originalRef !== null)
         c.addIssue({ code: "custom", message: "REF_NOT_ALLOWED" });
