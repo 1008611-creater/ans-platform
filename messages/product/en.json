@@ -45,7 +45,7 @@
   "home": {
     "eyebrow": "ANS / DISCOVER · LEARN · CREATE",
     "title": "Give your ideas\nroom to grow.",
-    "description": "Find inspiration in real projects. Learn the method, bring your own ideas, and make something yours.",
+    "description": "Looking for an idea or ready to build? Explore real projects and choose a direction.",
     "searchPlaceholder": "Try a portfolio, AI video or open-source tool",
     "spotlight": "Projects worth a closer look",
     "directions": "Find your direction",
@@ -2083,7 +2083,7 @@
   },
   "growth": {
     "eyebrow": "ANS GROWTH",
-    "availablePoints": "Growth points",
+    "availablePoints": "Community points",
     "privateGrowth": "Private growth records",
     "privateGrowthHint": "Check-in history and growth activity are private. Public profiles show your level and appearance without exposing individual participation records.",
     "pointsUnit": "community points",
@@ -2103,9 +2103,9 @@
     "notCheckedIn": "Not checked",
     "checkedInShort": "Checked",
     "streakHeadline": "{days}-day streak",
-    "streakHint": "Come back every day to leave a real growth signal. Streaks add bonus XP.",
+    "streakHint": "Want to keep your streak? Check in each day in Shanghai time. Streak rewards follow your recorded check-ins.",
     "earnEyebrow": "EARN XP",
-    "earnTitle": "Turn participation into progress",
+    "earnTitle": "How would you like to earn XP?",
     "dailyCap": "Up to {count} / day",
     "actions": {
       "CHECK_IN": "Check in",
@@ -2128,7 +2128,7 @@
       "LIKE": "Liked content",
       "LEVEL_REWARD": "Level reward"
     },
-    "qualityHint": "XP comes from real participation: publishing, discussion, sharing, and completed workflows are recorded.",
+    "qualityHint": "Earn XP through the activities below, each with a daily limit. Community levels do not grant publishing or administration permissions.",
     "activityEyebrow": "RECENT SIGNALS",
     "activityTitle": "Recent growth",
     "noActivity": "No growth records yet. Your first check-in will appear here.",
@@ -2137,12 +2137,12 @@
     "roadmapHint": "Unlock appearance and community identity",
     "currentLevel": "Current",
     "nextRewardTitle": "Your next unlock",
-    "nextRewardDescription": "Earn {xp} more XP to level up and receive {points} community points.",
+    "nextRewardDescription": "Earn {xp} more XP to receive {points} community points.",
     "xp": "XP",
     "maxLevel": "Highest level reached",
     "nextLevel": "{xp} XP to {level}",
     "streak": "{days}-day streak",
-    "levelReward": "Level-up reward: {points} points",
+    "levelReward": "Level reward: {points} community points",
     "stage": "Stage: {label}",
     "checkIn": "Check in today",
     "checkedIn": "Checked in today",
@@ -2152,7 +2152,7 @@
     "applied": "Appearance applied",
     "equipFailed": "Unable to equip right now",
     "unlockedTitle": "Unlocked appearance",
-    "identityPreview": "This is your growth identity. More frames and chat bubbles unlock as you level up.",
+    "identityPreview": "Let your work speak for you.",
     "avatarFrames": "Avatar frames",
     "chatBubbles": "Chat bubbles",
     "locked": "Locked",
@@ -2226,7 +2226,9 @@
     },
     "copyLink": "Copy link",
     "linkCopied": "Link copied",
-    "shareContent": "Share content"
+    "shareContent": "Share content",
+    "calendarGuide": "How do check-ins work?",
+    "earnGuide": "How do I earn XP?"
   },
   "agriWorkspace": {
     "decisionContextTitle": "Selected entry",
@@ -3515,7 +3517,11 @@
     "profile": "My profile",
     "profileBody": "Show your work, projects and unlocked growth rewards.",
     "publish": "Publish a project",
-    "publishBody": "Share what you have built so others can discover and use it."
+    "publishBody": "Share what you have built so others can discover and use it.",
+    "historyGuide": "XP history and permissions",
+    "boardGuide": "How are contributions ranked?",
+    "historyDetails": "Only you can see these 50 recent entries. Community levels do not change publishing or administration permissions.",
+    "boardDetails": "The top 20 members by XP. Equal XP shares a rank."
   },
   "workspace": {
     "title": "Workspace",

@@ -45,7 +45,7 @@
   "home": {
     "eyebrow": "ANS / 发现 · 拆解 · 创造",
     "title": "让脑海里的想法，\n长成看得见的作品。",
-    "description": "从真实好项目里找灵感，看懂别人怎么拆解，再用现成工作流亲手做出你的下一件代表作。",
+    "description": "想找灵感，还是直接动手？看看真实项目，选一个适合你的方向。",
     "searchPlaceholder": "搜你想做的：3D 简历、AI 短剧、路演方案、宝藏开源…",
     "spotlight": "正在发生的酷项目",
     "directions": "按方向找灵感",
@@ -2083,7 +2083,7 @@
   },
   "growth": {
     "eyebrow": "ANS GROWTH",
-    "availablePoints": "成长积分",
+    "availablePoints": "社区积分",
     "privateGrowth": "成长记录仅自己可见",
     "privateGrowthHint": "签到轨迹和成长流水仅自己可见。公开主页会展示等级与装扮，不公开具体参与记录。",
     "pointsUnit": "社区积分",
@@ -2103,9 +2103,9 @@
     "notCheckedIn": "未签到",
     "checkedInShort": "已签到",
     "streakHeadline": "连续签到 {days} 天",
-    "streakHint": "每天回来留下一个真实的成长记录，连续签到会获得额外 XP。",
+    "streakHint": "想保持连签？每天按上海时间签到。连续签到奖励按实际记录累计。",
     "earnEyebrow": "EARN XP",
-    "earnTitle": "把参与变成成长",
+    "earnTitle": "想怎样积累经验？",
     "dailyCap": "每日最多 {count} 次",
     "actions": {
       "CHECK_IN": "每日签到",
@@ -2128,7 +2128,7 @@
       "LIKE": "点赞内容",
       "LEVEL_REWARD": "等级奖励"
     },
-    "qualityHint": "经验来自真实参与：发布、交流、分享与完成工作流都会被记录。",
+    "qualityHint": "完成下方活动可获得经验，每项有每日上限。等级用于社区成长，不改变项目审核和管理权限。",
     "activityEyebrow": "RECENT SIGNALS",
     "activityTitle": "最近成长记录",
     "noActivity": "还没有成长记录，完成一次签到就会出现在这里。",
@@ -2137,12 +2137,12 @@
     "roadmapHint": "等级解锁装扮与社区身份",
     "currentLevel": "当前等级",
     "nextRewardTitle": "下一级会得到什么",
-    "nextRewardDescription": "再获得 {xp} XP，升级即可领取 {points} 社区积分。",
+    "nextRewardDescription": "还差 {xp} XP，可获得 {points} 社区积分。",
     "xp": "XP",
     "maxLevel": "已达最高等级",
     "nextLevel": "距离 {level} 还差 {xp} XP",
     "streak": "连续签到 {days} 天",
-    "levelReward": "本级升级奖励 {points} 积分",
+    "levelReward": "升级奖励：{points} 社区积分",
     "stage": "阶段：{label}",
     "checkIn": "今日签到",
     "checkedIn": "今日已签到",
@@ -2152,7 +2152,7 @@
     "applied": "装扮已应用",
     "equipFailed": "暂时无法装备",
     "unlockedTitle": "已解锁装扮",
-    "identityPreview": "这是你的成长身份。等级越高，可用的头像框和聊天气泡越丰富。",
+    "identityPreview": "让作品替你说话。",
     "avatarFrames": "头像框",
     "chatBubbles": "聊天气泡",
     "locked": "未解锁",
@@ -2226,7 +2226,9 @@
     },
     "copyLink": "复制链接",
     "linkCopied": "链接已复制",
-    "shareContent": "分享内容"
+    "shareContent": "分享内容",
+    "calendarGuide": "签到怎样计算？",
+    "earnGuide": "经验怎样获得？"
   },
   "agriWorkspace": {
     "decisionContextTitle": "当前管理对象",
@@ -3515,7 +3517,11 @@
     "profile": "我的主页",
     "profileBody": "展示你的作品、项目和成长装扮。",
     "publish": "发布项目",
-    "publishBody": "分享你做的项目，让更多人看到和使用。"
+    "publishBody": "分享你做的项目，让更多人看到和使用。",
+    "historyGuide": "经验记录与权限说明",
+    "boardGuide": "贡献榜怎样排名？",
+    "historyDetails": "仅自己可见，展示最近 50 条。等级记录社区参与，项目上架与管理权限按实际审核与授权执行。",
+    "boardDetails": "按经验展示前 20 位，同分同名次。"
   },
   "workspace": {
     "title": "工作台",

@@ -17,7 +17,8 @@ it("keeps all nine destinations with separate, initially hidden explanations", a
   for (const button of buttons) {
     expect(button.closest("a")).toBeNull();
     expect(button).toHaveAttribute("aria-expanded", "false");
-    expect(document.getElementById(button.getAttribute("aria-controls")!)).toHaveAttribute("aria-hidden", "true");
+    expect(document.getElementById(button.getAttribute("aria-controls")!)).not.toBeVisible();
+    expect(document.getElementById(button.getAttribute("aria-controls")!)).toHaveAttribute("inert");
   }
   fireEvent.click(buttons[0]);
   expect(buttons[0]).toHaveAttribute("aria-expanded", "true");

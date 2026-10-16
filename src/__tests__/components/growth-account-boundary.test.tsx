@@ -41,7 +41,7 @@ describe("个人成长与装扮的账号边界", () => {
     const signal = fetchMock.mock.calls[0][1].signal as AbortSignal;
     m.actor = "member-b"; view.rerender(panel());
     expect(signal.aborted).toBe(true); expect(screen.getByRole("alert")).toHaveTextContent("changed");
-    expect(screen.queryByRole("list", { name: "checkInCalendarTitle" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "checkInCalendarTitle" })).not.toBeInTheDocument();
     expect(screen.queryByText("+37 XP")).not.toBeInTheDocument();
     view.rerender(panel("member-b", newMember));
     await act(async () => task.resolve(reply({ alreadyCheckedIn: false, checkIn: { ...checkInRecord, xpAwarded: 9000 } })));
@@ -89,7 +89,7 @@ describe("个人成长与装扮的账号边界", () => {
     expect(screen.queryByRole("button", { name: "checkIn" })).not.toBeInTheDocument();
     view.rerender(<ProfileGrowthPanel user={initial} editable={false} />);
     expect(screen.queryByRole("button", { name: "checkIn" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("list", { name: "checkInCalendarTitle" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "checkInCalendarTitle" })).not.toBeInTheDocument();
     expect(screen.queryByText("+37 XP")).not.toBeInTheDocument(); expect(screen.getAllByText("privateGrowthHint")).toHaveLength(2);
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -103,7 +103,7 @@ describe("Shanghai midnight refresh", () => {
     await act(async () => { vi.advanceTimersByTime(1002); });
     expect(screen.getByRole("button", { name: "checkIn" })).toBeEnabled();
     expect(screen.getByText('streakHeadline{"days":2}')).toBeInTheDocument();
-    expect(screen.getByRole("listitem", { name: 'calendarDayEmpty{"day":"2026-10-13"}' })).toHaveAttribute("aria-current", "date");
+    expect(screen.getByRole("button", { name: 'calendarDayEmpty{"day":"2026-10-13"}' })).toHaveAttribute("aria-current", "date");
     expect(fetchMock).not.toHaveBeenCalled();
   });
   it("expires yesterday's streak on the next midnight while preserving history", async () => {
@@ -111,7 +111,7 @@ describe("Shanghai midnight refresh", () => {
     render(panel()); expect(screen.getByText('streakHeadline{"days":2}')).toBeInTheDocument();
     await act(async () => { vi.advanceTimersByTime(1002); });
     expect(screen.getByText('streakHeadline{"days":0}')).toBeInTheDocument();
-    expect(screen.getByRole("listitem", { name: 'calendarDayChecked{"day":"2026-10-11","xp":5}' })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: 'calendarDayChecked{"day":"2026-10-11","xp":5}' })).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
   it("catches up on focus after a tab was suspended over several days", async () => {
