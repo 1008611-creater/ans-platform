@@ -28,12 +28,12 @@ export default async function AgriWallSharePage({ params }: Props) {
   const { slug } = await params;
   const data = await readAgriWallShare(slug);
   if (!data) notFound();
-  const t = await getTranslations("agriWall");
+  const t = await getTranslations("agriWall"), nav = await getTranslations("product.agrihackathon");
   const { entry, round } = data;
   const listing = entry.offer.listing;
   const href = `/competitions/agrihackathon/wall/${encodeURIComponent(slug)}`;
   return <main className="mx-auto max-w-3xl space-y-6 px-4 py-10 sm:py-16">
-    <Link href="/explore?category=competition&subcategory=agri-wall" className="text-sm text-primary underline underline-offset-4">{t("backWall")}</Link>
+    <div className="flex flex-wrap items-center gap-3"><Link href="/explore?category=competition&subcategory=agri-wall" className="text-sm text-primary underline underline-offset-4">{t("backWall")}</Link><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon">{nav("crossNav.hub")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/showcase">{nav("crossNav.showcase")}</Link></Button></div>
     <article className="overflow-hidden rounded-2xl border bg-card">
       {listing.coverUrl && <Image src={listing.coverUrl} alt="" width={1200} height={750} unoptimized className="aspect-[8/5] w-full object-cover" />}
       <div className="space-y-6 p-6 sm:p-9"><header><p className="text-sm text-muted-foreground">{entry.teamName}</p><h1 className="mt-3 break-words text-3xl font-semibold">{listing.title}</h1><p className="mt-4 break-words leading-7 text-muted-foreground">{listing.summary}</p></header>

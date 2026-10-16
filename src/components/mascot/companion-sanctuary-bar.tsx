@@ -128,7 +128,7 @@ export function CompanionSanctuaryBar({
   const styleEval = calculateStyleEvaluation(state);
   const aff = getAffectionProgress(state.affectionXp);
   const uLv = styleEval.userLevel;
-  const isOverclocked = state.workBoostUntil > Date.now();
+  const isOverclocked = state.workBoostUntil > 0;
 
   function handleWhip() {
     const quip = WHIP_QUIPS[Math.floor(Math.random() * WHIP_QUIPS.length)];

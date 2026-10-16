@@ -829,7 +829,8 @@
       "popularity": "03 人气奖计票窗",
       "works": "04 作品核验与导出",
       "onsite": "05 现场核查与排期",
-      "publicationReview": "06 成果公开审核"
+      "publicationReview": "06 成果公开审核",
+      "rankings": "07 评委录分与放榜"
     },
     "workspaceLinksBody": "查看项目广场、AI 工作流与个人工作台。",
     "openHubs": "Hub 与 AI 工作流"

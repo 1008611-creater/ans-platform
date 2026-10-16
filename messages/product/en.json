@@ -829,7 +829,8 @@
       "popularity": "03 Popularity Window",
       "works": "04 Works & CSV Export",
       "onsite": "05 Demo Day Onsite",
-      "publicationReview": "06 Showcase Review"
+      "publicationReview": "06 Showcase Review",
+      "rankings": "07 Judge Scoring & Rankings"
     },
     "workspaceLinksBody": "Browse the project gallery, AI workflows, and your personal workspace.",
     "openHubs": "Hubs and workflows"
