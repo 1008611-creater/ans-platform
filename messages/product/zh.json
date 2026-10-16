@@ -1972,6 +1972,7 @@
     "freeNote": "免费项目。使用范围以创作者说明为准。"
   },
   "quotaHistory": {
+    "pageTitle": "算力中心",
     "title": "积分账单",
     "entry": "积分账单",
     "description": "查看统一积分余额、预占额度和每笔变动。",
@@ -2519,6 +2520,8 @@
     "revoke": "停用未兑换卡密",
     "revokeConfirm": "确认停用本批次剩余卡密",
     "catalogTitle": "选择积分卡",
+    "redemptionGuide": "卡密怎么兑换？",
+    "purchaseGuide": "第一次买积分卡？",
     "oneTime": "一次性购买",
     "catalogDescription": "买卡、收卡密、回这里兑换。积分入账到当前账号。",
     "chooseAmount": "选择积分面值",
@@ -2535,7 +2538,7 @@
     "redeemStep": "粘贴卡密，兑换到当前 ANS 账号。",
     "accountNote": "请先确认登录的是要充值的账号。已兑换卡密无法用于另一个账号。",
     "planStatus": "准备中",
-    "planDescription": "周卡、月卡、季卡，看看 VibePlan 的新界面。",
+    "planDescription": "比较周卡、月卡、季卡的价格与规划权益。",
     "planExplore": "了解 VibePlan",
     "quickAmounts": "快捷选择面值"
   },
