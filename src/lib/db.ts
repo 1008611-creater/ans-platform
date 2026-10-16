@@ -17,7 +17,7 @@ const prismaClientSingleton = () => {
       datasourceUrl.port = "5432";
       datasourceUrl.searchParams.delete("pgbouncer");
     }
-    if (!datasourceUrl.searchParams.has("connection_limit")) datasourceUrl.searchParams.set("connection_limit", "8");
+    if (!datasourceUrl.searchParams.has("connection_limit")) datasourceUrl.searchParams.set("connection_limit", "12");
     if (!datasourceUrl.searchParams.has("pool_timeout")) datasourceUrl.searchParams.set("pool_timeout", "20");
   }
   const client = new PrismaClient({

@@ -1,7 +1,7 @@
-import type { DbTransaction } from "@/lib/db";
+import { db, type DbTransaction } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { createHash,randomUUID } from "node:crypto";
-import { agriWallCommandSchema,type AgriWallView,type AgriWallMine } from "@/contracts/agri-wall";
+import { agriWallCommandSchema,type AgriPopularityView,type AgriWallResult,type AgriWallView,type AgriWallMine } from "@/contracts/agri-wall";
 import { marketListingInputSchema } from "@/contracts/marketplace";
 import type { MarketOfferView } from "@/contracts/marketplace-view";
 import type { AgriStageSubmissionContent } from "@/contracts/agri-submissions";
@@ -9,7 +9,7 @@ import { AgriWorkspaceError } from "@/contracts/agri-workspace";
 import { marketTransaction,requireMarketActor } from "@/server/marketplace/shared";
 import { agriDatabaseClock,lockAgriWorkspace,requireAgriScope,assertAgriAuthorityCurrent,type AgriWorkspaceContext } from "./workspace";
 import { bootstrapAgriEditionInTx,shouldAutoBootstrapAgriEdition } from "./bootstrap";
-import { wallFailure,lockPopularityRound,popularityView,assertAgriListingRevision } from "./popularity";
+import { wallFailure,lockPopularityRound,popularityCounts,popularityView,rankPopularityResults,assertAgriListingRevision,type PopularityRoundRow } from "./popularity";
 
 interface WallRow {id:string;competitionId:string;teamCompetitionId:string;listingId:string;projectId:string;artifactVersionId:string;listingVersion:number}
 interface PublicRow {id:string;slug:string;official:boolean;status:string;version:number;payload:unknown;sellerId:string;username:string;nickname:string|null;avatar:string|null;starCount:number;starred:boolean}
@@ -28,6 +28,41 @@ async function publicOffers(tx:DbTransaction,competitionId:string,viewerId?:stri
 export async function readAgriWall(viewerId?:string):Promise<AgriWallView> {
  const competitionId=process.env.ANS_AGRIHACKATHON_COMPETITION_ID?.trim();
  if(!competitionId) return {configured:false,competitionId:null,round:null,entries:[]};
+ if(!viewerId && process.env.NODE_ENV!=="test") {
+  const [workspace,rounds,clocks,rows]=await Promise.all([
+   db.agriWorkspace.findUnique({where:{competitionId},select:{id:true}}),
+   db.$queryRaw<PopularityRoundRow[]>`SELECT * FROM agri_popularity_rounds WHERE "competitionId"=${competitionId} LIMIT 1`,
+   db.$queryRaw<Array<{now:Date}>>`SELECT clock_timestamp() AS now`,
+   publicOffers(db,competitionId,undefined),
+  ]);
+  const round=rounds[0]??null;
+  const now=clocks[0]?.now??new Date();
+  if(workspace && (!round || round.frozenAt || now<round.closesAt)) {
+   const roundView:AgriPopularityView|null=!round ? null : {
+    revision:round.revision,
+    opensAt:round.opensAt.toISOString(),
+    closesAt:round.closesAt.toISOString(),
+    state:round.frozenAt ? "CLOSED" : now<round.opensAt ? "NOT_OPEN" : "OPEN",
+    frozenAt:round.frozenAt?.toISOString()??null,
+    results:round.frozenAt ? (round.results as AgriWallResult[]) : rankPopularityResults(await popularityCounts(db,round)),
+   };
+   return {
+    configured:true,
+    competitionId,
+    round:roundView,
+    entries:rows.map(row=>({
+     id:row.wallId,
+     teamName:row.teamName,
+     projectId:row.projectId,
+     offer:offer(row),
+     validStars:roundView?.results.find(item=>item.entryId===row.wallId)?.votes??0,
+     eligible:true,
+     viewerEligible:null,
+     viewerVoted:row.viewerVoted,
+    })),
+   };
+  }
+ }
  return marketTransaction(async tx=>{
   if(viewerId)await requireMarketActor(tx,viewerId);
   let workspace=await tx.agriWorkspace.findUnique({where:{competitionId},select:{id:true}});

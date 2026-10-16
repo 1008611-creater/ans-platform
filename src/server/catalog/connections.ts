@@ -119,7 +119,7 @@ async function connections(projects: CatalogProject[], workflows: PublicWorkflow
     workflows: workflows.map(workflowLink), offers: offers.map(offerLink),
   };
 }
-export const getProjectConnections = cache(async (project: CatalogProject) => {
+const getProjectConnectionsByKey = cache(async (_key: string, project: CatalogProject) => {
   const workflows = await workflowsFor([project]);
   const offers = await offersFor([project], workflows);
   // An explicitly associated market workflow can expose its reviewed source too.
@@ -127,6 +127,10 @@ export const getProjectConnections = cache(async (project: CatalogProject) => {
   const bound = (await Promise.all(offers.flatMap(offer => offer.listing.execution && !knownIds.has(offer.listing.execution.workflowId) ? [resolveWorkflowId(offer.listing.execution.workflowId)] : []))).filter(workflow => workflow !== null);
   return connections([], [...new Map([...workflows, ...bound].map(workflow => [workflow.slug, workflow])).values()], offers);
 });
+export async function getProjectConnections(project: CatalogProject) {
+  const key = JSON.stringify([project.slug, project.memberHref ?? null, project.workflowSlugs ?? [], project.marketSlugs ?? []]);
+  return getProjectConnectionsByKey(key, project);
+}
 export async function getWorkflowConnections(workflow: PublicWorkflow) {
   if (!await readWorkflow(workflow.slug)) return connections([], [], []);
   const [boundOffers, catalog] = await Promise.all([offersFor([], [workflow]), getRequestCatalog()]);
