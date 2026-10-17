@@ -36,6 +36,7 @@ export default async function HypitPage() {
       </header>
       <HypitShowcase />
     </div>
+    <div id="hypit-workspace" className="scroll-mt-24"><HypitWorkspace /></div>
     <section className={styles.preparation} aria-labelledby="hypit-preparation-title">
       <h2 id="hypit-preparation-title" className="text-xl font-semibold">{t("preparation.title")}</h2>
       <ol className={styles.steps}>{(["brief", "assets", "review"] as const).map((step, index) => <li key={step}>
@@ -43,7 +44,6 @@ export default async function HypitPage() {
         <div><h3 className="text-sm font-semibold">{t(`preparation.${step}.title`)}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{t(`preparation.${step}.body`)}</p></div>
       </li>)}</ol>
     </section>
-    <div id="hypit-workspace" className="scroll-mt-24"><HypitWorkspace /></div>
     <div className="border-t pt-6 text-xs leading-6 text-muted-foreground">
       <p>{t("internalNote")}</p>
       <div className="mt-2 flex gap-5"><a href="https://github.com/hypit-ai/hypit" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{t("sourceLink")}</a><a href="/workflows/hypit/HYPIT-LICENSE" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{t("licenseLink")}</a></div>
