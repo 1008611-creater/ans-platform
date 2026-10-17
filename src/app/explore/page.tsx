@@ -48,17 +48,25 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
       {category.children.map(child => <Link key={child} href={filterHref({ subcategory: child })} aria-current={subcategory === child ? "page" : undefined} className="ans-subcategory">{t(`children.${child}`)}</Link>)}
     </nav>}
     {isAgriWall ? <AgriWall /> : <>
-    <div className={styles.filters}>
-      <nav aria-label={t("sourceFilter")} className="flex flex-wrap items-center gap-1">
-        <span className="me-2 text-xs text-muted-foreground">{t("sourceFilter")}</span>
-        {[undefined, ...CATALOG_SOURCES].map(value => <Link key={value ?? "all"} href={filterHref({ source: value })} aria-current={filters.source === value ? "page" : undefined} className="ans-subcategory">{t(value ? catalogSourceLabel(value) : "allSources")}</Link>)}
-      </nav>
-      <nav aria-label={t("readinessFilter")} className="flex flex-wrap items-center gap-1">
-        <span className="me-2 text-xs text-muted-foreground">{t("readinessFilter")}</span>
-        {[undefined, "ready", "reference"].map(value => <Link key={value ?? "all"} href={filterHref({ readiness: value })} aria-current={filters.readiness === value ? "page" : undefined} className="ans-subcategory">{t(value ?? "allReadiness")}</Link>)}
-      </nav>
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <h2 id="project-results" className="text-sm font-normal text-muted-foreground">{t("results", { count: browse.total })}</h2>
+      <details open={Boolean(filters.source || filters.readiness)} className="group rounded-xl border bg-card/50 px-3.5 py-2 text-xs">
+        <summary className="cursor-pointer select-none font-medium text-muted-foreground hover:text-foreground">
+          {t("sourceFilter")} / {t("readinessFilter")}
+          {(filters.source || filters.readiness) ? " ●" : ""}
+        </summary>
+        <div className={`${styles.filters} mt-3 border-b-0 pb-1 pt-3`}>
+          <nav aria-label={t("sourceFilter")} className="flex flex-wrap items-center gap-1">
+            <span className="me-2 text-xs text-muted-foreground">{t("sourceFilter")}</span>
+            {[undefined, ...CATALOG_SOURCES].map(value => <Link key={value ?? "all"} href={filterHref({ source: value })} aria-current={filters.source === value ? "page" : undefined} className="ans-subcategory">{t(value ? catalogSourceLabel(value) : "allSources")}</Link>)}
+          </nav>
+          <nav aria-label={t("readinessFilter")} className="flex flex-wrap items-center gap-1">
+            <span className="me-2 text-xs text-muted-foreground">{t("readinessFilter")}</span>
+            {[undefined, "ready", "reference"].map(value => <Link key={value ?? "all"} href={filterHref({ readiness: value })} aria-current={filters.readiness === value ? "page" : undefined} className="ans-subcategory">{t(value ?? "allReadiness")}</Link>)}
+          </nav>
+        </div>
+      </details>
     </div>
-    <h2 id="project-results" className="mb-5 text-sm font-normal text-muted-foreground">{t("results", { count: browse.total })}</h2>
     {browse.projects.length ? <div className={styles.projects}>{browse.projects.map(project => <ProjectCard key={project.slug} project={project} compact />)}</div> : <div className="ans-empty"><h3 className="text-xl font-semibold">{t("emptyTitle")}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{t("emptyBody")}</p><div className="mt-6"><Button asChild variant="outline"><Link href="/explore">{t("clear")}</Link></Button></div></div>}
     <CatalogPagination page={browse.page} pages={browse.pages} href={page => filterHref({}, page)} labels={{ navigation: t("catalogBrowse.pagination"), previous: t("catalogBrowse.previous"), next: t("catalogBrowse.next"), page: page => t("catalogBrowse.page", { page }) }} />
     </>}

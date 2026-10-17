@@ -46,8 +46,12 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   }, []);
   useEffect(() => {
     const activate = () => {
-      const child = frame.current?.contentWindow as (Window & { __ANS_DINO__?: { activateAudio?: () => Promise<void> } }) | null;
-      try { void child?.__ANS_DINO__?.activateAudio?.()?.catch(() => {}); } catch { /* Audio may not be ready. */ }
+      setRequested(true);
+      const child = frame.current?.contentWindow as (Window & { __ANS_DINO__?: { activateAudio?: () => Promise<void>; syncSanctuary?: (st?: unknown) => void } }) | null;
+      try {
+        void child?.__ANS_DINO__?.activateAudio?.()?.catch(() => {});
+        child?.__ANS_DINO__?.syncSanctuary?.(loadSanctuaryState());
+      } catch { /* Audio or 3D may not be ready. */ }
     };
     window.addEventListener("ans:dino-activate", activate);
     return () => window.removeEventListener("ans:dino-activate", activate);
@@ -124,19 +128,9 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   }, [animated, open, send]);
   useEffect(() => {
     if (!animated) return;
-    const syncSanctuary = () => {
-      send({ event: "sanctuary", state: loadSanctuaryState() });
-    };
-    syncSanctuary();
-    window.addEventListener(SANCTUARY_EVENT_NAME, syncSanctuary);
-    window.addEventListener("ans-sanctuary-sync", syncSanctuary);
-    window.addEventListener("storage", syncSanctuary);
-    return () => {
-      window.removeEventListener(SANCTUARY_EVENT_NAME, syncSanctuary);
-      window.removeEventListener("ans-sanctuary-sync", syncSanctuary);
-      window.removeEventListener("storage", syncSanctuary);
-    };
-  }, [animated, send]);
+    const child = frame.current?.contentWindow as (Window & { __ANS_DINO__?: { syncSanctuary?: (st?: unknown) => void } }) | null;
+    try { child?.__ANS_DINO__?.syncSanctuary?.(loadSanctuaryState()); } catch { /* Ignore */ }
+  }, [animated]);
   useEffect(() => {
     if (!animated) return;
     let last = 0;
@@ -153,7 +147,7 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   return <span className="ans-dino-avatar" aria-hidden="true">
     <Image src="/mascot/ans-mascot.png" width={88} height={88} alt="" className={animated ? "invisible" : ""} />
     {/* Download 3D only after opening the guide; retain the frame across subsequent openings. */}
-    {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=voice-points-20261013-1" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
+    {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=sanctuary-20261017-v2" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
   </span>;
 }
 

@@ -3,6 +3,7 @@
   const fallback = document.getElementById("showcase-fallback");
   const toggle = document.getElementById("scene-toggle");
   let failed = false;
+  let ready = false;
   function showFallback(message) {
     failed = true;
     fallback.hidden = false;
@@ -11,9 +12,17 @@
     window.dispatchEvent(new CustomEvent("ans-scene-pause", {detail:true}));
     document.getElementById("dino-greet").disabled = true;
   }
+  window.addEventListener("ans-showcase-ready", () => {
+    ready = true;
+  });
   window.addEventListener("ans-showcase-failure", () => showFallback("3D 场景暂时无法加载，你仍可继续浏览。"));
-  window.addEventListener("error", event => { if (event.filename?.includes("/showcase/ans-3d/assets/") || event.target?.tagName === "SCRIPT") showFallback("3D 场景暂时无法加载，你仍可继续浏览。"); }, true);
-  window.addEventListener("unhandledrejection", () => showFallback("3D 场景暂时无法加载，你仍可继续浏览。"));
+  window.addEventListener("error", event => { if (!ready && (event.filename?.includes("/showcase/ans-3d/assets/") || event.target?.tagName === "SCRIPT")) showFallback("3D 场景暂时无法加载，你仍可继续浏览。"); }, true);
+  window.addEventListener("unhandledrejection", event => {
+    if (ready) return;
+    const msg = String(event?.reason?.message || event?.reason || "");
+    if (/clipboard|play\(\)|audio|gesture|NotAllowedError|AbortError/i.test(msg)) return;
+    showFallback("3D 场景暂时无法加载，你仍可继续浏览。");
+  });
   document.getElementById("scene-retry").addEventListener("click", () => window.location.reload());
   toggle.addEventListener("click", () => {
     if (failed) return;

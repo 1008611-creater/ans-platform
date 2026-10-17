@@ -114,6 +114,8 @@ export interface MascotSanctuaryState {
   vaultUnlockedUsd: Record<string, number>;
   lastSecretQuestId: SecretQuestId | null;
   lastSecretQuestAt: number;
+  turntableYaw?: number;
+  turntableSpin?: boolean;
 }
 
 export const DINO_SPECIES: Record<DinoSpeciesId, DinoSpeciesDef> = {

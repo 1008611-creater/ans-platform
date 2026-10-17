@@ -38,14 +38,17 @@ const connectorStyles = {
   solara: {
     icon: Network,
     iconClass: "bg-sky-500/15 text-sky-600 dark:text-sky-300",
+    cover: "/catalog/gitglow-v1/infinite-canvas.webp",
   },
   plane: {
     icon: Layers3,
     iconClass: "bg-violet-500/15 text-violet-600 dark:text-violet-300",
+    cover: "/catalog/gitglow-v1/plane-projects.webp",
   },
   toonflow: {
     icon: Sparkles,
     iconClass: "bg-amber-500/15 text-amber-600 dark:text-amber-300",
+    cover: "/catalog/gitglow-v1/niannian-drama.webp",
   },
 } as const;
 
@@ -83,9 +86,16 @@ export default async function AigcCompetitionPage() {
   return (
     <div className="ans-product-shell">
       <div className="ans-product-container ans-page-content space-y-8">
-        <Link href="/competitions" className="inline-flex min-h-11 items-center rounded text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{tRoot("nav.competitionHub")}</Link>
-        <PageHeading title={t("title")} description={t("description")} actions={<Button asChild size="lg" className="h-auto min-h-11 whitespace-normal"><Link href="/projects">{t("createProject")}</Link></Button>} />
-        <Link href="/teams" className="inline-flex min-h-11 items-center rounded text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("openTeams")}</Link>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Link href="/competitions" className="inline-flex min-h-11 items-center rounded text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{tRoot("nav.competitionHub")}</Link>
+          <Link href="/teams" className="inline-flex min-h-11 items-center rounded text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("openTeams")}</Link>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <PageHeading title={t("title")} description={t("description")} actions={<Button asChild size="lg" className="h-auto min-h-11 whitespace-normal"><Link href="/projects">{t("createProject")}</Link></Button>} />
+          <figure className="overflow-hidden rounded-2xl border bg-slate-950/90 shadow-sm">
+            <img src="/catalog/gitglow-v1/aigc-workspace.webp" alt="" loading="lazy" className="aspect-[16/9] w-full object-cover object-top" />
+          </figure>
+        </div>
         <section className="space-y-5">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
@@ -102,8 +112,10 @@ export default async function AigcCompetitionPage() {
                   ? t("productionLabel")
                   : t("backupLabel");
               return (
-                <Card key={connector.id} className="group relative min-w-0 border-border/80">
-
+                <Card key={connector.id} className="group relative min-w-0 overflow-hidden border-border/80">
+                  <div className="overflow-hidden border-b bg-slate-950/90">
+                    <img src={connector.cover} alt="" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]" />
+                  </div>
                   <CardHeader className="relative gap-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${connector.iconClass}`}>

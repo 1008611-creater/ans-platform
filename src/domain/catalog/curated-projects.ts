@@ -11,6 +11,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/markmap/markmap",
     "licenseUrl": "https://github.com/markmap/markmap/blob/master/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/markmap.svg",
     "content": {
       "zh": {
         "title": "把复习提纲变成知识地图 · Markmap",
@@ -47,6 +48,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/slidevjs/slidev",
     "licenseUrl": "https://github.com/slidevjs/slidev/blob/main/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/slidev.svg",
     "content": {
       "zh": {
         "title": "把项目讲清楚的网页演示 · Slidev",
@@ -83,6 +85,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/penpot/penpot",
     "licenseUrl": "https://github.com/penpot/penpot/blob/develop/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/penpot.svg",
     "content": {
       "zh": {
         "title": "让队友点得动你的产品想法 · Penpot",
@@ -119,6 +122,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/Stirling-Tools/Stirling-PDF",
     "licenseUrl": "https://github.com/Stirling-Tools/Stirling-PDF/blob/main/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/stirling-pdf.svg",
     "content": {
       "zh": {
         "title": "把零散 PDF 整理成一份能交的材料 · Stirling PDF",
@@ -155,6 +159,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/formbricks/formbricks",
     "licenseUrl": "https://github.com/formbricks/formbricks/blob/main/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/formbricks.svg",
     "content": {
       "zh": {
         "title": "给产品想法收一轮真实反馈 · Formbricks",
@@ -191,6 +196,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/actualbudget/actual",
     "licenseUrl": "https://github.com/actualbudget/actual/blob/master/LICENSE.txt",
+    "coverUrl": "/catalog/gitglow-v1/actual-budget.svg",
     "content": {
       "zh": {
         "title": "给生活费安排一个可执行预算 · Actual Budget",
@@ -227,6 +233,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/linkwarden/linkwarden",
     "licenseUrl": "https://github.com/linkwarden/linkwarden/blob/main/LICENSE.md",
+    "coverUrl": "/catalog/gitglow-v1/linkwarden.svg",
     "content": {
       "zh": {
         "title": "把研究链接收成能再找到的资料库 · Linkwarden",
@@ -263,6 +270,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/immich-app/immich",
     "licenseUrl": "https://github.com/immich-app/immich/blob/main/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/immich.svg",
     "content": {
       "zh": {
         "title": "给照片和视频建一个自己的相册 · Immich",
@@ -299,6 +307,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/louislam/uptime-kuma",
     "licenseUrl": "https://github.com/louislam/uptime-kuma/blob/master/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/uptime-kuma.svg",
     "content": {
       "zh": {
         "title": "知道自己的作品网站什么时候打不开 · Uptime Kuma",
@@ -335,6 +344,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/facebook/docusaurus",
     "licenseUrl": "https://github.com/facebook/docusaurus/blob/main/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/docusaurus.svg",
     "content": {
       "zh": {
         "title": "给开源作品配一份认真写的使用说明 · Docusaurus",
@@ -371,6 +381,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/open-webui/open-webui",
     "licenseUrl": "https://github.com/open-webui/open-webui/blob/main/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/open-webui.svg",
     "content": {
       "zh": {
         "title": "给自己的模型和资料一个聊天工作区 · Open WebUI",
@@ -407,6 +418,7 @@ export const CURATED_CATALOG_PROJECTS = [
     "source": "github",
     "sourceUrl": "https://github.com/mermaid-js/mermaid-live-editor",
     "licenseUrl": "https://github.com/mermaid-js/mermaid-live-editor/blob/develop/LICENSE",
+    "coverUrl": "/catalog/gitglow-v1/mermaid-live.svg",
     "content": {
       "zh": {
         "title": "用几行文字画清项目流程 · Mermaid Live Editor",

@@ -48,6 +48,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const prefs = useSitePreferences(), task = useDinoTask(), panelSize = useCompanionSize();
   const voiceOffer = useVoiceOffer(actor, prefs.voice);
   const [open, setOpen] = useState(false), [showLatest, setShowLatest] = useState(false), [unread, setUnread] = useState(false);
+  const [requestedTab, setRequestedTab] = useState<"none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt" | null>(null);
   const [speech, setSpeech] = useState<SpeechRequest | null>(null), [voiceStatus, setVoiceStatus] = useState("idle");
   const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null);
   const scrollState = useRef<Record<Mode, { top: number; follow: boolean; lastId: number | undefined }>>({ agent: { top: 0, follow: true, lastId: undefined }, guide: { top: 0, follow: true, lastId: undefined } });
@@ -138,6 +139,18 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
       if (prefs.voice) { window.dispatchEvent(new CustomEvent("ans:dino-activate")); setSpeech({ id: ++sequence.current, text: greeting }); }
     }
   }
+  useEffect(() => {
+    function onOpenCompanionTab(event: Event) {
+      const custom = event as CustomEvent<{ tab?: "none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt" }>;
+      const targetTab = custom.detail?.tab ?? "pet";
+      setRequestedTab(targetTab);
+      panelSize.prepare();
+      setOpen(true);
+      window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+    }
+    window.addEventListener("ans:open-companion-tab", onOpenCompanionTab);
+    return () => window.removeEventListener("ans:open-companion-tab", onOpenCompanionTab);
+  }, [panelSize]);
   function submit(event?: FormEvent, quick?: string) {
     event?.preventDefault(); const input = (quick ?? draft).trim().slice(0, 1200); if (!input || blocked) return;
     scrollState.current[mode].follow = true; setUnread(false); setUndo(null);
@@ -206,6 +219,8 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>{ui("guideMode")}</button>
         </div>
         <CompanionSanctuaryBar
+          requestedTab={requestedTab}
+          onRequestedTabHandled={() => setRequestedTab(null)}
           onSpeak={text => setSpeech({ id: ++sequence.current, text })}
           onInjectPrompt={promptText => {
             updateThread(mode, current => ({ ...current, draft: promptText }));

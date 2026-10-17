@@ -12,14 +12,21 @@ const SOURCE_SHA256 = 'e420b1580e76a5871e0427e8b2fe1756532692af377b9f30c67d70385
 const SETTINGS = Object.freeze({
   modelUrl: new URL('./dinosaur.glb', import.meta.url).href,
   wardrobeUrl: new URL('./sanctuary-wardrobe.glb?v=20261016s', import.meta.url).href,
-  maxFps: 30, maxPixelRatio: 1.75, verticalFrame: 1.48,
+  maxFps: 30, maxPixelRatio: 1.75, verticalFrame: 1.62,
   shadowOpacity: 0.12,
 });
 const SPECIES_TINTS = Object.freeze({
-  mint_star:   { color: 0xffffff, emissive: 0x000000, emissiveIntensity: 0.0, roughnessDelta: 0.0 },
-  cyber_gold:  { color: 0xd4be98, emissive: 0x3b2306, emissiveIntensity: 0.16, roughnessDelta: -0.14 },
-  sakura_mochi:{ color: 0xffd0e2, emissive: 0x380c1e, emissiveIntensity: 0.12, roughnessDelta: 0.04 },
-  aurora_ice:  { color: 0xc8e4ff, emissive: 0x0b1f47, emissiveIntensity: 0.15, roughnessDelta: -0.08 },
+  mint_star:   { color: 0xffffff, emissive: 0x000000, emissiveIntensity: 0.0, roughnessDelta: 0.0, morph: { head: [1.0, 1.0, 1.0], tail: [1.0, 1.0, 1.0] } },
+  cyber_gold:  { color: 0xd4be98, emissive: 0x3b2306, emissiveIntensity: 0.16, roughnessDelta: -0.14, morph: { head: [1.02, 1.02, 1.04], tail: [1.05, 1.0, 1.12] } },
+  sakura_mochi:{ color: 0xffd0e2, emissive: 0x380c1e, emissiveIntensity: 0.12, roughnessDelta: 0.04, morph: { head: [1.08, 1.05, 1.06], tail: [0.95, 0.95, 0.92] } },
+  aurora_ice:  { color: 0xc8e4ff, emissive: 0x0b1f47, emissiveIntensity: 0.15, roughnessDelta: -0.08, morph: { head: [0.98, 1.04, 1.02], tail: [1.04, 1.02, 1.15] } },
+});
+const AURA_PRESETS = Object.freeze({
+  none:        { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 0.0 },
+  aura_mint:   { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 1.0 },
+  aura_sakura: { c1: [1.0, 0.52, 0.76],  c2: [0.83, 0.68, 0.98], boost: 1.25 },
+  aura_gold:   { c1: [1.0, 0.84, 0.32],  c2: [1.0, 0.45, 0.22], boost: 1.38 },
+  aura_aurora: { c1: [0.36, 0.90, 0.86], c2: [0.70, 0.42, 0.98], boost: 1.55 },
 });
 const HEAD_NODES = new Set([
   'species_cyber_horns', 'species_sakura_ears', 'species_aurora_crystals',
@@ -98,8 +105,8 @@ function startCompanion() {
   const actor = new T.Group();
   const framing = new T.Group();
   const camera = new T.OrthographicCamera(-0.7, 0.7, 0.7, -0.7, 0.01, 12);
-  camera.position.set(0.11, 0.65, 3.2);
-  camera.lookAt(0, 0.58, 0);
+  camera.position.set(0.11, 0.63, 3.2);
+  camera.lookAt(0, 0.56, 0);
   actor.add(framing);
   scene.add(actor);
 
@@ -108,6 +115,14 @@ function startCompanion() {
   const wardrobeNodes = new Map();
   const baseSkinMaterials = [];
   let sanctuarySpeciesId = 'mint_star';
+  let equippedAuraId = 'aura_mint';
+  let turntableYawTarget = 0;
+  let turntableYawCurrent = 0;
+  let turntableSpin = false;
+  let whipUntil = -1;
+  let feedUntil = -1;
+  let feedMode = 'happy';
+  let patUntil = -1;
   let activeWardrobeIds = [];
   let sourceClips = [];
   let phase = 'idle';
@@ -137,6 +152,12 @@ function startCompanion() {
     const st = overrideState || readSanctuaryStorage();
     const speciesId = (st && SPECIES_TINTS[st.speciesId]) ? st.speciesId : 'mint_star';
     sanctuarySpeciesId = speciesId;
+    if (st && typeof st.turntableYaw === 'number' && Number.isFinite(st.turntableYaw)) {
+      turntableYawTarget = st.turntableYaw;
+    }
+    if (st && typeof st.turntableSpin === 'boolean') {
+      turntableSpin = st.turntableSpin;
+    }
     const tint = SPECIES_TINTS[speciesId];
     for (const entry of baseSkinMaterials) {
       const { mat, baseColor, baseEmissive, baseRoughness } = entry;
@@ -156,12 +177,14 @@ function startCompanion() {
       handheld: 'none',
       aura: 'aura_mint',
     };
+    equippedAuraId = (eq.aura && AURA_PRESETS[eq.aura]) ? eq.aura : 'aura_mint';
     const nextActive = new Set();
     if (SPECIES_HEAD_NODE[speciesId]) nextActive.add(SPECIES_HEAD_NODE[speciesId]);
     for (const rawVal of Object.values(eq)) {
       const resolved = resolveWardrobeNodeId(rawVal);
       if (resolved) nextActive.add(resolved);
     }
+    if (equippedAuraId !== 'none') nextActive.add(equippedAuraId);
     activeWardrobeIds = [...nextActive];
     const hatTuck = eq.headwear === 'beret_cloud' || eq.headwear === 'phd_mortarboard';
     for (const [nodeName, nodeObj] of wardrobeNodes.entries()) {
@@ -173,25 +196,20 @@ function startCompanion() {
     wake();
   }
 
-  function animateWardrobeNodes(nowSec) {
-    if (!wardrobeLoaded || !wardrobeNodes.size) return;
-    const grimoire = wardrobeNodes.get('handheld_floating_grimoire');
-    if (grimoire?.visible) {
-      grimoire.position.y = (grimoire.userData.baseY ?? 0.16) + Math.sin(nowSec * 3.1) * 0.022;
-      grimoire.rotation.y = (grimoire.userData.baseRY ?? 0) + Math.sin(nowSec * 1.7) * 0.12;
-    }
-    const wand = wardrobeNodes.get('handheld_magic_wand');
-    if (wand?.visible) {
-      wand.rotation.z = (wand.userData.baseRZ ?? 0) + Math.sin(nowSec * 3.8) * 0.08;
-    }
-    const crown = wardrobeNodes.get('headwear_crown_aurora');
-    if (crown?.visible) {
-      crown.position.y = (crown.userData.baseY ?? 0) + Math.sin(nowSec * 2.6) * 0.008;
-    }
-    for (const auraKey of ['aura_mint', 'aura_gold', 'aura_sakura', 'aura_aurora']) {
-      const auraNode = wardrobeNodes.get(auraKey);
-      if (auraNode?.visible) {
-        auraNode.rotation.y = nowSec * 0.65;
+  function animateWardrobeNodes(nowSec, dtSec = 0.016) {
+    if (wardrobeLoaded && wardrobeNodes.size) {
+      const grimoire = wardrobeNodes.get('handheld_floating_grimoire');
+      if (grimoire?.visible) {
+        grimoire.position.y = (grimoire.userData.baseY ?? 0.16) + Math.sin(nowSec * 3.1) * 0.022;
+        grimoire.rotation.y = (grimoire.userData.baseRY ?? 0) + Math.sin(nowSec * 1.7) * 0.12;
+      }
+      const wand = wardrobeNodes.get('handheld_magic_wand');
+      if (wand?.visible) {
+        wand.rotation.z = (wand.userData.baseRZ ?? 0) + Math.sin(nowSec * 3.8) * 0.08;
+      }
+      const crown = wardrobeNodes.get('headwear_crown_aurora');
+      if (crown?.visible) {
+        crown.position.y = (crown.userData.baseY ?? 0) + Math.sin(nowSec * 2.6) * 0.008;
       }
     }
   }
@@ -268,6 +286,54 @@ function startCompanion() {
   contact.position.set(0, 0.001, 0.025);
   scene.add(contact);
 
+  const haloUniforms = {
+    uTime: { value: 0 },
+    uFlight: { value: 0 },
+    uAuraColor1: { value: new T.Vector3(0.52, 0.96, 0.72) },
+    uAuraColor2: { value: new T.Vector3(1.0, 0.85, 0.56) },
+    uAuraBoost: { value: 1.0 },
+  };
+  const haloMaterial = new T.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+    side: T.DoubleSide,
+    uniforms: haloUniforms,
+    vertexShader: 'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+    fragmentShader: `
+      varying vec2 vUv;
+      uniform float uTime;
+      uniform float uFlight;
+      uniform vec3 uAuraColor1;
+      uniform vec3 uAuraColor2;
+      uniform float uAuraBoost;
+      void main() {
+        vec2 p = (vUv - 0.5) * 2.0;
+        float r = length(p);
+        float ang = atan(p.y, p.x);
+        float core = pow(max(0.0, 1.0 - r * 1.35), 2.4) * (0.22 + 0.25 * uFlight);
+        float ring1 = exp(-pow((r - 0.54) * 26.0, 2.0)) * (0.55 + 0.45 * sin(ang * 4.0 - uTime * (3.0 + uFlight * 6.0)));
+        float ring2 = exp(-pow((r - 0.78) * 32.0, 2.0)) * smoothstep(-0.2, 0.8, cos(ang * 6.0 + uTime * (2.2 + uFlight * 5.0)));
+        float spark = 0.0;
+        for (int i = 0; i < 6; i++) {
+          float fi = float(i);
+          float a = fi * 1.0471975 + uTime * (1.8 + uFlight * 3.5);
+          float rad = 0.66 + 0.08 * sin(uTime * 3.0 + fi);
+          vec2 sp = vec2(cos(a), sin(a)) * rad;
+          spark += exp(-length(p - sp) * 28.0);
+        }
+        vec3 col = mix(uAuraColor1, uAuraColor2, clamp(ring2 + spark * 0.6, 0.0, 1.0));
+        float alpha = clamp((core + ring1 * 0.55 + ring2 * (0.45 + 0.45 * uFlight) + spark * (0.55 + 0.45 * uFlight)) * uAuraBoost, 0.0, 0.92) * (1.0 - smoothstep(0.88, 1.0, r));
+        gl_FragColor = vec4(col, alpha);
+      }
+    `,
+  });
+  const haloMesh = new T.Mesh(new T.PlaneGeometry(1.12, 1.12), haloMaterial);
+  haloMesh.rotation.x = -Math.PI / 2;
+  haloMesh.position.set(0, 0.004, 0.025);
+  haloMesh.renderOrder = 12;
+  scene.add(haloMesh);
+
   function isVisible() {
     return !pageSuspended && !document.hidden && parentVisible;
   }
@@ -286,6 +352,42 @@ function startCompanion() {
     if (disposed || failed || reducedMotion || !isVisible()) return;
     director.onHello(time);
     applyNextGesture();
+    wake();
+  }
+  function triggerInteraction(payload = {}) {
+    if (disposed || failed || !isVisible()) return;
+    const action = payload.action || payload.kind || 'pat';
+    const gesture = typeof payload.gesture === 'string' ? payload.gesture : null;
+    if (action === 'whip') {
+      whipUntil = time + 3.8;
+      director.onGesture(gesture || 'surprise', time);
+      performer?.trigger(gesture || 'surprise', time);
+    } else if (action === 'feed') {
+      feedUntil = time + 4.2;
+      feedMode = typeof payload.reactMode === 'string' ? payload.reactMode : 'happy';
+      director.onGesture(gesture || 'celebrate', time);
+      performer?.trigger(gesture || 'celebrate', time);
+    } else if (action === 'pat') {
+      patUntil = time + 2.4;
+      director.onGesture(gesture || 'shy', time);
+      performer?.trigger(gesture || 'shy', time);
+    } else if (action === 'pose') {
+      patUntil = time + 2.0;
+      const poses = ['celebrate', 'hello', 'curious', 'stretch'];
+      const chosen = gesture || poses[Math.floor(Math.random() * poses.length)];
+      director.onGesture(chosen, time);
+      performer?.trigger(chosen, time);
+    } else if (action === 'turntable') {
+      if (typeof payload.yaw === 'number' && Number.isFinite(payload.yaw)) {
+        turntableYawTarget = payload.yaw;
+      } else if (typeof payload.deltaYaw === 'number' && Number.isFinite(payload.deltaYaw)) {
+        turntableYawTarget += payload.deltaYaw;
+      }
+      if (typeof payload.spin === 'boolean') {
+        turntableSpin = payload.spin;
+      }
+    }
+    syncSanctuaryAppearance(payload.state || null);
     wake();
   }
   function changePhase(nextPhase) {
@@ -329,6 +431,9 @@ function startCompanion() {
     if (data.event === 'sanctuary') {
       syncSanctuaryAppearance(data.state || null);
     }
+    if (data.event === 'interact') {
+      triggerInteraction(data);
+    }
     if (data.event === 'hello') hello();
     if (data.event === 'autoplay' && typeof data.enabled === 'boolean') {
       director.setAutoplay(data.enabled, time); applyNextGesture(); wake();
@@ -371,17 +476,120 @@ function startCompanion() {
     renderer.setSize(width, height, false);
     wake();
   }
-  function renderSafely(updatePose, initialFrame = false) {
+  function applyReactionAndAura(dtSec = 0.016) {
+    const tNow = time;
+    haloUniforms.uTime.value = tNow;
+    const auraTarget = AURA_PRESETS[equippedAuraId] || AURA_PRESETS.aura_mint;
+    const aLerp = Math.min(1, dtSec * 8.0);
+    haloUniforms.uAuraColor1.value.x += (auraTarget.c1[0] - haloUniforms.uAuraColor1.value.x) * aLerp;
+    haloUniforms.uAuraColor1.value.y += (auraTarget.c1[1] - haloUniforms.uAuraColor1.value.y) * aLerp;
+    haloUniforms.uAuraColor1.value.z += (auraTarget.c1[2] - haloUniforms.uAuraColor1.value.z) * aLerp;
+    haloUniforms.uAuraColor2.value.x += (auraTarget.c2[0] - haloUniforms.uAuraColor2.value.x) * aLerp;
+    haloUniforms.uAuraColor2.value.y += (auraTarget.c2[1] - haloUniforms.uAuraColor2.value.y) * aLerp;
+    haloUniforms.uAuraColor2.value.z += (auraTarget.c2[2] - haloUniforms.uAuraColor2.value.z) * aLerp;
+    haloUniforms.uAuraBoost.value += (auraTarget.boost - haloUniforms.uAuraBoost.value) * aLerp;
+
+    const whipActive = tNow < whipUntil;
+    const whipAge = whipActive ? (3.8 - (whipUntil - tNow)) : 99;
+    const feedActive = tNow < feedUntil;
+    const feedAge = feedActive ? (4.2 - (feedUntil - tNow)) : 99;
+    const patActive = tNow < patUntil;
+    const patAge = patActive ? (2.4 - (patUntil - tNow)) : 99;
+
+    haloUniforms.uFlight.value += ((whipActive ? 0.95 : feedActive ? 0.78 : patActive ? 0.45 : 0.15) - haloUniforms.uFlight.value) * Math.min(1, dtSec * 8.0);
+
+    let reactionHopY = patActive && patAge < 0.55 ? Math.sin((patAge / 0.55) * Math.PI) * 0.05 : 0;
+    let reactionJitterX = 0;
+    let reactionYawOffset = 0;
+    let reactionPitchOffset = 0;
+    let reactionRollOffset = 0;
+
+    if (whipActive && !reducedMotion) {
+      if (whipAge < 0.68) {
+        const p = whipAge / 0.68;
+        reactionHopY = Math.sin(p * Math.PI) * 0.11;
+        reactionYawOffset = Math.sin(p * Math.PI) * 2.18;
+        reactionPitchOffset = Math.sin(p * Math.PI) * 0.30;
+        reactionRollOffset = Math.sin(tNow * 48.0) * 0.22;
+        reactionJitterX = Math.sin(tNow * 55.0) * 0.018;
+      } else {
+        const workDecay = Math.max(0, Math.min(1, (3.8 - whipAge) / 3.12));
+        reactionHopY = Math.abs(Math.sin(tNow * 18.0)) * 0.03 * workDecay;
+        reactionPitchOffset = Math.sin(tNow * 26.0) * 0.10 * workDecay;
+        reactionRollOffset = Math.cos(tNow * 22.0) * 0.08 * workDecay;
+        reactionJitterX = Math.sin(tNow * 34.0) * 0.010 * workDecay;
+      }
+    } else if (feedActive && !reducedMotion) {
+      const feedDecay = Math.max(0, Math.min(1, (4.2 - feedAge) / 4.2));
+      if (feedMode === 'caffeine') {
+        reactionHopY = Math.abs(Math.sin(tNow * 22.0)) * 0.055 * feedDecay;
+        reactionJitterX = Math.sin(tNow * 60.0) * 0.016 * feedDecay;
+        reactionRollOffset = Math.sin(tNow * 32.0) * 0.14 * feedDecay;
+      } else if (feedMode === 'spicy') {
+        reactionHopY = Math.abs(Math.sin(tNow * 14.0)) * 0.08 * feedDecay;
+        reactionYawOffset = feedAge * 8.5 * feedDecay;
+        reactionPitchOffset = -0.16 * feedDecay;
+      } else if (feedMode === 'chomp') {
+        reactionHopY = feedAge < 0.5 ? Math.sin((feedAge / 0.5) * Math.PI) * 0.09 : Math.sin(tNow * 10.0) * 0.025 * feedDecay;
+        reactionPitchOffset = feedAge < 0.45 ? 0.30 : -0.10 * Math.sin(tNow * 8.0) * feedDecay;
+      } else if (feedMode === 'choke') {
+        reactionPitchOffset = Math.sin(tNow * 9.0) * 0.20 * feedDecay;
+        reactionRollOffset = Math.cos(tNow * 7.5) * 0.18 * feedDecay;
+        reactionHopY = Math.max(0, Math.sin(tNow * 6.0)) * 0.035 * feedDecay;
+      } else if (feedMode === 'stinky') {
+        if (feedAge < 0.65) {
+          reactionPitchOffset = -0.26;
+          reactionYawOffset = Math.sin(tNow * 24.0) * 0.24;
+        } else {
+          reactionPitchOffset = Math.sin(tNow * 20.0) * 0.16 * feedDecay;
+          reactionHopY = Math.abs(Math.sin(tNow * 12.0)) * 0.045 * feedDecay;
+        }
+      } else if (feedMode === 'shock') {
+        reactionHopY = 0.06 * feedDecay + Math.sin(tNow * 45.0) * 0.018 * feedDecay;
+        reactionRollOffset = Math.sin(tNow * 40.0) * 0.24 * feedDecay;
+        reactionYawOffset = Math.cos(tNow * 36.0) * 0.20 * feedDecay;
+      } else if (feedMode === 'sour') {
+        reactionYawOffset = Math.sin(tNow * 38.0) * 0.26 * feedDecay;
+        reactionRollOffset = Math.cos(tNow * 34.0) * 0.16 * feedDecay;
+      } else {
+        reactionHopY = Math.abs(Math.sin(tNow * 9.5)) * 0.075 * feedDecay;
+        reactionRollOffset = Math.sin(tNow * 8.0) * 0.14 * feedDecay;
+      }
+    }
+
+    if (turntableSpin && !reducedMotion) {
+      turntableYawTarget += dtSec * 1.15;
+    }
+    let yawDiff = turntableYawTarget - turntableYawCurrent;
+    while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
+    while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
+    turntableYawCurrent += yawDiff * Math.min(1, dtSec * 10.0);
+
+    actor.position.set(reactionJitterX, reactionHopY, 0);
+    actor.rotation.set(reactionPitchOffset, turntableYawCurrent + reactionYawOffset, reactionRollOffset, 'YXZ');
+
+    const spMorph = SPECIES_TINTS[sanctuarySpeciesId]?.morph;
+    if (spMorph && performer) {
+      const hBone = performer.bones.get('head');
+      const tBone = performer.bones.get('tail');
+      if (hBone && spMorph.head) hBone.scale.set(spMorph.head[0], spMorph.head[1], spMorph.head[2]);
+      if (tBone && spMorph.tail) tBone.scale.set(spMorph.tail[0], spMorph.tail[1], spMorph.tail[2]);
+    }
+  }
+  function renderSafely(updatePose, initialFrame = false, dtSec = 0.016) {
     if (failed || disposed || (!initialFrame && !isVisible())) return false;
     try {
       updatePose();
-      animateWardrobeNodes(time);
-      const jump = performer?.rigTransform.jumpHeight || 0;
+      applyReactionAndAura(dtSec);
+      animateWardrobeNodes(time, dtSec);
+      const jump = (performer?.rigTransform.jumpHeight || 0) + actor.position.y;
       const spread = 1 + jump * 3;
       contact.scale.set(spread, spread, 1);
-      contact.position.x = performer?.rigTransform.x || 0;
+      contact.position.x = (performer?.rigTransform.x || 0) + actor.position.x;
       contact.position.z = 0.025 + (performer?.rigTransform.z || 0);
       contactMaterial.uniforms.opacity.value = SETTINGS.shadowOpacity * (1 - Math.min(0.45, jump * 5));
+      haloMesh.position.x = contact.position.x;
+      haloMesh.position.z = contact.position.z;
       orbit?.update();
       renderer.render(scene, camera);
       const currentGesture = performer?.gesture || 'idle';
@@ -401,7 +609,7 @@ function startCompanion() {
   }
   function renderStill() {
     if (!modelLoaded || failed || disposed || !isVisible()) return;
-    renderSafely(() => { performer.update(time, 0, true); faceVoice?.update(time, 0, true); });
+    renderSafely(() => { performer.update(time, 0, true); faceVoice?.update(time, 0, true); }, false, 0);
   }
   function tick(stamp) {
     rafId = 0;
@@ -413,11 +621,12 @@ function startCompanion() {
     const dt = lastFrameStamp === null ? 0 : Math.min((stamp - lastFrameStamp) / 1000, 0.08);
     lastFrameStamp = stamp;
     time += dt;
+    const speedMult = time < whipUntil ? 2.4 : 1.0;
     const rendered = renderSafely(() => {
       applyNextGesture();
-      performer.update(time, dt, reducedMotion);
+      performer.update(time, dt * speedMult, reducedMotion);
       faceVoice?.update(time, dt, reducedMotion);
-    });
+    }, false, dt);
     if (rendered && canAnimate() && !rafId) rafId = requestAnimationFrame(tick);
   }
   function onMotionPreference(event) {
@@ -442,7 +651,8 @@ function startCompanion() {
     resize();
   }
   function onContextLost(event) { event.preventDefault(); fail('WEBGL_CONTEXT_LOST'); }
-  const onSanctuarySync = () => syncSanctuaryAppearance();
+  const onSanctuarySync = event => syncSanctuaryAppearance(event?.detail || null);
+  const onDinoInteract = event => triggerInteraction(event?.detail || {});
   function dispose() {
     if (disposed) return;
     disposed = true;
@@ -451,10 +661,12 @@ function startCompanion() {
     removeEventListener('storage', onSanctuarySync);
     removeEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
     removeEventListener('ans:sanctuary-updated', onSanctuarySync);
+    removeEventListener('ans:dino-interact', onDinoInteract);
     try {
       if (window.parent && window.parent !== window) {
         window.parent.removeEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
         window.parent.removeEventListener('ans:sanctuary-updated', onSanctuarySync);
+        window.parent.removeEventListener('ans:dino-interact', onDinoInteract);
       }
     } catch {}
     removeEventListener('resize', resize);
@@ -479,10 +691,12 @@ function startCompanion() {
   addEventListener('storage', onSanctuarySync);
   addEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
   addEventListener('ans:sanctuary-updated', onSanctuarySync);
+  addEventListener('ans:dino-interact', onDinoInteract);
   try {
     if (window.parent && window.parent !== window) {
       window.parent.addEventListener('ans:mascot-sanctuary-sync', onSanctuarySync);
       window.parent.addEventListener('ans:sanctuary-updated', onSanctuarySync);
+      window.parent.addEventListener('ans:dino-interact', onDinoInteract);
     }
   } catch {}
   addEventListener('resize', resize);
@@ -502,7 +716,7 @@ function startCompanion() {
   resize();
   Object.defineProperty(window, '__ANS_DINO__', {
     configurable: true,
-    value: Object.freeze({ activateAudio: () => faceVoice?.activateAudio(), syncSanctuary: syncSanctuaryAppearance, snapshot: () => {
+    value: Object.freeze({ activateAudio: () => faceVoice?.activateAudio(), syncSanctuary: syncSanctuaryAppearance, interact: triggerInteraction, snapshot: () => {
       const motion = performer?.snapshot() || null;
       return {
         version: VERSION, sourceSHA256: SOURCE_SHA256, modelLoaded, ready, failed, disposed,
@@ -511,6 +725,9 @@ function startCompanion() {
         face: faceVoice?.snapshot() || null,
         sanctuary: {
           speciesId: sanctuarySpeciesId,
+          equippedAuraId,
+          turntableYaw: Number(turntableYawCurrent.toFixed(3)),
+          turntableSpin,
           wardrobeLoaded,
           activeWardrobeIds: [...activeWardrobeIds],
           totalWardrobeNodes: wardrobeNodes.size,

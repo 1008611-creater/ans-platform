@@ -29,8 +29,7 @@ function Navigation() {
   const links = [
     { label: "terms", path: "" }, { label: "guides", path: "/guides" },
     { label: "courses", path: "/courses" }, { label: "practice", path: "/practice" },
-    { label: "saved", path: "/favorites" }, { label: "antiAi", path: "/anti-ai-flavor" },
-    { label: "skill", path: "/vibehub-skill" }, { label: "updates", path: "/updates" },
+    { label: "saved", path: "/favorites" },
   ] as const;
   const active = (path: string) => path ? pathname === `/vibe-hub${path}` || pathname.startsWith(`/vibe-hub${path}/`) : (pathname === "/vibe-hub" || pathname.startsWith("/vibe-hub/topics"));
   function switchLanguage() {

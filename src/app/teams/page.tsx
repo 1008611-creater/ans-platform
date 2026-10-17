@@ -159,25 +159,42 @@ export default async function TeamsPage() {
         </h2>
 
         {competitions.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="space-y-3 py-10 text-center text-sm text-muted-foreground">
-              <p>
-                {isEn
-                  ? "Official campus hackathons are hosted in the Competition Hub. External partner competitions will also appear here as they open."
-                  : "当前暂无外部合作赛事登记，您可前往「赛事中心」参与正在进行的官方黑客松与高校赛事。"}
-              </p>
-              {isAdmin && (
-                <p className="text-xs text-muted-foreground/80">
-                  {isEn ? "Admin note: External competitions can be added in the admin console." : "管理员提示：可在管理后台录入外部合作赛事信息。"}
-                </p>
-              )}
-              <div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Card className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
+              <img src="/catalog/agrihackathon-v1/gitglow-hub.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{isEn ? "AgriHackathon · Smart Agriculture Challenge" : "智耕黑客松 · 现代农业 AI 挑战赛"}</CardTitle>
+                  <Badge>{isEn ? "Ongoing" : "进行中"}</Badge>
+                </div>
+                <CardDescription>
+                  {isEn ? "Form a campus team, claim shared compute points, and build on real agricultural datasets." : "组队申领团队算力池，围绕温室传感、农情病虫害与智慧农机数据集交付真实可验证作品。"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/competitions">{isEn ? "Go to Competition Hub (/competitions)" : "前往赛事中心 (/competitions)"}</Link>
+                  <Link href="/competitions/agrihackathon">{isEn ? "Enter AgriHackathon →" : "进入智耕黑客松 →"}</Link>
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+            <Card className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
+              <img src="/catalog/gitglow-v1/aigc-workspace.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{isEn ? "AIGC Creative Track · Storyboard & Drama" : "AIGC 创作赛道 · 短剧分镜与多模态工坊"}</CardTitle>
+                  <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
+                </div>
+                <CardDescription>
+                  {isEn ? "Connect Solara Canvas, Plane project tracking, and Toonflow script-to-video pipelines." : "直连 Solara 无限画布、Plane 团队排期与 Toonflow 漫剧流水线，一站式沉淀参赛作品集。"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/competitions/aigc">{isEn ? "Enter AIGC Studio →" : "进入 AIGC 赛事工坊 →"}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {competitions.map((c) => {
