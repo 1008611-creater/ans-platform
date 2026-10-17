@@ -97,7 +97,7 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
       "@/components/workspace/claw-arcade-pod"
     );
 
-    expect(TRIPO_GLB_ASSETS).toHaveLength(5);
+    expect(TRIPO_GLB_ASSETS).toHaveLength(6);
     for (const asset of TRIPO_GLB_ASSETS) {
       const glbDiskPath = path.join(process.cwd(), "public", asset.glbUrl);
       const sheetDiskPath = path.join(process.cwd(), "public", asset.sheetUrl);

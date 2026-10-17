@@ -42,6 +42,7 @@ export type TripoGlbAssetId =
   | "claw-arm"
   | "ur-dragon-egg"
   | "ssr-4090-cookie"
+  | "sr-golden-wheat"
   | "mint-star-dino";
 
 export interface TripoGlbAssetMeta {
@@ -129,6 +130,23 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
     fallbackRgb: [52, 211, 153],
     promptZh:
       "生成用于三维重建的单个SSR级显卡造型夹心饼干扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆角厚实长方体潮玩饼干造型，外层为烤金黄色曲奇脆皮与黑巧装甲边框，正面雕刻两个对称翠绿薄荷奶油涡轮风扇浮雕，底部边缘露出一排闪亮金色曲奇插脚，背面为方格华夫饼干背板纹路，中间夹有饱满翠绿荧光奶油层。",
+  },
+  {
+    id: "sr-golden-wheat",
+    icon: "🌾",
+    nameZh: "SR 农大黄金麦穗胶囊 ($40 / 400 积分)",
+    nameEn: "SR CAU Golden Wheat Capsule ($40 / 400 Pts)",
+    roleZh: "琥珀金星轨底座 + 重穗黄金麦浪 + 翡翠叶徽章",
+    roleEn: "Amber star-orbit base + sculpted golden wheat + emerald leaf crest",
+    glbUrl: "/arcade-3d/sr-golden-wheat.glb",
+    sheetUrl: "/arcade-3d/sheets/sr-golden-wheat.png",
+    tripoTaskId: "cau-wheat-capsule-v1-29558a28e926",
+    sha256Prefix: "29558a28e926",
+    vertexCount: 5329,
+    faceCount: 10368,
+    fallbackRgb: [245, 158, 11],
+    promptZh:
+      "生成用于三维重建的单个SR级中国农大黄金麦穗胶囊扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆润胶囊形3D潮玩盲盒，下半部为琥珀金金属底座并环绕一圈翠绿农林星轨浮雕，上半部为立体饱满的金黄色重穗麦浪雕塑，正面中央镶嵌一枚翡翠绿叶子徽章，背面为对称饱满的黄金麦粒纹理。",
   },
   {
     id: "mint-star-dino",
@@ -350,7 +368,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 34,
     z: 70,
     colorClass: "from-amber-300 via-orange-400 to-amber-600 ring-amber-200/70",
-    glbId: "mint-star-dino",
+    glbId: "sr-golden-wheat",
   },
   {
     id: "cap-sr-2",
@@ -361,7 +379,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     x: 68,
     z: 30,
     colorClass: "from-orange-300 via-amber-500 to-yellow-600 ring-orange-200/70",
-    glbId: "ur-dragon-egg",
+    glbId: "sr-golden-wheat",
   },
   {
     id: "cap-r-1",

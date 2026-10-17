@@ -925,6 +925,22 @@ function syncSecretQuestToArcadeStorage(quest: SecretQuestDef, nowMs: number) {
     };
     window.localStorage.setItem(QUEST_ARCADE_STORAGE_KEY, JSON.stringify(nextArcade));
     window.dispatchEvent(new CustomEvent(QUEST_ARCADE_EVENT, { detail: nextArcade }));
+    if (typeof fetch === "function" && process.env.NODE_ENV !== "test") {
+      void fetch("/api/compute-benefits/arcade", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind: "quest", questId: arcadeQuestId }),
+      })
+        .then(res => (res.ok ? res.json() : null))
+        .then(data => {
+          if (data) {
+            window.dispatchEvent(
+              new CustomEvent("ans:quest-arcade-server-credited", { detail: data }),
+            );
+          }
+        })
+        .catch(() => {});
+    }
   } catch {
     /* Ignore storage errors */
   }
