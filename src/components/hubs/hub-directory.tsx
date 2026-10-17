@@ -9,7 +9,7 @@ import styles from "./hubs.module.css";
 
 const icons = { cauhub: GraduationCap, vibehub: BookOpen, aigc: Clapperboard, "full-stack": Code2 };
 const hubCovers: Record<HubDefinition["slug"], string> = {
-  cauhub: "/catalog/agrihackathon-v1/gitglow-hub.webp",
+  cauhub: "/competitions/agrihackathon/gitglow-hub.webp",
   vibehub: "/catalog/gitglow-v1/cauai-one.webp",
   aigc: "/catalog/gitglow-v1/aigc-workspace.webp",
   "full-stack": "/catalog/gitglow-v1/ans-3d-showcase.svg",

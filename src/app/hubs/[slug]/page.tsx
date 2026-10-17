@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const t = await getTranslations("hubs"); return { title: t(`items.${hub.slug}.name`), description: t(`items.${hub.slug}.description`) };
 }
 const resourceCovers: Record<string, string> = {
-  agrihackathon: "/catalog/agrihackathon-v1/gitglow-hub.webp",
+  agrihackathon: "/competitions/agrihackathon/gitglow-hub.webp",
   "vibehub-knowledge": "/catalog/gitglow-v1/cauai-one.webp",
   "aigc-workbench": "/catalog/gitglow-v1/niannian-drama.webp",
   hypit: "/catalog/gitglow-v1/niannian-edit.webp",
