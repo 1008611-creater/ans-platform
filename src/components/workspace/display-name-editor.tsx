@@ -21,6 +21,12 @@ export interface CodexWorkbenchProps {
   initialPrompt?: string;
 }
 
+interface CodexTaskLink {
+  labelZh: string;
+  labelEn?: string;
+  href: string;
+}
+
 interface CodexTask {
   id: string;
   title: string;
@@ -30,6 +36,7 @@ interface CodexTask {
   prompt: string;
   trace: string[];
   summary: string;
+  links?: CodexTaskLink[];
   artifactType: "html" | "markdown" | "python";
   artifactFile: string;
   artifactCode: string;
@@ -125,6 +132,138 @@ const INITIAL_CODEX_TASKS: CodexTask[] = [
 </html>`,
   },
   {
+    id: "task-toonflow-director",
+    title: "🎬 Toonflow · AI 漫剧分镜导演与提示词工坊",
+    tag: "AIGC 漫剧",
+    model: "gpt-6-astra",
+    status: "completed",
+    prompt: "生成一个可交互的 AI 漫剧 4 镜头故事板导演台，支持点击分镜卡实时合成运镜提示词（Camera Motion + Character Seed）并一键复制。",
+    trace: [
+      "✓ [1/3] script.breakdown — 拆解 4 个核心漫剧分镜与角色一致性 Seed #4092",
+      "✓ [2/3] camera.compose_motion — 注入 Dolly In / Orbit / Tracking / Crane Up 运镜参数",
+      "✓ [3/3] sandbox.mount_iframe — 分镜导演台已挂载至右侧实时预览画布",
+    ],
+    summary: "已构建《Toonflow · AI 漫剧分镜导演与角色锁定台》，包含 4 个可点击切换的分镜故事板卡片与实时 Sora / Toonflow 提示词合成器。",
+    artifactType: "html",
+    artifactFile: "toonflow-storyboard-director.html",
+    artifactCode: `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #130b24; color: #f5f3ff; padding: 22px; }
+  .top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(167,139,250,0.25); padding-bottom: 12px; }
+  .shots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
+  .shot { background: rgba(30,27,75,0.65); border: 1px solid rgba(167,139,250,0.3); border-radius: 12px; padding: 12px; cursor: pointer; transition: border-color .2s; }
+  .shot:hover { border-color: #f59e0b; }
+  .shot .num { font-size: 11px; color: #fbbf24; font-weight: 800; }
+  .shot h4 { font-size: 14px; margin-top: 4px; }
+  .shot p { font-size: 11.5px; color: #c4b5fd; margin-top: 4px; line-height: 1.45; }
+  .prompt-box { margin-top: 14px; background: rgba(15,23,42,0.85); border: 1px solid rgba(251,191,36,0.4); border-radius: 12px; padding: 14px; }
+  button { margin-top: 10px; cursor: pointer; border: none; border-radius: 8px; padding: 8px 14px; background: linear-gradient(135deg, #f59e0b, #ec4899); color: white; font-weight: 700; font-size: 12px; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div><h2 style="font-size:19px">🎬 Toonflow · AI 漫剧分镜导演与角色锁定台</h2><p style="font-size:12px;color:#c4b5fd;margin-top:3px">点击任意分镜卡实时合成运镜提示词 (Camera Motion + Character Seed)</p></div>
+    <span style="background:rgba(245,158,11,0.2);border:1px solid #f59e0b;color:#fde68a;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700">4 镜头就绪</span>
+  </div>
+  <div class="shots">
+    <div class="shot" onclick="setShot('Shot 01 · 远景推镜 (Dolly In)：赛博农大玻璃温室夜景，霓虹光雨洒在基因作物叶片上，少女研究员林夏回头，8k Anime Style, Seed #4092')"><div class="num">SHOT 01 · 远景推镜 (Dolly In)</div><h4>赛博温室 · 霓虹夜雨开场</h4><p>镜头缓缓推进玻璃穹顶，发光麦穗随呼吸闪烁，锁定主角林夏面部特征。</p></div>
+    <div class="shot" onclick="setShot('Shot 02 · 特写环绕 (Orbit Close-up)：全息光屏浮现叶绿素突变曲线，林夏瞳孔倒映金色数据流，浅景深, Cinematic Lighting, Seed #4092')"><div class="num">SHOT 02 · 特写环绕 (Orbit)</div><h4>全息光谱 · 突变曲线觉醒</h4><p>360 度环绕特写，全息屏金光映照主角瞳孔，强化悬疑张力。</p></div>
+    <div class="shot" onclick="setShot('Shot 03 · 跟随仰拍 (Low-Angle Tracking)：小恐龙机甲伴侣 Minty 展开全息护盾冲出温室走廊，粒子尾迹，Dynamic Motion')"><div class="num">SHOT 03 · 跟随仰拍 (Tracking)</div><h4>小恐龙 Minty · 机甲护盾展开</h4><p>低机位高速跟拍，小恐龙吉祥物化身为量子护盾伴侣腾空跃起。</p></div>
+    <div class="shot" onclick="setShot('Shot 04 · 航拍拉远 (Crane Up)：整座智慧农业浮空岛点亮金色能量矩阵，漫天星轨汇聚成 ANS 徽章，Epic Finale')"><div class="num">SHOT 04 · 航拍拉远 (Crane Up)</div><h4>浮空农庄 · 能量矩阵终章</h4><p>高空摇臂拉远，整座未来农庄被金色星轨点亮，形成视觉高潮。</p></div>
+  </div>
+  <div class="prompt-box">
+    <div style="font-size:11px;color:#fde68a;font-weight:700">📋 当前合成的 Toonflow / Sora 视频生成指令：</div>
+    <p id="out" style="font-family:monospace;font-size:12px;color:#f8fafc;margin-top:6px;line-height:1.5">Shot 01 · 远景推镜 (Dolly In)：赛博农大玻璃温室夜景，霓虹光雨洒在基因作物叶片上，少女研究员林夏回头，8k Anime Style, Seed #4092</p>
+    <button onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('out').textContent);this.textContent='✅ 已复制分镜 Prompt！可粘贴至 Toonflow'">✨ 一键复制分镜 Prompt</button>
+  </div>
+  <script>function setShot(t){document.getElementById('out').textContent=t;}</script>
+</body>
+</html>`,
+  },
+  {
+    id: "task-cyber-snake",
+    title: "🎮 极客摸鱼 · 赛博霓虹贪吃蛇 (Canvas 60FPS)",
+    tag: "Canvas 游戏",
+    model: "deepseek-v4.1-flash",
+    status: "completed",
+    prompt: "用纯 HTML5 Canvas 编写一个 60fps 可玩版赛博霓虹贪吃蛇小游戏，支持键盘方向键与屏幕按钮操控、穿墙模式与实时计分。",
+    trace: [
+      "✓ [1/2] game.loop_setup — 构建 20x16 网格状态机与赛博霓虹渲染管线",
+      "✓ [2/2] input.bind_controls — 已绑定键盘方向键与触控按钮，右侧预览可直接畅玩",
+    ],
+    summary: "已生成单文件 HTML5 赛博霓虹贪吃蛇游戏，右侧预览窗口即可直接用方向键或屏幕按钮开始游玩！",
+    artifactType: "html",
+    artifactFile: "cyber-neon-snake.html",
+    artifactCode: `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #060913; color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 14px; }
+  .hud { display: flex; align-items: center; justify-content: space-between; width: 420px; margin-bottom: 10px; }
+  canvas { background: #0f172a; border: 2px solid #6366f1; border-radius: 14px; box-shadow: 0 0 30px rgba(99,102,241,0.35); }
+  .controls { margin-top: 10px; display: flex; gap: 8px; }
+  button { cursor: pointer; border: 1px solid rgba(99,102,241,0.5); background: rgba(30,41,59,0.9); color: #e2e8f0; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; }
+  button:hover { background: #4f46e5; color: white; }
+</style>
+</head>
+<body>
+  <div class="hud">
+    <div><strong>🎮 赛博霓虹贪吃蛇</strong> <span style="font-size:11px;color:#94a3b8">(方向键或下方按钮控制)</span></div>
+    <div style="color:#34d399;font-weight:800">得分: <span id="score">0</span></div>
+  </div>
+  <canvas id="game" width="420" height="320"></canvas>
+  <div class="controls">
+    <button onclick="setDir(0,-1)">⬆️ 上</button>
+    <button onclick="setDir(0,1)">⬇️ 下</button>
+    <button onclick="setDir(-1,0)">⬅️ 左</button>
+    <button onclick="setDir(1,0)">➡️ 右</button>
+    <button onclick="resetGame()" style="background:#059669;border-color:#10b981">🔄 重新开始</button>
+  </div>
+<script>
+  const cvs = document.getElementById('game'), ctx = cvs.getContext('2d');
+  const S = 20, W = cvs.width / S, H = cvs.height / S;
+  let snake, dir, food, score;
+  function resetGame() {
+    snake = [{x: 10, y: 8}, {x: 9, y: 8}, {x: 8, y: 8}];
+    dir = {x: 1, y: 0}; score = 0;
+    document.getElementById('score').textContent = score;
+    spawnFood();
+  }
+  function spawnFood() { food = { x: Math.floor(Math.random() * W), y: Math.floor(Math.random() * H) }; }
+  window.setDir = (x, y) => { if (x !== -dir.x || y !== -dir.y) dir = {x, y}; };
+  window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp') setDir(0, -1);
+    if (e.key === 'ArrowDown') setDir(0, 1);
+    if (e.key === 'ArrowLeft') setDir(-1, 0);
+    if (e.key === 'ArrowRight') setDir(1, 0);
+  });
+  resetGame();
+  setInterval(() => {
+    const head = { x: (snake[0].x + dir.x + W) % W, y: (snake[0].y + dir.y + H) % H };
+    if (snake.some(seg => seg.x === head.x && seg.y === head.y)) { resetGame(); return; }
+    snake.unshift(head);
+    if (head.x === food.x && head.y === food.y) {
+      score += 10; document.getElementById('score').textContent = score; spawnFood();
+    } else { snake.pop(); }
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, cvs.width, cvs.height);
+    ctx.fillStyle = '#f43f5e'; ctx.beginPath();
+    ctx.arc(food.x * S + S/2, food.y * S + S/2, S/2 - 2, 0, Math.PI * 2); ctx.fill();
+    snake.forEach((seg, i) => {
+      ctx.fillStyle = i === 0 ? '#34d399' : '#6366f1';
+      ctx.fillRect(seg.x * S + 2, seg.y * S + 2, S - 4, S - 4);
+    });
+  }, 130);
+</script>
+</body>
+</html>`,
+  },
+  {
     id: "task-agrihackathon-kit",
     title: "🌾 农客松参赛立项 + 架构与 FastAPI 启动代码",
     tag: "Hackathon / Full-Stack",
@@ -167,31 +306,6 @@ async def diagnose_crop(req: CropDiagnosisRequest):
         ],
     }
 `,
-  },
-  {
-    id: "task-paper-polish",
-    title: "📄 SCI / 课程论文摘要精修 + 双栏 Diff 对比",
-    tag: "Academic / LaTeX",
-    model: "gpt-6.1-sol",
-    status: "completed",
-    prompt: "润色农业人工智能方向的英文论文摘要，提供修改前后对比说明与 LaTeX 模板代码。",
-    trace: [
-      "✓ [1/3] academic.check_style — 检测长难句、被动语态与顶刊高频学术词汇",
-      "✓ [2/3] codex.diff_rewrite — 生成 Native 级英文摘要与修改批注",
-      "✓ [3/3] canvas.export_latex — 输出 IEEE / Elsevier 标准 LaTeX Abstract 片段",
-    ],
-    summary: "已完成顶刊级学术摘要精修，消除了中式英语表达，强化了定量实验增益（SOTA +4.8% mAP）与贡献点层次，右侧可直接复制 LaTeX 源码。",
-    artifactType: "markdown",
-    artifactFile: "paper-abstract-diff.tex",
-    artifactCode: `% Polished Abstract for Computers and Electronics in Agriculture (Q1)
-\\begin{abstract}
-Accurate in-field crop disease diagnosis remains challenging due to complex background clutter and illumination variations. In this study, we propose \\textbf{AgriVLM-Net}, a lightweight multimodal vision-language agent tailored for real-time edge deployment in precision agriculture. Specifically, a cross-scale canopy attention module is introduced to suppress soil and weed interference, while meteorological priors are fused via gated token alignment. Extensive experiments on the CAU-Wheat2026 benchmark demonstrate that AgriVLM-Net achieves \\textbf{94.6\\% top-1 accuracy} and \\textbf{+4.8\\% mAP} over state-of-the-art baselines while reducing inference latency by 38\\%.
-\\end{abstract}
-
-% Key Upgrades (Diff Notes):
-% 1. Replaced "is very hard because of" -> "remains challenging due to"
-% 2. Replaced "we made a new model" -> "we propose AgriVLM-Net, a lightweight multimodal..."
-% 3. Highlighted quantitative metrics (+4.8% mAP, -38% latency) in the concluding sentence.`,
   },
 ];
 
@@ -291,6 +405,7 @@ function PiCodexWorkbench({
   const [promptInput, setPromptInput] = useState<string>(initialPrompt);
   const [running, setRunning] = useState<boolean>(false);
   const [canvasTab, setCanvasTab] = useState<"preview" | "code" | "terminal" | "tools">("preview");
+  const [previewKey, setPreviewKey] = useState<number>(0);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
     "[00:00.01] $ pi-codex init --mode=work --sandbox=ans-cloud-v2",
     "[00:00.08] ✓ Connected to ANS Compute Cluster (DeepSeek-V3 / GPT-6.1-Sol / Qwen-Coder)",
@@ -313,7 +428,16 @@ function PiCodexWorkbench({
     if (running) return;
     setRunning(true);
     const taskId = "task-" + Date.now();
-    const shortTitle = intent === "checkin" ? "📅 灵龙实权代办：每日签到领积分" : intent === "claw" ? "🕹️ 灵龙实权代办：3D 抓娃娃机搏锦鲤" : intent === "redeem" ? "🎁 灵龙实权代办：5 积分秒兑周报模板" : "⚡ " + (q.slice(0, 26) || "Codex 工程任务");
+    const shortTitle =
+      intent === "checkin"
+        ? "📅 灵龙实权代办：每日签到领积分"
+        : intent === "claw"
+          ? "🕹️ 灵龙实权代办：3D 抓娃娃机搏锦鲤"
+          : intent === "redeem"
+            ? "🎁 灵龙实权代办：5 积分秒兑周报模板"
+            : intent === "scaffold"
+              ? "🚀 灵龙实权代办：一键立项存为我的项目"
+              : "⚡ " + (q.slice(0, 26) || "Codex 工程任务");
     const newTask: CodexTask = {
       id: taskId,
       title: shortTitle,
@@ -361,21 +485,22 @@ function PiCodexWorkbench({
                 status: "completed",
                 trace: [
                   "✓ [1/3] workspace.parse_intent — 任务意图与上下文校验通过",
-                  `✓ [2/3] llm.invoke(${data?.modelUsed || model}) — 响应耗时 ${data?.latencyMs || 420}ms`,
+                  `✓ [2/3] llm.invoke(${data?.toolUsed || model}) — 实权动作已完成`,
                   "✓ [3/3] canvas.sync_artifact — 产物已同步至右侧画布",
                 ],
                 summary: reply,
-                artifactType: isHtml ? "html" : "markdown",
-                artifactFile: isHtml ? "codex-live-app.html" : "codex-output.md",
-                artifactCode: extractedCode,
+                links: Array.isArray(data?.links) ? data.links : [],
+                artifactType: isHtml ? "html" : item.artifactType,
+                artifactFile: isHtml ? "codex-live-app.html" : item.artifactFile,
+                artifactCode: isHtml ? extractedCode : item.artifactCode,
               }
             : item,
         ),
       );
-      setCanvasTab(isHtml ? "preview" : "code");
+      if (isHtml) setCanvasTab("preview");
       setTerminalLogs(prev => [
         ...prev,
-        `[${new Date().toLocaleTimeString()}] ✓ Completed in ${data?.latencyMs || 420}ms (0 pts · Codex Beta Free)`,
+        `[${new Date().toLocaleTimeString()}] ✓ Completed (${data?.toolUsed || intent})`,
       ]);
     } catch {
       setTasks(prev =>
@@ -396,6 +521,33 @@ function PiCodexWorkbench({
 
   function updateActiveCode(newCode: string) {
     setTasks(prev => prev.map(item => (item.id === activeTask.id ? { ...item, artifactCode: newCode } : item)));
+  }
+
+  function downloadActiveHtml() {
+    try {
+      const blob = new Blob([activeTask.artifactCode], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = activeTask.artifactFile || `${activeTask.id}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("已下载单文件应用源码！");
+    } catch {
+      toast.error("下载失败，请先复制源码");
+    }
+  }
+
+  function openFullscreenPreview() {
+    try {
+      const blob = new Blob([activeTask.artifactCode], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      toast.error("无法打开新窗口预览");
+    }
   }
 
   function switchToFloatingChat() {
@@ -426,9 +578,9 @@ function PiCodexWorkbench({
             onChange={e => setModel(e.target.value as typeof model)}
             className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-bold text-emerald-300 outline-none focus:border-emerald-500"
           >
-            <option value="deepseek-v4.1-flash">⚡ DeepSeek-V3.2 · 极速工程主力 (0积分免扣)</option>
-            <option value="gpt-6.1-sol">🧠 GPT-6.1-Sol · 架构与学术精修 (旗舰)</option>
-            <option value="gpt-6-astra">💻 Qwen-2.5-Coder / Astra · 全栈代码生成</option>
+            <option value="deepseek-v4.1-flash">⚡ DeepSeek-V4.1-Flash · 极速工程主力 (0.5分)</option>
+            <option value="gpt-6.1-sol">🧠 GPT-6.1-Sol · 架构与学术精修 (1分)</option>
+            <option value="gpt-6-astra">🌟 GPT-6-Astra · 全栈代码生成 (1分)</option>
           </select>
         </div>
 
@@ -495,17 +647,10 @@ function PiCodexWorkbench({
               <div className="mt-2 grid gap-1.5">
                 <button
                   type="button"
-                  onClick={() => void executeCodexTask("请用单文件 HTML + CSS + JS 写一个可交互的 3D 星空个人作品集网页，包含项目卡片与动态粒子背景。", "playground")}
-                  className="rounded-xl border border-slate-800 bg-slate-900/90 px-2.5 py-2 text-left text-xs font-medium text-slate-200 transition hover:border-emerald-500/50 hover:bg-slate-800"
+                  onClick={() => void executeCodexTask(activeTask.title, "scaffold")}
+                  className="rounded-xl border border-indigo-500/35 bg-indigo-500/15 px-2.5 py-2 text-left text-xs font-bold text-indigo-200 transition hover:bg-indigo-500/25"
                 >
-                  🎨 生成 3D 星空个人作品集网页
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void executeCodexTask("帮我生成一份中国农大智耕黑客松（AgriHackathon）完整立项方案，含痛点分析、多模态技术路线与 FastAPI 核心代码。", "playground")}
-                  className="rounded-xl border border-slate-800 bg-slate-900/90 px-2.5 py-2 text-left text-xs font-medium text-slate-200 transition hover:border-emerald-500/50 hover:bg-slate-800"
-                >
-                  🌾 生成农客松参赛立项与代码
+                  🚀 灵龙代办：一键立项存为我的项目
                 </button>
                 <button
                   type="button"
@@ -575,6 +720,19 @@ function PiCodexWorkbench({
             <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/15 p-4">
               <div className="mb-1.5 text-xs font-extrabold text-emerald-300">🦖 Pi-Codex 工程输出说明</div>
               <div className="whitespace-pre-wrap text-xs leading-6 text-slate-200">{activeTask.summary}</div>
+              {activeTask.links && activeTask.links.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {activeTask.links.map((lk, i) => (
+                    <a
+                      key={i}
+                      href={lk.href}
+                      className="rounded-lg border border-indigo-400/50 bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-200 hover:bg-indigo-500/30"
+                    >
+                      {lk.labelZh || lk.labelEn} ↗
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -633,9 +791,9 @@ function PiCodexWorkbench({
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-slate-950/70 px-4 py-2.5">
             <div className="flex flex-wrap items-center gap-1">
               {[
-                { id: "preview", label: "👁️ 实时预览 (Preview)" },
-                { id: "code", label: "💻 源码编辑 (Code)" },
-                { id: "terminal", label: "📟 终端日志 (Terminal)" },
+                { id: "preview", label: "👁️ 实时预览" },
+                { id: "code", label: "💻 源码编辑" },
+                { id: "terminal", label: "📟 终端日志" },
                 { id: "tools", label: "🧰 全站工具箱" },
               ].map(t => (
                 <button
@@ -650,7 +808,28 @@ function PiCodexWorkbench({
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPreviewKey(k => k + 1)}
+                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
+              >
+                🔄 重置
+              </button>
+              <button
+                type="button"
+                onClick={downloadActiveHtml}
+                className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
+              >
+                💾 下载 .html
+              </button>
+              <button
+                type="button"
+                onClick={openFullscreenPreview}
+                className="rounded-lg border border-indigo-400/40 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
+              >
+                🖥️ 新窗口全屏 ↗
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -661,12 +840,6 @@ function PiCodexWorkbench({
               >
                 📋 复制源码
               </button>
-              <a
-                href="/explore/submit"
-                className="rounded-lg bg-indigo-500/20 border border-indigo-400/40 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
-              >
-                🚀 发布成果 ↗
-              </a>
             </div>
           </div>
 
@@ -681,6 +854,7 @@ function PiCodexWorkbench({
                     </button>
                   </div>
                   <iframe
+                    key={`${activeTask.id}-${previewKey}`}
                     title="Pi-Codex Live Artifact Preview"
                     srcDoc={activeTask.artifactCode}
                     sandbox="allow-scripts"

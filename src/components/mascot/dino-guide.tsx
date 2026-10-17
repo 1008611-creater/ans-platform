@@ -225,6 +225,14 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
             onClick={() => {
               changeOpen(false);
               const q = draft.trim();
+              if (pathname === "/workspace") {
+                if (q) {
+                  window.dispatchEvent(new CustomEvent("ans:codex-prompt", { detail: { prompt: q } }));
+                }
+                const el = document.querySelector('[aria-label="Pi-Codex 个人工作台"]');
+                if (el && "scrollIntoView" in el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                return;
+              }
               window.location.href = "/workspace" + (q ? `?prompt=${encodeURIComponent(q)}` : "");
             }}
           >
@@ -252,7 +260,6 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
               {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
               {mode === "agent" && <><AgentRecoveryStatus turns={agent.recovery.turns.filter(turn => turn.ticket !== agent.currentTicket)} onCheck={agent.recovery.check} /><AgentTurnStatus agent={agent} /></>}
             </div>
-            {prefs.suggestions && !blocked && nextActions.length > 0 && <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}><h3>{ui("suggestedNextSteps")}</h3>{nextActions.map(action => { const Icon = icons[action.icon]; return <Link href={action.href} key={action.href} onClick={() => changeOpen(false)}><span className="ans-companion-action-icon"><Icon aria-hidden="true" /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight className="ans-companion-action-arrow" aria-hidden="true" /></Link>; })}</nav>}
           </div>
           {showLatest && (messages.length > 0 || agent.quote) && <button className="ans-companion-latest" type="button" onClick={jumpToLatest}><ArrowDown aria-hidden="true" />{ui(unread ? "newReplyBelow" : "backToLatest")}</button>}
         </div>
