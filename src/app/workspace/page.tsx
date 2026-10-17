@@ -22,14 +22,12 @@ const RUN_STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"
 };
 
 type WorkspacePageProps = {
-  searchParams?: Promise<{ runsCursor?: string | string[] }>;
+  searchParams?: Promise<{ runsCursor?: string | string[]; prompt?: string | string[] }>;
 };
 
 export default async function WorkspacePage({ searchParams }: WorkspacePageProps) {
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login?callbackUrl=/workspace");
-  }
+  const userId = session?.user?.id ?? null;
 
   const retired = await getTranslations("retirement");
   const t = await getTranslations("product.workspace");
@@ -39,92 +37,88 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   const quotaCopy = await getTranslations("product.quotaHistory");
   const query = searchParams ? await searchParams : {};
   const rawCursor = Array.isArray(query.runsCursor) ? query.runsCursor[0] : query.runsCursor;
+  const rawPrompt = Array.isArray(query.prompt) ? query.prompt[0] : query.prompt;
+  const initialPrompt = rawPrompt && rawPrompt.length <= 2000 ? rawPrompt : "";
   const runsCursor = rawCursor && rawCursor.length <= 128 ? rawCursor : undefined;
   const pageSize = 20;
 
-  const [user, runRows, runCount, memberships] = await Promise.all([
-    db.user.findUnique({
-      where: { id: session.user.id },
-      select: { xp: true, quotaPoints: true, nickname: true },
-    }),
-    db.run.findMany({
-      where: { userId: session.user.id },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      ...(runsCursor ? { cursor: { id: runsCursor }, skip: 1 } : {}),
-      take: pageSize + 1,
-      select: {
-        id: true,
-        status: true,
-        costPoints: true,
-        outputText: true,
-        error: true,
-        createdAt: true,
-        template: { select: { title: true, slug: true } },
-      },
-    }),
-    db.run.count({ where: { userId: session.user.id } }),
-    db.teamMember.findMany({
-      where: { userId: session.user.id, status: "ACTIVE" },
-      select: {
-        role: true,
-        quotaAllowance: true,
-        quotaUsed: true,
-        team: { select: { id: true, name: true, slug: true } },
-      },
-    }),
-  ]);
+  const [user, runRows, runCount, memberships] = userId
+    ? await Promise.all([
+        db.user.findUnique({
+          where: { id: userId },
+          select: { xp: true, quotaPoints: true, nickname: true },
+        }),
+        db.run.findMany({
+          where: { userId },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          ...(runsCursor ? { cursor: { id: runsCursor }, skip: 1 } : {}),
+          take: pageSize + 1,
+          select: {
+            id: true,
+            status: true,
+            costPoints: true,
+            outputText: true,
+            error: true,
+            createdAt: true,
+            template: { select: { title: true, slug: true } },
+          },
+        }),
+        db.run.count({ where: { userId } }),
+        db.teamMember.findMany({
+          where: { userId, status: "ACTIVE" },
+          select: {
+            role: true,
+            quotaAllowance: true,
+            quotaUsed: true,
+            team: { select: { id: true, name: true, slug: true } },
+          },
+        }),
+      ])
+    : [null, [], 0, []];
 
   const hasMoreRuns = runRows.length > pageSize;
   const runs = hasMoreRuns ? runRows.slice(0, pageSize) : runRows;
   const nextRunsCursor = hasMoreRuns ? runs[runs.length - 1]?.id : undefined;
   const xp = user?.xp ?? 0;
   const progress = getLevelProgress(xp);
-  const displayName = user?.nickname?.trim() || t("anonymous");
+  const displayName = user?.nickname?.trim() || (userId ? t("anonymous") : locale === "zh" ? "访客创作者" : "Guest Creator");
   const currentPoints = Number(user?.quotaPoints ?? 0);
+  const levelName = locale === "zh" ? formatLevel(xp) : progress.level.nameEn;
 
   return (
     <div className="ans-product-container ans-page-content ans-workspace-page">
-      <PageHeading title={t("title")}
-        description={<span className="ans-workspace-greeting">{t("greeting", { name: displayName })} · {locale === "zh" ? formatLevel(xp) : progress.level.nameEn}
-          <DisplayNameEditor actorId={session.user.id} current={displayName} /></span>}
-        actions={<><Button asChild><Link href="/projects">{product("myProjects")}</Link></Button><Button asChild variant="outline"><Link href="/explore">{product("nav.explore")}</Link></Button></>} />
+      <DisplayNameEditor
+        codexWorkbench
+        actorId={userId ?? "guest"}
+        current={displayName}
+        points={currentPoints}
+        levelName={levelName}
+        initialPrompt={initialPrompt}
+      />
 
-      {currentPoints < 100 && (
-        <section aria-label={locale === "zh" ? "算力福利直通车" : "Compute Benefits Express"} className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-amber-500/5 to-rose-500/10 p-4 sm:px-6">
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs">
-              <Gift className="h-4 w-4" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {locale === "zh"
-                  ? "🎁 算力福利中心开放中：免费领 100~150 积分（¥10~¥15）· 0.1% 抽 1,000 积分神话锦鲤"
-                  : "🎁 Compute Benefits Open: Claim 100–150 Free Pts ($10–$15) & 0.1% 1,000-Pt Mythic Jackpot"}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {locale === "zh"
-                  ? "完成 5 题 DeepSeek 破冰问卷即领 $5（50 积分），参与 3D 灵龙抓娃娃机与星轨转盘最高暴击 1,000 积分（¥100）！"
-                  : "Complete the 5-question DeepSeek onboarding for $5 (50 pts) and play the 3D Claw Machine for up to 1,000 pts ($100)!"}
-              </p>
+      <details className="mt-6 rounded-2xl border border-border/70 bg-card/60 p-4">
+        <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 text-sm font-semibold">
+          <span>
+            📊 {locale === "zh" ? "账户资产、算力流水与运行记录（点击展开）" : "Account Balance, Credits & Run History (Expand)"}
+          </span>
+          <span className="text-xs font-normal text-muted-foreground">
+            {displayName} · {levelName} · {currentPoints.toLocaleString()} {t("pointsUnit")}
+          </span>
+        </summary>
+        <div className="mt-4">
+          {userId && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <span className="ans-workspace-greeting text-sm text-muted-foreground">
+                {t("greeting", { name: displayName })} · {levelName}
+                <DisplayNameEditor actorId={userId} current={displayName} />
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild size="sm" variant="outline"><Link href="/workspace/benefits">🎁 {locale === "zh" ? "算力福利中心" : "Benefits"}</Link></Button>
+                <Button asChild size="sm" variant="outline"><Link href="/workspace/credits">💳 {quotaCopy("entry")}</Link></Button>
+                <Button asChild size="sm" variant="outline"><Link href="/projects">{product("myProjects")}</Link></Button>
+              </div>
             </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
-              <Link href="/workspace/benefits">
-                <Sparkles className="me-1 h-3.5 w-3.5" aria-hidden="true" />
-                {locale === "zh" ? "立即免费领算力 / 抓娃娃" : "Claim Free Credits & Play"}
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/workspace/credits">
-                {locale === "zh" ? "卡密充值兑换" : "Redeem Voucher"}
-              </Link>
-            </Button>
-          </div>
-        </section>
-      )}
-
-      <CreationTools />
+          )}
       <section className="ans-account-summary">
         <Card>
           <CardHeader className="pb-2">
@@ -295,6 +289,8 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         )}
       </section>
       </div>
+        </div>
+      </details>
     </div>
   );
 }

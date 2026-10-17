@@ -614,6 +614,16 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         >
           👗 {isZh ? "换装" : "Dress"}
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = "/workspace";
+          }}
+          title={isZh ? "切换到 Pi-Codex 工作模式（个人工作台 IDE）" : "Switch to Pi-Codex Work Mode (/workspace)"}
+          className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-extrabold text-indigo-700 transition hover:bg-indigo-500/30 dark:text-indigo-300"
+        >
+          🛠️ {isZh ? "工作台" : "Codex"}
+        </button>
       </div>
 
       {kaomojiTag && (

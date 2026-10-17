@@ -215,8 +215,21 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           </div>
         </header>
         <div className="ans-companion-mode" role="group" aria-label={ui("conversationMode")}>
-          <button type="button" aria-pressed={mode === "agent"} onClick={() => changeMode("agent")} disabled={!actor || agent.busy || agent.checkingReceipts}>{ui("agentMode")}</button>
-          <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>{ui("guideMode")}</button>
+          <button type="button" aria-pressed={true} onClick={() => changeMode(actor ? "agent" : "guide")} disabled={agent.busy || agent.checkingReceipts}>
+            {locale === "zh" ? "💬 聊天模式 (伴随问答)" : "💬 Chat Mode"}
+          </button>
+          <button
+            type="button"
+            aria-pressed={false}
+            data-testid="dino-switch-work-mode"
+            onClick={() => {
+              changeOpen(false);
+              const q = draft.trim();
+              window.location.href = "/workspace" + (q ? `?prompt=${encodeURIComponent(q)}` : "");
+            }}
+          >
+            {locale === "zh" ? "🛠️ 工作模式 · Codex 工作台 ↗" : "🛠️ Work Mode · Codex ↗"}
+          </button>
         </div>
         <CompanionSanctuaryBar
           requestedTab={requestedTab}
