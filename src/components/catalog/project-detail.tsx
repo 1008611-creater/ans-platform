@@ -55,7 +55,9 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
       <FavoriteButton accountId={accountId} targetType="PROJECT" targetId={project.slug} initialFavorited={favorited} />
     </header>
     <div className={styles.hero}>
-      <div className={styles.showcase}><ProjectPreview project={project} large /></div>
+      <div className={styles.showcase}>
+        {primaryHref ? (isExternal ? <a href={primaryHref} target="_blank" rel="noopener noreferrer" className="group relative block overflow-hidden rounded-2xl"><ProjectPreview project={project} large /><span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-slate-950/85 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-xs transition group-hover:bg-primary">{primaryLabel}<ArrowUpRight size={14} aria-hidden="true" /></span></a> : <Link href={primaryHref} className="group relative block overflow-hidden rounded-2xl"><ProjectPreview project={project} large /><span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-slate-950/85 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-xs transition group-hover:bg-primary">{primaryLabel}<ArrowRight size={14} aria-hidden="true" /></span></Link>) : <ProjectPreview project={project} large />}
+      </div>
       <aside className={styles.start} aria-label={d("startHere")}>
         <p className={styles.kicker}>{d("startHere")}</p>
         <h2>{primaryConnection ? ct(primaryConnection.kind === "workflow" || primaryConnection.kind === "workflow-offer" ? "startWithWorkflow" : "startWithOffer") : d(project.memberHref ? "creatorProject" : startHref ? "ansWorkflow" : "sourceProject")}</h2>
@@ -77,13 +79,13 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
           <p className={styles.prose}>{advice?.result ?? text("output")}</p>
           {advice?.audience && <div className={styles.audience}><FileCheck2 size={19} aria-hidden="true" /><div><h3>{d("forWhom")}</h3><p>{advice.audience}</p></div></div>}
         </section>
-        <section id="project-path" className={styles.section}>
+        {advice && <section id="project-path" className={styles.section}>
           <p className={styles.kicker}>02 / {d("path")}</p><h2>{d("firstResult")}</h2>
           <ol className={styles.steps}>{steps.map((step, index) => <li key={step.title}>
             <span className={styles.stepNumber} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
             <div><h3>{step.title}</h3><p>{step.body}</p>{step.href && <a href={step.href} target="_blank" rel="noopener noreferrer" className="ans-text-link">{d("openStep")}<ExternalLink size={14} aria-hidden="true" /></a>}</div>
           </li>)}</ol>
-        </section>
+        </section>}
       </div>
       <aside className={styles.sideNote}>
         <section id="project-conditions">

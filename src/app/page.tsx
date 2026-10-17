@@ -48,7 +48,7 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
         </div>
         {hero ? <ProjectCoverflow projects={(showcase.length ? showcase : [hero]).map(project => ({
           slug: project.slug,
-          href: project.memberHref ?? `/explore/${project.slug}`,
+          href: project.memberHref ?? (project.workflowId === "resume-website" ? "/market/resume-website" : project.workflowId === "easel" ? "/competitions/aigc" : project.workflowId === "hypit" ? "/workflows/hypit" : project.workflowId === "toonflow" ? "https://toonflow.cauai.fun" : project.workflowId ? `/projects?goal=${project.goal}&workflow=${project.workflowId}#new-project` : project.sourceUrl ?? `/explore/${project.slug}`),
           title: catalogText(project, t, "title", locale),
           summary: catalogText(project, t, "summary", locale),
           category: t(`categories.${project.category}`),

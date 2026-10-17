@@ -14,6 +14,7 @@ export async function generateMetadata() {
   return { title: t("title"), description: t("body") };
 }
 export default async function EaselPage() {
+  if (process.env.ANS_EASEL_ENABLED !== "1") redirect("/competitions/aigc");
   const session = await auth();
   if (!session?.user?.id) redirect("/login?callbackUrl=/workflows/easel");
   const t = await getTranslations("easel");

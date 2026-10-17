@@ -113,29 +113,27 @@ export default async function AigcCompetitionPage() {
                   : t("backupLabel");
               return (
                 <Card key={connector.id} className="group relative min-w-0 overflow-hidden border-border/80">
-                  <div className="overflow-hidden border-b bg-slate-950/90">
+                  <a href={connector.url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden border-b bg-slate-950/90">
                     <img src={connector.cover} alt="" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]" />
-                  </div>
-                  <CardHeader className="relative gap-4">
+                  </a>
+                  <CardHeader className="relative gap-3">
                     <div className="flex items-start justify-between gap-4">
-                      <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${connector.iconClass}`}>
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${connector.iconClass}`}>
                         <Icon className="h-5 w-5" aria-hidden="true" />
                       </div>
                       <Badge variant="outline" className="rounded-full bg-background/60 text-[11px]">{label}</Badge>
                     </div>
-                    <div className="space-y-2">
+                    <a href={connector.url} target="_blank" rel="noopener noreferrer" className="space-y-1.5 hover:underline">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-xl">{connector.name}</CardTitle>
                         <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                       </div>
-                      <p className="break-all text-xs text-muted-foreground">{connector.host}</p>
                       <CardDescription className="text-sm font-medium text-foreground/80">{connector.role}</CardDescription>
-                    </div>
+                    </a>
                   </CardHeader>
-                  <CardContent className="relative space-y-5">
+                  <CardContent className="relative space-y-4">
                     <p className="text-sm leading-6 text-muted-foreground">{connector.description}</p>
-                    <details><summary className="min-h-11 cursor-pointer rounded py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("toolDetails")}</summary><p className="mt-2 text-sm leading-6 text-muted-foreground">{connector.status}{". "}{connector.detail}</p></details>
-                    <Button asChild className="h-auto min-h-11 w-full whitespace-normal" variant="outline">
+                    <Button asChild className="h-auto min-h-11 w-full whitespace-normal">
                       <a href={connector.url} target="_blank" rel="noopener noreferrer" aria-label={t("openNamedTool", { name: connector.name })}>
                         {t("openTool")}
                         <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
