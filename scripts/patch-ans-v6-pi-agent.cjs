@@ -87,11 +87,11 @@ async function piClaimDailyBenefit(actor, locale = "zh") {
   const isZh = locale === "zh";
   const dayKey = piUtcDayKey();
   const idempotencyKey = "benefit:daily_checkin:" + actor + ":" + dayKey;
-  const existing = await e.db.creditLedger.findUnique({ where: { idempotencyKey }, select: { id: true } });
+  const existing = await e.db.quotaLedger.findFirst({ where: { userId: actor, refType: "pi_daily_checkin", refId: idempotencyKey }, select: { id: true } });
   const userBefore = await e.db.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
   if (!userBefore) return { ok: false, summary: isZh ? "未找到当前账户。" : "Account not found.", data: { code: "ACCOUNT_NOT_FOUND" }, links: [] };
   if (existing) {
-    const bal = Number(userBefore.quotaPoints);
+    const bal = Math.round(Number(userBefore.quotaPoints) * 10) / 10;
     return {
       ok: true,
       summary: isZh
@@ -106,19 +106,20 @@ async function piClaimDailyBenefit(actor, locale = "zh") {
   }
   const updated = await e.db.$transaction(async (tx) => {
     const u = await tx.user.update({ where: { id: actor }, data: { quotaPoints: { increment: PI_DAILY_POINTS } }, select: { quotaPoints: true } });
-    await tx.creditLedger.create({
+    await tx.quotaLedger.create({
       data: {
         userId: actor,
-        delta: PI_DAILY_POINTS,
+        amount: PI_DAILY_POINTS,
         balanceAfter: u.quotaPoints,
-        reason: "DAILY_CHECKIN_REWARD",
-        idempotencyKey,
-        meta: { dayKey, points: PI_DAILY_POINTS, source: "pi-agent-companion" }
+        reason: "GRANT",
+        refType: "pi_daily_checkin",
+        refId: idempotencyKey,
+        note: JSON.stringify({ dayKey, points: PI_DAILY_POINTS, source: "pi-agent-companion" })
       }
     });
     return u;
   });
-  const bal = Number(updated.quotaPoints);
+  const bal = Math.round(Number(updated.quotaPoints) * 10) / 10;
   return {
     ok: true,
     summary: isZh
@@ -135,14 +136,14 @@ async function piPlayClawArcade(actor, locale = "zh") {
   const isZh = locale === "zh";
   const dayKey = piUtcDayKey();
   const freePrefix = "benefit:claw_arcade:" + actor + ":" + dayKey;
-  const usedPlays = await e.db.creditLedger.count({
-    where: { userId: actor, reason: "CLAW_ARCADE_REWARD", idempotencyKey: { startsWith: freePrefix } }
+  const usedPlays = await e.db.quotaLedger.count({
+    where: { userId: actor, refType: "pi_claw_arcade", refId: { startsWith: freePrefix } }
   });
   const isFreePlay = usedPlays < 1;
   const costPoints = isFreePlay ? 0 : PI_CLAW_EXTRA_COST;
   const userBefore = await e.db.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
   if (!userBefore) return { ok: false, summary: isZh ? "未找到账户。" : "Account not found.", data: { code: "ACCOUNT_NOT_FOUND" }, links: [] };
-  const currentBalance = Number(userBefore.quotaPoints);
+  const currentBalance = Math.round(Number(userBefore.quotaPoints) * 10) / 10;
   if (!isFreePlay && currentBalance < costPoints) {
     return {
       ok: false,
@@ -160,19 +161,20 @@ async function piPlayClawArcade(actor, locale = "zh") {
     : freePrefix + ":paid:" + Date.now() + ":" + piRandomUUID().slice(0, 8);
   const updated = await e.db.$transaction(async (tx) => {
     const u = await tx.user.update({ where: { id: actor }, data: { quotaPoints: { increment: netDelta } }, select: { quotaPoints: true } });
-    await tx.creditLedger.create({
+    await tx.quotaLedger.create({
       data: {
         userId: actor,
-        delta: netDelta,
+        amount: netDelta,
         balanceAfter: u.quotaPoints,
-        reason: "CLAW_ARCADE_REWARD",
-        idempotencyKey,
-        meta: { dayKey, prizeId: prize.id, prizePoints: prize.points, costPoints, netDelta, isFreePlay, rarity: prize.rarity, source: "pi-agent-companion" }
+        reason: "GRANT",
+        refType: "pi_claw_arcade",
+        refId: idempotencyKey,
+        note: JSON.stringify({ dayKey, prizeId: prize.id, prizePoints: prize.points, costPoints, netDelta, isFreePlay, rarity: prize.rarity, source: "pi-agent-companion" })
       }
     });
     return u;
   });
-  const balance = Number(updated.quotaPoints);
+  const balance = Math.round(Number(updated.quotaPoints) * 10) / 10;
   const prizeTitle = isZh ? prize.nameZh : prize.nameEn;
   const costLabel = isFreePlay ? (isZh ? "今日免费局（0 积分）" : "Daily Free Pull (0 pts)") : (isZh ? "消耗 " + costPoints + " 积分" : "Spent " + costPoints + " pts");
   return {
@@ -241,18 +243,13 @@ async function piScaffoldProjectDraft(actor, query = "", locale = "zh") {
   const isZh = locale === "zh";
   const rawTitle = query.trim();
   const title = rawTitle.length >= 2 ? rawTitle.slice(0, 80) : isZh ? "农大 AI 创新赛实战项目 · " + piUtcDayKey() : "CAU AI Innovation Project · " + piUtcDayKey();
-  const goal = isZh
-    ? "由小恐龙 Pi Agent 一键初始化：包含项目定位、核心工作流选型与立项路演检查清单。"
-    : "Initialized by Little Dino Pi Agent with project positioning, workflow selection, and pitch checklist.";
   const created = await e.db.project.create({
     data: {
       ownerId: actor,
       title,
-      goal,
-      context: isZh
-        ? "1. 痛点与目标受众\\n2. 核心 AI 工作流链路（可在 /market 或 /workflows 选用）\\n3. 实测数据与对比结论\\n4. 10页路演答辩提纲"
-        : "1. Problem & audience\\n2. Core AI workflow pipeline\\n3. Benchmark data\\n4. 10-slide pitch outline",
-      status: "ACTIVE"
+      goal: "CONTEST",
+      status: "ACTIVE",
+      visibility: "PRIVATE"
     },
     select: { id: true, title: true }
   });
@@ -302,7 +299,7 @@ async function executePiAgentActionProd(actor, rawBody) {
     intent: resolved,
     toolName,
     reply: result.summary,
-    balance: userAfter ? Number(userAfter.quotaPoints) : null,
+    balance: userAfter ? Math.round(Number(userAfter.quotaPoints) * 10) / 10 : null,
     data: result.data,
     links: result.links
   };
