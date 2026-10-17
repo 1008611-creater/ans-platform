@@ -23,18 +23,19 @@ export function formatBenefitUsd(micros: string) {
   return `$${whole}${fraction ? `.${fraction}` : ""}`;
 }
 
-type Props = { actorId: string; compact?: boolean };
+type Props = { actorId: string; compact?: boolean; initialData?: ComputeBenefitsSummary | null };
 export function ComputeBenefits(props: Props) {
   return <AccountContentBoundary actorId={props.actorId}><BenefitsSession key={props.actorId} {...props} /></AccountContentBoundary>;
 }
-function BenefitsSession({ actorId, compact = false }: Props) {
+function BenefitsSession({ actorId, compact = false, initialData }: Props) {
   const t = useTranslations("product.computeBenefits"), locale = useLocale(), router = useRouter();
-  const [data, setData] = useState<ComputeBenefitsSummary | null>(null);
-  const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
+  const [data, setData] = useState<ComputeBenefitsSummary | null>(initialData ?? null);
+  const [loading, setLoading] = useState(initialData === undefined), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
   const [failed, setFailed] = useState(false), [accountChanged, setAccountChanged] = useState(false), [reload, setReload] = useState(0);
   const alive = useRef(true), flight = useRef<AbortController | null>(null);
   useEffect(() => { alive.current = true; return () => { alive.current = false; flight.current?.abort(); }; }, []);
   useEffect(() => {
+    if (initialData !== undefined && reload === 0) return;
     let active = true; const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 15_000);
     setLoading(true); setFailed(false);
     void (async () => { try {

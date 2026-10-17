@@ -13,6 +13,8 @@ export interface ArcadeServerCreditedDetail {
   balanceAfter: number;
   duplicate: boolean;
   operationKey: string;
+  awardedPrizeId?: string;
+  errorCode?: string;
 }
 
 /**
@@ -552,7 +554,23 @@ export async function syncArcadeRewardToServer(
       headers,
       body: JSON.stringify(payload),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errBody = (await res.json().catch(() => null)) as { error?: string } | null;
+      if (errBody?.error) {
+        window.dispatchEvent(
+          new CustomEvent(QUEST_ARCADE_SERVER_CREDITED_EVENT, {
+            detail: {
+              grantedPoints: 0,
+              balanceAfter: -1,
+              duplicate: false,
+              operationKey: "",
+              errorCode: errBody.error,
+            } satisfies ArcadeServerCreditedDetail,
+          }),
+        );
+      }
+      return null;
+    }
     const data = (await res.json()) as ArcadeServerCreditedDetail;
     window.dispatchEvent(new CustomEvent(QUEST_ARCADE_SERVER_CREDITED_EVENT, { detail: data }));
     return data;
