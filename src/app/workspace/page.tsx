@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Activity, Coins, FolderOpen, Heart, Users, Zap } from "lucide-react";
+import { Activity, Coins, FolderOpen, Gift, Heart, Sparkles, Users, Zap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelProgress, formatLevel } from "@/lib/level";
@@ -80,6 +80,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   const xp = user?.xp ?? 0;
   const progress = getLevelProgress(xp);
   const displayName = user?.nickname?.trim() || t("anonymous");
+  const currentPoints = Number(user?.quotaPoints ?? 0);
 
   return (
     <div className="ans-product-container ans-page-content ans-workspace-page">
@@ -87,6 +88,41 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         description={<span className="ans-workspace-greeting">{t("greeting", { name: displayName })} · {locale === "zh" ? formatLevel(xp) : progress.level.nameEn}
           <DisplayNameEditor actorId={session.user.id} current={displayName} /></span>}
         actions={<><Button asChild><Link href="/projects">{product("myProjects")}</Link></Button><Button asChild variant="outline"><Link href="/explore">{product("nav.explore")}</Link></Button></>} />
+
+      {currentPoints < 100 && (
+        <section aria-label={locale === "zh" ? "算力福利直通车" : "Compute Benefits Express"} className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-amber-500/5 to-rose-500/10 p-4 sm:px-6">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs">
+              <Gift className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {locale === "zh"
+                  ? "🎁 算力福利中心开放中：免费领 100~150 积分（¥10~¥15）· 0.1% 抽 1,000 积分神话锦鲤"
+                  : "🎁 Compute Benefits Open: Claim 100–150 Free Pts ($10–$15) & 0.1% 1,000-Pt Mythic Jackpot"}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {locale === "zh"
+                  ? "完成 5 题 DeepSeek 破冰问卷即领 $5（50 积分），参与 3D 灵龙抓娃娃机与星轨转盘最高暴击 1,000 积分（¥100）！"
+                  : "Complete the 5-question DeepSeek onboarding for $5 (50 pts) and play the 3D Claw Machine for up to 1,000 pts ($100)!"}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
+              <Link href="/workspace/benefits">
+                <Sparkles className="me-1 h-3.5 w-3.5" aria-hidden="true" />
+                {locale === "zh" ? "立即免费领算力 / 抓娃娃" : "Claim Free Credits & Play"}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/workspace/credits">
+                {locale === "zh" ? "卡密充值兑换" : "Redeem Voucher"}
+              </Link>
+            </Button>
+          </div>
+        </section>
+      )}
 
       <CreationTools />
       <section className="ans-account-summary">
@@ -100,7 +136,16 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
               <span className="ms-1 text-sm font-normal text-muted-foreground">{t("pointsUnit")}</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-2 pt-0"><Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{quotaCopy("entry")}</Link></Button><Button asChild variant="ghost" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button></CardContent>
+          <CardContent className="flex flex-wrap gap-2 pt-0">
+            <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
+              <Link href="/workspace/benefits">
+                <Gift className="me-1 h-3.5 w-3.5" aria-hidden="true" />
+                {locale === "zh" ? "领 100~150分 · 抽锦鲤" : "Free 100–150 Pts"}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{quotaCopy("entry")}</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button>
+          </CardContent>
         </Card>
 
         <Card>

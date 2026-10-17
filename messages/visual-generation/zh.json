@@ -17,7 +17,7 @@
   "cancelNote": "提交到生成服务前取消会退回积分。提交后会继续保存结果，费用需要核对。",
   "connectionFailed": "任务状态暂时无法连接，稍后会自动更新。",
   "requestFailed": "提交未获确认。请查看任务列表；再次点击会核对原请求。",
-  "insufficient": "ANS 算力积分不足。",
+  "insufficient": "ANS 算力积分不足，可前往「算力福利中心 (/workspace/benefits)」免费领 100~150 积分或到「算力中心」兑换卡密。",
   "priceChanged": "费用已变化，请刷新后重新确认。",
   "progress": "生成进度",
   "apply": "使用这个模型",

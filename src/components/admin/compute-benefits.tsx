@@ -28,7 +28,76 @@ function AdminBenefitsSession({ actorId }: { actorId: string }) {
   if (failed) return <div className="space-y-3"><p role="alert">{t("loadFailed")}</p><Button variant="outline" onClick={() => setRevision(value => value + 1)}>{t("retry")}</Button></div>;
   if (!data) return <p role="status">{t("adminLoading")}</p>;
   if (!data.enabled) return null;
-  return <div className="space-y-5"><p className="rounded-xl border bg-muted/30 p-4 text-sm leading-6">{t("adminReward")}</p>{data.applications.length === 0 ? <p className="rounded-2xl border border-dashed p-8 text-muted-foreground">{t("adminEmpty")}</p> : data.applications.map(application => <Review key={`${application.id}:${application.revision}`} actorId={actorId} application={application} refresh={() => { setData(null); setRevision(value => value + 1); router.refresh(); }} invalidate={() => { setChanged(true); setData(null); router.refresh(); }} />)}</div>;
+  const stats = data.stats ?? {
+    onboardingUsersCount: 0,
+    agriApprovedUsersCount: 0,
+    totalGrantedUsdMicros: "0",
+    totalUsedUsdMicros: "0",
+    arcadeParticipantCount: 0,
+    arcadeTotalPointsGranted: 0,
+    arcadeAvgPointsPerUser: 0,
+    estimatedAvgAllAnsPoints: 126,
+    jackpotHits: { spCount: 0, urCount: 0, ssrCount: 0 },
+    recentJackpots: [],
+  };
+  const grantedUsd = (Number(BigInt(stats.totalGrantedUsdMicros)) / 1_000_000).toFixed(2);
+  const usedUsd = (Number(BigInt(stats.totalUsedUsdMicros)) / 1_000_000).toFixed(2);
+  const inNormalBand = stats.estimatedAvgAllAnsPoints >= 100 && stats.estimatedAvgAllAnsPoints <= 150;
+  return <div className="space-y-5">
+    <section aria-label="全站算力发放与正态分布监控大盘" className="rounded-2xl border bg-card p-5 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+        <div>
+          <h2 className="text-base font-semibold">📊 全站算力预算与正态分布风控大盘（100 积分 = ¥10 元 = $10）</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">实时监控全站注册赠金、破冰问卷、农业调研与 3D 游乐场积分发放水位，确保 90% 用户稳定落在 100~150 积分区间</p>
+        </div>
+        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${inNormalBand ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border border-amber-500/20"}`}>
+          {inNormalBand ? "✓ 正态分布走廊正常 (100~150分)" : "⚠ 均值偏离预警"}
+        </span>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border bg-muted/20 p-3.5">
+          <p className="text-xs text-muted-foreground">全站活跃人均免费积分</p>
+          <p className="mt-1.5 text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+            {stats.estimatedAvgAllAnsPoints} <span className="text-xs font-normal text-muted-foreground">积分 (≈ ¥{(stats.estimatedAvgAllAnsPoints / 10).toFixed(1)})</span>
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">含注册 10分 + 破冰 50分 + 游乐场均值</p>
+        </div>
+        <div className="rounded-xl border bg-muted/20 p-3.5">
+          <p className="text-xs text-muted-foreground">破冰问卷 & 农业项目赠金</p>
+          <p className="mt-1.5 text-2xl font-bold tabular-nums">
+            ${grantedUsd} <span className="text-xs font-normal text-muted-foreground">已消耗 ${usedUsd}</span>
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">破冰 {stats.onboardingUsersCount} 人 · 农研审批通过 {stats.agriApprovedUsersCount} 人</p>
+        </div>
+        <div className="rounded-xl border bg-muted/20 p-3.5">
+          <p className="text-xs text-muted-foreground">3D 游乐场累计发放</p>
+          <p className="mt-1.5 text-2xl font-bold tabular-nums">
+            {stats.arcadeTotalPointsGranted} <span className="text-xs font-normal text-muted-foreground">积分 ({stats.arcadeParticipantCount} 人参与)</span>
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">游乐场人均增量：{stats.arcadeAvgPointsPerUser} 积分/人</p>
+        </div>
+        <div className="rounded-xl border bg-muted/20 p-3.5">
+          <p className="text-xs text-muted-foreground">极低概率欧皇大奖触发次数</p>
+          <div className="mt-1.5 flex items-baseline gap-3 text-sm font-semibold tabular-nums">
+            <span className="text-rose-600 dark:text-rose-400">👑 SP(1000分): {stats.jackpotHits.spCount}</span>
+            <span className="text-amber-600 dark:text-amber-400">🐉 UR(300分): {stats.jackpotHits.urCount}</span>
+            <span className="text-purple-600 dark:text-purple-400">💎 SSR(80分): {stats.jackpotHits.ssrCount}</span>
+          </div>
+          <p className="mt-1.5 text-[11px] text-muted-foreground">理论概率：SP 0.1% · UR 0.9% · SSR 4.0%</p>
+        </div>
+      </div>
+      {stats.recentJackpots.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">最近高倍中奖记录：</span>
+          {stats.recentJackpots.map((j, idx) => (
+            <span key={idx} className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 font-mono text-[11px]">
+              <b>{j.rarity}</b> @{j.username} +{j.points}分
+            </span>
+          ))}
+        </div>
+      )}
+    </section>
+    <p className="rounded-xl border bg-muted/30 p-4 text-sm leading-6">{t("adminReward")}</p>{data.applications.length === 0 ? <p className="rounded-2xl border border-dashed p-8 text-muted-foreground">{t("adminEmpty")}</p> : data.applications.map(application => <Review key={`${application.id}:${application.revision}`} actorId={actorId} application={application} refresh={() => { setData(null); setRevision(value => value + 1); router.refresh(); }} invalidate={() => { setChanged(true); setData(null); router.refresh(); }} />)}</div>;
 }
 function Review({ actorId, application, refresh, invalidate }: { actorId: string; application: AdminBenefitApplication; refresh: () => void; invalidate: () => void }) {
   const t = useTranslations("product.computeBenefits"), locale = useLocale();

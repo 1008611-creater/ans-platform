@@ -49,7 +49,28 @@ export interface ComputeBenefitsSummary {
   grants: BenefitGrant[]; activity: BenefitActivity[];
 }
 export interface AdminBenefitApplication extends BenefitApplication { userId: string; username: string }
-export interface AdminComputeBenefitsList { enabled: boolean; applications: AdminBenefitApplication[] }
+export interface AdminComputeBenefitsStats {
+  onboardingUsersCount: number;
+  agriApprovedUsersCount: number;
+  totalGrantedUsdMicros: string;
+  totalUsedUsdMicros: string;
+  arcadeParticipantCount: number;
+  arcadeTotalPointsGranted: number;
+  arcadeAvgPointsPerUser: number;
+  estimatedAvgAllAnsPoints: number;
+  jackpotHits: {
+    spCount: number;
+    urCount: number;
+    ssrCount: number;
+  };
+  recentJackpots: Array<{
+    username: string;
+    rarity: "SP" | "UR" | "SSR" | "SR";
+    points: number;
+    createdAt: string;
+  }>;
+}
+export interface AdminComputeBenefitsList { enabled: boolean; applications: AdminBenefitApplication[]; stats?: AdminComputeBenefitsStats }
 export class ComputeBenefitError extends Error {
   constructor(public readonly code: string, public readonly status = 409) { super(code); this.name = "ComputeBenefitError"; }
 }

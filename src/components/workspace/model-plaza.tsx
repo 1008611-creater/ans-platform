@@ -45,6 +45,21 @@ export function ModelPlaza({ catalog }: { catalog: ModelPlazaCatalog }) {
     <Link href="/workspace/credits" className="inline-flex min-h-10 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" />{t("back")}</Link>
     <header className="mx-auto max-w-3xl text-center"><p className="ans-eyebrow">ANS / API</p><h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">{t("title")}</h1><p className="mt-4 text-sm leading-7 text-muted-foreground">{t("description")}</p><label className="relative mt-6 block text-start"><span className="sr-only">{t("search")}</span><Search className="absolute left-4 top-3.5 size-4 text-muted-foreground" aria-hidden="true" /><Input value={query} onChange={event => setQuery(event.target.value)} placeholder={t("search")} className="min-h-12 rounded-xl pl-11" /></label></header>
     <aside className="rounded-2xl border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground"><p>{t("directoryNotice")}</p><p className="mt-2">{t("referenceNotice")}</p>{catalog.state === "unavailable" && <p role="alert" className="mt-2 text-destructive">{t("unavailable")}</p>}<p className="mt-2">{t("exchange", { points: catalog.billing.pointsPerCny })} {catalog.billing.usdCny === null ? t("fxMissing") : t("fxPresent", { rate: catalog.billing.usdCny })}</p>{catalog.billing.fxSource && catalog.billing.fxAsOf && <p className="mt-2 break-words">{t("fxEvidence", { source: catalog.billing.fxSource, date: dates.format(new Date(catalog.billing.fxAsOf)) })}</p>}</aside>
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/5 px-4 py-3 text-xs sm:text-sm">
+      <p className="text-foreground/90">
+        {locale.startsWith("zh")
+          ? "🎁 算力不足？全站 90% 用户可免费领 100~150 积分（¥10~¥15），更有 0.1% 概率抽取 1,000 积分（¥100）神话锦鲤！"
+          : "🎁 Need compute credits? Claim 100–150 free pts ($10–$15) + 0.1% 1,000-pt Mythic Jackpot in Benefits, or redeem a voucher."}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href="/workspace/benefits" className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500">
+          {locale.startsWith("zh") ? "免费领 100~150 积分 →" : "Claim Free 100–150 Pts →"}
+        </Link>
+        <Link href="/workspace/credits#credits-redeem-heading" className="inline-flex items-center gap-1 rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted">
+          {locale.startsWith("zh") ? "卡密充值与兑换" : "Redeem Voucher"}
+        </Link>
+      </div>
+    </div>
     <div className="grid items-start gap-6 lg:grid-cols-[210px_minmax(0,1fr)]">
       <aside className="rounded-2xl border p-4"><h2 className="font-semibold">{t("filters")}</h2><div className="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
         <label className="text-sm">{t("vendor")}<select className={selectClass} value={vendor} onChange={event => setVendor(event.target.value)}><option value="all">{t("all")}</option>{vendors.map(value => <option key={value}>{value}</option>)}</select></label>
