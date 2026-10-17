@@ -40,14 +40,25 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
   return (
     <>
       {/* Persistent Floating Pill to Re-open Activity Guide Anytime */}
-      <div className="fixed bottom-5 left-5 z-40">
+      <div
+        className="fixed bottom-5 left-5 z-40"
+        style={{ position: "fixed", bottom: "1.25rem", left: "1.25rem", zIndex: 45 }}
+      >
         <button
           type="button"
           onClick={() => setOpen(true)}
           data-testid="home-campaign-reopen-pill"
+          style={{
+            backgroundColor: "rgba(2, 6, 23, 0.94)",
+            borderColor: "rgba(245, 158, 11, 0.55)",
+            color: "#fcd34d",
+          }}
           className="inline-flex items-center gap-2 rounded-full border border-amber-500/50 bg-slate-950/95 px-4 py-2 text-xs font-black text-amber-300 shadow-lg backdrop-blur-md transition hover:scale-105 hover:border-amber-400 hover:bg-slate-900"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
+          <span
+            className="inline-block h-2 w-2 rounded-full bg-emerald-400"
+            style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: "#34d399" }}
+          />
           <span>
             {isEn
               ? "🎁 Activity Guide · Claim 100–150 Pts & Spend in Market"
@@ -63,6 +74,17 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
           aria-modal="true"
           aria-label={isEn ? "ANS Compute Activity & Spending Guide" : "ANS 算力福利与市场消费活动弹窗"}
           data-testid="home-campaign-modal"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 60,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+            backgroundColor: "rgba(2, 6, 23, 0.78)",
+            backdropFilter: "blur(6px)",
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-xs"
           onClick={e => {
             if (e.target === e.currentTarget) {
@@ -70,7 +92,15 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
             }
           }}
         >
-          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-amber-500/40 bg-card text-card-foreground shadow-2xl">
+          <div
+            style={{
+              maxHeight: "90vh",
+              width: "100%",
+              maxWidth: "54rem",
+              overflowY: "auto",
+            }}
+            className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-amber-500/40 bg-card text-card-foreground shadow-2xl"
+          >
             {/* Top Banner Header */}
             <div className="relative border-b border-border bg-gradient-to-r from-emerald-500/15 via-amber-500/15 to-rose-500/15 px-5 py-4 sm:px-7 sm:py-5">
               <div className="flex items-start justify-between gap-3">
