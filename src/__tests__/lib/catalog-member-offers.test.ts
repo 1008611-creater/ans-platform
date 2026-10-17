@@ -20,6 +20,8 @@ describe("catalog member snapshot", () => {
     expect(sql.match(/l.status = 'PUBLISHED' AND NOT u.flagged AND u.\"deletedAt\" IS NULL/g)).toHaveLength(2);
     expect(sql).toContain('v."reviewedAt" IS NOT NULL');
     expect(sql).toContain("agri_workspaces");
+    expect(sql).toContain("ORDER BY CASE source WHEN 'market' THEN 0 ELSE 1 END");
+    expect(sql).toContain('CASE WHEN source = \'wall\' THEN "sortAt" END ASC, "sortId" ASC');
     expect(sql).not.toMatch(/FOR UPDATE|FOR SHARE|agri_popularity_votes|market_listing_stars|INSERT|UPDATE|DELETE/);
     expect(database.$transaction).not.toHaveBeenCalled();
     expect(database.$queryRaw).toHaveBeenCalledTimes(1);
