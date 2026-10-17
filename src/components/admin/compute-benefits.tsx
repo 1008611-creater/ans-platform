@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { benefitReviewSchema, type AdminComputeBenefitsList, type AdminBenefitApplication } from "@/contracts/compute-benefits";
 
-export function AdminComputeBenefits({ actorId }: { actorId: string }) {
-  return <AccountContentBoundary actorId={actorId}><AdminBenefitsSession key={actorId} actorId={actorId} /></AccountContentBoundary>;
+export function AdminComputeBenefits({ actorId, initialData }: { actorId: string; initialData?: AdminComputeBenefitsList | null }) {
+  return <AccountContentBoundary actorId={actorId}><AdminBenefitsSession key={actorId} actorId={actorId} initialData={initialData} /></AccountContentBoundary>;
 }
-function AdminBenefitsSession({ actorId }: { actorId: string }) {
+function AdminBenefitsSession({ actorId, initialData = null }: { actorId: string; initialData?: AdminComputeBenefitsList | null }) {
   const t = useTranslations("product.computeBenefits"), router = useRouter();
-  const [data, setData] = useState<AdminComputeBenefitsList | null>(null), [failed, setFailed] = useState(false), [changed, setChanged] = useState(false), [revision, setRevision] = useState(0);
+  const [data, setData] = useState<AdminComputeBenefitsList | null>(initialData), [failed, setFailed] = useState(false), [changed, setChanged] = useState(false), [revision, setRevision] = useState(0);
   useEffect(() => {
     let active = true; const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 15_000);
     setFailed(false);
