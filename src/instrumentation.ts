@@ -12,7 +12,13 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs" && process.env.NEXT_PHASE !== "phase-production-build" && process.env.NODE_ENV !== "test") {
     const { ensureDefaultAgriEditionBootstrapped } = await import("@/server/competitions/agrihackathon/bootstrap");
     void ensureDefaultAgriEditionBootstrapped();
+    const { db } = await import("@/lib/db");
+    const keepalive = setInterval(() => {
+      void db.$queryRaw`SELECT 1`.catch(() => null);
+    }, 50_000);
+    if (typeof keepalive.unref === "function") keepalive.unref();
   }
 }
 
 export function onRequestError() {}
+
