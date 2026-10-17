@@ -409,6 +409,7 @@ function patchBundles() {
     sp = sp
       .replace('(0,e.jsx)("p",{className:"mt-3 text-sm leading-7 text-muted-foreground",children:j(L?"runPreparation":"purchasePreparation")}),', "")
       .replace('(0,e.jsx)("p",{className:"text-xs leading-6 text-muted-foreground",children:j(L?"runPriceNote":Q?"freePriceNote":"pointsPriceNote")}),', "")
+      .replace('!L&&!Q&&N.usageUrl&&(0,e.jsx)(', '!L&&!Q&&N.usageUrl&&!N.usageUrl.includes("/workspace/models")&&(0,e.jsx)(')
       .replace('(0,e.jsx)("p",{className:"text-xs leading-6 text-muted-foreground",children:L?j("runPriceNote"):Q?h("realProject.freeNote"):c("paymentNotice")})', "null");
     fs.writeFileSync(slugPagePath, sp, "utf8");
     console.log("[v10] De-bloated /market/[slug]/page.js");
