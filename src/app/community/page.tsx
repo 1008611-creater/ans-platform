@@ -21,7 +21,7 @@ export default async function CommunityPage() {
   const session = await auth();
   if (!session?.user?.id) {
     const t = await getTranslations("product.communityPage");
-    const isEn = t("title") === "Community";
+    const isEn = /^community/i.test(t("title"));
     const guestLinks = [
       { href: "/showcase", title: t("works"), icon: MessageCircle },
       { href: "/explore", title: isEn ? "Public Project Directory" : "公开项目库", icon: Compass },
