@@ -116,20 +116,23 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
           </article>)}</div>
         </section>}
         <section id="market-terms" className={styles.section}>
-          <h2>{td("termsTitle")}</h2>
-          <dl className={styles.terms}>
-            <div><dt>{td("licenseTitle")}</dt><dd className="whitespace-pre-wrap">{listing.licenseTerms}</dd></div>
-            <div><dt>{td("costBoundaryTitle")}</dt><dd>{runnable ? td("runCostBoundary") : isFree ? td("freeCostBoundary") : t(listing.computeIncluded ? "computeYes" : "computeNo")}</dd></div>
-            {!runnable && !isFree && <>
-              <div><dt>{td("deliveryTitle")}</dt><dd>{t("delivery", { days: listing.deliveryDays })} · {t("revisions", { count: listing.revisionLimit })}. {td("deliveryNote")}</dd></div>
-              <div><dt>{td("orderProcessTitle")}</dt><dd>{td("orderProcessNote")}</dd></div>
-            </>}
-            <div><dt>{td("versionTitle")}</dt><dd>{td("versionNote", { version: offer.version })}{runnable && <> {td("workflowVersionNote", { version: runnable.version })}</>}</dd></div>
-          </dl>
+          <details className="group">
+            <summary className="flex cursor-pointer items-center justify-between text-base font-semibold text-foreground">
+              <span>{td("termsTitle")}</span>
+              <span className="text-xs font-normal text-muted-foreground">展开查看授权与交付说明 ▾</span>
+            </summary>
+            <dl className={`${styles.terms} mt-4`}>
+              <div><dt>{td("licenseTitle")}</dt><dd className="whitespace-pre-wrap">{listing.licenseTerms}</dd></div>
+              <div><dt>{td("costBoundaryTitle")}</dt><dd>{runnable ? td("runCostBoundary") : isFree ? td("freeCostBoundary") : t(listing.computeIncluded ? "computeYes" : "computeNo")}</dd></div>
+              {!runnable && !isFree && <>
+                <div><dt>{td("deliveryTitle")}</dt><dd>{t("delivery", { days: listing.deliveryDays })} · {t("revisions", { count: listing.revisionLimit })}</dd></div>
+              </>}
+              <div><dt>{td("versionTitle")}</dt><dd>{td("versionNote", { version: offer.version })}{runnable && <> {td("workflowVersionNote", { version: runnable.version })}</>}</dd></div>
+            </dl>
+          </details>
         </section>
         {(runnable || !isFree) && <section id={purchaseAnchor} className={styles.section}>
           <h2>{purchaseHeading}</h2>
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">{runnable ? td("runPreparation") : td("purchasePreparation")}</p>
           <div className={styles.checkout}>
             {runnable ? runnable.available ? session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketWorkflowRun listingId={offer.id} version={offer.version} details={runnable} /></MarketAccountBoundary> : <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}>{td("loginToPrepare")}</Link></Button> : <p className="text-sm leading-7 text-muted-foreground">{w("unavailable")}</p> : session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>
               <CreatePointsOrder key={`${offer.id}-${offer.version}`} listingId={offer.id} version={offer.version} available={availability.checkoutAvailable} tiers={tiers} priceMinor={listing.priceMinor} isOwner={isOwner} />
@@ -142,7 +145,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
         <div className="flex flex-wrap items-center gap-2 text-xs font-medium"><span className="rounded-full bg-muted px-3 py-1.5">{runnable ? td("workflowProduct") : t(listing.fulfillment)}</span><span className="text-muted-foreground">{t("version", { version: offer.version })}</span></div>
         <h1>{listing.title}</h1><p className={styles.summary}>{listing.summary}</p>
         <p className={styles.price}>{runnable ? w("computeOnRun") : isFree ? p("realProject.freeShare") : tiers.length > 1 ? tp("fromPoints", { amount: minimum / 100 }) : t("pointsUnit", { amount: minimum / 100 })}</p>
-        <p className="text-xs leading-6 text-muted-foreground">{runnable ? td("runPriceNote") : isFree ? td("freePriceNote") : td("pointsPriceNote")}</p>
         <dl className={styles.facts}>
           <div><dt>{td("deliverablesCount")}</dt><dd>{td("itemsCount", { count: listing.deliverables.length })}</dd></div>
           {runnable ? <div><dt>{td("executionMode")}</dt><dd>{runnable.available ? td("readyToRun") : td("notReadyToRun")}</dd></div> : !isFree && <><div><dt>{td("deliveryTitle")}</dt><dd>{t("delivery", { days: listing.deliveryDays })}</dd></div><div><dt>{td("revisionTitle")}</dt><dd>{t("revisions", { count: listing.revisionLimit })}</dd></div></>}
@@ -153,7 +155,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
           {session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketStar listingId={offer.id} initialCount={offer.starCount ?? 0} initialStarred={offer.starred ?? false} /></MarketAccountBoundary> : <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}><Star aria-hidden="true" />{tp("loginToStar", { count: offer.starCount ?? 0 })}</Link></Button>}
           {!runnable && !isFree && listing.usageUrl && <ProjectUsageEntry usageUrl={listing.usageUrl} />}
           {!runnable && isOwner && <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={`/market/creator/${offer.id}/integration`}>{tp("integrationAction")}</Link></Button>}
-          <p className="text-xs leading-6 text-muted-foreground">{runnable ? td("runPriceNote") : isFree ? p("realProject.freeNote") : t("paymentNotice")}</p>
         </div>
         <Link href={"/@" + offer.seller.username} className={styles.seller}>
           {offer.seller.avatar ? <Image unoptimized src={offer.seller.avatar} width={40} height={40} alt="" className={styles.sellerAvatar} /> : <span className={styles.avatarFallback} aria-hidden="true">{sellerName.slice(0, 1)}</span>}
