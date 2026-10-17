@@ -191,6 +191,7 @@ export interface ParsedGlbMesh {
   baseColorImageBytes?: Uint8Array;
   baseColorMimeType?: string;
   textureApplied?: boolean;
+  spriteCache?: Map<number, HTMLCanvasElement>;
 }
 
 const glbMeshCache = new Map<TripoGlbAssetId, ParsedGlbMesh>();
@@ -354,7 +355,7 @@ export function parseGlbBinaryMesh(
     const baseR = fallbackRgb[0] * (1 - bandMix * 0.42) + accentRgb[0] * (bandMix * 0.42);
     const baseG = fallbackRgb[1] * (1 - bandMix * 0.42) + accentRgb[1] * (bandMix * 0.42);
     const baseB = fallbackRgb[2] * (1 - bandMix * 0.42) + accentRgb[2] * (bandMix * 0.42);
-    const lift = Math.max(0.74, Math.min(1.3, 1.02 + avgY * 0.48));
+    const lift = Math.max(0.78, Math.min(1.32, 1.04 + avgY * 0.48));
     const rgb: [number, number, number] = [
       Math.min(255, Math.round(baseR * lift)),
       Math.min(255, Math.round(baseG * lift)),
@@ -385,10 +386,11 @@ export function parseGlbBinaryMesh(
     triangles,
     baseColorImageBytes,
     baseColorMimeType,
+    spriteCache: new Map(),
   };
 }
 
-async function decodeEmbeddedGlbTexture(mesh: ParsedGlbMesh): Promise<void> {
+async function decodeEmbeddedGlbTexture(mesh: ParsedGlbMesh, meta: TripoGlbAssetMeta): Promise<void> {
   if (
     mesh.textureApplied ||
     !mesh.baseColorImageBytes ||
@@ -416,23 +418,125 @@ async function decodeEmbeddedGlbTexture(mesh: ParsedGlbMesh): Promise<void> {
       const tx = Math.max(0, Math.min(texSize - 1, Math.floor(tri.uv[0] * texSize)));
       const ty = Math.max(0, Math.min(texSize - 1, Math.floor(tri.uv[1] * texSize)));
       const idx = (ty * texSize + tx) * 4;
-      const r = imgData[idx];
-      const g = imgData[idx + 1];
-      const b = imgData[idx + 2];
-      // Boost saturation/brightness slightly if texture pixel is very dark
-      const luma = 0.299 * r + 0.587 * g + 0.114 * b;
-      const boost = luma < 45 ? 1.45 : luma < 90 ? 1.18 : 1.05;
+      const tr = imgData[idx];
+      const tg = imgData[idx + 1];
+      const tb = imgData[idx + 2];
+      const luma = 0.299 * tr + 0.587 * tg + 0.114 * tb;
+      // Blend UV texture with studio metallic environment tint so dark PBR metallic regions shine brightly
+      const envMix = luma < 65 ? 0.66 : luma < 120 ? 0.42 : 0.2;
+      const avgY = (tri.v0[1] + tri.v1[1] + tri.v2[1]) / 3;
+      const envR = avgY > -0.05 ? meta.fallbackRgb[0] : meta.accentRgb[0];
+      const envG = avgY > -0.05 ? meta.fallbackRgb[1] : meta.accentRgb[1];
+      const envB = avgY > -0.05 ? meta.fallbackRgb[2] : meta.accentRgb[2];
+      const r = tr * (1 - envMix) + envR * envMix;
+      const g = tg * (1 - envMix) + envG * envMix;
+      const b = tb * (1 - envMix) + envB * envMix;
       tri.rgb = [
-        Math.min(255, Math.round(r * boost)),
-        Math.min(255, Math.round(g * boost)),
-        Math.min(255, Math.round(b * boost)),
+        Math.min(255, Math.round(r * 1.24 + 14)),
+        Math.min(255, Math.round(g * 1.24 + 14)),
+        Math.min(255, Math.round(b * 1.24 + 14)),
       ];
     }
     mesh.textureApplied = true;
     mesh.baseColorImageBytes = undefined;
+    mesh.spriteCache?.clear();
   } catch {
     // Keep procedural multi-tone fallback
   }
+}
+
+function renderGlbAngleSprite(mesh: ParsedGlbMesh, angleStep: number, totalSteps = 16): HTMLCanvasElement | null {
+  if (typeof document === "undefined") return null;
+  if (!mesh.spriteCache) mesh.spriteCache = new Map();
+  const cached = mesh.spriteCache.get(angleStep);
+  if (cached) return cached;
+
+  const size = 156;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const yaw = (angleStep / totalSteps) * Math.PI * 2;
+  const pitch = 0.24;
+  const cosY = Math.cos(yaw);
+  const sinY = Math.sin(yaw);
+  const cosP = Math.cos(pitch);
+  const sinP = Math.sin(pitch);
+  const cx = size * 0.5;
+  const cy = size * 0.52;
+  const fov = size * 1.52;
+
+  const projected: Array<{
+    p0x: number;
+    p0y: number;
+    p1x: number;
+    p1y: number;
+    p2x: number;
+    p2y: number;
+    depth: number;
+    fill: string;
+  }> = [];
+
+  for (const tri of mesh.triangles) {
+    const proj = (v: [number, number, number]) => {
+      const rx = v[0] * cosY - v[2] * sinY;
+      const rz0 = v[0] * sinY + v[2] * cosY;
+      const ry = v[1] * cosP - rz0 * sinP;
+      const rz = v[1] * sinP + rz0 * cosP;
+      const depth = Math.max(1.05, 2.15 - rz);
+      return {
+        sx: cx + (rx / depth) * fov,
+        sy: cy - (ry / depth) * fov,
+        depth,
+      };
+    };
+    const p0 = proj(tri.v0);
+    const p1 = proj(tri.v1);
+    const p2 = proj(tri.v2);
+
+    const rnx = tri.normal[0] * cosY - tri.normal[2] * sinY;
+    const rnz0 = tri.normal[0] * sinY + tri.normal[2] * cosY;
+    const rny = tri.normal[1] * cosP - rnz0 * sinP;
+    const rnz = tri.normal[1] * sinP + rnz0 * cosP;
+    if (rnz < -0.55) continue;
+
+    const diff = Math.max(0.56, Math.min(1.42, 0.78 + rnx * 0.32 + rny * 0.42 + rnz * 0.28));
+    const spec = Math.pow(Math.max(0, rny * 0.55 + rnz * 0.8), 6) * 46;
+    const rim = Math.pow(1 - Math.max(0, Math.abs(rnz)), 2.2) * 28;
+    const r = Math.min(255, Math.round(tri.rgb[0] * diff + spec + rim));
+    const g = Math.min(255, Math.round(tri.rgb[1] * diff + spec + rim));
+    const b = Math.min(255, Math.round(tri.rgb[2] * diff + spec + rim));
+    projected.push({
+      p0x: p0.sx,
+      p0y: p0.sy,
+      p1x: p1.sx,
+      p1y: p1.sy,
+      p2x: p2.sx,
+      p2y: p2.sy,
+      depth: (p0.depth + p1.depth + p2.depth) / 3,
+      fill: `rgb(${r},${g},${b})`,
+    });
+  }
+
+  projected.sort((a, b) => b.depth - a.depth);
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 1.15;
+  for (const t of projected) {
+    ctx.fillStyle = t.fill;
+    ctx.strokeStyle = t.fill;
+    ctx.beginPath();
+    ctx.moveTo(t.p0x, t.p0y);
+    ctx.lineTo(t.p1x, t.p1y);
+    ctx.lineTo(t.p2x, t.p2y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  mesh.spriteCache.set(angleStep, canvas);
+  return canvas;
 }
 
 async function fetchAndParseGlbAsset(meta: TripoGlbAssetMeta): Promise<ParsedGlbMesh | null> {
@@ -451,10 +555,11 @@ async function fetchAndParseGlbAsset(meta: TripoGlbAssetMeta): Promise<ParsedGlb
     .then(res => (res.ok ? res.arrayBuffer() : null))
     .then(async buf => {
       if (!buf) return null;
-      const parsed = parseGlbBinaryMesh(meta.id, buf, meta.fallbackRgb, 900);
+      // Parse full watertight triangle mesh (up to 12,000 triangles, step=1)
+      const parsed = parseGlbBinaryMesh(meta.id, buf, meta.fallbackRgb, 12000);
       if (parsed) {
-        await decodeEmbeddedGlbTexture(parsed);
         glbMeshCache.set(meta.id, parsed);
+        await decodeEmbeddedGlbTexture(parsed, meta);
       }
       return parsed;
     })
@@ -618,70 +723,35 @@ function DinoClaw3DViewport({
       };
     };
 
-    const drawGlbInstance = (
+    const drawGlbSprite = (
       mesh: ParsedGlbMesh,
       cx: number,
       cy: number,
       cz: number,
-      scale: number,
+      worldSize: number,
       yaw: number,
       w: number,
       h: number,
-      alpha = 0.96,
-      wireOverlay = false,
+      alpha = 0.98,
     ) => {
       if (!ctx) return;
-      const cosY = Math.cos(yaw);
-      const sinY = Math.sin(yaw);
-      const projectedTris: Array<{
-        p0: { sx: number; sy: number; depth: number };
-        p1: { sx: number; sy: number; depth: number };
-        p2: { sx: number; sy: number; depth: number };
-        avgDepth: number;
-        fill: string;
-      }> = [];
-
-      for (const tri of mesh.triangles) {
-        const rot = (v: [number, number, number]) => {
-          const rx = v[0] * cosY - v[2] * sinY;
-          const rz = v[0] * sinY + v[2] * cosY;
-          return project3D(cx + rx * scale, cy + v[1] * scale, cz + rz * scale, w, h);
-        };
-        const p0 = rot(tri.v0);
-        const p1 = rot(tri.v1);
-        const p2 = rot(tri.v2);
-        const rnx = tri.normal[0] * cosY - tri.normal[2] * sinY;
-        const rny = tri.normal[1];
-        const rnz = tri.normal[0] * sinY + tri.normal[2] * cosY;
-        const diffuse = Math.max(0.44, Math.min(1.32, 0.66 + rnx * 0.3 + rny * 0.42 - rnz * 0.26));
-        const spec = Math.pow(Math.max(0, rny * 0.6 - rnz * 0.8), 6) * 36;
-        const r = Math.min(255, Math.round(tri.rgb[0] * diffuse + spec));
-        const g = Math.min(255, Math.round(tri.rgb[1] * diffuse + spec));
-        const b = Math.min(255, Math.round(tri.rgb[2] * diffuse + spec));
-        projectedTris.push({
-          p0,
-          p1,
-          p2,
-          avgDepth: (p0.depth + p1.depth + p2.depth) / 3,
-          fill: `rgba(${r},${g},${b},${alpha})`,
-        });
-      }
-
-      projectedTris.sort((a, b) => b.avgDepth - a.avgDepth);
-      for (const pt of projectedTris) {
-        ctx.fillStyle = pt.fill;
-        ctx.beginPath();
-        ctx.moveTo(pt.p0.sx, pt.p0.sy);
-        ctx.lineTo(pt.p1.sx, pt.p1.sy);
-        ctx.lineTo(pt.p2.sx, pt.p2.sy);
-        ctx.closePath();
-        ctx.fill();
-        if (wireOverlay) {
-          ctx.strokeStyle = "rgba(255,255,255,0.12)";
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
-      }
+      const proj = project3D(cx, cy, cz, w, h);
+      const totalSteps = 16;
+      const normYaw = ((yaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const angleStep = Math.floor((normYaw / (Math.PI * 2)) * totalSteps) % totalSteps;
+      const sprite = renderGlbAngleSprite(mesh, angleStep, totalSteps);
+      if (!sprite) return;
+      const drawDiameter = Math.max(28, proj.scale * worldSize);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(
+        sprite,
+        proj.sx - drawDiameter * 0.5,
+        proj.sy - drawDiameter * 0.5,
+        drawDiameter,
+        drawDiameter,
+      );
+      ctx.restore();
     };
 
     const renderFrame = (timeMs: number) => {
@@ -716,7 +786,7 @@ function DinoClaw3DViewport({
       // 0. Draw Subtle 3D Cabinet Background Silhouette if claw-cabinet.glb is loaded
       const cabinetMesh = meshesRef.current.get("claw-cabinet");
       if (cabinetMesh) {
-        drawGlbInstance(cabinetMesh, 0, 0.14, -1.05, 2.2, 0, w, h, 0.18);
+        drawGlbSprite(cabinetMesh, 0, 0.1, -1.0, 2.8, 0, w, h, 0.2);
       }
 
       // 1. Draw 3D Perspective Cyber-Agri Floor Grid
@@ -791,16 +861,16 @@ function DinoClaw3DViewport({
 
         const prizeGlb = meshesRef.current.get(cap.glbId);
         if (prizeGlb) {
-          drawGlbInstance(
+          drawGlbSprite(
             prizeGlb,
             wx,
             wy,
             wz,
-            isTargeted ? 0.78 : 0.68,
-            t * 0.95 + idx * 1.05,
+            isTargeted ? 0.98 : 0.86,
+            t * 0.85 + idx * 1.1,
             w,
             h,
-            0.98,
+            1.0,
           );
         } else {
           const grad = ctx.createRadialGradient(
@@ -841,12 +911,12 @@ function DinoClaw3DViewport({
         }
 
         // Crisp mini HUD tag below the 3D mesh (never covering the 3D mesh itself)
-        const tagY = proj.sy + r * 0.85;
+        const tagY = proj.sy + r * 0.92;
         ctx.save();
         ctx.font = "bold 9px system-ui, -apple-system, sans-serif";
         const label = `${cap.icon} ${cap.shortTag}`;
         const tw = ctx.measureText(label).width + 8;
-        ctx.fillStyle = isTargeted ? "rgba(251, 191, 36, 0.95)" : "rgba(15, 23, 42, 0.82)";
+        ctx.fillStyle = isTargeted ? "rgba(251, 191, 36, 0.95)" : "rgba(15, 23, 42, 0.85)";
         ctx.beginPath();
         ctx.roundRect(proj.sx - tw * 0.5, tagY - 7, tw, 13, 4);
         ctx.fill();
@@ -900,7 +970,7 @@ function DinoClaw3DViewport({
 
       const clawArmMesh = meshesRef.current.get("claw-arm");
       if (clawArmMesh) {
-        drawGlbInstance(clawArmMesh, curX, clawY - 0.18, curZ, 0.84, t * 0.55, w, h, 0.98);
+        drawGlbSprite(clawArmMesh, curX, clawY - 0.16, curZ, 0.98, t * 0.55, w, h, 1.0);
       } else {
         const hubR = Math.max(7, clawHeadProj.scale * 0.12);
         for (let i = 0; i < 3; i++) {
@@ -1025,7 +1095,7 @@ function GlbInteractiveTurntable({
 
       // Draw glowing 3D turntable ring at bottom
       const cx = w * 0.5;
-      const cy = h * 0.54;
+      const cy = h * 0.53;
       const radius = Math.min(w, h) * 0.36;
 
       ctx.save();
@@ -1049,56 +1119,87 @@ function GlbInteractiveTurntable({
 
       const mesh = meshRef.current;
       if (mesh && mesh.triangles.length > 0) {
-        const projVert = (v: [number, number, number]) => {
-          const rx = v[0] * cosY - v[2] * sinY;
-          const rz0 = v[0] * sinY + v[2] * cosY;
-          const ry = v[1] * cosP - rz0 * sinP;
-          const rz = v[1] * sinP + rz0 * cosP;
-          const depth = Math.max(1.1, 2.35 - rz);
-          const fov = Math.min(w, h) * 1.55;
-          return {
-            sx: cx + (rx / depth) * fov,
-            sy: cy - (ry / depth) * fov,
-            depth,
+        if (!wireframe && !orbitRef.current.dragging) {
+          const totalSteps = 16;
+          const normYaw = ((yaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+          const angleStep = Math.floor((normYaw / (Math.PI * 2)) * totalSteps) % totalSteps;
+          const sprite = renderGlbAngleSprite(mesh, angleStep, totalSteps);
+          if (sprite) {
+            const drawSize = Math.min(w, h) * 0.92;
+            ctx.drawImage(
+              sprite,
+              cx - drawSize * 0.5,
+              cy - drawSize * 0.5,
+              drawSize,
+              drawSize,
+            );
+          }
+        } else {
+          const projVert = (v: [number, number, number]) => {
+            const rx = v[0] * cosY - v[2] * sinY;
+            const rz0 = v[0] * sinY + v[2] * cosY;
+            const ry = v[1] * cosP - rz0 * sinP;
+            const rz = v[1] * sinP + rz0 * cosP;
+            const depth = Math.max(1.05, 2.2 - rz);
+            const fov = Math.min(w, h) * 1.48;
+            return {
+              sx: cx + (rx / depth) * fov,
+              sy: cy - (ry / depth) * fov,
+              depth,
+            };
           };
-        };
 
-        const tris = mesh.triangles.map(tri => {
-          const p0 = projVert(tri.v0);
-          const p1 = projVert(tri.v1);
-          const p2 = projVert(tri.v2);
-          const rnx = tri.normal[0] * cosY - tri.normal[2] * sinY;
-          const rnz0 = tri.normal[0] * sinY + tri.normal[2] * cosY;
-          const rny = tri.normal[1] * cosP - rnz0 * sinP;
-          const rnz = tri.normal[1] * sinP + rnz0 * cosP;
-          const diff = Math.max(0.42, Math.min(1.35, 0.68 + rnx * 0.34 + rny * 0.44 + rnz * 0.25));
-          const spec = Math.pow(Math.max(0, rny * 0.55 + rnz * 0.78), 7) * 44;
-          const r = Math.min(255, Math.round(tri.rgb[0] * diff + spec));
-          const g = Math.min(255, Math.round(tri.rgb[1] * diff + spec));
-          const b = Math.min(255, Math.round(tri.rgb[2] * diff + spec));
-          return {
-            p0,
-            p1,
-            p2,
-            avgDepth: (p0.depth + p1.depth + p2.depth) / 3,
-            fill: `rgb(${r},${g},${b})`,
-          };
-        });
+          const tris: Array<{
+            p0: { sx: number; sy: number; depth: number };
+            p1: { sx: number; sy: number; depth: number };
+            p2: { sx: number; sy: number; depth: number };
+            avgDepth: number;
+            fill: string;
+          }> = [];
 
-        tris.sort((a, b) => b.avgDepth - a.avgDepth);
-        for (const t of tris) {
-          ctx.beginPath();
-          ctx.moveTo(t.p0.sx, t.p0.sy);
-          ctx.lineTo(t.p1.sx, t.p1.sy);
-          ctx.lineTo(t.p2.sx, t.p2.sy);
-          ctx.closePath();
-          if (wireframe) {
-            ctx.strokeStyle = `rgba(${asset.fallbackRgb[0]}, ${asset.fallbackRgb[1]}, ${asset.fallbackRgb[2]}, 0.75)`;
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-          } else {
-            ctx.fillStyle = t.fill;
-            ctx.fill();
+          for (const tri of mesh.triangles) {
+            const rnx = tri.normal[0] * cosY - tri.normal[2] * sinY;
+            const rnz0 = tri.normal[0] * sinY + tri.normal[2] * cosY;
+            const rny = tri.normal[1] * cosP - rnz0 * sinP;
+            const rnz = tri.normal[1] * sinP + rnz0 * cosP;
+            if (!wireframe && rnz < -0.55) continue;
+
+            const p0 = projVert(tri.v0);
+            const p1 = projVert(tri.v1);
+            const p2 = projVert(tri.v2);
+            const diff = Math.max(0.56, Math.min(1.42, 0.78 + rnx * 0.34 + rny * 0.44 + rnz * 0.25));
+            const spec = Math.pow(Math.max(0, rny * 0.55 + rnz * 0.78), 6) * 46;
+            const rim = Math.pow(1 - Math.max(0, Math.abs(rnz)), 2.2) * 28;
+            const r = Math.min(255, Math.round(tri.rgb[0] * diff + spec + rim));
+            const g = Math.min(255, Math.round(tri.rgb[1] * diff + spec + rim));
+            const b = Math.min(255, Math.round(tri.rgb[2] * diff + spec + rim));
+            tris.push({
+              p0,
+              p1,
+              p2,
+              avgDepth: (p0.depth + p1.depth + p2.depth) / 3,
+              fill: `rgb(${r},${g},${b})`,
+            });
+          }
+
+          tris.sort((a, b) => b.avgDepth - a.avgDepth);
+          ctx.lineJoin = "round";
+          ctx.lineWidth = wireframe ? 0.65 : 1.15;
+          for (const t of tris) {
+            ctx.beginPath();
+            ctx.moveTo(t.p0.sx, t.p0.sy);
+            ctx.lineTo(t.p1.sx, t.p1.sy);
+            ctx.lineTo(t.p2.sx, t.p2.sy);
+            ctx.closePath();
+            if (wireframe) {
+              ctx.strokeStyle = `rgba(${asset.fallbackRgb[0]}, ${asset.fallbackRgb[1]}, ${asset.fallbackRgb[2]}, 0.75)`;
+              ctx.stroke();
+            } else {
+              ctx.fillStyle = t.fill;
+              ctx.strokeStyle = t.fill;
+              ctx.fill();
+              ctx.stroke();
+            }
           }
         }
       }
