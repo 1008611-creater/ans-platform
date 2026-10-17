@@ -546,10 +546,13 @@ export function isQuestClaimedToday(state: QuestArcadeState, quest: QuestDefinit
   return Boolean(stamp);
 }
 
+export const ARCADE_TOKEN_COST_POINTS = 10;
+
 export async function syncArcadeRewardToServer(
   payload:
     | { kind: "quest"; questId: string }
-    | { kind: "draw"; prizeId: string; drawId: string; mode: "claw" | "roulette" },
+    | { kind: "draw"; prizeId: string; drawId: string; mode: "claw" | "roulette" }
+    | { kind: "buy_tokens"; count: number; orderId: string },
   actorId?: string | null,
 ): Promise<ArcadeServerCreditedDetail | null> {
   if (
@@ -594,6 +597,32 @@ export async function syncArcadeRewardToServer(
   } catch {
     return null;
   }
+}
+
+export function buyArcadeTokensWithPoints(
+  count = 1,
+  actorId?: string | null,
+): { state: QuestArcadeState; costPoints: number; orderId: string } {
+  const safeCount = Math.max(1, Math.min(10, Math.floor(count)));
+  const costPoints = safeCount * ARCADE_TOKEN_COST_POINTS;
+  const orderId = `buy-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const current = loadQuestArcadeState(actorId);
+  const next: QuestArcadeState = {
+    ...current,
+    arcadeTokens: current.arcadeTokens + safeCount,
+  };
+  saveQuestArcadeState(next, actorId);
+  void syncArcadeRewardToServer({ kind: "buy_tokens", count: safeCount, orderId }, actorId).then(res => {
+    if (!res && typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
+      // If server rejected due to INSUFFICIENT_POINTS, revert optimistic token increment
+      const latest = loadQuestArcadeState(actorId);
+      saveQuestArcadeState(
+        { ...latest, arcadeTokens: Math.max(0, latest.arcadeTokens - safeCount) },
+        actorId,
+      );
+    }
+  });
+  return { state: next, costPoints, orderId };
 }
 
 export function advanceAndClaimQuest(

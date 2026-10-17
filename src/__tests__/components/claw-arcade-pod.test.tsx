@@ -198,5 +198,44 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     expect(normalMean).toBeLessThan(124);
     expect(rightTailCount).toBe(sampleSize - normalBandCount);
   });
+
+  it("supports exchanging 10 points per arcade token and links directly to Marketplace (/market)", async () => {
+    const { buyArcadeTokensWithPoints, ARCADE_TOKEN_COST_POINTS } = await import(
+      "@/domain/mascot/quest-arcade"
+    );
+    expect(ARCADE_TOKEN_COST_POINTS).toBe(10);
+
+    const bought = buyArcadeTokensWithPoints(2, "u-buy");
+    expect(bought.costPoints).toBe(20);
+    expect(bought.state.arcadeTokens).toBe(5); // 3 starter + 2 purchased
+
+    render(<ComputeQuestArcade actorId="u-buy-ui" initialServerPoints={120} />);
+    expect(screen.getByTestId("arcade-go-market").getAttribute("href")).toBe("/market");
+    expect(screen.getByTestId("arcade-token-count").textContent).toContain("3");
+
+    fireEvent.click(screen.getByTestId("arcade-buy-token-1"));
+    expect(screen.getByTestId("arcade-token-count").textContent).toContain("4");
+    expect(screen.getByTestId("gateway-live-points").textContent).toContain("110");
+  });
+
+  it("renders HomeCampaignModal on homepage visit with 3-step guide (benefits, arcade, market) and reopen pill", async () => {
+    window.sessionStorage.clear();
+    const { HomeCampaignModal } = await import("@/components/homepage/home-campaign-modal");
+    render(<HomeCampaignModal locale="zh" />);
+
+    expect(screen.getByTestId("home-campaign-modal")).toBeTruthy();
+    expect(screen.getByTestId("modal-cta-benefits").getAttribute("href")).toBe("/workspace/benefits");
+    expect(screen.getByTestId("modal-cta-arcade").getAttribute("href")).toBe(
+      "/workspace/benefits#ans-quest-arcade-hub",
+    );
+    expect(screen.getByTestId("modal-cta-market").getAttribute("href")).toBe("/market");
+
+    // Close modal and verify persistent reopen pill brings it back
+    fireEvent.click(screen.getByTestId("home-campaign-modal-close"));
+    expect(screen.queryByTestId("home-campaign-modal")).toBeNull();
+
+    fireEvent.click(screen.getByTestId("home-campaign-reopen-pill"));
+    expect(screen.getByTestId("home-campaign-modal")).toBeTruthy();
+  });
 });
 

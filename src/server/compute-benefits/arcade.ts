@@ -260,6 +260,8 @@ async function verifyQuestPrerequisiteInTx(tx: DbTransaction, userId: string, qu
   }
 }
 
+export const ARCADE_TOKEN_COST_POINTS = 10;
+
 const arcadeClaimSchema = z.discriminatedUnion("kind", [
   z
     .object({
@@ -276,6 +278,16 @@ const arcadeClaimSchema = z.discriminatedUnion("kind", [
         .trim()
         .regex(/^[A-Za-z0-9_-]{6,64}$/),
       mode: z.enum(["claw", "roulette"]),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("buy_tokens"),
+      count: z.number().int().min(1).max(10).default(1),
+      orderId: z
+        .string()
+        .trim()
+        .regex(/^[A-Za-z0-9_-]{6,64}$/),
     })
     .strict(),
 ]);
@@ -309,7 +321,9 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       ? ARCADE_QUEST_REWARDS[input.questId].daily
         ? `arcade:quest:${userId}:${input.questId}:${beijingDay}`
         : `arcade:quest:${userId}:${input.questId}`
-      : `arcade:draw:${userId}:${input.drawId}`;
+      : input.kind === "buy_tokens"
+        ? `arcade:buy_tokens:${userId}:${input.orderId}`
+        : `arcade:draw:${userId}:${input.drawId}`;
 
   return marketTransaction(async tx => {
     const account = await tx.user.findFirst({
@@ -335,7 +349,15 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
     let note = "";
     let awardedPrizeId: string | undefined;
 
-    if (input.kind === "quest") {
+    if (input.kind === "buy_tokens") {
+      const costPoints = input.count * ARCADE_TOKEN_COST_POINTS;
+      if (Number(account.quotaPoints) < costPoints) {
+        throw new ComputeBenefitError("INSUFFICIENT_POINTS", 409);
+      }
+      points = -costPoints;
+      evidenceRef = `arcade_buy_tokens:${input.count}`;
+      note = `Arcade token exchange (${input.count} token(s) for ${costPoints} pts)`;
+    } else if (input.kind === "quest") {
       await verifyQuestPrerequisiteInTx(tx, userId, input.questId);
       const quest = ARCADE_QUEST_REWARDS[input.questId];
       points = quest.points;
@@ -358,6 +380,11 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
         } else if (op.evidenceRef?.startsWith("arcade_quest:")) {
           const qId = op.evidenceRef.slice("arcade_quest:".length);
           earnedTokens += ARCADE_QUEST_REWARDS[qId]?.tokens ?? 0;
+        } else if (op.evidenceRef?.startsWith("arcade_buy_tokens:")) {
+          const bought = Number.parseInt(op.evidenceRef.slice("arcade_buy_tokens:".length), 10);
+          if (Number.isFinite(bought) && bought > 0) {
+            earnedTokens += bought;
+          }
         }
       }
       if (usedDraws >= earnedTokens) {
@@ -378,7 +405,7 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       awardedPrizeId === "prize_sp_mythic_jackpot" ||
       awardedPrizeId === "prize_ur_dragon_egg" ||
       awardedPrizeId === "prize_ssr_gpu_cookie";
-    if (!isVerifiedMilestone && !isServerJackpotHit) {
+    if (input.kind !== "buy_tokens" && !isVerifiedMilestone && !isServerJackpotHit) {
       const lifetimeOps = await tx.quotaOperation.findMany({
         where: {
           userId,
@@ -416,7 +443,7 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
         requestHash,
         userId,
         actorId: userId,
-        kind: "GRANT",
+        kind: points < 0 ? "SPEND" : "GRANT",
         amount: points,
         balanceAfter: updated.quotaPoints,
         evidenceRef,
@@ -424,13 +451,13 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       },
     });
 
-    if (points > 0) {
+    if (points !== 0) {
       await tx.quotaLedger.create({
         data: {
           userId,
           amount: points,
           balanceAfter: updated.quotaPoints,
-          reason: "GRANT",
+          reason: points < 0 ? "RUN_COST" : "GRANT",
           refType: "quest_arcade",
           refId: op.id,
           note,

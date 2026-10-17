@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import {
   ARCADE_PRIZES,
+  ARCADE_TOKEN_COST_POINTS,
   CNY_PER_POINT,
   POINTS_PER_USD,
   QUEST_ARCADE_EVENT,
@@ -12,6 +13,7 @@ import {
   QUEST_DEFINITIONS,
   USD_PER_POINT,
   advanceAndClaimQuest,
+  buyArcadeTokensWithPoints,
   drawArcadePrize,
   isQuestClaimedToday,
   loadQuestArcadeState,
@@ -1331,8 +1333,16 @@ export function ComputeQuestArcade({
       if (detail.errorCode === "ARCADE_TOKENS_EXHAUSTED") {
         setBannerMessage(
           isEn
-            ? "ℹ️ Server draw token limit reached. Complete more daily quests or Dino easter eggs to earn verified tokens!"
-            : "ℹ️ 服务端可核验抓娃娃币已用尽，完成每日打卡或小恐龙隐藏彩蛋即可继续获赠真金白银积分！",
+            ? "ℹ️ Free draw tokens used up! Click [🪙 10 Pts → 1 Token] to exchange points and keep playing for the 1,000-pt Mythic Koi!"
+            : "ℹ️ 免费抓娃娃币已用完！可点击【🪙 10积分兑1币】用积分投币继续冲刺 1000 积分锦鲤大奖，或完成右侧打卡彩蛋免费领币！",
+        );
+        return;
+      }
+      if (detail.errorCode === "INSUFFICIENT_POINTS") {
+        setBannerMessage(
+          isEn
+            ? "⚠️ Insufficient API Gateway points (10 Pts = 1 Token). Complete the Onboarding Questionnaire (+50 pts) or daily quests first!"
+            : "⚠️ 账户可用积分不足（10 积分 = 1 枚抓娃娃币）！请先完成上方破冰问卷（+50分）或右侧打卡任务领积分。",
         );
         return;
       }
@@ -1422,15 +1432,44 @@ export function ComputeQuestArcade({
     return best;
   }
 
+  function handleBuyTokens(count: 1 | 5 = 1) {
+    const cost = count * ARCADE_TOKEN_COST_POINTS;
+    if (serverBalancePoints !== null && serverBalancePoints < cost) {
+      setBannerMessage(
+        isEn
+          ? `⚠️ Need ${cost} Pts to exchange ${count} Token(s), current balance: ${serverBalancePoints} Pts. Complete Onboarding (+50 pts) or daily quests first!`
+          : `⚠️ 兑换 ${count} 枚抓娃娃币需 ${cost} 积分（当前余额 ${serverBalancePoints} 积分），请先完成上方破冰问卷（+50分）或右侧打卡任务！`,
+      );
+      return;
+    }
+    const res = buyArcadeTokensWithPoints(count, actorId);
+    setState(res.state);
+    if (serverBalancePoints !== null) {
+      setServerBalancePoints(Math.max(0, serverBalancePoints - res.costPoints));
+    }
+    setBannerMessage(
+      isEn
+        ? `🪙 Spent ${res.costPoints} Pts to exchange +${count} Arcade Token(s)! Drop the claw or spin the wheel for the 0.1% 1,000-pt Mythic Koi!`
+        : `🪙 已花 ${res.costPoints} 积分兑换 +${count} 枚抓娃娃币！快投币下爪冲击 0.1%【1000 积分 (¥100) 天选锦鲤】大奖！`,
+    );
+  }
+
   function handleClawDrop() {
     if (clawPhase !== "idle") return;
     if (state.arcadeTokens < 1) {
-      setBannerMessage(
-        isEn
-          ? "⚠️ Out of Arcade Tokens! Complete any daily quest or Dino easter egg on the right to earn tokens."
-          : "⚠️ 抓娃娃币不足！完成右侧任意每日任务或触发小恐龙反常识彩蛋即可免费领币。",
-      );
-      return;
+      if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
+        setBannerMessage(
+          isEn
+            ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete any daily quest or Dino easter egg on the right to earn free tokens."
+            : "⚠️ 抓娃娃币与积分均不足（10 积分可兑 1 币）！完成右侧任意每日任务或小恐龙反常识彩蛋即可免费领币。",
+        );
+        return;
+      }
+      const bought = buyArcadeTokensWithPoints(1, actorId);
+      setState(bought.state);
+      if (serverBalancePoints !== null) {
+        setServerBalancePoints(Math.max(0, serverBalancePoints - bought.costPoints));
+      }
     }
 
     setClawPhase("dropping");
@@ -1464,15 +1503,25 @@ export function ComputeQuestArcade({
 
   function handleRouletteSpin(drawsCount: 1 | 5 = 1) {
     if (isSpinning) return;
-    const actualDraws = Math.min(drawsCount, state.arcadeTokens);
-    if (actualDraws < 1) {
-      setBannerMessage(
-        isEn
-          ? "⚠️ Out of Arcade Tokens! Complete daily quests or Dino easter eggs on the right to earn tokens."
-          : "⚠️ 星轨转盘币不足！完成右侧每日任务或小恐龙彩蛋即可免费获取。",
-      );
-      return;
+    let availableTokens = state.arcadeTokens;
+    if (availableTokens < 1) {
+      if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
+        setBannerMessage(
+          isEn
+            ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete daily quests or Dino easter eggs on the right to earn tokens."
+            : "⚠️ 星轨转盘币与积分均不足（10 积分可兑 1 币）！完成右侧每日任务或小恐龙彩蛋即可免费获取。",
+        );
+        return;
+      }
+      const bought = buyArcadeTokensWithPoints(1, actorId);
+      setState(bought.state);
+      availableTokens = bought.state.arcadeTokens;
+      if (serverBalancePoints !== null) {
+        setServerBalancePoints(Math.max(0, serverBalancePoints - bought.costPoints));
+      }
     }
+    const actualDraws = Math.min(drawsCount, availableTokens);
+    if (actualDraws < 1) return;
 
     setIsSpinning(true);
     setLastWonPrize(null);
@@ -1575,22 +1624,32 @@ export function ComputeQuestArcade({
               {serverBalancePoints !== null
                 ? serverBalancePoints.toLocaleString()
                 : Math.round((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD).toLocaleString()}
-              {lastServerCredit && !lastServerCredit.duplicate && lastServerCredit.grantedPoints > 0 ? (
+              {lastServerCredit && !lastServerCredit.duplicate && lastServerCredit.grantedPoints !== 0 ? (
                 <span className="ml-1.5 rounded-full bg-emerald-600/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-200">
-                  +{lastServerCredit.grantedPoints}
+                  {lastServerCredit.grantedPoints > 0 ? `+${lastServerCredit.grantedPoints}` : lastServerCredit.grantedPoints}
                 </span>
               ) : null}
             </div>
           </div>
           <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 px-3.5 py-2 text-center">
             <div className="text-[11px] font-medium text-amber-900 dark:text-amber-200">
-              {isEn ? "Arcade Tokens" : "游乐场抓娃娃币"}
+              {isEn ? "Arcade Tokens (10 Pts/Token)" : "游乐场抓娃娃币（10分/币）"}
             </div>
-            <div
-              className="text-lg font-black tabular-nums text-amber-700 dark:text-amber-300"
-              data-testid="arcade-token-count"
-            >
-              🎟️ {state.arcadeTokens}
+            <div className="flex items-center justify-center gap-1.5">
+              <span
+                className="text-lg font-black tabular-nums text-amber-700 dark:text-amber-300"
+                data-testid="arcade-token-count"
+              >
+                🎟️ {state.arcadeTokens}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleBuyTokens(1)}
+                data-testid="arcade-buy-token-1"
+                className="rounded-lg bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950 shadow-2xs transition hover:brightness-105"
+              >
+                {isEn ? "+1 Token (10 Pts)" : "🪙 10积分兑1币"}
+              </button>
             </div>
           </div>
           <div className="rounded-2xl border border-border bg-muted/40 px-3.5 py-2 text-center">
@@ -1601,10 +1660,19 @@ export function ComputeQuestArcade({
           </div>
           <div className="rounded-2xl border border-border bg-muted/40 px-3.5 py-2 text-center">
             <div className="text-[11px] font-medium text-muted-foreground">
-              {isEn ? "3D / Market Vouchers" : "3D建模 / 市场券"}
+              {isEn ? "Spend Points in Market" : "市场花积分买工作流"}
             </div>
-            <div className="text-lg font-black tabular-nums text-foreground">
-              🧊 {state.tripoFreeVouchers} · 🛠️ {state.marketDiscountVouchers}
+            <div className="mt-0.5 flex items-center justify-center gap-1.5">
+              <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                🧊{state.tripoFreeVouchers} 🛠️{state.marketDiscountVouchers}
+              </span>
+              <Link
+                href="/market"
+                data-testid="arcade-go-market"
+                className="rounded-lg bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white shadow-2xs transition hover:bg-emerald-500 dark:bg-emerald-400 dark:text-slate-950"
+              >
+                {isEn ? "🛒 Go Market →" : "🛒 去市场花积分 →"}
+              </Link>
             </div>
           </div>
         </div>
@@ -1884,9 +1952,13 @@ export function ComputeQuestArcade({
                     className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-black text-slate-950 shadow-sm transition hover:brightness-105 disabled:opacity-50"
                   >
                     {clawPhase === "idle"
-                      ? isEn
-                        ? "🕹️ DROP CLAW (1 Token · 100% Win)"
-                        : "🕹️ 投币下爪抓取（耗 1 币 · 100% 必中算力）"
+                      ? state.arcadeTokens > 0
+                        ? isEn
+                          ? "🕹️ DROP CLAW (1 Token · 100% Win)"
+                          : "🕹️ 投币下爪抓取（耗 1 币 · 100% 必中算力）"
+                        : isEn
+                          ? "🪙 SPEND 10 PTS & DROP CLAW (100% Win)"
+                          : "🪙 花 10 积分投币下爪（100% 必中 · 冲 1000分 锦鲤）"
                       : isEn
                         ? "⚙️ Claw Grabbing Capsule..."
                         : "⚙️ 机械爪正在抓起盲盒胶囊..."}
@@ -1952,7 +2024,13 @@ export function ComputeQuestArcade({
                     data-testid="roulette-spin-1"
                     className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white shadow-sm hover:brightness-105 disabled:opacity-50 dark:bg-emerald-400 dark:text-slate-950"
                   >
-                    {isEn ? "🎡 Spin 1x (1 Token)" : "🎡 单抽星轨转盘（1 币）"}
+                    {state.arcadeTokens > 0
+                      ? isEn
+                        ? "🎡 Spin 1x (1 Token)"
+                        : "🎡 单抽星轨转盘（耗 1 币）"
+                      : isEn
+                        ? "🪙 Spend 10 Pts & Spin 1x"
+                        : "🪙 花 10 积分单抽转盘"}
                   </button>
                   <button
                     type="button"
@@ -2037,6 +2115,36 @@ export function ComputeQuestArcade({
                 );
               })()
             )}
+
+            {/* Spend Points Bar: Buy Tokens with Points OR Spend in Marketplace */}
+            <div className="mt-2.5 flex flex-wrap items-center justify-between gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/5 px-2.5 py-2 text-[11px]">
+              <span className="font-bold text-foreground">
+                {isEn ? "💡 Spend Points:" : "💡 积分怎么花："}
+              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleBuyTokens(1)}
+                  className="rounded-lg border border-amber-500/40 bg-background px-2 py-1 font-bold text-amber-800 hover:bg-amber-500/15 dark:text-amber-300"
+                >
+                  {isEn ? "🪙 10 Pts → +1 Token" : "🪙 10积分兑1币"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBuyTokens(5)}
+                  data-testid="arcade-buy-token-5"
+                  className="rounded-lg border border-amber-500/40 bg-background px-2 py-1 font-bold text-amber-800 hover:bg-amber-500/15 dark:text-amber-300"
+                >
+                  {isEn ? "🪙 50 Pts → +5 Tokens" : "🪙 50积分兑5币"}
+                </button>
+                <Link
+                  href="/market"
+                  className="rounded-lg bg-emerald-600 px-2.5 py-1 font-bold text-white hover:bg-emerald-500 dark:bg-emerald-400 dark:text-slate-950"
+                >
+                  {isEn ? "🛒 Spend in Market →" : "🛒 去市场花积分 →"}
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Prize Pool & Latest Pull Card */}
