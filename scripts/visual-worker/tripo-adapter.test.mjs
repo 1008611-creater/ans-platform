@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { TripoAdapter,providerManifest,uploadGenerationInput } from "./tripo-adapter.mjs";
+import { TripoAdapter,providerManifest,uploadGenerationInput,normalizeGenModels,toUpstreamModel } from "./tripo-adapter.mjs";
 const options={model:"P2-20260801",faceCount:5000,texture:true,pbr:true,textureResolution:"4K"};
 const success=data=>new Response(JSON.stringify({code:0,data}),{headers:{"content-type":"application/json"}});
 test("maps visible texture choices to provider values",()=>{
@@ -10,8 +10,17 @@ test("maps visible texture choices to provider values",()=>{
  assert.throws(()=>providerManifest({...options,model:"P2.0-Preview"},"image-token","image/png"));
 });
 test("preflight only logs in and reads configuration",async()=>{
- const paths=[];const adapter=new TripoAdapter({credential:async()=>({username:"test",password:"private-test"}),fetcher:async url=>{paths.push(new URL(url).pathname);return success(url.endsWith("/login")?{access_token:"private-test-token"}:{p:[{value:"P2-20260801"}]});}});
+ const paths=[];const adapter=new TripoAdapter({credential:async()=>({username:"test",password:"private-test"}),fetcher:async url=>{paths.push(new URL(url).pathname);return success(url.endsWith("/login")?{access_token:"private-test-token"}:{p:[{value:"Nexus-v2.0-20260801",credits:100}]});}});
  assert.equal((await adapter.preflight()).submission,false);assert.deepEqual(paths,["/api/auth/login","/api/gen-models"]);
+});
+test("normalizes Nexus P-series models while preserving legacy P2/P1 aliases",()=>{
+ const catalog=normalizeGenModels({p:[{value:"Nexus-v2.0-20260801",credits:100,face_min:500,face_max:50000},{value:"Nexus-v1.0-20260214",face_min:500,face_max:20000}]});
+ assert.ok(catalog.p.some(item=>item.value==="Nexus-v2.0-20260801"));
+ assert.ok(catalog.p.some(item=>item.value==="P2-20260801"&&item.credits===100));
+ assert.ok(catalog.p.some(item=>item.value==="P1-20260311"));
+ assert.equal(toUpstreamModel("P2-20260801"),"Nexus-v2.0-20260801");
+ assert.equal(toUpstreamModel("P1-20260311"),"Nexus-v1.0-20260214");
+ assert.equal(toUpstreamModel("v3.1-20260211"),"v3.1-20260211");
 });
 test("a lost submission is uncertain and never auto-retried",async()=>{
  let count=0;const adapter=new TripoAdapter({fetcher:async()=>{count++;throw new Error("network timeout");}});adapter.token="private-test-token";
@@ -24,6 +33,10 @@ test("rejects conversion before requesting a potentially charged export",async()
 test("downloads only allowlisted HTTPS URLs without forwarding credentials",async()=>{
  const calls=[];const adapter=new TripoAdapter({allowedHosts:["cdn.example.invalid"],fetcher:async(url,init)=>{calls.push({url:String(url),init});return calls.length===1?success({url:"https://cdn.example.invalid/model.glb"}):new Response(new Uint8Array([1,2,3]));}});adapter.token="private-test-token";
  assert.equal((await adapter.download("task","glb")).length,3);assert.ok(calls[0].init.headers.authorization);assert.equal(calls[1].init.headers,undefined);assert.equal(calls[1].init.redirect,"error");
+});
+test("supports direct octet-stream GLB responses from studio.tripo3d.uk",async()=>{
+ const adapter=new TripoAdapter({fetcher:async()=>new Response(new Uint8Array([0x67,0x6c,0x54,0x46]),{headers:{"content-type":"application/octet-stream"}})});adapter.token="private-test-token";
+ assert.equal((await adapter.download("task","glb")).length,4);
 });
 test("blocks untrusted signed download hosts",async()=>{
  const adapter=new TripoAdapter({fetcher:async()=>success({url:"https://unknown.example.invalid/model.glb"})});adapter.token="private-test-token";
@@ -41,6 +54,7 @@ test("maps all observed models and advanced options without confusing mesh famil
  assert.equal(manifest.file.type,"webp");assert.equal(manifest.texture_quality,undefined);
  assert.throws(()=>providerManifest({...options,quad:true,faceCount:25001},"token","image/png"));
  assert.throws(()=>providerManifest({...options,model:"P1-20260311",quad:true},"token","image/png"));
+ assert.equal(providerManifest({...options,model:"Nexus-v2.0-20260801",faceCount:50000,quad:false},"token","image/png").face_limit,50000);
  assert.equal(providerManifest({...options,textureResolution:"8K",autoFix:true},"token","image/png").texture_quality,"extreme");
  assert.equal(providerManifest({...options,autoFix:true},"token","image/png").enable_image_autofix,true);
  assert.equal(providerManifest({...options,model:"v2.5-20250123",textureResolution:"2K"},"token","image/png").geometry_quality,undefined);
