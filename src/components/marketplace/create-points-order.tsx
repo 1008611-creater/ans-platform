@@ -19,7 +19,18 @@ export function CreatePointsOrder({ listingId, version, available, tiers = [], p
     if (flight.current || isOwner) return;
     flight.current = true; setBusy(true); setError("");
     command.current ??= { listingId, expectedVersion: version, idempotencyKey: crypto.randomUUID(), requirements: "", ...(tierId ? { tierId } : {}) };
-    try { const result = await marketRequest<{ order: { id: string } }>("/api/market/orders", "POST", command.current); router.push(`/market/orders/${result.order.id}`); }
+    try {
+      const result = await marketRequest<{ order: { id: string; revision?: number } }>("/api/market/orders", "POST", command.current);
+      try {
+        await marketRequest(`/api/market/orders/${result.order.id}/pay`, "POST", {
+          expectedRevision: result.order.revision ?? 0,
+          operationKey: crypto.randomUUID(),
+        });
+      } catch {
+        // Fallback to order page if auto-pay fails (e.g. insufficient points)
+      }
+      router.push(`/market/orders/${result.order.id}`);
+    }
     catch (caught) {
       const code = caught instanceof Error ? caught.message : "INTERNAL_ERROR";
       if (caught instanceof MarketRequestRejection) command.current = null;

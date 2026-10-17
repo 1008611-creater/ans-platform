@@ -7,6 +7,6 @@ export function parseMarketPrice(value: string) {
   return minor >= 1 && minor <= 100_000_000 ? minor : null;
 }
 export function availableMarketActions(order: { status: MarketOrderStatus; revisionRequests: number; revisionLimit: number }, role: "buyer" | "seller"): MarketOrderAction["action"][] {
-  const actions: MarketOrderAction["action"][] = ["submit_requirements", "deliver", "request_revision", "accept", "cancel", "dispute"];
+  const actions: MarketOrderAction["action"][] = ["submit_requirements", "deliver", "accept", "request_revision", "cancel", "dispute"];
   return actions.filter((action) => { try { nextOrderStatus(order, action, role); return true; } catch { return false; } });
 }
