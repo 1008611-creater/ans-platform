@@ -115,7 +115,8 @@
     "claim_daily_benefit": "执行今日算力打卡签到 (+5积分)",
     "play_claw_arcade": "投币启动 3D 抓娃娃机抽算力锦鲤",
     "search_market": "检索 ANS 市场可购买商品与工作流",
-    "scaffold_project_draft": "一键创建参赛项目与立项架构草案"
+    "scaffold_project_draft": "一键创建参赛项目与立项架构草案",
+    "redeem_market_item": "积分秒兑 ANS 市场官方工具包并自动交付"
   },
   "agentError": {
     "signIn": "登录账号后就能召唤 Agent 深度帮忙啦；旁边的「快捷向导」不登录也能免费用。",

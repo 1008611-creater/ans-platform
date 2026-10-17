@@ -298,7 +298,7 @@ export function CompanionSanctuaryBar({
     links?: { href: string; title: string; detail: string }[];
   } | null>(null);
 
-  async function runPiAction(intent: "checkin" | "claw" | "market" | "scaffold" | "auto", customPrompt?: string) {
+  async function runPiAction(intent: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "auto", customPrompt?: string) {
     if (piBusy) return;
     setPiBusy(true);
     setTab("pi");
@@ -826,6 +826,15 @@ export function CompanionSanctuaryBar({
             className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-sky-700 shadow-xs transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
           >
             🛒 {isZh ? "挑市场工具" : "Market Tools"}
+          </button>
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-redeem"
+            onClick={() => void runPiAction("redeem", piPrompt)}
+            className="rounded-full border border-rose-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-rose-700 shadow-xs transition hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300"
+          >
+            🎁 {isZh ? "5分秒兑周报" : "5pt Redeem"}
           </button>
           <button
             type="button"

@@ -15,7 +15,7 @@ export const agentRequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("status"), ticket: z.string().min(20).max(2000) }).strict(),
   z.object({
     action: z.literal("pi_action"),
-    intent: z.enum(["checkin", "claw", "market", "scaffold", "auto"]).optional(),
+    intent: z.enum(["checkin", "claw", "market", "scaffold", "redeem", "auto"]).optional(),
     prompt: z.string().trim().max(400).optional(),
   }).strict(),
 ]);

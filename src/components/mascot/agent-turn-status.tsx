@@ -16,6 +16,7 @@ const names = new Set([
   "play_claw_arcade",
   "search_market",
   "scaffold_project_draft",
+  "redeem_market_item",
 ]);
 const toolKey = (name: string | null) => name && names.has(name) ? `agentTool.${name}` : "agentTool.generic";
 const errorKeys: Record<string, string> = {

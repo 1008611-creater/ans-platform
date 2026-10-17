@@ -3,10 +3,16 @@ import type { AgentLink } from "@/contracts/companion-agent";
 import { claimArcadeReward } from "@/server/compute-benefits/arcade";
 import { listMarketListings } from "@/server/marketplace/listings";
 import { marketProductPath } from "@/domain/marketplace/product-route";
+import { getOfficialDeliveryMarkdown } from "@/server/marketplace/official-deliveries";
 
 export interface PiActionResult {
   ok: boolean;
-  toolUsed: "claim_daily_benefit" | "play_claw_arcade" | "search_market" | "scaffold_project_draft";
+  toolUsed:
+    | "claim_daily_benefit"
+    | "play_claw_arcade"
+    | "search_market"
+    | "scaffold_project_draft"
+    | "redeem_market_item";
   replyZh: string;
   replyEn: string;
   pointsDelta?: number;
@@ -271,9 +277,173 @@ export async function scaffoldProjectDraftViaPi(actor: string, rawTopic: string)
   };
 }
 
+export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Promise<PiActionResult> {
+  const q = rawQuery.trim().toLowerCase();
+  const rows = await db.marketListing.findMany({
+    where: {
+      status: "PUBLISHED",
+      publishedVersion: { gt: 0 },
+      ...(q
+        ? {
+            OR: [
+              { slug: { contains: q, mode: "insensitive" } },
+              { title: { contains: q, mode: "insensitive" } },
+              { summary: { contains: q, mode: "insensitive" } },
+              { category: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    include: { versions: true },
+    orderBy: [{ priceMinor: "asc" }, { updatedAt: "desc" }],
+    take: 5,
+  });
+
+  const target =
+    rows.find((r) => r.slug === "lab-weekly-git-report-automation") ??
+    rows[0] ??
+    (await db.marketListing.findFirst({
+      where: { status: "PUBLISHED", slug: "lab-weekly-git-report-automation" },
+      include: { versions: true },
+    }));
+
+  if (!target) {
+    return {
+      ok: false,
+      toolUsed: "redeem_market_item",
+      replyZh: "⚠️ 暂未找到可秒兑的市场商品，请前往 /market 浏览。",
+      replyEn: "⚠️ No matching market listing found.",
+      links: [{ href: "/market", title: "前往 ANS 市场 (/market)", detail: "浏览全部商品", icon: "discover" }],
+    };
+  }
+
+  const pricePoints = Math.max(1, Math.round(target.priceMinor / 100));
+  const userBefore = await db.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
+  const currentBal = userBefore ? Math.round(Number(userBefore.quotaPoints) * 10) / 10 : 0;
+
+  if (currentBal < pricePoints) {
+    return {
+      ok: false,
+      toolUsed: "redeem_market_item",
+      replyZh: `⚠️ 兑换《${target.title}》需要 **${pricePoints} 积分**，当前余额 **${currentBal} 积分**。请先点上方「📅 代签到 (+5分)」或「🕹️ 代抓娃娃搏锦鲤」领积分后再秒兑！`,
+      replyEn: `⚠️ Redeeming "${target.title}" requires ${pricePoints} pts (current balance: ${currentBal} pts). Click Check-in (+5pt) or Claw Pull first!`,
+      balancePoints: currentBal,
+      links: [
+        { href: "/workspace/benefits", title: "去福利中心领 100~150 积分", detail: "破冰问卷 +50分 / 每日签到 +5分", icon: "credits" },
+      ],
+    };
+  }
+
+  const verRow = target.versions.find((v) => v.version === target.publishedVersion) ?? target.versions[0];
+  const payload = (verRow?.payload ?? {}) as Record<string, unknown>;
+  const deliverables = Array.isArray(payload.deliverables) ? (payload.deliverables as string[]) : ["完整工具包与 Prompt 模板"];
+  const deliveryMd = getOfficialDeliveryMarkdown(target.slug, target.title, deliverables);
+
+  const result = await db.$transaction(async (tx) => {
+    const u = await tx.user.update({
+      where: { id: actor },
+      data: { quotaPoints: { decrement: pricePoints } },
+      select: { quotaPoints: true },
+    });
+    const quote = {
+      slug: target.slug,
+      title: target.title,
+      summary: target.summary,
+      description: (typeof payload.description === "string" ? payload.description : target.summary).slice(0, 2000),
+      category: target.category,
+      subcategory: target.subcategory,
+      fulfillment: target.fulfillmentType === "service" ? "service" : "resource",
+      priceMinor: target.priceMinor,
+      currency: "CNY",
+      deliveryDays: 1,
+      revisionLimit: 1,
+      computeIncluded: false,
+      deliverables,
+      licenseTerms: typeof payload.licenseTerms === "string" ? payload.licenseTerms : "Personal & academic lab use permitted.",
+      listingId: target.id,
+      listingVersion: target.publishedVersion || 1,
+      sellerId: target.sellerId,
+      commissionBps: 0,
+      platformFeeMinor: 0,
+      sellerDueMinor: target.priceMinor,
+    };
+    const idempotencyKey = `pi-redeem:${actor}:${target.id}:${Date.now()}`;
+    const order = await tx.marketOrder.create({
+      data: {
+        paymentMethod: "POINTS",
+        buyerId: actor,
+        sellerId: target.sellerId,
+        listingId: target.id,
+        quote,
+        totalMinor: target.priceMinor,
+        currency: "CNY",
+        requirements: "Pi Agent 一键积分秒兑自动交付",
+        status: "DELIVERED",
+        revision: 2,
+        paidAt: new Date(),
+        idempotencyKey,
+        requestHash: idempotencyKey,
+      },
+      select: { id: true },
+    });
+    await tx.quotaLedger.create({
+      data: {
+        userId: actor,
+        amount: -pricePoints,
+        balanceAfter: u.quotaPoints,
+        reason: "RUN_COST",
+        refType: "market_order",
+        refId: order.id,
+        note: `Pi Agent instant redeem: ${target.slug}`,
+      },
+    });
+    await tx.marketPointsEscrow.create({
+      data: {
+        orderId: order.id,
+        amount: pricePoints,
+        sellerPoints: pricePoints,
+        feePoints: 0,
+        state: "HELD",
+      },
+    });
+    await tx.marketDelivery.create({
+      data: {
+        orderId: order.id,
+        orderRevision: 2,
+        contentMarkdown: deliveryMd,
+      },
+    });
+    return { orderId: order.id, balance: Math.round(Number(u.quotaPoints) * 10) / 10 };
+  });
+
+  return {
+    ok: true,
+    toolUsed: "redeem_market_item",
+    replyZh: `🎁 **Pi Agent 已帮你花 ${pricePoints} 积分秒兑《${target.title}》！**\n完整 Markdown 交付包（含可直接复制的 Prompt 工作流、代码脚本与模板）已自动解锁并写入订单！当前剩余 **${result.balance} 积分**。`,
+    replyEn: `🎁 **Pi Agent redeemed "${target.title}" for ${pricePoints} pts!**\nFull Markdown toolkit has been auto-delivered to your order! Balance: **${result.balance} pts**.`,
+    pointsDelta: -pricePoints,
+    balancePoints: result.balance,
+    data: { orderId: result.orderId, slug: target.slug, title: target.title, pricePoints, balance: result.balance },
+    links: [
+      {
+        href: `/market/orders/${result.orderId}`,
+        title: `📦 查看已解锁交付包：《${target.title.slice(0, 20)}…》`,
+        detail: "点击直接阅读并复制完整 Markdown 工具包与代码脚本",
+        icon: "discover",
+      },
+      {
+        href: "/market/orders",
+        title: "查看我的全部市场订单",
+        detail: "管理所有已兑换的官方工具与服务",
+        icon: "credits",
+      },
+    ],
+  };
+}
+
 export async function executePiAgentAction(
   actor: string,
-  input: { intent?: "checkin" | "claw" | "market" | "scaffold" | "auto"; prompt?: string },
+  input: { intent?: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "auto"; prompt?: string },
 ): Promise<PiActionResult> {
   const rawPrompt = (input.prompt ?? "").trim();
   const intent = input.intent ?? "auto";
@@ -282,6 +452,7 @@ export async function executePiAgentAction(
   if (intent === "claw") return playClawArcadeViaPi(actor);
   if (intent === "market") return searchMarketViaPi(rawPrompt, actor);
   if (intent === "scaffold") return scaffoldProjectDraftViaPi(actor, rawPrompt);
+  if (intent === "redeem") return redeemMarketItemViaPi(actor, rawPrompt);
 
   // Auto-route natural language command via Pi Agent intent router
   const lower = rawPrompt.toLowerCase();
@@ -291,6 +462,10 @@ export async function executePiAgentAction(
   if (/抓娃娃|娃娃机|转盘|抽奖|锦鲤|兑币|claw|arcade|gacha|spin/.test(lower)) {
     return playClawArcadeViaPi(actor);
   }
+  if (/兑换|秒兑|买|购买|解锁|redeem|buy/.test(lower)) {
+    const cleaned = rawPrompt.replace(/^(帮我|请|小恐龙)?(兑换|秒兑|购买|买一个|买|解锁)[:：\s]*/i, "").trim();
+    return redeemMarketItemViaPi(actor, cleaned);
+  }
   if (/新建|创建|立项|建个项目|写个项目|保存项目|scaffold|create project|new project/.test(lower)) {
     const cleanedTopic = rawPrompt
       .replace(/^(帮我|请|麻烦|小恐龙|pi\s*agent)?(新建|创建|立项|建个项目|写个项目|生成一个项目)[:：\s]*/i, "")
@@ -298,7 +473,7 @@ export async function executePiAgentAction(
     return scaffoldProjectDraftViaPi(actor, cleanedTopic || rawPrompt);
   }
   const marketQuery = rawPrompt
-    .replace(/^(帮我|请|去市场|市场里|找一下|搜一下|推荐|挑个|买个|花积分)[:：\s]*/i, "")
+    .replace(/^(帮我|请|去市场|市场里|找一下|搜一下|推荐|挑个)[:：\s]*/i, "")
     .trim();
   return searchMarketViaPi(marketQuery, actor);
 }

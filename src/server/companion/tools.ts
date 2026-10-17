@@ -20,6 +20,7 @@ const descriptions = {
   play_claw_arcade: "Play the 3D Claw Machine once for this member (uses 1 free token or exchanges 10 points for 1 token) for a chance at SP 1,000 pts or UR 300 pts. Query may be empty.",
   search_market: "Search published ANS Market (/market) tools, resources and runnable workflows priced in points. Query may be a short keyword or empty.",
   scaffold_project_draft: "Create a new Project and v1 README/architecture blueprint in this member's workspace; requires explicit privateAccess. Pass the project title/topic in query.",
+  redeem_market_item: "Instantly redeem and auto-deliver an official ANS Market tool/resource with this member's points balance. Pass the item keyword or slug in query (or empty string for the 5-point weekly report automation kit).",
 } as const;
 export type AgentToolName = keyof typeof descriptions;
 export const AGENT_TOOLS = Object.entries(descriptions).map(([name, description]) => ({ type: "function" as const, name, description, strict: true,
@@ -51,6 +52,11 @@ export async function executeAgentTool(name: string, raw: string, actor: string,
   if (name === "scaffold_project_draft") {
     const { scaffoldProjectDraftViaPi } = await import("./pi-agent");
     const res = await scaffoldProjectDraftViaPi(actor, query);
+    return { ok: res.ok, data: res.data ?? { message: res.replyZh }, links: res.links };
+  }
+  if (name === "redeem_market_item") {
+    const { redeemMarketItemViaPi } = await import("./pi-agent");
+    const res = await redeemMarketItemViaPi(actor, query);
     return { ok: res.ok, data: res.data ?? { message: res.replyZh }, links: res.links };
   }
   if (name === "current_page") {

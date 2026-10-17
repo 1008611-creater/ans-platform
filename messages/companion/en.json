@@ -115,7 +115,8 @@
     "claim_daily_benefit": "Claim daily check-in reward (+5 pts)",
     "play_claw_arcade": "Play 3D Claw Machine for Koi jackpot",
     "search_market": "Search ANS Market tools & workflows",
-    "scaffold_project_draft": "Scaffold a new project & README draft"
+    "scaffold_project_draft": "Scaffold a new project & README draft",
+    "redeem_market_item": "Redeem ANS Market toolkit with points & instant delivery"
   },
   "agentError": {
     "signIn": "Sign in to use the Agent. The quick guide is available without signing in.",
