@@ -119,12 +119,14 @@ export default async function AgriHackathonPage() {
           <h2 id="agri-pipeline-heading" className="text-xl font-semibold">{t("pipelineTitle")}</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <figure className={visualFrameClass}>
-            <Image src="/competitions/agrihackathon/gitglow-hub.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" />
-          </figure>
-          <figure className={visualFrameClass}>
-            <Image src="/competitions/agrihackathon/gitglow-wall.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" />
-          </figure>
+          <Link href="/competitions/agrihackathon/tasks" className={`${visualFrameClass} group relative block transition hover:border-primary/60`}>
+            <Image src="/competitions/agrihackathon/gitglow-hub.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+            <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/85 px-3 py-1 text-xs font-semibold text-white backdrop-blur-xs">🎯 进入赛事任务 →</span>
+          </Link>
+          <Link href="/explore/submit?event=agrihackathon" className={`${visualFrameClass} group relative block transition hover:border-primary/60`}>
+            <Image src="/competitions/agrihackathon/gitglow-wall.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+            <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/85 px-3 py-1 text-xs font-semibold text-white backdrop-blur-xs">🚀 提交参赛作品 →</span>
+          </Link>
         </div>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {pipelineSteps.map((step) => {
