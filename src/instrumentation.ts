@@ -13,9 +13,16 @@ export async function register() {
     const { ensureDefaultAgriEditionBootstrapped } = await import("@/server/competitions/agrihackathon/bootstrap");
     void ensureDefaultAgriEditionBootstrapped();
     const { db } = await import("@/lib/db");
-    const keepalive = setInterval(() => {
-      void db.$queryRaw`SELECT 1`.catch(() => null);
-    }, 50_000);
+    const warmPool = () => {
+      void Promise.all([
+        db.$queryRaw`SELECT 1`,
+        db.$queryRaw`SELECT 1`,
+        db.$queryRaw`SELECT 1`,
+        db.$queryRaw`SELECT 1`,
+      ]).catch(() => null);
+    };
+    warmPool();
+    const keepalive = setInterval(warmPool, 50_000);
     if (typeof keepalive.unref === "function") keepalive.unref();
   }
 }
