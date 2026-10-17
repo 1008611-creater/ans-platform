@@ -283,31 +283,41 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
     where: {
       status: "PUBLISHED",
       publishedVersion: { gt: 0 },
-      ...(q
-        ? {
-            OR: [
-              { slug: { contains: q, mode: "insensitive" } },
-              { title: { contains: q, mode: "insensitive" } },
-              { summary: { contains: q, mode: "insensitive" } },
-              { category: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : {}),
+      sellerId: { not: actor },
     },
     include: { versions: true },
-    orderBy: [{ priceMinor: "asc" }, { updatedAt: "desc" }],
-    take: 5,
+    orderBy: [{ official: "desc" }, { updatedAt: "desc" }],
+    take: 20,
   });
 
-  const target =
-    rows.find((r) => r.slug === "lab-weekly-git-report-automation") ??
-    rows[0] ??
-    (await db.marketListing.findFirst({
-      where: { status: "PUBLISHED", slug: "lab-weekly-git-report-automation" },
-      include: { versions: true },
-    }));
+  const mapped = rows
+    .map((r) => {
+      const verRow = r.versions.find((v) => v.version === r.publishedVersion) ?? r.versions[0];
+      const payload = (verRow?.payload ?? {}) as Record<string, unknown>;
+      const title = typeof payload.title === "string" ? payload.title : r.slug;
+      const summary = typeof payload.summary === "string" ? payload.summary : title;
+      const description = typeof payload.description === "string" ? payload.description : summary;
+      const category = typeof payload.category === "string" ? payload.category : "productivity";
+      const subcategory = typeof payload.subcategory === "string" ? payload.subcategory : "general";
+      const fulfillment = payload.fulfillment === "service" ? "service" : "resource";
+      const priceMinor = typeof payload.priceMinor === "number" ? payload.priceMinor : 500;
+      const deliverables = Array.isArray(payload.deliverables) ? (payload.deliverables as string[]) : ["完整工具包与 Prompt 模板"];
+      const licenseTerms = typeof payload.licenseTerms === "string" ? payload.licenseTerms : "Personal & academic lab use permitted.";
+      return { r, verRow, payload, title, summary, description, category, subcategory, fulfillment, priceMinor, deliverables, licenseTerms };
+    })
+    .filter((item) => Boolean(item.verRow));
 
-  if (!target) {
+  const matched = q
+    ? mapped.find((m) => m.r.slug === q) ??
+      mapped.find((m) => [m.r.slug, m.title, m.summary, m.category].join(" ").toLowerCase().includes(q))
+    : undefined;
+
+  const picked =
+    matched ??
+    mapped.find((m) => m.r.slug === "lab-weekly-git-report-automation") ??
+    mapped.sort((a, b) => a.priceMinor - b.priceMinor)[0];
+
+  if (!picked) {
     return {
       ok: false,
       toolUsed: "redeem_market_item",
@@ -317,7 +327,8 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
     };
   }
 
-  const pricePoints = Math.max(1, Math.round(target.priceMinor / 100));
+  const { r: target, title, summary, description, category, subcategory, fulfillment, priceMinor, deliverables, licenseTerms } = picked;
+  const pricePoints = Math.max(1, Math.round(priceMinor / 100));
   const userBefore = await db.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
   const currentBal = userBefore ? Math.round(Number(userBefore.quotaPoints) * 10) / 10 : 0;
 
@@ -325,8 +336,8 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
     return {
       ok: false,
       toolUsed: "redeem_market_item",
-      replyZh: `⚠️ 兑换《${target.title}》需要 **${pricePoints} 积分**，当前余额 **${currentBal} 积分**。请先点上方「📅 代签到 (+5分)」或「🕹️ 代抓娃娃搏锦鲤」领积分后再秒兑！`,
-      replyEn: `⚠️ Redeeming "${target.title}" requires ${pricePoints} pts (current balance: ${currentBal} pts). Click Check-in (+5pt) or Claw Pull first!`,
+      replyZh: `⚠️ 兑换《${title}》需要 **${pricePoints} 积分**，当前余额 **${currentBal} 积分**。请先点上方「📅 代签到 (+5分)」或「🕹️ 代抓娃娃搏锦鲤」领积分后再秒兑！`,
+      replyEn: `⚠️ Redeeming "${title}" requires ${pricePoints} pts (current balance: ${currentBal} pts). Click Check-in (+5pt) or Claw Pull first!`,
       balancePoints: currentBal,
       links: [
         { href: "/workspace/benefits", title: "去福利中心领 100~150 积分", detail: "破冰问卷 +50分 / 每日签到 +5分", icon: "credits" },
@@ -334,10 +345,7 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
     };
   }
 
-  const verRow = target.versions.find((v) => v.version === target.publishedVersion) ?? target.versions[0];
-  const payload = (verRow?.payload ?? {}) as Record<string, unknown>;
-  const deliverables = Array.isArray(payload.deliverables) ? (payload.deliverables as string[]) : ["完整工具包与 Prompt 模板"];
-  const deliveryMd = getOfficialDeliveryMarkdown(target.slug, target.title, deliverables);
+  const deliveryMd = getOfficialDeliveryMarkdown(target.slug, title, deliverables);
 
   const result = await db.$transaction(async (tx) => {
     const u = await tx.user.update({
@@ -347,27 +355,27 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
     });
     const quote = {
       slug: target.slug,
-      title: target.title,
-      summary: target.summary,
-      description: (typeof payload.description === "string" ? payload.description : target.summary).slice(0, 2000),
-      category: target.category,
-      subcategory: target.subcategory,
-      fulfillment: target.fulfillmentType === "service" ? "service" : "resource",
-      priceMinor: target.priceMinor,
+      title,
+      summary,
+      description: description.slice(0, 2000),
+      category,
+      subcategory,
+      fulfillment,
+      priceMinor,
       currency: "CNY",
       deliveryDays: 1,
       revisionLimit: 1,
       computeIncluded: false,
       deliverables,
-      licenseTerms: typeof payload.licenseTerms === "string" ? payload.licenseTerms : "Personal & academic lab use permitted.",
+      licenseTerms,
       listingId: target.id,
       listingVersion: target.publishedVersion || 1,
       sellerId: target.sellerId,
       commissionBps: 0,
       platformFeeMinor: 0,
-      sellerDueMinor: target.priceMinor,
+      sellerDueMinor: priceMinor,
     };
-    const idempotencyKey = `pi-redeem:${actor}:${target.id}:${Date.now()}`;
+    const idempotencyKey = `pi-redeem:${actor.slice(0, 12)}:${target.id.slice(0, 12)}:${Date.now()}`;
     const order = await tx.marketOrder.create({
       data: {
         paymentMethod: "POINTS",
@@ -375,14 +383,14 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
         sellerId: target.sellerId,
         listingId: target.id,
         quote,
-        totalMinor: target.priceMinor,
+        totalMinor: priceMinor,
         currency: "CNY",
         requirements: "Pi Agent 一键积分秒兑自动交付",
         status: "DELIVERED",
         revision: 2,
         paidAt: new Date(),
         idempotencyKey,
-        requestHash: idempotencyKey,
+        requestHash: idempotencyKey.slice(0, 64),
       },
       select: { id: true },
     });
@@ -413,21 +421,46 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
         contentMarkdown: deliveryMd,
       },
     });
+    await tx.marketOrderEvent.create({
+      data: {
+        orderId: order.id,
+        actorId: actor,
+        action: "POINTS_PAID",
+        fromStatus: "AWAITING_PAYMENT",
+        toStatus: "IN_PROGRESS",
+        revision: 1,
+        operationKey: `${idempotencyKey}:pay`,
+        requestHash: idempotencyKey.slice(0, 64),
+      },
+    });
+    await tx.marketOrderEvent.create({
+      data: {
+        orderId: order.id,
+        actorId: target.sellerId,
+        action: "deliver",
+        fromStatus: "IN_PROGRESS",
+        toStatus: "DELIVERED",
+        revision: 2,
+        message: "ANS 官方自动秒发交付包已送达",
+        operationKey: `${idempotencyKey}:deliver`,
+        requestHash: idempotencyKey.slice(0, 64),
+      },
+    });
     return { orderId: order.id, balance: Math.round(Number(u.quotaPoints) * 10) / 10 };
   });
 
   return {
     ok: true,
     toolUsed: "redeem_market_item",
-    replyZh: `🎁 **Pi Agent 已帮你花 ${pricePoints} 积分秒兑《${target.title}》！**\n完整 Markdown 交付包（含可直接复制的 Prompt 工作流、代码脚本与模板）已自动解锁并写入订单！当前剩余 **${result.balance} 积分**。`,
-    replyEn: `🎁 **Pi Agent redeemed "${target.title}" for ${pricePoints} pts!**\nFull Markdown toolkit has been auto-delivered to your order! Balance: **${result.balance} pts**.`,
+    replyZh: `🎁 **Pi Agent 已帮你花 ${pricePoints} 积分秒兑《${title}》！**\n完整 Markdown 交付包（含可直接复制的 Prompt 工作流、代码脚本与模板）已自动解锁并写入订单！当前剩余 **${result.balance} 积分**。`,
+    replyEn: `🎁 **Pi Agent redeemed "${title}" for ${pricePoints} pts!**\nFull Markdown toolkit has been auto-delivered to your order! Balance: **${result.balance} pts**.`,
     pointsDelta: -pricePoints,
     balancePoints: result.balance,
-    data: { orderId: result.orderId, slug: target.slug, title: target.title, pricePoints, balance: result.balance },
+    data: { orderId: result.orderId, slug: target.slug, title, pricePoints, balance: result.balance },
     links: [
       {
         href: `/market/orders/${result.orderId}`,
-        title: `📦 查看已解锁交付包：《${target.title.slice(0, 20)}…》`,
+        title: `📦 查看已解锁交付包：《${title.slice(0, 20)}…》`,
         detail: "点击直接阅读并复制完整 Markdown 工具包与代码脚本",
         icon: "discover",
       },
