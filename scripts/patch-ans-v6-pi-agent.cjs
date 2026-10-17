@@ -12,9 +12,9 @@ let routeCode = fs.readFileSync(routePath, "utf8");
 if (!routeCode.includes("executePiAgentActionProd")) {
   // 1a. Patch module 18214 to handle action === "pi_action" before zod schema parse
   const target18214 =
-    'let d=f.O.safeParse(await (0,g.Nd)(a));if(!d.success)throw new i.Yv("INVALID_INPUT",400);';
+    'let c=b.user.id;(0,g.vt)(a,c);let d=f.O.safeParse(await (0,g.Nd)(a));if(!d.success)throw new i.Yv("INVALID_INPUT",400);';
   const replacement18214 =
-    'let rawPiBody=await (0,g.Nd)(a);if(rawPiBody&&"pi_action"===rawPiBody.action)return Response.json(await (0,h.pA)(c,rawPiBody),{headers:l});let d=f.O.safeParse(rawPiBody);if(!d.success)throw new i.Yv("INVALID_INPUT",400);';
+    'let c=b.user.id;let rawPiBody=await (0,g.Nd)(a);if(rawPiBody&&"pi_action"===rawPiBody.action)return Response.json(await (0,h.pA)(c,rawPiBody),{headers:l});(0,g.vt)(a,c);let d=f.O.safeParse(rawPiBody);if(!d.success)throw new i.Yv("INVALID_INPUT",400);';
   if (!routeCode.includes(target18214)) {
     throw new Error("Could not find target18214 in route.js");
   }
