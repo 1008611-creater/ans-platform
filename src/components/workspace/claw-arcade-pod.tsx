@@ -2098,7 +2098,7 @@ export function ComputeQuestArcade({
                           +${quest.unlockUsd} ({pts} {isEn ? "pts" : "积分"})
                         </span>
                         <span className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[10px] font-bold text-purple-800 dark:text-purple-200">
-                          +{quest.rewardTokens}🎟️ +{quest.rewardStarBeans}🪙
+                          {quest.rewardTokens > 0 ? `+${quest.rewardTokens}🎟️ ` : ""}+{quest.rewardStarBeans}🪙
                         </span>
                       </div>
                       <p className="text-xs leading-relaxed text-muted-foreground">
