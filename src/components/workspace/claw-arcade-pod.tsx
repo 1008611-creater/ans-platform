@@ -103,8 +103,8 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
   {
     id: "ur-dragon-egg",
     icon: "🐉",
-    nameZh: "UR 紫金星云龙蛋 ($100 / 1000 积分)",
-    nameEn: "UR Violet-Gold Dragon Egg ($100 / 1000 Pts)",
+    nameZh: "UR 紫金星云龙蛋 ($8.0 / 80 积分)",
+    nameEn: "UR Violet-Gold Dragon Egg ($8.0 / 80 Pts)",
     roleZh: "紫金渐变龙鳞浮雕 + 琥珀金龙晶核心",
     roleEn: "Violet-gold dragon scales + amber dragon crystal core",
     glbUrl: "/arcade-3d/ur-dragon-egg.glb",
@@ -121,8 +121,8 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
   {
     id: "ssr-4090-cookie",
     icon: "🔋",
-    nameZh: "SSR 4090 显卡夹心饼干 ($50 / 500 积分)",
-    nameEn: "SSR RTX 4090 Sandwich Cookie ($50 / 500 Pts)",
+    nameZh: "SSR 4090 显卡夹心饼干 ($4.0 / 40 积分)",
+    nameEn: "SSR RTX 4090 Sandwich Cookie ($4.0 / 40 Pts)",
     roleZh: "双薄荷奶油涡轮风扇 + 华夫背板 + 金手指插脚",
     roleEn: "Dual mint-cream turbo fans + waffle backplate + gold pins",
     glbUrl: "/arcade-3d/ssr-4090-cookie.glb",
@@ -139,8 +139,8 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
   {
     id: "sr-golden-wheat",
     icon: "🌾",
-    nameZh: "SR 农大黄金麦穗胶囊 ($40 / 400 积分)",
-    nameEn: "SR CAU Golden Wheat Capsule ($40 / 400 Pts)",
+    nameZh: "SR 农大黄金麦穗胶囊 ($2.0 / 20 积分)",
+    nameEn: "SR CAU Golden Wheat Capsule ($2.0 / 20 Pts)",
     roleZh: "琥珀金星轨底座 + 重穗黄金麦浪 + 翡翠叶徽章",
     roleEn: "Amber star-orbit base + sculpted golden wheat + emerald leaf crest",
     glbUrl: "/arcade-3d/sr-golden-wheat.glb",
@@ -157,8 +157,8 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
   {
     id: "mint-star-dino",
     icon: "🦖",
-    nameZh: "R 薄荷星龙潮玩手办 ($25 / 250 积分)",
-    nameEn: "R Mint Star Dino Figurine ($25 / 250 Pts)",
+    nameZh: "R 薄荷星龙潮玩手办 ($1.5 / 15 积分)",
+    nameEn: "R Mint Star Dino Figurine ($1.5 / 15 Pts)",
     roleZh: "金麦穗皇冠 + 薄荷绿磨砂机身 + 琥珀金背棘",
     roleEn: "Golden wheat crown + matte mint body + amber dorsal spines",
     glbUrl: "/arcade-3d/mint-star-dino.glb",
@@ -573,9 +573,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-ur-1",
     rarity: "UR",
     icon: "🐉",
-    shortTag: "UR $100",
-    labelZh: "UR 紫金龙蛋 ($100)",
-    labelEn: "UR Dragon Egg ($100)",
+    shortTag: "UR 80分",
+    labelZh: "UR 紫金龙蛋 (80积分)",
+    labelEn: "UR Dragon Egg (80 Pts)",
     x: 50,
     z: 52,
     glbId: "ur-dragon-egg",
@@ -584,9 +584,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-ssr-1",
     rarity: "SSR",
     icon: "🔋",
-    shortTag: "SSR $50",
-    labelZh: "SSR 4090 显卡饼干 ($50)",
-    labelEn: "SSR 4090 Cookie ($50)",
+    shortTag: "SSR 40分",
+    labelZh: "SSR 4090 显卡饼干 (40积分)",
+    labelEn: "SSR 4090 Cookie (40 Pts)",
     x: 24,
     z: 36,
     glbId: "ssr-4090-cookie",
@@ -596,8 +596,8 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     rarity: "SSR",
     icon: "🧊",
     shortTag: "SSR 3D舱",
-    labelZh: "SSR Tripo 3D 建模舱 ($50)",
-    labelEn: "SSR Tripo 3D Pod ($50)",
+    labelZh: "SSR Tripo 3D 建模舱 (40积分)",
+    labelEn: "SSR Tripo 3D Pod (40 Pts)",
     x: 76,
     z: 62,
     glbId: "claw-cabinet",
@@ -606,9 +606,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-sr-1",
     rarity: "SR",
     icon: "🌾",
-    shortTag: "SR $40",
-    labelZh: "SR 农大黄金麦穗 ($40)",
-    labelEn: "SR Golden Wheat ($40)",
+    shortTag: "SR 20分",
+    labelZh: "SR 农大黄金麦穗 (20积分)",
+    labelEn: "SR Golden Wheat (20 Pts)",
     x: 33,
     z: 72,
     glbId: "sr-golden-wheat",
@@ -618,8 +618,8 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     rarity: "SR",
     icon: "🛠️",
     shortTag: "SR 市场券",
-    labelZh: "SR 市场算力抵扣胶囊 ($40)",
-    labelEn: "SR Market Voucher ($40)",
+    labelZh: "SR 市场算力抵扣胶囊 (20积分)",
+    labelEn: "SR Market Voucher (20 Pts)",
     x: 68,
     z: 28,
     glbId: "sr-golden-wheat",
@@ -628,9 +628,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-r-1",
     rarity: "R",
     icon: "🦖",
-    shortTag: "R $25",
-    labelZh: "R 薄荷星龙 ($25)",
-    labelEn: "R Mint Dino ($25)",
+    shortTag: "R 15分",
+    labelZh: "R 薄荷星龙 (15积分)",
+    labelEn: "R Mint Dino (15 Pts)",
     x: 18,
     z: 66,
     glbId: "mint-star-dino",
@@ -639,9 +639,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-r-2",
     rarity: "R",
     icon: "⚡",
-    shortTag: "R $25",
-    labelZh: "R 极速 Flash 能量球 ($25)",
-    labelEn: "R Flash Orb ($25)",
+    shortTag: "R 15分",
+    labelZh: "R 极速 Flash 能量球 (15积分)",
+    labelEn: "R Flash Orb (15 Pts)",
     x: 82,
     z: 38,
     glbId: "mint-star-dino",
@@ -1555,8 +1555,8 @@ export function ComputeQuestArcade({
           </h2>
           <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
             {isEn
-              ? "Complete daily/weekly quests, AgriHackathon milestones (M1–M4), or discover the 6 counter-intuitive Dino Agent easter eggs to earn Arcade Tokens and unlock your $1,000 DeepSeek V4.1 Flash + $600 Flagship compute packs."
-              : "完成每日打卡、VibeHub 充电、工作流市场上架、农客松 M1–M4 里程碑或触发右下角小恐龙 6 大反常识隐藏彩蛋，即可赚取游乐币，亲手抓出 $1,000 DeepSeek V4.1 Flash 与 $600 农客松顶配旗舰算力包！"}
+              ? "Gaussian Reward Model N(μ=125, σ=15.2): ~90% of active users steadily unlock 100–150 Gateway Points via starter draws & daily quests, while the top ~10% (SSR/UR jackpot winners & AgriHackathon milestone completionists) burst up to 155–250+ Points."
+              : "采用正态分布算力投放模型 N(μ=125, σ=15.2)：约 90% 的活跃用户通过初始 3 连抽与日常打卡稳定拿满 100–150 积分；少部分约 10% 欧皇（SSR/UR 暴击）与农客松 M1–M4 里程碑硬核玩家可冲高至 155–250+ 积分！"}
           </p>
         </div>
 
@@ -1611,15 +1611,15 @@ export function ComputeQuestArcade({
 
       {/* Progressive Compute Vault Dual Progress Dashboard */}
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        {/* Vault 1: $1,000 DeepSeek V4.1 Flash (10,000 Points) */}
+        {/* Vault 1: 90% Normal Distribution Band (100–150 Points) */}
         <div className="rounded-2xl border border-border bg-muted/25 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                {isEn ? "Tier 1 · Universal Onboarding Vault" : "第一梯队 · 全民问卷算力金库"}
+                {isEn ? "90% Normal Band · μ=125 Pts (100–150 Pts)" : "正态分布主区间 (90% 用户) · 均值 μ=125 积分"}
               </span>
               <h3 className="text-base font-semibold text-foreground">
-                {isEn ? "$1,000 DeepSeek V4.1 Flash (10,000 Pts)" : "$1,000 DeepSeek V4.1 Flash（10,000 专项积分）"}
+                {isEn ? "100–150 Pts Standard Compute Pool ($15)" : "100–150 积分大众普惠算力池（DeepSeek V4.1 Flash）"}
               </h3>
             </div>
             <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-emerald-800 dark:text-emerald-300">
@@ -1636,24 +1636,24 @@ export function ComputeQuestArcade({
           <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>
               {isEn
-                ? "Initial $50 (500 pts) unlocked · Unlock remaining $950 via Daily Quests & Claw Machine"
-                : "首期已到账 $50（500 积分）· 剩余 $950（9,500 积分）通过每日任务与抓娃娃机实时提现"}
+                ? "Base 50 pts unlocked · 3 starter draws (~50 pts) + daily check-in easily reaches 100–150 pts"
+                : "初始底仓 50 积分 + 免费 3 连抓（保底 45–60 积分）+ 每日打卡 = 90% 用户稳拿 100–150 积分"}
             </span>
             <span className="font-bold tabular-nums text-emerald-700 dark:text-emerald-300">{deepseekPct}%</span>
           </div>
         </div>
 
-        {/* Vault 2: $600 AgriHackathon Flagship Pack (6,000 Points) */}
+        {/* Vault 2: Top 10% Right-Tail & AgriHackathon Milestone Bonus Pool */}
         <div className="rounded-2xl border border-border bg-muted/25 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                {isEn ? "Tier 2 · CAU AgriHackathon Flagship Vault" : "第二梯队 · 农客松参赛顶配旗舰金库"}
+                {isEn ? "Top 10% Right Tail · Jackpot & Milestones" : "正态右尾高光区 (Top 10% 欧皇 & 赛队里程碑)"}
               </span>
               <h3 className="text-base font-semibold text-foreground">
                 {isEn
-                  ? "$600 Flagship Pack (6,000 Pts: Terra / GPT-6.1 / Opus 5.5)"
-                  : "$600 顶配旗舰包（6,000 积分：$300 Terra + $200 GPT-6.1 + $100 Opus 5.5）"}
+                  ? "+150 Pts Flagship Burst Pool (Terra / GPT-6.1 / Opus 5.5)"
+                  : "+150 积分旗舰暴击池（SSR 40分 / UR 80分 / 农客松 M1–M4）"}
               </h3>
             </div>
             <span className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-amber-800 dark:text-amber-300">
@@ -1670,8 +1670,8 @@ export function ComputeQuestArcade({
           <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>
               {isEn
-                ? "M1 Apply (20% $120) → M2 Code Host (30% $180) → M3 Wall Public (25% $150) → M4 5-Day Streak (25% $150)"
-                : "M1 报名(20% $120) → M2 代码托管(30% $180) → M3 作品墙拉Star(25% $150) → M4 5天冲刺(25% $150)"}
+                ? "M1 Apply (20 pts) → M2 Code Host (30 pts) → M3 Wall Public (25 pts) → M4 5-Day Streak (25 pts)"
+                : "M1 报名(20分) → M2 代码存证(30分) → M3 作品墙拉Star(25分) → M4 5天冲刺(25分)"}
             </span>
             <span className="font-bold tabular-nums text-amber-700 dark:text-amber-300">{flagshipPct}%</span>
           </div>
@@ -2016,8 +2016,8 @@ export function ComputeQuestArcade({
             )}
             <div className="text-[11px] font-medium text-muted-foreground">
               {isEn
-                ? "Capsule Pool: 🐉 UR ($100 Flagship, 3%) · 🔋 SSR ($50 + 3D Voucher, 12%) · 🌾 SR ($40 + Market Voucher, 30%) · 🦖 R ($25 Flash, 55%)"
-                : "奖池一览：🐉 UR 紫金龙蛋($100旗舰, 3%) · 🔋 SSR 4090饼干($50+3D建模券, 12%) · 🌾 SR 黄金麦穗($40+市场券, 30%) · 🦖 R 薄荷星龙($25保底, 55%)"}
+                ? "Capsule Pool: 🐉 UR (80 Pts, 2%) · 🔋 SSR (40 Pts + 3D Voucher, 8%) · 🌾 SR (20 Pts + Market Voucher, 35%) · 🦖 R (15 Pts Flash, 55%)"
+                : "奖池一览：🐉 UR 紫金龙蛋(80分, 2%) · 🔋 SSR 4090饼干(40分+3D建模券, 8%) · 🌾 SR 黄金麦穗(20分+市场券, 35%) · 🦖 R 薄荷星龙(15分保底, 55%)"}
             </div>
           </div>
         </div>
@@ -2042,7 +2042,7 @@ export function ComputeQuestArcade({
                     },
                     {
                       id: "agri",
-                      labelZh: "🌾 农客松 M1-M4 ($600)",
+                      labelZh: "🌾 农客松 M1-M4 (+100分)",
                       labelEn: "🌾 AgriHackathon M1-M4",
                     },
                     {

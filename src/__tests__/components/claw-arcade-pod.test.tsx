@@ -31,9 +31,9 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     expect(USD_PER_POINT).toBe(0.1);
 
     const initial = loadQuestArcadeState("u-ratio");
-    expect(initial.deepseekTotalUsd).toBe(1000);
-    expect(initial.deepseekUnlockedUsd).toBe(50); // $50 = 500 pts initial unlock
-    expect(initial.flagshipTotalUsd).toBe(600); // $300 Terra + $200 GPT-6.1 + $100 Opus 5.5
+    expect(initial.deepseekTotalUsd).toBe(15); // $15 = 150 pts normal-distribution upper bound
+    expect(initial.deepseekUnlockedUsd).toBe(5); // $5 = 50 pts initial base unlock
+    expect(initial.flagshipTotalUsd).toBe(15); // $15 = 150 pts right-tail & milestone pool
     expect(initial.arcadeTokens).toBe(3);
   });
 
@@ -43,18 +43,26 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
 
     const m1 = advanceAndClaimQuest("agri_m1_apply", "u-quest");
     expect(m1?.newlyClaimed).toBe(true);
-    expect(m1?.state.flagshipUnlockedUsd).toBe(120); // 20% of $600 = $120 (1,200 pts)
-    expect(m1?.state.arcadeTokens).toBe(6); // 3 starter + 3 reward
+    expect(m1?.state.flagshipUnlockedUsd).toBe(2); // $2 = 20 pts
+    expect(m1?.state.arcadeTokens).toBe(4); // 3 starter + 1 reward
 
     const secretPua = advanceAndClaimQuest("secret_reverse_pua", "u-quest");
     expect(secretPua?.newlyClaimed).toBe(true);
-    expect(secretPua?.state.flagshipUnlockedUsd).toBe(140);
+    expect(secretPua?.state.flagshipUnlockedUsd).toBe(3); // $2 + $1 = $3 (30 pts)
     expect(secretPua?.state.secretUnlockedAt.secret_reverse_pua).toBeTruthy();
   });
 
   it("draws prizes from the 3D Claw Machine and guarantees SSR/UR at 10-draw pity", () => {
-    // Give user enough tokens for 10 draws
-    for (const q of ["agri_m1_apply", "agri_m2_code_host", "agri_m3_wall_public"]) {
+    // Give user enough tokens for 10 draws (3 starter + 7 quest tokens = 10 tokens)
+    for (const q of [
+      "daily_checkin",
+      "daily_vibehub_read",
+      "agri_m1_apply",
+      "agri_m2_code_host",
+      "agri_m3_wall_public",
+      "agri_m4_streak_final",
+      "secret_ssr_gpu_cookie",
+    ]) {
       advanceAndClaimQuest(q, "u-pity");
     }
     let sawHighRarity = false;
@@ -72,7 +80,7 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     render(<ComputeQuestArcade actorId="u-ui" />);
     expect(screen.getByText(/1 积分 = ¥0.10 元 = \$0.10 USD/i)).toBeTruthy();
     expect(screen.getByTestId("arcade-token-count").textContent).toContain("3");
-    expect(screen.getByTestId("gateway-live-points").textContent).toContain("500");
+    expect(screen.getByTestId("gateway-live-points").textContent).toContain("50");
 
     // Claim daily check-in quest
     const claimCheckin = screen.getByTestId("claim-quest-daily_checkin");
@@ -133,14 +141,15 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     }
   });
 
-  it("enforces deterministic server-side prize rolling and 10-draw SR+ pity", async () => {
+  it("enforces deterministic server-side prize rolling, 10-draw SR+ pity, and 90% [100,150] Gaussian cap", async () => {
     const {
       ARCADE_PRIZE_REWARDS,
       ARCADE_DAILY_NON_MILESTONE_POINTS_CAP,
+      computeUserGaussianArcadeCap,
       rollServerArcadePrize,
     } = await import("@/server/compute-benefits/arcade");
 
-    expect(ARCADE_DAILY_NON_MILESTONE_POINTS_CAP).toBe(800);
+    expect(ARCADE_DAILY_NON_MILESTONE_POINTS_CAP).toBe(150);
 
     for (let i = 1; i <= 30; i++) {
       const prizeId = rollServerArcadePrize("user-test-1", `draw_test_${i}`, i);
@@ -149,6 +158,32 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
         expect(ARCADE_PRIZE_REWARDS[prizeId].rarity).not.toBe("R");
       }
     }
+
+    // Verify across 1,000 users that ~90% land in [100, 150] (mean ~125) and ~10% land in [155, 250]
+    let normalBandCount = 0;
+    let normalBandSum = 0;
+    let rightTailCount = 0;
+    const sampleSize = 1000;
+    for (let u = 1; u <= sampleSize; u++) {
+      const res = computeUserGaussianArcadeCap(`cau-student-${u}`);
+      if (!res.isTopTail) {
+        expect(res.targetPoints).toBeGreaterThanOrEqual(100);
+        expect(res.targetPoints).toBeLessThanOrEqual(150);
+        normalBandCount += 1;
+        normalBandSum += res.targetPoints;
+      } else {
+        expect(res.targetPoints).toBeGreaterThanOrEqual(155);
+        expect(res.targetPoints).toBeLessThanOrEqual(250);
+        rightTailCount += 1;
+      }
+    }
+    const normalRatio = normalBandCount / sampleSize;
+    const normalMean = normalBandSum / normalBandCount;
+    expect(normalRatio).toBeGreaterThan(0.86);
+    expect(normalRatio).toBeLessThan(0.94);
+    expect(normalMean).toBeGreaterThan(122);
+    expect(normalMean).toBeLessThan(128);
+    expect(rightTailCount).toBe(sampleSize - normalBandCount);
   });
 });
 
