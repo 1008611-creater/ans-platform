@@ -15,8 +15,9 @@ export const agentRequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("status"), ticket: z.string().min(20).max(2000) }).strict(),
   z.object({
     action: z.literal("pi_action"),
-    intent: z.enum(["checkin", "claw", "market", "scaffold", "redeem", "auto"]).optional(),
-    prompt: z.string().trim().max(400).optional(),
+    intent: z.enum(["checkin", "claw", "market", "scaffold", "redeem", "playground", "auto"]).optional(),
+    prompt: z.string().trim().max(4000).optional(),
+    model: z.enum(["deepseek-v4.1-flash", "gpt-6-astra", "gpt-6.1-sol"]).optional(),
   }).strict(),
 ]);
 export type AgentInput = z.infer<typeof agentInputSchema>;

@@ -35,7 +35,8 @@ function OrderStudioSession({ order, userId }: { order: MarketOrderView; userId:
   const role = order.buyerId === userId ? "buyer" : "seller";
   const canOpenProject = role === "buyer" && order.paymentMethod === "POINTS" && Boolean(order.paidAt) && ["AWAITING_REQUIREMENTS", "IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED", "COMPLETED"].includes(order.status);
   const actions = availableMarketActions({ ...order, revisionLimit: order.quote.revisionLimit }, role);
-  const [selected, setSelected] = useState(actions[0]); const chosen = actions.includes(selected) ? selected : actions[0];
+  const defaultAction = actions.includes("accept") ? "accept" : actions[0];
+  const [selected, setSelected] = useState(defaultAction); const chosen = actions.includes(selected) ? selected : defaultAction;
   const [busy, setBusy] = useState(false); const [error, setError] = useState("");
   const [pending, setPending] = useState<PendingOrderCommand | null>(null);
   const pendingRef = useRef<PendingOrderCommand | null>(null);

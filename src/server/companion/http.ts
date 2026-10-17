@@ -19,7 +19,7 @@ export async function companionAgentResponse(request: Request) {
     if (body.action === "pi_action") {
       if (request.headers.get("x-ans-actor")) assertRequestActor(request, actor);
       const { executePiAgentAction } = await import("./pi-agent");
-      return Response.json(await executePiAgentAction(actor, { intent: body.intent, prompt: body.prompt }), { headers });
+      return Response.json(await executePiAgentAction(actor, { intent: body.intent, prompt: body.prompt, model: body.model }), { headers });
     }
     assertRequestActor(request, actor);
     if (body.action === "quote") return Response.json(await prepareAgentQuote(actor, body.input), { headers });
