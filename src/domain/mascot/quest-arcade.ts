@@ -28,7 +28,7 @@ export const CNY_PER_POINT = 0.1;
 export const USD_PER_POINT = 0.1;
 
 export type QuestCategory = "daily" | "weekly" | "agri" | "secret";
-export type PrizeRarity = "UR" | "SSR" | "SR" | "R";
+export type PrizeRarity = "SP" | "UR" | "SSR" | "SR" | "R";
 
 export interface QuestDefinition {
   id: string;
@@ -386,44 +386,60 @@ export const QUEST_DEFINITIONS: readonly QuestDefinition[] = [
 
 export const ARCADE_PRIZES: readonly ArcadePrize[] = [
   {
+    id: "prize_sp_mythic_jackpot",
+    rarity: "SP",
+    icon: "👑",
+    color: "from-yellow-300 via-rose-500 to-purple-700",
+    nameZh: "天选农大锦鲤 · 1000 积分神话算力免单大奖 (0.1%)",
+    nameEn: "Mythic CAU Koi · 1,000 Pts Grand Jackpot (0.1%)",
+    descZh: "千分之一神话天选暴击！立即解锁 $100.0（1000 积分 ≈ ¥100 元）满血旗舰算力 + 888 星豆 + 3 张 3D 建模免单券！",
+    descEn: "0.1% Mythic Jackpot! Instantly unlock $100.0 (1,000 pts ≈ ¥100 CNY) Flagship quota + 888 Star Beans + 3 Tripo 3D Vouchers!",
+    unlockPool: "flagship",
+    unlockUsd: 100,
+    starBeans: 888,
+    bonusBadgeZh: "SP 神话 · 1000 积分免单大奖 (0.1%)",
+    bonusBadgeEn: "SP Mythic · 1,000 Pts Jackpot (0.1%)",
+    probability: 0.001,
+  },
+  {
     id: "prize_ur_dragon_egg",
     rarity: "UR",
     icon: "🐉",
     color: "from-amber-400 via-fuchsia-500 to-indigo-600",
-    nameZh: "紫金麦穗龙蛋 · 欧皇极客大奖 (Top 2%)",
-    nameEn: "Violet-Gold Dragon Egg · Jackpot Geek Pack (Top 2%)",
-    descZh: "正态分布右尾暴击！立即从旗舰金库提取 $5.0（50 积分）满血额度 + 100 灵感星豆 + UR 荣耀印记！",
-    descEn: "Right-tail jackpot! Instantly unlock $5.0 (50 pts) Flagship Vault quota + 100 Star Beans + UR crest!",
+    nameZh: "紫金麦穗龙蛋 · 300 积分欧皇传说大奖 (0.9%)",
+    nameEn: "Violet-Gold Dragon Egg · 300 Pts Legend Jackpot (0.9%)",
+    descZh: "百里挑一传说暴击！立即从旗舰金库提取 $30.0（300 积分 ≈ ¥30 元）满血额度 + 200 灵感星豆 + UR 荣耀印记！",
+    descEn: "0.9% Legend Jackpot! Instantly unlock $30.0 (300 pts ≈ ¥30 CNY) Flagship Vault quota + 200 Star Beans + UR crest!",
     unlockPool: "flagship",
-    unlockUsd: 5,
-    starBeans: 100,
-    bonusBadgeZh: "UR 传说 · 50 旗舰积分",
-    bonusBadgeEn: "UR Legend · 50 Flagship Pts",
-    probability: 0.02,
+    unlockUsd: 30,
+    starBeans: 200,
+    bonusBadgeZh: "UR 传说 · 300 旗舰积分 (0.9%)",
+    bonusBadgeEn: "UR Legend · 300 Flagship Pts (0.9%)",
+    probability: 0.009,
   },
   {
     id: "prize_ssr_gpu_cookie",
     rarity: "SSR",
     icon: "🔋",
     color: "from-emerald-400 via-teal-500 to-cyan-600",
-    nameZh: "4090 满血显卡饼干 · 3D 建模体验券 + 25 积分",
-    nameEn: "RTX 4090 Cookie · Tripo 3D Voucher + 25 Pts",
-    descZh: "解锁 $2.5（25 积分）旗舰额度 + 赠送 1 张 Tripo 四视图 3D 建模免单体验券！",
-    descEn: "Unlock $2.5 (25 pts) Flagship quota + 1 Tripo Multiview 3D Modeling Free Voucher!",
+    nameZh: "4090 满血显卡饼干 · 80 积分 + 3D 建模体验券 (4%)",
+    nameEn: "RTX 4090 Cookie · 80 Pts + Tripo 3D Voucher (4%)",
+    descZh: "史诗暴击！解锁 $8.0（80 积分 ≈ ¥8 元）旗舰额度 + 赠送 1 张 Tripo 四视图 3D 建模免单体验券！",
+    descEn: "Epic hit! Unlock $8.0 (80 pts ≈ ¥8 CNY) Flagship quota + 1 Tripo Multiview 3D Modeling Free Voucher!",
     unlockPool: "flagship",
-    unlockUsd: 2.5,
-    starBeans: 60,
-    bonusBadgeZh: "SSR 史诗 · 25 积分 + 3D券",
-    bonusBadgeEn: "SSR Epic · 25 Pts + 3D Voucher",
-    probability: 0.08,
+    unlockUsd: 8,
+    starBeans: 80,
+    bonusBadgeZh: "SSR 史诗 · 80 积分 + 3D券 (4%)",
+    bonusBadgeEn: "SSR Epic · 80 Pts + 3D Voucher (4%)",
+    probability: 0.04,
   },
   {
     id: "prize_sr_golden_wheat",
     rarity: "SR",
     icon: "🌾",
     color: "from-amber-300 via-orange-400 to-amber-600",
-    nameZh: "农大黄金麦穗胶囊 · 工作流市场券 + 15 积分",
-    nameEn: "CAU Golden Wheat Capsule · Market Voucher + 15 Pts",
+    nameZh: "农大黄金麦穗胶囊 · 工作流市场券 + 15 积分 (30%)",
+    nameEn: "CAU Golden Wheat Capsule · Market Voucher + 15 Pts (30%)",
     descZh: "从金库提取 $1.5（15 积分）DeepSeek V4.1 Flash 额度 + 1 张工作流市场体验抵扣券！",
     descEn: "Unlock $1.5 (15 pts) DeepSeek V4.1 Flash quota + 1 Workflow Marketplace Discount Voucher!",
     unlockPool: "deepseek",
@@ -431,15 +447,15 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     starBeans: 45,
     bonusBadgeZh: "SR 稀有 · 15 积分 + 市场券",
     bonusBadgeEn: "SR Rare · 15 Pts + Market Voucher",
-    probability: 0.35,
+    probability: 0.3,
   },
   {
     id: "prize_r_mint_dino",
     rarity: "R",
     icon: "🦖",
     color: "from-sky-400 via-blue-500 to-indigo-500",
-    nameZh: "Q版薄荷星龙盲盒 · 10 Flash 算力积分 + 灵感星豆",
-    nameEn: "Mint Star Dino Capsule · 10 Flash Pts + Star Beans",
+    nameZh: "Q版薄荷星龙盲盒 · 10 Flash 算力积分 + 灵感星豆 (65%)",
+    nameEn: "Mint Star Dino Capsule · 10 Flash Pts + Star Beans (65%)",
     descZh: "100% 不空军！立即提取 $1.0（10 积分）DeepSeek V4.1 Flash 额度 + 30 灵感星豆！",
     descEn: "100% win rate! Unlock $1.0 (10 pts) DeepSeek V4.1 Flash quota + 30 Star Beans!",
     unlockPool: "deepseek",
@@ -447,7 +463,7 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     starBeans: 30,
     bonusBadgeZh: "R 必得 · 10 Flash 积分",
     bonusBadgeEn: "R Guaranteed · 10 Flash Pts",
-    probability: 0.55,
+    probability: 0.65,
   },
 ] as const;
 
@@ -467,13 +483,13 @@ export function getTodayBeijingDate(): string {
 export function createInitialQuestArcadeState(): QuestArcadeState {
   return {
     version: 1,
-    arcadeTokens: 3, // New users get 3 starter tokens (~30–45 pts expected draw value)
+    arcadeTokens: 3, // New users get 3 starter tokens (~30–45 pts normal draw value, with 0.1% 1000-pt & 0.9% 300-pt jackpot chance)
     pityCounter: 0,
     streakDays: 1,
     lastCheckInDate: null,
-    deepseekTotalUsd: 15, // $15 = 150 Points (90% user All-ANS total upper bound)
+    deepseekTotalUsd: 15, // $15 = 150 Points (90% user All-ANS normal-distribution upper bound)
     deepseekUnlockedUsd: 5, // $5 = 50 Points starter base unlocked (matches Onboarding Questionnaire)
-    flagshipTotalUsd: 6, // $6 = 60 Points (top 10% right-tail & AgriHackathon M1-M4 pool; max All-ANS total = 210 pts)
+    flagshipTotalUsd: 100, // $100 = 1,000 Points (supports up to the 0.1% 1,000-pt Mythic Jackpot & 0.9% 300-pt UR Jackpot)
     flagshipUnlockedUsd: 0,
     tripoFreeVouchers: 0,
     marketDiscountVouchers: 0,
@@ -671,8 +687,14 @@ export function drawArcadePrize(
   if (preferredRarity) {
     selected = ARCADE_PRIZES.find(p => p.rarity === preferredRarity) ?? selected;
   } else if (nextPity >= 10) {
-    // Hard pity at 10 draws: guaranteed SSR or UR
-    selected = Math.random() < 0.25 ? ARCADE_PRIZES[0] : ARCADE_PRIZES[1];
+    // Hard pity at 10 draws: guaranteed SSR (90%), UR (9%), or SP (1%)
+    const pityRoll = Math.random();
+    selected =
+      pityRoll < 0.01
+        ? ARCADE_PRIZES[0]
+        : pityRoll < 0.1
+          ? ARCADE_PRIZES[1]
+          : ARCADE_PRIZES[2];
   } else {
     const roll = Math.random();
     let acc = 0;
@@ -685,7 +707,8 @@ export function drawArcadePrize(
     }
   }
 
-  const resetPity = selected.rarity === "UR" || selected.rarity === "SSR" ? 0 : nextPity;
+  const resetPity =
+    selected.rarity === "SP" || selected.rarity === "UR" || selected.rarity === "SSR" ? 0 : nextPity;
   const record: ArcadeRewardRecord = {
     id: `draw-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     prizeId: selected.id,
@@ -711,7 +734,11 @@ export function drawArcadePrize(
         ? Math.min(current.flagshipTotalUsd, Number((current.flagshipUnlockedUsd + selected.unlockUsd).toFixed(2)))
         : current.flagshipUnlockedUsd,
     tripoFreeVouchers:
-      selected.id === "prize_ssr_gpu_cookie" ? current.tripoFreeVouchers + 1 : current.tripoFreeVouchers,
+      selected.id === "prize_sp_mythic_jackpot"
+        ? current.tripoFreeVouchers + 3
+        : selected.id === "prize_ssr_gpu_cookie"
+          ? current.tripoFreeVouchers + 1
+          : current.tripoFreeVouchers,
     marketDiscountVouchers:
       selected.id === "prize_sr_golden_wheat" ? current.marketDiscountVouchers + 1 : current.marketDiscountVouchers,
     drawHistory: [record, ...current.drawHistory].slice(0, 20),

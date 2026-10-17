@@ -570,37 +570,37 @@ async function fetchAndParseGlbAsset(meta: TripoGlbAssetMeta): Promise<ParsedGlb
 
 const INITIAL_CAPSULES: readonly CapsuleItem[] = [
   {
+    id: "cap-sp-1",
+    rarity: "SP",
+    icon: "👑",
+    shortTag: "SP 1000分",
+    labelZh: "SP 天选锦鲤大奖 (1000积分 · 0.1%)",
+    labelEn: "SP Mythic Koi (1,000 Pts · 0.1%)",
+    x: 50,
+    z: 50,
+    glbId: "ur-dragon-egg",
+  },
+  {
     id: "cap-ur-1",
     rarity: "UR",
     icon: "🐉",
-    shortTag: "UR 50分",
-    labelZh: "UR 紫金龙蛋 (50积分)",
-    labelEn: "UR Dragon Egg (50 Pts)",
-    x: 50,
-    z: 52,
+    shortTag: "UR 300分",
+    labelZh: "UR 紫金龙蛋 (300积分 · 0.9%)",
+    labelEn: "UR Dragon Egg (300 Pts · 0.9%)",
+    x: 76,
+    z: 62,
     glbId: "ur-dragon-egg",
   },
   {
     id: "cap-ssr-1",
     rarity: "SSR",
     icon: "🔋",
-    shortTag: "SSR 25分",
-    labelZh: "SSR 4090 显卡饼干 (25积分)",
-    labelEn: "SSR 4090 Cookie (25 Pts)",
+    shortTag: "SSR 80分",
+    labelZh: "SSR 4090 显卡饼干 (80积分 · 4%)",
+    labelEn: "SSR 4090 Cookie (80 Pts · 4%)",
     x: 24,
     z: 36,
     glbId: "ssr-4090-cookie",
-  },
-  {
-    id: "cap-ssr-2",
-    rarity: "SSR",
-    icon: "🧊",
-    shortTag: "SSR 3D舱",
-    labelZh: "SSR Tripo 3D 建模舱 (25积分)",
-    labelEn: "SSR Tripo 3D Pod (25 Pts)",
-    x: 76,
-    z: 62,
-    glbId: "claw-cabinet",
   },
   {
     id: "cap-sr-1",
@@ -649,6 +649,7 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
 ];
 
 const CAPSULE_PALETTE: Record<PrizeRarity, { shell: string; glow: string; core: string }> = {
+  SP: { shell: "rgba(244, 63, 94, 0.95)", glow: "rgba(250, 204, 21, 0.85)", core: "#fef08a" },
   UR: { shell: "rgba(245, 158, 11, 0.92)", glow: "rgba(217, 70, 239, 0.65)", core: "#fde047" },
   SSR: { shell: "rgba(16, 185, 129, 0.92)", glow: "rgba(6, 182, 212, 0.65)", core: "#6ee7b7" },
   SR: { shell: "rgba(249, 115, 22, 0.9)", glow: "rgba(251, 191, 36, 0.55)", core: "#fed7aa" },
@@ -896,8 +897,8 @@ function DinoClaw3DViewport({
           ctx.restore();
         }
 
-        // Orbiting 3D Energy Ring around UR / SSR or targeted capsule
-        if (cap.rarity === "UR" || cap.rarity === "SSR" || isTargeted) {
+        // Orbiting 3D Energy Ring around SP / UR / SSR or targeted capsule
+        if (cap.rarity === "SP" || cap.rarity === "UR" || cap.rarity === "SSR" || isTargeted) {
           ctx.save();
           ctx.translate(proj.sx, proj.sy);
           ctx.rotate(Math.sin(t * 1.6 + idx) * 0.32);
@@ -1555,8 +1556,8 @@ export function ComputeQuestArcade({
           </h2>
           <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
             {isEn
-              ? "All-ANS Unified Gaussian Budget N(μ=120, σ=15.2): Across ALL ANS activities combined (50 pts Onboarding Base + 3D Claw/Roulette + Quests + Dino Easter Eggs), ~90% of users receive 100–150 Total Points (≈¥10–¥15 CNY), while the top ~10% reach 155–210 Total Points."
-              : "全站统一正态分布算力预算 N(μ=120, σ=15.2)：汇总 ANS 全站所有免费渠道（问卷基础 50 积分 + 3D 抓娃娃/转盘 + 日常打卡 + 灵龙彩蛋），约 90% 用户全站累计获赠 100–150 积分（折合 ¥10–¥15 元），约 10% 欧皇与农客松参赛队最高可达 155–210 积分！"}
+              ? "All-ANS Gaussian + Low-Prob Jackpot Model: ~90% of users steadily receive 100–150 Total Points (≈¥10–¥15 CNY across Onboarding 50 pts + Quests/Draws), while low-probability jackpots offer 80 Pts (SSR 4%), 300 Pts (UR 0.9%), and up to 1,000 Pts / ¥100 Mythic Koi (SP 0.1%)!"
+              : "全站正态分布 + 低概率重磅大奖模型：约 90% 用户全站累计获赠 100–150 积分（含问卷基础 50 积分 + 抓娃娃/打卡，折合 ¥10–¥15 元）；同时奖池设置低概率重磅大奖——SSR 80 积分 (4%)、UR 紫金龙蛋 300 积分 (0.9%)、SP 天选锦鲤 1000 积分免单大奖 (0.1% · 价值 ¥100 元)！"}
           </p>
         </div>
 
@@ -1643,17 +1644,17 @@ export function ComputeQuestArcade({
           </div>
         </div>
 
-        {/* Vault 2: Top 10% Right-Tail & AgriHackathon Milestone Bonus Pool */}
+        {/* Vault 2: Low-Probability Grand Jackpot & AgriHackathon Milestone Bonus Pool */}
         <div className="rounded-2xl border border-border bg-muted/25 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                {isEn ? "Top 10% Right Tail · Jackpot & Agri Milestones" : "正态右尾高光区 (Top 10% 欧皇 & 农客松获批赛队)"}
+                {isEn ? "Low-Prob Jackpots (0.1% / 0.9% / 4%) & Agri Milestones" : "低概率欧皇暴击大奖池 (0.1% / 0.9% / 4%) & 农客松里程碑"}
               </span>
               <h3 className="text-base font-semibold text-foreground">
                 {isEn
-                  ? "+60 Pts Flagship Bonus Pool ($6 · Terra $3 / Sol $2 / Opus $1)"
-                  : "+60 积分赛事与欧皇加成池（$6：SSR 25分 / UR 50分 / 农客松 M1–M4）"}
+                  ? "Up to 1,000 Pts ($100) Mythic Jackpot & +60 Pts Agri Pool"
+                  : "最高 1000 积分（¥100 天选锦鲤）/ 300 积分龙蛋 / +60 分农客松池"}
               </h3>
             </div>
             <span className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-amber-800 dark:text-amber-300">
@@ -1670,8 +1671,8 @@ export function ComputeQuestArcade({
           <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>
               {isEn
-                ? "M1 Apply (12 pts) → M2 Code Host (18 pts) → M3 Wall Public (15 pts) → M4 5-Day Streak (15 pts) = 60 pts"
-                : "M1 报名(12分) → M2 代码存证(18分) → M3 作品墙拉Star(15分) → M4 5天冲刺(15分) = 共 60 积分"}
+                ? "👑 SP 1,000 pts (0.1%) · 🐉 UR 300 pts (0.9%) · 🔋 SSR 80 pts (4%) · 🌾 Agri M1–M4 (+60 pts)"
+                : "👑 SP 锦鲤 1000分(0.1%) · 🐉 UR 龙蛋 300分(0.9%) · 🔋 SSR 80分(4%) · 🌾 农客松 M1–M4(+60分)"}
             </span>
             <span className="font-bold tabular-nums text-amber-700 dark:text-amber-300">{flagshipPct}%</span>
           </div>
@@ -1739,7 +1740,7 @@ export function ComputeQuestArcade({
                 </button>
               </div>
               <span className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-[11px] font-bold text-purple-800 dark:text-purple-200">
-                {isEn ? `SSR/UR Pity: ${state.pityCounter}/10` : `十连保底 SSR/UR：${state.pityCounter}/10`}
+                {isEn ? `SSR/UR/SP Pity: ${state.pityCounter}/10` : `十连保底 SSR/UR/SP：${state.pityCounter}/10`}
               </span>
             </div>
 
@@ -1861,26 +1862,20 @@ export function ComputeQuestArcade({
                     </span>
                   </div>
 
-                  {/* 8-Sector Conic-Gradient Wheel with Counter-Rotated Upright Badges */}
+                  {/* 5-Sector Conic-Gradient Wheel with Counter-Rotated Upright Badges */}
                   <div
                     className="relative flex h-44 w-44 items-center justify-center rounded-full border-4 border-amber-400/80 shadow-2xl transition-transform duration-700 ease-out"
                     style={{
                       transform: `rotate(${wheelAngle}deg)`,
                       background:
-                        "conic-gradient(from -45deg, #4c1d95 0deg 90deg, #065f46 90deg 180deg, #78350f 180deg 270deg, #1e3a8a 270deg 360deg)",
+                        "conic-gradient(from -36deg, #9f1239 0deg 72deg, #4c1d95 72deg 144deg, #065f46 144deg 216deg, #78350f 216deg 288deg, #1e3a8a 288deg 360deg)",
                     }}
                   >
-                    {/* Crosshair sector dividers */}
-                    <div className="pointer-events-none absolute inset-0 rotate-45">
-                      <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-amber-300/40" />
-                      <div className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-amber-300/40" />
-                    </div>
-
                     {ARCADE_PRIZES.map((prize, idx) => {
-                      const angle = idx * 90;
+                      const angle = idx * (360 / ARCADE_PRIZES.length);
                       const rad = (angle - 90) * (Math.PI / 180);
-                      const tx = Math.round(Math.cos(rad) * 56);
-                      const ty = Math.round(Math.sin(rad) * 56);
+                      const tx = Math.round(Math.cos(rad) * 58);
+                      const ty = Math.round(Math.sin(rad) * 58);
                       return (
                         <div
                           key={prize.id}
@@ -1889,9 +1884,9 @@ export function ComputeQuestArcade({
                           }}
                           className="absolute flex flex-col items-center text-center transition-transform duration-700 ease-out"
                         >
-                          <span className="text-xl leading-none drop-shadow">{prize.icon}</span>
-                          <span className="mt-0.5 rounded bg-slate-950/90 px-1.5 py-0.5 text-[9px] font-black text-amber-200 ring-1 ring-amber-400/40">
-                            {prize.rarity} · ${prize.unlockUsd}
+                          <span className="text-lg leading-none drop-shadow">{prize.icon}</span>
+                          <span className="mt-0.5 rounded bg-slate-950/90 px-1.5 py-0.5 text-[8px] font-black text-amber-200 ring-1 ring-amber-400/40">
+                            {prize.rarity} · {Math.round(prize.unlockUsd * POINTS_PER_USD)}分
                           </span>
                         </div>
                       );
@@ -1902,8 +1897,8 @@ export function ComputeQuestArcade({
                   </div>
                   <p className="mt-2 text-[11px] text-slate-300">
                     {isEn
-                      ? "100% Win Rate · Every spin unlocks Vault Compute + Star Beans!"
-                      : "100% 中奖不空军 · 每一转直接从算力金库提取真金白银额度！"}
+                      ? "100% Win Rate · 0.1% Mythic 1,000 Pts Jackpot & 0.9% UR 300 Pts!"
+                      : "100% 必中 · 更有 0.1% 天选锦鲤 1000 积分 & 0.9% UR 龙蛋 300 积分大奖！"}
                   </p>
                 </div>
 
@@ -2016,8 +2011,8 @@ export function ComputeQuestArcade({
             )}
             <div className="text-[11px] font-medium text-muted-foreground">
               {isEn
-                ? "Capsule Pool: 🐉 UR (50 Pts, 2%) · 🔋 SSR (25 Pts + 3D Voucher, 8%) · 🌾 SR (15 Pts + Market Voucher, 35%) · 🦖 R (10 Pts Flash, 55%)"
-                : "奖池一览：🐉 UR 紫金龙蛋(50分, 2%) · 🔋 SSR 4090饼干(25分+3D建模券, 8%) · 🌾 SR 黄金麦穗(15分+市场券, 35%) · 🦖 R 薄荷星龙(10分保底, 55%)"}
+                ? "Jackpot & Capsule Pool: 👑 SP Mythic Koi (1,000 Pts, 0.1%) · 🐉 UR Dragon Egg (300 Pts, 0.9%) · 🔋 SSR 4090 Cookie (80 Pts + 3D Voucher, 4%) · 🌾 SR Golden Wheat (15 Pts, 30%) · 🦖 R Mint Dino (10 Pts, 65%)"
+                : "奖池概率公示：👑 SP 天选锦鲤(1000分 ≈ ¥100, 0.1%) · 🐉 UR 紫金龙蛋(300分 ≈ ¥30, 0.9%) · 🔋 SSR 4090饼干(80分+3D券, 4%) · 🌾 SR 黄金麦穗(15分+市场券, 30%) · 🦖 R 薄荷星龙(10分保底, 65%)"}
             </div>
           </div>
         </div>

@@ -43,12 +43,13 @@ export const ARCADE_QUEST_REWARDS: Readonly<
 };
 
 export const ARCADE_PRIZE_REWARDS: Readonly<
-  Record<string, { points: number; weight: number; rarity: "UR" | "SSR" | "SR" | "R"; title: string }>
+  Record<string, { points: number; weight: number; rarity: "SP" | "UR" | "SSR" | "SR" | "R"; title: string }>
 > = {
-  prize_ur_dragon_egg: { points: 50, weight: 20, rarity: "UR", title: "Arcade UR · Violet-Gold Dragon Egg" },
-  prize_ssr_gpu_cookie: { points: 25, weight: 80, rarity: "SSR", title: "Arcade SSR · RTX 4090 Cookie" },
-  prize_sr_golden_wheat: { points: 15, weight: 350, rarity: "SR", title: "Arcade SR · CAU Golden Wheat Capsule" },
-  prize_r_mint_dino: { points: 10, weight: 550, rarity: "R", title: "Arcade R · Mint Star Dino Capsule" },
+  prize_sp_mythic_jackpot: { points: 1000, weight: 1, rarity: "SP", title: "Arcade SP · Mythic CAU Koi 1,000 Pts Jackpot" },
+  prize_ur_dragon_egg: { points: 300, weight: 9, rarity: "UR", title: "Arcade UR · Violet-Gold Dragon Egg 300 Pts" },
+  prize_ssr_gpu_cookie: { points: 80, weight: 40, rarity: "SSR", title: "Arcade SSR · RTX 4090 Cookie 80 Pts" },
+  prize_sr_golden_wheat: { points: 15, weight: 300, rarity: "SR", title: "Arcade SR · CAU Golden Wheat Capsule" },
+  prize_r_mint_dino: { points: 10, weight: 650, rarity: "R", title: "Arcade R · Mint Star Dino Capsule" },
 };
 
 const BASE_STARTER_TOKENS = 3;
@@ -56,12 +57,13 @@ export const ARCADE_BASE_ONBOARDING_POINTS = 50; // $5 Onboarding Questionnaire 
 export const ARCADE_DAILY_NON_MILESTONE_POINTS_CAP = 150; // All-ANS 90% Normal-Distribution Total Upper Bound
 
 /**
- * Deterministic All-ANS Lifetime Gaussian (Box-Muller) allocation curve per user:
+ * Deterministic All-ANS Lifetime Gaussian + Low-Probability Jackpot allocation curve per user:
  * - Includes the 50-point ($5) Onboarding Base + Lifetime Arcade/Quest/Easter-Egg rewards:
- * - 90% of users land in the normal band [100, 150] TOTAL ANS points (mean μ = 120, σ ≈ 15.2, ±1.645σ = [100, 150]),
- *   which corresponds to [50, 100] incremental points from Arcade/Quests/Easter Eggs on top of the 50-pt base.
- * - 10% of users land in the right tail [155, 210] TOTAL ANS points (SSR/UR jackpot pullers & easter-egg hunters),
- *   which corresponds to [105, 160] incremental points from Arcade/Quests/Easter Eggs on top of the 50-pt base.
+ * - 90.0% of users land in the normal band [100, 150] TOTAL ANS points (mean μ = 120, σ ≈ 15.2),
+ *   corresponding to [50, 100] incremental points from Arcade/Quests/Easter Eggs on top of the 50-pt base.
+ * - 9.0% of users land in the active/SSR right tail [155, 230] TOTAL ANS points ([105, 180] incremental).
+ * - 0.9% of users land in the UR Legend Jackpot tier [350, 420] TOTAL ANS points ([300, 370] incremental).
+ * - 0.1% of users land in the SP Mythic Koi Grand Jackpot tier [1050, 1150] TOTAL ANS points ([1000, 1100] incremental).
  */
 export function computeUserGaussianArcadeCap(userId: string): {
   targetPoints: number;
@@ -90,11 +92,33 @@ export function computeUserGaussianArcadeCap(userId: string): {
     };
   }
 
-  const tailBonus = Math.min(55, Math.round(Math.abs(zScore) * 22));
-  const targetPoints = Math.min(210, 155 + tailBonus);
+  if (uTail < 0.99) {
+    const tailBonus = Math.min(75, Math.round(Math.abs(zScore) * 28));
+    const targetPoints = Math.min(230, 155 + tailBonus);
+    return {
+      targetPoints,
+      arcadeLifetimeCapPoints: Math.max(105, targetPoints - ARCADE_BASE_ONBOARDING_POINTS),
+      isTopTail: true,
+      zScore,
+    };
+  }
+
+  if (uTail < 0.999) {
+    const urBonus = Math.min(70, Math.round(Math.abs(zScore) * 25));
+    const targetPoints = Math.min(420, 350 + urBonus);
+    return {
+      targetPoints,
+      arcadeLifetimeCapPoints: targetPoints - ARCADE_BASE_ONBOARDING_POINTS,
+      isTopTail: true,
+      zScore,
+    };
+  }
+
+  const spBonus = Math.min(100, Math.round(Math.abs(zScore) * 35));
+  const targetPoints = Math.min(1150, 1050 + spBonus);
   return {
     targetPoints,
-    arcadeLifetimeCapPoints: Math.max(105, targetPoints - ARCADE_BASE_ONBOARDING_POINTS),
+    arcadeLifetimeCapPoints: targetPoints - ARCADE_BASE_ONBOARDING_POINTS,
     isTopTail: true,
     zScore,
   };
@@ -111,13 +135,13 @@ const VERIFIED_MILESTONE_QUEST_IDS = new Set([
 ]);
 
 /**
- * Server-authoritative deterministic prize roll bound to (userId, drawId, drawSequence).
- * Prevents DevTools tampering where a client forces prizeId = "prize_ur_dragon_egg" on every draw.
+ * Server-authoritative deterministic prize roll bound to (userId, drawSequence).
+ * Prevents DevTools tampering where a client forces prizeId or brute-forces drawId.
  */
-export function rollServerArcadePrize(userId: string, drawId: string, drawSequence: number): string {
+export function rollServerArcadePrize(userId: string, _drawId: string, drawSequence: number): string {
   const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "ans-arcade-authoritative-seed-v1";
   const digest = createHash("sha256")
-    .update(`${secret}:${userId}:${drawId}:${drawSequence}`)
+    .update(`${secret}:server-roll-v3:${userId}:${drawSequence}`)
     .digest();
   const rawInt = digest.readUInt32BE(0);
 
@@ -347,10 +371,14 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       note = `Arcade ${input.mode} prize (${prize.title})`;
     }
 
-    // Enforce per-user LIFETIME Gaussian normal-distribution cap across all ANS non-milestone free points
-    // (All-ANS Total = 50 Onboarding Base + arcadeLifetimeCapPoints = [100, 150] for 90% of users, [155, 210] for 10% right tail)
+    // Enforce per-user LIFETIME Gaussian normal-distribution cap across all ANS non-milestone free points,
+    // while allowing genuine server-rolled low-probability jackpots (SP 0.1% / UR 0.9% / SSR 4%) to be credited in full!
     const isVerifiedMilestone = input.kind === "quest" && VERIFIED_MILESTONE_QUEST_IDS.has(input.questId);
-    if (!isVerifiedMilestone) {
+    const isServerJackpotHit =
+      awardedPrizeId === "prize_sp_mythic_jackpot" ||
+      awardedPrizeId === "prize_ur_dragon_egg" ||
+      awardedPrizeId === "prize_ssr_gpu_cookie";
+    if (!isVerifiedMilestone && !isServerJackpotHit) {
       const lifetimeOps = await tx.quotaOperation.findMany({
         where: {
           userId,

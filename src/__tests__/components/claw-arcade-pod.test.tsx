@@ -33,7 +33,7 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     const initial = loadQuestArcadeState("u-ratio");
     expect(initial.deepseekTotalUsd).toBe(15); // $15 = 150 pts All-ANS 90% normal-distribution upper bound
     expect(initial.deepseekUnlockedUsd).toBe(5); // $5 = 50 pts initial base unlock
-    expect(initial.flagshipTotalUsd).toBe(6); // $6 = 60 pts right-tail & AgriHackathon milestone pool
+    expect(initial.flagshipTotalUsd).toBe(100); // $100 = 1,000 pts SP/UR/SSR jackpot & milestone pool
     expect(initial.arcadeTokens).toBe(3);
   });
 
@@ -52,7 +52,7 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     expect(secretPua?.state.secretUnlockedAt.secret_reverse_pua).toBeTruthy();
   });
 
-  it("draws prizes from the 3D Claw Machine and guarantees SSR/UR at 10-draw pity", () => {
+  it("draws prizes from the 3D Claw Machine and guarantees SSR/UR/SP at 10-draw pity", () => {
     // Give user enough tokens for 10 draws (3 starter + 7 quest tokens = 10 tokens)
     for (const q of [
       "daily_checkin",
@@ -69,7 +69,11 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     for (let i = 0; i < 10; i++) {
       const outcome = drawArcadePrize("claw", "u-pity");
       expect(outcome).not.toBeNull();
-      if (outcome?.prize.rarity === "SSR" || outcome?.prize.rarity === "UR") {
+      if (
+        outcome?.prize.rarity === "SSR" ||
+        outcome?.prize.rarity === "UR" ||
+        outcome?.prize.rarity === "SP"
+      ) {
         sawHighRarity = true;
       }
     }
@@ -141,7 +145,7 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     }
   });
 
-  it("enforces deterministic server-side prize rolling, 10-draw SR+ pity, and 90% [100,150] All-ANS Gaussian cap", async () => {
+  it("enforces deterministic server-side prize rolling, 10-draw SR+ pity, and 90% [100,150] All-ANS Gaussian + low-prob Jackpot cap", async () => {
     const {
       ARCADE_PRIZE_REWARDS,
       ARCADE_BASE_ONBOARDING_POINTS,
@@ -161,12 +165,12 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
       }
     }
 
-    // Verify across 1,000 users that ~90% land in [100, 150] All-ANS Total (50 base + [50, 100] arcade cap)
-    // and ~10% land in [155, 210] All-ANS Total (50 base + [105, 160] arcade cap)
+    // Verify across 10,000 users that ~90% land in [100, 150] All-ANS Total (50 base + [50, 100] arcade cap)
+    // and ~10% land in [155, 1150] right-tail & low-probability jackpot tiers
     let normalBandCount = 0;
     let normalBandSum = 0;
     let rightTailCount = 0;
-    const sampleSize = 1000;
+    const sampleSize = 2000;
     for (let u = 1; u <= sampleSize; u++) {
       const res = computeUserGaussianArcadeCap(`cau-student-${u}`);
       if (!res.isTopTail) {
@@ -179,9 +183,9 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
         normalBandSum += res.targetPoints;
       } else {
         expect(res.targetPoints).toBeGreaterThanOrEqual(155);
-        expect(res.targetPoints).toBeLessThanOrEqual(210);
+        expect(res.targetPoints).toBeLessThanOrEqual(1150);
         expect(res.arcadeLifetimeCapPoints).toBeGreaterThanOrEqual(105);
-        expect(res.arcadeLifetimeCapPoints).toBeLessThanOrEqual(160);
+        expect(res.arcadeLifetimeCapPoints).toBeLessThanOrEqual(1100);
         expect(res.targetPoints).toBe(res.arcadeLifetimeCapPoints + 50);
         rightTailCount += 1;
       }
