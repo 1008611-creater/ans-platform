@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import type { AgentLink } from "@/contracts/companion-agent";
-import { claimArcadeReward } from "@/server/compute-benefits/arcade";
+import { claimArcadeReward, ARCADE_PRIZE_REWARDS } from "@/server/compute-benefits/arcade";
 import { listMarketListings } from "@/server/marketplace/listings";
 import { marketProductPath } from "@/domain/marketplace/product-route";
 import { getOfficialDeliveryMarkdown } from "@/server/marketplace/official-deliveries";
@@ -24,23 +24,26 @@ export interface PiActionResult {
 export async function claimDailyBenefitViaPi(actor: string): Promise<PiActionResult> {
   try {
     const res = await claimArcadeReward(actor, { kind: "quest", questId: "daily_checkin" });
+    const alreadyClaimed = res.duplicate;
+    const pointsGranted = res.grantedPoints;
+    const balancePoints = res.balanceAfter;
     return {
       ok: true,
       toolUsed: "claim_daily_benefit",
-      replyZh: res.alreadyClaimed
-        ? `📅 今日算力签到已经打过卡啦！当前账户可用算力余额为 **${res.balancePoints.toFixed(1)} 积分**（剩余抓娃娃币 **${res.remainingTokens} 枚**）。`
-        : `🎉 **Pi Agent 已帮你完成今日算力签到！** 到账 **+${res.pointsGranted} 积分** + **1 枚抓娃娃币**！当前账户余额：**${res.balancePoints.toFixed(1)} 积分**（抓娃娃币 **${res.remainingTokens} 枚**）。`,
-      replyEn: res.alreadyClaimed
-        ? `📅 Today's check-in is already claimed! Current balance: **${res.balancePoints.toFixed(1)} pts** (**${res.remainingTokens}** claw tokens).`
-        : `🎉 **Pi Agent completed your daily check-in!** Granted **+${res.pointsGranted} pts** + **1 claw token**! Current balance: **${res.balancePoints.toFixed(1)} pts**.`,
-      pointsDelta: res.pointsGranted,
-      balancePoints: res.balancePoints,
+      replyZh: alreadyClaimed
+        ? `📅 今日算力签到已经打过卡啦！当前账户可用算力余额为 **${balancePoints.toFixed(1)} 积分**。`
+        : `🎉 **Pi Agent 已帮你完成今日算力签到！** 到账 **+${pointsGranted} 积分** + **1 枚抓娃娃币**！当前账户余额：**${balancePoints.toFixed(1)} 积分**。`,
+      replyEn: alreadyClaimed
+        ? `📅 Today's check-in is already claimed! Current balance: **${balancePoints.toFixed(1)} pts**.`
+        : `🎉 **Pi Agent completed your daily check-in!** Granted **+${pointsGranted} pts** + **1 claw token**! Current balance: **${balancePoints.toFixed(1)} pts**.`,
+      pointsDelta: pointsGranted,
+      balancePoints,
       data: res,
       links: [
         {
           href: "/workspace/benefits",
           title: "查看算力福利与抓娃娃机",
-          detail: `当前余额 ${res.balancePoints.toFixed(1)} 积分 · 抓娃娃币 ${res.remainingTokens} 枚`,
+          detail: `当前余额 ${balancePoints.toFixed(1)} 积分`,
           icon: "credits",
         },
         {
@@ -80,17 +83,22 @@ export async function playClawArcadeViaPi(actor: string): Promise<PiActionResult
       }
     }
 
-    const netPoints = drawRes.pointsGranted - spentForToken;
+    const pointsGranted = drawRes.grantedPoints;
+    const balancePoints = drawRes.balanceAfter;
+    const prizeMeta = drawRes.awardedPrizeId ? ARCADE_PRIZE_REWARDS[drawRes.awardedPrizeId] : undefined;
+    const tier = prizeMeta?.rarity ?? "R";
+    const labelZh = prizeMeta?.title ?? "算力盲盒";
+    const netPoints = pointsGranted - spentForToken;
     const tokenNoteZh = spentForToken > 0 ? `（已自动花 10 积分兑 1 币投币）` : `（消耗 1 枚免费抓娃娃币）`;
     const tokenNoteEn = spentForToken > 0 ? `(auto-exchanged 10 pts for 1 token)` : `(used 1 free token)`;
 
     return {
       ok: true,
       toolUsed: "play_claw_arcade",
-      replyZh: `🕹️ **Pi Agent 帮你下爪抓娃娃成功！** ${tokenNoteZh}\n抓中 **【${drawRes.tier ?? "R"} · ${drawRes.labelZh ?? "算力盲盒"}】**，获得 **+${drawRes.pointsGranted} 积分**！当前账户可用余额：**${drawRes.balancePoints.toFixed(1)} 积分**（剩余抓娃娃币 **${drawRes.remainingTokens} 枚**）。`,
-      replyEn: `🕹️ **Pi Agent played the 3D Claw Machine!** ${tokenNoteEn}\nCaught **[${drawRes.tier ?? "R"} · ${drawRes.labelZh ?? "Compute Pod"}]** for **+${drawRes.pointsGranted} pts**! Balance: **${drawRes.balancePoints.toFixed(1)} pts**.`,
+      replyZh: `🕹️ **Pi Agent 帮你下爪抓娃娃成功！** ${tokenNoteZh}\n抓中 **【${tier} · ${labelZh}】**，获得 **+${pointsGranted} 积分**！当前账户可用余额：**${balancePoints.toFixed(1)} 积分**。`,
+      replyEn: `🕹️ **Pi Agent played the 3D Claw Machine!** ${tokenNoteEn}\nCaught **[${tier} · ${labelZh}]** for **+${pointsGranted} pts**! Balance: **${balancePoints.toFixed(1)} pts**.`,
       pointsDelta: netPoints,
-      balancePoints: drawRes.balancePoints,
+      balancePoints,
       data: { ...drawRes, spentForToken },
       links: [
         {
@@ -102,7 +110,7 @@ export async function playClawArcadeViaPi(actor: string): Promise<PiActionResult
         {
           href: "/workspace/benefits",
           title: "打开 3D 抓娃娃机主舱",
-          detail: `剩余 ${drawRes.remainingTokens} 枚抓娃娃币 · 0.1% 抽 1000分锦鲤`,
+          detail: `当前余额 ${balancePoints.toFixed(1)} 积分 · 0.1% 抽 1000分锦鲤`,
           icon: "credits",
         },
       ],
