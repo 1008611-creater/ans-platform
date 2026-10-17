@@ -30,10 +30,10 @@ const projectApplication = (r: ApplicationRow): BenefitApplication => ({
   submittedAt: r.submittedAt.toISOString(), reviewedAt: r.reviewedAt?.toISOString() ?? null, reviewNote: r.reviewNote,
 });
 export const BENEFIT_POLICIES: ReadonlyArray<{ kind: BenefitKind; campaignId: string; modelIds: readonly string[]; totalUsdMicros: bigint }> = [
-  { kind: "DEEPSEEK_ONBOARDING", campaignId: ONBOARDING_CAMPAIGN, modelIds: ["deepseek-v4.1-flash"], totalUsdMicros: BigInt("1000000000") },
-  { kind: "TERRA_AGRI", campaignId: AGRI_CAMPAIGN, modelIds: ["gpt-5.6-terra"], totalUsdMicros: BigInt("300000000") },
-  { kind: "GPT_AGRI", campaignId: AGRI_CAMPAIGN, modelIds: ["gpt-6-astra", "gpt-6.1-sol"], totalUsdMicros: BigInt("200000000") },
-  { kind: "OPUS_AGRI", campaignId: AGRI_CAMPAIGN, modelIds: ["claude-opus-5-5"], totalUsdMicros: BigInt("100000000") },
+  { kind: "DEEPSEEK_ONBOARDING", campaignId: ONBOARDING_CAMPAIGN, modelIds: ["deepseek-v4.1-flash"], totalUsdMicros: BigInt("5000000") },
+  { kind: "TERRA_AGRI", campaignId: AGRI_CAMPAIGN, modelIds: ["gpt-5.6-terra"], totalUsdMicros: BigInt("3000000") },
+  { kind: "GPT_AGRI", campaignId: AGRI_CAMPAIGN, modelIds: ["gpt-6-astra", "gpt-6.1-sol"], totalUsdMicros: BigInt("2000000") },
+  { kind: "OPUS_AGRI", campaignId: AGRI_CAMPAIGN, modelIds: ["claude-opus-5-5"], totalUsdMicros: BigInt("1000000") },
 ];
 async function insertGrant(tx: DbTransaction, userId: string, kind: BenefitKind, applicationId: string | null) {
   const p = BENEFIT_POLICIES.find(p => p.kind === kind)!;

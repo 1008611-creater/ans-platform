@@ -573,9 +573,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-ur-1",
     rarity: "UR",
     icon: "🐉",
-    shortTag: "UR 80分",
-    labelZh: "UR 紫金龙蛋 (80积分)",
-    labelEn: "UR Dragon Egg (80 Pts)",
+    shortTag: "UR 50分",
+    labelZh: "UR 紫金龙蛋 (50积分)",
+    labelEn: "UR Dragon Egg (50 Pts)",
     x: 50,
     z: 52,
     glbId: "ur-dragon-egg",
@@ -584,9 +584,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-ssr-1",
     rarity: "SSR",
     icon: "🔋",
-    shortTag: "SSR 40分",
-    labelZh: "SSR 4090 显卡饼干 (40积分)",
-    labelEn: "SSR 4090 Cookie (40 Pts)",
+    shortTag: "SSR 25分",
+    labelZh: "SSR 4090 显卡饼干 (25积分)",
+    labelEn: "SSR 4090 Cookie (25 Pts)",
     x: 24,
     z: 36,
     glbId: "ssr-4090-cookie",
@@ -596,8 +596,8 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     rarity: "SSR",
     icon: "🧊",
     shortTag: "SSR 3D舱",
-    labelZh: "SSR Tripo 3D 建模舱 (40积分)",
-    labelEn: "SSR Tripo 3D Pod (40 Pts)",
+    labelZh: "SSR Tripo 3D 建模舱 (25积分)",
+    labelEn: "SSR Tripo 3D Pod (25 Pts)",
     x: 76,
     z: 62,
     glbId: "claw-cabinet",
@@ -606,9 +606,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-sr-1",
     rarity: "SR",
     icon: "🌾",
-    shortTag: "SR 20分",
-    labelZh: "SR 农大黄金麦穗 (20积分)",
-    labelEn: "SR Golden Wheat (20 Pts)",
+    shortTag: "SR 15分",
+    labelZh: "SR 农大黄金麦穗 (15积分)",
+    labelEn: "SR Golden Wheat (15 Pts)",
     x: 33,
     z: 72,
     glbId: "sr-golden-wheat",
@@ -618,8 +618,8 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     rarity: "SR",
     icon: "🛠️",
     shortTag: "SR 市场券",
-    labelZh: "SR 市场算力抵扣胶囊 (20积分)",
-    labelEn: "SR Market Voucher (20 Pts)",
+    labelZh: "SR 市场算力抵扣胶囊 (15积分)",
+    labelEn: "SR Market Voucher (15 Pts)",
     x: 68,
     z: 28,
     glbId: "sr-golden-wheat",
@@ -628,9 +628,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-r-1",
     rarity: "R",
     icon: "🦖",
-    shortTag: "R 15分",
-    labelZh: "R 薄荷星龙 (15积分)",
-    labelEn: "R Mint Dino (15 Pts)",
+    shortTag: "R 10分",
+    labelZh: "R 薄荷星龙 (10积分)",
+    labelEn: "R Mint Dino (10 Pts)",
     x: 18,
     z: 66,
     glbId: "mint-star-dino",
@@ -639,9 +639,9 @@ const INITIAL_CAPSULES: readonly CapsuleItem[] = [
     id: "cap-r-2",
     rarity: "R",
     icon: "⚡",
-    shortTag: "R 15分",
-    labelZh: "R 极速 Flash 能量球 (15积分)",
-    labelEn: "R Flash Orb (15 Pts)",
+    shortTag: "R 10分",
+    labelZh: "R 极速 Flash 能量球 (10积分)",
+    labelEn: "R Flash Orb (10 Pts)",
     x: 82,
     z: 38,
     glbId: "mint-star-dino",
@@ -1555,8 +1555,8 @@ export function ComputeQuestArcade({
           </h2>
           <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
             {isEn
-              ? "Gaussian Reward Model N(μ=125, σ=15.2): ~90% of active users steadily unlock 100–150 Gateway Points via starter draws & daily quests, while the top ~10% (SSR/UR jackpot winners & AgriHackathon milestone completionists) burst up to 155–250+ Points."
-              : "采用正态分布算力投放模型 N(μ=125, σ=15.2)：约 90% 的活跃用户通过初始 3 连抽与日常打卡稳定拿满 100–150 积分；少部分约 10% 欧皇（SSR/UR 暴击）与农客松 M1–M4 里程碑硬核玩家可冲高至 155–250+ 积分！"}
+              ? "All-ANS Unified Gaussian Budget N(μ=120, σ=15.2): Across ALL ANS activities combined (50 pts Onboarding Base + 3D Claw/Roulette + Quests + Dino Easter Eggs), ~90% of users receive 100–150 Total Points (≈¥10–¥15 CNY), while the top ~10% reach 155–210 Total Points."
+              : "全站统一正态分布算力预算 N(μ=120, σ=15.2)：汇总 ANS 全站所有免费渠道（问卷基础 50 积分 + 3D 抓娃娃/转盘 + 日常打卡 + 灵龙彩蛋），约 90% 用户全站累计获赠 100–150 积分（折合 ¥10–¥15 元），约 10% 欧皇与农客松参赛队最高可达 155–210 积分！"}
           </p>
         </div>
 
@@ -1573,7 +1573,7 @@ export function ComputeQuestArcade({
               💳{" "}
               {serverBalancePoints !== null
                 ? serverBalancePoints.toLocaleString()
-                : ((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD).toLocaleString()}
+                : Math.round((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD).toLocaleString()}
               {lastServerCredit && !lastServerCredit.duplicate && lastServerCredit.grantedPoints > 0 ? (
                 <span className="ml-1.5 rounded-full bg-emerald-600/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-200">
                   +{lastServerCredit.grantedPoints}
@@ -1611,19 +1611,19 @@ export function ComputeQuestArcade({
 
       {/* Progressive Compute Vault Dual Progress Dashboard */}
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        {/* Vault 1: 90% Normal Distribution Band (100–150 Points) */}
+        {/* Vault 1: 90% Normal Distribution Band (100–150 Points All-ANS Total) */}
         <div className="rounded-2xl border border-border bg-muted/25 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                {isEn ? "90% Normal Band · μ=125 Pts (100–150 Pts)" : "正态分布主区间 (90% 用户) · 均值 μ=125 积分"}
+                {isEn ? "90% Normal Band · All-ANS Total 100–150 Pts (μ=120)" : "全站正态主区间 (90% 用户) · 累计 100–150 积分 (均值 μ=120)"}
               </span>
               <h3 className="text-base font-semibold text-foreground">
-                {isEn ? "100–150 Pts Standard Compute Pool ($15)" : "100–150 积分大众普惠算力池（DeepSeek V4.1 Flash）"}
+                {isEn ? "100–150 Pts All-ANS Standard Pool ($15 / ¥15)" : "100–150 积分全站普惠算力池（含入门基础 50 积分 + 互动 50–100 积分）"}
               </h3>
             </div>
             <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-emerald-800 dark:text-emerald-300">
-              ${state.deepseekUnlockedUsd} / ${state.deepseekTotalUsd} ({state.deepseekUnlockedUsd * POINTS_PER_USD}{" "}
+              ${state.deepseekUnlockedUsd} / ${state.deepseekTotalUsd} ({Math.round(state.deepseekUnlockedUsd * POINTS_PER_USD)}{" "}
               {isEn ? "pts" : "积分"})
             </span>
           </div>
@@ -1636,8 +1636,8 @@ export function ComputeQuestArcade({
           <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>
               {isEn
-                ? "Base 50 pts unlocked · 3 starter draws (~50 pts) + daily check-in easily reaches 100–150 pts"
-                : "初始底仓 50 积分 + 免费 3 连抓（保底 45–60 积分）+ 每日打卡 = 90% 用户稳拿 100–150 积分"}
+                ? "Base 50 pts ($5) + 3 starter draws (30–45 pts) + daily check-in = 90% of users get 100–150 pts total across ANS"
+                : "问卷基础 50 积分 + 免费 3 连抓（30–45 积分）+ 打卡彩蛋 = 90% 用户全站共拿 100–150 积分（约 ¥10–¥15 元）"}
             </span>
             <span className="font-bold tabular-nums text-emerald-700 dark:text-emerald-300">{deepseekPct}%</span>
           </div>
@@ -1648,16 +1648,16 @@ export function ComputeQuestArcade({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                {isEn ? "Top 10% Right Tail · Jackpot & Milestones" : "正态右尾高光区 (Top 10% 欧皇 & 赛队里程碑)"}
+                {isEn ? "Top 10% Right Tail · Jackpot & Agri Milestones" : "正态右尾高光区 (Top 10% 欧皇 & 农客松获批赛队)"}
               </span>
               <h3 className="text-base font-semibold text-foreground">
                 {isEn
-                  ? "+150 Pts Flagship Burst Pool (Terra / GPT-6.1 / Opus 5.5)"
-                  : "+150 积分旗舰暴击池（SSR 40分 / UR 80分 / 农客松 M1–M4）"}
+                  ? "+60 Pts Flagship Bonus Pool ($6 · Terra $3 / Sol $2 / Opus $1)"
+                  : "+60 积分赛事与欧皇加成池（$6：SSR 25分 / UR 50分 / 农客松 M1–M4）"}
               </h3>
             </div>
             <span className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-amber-800 dark:text-amber-300">
-              ${state.flagshipUnlockedUsd} / ${state.flagshipTotalUsd} ({state.flagshipUnlockedUsd * POINTS_PER_USD}{" "}
+              ${state.flagshipUnlockedUsd} / ${state.flagshipTotalUsd} ({Math.round(state.flagshipUnlockedUsd * POINTS_PER_USD)}{" "}
               {isEn ? "pts" : "积分"})
             </span>
           </div>
@@ -1670,8 +1670,8 @@ export function ComputeQuestArcade({
           <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>
               {isEn
-                ? "M1 Apply (20 pts) → M2 Code Host (30 pts) → M3 Wall Public (25 pts) → M4 5-Day Streak (25 pts)"
-                : "M1 报名(20分) → M2 代码存证(30分) → M3 作品墙拉Star(25分) → M4 5天冲刺(25分)"}
+                ? "M1 Apply (12 pts) → M2 Code Host (18 pts) → M3 Wall Public (15 pts) → M4 5-Day Streak (15 pts) = 60 pts"
+                : "M1 报名(12分) → M2 代码存证(18分) → M3 作品墙拉Star(15分) → M4 5天冲刺(15分) = 共 60 积分"}
             </span>
             <span className="font-bold tabular-nums text-amber-700 dark:text-amber-300">{flagshipPct}%</span>
           </div>
@@ -2016,8 +2016,8 @@ export function ComputeQuestArcade({
             )}
             <div className="text-[11px] font-medium text-muted-foreground">
               {isEn
-                ? "Capsule Pool: 🐉 UR (80 Pts, 2%) · 🔋 SSR (40 Pts + 3D Voucher, 8%) · 🌾 SR (20 Pts + Market Voucher, 35%) · 🦖 R (15 Pts Flash, 55%)"
-                : "奖池一览：🐉 UR 紫金龙蛋(80分, 2%) · 🔋 SSR 4090饼干(40分+3D建模券, 8%) · 🌾 SR 黄金麦穗(20分+市场券, 35%) · 🦖 R 薄荷星龙(15分保底, 55%)"}
+                ? "Capsule Pool: 🐉 UR (50 Pts, 2%) · 🔋 SSR (25 Pts + 3D Voucher, 8%) · 🌾 SR (15 Pts + Market Voucher, 35%) · 🦖 R (10 Pts Flash, 55%)"
+                : "奖池一览：🐉 UR 紫金龙蛋(50分, 2%) · 🔋 SSR 4090饼干(25分+3D建模券, 8%) · 🌾 SR 黄金麦穗(15分+市场券, 35%) · 🦖 R 薄荷星龙(10分保底, 55%)"}
             </div>
           </div>
         </div>
@@ -2042,7 +2042,7 @@ export function ComputeQuestArcade({
                     },
                     {
                       id: "agri",
-                      labelZh: "🌾 农客松 M1-M4 (+100分)",
+                      labelZh: "🌾 农客松 M1-M4 (+60分)",
                       labelEn: "🌾 AgriHackathon M1-M4",
                     },
                     {

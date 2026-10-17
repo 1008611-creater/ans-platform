@@ -23,44 +23,49 @@ export async function getArcadeServerBalance(userId: string): Promise<{ balanceP
 export const ARCADE_QUEST_REWARDS: Readonly<
   Record<string, { points: number; tokens: number; daily: boolean; title: string }>
 > = {
-  daily_checkin: { points: 10, tokens: 1, daily: true, title: "Daily Compute Check-In" },
-  daily_vibehub_read: { points: 10, tokens: 1, daily: true, title: "VibeHub 60s Deep Reading" },
-  daily_explore_star: { points: 10, tokens: 0, daily: true, title: "Spark Support · Star a Project" },
-  daily_agent_feed: { points: 5, tokens: 0, daily: true, title: "Dino Training · Feed or Chat with Agent" },
-  weekly_market_workflow: { points: 20, tokens: 1, daily: false, title: "Marketplace Creator · Publish Workflow" },
-  weekly_publish_project: { points: 25, tokens: 1, daily: false, title: "Launch Project · Publish to Plaza" },
-  weekly_homepage_heat: { points: 15, tokens: 1, daily: false, title: "Creator Spotlight · Community Heat" },
-  agri_m1_apply: { points: 20, tokens: 1, daily: false, title: "AgriHackathon M1 Application" },
-  agri_m2_code_host: { points: 30, tokens: 1, daily: false, title: "AgriHackathon M2 Code Hosting" },
-  agri_m3_wall_public: { points: 25, tokens: 1, daily: false, title: "AgriHackathon M3 Public Showcase" },
-  agri_m4_streak_final: { points: 25, tokens: 1, daily: false, title: "AgriHackathon M4 Final Sprint" },
-  secret_ssr_gpu_cookie: { points: 15, tokens: 1, daily: false, title: "Secret Easter Egg · SSR GPU Feeding" },
-  secret_whip_strike: { points: 15, tokens: 1, daily: false, title: "Secret Easter Egg · Cyber Labor Law Strike" },
-  secret_reverse_pua: { points: 10, tokens: 1, daily: false, title: "Secret Easter Egg · Reverse PUA Vacation" },
-  secret_midnight_farmer: { points: 15, tokens: 0, daily: false, title: "Secret Easter Egg · 3 AM CAU Wheatfield" },
-  secret_fashion_mudslide: { points: 10, tokens: 0, daily: false, title: "Secret Easter Egg · Fashion Mudslide" },
-  secret_bug_eater: { points: 10, tokens: 0, daily: false, title: "Secret Easter Egg · Bug Devourer" },
+  daily_checkin: { points: 5, tokens: 1, daily: true, title: "Daily Compute Check-In" },
+  daily_vibehub_read: { points: 5, tokens: 1, daily: true, title: "VibeHub 60s Deep Reading" },
+  daily_explore_star: { points: 5, tokens: 0, daily: true, title: "Spark Support · Star a Project" },
+  daily_agent_feed: { points: 3, tokens: 0, daily: true, title: "Dino Training · Feed or Chat with Agent" },
+  weekly_market_workflow: { points: 12, tokens: 1, daily: false, title: "Marketplace Creator · Publish Workflow" },
+  weekly_publish_project: { points: 13, tokens: 1, daily: false, title: "Launch Project · Publish to Plaza" },
+  weekly_homepage_heat: { points: 10, tokens: 1, daily: false, title: "Creator Spotlight · Community Heat" },
+  agri_m1_apply: { points: 12, tokens: 1, daily: false, title: "AgriHackathon M1 Application" },
+  agri_m2_code_host: { points: 18, tokens: 1, daily: false, title: "AgriHackathon M2 Code Hosting" },
+  agri_m3_wall_public: { points: 15, tokens: 1, daily: false, title: "AgriHackathon M3 Public Showcase" },
+  agri_m4_streak_final: { points: 15, tokens: 1, daily: false, title: "AgriHackathon M4 Final Sprint" },
+  secret_ssr_gpu_cookie: { points: 8, tokens: 1, daily: false, title: "Secret Easter Egg · SSR GPU Feeding" },
+  secret_whip_strike: { points: 8, tokens: 1, daily: false, title: "Secret Easter Egg · Cyber Labor Law Strike" },
+  secret_reverse_pua: { points: 6, tokens: 1, daily: false, title: "Secret Easter Egg · Reverse PUA Vacation" },
+  secret_midnight_farmer: { points: 6, tokens: 0, daily: false, title: "Secret Easter Egg · 3 AM CAU Wheatfield" },
+  secret_fashion_mudslide: { points: 5, tokens: 0, daily: false, title: "Secret Easter Egg · Fashion Mudslide" },
+  secret_bug_eater: { points: 5, tokens: 0, daily: false, title: "Secret Easter Egg · Bug Devourer" },
 };
 
 export const ARCADE_PRIZE_REWARDS: Readonly<
   Record<string, { points: number; weight: number; rarity: "UR" | "SSR" | "SR" | "R"; title: string }>
 > = {
-  prize_ur_dragon_egg: { points: 80, weight: 20, rarity: "UR", title: "Arcade UR · Violet-Gold Dragon Egg" },
-  prize_ssr_gpu_cookie: { points: 40, weight: 80, rarity: "SSR", title: "Arcade SSR · RTX 4090 Cookie" },
-  prize_sr_golden_wheat: { points: 20, weight: 350, rarity: "SR", title: "Arcade SR · CAU Golden Wheat Capsule" },
-  prize_r_mint_dino: { points: 15, weight: 550, rarity: "R", title: "Arcade R · Mint Star Dino Capsule" },
+  prize_ur_dragon_egg: { points: 50, weight: 20, rarity: "UR", title: "Arcade UR · Violet-Gold Dragon Egg" },
+  prize_ssr_gpu_cookie: { points: 25, weight: 80, rarity: "SSR", title: "Arcade SSR · RTX 4090 Cookie" },
+  prize_sr_golden_wheat: { points: 15, weight: 350, rarity: "SR", title: "Arcade SR · CAU Golden Wheat Capsule" },
+  prize_r_mint_dino: { points: 10, weight: 550, rarity: "R", title: "Arcade R · Mint Star Dino Capsule" },
 };
 
 const BASE_STARTER_TOKENS = 3;
-export const ARCADE_DAILY_NON_MILESTONE_POINTS_CAP = 150;
+export const ARCADE_BASE_ONBOARDING_POINTS = 50; // $5 Onboarding Questionnaire / Base Vault Unlock
+export const ARCADE_DAILY_NON_MILESTONE_POINTS_CAP = 150; // All-ANS 90% Normal-Distribution Total Upper Bound
 
 /**
- * Deterministic Gaussian (Box-Muller) allocation curve per user:
- * - 90% of users land in the normal band [100, 150] points (mean μ = 125, σ ≈ 15.2, ±1.645σ = [100, 150]).
- * - 10% of users land in the right tail [155, 250] points (lucky SSR/UR jackpot pullers & easter-egg hunters).
+ * Deterministic All-ANS Lifetime Gaussian (Box-Muller) allocation curve per user:
+ * - Includes the 50-point ($5) Onboarding Base + Lifetime Arcade/Quest/Easter-Egg rewards:
+ * - 90% of users land in the normal band [100, 150] TOTAL ANS points (mean μ = 120, σ ≈ 15.2, ±1.645σ = [100, 150]),
+ *   which corresponds to [50, 100] incremental points from Arcade/Quests/Easter Eggs on top of the 50-pt base.
+ * - 10% of users land in the right tail [155, 210] TOTAL ANS points (SSR/UR jackpot pullers & easter-egg hunters),
+ *   which corresponds to [105, 160] incremental points from Arcade/Quests/Easter Eggs on top of the 50-pt base.
  */
 export function computeUserGaussianArcadeCap(userId: string): {
   targetPoints: number;
+  arcadeLifetimeCapPoints: number;
   isTopTail: boolean;
   zScore: number;
 } {
@@ -76,13 +81,23 @@ export function computeUserGaussianArcadeCap(userId: string): {
 
   if (uTail < 0.9) {
     const clampedZ = Math.max(-1.645, Math.min(1.645, zScore));
-    const targetPoints = Math.min(150, Math.max(100, Math.round(125 + clampedZ * 15.19)));
-    return { targetPoints, isTopTail: false, zScore };
+    const targetPoints = Math.min(150, Math.max(100, Math.round(120 + clampedZ * 15.19)));
+    return {
+      targetPoints,
+      arcadeLifetimeCapPoints: Math.max(50, targetPoints - ARCADE_BASE_ONBOARDING_POINTS),
+      isTopTail: false,
+      zScore,
+    };
   }
 
-  const tailBonus = Math.min(95, Math.round(Math.abs(zScore) * 35));
-  const targetPoints = Math.min(250, 155 + tailBonus);
-  return { targetPoints, isTopTail: true, zScore };
+  const tailBonus = Math.min(55, Math.round(Math.abs(zScore) * 22));
+  const targetPoints = Math.min(210, 155 + tailBonus);
+  return {
+    targetPoints,
+    arcadeLifetimeCapPoints: Math.max(105, targetPoints - ARCADE_BASE_ONBOARDING_POINTS),
+    isTopTail: true,
+    zScore,
+  };
 }
 
 const VERIFIED_MILESTONE_QUEST_IDS = new Set([
@@ -332,29 +347,28 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       note = `Arcade ${input.mode} prize (${prize.title})`;
     }
 
-    // Enforce per-user Gaussian normal-distribution cap on non-milestone free arcade points
+    // Enforce per-user LIFETIME Gaussian normal-distribution cap across all ANS non-milestone free points
+    // (All-ANS Total = 50 Onboarding Base + arcadeLifetimeCapPoints = [100, 150] for 90% of users, [155, 210] for 10% right tail)
     const isVerifiedMilestone = input.kind === "quest" && VERIFIED_MILESTONE_QUEST_IDS.has(input.questId);
     if (!isVerifiedMilestone) {
-      const dayStartUtc = new Date(`${beijingDay}T00:00:00+08:00`);
-      const todayOps = await tx.quotaOperation.findMany({
+      const lifetimeOps = await tx.quotaOperation.findMany({
         where: {
           userId,
           operationKey: { startsWith: `arcade:` },
-          createdAt: { gte: dayStartUtc },
         },
         select: { amount: true, evidenceRef: true },
       });
-      let todayFreePoints = 0;
-      for (const op of todayOps) {
+      let lifetimeFreePoints = 0;
+      for (const op of lifetimeOps) {
         const qId = op.evidenceRef?.startsWith("arcade_quest:")
           ? op.evidenceRef.slice("arcade_quest:".length)
           : "";
         if (!VERIFIED_MILESTONE_QUEST_IDS.has(qId)) {
-          todayFreePoints += Number(op.amount);
+          lifetimeFreePoints += Number(op.amount);
         }
       }
-      const userGaussianCap = computeUserGaussianArcadeCap(userId).targetPoints;
-      const remainingCap = Math.max(0, userGaussianCap - todayFreePoints);
+      const userArcadeCap = computeUserGaussianArcadeCap(userId).arcadeLifetimeCapPoints;
+      const remainingCap = Math.max(0, userArcadeCap - lifetimeFreePoints);
       points = Math.min(points, remainingCap);
     }
 

@@ -31,9 +31,9 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     expect(USD_PER_POINT).toBe(0.1);
 
     const initial = loadQuestArcadeState("u-ratio");
-    expect(initial.deepseekTotalUsd).toBe(15); // $15 = 150 pts normal-distribution upper bound
+    expect(initial.deepseekTotalUsd).toBe(15); // $15 = 150 pts All-ANS 90% normal-distribution upper bound
     expect(initial.deepseekUnlockedUsd).toBe(5); // $5 = 50 pts initial base unlock
-    expect(initial.flagshipTotalUsd).toBe(15); // $15 = 150 pts right-tail & milestone pool
+    expect(initial.flagshipTotalUsd).toBe(6); // $6 = 60 pts right-tail & AgriHackathon milestone pool
     expect(initial.arcadeTokens).toBe(3);
   });
 
@@ -43,12 +43,12 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
 
     const m1 = advanceAndClaimQuest("agri_m1_apply", "u-quest");
     expect(m1?.newlyClaimed).toBe(true);
-    expect(m1?.state.flagshipUnlockedUsd).toBe(2); // $2 = 20 pts
+    expect(m1?.state.flagshipUnlockedUsd).toBe(1.2); // $1.2 = 12 pts
     expect(m1?.state.arcadeTokens).toBe(4); // 3 starter + 1 reward
 
     const secretPua = advanceAndClaimQuest("secret_reverse_pua", "u-quest");
     expect(secretPua?.newlyClaimed).toBe(true);
-    expect(secretPua?.state.flagshipUnlockedUsd).toBe(3); // $2 + $1 = $3 (30 pts)
+    expect(secretPua?.state.flagshipUnlockedUsd).toBe(1.8); // $1.2 + $0.6 = $1.8 (18 pts)
     expect(secretPua?.state.secretUnlockedAt.secret_reverse_pua).toBeTruthy();
   });
 
@@ -130,25 +130,27 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     for (const q of QUEST_DEFINITIONS) {
       const serverReward = ARCADE_QUEST_REWARDS[q.id];
       expect(serverReward).toBeDefined();
-      expect(serverReward.points).toBe(q.unlockUsd * POINTS_PER_USD);
+      expect(serverReward.points).toBe(Math.round(q.unlockUsd * POINTS_PER_USD));
       expect(serverReward.tokens).toBe(q.rewardTokens);
     }
 
     for (const p of ARCADE_PRIZES) {
       const serverPrize = ARCADE_PRIZE_REWARDS[p.id];
       expect(serverPrize).toBeDefined();
-      expect(serverPrize.points).toBe(p.unlockUsd * POINTS_PER_USD);
+      expect(serverPrize.points).toBe(Math.round(p.unlockUsd * POINTS_PER_USD));
     }
   });
 
-  it("enforces deterministic server-side prize rolling, 10-draw SR+ pity, and 90% [100,150] Gaussian cap", async () => {
+  it("enforces deterministic server-side prize rolling, 10-draw SR+ pity, and 90% [100,150] All-ANS Gaussian cap", async () => {
     const {
       ARCADE_PRIZE_REWARDS,
+      ARCADE_BASE_ONBOARDING_POINTS,
       ARCADE_DAILY_NON_MILESTONE_POINTS_CAP,
       computeUserGaussianArcadeCap,
       rollServerArcadePrize,
     } = await import("@/server/compute-benefits/arcade");
 
+    expect(ARCADE_BASE_ONBOARDING_POINTS).toBe(50);
     expect(ARCADE_DAILY_NON_MILESTONE_POINTS_CAP).toBe(150);
 
     for (let i = 1; i <= 30; i++) {
@@ -159,7 +161,8 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
       }
     }
 
-    // Verify across 1,000 users that ~90% land in [100, 150] (mean ~125) and ~10% land in [155, 250]
+    // Verify across 1,000 users that ~90% land in [100, 150] All-ANS Total (50 base + [50, 100] arcade cap)
+    // and ~10% land in [155, 210] All-ANS Total (50 base + [105, 160] arcade cap)
     let normalBandCount = 0;
     let normalBandSum = 0;
     let rightTailCount = 0;
@@ -169,11 +172,17 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
       if (!res.isTopTail) {
         expect(res.targetPoints).toBeGreaterThanOrEqual(100);
         expect(res.targetPoints).toBeLessThanOrEqual(150);
+        expect(res.arcadeLifetimeCapPoints).toBeGreaterThanOrEqual(50);
+        expect(res.arcadeLifetimeCapPoints).toBeLessThanOrEqual(100);
+        expect(res.targetPoints).toBe(res.arcadeLifetimeCapPoints + 50);
         normalBandCount += 1;
         normalBandSum += res.targetPoints;
       } else {
         expect(res.targetPoints).toBeGreaterThanOrEqual(155);
-        expect(res.targetPoints).toBeLessThanOrEqual(250);
+        expect(res.targetPoints).toBeLessThanOrEqual(210);
+        expect(res.arcadeLifetimeCapPoints).toBeGreaterThanOrEqual(105);
+        expect(res.arcadeLifetimeCapPoints).toBeLessThanOrEqual(160);
+        expect(res.targetPoints).toBe(res.arcadeLifetimeCapPoints + 50);
         rightTailCount += 1;
       }
     }
@@ -181,8 +190,8 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     const normalMean = normalBandSum / normalBandCount;
     expect(normalRatio).toBeGreaterThan(0.86);
     expect(normalRatio).toBeLessThan(0.94);
-    expect(normalMean).toBeGreaterThan(122);
-    expect(normalMean).toBeLessThan(128);
+    expect(normalMean).toBeGreaterThan(117);
+    expect(normalMean).toBeLessThan(124);
     expect(rightTailCount).toBe(sampleSize - normalBandCount);
   });
 });
