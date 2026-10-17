@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { ComputeBenefitError } from "@/contracts/compute-benefits";
-import { db } from "@/lib/db";
+import { db, type DbTransaction } from "@/lib/db";
 import { marketTransaction } from "@/server/marketplace/shared";
 
 export interface ArcadeClaimResult {
@@ -9,6 +9,7 @@ export interface ArcadeClaimResult {
   balanceAfter: number;
   duplicate: boolean;
   operationKey: string;
+  awardedPrizeId?: string;
 }
 
 export async function getArcadeServerBalance(userId: string): Promise<{ balancePoints: number }> {
@@ -41,14 +42,153 @@ export const ARCADE_QUEST_REWARDS: Readonly<
   secret_bug_eater: { points: 150, tokens: 1, daily: false, title: "Secret Easter Egg · Bug Devourer" },
 };
 
-export const ARCADE_PRIZE_REWARDS: Readonly<Record<string, { points: number; title: string }>> = {
-  prize_ur_dragon_egg: { points: 1000, title: "Arcade UR · Violet-Gold Dragon Egg" },
-  prize_ssr_gpu_cookie: { points: 500, title: "Arcade SSR · RTX 4090 Cookie" },
-  prize_sr_golden_wheat: { points: 400, title: "Arcade SR · CAU Golden Wheat Capsule" },
-  prize_r_mint_dino: { points: 250, title: "Arcade R · Mint Star Dino Capsule" },
+export const ARCADE_PRIZE_REWARDS: Readonly<
+  Record<string, { points: number; weight: number; rarity: "UR" | "SSR" | "SR" | "R"; title: string }>
+> = {
+  prize_ur_dragon_egg: { points: 1000, weight: 15, rarity: "UR", title: "Arcade UR · Violet-Gold Dragon Egg" },
+  prize_ssr_gpu_cookie: { points: 500, weight: 65, rarity: "SSR", title: "Arcade SSR · RTX 4090 Cookie" },
+  prize_sr_golden_wheat: { points: 400, weight: 220, rarity: "SR", title: "Arcade SR · CAU Golden Wheat Capsule" },
+  prize_r_mint_dino: { points: 250, weight: 700, rarity: "R", title: "Arcade R · Mint Star Dino Capsule" },
 };
 
 const BASE_STARTER_TOKENS = 3;
+export const ARCADE_DAILY_NON_MILESTONE_POINTS_CAP = 800;
+
+const VERIFIED_MILESTONE_QUEST_IDS = new Set([
+  "agri_m1_apply",
+  "agri_m2_code_host",
+  "agri_m3_wall_public",
+  "agri_m4_streak_final",
+  "weekly_market_workflow",
+  "weekly_publish_project",
+  "weekly_homepage_heat",
+]);
+
+/**
+ * Server-authoritative deterministic prize roll bound to (userId, drawId, drawSequence).
+ * Prevents DevTools tampering where a client forces prizeId = "prize_ur_dragon_egg" on every draw.
+ */
+export function rollServerArcadePrize(userId: string, drawId: string, drawSequence: number): string {
+  const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "ans-arcade-authoritative-seed-v1";
+  const digest = createHash("sha256")
+    .update(`${secret}:${userId}:${drawId}:${drawSequence}`)
+    .digest();
+  const rawInt = digest.readUInt32BE(0);
+
+  const isPityTen = drawSequence > 0 && drawSequence % 10 === 0;
+  const entries = Object.entries(ARCADE_PRIZE_REWARDS).filter(([, p]) =>
+    isPityTen ? p.rarity !== "R" : true,
+  );
+  const totalWeight = entries.reduce((acc, [, p]) => acc + p.weight, 0);
+  let cursor = rawInt % totalWeight;
+  for (const [id, prize] of entries) {
+    if (cursor < prize.weight) {
+      return id;
+    }
+    cursor -= prize.weight;
+  }
+  return entries[entries.length - 1][0];
+}
+
+async function verifyQuestPrerequisiteInTx(tx: DbTransaction, userId: string, questId: string): Promise<void> {
+  if (!VERIFIED_MILESTONE_QUEST_IDS.has(questId)) return;
+
+  if (questId === "agri_m1_apply") {
+    const [row] = await tx.$queryRaw<Array<{ ok: boolean }>>`
+      SELECT (
+        EXISTS (
+          SELECT 1 FROM compute_benefit_applications
+          WHERE "userId" = ${userId} AND status = 'APPROVED'
+        )
+        OR EXISTS (
+          SELECT 1 FROM team_members tm
+          JOIN team_competitions tc ON tc."teamId" = tm."teamId"
+          WHERE tm."userId" = ${userId}
+        )
+      ) AS ok
+    `;
+    if (!row?.ok) throw new ComputeBenefitError("QUEST_PREREQUISITE_NOT_MET", 409);
+    return;
+  }
+
+  if (questId === "agri_m2_code_host") {
+    const [row] = await tx.$queryRaw<Array<{ ok: boolean }>>`
+      SELECT (
+        EXISTS (
+          SELECT 1 FROM agri_submission_receipts WHERE "actorId" = ${userId}
+        )
+        OR EXISTS (
+          SELECT 1 FROM agri_evidence_requests er
+          JOIN projects p ON p.id = er."projectId"
+          LEFT JOIN team_members tm ON tm."teamId" = p."teamId" AND tm."userId" = ${userId}
+          WHERE p."ownerId" = ${userId} OR tm."userId" IS NOT NULL
+        )
+      ) AS ok
+    `;
+    if (!row?.ok) throw new ComputeBenefitError("QUEST_PREREQUISITE_NOT_MET", 409);
+    return;
+  }
+
+  if (questId === "agri_m3_wall_public") {
+    const [row] = await tx.$queryRaw<Array<{ ok: boolean }>>`
+      SELECT EXISTS (
+        SELECT 1 FROM agri_wall_entries awe
+        JOIN projects p ON p.id = awe."projectId"
+        LEFT JOIN team_members tm ON tm."teamId" = p."teamId" AND tm."userId" = ${userId}
+        WHERE p."ownerId" = ${userId} OR tm."userId" IS NOT NULL
+      ) AS ok
+    `;
+    if (!row?.ok) throw new ComputeBenefitError("QUEST_PREREQUISITE_NOT_MET", 409);
+    return;
+  }
+
+  if (questId === "agri_m4_streak_final") {
+    const checkinCount = await tx.quotaOperation.count({
+      where: {
+        userId,
+        operationKey: { startsWith: `arcade:quest:${userId}:daily_checkin:` },
+      },
+    });
+    if (checkinCount >= 5) return;
+    const [row] = await tx.$queryRaw<Array<{ ok: boolean }>>`
+      SELECT EXISTS (
+        SELECT 1 FROM agri_entry_stages aes
+        JOIN team_competitions tc ON tc.id = aes."teamCompetitionId"
+        JOIN team_members tm ON tm."teamId" = tc."teamId"
+        WHERE tm."userId" = ${userId} AND aes.stage = 'FINAL'
+      ) AS ok
+    `;
+    if (!row?.ok) throw new ComputeBenefitError("QUEST_PREREQUISITE_NOT_MET", 409);
+    return;
+  }
+
+  if (questId === "weekly_market_workflow") {
+    const listingCount = await tx.marketListing.count({
+      where: { sellerId: userId, status: "PUBLISHED" },
+    });
+    if (listingCount < 1) throw new ComputeBenefitError("QUEST_PREREQUISITE_NOT_MET", 409);
+    return;
+  }
+
+  if (questId === "weekly_publish_project") {
+    const projectCount = await tx.project.count({
+      where: { ownerId: userId, visibility: "PUBLIC" },
+    });
+    if (projectCount < 1) throw new ComputeBenefitError("QUEST_PREREQUISITE_NOT_MET", 409);
+    return;
+  }
+
+  if (questId === "weekly_homepage_heat") {
+    const [row] = await tx.$queryRaw<Array<{ total: bigint }>>`
+      SELECT (
+        (SELECT COUNT(*) FROM market_listing_stars mls JOIN market_listings ml ON ml.id = mls."listingId" WHERE ml."sellerId" = ${userId} AND mls."userId" <> ${userId})
+        +
+        (SELECT COUNT(*) FROM agri_popularity_votes apv JOIN agri_wall_entries awe ON awe.id = apv."wallEntryId" AND awe."competitionId" = apv."competitionId" JOIN projects p ON p.id = awe."projectId" WHERE p."ownerId" = ${userId} AND apv."userId" <> ${userId})
+      ) AS total
+    `;
+    if (Number(row?.total ?? 0) < 10) throw new ComputeBenefitError("QUEST_PREREQUISITE_NOT_MET", 409);
+  }
+}
 
 const arcadeClaimSchema = z.discriminatedUnion("kind", [
   z
@@ -87,32 +227,19 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
   const input = arcadeClaimSchema.parse(raw);
   const beijingDay = getBeijingDayString();
 
-  let points = 0;
-  let operationKey = "";
-  let evidenceRef = "";
-  let note = "";
-
-  if (input.kind === "quest") {
-    const quest = ARCADE_QUEST_REWARDS[input.questId];
-    if (!quest) throw new ComputeBenefitError("INVALID_INPUT", 400);
-    points = quest.points;
-    operationKey = quest.daily
-      ? `arcade:quest:${userId}:${input.questId}:${beijingDay}`
-      : `arcade:quest:${userId}:${input.questId}`;
-    evidenceRef = `arcade_quest:${input.questId}`;
-    note = `Quest Arcade reward (${quest.title})`;
-  } else {
-    const prize = ARCADE_PRIZE_REWARDS[input.prizeId];
-    if (!prize) throw new ComputeBenefitError("INVALID_INPUT", 400);
-    points = prize.points;
-    operationKey = `arcade:draw:${userId}:${input.drawId}`;
-    evidenceRef = `arcade_draw:${input.mode}:${input.prizeId}`;
-    note = `Arcade ${input.mode} prize (${prize.title})`;
+  if (input.kind === "quest" && !ARCADE_QUEST_REWARDS[input.questId]) {
+    throw new ComputeBenefitError("INVALID_INPUT", 400);
+  }
+  if (input.kind === "draw" && !ARCADE_PRIZE_REWARDS[input.prizeId]) {
+    throw new ComputeBenefitError("INVALID_INPUT", 400);
   }
 
-  const requestHash = createHash("sha256")
-    .update(JSON.stringify({ userId, operationKey, points }))
-    .digest("hex");
+  const operationKey =
+    input.kind === "quest"
+      ? ARCADE_QUEST_REWARDS[input.questId].daily
+        ? `arcade:quest:${userId}:${input.questId}:${beijingDay}`
+        : `arcade:quest:${userId}:${input.questId}`
+      : `arcade:draw:${userId}:${input.drawId}`;
 
   return marketTransaction(async tx => {
     const account = await tx.user.findFirst({
@@ -133,7 +260,18 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       };
     }
 
-    if (input.kind === "draw") {
+    let points = 0;
+    let evidenceRef = "";
+    let note = "";
+    let awardedPrizeId: string | undefined;
+
+    if (input.kind === "quest") {
+      await verifyQuestPrerequisiteInTx(tx, userId, input.questId);
+      const quest = ARCADE_QUEST_REWARDS[input.questId];
+      points = quest.points;
+      evidenceRef = `arcade_quest:${input.questId}`;
+      note = `Quest Arcade reward (${quest.title})`;
+    } else {
       const priorOps = await tx.quotaOperation.findMany({
         where: {
           userId,
@@ -155,7 +293,42 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       if (usedDraws >= earnedTokens) {
         throw new ComputeBenefitError("ARCADE_TOKENS_EXHAUSTED", 409);
       }
+
+      awardedPrizeId = rollServerArcadePrize(userId, input.drawId, usedDraws + 1);
+      const prize = ARCADE_PRIZE_REWARDS[awardedPrizeId];
+      points = prize.points;
+      evidenceRef = `arcade_draw:${input.mode}:${awardedPrizeId}`;
+      note = `Arcade ${input.mode} prize (${prize.title})`;
     }
+
+    // Enforce per-user daily cap on non-milestone free arcade points to prevent script farming
+    const isVerifiedMilestone = input.kind === "quest" && VERIFIED_MILESTONE_QUEST_IDS.has(input.questId);
+    if (!isVerifiedMilestone) {
+      const dayStartUtc = new Date(`${beijingDay}T00:00:00+08:00`);
+      const todayOps = await tx.quotaOperation.findMany({
+        where: {
+          userId,
+          operationKey: { startsWith: `arcade:` },
+          createdAt: { gte: dayStartUtc },
+        },
+        select: { amount: true, evidenceRef: true },
+      });
+      let todayFreePoints = 0;
+      for (const op of todayOps) {
+        const qId = op.evidenceRef?.startsWith("arcade_quest:")
+          ? op.evidenceRef.slice("arcade_quest:".length)
+          : "";
+        if (!VERIFIED_MILESTONE_QUEST_IDS.has(qId)) {
+          todayFreePoints += Number(op.amount);
+        }
+      }
+      const remainingCap = Math.max(0, ARCADE_DAILY_NON_MILESTONE_POINTS_CAP - todayFreePoints);
+      points = Math.min(points, remainingCap);
+    }
+
+    const requestHash = createHash("sha256")
+      .update(JSON.stringify({ userId, operationKey, points, evidenceRef }))
+      .digest("hex");
 
     const updated = await tx.user.update({
       where: { id: userId },
@@ -177,23 +350,27 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       },
     });
 
-    await tx.quotaLedger.create({
-      data: {
-        userId,
-        amount: points,
-        balanceAfter: updated.quotaPoints,
-        reason: "GRANT",
-        refType: "quest_arcade",
-        refId: op.id,
-        note,
-      },
-    });
+    if (points > 0) {
+      await tx.quotaLedger.create({
+        data: {
+          userId,
+          amount: points,
+          balanceAfter: updated.quotaPoints,
+          reason: "GRANT",
+          refType: "quest_arcade",
+          refId: op.id,
+          note,
+        },
+      });
+    }
 
     return {
       grantedPoints: points,
       balanceAfter: Number(updated.quotaPoints),
       duplicate: false,
       operationKey,
+      ...(awardedPrizeId ? { awardedPrizeId } : {}),
     };
   });
 }
+

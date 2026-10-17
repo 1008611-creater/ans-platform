@@ -132,4 +132,23 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
       expect(serverPrize.points).toBe(p.unlockUsd * POINTS_PER_USD);
     }
   });
+
+  it("enforces deterministic server-side prize rolling and 10-draw SR+ pity", async () => {
+    const {
+      ARCADE_PRIZE_REWARDS,
+      ARCADE_DAILY_NON_MILESTONE_POINTS_CAP,
+      rollServerArcadePrize,
+    } = await import("@/server/compute-benefits/arcade");
+
+    expect(ARCADE_DAILY_NON_MILESTONE_POINTS_CAP).toBe(800);
+
+    for (let i = 1; i <= 30; i++) {
+      const prizeId = rollServerArcadePrize("user-test-1", `draw_test_${i}`, i);
+      expect(ARCADE_PRIZE_REWARDS[prizeId]).toBeDefined();
+      if (i % 10 === 0) {
+        expect(ARCADE_PRIZE_REWARDS[prizeId].rarity).not.toBe("R");
+      }
+    }
+  });
 });
+
