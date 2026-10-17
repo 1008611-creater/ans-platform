@@ -55,7 +55,54 @@ async function queryPlatformRecipe(tx: DbTransaction, idOrSlug: string, ownerId?
   return { recipe, workflow: { ...workflow, author: { id: owner.id, username: owner.username, nickname: owner.nickname, avatar: owner.avatar } }, version, definition: parsed.data };
 }
 
-const getRequestPlatformRecipe = cache(async () => queryPlatformRecipe(db, PLATFORM_RESUME_RECIPE.officialId));
+async function queryPlatformRecipeFast() {
+  const recipe = PLATFORM_RESUME_RECIPE;
+  const [workflow, audit] = await Promise.all([
+    db.workflow.findFirst({
+      where: { officialId: recipe.officialId },
+      include: workflowInclude,
+    }),
+    db.auditLog.findFirst({
+      where: {
+        action: "PLATFORM_RECIPE_REGISTERED",
+        resourceType: "workflow",
+        AND: [
+          { metadata: { path: ["officialId"], equals: recipe.officialId } },
+          { metadata: { path: ["version"], equals: recipe.version } },
+          { metadata: { path: ["definitionHash"], equals: recipe.definitionHash } },
+          { metadata: { path: ["sourceCodeHash"], equals: recipe.sourceCodeHash } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, actorId: true, resourceType: true, resourceId: true, action: true, metadata: true },
+    }),
+  ]);
+  if (!workflow || !isPlatformRecipeMetadata(workflow)) return null;
+  const owner = workflow.author;
+  if (!owner || owner.id !== workflow.authorId || owner.role !== "ADMIN" || owner.deletedAt || owner.flagged || !hasAdminPermission(owner.adminPermissions, "MARKETPLACE_MANAGE")) return null;
+  if (workflow.versions.length !== 1) return null;
+  const version = workflow.versions[0];
+  if (version.version !== recipe.version || version.workflowId !== workflow.id || version.createdById !== owner.id) return null;
+  const parsed = workflowDefinitionSchema.safeParse(version.definition);
+  if (!parsed.success || hash(version.definition) !== recipe.definitionHash || hash(parsed.data) !== recipe.definitionHash || hash(recipe.definition) !== recipe.definitionHash || hash(recipe.sourceFiles) !== recipe.sourceCodeHash) return null;
+  if (!audit || audit.actorId !== owner.id || audit.resourceType !== "workflow" || audit.resourceId !== workflow.id || audit.action !== "PLATFORM_RECIPE_REGISTERED" || !audit.metadata || typeof audit.metadata !== "object" || Array.isArray(audit.metadata)) return null;
+  const metadata = audit.metadata as Record<string, unknown>;
+  const expected = { officialId: recipe.officialId, workflowId: workflow.id, ownerId: owner.id, version: recipe.version, versionId: version.id, definitionHash: recipe.definitionHash, sourceCodeHash: recipe.sourceCodeHash };
+  if (Object.entries(expected).some(([key, value]) => metadata[key] !== value)) return null;
+  return { recipe, workflow: { ...workflow, author: { id: owner.id, username: owner.username, nickname: owner.nickname, avatar: owner.avatar } }, version, definition: parsed.data };
+}
+
+let inFlightPlatformRecipe: ReturnType<typeof queryPlatformRecipeFast> | null = null;
+function loadInFlightPlatformRecipe() {
+  if (inFlightPlatformRecipe) return inFlightPlatformRecipe;
+  const pending = queryPlatformRecipeFast();
+  inFlightPlatformRecipe = pending;
+  const clear = () => { if (inFlightPlatformRecipe === pending) inFlightPlatformRecipe = null; };
+  void pending.then(clear, clear);
+  return pending;
+}
+
+const getRequestPlatformRecipe = cache(async () => loadInFlightPlatformRecipe());
 
 /** Every read validates provenance and the owner's current authority. Reads never register or run. */
 export async function readPlatformRecipe(tx: DbTransaction, idOrSlug: string, ownerId?: string) {

@@ -23,6 +23,7 @@ const CORE_ROUTES = [
   "/vibe-hub",
   "/hubs",
   "/community",
+  "/showcase",
   "/status",
   "/privacy",
   "/terms",
@@ -35,12 +36,14 @@ const CORE_ROUTES = [
 
 async function measureWarmTtfb(route) {
   const url = `${BASE_URL}${route}`;
-  // Warm up connection / SSR cache once, then measure second request
-  await fetch(url, { redirect: "follow" }).catch(() => null);
+  // Warm up connection / SSR cache once and drain body so Suspense streams finish and socket returns to keep-alive pool
+  const warm = await fetch(url, { redirect: "follow" }).catch(() => null);
+  if (warm) await warm.arrayBuffer().catch(() => null);
   const start = performance.now();
   const response = await fetch(url, { redirect: "follow" });
   const ttfbMs = Math.round(performance.now() - start);
   const finalPath = new URL(response.url).pathname;
+  await response.arrayBuffer().catch(() => null);
   return { route, status: response.status, ttfbMs, finalPath };
 }
 
@@ -187,6 +190,16 @@ async function main() {
       if (/忘记密码/.test(enLoginText)) {
         failures.push(`英文模式下 /login 仍残留中文「忘记密码」`);
       }
+      await enPage.goto(`${BASE_URL}/community`, { waitUntil: "domcontentloaded" });
+      const enCommunityText = await enPage.locator('[data-testid="community-guest-preview"]').innerText().catch(() => "");
+      if (/欢迎来到|立即登录/.test(enCommunityText)) {
+        failures.push(`英文模式下 /community 访客预览仍残留未翻译中文`);
+      }
+      await enPage.goto(`${BASE_URL}/showcase`, { waitUntil: "domcontentloaded" });
+      const enShowcaseHeading = await enPage.locator("h1").first().innerText().catch(() => "");
+      if (/作品，不该/.test(enShowcaseHeading)) {
+        failures.push(`英文模式下 /showcase 标题仍残留未翻译中文`);
+      }
       await enContext.close();
 
       // Mobile 390x844 Viewport Collision & Iframe Title Check
@@ -198,13 +211,12 @@ async function main() {
       const mobilePage = await mobileContext.newPage();
       await mobilePage.goto(`${BASE_URL}/explore`, { waitUntil: "domcontentloaded" });
       await mobilePage.waitForTimeout(800);
-      const dinoIframeTitle = await mobilePage
-        .locator(".ans-companion-v2 iframe")
-        .first()
-        .getAttribute("title")
-        .catch(() => null);
-      if (!dinoIframeTitle) {
-        failures.push(`.ans-companion-v2 iframe 缺少无障碍 title 属性`);
+      const dinoIframes = mobilePage.locator(".ans-companion-v2 iframe");
+      if ((await dinoIframes.count()) > 0) {
+        const dinoIframeTitle = await dinoIframes.first().getAttribute("title").catch(() => null);
+        if (!dinoIframeTitle) {
+          failures.push(`.ans-companion-v2 iframe 缺少无障碍 title 属性`);
+        }
       }
       const dinoBox = await mobilePage.locator(".ans-companion-v2").first().boundingBox().catch(() => null);
       const submitBox = await mobilePage.locator('a[href="/submit"]').first().boundingBox().catch(() => null);

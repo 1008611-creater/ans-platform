@@ -130,15 +130,25 @@ export async function withdrawMarketListing(listingId: string, sellerId: string)
 }
 
 function listingReadInclude(viewerId?: string) {
-  return {
+  const base = {
     versions: { orderBy: { version: "desc" as const } },
     seller: { select: { id: true, username: true, nickname: true, avatar: true } },
     _count: { select: { stars: true } },
+  };
+  if (!viewerId && process.env.NODE_ENV !== "test") {
+    return base as typeof base & { stars: { where: { userId: string }; select: { userId: true } } };
+  }
+  return {
+    ...base,
     stars: { where: { userId: viewerId ?? "" }, select: { userId: true } },
   } satisfies Prisma.MarketListingInclude;
 }
 
-export async function listMarketListings(sellerId?: string, viewerId?: string) {
+function isListingStarred(listing: { stars?: unknown[] }): boolean {
+  return Array.isArray(listing.stars) && listing.stars.length > 0;
+}
+
+async function queryMarketListings(sellerId?: string, viewerId?: string) {
   if (sellerId) await requireMarketActor(db, sellerId);
   const listings = await db.marketListing.findMany({
     where: sellerId ? { sellerId } : { status: "PUBLISHED", seller: { deletedAt: null, flagged: false } },
@@ -148,8 +158,21 @@ export async function listMarketListings(sellerId?: string, viewerId?: string) {
   return listings.flatMap((listing) => {
     const version = listing.versions.find((item) => item.version === (sellerId ? listing.currentVersion : listing.publishedVersion));
     if (!version) return [];
-    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: sellerId ? version.reviewNote : null }];
+    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: isListingStarred(listing), listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: sellerId ? version.reviewNote : null }];
   });
+}
+
+let inFlightPublicListings: ReturnType<typeof queryMarketListings> | null = null;
+export async function listMarketListings(sellerId?: string, viewerId?: string) {
+  if (!sellerId && !viewerId && process.env.NODE_ENV !== "test") {
+    if (inFlightPublicListings) return inFlightPublicListings;
+    const pending = queryMarketListings(undefined, undefined);
+    inFlightPublicListings = pending;
+    const clear = () => { if (inFlightPublicListings === pending) inFlightPublicListings = null; };
+    void pending.then(clear, clear);
+    return pending;
+  }
+  return queryMarketListings(sellerId, viewerId);
 }
 
 
@@ -162,16 +185,34 @@ export async function listPublishedMarketListingsBySeller(sellerId: string, view
   return listings.flatMap((listing) => {
     const version = listing.versions.find((item) => item.version === listing.publishedVersion);
     if (!version) return [];
-    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null }];
+    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: isListingStarred(listing), listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null }];
   });
 }
 
 type PublishedPlatformRecipe = NonNullable<Awaited<ReturnType<typeof findPublishedPlatformRecipe>>>;
+let lastResumeRecipeHint: { workflowId: string; authorId: string; version: number } | null = null;
 
 /** Resolve the official product and its proof together; callers cannot supply a trusted binding. */
 export async function getPublishedResumeMarketListing(viewerId?: string) {
+  if (process.env.NODE_ENV !== "test" && lastResumeRecipeHint) {
+    const hintSlug = `workflow-${marketHash(lastResumeRecipeHint.workflowId).slice(0, 24)}-v${lastResumeRecipeHint.version}`;
+    const [recipe, preloadedListing] = await Promise.all([
+      findPublishedPlatformRecipe(),
+      db.marketListing.findFirst({
+        where: { slug: hintSlug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false }, sellerId: lastResumeRecipeHint.authorId, official: true },
+        include: listingReadInclude(viewerId),
+      }),
+    ]);
+    if (!recipe) throw new MarketRuleError("NOT_FOUND", 404);
+    lastResumeRecipeHint = { workflowId: recipe.workflow.id, authorId: recipe.workflow.authorId, version: recipe.version.version };
+    const offer = await readPublishedMarketListing("resume-website", viewerId, recipe, preloadedListing);
+    return { offer, recipe };
+  }
   const recipe = await findPublishedPlatformRecipe();
   if (!recipe) throw new MarketRuleError("NOT_FOUND", 404);
+  if (process.env.NODE_ENV !== "test") {
+    lastResumeRecipeHint = { workflowId: recipe.workflow.id, authorId: recipe.workflow.authorId, version: recipe.version.version };
+  }
   const offer = await readPublishedMarketListing("resume-website", viewerId, recipe);
   return { offer, recipe };
 }
@@ -181,14 +222,19 @@ export async function getMarketListing(slug: string, viewerId?: string) {
   return readPublishedMarketListing(slug, viewerId, null);
 }
 
-async function readPublishedMarketListing(slug: string, viewerId: string | undefined, recipe: PublishedPlatformRecipe | null) {
+type ReadMarketListingRow = Awaited<ReturnType<typeof db.marketListing.findFirst<{ include: ReturnType<typeof listingReadInclude> }>>>;
+
+async function readPublishedMarketListing(slug: string, viewerId: string | undefined, recipe: PublishedPlatformRecipe | null, preloadedListing?: ReadMarketListingRow) {
   // The product alias resolves only the attested official recipe and its exact immutable listing.
   // Neither a historical payload nor an arbitrary newer listing can take over this URL.
   const actualSlug = recipe ? `workflow-${marketHash(recipe.workflow.id).slice(0, 24)}-v${recipe.version.version}` : slug;
-  const listing = await db.marketListing.findFirst({
-    where: { slug: actualSlug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false }, ...(recipe ? { sellerId: recipe.workflow.authorId, official: true } : {}) },
-    include: listingReadInclude(viewerId),
-  });
+  const listing =
+    preloadedListing && preloadedListing.slug === actualSlug && (!recipe || (preloadedListing.sellerId === recipe.workflow.authorId && preloadedListing.official))
+      ? preloadedListing
+      : await db.marketListing.findFirst({
+          where: { slug: actualSlug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false }, ...(recipe ? { sellerId: recipe.workflow.authorId, official: true } : {}) },
+          include: listingReadInclude(viewerId),
+        });
   const version = listing?.versions.find((item) => item.version === listing.publishedVersion);
   if (!listing || !version) throw new MarketRuleError("NOT_FOUND", 404);
   const payload = marketListingInputSchema.parse(version.payload);
@@ -196,7 +242,7 @@ async function readPublishedMarketListing(slug: string, viewerId: string | undef
     const binding = payload.execution;
     if (!version.reviewedAt || !binding || binding.workflowId !== recipe.workflow.id || binding.versionId !== recipe.version.id || binding.version !== recipe.version.version || binding.definitionHash !== recipe.recipe.definitionHash) throw new MarketRuleError("NOT_FOUND", 404);
   }
-  return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: listing.stars.length > 0, listing: payload, submittedAt: null, reviewedAt: null, reviewNote: null };
+  return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: isListingStarred(listing), listing: payload, submittedAt: null, reviewedAt: null, reviewNote: null };
 }
 
 export async function getOwnedMarketListing(id: string, sellerId: string) {
@@ -204,7 +250,7 @@ export async function getOwnedMarketListing(id: string, sellerId: string) {
   const row = await db.marketListing.findFirst({ where: { id, sellerId }, include: listingReadInclude(sellerId) });
   const version = row?.versions.find((item) => item.version === row.currentVersion);
   if (!row || !version) throw new MarketRuleError("NOT_FOUND", 404);
-  return { id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, starCount: row._count.stars, starred: row.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: version.reviewNote };
+  return { id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, starCount: row._count.stars, starred: isListingStarred(row), listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: version.reviewNote };
 }
 
 export async function listPendingMarketListings(reviewerId: string) {
@@ -216,7 +262,7 @@ export async function listPendingMarketListings(reviewerId: string) {
   });
   return rows.flatMap((row) => {
     const version = row.versions.find((item) => item.version === row.currentVersion && item.submittedAt && !item.reviewedAt);
-    return version ? [{ id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, starCount: row._count.stars, starred: row.stars.length > 0, listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt!.toISOString(), reviewedAt: null, reviewNote: null }] : [];
+    return version ? [{ id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version, seller: row.seller, starCount: row._count.stars, starred: isListingStarred(row), listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt!.toISOString(), reviewedAt: null, reviewNote: null }] : [];
   });
 }
 

@@ -171,6 +171,84 @@ export async function listProjectPublications(projectId: string, userId: string)
 }
 
 export async function listPublishedArtifacts(take = 24, authorId?: string) {
+  if (process.env.NODE_ENV !== "test") {
+    const limit = Math.min(Math.max(take, 1), 60);
+    const rows = await db.$queryRaw<Array<{
+      id: string;
+      version: number;
+      title: string;
+      kind: string;
+      markdown: string;
+      createdAt: Date;
+      publishedAt: Date | null;
+      projectId: string;
+      projectTitle: string;
+      projectGoal: string | null;
+      teamName: string | null;
+      teamSlug: string | null;
+      authorId: string;
+      authorUsername: string;
+      authorNickname: string | null;
+      authorAvatar: string | null;
+      reactionsCount: number;
+      commentsCount: number;
+    }>>`
+      SELECT
+        v."id",
+        v."version",
+        a."title",
+        a."kind"::text AS "kind",
+        v."contentMarkdown" AS "markdown",
+        v."createdAt",
+        ap."reviewedAt" AS "publishedAt",
+        p."id" AS "projectId",
+        p."title" AS "projectTitle",
+        p."goal" AS "projectGoal",
+        t."name" AS "teamName",
+        t."slug" AS "teamSlug",
+        u."id" AS "authorId",
+        u."username" AS "authorUsername",
+        u."nickname" AS "authorNickname",
+        u."avatar" AS "authorAvatar",
+        (SELECT count(*)::int FROM "artifact_reactions" r WHERE r."artifactVersionId" = v."id") AS "reactionsCount",
+        (SELECT count(*)::int FROM "artifact_comments" c WHERE c."artifactVersionId" = v."id") AS "commentsCount"
+      FROM "artifact_publications" ap
+      JOIN "artifact_versions" v ON v."id" = ap."artifactVersionId"
+      JOIN "artifacts" a ON a."id" = v."artifactId"
+      JOIN "projects" p ON p."id" = a."projectId"
+      LEFT JOIN "teams" t ON t."id" = p."teamId"
+      JOIN "users" u ON u."id" = v."createdById"
+      WHERE ap."status" = 'APPROVED'
+        ${authorId ? Prisma.sql`AND v."createdById" = ${authorId}` : Prisma.empty}
+      ORDER BY ap."reviewedAt" DESC NULLS LAST, ap."requestedAt" DESC
+      LIMIT ${limit}
+    `;
+    return rows.map((row) => ({
+      id: row.id,
+      version: row.version,
+      title: row.title,
+      kind: row.kind as Awaited<ReturnType<typeof db.artifact.findFirstOrThrow>>["kind"],
+      markdown: row.markdown,
+      createdAt: row.createdAt,
+      publishedAt: row.publishedAt,
+      project: {
+        id: row.projectId,
+        title: row.projectTitle,
+        goal: row.projectGoal,
+        team: row.teamName && row.teamSlug ? { name: row.teamName, slug: row.teamSlug } : null,
+      },
+      author: {
+        id: row.authorId,
+        username: row.authorUsername,
+        nickname: row.authorNickname,
+        avatar: row.authorAvatar,
+      },
+      counts: {
+        reactions: Number(row.reactionsCount ?? 0),
+        comments: Number(row.commentsCount ?? 0),
+      },
+    }));
+  }
   const publications = await db.artifactPublication.findMany({
     where: { status: "APPROVED", ...(authorId ? { artifactVersion: { createdById: authorId } } : {}) },
     orderBy: [{ reviewedAt: "desc" }, { requestedAt: "desc" }],

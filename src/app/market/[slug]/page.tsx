@@ -27,9 +27,11 @@ export const dynamic = "force-dynamic";
 type MarketDetailProps = { params: Promise<{ slug: string }> };
 
 const publishedListing = cache(async (slug: string) => {
-  warmCatalogForRequest();
-  try { return await readMarketPage(slug); }
-  catch (error) {
+  try {
+    const page = await readMarketPage(slug);
+    warmCatalogForRequest();
+    return page;
+  } catch (error) {
     if (error instanceof MarketRuleError && error.code === "NOT_FOUND") notFound();
     throw error;
   }
