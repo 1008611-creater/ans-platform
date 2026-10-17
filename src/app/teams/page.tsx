@@ -161,7 +161,7 @@ export default async function TeamsPage() {
         {competitions.length === 0 ? (
           <div className="grid gap-5 sm:grid-cols-2">
             <Card className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
-              <img src="/catalog/agrihackathon-v1/gitglow-hub.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
+              <img src="/competitions/agrihackathon/gitglow-hub.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base">{isEn ? "AgriHackathon · Smart Agriculture Challenge" : "智耕黑客松 · 现代农业 AI 挑战赛"}</CardTitle>

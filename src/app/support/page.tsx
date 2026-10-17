@@ -102,12 +102,12 @@ export default function SupportPage() {
   const quickCards = [
     {
       href: "/competitions",
-      img: "/catalog/agrihackathon-v1/gitglow-hub.webp",
+      img: "/competitions/agrihackathon/gitglow-hub.webp",
       title: "赛事中心与团队算力",
       desc: "查看智耕黑客松、AIGC 创作赛道及团队额度申领说明。",
     },
     {
-      href: "/benefits",
+      href: "/workspace/benefits",
       img: "/catalog/gitglow-v1/ans-3d-showcase.svg",
       title: "福利中心与 3D 小龙圣殿",
       desc: "每日抽奖、3D 抓娃娃机、小龙换装投喂与算力兑换码。",
@@ -123,7 +123,7 @@ export default function SupportPage() {
   const faqItems = [
     {
       question: "ANS 平台的算力点数（Points）如何获取与使用？",
-      answer: "注册登录即可在「福利中心 (/benefits)」参与每日抽奖、3D 抓娃娃机或使用兑换码领取算力点数；报名参加黑客松或高校赛事的团队可在「团队 (/teams)」共享队长分配的团队参赛额度，用于运行官方工作流与多模态工具。",
+      answer: "注册登录即可在「福利中心 (/workspace/benefits)」参与每日抽奖、3D 抓娃娃机或使用兑换码领取算力点数；报名参加黑客松或高校赛事的团队可在「团队 (/teams)」共享队长分配的团队参赛额度，用于运行官方工作流与多模态工具。",
     },
     {
       question: "如何组队参加智耕黑客松或 AIGC 创作赛并提交作品？",
@@ -131,7 +131,7 @@ export default function SupportPage() {
     },
     {
       question: "右下角 3D 小龙如何换装、投喂和触发特技？",
-      answer: "点击页面右下角 3D 小龙悬浮球即可唤出快捷互动坞（支持 🪢 抽鞭子、🎲 盲盒投喂、🤚 摸头、👗 一键换装）；在「福利中心 (/benefits)」顶部还可展开完整 3D 小龙养成圣殿，自由切换 360° 展台、脚底光环与传说套装。",
+      answer: "点击页面右下角 3D 小龙悬浮球即可唤出快捷互动坞（支持 🪢 抽鞭子、🎲 盲盒投喂、🤚 摸头、👗 一键换装）；在「福利中心 (/workspace/benefits)」顶部还可展开完整 3D 小龙养成圣殿，自由切换 360° 展台、脚底光环与传说套装。",
     },
     {
       question: "发现页面或服务异常时如何排查？",

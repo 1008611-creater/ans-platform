@@ -25,8 +25,8 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
   const filterHref = (updates: Parameters<typeof catalogBrowseHref>[2] = {}, page = 1) => catalogBrowseHref("/", browse.filters, updates, page);
   const isEn = locale.startsWith("en");
   const scenes = [
-    { href: "/competitions/agrihackathon", img: "/catalog/agrihackathon-v1/gitglow-hub.webp", tag: isEn ? "Hackathon" : "赛事主舞台", label: isEn ? "AgriHackathon · Compute & Datasets" : "智耕黑客松 · 团队算力与农情挑战" },
-    { href: "/benefits", img: "/catalog/gitglow-v1/ans-3d-showcase.svg", tag: isEn ? "3D Arcade & Pet" : "3D 互动工坊", label: isEn ? "3D Claw Machine & Dino Wardrobe" : "3D 抓娃娃机 · 小龙换装投喂圣殿" },
+    { href: "/competitions/agrihackathon", img: "/competitions/agrihackathon/gitglow-hub.webp", tag: isEn ? "Hackathon" : "赛事主舞台", label: isEn ? "AgriHackathon · Compute & Datasets" : "智耕黑客松 · 团队算力与农情挑战" },
+    { href: "/workspace/benefits", img: "/catalog/gitglow-v1/ans-3d-showcase.svg", tag: isEn ? "3D Arcade & Pet" : "3D 互动工坊", label: isEn ? "3D Claw Machine & Dino Wardrobe" : "3D 抓娃娃机 · 小龙换装投喂圣殿" },
     { href: "/competitions/aigc", img: "/catalog/gitglow-v1/aigc-workspace.webp", tag: isEn ? "AIGC Studio" : "AIGC 创作台", label: isEn ? "Solara · Infinite Canvas · Toonflow" : "AIGC 赛事工具链 · 分镜画布与短剧" },
     { href: "/hubs", img: "/catalog/gitglow-v1/cauai-one.webp", tag: isEn ? "Campus Hubs" : "开源与课程空间", label: isEn ? "CAUHub · VibeHub · Full-Stack" : "校园空间 · VibeHub 教程与方法库" },
   ];
