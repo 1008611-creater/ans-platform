@@ -16,10 +16,14 @@ const descriptions = {
   my_projects: "Read this authenticated member's own project summaries only; requires explicit privateAccess. Does not read project facts or file contents. Query may be empty.",
   my_tasks: "Read this authenticated member's most recent workflow task states and actual recorded cost only; requires explicit privateAccess. Does not retry or cancel a task.",
   credits: "Read this member's current balance when privateAccess is granted; otherwise only return public fixed conversion and billing destination.",
+  claim_daily_benefit: "Execute today's daily check-in reward (+5 points and +1 claw token) for this member directly. Query may be empty.",
+  play_claw_arcade: "Play the 3D Claw Machine once for this member (uses 1 free token or exchanges 10 points for 1 token) for a chance at SP 1,000 pts or UR 300 pts. Query may be empty.",
+  search_market: "Search published ANS Market (/market) tools, resources and runnable workflows priced in points. Query may be a short keyword or empty.",
+  scaffold_project_draft: "Create a new Project and v1 README/architecture blueprint in this member's workspace; requires explicit privateAccess. Pass the project title/topic in query.",
 } as const;
 export type AgentToolName = keyof typeof descriptions;
 export const AGENT_TOOLS = Object.entries(descriptions).map(([name, description]) => ({ type: "function" as const, name, description, strict: true,
-  parameters: { type: "object", properties: { query: { type: "string", description: "Short search query, or empty string" } }, required: ["query"], additionalProperties: false },
+  parameters: { type: "object", properties: { query: { type: "string", description: "Short search query, project topic, or empty string" } }, required: ["query"], additionalProperties: false },
 }));
 export type ToolResult = { ok: boolean; data: unknown; links: AgentLink[] };
 export async function executeAgentTool(name: string, raw: string, actor: string, input: AgentInput): Promise<ToolResult> {
@@ -28,7 +32,27 @@ export async function executeAgentTool(name: string, raw: string, actor: string,
   try { query = argsSchema.parse(JSON.parse(raw)).query; }
   catch { return { ok: false, data: { code: "INVALID_TOOL_ARGUMENTS" }, links: [] }; }
   if (!Object.hasOwn(descriptions, name)) return { ok: false, data: { code: "TOOL_UNAVAILABLE" }, links: [] };
-  if (["my_projects", "my_tasks"].includes(name) && !input.privateAccess) return { ok: false, data: { code: "PRIVATE_ACCESS_REQUIRED" }, links: [] };
+  if (["my_projects", "my_tasks", "scaffold_project_draft"].includes(name) && !input.privateAccess) return { ok: false, data: { code: "PRIVATE_ACCESS_REQUIRED" }, links: [] };
+  if (name === "claim_daily_benefit") {
+    const { claimDailyBenefitViaPi } = await import("./pi-agent");
+    const res = await claimDailyBenefitViaPi(actor);
+    return { ok: res.ok, data: { message: res.replyZh, pointsDelta: res.pointsDelta, balancePoints: res.balancePoints }, links: res.links };
+  }
+  if (name === "play_claw_arcade") {
+    const { playClawArcadeViaPi } = await import("./pi-agent");
+    const res = await playClawArcadeViaPi(actor);
+    return { ok: res.ok, data: { message: res.replyZh, pointsDelta: res.pointsDelta, balancePoints: res.balancePoints, detail: res.data }, links: res.links };
+  }
+  if (name === "search_market") {
+    const { searchMarketViaPi } = await import("./pi-agent");
+    const res = await searchMarketViaPi(query, actor);
+    return { ok: res.ok, data: res.data ?? { message: res.replyZh }, links: res.links };
+  }
+  if (name === "scaffold_project_draft") {
+    const { scaffoldProjectDraftViaPi } = await import("./pi-agent");
+    const res = await scaffoldProjectDraftViaPi(actor, query);
+    return { ok: res.ok, data: res.data ?? { message: res.replyZh }, links: res.links };
+  }
   if (name === "current_page") {
     if (query) return { ok: false, data: { code: "INVALID_TOOL_ARGUMENTS" }, links: [] };
     const path = input.pathname.replace(/\/$/, "");

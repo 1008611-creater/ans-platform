@@ -13,6 +13,11 @@ export const agentRequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("quote"), input: agentInputSchema }).strict(),
   z.object({ action: z.literal("execute"), input: agentInputSchema, ticket: z.string().min(20).max(2000) }).strict(),
   z.object({ action: z.literal("status"), ticket: z.string().min(20).max(2000) }).strict(),
+  z.object({
+    action: z.literal("pi_action"),
+    intent: z.enum(["checkin", "claw", "market", "scaffold", "auto"]).optional(),
+    prompt: z.string().trim().max(400).optional(),
+  }).strict(),
 ]);
 export type AgentInput = z.infer<typeof agentInputSchema>;
 export type AgentLink = { href: string; title: string; detail: string; icon: "project" | "video" | "credits" | "team" | "discover" | "learn" };

@@ -281,12 +281,53 @@ export function CompanionSanctuaryBar({
   const locale = useLocale();
   const isZh = locale === "zh";
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
-  const [tab, setTab] = useState<"none" | "pet" | "wardrobe" | "secrets" | "adopt">("none");
+  const [tab, setTab] = useState<"none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt">("none");
   const [slot, setSlot] = useState<WardrobeSlot>("headwear");
   const [statusNote, setStatusNote] = useState<string>("");
   const [activeBannerQuest, setActiveBannerQuest] = useState<SecretQuestDef | null>(null);
   const [strikeRemainingSec, setStrikeRemainingSec] = useState<number>(0);
   const whipTimestampsRef = useRef<number[]>([]);
+  const [piBusy, setPiBusy] = useState(false);
+  const [piPrompt, setPiPrompt] = useState("");
+  const [piResult, setPiResult] = useState<{
+    ok: boolean;
+    toolUsed?: string;
+    replyZh: string;
+    replyEn: string;
+    balancePoints?: number | null;
+    links?: { href: string; title: string; detail: string }[];
+  } | null>(null);
+
+  async function runPiAction(intent: "checkin" | "claw" | "market" | "scaffold" | "auto", customPrompt?: string) {
+    if (piBusy) return;
+    setPiBusy(true);
+    setTab("pi");
+    try {
+      const res = await fetch("/api/mascot/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "pi_action", intent, prompt: customPrompt ?? piPrompt }),
+      });
+      const data = await res.json();
+      setPiResult(data);
+      const speechLine = isZh ? data.replyZh : data.replyEn;
+      if (speechLine) {
+        onSpeak?.(speechLine.replace(/\*\*/g, ""));
+      }
+      if (intent === "auto") {
+        setPiPrompt("");
+      }
+    } catch {
+      setPiResult({
+        ok: false,
+        replyZh: "⚠️ Pi Agent 网络连接异常，请稍后重试。",
+        replyEn: "⚠️ Pi Agent network error. Please try again.",
+        links: [],
+      });
+    } finally {
+      setPiBusy(false);
+    }
+  }
 
   useEffect(() => {
     const syncFromStorage = () => {
@@ -699,6 +740,18 @@ export function CompanionSanctuaryBar({
         <div className="flex flex-wrap items-center gap-1">
           <button
             type="button"
+            data-testid="pi-agent-tab-toggle"
+            onClick={() => setTab(current => (current === "pi" ? "none" : "pi"))}
+            className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition ${
+              tab === "pi"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
+            }`}
+          >
+            🤖 {isZh ? "Pi 实权 Agent" : "Pi Agent"}
+          </button>
+          <button
+            type="button"
             onClick={() => setTab(current => (current === "pet" ? "none" : "pet"))}
             className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition ${
               tab === "pet" ? "bg-foreground text-background" : "bg-background/80 text-muted-foreground hover:text-foreground"
@@ -738,10 +791,147 @@ export function CompanionSanctuaryBar({
         </div>
       </div>
 
+      {/* Always-visible 1-Click Pi Agent Copilot Bar */}
+      <div
+        data-testid="pi-agent-quickbar"
+        className="mt-1.5 flex flex-wrap items-center justify-between gap-1.5 rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 px-2.5 py-1.5"
+      >
+        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-800 dark:text-emerald-200">
+          🤖 {isZh ? "Pi Agent 免确认代办：" : "Pi Agent 1-Click:"}
+        </span>
+        <div className="flex flex-wrap items-center gap-1">
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-checkin"
+            onClick={() => void runPiAction("checkin")}
+            className="rounded-full border border-emerald-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-emerald-700 shadow-xs transition hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300"
+          >
+            📅 {isZh ? "代签到 (+5分)" : "Check-in (+5)"}
+          </button>
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-claw"
+            onClick={() => void runPiAction("claw")}
+            className="rounded-full border border-amber-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-amber-700 shadow-xs transition hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300"
+          >
+            🕹️ {isZh ? "代抓娃娃搏锦鲤" : "Play Claw"}
+          </button>
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-market"
+            onClick={() => void runPiAction("market", "")}
+            className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-sky-700 shadow-xs transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
+          >
+            🛒 {isZh ? "挑市场工具" : "Market Tools"}
+          </button>
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-scaffold"
+            onClick={() => void runPiAction("scaffold", piPrompt || "农客松智慧农业多模态监测 Agent")}
+            className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-purple-700 shadow-xs transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
+          >
+            📝 {isZh ? "一键建参赛项目" : "New Project"}
+          </button>
+        </div>
+      </div>
+
       {statusNote && (
         <p className="mt-1.5 rounded-lg bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground">
           {statusNote}
         </p>
+      )}
+
+      {tab === "pi" && (
+        <div
+          data-testid="pi-agent-pod"
+          className="mt-2 space-y-2 rounded-xl border border-emerald-500/40 bg-background/95 p-2.5 shadow-sm"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300">
+              ⚡ {isZh ? "小恐龙 Pi Agent 实权执行舱（免报价确认 · 直接读写数据库）" : "Dino Pi Agent Execution Pod (Zero-Confirmation)"}
+            </span>
+            {piBusy && (
+              <span className="animate-pulse rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                {isZh ? "Pi 工具执行中…" : "Executing…"}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <input
+              type="search"
+              value={piPrompt}
+              onChange={e => setPiPrompt(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void runPiAction("auto", piPrompt);
+                }
+              }}
+              placeholder={
+                isZh
+                  ? "输入指令：如「帮我新建智慧温室项目」「搜论文润色工具」「帮我抓娃娃」…"
+                  : "Command Pi Agent: e.g. 'Create smart greenhouse project', 'Search paper tools'…"
+              }
+              aria-label={isZh ? "Pi Agent 指令输入" : "Pi Agent command input"}
+              data-testid="pi-agent-search-input"
+              className="flex-1 rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none"
+            />
+            <button
+              type="button"
+              disabled={piBusy}
+              data-testid="pi-agent-run-btn"
+              onClick={() => void runPiAction("auto", piPrompt)}
+              className="shrink-0 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs transition hover:bg-emerald-500 disabled:opacity-50"
+            >
+              {isZh ? "⚡ 执行" : "⚡ Run"}
+            </button>
+          </div>
+
+          {piResult && (
+            <div
+              data-testid="pi-agent-result"
+              className="space-y-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2 text-[11px]"
+            >
+              {piResult.toolUsed && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/15 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-200">
+                    ✓ Pi Tool: {piResult.toolUsed}
+                  </span>
+                  {typeof piResult.balancePoints === "number" && (
+                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-300">
+                      {isZh ? `当前余额：${piResult.balancePoints.toFixed(1)} 积分` : `Balance: ${piResult.balancePoints.toFixed(1)} pts`}
+                    </span>
+                  )}
+                </div>
+              )}
+              <p className="whitespace-pre-line leading-relaxed text-foreground">
+                {(isZh ? piResult.replyZh : piResult.replyEn).replace(/\*\*/g, "")}
+              </p>
+              {piResult.links && piResult.links.length > 0 && (
+                <div className="grid grid-cols-1 gap-1 pt-1">
+                  {piResult.links.map(link => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      className="flex items-center justify-between rounded-lg border border-border/80 bg-background px-2.5 py-1.5 text-[11px] font-semibold text-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10"
+                    >
+                      <div className="truncate">
+                        <span className="font-bold text-emerald-700 dark:text-emerald-300">{link.title}</span>
+                        <span className="ml-1.5 text-[10px] text-muted-foreground">{link.detail}</span>
+                      </div>
+                      <span className="ml-2 shrink-0 text-[10px] font-bold text-emerald-600">→</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {tab === "pet" && (
