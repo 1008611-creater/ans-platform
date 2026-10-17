@@ -26,13 +26,17 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   voiceCallback.current = onVoiceStatus;
   const frame = useRef<HTMLIFrameElement>(null);
   const [enabled, setEnabled] = useState(false);
+  const [requested, setRequested] = useState(open);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  const active = enabled && !failed;
+  const active = enabled && (requested || open) && !failed;
   const animated = active && ready;
   const send = useCallback((data: AvatarMessage) => {
     frame.current?.contentWindow?.postMessage({ type: "ans-dino", ...data }, window.location.origin);
   }, []);
+  useEffect(() => {
+    if (open) setRequested(true);
+  }, [open]);
   useEffect(() => {
     if (!window.matchMedia) return;
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -148,7 +152,7 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   }, [animated, send]);
   return <span className="ans-dino-avatar" aria-hidden="true">
     <Image src="/mascot/ans-mascot.png" width={88} height={88} alt="" className={animated ? "invisible" : ""} />
-    {/* The fixed companion is already in view; lazy loading must not consume its ready timeout. */}
+    {/* Download 3D only after opening the guide; retain the frame across subsequent openings. */}
     {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=voice-points-20261013-1" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
   </span>;
 }

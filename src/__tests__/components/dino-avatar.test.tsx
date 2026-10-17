@@ -40,7 +40,8 @@ function message(source: Window | null, type: string, origin = window.location.o
   act(() => window.dispatchEvent(new MessageEvent("message", { source, origin, data: { type } })));
 }
 function mount(open = false) {
-  const view = render(<DinoAvatar phase="idle" open={open} />);
+  const view = render(<DinoAvatar phase="idle" open />);
+  if (!open) view.rerender(<DinoAvatar phase="idle" open={false} />);
   const frame = view.container.querySelector("iframe")!;
   expect(frame).not.toBeNull();
   const source = frame.contentWindow!;
@@ -57,6 +58,22 @@ function pointer() {
 const offer = { available: true, mode: "free" as const, points: 0 as const, modelId: "mimo-v2.5-tts", policyVersion: "fixture-free", checkedAt: "2026-10-12T00:00:00Z", reviewBy: "2099-01-01T00:00:00Z", cacheHours: 24, maxCharacters: 1200 };
 
 describe("DinoAvatar frame lifecycle", () => {
+  it("does not download 3D before the guide is opened and reuses its frame after closing", () => {
+    const view = render(<DinoAvatar phase="idle" open={false} />);
+    expect(view.container.querySelector("iframe")).toBeNull();
+    act(() => vi.advanceTimersByTime(60000));
+    expect(view.container.querySelector("iframe")).toBeNull();
+    expect(screen.getByTestId("static-mascot")).not.toHaveClass("invisible");
+    view.rerender(<DinoAvatar phase="idle" open />);
+    const frame = view.container.querySelector("iframe")!;
+    expect(frame).not.toBeNull();
+    message(frame.contentWindow, "ans-dino-ready");
+    view.rerender(<DinoAvatar phase="idle" open={false} />);
+    view.rerender(<DinoAvatar phase="idle" open />);
+    expect(view.container.querySelector("iframe")).toBe(frame);
+    expect(screen.getByTestId("static-mascot")).toHaveClass("invisible");
+  });
+
   it("keeps voice off by default and speaks only after an explicit preference opt-in and fresh reply", () => {
     const view = mount(true);
     view.rerender(<DinoAvatar actor="member" voicePolicy={offer} phase="idle" open speech={{ id: 1, text: "Public guide reply" }} />);
@@ -82,7 +99,7 @@ describe("DinoAvatar frame lifecycle", () => {
     view.rerender(<DinoAvatar actor="member" voicePolicy={offer} phase="idle" open speech={{ id: 7, text: "Public" }} />);
     expect(view.send.mock.calls.filter(call => call[0].event === "speak")).toHaveLength(1);
   });
-  it("starts the visible companion eagerly and keeps its still until ready", () => {
+  it("starts the requested companion eagerly and keeps its still until ready", () => {
     const view = mount();
     expect(view.frame).toHaveAttribute("loading", "eager");
     expect(view.frame).toHaveAttribute("tabindex", "-1");
