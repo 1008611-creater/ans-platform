@@ -5,10 +5,8 @@ import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 
 const database = vi.hoisted(() => ({ $queryRaw: vi.fn(), $transaction: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: database }));
-vi.mock("@/server/marketplace/listings", () => ({ listMarketListings: vi.fn(async () => []) }));
-vi.mock("@/server/competitions/agrihackathon/wall", () => ({ readAgriWall: vi.fn(async () => ({ entries: [] })) }));
-import { listMarketListings } from "@/server/marketplace/listings";
-import { readAgriWall } from "@/server/competitions/agrihackathon/wall";
+vi.mock("@/server/catalog/member-offers", () => ({ listCatalogMemberOffers: vi.fn(async () => ({ market: [], wall: [] })) }));
+import { listCatalogMemberOffers } from "@/server/catalog/member-offers";
 import { listPublishedCatalog } from "@/server/catalog/service";
 
 const text = Object.fromEntries(CATALOG_TEXT_FIELDS.map(field => [field, "Published " + field])) as CatalogEntry["content"]["zh"];
@@ -68,12 +66,11 @@ describe("public catalog snapshot reads", () => {
     expect(database.$queryRaw).toHaveBeenCalledTimes(2);
   });
 
-  it("starts independent market and wall reads while the publication snapshot is pending", async () => {
+  it("starts the lightweight member snapshot while the publication snapshot is pending", async () => {
     let resolveRows!: (rows: ReturnType<typeof row>[]) => void;
     database.$queryRaw.mockReturnValueOnce(new Promise(resolve => { resolveRows = resolve; }));
     const pending = listPublishedCatalog();
-    expect(listMarketListings).toHaveBeenCalledTimes(1);
-    expect(readAgriWall).toHaveBeenCalledTimes(1);
+    expect(listCatalogMemberOffers).toHaveBeenCalledTimes(1);
     resolveRows([row()]);
     expect(await pending).toContainEqual(entry);
   });

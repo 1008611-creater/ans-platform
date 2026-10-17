@@ -4,9 +4,8 @@ import { db } from "@/lib/db";
 import { hasAdminPermission } from "@/lib/admin-permission-values";
 import { catalogActionSchema, catalogEntrySchema, catalogSaveSchema, type CatalogAdminEntry } from "@/contracts/catalog-content";
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
-import { listMarketListings } from "@/server/marketplace/listings";
+import { listCatalogMemberOffers } from "./member-offers";
 import { memberCatalogProject } from "@/domain/catalog/member-project";
-import { readAgriWall } from "@/server/competitions/agrihackathon/wall";
 import { mergeCatalog } from "@/domain/catalog/content";
 
 export class CatalogError extends Error {
@@ -20,7 +19,7 @@ async function loadPublishedCatalog() {
   // No catch/fallback: an unavailable DB must not silently resurrect withdrawn content.
   // One statement reads the publication pointer and its immutable version in one
   // PostgreSQL snapshot, without an interactive transaction crossing pooler calls.
-  const [rows, offers, wall] = await Promise.all([db.$queryRaw<{
+  const [rows, membersSnapshot] = await Promise.all([db.$queryRaw<{
     slug: string; withdrawn: boolean; publishedRevision: number | null; payload: unknown;
   }[]>`
     SELECT p."slug", p."withdrawn", p."publishedRevision", v."payload"
@@ -29,7 +28,7 @@ async function loadPublishedCatalog() {
       ON v."projectId" = p."id" AND v."revision" = p."publishedRevision"
       AND p."withdrawn" = false
     ORDER BY p."createdAt" ASC
-  `, listMarketListings(), readAgriWall()]);
+  `, listCatalogMemberOffers()]);
   const official = mergeCatalog(CATALOG_PROJECTS, rows.map(row => ({
     slug: row.slug,
     withdrawn: row.withdrawn,
@@ -37,8 +36,8 @@ async function loadPublishedCatalog() {
   })));
   const retired = new Set(["resume-website", "resume-story", "project-page", "readme-kit", "competition-starter", "pitch-kit", "learning-retrospective", "grok-motion-lab", "open-resume", "dify-agent"]);
   // Runnable recipe listings belong to workflows and market, not project discovery.
-  const members = offers.filter(offer => !offer.listing.execution && offer.listing.subcategory !== "agri-wall").map(memberCatalogProject);
-  members.push(...wall.entries.map(entry => memberCatalogProject(entry.offer)));
+  const members = membersSnapshot.market.filter(offer => !offer.listing.execution && offer.listing.subcategory !== "agri-wall").map(memberCatalogProject);
+  members.push(...membersSnapshot.wall.map(memberCatalogProject));
   return [...official.filter(entry => !retired.has(entry.slug) && entry.subcategory !== "agri-wall"), ...members];
 }
 // Share only in-flight public reads. Do not cache completed data or private queries.
