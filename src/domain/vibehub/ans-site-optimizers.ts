@@ -604,14 +604,16 @@ export function stripAiBuzzwords(raw: string): string {
  * Generates de-slopped roadshow pitch, GitHub README, and Xiaohongshu/Bilibili draft from a creator's project form.
  */
 export function generateRoadshowAndSocialPack(
-  draft: { title: string; summary: string; deliverables: string; category: string },
+  draft: { title: string; summary: string; deliverables: string | readonly string[]; category: string },
   locale: VibeLocale = "zh",
 ): RoadshowAndSocialPack {
   const cleanTitle = (draft.title.trim() || "ANS 可复现 AI 工程项目").replace(SLOP_BUZZWORDS, "").trim();
   const rawSummary = draft.summary.trim() || "基于 ANS 工作台构建的可交互工程产物，支持实时沙箱预览与源码复现。";
   const cleanedSummary = rawSummary.replace(SLOP_BUZZWORDS, "").replace(/\s+/g, " ").trim();
-  const items = draft.deliverables
-    .split("\n")
+  const rawItems = Array.isArray(draft.deliverables)
+    ? draft.deliverables
+    : String(draft.deliverables).split("\n");
+  const items = rawItems
     .map(s => s.trim())
     .filter(Boolean);
   const delivList = items.length
