@@ -36,6 +36,10 @@ function parseFields(raw: string): BriefFields {
   }
 }
 
+export function SkillClient(props: { initialScenario?: string }) {
+  return <Skill {...props} />;
+}
+
 export default function Skill({ initialScenario }: { initialScenario?: string }) {
   const lang = useVibeLanguage();
   const t = useTranslations("vibehub");
