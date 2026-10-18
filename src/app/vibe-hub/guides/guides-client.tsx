@@ -87,7 +87,17 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
             </div>
             <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border bg-muted shadow-xs">
               <img
-                src={guide.task === "media-pipeline" || guide.task === "creative" ? "/catalog/gitglow-v1/niannian-drama.webp" : guide.task === "evidence" || guide.task === "agent-team" ? "/competitions/agrihackathon/gitglow-hub.webp" : "/catalog/gitglow-v1/magic-resume.webp"}
+                src={
+                  guide.task === "media-pipeline" || guide.task === "creative"
+                    ? "/catalog/ans-pro-v1/niannian-drama.webp"
+                    : guide.task === "agent-team" || guide.task === "skill-product" || guide.task === "evidence"
+                      ? "/catalog/ans-pro-v1/agent-team.webp"
+                      : guide.task === "open-source"
+                        ? "/catalog/ans-pro-v1/git-ship.webp"
+                        : guide.task === "website" || guide.task === "ui-design"
+                          ? "/catalog/ans-pro-v1/cauai-one.webp"
+                          : "/catalog/ans-pro-v1/magic-resume.webp"
+                }
                 alt={guide.title}
                 className="h-full w-full object-cover"
                 loading="lazy"

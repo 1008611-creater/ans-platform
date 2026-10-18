@@ -37,8 +37,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS interactive showcase reusing same-origin 3D mascot assets."
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/dragon-arcade.webp",
     "coverUrl": "/catalog/gitglow-v1/ans-3d-showcase.svg",
-    "coverNote": "3D 双模型互动展示 · 主理人 × 小恐龙"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面 · 主理人 × 小恐龙"
   },
   {
     "slug": "liu-resume",
@@ -75,8 +76,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/magic-resume.webp",
     "coverUrl": "/catalog/gitglow-v1/liu-resume.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
   {
     "slug": "image2-library",
@@ -187,8 +189,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/niannian-drama.webp",
     "coverUrl": "/catalog/gitglow-v1/niannian-drama.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "Project-Native 斜切分镜墙门面风 × GitGlow 双封面"
   },
   {
     "slug": "niannian-edit",
@@ -362,8 +365,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/cauai-one.webp",
     "coverUrl": "/catalog/gitglow-v1/cauai-one.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
   {
     "slug": "hello-algo",
@@ -518,8 +522,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "joyceql 维护，收录于 HelloGitHub 第 124 期。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/magic-resume.webp",
     "coverUrl": "/catalog/gitglow-v1/magic-resume.webp",
-    "coverNote": "原项目官方素材 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
   {
     "slug": "vcard-portfolio",
