@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600">
+  <title>温室水肥光热多智能体调控 · GreenHouse-OS · oil欧呦风格高反差封面</title>
+  <defs>
+    <pattern id="oil-grid-showcase-greenhouse-os" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#141413" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="600" fill="#f6f2eb"/>
+  <rect width="960" height="600" fill="url(#oil-grid-showcase-greenhouse-os)"/>
+  <rect x="20" y="20" width="920" height="560" rx="24" fill="none" stroke="#141413" stroke-width="4"/>
+
+  <g transform="translate(48, 48)">
+    <rect x="0" y="0" width="236" height="38" rx="19" fill="#141413"/>
+    <circle cx="22" cy="19" r="6" fill="#10b981"/>
+    <text x="38" y="24" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800" fill="#fffdf8" letter-spacing="1">ANS · AI NEVER STOPS</text>
+
+    <rect x="252" y="0" width="224" height="38" rx="19" fill="#fee2e2" stroke="#141413" stroke-width="2.5"/>
+    <text x="364" y="24" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800" fill="#141413">COMPETITION · 赛事标杆</text>
+  </g>
+
+  <g transform="translate(48, 132)">
+    <rect x="0" y="6" width="14" height="136" rx="7" fill="#b91c1c"/>
+    <text x="30" y="64" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="56" font-weight="900" fill="#141413" letter-spacing="-1">温室水肥光热多智</text>
+    <text x="30" y="134" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="52" font-weight="900" fill="#b91c1c" letter-spacing="-1">能体调控</text>
+    <text x="30" y="182" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" font-weight="700" fill="#141413" opacity="0.78">GreenHouse-OS</text>
+  </g>
+
+  <g transform="translate(48, 344)">
+    <rect x="6" y="6" width="476" height="118" rx="16" fill="#141413"/>
+    <rect x="0" y="0" width="476" height="118" rx="16" fill="#fffdf7" stroke="#141413" stroke-width="3"/>
+    <rect x="20" y="20" width="56" height="28" rx="8" fill="#b91c1c"/>
+    <text x="48" y="39" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="900" fill="#ffffff">#62</text>
+    <text x="90" y="40" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="20" font-weight="800" fill="#141413">接入物联网传感器时序流，多 Agent 博弈</text>
+    <text x="20" y="82" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="18" font-weight="600" fill="#57534e">动态优化滴灌配比，节水 23%。</text>
+  </g>
+
+  <g transform="translate(48, 494)">
+    <rect x="0" y="0" width="168" height="40" rx="10" fill="#fffdf7" stroke="#141413" stroke-width="2.5"/>
+    <text x="84" y="25" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#141413">OIL 封面 · 外封海报</text>
+
+    <rect x="182" y="0" width="216" height="40" rx="10" fill="#fee2e2" stroke="#141413" stroke-width="2.5"/>
+    <text x="290" y="25" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#b91c1c">点进看 GitGlow 3D 内封 →</text>
+  </g>
+
+  
+      <g transform="translate(568, 92)">
+        <rect x="8" y="8" width="332" height="416" rx="18" fill="#141413"/>
+        <rect x="0" y="0" width="332" height="416" rx="18" fill="#fffdf7" stroke="#141413" stroke-width="3.5"/>
+        <rect x="0" y="0" width="332" height="42" rx="18" fill="#fee2e2" stroke="#141413" stroke-width="3.5"/>
+        <circle cx="24" cy="21" r="6" fill="#ef4444"/><circle cx="44" cy="21" r="6" fill="#f59e0b"/><circle cx="64" cy="21" r="6" fill="#10b981"/>
+        <text x="308" y="26" text-anchor="end" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#141413">ROADSHOW · VERIFIED</text>
+        <rect x="24" y="66" width="284" height="156" rx="12" fill="#fee2e2" stroke="#141413" stroke-width="3"/>
+        <line x1="24" y1="118" x2="308" y2="118" stroke="#141413" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <line x1="24" y1="170" x2="308" y2="170" stroke="#141413" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <polyline points="44,192 98,154 152,166 214,104 284,88" fill="none" stroke="#b91c1c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="214" cy="104" r="8" fill="#fff" stroke="#141413" stroke-width="3"/>
+        <circle cx="284" cy="88" r="9" fill="#b91c1c" stroke="#141413" stroke-width="3"/>
+        <rect x="24" y="242" width="134" height="74" rx="10" fill="#fff" stroke="#141413" stroke-width="3"/>
+        <text x="40" y="270" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#141413">BENCHMARK</text>
+        <text x="40" y="300" font-family="ui-monospace,monospace" font-size="24" font-weight="900" fill="#b91c1c">98.4%</text>
+        <rect x="174" y="242" width="134" height="74" rx="10" fill="#fff" stroke="#141413" stroke-width="3"/>
+        <text x="190" y="270" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#141413">SMOKE TEST</text>
+        <text x="190" y="300" font-family="ui-monospace,monospace" font-size="22" font-weight="900" fill="#0f766e">3 PRESETS</text>
+        <rect x="24" y="336" width="284" height="50" rx="10" fill="#141413"/>
+        <text x="166" y="367" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" font-weight="800" fill="#ffffff">LIVE SANDBOX READY</text>
+      </g>
+</svg>

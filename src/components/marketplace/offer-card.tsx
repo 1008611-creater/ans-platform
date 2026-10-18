@@ -7,15 +7,25 @@ import { ArrowUpRight, Check } from "lucide-react";
 import type { MarketOfferView } from "@/contracts/marketplace-view";
 
 const FALLBACK_COVERS: Record<string, string> = {
-  learning: "/catalog/gitglow-v1/astro-starlight.webp",
-  career: "/catalog/gitglow-v1/react-interview.webp",
-  aigc: "/catalog/gitglow-v1/niannian-drama.webp",
-  web: "/competitions/agrihackathon/gitglow-tracks.webp",
-  github: "/catalog/gitglow-v1/hermes-agent.webp",
-  business: "/competitions/agrihackathon/gitglow-awards.webp",
-  productivity: "/catalog/gitglow-v1/code2prompt.webp",
-  competition: "/competitions/agrihackathon/gitglow-wall.webp",
+  learning: "/catalog/oil-v1/astro-starlight.svg",
+  career: "/catalog/oil-v1/react-interview.svg",
+  aigc: "/catalog/oil-v1/niannian-drama.svg",
+  web: "/catalog/oil-v1/ans-3d-showcase.svg",
+  github: "/catalog/oil-v1/hermes-agent.svg",
+  business: "/catalog/oil-v1/saleor-commerce.svg",
+  productivity: "/catalog/oil-v1/code2prompt.svg",
+  competition: "/catalog/oil-v1/curated-agri-uav.svg",
 };
+
+function toOuterOilCover(coverUrl?: string | null, category?: string): string {
+  if (coverUrl) {
+    const match = coverUrl.match(/\/catalog\/gitglow-v1\/([a-z0-9-]+)\.(?:webp|svg|png)$/i);
+    if (match) return `/catalog/oil-v1/${match[1]}.svg`;
+    if (coverUrl.includes("/competitions/agrihackathon/")) return "/catalog/oil-v1/curated-agri-uav.svg";
+    return coverUrl;
+  }
+  return (category && FALLBACK_COVERS[category]) || "/catalog/oil-v1/cauai-one.svg";
+}
 
 export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }: { offer: MarketOfferView; owner?: boolean; headingLevel?: 2 | 3 }) {
   const Heading = headingLevel === 3 ? "h3" : "h2";
@@ -24,10 +34,10 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
   const listing = offer.listing; const tiers = listing.pricingTiers ?? [];
   const minimum = tiers.length ? Math.min(...tiers.map(tier => tier.priceMinor)) : listing.priceMinor;
   const status = offer.submittedAt && !offer.reviewedAt ? "PENDING" : offer.status;
-  const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/cauai-one.webp";
+  const coverSrc = toOuterOilCover(listing.coverUrl, listing.category);
   const metrics = getMarketOfferMetrics(offer);
   return <Link href={owner ? "/market/creator/" + offer.id : marketProductPath(offer)} className="ans-project-card group flex min-w-0 flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
-    <div className="relative aspect-video overflow-hidden border-b bg-slate-950/90">
+    <div className="relative aspect-video overflow-hidden border-b bg-muted/30">
       <Image unoptimized src={coverSrc} width={960} height={540} alt={tp("projectCover", { title: listing.title })} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"/>
       <div className="pointer-events-none absolute inset-x-3 top-3 flex items-center justify-between gap-2">
         <span className="rounded-full bg-slate-950/75 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md">{p("categories." + listing.category)}</span>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600">
+  <title>CAUAI 无限画布 · oil欧呦风格高反差封面</title>
+  <defs>
+    <pattern id="oil-grid-infinite-canvas" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#171412" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="600" fill="#f5f1ec"/>
+  <rect width="960" height="600" fill="url(#oil-grid-infinite-canvas)"/>
+  <rect x="20" y="20" width="920" height="560" rx="24" fill="none" stroke="#171412" stroke-width="4"/>
+
+  <g transform="translate(48, 48)">
+    <rect x="0" y="0" width="236" height="38" rx="19" fill="#171412"/>
+    <circle cx="22" cy="19" r="6" fill="#10b981"/>
+    <text x="38" y="24" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800" fill="#fffdf8" letter-spacing="1">ANS · AI NEVER STOPS</text>
+
+    <rect x="252" y="0" width="224" height="38" rx="19" fill="#fed7aa" stroke="#171412" stroke-width="2.5"/>
+    <text x="364" y="24" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800" fill="#171412">AIGC · 影像与分镜</text>
+  </g>
+
+  <g transform="translate(48, 132)">
+    <rect x="0" y="6" width="14" height="136" rx="7" fill="#c2410c"/>
+    <text x="30" y="64" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="56" font-weight="900" fill="#171412" letter-spacing="-1">CAUAI 无限</text>
+    <text x="30" y="134" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="52" font-weight="900" fill="#c2410c" letter-spacing="-1">画布</text>
+    <text x="30" y="182" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" font-weight="700" fill="#171412" opacity="0.78">ANS 精选可复现工程</text>
+  </g>
+
+  <g transform="translate(48, 344)">
+    <rect x="6" y="6" width="476" height="118" rx="16" fill="#171412"/>
+    <rect x="0" y="0" width="476" height="118" rx="16" fill="#fffcf7" stroke="#171412" stroke-width="3"/>
+    <rect x="20" y="20" width="56" height="28" rx="8" fill="#c2410c"/>
+    <text x="48" y="39" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="900" fill="#ffffff">#09</text>
+    <text x="90" y="40" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="20" font-weight="800" fill="#171412">在可视化画布上组织素材和创作步骤，连接自己的</text>
+    <text x="20" y="82" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="18" font-weight="600" fill="#57534e"> AIGC 工作。</text>
+  </g>
+
+  <g transform="translate(48, 494)">
+    <rect x="0" y="0" width="168" height="40" rx="10" fill="#fffcf7" stroke="#171412" stroke-width="2.5"/>
+    <text x="84" y="25" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#171412">OIL 封面 · 外封海报</text>
+
+    <rect x="182" y="0" width="216" height="40" rx="10" fill="#fed7aa" stroke="#171412" stroke-width="2.5"/>
+    <text x="290" y="25" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#c2410c">点进看 GitGlow 3D 内封 →</text>
+  </g>
+
+  
+      <g transform="translate(568, 92)">
+        <rect x="8" y="8" width="332" height="416" rx="18" fill="#171412"/>
+        <rect x="0" y="0" width="332" height="416" rx="18" fill="#fffcf7" stroke="#171412" stroke-width="3.5"/>
+        <rect x="0" y="0" width="332" height="42" rx="18" fill="#fed7aa" stroke="#171412" stroke-width="3.5"/>
+        <circle cx="24" cy="21" r="6" fill="#ef4444"/><circle cx="44" cy="21" r="6" fill="#f59e0b"/><circle cx="64" cy="21" r="6" fill="#10b981"/>
+        <text x="308" y="26" text-anchor="end" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#171412">STORYBOARD · 4K</text>
+        <rect x="24" y="64" width="134" height="96" rx="10" fill="#fed7aa" stroke="#171412" stroke-width="3"/>
+        <text x="38" y="90" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#c2410c">SHOT 01</text>
+        <circle cx="91" cy="122" r="20" fill="#c2410c" stroke="#171412" stroke-width="2.5"/>
+        <polygon points="86,113 86,131 102,122" fill="#fff"/>
+        <rect x="174" y="64" width="134" height="96" rx="10" fill="#fff" stroke="#171412" stroke-width="3"/>
+        <text x="188" y="90" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#171412">SHOT 02</text>
+        <path d="M192 138 Q220 102 248 128 T292 110" fill="none" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/>
+        <rect x="24" y="178" width="284" height="132" rx="12" fill="#171412"/>
+        <rect x="42" y="198" width="110" height="16" rx="4" fill="#c2410c"/>
+        <rect x="42" y="226" width="210" height="12" rx="4" fill="#ffffff" opacity="0.85"/>
+        <rect x="42" y="250" width="170" height="12" rx="4" fill="#ffffff" opacity="0.55"/>
+        <circle cx="268" cy="244" r="24" fill="#c2410c"/>
+        <polygon points="262,233 262,255 280,244" fill="#ffffff"/>
+        <rect x="24" y="332" width="284" height="54" rx="10" fill="#fed7aa" stroke="#171412" stroke-width="3"/>
+        <text x="166" y="365" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" font-weight="800" fill="#171412">TIMELINE · SEEDANCE / REMUX</text>
+      </g>
+</svg>

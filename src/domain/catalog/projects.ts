@@ -15,7 +15,38 @@ type CatalogProjectBase = {
   preview: "document" | "code" | "plan" | "character" | "site" | "video" | "agent";
 };
 
-export type CatalogProject = CatalogProjectBase & { source: CatalogEntry["source"]; sourceUrl?: string; licenseUrl?: string; workflowId?: CatalogWorkflowId; workflowSlugs?: string[]; marketSlugs?: string[]; content?: CatalogEntry["content"]; discoveryUrl?: string; coverUrl?: string; coverNote?: string; memberHref?: string; creator?: string };
+export type CatalogProject = CatalogProjectBase & { source: CatalogEntry["source"]; sourceUrl?: string; licenseUrl?: string; workflowId?: CatalogWorkflowId; workflowSlugs?: string[]; marketSlugs?: string[]; content?: CatalogEntry["content"]; discoveryUrl?: string; coverUrl?: string; outerCoverUrl?: string; innerCoverUrl?: string; coverNote?: string; memberHref?: string; creator?: string };
+
+/**
+ * Scheme A Dual-Cover Resolver:
+ * - Before clicking (outer list card): oil-style high-contrast editorial cover (/catalog/oil-v1/<slug>.svg)
+ * - After clicking (inner detail hero): GitGlow 3D interface cover (/catalog/gitglow-v1/<slug>.(webp|svg))
+ */
+export function resolveProjectCovers(project: {
+  slug: string;
+  coverUrl?: string;
+  outerCoverUrl?: string;
+  innerCoverUrl?: string;
+}): { outerCoverUrl?: string; innerCoverUrl?: string } {
+  if (!project.coverUrl && !project.outerCoverUrl && !project.innerCoverUrl) {
+    return { outerCoverUrl: undefined, innerCoverUrl: undefined };
+  }
+  const isCustomUpload =
+    Boolean(project.coverUrl) &&
+    !project.coverUrl!.startsWith("/catalog/gitglow-v1/") &&
+    !project.coverUrl!.startsWith("/catalog/oil-v1/") &&
+    !project.coverUrl!.startsWith("/catalog/sketch-v1/");
+  if (isCustomUpload) {
+    return {
+      outerCoverUrl: project.outerCoverUrl ?? project.coverUrl,
+      innerCoverUrl: project.innerCoverUrl ?? project.coverUrl,
+    };
+  }
+  return {
+    outerCoverUrl: project.outerCoverUrl ?? `/catalog/oil-v1/${project.slug}.svg`,
+    innerCoverUrl: project.innerCoverUrl ?? project.coverUrl ?? `/catalog/gitglow-v1/${project.slug}.svg`,
+  };
+}
 
 export const WORKFLOW_RECIPES: readonly CatalogProject[] = [
   { slug: "resume-website", category: "career", subcategory: "portfolio", goal: "portfolio", workflowId: "resume-website", source: "official", preview: "site" },

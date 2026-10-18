@@ -375,24 +375,24 @@ export const ANS_DAILY_SKILLS: readonly AnsDailySkill[] = [
     code: "ans-cover-studio",
     pipelineId: "media",
     title: {
-      zh: "横竖双画幅高识别度视频封面生成",
-      en: "Dual-Aspect (16:9 & 3:4) Video Cover Studio",
+      zh: "双封面 Skill 引擎（oil 外封大字海报 + GitGlow 内封 3D 实景）",
+      en: "Dual-Cover Skill Engine (oil Outer Poster + GitGlow 3D Inner Hero)",
     },
     trigger: {
-      zh: "需要为同一期内容同时准备 B 站/YouTube 横版（16:9）与小红书/抖音竖版（3:4）封面图时触发。",
-      en: "Use when generating matching 16:9 landscape and 3:4 vertical thumbnails for a video or tutorial release.",
+      zh: "需要为同一个网站或项目同时生成「点进去之前（列表卡片外封）」与「点进去之后（详情页大图内封）」两套差异化封面，或同时导出 16:9 / 3:4 发布封面时触发。",
+      en: "Use when generating dual covers for the same project: an oil-style high-contrast poster before clicking in (list card) and a GitGlow 3D UI spotlight cover after clicking in (detail page).",
     },
     mechanism: {
-      zh: "从视频抽取表情自然的人物关键帧（或调用去背景抠像合成），结合高对比度双层大字 SVG 模板（主标题直击痛点结果、副标题点明具体工具或数字），一次性渲染 16:9 与 3:4 两种比例并嵌入本地 HTML 预览页直观对比缩略图可读性。",
-      en: "Selects a clean speaker keyframe or cutout subject, pairs it with a high-contrast two-line SVG typography layout, and renders both 16:9 and 3:4 covers inside a local HTML thumbnail preview.",
+      zh: "一套项目双封面协同：（1）点进去前用 oil 封面 Skill（#f5f2eb 暖米白编辑部网格 + 墨黑粗描边硬阴影 + 超大标题 + 主题手绘插画），解决缩略图字小看不清、暗黑卡片撞脸问题；（2）点进去后用 GitGlow 封面 Skill（深色聚光灯 + 3D 透视斜切真实界面截图与指标面板），展示项目真实运行长相，并支持一键双封面切换。",
+      en: "Generates two complementary covers per project: (1) oil Outer Poster Skill (warm #f5f2eb grid, bold ink border, oversized title + vector art) for instant thumbnail legibility on browse cards; (2) GitGlow 3D Inner Skill (dark spotlight + 3D angled UI stack) on the detail page.",
     },
     boundary: {
-      zh: "封面文字控制在 10 个字以内，确保手机信息流缩略图一眼能看清；禁止堆砌超过 3 种颜色或遮挡主体面部。",
-      en: "Keeps cover text concise enough to read at mobile feed thumbnail size, using at most 3 colors without covering the subject.",
+      zh: "外封（oil Skill）主标题控制在 12 字以内，确保列表卡片一眼看懂主题；内封（GitGlow Skill）聚焦真实界面结构与运行指标，严禁多项目共用同一张封面图。",
+      en: "Keeps outer oil poster titles concise for instant feed legibility, while inner GitGlow 3D covers showcase authentic UI structure with zero duplicate covers across projects.",
     },
     agentPrompt: {
-      zh: "请使用 ans-cover-studio 为本期内容生成 16:9 横版与 3:4 竖版双尺寸封面：提炼 3 组不超过 10 个字的高反差平实主标题候选，结合主体画面渲染进本地 HTML 缩略图预览页，供我挑选最清晰的一版。",
-      en: "Use ans-cover-studio to generate 16:9 and 3:4 covers for this release: propose 3 punchy, non-hype title options under 8 words and render them into a local HTML thumbnail preview for selection.",
+      zh: "请使用 ans-cover-studio 双封面 Skill 为当前项目同时生成两套封面：① 点进去前的列表外封（调用 oil 封面 Skill：暖米白网格底、粗黑描边硬阴影、超大反差中文标题 + 赛道主题插画）；② 点进去后的详情内封（调用 GitGlow 封面 Skill：深色聚光灯 + 3D 透视三层界面实景窗口），并在详情页提供一键切换对比。",
+      en: "Use ans-cover-studio Dual-Cover Skill to generate both covers for this project: (1) an outer card poster via the oil Cover Skill (warm grid, bold ink border, big title + theme illustration) for browse lists, and (2) an inner detail hero via the GitGlow 3D Cover Skill (dark spotlight + 3D angled UI stack).",
     },
     relatedTerms: [
       { slug: "image", label: { zh: "Image 图像资产", en: "Image" } },

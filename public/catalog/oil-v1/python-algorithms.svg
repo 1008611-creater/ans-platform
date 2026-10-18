@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600">
+  <title>The Algorithms · Python · oil欧呦风格高反差封面</title>
+  <defs>
+    <pattern id="oil-grid-python-algorithms" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#141413" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="600" fill="#f6f3ec"/>
+  <rect width="960" height="600" fill="url(#oil-grid-python-algorithms)"/>
+  <rect x="20" y="20" width="920" height="560" rx="24" fill="none" stroke="#141413" stroke-width="4"/>
+
+  <g transform="translate(48, 48)">
+    <rect x="0" y="0" width="236" height="38" rx="19" fill="#141413"/>
+    <circle cx="22" cy="19" r="6" fill="#10b981"/>
+    <text x="38" y="24" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800" fill="#fffdf8" letter-spacing="1">ANS · AI NEVER STOPS</text>
+
+    <rect x="252" y="0" width="224" height="38" rx="19" fill="#ccfbf1" stroke="#141413" stroke-width="2.5"/>
+    <text x="364" y="24" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800" fill="#141413">LEARNING · 知识图谱</text>
+  </g>
+
+  <g transform="translate(48, 132)">
+    <rect x="0" y="6" width="14" height="136" rx="7" fill="#0f766e"/>
+    <text x="30" y="64" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="56" font-weight="900" fill="#141413" letter-spacing="-1">The Algo</text>
+    <text x="30" y="134" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="52" font-weight="900" fill="#0f766e" letter-spacing="-1">rithms</text>
+    <text x="30" y="182" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" font-weight="700" fill="#141413" opacity="0.78">Python</text>
+  </g>
+
+  <g transform="translate(48, 344)">
+    <rect x="6" y="6" width="476" height="118" rx="16" fill="#141413"/>
+    <rect x="0" y="0" width="476" height="118" rx="16" fill="#fffdf8" stroke="#141413" stroke-width="3"/>
+    <rect x="20" y="20" width="56" height="28" rx="8" fill="#0f766e"/>
+    <text x="48" y="39" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="900" fill="#ffffff">#17</text>
+    <text x="90" y="40" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="20" font-weight="800" fill="#141413">阅读 Python 算法实现，把概念和实际代</text>
+    <text x="20" y="82" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="18" font-weight="600" fill="#57534e">码对照起来。</text>
+  </g>
+
+  <g transform="translate(48, 494)">
+    <rect x="0" y="0" width="168" height="40" rx="10" fill="#fffdf8" stroke="#141413" stroke-width="2.5"/>
+    <text x="84" y="25" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#141413">OIL 封面 · 外封海报</text>
+
+    <rect x="182" y="0" width="216" height="40" rx="10" fill="#ccfbf1" stroke="#141413" stroke-width="2.5"/>
+    <text x="290" y="25" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#0f766e">点进看 GitGlow 3D 内封 →</text>
+  </g>
+
+  
+    <g transform="translate(568, 92)">
+      <rect x="8" y="8" width="332" height="416" rx="18" fill="#141413"/>
+      <rect x="0" y="0" width="332" height="416" rx="18" fill="#fffdf8" stroke="#141413" stroke-width="3.5"/>
+      <rect x="0" y="0" width="332" height="42" rx="18" fill="#ccfbf1" stroke="#141413" stroke-width="3.5"/>
+      <circle cx="24" cy="21" r="6" fill="#ef4444"/><circle cx="44" cy="21" r="6" fill="#f59e0b"/><circle cx="64" cy="21" r="6" fill="#10b981"/>
+      <text x="308" y="26" text-anchor="end" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#141413">ANS · WORKBENCH</text>
+      <rect x="24" y="68" width="126" height="110" rx="12" fill="#ccfbf1" stroke="#141413" stroke-width="3"/>
+      <text x="87" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" font-weight="900" fill="#141413">INPUT</text>
+      <text x="87" y="142" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#0f766e">GROUNDED</text>
+      <rect x="182" y="68" width="126" height="110" rx="12" fill="#fff" stroke="#141413" stroke-width="3"/>
+      <text x="245" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" font-weight="900" fill="#0f766e">OUTPUT</text>
+      <text x="245" y="142" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#141413">VERIFIED</text>
+      <path d="M150 123 H182" stroke="#141413" stroke-width="4"/>
+      <rect x="24" y="200" width="284" height="116" rx="12" fill="#141413"/>
+      <text x="44" y="236" font-family="ui-monospace,monospace" font-size="15" font-weight="700" fill="#6ee7b7">$ ans run python-algorithms</text>
+      <text x="44" y="266" font-family="ui-monospace,monospace" font-size="14" fill="#e2e8f0">✓ schema &amp; boundary verified</text>
+      <text x="44" y="294" font-family="ui-monospace,monospace" font-size="14" fill="#fbbf24">✓ live preview ready (200 OK)</text>
+      <rect x="24" y="336" width="284" height="50" rx="10" fill="#0f766e" stroke="#141413" stroke-width="3"/>
+      <text x="166" y="367" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" font-weight="900" fill="#ffffff">CLICK TO OPEN DETAIL →</text>
+    </g>
+</svg>

@@ -725,8 +725,24 @@ export interface CoverStudioPreset {
 
 export const COVER_STUDIO_PRESETS: readonly CoverStudioPreset[] = [
   {
+    id: "editorial",
+    label: {
+      zh: "🎨 外封 · oil 大字插画海报 Skill (点进去前 · 列表卡片)",
+      en: "🎨 Outer · oil Editorial Poster Skill (Before Click · Card)",
+    },
+    accent: "#d95d39",
+    bg: "#f5f2eb",
+    fg: "#18181b",
+    sub: "#3f3f46",
+    tagBg: "#18181b",
+    tagFg: "#f5f2eb",
+  },
+  {
     id: "dark-tech",
-    label: { zh: "01 · 深色工程看板风 (16:9)", en: "01 · Dark Engineering Spec (16:9)" },
+    label: {
+      zh: "🌌 内封 · GitGlow 3D 界面透视 Skill (点进去后 · 详情主图)",
+      en: "🌌 Inner · GitGlow 3D UI Spotlight Skill (After Click · Detail)",
+    },
     accent: "#10b981",
     bg: "#090f1a",
     fg: "#f8fafc",
@@ -735,18 +751,11 @@ export const COVER_STUDIO_PRESETS: readonly CoverStudioPreset[] = [
     tagFg: "#6ee7b7",
   },
   {
-    id: "editorial",
-    label: { zh: "02 · 编辑部白底高对比风 (16:9)", en: "02 · Editorial High-Contrast (16:9)" },
-    accent: "#e85d3f",
-    bg: "#f7f4ed",
-    fg: "#18181b",
-    sub: "#52525b",
-    tagBg: "#18181b",
-    tagFg: "#f7f4ed",
-  },
-  {
     id: "hackathon",
-    label: { zh: "03 · 赛事金绿路演风 (16:9)", en: "03 · Hackathon Roadshow Gold (16:9)" },
+    label: {
+      zh: "🏆 赛事 · 神农金绿双模路演封面 (16:9)",
+      en: "🏆 Hackathon · Roadshow Dual-Mode Cover (16:9)",
+    },
     accent: "#f59e0b",
     bg: "#052e2b",
     fg: "#ecfdf5",
@@ -766,7 +775,10 @@ function escapeXml(str: string): string {
 }
 
 /**
- * Generates a self-contained SVG cover markup (ans-cover-studio) with big typography, high contrast, and ANS badge.
+ * Generates a self-contained SVG cover markup (ans-cover-studio) supporting both:
+ * - "editorial" (oil Cover Skill: warm #f5f2eb grid, bold #18181b ink border + hard shadow, huge title + right vector illustration)
+ * - "dark-tech" (GitGlow 3D Cover Skill: dark radial spotlight + 3D perspective tilted UI window stack)
+ * - "hackathon" (Hackathon gold/emerald roadshow cover)
  */
 export function buildCoverStudioSvg(
   presetId: CoverStudioPreset["id"],
@@ -776,10 +788,57 @@ export function buildCoverStudioSvg(
 ): string {
   const preset = COVER_STUDIO_PRESETS.find(item => item.id === presetId) ?? COVER_STUDIO_PRESETS[0];
   const cleanTitle = (title.trim() || "ANS 可复现 AI 工程工作流").replace(SLOP_BUZZWORDS, "");
-  const line1 = cleanTitle.slice(0, 16);
-  const line2 = cleanTitle.slice(16, 32);
-  const shortSummary = (summary.trim() || "Deterministic Script + Grounded Agent + Live Preview Gate").slice(0, 44);
+  const line1 = cleanTitle.slice(0, 13);
+  const line2 = cleanTitle.slice(13, 26);
+  const shortSummary = (summary.trim() || "Deterministic Script + Grounded Agent + Live Preview Gate").slice(0, 42);
   const badge = (categoryBadge.trim() || "ANS VERIFIED WORKFLOW").toUpperCase();
+
+  if (preset.id === "editorial") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <pattern id="grid-oil" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#18181b" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="#f5f2eb"/>
+  <rect width="1200" height="675" fill="url(#grid-oil)"/>
+  <rect x="44" y="42" width="1116" height="596" rx="28" fill="#18181b"/>
+  <rect x="34" y="32" width="1116" height="596" rx="28" fill="#faf8f3" stroke="#18181b" stroke-width="4.5"/>
+  <rect x="34" y="32" width="1116" height="16" rx="8" fill="${preset.accent}"/>
+  <g transform="translate(76, 82)">
+    <rect x="4" y="4" width="320" height="44" rx="12" fill="#18181b"/>
+    <rect x="0" y="0" width="320" height="44" rx="12" fill="${preset.accent}" stroke="#18181b" stroke-width="3"/>
+    <text x="160" y="28" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="16" font-weight="900" letter-spacing="1">${escapeXml(badge.slice(0, 24))}</text>
+  </g>
+  <text x="76" y="236" fill="#18181b" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="60" font-weight="900" letter-spacing="-1.2">${escapeXml(line1)}</text>
+  ${line2 ? `<text x="76" y="314" fill="#18181b" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="60" font-weight="900" letter-spacing="-1.2">${escapeXml(line2)}</text>` : ""}
+  <rect x="76" y="${line2 ? 344 : 272}" width="190" height="12" rx="6" fill="${preset.accent}" stroke="#18181b" stroke-width="2.5"/>
+  <text x="76" y="${line2 ? 404 : 334}" fill="#3f3f46" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="23" font-weight="700">${escapeXml(shortSummary)}</text>
+  <g transform="translate(76, 516)">
+    <rect x="4" y="4" width="210" height="48" rx="12" fill="#18181b"/>
+    <rect x="0" y="0" width="210" height="48" rx="12" fill="#fef3c7" stroke="#18181b" stroke-width="3"/>
+    <text x="105" y="30" text-anchor="middle" fill="#18181b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="900">🎨 OIL OUTER COVER</text>
+    <rect x="230" y="4" width="240" height="48" rx="12" fill="#18181b"/>
+    <rect x="226" y="0" width="240" height="48" rx="12" fill="#ffffff" stroke="#18181b" stroke-width="3"/>
+    <text x="346" y="30" text-anchor="middle" fill="#18181b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="800">ANS VIBEHUB · AI NEVER STOPS</text>
+  </g>
+  <g transform="translate(770, 96)">
+    <rect x="10" y="10" width="330" height="460" rx="24" fill="#18181b"/>
+    <rect x="0" y="0" width="330" height="460" rx="24" fill="#fde6d8" stroke="#18181b" stroke-width="4"/>
+    <rect x="24" y="24" width="282" height="40" rx="10" fill="#ffffff" stroke="#18181b" stroke-width="3"/>
+    <circle cx="46" cy="44" r="6" fill="#ef4444" stroke="#18181b" stroke-width="2"/>
+    <circle cx="66" cy="44" r="6" fill="#f59e0b" stroke="#18181b" stroke-width="2"/>
+    <circle cx="86" cy="44" r="6" fill="#10b981" stroke="#18181b" stroke-width="2"/>
+    <rect x="24" y="84" width="282" height="190" rx="16" fill="#ffffff" stroke="#18181b" stroke-width="3.5"/>
+    <circle cx="165" cy="178" r="56" fill="#fef3c7" stroke="#18181b" stroke-width="3.5"/>
+    <path d="M 140 178 L 158 196 L 194 158" fill="none" stroke="${preset.accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="24" y="294" width="282" height="64" rx="14" fill="#18181b"/>
+    <text x="165" y="333" text-anchor="middle" fill="#faf8f3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" font-weight="900">CLICK TO OPEN 3D ↗</text>
+    <rect x="24" y="376" width="282" height="56" rx="14" fill="#ffffff" stroke="#18181b" stroke-width="3"/>
+    <text x="165" y="410" text-anchor="middle" fill="#18181b" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="16" font-weight="800">外封先讲清主题 · 点进看实景</text>
+  </g>
+</svg>`;
+  }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
   <defs>
@@ -790,21 +849,37 @@ export function buildCoverStudioSvg(
   <rect width="1200" height="675" fill="${preset.bg}"/>
   <rect width="1200" height="675" fill="url(#grid-${preset.id})"/>
   <rect x="44" y="40" width="1112" height="595" rx="28" fill="none" stroke="${preset.accent}" stroke-opacity="0.45" stroke-width="2.5"/>
-  <circle cx="1040" cy="140" r="220" fill="${preset.accent}" fill-opacity="0.12"/>
-  <rect x="92" y="96" width="340" height="44" rx="22" fill="${preset.tagBg}"/>
-  <text x="262" y="124" text-anchor="middle" fill="${preset.tagFg}" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="18" font-weight="700" letter-spacing="1.2">${escapeXml(badge.slice(0, 26))}</text>
-  <text x="92" y="258" fill="${preset.fg}" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="68" font-weight="800" letter-spacing="-1.5">${escapeXml(line1)}</text>
-  ${line2 ? `<text x="92" y="346" fill="${preset.fg}" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="68" font-weight="800" letter-spacing="-1.5">${escapeXml(line2)}</text>` : ""}
-  <rect x="92" y="${line2 ? 392 : 308}" width="180" height="10" rx="5" fill="${preset.accent}"/>
-  <text x="92" y="${line2 ? 454 : 378}" fill="${preset.sub}" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="27" font-weight="500">${escapeXml(shortSummary)}</text>
-  <g transform="translate(92, 540)">
-    <rect x="0" y="0" width="190" height="44" rx="12" fill="${preset.fg}" fill-opacity="0.08" stroke="${preset.fg}" stroke-opacity="0.2"/>
-    <text x="95" y="28" text-anchor="middle" fill="${preset.fg}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="600">SCRIPT + AGENT</text>
-    <rect x="206" y="0" width="210" height="44" rx="12" fill="${preset.fg}" fill-opacity="0.08" stroke="${preset.fg}" stroke-opacity="0.2"/>
-    <text x="311" y="28" text-anchor="middle" fill="${preset.fg}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="600">LIVE SANDBOX</text>
-    <rect x="432" y="0" width="220" height="44" rx="12" fill="${preset.fg}" fill-opacity="0.08" stroke="${preset.fg}" stroke-opacity="0.2"/>
-    <text x="542" y="28" text-anchor="middle" fill="${preset.fg}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="600">ANS-TONE-GUARD</text>
+  <circle cx="960" cy="220" r="240" fill="${preset.accent}" fill-opacity="0.14"/>
+  <rect x="82" y="88" width="330" height="42" rx="21" fill="${preset.tagBg}" stroke="${preset.accent}" stroke-opacity="0.5"/>
+  <text x="247" y="115" text-anchor="middle" fill="${preset.tagFg}" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="16" font-weight="800" letter-spacing="1.2">${escapeXml(badge.slice(0, 26))}</text>
+  <text x="82" y="232" fill="${preset.fg}" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="56" font-weight="800" letter-spacing="-1.2">${escapeXml(line1)}</text>
+  ${line2 ? `<text x="82" y="306" fill="${preset.fg}" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="56" font-weight="800" letter-spacing="-1.2">${escapeXml(line2)}</text>` : ""}
+  <rect x="82" y="${line2 ? 340 : 272}" width="170" height="8" rx="4" fill="${preset.accent}"/>
+  <text x="82" y="${line2 ? 396 : 332}" fill="${preset.sub}" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif" font-size="22" font-weight="500">${escapeXml(shortSummary)}</text>
+  <g transform="translate(680, 108) skewY(-5) rotate(-3)">
+    <rect x="36" y="36" width="410" height="290" rx="18" fill="#0f172a" stroke="${preset.accent}" stroke-opacity="0.35" stroke-width="2"/>
+    <rect x="18" y="18" width="410" height="290" rx="18" fill="#111c33" stroke="${preset.accent}" stroke-opacity="0.55" stroke-width="2"/>
+    <rect x="0" y="0" width="410" height="290" rx="18" fill="#0b1324" stroke="${preset.accent}" stroke-width="2.5"/>
+    <rect x="0" y="0" width="410" height="34" rx="18" fill="#1e293b"/>
+    <circle cx="20" cy="17" r="5" fill="#f43f5e"/>
+    <circle cx="36" cy="17" r="5" fill="#f59e0b"/>
+    <circle cx="52" cy="17" r="5" fill="#10b981"/>
+    <text x="210" y="22" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700">gitglow-3d-preview://live-ui</text>
+    <rect x="20" y="52" width="175" height="110" rx="10" fill="${preset.accent}" fill-opacity="0.14" stroke="${preset.accent}" stroke-opacity="0.45"/>
+    <text x="34" y="82" fill="${preset.tagFg}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800">3D UI PERSPECTIVE</text>
+    <text x="34" y="112" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="900">LIVE DEMO</text>
+    <rect x="210" y="52" width="180" height="110" rx="10" fill="#1e293b"/>
+    <path d="M 226 138 L 258 106 L 288 122 L 328 78 L 372 92" fill="none" stroke="${preset.accent}" stroke-width="4" stroke-linecap="round"/>
+    <rect x="20" y="178" width="370" height="90" rx="10" fill="#111827" stroke="#334155"/>
+    <text x="36" y="210" fill="#e2e8f0" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700">$ ans verify --cover=gitglow-3d-inner</text>
+    <text x="36" y="240" fill="${preset.accent}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700">✓ Inner 3D UI Hero Ready · 60fps</text>
   </g>
-  <text x="1104" y="570" text-anchor="end" fill="${preset.accent}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22" font-weight="800">ANS VIBEHUB</text>
+  <g transform="translate(82, 536)">
+    <rect x="0" y="0" width="210" height="44" rx="12" fill="${preset.fg}" fill-opacity="0.08" stroke="${preset.accent}" stroke-opacity="0.4"/>
+    <text x="105" y="28" text-anchor="middle" fill="${preset.fg}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700">🌌 GITGLOW 3D INNER</text>
+    <rect x="226" y="0" width="220" height="44" rx="12" fill="${preset.fg}" fill-opacity="0.08" stroke="${preset.fg}" stroke-opacity="0.2"/>
+    <text x="336" y="28" text-anchor="middle" fill="${preset.fg}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700">LIVE SANDBOX</text>
+  </g>
+  <text x="1114" y="572" text-anchor="end" fill="${preset.accent}" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" font-weight="800">ANS VIBEHUB</text>
 </svg>`;
 }

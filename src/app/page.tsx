@@ -4,7 +4,7 @@ import { ArrowRight, Plus, Search, BookOpen, BriefcaseBusiness, Clapperboard, Co
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { listPublishedCatalog } from "@/server/catalog/service";
-import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
+import { PROJECT_CATEGORIES, resolveProjectCovers } from "@/domain/catalog/projects";
 import { catalogText } from "@/domain/catalog/content";
 import { homepageProjects, resolveCatalogShowcaseHref } from "@/domain/catalog/homepage";
 import { browseCatalog, catalogBrowseHref, type CatalogBrowseQuery } from "@/domain/catalog/browse";
@@ -46,7 +46,7 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
           title: catalogText(project, t, "title", locale),
           summary: catalogText(project, t, "summary", locale),
           category: t(`categories.${project.category}`),
-          coverUrl: project.coverUrl,
+          coverUrl: resolveProjectCovers(project).outerCoverUrl,
         }))} labels={{ title: t("home.spotlight"), open: t("detail"), carousel: t("home.projectCarousel"), info: t("catalogBrowse.introduction"), pause: t("home.pauseProjects"), play: t("home.playProjects") }} /> : <div className={styles.empty}><BookOpen aria-hidden="true" /><h2>{t("emptyTitle")}</h2><p>{t("emptyBody")}</p></div>}
       </div>
       <div className="ans-product-container mt-4" data-testid="home-ecosystem-pulse">

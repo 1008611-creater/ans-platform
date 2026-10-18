@@ -43,7 +43,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
   const [title, setTitle] = useState(data?.title ?? ""); const [summary, setSummary] = useState(data?.summary ?? ""); const [deliverables, setDeliverables] = useState(data?.deliverables.join("\n") ?? "");
   const [coverUrl, setCoverUrl] = useState(data?.coverUrl ?? "");
   const [studioTab, setStudioTab] = useState<"pitch" | "readme" | "social" | "cover">("pitch");
-  const [coverPreset, setCoverPreset] = useState<CoverStudioPreset["id"]>("dark-tech");
+  const [coverPreset, setCoverPreset] = useState<CoverStudioPreset["id"]>("editorial");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [tiers, setTiers] = useState<TierDraft[]>(data?.pricingTiers?.length ? data.pricingTiers.map(tier => ({ id: tier.id, title: tier.title, description: tier.description, price: (tier.priceMinor / 100).toFixed(2), deliverables: tier.deliverables.join("\n") })) : [{ id: "basic", title: "", description: "", price: data?.priceMinor ? (data.priceMinor / 100).toFixed(2) : "", deliverables: data?.deliverables.join("\n") ?? "" }]);
   const children = PROJECT_CATEGORIES.find(item => item.id === category)!.children;
@@ -254,7 +254,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
               { id: "pitch", label: "🎙️ 60秒路演逐字稿" },
               { id: "readme", label: "📘 去AI味 GitHub README" },
               { id: "social", label: "📲 小红书/B站发布草稿" },
-              { id: "cover", label: "🎨 16:9 高对比三版封面 (ans-cover-studio)" },
+              { id: "cover", label: "🎨 双封面 Skill 工坊 (oil 外封 + GitGlow 3D 内封)" },
             ] as const).map(tab => (
               <button
                 key={tab.id}
@@ -308,6 +308,9 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             </div>
           ) : (
             <div className="space-y-3">
+              <p className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-3.5 py-2 text-xs leading-5 text-muted-foreground">
+                💡 <strong className="text-foreground">一项目双封面规范：</strong>点进去之前（列表卡片外封）使用 <strong className="text-foreground">oil 大字插画海报 Skill</strong> 一眼看懂；点进去之后（详情页主图内封）使用 <strong className="text-foreground">GitGlow 3D 界面透视 Skill</strong> 展示真实运行界面。
+              </p>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap gap-2">
                   {COVER_STUDIO_PRESETS.map(preset => (
@@ -331,7 +334,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
                   className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  <span>下载 16:9 SVG 封面文件</span>
+                  <span>下载当前 16:9 SVG 封面</span>
                 </button>
               </div>
               <div

@@ -10,6 +10,7 @@ import {
   ANS_SKILL_PIPELINES,
   ANS_SKILL_PRODUCT_PRINCIPLES,
 } from "@/domain/vibehub/ans-skill-matrix";
+import { buildCoverStudioSvg } from "@/domain/vibehub/ans-site-optimizers";
 import { SkillCopyButton } from "../skill-copy-button";
 import { usePersistedSetting } from "../use-persisted-setting";
 import { useVibeLanguage } from "../use-vibe-language";
@@ -48,6 +49,8 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
   const [templateNotice, setTemplateNotice] = useState("");
   const [activeRewriteId, setActiveRewriteId] = useState(ANS_REWRITE_EXAMPLES[0].id);
   const [activePipeline, setActivePipeline] = useState<"all" | "engineering" | "media" | "content">("engineering");
+  const [coverDemoSlug, setCoverDemoSlug] = useState<"cauai-one" | "niannian-drama" | "liu-resume">("cauai-one");
+  const [customCoverTitle, setCustomCoverTitle] = useState("CAU 农情病虫害多模态诊断终端");
   const scenario = getBriefScenario(scenarioId);
   const [saved, setSaved, persisted] = usePersistedSetting(
     `ans:vibehub:brief:${scenario.id}:${lang}:v1`,
@@ -373,6 +376,112 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section
+        id="ans-dual-cover-studio"
+        data-testid="ans-dual-cover-studio"
+        className="ans-skill-section"
+        aria-labelledby="ans-dual-cover-heading"
+      >
+        <div className="ans-knowledge-section-heading">
+          <div>
+            <p className="ans-knowledge-eyebrow">
+              {lang === "en" ? "DUAL-COVER SKILL ENGINE · OIL + GITGLOW" : "双封面 SKILL 协同引擎 · 点进去前一套 / 点进去后一套"}
+            </p>
+            <h2 id="ans-dual-cover-heading">
+              {lang === "en"
+                ? "Same Project, Two Cover Skills: oil Poster Before Click · GitGlow 3D After Click"
+                : "同一个项目两份封面：点进去前用 oil 大字海报 Skill，点进去后用 GitGlow 3D 实景 Skill"}
+            </h2>
+          </div>
+          <p>
+            {lang === "en"
+              ? "Outer browse cards use the oil Cover Skill for instant topic recognition; inner detail pages use the GitGlow 3D Skill to reveal the real running interface."
+              : "外层列表卡片用 oil 封面 Skill（暖米白网格底 + 粗黑描边硬阴影 + 超大标题 + 主题插画），一眼看懂它是干嘛的；点进详情页切换为 GitGlow 封面 Skill（深色聚光灯 + 3D 透视界面实景），看清项目真实长相。"}
+          </p>
+        </div>
+
+        <div className="ans-brief-scenarios" role="group" aria-label="双封面示范项目切换">
+          {([
+            { id: "cauai-one", label: "🚀 示例 1：CAUAI.one 个人主页生成器", title: "CAUAI.one 30秒个人主页生成" },
+            { id: "niannian-drama", label: "🎬 示例 2：念念漫剧 AI 短剧流水线", title: "念念漫剧 AI 短剧分镜工坊" },
+            { id: "liu-resume", label: "📄 示例 3：个人交互式简历主页", title: "刘曙宾 交互式数字简历站" },
+          ] as const).map(item => (
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={coverDemoSlug === item.id}
+              onClick={() => {
+                setCoverDemoSlug(item.id);
+                setCustomCoverTitle(item.title);
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="ans-rewrite-compare" style={{ marginTop: "1rem" }}>
+          <article className="ans-rewrite-card">
+            <div className="ans-rewrite-after-head">
+              <span className="ans-knowledge-eyebrow">🎨 点进去之前（列表卡片外封）· oil 封面 Skill</span>
+              <Link className="ans-editorial-link" href={`/explore/${coverDemoSlug}`}>
+                查看详情页切换效果 <ArrowUpRight size={14} aria-hidden="true" />
+              </Link>
+            </div>
+            <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(0,0,0,0.12)", marginTop: "0.75rem" }}>
+              <img
+                src={`/catalog/oil-v1/${coverDemoSlug}.svg`}
+                alt="oil 外封海报示例"
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
+            <small className="ans-rewrite-why">
+              暖米白编辑部网格 + 墨黑粗描边硬阴影 + 超大中文标题 + 赛道手绘插画，解决缩略图字小看不清、暗黑卡片撞脸问题。
+            </small>
+          </article>
+
+          <article className="ans-rewrite-card">
+            <div className="ans-rewrite-after-head">
+              <span className="ans-knowledge-eyebrow">🌌 点进去之后（详情页主图内封）· GitGlow 3D 封面 Skill</span>
+              <Link className="ans-editorial-link" href={`/explore/${coverDemoSlug}`}>
+                进入详情页实测 <ArrowUpRight size={14} aria-hidden="true" />
+              </Link>
+            </div>
+            <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(0,0,0,0.12)", marginTop: "0.75rem" }}>
+              <img
+                src={`/catalog/gitglow-v1/${coverDemoSlug}.webp`}
+                alt="GitGlow 3D 内封实景示例"
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
+            <small className="ans-rewrite-why">
+              深色聚光灯 + 3D 透视斜切真实软件界面截图，点进详情页后直观展示工作台与真实运行界面，左上角支持一键切换外封/内封。
+            </small>
+          </article>
+        </div>
+
+        <div className="ans-rewrite-compare" style={{ marginTop: "1rem" }}>
+          <article className="ans-rewrite-card">
+            <span className="ans-knowledge-eyebrow">⚡ 在线实时生成预览 · oil 外封 Skill (SVG 引擎)</span>
+            <div
+              style={{ borderRadius: "14px", overflow: "hidden", marginTop: "0.75rem" }}
+              dangerouslySetInnerHTML={{
+                __html: buildCoverStudioSvg("editorial", customCoverTitle, "确定性脚本校验 + 受约束 Agent + 本地沙箱预览", "ANS · OIL COVER SKILL"),
+              }}
+            />
+          </article>
+          <article className="ans-rewrite-card">
+            <span className="ans-knowledge-eyebrow">⚡ 在线实时生成预览 · GitGlow 3D 内封 Skill (SVG 引擎)</span>
+            <div
+              style={{ borderRadius: "14px", overflow: "hidden", marginTop: "0.75rem" }}
+              dangerouslySetInnerHTML={{
+                __html: buildCoverStudioSvg("dark-tech", customCoverTitle, "确定性脚本校验 + 受约束 Agent + 本地沙箱预览", "ANS · GITGLOW 3D SKILL"),
+              }}
+            />
+          </article>
         </div>
       </section>
 

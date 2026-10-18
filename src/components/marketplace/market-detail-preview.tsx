@@ -1,8 +1,8 @@
-import Image from "next/image";
 import { Check, ExternalLink, FileCode2, Github } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { MarketListingInput } from "@/contracts/marketplace";
 import { getMarketSamplePreview } from "@/domain/marketplace/presentation";
+import { DualCoverPreview } from "@/components/catalog/dual-cover-preview";
 import { Button } from "@/components/ui/button";
 import styles from "./market-detail.module.css";
 
@@ -17,14 +17,35 @@ const FALLBACK_COVERS: Record<string, string> = {
   competition: "/competitions/agrihackathon/gitglow-wall.webp",
 };
 
+const OUTER_FALLBACK_COVERS: Record<string, string> = {
+  learning: "/catalog/oil-v1/astro-starlight.svg",
+  career: "/catalog/oil-v1/react-interview.svg",
+  aigc: "/catalog/oil-v1/niannian-drama.svg",
+  web: "/catalog/oil-v1/ans-3d-showcase.svg",
+  github: "/catalog/oil-v1/hermes-agent.svg",
+  business: "/catalog/oil-v1/saleor-commerce.svg",
+  productivity: "/catalog/oil-v1/code2prompt.svg",
+  competition: "/catalog/oil-v1/curated-agri-uav.svg",
+};
+
+function resolveOuterOilCover(coverUrl: string, category?: string): string {
+  const match = coverUrl.match(/\/catalog\/gitglow-v1\/([a-z0-9-]+)\.(?:webp|svg|png)$/i);
+  if (match) return `/catalog/oil-v1/${match[1]}.svg`;
+  return (category && OUTER_FALLBACK_COVERS[category]) || "/catalog/oil-v1/cauai-one.svg";
+}
+
 export async function MarketDetailPreview({ listing }: { listing: MarketListingInput }) {
-  const t = await getTranslations("product.marketDetail");
+  const [t, locale] = await Promise.all([getTranslations("product.marketDetail"), getLocale()]);
   const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/cauai-one.webp";
+  const outerCoverSrc = resolveOuterOilCover(coverSrc, listing.category);
   const sample = getMarketSamplePreview(listing);
   return <section aria-label={t("previewTitle")} className={styles.preview}>
-    <div className={styles.cover}>
-      <Image unoptimized src={coverSrc} width={1200} height={675} alt={t("coverAlt", { title: listing.title })} className="h-full w-full object-cover" priority />
-    </div>
+    <DualCoverPreview
+      innerCoverUrl={coverSrc}
+      outerCoverUrl={outerCoverSrc}
+      alt={t("coverAlt", { title: listing.title })}
+      isEn={locale.startsWith("en")}
+    />
     {(listing.previewUrl || listing.githubUrl) && <div className={styles.previewToolbar}>
       <div className="flex shrink-0 flex-wrap gap-2">
         {listing.previewUrl && <Button asChild variant="outline" size="sm"><a href={listing.previewUrl} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden="true" />{t("openPreview")}</a></Button>}
