@@ -138,7 +138,7 @@ function PiCodexWorkbench({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function executeCodexTask(customPrompt?: string, intent: "playground" | "checkin" | "claw" | "redeem" | "scaffold" = "playground") {
+  async function executeCodexTask(customPrompt?: string, intent: "playground" | "checkin" | "claw" | "redeem" | "scaffold" | "market" = "playground") {
     const q = (customPrompt ?? promptInput).trim();
     if (!q && intent === "playground") return;
     if (running) return;
@@ -370,10 +370,10 @@ function PiCodexWorkbench({
                 </button>
                 <button
                   type="button"
-                  onClick={() => void executeCodexTask("", "market")}
+                  onClick={() => void executeCodexTask("", "redeem")}
                   className="rounded-xl border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-left text-xs font-bold text-sky-300 transition hover:bg-sky-500/20"
                 >
-                  🛒 检索工作流模板
+                  🎁 5分秒兑周报生成器
                 </button>
                 <button
                   type="button"
