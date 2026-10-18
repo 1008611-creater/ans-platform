@@ -4544,7 +4544,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
       hitboxEl.removeEventListener("keydown",onKeyDown);
     }
   };
-},[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
+},[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.visible=!1,s.castShadow=!1,s.receiveShadow=!1,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeL));
           objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeR));`).replace("#include <begin_vertex>",`#include <begin_vertex>
           transformed += (uEyeL + eyeSpin(transformed - uEyeL) - transformed) * eyeWeight(transformed, uEyeL);
@@ -4594,194 +4594,193 @@ dinoState.orbitUniforms.uTime.value = dinoState.time;
 dinoState.orbitUniforms.uPhase.value = spline.phase;
 dinoState.orbitUniforms.uAlpha.value = (de ? 0.22 : 1.0) * (1.0 - specialPin * 0.88);
 
-const macroW = Math.max(de ? 0 : spline.macroWeight, specialPin);
-const flightRaw = Math.abs(J - q);
-const scrollFlightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
-const cruiseFlightSpeed = reducedMotionNow ? 0 : (0.36 * dwellMod * autoPauseMod);
-const flightSpeed = f.clamp(Math.max(scrollFlightSpeed, cruiseFlightSpeed), 0, 1);
-if(p&&_.isPerspectiveCamera){const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
-// Dual-Subject Camera Patrol:
-const orbitPull = 1.28 + 0.10 * (1.0 - macroW) + 0.04 * Math.sin(spline.phase * Math.PI * 2.0) + 0.06 * scrollFlightSpeed;
-const macroPull = f.lerp(1.22, 1.28, specialPin);
-const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
-dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
+  const macroW = Math.max(de ? 0.65 : Math.max(0.76, spline.macroWeight), specialPin);
+  const flightRaw = Math.abs(J - q);
+  const scrollFlightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
+  const cruiseFlightSpeed = reducedMotionNow ? 0 : (0.36 * dwellMod * autoPauseMod);
+  const flightSpeed = f.clamp(Math.max(scrollFlightSpeed, cruiseFlightSpeed), 0, 1);
+  if(p&&_.isPerspectiveCamera){const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
+  // Dual-Subject Camera Patrol:
+  const orbitPull = 1.28 + 0.10 * (1.0 - macroW) + 0.04 * Math.sin(spline.phase * Math.PI * 2.0) + 0.06 * scrollFlightSpeed;
+  const macroPull = f.lerp(1.22, 1.28, specialPin);
+  const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
+  dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
 
-// 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit in CAMERA-ALIGNED (r, u, d) space!
-const patrolEase = Math.min(1, y * 4.5);
-const orbitR = spline.rud[0];
-const orbitU = spline.rud[1];
-const patrolWeight = de ? 0.10 : (1.0 - macroW * 0.72);
-const targetPatrolX = orbitR * 0.22 * patrolWeight;
-const targetPatrolY = orbitU * 0.22 * patrolWeight;
-const targetPatrolYaw = f.clamp(-orbitR * 0.048 * patrolWeight, -0.08, 0.08);
-const targetPatrolPitch = f.clamp(orbitU * 0.055 * patrolWeight, -0.06, 0.06);
-dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
-dinoState.camPatrolY += (targetPatrolY - dinoState.camPatrolY) * patrolEase;
-dinoState.camPatrolYaw += (targetPatrolYaw - dinoState.camPatrolYaw) * patrolEase;
-dinoState.camPatrolPitch += (targetPatrolPitch - dinoState.camPatrolPitch) * patrolEase;
+  // 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit in CAMERA-ALIGNED (r, u, d) space!
+  const patrolEase = Math.min(1, y * 4.5);
+  const orbitR = spline.rud[0];
+  const orbitU = spline.rud[1];
+  const patrolWeight = de ? 0.10 : (1.0 - macroW * 0.72);
+  const targetPatrolX = orbitR * 0.22 * patrolWeight;
+  const targetPatrolY = orbitU * 0.22 * patrolWeight;
+  const targetPatrolYaw = f.clamp(-orbitR * 0.048 * patrolWeight, -0.08, 0.08);
+  const targetPatrolPitch = f.clamp(orbitU * 0.055 * patrolWeight, -0.06, 0.06);
+  dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
+  dinoState.camPatrolY += (targetPatrolY - dinoState.camPatrolY) * patrolEase;
+  dinoState.camPatrolYaw += (targetPatrolYaw - dinoState.camPatrolYaw) * patrolEase;
+  dinoState.camPatrolPitch += (targetPatrolPitch - dinoState.camPatrolPitch) * patrolEase;
 
-Ue.current.set(-$.current.y*m, -$.current.x*m, 0);
-ke.current.setFromEuler(Ue.current);
-K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current);
-ce.current&&K.current.multiplyScalar(l.mobilePullback);
-K.current.multiplyScalar(dinoState.camPullback);
-K.current.add(t.current);
-_.position.copy(K.current);
-_.quaternion.multiplyQuaternions(ke.current,_e.current);
-_.translateX(dinoState.camPatrolX);
-_.translateY(dinoState.camPatrolY);
-_.rotateY(dinoState.camPatrolYaw);
-_.rotateX(dinoState.camPatrolPitch);
-if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}
+  Ue.current.set(-$.current.y*m, -$.current.x*m, 0);
+  ke.current.setFromEuler(Ue.current);
+  K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current);
+  ce.current&&K.current.multiplyScalar(l.mobilePullback);
+  K.current.multiplyScalar(dinoState.camPullback);
+  K.current.add(t.current);
+  _.position.copy(K.current);
+  _.quaternion.multiplyQuaternions(ke.current,_e.current);
+  _.translateX(dinoState.camPatrolX);
+  _.translateY(dinoState.camPatrolY);
+  _.rotateY(dinoState.camPatrolYaw);
+  _.rotateX(dinoState.camPatrolPitch);
+  if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}
 
-// Save the Base Stage Camera transform BEFORE applying user manual Wheel Zoom & Long-Press Drag Orbit!
-dinoState.baseCamPos.copy(_.position);
-dinoState.baseCamQuat.copy(_.quaternion);
+  // Save the Base Stage Camera transform BEFORE applying user manual Wheel Zoom & Long-Press Drag Orbit!
+  dinoState.baseCamPos.copy(_.position);
+  dinoState.baseCamQuat.copy(_.quaternion);
 
-// 3) Apply User Mouse-Wheel Zoom (放大/缩小画面) & Long-Press Drag Turntable Orbit (长按拖拽改变机位视角)!
-const userCtrlEase = Math.min(1, y * 12.0);
-dinoState.userZoom += (dinoState.userZoomTarget - dinoState.userZoom) * userCtrlEase;
-dinoState.userYaw += (dinoState.userYawTarget - dinoState.userYaw) * userCtrlEase;
-dinoState.userPitch += (dinoState.userPitchTarget - dinoState.userPitch) * userCtrlEase;
+  // 3) Apply User Mouse-Wheel Zoom (放大/缩小画面) & Long-Press Drag Turntable Orbit (长按拖拽改变机位视角)!
+  const userCtrlEase = Math.min(1, y * 12.0);
+  dinoState.userZoom += (dinoState.userZoomTarget - dinoState.userZoom) * userCtrlEase;
+  dinoState.userYaw += (dinoState.userYawTarget - dinoState.userYaw) * userCtrlEase;
+  dinoState.userPitch += (dinoState.userPitchTarget - dinoState.userPitch) * userCtrlEase;
 
-if (Math.abs(dinoState.userZoom - 1.0) > 0.001 || Math.abs(dinoState.userYaw) > 0.001 || Math.abs(dinoState.userPitch) > 0.001) {
-  K.current.copy(_.position).sub(t.current);
-  K.current.multiplyScalar(dinoState.userZoom);
-  ve.current.set(0, 1, 0);
-  ze.current.setFromAxisAngle(ve.current, dinoState.userYaw);
-  K.current.applyQuaternion(ze.current);
-  _.quaternion.premultiply(ze.current);
-  ye.current.set(1, 0, 0).applyQuaternion(_.quaternion);
-  ye.current.y = 0;
-  if (ye.current.lengthSq() > 1e-5) ye.current.normalize(); else ye.current.set(0, 0, 1);
-  Be.current.setFromAxisAngle(ye.current, dinoState.userPitch);
-  K.current.applyQuaternion(Be.current);
-  _.quaternion.premultiply(Be.current);
-  _.position.copy(t.current).add(K.current);
-}
-
-const baseFov = p.fov || 45;
-const zoomedFov = f.clamp(baseFov * f.lerp(1.0, dinoState.userZoom, 0.28), 18, 68);
-if (Math.abs(_.fov - zoomedFov) > 0.02) {
-  _.fov = zoomedFov;
-  _.updateProjectionMatrix();
-}
-if (dinoState.badge.updateCamStatus) {
-  dinoState.badge.updateCamStatus(dinoState.userZoom, dinoState.userYaw, dinoState.userPitch, dinoState.isCamDragging, dinoState.wheelZoomEnabled);
-}
-}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
-{
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
-  if (!reduced) {
-  const dt = Math.min(Math.max(y, 0), 0.08);
-  dinoState.time += dt;
-  const tNow = dinoState.time;
-  dinoState.haloUniforms.uTime.value = tNow;
-  dinoState.perf.look(ne.current.x, -ne.current.y, tNow);
-  dinoState.faceUniforms.uDinoGaze.value.set(ne.current.x, ne.current.y);
-
-  // Sync Species Skin/Blush Shader Uniforms & Foot Aura Uniforms!
-  const spCfg = dinoState.badge.getSpeciesConfig ? dinoState.badge.getSpeciesConfig() : null;
-  if (spCfg) {
-    const tintLerp = Math.min(1, dt * 8.0);
-    const uSkin = dinoState.faceUniforms.uDinoSkinTint.value;
-    const uBlushC = dinoState.faceUniforms.uDinoBlushColor.value;
-    uSkin.x += (spCfg.tintRGB[0] - uSkin.x) * tintLerp;
-    uSkin.y += (spCfg.tintRGB[1] - uSkin.y) * tintLerp;
-    uSkin.z += (spCfg.tintRGB[2] - uSkin.z) * tintLerp;
-    uBlushC.x += (spCfg.blushRGB[0] - uBlushC.x) * tintLerp;
-    uBlushC.y += (spCfg.blushRGB[1] - uBlushC.y) * tintLerp;
-    uBlushC.z += (spCfg.blushRGB[2] - uBlushC.z) * tintLerp;
+  if (Math.abs(dinoState.userZoom - 1.0) > 0.001 || Math.abs(dinoState.userYaw) > 0.001 || Math.abs(dinoState.userPitch) > 0.001) {
+    K.current.copy(_.position).sub(t.current);
+    K.current.multiplyScalar(dinoState.userZoom);
+    ve.current.set(0, 1, 0);
+    ze.current.setFromAxisAngle(ve.current, dinoState.userYaw);
+    K.current.applyQuaternion(ze.current);
+    _.quaternion.premultiply(ze.current);
+    ye.current.set(1, 0, 0).applyQuaternion(_.quaternion);
+    ye.current.y = 0;
+    if (ye.current.lengthSq() > 1e-5) ye.current.normalize(); else ye.current.set(0, 0, 1);
+    Be.current.setFromAxisAngle(ye.current, dinoState.userPitch);
+    K.current.applyQuaternion(Be.current);
+    _.quaternion.premultiply(Be.current);
+    _.position.copy(t.current).add(K.current);
   }
-  const eqAura = (curSanc && curSanc.equipped && curSanc.equipped.aura) || "aura_mint";
-  const auraMap = {
-    none: { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 0.0 },
-    aura_mint: { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 1.0 },
-    aura_sakura: { c1: [1.0, 0.52, 0.76], c2: [0.83, 0.68, 0.98], boost: 1.25 },
-    aura_gold: { c1: [1.0, 0.84, 0.32], c2: [1.0, 0.45, 0.22], boost: 1.38 },
-    aura_aurora: { c1: [0.36, 0.90, 0.86], c2: [0.70, 0.42, 0.98], boost: 1.55 }
-  };
-  const aTarget = auraMap[eqAura] || auraMap.aura_mint;
-  const aLerp = Math.min(1, dt * 8.0);
-  dinoState.haloUniforms.uAuraColor1.value.x += (aTarget.c1[0] - dinoState.haloUniforms.uAuraColor1.value.x) * aLerp;
-  dinoState.haloUniforms.uAuraColor1.value.y += (aTarget.c1[1] - dinoState.haloUniforms.uAuraColor1.value.y) * aLerp;
-  dinoState.haloUniforms.uAuraColor1.value.z += (aTarget.c1[2] - dinoState.haloUniforms.uAuraColor1.value.z) * aLerp;
-  dinoState.haloUniforms.uAuraColor2.value.x += (aTarget.c2[0] - dinoState.haloUniforms.uAuraColor2.value.x) * aLerp;
-  dinoState.haloUniforms.uAuraColor2.value.y += (aTarget.c2[1] - dinoState.haloUniforms.uAuraColor2.value.y) * aLerp;
-  dinoState.haloUniforms.uAuraColor2.value.z += (aTarget.c2[2] - dinoState.haloUniforms.uAuraColor2.value.z) * aLerp;
-  dinoState.haloUniforms.uAuraBoost.value += (aTarget.boost - dinoState.haloUniforms.uAuraBoost.value) * aLerp;
 
-  // Active reaction states: Whip Butt (催干活), Random Feed (盲盒投喂), or Normal Click
-  const whipActive = tNow < dinoState.whipUntil;
-  const whipAge = whipActive ? (3.8 - (dinoState.whipUntil - tNow)) : 99;
-  const feedActive = tNow < dinoState.feedUntil;
-  const feedAge = feedActive ? (4.2 - (dinoState.feedUntil - tNow)) : 99;
-  const clickActive = tNow < dinoState.clickUntil;
-  const clickAge = clickActive ? (4.5 - (dinoState.clickUntil - tNow)) : 99;
+  const baseFov = p.fov || 45;
+  const zoomedFov = f.clamp(baseFov * f.lerp(1.0, dinoState.userZoom, 0.28), 18, 68);
+  if (Math.abs(_.fov - zoomedFov) > 0.02) {
+    _.fov = zoomedFov;
+    _.updateProjectionMatrix();
+  }
+  if (dinoState.badge.updateCamStatus) {
+    dinoState.badge.updateCamStatus(dinoState.userZoom, dinoState.userYaw, dinoState.userPitch, dinoState.isCamDragging, dinoState.wheelZoomEnabled);
+  }
+  }{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
+  {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
+    if (!reduced) {
+    const dt = Math.min(Math.max(y, 0), 0.08);
+    dinoState.time += dt;
+    const tNow = dinoState.time;
+    dinoState.haloUniforms.uTime.value = tNow;
+    dinoState.perf.look(ne.current.x, -ne.current.y, tNow);
+    dinoState.faceUniforms.uDinoGaze.value.set(ne.current.x, ne.current.y);
 
-  // 1. Wide Clockwise 3D Orbit + FOV-Adaptive Full-Body Framing for Super Macro, Wardrobe, Dock & Interactive Stage!
-  dinoState.haloUniforms.uFlight.value += (Math.max(flightSpeed, whipActive ? 0.95 : feedActive ? 0.75 : 0) - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
+    // Sync Species Skin/Blush Shader Uniforms & Foot Aura Uniforms!
+    const spCfg = dinoState.badge.getSpeciesConfig ? dinoState.badge.getSpeciesConfig() : null;
+    if (spCfg) {
+      const tintLerp = Math.min(1, dt * 8.0);
+      const uSkin = dinoState.faceUniforms.uDinoSkinTint.value;
+      const uBlushC = dinoState.faceUniforms.uDinoBlushColor.value;
+      uSkin.x += (spCfg.tintRGB[0] - uSkin.x) * tintLerp;
+      uSkin.y += (spCfg.tintRGB[1] - uSkin.y) * tintLerp;
+      uSkin.z += (spCfg.tintRGB[2] - uSkin.z) * tintLerp;
+      uBlushC.x += (spCfg.blushRGB[0] - uBlushC.x) * tintLerp;
+      uBlushC.y += (spCfg.blushRGB[1] - uBlushC.y) * tintLerp;
+      uBlushC.z += (spCfg.blushRGB[2] - uBlushC.z) * tintLerp;
+    }
+    const eqAura = (curSanc && curSanc.equipped && curSanc.equipped.aura) || "aura_mint";
+    const auraMap = {
+      none: { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 0.0 },
+      aura_mint: { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 1.0 },
+      aura_sakura: { c1: [1.0, 0.52, 0.76], c2: [0.83, 0.68, 0.98], boost: 1.25 },
+      aura_gold: { c1: [1.0, 0.84, 0.32], c2: [1.0, 0.45, 0.22], boost: 1.38 },
+      aura_aurora: { c1: [0.36, 0.90, 0.86], c2: [0.70, 0.42, 0.98], boost: 1.55 }
+    };
+    const aTarget = auraMap[eqAura] || auraMap.aura_mint;
+    const aLerp = Math.min(1, dt * 8.0);
+    dinoState.haloUniforms.uAuraColor1.value.x += (aTarget.c1[0] - dinoState.haloUniforms.uAuraColor1.value.x) * aLerp;
+    dinoState.haloUniforms.uAuraColor1.value.y += (aTarget.c1[1] - dinoState.haloUniforms.uAuraColor1.value.y) * aLerp;
+    dinoState.haloUniforms.uAuraColor1.value.z += (aTarget.c1[2] - dinoState.haloUniforms.uAuraColor1.value.z) * aLerp;
+    dinoState.haloUniforms.uAuraColor2.value.x += (aTarget.c2[0] - dinoState.haloUniforms.uAuraColor2.value.x) * aLerp;
+    dinoState.haloUniforms.uAuraColor2.value.y += (aTarget.c2[1] - dinoState.haloUniforms.uAuraColor2.value.y) * aLerp;
+    dinoState.haloUniforms.uAuraColor2.value.z += (aTarget.c2[2] - dinoState.haloUniforms.uAuraColor2.value.z) * aLerp;
+    dinoState.haloUniforms.uAuraBoost.value += (aTarget.boost - dinoState.haloUniforms.uAuraBoost.value) * aLerp;
 
-  const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
-  dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
+    // Active reaction states: Whip Butt (催干活), Random Feed (盲盒投喂), or Normal Click
+    const whipActive = tNow < dinoState.whipUntil;
+    const whipAge = whipActive ? (3.8 - (dinoState.whipUntil - tNow)) : 99;
+    const feedActive = tNow < dinoState.feedUntil;
+    const feedAge = feedActive ? (4.2 - (dinoState.feedUntil - tNow)) : 99;
+    const clickActive = tNow < dinoState.clickUntil;
+    const clickAge = clickActive ? (4.5 - (dinoState.clickUntil - tNow)) : 99;
 
-  _.updateMatrixWorld();
-  const baseFovRad = f.degToRad(p ? p.fov : 45);
-  const tanHalfFov = Math.tan(baseFovRad * 0.5);
-  const aspect = _.aspect || (window.innerWidth / Math.max(1, window.innerHeight));
-  const baseFounderDist = Math.max(3.2, dinoState.baseCamPos.distanceTo(t.current));
-  const macroDist = Math.max(2.6, baseFounderDist * f.lerp(0.46, 0.40, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)));
-  const worldHalfH = macroDist * tanHalfFov;
-  const worldHalfW = worldHalfH * aspect;
+    // 1. Wide Clockwise 3D Orbit + FOV-Adaptive Full-Body Framing for Super Macro, Wardrobe, Dock & Interactive Stage!
+    dinoState.haloUniforms.uFlight.value += (Math.max(flightSpeed, whipActive ? 0.95 : feedActive ? 0.75 : 0) - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
 
-  const orbitFrustumH = 2.0 * baseFounderDist * tanHalfFov;
-  const macroFrustumH = 2.0 * worldHalfH;
-  const fovOrbitScale = f.clamp((0.20 * orbitFrustumH) / (1.00 * 2.25), 0.22, 0.68);
-  const fovMacroScale = f.clamp((f.lerp(0.28, 0.34, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)) * macroFrustumH) / (1.00 * 2.25), 0.22, 0.56);
-  const baseScale = f.lerp(fovOrbitScale, fovMacroScale, macroW) * f.lerp(1.0, 0.78, dinoState.dockBlend * (1.0 - dinoState.wardrobeBlend));
-  const pulseScale = (whipActive && whipAge < 0.45) ? 0.12 : (feedActive && feedAge < 0.55) ? 0.10 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.10 : 0);
-  const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
-  dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
+    const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
+    dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
 
-  const bobY = Math.sin(tNow * 2.4) * (0.015 * (1 - specialPin * 0.45)) + Math.cos(tNow * 1.3) * 0.005;
-  const swayX = Math.cos(tNow * 1.6) * 0.008;
-  const swayZ = Math.sin(tNow * 1.4) * 0.009;
-  let fx = spline.pos[0] + swayX;
-  let fy = spline.pos[1] + bobY;
-  let fz = spline.pos[2] + swayZ;
+    _.updateMatrixWorld();
+    const baseFovRad = f.degToRad(p ? p.fov : 45);
+    const tanHalfFov = Math.tan(baseFovRad * 0.5);
+    const aspect = _.aspect || (window.innerWidth / Math.max(1, window.innerHeight));
+    const baseFounderDist = Math.max(3.2, dinoState.baseCamPos.distanceTo(t.current));
+    const macroDist = Math.max(2.6, baseFounderDist * f.lerp(0.46, 0.40, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)));
+    const worldHalfH = macroDist * tanHalfFov;
+    const worldHalfW = worldHalfH * aspect;
 
-  // Compute Interactive / Wardrobe / Bottom-Right Dock Stage point in 3D world space using baseCamPos & baseCamQuat:
-  const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(dinoState.baseCamQuat);
-  const camUp    = ye.current.set(0, 1, 0).applyQuaternion(dinoState.baseCamQuat);
-  const camRight = ot.current.set(1, 0, 0).applyQuaternion(dinoState.baseCamQuat);
+    const orbitFrustumH = 2.0 * baseFounderDist * tanHalfFov;
+    const macroFrustumH = 2.0 * worldHalfH;
+    const fovOrbitScale = f.clamp((0.28 * orbitFrustumH) / (1.00 * 2.25), 0.26, 0.68);
+    const fovMacroScale = f.clamp((f.lerp(0.32, 0.36, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)) * macroFrustumH) / (1.00 * 2.25), 0.26, 0.58);
+    const baseScale = f.lerp(fovOrbitScale, fovMacroScale, macroW) * f.lerp(1.0, 0.78, dinoState.dockBlend * (1.0 - dinoState.wardrobeBlend));
+    const pulseScale = (whipActive && whipAge < 0.45) ? 0.12 : (feedActive && feedAge < 0.55) ? 0.10 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.10 : 0);
+    const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
+    dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
 
-  const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
-  let centerNdcX = 0.0;
-  let centerNdcY = 0.02;
-  // If in Bottom-Right Companion Dock mode ("停靠右下角"), hover right above the bottom-right Agent dock!
-  centerNdcX = f.lerp(centerNdcX, 0.56, dinoState.dockBlend);
-  centerNdcY = f.lerp(centerNdcY, -0.14, dinoState.dockBlend);
-  // If Miracle Nikki Wardrobe is open on the right, showcase the dinosaur on the left-center podium!
-  centerNdcX = f.lerp(centerNdcX, -0.34, dinoState.wardrobeBlend);
-  centerNdcY = f.lerp(centerNdcY, 0.00, dinoState.wardrobeBlend);
+    const bobY = Math.sin(tNow * 2.4) * (0.015 * (1 - specialPin * 0.45)) + Math.cos(tNow * 1.3) * 0.005;
+    const swayX = Math.cos(tNow * 1.6) * 0.008;
+    const swayZ = Math.sin(tNow * 1.4) * 0.009;
+    let fx = spline.pos[0] + swayX;
+    let fy = spline.pos[1] + bobY;
+    let fz = spline.pos[2] + swayZ;
 
-  const rightOffsetM = centerNdcX * worldHalfW;
-  const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
+    // Compute Interactive / Wardrobe / Bottom-Right Dock Stage point in 3D world space using baseCamPos & baseCamQuat:
+    const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(dinoState.baseCamQuat);
+    const camUp    = ye.current.set(0, 1, 0).applyQuaternion(dinoState.baseCamQuat);
+    const camRight = ot.current.set(1, 0, 0).applyQuaternion(dinoState.baseCamQuat);
 
-  const macroWorldX = dinoState.baseCamPos.x + camFwd.x * macroDist + camRight.x * rightOffsetM + camUp.x * feetUpOffsetM;
-  const macroWorldY = dinoState.baseCamPos.y + camFwd.y * macroDist + camRight.y * rightOffsetM + camUp.y * feetUpOffsetM;
-  const macroWorldZ = dinoState.baseCamPos.z + camFwd.z * macroDist + camRight.z * rightOffsetM + camUp.z * feetUpOffsetM;
+    const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
+    let centerNdcX = 0.0;
+    let centerNdcY = 0.02;
+    // If in Bottom-Right Companion Dock mode ("停靠右下角"), hover right above the bottom-right Agent dock!
+    centerNdcX = f.lerp(centerNdcX, 0.56, dinoState.dockBlend);
+    centerNdcY = f.lerp(centerNdcY, -0.14, dinoState.dockBlend);
+    // If Miracle Nikki Wardrobe is open on the right, showcase the dinosaur on the left-center podium!
+    centerNdcX = f.lerp(centerNdcX, -0.34, dinoState.wardrobeBlend);
+    centerNdcY = f.lerp(centerNdcY, 0.00, dinoState.wardrobeBlend);
 
-  const macroLocalX = (macroWorldX - 0.0) / 2.25;
-  const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
-  const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
+    const rightOffsetM = centerNdcX * worldHalfW;
+    const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
 
-  // Only pin to screen stage during explicit Interactive Stage, Bottom-Right Dock, or Miracle Nikki Wardrobe!
-  // During normal 3D patrol orbit, follow the Crown-Halo & Wide-Flank trajectory cleanly so the dinosaur never crosses the founder's face.
-  const stagePinWeight = f.clamp(specialPin, 0, 1);
-  fx = f.lerp(fx, macroLocalX, stagePinWeight);
-  fy = f.lerp(fy, macroLocalY, stagePinWeight);
-  fz = f.lerp(fz, macroLocalZ, stagePinWeight);
+    const macroWorldX = dinoState.baseCamPos.x + camFwd.x * macroDist + camRight.x * rightOffsetM + camUp.x * feetUpOffsetM;
+    const macroWorldY = dinoState.baseCamPos.y + camFwd.y * macroDist + camRight.y * rightOffsetM + camUp.y * feetUpOffsetM;
+    const macroWorldZ = dinoState.baseCamPos.z + camFwd.z * macroDist + camRight.z * rightOffsetM + camUp.z * feetUpOffsetM;
+
+    const macroLocalX = (macroWorldX - 0.0) / 2.25;
+    const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
+    const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
+
+    // Keep Little Dino centered on the 3D stage as the sole hero model with a gentle float!
+    const stagePinWeight = f.clamp(Math.max(0.84, specialPin), 0, 1);
+    fx = f.lerp(fx, macroLocalX, stagePinWeight);
+    fy = f.lerp(fy, macroLocalY, stagePinWeight);
+    fz = f.lerp(fz, macroLocalZ, stagePinWeight);
 
   // Full-Body Camera-Frustum Screen-Space Safety Guard:
   const userNeutralWeight = f.clamp(1.0 - (Math.abs(dinoState.userZoom - 1.0) * 2.2 + Math.hypot(dinoState.userYaw, dinoState.userPitch) * 1.8), 0, 1);
@@ -5074,9 +5073,9 @@ if (dinoState.badge.updateCamStatus) {
 }
 if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)c.obj.getWorldPosition(K.current).project(_),s+=K.current.x,Q+=K.current.y;s/=S.length,Q/=S.length;const G=ne.current.x-s,ee=ne.current.y-Q,Y=me*G*f.degToRad(x.maxYaw)*x.gain,be=pe*-ee*f.degToRad(x.maxPitch)*x.gain,we=Math.hypot(G,ee),je=f.clamp(1-we/x.crossRadius,0,1),at=f.degToRad(x.crossEye)*je;for(const c of S){const m=c.sx??c.side??0,h=Y-m*at;Le.current.set(be,h,0),ze.current.setFromEuler(Le.current),Be.current.copy(ze.current).multiply(c.base),c.obj.quaternion.slerp(Be.current,x.smooth)}}),e.jsxs("group",{position:[0,.4,-.7],rotation:[0,0*Math.PI/180,0],scale:2.25,children:[
   e.jsx("primitive",{object:M}),
-  e.jsx(At,{target:V,coordinateFrame:M}),
   e.jsx("group",{
     ref:dinoOrbitGroupRef,
+    visible:!1,
     position:[0.16,0.08,0.08],
     children:e.jsxs("mesh",{
       frustumCulled:!1,

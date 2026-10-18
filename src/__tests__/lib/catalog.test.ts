@@ -27,7 +27,7 @@ describe("public project catalog", () => {
     expect(filterCatalogProjects({ category: "career", subcategory: "resume" }, (p) => p.slug).map((p) => p.slug)).toEqual(["reactive-resume", "magic-resume"]);
     const aigc = filterCatalogProjects({ category: "aigc" }, (p) => p.slug);
     expect(aigc.length).toBeGreaterThanOrEqual(3); expect(aigc.every(p => p.category === "aigc")).toBe(true);
-    expect(aigc.map(p => p.slug)).toContain("aigc-workspace");
+    expect(aigc.map(p => p.slug)).toContain("infinite-canvas");
     expect(filterCatalogProjects({ query: "ＣＯＤＥ２ＰＲＯＭＰＴ" }, (p) => p.slug).map((p) => p.slug)).toEqual(["code2prompt"]);
     expect(filterCatalogProjects({ category: "unknown", subcategory: "resume" }, (p) => p.slug)).toHaveLength(CATALOG_PROJECTS.length);
     expect(filterCatalogProjects({ query: "no-such-project" }, (p) => p.slug)).toEqual([]);

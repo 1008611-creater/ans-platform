@@ -26,9 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 const resourceCovers: Record<string, string> = {
   agrihackathon: "/catalog/ans-pro-v1/agri-uav.webp",
-  "vibehub-knowledge": "/catalog/ans-pro-v1/cauai-one.webp",
-  "aigc-workbench": "/catalog/ans-pro-v1/niannian-drama.webp",
-  hypit: "/catalog/gitglow-v1/niannian-edit.webp",
+  "vibehub-knowledge": "/catalog/ans-pro-v1/ans-3d-showcase.webp",
+  hypit: "/catalog/ans-pro-v1/infinite-canvas.webp",
 };
 export default async function HubDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: Promise<{cursor?:string}> }) {
   const { slug } = await params;
