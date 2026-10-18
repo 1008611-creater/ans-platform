@@ -86,11 +86,12 @@ const PUBLIC_DEMO_PROJECTS = [
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ goal?: string | string[]; workflow?: string | string[]; preset?: string | string[] }>;
+  searchParams?: Promise<{ goal?: string | string[]; workflow?: string | string[]; preset?: string | string[]; title?: string | string[] }>;
 }) {
   const rawParams = (await searchParams) ?? {};
   const selection = resolveProjectSelection(rawParams);
   const presetParam = typeof rawParams.preset === "string" ? rawParams.preset : undefined;
+  const rawTitleParam = Array.isArray(rawParams.title) ? rawParams.title[0] : rawParams.title;
   const matchedPreset = QUICK_KICKOFF_CARDS.find((item) => item.id === presetParam);
   const session = await auth();
   const userId = session?.user?.id ?? null;
@@ -101,7 +102,7 @@ export default async function ProjectsPage({
     getTranslations("visualWebsite"),
   ]);
   const initialGoal: ProjectGoal = matchedPreset?.goal ?? selection.goal;
-  const initialTitle = matchedPreset?.defaultTitle ?? "";
+  const initialTitle = rawTitleParam?.trim() || matchedPreset?.defaultTitle || "";
 
   return (
     <div className="ans-product-container ans-page-content ans-projects-page space-y-7">

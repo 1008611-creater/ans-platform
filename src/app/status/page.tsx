@@ -102,12 +102,12 @@ export default async function StatusPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold">
-              {isEn ? "ANS Technical Architecture & Compute Economy" : "ANS 技术底座与高校算力经济体系"}
+              {isEn ? "ANS Platform Architecture & Compute Rules" : "ANS 平台架构与高校算力积分规则"}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {isEn
-                ? "Core infrastructure connecting campus AI competitions, 3D gamified onboarding, and creator revenue sharing."
-                : "面向高校开发者与合作伙伴的五层技术架构：从正态随机算力补贴、密码学赛事存证到技能市场持续分成。"}
+                ? "Core modules connecting campus AI competitions, 3D interactive onboarding, and creator revenue sharing."
+                : "面向高校开发者与参赛战队的平台架构：从新人算力申领、赛事代码存证到工作流市场分成。"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -122,15 +122,15 @@ export default async function StatusPage() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-lg border bg-muted/15 p-3.5">
             <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              {isEn ? "01 · Gamified Acquisition" : "01 · 3D 盲盒与正态算力补贴"}
+              {isEn ? "01 · Starter Compute & Claw Machine" : "01 · 新手问卷与 3D 抓娃娃机"}
             </div>
             <p className="mt-1 text-sm font-semibold">
-              {isEn ? "100–150 pts Normal Dist." : "100–150 积分正态随机发放"}
+              {isEn ? "50 Starter Pts + 10–1,000 Pts Draw" : "问卷立领 50 分 + 抓娃娃机每次 10~1000 分"}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {isEn
-                ? "Interactive 3D claw machine & pet stage onboard students at ¥10–¥15 compute cost per user."
-                : "通过 3D 抓娃娃机与小龙养成展台激活高校新用户，单人获客算力成本严格锚定 ¥10–¥15（均值 125 积分）。"}
+                ? "Complete the 30s survey for 50 base points and use tokens in the 3D claw machine to claim additional compute."
+                : "完成 30 秒新手问卷立领 50 积分与 3 枚游戏币，操纵 3D 机械臂每次必得 10~1000 算力积分。"}
             </p>
           </div>
           <div className="rounded-lg border bg-muted/15 p-3.5">

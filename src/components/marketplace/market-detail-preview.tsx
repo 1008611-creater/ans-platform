@@ -25,7 +25,7 @@ const OUTER_FALLBACK_COVERS: Record<string, string> = {
   github: "/catalog/oil-v1/hermes-agent.svg",
   business: "/catalog/oil-v1/saleor-commerce.svg",
   productivity: "/catalog/oil-v1/code2prompt.svg",
-  competition: "/catalog/oil-v1/curated-agri-uav.svg",
+  competition: "/catalog/oil-v1/showcase-agri-uav.svg",
 };
 
 function resolveOuterOilCover(coverUrl: string, category?: string): string {

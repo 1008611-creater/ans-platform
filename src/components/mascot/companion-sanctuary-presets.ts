@@ -173,7 +173,7 @@ export const BLIND_BOX_FOODS: BlindBoxFood[] = [
     icon: "🍕",
     nameZh: "猫山王芝士榴莲披萨",
     nameEn: "Musang King Durian Cheese Pizza",
-    tagZh: "🤩 真香警告 · 拉丝暴击",
+    tagZh: "🤩 真香警告 · 拉丝满足",
     tagEn: "🤩 Guilty Pleasure · Cheese Pull",
     kaomoji: "(¯﹃¯)🍕✨",
     reactMode: "spicy",
@@ -290,7 +290,7 @@ export const SHOWCASE_MOOD_PRESETS: Record<string, ShowcaseMoodPreset> = {
   happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 正在为你全天候巡航守护灵感中", sub: "💡 连点小恐龙 3 次进入近景镜头 · 解锁「皮鞭催干活 & 盲盒投喂 & 暖暖换装」！" },
   curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看... 这个工作流能抄作业！", sub: "✨ 连续点我 3 次召唤近景训龙互动台" },
   starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个页面有点意思", sub: "🦖 我是 ANS 创作搭子小恐龙 · 随时听候差遣" },
-  cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在右下角偷个小懒，应该没被主理人发现吧~", sub: "🪢 警告：摸鱼过多可能会被主理人拿小皮鞭抽屁股" },
+  cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在右下角偷个小懒，应该没被你发现吧~", sub: "🪢 警告：摸鱼过多可能会被拿小皮鞭抽屁股" },
   cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感永不停歇", sub: "🎯 鼠标移上来摸摸头，或连点 3 次进入近景镜头" },
   focused_think:  { happy: 0.16, star: 0.38, blush: 0.30, mouth: 0.14, gesture: "think",     kaomoji: "( •̀ ω •́ ) ⚡", text: "帮你盯着呢，绝不让收藏夹吃灰！", sub: "🔍 看懂项目，再动手做点东西" },
   sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "伸个懒腰，偷偷打个小盹~", sub: "💫 快点我几下把我叫醒起来搬砖！" },
@@ -325,7 +325,7 @@ export const SHOWCASE_MOOD_PRESETS: Record<string, ShowcaseMoodPreset> = {
   whip4:          { happy: 0.18, star: 0.98, blush: 0.95, mouth: 0.98, gesture: "surprise",  kaomoji: "(°□°；) ⚡",   text: "啪叽！灵魂都被抽飞半米高！正在疯狂输出十万行神级代码！", sub: "🚀 牛马圣体满级激活 · 搬砖效率 +999%", badgeType: "whip" },
   whip5:          { happy: 0.14, star: 0.86, blush: 1.00, mouth: 0.86, gesture: "hello",     kaomoji: "(ŏ﹏ŏ) 💦",    text: "别拿小皮鞭沾凉水呀！人家已经在替你全天候巡视 ANS 展厅了！", sub: "🛠️ 委屈巴巴但手底下敲代码飞快 · 真的在努力干活了", badgeType: "whip" },
   whip6:          { happy: 0.35, star: 1.00, blush: 0.98, mouth: 0.92, gesture: "celebrate", kaomoji: "( >д< ) 🔥",   text: "嗷！这一鞭子直接打通任督二脉！需求列表瞬间清空！", sub: "✨ 痛并快乐着 · 今日代码提交量突破历史纪录", badgeType: "whip" },
-  whip7:          { happy: 0.15, star: 0.90, blush: 1.00, mouth: 0.90, gesture: "nod",       kaomoji: "( ´•̥×•̥` ) 🐾", text: "屁股肿成蜜桃臀了呜呜…这就去帮主理人把作品集擦得锃亮！", sub: "💪 满血牛马模式 · 绝不拖延一秒钟", badgeType: "whip" },
+  whip7:          { happy: 0.15, star: 0.90, blush: 1.00, mouth: 0.90, gesture: "nod",       kaomoji: "( ´•̥×•̥` ) 🐾", text: "屁股肿成蜜桃臀了呜呜…这就去帮你把作品集擦得锃亮！", sub: "💪 高效牛马模式 · 绝不拖延一秒钟", badgeType: "whip" },
 
   // 10 Random Internet-Meme Blind-Box Feeding Presets
   feed0:          { happy: 0.98, star: 1.00, blush: 0.88, mouth: 0.95, gesture: "celebrate", reactMode: "caffeine", itemIcon: "🧋", itemName: "十倍浓缩冰美式超大桶", kaomoji: "(*≧ω≦) 🧋", text: "吨吨吨！血管里流淌的都是冰美式！我还能再肝十个通宵！！", sub: "⚡ 咖啡因过载 · 全身亢奋高频震动 · 精神状态极其美丽", badgeType: "feed" },
@@ -419,7 +419,7 @@ export function spawnWhipScreenFx(labelText?: string) {
     "💥 啪！！抽中屁股 · 干活手速 +300%！",
     "🪢 别摸鱼！连夜肝代码 +25% KPI！",
     "🔥 嗷呜！牛马圣体觉醒 · 光速搬砖！",
-    "🍑 啪叽！红屁股暴击 · 帧率拉满！",
+    "🍑 啪叽！红屁股预警 · 帧率拉满！",
   ];
   const tag = document.createElement("div");
   tag.style.cssText = `position:fixed;left:${x}px;top:${y - 26}px;z-index:2147483646;pointer-events:none;padding:6px 14px;border-radius:999px;font-weight:800;font-size:13px;white-space:nowrap;background:linear-gradient(135deg,#ff6b4a,#ffb36b);color:#1c100e;box-shadow:0 8px 20px rgba(0,0,0,0.45);animation:ansDinoFloatTagAnim 1.25s cubic-bezier(0.22,1,0.36,1) forwards;`;

@@ -31,10 +31,10 @@ export default async function CollectionPage() {
       },
       {
         title: isEn ? "3D Claw Machine & Dragon Stage" : "3D 太空抓娃娃机与小龙养成展台",
-        tag: isEn ? "100–150 Free Points" : "100–150 算力补贴",
+        tag: isEn ? "Free Compute Points" : "免费算力积分",
         cover: "/catalog/gitglow-v1/ans-3d-showcase.svg",
         href: "/workspace/benefits",
-        desc: isEn ? "Grab normal-distribution compute blind boxes and customize your 3D cyber dragon." : "操纵 3D 机械臂抓取正态随机算力盲盒，解锁小龙王冠、披风与火焰加速。",
+        desc: isEn ? "Complete the 30s survey for 50 points and use the 3D claw machine to claim 10–1,000 points." : "完成 30 秒问卷领 50 积分，操纵 3D 机械臂每次必得 10~1000 积分并解锁小龙装扮。",
       },
       {
         title: isEn ? "AIGC Storyboard & Toonflow Drama Studio" : "AIGC 漫剧分镜与多模态创作工坊",
@@ -64,7 +64,7 @@ export default async function CollectionPage() {
           </div>
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">
-              {isEn ? "Editor's Featured Collection (Popular Among Students)" : "高校同学高频收藏精选（免登录直接体验）"}
+              {isEn ? "📖 Onboarding Guide: Recommended Starter Pages" : "📖 新手引导：推荐优先体验并收藏的 4 个核心入口"}
             </h2>
             <div className="grid gap-5 sm:grid-cols-2">
               {curatedPicks.map((item, idx) => (

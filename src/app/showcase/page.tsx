@@ -143,10 +143,10 @@ export default async function ShowcasePage() {
       <section className="space-y-4" data-testid="showcase-curated-grid">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight">
-            {isEn ? "Featured Community & Competition Releases" : "社区与赛事精选标杆作品"}
+            {isEn ? "📖 Onboarding Guide: Reference Project Templates" : "📖 新手引导：参赛与作品交付参考范例"}
           </h2>
           <span className="text-xs text-muted-foreground">
-            {isEn ? "Verified immutable release snapshots" : "经组委会与社区双盲评审认证的标杆工程"}
+            {isEn ? "Official reference examples across tracks" : "各赛道标准作品结构与交付参考样板"}
           </span>
         </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -161,8 +161,8 @@ export default async function ShowcasePage() {
                     loading="lazy"
                   />
                   <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/65 to-transparent p-3.5 text-white">
-                    <Badge variant="secondary">{`评审通过 · ${item.version}`}</Badge>
-                    <span className="text-xs font-medium">{`${item.likes} 赞 · ${item.comments} 评论`}</span>
+                    <Badge variant="secondary">{isEn ? `📖 Guide Sample · ${item.version}` : `📖 官方参考范例 · ${item.version}`}</Badge>
+                    <span className="text-xs font-medium">{isEn ? "Reference Template" : "可参考同款结构"}</span>
                   </div>
                 </div>
                 <CardContent className="space-y-3 p-5">
@@ -170,9 +170,9 @@ export default async function ShowcasePage() {
                   <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{item.summary}</p>
                   <div className="flex items-center justify-between border-t pt-3 text-xs">
                     <span className="text-muted-foreground">{item.author}</span>
-                    <span className="font-medium text-primary group-hover:underline">{isEn ? "View release →" : "查看作品 →"}</span>
+                    <span className="font-medium text-primary group-hover:underline">{isEn ? "Open guide →" : "查看赛道与模板 →"}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{`所属专题：${item.competition}`}</p>
+                  <p className="text-xs text-muted-foreground">{`适用方向：${item.competition}`}</p>
                 </CardContent>
               </Card>
             </Link>

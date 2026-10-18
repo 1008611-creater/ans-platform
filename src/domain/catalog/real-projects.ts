@@ -14,7 +14,7 @@ export const REAL_CATALOG_PROJECTS = [
     "content": {
       "zh": {
         "title": "ANS × 小恐龙 3D 双模型互动展示",
-        "summary": "主理人 3D 建模与 ANS 吉祥物小恐龙同台展示：滚轮驱动顺时针绕头飞行、脸前超微距贴脸表情与鼠标悬停/点击碎碎念交互。",
+        "summary": "创作者 3D 建模与 ANS 吉祥物小恐龙同台展示：滚轮驱动顺时针绕头飞行、脸前超微距贴脸表情与鼠标悬停/点击碎碎念交互。",
         "sample": "ans.cauai.fun/showcase/ans-3d/index.html",
         "output": "双 3D 模型实时交互网页、顺时针伴飞运镜与线上产品亮点导览",
         "inputs": "鼠标滚轮控制飞行轨迹，鼠标悬停或点击小恐龙触发摸头与碎碎念互动",
@@ -39,7 +39,7 @@ export const REAL_CATALOG_PROJECTS = [
     },
     "outerCoverUrl": "/catalog/ans-pro-v1/dragon-arcade.webp",
     "coverUrl": "/catalog/gitglow-v1/ans-3d-showcase.svg",
-    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面 · 主理人 × 小恐龙"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面 · 创作者 × 小恐龙"
   },
   {
     "slug": "liu-resume",

@@ -11,7 +11,7 @@ export async function CreationTools() {
     { href: "/workflows/hypit", note: "AI 创意视频制作与脚本生成工作台", label: "🎬 Hypit 视频工作台", icon: Film },
     { href: "https://toonflow.cauai.fun", note: "小说转分镜与 AI 漫剧独立创作站（直达）", label: "🎭 Toonflow 短剧工坊 ↗", icon: Film, external: true },
     { href: "/vibe-hub", note: "全栈 AI 编程教程、提示词与实战路线图", label: "📚 VibeHub 知识库", icon: FolderOpen },
-    { href: "/workspace/benefits", note: "免费领 100~150 积分、3D 抓娃娃抽 ¥100 锦鲤", label: "🎁 3D 抓娃娃与算力福利", icon: Store },
+    { href: "/workspace/benefits", note: "免费领 100~150 积分与 3D 抓娃娃体验", label: "🎁 3D 抓娃娃与算力福利", icon: Store },
     { href: "/market", note: w("toolNotes.market"), label: t("market.browse"), icon: Store },
     { href: "/teams", note: w("toolNotes.teams"), label: t("teamEntry"), icon: Users },
     { href: "/explore/submit", note: w("toolNotes.submit"), label: t("realProject.submit"), icon: FolderOpen },

@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Activity, Coins, FolderOpen, Gift, Heart, Sparkles, Users, Zap } from "lucide-react";
+import { Activity, Coins, FolderOpen, Gift, Heart, Users, Zap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelProgress, formatLevel } from "@/lib/level";
@@ -133,7 +132,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
             <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
               <Link href="/workspace/benefits">
                 <Gift className="me-1 h-3.5 w-3.5" aria-hidden="true" />
-                {locale === "zh" ? "领 100~150分 · 抽锦鲤" : "Free 100–150 Pts"}
+                {locale === "zh" ? "免费领 100~150 积分" : "Free 100–150 Pts"}
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{quotaCopy("entry")}</Link></Button>

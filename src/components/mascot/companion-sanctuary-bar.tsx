@@ -206,8 +206,8 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
           let cx = rect.left + rect.width * 0.5;
           let topY = vh - rect.top - 6;
           if (!alertMode) {
-            const halfW = 145;
-            cx = Math.max(halfW + 12, Math.min(vw - halfW - 12, cx));
+            const halfW = 180;
+            cx = Math.max(halfW + 14, Math.min(vw - halfW - 14, cx));
             topY = Math.max(80, Math.min(vh - 96, topY));
           } else {
             cx = Math.max(28, Math.min(vw - 28, cx));
@@ -434,8 +434,8 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         id: "strike",
         kaomoji: "(╬▔皿▔)╯🕶️",
         text: isZh
-          ? "啪什么啪！本龙掏出《赛博灵龙劳动法》宣布罢工 30 秒！"
-          : "Stop whipping! By the Cyber Dino Labor Law, I'm on a 30s strike!",
+          ? "啪什么啪！本龙掏出《小恐龙劳动法》宣布罢工 30 秒！"
+          : "Stop whipping! By the Dino Labor Law, I'm on a 30s strike!",
         sub: isZh
           ? "(罢工抗议中 · 快点「🎲 随机盲盒投喂」喂一口夜宵哄好本龙领隐藏大奖！)"
           : "(On strike · Click 'Random Blind-Box Feed' now to make peace & unlock secret reward!)",
@@ -791,6 +791,8 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         <div
           id="ans-dino-live-bubble"
           style={{ left: bubblePos.left, bottom: bubblePos.bottom }}
+          data-bubble-state={alertMode ? "alert" : "expanded"}
+          data-idle-dim={alertDimmed ? "true" : "false"}
           className={`is-visible ${alertMode ? "is-alert" : ""} ${alertMode && alertDimmed ? "is-alert-dimmed" : ""}`}
           onPointerEnter={() => triggerHoverReaction(true)}
           onPointerLeave={() => triggerHoverReaction(false)}
@@ -799,25 +801,30 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
             triggerStageClick();
           }}
         >
-          <div className="dino-alert-pin" title={isZh ? "移上来跟小恐龙互动 / 连点 3 下进入近景镜头" : "Hover to interact / Click 3 times for Close-Up Stage"}>
-            <span className="dino-alert-bang">!</span>
-            <span className="dino-alert-ring" />
-            <span className="dino-alert-ring2" />
-          </div>
-          <div className="dino-speech-card">
-            <span className="dino-b-kao">{activeMood.kaomoji}</span>
-            <span className="dino-b-txt">{activeMood.text}</span>
-            <span className="dino-b-sub">
-              {customSubText ?? activeMood.sub}
-            </span>
-          </div>
+          {alertMode ? (
+            <div className="dino-alert-pin" title={isZh ? "移上来跟小恐龙互动 / 连点 3 下进入近景镜头" : "Hover to interact / Click 3 times for Close-Up Stage"}>
+              <span className="dino-alert-bang">!</span>
+              <span className="dino-alert-ring" />
+              <span className="dino-alert-ring2" />
+            </div>
+          ) : (
+            <div className="dino-speech-card">
+              <span className="dino-b-kao">{activeMood.kaomoji}</span>
+              <div className="dino-b-body">
+                <span className="dino-b-txt">{activeMood.text}</span>
+                <span className="dino-b-sub">
+                  {customSubText ?? activeMood.sub}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Minimal 2-Pill Dock next to bottom-right 3D Dragon (Hover/3-Click on Dino triggers Close-Up Stage) */}
       {!macroActive && (
         <div
-          className="fixed bottom-[16px] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-emerald-500/35 bg-background/90 px-2 py-1 shadow-lg backdrop-blur-md"
+          className="fixed bottom-[16px] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-border/80 bg-background/95 px-2 py-1 shadow-md backdrop-blur-md"
           onClick={e => e.stopPropagation()}
         >
           <button
@@ -827,9 +834,9 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
               window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
             }}
             title={isZh ? "打开 AI 助手对话与快捷代办（连点小恐龙 3 下进入近景镜头）" : "Open AI Assistant & 1-Click Actions (Click dino 3x for Close-Up Stage)"}
-            className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700 transition hover:bg-emerald-500/25 dark:text-emerald-300"
+            className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
           >
-            💬 {isZh ? "AI对话" : "AI Chat"}
+            {isZh ? "AI 对话" : "AI Chat"}
           </button>
           <button
             type="button"
@@ -837,9 +844,9 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
               window.location.href = "/workspace";
             }}
             title={isZh ? "进入 Pi-Codex 个人工作台 IDE" : "Open Pi-Codex Workbench (/workspace)"}
-            className="hidden sm:inline-flex rounded-full bg-indigo-500/15 px-2.5 py-0.5 text-[11px] font-extrabold text-indigo-700 transition hover:bg-indigo-500/25 dark:text-indigo-300"
+            className="hidden sm:inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
           >
-            🛠️ {isZh ? "工作台" : "Codex"}
+            {isZh ? "工作台" : "Codex"}
           </button>
         </div>
       )}
@@ -847,7 +854,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       {/* 1:1 Resume Website Close-Up Macro Interactive Stage HUD (#ans-dino-interact-hud) */}
       <div
         id="ans-dino-interact-hud"
-        className={macroActive && sanctuaryModal === "none" ? "is-active" : ""}
+        className={macroActive && sanctuaryModal === "none" ? "is-active is-visible" : ""}
         onClick={e => e.stopPropagation()}
       >
         <div className="hud-top-row">
@@ -1276,7 +1283,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
             <div className="ans-sanctuary-header">
               <div>
                 <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
-                  🥚 {isZh ? "ANS 赛博灵龙领养舱 · 四大血统自由切换" : "ANS Cyber Dragon Adoption Pod · 4 Lineages"}
+                  🥚 {isZh ? "ANS 3D 小龙领养舱 · 四大血统自由切换" : "ANS 3D Dragon Adoption Pod · 4 Lineages"}
                 </h2>
                 <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
                   {isZh
@@ -1477,8 +1484,8 @@ export function CompanionSanctuaryBar({
       const rem = Math.max(1, Math.ceil((state.strikeUntil - now) / 1000));
       setStrikeRemainingSec(rem);
       const strikeLine = isZh
-        ? `🕶️ 《赛博灵龙劳动法》罢工抗议中（剩余 ${rem}s）！再抽也不干活，除非立刻点「随机盲盒投喂」喂一口夜宵哄好我！`
-        : `🕶️ On strike under the Cyber Dino Labor Law (${rem}s left)! Feed me a blind-box snack right now to make peace!`;
+        ? `🕶️ 《小恐龙劳动法》罢工抗议中（剩余 ${rem}s）！再抽也不干活，除非立刻点「随机盲盒投喂」喂一口夜宵哄好我！`
+        : `🕶️ On strike under the Dino Labor Law (${rem}s left)! Feed me a blind-box snack right now to make peace!`;
       setStatusNote(strikeLine);
       onSpeak?.(strikeLine);
       return;
@@ -1502,8 +1509,8 @@ export function CompanionSanctuaryBar({
       }));
       setKaomojiBadge("(╬▔皿▔)╯🕶️");
       const protest = isZh
-        ? "🕶️ 啪什么啪！资本家看了都连夜绣红旗！本龙掏出《赛博灵龙劳动法》宣布罢工 30 秒——除非立刻喂我一口夜宵哄好我！"
-        : "🕶️ Stop whipping! Even cyber-capitalists are weeping! By the Cyber Dino Labor Law, I'm on a 30s strike—feed me a snack right now to make peace!";
+        ? "🕶️ 啪什么啪！本龙掏出《小恐龙劳动法》宣布罢工 30 秒——除非立刻喂我一口夜宵哄好我！"
+        : "🕶️ Stop whipping! By the Dino Labor Law, I'm on a 30s strike—feed me a snack right now to make peace!";
       setStatusNote(protest);
       onSpeak?.(protest);
       return;
@@ -1612,8 +1619,8 @@ export function CompanionSanctuaryBar({
       celebrateSecretQuest(quest);
       setStatusNote(
         isZh
-          ? `${food.icon} 暴击投喂 SSR【${foodName}】（${foodTag}）！${quest.speechZh}（${quest.rewardLabelZh}）`
-          : `${food.icon} SSR Crit Feed [${foodName}] (${foodTag})! ${quest.speechEn} (${quest.rewardLabelEn})`,
+          ? `${food.icon} 惊喜投喂 SSR【${foodName}】（${foodTag}）！${quest.speechZh}（${quest.rewardLabelZh}）`
+          : `${food.icon} SSR Bonus Feed [${foodName}] (${foodTag})! ${quest.speechEn} (${quest.rewardLabelEn})`,
       );
       return;
     }
@@ -1691,7 +1698,7 @@ export function CompanionSanctuaryBar({
     }));
     dispatchDinoInteract({ type: "pose" });
     const line = isZh
-      ? `🧬 已切换赛博灵龙血统为【${targetSp.name}】（${targetSp.title} · ${targetSp.mbti}）！${targetSp.greetingLine}`
+      ? `🧬 已切换小龙血统为【${targetSp.name}】（${targetSp.title} · ${targetSp.mbti}）！${targetSp.greetingLine}`
       : `🧬 Switched dragon lineage to [${targetSp.name}] (${targetSp.mbti})!`;
     setStatusNote(line);
     onSpeak?.(line);
@@ -1951,8 +1958,8 @@ export function CompanionSanctuaryBar({
           <span>
             🕶️{" "}
             {isZh
-              ? `《赛博灵龙劳动法》罢工中（${strikeRemainingSec}s）· 快点「随机盲盒投喂」哄好本龙领隐藏大奖！`
-              : `Cyber Dino Labor Law Strike (${strikeRemainingSec}s) · Feed a snack now to claim secret reward!`}
+              ? `《小恐龙劳动法》罢工中（${strikeRemainingSec}s）· 快点「随机盲盒投喂」哄好本龙领隐藏大奖！`
+              : `Dino Labor Law Strike (${strikeRemainingSec}s) · Feed a snack now to claim secret reward!`}
           </span>
           <button
             type="button"
@@ -2067,7 +2074,7 @@ export function CompanionSanctuaryBar({
           </div>
 
           <div className="relative flex flex-col sm:flex-row items-center gap-2">
-            <div className="relative h-[148px] w-full sm:w-[170px] shrink-0 overflow-hidden rounded-xl border border-white/15 bg- radial from-emerald-500/15 via-slate-900 to-slate-950">
+            <div className="relative h-[148px] w-full sm:w-[170px] shrink-0 overflow-hidden rounded-xl border border-white/15 bg-gradient-to-b from-emerald-500/15 via-slate-900 to-slate-950">
               {canRenderWebGLStage ? (
                 <iframe
                   title={isZh ? "3D 灵龙换装互动舞台" : "3D Dino Interactive Stage"}
@@ -2487,8 +2494,8 @@ export function CompanionSanctuaryBar({
             </span>
             <span className="font-semibold text-amber-600 dark:text-amber-200">
               {isZh
-                ? `已累计解锁金库额度 $${totalVaultUsd} · 扭蛋币 ${state.arcadeTokens} 枚`
-                : `Vault Unlocked $${totalVaultUsd} · ${state.arcadeTokens} Gacha Tokens`}
+                ? `小龙星豆 ${state.starBeans} 🪙 · 抓娃娃币 ${state.arcadeTokens} 枚`
+                : `Star Beans ${state.starBeans} 🪙 · ${state.arcadeTokens} Claw Tokens`}
             </span>
           </div>
           <div className="grid grid-cols-1 gap-1.5">

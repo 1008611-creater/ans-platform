@@ -39,28 +39,23 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
     <>
       {/* Persistent Floating Pill to Re-open Activity Guide Anytime */}
       <div
-        className="fixed bottom-5 left-5 z-40"
-        style={{ position: "fixed", bottom: "1.25rem", left: "1.25rem", zIndex: 45 }}
+        className="fixed bottom-4 left-4 z-40"
+        style={{ position: "fixed", bottom: "1rem", left: "1rem", zIndex: 45 }}
       >
         <button
           type="button"
           onClick={() => setOpen(true)}
           data-testid="home-campaign-reopen-pill"
-          style={{
-            backgroundColor: "rgba(2, 6, 23, 0.94)",
-            borderColor: "rgba(245, 158, 11, 0.55)",
-            color: "#fcd34d",
-          }}
-          className="inline-flex items-center gap-2 rounded-full border border-amber-500/50 bg-slate-950/95 px-4 py-2 text-xs font-black text-amber-300 shadow-lg backdrop-blur-md transition hover:scale-105 hover:border-amber-400 hover:bg-slate-900"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-background/95 px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur-md transition hover:border-foreground/30 hover:bg-muted"
         >
           <span
-            className="inline-block h-2 w-2 rounded-full bg-emerald-400"
-            style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: "#34d399" }}
+            className="inline-block h-2 w-2 rounded-full bg-emerald-600"
+            style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: "#059669" }}
           />
           <span>
             {isEn
-              ? "🎁 Activity Guide · Claim 100–150 Pts & Spend in Market"
-              : "🎁 算力活动指南 · 领100~150积分 / 抓娃娃 / 逛市场"}
+              ? "Activity Guide · Claim 100–150 Pts"
+              : "算力活动指南 · 领 100~150 积分"}
           </span>
         </button>
       </div>
@@ -105,21 +100,21 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-emerald-600 px-3 py-0.5 text-[11px] font-black text-white dark:bg-emerald-400 dark:text-slate-950">
-                      {isEn ? "🔥 ANS × CAU LIVE CAMPAIGN" : "🔥 ANS × 中国农大农客松 · 算力活动指南"}
+                      {isEn ? "📖 ANS ONBOARDING GUIDE" : "📖 新手引导 · 算力积分怎么领、怎么用"}
                     </span>
                     <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                      {isEn ? "10 Points = ¥1 CNY = $1 USD Quota" : "官方锚定：10 积分 = ¥1 元 = $1 USD 算力"}
+                      {isEn ? "10 Points = ¥1 CNY = $1 USD Quota" : "计费规则：10 积分 = ¥1 元算力额度"}
                     </span>
                   </div>
                   <div className="text-lg font-black tracking-tight text-foreground sm:text-2xl">
                     {isEn
                       ? "Claim 100–150 Free Points · Play 3D Claw Machine · Spend in Market"
-                      : "免费领 100~150 积分 · 抓娃娃机搏 ¥100 锦鲤 · 去市场花积分"}
+                      : "免费领 100~150 积分 · 体验 3D 抓娃娃 · 在工作台与市场直接使用"}
                   </div>
                   <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
                     {isEn
-                      ? "90% of users get 100–150 free points (¥10–¥15 value). Spend your points in the ANS Marketplace on AI workflows & tools, or spend 10 Pts/Token in the 3D Claw Machine for a shot at the 1,000-Pt (¥100) Mythic Koi!"
-                      : "全站 90% 用户稳拿 100~150 免费积分（价值 ¥10~¥15 元）！积分不仅能去【市场】直接购买/运行 AI 工作流与农大实战工具，还能在【3D 抓娃娃机】花 10 积分兑币，冲刺 1000 积分（¥100）天选锦鲤大奖！"}
+                      ? "New users can claim 100–150 free compute points by completing the 30-second questionnaire and daily check-ins. Points can be spent directly on AI workflows in /market or in the 3D Claw Machine."
+                      : "新同学完成 30 秒问卷与每日打卡可领 100~150 免费算力积分。积分可在【工具市场】兑换 AI 工作流、在【AI 工作台】调用模型，或在【3D 抓娃娃机】兑换游戏币抽取最高 1000 积分奖励。"}
                   </p>
                 </div>
 
@@ -135,7 +130,7 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
               </div>
             </div>
 
-            {/* 3-Step Closed-Loop Guide Cards */}
+            {/* 3-Step Onboarding Guide Cards */}
             <div className="grid gap-3.5 p-5 sm:grid-cols-3 sm:p-6">
               {/* Step 1: Claim Free Points */}
               <div className="flex flex-col justify-between rounded-2xl border border-emerald-500/35 bg-emerald-500/5 p-4">
@@ -145,24 +140,24 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                       {isEn ? "STEP 1 · CLAIM" : "第 1 步 · 免费领积分"}
                     </span>
                     <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">
-                      {isEn ? "100–150 Pts" : "稳拿 100~150 分"}
+                      {isEn ? "100–150 Pts" : "可领 100~150 分"}
                     </span>
                   </div>
                   <div className="mt-2.5 text-base font-black text-foreground">
-                    {isEn ? "🎁 Free Compute Vault" : "🎁 领普惠算力与农客松包"}
+                    {isEn ? "🎁 Free Starter Points" : "🎁 领新用户与农客松算力包"}
                   </div>
                   <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
                     <li>
-                      • {isEn ? "Sign up + 30s Questionnaire: " : "注册 + 30秒破冰问卷："}
-                      <strong className="text-foreground">{isEn ? "+60 Pts (¥6)" : "立得 60 积分 (¥6)"}</strong>
+                      • {isEn ? "Sign up + 30s Questionnaire: " : "注册 + 30 秒问卷："}
+                      <strong className="text-foreground">{isEn ? "+60 Pts" : "领 60 积分"}</strong>
                     </li>
                     <li>
-                      • {isEn ? "Daily check-in & 6 Easter Eggs: " : "游乐场打卡 + 6大彩蛋："}
+                      • {isEn ? "Daily check-in & tasks: " : "每日打卡与互动任务："}
                       <strong className="text-foreground">{isEn ? "+40–90 Pts" : "再领 40~90 积分"}</strong>
                     </li>
                     <li>
-                      • {isEn ? "CAU AgriHackathon Team Pack: " : "中国农大农客松战队专属："}
-                      <strong className="text-foreground">{isEn ? "+60 Pts ($6)" : "额外 +60 积分 ($6)"}</strong>
+                      • {isEn ? "CAU AgriHackathon Team Pack: " : "农客松参赛战队专项："}
+                      <strong className="text-foreground">{isEn ? "+60 Pts" : "额外 +60 积分"}</strong>
                     </li>
                   </ul>
                 </div>
@@ -177,37 +172,37 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                 </Link>
               </div>
 
-              {/* Step 2: Spend Points in 3D Claw Machine for Jackpots */}
+              {/* Step 2: Spend Points in 3D Claw Machine */}
               <div className="flex flex-col justify-between rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">
                 <div>
                   <div className="flex items-center justify-between gap-1">
                     <span className="rounded-md bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950">
-                      {isEn ? "STEP 2 · PLAY & WIN" : "第 2 步 · 积分抓娃娃"}
+                      {isEn ? "STEP 2 · 3D ARCADE" : "第 2 步 · 3D 抓娃娃"}
                     </span>
                     <span className="text-xs font-black text-amber-700 dark:text-amber-300">
                       {isEn ? "10 Pts / Token" : "10 积分 / 币"}
                     </span>
                   </div>
                   <div className="mt-2.5 text-base font-black text-foreground">
-                    {isEn ? "🕹️ 3D Claw & Roulette" : "🕹️ 抓娃娃机花积分搏锦鲤"}
+                    {isEn ? "🕹️ 3D Claw & Lucky Wheel" : "🕹️ 3D 抓娃娃机与幸运转盘"}
                   </div>
                   <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
                     <li>
-                      • {isEn ? "Starter gift: " : "进场即送 "}
+                      • {isEn ? "Starter gift: " : "免费体验："}
                       <strong className="text-foreground">{isEn ? "3 Free Tokens" : "3 枚免费抓娃娃币"}</strong>
                     </li>
                     <li>
-                      • {isEn ? "Spend points anytime: " : "用积分投币："}
+                      • {isEn ? "Exchange anytime: " : "积分兑币："}
                       <strong className="text-foreground">
-                        {isEn ? "10 Pts = 1 Token (100% Win)" : "10 积分兑 1 币（100% 必中）"}
+                        {isEn ? "10 Pts = 1 Token (100% Win)" : "10 积分兑 1 币（每次必得积分）"}
                       </strong>
                     </li>
                     <li>
-                      • {isEn ? "Grand Jackpots: " : "低概率暴击大奖："}
+                      • {isEn ? "Top Prizes: " : "特等奖项："}
                       <strong className="text-rose-600 dark:text-rose-400">
                         {isEn
-                          ? "👑 SP +1,000 Pts (¥100) · 🐉 UR +300 Pts"
-                          : "👑 SP 锦鲤 +1000分(¥100) · 🐉 UR +300分"}
+                          ? "👑 Top Prize +1,000 Pts · 🐉 +300 Pts"
+                          : "👑 特等奖 +1000分 · 🐉 一等奖 +300分"}
                       </strong>
                     </li>
                   </ul>
@@ -219,7 +214,7 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                   data-testid="modal-cta-arcade"
                   className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-2 text-xs font-black text-slate-950 shadow-2xs transition hover:brightness-105"
                 >
-                  {isEn ? "🕹️ Play 3D Claw Machine →" : "🕹️ 去抓娃娃抽锦鲤 →"}
+                  {isEn ? "🕹️ Play 3D Claw Machine →" : "🕹️ 去玩 3D 抓娃娃 →"}
                 </Link>
               </div>
 
@@ -228,28 +223,28 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                 <div>
                   <div className="flex items-center justify-between gap-1">
                     <span className="rounded-md bg-cyan-600 px-2 py-0.5 text-[10px] font-black text-white dark:bg-cyan-400 dark:text-slate-950">
-                      {isEn ? "STEP 3 · MARKET" : "第 3 步 · 去市场花积分"}
+                      {isEn ? "STEP 3 · MARKET" : "第 3 步 · 去市场用积分"}
                     </span>
                     <span className="text-xs font-black text-cyan-700 dark:text-cyan-300">
-                      {isEn ? "Spend & Earn" : "买工具 / 赚分成"}
+                      {isEn ? "Spend & Earn" : "兑工具 / 赚分成"}
                     </span>
                   </div>
                   <div className="mt-2.5 text-base font-black text-foreground">
-                    {isEn ? "🛒 ANS Marketplace" : "🛒 在市场花积分买工作流"}
+                    {isEn ? "🛒 ANS Marketplace" : "🛒 在市场兑换实用工作流"}
                   </div>
                   <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
                     <li>
                       • {isEn ? "Spend points directly in " : "在 "}
-                      <strong className="text-foreground">{isEn ? "ANS Market (/market)" : "ANS 市场 (/market)"}</strong>
-                      {isEn ? " to buy & run AI workflows" : " 直接花积分解锁 AI 工作流、简历建站与农大科研工具"}
+                      <strong className="text-foreground">{isEn ? "ANS Market (/market)" : "工具市场 (/market)"}</strong>
+                      {isEn ? " to run AI workflows" : " 直接用积分解锁 AI 工作流、简历建站与农大科研工具"}
                     </li>
                     <li>
                       • {isEn ? "Call DeepSeek / GPT / Claude in " : "在 "}
                       <strong className="text-foreground">{isEn ? "Model Plaza (/models)" : "模型广场 (/models)"}</strong>
-                      {isEn ? "" : " 零配置调用满血大模型"}
+                      {isEn ? "" : " 在线直接调用主流大模型"}
                     </li>
                     <li>
-                      • {isEn ? "Publish your own workflow to earn points!" : "上架原创工作流还能赚取积分分成！"}
+                      • {isEn ? "Publish your own workflow to earn points!" : "上架原创工作流还能获得积分分成"}
                     </li>
                   </ul>
                 </div>
@@ -260,21 +255,21 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                   data-testid="modal-cta-market"
                   className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-cyan-600 px-3 py-2 text-xs font-black text-white shadow-2xs transition hover:bg-cyan-500 dark:bg-cyan-400 dark:text-slate-950"
                 >
-                  {isEn ? "🛒 Go to Marketplace →" : "🛒 去市场花积分 →"}
+                  {isEn ? "🛒 Go to Marketplace →" : "🛒 去工具市场 →"}
                 </Link>
               </div>
             </div>
 
-            {/* Bottom Live Broadcast & Dismiss Footer */}
+            {/* Bottom Rule Note & Dismiss Footer */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/30 px-5 py-3.5 sm:px-7">
               <div className="flex items-center gap-2 text-xs">
-                <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950">
-                  {isEn ? "LIVE" : "实时欧皇"}
+                <span className="rounded-full bg-emerald-600/20 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+                  {isEn ? "RULE" : "积分说明"}
                 </span>
                 <span className="font-medium text-muted-foreground">
                   {isEn
-                    ? "👑 @cau_agr*** pulled [SP Mythic Koi +1,000 Pts] · 🛒 120+ workflows active in Market"
-                    : "👑 @cau_agr*** 抓中【SP 天选锦鲤 +1000积分 (¥100)】 · 🛒 市场已上架多款农大实战工作流"}
+                    ? "10 Points = ¥1 CNY quota · Spend points directly on 22 workflows in /market or in the AI Workbench"
+                    : "10 积分 = ¥1 元算力额度 · 可直接在 /market 兑换 22 款工作流或在工作台调用模型"}
                 </span>
               </div>
 

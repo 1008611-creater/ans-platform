@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -21,19 +21,19 @@ const QUICK_PROJECT_PRESETS: ReadonlyArray<{
     id: "agri",
     label: "🌾 农客松参赛项目",
     goal: "contest",
-    title: "CAU 农情病虫害多模态遥感诊断与农艺处方系统",
+    title: "农田病虫害拍照识别与防治建议小工具",
   },
   {
     id: "aigc",
     label: "🎬 AIGC 短剧项目",
     goal: "portfolio",
-    title: "Toonflow 赛博长安 AI 漫剧四格分镜与视频生成工程",
+    title: "AI 漫剧四镜头分镜脚本与画面生成小作品",
   },
   {
     id: "resume",
     label: "✨ 3D 个人简历站",
     goal: "career",
-    title: "Three.js 3D 星空个人作品集与全栈求职简历站",
+    title: "个人求职简历与课程项目展示网页",
   },
 ];
 
@@ -58,6 +58,15 @@ export function CreateProjectForm({
   const [copiedBrief, setCopiedBrief] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    if (initialTitle) setTitle(initialTitle);
+  }, [initialTitle]);
+
+  useEffect(() => {
+    if (initialGoal) setGoal(initialGoal);
+  }, [initialGoal]);
+
   const intentCluster = detectIntentAndMatchTerms(title || (goal === "contest" ? "农客松遥感诊断" : goal === "portfolio" ? "AIGC短剧分镜" : "3D个人简历作品集"));
   const structuredBrief = upgradeToStructuredBrief(title, "zh", t(goal));
 
@@ -93,7 +102,7 @@ export function CreateProjectForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       <div className="space-y-1.5 rounded-xl border border-primary/20 bg-primary/5 p-3">
-        <p className="text-xs font-semibold text-foreground">⚡ 一键填入热门立项课题：</p>
+        <p className="text-xs font-semibold text-foreground">📖 新手引导 · 点一下可填入常用立项题目（支持自由修改）：</p>
         <div className="flex flex-wrap gap-1.5">
           {QUICK_PROJECT_PRESETS.map((preset) => (
             <button
@@ -139,7 +148,7 @@ export function CreateProjectForm({
         />
       </label>
 
-      {/* ANS Intent Bridge (internalized vibe-hub-skill + ans-tone-guard) */}
+      {/* ANS Intent Bridge */}
       <div className="space-y-2.5 rounded-xl border border-border/80 bg-muted/35 p-3.5" data-testid="project-intent-bridge">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-xs font-semibold text-foreground">{intentCluster.badge.zh}</span>
@@ -148,12 +157,12 @@ export function CreateProjectForm({
             onClick={() => setShowBrief(v => !v)}
             className="text-xs font-semibold text-primary underline underline-offset-4 hover:opacity-80"
           >
-            {showBrief ? "收起四段式立项 Brief" : "🧭 一键生成四段式立项 Brief"}
+            {showBrief ? "收起项目需求大纲" : "✨ 帮我生成项目需求大纲"}
           </button>
         </div>
         <p className="text-xs leading-5 text-muted-foreground">{intentCluster.clarifyingQuestion.zh}</p>
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] font-medium text-muted-foreground">推荐锚定术语：</span>
+          <span className="text-[11px] font-medium text-muted-foreground">相关学习词条：</span>
           {intentCluster.terms.map(term => (
             <Link
               key={term.slug}
@@ -178,13 +187,13 @@ export function CreateProjectForm({
                 }}
                 className="rounded-lg border border-border bg-muted px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted/80"
               >
-                {copiedBrief ? "✓ 已复制四段式 Brief" : "📋 复制四段式 Brief"}
+                {copiedBrief ? "✓ 已复制需求大纲" : "📋 复制需求大纲"}
               </button>
               <Link
                 href={`/workspace?prompt=${encodeURIComponent(structuredBrief.slice(0, 600))}`}
                 className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
               >
-                ⚡ 带此 Brief 直达 Pi-Codex 沙箱运行 →
+                ⚡ 带此大纲去 AI 工作台生成代码 →
               </Link>
             </div>
           </div>
