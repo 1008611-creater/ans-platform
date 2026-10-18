@@ -811,20 +811,20 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
               e.stopPropagation();
               window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
             }}
-            title={isZh ? "打开 AI 助手对话与快捷代办（连点小恐龙 3 下进入近景镜头）" : "Open AI Assistant & 1-Click Actions (Click dino 3x for Close-Up Stage)"}
+            title={isZh ? "打开 Agent 对话与快捷代办（连点小恐龙 3 下进入近景互动）" : "Open Agent Chat & 1-Click Actions (Click dino 3x for Close-Up Stage)"}
             className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
           >
-            {isZh ? "AI 对话" : "AI Chat"}
+            {isZh ? "Agent" : "Agent"}
           </button>
           <button
             type="button"
             onClick={() => {
               window.location.href = "/workspace";
             }}
-            title={isZh ? "进入 Pi-Codex 个人工作台 IDE" : "Open Pi-Codex Workbench (/workspace)"}
+            title={isZh ? "进入 Agent 工作模式 (/workspace)" : "Open Work Mode (/workspace)"}
             className="hidden sm:inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
           >
-            {isZh ? "工作台" : "Codex"}
+            {isZh ? "工作模式" : "Work Mode"}
           </button>
         </div>
       )}
@@ -837,18 +837,18 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       >
         <div className="hud-top-row">
           <span className="hud-title">
-            🦖 {isZh ? `灵龙近景互动台 · ${state.customName || sp.name} · 干活动力 KPI` : `Dino Close-Up Stage · ${state.customName || sp.name} · Work Drive KPI`}
+            🦖 {isZh ? `${state.customName || sp.name} · 干活动力` : `${state.customName || sp.name} · Work Drive`}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="hud-kpi-val">
-              {workDrivePct}% {isOverclocked ? (isZh ? "⚡ 超频中" : "⚡ Overclocked") : ""} · 🪙 {state.starBeans}
+              {workDrivePct}% {isOverclocked ? (isZh ? "⚡ 超频" : "⚡ Boost") : ""} · 🪙 {state.starBeans}
             </span>
             <button
               type="button"
               className="hud-exit-btn"
               onClick={() => exitMacroMode()}
             >
-              ✕ {isZh ? "收起近景" : "Exit Close-Up"}
+              ✕ {isZh ? "收起" : "Close"}
             </button>
           </div>
         </div>
@@ -859,39 +859,44 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
           <button
             type="button"
             className="hud-act-btn is-whip"
+            title={isZh ? "催干活提速 · +25🪙 +8♥" : "Overclock boost · +25🪙 +8♥"}
             onClick={handleWhipAction}
           >
-            🪢 {isZh ? "挥鞭抽屁股（催干活 +25🪙）" : "Crack Whip (+25🪙 Overclock)"}
+            🪢 {isZh ? "挥鞭催干活" : "Crack Whip"}
           </button>
           <button
             type="button"
             className="hud-act-btn is-feed"
+            title={isZh ? "抽取限定零食 · +好感 & +20🪙" : "Blind-box snack · +Affection & +20🪙"}
             onClick={handleFeedAction}
           >
-            🎲 {isZh ? "随机盲盒投喂（拿好感 +20🪙）" : "Blind-Box Feed (+Affection & SSR)"}
+            🎲 {isZh ? "盲盒投喂" : "Blind-Box Feed"}
           </button>
           <button
             type="button"
             className="hud-act-btn is-wardrobe"
+            title={isZh ? "3D 换装与高定配饰" : "3D Wardrobe & Accessories"}
             onClick={handleOpenWardrobeDrawer}
           >
-            👗 {isZh ? "奇迹暖暖衣橱" : "3D Nikki Wardrobe"}
+            👗 {isZh ? "3D 衣橱" : "Wardrobe"}
           </button>
           <button
             type="button"
             className="hud-act-btn is-adopt"
+            title={isZh ? "切换四大灵龙血统" : "Switch Dragon Lineage"}
             onClick={handleOpenAdoptDrawer}
           >
-            🥚 {isZh ? "灵龙领养舱" : "Dragon Adoption Pod"}
+            🥚 {isZh ? "切换血统" : "Lineage"}
           </button>
         </div>
         <div className="hud-btn-row" style={{ marginTop: "2px" }}>
           <button
             type="button"
             className="hud-act-btn"
+            title={isZh ? "好感度 +15♥ · 星豆 +10🪙" : "Affection +15♥ · Beans +10🪙"}
             onClick={handlePatAction}
           >
-            🤚 {isZh ? "摸摸头顺毛 (+15♥)" : "Pat Head (+15♥)"}
+            🤚 {isZh ? "摸摸头" : "Pat Head"}
           </button>
           <button
             type="button"
@@ -901,7 +906,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
               window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
             }}
           >
-            💬 {isZh ? "打开 AI 伴随对话 & Pi Agent" : "Open AI Companion Chat"}
+            🤖 {isZh ? "Agent 对话" : "Agent Chat"}
           </button>
           <button
             type="button"
@@ -910,7 +915,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
               window.location.href = "/workspace";
             }}
           >
-            🛠️ {isZh ? "进入 Pi-Codex 工作台 ↗" : "Pi-Codex Workbench ↗"}
+            🛠️ {isZh ? "工作模式 ↗" : "Work Mode ↗"}
           </button>
         </div>
       </div>
@@ -1191,8 +1196,9 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                 return (
                   <div
                     key={item.id}
+                    title={item.description}
                     onClick={() => handleWardrobeItemClick(item.id)}
-                    className={`ans-wardrobe-card ${equipped ? "is-equipped" : ""}`}
+                    className={`ans-wardrobe-card group ${equipped ? "is-equipped" : ""}`}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "24px" }}>{item.icon}</span>
@@ -1209,9 +1215,8 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                         {item.rarity} · +{item.stylePower}分
                       </span>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: "13px" }}>{item.name}</div>
-                    <div style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.4 }}>{item.description}</div>
-                    <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
+                      <div style={{ fontWeight: 800, fontSize: "13px" }}>{item.name}</div>
                       <span
                         style={{
                           fontSize: "10px",
@@ -1223,14 +1228,17 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                         #{item.styleTag}
                       </span>
                     </div>
-                    <div style={{ marginTop: "auto", paddingTop: "6px", fontSize: "11px", fontWeight: 800 }}>
+                    <div className="hidden group-hover:block" style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.35 }}>
+                      {item.description}
+                    </div>
+                    <div style={{ marginTop: "auto", paddingTop: "4px", fontSize: "11px", fontWeight: 800 }}>
                       {equipped ? (
-                        <span style={{ color: "#10b981" }}>✓ {isZh ? "穿戴中（点击卸下）" : "Equipped (Click to remove)"}</span>
+                        <span style={{ color: "#10b981" }}>✓ {isZh ? "穿戴中" : "Equipped"}</span>
                       ) : unlocked ? (
-                        <span style={{ color: "#38bdf8" }}>{isZh ? "已拥有 · 点击穿戴" : "Owned · Click to equip"}</span>
+                        <span style={{ color: "#38bdf8" }}>{isZh ? "点击穿戴" : "Equip"}</span>
                       ) : (
                         <span style={{ color: "#f59e0b" }}>
-                          🪙 {item.priceBeans} {isZh ? "星豆解锁" : "Beans"} (Lv.{item.minUserLevel} / ♥Lv.{item.minAffectionLevel})
+                          🪙 {item.priceBeans} · Lv.{item.minUserLevel}
                         </span>
                       )}
                     </div>
@@ -1258,13 +1266,8 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
             <div className="ans-sanctuary-header">
               <div>
                 <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
-                  🥚 {isZh ? "ANS 3D 小龙领养舱 · 四大血统自由切换" : "ANS 3D Dragon Adoption Pod · 4 Lineages"}
+                  🥚 {isZh ? "3D 灵龙血统切换" : "3D Dragon Lineage Switcher"}
                 </h2>
-                <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
-                  {isZh
-                    ? "左侧 3D 展台实时预览不同灵龙血统肤色与腮红 · 切换血统保留全部已解锁高定衣橱单品"
-                    : "Preview dragon lineages live on the Left 3D Podium · All unlocked wardrobe items carry over"}
-                </p>
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                 <button
@@ -1281,7 +1284,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                     fontWeight: 800,
                   }}
                 >
-                  👗 {isZh ? "去奇迹暖暖衣橱" : "Open Wardrobe"}
+                  👗 {isZh ? "去 3D 衣橱" : "Open Wardrobe"}
                 </button>
                 <button
                   type="button"
@@ -1296,7 +1299,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                     fontWeight: 800,
                   }}
                 >
-                  ✕ {isZh ? "返回近景舞台" : "Back"}
+                  ✕ {isZh ? "返回" : "Back"}
                 </button>
               </div>
             </div>
@@ -1362,8 +1365,8 @@ export function CompanionSanctuaryBar({
     } catch {
       setPiResult({
         ok: false,
-        replyZh: "⚠️ Pi Agent 网络连接异常，请稍后重试。",
-        replyEn: "⚠️ Pi Agent network error. Please try again.",
+        replyZh: "⚠️ Agent 网络连接异常，请稍后重试。",
+        replyEn: "⚠️ Agent network error. Please try again.",
         links: [],
       });
     } finally {
@@ -1459,8 +1462,8 @@ export function CompanionSanctuaryBar({
       const rem = Math.max(1, Math.ceil((state.strikeUntil - now) / 1000));
       setStrikeRemainingSec(rem);
       const strikeLine = isZh
-        ? `🕶️ 《小恐龙劳动法》罢工抗议中（剩余 ${rem}s）！再抽也不干活，除非立刻点「随机盲盒投喂」喂一口夜宵哄好我！`
-        : `🕶️ On strike under the Dino Labor Law (${rem}s left)! Feed me a blind-box snack right now to make peace!`;
+        ? `🕶️ 《小恐龙劳动法》罢工抗议中（剩余 ${rem}s）！快点「盲盒投喂」哄好我！`
+        : `🕶️ On strike under the Dino Labor Law (${rem}s left)! Feed me a snack right now!`;
       setStatusNote(strikeLine);
       onSpeak?.(strikeLine);
       return;
@@ -1496,7 +1499,7 @@ export function CompanionSanctuaryBar({
     setKaomojiBadge(preset.kaomoji);
     spawnWhipScreenFx(
       isZh
-        ? `⚡ 啪！+15🪙 +8♥（连击 ${recent.length}/7）· 2.4x 超频干活`
+        ? `⚡ 啪！+15🪙 +8♥（连击 ${recent.length}/7）· 2.4x 超频`
         : `⚡ Crack! +15🪙 +8♥ (Combo ${recent.length}/7) · 2.4x Overclock`,
     );
     dispatchDinoInteract({ type: "whip" });
@@ -1511,8 +1514,8 @@ export function CompanionSanctuaryBar({
     }));
     setStatusNote(
       isZh
-        ? `🪢 啪！+15🪙 +8♥（10s连击 ${recent.length}/7）· 已激活 3 分钟【超频干活 Buff】· ${quip}`
-        : `🪢 Crack! +15🪙 +8♥ (10s combo ${recent.length}/7) · 3-min Overclock Buff active · ${quip}`,
+        ? `🪢 +15🪙 +8♥（连击 ${recent.length}/7）· ${quip}`
+        : `🪢 +15🪙 +8♥ (Combo ${recent.length}/7) · ${quip}`,
     );
     onSpeak?.(quip);
   }
@@ -1545,8 +1548,8 @@ export function CompanionSanctuaryBar({
       celebrateSecretQuest(quest);
       setStatusNote(
         isZh
-          ? `📜 罢工解除！【${quest.titleZh}】${quest.speechZh}（${quest.rewardLabelZh}）`
-          : `📜 Strike pacified! [${quest.titleEn}] ${quest.speechEn} (${quest.rewardLabelEn})`,
+          ? `📜 罢工解除！【${quest.titleZh}】${quest.speechZh}`
+          : `📜 Strike pacified! [${quest.titleEn}] ${quest.speechEn}`,
       );
       return;
     }
@@ -1594,16 +1597,16 @@ export function CompanionSanctuaryBar({
       celebrateSecretQuest(quest);
       setStatusNote(
         isZh
-          ? `${food.icon} 惊喜投喂 SSR【${foodName}】（${foodTag}）！${quest.speechZh}（${quest.rewardLabelZh}）`
-          : `${food.icon} SSR Bonus Feed [${foodName}] (${foodTag})! ${quest.speechEn} (${quest.rewardLabelEn})`,
+          ? `${food.icon} 抽中 SSR【${foodName}】！${quest.speechZh}`
+          : `${food.icon} SSR Bonus Feed [${foodName}]! ${quest.speechEn}`,
       );
       return;
     }
 
     setStatusNote(
       isZh
-        ? `${food.icon} 投喂【${foodName}】（${foodTag}）+${food.coins}🪙 +${food.affection}♥ · ${foodReaction}`
-        : `${food.icon} Fed [${foodName}] (${foodTag}) +${food.coins}🪙 +${food.affection}♥ · ${foodReaction}`,
+        ? `${food.icon} 投喂【${foodName}】（${foodTag}）+${food.coins}🪙 +${food.affection}♥`
+        : `${food.icon} Fed [${foodName}] (${foodTag}) +${food.coins}🪙 +${food.affection}♥`,
     );
     onSpeak?.(foodReaction);
   }
@@ -1617,8 +1620,8 @@ export function CompanionSanctuaryBar({
     setKaomojiBadge("(✿◡‿◡)💖");
     dispatchDinoInteract({ type: "pat" });
     const line = isZh
-      ? "🤚 呼噜呼噜~ 被主人摸头顺毛好治愈呀！好感度 +15♥，灵感星豆 +10🪙！"
-      : "🤚 Purr~ Head pats feel so cozy! Affection +15♥, Star Beans +10🪙!";
+      ? "🤚 呼噜呼噜~ 好感度 +15♥，灵感星豆 +10🪙！"
+      : "🤚 Purr~ Affection +15♥, Star Beans +10🪙!";
     setStatusNote(line);
     onSpeak?.(line);
   }
@@ -1632,10 +1635,10 @@ export function CompanionSanctuaryBar({
       setStatusNote(
         isZh
           ? nextSpin
-            ? "🔄 已开启 360° 暖暖高定旋转展台！"
-            : "⏹️ 已暂停 360° 旋转展台"
+            ? "🔄 已开启 360° 旋转展台"
+            : "⏹️ 已暂停 360° 旋转"
           : nextSpin
-            ? "🔄 360° Turntable showcase enabled!"
+            ? "🔄 360° Turntable enabled"
             : "⏹️ 360° Turntable paused",
       );
       return;
@@ -1654,8 +1657,8 @@ export function CompanionSanctuaryBar({
     setKaomojiBadge("✧(≖ ◡ ≖✿)📸");
     dispatchDinoInteract({ type: "pose" });
     const line = isZh
-      ? `📸 咔嚓！【${state.customName || sp.name}】摆出高定街拍 Pose · 当前时尚分 ${styleEval.totalScore} (${styleEval.grade})！`
-      : `📸 Snap! [${state.customName || sp.name}] struck a runway pose · Style Score ${styleEval.totalScore} (${styleEval.grade})!`;
+      ? `📸 【${state.customName || sp.name}】街拍 Pose · 时尚分 ${styleEval.totalScore} (${styleEval.grade})`
+      : `📸 [${state.customName || sp.name}] Runway Pose · Style ${styleEval.totalScore} (${styleEval.grade})`;
     setStatusNote(line);
     onSpeak?.(line);
   }
@@ -1673,8 +1676,8 @@ export function CompanionSanctuaryBar({
     }));
     dispatchDinoInteract({ type: "pose" });
     const line = isZh
-      ? `🧬 已切换小龙血统为【${targetSp.name}】（${targetSp.title} · ${targetSp.mbti}）！${targetSp.greetingLine}`
-      : `🧬 Switched dragon lineage to [${targetSp.name}] (${targetSp.mbti})!`;
+      ? `🧬 已切换为【${targetSp.name}】（${targetSp.mbti}）`
+      : `🧬 Switched to [${targetSp.name}] (${targetSp.mbti})`;
     setStatusNote(line);
     onSpeak?.(line);
   }
@@ -1712,8 +1715,8 @@ export function CompanionSanctuaryBar({
       celebrateSecretQuest(newlyUnlockedMudslide);
     }
     const line = isZh
-      ? "🧋 已穿戴 Tripo 3D 多视图重建【吨吨冰美式外挂喷射包 + 奶油云朵画家帽 + 金丝镜 + 零Bug仙女棒 + 樱吹雪星阵】高定套装！"
-      : "🧋 Equipped [Tripo 3D Boba Jet-Pack + Cloud Beret + Gold Glasses + Magic Wand + Sakura Halo] set!";
+      ? "🧋 已穿戴 Tripo 3D【冰美式喷射包 + 画家帽 + 金丝镜 + 仙女棒】套装！"
+      : "🧋 Equipped [Tripo 3D Boba Jet-Pack] set!";
     setStatusNote(line);
     onSpeak?.(line);
   }
@@ -1752,8 +1755,8 @@ export function CompanionSanctuaryBar({
       celebrateSecretQuest(newlyUnlockedMudslide);
     }
     const line = isZh
-      ? "👑 已一键试穿 UR 星神满配高定神装（SSS）【极光星神王冠 + 星轨单片镜 + 先锋熔金披风 + 悬浮魔导书 + 创世极光星环】！"
-      : "👑 Equipped UR Star-God Full Set (SSS) [Aurora Crown + Star Monocle + Pioneer Cape + Floating Grimoire + Aurora Halo]!";
+      ? "👑 已试穿 UR 星神满配套装（SSS）！"
+      : "👑 Equipped UR Star-God Full Set (SSS)!";
     setStatusNote(line);
     onSpeak?.(line);
   }
@@ -1767,24 +1770,24 @@ export function CompanionSanctuaryBar({
       if (uLv.level.index < item.minUserLevel) {
         setStatusNote(
           isZh
-            ? `🔒 需达到 Lv.${item.minUserLevel} 才可解锁【${item.name}】（下方可一键切换 Lv.0–Lv.7 等级预览或点「👑 一键试穿 UR 满配神装」）`
-            : `🔒 Requires Lv.${item.minUserLevel} to unlock [${item.name}] (use level switcher below to preview)`,
+            ? `🔒 需 Lv.${item.minUserLevel} 解锁【${item.name}】`
+            : `🔒 Requires Lv.${item.minUserLevel} to unlock [${item.name}]`,
         );
         return;
       }
       if (aff.level < item.minAffectionLevel) {
         setStatusNote(
           isZh
-            ? `🔒 需好感达到 ♥Lv.${item.minAffectionLevel} 才可解锁【${item.name}】`
-            : `🔒 Requires Affection ♥Lv.${item.minAffectionLevel} to unlock [${item.name}]`,
+            ? `🔒 需好感 ♥Lv.${item.minAffectionLevel} 解锁【${item.name}】`
+            : `🔒 Requires Affection ♥Lv.${item.minAffectionLevel}`,
         );
         return;
       }
       if (state.starBeans < item.priceBeans) {
         setStatusNote(
           isZh
-            ? `🪙 灵感星豆不足（需 ${item.priceBeans}🪙，可点下方「🎁 +500🪙 领测试星豆」或抽鞭子/投喂赚取）`
-            : `🪙 Not enough Star Beans (needs ${item.priceBeans}🪙)`,
+            ? `🪙 需 ${item.priceBeans}🪙 星豆`
+            : `🪙 Needs ${item.priceBeans}🪙 Star Beans`,
         );
         return;
       }
@@ -1818,8 +1821,8 @@ export function CompanionSanctuaryBar({
       celebrateSecretQuest(quest);
       setStatusNote(
         isZh
-          ? `🪩 触发反差混搭彩蛋【${quest.titleZh}】· ${quest.speechZh}`
-          : `🪩 Chaotic Mashup Unlocked [${quest.titleEn}] · ${quest.speechEn}`,
+          ? `🪩 触发混搭彩蛋【${quest.titleZh}】`
+          : `🪩 Chaotic Mashup Unlocked [${quest.titleEn}]`,
       );
       return;
     }
@@ -1827,11 +1830,11 @@ export function CompanionSanctuaryBar({
     setStatusNote(
       owned
         ? isZh
-          ? `✨ 已穿戴【${item.name}】· ${item.specialQuote}`
-          : `✨ Equipped [${item.name}] · ${item.specialQuote}`
+          ? `✨ 已穿戴【${item.name}】`
+          : `✨ Equipped [${item.name}]`
         : isZh
-          ? `🎉 解锁并换上【${item.name}】！穿搭评定提升！`
-          : `🎉 Unlocked & equipped [${item.name}]! Style score boosted!`,
+          ? `🎉 解锁并穿戴【${item.name}】`
+          : `🎉 Unlocked & equipped [${item.name}]`,
     );
     if (item.specialQuote) {
       onSpeak?.(item.specialQuote);
@@ -1859,8 +1862,8 @@ export function CompanionSanctuaryBar({
     celebrateSecretQuest(quest);
     setStatusNote(
       isZh
-        ? `🏖️ 【${quest.titleZh}】${quest.speechZh}（${quest.rewardLabelZh}）`
-        : `🏖️ [${quest.titleEn}] ${quest.speechEn} (${quest.rewardLabelEn})`,
+        ? `🏖️ 【${quest.titleZh}】${quest.speechZh}`
+        : `🏖️ [${quest.titleEn}] ${quest.speechEn}`,
     );
   }
 
@@ -1886,8 +1889,8 @@ export function CompanionSanctuaryBar({
     celebrateSecretQuest(quest);
     setStatusNote(
       isZh
-        ? `🐛 【${quest.titleZh}】${quest.speechZh}（${quest.rewardLabelZh}）`
-        : `🐛 [${quest.titleEn}] ${quest.speechEn} (${quest.rewardLabelEn})`,
+        ? `🐛 【${quest.titleZh}】${quest.speechZh}`
+        : `🐛 [${quest.titleEn}] ${quest.speechEn}`,
     );
   }
 
@@ -1895,8 +1898,8 @@ export function CompanionSanctuaryBar({
     const now = Date.now();
     if (!isBeijingNightOwlWindow(now)) {
       const hint = isZh
-        ? "🌙 【凌晨三点的造物主】仅在北京时间 01:30–04:30 点击右下角小恐龙叹号气泡（或连续戳 3 次叹号气泡）可触发哦！"
-        : "🌙 [3 AM Creator] triggers between 01:30–04:30 Beijing Time (or by poking the '!' bubble 3 times)!";
+        ? "🌙 【凌晨三点的造物主】仅在北京时间 01:30–04:30 触发"
+        : "🌙 [3 AM Creator] triggers between 01:30–04:30 Beijing Time";
       setStatusNote(hint);
       onSpeak?.(hint);
       return;
@@ -1909,13 +1912,12 @@ export function CompanionSanctuaryBar({
     celebrateSecretQuest(quest);
     setStatusNote(
       isZh
-        ? `🫖 夜猫子奇遇【${quest.titleZh}】· ${quest.speechZh}`
-        : `🫖 Night-Owl Encounter [${quest.titleEn}] · ${quest.speechEn}`,
+        ? `🫖 夜猫子奇遇【${quest.titleZh}】`
+        : `🫖 Night-Owl Encounter [${quest.titleEn}]`,
     );
   }
 
   const slotItems = DINO_WARDROBE_ITEMS.filter(item => item.slot === slot);
-  const totalVaultUsd = Object.values(state.vaultUnlockedUsd || {}).reduce((acc, v) => acc + v, 0);
   const totalSecretsCount = SECRET_QUEST_LIST.length;
 
   return (
@@ -1933,20 +1935,20 @@ export function CompanionSanctuaryBar({
           <span>
             🕶️{" "}
             {isZh
-              ? `《小恐龙劳动法》罢工中（${strikeRemainingSec}s）· 快点「随机盲盒投喂」哄好本龙领隐藏大奖！`
-              : `Dino Labor Law Strike (${strikeRemainingSec}s) · Feed a snack now to claim secret reward!`}
+              ? `罢工中（${strikeRemainingSec}s）· 投喂可解除并领彩蛋`
+              : `Strike (${strikeRemainingSec}s) · Feed to pacify`}
           </span>
           <button
             type="button"
             onClick={handleFeed}
             className="shrink-0 rounded-lg bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm hover:bg-emerald-500"
           >
-            {isZh ? "🧋 立即投喂哄好" : "🧋 Feed to Pacify"}
+            {isZh ? "🧋 投喂哄好" : "🧋 Feed"}
           </button>
         </div>
       )}
 
-      {/* Single Compact High-Value Utility Bar inside AI Chat Popover */}
+      {/* Single Compact High-Value Utility Bar inside Agent Chat Popover */}
       <div
         data-testid="pi-agent-quickbar"
         className="flex flex-wrap items-center justify-between gap-1.5"
@@ -1955,15 +1957,17 @@ export function CompanionSanctuaryBar({
           <button
             type="button"
             disabled={piBusy}
+            title={isZh ? "每日算力打卡 (+5 积分 + 1 抓娃娃币)" : "Daily check-in (+5 pts)"}
             data-testid="pi-agent-action-checkin"
             onClick={() => void runPiAction("checkin")}
             className="rounded-full border border-emerald-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-emerald-700 transition hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300"
           >
-            📅 {isZh ? "签到+5分" : "Check-in"}
+            📅 {isZh ? "签到" : "Check-in"}
           </button>
           <button
             type="button"
             disabled={piBusy}
+            title={isZh ? "一键创建项目与首版 README 草案" : "Create project & README draft"}
             data-testid="pi-agent-action-scaffold"
             onClick={() => void runPiAction("scaffold", piPrompt || "农客松智慧农业多模态监测 Agent")}
             className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
@@ -1973,6 +1977,7 @@ export function CompanionSanctuaryBar({
           <button
             type="button"
             disabled={piBusy}
+            title={isZh ? "检索市场高性价比科研与创作工具" : "Find market tools"}
             data-testid="pi-agent-action-market"
             onClick={() => void runPiAction("market", "")}
             className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
@@ -1982,15 +1987,17 @@ export function CompanionSanctuaryBar({
           <button
             type="button"
             disabled={piBusy}
+            title={isZh ? "5 积分秒兑周报模板" : "5pt instant redeem"}
             data-testid="pi-agent-action-redeem"
             onClick={() => void runPiAction("redeem", piPrompt)}
             className="rounded-full border border-rose-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-rose-700 transition hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300"
           >
-            🎁 {isZh ? "5分兑周报" : "5pt Redeem"}
+            🎁 {isZh ? "兑周报" : "Redeem"}
           </button>
           <button
             type="button"
             disabled={piBusy}
+            title={isZh ? "代下爪抓娃娃抽积分" : "Play 3D Claw Machine"}
             data-testid="pi-agent-action-claw"
             onClick={() => void runPiAction("claw")}
             className="rounded-full border border-amber-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-amber-700 transition hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300"
@@ -2010,7 +2017,7 @@ export function CompanionSanctuaryBar({
                 : "border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
             }`}
           >
-            🤖 {isZh ? "指令舱" : "Agent"}
+            ⚡ {isZh ? "快捷指令" : "Command"}
           </button>
           <button
             type="button"
@@ -2037,14 +2044,14 @@ export function CompanionSanctuaryBar({
           <div className="flex flex-wrap items-center justify-between gap-1 pb-1.5">
             <div className="flex items-center gap-1.5">
               <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black text-emerald-300">
-                🦖 {isZh ? "3D 闪耀暖暖换装 & 互动舞台" : "3D Live Wardrobe & Stage"}
+                🦖 {isZh ? "3D 换装舞台" : "3D Stage"}
               </span>
               <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300">
                 {kaomojiBadge}
               </span>
             </div>
             <span className="text-[10px] font-bold text-purple-300">
-              ✨ {isZh ? `时尚战力 ${styleEval.totalScore}` : `Style ${styleEval.totalScore}`} · {styleEval.grade}
+              ✨ {styleEval.totalScore} · {styleEval.grade}
             </span>
           </div>
 
@@ -2064,7 +2071,7 @@ export function CompanionSanctuaryBar({
               )}
               {isOverclocked && !isOnStrike && (
                 <span className="pointer-events-none absolute top-1.5 left-1.5 rounded-full bg-rose-600/90 px-2 py-0.5 text-[9px] font-black text-white shadow">
-                  🔥 2.4x 超频干活中
+                  🔥 2.4x 超频
                 </span>
               )}
             </div>
@@ -2074,10 +2081,10 @@ export function CompanionSanctuaryBar({
               <div className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5">
                 <div className="flex items-center justify-between text-[10px]">
                   <span className="font-bold text-emerald-300">
-                    ⚡ {isZh ? "干活劲头 KPI" : "Work Drive KPI"}
+                    ⚡ {isZh ? "干活劲头" : "Work Drive"}
                   </span>
                   <span className="font-black text-amber-300">
-                    {workDrivePct}% {isOverclocked ? "· 🔥240%超频" : ""}
+                    {workDrivePct}%
                   </span>
                 </div>
                 <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -2095,7 +2102,7 @@ export function CompanionSanctuaryBar({
                   onClick={() => handleTurntable(-Math.PI / 4, false)}
                   className="rounded-lg border border-white/15 bg-white/10 px-1.5 py-1 text-[10px] font-bold text-white transition hover:bg-white/20"
                 >
-                  ◀ {isZh ? "左转45°" : "Left 45°"}
+                  ◀ 45°
                 </button>
                 <button
                   type="button"
@@ -2106,27 +2113,26 @@ export function CompanionSanctuaryBar({
                       : "border-white/15 bg-white/10 text-white hover:bg-white/20"
                   }`}
                 >
-                  🔄 {isZh ? "360°旋转" : "360° Spin"}
+                  🔄 360°
                 </button>
                 <button
                   type="button"
                   onClick={() => handleTurntable(Math.PI / 4, false)}
                   className="rounded-lg border border-white/15 bg-white/10 px-1.5 py-1 text-[10px] font-bold text-white transition hover:bg-white/20"
                 >
-                  ▶ {isZh ? "右转45°" : "Right 45°"}
+                  ▶ 45°
                 </button>
                 <button
                   type="button"
                   onClick={handlePose}
                   className="rounded-lg border border-purple-400/40 bg-purple-500/25 px-1.5 py-1 text-[10px] font-bold text-purple-200 transition hover:bg-purple-500/35"
                 >
-                  📸 {isZh ? "街拍Pose" : "Pose"}
+                  📸 Pose
                 </button>
               </div>
 
               {/* Current Equipped Summary */}
               <div className="flex flex-wrap items-center gap-1 text-[10px] text-slate-300">
-                <span className="font-semibold text-slate-400">{isZh ? "当前穿戴：" : "Equipped:"}</span>
                 {styleEval.equippedItems.length > 0 ? (
                   styleEval.equippedItems.map(eq => (
                     <span
@@ -2137,7 +2143,7 @@ export function CompanionSanctuaryBar({
                     </span>
                   ))
                 ) : (
-                  <span className="text-[10px] text-slate-400">{isZh ? "初心裸龙装束" : "Default Starter"}</span>
+                  <span className="text-[10px] text-slate-400">{isZh ? "默认装束" : "Default Look"}</span>
                 )}
               </div>
             </div>
@@ -2148,19 +2154,8 @@ export function CompanionSanctuaryBar({
       {tab === "pi" && (
         <div
           data-testid="pi-agent-pod"
-          className="mt-2 space-y-2 rounded-xl border border-emerald-500/40 bg-background/95 p-2.5 shadow-sm"
+          className="mt-2 space-y-2 rounded-xl border border-emerald-500/40 bg-background/95 p-2 shadow-sm"
         >
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300">
-              ⚡ {isZh ? "小恐龙 Pi Agent 快捷指令" : "Dino Pi Agent Quick Command"}
-            </span>
-            {piBusy && (
-              <span className="animate-pulse rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-                {isZh ? "Pi 工具执行中…" : "Executing…"}
-              </span>
-            )}
-          </div>
-
           <div className="flex items-center gap-1.5">
             <input
               type="search"
@@ -2174,10 +2169,10 @@ export function CompanionSanctuaryBar({
               }}
               placeholder={
                 isZh
-                  ? "输入指令：如「帮我新建智慧温室项目」「搜论文润色工具」「帮我抓娃娃」…"
-                  : "Command Pi Agent: e.g. 'Create smart greenhouse project', 'Search paper tools'…"
+                  ? "输入 Agent 指令：如「新建智慧温室项目」「搜论文润色工具」…"
+                  : "Command Agent: e.g. 'Create smart greenhouse project', 'Search paper tools'…"
               }
-              aria-label={isZh ? "Pi Agent 指令输入" : "Pi Agent command input"}
+              aria-label={isZh ? "Agent 指令输入" : "Agent command input"}
               data-testid="pi-agent-search-input"
               className="flex-1 rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none"
             />
@@ -2188,7 +2183,7 @@ export function CompanionSanctuaryBar({
               onClick={() => void runPiAction("auto", piPrompt)}
               className="shrink-0 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs transition hover:bg-emerald-500 disabled:opacity-50"
             >
-              {isZh ? "⚡ 执行" : "⚡ Run"}
+              {piBusy ? (isZh ? "执行中…" : "Running…") : isZh ? "⚡ 执行" : "⚡ Run"}
             </button>
           </div>
 
@@ -2200,11 +2195,11 @@ export function CompanionSanctuaryBar({
               {piResult.toolUsed && (
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/15 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-200">
-                    ✓ Pi Tool: {piResult.toolUsed}
+                    ✓ {isZh ? "Agent 已执行" : "Agent Executed"}
                   </span>
                   {typeof piResult.balancePoints === "number" && (
                     <span className="text-[10px] font-bold text-amber-600 dark:text-amber-300">
-                      {isZh ? `当前余额：${piResult.balancePoints.toFixed(1)} 积分` : `Balance: ${piResult.balancePoints.toFixed(1)} pts`}
+                      {isZh ? `余额：${piResult.balancePoints.toFixed(1)} 积分` : `Balance: ${piResult.balancePoints.toFixed(1)} pts`}
                     </span>
                   )}
                 </div>
@@ -2218,11 +2213,12 @@ export function CompanionSanctuaryBar({
                     <a
                       key={link.href}
                       href={link.href}
-                      className="flex items-center justify-between rounded-lg border border-border/80 bg-background px-2.5 py-1.5 text-[11px] font-semibold text-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10"
+                      title={link.detail}
+                      className="group flex items-center justify-between rounded-lg border border-border/80 bg-background px-2.5 py-1.5 text-[11px] font-semibold text-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10"
                     >
                       <div className="truncate">
                         <span className="font-bold text-emerald-700 dark:text-emerald-300">{link.title}</span>
-                        <span className="ml-1.5 text-[10px] text-muted-foreground">{link.detail}</span>
+                        <span className="ml-1.5 hidden text-[10px] text-muted-foreground group-hover:inline">{link.detail}</span>
                       </div>
                       <span className="ml-2 shrink-0 text-[10px] font-bold text-emerald-600">→</span>
                     </a>

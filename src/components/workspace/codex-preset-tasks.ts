@@ -22,17 +22,17 @@ export interface CodexTask {
 export const INITIAL_CODEX_TASKS: CodexTask[] = [
   {
     id: "task-3d-agri-dashboard",
-    title: "🌾 农田温湿度与灌溉小看板 (HTML 网页范例)",
-    tag: "网页看板范例",
+    title: "🌾 农田温湿度监测看板",
+    tag: "网页范例",
     model: "deepseek-v4.1-flash",
     status: "completed",
     prompt: "帮我做一个单文件 HTML 农田温湿度监测小看板，带实时动态曲线和点击灌溉按钮。",
     trace: [
-      "📖 引导说明 1：这是单文件 HTML 网页范例，右侧「实时预览」可以直接点击按钮互动",
-      "📖 引导说明 2：切换到右上角「源码编辑」，可以直接修改文字、颜色或数据并立即生效",
-      "📖 引导说明 3：想做自己的页面？点左侧「+ 新建空白」，在下方输入你的需求即可",
+      "右侧「实时预览」可直接点击按钮互动",
+      "切换到「源码」可直接修改文字、颜色或数据",
+      "点击左侧「+ 新建」可创建你自己的项目草稿",
     ],
-    summary: "【新手引导范例 1 · 网页看板】展示如何用单个 HTML 文件做出带实时曲线和按钮交互的页面。你可以直接在右侧点「模拟开启滴灌」体验交互，或切到「源码编辑」改成你的课程作业/比赛看板。",
+    summary: "单文件 HTML 实时曲线与灌溉交互范例。直接在右侧点击按钮体验交互，或切到「源码」修改。",
     artifactType: "html",
     artifactFile: "agri-digital-twin-dashboard.html",
     artifactCode: `<!DOCTYPE html>
@@ -59,7 +59,7 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
   <div class="header">
     <div>
       <div style="font-size:15px;font-weight:800;">🌾 CAU × ANS 智慧农田数字孪生监测台</div>
-      <div style="font-size:11px;color:#94a3b8;margin-top:2px;">实验地块：涿州教学实验场 A-03 区 · Pi-Codex 实时渲染</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:2px;">实验地块：涿州教学实验场 A-03 区 · 实时渲染</div>
     </div>
     <span class="badge" id="statusBadge">🟢 传感器在线 · 60fps</span>
   </div>
@@ -70,7 +70,7 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
   </div>
   <canvas id="waveCanvas" width="600" height="160"></canvas>
   <div class="actions">
-    <div id="aiAdvice" style="font-size:12px;color:#a7f3d0;">🤖 Pi-Codex 诊断：当前根系水分充足，建议 18:00 后开启微喷水肥一体化 15 分钟。</div>
+    <div id="aiAdvice" style="font-size:12px;color:#a7f3d0;">🤖 Agent 诊断：当前根系水分充足，建议 18:00 后开启微喷水肥一体化 15 分钟。</div>
     <button onclick="triggerIrrigate()">⚡ 一键下发 AI 灌溉处方</button>
   </div>
   <script>
@@ -110,17 +110,16 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
   },
   {
     id: "task-toonflow-director",
-    title: "🎬 AI 漫剧 4 镜头分镜脚本生成台 (漫剧范例)",
-    tag: "漫剧分镜范例",
+    title: "🎬 漫剧 4 镜头分镜台",
+    tag: "漫剧范例",
     model: "gpt-6-astra",
     status: "completed",
     prompt: "帮我做一个 4 镜头漫剧分镜卡片页面，点不同镜头能切换对应的画面描述词并一键复制。",
     trace: [
-      "📖 引导说明 1：点击右侧任意一张分镜卡片，底部会自动切换对应的画面描述词",
-      "📖 引导说明 2：点击「一键复制分镜描述词」，就能直接粘贴到视频/绘图工具里使用",
-      "📖 引导说明 3：你可以基于这个范例修改台词和镜头，做成自己的短剧分镜脚本",
+      "点击右侧任意分镜卡片，底部自动切换画面描述词",
+      "点击「一键复制分镜 Prompt」可直接粘贴使用",
     ],
-    summary: "【新手引导范例 2 · 漫剧分镜】展示如何把剧本拆成 4 个镜头卡片，并一键复制画面描述词。直接在右侧点击不同镜头卡片即可体验切换效果。",
+    summary: "4 镜头分镜卡片范例。在右侧点击任意分镜卡即可切换并一键复制画面 Prompt。",
     artifactType: "html",
     artifactFile: "toonflow-storyboard-director.html",
     artifactCode: `<!DOCTYPE html>
@@ -163,16 +162,16 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
   },
   {
     id: "task-cyber-snake",
-    title: "🎮 网页版贪吃蛇小游戏 (Canvas 互动范例)",
+    title: "🎮 Canvas 贪吃蛇小游戏",
     tag: "小游戏范例",
     model: "deepseek-v4.1-flash",
     status: "completed",
     prompt: "用纯 HTML5 Canvas 写一个可以直接玩的网页贪吃蛇小游戏，支持键盘方向键和屏幕按钮控制。",
     trace: [
-      "📖 引导说明 1：右侧预览窗口可以直接用键盘方向键或屏幕上的「上下左右」按钮开始玩",
-      "📖 引导说明 2：切换到「源码编辑」可以修改移动速度、网格大小或配色",
+      "右侧预览窗口可直接用键盘方向键或屏幕按钮游玩",
+      "切换到「源码」可修改速度、网格大小或配色",
     ],
-    summary: "【新手引导范例 3 · Canvas 小游戏】展示如何用单个 HTML 文件写出可直接游玩的互动小游戏，右侧预览窗口即可直接操作。",
+    summary: "单文件 HTML5 Canvas 互动小游戏范例，直接在右侧用方向键或屏幕按钮即可游玩。",
     artifactType: "html",
     artifactFile: "cyber-neon-snake.html",
     artifactCode: `<!DOCTYPE html>
@@ -242,16 +241,16 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
   },
   {
     id: "task-agrihackathon-kit",
-    title: "🐍 Python FastAPI 后端接口模板 (代码范例)",
-    tag: "Python 后端范例",
+    title: "🐍 FastAPI 植保诊断接口",
+    tag: "后端范例",
     model: "deepseek-v4.1-flash",
     status: "completed",
     prompt: "帮我生成一个农客松比赛常用的 Python FastAPI 后端诊断接口代码模板。",
     trace: [
-      "📖 引导说明 1：这是一个标准的 Python FastAPI 接口模板，适合作为比赛后端起点",
-      "📖 引导说明 2：点击右上角「复制代码」或「下载文件」即可保存到本地运行",
+      "标准 Python FastAPI 接口模板，适合作为农客松后端起点",
+      "点击右上角「复制」或「下载」即可保存到本地运行",
     ],
-    summary: "【新手引导范例 4 · Python 后端接口】展示如何生成结构清晰的 FastAPI 接口代码模板，可直接复制或下载到本地运行。",
+    summary: "FastAPI 植保诊断接口代码范例，可直接复制或下载到本地运行。",
     artifactType: "python",
     artifactFile: "agrihackathon_agent_server.py",
     artifactCode: `# CAU AgriHackathon 2026 · 智慧植保多模态 Agent 后端骨架 (FastAPI)
@@ -259,7 +258,7 @@ from fastapi import FastAPI, pydantic
 from pydantic import BaseModel
 import datetime
 
-app = FastAPI(title="AgriGuard Pi-Codex Agent API", version="1.0.0")
+app = FastAPI(title="AgriGuard Agent API", version="1.0.0")
 
 class CropDiagnosisRequest(BaseModel):
     crop_type: str = "冬小麦 (Winter Wheat)"
@@ -284,3 +283,4 @@ async def diagnose_crop(req: CropDiagnosisRequest):
 `,
   },
 ];
+

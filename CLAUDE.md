@@ -69,3 +69,14 @@ src/
 2. Add translations for any user-facing text
 3. Use existing UI components from `src/components/ui/`
 4. Never commit secrets (use `.env`)
+
+## Mandatory UI/UX & Copy Baseline (`ans-ui-ux-baseline` = `oil-ui` + `oil-frontend` + `ui-ux-guide` + `oil-tone`)
+
+1. **Zero Fake State Masquerading as Real Activity**: Never render fabricated live winner tickers, fake user tasks/orders, or fake stats pretending to be real activity. Any preset sample must be framed as `📖 新手引导 / 参考范例`, while user state is 100% real.
+2. **Help Text Layering (L0–L3, Hover to Reveal)**:
+   - **L0**: Self-explanatory buttons/layouts must NOT have explanatory small print (`text-[10px]`/`text-[11px]` captions, `（点击展开）`, `（拖拽旋转）`).
+   - **L2 (Hover-to-Reveal)**: Secondary parameters, explanations, and tips are hidden by default and only revealed on hover (`group-hover` / `title` / `?` tooltip).
+   - **L3**: Long rules, probability tables, and samples are collapsed into `<details>` or on-demand drawers.
+3. **Image-First & Zero Redundancy**: When a visual cover or 3D stage already communicates the content, do not repeat it in multi-line text below, do not repeat the same rule (`10 积分 = ¥1 元`) multiple times on one page, and keep only one primary CTA per card.
+4. **Zero AI-Flavor & Clean Naming**: Ban pretentious jargon (`赋能`, `矩阵`, `闭环`, `底座`, `四段式`, `主理人`, `欧皇`, `天选锦鲤`, `暴击`). Always call the in-site assistant **`Agent`** (never expose internal codenames `Pi Agent`, `Pi-Agent`, `Pi-Codex`, `Pi Tool` in user-facing UI) and call the studio workspace **`工作模式`**.
+
