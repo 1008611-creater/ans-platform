@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
+import { isMarketOfferPurchasable } from "@/domain/marketplace/presentation";
 import { listMarketListings } from "@/server/marketplace/listings";
 import { MarketFrame } from "@/components/marketplace/frame";
 import { MarketOfferCard } from "@/components/marketplace/offer-card";
@@ -15,7 +16,13 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   const w = await getTranslations("marketWorkflow");
   const category = PROJECT_CATEGORIES.find((item) => item.id === query.category); const subcategory = category?.children.find((item) => item === query.subcategory);
   const q = typeof query.q === "string" ? query.q.slice(0, 200) : ""; const kind = query.fulfillment === "service" || query.fulfillment === "resource" || query.fulfillment === "workflow" ? query.fulfillment : undefined;
-  const matches = offers.filter(({ listing }) => (!category || listing.category === category.id) && (!subcategory || listing.subcategory === subcategory) && (!kind || (kind === "workflow" ? Boolean(listing.execution) : !listing.execution && listing.fulfillment === kind)) && (!q || [listing.title, listing.summary, listing.githubUrl ?? "", ...listing.deliverables].join(" ").toLocaleLowerCase().includes(q.toLocaleLowerCase())));
+  const matches = offers
+    .filter(({ listing }) => (!category || listing.category === category.id) && (!subcategory || listing.subcategory === subcategory) && (!kind || (kind === "workflow" ? Boolean(listing.execution) : !listing.execution && listing.fulfillment === kind)) && (!q || [listing.title, listing.summary, listing.githubUrl ?? "", ...listing.deliverables].join(" ").toLocaleLowerCase().includes(q.toLocaleLowerCase())))
+    .sort((a, b) => {
+      const aExec = a.listing.execution ? 2 : isMarketOfferPurchasable(a) ? 1 : 0;
+      const bExec = b.listing.execution ? 2 : isMarketOfferPurchasable(b) ? 1 : 0;
+      return bExec - aExec;
+    });
   const hasFilters = Boolean(category || kind || q);
   const href = (updates: Record<string, string | undefined>) => { const values = { category: category?.id, subcategory, q, fulfillment: kind, ...updates }; const next = new URLSearchParams(); for (const [key,value] of Object.entries(values)) if (value) next.set(key,value); return "/market" + (next.size ? "?" + next : ""); };
   return <MarketFrame title={t("title")} description={t("body")}

@@ -933,6 +933,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       {/* 1:1 Right-Aligned 3D Nikki Wardrobe Drawer (#ans-sanctuary-wardrobe-modal) with Left-Center 3D Podium */}
       <div
         id="ans-sanctuary-wardrobe-modal"
+        hidden={sanctuaryModal !== "wardrobe"}
         className={`ans-sanctuary-backdrop ${sanctuaryModal === "wardrobe" ? "is-open" : ""}`}
         onClick={e => {
           if (e.target === e.currentTarget) {
@@ -1262,6 +1263,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       {/* 1:1 Right-Aligned 3D Dragon Adoption Pod Drawer (#ans-sanctuary-adopt-modal) */}
       <div
         id="ans-sanctuary-adopt-modal"
+        hidden={sanctuaryModal !== "adopt"}
         className={`ans-sanctuary-backdrop ${sanctuaryModal === "adopt" ? "is-open" : ""}`}
         onClick={e => {
           if (e.target === e.currentTarget) {

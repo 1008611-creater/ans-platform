@@ -598,14 +598,20 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   inset: 0;
   z-index: 98;
   background: rgba(6, 11, 16, 0.18);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: flex-end;
   padding: 18px;
+  pointer-events: none;
+}
+.ans-sanctuary-backdrop.is-open {
+  display: flex;
   pointer-events: auto;
 }
-.ans-sanctuary-backdrop[hidden] {
+.ans-sanctuary-backdrop[hidden],
+.ans-sanctuary-backdrop:not(.is-open) {
   display: none !important;
+  pointer-events: none !important;
 }
 .ans-sanctuary-dialog {
   pointer-events: auto;

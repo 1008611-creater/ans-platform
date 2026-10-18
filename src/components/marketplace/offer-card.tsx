@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { marketProductPath } from "@/domain/marketplace/product-route";
+import { isMarketOfferPurchasable } from "@/domain/marketplace/presentation";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { ArrowUpRight, Check } from "lucide-react";
@@ -18,8 +19,13 @@ const FALLBACK_COVERS: Record<string, string> = {
 
 export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }: { offer: MarketOfferView; owner?: boolean; headingLevel?: 2 | 3 }) {
   const Heading = headingLevel === 3 ? "h3" : "h2";
-  const [t, tp, p] = await Promise.all([getTranslations("product.market"), getTranslations("product.marketProject"), getTranslations("product")]);
+  const [t, tp, p, w] = await Promise.all([getTranslations("product.market"), getTranslations("product.marketProject"), getTranslations("product"), getTranslations("marketWorkflow")]);
   const listing = offer.listing;
+  const tiers = listing.pricingTiers ?? [];
+  const minimum = tiers.length ? Math.min(...tiers.map(tier => tier.priceMinor)) : listing.priceMinor;
+  const points = Math.round(minimum / 100);
+  const yuan = (points / 10).toFixed(points % 10 === 0 ? 0 : 1);
+  const purchasable = isMarketOfferPurchasable(offer);
   const status = offer.submittedAt && !offer.reviewedAt ? "PENDING" : offer.status;
   const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/cauai-one.webp";
   return <Link href={owner ? "/market/creator/" + offer.id : marketProductPath(offer)} className="ans-project-card group flex min-w-0 flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
@@ -27,7 +33,13 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
       <Image unoptimized src={coverSrc} width={960} height={540} alt={tp("projectCover", { title: listing.title })} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"/>
       <div className="pointer-events-none absolute inset-x-3 top-3 flex items-center justify-between gap-2">
         <span className="rounded-full bg-slate-950/75 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md">{p("categories." + listing.category)}</span>
-        <span className="rounded-full bg-emerald-500/90 px-2.5 py-1 text-[11px] font-bold text-slate-950 shadow-xs">{listing.execution ? "🚀 在线即跑" : "🎁 免费直达"}</span>
+        {listing.execution ? (
+          <span className="rounded-full bg-emerald-500/95 px-2.5 py-1 text-[11px] font-bold text-slate-950 shadow-xs">🚀 在线工作台即跑</span>
+        ) : purchasable ? (
+          <span className="rounded-full bg-emerald-500/95 px-2.5 py-1 text-[11px] font-bold text-slate-950 shadow-xs">{points === 0 ? "🌐 开源展示" : "⚡ 支付即秒发"}</span>
+        ) : (
+          <span className="rounded-full bg-slate-800/90 px-2.5 py-1 text-[11px] font-semibold text-slate-200 shadow-xs">🔒 暂未开放购买</span>
+        )}
       </div>
     </div>
     <div className="flex flex-1 flex-col p-5">
@@ -46,10 +58,33 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
       </div>
       <div className="mt-4 flex items-end justify-between gap-3 border-t pt-4">
         <div>
-          <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">🎁 限时免费开放</p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">{offer.official ? p("official") : offer.seller.nickname || offer.seller.username} · {listing.execution ? "在线交互生成" : "真实模板与源码直达"}</p>
+          {listing.execution ? (
+            <>
+              <p className="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">免费排版 · AI 精修按次计费</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">单次 AI 双语生成 2~99 积分 · 支持导出独立站 HTML</p>
+            </>
+          ) : purchasable ? (
+            points === 0 ? (
+              <>
+                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">{p("realProject.freeShare")}</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">官方赛题样板 · 免费查看完整架构</p>
+              </>
+            ) : (
+              <>
+                <p className="text-xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{t("pointsUnit", { amount: points })} <span className="text-xs font-normal text-muted-foreground">（≈ ¥{yuan} 市场价）</span></p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">✅ 已验真完整交付包 · 支付后自动秒发源码与脚本</p>
+              </>
+            )
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-muted-foreground">🔒 交付包内测中 · 暂未开放购买</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">市场参考价 {points} 积分（≈ ¥{yuan}）· 仅开放 Sample 预览</p>
+            </>
+          )}
         </div>
-        <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{owner ? t("listingStatus." + status) : listing.execution ? "立即体验 →" : "免费获取 →"}</span>
+        <span className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold ${purchasable ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+          {owner ? t("listingStatus." + status) : listing.execution ? w("runnable") : purchasable ? (points === 0 ? "查看样板 →" : "立即购买 →") : "查看大纲 →"}
+        </span>
       </div>
     </div>
   </Link>;

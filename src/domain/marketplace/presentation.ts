@@ -1,5 +1,29 @@
 import type { MarketOrderAction, MarketOrderStatus } from "@/contracts/marketplace";
 import { nextOrderStatus } from "./order";
+
+export const VERIFIED_DELIVERABLE_SLUGS = new Set([
+  "lab-weekly-git-report-automation",
+  "aigc-agri-short-drama-storyboard",
+  "agri-anova-stats-plot-pack",
+  "cau-sci-paper-polisher-kit",
+  "nextjs-agri-agent-dashboard-starter",
+  "open-pi-agent-rag-toolchain",
+]);
+
+export function isMarketOfferPurchasable(offer: {
+  slug?: string;
+  listing: {
+    fulfillment?: string;
+    priceMinor?: number;
+    execution?: unknown;
+  };
+}): boolean {
+  if (offer.listing.execution) return true;
+  if (offer.listing.fulfillment === "service") return false;
+  if ((offer.listing.priceMinor ?? 0) === 0) return true;
+  return Boolean(offer.slug && VERIFIED_DELIVERABLE_SLUGS.has(offer.slug));
+}
+
 export function marketPrice(minor: number) { return "¥" + Math.floor(minor / 100) + "." + String(minor % 100).padStart(2, "0"); }
 export function parseMarketPrice(value: string) {
   if (!/^(?:0|[1-9][0-9]{0,6})(?:\.[0-9]{1,2})?$/.test(value)) return null;

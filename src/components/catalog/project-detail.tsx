@@ -70,7 +70,7 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
         <ProductConnectionsSection connections={otherActions} compact />
         {primaryConnection && (guide?.experienceUrl || project.sourceUrl) && <Button asChild variant="outline" className="mt-2 w-full"><a href={guide?.experienceUrl ?? project.sourceUrl} target="_blank" rel="noopener noreferrer">{guide?.experienceUrl ? d("tryOnline") : isGithub ? d("viewRepository") : d("openProject")}<ArrowUpRight size={16} aria-hidden="true" /></a></Button>}
         {guide?.experienceUrl && project.sourceUrl && <a href={project.sourceUrl} target="_blank" rel="noopener noreferrer" className="ans-text-link"><Github size={15} aria-hidden="true" />{d("viewRepository")}</a>}
-        <div className={styles.startNote}><Check size={15} aria-hidden="true" /><span>{isEn ? "Free Open Access · Instant online preview & template delivery" : "🎁 限时免费开放 · 零积分门槛，支持直接在线体验与复制模板"}</span></div>
+        <div className={styles.startNote}><Check size={15} aria-hidden="true" /><span>{isEn ? "Free Sample preview & guide · AI workflow billed transparently by compute" : "✅ 免费查看完整 Sample 样本与实操指南 · 在线 AI 工作台按真实算力透明计费"}</span></div>
         {project.creator && <p className={styles.creator}>{d("by", { name: project.creator })}</p>}
       </aside>
     </div>

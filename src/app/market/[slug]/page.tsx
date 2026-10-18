@@ -5,16 +5,20 @@ import { cache, Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowUpRight, ChevronRight, Star } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Lock, Star } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { MarketWorkflowRun } from "@/components/marketplace/workflow-run";
 import { marketWorkflowDetails } from "@/server/marketplace/workflows";
+import { CreatePointsOrder } from "@/components/marketplace/create-points-order";
+import { CreateCashOrder } from "@/components/marketplace/cash-payment";
 import { ProjectUsageEntry } from "@/components/marketplace/project-usage-entry";
 import { MarketStar } from "@/components/marketplace/market-star";
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketDetailPreview } from "@/components/marketplace/market-detail-preview";
 import { readMarketPage } from "@/server/marketplace/product-read";
+import { marketCashOffer, marketCheckoutAvailability } from "@/server/marketplace/orders";
+import { isMarketOfferPurchasable, getMarketSamplePreview } from "@/domain/marketplace/presentation";
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { Button } from "@/components/ui/button";
 import styles from "@/components/marketplace/market-detail.module.css";
@@ -62,12 +66,20 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
     return <ResumeWebsiteMarketProduct offer={offer} session={session} runnable={runnable} />;
   }
   const listing = offer.listing;
+  const tiers = listing.pricingTiers ?? [];
+  const minimum = tiers.length ? Math.min(...tiers.map(tier => tier.priceMinor)) : listing.priceMinor;
+  const points = Math.round(minimum / 100);
+  const yuan = (points / 10).toFixed(points % 10 === 0 ? 0 : 1);
+  const isFree = !runnable && minimum === 0;
+  const purchasable = isMarketOfferPurchasable(offer);
+  const sample = getMarketSamplePreview(listing);
+  const availability = marketCheckoutAvailability();
+  const cashOffer = purchasable ? marketCashOffer(offer.id, offer.version, offer.seller.id) : null;
   const isOwner = session?.user?.id === offer.seller.id;
-  const freeUrl = listing.usageUrl ?? listing.previewUrl ?? listing.sourceUrl ?? listing.githubUrl ?? "/vibe-hub/vibehub-skill";
-  const isExternalFreeUrl = /^https?:\/\//i.test(freeUrl);
+  const freeUrl = listing.usageUrl ?? listing.previewUrl ?? listing.sourceUrl ?? listing.githubUrl ?? "/competitions/agrihackathon";
   const loginHref = "/login?callbackUrl=" + encodeURIComponent("/market/" + slug);
   const sellerName = offer.seller.nickname || offer.seller.username;
-  const purchaseAnchor = runnable ? "market-run" : "market-deliverables";
+  const purchaseAnchor = runnable ? "market-run" : purchasable ? "market-purchase" : "market-deliverables";
 
   return <div className="ans-product-shell"><div className="ans-product-container ans-page-content ans-market-page">
     <nav aria-label={t("navigation")} className="ans-market-nav">
@@ -85,48 +97,112 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
       <div className={styles.content}>
         <MarketDetailPreview listing={listing} />
         <section id="market-deliverables" className={styles.section}>
-          <h2>📦 免费开放交付清单</h2>
+          <h2>📦 {purchasable ? "完整交付物清单与 Sample 预览" : "方案大纲与 Sample 预览（内测封测中）"}</h2>
           <ul className={styles.deliverables}>{listing.deliverables.map((item, index) => <li key={index}><span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><span>{item}</span></li>)}</ul>
-        </section>
-        <section id="market-details" className={styles.section}>
-          <h2>方案说明与使用方式</h2>
-          <p className={`${styles.body} mt-4 whitespace-pre-wrap`}>{listing.description}</p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            {isExternalFreeUrl ? (
-              <Button asChild><a href={freeUrl} target="_blank" rel="noopener noreferrer">⚡ 立即打开在线版本 / 源码<ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a></Button>
-            ) : (
-              <Button asChild><Link href={freeUrl}>⚡ 立即免费使用该方案<ChevronRight aria-hidden="true" className="h-4 w-4" /></Link></Button>
-            )}
-            {listing.githubUrl && listing.githubUrl !== freeUrl && (
-              <Button asChild variant="outline"><a href={listing.githubUrl} target="_blank" rel="noopener noreferrer">GitHub 开源仓库<ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a></Button>
-            )}
+          <div className="mt-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-emerald-700 dark:text-emerald-300">📦 付费前免费验真 · {sample.badge}</span>
+              <span className="font-mono text-muted-foreground">{sample.file}</span>
+            </div>
+            <pre className="mt-2.5 overflow-x-auto rounded-lg bg-slate-950 p-3 font-mono text-xs leading-5 text-emerald-300">{sample.snippet}</pre>
           </div>
         </section>
-        {runnable && <section id="market-run" className={styles.section}>
-          <h2>{td("runHeading")}</h2>
+        <section id="market-details" className={styles.section}>
+          <h2>{td("detailsTitle")}</h2>
+          <p className={`${styles.body} mt-4 whitespace-pre-wrap`}>{listing.description}</p>
+          {listing.githubUrl && (
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Button asChild variant="outline"><a href={listing.githubUrl} target="_blank" rel="noopener noreferrer">GitHub 开源仓库<ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a></Button>
+            </div>
+          )}
+        </section>
+        {tiers.length > 0 && purchasable && <section id="market-tiers" className={styles.section}>
+          <h2>{td("tiersTitle")}</h2><p className="mt-3 text-sm leading-7 text-muted-foreground">{td("tiersNote")}</p>
+          <div className="mt-3">{tiers.map(tier => <article key={tier.id} className={styles.tier}>
+            <div className="flex flex-wrap items-baseline justify-between gap-3"><h3 className="min-w-0 break-words text-base font-semibold">{tier.title}</h3><p className="shrink-0 text-base font-semibold tabular-nums">{t("pointsUnit", { amount: tier.priceMinor / 100 })}</p></div>
+            <p className={`${styles.body} mt-3 text-muted-foreground`}>{tier.description}</p>
+            <ul className="mt-4 space-y-2">{tier.deliverables.map((item, index) => <li key={index} className="flex items-start gap-2 text-sm leading-7"><Check aria-hidden="true" className="mt-1.5 h-3.5 w-3.5 shrink-0 text-primary" /><span className="min-w-0 break-words">{item}</span></li>)}</ul>
+          </article>)}</div>
+        </section>}
+        <section id="market-terms" className={styles.section}>
+          <details className="group">
+            <summary className="flex cursor-pointer items-center justify-between text-base font-semibold text-foreground">
+              <span>{td("termsTitle")}</span>
+              <span className="text-xs font-normal text-muted-foreground">展开查看计费标准与交付保障 ▾</span>
+            </summary>
+            <dl className={`${styles.terms} mt-4`}>
+              <div><dt>汇率与定价基准</dt><dd>1 元人民币 = 10 积分（1 积分 = ¥0.10）。所有已开放购买商品均按真实研发/算力成本与市场价透明定价。</dd></div>
+              <div><dt>{td("licenseTitle")}</dt><dd className="whitespace-pre-wrap">{listing.licenseTerms}</dd></div>
+              <div><dt>交付保障</dt><dd>{runnable ? "在线工作台实时运行并保存结果" : purchasable ? "官方已验真完整交付包：支付积分后系统立即自动秒发完整脚本、源码与配置文档" : "该方案涉及人工 1v1 定制或硬件/大体积数据集封装，当前处于内测阶段，暂不开放购买"}</dd></div>
+            </dl>
+          </details>
+        </section>
+        {(runnable || !isFree) && <section id={purchaseAnchor} className={styles.section}>
+          <h2>{runnable ? td("runHeading") : purchasable ? "⚡ 立即使用积分购买并秒发交付包" : "🔒 暂未开放购买权限"}</h2>
           <div className={styles.checkout}>
-            {runnable.available ? session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketWorkflowRun listingId={offer.id} version={offer.version} details={runnable} /></MarketAccountBoundary> : <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}>{td("loginToPrepare")}</Link></Button> : <p className="text-sm leading-7 text-muted-foreground">{w("unavailable")}</p>}
+            {runnable ? (
+              runnable.available ? (
+                session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketWorkflowRun listingId={offer.id} version={offer.version} details={runnable} /></MarketAccountBoundary> : <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}>{td("loginToPrepare")}</Link></Button>
+              ) : <p className="text-sm leading-7 text-muted-foreground">{w("unavailable")}</p>
+            ) : purchasable ? (
+              session?.user?.id ? (
+                <MarketAccountBoundary actorId={session.user.id}>
+                  <CreatePointsOrder key={`${offer.id}-${offer.version}`} listingId={offer.id} version={offer.version} available={availability.checkoutAvailable} tiers={tiers} priceMinor={listing.priceMinor} isOwner={isOwner} />
+                  {cashOffer && !isOwner && <CreateCashOrder listingId={offer.id} version={offer.version} offer={cashOffer} />}
+                </MarketAccountBoundary>
+              ) : <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}>{tp("loginToBuy")}</Link></Button>
+            ) : (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm leading-6 text-foreground">
+                <p className="flex items-center gap-2 font-semibold text-amber-700 dark:text-amber-300"><Lock className="h-4 w-4 shrink-0" />当前商品暂未开放购买权限（市场参考价：{points} 积分 / ≈ ¥{yuan}）</p>
+                <p className="mt-1.5 text-xs leading-6 text-muted-foreground">我们坚持「确定能 100% 闭环交付才开放购买」。该项目涉及 1v1 人工精修辅导或外部硬件/数据集套件封装，在完成自动化交付验收前暂不支持积分下单，您可免费查阅上方大纲与 Sample 样本。</p>
+              </div>
+            )}
           </div>
         </section>}
       </div>
       <aside className={styles.decision} aria-label={td("decisionTitle")}>
-        <div className="flex flex-wrap items-center gap-2 text-xs font-medium"><span className="rounded-full bg-emerald-500/15 px-3 py-1 font-semibold text-emerald-700 dark:text-emerald-300">🎁 限时免费开放</span><span className="rounded-full bg-muted px-3 py-1">{runnable ? td("workflowProduct") : t(listing.fulfillment)}</span></div>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+          {purchasable ? (
+            <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-semibold text-emerald-700 dark:text-emerald-300">{runnable ? "🚀 在线工作台" : isFree ? "🌐 开源展示" : "⚡ 支付即秒发完整包"}</span>
+          ) : (
+            <span className="rounded-full bg-amber-500/15 px-3 py-1 font-semibold text-amber-700 dark:text-amber-300">🔒 内测中 · 暂不开放购买</span>
+          )}
+          <span className="rounded-full bg-muted px-3 py-1">{runnable ? td("workflowProduct") : t(listing.fulfillment)}</span>
+        </div>
         <h1>{listing.title}</h1><p className={styles.summary}>{listing.summary}</p>
-        <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">0 积分 · 免费直达交付</p>
+        {runnable ? (
+          <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{w("computeOnRun")}</p>
+        ) : purchasable ? (
+          isFree ? (
+            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{p("realProject.freeShare")}</p>
+          ) : (
+            <div>
+              <p className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{t("pointsUnit", { amount: points })} <span className="text-sm font-normal text-muted-foreground">（折合 ¥{yuan}）</span></p>
+              <p className="mt-1 text-xs text-muted-foreground">按 1 元 = 10 积分市场价核算 · 支付后立即自动交付完整脚本与模板</p>
+            </div>
+          )
+        ) : (
+          <div>
+            <p className="text-base font-bold text-amber-700 dark:text-amber-300">暂未开放购买权限</p>
+            <p className="mt-1 text-xs text-muted-foreground">市场参考价：{points} 积分（≈ ¥{yuan}）· 交付闭环内测中</p>
+          </div>
+        )}
         <dl className={styles.facts}>
           <div><dt>{td("deliverablesCount")}</dt><dd>{td("itemsCount", { count: listing.deliverables.length })}</dd></div>
-          <div><dt>获取方式</dt><dd>{runnable ? "在线工作台直接生成" : "在线预览 + 完整模板直达"}</dd></div>
+          <div><dt>交付状态</dt><dd>{runnable ? "在线工作台实时生成" : purchasable ? (isFree ? "公开赛题样板" : "✅ 已验真 · 支付即秒发") : "🔒 内测封装中（仅开放预览）"}</dd></div>
         </dl>
         <div className="space-y-3">
           {runnable && runnable.available ? (
-            <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={`#${purchaseAnchor}`}>⚡ 立即在线生成<ChevronRight aria-hidden="true" /></a></Button>
-          ) : isExternalFreeUrl ? (
-            <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={freeUrl} target="_blank" rel="noopener noreferrer">⚡ 立即免费打开 / 获取模板<ArrowUpRight aria-hidden="true" /></a></Button>
+            <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={`#${purchaseAnchor}`}>{td("prepareRun")}<ChevronRight aria-hidden="true" /></a></Button>
+          ) : purchasable && isFree ? (
+            <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={freeUrl} target="_blank" rel="noopener noreferrer">{p("realProject.visitProduct")}<ArrowUpRight aria-hidden="true" /></a></Button>
+          ) : purchasable ? (
+            <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={`#${purchaseAnchor}`}>{isOwner ? tp("ownProject") : `⚡ 立即用 ${points} 积分购买`}<ChevronRight aria-hidden="true" /></a></Button>
           ) : (
-            <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><Link href={freeUrl}>⚡ 立即免费使用<ChevronRight aria-hidden="true" /></Link></Button>
+            <Button disabled variant="outline" className="h-auto min-h-11 w-full whitespace-normal py-3 text-center">🔒 交付包内测中 · 暂未开放购买</Button>
           )}
           {session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketStar listingId={offer.id} initialCount={offer.starCount ?? 0} initialStarred={offer.starred ?? false} /></MarketAccountBoundary> : <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}><Star aria-hidden="true" />{tp("loginToStar", { count: offer.starCount ?? 0 })}</Link></Button>}
-          {!runnable && listing.usageUrl && !listing.usageUrl.includes("/workspace/models") && <ProjectUsageEntry usageUrl={listing.usageUrl} />}
+          {!runnable && purchasable && listing.usageUrl && !listing.usageUrl.includes("/workspace/models") && <ProjectUsageEntry usageUrl={listing.usageUrl} />}
           {!runnable && isOwner && <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={`/market/creator/${offer.id}/integration`}>{tp("integrationAction")}</Link></Button>}
         </div>
         <Link href={"/@" + offer.seller.username} className={styles.seller}>

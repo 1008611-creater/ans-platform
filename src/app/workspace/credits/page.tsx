@@ -21,7 +21,7 @@ export async function generateMetadata() {
 }
 
 const GUEST_CREDITS_HISTORY = {
-  availablePoints: 125,
+  availablePoints: 0,
   reservedPoints: 0,
   pendingCount: 0,
   nextCursor: null as string | null,
@@ -32,36 +32,13 @@ const GUEST_CREDITS_HISTORY = {
     deepseekConsumptionMultiplier: 1,
     rechargeEnabled: false,
   },
-  entries: [
-    {
-      id: "guest-ledger-1",
-      createdAt: "2026-10-18T02:30:00.000Z",
-      category: "CLAIM",
-      amount: 50,
-      balanceAfter: 50,
-    },
-    {
-      id: "guest-ledger-2",
-      createdAt: "2026-10-18T02:45:00.000Z",
-      category: "GRANT",
-      amount: 60,
-      balanceAfter: 110,
-    },
-    {
-      id: "guest-ledger-3",
-      createdAt: "2026-10-18T03:00:00.000Z",
-      category: "CLAIM",
-      amount: 15.5,
-      balanceAfter: 125.5,
-    },
-    {
-      id: "guest-ledger-4",
-      createdAt: "2026-10-18T03:15:00.000Z",
-      category: "RUN_COST",
-      amount: -0.5,
-      balanceAfter: 125,
-    },
-  ],
+  entries: [] as Array<{
+    id: string;
+    createdAt: string;
+    category: string;
+    amount: number;
+    balanceAfter: number | null;
+  }>,
   voiceUsage: [] as Array<{
     id: string;
     createdAt: string;
@@ -118,27 +95,43 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
           {!userId && (
             <section
               data-testid="credits-guest-banner"
-              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3"
+              className="space-y-3 rounded-2xl border border-emerald-500/35 bg-emerald-500/5 p-4 sm:p-5"
             >
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 font-bold text-white">
-                  {isEn ? "Guest Preview" : "免登预览"}
-                </span>
-                <span className="font-semibold text-foreground">
-                  {isEn
-                    ? "1 Point = ¥0.10 = $0.10 USD APIC Quota · New users claim 100–150 free pts"
-                    : "1 积分 = ¥0.10 元 = $0.10 USD APIC 额度 · 新用户可免费领 100–150 积分"}
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 font-bold text-white">
+                    {isEn ? "📖 Onboarding Guide" : "📖 新手引导 · 算力积分怎么用？"}
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {isEn
+                      ? "Not signed in yet (Current Balance: 0 pts) · Sign in to view your real ledger"
+                      : "当前未登录（真实余额显示为 0）· 登录后可免费领积分并查看你的真实账本流水"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button asChild size="sm" className="h-8 rounded-xl bg-emerald-600 px-3 text-xs text-white hover:bg-emerald-500">
+                    <Link href="/login?callbackUrl=%2Fworkspace%2Fcredits">
+                      {isEn ? "Sign in →" : "🔐 登录查看我的账本 →"}
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline" className="h-8 rounded-xl px-3 text-xs">
+                    <Link href="/workspace/benefits">🎁 {isEn ? "Claim Free Points" : "去领免费积分"}</Link>
+                  </Button>
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button asChild size="sm" className="h-8 rounded-xl bg-emerald-600 px-3 text-xs text-white hover:bg-emerald-500">
-                  <Link href="/login?callbackUrl=%2Fworkspace%2Fcredits">
-                    {isEn ? "Sign in →" : "🔐 登录查看账本 →"}
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline" className="h-8 rounded-xl px-3 text-xs">
-                  <Link href="/workspace/benefits">🎁 {isEn ? "Claim Free Points" : "免费领积分"}</Link>
-                </Button>
+              <div className="grid gap-2.5 text-xs sm:grid-cols-3">
+                <div className="rounded-xl border border-border/70 bg-background/80 p-3">
+                  <div className="font-bold text-foreground">① 怎么免费拿积分？</div>
+                  <p className="mt-1 text-muted-foreground">注册后填 30 秒问卷立刻到账 50 积分；平时每日签到（+5分）和玩抓娃娃机还能再领 50~100 积分。</p>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-background/80 p-3">
+                  <div className="font-bold text-foreground">② 1 积分能跑多少次？</div>
+                  <p className="mt-1 text-muted-foreground">1 积分 = ¥0.10 元（10 积分 = $1 额度）。用日常主力模型 DeepSeek 跑一次任务仅扣约 0.5 积分。</p>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-background/80 p-3">
+                  <div className="font-bold text-foreground">③ 账本怎么扣费？</div>
+                  <p className="mt-1 text-muted-foreground">调用模型时先预占积分，按实际生成字数结算；若请求中断或失败，预占积分会自动退回账户。</p>
+                </div>
               </div>
             </section>
           )}
