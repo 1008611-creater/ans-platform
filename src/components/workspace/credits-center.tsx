@@ -101,14 +101,14 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
         </Link>
       </li>)}</ul>
       <p className="mt-3 text-xs leading-6 text-muted-foreground">{t("modelRatesNote")}</p>
-      <nav aria-label={t("entryPoints")} className="mt-5 grid gap-3 border-t pt-5 sm:grid-cols-2">
+      <nav aria-label={t("entryPoints")} className="mt-4 flex flex-wrap gap-2 border-t pt-4">
         {([
           { href: "/models", title: "plazaTitle", body: "plazaBody", icon: Cpu },
           { href: "/settings", title: "connectionTitle", body: "connectionBody", icon: TerminalSquare },
           { href: "/projects", title: "projectsTitle", body: "projectsBody", icon: FolderOpen },
           { href: "/workflows/runs", title: "runsTitle", body: "runsBody", icon: ReceiptText },
           { href: "/workspace/compute", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
-        ] as const).map(({ href, title, body, icon: Icon }) => <Link key={title} href={href} className="flex min-w-0 items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{t(title)}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{t(body)}</p></div><ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
+        ] as const).map(({ href, title, body, icon: Icon }) => <Link key={title} href={href} className="inline-flex items-center gap-1.5 rounded-full border bg-muted/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="size-3.5 shrink-0 text-primary" aria-hidden="true" /><span>{t(title)}</span><span className="sr-only">{t(body)}</span><ArrowRight className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
       </nav>
     </section>
     {apiHistory !== undefined && <section aria-labelledby="credits-api-history-heading" className="rounded-3xl border bg-card p-6 sm:p-8">

@@ -1112,80 +1112,44 @@ export function ComputeQuestArcade({
         </div>
       </div>
 
-      {/* Compact Normal-Distribution (100~150 Pts) + Low-Prob Koi Jackpot Summary & Live Broadcast Ticker */}
-      <div className="mt-3 grid gap-2 md:grid-cols-2">
-        <div className="flex items-center justify-between gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/5 px-3.5 py-2 text-xs">
-          <div>
-            <span className="font-bold text-emerald-800 dark:text-emerald-300">
-              📊 {isEn ? "90% Normal Distribution N(125, 10²) · 100–150 Pts/Student" : "正态分布普惠算力 N(125, 10²) · 90% 学生稳拿 100~150 积分"}
-            </span>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              {isEn
-                ? "50 Pts instant onboarding + 50–100 Pts progressive daily check-ins, VibeHub reading & claw pulls ($10–$15 APIC quota)."
-                : "破冰问卷立得 50 积分 + 每日打卡/阅读/抓娃娃阶梯提现 50~100 积分（折合 $10~$15 APIC 真实模型额度）。"}
-            </p>
-          </div>
-          <span className="shrink-0 rounded-lg bg-emerald-500/15 px-2 py-1 text-[11px] font-black tabular-nums text-emerald-700 dark:text-emerald-300">
-            {deepseekPct}%
+      {/* Single-Line Compact Quota & Jackpot Status Strip */}
+      <div
+        data-testid="arcade-jackpot-ticker"
+        className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-emerald-500/25 bg-muted/30 px-3.5 py-2 text-xs"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-emerald-600/15 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+            📊 {isEn ? `Normal N(125, 10²) · 100–150 Pts (${deepseekPct}%)` : `普惠算力 N(125, 10²) · 人均 100~150 分 (${deepseekPct}%)`}
+          </span>
+          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
+            👑 {isEn ? `0.1% SP Koi 1,000 Pts (¥100) · Pity (${flagshipPct}%)` : `0.1% 抽 1000 分 (¥100) 天选锦鲤 · 十连保底 (${flagshipPct}%)`}
           </span>
         </div>
-        <div className="flex items-center justify-between gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-3.5 py-2 text-xs">
-          <div>
-            <span className="font-bold text-amber-800 dark:text-amber-300">
-              👑 {isEn ? "Low-Prob Koi Jackpot · 0.1% 1,000 Pts (¥100) + 10-Pull Pity" : "低概率天选锦鲤大奖 · 0.1% 暴击 1000 积分 (¥100) + 十连保底"}
-            </span>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              {isEn
-                ? "Every claw drop is 100% win: 0.1% SP Koi (1,000 Pts), 0.9% UR Dragon Egg (300 Pts), 4% SSR 4090 Cookie (80 Pts)."
-                : "每次下爪 100% 必中算力胶囊：0.1% SP 锦鲤(1000分)、0.9% UR 龙蛋(300分)、4% SSR 4090饼干(80分)。"}
-            </p>
-          </div>
-          <span className="shrink-0 rounded-lg bg-amber-500/15 px-2 py-1 text-[11px] font-black tabular-nums text-amber-800 dark:text-amber-300">
-            {flagshipPct}%
-          </span>
-        </div>
-
-        {/* Live Koi & Jackpot Broadcast Ticker + One-Click Brag Card */}
-        <div
-          data-testid="arcade-jackpot-ticker"
-          className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-emerald-500/10 px-3.5 py-2 text-xs md:col-span-2"
+        <button
+          type="button"
+          onClick={() => {
+            const unlockedPoints = Math.round((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD);
+            const prizeLabel = lastWonPrize
+              ? `${lastWonPrize.icon} [${lastWonPrize.rarity}] ${isEn ? lastWonPrize.nameEn : lastWonPrize.nameZh}`
+              : isEn
+                ? "🎁 100–150 Free Compute Points"
+                : "🎁 100~150 普惠算力积分";
+            const shareText = isEn
+              ? `【ANS × CAU 3D Compute Arcade Report】I just unlocked ${prizeLabel} (Total ${unlockedPoints} Pts) at ANS! 90% of users get 100–150 free pts + 0.1% shot at 1,000-pt Mythic Koi 👉 https://ans.cauai.fun/workspace/benefits`
+              : `【ANS × 中国农大 3D 算力游乐场 · 欧皇战报】我刚在 ANS 灵龙抓娃娃机收获了「${prizeLabel}」（累计已解锁 ${unlockedPoints} 积分）！全站免费领 100~150 积分，更有 0.1% 概率暴击 1000 积分（¥100）神话锦鲤 👉 https://ans.cauai.fun/workspace/benefits`;
+            if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+              void navigator.clipboard.writeText(shareText).catch(() => {});
+            }
+            setBannerMessage(
+              isEn
+                ? "🏆 Brag report copied to clipboard! Share it with your lab or group chat!"
+                : "🏆 欧皇战报已复制到剪贴板！快发到农大社群/实验室群晒出欧气吧！",
+            );
+          }}
+          className="shrink-0 rounded-xl border border-amber-500/40 bg-background px-2.5 py-1 text-[11px] font-bold text-amber-800 shadow-2xs transition hover:bg-amber-500/15 dark:text-amber-300"
         >
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950">
-              🎉 {isEn ? "LIVE KOI FEED" : "实时欧皇播报"}
-            </span>
-            <span className="font-medium text-foreground">
-              {isEn
-                ? "👑 @cau_agr*** hit [SP Mythic Koi +1,000 Pts (¥100)] · 🐉 @lin_b*** pulled [UR Dragon Egg +300 Pts] · 💎 @zhao_*** won [SSR 4090 Cookie +80 Pts]"
-                : "👑 @cau_agr*** 抓中【SP 天选锦鲤 +1000积分 (¥100)】 · 🐉 @lin_b*** 转出【UR 紫金龙蛋 +300积分】 · 💎 @zhao_*** 解锁【SSR 4090饼干 +80积分】"}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              const unlockedPoints = Math.round((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD);
-              const prizeLabel = lastWonPrize
-                ? `${lastWonPrize.icon} [${lastWonPrize.rarity}] ${isEn ? lastWonPrize.nameEn : lastWonPrize.nameZh}`
-                : isEn
-                  ? "🎁 100–150 Free Compute Points"
-                  : "🎁 100~150 普惠算力积分";
-              const shareText = isEn
-                ? `【ANS × CAU 3D Compute Arcade Report】I just unlocked ${prizeLabel} (Total ${unlockedPoints} Pts) at ANS! 90% of users get 100–150 free pts + 0.1% shot at 1,000-pt Mythic Koi 👉 https://ans.cauai.fun/workspace/benefits`
-                : `【ANS × 中国农大 3D 算力游乐场 · 欧皇战报】我刚在 ANS 灵龙抓娃娃机收获了「${prizeLabel}」（累计已解锁 ${unlockedPoints} 积分）！全站免费领 100~150 积分，更有 0.1% 概率暴击 1000 积分（¥100）神话锦鲤 👉 https://ans.cauai.fun/workspace/benefits`;
-              if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-                void navigator.clipboard.writeText(shareText).catch(() => {});
-              }
-              setBannerMessage(
-                isEn
-                  ? "🏆 Brag report copied to clipboard! Share it with your lab or group chat!"
-                  : "🏆 欧皇战报已复制到剪贴板！快发到农大社群/实验室群晒出欧气吧！",
-              );
-            }}
-            className="shrink-0 rounded-xl border border-amber-500/40 bg-background px-2.5 py-1 text-[11px] font-bold text-amber-800 shadow-2xs transition hover:bg-amber-500/15 dark:text-amber-300"
-          >
-            🏆 {isEn ? "Copy Brag Card" : "一键复制欧皇战报"}
-          </button>
-        </div>
+          🏆 {isEn ? "Share Report" : "复制战报"}
+        </button>
       </div>
 
       {/* Live Toast / Status Banner */}

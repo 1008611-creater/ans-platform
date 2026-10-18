@@ -359,85 +359,83 @@ function PiCodexWorkbench({
             </div>
 
             <div className="border-t border-slate-800 pt-3">
-              <span className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">⚡ 一键 Agent 实权与工程预设</span>
+              <span className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">⚡ 快捷工程动作</span>
               <div className="mt-2 grid gap-1.5">
                 <button
                   type="button"
                   onClick={() => void executeCodexTask(activeTask.title, "scaffold")}
                   className="rounded-xl border border-indigo-500/35 bg-indigo-500/15 px-2.5 py-2 text-left text-xs font-bold text-indigo-200 transition hover:bg-indigo-500/25"
                 >
-                  🚀 灵龙代办：一键立项存为我的项目
+                  🚀 保存为我的立项项目
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void executeCodexTask("", "market")}
+                  className="rounded-xl border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-left text-xs font-bold text-sky-300 transition hover:bg-sky-500/20"
+                >
+                  🛒 检索工作流模板
                 </button>
                 <button
                   type="button"
                   onClick={() => void executeCodexTask("", "checkin")}
                   className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-left text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20"
                 >
-                  📅 灵龙代办：一键每日签到 (+5分)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void executeCodexTask("", "claw")}
-                  className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-left text-xs font-bold text-amber-300 transition hover:bg-amber-500/20"
-                >
-                  🕹️ 灵龙代办：代抓娃娃抽 ¥100 锦鲤
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void executeCodexTask("", "redeem")}
-                  className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-left text-xs font-bold text-rose-300 transition hover:bg-rose-500/20"
-                >
-                  🎁 灵龙代办：5 积分秒兑周报生成器
+                  📅 每日签到领算力 (+5分)
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/90 p-2.5 text-[11px] text-slate-400">
-            💡 <strong className="text-slate-200">双模式联动：</strong>日常逛站用右下角小恐龙【💬 聊天模式】，写代码/做网页/改论文切到【🛠️ 工作模式】享受完整 Codex 双栏画布。
+          <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-800 pt-3 text-[11px]">
+            <a href="/projects" className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
+              📂 我的项目
+            </a>
+            <a href="/market" className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
+              🛒 模板市场
+            </a>
           </div>
         </aside>
 
         {/* Center Column: Codex Execution Trace & Multi-Turn Composer */}
         <section className="flex flex-col justify-between border-b border-slate-800 bg-slate-950 p-4 sm:p-5 lg:border-r lg:border-b-0">
-          <div className="space-y-4 overflow-y-auto">
-            <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+          <div className="space-y-3 overflow-y-auto">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
               <div>
                 <span className="text-[11px] font-bold text-emerald-400">ACTIVE CODEX TASK · {activeTask.model}</span>
                 <h2 className="mt-0.5 text-base font-extrabold text-white">{activeTask.title}</h2>
               </div>
               <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300">
-                {running ? "⚡ Agent 思考执行中..." : "✓ 执行完毕"}
+                {running ? "⚡ 执行中..." : "✓ 已就绪"}
               </span>
             </div>
 
             {/* User Prompt Bubble */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3.5">
-              <div className="text-[11px] font-bold text-slate-400">🧑 任务指令 (Task Prompt)</div>
-              <p className="mt-1 text-xs leading-6 text-slate-100">{activeTask.prompt}</p>
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3">
+              <div className="text-[11px] font-bold text-slate-400">🧑 任务指令</div>
+              <p className="mt-1 text-xs leading-5 text-slate-100">{activeTask.prompt}</p>
             </div>
 
-            {/* Step-by-Step Tool Execution Trace */}
-            <div className="rounded-2xl border border-indigo-500/30 bg-indigo-950/20 p-3.5">
-              <div className="mb-2 flex items-center justify-between text-[11px] font-bold text-indigo-300">
-                <span>🛠️ Pi-Codex 工具链调用轨迹 (Execution Trace)</span>
-                <span className="font-mono text-[10px]">sandbox: ans-codex-v2</span>
-              </div>
-              <ul className="space-y-1.5 font-mono text-xs text-slate-300">
+            {/* Collapsible Tool Execution Trace */}
+            <details className="group rounded-2xl border border-indigo-500/30 bg-indigo-950/20 p-3">
+              <summary className="flex cursor-pointer list-none items-center justify-between text-[11px] font-bold text-indigo-300">
+                <span>🛠️ 工具链执行轨迹 ({activeTask.trace.length} 步)</span>
+                <span className="font-mono text-[10px] text-slate-400">点击展开 ↓</span>
+              </summary>
+              <ul className="mt-2 space-y-1.5 font-mono text-xs text-slate-300">
                 {activeTask.trace.map((step, idx) => (
                   <li key={idx} className="rounded-lg bg-slate-900/80 px-2.5 py-1.5 text-[11px] text-emerald-300">
                     {step}
                   </li>
                 ))}
               </ul>
-            </div>
+            </details>
 
             {/* Agent Response Summary */}
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/15 p-4">
-              <div className="mb-1.5 text-xs font-extrabold text-emerald-300">🦖 Pi-Codex 工程输出说明</div>
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/15 p-3.5">
+              <div className="mb-1 text-xs font-extrabold text-emerald-300">✓ 工程输出说明</div>
               <div className="whitespace-pre-wrap text-xs leading-6 text-slate-200">{activeTask.summary}</div>
               {activeTask.links && activeTask.links.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-2.5 flex flex-wrap gap-2">
                   {activeTask.links.map((lk, i) => (
                     <a
                       key={i}
