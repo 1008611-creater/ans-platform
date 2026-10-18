@@ -594,7 +594,11 @@ export interface RoadshowAndSocialPack {
   cleanedSummary: string;
 }
 
-const SLOP_BUZZWORDS = /赋能|抓手|闭环|生态位|颠覆性|史诗级|圣殿|超新星爆发|全维度|极致丝滑|无缝衔接/g;
+const SLOP_BUZZWORDS = /在当今数字化时代，?|随着 AI 的飞速发展，?|旨在|全方位|生态闭环|赋能|抓手|闭环|生态位|颠覆性|史诗级|圣殿|超新星爆发|全维度|极致丝滑|无缝衔接/g;
+
+export function stripAiBuzzwords(raw: string): string {
+  return raw.replace(SLOP_BUZZWORDS, "").replace(/\s+/g, " ").trim();
+}
 
 /**
  * Generates de-slopped roadshow pitch, GitHub README, and Xiaohongshu/Bilibili draft from a creator's project form.

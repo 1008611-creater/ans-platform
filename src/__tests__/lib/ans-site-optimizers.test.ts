@@ -48,7 +48,7 @@ describe("ANS Site Optimizers (ans-skill-refactor)", () => {
       {
         title: "CAU 农情病虫害诊断终端",
         summary: "旨在赋能农户，构建多光谱遥感与叶片病害识别。",
-        deliverables: ["可交互 HTML5 终端", "测试样本集"],
+        deliverables: "可交互 HTML5 终端\n测试样本集",
         category: "竞赛冲刺 · 智耕农客松",
       },
       "zh",
@@ -67,9 +67,9 @@ describe("ANS Site Optimizers (ans-skill-refactor)", () => {
   });
 
   it("simplifies catalog showcase routing via resolveCatalogShowcaseHref", () => {
-    expect(resolveCatalogShowcaseHref({ slug: "cauai-one", workflowId: "resume-website" })).toBe("/explore/resume-3d");
-    expect(resolveCatalogShowcaseHref({ slug: "aigc-1", workflowId: "easel" })).toBe("/explore/aigc-studio");
-    expect(resolveCatalogShowcaseHref({ slug: "agri-1", category: "competition" })).toBe("/explore/agrihackathon");
-    expect(resolveCatalogShowcaseHref({ slug: "demo-1", category: "web" })).toBe("/projects/demo-1");
+    expect(resolveCatalogShowcaseHref({ slug: "cauai-one", workflowId: "resume-website" } as never)).toBe("/market/resume-website");
+    expect(resolveCatalogShowcaseHref({ slug: "aigc-1", workflowId: "easel" } as never)).toBe("/competitions/aigc");
+    expect(resolveCatalogShowcaseHref({ slug: "hypit-1", workflowId: "hypit" } as never)).toBe("/workflows/hypit");
+    expect(resolveCatalogShowcaseHref({ slug: "demo-1", category: "web" } as never)).toBe("/explore/demo-1");
   });
 });
