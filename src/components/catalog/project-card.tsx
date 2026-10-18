@@ -8,7 +8,7 @@ import styles from "./project-card.module.css";
 
 export async function ProjectCard({ project, compact = false }: { project: CatalogProject; compact?: boolean }) {
   const [t, locale] = await Promise.all([getTranslations("product"), getLocale()]);
-  const directHref = project.memberHref ?? (project.workflowId === "resume-website" ? "/market/resume-website" : project.workflowId === "easel" ? "/competitions/aigc" : project.workflowId === "hypit" ? "/workflows/hypit" : project.workflowId === "toonflow" ? "https://toonflow.cauai.fun" : project.workflowId ? `/projects?goal=${project.goal}&workflow=${project.workflowId}#new-project` : project.sourceUrl ?? `/explore/${project.slug}`);
+  const directHref = project.memberHref ?? (project.workflowId === "resume-website" ? "/market/resume-website" : String(project.workflowId ?? "") === "easel" ? "/competitions/aigc" : String(project.workflowId ?? "") === "hypit" ? "/workflows/hypit" : String(project.workflowId ?? "") === "toonflow" ? "https://toonflow.cauai.fun" : project.workflowId ? `/projects?goal=${project.goal}&workflow=${project.workflowId}#new-project` : project.sourceUrl ?? `/explore/${project.slug}`);
   const isExternal = /^https?:\/\//.test(directHref);
   const isEn = locale.startsWith("en");
   const title = catalogText(project, t, "title", locale);

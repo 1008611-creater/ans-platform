@@ -113,7 +113,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
           {
             label: "✨ Vibe Coding 3D 网页模板",
             cat: "web",
-            sub: "website",
+            sub: "personal-site",
             title: "Three.js 3D 星空个人作品集与简历站",
             summary: "零依赖 HTML5 Canvas 3D 星空粒子交互主页，支持响应式 Bento 卡片、项目时间线与一键导出源码。",
             deliv: "单文件 HTML5 3D 粒子网页\nBento 作品集响应式布局\n在线预览与源码包",
