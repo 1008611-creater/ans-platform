@@ -370,10 +370,10 @@ function PiCodexWorkbench({
                 </button>
                 <button
                   type="button"
-                  onClick={() => void executeCodexTask("", "market")}
+                  onClick={() => void executeCodexTask("", "redeem")}
                   className="rounded-xl border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-left text-xs font-bold text-sky-300 transition hover:bg-sky-500/20"
                 >
-                  🛒 检索工作流模板
+                  🎁 5分秒兑周报生成器
                 </button>
                 <button
                   type="button"
