@@ -24,7 +24,7 @@
 .categoryRail svg { width: 15px; height: 15px; color: var(--muted-foreground); }
 .categoryRail a > span { color: var(--muted-foreground); font-variant-numeric: tabular-nums; font-size: 11px; }
 .categoryRail a:hover, .subcategories a:hover { background: var(--accent); color: var(--primary); }
-.categoryRail a[aria-current="page"], .subcategories a[aria-current="page"] { background: var(--accent); color: var(--primary); }
+.categoryRail a[aria-current="page"], .subcategories a[aria-current="page"] { background: var(--accent); color: var(--primary); font-weight: 600; }
 .subcategories { display: flex; flex-wrap: wrap; gap: 4px; margin-block: -12px 20px; }
 .projects { gap: 24px; }
 .empty { border: 1px dashed var(--border); border-radius: 16px; padding: 28px; }

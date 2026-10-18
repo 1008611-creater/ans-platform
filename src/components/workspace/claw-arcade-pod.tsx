@@ -1474,15 +1474,15 @@ export function ComputeQuestArcade({
                     </div>
 
                     {/* Metadata & Actions */}
-                    <div className="rounded-xl border border-border bg-background p-2.5 text-[11px]">
+                    <div className="border-t border-border pt-2.5 text-[11px]">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="font-bold text-foreground">
-                          {activeGlb.icon} {isEn ? activeGlb.nameEn : activeGlb.nameZh}
+                          <span aria-hidden="true">{activeGlb.icon}</span> {isEn ? activeGlb.nameEn : activeGlb.nameZh}
                         </span>
                         <a
                           href={activeGlb.glbUrl}
                           download={`${activeGlb.id}.glb`}
-                          className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-0.5 font-bold text-cyan-800 hover:bg-cyan-500/20 dark:text-cyan-300"
+                          className="rounded-lg border border-cyan-600/30 bg-cyan-500/10 px-2.5 py-0.5 font-bold text-cyan-900 hover:bg-cyan-500/20 dark:text-cyan-300"
                         >
                           ⬇ {isEn ? `Download ${activeGlb.id}.glb` : `下载 ${activeGlb.id}.glb`}
                         </a>
@@ -1490,7 +1490,7 @@ export function ComputeQuestArcade({
                       <div className="mt-1 text-muted-foreground">
                         3D 模型资源：<code>{activeGlb.glbUrl}</code> · {activeGlb.vertexCount} 顶点 / {activeGlb.faceCount} 三角面
                       </div>
-                      <div className="mt-1 line-clamp-2 text-[10px] text-muted-foreground" title={activeGlb.promptZh}>
+                      <div className="mt-1 line-clamp-2 text-[11px] text-muted-foreground" title={activeGlb.promptZh}>
                         Prompt: {activeGlb.promptZh}
                       </div>
                     </div>
@@ -1500,31 +1500,31 @@ export function ComputeQuestArcade({
             )}
 
             {/* Spend Points Bar: Buy Tokens with Points OR Spend in Marketplace */}
-            <div className="mt-2.5 flex flex-wrap items-center justify-between gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/5 px-2.5 py-2 text-[11px]">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-1.5 border-t border-border pt-3 text-xs">
               <span className="font-bold text-foreground">
-                {isEn ? "💡 Spend Points:" : "💡 积分怎么花："}
+                {isEn ? "Spend Points:" : "积分怎么花："}
               </span>
               <div className="flex flex-wrap items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => handleBuyTokens(1)}
-                  className="rounded-lg border border-amber-500/40 bg-background px-2 py-1 font-bold text-amber-800 hover:bg-amber-500/15 dark:text-amber-300"
+                  className="rounded-lg border border-border bg-background px-2 py-1 font-bold text-foreground hover:bg-muted"
                 >
-                  {isEn ? "🪙 10 Pts → +1 Token" : "🪙 10积分兑1币"}
+                  {isEn ? "10 Pts → +1 Token" : "10积分兑1币"}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleBuyTokens(5)}
                   data-testid="arcade-buy-token-5"
-                  className="rounded-lg border border-amber-500/40 bg-background px-2 py-1 font-bold text-amber-800 hover:bg-amber-500/15 dark:text-amber-300"
+                  className="rounded-lg border border-border bg-background px-2 py-1 font-bold text-foreground hover:bg-muted"
                 >
-                  {isEn ? "🪙 50 Pts → +5 Tokens" : "🪙 50积分兑5币"}
+                  {isEn ? "50 Pts → +5 Tokens" : "50积分兑5币"}
                 </button>
                 <Link
                   href="/market"
-                  className="rounded-lg bg-emerald-600 px-2.5 py-1 font-bold text-white hover:bg-emerald-500 dark:bg-emerald-400 dark:text-slate-950"
+                  className="rounded-lg bg-emerald-700 px-2.5 py-1 font-bold text-white hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
                 >
-                  {isEn ? "🛒 Spend in Market →" : "🛒 去市场花积分 →"}
+                  {isEn ? "Spend in Market →" : "去市场花积分 →"}
                 </Link>
               </div>
             </div>
@@ -1533,25 +1533,25 @@ export function ComputeQuestArcade({
           {/* Prize Pool & Latest Pull Card */}
           <div className="mt-4 space-y-2 border-t border-border pt-3">
             {lastWonPrize && (
-              <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs">
+              <div className="border-b border-border pb-2.5 text-xs">
                 <div className="font-black text-amber-800 dark:text-amber-300">
-                  {lastWonPrize.icon} [{lastWonPrize.rarity}] {isEn ? lastWonPrize.nameEn : lastWonPrize.nameZh}
+                  <span aria-hidden="true">{lastWonPrize.icon}</span> [{lastWonPrize.rarity}] {isEn ? lastWonPrize.nameEn : lastWonPrize.nameZh}
                 </div>
-                <div className="mt-0.5 text-[11px] text-muted-foreground">
+                <div className="mt-0.5 text-xs text-muted-foreground">
                   {isEn ? lastWonPrize.descEn : lastWonPrize.descZh}
                 </div>
               </div>
             )}
-            <div className="text-[11px] font-medium text-muted-foreground">
+            <div className="max-w-md text-[13px] leading-relaxed text-muted-foreground">
               {isEn
-                ? "Prize Pool: 👑 SP Top Prize (1,000 Pts, 0.1%) · 🐉 UR Dragon Egg (300 Pts, 0.9%) · 🔋 SSR Compute Box (80 Pts + 3D Voucher, 4%) · 🌾 SR Golden Wheat (15 Pts, 30%) · 🦖 R Mint Dino (10 Pts, 65%)"
-                : "奖池概率说明：👑 SP 特等奖(1000分, 0.1%) · 🐉 UR 紫金龙蛋(300分, 0.9%) · 🔋 SSR 算力盲盒(80分+3D券, 4%) · 🌾 SR 黄金麦穗(15分+市场券, 30%) · 🦖 R 薄荷小恐龙(10分保底, 65%)"}
+                ? "Prize Pool: SP Top Prize (1,000 Pts, 0.1%) · UR Dragon Egg (300 Pts, 0.9%) · SSR Compute Box (80 Pts + 3D Voucher, 4%) · SR Golden Wheat (15 Pts, 30%) · R Mint Dino (10 Pts, 65%)"
+                : "奖池概率说明：SP 特等奖(1000分, 0.1%) · UR 紫金龙蛋(300分, 0.9%) · SSR 算力盲盒(80分+3D券, 4%) · SR 黄金麦穗(15分+市场券, 30%) · R 薄荷小恐龙(10分保底, 65%)"}
             </div>
           </div>
         </div>
 
         {/* Right Column (7 cols): 4-Tab Gamified Quest & Counter-Intuitive Easter Egg Center */}
-        <div className="flex flex-col justify-between rounded-2xl border border-border bg-muted/20 p-4 lg:col-span-7">
+        <div className="flex flex-col justify-between rounded-3xl border border-border bg-card p-5 lg:col-span-7">
           <div>
             {/* Category Tabs */}
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
@@ -1560,23 +1560,23 @@ export function ComputeQuestArcade({
                   [
                     {
                       id: "daily",
-                      labelZh: "📅 每日活跃任务",
-                      labelEn: "📅 Daily Quests",
+                      labelZh: "每日活跃任务",
+                      labelEn: "Daily Quests",
                     },
                     {
                       id: "weekly",
-                      labelZh: "🛠️ 每周与市场创作",
-                      labelEn: "🛠️ Weekly & Market",
+                      labelZh: "每周与市场创作",
+                      labelEn: "Weekly & Market",
                     },
                     {
                       id: "agri",
-                      labelZh: "🌾 农客松 M1-M4 (+60分)",
-                      labelEn: "🌾 AgriHackathon M1-M4",
+                      labelZh: "农客松 M1-M4 (+60分)",
+                      labelEn: "AgriHackathon M1-M4",
                     },
                     {
                       id: "secret",
-                      labelZh: `🦖 6大反常识彩蛋 (${unlockedSecretCount}/6)`,
-                      labelEn: `🦖 6 Dino Easter Eggs (${unlockedSecretCount}/6)`,
+                      labelZh: `6大反常识彩蛋 (${unlockedSecretCount}/6)`,
+                      labelEn: `6 Dino Easter Eggs (${unlockedSecretCount}/6)`,
                     },
                   ] as const
                 ).map(tabItem => (
@@ -1586,7 +1586,7 @@ export function ComputeQuestArcade({
                     onClick={() => setActiveCategory(tabItem.id)}
                     className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition ${
                       activeCategory === tabItem.id
-                        ? "border-foreground bg-foreground text-background shadow-sm"
+                        ? "border-foreground bg-foreground text-background"
                         : "border-border bg-background text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -1594,13 +1594,13 @@ export function ComputeQuestArcade({
                   </button>
                 ))}
               </div>
-              <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                {isEn ? `🔥 Streak: ${state.streakDays} Day(s)` : `🔥 连续备赛打卡：${state.streakDays} 天`}
+              <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                {isEn ? `Streak: ${state.streakDays} Day(s)` : `连续备赛打卡：${state.streakDays} 天`}
               </span>
             </div>
 
-            {/* Quest Cards List */}
-            <div className="mt-3 space-y-2.5">
+            {/* Quest Rows List (Swiss Divide-Y Hairline Rows instead of Nested Cards) */}
+            <div className="mt-2 divide-y divide-border">
               {filteredQuests.map(quest => {
                 const claimed = isQuestClaimedToday(state, quest);
                 const progress = state.questProgress[quest.id] ?? 0;
@@ -1609,37 +1609,33 @@ export function ComputeQuestArcade({
                 return (
                   <div
                     key={quest.id}
-                    className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-3.5 transition ${
-                      claimed
-                        ? "border-emerald-500/40 bg-emerald-500/5"
-                        : "border-border bg-background hover:border-amber-500/40"
-                    }`}
+                    className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-2 last:pb-2"
                   >
                     <div className="min-w-[220px] flex-1 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-lg">{quest.icon}</span>
+                        <span className="text-base" aria-hidden="true">{quest.icon}</span>
                         <h4 className="text-sm font-bold text-foreground">
                           {isEn ? quest.titleEn : quest.titleZh}
                         </h4>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
                             quest.unlockPool === "flagship"
-                              ? "bg-amber-500/15 text-amber-800 dark:text-amber-300"
+                              ? "bg-amber-500/15 text-amber-900 dark:text-amber-300"
                               : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
                           }`}
                         >
                           +${quest.unlockUsd} ({pts} {isEn ? "pts" : "积分"})
                         </span>
-                        <span className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[10px] font-bold text-purple-800 dark:text-purple-200">
-                          {quest.rewardTokens > 0 ? `+${quest.rewardTokens}🎟️ ` : ""}+{quest.rewardStarBeans}🪙
+                        <span className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[11px] font-bold text-purple-900 dark:text-purple-200">
+                          {quest.rewardTokens > 0 ? `+${quest.rewardTokens}币 ` : ""}+{quest.rewardStarBeans}星豆
                         </span>
                       </div>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
+                      <p className="max-w-xl text-[13px] leading-relaxed text-muted-foreground">
                         {isEn ? quest.descEn : quest.descZh}
                       </p>
                       {(quest.hintZh || quest.hintEn) && (
-                        <p className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
-                          💡 {isEn ? quest.hintEn : quest.hintZh}
+                        <p className="max-w-xl text-xs font-medium text-amber-800 dark:text-amber-300">
+                          {isEn ? quest.hintEn : quest.hintZh}
                         </p>
                       )}
                     </div>
@@ -1650,13 +1646,13 @@ export function ComputeQuestArcade({
                           type="button"
                           onClick={() => setVibeTimerRunning(true)}
                           disabled={vibeTimerRunning}
-                          className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 py-1.5 text-xs font-bold text-cyan-800 hover:bg-cyan-500/20 dark:text-cyan-200"
+                          className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-3 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-500/20 dark:text-cyan-200"
                         >
                           {vibeTimerRunning
-                            ? `⏱️ ${state.vibehubReadSeconds}s / 60s...`
+                            ? `${state.vibehubReadSeconds}s / 60s...`
                             : isEn
-                              ? "⚡ Start 60s Timer"
-                              : "⚡ 启动 60 秒阅读计时"}
+                              ? "Start 60s Timer"
+                              : "启动 60 秒阅读计时"}
                         </button>
                       )}
 
@@ -1676,8 +1672,8 @@ export function ComputeQuestArcade({
                         data-testid={`claim-quest-${quest.id}`}
                         className={`rounded-xl px-3.5 py-1.5 text-xs font-black transition ${
                           claimed
-                            ? "cursor-default border border-emerald-500/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
-                            : "bg-emerald-600 text-white shadow-sm hover:brightness-105 dark:bg-emerald-400 dark:text-slate-950"
+                            ? "cursor-default border border-emerald-600/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
+                            : "bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
                         }`}
                       >
                         {claimed
@@ -1706,15 +1702,15 @@ export function ComputeQuestArcade({
           </div>
 
           {/* Footer Note */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[11px] text-muted-foreground">
-            <span>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[13px] leading-relaxed text-muted-foreground">
+            <span className="max-w-lg">
               {isEn
                 ? "🛡️ Note: Free compute points are used directly for calling models and workflows on ANS and cannot be transferred or exchanged for cash."
                 : "🛡️ 使用说明：免费领取的积分可直接用于站内调用大模型与兑换工作流，仅限站内使用，不支持转赠或折现。"}
             </span>
             <Link
               href="/competitions/agrihackathon"
-              className="font-bold text-emerald-700 hover:underline dark:text-emerald-300"
+              className="font-bold text-emerald-800 hover:underline dark:text-emerald-300"
             >
               {isEn ? "View CAU AgriHackathon Hub →" : "前往中国农大农客松赛事大厅 →"}
             </Link>
