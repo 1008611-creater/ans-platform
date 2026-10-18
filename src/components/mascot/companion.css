@@ -231,19 +231,28 @@
 
 /* Close-Up Macro Stage (Triggered on 3rd click on the 3D Little Dino) */
 body.ans-dino-interactive-mode .ans-dino-guide.ans-companion-v2 {
+  inset-inline-end: auto !important;
+  inset-inline-start: 50% !important;
   right: auto !important;
   left: 50% !important;
-  bottom: 210px !important;
+  bottom: 234px !important;
   transform: translate3d(-50%, 0, 0) !important;
-  z-index: 91 !important;
+  z-index: 95 !important;
 }
 body.ans-dino-interactive-mode .ans-companion-v2 .ans-dino-avatar {
-  width: min(300px, 68vw) !important;
-  height: min(330px, 44vh) !important;
+  width: min(290px, 64vw) !important;
+  height: min(310px, 40vh) !important;
+}
+body.ans-dino-interactive-mode .ans-companion-v2 .ans-dino-avatar > img,
+body.ans-sanctuary-open .ans-companion-v2 .ans-dino-avatar > img {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* Left-Center 3D Podium when Miracle Nikki Wardrobe or Adoption Pod is open on the right */
 body.ans-sanctuary-open .ans-dino-guide.ans-companion-v2 {
+  inset-inline-end: auto !important;
+  inset-inline-start: 26% !important;
   right: auto !important;
   left: 26% !important;
   bottom: 135px !important;
@@ -256,6 +265,7 @@ body.ans-sanctuary-open .ans-companion-v2 .ans-dino-avatar {
 }
 @media (max-width: 820px) {
   body.ans-sanctuary-open .ans-dino-guide.ans-companion-v2 {
+    inset-inline-start: 50% !important;
     left: 50% !important;
     bottom: auto !important;
     top: 68px !important;
@@ -286,7 +296,7 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
 /* Live Speech Bubble & Exclamation Pin (#ans-dino-live-bubble) */
 #ans-dino-live-bubble {
   position: fixed;
-  z-index: 93;
+  z-index: 96;
   font-family: "Helvetica Neue", "PingFang SC", -apple-system, system-ui, sans-serif;
   pointer-events: auto;
   cursor: pointer;

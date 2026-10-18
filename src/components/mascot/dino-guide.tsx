@@ -205,8 +205,9 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const voiceLabel = ui(prefs.voice ? "disableDinoVoice" : "enableDinoVoice");
   const voiceHint = !actor ? ui("voiceSignIn") : prefs.voice && !voiceOffer ? ui("voiceUnavailable") : !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceFree");
   const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
-  return <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
+  return <>
     {!open && <CompanionQuestPin onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />}
+    <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={nextOpen => {
       if (nextOpen && typeof WebGLRenderingContext !== "undefined" && !allowChatOpenRef.current) {
         return;
@@ -312,5 +313,6 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         </form>
       </PopoverContent>
     </Popover>
-  </div>;
+  </div>
+  </>;
 }

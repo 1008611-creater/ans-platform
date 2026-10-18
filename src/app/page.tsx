@@ -50,44 +50,54 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
         }))} labels={{ title: t("home.spotlight"), open: t("detail"), carousel: t("home.projectCarousel"), info: t("catalogBrowse.introduction"), pause: t("home.pauseProjects"), play: t("home.playProjects") }} /> : <div className={styles.empty}><BookOpen aria-hidden="true" /><h2>{t("emptyTitle")}</h2><p>{t("emptyBody")}</p></div>}
       </div>
       <div className="ans-product-container mt-4" data-testid="home-ecosystem-pulse">
-        <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-border/60 bg-card/75 p-3 backdrop-blur-md lg:grid-cols-4">
-          <Link href="/explore" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
-            <div>
-              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "Runnable Projects & Workflows" : "可复现项目与开源工作流"}</div>
-              <div className="mt-0.5 text-sm font-bold text-foreground">{browse.total}+ {isEn ? "Verified Entries · Live Demo" : "精选项目 · 含输入与验收边界"}</div>
-            </div>
-            <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+        <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-border/60 bg-card/75 p-2.5 backdrop-blur-md lg:grid-cols-4">
+          <Link
+            href="/explore"
+            title={isEn ? "Runnable Projects & Workflows · Verified Entries with Live Demo" : "可复现项目与开源工作流 · 含输入与验收边界"}
+            className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
+          >
+            <span className="truncate text-xs font-bold text-foreground sm:text-sm">
+              {browse.total}+ {isEn ? "Verified Projects" : "精选可复现项目"}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
-          <Link href="/competitions/agrihackathon" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
-            <div>
-              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "CAU AgriHackathon · Git Snapshot" : "中国农大智耕黑客松 · 代码快照存证"}</div>
-              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "¥3,300 Pool · SHA-256 Audit" : "¥3,300 奖池 · SHA-256 归档核验"}</div>
-            </div>
-            <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          <Link
+            href="/competitions/agrihackathon"
+            title={isEn ? "CAU AgriHackathon · ¥3,300 Pool & SHA-256 Git Snapshot Audit" : "中国农大智耕黑客松 · ¥3,300 奖池与代码存证归档"}
+            className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
+          >
+            <span className="truncate text-xs font-bold text-foreground sm:text-sm">
+              {isEn ? "AgriHackathon · ¥3,300" : "中国农大智耕黑客松"}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
-          <Link href="/vibe-hub/vibehub-skill" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
-            <div>
-              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "ANS Skill & Brief Workbench" : "ANS 需求转写与去 AI 味规范"}</div>
-              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "10 Daily Skills · 3 Pipelines" : "10 大日常 Skill · 3 条生产流水线"}</div>
-            </div>
-            <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          <Link
+            href="/vibe-hub/vibehub-skill"
+            title={isEn ? "ANS Skill & Brief Workbench · 10 Daily Skills & 3 Pipelines" : "ANS 需求转写与去 AI 味规范 · 10 大日常 Skill 与 3 条流水线"}
+            className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
+          >
+            <span className="truncate text-xs font-bold text-foreground sm:text-sm">
+              {isEn ? "10 Daily Skills" : "10 大高频 Skill 库"}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
-          <Link href="/status" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
-            <div>
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                {isEn ? "APIC Multi-Model Router" : "APIC 多模型路由与算力账本"}
-              </div>
-              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "6 Live Models · Auto-Failover" : "6 路模型探针 · 1 积分 = ¥0.1"}</div>
-            </div>
-            <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          <Link
+            href="/status"
+            title={isEn ? "APIC Multi-Model Router · 6 Live Models with Auto-Failover" : "APIC 多模型路由与算力探针 · 6 路主流模型在线"}
+            className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
+          >
+            <span className="flex items-center gap-1.5 truncate text-xs font-bold text-foreground sm:text-sm">
+              <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+              {isEn ? "6 Live AI Models" : "6 路模型实时在线"}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
         </div>
       </div>
     </section>
     <section className={`ans-product-container ${styles.selection}`} aria-labelledby="home-projects-title">
       <div className={styles.sectionHeading}>
-        <div className={styles.sectionTitle}><h2 id="home-projects-title">{t("nav.explore")}</h2><span className={styles.count}>{t("results", { count: browse.total })}</span></div>
+        <div className={styles.sectionTitle}><h2 id="home-projects-title">{isEn ? "Curated Projects & Runnable Workflows" : "精选项目与可复现工作流"}</h2><span className={styles.count}>{t("results", { count: browse.total })}</span></div>
         <Button asChild variant="outline" className={styles.submit}><Link href="/explore/submit"><Plus aria-hidden="true" />{t("realProject.submit")}</Link></Button>
       </div>
       <nav aria-label={t("categoriesLabel")} className={styles.categoryRail}>
