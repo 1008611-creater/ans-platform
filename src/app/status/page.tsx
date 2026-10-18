@@ -98,6 +98,78 @@ export default async function StatusPage() {
         </div>
       </section>
 
+      <section className="mt-6 rounded-xl border bg-card p-5 shadow-sm sm:p-6" data-testid="status-investor-architecture">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-semibold">
+              {isEn ? "ANS Technical Architecture & Compute Economy Loop" : "ANS 技术底座与高校算力经济闭环"}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {isEn
+                ? "End-to-end infrastructure connecting campus AI competitions, 3D gamified onboarding, and creator monetization."
+                : "面向高校开发者与合作伙伴的全链路技术架构：从正态随机算力补贴、密码学赛事存证到技能市场持续分成。"}
+            </p>
+          </div>
+          <Link href="/competitions/agrihackathon" className="text-xs font-medium text-primary hover:underline">
+            {isEn ? "Inspect Flagship AgriHackathon →" : "查看农大智耕黑客松实战 →"}
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border bg-muted/15 p-3.5">
+            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              {isEn ? "01 · Gamified Acquisition" : "01 · 3D 盲盒与正态算力补贴"}
+            </div>
+            <p className="mt-1 text-sm font-semibold">
+              {isEn ? "100–150 pts Normal Dist." : "100–150 积分正态随机发放"}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {isEn
+                ? "Interactive 3D claw machine & pet sanctuary onboard students at ¥10–¥15 compute cost per user."
+                : "通过 3D 抓娃娃机与小龙养成圣殿激活高校新用户，单人获客算力成本严格锚定 ¥10–¥15（均值 125 积分）。"}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-muted/15 p-3.5">
+            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              {isEn ? "02 · Team Compute Pool" : "02 · 队长组队与共享算力池"}
+            </div>
+            <p className="mt-1 text-sm font-semibold">
+              {isEn ? "Up to 750 pts / 5-Member Team" : "5 人战队最高 750 积分池"}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {isEn
+                ? "Captains allocate shared compute across LLM/VLM gateways for AgriHackathon & AIGC tracks."
+                : "支持 1–5 人跨专业组队，队长统一调度团队算力配额，直连 DeepSeek / Qwen / 漫剧生成工作流。"}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-muted/15 p-3.5">
+            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              {isEn ? "03 · Cryptographic Escrow" : "03 · SHA-256 赛事防篡改存证"}
+            </div>
+            <p className="mt-1 text-sm font-semibold">
+              {isEn ? "Verifiable Code & Blind Review" : "工程源码哈希锁定与盲审"}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {isEn
+                ? "Every submission generates an immutable SHA-256 fingerprint with 3-pillar judge scoring."
+                : "每次提交自动生成不可篡改 SHA-256 哈希存证与版本快照，配合三维度评委盲审与现场真机核验。"}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-muted/15 p-3.5">
+            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              {isEn ? "04 · Creator Marketplace" : "04 · 技能市场 80% 创作者分成"}
+            </div>
+            <p className="mt-1 text-sm font-semibold">
+              {isEn ? "1 Point = ¥0.10 Closed Loop" : "1 积分 = ¥0.10 商业闭环"}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {isEn
+                ? "Winning workflows publish to /market where student creators earn 80% ongoing point royalties."
+                : "优秀参赛作品与简历模板一键上架技能市场，复刻调用即享 80% 算力积分回流，形成自生长校园生态。"}
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="mt-6 rounded-xl border bg-card p-5 shadow-sm sm:p-6" aria-labelledby="feed-heading">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">

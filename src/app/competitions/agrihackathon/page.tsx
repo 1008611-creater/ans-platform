@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowRight, ArrowUpRight, Compass, Cpu, FileCheck2, Sprout, Star, Telescope, Trophy } from "lucide-react";
+import { auth } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeading } from "@/components/layout/page-heading";
@@ -23,7 +24,17 @@ const trackStyles = { people: { icon: Sprout }, discovery: { icon: Telescope }, 
 const linkClass = "inline-flex min-h-11 items-center gap-2 rounded-md py-2 text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const visualFrameClass = "overflow-hidden rounded-2xl border bg-slate-950/90 shadow-sm";
 
+function cleanMarkdown(raw: string): string {
+  return raw
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .trim();
+}
+
 export default async function AgriHackathonPage() {
+  const session = await auth();
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
   const t = await getTranslations("agriHackathon");
   const wall = await getTranslations("agriWall");
   const locale = await getLocale();
@@ -36,7 +47,6 @@ export default async function AgriHackathonPage() {
   const onsite = await getTranslations("product.agriOnsite");
   const management = await getTranslations("product.agriWorkspace");
   const rankings = await getTranslations("product.agriRankings");
-  const benefits = await getTranslations("product.computeBenefits");
   const competition = await findAgriHackathonCompetition();
   const guide = await readAgriPublicGuide().catch(() => null);
 
@@ -104,13 +114,15 @@ export default async function AgriHackathonPage() {
     <div className="ans-product-container ans-page-content space-y-9">
       <Link href="/competitions" className={linkClass}>{t("backToHub")}</Link>
       <PageHeading title={t("title")} description={t("intro")}
-        actions={<Button asChild size="lg" className="h-auto min-h-11 w-full whitespace-normal sm:w-auto"><Link href="/explore/submit?event=agrihackathon">{wall("publish")}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></Link></Button>} />
+        actions={<div className="flex flex-wrap items-center gap-2.5"><Button asChild variant="outline" size="lg" className="h-auto min-h-11"><Link href="/competitions/agrihackathon/showcase">🏆 示范作品展与榜单</Link></Button><Button asChild size="lg" className="h-auto min-h-11 w-full whitespace-normal sm:w-auto"><Link href="/explore/submit?event=agrihackathon">{wall("publish")}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></Link></Button></div>} />
       <aside aria-labelledby="agri-rules-pending" className="min-w-0 rounded-xl border bg-muted/30 p-4 sm:p-5">
-        <h2 id="agri-rules-pending" className="font-semibold">{guide ? management("rulesTitle") : pending("rulesPendingTitle")}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="agri-rules-pending" className="font-semibold">{guide ? management("rulesTitle") : pending("rulesPendingTitle")}</h2>
+          {guide && <Badge variant="secondary" className="font-mono text-xs">{management("publishedVersion")}: {guide.rule.version}</Badge>}
+        </div>
         {guide ? <>
-          <details className="mt-2"><summary className="min-h-11 w-fit cursor-pointer rounded py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("readPublishedRules")}</summary><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7">{guide.rule.guidanceMarkdown}</p></details>
-          <p className="mt-3 text-sm text-muted-foreground">{management("publishedVersion")}: {guide.rule.version}</p>
-          <ul className="mt-3 space-y-2 text-sm">{guide.rule.windows.map(window => <li key={window.stage}><span className="font-medium">{management("stage." + window.stage)}</span>{" · "}{window.state === "CONFIRMED" && window.opensAt && window.closesAt ? <>{submissions("dates", { opens: formatDate(window.opensAt), closes: formatDate(window.closesAt) })}{" · "}{submissions(window.includesDeadline ? "inclusive" : "exclusive")}</> : management("windowPending")}</li>)}</ul>
+          <details className="mt-2"><summary className="min-h-11 w-fit cursor-pointer rounded py-2 text-sm text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("readPublishedRules")}</summary><p className="mt-2 whitespace-pre-wrap break-words rounded-lg border bg-background/60 p-3.5 text-sm leading-7 text-muted-foreground">{cleanMarkdown(guide.rule.guidanceMarkdown)}</p></details>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2 text-sm">{guide.rule.windows.map(window => <li key={window.stage} className="rounded-lg border bg-background/50 px-3 py-2"><span className="font-medium">{management("stage." + window.stage)}</span>{" · "}{window.state === "CONFIRMED" && window.opensAt && window.closesAt ? <>{submissions("dates", { opens: formatDate(window.opensAt), closes: formatDate(window.closesAt) })}{" · "}{submissions(window.includesDeadline ? "inclusive" : "exclusive")}</> : management("windowPending")}</li>)}</ul>
         </> : <p className="mt-1.5 max-w-3xl text-sm leading-6 text-muted-foreground">{pending("rulesPendingBody")}</p>}
       </aside>
 
@@ -163,6 +175,7 @@ export default async function AgriHackathonPage() {
       <nav aria-label={t("nextAction")} className="flex flex-wrap gap-x-5 border-y py-3">
           <Link href="/explore/agrihackathon/submit" className={linkClass}>{t("bindProject")}</Link>
           <Link href="/competitions/agrihackathon/tasks" className={linkClass}>{tasks("title")}</Link>
+          <Link href="/competitions/agrihackathon/showcase" className={linkClass}>{publications("showcaseTitle")}</Link>
           <Link href="/teams" className={linkClass}>{t("openTeams")}</Link>
           {competition && <Link href={`/competitions/${competition.id}`} className={linkClass}>{t("enterWorkbench")}</Link>}
       </nav>
@@ -172,9 +185,10 @@ export default async function AgriHackathonPage() {
           <h2 id="agri-tracks-title" className="text-2xl font-semibold">{t("tracksTitle")}</h2>
           <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{t("tracksDescription")}</p>
         </div>
-        <figure className={visualFrameClass}>
-          <Image src="/competitions/agrihackathon/gitglow-tracks.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" />
-        </figure>
+        <Link href="/competitions/agrihackathon/tasks" className={`${visualFrameClass} group relative block transition hover:border-primary/60`}>
+          <Image src="/competitions/agrihackathon/gitglow-tracks.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover transition duration-300 group-hover:scale-[1.01]" />
+          <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/85 px-3 py-1 text-xs font-semibold text-white backdrop-blur-xs">🌾 选择赛道并查看备赛清单 →</span>
+        </Link>
         <div className="grid gap-4 md:grid-cols-3">{tracks.map(track => { const Icon = track.icon; return <article key={track.id} id={`track-${track.id}`} className="flex min-w-0 flex-col justify-between rounded-2xl border bg-card p-5">
           <div className="space-y-2.5">
             <div className="flex items-center justify-between gap-2">
@@ -183,22 +197,25 @@ export default async function AgriHackathonPage() {
             </div>
             <p className="text-sm leading-6 text-muted-foreground">{track.description}</p>
           </div>
-          <details className="mt-3 border-t pt-2"><summary className="min-h-11 w-fit cursor-pointer rounded py-1.5 text-xs font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("trackFocus")}</summary><p className="text-xs leading-5 text-muted-foreground">{track.detail}</p></details>
+          <p className="mt-3 border-t pt-3 text-xs leading-5 text-muted-foreground">{track.detail}</p>
         </article>; })}</div>
       </section>
 
       <section aria-labelledby="agri-guide-title" className="space-y-4">
         <h2 id="agri-guide-title" className="text-2xl font-semibold">{t("guideTitle")}</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <figure className={visualFrameClass}>
-            <Image src="/competitions/agrihackathon/gitglow-workflow.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" />
-          </figure>
-          <figure className={visualFrameClass}>
-            <Image src="/competitions/agrihackathon/gitglow-scoring.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" />
-          </figure>
-          <figure className={visualFrameClass}>
-            <Image src="/competitions/agrihackathon/gitglow-awards.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" />
-          </figure>
+          <Link href="/competitions/agrihackathon/tasks" className={`${visualFrameClass} group relative block transition hover:border-primary/60`}>
+            <Image src="/competitions/agrihackathon/gitglow-workflow.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+            <span className="absolute bottom-2.5 right-2.5 rounded-full bg-slate-950/85 px-2.5 py-1 text-[11px] font-semibold text-white">📋 6 步备赛流程 →</span>
+          </Link>
+          <Link href="/competitions/agrihackathon/showcase" className={`${visualFrameClass} group relative block transition hover:border-primary/60`}>
+            <Image src="/competitions/agrihackathon/gitglow-scoring.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+            <span className="absolute bottom-2.5 right-2.5 rounded-full bg-slate-950/85 px-2.5 py-1 text-[11px] font-semibold text-white">📊 评审标准与作品展 →</span>
+          </Link>
+          <Link href="/teams" className={`${visualFrameClass} group relative block transition hover:border-primary/60`}>
+            <Image src="/competitions/agrihackathon/gitglow-awards.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+            <span className="absolute bottom-2.5 right-2.5 rounded-full bg-slate-950/85 px-2.5 py-1 text-[11px] font-semibold text-white">🏆 ¥3,300 奖池与组队 →</span>
+          </Link>
         </div>
         <CompetitionDetails title={t("phasesTitle")}>
           <p className="max-w-3xl text-muted-foreground">{t("phasesDescription")}</p>
@@ -231,15 +248,17 @@ export default async function AgriHackathonPage() {
           <p className="max-w-3xl text-muted-foreground">{competition ? t("boundaryDescriptionOpen") : t("boundaryDescription")}</p>
           <ul className="grid gap-2 sm:grid-cols-2">{(["entry", "links", "ownership", "next"] as const).map(item => <li key={item} className="rounded-lg border px-3 py-2 text-xs">{item === "next" && competition ? t("boundaryNextOpen") : t(`boundaryItems.${item}`)}</li>)}</ul>
         </CompetitionDetails>
-        <CompetitionDetails title={pending("organizerTools")}>
-          <p className="max-w-3xl text-muted-foreground">{pending("organizerToolsBody")}</p>
-          <div className="grid gap-3 pt-1 sm:grid-cols-2">{([
-            ["works", works("title")], ["onsite", onsite("title")], ["publication-review", publications("reviewTitle")], ["popularity", wall("managementTitle")], ["manage", management("title")], ["rankings", rankings("adminTitle")],
-          ] as const).map(([path, label]) => <div key={path} className="rounded-lg border bg-background/60 p-3.5">
-            <Link href={`/competitions/agrihackathon/${path}`} className={linkClass}><span>{label}</span><ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" /></Link>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">{pending(`organizerToolDescriptions.${path}`)}</p>
-          </div>)}</div>
-        </CompetitionDetails>
+        {isAdmin && (
+          <CompetitionDetails title={pending("organizerTools")}>
+            <p className="max-w-3xl text-muted-foreground">{pending("organizerToolsBody")}</p>
+            <div className="grid gap-3 pt-1 sm:grid-cols-2">{([
+              ["works", works("title")], ["onsite", onsite("title")], ["publication-review", publications("reviewTitle")], ["popularity", wall("managementTitle")], ["manage", management("title")], ["rankings", rankings("adminTitle")],
+            ] as const).map(([path, label]) => <div key={path} className="rounded-lg border bg-background/60 p-3.5">
+              <Link href={`/competitions/agrihackathon/${path}`} className={linkClass}><span>{label}</span><ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" /></Link>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{pending(`organizerToolDescriptions.${path}`)}</p>
+            </div>)}</div>
+          </CompetitionDetails>
+        )}
       </section>
     </div>
   </div>;

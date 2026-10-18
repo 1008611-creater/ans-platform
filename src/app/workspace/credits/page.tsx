@@ -27,7 +27,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
   const voiceText = await getTranslations("product.voiceUsage");
   const agriNav = await getTranslations("product.agrihackathon");
   const agriWall = await getTranslations("agriWall");
-  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
+  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
   let history;
   let invalid = Array.isArray(query.cursor);
@@ -42,7 +42,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
     process.env.ANS_COMPUTE_BENEFITS_ENABLED === "1" ? getComputeBenefits(session.user.id).catch(() => undefined) : Promise.resolve(undefined),
   ]) : [null, null, undefined];
   return <AccountContentBoundary actorId={session.user.id}><div className="ans-product-shell"><div className="ans-product-container space-y-7 py-8 sm:py-12">
-    <div className="flex flex-wrap items-center gap-3"><Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground">{t("back")}</Link><Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500"><Link href="/workspace/benefits">🎁 免费领 100~150 积分 · 3D 抓娃娃机</Link></Button><Button asChild variant="outline" size="sm"><Link href="/workspace/models">⚡ 模型实机演练场</Link></Button><Button asChild variant="outline" size="sm"><Link href="/market">🛒 去积分市场消费</Link></Button></div>
+    <div className="flex flex-wrap items-center gap-3"><Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground">{t("back")}</Link><Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500"><Link href="/workspace/benefits">🎁 免费领 100~150 积分 · 3D 抓娃娃机</Link></Button><Button asChild variant="outline" size="sm"><Link href="/models">⚡ 模型实机演练场</Link></Button><Button asChild variant="outline" size="sm"><Link href="/market">🛒 去积分市场消费</Link></Button></div>
     <header className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-tight">{t("centerTitle")}</h1><p className="mt-3 max-w-2xl leading-7 text-muted-foreground">{t("centerDescription")}</p></div><Button asChild variant="outline"><Link href="/workspace/credits" prefetch={false}>{t("refresh")}</Link></Button></header>
     {!history ? <p role="alert" className="rounded-[var(--radius)] border p-5">{t(invalid ? "invalid" : "unavailable")}</p> : <>
       {giftOffer && <CreditGiftClaim actorId={session.user.id} offer={giftOffer} />}

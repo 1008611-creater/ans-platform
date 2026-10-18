@@ -73,8 +73,79 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
   const field = (label: string, input: ReactNode, hint?: string) => <label className="grid min-w-0 gap-2 text-sm font-medium"><span>{label}</span>{input}{hint && <span className="text-xs font-normal leading-6 text-muted-foreground">{hint}</span>}</label>;
   const section = (number: string, heading: string, body: string) => <div className="mb-6 flex gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">{number}</span><div><h2 className="text-lg font-semibold">{heading}</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">{body}</p></div></div>;
   const previewPrice = Math.min(...tiers.map(tier => parseMarketPrice(tier.price) ?? Infinity));
-  const safeCover = /^https:\/\//i.test(coverUrl);
+  const safeCover = /^(https:\/\/|\/)/i.test(coverUrl);
+  function applyQuickTemplate(tpl: { cat: string; sub: string; title: string; summary: string; deliv: string; cover: string; desc: string; url: string; git: string }) {
+    setCategory(tpl.cat as typeof category);
+    setSubcategory(tpl.sub);
+    setTitle(tpl.title);
+    setSummary(tpl.summary);
+    setDeliverables(tpl.deliv);
+    setCoverUrl(tpl.cover);
+    setTimeout(() => {
+      const d = document.querySelector<HTMLTextAreaElement>('textarea[name="description"]');
+      const u = document.querySelector<HTMLInputElement>('input[name="previewUrl"]');
+      const g = document.querySelector<HTMLInputElement>('input[name="githubUrl"]');
+      if (d) d.value = tpl.desc;
+      if (u) u.value = tpl.url;
+      if (g) g.value = tpl.git;
+    }, 30);
+  }
   return <div className="space-y-6">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/25 bg-primary/5 p-4">
+      <div className="space-y-0.5">
+        <p className="text-sm font-bold text-foreground">⚡ 一键填入示范项目模板（秒速体验实时预览与发布）</p>
+        <p className="text-xs text-muted-foreground">点击任一模板即可自动填充标题、封面、简介、亮点与预览地址，支持在此基础上自由修改</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {[
+          {
+            label: "🌾 农客松参赛作品模板",
+            cat: "competition",
+            sub: "agri-wall",
+            title: "CAU 农情病虫害多模态遥感诊断终端",
+            summary: "基于哨兵二号 NDVI 农情指数与 DeepSeek V4.1 视觉诊断的田间叶斑病实时预警与农艺处方生成系统。",
+            deliv: "可交互 HTML5 农情诊断终端\n病虫害置信度分析报告\n开源 Prompt 与数据集索引",
+            cover: "https://ans.cauai.fun/competitions/agrihackathon/gitglow-hub.webp",
+            desc: "面向中国农大智耕黑客松打造的智慧农业多模态诊断系统，融合田间实拍叶片视觉识别与多光谱遥感指数，3秒生成农艺防治处方。",
+            url: "https://ans.cauai.fun/workspace?thread=thread-agri",
+            git: "https://github.com/cauai/agri-vision-diagnosis",
+          },
+          {
+            label: "✨ Vibe Coding 3D 网页模板",
+            cat: "web",
+            sub: "website",
+            title: "Three.js 3D 星空个人作品集与简历站",
+            summary: "零依赖 HTML5 Canvas 3D 星空粒子交互主页，支持响应式 Bento 卡片、项目时间线与一键导出源码。",
+            deliv: "单文件 HTML5 3D 粒子网页\nBento 作品集响应式布局\n在线预览与源码包",
+            cover: "https://ans.cauai.fun/catalog/gitglow-v1/cauai-one.webp",
+            desc: "使用 Pi-Codex 工作台 30 秒生成的 3D 星空粒子个人主页，内置鼠标视差追踪与 Bento 作品矩阵。",
+            url: "https://ans.cauai.fun/workspace?thread=thread-portfolio",
+            git: "https://github.com/cauai/vibe-3d-portfolio",
+          },
+          {
+            label: "🎬 AIGC 漫剧分镜模板",
+            cat: "aigc",
+            sub: "video",
+            title: "Toonflow 赛博长安 AI 漫剧四格分镜工坊",
+            summary: "基于 Toonflow 与 Infinite Canvas 的一致性角色设定、四宫格电影级运镜脚本与 MJ/Runway 提示词工程。",
+            deliv: "4 镜完整分镜脚本与台词\nMJ v6 角色一致性 Prompt\nRunway Gen-3 运镜指令",
+            cover: "https://ans.cauai.fun/catalog/gitglow-v1/aigc-workspace.webp",
+            desc: "AIGC 创作赛道示范作品，包含完整角色设定锚点与四格电影级运镜提示词。",
+            url: "https://ans.cauai.fun/workspace?thread=thread-toonflow",
+            git: "https://github.com/cauai/toonflow-cyber-changan",
+          },
+        ].map(tpl => (
+          <button
+            key={tpl.label}
+            type="button"
+            onClick={() => applyQuickTemplate(tpl)}
+            className="rounded-full border border-primary/30 bg-background px-3.5 py-1.5 text-xs font-bold text-primary shadow-2xs transition hover:bg-primary hover:text-primary-foreground cursor-pointer"
+          >
+            {tpl.label}
+          </button>
+        ))}
+      </div>
+    </div>
     {isAgri && <aside className="rounded-2xl border border-primary/25 bg-primary/5 p-5"><h2 className="font-semibold">{aw("publishTitle")}</h2><p className="mt-2 text-sm leading-7 text-muted-foreground">{aw(offer && !offer.submittedAt && offer.status === "DRAFT" ? "publishDraftHint" : "publishBody")}</p><Link className="mt-3 inline-block text-sm font-medium text-primary underline underline-offset-4" href="/explore/agrihackathon/submit">{aw("continueEntry")}</Link></aside>}
     {offer && <div className="ans-detail-block space-y-3"><p className="font-medium">{t("version", { version: offer.version })} · {t("listingStatus." + (offer.submittedAt && !offer.reviewedAt ? "PENDING" : offer.status))}</p>{offer.status === "PUBLISHED" && <p className="text-sm text-muted-foreground">{t("publishedEditNote")}</p>}{offer.reviewNote && <p className="break-words text-sm">{t("reviewNote")}: {offer.reviewNote}</p>}<div className="flex flex-wrap gap-3"><Button type="button" disabled={busy || uploading || Boolean(offer.submittedAt || offer.reviewedAt)} onClick={() => act("submit")}>{t("submit")}</Button><Button type="button" variant="outline" disabled={busy || uploading || offer.status === "WITHDRAWN"} onClick={() => act("withdraw")}>{t("withdraw")}</Button>{!data?.execution && !isAgri && <Button type="button" variant="outline" asChild><Link href={`/market/creator/${offer.id}/integration`}>{tp("integrationAction")}<ArrowUpRight aria-hidden="true"/></Link></Button>}</div></div>}
     {error && <p role="alert" className="rounded-xl border border-destructive p-4 text-sm text-destructive">{error}</p>}

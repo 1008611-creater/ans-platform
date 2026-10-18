@@ -64,6 +64,41 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
           </div>
         </Link>)}
       </div>
+      <div className="ans-product-container mt-4" data-testid="home-ecosystem-pulse">
+        <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-border/60 bg-card/75 p-3 backdrop-blur-md lg:grid-cols-4">
+          <Link href="/explore" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
+            <div>
+              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "Verified AI & Open Workflows" : "精选可运行 AI 与开源项目"}</div>
+              <div className="mt-0.5 text-sm font-bold text-foreground">{browse.total}+ {isEn ? "Live Catalog Items" : "全栈工程与工作流"}</div>
+            </div>
+            <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          </Link>
+          <Link href="/competitions/agrihackathon" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
+            <div>
+              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "CAU AgriHackathon Prize & Escrow" : "中国农大智耕黑客松 · 密码学存证"}</div>
+              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "¥3,300 Pool · SHA-256" : "¥3,300 奖池 · SHA-256 存证"}</div>
+            </div>
+            <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          </Link>
+          <Link href="/workspace/benefits" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
+            <div>
+              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "3D Claw & Compute Economy" : "3D 盲盒与高校算力积分经济"}</div>
+              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "100–150 pts Grant · 1 pt = ¥0.1" : "100–150 积分补贴 · 80% 分成"}</div>
+            </div>
+            <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          </Link>
+          <Link href="/status" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
+            <div>
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                {isEn ? "APIC Multi-Model Router" : "APIC 多模态大模型算力网关"}
+              </div>
+              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "6 Live Models · Auto-Failover" : "6 路模型探针 · 实时健康监控"}</div>
+            </div>
+            <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          </Link>
+        </div>
+      </div>
     </section>
     <section className={`ans-product-container ${styles.selection}`} aria-labelledby="home-projects-title">
       <div className={styles.sectionHeading}>

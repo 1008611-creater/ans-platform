@@ -13,5 +13,18 @@ export default async function SubmitProjectPage({ searchParams }: { searchParams
     const w = await getTranslations("agriWall");
     return <div className="ans-product-shell"><div className="ans-product-container ans-page-content max-w-6xl space-y-6"><Button asChild variant="ghost"><Link href="/explore/agrihackathon/submit">{w("continueEntry")}</Link></Button><header><p className="mb-3 text-sm font-medium text-primary">{w("eyebrow")}</p><h1 className="ans-page-title">{w("publish")}</h1><p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">{w("reviewHint")}</p></header><MarketAccountBoundary actorId={user}><ListingEditor share agri /></MarketAccountBoundary></div></div>;
   }
-  return <MarketFrame title={t("submit")} description={t("submitBody")}><MarketAccountBoundary actorId={user}><ListingEditor share agri={agri} /></MarketAccountBoundary></MarketFrame>;
+  return (
+    <div className="ans-product-shell">
+      <div className="ans-product-container ans-page-content max-w-6xl space-y-6">
+        <header>
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-primary">ANS PROJECT PLAZA · 项目广场投稿</p>
+          <h1 className="ans-page-title">{t("submit")}</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("submitBody")}</p>
+        </header>
+        <MarketAccountBoundary actorId={user}>
+          <ListingEditor share agri={agri} />
+        </MarketAccountBoundary>
+      </div>
+    </div>
+  );
 }

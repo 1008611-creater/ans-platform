@@ -15,14 +15,9 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
       const params = new URLSearchParams(window.location.search);
       if (params.get("campaign") === "1") {
         setOpen(true);
-        return;
-      }
-      const dismissed = window.sessionStorage.getItem(DISMISS_STORAGE_KEY);
-      if (!dismissed) {
-        setOpen(true);
       }
     } catch {
-      setOpen(true);
+      // Do not auto-pop modal on load
     }
   }, []);
 

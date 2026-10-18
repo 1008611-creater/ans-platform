@@ -1603,11 +1603,6 @@ export function ComputeQuestArcade({
               ? "Compute Vault Progressive Unlock · 3D Dino Claw Machine & Quest Center"
               : "算力金库阶梯提现 · 3D 灵龙抓娃娃机 × 反常识彩蛋任务中心"}
           </h2>
-          <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            {isEn
-              ? "All-ANS Gaussian + Low-Prob Jackpot Model: ~90% of users steadily receive 100–150 Total Points (≈¥10–¥15 CNY across Onboarding 50 pts + Quests/Draws), while low-probability jackpots offer 80 Pts (SSR 4%), 300 Pts (UR 0.9%), and up to 1,000 Pts / ¥100 Mythic Koi (SP 0.1%)!"
-              : "全站正态分布 + 低概率重磅大奖模型：约 90% 用户全站累计获赠 100–150 积分（含问卷基础 50 积分 + 抓娃娃/打卡，折合 ¥10–¥15 元）；同时奖池设置低概率重磅大奖——SSR 80 积分 (4%)、UR 紫金龙蛋 300 积分 (0.9%)、SP 天选锦鲤 1000 积分免单大奖 (0.1% · 价值 ¥100 元)！"}
-          </p>
         </div>
 
         {/* Wallet Counters */}
@@ -1678,74 +1673,8 @@ export function ComputeQuestArcade({
         </div>
       </div>
 
-      {/* Progressive Compute Vault Dual Progress Dashboard */}
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        {/* Vault 1: 90% Normal Distribution Band (100–150 Points All-ANS Total) */}
-        <div className="rounded-2xl border border-border bg-muted/25 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                {isEn ? "90% Normal Band · All-ANS Total 100–150 Pts (μ=120)" : "全站正态主区间 (90% 用户) · 累计 100–150 积分 (均值 μ=120)"}
-              </span>
-              <h3 className="text-base font-semibold text-foreground">
-                {isEn ? "100–150 Pts All-ANS Standard Pool ($15 / ¥15)" : "100–150 积分全站普惠算力池（含入门基础 50 积分 + 互动 50–100 积分）"}
-              </h3>
-            </div>
-            <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-emerald-800 dark:text-emerald-300">
-              ${state.deepseekUnlockedUsd} / ${state.deepseekTotalUsd} ({Math.round(state.deepseekUnlockedUsd * POINTS_PER_USD)}{" "}
-              {isEn ? "pts" : "积分"})
-            </span>
-          </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-emerald-600 transition-all duration-500 dark:bg-emerald-400"
-              style={{ width: `${deepseekPct}%` }}
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>
-              {isEn
-                ? "Base 50 pts ($5) + 3 starter draws (30–45 pts) + daily check-in = 90% of users get 100–150 pts total across ANS"
-                : "问卷基础 50 积分 + 免费 3 连抓（30–45 积分）+ 打卡彩蛋 = 90% 用户全站共拿 100–150 积分（约 ¥10–¥15 元）"}
-            </span>
-            <span className="font-bold tabular-nums text-emerald-700 dark:text-emerald-300">{deepseekPct}%</span>
-          </div>
-        </div>
-
-        {/* Vault 2: Low-Probability Grand Jackpot & AgriHackathon Milestone Bonus Pool */}
-        <div className="rounded-2xl border border-border bg-muted/25 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                {isEn ? "Low-Prob Jackpots (0.1% / 0.9% / 4%) & Agri Milestones" : "低概率欧皇暴击大奖池 (0.1% / 0.9% / 4%) & 农客松里程碑"}
-              </span>
-              <h3 className="text-base font-semibold text-foreground">
-                {isEn
-                  ? "Up to 1,000 Pts ($100) Mythic Jackpot & +60 Pts Agri Pool"
-                  : "最高 1000 积分（¥100 天选锦鲤）/ 300 积分龙蛋 / +60 分农客松池"}
-              </h3>
-            </div>
-            <span className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-amber-800 dark:text-amber-300">
-              ${state.flagshipUnlockedUsd} / ${state.flagshipTotalUsd} ({Math.round(state.flagshipUnlockedUsd * POINTS_PER_USD)}{" "}
-              {isEn ? "pts" : "积分"})
-            </span>
-          </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-amber-500 transition-all duration-500 dark:bg-amber-400"
-              style={{ width: `${flagshipPct}%` }}
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>
-              {isEn
-                ? "👑 SP 1,000 pts (0.1%) · 🐉 UR 300 pts (0.9%) · 🔋 SSR 80 pts (4%) · 🌾 Agri M1–M4 (+60 pts)"
-                : "👑 SP 锦鲤 1000分(0.1%) · 🐉 UR 龙蛋 300分(0.9%) · 🔋 SSR 80分(4%) · 🌾 农客松 M1–M4(+60分)"}
-            </span>
-            <span className="font-bold tabular-nums text-amber-700 dark:text-amber-300">{flagshipPct}%</span>
-          </div>
-        </div>
-
+      {/* Compact Live Jackpot Ticker */}
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
         {/* Live Koi & Jackpot Broadcast Ticker + One-Click Brag Card */}
         <div
           data-testid="arcade-jackpot-ticker"

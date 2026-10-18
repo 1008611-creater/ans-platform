@@ -32,9 +32,19 @@ export default async function CompetitionsPage() {
               <Badge variant="secondary">{t(`items.${id}.status`)}</Badge>
             </div>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{t(`items.${id}.description`)}</p>
-            <details className="text-sm"><summary className="min-h-11 w-fit cursor-pointer rounded py-2 text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("eventOverview")}</summary><ul className="mt-2 list-disc space-y-1 ps-5 text-muted-foreground">{(t.raw(`items.${id}.highlights`) as string[]).map(item => <li key={item}>{item}</li>)}</ul></details>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {(t.raw(`items.${id}.highlights`) as string[]).map(item => (
+                <span key={item} className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-foreground/90">
+                  ✨ {item}
+                </span>
+              ))}
+            </div>
             <div className="flex flex-wrap items-center gap-4">
-              <Link href={href} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <Link
+                href={href}
+                style={{ background: "linear-gradient(135deg,#2563eb,#4f46e5)", color: "#ffffff", padding: "0 20px", borderRadius: "9999px", fontWeight: 700, boxShadow: "0 6px 16px rgba(37,99,235,0.24)" }}
+                className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-white transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 {t(`items.${id}.cta`)}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
               </Link>
               {id === "agrihackathon" && <>
@@ -48,7 +58,15 @@ export default async function CompetitionsPage() {
           </Link>
         </article>)}
       </section>
-      <Link href="/teams" className="inline-flex min-h-11 items-center rounded-md text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("continueTeam")}</Link>
+      <Link href="/teams" className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary/5 p-5 transition hover:border-primary/50 hover:bg-primary/10">
+        <div className="space-y-1">
+          <p className="text-base font-bold text-foreground">👥 组队参赛 · 申领 300 点团队专属算力包</p>
+          <p className="text-xs text-muted-foreground">创建或加入高校战队，共享比赛算力额度、提交农客松与 AIGC 参赛作品</p>
+        </div>
+        <span style={{ background: "#0f172a", color: "#fff", padding: "8px 16px", borderRadius: "9999px", fontSize: "13px", fontWeight: 700 }}>
+          {t("continueTeam")} →
+        </span>
+      </Link>
     </div>
   </div>;
 }

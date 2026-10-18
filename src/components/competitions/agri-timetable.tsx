@@ -74,12 +74,108 @@ function DateField({ label, value, onChange, disabled }: { label: string; value:
 
 export function AgriTimetable() {
   const t = useTranslations("product.agriTasks");
+  const locale = useLocale();
   const { data: session, status, update } = useSession();
   const [invalidSession, setInvalidSession] = useState(false);
   const markInvalid = useCallback(() => { clearAgriRecoveries(); setInvalidSession(true); }, []);
   useEffect(() => { if (status === "unauthenticated") clearAgriRecoveries(); }, [status]);
   if (status === "loading") return <p role="status">{t("loading")}</p>;
-  if (!session?.user?.id) return <Button asChild><Link href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Ftasks">{t("login")}</Link></Button>;
+  if (!session?.user?.id) {
+    const guestTasks = [
+      {
+        stage: "PREPARATION",
+        stageLabel: locale === "zh" ? "准备期 · Stage 01" : "Preparation · Stage 01",
+        priority: "HIGH",
+        title: locale === "zh" ? "组建 1–5 人跨学科战队 & 锁定三大赛道选题" : "Form 1–5 Member Team & Lock Track Topic",
+        criteria: locale === "zh" ? "在 /teams 完成队长建队，绑定 GitHub 仓库或本地源码包，领取最高 750 算力积分补贴。" : "Create team on /teams, bind GitHub repo, and claim up to 750 compute points.",
+        reward: "+150 pts / 人",
+      },
+      {
+        stage: "PRELIMINARY",
+        stageLabel: locale === "zh" ? "初赛开发 · Stage 02" : "Preliminary · Stage 02",
+        priority: "HIGH",
+        title: locale === "zh" ? "农业 AI 核心算法 / 硬件原型与数据集验证" : "Agri-AI Core Model / Hardware Prototype Validation",
+        criteria: locale === "zh" ? "基于 DeepSeek / Qwen2.5-VL 或边缘端 YOLO 完成病虫害识别、智慧灌溉或表型分析闭环。" : "Complete crop disease, smart irrigation, or phenotyping loop with LLM/VLM.",
+        reward: "AI 算力网关直连",
+      },
+      {
+        stage: "PRELIMINARY",
+        stageLabel: locale === "zh" ? "初赛封存 · Stage 03" : "Code Escrow · Stage 03",
+        priority: "HIGH",
+        title: locale === "zh" ? "提交初赛工程包与 SHA-256 密码学哈希存证" : "Submit Preliminary Package & SHA-256 Hash Escrow",
+        criteria: locale === "zh" ? "上传 10MB 内源码压缩包、架构说明与可复现实验命令，系统自动生成不可篡改 SHA-256 指纹。" : "Upload source archive and reproducible commands for automatic SHA-256 fingerprinting.",
+        reward: "防篡改代码存证",
+      },
+      {
+        stage: "FINAL",
+        stageLabel: locale === "zh" ? "决赛冲刺 · Stage 04" : "Finals · Stage 04",
+        priority: "NORMAL",
+        title: locale === "zh" ? "评委盲审反馈迭代 & 现场演示环境自检" : "Judge Feedback Iteration & Live Demo Check",
+        criteria: locale === "zh" ? "根据三维度评分（技术创新 40% / 农学落地 35% / 演示完整度 25%）完成演示自检表。" : "Complete live demo checklist across Innovation (40%), Agronomy (35%), Completeness (25%).",
+        reward: "冲击 ¥3,300 奖池",
+      },
+      {
+        stage: "EVENT_DAY",
+        stageLabel: locale === "zh" ? "路演答辩 · Stage 05" : "Demo Day · Stage 05",
+        priority: "HIGH",
+        title: locale === "zh" ? "中国农大现场路演答辩与实时人气打榜" : "CAU On-Site Pitch & Live Popularity Voting",
+        criteria: locale === "zh" ? "现场 5 分钟真机演示 + 3 分钟评委问答，同步开启全校作品墙星标助威。" : "5-min live hardware/software demo + 3-min Q&A with campus-wide star voting.",
+        reward: "校级荣誉证书",
+      },
+      {
+        stage: "ARCHIVE",
+        stageLabel: locale === "zh" ? "开源沉淀 · Stage 06" : "Archive · Stage 06",
+        priority: "NORMAL",
+        title: locale === "zh" ? "入选正式展览馆 & 上架技能市场持续分成" : "Official Showcase Publication & Market Royalties",
+        criteria: locale === "zh" ? "优秀工程一键归档至 ANS 正式展览馆，并可封装为标准技能包上架 /market 获取积分分成。" : "Publish to official showcase and list on /market for ongoing point royalties.",
+        reward: "80% 持续创作者分成",
+      },
+    ];
+    return (
+      <div className="space-y-5" data-testid="agri-tasks-guest-preview">
+        <div className="flex flex-col justify-between gap-4 rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent p-5 sm:flex-row sm:items-center">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                {locale === "zh" ? "农大创客马拉松 · 标准 6 阶段里程碑预览" : "AgriHackathon · 6-Stage Milestone Preview"}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {locale === "zh"
+                ? "登录后可一键初始化团队专属任务看板、指派队员、关联提交存证并实时同步备赛进度。"
+                : "Sign in to initialize your interactive team task board, assign members, and link submission records."}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button asChild className="rounded-xl">
+              <Link href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Ftasks">{t("login")}</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link href="/competitions/agrihackathon">{locale === "zh" ? "返回赛事主站" : "Back to Hub"}</Link>
+            </Button>
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {guestTasks.map((item, idx) => (
+            <Card key={idx} className="border-border/60 bg-card/90 transition hover:border-emerald-500/40 hover:shadow-md">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <Badge variant="outline" className="text-[11px]">{item.stageLabel}</Badge>
+                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-300">
+                    {item.reward}
+                  </span>
+                </div>
+                <CardTitle className="pt-1.5 text-base leading-snug">{item.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs leading-relaxed text-muted-foreground">{item.criteria}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (invalidSession) return <div className="space-y-3"><p role="alert">{t("errors.ACCOUNT_CHANGED")}</p><Button onClick={() => void update().then(() => setInvalidSession(false)).catch(() => setInvalidSession(true))}>{t("refresh")}</Button></div>;
   return <TaskList key={session.user.id} actorId={session.user.id} onAccountChanged={markInvalid} />;
 }

@@ -25,7 +25,7 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
   const t = useTranslations("product.vouchers");
   const historyText = useTranslations("product.quotaHistory");
   const locale = useLocale();
-  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
+  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
   const router = useRouter();
   const flight = useRef<{ controller: AbortController; timer: ReturnType<typeof setTimeout> } | null>(null);
@@ -83,16 +83,27 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
     <section aria-labelledby="credits-models-heading" className="rounded-3xl border bg-card p-6 sm:p-8">
       <div className="flex items-center gap-2"><Cpu className="size-5 text-primary" aria-hidden="true" /><h2 id="credits-models-heading" className="font-semibold">{t("modelsTitle")}</h2></div>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{t("modelsDescription")}</p>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-3">{RUN_MODEL_OPTIONS.map(model => <li key={model.key} className="min-w-0 rounded-xl border p-4"><p className="font-medium">{model.label}</p><p className="mt-1 break-all font-mono text-xs text-muted-foreground">{model.key}</p><p className="mt-4 text-sm">{t("modelMultiplier", { multiplier: RUN_MODEL_METERING[model.key].consumptionMultiplier })}</p></li>)}</ul>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-3">{RUN_MODEL_OPTIONS.map(model => <li key={model.key} className="min-w-0">
+        <Link href={`/models?model=${encodeURIComponent(model.key)}`} className="group flex h-full flex-col justify-between rounded-xl border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-semibold text-foreground group-hover:text-primary">{model.label}</p>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">⚡ 试玩 →</span>
+            </div>
+            <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{model.key}</p>
+          </div>
+          <p className="mt-4 text-sm font-medium">{t("modelMultiplier", { multiplier: RUN_MODEL_METERING[model.key].consumptionMultiplier })}</p>
+        </Link>
+      </li>)}</ul>
       <p className="mt-3 text-xs leading-6 text-muted-foreground">{t("modelRatesNote")}</p>
       <nav aria-label={t("entryPoints")} className="mt-5 grid gap-3 border-t pt-5 sm:grid-cols-2">
         {([
-          { href: "/workspace/models", title: "plazaTitle", body: "plazaBody", icon: Cpu },
+          { href: "/models", title: "plazaTitle", body: "plazaBody", icon: Cpu },
           { href: "/settings", title: "connectionTitle", body: "connectionBody", icon: TerminalSquare },
-          { href: "/projects", title: "projectsTitle", body: "projectsBody", icon: FolderOpen },
-          { href: "/workflows/runs", title: "runsTitle", body: "runsBody", icon: ReceiptText },
-          { href: "/workspace/compute", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
-        ] as const).map(({ href, title, body, icon: Icon }) => <Link key={href} href={href} className="flex min-w-0 items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{t(title)}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{t(body)}</p></div><ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
+          { href: "/workspace", title: "projectsTitle", body: "projectsBody", icon: FolderOpen },
+          { href: "/workspace", title: "runsTitle", body: "runsBody", icon: ReceiptText },
+          { href: "/competitions/aigc", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
+        ] as const).map(({ href, title, body, icon: Icon }) => <Link key={title} href={href} className="flex min-w-0 items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{t(title)}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{t(body)}</p></div><ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
       </nav>
     </section>
     {apiHistory !== undefined && <section aria-labelledby="credits-api-history-heading" className="rounded-3xl border bg-card p-6 sm:p-8">

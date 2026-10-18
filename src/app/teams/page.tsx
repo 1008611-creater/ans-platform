@@ -71,13 +71,70 @@ export default async function TeamsPage() {
         </div>
 
         {!viewerId ? (
-          <Card className="border-dashed">
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              {isEn
-                ? "Sign in to create a team, accept invitations, and manage member compute allowances."
-                : "登录后可以创建团队、接受邀请并管理成员额度。"}
-            </CardContent>
-          </Card>
+          <div className="space-y-4" data-testid="teams-guest-preview">
+            <Card className="border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent">
+              <CardContent className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                      {isEn ? "1–5 Members · Up to 750 Compute Points" : "1–5 人跨学科组队 · 最高 750 算力积分池"}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {isEn
+                      ? "Sign in to create a team, accept invitations, and manage member compute allowances."
+                      : "登录后可以创建团队、接受邀请并管理成员额度（每位成员正态随机配发 100–150 积分，由队长统一调度分配）。"}
+                  </p>
+                </div>
+                <Button asChild size="sm" className="shrink-0 rounded-xl">
+                  <Link href="/login?callbackUrl=/teams">{isEn ? "Create / Join Team →" : "立即登录建队 →"}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                {
+                  name: isEn ? "CropGuard · CAU Plant Protection VLM" : "植保慧眼 · 农大病虫害多模态组",
+                  track: isEn ? "AgriHackathon · Crop Disease Track" : "智耕黑客松 · 病虫害早筛赛道",
+                  members: "3 / 5",
+                  allowance: "410 pts",
+                  lookingFor: isEn ? "Recruiting: Frontend / Edge Deployment" : "招募：前端可视化 / 边缘端部署同学",
+                },
+                {
+                  name: isEn ? "HydroTwin · Greenhouse Fertigation Agent" : "智灌云脑 · 日光温室水肥数字孪生组",
+                  track: isEn ? "AgriHackathon · Smart Irrigation Track" : "智耕黑客松 · 智慧水肥赛道",
+                  members: "4 / 5",
+                  allowance: "535 pts",
+                  lookingFor: isEn ? "Recruiting: Agronomy Data Analyst" : "招募：农学气象建模 / 数据分析同学",
+                },
+                {
+                  name: isEn ? "ToonCraft · Campus AIGC Storyboard Lab" : "ToonCraft · 校园科普漫剧共创组",
+                  track: isEn ? "AIGC Studio · Open Track" : "AIGC 创作工坊 · 常驻组队池",
+                  members: "2 / 5",
+                  allowance: "260 pts",
+                  lookingFor: isEn ? "Recruiting: Prompt Director & ComfyUI" : "招募：分镜脚本策划 / ComfyUI 创作者",
+                },
+              ].map((sample, idx) => (
+                <Card key={idx} className="border-border/70 bg-card/90 transition hover:border-primary/40">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge variant="outline" className="text-[11px]">{sample.track}</Badge>
+                      <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{sample.allowance}</span>
+                    </div>
+                    <CardTitle className="pt-1 text-base">{sample.name}</CardTitle>
+                    <CardDescription className="text-xs">{sample.lookingFor}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex items-center justify-between pt-0 text-xs text-muted-foreground">
+                    <span>{isEn ? `Members: ${sample.members}` : `当前成员：${sample.members}`}</span>
+                    <Link href="/login?callbackUrl=/teams" className="font-medium text-primary hover:underline">
+                      {isEn ? "Apply →" : "登录后申请 →"}
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         ) : (
           <div className="space-y-6">
             {mine.invites.length > 0 ? (
@@ -196,14 +253,22 @@ export default async function TeamsPage() {
             </Card>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2">
             {competitions.map((c) => {
               const st = COMPETITION_STATUS[c.status] ?? { zh: c.status, en: c.status, variant: "outline" as const };
+              const isAgri = c.title.toLowerCase().includes("agri") || c.title.includes("农") || (c.url ?? "").includes("agrihackathon");
+              const coverSrc = isAgri ? "/competitions/agrihackathon/gitglow-hub.webp" : "/catalog/gitglow-v1/aigc-workspace.webp";
+              const targetHref = c.url || (isAgri ? "/competitions/agrihackathon" : "/competitions/aigc");
               return (
-                <Card key={c.id}>
+                <Card key={c.id} className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
+                  <Link href={targetHref} className="block overflow-hidden border-b">
+                    <img src={coverSrc} alt={c.title} loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
+                  </Link>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-base">{c.title}</CardTitle>
+                      <CardTitle className="text-base">
+                        <Link href={targetHref} className="hover:underline">{c.title}</Link>
+                      </CardTitle>
                       <Badge variant={st.variant}>{isEn ? st.en : st.zh}</Badge>
                     </div>
                     {c.organizer ? (
@@ -212,23 +277,46 @@ export default async function TeamsPage() {
                   </CardHeader>
                   <CardContent className="flex items-center justify-between pt-0">
                     <span className="text-xs text-muted-foreground">
-                      {c.startsAt ? c.startsAt.toLocaleDateString(isEn ? "en-US" : "zh-CN") : isEn ? "TBD" : "待定"}
+                      {c.startsAt ? c.startsAt.toLocaleDateString(isEn ? "en-US" : "zh-CN") : isEn ? "Ongoing · Campus Track" : "火热进行中 · 校级认证赛道"}
                       {c.endsAt ? " ~ " + c.endsAt.toLocaleDateString(isEn ? "en-US" : "zh-CN") : ""}
                     </span>
-                    {c.url ? (
-                      <a
-                        href={c.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline"
-                      >
-                        {isEn ? "Event details" : "赛事详情"}
-                      </a>
-                    ) : null}
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={targetHref}>
+                        {isEn ? "Enter Competition →" : "进入赛事专区 →"}
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               );
             })}
+            {competitions.length < 2 && (
+              <Card className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
+                <Link href="/competitions/aigc" className="block overflow-hidden border-b">
+                  <img src="/catalog/gitglow-v1/aigc-workspace.webp" alt="AIGC Creative Track" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
+                </Link>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="text-base">
+                      <Link href="/competitions/aigc" className="hover:underline">
+                        {isEn ? "AIGC Creative Track · Storyboard & Drama" : "AIGC 创作赛道 · 短剧分镜与多模态工坊"}
+                      </Link>
+                    </CardTitle>
+                    <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
+                  </div>
+                  <CardDescription>
+                    {isEn ? "Connect Solara Canvas, Plane project tracking, and Toonflow script-to-video pipelines." : "直连 Solara 无限画布、Plane 团队排期与 Toonflow 漫剧流水线，一站式沉淀参赛作品集。"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-between pt-0">
+                  <span className="text-xs text-muted-foreground">
+                    {isEn ? "Open Year-Round · Compute Subsidized" : "全年常驻开放 · 算力积分补贴"}
+                  </span>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/competitions/aigc">{isEn ? "Enter AIGC Studio →" : "进入 AIGC 赛事工坊 →"}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
       </section>
