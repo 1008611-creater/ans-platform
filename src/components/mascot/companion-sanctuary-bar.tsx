@@ -278,16 +278,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     hoverIdxRef.current += 1;
     const preset = findMoodPreset(id);
     setActiveMood(preset);
-    if (!macroActive && clickCountRef.current > 0 && clickCountRef.current < 3) {
-      const rem = 3 - clickCountRef.current;
-      setCustomSubText(
-        isZh
-          ? `(再点 ${rem} 下进入近景互动 / 换装 👗)`
-          : `(Click ${rem} more times for Close-Up Stage 👗)`,
-      );
-    } else {
-      setCustomSubText(null);
-    }
+    setCustomSubText(null);
     dispatchDinoInteract({ action: "hover", hover: true, mood: preset });
   };
 
@@ -311,11 +302,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     setMacroActive(false);
     const preset = findMoodPreset("happy_smile");
     setActiveMood(preset);
-    setCustomSubText(
-      isZh
-        ? "(已收起近景 · 再连点 3 下小恐龙可随时重新拉近镜头 ✨)"
-        : "(Exited Close-Up Stage · Click dino 3 times to zoom in again ✨)",
-    );
+    setCustomSubText(null);
     dispatchDinoInteract({
       action: "macro",
       active: false,
@@ -349,16 +336,11 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         enterMacroMode();
         return;
       }
-      const rem = 3 - clickCountRef.current;
       const id = CLICK_MOOD_IDS[clickIdxRef.current % CLICK_MOOD_IDS.length];
       clickIdxRef.current += 1;
       const preset = findMoodPreset(id);
       setActiveMood(preset);
-      setCustomSubText(
-        isZh
-          ? `(再点 ${rem} 下进入近景镜头 🎥 · 可抽鞭子/换装/投喂)`
-          : `(Click ${rem} more times for Close-Up Stage 🎥)`,
-      );
+      setCustomSubText(null);
       dispatchDinoInteract({ action: "click", mood: preset });
       onTriggerSpeech?.(preset.text);
       return;
@@ -374,11 +356,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       affectionXp: prev.affectionXp + 4,
     }));
     setActiveMood(preset);
-    setCustomSubText(
-      isZh
-        ? "(近景特写中 · 点击下方抽鞭子 / 投喂 / 奇迹暖暖衣橱 👇)"
-        : "(Close-Up Stage · Use controls below 👇)",
-    );
+    setCustomSubText(null);
     dispatchDinoInteract({ action: "click", mood: preset });
     onTriggerSpeech?.(preset.text);
   };
@@ -1000,18 +978,15 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "center",
-                justifyContent: "space-between",
-                gap: "10px",
+                justifyContent: "flex-end",
+                gap: "8px",
                 marginBottom: "12px",
-                padding: "10px 14px",
+                padding: "8px 12px",
                 borderRadius: "14px",
                 background: "rgba(15,23,42,0.55)",
                 border: "1px solid rgba(56,189,248,0.28)",
               }}
             >
-              <div style={{ fontSize: "12px", fontWeight: 800, color: "#bae6fd" }}>
-                ✨ {isZh ? "左侧 3D 展台已就位：点击单品即可在左侧 3D 小龙身上实时穿戴预览！" : "Left 3D Podium live: click any item below to preview on the 3D dragon in real time!"}
-              </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                 <button
                   type="button"
@@ -2177,7 +2152,7 @@ export function CompanionSanctuaryBar({
         >
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300">
-              ⚡ {isZh ? "小恐龙 Pi Agent 实权执行舱（免报价确认 · 直接读写数据库）" : "Dino Pi Agent Execution Pod (Zero-Confirmation)"}
+              ⚡ {isZh ? "小恐龙 Pi Agent 快捷指令" : "Dino Pi Agent Quick Command"}
             </span>
             {piBusy && (
               <span className="animate-pulse rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">

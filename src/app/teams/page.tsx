@@ -73,18 +73,14 @@ export default async function TeamsPage() {
         {!viewerId ? (
           <div className="space-y-4" data-testid="teams-guest-preview">
             <Card className="border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent">
-              <CardContent className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                      {isEn ? "1–5 Members · Shared Team Compute Pool" : "1–5 人跨学科组队 · 共享赛事算力池"}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {isEn
-                      ? "Sign in to create a real team, invite classmates, and allocate shared competition compute points."
-                      : "登录后可创建真实战队、生成邀请链接，并由队长统一分配队员的赛事算力额度。下方为常见跨学科组队分工参考范例："}
-                  </p>
+              <CardContent className="flex flex-col justify-between gap-3 py-3.5 sm:flex-row sm:items-center">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                    {isEn ? "1–5 Members · Shared Compute" : "1–5 人跨学科组队 · 共享赛事算力池"}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {isEn ? "Sign in to create a team and allocate shared points." : "登录后创建战队并分配赛事算力额度（下方为组队分工范例）"}
+                  </span>
                 </div>
                 <Button asChild size="sm" className="shrink-0 rounded-xl">
                   <Link href="/login?callbackUrl=/teams">{isEn ? "Create / Join Team →" : "立即登录建队 →"}</Link>
@@ -97,33 +93,33 @@ export default async function TeamsPage() {
                 {
                   name: isEn ? "Template A · Plant Protection & VLM Team" : "组队范例 A · 农情病虫害多模态识别组",
                   track: isEn ? "AgriHackathon · Crop Disease Track" : "智耕黑客松 · 病虫害早筛赛道",
-                  roles: isEn ? "1 Agronomy + 2 CS/AI + 1 Frontend" : "推荐配置：农学/植保 1 人 + 算法/后端 2 人 + 前端 1 人",
-                  badge: isEn ? "📖 Team Template" : "📖 组队参考范例",
+                  roles: isEn ? "1 Agronomy + 2 CS/AI + 1 Frontend" : "农学/植保 1 人 + 算法/后端 2 人 + 前端 1 人",
+                  badge: isEn ? "📖 Team Template" : "📖 组队范例",
                   lookingFor: isEn ? "Typical division: field dataset labeling, Qwen-VL fine-tuning, and mobile web UI." : "分工建议：田间病叶样本整理、多模态模型调用、移动端拍照诊断界面。",
                 },
                 {
                   name: isEn ? "Template B · Smart Greenhouse & IoT Team" : "组队范例 B · 日光温室水肥智能调控组",
                   track: isEn ? "AgriHackathon · Smart Irrigation Track" : "智耕黑客松 · 智慧水肥赛道",
-                  roles: isEn ? "1 Water/Agri Eng + 1 Data + 1 Full-Stack" : "推荐配置：水院/农工 1 人 + 数据建模 1 人 + 全栈 1 人",
-                  badge: isEn ? "📖 Team Template" : "📖 组队参考范例",
+                  roles: isEn ? "1 Water/Agri Eng + 1 Data + 1 Full-Stack" : "水院/农工 1 人 + 数据建模 1 人 + 全栈 1 人",
+                  badge: isEn ? "📖 Team Template" : "📖 组队范例",
                   lookingFor: isEn ? "Typical division: sensor time-series modeling, agent decision rules, and dashboard." : "分工建议：温湿度传感时序分析、滴灌策略生成与可视化大屏展示。",
                 },
                 {
                   name: isEn ? "Template C · Campus AIGC Short Drama Team" : "组队范例 C · 校园科普漫剧与多模态创作组",
                   track: isEn ? "AIGC Studio · Open Track" : "AIGC 创作工坊 · 常驻赛道",
-                  roles: isEn ? "1 Script/Design + 1 Prompt/Video" : "推荐配置：剧本分镜/美术 1 人 + AIGC 视觉工作流 1 人",
-                  badge: isEn ? "📖 Team Template" : "📖 组队参考范例",
+                  roles: isEn ? "1 Script/Design + 1 Prompt/Video" : "剧本分镜/美术 1 人 + AIGC 视觉工作流 1 人",
+                  badge: isEn ? "📖 Team Template" : "📖 组队范例",
                   lookingFor: isEn ? "Typical division: storyboard scripting, character consistency, and video editing." : "分工建议：12 镜分镜脚本设计、角色三视图锁定与配音成片合成。",
                 },
               ].map((sample, idx) => (
-                <Card key={idx} className="border-border/70 bg-card/90 transition hover:border-primary/40">
+                <Card key={idx} title={sample.lookingFor} className="group border-border/70 bg-card/90 transition hover:border-primary/40">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-2">
                       <Badge variant="outline" className="text-[11px]">{sample.track}</Badge>
                       <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{sample.badge}</span>
                     </div>
                     <CardTitle className="pt-1 text-base">{sample.name}</CardTitle>
-                    <CardDescription className="text-xs">{sample.lookingFor}</CardDescription>
+                    <CardDescription className="hidden text-xs group-hover:block">{sample.lookingFor}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex items-center justify-between pt-0 text-xs text-muted-foreground">
                     <span>{sample.roles}</span>
@@ -217,14 +213,14 @@ export default async function TeamsPage() {
 
         {competitions.length === 0 ? (
           <div className="grid gap-5 sm:grid-cols-2">
-            <Card className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
+            <Card className="group overflow-hidden border-border/80 transition-colors hover:border-primary/50">
               <img src="/competitions/agrihackathon/gitglow-hub.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base">{isEn ? "AgriHackathon · Smart Agriculture Challenge" : "智耕黑客松 · 现代农业 AI 挑战赛"}</CardTitle>
                   <Badge>{isEn ? "Ongoing" : "进行中"}</Badge>
                 </div>
-                <CardDescription>
+                <CardDescription className="line-clamp-1 group-hover:line-clamp-none">
                   {isEn ? "Form a campus team, claim shared compute points, and build on real agricultural datasets." : "组队申领团队算力池，围绕温室传感、农情病虫害与智慧农机数据集交付真实可验证作品。"}
                 </CardDescription>
               </CardHeader>
@@ -234,14 +230,14 @@ export default async function TeamsPage() {
                 </Button>
               </CardContent>
             </Card>
-            <Card className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
+            <Card className="group overflow-hidden border-border/80 transition-colors hover:border-primary/50">
               <img src="/catalog/gitglow-v1/aigc-workspace.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base">{isEn ? "AIGC Creative Track · Storyboard & Drama" : "AIGC 创作赛道 · 短剧分镜与多模态工坊"}</CardTitle>
                   <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
                 </div>
-                <CardDescription>
+                <CardDescription className="line-clamp-1 group-hover:line-clamp-none">
                   {isEn ? "Connect Solara Canvas, Plane project tracking, and Toonflow script-to-video pipelines." : "直连 Solara 无限画布、Plane 团队排期与 Toonflow 漫剧流水线，一站式沉淀参赛作品集。"}
                 </CardDescription>
               </CardHeader>
@@ -296,7 +292,7 @@ export default async function TeamsPage() {
               );
             })}
             {competitions.length < 2 && (
-              <Card className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
+              <Card className="group overflow-hidden border-border/80 transition-colors hover:border-primary/50">
                 <Link href="/competitions/aigc" className="block overflow-hidden border-b">
                   <img src="/catalog/gitglow-v1/aigc-workspace.webp" alt="AIGC Creative Track" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
                 </Link>
@@ -309,7 +305,7 @@ export default async function TeamsPage() {
                     </CardTitle>
                     <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
                   </div>
-                  <CardDescription>
+                  <CardDescription className="line-clamp-1 group-hover:line-clamp-none">
                     {isEn ? "Connect Solara Canvas, Plane project tracking, and Toonflow script-to-video pipelines." : "直连 Solara 无限画布、Plane 团队排期与 Toonflow 漫剧流水线，一站式沉淀参赛作品集。"}
                   </CardDescription>
                 </CardHeader>

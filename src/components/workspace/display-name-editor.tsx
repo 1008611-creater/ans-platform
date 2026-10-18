@@ -150,7 +150,7 @@ function PiCodexWorkbench({
   const [userTasks, setUserTasks] = useState<CodexTask[]>([]);
   const [guideTasks, setGuideTasks] = useState<CodexTask[]>(INITIAL_CODEX_TASKS);
   const [activeId, setActiveId] = useState<string>(INITIAL_CODEX_TASKS[0].id);
-  const [showOnboardingGuide, setShowOnboardingGuide] = useState<boolean>(true);
+  const [showOnboardingGuide, setShowOnboardingGuide] = useState<boolean>(false);
   const [model, setModel] = useState<"deepseek-v4.1-flash" | "gpt-6-astra" | "gpt-6.1-sol">("deepseek-v4.1-flash");
   const [promptInput, setPromptInput] = useState<string>(initialPrompt);
   const [running, setRunning] = useState<boolean>(false);
@@ -476,7 +476,7 @@ function PiCodexWorkbench({
             onClick={() => setShowOnboardingGuide(v => !v)}
             className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-500/20"
           >
-            📖 {showOnboardingGuide ? "收起新手引导" : "展开新手引导"}
+            📖 {showOnboardingGuide ? "收起引导" : "新手引导"}
           </button>
         </div>
 
@@ -506,12 +506,12 @@ function PiCodexWorkbench({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 font-bold text-amber-300">
-                📖 新手引导 · 3 步用起来
+                📖 3 步上手
               </span>
               <span className="text-slate-300">
-                <strong>① 写需求：</strong>在中间底部输入框直接用大白话写你要做的网页、脚本或比赛方案 →
-                <strong className="ml-1">② 看效果：</strong>右侧实时预览或切到「源码编辑」手改代码 →
-                <strong className="ml-1">③ 存项目：</strong>满意后点左侧「保存为我的立项项目」。
+                <strong>① 写需求：</strong>底部输入你要做的网页或方案 →
+                <strong className="ml-1">② 看效果：</strong>右侧实时预览或切「源码编辑」手改 →
+                <strong className="ml-1">③ 存项目：</strong>左侧一键保存到我的立项项目。
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -520,14 +520,14 @@ function PiCodexWorkbench({
                 onClick={handleStartBlankTask}
                 className="rounded-lg bg-emerald-500 px-2.5 py-1 text-xs font-black text-slate-950 hover:bg-emerald-400"
               >
-                + 新建我的空白任务
+                + 新建空白任务
               </button>
               <button
                 type="button"
                 onClick={() => setShowOnboardingGuide(false)}
                 className="text-xs text-slate-400 hover:text-white"
               >
-                知道了 ✕
+                ✕
               </button>
             </div>
           </div>
@@ -554,8 +554,8 @@ function PiCodexWorkbench({
                 </button>
               </div>
               {userTasks.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-400">
-                  还没有你自己的运行记录。在中间底部输入需求点击「运行」，或点上方「+ 新建空白」开始你的真实项目。
+                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/60 px-3 py-2.5 text-center text-xs text-slate-400">
+                  暂无运行记录
                 </div>
               ) : (
                 <div className="space-y-1.5">
@@ -572,7 +572,7 @@ function PiCodexWorkbench({
                     >
                       <div className="flex items-center justify-between gap-1 text-[10px]">
                         <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 font-bold text-emerald-300">{t.tag}</span>
-                        <span className="text-slate-400">{t.status === "running" ? "⚡ 生成中" : "✓ 我的记录"}</span>
+                        <span className="text-slate-400">{t.status === "running" ? "⚡ 生成中" : "✓ 已保存"}</span>
                       </div>
                       <div className="mt-1 line-clamp-1 text-xs font-bold">{t.title}</div>
                     </button>
@@ -585,11 +585,11 @@ function PiCodexWorkbench({
             <div className="border-t border-slate-800 pt-3">
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-[11px] font-extrabold text-amber-300/90">
-                  📖 新手引导范例 (点击体验效果)
+                  📖 新手引导范例
                 </span>
               </div>
               <div className="space-y-1.5">
-                {guideTasks.map((t, idx) => (
+                {guideTasks.map(t => (
                   <button
                     key={t.id}
                     type="button"
@@ -602,9 +602,8 @@ function PiCodexWorkbench({
                   >
                     <div className="flex items-center justify-between gap-1 text-[10px]">
                       <span className="rounded bg-amber-500/20 px-1.5 py-0.2 font-semibold text-amber-300">
-                        引导范例 {idx + 1}
+                        {t.tag}
                       </span>
-                      <span>{t.tag}</span>
                     </div>
                     <div className="mt-1 line-clamp-1 text-xs font-semibold">{t.title}</div>
                   </button>
@@ -614,7 +613,7 @@ function PiCodexWorkbench({
 
             {/* Section 3: Real Account Actions */}
             <div className="border-t border-slate-800 pt-3">
-              <span className="text-[11px] font-extrabold text-slate-400">⚡ 常用实权操作</span>
+              <span className="text-[11px] font-extrabold text-slate-400">⚡ 快捷操作</span>
               <div className="mt-2 grid gap-1.5">
                 <button
                   type="button"
@@ -647,35 +646,33 @@ function PiCodexWorkbench({
         {/* Center Column: Task Context & Prompt Input */}
         <section className="flex flex-col justify-between border-b border-slate-800 bg-slate-950 p-4 sm:p-5 lg:border-r lg:border-b-0">
           <div className="space-y-3 overflow-y-auto">
-            {isViewingGuideSample && (
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-                <span>📖 当前正在预览<strong>【新手引导范例】</strong>，并非你的历史记录。</span>
-                <button
-                  type="button"
-                  onClick={handleStartBlankTask}
-                  className="rounded-lg bg-amber-400 px-2 py-0.5 text-[11px] font-bold text-slate-950 hover:bg-amber-300"
-                >
-                  切换到我的空白草稿 →
-                </button>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
               <div>
                 <span className="text-[11px] font-bold text-emerald-400">
-                  {isViewingGuideSample ? "新手引导示范案例" : "我的工作任务"} · {activeTask.model}
+                  {activeTask.tag} · {activeTask.model}
                 </span>
                 <h2 className="mt-0.5 text-base font-extrabold text-white">{activeTask.title}</h2>
               </div>
-              <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300">
-                {running ? "⚡ 生成中..." : isViewingGuideSample ? "📖 引导范例" : "✓ 已保存"}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300">
+                  {running ? "⚡ 生成中..." : isViewingGuideSample ? "📖 引导范例" : "✓ 已保存"}
+                </span>
+                {isViewingGuideSample && (
+                  <button
+                    type="button"
+                    onClick={handleStartBlankTask}
+                    className="rounded-lg bg-amber-400 px-2 py-0.5 text-[11px] font-bold text-slate-950 hover:bg-amber-300"
+                  >
+                    + 新建空白草稿
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* User Prompt Bubble */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3">
               <div className="text-[11px] font-bold text-slate-400">
-                {isViewingGuideSample ? "💡 示范提问写法（可点下方按钮照着写）" : "🧑 我的输入需求"}
+                {isViewingGuideSample ? "💡 示范输入" : "🧑 我的输入需求"}
               </div>
               <p className="mt-1 text-xs leading-5 text-slate-100">{activeTask.prompt}</p>
             </div>
@@ -683,7 +680,7 @@ function PiCodexWorkbench({
             {/* Output Summary */}
             <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/15 p-3.5">
               <div className="mb-1 text-xs font-extrabold text-emerald-300">
-                {isViewingGuideSample ? "📖 范例说明" : "✓ 输出结果说明"}
+                {isViewingGuideSample ? "📖 范例说明" : "✓ 输出结果"}
               </div>
               <div className="whitespace-pre-wrap text-xs leading-6 text-slate-200">{activeTask.summary}</div>
               {activeTask.links && activeTask.links.length > 0 && (
@@ -715,7 +712,7 @@ function PiCodexWorkbench({
               rows={3}
               value={promptInput}
               onChange={e => setPromptInput(e.target.value)}
-              placeholder="在这里输入你真正想做的任务：比如「写一个番茄钟倒计时网页」「帮我列一份农客松参赛答辩提纲」..."
+              placeholder="输入你要做的任务：如「写一个番茄钟网页」「梳理农客松参赛答辩提纲」..."
               className="w-full resize-none bg-transparent text-xs leading-5 text-white placeholder:text-slate-500 focus:outline-none"
               onKeyDown={e => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -727,25 +724,9 @@ function PiCodexWorkbench({
             {(() => {
               const cluster = detectIntentAndMatchTerms(promptInput || activeTask.prompt);
               return (
-                <div className="mt-2 rounded-xl border border-slate-800 bg-slate-950/80 p-2" data-testid="codex-intent-bridge">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-slate-300">
-                      💡 提问小助手：觉得写得太简略？可点右侧帮你补齐细节
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const upgraded = upgradeToStructuredBrief(promptInput || activeTask.prompt, "zh");
-                        setPromptInput(upgraded);
-                        toast.success("已帮你补充需求细节，可直接修改后点击运行");
-                      }}
-                      className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300 transition hover:bg-emerald-500/25"
-                    >
-                      ✨ 帮我把需求写得更具体
-                    </button>
-                  </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] text-slate-400">常用补充项：</span>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 rounded-xl border border-slate-800 bg-slate-950/80 px-2.5 py-1.5" data-testid="codex-intent-bridge">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] text-slate-400">补充项：</span>
                     {cluster.terms.map(term => (
                       <button
                         key={term.slug}
@@ -763,6 +744,17 @@ function PiCodexWorkbench({
                       </button>
                     ))}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const upgraded = upgradeToStructuredBrief(promptInput || activeTask.prompt, "zh");
+                      setPromptInput(upgraded);
+                      toast.success("已补充需求细节");
+                    }}
+                    className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300 transition hover:bg-emerald-500/25"
+                  >
+                    ✨ 补齐细节
+                  </button>
                 </div>
               );
             })()}
@@ -823,21 +815,21 @@ function PiCodexWorkbench({
                 onClick={() => setPreviewKey(k => k + 1)}
                 className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
               >
-                🔄 刷新预览
+                🔄 刷新
               </button>
               <button
                 type="button"
                 onClick={downloadActiveHtml}
                 className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
               >
-                💾 下载文件
+                💾 下载
               </button>
               <button
                 type="button"
                 onClick={openFullscreenPreview}
                 className="rounded-lg border border-indigo-400/40 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
               >
-                🖥️ 新窗口打开 ↗
+                🖥️ 新窗口 ↗
               </button>
               <button
                 type="button"
@@ -847,7 +839,7 @@ function PiCodexWorkbench({
                 }}
                 className="rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
               >
-                📋 复制源码
+                📋 复制
               </button>
             </div>
           </div>
@@ -858,10 +850,10 @@ function PiCodexWorkbench({
                 <div className="flex h-full flex-col gap-2">
                   <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 text-[11px] text-slate-400">
                     <span>
-                      {isViewingGuideSample ? "📖 引导范例实时预览" : "🟢 我的草稿实时预览"} · <code className="text-emerald-300">{activeTask.artifactFile}</code>
+                      <code className="text-emerald-300">{activeTask.artifactFile}</code>
                     </span>
                     <button type="button" onClick={() => setCanvasTab("code")} className="text-emerald-400 hover:underline">
-                      打开源码编辑器修改 →
+                      编辑源码 →
                     </button>
                   </div>
                   <iframe
@@ -875,7 +867,7 @@ function PiCodexWorkbench({
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300">
-                    <span>📄 代码/文档预览 · <code className="text-emerald-300">{activeTask.artifactFile}</code></span>
+                    <span><code className="text-emerald-300">{activeTask.artifactFile}</code></span>
                     <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">{activeTask.artifactType.toUpperCase()}</span>
                   </div>
                   <pre className="max-h-[520px] overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-200">
@@ -888,7 +880,7 @@ function PiCodexWorkbench({
             {canvasTab === "code" && (
               <div className="flex h-full flex-col gap-2">
                 <div className="flex items-center justify-between text-[11px] text-slate-400">
-                  <span>正在编辑: <strong className="text-emerald-300">{activeTask.artifactFile}</strong>（修改后切回「👁️ 实时预览」立刻生效）</span>
+                  <span><strong className="text-emerald-300">{activeTask.artifactFile}</strong></span>
                   <span>{activeTask.artifactCode.split("\n").length} 行</span>
                 </div>
                 <textarea

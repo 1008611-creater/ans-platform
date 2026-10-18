@@ -95,27 +95,22 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
             className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-amber-500/40 bg-card text-card-foreground shadow-2xl"
           >
             {/* Top Banner Header */}
-            <div className="relative border-b border-border bg-gradient-to-r from-emerald-500/15 via-amber-500/15 to-rose-500/15 px-5 py-4 sm:px-7 sm:py-5">
+            <div className="relative border-b border-border bg-gradient-to-r from-emerald-500/15 via-amber-500/15 to-rose-500/15 px-5 py-4 sm:px-7">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-emerald-600 px-3 py-0.5 text-[11px] font-black text-white dark:bg-emerald-400 dark:text-slate-950">
-                      {isEn ? "📖 ANS ONBOARDING GUIDE" : "📖 新手引导 · 算力积分怎么领、怎么用"}
+                      {isEn ? "📖 ANS ONBOARDING GUIDE" : "📖 新手引导"}
                     </span>
                     <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                      {isEn ? "10 Points = ¥1 CNY = $1 USD Quota" : "计费规则：10 积分 = ¥1 元算力额度"}
+                      {isEn ? "10 Points = ¥1 CNY = $1 USD Quota" : "10 积分 = ¥1 元算力额度"}
                     </span>
                   </div>
-                  <div className="text-lg font-black tracking-tight text-foreground sm:text-2xl">
+                  <div className="text-lg font-black tracking-tight text-foreground sm:text-xl">
                     {isEn
                       ? "Claim 100–150 Free Points · Play 3D Claw Machine · Spend in Market"
                       : "免费领 100~150 积分 · 体验 3D 抓娃娃 · 在工作台与市场直接使用"}
                   </div>
-                  <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                    {isEn
-                      ? "New users can claim 100–150 free compute points by completing the 30-second questionnaire and daily check-ins. Points can be spent directly on AI workflows in /market or in the 3D Claw Machine."
-                      : "新同学完成 30 秒问卷与每日打卡可领 100~150 免费算力积分。积分可在【工具市场】兑换 AI 工作流、在【AI 工作台】调用模型，或在【3D 抓娃娃机】兑换游戏币抽取最高 1000 积分奖励。"}
-                  </p>
                 </div>
 
                 <button
@@ -137,29 +132,18 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                 <div>
                   <div className="flex items-center justify-between gap-1">
                     <span className="rounded-md bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white dark:bg-emerald-400 dark:text-slate-950">
-                      {isEn ? "STEP 1 · CLAIM" : "第 1 步 · 免费领积分"}
+                      {isEn ? "STEP 1" : "第 1 步"}
                     </span>
                     <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">
-                      {isEn ? "100–150 Pts" : "可领 100~150 分"}
+                      {isEn ? "+100–150 Pts" : "+100~150 分"}
                     </span>
                   </div>
                   <div className="mt-2.5 text-base font-black text-foreground">
-                    {isEn ? "🎁 Free Starter Points" : "🎁 领新用户与农客松算力包"}
+                    {isEn ? "🎁 Claim Free Points" : "🎁 领免费算力积分"}
                   </div>
-                  <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
-                    <li>
-                      • {isEn ? "Sign up + 30s Questionnaire: " : "注册 + 30 秒问卷："}
-                      <strong className="text-foreground">{isEn ? "+60 Pts" : "领 60 积分"}</strong>
-                    </li>
-                    <li>
-                      • {isEn ? "Daily check-in & tasks: " : "每日打卡与互动任务："}
-                      <strong className="text-foreground">{isEn ? "+40–90 Pts" : "再领 40~90 积分"}</strong>
-                    </li>
-                    <li>
-                      • {isEn ? "CAU AgriHackathon Team Pack: " : "农客松参赛战队专项："}
-                      <strong className="text-foreground">{isEn ? "+60 Pts" : "额外 +60 积分"}</strong>
-                    </li>
-                  </ul>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    {isEn ? "Sign up + 30s survey (+60 Pts), daily check-ins (+40–90 Pts)." : "注册填 30 秒问卷（+60分）、每日打卡与农客松专项（+40~90分）。"}
+                  </p>
                 </div>
 
                 <Link
@@ -177,35 +161,18 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                 <div>
                   <div className="flex items-center justify-between gap-1">
                     <span className="rounded-md bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950">
-                      {isEn ? "STEP 2 · 3D ARCADE" : "第 2 步 · 3D 抓娃娃"}
+                      {isEn ? "STEP 2" : "第 2 步"}
                     </span>
                     <span className="text-xs font-black text-amber-700 dark:text-amber-300">
-                      {isEn ? "10 Pts / Token" : "10 积分 / 币"}
+                      {isEn ? "3 Free Tokens" : "送 3 枚免费币"}
                     </span>
                   </div>
                   <div className="mt-2.5 text-base font-black text-foreground">
-                    {isEn ? "🕹️ 3D Claw & Lucky Wheel" : "🕹️ 3D 抓娃娃机与幸运转盘"}
+                    {isEn ? "🕹️ 3D Claw Machine" : "🕹️ 3D 抓娃娃与转盘"}
                   </div>
-                  <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
-                    <li>
-                      • {isEn ? "Starter gift: " : "免费体验："}
-                      <strong className="text-foreground">{isEn ? "3 Free Tokens" : "3 枚免费抓娃娃币"}</strong>
-                    </li>
-                    <li>
-                      • {isEn ? "Exchange anytime: " : "积分兑币："}
-                      <strong className="text-foreground">
-                        {isEn ? "10 Pts = 1 Token (100% Win)" : "10 积分兑 1 币（每次必得积分）"}
-                      </strong>
-                    </li>
-                    <li>
-                      • {isEn ? "Top Prizes: " : "特等奖项："}
-                      <strong className="text-rose-600 dark:text-rose-400">
-                        {isEn
-                          ? "👑 Top Prize +1,000 Pts · 🐉 +300 Pts"
-                          : "👑 特等奖 +1000分 · 🐉 一等奖 +300分"}
-                      </strong>
-                    </li>
-                  </ul>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    {isEn ? "100% win rate per grab (10–1,000 Pts)." : "每次下爪必得 10~1000 积分，支持免登录试玩手感。"}
+                  </p>
                 </div>
 
                 <Link
@@ -223,30 +190,18 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                 <div>
                   <div className="flex items-center justify-between gap-1">
                     <span className="rounded-md bg-cyan-600 px-2 py-0.5 text-[10px] font-black text-white dark:bg-cyan-400 dark:text-slate-950">
-                      {isEn ? "STEP 3 · MARKET" : "第 3 步 · 去市场用积分"}
+                      {isEn ? "STEP 3" : "第 3 步"}
                     </span>
                     <span className="text-xs font-black text-cyan-700 dark:text-cyan-300">
-                      {isEn ? "Spend & Earn" : "兑工具 / 赚分成"}
+                      {isEn ? "22 Workflows" : "22 款工作流"}
                     </span>
                   </div>
                   <div className="mt-2.5 text-base font-black text-foreground">
-                    {isEn ? "🛒 ANS Marketplace" : "🛒 在市场兑换实用工作流"}
+                    {isEn ? "🛒 ANS Marketplace" : "🛒 兑换工具与调用模型"}
                   </div>
-                  <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
-                    <li>
-                      • {isEn ? "Spend points directly in " : "在 "}
-                      <strong className="text-foreground">{isEn ? "ANS Market (/market)" : "工具市场 (/market)"}</strong>
-                      {isEn ? " to run AI workflows" : " 直接用积分解锁 AI 工作流、简历建站与农大科研工具"}
-                    </li>
-                    <li>
-                      • {isEn ? "Call DeepSeek / GPT / Claude in " : "在 "}
-                      <strong className="text-foreground">{isEn ? "Model Plaza (/models)" : "模型广场 (/models)"}</strong>
-                      {isEn ? "" : " 在线直接调用主流大模型"}
-                    </li>
-                    <li>
-                      • {isEn ? "Publish your own workflow to earn points!" : "上架原创工作流还能获得积分分成"}
-                    </li>
-                  </ul>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    {isEn ? "Unlock workflows in /market or run DeepSeek/GPT/Claude in /models." : "在 /market 解锁简历建站与科研工具，或在工作台调用主流大模型。"}
+                  </p>
                 </div>
 
                 <Link
@@ -260,35 +215,22 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
               </div>
             </div>
 
-            {/* Bottom Rule Note & Dismiss Footer */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/30 px-5 py-3.5 sm:px-7">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="rounded-full bg-emerald-600/20 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300">
-                  {isEn ? "RULE" : "积分说明"}
-                </span>
-                <span className="font-medium text-muted-foreground">
-                  {isEn
-                    ? "10 Points = ¥1 CNY quota · Spend points directly on 22 workflows in /market or in the AI Workbench"
-                    : "10 积分 = ¥1 元算力额度 · 可直接在 /market 兑换 22 款工作流或在工作台调用模型"}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleDismiss}
-                  className="rounded-xl border border-border bg-background px-3.5 py-1.5 text-xs font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                >
-                  {isEn ? "Browse Homepage First" : "先逛首页"}
-                </button>
-                <Link
-                  href="/workspace/benefits"
-                  onClick={handleDismiss}
-                  className="rounded-xl bg-emerald-600 px-4 py-1.5 text-xs font-black text-white shadow-2xs transition hover:bg-emerald-500 dark:bg-emerald-400 dark:text-slate-950"
-                >
-                  {isEn ? "🎁 Start Claiming →" : "🎁 立即去领积分 →"}
-                </Link>
-              </div>
+            {/* Dismiss Footer */}
+            <div className="flex items-center justify-end gap-2 border-t border-border bg-muted/30 px-5 py-3 sm:px-6">
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="rounded-xl border border-border bg-background px-3.5 py-1.5 text-xs font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              >
+                {isEn ? "Browse Homepage First" : "先逛首页"}
+              </button>
+              <Link
+                href="/workspace/benefits"
+                onClick={handleDismiss}
+                className="rounded-xl bg-emerald-600 px-4 py-1.5 text-xs font-black text-white shadow-2xs transition hover:bg-emerald-500 dark:bg-emerald-400 dark:text-slate-950"
+              >
+                {isEn ? "🎁 Start Claiming →" : "🎁 立即去领积分 →"}
+              </Link>
             </div>
           </div>
         </div>

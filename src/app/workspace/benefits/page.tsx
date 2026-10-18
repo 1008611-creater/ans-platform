@@ -45,43 +45,27 @@ export default async function BenefitsPage() {
         {!userId && (
           <section
             data-testid="benefits-guest-banner"
-            className="space-y-4 rounded-2xl border border-emerald-600/30 bg-emerald-500/5 p-5 sm:p-6"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-600/30 bg-emerald-500/5 px-5 py-3.5"
           >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2.5 text-[13px]">
-                <Badge className="bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950">
-                  {isEn ? "Onboarding Guide" : "新手引导 · 怎么免费领算力积分？"}
-                </Badge>
-                <span className="font-semibold text-foreground">
-                  {isEn
-                    ? "Not signed in yet (Live Balance: 0 pts) · Try the claw machine below or sign in to claim real points"
-                    : "当前未登录（真实账户余额为 0）· 下方抓娃娃机支持免登录试玩手感，登录后积分直接入账"}
-                </span>
-              </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-2">
-                <Button asChild size="sm" className="h-8 rounded-xl bg-emerald-700 px-3.5 text-xs font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950">
-                  <Link href="/login?callbackUrl=%2Fworkspace%2Fbenefits">
-                    {isEn ? "Sign in & Claim →" : "登录领真实积分 →"}
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline" className="h-8 rounded-xl px-3.5 text-xs font-semibold">
-                  <Link href="/workspace/credits">{isEn ? "Compute Center" : "查看算力账本"}</Link>
-                </Button>
-              </div>
+            <div className="flex flex-wrap items-center gap-2.5 text-[13px]">
+              <Badge className="bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950">
+                {isEn ? "Guest Trial" : "📖 免登录试玩"}
+              </Badge>
+              <span className="font-semibold text-foreground">
+                {isEn
+                  ? "Live Balance: 0 pts · Try the claw machine below or sign in to claim real points"
+                  : "当前未登录（真实余额 0）· 下方抓娃娃机可免登录试玩，登录后奖励直接入账"}
+              </span>
             </div>
-            <div className="grid gap-4 border-t border-emerald-600/20 pt-4 text-[13px] leading-relaxed sm:grid-cols-3 sm:divide-x sm:divide-emerald-600/20">
-              <div className="space-y-1">
-                <div className="font-bold text-foreground">01 · 填 30 秒问卷领 50 积分</div>
-                <p className="max-w-xs text-[13px] leading-relaxed text-muted-foreground">登录账号后，在页面下半部分填写简短的新手破冰问卷，50 积分（价值 ¥5）立即到账。</p>
-              </div>
-              <div className="space-y-1 sm:pl-4">
-                <div className="font-bold text-foreground">02 · 签到与抓娃娃再领 50~100 分</div>
-                <p className="max-w-xs text-[13px] leading-relaxed text-muted-foreground">完成右侧每日签到和阅读任务可拿免费抓娃娃币，每次下爪必得 10~1000 积分奖励。</p>
-              </div>
-              <div className="space-y-1 sm:pl-4">
-                <div className="font-bold text-foreground">03 · 在工作台与工具市场直接用</div>
-                <p className="max-w-xs text-[13px] leading-relaxed text-muted-foreground">领到的积分可在个人工作台调用 DeepSeek / GPT 模型，或在市场兑换论文润色、周报生成等工具。</p>
-              </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <Button asChild size="sm" className="h-8 rounded-xl bg-emerald-700 px-3.5 text-xs font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950">
+                <Link href="/login?callbackUrl=%2Fworkspace%2Fbenefits">
+                  {isEn ? "Sign in & Claim →" : "登录领真实积分 →"}
+                </Link>
+              </Button>
+              <Button asChild size="sm" variant="outline" className="h-8 rounded-xl px-3.5 text-xs font-semibold">
+                <Link href="/workspace/credits">{isEn ? "Compute Center" : "查看算力账本"}</Link>
+              </Button>
             </div>
           </section>
         )}
@@ -99,9 +83,9 @@ export default async function BenefitsPage() {
           className="group rounded-3xl border border-border bg-card p-5 shadow-xs"
         >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-foreground">
-            <span>🥚 {isEn ? "Expand 3D Dino Appearance & Wardrobe Pod (Optional)" : "展开小恐龙外观与换装设置（可选）"}</span>
+            <span>🥚 {isEn ? "3D Dino Appearance & Wardrobe Pod" : "小恐龙外观与换装设置"}</span>
             <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground group-open:hidden">
-              {isEn ? "Click to expand ↓" : "点击展开 ↓"}
+              ↓
             </span>
           </summary>
           <div className="mt-4">

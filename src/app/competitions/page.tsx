@@ -58,11 +58,8 @@ export default async function CompetitionsPage() {
           </Link>
         </article>)}
       </section>
-      <Link href="/teams" className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary/5 p-5 transition hover:border-primary/50 hover:bg-primary/10">
-        <div className="space-y-1">
-          <p className="text-base font-bold text-foreground">👥 组队参赛 · 申领 300 点团队专属算力包</p>
-          <p className="text-xs text-muted-foreground">创建或加入高校战队，共享比赛算力额度、提交农客松与 AIGC 参赛作品</p>
-        </div>
+      <Link href="/teams" className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary/5 px-5 py-4 transition hover:border-primary/50 hover:bg-primary/10">
+        <p className="text-base font-bold text-foreground">👥 组队参赛 · 申领 300 点团队专属算力包</p>
         <span style={{ background: "#0f172a", color: "#fff", padding: "8px 16px", borderRadius: "9999px", fontSize: "13px", fontWeight: 700 }}>
           {t("continueTeam")} →
         </span>

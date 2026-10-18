@@ -193,10 +193,7 @@ export function DinoAdoptionPod({
           </span>
           <div>
             <div style={{ fontSize: "14px", fontWeight: 800, color: "#ffffff" }}>
-              🥚 注册即领养 · 挑选你的专属灵龙 Agent 伴侣
-            </div>
-            <div style={{ fontSize: "11.5px", color: "rgba(235, 250, 245, 0.78)" }}>
-              QQ宠物养成 × 奇迹暖暖等级换装 × 全站右下角随身 AI Agent
+              🥚 挑选你的专属灵龙伴侣
             </div>
           </div>
         </div>
