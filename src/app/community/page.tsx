@@ -31,7 +31,7 @@ export default async function CommunityPage() {
     const featuredPosts = [
       {
         title: isEn ? "Greenhouse Tomato Late Blight Early-Warning Agent" : "温室番茄晚疫病多模态早期预警终端",
-        author: isEn ? "Guide Example · AgriHackathon" : "📖 农客松参赛作品参考范例",
+        author: isEn ? "AgriHackathon Track" : "智耕黑客松赛道",
         badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/competitions/agrihackathon/gitglow-hub.webp",
         href: "/competitions/agrihackathon",
@@ -39,7 +39,7 @@ export default async function CommunityPage() {
       },
       {
         title: isEn ? "3D Interactive Starry Portfolio & Bilingual Resume" : "3D 星空交互式个人作品集与双语简历站",
-        author: isEn ? "Guide Example · 3D Resume Studio" : "📖 3D 简历工坊参考范例",
+        author: isEn ? "3D Resume Studio" : "3D 简历工坊",
         badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/catalog/gitglow-v1/magic-resume.webp",
         href: "/market/resume-website",
@@ -47,7 +47,7 @@ export default async function CommunityPage() {
       },
       {
         title: isEn ? "Short Drama Storyboard Pipeline with Toonflow" : "用 Toonflow + Solara 跑通 12 镜 AI 漫剧短片",
-        author: isEn ? "Guide Example · AIGC Track" : "📖 AIGC 漫剧赛道参考范例",
+        author: isEn ? "AIGC Studio" : "AIGC 漫剧工坊",
         badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/catalog/gitglow-v1/aigc-workspace.webp",
         href: "/competitions/aigc",
@@ -55,7 +55,7 @@ export default async function CommunityPage() {
       },
       {
         title: isEn ? "Vibe Coding Full-Stack Starter Playbook" : "Vibe Coding 零代码到全栈上线实操手册",
-        author: isEn ? "Guide Example · VibeHub" : "📖 VibeHub 实训参考范例",
+        author: isEn ? "VibeHub" : "VibeHub 实训",
         badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/catalog/gitglow-v1/cauai-one.webp",
         href: "/vibe-hub",
@@ -120,6 +120,7 @@ export default async function CommunityPage() {
                 <Link
                   key={post.title}
                   href={post.href}
+                  title={post.summary}
                   className="group flex flex-col justify-between overflow-hidden rounded-2xl border bg-card transition-all hover:-translate-y-0.5 hover:border-primary/50"
                 >
                   <div>
@@ -129,7 +130,7 @@ export default async function CommunityPage() {
                     </div>
                     <div className="p-4">
                       <h3 className="line-clamp-1 text-sm font-semibold group-hover:text-primary">{post.title}</h3>
-                      <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-muted-foreground">{post.summary}</p>
+                      <p className="mt-1 line-clamp-1 text-xs leading-5 text-muted-foreground group-hover:line-clamp-2">{post.summary}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between border-t bg-muted/20 px-4 py-2.5 text-[11px] text-muted-foreground">
@@ -154,14 +155,14 @@ export default async function CommunityPage() {
               </div>
               <ol className="divide-y">
                 {xpEarnSteps.map((item) => (
-                  <li key={item.step} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                  <li key={item.step} title={item.desc} className="group flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-mono text-xs font-bold text-primary">
                         {item.step}
                       </span>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{item.name}</p>
-                        <p className="truncate text-xs text-muted-foreground">{item.desc}</p>
+                        <p className="hidden truncate text-xs text-muted-foreground group-hover:block">{item.desc}</p>
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
@@ -179,11 +180,11 @@ export default async function CommunityPage() {
               </h2>
               <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
                 {levelTiers.map((tier) => (
-                  <div key={tier.lv} className="flex items-center justify-between gap-3 rounded-xl border bg-muted/20 px-3.5 py-2.5 text-xs">
+                  <div key={tier.lv} title={tier.perk} className="group flex items-center justify-between gap-3 rounded-xl border bg-muted/20 px-3.5 py-2.5 text-xs">
                     <div className="min-w-0">
                       <span className="font-mono font-bold text-primary">{tier.lv}</span>
                       <span className="ms-2 font-semibold text-foreground">{tier.title}</span>
-                      <p className="mt-0.5 text-muted-foreground">{tier.perk}</p>
+                      <p className="mt-0.5 hidden text-muted-foreground group-hover:block">{tier.perk}</p>
                     </div>
                     <Badge variant="outline" className="shrink-0 font-mono text-[10px]">{tier.req}</Badge>
                   </div>
@@ -193,22 +194,15 @@ export default async function CommunityPage() {
           </aside>
         </div>
 
-        <section className="rounded-2xl border bg-card/70 p-6 space-y-4" data-testid="community-guest-preview">
-          <div className="flex items-start gap-3">
-            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-            <div className="space-y-1.5">
-              <h2 className="text-base font-semibold">{isEn ? "Welcome to the ANS Creator Community" : "欢迎来到 ANS 创作者社区"}</h2>
-              <p className="text-sm text-muted-foreground">
-                {isEn
-                  ? "Browse the public showcase, curated project directory, and topic hubs without signing in. Sign in to unlock daily check-ins, personal XP growth profiles, avatar frames, and community publishing."
-                  : "无需登录即可浏览社区公开作品展、精选项目库与专题 Hub。登录后可解锁每日签到（+5 算力积分 & 3D 抓娃娃机代币）、个人 XP 成长档案、专属 3D 小龙装扮与作品发布互动。"}
-              </p>
-            </div>
+        <section className="flex flex-col justify-between gap-3 rounded-2xl border bg-card/70 px-5 py-4 sm:flex-row sm:items-center" data-testid="community-guest-preview">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+            <h2 className="text-sm font-semibold">{isEn ? "Sign in to unlock daily check-ins, XP profile, and 3D Dino perks" : "登录后解锁每日签到、个人 XP 成长档案与作品发布互动"}</h2>
           </div>
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <Button asChild size="sm"><Link href="/login?callbackUrl=/community">{isEn ? "Sign in to unlock growth profile" : "立即登录解锁成长档案"}</Link></Button>
-            <Button asChild size="sm" variant="outline"><Link href="/register?callbackUrl=/community">{isEn ? "Create free account" : "免费注册账号（领新人算力包）"}</Link></Button>
-            <Button asChild size="sm" variant="ghost"><Link href="/showcase"><Gift className="me-1.5 h-4 w-4" />{isEn ? "Enter 3D Showcase" : "进入 3D 互动展厅"}</Link></Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild size="sm"><Link href="/login?callbackUrl=/community">{isEn ? "Sign in" : "立即登录"}</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link href="/register?callbackUrl=/community">{isEn ? "Create account" : "免费注册"}</Link></Button>
+            <Button asChild size="sm" variant="ghost"><Link href="/showcase"><Gift className="me-1.5 h-4 w-4" />{isEn ? "3D Showcase" : "3D 展厅"}</Link></Button>
           </div>
         </section>
       </div>

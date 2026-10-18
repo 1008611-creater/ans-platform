@@ -98,7 +98,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
       <details className="mt-6 rounded-2xl border border-border/70 bg-card/60 p-4">
         <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 text-sm font-semibold">
           <span>
-            📊 {locale === "zh" ? "账户资产、算力流水与运行记录（点击展开）" : "Account Balance, Credits & Run History (Expand)"}
+            📊 {locale === "zh" ? "账户资产、算力流水与运行记录" : "Account Balance, Credits & Run History"}
           </span>
           <span className="text-xs font-normal text-muted-foreground">
             {displayName} · {levelName} · {currentPoints.toLocaleString()} {t("pointsUnit")}
@@ -106,15 +106,9 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         </summary>
         <div className="mt-4">
           {userId && (
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <span className="ans-workspace-greeting text-sm text-muted-foreground">
-                {t("greeting", { name: displayName })} · {levelName}
-                <DisplayNameEditor actorId={userId} current={displayName} />
-              </span>
-              <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline"><Link href="/projects">{product("myProjects")}</Link></Button>
-                <Button asChild size="sm" variant="outline"><Link href="/workflows/runs">{locale === "zh" ? "运行记录" : "Workflow Runs"}</Link></Button>
-              </div>
+            <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+              <Button asChild size="sm" variant="outline"><Link href="/projects">{product("myProjects")}</Link></Button>
+              <Button asChild size="sm" variant="outline"><Link href="/workflows/runs">{locale === "zh" ? "运行记录" : "Workflow Runs"}</Link></Button>
             </div>
           )}
       <section className="ans-account-summary">
@@ -247,7 +241,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
           </div>
         )}
       </section>
-      <section className="ans-workspace-section"><h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Heart className="h-4 w-4" />{retired("favoritesTitle")}</h2><p className="text-sm leading-7 text-muted-foreground">{retired("favoritesNote")}</p><Button asChild variant="outline" className="mt-4"><Link href="/collection">{retired("openFavorites")}</Link></Button></section>
+      <section className="ans-workspace-section flex items-center justify-between"><h2 className="flex items-center gap-2 text-lg font-semibold"><Heart className="h-4 w-4" />{retired("favoritesTitle")}</h2><Button asChild variant="outline" size="sm"><Link href="/collection">{retired("openFavorites")}</Link></Button></section>
       <section className="ans-workspace-section ans-workspace-teams">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold">

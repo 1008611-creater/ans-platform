@@ -18,20 +18,17 @@ export async function ProjectCard({ project, compact = false }: { project: Catal
   const body = <>
     <ProjectPreview project={project} />
     <div className="p-3.5 sm:p-4">
-      <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-medium text-muted-foreground">
+      <div className="mb-1 flex items-center justify-between gap-2 text-[11px] font-medium text-muted-foreground">
         <span>{t(`categories.${project.category}`)}</span>
-        {!hasFooterBar && (
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">{actionLabel}</span>
-        )}
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary opacity-80 transition-opacity group-hover:opacity-100">{actionLabel}</span>
       </div>
       <div className={styles.title}><h3>{title}</h3><ArrowUpRight aria-hidden="true" /></div>
-      <p className="mt-1 line-clamp-1 text-[13px] leading-relaxed text-muted-foreground">{summary}</p>
+      <p title={summary} className="mt-1 line-clamp-1 text-xs leading-relaxed text-muted-foreground opacity-75 transition-opacity group-hover:opacity-100">{summary}</p>
     </div>
   </>;
-  return <article className={compact ? `${styles.card} flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card transition hover:border-primary/50` : "ans-project-card flex flex-col justify-between"}>
+  return <article className={compact ? `${styles.card} group flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card transition hover:border-primary/50` : "ans-project-card group flex flex-col justify-between"}>
     {isExternal ? <a href={directHref} target="_blank" rel="noopener noreferrer" className={compact ? styles.link : "ans-card-link"}>{body}</a> : <Link href={directHref} prefetch={false} className={compact ? styles.link : "ans-card-link"}>{body}</Link>}
-    {hasFooterBar && <div className="flex items-center justify-between border-t border-border/50 bg-muted/20 px-3.5 py-2 text-xs">
-      {isExternal ? <a href={directHref} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">{actionLabel}</a> : <Link href={directHref} prefetch={false} className="font-semibold text-primary hover:underline">{actionLabel}</Link>}
+    {hasFooterBar && <div className="flex items-center justify-end border-t border-border/40 bg-muted/15 px-3.5 py-1.5 text-[11px] opacity-80 transition-opacity group-hover:opacity-100">
       <Link href={`/explore/${project.slug}`} prefetch={false} className="text-muted-foreground hover:text-foreground hover:underline">{isEn ? "Guide & Info →" : "项目指南 →"}</Link>
     </div>}
   </article>;

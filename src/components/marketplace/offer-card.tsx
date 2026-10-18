@@ -42,44 +42,32 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
         )}
       </div>
     </div>
-    <div className="flex flex-1 flex-col p-5">
+    <div className="flex flex-1 flex-col p-4 sm:p-5">
       <div className="flex items-start justify-between gap-2">
-        <Heading className="line-clamp-1 break-words text-lg font-semibold group-hover:text-primary">{listing.title}</Heading>
+        <Heading className="line-clamp-1 break-words text-base font-semibold group-hover:text-primary sm:text-lg">{listing.title}</Heading>
         <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" aria-hidden="true"/>
       </div>
-      <p className="mt-2 line-clamp-2 break-words text-xs leading-6 text-muted-foreground sm:text-sm">{listing.summary}</p>
-      <div className="mt-3.5 flex flex-wrap gap-1.5">
+      <p title={listing.summary} className="mt-1.5 line-clamp-1 break-words text-xs leading-5 text-muted-foreground">{listing.summary}</p>
+      <div className="mt-2.5 hidden flex-wrap gap-1.5 group-hover:flex">
         {listing.deliverables.slice(0, 2).map((item, index) => (
-          <span key={index} className="inline-flex max-w-full items-center gap-1 truncate rounded-lg border bg-muted/35 px-2.5 py-1 text-xs text-muted-foreground">
+          <span key={index} className="inline-flex max-w-full items-center gap-1 truncate rounded-lg border bg-muted/35 px-2 py-0.5 text-[11px] text-muted-foreground">
             <Check className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true"/>
             <span className="truncate">{item}</span>
           </span>
         ))}
       </div>
-      <div className="mt-4 flex items-end justify-between gap-3 border-t pt-4">
+      <div className="mt-auto flex items-center justify-between gap-3 border-t pt-3.5">
         <div>
           {listing.execution ? (
-            <>
-              <p className="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">免费排版 · AI 精修按次计费</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">单次 AI 双语生成 2~99 积分 · 支持导出独立站 HTML</p>
-            </>
+            <p className="text-sm font-bold tabular-nums text-emerald-600 dark:text-emerald-400" title="单次 AI 双语生成 2~99 积分 · 支持导出独立站 HTML">免费排版 · 按次精修</p>
           ) : purchasable ? (
             points === 0 ? (
-              <>
-                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">{p("realProject.freeShare")}</p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">官方赛题样板 · 免费查看完整架构</p>
-              </>
+              <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{p("realProject.freeShare")}</p>
             ) : (
-              <>
-                <p className="text-xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{t("pointsUnit", { amount: points })} <span className="text-xs font-normal text-muted-foreground">（≈ ¥{yuan} 市场价）</span></p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">✅ 已验真完整交付包 · 支付后自动秒发源码与脚本</p>
-              </>
+              <p className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{t("pointsUnit", { amount: points })} <span className="text-xs font-normal text-muted-foreground">（≈ ¥{yuan}）</span></p>
             )
           ) : (
-            <>
-              <p className="text-sm font-semibold text-muted-foreground">🔒 交付包内测中 · 暂未开放购买</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">市场参考价 {points} 积分（≈ ¥{yuan}）· 仅开放 Sample 预览</p>
-            </>
+            <p className="text-xs font-medium text-muted-foreground">参考价 {points} 积分（≈ ¥{yuan}）</p>
           )}
         </div>
         <span className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold ${purchasable ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>

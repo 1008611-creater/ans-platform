@@ -97,15 +97,15 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
       <div className={styles.content}>
         <MarketDetailPreview listing={listing} />
         <section id="market-deliverables" className={styles.section}>
-          <h2>📦 {purchasable ? "完整交付物清单与 Sample 预览" : "方案大纲与 Sample 预览（内测封测中）"}</h2>
+          <h2>📦 {purchasable ? "交付物清单" : "方案大纲"}</h2>
           <ul className={styles.deliverables}>{listing.deliverables.map((item, index) => <li key={index}><span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><span>{item}</span></li>)}</ul>
-          <div className="mt-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span className="font-semibold text-emerald-700 dark:text-emerald-300">📦 付费前免费验真 · {sample.badge}</span>
-              <span className="font-mono text-muted-foreground">{sample.file}</span>
-            </div>
+          <details className="mt-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
+            <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-emerald-700 dark:text-emerald-300">📦 查看交付物 Sample 样本预览 · {sample.badge}</span>
+              <span className="font-mono text-muted-foreground">{sample.file} ▾</span>
+            </summary>
             <pre className="mt-2.5 overflow-x-auto rounded-lg bg-slate-950 p-3 font-mono text-xs leading-5 text-emerald-300">{sample.snippet}</pre>
-          </div>
+          </details>
         </section>
         <section id="market-details" className={styles.section}>
           <h2>{td("detailsTitle")}</h2>
@@ -128,7 +128,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
           <details className="group">
             <summary className="flex cursor-pointer items-center justify-between text-base font-semibold text-foreground">
               <span>{td("termsTitle")}</span>
-              <span className="text-xs font-normal text-muted-foreground">展开查看计费标准与交付保障 ▾</span>
+              <span className="text-xs font-normal text-muted-foreground">计费标准与交付保障 ▾</span>
             </summary>
             <dl className={`${styles.terms} mt-4`}>
               <div><dt>汇率与定价基准</dt><dd>1 元人民币 = 10 积分（1 积分 = ¥0.10）。所有已开放购买商品均按真实研发/算力成本与市场价透明定价。</dd></div>
@@ -152,9 +152,8 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
                 </MarketAccountBoundary>
               ) : <Button asChild className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}>{tp("loginToBuy")}</Link></Button>
             ) : (
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm leading-6 text-foreground">
-                <p className="flex items-center gap-2 font-semibold text-amber-700 dark:text-amber-300"><Lock className="h-4 w-4 shrink-0" />当前商品暂未开放购买权限（市场参考价：{points} 积分 / ≈ ¥{yuan}）</p>
-                <p className="mt-1.5 text-xs leading-6 text-muted-foreground">我们坚持「确定能 100% 闭环交付才开放购买」。该项目涉及 1v1 人工精修辅导或外部硬件/数据集套件封装，在完成自动化交付验收前暂不支持积分下单，您可免费查阅上方大纲与 Sample 样本。</p>
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs leading-6 text-foreground">
+                <p className="flex items-center gap-2 font-semibold text-amber-700 dark:text-amber-300"><Lock className="h-4 w-4 shrink-0" />交付物目前处于内测封装阶段，当前免费开放上方大纲与 Sample 样本预览。</p>
               </div>
             )}
           </div>
@@ -165,7 +164,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
           {purchasable ? (
             <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-semibold text-emerald-700 dark:text-emerald-300">{runnable ? "🚀 在线工作台" : isFree ? "🌐 开源展示" : "⚡ 支付即秒发完整包"}</span>
           ) : (
-            <span className="rounded-full bg-amber-500/15 px-3 py-1 font-semibold text-amber-700 dark:text-amber-300">🔒 内测中 · 暂不开放购买</span>
+            <span className="rounded-full bg-amber-500/15 px-3 py-1 font-semibold text-amber-700 dark:text-amber-300">🔒 内测中 · 仅开放预览</span>
           )}
           <span className="rounded-full bg-muted px-3 py-1">{runnable ? td("workflowProduct") : t(listing.fulfillment)}</span>
         </div>
@@ -177,14 +176,12 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
             <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{p("realProject.freeShare")}</p>
           ) : (
             <div>
-              <p className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{t("pointsUnit", { amount: points })} <span className="text-sm font-normal text-muted-foreground">（折合 ¥{yuan}）</span></p>
-              <p className="mt-1 text-xs text-muted-foreground">按 1 元 = 10 积分市场价核算 · 支付后立即自动交付完整脚本与模板</p>
+              <p className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{t("pointsUnit", { amount: points })} <span className="text-sm font-normal text-muted-foreground">（≈ ¥{yuan}）</span></p>
             </div>
           )
         ) : (
           <div>
-            <p className="text-base font-bold text-amber-700 dark:text-amber-300">暂未开放购买权限</p>
-            <p className="mt-1 text-xs text-muted-foreground">市场参考价：{points} 积分（≈ ¥{yuan}）· 交付闭环内测中</p>
+            <p className="text-sm font-medium text-muted-foreground">参考价：{points} 积分（≈ ¥{yuan}）</p>
           </div>
         )}
         <dl className={styles.facts}>
