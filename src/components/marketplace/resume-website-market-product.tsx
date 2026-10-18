@@ -10,6 +10,7 @@ import { VisualWebsiteExperience } from "@/components/projects/visual-website-ex
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketStar } from "@/components/marketplace/market-star";
 import { MarketProductConnections } from "@/components/marketplace/market-product-connections";
+import { getMarketOfferMetrics, getMarketSamplePreview } from "@/domain/marketplace/presentation";
 import { Button } from "@/components/ui/button";
 import type { MarketOfferView } from "@/contracts/marketplace-view";
 import styles from "./market-detail.module.css";
@@ -26,6 +27,8 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
     getTranslations("product.marketStudio"),
   ]);
   const listing = offer.listing;
+  const metrics = getMarketOfferMetrics(offer);
+  const sample = getMarketSamplePreview(listing);
   const readyDetails = runnable?.available && runnable.recipe === "resume-website-v1" ? runnable : null;
   const sellerName = offer.seller.nickname || offer.seller.username;
   const publicationAvailable = publicationConfig().available;
@@ -42,10 +45,11 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
     </nav>
     <header className={styles.studioOverview}>
       <div>
-        <div className={styles.workflowMeta}><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span></div>
+        <div className={styles.workflowMeta}><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span><span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300">{metrics.summaryLabel}</span></div>
         <h1>{ts("title")}</h1><p className={styles.studioLead}>{ts("summary")}</p>
         <div className={styles.studioActions}>
           <Button asChild><a href="#market-run">{ts("tryEditor")}<ArrowUpRight aria-hidden="true" /></a></Button>
+          <a href="#market-deliverables" className="text-sm font-medium text-emerald-600 underline underline-offset-4 dark:text-emerald-400">📦 查看交付物 Sample 样本</a>
           <a href="#market-terms" className="text-sm underline underline-offset-4">{td("termsTitle")}</a>
         </div>
       </div>
@@ -70,6 +74,13 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
         <section id="market-deliverables" className={styles.section}>
           <h2>{td("deliverablesTitle")}</h2>
           <ul className={styles.deliverables}>{["deliverableWebsite", "deliverableDraft", "deliverableAccount"].map((key, index) => <li key={key}><span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><span>{ts(key)}</span></li>)}</ul>
+          <div className="mt-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-emerald-700 dark:text-emerald-300">📦 交付物 Sample 样本预览 · {sample.badge}</span>
+              <span className="font-mono text-muted-foreground">{sample.file}</span>
+            </div>
+            <pre className="mt-2.5 overflow-x-auto rounded-lg bg-slate-950 p-3 font-mono text-xs leading-5 text-emerald-300">{sample.snippet}</pre>
+          </div>
         </section>
         <details id="market-details" className={styles.section}>
           <summary className="cursor-pointer py-2 text-sm font-semibold">{ts("howTitle")}</summary>

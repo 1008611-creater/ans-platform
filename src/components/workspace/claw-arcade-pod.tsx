@@ -1432,8 +1432,21 @@ export function ComputeQuestArcade({
     return best;
   }
 
+  const isGuest = !actorId || actorId === "guest";
+
   function handleBuyTokens(count: 1 | 5 = 1) {
     const cost = count * ARCADE_TOKEN_COST_POINTS;
+    if (isGuest) {
+      const next = { ...state, arcadeTokens: state.arcadeTokens + count };
+      saveQuestArcadeState(next, actorId);
+      setState(next);
+      setBannerMessage(
+        isEn
+          ? `🪙 [Guest Free Trial] Added +${count} Trial Token(s)! Drop the 3D claw to test your luck — sign in anytime to credit real API points!`
+          : `🪙 【访客免费试玩】已补充 +${count} 枚试玩抓娃娃币！快投币下爪体验 3D 机械臂，点击右侧【立即登录入账】即可将积分真实写入账户！`,
+      );
+      return;
+    }
     if (serverBalancePoints !== null && serverBalancePoints < cost) {
       setBannerMessage(
         isEn
@@ -1457,18 +1470,24 @@ export function ComputeQuestArcade({
   function handleClawDrop() {
     if (clawPhase !== "idle") return;
     if (state.arcadeTokens < 1) {
-      if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
-        setBannerMessage(
-          isEn
-            ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete any daily quest or Dino easter egg on the right to earn free tokens."
-            : "⚠️ 抓娃娃币与积分均不足（10 积分可兑 1 币）！完成右侧任意每日任务或小恐龙反常识彩蛋即可免费领币。",
-        );
-        return;
-      }
-      const bought = buyArcadeTokensWithPoints(1, actorId);
-      setState(bought.state);
-      if (serverBalancePoints !== null) {
-        setServerBalancePoints(Math.max(0, serverBalancePoints - bought.costPoints));
+      if (isGuest) {
+        const refilled = { ...state, arcadeTokens: 3 };
+        saveQuestArcadeState(refilled, actorId);
+        setState(refilled);
+      } else {
+        if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
+          setBannerMessage(
+            isEn
+              ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete any daily quest or Dino easter egg on the right to earn free tokens."
+              : "⚠️ 抓娃娃币与积分均不足（10 积分可兑 1 币）！完成右侧任意每日任务或小恐龙反常识彩蛋即可免费领币。",
+          );
+          return;
+        }
+        const bought = buyArcadeTokensWithPoints(1, actorId);
+        setState(bought.state);
+        if (serverBalancePoints !== null) {
+          setServerBalancePoints(Math.max(0, serverBalancePoints - bought.costPoints));
+        }
       }
     }
 
@@ -1490,10 +1509,15 @@ export function ComputeQuestArcade({
         setState(outcome.state);
         setLastWonPrize(outcome.prize);
         const pts = outcome.prize.unlockUsd * POINTS_PER_USD;
+        const guestHint = isGuest
+          ? isEn
+            ? " (🔓 Guest Trial: Sign in to credit these points to your live API Gateway account!)"
+            : "（🔓 访客试玩中：点击右侧【立即登录入账】即可将抓中的算力积分真实存入账户！）"
+          : "";
         setBannerMessage(
-          isEn
+          (isEn
             ? `🕹️ Claw Critical Hit! Pulled [${outcome.prize.rarity}] ${outcome.prize.nameEn} · Unlocked $${outcome.prize.unlockUsd} (${pts} pts) + ${outcome.prize.starBeans}🪙!`
-            : `🕹️ 机械爪暴击出货！抓中【${outcome.prize.rarity}】${outcome.prize.nameZh} · 已从金库提现 $${outcome.prize.unlockUsd}（${pts} 积分）+ ${outcome.prize.starBeans}🪙！`,
+            : `🕹️ 机械爪暴击出货！抓中【${outcome.prize.rarity}】${outcome.prize.nameZh} · 已从金库提现 $${outcome.prize.unlockUsd}（${pts} 积分）+ ${outcome.prize.starBeans}🪙！`) + guestHint,
         );
       }
     }, 1150);
@@ -1505,19 +1529,26 @@ export function ComputeQuestArcade({
     if (isSpinning) return;
     let availableTokens = state.arcadeTokens;
     if (availableTokens < 1) {
-      if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
-        setBannerMessage(
-          isEn
-            ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete daily quests or Dino easter eggs on the right to earn tokens."
-            : "⚠️ 星轨转盘币与积分均不足（10 积分可兑 1 币）！完成右侧每日任务或小恐龙彩蛋即可免费获取。",
-        );
-        return;
-      }
-      const bought = buyArcadeTokensWithPoints(1, actorId);
-      setState(bought.state);
-      availableTokens = bought.state.arcadeTokens;
-      if (serverBalancePoints !== null) {
-        setServerBalancePoints(Math.max(0, serverBalancePoints - bought.costPoints));
+      if (isGuest) {
+        const refilled = { ...state, arcadeTokens: 5 };
+        saveQuestArcadeState(refilled, actorId);
+        setState(refilled);
+        availableTokens = 5;
+      } else {
+        if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
+          setBannerMessage(
+            isEn
+              ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete daily quests or Dino easter eggs on the right to earn tokens."
+              : "⚠️ 星轨转盘币与积分均不足（10 积分可兑 1 币）！完成右侧每日任务或小恐龙彩蛋即可免费获取。",
+          );
+          return;
+        }
+        const bought = buyArcadeTokensWithPoints(1, actorId);
+        setState(bought.state);
+        availableTokens = bought.state.arcadeTokens;
+        if (serverBalancePoints !== null) {
+          setServerBalancePoints(Math.max(0, serverBalancePoints - bought.costPoints));
+        }
       }
     }
     const actualDraws = Math.min(drawsCount, availableTokens);
@@ -1542,10 +1573,15 @@ export function ComputeQuestArcade({
         setState(latestOutcome.state);
         setLastWonPrize(latestOutcome.prize);
         const totalPts = totalUsd * POINTS_PER_USD;
+        const guestHint = isGuest
+          ? isEn
+            ? " (🔓 Guest Trial: Sign in to settle these points into your account!)"
+            : "（🔓 访客试玩中：点击右侧【立即登录入账】即可将转出的积分真实入账！）"
+          : "";
         setBannerMessage(
-          isEn
+          (isEn
             ? `🎡 Starlight Roulette (${actualDraws}x) Complete! Highlight: [${latestOutcome.prize.rarity}] ${latestOutcome.prize.nameEn} · Total Unlocked: $${totalUsd} (${totalPts} pts)!`
-            : `🎡 丰收星轨大转盘（${actualDraws} 连抽）出货！最高命中【${latestOutcome.prize.rarity}】${latestOutcome.prize.nameZh} · 累计提现 $${totalUsd}（${totalPts} 积分）！`,
+            : `🎡 丰收星轨大转盘（${actualDraws} 连抽）出货！最高命中【${latestOutcome.prize.rarity}】${latestOutcome.prize.nameZh} · 累计提现 $${totalUsd}（${totalPts} 积分）！`) + guestHint,
         );
       }
     }, 900);
@@ -1559,10 +1595,15 @@ export function ComputeQuestArcade({
     setState(res.state);
     if (res.newlyClaimed) {
       const pts = quest.unlockUsd * POINTS_PER_USD;
+      const guestHint = isGuest
+        ? isEn
+          ? " (🔓 Guest Trial: Sign in to permanently bind +credit to your account!)"
+          : "（🔓 访客预览打卡成功：点击右侧【立即登录入账】即可将奖励永久写入你的算力账户！）"
+        : "";
       setBannerMessage(
-        isEn
+        (isEn
           ? `✅ Quest Completed: ${quest.titleEn}! Unlocked $${quest.unlockUsd} (${pts} pts) + ${quest.rewardTokens}🎟️ + ${quest.rewardStarBeans}🪙!`
-          : `✅ 任务达成：【${quest.titleZh}】！已从金库解锁 $${quest.unlockUsd}（${pts} 积分）+ ${quest.rewardTokens}🎟️ 抓娃娃币 + ${quest.rewardStarBeans}🪙 星豆！`,
+          : `✅ 任务达成：【${quest.titleZh}】！已从金库解锁 $${quest.unlockUsd}（${pts} 积分）+ ${quest.rewardTokens}🎟️ 抓娃娃币 + ${quest.rewardStarBeans}🪙 星豆！`) + guestHint,
       );
     } else {
       setBannerMessage(
@@ -1597,6 +1638,11 @@ export function ComputeQuestArcade({
                 ? `Official Ratio: 1 Point = ¥${CNY_PER_POINT.toFixed(2)} CNY = $${USD_PER_POINT.toFixed(2)} USD APIC Quota (10 Pts = $1)`
                 : `官方计费锚定：1 积分 = ¥${CNY_PER_POINT.toFixed(2)} 元 = $${USD_PER_POINT.toFixed(2)} USD APIC 标称额度（10 积分 = $1）`}
             </span>
+            {isGuest && (
+              <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:text-amber-300">
+                {isEn ? "🔓 Guest Free Trial Mode (No Login Required to Play)" : "🔓 访客免登试玩模式（可直接抓娃娃体验，登录即刻入账）"}
+              </span>
+            )}
           </div>
           <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
             {isEn
@@ -1673,8 +1719,39 @@ export function ComputeQuestArcade({
         </div>
       </div>
 
-      {/* Compact Live Jackpot Ticker */}
+      {/* Compact Normal-Distribution (100~150 Pts) + Low-Prob Koi Jackpot Summary & Live Broadcast Ticker */}
       <div className="mt-3 grid gap-2 md:grid-cols-2">
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/5 px-3.5 py-2 text-xs">
+          <div>
+            <span className="font-bold text-emerald-800 dark:text-emerald-300">
+              📊 {isEn ? "90% Normal Distribution N(125, 10²) · 100–150 Pts/Student" : "正态分布普惠算力 N(125, 10²) · 90% 学生稳拿 100~150 积分"}
+            </span>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {isEn
+                ? "50 Pts instant onboarding + 50–100 Pts progressive daily check-ins, VibeHub reading & claw pulls ($10–$15 APIC quota)."
+                : "破冰问卷立得 50 积分 + 每日打卡/阅读/抓娃娃阶梯提现 50~100 积分（折合 $10~$15 APIC 真实模型额度）。"}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-lg bg-emerald-500/15 px-2 py-1 text-[11px] font-black tabular-nums text-emerald-700 dark:text-emerald-300">
+            {deepseekPct}%
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-3.5 py-2 text-xs">
+          <div>
+            <span className="font-bold text-amber-800 dark:text-amber-300">
+              👑 {isEn ? "Low-Prob Koi Jackpot · 0.1% 1,000 Pts (¥100) + 10-Pull Pity" : "低概率天选锦鲤大奖 · 0.1% 暴击 1000 积分 (¥100) + 十连保底"}
+            </span>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {isEn
+                ? "Every claw drop is 100% win: 0.1% SP Koi (1,000 Pts), 0.9% UR Dragon Egg (300 Pts), 4% SSR 4090 Cookie (80 Pts)."
+                : "每次下爪 100% 必中算力胶囊：0.1% SP 锦鲤(1000分)、0.9% UR 龙蛋(300分)、4% SSR 4090饼干(80分)。"}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-lg bg-amber-500/15 px-2 py-1 text-[11px] font-black tabular-nums text-amber-800 dark:text-amber-300">
+            {flagshipPct}%
+          </span>
+        </div>
+
         {/* Live Koi & Jackpot Broadcast Ticker + One-Click Brag Card */}
         <div
           data-testid="arcade-jackpot-ticker"
@@ -1722,16 +1799,26 @@ export function ComputeQuestArcade({
       {bannerMessage && (
         <div
           role="status"
-          className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-foreground sm:text-sm"
+          className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-foreground sm:text-sm"
         >
           <span>{bannerMessage}</span>
-          <button
-            type="button"
-            onClick={() => setBannerMessage("")}
-            className="shrink-0 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
-          >
-            {isEn ? "Dismiss" : "收起"}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {isGuest && (
+              <Link
+                href="/login?callbackUrl=%2Fworkspace%2Fbenefits"
+                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-black text-white shadow-2xs hover:bg-emerald-500"
+              >
+                {isEn ? "🔐 Sign In to Credit Points →" : "🔐 立即登录入账 →"}
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => setBannerMessage("")}
+              className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
+            >
+              {isEn ? "Dismiss" : "收起"}
+            </button>
+          </div>
         </div>
       )}
 

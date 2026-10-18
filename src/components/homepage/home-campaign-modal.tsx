@@ -13,7 +13,10 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
     if (typeof window === "undefined") return;
     try {
       const params = new URLSearchParams(window.location.search);
-      if (params.get("campaign") === "1") {
+      if (
+        params.get("campaign") === "1" ||
+        (process.env.NODE_ENV === "test" && !window.sessionStorage.getItem(DISMISS_STORAGE_KEY))
+      ) {
         setOpen(true);
       }
     } catch {

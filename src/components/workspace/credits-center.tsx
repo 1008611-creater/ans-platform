@@ -25,7 +25,7 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
   const t = useTranslations("product.vouchers");
   const historyText = useTranslations("product.quotaHistory");
   const locale = useLocale();
-  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
   const router = useRouter();
   const flight = useRef<{ controller: AbortController; timer: ReturnType<typeof setTimeout> } | null>(null);
@@ -43,6 +43,11 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
 
   async function redeem() {
     if (flight.current) return;
+    if (actorId === "guest") {
+      setOk(false);
+      setMessage("🔓 当前为访客透明预览模式，请先登录账号后再兑换算力卡密。");
+      return;
+    }
     const controller = new AbortController();
     const timer = setTimeout(() => {
       if (flight.current?.controller !== controller) return;
@@ -100,9 +105,9 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
         {([
           { href: "/models", title: "plazaTitle", body: "plazaBody", icon: Cpu },
           { href: "/settings", title: "connectionTitle", body: "connectionBody", icon: TerminalSquare },
-          { href: "/workspace", title: "projectsTitle", body: "projectsBody", icon: FolderOpen },
-          { href: "/workspace", title: "runsTitle", body: "runsBody", icon: ReceiptText },
-          { href: "/competitions/aigc", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
+          { href: "/projects", title: "projectsTitle", body: "projectsBody", icon: FolderOpen },
+          { href: "/workflows/runs", title: "runsTitle", body: "runsBody", icon: ReceiptText },
+          { href: "/workspace/compute", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
         ] as const).map(({ href, title, body, icon: Icon }) => <Link key={title} href={href} className="flex min-w-0 items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{t(title)}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{t(body)}</p></div><ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
       </nav>
     </section>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { marketProductPath } from "@/domain/marketplace/product-route";
+import { getMarketOfferMetrics } from "@/domain/marketplace/presentation";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { ArrowUpRight, Check } from "lucide-react";
@@ -24,6 +25,7 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
   const minimum = tiers.length ? Math.min(...tiers.map(tier => tier.priceMinor)) : listing.priceMinor;
   const status = offer.submittedAt && !offer.reviewedAt ? "PENDING" : offer.status;
   const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/cauai-one.webp";
+  const metrics = getMarketOfferMetrics(offer);
   return <Link href={owner ? "/market/creator/" + offer.id : marketProductPath(offer)} className="ans-project-card group flex min-w-0 flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
     <div className="relative aspect-video overflow-hidden border-b bg-slate-950/90">
       <Image unoptimized src={coverSrc} width={960} height={540} alt={tp("projectCover", { title: listing.title })} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"/>
@@ -49,7 +51,7 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
       <div className="mt-4 flex items-end justify-between gap-3 border-t pt-4">
         <div>
           <p className="text-xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{listing.execution ? w("computeOnRun") : minimum === 0 ? p("realProject.freeShare") : tiers.length > 1 ? tp("fromPoints", { amount: minimum / 100 }) : t("pointsUnit", { amount: minimum / 100 })}</p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">{offer.official ? p("official") : offer.seller.nickname || offer.seller.username} · ★ {offer.starCount ?? 0}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">{offer.official ? p("official") : offer.seller.nickname || offer.seller.username} · <span className="font-semibold text-amber-600 dark:text-amber-400">★ {metrics.rating}</span> · {metrics.countLabel}</p>
         </div>
         <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{owner ? t("listingStatus." + status) : listing.execution ? w("runnable") : "立即解锁 →"}</span>
       </div>

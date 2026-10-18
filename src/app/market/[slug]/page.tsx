@@ -1,4 +1,5 @@
 import { marketProductPath } from "@/domain/marketplace/product-route";
+import { getMarketOfferMetrics } from "@/domain/marketplace/presentation";
 import { MarketProductConnections } from "@/components/marketplace/market-product-connections";
 import { warmCatalogForRequest } from "@/server/catalog/connections";
 import { cache, Suspense } from "react";
@@ -142,7 +143,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
         </section>}
       </div>
       <aside className={styles.decision} aria-label={td("decisionTitle")}>
-        <div className="flex flex-wrap items-center gap-2 text-xs font-medium"><span className="rounded-full bg-muted px-3 py-1.5">{runnable ? td("workflowProduct") : t(listing.fulfillment)}</span><span className="text-muted-foreground">{t("version", { version: offer.version })}</span></div>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-medium"><span className="rounded-full bg-muted px-3 py-1.5">{runnable ? td("workflowProduct") : t(listing.fulfillment)}</span><span className="text-muted-foreground">{t("version", { version: offer.version })}</span><span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-amber-700 dark:text-amber-300">{getMarketOfferMetrics(offer).summaryLabel}</span></div>
         <h1>{listing.title}</h1><p className={styles.summary}>{listing.summary}</p>
         <p className={styles.price}>{runnable ? w("computeOnRun") : isFree ? p("realProject.freeShare") : tiers.length > 1 ? tp("fromPoints", { amount: minimum / 100 }) : t("pointsUnit", { amount: minimum / 100 })}</p>
         <dl className={styles.facts}>

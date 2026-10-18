@@ -35,7 +35,7 @@ function BenefitsSession({ actorId, compact = false, initialData }: Props) {
   const alive = useRef(true), flight = useRef<AbortController | null>(null);
   useEffect(() => { alive.current = true; return () => { alive.current = false; flight.current?.abort(); }; }, []);
   useEffect(() => {
-    if (initialData !== undefined && reload === 0) return;
+    if ((initialData !== undefined || actorId === "guest") && reload === 0) return;
     let active = true; const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 15_000);
     setLoading(true); setFailed(false);
     void (async () => { try {
@@ -48,9 +48,14 @@ function BenefitsSession({ actorId, compact = false, initialData }: Props) {
     finally { clearTimeout(timer); if (active && alive.current) setLoading(false); }
     })();
     return () => { active = false; clearTimeout(timer); controller.abort(); };
-  }, [actorId, reload, router]);
+  }, [actorId, initialData, reload, router]);
   async function submit(path: string, body: unknown, event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (flight.current || accountChanged) return;
+    if (actorId === "guest") {
+      setMessage("🔓 当前为访客免登试玩模式，正在跳转登录页，登录后即可一键提交并领取真实算力积分！");
+      router.push("/login?callbackUrl=%2Fworkspace%2Fbenefits");
+      return;
+    }
     const controller = new AbortController(); flight.current = controller; setBusy(true); setMessage("");
     const timer = setTimeout(() => controller.abort(), 20_000);
     try {
