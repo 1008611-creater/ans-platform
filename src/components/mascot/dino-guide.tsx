@@ -131,8 +131,14 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     const host = window as unknown as Record<symbol, { dispose?: () => void } | undefined>;
     host[Symbol.for("ans.mascot.companion.v1")]?.dispose?.();
   }, []);
+  const allowChatOpenRef = useRef(false);
   function changeOpen(value: boolean) {
-    if (value) panelSize.prepare(); else rememberScroll();
+    if (value) {
+      document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
+      panelSize.prepare();
+    } else {
+      rememberScroll();
+    }
     setOpen(value);
     if (value && !welcomed.current) {
       welcomed.current = true;
@@ -143,13 +149,26 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     function onOpenCompanionTab(event: Event) {
       const custom = event as CustomEvent<{ tab?: "none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt" }>;
       const targetTab = custom.detail?.tab ?? "pet";
+      allowChatOpenRef.current = true;
+      document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
       setRequestedTab(targetTab);
       panelSize.prepare();
       setOpen(true);
       window.dispatchEvent(new CustomEvent("ans:dino-activate"));
     }
+    function onOpenCompanionChat() {
+      allowChatOpenRef.current = true;
+      document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
+      panelSize.prepare();
+      setOpen(true);
+      window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+    }
     window.addEventListener("ans:open-companion-tab", onOpenCompanionTab);
-    return () => window.removeEventListener("ans:open-companion-tab", onOpenCompanionTab);
+    window.addEventListener("ans:open-companion-chat", onOpenCompanionChat);
+    return () => {
+      window.removeEventListener("ans:open-companion-tab", onOpenCompanionTab);
+      window.removeEventListener("ans:open-companion-chat", onOpenCompanionChat);
+    };
   }, [panelSize]);
   function submit(event?: FormEvent, quick?: string) {
     event?.preventDefault(); const input = (quick ?? draft).trim().slice(0, 1200); if (!input || blocked) return;
@@ -188,8 +207,28 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
   return <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     {!open && <CompanionQuestPin onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />}
-    <Popover open={open} onOpenChange={changeOpen}>
-      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger"><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
+    <Popover open={open} onOpenChange={nextOpen => {
+      if (nextOpen && typeof WebGLRenderingContext !== "undefined" && !allowChatOpenRef.current) {
+        return;
+      }
+      allowChatOpenRef.current = false;
+      changeOpen(nextOpen);
+    }}>
+      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
+        if (typeof WebGLRenderingContext !== "undefined" && !open) {
+          window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: true } }));
+        }
+      }} onPointerLeave={() => {
+        if (typeof WebGLRenderingContext !== "undefined" && !open) {
+          window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: false } }));
+        }
+      }} onClick={event => {
+        if (typeof WebGLRenderingContext !== "undefined" && !open) {
+          event.preventDefault();
+          event.stopPropagation();
+          window.dispatchEvent(new CustomEvent("ans:dino-stage-click"));
+        }
+      }}><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
       <PopoverAnchor virtualRef={panelSize.anchor} />
       <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" onOpenAutoFocus={event => {
         event.preventDefault();

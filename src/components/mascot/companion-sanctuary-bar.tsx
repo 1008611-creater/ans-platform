@@ -30,6 +30,7 @@ import {
   BLIND_BOX_FOODS,
   QUEST_THOUGHTS_EN,
   QUEST_THOUGHTS_ZH,
+  SHOWCASE_MOOD_PRESETS,
   SPECIES_ICONS,
   WHIP_PRESETS,
   dispatchDinoInteract,
@@ -38,6 +39,7 @@ import {
   type BlindBoxFood,
   type DinoInteractPayload,
   type DinoReactMode,
+  type ShowcaseMoodPreset,
 } from "./companion-sanctuary-presets";
 
 export { dispatchDinoInteract, spawnFoodScreenFx, spawnWhipScreenFx, type DinoReactMode };
@@ -95,19 +97,79 @@ function SecretAchievementBanner({
   );
 }
 
+const HOVER_MOOD_IDS = ["hover0", "hover1", "hover2", "hover3", "hover4"] as const;
+const CLICK_MOOD_IDS = ["click0", "click1", "click2", "click3", "click4", "click5"] as const;
+const WHIP_MOOD_IDS = ["whip0", "whip1", "whip2", "whip3", "whip4", "whip5", "whip6", "whip7"] as const;
+const MACRO_MOOD_IDS = ["macro0", "macro1", "macro2", "macro3"] as const;
+const IDLE_MOOD_IDS = [
+  "happy_smile",
+  "excited_star",
+  "curious_tilt",
+  "shy_blush",
+  "sleepy_yawn",
+  "proud_cool",
+  "aha_spark",
+] as const;
+
+function findMoodPreset(id: string): ShowcaseMoodPreset {
+  return SHOWCASE_MOOD_PRESETS.find(item => item.id === id) ?? SHOWCASE_MOOD_PRESETS[0];
+}
+
 export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text: string) => void }) {
   const locale = useLocale();
   const isZh = locale === "zh";
-  const [dimmed, setDimmed] = useState(false);
-  const [bubble, setBubble] = useState<string | null>(null);
-  const [kaomojiTag, setKaomojiTag] = useState<string | null>(null);
+  const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
+  const [alertMode, setAlertMode] = useState(true);
+  const [alertDimmed, setAlertDimmed] = useState(false);
+  const [activeMood, setActiveMood] = useState<ShowcaseMoodPreset>(() => SHOWCASE_MOOD_PRESETS[0]);
+  const [customSubText, setCustomSubText] = useState<string | null>(null);
+  const [macroActive, setMacroActive] = useState(false);
+  const [sanctuaryModal, setSanctuaryModal] = useState<"none" | "wardrobe" | "adopt">("none");
+  const [wardrobeSlot, setWardrobeSlot] = useState<WardrobeSlot>("headwear");
+  const [wardrobeNote, setWardrobeNote] = useState<string>("");
   const [pinBannerQuest, setPinBannerQuest] = useState<SecretQuestDef | null>(null);
-  const pinClicksRef = useRef(0);
+  const [bubblePos, setBubblePos] = useState<{ left: string; bottom: string }>({
+    left: "calc(100vw - 82px)",
+    bottom: "136px",
+  });
 
+  const clickCountRef = useRef(0);
+  const hoverIdxRef = useRef(0);
+  const clickIdxRef = useRef(0);
+  const whipIdxRef = useRef(0);
+  const moodIdxRef = useRef(0);
+  const lastUserInteractRef = useRef(0);
+  const whipTimestampsRef = useRef<number[]>([]);
+
+  // Sync sanctuary state across tabs & components
   useEffect(() => {
-    const timer = window.setTimeout(() => setDimmed(true), 3000);
-    return () => window.clearTimeout(timer);
+    const sync = () => setState(loadSanctuaryState());
+    window.addEventListener(SANCTUARY_EVENT_NAME, sync);
+    window.addEventListener("ans:sanctuary-updated", sync);
+    window.addEventListener("ans-sanctuary-sync", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(SANCTUARY_EVENT_NAME, sync);
+      window.removeEventListener("ans:sanctuary-updated", sync);
+      window.removeEventListener("ans-sanctuary-sync", sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
+
+  function commitSanctuary(updater: (prev: MascotSanctuaryState) => MascotSanctuaryState) {
+    setState(prev => {
+      const next = updater(prev);
+      saveSanctuaryState(next);
+      return next;
+    });
+  }
+
+  // Dim the '!' alert pin after 3 seconds of no interaction (matching showcase.js)
+  useEffect(() => {
+    if (!alertMode) return;
+    const timer = window.setTimeout(() => setAlertDimmed(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, [alertMode]);
 
   // Automatically upgrade the bottom-right dragon to the live 3D Sanctuary WebGL canvas in real browsers
   useEffect(() => {
@@ -120,64 +182,317 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     }
   }, []);
 
+  // Keep body classes synchronized with macroActive and sanctuaryModal
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("ans-dino-interactive-mode", macroActive);
+    document.body.classList.toggle("ans-sanctuary-open", sanctuaryModal !== "none");
+    return () => {
+      document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
+    };
+  }, [macroActive, sanctuaryModal]);
+
+  // Dynamically position #ans-dino-live-bubble right above .ans-dino-trigger (matching showcase.js syncBubblePos)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let rafId = 0;
+    const updatePosition = () => {
+      const host = document.querySelector<HTMLElement>(".ans-dino-guide .ans-dino-trigger");
+      if (host) {
+        const rect = host.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const vw = window.innerWidth || document.documentElement.clientWidth || 1280;
+          const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+          let cx = rect.left + rect.width * 0.5;
+          let topY = vh - rect.top - 6;
+          if (!alertMode) {
+            const halfW = 145;
+            cx = Math.max(halfW + 12, Math.min(vw - halfW - 12, cx));
+            topY = Math.max(80, Math.min(vh - 96, topY));
+          } else {
+            cx = Math.max(28, Math.min(vw - 28, cx));
+            topY = Math.max(60, Math.min(vh - 48, topY));
+          }
+          setBubblePos({
+            left: `${Math.round(cx)}px`,
+            bottom: `${Math.round(topY)}px`,
+          });
+        }
+      }
+    };
+    updatePosition();
+    const interval = window.setInterval(updatePosition, 90);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("resize", updatePosition);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [alertMode, macroActive, sanctuaryModal]);
+
+  // Autonomous Mood & Rambling Cycle (every 4.2s, matching showcase.js)
+  useEffect(() => {
+    if (alertMode) return;
+    const timer = window.setInterval(() => {
+      if (performance.now() - lastUserInteractRef.current < 3600) return;
+      moodIdxRef.current += 1;
+      if (macroActive) {
+        const id = MACRO_MOOD_IDS[moodIdxRef.current % MACRO_MOOD_IDS.length];
+        const preset = findMoodPreset(id);
+        const cur = loadSanctuaryState();
+        const sp = DINO_SPECIES[cur.speciesId] || DINO_SPECIES.mint_star;
+        const eqCount = Object.values(cur.equipped || {}).filter(Boolean).length;
+        setActiveMood(preset);
+        setCustomSubText(
+          isZh
+            ? `(已穿戴 ${eqCount} 件高定 · ${sp.name} · 🪙 ${cur.starBeans} 灵感星豆)`
+            : `(${eqCount} equipped · ${sp.name} · 🪙 ${cur.starBeans} Star Beans)`,
+        );
+        dispatchDinoInteract({ action: "mood", mood: preset });
+      } else {
+        const id = IDLE_MOOD_IDS[moodIdxRef.current % IDLE_MOOD_IDS.length];
+        const preset = findMoodPreset(id);
+        setActiveMood(preset);
+        setCustomSubText(null);
+        dispatchDinoInteract({ action: "mood", mood: preset });
+      }
+    }, 4200);
+    return () => window.clearInterval(timer);
+  }, [alertMode, macroActive, isZh]);
+
   useEffect(() => {
     if (!pinBannerQuest) return;
     const timer = window.setTimeout(() => setPinBannerQuest(null), 8500);
     return () => window.clearTimeout(timer);
   }, [pinBannerQuest]);
 
-  function handlePinClick(e: React.MouseEvent) {
-    e.stopPropagation();
-    setDimmed(false);
-    const now = Date.now();
-    pinClicksRef.current += 1;
+  const triggerHoverReaction = (hovering: boolean) => {
+    if (!hovering) {
+      dispatchDinoInteract({ action: "hover", hover: false });
+      return;
+    }
+    lastUserInteractRef.current = performance.now();
+    setAlertMode(false);
+    setAlertDimmed(false);
+    const id = HOVER_MOOD_IDS[hoverIdxRef.current % HOVER_MOOD_IDS.length];
+    hoverIdxRef.current += 1;
+    const preset = findMoodPreset(id);
+    setActiveMood(preset);
+    if (!macroActive && clickCountRef.current > 0 && clickCountRef.current < 3) {
+      const rem = 3 - clickCountRef.current;
+      setCustomSubText(
+        isZh
+          ? `(再点 ${rem} 下进入近景互动 / 换装 👗)`
+          : `(Click ${rem} more times for Close-Up Stage 👗)`,
+      );
+    } else {
+      setCustomSubText(null);
+    }
+    dispatchDinoInteract({ action: "hover", hover: true, mood: preset });
+  };
 
-    // Secret Quest #3: 【凌晨三点的造物主】 (01:30 - 04:30 Beijing Time, or 3 consecutive clicks on the '!' bubble)
-    if (isBeijingNightOwlWindow(now) || pinClicksRef.current >= 3) {
-      pinClicksRef.current = 0;
+  const enterMacroMode = () => {
+    lastUserInteractRef.current = performance.now();
+    clickCountRef.current = 3;
+    setAlertMode(false);
+    setAlertDimmed(false);
+    setMacroActive(true);
+    const preset = findMoodPreset("macro0");
+    setActiveMood(preset);
+    setCustomSubText(null);
+    dispatchDinoInteract({ action: "macro", active: true, mood: preset });
+    onTriggerSpeech?.(isZh ? preset.textZh : preset.textEn);
+  };
+
+  const exitMacroMode = () => {
+    lastUserInteractRef.current = performance.now();
+    clickCountRef.current = 0;
+    setSanctuaryModal("none");
+    setMacroActive(false);
+    const preset = findMoodPreset("happy_smile");
+    setActiveMood(preset);
+    setCustomSubText(
+      isZh
+        ? "(已收起近景 · 再连点 3 下小恐龙可随时重新拉近镜头 ✨)"
+        : "(Exited Close-Up Stage · Click dino 3 times to zoom in again ✨)",
+    );
+    dispatchDinoInteract({
+      action: "macro",
+      active: false,
+      mood: preset,
+    });
+    dispatchDinoInteract({ type: "turntable", spin: false });
+  };
+
+  const triggerStageClick = () => {
+    const now = Date.now();
+    lastUserInteractRef.current = performance.now();
+    setAlertMode(false);
+    setAlertDimmed(false);
+
+    // Night-Owl Secret Quest check (01:30 - 04:30 Beijing Time)
+    if (isBeijingNightOwlWindow(now)) {
       const current = loadSanctuaryState();
-      const { state: nextState, newlyUnlocked, quest } = unlockSecretQuest(current, "midnight_creator", now);
-      if (newlyUnlocked) {
-        saveSanctuaryState(nextState);
+      if (!current.unlockedSecretQuests.includes("midnight_creator")) {
+        const { state: nextState, newlyUnlocked, quest } = unlockSecretQuest(current, "midnight_creator", now);
+        if (newlyUnlocked) {
+          saveSanctuaryState(nextState);
+          setState(nextState);
+          setPinBannerQuest(quest);
+        }
       }
-      const line = isZh ? quest.speechZh : quest.speechEn;
-      setPinBannerQuest(quest);
-      setBubble(line);
-      onTriggerSpeech?.(line);
+    }
+
+    if (!macroActive) {
+      clickCountRef.current += 1;
+      if (clickCountRef.current >= 3) {
+        enterMacroMode();
+        return;
+      }
+      const rem = 3 - clickCountRef.current;
+      const id = CLICK_MOOD_IDS[clickIdxRef.current % CLICK_MOOD_IDS.length];
+      clickIdxRef.current += 1;
+      const preset = findMoodPreset(id);
+      setActiveMood(preset);
+      setCustomSubText(
+        isZh
+          ? `(再点 ${rem} 下进入近景镜头 🎥 · 可抽鞭子/换装/投喂)`
+          : `(Click ${rem} more times for Close-Up Stage 🎥)`,
+      );
+      dispatchDinoInteract({ action: "click", mood: preset });
+      onTriggerSpeech?.(isZh ? preset.textZh : preset.textEn);
       return;
     }
 
-    const pool = isZh ? QUEST_THOUGHTS_ZH : QUEST_THOUGHTS_EN;
-    const next = pool[Math.floor(Math.random() * pool.length)];
-    setBubble(current => (current ? null : next));
-    onTriggerSpeech?.(next);
-  }
+    // Already in macro mode: playful click reaction + bonus Star Beans
+    const id = CLICK_MOOD_IDS[clickIdxRef.current % CLICK_MOOD_IDS.length];
+    clickIdxRef.current += 1;
+    const preset = findMoodPreset(id);
+    commitSanctuary(prev => ({
+      ...prev,
+      starBeans: prev.starBeans + 5,
+      affectionXp: prev.affectionXp + 4,
+    }));
+    setActiveMood(preset);
+    setCustomSubText(
+      isZh
+        ? "(近景特写中 · 点击下方抽鞭子 / 投喂 / 奇迹暖暖衣橱 👇)"
+        : "(Close-Up Stage · Use controls below 👇)",
+    );
+    dispatchDinoInteract({ action: "click", mood: preset });
+    onTriggerSpeech?.(isZh ? preset.textZh : preset.textEn);
+  };
 
-  function handleQuickWhip(e: React.MouseEvent) {
-    e.stopPropagation();
+  // Listen for hover & click events dispatched from .ans-dino-trigger in dino-guide.tsx
+  useEffect(() => {
+    const onStageHover = (event: Event) => {
+      const custom = event as CustomEvent<{ hover?: boolean }>;
+      triggerHoverReaction(Boolean(custom.detail?.hover));
+    };
+    const onStageClick = () => {
+      triggerStageClick();
+    };
+    window.addEventListener("ans:dino-stage-hover", onStageHover);
+    window.addEventListener("ans:dino-stage-click", onStageClick);
+    return () => {
+      window.removeEventListener("ans:dino-stage-hover", onStageHover);
+      window.removeEventListener("ans:dino-stage-click", onStageClick);
+    };
+  });
+
+  function handleWhipAction(e?: React.MouseEvent) {
+    e?.stopPropagation();
     const now = Date.now();
-    const preset = WHIP_PRESETS[Math.floor(Math.random() * WHIP_PRESETS.length)];
-    const current = loadSanctuaryState();
-    saveSanctuaryState({
-      ...current,
-      totalWhips: current.totalWhips + 1,
-      starBeans: current.starBeans + 15,
-      affectionXp: current.affectionXp + 8,
-      userXp: current.userXp + 20,
+    lastUserInteractRef.current = performance.now();
+    setAlertMode(false);
+    setAlertDimmed(false);
+
+    // Check 7-whip Cyber Dino Labor Law strike
+    const recent = whipTimestampsRef.current.filter(ts => now - ts <= 10_000);
+    recent.push(now);
+    whipTimestampsRef.current = recent;
+
+    if (recent.length >= 7) {
+      whipTimestampsRef.current = [];
+      const strikeEnd = now + 30_000;
+      commitSanctuary(prev => ({
+        ...prev,
+        totalWhips: prev.totalWhips + 1,
+        strikeUntil: strikeEnd,
+        workBoostUntil: 0,
+      }));
+      const protestMood: ShowcaseMoodPreset = {
+        id: "strike",
+        kaomoji: "(╬▔皿▔)╯🕶️",
+        textZh: "啪什么啪！本龙掏出《赛博灵龙劳动法》宣布罢工 30 秒！",
+        textEn: "Stop whipping! By the Cyber Dino Labor Law, I'm on a 30s strike!",
+        subZh: "(罢工抗议中 · 快点「🎲 随机盲盒投喂」喂一口夜宵哄好本龙领隐藏大奖！)",
+        subEn: "(On strike · Click 'Random Blind-Box Feed' now to make peace & unlock secret reward!)",
+        gesture: "whip",
+        blush: 0.9,
+        happy: 0.2,
+        star: 1.0,
+        mouth: 1.0,
+      };
+      setActiveMood(protestMood);
+      setCustomSubText(isZh ? protestMood.subZh : protestMood.subEn);
+      dispatchDinoInteract({ type: "whip", mood: protestMood });
+      onTriggerSpeech?.(isZh ? protestMood.textZh : protestMood.textEn);
+      return;
+    }
+
+    const id = WHIP_MOOD_IDS[whipIdxRef.current % WHIP_MOOD_IDS.length];
+    whipIdxRef.current += 1;
+    const preset = findMoodPreset(id);
+    commitSanctuary(prev => ({
+      ...prev,
+      totalWhips: prev.totalWhips + 1,
+      starBeans: prev.starBeans + 25,
+      affectionXp: prev.affectionXp + 8,
+      userXp: prev.userXp + 20,
       workBoostUntil: now + 180_000,
-    });
-    spawnWhipScreenFx(isZh ? "⚡ 啪！+15🪙 +8♥ · 2.4x 超频干活" : "⚡ Crack! +15🪙 +8♥ · 2.4x Overclock");
-    dispatchDinoInteract({ type: "whip" });
-    setKaomojiTag(preset.kaomoji);
-    const line = isZh ? preset.zh : preset.en;
-    setBubble(line);
-    onTriggerSpeech?.(line);
+    }));
+    spawnWhipScreenFx(
+      isZh ? preset.subZh.replace(/^\(|\)$/g, "") : preset.subEn.replace(/^\(|\)$/g, ""),
+    );
+    setActiveMood(preset);
+    setCustomSubText(null);
+    dispatchDinoInteract({ type: "whip", mood: preset });
+    onTriggerSpeech?.(isZh ? preset.textZh : preset.textEn);
   }
 
-  function handleQuickFeed(e: React.MouseEvent) {
-    e.stopPropagation();
+  function handleFeedAction(e?: React.MouseEvent) {
+    e?.stopPropagation();
     const now = Date.now();
+    lastUserInteractRef.current = performance.now();
+    setAlertMode(false);
+    setAlertDimmed(false);
+
     const current = loadSanctuaryState();
+    // If on strike, feeding pacifies the strike and unlocks Secret Quest #2!
+    if (current.strikeUntil > now) {
+      const pacified: MascotSanctuaryState = {
+        ...current,
+        strikeUntil: 0,
+        totalFeeds: current.totalFeeds + 1,
+        starBeans: current.starBeans + 35,
+        affectionXp: current.affectionXp + 25,
+        userXp: current.userXp + 25,
+        workBoostUntil: now + 180_000,
+      };
+      const res = unlockSecretQuest(pacified, "donkey_strike", now);
+      saveSanctuaryState(res.state);
+      setState(res.state);
+      setPinBannerQuest(res.quest);
+      const feedMood = findMoodPreset("feed0");
+      spawnFoodScreenFx("🧋", isZh ? "罢工解除 +35🪙 +25♥" : "Strike Pacified +35🪙 +25♥");
+      setActiveMood(feedMood);
+      setCustomSubText(isZh ? `📜 罢工解除！【${res.quest.titleZh}】已解锁` : `📜 Strike pacified! [${res.quest.titleEn}]`);
+      dispatchDinoInteract({ type: "feed", reactMode: "happy", mood: feedMood });
+      onTriggerSpeech?.(isZh ? res.quest.speechZh : res.quest.speechEn);
+      return;
+    }
+
     const ssrFoods = BLIND_BOX_FOODS.filter(item => item.isSsrSecret);
     const shouldGuaranteeSsr =
       !current.unlockedSecretQuests.includes("silicon_ulcer") && current.totalFeeds + 1 >= 4;
@@ -201,114 +516,255 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       }
     }
     saveSanctuaryState(nextState);
+    setState(nextState);
     advanceAndClaimQuest("daily_agent_feed");
+
     const foodName = isZh ? food.nameZh : food.nameEn;
-    spawnFoodScreenFx(food.icon, `${foodName} +${food.coins}🪙 +${food.affection}♥`);
-    dispatchDinoInteract({ type: "feed", reactMode: food.reactMode });
-    setKaomojiTag(food.kaomoji);
-    const line = isZh ? `${food.icon} 【${foodName}】${food.reactionZh}` : `${food.icon} [${foodName}] ${food.reactionEn}`;
-    setBubble(line);
-    onTriggerSpeech?.(line);
+    const foodTag = isZh ? food.tagZh : food.tagEn;
+    spawnFoodScreenFx(food.icon, `🎲 盲盒抽中【${foodName}】+${food.coins}🪙 +${food.affection}♥`);
+
+    const customFeedMood: ShowcaseMoodPreset = {
+      id: `feed_${food.id}`,
+      kaomoji: food.kaomoji,
+      textZh: `盲盒投喂【${food.icon} ${foodName}】！${food.reactionZh}`,
+      textEn: `Blind-box fed [${food.icon} ${foodName}]! ${food.reactionEn}`,
+      subZh: `(${foodTag} · 好感度 +${food.affection} ♥ · 灵感星豆 +${food.coins} 🪙)`,
+      subEn: `(${foodTag} · Affection +${food.affection} ♥ · Star Beans +${food.coins} 🪙)`,
+      gesture: food.reactMode,
+      blush: 0.85,
+      happy: 0.95,
+      star: 0.9,
+      mouth: 0.9,
+    };
+    setActiveMood(customFeedMood);
+    setCustomSubText(null);
+    dispatchDinoInteract({ type: "feed", reactMode: food.reactMode, mood: customFeedMood });
+    onTriggerSpeech?.(isZh ? customFeedMood.textZh : customFeedMood.textEn);
   }
 
-  function handleQuickPat(e: React.MouseEvent) {
-    e.stopPropagation();
-    const current = loadSanctuaryState();
-    saveSanctuaryState({
-      ...current,
-      starBeans: current.starBeans + 10,
-      affectionXp: current.affectionXp + 15,
+  function handlePatAction(e?: React.MouseEvent) {
+    e?.stopPropagation();
+    lastUserInteractRef.current = performance.now();
+    setAlertMode(false);
+    setAlertDimmed(false);
+    commitSanctuary(prev => ({
+      ...prev,
+      starBeans: prev.starBeans + 10,
+      affectionXp: prev.affectionXp + 15,
+    }));
+    const patMood: ShowcaseMoodPreset = {
+      id: "pat",
+      kaomoji: "(✿◡‿◡)💖",
+      textZh: "呼噜呼噜~ 被主人摸头顺毛好舒服呀！尾巴都要摇断啦~",
+      textEn: "Purr~ Head pats feel amazing! Tail wagging at max speed~",
+      subZh: "(摸头杀成功 · 好感度 +15 ♥ · 灵感星豆 +10 🪙)",
+      subEn: "(Head pat · Affection +15 ♥ · Star Beans +10 🪙)",
+      gesture: "shy",
+      blush: 1.0,
+      happy: 1.0,
+      star: 0.85,
+      mouth: 0.75,
+    };
+    setActiveMood(patMood);
+    setCustomSubText(null);
+    dispatchDinoInteract({ type: "pat", mood: patMood });
+    onTriggerSpeech?.(isZh ? patMood.textZh : patMood.textEn);
+  }
+
+  function handleOpenWardrobeDrawer(e?: React.MouseEvent) {
+    e?.stopPropagation();
+    if (!macroActive) {
+      enterMacroMode();
+    }
+    setSanctuaryModal("wardrobe");
+    dispatchDinoInteract({ type: "pose" });
+  }
+
+  function handleOpenAdoptDrawer(e?: React.MouseEvent) {
+    e?.stopPropagation();
+    if (!macroActive) {
+      enterMacroMode();
+    }
+    setSanctuaryModal("adopt");
+    dispatchDinoInteract({ type: "pose" });
+  }
+
+  function handleWardrobeTurntable(deltaYaw?: number, toggleSpin?: boolean) {
+    if (toggleSpin) {
+      const nextSpin = !state.turntableSpin;
+      commitSanctuary(prev => ({ ...prev, turntableSpin: nextSpin }));
+      dispatchDinoInteract({ type: "turntable", spin: nextSpin });
+      setWardrobeNote(
+        isZh
+          ? nextSpin
+            ? "🔄 已开启左侧 3D 展台 360° 自动旋转！"
+            : "⏹️ 已暂停 360° 自动旋转"
+          : nextSpin
+            ? "🔄 360° Turntable enabled!"
+            : "⏹️ 360° Turntable paused",
+      );
+      return;
+    }
+    const delta = deltaYaw ?? Math.PI / 4;
+    commitSanctuary(prev => ({
+      ...prev,
+      turntableSpin: false,
+      turntableYaw: (prev.turntableYaw || 0) + delta,
+    }));
+    dispatchDinoInteract({ type: "turntable", deltaYaw: delta, spin: false });
+  }
+
+  function handleWardrobeEquipTripo() {
+    const now = Date.now();
+    const allIds = DINO_WARDROBE_ITEMS.map(i => i.id);
+    commitSanctuary(prev => {
+      const updated: MascotSanctuaryState = {
+        ...prev,
+        turntableSpin: true,
+        starBeans: prev.starBeans + 25,
+        affectionXp: prev.affectionXp + 40,
+        unlockedItems: Array.from(new Set([...prev.unlockedItems, ...allIds])),
+        equipped: {
+          headwear: "beret_cloud",
+          eyewear: "gold_glasses",
+          neckwear: "boba_jetpack",
+          handheld: "magic_wand",
+          aura: "aura_sakura",
+        },
+      };
+      return unlockSecretQuest(updated, "fashion_mudslide", now).state;
     });
-    dispatchDinoInteract({ type: "pat" });
-    setKaomojiTag("(✿◡‿◡)💖");
-    const line = isZh
-      ? "呼噜呼噜~ 被摸头顺毛好舒服呀！好感度 +15♥，灵感星豆 +10🪙！"
-      : "Purr~ Head pats feel amazing! Affection +15♥, Star Beans +10🪙!";
-    setBubble(line);
-    onTriggerSpeech?.(line);
+    dispatchDinoInteract({ type: "turntable", spin: true });
+    dispatchDinoInteract({ type: "pose" });
+    setWardrobeNote(
+      isZh
+        ? "🧋 已穿戴 Tripo 3D【吨吨冰美式外挂喷射包 + 奶油云朵画家帽 + 金丝镜 + 零Bug仙女棒 + 樱吹雪星阵】套装！"
+        : "🧋 Equipped [Tripo 3D Boba Jet-Pack + Cloud Beret + Gold Glasses + Magic Wand + Sakura Halo] set!",
+    );
   }
 
-  function handleOpenWardrobe(e: React.MouseEvent) {
-    e.stopPropagation();
-    window.dispatchEvent(new CustomEvent("ans:open-companion-tab", { detail: { tab: "wardrobe" } }));
+  function handleWardrobeEquipUr() {
+    const now = Date.now();
+    const allIds = DINO_WARDROBE_ITEMS.map(i => i.id);
+    commitSanctuary(prev => {
+      const updated: MascotSanctuaryState = {
+        ...prev,
+        turntableSpin: true,
+        userXp: Math.max(prev.userXp, 6000),
+        affectionXp: Math.max(prev.affectionXp, 1500),
+        starBeans: prev.starBeans + 25,
+        unlockedItems: Array.from(new Set([...prev.unlockedItems, ...allIds])),
+        equipped: {
+          headwear: "crown_aurora",
+          eyewear: "star_monocle",
+          neckwear: "pioneer_cape",
+          handheld: "floating_grimoire",
+          aura: "aura_aurora",
+        },
+      };
+      return unlockSecretQuest(updated, "fashion_mudslide", now).state;
+    });
+    dispatchDinoInteract({ type: "turntable", spin: true });
+    dispatchDinoInteract({ type: "pose" });
+    setWardrobeNote(
+      isZh
+        ? "👑 已一键试穿 UR 星神满配高定神装（SSS）【极光星神王冠 + 星轨单片镜 + 先锋熔金披风 + 悬浮魔导书 + 创世极光星环】！"
+        : "👑 Equipped UR Star-God Full Set (SSS)!",
+    );
   }
+
+  function handleWardrobeItemClick(itemId: string) {
+    const now = Date.now();
+    const item = DINO_WARDROBE_ITEMS.find(entry => entry.id === itemId);
+    if (!item) return;
+    const owned = state.unlockedItems.includes(item.id);
+    const equippedNow = state.equipped[item.slot] === item.id;
+    const styleNow = calculateStyleEvaluation(state);
+    const affNow = getAffectionProgress(state.affectionXp);
+
+    if (equippedNow) {
+      commitSanctuary(prev => ({
+        ...prev,
+        equipped: { ...prev.equipped, [item.slot]: null },
+      }));
+      dispatchDinoInteract({ type: "pose" });
+      setWardrobeNote(isZh ? `已卸下【${item.name}】` : `Unequipped [${item.name}]`);
+      return;
+    }
+
+    if (!owned) {
+      if (styleNow.userLevel.level.index < item.minUserLevel) {
+        setWardrobeNote(
+          isZh
+            ? `🔒 需达到 Lv.${item.minUserLevel} 才可解锁【${item.name}】（可点上方「👑 一键试穿 UR 满配神装」直接解锁全部）`
+            : `🔒 Requires Lv.${item.minUserLevel} to unlock [${item.name}]`,
+        );
+        return;
+      }
+      if (affNow.level < item.minAffectionLevel) {
+        setWardrobeNote(
+          isZh
+            ? `🔒 需好感达到 ♥Lv.${item.minAffectionLevel} 才可解锁【${item.name}】`
+            : `🔒 Requires Affection ♥Lv.${item.minAffectionLevel}`,
+        );
+        return;
+      }
+      if (state.starBeans < item.priceBeans) {
+        setWardrobeNote(
+          isZh
+            ? `🪙 灵感星豆不足（需 ${item.priceBeans}🪙，可点上方「🎁 +500🪙 领测试星豆」）`
+            : `🪙 Needs ${item.priceBeans}🪙 Star Beans`,
+        );
+        return;
+      }
+    }
+
+    commitSanctuary(prev => {
+      const nextEq = { ...prev.equipped, [item.slot]: item.id };
+      const updated: MascotSanctuaryState = {
+        ...prev,
+        starBeans: owned ? prev.starBeans : prev.starBeans - item.priceBeans,
+        unlockedItems: owned ? prev.unlockedItems : [...prev.unlockedItems, item.id],
+        equipped: nextEq,
+      };
+      if (isContrastMixOutfit(nextEq, prev.speciesId)) {
+        return unlockSecretQuest(updated, "fashion_mudslide", now).state;
+      }
+      return updated;
+    });
+    dispatchDinoInteract({ type: "pose" });
+    setWardrobeNote(
+      isZh
+        ? `✨ 已穿戴【${item.icon} ${item.name}】· ${item.specialQuote}`
+        : `✨ Equipped [${item.icon} ${item.name}]`,
+    );
+    if (item.specialQuote) {
+      onTriggerSpeech?.(item.specialQuote);
+    }
+  }
+
+  const sp = DINO_SPECIES[state.speciesId] || DINO_SPECIES.mint_star;
+  const styleEval = calculateStyleEvaluation(state);
+  const aff = getAffectionProgress(state.affectionXp);
+  const isOverclocked = state.workBoostUntil > Date.now();
+  const isOnStrike = state.strikeUntil > Date.now();
+  const workDrivePct = isOnStrike
+    ? 0
+    : Math.min(100, 68 + (state.totalWhips % 4) * 8 + (isOverclocked ? 16 : 0));
+  const wardrobeItemsForSlot = DINO_WARDROBE_ITEMS.filter(i => i.slot === wardrobeSlot);
 
   return (
-    <div className="pointer-events-auto relative inline-flex items-center">
-      {/* Floating Quick Action Dock next to bottom-right 3D Dragon */}
+    <>
+      {/* Subtle Macro Stage Backdrop (clicking outside exits Close-Up Macro Stage) */}
       <div
-        className="fixed bottom-[16px] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-emerald-500/35 bg-background/90 px-2 py-1 shadow-lg backdrop-blur-md"
-        onClick={e => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={handleQuickWhip}
-          title={isZh ? "抽一鞭子催小恐龙 2.4x 超频干活 (+15🪙)" : "Crack whip for 2.4x overclock (+15🪙)"}
-          className="rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-extrabold text-rose-600 transition hover:bg-rose-500/25 dark:text-rose-300"
-        >
-          🪢 {isZh ? "抽鞭子" : "Whip"}
-        </button>
-        <button
-          type="button"
-          onClick={handleQuickFeed}
-          title={isZh ? "随机盲盒投喂小恐龙 (+SSR/♥)" : "Feed blind-box snack (+SSR/♥)"}
-          className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 transition hover:bg-emerald-500/25 dark:text-emerald-300"
-        >
-          🎲 {isZh ? "投喂" : "Feed"}
-        </button>
-        <button
-          type="button"
-          onClick={handleQuickPat}
-          title={isZh ? "摸摸头顺毛 (+15♥)" : "Pat head (+15♥)"}
-          className="hidden sm:inline-flex rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-extrabold text-amber-700 transition hover:bg-amber-500/25 dark:text-amber-300"
-        >
-          🤚 {isZh ? "摸头" : "Pat"}
-        </button>
-        <button
-          type="button"
-          onClick={handleOpenWardrobe}
-          title={isZh ? "打开 3D 暖暖衣橱与 360° 旋转展台" : "Open 3D Wardrobe & 360° Turntable"}
-          className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[10px] font-extrabold text-purple-700 transition hover:bg-purple-500/25 dark:text-purple-300"
-        >
-          👗 {isZh ? "换装" : "Dress"}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            window.location.href = "/workspace";
-          }}
-          title={isZh ? "切换到 Pi-Codex 工作模式（个人工作台 IDE）" : "Switch to Pi-Codex Work Mode (/workspace)"}
-          className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-extrabold text-indigo-700 transition hover:bg-indigo-500/30 dark:text-indigo-300"
-        >
-          🛠️ {isZh ? "工作台" : "Codex"}
-        </button>
-      </div>
+        id="ans-dino-macro-backdrop"
+        className={macroActive ? "is-active" : ""}
+        onClick={() => exitMacroMode()}
+      />
 
-      {kaomojiTag && (
-        <div
-          onClick={e => {
-            e.stopPropagation();
-            setKaomojiTag(null);
-          }}
-          className="fixed bottom-[92px] right-[26px] z-[61] cursor-pointer rounded-full border border-amber-400/50 bg-slate-950/90 px-2.5 py-0.5 text-[11px] font-black text-amber-300 shadow-md"
-        >
-          {kaomojiTag}
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={handlePinClick}
-        title={isZh ? "点击查看小恐龙碎碎念（凌晨 01:30-04:30 有夜猫子奇遇）" : "Click for dino thoughts (01:30-04:30 BJT night-owl secret)"}
-        aria-label={isZh ? "点击查看小恐龙碎碎念" : "Click for dino thoughts"}
-        className={`fixed bottom-[114px] right-[12px] sm:bottom-[74px] sm:right-[22px] z-[60] flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full border border-white/60 bg-gradient-to-br from-amber-400 to-rose-500 text-xs font-black text-white shadow-md transition-opacity duration-500 ${
-          dimmed && !bubble ? "opacity-40 hover:opacity-100" : "animate-bounce opacity-100"
-        }`}
-      >
-        !
-      </button>
+      {/* Secret Quest Banner Toast */}
       {pinBannerQuest && (
-        <div className="fixed bottom-[155px] right-[18px] z-[65] w-[300px]">
+        <div className="fixed bottom-[175px] right-[18px] z-[100025] w-[320px]">
           <SecretAchievementBanner
             quest={pinBannerQuest}
             isZh={isZh}
@@ -316,23 +772,583 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
           />
         </div>
       )}
-      {bubble && (
+
+      {/* 1:1 Resume Website Speech & Alert Bubble (#ans-dino-live-bubble) */}
+      {sanctuaryModal === "none" && (
         <div
+          id="ans-dino-live-bubble"
+          style={{ left: bubblePos.left, bottom: bubblePos.bottom }}
+          className={`is-visible ${alertMode ? "is-alert" : ""} ${alertMode && alertDimmed ? "is-alert-dimmed" : ""}`}
+          onPointerEnter={() => triggerHoverReaction(true)}
+          onPointerLeave={() => triggerHoverReaction(false)}
           onClick={e => {
             e.stopPropagation();
-            setBubble(null);
+            triggerStageClick();
           }}
-          className="fixed bottom-[140px] right-[12px] sm:bottom-[106px] sm:right-[18px] z-[60] max-w-[260px] cursor-pointer rounded-2xl border border-amber-500/30 bg-background/95 px-3 py-2 text-[11px] leading-snug text-foreground shadow-xl backdrop-blur-md"
         >
-          <span className="font-bold text-amber-500">
-            {isZh ? "🦖 灵龙碎碎念：" : "🦖 Dino Whisper: "}
-          </span>
-          {bubble}
+          <div className="dino-alert-pin" title={isZh ? "移上来跟小恐龙互动 / 连点 3 下进入近景镜头" : "Hover to interact / Click 3 times for Close-Up Stage"}>
+            <span className="dino-alert-bang">!</span>
+            <span className="dino-alert-ring" />
+            <span className="dino-alert-ring2" />
+          </div>
+          <div className="dino-speech-card">
+            <span className="dino-b-kao">{activeMood.kaomoji}</span>
+            <span className="dino-b-txt">{isZh ? activeMood.textZh : activeMood.textEn}</span>
+            <span className="dino-b-sub">
+              {customSubText ?? (isZh ? activeMood.subZh : activeMood.subEn)}
+            </span>
+          </div>
         </div>
       )}
-    </div>
+
+      {/* Compact Quick Dock next to bottom-right 3D Dragon when not in Macro mode */}
+      {!macroActive && (
+        <div
+          className="fixed bottom-[16px] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-emerald-500/35 bg-background/90 px-2 py-1 shadow-lg backdrop-blur-md"
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={e => {
+              e.stopPropagation();
+              enterMacroMode();
+            }}
+            title={isZh ? "拉近 3D 近景特写镜头（或连点小恐龙 3 下）" : "Enter 3D Close-Up Macro Stage (or click dino 3x)"}
+            className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-extrabold text-amber-700 transition hover:bg-amber-500/25 dark:text-amber-300"
+          >
+            🎥 {isZh ? "近景互动" : "Close-Up"}
+          </button>
+          <button
+            type="button"
+            onClick={handleWhipAction}
+            title={isZh ? "抽一鞭子催小恐龙 2.4x 超频干活 (+25🪙)" : "Crack whip for 2.4x overclock (+25🪙)"}
+            className="rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-extrabold text-rose-600 transition hover:bg-rose-500/25 dark:text-rose-300"
+          >
+            🪢 {isZh ? "抽鞭子" : "Whip"}
+          </button>
+          <button
+            type="button"
+            onClick={handleFeedAction}
+            title={isZh ? "随机盲盒投喂小恐龙 (+SSR/♥)" : "Feed blind-box snack (+SSR/♥)"}
+            className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 transition hover:bg-emerald-500/25 dark:text-emerald-300"
+          >
+            🎲 {isZh ? "投喂" : "Feed"}
+          </button>
+          <button
+            type="button"
+            onClick={handleOpenWardrobeDrawer}
+            title={isZh ? "打开 3D 奇迹暖暖高定衣橱与左侧 360° 旋转展台" : "Open 3D Nikki Wardrobe & Left 3D Podium"}
+            className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[10px] font-extrabold text-purple-700 transition hover:bg-purple-500/25 dark:text-purple-300"
+          >
+            👗 {isZh ? "换装" : "Dress"}
+          </button>
+          <button
+            type="button"
+            onClick={e => {
+              e.stopPropagation();
+              window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
+            }}
+            title={isZh ? "打开小恐龙 AI 伴随对话与 Pi Agent 面板" : "Open AI Companion Chat & Pi Agent"}
+            className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] font-extrabold text-cyan-700 transition hover:bg-cyan-500/25 dark:text-cyan-300"
+          >
+            💬 {isZh ? "AI对话" : "AI Chat"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = "/workspace";
+            }}
+            title={isZh ? "切换到 Pi-Codex 工作模式（个人工作台 IDE）" : "Switch to Pi-Codex Work Mode (/workspace)"}
+            className="hidden sm:inline-flex rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-extrabold text-indigo-700 transition hover:bg-indigo-500/30 dark:text-indigo-300"
+          >
+            🛠️ {isZh ? "工作台" : "Codex"}
+          </button>
+        </div>
+      )}
+
+      {/* 1:1 Resume Website Close-Up Macro Interactive Stage HUD (#ans-dino-interact-hud) */}
+      <div
+        id="ans-dino-interact-hud"
+        className={macroActive && sanctuaryModal === "none" ? "is-active" : ""}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="hud-top-row">
+          <span className="hud-title">
+            🦖 {isZh ? `灵龙近景互动台 · ${state.customName || sp.name} · 干活动力 KPI` : `Dino Close-Up Stage · ${state.customName || sp.name} · Work Drive KPI`}
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span className="hud-kpi-val">
+              {workDrivePct}% {isOverclocked ? (isZh ? "⚡ 超频中" : "⚡ Overclocked") : ""} · 🪙 {state.starBeans}
+            </span>
+            <button
+              type="button"
+              className="hud-exit-btn"
+              onClick={() => exitMacroMode()}
+            >
+              ✕ {isZh ? "收起近景" : "Exit Close-Up"}
+            </button>
+          </div>
+        </div>
+        <div className="hud-kpi-track">
+          <div className="hud-kpi-fill" style={{ width: `${workDrivePct}%` }} />
+        </div>
+        <div className="hud-btn-row">
+          <button
+            type="button"
+            className="hud-act-btn is-whip"
+            onClick={handleWhipAction}
+          >
+            🪢 {isZh ? "挥鞭抽屁股（催干活 +25🪙）" : "Crack Whip (+25🪙 Overclock)"}
+          </button>
+          <button
+            type="button"
+            className="hud-act-btn is-feed"
+            onClick={handleFeedAction}
+          >
+            🎲 {isZh ? "随机盲盒投喂（拿好感 +20🪙）" : "Blind-Box Feed (+Affection & SSR)"}
+          </button>
+          <button
+            type="button"
+            className="hud-act-btn is-wardrobe"
+            onClick={handleOpenWardrobeDrawer}
+          >
+            👗 {isZh ? "奇迹暖暖衣橱" : "3D Nikki Wardrobe"}
+          </button>
+          <button
+            type="button"
+            className="hud-act-btn is-adopt"
+            onClick={handleOpenAdoptDrawer}
+          >
+            🥚 {isZh ? "灵龙领养舱" : "Dragon Adoption Pod"}
+          </button>
+        </div>
+        <div className="hud-btn-row" style={{ marginTop: "2px" }}>
+          <button
+            type="button"
+            className="hud-act-btn"
+            onClick={handlePatAction}
+          >
+            🤚 {isZh ? "摸摸头顺毛 (+15♥)" : "Pat Head (+15♥)"}
+          </button>
+          <button
+            type="button"
+            className="hud-act-btn"
+            onClick={() => {
+              exitMacroMode();
+              window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
+            }}
+          >
+            💬 {isZh ? "打开 AI 伴随对话 & Pi Agent" : "Open AI Companion Chat"}
+          </button>
+          <button
+            type="button"
+            className="hud-act-btn"
+            onClick={() => {
+              window.location.href = "/workspace";
+            }}
+          >
+            🛠️ {isZh ? "进入 Pi-Codex 工作台 ↗" : "Pi-Codex Workbench ↗"}
+          </button>
+        </div>
+      </div>
+
+      {/* 1:1 Right-Aligned 3D Nikki Wardrobe Drawer (#ans-sanctuary-wardrobe-modal) with Left-Center 3D Podium */}
+      <div
+        id="ans-sanctuary-wardrobe-modal"
+        className={`ans-sanctuary-backdrop ${sanctuaryModal === "wardrobe" ? "is-open" : ""}`}
+        onClick={e => {
+          if (e.target === e.currentTarget) {
+            setSanctuaryModal("none");
+          }
+        }}
+      >
+        {sanctuaryModal === "wardrobe" && (
+          <div className="ans-sanctuary-dialog" onClick={e => e.stopPropagation()}>
+            <div className="ans-sanctuary-header">
+              <div>
+                <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
+                  👗 {isZh ? "灵龙奇迹暖暖高定衣橱" : "Dino 3D Haute Couture Wardrobe"} · {state.customName || sp.name}
+                </h2>
+                <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
+                  🪙 <strong>{state.starBeans}</strong> {isZh ? "灵感星豆" : "Star Beans"} · ♥ Lv.{aff.level} ({state.affectionXp} XP) · Lv.{styleEval.userLevel.level.index} {isZh ? styleEval.userLevel.level.nameZh : styleEval.userLevel.level.nameEn}
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <button
+                  type="button"
+                  onClick={() => setSanctuaryModal("adopt")}
+                  style={{
+                    borderRadius: "999px",
+                    padding: "6px 12px",
+                    border: "1px solid rgba(56,189,248,0.45)",
+                    background: "rgba(56,189,248,0.14)",
+                    color: "#7dd3fc",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                  }}
+                >
+                  🥚 {isZh ? "切换灵龙血统" : "Switch Lineage"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSanctuaryModal("none")}
+                  style={{
+                    borderRadius: "999px",
+                    padding: "6px 14px",
+                    border: "1px solid rgba(148,163,184,0.35)",
+                    background: "transparent",
+                    color: "inherit",
+                    cursor: "pointer",
+                    fontWeight: 800,
+                  }}
+                >
+                  ✕ {isZh ? "返回近景舞台" : "Back"}
+                </button>
+              </div>
+            </div>
+
+            {/* Left 3D Podium Turntable Controls & 1-Click Presets */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "10px",
+                marginBottom: "12px",
+                padding: "10px 14px",
+                borderRadius: "14px",
+                background: "rgba(15,23,42,0.55)",
+                border: "1px solid rgba(56,189,248,0.28)",
+              }}
+            >
+              <div style={{ fontSize: "12px", fontWeight: 800, color: "#bae6fd" }}>
+                ✨ {isZh ? "左侧 3D 展台已就位：点击单品即可在左侧 3D 小龙身上实时穿戴预览！" : "Left 3D Podium live: click any item below to preview on the 3D dragon in real time!"}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                <button
+                  type="button"
+                  onClick={() => handleWardrobeTurntable(-Math.PI / 4, false)}
+                  style={{
+                    padding: "5px 10px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(56,189,248,0.45)",
+                    background: "rgba(56,189,248,0.14)",
+                    color: "#7dd3fc",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  ◀ {isZh ? "左转 45°" : "Left 45°"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleWardrobeTurntable(0, true)}
+                  style={{
+                    padding: "5px 12px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(244,114,182,0.55)",
+                    background: state.turntableSpin ? "rgba(244,114,182,0.32)" : "rgba(244,114,182,0.14)",
+                    color: "#f472b6",
+                    fontSize: "11px",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  🔄 {state.turntableSpin ? (isZh ? "停止旋转" : "Stop Spin") : (isZh ? "360° 自动旋转" : "360° Auto-Spin")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleWardrobeTurntable(Math.PI / 4, false)}
+                  style={{
+                    padding: "5px 10px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(56,189,248,0.45)",
+                    background: "rgba(56,189,248,0.14)",
+                    color: "#7dd3fc",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  ▶ {isZh ? "右转 45°" : "Right 45°"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleWardrobeEquipTripo}
+                  style={{
+                    padding: "5px 10px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(245,158,11,0.5)",
+                    background: "rgba(245,158,11,0.16)",
+                    color: "#fbbf24",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  🧋 {isZh ? "试穿 Tripo 喷射套装" : "Tripo Boba Set"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleWardrobeEquipUr}
+                  style={{
+                    padding: "5px 10px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(192,132,252,0.55)",
+                    background: "rgba(192,132,252,0.18)",
+                    color: "#e9d5ff",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  👑 {isZh ? "一键 UR 满配神装" : "UR God Set"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    commitSanctuary(prev => ({
+                      ...prev,
+                      starBeans: prev.starBeans + 500,
+                      affectionXp: prev.affectionXp + 120,
+                    }));
+                    setWardrobeNote(isZh ? "🎁 已领取 +500🪙 灵感星豆！" : "🎁 Claimed +500🪙 Star Beans!");
+                  }}
+                  style={{
+                    padding: "5px 10px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(16,185,129,0.5)",
+                    background: "rgba(16,185,129,0.16)",
+                    color: "#6ee7b7",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  🎁 +500🪙
+                </button>
+              </div>
+            </div>
+
+            {wardrobeNote && (
+              <div
+                style={{
+                  marginBottom: "10px",
+                  padding: "8px 12px",
+                  borderRadius: "10px",
+                  background: "rgba(16,185,129,0.14)",
+                  border: "1px solid rgba(16,185,129,0.35)",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#a7f3d0",
+                }}
+              >
+                {wardrobeNote}
+              </div>
+            )}
+
+            {/* Style Evaluation Summary */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                borderRadius: "16px",
+                background: "linear-gradient(135deg, rgba(168,85,247,0.14), rgba(59,130,246,0.12))",
+                border: "1px solid rgba(168,85,247,0.3)",
+                marginBottom: "14px",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "#c084fc" }}>
+                  ✨ {isZh ? "奇迹暖暖高定穿搭评定" : "Style Evaluation"}：{styleEval.grade}
+                </div>
+                <div style={{ fontSize: "13px", fontWeight: 700, marginTop: "2px" }}>
+                  {isZh ? "总时尚分" : "Total Score"} <strong>{styleEval.totalScore}</strong> · {isZh ? "主导风格" : "Dominant Style"} <strong>#{styleEval.dominantTag}</strong>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                {styleEval.equippedItems.length > 0 ? (
+                  styleEval.equippedItems.map(eq => (
+                    <span
+                      key={eq.id}
+                      style={{
+                        fontSize: "11px",
+                        padding: "3px 9px",
+                        borderRadius: "999px",
+                        background: "rgba(255,255,255,0.1)",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {eq.icon} {eq.name}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{ fontSize: "11px", opacity: 0.7 }}>{isZh ? "初心裸龙装束" : "Starter Look"}</span>
+                )}
+              </div>
+            </div>
+
+            {/* 5 Wardrobe Slot Tabs */}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}>
+              {(Object.keys(WARDROBE_SLOT_LABELS) as WardrobeSlot[]).map(key => {
+                const info = WARDROBE_SLOT_LABELS[key];
+                const active = wardrobeSlot === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setWardrobeSlot(key)}
+                    style={{
+                      padding: "7px 14px",
+                      borderRadius: "999px",
+                      fontSize: "12px",
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      border: active ? "1px solid #f59e0b" : "1px solid rgba(148,163,184,0.28)",
+                      background: active ? "rgba(245,158,11,0.18)" : "transparent",
+                      color: active ? "#fbbf24" : "inherit",
+                    }}
+                  >
+                    {info.icon} {info.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Slot Items Grid */}
+            <div className="ans-wardrobe-grid">
+              {wardrobeItemsForSlot.map(item => {
+                const unlocked = state.unlockedItems.includes(item.id);
+                const equipped = state.equipped[item.slot] === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => handleWardrobeItemClick(item.id)}
+                    className={`ans-wardrobe-card ${equipped ? "is-equipped" : ""}`}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "24px" }}>{item.icon}</span>
+                      <span
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: 900,
+                          padding: "2px 8px",
+                          borderRadius: "999px",
+                          background: "rgba(245,158,11,0.18)",
+                          color: "#fbbf24",
+                        }}
+                      >
+                        {item.rarity} · +{item.styleScore}分
+                      </span>
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: "13px" }}>{item.name}</div>
+                    <div style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.4 }}>{item.desc}</div>
+                    <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                      {item.tags.map(t => (
+                        <span
+                          key={t}
+                          style={{
+                            fontSize: "10px",
+                            padding: "1px 6px",
+                            borderRadius: "6px",
+                            background: "rgba(148,163,184,0.16)",
+                          }}
+                        >
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: "auto", paddingTop: "6px", fontSize: "11px", fontWeight: 800 }}>
+                      {equipped ? (
+                        <span style={{ color: "#10b981" }}>✓ {isZh ? "穿戴中（点击卸下）" : "Equipped (Click to remove)"}</span>
+                      ) : unlocked ? (
+                        <span style={{ color: "#38bdf8" }}>{isZh ? "已拥有 · 点击穿戴" : "Owned · Click to equip"}</span>
+                      ) : (
+                        <span style={{ color: "#f59e0b" }}>
+                          🪙 {item.priceBeans} {isZh ? "星豆解锁" : "Beans"} (Lv.{item.minUserLevel} / ♥Lv.{item.minAffectionLevel})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 1:1 Right-Aligned 3D Dragon Adoption Pod Drawer (#ans-sanctuary-adopt-modal) */}
+      <div
+        id="ans-sanctuary-adopt-modal"
+        className={`ans-sanctuary-backdrop ${sanctuaryModal === "adopt" ? "is-open" : ""}`}
+        onClick={e => {
+          if (e.target === e.currentTarget) {
+            setSanctuaryModal("none");
+          }
+        }}
+      >
+        {sanctuaryModal === "adopt" && (
+          <div className="ans-sanctuary-dialog" onClick={e => e.stopPropagation()}>
+            <div className="ans-sanctuary-header">
+              <div>
+                <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
+                  🥚 {isZh ? "ANS 赛博灵龙领养舱 · 四大血统自由切换" : "ANS Cyber Dragon Adoption Pod · 4 Lineages"}
+                </h2>
+                <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
+                  {isZh
+                    ? "左侧 3D 展台实时预览不同灵龙血统肤色与腮红 · 切换血统保留全部已解锁高定衣橱单品"
+                    : "Preview dragon lineages live on the Left 3D Podium · All unlocked wardrobe items carry over"}
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <button
+                  type="button"
+                  onClick={() => setSanctuaryModal("wardrobe")}
+                  style={{
+                    borderRadius: "999px",
+                    padding: "6px 12px",
+                    border: "1px solid rgba(192,132,252,0.45)",
+                    background: "rgba(192,132,252,0.16)",
+                    color: "#e9d5ff",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                  }}
+                >
+                  👗 {isZh ? "去奇迹暖暖衣橱" : "Open Wardrobe"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSanctuaryModal("none")}
+                  style={{
+                    borderRadius: "999px",
+                    padding: "6px 14px",
+                    border: "1px solid rgba(148,163,184,0.35)",
+                    background: "transparent",
+                    color: "inherit",
+                    cursor: "pointer",
+                    fontWeight: 800,
+                  }}
+                >
+                  ✕ {isZh ? "返回近景舞台" : "Back"}
+                </button>
+              </div>
+            </div>
+            <DinoAdoptionPod onComplete={() => setSanctuaryModal("none")} />
+          </div>
+        )}
+      </div>
+    </>
   );
 }
+
 
 export function CompanionSanctuaryBar({
   requestedTab,

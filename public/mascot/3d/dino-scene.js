@@ -16,11 +16,83 @@ const SETTINGS = Object.freeze({
   shadowOpacity: 0.12,
 });
 const SPECIES_TINTS = Object.freeze({
-  mint_star:   { color: 0xffffff, emissive: 0x000000, emissiveIntensity: 0.0, roughnessDelta: 0.0, morph: { head: [1.0, 1.0, 1.0], tail: [1.0, 1.0, 1.0] } },
-  cyber_gold:  { color: 0xd4be98, emissive: 0x3b2306, emissiveIntensity: 0.16, roughnessDelta: -0.14, morph: { head: [1.02, 1.02, 1.04], tail: [1.05, 1.0, 1.12] } },
-  sakura_mochi:{ color: 0xffd0e2, emissive: 0x380c1e, emissiveIntensity: 0.12, roughnessDelta: 0.04, morph: { head: [1.08, 1.05, 1.06], tail: [0.95, 0.95, 0.92] } },
-  aurora_ice:  { color: 0xc8e4ff, emissive: 0x0b1f47, emissiveIntensity: 0.15, roughnessDelta: -0.08, morph: { head: [0.98, 1.04, 1.02], tail: [1.04, 1.02, 1.15] } },
+  mint_star:   { color: 0xffffff, emissive: 0x000000, emissiveIntensity: 0.0, roughnessDelta: 0.0, tintRGB: [1.0, 1.0, 1.0], blushRGB: [0.90, 0.28, 0.32], morph: { head: [1.0, 1.0, 1.0], tail: [1.0, 1.0, 1.0] } },
+  cyber_gold:  { color: 0xd4be98, emissive: 0x3b2306, emissiveIntensity: 0.16, roughnessDelta: -0.14, tintRGB: [1.38, 0.94, 0.48], blushRGB: [1.0, 0.44, 0.14], morph: { head: [1.02, 1.02, 1.04], tail: [1.05, 1.0, 1.12] } },
+  sakura_mochi:{ color: 0xffd0e2, emissive: 0x380c1e, emissiveIntensity: 0.12, roughnessDelta: 0.04, tintRGB: [1.44, 0.75, 1.06], blushRGB: [0.98, 0.22, 0.54], morph: { head: [1.08, 1.05, 1.06], tail: [0.95, 0.95, 0.92] } },
+  aurora_ice:  { color: 0xc8e4ff, emissive: 0x0b1f47, emissiveIntensity: 0.15, roughnessDelta: -0.08, tintRGB: [0.68, 1.08, 1.44], blushRGB: [0.56, 0.36, 0.98], morph: { head: [0.98, 1.04, 1.02], tail: [1.04, 1.02, 1.15] } },
 });
+const DINO_FACE_VERT_HEADER = `#include <common>
+varying vec3 vDinoObjPos;`;
+const DINO_FACE_FRAG_HEADER = `#include <common>
+varying vec3 vDinoObjPos;
+uniform float uDinoBlink;
+uniform float uDinoHappy;
+uniform float uDinoStar;
+uniform float uDinoBlush;
+uniform float uDinoMouth;
+uniform vec2 uDinoGaze;
+uniform vec3 uDinoSkinTint;
+uniform vec3 uDinoBlushColor;`;
+const DINO_FACE_FRAG_BODY = `#include <map_fragment>
+{
+  float skinMask = clamp((diffuseColor.g - diffuseColor.r * 0.72) * 3.5, 0.0, 1.0);
+  diffuseColor.rgb *= mix(vec3(1.0), uDinoSkinTint, skinMask * 0.90);
+}
+if (vDinoObjPos.z > 0.16) {
+  vec3 skinGreen = vec3(0.415, 0.665, 0.475) * uDinoSkinTint;
+  vec3 skinCream = vec3(0.960, 0.905, 0.765);
+  float bY = 0.630 - 0.52 * vDinoObjPos.x * vDinoObjPos.x;
+  vec3 localSkin = mix(skinCream, skinGreen, smoothstep(bY - 0.006, bY + 0.006, vDinoObjPos.y));
+  vec3 lashDark = vec3(0.025, 0.038, 0.032);
+  vec2 pR = vDinoObjPos.xy - vec2(-0.1740, 0.6467);
+  vec2 pL = vDinoObjPos.xy - vec2(0.1684, 0.6480);
+  vec2 pEye = (length(pR) < length(pL)) ? pR : pL;
+  float dEye = length(pEye);
+  if (dEye < 0.0345) {
+    float lidY = 0.034 - uDinoBlink * 0.068;
+    float blinkMask = smoothstep(lidY - 0.0030, lidY + 0.0030, pEye.y) * step(0.02, uDinoBlink);
+    float archY = -0.036 + max(0.0, uDinoHappy - 0.62) * 0.055 - 10.0 * pEye.x * pEye.x;
+    float happyMask = (1.0 - smoothstep(archY - 0.0030, archY + 0.0030, pEye.y)) * smoothstep(0.62, 0.95, uDinoHappy);
+    float cover = clamp(max(blinkMask, happyMask), 0.0, 1.0);
+    diffuseColor.rgb = mix(diffuseColor.rgb, skinGreen, cover);
+    float blinkLine = (1.0 - smoothstep(0.0, 0.0032, abs(pEye.y - lidY))) * smoothstep(0.12, 0.55, uDinoBlink);
+    float archLine = (1.0 - smoothstep(0.0, 0.0032, abs(pEye.y - archY))) * smoothstep(0.65, 0.95, uDinoHappy);
+    diffuseColor.rgb = mix(diffuseColor.rgb, lashDark, clamp(max(blinkLine, archLine), 0.0, 1.0));
+    if (cover < 0.45 && dEye < 0.029) {
+      vec2 hlDyn = pEye - (vec2(-0.007, 0.009) + uDinoGaze * 0.0055);
+      float cDyn = (1.0 - smoothstep(0.0040, 0.0068, length(hlDyn))) * 0.65;
+      vec2 st = pEye - (vec2(0.003, -0.002) + uDinoGaze * 0.0045);
+      float star = (1.0 - smoothstep(0.0, 0.013, length(st))) * (1.0 - smoothstep(0.0010, 0.0026, min(abs(st.x), abs(st.y)))) * smoothstep(0.45, 1.0, uDinoStar);
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.99, 0.96), clamp(cDyn + star * 0.85, 0.0, 1.0));
+    }
+  }
+  vec2 bR = (vDinoObjPos.xy - vec2(-0.168, 0.592)) / vec2(0.042, 0.025);
+  vec2 bL = (vDinoObjPos.xy - vec2(0.163, 0.592)) / vec2(0.042, 0.025);
+  float blushBoost = max(1.0 - smoothstep(0.15, 1.0, length(bR)), 1.0 - smoothstep(0.15, 1.0, length(bL)));
+  diffuseColor.rgb = mix(diffuseColor.rgb, uDinoBlushColor, blushBoost * max(0.0, uDinoBlush - 0.45) * 0.52);
+  if (vDinoObjPos.z > 0.22) {
+    vec2 mP = vDinoObjPos.xy - vec2(-0.002, 0.5690);
+    float smileCurveY = 2.65 * mP.x * mP.x;
+    float dSmile = length(vec2(max(0.0, abs(mP.x) - 0.028) * 1.5, mP.y - smileCurveY));
+    float smileLine = (1.0 - smoothstep(0.0012, 0.0028, dSmile)) * step(abs(mP.x), 0.033);
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.045, 0.022, 0.020), smileLine * 0.85);
+    if (uDinoMouth > 0.35) {
+      float openAmt = (uDinoMouth - 0.35) / 0.65;
+      float mW = 0.026 * (0.75 + 0.25 * openAmt);
+      float mH = 0.017 * openAmt;
+      float topEdge = smileCurveY;
+      float botEdge = topEdge - mH * sqrt(max(0.0, 1.0 - (mP.x * mP.x) / (mW * mW + 1e-6)));
+      if (abs(mP.x) < mW && mP.y < topEdge && mP.y > botEdge) {
+        float edgeSoft = smoothstep(botEdge, botEdge + 0.0018, mP.y) * smoothstep(topEdge, topEdge - 0.0018, mP.y);
+        vec3 mouthCol = vec3(0.05, 0.018, 0.022);
+        if (mP.y < botEdge + mH * 0.58 - 2.2 * mP.x * mP.x) {
+          mouthCol = vec3(0.76, 0.22, 0.26);
+        }
+        diffuseColor.rgb = mix(diffuseColor.rgb, mouthCol, edgeSoft * 0.94);
+      }
+    }
+  }
+}`;
 const AURA_PRESETS = Object.freeze({
   none:        { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 0.0 },
   aura_mint:   { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 1.0 },
@@ -123,6 +195,25 @@ function startCompanion() {
   let feedUntil = -1;
   let feedMode = 'happy';
   let patUntil = -1;
+  let clickUntil = -1;
+  let hovered = false;
+  let hoverBlend = 0;
+  let macroMode = false;
+  let macroBlend = 0;
+  let pointerX = 0, pointerY = 0;
+  let saccadeX = 0, saccadeY = 0, nextSaccade = 1.5;
+  let nextBlink = 2.2, blinkStart = -99, doubleBlink = false;
+  const moodTarget = { happy: 0.88, star: 0.45, blush: 0.78, mouth: 0.55 };
+  const faceUniforms = {
+    uDinoBlink: { value: 0 },
+    uDinoHappy: { value: 0.75 },
+    uDinoStar: { value: 0.35 },
+    uDinoBlush: { value: 0.72 },
+    uDinoMouth: { value: 0.45 },
+    uDinoGaze: { value: new T.Vector2(0, 0) },
+    uDinoSkinTint: { value: new T.Vector3(1, 1, 1) },
+    uDinoBlushColor: { value: new T.Vector3(0.90, 0.28, 0.32) },
+  };
   let activeWardrobeIds = [];
   let sourceClips = [];
   let phase = 'idle';
@@ -354,23 +445,80 @@ function startCompanion() {
     applyNextGesture();
     wake();
   }
+  function applyMoodPayload(payload) {
+    if (typeof payload.happy === 'number' && Number.isFinite(payload.happy)) moodTarget.happy = payload.happy;
+    if (typeof payload.star === 'number' && Number.isFinite(payload.star)) moodTarget.star = payload.star;
+    if (typeof payload.blush === 'number' && Number.isFinite(payload.blush)) moodTarget.blush = payload.blush;
+    if (typeof payload.mouth === 'number' && Number.isFinite(payload.mouth)) moodTarget.mouth = payload.mouth;
+  }
   function triggerInteraction(payload = {}) {
     if (disposed || failed || !isVisible()) return;
     const action = payload.action || payload.kind || 'pat';
     const gesture = typeof payload.gesture === 'string' ? payload.gesture : null;
+    applyMoodPayload(payload);
     if (action === 'whip') {
       whipUntil = time + 3.8;
+      moodTarget.happy = payload.happy ?? 0.14;
+      moodTarget.star = payload.star ?? 0.96;
+      moodTarget.blush = payload.blush ?? 1.0;
+      moodTarget.mouth = payload.mouth ?? 0.94;
       director.onGesture(gesture || 'surprise', time);
       performer?.trigger(gesture || 'surprise', time);
     } else if (action === 'feed') {
       feedUntil = time + 4.2;
       feedMode = typeof payload.reactMode === 'string' ? payload.reactMode : 'happy';
+      moodTarget.happy = payload.happy ?? 0.95;
+      moodTarget.star = payload.star ?? 0.96;
+      moodTarget.blush = payload.blush ?? 0.92;
+      moodTarget.mouth = payload.mouth ?? 0.92;
       director.onGesture(gesture || 'celebrate', time);
       performer?.trigger(gesture || 'celebrate', time);
     } else if (action === 'pat') {
       patUntil = time + 2.4;
+      moodTarget.happy = payload.happy ?? 0.96;
+      moodTarget.star = payload.star ?? 0.85;
+      moodTarget.blush = payload.blush ?? 1.0;
+      moodTarget.mouth = payload.mouth ?? 0.72;
       director.onGesture(gesture || 'shy', time);
       performer?.trigger(gesture || 'shy', time);
+    } else if (action === 'hover') {
+      hovered = payload.active !== false;
+      if (hovered) {
+        moodTarget.happy = payload.happy ?? 0.96;
+        moodTarget.star = payload.star ?? 0.92;
+        moodTarget.blush = payload.blush ?? 0.96;
+        moodTarget.mouth = payload.mouth ?? 0.80;
+        if (gesture) {
+          director.onGesture(gesture, time);
+          performer?.trigger(gesture, time);
+        }
+      }
+    } else if (action === 'click') {
+      clickUntil = time + 3.6;
+      moodTarget.happy = payload.happy ?? 0.98;
+      moodTarget.star = payload.star ?? 0.96;
+      moodTarget.blush = payload.blush ?? 0.98;
+      moodTarget.mouth = payload.mouth ?? 0.88;
+      director.onGesture(gesture || 'celebrate', time);
+      performer?.trigger(gesture || 'celebrate', time);
+    } else if (action === 'macro') {
+      macroMode = payload.active !== false;
+      if (macroMode) {
+        moodTarget.happy = payload.happy ?? 0.96;
+        moodTarget.star = payload.star ?? 0.96;
+        moodTarget.blush = payload.blush ?? 0.95;
+        moodTarget.mouth = payload.mouth ?? 0.86;
+        director.onGesture(gesture || 'celebrate', time);
+        performer?.trigger(gesture || 'celebrate', time);
+      } else {
+        turntableSpin = false;
+        turntableYawTarget = 0;
+      }
+    } else if (action === 'mood') {
+      if (gesture && gesture !== 'idle') {
+        director.onGesture(gesture, time);
+        performer?.trigger(gesture, time);
+      }
     } else if (action === 'pose') {
       patUntil = time + 2.0;
       const poses = ['celebrate', 'hello', 'curious', 'stretch'];
@@ -444,6 +592,8 @@ function startCompanion() {
     }
     if (data.event === 'phase' && typeof data.phase === 'string') changePhase(data.phase);
     if (data.event === 'pointer' && !reducedMotion && isVisible() && Number.isFinite(data.x) && Number.isFinite(data.y)) {
+      pointerX = Math.max(-1, Math.min(1, data.x));
+      pointerY = Math.max(-1, Math.min(1, data.y));
       director.onPointer(time);
       applyNextGesture();
       performer?.look(data.x, data.y, time);
@@ -466,7 +616,8 @@ function startCompanion() {
     const width = Math.max(1, document.documentElement.clientWidth);
     const height = Math.max(1, document.documentElement.clientHeight);
     const aspect = width / height;
-    const vertical = Math.max(SETTINGS.verticalFrame, (modelWidth + 0.18) / aspect);
+    const frameH = SETTINGS.verticalFrame - macroBlend * 0.22;
+    const vertical = Math.max(frameH, (modelWidth + 0.18) / aspect);
     camera.left = -vertical * aspect / 2;
     camera.right = vertical * aspect / 2;
     camera.top = vertical / 2;
@@ -489,20 +640,92 @@ function startCompanion() {
     haloUniforms.uAuraColor2.value.z += (auraTarget.c2[2] - haloUniforms.uAuraColor2.value.z) * aLerp;
     haloUniforms.uAuraBoost.value += (auraTarget.boost - haloUniforms.uAuraBoost.value) * aLerp;
 
+    const spTint = SPECIES_TINTS[sanctuarySpeciesId] || SPECIES_TINTS.mint_star;
+    const uSkin = faceUniforms.uDinoSkinTint.value;
+    const uBlushC = faceUniforms.uDinoBlushColor.value;
+    uSkin.x += (spTint.tintRGB[0] - uSkin.x) * aLerp;
+    uSkin.y += (spTint.tintRGB[1] - uSkin.y) * aLerp;
+    uSkin.z += (spTint.tintRGB[2] - uSkin.z) * aLerp;
+    uBlushC.x += (spTint.blushRGB[0] - uBlushC.x) * aLerp;
+    uBlushC.y += (spTint.blushRGB[1] - uBlushC.y) * aLerp;
+    uBlushC.z += (spTint.blushRGB[2] - uBlushC.z) * aLerp;
+
     const whipActive = tNow < whipUntil;
     const whipAge = whipActive ? (3.8 - (whipUntil - tNow)) : 99;
     const feedActive = tNow < feedUntil;
     const feedAge = feedActive ? (4.2 - (feedUntil - tNow)) : 99;
     const patActive = tNow < patUntil;
     const patAge = patActive ? (2.4 - (patUntil - tNow)) : 99;
+    const clickActive = tNow < clickUntil;
+    const clickAge = clickActive ? (3.6 - (clickUntil - tNow)) : 99;
 
-    haloUniforms.uFlight.value += ((whipActive ? 0.95 : feedActive ? 0.78 : patActive ? 0.45 : 0.15) - haloUniforms.uFlight.value) * Math.min(1, dtSec * 8.0);
+    hoverBlend += ((hovered ? 1.0 : 0.0) - hoverBlend) * Math.min(1, dtSec * 10.0);
+    const prevMacro = macroBlend;
+    macroBlend += ((macroMode ? 1.0 : 0.0) - macroBlend) * Math.min(1, dtSec * 7.5);
+    if (Math.abs(macroBlend - prevMacro) > 0.002) {
+      const width = Math.max(1, document.documentElement.clientWidth);
+      const height = Math.max(1, document.documentElement.clientHeight);
+      const aspect = width / height;
+      const frameH = SETTINGS.verticalFrame - macroBlend * 0.22;
+      const vertical = Math.max(frameH, (modelWidth + 0.18) / aspect);
+      camera.left = -vertical * aspect / 2;
+      camera.right = vertical * aspect / 2;
+      camera.top = vertical / 2;
+      camera.bottom = -vertical / 2;
+      camera.updateProjectionMatrix();
+    }
 
-    let reactionHopY = patActive && patAge < 0.55 ? Math.sin((patAge / 0.55) * Math.PI) * 0.05 : 0;
+    haloUniforms.uFlight.value += ((whipActive ? 0.95 : feedActive ? 0.78 : (patActive || clickActive || hovered || macroMode) ? 0.52 : 0.18) - haloUniforms.uFlight.value) * Math.min(1, dtSec * 8.0);
+
+    // Facial Shader Uniform Updates (Blink, Saccades, Happy Arch, Star Eyes, Blush, Talking Mouth)
+    if (tNow >= nextBlink) {
+      blinkStart = tNow;
+      doubleBlink = Math.random() < 0.30;
+      nextBlink = tNow + 2.2 + Math.random() * 3.2;
+    }
+    let blinkVal = 0;
+    const blinkAge = tNow - blinkStart;
+    if (blinkAge >= 0 && blinkAge < 0.18) {
+      const bp = blinkAge / 0.18;
+      blinkVal = bp < 0.5 ? bp * 2 : (1 - bp) * 2;
+    } else if (doubleBlink && blinkAge >= 0.24 && blinkAge < 0.42) {
+      const bp = (blinkAge - 0.24) / 0.18;
+      blinkVal = bp < 0.5 ? bp * 2 : (1 - bp) * 2;
+    }
+    if (whipActive && whipAge < 0.45) blinkVal = 0.85;
+    if (feedActive && feedMode === 'sour') blinkVal = Math.max(blinkVal, 0.78);
+
+    if (tNow >= nextSaccade) {
+      saccadeX = (Math.random() - 0.5) * 0.42;
+      saccadeY = (Math.random() - 0.5) * 0.28;
+      nextSaccade = tNow + 1.4 + Math.random() * 2.0;
+    }
+    const gx = Math.max(-1, Math.min(1, pointerX * 0.78 + saccadeX * (1 - hoverBlend * 0.7)));
+    const gy = Math.max(-1, Math.min(1, -pointerY * 0.78 + saccadeY * (1 - hoverBlend * 0.7)));
+    faceUniforms.uDinoGaze.value.x += (gx - faceUniforms.uDinoGaze.value.x) * Math.min(1, dtSec * 10.0);
+    faceUniforms.uDinoGaze.value.y += (gy - faceUniforms.uDinoGaze.value.y) * Math.min(1, dtSec * 10.0);
+
+    const waveHappy = Math.max(0, Math.min(1, moodTarget.happy + 0.08 * Math.sin(tNow * 1.8) + hoverBlend * 0.12));
+    const waveStar  = Math.max(0, Math.min(1, moodTarget.star  + 0.10 * Math.sin(tNow * 3.0 + 1.1) + hoverBlend * 0.15));
+    const waveBlush = Math.max(0, Math.min(1, moodTarget.blush + 0.07 * Math.cos(tNow * 1.4) + hoverBlend * 0.18));
+    const mouthFreq = (whipActive || feedActive) ? 14.0 : 5.2;
+    const waveMouth = Math.max(0, Math.min(1, moodTarget.mouth * (0.68 + 0.32 * Math.sin(tNow * mouthFreq + Math.sin(tNow * 2.1)))));
+
+    faceUniforms.uDinoBlink.value = blinkVal * (1 - waveHappy * 0.55);
+    faceUniforms.uDinoHappy.value += (waveHappy - faceUniforms.uDinoHappy.value) * Math.min(1, dtSec * 5.5);
+    faceUniforms.uDinoStar.value  += (waveStar  - faceUniforms.uDinoStar.value)  * Math.min(1, dtSec * 5.8);
+    faceUniforms.uDinoBlush.value += (waveBlush - faceUniforms.uDinoBlush.value) * Math.min(1, dtSec * 5.0);
+    faceUniforms.uDinoMouth.value += (waveMouth - faceUniforms.uDinoMouth.value) * Math.min(1, dtSec * 8.5);
+
+    let reactionHopY = (patActive && patAge < 0.55)
+      ? Math.sin((patAge / 0.55) * Math.PI) * 0.05
+      : (clickActive && clickAge < 0.50)
+      ? Math.sin((clickAge / 0.50) * Math.PI) * 0.065
+      : 0;
     let reactionJitterX = 0;
-    let reactionYawOffset = 0;
+    let reactionYawOffset = hovered ? pointerX * 0.14 : 0;
     let reactionPitchOffset = 0;
-    let reactionRollOffset = 0;
+    let reactionRollOffset = (hovered || macroMode) ? Math.sin(tNow * 2.8) * 0.045 * Math.max(hoverBlend, macroBlend) : 0;
 
     if (whipActive && !reducedMotion) {
       if (whipAge < 0.68) {
@@ -565,6 +788,9 @@ function startCompanion() {
     while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
     turntableYawCurrent += yawDiff * Math.min(1, dtSec * 10.0);
 
+    const pulseScale = (whipActive && whipAge < 0.45) ? 0.08 : (feedActive && feedAge < 0.55) ? 0.07 : (clickActive && clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.07 : 0);
+    const scaleBoost = 1.0 + hoverBlend * 0.045 + pulseScale;
+    actor.scale.setScalar(scaleBoost);
     actor.position.set(reactionJitterX, reactionHopY, 0);
     actor.rotation.set(reactionPitchOffset, turntableYawCurrent + reactionYawOffset, reactionRollOffset, 'YXZ');
 
@@ -800,6 +1026,17 @@ function startCompanion() {
       const mats = Array.isArray(node.material) ? node.material.map(m => m.clone()) : [node.material.clone()];
       node.material = Array.isArray(node.material) ? mats : mats[0];
       for (const mat of mats) {
+        mat.onBeforeCompile = sh => {
+          Object.assign(sh.uniforms, faceUniforms);
+          sh.vertexShader = sh.vertexShader
+            .replace('#include <common>', DINO_FACE_VERT_HEADER)
+            .replace('#include <begin_vertex>', '#include <begin_vertex>\nvDinoObjPos = position;');
+          sh.fragmentShader = sh.fragmentShader
+            .replace('#include <common>', DINO_FACE_FRAG_HEADER)
+            .replace('#include <map_fragment>', DINO_FACE_FRAG_BODY);
+        };
+        mat.customProgramCacheKey = () => 'ans-dino-face-v3-sanctuary';
+        mat.needsUpdate = true;
         baseSkinMaterials.push({
           mat,
           baseColor: mat.color ? mat.color.clone() : null,
