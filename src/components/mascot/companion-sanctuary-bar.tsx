@@ -383,7 +383,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     onTriggerSpeech?.(preset.text);
   };
 
-  // Listen for hover & click events dispatched from .ans-dino-trigger in dino-guide.tsx
+  // Listen for hover, click & macro-stage events dispatched from .ans-dino-trigger or AI chat popover
   useEffect(() => {
     const onStageHover = (event: Event) => {
       const custom = event as CustomEvent<{ hover?: boolean }>;
@@ -392,11 +392,20 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     const onStageClick = () => {
       triggerStageClick();
     };
+    const onEnterMacro = (event: Event) => {
+      const custom = event as CustomEvent<{ drawer?: "wardrobe" | "adopt" }>;
+      enterMacroMode();
+      if (custom.detail?.drawer) {
+        setSanctuaryModal(custom.detail.drawer);
+      }
+    };
     window.addEventListener("ans:dino-stage-hover", onStageHover);
     window.addEventListener("ans:dino-stage-click", onStageClick);
+    window.addEventListener("ans:enter-dino-macro", onEnterMacro);
     return () => {
       window.removeEventListener("ans:dino-stage-hover", onStageHover);
       window.removeEventListener("ans:dino-stage-click", onStageClick);
+      window.removeEventListener("ans:enter-dino-macro", onEnterMacro);
     };
   });
 
@@ -805,7 +814,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         </div>
       )}
 
-      {/* Compact Quick Dock next to bottom-right 3D Dragon when not in Macro mode */}
+      {/* Minimal 2-Pill Dock next to bottom-right 3D Dragon (Hover/3-Click on Dino triggers Close-Up Stage) */}
       {!macroActive && (
         <div
           className="fixed bottom-[16px] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-emerald-500/35 bg-background/90 px-2 py-1 shadow-lg backdrop-blur-md"
@@ -815,45 +824,10 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
             type="button"
             onClick={e => {
               e.stopPropagation();
-              enterMacroMode();
-            }}
-            title={isZh ? "拉近 3D 近景特写镜头（或连点小恐龙 3 下）" : "Enter 3D Close-Up Macro Stage (or click dino 3x)"}
-            className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-extrabold text-amber-700 transition hover:bg-amber-500/25 dark:text-amber-300"
-          >
-            🎥 {isZh ? "近景互动" : "Close-Up"}
-          </button>
-          <button
-            type="button"
-            onClick={handleWhipAction}
-            title={isZh ? "抽一鞭子催小恐龙 2.4x 超频干活 (+25🪙)" : "Crack whip for 2.4x overclock (+25🪙)"}
-            className="rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-extrabold text-rose-600 transition hover:bg-rose-500/25 dark:text-rose-300"
-          >
-            🪢 {isZh ? "抽鞭子" : "Whip"}
-          </button>
-          <button
-            type="button"
-            onClick={handleFeedAction}
-            title={isZh ? "随机盲盒投喂小恐龙 (+SSR/♥)" : "Feed blind-box snack (+SSR/♥)"}
-            className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 transition hover:bg-emerald-500/25 dark:text-emerald-300"
-          >
-            🎲 {isZh ? "投喂" : "Feed"}
-          </button>
-          <button
-            type="button"
-            onClick={handleOpenWardrobeDrawer}
-            title={isZh ? "打开 3D 奇迹暖暖高定衣橱与左侧 360° 旋转展台" : "Open 3D Nikki Wardrobe & Left 3D Podium"}
-            className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[10px] font-extrabold text-purple-700 transition hover:bg-purple-500/25 dark:text-purple-300"
-          >
-            👗 {isZh ? "换装" : "Dress"}
-          </button>
-          <button
-            type="button"
-            onClick={e => {
-              e.stopPropagation();
               window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
             }}
-            title={isZh ? "打开小恐龙 AI 伴随对话与 Pi Agent 面板" : "Open AI Companion Chat & Pi Agent"}
-            className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] font-extrabold text-cyan-700 transition hover:bg-cyan-500/25 dark:text-cyan-300"
+            title={isZh ? "打开 AI 助手对话与快捷代办（连点小恐龙 3 下进入近景镜头）" : "Open AI Assistant & 1-Click Actions (Click dino 3x for Close-Up Stage)"}
+            className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700 transition hover:bg-emerald-500/25 dark:text-emerald-300"
           >
             💬 {isZh ? "AI对话" : "AI Chat"}
           </button>
@@ -862,8 +836,8 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
             onClick={() => {
               window.location.href = "/workspace";
             }}
-            title={isZh ? "切换到 Pi-Codex 工作模式（个人工作台 IDE）" : "Switch to Pi-Codex Work Mode (/workspace)"}
-            className="hidden sm:inline-flex rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-extrabold text-indigo-700 transition hover:bg-indigo-500/30 dark:text-indigo-300"
+            title={isZh ? "进入 Pi-Codex 个人工作台 IDE" : "Open Pi-Codex Workbench (/workspace)"}
+            className="hidden sm:inline-flex rounded-full bg-indigo-500/15 px-2.5 py-0.5 text-[11px] font-extrabold text-indigo-700 transition hover:bg-indigo-500/25 dark:text-indigo-300"
           >
             🛠️ {isZh ? "工作台" : "Codex"}
           </button>
@@ -1988,30 +1962,60 @@ export function CompanionSanctuaryBar({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-1.5">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-sm">{isOnStrike ? "🕶️" : spIcon}</span>
-          <span className="font-bold text-foreground">{state.customName || sp.name}</span>
-          <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
-            Lv.{uLv.level.index} {isZh ? uLv.level.nameZh : uLv.level.nameEn}
-          </span>
-          <span className="rounded-full bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-bold text-rose-500">
-            ♥ Lv.{aff.level}
-          </span>
-          <span className="rounded-full bg-yellow-500/15 px-1.5 py-0.5 text-[10px] font-bold text-yellow-600 dark:text-yellow-400">
-            🪙 {state.starBeans}
-          </span>
-          <span
-            title={isZh ? "灵龙扭蛋币（可用于 3D 抓娃娃机与丰收转盘）" : "Dino Gacha Tokens (for 3D Claw Machine & Roulette)"}
-            className="rounded-full border border-amber-400/40 bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300"
-          >
-            🎰 {state.arcadeTokens}
-          </span>
-          <span className="rounded-full bg-purple-500/15 px-1.5 py-0.5 text-[10px] font-bold text-purple-500">
-            {styleEval.grade.split(" ")[0]}
-          </span>
-        </div>
+      {/* Single Compact High-Value Utility Bar inside AI Chat Popover */}
+      <div
+        data-testid="pi-agent-quickbar"
+        className="flex flex-wrap items-center justify-between gap-1.5"
+      >
         <div className="flex flex-wrap items-center gap-1">
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-checkin"
+            onClick={() => void runPiAction("checkin")}
+            className="rounded-full border border-emerald-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-emerald-700 transition hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300"
+          >
+            📅 {isZh ? "签到+5分" : "Check-in"}
+          </button>
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-scaffold"
+            onClick={() => void runPiAction("scaffold", piPrompt || "农客松智慧农业多模态监测 Agent")}
+            className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
+          >
+            📝 {isZh ? "新建项目" : "New Project"}
+          </button>
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-market"
+            onClick={() => void runPiAction("market", "")}
+            className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
+          >
+            🛒 {isZh ? "找工具" : "Tools"}
+          </button>
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-redeem"
+            onClick={() => void runPiAction("redeem", piPrompt)}
+            className="rounded-full border border-rose-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-rose-700 transition hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300"
+          >
+            🎁 {isZh ? "5分兑周报" : "5pt Redeem"}
+          </button>
+          <button
+            type="button"
+            disabled={piBusy}
+            data-testid="pi-agent-action-claw"
+            onClick={() => void runPiAction("claw")}
+            className="rounded-full border border-amber-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-amber-700 transition hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300"
+          >
+            🕹️ {isZh ? "抓娃娃" : "Claw"}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1">
           <button
             type="button"
             data-testid="pi-agent-tab-toggle"
@@ -2022,102 +2026,17 @@ export function CompanionSanctuaryBar({
                 : "border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
             }`}
           >
-            🤖 {isZh ? "Pi 实权 Agent" : "Pi Agent"}
+            🤖 {isZh ? "指令舱" : "Agent"}
           </button>
           <button
             type="button"
-            onClick={() => setTab(current => (current === "pet" ? "none" : "pet"))}
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition ${
-              tab === "pet" ? "bg-foreground text-background" : "bg-background/80 text-muted-foreground hover:text-foreground"
-            }`}
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("ans:enter-dino-macro", { detail: { drawer: "wardrobe" } }));
+            }}
+            title={isZh ? "拉近 3D 特写舞台并打开换装衣橱" : "Open 3D Close-Up Stage & Wardrobe"}
+            className="rounded-full border border-purple-500/35 bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold text-purple-700 transition hover:bg-purple-500/20 dark:text-purple-300"
           >
-            🐾 {isZh ? "互动投喂" : "Interact"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab(current => (current === "wardrobe" ? "none" : "wardrobe"))}
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition ${
-              tab === "wardrobe" ? "bg-foreground text-background" : "bg-background/80 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            👗 {isZh ? "暖暖衣橱" : "Wardrobe"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab(current => (current === "secrets" ? "none" : "secrets"))}
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition ${
-              tab === "secrets"
-                ? "bg-amber-500 text-slate-950"
-                : "bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:text-amber-300"
-            }`}
-          >
-            🏆 {isZh ? `彩蛋 ${state.unlockedSecretQuests.length}/${totalSecretsCount}` : `Secrets ${state.unlockedSecretQuests.length}/${totalSecretsCount}`}
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab(current => (current === "adopt" ? "none" : "adopt"))}
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition ${
-              tab === "adopt" ? "bg-foreground text-background" : "bg-background/80 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            🥚 {isZh ? "灵龙契约" : "Adopt"}
-          </button>
-        </div>
-      </div>
-
-      {/* Always-visible 1-Click Pi Agent Copilot Bar */}
-      <div
-        data-testid="pi-agent-quickbar"
-        className="mt-1.5 flex flex-wrap items-center justify-between gap-1.5 rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 px-2.5 py-1.5"
-      >
-        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-800 dark:text-emerald-200">
-          🤖 {isZh ? "Pi Agent 免确认代办：" : "Pi Agent 1-Click:"}
-        </span>
-        <div className="flex flex-wrap items-center gap-1">
-          <button
-            type="button"
-            disabled={piBusy}
-            data-testid="pi-agent-action-checkin"
-            onClick={() => void runPiAction("checkin")}
-            className="rounded-full border border-emerald-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-emerald-700 shadow-xs transition hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300"
-          >
-            📅 {isZh ? "代签到 (+5分)" : "Check-in (+5)"}
-          </button>
-          <button
-            type="button"
-            disabled={piBusy}
-            data-testid="pi-agent-action-claw"
-            onClick={() => void runPiAction("claw")}
-            className="rounded-full border border-amber-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-amber-700 shadow-xs transition hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300"
-          >
-            🕹️ {isZh ? "代抓娃娃搏锦鲤" : "Play Claw"}
-          </button>
-          <button
-            type="button"
-            disabled={piBusy}
-            data-testid="pi-agent-action-market"
-            onClick={() => void runPiAction("market", "")}
-            className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-sky-700 shadow-xs transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
-          >
-            🛒 {isZh ? "挑市场工具" : "Market Tools"}
-          </button>
-          <button
-            type="button"
-            disabled={piBusy}
-            data-testid="pi-agent-action-redeem"
-            onClick={() => void runPiAction("redeem", piPrompt)}
-            className="rounded-full border border-rose-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-rose-700 shadow-xs transition hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300"
-          >
-            🎁 {isZh ? "5分秒兑周报" : "5pt Redeem"}
-          </button>
-          <button
-            type="button"
-            disabled={piBusy}
-            data-testid="pi-agent-action-scaffold"
-            onClick={() => void runPiAction("scaffold", piPrompt || "农客松智慧农业多模态监测 Agent")}
-            className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-purple-700 shadow-xs transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
-          >
-            📝 {isZh ? "一键建参赛项目" : "New Project"}
+            🎥 {isZh ? "3D换装" : "3D Stage"}
           </button>
         </div>
       </div>

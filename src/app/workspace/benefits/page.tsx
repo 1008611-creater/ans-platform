@@ -70,40 +70,30 @@ export default async function BenefitsPage() {
 
   return (
     <div className="ans-product-shell">
-      <div className="ans-product-container space-y-8 py-8 sm:py-12">
+      <div className="ans-product-container space-y-6 py-6 sm:py-10">
         {!userId && (
           <section
             data-testid="benefits-guest-banner"
-            className="flex flex-col justify-between gap-4 rounded-3xl border border-emerald-500/35 bg-gradient-to-r from-emerald-500/10 via-amber-500/5 to-cyan-500/10 p-5 sm:flex-row sm:items-center sm:px-7"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3"
           >
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">
-                  {isEn
-                    ? "3D Interactive Guest Mode · 125 Demo Points Loaded"
-                    : "🎮 3D 盲盒与小龙展台 · 免登录互动试玩模式（已预载 125 体验积分）"}
-                </Badge>
-                <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                  正态分布 N(125, 10²) 人均 100~150 积分 + 0.1% 概率 1000 积分（¥100）天选锦鲤大奖
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">
+                {isEn ? "Guest Free Trial · 125 Pts" : "🎮 免登试玩模式"}
+              </Badge>
+              <span className="font-semibold text-foreground">
                 {isEn
-                  ? "Try the 3D claw machine, dragon wardrobe, and feeding stage right now. Sign in to claim 100–150 real compute points into your permanent ledger."
-                  : "您现在可直接操纵下方 3D 抓娃娃机摇杆、给小龙换装/投喂/挥鞭加速；登录后即可将正态随机抽中的 100–150 算力积分永久写入真实账户账本。"}
-              </p>
+                  ? "Play the 3D Claw Machine now · Sign in to lock 100–150 free compute points"
+                  : "可直接试玩下方 3D 抓娃娃机 · 登录后免费领 100~150 算力积分（0.1% 抽 1000 分锦鲤）"}
+              </span>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-2.5">
-              <Button asChild size="sm" className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-500">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <Button asChild size="sm" className="h-8 rounded-xl bg-emerald-600 px-3 text-xs text-white hover:bg-emerald-500">
                 <Link href="/login?callbackUrl=%2Fworkspace%2Fbenefits">
-                  {isEn ? "Sign in & Lock Real Points →" : "🔐 登录并锁定真实算力积分 →"}
+                  {isEn ? "Sign in & Claim →" : "🔐 登录领真实积分 →"}
                 </Link>
               </Button>
-              <Button asChild size="sm" variant="outline" className="rounded-xl">
-                <Link href="/register?callbackUrl=%2Fworkspace%2Fbenefits">🦖 免费注册领养小龙</Link>
-              </Button>
-              <Button asChild size="sm" variant="ghost" className="rounded-xl">
-                <Link href="/workspace/credits">{isEn ? "Compute Center" : "💳 查看算力中心"}</Link>
+              <Button asChild size="sm" variant="outline" className="h-8 rounded-xl px-3 text-xs">
+                <Link href="/workspace/credits">{isEn ? "Compute Center" : "💳 算力账本"}</Link>
               </Button>
             </div>
           </section>
@@ -114,14 +104,23 @@ export default async function BenefitsPage() {
           initialServerPoints={userId ? (arcadeBalance ? arcadeBalance.balancePoints : undefined) : 125}
         />
 
-        <section
+        <ComputeBenefits actorId={userId ?? "guest-preview"} initialData={initialBenefits} />
+
+        <details
           id="ans-dragon-sanctuary-showcase"
           aria-label="3D 小龙展台与基因养成舱"
+          className="group rounded-3xl border border-border bg-card p-5 shadow-xs"
         >
-          <DinoAdoptionPod compact={false} />
-        </section>
-
-        <ComputeBenefits actorId={userId ?? "guest-preview"} initialData={initialBenefits} />
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-foreground">
+            <span>🥚 {isEn ? "Expand 3D Dragon Adoption & Lineage Pod (Optional)" : "展开 3D 灵龙契约与血统养成舱（可选彩蛋）"}</span>
+            <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground group-open:hidden">
+              {isEn ? "Click to expand ↓" : "点击展开 ↓"}
+            </span>
+          </summary>
+          <div className="mt-4">
+            <DinoAdoptionPod compact />
+          </div>
+        </details>
       </div>
     </div>
   );
