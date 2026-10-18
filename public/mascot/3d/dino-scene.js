@@ -827,6 +827,8 @@ function startCompanion() {
     syncSanctuaryAppearance();
     loadWardrobeAssets();
     resize();
+    renderSafely(() => { performer.update(time, 0, true); faceVoice?.update(time, 0, true); }, true, 0);
+    wake();
   }
   const manager = new T.LoadingManager();
   manager.onError = () => fail('MODEL_RESOURCE_FAILED');

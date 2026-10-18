@@ -109,9 +109,10 @@
 .ans-companion-task footer { margin-top: 8px; }
 .ans-companion-task footer button { display: flex; align-items: center; gap: 3px; min-height: 30px; font-size: 11px; color: var(--primary); cursor: pointer; }
 .ans-companion-task footer svg { width: 12px; height: 12px; }
-.ans-companion-v2 .ans-dino-avatar { width: 106px; height: 132px; }
-.ans-companion-v2 .ans-dino-avatar > img { width: 106px; height: 106px; }
-.ans-companion-v2 .ans-dino-canvas { inset: -12px -16px; width: calc(100% + 32px); height: calc(100% + 24px); }
+.ans-companion-v2 .ans-dino-trigger { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+.ans-companion-v2 .ans-dino-avatar { width: 106px; height: 132px; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+.ans-companion-v2 .ans-dino-avatar > img { width: 106px; height: 106px; background: transparent !important; }
+.ans-companion-v2 .ans-dino-canvas { inset: -12px -16px; width: calc(100% + 32px); height: calc(100% + 24px); background: transparent !important; color-scheme: normal; }
 .ans-companion-v2[data-open=true] .ans-dino-avatar { width: 120px; height: 144px; }
 .ans-companion-v2[data-open=true] .ans-dino-avatar > img { width: 120px; height: 120px; }
 .ans-companion-v2 .ans-dino-trigger[aria-expanded=true] { animation: none; }

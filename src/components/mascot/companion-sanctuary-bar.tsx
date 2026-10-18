@@ -113,6 +113,10 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
   useEffect(() => {
     if (typeof window !== "undefined" && typeof WebGLRenderingContext !== "undefined") {
       window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+      const t = window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+      }, 60);
+      return () => window.clearTimeout(t);
     }
   }, []);
 
@@ -233,7 +237,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     <div className="pointer-events-auto relative inline-flex items-center">
       {/* Floating Quick Action Dock next to bottom-right 3D Dragon */}
       <div
-        className="fixed bottom-[16px] right-[86px] sm:bottom-[20px] sm:right-[96px] z-[60] flex items-center gap-1 rounded-full border border-emerald-500/35 bg-background/90 px-2 py-1 shadow-lg backdrop-blur-md"
+        className="fixed bottom-[16px] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-emerald-500/35 bg-background/90 px-2 py-1 shadow-lg backdrop-blur-md"
         onClick={e => e.stopPropagation()}
       >
         <button
