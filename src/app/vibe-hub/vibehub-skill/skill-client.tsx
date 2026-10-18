@@ -152,7 +152,6 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
               <h3>{t("briefPreviewTitle")}</h3>
               <SkillCopyButton
                 text={brief}
-                disabled={!brief}
                 label={t("briefCopy")}
                 copiedLabel={t("copied")}
               />

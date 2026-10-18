@@ -27,6 +27,7 @@ const TASK_PATH: Partial<Record<GuideTask, string>> = {
   "agent-team": "ans-agent-team",
   creative: "ans-creative-delivery",
   "open-source": "ans-open-source",
+  github: "ans-open-source",
 };
 const TASK_PRACTICE: Record<GuideTask, string> = {
   website: "portfolio",
@@ -36,9 +37,12 @@ const TASK_PRACTICE: Record<GuideTask, string> = {
   "agent-team": "agent-team-and-cost",
   creative: "creative-production",
   "open-source": "github-to-project",
+  github: "github-to-project",
   brief: "clear-brief",
   evidence: "competition-evidence",
+  competition: "competition-evidence",
   cost: "account-and-cost",
+  account: "account-and-cost",
 };
 const PRACTICE_EVIDENCE: Record<string, VibeText[]> = {
   "clear-brief": [
@@ -102,18 +106,18 @@ export function topicGuide(journey: JourneyData): GuideView {
   return {
     id: `topic:${journey.id}`,
     title: journey.title,
-    summary: journey.summary,
-    audience: journey.whenToUse,
+    summary: journey.subtitle,
+    audience: journey.audience,
     outcome: journey.outcome,
     briefHref: "/vibe-hub/vibehub-skill?scenario=custom",
     steps: journey.stages.map(stage => ({
-      id: `stage-${stage.stage}`,
+      id: `stage-${stage.order}`,
       title: stage.title,
-      action: stage.goal,
-      optional: stage.optionalNote,
-      links: stage.recommendedTerms.map(term => ({ href: `/vibe-hub/${term.id}`, label: term.title })),
+      action: stage.action,
+      optional: stage.optionalWhen ?? undefined,
+      links: stage.lessons.map(term => ({ href: `/vibe-hub/${term.id}`, label: term.title })),
     })),
-    terms: journey.stages.flatMap(stage => stage.recommendedTerms).slice(0, 6).map(term => ({ slug: term.id, label: term.title })),
+    terms: journey.stages.flatMap(stage => stage.lessons).slice(0, 6).map(term => ({ slug: term.id, label: term.title })),
     destinations: [],
   };
 }
