@@ -586,7 +586,7 @@ export const ANS_PRACTICES: readonly AnsPractice[] = [
         zh: "根据我们项目目前已实现的真实功能，整理一份比赛提交说明：1）痛点与服务对象；2）现场可演示的 3 个步骤；3）已验证的数据或测试结果；4）团队成员分工；5）尚未实现、计划赛后继续完成的部分。不要夸大未上线能力。",
         en: "From the features we have actually implemented, draft a competition submission summary: 1) problem and target users; 2) the 3 live demo steps; 3) verified data or test results; 4) teammate roles; 5) work planned for after the event. Do not overstate unshipped capabilities.",
       },
-      note: { zh: "如实区分已跑通闭环与未来规划，往往比满篇口号更有说服力。", en: "Separating working functionality from future plans is more credible than grand slogans." },
+      note: { zh: "如实区分已跑通功能与未来规划，往往比满篇口号更有说服力。", en: "Separating working functionality from future plans is more credible than grand slogans." },
     },
     nextDestinations: [
       { href: "/competitions/agrihackathon", label: { zh: "查看农客松赛事页面", en: "Open AgriHackathon" }, description: { zh: "进入赛事说明、任务要求与提交入口。", en: "Read competition rules, tasks, and submission entry points." } },

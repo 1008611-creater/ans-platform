@@ -102,17 +102,22 @@ export default async function StatusPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold">
-              {isEn ? "ANS Technical Architecture & Compute Economy Loop" : "ANS 技术底座与高校算力经济闭环"}
+              {isEn ? "ANS Technical Architecture & Compute Economy" : "ANS 技术底座与高校算力经济体系"}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {isEn
-                ? "End-to-end infrastructure connecting campus AI competitions, 3D gamified onboarding, and creator monetization."
-                : "面向高校开发者与合作伙伴的全链路技术架构：从正态随机算力补贴、密码学赛事存证到技能市场持续分成。"}
+                ? "Core infrastructure connecting campus AI competitions, 3D gamified onboarding, and creator revenue sharing."
+                : "面向高校开发者与合作伙伴的五层技术架构：从正态随机算力补贴、密码学赛事存证到技能市场持续分成。"}
             </p>
           </div>
-          <Link href="/competitions/agrihackathon" className="text-xs font-medium text-primary hover:underline">
-            {isEn ? "Inspect Flagship AgriHackathon →" : "查看农大智耕黑客松实战 →"}
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <a href="/architecture/ans-never-stops-architecture.html" className="text-xs font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+              {isEn ? "Open 5-Layer Architecture Map ↗" : "打开五层交互式全景架构图 ↗"}
+            </a>
+            <Link href="/competitions/agrihackathon" className="text-xs font-medium text-primary hover:underline">
+              {isEn ? "Inspect Flagship AgriHackathon →" : "查看农大智耕黑客松实战 →"}
+            </Link>
+          </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-lg border bg-muted/15 p-3.5">
@@ -159,7 +164,7 @@ export default async function StatusPage() {
               {isEn ? "04 · Creator Marketplace" : "04 · 技能市场 80% 创作者分成"}
             </div>
             <p className="mt-1 text-sm font-semibold">
-              {isEn ? "1 Point = ¥0.10 Closed Loop" : "1 积分 = ¥0.10 商业闭环"}
+              {isEn ? "1 Point = ¥0.10 Value Anchor" : "1 积分 = ¥0.10 价值锚定"}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {isEn

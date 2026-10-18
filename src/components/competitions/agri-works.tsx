@@ -83,7 +83,7 @@ export function AgriWorks() {
               stage: "FINAL · 技术核验通过",
               title: "GreenHouse-OS 温室水肥光热多智能体调控系统",
               cover: "/competitions/agrihackathon/gitglow-scoring.webp",
-              meta: "含 72h 传感器闭环回放日志 + 评委双盲复核记录",
+              meta: "含 72h 传感器联动回放日志 + 评委双盲复核记录",
             },
             {
               team: "青禾无人农机队 · 初赛冻结版 (Rev.2)",

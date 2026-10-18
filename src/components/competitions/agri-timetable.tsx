@@ -95,7 +95,7 @@ export function AgriTimetable() {
         stageLabel: locale === "zh" ? "初赛开发 · Stage 02" : "Preliminary · Stage 02",
         priority: "HIGH",
         title: locale === "zh" ? "农业 AI 核心算法 / 硬件原型与数据集验证" : "Agri-AI Core Model / Hardware Prototype Validation",
-        criteria: locale === "zh" ? "基于 DeepSeek / Qwen2.5-VL 或边缘端 YOLO 完成病虫害识别、智慧灌溉或表型分析闭环。" : "Complete crop disease, smart irrigation, or phenotyping loop with LLM/VLM.",
+        criteria: locale === "zh" ? "基于 DeepSeek / Qwen2.5-VL 或边缘端 YOLO 完成病虫害识别、智慧灌溉或表型分析全流程验证。" : "Complete crop disease, smart irrigation, or phenotyping validation with LLM/VLM.",
         reward: "AI 算力网关直连",
       },
       {

@@ -21,7 +21,7 @@ export const parts: Part[] = [
     slug: "introduction",
     chapters: [
       { slug: "00a-preface", title: "Preface", part: "Introduction", partNumber: 0, chapterNumber: 0, description: "A personal note from the author" },
-      { slug: "00b-history", title: "History", part: "Introduction", partNumber: 0, chapterNumber: 1, description: "The story of Awesome ChatGPT Prompts" },
+      { slug: "00b-history", title: "History", part: "Introduction", partNumber: 0, chapterNumber: 1, description: "The evolution of ANS Prompt Engineering" },
       { slug: "00c-introduction", title: "Introduction", part: "Introduction", partNumber: 0, chapterNumber: 2, description: "What is prompt engineering and why it matters" },
     ],
   },
