@@ -103,16 +103,16 @@ const WHIP_MOOD_IDS = ["whip0", "whip1", "whip2", "whip3", "whip4", "whip5", "wh
 const MACRO_MOOD_IDS = ["macro0", "macro1", "macro2", "macro3"] as const;
 const IDLE_MOOD_IDS = [
   "happy_smile",
-  "excited_star",
+  "starry_excited",
   "curious_tilt",
-  "shy_blush",
-  "sleepy_yawn",
-  "proud_cool",
+  "cozy_chill",
+  "sleepy_stretch",
+  "focused_think",
   "aha_spark",
 ] as const;
 
 function findMoodPreset(id: string): ShowcaseMoodPreset {
-  return SHOWCASE_MOOD_PRESETS.find(item => item.id === id) ?? SHOWCASE_MOOD_PRESETS[0];
+  return SHOWCASE_MOOD_PRESETS[id] ?? SHOWCASE_MOOD_PRESETS.happy_smile;
 }
 
 export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text: string) => void }) {
@@ -121,7 +121,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [alertMode, setAlertMode] = useState(true);
   const [alertDimmed, setAlertDimmed] = useState(false);
-  const [activeMood, setActiveMood] = useState<ShowcaseMoodPreset>(() => SHOWCASE_MOOD_PRESETS[0]);
+  const [activeMood, setActiveMood] = useState<ShowcaseMoodPreset>(() => SHOWCASE_MOOD_PRESETS.happy_smile);
   const [customSubText, setCustomSubText] = useState<string | null>(null);
   const [macroActive, setMacroActive] = useState(false);
   const [sanctuaryModal, setSanctuaryModal] = useState<"none" | "wardrobe" | "adopt">("none");
@@ -301,7 +301,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     setActiveMood(preset);
     setCustomSubText(null);
     dispatchDinoInteract({ action: "macro", active: true, mood: preset });
-    onTriggerSpeech?.(isZh ? preset.textZh : preset.textEn);
+    onTriggerSpeech?.(preset.text);
   };
 
   const exitMacroMode = () => {
@@ -360,7 +360,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
           : `(Click ${rem} more times for Close-Up Stage 🎥)`,
       );
       dispatchDinoInteract({ action: "click", mood: preset });
-      onTriggerSpeech?.(isZh ? preset.textZh : preset.textEn);
+      onTriggerSpeech?.(preset.text);
       return;
     }
 
@@ -380,7 +380,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         : "(Close-Up Stage · Use controls below 👇)",
     );
     dispatchDinoInteract({ action: "click", mood: preset });
-    onTriggerSpeech?.(isZh ? preset.textZh : preset.textEn);
+    onTriggerSpeech?.(preset.text);
   };
 
   // Listen for hover & click events dispatched from .ans-dino-trigger in dino-guide.tsx
@@ -424,10 +424,12 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       const protestMood: ShowcaseMoodPreset = {
         id: "strike",
         kaomoji: "(╬▔皿▔)╯🕶️",
-        textZh: "啪什么啪！本龙掏出《赛博灵龙劳动法》宣布罢工 30 秒！",
-        textEn: "Stop whipping! By the Cyber Dino Labor Law, I'm on a 30s strike!",
-        subZh: "(罢工抗议中 · 快点「🎲 随机盲盒投喂」喂一口夜宵哄好本龙领隐藏大奖！)",
-        subEn: "(On strike · Click 'Random Blind-Box Feed' now to make peace & unlock secret reward!)",
+        text: isZh
+          ? "啪什么啪！本龙掏出《赛博灵龙劳动法》宣布罢工 30 秒！"
+          : "Stop whipping! By the Cyber Dino Labor Law, I'm on a 30s strike!",
+        sub: isZh
+          ? "(罢工抗议中 · 快点「🎲 随机盲盒投喂」喂一口夜宵哄好本龙领隐藏大奖！)"
+          : "(On strike · Click 'Random Blind-Box Feed' now to make peace & unlock secret reward!)",
         gesture: "whip",
         blush: 0.9,
         happy: 0.2,
@@ -435,9 +437,9 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         mouth: 1.0,
       };
       setActiveMood(protestMood);
-      setCustomSubText(isZh ? protestMood.subZh : protestMood.subEn);
+      setCustomSubText(protestMood.sub);
       dispatchDinoInteract({ type: "whip", mood: protestMood });
-      onTriggerSpeech?.(isZh ? protestMood.textZh : protestMood.textEn);
+      onTriggerSpeech?.(protestMood.text);
       return;
     }
 
@@ -452,13 +454,11 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       userXp: prev.userXp + 20,
       workBoostUntil: now + 180_000,
     }));
-    spawnWhipScreenFx(
-      isZh ? preset.subZh.replace(/^\(|\)$/g, "") : preset.subEn.replace(/^\(|\)$/g, ""),
-    );
+    spawnWhipScreenFx(preset.sub.replace(/^\(|\)$/g, ""));
     setActiveMood(preset);
     setCustomSubText(null);
     dispatchDinoInteract({ type: "whip", mood: preset });
-    onTriggerSpeech?.(isZh ? preset.textZh : preset.textEn);
+    onTriggerSpeech?.(preset.text);
   }
 
   function handleFeedAction(e?: React.MouseEvent) {
@@ -526,10 +526,12 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     const customFeedMood: ShowcaseMoodPreset = {
       id: `feed_${food.id}`,
       kaomoji: food.kaomoji,
-      textZh: `盲盒投喂【${food.icon} ${foodName}】！${food.reactionZh}`,
-      textEn: `Blind-box fed [${food.icon} ${foodName}]! ${food.reactionEn}`,
-      subZh: `(${foodTag} · 好感度 +${food.affection} ♥ · 灵感星豆 +${food.coins} 🪙)`,
-      subEn: `(${foodTag} · Affection +${food.affection} ♥ · Star Beans +${food.coins} 🪙)`,
+      text: isZh
+        ? `盲盒投喂【${food.icon} ${foodName}】！${food.reactionZh}`
+        : `Blind-box fed [${food.icon} ${foodName}]! ${food.reactionEn}`,
+      sub: isZh
+        ? `(${foodTag} · 好感度 +${food.affection} ♥ · 灵感星豆 +${food.coins} 🪙)`
+        : `(${foodTag} · Affection +${food.affection} ♥ · Star Beans +${food.coins} 🪙)`,
       gesture: food.reactMode,
       blush: 0.85,
       happy: 0.95,
@@ -539,7 +541,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     setActiveMood(customFeedMood);
     setCustomSubText(null);
     dispatchDinoInteract({ type: "feed", reactMode: food.reactMode, mood: customFeedMood });
-    onTriggerSpeech?.(isZh ? customFeedMood.textZh : customFeedMood.textEn);
+    onTriggerSpeech?.(customFeedMood.text);
   }
 
   function handlePatAction(e?: React.MouseEvent) {
@@ -555,10 +557,12 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     const patMood: ShowcaseMoodPreset = {
       id: "pat",
       kaomoji: "(✿◡‿◡)💖",
-      textZh: "呼噜呼噜~ 被主人摸头顺毛好舒服呀！尾巴都要摇断啦~",
-      textEn: "Purr~ Head pats feel amazing! Tail wagging at max speed~",
-      subZh: "(摸头杀成功 · 好感度 +15 ♥ · 灵感星豆 +10 🪙)",
-      subEn: "(Head pat · Affection +15 ♥ · Star Beans +10 🪙)",
+      text: isZh
+        ? "呼噜呼噜~ 被主人摸头顺毛好舒服呀！尾巴都要摇断啦~"
+        : "Purr~ Head pats feel amazing! Tail wagging at max speed~",
+      sub: isZh
+        ? "(摸头杀成功 · 好感度 +15 ♥ · 灵感星豆 +10 🪙)"
+        : "(Head pat · Affection +15 ♥ · Star Beans +10 🪙)",
       gesture: "shy",
       blush: 1.0,
       happy: 1.0,
@@ -568,7 +572,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     setActiveMood(patMood);
     setCustomSubText(null);
     dispatchDinoInteract({ type: "pat", mood: patMood });
-    onTriggerSpeech?.(isZh ? patMood.textZh : patMood.textEn);
+    onTriggerSpeech?.(patMood.text);
   }
 
   function handleOpenWardrobeDrawer(e?: React.MouseEvent) {
@@ -793,9 +797,9 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
           </div>
           <div className="dino-speech-card">
             <span className="dino-b-kao">{activeMood.kaomoji}</span>
-            <span className="dino-b-txt">{isZh ? activeMood.textZh : activeMood.textEn}</span>
+            <span className="dino-b-txt">{activeMood.text}</span>
             <span className="dino-b-sub">
-              {customSubText ?? (isZh ? activeMood.subZh : activeMood.subEn)}
+              {customSubText ?? activeMood.sub}
             </span>
           </div>
         </div>
@@ -1245,25 +1249,22 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                           color: "#fbbf24",
                         }}
                       >
-                        {item.rarity} · +{item.styleScore}分
+                        {item.rarity} · +{item.stylePower}分
                       </span>
                     </div>
                     <div style={{ fontWeight: 800, fontSize: "13px" }}>{item.name}</div>
-                    <div style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.4 }}>{item.desc}</div>
+                    <div style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.4 }}>{item.description}</div>
                     <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-                      {item.tags.map(t => (
-                        <span
-                          key={t}
-                          style={{
-                            fontSize: "10px",
-                            padding: "1px 6px",
-                            borderRadius: "6px",
-                            background: "rgba(148,163,184,0.16)",
-                          }}
-                        >
-                          #{t}
-                        </span>
-                      ))}
+                      <span
+                        style={{
+                          fontSize: "10px",
+                          padding: "1px 6px",
+                          borderRadius: "6px",
+                          background: "rgba(148,163,184,0.16)",
+                        }}
+                      >
+                        #{item.styleTag}
+                      </span>
                     </div>
                     <div style={{ marginTop: "auto", paddingTop: "6px", fontSize: "11px", fontWeight: 800 }}>
                       {equipped ? (

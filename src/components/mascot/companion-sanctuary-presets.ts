@@ -254,9 +254,11 @@ export const QUEST_THOUGHTS_EN = [
 ];
 
 export type DinoInteractPayload = {
-  type: "whip" | "feed" | "pat" | "pose" | "turntable" | "hover" | "click" | "macro" | "mood";
+  type?: "whip" | "feed" | "pat" | "pose" | "turntable" | "hover" | "click" | "macro" | "mood";
   action?: string;
   active?: boolean;
+  hover?: boolean;
+  mood?: ShowcaseMoodPreset;
   gesture?: string;
   happy?: number;
   star?: number;
@@ -268,6 +270,7 @@ export type DinoInteractPayload = {
 };
 
 export interface ShowcaseMoodPreset {
+  id?: string;
   happy: number;
   star: number;
   blush: number;
@@ -465,7 +468,11 @@ export function spawnFoodScreenFx(icon: string, burstText: string) {
 
 export function dispatchDinoInteract(payload: DinoInteractPayload) {
   if (typeof window === "undefined") return;
-  const fullPayload = { action: payload.type, ...payload };
+  const fullPayload: Record<string, unknown> = {
+    ...(payload.mood ?? {}),
+    ...payload,
+    action: payload.action ?? payload.type ?? "mood",
+  };
   window.dispatchEvent(new CustomEvent("ans:dino-activate"));
   window.dispatchEvent(new CustomEvent("ans:dino-interact", { detail: fullPayload }));
   if (typeof document !== "undefined") {
@@ -478,7 +485,7 @@ export function dispatchDinoInteract(payload: DinoInteractPayload) {
           __ANS_DINO__?: { interact?: (p: Record<string, unknown>) => void };
         }) | null;
         child?.__ANS_DINO__?.interact?.(fullPayload);
-        child?.postMessage({ ...fullPayload, type: "ans-dino", event: "interact", interactType: payload.type }, window.location.origin);
+        child?.postMessage({ ...fullPayload, type: "ans-dino", event: "interact", interactType: payload.type ?? payload.action }, window.location.origin);
       } catch {
         /* ignore cross-frame timing */
       }
