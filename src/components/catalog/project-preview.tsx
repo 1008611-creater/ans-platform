@@ -10,7 +10,7 @@ export async function ProjectPreview({ project, large = false }: { project: Cata
   const { outerCoverUrl, innerCoverUrl } = resolveProjectCovers(project);
   const alt = catalogText(project, t, "title", locale);
   if (large && innerCoverUrl) {
-    return <DualCoverPreview innerCoverUrl={innerCoverUrl} outerCoverUrl={outerCoverUrl} alt={alt} isEn={locale.startsWith("en")} />;
+    return <DualCoverPreview innerCoverUrl={innerCoverUrl} outerCoverUrl={outerCoverUrl ?? innerCoverUrl} alt={alt} isEn={locale.startsWith("en")} />;
   }
   const coverSrc = large ? innerCoverUrl : outerCoverUrl;
   if (coverSrc) return <figure className="overflow-hidden rounded-3xl border bg-muted/20">
