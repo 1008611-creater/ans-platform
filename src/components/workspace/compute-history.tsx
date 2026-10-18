@@ -56,6 +56,38 @@ export async function ComputeHistory({ history, filter, paged, userId }: { userI
       <div className="max-w-3xl"><h2 className="text-sm font-semibold">{t("deliveryTitle")}</h2><p className="mt-1 text-sm leading-7 text-muted-foreground">{t("deliveryBody")}</p></div>
       <Button asChild variant="outline" size="sm"><Link href="/workflows/toonflow">{t("viewResults")}</Link></Button>
     </aside>
+    <section aria-label="GPU 算力节点与场景矩阵" className="grid gap-4 sm:grid-cols-3" data-testid="compute-cluster-cards">
+      {[
+        {
+          title: "ToonFlow 4K 漫剧渲染节点",
+          spec: "A800 80GB · 按张/按秒弹性计费",
+          cover: "/images/home/showcase/toonflow-studio.png",
+          href: "/workflows/toonflow",
+        },
+        {
+          title: "Agri-Vision 农田遥感推理节点",
+          spec: "多光谱视觉大模型 · 差额自动退还",
+          cover: "/images/home/showcase/agri-drone-ai.png",
+          href: "/competitions/agrihackathon",
+        },
+        {
+          title: "ANS-Studio 网页与多模态构建集群",
+          spec: "DeepSeek-V3 / Qwen-VL · 零冷启调度",
+          cover: "/images/home/showcase/academic-portal.png",
+          href: "/workspace/models",
+        },
+      ].map((node) => (
+        <Link key={node.title} href={node.href} className="group overflow-hidden rounded-xl border bg-card transition hover:border-primary/40 hover:shadow-md">
+          <div className="aspect-[16/9] w-full overflow-hidden border-b bg-muted">
+            <img src={node.cover} alt={node.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" />
+          </div>
+          <div className="p-4">
+            <h3 className="text-sm font-semibold group-hover:text-primary">{node.title}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">{node.spec}</p>
+          </div>
+        </Link>
+      ))}
+    </section>
     <section aria-labelledby="compute-history-heading" className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 id="compute-history-heading" className="flex items-center gap-2 text-lg font-semibold"><ReceiptText className="size-5" aria-hidden="true" />{t("records")}</h2>
@@ -80,7 +112,7 @@ export async function ComputeHistory({ history, filter, paged, userId }: { userI
             <div><dt className="text-xs text-muted-foreground">{t("returned")}</dt><dd className="mt-1 font-medium tabular-nums">{points(task.refundedPoints)}</dd></div>
           </dl>
           <p className="mt-4 text-sm leading-7 text-muted-foreground">{t(`stateBody.${task.state}`)}</p>
-          {(task.unit === "image" || task.unit === "second") && <ComputeDeliveryStatus userId={userId} taskId={task.taskId} unit={task.unit} resultUrl={getToonflowResultUrl(task.taskId)} />}
+          {userId !== "guest-preview" && (task.unit === "image" || task.unit === "second") && <ComputeDeliveryStatus userId={userId} taskId={task.taskId} unit={task.unit} resultUrl={getToonflowResultUrl(task.taskId)} />}
           <details className="mt-3 text-xs"><summary className="w-fit cursor-pointer py-2 text-muted-foreground">{t("details")}</summary>
             <dl className="grid gap-3 rounded-[var(--radius)] bg-muted/40 p-4 sm:grid-cols-2">
               <div className="min-w-0"><dt className="text-muted-foreground">{t("taskId")}</dt><dd className="mt-1 break-all font-mono">{task.taskId}</dd></div>

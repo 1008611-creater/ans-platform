@@ -13,7 +13,9 @@ export function CourseTile({course, number}: {course: CourseId; number: number})
  const current=chapters.find(item=>progress.chapters[item.id]?.status==="in-progress")||chapters.find(item=>!progress.chapters[item.id]?.readCompleted)||chapters[0];
  const started=hydrated&&chapters.some(item=>progress.chapters[item.id]?.updatedAt>0);
  const Icon=course==="product-website"?Code2:GitBranch;
+ const cover=course==="product-website"?"/images/home/showcase/academic-portal.png":"/images/home/showcase/agri-drone-ai.png";
  return <article className="ans-learn-course"><header><span className="ans-learn-course-id"><Icon size={20} aria-hidden="true" />{String(number).padStart(2,"0")}</span><span>{t("chapters",{count:chapters.length})}</span></header>
+ <div className="mb-3 aspect-[16/9] w-full overflow-hidden rounded-xl border bg-muted"><img src={cover} alt={t(`${course}.title`)} className="h-full w-full object-cover" loading="lazy" /></div>
  <h2>{t(`${course}.title`)}</h2><p>{t(`${course}.outcome`)}</p>
  <div className="ans-learn-course-visual" aria-hidden="true">{course==="product-website"?<><div className="ans-learn-wire-nav"><i/><i/><i/></div><div className="ans-learn-wire-hero"><span/><span/><b/></div><div className="ans-learn-wire-content"><i/><i/><i/></div></>:<><div className="ans-learn-git-line"><i/><span/><i/><span/><i/></div><div className="ans-learn-git-branch"><i/><span/><i/></div><code>main / feature</code></>}</div>
  <ol className="ans-learn-course-topics">{[1,2,3].map(n=><li key={n}><span>{String(n).padStart(2,"0")}</span>{t(`${course}.step${n}`)}</li>)}</ol>

@@ -30,9 +30,9 @@ function Navigation() {
     { label: "terms", path: "" },
     { label: "guides", path: "/guides" },
     { label: "skill", path: "/vibehub-skill" },
-    { label: "antiAi", path: "/anti-ai-flavor" },
     { label: "courses", path: "/courses" },
     { label: "practice", path: "/practice" },
+    { label: "antiAi", path: "/anti-ai-flavor" },
     { label: "saved", path: "/favorites" },
     { label: "updates", path: "/updates" },
   ] as const;
@@ -58,7 +58,7 @@ function Navigation() {
         <span>ANS <b>VibeHub</b></span>
       </Link>
       <nav className="vh-desktop-nav" aria-label={t("navigation")}>
-        {links.slice(0, 7).map(link => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={active(link.path) ? "page" : undefined}>{t(link.label)}</Link>)}
+        {links.slice(0, 5).map(link => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={active(link.path) ? "page" : undefined}>{t(link.label)}</Link>)}
       </nav>
       <div className="vh-header-actions">
         <Button variant="ghost" size="icon" className="ans-knowledge-action ans-language-action" onClick={switchLanguage} aria-label={t("switchLanguage")} title={t("switchLanguage")}><Languages size={18} aria-hidden="true" /><span>{lang === "zh" ? "EN" : "中"}</span></Button>

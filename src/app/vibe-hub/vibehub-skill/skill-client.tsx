@@ -47,7 +47,7 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
   const [scenarioId, setScenarioId] = useState(initial.id);
   const [templateNotice, setTemplateNotice] = useState("");
   const [activeRewriteId, setActiveRewriteId] = useState(ANS_REWRITE_EXAMPLES[0].id);
-  const [activePipeline, setActivePipeline] = useState<"all" | "engineering" | "media" | "content">("all");
+  const [activePipeline, setActivePipeline] = useState<"all" | "engineering" | "media" | "content">("engineering");
   const scenario = getBriefScenario(scenarioId);
   const [saved, setSaved, persisted] = usePersistedSetting(
     `ans:vibehub:brief:${scenario.id}:${lang}:v1`,
@@ -103,6 +103,36 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
           </a>
         </nav>
       </header>
+
+      <section className="grid gap-4 pb-6 sm:grid-cols-3" data-testid="vibehub-skill-visual-strip">
+        {[
+          {
+            title: lang === "en" ? "Agri-AI Competition Project" : "农客松参赛工程 · 需求快写",
+            sub: lang === "en" ? "UAV Vision + Agent Pipeline" : "多光谱遥感与智能体协同场景",
+            cover: "/images/home/showcase/agri-drone-ai.png",
+          },
+          {
+            title: lang === "en" ? "ToonFlow AIGC Storyboard" : "漫剧与视觉创作 · 镜头控制",
+            sub: lang === "en" ? "4K Keyframe + Character Lock" : "分镜提示词与角色一致性管线",
+            cover: "/images/home/showcase/toonflow-studio.png",
+          },
+          {
+            title: lang === "en" ? "Academic & Product Website" : "学术主页与产品站 · 零 AI 味",
+            sub: lang === "en" ? "Clean Editorial Layout" : "高密度双语排版与结构化交付",
+            cover: "/images/home/showcase/academic-portal.png",
+          },
+        ].map((card) => (
+          <div key={card.title} className="overflow-hidden rounded-xl border bg-card">
+            <div className="aspect-[16/9] w-full overflow-hidden border-b bg-muted">
+              <img src={card.cover} alt={card.title} className="h-full w-full object-cover" loading="lazy" />
+            </div>
+            <div className="p-3.5">
+              <strong className="block text-sm">{card.title}</strong>
+              <span className="mt-1 block text-xs text-muted-foreground">{card.sub}</span>
+            </div>
+          </div>
+        ))}
+      </section>
 
       <section id="ans-brief-builder" aria-labelledby="ans-brief-builder-heading">
         <div className="ans-brief-start" aria-label={t("briefScenarioLabel")}>

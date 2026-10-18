@@ -72,7 +72,17 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
       </aside>
       <section ref={workRef} tabIndex={-1} className="ans-guide-work" aria-labelledby="ans-current-guide-title">
         <header className="ans-guide-work-head">
-          <div className="ans-guide-title-row"><div><h2 id="ans-current-guide-title">{guide.title}</h2><p>{guide.summary}</p></div><Link className="ans-knowledge-button" data-variant="default" href={destination(guide.briefHref)}>{t("guideWriteBrief")}<ArrowUpRight size={16} aria-hidden="true" /></Link></div>
+          <div className="mb-4 grid gap-4 sm:grid-cols-[1.35fr_0.65fr] sm:items-center">
+            <div className="ans-guide-title-row"><div><h2 id="ans-current-guide-title">{guide.title}</h2><p>{guide.summary}</p></div><Link className="ans-knowledge-button" data-variant="default" href={destination(guide.briefHref)}>{t("guideWriteBrief")}<ArrowUpRight size={16} aria-hidden="true" /></Link></div>
+            <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border bg-muted">
+              <img
+                src={guide.task === "media-pipeline" || guide.task === "creative" ? "/images/home/showcase/toonflow-studio.png" : guide.task === "evidence" || guide.task === "agent-team" ? "/images/home/showcase/agri-drone-ai.png" : "/images/home/showcase/academic-portal.png"}
+                alt={guide.title}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
           <div className="ans-guide-progress" role="status"><span>{t("pathProgress", { count: completed.length, total: guide.steps.length })}</span><progress value={completed.length} max={guide.steps.length} aria-label={t("pathProgressLabel")} />{!persisted && <span className="ans-guide-save-error">{t("deviceSaveFailed")}</span>}</div>
         </header>
         <ol className="ans-guide-steps">

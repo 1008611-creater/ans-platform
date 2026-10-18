@@ -135,7 +135,63 @@ export function AgriWall({ initialView }: { initialView?: AgriWallView } = {}) {
           const rankBadge = rank ? t(rank <= 3 ? "rankTop" : "rankLabel", { rank }) : null;
           const rankHint = frozen ? null : higherStars !== undefined && result ? t("gapHint", { gap: higherStars - result.votes }) : (rank === 1 && result && result.votes > 0 ? t("leaderHint") : null);
           return <article key={entry.id} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/40">{entry.offer.listing.coverUrl && <Link href={`/explore/member-${entry.offer.slug}`} tabIndex={-1} aria-hidden="true"><Image src={entry.offer.listing.coverUrl} alt="" width={720} height={450} unoptimized className="aspect-[8/5] w-full border-b object-cover" /></Link>}<div className="flex flex-1 flex-col p-5 sm:p-6"><div className="mb-4 flex flex-wrap items-center justify-between gap-2"><span className="min-w-0 break-words text-sm text-muted-foreground">{entry.teamName}</span><div className="flex flex-wrap items-center gap-1.5">{rankBadge && <Badge variant={rank! <= 3 ? "default" : "secondary"}>{rankBadge}</Badge>}{entry.eligible ? <Badge variant="outline">{t("entry")}</Badge> : <Badge variant="secondary">{t("ineligible")}</Badge>}</div></div><h3 className="break-words text-xl font-semibold leading-snug"><Link className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href={`/explore/member-${entry.offer.slug}`}>{entry.offer.listing.title}</Link></h3><p className="mt-3 break-words text-sm leading-7 text-muted-foreground">{entry.offer.listing.summary}</p><div className="mt-5 flex flex-wrap gap-4 text-sm">{entry.offer.listing.githubUrl && <a href={entry.offer.listing.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline-offset-4 hover:underline">GitHub<ExternalLink className="size-3.5" aria-hidden="true" /></a>}{(entry.offer.listing.previewUrl || entry.offer.listing.usageUrl) && <a href={entry.offer.listing.previewUrl || entry.offer.listing.usageUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline-offset-4 hover:underline">{t("demo")}<ExternalLink className="size-3.5" aria-hidden="true" /></a>}<Link className="ms-auto inline-flex items-center gap-1 font-medium text-primary underline-offset-4 hover:underline" href={`/explore/member-${entry.offer.slug}`}>{t("details")}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></div></div><div className="space-y-3 border-t bg-muted/20 p-5 sm:px-6"><div className="flex flex-wrap items-baseline justify-between gap-2"><div className="space-y-0.5"><span className="text-sm text-muted-foreground">{t(frozen ? "frozenStars" : "validStars")}</span>{rankHint && <p className="text-xs text-primary">{rankHint}</p>}</div><span className="text-xl font-semibold tabular-nums">{entry.validStars}</span></div>{actorId ? <MarketAccountBoundary actorId={actorId}><MarketStar key={`${actorId}:${entry.offer.id}:${entry.offer.starCount}:${entry.offer.starred}`} listingId={entry.offer.id} initialCount={entry.offer.starCount ?? 0} initialStarred={entry.offer.starred ?? false} initialEventVote={{ open: view.round?.state === "OPEN", eligible: entry.viewerEligible === true, voted: entry.viewerVoted }} /><EventVoteStatus eligible={entry.viewerEligible} voted={entry.viewerVoted} open={view.round?.state === "OPEN"} /></MarketAccountBoundary> : <Button asChild variant="outline" className="w-full"><Link href={`/login?callbackUrl=${encodeURIComponent(WALL)}`}><Star aria-hidden="true" />{t("loginStar")}</Link></Button>}<ShareVoteButton slug={entry.offer.slug} title={entry.offer.listing.title} teamName={entry.teamName} validStars={entry.validStars} /></div></article>;
-        })}</div> : <div className="rounded-2xl border border-dashed px-6 py-14 text-center"><Sprout className="mx-auto mb-4 size-8 text-primary" aria-hidden="true" /><h3 className="text-lg font-semibold">{t(query ? "noSearch" : "emptyTitle")}</h3><p className="mx-auto mt-3 max-w-md text-sm leading-7 text-muted-foreground">{t(query ? "noSearchHint" : "emptyBody")}</p><Button className="mt-6" variant="outline" onClick={query ? () => setQuery("") : undefined} asChild={!query}>{query ? t("clearSearch") : <Link href={SUBMIT}>{t("join")}</Link>}</Button></div>}
+        })}</div> : <div className="space-y-6" data-testid="agri-wall-pioneer-preview">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-dashed bg-muted/20 px-6 py-5">
+            <div className="flex items-center gap-3">
+              <Sprout className="size-6 shrink-0 text-primary" aria-hidden="true" />
+              <div>
+                <h3 className="text-base font-semibold">{t(query ? "noSearch" : "emptyTitle")}</h3>
+                <p className="text-xs text-muted-foreground">{t(query ? "noSearchHint" : "emptyBody")}</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={query ? () => setQuery("") : undefined} asChild={!query}>
+              {query ? t("clearSearch") : <Link href={SUBMIT}>{t("join")}</Link>}
+            </Button>
+          </div>
+          {!query && (
+            <div className="grid gap-5 md:grid-cols-3">
+              {[
+                {
+                  team: "农大智耕先锋队 · 示范展位 #01",
+                  title: "Agri-Vision 小麦条锈病无人机多光谱巡检流",
+                  summary: "结合田间无人机多光谱影像与 Qwen-VL 诊断节点，15 秒生成病虫害热力图与农艺防治处方。",
+                  stars: 142,
+                  cover: "/competitions/agrihackathon/gitglow-hero.webp",
+                },
+                {
+                  team: "绿洲智控联队 · 示范展位 #02",
+                  title: "GreenHouse-OS 温室水肥光热多 Agent 协同沙盘",
+                  summary: "基于温湿度与光照时序预测模型，动态调度滴灌与补光策略，支持现场评委扫码实时拉票体验。",
+                  stars: 118,
+                  cover: "/competitions/agrihackathon/gitglow-workflow.webp",
+                },
+                {
+                  team: "神农基因智算队 · 示范展位 #03",
+                  title: "Seed-GPT 玉米耐旱表型组学文献与基因检索助手",
+                  summary: "整合 4.2 万篇作物表型组学文献与知识图谱，辅助育种团队快速定位耐旱候选基因位点。",
+                  stars: 96,
+                  cover: "/competitions/agrihackathon/gitglow-scoring.webp",
+                },
+              ].map((demo) => (
+                <article key={demo.title} className="flex flex-col overflow-hidden rounded-2xl border bg-card transition hover:border-primary/40">
+                  <Image src={demo.cover} alt={demo.title} width={720} height={450} unoptimized className="aspect-[16/10] w-full border-b object-cover" />
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground">{demo.team}</span>
+                      <Badge variant="secondary">先锋示范展位</Badge>
+                    </div>
+                    <h3 className="text-base font-semibold leading-snug">{demo.title}</h3>
+                    <p className="mt-2 flex-1 text-xs leading-6 text-muted-foreground">{demo.summary}</p>
+                    <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs">
+                      <span className="font-semibold text-primary">★ {demo.stars} 示范人气</span>
+                      <Link href={SUBMIT} className="font-medium text-primary hover:underline">绑定我的参赛作品 →</Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>}
       </section>
     </>}
   </div>;
