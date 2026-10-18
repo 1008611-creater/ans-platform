@@ -138,7 +138,7 @@ function PiCodexWorkbench({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function executeCodexTask(customPrompt?: string, intent: "playground" | "checkin" | "claw" | "redeem" | "scaffold" = "playground") {
+  async function executeCodexTask(customPrompt?: string, intent: "playground" | "checkin" | "claw" | "redeem" | "scaffold" | "market" = "playground") {
     const q = (customPrompt ?? promptInput).trim();
     if (!q && intent === "playground") return;
     if (running) return;
