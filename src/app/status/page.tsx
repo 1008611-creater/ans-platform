@@ -124,8 +124,8 @@ export default async function StatusPage() {
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {isEn
-                ? "Interactive 3D claw machine & pet sanctuary onboard students at ¥10–¥15 compute cost per user."
-                : "通过 3D 抓娃娃机与小龙养成圣殿激活高校新用户，单人获客算力成本严格锚定 ¥10–¥15（均值 125 积分）。"}
+                ? "Interactive 3D claw machine & pet stage onboard students at ¥10–¥15 compute cost per user."
+                : "通过 3D 抓娃娃机与小龙养成展台激活高校新用户，单人获客算力成本严格锚定 ¥10–¥15（均值 125 积分）。"}
             </p>
           </div>
           <div className="rounded-lg border bg-muted/15 p-3.5">

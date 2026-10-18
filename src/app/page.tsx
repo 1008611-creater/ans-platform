@@ -24,12 +24,6 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
   const browse = browseCatalog(projects, params, project => [catalogText(project, t, "title", locale), catalogText(project, t, "summary", locale), t(`categories.${project.category}`), t(`children.${project.subcategory}`)].join(" "));
   const filterHref = (updates: Parameters<typeof catalogBrowseHref>[2] = {}, page = 1) => catalogBrowseHref("/", browse.filters, updates, page);
   const isEn = locale.startsWith("en");
-  const scenes = [
-    { href: "/competitions/agrihackathon", img: "/competitions/agrihackathon/gitglow-hub.webp", tag: isEn ? "Hackathon" : "赛事工作台", label: isEn ? "AgriHackathon · Datasets & SHA-256 Evidence" : "智耕黑客松 · 团队算力与代码存证" },
-    { href: "/workspace/benefits", img: "/catalog/gitglow-v1/ans-3d-showcase.svg", tag: isEn ? "3D Arcade & Pet" : "3D 算力工坊", label: isEn ? "3D Claw Machine & Compute Grant" : "3D 物理抓娃娃 · 灵龙换装与积分补贴" },
-    { href: "/competitions/aigc", img: "/catalog/gitglow-v1/aigc-workspace.webp", tag: isEn ? "AIGC Studio" : "AIGC 创作链", label: isEn ? "Storyboard Canvas · Toonflow · Video" : "四视图建模 · 分镜画布与漫剧工作流" },
-    { href: "/vibe-hub/vibehub-skill", img: "/catalog/gitglow-v1/cauai-one.webp", tag: isEn ? "ANS Skill Matrix" : "10 大高频 Skill", label: isEn ? "4-Part Brief · 10 Agent Skills · De-Slop" : "四段式需求工作台 · 10 大 Agent Skill 矩阵" },
-  ];
   return <div className={`ans-product-shell ans-home-page ${styles.page}`}>
     <HomeCampaignModal locale={locale} />
     <section className={styles.hero} aria-labelledby="home-title">
@@ -54,15 +48,6 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
           category: t(`categories.${project.category}`),
           coverUrl: project.coverUrl,
         }))} labels={{ title: t("home.spotlight"), open: t("detail"), carousel: t("home.projectCarousel"), info: t("catalogBrowse.introduction"), pause: t("home.pauseProjects"), play: t("home.playProjects") }} /> : <div className={styles.empty}><BookOpen aria-hidden="true" /><h2>{t("emptyTitle")}</h2><p>{t("emptyBody")}</p></div>}
-      </div>
-      <div className={`ans-product-container ${styles.sceneStrip}`}>
-        {scenes.map(scene => <Link key={scene.href} href={scene.href} className={styles.sceneCard}>
-          <img src={scene.img} alt="" loading="lazy" className={styles.sceneImg} />
-          <div className={styles.sceneMeta}>
-            <span className={styles.sceneTag}>{scene.tag}</span>
-            <strong className={styles.sceneLabel}>{scene.label}</strong>
-          </div>
-        </Link>)}
       </div>
       <div className="ans-product-container mt-4" data-testid="home-ecosystem-pulse">
         <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-border/60 bg-card/75 p-3 backdrop-blur-md lg:grid-cols-4">

@@ -113,9 +113,8 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
                 <DisplayNameEditor actorId={userId} current={displayName} />
               </span>
               <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline"><Link href="/workspace/benefits">🎁 {locale === "zh" ? "算力福利中心" : "Benefits"}</Link></Button>
-                <Button asChild size="sm" variant="outline"><Link href="/workspace/credits">💳 {quotaCopy("entry")}</Link></Button>
                 <Button asChild size="sm" variant="outline"><Link href="/projects">{product("myProjects")}</Link></Button>
+                <Button asChild size="sm" variant="outline"><Link href="/workflows/runs">{locale === "zh" ? "运行记录" : "Workflow Runs"}</Link></Button>
               </div>
             </div>
           )}

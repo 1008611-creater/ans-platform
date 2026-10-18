@@ -81,7 +81,7 @@ export default async function BenefitsPage() {
                 <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">
                   {isEn
                     ? "3D Interactive Guest Mode · 125 Demo Points Loaded"
-                    : "🎮 3D 盲盒与小龙圣殿 · 免登录互动试玩模式（已预载 125 体验积分）"}
+                    : "🎮 3D 盲盒与小龙展台 · 免登录互动试玩模式（已预载 125 体验积分）"}
                 </Badge>
                 <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
                   正态分布 N(125, 10²) 人均 100~150 积分 + 0.1% 概率 1000 积分（¥100）天选锦鲤大奖
@@ -89,7 +89,7 @@ export default async function BenefitsPage() {
               </div>
               <p className="text-sm text-muted-foreground">
                 {isEn
-                  ? "Try the 3D claw machine, dragon wardrobe, and feeding sanctuary right now. Sign in to claim 100–150 real compute points into your permanent ledger."
+                  ? "Try the 3D claw machine, dragon wardrobe, and feeding stage right now. Sign in to claim 100–150 real compute points into your permanent ledger."
                   : "您现在可直接操纵下方 3D 抓娃娃机摇杆、给小龙换装/投喂/挥鞭加速；登录后即可将正态随机抽中的 100–150 算力积分永久写入真实账户账本。"}
               </p>
             </div>
@@ -116,7 +116,7 @@ export default async function BenefitsPage() {
 
         <section
           id="ans-dragon-sanctuary-showcase"
-          aria-label="3D 小龙圣殿与基因养成舱"
+          aria-label="3D 小龙展台与基因养成舱"
         >
           <DinoAdoptionPod compact={false} />
         </section>

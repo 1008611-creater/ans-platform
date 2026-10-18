@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANS (AI Never Stops) · oil欧呦风格 16:9 横屏动态导览与六幕分镜画布</title>
+  <style>
+    :root {
+      --bg: #f5f2eb;
+      --card: #fffdf8;
+      --ink: #141413;
+      --sub: #57534e;
+      --accent: #d94e28;
+      --emerald: #0f766e;
+      --line: #d6d1c4;
+      --mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #18181b;
+      color: #f8fafc;
+      font-family: var(--sans);
+      padding: 20px;
+    }
+    .toolbar {
+      max-width: 1280px;
+      margin: 0 auto 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      padding: 12px 18px;
+      border-radius: 14px;
+    }
+    .toolbar-left { display: flex; align-items: center; gap: 10px; }
+    .badge {
+      background: #10b981;
+      color: #022c22;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      background: #3f3f46;
+      color: #f8fafc;
+      border: 1px solid #52525b;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn.active, .btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+    /* 16:9 Stage */
+    .stage-wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      aspect-ratio: 16 / 9;
+      background: var(--bg);
+      color: var(--ink);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      border: 3px solid #3f3f46;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+      background-image:
+        linear-gradient(to right, rgba(20,20,19,0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20,20,19,0.045) 1px, transparent 1px);
+      background-size: 36px 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 36px 48px 28px;
+    }
+    .stage-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--ink);
+      color: var(--card);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+    .act-pill {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      background: #fbece7;
+      border: 1.5px solid var(--ink);
+      padding: 5px 14px;
+      border-radius: 999px;
+    }
+    .stage-body {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 32px;
+      align-items: center;
+      margin: auto 0;
+    }
+    .hook-kicker {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--emerald);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .hook-title {
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      margin-top: 10px;
+    }
+    .hook-points {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .hook-points li {
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: 4px 4px 0 var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hook-points li span.num {
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    /* Screen Studio Browser Mockup */
+    .browser-window {
+      background: #0f172a;
+      border: 2.5px solid var(--ink);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 10px 10px 0 var(--ink);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .browser-bar {
+      background: #1e293b;
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #334155;
+    }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .dots i:nth-child(1) { background: #ef4444; }
+    .dots i:nth-child(2) { background: #f59e0b; }
+    .dots i:nth-child(3) { background: #10b981; }
+    .url-pill {
+      background: #090f1a;
+      color: #94a3b8;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      flex: 1;
+    }
+    .browser-screen {
+      aspect-ratio: 16 / 10;
+      width: 100%;
+      object-fit: cover;
+      display: block;
+      background: #090f1a;
+    }
+    /* Fixed Official Mascot Corner (Never AI-regenerated!) */
+    .mascot-anchor {
+      position: absolute;
+      right: 36px;
+      bottom: 74px;
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      padding: 6px 14px 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .mascot-anchor img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+      border-radius: 50%;
+      background: #e6f4f1;
+    }
+    .mascot-anchor span {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    /* Subtitle & Chapter Bar */
+    .stage-bottom {
+      display: grid;
+      gap: 12px;
+    }
+    .subtitle-pill {
+      margin: 0 auto;
+      background: rgba(20, 20, 19, 0.92);
+      color: #fff;
+      padding: 9px 22px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    .chapter-bar {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+    }
+    .chapter-item {
+      background: rgba(20,20,19,0.08);
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .chapter-item.active {
+      background: var(--ink);
+      color: #fff;
+    }
+    /* 6-Grid Storyboard Overview */
+    .grid-view {
+      max-width: 1280px;
+      margin: 20px auto 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .grid-card {
+      background: #27272a;
+      border: 1.5px solid #3f3f46;
+      border-radius: 14px;
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .grid-card:hover, .grid-card.active { border-color: var(--accent); }
+    .grid-card small { font-family: var(--mono); color: #fbbf24; font-size: 11px; font-weight: 700; }
+    .grid-card h3 { font-size: 15px; margin-top: 4px; color: #fff; }
+    .grid-card p { font-size: 12px; color: #a1a1aa; margin-top: 6px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="badge">SKILL D · OIL欧呦同款 16:9 横屏动态信息图画布</span>
+      <strong style="font-size:13px;">拒绝文生视频盲抽卡 · 100% 锁定 ANS (AI Never Stops) 真实界面与官方小恐龙资产</strong>
+    </div>
+    <div class="btn-group">
+      <button class="btn active" id="playBtn" onclick="toggleAutoPlay()">⏸ 自动轮播中 (每幕 5s)</button>
+      <button class="btn" onclick="prevAct()">◀ 上一幕</button>
+      <button class="btn" onclick="nextAct()">下一幕 ▶</button>
+    </div>
+  </div>
+
+  <div class="stage-wrap" id="stage">
+    <div class="stage-top">
+      <div class="brand-tag">🟢 ANS · AI NEVER STOPS · ans.cauai.fun</div>
+      <div class="act-pill" id="actPill">ACT 01 / 06 · 痛点钩子 (00:00 - 00:08)</div>
+    </div>
+
+    <div class="stage-body">
+      <div>
+        <div class="hook-kicker" id="actKicker">WHY ANS EXISTS · 解决收藏夹吃灰症</div>
+        <h1 class="hook-title" id="actTitle">别再只囤 AI 教程了，来 ANS 直接端出你的代表作。</h1>
+        <ul class="hook-points" id="actPoints"></ul>
+      </div>
+      <div class="browser-window" id="browserWin">
+        <div class="browser-bar">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="url-pill" id="actUrl">https://ans.cauai.fun/explore</div>
+        </div>
+        <img class="browser-screen" id="actImg" src="/catalog/gitglow-v1/image2-library.webp" alt="ANS Screen" />
+      </div>
+    </div>
+
+    <div class="mascot-anchor">
+      <img src="/mascot/ans-mascot.png" alt="ANS Official Mascot" />
+      <span>官方小恐龙伴侣 · 聊天/工作双模式</span>
+    </div>
+
+    <div class="stage-bottom">
+      <div class="subtitle-pill" id="actSub">“收藏了一百个 AI 视频，不如亲手跑通一个能写进简历和比赛的真项目。”</div>
+      <div class="chapter-bar" id="chapterBar"></div>
+    </div>
+  </div>
+
+  <div class="grid-view" id="gridView"></div>
+
+  <script>
+    const ACTS = [
+      {
+        pill: "ACT 01 / 06 · 黄金 3 秒钩子 (00:00 - 00:08)",
+        chapter: "01 · 痛点破局",
+        kicker: "ANS = AI NEVER STOPS · 独立创作与交付站",
+        title: "别再让 AI 教程在收藏夹吃灰，3 分钟跑出真作品。",
+        points: [
+          ["痛点", "看了一堆 Prompt 和工具评测，合上电脑还是没有一件自己的作品"],
+          ["解法", "ANS (AI Never Stops) 把真实项目拆解、可执行工作流与算力沙箱合三为一"],
+          ["承诺", "先免费预览交互效果，确认满意再一键导出 HTML 或源码包"]
+        ],
+        url: "https://ans.cauai.fun/",
+        img: "/catalog/gitglow-v1/image2-library.webp",
+        sub: "“收藏了一百个 AI 教程，不如在 ANS 亲手跑通一个能写进简历和比赛的真项目。”"
+      },
+      {
+        pill: "ACT 02 / 06 · 项目广场与 30 秒架构拆解 (00:08 - 00:20)",
+        chapter: "02 · 项目拆解",
+        kicker: "PROJECT EXPLORE · 先看效果再看配方",
+        title: "70+ 个精选真实项目，4 步看懂「脚本 vs Agent」怎么配合。",
+        points: [
+          ["STEP 01", "确定性规则校验输入边界，绝不让大模型瞎猜数据"],
+          ["STEP 02", "受约束 Agent 推理 + 本地沙箱实时预览确认门禁"],
+          ["双盲对比", "每个项目自带「裸调默认模型 vs 接入 ANS 工作流」对比表"]
+        ],
+        url: "https://ans.cauai.fun/explore",
+        img: "/catalog/gitglow-v1/magic-resume.webp",
+        sub: "“在项目广场点开任意作品，30 秒就能看懂它用了什么模型、什么 Skill、怎么防翻车。”"
+      },
+      {
+        pill: "ACT 03 / 06 · VibeHub 10 大内化 Skill 工作台 (00:20 - 00:34)",
+        chapter: "03 · VibeHub Skill",
+        kicker: "VIBEHUB SKILL WORKBENCH · 说人话也能写专业需求",
+        title: "不懂黑话？点选术语胶囊，一键扩写成四段式专业 Brief。",
+        points: [
+          ["词典对焦", "自动识别农客松、3D 网页、AIGC 漫剧意图，推荐 Grounding 等核心词"],
+          ["去 AI 味", "内置 ans-tone-guard，自动删掉‘赋能/抓手/闭环’与塑料感发光卡片墙"],
+          ["10 大 Skill", "覆盖工程提效、漫剧分镜与一鱼四吃内容发布全链路"]
+        ],
+        url: "https://ans.cauai.fun/vibe-hub/vibehub-skill",
+        img: "/catalog/gitglow-v1/cauai-one.webp",
+        sub: "“在立项页或工作台输入一句大白话，点一下就能升维成带验收标准的四段式工程 Brief。”"
+      },
+      {
+        pill: "ACT 04 / 06 · Pi-Codex 三栏实时沙箱工作台 (00:34 - 00:48)",
+        chapter: "04 · 三栏工作台",
+        kicker: "PI-CODEX WORKBENCH · 左任务 · 中对话 · 右实时沙箱",
+        title: "告别只给干瘪文字！右侧沙箱直接跑 HTML5、Canvas 与 3D 交互。",
+        points: [
+          ["实时预览", "内置智慧农田数字孪生、Toonflow 分镜导演台、赛博贪吃蛇等可交互线程"],
+          ["源码微调", "支持单幕/单文件在线改代码，改完即刻刷新预览，不必整条重跑"],
+          ["小恐龙伴侣", "右下角官方小恐龙支持聊天答疑模式与工作执行模式无缝切换"]
+        ],
+        url: "https://ans.cauai.fun/workspace",
+        img: "/catalog/gitglow-v1/infinite-canvas.webp",
+        sub: "“左边管任务版本，中间用术语胶囊调教 Agent，右边直接在浏览器沙箱里点按实测。”"
+      },
+      {
+        pill: "ACT 05 / 06 · 3D 个人网站工坊与智耕农客松 (00:48 - 01:02)",
+        chapter: "05 · 3D简历与农客松",
+        kicker: "STUDIO MARKET & AGRIHACKATHON · 赛事与求职双利器",
+        title: "零代码导出 3D 个人网站，组队领算力包冲刺农大智耕黑客松。",
+        points: [
+          ["3D 简历站", "自由编辑文字、贴纸与镜头停靠点，免费预览并导出单文件 HTML"],
+          ["战队算力池", "1–5 人跨专业组队最高申领 750 算力积分，SHA-256 代码快照存证"],
+          ["透明计费", "手动编辑与预览 0 积分；AI 生成预占扣费，失败自动原路退回"]
+        ],
+        url: "https://ans.cauai.fun/competitions/agrihackathon",
+        img: "/competitions/agrihackathon/gitglow-hub.webp",
+        sub: "“无论是做会动的 3D 个人主页，还是组队参加黑客松，平台直接给齐工作流和算力补贴。”"
+      },
+      {
+        pill: "ACT 06 / 06 · 创作者一鱼四吃与 80% 分润闭环 (01:02 - 01:15)",
+        chapter: "06 · 发布与变现",
+        kicker: "CREATOR STUDIO · 一鱼四吃 + 80% 算力分润",
+        title: "做完作品一键生成 60s 路演稿、去 AI 味 README 与三版 16:9 封面。",
+        points: [
+          ["路演工坊", "发布页自动生成 60 秒答辩逐字稿、开源 README 与小红书/B站分享帖"],
+          ["封面工坊", "内置 3 套高对比 16:9 SVG 封面实时渲染与下载，彻底告别简陋配图"],
+          ["创作者分成", "上架成熟工作流至 ANS 市场，每次被调用实时获得 80% 算力收益分成"]
+        ],
+        url: "https://ans.cauai.fun/explore/submit",
+        img: "/catalog/gitglow-v1/aigc-workspace.webp",
+        sub: "“现在就打开 ans.cauai.fun，免登录直接体验全部工作台，让你的想法变成看得见的作品！”"
+      }
+    ];
+
+    let current = 0;
+    let timer = null;
+
+    function renderAct(idx) {
+      current = (idx + ACTS.length) % ACTS.length;
+      const act = ACTS[current];
+      document.getElementById("actPill").textContent = act.pill;
+      document.getElementById("actKicker").textContent = act.kicker;
+      document.getElementById("actTitle").textContent = act.title;
+      document.getElementById("actUrl").textContent = act.url;
+      document.getElementById("actImg").src = act.img;
+      document.getElementById("actSub").textContent = act.sub;
+      document.getElementById("actPoints").innerHTML = act.points
+        .map(([tag, text]) => `<li><span class="num">${tag}</span><span>${text}</span></li>`)
+        .join("");
+      const win = document.getElementById("browserWin");
+      win.style.transform = "scale(0.97) translateY(4px)";
+      setTimeout(() => { win.style.transform = "scale(1) translateY(0)"; }, 60);
+
+      document.getElementById("chapterBar").innerHTML = ACTS.map((a, i) =>
+        `<button class="chapter-item ${i === current ? "active" : ""}" onclick="selectAct(${i})">${a.chapter}</button>`
+      ).join("");
+
+      document.getElementById("gridView").innerHTML = ACTS.map((a, i) =>
+        `<div class="grid-card ${i === current ? "active" : ""}" onclick="selectAct(${i})">
+          <small>${a.pill}</small>
+          <h3>${a.title}</h3>
+          <p>${a.sub}</p>
+        </div>`
+      ).join("");
+    }
+
+    function selectAct(i) { renderAct(i); }
+    function nextAct() { renderAct(current + 1); }
+    function prevAct() { renderAct(current - 1); }
+    function toggleAutoPlay() {
+      const btn = document.getElementById("playBtn");
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        btn.textContent = "▶ 开启自动轮播";
+        btn.classList.remove("active");
+      } else {
+        timer = setInterval(nextAct, 5000);
+        btn.textContent = "⏸ 自动轮播中 (每幕 5s)";
+        btn.classList.add("active");
+      }
+    }
+
+    renderAct(0);
+    timer = setInterval(nextAct, 5000);
+  </script>
+</body>
+</html>

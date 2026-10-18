@@ -342,6 +342,26 @@ for (const rel of fixedButStale) {
   });
 }
 
+// ---- 7. 品牌铁律边界：ANS = AI Never Stops --------------------------------
+const FORBIDDEN_BRAND_PATTERNS = /AI\s+Native\s+(?:Society|Studio)/i;
+const brandCheckFiles = [
+  ...allFiles,
+  path.resolve(scriptDir, "..", "messages", "zh.json"),
+  path.resolve(scriptDir, "..", "messages", "en.json"),
+];
+for (const file of brandCheckFiles) {
+  if (!fs.existsSync(file)) continue;
+  const text = fileCache.get(file)?.text ?? fs.readFileSync(file, "utf8");
+  const match = text.match(FORBIDDEN_BRAND_PATTERNS);
+  if (match) {
+    violations.push({
+      rule: "brand-identity",
+      file: path.relative(path.resolve(scriptDir, ".."), file).replace(/\\/g, "/"),
+      detail: `发现错误的品牌全称 "${match[0]}"；ANS 的唯一官方全称是 "AI Never Stops"，严禁写成 AI Native Society 或 AI Native Studio`,
+    });
+  }
+}
+
 // ---- 报告 ---------------------------------------------------------------
 const RULE_LABEL = {
   "client-boundary": "客户端边界",
@@ -351,10 +371,11 @@ const RULE_LABEL = {
   "server-purity": "server 纯净",
   "app-data": "app 数据边界",
   "app-data-stale": "app 数据边界（台账过期）",
+  "brand-identity": "品牌铁律（ANS = AI Never Stops）",
 };
 
 const countOf = (prefix) => allFiles.filter((f) => relOf(f).startsWith(prefix)).length;
-console.log("[boundaries] 扫描 src/ 下的分层依赖");
+console.log("[boundaries] 扫描 src/ 下的分层依赖与 ANS (AI Never Stops) 品牌铁律");
 console.log(
   `[boundaries] 文件 ${allFiles.length} 个（客户端组件 ${clientFiles.length} 个）；` +
     `contracts ${countOf("contracts/")} 个，domain ${countOf("domain/")} 个，server ${countOf("server/")} 个`,
@@ -365,7 +386,7 @@ console.log(
 );
 
 if (violations.length === 0) {
-  console.log("[boundaries] 六类检查全部通过");
+  console.log("[boundaries] 七类检查（含 ANS = AI Never Stops 品牌铁律）全部通过");
   process.exit(0);
 }
 

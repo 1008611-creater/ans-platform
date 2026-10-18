@@ -763,8 +763,8 @@
     },
     "import": {
       "title": "导入社区提示词",
-      "description": "从 Awesome ChatGPT Prompts 的 prompts.csv 文件导入提示词",
-      "fileInfo": "从 Awesome ChatGPT Prompts 社区 prompts.csv 导入",
+      "description": "从 ANS (AI Never Stops) 社区的 prompts.csv 文件导入提示词",
+      "fileInfo": "从 ANS 社区提示词库 prompts.csv 导入",
       "csvFormat": "格式：act, prompt, for_devs, type",
       "importButton": "导入社区提示词",
       "importing": "导入中...",
@@ -1189,7 +1189,7 @@
       },
       "whatIsPromptschat": {
         "question": "ANS 是什么？",
-        "answer": "ANS（AI Native Studio）是面向高校创作者与开发者的 AI 共创与作品交付平台，集成了项目广场（Explore）、工作流与商品市场（Market）、VibeHub 交互设计知识库以及黑客松战队算力协作中心。"
+        "answer": "ANS（AI Never Stops）是面向高校创作者与开发者的 AI 共创与作品交付平台，集成了项目广场（Explore）、工作流与商品市场（Market）、VibeHub 交互设计知识库以及黑客松战队算力协作中心。"
       },
       "howToUse": {
         "question": "如何在 ANS 上开始制作我的第一个作品？",
@@ -1468,18 +1468,18 @@
     "dismiss": "关闭"
   },
   "about": {
-    "title": "关于 ANS",
-    "description": "ChatGPT发布两周后创建的首个AI提示词库的故事。",
-    "releasedOn": "2022年12月5日",
-    "storyTitle": "我们的故事",
+    "title": "关于 ANS (AI Never Stops)",
+    "description": "面向高校与青年创作者的 AI 作品化交付平台——拆解真实项目、复用成熟工作流、沉淀个人代表作。",
+    "releasedOn": "2026年",
+    "storyTitle": "我们的定位",
     "goalTitle": "我们的目标",
-    "story1Rich": "ANS 基于开源项目 <repoLink>Awesome ChatGPT Prompts</repoLink> 构建。该项目始于 <authorLink>@f</authorLink> 的个人项目，用于整理 ChatGPT 提示词，当时 ChatGPT 初版还没有历史记录功能。",
-    "story2": "Awesome ChatGPT Prompts仓库创建于2022年12月5日，距离ChatGPT向世界宣布仅两周。最初只是一个简单的解决方案，现已成为数百万AI爱好者的首选资源。",
-    "testimonialsRich": "深受AI先驱喜爱，包括OpenAI联合创始人<gregLink>Greg Brockman</gregLink>和<wojciechLink>Wojciech Zaremba</wojciechLink>。",
-    "openSource": "从第一天起就完全免费开源。",
-    "goal1Rich": "我们相信分享的力量。我们的使命是让<bold>数百万人共享的AI上下文工程技术</bold>，从社区传递给每个人。",
-    "goal2Rich": "这里分享的每一个提示词、每一项技术、每一个见解都属于全人类。这就是我们选择<licenseLink>CC0（公共领域）</licenseLink>许可证的原因：无限制，无需署名。只有纯粹的知识给所有人。",
-    "goal3": "无论你是学习AI的学生、正在构建下一个突破的开发者，还是对可能性充满好奇的人：这是你的图书馆。使用它，分享它，在它的基础上创造。",
+    "story1Rich": "ANS（AI Never Stops）致力于解决「收藏了一堆 AI 教程却做不出完整作品」的痛点，将项目拆解、可执行工作流与算力协作合三为一。",
+    "story2": "从 3D 个人网站、智耕农客松多模态终端到 AIGC 漫剧分镜，ANS 把复杂工程沉淀为可预览、可复现、可导出的标准配方。",
+    "testimonialsRich": "汇聚高校实验室、独立开发者与黑客松优胜战队的真实实战项目。",
+    "openSource": "支持在线沙箱免费预览与单文件 HTML/源码包一键导出。",
+    "goal1Rich": "我们的使命是让<bold>每一次 AI 调用都沉淀为可验证、可展示的真实作品</bold>，连接学习、创作与商业变现。",
+    "goal2Rich": "平台精选开源拆解遵循各自开源协议（包括 <licenseLink>MIT / CC0</licenseLink>），同时创作者对私密工作流与个人作品享有 100% 完整版权。",
+    "goal3": "无论你是准备简历与比赛的学生，还是构建 AI 工作流的独立开发者：在 ANS 看懂真项目、跑通真流程、拿出真作品。",
     "achievementsTitle": "成就",
     "pressCategoryTitle": "媒体报道",
     "academicCategoryTitle": "学术认可",
@@ -1776,7 +1776,7 @@
     "metaTitle": "互动提示词工程之书 | AI提示词工程免费在线指南",
     "metaDescription": "通过这本免费互动指南掌握AI提示词工程。学习ChatGPT提示词、思维链推理、少样本学习和高级技术。25+章节配有真实示例。",
     "interactiveGuideBy": "互动指南 by",
-    "authorIntro": "你好，我是<author>Fatih Kadir Akın</author>，GitHub上热门<repoLink>Awesome ChatGPT Prompts</repoLink>仓库和<siteName>prompts.chat</siteName>的策展人。",
+    "authorIntro": "欢迎来到 <siteName>ANS (AI Never Stops)</siteName> 提示词与 Agent 工程指南，由 <repoLink>ANS 开源共创社区</repoLink> 联合维护。",
     "bookDescription": "在这本全面的互动指南中，你将发现创建引人入胜的AI提示词的专家策略，这些提示词能够产生有效的对话。从理解AI模型的工作原理到掌握提示词链和代理系统等高级技术，这本书为你提供了将AI交互提升到新水平所需的工具。",
     "whatYouWillLearn": "你将学到：",
     "highlights": {
@@ -1801,7 +1801,7 @@
     "startReading": "开始阅读",
     "skipToChapter1": "跳至第1章",
     "continuousUpdate": "随着AI的发展，本书将持续更新新技术和见解。",
-    "partOfProject": "<repoLink>Awesome ChatGPT Prompts</repoLink>项目的一部分。CC0许可。",
+    "partOfProject": "<repoLink>ANS (AI Never Stops)</repoLink> 共创社区的一部分。CC0许可。",
     "kidsSection": {
       "question": "你是老师或家长吗？",
       "title": "试试我们的儿童游戏书！🎮",
@@ -1815,7 +1815,7 @@
       "next": "下一章"
     },
     "tableOfContents": "目录",
-    "awesomeChatGPTPrompts": "Awesome ChatGPT Prompts",
+    "awesomeChatGPTPrompts": "ANS (AI Never Stops) 提示词库",
     "search": {
       "placeholder": "搜索章节...",
       "noResults": "未找到章节"
@@ -1868,7 +1868,7 @@
     },
     "chapterDescriptions": {
       "00a-preface": "作者的个人说明",
-      "00b-history": "Awesome ChatGPT Prompts的历史",
+      "00b-history": "ANS 提示词工程演进史",
       "00c-introduction": "什么是提示词工程，为什么重要",
       "01-understanding-ai-models": "大型语言模型如何工作",
       "02-anatomy-of-effective-prompt": "使提示词有效的组成部分",
@@ -2541,7 +2541,7 @@
       "scale": "战队规模",
       "scaleValue": "1–5 人",
       "phases": "核心环节",
-      "phasesValue": "5 步闭环",
+      "phasesValue": "5 步全流程",
       "deliverables": "算力与积分",
       "deliverablesValue": "算力中心"
     },
@@ -2627,7 +2627,7 @@
       },
       "completeness": {
         "label": "Demo 完成度 · 20 分",
-        "description": "在线可跑，核心体验闭环。"
+        "description": "在线可跑，核心流程完整可验证。"
       },
       "problem": {
         "label": "真实价值 · 15 分",
@@ -2721,7 +2721,7 @@
     "readPublishedRules": "阅读已发布规则",
     "bindProject": "绑定参赛项目",
     "claimCompute": "领取参赛算力",
-    "pipelineSectionLabel": "00 / 一站式参赛闭环",
+    "pipelineSectionLabel": "00 / 五步参赛全流程",
     "pipelineTitle": "五步参赛全流程",
     "pipelineDescription": "读规则、领算力、交作品、上墙拉票、查入围。",
     "pipeline": {

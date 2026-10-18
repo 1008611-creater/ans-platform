@@ -101,38 +101,26 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
             <Terminal size={15} aria-hidden="true" />
             {t("skillNavPrinciples")}
           </a>
+          <a
+            href="/architecture/ans-never-stops-architecture.html"
+            target="_blank"
+            rel="noreferrer"
+            className="ans-editorial-link"
+          >
+            <ArrowUpRight size={15} aria-hidden="true" />
+            {lang === "en" ? "ANS (AI Never Stops) Architecture Map" : "ANS (AI Never Stops) 全景交互架构图"}
+          </a>
+          <a
+            href="/architecture/ans-oil-style-storyboard.html"
+            target="_blank"
+            rel="noreferrer"
+            className="ans-editorial-link"
+          >
+            <ArrowUpRight size={15} aria-hidden="true" />
+            {lang === "en" ? "16:9 Dynamic Storyboard Canvas" : "16:9 横屏六幕动态导览画布"}
+          </a>
         </nav>
       </header>
-
-      <section className="grid gap-4 pb-6 sm:grid-cols-3" data-testid="vibehub-skill-visual-strip">
-        {[
-          {
-            title: lang === "en" ? "Agri-AI Competition Project" : "农客松参赛工程 · 需求快写",
-            sub: lang === "en" ? "UAV Vision + Agent Pipeline" : "多光谱遥感与智能体协同场景",
-            cover: "/competitions/agrihackathon/gitglow-hub.webp",
-          },
-          {
-            title: lang === "en" ? "ToonFlow AIGC Storyboard" : "漫剧与视觉创作 · 镜头控制",
-            sub: lang === "en" ? "4K Keyframe + Character Lock" : "分镜提示词与角色一致性管线",
-            cover: "/catalog/gitglow-v1/niannian-drama.webp",
-          },
-          {
-            title: lang === "en" ? "Academic & Product Website" : "学术主页与产品站 · 零 AI 味",
-            sub: lang === "en" ? "Clean Editorial Layout" : "高密度双语排版与结构化交付",
-            cover: "/catalog/gitglow-v1/magic-resume.webp",
-          },
-        ].map((card) => (
-          <div key={card.title} className="overflow-hidden rounded-xl border bg-card">
-            <div className="aspect-[16/9] w-full overflow-hidden border-b bg-muted">
-              <img src={card.cover} alt={card.title} className="h-full w-full object-cover" loading="lazy" />
-            </div>
-            <div className="p-3.5">
-              <strong className="block text-sm">{card.title}</strong>
-              <span className="mt-1 block text-xs text-muted-foreground">{card.sub}</span>
-            </div>
-          </div>
-        ))}
-      </section>
 
       <section id="ans-brief-builder" aria-labelledby="ans-brief-builder-heading">
         <div className="ans-brief-start" aria-label={t("briefScenarioLabel")}>

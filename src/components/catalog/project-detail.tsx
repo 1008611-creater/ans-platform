@@ -64,7 +64,7 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
       <aside className={styles.start} aria-label={d("startHere")}>
         <p className={styles.kicker}>{d("startHere")}</p>
         <h2>{primaryConnection ? ct(primaryConnection.kind === "workflow" || primaryConnection.kind === "workflow-offer" ? "startWithWorkflow" : "startWithOffer") : d(project.memberHref ? "creatorProject" : startHref ? "ansWorkflow" : "sourceProject")}</h2>
-        <p>{primaryConnection ? ct("prepareNote") : advice?.access ?? text("output")}</p>
+        <p>{primaryConnection ? ct("prepareNote") : advice?.access ?? (hasMeaningfulSourceNote ? rawSourceNote : text("summary"))}</p>
         {primaryHref && <Button asChild size="lg" className={`${styles.primary} h-auto min-h-11 whitespace-normal py-3 text-center`}>
           {isExternal ? <a href={primaryHref} target="_blank" rel="noopener noreferrer">{primaryLabel}<ArrowUpRight size={18} aria-hidden="true" /></a> : <Link href={primaryHref}>{primaryLabel}<ArrowRight size={18} aria-hidden="true" /></Link>}
         </Button>}

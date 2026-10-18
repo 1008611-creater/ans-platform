@@ -1,12 +1,13 @@
 # AGENTS.md
 
+> **Core Brand Iron Rule**: **`ANS` stands exclusively for `AI Never Stops`** (never miswrite it as `AI Native Society` or `AI Native Studio` in any copy, code, diagram, or response).
 > Product authority: docs/ANS权威产品与架构总纲.md, current 2026-10-15 revision. Load the relevant sections for the task. Primary navigation is project square, Hub, community growth, competitions, market and workspace; workflows remain an internal execution layer with no standalone discovery entry. Implement only authorized product changes; preserve authentication, accounting, private data, runtime APIs and applicable source notices.
 
 > Guidelines for AI coding agents working on this project.
 
 ## Project Overview
 
-**ANS** is a project discovery, Hub, workflow, community, event and marketplace platform built with Next.js. The six primary destinations, in order, are /explore, /hubs, /community, /competitions, /market and /workspace. Preserve all six in desktop navigation, mobile navigation and the navigation drawer. Remove only the standalone workflow discovery entry; public /workflows directory/details redirect to market. Favorites and compute center belong to the account menu. Hubs organize explicitly related contents; immutable workflows execute personal inputs; reviewed marketplace listings bind the exact runnable version. Keep historical data and shared backend interfaces when retiring old prompt UI. Retained upstream code remains governed by its source licenses.
+**ANS (AI Never Stops)** is a project discovery, Hub, workflow, community, event and marketplace platform built with Next.js. The six primary destinations, in order, are /explore, /hubs, /community, /competitions, /market and /workspace. Preserve all six in desktop navigation, mobile navigation and the navigation drawer. Remove only the standalone workflow discovery entry; public /workflows directory/details redirect to market. Favorites and compute center belong to the account menu. Hubs organize explicitly related contents; immutable workflows execute personal inputs; reviewed marketplace listings bind the exact runnable version. Keep historical data and shared backend interfaces when retiring old prompt UI. Retained upstream code remains governed by its source licenses.
 
 ### Tech Stack
 

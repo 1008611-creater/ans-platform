@@ -30,7 +30,7 @@ export default async function CollectionPage() {
         desc: isEn ? "Claim up to 750 team compute points and build verifiable agricultural AI solutions." : "组队申领最高 750 算力积分，围绕智慧水肥、病虫害早筛与畜牧巡检提交 SHA-256 存证作品。",
       },
       {
-        title: isEn ? "3D Claw Machine & Dragon Sanctuary" : "3D 太空抓娃娃机与小龙养成圣殿",
+        title: isEn ? "3D Claw Machine & Dragon Stage" : "3D 太空抓娃娃机与小龙养成展台",
         tag: isEn ? "100–150 Free Points" : "100–150 算力补贴",
         cover: "/catalog/gitglow-v1/ans-3d-showcase.svg",
         href: "/workspace/benefits",

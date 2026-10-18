@@ -117,7 +117,7 @@ export const ANS_REWRITE_EXAMPLES: readonly AnsRewriteExample[] = [
       en: "Enable Sub-agent team mode: 1) dispatch a fast lightweight Explorer to return only target file paths and interface summaries to the main Context Window; 2) hand explicit rule files and file boundaries to an Executor; 3) spawn a fresh Reviewer before commit to strip over-engineering and duplicate state.",
     },
     why: {
-      zh: "明确主从 Agent 的上下文交接边界与 Explore → Execute → Simplify 三阶段闭环。",
+      zh: "明确主从 Agent 的上下文交接边界与 Explore → Execute → Simplify 三阶段流程。",
       en: "Defines exact context handoffs between main and sub-agents using an Explore -> Execute -> Simplify loop.",
     },
     terms: [

@@ -77,7 +77,7 @@ const PUBLIC_DEMO_PROJECTS = [
     title: "样板 03 · 3D 交互式双语个人简历与作品集微站（求职示范立项）",
     goalLabel: "求职简历",
     stageLabel: "已发布 v2 视觉站点 · 支持 .html 源码导出",
-    summary: "内置 Canvas 3D 星轨超新星爆发视差交互与响应式 Bento 卡片矩阵，支持在 Pi-Codex 工作台内实时改代码热预览。",
+    summary: "内置 Canvas 3D 星轨粒子视差交互与响应式 Bento 卡片矩阵，支持在 Pi-Codex 工作台内实时改代码热预览。",
     sandboxHref: "/workspace?thread=thread-portfolio",
     guideHref: "/market/resume-website",
   },

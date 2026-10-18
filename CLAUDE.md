@@ -1,10 +1,11 @@
 # CLAUDE.md
 
-> Quick reference for Claude Code when working on ANS
+> Quick reference for Claude Code when working on ANS (**AI Never Stops**).
+> **Brand Iron Rule**: `ANS` stands exclusively for **`AI Never Stops`** (never write `AI Native Society` or `AI Native Studio`).
 
 ## Project Overview
 
-**ANS** is a social platform for AI prompts built with Next.js 16 App Router, React 19, TypeScript, and PostgreSQL/Prisma. It allows users to share, discover, and collect prompts.
+**ANS (AI Never Stops)** is an AI project discovery, Hub, workflow execution, community, competition, and marketplace platform built with Next.js 16 App Router, React 19, TypeScript, and PostgreSQL/Prisma. The six primary destinations are `/explore`, `/hubs`, `/community`, `/competitions`, `/market`, and `/workspace`.
 
 For detailed agent guidelines, see [AGENTS.md](AGENTS.md).
 

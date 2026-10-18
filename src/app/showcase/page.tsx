@@ -46,7 +46,7 @@ const CURATED_SHOWCASE = [
   },
   {
     id: "curated-dragon-arcade",
-    title: "Compute Quest 3D 算力盲盒抓娃娃机与神龙养成圣殿",
+    title: "Compute Quest 3D 算力盲盒抓娃娃机与小龙养成展台",
     version: "v3.0",
     author: "ANS 核心交互实验室",
     competition: "平台算力生态标杆工程",

@@ -8,7 +8,12 @@ export function homepageProjects(catalog: readonly CatalogProject[]) {
   const ordered = [...preferred.flatMap(slug => remaining.filter(project => project.slug === slug)),
     ...remaining.filter(project => !preferred.includes(project.slug))];
   const showcase = [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project?.coverUrl)).slice(0, 7);
-  return { hero, projects: [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project)), showcase };
+  const frontSlugs = new Set(showcase.map(project => project.slug));
+  const allProjects = [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project));
+  const directoryProjects = allProjects.length > showcase.length
+    ? [...allProjects.filter(project => !frontSlugs.has(project.slug)), ...allProjects.filter(project => frontSlugs.has(project.slug))]
+    : allProjects;
+  return { hero, projects: directoryProjects, showcase };
 }
 
 /**

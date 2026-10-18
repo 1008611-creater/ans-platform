@@ -217,7 +217,7 @@ export const ANS_LEARNING_PATHS: readonly AnsLearningPath[] = [
     number: "04",
     title: { zh: "打造个人 Build in Public 与口播视频自动化流水线", en: "Run a Build-in-Public & Talking-Head Video Automation Pipeline" },
     summary: {
-      zh: "用 1–2 小时下班时间跑通“真实痛点选题 → 口述大纲录屏 → VAD+ASR 去口误粗剪 → 画面 OCR 字幕校对 → 横竖双封面 → 多平台草稿箱”闭环。",
+      zh: "用 1–2 小时下班时间跑通“真实痛点选题 → 口述大纲录屏 → VAD+ASR 去口误粗剪 → 画面 OCR 字幕校对 → 横竖双封面 → 多平台草稿箱”全流程。",
       en: "Complete a full content loop in 1–2 hours: pain-point outline, single-take screen recording, VAD+ASR retake rough-cut, screen-OCR caption correction, 16:9/3:4 covers, and draft uploads.",
     },
     audience: { zh: "适合希望通过真实作品复盘、技术分享沉淀长期影响力，但不想把时间耗在机械剪辑和重复排版上的开发者与学生。", en: "For builders and students sharing real work in public who want to automate mechanical editing and formatting." },

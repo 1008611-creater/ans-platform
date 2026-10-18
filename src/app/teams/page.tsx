@@ -254,10 +254,16 @@ export default async function TeamsPage() {
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2">
-            {competitions.map((c) => {
+            {competitions.map((c, idx) => {
               const st = COMPETITION_STATUS[c.status] ?? { zh: c.status, en: c.status, variant: "outline" as const };
               const isAgri = c.title.toLowerCase().includes("agri") || c.title.includes("农") || (c.url ?? "").includes("agrihackathon");
-              const coverSrc = isAgri ? "/competitions/agrihackathon/gitglow-hub.webp" : "/catalog/gitglow-v1/aigc-workspace.webp";
+              const fallbackCovers = [
+                "/catalog/gitglow-v1/aigc-workspace.webp",
+                "/catalog/gitglow-v1/niannian-drama.webp",
+                "/catalog/gitglow-v1/hermes-agent.webp",
+                "/catalog/gitglow-v1/infinite-canvas.webp",
+              ];
+              const coverSrc = isAgri ? "/competitions/agrihackathon/gitglow-hub.webp" : fallbackCovers[idx % fallbackCovers.length];
               const targetHref = c.url || (isAgri ? "/competitions/agrihackathon" : "/competitions/aigc");
               return (
                 <Card key={c.id} className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">

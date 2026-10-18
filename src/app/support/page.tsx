@@ -109,7 +109,7 @@ export default function SupportPage() {
     {
       href: "/workspace/benefits",
       img: "/catalog/gitglow-v1/ans-3d-showcase.svg",
-      title: "福利中心与 3D 小龙圣殿",
+      title: "福利中心与 3D 小龙展台",
       desc: "每日抽奖、3D 抓娃娃机、小龙换装投喂与算力兑换码。",
     },
     {
@@ -131,7 +131,7 @@ export default function SupportPage() {
     },
     {
       question: "右下角 3D 小龙如何换装、投喂和触发特技？",
-      answer: "点击页面右下角 3D 小龙悬浮球即可唤出快捷互动坞（支持 🪢 抽鞭子、🎲 盲盒投喂、🤚 摸头、👗 一键换装）；在「福利中心 (/workspace/benefits)」顶部还可展开完整 3D 小龙养成圣殿，自由切换 360° 展台、脚底光环与传说套装。",
+      answer: "点击页面右下角 3D 小龙悬浮球即可唤出快捷互动坞（支持 🪢 抽鞭子、🎲 盲盒投喂、🤚 摸头、👗 一键换装）；在「福利中心 (/workspace/benefits)」顶部还可展开完整 3D 小龙养成展台，自由切换 360° 展台、脚底光环与传说套装。",
     },
     {
       question: "发现页面或服务异常时如何排查？",
