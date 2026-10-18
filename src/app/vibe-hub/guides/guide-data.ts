@@ -106,8 +106,8 @@ export function topicGuide(journey: JourneyData): GuideView {
   return {
     id: `topic:${journey.id}`,
     title: journey.title,
-    summary: journey.subtitle,
-    audience: journey.audience,
+    summary: journey.outcome,
+    audience: journey.stages[0]?.title ?? journey.title,
     outcome: journey.outcome,
     briefHref: "/vibe-hub/vibehub-skill?scenario=custom",
     steps: journey.stages.map(stage => ({
