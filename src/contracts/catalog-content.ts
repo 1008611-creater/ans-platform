@@ -33,7 +33,7 @@ export const catalogEntrySchema = z.object({
   source: z.enum(CATALOG_SOURCES), sourceUrl: publicUrl.optional(), licenseUrl: publicUrl.optional(),
   workflowId: catalogWorkflowIdSchema.optional(),
   workflowSlugs: relatedSlugs.optional(), marketSlugs: relatedSlugs.optional(),
-  discoveryUrl: publicUrl.optional(), coverUrl: z.union([publicUrl, z.string().regex(/^\/catalog\/(?:[a-z0-9][a-z0-9-]*\/)*[a-z0-9][a-z0-9.-]*\.(?:webp|png|jpg|jpeg|svg)$/)]).optional(), coverNote: text.max(160).optional(),
+  discoveryUrl: publicUrl.optional(), coverUrl: z.union([publicUrl, z.string().regex(/^\/catalog\/(?:[a-z0-9][a-z0-9-]*\/)*[a-z0-9][a-z0-9.-]*\.(?:webp|png|jpg|jpeg|svg)$/)]).optional(), outerCoverUrl: z.union([publicUrl, z.string().regex(/^\/catalog\/(?:[a-z0-9][a-z0-9-]*\/)*[a-z0-9][a-z0-9.-]*\.(?:webp|png|jpg|jpeg|svg)$/)]).optional(), innerCoverUrl: z.union([publicUrl, z.string().regex(/^\/catalog\/(?:[a-z0-9][a-z0-9-]*\/)*[a-z0-9][a-z0-9.-]*\.(?:webp|png|jpg|jpeg|svg)$/)]).optional(), coverNote: text.max(160).optional(),
   content: z.object({ zh: catalogTextSchema, en: catalogTextSchema.optional() }).strict(),
 }).strict().superRefine((entry, ctx) => {
   const category = PROJECT_CATEGORIES.find((item) => item.id === entry.category);
