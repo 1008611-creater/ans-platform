@@ -43,7 +43,7 @@ export default async function CreatorPage() {
       <MarketAccountBoundary actorId={userId ?? "guest-preview"}>
         <div className="mb-8 flex flex-wrap gap-3">
           <Button asChild>
-            <Link href={userId ? "/market/creator/new" : "/login?callbackUrl=%2Fmarket%2Fcreator%2Fnew"}>{t("create")}</Link>
+            <Link href="/market/creator/new">{t("create")}</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/explore/submit">免费发布开源作品上墙 →</Link>

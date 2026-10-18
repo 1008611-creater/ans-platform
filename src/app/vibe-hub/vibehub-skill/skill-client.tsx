@@ -109,17 +109,17 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
           {
             title: lang === "en" ? "Agri-AI Competition Project" : "农客松参赛工程 · 需求快写",
             sub: lang === "en" ? "UAV Vision + Agent Pipeline" : "多光谱遥感与智能体协同场景",
-            cover: "/images/home/showcase/agri-drone-ai.png",
+            cover: "/competitions/agrihackathon/gitglow-hub.webp",
           },
           {
             title: lang === "en" ? "ToonFlow AIGC Storyboard" : "漫剧与视觉创作 · 镜头控制",
             sub: lang === "en" ? "4K Keyframe + Character Lock" : "分镜提示词与角色一致性管线",
-            cover: "/images/home/showcase/toonflow-studio.png",
+            cover: "/catalog/gitglow-v1/niannian-drama.webp",
           },
           {
             title: lang === "en" ? "Academic & Product Website" : "学术主页与产品站 · 零 AI 味",
             sub: lang === "en" ? "Clean Editorial Layout" : "高密度双语排版与结构化交付",
-            cover: "/images/home/showcase/academic-portal.png",
+            cover: "/catalog/gitglow-v1/magic-resume.webp",
           },
         ].map((card) => (
           <div key={card.title} className="overflow-hidden rounded-xl border bg-card">

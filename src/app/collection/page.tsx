@@ -18,7 +18,7 @@ export default async function CollectionPage() {
       {
         title: isEn ? "3D Interactive Resume & Portfolio Studio" : "3D 交互式双语简历与作品集工作坊",
         tag: isEn ? "Career Must-Have" : "求职必藏",
-        cover: "/catalog/gitglow-v1/resume-website.webp",
+        cover: "/catalog/gitglow-v1/magic-resume.webp",
         href: "/market/resume-website",
         desc: isEn ? "Turn GitHub repos and coursework into a standalone 3D portfolio website in 3 minutes." : "3 分钟将 GitHub 仓库与课程项目转化为可独立导出的 3D 个人作品集网站。",
       },

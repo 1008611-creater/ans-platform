@@ -37,7 +37,7 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
     {
       title: locale === "zh" ? "智灌云脑 · 日光温室蒸腾预测与精准水肥一体 Agent" : "Smart Irrigation Brain · Greenhouse Evapotranspiration & Fertigation Agent",
       track: locale === "zh" ? "智慧种植与精准水肥赛道 · 先锋参考样板" : "Smart Planting & Fertigation · Reference Sample",
-      cover: "/catalog/agrihackathon-v1/smart-irrigation.svg",
+      cover: "/competitions/agrihackathon/gitglow-workflow.webp",
       summary: locale === "zh" ? "融合土壤多深度墒情传感器与气象预报数据，通过 DeepSeek-V3 动态规划未来 24 小时滴灌脉冲策略，节水 27%。" : "Fuses multi-depth soil moisture sensors with weather forecasts via DeepSeek-V3 to schedule 24h drip irrigation pulses.",
       hash: "SHA-256 · 8f4e...c91a",
       href: "/competitions/agrihackathon/wall",
@@ -45,7 +45,7 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
     {
       title: locale === "zh" ? "植保慧眼 · 玉米与番茄叶部病虫害边缘端毫秒级早筛" : "CropGuard Vision · Edge Millisecond Early Screening for Maize & Tomato Diseases",
       track: locale === "zh" ? "病虫害多模态早筛赛道 · 先锋参考样板" : "Crop Disease Early Screening · Reference Sample",
-      cover: "/catalog/agrihackathon-v1/crop-disease-edge.svg",
+      cover: "/competitions/agrihackathon/gitglow-tracks.webp",
       summary: locale === "zh" ? "基于轻量化 YOLOv11-Nano + Qwen2.5-VL 多模态农艺处方生成，支持田间无网离线推理与防治药剂配比建议。" : "Combines lightweight YOLOv11-Nano with Qwen2.5-VL agronomic prescriptions for offline field inference.",
       hash: "SHA-256 · 3b19...70d2",
       href: "/competitions/agrihackathon/wall",
@@ -53,7 +53,7 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
     {
       title: locale === "zh" ? "牧瞳巡检 · 规模化牧场畜禽体况评分与异常行为预警" : "LivestockEye · Automated Body Condition Scoring & Anomaly Alerting",
       track: locale === "zh" ? "畜牧巡检与农业机器人赛道 · 先锋参考样板" : "Livestock Vision & Robotics · Reference Sample",
-      cover: "/catalog/agrihackathon-v1/livestock-vision.svg",
+      cover: "/competitions/agrihackathon/gitglow-scoring.webp",
       summary: locale === "zh" ? "利用双目深度相机与姿态关键点追踪，全天候监测奶牛跛行、反刍时长与采食节律，自动推送兽医干预工单。" : "Uses stereo depth cameras and pose keypoint tracking to monitor lameness, rumination, and feeding rhythms.",
       hash: "SHA-256 · e5a2...41f8",
       href: "/competitions/agrihackathon/wall",

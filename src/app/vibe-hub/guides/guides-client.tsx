@@ -76,7 +76,7 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
             <div className="ans-guide-title-row"><div><h2 id="ans-current-guide-title">{guide.title}</h2><p>{guide.summary}</p></div><Link className="ans-knowledge-button" data-variant="default" href={destination(guide.briefHref)}>{t("guideWriteBrief")}<ArrowUpRight size={16} aria-hidden="true" /></Link></div>
             <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border bg-muted">
               <img
-                src={guide.task === "media-pipeline" || guide.task === "creative" ? "/images/home/showcase/toonflow-studio.png" : guide.task === "evidence" || guide.task === "agent-team" ? "/images/home/showcase/agri-drone-ai.png" : "/images/home/showcase/academic-portal.png"}
+                src={guide.task === "media-pipeline" || guide.task === "creative" ? "/catalog/gitglow-v1/niannian-drama.webp" : guide.task === "evidence" || guide.task === "agent-team" ? "/competitions/agrihackathon/gitglow-hub.webp" : "/catalog/gitglow-v1/magic-resume.webp"}
                 alt={guide.title}
                 className="h-full w-full object-cover"
                 loading="lazy"

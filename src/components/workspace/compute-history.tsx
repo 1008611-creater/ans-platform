@@ -61,19 +61,19 @@ export async function ComputeHistory({ history, filter, paged, userId }: { userI
         {
           title: "ToonFlow 4K 漫剧渲染节点",
           spec: "A800 80GB · 按张/按秒弹性计费",
-          cover: "/images/home/showcase/toonflow-studio.png",
+          cover: "/catalog/gitglow-v1/niannian-drama.webp",
           href: "/workflows/toonflow",
         },
         {
           title: "Agri-Vision 农田遥感推理节点",
           spec: "多光谱视觉大模型 · 差额自动退还",
-          cover: "/images/home/showcase/agri-drone-ai.png",
+          cover: "/competitions/agrihackathon/gitglow-hub.webp",
           href: "/competitions/agrihackathon",
         },
         {
           title: "ANS-Studio 网页与多模态构建集群",
           spec: "DeepSeek-V3 / Qwen-VL · 零冷启调度",
-          cover: "/images/home/showcase/academic-portal.png",
+          cover: "/catalog/gitglow-v1/magic-resume.webp",
           href: "/workspace/models",
         },
       ].map((node) => (

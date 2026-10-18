@@ -156,7 +156,7 @@ export function AgriWall({ initialView }: { initialView?: AgriWallView } = {}) {
                   title: "Agri-Vision 小麦条锈病无人机多光谱巡检流",
                   summary: "结合田间无人机多光谱影像与 Qwen-VL 诊断节点，15 秒生成病虫害热力图与农艺防治处方。",
                   stars: 142,
-                  cover: "/competitions/agrihackathon/gitglow-hero.webp",
+                  cover: "/competitions/agrihackathon/gitglow-tracks.webp",
                 },
                 {
                   team: "绿洲智控联队 · 示范展位 #02",

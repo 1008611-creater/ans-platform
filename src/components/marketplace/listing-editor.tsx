@@ -1,6 +1,6 @@
 "use client";
 
-import { useMarketRequest, useMarketUpload } from "./account-boundary";
+import { useMarketActorId, useMarketRequest, useMarketUpload } from "./account-boundary";
 import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,6 +20,8 @@ const lines = (value: string) => value.split("\n").map(item => item.trim()).filt
 const selectClass = "h-10 w-full min-w-0 rounded-md border bg-background px-3 text-sm";
 
 export function ListingEditor({ offer, share = false, agri = false }: { offer?: MarketOfferView; share?: boolean; agri?: boolean }) {
+  const actorId = useMarketActorId();
+  const isGuest = !actorId || actorId === "guest" || actorId === "guest-preview";
   const marketRequest = useMarketRequest(); const upload = useMarketUpload();
   const t = useTranslations("product.market"); const tp = useTranslations("product.marketProject"); const p = useTranslations("product"); const router = useRouter();
   const w = useTranslations("marketWorkflow");
@@ -38,6 +40,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
   function updateTier(id: string, change: Partial<TierDraft>) { setTiers(current => current.map(tier => tier.id === id ? { ...tier, ...change } : tier)); }
   async function uploadCover(file?: File) {
     if (!file || uploading || busy) return;
+    if (isGuest) { router.push("/login?callbackUrl=%2Fmarket%2Fcreator%2Fnew"); return; }
     setError("");
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 4 * 1024 * 1024 || file.size === 0) { setError(tp("coverInvalid")); return; }
     setUploading(true);
@@ -47,6 +50,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
   }
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (flight.current || uploading) return;
+    if (isGuest) { router.push(share ? "/login?callbackUrl=%2Fexplore%2Fsubmit" : "/login?callbackUrl=%2Fmarket%2Fcreator%2Fnew"); return; }
     const form = new FormData(event.currentTarget); setError(""); const text = (key: string) => String(form.get(key) ?? "").trim();
     const pricingTiers = (free || isAgri) ? [] : tiers.map(tier => ({ id: tier.id, title: tier.title.trim(), description: tier.description.trim(), priceMinor: parseMarketPrice(tier.price), deliverables: lines(tier.deliverables) }));
     const parsed = marketListingInputSchema.safeParse({

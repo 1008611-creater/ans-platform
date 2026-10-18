@@ -147,30 +147,30 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
               </div>
             </section>
           )}
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground">
-              {t("back")}
-            </Link>
-            <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
-              <Link href="/workspace/benefits">🎁 免费领 100~150 积分 · 3D 抓娃娃机</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/models">⚡ 模型实机演练场</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/market">🛒 去积分市场消费</Link>
-            </Button>
-          </div>
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight">{t("centerTitle")}</h1>
-              <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">{t("centerDescription")}</p>
-            </div>
-            <Button asChild variant="outline">
-              <Link href="/workspace/credits" prefetch={false}>
-                {t("refresh")}
+              <Link href="/workspace" className="text-xs font-medium text-muted-foreground hover:text-foreground">
+                ← {t("back")}
               </Link>
-            </Button>
+              <h1 className="mt-1 text-3xl font-semibold tracking-tight">{t("centerTitle")}</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("centerDescription")}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
+                <Link href="/workspace/benefits">🎁 免费领 100~150 积分 · 3D 抓娃娃机</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/workspace/models">⚡ 模型实机演练场</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/market">🛒 去积分市场消费</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/workspace/credits" prefetch={false}>
+                  {t("refresh")}
+                </Link>
+              </Button>
+            </div>
           </header>
           {!history ? (
             <p role="alert" className="rounded-[var(--radius)] border p-5">

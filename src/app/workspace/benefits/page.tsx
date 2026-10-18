@@ -117,26 +117,7 @@ export default async function BenefitsPage() {
         <section
           id="ans-dragon-sanctuary-showcase"
           aria-label="3D 小龙圣殿与基因养成舱"
-          className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7"
         >
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <span className="rounded-full bg-emerald-500/15 px-3 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                🐉 3D DRAGON SANCTUARY · 3D 小龙圣殿
-              </span>
-              <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-foreground">
-                3D 灵龙圣殿 · 四大基因形态与潮玩挂件实时预览
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-                支持薄荷星龙、赛博金龙、樱花麻薯龙、极光冰龙 4 种 3D 形态切换与衣橱装扮；抓娃娃机掉落的灵感星豆可直接解锁限定挂件。
-              </p>
-            </div>
-            {!userId && (
-              <Button asChild size="sm" variant="outline">
-                <Link href="/register?callbackUrl=%2Fworkspace%2Fbenefits">✨ 注册并绑定专属灵龙 →</Link>
-              </Button>
-            )}
-          </div>
           <DinoAdoptionPod compact={false} />
         </section>
 

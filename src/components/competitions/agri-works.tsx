@@ -89,7 +89,7 @@ export function AgriWorks() {
               team: "青禾无人农机队 · 初赛冻结版 (Rev.2)",
               stage: "PRELIMINARY · 已存证",
               title: "UAV-Swarm 丘陵果园多机协同路径规划仿真",
-              cover: "/competitions/agrihackathon/gitglow-hero.webp",
+              cover: "/competitions/agrihackathon/gitglow-tracks.webp",
               meta: "含 Three.js 仿真沙盘录屏 + SHA-256 哈希回执",
             },
           ].map((item) => (

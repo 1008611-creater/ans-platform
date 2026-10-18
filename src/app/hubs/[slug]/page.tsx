@@ -18,7 +18,9 @@ import styles from "@/components/hubs/hubs.module.css";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params, hub = getHub(slug); if (!hub) notFound();
+  const { slug } = await params;
+  const hub = getHub(slug);
+  if (!hub) return { title: "ANS Hub" };
   const t = await getTranslations("hubs"); return { title: t(`items.${hub.slug}.name`), description: t(`items.${hub.slug}.description`) };
 }
 const resourceCovers: Record<string, string> = {
@@ -28,7 +30,12 @@ const resourceCovers: Record<string, string> = {
   hypit: "/catalog/gitglow-v1/niannian-edit.webp",
 };
 export default async function HubDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: Promise<{cursor?:string}> }) {
-  const { slug } = await params, hub = getHub(slug); if (!hub) notFound();
+  const { slug } = await params;
+  if (slug === "models" || slug === "model") redirect("/workspace/models");
+  if (slug === "compute") redirect("/workspace/compute");
+  if (slug === "learning") redirect("/vibe-hub/courses");
+  if (slug === "data") redirect("/explore");
+  const hub = getHub(slug); if (!hub) notFound();
   if (hub.slug === "vibehub") redirect("/vibe-hub");
   if (hub.slug === "cauhub") redirect("/competitions/agrihackathon");
   const [t, product, locale] = await Promise.all([getTranslations("hubs"), getTranslations("product"), getLocale()]);
