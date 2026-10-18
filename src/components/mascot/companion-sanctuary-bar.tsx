@@ -1341,7 +1341,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                 </button>
               </div>
             </div>
-            <DinoAdoptionPod onComplete={() => setSanctuaryModal("none")} />
+            <DinoAdoptionPod />
           </div>
         )}
       </div>

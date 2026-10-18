@@ -478,7 +478,7 @@ export function dispatchDinoInteract(payload: DinoInteractPayload) {
           __ANS_DINO__?: { interact?: (p: Record<string, unknown>) => void };
         }) | null;
         child?.__ANS_DINO__?.interact?.(fullPayload);
-        child?.postMessage({ type: "ans-dino", event: "interact", ...fullPayload }, window.location.origin);
+        child?.postMessage({ ...fullPayload, type: "ans-dino", event: "interact", interactType: payload.type }, window.location.origin);
       } catch {
         /* ignore cross-frame timing */
       }
