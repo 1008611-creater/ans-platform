@@ -24,36 +24,7 @@ const GUEST_BENEFITS_PREVIEW: ComputeBenefitsSummary = {
   onboarding: null,
   application: null,
   activity: [],
-  grants: [
-    {
-      id: "guest-preview-onboarding",
-      kind: "DEEPSEEK_ONBOARDING",
-      campaignId: "onboarding-v1",
-      modelIds: ["deepseek-v4.1-flash", "gpt-6-astra", "gpt-6.1-sol"],
-      totalUsdMicros: "15000000",
-      usedUsdMicros: "2500000",
-      reservedUsdMicros: "0",
-      availableUsdMicros: "12500000",
-      expiredUsdMicros: "0",
-      grantedAt: "2026-10-15T00:00:00.000Z",
-      expiresAt: "2026-12-31T23:59:59.000Z",
-      status: "ACTIVE",
-    },
-    {
-      id: "guest-preview-agri",
-      kind: "GPT_AGRI",
-      campaignId: "agri-v1",
-      modelIds: ["gpt-6-astra", "gpt-6.1-sol"],
-      totalUsdMicros: "6000000",
-      usedUsdMicros: "0",
-      reservedUsdMicros: "0",
-      availableUsdMicros: "6000000",
-      expiredUsdMicros: "0",
-      grantedAt: "2026-10-15T00:00:00.000Z",
-      expiresAt: "2026-12-31T23:59:59.000Z",
-      status: "ACTIVE",
-    },
-  ],
+  grants: [],
 };
 
 export default async function BenefitsPage() {
@@ -74,34 +45,50 @@ export default async function BenefitsPage() {
         {!userId && (
           <section
             data-testid="benefits-guest-banner"
-            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3"
+            className="space-y-3 rounded-2xl border border-emerald-500/35 bg-emerald-500/5 p-4 sm:p-5"
           >
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">
-                {isEn ? "Guest Free Trial · 125 Pts" : "🎮 免登试玩模式"}
-              </Badge>
-              <span className="font-semibold text-foreground">
-                {isEn
-                  ? "Play the 3D Claw Machine now · Sign in to lock 100–150 free compute points"
-                  : "可直接试玩下方 3D 抓娃娃机 · 登录后免费领 100~150 算力积分（0.1% 抽 1000 分锦鲤）"}
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">
+                  {isEn ? "📖 Onboarding Guide" : "📖 新手引导 · 怎么免费领算力积分？"}
+                </Badge>
+                <span className="font-semibold text-foreground">
+                  {isEn
+                    ? "Not signed in yet (Live Balance: 0 pts) · Try the claw machine below or sign in to claim real points"
+                    : "当前未登录（真实账户余额为 0）· 下方抓娃娃机支持免登录试玩手感，登录后积分直接入账"}
+                </span>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <Button asChild size="sm" className="h-8 rounded-xl bg-emerald-600 px-3 text-xs text-white hover:bg-emerald-500">
+                  <Link href="/login?callbackUrl=%2Fworkspace%2Fbenefits">
+                    {isEn ? "Sign in & Claim →" : "🔐 登录领真实积分 →"}
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline" className="h-8 rounded-xl px-3 text-xs">
+                  <Link href="/workspace/credits">{isEn ? "Compute Center" : "💳 查看算力账本"}</Link>
+                </Button>
+              </div>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
-              <Button asChild size="sm" className="h-8 rounded-xl bg-emerald-600 px-3 text-xs text-white hover:bg-emerald-500">
-                <Link href="/login?callbackUrl=%2Fworkspace%2Fbenefits">
-                  {isEn ? "Sign in & Claim →" : "🔐 登录领真实积分 →"}
-                </Link>
-              </Button>
-              <Button asChild size="sm" variant="outline" className="h-8 rounded-xl px-3 text-xs">
-                <Link href="/workspace/credits">{isEn ? "Compute Center" : "💳 算力账本"}</Link>
-              </Button>
+            <div className="grid gap-2.5 text-xs sm:grid-cols-3">
+              <div className="rounded-xl border border-border/70 bg-background/80 p-3">
+                <div className="font-bold text-foreground">第 1 步：填 30 秒问卷领 50 积分</div>
+                <p className="mt-1 text-muted-foreground">登录账号后，在页面下半部分填写简短的新手破冰问卷，50 积分（价值 ¥5）立即到账。</p>
+              </div>
+              <div className="rounded-xl border border-border/70 bg-background/80 p-3">
+                <div className="font-bold text-foreground">第 2 步：签到与抓娃娃再领 50~100 分</div>
+                <p className="mt-1 text-muted-foreground">完成右侧每日签到和阅读任务可拿免费抓娃娃币，每次下爪必中 15~50 积分（最高 1000 分）。</p>
+              </div>
+              <div className="rounded-xl border border-border/70 bg-background/80 p-3">
+                <div className="font-bold text-foreground">第 3 步：在工作台与工具市场直接用</div>
+                <p className="mt-1 text-muted-foreground">领到的积分可在个人工作台调用 DeepSeek / GPT 模型，或在市场兑换论文润色、周报生成等工具。</p>
+              </div>
             </div>
           </section>
         )}
 
         <ComputeQuestArcade
           actorId={userId ?? "guest-preview"}
-          initialServerPoints={userId ? (arcadeBalance ? arcadeBalance.balancePoints : undefined) : 125}
+          initialServerPoints={userId ? (arcadeBalance ? arcadeBalance.balancePoints : undefined) : 0}
         />
 
         <ComputeBenefits actorId={userId ?? "guest-preview"} initialData={initialBenefits} />
