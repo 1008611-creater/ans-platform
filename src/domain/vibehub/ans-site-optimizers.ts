@@ -494,7 +494,7 @@ export function buildProjectVisualWalkthrough(
         : [
             {
               step: "01",
-              badge: isEn ? "4-Part Brief" : "四段式需求锚定",
+              badge: isEn ? "4-Part Brief" : "结构化需求锚定",
               kind: "script",
               title: isEn ? "Goal, Scope, Inputs & Acceptance" : "锁定目标受众、保留边界与验收标准",
               detail: isEn

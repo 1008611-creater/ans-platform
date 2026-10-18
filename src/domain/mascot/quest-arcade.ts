@@ -352,7 +352,7 @@ export const QUEST_DEFINITIONS: readonly QuestDefinition[] = [
     id: "secret_fashion_mudslide",
     category: "secret",
     icon: "🕶️",
-    titleZh: "【隐藏彩蛋】时尚泥石流 · 混搭审美暴击",
+    titleZh: "【隐藏彩蛋】时尚泥石流 · 混搭造型彩蛋",
     titleEn: "[Secret Easter Egg] Fashion Mudslide · Avant-Garde Styling",
     descZh: "在「暖暖衣橱」里给小恐龙切换尝试 3 件以上不同槽位的穿搭，触发高街毒舌锐评（+5 积分）！",
     descEn: "Equip 3 or more wardrobe items across slots in the Dino Wardrobe to trigger a high-fashion roast (+5 pts)!",
@@ -390,14 +390,14 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     rarity: "SP",
     icon: "👑",
     color: "from-yellow-300 via-rose-500 to-purple-700",
-    nameZh: "天选农大锦鲤 · 1000 积分神话算力免单大奖 (0.1%)",
-    nameEn: "Mythic CAU Koi · 1,000 Pts Grand Jackpot (0.1%)",
-    descZh: "千分之一神话天选暴击！立即解锁 $100.0（1000 积分 ≈ ¥100 元）满血旗舰算力 + 888 星豆 + 3 张 3D 建模免单券！",
-    descEn: "0.1% Mythic Jackpot! Instantly unlock $100.0 (1,000 pts ≈ ¥100 CNY) Flagship quota + 888 Star Beans + 3 Tripo 3D Vouchers!",
+    nameZh: "农大科研特等奖 · 1000 积分算力免单大奖 (0.1%)",
+    nameEn: "CAU Grand Research Prize · 1,000 Pts Grand Jackpot (0.1%)",
+    descZh: "0.1% 稀有大奖！立即解锁 $100.0（1000 积分 ≈ ¥100 元）旗舰模型算力 + 888 星豆 + 3 张 3D 建模免单券！",
+    descEn: "0.1% Grand Prize! Instantly unlock $100.0 (1,000 pts ≈ ¥100 CNY) Flagship quota + 888 Star Beans + 3 Tripo 3D Vouchers!",
     unlockPool: "flagship",
     unlockUsd: 100,
     starBeans: 888,
-    bonusBadgeZh: "SP 神话 · 1000 积分免单大奖 (0.1%)",
+    bonusBadgeZh: "SP 特等 · 1000 积分免单大奖 (0.1%)",
     bonusBadgeEn: "SP Mythic · 1,000 Pts Jackpot (0.1%)",
     probability: 0.001,
   },
@@ -406,10 +406,10 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     rarity: "UR",
     icon: "🐉",
     color: "from-amber-400 via-fuchsia-500 to-indigo-600",
-    nameZh: "紫金麦穗龙蛋 · 300 积分欧皇传说大奖 (0.9%)",
-    nameEn: "Violet-Gold Dragon Egg · 300 Pts Legend Jackpot (0.9%)",
-    descZh: "百里挑一传说暴击！立即从旗舰金库提取 $30.0（300 积分 ≈ ¥30 元）满血额度 + 200 灵感星豆 + UR 荣耀印记！",
-    descEn: "0.9% Legend Jackpot! Instantly unlock $30.0 (300 pts ≈ ¥30 CNY) Flagship Vault quota + 200 Star Beans + UR crest!",
+    nameZh: "紫金麦穗龙蛋 · 300 积分传说算力包 (0.9%)",
+    nameEn: "Violet-Gold Dragon Egg · 300 Pts Legend Pack (0.9%)",
+    descZh: "0.9% 传说奖励！立即解锁 $30.0（300 积分 ≈ ¥30 元）旗舰模型额度 + 200 灵感星豆 + UR 纪念徽章！",
+    descEn: "0.9% Legend Pack! Instantly unlock $30.0 (300 pts ≈ ¥30 CNY) Flagship quota + 200 Star Beans + UR crest!",
     unlockPool: "flagship",
     unlockUsd: 30,
     starBeans: 200,
@@ -422,10 +422,10 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     rarity: "SSR",
     icon: "🔋",
     color: "from-emerald-400 via-teal-500 to-cyan-600",
-    nameZh: "4090 满血显卡饼干 · 80 积分 + 3D 建模体验券 (4%)",
+    nameZh: "4090 显卡饼干 · 80 积分 + 3D 建模体验券 (4%)",
     nameEn: "RTX 4090 Cookie · 80 Pts + Tripo 3D Voucher (4%)",
-    descZh: "史诗暴击！解锁 $8.0（80 积分 ≈ ¥8 元）旗舰额度 + 赠送 1 张 Tripo 四视图 3D 建模免单体验券！",
-    descEn: "Epic hit! Unlock $8.0 (80 pts ≈ ¥8 CNY) Flagship quota + 1 Tripo Multiview 3D Modeling Free Voucher!",
+    descZh: "4% 史诗奖励！解锁 $8.0（80 积分 ≈ ¥8 元）旗舰模型额度 + 赠送 1 张 Tripo 四视图 3D 建模免单体验券！",
+    descEn: "4% Epic reward! Unlock $8.0 (80 pts ≈ ¥8 CNY) Flagship quota + 1 Tripo Multiview 3D Modeling Free Voucher!",
     unlockPool: "flagship",
     unlockUsd: 8,
     starBeans: 80,
@@ -440,7 +440,7 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     color: "from-amber-300 via-orange-400 to-amber-600",
     nameZh: "农大黄金麦穗胶囊 · 工作流市场券 + 15 积分 (30%)",
     nameEn: "CAU Golden Wheat Capsule · Market Voucher + 15 Pts (30%)",
-    descZh: "从金库提取 $1.5（15 积分）DeepSeek V4.1 Flash 额度 + 1 张工作流市场体验抵扣券！",
+    descZh: "解锁 $1.5（15 积分）DeepSeek V4.1 Flash 算力额度 + 1 张工作流市场体验抵扣券！",
     descEn: "Unlock $1.5 (15 pts) DeepSeek V4.1 Flash quota + 1 Workflow Marketplace Discount Voucher!",
     unlockPool: "deepseek",
     unlockUsd: 1.5,
@@ -456,8 +456,8 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     color: "from-sky-400 via-blue-500 to-indigo-500",
     nameZh: "Q版薄荷星龙盲盒 · 10 Flash 算力积分 + 灵感星豆 (65%)",
     nameEn: "Mint Star Dino Capsule · 10 Flash Pts + Star Beans (65%)",
-    descZh: "100% 不空军！立即提取 $1.0（10 积分）DeepSeek V4.1 Flash 额度 + 30 灵感星豆！",
-    descEn: "100% win rate! Unlock $1.0 (10 pts) DeepSeek V4.1 Flash quota + 30 Star Beans!",
+    descZh: "每次必得！立即解锁 $1.0（10 积分）DeepSeek V4.1 Flash 算力额度 + 30 灵感星豆！",
+    descEn: "100% guaranteed! Unlock $1.0 (10 pts) DeepSeek V4.1 Flash quota + 30 Star Beans!",
     unlockPool: "deepseek",
     unlockUsd: 1,
     starBeans: 30,
@@ -483,13 +483,13 @@ export function getTodayBeijingDate(): string {
 export function createInitialQuestArcadeState(): QuestArcadeState {
   return {
     version: 1,
-    arcadeTokens: 3, // New users get 3 starter tokens (~30–45 pts normal draw value, with 0.1% 1000-pt & 0.9% 300-pt jackpot chance)
+    arcadeTokens: 3,
     pityCounter: 0,
     streakDays: 1,
     lastCheckInDate: null,
-    deepseekTotalUsd: 15, // $15 = 150 Points (90% user All-ANS normal-distribution upper bound)
-    deepseekUnlockedUsd: 5, // $5 = 50 Points starter base unlocked (matches Onboarding Questionnaire)
-    flagshipTotalUsd: 100, // $100 = 1,000 Points (supports up to the 0.1% 1,000-pt Mythic Jackpot & 0.9% 300-pt UR Jackpot)
+    deepseekTotalUsd: 15,
+    deepseekUnlockedUsd: 5,
+    flagshipTotalUsd: 100,
     flagshipUnlockedUsd: 0,
     tripoFreeVouchers: 0,
     marketDiscountVouchers: 0,
@@ -507,7 +507,7 @@ export function loadQuestArcadeState(actorId?: string | null): QuestArcadeState 
   if (typeof window === "undefined") return createInitialQuestArcadeState();
   const key = actorId ? `${QUEST_ARCADE_STORAGE_KEY}:${actorId}` : QUEST_ARCADE_STORAGE_KEY;
   try {
-    const raw = window.localStorage.getItem(key) ?? window.localStorage.getItem(QUEST_ARCADE_STORAGE_KEY);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return createInitialQuestArcadeState();
     const parsed = JSON.parse(raw) as Partial<QuestArcadeState>;
     const base = createInitialQuestArcadeState();
@@ -527,10 +527,13 @@ export function loadQuestArcadeState(actorId?: string | null): QuestArcadeState 
 export function saveQuestArcadeState(state: QuestArcadeState, actorId?: string | null): void {
   if (typeof window === "undefined") return;
   const key = actorId ? `${QUEST_ARCADE_STORAGE_KEY}:${actorId}` : QUEST_ARCADE_STORAGE_KEY;
+  const isGuestPreview = actorId === "guest" || actorId === "guest-preview";
   try {
     const serialized = JSON.stringify(state);
     window.localStorage.setItem(key, serialized);
-    window.localStorage.setItem(QUEST_ARCADE_STORAGE_KEY, serialized);
+    if (!isGuestPreview) {
+      window.localStorage.setItem(QUEST_ARCADE_STORAGE_KEY, serialized);
+    }
     window.dispatchEvent(new CustomEvent(QUEST_ARCADE_EVENT, { detail: state }));
   } catch {
     // Ignore storage quota errors
@@ -678,25 +681,27 @@ export function advanceAndClaimQuest(
   void syncArcadeRewardToServer({ kind: "quest", questId: quest.id }, actorId);
 
   // Sync Star Beans, XP, Arcade Tokens & Secret Quest status to the Dino Sanctuary state
-  try {
-    const sanctuary = loadSanctuaryState();
-    const mappedSecretId = ARCADE_TO_SECRET_QUEST_ID[quest.id];
-    const nextUnlockedSecrets =
-      mappedSecretId && !sanctuary.unlockedSecretQuests.includes(mappedSecretId)
-        ? [...sanctuary.unlockedSecretQuests, mappedSecretId]
-        : sanctuary.unlockedSecretQuests;
-    saveSanctuaryState({
-      ...sanctuary,
-      arcadeTokens: next.arcadeTokens,
-      starBeans: sanctuary.starBeans + quest.rewardStarBeans,
-      userXp: sanctuary.userXp + quest.rewardXp,
-      affectionXp: sanctuary.affectionXp + 10,
-      unlockedSecretQuests: nextUnlockedSecrets,
-      lastSecretQuestId: mappedSecretId ?? sanctuary.lastSecretQuestId,
-      lastSecretQuestAt: mappedSecretId ? Date.now() : sanctuary.lastSecretQuestAt,
-    });
-  } catch {
-    // Ignore if sanctuary storage unavailable
+  if (actorId !== "guest" && actorId !== "guest-preview") {
+    try {
+      const sanctuary = loadSanctuaryState();
+      const mappedSecretId = ARCADE_TO_SECRET_QUEST_ID[quest.id];
+      const nextUnlockedSecrets =
+        mappedSecretId && !sanctuary.unlockedSecretQuests.includes(mappedSecretId)
+          ? [...sanctuary.unlockedSecretQuests, mappedSecretId]
+          : sanctuary.unlockedSecretQuests;
+      saveSanctuaryState({
+        ...sanctuary,
+        arcadeTokens: next.arcadeTokens,
+        starBeans: sanctuary.starBeans + quest.rewardStarBeans,
+        userXp: sanctuary.userXp + quest.rewardXp,
+        affectionXp: sanctuary.affectionXp + 10,
+        unlockedSecretQuests: nextUnlockedSecrets,
+        lastSecretQuestId: mappedSecretId ?? sanctuary.lastSecretQuestId,
+        lastSecretQuestAt: mappedSecretId ? Date.now() : sanctuary.lastSecretQuestAt,
+      });
+    } catch {
+      // Ignore if sanctuary storage unavailable
+    }
   }
 
   return { state: next, quest, newlyClaimed: true };
@@ -779,15 +784,17 @@ export function drawArcadePrize(
     actorId,
   );
 
-  try {
-    const sanctuary = loadSanctuaryState();
-    saveSanctuaryState({
-      ...sanctuary,
-      starBeans: sanctuary.starBeans + selected.starBeans,
-      userXp: sanctuary.userXp + 25,
-    });
-  } catch {
-    // Ignore
+  if (actorId !== "guest" && actorId !== "guest-preview") {
+    try {
+      const sanctuary = loadSanctuaryState();
+      saveSanctuaryState({
+        ...sanctuary,
+        starBeans: sanctuary.starBeans + selected.starBeans,
+        userXp: sanctuary.userXp + 25,
+      });
+    } catch {
+      // Ignore
+    }
   }
 
   return { state: next, prize: selected, record };

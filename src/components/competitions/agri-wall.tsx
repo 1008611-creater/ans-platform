@@ -152,24 +152,21 @@ export function AgriWall({ initialView }: { initialView?: AgriWallView } = {}) {
             <div className="grid gap-5 md:grid-cols-3">
               {[
                 {
-                  team: "农大智耕先锋队 · 示范展位 #01",
+                  team: "📖 参赛参考范例 #01 · 智慧植保方向",
                   title: "Agri-Vision 小麦条锈病无人机多光谱巡检流",
-                  summary: "结合田间无人机多光谱影像与 Qwen-VL 诊断节点，15 秒生成病虫害热力图与农艺防治处方。",
-                  stars: 142,
+                  summary: "结合田间无人机多光谱影像与 Qwen-VL 诊断节点，生成病虫害热力图与农艺防治处方。",
                   cover: "/competitions/agrihackathon/gitglow-tracks.webp",
                 },
                 {
-                  team: "绿洲智控联队 · 示范展位 #02",
+                  team: "📖 参赛参考范例 #02 · 设施农业方向",
                   title: "GreenHouse-OS 温室水肥光热多 Agent 协同沙盘",
-                  summary: "基于温湿度与光照时序预测模型，动态调度滴灌与补光策略，支持现场评委扫码实时拉票体验。",
-                  stars: 118,
+                  summary: "基于温湿度与光照时序预测模型，动态调度滴灌与补光策略，支持评委扫码体验。",
                   cover: "/competitions/agrihackathon/gitglow-workflow.webp",
                 },
                 {
-                  team: "神农基因智算队 · 示范展位 #03",
+                  team: "📖 参赛参考范例 #03 · 生物育种方向",
                   title: "Seed-GPT 玉米耐旱表型组学文献与基因检索助手",
-                  summary: "整合 4.2 万篇作物表型组学文献与知识图谱，辅助育种团队快速定位耐旱候选基因位点。",
-                  stars: 96,
+                  summary: "整合作物表型组学文献与知识图谱，辅助育种团队快速检索耐旱候选基因位点。",
                   cover: "/competitions/agrihackathon/gitglow-scoring.webp",
                 },
               ].map((demo) => (
@@ -178,12 +175,12 @@ export function AgriWall({ initialView }: { initialView?: AgriWallView } = {}) {
                   <div className="flex flex-1 flex-col p-5">
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <span className="text-xs text-muted-foreground">{demo.team}</span>
-                      <Badge variant="secondary">先锋示范展位</Badge>
+                      <Badge variant="secondary">📖 参赛参考范例</Badge>
                     </div>
                     <h3 className="text-base font-semibold leading-snug">{demo.title}</h3>
                     <p className="mt-2 flex-1 text-xs leading-6 text-muted-foreground">{demo.summary}</p>
                     <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs">
-                      <span className="font-semibold text-primary">★ {demo.stars} 示范人气</span>
+                      <span className="font-semibold text-primary">📖 作品结构参考</span>
                       <Link href={SUBMIT} className="font-medium text-primary hover:underline">绑定我的参赛作品 →</Link>
                     </div>
                   </div>

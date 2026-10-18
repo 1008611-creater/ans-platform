@@ -16,7 +16,7 @@ const CURATED_SHOWCASE = [
     competition: "神农杯 AI 农客松 · 智慧植保赛道",
     likes: 128,
     comments: 34,
-    cover: "/catalog/oil-v1/curated-agri-uav.svg",
+    cover: "/catalog/ans-pro-v1/agri-uav.webp",
     summary: "结合多光谱航拍切片与 Qwen-VL 视觉诊断流，实现冬小麦条锈病与玉米螟虫害亚米级定位与处方图直出。",
     href: "/competitions/agrihackathon/showcase",
   },
@@ -28,7 +28,7 @@ const CURATED_SHOWCASE = [
     competition: "AIGC 漫剧创作大赛 · 金奖入围",
     likes: 215,
     comments: 56,
-    cover: "/catalog/oil-v1/curated-toonflow.svg",
+    cover: "/catalog/ans-pro-v1/niannian-drama.webp",
     summary: "基于 ANS 漫剧工作流实现 12 镜分镜脚本自动拆解、主角三视图特征锁定与动态运镜合成。",
     href: "/competitions/aigc",
   },
@@ -40,7 +40,7 @@ const CURATED_SHOWCASE = [
     competition: "ANS 科研主页共创计划",
     likes: 94,
     comments: 19,
-    cover: "/catalog/oil-v1/curated-scholar-portal.svg",
+    cover: "/catalog/ans-pro-v1/magic-resume.webp",
     summary: "通过 ORCID 与论文 BibTeX 自动构建高颜值响应式学术主页，内置开源数据集下载与论文交互预览。",
     href: "/market/resume-website",
   },
@@ -52,7 +52,7 @@ const CURATED_SHOWCASE = [
     competition: "平台算力生态标杆工程",
     likes: 312,
     comments: 82,
-    cover: "/catalog/oil-v1/curated-dragon-arcade.svg",
+    cover: "/catalog/ans-pro-v1/dragon-arcade.webp",
     summary: "Three.js 物理刚体碰撞抓娃娃机与五阶神龙进化体系，将参赛与创作 XP 转化为可交互的算力盲盒奖励。",
     href: "/workspace/benefits",
   },
@@ -64,7 +64,7 @@ const CURATED_SHOWCASE = [
     competition: "神农杯 AI 农客松 · 设施农业赛道",
     likes: 106,
     comments: 27,
-    cover: "/catalog/oil-v1/curated-greenhouse-agent.svg",
+    cover: "/catalog/ans-pro-v1/greenhouse-os.webp",
     summary: "接入温室物联网传感器时序流，利用多 Agent 博弈策略动态优化滴灌配比与补光时长，节水率提升 23%。",
     href: "/competitions/agrihackathon",
   },
@@ -76,7 +76,7 @@ const CURATED_SHOWCASE = [
     competition: "AIGC 创意视觉赛道",
     likes: 164,
     comments: 41,
-    cover: "/catalog/oil-v1/curated-aigc-film.svg",
+    cover: "/catalog/gitglow-v1/aigc-workspace.webp",
     summary: "融合传统水墨笔触控制网（ControlNet）与环境音轨生成，呈现谷雨时节茶山采摘与农耕物候之美。",
     href: "/competitions/aigc",
   },
@@ -143,10 +143,10 @@ export default async function ShowcasePage() {
       <section className="space-y-4" data-testid="showcase-curated-grid">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight">
-            {isEn ? "Featured Community & Competition Releases" : "社区与赛事精选标杆作品"}
+            {isEn ? "📖 Onboarding Guide: Reference Project Templates" : "📖 新手引导：参赛与作品交付参考范例"}
           </h2>
           <span className="text-xs text-muted-foreground">
-            {isEn ? "Verified immutable release snapshots" : "经组委会与社区双盲评审认证的标杆工程"}
+            {isEn ? "Official reference examples across tracks" : "各赛道标准作品结构与交付参考样板"}
           </span>
         </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -161,8 +161,8 @@ export default async function ShowcasePage() {
                     loading="lazy"
                   />
                   <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/65 to-transparent p-3.5 text-white">
-                    <Badge variant="secondary">{`评审通过 · ${item.version}`}</Badge>
-                    <span className="text-xs font-medium">{`${item.likes} 赞 · ${item.comments} 评论`}</span>
+                    <Badge variant="secondary">{isEn ? `📖 Guide Sample · ${item.version}` : `📖 官方参考范例 · ${item.version}`}</Badge>
+                    <span className="text-xs font-medium">{isEn ? "Reference Template" : "可参考同款结构"}</span>
                   </div>
                 </div>
                 <CardContent className="space-y-3 p-5">
@@ -170,9 +170,9 @@ export default async function ShowcasePage() {
                   <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{item.summary}</p>
                   <div className="flex items-center justify-between border-t pt-3 text-xs">
                     <span className="text-muted-foreground">{item.author}</span>
-                    <span className="font-medium text-primary group-hover:underline">{isEn ? "View release →" : "查看作品 →"}</span>
+                    <span className="font-medium text-primary group-hover:underline">{isEn ? "Open guide →" : "查看赛道与模板 →"}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{`所属专题：${item.competition}`}</p>
+                  <p className="text-xs text-muted-foreground">{`适用方向：${item.competition}`}</p>
                 </CardContent>
               </Card>
             </Link>

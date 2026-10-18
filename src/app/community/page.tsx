@@ -2,7 +2,7 @@ import { AccountContentBoundary } from "@/components/auth/account-content-bounda
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowUpRight, Award, Compass, Flame, Gift, MessageCircle, Rocket, Sparkles, Star, Trophy, UserRound } from "lucide-react";
+import { ArrowUpRight, Award, Compass, Flame, Gift, MessageCircle, Rocket, Sparkles, Trophy, UserRound } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getGrowthProfile } from "@/server/growth/service";
 import { CommunityPanel } from "@/components/community/community-panel";
@@ -31,66 +31,58 @@ export default async function CommunityPage() {
     const featuredPosts = [
       {
         title: isEn ? "Greenhouse Tomato Late Blight Early-Warning Agent" : "温室番茄晚疫病多模态早期预警终端",
-        author: "CAU · 智耕先锋队",
-        badge: isEn ? "AgriHackathon Hot" : "农客松高赞",
-        stars: 128,
-        comments: 34,
+        author: isEn ? "Guide Example · AgriHackathon" : "📖 农客松参赛作品参考范例",
+        badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/competitions/agrihackathon/gitglow-hub.webp",
         href: "/competitions/agrihackathon",
-        summary: isEn ? "Built with Qwen-VL + IoT humidity sensors; achieved 94.2% leaf lesion recall in greenhouse trials." : "结合叶片视觉识别与温湿度传感器时序预测，在农大日光温室实测病斑召回率达 94.2%。",
+        summary: isEn ? "Reference architecture combining leaf image inspection with greenhouse humidity sensors." : "展示如何结合叶片视觉识别与温湿度传感器数据构建参赛原型，点击可查看农客松参赛指南。",
       },
       {
-        title: isEn ? "3D Interactive Starry Portfolio & AI Resume" : "3D 星空交互式个人作品集与双语简历站",
-        author: "Lin · 全栈创客",
-        badge: isEn ? "3D Showcase" : "3D 展厅精选",
-        stars: 96,
-        comments: 21,
+        title: isEn ? "3D Interactive Starry Portfolio & Bilingual Resume" : "3D 星空交互式个人作品集与双语简历站",
+        author: isEn ? "Guide Example · 3D Resume Studio" : "📖 3D 简历工坊参考范例",
+        badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/catalog/gitglow-v1/magic-resume.webp",
         href: "/market/resume-website",
-        summary: isEn ? "One-click WebGL character showcase + bilingual resume export, forked by 80+ students for internship applications." : "基于 ANS 3D 个人网站工坊一键生成，支持单文件 HTML 导出与 3D 角色互动，已被 80+ 同学复用投递实习。",
+        summary: isEn ? "One-click WebGL character showcase + bilingual resume export for internship applications." : "基于 ANS 3D 个人网站工坊生成，支持单文件 HTML 导出与 3D 角色互动，适合直接改造成求职简历。",
       },
       {
-        title: isEn ? "Sci-Fi Short Drama Storyboard Pipeline with Toonflow" : "用 Toonflow + Solara 3 小时跑通 12 镜 AI 漫剧短片",
-        author: "Mia · AIGC 导演组",
-        badge: isEn ? "AIGC Studio" : "AIGC 创作赛",
-        stars: 84,
-        comments: 19,
+        title: isEn ? "Short Drama Storyboard Pipeline with Toonflow" : "用 Toonflow + Solara 跑通 12 镜 AI 漫剧短片",
+        author: isEn ? "Guide Example · AIGC Track" : "📖 AIGC 漫剧赛道参考范例",
+        badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/catalog/gitglow-v1/aigc-workspace.webp",
         href: "/competitions/aigc",
-        summary: isEn ? "Complete character consistency prompt sheet + storyboard keyframes and voiceover workflow." : "分享角色一致性锁脸 Prompt 模板与分镜关键帧工作流，零基础也能快速交付成片。",
+        summary: isEn ? "Character consistency prompt sheet + storyboard keyframes and voiceover workflow." : "提供角色特征锁定 Prompt 模板与分镜关键帧工作流，零基础也能按步骤完成短片。",
       },
       {
-        title: isEn ? "Vibe Coding Full-Stack Cheat Sheet & Prompt Playbook" : "Vibe Coding 零代码到全栈上线避坑指南（含 30 个神级 Prompt）",
-        author: "Kevin · VibeHub 贡献者",
-        badge: isEn ? "VibeHub Guide" : "VibeHub 精华",
-        stars: 152,
-        comments: 42,
+        title: isEn ? "Vibe Coding Full-Stack Starter Playbook" : "Vibe Coding 零代码到全栈上线实操手册",
+        author: isEn ? "Guide Example · VibeHub" : "📖 VibeHub 实训参考范例",
+        badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/catalog/gitglow-v1/cauai-one.webp",
         href: "/vibe-hub",
-        summary: isEn ? "How to go from a rough idea to a deployed Next.js + Prisma app without getting stuck in AI hallucinations." : "从需求拆解、数据库建模到去 AI 味 UI 调优的实战复盘，附可直接复制的 Cursor / Codex 提示词。",
+        summary: isEn ? "Step-by-step guide from requirement breakdown and schema design to deploying a Next.js app." : "从需求拆解、数据库建模到界面调优的分步实操指南，附可直接复用的开发提示词。",
       },
     ];
-    const topCreators = [
-      { rank: "01", name: "张同学 · CAU 农工院", level: "Lv.5 传奇创客", xp: "3,420 XP", badge: "🏆 农客松人气榜 #1", dragon: "👑 紫金皇冠龙" },
-      { rank: "02", name: "林同学 · 计算机系", level: "Lv.4 核心贡献者", xp: "2,890 XP", badge: "⚡ 上架 4 款高分工作流", dragon: "🚀 喷气背包龙" },
-      { rank: "03", name: "陈同学 · 智慧农业", level: "Lv.4 资深创客", xp: "2,410 XP", badge: "🌟 3D 作品集获赞 100+", dragon: "🕶️ 赛博墨镜龙" },
-      { rank: "04", name: "王同学 · 新媒体艺术", level: "Lv.3 活跃创作者", xp: "1,850 XP", badge: "🎬 AIGC 漫剧优秀奖", dragon: "🧣 学院围巾龙" },
+    const xpEarnSteps = [
+      { step: "01", name: isEn ? "Daily Check-In & Onboarding Survey" : "每日签到与 30 秒新手问卷", reward: "+20~50 XP", desc: isEn ? "Unlock 50 starter compute points + daily claw machine tokens" : "完成问卷立得 50 算力积分，每日签到再领 5 积分与抓娃娃币" },
+      { step: "02", name: isEn ? "VibeHub 60s Interactive Reading" : "VibeHub 课程实训阅读满 60 秒", reward: "+25 XP", desc: isEn ? "Learn practical AI workflows while earning compute points" : "边看 AI 实战教程边领 5 算力积分与抓娃娃机代币" },
+      { step: "03", name: isEn ? "Publish a Project or Workflow" : "发布公开项目或上架工作流模板", reward: "+100~150 XP", desc: isEn ? "Share your repo on /explore or list a workflow on /market" : "在公开项目库提交作品或在市场发布工作流，获得算力分成" },
+      { step: "04", name: isEn ? "AgriHackathon M1–M4 Milestones" : "参与农客松 M1–M4 阶段里程碑", reward: "+100~200 XP", desc: isEn ? "Complete team registration, code snapshot, and showcase wall" : "完成报名、代码存证与作品上墙，累计解锁 60 赛事积分" },
     ];
     const levelTiers = [
       { lv: "Lv.1", title: isEn ? "Rookie Explorer" : "新星探索者", req: "0+ XP", perk: isEn ? "Daily check-in +5 pts & 3D Dino pet" : "解锁每日签到领积分 + 专属 3D 小龙陪伴" },
       { lv: "Lv.2", title: isEn ? "Campus Builder" : "高校创客", req: "300+ XP", perk: isEn ? "Publish projects & join hackathon teams" : "发布公开项目上墙 + 组队申领赛事算力包" },
-      { lv: "Lv.3", title: isEn ? "Workflow Creator" : "工作流主理人", req: "1,000+ XP", perk: isEn ? "List workflows on ANS Market & earn points" : "在 ANS 市场发布付费工作流赚取算力积分分成" },
-      { lv: "Lv.4+", title: isEn ? "Campus Fellow" : "传奇领航员", req: "2,500+ XP", perk: isEn ? "SSR Dino skins + priority GPU quota" : "解锁 3D 小龙限定传说皮肤 + 赛事专属 GPU 额度" },
+      { lv: "Lv.3", title: isEn ? "Workflow Creator" : "工作流创作者", req: "1,000+ XP", perk: isEn ? "List workflows on ANS Market & earn points" : "在 ANS 市场发布工作流赚取算力积分分成" },
+      { lv: "Lv.4+", title: isEn ? "Campus Fellow" : "资深领航员", req: "2,500+ XP", perk: isEn ? "SSR Dino skins + priority GPU quota" : "解锁 3D 小龙限定皮肤 + 赛事专属算力额度" },
     ];
     return (
       <div className="ans-product-container ans-page-content ans-community-page space-y-8">
         <PageHeading
           title={t("title")}
-          description={isEn ? "Explore campus creator showcases, XP leaderboards, and open-source AI builds." : "汇聚高校 AI 创客作品、农客松实战帖、XP 成长段位榜与 3D 小龙养成装扮。"}
+          description={isEn ? "Explore campus creator guides, XP growth rules, and open-source AI builds." : "浏览高校 AI 创客作品范例、XP 成长段位指南与 3D 小龙养成权益。"}
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <Button asChild variant="outline"><Link href="/showcase">{t("works")}</Link></Button>
-              <Button asChild><Link href="/login?callbackUrl=/community">{isEn ? "Sign in to join community" : "登录参与社区互动"}</Link></Button>
+              <Button asChild><Link href="/login?callbackUrl=/community">{isEn ? "Sign in to join community" : "登录查看我的真实社区档案"}</Link></Button>
             </div>
           }
         />
@@ -117,7 +109,7 @@ export default async function CommunityPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 id="community-featured-heading" className="flex items-center gap-2 text-lg font-semibold">
                 <Flame className="h-5 w-5 text-orange-500" aria-hidden="true" />
-                {isEn ? "Featured Student Works & Field Notes" : "热门创客作品与实战笔记"}
+                {isEn ? "📖 Onboarding Guide: Community Post & Project Examples" : "📖 新手引导：社区发帖与作品分享参考范例"}
               </h2>
               <Link href="/explore" className="text-xs font-medium text-primary hover:underline">
                 {isEn ? "View all 40+ projects →" : "查看全部 40+ 精选项目 →"}
@@ -142,9 +134,8 @@ export default async function CommunityPage() {
                   </div>
                   <div className="flex items-center justify-between border-t bg-muted/20 px-4 py-2.5 text-[11px] text-muted-foreground">
                     <span className="font-medium text-foreground/80">{post.author}</span>
-                    <span className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 text-amber-500" />{post.stars}</span>
-                      <span>💬 {post.comments}</span>
+                    <span className="font-medium text-primary group-hover:underline">
+                      {isEn ? "Open Guide →" : "查看详情 →"}
                     </span>
                   </div>
                 </Link>
@@ -157,25 +148,24 @@ export default async function CommunityPage() {
               <div className="flex items-center justify-between gap-2">
                 <h2 id="community-leaderboard-heading" className="flex items-center gap-2 text-base font-semibold">
                   <Trophy className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                  {isEn ? "Campus Creator XP Leaderboard" : "本周高校创客 XP 荣誉榜"}
+                  {isEn ? "📖 How to Earn XP & Compute Points" : "📖 社区经验值 (XP) 获取指南"}
                 </h2>
-                <Badge variant="secondary" className="text-[11px]">{isEn ? "Weekly Live" : "实时更新"}</Badge>
+                <Badge variant="secondary" className="text-[11px]">{isEn ? "Onboarding Guide" : "新手必读"}</Badge>
               </div>
               <ol className="divide-y">
-                {topCreators.map((creator) => (
-                  <li key={creator.rank} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                {xpEarnSteps.map((item) => (
+                  <li key={item.step} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-mono text-xs font-bold text-primary">
-                        {creator.rank}
+                        {item.step}
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{creator.name}</p>
-                        <p className="truncate text-xs text-muted-foreground">{creator.badge} · {creator.dragon}</p>
+                        <p className="truncate text-sm font-medium">{item.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{item.desc}</p>
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-xs font-semibold text-primary">{creator.xp}</p>
-                      <p className="text-[11px] text-muted-foreground">{creator.level}</p>
+                      <p className="text-xs font-semibold text-primary">{item.reward}</p>
                     </div>
                   </li>
                 ))}

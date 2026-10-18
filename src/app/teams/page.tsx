@@ -77,13 +77,13 @@ export default async function TeamsPage() {
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                      {isEn ? "1–5 Members · Up to 750 Compute Points" : "1–5 人跨学科组队 · 最高 750 算力积分池"}
+                      {isEn ? "1–5 Members · Shared Team Compute Pool" : "1–5 人跨学科组队 · 共享赛事算力池"}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {isEn
-                      ? "Sign in to create a team, accept invitations, and manage member compute allowances."
-                      : "登录后可以创建团队、接受邀请并管理成员额度（每位成员正态随机配发 100–150 积分，由队长统一调度分配）。"}
+                      ? "Sign in to create a real team, invite classmates, and allocate shared competition compute points."
+                      : "登录后可创建真实战队、生成邀请链接，并由队长统一分配队员的赛事算力额度。下方为常见跨学科组队分工参考范例："}
                   </p>
                 </div>
                 <Button asChild size="sm" className="shrink-0 rounded-xl">
@@ -95,40 +95,40 @@ export default async function TeamsPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               {[
                 {
-                  name: isEn ? "CropGuard · CAU Plant Protection VLM" : "植保慧眼 · 农大病虫害多模态组",
+                  name: isEn ? "Template A · Plant Protection & VLM Team" : "组队范例 A · 农情病虫害多模态识别组",
                   track: isEn ? "AgriHackathon · Crop Disease Track" : "智耕黑客松 · 病虫害早筛赛道",
-                  members: "3 / 5",
-                  allowance: "410 pts",
-                  lookingFor: isEn ? "Recruiting: Frontend / Edge Deployment" : "招募：前端可视化 / 边缘端部署同学",
+                  roles: isEn ? "1 Agronomy + 2 CS/AI + 1 Frontend" : "推荐配置：农学/植保 1 人 + 算法/后端 2 人 + 前端 1 人",
+                  badge: isEn ? "📖 Team Template" : "📖 组队参考范例",
+                  lookingFor: isEn ? "Typical division: field dataset labeling, Qwen-VL fine-tuning, and mobile web UI." : "分工建议：田间病叶样本整理、多模态模型调用、移动端拍照诊断界面。",
                 },
                 {
-                  name: isEn ? "HydroTwin · Greenhouse Fertigation Agent" : "智灌云脑 · 日光温室水肥数字孪生组",
+                  name: isEn ? "Template B · Smart Greenhouse & IoT Team" : "组队范例 B · 日光温室水肥智能调控组",
                   track: isEn ? "AgriHackathon · Smart Irrigation Track" : "智耕黑客松 · 智慧水肥赛道",
-                  members: "4 / 5",
-                  allowance: "535 pts",
-                  lookingFor: isEn ? "Recruiting: Agronomy Data Analyst" : "招募：农学气象建模 / 数据分析同学",
+                  roles: isEn ? "1 Water/Agri Eng + 1 Data + 1 Full-Stack" : "推荐配置：水院/农工 1 人 + 数据建模 1 人 + 全栈 1 人",
+                  badge: isEn ? "📖 Team Template" : "📖 组队参考范例",
+                  lookingFor: isEn ? "Typical division: sensor time-series modeling, agent decision rules, and dashboard." : "分工建议：温湿度传感时序分析、滴灌策略生成与可视化大屏展示。",
                 },
                 {
-                  name: isEn ? "ToonCraft · Campus AIGC Storyboard Lab" : "ToonCraft · 校园科普漫剧共创组",
-                  track: isEn ? "AIGC Studio · Open Track" : "AIGC 创作工坊 · 常驻组队池",
-                  members: "2 / 5",
-                  allowance: "260 pts",
-                  lookingFor: isEn ? "Recruiting: Prompt Director & ComfyUI" : "招募：分镜脚本策划 / ComfyUI 创作者",
+                  name: isEn ? "Template C · Campus AIGC Short Drama Team" : "组队范例 C · 校园科普漫剧与多模态创作组",
+                  track: isEn ? "AIGC Studio · Open Track" : "AIGC 创作工坊 · 常驻赛道",
+                  roles: isEn ? "1 Script/Design + 1 Prompt/Video" : "推荐配置：剧本分镜/美术 1 人 + AIGC 视觉工作流 1 人",
+                  badge: isEn ? "📖 Team Template" : "📖 组队参考范例",
+                  lookingFor: isEn ? "Typical division: storyboard scripting, character consistency, and video editing." : "分工建议：12 镜分镜脚本设计、角色三视图锁定与配音成片合成。",
                 },
               ].map((sample, idx) => (
                 <Card key={idx} className="border-border/70 bg-card/90 transition hover:border-primary/40">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-2">
                       <Badge variant="outline" className="text-[11px]">{sample.track}</Badge>
-                      <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{sample.allowance}</span>
+                      <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{sample.badge}</span>
                     </div>
                     <CardTitle className="pt-1 text-base">{sample.name}</CardTitle>
                     <CardDescription className="text-xs">{sample.lookingFor}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex items-center justify-between pt-0 text-xs text-muted-foreground">
-                    <span>{isEn ? `Members: ${sample.members}` : `当前成员：${sample.members}`}</span>
-                    <Link href="/login?callbackUrl=/teams" className="font-medium text-primary hover:underline">
-                      {isEn ? "Apply →" : "登录后申请 →"}
+                    <span>{sample.roles}</span>
+                    <Link href="/login?callbackUrl=/teams" className="shrink-0 font-medium text-primary hover:underline">
+                      {isEn ? "Use Template →" : "登录建队 →"}
                     </Link>
                   </CardContent>
                 </Card>

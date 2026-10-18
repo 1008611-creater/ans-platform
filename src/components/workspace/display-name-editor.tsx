@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ export interface CodexWorkbenchProps {
   initialPrompt?: string;
 }
 
-import { INITIAL_CODEX_TASKS, type CodexTask, type CodexTaskLink } from "./codex-preset-tasks";
+import { INITIAL_CODEX_TASKS, type CodexTask } from "./codex-preset-tasks";
 
 export function DisplayNameEditor(props: CodexWorkbenchProps) {
   if (props.codexWorkbench) {
@@ -161,20 +161,19 @@ function PiCodexWorkbench({
   ]);
   const [livePoints, setLivePoints] = useState<number>(points);
 
-  useEffect(() => {
+  function readStoredUserTasks(): CodexTask[] {
+    if (typeof window === "undefined") return [];
     try {
       const raw = window.localStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw) as CodexTask[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setUserTasks(parsed);
-          setActiveId(parsed[0].id);
-        }
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {
       // ignore storage errors
     }
-  }, [storageKey]);
+    return [];
+  }
 
   function saveUserTasks(next: CodexTask[]) {
     setUserTasks(next);
@@ -188,13 +187,38 @@ function PiCodexWorkbench({
   const allTasks = [...userTasks, ...guideTasks];
   const activeTask = allTasks.find(t => t.id === activeId) ?? guideTasks[0];
   const isViewingGuideSample = !userTasks.some(t => t.id === activeTask.id);
+  const autoTriggeredPromptRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (initialPrompt && initialPrompt.trim().length > 0) {
-      void executeCodexTask(initialPrompt.trim(), "playground");
+    const stored = readStoredUserTasks();
+    if (stored.length > 0) {
+      setUserTasks(stored);
+      if (!initialPrompt || initialPrompt.trim().length === 0) {
+        setActiveId(stored[0].id);
+      }
+    }
+    const cleanInitial = initialPrompt?.trim() ?? "";
+    const triggerKey = `${storageKey}:${cleanInitial}`;
+    if (cleanInitial.length > 0 && autoTriggeredPromptRef.current !== triggerKey) {
+      autoTriggeredPromptRef.current = triggerKey;
+      void executeCodexTask(cleanInitial, "playground", stored);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [storageKey]);
+
+  useEffect(() => {
+    const onExternalPrompt = (ev: Event) => {
+      const detail = (ev as CustomEvent<{ prompt?: string }>).detail;
+      const incoming = detail?.prompt?.trim();
+      if (incoming) {
+        setPromptInput(incoming);
+        void executeCodexTask(incoming, "playground");
+      }
+    };
+    window.addEventListener("ans:codex-prompt", onExternalPrompt);
+    return () => window.removeEventListener("ans:codex-prompt", onExternalPrompt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userTasks, model, running]);
 
   function handleStartBlankTask() {
     const blankTask: CodexTask = {
@@ -210,29 +234,58 @@ function PiCodexWorkbench({
       artifactFile: "my-app.html",
       artifactCode: buildLocalStarterHtml("我的第一个网页应用"),
     };
-    const next = [blankTask, ...userTasks];
+    const baseTasks = userTasks.length > 0 ? userTasks : readStoredUserTasks();
+    const next = [blankTask, ...baseTasks];
     saveUserTasks(next);
     setActiveId(blankTask.id);
     setCanvasTab("preview");
     setTimeout(() => document.getElementById("codex-composer-input")?.focus(), 50);
   }
 
-  async function executeCodexTask(customPrompt?: string, intent: "playground" | "checkin" | "claw" | "redeem" | "scaffold" = "playground") {
+  async function executeCodexTask(
+    customPrompt?: string,
+    intent: "playground" | "checkin" | "claw" | "redeem" | "scaffold" = "playground",
+    baseTasksOverride?: CodexTask[],
+  ) {
     const q = (customPrompt ?? promptInput).trim();
     if (!q && intent === "playground") return;
     if (running) return;
+    if (intent === "checkin") {
+      setRunning(true);
+      try {
+        const res = await fetch("/api/mascot/agent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "pi_action", intent: "checkin", prompt: "", model }),
+        });
+        if (res.status === 401 || !res.ok) {
+          toast.info("请先登录账号后再领取每日签到算力积分 (+5分)");
+          return;
+        }
+        const data = await res.json();
+        if (typeof data?.balancePoints === "number") {
+          setLivePoints(data.balancePoints);
+        }
+        toast.success((data?.replyZh || "已完成今日签到 (+5 积分)").slice(0, 80));
+      } catch {
+        toast.error("签到请求暂时未响应，请稍后重试");
+      } finally {
+        setRunning(false);
+      }
+      return;
+    }
     setRunning(true);
     const taskId = "user-task-" + Date.now();
     const shortTitle =
-      intent === "checkin"
-        ? "📅 每日签到领积分"
-        : intent === "claw"
-          ? "🕹️ 3D 抓娃娃机抽积分"
-          : intent === "redeem"
-            ? "🎁 5 积分兑换周报模板"
-            : intent === "scaffold"
-              ? `🚀 立项保存：${q.slice(0, 20) || activeTask.title}`
-              : q.slice(0, 28) || "我的自定义任务";
+      intent === "claw"
+        ? "🕹️ 3D 抓娃娃机抽积分"
+        : intent === "redeem"
+          ? "🎁 5 积分兑换周报模板"
+          : intent === "scaffold"
+            ? `🚀 立项保存：${q.slice(0, 20) || activeTask.title}`
+            : q.slice(0, 28) || "我的自定义任务";
+    const starterCode =
+      intent === "scaffold" ? activeTask.artifactCode : buildLocalStarterHtml(q || shortTitle);
     const newTask: CodexTask = {
       id: taskId,
       title: shortTitle,
@@ -244,14 +297,15 @@ function PiCodexWorkbench({
         `正在请求模型 ${model} 处理你的需求...`,
       ],
       summary: "正在连接算力接口生成结果，请稍候...",
-      artifactType: activeTask.artifactType,
-      artifactFile: "my-output.html",
-      artifactCode: activeTask.artifactCode,
+      artifactType: intent === "scaffold" ? activeTask.artifactType : "html",
+      artifactFile: intent === "scaffold" ? activeTask.artifactFile : "my-output.html",
+      artifactCode: starterCode,
     };
-    const nextWithRunning = [newTask, ...userTasks];
+    const baseTasks = baseTasksOverride ?? (userTasks.length > 0 ? userTasks : readStoredUserTasks());
+    const nextWithRunning = [newTask, ...baseTasks];
     saveUserTasks(nextWithRunning);
     setActiveId(taskId);
-    if (!customPrompt) setPromptInput("");
+    if (customPrompt === undefined) setPromptInput("");
     setTerminalLogs(prev => [
       ...prev,
       `[${new Date().toLocaleTimeString()}] 开始执行：${shortTitle} (${model})`,
@@ -263,8 +317,7 @@ function PiCodexWorkbench({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "pi_action", intent, prompt: q, model }),
       });
-      if (res.status === 401) {
-        const fallbackHtml = buildLocalStarterHtml(q || shortTitle);
+      if (res.status === 401 || !res.ok) {
         const updated = nextWithRunning.map(item =>
           item.id === taskId
             ? {
@@ -276,7 +329,7 @@ function PiCodexWorkbench({
                 links: [{ labelZh: "🔐 登录账号调用真实模型算力", href: "/login?callbackUrl=%2Fworkspace" }],
                 artifactType: "html" as const,
                 artifactFile: "local-draft.html",
-                artifactCode: fallbackHtml,
+                artifactCode: starterCode,
               }
             : item,
         );
@@ -285,7 +338,8 @@ function PiCodexWorkbench({
         return;
       }
       const data = await res.json();
-      const reply = (data?.replyZh || data?.replyEn || "执行完成。").trim();
+      const rawReply = (data?.replyZh || data?.replyEn || "").trim();
+      const reply = rawReply && rawReply !== "UNAUTHORIZED" ? rawReply : "已完成处理，右侧可直接预览或编辑代码。";
       if (typeof data?.balancePoints === "number") {
         setLivePoints(data.balancePoints);
       }
@@ -316,7 +370,6 @@ function PiCodexWorkbench({
         `[${new Date().toLocaleTimeString()}] ✓ 执行完成 (${data?.toolUsed || intent})`,
       ]);
     } catch {
-      const fallbackHtml = buildLocalStarterHtml(q || shortTitle);
       const updated = nextWithRunning.map(item =>
         item.id === taskId
           ? {
@@ -326,7 +379,7 @@ function PiCodexWorkbench({
               summary: "已为你生成本地可编辑草稿，可直接在右侧「源码编辑」中修改或稍后重试。",
               artifactType: "html" as const,
               artifactFile: "local-draft.html",
-              artifactCode: fallbackHtml,
+              artifactCode: starterCode,
             }
           : item,
       );
@@ -340,7 +393,18 @@ function PiCodexWorkbench({
     if (userTasks.some(t => t.id === activeTask.id)) {
       saveUserTasks(userTasks.map(item => (item.id === activeTask.id ? { ...item, artifactCode: newCode } : item)));
     } else {
-      setGuideTasks(prev => prev.map(item => (item.id === activeTask.id ? { ...item, artifactCode: newCode } : item)));
+      const forkedTask: CodexTask = {
+        ...activeTask,
+        id: "user-fork-" + Date.now(),
+        title: `我的修改版：${activeTask.title.replace(/^[^\s]+\s*/, "")}`,
+        tag: "我的草稿",
+        trace: ["已从新手引导范例复制为你的个人草稿，修改内容已自动保存在本地"],
+        summary: "这是你基于新手引导范例修改的个人草稿，已自动保存到左侧「📂 我的真实记录」中，刷新页面不会丢失。",
+        artifactCode: newCode,
+      };
+      const next = [forkedTask, ...userTasks];
+      saveUserTasks(next);
+      setActiveId(forkedTask.id);
     }
   }
 
@@ -377,7 +441,11 @@ function PiCodexWorkbench({
   }
 
   return (
-    <div data-testid="pi-codex-workbench" className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 text-slate-100 shadow-2xl">
+    <div
+      data-testid="pi-codex-workbench"
+      aria-label="Pi-Codex 个人工作台"
+      className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 text-slate-100 shadow-2xl"
+    >
       {/* Top Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/90 px-4 py-3 sm:px-6">
         <div className="flex flex-wrap items-center gap-2.5">

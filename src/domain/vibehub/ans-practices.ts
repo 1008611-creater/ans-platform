@@ -34,7 +34,7 @@ export const ANS_PRACTICES: readonly AnsPractice[] = [
       en: "State the goal, audience, references, and acceptance check before asking an Agent to build, avoiding polished output that cannot be used.",
     },
     audience: { zh: "适合第一次用 AI 做网页、海报、课程作业或比赛原型的同学。", en: "For students using AI for a first site, poster, course assignment, or competition prototype." },
-    outcome: { zh: "得到一份可以直接发给编码或创作工具的四段式需求说明。", en: "A four-part brief ready to paste into a coding or creative tool." },
+    outcome: { zh: "得到一份可以直接发给编码或创作工具的结构化需求说明。", en: "A four-part brief ready to paste into a coding or creative tool." },
     relatedTerms: [
       { slug: "prd", label: { zh: "PRD 产品需求文档", en: "PRD" } },
       { slug: "acceptance-criteria", label: { zh: "Acceptance Criteria 验收条件", en: "Acceptance Criteria" } },

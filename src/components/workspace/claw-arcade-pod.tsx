@@ -706,6 +706,7 @@ export function ComputeQuestArcade({
   );
   const [lastServerCredit, setLastServerCredit] = useState<ArcadeServerCreditedDetail | null>(null);
   const timersRef = useRef<number[]>([]);
+  const isGuest = !actorId || actorId === "guest" || actorId === "guest-preview";
 
   useEffect(() => {
     const syncAll = () => {
@@ -726,8 +727,8 @@ export function ComputeQuestArcade({
       if (detail.errorCode === "ARCADE_TOKENS_EXHAUSTED") {
         setBannerMessage(
           isEn
-            ? "ℹ️ Free draw tokens used up! Click [🪙 10 Pts → 1 Token] to exchange points and keep playing for the 1,000-pt Mythic Koi!"
-            : "ℹ️ 免费抓娃娃币已用完！可点击【🪙 10积分兑1币】用积分投币继续冲刺 1000 积分锦鲤大奖，或完成右侧打卡彩蛋免费领币！",
+            ? "ℹ️ Free draw tokens used up! Click [🪙 10 Pts → 1 Token] to exchange points or complete a check-in task on the right."
+            : "ℹ️ 免费抓娃娃币已用完！可点击【🪙 10分兑1币】用积分兑换游戏币，或完成右侧打卡任务免费领币。",
         );
         return;
       }
@@ -735,7 +736,7 @@ export function ComputeQuestArcade({
         setBannerMessage(
           isEn
             ? "⚠️ Insufficient API Gateway points (10 Pts = 1 Token). Complete the Onboarding Questionnaire (+50 pts) or daily quests first!"
-            : "⚠️ 账户可用积分不足（10 积分 = 1 枚抓娃娃币）！请先完成上方破冰问卷（+50分）或右侧打卡任务领积分。",
+            : "⚠️ 账户可用积分不足（10 积分 = 1 枚抓娃娃币）！请先完成下方新手问卷（+50分）或右侧打卡任务领积分。",
         );
         return;
       }
@@ -755,7 +756,7 @@ export function ComputeQuestArcade({
     window.addEventListener(QUEST_ARCADE_SERVER_CREDITED_EVENT, onServerCredited);
     window.addEventListener("storage", syncAll);
 
-    if (process.env.NODE_ENV !== "test" && typeof fetch === "function") {
+    if (!isGuest && process.env.NODE_ENV !== "test" && typeof fetch === "function") {
       void fetch("/api/compute-benefits/arcade")
         .then(res => (res.ok ? res.json() : null))
         .then((data: { balancePoints?: number } | null) => {
@@ -774,7 +775,7 @@ export function ComputeQuestArcade({
       window.removeEventListener("storage", syncAll);
       timers.forEach(id => window.clearTimeout(id));
     };
-  }, [actorId, isEn]);
+  }, [actorId, isEn, isGuest]);
 
   useEffect(() => {
     if (!vibeTimerRunning) return;
@@ -797,8 +798,8 @@ export function ComputeQuestArcade({
         if (res?.newlyClaimed) {
           setBannerMessage(
             isEn
-              ? `🎉 VibeHub 60s Deep Reading completed! Unlocked $${res.quest.unlockUsd} (${res.quest.unlockUsd * POINTS_PER_USD} pts) + 1 Claw Token!`
-              : `🎉 VibeHub 60 秒沉浸充电完成！已从金库提取 $${res.quest.unlockUsd}（${res.quest.unlockUsd * POINTS_PER_USD} 积分）+ 1 枚抓娃娃币！`,
+              ? `🎉 VibeHub 60s reading completed! Claimed +${res.quest.unlockUsd * POINTS_PER_USD} pts + 1 Claw Token!`
+              : `🎉 VibeHub 60 秒阅读完成！已领取 +${res.quest.unlockUsd * POINTS_PER_USD} 积分 + 1 枚抓娃娃币！`,
           );
         }
       }
@@ -825,8 +826,6 @@ export function ComputeQuestArcade({
     return best;
   }
 
-  const isGuest = !actorId || actorId === "guest" || actorId === "guest-preview";
-
   function handleBuyTokens(count: 1 | 5 = 1) {
     const cost = count * ARCADE_TOKEN_COST_POINTS;
     if (isGuest) {
@@ -835,16 +834,16 @@ export function ComputeQuestArcade({
       setState(next);
       setBannerMessage(
         isEn
-          ? `🪙 [Guest Free Trial] Added +${count} Trial Token(s)! Drop the 3D claw to test your luck — sign in anytime to credit real API points!`
-          : `🪙 【访客免费试玩】已补充 +${count} 枚试玩抓娃娃币！快投币下爪体验 3D 机械臂，点击右侧【立即登录入账】即可将积分真实写入账户！`,
+          ? `🪙 [Guest Free Trial] Added +${count} Trial Token(s)! Drop the 3D claw to try it out — sign in anytime to credit real points!`
+          : `🪙 【未登录免费试玩】已补充 +${count} 枚试玩抓娃娃币！可先体验 3D 机械爪手感，点击右侧【立即登录入账】即可将积分真实存入账户。`,
       );
       return;
     }
     if (serverBalancePoints !== null && serverBalancePoints < cost) {
       setBannerMessage(
         isEn
-          ? `⚠️ Need ${cost} Pts to exchange ${count} Token(s), current balance: ${serverBalancePoints} Pts. Complete Onboarding (+50 pts) or daily quests first!`
-          : `⚠️ 兑换 ${count} 枚抓娃娃币需 ${cost} 积分（当前余额 ${serverBalancePoints} 积分），请先完成上方破冰问卷（+50分）或右侧打卡任务！`,
+          ? `⚠️ Need ${cost} Pts to exchange ${count} Token(s), current balance: ${serverBalancePoints} Pts. Complete the questionnaire (+50 pts) or daily quests first!`
+          : `⚠️ 兑换 ${count} 枚抓娃娃币需 ${cost} 积分（当前余额 ${serverBalancePoints} 积分），请先完成下方新手问卷（+50分）或右侧打卡任务！`,
       );
       return;
     }
@@ -855,8 +854,8 @@ export function ComputeQuestArcade({
     }
     setBannerMessage(
       isEn
-        ? `🪙 Spent ${res.costPoints} Pts to exchange +${count} Arcade Token(s)! Drop the claw or spin the wheel for the 0.1% 1,000-pt Mythic Koi!`
-        : `🪙 已花 ${res.costPoints} 积分兑换 +${count} 枚抓娃娃币！快投币下爪冲击 0.1%【1000 积分 (¥100) 天选锦鲤】大奖！`,
+        ? `🪙 Spent ${res.costPoints} Pts to exchange +${count} Arcade Token(s)!`
+        : `🪙 已用 ${res.costPoints} 积分兑换 +${count} 枚抓娃娃币，快投币下爪试试手气吧！`,
     );
   }
 
@@ -871,8 +870,8 @@ export function ComputeQuestArcade({
         if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
           setBannerMessage(
             isEn
-              ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete any daily quest or Dino easter egg on the right to earn free tokens."
-              : "⚠️ 抓娃娃币与积分均不足（10 积分可兑 1 币）！完成右侧任意每日任务或小恐龙反常识彩蛋即可免费领币。",
+              ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete any daily quest on the right to earn free tokens."
+              : "⚠️ 抓娃娃币与积分均不足（10 积分可兑 1 币）！完成右侧任意每日任务即可免费领币。",
           );
           return;
         }
@@ -904,13 +903,13 @@ export function ComputeQuestArcade({
         const pts = outcome.prize.unlockUsd * POINTS_PER_USD;
         const guestHint = isGuest
           ? isEn
-            ? " (🔓 Guest Trial: Sign in to credit these points to your live API Gateway account!)"
-            : "（🔓 访客试玩中：点击右侧【立即登录入账】即可将抓中的算力积分真实存入账户！）"
+            ? " (🔓 Guest Trial: Sign in to credit these points to your account!)"
+            : "（🔓 未登录试玩中：点击右侧【立即登录入账】即可将抓中的积分真实存入账户）"
           : "";
         setBannerMessage(
           (isEn
-            ? `🕹️ Claw Critical Hit! Pulled [${outcome.prize.rarity}] ${outcome.prize.nameEn} · Unlocked $${outcome.prize.unlockUsd} (${pts} pts) + ${outcome.prize.starBeans}🪙!`
-            : `🕹️ 机械爪暴击出货！抓中【${outcome.prize.rarity}】${outcome.prize.nameZh} · 已从金库提现 $${outcome.prize.unlockUsd}（${pts} 积分）+ ${outcome.prize.starBeans}🪙！`) + guestHint,
+            ? `🕹️ Claw Grab Success! Pulled [${outcome.prize.rarity}] ${outcome.prize.nameEn} · +${pts} pts + ${outcome.prize.starBeans}🪙!`
+            : `🕹️ 抓取成功！获得【${outcome.prize.rarity}】${outcome.prize.nameZh}（+${pts} 积分 + ${outcome.prize.starBeans}🪙 星豆）`) + guestHint,
         );
       }
     }, 1150);
@@ -931,8 +930,8 @@ export function ComputeQuestArcade({
         if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
           setBannerMessage(
             isEn
-              ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete daily quests or Dino easter eggs on the right to earn tokens."
-              : "⚠️ 星轨转盘币与积分均不足（10 积分可兑 1 币）！完成右侧每日任务或小恐龙彩蛋即可免费获取。",
+              ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete daily quests on the right to earn tokens."
+              : "⚠️ 转盘币与积分均不足（10 积分可兑 1 币）！完成右侧每日任务即可免费获取。",
           );
           return;
         }
@@ -969,12 +968,12 @@ export function ComputeQuestArcade({
         const guestHint = isGuest
           ? isEn
             ? " (🔓 Guest Trial: Sign in to settle these points into your account!)"
-            : "（🔓 访客试玩中：点击右侧【立即登录入账】即可将转出的积分真实入账！）"
+            : "（🔓 未登录试玩中：点击右侧【立即登录入账】即可将转出的积分真实入账）"
           : "";
         setBannerMessage(
           (isEn
-            ? `🎡 Starlight Roulette (${actualDraws}x) Complete! Highlight: [${latestOutcome.prize.rarity}] ${latestOutcome.prize.nameEn} · Total Unlocked: $${totalUsd} (${totalPts} pts)!`
-            : `🎡 丰收星轨大转盘（${actualDraws} 连抽）出货！最高命中【${latestOutcome.prize.rarity}】${latestOutcome.prize.nameZh} · 累计提现 $${totalUsd}（${totalPts} 积分）！`) + guestHint,
+            ? `🎡 Lucky Wheel (${actualDraws}x) Complete! Highlight: [${latestOutcome.prize.rarity}] ${latestOutcome.prize.nameEn} · Total: +${totalPts} pts!`
+            : `🎡 幸运转盘（${actualDraws} 次）完成！最高抽中【${latestOutcome.prize.rarity}】${latestOutcome.prize.nameZh} · 共计 +${totalPts} 积分`) + guestHint,
         );
       }
     }, 900);
@@ -990,19 +989,19 @@ export function ComputeQuestArcade({
       const pts = quest.unlockUsd * POINTS_PER_USD;
       const guestHint = isGuest
         ? isEn
-          ? " (🔓 Guest Trial: Sign in to permanently bind +credit to your account!)"
-          : "（🔓 访客预览打卡成功：点击右侧【立即登录入账】即可将奖励永久写入你的算力账户！）"
+          ? " (🔓 Guest Trial: Sign in to permanently credit this reward to your account!)"
+          : "（🔓 未登录体验：点击右侧【立即登录入账】即可将此任务奖励真实记入你的账户）"
         : "";
       setBannerMessage(
         (isEn
-          ? `✅ Quest Completed: ${quest.titleEn}! Unlocked $${quest.unlockUsd} (${pts} pts) + ${quest.rewardTokens}🎟️ + ${quest.rewardStarBeans}🪙!`
-          : `✅ 任务达成：【${quest.titleZh}】！已从金库解锁 $${quest.unlockUsd}（${pts} 积分）+ ${quest.rewardTokens}🎟️ 抓娃娃币 + ${quest.rewardStarBeans}🪙 星豆！`) + guestHint,
+          ? `✅ Quest Completed: ${quest.titleEn}! Earned +${pts} pts + ${quest.rewardTokens}🎟️ + ${quest.rewardStarBeans}🪙!`
+          : `✅ 任务完成：【${quest.titleZh}】！获得 +${pts} 积分 + ${quest.rewardTokens}🎟️ 抓娃娃币 + ${quest.rewardStarBeans}🪙 星豆`) + guestHint,
       );
     } else {
       setBannerMessage(
         isEn
           ? `ℹ️ Quest [${quest.titleEn}] has already been claimed for this cycle.`
-          : `ℹ️ 【${quest.titleZh}】本周期奖励已入账，快去抓娃娃或探索其他隐藏彩蛋吧！`,
+          : `ℹ️ 【${quest.titleZh}】今日已领取，可前往体验抓娃娃或完成其他任务。`,
       );
     }
   }
@@ -1016,38 +1015,60 @@ export function ComputeQuestArcade({
   return (
     <section
       id="ans-quest-arcade-hub"
-      aria-label={isEn ? "Compute Vault, 3D Claw Arcade & Gamified Quest Center" : "算力金库、3D 抓娃娃游乐场与游戏化任务中心"}
-      className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 text-card-foreground shadow-sm sm:p-7"
+      aria-label={isEn ? "Compute Tasks, 3D Claw Machine & Daily Check-In" : "算力福利、3D 抓娃娃机与打卡任务"}
+      className="space-y-5 text-foreground"
     >
-      {/* Top Header & Official Conversion Ratio Badge */}
-      <div className="relative flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
-        <div className="space-y-1.5">
-          <div className="inline-flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-slate-950">
-              {isEn ? "🎁 Compute Tasks & 3D Claw Machine" : "🎁 算力任务与 3D 抓娃娃机"}
-            </span>
-            <span className="rounded-full border border-emerald-600/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-              {isEn
-                ? `1 Point = ¥${CNY_PER_POINT.toFixed(2)} CNY = $${USD_PER_POINT.toFixed(2)} USD Quota`
-                : `计费规则：1 积分 = ¥${CNY_PER_POINT.toFixed(2)} 元（10 积分 = $1 模型额度）`}
-            </span>
-            {isGuest && (
-              <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:text-amber-300">
-                {isEn ? "📖 Guest Trial Mode (Sign in to credit points)" : "📖 未登录试玩中（可先体验抓娃娃手感，登录后真实入账）"}
+      {/* Top Header, Wallet Strip & Guide Bar (Single Card Surface, No Inner Nested Cards) */}
+      <div className="rounded-3xl border border-border bg-card p-5 text-card-foreground sm:p-7">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-emerald-700 px-3 py-0.5 text-xs font-bold text-white dark:bg-emerald-400 dark:text-slate-950">
+                {isEn ? "Compute Tasks & 3D Claw Machine" : "算力任务与 3D 抓娃娃机"}
               </span>
-            )}
+              <span className="rounded-full border border-emerald-600/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                {isEn
+                  ? `1 Point = ¥${CNY_PER_POINT.toFixed(2)} CNY = $${USD_PER_POINT.toFixed(2)} USD Quota`
+                  : `计费规则：1 积分 = ¥${CNY_PER_POINT.toFixed(2)} 元 = $${USD_PER_POINT.toFixed(2)} USD 算力额度`}
+              </span>
+              {isGuest && (
+                <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-900 dark:text-amber-300">
+                  {isEn ? "Guest Trial Mode (Sign in to credit points)" : "未登录试玩中（可先体验抓娃娃手感，登录后真实入账）"}
+                </span>
+              )}
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              {isEn
+                ? "Complete Tasks for Free Tokens · Draw Compute Points"
+                : "每日打卡领免费币 · 抓娃娃抽算力积分"}
+            </h2>
           </div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            {isEn
-              ? "Complete Tasks for Free Tokens · Draw Compute Points"
-              : "每日打卡领免费币 · 抓娃娃抽算力积分"}
-          </h2>
+
+          <button
+            type="button"
+            onClick={() => {
+              const shareText = isEn
+                ? `Come claim 100–150 free compute points at ANS: https://ans.cauai.fun/workspace/benefits`
+                : `农大 ANS 平台可以免费领 100~150 算力积分（能直接调 DeepSeek 和 GPT），链接：https://ans.cauai.fun/workspace/benefits`;
+              if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+                void navigator.clipboard.writeText(shareText).catch(() => {});
+              }
+              setBannerMessage(
+                isEn
+                  ? "Link copied to clipboard!"
+                  : "已复制分享链接，可以发给队友或同学一起领积分！",
+              );
+            }}
+            className="shrink-0 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-muted"
+          >
+            {isEn ? "Share Link" : "复制分享链接"}
+          </button>
         </div>
 
-        {/* Wallet Counters */}
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
-          <div className="rounded-2xl border border-emerald-500/35 bg-emerald-500/10 px-3.5 py-2 text-center">
-            <div className="text-[11px] font-medium text-emerald-800 dark:text-emerald-200">
+        {/* Swiss Hairline Wallet Metrics Strip (Replaces 4 nested card boxes) */}
+        <div className="mt-4 grid grid-cols-2 gap-4 border-y border-border py-3.5 sm:grid-cols-4 sm:divide-x sm:divide-border">
+          <div className="space-y-0.5">
+            <div className="text-xs font-medium text-muted-foreground">
               {isGuest
                 ? isEn
                   ? "My Account Balance (Not Signed In)"
@@ -1057,24 +1078,24 @@ export function ComputeQuestArcade({
                   : "我的账户可用积分"}
             </div>
             <div
-              className="text-lg font-black tabular-nums text-emerald-700 dark:text-emerald-300"
+              className="text-lg font-black tabular-nums text-emerald-800 dark:text-emerald-300"
               data-testid="gateway-live-points"
             >
-              💳{" "}
               {serverBalancePoints !== null
                 ? serverBalancePoints.toLocaleString()
                 : isGuest
                   ? "0"
                   : Math.round((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD).toLocaleString()}
               {lastServerCredit && !lastServerCredit.duplicate && lastServerCredit.grantedPoints !== 0 ? (
-                <span className="ml-1.5 rounded-full bg-emerald-600/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-200">
+                <span className="ml-1.5 rounded-full bg-emerald-700 px-1.5 py-0.5 text-[10px] font-bold text-white">
                   {lastServerCredit.grantedPoints > 0 ? `+${lastServerCredit.grantedPoints}` : lastServerCredit.grantedPoints}
                 </span>
               ) : null}
             </div>
           </div>
-          <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 px-3.5 py-2 text-center">
-            <div className="text-[11px] font-medium text-amber-900 dark:text-amber-200">
+
+          <div className="space-y-0.5 sm:pl-4">
+            <div className="text-xs font-medium text-muted-foreground">
               {isGuest
                 ? isEn
                   ? "Trial Claw Tokens"
@@ -1083,138 +1104,121 @@ export function ComputeQuestArcade({
                   ? "Claw Tokens (10 Pts/Token)"
                   : "抓娃娃币（10分可兑1币）"}
             </div>
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
               <span
-                className="text-lg font-black tabular-nums text-amber-700 dark:text-amber-300"
+                className="text-lg font-black tabular-nums text-amber-800 dark:text-amber-300"
                 data-testid="arcade-token-count"
               >
-                🎟️ {state.arcadeTokens}
+                {state.arcadeTokens}
               </span>
               <button
                 type="button"
                 onClick={() => handleBuyTokens(1)}
                 data-testid="arcade-buy-token-1"
-                className="rounded-lg bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950 shadow-2xs transition hover:brightness-105"
+                className="rounded-lg bg-amber-500 px-2 py-0.5 text-[11px] font-black text-slate-950 transition hover:brightness-105"
               >
-                {isGuest ? (isEn ? "+1 Trial Token" : "领试玩币") : isEn ? "+1 Token (10 Pts)" : "🪙 10分兑1币"}
+                {isGuest ? (isEn ? "+1 Trial Token" : "领试玩币") : isEn ? "+1 Token (10 Pts)" : "10分兑1币"}
               </button>
             </div>
           </div>
-          <div className="rounded-2xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-            <div className="text-[11px] font-medium text-muted-foreground">
+
+          <div className="space-y-0.5 sm:pl-4">
+            <div className="text-xs font-medium text-muted-foreground">
               {isEn ? "Dino Star Beans" : "小恐龙换装星豆"}
             </div>
-            <div className="text-lg font-black tabular-nums text-foreground">🪙 {starBeans}</div>
+            <div className="text-lg font-black tabular-nums text-foreground">{starBeans}</div>
           </div>
-          <div className="rounded-2xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-            <div className="text-[11px] font-medium text-muted-foreground">
+
+          <div className="space-y-0.5 sm:pl-4">
+            <div className="text-xs font-medium text-muted-foreground">
               {isEn ? "Use Points in Market" : "积分去哪花"}
             </div>
-            <div className="mt-0.5 flex items-center justify-center gap-1.5">
+            <div className="mt-1">
               <Link
                 href="/market"
                 data-testid="arcade-go-market"
-                className="rounded-lg bg-emerald-600 px-2.5 py-0.5 text-[11px] font-black text-white shadow-2xs transition hover:bg-emerald-500 dark:bg-emerald-400 dark:text-slate-950"
+                className="inline-flex rounded-lg bg-emerald-700 px-2.5 py-1 text-xs font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
               >
-                {isEn ? "🛒 Go Market →" : "🛒 去工具市场 →"}
+                {isEn ? "Go Market →" : "去工具市场 →"}
               </Link>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Single-Line Compact Guide Strip */}
-      <div
-        data-testid="arcade-jackpot-ticker"
-        className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-emerald-500/25 bg-muted/30 px-3.5 py-2 text-xs"
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-emerald-600/15 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-            📖 {isEn ? "How to Play" : "玩法说明"}
-          </span>
-          <span className="text-muted-foreground">
-            {isEn
-              ? "Use the joystick buttons below to aim at a capsule and click Drop Claw. Every pull grants 15–50 pts (up to 1,000 pts)."
-              : "先用下方左/右/前/后按钮移动机械爪对准胶囊，再点「投币下爪」；每次必得 15~50 积分（最高可抓中 1000 积分）。"}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            const shareText = isEn
-              ? `Come claim 100–150 free compute points at ANS: https://ans.cauai.fun/workspace/benefits`
-              : `农大 ANS 平台可以免费领 100~150 算力积分（能直接调 DeepSeek 和 GPT），链接：https://ans.cauai.fun/workspace/benefits`;
-            if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-              void navigator.clipboard.writeText(shareText).catch(() => {});
-            }
-            setBannerMessage(
-              isEn
-                ? "Link copied to clipboard!"
-                : "已复制分享链接，可以发给队友或同学一起领积分！",
-            );
-          }}
-          className="shrink-0 rounded-xl border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-foreground transition hover:bg-muted"
-        >
-          📋 {isEn ? "Share Link" : "分享给同学"}
-        </button>
-      </div>
-
-      {/* Live Toast / Status Banner */}
-      {bannerMessage && (
+        {/* Single-Line Compact Guide Strip */}
         <div
-          role="status"
-          className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-foreground sm:text-sm"
+          data-testid="arcade-jackpot-ticker"
+          className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[13px]"
         >
-          <span>{bannerMessage}</span>
-          <div className="flex shrink-0 items-center gap-2">
-            {isGuest && (
-              <Link
-                href="/login?callbackUrl=%2Fworkspace%2Fbenefits"
-                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-black text-white shadow-2xs hover:bg-emerald-500"
-              >
-                {isEn ? "🔐 Sign In to Credit Points →" : "🔐 立即登录入账 →"}
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={() => setBannerMessage("")}
-              className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
-            >
-              {isEn ? "Dismiss" : "收起"}
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+              {isEn ? "How to Play" : "玩法说明"}
+            </span>
+            <span className="text-muted-foreground">
+              {isEn
+                ? "Use the joystick buttons below to aim at a capsule and click Drop Claw. Every pull grants 10–1,000 pts."
+                : "先用下方左/右/前/后按钮移动机械爪对准胶囊，再点「投币下爪」；每次必得 10~1000 积分奖励。"}
+            </span>
           </div>
         </div>
-      )}
+
+        {/* Live Toast / Status Banner */}
+        {bannerMessage && (
+          <div
+            role="status"
+            className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-amber-500/30 pt-3 text-xs font-semibold text-foreground sm:text-sm"
+          >
+            <span>{bannerMessage}</span>
+            <div className="flex shrink-0 items-center gap-2">
+              {isGuest && (
+                <Link
+                  href="/login?callbackUrl=%2Fworkspace%2Fbenefits"
+                  className="rounded-lg bg-emerald-700 px-3 py-1 text-xs font-bold text-white hover:bg-emerald-800"
+                >
+                  {isEn ? "Sign In to Credit Points →" : "立即登录入账 →"}
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={() => setBannerMessage("")}
+                className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
+              >
+                {isEn ? "Dismiss" : "收起"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Main Split Grid: Left = 3D Claw Machine / Starlight Roulette Pod, Right = 4-Tab Gamified Quest Center */}
-      <div className="mt-5 grid gap-6 lg:grid-cols-12">
+      <div className="grid gap-6 lg:grid-cols-12">
         {/* Left Column (5 cols): 3D Claw Machine, Starlight Roulette & 4-View .glb Studio */}
-        <div className="flex flex-col justify-between rounded-2xl border border-border bg-muted/20 p-4 lg:col-span-5">
+        <div className="flex flex-col justify-between rounded-3xl border border-border bg-card p-5 lg:col-span-5">
           <div>
             {/* Mode Switcher */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="inline-flex flex-wrap rounded-xl border border-border bg-background p-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+              <div className="inline-flex flex-wrap gap-1">
                 <button
                   type="button"
                   onClick={() => setArcadeMode("claw")}
                   className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                     arcadeMode === "claw"
-                      ? "bg-amber-500 text-slate-950 shadow-sm"
+                      ? "bg-amber-500 text-slate-950"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {isEn ? "🕹️ 3D Claw Machine" : "🕹️ 3D 抓娃娃机"}
+                  {isEn ? "3D Claw Machine" : "3D 抓娃娃机"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setArcadeMode("roulette")}
                   className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                     arcadeMode === "roulette"
-                      ? "bg-emerald-600 text-white shadow-sm dark:bg-emerald-400 dark:text-slate-950"
+                      ? "bg-emerald-700 text-white dark:bg-emerald-400 dark:text-slate-950"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {isEn ? "🎡 Lucky Wheel" : "🎡 积分转盘"}
+                  {isEn ? "Lucky Wheel" : "积分转盘"}
                 </button>
                 <button
                   type="button"
@@ -1222,14 +1226,14 @@ export function ComputeQuestArcade({
                   onClick={() => setArcadeMode("glb")}
                   className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                     arcadeMode === "glb"
-                      ? "bg-cyan-600 text-white shadow-sm dark:bg-cyan-400 dark:text-slate-950"
+                      ? "bg-cyan-700 text-white dark:bg-cyan-400 dark:text-slate-950"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {isEn ? "🧊 3D Model View" : "🧊 3D 模型预览"}
+                  {isEn ? "3D Model View" : "3D 模型预览"}
                 </button>
               </div>
-              <span className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-[11px] font-bold text-purple-800 dark:text-purple-200">
+              <span className="rounded-lg bg-purple-500/10 px-2 py-1 text-[11px] font-bold text-purple-900 dark:text-purple-200">
                 {isEn ? `Pity Counter: ${state.pityCounter}/10` : `十抽保底进度：${state.pityCounter}/10`}
               </span>
             </div>
@@ -1237,7 +1241,7 @@ export function ComputeQuestArcade({
             {arcadeMode === "claw" ? (
               /* 3D Claw Machine Cabinet */
               <div className="mt-3">
-                <div className="relative h-64 w-full overflow-hidden rounded-2xl border-2 border-slate-800 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-slate-100 shadow-inner">
+                <div className="relative h-64 w-full overflow-hidden rounded-xl bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
                   {/* Top Header */}
                   <div className="relative z-10 flex items-center justify-between border-b border-white/10 bg-black/55 px-3 py-1.5 text-[10px] font-bold text-amber-300">
                     <span>
@@ -1335,13 +1339,13 @@ export function ComputeQuestArcade({
                       ? state.arcadeTokens > 0
                         ? isEn
                           ? "🕹️ DROP CLAW (1 Token · 100% Win)"
-                          : "🕹️ 投币下爪抓取（耗 1 币 · 100% 必中算力）"
+                          : "🕹️ 投币下爪抓取（耗 1 币 · 每次必得积分）"
                         : isEn
                           ? "🪙 SPEND 10 PTS & DROP CLAW (100% Win)"
-                          : "🪙 花 10 积分投币下爪（100% 必中 · 冲 1000分 锦鲤）"
+                          : "🪙 10 积分兑 1 币下爪"
                       : isEn
                         ? "⚙️ Claw Grabbing Capsule..."
-                        : "⚙️ 机械爪正在抓起盲盒胶囊..."}
+                        : "⚙️ 机械爪正在抓起胶囊..."}
                   </button>
                 </div>
               </div>
@@ -1391,8 +1395,8 @@ export function ComputeQuestArcade({
                   </div>
                   <p className="mt-2 text-[11px] text-slate-300">
                     {isEn
-                      ? "100% Win Rate · 0.1% Mythic 1,000 Pts Jackpot & 0.9% UR 300 Pts!"
-                      : "100% 必中 · 更有 0.1% 天选锦鲤 1000 积分 & 0.9% UR 龙蛋 300 积分大奖！"}
+                      ? "100% Win Rate · Win 10 to 1,000 Compute Points on every spin"
+                      : "每次必得积分或星豆奖励，最高可得 1000 积分"}
                   </p>
                 </div>
 
@@ -1407,10 +1411,10 @@ export function ComputeQuestArcade({
                     {state.arcadeTokens > 0
                       ? isEn
                         ? "🎡 Spin 1x (1 Token)"
-                        : "🎡 单抽星轨转盘（耗 1 币）"
+                        : "🎡 转盘单抽（耗 1 币）"
                       : isEn
                         ? "🪙 Spend 10 Pts & Spin 1x"
-                        : "🪙 花 10 积分单抽转盘"}
+                        : "🪙 10 积分单抽转盘"}
                   </button>
                   <button
                     type="button"
@@ -1419,7 +1423,7 @@ export function ComputeQuestArcade({
                     data-testid="roulette-spin-5"
                     className="rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 px-3 py-2 text-xs font-black text-white shadow-sm hover:brightness-105 disabled:opacity-50"
                   >
-                    {isEn ? "⚡ 5x Burst Spin" : "⚡ 五连暴击转盘（速冲保底）"}
+                    {isEn ? "⚡ 5x Spin" : "⚡ 转盘五连抽"}
                   </button>
                 </div>
               </div>
@@ -1454,7 +1458,7 @@ export function ComputeQuestArcade({
 
                       <div className="relative flex h-52 flex-col justify-between overflow-hidden rounded-xl border border-amber-500/40 bg-white p-2 text-slate-900">
                         <div className="flex items-center justify-between rounded bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-amber-300">
-                          <span>{isEn ? "OpenLux 2×2 Four-View" : "OpenLux 2×2 正交四视图"}</span>
+                          <span>{isEn ? "OpenLux 2×2 Four-View" : "2×2 正交四视图"}</span>
                           <span>F/B/L/R</span>
                         </div>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1484,8 +1488,7 @@ export function ComputeQuestArcade({
                         </a>
                       </div>
                       <div className="mt-1 text-muted-foreground">
-                        Tripo v3.1 Task: <code>{activeGlb.tripoTaskId.slice(0, 18)}...</code> · SHA256:{" "}
-                        <code>{activeGlb.sha256Prefix}</code> · {activeGlb.vertexCount} verts
+                        3D 模型资源：<code>{activeGlb.glbUrl}</code> · {activeGlb.vertexCount} 顶点 / {activeGlb.faceCount} 三角面
                       </div>
                       <div className="mt-1 line-clamp-2 text-[10px] text-muted-foreground" title={activeGlb.promptZh}>
                         Prompt: {activeGlb.promptZh}
@@ -1541,8 +1544,8 @@ export function ComputeQuestArcade({
             )}
             <div className="text-[11px] font-medium text-muted-foreground">
               {isEn
-                ? "Jackpot & Capsule Pool: 👑 SP Mythic Koi (1,000 Pts, 0.1%) · 🐉 UR Dragon Egg (300 Pts, 0.9%) · 🔋 SSR 4090 Cookie (80 Pts + 3D Voucher, 4%) · 🌾 SR Golden Wheat (15 Pts, 30%) · 🦖 R Mint Dino (10 Pts, 65%)"
-                : "奖池概率公示：👑 SP 天选锦鲤(1000分 ≈ ¥100, 0.1%) · 🐉 UR 紫金龙蛋(300分 ≈ ¥30, 0.9%) · 🔋 SSR 4090饼干(80分+3D券, 4%) · 🌾 SR 黄金麦穗(15分+市场券, 30%) · 🦖 R 薄荷星龙(10分保底, 65%)"}
+                ? "Prize Pool: 👑 SP Top Prize (1,000 Pts, 0.1%) · 🐉 UR Dragon Egg (300 Pts, 0.9%) · 🔋 SSR Compute Box (80 Pts + 3D Voucher, 4%) · 🌾 SR Golden Wheat (15 Pts, 30%) · 🦖 R Mint Dino (10 Pts, 65%)"
+                : "奖池概率说明：👑 SP 特等奖(1000分, 0.1%) · 🐉 UR 紫金龙蛋(300分, 0.9%) · 🔋 SSR 算力盲盒(80分+3D券, 4%) · 🌾 SR 黄金麦穗(15分+市场券, 30%) · 🦖 R 薄荷小恐龙(10分保底, 65%)"}
             </div>
           </div>
         </div>
@@ -1562,7 +1565,7 @@ export function ComputeQuestArcade({
                     },
                     {
                       id: "weekly",
-                      labelZh: "🛠️ 每周与市场变现",
+                      labelZh: "🛠️ 每周与市场创作",
                       labelEn: "🛠️ Weekly & Market",
                     },
                     {
@@ -1573,7 +1576,7 @@ export function ComputeQuestArcade({
                     {
                       id: "secret",
                       labelZh: `🦖 6大反常识彩蛋 (${unlockedSecretCount}/6)`,
-                      labelEn: `🦖 6 Secret Easter Eggs (${unlockedSecretCount}/6)`,
+                      labelEn: `🦖 6 Dino Easter Eggs (${unlockedSecretCount}/6)`,
                     },
                   ] as const
                 ).map(tabItem => (
@@ -1653,7 +1656,7 @@ export function ComputeQuestArcade({
                             ? `⏱️ ${state.vibehubReadSeconds}s / 60s...`
                             : isEn
                               ? "⚡ Start 60s Timer"
-                              : "⚡ 启动 60 秒沉浸计时"}
+                              : "⚡ 启动 60 秒阅读计时"}
                         </button>
                       )}
 
@@ -1678,14 +1681,22 @@ export function ComputeQuestArcade({
                         }`}
                       >
                         {claimed
-                          ? isEn
-                            ? "✓ Unlocked"
-                            : "✓ 已解锁入账"
-                          : progress > 0 && quest.targetCount > 1
-                            ? `${isEn ? "Claim" : "打卡领奖"} (${Math.min(progress, quest.targetCount)}/${quest.targetCount})`
+                          ? isGuest
+                            ? isEn
+                              ? "✓ Trial Claimed"
+                              : "✓ 已体验打卡"
                             : isEn
-                              ? "Unlock & Claim"
-                              : "一键打卡提现"}
+                              ? "✓ Claimed"
+                              : "✓ 已打卡领取"
+                          : progress > 0 && quest.targetCount > 1
+                            ? `${isEn ? "Claim" : "打卡领取"} (${Math.min(progress, quest.targetCount)}/${quest.targetCount})`
+                            : isGuest
+                              ? isEn
+                                ? "Try Check-In"
+                                : "体验打卡"
+                              : isEn
+                                ? "Claim Reward"
+                                : "一键打卡领取"}
                       </button>
                     </div>
                   </div>
@@ -1694,12 +1705,12 @@ export function ComputeQuestArcade({
             </div>
           </div>
 
-          {/* Footer Note: Anti-Abuse & Model Scope Protection */}
+          {/* Footer Note */}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[11px] text-muted-foreground">
             <span>
               {isEn
-                ? "🛡️ Anti-Abuse Guard: Unlocked welfare points are strictly scoped to their designated models (DeepSeek V4.1 Flash / Flagship Trio) and cannot be transferred."
-                : "🛡️ 防薅风控说明：福利金库解锁的积分严格绑定对应模型（DeepSeek V4.1 Flash / 农客松三大旗舰模型），不可跨池混用或转赠提现。"}
+                ? "🛡️ Note: Free compute points are used directly for calling models and workflows on ANS and cannot be transferred or exchanged for cash."
+                : "🛡️ 使用说明：免费领取的积分可直接用于站内调用大模型与兑换工作流，仅限站内使用，不支持转赠或折现。"}
             </span>
             <Link
               href="/competitions/agrihackathon"

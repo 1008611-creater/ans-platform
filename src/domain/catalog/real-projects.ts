@@ -14,7 +14,7 @@ export const REAL_CATALOG_PROJECTS = [
     "content": {
       "zh": {
         "title": "ANS × 小恐龙 3D 双模型互动展示",
-        "summary": "主理人 3D 建模与 ANS 吉祥物小恐龙同台展示：滚轮驱动顺时针绕头飞行、脸前超微距贴脸表情与鼠标悬停/点击碎碎念交互。",
+        "summary": "创作者 3D 建模与 ANS 吉祥物小恐龙同台展示：滚轮驱动顺时针绕头飞行、脸前超微距贴脸表情与鼠标悬停/点击碎碎念交互。",
         "sample": "ans.cauai.fun/showcase/ans-3d/index.html",
         "output": "双 3D 模型实时交互网页、顺时针伴飞运镜与线上产品亮点导览",
         "inputs": "鼠标滚轮控制飞行轨迹，鼠标悬停或点击小恐龙触发摸头与碎碎念互动",
@@ -37,8 +37,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS interactive showcase reusing same-origin 3D mascot assets."
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/dragon-arcade.webp",
     "coverUrl": "/catalog/gitglow-v1/ans-3d-showcase.svg",
-    "coverNote": "3D 双模型互动展示 · 主理人 × 小恐龙"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面 · 创作者 × 小恐龙"
   },
   {
     "slug": "liu-resume",
@@ -75,8 +76,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/magic-resume.webp",
     "coverUrl": "/catalog/gitglow-v1/liu-resume.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
   {
     "slug": "image2-library",
@@ -187,8 +189,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/niannian-drama.webp",
     "coverUrl": "/catalog/gitglow-v1/niannian-drama.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "Project-Native 斜切分镜墙门面风 × GitGlow 双封面"
   },
   {
     "slug": "niannian-edit",
@@ -362,8 +365,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/cauai-one.webp",
     "coverUrl": "/catalog/gitglow-v1/cauai-one.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
   {
     "slug": "hello-algo",
@@ -518,8 +522,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "joyceql 维护，收录于 HelloGitHub 第 124 期。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/magic-resume.webp",
     "coverUrl": "/catalog/gitglow-v1/magic-resume.webp",
-    "coverNote": "原项目官方素材 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
   {
     "slug": "vcard-portfolio",

@@ -41,7 +41,7 @@ cat weekly_commits.txt
 3. 遇到的卡点或报错：
 {{在此粘贴当前 Bug 或实验异常}}
 
-# Output Format（严格按以下四段式 Markdown 输出）
+# Output Format（严格按以下结构化 Markdown 输出）
 ## 一、本周核心进展摘要（3 条以内，量化结果先行）
 - **[模块/实验名]**：完成了什么动作 → 取得了什么量化指标变化（如准确率提升 X%、耗时降低 Y%）。
 
@@ -75,7 +75,7 @@ cat weekly_commits.txt
 
 ---
 
-## 1. Nature / 顶刊级 Abstract 四段式精修 Prompt
+## 1. Nature / 顶刊级 Abstract 结构化精修 Prompt
 
 \`\`\`markdown
 # Role
