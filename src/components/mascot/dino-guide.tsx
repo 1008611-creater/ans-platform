@@ -9,7 +9,7 @@ import { useSession } from "next-auth/react";
 import { ArrowUp, ArrowDown, ArrowUpRight, Square, X, Settings, Volume2, VolumeX, Sparkles, FolderPlus, Clapperboard, Coins, Users, Compass, BookOpen, RotateCcw, Maximize2, MoveUpLeft } from "lucide-react";
 import { DinoAvatar, type SpeechRequest } from "./dino-avatar";
 import { useDinoTask } from "./dino-task-context";
-import { guideReply, pageActions, pagePrompts, pageContextKey, type GuideAction } from "./guide-actions";
+import { guideReply, pageActions, pagePrompts, type GuideAction } from "./guide-actions";
 import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { openSiteSettings, updateSitePreferences, useSitePreferences } from "@/lib/site-preferences";
@@ -256,7 +256,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         </header>
         <div className="ans-companion-mode" role="group" aria-label={ui("conversationMode")}>
           <button type="button" aria-pressed={true} onClick={() => changeMode(actor ? "agent" : "guide")} disabled={agent.busy || agent.checkingReceipts}>
-            {locale === "zh" ? "💬 聊天模式 (伴随问答)" : "💬 Chat Mode"}
+            {locale === "zh" ? "🤖 Agent 对话" : "🤖 Agent Chat"}
           </button>
           <button
             type="button"
@@ -269,14 +269,14 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
                 if (q) {
                   window.dispatchEvent(new CustomEvent("ans:codex-prompt", { detail: { prompt: q } }));
                 }
-                const el = document.querySelector('[aria-label="Pi-Codex 个人工作台"]');
+                const el = document.querySelector('[data-testid="pi-codex-workbench"]');
                 if (el && "scrollIntoView" in el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                 return;
               }
               window.location.href = "/workspace" + (q ? `?prompt=${encodeURIComponent(q)}` : "");
             }}
           >
-            {locale === "zh" ? "🛠️ 工作模式 · Codex 工作台 ↗" : "🛠️ Work Mode · Codex ↗"}
+            {locale === "zh" ? "🛠️ 工作模式 ↗" : "🛠️ Work Mode ↗"}
           </button>
         </div>
         <CompanionSanctuaryBar
@@ -295,7 +295,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           <div className="ans-companion-body" ref={bindList} onScroll={rememberScroll}>
             {task && <section className="ans-companion-task" aria-labelledby={taskId}><div><h3 id={taskId}>{ui("currentTask")}</h3><span>{task.step}/3</span></div><p role="status">{t(`task.${task.phase}`)}</p><ol aria-label={t("taskSteps")}>{([1, 2, 3] as const).map(step => <li key={step} aria-current={step === task.step ? "step" : undefined}><span>0{step}</span>{t(`taskStep.${step}`)}</li>)}</ol><footer>{task.targetId && <button type="button" onClick={() => { focusTarget.current = task.targetId ?? null; changeOpen(false); }}>{t("taskAction")}<ArrowUpRight aria-hidden="true" /></button>}</footer></section>}
             <div className="ans-companion-conversation" role="log" aria-label={ui("conversationWithDino")} aria-live="polite" aria-relevant="additions">
-              {!messages.length && !agent.quote && <div className="ans-companion-welcome"><Sparkles aria-hidden="true" /><div><small>{ui("currentPage", { page: ui(pageContextKey(pathname)) })}</small><p>{greeting}</p></div></div>}
+              {!messages.length && !agent.quote && <div className="ans-companion-welcome"><Sparkles aria-hidden="true" /><div><p>{greeting}</p></div></div>}
               {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} /></Suspense>}</div>)}
               {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
               {mode === "agent" && <><AgentRecoveryStatus turns={agent.recovery.turns.filter(turn => turn.ticket !== agent.currentTicket)} onCheck={agent.recovery.check} /><AgentTurnStatus agent={agent} /></>}

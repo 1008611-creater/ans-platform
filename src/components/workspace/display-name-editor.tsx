@@ -408,6 +408,21 @@ function PiCodexWorkbench({
     }
   }
 
+  function forkActiveSampleToDraft() {
+    const forkedTask: CodexTask = {
+      ...activeTask,
+      id: "user-fork-" + Date.now(),
+      title: `草稿：${activeTask.title.replace(/^[^\s]+\s*/, "")}`,
+      tag: "我的草稿",
+      trace: ["已从引导范例复制为个人草稿，本地自动保存"],
+      summary: "已复制为你的个人草稿，可直接在右侧修改源码或输入新需求。",
+    };
+    const next = [forkedTask, ...userTasks];
+    saveUserTasks(next);
+    setActiveId(forkedTask.id);
+    toast.success("已复制为个人草稿");
+  }
+
   function downloadActiveHtml() {
     try {
       const blob = new Blob([activeTask.artifactCode], { type: "text/html;charset=utf-8" });
@@ -437,81 +452,83 @@ function PiCodexWorkbench({
 
   function switchToFloatingChat() {
     window.dispatchEvent(new CustomEvent("ans:open-companion-tab", { detail: { tab: "pi" } }));
-    toast.success("已打开右下角小恐龙对话窗");
+    toast.success("已切换至右下角 Agent 对话窗");
   }
 
   return (
     <div
       data-testid="pi-codex-workbench"
-      aria-label="Pi-Codex 个人工作台"
+      aria-label="Agent 工作模式"
       className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 text-slate-100 shadow-2xl"
     >
       {/* Top Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/90 px-4 py-3 sm:px-6">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="inline-flex items-center rounded-xl border border-slate-700 bg-slate-950 p-1 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800 bg-slate-900/90 px-4 py-2.5 sm:px-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center rounded-xl border border-slate-700/80 bg-slate-950 p-0.5 text-xs">
             <button
               type="button"
               onClick={switchToFloatingChat}
+              title="唤起右下角 Agent 悬浮对话窗"
               className="rounded-lg px-2.5 py-1 font-semibold text-slate-400 transition hover:bg-slate-800 hover:text-white"
             >
-              💬 悬浮对话窗
+              🤖 Agent 对话
             </button>
             <span className="rounded-lg bg-emerald-500 px-3 py-1 font-black text-slate-950 shadow-sm">
-              🛠️ 个人工作台
+              🛠️ 工作模式
             </span>
           </div>
           <select
             aria-label="选择推理与代码生成模型"
             value={model}
             onChange={e => setModel(e.target.value as typeof model)}
-            className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-bold text-emerald-300 outline-none focus:border-emerald-500"
+            className="rounded-xl border border-slate-700/80 bg-slate-900 px-2.5 py-1 text-xs font-bold text-emerald-300 outline-none focus:border-emerald-500"
           >
-            <option value="deepseek-v4.1-flash">⚡ DeepSeek-V4.1-Flash · 日常主力 (0.5分/次)</option>
-            <option value="gpt-6.1-sol">🧠 GPT-6.1-Sol · 复杂逻辑与论文 (1分/次)</option>
-            <option value="gpt-6-astra">🌟 GPT-6-Astra · 网页与前端代码 (1分/次)</option>
+            <option value="deepseek-v4.1-flash">⚡ DeepSeek-V4.1-Flash (0.5分)</option>
+            <option value="gpt-6.1-sol">🧠 GPT-6.1-Sol · 深度推理 (1分)</option>
+            <option value="gpt-6-astra">🌟 GPT-6-Astra · 前端代码 (1分)</option>
           </select>
           <button
             type="button"
             onClick={() => setShowOnboardingGuide(v => !v)}
-            className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-500/20"
+            title="查看 3 步上手说明"
+            className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-500/20"
           >
-            📖 {showOnboardingGuide ? "收起引导" : "新手引导"}
+            📖 {showOnboardingGuide ? "收起" : "引导"}
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <span className="rounded-xl border border-slate-800 bg-slate-900 px-2.5 py-1 text-slate-300">
             👤 {current} · <strong className="text-amber-300">{levelName}</strong>
             {actorId && <LegacyDisplayNameEditor actorId={actorId} current={current} />}
           </span>
           <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 font-bold text-emerald-300">
-            💰 真实余额: {livePoints} 积分
+            🪙 {livePoints} 积分
           </span>
-          <a href="/workspace/benefits" className="rounded-xl bg-emerald-500 px-3 py-1 font-black text-slate-950 transition hover:bg-emerald-400">
-            🎁 领免费积分
+          <a href="/workspace/benefits" className="rounded-xl bg-emerald-500 px-2.5 py-1 font-black text-slate-950 transition hover:bg-emerald-400">
+            🎁 领算力
           </a>
           <a href="/workspace/credits" className="rounded-xl border border-slate-700 bg-slate-900 px-2.5 py-1 font-semibold text-slate-200 transition hover:bg-slate-800">
-            🔑 账本 / 充值
+            🔑 账本
           </a>
         </div>
       </div>
 
-      {/* Collapsible Zero-AI-Flavor Onboarding Guide Banner */}
+      {/* Collapsible Onboarding Guide Banner */}
       {showOnboardingGuide && (
         <div
           data-testid="workbench-onboarding-guide"
-          className="border-b border-slate-800 bg-slate-900/60 px-4 py-3 sm:px-6"
+          className="border-b border-slate-800 bg-slate-900/60 px-4 py-2.5 sm:px-5"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 font-bold text-amber-300">
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-bold text-amber-300">
                 📖 3 步上手
               </span>
               <span className="text-slate-300">
-                <strong>① 写需求：</strong>底部输入你要做的网页或方案 →
-                <strong className="ml-1">② 看效果：</strong>右侧实时预览或切「源码编辑」手改 →
-                <strong className="ml-1">③ 存项目：</strong>左侧一键保存到我的立项项目。
+                <strong>① 写需求</strong>（底部输入）→
+                <strong className="ml-1">② 看效果</strong>（右侧预览/改源码）→
+                <strong className="ml-1">③ 存项目</strong>（一键保存立项）。
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -520,7 +537,7 @@ function PiCodexWorkbench({
                 onClick={handleStartBlankTask}
                 className="rounded-lg bg-emerald-500 px-2.5 py-1 text-xs font-black text-slate-950 hover:bg-emerald-400"
               >
-                + 新建空白任务
+                + 新建空白
               </button>
               <button
                 type="button"
@@ -534,47 +551,48 @@ function PiCodexWorkbench({
         </div>
       )}
 
-      {/* 3-Column Workbench Grid */}
-      <div className="grid min-h-[640px] grid-cols-1 lg:grid-cols-[260px_1fr_1.15fr]">
-        {/* Left Column: Real User Tasks vs Official Onboarding Samples */}
-        <aside className="flex flex-col justify-between border-b border-slate-800 bg-slate-900/50 p-3.5 lg:border-r lg:border-b-0">
-          <div className="space-y-4">
+      {/* 3-Column Studio Grid: Compact Task List (224px) | Prompt & Composer (340px) | Wide Live Canvas (1fr) */}
+      <div className="grid min-h-[620px] grid-cols-1 lg:grid-cols-[224px_340px_1fr]">
+        {/* Left Column: User Records & Starter Examples */}
+        <aside className="flex flex-col justify-between border-b border-slate-800 bg-slate-900/40 p-3 lg:border-r lg:border-b-0">
+          <div className="space-y-3.5">
             {/* Section 1: Real User Tasks */}
             <div>
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-[11px] font-extrabold text-emerald-400">
-                  📂 我的真实记录 ({userTasks.length})
+                  📂 我的记录 ({userTasks.length})
                 </span>
                 <button
                   type="button"
                   onClick={handleStartBlankTask}
                   className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
                 >
-                  + 新建空白
+                  + 新建
                 </button>
               </div>
               {userTasks.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/60 px-3 py-2.5 text-center text-xs text-slate-400">
-                  暂无运行记录
+                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/50 px-2.5 py-2 text-center text-[11px] text-slate-500">
+                  暂无个人记录
                 </div>
               ) : (
-                <div className="space-y-1.5">
+                <div className="max-h-[210px] space-y-1 overflow-y-auto pr-0.5">
                   {userTasks.map(t => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={() => setActiveId(t.id)}
-                      className={`w-full rounded-xl border p-2.5 text-left transition ${
+                      className={`group w-full rounded-xl border px-2.5 py-2 text-left transition ${
                         t.id === activeTask.id
                           ? "border-emerald-500/60 bg-emerald-500/15 text-white shadow-sm"
                           : "border-slate-800/80 bg-slate-900/60 text-slate-300 hover:border-slate-700 hover:bg-slate-900"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-1 text-[10px]">
-                        <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 font-bold text-emerald-300">{t.tag}</span>
-                        <span className="text-slate-400">{t.status === "running" ? "⚡ 生成中" : "✓ 已保存"}</span>
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="line-clamp-1 text-xs font-bold">{t.title}</span>
+                        <span className="shrink-0 text-[10px] text-emerald-300">
+                          {t.status === "running" ? "⚡" : "✓"}
+                        </span>
                       </div>
-                      <div className="mt-1 line-clamp-1 text-xs font-bold">{t.title}</div>
                     </button>
                   ))}
                 </div>
@@ -582,121 +600,148 @@ function PiCodexWorkbench({
             </div>
 
             {/* Section 2: Onboarding Sample Walkthroughs */}
-            <div className="border-t border-slate-800 pt-3">
+            <div className="border-t border-slate-800/80 pt-3">
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-[11px] font-extrabold text-amber-300/90">
-                  📖 新手引导范例
+                  📖 引导范例
                 </span>
+                <span className="text-[10px] text-slate-500">点击即看</span>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {guideTasks.map(t => (
                   <button
                     key={t.id}
                     type="button"
                     onClick={() => setActiveId(t.id)}
-                    className={`w-full rounded-xl border p-2 text-left transition ${
+                    title={t.summary}
+                    className={`group w-full rounded-xl border px-2.5 py-2 text-left transition ${
                       t.id === activeTask.id
                         ? "border-amber-500/60 bg-amber-500/15 text-white shadow-sm"
                         : "border-slate-800/70 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-slate-200"
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-1 text-[10px]">
-                      <span className="rounded bg-amber-500/20 px-1.5 py-0.2 font-semibold text-amber-300">
-                        {t.tag}
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className="line-clamp-1 text-xs font-semibold">{t.title}</span>
+                      <span className="shrink-0 rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold text-amber-300 opacity-75 group-hover:opacity-100">
+                        {t.tag.replace("范例", "")}
                       </span>
                     </div>
-                    <div className="mt-1 line-clamp-1 text-xs font-semibold">{t.title}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Section 3: Real Account Actions */}
-            <div className="border-t border-slate-800 pt-3">
-              <span className="text-[11px] font-extrabold text-slate-400">⚡ 快捷操作</span>
-              <div className="mt-2 grid gap-1.5">
+            {/* Section 3: Quick Actions */}
+            <div className="border-t border-slate-800/80 pt-3">
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   type="button"
                   onClick={() => void executeCodexTask(activeTask.title, "scaffold")}
-                  className="rounded-xl border border-indigo-500/35 bg-indigo-500/15 px-2.5 py-2 text-left text-xs font-bold text-indigo-200 transition hover:bg-indigo-500/25"
+                  title="将当前作品保存至我的项目库"
+                  className="rounded-xl border border-indigo-500/35 bg-indigo-500/15 px-2 py-1.5 text-center text-[11px] font-bold text-indigo-200 transition hover:bg-indigo-500/25"
                 >
-                  🚀 保存当前内容到「我的项目」
+                  🚀 存为项目
                 </button>
                 <button
                   type="button"
                   onClick={() => void executeCodexTask("", "checkin")}
-                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-left text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20"
+                  title="每日签到领取 5 算力积分"
+                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 text-center text-[11px] font-bold text-emerald-300 transition hover:bg-emerald-500/20"
                 >
-                  📅 今日签到领算力 (+5分)
+                  📅 签到 +5
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-800 pt-3 text-[11px]">
-            <a href="/projects" className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
-              📂 我的项目库
+          <div className="mt-3 grid grid-cols-2 gap-1.5 border-t border-slate-800/80 pt-2.5 text-center text-[11px]">
+            <a href="/projects" className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
+              📂 项目库
             </a>
-            <a href="/market" className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
+            <a href="/market" className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
               🛒 工具市场
             </a>
           </div>
         </aside>
 
-        {/* Center Column: Task Context & Prompt Input */}
-        <section className="flex flex-col justify-between border-b border-slate-800 bg-slate-950 p-4 sm:p-5 lg:border-r lg:border-b-0">
-          <div className="space-y-3 overflow-y-auto">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
-              <div>
-                <span className="text-[11px] font-bold text-emerald-400">
-                  {activeTask.tag} · {activeTask.model}
-                </span>
-                <h2 className="mt-0.5 text-base font-extrabold text-white">{activeTask.title}</h2>
+        {/* Center Column: Prompt Context & Composer */}
+        <section className="flex flex-col justify-between border-b border-slate-800 bg-slate-950 p-3.5 sm:p-4 lg:border-r lg:border-b-0">
+          <div className="space-y-2.5 overflow-y-auto">
+            {/* Compact Task Header */}
+            <div className="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
+                  <span>{activeTask.tag}</span>
+                  <span>·</span>
+                  <span className="text-slate-400">{activeTask.model}</span>
+                </div>
+                <h2 className="mt-0.5 truncate text-sm font-extrabold text-white" title={activeTask.title}>
+                  {activeTask.title}
+                </h2>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300">
-                  {running ? "⚡ 生成中..." : isViewingGuideSample ? "📖 引导范例" : "✓ 已保存"}
-                </span>
+              <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                running
+                  ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300"
+                  : isViewingGuideSample
+                    ? "border-amber-500/40 bg-amber-500/15 text-amber-300"
+                    : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
+              }`}>
+                {running ? "⚡ 生成中" : isViewingGuideSample ? "📖 范例" : "✓ 已保存"}
+              </span>
+            </div>
+
+            {/* Prompt Bubble */}
+            <div className="rounded-xl border border-slate-800/90 bg-slate-900/60 p-2.5">
+              <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                <span>{isViewingGuideSample ? "💡 范例指令" : "🧑 任务需求"}</span>
                 {isViewingGuideSample && (
                   <button
                     type="button"
-                    onClick={handleStartBlankTask}
-                    className="rounded-lg bg-amber-400 px-2 py-0.5 text-[11px] font-bold text-slate-950 hover:bg-amber-300"
+                    onClick={() => setPromptInput(activeTask.prompt)}
+                    className="text-emerald-400 hover:underline"
                   >
-                    + 新建空白草稿
+                    填入输入框 ↓
                   </button>
                 )}
-              </div>
-            </div>
-
-            {/* User Prompt Bubble */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3">
-              <div className="text-[11px] font-bold text-slate-400">
-                {isViewingGuideSample ? "💡 示范输入" : "🧑 我的输入需求"}
               </div>
               <p className="mt-1 text-xs leading-5 text-slate-100">{activeTask.prompt}</p>
             </div>
 
-            {/* Output Summary */}
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/15 p-3.5">
-              <div className="mb-1 text-xs font-extrabold text-emerald-300">
-                {isViewingGuideSample ? "📖 范例说明" : "✓ 输出结果"}
+            {/* Guide Sample Compact Bar OR Real Task Output Summary */}
+            {isViewingGuideSample ? (
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
+                <span className="truncate" title={activeTask.summary}>
+                  📖 右侧可直接点击交互或切「源码」修改
+                </span>
+                <button
+                  type="button"
+                  onClick={forkActiveSampleToDraft}
+                  className="shrink-0 rounded-lg bg-amber-400 px-2 py-0.5 text-[10px] font-black text-slate-950 hover:bg-amber-300"
+                >
+                  复制为草稿
+                </button>
               </div>
-              <div className="whitespace-pre-wrap text-xs leading-6 text-slate-200">{activeTask.summary}</div>
-              {activeTask.links && activeTask.links.length > 0 && (
-                <div className="mt-2.5 flex flex-wrap gap-2">
-                  {activeTask.links.map((lk, i) => (
-                    <a
-                      key={i}
-                      href={lk.href}
-                      className="rounded-lg border border-indigo-400/50 bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-200 hover:bg-indigo-500/30"
-                    >
-                      {lk.labelZh || lk.labelEn} ↗
-                    </a>
-                  ))}
+            ) : (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/15 p-3">
+                <div className="mb-1 text-[11px] font-extrabold text-emerald-300">✓ 执行结果</div>
+                <div className="max-h-[160px] overflow-y-auto whitespace-pre-wrap text-xs leading-5 text-slate-200">
+                  {activeTask.summary}
                 </div>
-              )}
-            </div>
+                {activeTask.links && activeTask.links.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {activeTask.links.map((lk, i) => (
+                      <a
+                        key={i}
+                        href={lk.href}
+                        className="rounded-lg border border-indigo-400/50 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
+                      >
+                        {lk.labelZh || lk.labelEn} ↗
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Bottom Composer */}
@@ -705,14 +750,14 @@ function PiCodexWorkbench({
               e.preventDefault();
               void executeCodexTask();
             }}
-            className="mt-4 rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-inner"
+            className="mt-3 rounded-2xl border border-slate-700/90 bg-slate-900 p-2.5 shadow-inner"
           >
             <textarea
               id="codex-composer-input"
               rows={3}
               value={promptInput}
               onChange={e => setPromptInput(e.target.value)}
-              placeholder="输入你要做的任务：如「写一个番茄钟网页」「梳理农客松参赛答辩提纲」..."
+              placeholder="输入你要做的网页、脚本或农客松方案（Enter 发送）..."
               className="w-full resize-none bg-transparent text-xs leading-5 text-white placeholder:text-slate-500 focus:outline-none"
               onKeyDown={e => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -724,9 +769,8 @@ function PiCodexWorkbench({
             {(() => {
               const cluster = detectIntentAndMatchTerms(promptInput || activeTask.prompt);
               return (
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 rounded-xl border border-slate-800 bg-slate-950/80 px-2.5 py-1.5" data-testid="codex-intent-bridge">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] text-slate-400">补充项：</span>
+                <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 rounded-xl border border-slate-800 bg-slate-950/80 px-2 py-1" data-testid="codex-intent-bridge">
+                  <div className="flex flex-wrap items-center gap-1">
                     {cluster.terms.map(term => (
                       <button
                         key={term.slug}
@@ -738,7 +782,7 @@ function PiCodexWorkbench({
                             return base.includes(term.appendText.zh) ? base : `${base}\n- ${term.appendText.zh}`;
                           });
                         }}
-                        className="rounded-md border border-slate-700 bg-slate-900 px-2 py-0.5 text-[11px] text-slate-200 transition hover:border-emerald-400/60 hover:text-emerald-300"
+                        className="rounded-md border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-[10px] text-slate-300 transition hover:border-emerald-400/60 hover:text-emerald-300"
                       >
                         + {term.label.zh}
                       </button>
@@ -746,12 +790,13 @@ function PiCodexWorkbench({
                   </div>
                   <button
                     type="button"
+                    title="将简短想法扩充为结构化需求"
                     onClick={() => {
                       const upgraded = upgradeToStructuredBrief(promptInput || activeTask.prompt, "zh");
                       setPromptInput(upgraded);
-                      toast.success("已补充需求细节");
+                      toast.success("已补齐结构化细节");
                     }}
-                    className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300 transition hover:bg-emerald-500/25"
+                    className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-300 transition hover:bg-emerald-500/25"
                   >
                     ✨ 补齐细节
                   </button>
@@ -759,18 +804,18 @@ function PiCodexWorkbench({
               );
             })()}
 
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800 pt-2">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 border-t border-slate-800 pt-2">
               <div className="flex flex-wrap gap-1">
                 {[
-                  ["🌐 试写网页", "请用单文件 HTML5 + CSS + JS 写一个简洁好用的实验数据记录与折线图网页"],
+                  ["🌐 写网页", "请用单文件 HTML5 + CSS + JS 写一个简洁好用的实验数据记录与折线图网页"],
                   ["🌾 农客松提纲", "帮我梳理一份中国农大农客松智慧农业参赛项目痛点、方案与分工提纲"],
-                  ["📄 论文润色", "帮我润色一段农业遥感方向的中英文论文摘要，并列出修改原因"],
+                  ["📄 改摘要", "帮我润色一段农业遥感方向的中英文论文摘要，并列出修改原因"],
                 ].map(([label, sample]) => (
                   <button
                     key={label}
                     type="button"
                     onClick={() => setPromptInput(sample)}
-                    className="rounded-lg border border-slate-700 bg-slate-800/90 px-2 py-0.5 text-[11px] text-slate-300 hover:border-emerald-500/50 hover:text-white"
+                    className="rounded-lg border border-slate-700/80 bg-slate-800/90 px-2 py-0.5 text-[10px] text-slate-300 hover:border-emerald-500/50 hover:text-white"
                   >
                     {label}
                   </button>
@@ -779,23 +824,23 @@ function PiCodexWorkbench({
               <button
                 type="submit"
                 disabled={running}
-                className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-4 py-1.5 text-xs font-black text-slate-950 shadow-md transition hover:brightness-110 disabled:opacity-50"
+                className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-3.5 py-1.5 text-xs font-black text-slate-950 shadow-md transition hover:brightness-110 disabled:opacity-50"
               >
-                {running ? "⚡ 正在运行..." : "⚡ 发送并运行"}
+                {running ? "⚡ 运行中..." : "⚡ 发送并运行"}
               </button>
             </div>
           </form>
         </section>
 
-        {/* Right Column: Live Preview / Code Editor / Terminal / Quick Tools Canvas */}
+        {/* Right Column: Wide Studio Live Preview / Code Editor / Logs / Quick Nav */}
         <section className="flex flex-col bg-slate-900/80">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-slate-950/70 px-4 py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-slate-950/80 px-4 py-2">
             <div className="flex flex-wrap items-center gap-1">
               {[
-                { id: "preview", label: "👁️ 实时预览" },
-                { id: "code", label: "💻 源码编辑" },
-                { id: "terminal", label: "📟 运行日志" },
-                { id: "tools", label: "🧰 站内导航" },
+                { id: "preview", label: "👁️ 预览" },
+                { id: "code", label: "💻 源码" },
+                { id: "terminal", label: "📟 日志" },
+                { id: "tools", label: "🧰 导航" },
               ].map(t => (
                 <button
                   key={t.id}
@@ -808,14 +853,28 @@ function PiCodexWorkbench({
                   {t.label}
                 </button>
               ))}
+              <code className="ml-1.5 hidden rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-[11px] text-emerald-300 sm:inline-block">
+                {activeTask.artifactFile}
+              </code>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setPreviewKey(k => k + 1)}
+                title="重新加载预览画布"
                 className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
               >
                 🔄 刷新
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard?.writeText(activeTask.artifactCode);
+                  toast.success("已复制源码");
+                }}
+                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
+              >
+                📋 复制
               </button>
               <button
                 type="button"
@@ -831,69 +890,38 @@ function PiCodexWorkbench({
               >
                 🖥️ 新窗口 ↗
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard?.writeText(activeTask.artifactCode);
-                  toast.success("已复制源码");
-                }}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
-              >
-                📋 复制
-              </button>
             </div>
           </div>
 
-          <div className="flex-1 p-4">
+          <div className="flex flex-1 flex-col p-3">
             {canvasTab === "preview" && (
               activeTask.artifactType === "html" ? (
-                <div className="flex h-full flex-col gap-2">
-                  <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 text-[11px] text-slate-400">
-                    <span>
-                      <code className="text-emerald-300">{activeTask.artifactFile}</code>
-                    </span>
-                    <button type="button" onClick={() => setCanvasTab("code")} className="text-emerald-400 hover:underline">
-                      编辑源码 →
-                    </button>
-                  </div>
-                  <iframe
-                    key={`${activeTask.id}-${previewKey}`}
-                    title="Live Artifact Preview"
-                    srcDoc={activeTask.artifactCode}
-                    sandbox="allow-scripts"
-                    className="min-h-[520px] w-full flex-1 rounded-2xl border border-slate-800 bg-slate-950 shadow-inner"
-                  />
-                </div>
+                <iframe
+                  key={`${activeTask.id}-${previewKey}`}
+                  title="Live Artifact Preview"
+                  srcDoc={activeTask.artifactCode}
+                  sandbox="allow-scripts"
+                  className="min-h-[540px] w-full flex-1 rounded-2xl border border-slate-800 bg-slate-950 shadow-inner"
+                />
               ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300">
-                    <span><code className="text-emerald-300">{activeTask.artifactFile}</code></span>
-                    <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">{activeTask.artifactType.toUpperCase()}</span>
-                  </div>
-                  <pre className="max-h-[520px] overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-200">
-                    {activeTask.artifactCode}
-                  </pre>
-                </div>
+                <pre className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-200">
+                  {activeTask.artifactCode}
+                </pre>
               )
             )}
 
             {canvasTab === "code" && (
-              <div className="flex h-full flex-col gap-2">
-                <div className="flex items-center justify-between text-[11px] text-slate-400">
-                  <span><strong className="text-emerald-300">{activeTask.artifactFile}</strong></span>
-                  <span>{activeTask.artifactCode.split("\n").length} 行</span>
-                </div>
-                <textarea
-                  value={activeTask.artifactCode}
-                  onChange={e => updateActiveCode(e.target.value)}
-                  className="min-h-[520px] w-full flex-1 rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-300 focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
+              <textarea
+                value={activeTask.artifactCode}
+                onChange={e => updateActiveCode(e.target.value)}
+                aria-label="源码编辑器"
+                className="min-h-[540px] w-full flex-1 rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-300 focus:border-emerald-500 focus:outline-none"
+              />
             )}
 
             {canvasTab === "terminal" && (
-              <div className="min-h-[520px] rounded-2xl border border-slate-800 bg-black p-4 font-mono text-xs leading-6 text-emerald-400">
-                <div className="mb-2 border-b border-slate-800 pb-2 text-slate-400">真实操作记录（仅记录当前会话操作）</div>
+              <div className="min-h-[540px] flex-1 rounded-2xl border border-slate-800 bg-black p-4 font-mono text-xs leading-6 text-emerald-400">
+                <div className="mb-2 border-b border-slate-800 pb-2 text-slate-400">会话操作日志</div>
                 {terminalLogs.map((line, i) => (
                   <div key={i}>{line}</div>
                 ))}
@@ -901,26 +929,26 @@ function PiCodexWorkbench({
             )}
 
             {canvasTab === "tools" && (
-              <div className="grid gap-2.5 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {[
-                  ["⚡ 模型演练场", "/workspace/models", "对比测试 DeepSeek 与 GPT 模型输出"],
-                  ["🎨 3D 个人简历站生成", "/market/resume-website", "生成可独立部署的 3D 个人作品集网页"],
-                  ["🎬 Hypit 视频工作台", "/workflows/hypit", "视频脚本与分镜制作工具"],
-                  ["🎭 Toonflow 短剧工坊 ↗", "https://toonflow.cauai.fun", "小说转分镜与漫剧创作站点"],
-                  ["📚 VibeHub 教程库", "/vibe-hub", "AI 编程入门教程与实战指南"],
-                  ["🎁 算力福利中心", "/workspace/benefits", "做任务、玩抓娃娃机免费领积分"],
-                  ["🛒 工具与工作流市场", "/market", "用积分兑换现成科研与创作工具"],
+                  ["⚡ 模型演练场", "/workspace/models", "多模型同屏对比输出"],
+                  ["🎨 3D 个人简历站", "/market/resume-website", "一键生成 3D 作品集网页"],
+                  ["🎬 Hypit 视频工作台", "/workflows/hypit", "视频脚本与分镜生成"],
+                  ["🎭 Toonflow 短剧工坊 ↗", "https://toonflow.cauai.fun", "小说转分镜与漫剧制作"],
+                  ["📚 VibeHub 教程库", "/vibe-hub", "AI 编程实战指南"],
+                  ["🎁 算力福利中心", "/workspace/benefits", "抓娃娃与任务领积分"],
+                  ["🛒 工具与工作流市场", "/market", "兑换科研与创作工具包"],
                   ["🤝 比赛组队大厅", "/teams", "创建或加入参赛队伍"],
-                  ["📦 我的已购订单", "/market/orders", "查看已兑换的工具包交付物"],
-                  ["🔑 算力账本与卡密充值", "/workspace/credits", "查看真实积分流水、兑换卡密"],
+                  ["📦 我的已购订单", "/market/orders", "查看已兑换工具交付物"],
+                  ["🔑 算力账本与充值", "/workspace/credits", "查看积分流水与卡密兑换"],
                 ].map(([title, href, desc]) => (
                   <a
                     key={href}
                     href={href}
-                    className="rounded-xl border border-slate-800 bg-slate-950/90 p-3 transition hover:border-emerald-500/50 hover:bg-slate-900"
+                    className="group rounded-xl border border-slate-800 bg-slate-950/90 p-3 transition hover:border-emerald-500/50 hover:bg-slate-900"
                   >
-                    <div className="text-xs font-bold text-white">{title}</div>
-                    <div className="mt-1 text-[11px] text-slate-400">{desc}</div>
+                    <div className="text-xs font-bold text-white group-hover:text-emerald-300">{title}</div>
+                    <div className="mt-0.5 text-[11px] text-slate-400">{desc}</div>
                   </a>
                 ))}
               </div>

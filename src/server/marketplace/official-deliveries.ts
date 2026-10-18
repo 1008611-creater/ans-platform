@@ -269,14 +269,14 @@ export function AgriDashboardGrid() {
 \`\`\`
 `,
 
-  "open-pi-agent-rag-toolchain": `# 📦 交付包：Pi Agent 多工具编排与农业知识图谱 RAG 实战套件
+  "open-pi-agent-rag-toolchain": `# 📦 交付包：Agent 多工具编排与农业知识图谱 RAG 实战套件
 
 > **状态**：✅ ANS 官方自动秒发（已永久解锁）  
-> **架构亮点**：零臃肿框架依赖、遵循 Pi-style 极简 \`think -> tool_call -> observe -> answer\` 循环。
+> **架构亮点**：零臃肿框架依赖、遵循极简 \`think -> tool_call -> observe -> answer\` 循环。
 
 ---
 
-## 1. 极简 Pi-Style Agent 工具循环核心实现（TypeScript）
+## 1. 极简 Agent 工具循环核心实现（TypeScript）
 
 \`\`\`typescript
 export interface PiTool {

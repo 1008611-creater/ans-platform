@@ -8,8 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DisplayNameEditor } from "@/components/workspace/display-name-editor";
-import { CreationTools } from "@/components/workspace/creation-tools";
-import { PageHeading } from "@/components/layout/page-heading";
 
 export async function generateMetadata() {
   const t = await getTranslations("product.workspace");
@@ -32,7 +30,6 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   const t = await getTranslations("product.workspace");
   const locale = await getLocale();
   const computeCopy = await getTranslations("product.computeHistory");
-  const product = await getTranslations("product");
   const quotaCopy = await getTranslations("product.quotaHistory");
   const query = searchParams ? await searchParams : {};
   const rawCursor = Array.isArray(query.runsCursor) ? query.runsCursor[0] : query.runsCursor;
@@ -95,22 +92,18 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         initialPrompt={initialPrompt}
       />
 
-      <details className="mt-6 rounded-2xl border border-border/70 bg-card/60 p-4">
+      <details className="mt-5 rounded-2xl border border-border/70 bg-card/60 p-4">
         <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 text-sm font-semibold">
           <span>
-            📊 {locale === "zh" ? "账户资产、算力流水与运行记录" : "Account Balance, Credits & Run History"}
+            📊 {locale === "zh" ? "算力流水、项目归档与团队概览" : "Credits, Runs & Teams"}
           </span>
           <span className="text-xs font-normal text-muted-foreground">
-            {displayName} · {levelName} · {currentPoints.toLocaleString()} {t("pointsUnit")}
+            {locale === "zh"
+              ? `运行 ${runCount} 次 · 团队 ${memberships.length} 个`
+              : `${runCount} Runs · ${memberships.length} Teams`}
           </span>
         </summary>
         <div className="mt-4">
-          {userId && (
-            <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
-              <Button asChild size="sm" variant="outline"><Link href="/projects">{product("myProjects")}</Link></Button>
-              <Button asChild size="sm" variant="outline"><Link href="/workflows/runs">{locale === "zh" ? "运行记录" : "Workflow Runs"}</Link></Button>
-            </div>
-          )}
       <section className="ans-account-summary">
         <Card>
           <CardHeader className="pb-2">

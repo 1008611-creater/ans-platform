@@ -163,7 +163,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             summary: "零依赖 HTML5 Canvas 3D 星空粒子交互主页，支持响应式 Bento 卡片、项目时间线与一键导出源码。",
             deliv: "单文件 HTML5 3D 粒子网页\nBento 作品集响应式布局\n在线预览与源码包",
             cover: "https://ans.cauai.fun/catalog/gitglow-v1/cauai-one.webp",
-            desc: "使用 Pi-Codex 工作台 30 秒生成的 3D 星空粒子个人主页，内置鼠标视差追踪与 Bento 作品矩阵。",
+            desc: "使用工作模式 30 秒生成的 3D 星空粒子个人主页，内置鼠标视差追踪与 Bento 作品卡片。",
             url: "https://ans.cauai.fun/workspace?thread=thread-portfolio",
             git: "https://github.com/cauai/vibe-3d-portfolio",
           },

@@ -31,11 +31,11 @@ export async function claimDailyBenefitViaPi(actor: string): Promise<PiActionRes
       ok: true,
       toolUsed: "claim_daily_benefit",
       replyZh: alreadyClaimed
-        ? `📅 今日算力签到已经打过卡啦！当前账户可用算力余额为 **${balancePoints.toFixed(1)} 积分**。`
-        : `🎉 **Pi Agent 已帮你完成今日算力签到！** 到账 **+${pointsGranted} 积分** + **1 枚抓娃娃币**！当前账户余额：**${balancePoints.toFixed(1)} 积分**。`,
+        ? `📅 今日算力签到已经打过卡啦！当前账户可用余额为 **${balancePoints.toFixed(1)} 积分**。`
+        : `🎉 **Agent 已帮你完成今日算力签到！** 到账 **+${pointsGranted} 积分** + **1 枚抓娃娃币**！当前账户余额：**${balancePoints.toFixed(1)} 积分**。`,
       replyEn: alreadyClaimed
         ? `📅 Today's check-in is already claimed! Current balance: **${balancePoints.toFixed(1)} pts**.`
-        : `🎉 **Pi Agent completed your daily check-in!** Granted **+${pointsGranted} pts** + **1 claw token**! Current balance: **${balancePoints.toFixed(1)} pts**.`,
+        : `🎉 **Agent completed your daily check-in!** Granted **+${pointsGranted} pts** + **1 claw token**! Current balance: **${balancePoints.toFixed(1)} pts**.`,
       pointsDelta: pointsGranted,
       balancePoints,
       data: res,
@@ -48,8 +48,8 @@ export async function claimDailyBenefitViaPi(actor: string): Promise<PiActionRes
         },
         {
           href: "/market",
-          title: "去 ANS 市场花积分",
-          detail: "用积分购买/运行 AI 工作流与农大科研工具",
+          title: "去 ANS 市场使用积分",
+          detail: "兑换 AI 工作流与农大科研工具",
           icon: "discover",
         },
       ],
@@ -95,22 +95,22 @@ export async function playClawArcadeViaPi(actor: string): Promise<PiActionResult
     return {
       ok: true,
       toolUsed: "play_claw_arcade",
-      replyZh: `🕹️ **Pi Agent 帮你下爪抓娃娃成功！** ${tokenNoteZh}\n抓中 **【${tier} · ${labelZh}】**，获得 **+${pointsGranted} 积分**！当前账户可用余额：**${balancePoints.toFixed(1)} 积分**。`,
-      replyEn: `🕹️ **Pi Agent played the 3D Claw Machine!** ${tokenNoteEn}\nCaught **[${tier} · ${labelZh}]** for **+${pointsGranted} pts**! Balance: **${balancePoints.toFixed(1)} pts**.`,
+      replyZh: `🕹️ **Agent 帮你下爪抓娃娃成功！** ${tokenNoteZh}\n抓中 **【${tier} · ${labelZh}】**，获得 **+${pointsGranted} 积分**！当前账户可用余额：**${balancePoints.toFixed(1)} 积分**。`,
+      replyEn: `🕹️ **Agent played the 3D Claw Machine!** ${tokenNoteEn}\nCaught **[${tier} · ${labelZh}]** for **+${pointsGranted} pts**! Balance: **${balancePoints.toFixed(1)} pts**.`,
       pointsDelta: netPoints,
       balancePoints,
       data: { ...drawRes, spentForToken },
       links: [
         {
           href: "/market",
-          title: "去市场把积分花掉 (/market)",
+          title: "去市场使用积分 (/market)",
           detail: "解锁农学论文精修、方差分析、AI 短剧与简历建站工具",
           icon: "discover",
         },
         {
           href: "/workspace/benefits",
           title: "打开 3D 抓娃娃机主舱",
-          detail: `当前余额 ${balancePoints.toFixed(1)} 积分 · 0.1% 抽 1000分锦鲤`,
+          detail: `当前余额 ${balancePoints.toFixed(1)} 积分`,
           icon: "credits",
         },
       ],
@@ -122,12 +122,12 @@ export async function playClawArcadeViaPi(actor: string): Promise<PiActionResult
       ok: false,
       toolUsed: "play_claw_arcade",
       replyZh: isLowPoints
-        ? `⚠️ 免费抓娃娃币已用完，且账户积分不足 10 积分，无法兑币下爪。可以先让我帮你「代签到 (+5分)」或去福利页完成破冰问卷 (+50分)！`
+        ? `⚠️ 免费抓娃娃币已用完，且账户积分不足 10 积分。可以先点上方「📅 签到」或去福利页完成破冰问卷 (+50分)！`
         : `⚠️ 抓娃娃执行暂不可用（${code}），请前往算力游乐场操作。`,
       replyEn: isLowPoints
         ? `⚠️ No free tokens left and balance is under 10 pts. Claim daily check-in (+5 pts) or onboarding (+50 pts) first!`
         : `⚠️ Claw machine unavailable (${code}).`,
-      links: [{ href: "/workspace/benefits", title: "去领免费算力与抓娃娃币", detail: "90% 用户可领 100~150 积分", icon: "credits" }],
+      links: [{ href: "/workspace/benefits", title: "去领免费算力与抓娃娃币", detail: "新人可领 100~150 积分", icon: "credits" }],
     };
   }
 }
@@ -161,7 +161,7 @@ export async function searchMarketViaPi(query: string, viewerId?: string): Promi
   });
 
   const summaryListZh = items
-    .map((it, idx) => `${idx + 1}. **${it.title}**（${it.runnable ? "按运行计费 ~2积分" : `${it.pricePoints || 10} 积分`}）— ${it.summary.slice(0, 48)}…`)
+    .map((it, idx) => `${idx + 1}. **${it.title}**（${it.runnable ? "按运行计费 ~2积分" : `${it.pricePoints || 10} 积分`}）`)
     .join("\n");
   const summaryListEn = items
     .map((it, idx) => `${idx + 1}. **${it.title}** (${it.runnable ? "~2 pts/run" : `${it.pricePoints || 10} pts`})`)
@@ -171,10 +171,10 @@ export async function searchMarketViaPi(query: string, viewerId?: string): Promi
     ok: true,
     toolUsed: "search_market",
     replyZh: items.length
-      ? `🛒 **Pi Agent 已为你从 ANS 市场 (\`/market\`) 挑出 ${items.length} 款高性价比工具/工作流：**\n${summaryListZh}\n\n点击下方卡片即可直接进入对应商品页用积分兑换或一键运行！`
-      : `🛒 当前市场暂无完全匹配「${query}」的商品，点击下方按钮可浏览市场全部工具。`,
+      ? `🛒 **Agent 已为你从市场 (\`/market\`) 挑出 ${items.length} 款适用工具/工作流：**\n${summaryListZh}`
+      : `🛒 当前市场暂无完全匹配「${query}」的商品，点击下方可浏览全部工具。`,
     replyEn: items.length
-      ? `🛒 **Pi Agent found ${items.length} tools on ANS Market (\`/market\`):**\n${summaryListEn}`
+      ? `🛒 **Agent found ${items.length} tools on ANS Market (\`/market\`):**\n${summaryListEn}`
       : `🛒 No exact match for "${query}" on ANS Market. Browse all tools below.`,
     data: { items, totalPublished: offers.length },
     links: [
@@ -199,7 +199,7 @@ export async function scaffoldProjectDraftViaPi(actor: string, rawTopic: string)
   const markdown = [
     `# ${topic} — 项目立项书与技术架构草案`,
     ``,
-    `> 由 **ANS 小恐龙 Pi Agent** 自动生成并写入你的个人项目库，可直接用于农客松参赛申报、README 展示或团队协作。`,
+    `> 由 **ANS Agent** 自动生成并写入你的个人项目库，可直接用于农客松参赛申报、README 展示或团队协作。`,
     ``,
     `## 1. 核心痛点与场景定义`,
     `- **目标场景**：围绕「${topic}」解决传统人工经验效率低、数据孤岛或响应滞后的实际问题。`,
@@ -211,9 +211,9 @@ export async function scaffoldProjectDraftViaPi(actor: string, rawTopic: string)
     `3. **交互与交付层**：提供可视化 Web 看板、一键复现工作流与结构化报告导出。`,
     ``,
     `## 3. 最小可行原型 (MVP) 三步走计划`,
-    `- **Step 1（第 1~2 天）**：跑通核心 Prompt 与单点数据推理闭环，在 \`/workspace/models\` 验证准确率。`,
-    `- **Step 2（第 3~4 天）**：封装为可复用的 ANS 工作流并上架 \`/market\` 市场赚取积分分成。`,
-    `- **Step 3（第 5 天）**：完善路演演示页面与评测指标，提交至农客松作品墙拉票。`,
+    `- **Step 1（第 1~2 天）**：跑通核心 Prompt 与单点数据推理，在 \`/workspace/models\` 验证准确率。`,
+    `- **Step 2（第 3~4 天）**：封装为可复用的 ANS 工作流并上架 \`/market\` 市场。`,
+    `- **Step 3（第 5 天）**：完善路演演示页面与评测指标，提交至农客松作品墙。`,
   ].join("\n");
 
   const created = await db.project.create({
@@ -250,7 +250,7 @@ export async function scaffoldProjectDraftViaPi(actor: string, rawTopic: string)
           versions: {
             create: {
               version: 1,
-              contentJson: { title: topic, summary: `Pi Agent 自动生成的「${topic}」立项草案`, markdown },
+              contentJson: { title: topic, summary: `Agent 自动生成的「${topic}」立项草案`, markdown },
               contentMarkdown: markdown,
               factSnapshotHash: "pi-agent-scaffold-v1",
               createdById: actor,
@@ -265,8 +265,8 @@ export async function scaffoldProjectDraftViaPi(actor: string, rawTopic: string)
   return {
     ok: true,
     toolUsed: "scaffold_project_draft",
-    replyZh: `📝 **Pi Agent 已在你的工作台创建真实项目《${created.title}》！**\n同时已自动写入首版 **《README 与立项架构书》** 及核心项目事实，点击下方按钮即可直接打开编辑或提交参赛！`,
-    replyEn: `📝 **Pi Agent created project "${created.title}" in your workspace!**\nIncludes a complete v1 README & architecture blueprint. Click below to open and edit!`,
+    replyZh: `📝 **Agent 已在你的工作台创建真实项目《${created.title}》！**\n同时已自动写入首版 **《README 与立项架构书》** 及核心项目事实。`,
+    replyEn: `📝 **Agent created project "${created.title}" in your workspace!**\nIncludes a complete v1 README & architecture blueprint.`,
     data: { projectId: created.id, title: created.title, href: `/projects/${created.id}` },
     links: [
       {
@@ -344,7 +344,7 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
     return {
       ok: false,
       toolUsed: "redeem_market_item",
-      replyZh: `⚠️ 兑换《${title}》需要 **${pricePoints} 积分**，当前余额 **${currentBal} 积分**。请先点上方「📅 代签到 (+5分)」或「🕹️ 代抓娃娃搏锦鲤」领积分后再秒兑！`,
+      replyZh: `⚠️ 兑换《${title}》需要 **${pricePoints} 积分**，当前余额 **${currentBal} 积分**。请先点上方「📅 签到」或「🕹️ 抓娃娃」领积分后再秒兑！`,
       replyEn: `⚠️ Redeeming "${title}" requires ${pricePoints} pts (current balance: ${currentBal} pts). Click Check-in (+5pt) or Claw Pull first!`,
       balancePoints: currentBal,
       links: [
@@ -393,7 +393,7 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
         quote,
         totalMinor: priceMinor,
         currency: "CNY",
-        requirements: "Pi Agent 一键积分秒兑自动交付",
+        requirements: "Agent 一键积分秒兑自动交付",
         status: "DELIVERED",
         revision: 2,
         paidAt: new Date(),
@@ -410,7 +410,7 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
         reason: "RUN_COST",
         refType: "market_order",
         refId: order.id,
-        note: `Pi Agent instant redeem: ${target.slug}`,
+        note: `Agent instant redeem: ${target.slug}`,
       },
     });
     await tx.marketPointsEscrow.create({
@@ -460,8 +460,8 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
   return {
     ok: true,
     toolUsed: "redeem_market_item",
-    replyZh: `🎁 **Pi Agent 已帮你花 ${pricePoints} 积分秒兑《${title}》！**\n完整 Markdown 交付包（含可直接复制的 Prompt 工作流、代码脚本与模板）已自动解锁并写入订单！当前剩余 **${result.balance} 积分**。`,
-    replyEn: `🎁 **Pi Agent redeemed "${title}" for ${pricePoints} pts!**\nFull Markdown toolkit has been auto-delivered to your order! Balance: **${result.balance} pts**.`,
+    replyZh: `🎁 **Agent 已帮你花 ${pricePoints} 积分秒兑《${title}》！**\n完整 Markdown 交付包已自动解锁并写入订单！当前剩余 **${result.balance} 积分**。`,
+    replyEn: `🎁 **Agent redeemed "${title}" for ${pricePoints} pts!**\nFull Markdown toolkit has been auto-delivered to your order! Balance: **${result.balance} pts**.`,
     pointsDelta: -pricePoints,
     balancePoints: result.balance,
     data: { orderId: result.orderId, slug: target.slug, title, pricePoints, balance: result.balance },
