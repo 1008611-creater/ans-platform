@@ -56,7 +56,7 @@ const QUICK_KICKOFF_CARDS = [
 const PUBLIC_DEMO_PROJECTS = [
   {
     id: "demo-agri",
-    title: "CAU 温室病虫害 AI 遥感诊断终端（农客松官方示范立项）",
+    title: "样板 01 · CAU 温室病虫害 AI 遥感诊断终端（农客松官方示范立项）",
     goalLabel: "赛事冲刺",
     stageLabel: "已完成 3/3 核心工件 · 含 HTML5 实时沙箱",
     summary: "融合哨兵二号 NDVI 叶面健康指数与 DeepSeek V4.1 视觉诊断，支持无人机多光谱巡检仿真与农艺处方一键生成。",
@@ -65,7 +65,7 @@ const PUBLIC_DEMO_PROJECTS = [
   },
   {
     id: "demo-aigc",
-    title: "Toonflow 赛博长安 AI 漫剧四格导演台（AIGC 赛道示范立项）",
+    title: "样板 02 · Toonflow 赛博长安 AI 漫剧四格导演台（AIGC 赛道示范立项）",
     goalLabel: "作品集沉淀",
     stageLabel: "已生成 4 幕分镜脚本 + 角色一致性 Seed #4092",
     summary: "提供远景推镜、特写环绕、跟随仰拍、航拍拉远 4 组完整运镜脚本与可直接复制的文生视频 Prompt。",
@@ -74,12 +74,12 @@ const PUBLIC_DEMO_PROJECTS = [
   },
   {
     id: "demo-resume",
-    title: "Three.js 3D 星空个人简历与作品集微站（求职示范立项）",
+    title: "样板 03 · 3D 交互式双语个人简历与作品集微站（求职示范立项）",
     goalLabel: "求职简历",
     stageLabel: "已发布 v2 视觉站点 · 支持 .html 源码导出",
     summary: "内置 Canvas 3D 星轨超新星爆发视差交互与响应式 Bento 卡片矩阵，支持在 Pi-Codex 工作台内实时改代码热预览。",
     sandboxHref: "/workspace?thread=thread-portfolio",
-    guideHref: "/explore/liu-resume",
+    guideHref: "/market/resume-website",
   },
 ] as const;
 
@@ -110,11 +110,6 @@ export default async function ProjectsPage({
           <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
             🚀 ANS PROJECT & PORTFOLIO STUDIO · ANS 项目立项与作品集工坊
           </span>
-          {!userId && (
-            <span className="rounded-full border border-emerald-500/35 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-              🔓 免登工坊预览模式（可自由选择立项模板与体验公开示范项目，提交立项时登录保存）
-            </span>
-          )}
         </div>
         <PageHeading
           title={`${t("projectsTitle")} · ANS 项目立项与作品集工坊`}
@@ -131,6 +126,30 @@ export default async function ProjectsPage({
           }
         />
       </div>
+
+      {!userId && (
+        <div
+          data-testid="projects-guest-banner"
+          className="flex flex-col justify-between gap-4 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent p-5 sm:flex-row sm:items-center"
+        >
+          <div className="space-y-1">
+            <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">
+              AI 项目工作台 · 免登录预览模式
+            </Badge>
+            <p className="text-sm text-muted-foreground">
+              支持一键初始化 3D 个人简历网站、农客松参赛 MVP 方案、AIGC 短剧项目与路演答辩 Q&A。点击提交立项时登录即可永久保存多版本工程产物。
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button asChild size="sm" className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-500">
+              <Link href={`/login?callbackUrl=${encodeURIComponent(selection.callbackPath)}`}>登录并创建专属项目 →</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="rounded-xl">
+              <Link href="/market/resume-website">体验 3D 简历工作坊</Link>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* 3 Major Quick Kickoff Cards */}
       <section aria-label="3 大快速立项卡片" className="space-y-3">
@@ -299,4 +318,3 @@ export default async function ProjectsPage({
     </div>
   );
 }
-

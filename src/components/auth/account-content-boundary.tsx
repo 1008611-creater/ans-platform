@@ -11,7 +11,7 @@ export function AccountContentBoundary({ actorId, children }: { actorId: string;
   const { data, status } = useSession();
   const router = useRouter();
   const t = useTranslations("product.accountBoundary");
-  if (actorId === "guest") return children;
+  if (actorId === "guest-preview" && status !== "authenticated") return children;
   if (status === "loading") return <p role="status">{t("loading")}</p>;
   if (status !== "authenticated" || data?.user?.id !== actorId) {
     return <div className="space-y-3 rounded-xl border p-5"><p role="alert" className="text-sm">{t("changed")}</p><Button variant="outline" onClick={() => router.refresh()}>{t("refresh")}</Button></div>;

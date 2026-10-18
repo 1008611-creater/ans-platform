@@ -1,44 +1,403 @@
 "use client";
+import { useRef, useState } from "react";
 import Link from "next/link";
-import { guideHref, guideSelectionForPractice } from "@/domain/vibehub/guide-routing";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Layers, Sparkles, Terminal, Wrench } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { BRIEF_FIELDS, BRIEF_SCENARIOS, getBriefScenario, type BriefField } from "@/domain/vibehub/brief-scenarios";
-import { useVibeLanguage } from "../use-vibe-language";
+import { BRIEF_SCENARIOS, getBriefScenario, type BriefFields } from "@/domain/vibehub/brief-scenarios";
+import {
+  ANS_DAILY_SKILLS,
+  ANS_REWRITE_EXAMPLES,
+  ANS_SKILL_PIPELINES,
+  ANS_SKILL_PRODUCT_PRINCIPLES,
+} from "@/domain/vibehub/ans-skill-matrix";
+import { SkillCopyButton } from "../skill-copy-button";
 import { usePersistedSetting } from "../use-persisted-setting";
-import { CopyTermButton } from "../copy-term-button";
-export function SkillClient() {
-  const lang = useVibeLanguage(); const t = useTranslations("vibehub");
-  const router = useRouter(); const params = useSearchParams();
-  const [legacy] = usePersistedSetting("ans:vibehub:brief:v1", "{}");
-  let hasLegacy = false;
-  try { const value: unknown = JSON.parse(legacy); hasLegacy = !!value && typeof value === "object" && BRIEF_FIELDS.some(key => typeof (value as Record<string, unknown>)[key] === "string" && !!((value as Record<string, string>)[key]).trim()); } catch { /* Keep invalid legacy storage untouched. */ }
-  const scenario = getBriefScenario(params.get("scenario") || (hasLegacy ? "custom" : "website"));
-  const [saved, setSaved, persisted] = usePersistedSetting(`ans:vibehub:brief:${scenario.id}:v2`, scenario.id === "custom" ? legacy : "{}");
-  const [templateApplied, setTemplateApplied] = useState(false);
-  const draft: Partial<Record<BriefField, string>> = {};
-  try { const value: unknown = JSON.parse(saved); if (value && typeof value === "object") for (const key of BRIEF_FIELDS) { const entry = (value as Record<string, unknown>)[key]; if (typeof entry === "string") draft[key] = entry; } } catch { /* Invalid device drafts start empty. */ }
-  const missing = BRIEF_FIELDS.filter(key => !draft[key]?.trim());
-  const hasContent = missing.length < BRIEF_FIELDS.length;
-  const brief = [t("agentBriefOpening"), ...BRIEF_FIELDS.map(key => `${t(`agentField${key}`)}: ${draft[key]?.trim() || t("agentBriefMissing")}`), t("agentBriefConstraint")].join("\n\n");
-  function useTemplate() {
-    const next = { ...draft };
-    for (const key of BRIEF_FIELDS) if (!next[key]?.trim() && scenario.starter?.[key]) next[key] = scenario.starter[key][lang];
-    setSaved(JSON.stringify(next)); setTemplateApplied(true);
+import { useVibeLanguage } from "../use-vibe-language";
+
+type FieldKey = keyof BriefFields;
+const fieldOrder: { key: FieldKey; title: string; placeholder: string }[] = [
+  { key: "goal", title: "briefFieldGoal", placeholder: "briefPlaceholderGoal" },
+  { key: "audience", title: "briefFieldAudience", placeholder: "briefPlaceholderAudience" },
+  { key: "references", title: "briefFieldReferences", placeholder: "briefPlaceholderReferences" },
+  { key: "acceptance", title: "briefFieldAcceptance", placeholder: "briefPlaceholderAcceptance" },
+];
+
+function parseFields(raw: string): BriefFields {
+  try {
+    const value = JSON.parse(raw) as Partial<BriefFields>;
+    return {
+      goal: typeof value.goal === "string" ? value.goal : "",
+      audience: typeof value.audience === "string" ? value.audience : "",
+      references: typeof value.references === "string" ? value.references : "",
+      acceptance: typeof value.acceptance === "string" ? value.acceptance : "",
+    };
+  } catch {
+    return { goal: "", audience: "", references: "", acceptance: "" };
   }
-  return <main className="ans-knowledge-container ans-editorial-page"><header className="ans-knowledge-page-heading"><h1>{t("agentTitle")}</h1><p>{t("agentBody")}</p></header>
-    <section className="ans-brief-start" aria-label={t("briefScenario")}>
-      <div className="ans-brief-scenarios">{BRIEF_SCENARIOS.map(item => <button type="button" key={item.id} aria-pressed={scenario.id === item.id} onClick={() => { const next = new URLSearchParams(params.toString()); next.set("scenario", item.id); router.replace(`/vibe-hub/vibehub-skill?${next}`, { scroll: false }); setTemplateApplied(false); }}>{t(item.label)}</button>)}</div>
-      {scenario.starter && <button type="button" className="ans-editorial-link" onClick={useTemplate} disabled={BRIEF_FIELDS.every(key => draft[key]?.trim() || !scenario.starter?.[key])}>{t("briefUseTemplate")}<ArrowUpRight size={16} aria-hidden="true" /></button>}
-      <span className="ans-brief-template-status" role="status">{templateApplied ? t("briefTemplateApplied") : ""}</span>
-    </section>
-    <section className="ans-brief-workbench" aria-labelledby="brief-title"><div className="ans-brief-inputs"><div className="ans-brief-heading"><h2 id="brief-title">{t("agentBriefTitle")}</h2><span className="ans-device-state" role="status">{t(persisted ? "deviceDraft" : "deviceTemporary")}</span></div>{BRIEF_FIELDS.map(key => <label key={key} htmlFor={`brief-${key}`}><span>{t(`agentField${key}`)}</span><textarea id={`brief-${key}`} rows={3} maxLength={4000} value={draft[key] || ""} placeholder={scenario.hints[key][lang]} onChange={event => { setSaved(JSON.stringify({ ...draft, [key]: event.target.value })); setTemplateApplied(false); }} /></label>)}</div>
-    <div className="ans-brief-preview"><div><h3>{t("agentBriefPreview")}</h3><CopyTermButton text={brief} disabled={missing.length > 0} /></div>
-      {missing.length > 0 ? <div className="ans-brief-missing"><span>{t("briefMissingFields")}</span>{missing.map(key => <button key={key} type="button" onClick={() => document.getElementById(`brief-${key}`)?.focus()}>{t(`agentField${key}`)}</button>)}</div> : <p className="ans-brief-ready" role="status">{t("briefReady")}</p>}
-      {hasContent ? <pre>{brief}</pre> : <p className="ans-brief-empty">{t("briefEmptyPreview")}</p>}
-      <nav className="ans-brief-next" aria-label={t("related")}><Link className="ans-editorial-link" href={guideHref(lang, guideSelectionForPractice(scenario.guide))}>{t("guideSeeSteps")}<ArrowUpRight size={16} aria-hidden="true" /></Link></nav>
-    </div></section>
-  </main>;
+}
+
+export default function Skill({ initialScenario }: { initialScenario?: string }) {
+  const lang = useVibeLanguage();
+  const t = useTranslations("vibehub");
+  const initial = getBriefScenario(initialScenario);
+  const [scenarioId, setScenarioId] = useState(initial.id);
+  const [templateNotice, setTemplateNotice] = useState("");
+  const [activeRewriteId, setActiveRewriteId] = useState(ANS_REWRITE_EXAMPLES[0].id);
+  const [activePipeline, setActivePipeline] = useState<"all" | "engineering" | "media" | "content">("all");
+  const scenario = getBriefScenario(scenarioId);
+  const [saved, setSaved, persisted] = usePersistedSetting(
+    `ans:vibehub:brief:${scenario.id}:${lang}:v1`,
+    JSON.stringify(scenario.template[lang]),
+  );
+  const fields = parseFields(saved);
+  const fieldRefs = useRef<Partial<Record<FieldKey, HTMLTextAreaElement | null>>>({});
+  const lines = fieldOrder
+    .map(item => [t(item.title), fields[item.key].trim()] as const)
+    .filter(([, text]) => text.length > 0);
+  const missing = fieldOrder.filter(item => !fields[item.key].trim());
+  const brief = lines.map(([label, text]) => `${label}：${text}`).join("\n\n");
+  const destination = (href: string) =>
+    href.startsWith("/vibe-hub") ? `${href}${href.includes("?") ? "&" : "?"}lang=${lang}` : href;
+
+  const activeRewrite = ANS_REWRITE_EXAMPLES.find(item => item.id === activeRewriteId) || ANS_REWRITE_EXAMPLES[0];
+  const visibleSkills =
+    activePipeline === "all"
+      ? ANS_DAILY_SKILLS
+      : ANS_DAILY_SKILLS.filter(skill => skill.pipelineId === activePipeline);
+
+  function selectScenario(id: typeof scenarioId) {
+    setScenarioId(id);
+    setTemplateNotice(
+      id === "custom"
+        ? t("briefBlankReady")
+        : t("briefTemplateLoaded", { name: getBriefScenario(id).label[lang] }),
+    );
+  }
+
+  return (
+    <main className="ans-knowledge-container ans-editorial-page">
+      <header className="ans-knowledge-page-heading">
+        <p className="ans-knowledge-eyebrow">{t("skillEyebrow")}</p>
+        <h1>{t("skillTitle")}</h1>
+        <p>{t("skillSubtitle")}</p>
+        <nav className="ans-skill-quicknav" aria-label={t("onThisPage")}>
+          <a href="#ans-brief-builder" className="ans-editorial-link">
+            <Wrench size={15} aria-hidden="true" />
+            {t("skillNavBrief")}
+          </a>
+          <a href="#ans-expression-rewriter" className="ans-editorial-link">
+            <Sparkles size={15} aria-hidden="true" />
+            {t("skillNavRewrite")}
+          </a>
+          <a href="#ans-skill-matrix" className="ans-editorial-link">
+            <Layers size={15} aria-hidden="true" />
+            {t("skillNavMatrix")}
+          </a>
+          <a href="#ans-skill-principles" className="ans-editorial-link">
+            <Terminal size={15} aria-hidden="true" />
+            {t("skillNavPrinciples")}
+          </a>
+        </nav>
+      </header>
+
+      <section id="ans-brief-builder" aria-labelledby="ans-brief-builder-heading">
+        <div className="ans-brief-start" aria-label={t("briefScenarioLabel")}>
+          <div className="ans-brief-scenarios" role="group" aria-label={t("briefScenarioLabel")}>
+            {BRIEF_SCENARIOS.map(item => (
+              <button
+                type="button"
+                key={item.id}
+                aria-pressed={scenario.id === item.id}
+                onClick={() => selectScenario(item.id)}
+              >
+                {item.label[lang]}
+              </button>
+            ))}
+          </div>
+          <p className="ans-brief-template-status" role="status" aria-live="polite">
+            {templateNotice || scenario.summary[lang]}
+          </p>
+        </div>
+        <div className="ans-brief-workbench" aria-label={t("skillWorkbench")}>
+          <div className="ans-brief-inputs">
+            <div className="ans-brief-heading">
+              <h2 id="ans-brief-builder-heading">{t("skillWorkbenchTitle")}</h2>
+              <span className="ans-device-state" role="status">
+                {t(persisted ? "deviceSaved" : "deviceSaveFailed")}
+              </span>
+            </div>
+            {fieldOrder.map(item => (
+              <label key={item.key}>
+                {t(item.title)}
+                <textarea
+                  ref={node => {
+                    fieldRefs.current[item.key] = node;
+                  }}
+                  value={fields[item.key]}
+                  placeholder={t(item.placeholder)}
+                  onChange={event => {
+                    setTemplateNotice("");
+                    setSaved(JSON.stringify({ ...fields, [item.key]: event.target.value }));
+                  }}
+                />
+              </label>
+            ))}
+          </div>
+          <aside className="ans-brief-preview" aria-live="polite">
+            <div>
+              <h3>{t("briefPreviewTitle")}</h3>
+              <SkillCopyButton
+                text={brief}
+                disabled={!brief}
+                label={t("briefCopy")}
+                copiedLabel={t("copied")}
+              />
+            </div>
+            <div className="ans-brief-missing" role="status">
+              {missing.length > 0 ? (
+                <>
+                  <span>{t("briefMissingLabel")}</span>
+                  {missing.map(item => (
+                    <button
+                      type="button"
+                      key={item.key}
+                      onClick={() => fieldRefs.current[item.key]?.focus()}
+                    >
+                      {t(item.title)}
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <span className="ans-brief-ready">{t("briefCompleteStatus")}</span>
+              )}
+            </div>
+            {brief ? (
+              <pre>{brief}</pre>
+            ) : (
+              <p className="ans-brief-empty">{t("briefEmptyState")}</p>
+            )}
+            <nav className="ans-brief-next" aria-label={t("ansDestinations")}>
+              <Link className="ans-editorial-link" href={destination(scenario.nextHref)}>
+                {scenario.nextLabel[lang]}
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+              <Link
+                className="ans-editorial-link ans-editorial-link-secondary"
+                href={`/vibe-hub/guides?lang=${lang}`}
+              >
+                {t("guides")}
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+            </nav>
+          </aside>
+        </div>
+      </section>
+
+      <section
+        id="ans-expression-rewriter"
+        className="ans-skill-section"
+        aria-labelledby="ans-rewrite-heading"
+      >
+        <div className="ans-knowledge-section-heading">
+          <div>
+            <p className="ans-knowledge-eyebrow">{t("skillRewriteEyebrow")}</p>
+            <h2 id="ans-rewrite-heading">{t("skillRewriteTitle")}</h2>
+          </div>
+          <p>{t("skillRewriteSubtitle")}</p>
+        </div>
+        <div className="ans-brief-scenarios" role="group" aria-label={t("skillRewriteTitle")}>
+          {ANS_REWRITE_EXAMPLES.map(example => (
+            <button
+              key={example.id}
+              type="button"
+              aria-pressed={activeRewrite.id === example.id}
+              onClick={() => setActiveRewriteId(example.id)}
+            >
+              {example.label[lang]}
+            </button>
+          ))}
+        </div>
+        <div className="ans-rewrite-compare" aria-live="polite">
+          <article className="ans-rewrite-card ans-rewrite-before">
+            <span className="ans-knowledge-eyebrow">{t("skillRewriteBefore")}</span>
+            <p>“{activeRewrite.before[lang]}”</p>
+          </article>
+          <article className="ans-rewrite-card ans-rewrite-after">
+            <div className="ans-rewrite-after-head">
+              <span className="ans-knowledge-eyebrow">{t("skillRewriteAfter")}</span>
+              <SkillCopyButton
+                text={activeRewrite.after[lang]}
+                label={t("copyRequest")}
+                copiedLabel={t("copied")}
+              />
+            </div>
+            <p>{activeRewrite.after[lang]}</p>
+            <small className="ans-rewrite-why">{activeRewrite.why[lang]}</small>
+            <nav className="ans-rewrite-terms" aria-label={t("relatedTerms")}>
+              {activeRewrite.terms.map(term => (
+                <Link key={term.slug} href={`/vibe-hub/${term.slug}?lang=${lang}`}>
+                  {term.label[lang]}
+                  <ArrowUpRight size={13} aria-hidden="true" />
+                </Link>
+              ))}
+            </nav>
+          </article>
+        </div>
+      </section>
+
+      <section
+        id="ans-skill-matrix"
+        className="ans-skill-section"
+        aria-labelledby="ans-matrix-heading"
+      >
+        <div className="ans-knowledge-section-heading">
+          <div>
+            <p className="ans-knowledge-eyebrow">{t("skillMatrixEyebrow")}</p>
+            <h2 id="ans-matrix-heading">{t("skillMatrixTitle")}</h2>
+          </div>
+          <p>{t("skillMatrixSubtitle")}</p>
+        </div>
+
+        <div className="ans-pipeline-grid">
+          {ANS_SKILL_PIPELINES.map(pipeline => (
+            <article key={pipeline.id} className="ans-pipeline-card">
+              <div className="ans-pipeline-head">
+                <span className="ans-practice-number">{pipeline.number}</span>
+                <h3>{pipeline.title[lang]}</h3>
+              </div>
+              <p>{pipeline.summary[lang]}</p>
+              <ol className="ans-pipeline-steps">
+                {pipeline.flowSteps.map(step => (
+                  <li key={step.en}>{step[lang]}</li>
+                ))}
+              </ol>
+            </article>
+          ))}
+        </div>
+
+        <div className="ans-brief-scenarios ans-skill-filter" role="group" aria-label={t("skillMatrixFilterLabel")}>
+          {(
+            [
+              { id: "all", label: t("skillFilterAll") },
+              { id: "engineering", label: t("skillFilterEngineering") },
+              { id: "media", label: t("skillFilterMedia") },
+              { id: "content", label: t("skillFilterContent") },
+            ] as const
+          ).map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              aria-pressed={activePipeline === tab.id}
+              onClick={() => setActivePipeline(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="ans-daily-skills-grid">
+          {visibleSkills.map(skill => {
+            const pipeline = ANS_SKILL_PIPELINES.find(p => p.id === skill.pipelineId)!;
+            return (
+              <article key={skill.id} id={skill.id} className="ans-daily-skill-card">
+                <header className="ans-daily-skill-head">
+                  <div>
+                    <p className="ans-knowledge-eyebrow">
+                      <span>{skill.number}</span>
+                      <span aria-hidden="true">·</span>
+                      <code>{skill.code}</code>
+                      <span aria-hidden="true">·</span>
+                      <span>{pipeline.title[lang]}</span>
+                    </p>
+                    <h3>{skill.title[lang]}</h3>
+                  </div>
+                  <Link className="ans-editorial-link" href={destination(skill.guideHref)}>
+                    {t("skillOpenGuide")}
+                    <ArrowUpRight size={15} aria-hidden="true" />
+                  </Link>
+                </header>
+                <dl className="ans-daily-skill-meta">
+                  <div>
+                    <dt>{t("skillWhenToUse")}</dt>
+                    <dd>{skill.trigger[lang]}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("skillHowItWorks")}</dt>
+                    <dd>{skill.mechanism[lang]}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("skillBoundaryLabel")}</dt>
+                    <dd>{skill.boundary[lang]}</dd>
+                  </div>
+                </dl>
+                <div className="ans-daily-skill-prompt">
+                  <div className="ans-daily-skill-prompt-head">
+                    <strong>{t("skillPromptLabel")}</strong>
+                    <SkillCopyButton
+                      text={skill.agentPrompt[lang]}
+                      label={t("copyRequest")}
+                      copiedLabel={t("copied")}
+                    />
+                  </div>
+                  <p>{skill.agentPrompt[lang]}</p>
+                </div>
+                <nav className="ans-rewrite-terms" aria-label={t("relatedTerms")}>
+                  {skill.relatedTerms.map(term => (
+                    <Link key={term.slug} href={`/vibe-hub/${term.slug}?lang=${lang}`}>
+                      {term.label[lang]}
+                      <ArrowUpRight size={13} aria-hidden="true" />
+                    </Link>
+                  ))}
+                </nav>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section
+        id="ans-skill-principles"
+        className="ans-skill-section"
+        aria-labelledby="ans-principles-heading"
+      >
+        <div className="ans-knowledge-section-heading">
+          <div>
+            <p className="ans-knowledge-eyebrow">{t("skillPrinciplesEyebrow")}</p>
+            <h2 id="ans-principles-heading">{t("skillPrinciplesTitle")}</h2>
+          </div>
+          <p>{t("skillPrinciplesSubtitle")}</p>
+        </div>
+        <div className="ans-principles-grid">
+          {ANS_SKILL_PRODUCT_PRINCIPLES.map(item => (
+            <article key={item.id} className="ans-principle-card">
+              <span className="ans-practice-number">{item.number}</span>
+              <h3>{item.title[lang]}</h3>
+              <p className="ans-principle-problem">
+                <strong>{t("skillPrinciplePitfall")}：</strong>
+                {item.problem[lang]}
+              </p>
+              <p className="ans-principle-solution">
+                <strong>{t("skillPrincipleSolution")}：</strong>
+                {item.solution[lang]}
+              </p>
+            </article>
+          ))}
+        </div>
+        <nav className="ans-skill-bottom-links" aria-label={t("ansDestinations")}>
+          <Link className="ans-editorial-link" href={`/vibe-hub/guides?task=skill-product&lang=${lang}`}>
+            {t("skillOpenProductGuide")}
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+          <Link className="ans-editorial-link" href={`/vibe-hub/anti-ai-flavor?lang=${lang}`}>
+            {t("antiAi")}
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </Link>
+          <Link className="ans-editorial-link" href={`/vibe-hub/lab?lang=${lang}`}>
+            {t("lab")}
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </Link>
+        </nav>
+      </section>
+    </main>
+  );
 }

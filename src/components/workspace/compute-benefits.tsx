@@ -35,7 +35,7 @@ function BenefitsSession({ actorId, compact = false, initialData }: Props) {
   const alive = useRef(true), flight = useRef<AbortController | null>(null);
   useEffect(() => { alive.current = true; return () => { alive.current = false; flight.current?.abort(); }; }, []);
   useEffect(() => {
-    if ((initialData !== undefined || actorId === "guest") && reload === 0) return;
+    if ((initialData !== undefined || actorId === "guest" || actorId === "guest-preview") && reload === 0) return;
     let active = true; const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 15_000);
     setLoading(true); setFailed(false);
     void (async () => { try {
@@ -51,7 +51,7 @@ function BenefitsSession({ actorId, compact = false, initialData }: Props) {
   }, [actorId, initialData, reload, router]);
   async function submit(path: string, body: unknown, event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (flight.current || accountChanged) return;
-    if (actorId === "guest") {
+    if (actorId === "guest" || actorId === "guest-preview") {
       setMessage("🔓 当前为访客免登试玩模式，正在跳转登录页，登录后即可一键提交并领取真实算力积分！");
       router.push("/login?callbackUrl=%2Fworkspace%2Fbenefits");
       return;

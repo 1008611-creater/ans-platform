@@ -1432,7 +1432,7 @@ export function ComputeQuestArcade({
     return best;
   }
 
-  const isGuest = !actorId || actorId === "guest";
+  const isGuest = !actorId || actorId === "guest" || actorId === "guest-preview";
 
   function handleBuyTokens(count: 1 | 5 = 1) {
     const cost = count * ARCADE_TOKEN_COST_POINTS;

@@ -72,14 +72,15 @@ const GUEST_CREDITS_HISTORY = {
 };
 
 export default async function CreditsPage({ searchParams }: { searchParams?: Promise<{ cursor?: string | string[] }> }) {
-  const session = await auth();
-  const userId = session?.user?.id ?? null;
-  const actorId = userId ?? "guest";
-  const [t, locale, query] = await Promise.all([
+  const [session, t, locale, query] = await Promise.all([
+    auth(),
     getTranslations("product.quotaHistory"),
     getLocale(),
     searchParams ?? Promise.resolve({} as { cursor?: string | string[] }),
   ]);
+  const isEn = locale.startsWith("en");
+  const userId = session?.user?.id ?? null;
+  const actorId = userId ?? "guest-preview";
   const voiceText = await getTranslations("product.voiceUsage");
   const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
@@ -112,7 +113,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
 
   return (
     <AccountContentBoundary actorId={actorId}>
-      <div className="ans-product-shell">
+      <div className="ans-product-shell" data-testid={!userId ? "credits-guest-preview" : undefined}>
         <div className="ans-product-container space-y-7 py-8 sm:py-12">
           {!userId && (
             <section
@@ -120,24 +121,28 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
               className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-emerald-500/35 bg-gradient-to-r from-emerald-500/10 via-amber-500/5 to-cyan-500/10 p-5 sm:px-7"
             >
               <div className="space-y-1">
-                <div className="inline-flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white">
-                    🔓 算力账本与计费标准 · 免登透明预览
+                    {isEn ? "ANS Compute Economy · Guest Preview (1 Point = ¥0.10)" : "ANS 算力积分中心 · 免登录预览模式（1 积分 = ¥0.10）"}
                   </span>
                   <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
                     1 积分 = ¥0.10 元 = $0.10 USD APIC 标称额度（10 积分 = $1）
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  下方展示 ANS 算力账本结构、三大主力模型倍率（DeepSeek V4.1 Flash / GPT-6 Astra / GPT-6.1 Sol）与卡密兑换流程；登录后即可激活你个人的 100~150 普惠算力积分账本。
+                  {isEn
+                    ? "Preview live model multipliers, voucher redemption, and 100–150 pts normal-distribution claw grants. Sign in to view your personal ledger."
+                    : "新用户与农大参赛同学可通过 3D 抓娃娃机正态随机领取 100–150 算力积分（价值 ¥10–¥15），队长组队最高享 750 积分池。下方展示三大主力模型倍率与透明流水账本样例。"}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2.5">
-                <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
-                  <Link href="/login?callbackUrl=%2Fworkspace%2Fcredits">🔐 立即登录激活个人账本 →</Link>
+                <Button asChild size="sm" className="rounded-xl bg-emerald-600 text-white hover:bg-emerald-500">
+                  <Link href="/login?callbackUrl=%2Fworkspace%2Fcredits">
+                    {isEn ? "Sign in to Account →" : "🔐 登录查看我的算力账本 →"}
+                  </Link>
                 </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/workspace/benefits">🕹️ 免费试玩 3D 抓娃娃机</Link>
+                <Button asChild size="sm" variant="outline" className="rounded-xl">
+                  <Link href="/workspace/benefits">🎁 {isEn ? "Try 3D Claw Machine" : "免登录试玩 3D 抓娃娃机"}</Link>
                 </Button>
               </div>
             </section>
@@ -266,4 +271,3 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
     </AccountContentBoundary>
   );
 }
-

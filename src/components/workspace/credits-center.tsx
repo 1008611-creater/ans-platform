@@ -43,7 +43,7 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
 
   async function redeem() {
     if (flight.current) return;
-    if (actorId === "guest") {
+    if (actorId === "guest" || actorId === "guest-preview") {
       setOk(false);
       setMessage("🔓 当前为访客透明预览模式，请先登录账号后再兑换算力卡密。");
       return;
