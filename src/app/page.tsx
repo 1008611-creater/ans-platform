@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { listPublishedCatalog } from "@/server/catalog/service";
 import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
 import { catalogText } from "@/domain/catalog/content";
-import { homepageProjects } from "@/domain/catalog/homepage";
+import { homepageProjects, resolveCatalogShowcaseHref } from "@/domain/catalog/homepage";
 import { browseCatalog, catalogBrowseHref, type CatalogBrowseQuery } from "@/domain/catalog/browse";
 import { ProjectCard } from "@/components/catalog/project-card";
 import { CatalogPagination } from "@/components/catalog/catalog-pagination";
@@ -25,10 +25,10 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
   const filterHref = (updates: Parameters<typeof catalogBrowseHref>[2] = {}, page = 1) => catalogBrowseHref("/", browse.filters, updates, page);
   const isEn = locale.startsWith("en");
   const scenes = [
-    { href: "/competitions/agrihackathon", img: "/competitions/agrihackathon/gitglow-hub.webp", tag: isEn ? "Hackathon" : "赛事主舞台", label: isEn ? "AgriHackathon · Compute & Datasets" : "智耕黑客松 · 团队算力与农情挑战" },
-    { href: "/workspace/benefits", img: "/catalog/gitglow-v1/ans-3d-showcase.svg", tag: isEn ? "3D Arcade & Pet" : "3D 互动工坊", label: isEn ? "3D Claw Machine & Dino Wardrobe" : "3D 抓娃娃机 · 小龙换装投喂圣殿" },
-    { href: "/competitions/aigc", img: "/catalog/gitglow-v1/aigc-workspace.webp", tag: isEn ? "AIGC Studio" : "AIGC 创作台", label: isEn ? "Solara · Infinite Canvas · Toonflow" : "AIGC 赛事工具链 · 分镜画布与短剧" },
-    { href: "/hubs", img: "/catalog/gitglow-v1/cauai-one.webp", tag: isEn ? "Campus Hubs" : "开源与课程空间", label: isEn ? "CAUHub · VibeHub · Full-Stack" : "校园空间 · VibeHub 教程与方法库" },
+    { href: "/competitions/agrihackathon", img: "/competitions/agrihackathon/gitglow-hub.webp", tag: isEn ? "Hackathon" : "赛事工作台", label: isEn ? "AgriHackathon · Datasets & SHA-256 Evidence" : "智耕黑客松 · 团队算力与代码存证" },
+    { href: "/workspace/benefits", img: "/catalog/gitglow-v1/ans-3d-showcase.svg", tag: isEn ? "3D Arcade & Pet" : "3D 算力工坊", label: isEn ? "3D Claw Machine & Compute Grant" : "3D 物理抓娃娃 · 灵龙换装与积分补贴" },
+    { href: "/competitions/aigc", img: "/catalog/gitglow-v1/aigc-workspace.webp", tag: isEn ? "AIGC Studio" : "AIGC 创作链", label: isEn ? "Storyboard Canvas · Toonflow · Video" : "四视图建模 · 分镜画布与漫剧工作流" },
+    { href: "/vibe-hub/vibehub-skill", img: "/catalog/gitglow-v1/cauai-one.webp", tag: isEn ? "ANS Skill Matrix" : "10 大高频 Skill", label: isEn ? "4-Part Brief · 10 Agent Skills · De-Slop" : "四段式需求工作台 · 10 大 Agent Skill 矩阵" },
   ];
   return <div className={`ans-product-shell ans-home-page ${styles.page}`}>
     <HomeCampaignModal locale={locale} />
@@ -48,7 +48,7 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
         </div>
         {hero ? <ProjectCoverflow projects={(showcase.length ? showcase : [hero]).map(project => ({
           slug: project.slug,
-          href: project.memberHref ?? (project.workflowId === "resume-website" ? "/market/resume-website" : String(project.workflowId ?? "") === "easel" ? "/competitions/aigc" : String(project.workflowId ?? "") === "hypit" ? "/workflows/hypit" : String(project.workflowId ?? "") === "toonflow" ? "https://toonflow.cauai.fun" : project.workflowId ? `/projects?goal=${project.goal}&workflow=${project.workflowId}#new-project` : project.sourceUrl ?? `/explore/${project.slug}`),
+          href: resolveCatalogShowcaseHref(project),
           title: catalogText(project, t, "title", locale),
           summary: catalogText(project, t, "summary", locale),
           category: t(`categories.${project.category}`),
@@ -68,22 +68,22 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
         <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-border/60 bg-card/75 p-3 backdrop-blur-md lg:grid-cols-4">
           <Link href="/explore" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
             <div>
-              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "Verified AI & Open Workflows" : "精选可运行 AI 与开源项目"}</div>
-              <div className="mt-0.5 text-sm font-bold text-foreground">{browse.total}+ {isEn ? "Live Catalog Items" : "全栈工程与工作流"}</div>
+              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "Runnable Projects & Workflows" : "可复现项目与开源工作流"}</div>
+              <div className="mt-0.5 text-sm font-bold text-foreground">{browse.total}+ {isEn ? "Verified Entries · Live Demo" : "精选项目 · 含输入与验收边界"}</div>
             </div>
             <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
           <Link href="/competitions/agrihackathon" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
             <div>
-              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "CAU AgriHackathon Prize & Escrow" : "中国农大智耕黑客松 · 密码学存证"}</div>
-              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "¥3,300 Pool · SHA-256" : "¥3,300 奖池 · SHA-256 存证"}</div>
+              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "CAU AgriHackathon · Git Snapshot" : "中国农大智耕黑客松 · 代码快照存证"}</div>
+              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "¥3,300 Pool · SHA-256 Audit" : "¥3,300 奖池 · SHA-256 归档核验"}</div>
             </div>
             <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
-          <Link href="/workspace/benefits" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
+          <Link href="/vibe-hub/vibehub-skill" className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2.5 transition hover:border-emerald-500/35 hover:bg-emerald-500/5">
             <div>
-              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "3D Claw & Compute Economy" : "3D 盲盒与高校算力积分经济"}</div>
-              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "100–150 pts Grant · 1 pt = ¥0.1" : "100–150 积分补贴 · 80% 分成"}</div>
+              <div className="text-[11px] font-medium text-muted-foreground">{isEn ? "ANS Skill & Brief Workbench" : "ANS 需求转写与去 AI 味规范"}</div>
+              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "10 Daily Skills · 3 Pipelines" : "10 大日常 Skill · 3 条生产流水线"}</div>
             </div>
             <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
@@ -91,9 +91,9 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
             <div>
               <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
                 <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                {isEn ? "APIC Multi-Model Router" : "APIC 多模态大模型算力网关"}
+                {isEn ? "APIC Multi-Model Router" : "APIC 多模型路由与算力账本"}
               </div>
-              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "6 Live Models · Auto-Failover" : "6 路模型探针 · 实时健康监控"}</div>
+              <div className="mt-0.5 text-sm font-bold text-foreground">{isEn ? "6 Live Models · Auto-Failover" : "6 路模型探针 · 1 积分 = ¥0.1"}</div>
             </div>
             <span className="text-xs font-semibold text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>

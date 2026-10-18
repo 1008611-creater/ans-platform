@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ExternalLink, FileCheck2, G
 import { catalogText, catalogSourceLabel } from "@/domain/catalog/content";
 import { projectStartHref, type CatalogProject } from "@/domain/catalog/projects";
 import type { ProjectGuide } from "@/domain/catalog/project-guide-types";
+import { buildProjectVisualWalkthrough } from "@/domain/vibehub/ans-site-optimizers";
 import { PROJECT_WORKFLOW_COST_POINTS } from "@/contracts/projects";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
 }) {
   const [t, d, ct, locale] = await Promise.all([getTranslations("product"), getTranslations("product.projectDetail"), getTranslations("product.connections"), getLocale()]);
   const text = (field: Parameters<typeof catalogText>[2]) => catalogText(project, t, field, locale);
+  const isEn = locale.startsWith("en");
+  const walkthrough = buildProjectVisualWalkthrough(project, isEn ? "en" : "zh");
   const advice = guide ? (locale.startsWith("zh") ? guide.zh : guide.en) : undefined;
   const startHref = projectStartHref(project);
   const isGithub = project.source === "github";
@@ -86,6 +89,82 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
             <div><h3>{step.title}</h3><p>{step.body}</p>{step.href && <a href={step.href} target="_blank" rel="noopener noreferrer" className="ans-text-link">{d("openStep")}<ExternalLink size={14} aria-hidden="true" /></a>}</div>
           </li>)}</ol>
         </section>}
+        <section id="project-visual-walkthrough" data-testid="project-visual-walkthrough" className={`${styles.section} space-y-5`}>
+          <div>
+            <p className={styles.kicker}>{walkthrough.eyebrow}</p>
+            <h2>{walkthrough.heading}</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{walkthrough.subtitle}</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {walkthrough.nodes.map(node => (
+              <div key={node.step} className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card/75 p-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs font-bold text-muted-foreground">STEP {node.step}</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                      node.kind === "script"
+                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300"
+                        : node.kind === "preview"
+                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-300"
+                          : "bg-indigo-500/15 text-indigo-600 dark:text-indigo-300"
+                    }`}>
+                      {node.badge}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground">{node.title}</h3>
+                  <p className="text-xs leading-5 text-muted-foreground">{node.detail}</p>
+                </div>
+                <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-2 font-mono text-[11px] text-muted-foreground">
+                  <span>{isEn ? "Artifact" : "阶段产物"}</span>
+                  <code className="text-foreground">{node.artifact}</code>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-2xl border border-border/80 bg-muted/25 p-4 space-y-3">
+            <div>
+              <h3 className="text-sm font-bold text-foreground">{walkthrough.evalHeading}</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">{walkthrough.evalSubtitle}</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border/80 text-muted-foreground">
+                    <th className="py-2 pr-3 font-semibold">{isEn ? "Dimension" : "对比维度"}</th>
+                    <th className="py-2 px-3 font-semibold">{isEn ? "Raw LLM Prompt (Without Skill)" : "裸调默认模型（无工作流约束）"}</th>
+                    <th className="py-2 pl-3 font-semibold text-emerald-600 dark:text-emerald-400">{isEn ? "With ANS Productized Workflow" : "启用本 ANS 结构化工作流"}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {walkthrough.evalRows.map(row => (
+                    <tr key={row.dimension}>
+                      <td className="py-2.5 pr-3 font-semibold text-foreground whitespace-nowrap">{row.dimension}</td>
+                      <td className="py-2.5 px-3 text-muted-foreground">{row.withoutSkill}</td>
+                      <td className="py-2.5 pl-3 font-medium text-foreground">{row.withAnsWorkflow}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-2.5 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-muted-foreground">{isEn ? "Built-in ANS Skills:" : "底层内化 ANS Skill："}</span>
+                {walkthrough.recommendedSkills.map(sk => (
+                  <Link
+                    key={sk.slug}
+                    href={`/vibe-hub/vibehub-skill?lang=${isEn ? "en" : "zh"}#ans-skill-matrix`}
+                    className="rounded-md border border-border bg-background px-2 py-0.5 font-mono text-[11px] font-medium text-foreground hover:border-primary hover:text-primary"
+                  >
+                    {sk.name} · {sk.role}
+                  </Link>
+                ))}
+              </div>
+              <Link href={`/vibe-hub/vibehub-skill?lang=${isEn ? "en" : "zh"}#ans-brief-builder`} className="font-semibold text-primary hover:underline">
+                {isEn ? "Customize 4-Part Brief →" : "去四段式工作台定制同类需求 →"}
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
       <aside className={styles.sideNote}>
         <section id="project-conditions">

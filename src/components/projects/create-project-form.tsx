@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { CatalogWorkflowId } from "@/contracts/catalog";
 import type { ProjectGoal } from "@/contracts/projects";
 import { studioSelectionHref } from "@/domain/catalog/selection";
+import { detectIntentAndMatchTerms, upgradeToStructuredBrief } from "@/domain/vibehub/ans-site-optimizers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -52,8 +54,12 @@ export function CreateProjectForm({
   const t = useTranslations("learning");
   const [title, setTitle] = useState(initialTitle);
   const [goal, setGoal] = useState<ProjectGoal>(initialGoal);
+  const [showBrief, setShowBrief] = useState(false);
+  const [copiedBrief, setCopiedBrief] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const intentCluster = detectIntentAndMatchTerms(title || (goal === "contest" ? "农客松遥感诊断" : goal === "portfolio" ? "AIGC短剧分镜" : "3D个人简历作品集"));
+  const structuredBrief = upgradeToStructuredBrief(title, "zh", t(goal));
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -132,6 +138,59 @@ export function CreateProjectForm({
           disabled={pending}
         />
       </label>
+
+      {/* ANS Intent Bridge (internalized vibe-hub-skill + ans-tone-guard) */}
+      <div className="space-y-2.5 rounded-xl border border-border/80 bg-muted/35 p-3.5" data-testid="project-intent-bridge">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs font-semibold text-foreground">{intentCluster.badge.zh}</span>
+          <button
+            type="button"
+            onClick={() => setShowBrief(v => !v)}
+            className="text-xs font-semibold text-primary underline underline-offset-4 hover:opacity-80"
+          >
+            {showBrief ? "收起四段式立项 Brief" : "🧭 一键生成四段式立项 Brief"}
+          </button>
+        </div>
+        <p className="text-xs leading-5 text-muted-foreground">{intentCluster.clarifyingQuestion.zh}</p>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-medium text-muted-foreground">推荐锚定术语：</span>
+          {intentCluster.terms.map(term => (
+            <Link
+              key={term.slug}
+              href={`/vibe-hub/${term.slug}?lang=zh`}
+              title={term.hint.zh}
+              className="rounded-md border border-border bg-background px-2 py-0.5 text-[11px] font-medium text-foreground transition hover:border-primary hover:text-primary"
+            >
+              {term.label.zh} ↗
+            </Link>
+          ))}
+        </div>
+        {showBrief && (
+          <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+            <pre className="whitespace-pre-wrap font-sans text-xs leading-5 text-foreground">{structuredBrief}</pre>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard?.writeText(structuredBrief);
+                  setCopiedBrief(true);
+                  setTimeout(() => setCopiedBrief(false), 1800);
+                }}
+                className="rounded-lg border border-border bg-muted px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted/80"
+              >
+                {copiedBrief ? "✓ 已复制四段式 Brief" : "📋 复制四段式 Brief"}
+              </button>
+              <Link
+                href={`/workspace?prompt=${encodeURIComponent(structuredBrief.slice(0, 600))}`}
+                className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
+              >
+                ⚡ 带此 Brief 直达 Pi-Codex 沙箱运行 →
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+
       <p className="text-xs text-muted-foreground">
         {guestMode
           ? "🔓 当前为免登工坊预览模式：选好课题后点击下方按钮将跳转登录并为你创建专属工作空间。"
@@ -148,4 +207,5 @@ export function CreateProjectForm({
     </form>
   );
 }
+
 

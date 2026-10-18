@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { useSettingsRequest } from "@/components/settings/account-request";
+import { detectIntentAndMatchTerms, upgradeToStructuredBrief } from "@/domain/vibehub/ans-site-optimizers";
+
 
 export interface CodexWorkbenchProps {
   actorId: string;
@@ -758,6 +760,50 @@ function PiCodexWorkbench({
                 }
               }}
             />
+            {/* ANS Intent Bridge: Proactive Term Pills & 1-Click 4-Part Brief Upgrade */}
+            {(() => {
+              const cluster = detectIntentAndMatchTerms(promptInput || activeTask.prompt);
+              return (
+                <div className="mt-2 rounded-xl border border-slate-800 bg-slate-950/80 p-2.5" data-testid="codex-intent-bridge">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold text-emerald-300">{cluster.badge.zh}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const upgraded = upgradeToStructuredBrief(promptInput || activeTask.prompt, "zh");
+                        setPromptInput(upgraded);
+                        toast.success("已按 ANS 四段式规范 + ans-tone-guard 扩写工程指令！");
+                      }}
+                      className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300 transition hover:bg-emerald-500/25"
+                    >
+                      🧭 一键扩写为四段式专业 Brief
+                    </button>
+                  </div>
+                  <p className="mt-1 text-[11px] leading-4 text-slate-400">{cluster.clarifyingQuestion.zh}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] font-semibold text-slate-400">注入术语约束：</span>
+                    {cluster.terms.map(term => (
+                      <button
+                        key={term.slug}
+                        type="button"
+                        title={term.hint.zh}
+                        onClick={() => {
+                          setPromptInput(prev => {
+                            const base = (prev || activeTask.prompt).trim();
+                            return base.includes(term.appendText.zh) ? base : `${base}\n- ${term.appendText.zh}`;
+                          });
+                          toast.success(`已注入「${term.label.zh}」工程约束`);
+                        }}
+                        className="rounded-md border border-slate-700 bg-slate-900 px-2 py-0.5 text-[11px] font-medium text-slate-200 transition hover:border-emerald-400/60 hover:text-emerald-300"
+                      >
+                        + {term.label.zh}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800 pt-2">
               <div className="flex flex-wrap gap-1">
                 {[

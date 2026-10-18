@@ -10,3 +10,18 @@ export function homepageProjects(catalog: readonly CatalogProject[]) {
   const showcase = [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project?.coverUrl)).slice(0, 7);
   return { hero, projects: [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project)), showcase };
 }
+
+/**
+ * Pure route resolver for homepage spotlight cards (ans-code-simplify: no nested inline ternaries in JSX).
+ */
+export function resolveCatalogShowcaseHref(project: CatalogProject): string {
+  if (project.memberHref) return project.memberHref;
+  const workflowId = String(project.workflowId ?? "");
+  if (workflowId === "resume-website") return "/market/resume-website";
+  if (workflowId === "easel") return "/competitions/aigc";
+  if (workflowId === "hypit") return "/workflows/hypit";
+  if (workflowId === "toonflow") return "https://toonflow.cauai.fun";
+  if (project.workflowId) return `/projects?goal=${project.goal}&workflow=${project.workflowId}#new-project`;
+  return project.sourceUrl ?? `/explore/${project.slug}`;
+}
+

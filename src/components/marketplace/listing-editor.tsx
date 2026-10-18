@@ -5,12 +5,18 @@ import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { ArrowUpRight, Github, ImagePlus, PackageCheck, Plus, Trash2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { ArrowUpRight, Check, Copy, Download, Github, ImagePlus, PackageCheck, Plus, Sparkles, Trash2 } from "lucide-react";
 import type { MarketOfferView } from "@/contracts/marketplace-view";
 import { marketListingInputSchema } from "@/contracts/marketplace";
 import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
 import { parseMarketPrice } from "@/domain/marketplace/presentation";
+import {
+  COVER_STUDIO_PRESETS,
+  buildCoverStudioSvg,
+  generateRoadshowAndSocialPack,
+  type CoverStudioPreset,
+} from "@/domain/vibehub/ans-site-optimizers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +29,8 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
   const actorId = useMarketActorId();
   const isGuest = !actorId || actorId === "guest" || actorId === "guest-preview";
   const marketRequest = useMarketRequest(); const upload = useMarketUpload();
+  const rawLocale = useLocale();
+  const locale = (rawLocale === "en" ? "en" : "zh") as "zh" | "en";
   const t = useTranslations("product.market"); const tp = useTranslations("product.marketProject"); const p = useTranslations("product"); const router = useRouter();
   const w = useTranslations("marketWorkflow");
   const aw = useTranslations("agriWall");
@@ -34,8 +42,41 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
   const [free, setFree] = useState(offer ? data?.priceMinor === 0 && !data?.pricingTiers?.length : share || agri);
   const [title, setTitle] = useState(data?.title ?? ""); const [summary, setSummary] = useState(data?.summary ?? ""); const [deliverables, setDeliverables] = useState(data?.deliverables.join("\n") ?? "");
   const [coverUrl, setCoverUrl] = useState(data?.coverUrl ?? "");
+  const [studioTab, setStudioTab] = useState<"pitch" | "readme" | "social" | "cover">("pitch");
+  const [coverPreset, setCoverPreset] = useState<CoverStudioPreset["id"]>("dark-tech");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [tiers, setTiers] = useState<TierDraft[]>(data?.pricingTiers?.length ? data.pricingTiers.map(tier => ({ id: tier.id, title: tier.title, description: tier.description, price: (tier.priceMinor / 100).toFixed(2), deliverables: tier.deliverables.join("\n") })) : [{ id: "basic", title: "", description: "", price: data?.priceMinor ? (data.priceMinor / 100).toFixed(2) : "", deliverables: data?.deliverables.join("\n") ?? "" }]);
   const children = PROJECT_CATEGORIES.find(item => item.id === category)!.children;
+  const categoryLabel = `${p("categories." + category)} · ${p("children." + subcategory)}`;
+  const socialPack = generateRoadshowAndSocialPack(
+    { title, summary, deliverables: lines(deliverables), category: categoryLabel },
+    locale,
+  );
+  const coverSvgMarkup = buildCoverStudioSvg(coverPreset, title, socialPack.cleanedSummary, categoryLabel);
+  function copyStudioText(key: string, value: string) {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      void navigator.clipboard.writeText(value);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(curr => (curr === key ? null : curr)), 1800);
+    }
+  }
+  function fillDescriptionWithReadme() {
+    const d = document.querySelector<HTMLTextAreaElement>('textarea[name="description"]');
+    if (d) {
+      d.value = socialPack.readmeMarkdown;
+      d.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+  function downloadCoverSvg() {
+    if (typeof window === "undefined") return;
+    const blob = new Blob([coverSvgMarkup], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(title.trim() || "ans-project").slice(0, 24).replace(/\s+/g, "-")}-${coverPreset}.svg`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
   function errorMessage(code: string) { return t(t.has("errors." + code) ? "errors." + code : "errors.INTERNAL_ERROR"); }
   function updateTier(id: string, change: Partial<TierDraft>) { setTiers(current => current.map(tier => tier.id === id ? { ...tier, ...change } : tier)); }
   async function uploadCover(file?: File) {
@@ -160,7 +201,23 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
           {!free && field(t("fields.slug"), <Input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" minLength={3} maxLength={80} defaultValue={data?.slug} readOnly={Boolean(offer)} placeholder="my-project"/>)}
           {field(t("fields.category"), <select aria-label={t("fields.category")} className={selectClass} value={category} onChange={event => { const next = PROJECT_CATEGORIES.find(item => item.id === event.target.value)!; setCategory(next.id); setSubcategory(next.children[0]); }}>{PROJECT_CATEGORIES.map(item => <option key={item.id} value={item.id}>{p("categories." + item.id)}</option>)}</select>)}
           {field(t("fields.subcategory"), <select aria-label={t("fields.subcategory")} className={selectClass} value={subcategory} onChange={event => { setSubcategory(event.target.value); if (event.target.value === "agri-wall") setFree(true); }}>{children.map(item => <option key={item} value={item}>{p("children." + item)}</option>)}</select>)}
-          <div className="md:col-span-2">{field(t("fields.summary"), <Textarea name="summary" required minLength={10} maxLength={300} value={summary} onChange={event => setSummary(event.target.value)}/>)}</div>
+          <div className="md:col-span-2 space-y-2">
+            {field(t("fields.summary"), <Textarea name="summary" required minLength={10} maxLength={300} value={summary} onChange={event => setSummary(event.target.value)}/>)}
+            {summary.trim().length > 0 && socialPack.cleanedSummary !== summary.trim() && (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs">
+                <span className="text-muted-foreground">
+                  🧹 <strong className="text-foreground">ans-tone-guard 检测到空洞修辞：</strong>建议精简为可核验的工程事实描述
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSummary(socialPack.cleanedSummary)}
+                  className="rounded-full border border-primary/30 bg-background px-3 py-1 font-semibold text-primary hover:bg-primary/10 cursor-pointer"
+                >
+                  一键去 AI 味精简简介
+                </button>
+              </div>
+            )}
+          </div>
           <div className="md:col-span-2 space-y-3">{field(t("fields.coverUrl"), <Input type="url" name="coverUrl" maxLength={1000} value={coverUrl} onChange={event => setCoverUrl(event.target.value)} placeholder="https://"/>)}{field(tp("uploadCover"), <Input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => { void uploadCover(event.target.files?.[0]); event.target.value = ""; }}/>, tp("coverHint"))}{uploading && <p role="status" className="text-sm text-muted-foreground">{tp("uploading")}</p>}</div>
         </div></section>
         <section className="ans-detail-block">{section("02", tp("projectTitle"), tp("projectBody"))}<div className="grid min-w-0 gap-5 md:grid-cols-2">
@@ -172,6 +229,118 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
           <div className="md:col-span-2">{field(t("fields.deliverables"), <Textarea name="deliverables" required className="min-h-28" value={deliverables} onChange={event => setDeliverables(event.target.value)} placeholder={t("deliverablesHint")}/>)}</div>
           <div className="md:col-span-2">{field(t("fields.licenseTerms"), <Textarea name="licenseTerms" required minLength={10} maxLength={3000} defaultValue={data?.licenseTerms}/>)}</div>
         </div></section>
+        <section className="ans-detail-block space-y-4" data-testid="ans-submission-skill-studio">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>ANS 路演发布与高对比封面工坊 · ans-draft-publisher + ans-cover-studio</span>
+              </p>
+              <h2 className="mt-1 text-lg font-semibold">一鱼四吃：自动生成 60s 路演稿、去 AI 味 README、社媒帖与 16:9 封面</h2>
+              <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                基于当前填写的项目标题、简介与交付物，实时执行去 AI 味校验（ans-tone-guard）并同步生成四套发布物料。
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={fillDescriptionWithReadme}
+              className="rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground cursor-pointer"
+            >
+              📄 将去 AI 味 README 填入项目详情
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2 border-b pb-3">
+            {([
+              { id: "pitch", label: "🎙️ 60秒路演逐字稿" },
+              { id: "readme", label: "📘 去AI味 GitHub README" },
+              { id: "social", label: "📲 小红书/B站发布草稿" },
+              { id: "cover", label: "🎨 16:9 高对比三版封面 (ans-cover-studio)" },
+            ] as const).map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setStudioTab(tab.id)}
+                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                  studioTab === tab.id
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {studioTab !== "cover" ? (
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {studioTab === "pitch"
+                    ? "面向评委/导师的 60 秒三段式路演结构（痛点 → 确定性边界 → 现场可核验交付）"
+                    : studioTab === "readme"
+                      ? "遵循 Grounding 规范与 30 秒冒烟测试的开源项目 README"
+                      : "去除空洞口号、带双备选标题与可验证亮点的社区分享帖"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyStudioText(
+                      studioTab,
+                      studioTab === "pitch"
+                        ? socialPack.roadshowPitch
+                        : studioTab === "readme"
+                          ? socialPack.readmeMarkdown
+                          : socialPack.socialPostDraft,
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-background px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer"
+                >
+                  {copiedKey === studioTab ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  <span>{copiedKey === studioTab ? "已复制" : "复制文稿"}</span>
+                </button>
+              </div>
+              <pre className="max-h-60 overflow-auto rounded-xl border border-border/80 bg-muted/30 p-3.5 text-xs leading-6 whitespace-pre-wrap text-foreground">
+                {studioTab === "pitch"
+                  ? socialPack.roadshowPitch
+                  : studioTab === "readme"
+                    ? socialPack.readmeMarkdown
+                    : socialPack.socialPostDraft}
+              </pre>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap gap-2">
+                  {COVER_STUDIO_PRESETS.map(preset => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => setCoverPreset(preset.id)}
+                      className={`rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer ${
+                        coverPreset === preset.id
+                          ? "bg-foreground text-background"
+                          : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {preset.label[locale]}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={downloadCoverSvg}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>下载 16:9 SVG 封面文件</span>
+                </button>
+              </div>
+              <div
+                className="overflow-hidden rounded-xl border border-border/80 shadow-xs [&_svg]:h-auto [&_svg]:w-full"
+                dangerouslySetInnerHTML={{ __html: coverSvgMarkup }}
+              />
+            </div>
+          )}
+        </section>
         <section className="ans-detail-block">{section("03", isAgri ? aw("freeDisplayTitle") : tp("pricingTitle"), isAgri ? aw("freeDisplayBody") : tp("pricingBody"))}{data?.execution && <p className="mb-4 text-sm font-medium text-primary">{w("runnable")} · {w("computeOnRun")}</p>}{!data?.execution && <label className="flex items-start gap-3 rounded-xl border p-4 text-sm"><input type="checkbox" checked={free} disabled={Boolean(data?.execution) || isAgri} onChange={event => setFree(event.target.checked)} className="mt-1 h-4 w-4 accent-primary"/><span><strong>{p("realProject.freeShare")}</strong><span className="mt-1 block leading-6 text-muted-foreground">{tp("freeHint")}</span></span></label>}
           {!free && <div className="mt-5 space-y-5"><div className="grid min-w-0 gap-5 md:grid-cols-2">{field(t("fields.fulfillment"), <select className={selectClass} name="fulfillment" defaultValue={data?.fulfillment ?? "service"}><option value="service">{t("service")}</option><option value="resource">{t("resource")}</option></select>)}{field(t("fields.deliveryDays"), <Input type="number" name="deliveryDays" required min={1} max={90} defaultValue={data?.deliveryDays ?? 3}/>)}{field(t("fields.revisionLimit"), <Input type="number" name="revisionLimit" required min={0} max={20} defaultValue={data?.revisionLimit ?? 1}/>)}</div>
             {tiers.map((tier, index) => <div key={tier.id} className="min-w-0 space-y-4 rounded-xl border bg-muted/20 p-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-semibold">{tp("tierNumber", { number: index + 1 })}</h3><Button type="button" size="sm" variant="ghost" disabled={tiers.length === 1} onClick={() => setTiers(current => current.filter(item => item.id !== tier.id))} aria-label={tp("removeTier", { number: index + 1 })}><Trash2 aria-hidden="true"/>{tp("remove")}</Button></div><div className="grid min-w-0 gap-4 md:grid-cols-2">{field(tp("tierTitle"), <Input value={tier.title} required maxLength={80} onChange={event => updateTier(tier.id, { title: event.target.value })}/>)}{field(tp("tierPrice"), <Input inputMode="decimal" value={tier.price} required pattern="(0|[1-9][0-9]{0,6})([.][0-9]{1,2})?" onChange={event => updateTier(tier.id, { price: event.target.value })}/>)}<div className="md:col-span-2">{field(tp("tierDescription"), <Textarea value={tier.description} required maxLength={1000} onChange={event => updateTier(tier.id, { description: event.target.value })}/>)}</div><div className="md:col-span-2">{field(tp("tierDeliverables"), <Textarea value={tier.deliverables} required onChange={event => updateTier(tier.id, { deliverables: event.target.value })}/>, t("deliverablesHint"))}</div></div></div>)}
