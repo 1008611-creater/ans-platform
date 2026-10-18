@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ExternalLink, FileCheck2, Github, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ExternalLink, FileCheck2, Github } from "lucide-react";
 import { catalogText, catalogSourceLabel } from "@/domain/catalog/content";
 import { projectStartHref, type CatalogProject } from "@/domain/catalog/projects";
 import type { ProjectGuide } from "@/domain/catalog/project-guide-types";
 import { buildProjectVisualWalkthrough } from "@/domain/vibehub/ans-site-optimizers";
-import { PROJECT_WORKFLOW_COST_POINTS } from "@/contracts/projects";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { Button } from "@/components/ui/button";
 import { ProjectPreview } from "./project-preview";
@@ -71,7 +70,7 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
         <ProductConnectionsSection connections={otherActions} compact />
         {primaryConnection && (guide?.experienceUrl || project.sourceUrl) && <Button asChild variant="outline" className="mt-2 w-full"><a href={guide?.experienceUrl ?? project.sourceUrl} target="_blank" rel="noopener noreferrer">{guide?.experienceUrl ? d("tryOnline") : isGithub ? d("viewRepository") : d("openProject")}<ArrowUpRight size={16} aria-hidden="true" /></a></Button>}
         {guide?.experienceUrl && project.sourceUrl && <a href={project.sourceUrl} target="_blank" rel="noopener noreferrer" className="ans-text-link"><Github size={15} aria-hidden="true" />{d("viewRepository")}</a>}
-        {!primaryConnection && startHref && <div className={styles.startNote}><Info size={15} aria-hidden="true" /><span>{t("cost", { points: PROJECT_WORKFLOW_COST_POINTS }) + " · " + t("costNote")}</span></div>}
+        <div className={styles.startNote}><Check size={15} aria-hidden="true" /><span>{isEn ? "Free Open Access · Instant online preview & template delivery" : "🎁 限时免费开放 · 零积分门槛，支持直接在线体验与复制模板"}</span></div>
         {project.creator && <p className={styles.creator}>{d("by", { name: project.creator })}</p>}
       </aside>
     </div>
@@ -89,11 +88,10 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
             <div><h3>{step.title}</h3><p>{step.body}</p>{step.href && <a href={step.href} target="_blank" rel="noopener noreferrer" className="ans-text-link">{d("openStep")}<ExternalLink size={14} aria-hidden="true" /></a>}</div>
           </li>)}</ol>
         </section>}
-        <section id="project-visual-walkthrough" data-testid="project-visual-walkthrough" className={`${styles.section} space-y-5`}>
+        <section id="project-visual-walkthrough" data-testid="project-visual-walkthrough" className={`${styles.section} space-y-4`}>
           <div>
             <p className={styles.kicker}>{walkthrough.eyebrow}</p>
             <h2>{walkthrough.heading}</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">{walkthrough.subtitle}</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {walkthrough.nodes.map(node => (
@@ -121,70 +119,25 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
               </div>
             ))}
           </div>
-          <div className="rounded-2xl border border-border/80 bg-muted/25 p-4 space-y-3">
-            <div>
-              <h3 className="text-sm font-bold text-foreground">{walkthrough.evalHeading}</h3>
-              <p className="mt-0.5 text-xs text-muted-foreground">{walkthrough.evalSubtitle}</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border/80 text-muted-foreground">
-                    <th className="py-2 pr-3 font-semibold">{isEn ? "Dimension" : "对比维度"}</th>
-                    <th className="py-2 px-3 font-semibold">{isEn ? "Raw LLM Prompt (Without Skill)" : "裸调默认模型（无工作流约束）"}</th>
-                    <th className="py-2 pl-3 font-semibold text-emerald-600 dark:text-emerald-400">{isEn ? "With ANS Productized Workflow" : "启用本 ANS 结构化工作流"}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
-                  {walkthrough.evalRows.map(row => (
-                    <tr key={row.dimension}>
-                      <td className="py-2.5 pr-3 font-semibold text-foreground whitespace-nowrap">{row.dimension}</td>
-                      <td className="py-2.5 px-3 text-muted-foreground">{row.withoutSkill}</td>
-                      <td className="py-2.5 pl-3 font-medium text-foreground">{row.withAnsWorkflow}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-2.5 text-xs">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-muted-foreground">{isEn ? "Built-in ANS Skills:" : "底层内化 ANS Skill："}</span>
-                {walkthrough.recommendedSkills.map(sk => (
-                  <Link
-                    key={sk.slug}
-                    href={`/vibe-hub/vibehub-skill?lang=${isEn ? "en" : "zh"}#ans-skill-matrix`}
-                    className="rounded-md border border-border bg-background px-2 py-0.5 font-mono text-[11px] font-medium text-foreground hover:border-primary hover:text-primary"
-                  >
-                    {sk.name} · {sk.role}
-                  </Link>
-                ))}
-              </div>
-              <Link href={`/vibe-hub/vibehub-skill?lang=${isEn ? "en" : "zh"}#ans-brief-builder`} className="font-semibold text-primary hover:underline">
-                {isEn ? "Customize 4-Part Brief →" : "去四段式工作台定制同类需求 →"}
-              </Link>
-            </div>
-          </div>
         </section>
       </div>
       <aside className={styles.sideNote}>
         <section id="project-conditions">
-          <p className={styles.kicker}>03 / {d("conditions")}</p><h2>{d("beforeStarting")}</h2>
+          <p className={styles.kicker}>03 / {isEn ? "DELIVERY & ACCESS" : "真实交付与直达入口"}</p>
+          <h2>{isEn ? "What You Get Right Now" : "现在点进去能拿到什么"}</h2>
           <dl className={styles.requirements}>
+            <div><dt>{isEn ? "Access Status" : "开放状态"}</dt><dd className="font-semibold text-emerald-600 dark:text-emerald-400">{isEn ? "Free Open Access (0 Points)" : "🎁 限时免费开放（0 积分）"}</dd></div>
             <div><dt>{d("prepare")}</dt><dd className="whitespace-pre-line">{text("inputs")}</dd></div>
-            {advice && <><div><dt>{d("difficulty")}</dt><dd>{advice.difficulty}</dd></div><div><dt>{d("cost")}</dt><dd>{advice.cost}</dd></div></>}
-            <div><dt>{d("yourDecision")}</dt><dd className="whitespace-pre-line">{text("decisions")}</dd></div>
           </dl>
-          {advice?.cautions.length ? <div className={styles.cautions}><h3>{d("limits")}</h3><ul>{advice.cautions.map(item => <li key={item}><Check size={15} aria-hidden="true" /><span>{item}</span></li>)}</ul></div> : null}
           {methods.length > 0 && <details className={styles.methods}><summary>{d("tools")}</summary><dl>{methods.map(field => <div key={field}><dt>{t(`${field}Title`)}</dt><dd>{text(field)}</dd></div>)}</dl></details>}
         </section>
         <section id="project-sources" className="mt-8 pt-6 border-t">
           <p className={styles.kicker}>04 / {d("sources")}</p>
-          {hasMeaningfulSourceNote && <p className="mt-2 text-xs leading-6 text-muted-foreground">{rawSourceNote}</p>}
           <ul className={styles.sources}>
+            {guide?.experienceUrl && <li><a href={guide.experienceUrl} target="_blank" rel="noopener noreferrer"><span>{d("tryOnline")}</span><ArrowUpRight size={16} aria-hidden="true" /></a></li>}
             {project.sourceUrl && <li><a href={project.sourceUrl} target="_blank" rel="noopener noreferrer"><span>{d("original")}</span><span>{sourceName}<ArrowUpRight size={16} aria-hidden="true" /></span></a></li>}
-            {guide?.evidence.filter(item => item.href !== project.sourceUrl).map(item => <li key={item.href}><a href={item.href} target="_blank" rel="noopener noreferrer"><span>{item.label}</span><ArrowUpRight size={16} aria-hidden="true" /></a></li>)}
+            {guide?.evidence.filter(item => item.href !== project.sourceUrl && item.href !== guide?.experienceUrl).map(item => <li key={item.href}><a href={item.href} target="_blank" rel="noopener noreferrer"><span>{item.label}</span><ArrowUpRight size={16} aria-hidden="true" /></a></li>)}
             {project.licenseUrl && <li><a href={project.licenseUrl} target="_blank" rel="noopener noreferrer"><span>{d("license")}</span><ArrowUpRight size={16} aria-hidden="true" /></a></li>}
-            {project.discoveryUrl && <li><a href={project.discoveryUrl} target="_blank" rel="noopener noreferrer"><span>{t("realProject.discovery")}</span><ArrowUpRight size={16} aria-hidden="true" /></a></li>}
           </ul>
         </section>
       </aside>

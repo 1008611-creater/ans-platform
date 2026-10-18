@@ -10,7 +10,7 @@ import { VisualWebsiteExperience } from "@/components/projects/visual-website-ex
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketStar } from "@/components/marketplace/market-star";
 import { MarketProductConnections } from "@/components/marketplace/market-product-connections";
-import { getMarketOfferMetrics, getMarketSamplePreview } from "@/domain/marketplace/presentation";
+import { getMarketSamplePreview } from "@/domain/marketplace/presentation";
 import { Button } from "@/components/ui/button";
 import type { MarketOfferView } from "@/contracts/marketplace-view";
 import styles from "./market-detail.module.css";
@@ -27,7 +27,6 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
     getTranslations("product.marketStudio"),
   ]);
   const listing = offer.listing;
-  const metrics = getMarketOfferMetrics(offer);
   const sample = getMarketSamplePreview(listing);
   const readyDetails = runnable?.available && runnable.recipe === "resume-website-v1" ? runnable : null;
   const sellerName = offer.seller.nickname || offer.seller.username;
@@ -45,16 +44,16 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
     </nav>
     <header className={styles.studioOverview}>
       <div>
-        <div className={styles.workflowMeta}><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span><span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300">{metrics.summaryLabel}</span></div>
+        <div className={styles.workflowMeta}><span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">🎁 限时免费开放</span><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span></div>
         <h1>{ts("title")}</h1><p className={styles.studioLead}>{ts("summary")}</p>
         <div className={styles.studioActions}>
           <Button asChild><a href="#market-run">{ts("tryEditor")}<ArrowUpRight aria-hidden="true" /></a></Button>
           <a href="#market-deliverables" className="text-sm font-medium text-emerald-600 underline underline-offset-4 dark:text-emerald-400">📦 查看交付物 Sample 样本</a>
-          <a href="#market-terms" className="text-sm underline underline-offset-4">{td("termsTitle")}</a>
         </div>
       </div>
       <aside className={styles.studioContract} aria-label={td("decisionTitle")}>
-        <strong>{ts("freeEditing")}</strong><p>{ts("costNote")}</p>
+        <strong className="text-emerald-600 dark:text-emerald-400">🎁 0 积分 · 免费在线制作与导出</strong>
+        <p>支持直接在线填写信息、实时预览双语作品集排版，并一键导出完整单文件 HTML 简历网站。</p>
         <dl><div><dt>{ts("aiCopy")}</dt><dd>{ts(readyDetails ? "copyReady" : "copyUnavailable")}</dd></div><div><dt>{ts("sharing")}</dt><dd>{ts(publicationAvailable ? "sharingReady" : "sharingUnavailable")}</dd></div></dl>
         <div className={styles.studioPublisher}>
           <Link href={"/@" + offer.seller.username} className="flex min-w-0 items-center gap-2">

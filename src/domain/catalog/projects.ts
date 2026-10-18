@@ -31,20 +31,10 @@ export function resolveProjectCovers(project: {
   if (!project.coverUrl && !project.outerCoverUrl && !project.innerCoverUrl) {
     return { outerCoverUrl: undefined, innerCoverUrl: undefined };
   }
-  const isCustomUpload =
-    Boolean(project.coverUrl) &&
-    !project.coverUrl!.startsWith("/catalog/gitglow-v1/") &&
-    !project.coverUrl!.startsWith("/catalog/oil-v1/") &&
-    !project.coverUrl!.startsWith("/catalog/sketch-v1/");
-  if (isCustomUpload) {
-    return {
-      outerCoverUrl: project.outerCoverUrl ?? project.coverUrl,
-      innerCoverUrl: project.innerCoverUrl ?? project.coverUrl,
-    };
-  }
+  const gitglowCover = project.coverUrl ?? `/catalog/gitglow-v1/${project.slug}.svg`;
   return {
-    outerCoverUrl: project.outerCoverUrl ?? `/catalog/oil-v1/${project.slug}.svg`,
-    innerCoverUrl: project.innerCoverUrl ?? project.coverUrl ?? `/catalog/gitglow-v1/${project.slug}.svg`,
+    outerCoverUrl: project.outerCoverUrl ?? gitglowCover,
+    innerCoverUrl: project.innerCoverUrl ?? gitglowCover,
   };
 }
 
