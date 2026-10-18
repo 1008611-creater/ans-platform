@@ -18,9 +18,8 @@ type CatalogProjectBase = {
 export type CatalogProject = CatalogProjectBase & { source: CatalogEntry["source"]; sourceUrl?: string; licenseUrl?: string; workflowId?: CatalogWorkflowId; workflowSlugs?: string[]; marketSlugs?: string[]; content?: CatalogEntry["content"]; discoveryUrl?: string; coverUrl?: string; outerCoverUrl?: string; innerCoverUrl?: string; coverNote?: string; memberHref?: string; creator?: string };
 
 /**
- * Scheme A Dual-Cover Resolver:
- * - Before clicking (outer list card): oil-style high-contrast editorial cover (/catalog/oil-v1/<slug>.svg)
- * - After clicking (inner detail hero): GitGlow 3D interface cover (/catalog/gitglow-v1/<slug>.(webp|svg))
+ * Dual-Cover Resolver:
+ * - Defaults both outerCoverUrl and innerCoverUrl to GitGlow (/catalog/gitglow-v1/<slug>.(webp|svg)) unless an approved cover is explicitly provided.
  */
 export function resolveProjectCovers(project: {
   slug: string;

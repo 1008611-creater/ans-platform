@@ -362,6 +362,28 @@ for (const file of brandCheckFiles) {
   }
 }
 
+// 8. 封面质量门禁（严禁将未获批的批量扁平 /catalog/oil-v1/*.svg 直接绑回主站外层卡片）
+const coverGateFiles = [
+  "src/domain/catalog/projects.ts",
+  "src/app/showcase/page.tsx",
+  "src/components/marketplace/offer-card.tsx",
+  "src/app/hubs/[slug]/page.tsx",
+  "src/app/vibe-hub/guides/guides-client.tsx",
+  "src/app/vibe-hub/courses/course-directory.tsx",
+];
+for (const rel of coverGateFiles) {
+  const full = path.resolve(scriptDir, "..", rel);
+  if (!fs.existsSync(full)) continue;
+  const text = fileCache.get(full)?.text ?? fs.readFileSync(full, "utf8");
+  if (text.includes("/catalog/oil-v1/")) {
+    violations.push({
+      rule: "cover-quality-gate",
+      file: rel,
+      detail: `严禁在主站外层卡片中直接引用批量扁平 SVG (/catalog/oil-v1/)；所有新封面必须经真实 Skill 生成并由用户肉眼确认质量后方可上线`,
+    });
+  }
+}
+
 // ---- 报告 ---------------------------------------------------------------
 const RULE_LABEL = {
   "client-boundary": "客户端边界",
@@ -372,6 +394,7 @@ const RULE_LABEL = {
   "app-data": "app 数据边界",
   "app-data-stale": "app 数据边界（台账过期）",
   "brand-identity": "品牌铁律（ANS = AI Never Stops）",
+  "cover-quality-gate": "封面视觉质量门禁（No Unapproved Fake SVG Covers）",
 };
 
 const countOf = (prefix) => allFiles.filter((f) => relOf(f).startsWith(prefix)).length;

@@ -1,6 +1,8 @@
 # AGENTS.md
 
 > **Core Brand Iron Rule**: **`ANS` stands exclusively for `AI Never Stops`** (never miswrite it as `AI Native Society` or `AI Native Studio` in any copy, code, diagram, or response).
+> **No Fake/Scripted Skill Substitutes Rule**: When asked to use any external/open-source visual or cover Skill (`oil-cover`, `beautify-github-readme`, `oil-visual`, `oil-ui`, `GitGlow`, etc.), always install and follow the authentic upstream Skill repository (`SKILL.md`, `references/*`, `scripts/*`) and real generation pipeline (e.g., `image2.5genskill` / `gpt-image-2.5`). NEVER substitute an upstream visual Skill with a makeshift script that draws repetitive flat SVG boxes.
+> **Mandatory Visual Quality Gate Rule**: Whenever generating covers or visual assets with `image2.5genskill` or any cover Skill, ALWAYS present sample outputs across the candidate styles to the user for visual inspection and explicit quality approval BEFORE replacing or deploying covers to the live site.
 > Product authority: docs/ANS权威产品与架构总纲.md, current 2026-10-15 revision. Load the relevant sections for the task. Primary navigation is project square, Hub, community growth, competitions, market and workspace; workflows remain an internal execution layer with no standalone discovery entry. Implement only authorized product changes; preserve authentication, accounting, private data, runtime APIs and applicable source notices.
 
 > Guidelines for AI coding agents working on this project.
