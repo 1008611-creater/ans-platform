@@ -3,10 +3,9 @@ import { HubMemberWorkflowList } from "@/components/hubs/hub-member-workflows";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getHub, hubProjects, hubWorkflowRecipes } from "@/domain/hubs/registry";
-import { resolveProjectCovers } from "@/domain/catalog/projects";
 import { listPublishedCatalog } from "@/server/catalog/service";
 import { catalogText } from "@/domain/catalog/content";
 import { findPublishedPlatformRecipe } from "@/server/workflows/platform-recipes";
@@ -19,25 +18,11 @@ import styles from "@/components/hubs/hubs.module.css";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const hub = getHub(slug);
-  if (!hub) return { title: "ANS Hub" };
+  const { slug } = await params, hub = getHub(slug); if (!hub) notFound();
   const t = await getTranslations("hubs"); return { title: t(`items.${hub.slug}.name`), description: t(`items.${hub.slug}.description`) };
 }
-const resourceCovers: Record<string, string> = {
-  agrihackathon: "/catalog/ans-pro-v1/agri-uav.webp",
-  "vibehub-knowledge": "/catalog/ans-pro-v1/ans-3d-showcase.webp",
-  hypit: "/catalog/ans-pro-v1/infinite-canvas.webp",
-};
 export default async function HubDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: Promise<{cursor?:string}> }) {
-  const { slug } = await params;
-  if (slug === "models" || slug === "model") redirect("/workspace/models");
-  if (slug === "compute") redirect("/workspace/compute");
-  if (slug === "learning") redirect("/vibe-hub/courses");
-  if (slug === "data") redirect("/explore");
-  const hub = getHub(slug); if (!hub) notFound();
-  if (hub.slug === "vibehub") redirect("/vibe-hub");
-  if (hub.slug === "cauhub") redirect("/competitions/agrihackathon");
+  const { slug } = await params, hub = getHub(slug); if (!hub) notFound();
   const [t, product, locale] = await Promise.all([getTranslations("hubs"), getTranslations("product"), getLocale()]);
   const query = await searchParams;
   const cursor = typeof query?.cursor === "string" && query.cursor.length <= 80 ? query.cursor : undefined;
@@ -61,14 +46,12 @@ export default async function HubDetailPage({ params, searchParams }: { params: 
   ]);
   const projects = published ? hubProjects(hub, published) : [];
   const recipes = hubWorkflowRecipes(hub, workflowsUnavailable ? null : platform ? [platform.recipe.catalogRecipeId] : []);
-  const hasOfficial = recipes === null || recipes.length > 0;
-  const hasMembers = Boolean(members && Array.isArray(members.items) && members.items.length > 0);
   return <div className="ans-product-shell"><div className={`ans-product-container ${styles.container}`}>
     <Link href="/hubs" className={styles.back}><ArrowLeft className="size-4" aria-hidden="true" />{t("back")}</Link>
     <header className="ans-page-heading"><RevealDetails id="hub-description" kind="heading" label={t("guideLabel")} className="ans-page-heading-copy pe-12" details={<><p>{t(`items.${hub.slug}.description`)}</p>{hub.organization.university && <p>{t("universityNote", { university: t(hub.organization.university.nameKey) })}</p>}</>}><p className="ans-eyebrow">{t(`types.${hub.organization.type}`)}</p><h1 className="ans-page-title">{t(`items.${hub.slug}.name`)}</h1></RevealDetails></header>
-    {hub.resources.length > 0 && <section className={styles.section} aria-labelledby="hub-resources"><h2 id="hub-resources">{t("resourcesTitle")}</h2><div className={styles.entries}>{hub.resources.map(resource => <article key={resource.id} className={`${styles.entry} group`} title={t(resource.descriptionKey)}><Link href={resource.href} className="block overflow-hidden rounded-xl" tabIndex={-1} aria-hidden="true"><img className={`${styles.cover} transition-transform duration-300 hover:scale-[1.02]`} src={resourceCovers[resource.id] ?? "/catalog/gitglow-v1/infinite-canvas.webp"} alt="" loading="lazy" /></Link><span className={styles.kind}>{t(`kinds.${resource.kind}`)}</span><h3><Link href={resource.href}>{t(resource.titleKey)}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></h3><p className="line-clamp-1 group-hover:line-clamp-none">{t(resource.descriptionKey)}</p></article>)}</div></section>}
-    <section className={styles.section} aria-labelledby="hub-projects"><RevealDetails id="hub-project-guide" kind="heading" className="pe-12" label={t("projectGuideLabel")} details={<p>{t("projectsNote")}</p>}><h2 id="hub-projects">{t("projectsTitle")}</h2></RevealDetails>{published === null ? <p className={styles.empty} role="status">{t("catalogUnavailable")}</p> : projects.length ? <div className={styles.entries}>{projects.map(project => { const { outerCoverUrl } = resolveProjectCovers(project); return <article key={project.slug} className={styles.entry}>{outerCoverUrl && <Link href={`/explore/${project.slug}`} className="block overflow-hidden rounded-xl" tabIndex={-1} aria-hidden="true"><Image className={`${styles.cover} transition-transform duration-300 hover:scale-[1.02]`} src={outerCoverUrl} width={640} height={360} unoptimized alt="" sizes="(max-width:767px) 100vw, 50vw" /></Link>}<span className={styles.kind}>{t(project.source === "github" || project.source === "bilibili" || project.source === "web" ? "kinds.reference" : "kinds.external")}</span><h3><Link href={`/explore/${project.slug}`}>{catalogText(project, product, "title", locale)}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></h3><p>{catalogText(project, product, "summary", locale)}</p></article>; })}</div> : <div className={styles.empty}>{t("noProjects")}</div>}</section>
-    {hasOfficial && <section className={styles.section} aria-labelledby="hub-workflows"><RevealDetails id="hub-workflow-guide" kind="heading" className="pe-12" label={t("workflowGuideLabel")} details={<p>{t("runnableNote")}</p>}><h2 id="hub-workflows">{t("officialWorkflowsTitle")}</h2></RevealDetails>{recipes === null ? <div className={styles.empty} role="status">{t("workflowsUnavailable")}</div> : <div className={styles.entries}>{recipes.map(id => <article key={id} className={styles.entry}><img className={styles.cover} src="/catalog/gitglow-v1/magic-resume.webp" alt="" loading="lazy" /><span className={styles.kind}>{t("kinds.runnable")}</span><h3>{t(`recipes.${id}.title`)}</h3><p>{t(`recipes.${id}.description`)}</p><p>{t(unifiedModelBilling() ? "recipeMeteredCost" : "recipeCost", { points: RESUME_WEBSITE_COST_POINTS })}</p>{marketUnavailable && <p role="status">{t("marketUnavailable")}</p>}{marketPath && <Button asChild variant="ghost" className="mt-4"><Link href={marketPath}>{t("viewMarketCard")}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></Button>}</article>)}</div>}</section>}
-    {hasMembers && <HubMemberWorkflowList page={members} slug={hub.slug} />}
+    <section className={styles.section} aria-labelledby="hub-workflows"><RevealDetails id="hub-workflow-guide" kind="heading" className="pe-12" label={t("workflowGuideLabel")} details={<p>{t("runnableNote")}</p>}><h2 id="hub-workflows">{t("officialWorkflowsTitle")}</h2></RevealDetails>{recipes === null ? <div className={styles.empty} role="status">{t("workflowsUnavailable")}</div> : recipes.length ? <div className={styles.entries}>{recipes.map(id => <article key={id} className={styles.entry}><span className={styles.kind}>{t("kinds.runnable")}</span><h3>{t(`recipes.${id}.title`)}</h3><p>{t(`recipes.${id}.description`)}</p><p>{t(unifiedModelBilling() ? "recipeMeteredCost" : "recipeCost", { points: RESUME_WEBSITE_COST_POINTS })}</p>{marketUnavailable && <p role="status">{t("marketUnavailable")}</p>}{marketPath && <Button asChild variant="ghost" className="mt-4"><Link href={marketPath}>{t("viewMarketCard")}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></Button>}</article>)}</div> : <div className={styles.empty}>{t("noOfficialWorkflows")}</div>}</section>
+    <HubMemberWorkflowList page={members} slug={hub.slug} />
+    {hub.resources.length > 0 && <section className={styles.section} aria-labelledby="hub-resources"><h2 id="hub-resources">{t("resourcesTitle")}</h2><div className={styles.entries}>{hub.resources.map(resource => <article key={resource.id} className={styles.entry}><span className={styles.kind}>{t(`kinds.${resource.kind}`)}</span><h3><Link href={resource.href}>{t(resource.titleKey)}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></h3><p>{t(resource.descriptionKey)}</p></article>)}</div></section>}
+    <section className={styles.section} aria-labelledby="hub-projects"><RevealDetails id="hub-project-guide" kind="heading" className="pe-12" label={t("projectGuideLabel")} details={<p>{t("projectsNote")}</p>}><h2 id="hub-projects">{t("projectsTitle")}</h2></RevealDetails>{published === null ? <p className={styles.empty} role="status">{t("catalogUnavailable")}</p> : projects.length ? <div className={styles.entries}>{projects.map(project => <article key={project.slug} className={styles.entry}>{project.coverUrl && <Image className={styles.cover} src={project.coverUrl} width={640} height={360} alt="" sizes="(max-width:767px) 100vw, 50vw" />}<span className={styles.kind}>{t(project.source === "github" || project.source === "bilibili" || project.source === "web" ? "kinds.reference" : "kinds.external")}</span><h3><Link href={`/explore/${project.slug}`}>{catalogText(project, product, "title", locale)}<ArrowUpRight className="size-4" aria-hidden="true" /></Link></h3><p>{catalogText(project, product, "summary", locale)}</p></article>)}</div> : <div className={styles.empty}>{t("noProjects")}</div>}</section>
   </div></div>;
 }

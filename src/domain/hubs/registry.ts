@@ -17,6 +17,7 @@ export const HUBS: readonly HubDefinition[] = [
     { id: "vibehub-knowledge", href: "/vibe-hub", kind: "knowledge", titleKey: "resources.vibehub.title", descriptionKey: "resources.vibehub.description" },
   ] },
   { slug: "aigc", organization: { id: "ans-aigc", type: "topic", nameKey: "organizations.aigc" }, projectSlugs: ["image2-library", "vibephoto", "infinite-canvas", "ai-video-services", "remotion-video", "comfyui", "pyvideotrans", "video2x"], workflowRecipeIds: [], resources: [
+    { id: "aigc-workbench", href: "/workflows/toonflow", kind: "hosted-tool", titleKey: "resources.aigc.title", descriptionKey: "resources.aigc.description" },
     { id: "hypit", href: "/workflows/hypit", kind: "hosted-tool", titleKey: "resources.hypit.title", descriptionKey: "resources.hypit.description" },
   ] },
   { slug: "full-stack", organization: { id: "ans-full-stack", type: "topic", nameKey: "organizations.fullStack" }, projectSlugs: ["liu-resume", "hello-algo", "build-your-own-x", "freecodecamp", "python-algorithms", "reactive-resume", "magic-resume", "vcard-portfolio", "react-interview", "hugo-site", "docsify", "astro-starlight", "code2prompt", "saleor-commerce", "plausible-analytics", "plane-projects"], workflowRecipeIds: [RESUME_WEBSITE_WORKFLOW_ID], resources: [] },
