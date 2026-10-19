@@ -42,7 +42,7 @@ export default async function CommunityPage() {
         author: isEn ? "3D Resume Studio" : "3D 简历工坊",
         badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
         cover: "/catalog/ans-pro-v1/magic-resume.webp",
-        href: "/projects/resume-website",
+        href: "/market/resume-website",
         summary: isEn ? "One-click WebGL character showcase + bilingual resume export for internship applications." : "基于 ANS 3D 个人网站工坊生成，支持单文件 HTML 导出与 3D 角色互动，适合直接改造成求职简历。",
       },
       {

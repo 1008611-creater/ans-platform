@@ -53,7 +53,7 @@ const BLUEPRINT_WORKFLOWS = [
     cost: "2 点/次",
     cover: "/catalog/ans-pro-v1/magic-resume.webp",
     desc: "输入 PDF 论文摘要或 ORCID，自动生成双语学术主页结构与精选海报卡片。",
-    href: "/projects/resume-website",
+    href: "/market/resume-website",
   },
 ];
 

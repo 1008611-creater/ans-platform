@@ -856,7 +856,7 @@ export function CompanionQuestPin({
           <button
             type="button"
             onClick={navigateToWorkMode}
-            title={isZh ? "进入 Agent 工作模式 (/workspace)" : "Open Work Mode (/workspace)"}
+            title={isZh ? "进入 Agent 工作模式" : "Open Work Mode"}
             className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
           >
             {isZh ? "工作模式" : "Work Mode"}

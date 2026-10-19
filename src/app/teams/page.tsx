@@ -231,7 +231,7 @@ export default async function TeamsPage() {
               </CardContent>
             </Card>
             <Card className="group overflow-hidden border-border/80 transition-colors hover:border-primary/50">
-              <img src="/catalog/gitglow-v1/infinite-canvas.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
+              <img src="/catalog/ans-pro-v1/infinite-canvas.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base">{isEn ? "AIGC Creative Track · Multimodal Canvas" : "AIGC 创作赛道 · 无限画布与多模态工坊"}</CardTitle>
@@ -256,7 +256,7 @@ export default async function TeamsPage() {
               const fallbackCovers = [
                 "/catalog/ans-pro-v1/infinite-canvas.webp",
                 "/catalog/ans-pro-v1/vibephoto.webp",
-                "/catalog/ans-pro-v1/hermes-agent.webp",
+                "/catalog/ans-pro-v1/agent-team.webp",
                 "/catalog/ans-pro-v1/ai-video-services.webp",
               ];
               const coverSrc = isAgri ? "/competitions/agrihackathon/gitglow-hub.webp" : fallbackCovers[idx % fallbackCovers.length];
