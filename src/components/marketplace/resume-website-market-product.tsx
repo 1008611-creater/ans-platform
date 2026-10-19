@@ -10,7 +10,7 @@ import { VisualWebsiteExperience } from "@/components/projects/visual-website-ex
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketStar } from "@/components/marketplace/market-star";
 import { MarketProductConnections } from "@/components/marketplace/market-product-connections";
-import { getMarketOfferMetrics, getMarketSamplePreview } from "@/domain/marketplace/presentation";
+import { getMarketSamplePreview } from "@/domain/marketplace/presentation";
 import { Button } from "@/components/ui/button";
 import type { MarketOfferView } from "@/contracts/marketplace-view";
 import styles from "./market-detail.module.css";
@@ -27,7 +27,6 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
     getTranslations("product.marketStudio"),
   ]);
   const listing = offer.listing;
-  const metrics = getMarketOfferMetrics(offer);
   const sample = getMarketSamplePreview(listing);
   const readyDetails = runnable?.available && runnable.recipe === "resume-website-v1" ? runnable : null;
   const sellerName = offer.seller.nickname || offer.seller.username;
@@ -45,7 +44,7 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
     </nav>
     <header className={styles.studioOverview}>
       <div>
-        <div className={styles.workflowMeta}><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span><span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300">{metrics.summaryLabel}</span></div>
+        <div className={styles.workflowMeta}><span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">⚡ 官方在线工作台</span><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span></div>
         <h1>{ts("title")}</h1><p className={styles.studioLead}>{ts("summary")}</p>
         <div className={styles.studioActions}>
           <Button asChild><a href="#market-run">{ts("tryEditor")}<ArrowUpRight aria-hidden="true" /></a></Button>
@@ -54,7 +53,8 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
         </div>
       </div>
       <aside className={styles.studioContract} aria-label={td("decisionTitle")}>
-        <strong>{ts("freeEditing")}</strong><p>{ts("costNote")}</p>
+        <strong>{ts("freeEditing")}</strong>
+        <p>{ts("costNote")}</p>
         <dl><div><dt>{ts("aiCopy")}</dt><dd>{ts(readyDetails ? "copyReady" : "copyUnavailable")}</dd></div><div><dt>{ts("sharing")}</dt><dd>{ts(publicationAvailable ? "sharingReady" : "sharingUnavailable")}</dd></div></dl>
         <div className={styles.studioPublisher}>
           <Link href={"/@" + offer.seller.username} className="flex min-w-0 items-center gap-2">

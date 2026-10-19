@@ -1,6 +1,6 @@
 /**
  * Built-in instant Markdown delivery packages for official ANS Market listings.
- * When a member pays with ANS points for an official listing (or redeems via Little Dino Pi Agent),
+ * When a member pays with ANS points for an official listing (or redeems via Little Dino Agent),
  * the order is immediately fulfilled with the complete, copy-paste-ready Markdown toolkit.
  */
 
@@ -63,7 +63,7 @@ cat weekly_commits.txt
 ## 3. 飞书云文档 / Notion 每日科研打卡双链模板
 
 - **每日三问卡片**：
-  1. 📌 **今日唯一核心实验/代码闭环是什么？**
+  1. 📌 **今日唯一核心实验/代码任务是什么？**
   2. 📊 **关键产出文件或图表路径（Commit SHA / 数据集版本）？**
   3. ⚠️ **明日第一顺位待解决的阻塞点？**
 `,
@@ -183,7 +183,7 @@ ggplot(df, aes(x = Treatment, y = Yield, fill = Treatment)) +
   "aigc-agri-short-drama-storyboard": `# 📦 交付包：乡村振兴 & 智慧农业微短剧 AI 分镜与 Seedance 视频提示词库
 
 > **状态**：✅ ANS 官方自动秒发（已永久解锁）  
-> **适配平台**：直接支持站内 [Toonflow 短剧工作台 (/workflows/toonflow)](/workflows/toonflow) 与 [Hypit 创作台 (/workflows/hypit)](/workflows/hypit)。
+> **适配平台**：直接支持 [CAUAI 无限画布 (https://hb.cauai.fun/)](https://hb.cauai.fun/) 与 [Hypit 创作台 (/workflows/hypit)](/workflows/hypit)。
 
 ---
 
@@ -279,15 +279,15 @@ export function AgriDashboardGrid() {
 ## 1. 极简 Agent 工具循环核心实现（TypeScript）
 
 \`\`\`typescript
-export interface PiTool {
+export interface AgentTool {
   name: string;
   description: string;
   execute: (query: string) => Promise<{ ok: boolean; data: unknown }>;
 }
 
-export async function runPiAgentLoop(
+export async function runAgentLoop(
   userPrompt: string,
-  tools: Record<string, PiTool>,
+  tools: Record<string, AgentTool>,
   callModel: (messages: unknown[]) => Promise<{ toolCall?: { name: string; query: string }; text?: string }>
 ) {
   const history: unknown[] = [{ role: "user", content: userPrompt }];
@@ -317,7 +317,7 @@ export async function runPiAgentLoop(
 1. **P1 封面与一句话定位**：项目名称 + 解决什么作物/场景的什么痛点 + 降本增效核心数字。
 2. **P2 一线真实痛点与田间调研证据**：用实拍图 + 农户/农企访谈原话证明「真需求」，拒绝凭空臆想。
 3. **P3 现有方案局限与我们的核心技术壁垒**：对比传统人工与通用大模型，突出农学专有数据集与轻量化边缘部署。
-4. **P4 产品实机演示闭环（感知 → 决策 → 执行）**：展示真实 Web 工作台或硬件联动截图。
+4. **P4 产品实机演示流程（感知 → 决策 → 执行）**：展示真实 Web 工作台或硬件联动截图。
 5. **P5 田间试验/实验室对照数据**：用 R/Python 方差分析显著性图表证明效果。
 6. **P6 商业模式与单亩/单棚 ROI 测算表**：农户投入多少元 → 增产或省药多少元 → 回本周期几个月。
 7. **P7 已落地试点与合作证明**：校内课题组背书、科技小院或示范基地试用反馈。
@@ -329,7 +329,7 @@ export async function runPiAgentLoop(
 
 ## 2. 评委最常追问的 3 大犀利问题标准应答卡
 - **Q1：「你们和直接调通用 ChatGPT / DeepSeek 有什么本质区别？」**  
-  👉 **标准答法**：通用模型缺乏特定作物的生育期农事约束与本地植保规程，容易给出违规用药建议；我们构建了经过农大植保教材校验的结构化知识图谱与边缘传感器闭环。
+  👉 **标准答法**：通用模型缺乏特定作物的生育期农事约束与本地植保规程，容易给出违规用药建议；我们构建了经过农大植保教材校验的结构化知识图谱与边缘传感器联动系统。
 `,
 
   "cau-agri-smart-greenhouse-agent": `# 📦 交付包：中国农大智慧温室病虫害巡检与环控处方 Agent 全套方案

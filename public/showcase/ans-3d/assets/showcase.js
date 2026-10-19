@@ -553,57 +553,57 @@ class MotionDirector {
   // Rich Kaomoji Rambling Presets (Normal Orbit + Super Macro + Hover + Click + Whip Butt to Work + Random Meme Feeding)
   const MOOD_PRESETS = {
     // 8 Autonomous Orbiting Ramblings (Natural random changes)
-    happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 顺时针绕着主理人头顶大圈巡航中", sub: "💡 再点小恐龙解锁「皮鞭催干活 & 盲盒投喂」互动台！" },
-    curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看... 这个工作流能抄作业！", sub: "✨ 连续点我 3 次以上可召唤专属训龙互动 UI" },
-    starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个 3D 展示有点意思", sub: "🦖 我是 ANS 创作搭子小恐龙 · 随时听候差遣" },
-    cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在主理人耳边兜大圈偷个小懒，应该没被发现吧~", sub: "🪢 警告：摸鱼过多可能会被主理人拿小皮鞭抽屁股" },
-    cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感永不停歇", sub: "🎯 点击感叹号看我碎碎念，多戳几下有惊喜" },
+    happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 顺时针绕着 3D 展厅大圈巡航中", sub: "🦖 薄荷星翼全开 · 展厅巡检状态满分" },
+    curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看... 这个工作流能直接复用！", sub: "✨ 灵感雷达已锁定可复现项目" },
+    starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个 3D 展厅有点意思", sub: "🦖 我是 ANS 创作搭子小恐龙 · 随时待命" },
+    cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在展厅半空兜大圈偷个小懒，没被发现吧~", sub: "🍃 微风巡航模式 · 偶尔摸鱼充个电" },
+    cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感永不停歇", sub: "🎯 小恐龙全天候在线陪跑" },
     focused_think:  { happy: 0.16, star: 0.38, blush: 0.30, mouth: 0.14, gesture: "think",     kaomoji: "( •̀ ω •́ ) ⚡", text: "帮你盯着呢，绝不让收藏夹吃灰！", sub: "🔍 看懂项目，再动手做点东西" },
-    sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "绕圈飞累了伸个懒腰，偷偷打个小盹~", sub: "💫 快点我几下把我叫醒起来搬砖！" },
-    aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚在主理人头顶抓到一个新灵感", sub: "🚀 滑到脸前我会飞到镜头前找你玩！" },
+    sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "绕圈飞累了伸个懒腰，偷偷打个小盹~", sub: "💫 充饱算力再继续陪你肝项目" },
+    aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚在展厅上空抓到一个新灵感", sub: "🚀 随时准备把想法变成真实作品" },
 
     // 4 Camera Super Macro Close-Up Ramblings
-    macro0:         { happy: 0.96, star: 0.95, blush: 0.94, mouth: 0.85, gesture: "hello",     kaomoji: "( ✧∀✧ ) 📸", text: "贴脸杀！飞到超微距镜头前逮住你啦~", sub: "✨ 连续点我解锁「挥鞭催干活 & 随机盲盒投喂」！", badgeType: "macro" },
-    macro1:         { happy: 1.00, star: 0.80, blush: 1.00, mouth: 0.78, gesture: "curious",   kaomoji: "( ˶ˆᗜˆ˵ ) ✌️", text: "超微距营业中！我脸上的小腮红好看吗", sub: "💖 正对摄像机给你比个大大的耶~", badgeType: "macro" },
-    macro2:         { happy: 0.90, star: 1.00, blush: 0.88, mouth: 0.90, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🔍", text: "凑近镜头碎碎念：快去拆解神仙项目！", sub: "🦖 多点我几下开启隐藏训龙面板~", badgeType: "macro" },
-    macro3:         { happy: 0.85, star: 0.90, blush: 0.96, mouth: 0.70, gesture: "shy",       kaomoji: "( ´ ▽ ` )ﾉ ✨", text: "离镜头这么近有点小害羞嘿嘿...", sub: "👆 戳我超过 3 次就能投喂奇葩美食啦", badgeType: "macro" },
+    macro0:         { happy: 0.96, star: 0.95, blush: 0.94, mouth: 0.85, gesture: "hello",     kaomoji: "( ✧∀✧ ) 📸", text: "贴脸杀！飞到近景镜头前逮住你啦~", sub: "🦖 薄荷星翼近景营业 · 干活劲头拉满", badgeType: "macro" },
+    macro1:         { happy: 1.00, star: 0.80, blush: 1.00, mouth: 0.78, gesture: "curious",   kaomoji: "( ˶ˆᗜˆ˵ ) ✌️", text: "超微距营业中！我脸上的腮红好看吗", sub: "💖 正对摄像机给你比个大大的耶~", badgeType: "macro" },
+    macro2:         { happy: 0.90, star: 1.00, blush: 0.88, mouth: 0.90, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🔍", text: "凑近镜头碎碎念：一起拆解好项目！", sub: "🦖 灵感满格 · 随时准备开工", badgeType: "macro" },
+    macro3:         { happy: 0.85, star: 0.90, blush: 0.96, mouth: 0.70, gesture: "shy",       kaomoji: "( ´ ▽ ` )ﾉ ✨", text: "离镜头这么近有点小害羞嘿嘿...", sub: "✨ 肚皮圆滚滚 · 营业状态满分", badgeType: "macro" },
 
     // 5 Mouse Hover Interactive Ramblings
-    hover0:         { happy: 1.00, star: 0.88, blush: 1.00, mouth: 0.82, gesture: "hello",     kaomoji: "( ˶ˆᗜˆ˵ ) 🫳", text: "哇！被你的鼠标摸头啦，好舒服呀~", sub: "✨ 点开感叹号或连点我 3 次开启深度互动！", badgeType: "hover" },
-    hover1:         { happy: 0.96, star: 0.95, blush: 0.92, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ )/ 💫", text: "别挠痒痒哈哈哈！我的尾巴都摇飞啦", sub: "🎯 继续点击小恐龙召唤「训龙互动台」！", badgeType: "hover" },
-    hover2:         { happy: 0.88, star: 1.00, blush: 0.90, mouth: 0.76, gesture: "curious",   kaomoji: "( ☆▽☆ ) 🤝", text: "捕捉到野生鼠标一只！要一起造物吗", sub: "🔥 连点我解锁「挥鞭抽屁股催工」与「盲盒投喂」", badgeType: "hover" },
-    hover3:         { happy: 0.94, star: 0.75, blush: 1.00, mouth: 0.68, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 💖", text: "蹭蹭你的鼠标指针~ 灵感全都传给你", sub: "✨ 点击我切换表情，点满 3 次进入互动专场", badgeType: "hover" },
-    hover4:         { happy: 0.25, star: 0.92, blush: 0.75, mouth: 0.80, gesture: "surprise",  kaomoji: "( ⊙▽⊙ ) ✨", text: "盯——我正顺着网线看着你的鼠标呢！", sub: "👆 快戳我几下试试会发生什么~", badgeType: "hover" },
+    hover0:         { happy: 1.00, star: 0.88, blush: 1.00, mouth: 0.82, gesture: "hello",     kaomoji: "( ˶ˆᗜˆ˵ ) 🫳", text: "哇！被你的鼠标摸头啦，好舒服呀~", sub: "✨ 头顶三颗小肉峰都在发光", badgeType: "hover" },
+    hover1:         { happy: 0.96, star: 0.95, blush: 0.92, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ )/ 💫", text: "别挠痒痒哈哈哈！尾巴都摇飞啦", sub: "🎯 元气值 +100 · 随时听候差遣", badgeType: "hover" },
+    hover2:         { happy: 0.88, star: 1.00, blush: 0.90, mouth: 0.76, gesture: "curious",   kaomoji: "( ☆▽☆ ) 🤝", text: "捕捉到野生鼠标一只！要一起造物吗", sub: "🔥 算力热身完毕 · 随时可出发", badgeType: "hover" },
+    hover3:         { happy: 0.94, star: 0.75, blush: 1.00, mouth: 0.68, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 💖", text: "蹭蹭你的鼠标指针~ 灵感全传给你", sub: "✨ 今日编译通过率 +99%", badgeType: "hover" },
+    hover4:         { happy: 0.25, star: 0.92, blush: 0.75, mouth: 0.80, gesture: "surprise",  kaomoji: "( ⊙▽⊙ ) ✨", text: "盯——我正顺着网线看着你的鼠标呢！", sub: "🦖 雙眼追光开启 · 全程伴飞", badgeType: "hover" },
 
     // 6 Mouse Click Interactive Ramblings
-    click0:         { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🎉", text: "耶！气泡展开啦，原地开心蹦两下！", sub: "💖 再点我几下即可召唤「皮鞭催工 & 随机投喂」面板", badgeType: "click" },
-    click1:         { happy: 0.92, star: 0.65, blush: 1.00, mouth: 0.55, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 🙈", text: "哎呀被戳脸蛋了，害羞转身偷看你~", sub: "✨ 马上就要解锁深度训龙互动 UI 啦！", badgeType: "click" },
-    click2:         { happy: 0.96, star: 1.00, blush: 0.88, mouth: 0.88, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "训龙互动台已就绪！快来鞭策或投喂我吧！", sub: "🚀 下方互动按钮已开启，页面文字已自动半透明避让", badgeType: "click" },
-    click3:         { happy: 0.90, star: 0.80, blush: 0.94, mouth: 0.95, gesture: "hello",     kaomoji: "( ˆڡˆ ) 🦖",  text: "嗷呜一口吃掉你的拖延症！马上开工", sub: "🎉 试试用下方按钮抽我屁股催干活，或者盲盒投喂！", badgeType: "click" },
-    click4:         { happy: 0.82, star: 0.85, blush: 0.78, mouth: 0.65, gesture: "nod",       kaomoji: "( •̀ ω •́ )ゞ ⚡", text: "收到！打工人打工魂，随时准备肝代码", sub: "💡 点击下方「挥鞭抽屁股」或「随机盲盒投喂」试试", badgeType: "click" },
-    click5:         { happy: 0.78, star: 0.50, blush: 0.86, mouth: 0.72, gesture: "stretch",   kaomoji: "( ˘◡˘ ) 💕",  text: "贴贴成功！给你表演个空中伸懒腰~", sub: "🌟 肚子有点饿了，快点下方「随机投喂」喂我吃一口", badgeType: "click" },
+    click0:         { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🎉", text: "耶！气泡展开啦，原地开心蹦两下！", sub: "💖 灵龙伴侣已上线 · 元气满满", badgeType: "click" },
+    click1:         { happy: 0.92, star: 0.65, blush: 1.00, mouth: 0.55, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 🙈", text: "哎呀被戳脸蛋了，害羞转身偷看你~", sub: "✨ 小脸微红 · 算力加速运转中", badgeType: "click" },
+    click2:         { happy: 0.96, star: 1.00, blush: 0.88, mouth: 0.88, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "训龙互动台已就绪！本龙随时待命！", sub: "🚀 近景舞台已开启 · 干活劲头飙升", badgeType: "click" },
+    click3:         { happy: 0.90, star: 0.80, blush: 0.94, mouth: 0.95, gesture: "hello",     kaomoji: "( ˆڡˆ ) 🦖",  text: "嗷呜一口吃掉你的拖延症！马上开工", sub: "🎉 满血状态 · 随时开启创作冲刺", badgeType: "click" },
+    click4:         { happy: 0.82, star: 0.85, blush: 0.78, mouth: 0.65, gesture: "nod",       kaomoji: "( •̀ ω •́ )ゞ ⚡", text: "收到！打工人打工魂，随时准备肝代码", sub: "💡 键盘已热好 · 绝不拖延一秒", badgeType: "click" },
+    click5:         { happy: 0.78, star: 0.50, blush: 0.86, mouth: 0.72, gesture: "stretch",   kaomoji: "( ˘◡˘ ) 💕",  text: "贴贴成功！给你表演个空中伸懒腰~", sub: "🌟 翼展舒展完毕 · 状态拉满", badgeType: "click" },
 
     // 8 Whip-Butt-to-Work Ramblings (用鞭子抽屁股催它努力干活的真实反应与碎碎念!)
-    whip0:          { happy: 0.08, star: 0.95, blush: 1.00, mouth: 0.96, gesture: "surprise",  kaomoji: "( >﹏<。) 💥", text: "啪！！嗷呜屁股开花啦！已经在光速敲代码改Bug了！！", sub: "⚡ 手速飙升 300% · 键盘正在冒火星子中 · 绝不敢摸鱼了", badgeType: "whip" },
-    whip1:          { happy: 0.12, star: 0.88, blush: 1.00, mouth: 0.92, gesture: "nod",       kaomoji: "( ；´Д｀) 🪢", text: "别抽屁股了老板！这份 PRD 我今晚通宵肝完还不行吗！", sub: "🔥 天选打工龙 · 含泪连夜推进 ANS 进度 +25%", badgeType: "whip" },
-    whip2:          { happy: 0.20, star: 1.00, blush: 0.96, mouth: 0.94, gesture: "celebrate", kaomoji: "(╬◣д◢) 💨",  text: "生产队的恐龙都不敢这么歇！马上把 3D 渲染优化到 120 帧！", sub: "💻 屁股火辣辣 · 打工魂彻底觉醒 · KPI 狂飙中", badgeType: "whip" },
-    whip3:          { happy: 0.10, star: 0.82, blush: 1.00, mouth: 0.88, gesture: "shy",       kaomoji: "(つд⊂) 🍑",   text: "呜呜轻点抽小屁股呀！我这就去把 PR 合并、测试跑通、文档写满！", sub: "📈 卑微实习龙 · 一边揉着红屁股一边疯狂搬砖", badgeType: "whip" },
-    whip4:          { happy: 0.18, star: 0.98, blush: 0.95, mouth: 0.98, gesture: "surprise",  kaomoji: "(°□°；) ⚡",   text: "啪叽！灵魂都被抽飞半米高！正在疯狂输出十万行神级代码！", sub: "🚀 牛马圣体满级激活 · 搬砖效率 +999%", badgeType: "whip" },
-    whip5:          { happy: 0.14, star: 0.86, blush: 1.00, mouth: 0.86, gesture: "hello",     kaomoji: "(ŏ﹏ŏ) 💦",    text: "别拿小皮鞭沾凉水呀！人家已经在替你全天候巡视 ANS 展厅了！", sub: "🛠️ 委屈巴巴但手底下敲代码飞快 · 真的在努力干活了", badgeType: "whip" },
-    whip6:          { happy: 0.35, star: 1.00, blush: 0.98, mouth: 0.92, gesture: "celebrate", kaomoji: "( >д< ) 🔥",   text: "嗷！这一鞭子直接打通任督二脉！需求列表瞬间清空！", sub: "✨ 痛并快乐着 · 今日代码提交量突破历史纪录", badgeType: "whip" },
-    whip7:          { happy: 0.15, star: 0.90, blush: 1.00, mouth: 0.90, gesture: "nod",       kaomoji: "( ´•̥×•̥` ) 🐾", text: "屁股肿成蜜桃臀了呜呜…这就去帮主理人把作品集擦得锃亮！", sub: "💪 满血牛马模式 · 绝不拖延一秒钟", badgeType: "whip" },
+    whip0:          { happy: 0.08, star: 0.95, blush: 1.00, mouth: 0.96, gesture: "surprise",  kaomoji: "( >﹏<。) 💥", text: "啪！嗷呜屁股开花啦！已经在光速改Bug了！", sub: "⚡ 手速飙升 300% · 绝不敢摸鱼了", badgeType: "whip" },
+    whip1:          { happy: 0.12, star: 0.88, blush: 1.00, mouth: 0.92, gesture: "nod",       kaomoji: "( ；´Д｀) 🪢", text: "别抽屁股了老板！这份方案我今晚肝完！", sub: "🔥 天选打工龙 · 连夜推进进度 +25%", badgeType: "whip" },
+    whip2:          { happy: 0.20, star: 1.00, blush: 0.96, mouth: 0.94, gesture: "celebrate", kaomoji: "(╬◣д◢) 💨",  text: "生产队的恐龙都不敢歇！马上优化到 120 帧！", sub: "💻 打工魂彻底觉醒 · KPI 狂飙中", badgeType: "whip" },
+    whip3:          { happy: 0.10, star: 0.82, blush: 1.00, mouth: 0.88, gesture: "shy",       kaomoji: "(つд⊂) 🍑",   text: "呜呜轻点抽呀！这就去把测试跑通、文档写满！", sub: "📈 一边揉着红屁股一边疯狂搬砖", badgeType: "whip" },
+    whip4:          { happy: 0.18, star: 0.98, blush: 0.95, mouth: 0.98, gesture: "surprise",  kaomoji: "(°□°；) ⚡",   text: "啪叽！灵魂抽飞半米高！正在疯狂输出代码！", sub: "🚀 牛马圣体满级激活 · 搬砖效率 +999%", badgeType: "whip" },
+    whip5:          { happy: 0.14, star: 0.86, blush: 1.00, mouth: 0.86, gesture: "hello",     kaomoji: "(ŏ﹏ŏ) 💦",    text: "别拿皮鞭沾凉水呀！已经在替你全天候巡视展厅了！", sub: "🛠️ 手底下敲代码飞快 · 真的在努力干活了", badgeType: "whip" },
+    whip6:          { happy: 0.35, star: 1.00, blush: 0.98, mouth: 0.92, gesture: "celebrate", kaomoji: "( >д< ) 🔥",   text: "嗷！这一鞭直接打通任督二脉！需求瞬间清空！", sub: "✨ 今日代码提交量突破历史纪录", badgeType: "whip" },
+    whip7:          { happy: 0.15, star: 0.90, blush: 1.00, mouth: 0.90, gesture: "nod",       kaomoji: "( ´•̥×•̥` ) 🐾", text: "屁股肿成蜜桃臀了呜呜…这就去把作品集擦得锃亮！", sub: "💪 满血牛马模式 · 绝不拖延一秒钟", badgeType: "whip" },
 
     // 10 Random Internet-Meme Blind-Box Feeding Presets (随机网感盲盒投喂配套反应与碎碎念!)
-    feed0:          { happy: 0.98, star: 1.00, blush: 0.88, mouth: 0.95, gesture: "celebrate", reactMode: "caffeine", itemIcon: "🧋", itemName: "十倍浓缩冰美式超大桶", kaomoji: "(*≧ω≦) 🧋", text: "吨吨吨！血管里流淌的都是冰美式！我还能再肝十个通宵！！", sub: "⚡ 咖啡因过载 · 全身亢奋高频震动 · 精神状态极其美丽", badgeType: "feed" },
-    feed1:          { happy: 0.35, star: 0.92, blush: 1.00, mouth: 1.00, gesture: "surprise",  reactMode: "spicy",    itemIcon: "🌶️", itemName: "变态辣火鸡面配折耳根香菜", kaomoji: "(╬°▽°) 🔥", text: "斯哈斯哈！！折耳根配变态辣？！嘴唇肿成香肠龙了救命！！", sub: "🌶️ 味蕾核爆 · 整条小恐龙红温起飞转圈喷火中", badgeType: "feed" },
-    feed2:          { happy: 0.94, star: 0.96, blush: 0.82, mouth: 0.88, gesture: "nod",       reactMode: "chomp",    itemIcon: "🐛", itemName: "祖传陈年 P0 级空指针 Bug", kaomoji: "(๑•̀ㅂ•́)و✧ 🐛", text: "咔哧咔哧！鸡肉味嘎嘣脆！顺手帮你把这颗 Bug 消化成 Feature 了！", sub: "✨ Bug 吞噬者 · 消化系统堪比赛博编译器", badgeType: "feed" },
-    feed3:          { happy: 0.12, star: 0.30, blush: 0.65, mouth: 0.82, gesture: "curious",   reactMode: "choke",    itemIcon: "🥞", itemName: "老板刚画的 88 寸赛博镶金大饼", kaomoji: "( ´_ゝ｀) 🥞", text: "嗝……老板这饼太干太硬了，卡在嗓子眼差点把我 CPU 干烧了！", sub: "🛡️ 画饼防御力 +50 · 噎得直翻白眼想喝水", badgeType: "feed" },
-    feed4:          { happy: 0.92, star: 0.88, blush: 0.94, mouth: 0.92, gesture: "celebrate", reactMode: "stinky",   itemIcon: "🥣", itemName: "螺蛳粉炖榴莲臭豆腐暗黑全家桶", kaomoji: "(¬_¬\") 🥣", text: "呕…等等？吸溜吸溜…真香！！臭到极致就是香，再来两大碗！", sub: "💨 真香定律虽迟但到 · 展厅空气逐渐有味道了", badgeType: "feed" },
-    feed5:          { happy: 0.96, star: 0.84, blush: 0.90, mouth: 0.76, gesture: "hello",     reactMode: "happy",    itemIcon: "🧴", itemName: "霸王防脱生发水 + 枸杞保温杯", kaomoji: "(✿◡‿◡) 🧴", text: "谢谢投喂！虽然我是秃头小恐龙，但喝完感觉头顶背刺都长高了两厘米！", sub: "🌿 告别程序员脱发焦虑 · 发量王者申请出战", badgeType: "feed" },
-    feed6:          { happy: 1.00, star: 1.00, blush: 0.92, mouth: 0.96, gesture: "surprise",  reactMode: "shock",    itemIcon: "🔋", itemName: "RTX 5090 满血电源线（直接怼嘴里）", kaomoji: "⚡(☆▽☆)⚡", text: "滋滋滋——满血 800W 算力注入！现在本龙就是人形自走大模型！", sub: "🚀 显卡级触电亢奋 · 脑回路帧率突破 240Hz", badgeType: "feed" },
-    feed7:          { happy: 0.08, star: 0.72, blush: 0.96, mouth: 0.35, gesture: "shy",       reactMode: "sour",     itemIcon: "🍋", itemName: "隔壁大厂刚摘的 100% 纯度酸柠檬", kaomoji: "(＞﹏＜) 🍋", text: "嘶——酸得我腮帮子倒牙五官乱飞！别羡慕别人啦，咱 ANS 才是最酷的！", sub: "✨ 柠檬精瞬间退散 · 酸爽提神醒脑", badgeType: "feed" },
-    feed8:          { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.94, gesture: "celebrate", reactMode: "happy",    itemIcon: "🍗", itemName: "疯狂星期四 V 我 50 黄金脆皮炸鸡桶", kaomoji: "╰(*°▽°*)╯ 🍗", text: "呜呼！居然真有人 V 我 50 吃炸鸡！今天谁也别拦我给你卖萌干活！", sub: "💖 幸福感直接拉爆 · 尾巴摇成阿帕奇螺旋桨", badgeType: "feed" },
-    feed9:          { happy: 0.88, star: 0.90, blush: 0.76, mouth: 0.68, gesture: "stretch",   reactMode: "zen",      itemIcon: "🧼", itemName: "拼夕夕九块九包邮「恋爱脑清醒肥皂」", kaomoji: "(｡•̀ᴗ-)✧ 🧼", text: "咕噜咕噜吐泡泡～智商重新占领高地！搞钱搞创作才是硬道理！", sub: "🫧 人间清醒龙 · 恋爱脑已彻底清零", badgeType: "feed" }
+    feed0:          { happy: 0.98, star: 1.00, blush: 0.88, mouth: 0.95, gesture: "celebrate", reactMode: "caffeine", itemIcon: "🧋", itemName: "十倍浓缩冰美式超大桶", kaomoji: "(*≧ω≦) 🧋", text: "吨吨吨！血管里流淌的都是冰美式！还能再肝十个通宵！", sub: "⚡ 咖啡因过载 · 精神状态极其美丽", badgeType: "feed" },
+    feed1:          { happy: 0.35, star: 0.92, blush: 1.00, mouth: 1.00, gesture: "surprise",  reactMode: "spicy",    itemIcon: "🌶️", itemName: "变态辣火鸡面配折耳根香菜", kaomoji: "(╬°▽°) 🔥", text: "斯哈斯哈！折耳根配变态辣？！嘴唇肿成香肠龙了！", sub: "🌶️ 味蕾核爆 · 整条小恐龙红温起飞中", badgeType: "feed" },
+    feed2:          { happy: 0.94, star: 0.96, blush: 0.82, mouth: 0.88, gesture: "nod",       reactMode: "chomp",    itemIcon: "🐛", itemName: "祖传陈年 P0 级空指针 Bug", kaomoji: "(๑•̀ㅂ•́)و✧ 🐛", text: "咔哧咔哧！鸡肉味嘎嘣脆！顺手把 Bug 消化成新功能了！", sub: "✨ Bug 吞噬者 · 消化系统堪比编译器", badgeType: "feed" },
+    feed3:          { happy: 0.12, star: 0.30, blush: 0.65, mouth: 0.82, gesture: "curious",   reactMode: "choke",    itemIcon: "🥞", itemName: "老板刚画的 88 寸赛博镶金大饼", kaomoji: "( ´_ゝ｀) 🥞", text: "嗝……这饼太干太硬了，卡在嗓子眼差点把 CPU 干烧了！", sub: "🛡️ 画饼防御力 +50 · 噎得直想喝水", badgeType: "feed" },
+    feed4:          { happy: 0.92, star: 0.88, blush: 0.94, mouth: 0.92, gesture: "celebrate", reactMode: "stinky",   itemIcon: "🥣", itemName: "螺蛳粉炖榴莲臭豆腐暗黑全家桶", kaomoji: "(¬_¬\") 🥣", text: "呕…等等？吸溜吸溜…真香！臭到极致就是香，再来两碗！", sub: "💨 真香定律虽迟但到 · 展厅空气逐渐有味道了", badgeType: "feed" },
+    feed5:          { happy: 0.96, star: 0.84, blush: 0.90, mouth: 0.76, gesture: "hello",     reactMode: "happy",    itemIcon: "🧴", itemName: "霸王防脱生发水 + 枸杞保温杯", kaomoji: "(✿◡‿◡) 🧴", text: "谢谢投喂！喝完感觉头顶三颗小肉峰都长高了两厘米！", sub: "🌿 告别程序员脱发焦虑 · 发量王者申请出战", badgeType: "feed" },
+    feed6:          { happy: 1.00, star: 1.00, blush: 0.92, mouth: 0.96, gesture: "surprise",  reactMode: "shock",    itemIcon: "🔋", itemName: "RTX 5090 满血电源线（直接怼嘴里）", kaomoji: "⚡(☆▽☆)⚡", text: "滋滋滋——满血 800W 算力注入！本龙就是自走大模型！", sub: "🚀 显卡级触电亢奋 · 脑回路帧率突破 240Hz", badgeType: "feed" },
+    feed7:          { happy: 0.08, star: 0.72, blush: 0.96, mouth: 0.35, gesture: "shy",       reactMode: "sour",     itemIcon: "🍋", itemName: "隔壁大厂刚摘的 100% 纯度酸柠檬", kaomoji: "(＞﹏＜) 🍋", text: "嘶——酸得我五官乱飞！别羡慕别人啦，咱 ANS 才是最酷的！", sub: "✨ 柠檬精瞬间退散 · 酸爽提神醒脑", badgeType: "feed" },
+    feed8:          { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.94, gesture: "celebrate", reactMode: "happy",    itemIcon: "🍗", itemName: "疯狂星期四 V 我 50 黄金脆皮炸鸡桶", kaomoji: "╰(*°▽°*)╯ 🍗", text: "呜呼！真有人请吃黄金炸鸡！今天谁也别拦我卖萌干活！", sub: "💖 幸福感直接拉爆 · 尾巴摇成螺旋桨", badgeType: "feed" },
+    feed9:          { happy: 0.88, star: 0.90, blush: 0.76, mouth: 0.68, gesture: "stretch",   reactMode: "zen",      itemIcon: "🧼", itemName: "拼夕夕九块九包邮「恋爱脑清醒肥皂」", kaomoji: "(｡•̀ᴗ-)✧ 🧼", text: "咕噜咕噜吐泡泡～智商占领高地！做好作品才是硬道理！", sub: "🫧 人间清醒龙 · 专心搞创作", badgeType: "feed" }
   };
 
   function createExpressionBadgeTexture() {
@@ -1461,7 +1461,7 @@ class MotionDirector {
               </button>
             </div>
             <div class="dino-hud-foot">
-              <span class="dino-hud-feed-tag">💡 提示：抽屁股/盲盒投喂可赚取「好感度 ♥」与「灵感星豆 🪙」，解锁奇迹暖暖 3D 进阶穿搭！</span>
+              <span class="dino-hud-feed-tag">✨ 每次互动可累积好感度 ♥ 与灵感星豆 🪙</span>
             </div>
           `;
           document.body.appendChild(hudEl);
@@ -1526,12 +1526,12 @@ class MotionDirector {
         camPill.setAttribute("data-cam-mode", "off");
         camPill.setAttribute("aria-label", "3D 机位视角与缩放控制");
         camPill.innerHTML = `
-          <span class="cam-pill-status">🖱️ 正常下滑模式 · 长按画面可开启缩放与机位调整</span>
-          <button type="button" class="cam-pill-btn cam-only-inactive" data-cam-act="enter-mode">🎥 开启机位调整</button>
+          <span class="cam-pill-status">🎥 3D 镜头</span>
+          <button type="button" class="cam-pill-btn cam-only-inactive" data-cam-act="enter-mode">调整机位</button>
           <button type="button" class="cam-pill-btn cam-only-active" data-cam-act="zoom-out">－</button>
           <button type="button" class="cam-pill-btn cam-only-active" data-cam-act="zoom-in">＋</button>
-          <button type="button" class="cam-pill-btn" data-cam-act="reset">复位机位</button>
-          <button type="button" class="cam-pill-btn cam-only-active" data-cam-act="exit-mode">退出机位模式 ✕</button>
+          <button type="button" class="cam-pill-btn" data-cam-act="reset">复位</button>
+          <button type="button" class="cam-pill-btn cam-only-active" data-cam-act="exit-mode">退出 ✕</button>
         `;
         document.body.appendChild(camPill);
         camPill.addEventListener("click", ev => {
@@ -1931,7 +1931,7 @@ class MotionDirector {
       { id: "none", slot: "neckwear", name: "轻装上阵", icon: "🍃", rarity: "R", styleTag: "极客", styleScore: 10, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "展示圆鼓鼓的奶油色小肚皮与灵动小尾巴" },
       { id: "starter_scarf", slot: "neckwear", name: "薄荷极客小围巾", icon: "🧣", rarity: "R", styleTag: "极客", styleScore: 48, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "领养即送！实验室空调太冷时的保暖神器" },
       { id: "boba_jetpack", slot: "neckwear", name: "双管冰美式喷射背包", icon: "🚀", rarity: "SR", styleTag: "极客", styleScore: 84, minUserLevel: 2, minAffectionLevel: 2, priceBeans: 140, desc: "以高浓度冰美式与黑糖波霸为燃料的涡轮飞行背包" },
-      { id: "cyber_wings", slot: "neckwear", name: "六翼霓虹量子光翼", icon: "🦋", rarity: "SSR", styleTag: "赛博", styleScore: 135, minUserLevel: 4, minAffectionLevel: 3, priceBeans: 280, desc: "由半透明流光矩阵构成的六片悬浮能量羽翼" },
+      { id: "cyber_wings", slot: "neckwear", name: "六翼霓虹量子光翼", icon: "🦋", rarity: "SSR", styleTag: "赛博", styleScore: 135, minUserLevel: 4, minAffectionLevel: 3, priceBeans: 280, desc: "由半透明流光阵列构成的六片悬浮能量羽翼" },
       { id: "pioneer_cape", slot: "neckwear", name: "破界领航员星芒披风", icon: "🦸", rarity: "UR", styleTag: "星神", styleScore: 190, minUserLevel: 6, minAffectionLevel: 5, priceBeans: 520, desc: "织入整片银河星尘的流光披风，飞行时自带王者气场" },
       // HANDHELD
       { id: "none", slot: "handheld", name: "挥舞小爪爪", icon: "🐾", rarity: "R", styleTag: "甜酷", styleScore: 10, minUserLevel: 0, minAffectionLevel: 1, priceBeans: 0, desc: "空手挥舞小短爪，随时准备给你比心打招呼" },
@@ -2127,7 +2127,7 @@ class MotionDirector {
       }
       total += bonusScore;
       const rank = total >= 620 ? "SSS · 闪耀星神"
-        : total >= 460 ? "SS · 高定主理人"
+        : total >= 460 ? "SS · 高定搭配师"
         : total >= 320 ? "S · 甜酷潮龙"
         : total >= 210 ? "A · 新锐穿搭"
         : "B · 初心萌龙";
@@ -2173,7 +2173,7 @@ class MotionDirector {
                `🎯 <b>今日运势：</b>编译一次通过率 <b>${Math.min(99.9, 88 + st.total * 0.018).toFixed(1)}%</b>！宜：提交核心代码、去 <a href="/hubs" style="color:#84fab0;text-decoration:underline;">Hub 社区</a> 发帖拿星豆；忌：不写注释直接强推分支！`;
       } else if (skill === "chat" && userQuestion) {
         const cleanQ = userQuestion.replace(/[<>&]/g, "");
-        promptToCopy = `【${sanctuaryState.dinoName} · ${sp.name} (${perkStr})】针对「${cleanQ}」的深度拆解方案：\n1. 核心目标拆解与最小可行闭环（MVP）；\n2. 关键工程/设计避坑清单；\n3. 下一步立即执行的 15 分钟行动项。`;
+        promptToCopy = `【${sanctuaryState.dinoName} · ${sp.name} (${perkStr})】针对「${cleanQ}」的深度拆解方案：\n1. 核心目标拆解与最小可行原型（MVP）；\n2. 关键工程/设计避坑清单；\n3. 下一步立即执行的 15 分钟行动项。`;
         html = `<b>💬 你问：</b>「${cleanQ}」<br/>` +
                `<b>${sp.icon} ${sanctuaryState.dinoName}（穿戴 ${st.activeItems.length} 件 #${st.dominantTag} 装备 · ${overclockLabel}）：</b><br/>` +
                `已启用【${perkStr}】为你拆解：① 先用最小原型验证核心交互；② 借助 <a href="/market/resume-website" style="color:#84fab0;text-decoration:underline;">简历工作室</a> 与 <a href="/explore" style="color:#84fab0;text-decoration:underline;">项目广场</a> 沉淀可交互展示资产；③ 点击下方按钮可一键复制完整定制 Prompt！`;
@@ -3095,7 +3095,7 @@ class MotionDirector {
           const displayHtml = agentOutputHtml || agentCtx.html;
           drawerBodyHtml = `
             <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px;border-radius:11px;background:rgba(255,217,179,0.08);border:1px solid rgba(255,217,179,0.28);font-size:11px;">
-              <span style="color:#ffd9b3;font-weight:700;">⚡ 装备赋能：${agentCtx.perkStr}</span>
+              <span style="color:#ffd9b3;font-weight:700;">⚡ 装备加成：${agentCtx.perkStr}</span>
               <button type="button" class="ans-comp-qbtn is-agent" style="padding:2px 8px;font-size:10.5px;" data-comp-act="agent-copy-prompt" title="复制融合了当前 3D 穿搭与灵龙血统的专属 AI 提示词">📋 复制专属咒语 +15🪙</button>
             </div>
             <div class="ans-comp-grid2">
@@ -3258,7 +3258,7 @@ class MotionDirector {
                 <button type="button" class="ans-comp-qbtn" data-adopt-act="random-name">🎲 随机网感名</button>
                 <label style="font-size:12.5px;font-weight:700;margin-left:4px;">🪪 训龙师头衔：</label>
                 <select id="ans-adopt-title-select" style="padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.45);color:#fff;font-size:12.5px;">
-                  ${["首席训龙师", "算力魔法师", "奇迹暖暖主理人", "摸鱼督导官", "ANS 创世先锋"].map(t => `<option value="${t}" ${t === sanctuaryState.trainerTitle ? "selected" : ""}>${t}</option>`).join("")}
+                  ${["首席训龙师", "算力魔法师", "高定搭配师", "摸鱼督导官", "ANS 创世先锋"].map(t => `<option value="${t}" ${t === sanctuaryState.trainerTitle ? "selected" : ""}>${t}</option>`).join("")}
                 </select>
               </div>
               <div style="display:flex;align-items:center;gap:8px;width:100%;justify-content:space-between;">
@@ -3618,12 +3618,12 @@ class MotionDirector {
       let txt = "";
       if (!camModeActive) {
         txt = hasCustomCam
-          ? `🖱️ 正常下滑模式（当前画面 ${zoomPct}%）· 长按画面 0.5s 调机位`
-          : "🖱️ 正常下滑模式 · 长按画面 0.5s 可开启缩放与机位调整";
+          ? `🎥 3D 镜头 (${zoomPct}%)`
+          : "🎥 3D 镜头";
       } else if (isDragging) {
-        txt = `🎥 正在拖拽机位 · 缩放 ${zoomPct}% · 视角 (${yawDeg >= 0 ? "+" : ""}${yawDeg}°, ${pitchDeg >= 0 ? "+" : ""}${pitchDeg}°)`;
+        txt = `🎥 机位 (${yawDeg >= 0 ? "+" : ""}${yawDeg}°, ${pitchDeg >= 0 ? "+" : ""}${pitchDeg}°)`;
       } else {
-        txt = `🎥 缩放与机位模式中 (${zoomPct}%) · 滚轮缩放 / 拖拽改视角 / 再长按退出`;
+        txt = `🎥 镜头调节中 (${zoomPct}%)`;
       }
       if (txt !== lastStatusText) {
         lastStatusText = txt;
@@ -4544,11 +4544,7 @@ function Ot({focusRef:t,frameRef:o,dofBokehRef:r,dofRangeRef:a}){var We;const l=
       hitboxEl.removeEventListener("keydown",onKeyDown);
     }
   };
-},[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),y=[],W=[],T=[],O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.castShadow=!0,s.receiveShadow=!0,T.push(s)),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s),s.isBone&&/^eye[._-]?(L|R)$/i.test(s.name)?W.push({obj:s,base:s.quaternion.clone(),side:/\.L$/i.test(s.name)?-1:1}):s.isMesh&&/eye/i.test(s.name)&&(s.isMesh&&(s.geometry.computeVertexNormals(),(Array.isArray(s.material)?s.material:[s.material]).forEach(G=>{G.flatShading=!1,G.needsUpdate=!0})),y.push({obj:s,base:s.quaternion.clone(),x:s.position.x}))});const de=T.sort((s,Q)=>{var G,ee,Y,be,we,je;return((Y=(ee=(G=Q.geometry)==null?void 0:G.attributes)==null?void 0:ee.position)==null?void 0:Y.count)-((je=(we=(be=s.geometry)==null?void 0:be.attributes)==null?void 0:we.position)==null?void 0:je.count)})[0];if(W.length>0)y.length=0;else if(y.length>1){const s=y.map(Y=>Y.x),Q=Math.min(...s),G=Math.max(...s),ee=(Q+G)/2;y.forEach(Y=>{Y.sx=Y.x<ee?-1:1})}else y.forEach(s=>s.sx=0);const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:de??null,eyes:W.length>0?W:y,eyeBones:W,points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;if(window.location.search.includes("inspect"))window.__eyeInspect={mesh:V,uniforms:C,get:w};const eyeTracker=n.useMemo(()=>__liuEyePatch.createEyeTracker(),[]);n.useEffect(()=>eyeTracker.connect(),[eyeTracker]);n.useEffect(()=>{if(!P||D.length>0)return;const N=P.material;N.onBeforeCompile=y=>{Object.assign(y.uniforms,C),y.vertexShader=y.vertexShader.replace("#include <common>",__liuEyePatch.EYE_WARP_COMMON).replace("#include <beginnormal_vertex>",`#include <beginnormal_vertex>
-          objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeL));
-          objectNormal = normalize(objectNormal + (eyeSpin(objectNormal) - objectNormal) * eyeWeight(position, uEyeR));`).replace("#include <begin_vertex>",`#include <begin_vertex>
-          transformed += (uEyeL + eyeSpin(transformed - uEyeL) - transformed) * eyeWeight(transformed, uEyeL);
-          transformed += (uEyeR + eyeSpin(transformed - uEyeR) - transformed) * eyeWeight(transformed, uEyeR);`)},N.customProgramCacheKey=()=>"eye-warp-aperture-v2",N.needsUpdate=!0},[P,D.length,C]);const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);
+},[dinoState]),{model:M,bodyMesh:V,eyes:S,eyeBones:D,points:k,startPoint:v,glbCam:p,focusNode:H,dof:j}=n.useMemo(()=>{const N=E.clone(!0),O={};let ue=null,Z=null,J=null;N.traverse(s=>{s.isMesh&&(s.visible=!1,s.castShadow=!1,s.receiveShadow=!1),s.isCamera&&(Z=s),(s.name==="focus-start"||s.name==="focus-0")&&(ue=s),s.name==="focus-works"&&(J=s),Re.includes(s.name)&&(O[s.name]=s)});const F=Re.map(s=>O[s]||null),se=J||F[F.length-1]||null,q=ue||F[0]||null,L=s=>(s==null?void 0:s.userData)??{},_=[...F,q,se].some(s=>L(s).dofBokeh!==void 0),me=s=>L(s).dofEnabled===!1?0:L(s).dofBokeh??0,pe=s=>L(s).dofFocusRange??0;return{model:N,bodyMesh:null,eyes:[],eyeBones:[],points:F,startPoint:q,glbCam:Z,focusNode:se,dof:{has:_,bokeh:F.map(me),range:F.map(pe),startBokeh:me(q),startRange:pe(q),worksBokeh:me(se),worksRange:pe(se)}}},[E]),C=n.useMemo(()=>({uEyeL:{value:Mt.clone()},uEyeR:{value:It.clone()},uEyeRadius:{value:Ct},uGaze:{value:new Ke(0,0)}}),[]),P=V;const ae=n.useMemo(()=>{const N=A||[],W=N.find(T=>T.name==="CameraAction")||(N.length?N.reduce((T,O)=>O.duration>T.duration?O:T):null);return W?Math.round(W.duration*He):te+2*Ie},[A]),ie=n.useMemo(()=>new gt(M),[M]),ge=n.useRef([]);n.useEffect(()=>{if(!(!A||A.length===0))return ie.stopAllAction(),ge.current=A.map(N=>{const y=ie.clipAction(N);return y.play(),y.paused=!0,{action:y,duration:N.duration}}),()=>{ie.stopAllAction(),ge.current=[]}},[ie,A]);const ne=n.useRef({x:0,y:0}),$=n.useRef({x:0,y:0});n.useEffect(()=>{const N=y=>{ne.current.x=y.clientX/window.innerWidth*2-1,ne.current.y=-(y.clientY/window.innerHeight*2-1)};return window.addEventListener("mousemove",N),()=>window.removeEventListener("mousemove",N)},[]);const ce=n.useRef(typeof window<"u"&&(((We=window.matchMedia)==null?void 0:We.call(window,"(pointer: coarse)").matches)===!0||window.innerWidth<=640)),Se=n.useRef(null),le=n.useRef(null),xe=n.useRef(0),ve=n.useRef(new B),ye=n.useRef(new B),Le=n.useRef(new Ge(0,0,0,"YXZ")),ze=n.useRef(new oe),Be=n.useRef(new oe),K=n.useRef(new B),Oe=n.useRef(new B),_e=n.useRef(new oe),ot=n.useRef(new B),Ue=n.useRef(new Ge(0,0,0,"YXZ")),ke=n.useRef(new oe);
 const spId = (sanctuarySnap && sanctuarySnap.speciesId) || "mint_star";
 const eq = (sanctuarySnap && sanctuarySnap.equipped) || {};
 return Ze((N,y)=>{const W=1-Math.pow(l.damping,y);Se.current||(Se.current=Re.map(c=>document.querySelector(`[data-point="${c}"]`)));const T=Se.current,O=f.clamp(l.dwell,0,.49),ue=c=>O<=0?c:c<O?0:c>1-O?1:f.smoothstep((c-O)/(1-2*O),0,1);let Z=f.clamp(xe.current/Ee-1,-1,U-1);if(T&&T.length===U&&T.every(Boolean)){const c=window.scrollY+window.innerHeight*Ye,m=T.map(h=>h.getBoundingClientRect().top+window.scrollY);if(c<=m[0]){const h=Math.max(1,m[0]-window.innerHeight*Ye);Z=-1+ue(f.clamp(window.scrollY/h,0,1))}else if(c>=m[U-1])Z=U-1;else for(let h=0;h<U-1;h++)if(c<=m[h+1]){const I=(c-m[h])/Math.max(1,m[h+1]-m[h]);Z=h+ue(I);break}}let J=f.clamp((Z+1)*Ee,0,te),de=!1;if(le.current||(le.current=document.querySelector(".wk-gallery")),le.current){const c=window.innerHeight,m=le.current.getBoundingClientRect().top,h=Math.max(0,le.current.offsetHeight-c);if(m<c){de=!0;const I=Math.min(te+Ie,ae);if(m>0){const X=f.clamp(1-m/c,0,1);J=te+(I-te)*X}else{const X=f.clamp(-m,0,h),he=f.clamp(X/window.innerWidth,0,1);J=I+(ae-I)*he}}}const F=f.smoothstep(J,te,te+Ie),se=f.lerp(W,1,F);xe.current+=(J-xe.current)*se;const q=xe.current;if(ge.current.length){const c=q/He;for(const{action:m,duration:h}of ge.current)m.time=Math.min(c,h);ie.update(0)}o&&(o.current=q);const L=f.clamp(q/Ee-1,-1,U-1);if(t)if(de&&H)H.getWorldPosition(t.current);else if(L<0&&v&&k[0])v.getWorldPosition(ve.current),k[0].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,f.clamp(L+1,0,1));else{const c=f.clamp(L,0,U-1),m=Math.floor(c),h=Math.min(m+1,U-1),I=c-m;k[m]&&k[h]&&(k[m].getWorldPosition(ve.current),k[h].getWorldPosition(ye.current),t.current.lerpVectors(ve.current,ye.current,I))}if(r&&a)if(!j.has)r.current=-1;else{const c=(m,h,I)=>{if(de)return I;if(L<0)return f.lerp(h,m[0]??h,f.clamp(L+1,0,1));const X=f.clamp(L,0,U-1),he=Math.floor(X),it=Math.min(he+1,U-1);return f.lerp(m[he]??0,m[it]??0,X-he)};r.current=c(j.bokeh,j.startBokeh,j.worksBokeh),a.current=c(j.range,j.startRange,j.worksRange)*2.25}
@@ -4594,194 +4590,193 @@ dinoState.orbitUniforms.uTime.value = dinoState.time;
 dinoState.orbitUniforms.uPhase.value = spline.phase;
 dinoState.orbitUniforms.uAlpha.value = (de ? 0.22 : 1.0) * (1.0 - specialPin * 0.88);
 
-const macroW = Math.max(de ? 0 : spline.macroWeight, specialPin);
-const flightRaw = Math.abs(J - q);
-const scrollFlightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
-const cruiseFlightSpeed = reducedMotionNow ? 0 : (0.36 * dwellMod * autoPauseMod);
-const flightSpeed = f.clamp(Math.max(scrollFlightSpeed, cruiseFlightSpeed), 0, 1);
-if(p&&_.isPerspectiveCamera){const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
-// Dual-Subject Camera Patrol:
-const orbitPull = 1.28 + 0.10 * (1.0 - macroW) + 0.04 * Math.sin(spline.phase * Math.PI * 2.0) + 0.06 * scrollFlightSpeed;
-const macroPull = f.lerp(1.22, 1.28, specialPin);
-const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
-dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
+  const macroW = Math.max(de ? 0.65 : Math.max(0.76, spline.macroWeight), specialPin);
+  const flightRaw = Math.abs(J - q);
+  const scrollFlightSpeed = f.clamp(flightRaw / 12.0, 0, 1);
+  const cruiseFlightSpeed = reducedMotionNow ? 0 : (0.36 * dwellMod * autoPauseMod);
+  const flightSpeed = f.clamp(Math.max(scrollFlightSpeed, cruiseFlightSpeed), 0, 1);
+  if(p&&_.isPerspectiveCamera){const c=1-Math.pow(l.parallaxEase,y);$.current.x+=(ne.current.x-$.current.x)*c,$.current.y+=(ne.current.y-$.current.y)*c;const m=f.degToRad(l.parallax);
+  // Dual-Subject Camera Patrol:
+  const orbitPull = 1.28 + 0.10 * (1.0 - macroW) + 0.04 * Math.sin(spline.phase * Math.PI * 2.0) + 0.06 * scrollFlightSpeed;
+  const macroPull = f.lerp(1.22, 1.28, specialPin);
+  const targetPullback = de ? 1.18 : f.lerp(orbitPull, macroPull, macroW);
+  dinoState.camPullback += (targetPullback - dinoState.camPullback) * Math.min(1, y * 5.0);
 
-// 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit in CAMERA-ALIGNED (r, u, d) space!
-const patrolEase = Math.min(1, y * 4.5);
-const orbitR = spline.rud[0];
-const orbitU = spline.rud[1];
-const patrolWeight = de ? 0.10 : (1.0 - macroW * 0.72);
-const targetPatrolX = orbitR * 0.22 * patrolWeight;
-const targetPatrolY = orbitU * 0.22 * patrolWeight;
-const targetPatrolYaw = f.clamp(-orbitR * 0.048 * patrolWeight, -0.08, 0.08);
-const targetPatrolPitch = f.clamp(orbitU * 0.055 * patrolWeight, -0.06, 0.06);
-dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
-dinoState.camPatrolY += (targetPatrolY - dinoState.camPatrolY) * patrolEase;
-dinoState.camPatrolYaw += (targetPatrolYaw - dinoState.camPatrolYaw) * patrolEase;
-dinoState.camPatrolPitch += (targetPatrolPitch - dinoState.camPatrolPitch) * patrolEase;
+  // 2) Orbital Camera Patrol Sway & Pan/Tilt: smoothly track the dinosaur's wide clockwise orbit in CAMERA-ALIGNED (r, u, d) space!
+  const patrolEase = Math.min(1, y * 4.5);
+  const orbitR = spline.rud[0];
+  const orbitU = spline.rud[1];
+  const patrolWeight = de ? 0.10 : (1.0 - macroW * 0.72);
+  const targetPatrolX = orbitR * 0.22 * patrolWeight;
+  const targetPatrolY = orbitU * 0.22 * patrolWeight;
+  const targetPatrolYaw = f.clamp(-orbitR * 0.048 * patrolWeight, -0.08, 0.08);
+  const targetPatrolPitch = f.clamp(orbitU * 0.055 * patrolWeight, -0.06, 0.06);
+  dinoState.camPatrolX += (targetPatrolX - dinoState.camPatrolX) * patrolEase;
+  dinoState.camPatrolY += (targetPatrolY - dinoState.camPatrolY) * patrolEase;
+  dinoState.camPatrolYaw += (targetPatrolYaw - dinoState.camPatrolYaw) * patrolEase;
+  dinoState.camPatrolPitch += (targetPatrolPitch - dinoState.camPatrolPitch) * patrolEase;
 
-Ue.current.set(-$.current.y*m, -$.current.x*m, 0);
-ke.current.setFromEuler(Ue.current);
-K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current);
-ce.current&&K.current.multiplyScalar(l.mobilePullback);
-K.current.multiplyScalar(dinoState.camPullback);
-K.current.add(t.current);
-_.position.copy(K.current);
-_.quaternion.multiplyQuaternions(ke.current,_e.current);
-_.translateX(dinoState.camPatrolX);
-_.translateY(dinoState.camPatrolY);
-_.rotateY(dinoState.camPatrolYaw);
-_.rotateX(dinoState.camPatrolPitch);
-if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}
+  Ue.current.set(-$.current.y*m, -$.current.x*m, 0);
+  ke.current.setFromEuler(Ue.current);
+  K.current.copy(Oe.current).sub(t.current).applyQuaternion(ke.current);
+  ce.current&&K.current.multiplyScalar(l.mobilePullback);
+  K.current.multiplyScalar(dinoState.camPullback);
+  K.current.add(t.current);
+  _.position.copy(K.current);
+  _.quaternion.multiplyQuaternions(ke.current,_e.current);
+  _.translateX(dinoState.camPatrolX);
+  _.translateY(dinoState.camPatrolY);
+  _.rotateY(dinoState.camPatrolYaw);
+  _.rotateX(dinoState.camPatrolPitch);
+  if(ce.current&&l.mobileTimelineShift!==0){const h=f.smoothstep(L,-.8,.3)*(1-F);if(h>0){const I=_.position.distanceTo(t.current);_.translateX(-I*l.mobileTimelineShift*h)}}
 
-// Save the Base Stage Camera transform BEFORE applying user manual Wheel Zoom & Long-Press Drag Orbit!
-dinoState.baseCamPos.copy(_.position);
-dinoState.baseCamQuat.copy(_.quaternion);
+  // Save the Base Stage Camera transform BEFORE applying user manual Wheel Zoom & Long-Press Drag Orbit!
+  dinoState.baseCamPos.copy(_.position);
+  dinoState.baseCamQuat.copy(_.quaternion);
 
-// 3) Apply User Mouse-Wheel Zoom (放大/缩小画面) & Long-Press Drag Turntable Orbit (长按拖拽改变机位视角)!
-const userCtrlEase = Math.min(1, y * 12.0);
-dinoState.userZoom += (dinoState.userZoomTarget - dinoState.userZoom) * userCtrlEase;
-dinoState.userYaw += (dinoState.userYawTarget - dinoState.userYaw) * userCtrlEase;
-dinoState.userPitch += (dinoState.userPitchTarget - dinoState.userPitch) * userCtrlEase;
+  // 3) Apply User Mouse-Wheel Zoom (放大/缩小画面) & Long-Press Drag Turntable Orbit (长按拖拽改变机位视角)!
+  const userCtrlEase = Math.min(1, y * 12.0);
+  dinoState.userZoom += (dinoState.userZoomTarget - dinoState.userZoom) * userCtrlEase;
+  dinoState.userYaw += (dinoState.userYawTarget - dinoState.userYaw) * userCtrlEase;
+  dinoState.userPitch += (dinoState.userPitchTarget - dinoState.userPitch) * userCtrlEase;
 
-if (Math.abs(dinoState.userZoom - 1.0) > 0.001 || Math.abs(dinoState.userYaw) > 0.001 || Math.abs(dinoState.userPitch) > 0.001) {
-  K.current.copy(_.position).sub(t.current);
-  K.current.multiplyScalar(dinoState.userZoom);
-  ve.current.set(0, 1, 0);
-  ze.current.setFromAxisAngle(ve.current, dinoState.userYaw);
-  K.current.applyQuaternion(ze.current);
-  _.quaternion.premultiply(ze.current);
-  ye.current.set(1, 0, 0).applyQuaternion(_.quaternion);
-  ye.current.y = 0;
-  if (ye.current.lengthSq() > 1e-5) ye.current.normalize(); else ye.current.set(0, 0, 1);
-  Be.current.setFromAxisAngle(ye.current, dinoState.userPitch);
-  K.current.applyQuaternion(Be.current);
-  _.quaternion.premultiply(Be.current);
-  _.position.copy(t.current).add(K.current);
-}
-
-const baseFov = p.fov || 45;
-const zoomedFov = f.clamp(baseFov * f.lerp(1.0, dinoState.userZoom, 0.28), 18, 68);
-if (Math.abs(_.fov - zoomedFov) > 0.02) {
-  _.fov = zoomedFov;
-  _.updateProjectionMatrix();
-}
-if (dinoState.badge.updateCamStatus) {
-  dinoState.badge.updateCamStatus(dinoState.userZoom, dinoState.userYaw, dinoState.userPitch, dinoState.isCamDragging, dinoState.wheelZoomEnabled);
-}
-}{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else{const gaze=eyeTracker.update(V,_,C.uEyeL.value,C.uEyeR.value,y);c.set(gaze.x,gaze.y)}}
-{
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
-  if (!reduced) {
-  const dt = Math.min(Math.max(y, 0), 0.08);
-  dinoState.time += dt;
-  const tNow = dinoState.time;
-  dinoState.haloUniforms.uTime.value = tNow;
-  dinoState.perf.look(ne.current.x, -ne.current.y, tNow);
-  dinoState.faceUniforms.uDinoGaze.value.set(ne.current.x, ne.current.y);
-
-  // Sync Species Skin/Blush Shader Uniforms & Foot Aura Uniforms!
-  const spCfg = dinoState.badge.getSpeciesConfig ? dinoState.badge.getSpeciesConfig() : null;
-  if (spCfg) {
-    const tintLerp = Math.min(1, dt * 8.0);
-    const uSkin = dinoState.faceUniforms.uDinoSkinTint.value;
-    const uBlushC = dinoState.faceUniforms.uDinoBlushColor.value;
-    uSkin.x += (spCfg.tintRGB[0] - uSkin.x) * tintLerp;
-    uSkin.y += (spCfg.tintRGB[1] - uSkin.y) * tintLerp;
-    uSkin.z += (spCfg.tintRGB[2] - uSkin.z) * tintLerp;
-    uBlushC.x += (spCfg.blushRGB[0] - uBlushC.x) * tintLerp;
-    uBlushC.y += (spCfg.blushRGB[1] - uBlushC.y) * tintLerp;
-    uBlushC.z += (spCfg.blushRGB[2] - uBlushC.z) * tintLerp;
+  if (Math.abs(dinoState.userZoom - 1.0) > 0.001 || Math.abs(dinoState.userYaw) > 0.001 || Math.abs(dinoState.userPitch) > 0.001) {
+    K.current.copy(_.position).sub(t.current);
+    K.current.multiplyScalar(dinoState.userZoom);
+    ve.current.set(0, 1, 0);
+    ze.current.setFromAxisAngle(ve.current, dinoState.userYaw);
+    K.current.applyQuaternion(ze.current);
+    _.quaternion.premultiply(ze.current);
+    ye.current.set(1, 0, 0).applyQuaternion(_.quaternion);
+    ye.current.y = 0;
+    if (ye.current.lengthSq() > 1e-5) ye.current.normalize(); else ye.current.set(0, 0, 1);
+    Be.current.setFromAxisAngle(ye.current, dinoState.userPitch);
+    K.current.applyQuaternion(Be.current);
+    _.quaternion.premultiply(Be.current);
+    _.position.copy(t.current).add(K.current);
   }
-  const eqAura = (curSanc && curSanc.equipped && curSanc.equipped.aura) || "aura_mint";
-  const auraMap = {
-    none: { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 0.0 },
-    aura_mint: { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 1.0 },
-    aura_sakura: { c1: [1.0, 0.52, 0.76], c2: [0.83, 0.68, 0.98], boost: 1.25 },
-    aura_gold: { c1: [1.0, 0.84, 0.32], c2: [1.0, 0.45, 0.22], boost: 1.38 },
-    aura_aurora: { c1: [0.36, 0.90, 0.86], c2: [0.70, 0.42, 0.98], boost: 1.55 }
-  };
-  const aTarget = auraMap[eqAura] || auraMap.aura_mint;
-  const aLerp = Math.min(1, dt * 8.0);
-  dinoState.haloUniforms.uAuraColor1.value.x += (aTarget.c1[0] - dinoState.haloUniforms.uAuraColor1.value.x) * aLerp;
-  dinoState.haloUniforms.uAuraColor1.value.y += (aTarget.c1[1] - dinoState.haloUniforms.uAuraColor1.value.y) * aLerp;
-  dinoState.haloUniforms.uAuraColor1.value.z += (aTarget.c1[2] - dinoState.haloUniforms.uAuraColor1.value.z) * aLerp;
-  dinoState.haloUniforms.uAuraColor2.value.x += (aTarget.c2[0] - dinoState.haloUniforms.uAuraColor2.value.x) * aLerp;
-  dinoState.haloUniforms.uAuraColor2.value.y += (aTarget.c2[1] - dinoState.haloUniforms.uAuraColor2.value.y) * aLerp;
-  dinoState.haloUniforms.uAuraColor2.value.z += (aTarget.c2[2] - dinoState.haloUniforms.uAuraColor2.value.z) * aLerp;
-  dinoState.haloUniforms.uAuraBoost.value += (aTarget.boost - dinoState.haloUniforms.uAuraBoost.value) * aLerp;
 
-  // Active reaction states: Whip Butt (催干活), Random Feed (盲盒投喂), or Normal Click
-  const whipActive = tNow < dinoState.whipUntil;
-  const whipAge = whipActive ? (3.8 - (dinoState.whipUntil - tNow)) : 99;
-  const feedActive = tNow < dinoState.feedUntil;
-  const feedAge = feedActive ? (4.2 - (dinoState.feedUntil - tNow)) : 99;
-  const clickActive = tNow < dinoState.clickUntil;
-  const clickAge = clickActive ? (4.5 - (dinoState.clickUntil - tNow)) : 99;
+  const baseFov = p.fov || 45;
+  const zoomedFov = f.clamp(baseFov * f.lerp(1.0, dinoState.userZoom, 0.28), 18, 68);
+  if (Math.abs(_.fov - zoomedFov) > 0.02) {
+    _.fov = zoomedFov;
+    _.updateProjectionMatrix();
+  }
+  if (dinoState.badge.updateCamStatus) {
+    dinoState.badge.updateCamStatus(dinoState.userZoom, dinoState.userYaw, dinoState.userPitch, dinoState.isCamDragging, dinoState.wheelZoomEnabled);
+  }
+  }{const c=C.uGaze.value,m=window.__eyeGaze;if(m)c.set(m[0],m[1]);else c.set(ne.current.x,ne.current.y)}
+  {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden;
+    if (!reduced) {
+    const dt = Math.min(Math.max(y, 0), 0.08);
+    dinoState.time += dt;
+    const tNow = dinoState.time;
+    dinoState.haloUniforms.uTime.value = tNow;
+    dinoState.perf.look(ne.current.x, -ne.current.y, tNow);
+    dinoState.faceUniforms.uDinoGaze.value.set(ne.current.x, ne.current.y);
 
-  // 1. Wide Clockwise 3D Orbit + FOV-Adaptive Full-Body Framing for Super Macro, Wardrobe, Dock & Interactive Stage!
-  dinoState.haloUniforms.uFlight.value += (Math.max(flightSpeed, whipActive ? 0.95 : feedActive ? 0.75 : 0) - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
+    // Sync Species Skin/Blush Shader Uniforms & Foot Aura Uniforms!
+    const spCfg = dinoState.badge.getSpeciesConfig ? dinoState.badge.getSpeciesConfig() : null;
+    if (spCfg) {
+      const tintLerp = Math.min(1, dt * 8.0);
+      const uSkin = dinoState.faceUniforms.uDinoSkinTint.value;
+      const uBlushC = dinoState.faceUniforms.uDinoBlushColor.value;
+      uSkin.x += (spCfg.tintRGB[0] - uSkin.x) * tintLerp;
+      uSkin.y += (spCfg.tintRGB[1] - uSkin.y) * tintLerp;
+      uSkin.z += (spCfg.tintRGB[2] - uSkin.z) * tintLerp;
+      uBlushC.x += (spCfg.blushRGB[0] - uBlushC.x) * tintLerp;
+      uBlushC.y += (spCfg.blushRGB[1] - uBlushC.y) * tintLerp;
+      uBlushC.z += (spCfg.blushRGB[2] - uBlushC.z) * tintLerp;
+    }
+    const eqAura = (curSanc && curSanc.equipped && curSanc.equipped.aura) || "aura_mint";
+    const auraMap = {
+      none: { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 0.0 },
+      aura_mint: { c1: [0.52, 0.96, 0.72], c2: [1.0, 0.85, 0.56], boost: 1.0 },
+      aura_sakura: { c1: [1.0, 0.52, 0.76], c2: [0.83, 0.68, 0.98], boost: 1.25 },
+      aura_gold: { c1: [1.0, 0.84, 0.32], c2: [1.0, 0.45, 0.22], boost: 1.38 },
+      aura_aurora: { c1: [0.36, 0.90, 0.86], c2: [0.70, 0.42, 0.98], boost: 1.55 }
+    };
+    const aTarget = auraMap[eqAura] || auraMap.aura_mint;
+    const aLerp = Math.min(1, dt * 8.0);
+    dinoState.haloUniforms.uAuraColor1.value.x += (aTarget.c1[0] - dinoState.haloUniforms.uAuraColor1.value.x) * aLerp;
+    dinoState.haloUniforms.uAuraColor1.value.y += (aTarget.c1[1] - dinoState.haloUniforms.uAuraColor1.value.y) * aLerp;
+    dinoState.haloUniforms.uAuraColor1.value.z += (aTarget.c1[2] - dinoState.haloUniforms.uAuraColor1.value.z) * aLerp;
+    dinoState.haloUniforms.uAuraColor2.value.x += (aTarget.c2[0] - dinoState.haloUniforms.uAuraColor2.value.x) * aLerp;
+    dinoState.haloUniforms.uAuraColor2.value.y += (aTarget.c2[1] - dinoState.haloUniforms.uAuraColor2.value.y) * aLerp;
+    dinoState.haloUniforms.uAuraColor2.value.z += (aTarget.c2[2] - dinoState.haloUniforms.uAuraColor2.value.z) * aLerp;
+    dinoState.haloUniforms.uAuraBoost.value += (aTarget.boost - dinoState.haloUniforms.uAuraBoost.value) * aLerp;
 
-  const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
-  dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
+    // Active reaction states: Whip Butt (催干活), Random Feed (盲盒投喂), or Normal Click
+    const whipActive = tNow < dinoState.whipUntil;
+    const whipAge = whipActive ? (3.8 - (dinoState.whipUntil - tNow)) : 99;
+    const feedActive = tNow < dinoState.feedUntil;
+    const feedAge = feedActive ? (4.2 - (dinoState.feedUntil - tNow)) : 99;
+    const clickActive = tNow < dinoState.clickUntil;
+    const clickAge = clickActive ? (4.5 - (dinoState.clickUntil - tNow)) : 99;
 
-  _.updateMatrixWorld();
-  const baseFovRad = f.degToRad(p ? p.fov : 45);
-  const tanHalfFov = Math.tan(baseFovRad * 0.5);
-  const aspect = _.aspect || (window.innerWidth / Math.max(1, window.innerHeight));
-  const baseFounderDist = Math.max(3.2, dinoState.baseCamPos.distanceTo(t.current));
-  const macroDist = Math.max(2.6, baseFounderDist * f.lerp(0.46, 0.40, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)));
-  const worldHalfH = macroDist * tanHalfFov;
-  const worldHalfW = worldHalfH * aspect;
+    // 1. Wide Clockwise 3D Orbit + FOV-Adaptive Full-Body Framing for Super Macro, Wardrobe, Dock & Interactive Stage!
+    dinoState.haloUniforms.uFlight.value += (Math.max(flightSpeed, whipActive ? 0.95 : feedActive ? 0.75 : 0) - dinoState.haloUniforms.uFlight.value) * Math.min(1, dt * 8);
 
-  const orbitFrustumH = 2.0 * baseFounderDist * tanHalfFov;
-  const macroFrustumH = 2.0 * worldHalfH;
-  const fovOrbitScale = f.clamp((0.20 * orbitFrustumH) / (1.00 * 2.25), 0.22, 0.68);
-  const fovMacroScale = f.clamp((f.lerp(0.28, 0.34, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)) * macroFrustumH) / (1.00 * 2.25), 0.22, 0.56);
-  const baseScale = f.lerp(fovOrbitScale, fovMacroScale, macroW) * f.lerp(1.0, 0.78, dinoState.dockBlend * (1.0 - dinoState.wardrobeBlend));
-  const pulseScale = (whipActive && whipAge < 0.45) ? 0.12 : (feedActive && feedAge < 0.55) ? 0.10 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.10 : 0);
-  const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
-  dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
+    const hoverTarget = dinoState.hovered ? 1.0 : 0.0;
+    dinoState.hoverBlend += (hoverTarget - dinoState.hoverBlend) * Math.min(1, dt * 10);
 
-  const bobY = Math.sin(tNow * 2.4) * (0.015 * (1 - specialPin * 0.45)) + Math.cos(tNow * 1.3) * 0.005;
-  const swayX = Math.cos(tNow * 1.6) * 0.008;
-  const swayZ = Math.sin(tNow * 1.4) * 0.009;
-  let fx = spline.pos[0] + swayX;
-  let fy = spline.pos[1] + bobY;
-  let fz = spline.pos[2] + swayZ;
+    _.updateMatrixWorld();
+    const baseFovRad = f.degToRad(p ? p.fov : 45);
+    const tanHalfFov = Math.tan(baseFovRad * 0.5);
+    const aspect = _.aspect || (window.innerWidth / Math.max(1, window.innerHeight));
+    const baseFounderDist = Math.max(3.2, dinoState.baseCamPos.distanceTo(t.current));
+    const macroDist = Math.max(2.6, baseFounderDist * f.lerp(0.46, 0.40, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)));
+    const worldHalfH = macroDist * tanHalfFov;
+    const worldHalfW = worldHalfH * aspect;
 
-  // Compute Interactive / Wardrobe / Bottom-Right Dock Stage point in 3D world space using baseCamPos & baseCamQuat:
-  const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(dinoState.baseCamQuat);
-  const camUp    = ye.current.set(0, 1, 0).applyQuaternion(dinoState.baseCamQuat);
-  const camRight = ot.current.set(1, 0, 0).applyQuaternion(dinoState.baseCamQuat);
+    const orbitFrustumH = 2.0 * baseFounderDist * tanHalfFov;
+    const macroFrustumH = 2.0 * worldHalfH;
+    const fovOrbitScale = f.clamp((0.28 * orbitFrustumH) / (1.00 * 2.25), 0.26, 0.68);
+    const fovMacroScale = f.clamp((f.lerp(0.32, 0.36, Math.max(dinoState.interactBlend, dinoState.wardrobeBlend)) * macroFrustumH) / (1.00 * 2.25), 0.26, 0.58);
+    const baseScale = f.lerp(fovOrbitScale, fovMacroScale, macroW) * f.lerp(1.0, 0.78, dinoState.dockBlend * (1.0 - dinoState.wardrobeBlend));
+    const pulseScale = (whipActive && whipAge < 0.45) ? 0.12 : (feedActive && feedAge < 0.55) ? 0.10 : (clickAge < 0.45 ? Math.sin((clickAge / 0.45) * Math.PI) * 0.10 : 0);
+    const targetScale = baseScale * (1.0 + dinoState.hoverBlend * 0.06 + pulseScale);
+    dinoState.scalePop += (targetScale - dinoState.scalePop) * Math.min(1, dt * 14);
 
-  const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
-  let centerNdcX = 0.0;
-  let centerNdcY = 0.02;
-  // If in Bottom-Right Companion Dock mode ("停靠右下角"), hover right above the bottom-right Agent dock!
-  centerNdcX = f.lerp(centerNdcX, 0.56, dinoState.dockBlend);
-  centerNdcY = f.lerp(centerNdcY, -0.14, dinoState.dockBlend);
-  // If Miracle Nikki Wardrobe is open on the right, showcase the dinosaur on the left-center podium!
-  centerNdcX = f.lerp(centerNdcX, -0.34, dinoState.wardrobeBlend);
-  centerNdcY = f.lerp(centerNdcY, 0.00, dinoState.wardrobeBlend);
+    const bobY = Math.sin(tNow * 2.4) * (0.015 * (1 - specialPin * 0.45)) + Math.cos(tNow * 1.3) * 0.005;
+    const swayX = Math.cos(tNow * 1.6) * 0.008;
+    const swayZ = Math.sin(tNow * 1.4) * 0.009;
+    let fx = spline.pos[0] + swayX;
+    let fy = spline.pos[1] + bobY;
+    let fz = spline.pos[2] + swayZ;
 
-  const rightOffsetM = centerNdcX * worldHalfW;
-  const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
+    // Compute Interactive / Wardrobe / Bottom-Right Dock Stage point in 3D world space using baseCamPos & baseCamQuat:
+    const camFwd   = ve.current.set(0, 0, -1).applyQuaternion(dinoState.baseCamQuat);
+    const camUp    = ye.current.set(0, 1, 0).applyQuaternion(dinoState.baseCamQuat);
+    const camRight = ot.current.set(1, 0, 0).applyQuaternion(dinoState.baseCamQuat);
 
-  const macroWorldX = dinoState.baseCamPos.x + camFwd.x * macroDist + camRight.x * rightOffsetM + camUp.x * feetUpOffsetM;
-  const macroWorldY = dinoState.baseCamPos.y + camFwd.y * macroDist + camRight.y * rightOffsetM + camUp.y * feetUpOffsetM;
-  const macroWorldZ = dinoState.baseCamPos.z + camFwd.z * macroDist + camRight.z * rightOffsetM + camUp.z * feetUpOffsetM;
+    const dinoHalfWorldH = 0.48 * dinoState.scalePop * 2.25;
+    let centerNdcX = 0.0;
+    let centerNdcY = 0.02;
+    // If in Bottom-Right Companion Dock mode ("停靠右下角"), hover right above the bottom-right Agent dock!
+    centerNdcX = f.lerp(centerNdcX, 0.56, dinoState.dockBlend);
+    centerNdcY = f.lerp(centerNdcY, -0.14, dinoState.dockBlend);
+    // If Miracle Nikki Wardrobe is open on the right, showcase the dinosaur on the left-center podium!
+    centerNdcX = f.lerp(centerNdcX, -0.34, dinoState.wardrobeBlend);
+    centerNdcY = f.lerp(centerNdcY, 0.00, dinoState.wardrobeBlend);
 
-  const macroLocalX = (macroWorldX - 0.0) / 2.25;
-  const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
-  const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
+    const rightOffsetM = centerNdcX * worldHalfW;
+    const feetUpOffsetM = centerNdcY * worldHalfH - dinoHalfWorldH;
 
-  // Only pin to screen stage during explicit Interactive Stage, Bottom-Right Dock, or Miracle Nikki Wardrobe!
-  // During normal 3D patrol orbit, follow the Crown-Halo & Wide-Flank trajectory cleanly so the dinosaur never crosses the founder's face.
-  const stagePinWeight = f.clamp(specialPin, 0, 1);
-  fx = f.lerp(fx, macroLocalX, stagePinWeight);
-  fy = f.lerp(fy, macroLocalY, stagePinWeight);
-  fz = f.lerp(fz, macroLocalZ, stagePinWeight);
+    const macroWorldX = dinoState.baseCamPos.x + camFwd.x * macroDist + camRight.x * rightOffsetM + camUp.x * feetUpOffsetM;
+    const macroWorldY = dinoState.baseCamPos.y + camFwd.y * macroDist + camRight.y * rightOffsetM + camUp.y * feetUpOffsetM;
+    const macroWorldZ = dinoState.baseCamPos.z + camFwd.z * macroDist + camRight.z * rightOffsetM + camUp.z * feetUpOffsetM;
+
+    const macroLocalX = (macroWorldX - 0.0) / 2.25;
+    const macroLocalY = (macroWorldY - 0.4) / 2.25 + bobY * 0.5;
+    const macroLocalZ = (macroWorldZ - (-0.7)) / 2.25;
+
+    // Keep Little Dino centered on the 3D stage as the sole hero model with a gentle float!
+    const stagePinWeight = f.clamp(Math.max(0.84, specialPin), 0, 1);
+    fx = f.lerp(fx, macroLocalX, stagePinWeight);
+    fy = f.lerp(fy, macroLocalY, stagePinWeight);
+    fz = f.lerp(fz, macroLocalZ, stagePinWeight);
 
   // Full-Body Camera-Frustum Screen-Space Safety Guard:
   const userNeutralWeight = f.clamp(1.0 - (Math.abs(dinoState.userZoom - 1.0) * 2.2 + Math.hypot(dinoState.userYaw, dinoState.userPitch) * 1.8), 0, 1);
@@ -5074,9 +5069,9 @@ if (dinoState.badge.updateCamStatus) {
 }
 if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)c.obj.getWorldPosition(K.current).project(_),s+=K.current.x,Q+=K.current.y;s/=S.length,Q/=S.length;const G=ne.current.x-s,ee=ne.current.y-Q,Y=me*G*f.degToRad(x.maxYaw)*x.gain,be=pe*-ee*f.degToRad(x.maxPitch)*x.gain,we=Math.hypot(G,ee),je=f.clamp(1-we/x.crossRadius,0,1),at=f.degToRad(x.crossEye)*je;for(const c of S){const m=c.sx??c.side??0,h=Y-m*at;Le.current.set(be,h,0),ze.current.setFromEuler(Le.current),Be.current.copy(ze.current).multiply(c.base),c.obj.quaternion.slerp(Be.current,x.smooth)}}),e.jsxs("group",{position:[0,.4,-.7],rotation:[0,0*Math.PI/180,0],scale:2.25,children:[
   e.jsx("primitive",{object:M}),
-  e.jsx(At,{target:V,coordinateFrame:M}),
   e.jsx("group",{
     ref:dinoOrbitGroupRef,
+    visible:!1,
     position:[0.16,0.08,0.08],
     children:e.jsxs("mesh",{
       frustumCulled:!1,
@@ -5327,12 +5322,12 @@ if(S.length===0||ce.current)return;const me=1,pe=1;let s=0,Q=0;for(const c of S)
     color = clamp(color, 0.0, 1.0);
     gl_FragColor = vec4(color, ${Ut(Pe.alpha)});
   }
-`;function Gt(){const t=n.useRef(null),o=n.useMemo(()=>new Ke,[]),r=n.useRef(-999),a=1;Ze(({clock:u,size:b})=>{t.current&&(u.elapsedTime-r.current<1/a*.5||(r.current=u.elapsedTime,t.current.uniforms.uTime.value=u.elapsedTime%1e4,o.set(b.width,b.height),t.current.uniforms.uResolution.value=o))}),n.useEffect(()=>{const u=setInterval(()=>xt(),1e3/a);return()=>clearInterval(u)},[]);const d=n.useMemo(()=>({uTime:{value:0},uResolution:{value:o}}),[o]);return e.jsxs("mesh",{frustumCulled:!1,children:[e.jsx("planeGeometry",{args:[2,2]}),e.jsx("shaderMaterial",{ref:t,transparent:!0,depthTest:!1,depthWrite:!1,side:Qe,uniforms:d,vertexShader:Wt,fragmentShader:Ft},tt)]})}function Dt(){const[t,o]=n.useState(!1);return n.useEffect(()=>o(!0),[]),t?e.jsx("div",{"aria-hidden":"true","data-three-noise-overlay":tt,style:{position:"fixed",inset:0,overflow:"hidden",pointerEvents:"none",zIndex:Pe.zIndex,mixBlendMode:"multiply"},children:e.jsx(Je,{style:{width:"100%",height:"100%",opacity:Pe.opacity,pointerEvents:"none"},frameloop:"demand",camera:{position:[0,0,1]},gl:{alpha:!0,antialias:!1,powerPreference:"high-performance"},children:e.jsx(Gt,{})})}):null}function Ht(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M13 3h3a5 5 0 0 0 4.6 4.98V11A8 8 0 0 1 16 9.6V15a6 6 0 1 1-6-6c.34 0 .67.03 1 .08v3.12A3 3 0 1 0 13 15V3z"})})}function Yt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("path",{d:"M7 3l3 3M17 3l-3 3"}),e.jsx("rect",{x:"3",y:"6",width:"18",height:"13",rx:"3.5"}),e.jsx("path",{d:"M9 11v2M15 11v2"})]})}function Vt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("rect",{x:"3",y:"3",width:"18",height:"18",rx:"5",fill:"none",stroke:"currentColor",strokeWidth:"2"}),e.jsx("path",{d:"M12 16.2c-2.1-1.5-4-3-4-5.1A2.1 2.1 0 0 1 12 9.9a2.1 2.1 0 0 1 4 1.2c0 2.1-1.9 3.6-4 5.1z",fill:"currentColor"})]})}function $t(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"})})}const nt={douyin:Ht,bilibili:Yt,xiaohongshu:Vt,github:$t},st={"zh":{"title":"从发现到创作","entries":[{"period":"01","place":"项目广场","role":"查看真实项目，找到感兴趣的方向。","points":[],"groups":[{"heading":"浏览项目","link":"/explore"}]},{"period":"02","place":"简历与作品集工作室","role":"打开专用编辑器，整理自己的经历与作品。","points":[],"groups":[{"heading":"打开编辑器","link":"/market/resume-website"}]},{"period":"03","place":"Hub 与社区","role":"按主题与高校浏览内容。","points":[],"groups":[{"heading":"浏览 Hub","link":"/hubs"}]},{"period":"04","place":"赛事与算力","role":"赛事信息以赛事专区公布为准；算力价格以运行前的实际报价为准。","points":[],"groups":[{"heading":"查看赛事","link":"/competitions"}]}]},"en":{"title":"Explore and create","entries":[{"period":"01","place":"项目广场","role":"查看真实项目，找到感兴趣的方向。","points":[],"groups":[{"heading":"浏览项目","link":"/explore"}]},{"period":"02","place":"简历与作品集工作室","role":"打开专用编辑器，整理自己的经历与作品。","points":[],"groups":[{"heading":"打开编辑器","link":"/market/resume-website"}]},{"period":"03","place":"Hub 与社区","role":"按主题与高校浏览内容。","points":[],"groups":[{"heading":"浏览 Hub","link":"/hubs"}]},{"period":"04","place":"赛事与算力","role":"赛事信息以赛事专区公布为准；算力价格以运行前的实际报价为准。","points":[],"groups":[{"heading":"查看赛事","link":"/competitions"}]}]}},qt=Te,rt=[.22,1,.36,1],Qt={hidden:{},show:{transition:{staggerChildren:.09,delayChildren:.04}}},re={hidden:{opacity:0,y:26},show:{opacity:1,y:0,transition:{duration:.75,ease:rt}}};function Xt({group:t}){const o=t.link?e.jsx("a",{className:"about-link",href:t.link,target:"_blank",rel:"noopener noreferrer",children:t.heading}):e.jsx("span",{children:t.heading});return e.jsxs(R.div,{className:"tl-group",variants:re,children:[e.jsxs("div",{className:"tl-group-head",children:[o,t.sub&&e.jsx("span",{className:"tl-group-sub",children:t.sub})]}),t.items&&e.jsx("ul",{className:"tl-points",children:t.items.map((r,a)=>e.jsx("li",{children:r},a))}),t.links&&e.jsx("div",{className:"tl-logos",children:t.links.map(r=>{const a=nt[r.id];return e.jsx("a",{className:"tl-logo",href:r.href,target:"_blank",rel:"noopener noreferrer","aria-label":r.label,title:r.label,children:e.jsx(a,{})},r.id)})})]})}function Kt({entry:t,index:o}){return e.jsxs(R.div,{className:"tl-entry","data-point":qt[o],variants:Qt,initial:"hidden",whileInView:"show",viewport:{once:!0,margin:"-12% 0px -12% 0px"},children:[e.jsx(R.span,{className:"tl-dot",variants:re,"aria-hidden":"true"}),e.jsxs("div",{className:"tl-body",children:[e.jsx(R.div,{className:"tl-period",variants:re,children:t.period}),e.jsx(R.div,{className:"tl-head",variants:re,children:e.jsx("h3",{className:"tl-place",children:t.place})}),t.role&&e.jsx(R.div,{className:"tl-role",variants:re,children:t.role}),t.points&&e.jsx(R.ul,{className:"tl-points",variants:re,children:t.points.map((r,a)=>e.jsx("li",{children:r},a))}),t.groups&&t.groups.map((r,a)=>e.jsx(Xt,{group:r},a))]})]})}function Zt({lang:t}){const o=st[t];return e.jsxs("section",{className:"resume",lang:t,children:[e.jsxs(R.div,{className:"resume-heading",initial:{opacity:0,y:20},whileInView:{opacity:1,y:0},viewport:{once:!0,margin:"-10% 0px"},transition:{duration:.7,ease:rt},children:[e.jsx("span",{className:"resume-kicker",children:t==="en"?"Selected trajectory":"探索 ANS"}),e.jsx("h2",{className:"resume-title",children:o.title}),e.jsx("p",{className:"resume-deck",children:t==="en"?"From generative craft to shipped systems — a practice built in public.":"选择章节入口，或继续下滑查看详情。"})]}),e.jsx("div",{className:"timeline",children:o.entries.map((r,a)=>e.jsx(Kt,{entry:r,index:a},a))})]})}function Jt({lang:t,activeIndex:o,onJump:r,visible:a}){const[d,u]=n.useState(null),b=st[t].entries,i=[{label:t==="en"?"Intro":"封面"},...b.map(g=>({label:g.place}))];return e.jsx("nav",{className:`chapter-nav${a?" is-visible":""}`,"aria-label":t==="en"?"Section navigation":"章节导航",children:e.jsx("div",{className:"chapter-nav-list",children:i.map((g,l)=>{const x=o===l;return e.jsxs("button",{type:"button",className:`chapter-nav-node${x?" is-active":""}`,onClick:()=>r(l),onMouseEnter:()=>u(l),onMouseLeave:()=>u(null),"aria-label":g.label,"aria-current":x?"true":void 0,children:[e.jsx("span",{className:"chapter-nav-label",children:d===l||x?g.label:String(l).padStart(2,"0")}),e.jsx("span",{className:"chapter-nav-dot","aria-hidden":"true"})]},l)})})})}function en(){return e.jsx(ShowcaseLoading,{})}const tn=yt(t=>({active:null,hovered:null,entered:!1,setActive:o=>t({active:o}),setHovered:o=>t({hovered:o}),enter:()=>t({entered:!0})})),nn=n.lazy(()=>import("pkg-works"));function sn(){const t=tn(o=>o.setActive);return e.jsxs("mesh",{position:[0,0,-40],onClick:()=>t(null),children:[e.jsx("planeGeometry",{args:[600,300]}),e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})]})}const rn={"zh":{"title":"ANS · AI Never Stops","paragraphs":["发现真实项目，走进创作现场。"]},"en":{"title":"ANS · AI Never Stops","paragraphs":["Discover projects. Make something of your own."]}},fe={"tlName":"ANS · AI Never Stops","tlSub":"项目 · 创作 · 社区","tr":"3D SHOWCASE","bl":"AI never stops","right":"ans.cauai.fun"},on=[{id:"github",label:"GitHub",href:"https://github.com/1008611-creater"}];function an({lang:t,cueOpacity:o}){const{title:r,paragraphs:a}=rn[t],d=n.useRef(null),{scrollYProgress:u}=Ce({target:d,offset:["start start","end start"]}),i=z(u,[.06,.4],[1,0]),g=z(u,[0,1],[0,-96]),l=z(u,[0,1],[0,-52]),x=z(u,[0,1],["0.01em","0.42em"]);return e.jsxs("section",{className:"hero",ref:d,children:[e.jsx(R.div,{className:"about",lang:t,style:{opacity:i},children:e.jsxs("div",{className:"about-intro",children:[e.jsxs("div",{className:"about-kicker",children:[e.jsx("span",{className:"about-kicker-line"}),e.jsx("span",{children:"AI Never Stops / Product & Demo Showcase"}),e.jsx("span",{className:"about-kicker-line"})]}),e.jsx(R.h1,{className:"about-title",style:{y:g,letterSpacing:x},children:r}),a.map((w,E)=>e.jsx(R.p,{className:"about-body",style:{y:l},children:w},E)),e.jsxs("div",{className:"about-footnote",children:[e.jsx("span",{children:"01 — 04"}),e.jsx("span",{children:t==="en"?"Scroll to compose the story":"向下滚动，发现项目与创作入口"})]})]})}),e.jsxs(R.div,{className:"scroll-cue",style:{opacity:o,cursor:"pointer",pointerEvents:"auto"},onClick:()=>{const el=document.querySelector("[data-point]");if(el)el.scrollIntoView({behavior:"smooth"});},"aria-hidden":"true",children:[e.jsx("span",{className:"scroll-cue-label",children:t==="en"?"SCROLL":"向下滚动"}),e.jsx("span",{className:"scroll-cue-track",children:e.jsx("span",{className:"scroll-cue-dot"})})]})]})}class SceneBoundary extends n.Component {
+`;function Gt(){const t=n.useRef(null),o=n.useMemo(()=>new Ke,[]),r=n.useRef(-999),a=1;Ze(({clock:u,size:b})=>{t.current&&(u.elapsedTime-r.current<1/a*.5||(r.current=u.elapsedTime,t.current.uniforms.uTime.value=u.elapsedTime%1e4,o.set(b.width,b.height),t.current.uniforms.uResolution.value=o))}),n.useEffect(()=>{const u=setInterval(()=>xt(),1e3/a);return()=>clearInterval(u)},[]);const d=n.useMemo(()=>({uTime:{value:0},uResolution:{value:o}}),[o]);return e.jsxs("mesh",{frustumCulled:!1,children:[e.jsx("planeGeometry",{args:[2,2]}),e.jsx("shaderMaterial",{ref:t,transparent:!0,depthTest:!1,depthWrite:!1,side:Qe,uniforms:d,vertexShader:Wt,fragmentShader:Ft},tt)]})}function Dt(){const[t,o]=n.useState(!1);return n.useEffect(()=>o(!0),[]),t?e.jsx("div",{"aria-hidden":"true","data-three-noise-overlay":tt,style:{position:"fixed",inset:0,overflow:"hidden",pointerEvents:"none",zIndex:Pe.zIndex,mixBlendMode:"multiply"},children:e.jsx(Je,{style:{width:"100%",height:"100%",opacity:Pe.opacity,pointerEvents:"none"},frameloop:"demand",camera:{position:[0,0,1]},gl:{alpha:!0,antialias:!1,powerPreference:"high-performance"},children:e.jsx(Gt,{})})}):null}function Ht(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M13 3h3a5 5 0 0 0 4.6 4.98V11A8 8 0 0 1 16 9.6V15a6 6 0 1 1-6-6c.34 0 .67.03 1 .08v3.12A3 3 0 1 0 13 15V3z"})})}function Yt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("path",{d:"M7 3l3 3M17 3l-3 3"}),e.jsx("rect",{x:"3",y:"6",width:"18",height:"13",rx:"3.5"}),e.jsx("path",{d:"M9 11v2M15 11v2"})]})}function Vt(t){return e.jsxs("svg",{viewBox:"0 0 24 24",xmlns:"http://www.w3.org/2000/svg",...t,children:[e.jsx("rect",{x:"3",y:"3",width:"18",height:"18",rx:"5",fill:"none",stroke:"currentColor",strokeWidth:"2"}),e.jsx("path",{d:"M12 16.2c-2.1-1.5-4-3-4-5.1A2.1 2.1 0 0 1 12 9.9a2.1 2.1 0 0 1 4 1.2c0 2.1-1.9 3.6-4 5.1z",fill:"currentColor"})]})}function $t(t){return e.jsx("svg",{viewBox:"0 0 24 24",fill:"currentColor",xmlns:"http://www.w3.org/2000/svg",...t,children:e.jsx("path",{d:"M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"})})}const nt={douyin:Ht,bilibili:Yt,xiaohongshu:Vt,github:$t},st={"zh":{"title":"从发现到创作","entries":[{"period":"01","place":"项目广场","role":"查看真实项目，找到感兴趣的方向。","points":[],"groups":[{"heading":"浏览项目","link":"/explore"}]},{"period":"02","place":"简历与作品集工作室","role":"打开专用编辑器，整理自己的经历与作品。","points":[],"groups":[{"heading":"打开编辑器","link":"/market/resume-website"}]},{"period":"03","place":"Hub 与社区","role":"按主题与高校浏览内容。","points":[],"groups":[{"heading":"浏览 Hub","link":"/hubs"}]},{"period":"04","place":"赛事与算力","role":"赛事信息以赛事专区公布为准；算力价格以运行前的实际报价为准。","points":[],"groups":[{"heading":"查看赛事","link":"/competitions"}]}]},"en":{"title":"Explore and create","entries":[{"period":"01","place":"项目广场","role":"查看真实项目，找到感兴趣的方向。","points":[],"groups":[{"heading":"浏览项目","link":"/explore"}]},{"period":"02","place":"简历与作品集工作室","role":"打开专用编辑器，整理自己的经历与作品。","points":[],"groups":[{"heading":"打开编辑器","link":"/market/resume-website"}]},{"period":"03","place":"Hub 与社区","role":"按主题与高校浏览内容。","points":[],"groups":[{"heading":"浏览 Hub","link":"/hubs"}]},{"period":"04","place":"赛事与算力","role":"赛事信息以赛事专区公布为准；算力价格以运行前的实际报价为准。","points":[],"groups":[{"heading":"查看赛事","link":"/competitions"}]}]}},qt=Te,rt=[.22,1,.36,1],Qt={hidden:{},show:{transition:{staggerChildren:.09,delayChildren:.04}}},re={hidden:{opacity:0,y:26},show:{opacity:1,y:0,transition:{duration:.75,ease:rt}}};function Xt({group:t}){const o=t.link?e.jsx("a",{className:"about-link",href:t.link,target:"_blank",rel:"noopener noreferrer",children:t.heading}):e.jsx("span",{children:t.heading});return e.jsxs(R.div,{className:"tl-group",variants:re,children:[e.jsxs("div",{className:"tl-group-head",children:[o,t.sub&&e.jsx("span",{className:"tl-group-sub",children:t.sub})]}),t.items&&e.jsx("ul",{className:"tl-points",children:t.items.map((r,a)=>e.jsx("li",{children:r},a))}),t.links&&e.jsx("div",{className:"tl-logos",children:t.links.map(r=>{const a=nt[r.id];return e.jsx("a",{className:"tl-logo",href:r.href,target:"_blank",rel:"noopener noreferrer","aria-label":r.label,title:r.label,children:e.jsx(a,{})},r.id)})})]})}function Kt({entry:t,index:o}){return e.jsxs(R.div,{className:"tl-entry","data-point":qt[o],variants:Qt,initial:"hidden",whileInView:"show",viewport:{once:!0,margin:"-12% 0px -12% 0px"},children:[e.jsx(R.span,{className:"tl-dot",variants:re,"aria-hidden":"true"}),e.jsxs("div",{className:"tl-body",children:[e.jsx(R.div,{className:"tl-head",variants:re,children:e.jsx("h3",{className:"tl-place",children:t.place})}),t.role&&e.jsx(R.div,{className:"tl-role",variants:re,children:t.role}),t.points&&e.jsx(R.ul,{className:"tl-points",variants:re,children:t.points.map((r,a)=>e.jsx("li",{children:r},a))}),t.groups&&t.groups.map((r,a)=>e.jsx(Xt,{group:r},a))]})]})}function Zt({lang:t}){const o=st[t];return e.jsxs("section",{className:"resume",lang:t,children:[e.jsxs(R.div,{className:"resume-heading",initial:{opacity:0,y:20},whileInView:{opacity:1,y:0},viewport:{once:!0,margin:"-10% 0px"},transition:{duration:.7,ease:rt},children:[e.jsx("h2",{className:"resume-title",children:o.title}),e.jsx("p",{className:"resume-deck",children:t==="en"?"From generative craft to shipped systems — a practice built in public.":"选择章节入口，或继续下滑查看详情。"})]}),e.jsx("div",{className:"timeline",children:o.entries.map((r,a)=>e.jsx(Kt,{entry:r,index:a},a))})]})}function Jt({lang:t,activeIndex:o,onJump:r,visible:a}){const[d,u]=n.useState(null),b=st[t].entries,i=[{label:t==="en"?"Intro":"封面"},...b.map(g=>({label:g.place}))];return e.jsx("nav",{className:`chapter-nav${a?" is-visible":""}`,"aria-label":t==="en"?"Section navigation":"章节导航",children:e.jsx("div",{className:"chapter-nav-list",children:i.map((g,l)=>{const x=o===l;return e.jsxs("button",{type:"button",className:`chapter-nav-node${x?" is-active":""}`,onClick:()=>r(l),onMouseEnter:()=>u(l),onMouseLeave:()=>u(null),"aria-label":g.label,"aria-current":x?"true":void 0,children:[e.jsx("span",{className:"chapter-nav-label",children:d===l||x?g.label:String(l).padStart(2,"0")}),e.jsx("span",{className:"chapter-nav-dot","aria-hidden":"true"})]},l)})})})}function en(){return e.jsx(ShowcaseLoading,{})}const tn=yt(t=>({active:null,hovered:null,entered:!1,setActive:o=>t({active:o}),setHovered:o=>t({hovered:o}),enter:()=>t({entered:!0})})),nn=n.lazy(()=>import("pkg-works"));function sn(){const t=tn(o=>o.setActive);return e.jsxs("mesh",{position:[0,0,-40],onClick:()=>t(null),children:[e.jsx("planeGeometry",{args:[600,300]}),e.jsx("meshBasicMaterial",{transparent:!0,opacity:0,depthWrite:!1})]})}const rn={"zh":{"title":"ANS · AI Never Stops","paragraphs":["发现真实项目，走进创作现场。"]},"en":{"title":"ANS · AI Never Stops","paragraphs":["Discover projects. Make something of your own."]}},fe={"tlName":"ANS · 小恐龙 3D 展厅","tlSub":"项目 · 创作 · 社区"},on=[{id:"github",label:"GitHub",href:"https://github.com/1008611-creater"}];function an({lang:t,cueOpacity:o}){const{title:r,paragraphs:a}=rn[t],d=n.useRef(null),{scrollYProgress:u}=Ce({target:d,offset:["start start","end start"]}),i=z(u,[.06,.4],[1,0]),g=z(u,[0,1],[0,-96]),l=z(u,[0,1],[0,-52]),x=z(u,[0,1],["0.01em","0.42em"]);return e.jsxs("section",{className:"hero",ref:d,children:[e.jsx(R.div,{className:"about",lang:t,style:{opacity:i},children:e.jsxs("div",{className:"about-intro",children:[e.jsx(R.h1,{className:"about-title",style:{y:g,letterSpacing:x},children:r}),a.map((w,E)=>e.jsx(R.p,{className:"about-body",style:{y:l},children:w},E))]})}),e.jsxs(R.div,{className:"scroll-cue",style:{opacity:o,cursor:"pointer",pointerEvents:"auto"},onClick:()=>{const el=document.querySelector("[data-point]");if(el)el.scrollIntoView({behavior:"smooth"});},"aria-hidden":"true",children:[e.jsx("span",{className:"scroll-cue-label",children:t==="en"?"SCROLL":"向下滚动"}),e.jsx("span",{className:"scroll-cue-track",children:e.jsx("span",{className:"scroll-cue-dot"})})]})]})}class SceneBoundary extends n.Component {
   constructor(props){super(props);this.state={failed:false};}
   static getDerivedStateFromError(){return {failed:true};}
   componentDidCatch(){window.dispatchEvent(new Event("ans-showcase-failure"));}
   render(){return this.state.failed?null:this.props.children;}
 }
-function cn(){var k;const[scenePaused,setScenePaused]=n.useState(false);n.useEffect(()=>{const change=event=>setScenePaused(Boolean(event.detail));window.addEventListener("ans-scene-pause",change);return()=>window.removeEventListener("ans-scene-pause",change)},[]);const[t,o]=n.useState("zh"),{scrollY:r}=Ce(),a=n.useRef(null),{scrollYProgress:d}=Ce({target:a,offset:["start end","start center"]}),u=z(d,[0,1],["rgba(8, 11, 18, 0)","rgba(8, 11, 18, 0.41)"]);z(d,[0,1],["blur(0px)","blur(10px)"]);const b=z(r,[0,520],[0,.4]),i=z(r,[0,160],[1,0]);z(r,[0,240],[1,0]);const g=typeof window<"u"?window.innerHeight:800,l=z(r,[g*.5,g*1.1],[0,1]),x=z(r,[0,280],[1,0]),w=.3,E=n.useRef([]),[A,M]=n.useState(0),[V,S]=n.useState(!1);n.useEffect(()=>{const v=()=>{const H=Te.map(j=>{const C=document.querySelector(`[data-point="${j}"]`);return C?C.getBoundingClientRect().top+window.scrollY:null}).filter(j=>j!==null);E.current=[0,...H]};v();const p=new ResizeObserver(v);return p.observe(document.documentElement),window.addEventListener("resize",v),()=>{p.disconnect(),window.removeEventListener("resize",v)}},[]),Nt(r,"change",v=>{const p=E.current;if(p.length>1){const j=v+window.innerHeight*w;let C=0;for(let P=0;P<p.length;P++)j>=p[P]&&(C=P);M(P=>P===C?P:C)}const H=v>window.innerHeight*.5;S(j=>j===H?j:H)});const D=n.useCallback(v=>{const p=E.current;window.scrollTo({top:p[Math.min(v,p.length-1)]??0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"})},[]);return e.jsxs(e.Fragment,{children:[e.jsx(en,{}),e.jsx("div",{className:"scene-bg",children:e.jsx(SceneBoundary,{children:e.jsxs(Je,{eventSource:document.body,eventPrefix:"client",frameloop:scenePaused||window.matchMedia("(prefers-reduced-motion: reduce)").matches?"demand":"always",fallback:e.jsx("span",{children:"当前设备未能启用 3D，仍可使用页面入口。"}),onCreated:({gl})=>{gl.domElement.addEventListener("webglcontextlost",()=>window.dispatchEvent(new Event("ans-showcase-failure")));window.dispatchEvent(new Event("ans-showcase-ready"));},shadows:{type:jt},dpr:[1,1.5],camera:{position:[0,5,19],fov:39,near:.1,far:500},gl:{antialias:!0,stencil:!1,depth:!0,toneMapping:wt},children:[e.jsx("color",{attach:"background",args:["#0a0e16"]}),e.jsxs(n.Suspense,{fallback:null,children:[e.jsx(sn,{}),e.jsx(_t,{})]})]})})}),e.jsx(R.div,{className:"scrim",style:{opacity:b},"aria-hidden":"true"}),e.jsx(R.div,{className:"stage-fog",style:{background:u},"aria-hidden":"true"}),e.jsx(R.div,{className:"glass-rail",style:{opacity:l},"aria-hidden":"true"}),e.jsxs(R.div,{className:"hero-chrome",style:{opacity:x},"aria-hidden":"true",children:[e.jsx("div",{className:"hero-frame"}),e.jsx("span",{className:"hero-mark tl",children:"+"}),e.jsx("span",{className:"hero-mark tr",children:"+"}),e.jsx("span",{className:"hero-mark bl",children:"+"}),e.jsx("span",{className:"hero-mark br",children:"+"}),e.jsxs("div",{className:"hero-meta hm-tl",children:[e.jsx("span",{className:"hm-name",children:fe.tlName}),e.jsx("span",{children:fe.tlSub})]}),e.jsx("div",{className:"hero-meta hm-tr",children:fe.tr}),e.jsx("div",{className:"hero-meta hm-bl",children:fe.bl}),e.jsx("div",{className:"hero-meta hm-right",children:fe.right}),e.jsx("div",{className:"hero-social",children:on.map(v=>{const p=nt[v.id];return e.jsx("a",{className:"tl-logo",href:v.href,target:"_blank",rel:"noopener noreferrer","aria-label":v.label,title:v.label,children:e.jsx(p,{})},v.id)})})]}),null,e.jsx(Jt,{lang:t,activeIndex:A,onJump:D,visible:!0}),e.jsxs("main",{className:"content",children:[e.jsx(an,{lang:t,cueOpacity:i}),e.jsx(Zt,{lang:t}),e.jsx(n.Suspense,{fallback:e.jsx("div",{className:"works-loading","aria-label":"Loading works",children:"Loading works…"}),children:e.jsx(nn,{lang:t,innerRef:a})})]})]})}ct(document.getElementById("root")).render(e.jsx(cn,{}));
+function cn(){var k;const[scenePaused,setScenePaused]=n.useState(false);n.useEffect(()=>{const change=event=>setScenePaused(Boolean(event.detail));window.addEventListener("ans-scene-pause",change);return()=>window.removeEventListener("ans-scene-pause",change)},[]);const[t,o]=n.useState("zh"),{scrollY:r}=Ce(),a=n.useRef(null),{scrollYProgress:d}=Ce({target:a,offset:["start end","start center"]}),u=z(d,[0,1],["rgba(8, 11, 18, 0)","rgba(8, 11, 18, 0.41)"]);z(d,[0,1],["blur(0px)","blur(10px)"]);const b=z(r,[0,520],[0,.4]),i=z(r,[0,160],[1,0]);z(r,[0,240],[1,0]);const g=typeof window<"u"?window.innerHeight:800,l=z(r,[g*.5,g*1.1],[0,1]),x=z(r,[0,280],[1,0]),w=.3,E=n.useRef([]),[A,M]=n.useState(0),[V,S]=n.useState(!1);n.useEffect(()=>{const v=()=>{const H=Te.map(j=>{const C=document.querySelector(`[data-point="${j}"]`);return C?C.getBoundingClientRect().top+window.scrollY:null}).filter(j=>j!==null);E.current=[0,...H]};v();const p=new ResizeObserver(v);return p.observe(document.documentElement),window.addEventListener("resize",v),()=>{p.disconnect(),window.removeEventListener("resize",v)}},[]),Nt(r,"change",v=>{const p=E.current;if(p.length>1){const j=v+window.innerHeight*w;let C=0;for(let P=0;P<p.length;P++)j>=p[P]&&(C=P);M(P=>P===C?P:C)}const H=v>window.innerHeight*.5;S(j=>j===H?j:H)});const D=n.useCallback(v=>{const p=E.current;window.scrollTo({top:p[Math.min(v,p.length-1)]??0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"})},[]);return e.jsxs(e.Fragment,{children:[e.jsx(en,{}),e.jsx("div",{className:"scene-bg",children:e.jsx(SceneBoundary,{children:e.jsxs(Je,{eventSource:document.body,eventPrefix:"client",frameloop:scenePaused||window.matchMedia("(prefers-reduced-motion: reduce)").matches?"demand":"always",fallback:e.jsx("span",{children:"当前设备未能启用 3D，仍可使用页面入口。"}),onCreated:({gl})=>{gl.domElement.addEventListener("webglcontextlost",()=>window.dispatchEvent(new Event("ans-showcase-failure")));window.dispatchEvent(new Event("ans-showcase-ready"));},shadows:{type:jt},dpr:[1,1.5],camera:{position:[0,5,19],fov:39,near:.1,far:500},gl:{antialias:!0,stencil:!1,depth:!0,toneMapping:wt},children:[e.jsx("color",{attach:"background",args:["#0a0e16"]}),e.jsxs(n.Suspense,{fallback:null,children:[e.jsx(sn,{}),e.jsx(_t,{})]})]})})}),e.jsx(R.div,{className:"scrim",style:{opacity:b},"aria-hidden":"true"}),e.jsx(R.div,{className:"stage-fog",style:{background:u},"aria-hidden":"true"}),e.jsx(R.div,{className:"glass-rail",style:{opacity:l},"aria-hidden":"true"}),e.jsxs(R.div,{className:"hero-chrome",style:{opacity:x},"aria-hidden":"true",children:[e.jsx("div",{className:"hero-frame"}),e.jsx("span",{className:"hero-mark tl",children:"+"}),e.jsx("span",{className:"hero-mark tr",children:"+"}),e.jsx("span",{className:"hero-mark bl",children:"+"}),e.jsx("span",{className:"hero-mark br",children:"+"}),e.jsxs("div",{className:"hero-meta hm-tl",children:[e.jsx("span",{className:"hm-name",children:fe.tlName}),e.jsx("span",{children:fe.tlSub})]}),e.jsx("div",{className:"hero-social",children:on.map(v=>{const p=nt[v.id];return e.jsx("a",{className:"tl-logo",href:v.href,target:"_blank",rel:"noopener noreferrer","aria-label":v.label,title:v.label,children:e.jsx(p,{})},v.id)})})]}),null,e.jsx(Jt,{lang:t,activeIndex:A,onJump:D,visible:!0}),e.jsxs("main",{className:"content",children:[e.jsx(an,{lang:t,cueOpacity:i}),e.jsx(Zt,{lang:t}),e.jsx(n.Suspense,{fallback:e.jsx("div",{className:"works-loading","aria-label":"Loading works",children:"Loading works…"}),children:e.jsx(nn,{lang:t,innerRef:a})})]})]})}ct(document.getElementById("root")).render(e.jsx(cn,{}));
 
     

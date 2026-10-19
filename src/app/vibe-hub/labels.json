@@ -1167,7 +1167,7 @@
     "deviceSaved": "已自动保存在本机",
     "briefBlankReady": "已切换为空白自定义需求，可从零填写目标、受众、参考约束与验收条件。",
     "briefTemplateLoaded": "已载入「{name}」需求模板，可直接修改或补充你的真实材料。",
-    "skillEyebrow": "ANS VibeHub Skill · 需求工作台与高频技能矩阵",
+    "skillEyebrow": "ANS VibeHub Skill · 需求工作台与高频技能目录",
     "skillTitle": "把模糊想法变成准确需求，把重复动作沉淀成高频 Skill",
     "skillSubtitle": "在这里一站式完成结构化需求编写、模糊口语到精准术语的规范改写，并直接复制 ANS 内化的「日常高频 10 大 Skill · 三条自动化流水线」与「把 Skill 当产品做的 6 条工程准则」。",
     "briefScenarioLabel": "选择需求起点场景",
@@ -1208,7 +1208,7 @@
     "skillOpenProductGuide": "阅读《像做产品一样开发 Skill》完整指南",
     "ansChangeskillsTitle": "VibeHub Skill 升级：10 大高频 Skill 图谱、规范表达台与 6 条产品准则",
     "ansChangeskillsBody": "全面升级 /vibe-hub/vibehub-skill：新增 8 大场景需求模板、模糊口语到精准术语的对比改写台、覆盖研发交付/视频粗剪/去 AI 味文档的 10 个高频 Skill 指令卡，以及把 Skill 当产品做的 6 条工程准则。",
-    "ansChangeskillsLink": "打开 VibeHub Skill 矩阵",
+    "ansChangeskillsLink": "打开 VibeHub Skill 目录",
     "ansChangeuidesignTitle": "新增四套深度实战指南：UI 多方向探索、Skill 工程化、口播视频流与多 Agent 小队",
     "ansChangeuidesignBody": "在实践指南与学习路径中内化三方向首屏同屏对比 + 无上下文子 Agent 截图挑刺、单页分片防截断 Skill 架构、VAD+ASR 去口误粗剪 + 录屏 OCR 字幕校对，以及 1:20:100 模型成本分级路由。",
     "ansChangeuidesignLink": "查看新增实战指南"

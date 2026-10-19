@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 const entries = [
   { id: "agrihackathon", href: "/competitions/agrihackathon", icon: HeartHandshake, cover: "/competitions/agrihackathon/gitglow-hub.webp" },
-  { id: "aigc", href: "/competitions/aigc", icon: Sparkles, cover: "/catalog/gitglow-v1/aigc-workspace.webp" },
+  { id: "aigc", href: "/competitions/aigc", icon: Sparkles, cover: "/catalog/gitglow-v1/infinite-canvas.webp" },
 ] as const;
 
 export default async function CompetitionsPage() {

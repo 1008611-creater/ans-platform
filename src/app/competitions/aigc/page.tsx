@@ -48,7 +48,7 @@ const connectorStyles = {
   toonflow: {
     icon: Sparkles,
     iconClass: "bg-amber-500/15 text-amber-600 dark:text-amber-300",
-    cover: "/catalog/gitglow-v1/niannian-drama.webp",
+    cover: "/catalog/gitglow-v1/ai-video-services.webp",
   },
 } as const;
 
@@ -93,7 +93,7 @@ export default async function AigcCompetitionPage() {
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <PageHeading title={t("title")} description={t("description")} actions={<Button asChild size="lg" className="h-auto min-h-11 whitespace-normal"><Link href="/projects">{t("createProject")}</Link></Button>} />
           <figure className="overflow-hidden rounded-2xl border bg-slate-950/90 shadow-sm">
-            <img src="/catalog/gitglow-v1/aigc-workspace.webp" alt="" loading="lazy" className="aspect-[16/9] w-full object-cover object-top" />
+            <img src="/catalog/gitglow-v1/infinite-canvas.webp" alt="" loading="lazy" className="aspect-[16/9] w-full object-cover object-top" />
           </figure>
         </div>
         <section className="space-y-5">

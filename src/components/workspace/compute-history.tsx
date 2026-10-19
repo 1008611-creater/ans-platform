@@ -56,13 +56,13 @@ export async function ComputeHistory({ history, filter, paged, userId }: { userI
       <div className="max-w-3xl"><h2 className="text-sm font-semibold">{t("deliveryTitle")}</h2><p className="mt-1 text-sm leading-7 text-muted-foreground">{t("deliveryBody")}</p></div>
       <Button asChild variant="outline" size="sm"><Link href="/workflows/toonflow">{t("viewResults")}</Link></Button>
     </aside>
-    <section aria-label="GPU 算力节点与场景矩阵" className="grid gap-4 sm:grid-cols-3" data-testid="compute-cluster-cards">
+    <section aria-label="GPU 算力节点概览" className="grid gap-4 sm:grid-cols-3" data-testid="compute-cluster-cards">
       {[
         {
-          title: "ToonFlow 4K 漫剧渲染节点",
+          title: "CAUAI 无限画布 4K 渲染节点",
           spec: "A800 80GB · 按张/按秒弹性计费",
-          cover: "/catalog/gitglow-v1/niannian-drama.webp",
-          href: "/workflows/toonflow",
+          cover: "/catalog/gitglow-v1/infinite-canvas.webp",
+          href: "https://hb.cauai.fun/",
         },
         {
           title: "Agri-Vision 农田遥感推理节点",

@@ -37,11 +37,11 @@ export default async function CollectionPage() {
         desc: isEn ? "Complete the 30s survey for 50 points and use the 3D claw machine to claim 10–1,000 points." : "完成 30 秒问卷领 50 积分，操纵 3D 机械臂每次必得 10~1000 积分并解锁小龙装扮。",
       },
       {
-        title: isEn ? "AIGC Storyboard & Toonflow Drama Studio" : "AIGC 漫剧分镜与多模态创作工坊",
+        title: isEn ? "CAUAI Infinite Canvas · Multimodal AIGC Studio" : "CAUAI 无限画布 · 多模态视觉与视频工作台",
         tag: isEn ? "AIGC Studio" : "多模态创作",
-        cover: "/catalog/gitglow-v1/aigc-workspace.webp",
+        cover: "/catalog/gitglow-v1/infinite-canvas.webp",
         href: "/competitions/aigc",
-        desc: isEn ? "Infinite canvas + script-to-video pipeline for campus creators." : "直连 Solara 无限画布与 Toonflow 漫剧流水线，一站式完成剧本分镜与视频生成。",
+        desc: isEn ? "Infinite canvas + node-based image and video generation pipeline for campus creators." : "在无限画布中串联多模态生图、参考图控构与视频生成节点，一站式完成创作。",
       },
     ];
     return (

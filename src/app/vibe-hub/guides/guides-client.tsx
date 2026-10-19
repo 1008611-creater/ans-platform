@@ -72,22 +72,31 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
       </aside>
       <section ref={workRef} tabIndex={-1} className="ans-guide-work" aria-labelledby="ans-current-guide-title">
         <header className="ans-guide-work-head">
-          <div className="mb-4 grid gap-4 sm:grid-cols-[1.35fr_0.65fr] sm:items-center">
-            <div className="ans-guide-title-row"><div><h2 id="ans-current-guide-title">{guide.title}</h2><p>{guide.summary}</p></div><Link className="ans-knowledge-button" data-variant="default" href={destination(guide.briefHref)}>{t("guideWriteBrief")}<ArrowUpRight size={16} aria-hidden="true" /></Link></div>
-            <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border bg-muted">
+          <div className="mb-4 grid gap-5 sm:grid-cols-[1.2fr_0.8fr] sm:items-center">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                <span>🎁 限时免费开放 · 实操模板直达</span>
+              </div>
+              <h2 id="ans-current-guide-title">{guide.title}</h2>
+              <p>{guide.summary}</p>
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <Link className="ans-knowledge-button" data-variant="default" href={destination(guide.briefHref)}>{t("guideWriteBrief")}<ArrowUpRight size={16} aria-hidden="true" /></Link>
+                {guide.prompt && <SkillCopyButton text={guide.prompt.text} label={lang === "en" ? "Copy Ready Prompt" : "📋 一键复制完整提示词模板"} copiedLabel={t("copied")} />}
+                {guide.destinations[0] && <Link className="ans-editorial-link" href={destination(guide.destinations[0].href)}>{guide.destinations[0].label}<ArrowUpRight size={14} aria-hidden="true" /></Link>}
+              </div>
+            </div>
+            <div className="aspect-[16/9] w-full overflow-hidden rounded-xl border bg-muted shadow-xs">
               <img
                 src={
                   guide.task === "media-pipeline" || guide.task === "creative"
-                    ? "/catalog/oil-v1/guide-media.svg"
-                    : guide.task === "evidence" || guide.task === "agent-team"
-                      ? "/catalog/oil-v1/guide-agri.svg"
+                    ? "/catalog/ans-pro-v1/infinite-canvas.webp"
+                    : guide.task === "agent-team" || guide.task === "skill-product" || guide.task === "evidence"
+                      ? "/catalog/ans-pro-v1/agent-team.webp"
                       : guide.task === "open-source"
-                        ? "/catalog/oil-v1/lib-open-source.svg"
-                        : guide.task === "ui-design"
-                          ? "/catalog/oil-v1/ans-3d-showcase.svg"
-                          : guide.task === "skill-product"
-                            ? "/catalog/oil-v1/hermes-agent.svg"
-                            : "/catalog/oil-v1/guide-website.svg"
+                        ? "/catalog/ans-pro-v1/git-ship.webp"
+                        : guide.task === "website" || guide.task === "ui-design"
+                          ? "/catalog/ans-pro-v1/vibephoto.webp"
+                          : "/catalog/ans-pro-v1/magic-resume.webp"
                 }
                 alt={guide.title}
                 className="h-full w-full object-cover"
@@ -95,6 +104,15 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
               />
             </div>
           </div>
+          {guide.prompt && (
+            <div id="prompt" className="mb-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <strong className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">⚡ {guide.prompt.title}（可直接复制发送给 Claude / Cursor / ChatGPT）</strong>
+                <SkillCopyButton text={guide.prompt.text} label={t("copyRequest")} copiedLabel={t("copied")} />
+              </div>
+              <p className="mt-2 line-clamp-3 font-mono text-xs leading-5 text-muted-foreground">{guide.prompt.text}</p>
+            </div>
+          )}
           <div className="ans-guide-progress" role="status"><span>{t("pathProgress", { count: completed.length, total: guide.steps.length })}</span><progress value={completed.length} max={guide.steps.length} aria-label={t("pathProgressLabel")} />{!persisted && <span className="ans-guide-save-error">{t("deviceSaveFailed")}</span>}</div>
         </header>
         <ol className="ans-guide-steps">
@@ -122,10 +140,6 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
           })}
         </ol>
         <footer className="ans-guide-reference">
-          {guide.prompt && <details id="prompt">
-            <summary><strong>{guide.prompt.title}</strong><ChevronDown size={16} aria-hidden="true" /></summary>
-            <div className="ans-guide-prompt"><p>{guide.prompt.text}</p><SkillCopyButton text={guide.prompt.text} label={t("copyRequest")} copiedLabel={t("copied")} /></div>
-          </details>}
           {(guide.terms.length > 0 || guide.destinations.length > 0) && <nav aria-label={t("relatedTerms")}>
             {guide.terms.map(term => <Link key={term.slug} href={`/vibe-hub/${term.slug}?lang=${lang}`}>{term.label}<ArrowUpRight size={13} aria-hidden="true" /></Link>)}
             {guide.destinations.map(item => <Link key={item.href} className="ans-editorial-link" href={destination(item.href)}>{item.label}<ArrowUpRight size={14} aria-hidden="true" /></Link>)}

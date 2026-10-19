@@ -22,7 +22,6 @@ import {
   type SecretQuestDef,
   type WardrobeSlot,
 } from "@/domain/mascot/sanctuary";
-import { LEVELS } from "@/domain/growth/levels";
 import { advanceAndClaimQuest } from "@/domain/mascot/quest-arcade";
 import { DinoAdoptionPod } from "./dino-adoption-pod";
 
@@ -115,7 +114,13 @@ function findMoodPreset(id: string): ShowcaseMoodPreset {
   return SHOWCASE_MOOD_PRESETS[id] ?? SHOWCASE_MOOD_PRESETS.happy_smile;
 }
 
-export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text: string) => void }) {
+export function CompanionQuestPin({
+  dialogOpen = false,
+  onTriggerSpeech,
+}: {
+  dialogOpen?: boolean;
+  onTriggerSpeech?: (text: string) => void;
+}) {
   const locale = useLocale();
   const isZh = locale === "zh";
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
@@ -311,6 +316,17 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     dispatchDinoInteract({ type: "turntable", spin: false });
   };
 
+  function navigateToWorkMode() {
+    exitMacroMode();
+    if (typeof window !== "undefined" && window.location.pathname === "/workspace") {
+      const el = document.querySelector('[data-testid="pi-codex-workbench"]');
+      if (el && "scrollIntoView" in el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => document.getElementById("codex-composer-input")?.focus(), 80);
+      return;
+    }
+    window.location.href = "/workspace";
+  }
+
   const triggerStageClick = () => {
     const now = Date.now();
     lastUserInteractRef.current = performance.now();
@@ -361,7 +377,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
     onTriggerSpeech?.(preset.text);
   };
 
-  // Listen for hover, click & macro-stage events dispatched from .ans-dino-trigger or AI chat popover
+  // Listen for hover, click, macro-stage & Escape key events dispatched from .ans-dino-trigger or AI chat popover
   useEffect(() => {
     const onStageHover = (event: Event) => {
       const custom = event as CustomEvent<{ hover?: boolean }>;
@@ -377,13 +393,24 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
         setSanctuaryModal(custom.detail.drawer);
       }
     };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (sanctuaryModal !== "none") {
+          setSanctuaryModal("none");
+        } else if (macroActive) {
+          exitMacroMode();
+        }
+      }
+    };
     window.addEventListener("ans:dino-stage-hover", onStageHover);
     window.addEventListener("ans:dino-stage-click", onStageClick);
     window.addEventListener("ans:enter-dino-macro", onEnterMacro);
+    window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("ans:dino-stage-hover", onStageHover);
       window.removeEventListener("ans:dino-stage-click", onStageClick);
       window.removeEventListener("ans:enter-dino-macro", onEnterMacro);
+      window.removeEventListener("keydown", onKeyDown);
     };
   });
 
@@ -703,7 +730,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       if (state.starBeans < item.priceBeans) {
         setWardrobeNote(
           isZh
-            ? `🪙 灵感星豆不足（需 ${item.priceBeans}🪙，可点上方「🎁 +500🪙 领测试星豆」）`
+            ? `🪙 灵感星豆不足（需 ${item.priceBeans}🪙，可通过摸摸头、盲盒投喂或催干活获取）`
             : `🪙 Needs ${item.priceBeans}🪙 Star Beans`,
         );
         return;
@@ -765,7 +792,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       )}
 
       {/* 1:1 Resume Website Speech & Alert Bubble (#ans-dino-live-bubble) */}
-      {sanctuaryModal === "none" && (
+      {!dialogOpen && sanctuaryModal === "none" && (
         <div
           id="ans-dino-live-bubble"
           style={{ left: bubblePos.left, bottom: bubblePos.bottom }}
@@ -800,7 +827,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
       )}
 
       {/* Minimal 2-Pill Dock next to bottom-right 3D Dragon (Hover/3-Click on Dino triggers Close-Up Stage) */}
-      {!macroActive && (
+      {!dialogOpen && !macroActive && (
         <div
           className="fixed bottom-[16px] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-border/80 bg-background/95 px-2 py-1 shadow-md backdrop-blur-md"
           onClick={e => e.stopPropagation()}
@@ -818,11 +845,9 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
           </button>
           <button
             type="button"
-            onClick={() => {
-              window.location.href = "/workspace";
-            }}
+            onClick={navigateToWorkMode}
             title={isZh ? "进入 Agent 工作模式 (/workspace)" : "Open Work Mode (/workspace)"}
-            className="hidden sm:inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
+            className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
           >
             {isZh ? "工作模式" : "Work Mode"}
           </button>
@@ -911,9 +936,7 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
           <button
             type="button"
             className="hud-act-btn"
-            onClick={() => {
-              window.location.href = "/workspace";
-            }}
+            onClick={navigateToWorkMode}
           >
             🛠️ {isZh ? "工作模式 ↗" : "Work Mode ↗"}
           </button>
@@ -1072,29 +1095,6 @@ export function CompanionQuestPin({ onTriggerSpeech }: { onTriggerSpeech?: (text
                   }}
                 >
                   👑 {isZh ? "一键 UR 满配神装" : "UR God Set"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    commitSanctuary(prev => ({
-                      ...prev,
-                      starBeans: prev.starBeans + 500,
-                      affectionXp: prev.affectionXp + 120,
-                    }));
-                    setWardrobeNote(isZh ? "🎁 已领取 +500🪙 灵感星豆！" : "🎁 Claimed +500🪙 Star Beans!");
-                  }}
-                  style={{
-                    padding: "5px 10px",
-                    borderRadius: "999px",
-                    border: "1px solid rgba(16,185,129,0.5)",
-                    background: "rgba(16,185,129,0.16)",
-                    color: "#6ee7b7",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
-                  🎁 +500🪙
                 </button>
               </div>
             </div>
@@ -1353,7 +1353,28 @@ export function CompanionSanctuaryBar({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "pi_action", intent, prompt: customPrompt ?? piPrompt }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401 || !res.ok || (!data?.replyZh && !data?.replyEn)) {
+        const fallbackZh =
+          res.status === 401
+            ? "请先登录账号后再执行该快捷操作（如签到、立项或兑换）。"
+            : data?.replyZh || "当前请求暂不可用，请稍后重试。";
+        const fallbackEn =
+          res.status === 401
+            ? "Please sign in first to run this quick action."
+            : data?.replyEn || "Action temporarily unavailable. Please try again.";
+        setPiResult({
+          ok: false,
+          toolUsed: res.status === 401 ? "auth_required" : undefined,
+          replyZh: fallbackZh,
+          replyEn: fallbackEn,
+          links:
+            res.status === 401
+              ? [{ href: "/login", title: isZh ? "🔐 登录账号" : "🔐 Sign In", detail: isZh ? "登录后解锁算力与快捷操作" : "Sign in to unlock actions" }]
+              : [],
+        });
+        return;
+      }
       setPiResult(data);
       const speechLine = isZh ? data.replyZh : data.replyEn;
       if (speechLine) {
@@ -1448,7 +1469,7 @@ export function CompanionSanctuaryBar({
   const styleEval = calculateStyleEvaluation(state);
   const aff = getAffectionProgress(state.affectionXp);
   const uLv = styleEval.userLevel;
-  const isOverclocked = state.workBoostUntil > 0;
+  const isOverclocked = state.workBoostUntil > Date.now();
   const isOnStrike = strikeRemainingSec > 0;
   const workDrivePct = isOnStrike
     ? 0
@@ -2205,7 +2226,7 @@ export function CompanionSanctuaryBar({
                 </div>
               )}
               <p className="whitespace-pre-line leading-relaxed text-foreground">
-                {(isZh ? piResult.replyZh : piResult.replyEn).replace(/\*\*/g, "")}
+                {((isZh ? piResult.replyZh : piResult.replyEn) || "").replace(/\*\*/g, "")}
               </p>
               {piResult.links && piResult.links.length > 0 && (
                 <div className="grid grid-cols-1 gap-1 pt-1">
@@ -2332,7 +2353,7 @@ export function CompanionSanctuaryBar({
             </div>
           </div>
 
-          {/* 1-Click Preset Outfits & Star Beans Boost */}
+          {/* 1-Click Preset Outfits */}
           <div className="flex flex-wrap items-center gap-1">
             <button
               type="button"
@@ -2348,27 +2369,9 @@ export function CompanionSanctuaryBar({
             >
               👑 {isZh ? "一键试穿 UR 满配神装" : "Equip UR God Set"}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                commit(prev => ({
-                  ...prev,
-                  starBeans: prev.starBeans + 500,
-                  affectionXp: prev.affectionXp + 120,
-                }));
-                setStatusNote(
-                  isZh
-                    ? "🎁 已领取 +500🪙 灵感星豆与 +120♥ 好感度，快去解锁心仪穿搭吧！"
-                    : "🎁 Claimed +500🪙 Star Beans & +120♥ Affection!",
-                );
-              }}
-              className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
-            >
-              🎁 {isZh ? "+500🪙 领测试星豆" : "+500🪙 Free Beans"}
-            </button>
           </div>
 
-          {/* 5 Wardrobe Slot Tabs + Level Switcher */}
+          {/* 5 Wardrobe Slot Tabs */}
           <div className="flex flex-wrap items-center justify-between gap-1">
             <div className="flex flex-wrap gap-1">
               {(Object.keys(WARDROBE_SLOT_LABELS) as WardrobeSlot[]).map(key => (
@@ -2384,14 +2387,9 @@ export function CompanionSanctuaryBar({
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => commit(prev => ({ ...prev, userXp: (prev.userXp + 600) % 6000, starBeans: prev.starBeans + 200, affectionXp: prev.affectionXp + 80 }))}
-              className="rounded-lg border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
-              title={isZh ? "模拟提升个人荣誉等级与星豆" : "Simulate level & Star Beans boost"}
-            >
-              {isZh ? `升级 Lv.${uLv.level.index}↻` : `Lv.${uLv.level.index}↻`}
-            </button>
+            <span className="rounded-lg border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              Lv.{uLv.level.index}
+            </span>
           </div>
 
           {/* Slot Items Grid */}
@@ -2419,40 +2417,6 @@ export function CompanionSanctuaryBar({
                 </button>
               );
             })}
-          </div>
-
-          {/* Lv.0 - Lv.7 Quick Level Preview Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-1 rounded-lg border border-border/60 bg-background/60 px-2 py-1">
-            <span className="text-[10px] text-muted-foreground">
-              🎚️ {isZh ? "切换等级预览解锁：" : "Preview Level:"}
-            </span>
-            <div className="flex flex-wrap gap-1">
-              {LEVELS.map(tier => (
-                <button
-                  key={tier.index}
-                  type="button"
-                  onClick={() => {
-                    commit(prev => ({
-                      ...prev,
-                      userXp: tier.minXp,
-                      affectionXp: Math.max(prev.affectionXp, tier.index * 160),
-                    }));
-                    setStatusNote(
-                      isZh
-                        ? `🎖️ 已切换预览等级至 Lv.${tier.index}【${tier.nameZh}】！`
-                        : `🎖️ Switched level preview to Lv.${tier.index} [${tier.nameEn}]`,
-                    );
-                  }}
-                  className={`rounded px-1.5 py-0.5 text-[9px] font-bold transition ${
-                    uLv.level.index === tier.index
-                      ? "bg-amber-500 text-slate-950"
-                      : "bg-muted text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Lv.{tier.index}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       )}

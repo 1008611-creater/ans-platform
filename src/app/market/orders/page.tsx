@@ -21,13 +21,13 @@ const SAMPLE_ORDERS = [
     desc: "含完整多模态提示词模板、UAV 航拍切片预处理节点与结构化诊断 JSON 输出。",
   },
   {
-    id: "demo-order-toonflow",
-    title: "ToonFlow 漫剧全自动分镜与角色一致性工作流",
+    id: "demo-order-canvas",
+    title: "CAUAI 无限画布多模态视觉与视频工作流",
     role: "买家 · 已即时交付 (COMPLETED)",
     price: "20 积分",
-    cover: "/catalog/gitglow-v1/niannian-drama.webp",
-    href: "/workflows/toonflow",
-    desc: "支持剧本一键拆解 12 镜分镜提示词，自动锁定主角三视图特征与光影风格。",
+    cover: "/catalog/gitglow-v1/infinite-canvas.webp",
+    href: "https://hb.cauai.fun/",
+    desc: "支持在无限画布中串联分镜提示词、主角特征参考与视频生成节点。",
   },
   {
     id: "demo-order-academic-site",

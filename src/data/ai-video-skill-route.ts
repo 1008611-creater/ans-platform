@@ -1,5 +1,5 @@
 /**
- * 念念技能库路由元数据（静态）
+ * AI 视频技能库路由元数据（静态）
  *
  * 说明：source 清单为本地 `.workbuddy/skills/` 全部技能 + AI 视频链路历史技能，
  *      vendored 至 `ai-video-skills-source/`（脚本以 SKILL_DIR_LAYER 为准遍历导入）。
@@ -111,7 +111,7 @@ export const SKILL_LAYERS: SkillLayer[] = [
   {
     key: "eng",
     label: "工程与安全层",
-    description: "工程化能力：安全审计、浏览器自动化、服务器运维、游戏系统、念念自有工程与画布。",
+    description: "工程化能力：安全审计、浏览器自动化、服务器运维、游戏系统与无限画布工程。",
     order: 14,
   },
   {

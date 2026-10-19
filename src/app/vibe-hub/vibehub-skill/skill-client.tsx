@@ -49,7 +49,7 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
   const [templateNotice, setTemplateNotice] = useState("");
   const [activeRewriteId, setActiveRewriteId] = useState(ANS_REWRITE_EXAMPLES[0].id);
   const [activePipeline, setActivePipeline] = useState<"all" | "engineering" | "media" | "content">("engineering");
-  const [coverDemoSlug, setCoverDemoSlug] = useState<"cauai-one" | "niannian-drama" | "liu-resume">("cauai-one");
+  const [coverDemoSlug, setCoverDemoSlug] = useState<"ans-3d-showcase" | "infinite-canvas" | "liu-resume">("ans-3d-showcase");
   const [customCoverTitle, setCustomCoverTitle] = useState("CAU 农情病虫害多模态诊断终端");
   const scenario = getBriefScenario(scenarioId);
   const [saved, setSaved, persisted] = usePersistedSetting(
@@ -405,8 +405,8 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
 
         <div className="ans-brief-scenarios" role="group" aria-label="双封面示范项目切换">
           {([
-            { id: "cauai-one", label: "🚀 示例 1：CAUAI.one 个人主页生成器", title: "CAUAI.one 30秒个人主页生成" },
-            { id: "niannian-drama", label: "🎬 示例 2：念念漫剧 AI 短剧流水线", title: "念念漫剧 AI 短剧分镜工坊" },
+            { id: "ans-3d-showcase", label: "🦖 示例 1：ANS × 小恐龙 3D 互动展厅", title: "ANS 小恐龙 3D 互动展厅" },
+            { id: "infinite-canvas", label: "🎨 示例 2：CAUAI 无限画布多模态工作台", title: "CAUAI 无限画布多模态工作台" },
             { id: "liu-resume", label: "📄 示例 3：个人交互式简历主页", title: "刘曙宾 交互式数字简历站" },
           ] as const).map(item => (
             <button

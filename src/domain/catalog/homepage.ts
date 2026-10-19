@@ -3,17 +3,13 @@ import type { CatalogProject } from "./projects";
 /** Select only from the current published snapshot; never revive a withdrawn pick. */
 export function homepageProjects(catalog: readonly CatalogProject[]) {
   const hero = catalog.find(project => project.slug === "image2-library") ?? catalog.find(project => Boolean(project.coverUrl)) ?? catalog[0];
-  const preferred = ["ans-3d-showcase", "liu-resume", "vibephoto", "infinite-canvas", "hello-algo", "remotion-video", "excalidraw"];
+  const preferred = ["ans-3d-showcase", "liu-resume", "magic-resume", "vibephoto", "infinite-canvas", "ai-video-services", "hello-algo", "remotion-video", "excalidraw"];
   const remaining = catalog.filter(project => project.slug !== hero?.slug);
   const ordered = [...preferred.flatMap(slug => remaining.filter(project => project.slug === slug)),
     ...remaining.filter(project => !preferred.includes(project.slug))];
   const showcase = [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project?.coverUrl)).slice(0, 7);
-  const frontSlugs = new Set(showcase.map(project => project.slug));
   const allProjects = [hero, ...ordered].filter((project): project is CatalogProject => Boolean(project));
-  const directoryProjects = allProjects.length > showcase.length
-    ? [...allProjects.filter(project => !frontSlugs.has(project.slug)), ...allProjects.filter(project => frontSlugs.has(project.slug))]
-    : allProjects;
-  return { hero, projects: directoryProjects, showcase };
+  return { hero, projects: allProjects, showcase };
 }
 
 /**
@@ -25,7 +21,6 @@ export function resolveCatalogShowcaseHref(project: CatalogProject): string {
   if (workflowId === "resume-website") return "/market/resume-website";
   if (workflowId === "easel") return "/competitions/aigc";
   if (workflowId === "hypit") return "/workflows/hypit";
-  if (workflowId === "toonflow") return "https://toonflow.cauai.fun";
   if (project.workflowId) return `/projects?goal=${project.goal}&workflow=${project.workflowId}#new-project`;
   return project.sourceUrl ?? `/explore/${project.slug}`;
 }

@@ -631,7 +631,7 @@ export async function executePiAgentAction(
   if (intent === "redeem") return redeemMarketItemViaPi(actor, rawPrompt);
   if (intent === "playground") return runModelPlaygroundViaPi(actor, rawPrompt, input.model);
 
-  // Auto-route natural language command via Pi Agent intent router
+  // Auto-route natural language command via Agent intent router
   const lower = rawPrompt.toLowerCase();
   if (/签到|打卡|每日|领积分|checkin|check-in|daily/.test(lower)) {
     return claimDailyBenefitViaPi(actor);

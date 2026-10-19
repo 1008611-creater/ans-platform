@@ -1,6 +1,8 @@
 export interface CodexTaskLink {
-  labelZh: string;
+  labelZh?: string;
   labelEn?: string;
+  title?: string;
+  detail?: string;
   href: string;
 }
 
@@ -28,11 +30,11 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
     status: "completed",
     prompt: "帮我做一个单文件 HTML 农田温湿度监测小看板，带实时动态曲线和点击灌溉按钮。",
     trace: [
-      "右侧「实时预览」可直接点击按钮互动",
-      "切换到「源码」可直接修改文字、颜色或数据",
-      "点击左侧「+ 新建」可创建你自己的项目草稿",
+      "构建三栏指标卡片（土壤含水率 / 光合有效辐射 / 产量预测）",
+      "挂载 HTML5 Canvas 60fps 双通道传感器波形图",
+      "绑定微喷水肥处方下发按钮与数值动态反馈",
     ],
-    summary: "单文件 HTML 实时曲线与灌溉交互范例。直接在右侧点击按钮体验交互，或切到「源码」修改。",
+    summary: "已生成单文件农田温湿度监测看板，含 3 项核心传感器指标、Canvas 实时波形与一键灌溉交互。",
     artifactType: "html",
     artifactFile: "agri-digital-twin-dashboard.html",
     artifactCode: `<!DOCTYPE html>
@@ -109,19 +111,20 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
 </html>`,
   },
   {
-    id: "task-toonflow-director",
-    title: "🎬 漫剧 4 镜头分镜台",
-    tag: "漫剧范例",
+    id: "task-canvas-director",
+    title: "🎬 多模态 4 镜头分镜台",
+    tag: "分镜范例",
     model: "gpt-6-astra",
     status: "completed",
-    prompt: "帮我做一个 4 镜头漫剧分镜卡片页面，点不同镜头能切换对应的画面描述词并一键复制。",
+    prompt: "帮我做一个 4 镜头多模态视频分镜卡片页面，点不同镜头能切换对应的画面描述词并一键复制。",
     trace: [
-      "点击右侧任意分镜卡片，底部自动切换画面描述词",
-      "点击「一键复制分镜 Prompt」可直接粘贴使用",
+      "编排 4 镜头运镜结构（Dolly In / Orbit / Tracking / Crane Up）",
+      "锁定主角 Seed #4092 与场景光影描述词",
+      "内置剪贴板一键复制指令面板",
     ],
-    summary: "4 镜头分镜卡片范例。在右侧点击任意分镜卡即可切换并一键复制画面 Prompt。",
+    summary: "已生成 4 镜头视频分镜台，支持切换镜头运镜参数并一键复制视频生成 Prompt。",
     artifactType: "html",
-    artifactFile: "toonflow-storyboard-director.html",
+    artifactFile: "canvas-storyboard-director.html",
     artifactCode: `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -149,7 +152,7 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
     <div class="shot" onclick="setShot('Shot 01 · 远景推镜 (Dolly In)：赛博农大玻璃温室夜景，霓虹光雨洒在基因作物叶片上，少女研究员林夏回头，8k Anime Style, Seed #4092')"><div class="num">SHOT 01 · 远景推镜 (Dolly In)</div><h4>赛博温室 · 霓虹夜雨开场</h4><p>镜头缓缓推进玻璃穹顶，发光麦穗随呼吸闪烁，锁定主角林夏面部特征。</p></div>
     <div class="shot" onclick="setShot('Shot 02 · 特写环绕 (Orbit Close-up)：全息光屏浮现叶绿素突变曲线，林夏瞳孔倒映金色数据流，浅景深, Cinematic Lighting, Seed #4092')"><div class="num">SHOT 02 · 特写环绕 (Orbit)</div><h4>全息光谱 · 突变曲线觉醒</h4><p>360 度环绕特写，全息屏金光映照主角瞳孔，强化悬疑张力。</p></div>
     <div class="shot" onclick="setShot('Shot 03 · 跟随仰拍 (Low-Angle Tracking)：小恐龙机甲伴侣 Minty 展开全息护盾冲出温室走廊，粒子尾迹，Dynamic Motion')"><div class="num">SHOT 03 · 跟随仰拍 (Tracking)</div><h4>小恐龙 Minty · 机甲护盾展开</h4><p>低机位高速跟拍，小恐龙吉祥物化身为量子护盾伴侣腾空跃起。</p></div>
-    <div class="shot" onclick="setShot('Shot 04 · 航拍拉远 (Crane Up)：整座智慧农业浮空岛点亮金色能量矩阵，漫天星轨汇聚成 ANS 徽章，Epic Finale')"><div class="num">SHOT 04 · 航拍拉远 (Crane Up)</div><h4>浮空农庄 · 能量矩阵终章</h4><p>高空摇臂拉远，整座未来农庄被金色星轨点亮，形成视觉高潮。</p></div>
+    <div class="shot" onclick="setShot('Shot 04 · 航拍拉远 (Crane Up)：整座智慧农业浮空岛点亮金色能量网络，漫天星轨汇聚成 ANS 徽章，Epic Finale')"><div class="num">SHOT 04 · 航拍拉远 (Crane Up)</div><h4>浮空农庄 · 能量网络终章</h4><p>高空摇臂拉远，整座未来农庄被金色星轨点亮，形成视觉高潮。</p></div>
   </div>
   <div class="prompt-box">
     <div style="font-size:11px;color:#fde68a;font-weight:700">📋 当前合成的 Toonflow / Sora 视频生成指令：</div>
@@ -168,10 +171,11 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
     status: "completed",
     prompt: "用纯 HTML5 Canvas 写一个可以直接玩的网页贪吃蛇小游戏，支持键盘方向键和屏幕按钮控制。",
     trace: [
-      "右侧预览窗口可直接用键盘方向键或屏幕按钮游玩",
-      "切换到「源码」可修改速度、网格大小或配色",
+      "初始化 420×320 Canvas 网格与蛇身坐标队列",
+      "绑定 ArrowKeys 键盘监听与触屏方向按钮",
+      "实现环形穿墙、随机果实刷新与得分计分板",
     ],
-    summary: "单文件 HTML5 Canvas 互动小游戏范例，直接在右侧用方向键或屏幕按钮即可游玩。",
+    summary: "已生成 HTML5 Canvas 贪吃蛇小游戏，支持方向键与触屏按钮双控及实时计分。",
     artifactType: "html",
     artifactFile: "cyber-neon-snake.html",
     artifactCode: `<!DOCTYPE html>
@@ -247,10 +251,11 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
     status: "completed",
     prompt: "帮我生成一个农客松比赛常用的 Python FastAPI 后端诊断接口代码模板。",
     trace: [
-      "标准 Python FastAPI 接口模板，适合作为农客松后端起点",
-      "点击右上角「复制」或「下载」即可保存到本地运行",
+      "定义 CropDiagnosisRequest Pydantic 入参校验模型",
+      "实现 /api/v1/diagnose 温湿度复合风险评分逻辑",
+      "输出无人机变量喷施与微气象调控处方 JSON",
     ],
-    summary: "FastAPI 植保诊断接口代码范例，可直接复制或下载到本地运行。",
+    summary: "已生成 Python FastAPI 植保诊断接口模板，含入参校验与防治处方返回结构。",
     artifactType: "python",
     artifactFile: "agrihackathon_agent_server.py",
     artifactCode: `# CAU AgriHackathon 2026 · 智慧植保多模态 Agent 后端骨架 (FastAPI)

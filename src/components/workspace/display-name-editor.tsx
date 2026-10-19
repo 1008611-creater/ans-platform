@@ -223,13 +223,13 @@ function PiCodexWorkbench({
   function handleStartBlankTask() {
     const blankTask: CodexTask = {
       id: "user-draft-" + Date.now(),
-      title: "新建空白网页/代码草稿",
+      title: "新建空白草稿",
       tag: "我的草稿",
       model,
       status: "ready",
-      prompt: "在下方输入框填写你的需求，或在右侧「源码编辑」中直接编写代码。",
-      trace: ["等待输入需求并点击「运行」"],
-      summary: "这是一个干净的空白草稿。你可以在下方输入需求让模型生成代码，也可以直接切到右侧「💻 源码编辑」自己写代码并实时预览。",
+      prompt: "",
+      trace: ["草稿已创建"],
+      summary: "空白草稿已就绪。",
       artifactType: "html",
       artifactFile: "my-app.html",
       artifactCode: buildLocalStarterHtml("我的第一个网页应用"),
@@ -240,6 +240,22 @@ function PiCodexWorkbench({
     setActiveId(blankTask.id);
     setCanvasTab("preview");
     setTimeout(() => document.getElementById("codex-composer-input")?.focus(), 50);
+  }
+
+  function handleDeleteUserTask(taskId: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    const next = userTasks.filter(t => t.id !== taskId);
+    saveUserTasks(next);
+    if (activeId === taskId) {
+      setActiveId(next[0]?.id ?? guideTasks[0].id);
+    }
+    toast.success("已删除该记录");
+  }
+
+  function handleClearUserTasks() {
+    saveUserTasks([]);
+    setActiveId(guideTasks[0].id);
+    toast.success("已清空个人记录");
   }
 
   async function executeCodexTask(
@@ -274,6 +290,65 @@ function PiCodexWorkbench({
       }
       return;
     }
+
+    if (intent === "scaffold") {
+      setRunning(true);
+      try {
+        const res = await fetch("/api/mascot/agent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "pi_action", intent: "scaffold", prompt: q || activeTask.title, model }),
+        });
+        const baseTasks = baseTasksOverride ?? (userTasks.length > 0 ? userTasks : readStoredUserTasks());
+        if (res.status === 401 || !res.ok) {
+          const targetLink = `/projects?title=${encodeURIComponent(activeTask.title)}&goal=${encodeURIComponent(activeTask.prompt || activeTask.title)}#new-project`;
+          const savedTask: CodexTask = {
+            ...activeTask,
+            id: baseTasks.some(t => t.id === activeTask.id) ? activeTask.id : "user-saved-" + Date.now(),
+            tag: "已存草稿",
+            status: "completed",
+            prompt: activeTask.prompt || activeTask.title,
+            summary: "已保存至本地记录，点击下方入口可同步创建正式项目。",
+            links: [{ labelZh: "📂 前往项目库创建正式立项", href: targetLink }],
+          };
+          const next = baseTasks.some(t => t.id === savedTask.id)
+            ? baseTasks.map(t => (t.id === savedTask.id ? savedTask : t))
+            : [savedTask, ...baseTasks];
+          saveUserTasks(next);
+          setActiveId(savedTask.id);
+          toast.success("已保存至本地记录");
+          return;
+        }
+        const data = await res.json();
+        if (typeof data?.balancePoints === "number") {
+          setLivePoints(data.balancePoints);
+        }
+        const rawReply = (data?.replyZh || data?.replyEn || "").trim();
+        const savedTask: CodexTask = {
+          ...activeTask,
+          id: baseTasks.some(t => t.id === activeTask.id) ? activeTask.id : "user-saved-" + Date.now(),
+          tag: "已立项",
+          status: "completed",
+          prompt: activeTask.prompt || activeTask.title,
+          summary: rawReply || "已生成项目立项草稿。",
+          links: Array.isArray(data?.links) && data.links.length > 0
+            ? data.links
+            : [{ labelZh: "📂 打开项目库查看", href: "/projects" }],
+        };
+        const next = baseTasks.some(t => t.id === savedTask.id)
+          ? baseTasks.map(t => (t.id === savedTask.id ? savedTask : t))
+          : [savedTask, ...baseTasks];
+        saveUserTasks(next);
+        setActiveId(savedTask.id);
+        toast.success("已存为项目草稿");
+      } catch {
+        toast.error("保存请求暂时未响应，请稍后重试");
+      } finally {
+        setRunning(false);
+      }
+      return;
+    }
+
     setRunning(true);
     const taskId = "user-task-" + Date.now();
     const shortTitle =
@@ -281,11 +356,8 @@ function PiCodexWorkbench({
         ? "🕹️ 3D 抓娃娃机抽积分"
         : intent === "redeem"
           ? "🎁 5 积分兑换周报模板"
-          : intent === "scaffold"
-            ? `🚀 立项保存：${q.slice(0, 20) || activeTask.title}`
-            : q.slice(0, 28) || "我的自定义任务";
-    const starterCode =
-      intent === "scaffold" ? activeTask.artifactCode : buildLocalStarterHtml(q || shortTitle);
+          : q.slice(0, 28) || "我的自定义任务";
+    const starterCode = buildLocalStarterHtml(q || shortTitle);
     const newTask: CodexTask = {
       id: taskId,
       title: shortTitle,
@@ -294,11 +366,11 @@ function PiCodexWorkbench({
       status: "running",
       prompt: q || shortTitle,
       trace: [
-        `正在请求模型 ${model} 处理你的需求...`,
+        `正在请求模型 ${model} 处理需求...`,
       ],
-      summary: "正在连接算力接口生成结果，请稍候...",
-      artifactType: intent === "scaffold" ? activeTask.artifactType : "html",
-      artifactFile: intent === "scaffold" ? activeTask.artifactFile : "my-output.html",
+      summary: "正在连接算力接口生成结果...",
+      artifactType: "html",
+      artifactFile: "my-output.html",
       artifactCode: starterCode,
     };
     const baseTasks = baseTasksOverride ?? (userTasks.length > 0 ? userTasks : readStoredUserTasks());
@@ -323,10 +395,10 @@ function PiCodexWorkbench({
             ? {
                 ...item,
                 status: "completed" as const,
-                trace: ["未登录状态：已在浏览器本地生成可编辑 HTML 草稿"],
+                trace: ["未登录状态：已生成本地可编辑 HTML 草稿"],
                 summary:
-                  "当前尚未登录账号，已先根据你的描述在右侧生成一份本地可编辑的网页草稿。登录账号后再次点击运行，即可调用真实模型算力生成完整代码。",
-                links: [{ labelZh: "🔐 登录账号调用真实模型算力", href: "/login?callbackUrl=%2Fworkspace" }],
+                  "当前尚未登录，已在右侧生成本地可编辑草稿。登录后再次运行即可调用模型生成完整结果。",
+                links: [{ labelZh: "🔐 登录账号调用模型算力", href: "/login?callbackUrl=%2Fworkspace" }],
                 artifactType: "html" as const,
                 artifactFile: "local-draft.html",
                 artifactCode: starterCode,
@@ -339,13 +411,30 @@ function PiCodexWorkbench({
       }
       const data = await res.json();
       const rawReply = (data?.replyZh || data?.replyEn || "").trim();
-      const reply = rawReply && rawReply !== "UNAUTHORIZED" ? rawReply : "已完成处理，右侧可直接预览或编辑代码。";
+      const reply = rawReply && rawReply !== "UNAUTHORIZED" ? rawReply : "已完成处理。";
       if (typeof data?.balancePoints === "number") {
         setLivePoints(data.balancePoints);
       }
-      const codeMatch = reply.match(/```(?:html|python|tsx|ts|js|markdown|tex|sh)?\n([\s\S]*?)```/i);
-      const extractedCode = codeMatch ? codeMatch[1].trim() : reply;
-      const isHtml = /<!DOCTYPE html>|<html|<canvas|<style/i.test(extractedCode);
+      const codeMatch = reply.match(/```(html|python|py|tsx|ts|js|markdown|md|tex|sh)?\n([\s\S]*?)```/i);
+      const fenceLang = (codeMatch?.[1] || "").toLowerCase();
+      const extractedCode = codeMatch ? codeMatch[2].trim() : reply;
+      const isHtml =
+        fenceLang === "html" ||
+        /<!DOCTYPE html>|<html[\s>]|<head[\s>]|<body[\s>]|<canvas[\s>]|<style[\s>]|<script[\s>]/i.test(extractedCode);
+      const isPython =
+        !isHtml &&
+        (fenceLang === "python" || fenceLang === "py" || /^(?:from\s+\w+\s+import|import\s+\w+|def\s+\w+|@app\.)/m.test(extractedCode));
+      const resolvedType: "html" | "python" | "markdown" = isHtml
+        ? "html"
+        : isPython
+          ? "python"
+          : "markdown";
+      const resolvedFile =
+        resolvedType === "html"
+          ? "my-live-app.html"
+          : resolvedType === "python"
+            ? "script.py"
+            : "document.md";
 
       const updated = nextWithRunning.map(item =>
         item.id === taskId
@@ -357,14 +446,14 @@ function PiCodexWorkbench({
               ],
               summary: reply,
               links: Array.isArray(data?.links) ? data.links : [],
-              artifactType: isHtml ? ("html" as const) : item.artifactType,
-              artifactFile: isHtml ? "my-live-app.html" : item.artifactFile,
-              artifactCode: isHtml ? extractedCode : item.artifactCode,
+              artifactType: resolvedType,
+              artifactFile: resolvedFile,
+              artifactCode: extractedCode,
             }
           : item,
       );
       saveUserTasks(updated);
-      if (isHtml) setCanvasTab("preview");
+      setCanvasTab("preview");
       setTerminalLogs(prev => [
         ...prev,
         `[${new Date().toLocaleTimeString()}] ✓ 执行完成 (${data?.toolUsed || intent})`,
@@ -376,7 +465,7 @@ function PiCodexWorkbench({
               ...item,
               status: "completed" as const,
               trace: ["已切换为本地草稿模式"],
-              summary: "已为你生成本地可编辑草稿，可直接在右侧「源码编辑」中修改或稍后重试。",
+              summary: "已生成本地可编辑草稿。",
               artifactType: "html" as const,
               artifactFile: "local-draft.html",
               artifactCode: starterCode,
@@ -396,10 +485,10 @@ function PiCodexWorkbench({
       const forkedTask: CodexTask = {
         ...activeTask,
         id: "user-fork-" + Date.now(),
-        title: `我的修改版：${activeTask.title.replace(/^[^\s]+\s*/, "")}`,
+        title: `修改版：${activeTask.title.replace(/^[^\s]+\s*/, "")}`,
         tag: "我的草稿",
-        trace: ["已从新手引导范例复制为你的个人草稿，修改内容已自动保存在本地"],
-        summary: "这是你基于新手引导范例修改的个人草稿，已自动保存到左侧「📂 我的真实记录」中，刷新页面不会丢失。",
+        trace: ["已从引导范例另存为个人草稿"],
+        summary: "基于引导范例修改的个人草稿，已自动保存在本地。",
         artifactCode: newCode,
       };
       const next = [forkedTask, ...userTasks];
@@ -414,8 +503,8 @@ function PiCodexWorkbench({
       id: "user-fork-" + Date.now(),
       title: `草稿：${activeTask.title.replace(/^[^\s]+\s*/, "")}`,
       tag: "我的草稿",
-      trace: ["已从引导范例复制为个人草稿，本地自动保存"],
-      summary: "已复制为你的个人草稿，可直接在右侧修改源码或输入新需求。",
+      trace: ["已从引导范例复制为个人草稿"],
+      summary: "已复制为个人草稿。",
     };
     const next = [forkedTask, ...userTasks];
     saveUserTasks(next);
@@ -425,18 +514,30 @@ function PiCodexWorkbench({
 
   function downloadActiveHtml() {
     try {
-      const blob = new Blob([activeTask.artifactCode], { type: "text/html;charset=utf-8" });
+      const mimeType =
+        activeTask.artifactType === "html"
+          ? "text/html;charset=utf-8"
+          : activeTask.artifactType === "python"
+            ? "text/x-python;charset=utf-8"
+            : "text/markdown;charset=utf-8";
+      const fallbackExt =
+        activeTask.artifactType === "html"
+          ? ".html"
+          : activeTask.artifactType === "python"
+            ? ".py"
+            : ".md";
+      const blob = new Blob([activeTask.artifactCode], { type: mimeType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = activeTask.artifactFile || `${activeTask.id}.html`;
+      a.download = activeTask.artifactFile || `${activeTask.id}${fallbackExt}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("已下载源码文件");
+      toast.success("已下载文件");
     } catch {
-      toast.error("下载失败，请点击复制源码");
+      toast.error("下载失败，请点击复制");
     }
   }
 
@@ -444,15 +545,15 @@ function PiCodexWorkbench({
     try {
       const blob = new Blob([activeTask.artifactCode], { type: "text/html;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
+      window.open(url, "_blank");
     } catch {
       toast.error("无法打开新窗口预览");
     }
   }
 
   function switchToFloatingChat() {
-    window.dispatchEvent(new CustomEvent("ans:open-companion-tab", { detail: { tab: "pi" } }));
-    toast.success("已切换至右下角 Agent 对话窗");
+    window.dispatchEvent(new CustomEvent("ans:open-companion-chat", { detail: { draft: promptInput } }));
+    toast.success("已唤起右下角 Agent 对话窗");
   }
 
   return (
@@ -562,13 +663,25 @@ function PiCodexWorkbench({
                 <span className="text-[11px] font-extrabold text-emerald-400">
                   📂 我的记录 ({userTasks.length})
                 </span>
-                <button
-                  type="button"
-                  onClick={handleStartBlankTask}
-                  className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
-                >
-                  + 新建
-                </button>
+                <div className="flex items-center gap-1">
+                  {userTasks.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleClearUserTasks}
+                      title="清空全部本地记录"
+                      className="rounded-lg border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-[10px] text-slate-400 hover:border-rose-500/40 hover:text-rose-300"
+                    >
+                      清空
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleStartBlankTask}
+                    className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
+                  >
+                    + 新建
+                  </button>
+                </div>
               </div>
               {userTasks.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/50 px-2.5 py-2 text-center text-[11px] text-slate-500">
@@ -577,23 +690,39 @@ function PiCodexWorkbench({
               ) : (
                 <div className="max-h-[210px] space-y-1 overflow-y-auto pr-0.5">
                   {userTasks.map(t => (
-                    <button
+                    <div
                       key={t.id}
-                      type="button"
                       onClick={() => setActiveId(t.id)}
-                      className={`group w-full rounded-xl border px-2.5 py-2 text-left transition ${
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={e => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setActiveId(t.id);
+                        }
+                      }}
+                      className={`group flex w-full cursor-pointer items-center justify-between gap-1 rounded-xl border px-2.5 py-2 text-left transition ${
                         t.id === activeTask.id
                           ? "border-emerald-500/60 bg-emerald-500/15 text-white shadow-sm"
                           : "border-slate-800/80 bg-slate-900/60 text-slate-300 hover:border-slate-700 hover:bg-slate-900"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="line-clamp-1 text-xs font-bold">{t.title}</span>
-                        <span className="shrink-0 text-[10px] text-emerald-300">
+                      <span className="line-clamp-1 text-xs font-bold">{t.title}</span>
+                      <span className="flex shrink-0 items-center gap-1">
+                        <span className="text-[10px] text-emerald-300">
                           {t.status === "running" ? "⚡" : "✓"}
                         </span>
-                      </div>
-                    </button>
+                        <button
+                          type="button"
+                          onClick={e => handleDeleteUserTask(t.id, e)}
+                          title="删除此记录"
+                          aria-label={`删除 ${t.title}`}
+                          className="hidden rounded px-1 text-[10px] text-slate-400 hover:bg-rose-500/20 hover:text-rose-300 group-hover:inline-block"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    </div>
                   ))}
                 </div>
               )}
@@ -605,7 +734,6 @@ function PiCodexWorkbench({
                 <span className="text-[11px] font-extrabold text-amber-300/90">
                   📖 引导范例
                 </span>
-                <span className="text-[10px] text-slate-500">点击即看</span>
               </div>
               <div className="space-y-1">
                 {guideTasks.map(t => (
@@ -704,14 +832,16 @@ function PiCodexWorkbench({
                   </button>
                 )}
               </div>
-              <p className="mt-1 text-xs leading-5 text-slate-100">{activeTask.prompt}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-100">
+                {activeTask.prompt || <span className="text-slate-500">等待输入需求...</span>}
+              </p>
             </div>
 
             {/* Guide Sample Compact Bar OR Real Task Output Summary */}
             {isViewingGuideSample ? (
               <div className="flex items-center justify-between gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
                 <span className="truncate" title={activeTask.summary}>
-                  📖 右侧可直接点击交互或切「源码」修改
+                  {activeTask.summary}
                 </span>
                 <button
                   type="button"
@@ -733,9 +863,10 @@ function PiCodexWorkbench({
                       <a
                         key={i}
                         href={lk.href}
+                        title={lk.detail}
                         className="rounded-lg border border-indigo-400/50 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
                       >
-                        {lk.labelZh || lk.labelEn} ↗
+                        {lk.labelZh || lk.title || lk.labelEn || "查看详情"} ↗
                       </a>
                     ))}
                   </div>
@@ -767,7 +898,8 @@ function PiCodexWorkbench({
               }}
             />
             {(() => {
-              const cluster = detectIntentAndMatchTerms(promptInput || activeTask.prompt);
+              const seedText = (promptInput || activeTask.prompt || "网页应用").trim();
+              const cluster = detectIntentAndMatchTerms(seedText);
               return (
                 <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 rounded-xl border border-slate-800 bg-slate-950/80 px-2 py-1" data-testid="codex-intent-bridge">
                   <div className="flex flex-wrap items-center gap-1">
@@ -779,6 +911,7 @@ function PiCodexWorkbench({
                         onClick={() => {
                           setPromptInput(prev => {
                             const base = (prev || activeTask.prompt).trim();
+                            if (!base) return term.appendText.zh;
                             return base.includes(term.appendText.zh) ? base : `${base}\n- ${term.appendText.zh}`;
                           });
                         }}
@@ -792,7 +925,13 @@ function PiCodexWorkbench({
                     type="button"
                     title="将简短想法扩充为结构化需求"
                     onClick={() => {
-                      const upgraded = upgradeToStructuredBrief(promptInput || activeTask.prompt, "zh");
+                      const rawIdea = (promptInput || activeTask.prompt).trim();
+                      if (!rawIdea) {
+                        toast.info("请先在输入框写下一句话想法，再点击补齐细节");
+                        document.getElementById("codex-composer-input")?.focus();
+                        return;
+                      }
+                      const upgraded = upgradeToStructuredBrief(rawIdea, "zh");
                       setPromptInput(upgraded);
                       toast.success("已补齐结构化细节");
                     }}
@@ -870,7 +1009,7 @@ function PiCodexWorkbench({
                 type="button"
                 onClick={() => {
                   navigator.clipboard?.writeText(activeTask.artifactCode);
-                  toast.success("已复制源码");
+                  toast.success("已复制内容");
                 }}
                 className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
               >
@@ -883,13 +1022,15 @@ function PiCodexWorkbench({
               >
                 💾 下载
               </button>
-              <button
-                type="button"
-                onClick={openFullscreenPreview}
-                className="rounded-lg border border-indigo-400/40 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
-              >
-                🖥️ 新窗口 ↗
-              </button>
+              {activeTask.artifactType === "html" && (
+                <button
+                  type="button"
+                  onClick={openFullscreenPreview}
+                  className="rounded-lg border border-indigo-400/40 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
+                >
+                  🖥️ 新窗口 ↗
+                </button>
+              )}
             </div>
           </div>
 
@@ -903,6 +1044,14 @@ function PiCodexWorkbench({
                   sandbox="allow-scripts"
                   className="min-h-[540px] w-full flex-1 rounded-2xl border border-slate-800 bg-slate-950 shadow-inner"
                 />
+              ) : activeTask.artifactType === "markdown" ? (
+                <article className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-5 text-sm leading-7 text-slate-100">
+                  <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2.5">
+                    <span className="text-xs font-extrabold text-emerald-400">📄 生成文档预览 · {activeTask.title}</span>
+                    <span className="text-[11px] text-slate-400">{activeTask.model}</span>
+                  </div>
+                  <div className="whitespace-pre-wrap">{activeTask.artifactCode}</div>
+                </article>
               ) : (
                 <pre className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-200">
                   {activeTask.artifactCode}
@@ -934,7 +1083,7 @@ function PiCodexWorkbench({
                   ["⚡ 模型演练场", "/workspace/models", "多模型同屏对比输出"],
                   ["🎨 3D 个人简历站", "/market/resume-website", "一键生成 3D 作品集网页"],
                   ["🎬 Hypit 视频工作台", "/workflows/hypit", "视频脚本与分镜生成"],
-                  ["🎭 Toonflow 短剧工坊 ↗", "https://toonflow.cauai.fun", "小说转分镜与漫剧制作"],
+                  ["🎨 CAUAI 无限画布 ↗", "https://hb.cauai.fun/", "无限画布多模态视觉与视频工作台"],
                   ["📚 VibeHub 教程库", "/vibe-hub", "AI 编程实战指南"],
                   ["🎁 算力福利中心", "/workspace/benefits", "抓娃娃与任务领积分"],
                   ["🛒 工具与工作流市场", "/market", "兑换科研与创作工具包"],
