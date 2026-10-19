@@ -61,6 +61,7 @@
     "plugins",
     "android",
     "android-web-assets",
-    "deployment-snapshots"
+    "deployment-snapshots",
+    "ecosystem-sites-archive"
   ]
 }
