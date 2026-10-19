@@ -202,12 +202,22 @@ export function CompanionQuestPin({
     if (typeof window === "undefined") return;
     let rafId = 0;
     const updatePosition = () => {
+      const vw = window.innerWidth || document.documentElement.clientWidth || 1280;
+      const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+      if (macroActive && sanctuaryModal === "none") {
+        const dinoBottom = 184;
+        const dinoHeight = Math.min(290, Math.round(vh * 0.36));
+        const topY = Math.max(240, Math.min(vh - 76, dinoBottom + dinoHeight + 6));
+        setBubblePos({
+          left: `${Math.round(vw * 0.5)}px`,
+          bottom: `${Math.round(topY)}px`,
+        });
+        return;
+      }
       const host = document.querySelector<HTMLElement>(".ans-dino-guide .ans-dino-trigger");
       if (host) {
         const rect = host.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
-          const vw = window.innerWidth || document.documentElement.clientWidth || 1280;
-          const vh = window.innerHeight || document.documentElement.clientHeight || 800;
           let cx = rect.left + rect.width * 0.5;
           let topY = vh - rect.top - 6;
           if (!alertMode) {
@@ -250,8 +260,8 @@ export function CompanionQuestPin({
         setActiveMood(preset);
         setCustomSubText(
           isZh
-            ? `(已穿戴 ${eqCount} 件高定 · ${sp.name} · 🪙 ${cur.starBeans} 灵感星豆)`
-            : `(${eqCount} equipped · ${sp.name} · 🪙 ${cur.starBeans} Star Beans)`,
+            ? `(${sp.name} · 已穿戴 ${eqCount} 件装扮)`
+            : `(${sp.name} · ${eqCount} equipped)`,
         );
         dispatchDinoInteract({ action: "mood", mood: preset });
       } else {

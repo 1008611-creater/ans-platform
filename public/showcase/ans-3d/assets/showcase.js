@@ -5,7 +5,7 @@ import{r as n,j as e,b as ct}from"pkg-react";import{u as Ve,a as lt,T as $e,E as
   n.useEffect(() => {
     if (errors.length) window.dispatchEvent(new Event("ans-showcase-failure"));
   }, [errors.length]);
-  return active ? e.jsx("p", { className: "showcase-loading", role: "status", children: "正在加载 3D 场景，页面入口仍可使用。" }) : null;
+  return null;
 }
 Xe.preload("/showcase/ans-3d/models/person.glb", true, true);
 Xe.preload("/mascot/3d/dinosaur.glb", true, true);

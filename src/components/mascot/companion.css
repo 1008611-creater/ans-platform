@@ -235,13 +235,13 @@ body.ans-dino-interactive-mode .ans-dino-guide.ans-companion-v2 {
   inset-inline-start: 50% !important;
   right: auto !important;
   left: 50% !important;
-  bottom: 234px !important;
+  bottom: 184px !important;
   transform: translate3d(-50%, 0, 0) !important;
   z-index: 95 !important;
 }
 body.ans-dino-interactive-mode .ans-companion-v2 .ans-dino-avatar {
-  width: min(290px, 64vw) !important;
-  height: min(310px, 40vh) !important;
+  width: min(280px, 60vw) !important;
+  height: min(290px, 36vh) !important;
 }
 body.ans-dino-interactive-mode .ans-companion-v2 .ans-dino-avatar > img,
 body.ans-sanctuary-open .ans-companion-v2 .ans-dino-avatar > img {
@@ -369,7 +369,7 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #f7f0e5;
-  max-width: min(340px, calc(100vw - 28px));
+  max-width: min(420px, calc(100vw - 28px));
   animation: dinoBubbleExpandPop 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }
 #ans-dino-live-bubble[data-bubble-state="alert"] .dino-speech-card {
