@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-19T17:40:03+00:00",
+  "description": "ANS 权威基线账本。只记录已被主控确认的产品/流程决定，每条尽量带机器规则（contains/absent/countMax），由 scripts/check-authority.mjs 守卫（CI job: Authority）。改代码而不改账本 = 静默回退，禁止。",
+  "entries": [
+    {
+      "id": "A-PLAZA-01",
+      "status": "authoritative",
+      "title": "项目广场 /explore 必须保留轮转项目封面（ProjectCoverflow）",
+      "decidedAt": "2026-10-19",
+      "authority": "commit 219422c9 · fix(explore,mascot): restore Hero + ProjectCoverflow on /explore",
+      "restoredBy": "fix/explore-plaza-authority-restore-20261020",
+      "surface": [
+        "src/app/explore/page.tsx"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "contains",
+          "value": "ProjectCoverflow",
+          "note": "轮转封面组件必须被 /explore 渲染"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "contains",
+          "value": "homepageProjects",
+          "note": "封面数据来自公开目录的 hero/showcase 选取，禁止自造数据"
+        }
+      ],
+      "rollback": [
+        {
+          "commit": "27969917",
+          "at": "2026-10-19 18:25 +0800",
+          "what": "删除 ProjectCoverflow / homepageProjects / homeStyles 引用，页头退回纯文字标题"
+        },
+        {
+          "commit": "51baaa7d",
+          "at": "2026-10-19 14:33 +0800",
+          "what": "站点级对抗式审查重排 /explore 与 / 页头"
+        }
+      ]
+    },
+    {
+      "id": "A-PLAZA-02",
+      "status": "authoritative",
+      "title": "项目广场 /explore 页头不得重复出现可见的“项目广场”标题",
+      "decidedAt": "2026-10-19",
+      "authority": "commit 219422c9（同一次修复：eliminate duplicate 项目广场 title）",
+      "restoredBy": "fix/explore-plaza-authority-restore-20261020",
+      "surface": [
+        "src/app/explore/page.tsx"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "absent",
+          "value": "ans-page-title\">{t(\"nav.explore\")}",
+          "note": "可见 h1 不得直接等于导航词“项目广场”"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "contains",
+          "value": "sr-only\">{t(\"nav.explore\")}",
+          "note": "页面名只能作为 h1 内的 sr-only 前缀出现"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "contains",
+          "value": "{t(\"home.title\")}",
+          "note": "可见标题必须是品牌主标题"
+        }
+      ],
+      "rollback": [
+        {
+          "commit": "27969917",
+          "at": "2026-10-19 18:25 +0800",
+          "what": "把页头换成 <h1 className=\"ans-page-title\">{t(\"nav.explore\")}</h1>，重复标题回归"
+        }
+      ]
+    },
+    {
+      "id": "A-PLAZA-03",
+      "status": "authoritative",
+      "title": "首页 / 必须保留轮转项目封面（ProjectCoverflow）",
+      "decidedAt": "2026-10-19",
+      "authority": "commit e8d58105（Show real published projects in an accessible homepage coverflow）+ 219422c9",
+      "surface": [
+        "src/app/page.tsx"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/app/page.tsx",
+          "type": "contains",
+          "value": "ProjectCoverflow",
+          "note": "首页 Hero 右侧的轮转封面是权威版式"
+        }
+      ],
+      "rollback": []
+    },
+    {
+      "id": "A-PLAZA-04",
+      "status": "authoritative",
+      "title": "可访问性探针对 /explore 必须按“sr-only 前缀 + 非重复可见标题”断言",
+      "decidedAt": "2026-10-20",
+      "authority": "本 PR：旧探针 main h1 === \"项目广场\" 与 A-PLAZA-02 冲突，会让 verify 必红",
+      "surface": [
+        "scripts/a11y-audit.mjs"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "scripts/a11y-audit.mjs",
+          "type": "contains",
+          "value": "accessiblePrefix",
+          "note": "禁止把 h1 严格相等断言改回来"
+        }
+      ],
+      "rollback": []
+    },
+    {
+      "id": "A-GATE-01",
+      "status": "authoritative",
+      "title": "进入 main 的改动必须来自 PR，且 PR 的 CI（npm run verify）必须绿",
+      "decidedAt": "2026-10-20",
+      "authority": "交付治理确认（.agents/skills/ans-delivery-governance/references/branch-and-release-model.md）",
+      "surface": [
+        ".github/workflows/ci.yml"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": ".github/workflows/ci.yml",
+          "type": "contains",
+          "value": "npm run verify",
+          "note": "CI 必须保留完整 verify 门禁"
+        }
+      ],
+      "check": "git-health",
+      "note": "GitHub 侧仍需 ruleset：必需状态检查（Test + Authority）+ 必需 review。自动化 prompts 数据提交是唯一例外（Add prompt: 前缀）。"
+    },
+    {
+      "id": "A-GATE-02",
+      "status": "authoritative",
+      "title": "合进 develop 的 PR 也必须跑 verify 与 Authority",
+      "decidedAt": "2026-10-20",
+      "authority": "fix/explore-plaza-authority-restore-20261020（本 PR 已把 develop 加入 ci.yml 触发分支）",
+      "surface": [
+        ".github/workflows/ci.yml"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": ".github/workflows/ci.yml",
+          "type": "contains",
+          "value": "- develop",
+          "note": "push/pull_request 都要覆盖 develop"
+        }
+      ],
+      "check": "git-health",
+      "note": "实测 2026-10-19 的 PR #141–#144（合入 develop）此前只有反垃圾检查。"
+    },
+    {
+      "id": "A-GATE-03",
+      "status": "authoritative",
+      "title": "主 PR 必须声明触及的权威条目（PR 模板必填）",
+      "decidedAt": "2026-10-20",
+      "authority": "A-PROC-01 的落地手段",
+      "surface": [
+        ".github/PULL_REQUEST_TEMPLATE.md"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": ".github/PULL_REQUEST_TEMPLATE.md",
+          "type": "contains",
+          "value": "权威基线",
+          "note": "PR 模板必须保留权威对表字段"
+        }
+      ],
+      "rollback": []
+    },
+    {
+      "id": "A-SIGNAL-01",
+      "status": "authoritative",
+      "title": "发布完成后 ops/prod-live 必须等于 ops/deploy-target，且等于当次发布的 main SHA",
+      "decidedAt": "2026-10-20",
+      "authority": "RELEASE_MASTER_PLAYBOOK.md 的 Step 2 / Step 4 信号灯约定",
+      "surface": [
+        "ops/deploy-target",
+        "ops/prod-live"
+      ],
+      "rules": [],
+      "check": "git-health",
+      "note": "2026-10-20 01:11 实测：deploy-target=219422c9（落后 origin/main 124 个提交，GitHub compare 真值），prod-live=f32e06f0（2026-10-18 21:24）；两者不一致，需人工确认是“未上线”还是“未回写”。"
+    },
+    {
+      "id": "A-PROC-01",
+      "status": "authoritative",
+      "title": "任何以 audit/审查/修复名义的改动，不得删除权威条目约束的实现；要删必须同一 PR 内改账本",
+      "decidedAt": "2026-10-20",
+      "authority": "项目广场回退事故复盘（见 .agents/skills/ans-delivery-governance/references/authority-ledger.md 第 5 节）",
+      "surface": [
+        "docs/authority/ledger.json"
+      ],
+      "rules": [],
+      "check": "review-only",
+      "note": "PR 合并前逐条对表；A-GATE-03 已把该动作写进 PR 模板。"
+    }
+  ]
+}

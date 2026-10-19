@@ -2,6 +2,13 @@
 
 <!-- Briefly describe the changes in this PR -->
 
+## 权威基线（必填）
+
+- 本 PR 触及的权威条目 ID：<!-- 例如 A-PLAZA-01；没有就写“无” -->
+- [ ] 已跑 `node scripts/check-authority.mjs --worktree` 且通过
+- [ ] 若撤销/取代了某条权威：同 PR 已更新 `docs/authority/ledger.json` 并写明理由
+- [ ] 若新增了权威：已补账本条目 + 机器规则（contains / absent / countMax）
+
 ## Type of Change
 
 - [ ] Bug fix
