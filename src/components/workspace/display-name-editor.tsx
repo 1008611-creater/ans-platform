@@ -84,7 +84,7 @@ function DisplayNameForm({ current, actorId }: { current: string; actorId: strin
 
   if (!open) {
     return (
-      <Button type="button" variant="ghost" size="sm" className="ms-2 h-7 gap-1 text-xs text-muted-foreground" onClick={() => setOpen(true)}>
+      <Button type="button" variant="ghost" size="sm" className="ms-2 h-7 gap-1 text-xs text-current hover:text-white" onClick={() => setOpen(true)}>
         <Pencil className="h-3 w-3" /> 改昵称
       </Button>
     );
@@ -987,7 +987,7 @@ function PiCodexWorkbench({
                 </div>
               </div>
               {userTasks.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/50 px-2.5 py-2 text-center text-[11px] text-slate-500">
+                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/50 px-2.5 py-2 text-center text-[11px] text-slate-300">
                   暂无个人任务，在中间输入指令即可开始
                 </div>
               ) : (
@@ -1050,7 +1050,7 @@ function PiCodexWorkbench({
                 <span className="text-[11px] font-extrabold text-amber-300/90">
                   📖 引导范例
                 </span>
-                <span className="font-mono text-[10px] text-slate-500">含 Diff 对比</span>
+                <span className="font-mono text-[10px] text-slate-300">含 Diff 对比</span>
               </div>
               <div className="space-y-1">
                 {guideTasks.map(t => (
@@ -1062,7 +1062,7 @@ function PiCodexWorkbench({
                     className={`group w-full rounded-xl border px-2.5 py-2 text-left transition ${
                       t.id === activeTask.id
                         ? "border-amber-500/60 bg-amber-500/15 text-white shadow-sm"
-                        : "border-slate-800/70 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        : "border-slate-800/70 bg-slate-900/40 text-slate-300 hover:border-slate-700 hover:text-slate-100"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-1.5">
@@ -1072,7 +1072,7 @@ function PiCodexWorkbench({
                         {t.diffDeletions ? <span className="ml-0.5 text-rose-400">-{t.diffDeletions}</span> : null}
                       </span>
                     </div>
-                    <div className="mt-0.5 flex items-center justify-between font-mono text-[10px] text-slate-500">
+                    <div className="mt-0.5 flex items-center justify-between font-mono text-[10px] text-slate-300">
                       <span>{t.artifactFile}</span>
                       <span>{t.tag.replace("范例", "")}</span>
                     </div>
@@ -1163,7 +1163,7 @@ function PiCodexWorkbench({
                 )}
               </div>
               <p className="mt-1 text-xs leading-5 text-slate-100">
-                {activeTask.prompt || <span className="text-slate-500">等待输入需求...</span>}
+                {activeTask.prompt || <span className="text-slate-300">等待输入需求...</span>}
               </p>
             </div>
 
@@ -1290,7 +1290,7 @@ function PiCodexWorkbench({
                   ? `描述要对 ${activeTask.artifactFile} 做的修改（如：切换为浅色主题、增加导出 CSV 按钮），或直接提问...`
                   : "输入你要新建的网页、Python 脚本或农客松方案（Enter 执行）..."
               }
-              className="w-full resize-none bg-transparent text-xs leading-5 text-white placeholder:text-slate-500 focus:outline-none"
+              className="w-full resize-none bg-transparent text-xs leading-5 text-white placeholder:text-slate-400 focus:outline-none"
               onKeyDown={e => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -1551,10 +1551,10 @@ function PiCodexWorkbench({
                             : "text-slate-400"
                       }`}
                     >
-                      <span className="select-none pr-2 text-right text-[10px] text-slate-600">
+                      <span className="select-none pr-2 text-right text-[10px] text-slate-400">
                         {line.oldLine ?? ""}
                       </span>
-                      <span className="select-none pr-2 text-right text-[10px] text-slate-600">
+                      <span className="select-none pr-2 text-right text-[10px] text-slate-400">
                         {line.newLine ?? ""}
                       </span>
                       <span className="select-none font-bold">
@@ -1571,7 +1571,7 @@ function PiCodexWorkbench({
               <div className="flex min-h-[540px] flex-1 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950">
                 <div
                   aria-hidden="true"
-                  className="select-none border-r border-slate-800/80 bg-slate-900/60 px-2.5 py-4 text-right font-mono text-xs leading-6 text-slate-600"
+                  className="select-none border-r border-slate-800/80 bg-slate-900/60 px-2.5 py-4 text-right font-mono text-xs leading-6 text-slate-400"
                 >
                   {Array.from({ length: codeLineCount }, (_, idx) => (
                     <div key={idx}>{idx + 1}</div>
