@@ -3,18 +3,15 @@ import Link from "next/link";
 import { CATALOG_SOURCES } from "@/contracts/catalog-content";
 import { listPublishedCatalog } from "@/server/catalog/service";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowRight, BookOpen, Plus, Search } from "lucide-react";
-import { PROJECT_CATEGORIES, resolveProjectCovers } from "@/domain/catalog/projects";
-import { homepageProjects, resolveCatalogShowcaseHref } from "@/domain/catalog/homepage";
+import { Search } from "lucide-react";
+import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
 import { browseCatalog, catalogBrowseHref, type CatalogBrowseQuery, type CatalogBrowseFilters } from "@/domain/catalog/browse";
 import { ProjectCard } from "@/components/catalog/project-card";
 import { CatalogPagination } from "@/components/catalog/catalog-pagination";
 import { RevealDetails } from "@/components/catalog/reveal-details";
-import { ProjectCoverflow } from "@/components/homepage/project-coverflow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AgriWall } from "@/components/competitions/agri-wall";
-import homeStyles from "../home.module.css";
 import styles from "./explore.module.css";
 
 export const dynamic = "force-dynamic";
@@ -28,48 +25,18 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   const browse = browseCatalog(catalog, params, project => [catalogText(project, t, "title", locale), catalogText(project, t, "summary", locale), t(`categories.${project.category}`), t(`children.${project.subcategory}`)].join(" "));
   const { category, subcategory, filters } = browse;
   const isAgriWall = category?.id === "competition" && subcategory === "agri-wall";
-  const isEn = locale.startsWith("en");
   const filterHref = (updates: Partial<CatalogBrowseFilters> = {}, page = 1) => catalogBrowseHref("/explore", filters, updates, page);
-  return <div className={`ans-product-shell ans-home-page ${homeStyles.page}`}>
-    <div className={`ans-product-container ans-page-content ${styles.page}`}>
-    {!isAgriWall && <header className="mb-6 flex flex-col gap-4 border-b border-border/60 pb-5 lg:flex-row lg:items-center lg:justify-between">
-      <div className="space-y-1">
-        <RevealDetails id="explore-introduction" label={t("catalogBrowse.introduction")} kind="heading" details={<p>{t("exploreBody")}</p>}>
-          <h1 id="project-results" className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {isEn ? "Explore Projects & Runnable Workflows" : "探索精选项目与可复现工作流"}
-          </h1>
-        </RevealDetails>
-        <p className="text-xs text-muted-foreground">
-          {t("results", { count: browse.total })} · {isEn ? `${catalog.length} total catalog entries` : `共收录 ${catalog.length} 个项目`}
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2.5">
-        <form action="/explore#project-results" method="get" role="search" className="flex items-center gap-1.5" aria-label={t("searchLabel")}>
+  return <div className="ans-product-shell"><div className={`ans-product-container ans-page-content ${styles.page}`}>
+    {!isAgriWall && <header className="ans-page-heading ans-page-heading-with-tools">
+      <div className="ans-page-heading-copy"><RevealDetails id="explore-introduction" label={t("catalogBrowse.introduction")} kind="heading" className={styles.titleBlock} details={<p>{t("exploreBody")}</p>}><h1 className="ans-page-title">{t("nav.explore")}</h1></RevealDetails></div>
+      <div className="ans-page-heading-tools">
+        <form action="/explore#project-results" className={styles.search}>
           <label className="sr-only" htmlFor="project-search">{t("searchLabel")}</label>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <Input id="project-search" type="search" name="q" autoComplete="off" maxLength={200} defaultValue={filters.q} placeholder={t("home.searchPlaceholder")} className="h-9 w-56 pl-8 text-sm sm:w-64" />
-          </div>
+          <Input id="project-search" type="search" name="q" autoComplete="off" maxLength={200} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="h-12 min-w-0 rounded-xl" />
           {Object.entries(filters).map(([key, value]) => key !== "q" && value && <input key={key} type="hidden" name={key} value={value} />)}
-          <Button type="submit" size="sm" aria-label={t("search")}><ArrowRight className="h-4 w-4" aria-hidden="true" /></Button>
+          <Button type="submit" className="h-12 shrink-0 rounded-xl"><Search className="me-2 h-4 w-4" aria-hidden="true" />{t("search")}</Button>
         </form>
-        <details open={Boolean(filters.source || filters.readiness)} className="group rounded-xl border bg-card/50 px-3.5 py-2 text-xs">
-          <summary className="cursor-pointer select-none font-medium text-muted-foreground hover:text-foreground">
-            {t("sourceFilter")} / {t("readinessFilter")}
-            {(filters.source || filters.readiness) ? " ●" : ""}
-          </summary>
-          <div className={`${styles.filters} mt-3 border-b-0 pb-1 pt-3`}>
-            <nav aria-label={t("sourceFilter")} className="flex flex-wrap items-center gap-1">
-              <span className="me-2 text-xs text-muted-foreground">{t("sourceFilter")}</span>
-              {[undefined, ...CATALOG_SOURCES].map(value => <Link key={value ?? "all"} href={filterHref({ source: value })} aria-current={filters.source === value ? "page" : undefined} className="ans-subcategory">{t(value ? catalogSourceLabel(value) : "allSources")}</Link>)}
-            </nav>
-            <nav aria-label={t("readinessFilter")} className="flex flex-wrap items-center gap-1">
-              <span className="me-2 text-xs text-muted-foreground">{t("readinessFilter")}</span>
-              {[undefined, "ready", "reference"].map(value => <Link key={value ?? "all"} href={filterHref({ readiness: value })} aria-current={filters.readiness === value ? "page" : undefined} className="ans-subcategory">{t(value ?? "allReadiness")}</Link>)}
-            </nav>
-          </div>
-        </details>
-        <Button asChild variant="outline" size="sm"><Link href="/explore/submit"><Plus className="me-1.5 h-4 w-4" aria-hidden="true" />{t("realProject.submit")}</Link></Button>
+        <div className="ans-page-actions"><Button asChild variant="outline"><Link href="/explore/submit">{t("realProject.submit")}</Link></Button></div>
       </div>
     </header>}
     <nav aria-label={t("categoriesLabel")} className={`ans-category-row ${styles.categories}`}>
@@ -81,6 +48,17 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
       {category.children.map(child => <Link key={child} href={filterHref({ subcategory: child })} aria-current={subcategory === child ? "page" : undefined} className="ans-subcategory">{t(`children.${child}`)}</Link>)}
     </nav>}
     {isAgriWall ? <AgriWall /> : <>
+    <div className={styles.filters}>
+      <nav aria-label={t("sourceFilter")} className="flex flex-wrap items-center gap-1">
+        <span className="me-2 text-xs text-muted-foreground">{t("sourceFilter")}</span>
+        {[undefined, ...CATALOG_SOURCES].map(value => <Link key={value ?? "all"} href={filterHref({ source: value })} aria-current={filters.source === value ? "page" : undefined} className="ans-subcategory">{t(value ? catalogSourceLabel(value) : "allSources")}</Link>)}
+      </nav>
+      <nav aria-label={t("readinessFilter")} className="flex flex-wrap items-center gap-1">
+        <span className="me-2 text-xs text-muted-foreground">{t("readinessFilter")}</span>
+        {[undefined, "ready", "reference"].map(value => <Link key={value ?? "all"} href={filterHref({ readiness: value })} aria-current={filters.readiness === value ? "page" : undefined} className="ans-subcategory">{t(value ?? "allReadiness")}</Link>)}
+      </nav>
+    </div>
+    <h2 id="project-results" className="mb-5 text-sm font-normal text-muted-foreground">{t("results", { count: browse.total })}</h2>
     {browse.projects.length ? <div className={styles.projects}>{browse.projects.map(project => <ProjectCard key={project.slug} project={project} compact />)}</div> : <div className="ans-empty"><h3 className="text-xl font-semibold">{t("emptyTitle")}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{t("emptyBody")}</p><div className="mt-6"><Button asChild variant="outline"><Link href="/explore">{t("clear")}</Link></Button></div></div>}
     <CatalogPagination page={browse.page} pages={browse.pages} href={page => filterHref({}, page)} labels={{ navigation: t("catalogBrowse.pagination"), previous: t("catalogBrowse.previous"), next: t("catalogBrowse.next"), page: page => t("catalogBrowse.page", { page }) }} />
     </>}

@@ -28,7 +28,7 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   const voiceCallback = useRef(onVoiceStatus);
   voiceCallback.current = onVoiceStatus;
   const frame = useRef<HTMLIFrameElement>(null);
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(false);
   const [requested, setRequested] = useState(open);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);

@@ -2,7 +2,6 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { marketListingInputSchema, marketMessageSchema, marketOrderActionSchema, marketOrderCreateSchema, marketQuoteSchema, marketReviewSchema } from "@/contracts/marketplace";
 import { buildMarketQuote, completionPostings, MarketRuleError, nextOrderStatus, selectMarketPricingTier } from "@/domain/marketplace/order";
-import { isMarketOfferPurchasable } from "@/domain/marketplace/presentation";
 import { appendCashJournal, marketHash, marketTransaction, requireMarketActor } from "./shared";
 
 import { marketHistoryPageSize } from "@/contracts/marketplace-history";
@@ -80,7 +79,6 @@ export async function createMarketOrder(buyerId: string, raw: unknown, policy?: 
     const paymentMethod = input.paymentMethod ?? "POINTS";
     const publishedInput = marketListingInputSchema.parse(version.payload);
     if (publishedInput.execution) throw new MarketRuleError("WORKFLOW_RUN_REQUIRED", 409);
-    if (!isMarketOfferPurchasable({ slug: listing.slug, listing: publishedInput })) throw new MarketRuleError("DELIVERY_NOT_READY", 409);
     const selected = selectMarketPricingTier(publishedInput, input.tierId);
     const listingInput = selected.listing;
     let pricing = policy;

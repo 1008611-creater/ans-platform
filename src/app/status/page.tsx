@@ -9,7 +9,7 @@ function statusClass(status: ApicStatusRecord["status"], availability24h: number
   if (status === "operational" && availability24h >= 90) {
     return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
   }
-  if (status === "down" || availability24h < 50) {
+  if (status === "error" || status === "failed" || availability24h < 50) {
     return "bg-rose-500/10 text-rose-700 dark:text-rose-300";
   }
   return "bg-amber-500/10 text-amber-700 dark:text-amber-300";
@@ -39,16 +39,16 @@ export default async function StatusPage() {
 
   const coreServices = isEn
     ? [
-        { name: "ANS Web & Project Square", detail: "SSR & static asset delivery", status: "Operational" },
-        { name: "Resume Studio & Visual Editor", detail: "Interactive preview & HTML export", status: "Operational" },
-        { name: "Hubs, Market & Community", detail: "Catalog snapshot & workflow bindings", status: "Operational" },
-        { name: "Account & Compute Ledger", detail: "Authentication & points accounting", status: "Operational" },
+        { name: "ANS Web & Project Square", detail: "SSR & static asset delivery", status: "Web SSR" },
+        { name: "Resume Studio & Visual Editor", detail: "Interactive preview & HTML export", status: "Browser Studio" },
+        { name: "Hubs, Market & Community", detail: "Catalog snapshot & workflow bindings", status: "Catalog Active" },
+        { name: "Account & Compute Ledger", detail: "Authentication & points accounting", status: "Ledger Active" },
       ]
     : [
-        { name: "ANS 站点与项目广场", detail: "页面渲染与静态资源分发", status: "正常运行" },
-        { name: "个人简历与可视化工作台", detail: "实时预览与单文件 HTML 导出", status: "正常运行" },
-        { name: "知识中心、市场与社区", detail: "目录快照与工作流版本绑定", status: "正常运行" },
-        { name: "账号认证与算力账本", detail: "登录鉴权与积分计量服务", status: "正常运行" },
+        { name: "ANS 站点与项目广场", detail: "页面渲染与静态资源分发", status: "Web 渲染层" },
+        { name: "个人简历与可视化工作台", detail: "实时预览与单文件 HTML 导出", status: "浏览器工作台" },
+        { name: "知识中心、市场与社区", detail: "目录快照与工作流版本绑定", status: "目录已挂载" },
+        { name: "账号认证与算力账本", detail: "登录鉴权与积分计量服务", status: "账本服务层" },
       ];
 
   return (
@@ -72,15 +72,15 @@ export default async function StatusPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 id="core-services-heading" className="font-semibold">
-              {isEn ? "ANS Core Platform Services" : "ANS 平台核心服务状态"}
+              {isEn ? "ANS Platform Service Modules" : "ANS 平台服务模块"}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {isEn ? "Real-time availability of core web modules, editors, and account services." : "核心网页模块、在线编辑器与账户算力服务的实时运行状态。"}
+              {isEn ? "Core web modules, interactive editors, and account ledger components." : "核心网页模块、在线编辑器与账户算力账本组件构成。"}
             </p>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-hidden="true" />
-            {isEn ? "All Core Systems Operational" : "核心系统全部正常"}
+            {isEn ? "4 Core Modules Mounted" : "4 大核心模块已挂载"}
           </span>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -174,7 +174,7 @@ export default async function StatusPage() {
           <div className="mt-5 space-y-3">
             {rawRecords.map((record) => {
               const isHealthy = record.status === "operational" && record.availability24h >= 90;
-              const isDown = record.status === "down" || record.availability24h < 50;
+              const isDown = record.status === "error" || record.status === "failed" || record.availability24h < 50;
               const badgeLabel = isHealthy
                 ? t("statusOperational")
                 : isDown

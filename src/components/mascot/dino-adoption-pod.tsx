@@ -222,7 +222,7 @@ export function DinoAdoptionPod({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "112px 1fr",
+              gridTemplateColumns: "112px minmax(0, 1fr)",
               gap: "12px",
               alignItems: "center",
               padding: "12px",
@@ -439,7 +439,7 @@ export function DinoAdoptionPod({
               border: "1px solid rgba(255, 224, 130, 0.35)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, flexWrap: "wrap", minWidth: 0 }}>
               <span style={{ fontSize: "11.5px", fontWeight: 700, whiteSpace: "nowrap" }}>
                 🏷️ 爱宠赐名：
               </span>
@@ -451,7 +451,7 @@ export function DinoAdoptionPod({
                 onChange={e => updateSanctuary({ customName: e.target.value })}
                 style={{
                   flex: 1,
-                  minWidth: "90px",
+                  minWidth: 0,
                   padding: "4px 8px",
                   borderRadius: "8px",
                   border: "1px solid rgba(132,250,176,0.5)",
