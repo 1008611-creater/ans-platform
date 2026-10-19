@@ -16,31 +16,13 @@ const FALLBACK_COVERS: Record<string, string> = {
   competition: "/competitions/agrihackathon/gitglow-wall.webp",
 };
 
-const OUTER_FALLBACK_COVERS: Record<string, string> = {
-  learning: "/catalog/oil-v1/astro-starlight.svg",
-  career: "/catalog/oil-v1/react-interview.svg",
-  aigc: "/catalog/oil-v1/infinite-canvas.svg",
-  web: "/catalog/oil-v1/ans-3d-showcase.svg",
-  github: "/catalog/oil-v1/hermes-agent.svg",
-  business: "/catalog/oil-v1/saleor-commerce.svg",
-  productivity: "/catalog/oil-v1/code2prompt.svg",
-  competition: "/catalog/oil-v1/showcase-agri-uav.svg",
-};
-
-function resolveOuterOilCover(coverUrl: string, category?: string): string {
-  const match = coverUrl.match(/\/catalog\/gitglow-v1\/([a-z0-9-]+)\.(?:webp|svg|png)$/i);
-  if (match) return `/catalog/oil-v1/${match[1]}.svg`;
-  return (category && OUTER_FALLBACK_COVERS[category]) || "/catalog/oil-v1/ans-3d-showcase.svg";
-}
-
 export async function MarketDetailPreview({ listing }: { listing: MarketListingInput }) {
   const [t, locale] = await Promise.all([getTranslations("product.marketDetail"), getLocale()]);
   const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/magic-resume.webp";
-  const outerCoverSrc = resolveOuterOilCover(coverSrc, listing.category);
   return <section aria-label={t("previewTitle")} className={styles.preview}>
     <DualCoverPreview
       innerCoverUrl={coverSrc}
-      outerCoverUrl={outerCoverSrc}
+      outerCoverUrl={coverSrc}
       alt={t("coverAlt", { title: listing.title })}
       isEn={locale.startsWith("en")}
     />

@@ -31,7 +31,7 @@ const freshThread = (): Thread => ({ draft: "", messages: [], recommendations: n
 export function DinoGuide() {
   const { data, status } = useSession();
   useEffect(() => { if (status !== "loading") activateCompanionActor(status === "authenticated" ? data?.user?.id ?? null : null); }, [status, data?.user?.id]);
-  return <Companion storageReady={status !== "loading"} key={status === "authenticated" ? data?.user?.id : status} actor={status === "authenticated" ? data?.user?.id ?? null : null} />;
+  return <Companion storageReady={status !== "loading"} key={status === "authenticated" ? (data?.user?.id ?? "authenticated") : "guest"} actor={status === "authenticated" ? data?.user?.id ?? null : null} />;
 }
 function Companion({ actor, storageReady }: { actor: string | null; storageReady: boolean }) {
   const t = useTranslations("product.mascot"), ui = useTranslations("companion");
