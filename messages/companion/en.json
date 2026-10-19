@@ -275,7 +275,7 @@
     "hudClose": "Close",
     "hudOverclockBoost258": "Overclock boost · +25🪙 +8♥",
     "hudCrackWhip": "Crack Whip",
-    "hudBlindBoxSnackAffection": "Blind-box snack · +Affection & +20🪙",
+    "hudBlindBoxSnackAffection": "Blind-box snack · +Affection & +{min}~{max}🪙",
     "hudBlindBoxFeed": "Blind-Box Feed",
     "hud3dWardrobeAccessories": "3D Wardrobe & Accessories",
     "hudWardrobe": "Wardrobe",
@@ -318,7 +318,7 @@
     "quickbarNewProject": "New Project",
     "quickbarFindMarketTools": "Find market tools",
     "quickbarTools": "Tools",
-    "quickbar5ptInstantRedeem": "5pt instant redeem",
+    "quickbar5ptInstantRedeem": "Redeem a market listing by name (live price; nothing is charged until you confirm)",
     "quickbarRedeem": "Redeem",
     "quickbarPlay3DClawMachine": "Play 3D Claw Machine",
     "quickbarClaw": "Claw",
@@ -346,6 +346,7 @@
     "podNetworkError": "⚠️ Agent network error. Please try again.",
     "quickbarDefaultProjectTopic": "Smart agriculture monitoring Agent",
     "podQuickCommandPlaceholder": "Quick command: e.g. 'Create smart greenhouse project', 'Search paper tools'…",
-    "podBalancePts": "Balance: {points} pts"
+    "podBalancePts": "Balance: {points} pts",
+    "podNotExecuted": "Not executed"
   }
 }

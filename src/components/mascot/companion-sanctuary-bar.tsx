@@ -106,6 +106,12 @@ function findMoodPreset(id: string): ShowcaseMoodPreset {
   return SHOWCASE_MOOD_PRESETS[id] ?? SHOWCASE_MOOD_PRESETS.happy_smile;
 }
 
+/** 盲盒奖励区间直接从道具表推导，避免按钮写死一个与真实奖励不符的数字。 */
+const BLIND_BOX_COIN_RANGE = {
+  min: Math.min(...BLIND_BOX_FOODS.map(item => item.coins)),
+  max: Math.max(...BLIND_BOX_FOODS.map(item => item.coins)),
+};
+
 export function CompanionQuestPin({
   dialogOpen = false,
   onTriggerSpeech,
@@ -884,7 +890,7 @@ export function CompanionQuestPin({
           <button
             type="button"
             className="hud-act-btn is-feed"
-            title={ui("bar.hudBlindBoxSnackAffection")}
+            title={ui("bar.hudBlindBoxSnackAffection", { min: BLIND_BOX_COIN_RANGE.min, max: BLIND_BOX_COIN_RANGE.max })}
             onClick={handleFeedAction}
           >
             🎲 {ui("bar.hudBlindBoxFeed")}
@@ -1367,12 +1373,12 @@ export function CompanionSanctuaryBar({
       const data = await res.json().catch(() => ({}));
       // 服务端报价：先展示"Is X 积分、尚未扣费"，用户点确认后再用同一金额重发；
       // 服务端会再次校验金额，界面被绕过也扣不到钱。
+      // 服务端只要重新报价就刷新确认条（即使这次请求本来就带着 confirmedPoints——价格变了就得重新确认）。
       const confirmRequest = (data?.data ?? {}) as { requiresConfirmation?: boolean; pricePoints?: number };
       if (
         confirmRequest.requiresConfirmation &&
         typeof confirmRequest.pricePoints === "number" &&
-        confirmRequest.pricePoints > 0 &&
-        typeof confirmedPoints !== "number"
+        confirmRequest.pricePoints > 0
       ) {
         setPiConfirm({ intent, prompt: resolvedPrompt, pricePoints: confirmRequest.pricePoints });
         setPiResult({
@@ -1777,7 +1783,9 @@ export function CompanionSanctuaryBar({
                   >
                     {piResult.ok
                       ? `✓ ${ui("bar.podAgentExecuted")}`
-                      : `⏸ ${ui("bar.podNotExecutedAwaitingConfirmation")}`}
+                      : piConfirm
+                        ? `⏸ ${ui("bar.podNotExecutedAwaitingConfirmation")}`
+                        : `✕ ${ui("bar.podNotExecuted")}`}
                   </span>
                   {typeof piResult.balancePoints === "number" && (
                     <span className="text-[10px] font-bold text-amber-600 dark:text-amber-300">

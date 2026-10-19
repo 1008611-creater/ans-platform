@@ -275,7 +275,7 @@
     "hudClose": "收起",
     "hudOverclockBoost258": "催干活提速 · +25🪙 +8♥",
     "hudCrackWhip": "挥鞭催干活",
-    "hudBlindBoxSnackAffection": "抽取限定零食 · +好感 & +20🪙",
+    "hudBlindBoxSnackAffection": "抽取限定零食 · +好感 & +{min}~{max}🪙",
     "hudBlindBoxFeed": "盲盒投喂",
     "hud3dWardrobeAccessories": "3D 换装与高定配饰",
     "hudWardrobe": "3D 衣橱",
@@ -318,8 +318,8 @@
     "quickbarNewProject": "新建项目",
     "quickbarFindMarketTools": "检索市场高性价比科研与创作工具",
     "quickbarTools": "找工具",
-    "quickbar5ptInstantRedeem": "5 积分秒兑周报模板",
-    "quickbarRedeem": "兑周报",
+    "quickbar5ptInstantRedeem": "按商品名兑换市场商品（价格取货架实时价，确认后才扣分）",
+    "quickbarRedeem": "兑换",
     "quickbarPlay3DClawMachine": "代下爪抓娃娃抽积分",
     "quickbarClaw": "抓娃娃",
     "quickbarCommand": "快捷指令",
@@ -346,6 +346,7 @@
     "podNetworkError": "⚠️ Agent 网络连接异常，请稍后重试。",
     "quickbarDefaultProjectTopic": "农客松智慧农业多模态监测 Agent",
     "podQuickCommandPlaceholder": "输入快捷指令：如「新建智慧温室项目」「搜论文润色工具」…",
-    "podBalancePts": "余额：{points} 积分"
+    "podBalancePts": "余额：{points} 积分",
+    "podNotExecuted": "未执行"
   }
 }
