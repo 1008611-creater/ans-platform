@@ -13,6 +13,7 @@
  *
  * 退出码：0 = 全部期望成立；1 = 有期望不成立（即修复未上线）；2 = 环境缺浏览器等前置条件。
  */
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
 const argv = process.argv.slice(2);
@@ -107,6 +108,24 @@ async function probeAgentPanel(puppeteer) {
       record("next-steps-structure", "建议下一步是直接子元素且带图标", panel.nextAreDirectChildren && panel.nextHasIcon, `next=${panel.nextCount} direct=${panel.nextAreDirectChildren} icon=${panel.nextHasIcon}`);
     }
 
+    // 2b) 面板内的 axe 扫描（只把 critical/serious 当失败，moderate/minor 只打印）
+    if (panel && axeSource) {
+      await page.evaluate(axeSource);
+      const axeResult = await page.evaluate(async () => {
+        const target = document.getElementById("ans-companion-panel");
+        if (!target) return null;
+        const run = await window.axe.run(target, {
+          runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] },
+        });
+        return run.violations.map(violation => ({ id: violation.id, impact: violation.impact, nodes: violation.nodes.length }));
+      });
+      const blocking = (axeResult ?? []).filter(violation => violation.impact === "critical" || violation.impact === "serious");
+      record("panel-axe", "Agent 面板内 axe 无 critical/serious 违规", blocking.length === 0,
+        blocking.length
+          ? blocking.map(violation => `${violation.id}(${violation.nodes})`).join(", ")
+          : `0 条 critical/serious（共 ${(axeResult ?? []).length} 条含 moderate/minor）`);
+    }
+
     // 3) 3D 在交互后才加载（打开面板 = 交互）
     const lateFrame = await page.evaluate(() => Boolean(document.querySelector('iframe[src*="/mascot/3d"]')));
     record("3d-after-interaction", "交互后才出现 3D iframe", lateFrame === true, lateFrame ? "已按需加载" : "打开面板后仍未加载（可能被 reduced-motion 或网络限制挡住）");
@@ -117,6 +136,13 @@ async function probeAgentPanel(puppeteer) {
 
 await probeHealth();
 await probeSkillsIndex();
+let axeSource = null;
+try {
+  axeSource = readFileSync(createRequire(import.meta.url).resolve("axe-core/axe.min.js"), "utf8");
+} catch {
+  axeSource = null; // 缺 axe 时只跳过面板无障碍那一项
+}
+
 try {
   const require = createRequire(import.meta.url);
   const puppeteer = require("puppeteer");
