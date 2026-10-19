@@ -69,3 +69,15 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
 5. **翻开前的模拟已跑过**（2026-10-20）：在「栈 + main + 本 PR」的本地合并结果上把 4 条 pending 全改为
    `authoritative`，`node scripts/check-authority.mjs --worktree` → **23 条规则通过 / 0 失败**（`isZh ?`
    实际 19 处，条目上限 30，留有余量）。也就是说合并完成后直接翻状态是安全的。
+
+## 发布后验收（每次上线后跑一遍）
+
+```powershell
+npm run audit:live-agent        # 只读探针：3D 是否按需加载、移动端面板是否压站头、建议下一步结构、/.well-known/skills 是否合规
+node scripts/git-health.mjs     # 仓库与发布体检：落后/脏树/部署信号/分支卫生（有 critical 时退出码 1）
+npm run check:authority:upstream   # 上游是否有人把权威实现改回去
+```
+
+2026-10-20 的修复前基线（探针 9 项只有 4 项成立，正好对应已修缺陷）：3D 首屏已加载、
+移动端面板与站头重叠 25px、建议下一步不是直接子元素也不带图标、技能索引 174/202 条含反斜杠路径、
+148/202 条 description 不合法。发布后这三条命令应当全绿，把输出贴进发布记录即可作为验收证据。
