@@ -89,13 +89,13 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
               <img
                 src={
                   guide.task === "media-pipeline" || guide.task === "creative"
-                    ? "/catalog/ans-pro-v1/niannian-drama.webp"
+                    ? "/catalog/ans-pro-v1/infinite-canvas.webp"
                     : guide.task === "agent-team" || guide.task === "skill-product" || guide.task === "evidence"
                       ? "/catalog/ans-pro-v1/agent-team.webp"
                       : guide.task === "open-source"
                         ? "/catalog/ans-pro-v1/git-ship.webp"
                         : guide.task === "website" || guide.task === "ui-design"
-                          ? "/catalog/ans-pro-v1/cauai-one.webp"
+                          ? "/catalog/ans-pro-v1/vibephoto.webp"
                           : "/catalog/ans-pro-v1/magic-resume.webp"
                 }
                 alt={guide.title}

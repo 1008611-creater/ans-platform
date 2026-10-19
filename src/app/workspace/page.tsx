@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Activity, Coins, FolderOpen, Gift, Heart, Users, Zap } from "lucide-react";
+import { FolderOpen, Heart, Users } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelProgress, formatLevel } from "@/lib/level";
@@ -95,7 +95,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
       <details className="mt-5 rounded-2xl border border-border/70 bg-card/60 p-4">
         <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 text-sm font-semibold">
           <span>
-            📊 {locale === "zh" ? "算力流水、项目归档与团队概览" : "Credits, Runs & Teams"}
+            📊 {locale === "zh" ? "历史运行与团队记录" : "Run History & Teams"}
           </span>
           <span className="text-xs font-normal text-muted-foreground">
             {locale === "zh"
@@ -104,75 +104,11 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
           </span>
         </summary>
         <div className="mt-4">
-      <section className="ans-account-summary">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <Coins className="h-3.5 w-3.5" /> {t("balance")}
-            </CardDescription>
-            <CardTitle className="text-2xl">
-              {(user?.quotaPoints ?? 0).toLocaleString(undefined, { maximumFractionDigits: 6 })}
-              <span className="ms-1 text-sm font-normal text-muted-foreground">{t("pointsUnit")}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2 pt-0">
-            <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
-              <Link href="/workspace/benefits">
-                <Gift className="me-1 h-3.5 w-3.5" aria-hidden="true" />
-                {locale === "zh" ? "免费领 100~150 积分" : "Free 100–150 Pts"}
-              </Link>
-            </Button>
+          <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-border/60 pb-3">
             <Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{quotaCopy("entry")}</Link></Button>
-            <Button asChild variant="ghost" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5" /> {t("experience")}
-            </CardDescription>
-            <CardTitle className="text-2xl">
-              {xp.toLocaleString()}
-              <span className="ms-1 text-sm font-normal text-muted-foreground">XP</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: String(Math.round(progress.progress * 100)) + "%" }}
-              />
-            </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              {progress.nextLevel
-                ? t("nextLevel", { level: locale === "zh" ? progress.nextLevel.nameZh : progress.nextLevel.nameEn, xp: progress.xpToNext })
-                : t("maxLevel")}
-            </p>
-            <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link href="/community">{t("community")}</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <Activity className="h-3.5 w-3.5" /> {t("runs")}
-            </CardDescription>
-            <CardTitle className="text-2xl">{runCount}</CardTitle>
-          </CardHeader>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5" /> {t("myTeams")}
-            </CardDescription>
-            <CardTitle className="text-2xl">{memberships.length}</CardTitle>
-          </CardHeader>
-        </Card>
-      </section>
+            <Button asChild variant="outline" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link href="/community">{t("community")}</Link></Button>
+          </div>
 
       <div className="ans-workspace-records">
       <section className="ans-workspace-section ans-workspace-runs">

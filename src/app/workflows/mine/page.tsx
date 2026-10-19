@@ -41,13 +41,13 @@ const BLUEPRINT_WORKFLOWS = [
     href: "/workflows/new",
   },
   {
-    title: "ToonFlow 漫剧剧本拆解与角色三视图生成流",
+    title: "CAUAI 无限画布多模态视觉与视频生成流",
     version: "v2.1 · 市场在售 (80% 分成)",
     cost: "5 点/次",
     runs: "2,450 次运行",
-    cover: "/catalog/gitglow-v1/niannian-drama.webp",
-    desc: "支持小说章节一键拆解 12 镜分镜提示词，自动锁定角色种子与镜头光影一致性。",
-    href: "/workflows/toonflow",
+    cover: "/catalog/gitglow-v1/infinite-canvas.webp",
+    desc: "支持在无限画布中串联分镜提示词、参考图锁定与多模态视频生成节点。",
+    href: "https://hb.cauai.fun/",
   },
   {
     title: "Scholar-Web 科研主页与论文解读自动编排流",

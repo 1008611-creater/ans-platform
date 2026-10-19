@@ -24,7 +24,7 @@ const CURATED_SHOWCASE = [
     id: "curated-infinite-canvas",
     title: "Infinite Canvas 《星际麦田》4K 多模态 AIGC 画布工程",
     version: "v1.8",
-    author: "光影矩阵工作室 · 跨校联队",
+    author: "光影视觉工作室 · 跨校联队",
     competition: "AIGC 创意视觉赛道 · 金奖入围",
     likes: 215,
     comments: 56,

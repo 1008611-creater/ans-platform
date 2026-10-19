@@ -114,7 +114,7 @@ export default function SupportPage() {
     },
     {
       href: "/vibe-hub",
-      img: "/catalog/gitglow-v1/cauai-one.webp",
+      img: "/catalog/gitglow-v1/infinite-canvas.webp",
       title: "VibeHub 知识库与指南",
       desc: "查阅术语词典、操作指南、课程与实践路线。",
     },

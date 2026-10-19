@@ -9,7 +9,7 @@ export async function CreationTools() {
     { href: "/workspace/models", note: "DeepSeek / Qwen / 视觉模型零配置在线对话演练", label: "⚡ 模型广场与在线演练", icon: GitBranch, primary: true },
     { href: "/market/resume-website", note: "交互式 3D 角色与双语个人作品集即开即改", label: "🎨 3D 个人网站工作坊", icon: Store, primary: true },
     { href: "/workflows/hypit", note: "AI 创意视频制作与脚本生成工作台", label: "🎬 Hypit 视频工作台", icon: Film },
-    { href: "https://toonflow.cauai.fun", note: "小说转分镜与 AI 漫剧独立创作站（直达）", label: "🎭 Toonflow 短剧工坊 ↗", icon: Film, external: true },
+    { href: "https://hb.cauai.fun/", note: "无限画布多模态视觉与视频节点工作台（直达）", label: "🎨 CAUAI 无限画布工作台 ↗", icon: Film, external: true },
     { href: "/vibe-hub", note: "全栈 AI 编程教程、提示词与实战路线图", label: "📚 VibeHub 知识库", icon: FolderOpen },
     { href: "/workspace/benefits", note: "免费领 100~150 积分与 3D 抓娃娃体验", label: "🎁 3D 抓娃娃与算力福利", icon: Store },
     { href: "/market", note: w("toolNotes.market"), label: t("market.browse"), icon: Store },

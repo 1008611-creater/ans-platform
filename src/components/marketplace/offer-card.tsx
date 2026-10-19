@@ -9,7 +9,7 @@ import type { MarketOfferView } from "@/contracts/marketplace-view";
 const FALLBACK_COVERS: Record<string, string> = {
   learning: "/catalog/gitglow-v1/astro-starlight.webp",
   career: "/catalog/gitglow-v1/react-interview.webp",
-  aigc: "/catalog/gitglow-v1/niannian-drama.webp",
+  aigc: "/catalog/gitglow-v1/infinite-canvas.webp",
   web: "/competitions/agrihackathon/gitglow-tracks.webp",
   github: "/catalog/gitglow-v1/hermes-agent.webp",
   business: "/competitions/agrihackathon/gitglow-awards.webp",
@@ -27,7 +27,7 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
   const yuan = (points / 10).toFixed(points % 10 === 0 ? 0 : 1);
   const purchasable = isMarketOfferPurchasable(offer);
   const status = offer.submittedAt && !offer.reviewedAt ? "PENDING" : offer.status;
-  const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/cauai-one.webp";
+  const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/magic-resume.webp";
   return <Link href={owner ? "/market/creator/" + offer.id : marketProductPath(offer)} className="ans-project-card group flex min-w-0 flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
     <div className="relative aspect-video overflow-hidden border-b bg-slate-950/90">
       <Image unoptimized src={coverSrc} width={960} height={540} alt={tp("projectCover", { title: listing.title })} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"/>

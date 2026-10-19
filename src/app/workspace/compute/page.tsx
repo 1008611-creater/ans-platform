@@ -24,8 +24,8 @@ const GUEST_COMPUTE_HISTORY: Awaited<ReturnType<typeof readComputeHistory>> = {
   nextCursor: null,
   tasks: [
     {
-      taskId: "compute-demo-toonflow-4k-a800",
-      modelId: "ToonFlow · 4K 漫剧分镜渲染集群 (A800 × 2)",
+      taskId: "compute-demo-canvas-4k-a800",
+      modelId: "CAUAI-Canvas · 4K 无限画布多模态渲染集群 (A800 × 2)",
       state: "SETTLED",
       revision: 3,
       authorizedPoints: 60,
@@ -110,7 +110,7 @@ export default async function ComputeHistoryPage({ searchParams }: {
                 <Link href="/login?callbackUrl=%2Fworkspace%2Fcompute">登录同步真实算力账单</Link>
               </Button>
               <Button asChild size="sm" variant="outline">
-                <Link href="/workspace/models">浏览可用模型矩阵</Link>
+                <Link href="/workspace/models">浏览可用模型列表</Link>
               </Button>
             </div>
           </div>

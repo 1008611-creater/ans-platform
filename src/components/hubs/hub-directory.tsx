@@ -10,8 +10,8 @@ import styles from "./hubs.module.css";
 const icons = { cauhub: GraduationCap, vibehub: BookOpen, aigc: Clapperboard, "full-stack": Code2 };
 const hubCovers: Record<HubDefinition["slug"], string> = {
   cauhub: "/competitions/agrihackathon/gitglow-hub.webp",
-  vibehub: "/catalog/gitglow-v1/cauai-one.webp",
-  aigc: "/catalog/gitglow-v1/aigc-workspace.webp",
+  vibehub: "/catalog/gitglow-v1/vibephoto.webp",
+  aigc: "/catalog/gitglow-v1/infinite-canvas.webp",
   "full-stack": "/catalog/gitglow-v1/ans-3d-showcase.svg",
 };
 const directHref: Partial<Record<HubDefinition["slug"], string>> = {

@@ -21,7 +21,6 @@ export function resolveCatalogShowcaseHref(project: CatalogProject): string {
   if (workflowId === "resume-website") return "/market/resume-website";
   if (workflowId === "easel") return "/competitions/aigc";
   if (workflowId === "hypit") return "/workflows/hypit";
-  if (workflowId === "toonflow") return "https://toonflow.cauai.fun";
   if (project.workflowId) return `/projects?goal=${project.goal}&workflow=${project.workflowId}#new-project`;
   return project.sourceUrl ?? `/explore/${project.slug}`;
 }

@@ -44,7 +44,7 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
     icon: "🕹️",
     nameZh: "赛博农林太空抓娃娃机 · 机身舱体",
     nameEn: "Cyber-Agri Space Claw Cabinet",
-    roleZh: "八角星轨街机底座 + 钛金透明拱顶展示舱",
+    roleZh: "八角星轨街机基座 + 钛金透明拱顶展示舱",
     roleEn: "Octagonal cyber base + titanium glass display dome",
     glbUrl: "/arcade-3d/claw-cabinet.glb",
     sheetUrl: "/arcade-3d/sheets/claw-cabinet.png",
@@ -55,7 +55,7 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
     fallbackRgb: [16, 185, 129],
     accentRgb: [245, 158, 11],
     promptZh:
-      "生成用于三维重建的单个赛博农林科技风太空抓娃娃机机身舱体正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆润八角柱形街机机舱，下半部为深邃暗金与翠绿发光饰条底座（正面中央带内凹出物舱口与琥珀色摇杆凸台，背面为平整银灰散热装甲板），上半部为四根流线型钛金立柱支撑的透明拱顶展示舱框架。",
+      "生成用于三维重建的单个赛博农林科技风太空抓娃娃机机身舱体正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆润八角柱形街机机舱，下半部为深邃暗金与翠绿发光饰条基座（正面中央带内凹出物舱口与琥珀色摇杆凸台，背面为平整银灰散热装甲板），上半部为四根流线型钛金立柱支撑的透明拱顶展示舱框架。",
   },
   {
     id: "claw-arm",
@@ -116,7 +116,7 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
     icon: "🌾",
     nameZh: "SR 农大黄金麦穗胶囊 ($1.5 / 15 积分)",
     nameEn: "SR CAU Golden Wheat Capsule ($1.5 / 15 Pts)",
-    roleZh: "琥珀金星轨底座 + 重穗黄金麦浪 + 翡翠叶徽章",
+    roleZh: "琥珀金星轨基座 + 重穗黄金麦浪 + 翡翠叶徽章",
     roleEn: "Amber star-orbit base + sculpted golden wheat + emerald leaf crest",
     glbUrl: "/arcade-3d/sr-golden-wheat.glb",
     sheetUrl: "/arcade-3d/sheets/sr-golden-wheat.png",
@@ -127,7 +127,7 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
     fallbackRgb: [245, 158, 11],
     accentRgb: [16, 185, 129],
     promptZh:
-      "生成用于三维重建的单个SR级中国农大黄金麦穗胶囊扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆润胶囊形3D潮玩盲盒，下半部为琥珀金金属底座并环绕一圈翠绿农林星轨浮雕，上半部为立体饱满的金黄色重穗麦浪雕塑，正面中央镶嵌一枚翡翠绿叶子徽章，背面为对称饱满的黄金麦粒纹理。",
+      "生成用于三维重建的单个SR级中国农大黄金麦穗胶囊扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆润胶囊形3D潮玩盲盒，下半部为琥珀金金属基座并环绕一圈翠绿农林星轨浮雕，上半部为立体饱满的金黄色重穗麦浪雕塑，正面中央镶嵌一枚翡翠绿叶子徽章，背面为对称饱满的黄金麦粒纹理。",
   },
   {
     id: "mint-star-dino",

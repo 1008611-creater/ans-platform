@@ -44,7 +44,7 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
     </nav>
     <header className={styles.studioOverview}>
       <div>
-        <div className={styles.workflowMeta}><span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">⚡ 官方闭环工作台</span><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span></div>
+        <div className={styles.workflowMeta}><span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">⚡ 官方在线工作台</span><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span></div>
         <h1>{ts("title")}</h1><p className={styles.studioLead}>{ts("summary")}</p>
         <div className={styles.studioActions}>
           <Button asChild><a href="#market-run">{ts("tryEditor")}<ArrowUpRight aria-hidden="true" /></a></Button>

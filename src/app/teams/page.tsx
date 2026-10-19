@@ -231,14 +231,14 @@ export default async function TeamsPage() {
               </CardContent>
             </Card>
             <Card className="group overflow-hidden border-border/80 transition-colors hover:border-primary/50">
-              <img src="/catalog/gitglow-v1/aigc-workspace.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
+              <img src="/catalog/gitglow-v1/infinite-canvas.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-base">{isEn ? "AIGC Creative Track · Storyboard & Drama" : "AIGC 创作赛道 · 短剧分镜与多模态工坊"}</CardTitle>
+                  <CardTitle className="text-base">{isEn ? "AIGC Creative Track · Multimodal Canvas" : "AIGC 创作赛道 · 无限画布与多模态工坊"}</CardTitle>
                   <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
                 </div>
                 <CardDescription className="line-clamp-1 group-hover:line-clamp-none">
-                  {isEn ? "Connect Solara Canvas, Plane project tracking, and Toonflow script-to-video pipelines." : "直连 Solara 无限画布、Plane 团队排期与 Toonflow 漫剧流水线，一站式沉淀参赛作品集。"}
+                  {isEn ? "Connect CAUAI Infinite Canvas, Plane project tracking, and multimodal video pipelines." : "直连 CAUAI 无限画布、Plane 团队排期与多模态视频流水线，一站式沉淀参赛作品集。"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
@@ -254,10 +254,10 @@ export default async function TeamsPage() {
               const st = COMPETITION_STATUS[c.status] ?? { zh: c.status, en: c.status, variant: "outline" as const };
               const isAgri = c.title.toLowerCase().includes("agri") || c.title.includes("农") || (c.url ?? "").includes("agrihackathon");
               const fallbackCovers = [
-                "/catalog/gitglow-v1/aigc-workspace.webp",
-                "/catalog/gitglow-v1/niannian-drama.webp",
-                "/catalog/gitglow-v1/hermes-agent.webp",
                 "/catalog/gitglow-v1/infinite-canvas.webp",
+                "/catalog/gitglow-v1/vibephoto.webp",
+                "/catalog/gitglow-v1/hermes-agent.webp",
+                "/catalog/gitglow-v1/ai-video-services.webp",
               ];
               const coverSrc = isAgri ? "/competitions/agrihackathon/gitglow-hub.webp" : fallbackCovers[idx % fallbackCovers.length];
               const targetHref = c.url || (isAgri ? "/competitions/agrihackathon" : "/competitions/aigc");
@@ -294,19 +294,19 @@ export default async function TeamsPage() {
             {competitions.length < 2 && (
               <Card className="group overflow-hidden border-border/80 transition-colors hover:border-primary/50">
                 <Link href="/competitions/aigc" className="block overflow-hidden border-b">
-                  <img src="/catalog/gitglow-v1/aigc-workspace.webp" alt="AIGC Creative Track" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
+                  <img src="/catalog/gitglow-v1/infinite-canvas.webp" alt="AIGC Creative Track" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
                 </Link>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-base">
                       <Link href="/competitions/aigc" className="hover:underline">
-                        {isEn ? "AIGC Creative Track · Storyboard & Drama" : "AIGC 创作赛道 · 短剧分镜与多模态工坊"}
+                        {isEn ? "AIGC Creative Track · Multimodal Canvas" : "AIGC 创作赛道 · 无限画布与多模态工坊"}
                       </Link>
                     </CardTitle>
                     <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
                   </div>
                   <CardDescription className="line-clamp-1 group-hover:line-clamp-none">
-                    {isEn ? "Connect Solara Canvas, Plane project tracking, and Toonflow script-to-video pipelines." : "直连 Solara 无限画布、Plane 团队排期与 Toonflow 漫剧流水线，一站式沉淀参赛作品集。"}
+                    {isEn ? "Connect CAUAI Infinite Canvas, Plane project tracking, and multimodal video pipelines." : "直连 CAUAI 无限画布、Plane 团队排期与多模态视频流水线，一站式沉淀参赛作品集。"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center justify-between pt-0">

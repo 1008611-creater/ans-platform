@@ -301,9 +301,9 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   pointer-events: auto;
   cursor: pointer;
   user-select: none;
-  transform: translate3d(-50%, -100%, 0);
+  transform: translate3d(-50%, 0, 0);
   transform-origin: 50% 100%;
-  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), left 0.32s cubic-bezier(0.22, 1, 0.36, 1), top 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), left 0.32s cubic-bezier(0.22, 1, 0.36, 1), bottom 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 #ans-dino-live-bubble[data-bubble-state="alert"][data-idle-dim="true"] {
   opacity: 0.38;

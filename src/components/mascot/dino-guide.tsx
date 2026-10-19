@@ -147,29 +147,37 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   }
   useEffect(() => {
     function onOpenCompanionTab(event: Event) {
-      const custom = event as CustomEvent<{ tab?: "none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt" }>;
-      const targetTab = custom.detail?.tab ?? "pet";
-      allowChatOpenRef.current = true;
-      document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
+      const custom = event as CustomEvent<{ tab?: "none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt"; draft?: string }>;
+      const targetTab = custom.detail?.tab ?? "none";
+      const incomingDraft = custom.detail?.draft?.trim();
+      if (incomingDraft) {
+        updateThread(mode, current => ({ ...current, draft: incomingDraft }));
+      }
       setRequestedTab(targetTab);
-      panelSize.prepare();
-      setOpen(true);
+      changeOpen(true);
       window.dispatchEvent(new CustomEvent("ans:dino-activate"));
     }
-    function onOpenCompanionChat() {
-      allowChatOpenRef.current = true;
-      document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
-      panelSize.prepare();
-      setOpen(true);
+    function onOpenCompanionChat(event: Event) {
+      const custom = event as CustomEvent<{ draft?: string }>;
+      const incomingDraft = custom.detail?.draft?.trim();
+      if (incomingDraft) {
+        updateThread(mode, current => ({ ...current, draft: incomingDraft }));
+      }
+      changeOpen(true);
       window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+    }
+    function onEnterMacroFromDialog() {
+      changeOpen(false);
     }
     window.addEventListener("ans:open-companion-tab", onOpenCompanionTab);
     window.addEventListener("ans:open-companion-chat", onOpenCompanionChat);
+    window.addEventListener("ans:enter-dino-macro", onEnterMacroFromDialog);
     return () => {
       window.removeEventListener("ans:open-companion-tab", onOpenCompanionTab);
       window.removeEventListener("ans:open-companion-chat", onOpenCompanionChat);
+      window.removeEventListener("ans:enter-dino-macro", onEnterMacroFromDialog);
     };
-  }, [panelSize]);
+  }, [panelSize, mode]);
   function submit(event?: FormEvent, quick?: string) {
     event?.preventDefault(); const input = (quick ?? draft).trim().slice(0, 1200); if (!input || blocked) return;
     scrollState.current[mode].follow = true; setUnread(false); setUndo(null);
@@ -206,7 +214,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const voiceHint = !actor ? ui("voiceSignIn") : prefs.voice && !voiceOffer ? ui("voiceUnavailable") : !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceFree");
   const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
   return <>
-    {!open && <CompanionQuestPin onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />}
+    <CompanionQuestPin dialogOpen={open} onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />
     <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={nextOpen => {
       if (nextOpen && typeof WebGLRenderingContext !== "undefined" && !allowChatOpenRef.current) {
@@ -255,8 +263,11 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           </div>
         </header>
         <div className="ans-companion-mode" role="group" aria-label={ui("conversationMode")}>
-          <button type="button" aria-pressed={true} onClick={() => changeMode(actor ? "agent" : "guide")} disabled={agent.busy || agent.checkingReceipts}>
-            {locale === "zh" ? "🤖 Agent 对话" : "🤖 Agent Chat"}
+          <button type="button" aria-pressed={mode === "agent"} onClick={() => changeMode("agent")} disabled={!actor || agent.busy || agent.checkingReceipts}>
+            {ui("agentMode")}
+          </button>
+          <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>
+            {ui("guideMode")}
           </button>
           <button
             type="button"
@@ -299,6 +310,23 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
               {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} /></Suspense>}</div>)}
               {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
               {mode === "agent" && <><AgentRecoveryStatus turns={agent.recovery.turns.filter(turn => turn.ticket !== agent.currentTicket)} onCheck={agent.recovery.check} /><AgentTurnStatus agent={agent} /></>}
+              <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}>
+                <div>
+                  {nextActions.map(action => {
+                    const Icon = icons[action.icon];
+                    return (
+                      <Link key={action.href + action.title} href={action.href} title={action.detail} onClick={() => changeOpen(false)}>
+                        <Icon aria-hidden="true" />
+                        <span>
+                          <strong>{action.title}</strong>
+                          <small className="sr-only">{action.detail}</small>
+                        </span>
+                        <ArrowUpRight aria-hidden="true" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </nav>
             </div>
           </div>
           {showLatest && (messages.length > 0 || agent.quote) && <button className="ans-companion-latest" type="button" onClick={jumpToLatest}><ArrowDown aria-hidden="true" />{ui(unread ? "newReplyBelow" : "backToLatest")}</button>}

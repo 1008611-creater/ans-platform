@@ -8,7 +8,7 @@ import styles from "./market-detail.module.css";
 const FALLBACK_COVERS: Record<string, string> = {
   learning: "/catalog/gitglow-v1/astro-starlight.webp",
   career: "/catalog/gitglow-v1/react-interview.webp",
-  aigc: "/catalog/gitglow-v1/niannian-drama.webp",
+  aigc: "/catalog/gitglow-v1/infinite-canvas.webp",
   web: "/competitions/agrihackathon/gitglow-tracks.webp",
   github: "/catalog/gitglow-v1/hermes-agent.webp",
   business: "/competitions/agrihackathon/gitglow-awards.webp",
@@ -19,7 +19,7 @@ const FALLBACK_COVERS: Record<string, string> = {
 const OUTER_FALLBACK_COVERS: Record<string, string> = {
   learning: "/catalog/oil-v1/astro-starlight.svg",
   career: "/catalog/oil-v1/react-interview.svg",
-  aigc: "/catalog/oil-v1/niannian-drama.svg",
+  aigc: "/catalog/oil-v1/infinite-canvas.svg",
   web: "/catalog/oil-v1/ans-3d-showcase.svg",
   github: "/catalog/oil-v1/hermes-agent.svg",
   business: "/catalog/oil-v1/saleor-commerce.svg",
@@ -30,12 +30,12 @@ const OUTER_FALLBACK_COVERS: Record<string, string> = {
 function resolveOuterOilCover(coverUrl: string, category?: string): string {
   const match = coverUrl.match(/\/catalog\/gitglow-v1\/([a-z0-9-]+)\.(?:webp|svg|png)$/i);
   if (match) return `/catalog/oil-v1/${match[1]}.svg`;
-  return (category && OUTER_FALLBACK_COVERS[category]) || "/catalog/oil-v1/cauai-one.svg";
+  return (category && OUTER_FALLBACK_COVERS[category]) || "/catalog/oil-v1/ans-3d-showcase.svg";
 }
 
 export async function MarketDetailPreview({ listing }: { listing: MarketListingInput }) {
   const [t, locale] = await Promise.all([getTranslations("product.marketDetail"), getLocale()]);
-  const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/cauai-one.webp";
+  const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/magic-resume.webp";
   const outerCoverSrc = resolveOuterOilCover(coverSrc, listing.category);
   return <section aria-label={t("previewTitle")} className={styles.preview}>
     <DualCoverPreview
