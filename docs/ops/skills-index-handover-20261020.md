@@ -15,8 +15,9 @@ python -c "import json;d=json.load(open('skills.json',encoding='utf-8'));s=d['sk
 1. **路径用了 Windows 反斜杠**（约 174 条），例如
    `{"name":"ai-video-fundamentals-skill","description":"name: ai-video-fundamentals-skill","files":["agents\\openai.yaml","SKILL.md"]}`。
    macOS / Linux 客户端按字面量取文件会失败（`agents\openai.yaml` 不是合法 POSIX 相对路径）。
-2. **description 不是描述**：多条记录把 `SKILL.md` 前十行的 `name: <slug>` 行当成描述（如上例），
-   还有条目出现 UTF-8 被按 GBK 解码后的乱码（``）。
+2. **description 不是描述**：**148 / 202 条**把 `SKILL.md` 开头的 `name: <slug>` 行当成描述（如上例），
+   另有部分条目描述为空。（2026-10-20 复核：JSON 文本里 **0 处 U+FFFD**，此前的"乱码"是终端按 GBK 显示造成的误判，
+   已在下方改成交互式核对，不再作为缺陷主张。）
 3. **source 指向旧目录**：条目里仍在引用 `plugins/claude/prompts-chat/skills`，
    而 ANS 仓库里同一批 skill 已迁到 `ai-video-skills-source/`（`plugins/...` 仍在仓库中，但那是历史路径）。
 
@@ -50,7 +51,7 @@ assert skills, "空清单"
 for s in skills:
     assert "\\" not in json.dumps(s), f"{s['name']} 含反斜杠路径"
     assert s.get("description") and not s["description"].startswith("name:"), f"{s['name']} 描述不合法"
-    assert "\ufffd" not in json.dumps(s), f"{s['name']} 含替换字符（编码损坏）"
+    assert "\ufffd" not in json.dumps(s), f"{s['name']} 含替换字符（编码损坏）"  # 本次实测 0 处，作为回归保险
     for f in s.get("files", []):
         assert not f.startswith("/"), f"{s['name']} 出现绝对路径 {f}"
 print("OK", len(skills))
