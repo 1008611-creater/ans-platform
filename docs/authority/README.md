@@ -32,7 +32,14 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
 
 ## 当前状态（2026-10-20）
 
-- `A-PLAZA-01 / 02 / 04` 正在由 `fix/explore-plaza-authority-restore-20261020` 恢复：
-  合并前 `origin/main` 与 `origin/develop` 仍是回退态，`npm run check:authority:upstream` 会报红 —— 这是预期的。
-- `A-GATE-02`：`ci.yml` 已覆盖 `develop` 的 push 与 PR。
-- `A-SIGNAL-01`：`ops/deploy-target`(219422c9) ≠ `ops/prod-live`(f32e06f0)，且 deploy-target 落后 main 124 个提交，发布前需人工确认。
+- `A-PLAZA-01 / 02 / 04`：已由 #149 合入 main 恢复（`npm run check:authority:upstream` 现在通过，
+  轮转封面、页头标题与可访问性探针都在位上）。
+- `A-AGENT-01`：已生效。线上 Agent 就是小恐龙伴侣 `DinoGuide`（`layout.tsx` 挂载 +
+  `useCompanionAgent` 链路），旧 `PromptBuilder` 浮层不得回归。
+- `A-AGENT-02 / 03 / 04 / 05`：**pending**（守卫自动跳过）。对应的实现还在评审中的 PR 栈里
+  （#150 扣费先报价再确认 → #151 面板文案 i18n → #152 3D 按需加载 → #153 抓娃娃载荷与聊天确认 →
+  #154 诚实性与无障碍）。**谁先把它们合入 main，谁就在同一个 PR 里把 status 改回 `authoritative`**，
+  否则规则一开就会红。
+- `A-SIGNAL-01`：`ops/deploy-target` ≠ `ops/prod-live`，且 deploy-target 落后 main 多个提交，
+  发布前需人工确认"未上线"还是"未回写"。注意 `ops/` 目录**不在 git 里**（`git log --all -- ops` 为空），
+  它是部署机上的工作树文件，`git-health` 读不到时会打印 `(无)`——发布一致性检查需要先决定它是否入库。
