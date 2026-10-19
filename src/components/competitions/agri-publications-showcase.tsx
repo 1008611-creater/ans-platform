@@ -33,11 +33,71 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
   },[load,clear]);
   const at=(value:string)=>new Intl.DateTimeFormat(locale,{timeZone:"Asia/Shanghai",dateStyle:"medium",timeStyle:"short"}).format(new Date(value));
   const errorText=["AGRI_NOT_CONFIGURED","AGRI_WORKSPACE_NOT_CONFIGURED","AGRI_EDITION_NOT_CONFIGURED"].includes(error)?t("notConfigured"):error==="AGRI_PUBLICATION_NOT_FOUND"||error==="NOT_FOUND"?t("unavailable"):t("errors.INTERNAL_ERROR");
+  const pioneerShowcases = [
+    {
+      title: locale === "zh" ? "智灌云脑 · 日光温室蒸腾预测与精准水肥一体 Agent" : "Smart Irrigation Brain · Greenhouse Evapotranspiration & Fertigation Agent",
+      track: locale === "zh" ? "智慧种植与精准水肥赛道" : "Smart Planting & Fertigation",
+      cover: "/competitions/agrihackathon/gitglow-workflow.webp",
+      summary: locale === "zh" ? "融合土壤多深度墒情传感器与气象预报数据，通过大模型动态规划未来 24 小时滴灌脉冲策略。" : "Fuses multi-depth soil moisture sensors with weather forecasts to schedule 24h drip irrigation pulses.",
+      hash: locale === "zh" ? "📖 官方选题参考范例" : "📖 Track Reference Sample",
+      href: "/competitions/agrihackathon/wall",
+    },
+    {
+      title: locale === "zh" ? "植保慧眼 · 玉米与番茄叶部病虫害边缘端毫秒级早筛" : "CropGuard Vision · Edge Millisecond Early Screening for Maize & Tomato Diseases",
+      track: locale === "zh" ? "病虫害多模态早筛赛道" : "Crop Disease Early Screening",
+      cover: "/competitions/agrihackathon/gitglow-tracks.webp",
+      summary: locale === "zh" ? "结合轻量化视觉检测与 Qwen2.5-VL 多模态农艺处方生成，支持田间离线推理与防治建议。" : "Combines lightweight vision detection with Qwen2.5-VL agronomic prescriptions for field inference.",
+      hash: locale === "zh" ? "📖 官方选题参考范例" : "📖 Track Reference Sample",
+      href: "/competitions/agrihackathon/wall",
+    },
+    {
+      title: locale === "zh" ? "牧瞳巡检 · 规模化牧场畜禽体况评分与异常行为预警" : "LivestockEye · Automated Body Condition Scoring & Anomaly Alerting",
+      track: locale === "zh" ? "畜牧巡检与农业机器人赛道" : "Livestock Vision & Robotics",
+      cover: "/competitions/agrihackathon/gitglow-scoring.webp",
+      summary: locale === "zh" ? "利用双目深度相机与姿态关键点追踪，全天候监测奶牛反刍时长与采食节律，自动推送干预提醒。" : "Uses stereo depth cameras and pose keypoint tracking to monitor rumination and feeding rhythms.",
+      hash: locale === "zh" ? "📖 官方选题参考范例" : "📖 Track Reference Sample",
+      href: "/competitions/agrihackathon/wall",
+    },
+  ];
   return <section className="min-w-0 space-y-6">
     <div className="flex flex-wrap items-center justify-between gap-3"><p className="max-w-prose text-sm leading-6 text-muted-foreground">{t("showcaseHint")}</p><Button variant="outline" disabled={loading} onClick={()=>void load()}>{t("refresh")}</Button></div>
     {loading&&<div role="status" className="space-y-3"><span className="sr-only">{t("loading")}</span><Skeleton className="h-5 w-2/3"/><Skeleton className="h-4 w-1/2"/></div>}
     {error&&<div className="space-y-3 py-6"><p role="alert" className="text-sm">{errorText}</p>{["AGRI_NOT_CONFIGURED","AGRI_WORKSPACE_NOT_CONFIGURED","AGRI_EDITION_NOT_CONFIGURED"].includes(error)&&<div className="flex flex-wrap gap-2"><Button asChild variant="outline" size="sm"><WorkspaceLink href="/explore?category=competition&subcategory=agri-wall">{t("browseWall")}</WorkspaceLink></Button><Button asChild variant="ghost" size="sm"><WorkspaceLink href="/competitions/agrihackathon/submissions">{t("goToSubmissions")}</WorkspaceLink></Button></div>}</div>}
-    {list&&<>{!list.items.length&&<div className="space-y-3 rounded-2xl border bg-muted/20 p-6"><h2 className="font-semibold">{t("empty")}</h2><p className="max-w-prose text-sm leading-6 text-muted-foreground">{t("emptyHint")}</p><div className="flex flex-wrap gap-2 pt-1"><Button asChild variant="outline" size="sm"><WorkspaceLink href="/explore?category=competition&subcategory=agri-wall">{t("browseWall")}</WorkspaceLink></Button><Button asChild variant="ghost" size="sm"><WorkspaceLink href="/competitions/agrihackathon/submissions">{t("goToSubmissions")}</WorkspaceLink></Button></div></div>}<ul className="divide-y">{list.items.map(row=><li key={row.id} className="space-y-4 py-6"><p className="text-xs text-muted-foreground">{t(row.basis==="FROZEN"&&!row.correctionPreviousSubmissionId&&row.stage==="PRELIMINARY"?"versionPreliminaryFrozen":row.basis==="FROZEN"?"versionFrozen":"versionCurrent")}{row.correctionPreviousSubmissionId?" · "+t("versionCorrection"):""} · {t("stage."+row.stage)}</p><PublicContent content={row.content} headingLevel="h2"/><div className="flex flex-wrap items-center gap-4"><span className="text-xs text-muted-foreground">{t("publishedAt",{at:at(row.publishedAt)})}</span><Button asChild variant="outline"><WorkspaceLink prefetch={false} href={"/competitions/agrihackathon/showcase/"+encodeURIComponent(row.id)}>{t("viewProject")}</WorkspaceLink></Button></div></li>)}</ul>{list.nextCursor&&<Button variant="outline" disabled={loading} onClick={()=>void load(list.nextCursor!)}>{t("nextPage")}</Button>}</>}
+    {list&&<>{!list.items.length&&<div className="space-y-4">
+      <div className="space-y-3 rounded-2xl border bg-muted/20 p-6"><h2 className="font-semibold">{t("empty")}</h2><p className="max-w-prose text-sm leading-6 text-muted-foreground">{t("emptyHint")}</p><div className="flex flex-wrap gap-2 pt-1"><Button asChild variant="outline" size="sm"><WorkspaceLink href="/explore?category=competition&subcategory=agri-wall">{t("browseWall")}</WorkspaceLink></Button><Button asChild variant="ghost" size="sm"><WorkspaceLink href="/competitions/agrihackathon/submissions">{t("goToSubmissions")}</WorkspaceLink></Button></div></div>
+      <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4" data-testid="agri-showcase-pioneer-samples">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-foreground">
+          <span>{locale === "zh" ? "📖 查看三大赛道参考样板（3 个选题范例）" : "📖 View Pioneer Reference Showcase Samples Across 3 Tracks"}</span>
+          <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
+          <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">{locale === "zh" ? "收起 ▴" : "Collapse ▴"}</span>
+        </summary>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {pioneerShowcases.map((sample, idx) => (
+            <div key={idx} className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/90 transition hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-md">
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+                <img src={sample.cover} alt={sample.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                <span className="absolute bottom-2.5 left-3 rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-[11px] font-medium text-white">
+                  {sample.track}
+                </span>
+              </div>
+              <div className="flex flex-1 flex-col justify-between space-y-3 p-4">
+                <div className="space-y-1.5">
+                  <h4 className="font-semibold leading-snug text-foreground">{sample.title}</h4>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{sample.summary}</p>
+                </div>
+                <div className="flex items-center justify-between border-t border-border/50 pt-2.5 text-xs">
+                  <span className="font-mono text-[11px] text-muted-foreground">{sample.hash}</span>
+                  <WorkspaceLink href={sample.href} className="font-medium text-emerald-600 hover:underline dark:text-emerald-400">
+                    {locale === "zh" ? "查看实时作品墙 →" : "Live Wall →"}
+                  </WorkspaceLink>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </details>
+    </div>}<ul className="divide-y">{list.items.map(row=><li key={row.id} className="space-y-4 py-6"><p className="text-xs text-muted-foreground">{t(row.basis==="FROZEN"&&!row.correctionPreviousSubmissionId&&row.stage==="PRELIMINARY"?"versionPreliminaryFrozen":row.basis==="FROZEN"?"versionFrozen":"versionCurrent")}{row.correctionPreviousSubmissionId?" · "+t("versionCorrection"):""} · {t("stage."+row.stage)}</p><PublicContent content={row.content} headingLevel="h2"/><div className="flex flex-wrap items-center gap-4"><span className="text-xs text-muted-foreground">{t("publishedAt",{at:at(row.publishedAt)})}</span><Button asChild variant="outline"><WorkspaceLink prefetch={false} href={"/competitions/agrihackathon/showcase/"+encodeURIComponent(row.id)}>{t("viewProject")}</WorkspaceLink></Button></div></li>)}</ul>{list.nextCursor&&<Button variant="outline" disabled={loading} onClick={()=>void load(list.nextCursor!)}>{t("nextPage")}</Button>}</>}
     {item&&<article className="space-y-5"><p className="text-sm text-muted-foreground">{t(item.basis==="FROZEN"&&!item.correctionPreviousSubmissionId&&item.stage==="PRELIMINARY"?"versionPreliminaryFrozen":item.basis==="FROZEN"?"versionFrozen":"versionCurrent")}{item.correctionPreviousSubmissionId?" · "+t("versionCorrection"):""} · {t("stage."+item.stage)}</p><PublicContent content={item.content} headingLevel="h2"/><dl className="space-y-2 border-t pt-4 text-xs text-muted-foreground"><div><dt>{t("submissionVersion")}</dt><dd className="break-all">{item.artifactVersionId}</dd></div><div><dt>{t("acceptedAt")}</dt><dd>{at(item.acceptedAt)}</dd></div><div><dt>{t("publishedLabel")}</dt><dd>{at(item.publishedAt)}</dd></div></dl></article>}
   </section>;
 }

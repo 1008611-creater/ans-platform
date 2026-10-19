@@ -20,7 +20,7 @@ export default function VibeHubTermClient({ slug, content, lesson, detail, previ
   return <main className="vh-page"><div className="vh-detail-toolbar"><Link href={`/vibe-hub?lang=${lang}`}>← {t("all")}</Link><div className="vh-detail-actions"><FavoriteButton slug={slug} /><CopyTermButton text={markdown} markdown /><CopyTermButton text={content.agentPrompt || lesson?.agentPrompt || lesson?.flowLesson?.agentPrompt || markdown} /><PronunciationButton slug={slug} /></div></div>
     <SourceContent slug={slug} officialEntry={detail} html={content.html} className="vh-detail-content" demo={hasNativeDemo(slug) ? <TermDemo slug={slug} /> : undefined} />
     {lesson?.lessonPractice && <LessonQuiz id={slug} practice={lesson.lessonPractice} />}
-    <AnsPracticeLinks term={slug} />
+    <AnsPracticeLinks termSlug={slug} />
     <nav className="vh-detail-nav" aria-label={t("terms")}><Link href={`/vibe-hub/${previous.slug}?lang=${lang}`} rel="prev">← {lang === "zh" ? previous.zhName : previous.name}</Link><Link href={`/vibe-hub/${next.slug}?lang=${lang}`} rel="next">{lang === "zh" ? next.zhName : next.name} →</Link></nav>
   </main>;
 }

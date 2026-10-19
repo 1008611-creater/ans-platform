@@ -7,7 +7,7 @@
   "generate": "制作四视图",
   "submitting": "正在提交…",
   "unavailable": "四视图服务尚未就绪，暂不能提交。",
-  "insufficient": "积分不足，请查看算力余额。",
+  "insufficient": "积分不足，可前往「算力福利中心 (/workspace/benefits)」免费领 100~150 积分或查看算力余额。",
   "requestFailed": "请求未能确认，请先查看任务状态；同一原图和比例重试不会重复扣费。",
   "loadFailed": "暂时无法读取四视图，请稍后再试。",
   "loading": "正在读取四张参考图…",

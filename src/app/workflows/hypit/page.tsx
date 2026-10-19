@@ -16,7 +16,7 @@ export async function generateMetadata() {
 export default async function HypitPage() {
   const t = await getTranslations("product.hypit");
   return <div className="ans-product-shell"><div className="ans-product-container space-y-10 py-10 sm:py-12">
-    <Link href="/workflows" className="ans-text-link w-fit"><ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("back")}</Link>
+    <Link href="/market" className="ans-text-link w-fit"><ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("back")}</Link>
     <div className={styles.hero}>
       <header className={styles.intro}>
         <p className="ans-eyebrow">{t("tag")}</p>
@@ -31,11 +31,10 @@ export default async function HypitPage() {
           <Button asChild><a href="#hypit-workspace">{t("open")}<ArrowDown className="ms-2 h-4 w-4" aria-hidden="true" /></a></Button>
           <a href="#hypit-examples" className="ans-text-link text-sm">{t("overview.examples")}</a>
         </div>
-        <p className="mt-6 text-sm leading-6 text-muted-foreground">{t("status")}</p>
-        <p className="mt-2 text-xs leading-6 text-muted-foreground">{t("channelsNote")}</p>
       </header>
       <HypitShowcase />
     </div>
+    <div id="hypit-workspace" className="scroll-mt-24"><HypitWorkspace /></div>
     <section className={styles.preparation} aria-labelledby="hypit-preparation-title">
       <h2 id="hypit-preparation-title" className="text-xl font-semibold">{t("preparation.title")}</h2>
       <ol className={styles.steps}>{(["brief", "assets", "review"] as const).map((step, index) => <li key={step}>
@@ -43,7 +42,6 @@ export default async function HypitPage() {
         <div><h3 className="text-sm font-semibold">{t(`preparation.${step}.title`)}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{t(`preparation.${step}.body`)}</p></div>
       </li>)}</ol>
     </section>
-    <div id="hypit-workspace" className="scroll-mt-24"><HypitWorkspace /></div>
     <div className="border-t pt-6 text-xs leading-6 text-muted-foreground">
       <p>{t("internalNote")}</p>
       <div className="mt-2 flex gap-5"><a href="https://github.com/hypit-ai/hypit" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{t("sourceLink")}</a><a href="/workflows/hypit/HYPIT-LICENSE" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{t("licenseLink")}</a></div>

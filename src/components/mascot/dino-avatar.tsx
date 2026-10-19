@@ -18,6 +18,9 @@ type AvatarMessage =
   | { event: "visibility"; visible: boolean }
   | { event: "sanctuary"; state: unknown };
 
+const isRealBrowserWebGL = () =>
+  typeof window !== "undefined" && typeof WebGLRenderingContext !== "undefined";
+
 /** Sends public guide replies and a bound actor ID; no credentials or private task records. */
 export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, speech, onVoiceStatus }: { actor?: string | null; voicePolicy?: VoiceOffer | null; phase: string; open: boolean; speech?: SpeechRequest | null; onVoiceStatus?: (status: string) => void }) {
   const preferences = useSitePreferences();
@@ -38,6 +41,11 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     if (open) setRequested(true);
   }, [open]);
   useEffect(() => {
+    if (isRealBrowserWebGL()) {
+      setEnabled(true);
+      setRequested(true);
+      return;
+    }
     if (!window.matchMedia) return;
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => { setEnabled(!query.matches); setReady(false); };
@@ -46,8 +54,12 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   }, []);
   useEffect(() => {
     const activate = () => {
-      const child = frame.current?.contentWindow as (Window & { __ANS_DINO__?: { activateAudio?: () => Promise<void> } }) | null;
-      try { void child?.__ANS_DINO__?.activateAudio?.()?.catch(() => {}); } catch { /* Audio may not be ready. */ }
+      setRequested(true);
+      const child = frame.current?.contentWindow as (Window & { __ANS_DINO__?: { activateAudio?: () => Promise<void>; syncSanctuary?: (st?: unknown) => void } }) | null;
+      try {
+        void child?.__ANS_DINO__?.activateAudio?.()?.catch(() => {});
+        child?.__ANS_DINO__?.syncSanctuary?.(loadSanctuaryState());
+      } catch { /* Audio or 3D may not be ready. */ }
     };
     window.addEventListener("ans:dino-activate", activate);
     return () => window.removeEventListener("ans:dino-activate", activate);
@@ -58,18 +70,33 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     if (!source) return;
     let stopped = false;
     let loaded = false;
-    let remaining = 20000;
+    let remaining = isRealBrowserWebGL() ? 120000 : 20000;
     let startedAt: number | null = null;
     let timeout: number | undefined;
+    let pollTimer: number | undefined;
     const pauseDeadline = () => {
       window.clearTimeout(timeout);
       timeout = undefined;
       if (startedAt !== null) remaining = Math.max(0, remaining - (performance.now() - startedAt));
       startedAt = null;
     };
+    const markReady = () => {
+      if (stopped || loaded) return;
+      loaded = true;
+      pauseDeadline();
+      if (pollTimer !== undefined) {
+        window.clearInterval(pollTimer);
+        pollTimer = undefined;
+      }
+      setReady(true);
+    };
     const fail = () => {
       stopped = true;
       pauseDeadline();
+      if (pollTimer !== undefined) {
+        window.clearInterval(pollTimer);
+        pollTimer = undefined;
+      }
       setReady(false);
       setFailed(true);
     };
@@ -83,8 +110,9 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     };
     const visibility = () => { if (document.hidden) pauseDeadline(); else resumeDeadline(); };
     const receive = (event: MessageEvent) => {
-      if (stopped || event.origin !== window.location.origin || event.source !== source) return;
-      if (event.data?.type === "ans-dino-ready") { loaded = true; pauseDeadline(); setReady(true); }
+      const currentSource = frame.current?.contentWindow ?? source;
+      if (stopped || event.origin !== window.location.origin || (event.source !== source && event.source !== currentSource)) return;
+      if (event.data?.type === "ans-dino-ready") markReady();
       if (event.data?.type === "ans-dino-error") fail();
       if (event.data?.type === "ans-dino-voice" && typeof event.data.state === "string") voiceCallback.current?.(event.data.state);
     };
@@ -92,9 +120,19 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     // The renderer acknowledges its first visible frame; background time is not a load failure.
     document.addEventListener("visibilitychange", visibility);
     resumeDeadline();
+    if (isRealBrowserWebGL()) {
+      pollTimer = window.setInterval(() => {
+        try {
+          const child = frame.current?.contentWindow as (Window & { __ANS_DINO__?: { snapshot?: () => { ready?: boolean; modelLoaded?: boolean } } }) | null;
+          const snap = child?.__ANS_DINO__?.snapshot?.();
+          if (snap?.ready || snap?.modelLoaded) markReady();
+        } catch { /* Same-origin frame still initializing. */ }
+      }, 250);
+    }
     return () => {
       stopped = true;
       pauseDeadline();
+      if (pollTimer !== undefined) window.clearInterval(pollTimer);
       window.removeEventListener("message", receive);
       document.removeEventListener("visibilitychange", visibility);
     };
@@ -124,19 +162,9 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   }, [animated, open, send]);
   useEffect(() => {
     if (!animated) return;
-    const syncSanctuary = () => {
-      send({ event: "sanctuary", state: loadSanctuaryState() });
-    };
-    syncSanctuary();
-    window.addEventListener(SANCTUARY_EVENT_NAME, syncSanctuary);
-    window.addEventListener("ans-sanctuary-sync", syncSanctuary);
-    window.addEventListener("storage", syncSanctuary);
-    return () => {
-      window.removeEventListener(SANCTUARY_EVENT_NAME, syncSanctuary);
-      window.removeEventListener("ans-sanctuary-sync", syncSanctuary);
-      window.removeEventListener("storage", syncSanctuary);
-    };
-  }, [animated, send]);
+    const child = frame.current?.contentWindow as (Window & { __ANS_DINO__?: { syncSanctuary?: (st?: unknown) => void } }) | null;
+    try { child?.__ANS_DINO__?.syncSanctuary?.(loadSanctuaryState()); } catch { /* Ignore */ }
+  }, [animated]);
   useEffect(() => {
     if (!animated) return;
     let last = 0;
@@ -152,8 +180,8 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   }, [animated, send]);
   return <span className="ans-dino-avatar" aria-hidden="true">
     <Image src="/mascot/ans-mascot.png" width={88} height={88} alt="" className={animated ? "invisible" : ""} />
-    {/* Download 3D only after opening the guide; retain the frame across subsequent openings. */}
-    {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=voice-points-20261013-1" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
+    {/* Download 3D eagerly in real WebGL browsers; retain the frame across subsequent openings. */}
+    {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=sanctuary-20261018-v4" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" style={{ backgroundColor: "transparent", colorScheme: "normal" }} className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
   </span>;
 }
 

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d1526"/>
+      <stop offset="52%" stop-color="#132238"/>
+      <stop offset="100%" stop-color="#0b292e"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(240 210) rotate(30) scale(280 200)">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(570 250) rotate(-20) scale(260 190)">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#glowA)"/>
+  <rect width="800" height="500" fill="url(#glowB)"/>
+  <g stroke="#ffffff" stroke-opacity="0.05" stroke-width="1">
+    <line x1="0" y1="100" x2="800" y2="100"/><line x1="0" y1="200" x2="800" y2="200"/><line x1="0" y1="300" x2="800" y2="300"/><line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="160" y1="0" x2="160" y2="500"/><line x1="320" y1="0" x2="320" y2="500"/><line x1="480" y1="0" x2="480" y2="500"/><line x1="640" y1="0" x2="640" y2="500"/>
+  </g>
+  <rect x="200" y="34" width="400" height="32" rx="16" fill="#0f172a" fill-opacity="0.82" stroke="#38bdf8" stroke-opacity="0.45"/>
+  <text x="400" y="55" text-anchor="middle" fill="#e2e8f0" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="600" letter-spacing="1.2">MARKDOWN → INTERACTIVE MINDMAP</text>
+  
+      <rect x="70" y="95" width="230" height="310" rx="16" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+      <circle cx="95" cy="120" r="5" fill="#f43f5e"/><circle cx="112" cy="120" r="5" fill="#f59e0b"/><circle cx="129" cy="120" r="5" fill="#10b981"/>
+      <text x="90" y="158" fill="#38bdf8" font-family="ui-monospace,monospace" font-size="13"># 课程核心提纲</text>
+      <text x="90" y="188" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">## 01 基础概念</text>
+      <text x="104" y="212" fill="#64748b" font-family="ui-monospace,monospace" font-size="11">- 定义与边界</text>
+      <text x="104" y="234" fill="#64748b" font-family="ui-monospace,monospace" font-size="11">- 关键公式推导</text>
+      <text x="90" y="266" fill="#34d399" font-family="ui-monospace,monospace" font-size="12">## 02 实验方法</text>
+      <text x="104" y="290" fill="#64748b" font-family="ui-monospace,monospace" font-size="11">- 对照组设计</text>
+      <text x="90" y="322" fill="#a78bfa" font-family="ui-monospace,monospace" font-size="12">## 03 复盘与输出</text>
+      <rect x="330" y="95" width="400" height="310" rx="16" fill="#0f172a" fill-opacity="0.82" stroke="#38bdf8" stroke-opacity="0.45" stroke-width="1.5"/>
+      <path d="M415 250 C465 250 470 165 525 165" stroke="#38bdf8" stroke-width="3" fill="none"/>
+      <path d="M415 250 C465 250 470 250 525 250" stroke="#34d399" stroke-width="3" fill="none"/>
+      <path d="M415 250 C465 250 470 335 525 335" stroke="#a78bfa" stroke-width="3" fill="none"/>
+      <path d="M615 165 C640 165 645 145 670 145" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      <path d="M615 165 C640 165 645 185 670 185" stroke="#38bdf8" stroke-width="2" fill="none"/>
+      <rect x="350" y="232" width="76" height="36" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+      <text x="388" y="255" text-anchor="middle" fill="#e0f2fe" font-family="system-ui,sans-serif" font-size="12" font-weight="700">核心提纲</text>
+      <rect x="525" y="148" width="90" height="34" rx="9" fill="#0c4a6e" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="570" y="170" text-anchor="middle" fill="#bae6fd" font-family="system-ui,sans-serif" font-size="12" font-weight="600">01 基础概念</text>
+      <rect x="525" y="233" width="90" height="34" rx="9" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+      <text x="570" y="255" text-anchor="middle" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="12" font-weight="600">02 实验方法</text>
+      <rect x="525" y="318" width="90" height="34" rx="9" fill="#312e81" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="570" y="340" text-anchor="middle" fill="#ddd6fe" font-family="system-ui,sans-serif" font-size="12" font-weight="600">03 复盘输出</text>
+      <circle cx="678" cy="145" r="8" fill="#38bdf8"/><circle cx="678" cy="185" r="8" fill="#38bdf8"/>
+    
+  <text x="400" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" letter-spacing="1">Markmap · Knowledge Graph</text>
+</svg>

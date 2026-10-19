@@ -1382,9 +1382,9 @@ function w(e) {
         y: "78",
         fill: "#1f1e1b",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif",
-        fontSize: "88",
+        fontSize: "68",
         fontWeight: "750",
-        children: "oil-tone"
+        children: "ans-tone-guard"
       }), (0, n.jsx)("text", {
         x: "2",
         y: "134",
@@ -1505,17 +1505,17 @@ function x(e) {
       locale: t
     } = e,
     a = "zh" === t ? {
-      subtitle: "给前端 Agent 使用的产品界面与代码规范",
+      subtitle: "给前端 Agent 使用的产品界面与代码收敛规范",
       line1: "同时检查用户任务、数据状态、界面结构和代码归属。",
       line2: "新实现接管以后，删除旧状态、旧样式和兼容分支。",
       pills: ["任务与信息", "状态与数据", "组件与代码"],
-      action: "明确点名后启用"
+      action: "在 ANS Skill 库查看"
     } : {
-      subtitle: "Product interface and code rules for frontend agents",
+      subtitle: "Product interface and code simplification rules for frontend agents",
       line1: "Checks user tasks, data state, interface structure, and code ownership together.",
       line2: "Removes stale state, styles, and compatibility branches after replacement.",
       pills: ["Tasks & info", "State & data", "Components & code"],
-      action: "Invoke by name"
+      action: "View in ANS Skill Directory"
     };
   return (0, n.jsxs)("svg", {
     "aria-hidden": "true",
@@ -1579,10 +1579,10 @@ function x(e) {
           x: "66",
           y: "140",
           fill: "#171917",
-          fontSize: "72",
+          fontSize: "58",
           fontWeight: "700",
-          letterSpacing: "-2.6",
-          children: "oil-frontend"
+          letterSpacing: "-2.2",
+          children: "ans-code-simplify"
         }), (0, n.jsx)("rect", {
           x: "64",
           y: "164",
@@ -1696,34 +1696,32 @@ function j(e) {
     locale: t,
     skillId: a
   } = e;
-  return "oil-tone" === a ? (0, n.jsx)(w, {
+  return "ans-tone-guard" === a ? (0, n.jsx)(w, {
     locale: t
   }) : (0, n.jsx)(x, {
     locale: t
   });
 }
 let k = {
-  "oil-tone": "https://github.com/oil-oil/oil-tone",
-  "oil-frontend": "https://github.com/oil-oil/oil-frontend"
+  "ans-tone-guard": "/vibe-hub/vibehub-skill#ans-skill-matrix",
+  "ans-code-simplify": "/vibe-hub/vibehub-skill#ans-skill-matrix"
 };
 function q(e) {
   let {
       category: t,
       locale: a
     } = e,
-    i = "zh" === t || "en" === t ? "oil-tone" : "oil-frontend",
-    r = "zh" === a ? "在 GitHub 查看 ".concat(i) : "View ".concat(i, " on GitHub");
+    i = "zh" === t || "en" === t ? "ans-tone-guard" : "ans-code-simplify",
+    r = "zh" === a ? "在 ANS Skill 库查看 ".concat(i) : "View ".concat(i, " in ANS Skill Directory");
   return (0, n.jsxs)("section", {
     className: "aif-detail-skill-recommendation",
     "aria-labelledby": "aif-recommended-skill-title",
     children: [(0, n.jsx)("h2", {
       className: "section-title",
       id: "aif-recommended-skill-title",
-      children: "zh" === a ? "推荐使用的 Skill" : "Recommended Skill"
+      children: "zh" === a ? "推荐使用的 ANS Skill" : "Recommended ANS Skill"
     }), (0, n.jsx)("a", {
       href: k[i],
-      rel: "noreferrer",
-      target: "_blank",
       "aria-label": r,
       children: (0, n.jsx)(j, {
         locale: a,

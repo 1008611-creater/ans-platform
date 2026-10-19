@@ -30,19 +30,90 @@ const STATUS_LABELS: Record<string, { label: string; variant: "secondary" | "out
  *
  * 状态机：草稿/驳回可编辑并提交审核；待审冻结；已发布可继续追加新版本。
  */
+const BLUEPRINT_WORKFLOWS = [
+  {
+    title: "Agri-Vision 农田病虫害多模态诊断流水线",
+    version: "📖 官方蓝图范例",
+    cost: "3 点/次",
+    cover: "/competitions/agrihackathon/gitglow-hub.webp",
+    desc: "串联无人机遥感切片识别、气象知识库检索与防治处方生成节点。",
+    href: "/workflows/new",
+  },
+  {
+    title: "CAUAI 无限画布多模态视觉与视频生成流",
+    version: "📖 官方蓝图范例",
+    cost: "5 点/次",
+    cover: "/catalog/ans-pro-v1/infinite-canvas.webp",
+    desc: "支持在无限画布中串联分镜提示词、参考图锁定与多模态视频生成节点。",
+    href: "https://hb.cauai.fun/",
+  },
+  {
+    title: "Scholar-Web 科研主页与论文解读自动编排流",
+    version: "📖 官方蓝图范例",
+    cost: "2 点/次",
+    cover: "/catalog/ans-pro-v1/magic-resume.webp",
+    desc: "输入 PDF 论文摘要或 ORCID，自动生成双语学术主页结构与精选海报卡片。",
+    href: "/market/resume-website",
+  },
+];
+
 export default async function MyWorkflowsPage() {
   const session = await auth();
   if (!session?.user?.id) {
     return (
-      <div className="container max-w-2xl space-y-4 py-16">
-        <h1 className="text-2xl font-bold">我的工作流</h1>
-        <p className="text-muted-foreground">查看和管理自己创建的工作流需要先登录。</p>
-        <Link
-          href={`/login?callbackUrl=${encodeURIComponent("/workflows/mine")}`}
-          className="text-sm text-primary underline"
-        >
-          前往登录
-        </Link>
+      <div className="container max-w-5xl space-y-8 py-12" data-testid="workflows-mine-guest-preview">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-6">
+          <div className="space-y-1.5">
+            <Badge variant="secondary">当前未登录 · 私有草稿与线上版本需登录后管理</Badge>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">我的工作流</h1>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              登录后可管理你的工作流草稿、提交版本审核，并将通过审核的工作流上架市场获取 80% 积分分成。
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            <Button asChild>
+              <Link href={`/login?callbackUrl=${encodeURIComponent("/workflows/mine")}`}>登录管理我的工作流</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/workflows/new">
+                <Plus className="me-1.5 h-4 w-4" />
+                免登录体验新建画布
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <details className="group rounded-xl border bg-card p-5">
+          <summary className="cursor-pointer list-none font-semibold flex items-center justify-between">
+            <span>📖 官方参考工作流蓝图（3 个模板）</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
+          </summary>
+          <div className="mt-3 flex justify-end">
+            <Link href="/market" className="text-xs font-medium text-primary hover:underline">前往工具与工作流市场 →</Link>
+          </div>
+          <div className="mt-3 grid gap-5 md:grid-cols-3">
+            {BLUEPRINT_WORKFLOWS.map((item) => (
+              <Card key={item.title} className="group/card overflow-hidden transition hover:border-primary/40 hover:shadow-md">
+                <div className="aspect-[16/9] w-full overflow-hidden border-b bg-muted">
+                  <img src={item.cover} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+                </div>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className="text-xs">{item.version}</Badge>
+                    <span className="text-xs font-medium text-primary">{item.cost}</span>
+                  </div>
+                  <CardTitle className="mt-2 text-base">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="hidden text-xs leading-5 text-muted-foreground group-hover/card:block">{item.desc}</p>
+                  <div className="flex items-center justify-end border-t pt-3 text-xs text-muted-foreground">
+                    <Link href={item.href} className="font-medium text-primary hover:underline">打开蓝图 →</Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </details>
       </div>
     );
   }
@@ -69,8 +140,7 @@ export default async function MyWorkflowsPage() {
       </header>
 
       <p className="text-sm text-muted-foreground">
-        展示最近 100 个你创建的工作流。草稿和驳回可以继续编辑并提交审核；待审期间正文冻结；
-        已发布的工作流可以追加新版本，运行中的同学仍然跑在原来的不可变版本上。
+        展示你创建的最近 100 条工作流与发布状态。
       </p>
 
       {workflows.length === 0 ? (

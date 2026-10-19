@@ -33,10 +33,7 @@ export default async function NewWorkflowPage({ searchParams }: { searchParams: 
     <p className="text-sm leading-7 text-muted-foreground" role="status">{t(`source${sourceError}Body`)}</p>
     <div className="flex flex-wrap gap-3"><Button asChild><Link href="/explore">{t("backToProjects")}</Link></Button><Button asChild variant="outline"><Link href="/workflows/new">{t("createBlank")}</Link></Button></div>
   </div>;
-  if (!session?.user?.id) {
-    const callback = sourceSlug ? `/workflows/new?${new URLSearchParams({ project: sourceSlug })}` : "/workflows/new";
-    return <div className="container max-w-2xl space-y-4 py-16"><h1 className="text-2xl font-bold">{t("createTitle")}</h1><p className="text-muted-foreground">{t("loginBody")}</p>{sourceProject && <p className="text-sm">{t("sourceTitle")}: {sourceProject.title}</p>}<Button asChild><Link href={`/login?callbackUrl=${encodeURIComponent(callback)}`}>{t("login")}</Link></Button></div>;
-  }
+  const callback = sourceSlug ? `/workflows/new?${new URLSearchParams({ project: sourceSlug })}` : "/workflows/new";
   // Source text is reference material, never new template variables or a tool manifest.
   const literal = (value: string) => value.replace(/\{\{/g, "{ {").replace(/\}\}/g, "} }");
   const definition: WorkflowDefinition | undefined = sourceProject ? {
@@ -49,8 +46,24 @@ export default async function NewWorkflowPage({ searchParams }: { searchParams: 
     experience: { version: 1, output: { label: t("sourcePlan"), format: "markdown" }, sourceProjectSlug: sourceProject.slug, stages: [{ id: "draft", title: t("sourceGenerate"), nodeIds: ["draft"] }, { id: "result", title: t("sourceDeliver"), nodeIds: ["result"] }] },
   } : undefined;
   const initialMeta = sourceProject ? { slug: "", title: t("sourceWorkflowTitle", { title: sourceProject.title }).slice(0, 120), summary: t("sourceSummary", { title: sourceProject.title }).slice(0, 240), description: t("sourceDescription", { title: sourceProject.title, inputs: sourceProject.inputs, output: sourceProject.output, url: sourceProject.sourceUrl ?? `/explore/${sourceProject.slug}` }).slice(0, 10000) } : undefined;
+  const isEn = locale.toLowerCase().startsWith("en");
   return <div className="container max-w-7xl space-y-6 py-10">
-    <Link href="/workflows/mine" className="text-sm text-primary">{t("backToMine")}</Link>
+    {!session?.user?.id && (
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm" data-testid="workflow-new-guest-banner">
+        <p className="text-muted-foreground">
+          <strong className="font-semibold text-foreground">
+            {isEn ? "Visual Workflow Canvas (Guest Preview): " : "可视化工作流编排画布（免登录体验模式）："}
+          </strong>
+          {isEn
+            ? "Arrange model nodes, input variables, and output stages below; sign in to save your draft and publish to ANS Market (80% creator revenue share)."
+            : "你可以直接在下方编排模型节点、输入变量与输出阶段；登录账号后即可保存草稿并发布到市场获得 80% 算力分成。"}
+        </p>
+        <Button asChild size="sm">
+          <Link href={`/login?callbackUrl=${encodeURIComponent(callback)}`}>{t("login")}</Link>
+        </Button>
+      </div>
+    )}
+    <Link href="/workflows/mine" className="inline-flex min-h-9 items-center text-sm text-primary">{t("backToMine")}</Link>
     <header className="space-y-2"><h1 className="text-3xl font-bold tracking-tight">{t("createTitle")}</h1><p className="max-w-prose text-sm leading-7 text-muted-foreground">{t("createBody")}</p></header>
     {sourceProject && <section aria-labelledby="source-project-title" className="space-y-4 rounded-xl border bg-muted/30 p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs text-muted-foreground">{t("sourceTitle")}</p><h2 id="source-project-title" className="mt-2 break-words text-lg font-semibold">{sourceProject.title}</h2></div><Link href={`/explore/${sourceProject.slug}`} className="text-sm text-primary underline underline-offset-4">{t("sourceView")}</Link></div><p className="max-w-prose text-sm leading-7 text-muted-foreground">{t("sourceBody")}</p><dl className="grid gap-4 text-sm sm:grid-cols-2"><div><dt className="font-medium">{t("sourceInputs")}</dt><dd className="mt-2 whitespace-pre-line break-words text-muted-foreground">{sourceProject.inputs}</dd></div><div><dt className="font-medium">{t("sourceOutput")}</dt><dd className="mt-2 whitespace-pre-line break-words text-muted-foreground">{sourceProject.output}</dd></div></dl></section>}
     <WorkflowEditor mode="create" initialMeta={initialMeta} initialDefinition={definition} sourceProject={sourceProject} />

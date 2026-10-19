@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="52%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#112432"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(240 210) rotate(30) scale(280 200)">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(570 250) rotate(-20) scale(260 190)">
+      <stop offset="0%" stop-color="#f472b6" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#f472b6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#glowA)"/>
+  <rect width="800" height="500" fill="url(#glowB)"/>
+  <g stroke="#ffffff" stroke-opacity="0.05" stroke-width="1">
+    <line x1="0" y1="100" x2="800" y2="100"/><line x1="0" y1="200" x2="800" y2="200"/><line x1="0" y1="300" x2="800" y2="300"/><line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="160" y1="0" x2="160" y2="500"/><line x1="320" y1="0" x2="320" y2="500"/><line x1="480" y1="0" x2="480" y2="500"/><line x1="640" y1="0" x2="640" y2="500"/>
+  </g>
+  <rect x="200" y="34" width="400" height="32" rx="16" fill="#0f172a" fill-opacity="0.82" stroke="#38bdf8" stroke-opacity="0.45"/>
+  <text x="400" y="55" text-anchor="middle" fill="#e2e8f0" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="600" letter-spacing="1.2">OPEN DESIGN & INTERACTIVE PROTOTYPE</text>
+  
+      <rect x="80" y="100" width="185" height="290" rx="16" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+      <rect x="100" y="124" width="145" height="28" rx="7" fill="#1e293b"/>
+      <rect x="100" y="164" width="145" height="90" rx="10" fill="#172554" stroke="#38bdf8" stroke-opacity="0.5"/>
+      <rect x="100" y="270" width="145" height="36" rx="9" fill="#0284c7"/>
+      <text x="172" y="293" text-anchor="middle" fill="#ffffff" font-family="system-ui,sans-serif" font-size="12" font-weight="700">开始体验 →</text>
+      <rect x="335" y="100" width="185" height="290" rx="16" fill="#0f172a" stroke="#f472b6" stroke-width="1.5"/>
+      <rect x="355" y="124" width="145" height="65" rx="9" fill="#31102f" stroke="#f472b6" stroke-opacity="0.5"/>
+      <rect x="355" y="202" width="145" height="65" rx="9" fill="#1e293b"/>
+      <rect x="355" y="282" width="145" height="36" rx="9" fill="#db2777"/>
+      <text x="427" y="305" text-anchor="middle" fill="#ffffff" font-family="system-ui,sans-serif" font-size="12" font-weight="700">生成结果 ✓</text>
+      <rect x="575" y="130" width="145" height="230" rx="16" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+      <circle cx="647" cy="205" r="34" fill="#064e3b" stroke="#34d399" stroke-width="2"/>
+      <path d="M633 205 L643 215 L663 195" stroke="#6ee7b7" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M245 288 C285 288 295 190 335 190" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="6 4" fill="none"/>
+      <circle cx="245" cy="288" r="5" fill="#38bdf8"/><circle cx="335" cy="190" r="5" fill="#38bdf8"/>
+      <path d="M500 300 C535 300 540 235 575 235" stroke="#f472b6" stroke-width="2.5" stroke-dasharray="6 4" fill="none"/>
+      <circle cx="500" cy="300" r="5" fill="#f472b6"/><circle cx="575" cy="235" r="5" fill="#34d399"/>
+    
+  <text x="400" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" letter-spacing="1">Penpot · Clickable Flow</text>
+</svg>

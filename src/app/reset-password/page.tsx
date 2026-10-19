@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,8 @@ type ResetResponse = { message?: string; error?: string; retryAfter?: number } |
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const isEn = typeof document !== "undefined" && document.documentElement.lang?.toLowerCase().startsWith("en");
+  const locale = useLocale();
+  const isEn = locale.toLowerCase().startsWith("en");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -82,9 +84,8 @@ export default function ResetPasswordPage() {
       setCooldown(RESEND_COOLDOWN_SECONDS);
       setMessage(
         isEn
-          ? `${sent ? "Verification code resent" : "Verification code sent"}. Please check your inbox (and spam folder). Password reset uses a 4-digit security code.`
-          : (sent ? "验证码已重新发送" : "验证码已发送") +
-              "，请检查邮箱（包括垃圾邮件文件夹）。若 1 分钟内仍未收到，请确认该邮箱已注册，或点击下方按钮重新发送。",
+          ? `${sent ? "Verification code resent" : "Verification code sent"}. Please check your inbox (and spam folder).`
+          : (sent ? "验证码已重新发送" : "验证码已发送") + "，请查收邮箱（含垃圾邮件夹）。",
       );
     } catch {
       setError(isEn ? "Network temporarily unavailable, please try again later" : "网络暂时不可用，请稍后重试");
@@ -141,16 +142,32 @@ export default function ResetPasswordPage() {
         <h1 className="text-xl font-semibold">{isEn ? "Reset Password" : "找回密码"}</h1>
         <p className="text-xs text-muted-foreground">
           {isEn
-            ? "Receive a 4-digit password reset security code via your registered email (note: password reset uses 4 digits; new account registration uses 6 digits)."
-            : "通过注册邮箱接收 4 位密码重置安全码，验证后设置新密码（注：密码重置为 4 位数字，新用户注册为 6 位数字）"}
+            ? "Receive a 4-digit security code via your registered email to set a new password."
+            : "通过注册邮箱接收 4 位验证码并设置新密码。"}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-3">
         <div className="space-y-1">
-          <Label className="text-xs" htmlFor="reset-email">
-            {isEn ? "Email" : "邮箱"}
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs" htmlFor="reset-email">
+              {isEn ? "Email" : "邮箱"}
+            </Label>
+            {sent && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSent(false);
+                  setCode("");
+                  setMessage("");
+                  setError("");
+                }}
+                className="text-xs text-primary hover:underline"
+              >
+                {isEn ? "Change email" : "更换邮箱"}
+              </button>
+            )}
+          </div>
           <Input
             id="reset-email"
             type="email"

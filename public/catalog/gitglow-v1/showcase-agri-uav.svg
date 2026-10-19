@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+  <title>农田多光谱无人机巡检 · Agri-Vision · GitGlow 3D 详情内封</title>
+  <defs>
+    <linearGradient id="gg-bg-showcase-agri-uav" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#070b14"/>
+      <stop offset="55%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#13262f"/>
+    </linearGradient>
+    <radialGradient id="gg-glow-showcase-agri-uav" cx="78%" cy="28%" r="52%">
+      <stop offset="0%" stop-color="#b91c1c" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#b91c1c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="800" fill="url(#gg-bg-showcase-agri-uav)"/>
+  <rect width="1280" height="800" fill="url(#gg-glow-showcase-agri-uav)"/>
+  <g transform="translate(76, 84)">
+    <rect x="0" y="0" width="280" height="42" rx="21" fill="#1e293b" stroke="#b91c1c" stroke-width="1.5"/>
+    <text x="140" y="27" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#6ee7b7">GITGLOW 3D · 详情实景内封</text>
+    <text x="0" y="138" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="64" font-weight="900" fill="#f8fafc">农田多光谱无人机巡检</text>
+    <text x="0" y="218" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="48" font-weight="800" fill="#b91c1c">Agri-Vision</text>
+    <text x="0" y="286" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="24" fill="#cbd5e1">多光谱航拍切片与视觉诊断流，亚米级定位冬小麦条锈病并</text>
+    <text x="0" y="324" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="24" fill="#94a3b8">直出农艺处方图。</text>
+  </g>
+  <g transform="translate(690, 130) skewY(-6)">
+    <rect x="40" y="40" width="480" height="460" rx="22" fill="#090f1a" stroke="#334155" stroke-width="2"/>
+    <rect x="0" y="0" width="480" height="460" rx="22" fill="#0f172a" stroke="#b91c1c" stroke-width="3"/>
+    <rect x="0" y="0" width="480" height="46" rx="22" fill="#1e293b"/>
+    <circle cx="26" cy="23" r="7" fill="#ef4444"/><circle cx="48" cy="23" r="7" fill="#f59e0b"/><circle cx="70" cy="23" r="7" fill="#10b981"/>
+    <text x="450" y="28" text-anchor="end" font-family="ui-monospace, monospace" font-size="13" fill="#94a3b8">ans.cauai.fun/showcase-agri-uav</text>
+    <rect x="28" y="76" width="424" height="160" rx="14" fill="#1e293b"/>
+    <text x="52" y="122" font-family="ui-monospace, monospace" font-size="20" font-weight="800" fill="#38bdf8">ANS · AI NEVER STOPS</text>
+    <text x="52" y="162" font-family="ui-monospace, monospace" font-size="16" fill="#e2e8f0">✓ Interactive Sandbox Ready</text>
+    <text x="52" y="196" font-family="ui-monospace, monospace" font-size="16" fill="#6ee7b7">✓ Verified Deliverable &amp; Guide</text>
+    <rect x="28" y="260" width="202" height="164" rx="14" fill="#111827" stroke="#334155"/>
+    <text x="129" y="336" text-anchor="middle" font-family="ui-monospace, monospace" font-size="28" font-weight="900" fill="#f8fafc">100%</text>
+    <text x="129" y="368" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#94a3b8">SMOKE TEST PASS</text>
+    <rect x="250" y="260" width="202" height="164" rx="14" fill="#111827" stroke="#334155"/>
+    <text x="351" y="336" text-anchor="middle" font-family="ui-monospace, monospace" font-size="26" font-weight="900" fill="#b91c1c">200 OK</text>
+    <text x="351" y="368" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#94a3b8">ZERO LOGIN WALL</text>
+  </g>
+</svg>

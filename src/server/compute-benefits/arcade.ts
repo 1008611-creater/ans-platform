@@ -23,44 +23,51 @@ export async function getArcadeServerBalance(userId: string): Promise<{ balanceP
 export const ARCADE_QUEST_REWARDS: Readonly<
   Record<string, { points: number; tokens: number; daily: boolean; title: string }>
 > = {
-  daily_checkin: { points: 10, tokens: 1, daily: true, title: "Daily Compute Check-In" },
-  daily_vibehub_read: { points: 10, tokens: 1, daily: true, title: "VibeHub 60s Deep Reading" },
-  daily_explore_star: { points: 10, tokens: 0, daily: true, title: "Spark Support · Star a Project" },
-  daily_agent_feed: { points: 5, tokens: 0, daily: true, title: "Dino Training · Feed or Chat with Agent" },
-  weekly_market_workflow: { points: 20, tokens: 1, daily: false, title: "Marketplace Creator · Publish Workflow" },
-  weekly_publish_project: { points: 25, tokens: 1, daily: false, title: "Launch Project · Publish to Plaza" },
-  weekly_homepage_heat: { points: 15, tokens: 1, daily: false, title: "Creator Spotlight · Community Heat" },
-  agri_m1_apply: { points: 20, tokens: 1, daily: false, title: "AgriHackathon M1 Application" },
-  agri_m2_code_host: { points: 30, tokens: 1, daily: false, title: "AgriHackathon M2 Code Hosting" },
-  agri_m3_wall_public: { points: 25, tokens: 1, daily: false, title: "AgriHackathon M3 Public Showcase" },
-  agri_m4_streak_final: { points: 25, tokens: 1, daily: false, title: "AgriHackathon M4 Final Sprint" },
-  secret_ssr_gpu_cookie: { points: 15, tokens: 1, daily: false, title: "Secret Easter Egg · SSR GPU Feeding" },
-  secret_whip_strike: { points: 15, tokens: 1, daily: false, title: "Secret Easter Egg · Cyber Labor Law Strike" },
-  secret_reverse_pua: { points: 10, tokens: 1, daily: false, title: "Secret Easter Egg · Reverse PUA Vacation" },
-  secret_midnight_farmer: { points: 15, tokens: 0, daily: false, title: "Secret Easter Egg · 3 AM CAU Wheatfield" },
-  secret_fashion_mudslide: { points: 10, tokens: 0, daily: false, title: "Secret Easter Egg · Fashion Mudslide" },
-  secret_bug_eater: { points: 10, tokens: 0, daily: false, title: "Secret Easter Egg · Bug Devourer" },
+  daily_checkin: { points: 5, tokens: 1, daily: true, title: "Daily Compute Check-In" },
+  daily_vibehub_read: { points: 5, tokens: 1, daily: true, title: "VibeHub 60s Deep Reading" },
+  daily_explore_star: { points: 5, tokens: 0, daily: true, title: "Spark Support · Star a Project" },
+  daily_agent_feed: { points: 3, tokens: 0, daily: true, title: "Dino Training · Feed or Chat with Agent" },
+  weekly_market_workflow: { points: 12, tokens: 1, daily: false, title: "Marketplace Creator · Publish Workflow" },
+  weekly_publish_project: { points: 13, tokens: 1, daily: false, title: "Launch Project · Publish to Plaza" },
+  weekly_homepage_heat: { points: 10, tokens: 1, daily: false, title: "Creator Spotlight · Community Heat" },
+  agri_m1_apply: { points: 12, tokens: 1, daily: false, title: "AgriHackathon M1 Application" },
+  agri_m2_code_host: { points: 18, tokens: 1, daily: false, title: "AgriHackathon M2 Code Hosting" },
+  agri_m3_wall_public: { points: 15, tokens: 1, daily: false, title: "AgriHackathon M3 Public Showcase" },
+  agri_m4_streak_final: { points: 15, tokens: 1, daily: false, title: "AgriHackathon M4 Final Sprint" },
+  secret_ssr_gpu_cookie: { points: 8, tokens: 1, daily: false, title: "Secret Easter Egg · SSR GPU Feeding" },
+  secret_whip_strike: { points: 8, tokens: 1, daily: false, title: "Secret Easter Egg · Cyber Labor Law Strike" },
+  secret_reverse_pua: { points: 6, tokens: 1, daily: false, title: "Secret Easter Egg · Reverse PUA Vacation" },
+  secret_midnight_farmer: { points: 6, tokens: 0, daily: false, title: "Secret Easter Egg · 3 AM CAU Wheatfield" },
+  secret_fashion_mudslide: { points: 5, tokens: 0, daily: false, title: "Secret Easter Egg · Fashion Mudslide" },
+  secret_bug_eater: { points: 5, tokens: 0, daily: false, title: "Secret Easter Egg · Bug Devourer" },
 };
 
 export const ARCADE_PRIZE_REWARDS: Readonly<
-  Record<string, { points: number; weight: number; rarity: "UR" | "SSR" | "SR" | "R"; title: string }>
+  Record<string, { points: number; weight: number; rarity: "SP" | "UR" | "SSR" | "SR" | "R"; title: string }>
 > = {
-  prize_ur_dragon_egg: { points: 80, weight: 20, rarity: "UR", title: "Arcade UR · Violet-Gold Dragon Egg" },
-  prize_ssr_gpu_cookie: { points: 40, weight: 80, rarity: "SSR", title: "Arcade SSR · RTX 4090 Cookie" },
-  prize_sr_golden_wheat: { points: 20, weight: 350, rarity: "SR", title: "Arcade SR · CAU Golden Wheat Capsule" },
-  prize_r_mint_dino: { points: 15, weight: 550, rarity: "R", title: "Arcade R · Mint Star Dino Capsule" },
+  prize_sp_mythic_jackpot: { points: 1000, weight: 1, rarity: "SP", title: "Arcade SP · Mythic CAU Koi 1,000 Pts Jackpot" },
+  prize_ur_dragon_egg: { points: 300, weight: 9, rarity: "UR", title: "Arcade UR · Violet-Gold Dragon Egg 300 Pts" },
+  prize_ssr_gpu_cookie: { points: 80, weight: 40, rarity: "SSR", title: "Arcade SSR · RTX 4090 Cookie 80 Pts" },
+  prize_sr_golden_wheat: { points: 15, weight: 300, rarity: "SR", title: "Arcade SR · CAU Golden Wheat Capsule" },
+  prize_r_mint_dino: { points: 10, weight: 650, rarity: "R", title: "Arcade R · Mint Star Dino Capsule" },
 };
 
 const BASE_STARTER_TOKENS = 3;
-export const ARCADE_DAILY_NON_MILESTONE_POINTS_CAP = 150;
+export const ARCADE_BASE_ONBOARDING_POINTS = 50; // $5 Onboarding Questionnaire / Base Vault Unlock
+export const ARCADE_DAILY_NON_MILESTONE_POINTS_CAP = 150; // All-ANS 90% Normal-Distribution Total Upper Bound
 
 /**
- * Deterministic Gaussian (Box-Muller) allocation curve per user:
- * - 90% of users land in the normal band [100, 150] points (mean μ = 125, σ ≈ 15.2, ±1.645σ = [100, 150]).
- * - 10% of users land in the right tail [155, 250] points (lucky SSR/UR jackpot pullers & easter-egg hunters).
+ * Deterministic All-ANS Lifetime Gaussian + Low-Probability Jackpot allocation curve per user:
+ * - Includes the 50-point ($5) Onboarding Base + Lifetime Arcade/Quest/Easter-Egg rewards:
+ * - 90.0% of users land in the normal band [100, 150] TOTAL ANS points (mean μ = 120, σ ≈ 15.2),
+ *   corresponding to [50, 100] incremental points from Arcade/Quests/Easter Eggs on top of the 50-pt base.
+ * - 9.0% of users land in the active/SSR right tail [155, 230] TOTAL ANS points ([105, 180] incremental).
+ * - 0.9% of users land in the UR Legend Jackpot tier [350, 420] TOTAL ANS points ([300, 370] incremental).
+ * - 0.1% of users land in the SP Mythic Koi Grand Jackpot tier [1050, 1150] TOTAL ANS points ([1000, 1100] incremental).
  */
 export function computeUserGaussianArcadeCap(userId: string): {
   targetPoints: number;
+  arcadeLifetimeCapPoints: number;
   isTopTail: boolean;
   zScore: number;
 } {
@@ -76,13 +83,45 @@ export function computeUserGaussianArcadeCap(userId: string): {
 
   if (uTail < 0.9) {
     const clampedZ = Math.max(-1.645, Math.min(1.645, zScore));
-    const targetPoints = Math.min(150, Math.max(100, Math.round(125 + clampedZ * 15.19)));
-    return { targetPoints, isTopTail: false, zScore };
+    const targetPoints = Math.min(150, Math.max(100, Math.round(120 + clampedZ * 15.19)));
+    return {
+      targetPoints,
+      arcadeLifetimeCapPoints: Math.max(50, targetPoints - ARCADE_BASE_ONBOARDING_POINTS),
+      isTopTail: false,
+      zScore,
+    };
   }
 
-  const tailBonus = Math.min(95, Math.round(Math.abs(zScore) * 35));
-  const targetPoints = Math.min(250, 155 + tailBonus);
-  return { targetPoints, isTopTail: true, zScore };
+  if (uTail < 0.99) {
+    const tailBonus = Math.min(75, Math.round(Math.abs(zScore) * 28));
+    const targetPoints = Math.min(230, 155 + tailBonus);
+    return {
+      targetPoints,
+      arcadeLifetimeCapPoints: Math.max(105, targetPoints - ARCADE_BASE_ONBOARDING_POINTS),
+      isTopTail: true,
+      zScore,
+    };
+  }
+
+  if (uTail < 0.999) {
+    const urBonus = Math.min(70, Math.round(Math.abs(zScore) * 25));
+    const targetPoints = Math.min(420, 350 + urBonus);
+    return {
+      targetPoints,
+      arcadeLifetimeCapPoints: targetPoints - ARCADE_BASE_ONBOARDING_POINTS,
+      isTopTail: true,
+      zScore,
+    };
+  }
+
+  const spBonus = Math.min(100, Math.round(Math.abs(zScore) * 35));
+  const targetPoints = Math.min(1150, 1050 + spBonus);
+  return {
+    targetPoints,
+    arcadeLifetimeCapPoints: targetPoints - ARCADE_BASE_ONBOARDING_POINTS,
+    isTopTail: true,
+    zScore,
+  };
 }
 
 const VERIFIED_MILESTONE_QUEST_IDS = new Set([
@@ -96,13 +135,13 @@ const VERIFIED_MILESTONE_QUEST_IDS = new Set([
 ]);
 
 /**
- * Server-authoritative deterministic prize roll bound to (userId, drawId, drawSequence).
- * Prevents DevTools tampering where a client forces prizeId = "prize_ur_dragon_egg" on every draw.
+ * Server-authoritative deterministic prize roll bound to (userId, drawSequence).
+ * Prevents DevTools tampering where a client forces prizeId or brute-forces drawId.
  */
-export function rollServerArcadePrize(userId: string, drawId: string, drawSequence: number): string {
+export function rollServerArcadePrize(userId: string, _drawId: string, drawSequence: number): string {
   const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "ans-arcade-authoritative-seed-v1";
   const digest = createHash("sha256")
-    .update(`${secret}:${userId}:${drawId}:${drawSequence}`)
+    .update(`${secret}:server-roll-v3:${userId}:${drawSequence}`)
     .digest();
   const rawInt = digest.readUInt32BE(0);
 
@@ -221,6 +260,8 @@ async function verifyQuestPrerequisiteInTx(tx: DbTransaction, userId: string, qu
   }
 }
 
+export const ARCADE_TOKEN_COST_POINTS = 10;
+
 const arcadeClaimSchema = z.discriminatedUnion("kind", [
   z
     .object({
@@ -237,6 +278,16 @@ const arcadeClaimSchema = z.discriminatedUnion("kind", [
         .trim()
         .regex(/^[A-Za-z0-9_-]{6,64}$/),
       mode: z.enum(["claw", "roulette"]),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("buy_tokens"),
+      count: z.number().int().min(1).max(10).default(1),
+      orderId: z
+        .string()
+        .trim()
+        .regex(/^[A-Za-z0-9_-]{6,64}$/),
     })
     .strict(),
 ]);
@@ -270,7 +321,9 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       ? ARCADE_QUEST_REWARDS[input.questId].daily
         ? `arcade:quest:${userId}:${input.questId}:${beijingDay}`
         : `arcade:quest:${userId}:${input.questId}`
-      : `arcade:draw:${userId}:${input.drawId}`;
+      : input.kind === "buy_tokens"
+        ? `arcade:buy_tokens:${userId}:${input.orderId}`
+        : `arcade:draw:${userId}:${input.drawId}`;
 
   return marketTransaction(async tx => {
     const account = await tx.user.findFirst({
@@ -296,7 +349,15 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
     let note = "";
     let awardedPrizeId: string | undefined;
 
-    if (input.kind === "quest") {
+    if (input.kind === "buy_tokens") {
+      const costPoints = input.count * ARCADE_TOKEN_COST_POINTS;
+      if (Number(account.quotaPoints) < costPoints) {
+        throw new ComputeBenefitError("INSUFFICIENT_POINTS", 409);
+      }
+      points = -costPoints;
+      evidenceRef = `arcade_buy_tokens:${input.count}`;
+      note = `Arcade token exchange (${input.count} token(s) for ${costPoints} pts)`;
+    } else if (input.kind === "quest") {
       await verifyQuestPrerequisiteInTx(tx, userId, input.questId);
       const quest = ARCADE_QUEST_REWARDS[input.questId];
       points = quest.points;
@@ -319,6 +380,11 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
         } else if (op.evidenceRef?.startsWith("arcade_quest:")) {
           const qId = op.evidenceRef.slice("arcade_quest:".length);
           earnedTokens += ARCADE_QUEST_REWARDS[qId]?.tokens ?? 0;
+        } else if (op.evidenceRef?.startsWith("arcade_buy_tokens:")) {
+          const bought = Number.parseInt(op.evidenceRef.slice("arcade_buy_tokens:".length), 10);
+          if (Number.isFinite(bought) && bought > 0) {
+            earnedTokens += bought;
+          }
         }
       }
       if (usedDraws >= earnedTokens) {
@@ -332,29 +398,32 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       note = `Arcade ${input.mode} prize (${prize.title})`;
     }
 
-    // Enforce per-user Gaussian normal-distribution cap on non-milestone free arcade points
+    // Enforce per-user LIFETIME Gaussian normal-distribution cap across all ANS non-milestone free points,
+    // while allowing genuine server-rolled low-probability jackpots (SP 0.1% / UR 0.9% / SSR 4%) to be credited in full!
     const isVerifiedMilestone = input.kind === "quest" && VERIFIED_MILESTONE_QUEST_IDS.has(input.questId);
-    if (!isVerifiedMilestone) {
-      const dayStartUtc = new Date(`${beijingDay}T00:00:00+08:00`);
-      const todayOps = await tx.quotaOperation.findMany({
+    const isServerJackpotHit =
+      awardedPrizeId === "prize_sp_mythic_jackpot" ||
+      awardedPrizeId === "prize_ur_dragon_egg" ||
+      awardedPrizeId === "prize_ssr_gpu_cookie";
+    if (input.kind !== "buy_tokens" && !isVerifiedMilestone && !isServerJackpotHit) {
+      const lifetimeOps = await tx.quotaOperation.findMany({
         where: {
           userId,
           operationKey: { startsWith: `arcade:` },
-          createdAt: { gte: dayStartUtc },
         },
         select: { amount: true, evidenceRef: true },
       });
-      let todayFreePoints = 0;
-      for (const op of todayOps) {
+      let lifetimeFreePoints = 0;
+      for (const op of lifetimeOps) {
         const qId = op.evidenceRef?.startsWith("arcade_quest:")
           ? op.evidenceRef.slice("arcade_quest:".length)
           : "";
         if (!VERIFIED_MILESTONE_QUEST_IDS.has(qId)) {
-          todayFreePoints += Number(op.amount);
+          lifetimeFreePoints += Number(op.amount);
         }
       }
-      const userGaussianCap = computeUserGaussianArcadeCap(userId).targetPoints;
-      const remainingCap = Math.max(0, userGaussianCap - todayFreePoints);
+      const userArcadeCap = computeUserGaussianArcadeCap(userId).arcadeLifetimeCapPoints;
+      const remainingCap = Math.max(0, userArcadeCap - lifetimeFreePoints);
       points = Math.min(points, remainingCap);
     }
 
@@ -374,7 +443,7 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
         requestHash,
         userId,
         actorId: userId,
-        kind: "GRANT",
+        kind: points < 0 ? "SPEND" : "GRANT",
         amount: points,
         balanceAfter: updated.quotaPoints,
         evidenceRef,
@@ -382,13 +451,13 @@ export async function claimArcadeReward(userId: string, raw: unknown): Promise<A
       },
     });
 
-    if (points > 0) {
+    if (points !== 0) {
       await tx.quotaLedger.create({
         data: {
           userId,
           amount: points,
           balanceAfter: updated.quotaPoints,
-          reason: "GRANT",
+          reason: points < 0 ? "RUN_COST" : "GRANT",
           refType: "quest_arcade",
           refId: op.id,
           note,

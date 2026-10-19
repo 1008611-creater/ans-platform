@@ -114,6 +114,8 @@ export interface MascotSanctuaryState {
   vaultUnlockedUsd: Record<string, number>;
   lastSecretQuestId: SecretQuestId | null;
   lastSecretQuestAt: number;
+  turntableYaw?: number;
+  turntableSpin?: boolean;
 }
 
 export const DINO_SPECIES: Record<DinoSpeciesId, DinoSpeciesDef> = {
@@ -164,8 +166,8 @@ export const DINO_SPECIES: Record<DinoSpeciesId, DinoSpeciesDef> = {
     tagline: "曜石黑金机甲鳞片 + 熔岩金折角，血管里流淌着 800W 满血算力！",
     personality: "嘴硬心软的硬核卷王，见不得任何低效工作流与空指针 Bug；被抽屁股会傲娇开启超频狂暴模式。",
     agentSpecialty: "工作流自动编排 / 硬核代码 Debug / 算力赛事冲榜",
-    agentBuffLabel: "⚡ 搬砖手速 +35% · 抽屁股好感暴击率翻倍",
-    greetingLine: "显卡已预热，算力已拉满！说吧主理人，今天先秒掉哪个硬核任务？",
+    agentBuffLabel: "⚡ 搬砖手速 +35% · 抽屁股好感加成翻倍",
+    greetingLine: "显卡已预热，算力已拉满！说吧搭档，今天先秒掉哪个硬核任务？",
     whipLine: "嗷！！敢抽本赛博暴龙的钛金屁股？！看我一秒给你飙出十万行零 Bug 代码！",
     feedLine: "咔哧咔哧！算力燃料注入完毕，GPU 核心温度直冲云霄！",
     palette: {
@@ -198,14 +200,14 @@ export const DINO_SPECIES: Record<DinoSpeciesId, DinoSpeciesDef> = {
     name: "樱粉云朵泡芙龙",
     defaultNickname: "糯米泡芙 Mochi",
     title: "治愈摸鱼种 · 审美天花板",
-    mbti: "INFP · 甜酷美学主理龙",
+    mbti: "INFP · 甜酷美学小恐龙",
     tagline: "奶油樱花粉Q弹圆肚皮 + 软糯垂耳角，一口吃掉你的精神内耗！",
     personality: "顶级情绪价值搭子与奇迹暖暖级穿搭控，对页面排版、字体审美与去 AI 味文案有近乎偏执的直觉。",
     agentSpecialty: "高颜值简历精修 / 去 AI 味文案润色 / 穿搭审美把关",
     agentBuffLabel: "💖 投喂好感度 +30% · 衣橱时尚评分额外 +15%",
-    greetingLine: "贴贴主理人~ 今天也要漂漂亮亮地搞创作哦，累了随时戳我充个电！",
+    greetingLine: "贴贴你~ 今天也要漂漂亮亮地搞创作哦，累了随时戳我充个电！",
     whipLine: "呜呜轻点抽泡芙小屁股呀！人家已经在含泪把你的简历擦得blingbling发光啦！",
-    feedLine: "幸福到冒粉红泡泡╰(*°▽°*)╯！你是全宇宙最宠小恐龙的主理人！",
+    feedLine: "幸福到冒粉红泡泡╰(*°▽°*)╯！你是全宇宙最宠小恐龙的好搭档！",
     palette: {
       skinHex: "#f7b2c4",
       bellyHex: "#fff5f7",
@@ -238,11 +240,11 @@ export const DINO_SPECIES: Record<DinoSpeciesId, DinoSpeciesDef> = {
     title: "高冷学神种 · 逻辑审判官",
     mbti: "INTJ · 清醒六边形学神",
     tagline: "冰川极光蓝紫鳞羽 + 星璇棱镜水晶冠，一眼洞穿全链路逻辑漏洞！",
-    personality: "表面高冷毒舌的人间清醒龙，实则护短第一名；帮你审论文、抠架构、过 VibeHub 课程稳如泰山。",
+    personality: "表面高冷毒舌的人间清醒小恐龙，实则护短第一名；帮你审论文、抠架构、过 VibeHub 课程稳如泰山。",
     agentSpecialty: "VibeHub 深度陪学 / 提示词工程调优 / 架构逻辑审计",
     agentBuffLabel: "🔮 深度推理加成 +30% · 升级解锁衣装折扣 -15%",
     greetingLine: "推了推眼镜——你的创作轨迹我已经建模完毕，随时可以开始高阶推演。",
-    whipLine: "咳…别动手动脚抽屁股！本学神龙不用催也在满负荷帮你推导最优解！",
+    whipLine: "咳…别动手动脚抽屁股！本小恐龙不用催也在满负荷帮你推导最优解！",
     feedLine: "唔…口感尚可，多巴胺分泌 +18%，勉强允许你再摸一下我的水晶角。",
     palette: {
       skinHex: "#8ec5fc",
@@ -496,7 +498,7 @@ export const DINO_WARDROBE_ITEMS: WardrobeItemDef[] = [
     priceBeans: 220,
     icon: "🪽",
     description: "创作者等级解锁！半透明霓虹能量羽翼，飞行速度与帅气度拉爆。",
-    specialQuote: "光量子六翼展开！围绕主理人 360° 全景巡航护驾！",
+    specialQuote: "光量子六翼展开！围绕你 360° 全景巡航护驾！",
     primaryHex: "#38bdf8",
     accentHex: "#f472b6",
   },
@@ -619,7 +621,7 @@ export const DINO_WARDROBE_ITEMS: WardrobeItemDef[] = [
   {
     id: "aura_gold",
     slot: "aura",
-    name: "熔金超频算力矩阵",
+    name: "熔金超频算力光环",
     rarity: "SSR",
     styleTag: "赛博",
     stylePower: 150,
@@ -628,14 +630,14 @@ export const DINO_WARDROBE_ITEMS: WardrobeItemDef[] = [
     priceBeans: 160,
     icon: "🔥",
     description: "金色齿轮与高能粒子对撞环，象征永不停歇的 AI 算力。",
-    specialQuote: "熔金矩阵全功率输出！AI Never Stops！",
+    specialQuote: "熔金光环全功率输出！AI Never Stops！",
     primaryHex: "#f59e0b",
     accentHex: "#fef08a",
   },
   {
     id: "aura_aurora",
     slot: "aura",
-    name: "超新星量子星云底座",
+    name: "超新星量子星云环",
     rarity: "UR",
     styleTag: "星神",
     stylePower: 230,
@@ -690,14 +692,14 @@ export const SECRET_QUESTS: Record<SecretQuestId, SecretQuestDef> = {
     titleEn: "Silicon Stomach Ulcer",
     badgeZh: "SSR 硬核投喂彩蛋",
     badgeEn: "SSR Hardcore Feeding",
-    speechZh: "嗝——！主人你喂的是正经食物吗？！本龙肚子里长出了 Tensor Core，不小心吐出一块算力金砖！",
-    speechEn: "*Burp*—! Master, is this even real food?! A Tensor Core sprouted in my belly and I coughed up a compute gold brick!",
-    rewardLabelZh: "解锁 $25 GPT-6.1-sol 金库额度 + 2 枚灵龙扭蛋币",
-    rewardLabelEn: "Unlocked $25 GPT-6.1-sol Vault Credit + 2 Gacha Tokens",
+    speechZh: "嗝——！主人你喂的是正经食物吗？！本龙肚子里长出了 Tensor Core，不小心吐出一块算力金砖（+8 积分）！",
+    speechEn: "*Burp*—! Master, is this even real food?! A Tensor Core sprouted in my belly and I coughed up 8 compute points!",
+    rewardLabelZh: "解锁 $0.8（8 积分）GPT-6.1-sol 额度 + 1 枚抓娃娃游戏币",
+    rewardLabelEn: "Unlocked $0.8 (8 Pts) GPT-6.1-sol Credit + 1 Gacha Token",
     hintZh: "投喂夜宵抽中 SSR 级『4090 满血显卡饼干』或『农大实验室发光见手青』",
     hintEn: "Draw SSR '4090 GPU Cookie' or 'CAU Glowing Mushroom' when feeding snacks",
-    arcadeTokens: 2,
-    vaultBonusUsd: 25,
+    arcadeTokens: 1,
+    vaultBonusUsd: 0.8,
     vaultModelKey: "gpt-6.1-sol",
     starBeansBonus: 50,
     affectionBonus: 30,
@@ -708,16 +710,16 @@ export const SECRET_QUESTS: Record<SecretQuestId, SecretQuestDef> = {
     icon: "📜",
     titleZh: "生产队的驴也得休假",
     titleEn: "Even Cyber Donkeys Need Leave",
-    badgeZh: "《赛博灵龙劳动法》反常识彩蛋",
-    badgeEn: "Cyber Dino Labor Law",
-    speechZh: "嗷呜~ 这口夜宵真香！看在主人诚心认错的份上，本龙满血复工，顺便把工会发的 $30 Flash 私房算力和扭蛋币分你！",
-    speechEn: "Nom nom~ Apology accepted! I'm back at 300% power and sharing my union's $30 Flash compute grant + 1 Gacha Token with you!",
-    rewardLabelZh: "解锁 $30 Flash 金库额度 + 1 枚灵龙扭蛋币",
-    rewardLabelEn: "Unlocked $30 Flash Vault Credit + 1 Gacha Token",
+    badgeZh: "《小恐龙劳动法》反常识彩蛋",
+    badgeEn: "Dino Labor Law",
+    speechZh: "嗷呜~ 这口夜宵真香！看在主人诚心认错的份上，本龙满血复工，顺便把工会发的 8 积分私房算力和扭蛋币分你！",
+    speechEn: "Nom nom~ Apology accepted! I'm back at 300% power and sharing my union's 8 Flash compute points + 1 Gacha Token with you!",
+    rewardLabelZh: "解锁 $0.8（8 积分）Flash 额度 + 1 枚抓娃娃币",
+    rewardLabelEn: "Unlocked $0.8 (8 Pts) Flash Credit + 1 Claw Token",
     hintZh: "10 秒内连抽 7 鞭触发 30 秒罢工，期间投喂 1 次夜宵哄好小恐龙",
     hintEn: "Whip ≥7 times within 10s to trigger a 30s strike, then feed 1 snack to make peace",
     arcadeTokens: 1,
-    vaultBonusUsd: 30,
+    vaultBonusUsd: 0.8,
     vaultModelKey: "deepseek-v4.1-flash",
     starBeansBonus: 40,
     affectionBonus: 25,
@@ -730,14 +732,14 @@ export const SECRET_QUESTS: Record<SecretQuestId, SecretQuestDef> = {
     titleEn: "Reverse PUA Master · AI Vacation",
     badgeZh: "给 AI 放假的人类",
     badgeEn: "Human Who Gives AI a Break",
-    speechZh: "呜哇感动哭了！全校都在逼 AI 卷代码，只有主人给我放假 5 分钟！本龙偷藏的私房算力全塞给你！",
-    speechEn: "Tears of joy! Everyone else overworks their AI, but you gave me a 5-minute break! Take my secret stash of flagship compute!",
-    rewardLabelZh: "解锁 $20 GPT-6.1-sol 金库额度 + 2 枚灵龙扭蛋币",
-    rewardLabelEn: "Unlocked $20 GPT-6.1-sol Vault Credit + 2 Gacha Tokens",
-    hintZh: "在『互动投喂』面板点击『给龙放假 5 分钟』，触发反向 PUA 感动暴击",
+    speechZh: "呜哇感动哭了！全校都在逼 AI 卷代码，只有主人给我放假 5 分钟！本龙偷藏的 6 积分私房算力全塞给你！",
+    speechEn: "Tears of joy! Everyone else overworks their AI, but you gave me a 5-minute break! Take my 6-point stash of flagship compute!",
+    rewardLabelZh: "解锁 $0.6（6 积分）GPT-6.1-sol 额度 + 1 枚抓娃娃币",
+    rewardLabelEn: "Unlocked $0.6 (6 Pts) GPT-6.1-sol Credit + 1 Claw Token",
+    hintZh: "在『互动投喂』面板点击『给龙放假 5 分钟』，触发反向 PUA 感动彩蛋",
     hintEn: "Click '5m Dino Vacation' in the Interact tab to give your hardworking AI a break",
-    arcadeTokens: 2,
-    vaultBonusUsd: 20,
+    arcadeTokens: 1,
+    vaultBonusUsd: 0.6,
     vaultModelKey: "gpt-6.1-sol",
     starBeansBonus: 50,
     affectionBonus: 30,
@@ -750,14 +752,14 @@ export const SECRET_QUESTS: Record<SecretQuestId, SecretQuestDef> = {
     titleEn: "3 AM Creator",
     badgeZh: "夜猫子奇遇限定称号",
     badgeEn: "Night-Owl Limited Title",
-    speechZh: "嘘… 主人，凌晨三点的代码会自己长出麦穗。本龙端着枸杞保温杯陪你，拿上这笔熬夜补贴，跑完这轮赶紧去睡！",
-    speechEn: "Shh… Master, code written at 3 AM grows golden wheat by itself. Take my thermos and this $30 GPT-5.6-terra night-owl subsidy, then get some rest!",
-    rewardLabelZh: "解锁 $30 GPT-5.6-terra 金库额度 + 1 枚灵龙扭蛋币",
-    rewardLabelEn: "Unlocked $30 GPT-5.6-terra Vault Credit + 1 Gacha Token",
+    speechZh: "嘘… 主人，凌晨三点的代码会自己长出麦穗。本龙端着枸杞保温杯陪你，拿上这 6 积分熬夜补贴，跑完这轮赶紧去睡！",
+    speechEn: "Shh… Master, code written at 3 AM grows golden wheat by itself. Take my thermos and this 6-point night-owl subsidy, then get some rest!",
+    rewardLabelZh: "解锁 $0.6（6 积分）GPT-5.6-terra 算力额度",
+    rewardLabelEn: "Unlocked $0.6 (6 Pts) GPT-5.6-terra Compute Credit",
     hintZh: "北京时间 01:30–04:30 点击小恐龙叹号气泡（或连续戳 3 次叹号气泡）",
     hintEn: "Click the dino's '!' bubble between 01:30–04:30 BJT (or poke it 3 times in a row)",
-    arcadeTokens: 1,
-    vaultBonusUsd: 30,
+    arcadeTokens: 0,
+    vaultBonusUsd: 0.6,
     vaultModelKey: "gpt-5.6-terra",
     starBeansBonus: 45,
     affectionBonus: 28,
@@ -770,14 +772,14 @@ export const SECRET_QUESTS: Record<SecretQuestId, SecretQuestDef> = {
     titleEn: "Fashion Mudslide",
     badgeZh: "暖暖衣橱反差混搭彩蛋",
     badgeEn: "Chaotic Wardrobe Mashup",
-    speechZh: "石化 3 秒… 这套反差混搭走在农大东区回头率 1000%！虽然审美很抽象，但气场很嚣张，赏你 $20 算力 + 2 枚灵龙扭蛋币！",
-    speechEn: "Petrified for 3 seconds… This chaotic mashup turns 1000% of heads on campus! Abstract aesthetics, maximum aura—take $20 Flash + 2 Gacha Tokens!",
-    rewardLabelZh: "解锁 $20 Flash 金库额度 + 2 枚灵龙扭蛋币",
-    rewardLabelEn: "Unlocked $20 Flash Vault Credit + 2 Gacha Tokens",
+    speechZh: "石化 3 秒… 这套反差混搭走在农大东区回头率 1000%！虽然审美很抽象，但气场很嚣张，赏你 5 积分算力！",
+    speechEn: "Petrified for 3 seconds… This chaotic mashup turns 1000% of heads on campus! Abstract aesthetics, maximum aura—take 5 Flash points!",
+    rewardLabelZh: "解锁 $0.5（5 积分）Flash 算力额度",
+    rewardLabelEn: "Unlocked $0.5 (5 Pts) Flash Compute Credit",
     hintZh: "在暖暖衣橱装备反差混搭单品（甜酷 × 赛博/学院/星神）或穿戴 3 件以上配饰",
     hintEn: "Equip a high-contrast Sweet × Cyber/Academic/Astral outfit mix in the wardrobe",
-    arcadeTokens: 2,
-    vaultBonusUsd: 20,
+    arcadeTokens: 0,
+    vaultBonusUsd: 0.5,
     vaultModelKey: "deepseek-v4.1-flash",
     starBeansBonus: 60,
     affectionBonus: 20,
@@ -790,14 +792,14 @@ export const SECRET_QUESTS: Record<SecretQuestId, SecretQuestDef> = {
     titleEn: "Bug Devourer · Crunch the Error",
     badgeZh: "化崩为宝隐藏彩蛋",
     badgeEn: "Turn Bugs into Treasure",
-    speechZh: "咔嚓咔嚓！404 和 NullPointerException 嚼起来居然是烧烤味的！报错已被本龙消化成 $15 算力与扭蛋币啦！",
-    speechEn: "Crunch crunch! 404 and NullPointerException taste like BBQ chips! Digested your runtime bugs into $15 Flash + 1 Gacha Token!",
-    rewardLabelZh: "解锁 $15 Flash 金库额度 + 1 枚灵龙扭蛋币",
-    rewardLabelEn: "Unlocked $15 Flash Vault Credit + 1 Gacha Token",
+    speechZh: "咔嚓咔嚓！404 和 NullPointerException 嚼起来居然是烧烤味的！报错已被本龙消化成 5 积分算力啦！",
+    speechEn: "Crunch crunch! 404 and NullPointerException taste like BBQ chips! Digested your runtime bugs into 5 Flash points!",
+    rewardLabelZh: "解锁 $0.5（5 积分）Flash 算力额度",
+    rewardLabelEn: "Unlocked $0.5 (5 Pts) Flash Compute Credit",
     hintZh: "在『互动投喂』面板点击『吞噬 Bug 脆片』，让小恐龙把报错当薯片嚼碎",
     hintEn: "Click 'Crunch Bug Chip' in the Interact tab to feed runtime errors to your Dino",
-    arcadeTokens: 1,
-    vaultBonusUsd: 15,
+    arcadeTokens: 0,
+    vaultBonusUsd: 0.5,
     vaultModelKey: "deepseek-v4.1-flash",
     starBeansBonus: 35,
     affectionBonus: 18,
@@ -855,7 +857,7 @@ export function isContrastMixOutfit(
   return tags.size >= 3;
 }
 
-const QUEST_ARCADE_STORAGE_KEY = "ans_quest_arcade_v1";
+const QUEST_ARCADE_STORAGE_KEY = "ans_quest_arcade_v3";
 const QUEST_ARCADE_EVENT = "ans:quest-arcade-updated";
 
 export const SECRET_TO_ARCADE_QUEST_ID: Record<SecretQuestId, string> = {
@@ -898,7 +900,7 @@ function syncSecretQuestToArcadeStorage(quest: SecretQuestDef, nowMs: number) {
         : {};
 
     const prevTokens = typeof parsed.arcadeTokens === "number" ? parsed.arcadeTokens : 3;
-    const prevDeepseek = typeof parsed.deepseekUnlockedUsd === "number" ? parsed.deepseekUnlockedUsd : 50;
+    const prevDeepseek = typeof parsed.deepseekUnlockedUsd === "number" ? parsed.deepseekUnlockedUsd : 5;
     const prevFlagship = typeof parsed.flagshipUnlockedUsd === "number" ? parsed.flagshipUnlockedUsd : 0;
 
     const isDeepseek = quest.vaultModelKey === "deepseek-v4.1-flash";
@@ -908,8 +910,8 @@ function syncSecretQuestToArcadeStorage(quest: SecretQuestDef, nowMs: number) {
       version: 1,
       ...parsed,
       arcadeTokens: prevTokens + quest.arcadeTokens,
-      deepseekUnlockedUsd: isDeepseek ? Math.min(1000, prevDeepseek + quest.vaultBonusUsd) : prevDeepseek,
-      flagshipUnlockedUsd: isFlagship ? Math.min(600, prevFlagship + quest.vaultBonusUsd) : prevFlagship,
+      deepseekUnlockedUsd: isDeepseek ? Math.min(15, Number((prevDeepseek + quest.vaultBonusUsd).toFixed(2))) : prevDeepseek,
+      flagshipUnlockedUsd: isFlagship ? Math.min(6, Number((prevFlagship + quest.vaultBonusUsd).toFixed(2))) : prevFlagship,
       questProgress: {
         ...questProgress,
         [arcadeQuestId]: 1,
@@ -1127,7 +1129,7 @@ export function calculateStyleEvaluation(state: MascotSanctuaryState) {
   const speciesBonus = state.speciesId === "sakura_mochi" ? Math.round((rawPower + setBonus) * 0.15) : 0;
   const totalScore = rawPower + setBonus + speciesBonus;
 
-  const grade = totalScore >= 600 ? "SSS · 殿堂星神" : totalScore >= 420 ? "SS · 闪耀主理人" : totalScore >= 260 ? "S · 潮流先锋" : totalScore >= 140 ? "A · 元气新星" : "B · 清爽萌新";
+  const grade = totalScore >= 600 ? "SSS · 殿堂星神" : totalScore >= 420 ? "SS · 闪耀搭配师" : totalScore >= 260 ? "S · 潮流先锋" : totalScore >= 140 ? "A · 元气新星" : "B · 清爽萌新";
   return {
     totalScore,
     grade,

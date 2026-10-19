@@ -155,7 +155,7 @@
       },
       "login_required": {
         "title": "先连接你的 ANS 账号",
-        "body": "点击下方按钮，在新标签页登录 ANS。登录好后回到这页点「重新检查连接」就能接着做啦。"
+        "body": "在新标签页登录 ANS 后，回到本页点「重新检查连接」即可继续。"
       },
       "account_mismatch": {
         "title": "两边登录的账号不一致",
@@ -270,7 +270,7 @@
       "output": "一页标准 Markdown 项目展示文档，支持在线免费微调、多版本保存与一键下载。",
       "inputs": "你想解决的问题、实现方案、个人贡献亮点，以及现有的演示截图或结果说明。",
       "decisions": "挑出最能代表你水平的 1～2 个核心亮点，并确认哪些内容适合公开展示（私密事实默认仅自己可见）。",
-      "prompt": "围绕「为什么做 → 怎么做 → 我的核心贡献 → 真实效果」四段式成文，对信息缺口主动提示补充。",
+      "prompt": "围绕「为什么做 → 怎么做 → 我的核心贡献 → 真实效果」四个部分成文，对信息缺口主动提示补充。",
       "sample": "项目定位 / 痛点与方案 / 我的核心贡献 / 演示与验证"
     },
     "readme-kit": {
@@ -285,11 +285,11 @@
     "competition-starter": {
       "title": "黑客松 / 比赛 MVP 破局方案",
       "summary": "拒绝假大空PPT！帮你把宏大的比赛赛题切成一个周末就能跑通、评委现场点得动的最小可行方案（MVP）。",
-      "output": "一份聚焦可演示闭环的比赛 MVP 作战方案，明确砍掉哪些冗余、先做哪三步。",
+      "output": "一份聚焦可演示原型的比赛 MVP 作战方案，明确砍掉哪些冗余、先做哪三步。",
       "inputs": "比赛主题、你想解决的具体痛点、现有的技术积累与队友分工。",
       "decisions": "果断砍掉做不完的支线功能，锁定路演现场最抓人的 1 条核心演示路径。",
-      "prompt": "按「真实痛点 → 最小闭环（MVP）→ 现场演示脚本 → 潜在翻车风险」拆解，绝不把规划写成已实现成果。",
-      "sample": "真痛点锚定 → 最小闭环切分 → 现场 Demo 动线 → 风险排雷"
+      "prompt": "按「真实痛点 → 最小可用版本（MVP）→ 现场演示脚本 → 潜在翻车风险」拆解，绝不把规划写成已实现成果。",
+      "sample": "真痛点锚定 → 最小原型切分 → 现场 Demo 动线 → 风险排雷"
     },
     "pitch-kit": {
       "title": "不怯场的路演答辩提纲",
@@ -532,7 +532,7 @@
       "REVISION_LIMIT_REACHED": "已经用完了这笔订单约定的修改次数，可以通过订单留言和创作者继续协商。",
       "ARTIFACT_PERMISSION_REQUIRED": "只能选择你自己名下拥有的作品版本进行交付。",
       "REVIEW_ALREADY_SUBMITTED": "这笔订单你已经写过评价啦，感谢反馈！",
-      "INSUFFICIENT_QUOTA": "当前算力积分余额不足，请先补充积分后再试。",
+      "INSUFFICIENT_QUOTA": "当前算力积分余额不足，可前往「算力福利中心 (/workspace/benefits)」免费领 100~150 积分或到「算力中心 (/workspace/credits)」兑换卡密后再试。",
       "SELLER_REVERSAL_REQUIRES_REVIEW": "卖家当前积分余额不足以直接扣回已结算收入，已转交人工核对，退款暂未执行。",
       "POINTS_ONLY": "站内市场统一使用 ANS 积分交易，请刷新商品页后使用积分购买。",
       "AGRI_WALL_CATEGORY_LOCKED": "已绑定农客松参赛的作品必须保持「农客松作品墙」分类与免费展示状态。",
@@ -607,7 +607,7 @@
     "preview": "网站预览",
     "livePreview": "资料实时预览 · 尚未调用 AI 生成",
     "savedPreview": "已保存作品 · 版本 {version}",
-    "previewHint": "先在左侧填好姓名、个人介绍和至少一段项目经历，这里就会立刻呈现你的专属页面预览。",
+    "previewHint": "填好姓名、个人介绍和至少一段项目经历后，将在此实时呈现你的专属页面预览。",
     "previewTitle": "个人网站安全预览",
     "desktop": "宽屏",
     "mobile": "手机",
@@ -648,7 +648,7 @@
       "RUN_IN_PROGRESS": "当前已经有一个生成任务在跑啦，等它跑完再试吧。",
       "INVALID_INPUT": "请检查一下必填项、邮箱格式、链接地址和字数是否符合要求。",
       "UNAUTHORIZED": "登录状态已过期，请重新登录后继续。",
-      "INSUFFICIENT_QUOTA": "算力点余额不够啦，先去工作台算力中心看看余额吧。",
+      "INSUFFICIENT_QUOTA": "算力点余额不够啦，可先去「算力福利中心 (/workspace/benefits)」免费领 100~150 积分或去「算力中心」补充余额。",
       "FORBIDDEN": "当前请求未被接受，请刷新页面后再试一次。",
       "INTERNAL_ERROR": "网络或服务刚刚晃了一下，请重试；你填写的内容完好保留在页面上。",
       "WORKER_UNAVAILABLE": "生成服务现在有点忙，请稍后重试；你填写的资料已安全保留。",
@@ -3089,7 +3089,7 @@
       "INVALID_INPUT": "请检查网站来源或请求内容。",
       "INTERNAL_ERROR": "暂未确认操作结果，请保留当前页面并重试；支付不会重复扣费。",
       "UNAUTHORIZED": "接入凭据已停用，请联系项目作者。",
-      "INSUFFICIENT_QUOTA": "积分不足，请到积分中心购买卡密并兑换后重试。",
+      "INSUFFICIENT_QUOTA": "积分不足，可前往「算力福利中心 (/workspace/benefits)」免费领 100~150 积分或到积分中心兑换卡密后重试。",
       "VERSION_CONFLICT": "项目已更新，请返回原项目重新选择。",
       "CHECKOUT_EXPIRED": "支付链接已过期，请返回原项目重新创建。",
       "FORBIDDEN": "当前账号不能确认这笔支付。",
@@ -3577,7 +3577,7 @@
     "inspecting": "正在解析源码包目录…",
     "fileTree": "源码目录树（共 {files} 个文件 · {dirs} 个目录）",
     "treeTruncated": "目录项较多，仅展示前 800 项。",
-    "selectFileHint": "点击左侧文件可在线预览源码内容。",
+    "selectFileHint": "选择目录树中的文件即可在线预览源码内容。",
     "previewTruncated": "文件较大，仅预览前 96 KB 内容；完整源码请点击下载。",
     "binaryFile": "该文件为二进制或非 UTF-8 编码文件（{size} 字节），请下载源码包查看。"
   },
@@ -3725,8 +3725,8 @@
     "stale": "刷新未成功，当前显示上次读取的记录。",
     "empty": "尚无赠送额度。完成入门问卷可领取 DeepSeek 专属额度；报名审核通过后获得进阶模型额度。",
     "expiryRule": "每笔额度到账后 30 天有效，不因创建 Key 或修改问卷延长。所有 Key 与站内请求共用同一余额。",
-    "onboardingTitle": "完成问卷，领取 $1,000 DeepSeek 额度",
-    "onboardingDescription": "介绍一下你的使用计划，帮助我们完善新手支持。新旧注册账号均可完成一次，成功提交后发放一次。",
+    "onboardingTitle": "完成入门问卷，领取 $5（50 积分）DeepSeek 基础额度",
+    "onboardingDescription": "介绍一下你的使用计划，帮助我们完善新手支持。新旧注册账号均可完成一次，成功提交后发放 $5（50 积分）基础额度。",
     "onboardingComplete": "问卷已于 {date} 提交。领取结果以以上真实额度记录为准。",
     "role": "你的角色",
     "experience": "AI 使用经验",
@@ -3737,8 +3737,8 @@
     "rules": "我确认资料真实，知晓额度仅限本人使用、到账后 30 天有效，不可转让、提现或用于市场交易；按模型官方美元费用扣减，不承诺固定 Token 数量。",
     "submitQuestionnaire": "提交问卷并领取",
     "saving": "正在提交…",
-    "agriTitle": "报名农客松，审核后获得 $600 专属额度",
-    "agriDescription": "每位获批账号获得 Terra $300，Astra 与 Sol 共用 $200，以及 Opus $100。报名申请人工审核，作品投稿审核不会触发发放。",
+    "agriTitle": "报名农客松，审核后获得 $6（60 积分）赛事专属加成",
+    "agriDescription": "每位获批参赛账号获得 Terra $3（30 积分）、Astra 与 Sol 共用 $2（20 积分）以及 Opus $1（10 积分）。报名申请人工审核，作品投稿审核不会触发发放。",
     "teamName": "队伍名称 / 个人参赛名",
     "projectTitle": "拟做项目名称",
     "problem": "想解决什么农业问题？",
@@ -3829,7 +3829,7 @@
     "adminSuccess": "审核已保存，正在刷新队列。",
     "adminConflict": "申请版本已变化，请刷新后重新核对。",
     "adminApplicant": "申请人",
-    "adminReward": "通过后发放：Terra $300 + Astra / Sol 共用 $200 + Opus $100，各自到账后 30 天有效。",
+    "adminReward": "通过后发放：Terra $3（30积分）+ Astra / Sol 共用 $2（20积分）+ Opus $1（10积分），各自到账后 30 天有效。",
     "adminRevision": "申请版本 {revision}",
     "adminBack": "返回管理后台"
   },

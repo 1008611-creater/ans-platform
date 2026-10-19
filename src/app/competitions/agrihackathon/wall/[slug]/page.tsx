@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) notFound();
   const t = await getTranslations("agriWall");
   const { entry } = data;
-  const title = `${entry.offer.listing.title} ? ${entry.teamName}`;
-  const description = `${t(data.round?.state === "CLOSED" ? "frozenStars" : "validStars")} ${entry.validStars} ? ${entry.offer.listing.summary}`;
+  const title = `${entry.offer.listing.title} · ${entry.teamName}`;
+  const description = `${t(data.round?.state === "CLOSED" ? "frozenStars" : "validStars")} ${entry.validStars} · ${entry.offer.listing.summary}`;
   const url = `/competitions/agrihackathon/wall/${encodeURIComponent(slug)}`;
   const images = entry.offer.listing.coverUrl ? [{ url: entry.offer.listing.coverUrl, alt: entry.offer.listing.title }] : [];
   return { title, description, alternates: { canonical: url },

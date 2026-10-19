@@ -49,7 +49,69 @@ export function AgriWorks() {
   const [invalidActor, setInvalidActor] = useState<string | null>(null);
   const actorId = status === "authenticated" ? data?.user?.id : null;
   if (status === "loading") return <p role="status">{t("loading")}</p>;
-  if (!actorId) return <Button asChild><WorkspaceLink href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Fworks">{t("login")}</WorkspaceLink></Button>;
+  if (!actorId) {
+    return (
+      <div className="space-y-5" data-testid="agri-works-guest-preview">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+          <div className="space-y-1">
+            <Badge variant="secondary">Stage Archives & Evidence · 赛段作品归档库</Badge>
+            <h2 className="text-lg font-semibold">当前未登录 · 真实赛段归档需登录参赛或评委账号查看</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm">
+              <WorkspaceLink href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Fworks">{t("login")}</WorkspaceLink>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <WorkspaceLink href="/competitions/agrihackathon/showcase">查看公开作品展厅</WorkspaceLink>
+            </Button>
+          </div>
+        </div>
+        <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-foreground">
+            <span>📖 查看赛段归档参考范例（3 组示范存证）</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
+            <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">收起 ▴</span>
+          </summary>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                team: "参考范例 · 初赛冻结结构",
+                stage: "📖 范例 · PRELIMINARY",
+                title: "Agri-Vision 多光谱遥感病虫害巡检工作流",
+                cover: "/competitions/agrihackathon/gitglow-workflow.webp",
+                meta: "示范：Git 源码快照 + 田间实测对比切片",
+              },
+              {
+                team: "参考范例 · 决赛路演结构",
+                stage: "📖 范例 · FINAL",
+                title: "GreenHouse-OS 温室水肥光热多智能体调控系统",
+                cover: "/catalog/ans-pro-v1/agri-uav.webp",
+                meta: "示范：72h 传感器联动日志 + 评委双盲复核",
+              },
+              {
+                team: "参考范例 · 仿真沙盘结构",
+                stage: "📖 范例 · PRELIMINARY",
+                title: "UAV-Swarm 丘陵果园多机协同路径规划仿真",
+                cover: "/competitions/agrihackathon/gitglow-tracks.webp",
+                meta: "示范：Three.js 仿真录屏 + SHA-256 哈希回执",
+              },
+            ].map((item) => (
+              <Card key={item.title} className="overflow-hidden">
+                <div className="aspect-[16/10] w-full overflow-hidden border-b bg-slate-950/90">
+                  <img src={item.cover} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+                </div>
+                <CardContent className="space-y-1.5 p-4">
+                  <Badge variant="outline" className="text-xs">{item.stage}</Badge>
+                  <h3 className="text-sm font-semibold">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground">{item.meta}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </details>
+      </div>
+    );
+  }
   if (invalidActor === actorId) return <div className="space-y-3"><p role="alert">{t("errors.ACCOUNT_CHANGED")}</p><Button onClick={() => void update().then(() => setInvalidActor(null)).catch(() => {})}>{t("refresh")}</Button></div>;
   return <WorksWorkspace key={actorId} actorId={actorId} invalidate={() => setInvalidActor(actorId)} />;
 }

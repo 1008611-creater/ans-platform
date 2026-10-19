@@ -14,7 +14,7 @@ import {
 
 const TRENDY_NAMES = [
   "薄荷小星龙",
-  "满绩小锦鲤",
+  "满绩小恐龙",
   "4090吞金兽",
   "早八怨种龙",
   "芝士小泡芙",
@@ -193,10 +193,7 @@ export function DinoAdoptionPod({
           </span>
           <div>
             <div style={{ fontSize: "14px", fontWeight: 800, color: "#ffffff" }}>
-              🥚 注册即领养 · 挑选你的专属灵龙 Agent 伴侣
-            </div>
-            <div style={{ fontSize: "11.5px", color: "rgba(235, 250, 245, 0.78)" }}>
-              QQ宠物养成 × 奇迹暖暖等级换装 × 全站右下角随身 AI Agent
+              🥚 挑选你的专属小恐龙伴侣
             </div>
           </div>
         </div>
@@ -215,7 +212,7 @@ export function DinoAdoptionPod({
               cursor: "pointer",
             }}
           >
-            {expanded ? "收起孵化舱 ▲" : "展开挑选灵龙 ▼"}
+            {expanded ? "收起孵化舱 ▲" : "挑选小恐龙 ▼"}
           </button>
         ) : null}
       </div>
@@ -225,7 +222,7 @@ export function DinoAdoptionPod({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "112px 1fr",
+              gridTemplateColumns: "112px minmax(0, 1fr)",
               gap: "12px",
               alignItems: "center",
               padding: "12px",
@@ -237,7 +234,7 @@ export function DinoAdoptionPod({
             <button
               type="button"
               onClick={handleTapEgg}
-              title="点击敲击灵龙蛋体验破壳动效！"
+              title="敲击恐龙蛋破壳"
               style={{
                 appearance: "none",
                 border: `1.5px dashed ${currentSpecies.palette.eyeGlowHex}`,
@@ -280,7 +277,7 @@ export function DinoAdoptionPod({
                   <iframe
                     ref={previewFrameRef}
                     src="/mascot/3d/embed.html"
-                    title="3D 灵龙实时预览"
+                    title="3D 小恐龙实时预览"
                     tabIndex={-1}
                     style={{
                       position: "absolute",
@@ -442,7 +439,7 @@ export function DinoAdoptionPod({
               border: "1px solid rgba(255, 224, 130, 0.35)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, flexWrap: "wrap", minWidth: 0 }}>
               <span style={{ fontSize: "11.5px", fontWeight: 700, whiteSpace: "nowrap" }}>
                 🏷️ 爱宠赐名：
               </span>
@@ -454,7 +451,7 @@ export function DinoAdoptionPod({
                 onChange={e => updateSanctuary({ customName: e.target.value })}
                 style={{
                   flex: 1,
-                  minWidth: "90px",
+                  minWidth: 0,
                   padding: "4px 8px",
                   borderRadius: "8px",
                   border: "1px solid rgba(132,250,176,0.5)",

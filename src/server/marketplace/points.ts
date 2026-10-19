@@ -4,6 +4,7 @@ import { marketQuoteSchema } from "@/contracts/marketplace";
 import { debitQuota, refundQuota } from "@/server/quota/service";
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { marketTransaction, requireMarketActor, requireMarketModerator, marketHash } from "./shared";
+import { OFFICIAL_MARKET_DELIVERIES, getOfficialDeliveryMarkdown } from "./official-deliveries";
 
 const paySchema = z.object({ expectedRevision: z.number().int().nonnegative(), operationKey: z.string().regex(/^[A-Za-z0-9_-]{8,80}$/) }).strict();
 export function pointsPricingPolicy() {
@@ -35,6 +36,13 @@ export async function payMarketOrderPoints(orderId: string, buyerId: string, raw
     await tx.marketOrder.update({ where: { id: orderId }, data: { status, revision: { increment: 1 }, paidAt: new Date() } });
     await tx.marketOrderEvent.create({ data: { orderId, actorId: buyerId, action: "POINTS_PAID", fromStatus: order.status, toStatus: status, revision: order.revision + 1, operationKey: key, requestHash: hash } });
     await tx.auditLog.create({ data: { actorId: buyerId, action: "MARKET_POINTS_PAID", resourceType: "market_order", resourceId: orderId, metadata: { points: amount } } });
+    if ("marketDelivery" in tx && tx.marketDelivery && (quote.slug in OFFICIAL_MARKET_DELIVERIES || quote.fulfillment === "resource")) {
+      const deliveryMd = getOfficialDeliveryMarkdown(quote.slug, quote.title, quote.deliverables);
+      const nextRev = order.revision + 2;
+      await tx.marketDelivery.create({ data: { orderId, orderRevision: nextRev, contentMarkdown: deliveryMd } });
+      await tx.marketOrder.update({ where: { id: orderId }, data: { status: "DELIVERED", revision: { increment: 1 } } });
+      await tx.marketOrderEvent.create({ data: { orderId, actorId: order.sellerId, action: "deliver", fromStatus: status, toStatus: "DELIVERED", revision: nextRev, message: "ANS 官方自动秒发交付包已送达", operationKey: `auto-deliver:${orderId}:${nextRev}`, requestHash: hash } });
+    }
     return { paid: true, duplicate: false };
   });
 }

@@ -74,12 +74,113 @@ function DateField({ label, value, onChange, disabled }: { label: string; value:
 
 export function AgriTimetable() {
   const t = useTranslations("product.agriTasks");
+  const locale = useLocale();
   const { data: session, status, update } = useSession();
   const [invalidSession, setInvalidSession] = useState(false);
   const markInvalid = useCallback(() => { clearAgriRecoveries(); setInvalidSession(true); }, []);
   useEffect(() => { if (status === "unauthenticated") clearAgriRecoveries(); }, [status]);
   if (status === "loading") return <p role="status">{t("loading")}</p>;
-  if (!session?.user?.id) return <Button asChild><Link href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Ftasks">{t("login")}</Link></Button>;
+  if (!session?.user?.id) {
+    const guestTasks = [
+      {
+        stage: "PREPARATION",
+        stageLabel: locale === "zh" ? "📖 范例 · Stage 01" : "📖 Sample · Stage 01",
+        priority: "HIGH",
+        title: locale === "zh" ? "组建 1–5 人跨学科战队 & 锁定三大赛道选题" : "Form 1–5 Member Team & Lock Track Topic",
+        criteria: locale === "zh" ? "在战队大厅完成队长建队，绑定 GitHub 仓库或本地源码包，申领最高 750 点团队专属算力包（150 点/人）。" : "Create a team, bind your GitHub repo, and claim up to 750 team compute points (150 pts/member).",
+        reward: "+150 点 / 人",
+      },
+      {
+        stage: "PRELIMINARY",
+        stageLabel: locale === "zh" ? "📖 范例 · Stage 02" : "📖 Sample · Stage 02",
+        priority: "HIGH",
+        title: locale === "zh" ? "农业 AI 核心算法 / 硬件原型与数据集验证" : "Agri-AI Core Model / Hardware Prototype Validation",
+        criteria: locale === "zh" ? "基于 DeepSeek / Qwen2.5-VL 或边缘端 YOLO 完成病虫害识别、智慧灌溉或表型分析全流程验证。" : "Complete crop disease, smart irrigation, or phenotyping validation with LLM/VLM.",
+        reward: "AI 算力直连",
+      },
+      {
+        stage: "PRELIMINARY",
+        stageLabel: locale === "zh" ? "📖 范例 · Stage 03" : "📖 Sample · Stage 03",
+        priority: "HIGH",
+        title: locale === "zh" ? "提交初赛工程包与 SHA-256 密码学哈希存证" : "Submit Preliminary Package & SHA-256 Hash Escrow",
+        criteria: locale === "zh" ? "上传 10MB 内源码压缩包、架构说明与可复现实验命令，系统自动生成不可篡改 SHA-256 指纹。" : "Upload source archive and reproducible commands for automatic SHA-256 fingerprinting.",
+        reward: "防篡改代码存证",
+      },
+      {
+        stage: "FINAL",
+        stageLabel: locale === "zh" ? "📖 范例 · Stage 04" : "📖 Sample · Stage 04",
+        priority: "NORMAL",
+        title: locale === "zh" ? "评委盲审反馈迭代 & 现场演示环境自检" : "Judge Feedback Iteration & Live Demo Check",
+        criteria: locale === "zh" ? "根据五维度评分（问题价值、AI 契合度、创新性、技术实现、完整度）完成演示自检表。" : "Complete live demo checklist across the 5 official judging dimensions.",
+        reward: "冲击 ¥3,300 奖池",
+      },
+      {
+        stage: "EVENT_DAY",
+        stageLabel: locale === "zh" ? "📖 范例 · Stage 05" : "📖 Sample · Stage 05",
+        priority: "HIGH",
+        title: locale === "zh" ? "中国农大现场路演答辩与实时人气打榜" : "CAU On-Site Pitch & Live Popularity Voting",
+        criteria: locale === "zh" ? "现场 5 分钟真机演示 + 3 分钟评委问答，同步开启全校作品墙星标助威。" : "5-min live hardware/software demo + 3-min Q&A with campus-wide star voting.",
+        reward: "校级荣誉证书",
+      },
+      {
+        stage: "ARCHIVE",
+        stageLabel: locale === "zh" ? "📖 范例 · Stage 06" : "📖 Sample · Stage 06",
+        priority: "NORMAL",
+        title: locale === "zh" ? "入选正式展览馆 & 上架工具与工作流市场分成" : "Official Showcase Publication & Market Royalties",
+        criteria: locale === "zh" ? "优秀工程可归档至正式展览馆，并封装为标准技能包上架工具与工作流市场获取积分分成。" : "Publish to official showcase and list on the marketplace for ongoing point royalties.",
+        reward: "80% 创作者分成",
+      },
+    ];
+    return (
+      <div className="space-y-4" data-testid="agri-tasks-guest-preview">
+        <div className="flex flex-col justify-between gap-4 rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent p-5 sm:flex-row sm:items-center">
+          <div className="space-y-1">
+            <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+              {locale === "zh" ? "农大创客马拉松 · 战队任务看板" : "AgriHackathon · Team Task Board"}
+            </Badge>
+            <p className="text-sm text-muted-foreground">
+              {locale === "zh"
+                ? "当前未登录 · 登录后可初始化团队专属任务看板、指派队员并关联提交存证。"
+                : "Sign in to initialize your interactive team task board, assign members, and link submission records."}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button asChild className="rounded-xl">
+              <Link href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Ftasks">{t("login")}</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link href="/competitions/agrihackathon">{locale === "zh" ? "返回赛事主站" : "Back to Hub"}</Link>
+            </Button>
+          </div>
+        </div>
+        <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-foreground">
+            <span>{locale === "zh" ? "📖 查看标准 6 阶段备赛里程碑参考范例" : "📖 View 6-Stage Milestone Reference Template"}</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
+            <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">{locale === "zh" ? "收起 ▴" : "Collapse ▴"}</span>
+          </summary>
+          <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {guestTasks.map((item, idx) => (
+              <Card key={idx} className="border-border/60 bg-card/90 transition hover:border-emerald-500/40 hover:shadow-md">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className="text-[11px]">{item.stageLabel}</Badge>
+                    <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-300">
+                      {item.reward}
+                    </span>
+                  </div>
+                  <CardTitle className="pt-1.5 text-base leading-snug">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{item.criteria}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </details>
+      </div>
+    );
+  }
   if (invalidSession) return <div className="space-y-3"><p role="alert">{t("errors.ACCOUNT_CHANGED")}</p><Button onClick={() => void update().then(() => setInvalidSession(false)).catch(() => setInvalidSession(true))}>{t("refresh")}</Button></div>;
   return <TaskList key={session.user.id} actorId={session.user.id} onAccountChanged={markInvalid} />;
 }

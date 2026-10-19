@@ -226,7 +226,37 @@ function ProfileGrowthState({ user, editable = false, showActivity = true, avata
         <div>
           <div className="flex items-end justify-between gap-3"><RevealDetails id="growth-earn-guide" kind="heading" label={t("earnGuide")} className="flex-1 pe-12" details={<p>{t("qualityHint")}</p>}><h3 className="text-xl font-bold">{t("earnTitle")}</h3></RevealDetails><Target className="h-5 w-5 text-primary" aria-hidden="true" /></div>
           <div className={cn("mt-4 grid grid-cols-2 gap-2", !showActivity && "lg:grid-cols-3")}>
-            {actionCards.map((action) => { const Icon = action.icon; return <div key={action.key} className="rounded-xl border p-3"><div className="flex items-center justify-between"><Icon className="h-4 w-4 text-foreground/70" aria-hidden="true" /><span className="text-xs font-bold text-primary">+{action.xp} XP</span></div><p className="mt-3 text-sm font-semibold">{t(`actions.${action.key}`)}</p><p className="mt-1 text-[11px] text-muted-foreground">{t("dailyCap", { count: XP_RULES[action.key].dailyCap })}</p></div>; })}
+            {actionCards.map((action) => {
+              const Icon = action.icon;
+              const actionConfig = ({
+                CHECK_IN: { label: checked ? "✅ 今日已签" : "✨ 立即签到 →", run: () => void checkIn() },
+                PUBLISH_TEMPLATE: { label: "🚀 去发布 →", run: () => router.push("/explore/submit") },
+                COMMENT: { label: "💬 去交流 →", run: () => router.push("/showcase") },
+                LIKE: { label: "❤️ 去点赞 →", run: () => router.push("/") },
+                RUN_COMPLETE: { label: "⚡ 去运行 →", run: () => router.push("/workspace") },
+                SHARE: { label: "🔗 去分享 →", run: () => router.push("/hubs") },
+              } as Record<string, { label: string; run: () => void }>)[action.key] ?? { label: "去完成 →", run: () => router.push("/") };
+              return (
+                <button
+                  key={action.key}
+                  type="button"
+                  onClick={actionConfig.run}
+                  className="group flex flex-col justify-between rounded-xl border p-3 text-left transition-all hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                >
+                  <div className="w-full">
+                    <div className="flex items-center justify-between">
+                      <Icon className="h-4 w-4 text-foreground/70 group-hover:text-primary" aria-hidden="true" />
+                      <span className="text-xs font-bold text-primary">+{action.xp} XP</span>
+                    </div>
+                    <p className="mt-3 text-sm font-semibold group-hover:text-primary">{t(`actions.${action.key}`)}</p>
+                  </div>
+                  <div className="mt-2 flex w-full items-center justify-between gap-1 border-t border-border/50 pt-2">
+                    <span className="text-[11px] text-muted-foreground">{t("dailyCap", { count: XP_RULES[action.key].dailyCap })}</span>
+                    <span className="text-[11px] font-bold text-primary">{actionConfig.label}</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
         </div>

@@ -4,14 +4,15 @@ import { ArrowRight, Plus, Search, BookOpen, BriefcaseBusiness, Clapperboard, Co
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { listPublishedCatalog } from "@/server/catalog/service";
-import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
+import { PROJECT_CATEGORIES, resolveProjectCovers } from "@/domain/catalog/projects";
 import { catalogText } from "@/domain/catalog/content";
-import { homepageProjects } from "@/domain/catalog/homepage";
+import { homepageProjects, resolveCatalogShowcaseHref } from "@/domain/catalog/homepage";
 import { browseCatalog, catalogBrowseHref, type CatalogBrowseQuery } from "@/domain/catalog/browse";
 import { ProjectCard } from "@/components/catalog/project-card";
 import { CatalogPagination } from "@/components/catalog/catalog-pagination";
 import { RevealDetails } from "@/components/catalog/reveal-details";
 import { ProjectCoverflow } from "@/components/homepage/project-coverflow";
+import { HomeCampaignModal } from "@/components/homepage/home-campaign-modal";
 import styles from "./home.module.css";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,9 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
   const { hero, projects, showcase } = homepageProjects(catalog);
   const browse = browseCatalog(projects, params, project => [catalogText(project, t, "title", locale), catalogText(project, t, "summary", locale), t(`categories.${project.category}`), t(`children.${project.subcategory}`)].join(" "));
   const filterHref = (updates: Parameters<typeof catalogBrowseHref>[2] = {}, page = 1) => catalogBrowseHref("/", browse.filters, updates, page);
+  const isEn = locale.startsWith("en");
   return <div className={`ans-product-shell ans-home-page ${styles.page}`}>
+    <HomeCampaignModal locale={locale} />
     <section className={styles.hero} aria-labelledby="home-title">
       <div className={`ans-product-container ${styles.intro}`}>
         <div className={styles.copy}>
@@ -39,17 +42,61 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
         </div>
         {hero ? <ProjectCoverflow projects={(showcase.length ? showcase : [hero]).map(project => ({
           slug: project.slug,
-          href: project.memberHref ?? `/explore/${project.slug}`,
+          href: resolveCatalogShowcaseHref(project),
           title: catalogText(project, t, "title", locale),
           summary: catalogText(project, t, "summary", locale),
           category: t(`categories.${project.category}`),
-          coverUrl: project.coverUrl,
+          coverUrl: resolveProjectCovers(project).outerCoverUrl,
         }))} labels={{ title: t("home.spotlight"), open: t("detail"), carousel: t("home.projectCarousel"), info: t("catalogBrowse.introduction"), pause: t("home.pauseProjects"), play: t("home.playProjects") }} /> : <div className={styles.empty}><BookOpen aria-hidden="true" /><h2>{t("emptyTitle")}</h2><p>{t("emptyBody")}</p></div>}
+      </div>
+      <div className="ans-product-container mt-4" data-testid="home-ecosystem-pulse">
+        <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-border/60 bg-card/75 p-2.5 backdrop-blur-md lg:grid-cols-4">
+          <Link
+            href="/explore"
+            title={isEn ? "Runnable Projects & Workflows · Verified Entries with Live Demo" : "可复现项目与开源工作流 · 含输入与验收边界"}
+            className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
+          >
+            <span className="truncate text-xs font-bold text-foreground sm:text-sm">
+              {projects.length}+ {isEn ? "Verified Projects" : "精选可复现项目"}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          </Link>
+          <Link
+            href="/competitions/agrihackathon"
+            title={isEn ? "CAU AgriHackathon · ¥3,300 Pool & SHA-256 Git Snapshot Audit" : "中国农大智耕黑客松 · ¥3,300 奖池与代码存证归档"}
+            className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
+          >
+            <span className="truncate text-xs font-bold text-foreground sm:text-sm">
+              {isEn ? "AgriHackathon · ¥3,300" : "中国农大智耕黑客松"}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          </Link>
+          <Link
+            href="/vibe-hub/vibehub-skill"
+            title={isEn ? "ANS Skill & Brief Workbench · 10 Daily Skills & 3 Pipelines" : "ANS 需求转写与去 AI 味规范 · 10 大日常 Skill 与 3 条流水线"}
+            className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
+          >
+            <span className="truncate text-xs font-bold text-foreground sm:text-sm">
+              {isEn ? "10 Daily Skills" : "10 大高频 Skill 库"}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          </Link>
+          <Link
+            href="/workspace/models"
+            title={isEn ? "Multi-Model Playground · Compare DeepSeek, Qwen, GPT & Claude" : "多模型演练场 · 支持 DeepSeek、Qwen、GPT 与 Claude 在线对比"}
+            className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
+          >
+            <span className="truncate text-xs font-bold text-foreground sm:text-sm">
+              {isEn ? "6 AI Models Supported" : "支持 6 款主流大模型"}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
+          </Link>
+        </div>
       </div>
     </section>
     <section className={`ans-product-container ${styles.selection}`} aria-labelledby="home-projects-title">
       <div className={styles.sectionHeading}>
-        <div className={styles.sectionTitle}><h2 id="home-projects-title">{t("nav.explore")}</h2><span className={styles.count}>{t("results", { count: browse.total })}</span></div>
+        <div className={styles.sectionTitle}><h2 id="home-projects-title">{isEn ? "Curated Projects & Runnable Workflows" : "精选项目与可复现工作流"}</h2><span className={styles.count}>{t("results", { count: browse.total })}</span></div>
         <Button asChild variant="outline" className={styles.submit}><Link href="/explore/submit"><Plus aria-hidden="true" />{t("realProject.submit")}</Link></Button>
       </div>
       <nav aria-label={t("categoriesLabel")} className={styles.categoryRail}>

@@ -80,7 +80,7 @@ export async function ComputeHistory({ history, filter, paged, userId }: { userI
             <div><dt className="text-xs text-muted-foreground">{t("returned")}</dt><dd className="mt-1 font-medium tabular-nums">{points(task.refundedPoints)}</dd></div>
           </dl>
           <p className="mt-4 text-sm leading-7 text-muted-foreground">{t(`stateBody.${task.state}`)}</p>
-          {(task.unit === "image" || task.unit === "second") && <ComputeDeliveryStatus userId={userId} taskId={task.taskId} unit={task.unit} resultUrl={getToonflowResultUrl(task.taskId)} />}
+          {userId !== "guest-preview" && (task.unit === "image" || task.unit === "second") && <ComputeDeliveryStatus userId={userId} taskId={task.taskId} unit={task.unit} resultUrl={getToonflowResultUrl(task.taskId)} />}
           <details className="mt-3 text-xs"><summary className="w-fit cursor-pointer py-2 text-muted-foreground">{t("details")}</summary>
             <dl className="grid gap-3 rounded-[var(--radius)] bg-muted/40 p-4 sm:grid-cols-2">
               <div className="min-w-0"><dt className="text-muted-foreground">{t("taskId")}</dt><dd className="mt-1 break-all font-mono">{task.taskId}</dd></div>

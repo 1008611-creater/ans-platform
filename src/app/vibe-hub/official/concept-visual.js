@@ -5666,7 +5666,7 @@ let eX = {
     let e = (0, a.useContext)(ep.gq),
       [s, n] = (0, a.useState)("assumptions");
     return (0, t.jsxs)(eu.xc, {
-      label: "产品发现验证闭环图解",
+      label: "产品发现验证循环图解",
       className: "product-concept-scene discovery-scene",
       children: [(0, t.jsxs)("div", {
         className: "scene-controls",

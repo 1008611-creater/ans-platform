@@ -134,9 +134,17 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
     }).catch(() => undefined);
     return () => { active = false; };
   }, [project.id]);
-  const recommended = useMemo(() => projectPackWorkflowIds.map((id) => OFFICIAL_WORKFLOWS.find((workflow) => workflow.id === id)!), []);
-  const more = OFFICIAL_WORKFLOWS.filter((workflow) => !recommended.some((item) => item.id === workflow.id));
   const selectedWorkflow = OFFICIAL_WORKFLOWS.find((workflow) => workflow.id === initialWorkflowId);
+  const recommended = useMemo(
+    () =>
+      projectPackWorkflowIds
+        .map((id) => OFFICIAL_WORKFLOWS.find((workflow) => workflow.id === id)!)
+        .filter((workflow) => workflow.id !== selectedWorkflow?.id),
+    [selectedWorkflow?.id],
+  );
+  const more = OFFICIAL_WORKFLOWS.filter(
+    (workflow) => !projectPackWorkflowIds.includes(workflow.id as (typeof projectPackWorkflowIds)[number]) && workflow.id !== selectedWorkflow?.id,
+  );
 
   function factPayload(confirm: boolean) {
     return facts.map((fact) => {
@@ -351,7 +359,6 @@ export function ProjectStudio({ project, initialWorkflowId }: { project: Project
                   <CardTitle className="text-base">{artifact.title}</CardTitle>
                   <Badge variant="secondary">v{selectedVersion?.version}</Badge>
                 </div>
-                <CardDescription>{t("versionHint")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {artifact.versions.length > 1 ? <label className="flex flex-wrap items-center gap-2 text-sm"><span>{t("versionHistory")}</span><select disabled={locked} className="h-9 rounded-md border bg-background px-2" value={selectedVersion?.id ?? ""} onChange={(event) => setSelectedVersions((current) => ({ ...current, [artifact.id]: event.target.value }))}>{artifact.versions.map((item) => <option key={item.id} value={item.id}>v{item.version} · {new Date(item.createdAt).toLocaleDateString(locale)}</option>)}</select></label> : null}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import {
   ARCADE_PRIZES,
+  ARCADE_TOKEN_COST_POINTS,
   CNY_PER_POINT,
   POINTS_PER_USD,
   QUEST_ARCADE_EVENT,
@@ -12,6 +13,7 @@ import {
   QUEST_DEFINITIONS,
   USD_PER_POINT,
   advanceAndClaimQuest,
+  buyArcadeTokensWithPoints,
   drawArcadePrize,
   isQuestClaimedToday,
   loadQuestArcadeState,
@@ -25,634 +27,28 @@ import {
 } from "@/domain/mascot/quest-arcade";
 import { SANCTUARY_EVENT_NAME, loadSanctuaryState } from "@/domain/mascot/sanctuary";
 
-interface CapsuleItem {
-  id: string;
-  rarity: PrizeRarity;
-  icon: string;
-  shortTag: string;
-  labelZh: string;
-  labelEn: string;
-  x: number; // 14..86 (%)
-  z: number; // 20..82 (%)
-  glbId: TripoGlbAssetId;
-}
+import {
+  CAPSULE_PALETTE,
+  INITIAL_CAPSULES,
+  TRIPO_GLB_ASSETS,
+  fetchAndParseGlbAsset,
+  glbMeshCache,
+  parseGlbBinaryMesh,
+  renderGlbAngleSprite,
+  type CapsuleItem,
+  type ParsedGlbMesh,
+  type ParsedGlbTriangle,
+  type TripoGlbAssetId,
+  type TripoGlbAssetMeta,
+} from "./claw-arcade-glb";
 
-export type TripoGlbAssetId =
-  | "claw-cabinet"
-  | "claw-arm"
-  | "ur-dragon-egg"
-  | "ssr-4090-cookie"
-  | "sr-golden-wheat"
-  | "mint-star-dino";
-
-export interface TripoGlbAssetMeta {
-  id: TripoGlbAssetId;
-  icon: string;
-  nameZh: string;
-  nameEn: string;
-  roleZh: string;
-  roleEn: string;
-  glbUrl: string;
-  sheetUrl: string;
-  tripoTaskId: string;
-  sha256Prefix: string;
-  vertexCount: number;
-  faceCount: number;
-  fallbackRgb: [number, number, number];
-  accentRgb: [number, number, number];
-  promptZh: string;
-}
-
-export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
-  {
-    id: "claw-cabinet",
-    icon: "🕹️",
-    nameZh: "赛博农林太空抓娃娃机 · 机身舱体",
-    nameEn: "Cyber-Agri Space Claw Cabinet",
-    roleZh: "八角星轨街机底座 + 钛金透明拱顶展示舱",
-    roleEn: "Octagonal cyber base + titanium glass display dome",
-    glbUrl: "/arcade-3d/claw-cabinet.glb",
-    sheetUrl: "/arcade-3d/sheets/claw-cabinet.png",
-    tripoTaskId: "dc168408-327f-48bf-945d-7ebc53cfe331",
-    sha256Prefix: "bf044e9a0742",
-    vertexCount: 5959,
-    faceCount: 7142,
-    fallbackRgb: [16, 185, 129],
-    accentRgb: [245, 158, 11],
-    promptZh:
-      "生成用于三维重建的单个赛博农林科技风太空抓娃娃机机身舱体正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆润八角柱形街机机舱，下半部为深邃暗金与翠绿发光饰条底座（正面中央带内凹出物舱口与琥珀色摇杆凸台，背面为平整银灰散热装甲板），上半部为四根流线型钛金立柱支撑的透明拱顶展示舱框架。",
-  },
-  {
-    id: "claw-arm",
-    icon: "🦾",
-    nameZh: "青金动力核心 · 三爪机械臂",
-    nameEn: "Cyan-Gold Core 3-Prong Claw Arm",
-    roleZh: "天车悬吊环 + 墨绿琥珀动力盘 + 镀铬三爪",
-    roleEn: "Top suspension ring + emerald-gold core + 3 chrome prongs",
-    glbUrl: "/arcade-3d/claw-arm.glb",
-    sheetUrl: "/arcade-3d/sheets/claw-arm.png",
-    tripoTaskId: "c8a30ed7-0604-4138-bff0-bbb58fc7977f",
-    sha256Prefix: "9a1eb0b33023",
-    vertexCount: 5269,
-    faceCount: 7841,
-    fallbackRgb: [251, 191, 36],
-    accentRgb: [56, 189, 248],
-    promptZh:
-      "生成用于三维重建的单个三爪抓娃娃机械爪头正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为顶部银白金属圆柱吊环，中间为墨绿与琥珀金配色圆盘动力核心（正面镶嵌一颗青色圆形指示灯，背面为金色齿轮浮雕），下方对称垂落三根圆润微张的弧形镀铬机械爪指，爪尖包裹防滑软胶垫。",
-  },
-  {
-    id: "ur-dragon-egg",
-    icon: "🐉",
-    nameZh: "UR 紫金星云龙蛋 ($8.0 / 80 积分)",
-    nameEn: "UR Violet-Gold Dragon Egg ($8.0 / 80 Pts)",
-    roleZh: "紫金渐变龙鳞浮雕 + 琥珀金龙晶核心",
-    roleEn: "Violet-gold dragon scales + amber dragon crystal core",
-    glbUrl: "/arcade-3d/ur-dragon-egg.glb",
-    sheetUrl: "/arcade-3d/sheets/ur-dragon-egg.png",
-    tripoTaskId: "2fd1893b-732c-4fce-a557-cc00326c636a",
-    sha256Prefix: "176e90305784",
-    vertexCount: 5333,
-    faceCount: 7532,
-    fallbackRgb: [192, 132, 252],
-    accentRgb: [251, 191, 36],
-    promptZh:
-      "生成用于三维重建的单个UR级紫金星云龙蛋扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为饱满鹅蛋形3D潮玩盲盒巨蛋，表面覆盖立体层叠的紫金渐变龙鳞浮雕与金色闪电能量脉络，正面中央镶嵌一枚水滴形琥珀金龙晶宝石，背面为对称闭合的紫金龙鳞纹路。",
-  },
-  {
-    id: "ssr-4090-cookie",
-    icon: "🔋",
-    nameZh: "SSR 4090 显卡夹心饼干 ($4.0 / 40 积分)",
-    nameEn: "SSR RTX 4090 Sandwich Cookie ($4.0 / 40 Pts)",
-    roleZh: "双薄荷奶油涡轮风扇 + 华夫背板 + 金手指插脚",
-    roleEn: "Dual mint-cream turbo fans + waffle backplate + gold pins",
-    glbUrl: "/arcade-3d/ssr-4090-cookie.glb",
-    sheetUrl: "/arcade-3d/sheets/ssr-4090-cookie.png",
-    tripoTaskId: "81369246-175e-42c5-8737-62d167f3783b",
-    sha256Prefix: "17c182128a8c",
-    vertexCount: 5560,
-    faceCount: 7444,
-    fallbackRgb: [52, 211, 153],
-    accentRgb: [245, 158, 11],
-    promptZh:
-      "生成用于三维重建的单个SSR级显卡造型夹心饼干扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆角厚实长方体潮玩饼干造型，外层为烤金黄色曲奇脆皮与黑巧装甲边框，正面雕刻两个对称翠绿薄荷奶油涡轮风扇浮雕，底部边缘露出一排闪亮金色曲奇插脚，背面为方格华夫饼干背板纹路，中间夹有饱满翠绿荧光奶油层。",
-  },
-  {
-    id: "sr-golden-wheat",
-    icon: "🌾",
-    nameZh: "SR 农大黄金麦穗胶囊 ($2.0 / 20 积分)",
-    nameEn: "SR CAU Golden Wheat Capsule ($2.0 / 20 Pts)",
-    roleZh: "琥珀金星轨底座 + 重穗黄金麦浪 + 翡翠叶徽章",
-    roleEn: "Amber star-orbit base + sculpted golden wheat + emerald leaf crest",
-    glbUrl: "/arcade-3d/sr-golden-wheat.glb",
-    sheetUrl: "/arcade-3d/sheets/sr-golden-wheat.png",
-    tripoTaskId: "cau-wheat-capsule-v1-29558a28e926",
-    sha256Prefix: "29558a28e926",
-    vertexCount: 5329,
-    faceCount: 10368,
-    fallbackRgb: [245, 158, 11],
-    accentRgb: [16, 185, 129],
-    promptZh:
-      "生成用于三维重建的单个SR级中国农大黄金麦穗胶囊扭蛋正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为圆润胶囊形3D潮玩盲盒，下半部为琥珀金金属底座并环绕一圈翠绿农林星轨浮雕，上半部为立体饱满的金黄色重穗麦浪雕塑，正面中央镶嵌一枚翡翠绿叶子徽章，背面为对称饱满的黄金麦粒纹理。",
-  },
-  {
-    id: "mint-star-dino",
-    icon: "🦖",
-    nameZh: "R 薄荷星龙潮玩手办 ($1.5 / 15 积分)",
-    nameEn: "R Mint Star Dino Figurine ($1.5 / 15 Pts)",
-    roleZh: "金麦穗皇冠 + 薄荷绿磨砂机身 + 琥珀金背棘",
-    roleEn: "Golden wheat crown + matte mint body + amber dorsal spines",
-    glbUrl: "/arcade-3d/mint-star-dino.glb",
-    sheetUrl: "/arcade-3d/sheets/mint-star-dino.png",
-    tripoTaskId: "b71d10d1-bc96-4a71-92b6-3f4f35bb4979",
-    sha256Prefix: "dbaaf20a2193",
-    vertexCount: 5145,
-    faceCount: 7980,
-    fallbackRgb: [110, 231, 183],
-    accentRgb: [251, 191, 36],
-    promptZh:
-      "生成用于三维重建的单个Q版薄荷绿小恐龙潮玩手办正交四视图资产表。严格2×2等大四宫格：左上正面、右上背面、左下左侧、右下右侧。结构为二头身圆润站姿小恐龙盲盒公仔，通体薄荷翠绿哑光磨砂玩具材质，头顶佩戴一顶小巧金黄麦穗皇冠，正面有圆亮黑眼睛与奶油白圆肚皮，背部与短粗尾巴排列一列圆润琥珀金背棘。",
-  },
-] as const;
-
-export interface ParsedGlbTriangle {
-  v0: [number, number, number];
-  v1: [number, number, number];
-  v2: [number, number, number];
-  normal: [number, number, number];
-  rgb: [number, number, number];
-  uv: [number, number];
-}
-
-export interface ParsedGlbMesh {
-  assetId: TripoGlbAssetId;
-  vertexCount: number;
-  triangleCount: number;
-  triangles: ParsedGlbTriangle[];
-  baseColorImageBytes?: Uint8Array;
-  baseColorMimeType?: string;
-  textureApplied?: boolean;
-  spriteCache?: Map<number, HTMLCanvasElement>;
-}
-
-const glbMeshCache = new Map<TripoGlbAssetId, ParsedGlbMesh>();
-const glbLoadingPromises = new Map<TripoGlbAssetId, Promise<ParsedGlbMesh | null>>();
-
-export function parseGlbBinaryMesh(
-  assetId: TripoGlbAssetId,
-  buffer: ArrayBuffer,
-  fallbackRgb: [number, number, number],
-  maxRenderTriangles = 520,
-): ParsedGlbMesh | null {
-  if (buffer.byteLength < 28) return null;
-  const view = new DataView(buffer);
-  const magic = view.getUint32(0, true);
-  const version = view.getUint32(4, true);
-  if (magic !== 0x46546c67 || version !== 2) return null;
-
-  const jsonLen = view.getUint32(12, true);
-  const jsonType = view.getUint32(16, true);
-  if (jsonType !== 0x4e4f534a) return null;
-
-  const jsonBytes = new Uint8Array(buffer, 20, jsonLen);
-  const gltf = JSON.parse(new TextDecoder("utf-8").decode(jsonBytes));
-  const binChunkHeaderOffset = 20 + jsonLen;
-  if (binChunkHeaderOffset + 8 > buffer.byteLength) return null;
-  const binOffset = binChunkHeaderOffset + 8;
-
-  const prim = gltf.meshes?.[0]?.primitives?.[0];
-  if (!prim) return null;
-
-  const posAcc = gltf.accessors?.[prim.attributes?.POSITION];
-  const normAcc =
-    prim.attributes?.NORMAL !== undefined ? gltf.accessors?.[prim.attributes.NORMAL] : null;
-  const uvAcc =
-    prim.attributes?.TEXCOORD_0 !== undefined ? gltf.accessors?.[prim.attributes.TEXCOORD_0] : null;
-  const indAcc = prim.indices !== undefined ? gltf.accessors?.[prim.indices] : null;
-  if (!posAcc || !indAcc) return null;
-
-  const getBufferSlice = (acc: {
-    bufferView: number;
-    byteOffset?: number;
-    count: number;
-    type: string;
-    componentType: number;
-  }) => {
-    const bv = gltf.bufferViews[acc.bufferView];
-    const start = binOffset + (bv.byteOffset ?? 0) + (acc.byteOffset ?? 0);
-    const comps = acc.type === "VEC3" ? 3 : acc.type === "VEC2" ? 2 : 1;
-    const total = acc.count * comps;
-    if (acc.componentType === 5126) {
-      return new Float32Array(buffer, start, total);
-    }
-    if (acc.componentType === 5125) {
-      return new Uint32Array(buffer, start, total);
-    }
-    if (acc.componentType === 5123) {
-      return new Uint16Array(buffer, start, total);
-    }
-    return null;
-  };
-
-  const positions = getBufferSlice(posAcc) as Float32Array | null;
-  const normals = normAcc ? (getBufferSlice(normAcc) as Float32Array | null) : null;
-  const uvs = uvAcc ? (getBufferSlice(uvAcc) as Float32Array | null) : null;
-  const indices = getBufferSlice(indAcc) as Uint32Array | Uint16Array | null;
-  if (!positions || !indices) return null;
-
-  // Normalize bounding box to unit sphere/cube [-0.5, +0.5] centered at (0,0,0)
-  let minX = Infinity,
-    minY = Infinity,
-    minZ = Infinity;
-  let maxX = -Infinity,
-    maxY = -Infinity,
-    maxZ = -Infinity;
-  if (Array.isArray(posAcc.min) && Array.isArray(posAcc.max) && posAcc.min.length === 3) {
-    [minX, minY, minZ] = posAcc.min;
-    [maxX, maxY, maxZ] = posAcc.max;
-  } else {
-    for (let i = 0; i < positions.length; i += 3) {
-      const px = positions[i];
-      const py = positions[i + 1];
-      const pz = positions[i + 2];
-      if (px < minX) minX = px;
-      if (py < minY) minY = py;
-      if (pz < minZ) minZ = pz;
-      if (px > maxX) maxX = px;
-      if (py > maxY) maxY = py;
-      if (pz > maxZ) maxZ = pz;
-    }
-  }
-  const cx = (minX + maxX) * 0.5;
-  const cy = (minY + maxY) * 0.5;
-  const cz = (minZ + maxZ) * 0.5;
-  const maxSpan = Math.max(maxX - minX, maxY - minY, maxZ - minZ, 0.001);
-  const normScale = 1.0 / maxSpan;
-
-  const assetMeta = TRIPO_GLB_ASSETS.find(a => a.id === assetId);
-  const accentRgb: [number, number, number] = assetMeta?.accentRgb ?? [251, 191, 36];
-
-  const normVert = (rawIdx: number): [number, number, number] => [
-    (positions[rawIdx] - cx) * normScale,
-    (positions[rawIdx + 1] - cy) * normScale,
-    (positions[rawIdx + 2] - cz) * normScale,
-  ];
-
-  const totalTriCount = Math.floor(indices.length / 3);
-  const step = Math.max(1, Math.floor(totalTriCount / maxRenderTriangles));
-  const triangles: ParsedGlbTriangle[] = [];
-
-  for (let t = 0; t < totalTriCount; t += step) {
-    const vi0 = indices[t * 3];
-    const vi1 = indices[t * 3 + 1];
-    const vi2 = indices[t * 3 + 2];
-    const i0 = vi0 * 3;
-    const i1 = vi1 * 3;
-    const i2 = vi2 * 3;
-
-    const v0 = normVert(i0);
-    const v1 = normVert(i1);
-    const v2 = normVert(i2);
-
-    let nx = 0;
-    let ny = 1;
-    let nz = 0;
-    if (normals) {
-      nx = (normals[i0] + normals[i1] + normals[i2]) / 3;
-      ny = (normals[i0 + 1] + normals[i1 + 1] + normals[i2 + 1]) / 3;
-      nz = (normals[i0 + 2] + normals[i1 + 2] + normals[i2 + 2]) / 3;
-    } else {
-      const ux = v1[0] - v0[0];
-      const uy = v1[1] - v0[1];
-      const uz = v1[2] - v0[2];
-      const vx = v2[0] - v0[0];
-      const vy = v2[1] - v0[1];
-      const vz = v2[2] - v0[2];
-      nx = uy * vz - uz * vy;
-      ny = uz * vx - ux * vz;
-      nz = ux * vy - uy * vx;
-    }
-    const len = Math.hypot(nx, ny, nz) || 1;
-    nx /= len;
-    ny /= len;
-    nz /= len;
-
-    let u = 0.5;
-    let v = 0.5;
-    if (uvs) {
-      u = (uvs[vi0 * 2] + uvs[vi1 * 2] + uvs[vi2 * 2]) / 3;
-      v = (uvs[vi0 * 2 + 1] + uvs[vi1 * 2 + 1] + uvs[vi2 * 2 + 1]) / 3;
-      u = ((u % 1) + 1) % 1;
-      v = ((v % 1) + 1) % 1;
-    }
-
-    // Multi-tone procedural shading (until embedded PBR baseColorTexture is decoded in browser)
-    const avgY = (v0[1] + v1[1] + v2[1]) / 3;
-    const radial = Math.hypot((v0[0] + v1[0] + v2[0]) / 3, (v0[2] + v1[2] + v2[2]) / 3);
-    const bandMix = Math.max(
-      0,
-      Math.min(1, 0.5 + 0.5 * Math.sin(avgY * 9.5 + radial * 5.0 + u * 3.14)),
-    );
-    const baseR = fallbackRgb[0] * (1 - bandMix * 0.42) + accentRgb[0] * (bandMix * 0.42);
-    const baseG = fallbackRgb[1] * (1 - bandMix * 0.42) + accentRgb[1] * (bandMix * 0.42);
-    const baseB = fallbackRgb[2] * (1 - bandMix * 0.42) + accentRgb[2] * (bandMix * 0.42);
-    const lift = Math.max(0.78, Math.min(1.32, 1.04 + avgY * 0.48));
-    const rgb: [number, number, number] = [
-      Math.min(255, Math.round(baseR * lift)),
-      Math.min(255, Math.round(baseG * lift)),
-      Math.min(255, Math.round(baseB * lift)),
-    ];
-
-    triangles.push({ v0, v1, v2, normal: [nx, ny, nz], rgb, uv: [u, v] });
-  }
-
-  let baseColorImageBytes: Uint8Array | undefined;
-  let baseColorMimeType: string | undefined;
-  const imgDef = gltf.images?.[0];
-  if (imgDef && typeof imgDef.bufferView === "number") {
-    const bv = gltf.bufferViews?.[imgDef.bufferView];
-    if (bv && typeof bv.byteLength === "number") {
-      const start = binOffset + (bv.byteOffset ?? 0);
-      if (start + bv.byteLength <= buffer.byteLength) {
-        baseColorImageBytes = new Uint8Array(buffer, start, bv.byteLength);
-        baseColorMimeType = imgDef.mimeType || "image/jpeg";
-      }
-    }
-  }
-
-  return {
-    assetId,
-    vertexCount: posAcc.count,
-    triangleCount: totalTriCount,
-    triangles,
-    baseColorImageBytes,
-    baseColorMimeType,
-    spriteCache: new Map(),
-  };
-}
-
-async function decodeEmbeddedGlbTexture(mesh: ParsedGlbMesh, meta: TripoGlbAssetMeta): Promise<void> {
-  if (
-    mesh.textureApplied ||
-    !mesh.baseColorImageBytes ||
-    typeof window === "undefined" ||
-    typeof createImageBitmap !== "function"
-  ) {
-    return;
-  }
-  try {
-    const copyBytes = new Uint8Array(mesh.baseColorImageBytes.byteLength);
-    copyBytes.set(mesh.baseColorImageBytes);
-    const blob = new Blob([copyBytes.buffer], {
-      type: mesh.baseColorMimeType || "image/jpeg",
-    });
-    const bmp = await createImageBitmap(blob);
-    const texSize = 128;
-    const offCanvas = document.createElement("canvas");
-    offCanvas.width = texSize;
-    offCanvas.height = texSize;
-    const ctx = offCanvas.getContext("2d");
-    if (!ctx) return;
-    ctx.drawImage(bmp, 0, 0, texSize, texSize);
-    const imgData = ctx.getImageData(0, 0, texSize, texSize).data;
-    for (const tri of mesh.triangles) {
-      const tx = Math.max(0, Math.min(texSize - 1, Math.floor(tri.uv[0] * texSize)));
-      const ty = Math.max(0, Math.min(texSize - 1, Math.floor(tri.uv[1] * texSize)));
-      const idx = (ty * texSize + tx) * 4;
-      const tr = imgData[idx];
-      const tg = imgData[idx + 1];
-      const tb = imgData[idx + 2];
-      const luma = 0.299 * tr + 0.587 * tg + 0.114 * tb;
-      // Blend UV texture with studio metallic environment tint so dark PBR metallic regions shine brightly
-      const envMix = luma < 65 ? 0.66 : luma < 120 ? 0.42 : 0.2;
-      const avgY = (tri.v0[1] + tri.v1[1] + tri.v2[1]) / 3;
-      const envR = avgY > -0.05 ? meta.fallbackRgb[0] : meta.accentRgb[0];
-      const envG = avgY > -0.05 ? meta.fallbackRgb[1] : meta.accentRgb[1];
-      const envB = avgY > -0.05 ? meta.fallbackRgb[2] : meta.accentRgb[2];
-      const r = tr * (1 - envMix) + envR * envMix;
-      const g = tg * (1 - envMix) + envG * envMix;
-      const b = tb * (1 - envMix) + envB * envMix;
-      tri.rgb = [
-        Math.min(255, Math.round(r * 1.24 + 14)),
-        Math.min(255, Math.round(g * 1.24 + 14)),
-        Math.min(255, Math.round(b * 1.24 + 14)),
-      ];
-    }
-    mesh.textureApplied = true;
-    mesh.baseColorImageBytes = undefined;
-    mesh.spriteCache?.clear();
-  } catch {
-    // Keep procedural multi-tone fallback
-  }
-}
-
-function renderGlbAngleSprite(mesh: ParsedGlbMesh, angleStep: number, totalSteps = 16): HTMLCanvasElement | null {
-  if (typeof document === "undefined") return null;
-  if (!mesh.spriteCache) mesh.spriteCache = new Map();
-  const cached = mesh.spriteCache.get(angleStep);
-  if (cached) return cached;
-
-  const size = 156;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-
-  const yaw = (angleStep / totalSteps) * Math.PI * 2;
-  const pitch = 0.24;
-  const cosY = Math.cos(yaw);
-  const sinY = Math.sin(yaw);
-  const cosP = Math.cos(pitch);
-  const sinP = Math.sin(pitch);
-  const cx = size * 0.5;
-  const cy = size * 0.52;
-  const fov = size * 1.52;
-
-  const projected: Array<{
-    p0x: number;
-    p0y: number;
-    p1x: number;
-    p1y: number;
-    p2x: number;
-    p2y: number;
-    depth: number;
-    fill: string;
-  }> = [];
-
-  for (const tri of mesh.triangles) {
-    const proj = (v: [number, number, number]) => {
-      const rx = v[0] * cosY - v[2] * sinY;
-      const rz0 = v[0] * sinY + v[2] * cosY;
-      const ry = v[1] * cosP - rz0 * sinP;
-      const rz = v[1] * sinP + rz0 * cosP;
-      const depth = Math.max(1.05, 2.15 - rz);
-      return {
-        sx: cx + (rx / depth) * fov,
-        sy: cy - (ry / depth) * fov,
-        depth,
-      };
-    };
-    const p0 = proj(tri.v0);
-    const p1 = proj(tri.v1);
-    const p2 = proj(tri.v2);
-
-    const rnx = tri.normal[0] * cosY - tri.normal[2] * sinY;
-    const rnz0 = tri.normal[0] * sinY + tri.normal[2] * cosY;
-    const rny = tri.normal[1] * cosP - rnz0 * sinP;
-    const rnz = tri.normal[1] * sinP + rnz0 * cosP;
-    if (rnz < -0.55) continue;
-
-    const diff = Math.max(0.56, Math.min(1.42, 0.78 + rnx * 0.32 + rny * 0.42 + rnz * 0.28));
-    const spec = Math.pow(Math.max(0, rny * 0.55 + rnz * 0.8), 6) * 46;
-    const rim = Math.pow(1 - Math.max(0, Math.abs(rnz)), 2.2) * 28;
-    const r = Math.min(255, Math.round(tri.rgb[0] * diff + spec + rim));
-    const g = Math.min(255, Math.round(tri.rgb[1] * diff + spec + rim));
-    const b = Math.min(255, Math.round(tri.rgb[2] * diff + spec + rim));
-    projected.push({
-      p0x: p0.sx,
-      p0y: p0.sy,
-      p1x: p1.sx,
-      p1y: p1.sy,
-      p2x: p2.sx,
-      p2y: p2.sy,
-      depth: (p0.depth + p1.depth + p2.depth) / 3,
-      fill: `rgb(${r},${g},${b})`,
-    });
-  }
-
-  projected.sort((a, b) => b.depth - a.depth);
-  ctx.lineJoin = "round";
-  ctx.lineWidth = 1.15;
-  for (const t of projected) {
-    ctx.fillStyle = t.fill;
-    ctx.strokeStyle = t.fill;
-    ctx.beginPath();
-    ctx.moveTo(t.p0x, t.p0y);
-    ctx.lineTo(t.p1x, t.p1y);
-    ctx.lineTo(t.p2x, t.p2y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-  }
-
-  mesh.spriteCache.set(angleStep, canvas);
-  return canvas;
-}
-
-async function fetchAndParseGlbAsset(meta: TripoGlbAssetMeta): Promise<ParsedGlbMesh | null> {
-  if (glbMeshCache.has(meta.id)) return glbMeshCache.get(meta.id)!;
-  if (
-    typeof window === "undefined" ||
-    typeof fetch !== "function" ||
-    process.env.NODE_ENV === "test"
-  ) {
-    return null;
-  }
-  const existing = glbLoadingPromises.get(meta.id);
-  if (existing) return existing;
-
-  const p = fetch(meta.glbUrl)
-    .then(res => (res.ok ? res.arrayBuffer() : null))
-    .then(async buf => {
-      if (!buf) return null;
-      // Parse full watertight triangle mesh (up to 12,000 triangles, step=1)
-      const parsed = parseGlbBinaryMesh(meta.id, buf, meta.fallbackRgb, 12000);
-      if (parsed) {
-        glbMeshCache.set(meta.id, parsed);
-        await decodeEmbeddedGlbTexture(parsed, meta);
-      }
-      return parsed;
-    })
-    .catch(() => null);
-  glbLoadingPromises.set(meta.id, p);
-  return p;
-}
-
-const INITIAL_CAPSULES: readonly CapsuleItem[] = [
-  {
-    id: "cap-ur-1",
-    rarity: "UR",
-    icon: "🐉",
-    shortTag: "UR 80分",
-    labelZh: "UR 紫金龙蛋 (80积分)",
-    labelEn: "UR Dragon Egg (80 Pts)",
-    x: 50,
-    z: 52,
-    glbId: "ur-dragon-egg",
-  },
-  {
-    id: "cap-ssr-1",
-    rarity: "SSR",
-    icon: "🔋",
-    shortTag: "SSR 40分",
-    labelZh: "SSR 4090 显卡饼干 (40积分)",
-    labelEn: "SSR 4090 Cookie (40 Pts)",
-    x: 24,
-    z: 36,
-    glbId: "ssr-4090-cookie",
-  },
-  {
-    id: "cap-ssr-2",
-    rarity: "SSR",
-    icon: "🧊",
-    shortTag: "SSR 3D舱",
-    labelZh: "SSR Tripo 3D 建模舱 (40积分)",
-    labelEn: "SSR Tripo 3D Pod (40 Pts)",
-    x: 76,
-    z: 62,
-    glbId: "claw-cabinet",
-  },
-  {
-    id: "cap-sr-1",
-    rarity: "SR",
-    icon: "🌾",
-    shortTag: "SR 20分",
-    labelZh: "SR 农大黄金麦穗 (20积分)",
-    labelEn: "SR Golden Wheat (20 Pts)",
-    x: 33,
-    z: 72,
-    glbId: "sr-golden-wheat",
-  },
-  {
-    id: "cap-sr-2",
-    rarity: "SR",
-    icon: "🛠️",
-    shortTag: "SR 市场券",
-    labelZh: "SR 市场算力抵扣胶囊 (20积分)",
-    labelEn: "SR Market Voucher (20 Pts)",
-    x: 68,
-    z: 28,
-    glbId: "sr-golden-wheat",
-  },
-  {
-    id: "cap-r-1",
-    rarity: "R",
-    icon: "🦖",
-    shortTag: "R 15分",
-    labelZh: "R 薄荷星龙 (15积分)",
-    labelEn: "R Mint Dino (15 Pts)",
-    x: 18,
-    z: 66,
-    glbId: "mint-star-dino",
-  },
-  {
-    id: "cap-r-2",
-    rarity: "R",
-    icon: "⚡",
-    shortTag: "R 15分",
-    labelZh: "R 极速 Flash 能量球 (15积分)",
-    labelEn: "R Flash Orb (15 Pts)",
-    x: 82,
-    z: 38,
-    glbId: "mint-star-dino",
-  },
-];
-
-const CAPSULE_PALETTE: Record<PrizeRarity, { shell: string; glow: string; core: string }> = {
-  UR: { shell: "rgba(245, 158, 11, 0.92)", glow: "rgba(217, 70, 239, 0.65)", core: "#fde047" },
-  SSR: { shell: "rgba(16, 185, 129, 0.92)", glow: "rgba(6, 182, 212, 0.65)", core: "#6ee7b7" },
-  SR: { shell: "rgba(249, 115, 22, 0.9)", glow: "rgba(251, 191, 36, 0.55)", core: "#fed7aa" },
-  R: { shell: "rgba(56, 189, 248, 0.88)", glow: "rgba(99, 102, 241, 0.5)", core: "#bae6fd" },
+export {
+  TRIPO_GLB_ASSETS,
+  parseGlbBinaryMesh,
+  type ParsedGlbMesh,
+  type ParsedGlbTriangle,
+  type TripoGlbAssetId,
+  type TripoGlbAssetMeta,
 };
 
 function DinoClaw3DViewport({
@@ -896,8 +292,8 @@ function DinoClaw3DViewport({
           ctx.restore();
         }
 
-        // Orbiting 3D Energy Ring around UR / SSR or targeted capsule
-        if (cap.rarity === "UR" || cap.rarity === "SSR" || isTargeted) {
+        // Orbiting 3D Energy Ring around SP / UR / SSR or targeted capsule
+        if (cap.rarity === "SP" || cap.rarity === "UR" || cap.rarity === "SSR" || isTargeted) {
           ctx.save();
           ctx.translate(proj.sx, proj.sy);
           ctx.rotate(Math.sin(t * 1.6 + idx) * 0.32);
@@ -1216,10 +612,10 @@ function GlbInteractiveTurntable({
   }, [asset, autoRotate, wireframe]);
 
   return (
-    <div className="relative flex h-52 flex-col justify-between overflow-hidden rounded-xl border border-cyan-500/40 bg-slate-950 p-2.5 text-slate-100">
+    <div className="group relative flex h-52 flex-col justify-between overflow-hidden rounded-xl border border-cyan-500/40 bg-slate-950 p-2.5 text-slate-100">
       <div className="relative z-10 flex items-center justify-between text-[10px] font-bold text-cyan-300">
-        <span>{isEn ? "3D PBR .GLB TURNTABLE" : "3D .glb 实时旋转检视"}</span>
-        <span>
+        <span>{isEn ? "3D PBR .GLB" : "3D .glb 检视"}</span>
+        <span className="opacity-0 transition-opacity group-hover:opacity-100">
           {asset.vertexCount.toLocaleString()}v · {asset.faceCount.toLocaleString()} tris
         </span>
       </div>
@@ -1249,26 +645,21 @@ function GlbInteractiveTurntable({
         className="absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing"
       />
 
-      <div className="relative z-10 flex items-center justify-between gap-1 text-[10px]">
-        <span className="text-slate-400">
-          {isEn ? "Drag to orbit 360°" : "拖拽旋转 360°"}
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setWireframe(prev => !prev)}
-            className="rounded bg-slate-800/90 px-1.5 py-0.5 font-semibold text-cyan-200 hover:bg-slate-700"
-          >
-            {wireframe ? (isEn ? "Solid" : "实体") : isEn ? "Wireframe" : "线框"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setAutoRotate(prev => !prev)}
-            className="rounded bg-slate-800/90 px-1.5 py-0.5 font-semibold text-amber-200 hover:bg-slate-700"
-          >
-            {autoRotate ? (isEn ? "Pause" : "暂停") : isEn ? "Spin" : "自转"}
-          </button>
-        </div>
+      <div className="relative z-10 flex items-center justify-end gap-1 text-[10px]">
+        <button
+          type="button"
+          onClick={() => setWireframe(prev => !prev)}
+          className="rounded bg-slate-800/90 px-1.5 py-0.5 font-semibold text-cyan-200 hover:bg-slate-700"
+        >
+          {wireframe ? (isEn ? "Solid" : "实体") : isEn ? "Wireframe" : "线框"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setAutoRotate(prev => !prev)}
+          className="rounded bg-slate-800/90 px-1.5 py-0.5 font-semibold text-amber-200 hover:bg-slate-700"
+        >
+          {autoRotate ? (isEn ? "Pause" : "暂停") : isEn ? "Spin" : "自转"}
+        </button>
       </div>
     </div>
   );
@@ -1310,6 +701,7 @@ export function ComputeQuestArcade({
   );
   const [lastServerCredit, setLastServerCredit] = useState<ArcadeServerCreditedDetail | null>(null);
   const timersRef = useRef<number[]>([]);
+  const isGuest = !actorId || actorId === "guest" || actorId === "guest-preview";
 
   useEffect(() => {
     const syncAll = () => {
@@ -1330,8 +722,16 @@ export function ComputeQuestArcade({
       if (detail.errorCode === "ARCADE_TOKENS_EXHAUSTED") {
         setBannerMessage(
           isEn
-            ? "ℹ️ Server draw token limit reached. Complete more daily quests or Dino easter eggs to earn verified tokens!"
-            : "ℹ️ 服务端可核验抓娃娃币已用尽，完成每日打卡或小恐龙隐藏彩蛋即可继续获赠真金白银积分！",
+            ? "ℹ️ Free draw tokens used up! Click [🪙 10 Pts → 1 Token] to exchange points or complete a check-in task on the right."
+            : "ℹ️ 免费抓娃娃币已用完！可点击【🪙 10分兑1币】用积分兑换游戏币，或完成右侧打卡任务免费领币。",
+        );
+        return;
+      }
+      if (detail.errorCode === "INSUFFICIENT_POINTS") {
+        setBannerMessage(
+          isEn
+            ? "⚠️ Insufficient API Gateway points (10 Pts = 1 Token). Complete the Onboarding Questionnaire (+50 pts) or daily quests first!"
+            : "⚠️ 账户可用积分不足（10 积分 = 1 枚抓娃娃币）！请先完成下方新手问卷（+50分）或右侧打卡任务领积分。",
         );
         return;
       }
@@ -1351,7 +751,7 @@ export function ComputeQuestArcade({
     window.addEventListener(QUEST_ARCADE_SERVER_CREDITED_EVENT, onServerCredited);
     window.addEventListener("storage", syncAll);
 
-    if (process.env.NODE_ENV !== "test" && typeof fetch === "function") {
+    if (!isGuest && process.env.NODE_ENV !== "test" && typeof fetch === "function") {
       void fetch("/api/compute-benefits/arcade")
         .then(res => (res.ok ? res.json() : null))
         .then((data: { balancePoints?: number } | null) => {
@@ -1370,7 +770,7 @@ export function ComputeQuestArcade({
       window.removeEventListener("storage", syncAll);
       timers.forEach(id => window.clearTimeout(id));
     };
-  }, [actorId, isEn]);
+  }, [actorId, isEn, isGuest]);
 
   useEffect(() => {
     if (!vibeTimerRunning) return;
@@ -1393,8 +793,8 @@ export function ComputeQuestArcade({
         if (res?.newlyClaimed) {
           setBannerMessage(
             isEn
-              ? `🎉 VibeHub 60s Deep Reading completed! Unlocked $${res.quest.unlockUsd} (${res.quest.unlockUsd * POINTS_PER_USD} pts) + 1 Claw Token!`
-              : `🎉 VibeHub 60 秒沉浸充电完成！已从金库提取 $${res.quest.unlockUsd}（${res.quest.unlockUsd * POINTS_PER_USD} 积分）+ 1 枚抓娃娃币！`,
+              ? `🎉 VibeHub 60s reading completed! Claimed +${res.quest.unlockUsd * POINTS_PER_USD} pts + 1 Claw Token!`
+              : `🎉 VibeHub 60 秒阅读完成！已领取 +${res.quest.unlockUsd * POINTS_PER_USD} 积分 + 1 枚抓娃娃币！`,
           );
         }
       }
@@ -1421,15 +821,61 @@ export function ComputeQuestArcade({
     return best;
   }
 
+  function handleBuyTokens(count: 1 | 5 = 1) {
+    const cost = count * ARCADE_TOKEN_COST_POINTS;
+    if (isGuest) {
+      const next = { ...state, arcadeTokens: state.arcadeTokens + count };
+      saveQuestArcadeState(next, actorId);
+      setState(next);
+      setBannerMessage(
+        isEn
+          ? `🪙 [Guest Free Trial] Added +${count} Trial Token(s)! Drop the 3D claw to try it out — sign in anytime to credit real points!`
+          : `🪙 【未登录免费试玩】已补充 +${count} 枚试玩抓娃娃币！可先体验 3D 机械爪手感，点击右侧【立即登录入账】即可将积分真实存入账户。`,
+      );
+      return;
+    }
+    if (serverBalancePoints !== null && serverBalancePoints < cost) {
+      setBannerMessage(
+        isEn
+          ? `⚠️ Need ${cost} Pts to exchange ${count} Token(s), current balance: ${serverBalancePoints} Pts. Complete the questionnaire (+50 pts) or daily quests first!`
+          : `⚠️ 兑换 ${count} 枚抓娃娃币需 ${cost} 积分（当前余额 ${serverBalancePoints} 积分），请先完成下方新手问卷（+50分）或右侧打卡任务！`,
+      );
+      return;
+    }
+    const res = buyArcadeTokensWithPoints(count, actorId);
+    setState(res.state);
+    if (serverBalancePoints !== null) {
+      setServerBalancePoints(Math.max(0, serverBalancePoints - res.costPoints));
+    }
+    setBannerMessage(
+      isEn
+        ? `🪙 Spent ${res.costPoints} Pts to exchange +${count} Arcade Token(s)!`
+        : `🪙 已用 ${res.costPoints} 积分兑换 +${count} 枚抓娃娃币，快投币下爪试试手气吧！`,
+    );
+  }
+
   function handleClawDrop() {
     if (clawPhase !== "idle") return;
     if (state.arcadeTokens < 1) {
-      setBannerMessage(
-        isEn
-          ? "⚠️ Out of Arcade Tokens! Complete any daily quest or Dino easter egg on the right to earn tokens."
-          : "⚠️ 抓娃娃币不足！完成右侧任意每日任务或触发小恐龙反常识彩蛋即可免费领币。",
-      );
-      return;
+      if (isGuest) {
+        const refilled = { ...state, arcadeTokens: 3 };
+        saveQuestArcadeState(refilled, actorId);
+        setState(refilled);
+      } else {
+        if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
+          setBannerMessage(
+            isEn
+              ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete any daily quest on the right to earn free tokens."
+              : "⚠️ 抓娃娃币与积分均不足（10 积分可兑 1 币）！完成右侧任意每日任务即可免费领币。",
+          );
+          return;
+        }
+        const bought = buyArcadeTokensWithPoints(1, actorId);
+        setState(bought.state);
+        if (serverBalancePoints !== null) {
+          setServerBalancePoints(Math.max(0, serverBalancePoints - bought.costPoints));
+        }
+      }
     }
 
     setClawPhase("dropping");
@@ -1450,10 +896,15 @@ export function ComputeQuestArcade({
         setState(outcome.state);
         setLastWonPrize(outcome.prize);
         const pts = outcome.prize.unlockUsd * POINTS_PER_USD;
+        const guestHint = isGuest
+          ? isEn
+            ? " (🔓 Guest Trial: Sign in to credit these points to your account!)"
+            : "（🔓 未登录试玩中：点击右侧【立即登录入账】即可将抓中的积分真实存入账户）"
+          : "";
         setBannerMessage(
-          isEn
-            ? `🕹️ Claw Critical Hit! Pulled [${outcome.prize.rarity}] ${outcome.prize.nameEn} · Unlocked $${outcome.prize.unlockUsd} (${pts} pts) + ${outcome.prize.starBeans}🪙!`
-            : `🕹️ 机械爪暴击出货！抓中【${outcome.prize.rarity}】${outcome.prize.nameZh} · 已从金库提现 $${outcome.prize.unlockUsd}（${pts} 积分）+ ${outcome.prize.starBeans}🪙！`,
+          (isEn
+            ? `🕹️ Claw Grab Success! Pulled [${outcome.prize.rarity}] ${outcome.prize.nameEn} · +${pts} pts + ${outcome.prize.starBeans}🪙!`
+            : `🕹️ 抓取成功！获得【${outcome.prize.rarity}】${outcome.prize.nameZh}（+${pts} 积分 + ${outcome.prize.starBeans}🪙 星豆）`) + guestHint,
         );
       }
     }, 1150);
@@ -1463,15 +914,32 @@ export function ComputeQuestArcade({
 
   function handleRouletteSpin(drawsCount: 1 | 5 = 1) {
     if (isSpinning) return;
-    const actualDraws = Math.min(drawsCount, state.arcadeTokens);
-    if (actualDraws < 1) {
-      setBannerMessage(
-        isEn
-          ? "⚠️ Out of Arcade Tokens! Complete daily quests or Dino easter eggs on the right to earn tokens."
-          : "⚠️ 星轨转盘币不足！完成右侧每日任务或小恐龙彩蛋即可免费获取。",
-      );
-      return;
+    let availableTokens = state.arcadeTokens;
+    if (availableTokens < 1) {
+      if (isGuest) {
+        const refilled = { ...state, arcadeTokens: 5 };
+        saveQuestArcadeState(refilled, actorId);
+        setState(refilled);
+        availableTokens = 5;
+      } else {
+        if (serverBalancePoints !== null && serverBalancePoints < ARCADE_TOKEN_COST_POINTS) {
+          setBannerMessage(
+            isEn
+              ? "⚠️ Out of Arcade Tokens and <10 Pts! Complete daily quests on the right to earn tokens."
+              : "⚠️ 转盘币与积分均不足（10 积分可兑 1 币）！完成右侧每日任务即可免费获取。",
+          );
+          return;
+        }
+        const bought = buyArcadeTokensWithPoints(1, actorId);
+        setState(bought.state);
+        availableTokens = bought.state.arcadeTokens;
+        if (serverBalancePoints !== null) {
+          setServerBalancePoints(Math.max(0, serverBalancePoints - bought.costPoints));
+        }
+      }
     }
+    const actualDraws = Math.min(drawsCount, availableTokens);
+    if (actualDraws < 1) return;
 
     setIsSpinning(true);
     setLastWonPrize(null);
@@ -1492,10 +960,15 @@ export function ComputeQuestArcade({
         setState(latestOutcome.state);
         setLastWonPrize(latestOutcome.prize);
         const totalPts = totalUsd * POINTS_PER_USD;
+        const guestHint = isGuest
+          ? isEn
+            ? " (🔓 Guest Trial: Sign in to settle these points into your account!)"
+            : "（🔓 未登录试玩中：点击右侧【立即登录入账】即可将转出的积分真实入账）"
+          : "";
         setBannerMessage(
-          isEn
-            ? `🎡 Starlight Roulette (${actualDraws}x) Complete! Highlight: [${latestOutcome.prize.rarity}] ${latestOutcome.prize.nameEn} · Total Unlocked: $${totalUsd} (${totalPts} pts)!`
-            : `🎡 丰收星轨大转盘（${actualDraws} 连抽）出货！最高命中【${latestOutcome.prize.rarity}】${latestOutcome.prize.nameZh} · 累计提现 $${totalUsd}（${totalPts} 积分）！`,
+          (isEn
+            ? `🎡 Lucky Wheel (${actualDraws}x) Complete! Highlight: [${latestOutcome.prize.rarity}] ${latestOutcome.prize.nameEn} · Total: +${totalPts} pts!`
+            : `🎡 幸运转盘（${actualDraws} 次）完成！最高抽中【${latestOutcome.prize.rarity}】${latestOutcome.prize.nameZh} · 共计 +${totalPts} 积分`) + guestHint,
         );
       }
     }, 900);
@@ -1509,16 +982,21 @@ export function ComputeQuestArcade({
     setState(res.state);
     if (res.newlyClaimed) {
       const pts = quest.unlockUsd * POINTS_PER_USD;
+      const guestHint = isGuest
+        ? isEn
+          ? " (🔓 Guest Trial: Sign in to permanently credit this reward to your account!)"
+          : "（🔓 未登录体验：点击右侧【立即登录入账】即可将此任务奖励真实记入你的账户）"
+        : "";
       setBannerMessage(
-        isEn
-          ? `✅ Quest Completed: ${quest.titleEn}! Unlocked $${quest.unlockUsd} (${pts} pts) + ${quest.rewardTokens}🎟️ + ${quest.rewardStarBeans}🪙!`
-          : `✅ 任务达成：【${quest.titleZh}】！已从金库解锁 $${quest.unlockUsd}（${pts} 积分）+ ${quest.rewardTokens}🎟️ 抓娃娃币 + ${quest.rewardStarBeans}🪙 星豆！`,
+        (isEn
+          ? `✅ Quest Completed: ${quest.titleEn}! Earned +${pts} pts + ${quest.rewardTokens}🎟️ + ${quest.rewardStarBeans}🪙!`
+          : `✅ 任务完成：【${quest.titleZh}】！获得 +${pts} 积分 + ${quest.rewardTokens}🎟️ 抓娃娃币 + ${quest.rewardStarBeans}🪙 星豆`) + guestHint,
       );
     } else {
       setBannerMessage(
         isEn
           ? `ℹ️ Quest [${quest.titleEn}] has already been claimed for this cycle.`
-          : `ℹ️ 【${quest.titleZh}】本周期奖励已入账，快去抓娃娃或探索其他隐藏彩蛋吧！`,
+          : `ℹ️ 【${quest.titleZh}】今日已领取，可前往体验抓娃娃或完成其他任务。`,
       );
     }
   }
@@ -1532,198 +1010,219 @@ export function ComputeQuestArcade({
   return (
     <section
       id="ans-quest-arcade-hub"
-      aria-label={isEn ? "Compute Vault, 3D Claw Arcade & Gamified Quest Center" : "算力金库、3D 抓娃娃游乐场与游戏化任务中心"}
-      className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 text-card-foreground shadow-sm sm:p-7"
+      aria-label={isEn ? "Compute Tasks, 3D Claw Machine & Daily Check-In" : "算力福利、3D 抓娃娃机与打卡任务"}
+      className="space-y-5 text-foreground"
     >
-      {/* Top Header & Official Conversion Ratio Badge */}
-      <div className="relative flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5">
-        <div className="space-y-2">
-          <div className="inline-flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-slate-950">
-              {isEn ? "🎮 ANS × CAU AGRIHACKATHON ARCADE" : "🎮 ANS × 中国农大农客松 · 算力游乐场"}
-            </span>
-            <span className="rounded-full border border-emerald-600/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+      {/* Top Header, Wallet Strip & Guide Bar (Single Card Surface, No Inner Nested Cards) */}
+      <div className="rounded-3xl border border-border bg-card p-5 text-card-foreground sm:p-7">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-emerald-700 px-3 py-0.5 text-xs font-bold text-white dark:bg-emerald-400 dark:text-slate-950">
+                {isEn ? "Compute Tasks & 3D Claw Machine" : "算力任务与 3D 抓娃娃机"}
+              </span>
+              <span className="rounded-full border border-emerald-600/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                {isEn
+                  ? `1 Point = ¥${CNY_PER_POINT.toFixed(2)} CNY = $${USD_PER_POINT.toFixed(2)} USD Quota`
+                  : `计费规则：1 积分 = ¥${CNY_PER_POINT.toFixed(2)} 元 = $${USD_PER_POINT.toFixed(2)} USD 算力额度`}
+              </span>
+              {isGuest && (
+                <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-900 dark:text-amber-300">
+                  {isEn ? "Guest Trial Mode (Sign in to credit points)" : "未登录试玩中（可先体验抓娃娃手感，登录后真实入账）"}
+                </span>
+              )}
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
               {isEn
-                ? `Official Ratio: 1 Point = ¥${CNY_PER_POINT.toFixed(2)} CNY = $${USD_PER_POINT.toFixed(2)} USD APIC Quota (10 Pts = $1)`
-                : `官方计费锚定：1 积分 = ¥${CNY_PER_POINT.toFixed(2)} 元 = $${USD_PER_POINT.toFixed(2)} USD APIC 标称额度（10 积分 = $1）`}
-            </span>
+                ? "Complete Tasks for Free Tokens · Draw Compute Points"
+                : "每日打卡领免费币 · 抓娃娃抽算力积分"}
+            </h2>
           </div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            {isEn
-              ? "Compute Vault Progressive Unlock · 3D Dino Claw Machine & Quest Center"
-              : "算力金库阶梯提现 · 3D 灵龙抓娃娃机 × 反常识彩蛋任务中心"}
-          </h2>
-          <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            {isEn
-              ? "Gaussian Reward Model N(μ=125, σ=15.2): ~90% of active users steadily unlock 100–150 Gateway Points via starter draws & daily quests, while the top ~10% (SSR/UR jackpot winners & AgriHackathon milestone completionists) burst up to 155–250+ Points."
-              : "采用正态分布算力投放模型 N(μ=125, σ=15.2)：约 90% 的活跃用户通过初始 3 连抽与日常打卡稳定拿满 100–150 积分；少部分约 10% 欧皇（SSR/UR 暴击）与农客松 M1–M4 里程碑硬核玩家可冲高至 155–250+ 积分！"}
-          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              const shareText = isEn
+                ? `Come claim 100–150 free compute points at ANS: https://ans.cauai.fun/workspace/benefits`
+                : `农大 ANS 平台可以免费领 100~150 算力积分（能直接调 DeepSeek 和 GPT），链接：https://ans.cauai.fun/workspace/benefits`;
+              if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+                void navigator.clipboard.writeText(shareText).catch(() => {});
+              }
+              setBannerMessage(
+                isEn
+                  ? "Link copied to clipboard!"
+                  : "已复制分享链接，可以发给队友或同学一起领积分！",
+              );
+            }}
+            className="shrink-0 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-muted"
+          >
+            {isEn ? "Share Link" : "复制分享链接"}
+          </button>
         </div>
 
-        {/* Wallet Counters */}
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
-          <div className="rounded-2xl border border-emerald-500/35 bg-emerald-500/10 px-3.5 py-2 text-center">
-            <div className="text-[11px] font-medium text-emerald-800 dark:text-emerald-200">
-              {isEn ? "API Gateway Live Points" : "API 网关真实可扣费积分"}
+        {/* Swiss Hairline Wallet Metrics Strip (Replaces 4 nested card boxes) */}
+        <div className="mt-4 grid grid-cols-2 gap-4 border-y border-border py-3.5 sm:grid-cols-4 sm:divide-x sm:divide-border">
+          <div className="space-y-0.5">
+            <div className="text-xs font-medium text-muted-foreground">
+              {isGuest
+                ? isEn
+                  ? "My Account Balance (Not Signed In)"
+                  : "我的账户真实积分（未登录）"
+                : isEn
+                  ? "My Account Live Points"
+                  : "我的账户可用积分"}
             </div>
             <div
-              className="text-lg font-black tabular-nums text-emerald-700 dark:text-emerald-300"
+              className="text-lg font-black tabular-nums text-emerald-800 dark:text-emerald-300"
               data-testid="gateway-live-points"
             >
-              💳{" "}
               {serverBalancePoints !== null
                 ? serverBalancePoints.toLocaleString()
-                : ((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD).toLocaleString()}
-              {lastServerCredit && !lastServerCredit.duplicate && lastServerCredit.grantedPoints > 0 ? (
-                <span className="ml-1.5 rounded-full bg-emerald-600/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-200">
-                  +{lastServerCredit.grantedPoints}
+                : isGuest
+                  ? "0"
+                  : Math.round((state.deepseekUnlockedUsd + state.flagshipUnlockedUsd) * POINTS_PER_USD).toLocaleString()}
+              {lastServerCredit && !lastServerCredit.duplicate && lastServerCredit.grantedPoints !== 0 ? (
+                <span className="ml-1.5 rounded-full bg-emerald-700 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {lastServerCredit.grantedPoints > 0 ? `+${lastServerCredit.grantedPoints}` : lastServerCredit.grantedPoints}
                 </span>
               ) : null}
             </div>
           </div>
-          <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 px-3.5 py-2 text-center">
-            <div className="text-[11px] font-medium text-amber-900 dark:text-amber-200">
-              {isEn ? "Arcade Tokens" : "游乐场抓娃娃币"}
-            </div>
-            <div
-              className="text-lg font-black tabular-nums text-amber-700 dark:text-amber-300"
-              data-testid="arcade-token-count"
-            >
-              🎟️ {state.arcadeTokens}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-            <div className="text-[11px] font-medium text-muted-foreground">
-              {isEn ? "Star Beans" : "灵龙灵感星豆"}
-            </div>
-            <div className="text-lg font-black tabular-nums text-foreground">🪙 {starBeans}</div>
-          </div>
-          <div className="rounded-2xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-            <div className="text-[11px] font-medium text-muted-foreground">
-              {isEn ? "3D / Market Vouchers" : "3D建模 / 市场券"}
-            </div>
-            <div className="text-lg font-black tabular-nums text-foreground">
-              🧊 {state.tripoFreeVouchers} · 🛠️ {state.marketDiscountVouchers}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Progressive Compute Vault Dual Progress Dashboard */}
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        {/* Vault 1: 90% Normal Distribution Band (100–150 Points) */}
-        <div className="rounded-2xl border border-border bg-muted/25 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                {isEn ? "90% Normal Band · μ=125 Pts (100–150 Pts)" : "正态分布主区间 (90% 用户) · 均值 μ=125 积分"}
+          <div className="space-y-0.5 sm:pl-4">
+            <div className="text-xs font-medium text-muted-foreground">
+              {isGuest
+                ? isEn
+                  ? "Trial Claw Tokens"
+                  : "免费试玩抓娃娃币"
+                : isEn
+                  ? "Claw Tokens (10 Pts/Token)"
+                  : "抓娃娃币（10分兑1币）"}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className="text-lg font-black tabular-nums text-amber-800 dark:text-amber-300"
+                data-testid="arcade-token-count"
+              >
+                {state.arcadeTokens}
               </span>
-              <h3 className="text-base font-semibold text-foreground">
-                {isEn ? "100–150 Pts Standard Compute Pool ($15)" : "100–150 积分大众普惠算力池（DeepSeek V4.1 Flash）"}
-              </h3>
+              <button
+                type="button"
+                onClick={() => handleBuyTokens(1)}
+                data-testid="arcade-buy-token-1"
+                className="rounded-lg bg-amber-500 px-2 py-0.5 text-[11px] font-black text-slate-950 transition hover:brightness-105"
+              >
+                {isGuest ? (isEn ? "+1 Trial Token" : "领试玩币") : isEn ? "+1 Token (10 Pts)" : "10分兑1币"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBuyTokens(5)}
+                data-testid="arcade-buy-token-5"
+                className="rounded-lg border border-border bg-background px-1.5 py-0.5 text-[10px] font-bold text-foreground hover:bg-muted"
+              >
+                {isEn ? "50 Pts → +5" : "50分兑5币"}
+              </button>
             </div>
-            <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-emerald-800 dark:text-emerald-300">
-              ${state.deepseekUnlockedUsd} / ${state.deepseekTotalUsd} ({state.deepseekUnlockedUsd * POINTS_PER_USD}{" "}
-              {isEn ? "pts" : "积分"})
-            </span>
           </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-emerald-600 transition-all duration-500 dark:bg-emerald-400"
-              style={{ width: `${deepseekPct}%` }}
-            />
+
+          <div className="space-y-0.5 sm:pl-4">
+            <div className="text-xs font-medium text-muted-foreground">
+              {isEn ? "Dino Star Beans" : "小恐龙换装星豆"}
+            </div>
+            <div className="text-lg font-black tabular-nums text-foreground">{starBeans}</div>
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>
-              {isEn
-                ? "Base 50 pts unlocked · 3 starter draws (~50 pts) + daily check-in easily reaches 100–150 pts"
-                : "初始底仓 50 积分 + 免费 3 连抓（保底 45–60 积分）+ 每日打卡 = 90% 用户稳拿 100–150 积分"}
-            </span>
-            <span className="font-bold tabular-nums text-emerald-700 dark:text-emerald-300">{deepseekPct}%</span>
+
+          <div className="space-y-0.5 sm:pl-4">
+            <div className="text-xs font-medium text-muted-foreground">
+              {isEn ? "Use Points in Market" : "积分去哪花"}
+            </div>
+            <div className="mt-1">
+              <Link
+                href="/market"
+                data-testid="arcade-go-market"
+                className="inline-flex rounded-lg bg-emerald-700 px-2.5 py-1 text-xs font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
+              >
+                {isEn ? "Go Market →" : "去工具市场 →"}
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Vault 2: Top 10% Right-Tail & AgriHackathon Milestone Bonus Pool */}
-        <div className="rounded-2xl border border-border bg-muted/25 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                {isEn ? "Top 10% Right Tail · Jackpot & Milestones" : "正态右尾高光区 (Top 10% 欧皇 & 赛队里程碑)"}
-              </span>
-              <h3 className="text-base font-semibold text-foreground">
-                {isEn
-                  ? "+150 Pts Flagship Burst Pool (Terra / GPT-6.1 / Opus 5.5)"
-                  : "+150 积分旗舰暴击池（SSR 40分 / UR 80分 / 农客松 M1–M4）"}
-              </h3>
-            </div>
-            <span className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-bold tabular-nums text-amber-800 dark:text-amber-300">
-              ${state.flagshipUnlockedUsd} / ${state.flagshipTotalUsd} ({state.flagshipUnlockedUsd * POINTS_PER_USD}{" "}
-              {isEn ? "pts" : "积分"})
-            </span>
-          </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-amber-500 transition-all duration-500 dark:bg-amber-400"
-              style={{ width: `${flagshipPct}%` }}
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>
-              {isEn
-                ? "M1 Apply (20 pts) → M2 Code Host (30 pts) → M3 Wall Public (25 pts) → M4 5-Day Streak (25 pts)"
-                : "M1 报名(20分) → M2 代码存证(30分) → M3 作品墙拉Star(25分) → M4 5天冲刺(25分)"}
-            </span>
-            <span className="font-bold tabular-nums text-amber-700 dark:text-amber-300">{flagshipPct}%</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Live Toast / Status Banner */}
-      {bannerMessage && (
+        {/* Hover-Layered Rules & Prize Odds Pill */}
         <div
-          role="status"
-          className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-foreground sm:text-sm"
+          data-testid="arcade-jackpot-ticker"
+          className="group mt-2.5 flex flex-wrap items-center justify-between gap-2 text-xs"
+          title="玩法：用方向键或点击球体瞄准后点投币下爪，每次必得 10~1000 积分 · 概率：SP(1000分,0.1%) / UR(300分,0.9%) / SSR(80分,4%) / SR(15分,30%) / R(10分,65%)"
         >
-          <span>{bannerMessage}</span>
-          <button
-            type="button"
-            onClick={() => setBannerMessage("")}
-            className="shrink-0 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
-          >
-            {isEn ? "Dismiss" : "收起"}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="cursor-help rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+              ❓ {isEn ? "Rules & Prize Odds (Hover)" : "玩法与奖池概率（悬停查看）"}
+            </span>
+            <span className="hidden text-muted-foreground group-hover:inline">
+              {isEn
+                ? "Aim & drop claw (100% win: 10–1,000 pts) · SP 0.1% / UR 0.9% / SSR 4% / SR 30% / R 65%"
+                : "点击球体或方向键瞄准后下爪，每次必得 10~1000 积分 · SP(1000分,0.1%) · UR(300分,0.9%) · SSR(80分,4%) · SR(15分,30%) · R(10分,65%)"}
+            </span>
+          </div>
         </div>
-      )}
+
+        {/* Live Toast / Status Banner */}
+        {bannerMessage && (
+          <div
+            role="status"
+            className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-amber-500/30 pt-3 text-xs font-semibold text-foreground sm:text-sm"
+          >
+            <span>{bannerMessage}</span>
+            <div className="flex shrink-0 items-center gap-2">
+              {isGuest && (
+                <Link
+                  href="/login?callbackUrl=%2Fworkspace%2Fbenefits"
+                  className="rounded-lg bg-emerald-700 px-3 py-1 text-xs font-bold text-white hover:bg-emerald-800"
+                >
+                  {isEn ? "Sign In to Credit Points →" : "立即登录入账 →"}
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={() => setBannerMessage("")}
+                className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
+              >
+                {isEn ? "Dismiss" : "收起"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Main Split Grid: Left = 3D Claw Machine / Starlight Roulette Pod, Right = 4-Tab Gamified Quest Center */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-12">
+      <div className="grid gap-6 lg:grid-cols-12">
         {/* Left Column (5 cols): 3D Claw Machine, Starlight Roulette & 4-View .glb Studio */}
-        <div className="flex flex-col justify-between rounded-2xl border border-border bg-muted/20 p-4 lg:col-span-5">
+        <div className="flex flex-col justify-between rounded-3xl border border-border bg-card p-5 lg:col-span-5">
           <div>
             {/* Mode Switcher */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="inline-flex flex-wrap rounded-xl border border-border bg-background p-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+              <div className="inline-flex flex-wrap gap-1">
                 <button
                   type="button"
                   onClick={() => setArcadeMode("claw")}
                   className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                     arcadeMode === "claw"
-                      ? "bg-amber-500 text-slate-950 shadow-sm"
+                      ? "bg-amber-500 text-slate-950"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {isEn ? "🕹️ 3D Dino Claw" : "🕹️ 3D 灵龙抓娃娃机"}
+                  {isEn ? "3D Claw Machine" : "3D 抓娃娃机"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setArcadeMode("roulette")}
                   className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                     arcadeMode === "roulette"
-                      ? "bg-emerald-600 text-white shadow-sm dark:bg-emerald-400 dark:text-slate-950"
+                      ? "bg-emerald-700 text-white dark:bg-emerald-400 dark:text-slate-950"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {isEn ? "🎡 Starlight Roulette" : "🎡 丰收星轨大转盘"}
+                  {isEn ? "Lucky Wheel" : "积分转盘"}
                 </button>
                 <button
                   type="button"
@@ -1731,31 +1230,27 @@ export function ComputeQuestArcade({
                   onClick={() => setArcadeMode("glb")}
                   className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                     arcadeMode === "glb"
-                      ? "bg-cyan-600 text-white shadow-sm dark:bg-cyan-400 dark:text-slate-950"
+                      ? "bg-cyan-700 text-white dark:bg-cyan-400 dark:text-slate-950"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {isEn ? "🧊 4-View + .glb 3D" : "🧊 四视图 + .glb 3D 舱"}
+                  {isEn ? "3D Model View" : "3D 模型预览"}
                 </button>
               </div>
-              <span className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-[11px] font-bold text-purple-800 dark:text-purple-200">
-                {isEn ? `SSR/UR Pity: ${state.pityCounter}/10` : `十连保底 SSR/UR：${state.pityCounter}/10`}
+              <span className="rounded-lg bg-purple-500/10 px-2 py-1 text-[11px] font-bold text-purple-900 dark:text-purple-200">
+                {isEn ? `Pity Counter: ${state.pityCounter}/10` : `十抽保底：${state.pityCounter}/10`}
               </span>
             </div>
 
             {arcadeMode === "claw" ? (
-              /* 3D Cyber-Agri Claw Machine Cabinet */
+              /* 3D Claw Machine Cabinet */
               <div className="mt-3">
-                <div className="relative h-64 w-full overflow-hidden rounded-2xl border-2 border-slate-800 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-slate-100 shadow-inner">
-                  {/* Top Neon Header */}
+                <div className="relative h-64 w-full overflow-hidden rounded-xl bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
+                  {/* Top Header */}
                   <div className="relative z-10 flex items-center justify-between border-b border-white/10 bg-black/55 px-3 py-1.5 text-[10px] font-bold text-amber-300">
-                    <span>
-                      {isEn
-                        ? "TRIPO v3.1 MULTIVIEW .GLB RIG · 6 MODELS ACTIVE"
-                        : "TRIPO v3.1 四视图 .GLB 实装 · 6 大 3D 资产已挂载"}
-                    </span>
+                    <span>3D CLAW</span>
                     <span className="text-emerald-300">
-                      {isEn ? `Locked: ${targetCapsule.labelEn}` : `已瞄准：${targetCapsule.labelZh}`}
+                      {isEn ? `Target: ${targetCapsule.labelEn}` : `当前瞄准：${targetCapsule.labelZh}`}
                     </span>
                   </div>
 
@@ -1808,28 +1303,28 @@ export function ComputeQuestArcade({
                       onClick={() => moveClaw(-12, 0)}
                       className="rounded-xl border border-border bg-background px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted"
                     >
-                      ◀ {isEn ? "Left" : "左移"}
+                      ◀ {isEn ? "Left" : "左"}
                     </button>
                     <button
                       type="button"
                       onClick={() => moveClaw(12, 0)}
                       className="rounded-xl border border-border bg-background px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted"
                     >
-                      {isEn ? "Right" : "右移"} ▶
+                      {isEn ? "Right" : "右"} ▶
                     </button>
                     <button
                       type="button"
                       onClick={() => moveClaw(0, -12)}
                       className="rounded-xl border border-border bg-background px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted"
                     >
-                      ▲ {isEn ? "Back" : "前推"}
+                      ▲ {isEn ? "Back" : "前"}
                     </button>
                     <button
                       type="button"
                       onClick={() => moveClaw(0, 12)}
                       className="rounded-xl border border-border bg-background px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted"
                     >
-                      ▼ {isEn ? "Front" : "后拉"}
+                      ▼ {isEn ? "Front" : "后"}
                     </button>
                   </div>
 
@@ -1841,12 +1336,16 @@ export function ComputeQuestArcade({
                     className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-black text-slate-950 shadow-sm transition hover:brightness-105 disabled:opacity-50"
                   >
                     {clawPhase === "idle"
-                      ? isEn
-                        ? "🕹️ DROP CLAW (1 Token · 100% Win)"
-                        : "🕹️ 投币下爪抓取（耗 1 币 · 100% 必中算力）"
+                      ? state.arcadeTokens > 0
+                        ? isEn
+                          ? "🕹️ DROP CLAW (1 Token)"
+                          : "🕹️ 投币下爪（耗 1 币）"
+                        : isEn
+                          ? "🪙 SPEND 10 PTS & DROP CLAW"
+                          : "🪙 10 积分兑 1 币下爪"
                       : isEn
-                        ? "⚙️ Claw Grabbing Capsule..."
-                        : "⚙️ 机械爪正在抓起盲盒胶囊..."}
+                        ? "⚙️ Grabbing..."
+                        : "⚙️ 抓取中..."}
                   </button>
                 </div>
               </div>
@@ -1861,26 +1360,20 @@ export function ComputeQuestArcade({
                     </span>
                   </div>
 
-                  {/* 8-Sector Conic-Gradient Wheel with Counter-Rotated Upright Badges */}
+                  {/* 5-Sector Conic-Gradient Wheel with Counter-Rotated Upright Badges */}
                   <div
                     className="relative flex h-44 w-44 items-center justify-center rounded-full border-4 border-amber-400/80 shadow-2xl transition-transform duration-700 ease-out"
                     style={{
                       transform: `rotate(${wheelAngle}deg)`,
                       background:
-                        "conic-gradient(from -45deg, #4c1d95 0deg 90deg, #065f46 90deg 180deg, #78350f 180deg 270deg, #1e3a8a 270deg 360deg)",
+                        "conic-gradient(from -36deg, #9f1239 0deg 72deg, #4c1d95 72deg 144deg, #065f46 144deg 216deg, #78350f 216deg 288deg, #1e3a8a 288deg 360deg)",
                     }}
                   >
-                    {/* Crosshair sector dividers */}
-                    <div className="pointer-events-none absolute inset-0 rotate-45">
-                      <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-amber-300/40" />
-                      <div className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-amber-300/40" />
-                    </div>
-
                     {ARCADE_PRIZES.map((prize, idx) => {
-                      const angle = idx * 90;
+                      const angle = idx * (360 / ARCADE_PRIZES.length);
                       const rad = (angle - 90) * (Math.PI / 180);
-                      const tx = Math.round(Math.cos(rad) * 56);
-                      const ty = Math.round(Math.sin(rad) * 56);
+                      const tx = Math.round(Math.cos(rad) * 58);
+                      const ty = Math.round(Math.sin(rad) * 58);
                       return (
                         <div
                           key={prize.id}
@@ -1889,9 +1382,9 @@ export function ComputeQuestArcade({
                           }}
                           className="absolute flex flex-col items-center text-center transition-transform duration-700 ease-out"
                         >
-                          <span className="text-xl leading-none drop-shadow">{prize.icon}</span>
-                          <span className="mt-0.5 rounded bg-slate-950/90 px-1.5 py-0.5 text-[9px] font-black text-amber-200 ring-1 ring-amber-400/40">
-                            {prize.rarity} · ${prize.unlockUsd}
+                          <span className="text-lg leading-none drop-shadow">{prize.icon}</span>
+                          <span className="mt-0.5 rounded bg-slate-950/90 px-1.5 py-0.5 text-[8px] font-black text-amber-200 ring-1 ring-amber-400/40">
+                            {prize.rarity} · {Math.round(prize.unlockUsd * POINTS_PER_USD)}分
                           </span>
                         </div>
                       );
@@ -1900,11 +1393,6 @@ export function ComputeQuestArcade({
                       ANS
                     </div>
                   </div>
-                  <p className="mt-2 text-[11px] text-slate-300">
-                    {isEn
-                      ? "100% Win Rate · Every spin unlocks Vault Compute + Star Beans!"
-                      : "100% 中奖不空军 · 每一转直接从算力金库提取真金白银额度！"}
-                  </p>
                 </div>
 
                 <div className="mt-3 grid grid-cols-2 gap-2">
@@ -1915,7 +1403,13 @@ export function ComputeQuestArcade({
                     data-testid="roulette-spin-1"
                     className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white shadow-sm hover:brightness-105 disabled:opacity-50 dark:bg-emerald-400 dark:text-slate-950"
                   >
-                    {isEn ? "🎡 Spin 1x (1 Token)" : "🎡 单抽星轨转盘（1 币）"}
+                    {state.arcadeTokens > 0
+                      ? isEn
+                        ? "🎡 Spin 1x (1 Token)"
+                        : "🎡 转盘单抽（耗 1 币）"
+                      : isEn
+                        ? "🪙 Spend 10 Pts & Spin 1x"
+                        : "🪙 10 积分单抽转盘"}
                   </button>
                   <button
                     type="button"
@@ -1924,7 +1418,7 @@ export function ComputeQuestArcade({
                     data-testid="roulette-spin-5"
                     className="rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 px-3 py-2 text-xs font-black text-white shadow-sm hover:brightness-105 disabled:opacity-50"
                   >
-                    {isEn ? "⚡ 5x Burst Spin" : "⚡ 五连暴击转盘（速冲保底）"}
+                    {isEn ? "⚡ 5x Spin" : "⚡ 转盘五连抽"}
                   </button>
                 </div>
               </div>
@@ -1934,7 +1428,7 @@ export function ComputeQuestArcade({
                 const activeGlb =
                   TRIPO_GLB_ASSETS.find(item => item.id === selectedGlbId) ?? TRIPO_GLB_ASSETS[0];
                 return (
-                  <div className="mt-3 space-y-2.5" data-testid="tripo-glb-studio">
+                  <div className="group mt-3 space-y-2.5" data-testid="tripo-glb-studio">
                     {/* 6 Asset Selector Pills */}
                     <div className="flex flex-wrap gap-1.5">
                       {TRIPO_GLB_ASSETS.map(asset => (
@@ -1959,7 +1453,7 @@ export function ComputeQuestArcade({
 
                       <div className="relative flex h-52 flex-col justify-between overflow-hidden rounded-xl border border-amber-500/40 bg-white p-2 text-slate-900">
                         <div className="flex items-center justify-between rounded bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-amber-300">
-                          <span>{isEn ? "OpenLux 2×2 Four-View" : "OpenLux 2×2 正交四视图"}</span>
+                          <span>{isEn ? "Orthographic 2×2 Four-View" : "2×2 正交四视图"}</span>
                           <span>F/B/L/R</span>
                         </div>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1969,30 +1463,26 @@ export function ComputeQuestArcade({
                           className="mx-auto my-auto h-36 w-36 object-contain"
                         />
                         <div className="text-center text-[10px] font-medium text-slate-500">
-                          {isEn ? "Front · Back · Left · Right" : "左上正 · 右上背 · 左下左 · 右下右"}
+                          {isEn ? "Front · Back · Left · Right" : "正 · 背 · 左 · 右"}
                         </div>
                       </div>
                     </div>
 
                     {/* Metadata & Actions */}
-                    <div className="rounded-xl border border-border bg-background p-2.5 text-[11px]">
+                    <div className="border-t border-border pt-2.5 text-[11px]">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-bold text-foreground">
-                          {activeGlb.icon} {isEn ? activeGlb.nameEn : activeGlb.nameZh}
+                        <span className="font-bold text-foreground" title={activeGlb.promptZh}>
+                          <span aria-hidden="true">{activeGlb.icon}</span> {isEn ? activeGlb.nameEn : activeGlb.nameZh}
                         </span>
                         <a
                           href={activeGlb.glbUrl}
                           download={`${activeGlb.id}.glb`}
-                          className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-0.5 font-bold text-cyan-800 hover:bg-cyan-500/20 dark:text-cyan-300"
+                          className="rounded-lg border border-cyan-600/30 bg-cyan-500/10 px-2.5 py-0.5 font-bold text-cyan-900 hover:bg-cyan-500/20 dark:text-cyan-300"
                         >
                           ⬇ {isEn ? `Download ${activeGlb.id}.glb` : `下载 ${activeGlb.id}.glb`}
                         </a>
                       </div>
-                      <div className="mt-1 text-muted-foreground">
-                        Tripo v3.1 Task: <code>{activeGlb.tripoTaskId.slice(0, 18)}...</code> · SHA256:{" "}
-                        <code>{activeGlb.sha256Prefix}</code> · {activeGlb.vertexCount} verts
-                      </div>
-                      <div className="mt-1 line-clamp-2 text-[10px] text-muted-foreground" title={activeGlb.promptZh}>
+                      <div className="mt-1 hidden text-[11px] text-muted-foreground group-hover:line-clamp-2" title={activeGlb.promptZh}>
                         Prompt: {activeGlb.promptZh}
                       </div>
                     </div>
@@ -2002,28 +1492,21 @@ export function ComputeQuestArcade({
             )}
           </div>
 
-          {/* Prize Pool & Latest Pull Card */}
-          <div className="mt-4 space-y-2 border-t border-border pt-3">
-            {lastWonPrize && (
-              <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs">
-                <div className="font-black text-amber-800 dark:text-amber-300">
-                  {lastWonPrize.icon} [{lastWonPrize.rarity}] {isEn ? lastWonPrize.nameEn : lastWonPrize.nameZh}
-                </div>
-                <div className="mt-0.5 text-[11px] text-muted-foreground">
-                  {isEn ? lastWonPrize.descEn : lastWonPrize.descZh}
-                </div>
+          {/* Latest Pull Result */}
+          {lastWonPrize && (
+            <div className="mt-3 border-t border-border pt-3 text-xs">
+              <div className="font-black text-amber-800 dark:text-amber-300">
+                <span aria-hidden="true">{lastWonPrize.icon}</span> [{lastWonPrize.rarity}] {isEn ? lastWonPrize.nameEn : lastWonPrize.nameZh}
               </div>
-            )}
-            <div className="text-[11px] font-medium text-muted-foreground">
-              {isEn
-                ? "Capsule Pool: 🐉 UR (80 Pts, 2%) · 🔋 SSR (40 Pts + 3D Voucher, 8%) · 🌾 SR (20 Pts + Market Voucher, 35%) · 🦖 R (15 Pts Flash, 55%)"
-                : "奖池一览：🐉 UR 紫金龙蛋(80分, 2%) · 🔋 SSR 4090饼干(40分+3D建模券, 8%) · 🌾 SR 黄金麦穗(20分+市场券, 35%) · 🦖 R 薄荷星龙(15分保底, 55%)"}
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                {isEn ? lastWonPrize.descEn : lastWonPrize.descZh}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right Column (7 cols): 4-Tab Gamified Quest & Counter-Intuitive Easter Egg Center */}
-        <div className="flex flex-col justify-between rounded-2xl border border-border bg-muted/20 p-4 lg:col-span-7">
+        <div className="flex flex-col justify-between rounded-3xl border border-border bg-card p-5 lg:col-span-7">
           <div>
             {/* Category Tabs */}
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
@@ -2032,23 +1515,23 @@ export function ComputeQuestArcade({
                   [
                     {
                       id: "daily",
-                      labelZh: "📅 每日活跃任务",
-                      labelEn: "📅 Daily Quests",
+                      labelZh: "每日活跃任务",
+                      labelEn: "Daily Quests",
                     },
                     {
                       id: "weekly",
-                      labelZh: "🛠️ 每周与市场变现",
-                      labelEn: "🛠️ Weekly & Market",
+                      labelZh: "每周与市场创作",
+                      labelEn: "Weekly & Market",
                     },
                     {
                       id: "agri",
-                      labelZh: "🌾 农客松 M1-M4 (+100分)",
-                      labelEn: "🌾 AgriHackathon M1-M4",
+                      labelZh: "农客松 M1-M4 (+60分)",
+                      labelEn: "AgriHackathon M1-M4",
                     },
                     {
                       id: "secret",
-                      labelZh: `🦖 6大反常识彩蛋 (${unlockedSecretCount}/6)`,
-                      labelEn: `🦖 6 Secret Easter Eggs (${unlockedSecretCount}/6)`,
+                      labelZh: `6大反常识彩蛋 (${unlockedSecretCount}/6)`,
+                      labelEn: `6 Dino Easter Eggs (${unlockedSecretCount}/6)`,
                     },
                   ] as const
                 ).map(tabItem => (
@@ -2058,7 +1541,7 @@ export function ComputeQuestArcade({
                     onClick={() => setActiveCategory(tabItem.id)}
                     className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition ${
                       activeCategory === tabItem.id
-                        ? "border-foreground bg-foreground text-background shadow-sm"
+                        ? "border-foreground bg-foreground text-background"
                         : "border-border bg-background text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -2066,13 +1549,13 @@ export function ComputeQuestArcade({
                   </button>
                 ))}
               </div>
-              <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                {isEn ? `🔥 Streak: ${state.streakDays} Day(s)` : `🔥 连续备赛打卡：${state.streakDays} 天`}
+              <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                {isEn ? `Streak: ${state.streakDays} Day(s)` : `连续打卡：${state.streakDays} 天`}
               </span>
             </div>
 
-            {/* Quest Cards List */}
-            <div className="mt-3 space-y-2.5">
+            {/* Quest Rows List (Swiss Divide-Y Hairline Rows instead of Nested Cards) */}
+            <div className="mt-2 divide-y divide-border">
               {filteredQuests.map(quest => {
                 const claimed = isQuestClaimedToday(state, quest);
                 const progress = state.questProgress[quest.id] ?? 0;
@@ -2081,37 +1564,34 @@ export function ComputeQuestArcade({
                 return (
                   <div
                     key={quest.id}
-                    className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-3.5 transition ${
-                      claimed
-                        ? "border-emerald-500/40 bg-emerald-500/5"
-                        : "border-border bg-background hover:border-amber-500/40"
-                    }`}
+                    title={isEn ? quest.hintEn || quest.descEn : quest.hintZh || quest.descZh}
+                    className="group flex flex-wrap items-center justify-between gap-3 py-3.5 first:pt-2 last:pb-2"
                   >
                     <div className="min-w-[220px] flex-1 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-lg">{quest.icon}</span>
+                        <span className="text-base" aria-hidden="true">{quest.icon}</span>
                         <h4 className="text-sm font-bold text-foreground">
                           {isEn ? quest.titleEn : quest.titleZh}
                         </h4>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
                             quest.unlockPool === "flagship"
-                              ? "bg-amber-500/15 text-amber-800 dark:text-amber-300"
+                              ? "bg-amber-500/15 text-amber-900 dark:text-amber-300"
                               : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
                           }`}
                         >
                           +${quest.unlockUsd} ({pts} {isEn ? "pts" : "积分"})
                         </span>
-                        <span className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[10px] font-bold text-purple-800 dark:text-purple-200">
-                          +{quest.rewardTokens}🎟️ +{quest.rewardStarBeans}🪙
+                        <span className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[11px] font-bold text-purple-900 dark:text-purple-200">
+                          {quest.rewardTokens > 0 ? `+${quest.rewardTokens}币 ` : ""}+{quest.rewardStarBeans}星豆
                         </span>
                       </div>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
+                      <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
                         {isEn ? quest.descEn : quest.descZh}
                       </p>
                       {(quest.hintZh || quest.hintEn) && (
-                        <p className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
-                          💡 {isEn ? quest.hintEn : quest.hintZh}
+                        <p className="hidden max-w-xl text-xs font-medium text-amber-800 group-hover:block dark:text-amber-300">
+                          {isEn ? quest.hintEn : quest.hintZh}
                         </p>
                       )}
                     </div>
@@ -2122,13 +1602,13 @@ export function ComputeQuestArcade({
                           type="button"
                           onClick={() => setVibeTimerRunning(true)}
                           disabled={vibeTimerRunning}
-                          className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 py-1.5 text-xs font-bold text-cyan-800 hover:bg-cyan-500/20 dark:text-cyan-200"
+                          className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-3 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-500/20 dark:text-cyan-200"
                         >
                           {vibeTimerRunning
-                            ? `⏱️ ${state.vibehubReadSeconds}s / 60s...`
+                            ? `${state.vibehubReadSeconds}s / 60s...`
                             : isEn
-                              ? "⚡ Start 60s Timer"
-                              : "⚡ 启动 60 秒沉浸计时"}
+                              ? "Start 60s Timer"
+                              : "启动 60 秒阅读计时"}
                         </button>
                       )}
 
@@ -2148,19 +1628,27 @@ export function ComputeQuestArcade({
                         data-testid={`claim-quest-${quest.id}`}
                         className={`rounded-xl px-3.5 py-1.5 text-xs font-black transition ${
                           claimed
-                            ? "cursor-default border border-emerald-500/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
-                            : "bg-emerald-600 text-white shadow-sm hover:brightness-105 dark:bg-emerald-400 dark:text-slate-950"
+                            ? "cursor-default border border-emerald-600/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
+                            : "bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
                         }`}
                       >
                         {claimed
-                          ? isEn
-                            ? "✓ Unlocked"
-                            : "✓ 已解锁入账"
-                          : progress > 0 && quest.targetCount > 1
-                            ? `${isEn ? "Claim" : "打卡领奖"} (${Math.min(progress, quest.targetCount)}/${quest.targetCount})`
+                          ? isGuest
+                            ? isEn
+                              ? "✓ Trial Claimed"
+                              : "✓ 已体验打卡"
                             : isEn
-                              ? "Unlock & Claim"
-                              : "一键打卡提现"}
+                              ? "✓ Claimed"
+                              : "✓ 已打卡领取"
+                          : progress > 0 && quest.targetCount > 1
+                            ? `${isEn ? "Claim" : "打卡领取"} (${Math.min(progress, quest.targetCount)}/${quest.targetCount})`
+                            : isGuest
+                              ? isEn
+                                ? "Try Check-In"
+                                : "体验打卡"
+                              : isEn
+                                ? "Claim Reward"
+                                : "一键打卡领取"}
                       </button>
                     </div>
                   </div>
@@ -2169,18 +1657,18 @@ export function ComputeQuestArcade({
             </div>
           </div>
 
-          {/* Footer Note: Anti-Abuse & Model Scope Protection */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[11px] text-muted-foreground">
+          {/* Footer Note */}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
             <span>
               {isEn
-                ? "🛡️ Anti-Abuse Guard: Unlocked welfare points are strictly scoped to their designated models (DeepSeek V4.1 Flash / Flagship Trio) and cannot be transferred."
-                : "🛡️ 防薅风控说明：福利金库解锁的积分严格绑定对应模型（DeepSeek V4.1 Flash / 农客松三大旗舰模型），不可跨池混用或转赠提现。"}
+                ? "🛡️ Points are used for calling models and workflows on ANS."
+                : "🛡️ 免费积分可直接用于站内调用模型与兑换工具。"}
             </span>
             <Link
               href="/competitions/agrihackathon"
-              className="font-bold text-emerald-700 hover:underline dark:text-emerald-300"
+              className="font-bold text-emerald-800 hover:underline dark:text-emerald-300"
             >
-              {isEn ? "View CAU AgriHackathon Hub →" : "前往中国农大农客松赛事大厅 →"}
+              {isEn ? "CAU AgriHackathon Hub →" : "农客松赛事大厅 →"}
             </Link>
           </div>
         </div>

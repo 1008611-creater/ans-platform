@@ -13,32 +13,33 @@ export const REAL_CATALOG_PROJECTS = [
     "sourceUrl": "https://ans.cauai.fun/showcase/ans-3d/index.html",
     "content": {
       "zh": {
-        "title": "ANS × 小恐龙 3D 双模型互动展示",
-        "summary": "主理人 3D 建模与 ANS 吉祥物小恐龙同台展示：滚轮驱动顺时针绕头飞行、脸前超微距贴脸表情与鼠标悬停/点击碎碎念交互。",
+        "title": "ANS × 小恐龙 3D 互动展示",
+        "summary": "ANS 吉祥物小恐龙 3D 展厅：支持滚轮伴飞运镜、超微距贴脸表情、奇迹暖暖 3D 换装与鼠标悬停/点击碎碎念交互。",
         "sample": "ans.cauai.fun/showcase/ans-3d/index.html",
-        "output": "双 3D 模型实时交互网页、顺时针伴飞运镜与线上产品亮点导览",
-        "inputs": "鼠标滚轮控制飞行轨迹，鼠标悬停或点击小恐龙触发摸头与碎碎念互动",
-        "decisions": "基于个人 3D 作品集底座叠加吉祥物骨骼动画、GLSL 表情着色器与微距镜头调度",
+        "output": "小恐龙 3D 实时交互展厅、多章节滚轮运镜与线上产品亮点导览",
+        "inputs": "鼠标滚轮控制章节与视角，鼠标悬停或点击小恐龙触发摸头、换装与碎碎念互动",
+        "decisions": "基于 WebGL 实时渲染舞台叠加吉祥物骨骼动画、GLSL 表情着色器与微距镜头调度",
         "model": "浏览与互动无需消耗 AI 算力。",
         "prompt": "在 3D 个人网站工作流中替换个人文案与 3D 资产。",
         "skill": "进入项目即可直接滚动与点击体验。",
         "sourceNote": "ANS 官方互动展示项目。直接同源复用站内 3D 吉祥物资产。"
       },
       "en": {
-        "title": "ANS × Little Dino Dual 3D Interactive Showcase",
-        "summary": "Interactive WebGL stage featuring the creator 3D avatar and ANS mascot Little Dino with scroll-driven clockwise orbit flight, macro facial expressions, and hover/click chatter.",
+        "title": "ANS × Little Dino 3D Interactive Showcase",
+        "summary": "Interactive WebGL stage featuring the ANS mascot Little Dino with scroll-driven camera rig, macro facial expressions, 3D wardrobe, and hover/click chatter.",
         "sample": "ans.cauai.fun/showcase/ans-3d/index.html",
-        "output": "Real-time dual-3D interactive webpage, clockwise companion camera rig, and live product tour",
-        "inputs": "Scroll wheel controls orbit flight path; hover or click Little Dino to trigger head-pats and playful chatter",
-        "decisions": "Combines a 3D portfolio base with mascot skeletal animation, GLSL expression shaders, and macro camera scheduling",
+        "output": "Real-time Little Dino 3D interactive webpage, scroll camera rig, and live product tour",
+        "inputs": "Scroll wheel controls chapters and camera; hover or click Little Dino to trigger head-pats and playful chatter",
+        "decisions": "Combines a 3D showcase stage with mascot skeletal animation, GLSL expression shaders, and macro camera scheduling",
         "model": "Browsing and interacting require zero AI compute points.",
         "prompt": "Replace personal copy and 3D assets in the 3D Personal Website workflow.",
         "skill": "Open the project to scroll and interact immediately in your browser.",
         "sourceNote": "Official ANS interactive showcase reusing same-origin 3D mascot assets."
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/ans-3d-showcase.webp",
     "coverUrl": "/catalog/gitglow-v1/ans-3d-showcase.svg",
-    "coverNote": "3D 双模型互动展示 · 主理人 × 小恐龙"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面 · ANS 小恐龙"
   },
   {
     "slug": "liu-resume",
@@ -75,8 +76,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/magic-resume.webp",
     "coverUrl": "/catalog/gitglow-v1/liu-resume.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× 双封面"
   },
   {
     "slug": "image2-library",
@@ -112,8 +114,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/image2-library.webp",
     "coverUrl": "/catalog/gitglow-v1/image2-library.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
   {
     "slug": "vibephoto",
@@ -137,108 +140,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/vibephoto.webp",
     "coverUrl": "/catalog/gitglow-v1/vibephoto.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
-  },
-  {
-    "slug": "aigc-workspace",
-    "category": "aigc",
-    "subcategory": "video",
-    "goal": "portfolio",
-    "preview": "video",
-    "source": "official",
-    "sourceUrl": "https://toonflow.cauai.fun/",
-    "content": {
-      "zh": {
-        "title": "AIGC 工作台",
-        "summary": "进入官方视频创作工具，组织素材、提示词与视频工作流程。",
-        "sample": "toonflow.cauai.fun/",
-        "output": "视频创作工作区与素材、任务管理入口",
-        "inputs": "ANS 账号、创作资料与工作台所需渠道配置",
-        "decisions": "核对渠道、费用和素材后再发起生成；目前独立打开",
-        "model": "在项目中查看可用模型。",
-        "prompt": "在项目中编辑内容与提示词。",
-        "skill": "进入项目，按使用指南操作。",
-        "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
-      }
-    },
-    "coverUrl": "/catalog/gitglow-v1/aigc-workspace.webp",
-    "coverNote": "原项目官方演示素材 · GitGlow 版式"
-  },
-  {
-    "slug": "niannian-drama",
-    "category": "aigc",
-    "subcategory": "video",
-    "goal": "portfolio",
-    "preview": "video",
-    "source": "official",
-    "sourceUrl": "https://ai.cauai.fun/",
-    "content": {
-      "zh": {
-        "title": "念念 AI · 短剧创作",
-        "summary": "面向 AI 短剧与漫剧制作的公开产品，集中组织创作步骤。",
-        "sample": "ai.cauai.fun/",
-        "output": "原站的短剧与漫剧创作工具",
-        "inputs": "故事、人物与素材；按原站要求登录与配置",
-        "decisions": "先确认故事与角色，再推进各阶段生成",
-        "model": "在项目中查看可用模型。",
-        "prompt": "在项目中编辑内容与提示词。",
-        "skill": "进入项目，按使用指南操作。",
-        "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
-      }
-    },
-    "coverUrl": "/catalog/gitglow-v1/niannian-drama.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
-  },
-  {
-    "slug": "niannian-edit",
-    "category": "aigc",
-    "subcategory": "video",
-    "goal": "portfolio",
-    "preview": "video",
-    "source": "official",
-    "sourceUrl": "https://edit.cauai.fun/",
-    "content": {
-      "zh": {
-        "title": "念念智剪",
-        "summary": "已有剪辑工具入口，可从这里继续处理自己的视频素材。",
-        "sample": "edit.cauai.fun/",
-        "output": "原站剪辑工作区；具体交付依原站功能",
-        "inputs": "自己的视频与剪辑需求",
-        "decisions": "打开原站了解当前工具；检查剪辑内容与输出",
-        "model": "在项目中查看可用模型。",
-        "prompt": "在项目中编辑内容与提示词。",
-        "skill": "进入项目，按使用指南操作。",
-        "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
-      }
-    },
-    "coverUrl": "/catalog/gitglow-v1/niannian-edit.webp",
-    "coverNote": "真实项目介绍排版 · GitGlow 版式"
-  },
-  {
-    "slug": "kids-motion",
-    "category": "aigc",
-    "subcategory": "video",
-    "goal": "portfolio",
-    "preview": "video",
-    "source": "official",
-    "sourceUrl": "https://dh.cauai.fun/",
-    "content": {
-      "zh": {
-        "title": "童装动作迁移制作台",
-        "summary": "围绕童装展示组织首帧与动作迁移视频制作。",
-        "sample": "dh.cauai.fun/",
-        "output": "原站的首帧与视频制作入口",
-        "inputs": "商品资料、授权图片与动作参考",
-        "decisions": "核对商品细节、人物一致性与动作方案",
-        "model": "在项目中查看可用模型。",
-        "prompt": "在项目中编辑内容与提示词。",
-        "skill": "进入项目，按使用指南操作。",
-        "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
-      }
-    },
-    "coverUrl": "/catalog/gitglow-v1/kids-motion.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "Apple 柔和糖果色 3D 卡片风 × GitGlow 双封面"
   },
   {
     "slug": "infinite-canvas",
@@ -250,10 +154,10 @@ export const REAL_CATALOG_PROJECTS = [
     "sourceUrl": "https://hb.cauai.fun/",
     "content": {
       "zh": {
-        "title": "CAUAI 无限画布",
-        "summary": "在可视化画布上组织素材和创作步骤，连接自己的 AIGC 工作。",
+        "title": "CAUAI 无限画布 · AIGC 工作台",
+        "summary": "在可视化无限画布上统一组织素材、提示词、图像与视频生成步骤，连接自己的 AIGC 创作工作流。",
         "sample": "hb.cauai.fun/",
-        "output": "创作画布与素材组织界面",
+        "output": "AIGC 无限画布工作台与多模态素材组织界面",
         "inputs": "创作素材、想法与原站所需配置",
         "decisions": "明确素材用途和连接关系，生成前核对配置",
         "model": "在项目中查看可用模型。",
@@ -262,8 +166,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/infinite-canvas.webp",
     "coverUrl": "/catalog/gitglow-v1/infinite-canvas.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "ANS 漫画墨线解释图（独立开发者+小恐龙）× GitGlow 双封面"
   },
   {
     "slug": "ai-video-services",
@@ -287,83 +192,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
+    "outerCoverUrl": "/catalog/ans-pro-v1/ai-video-services.webp",
     "coverUrl": "/catalog/gitglow-v1/ai-video-services.webp",
-    "coverNote": "真实项目页面与原站公开作品 · GitGlow 版式"
-  },
-  {
-    "slug": "niannian-agent",
-    "category": "productivity",
-    "subcategory": "automation",
-    "goal": "portfolio",
-    "preview": "site",
-    "source": "official",
-    "sourceUrl": "https://tutor.cauai.fun/",
-    "content": {
-      "zh": {
-        "title": "念念 AI · 通用 Agent",
-        "summary": "围绕对话、上下文和工具调用处理自己的实际任务。",
-        "sample": "tutor.cauai.fun/",
-        "output": "原站的文字、图片、语音与工具入口",
-        "inputs": "具体任务、相关资料与需要的权限",
-        "decisions": "确认任务范围和工具权限，检查实际执行结果",
-        "model": "在项目中查看可用模型。",
-        "prompt": "在项目中编辑内容与提示词。",
-        "skill": "进入项目，按使用指南操作。",
-        "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
-      }
-    },
-    "coverUrl": "/catalog/gitglow-v1/niannian-agent.webp",
-    "coverNote": "真实项目介绍排版 · GitGlow 版式"
-  },
-  {
-    "slug": "liu-aigc-portfolio",
-    "category": "career",
-    "subcategory": "portfolio",
-    "goal": "career",
-    "preview": "site",
-    "source": "official",
-    "sourceUrl": "https://resume.cauai.fun/portfolio/",
-    "content": {
-      "zh": {
-        "title": "AIGC 动效作品集",
-        "summary": "查看已公开的视频作品与项目资料，了解作品如何集中展示。",
-        "sample": "resume.cauai.fun/portfolio/",
-        "output": "公开视频作品集与项目档案入口",
-        "inputs": "浏览公开内容；自己的作品需准备真实视频和制作资料",
-        "decisions": "按题材和作品整理材料；分享时保留来源",
-        "model": "浏览与使用无需 AI 模型。",
-        "prompt": "在项目中编辑内容与提示词。",
-        "skill": "进入项目，按使用指南操作。",
-        "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
-      }
-    },
-    "coverUrl": "/catalog/gitglow-v1/liu-aigc-portfolio.webp",
-    "coverNote": "原站公开作品缩略图 · GitGlow 版式"
-  },
-  {
-    "slug": "cauai-one",
-    "category": "web",
-    "subcategory": "applications",
-    "goal": "portfolio",
-    "preview": "site",
-    "source": "official",
-    "sourceUrl": "https://one.cauai.fun/",
-    "content": {
-      "zh": {
-        "title": "CAUAI 创作矩阵",
-        "summary": "从一个入口找到无限画布、视频工作台与模型接口平台。",
-        "sample": "one.cauai.fun/",
-        "output": "真实创作工具的导航与入口",
-        "inputs": "选择所需工具，并按原站要求配置账号和渠道",
-        "decisions": "根据任务进入合适工具，核对该工具当前可用条件",
-        "model": "浏览与使用无需 AI 模型。",
-        "prompt": "在项目中编辑内容与提示词。",
-        "skill": "进入项目，按使用指南操作。",
-        "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
-      }
-    },
-    "coverUrl": "/catalog/gitglow-v1/cauai-one.webp",
-    "coverNote": "真实项目页面 · GitGlow 版式"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
   {
     "slug": "hello-algo",
@@ -519,7 +350,7 @@ export const REAL_CATALOG_PROJECTS = [
       }
     },
     "coverUrl": "/catalog/gitglow-v1/magic-resume.webp",
-    "coverNote": "原项目官方素材 · GitGlow 版式"
+    "coverNote": "GitGlow 项目专用封面"
   },
   {
     "slug": "vcard-portfolio",

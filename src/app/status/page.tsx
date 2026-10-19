@@ -9,6 +9,9 @@ function statusClass(status: ApicStatusRecord["status"], availability24h: number
   if (status === "operational" && availability24h >= 90) {
     return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
   }
+  if (status === "error" || status === "failed" || availability24h < 50) {
+    return "bg-rose-500/10 text-rose-700 dark:text-rose-300";
+  }
   return "bg-amber-500/10 text-amber-700 dark:text-amber-300";
 }
 
@@ -25,29 +28,27 @@ export default async function StatusPage() {
   ]);
   const isEn = locale.toLowerCase().startsWith("en");
   const rawRecords = snapshot?.records ?? [];
-  const operationalRecords = rawRecords.filter((record) => record.status === "operational" && record.availability24h >= 80);
-  const primaryRecords = operationalRecords.length > 0 ? operationalRecords : rawRecords;
-  const latencyRecords = primaryRecords.filter((record) => record.latencyMs !== null);
+  const latencyRecords = rawRecords.filter((record) => record.latencyMs !== null);
   const averageLatency = latencyRecords.length
     ? Math.round(latencyRecords.reduce((sum, record) => sum + (record.latencyMs ?? 0), 0) / latencyRecords.length)
     : null;
-  const averageAvailability = primaryRecords.length
-    ? primaryRecords.reduce((sum, record) => sum + Math.max(record.availability24h, 95), 0) / primaryRecords.length
+  const averageAvailability = rawRecords.length
+    ? rawRecords.reduce((sum, record) => sum + record.availability24h, 0) / rawRecords.length
     : null;
   const sourceReady = snapshot !== null;
 
   const coreServices = isEn
     ? [
-        { name: "ANS Web & Project Square", detail: "SSR & static asset delivery", status: "Operational" },
-        { name: "Resume Studio & Visual Editor", detail: "Interactive preview & HTML export", status: "Operational" },
-        { name: "Hubs, Market & Community", detail: "Catalog snapshot & workflow bindings", status: "Operational" },
-        { name: "Account & Compute Ledger", detail: "Authentication & points accounting", status: "Operational" },
+        { name: "ANS Web & Project Square", detail: "SSR & static asset delivery", status: "Web SSR" },
+        { name: "Resume Studio & Visual Editor", detail: "Interactive preview & HTML export", status: "Browser Studio" },
+        { name: "Hubs, Market & Community", detail: "Catalog snapshot & workflow bindings", status: "Catalog Active" },
+        { name: "Account & Compute Ledger", detail: "Authentication & points accounting", status: "Ledger Active" },
       ]
     : [
-        { name: "ANS 站点与项目广场", detail: "页面渲染与静态资源分发", status: "正常运行" },
-        { name: "个人简历与可视化工作台", detail: "实时预览与单文件 HTML 导出", status: "正常运行" },
-        { name: "知识中心、市场与社区", detail: "目录快照与工作流版本绑定", status: "正常运行" },
-        { name: "账号认证与算力账本", detail: "登录鉴权与积分计量服务", status: "正常运行" },
+        { name: "ANS 站点与项目广场", detail: "页面渲染与静态资源分发", status: "Web 渲染层" },
+        { name: "个人简历与可视化工作台", detail: "实时预览与单文件 HTML 导出", status: "浏览器工作台" },
+        { name: "知识中心、市场与社区", detail: "目录快照与工作流版本绑定", status: "目录已挂载" },
+        { name: "账号认证与算力账本", detail: "登录鉴权与积分计量服务", status: "账本服务层" },
       ];
 
   return (
@@ -71,15 +72,15 @@ export default async function StatusPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 id="core-services-heading" className="font-semibold">
-              {isEn ? "ANS Core Platform Services" : "ANS 平台核心服务状态"}
+              {isEn ? "ANS Platform Service Modules" : "ANS 平台服务模块"}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {isEn ? "Real-time availability of core web modules, editors, and account services." : "核心网页模块、在线编辑器与账户算力服务的实时运行状态。"}
+              {isEn ? "Core web modules, interactive editors, and account ledger components." : "核心网页模块、在线编辑器与账户算力账本组件构成。"}
             </p>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-hidden="true" />
-            {isEn ? "All Core Systems Operational" : "核心系统全部正常"}
+            {isEn ? "4 Core Modules Mounted" : "4 大核心模块已挂载"}
           </span>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -95,6 +96,27 @@ export default async function StatusPage() {
               </span>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-5 py-4 shadow-sm" data-testid="status-investor-architecture">
+        <div>
+          <h2 className="text-sm font-semibold">
+            {isEn ? "ANS Service Architecture & Compute Ledger Rules" : "ANS 平台服务架构与算力计量说明"}
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {isEn
+              ? "Inspect the 5-layer service topology, SHA-256 submission verification, and point billing documentation."
+              : "查看五层服务拓扑、赛事代码 SHA-256 哈希核验与算力积分计费说明。"}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <a href="/architecture/ans-never-stops-architecture.html" className="text-xs font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+            {isEn ? "Open 5-Layer Architecture Map ↗" : "查看五层服务架构图 ↗"}
+          </a>
+          <Link href="/docs/points-integration" className="text-xs font-medium text-primary hover:underline">
+            {isEn ? "Points & Billing Docs →" : "积分与计费接口文档 →"}
+          </Link>
         </div>
       </section>
 
@@ -152,11 +174,12 @@ export default async function StatusPage() {
           <div className="mt-5 space-y-3">
             {rawRecords.map((record) => {
               const isHealthy = record.status === "operational" && record.availability24h >= 90;
+              const isDown = record.status === "error" || record.status === "failed" || record.availability24h < 50;
               const badgeLabel = isHealthy
                 ? t("statusOperational")
-                : isEn
-                  ? "Standby / Auto-Failover"
-                  : "灰度调优 / 自动切流保护";
+                : isDown
+                  ? (isEn ? "Outage / Degraded" : "通道波动 / 维护中")
+                  : (isEn ? "Degraded Performance" : "响应降级");
               return (
                 <article key={`${record.monitorName}:${record.model}`} className="rounded-lg border p-4">
                   <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
@@ -171,12 +194,12 @@ export default async function StatusPage() {
                   <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                     <div>
                       <dt className="text-muted-foreground">{t("latency")}</dt>
-                      <dd className="mt-1 font-medium">{record.latencyMs === null ? (isEn ? "Routing" : "自动路由中") : `${record.latencyMs} ms`}</dd>
+                      <dd className="mt-1 font-medium">{record.latencyMs === null ? t("notReported") : `${record.latencyMs} ms`}</dd>
                     </div>
                     <div>
                       <dt className="text-muted-foreground">{t("availability24h")}</dt>
                       <dd className="mt-1 font-medium">
-                        {isHealthy ? `${record.availability24h.toFixed(2)}%` : (isEn ? "Standby channel (auto-routed)" : "灰度备用通道（主链路已接管）")}
+                        {`${record.availability24h.toFixed(2)}%`}
                       </dd>
                     </div>
                     <div>

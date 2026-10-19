@@ -11,32 +11,20 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { RunPromptButton } from "@/components/prompts/run-prompt-button";
 
-// Import the actual ANS library
-import {
-  builder,
-  fromPrompt,
-  templates,
-  video,
-  audio,
-  image,
-  chat,
-  chatPresets,
-  variables,
-  similarity,
-  quality,
-  parser,
-} from "prompts.chat";
-
-// Import auto-generated type definitions and method options for Monaco
 import { type ApiItem } from "@/data/api-docs";
-import { TYPE_DEFINITIONS } from "@/data/type-definitions";
-import { TYPE_OPTIONS } from "@/data/method-options";
 
 // Import separated components
 import { ApiDocsSidebar } from "./api-docs-sidebar";
 import { ApiDetailsPopup } from "./api-details-popup";
-import { toYaml } from "./utils";
 import { type OutputFormat } from "./types";
+import {
+  type IdeConsoleEntry,
+  extractMonacoTypeErrors,
+  evaluateIdePromptCode,
+  injectTsIgnoreComments,
+  setupCodeEditorMount,
+  setupPreviewEditorMount,
+} from "./prompt-ide-runtime";
 
 import { useRouter } from "next/navigation";
 
@@ -68,7 +56,7 @@ export function PromptIde() {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedApiItem, setSelectedApiItem] = useState<ApiItem | null>(null);
   const [lastValidOutput, setLastValidOutput] = useState<string>("");
-  const [consoleErrors, setConsoleErrors] = useState<Array<{ type: 'error' | 'warning' | 'info'; message: string; line?: number; column?: number }>>([]); 
+  const [consoleErrors, setConsoleErrors] = useState<IdeConsoleEntry[]>([]); 
   const [isConsoleOpen, setIsConsoleOpen] = useState(true);
   const [consoleHeight, setConsoleHeight] = useState(128); // min height
   const monacoRef = useRef<unknown>(null);
@@ -96,57 +84,11 @@ export function PromptIde() {
 
   const cannotEvaluate = hasExternalImports();
 
-  // Get TypeScript diagnostics from Monaco
   const getTypeErrors = useCallback(() => {
-    if (!monacoRef.current || !editorRef.current) return [];
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const monaco = monacoRef.current as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any  
-    const editor = editorRef.current as any;
-    const model = editor.getModel();
-    if (!model) return [];
-    
-    const markers = monaco.editor.getModelMarkers({ resource: model.uri });
-    return markers
-      .filter((m: { severity: number }) => m.severity >= 4) // Error severity
-      .map((m: { message: string; startLineNumber: number; startColumn: number; severity: number }) => {
-        let message = m.message;
-        
-        // Try to extract type name(s) and add valid options from TYPE_OPTIONS
-        // Handles both single types and union types like 'MusicGenre | AudioGenre'
-        const typeMatch = message.match(/parameter of type '([^']+)'/);
-        if (typeMatch) {
-          const typeStr = typeMatch[1];
-          // Split by | for union types and extract individual type names
-          const typeNames = typeStr.split('|').map(t => t.trim());
-          const allOptions: string[] = [];
-          
-          for (const typeName of typeNames) {
-            const options = TYPE_OPTIONS[typeName];
-            if (options) {
-              allOptions.push(...options);
-            }
-          }
-          
-          // Deduplicate and show all options
-          const uniqueOptions = [...new Set(allOptions)];
-          if (uniqueOptions.length > 0) {
-            message += `\n  Valid: ${uniqueOptions.map(o => `'${o}'`).join(', ')}`;
-          }
-        }
-        
-        return {
-          type: m.severity === 8 ? 'error' : 'warning' as const,
-          message,
-          line: m.startLineNumber,
-          column: m.startColumn,
-        };
-      });
+    return extractMonacoTypeErrors(monacoRef.current, editorRef.current);
   }, []);
 
   const runCode = useCallback((showErrors = true) => {
-    // A03: Require authentication before executing code
     if (!session?.user) {
       setError("Authentication required to run code");
       setConsoleErrors([{ type: 'error', message: 'You must be logged in to execute code. Please sign in to use the IDE.' }]);
@@ -154,207 +96,30 @@ export function PromptIde() {
     }
     
     setIsRunning(true);
-    
-    // Get type errors first
     const typeErrors = getTypeErrors();
-    
-    // Capture console output
-    const consoleLogs: Array<{ type: 'info' | 'warning' | 'error'; message: string }> = [];
-    const mockConsole = {
-      log: (...args: unknown[]) => {
-        consoleLogs.push({ type: 'info', message: args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ') });
-      },
-      info: (...args: unknown[]) => {
-        consoleLogs.push({ type: 'info', message: args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ') });
-      },
-      warn: (...args: unknown[]) => {
-        consoleLogs.push({ type: 'warning', message: args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ') });
-      },
-      error: (...args: unknown[]) => {
-        consoleLogs.push({ type: 'error', message: args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ') });
-      },
-    };
-    
     try {
-      // Transform code: strip imports and handle the module-style code
-      let transformedCode = code
-        // Remove all import statements (ANS imports are provided via function params)
-        .replace(/^import\s+[\s\S]*?from\s+['"][^'"]+['"];?\s*$/gm, '')
-        .replace(/^import\s+['"][^'"]+['"];?\s*$/gm, '') // side-effect imports
-        // Remove other export statements but keep the content
-        .replace(/^export\s+(?!default)/gm, '')
-        .trim();
-      
-      // Handle "export default" - find it and convert to return (handles multiline objects)
-      const exportDefaultMatch = transformedCode.match(/^export\s+default\s+/m);
-      if (exportDefaultMatch) {
-        const idx = transformedCode.indexOf(exportDefaultMatch[0]);
-        transformedCode = transformedCode.substring(0, idx) + 'return ' + transformedCode.substring(idx + exportDefaultMatch[0].length);
-      }
-      
-      // Find the last expression (standalone identifier or expression) and return it
-      const lines = transformedCode.split('\n');
-      const lastLine = lines[lines.length - 1].trim();
-      
-      // Skip if code already has a return statement (from export default transformation)
-      const hasReturn = transformedCode.includes('return ');
-      if (!hasReturn) {
-        // If the last line is a simple identifier or expression (not a statement), wrap it in return
-        if (lastLine && !lastLine.endsWith(';') && !lastLine.startsWith('//') && !lastLine.startsWith('/*') && !lastLine.startsWith('}')) {
-          lines[lines.length - 1] = `return ${lastLine}`;
-          transformedCode = lines.join('\n');
-        } else if (lastLine.endsWith(';') && !lastLine.includes('=') && !lastLine.startsWith('const ') && !lastLine.startsWith('let ') && !lastLine.startsWith('var ') && !lastLine.startsWith('}')) {
-          // Last line is an expression statement like "prompt;" - convert to return
-          lines[lines.length - 1] = `return ${lastLine.slice(0, -1)}`;
-          transformedCode = lines.join('\n');
+      const res = evaluateIdePromptCode(code, outputFormat);
+      if (res.ok) {
+        setError(null);
+        if (showErrors) {
+          setConsoleErrors([...typeErrors, ...res.consoleLogs]);
         }
-      }
-      
-      // Wrap the code to capture the result
-      const wrappedCode = `
-        ${transformedCode}
-      `;
-
-      // Execute the code with the actual ANS library and mock console
-      const fn = new Function(
-        'builder', 'fromPrompt', 'templates', 
-        'video', 'audio', 'image', 'chat', 'chatPresets',
-        'variables', 'similarity', 'quality', 'parser',
-        'console',
-        wrappedCode
-      );
-      const result = fn(
-        builder, fromPrompt, templates,
-        video, audio, image, chat, chatPresets,
-        variables, similarity, quality, parser,
-        mockConsole
-      );
-
-      // Success - format output and update last valid output
-      setError(null);
-      if (showErrors) {
-        setConsoleErrors([...typeErrors, ...consoleLogs]); // Show type errors + console output
-      }
-      
-      // Check if result is the new { json, yaml, markdown } export format
-      const isExportFormat = result && typeof result === 'object' && 
-        ('json' in result || 'yaml' in result || 'markdown' in result);
-      
-      if (isExportFormat) {
-        // Use the appropriate format based on selected output format
-        const exportResult = result as { json?: unknown; yaml?: unknown; markdown?: unknown };
-        let outputValue: unknown;
-        let formattedOutput: string;
-        
-        switch (outputFormat) {
-          case "json":
-            outputValue = exportResult.json ?? exportResult.yaml ?? exportResult.markdown;
-            formattedOutput = typeof outputValue === 'string' ? outputValue : JSON.stringify(outputValue, null, 2);
-            break;
-          case "yaml":
-            outputValue = exportResult.yaml ?? exportResult.json ?? exportResult.markdown;
-            formattedOutput = typeof outputValue === 'string' ? outputValue : toYaml(outputValue);
-            break;
-          case "markdown":
-            outputValue = exportResult.markdown ?? exportResult.json ?? exportResult.yaml;
-            formattedOutput = typeof outputValue === 'string' ? outputValue : JSON.stringify(outputValue, null, 2);
-            break;
+        setOutput(res.formattedOutput);
+        if (res.formattedOutput) {
+          setLastValidOutput(res.formattedOutput);
         }
-        
-        setOutput(formattedOutput);
-        setLastValidOutput(formattedOutput);
       } else {
-        // Legacy format - use old logic
-        formatOutput(result);
-        // Save as last valid output
-        if (result) {
-          try {
-            switch (outputFormat) {
-              case "json":
-                setLastValidOutput(JSON.stringify(result, null, 2));
-                break;
-              case "yaml":
-                setLastValidOutput(toYaml(result));
-                break;
-              case "markdown":
-                if (typeof result === 'string') {
-                  setLastValidOutput(result);
-                } else if (typeof result === 'object' && result !== null) {
-                  if ('content' in result) {
-                    setLastValidOutput((result as { content: string }).content);
-                  } else if ('prompt' in result) {
-                    setLastValidOutput((result as { prompt: string }).prompt);
-                  } else if ('systemPrompt' in result) {
-                    setLastValidOutput((result as { systemPrompt: string }).systemPrompt);
-                  } else {
-                    setLastValidOutput(JSON.stringify(result, null, 2));
-                  }
-                } else {
-                  setLastValidOutput(String(result));
-                }
-                break;
-            }
-          } catch {
-            // Ignore formatting errors for lastValidOutput
-          }
+        const runtimeError: IdeConsoleEntry = { type: "error", message: res.errorMessage };
+        setError(runtimeError.message);
+        if (showErrors) {
+          setConsoleErrors([...typeErrors, ...res.consoleLogs, runtimeError]);
+          setIsConsoleOpen(true);
         }
       }
-    } catch (err) {
-      // Runtime error - keep last valid output, show error in console
-      const runtimeError = {
-        type: 'error' as const,
-        message: err instanceof Error ? err.message : "An error occurred",
-      };
-      setError(runtimeError.message);
-      if (showErrors) {
-        setConsoleErrors([...typeErrors, ...consoleLogs, runtimeError]); // Include console output before error
-        setIsConsoleOpen(true); // Auto-open console on error
-      }
-      // Don't clear output - keep last valid output visible
     } finally {
       setIsRunning(false);
     }
-  }, [code, outputFormat, getTypeErrors]);
-
-  
-  const formatOutput = useCallback((result: unknown) => {
-    if (!result) {
-      setOutput("");
-      return;
-    }
-
-    try {
-      switch (outputFormat) {
-        case "json":
-          setOutput(JSON.stringify(result, null, 2));
-          break;
-        case "yaml":
-          setOutput(toYaml(result));
-          break;
-        case "markdown":
-          if (typeof result === 'string') {
-            setOutput(result);
-          } else if (typeof result === 'object' && result !== null) {
-            // Try common prompt result properties
-            if ('content' in result) {
-              setOutput((result as { content: string }).content);
-            } else if ('prompt' in result) {
-              setOutput((result as { prompt: string }).prompt);
-            } else if ('systemPrompt' in result) {
-              setOutput((result as { systemPrompt: string }).systemPrompt);
-            } else {
-              // Fallback to JSON for objects without known text properties
-              setOutput(JSON.stringify(result, null, 2));
-            }
-          } else {
-            setOutput(String(result));
-          }
-          break;
-      }
-    } catch {
-      setError("Failed to format output");
-    }
-  }, [outputFormat]);
+  }, [code, outputFormat, getTypeErrors, session?.user]);
 
   // Auto-run code with debounce when code changes
   useEffect(() => {
@@ -373,7 +138,7 @@ export function PromptIde() {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [code, cannotEvaluate]);
+  }, [code, cannotEvaluate, runCode]);
 
   // Re-run when output format changes
   useEffect(() => {
@@ -389,147 +154,14 @@ export function PromptIde() {
   }, [code]);
 
   const handleEditorMount = useCallback((_editor: unknown, monaco: unknown) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const m = monaco as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const editor = _editor as any;
-    
-    // Store refs for later use
     monacoRef.current = monaco;
     editorRef.current = _editor;
-    
-    // Helper to get quoted string at position
-    const getQuotedStringAtPosition = (lineContent: string, column: number) => {
-      const col = column - 1; // 0-indexed
-      
-      // Check if we're inside quotes
-      let quoteChar = null;
-      let quoteStart = -1;
-      
-      // Look backwards for opening quote
-      for (let i = col - 1; i >= 0; i--) {
-        if (lineContent[i] === '"' || lineContent[i] === "'") {
-          quoteChar = lineContent[i];
-          quoteStart = i;
-          break;
-        }
-      }
-      if (quoteStart === -1) return null;
-      
-      // Look forwards for closing quote
-      let quoteEnd = -1;
-      for (let i = col; i < lineContent.length; i++) {
-        if (lineContent[i] === quoteChar) {
-          quoteEnd = i;
-          break;
-        }
-      }
-      if (quoteEnd === -1) return null;
-      
-      // Verify the click is actually between the quotes
-      if (col < quoteStart || col > quoteEnd) return null;
-      
-      return lineContent.substring(quoteStart + 1, quoteEnd);
-    };
-    
-    // Add click handler to code editor to highlight in preview
-    editor.onMouseDown((e: { target: { position?: { lineNumber: number; column: number } } }) => {
-      if (e.target.position) {
-        const model = editor.getModel();
-        if (!model) return;
-        
-        const lineContent = model.getLineContent(e.target.position.lineNumber);
-        const quotedString = getQuotedStringAtPosition(lineContent, e.target.position.column);
-        
-        if (quotedString && quotedString.length >= 2) {
-          // Clear previous decorations in preview
-          if (previewDecorationsRef.current) {
-            previewDecorationsRef.current.clear();
-          }
-          
-          // Highlight in preview editor
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const previewEditor = previewEditorRef.current as any;
-          if (previewEditor) {
-            const previewModel = previewEditor.getModel();
-            if (previewModel) {
-              const escapedText = quotedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const previewMatches = previewModel.findMatches(escapedText, true, false, true, null, true);
-              if (previewMatches.length > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const decorations = previewMatches.map((match: any) => ({
-                  range: match.range,
-                  options: {
-                    className: 'wordHighlight',
-                    inlineClassName: 'bg-yellow-300/50 dark:bg-yellow-500/30 rounded',
-                  }
-                }));
-                previewDecorationsRef.current = previewEditor.createDecorationsCollection(decorations);
-              }
-            }
-          }
-        }
-      }
-    });
-    
-    // Listen for marker changes (type errors)
-    m.editor.onDidChangeMarkers?.(() => {
+    setupCodeEditorMount(_editor, monaco, previewEditorRef, previewDecorationsRef, () => {
       const typeErrors = getTypeErrors();
       setConsoleErrors(prev => {
-        // Keep runtime errors, update type errors
         const runtimeErrors = prev.filter(e => !e.line);
         return [...typeErrors, ...runtimeErrors];
       });
-    });
-    
-    // Add custom type definitions for ANS
-    m.languages?.typescript?.typescriptDefaults?.addExtraLib(
-      TYPE_DEFINITIONS,
-      'ANS.d.ts'
-    );
-
-    // Configure TypeScript compiler options for better autocomplete
-    m.languages?.typescript?.typescriptDefaults?.setCompilerOptions({
-      target: 99, // ESNext
-      allowNonTsExtensions: true,
-      moduleResolution: 2, // NodeJs
-      module: 99, // ESNext
-      noEmit: true,
-      esModuleInterop: true,
-      allowSyntheticDefaultImports: true,
-      strict: true,
-    });
-
-    // Enable better diagnostics for autocomplete
-    m.languages?.typescript?.typescriptDefaults?.setDiagnosticsOptions({
-      noSemanticValidation: false,
-      noSyntaxValidation: false,
-    });
-
-    // Trigger suggestions automatically on string quotes and method calls
-    editor?.updateOptions?.({
-      quickSuggestions: {
-        strings: true,
-        comments: false,
-        other: true,
-      },
-      suggestOnTriggerCharacters: true,
-      acceptSuggestionOnEnter: 'on',
-      tabCompletion: 'on',
-      wordBasedSuggestions: 'off',
-      parameterHints: { enabled: true },
-    });
-
-    // Add keyboard shortcut to trigger suggestions (Option+Space / Alt+Space)
-    editor?.addAction?.({
-      id: 'trigger-suggestions',
-      label: 'Trigger Suggestions',
-      keybindings: [
-        m.KeyMod.Alt | m.KeyCode.Space,
-      ],
-      run: () => {
-        editor.trigger('keyboard', 'editor.action.triggerSuggest', {});
-      }
     });
   }, [getTypeErrors]);
 
@@ -571,42 +203,10 @@ export function PromptIde() {
 
   // Add @ts-ignore comments before lines with type errors
   const ignoreTypeErrors = useCallback(() => {
-    if (!monacoRef.current || !editorRef.current) return;
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const monaco = monacoRef.current as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const editor = editorRef.current as any;
-    const model = editor.getModel();
-    if (!model) return;
-    
-    const markers = monaco.editor.getModelMarkers({ resource: model.uri });
-    const typeErrors = markers.filter((m: { severity: number; message: string }) => 
-      m.severity >= 4 && m.message.includes("is not assignable to")
-    );
-    
-    if (typeErrors.length === 0) return;
-    
-    const lines = code.split('\n');
-    
-    // Get unique error line numbers, sorted from bottom to top
-    const errorLineNums: number[] = typeErrors.map((e: { startLineNumber: number }) => e.startLineNumber);
-    const uniqueLines = [...new Set(errorLineNums)].sort((a, b) => b - a);
-    
-    // Insert @ts-ignore before each error line (from bottom to preserve line numbers)
-    for (const lineNum of uniqueLines) {
-      const lineIndex = lineNum - 1;
-      if (lineIndex >= 0 && lineIndex < lines.length) {
-        // Check if previous line already has @ts-ignore
-        if (lineIndex > 0 && lines[lineIndex - 1].includes('@ts-ignore')) continue;
-        
-        // Get indentation of the error line
-        const indent = lines[lineIndex].match(/^(\s*)/)?.[1] || '';
-        lines.splice(lineIndex, 0, `${indent}// @ts-ignore`);
-      }
+    const updated = injectTsIgnoreComments(code, monacoRef.current, editorRef.current);
+    if (updated !== null) {
+      setCode(updated);
     }
-    
-    setCode(lines.join('\n'));
   }, [code]);
   
   const generateExample = useCallback(async () => {
@@ -814,116 +414,9 @@ export function PromptIde() {
                 language={outputFormat === "json" ? "json" : outputFormat === "yaml" ? "yaml" : "markdown"}
                 value={output || lastValidOutput}
                 theme={theme === "dark" ? "vs-dark" : "light"}
-                onMount={(previewEditor, monaco) => {
-                  // Store preview editor ref for cross-editor highlighting
+                onMount={(previewEditor) => {
                   previewEditorRef.current = previewEditor;
-                  
-                  // Helper to find quoted string containing a word at a position
-                  const getQuotedStringAtMatch = (model: unknown, range: { startLineNumber: number; startColumn: number; endColumn: number }) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const mdl = model as any;
-                    const lineContent = mdl.getLineContent(range.startLineNumber);
-                    const matchStart = range.startColumn - 1;
-                    
-                    // Look backwards for opening quote
-                    let quoteChar = null;
-                    let quoteStart = -1;
-                    for (let i = matchStart - 1; i >= 0; i--) {
-                      if (lineContent[i] === '"' || lineContent[i] === "'") {
-                        quoteChar = lineContent[i];
-                        quoteStart = i;
-                        break;
-                      }
-                    }
-                    if (quoteStart === -1) return null;
-                    
-                    // Look forwards for closing quote
-                    let quoteEnd = -1;
-                    for (let i = matchStart; i < lineContent.length; i++) {
-                      if (lineContent[i] === quoteChar) {
-                        quoteEnd = i;
-                        break;
-                      }
-                    }
-                    if (quoteEnd === -1) return null;
-                    
-                    // Return the content inside quotes (without quotes)
-                    return {
-                      content: lineContent.substring(quoteStart + 1, quoteEnd),
-                      range: {
-                        startLineNumber: range.startLineNumber,
-                        startColumn: quoteStart + 2, // +1 for 1-indexed, +1 to skip quote
-                        endLineNumber: range.startLineNumber,
-                        endColumn: quoteEnd + 1, // +1 for 1-indexed
-                      }
-                    };
-                  };
-                  
-                  // Add click handler to navigate to keyword in code editor
-                  previewEditor.onMouseDown((e) => {
-                    if (e.target.position) {
-                      const model = previewEditor.getModel();
-                      if (!model) return;
-                      
-                      // Get the word at click position
-                      const wordInfo = model.getWordAtPosition(e.target.position);
-                      if (!wordInfo) return;
-                      
-                      const word = wordInfo.word;
-                      if (!word || word.length < 2) return;
-                      
-                      // Clear previous decorations
-                      if (previewDecorationsRef.current) {
-                        previewDecorationsRef.current.clear();
-                      }
-                      
-                      // Search in code editor (full word match with regex)
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      const codeEditor = editorRef.current as any;
-                      if (!codeEditor) return;
-                      
-                      const codeModel = codeEditor.getModel();
-                      if (!codeModel) return;
-                      
-                      // Find first occurrence with full word match
-                      const matches = codeModel.findMatches(`\\b${word}\\b`, true, true, true, null, true);
-                      if (matches.length === 0) return;
-                      
-                      const firstMatch = matches[0];
-                      
-                      // Check if the match is inside quotes
-                      const quotedString = getQuotedStringAtMatch(codeModel, firstMatch.range);
-                      
-                      let searchText = word;
-                      let selectionRange = firstMatch.range;
-                      
-                      if (quotedString) {
-                        // Use the full quoted content for highlighting
-                        searchText = quotedString.content;
-                        selectionRange = quotedString.range;
-                      }
-                      
-                      // Select in code editor
-                      codeEditor.setSelection(selectionRange);
-                      codeEditor.revealLineInCenter(selectionRange.startLineNumber);
-                      codeEditor.focus();
-                      
-                      // Highlight in preview editor - escape special regex chars
-                      const escapedText = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                      const previewMatches = model.findMatches(escapedText, true, false, true, null, true);
-                      if (previewMatches.length > 0) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const decorations = previewMatches.map((m: any) => ({
-                          range: m.range,
-                          options: {
-                            className: 'wordHighlight',
-                            inlineClassName: 'bg-yellow-300/50 dark:bg-yellow-500/30 rounded',
-                          }
-                        }));
-                        previewDecorationsRef.current = previewEditor.createDecorationsCollection(decorations);
-                      }
-                    }
-                  });
+                  setupPreviewEditorMount(previewEditor, editorRef, previewDecorationsRef);
                 }}
                 options={{
                   readOnly: true,

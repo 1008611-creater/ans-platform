@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d1326"/>
+      <stop offset="52%" stop-color="#1b1c3a"/>
+      <stop offset="100%" stop-color="#0d2930"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(240 210) rotate(30) scale(280 200)">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(570 250) rotate(-20) scale(260 190)">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#glowA)"/>
+  <rect width="800" height="500" fill="url(#glowB)"/>
+  <g stroke="#ffffff" stroke-opacity="0.05" stroke-width="1">
+    <line x1="0" y1="100" x2="800" y2="100"/><line x1="0" y1="200" x2="800" y2="200"/><line x1="0" y1="300" x2="800" y2="300"/><line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="160" y1="0" x2="160" y2="500"/><line x1="320" y1="0" x2="320" y2="500"/><line x1="480" y1="0" x2="480" y2="500"/><line x1="640" y1="0" x2="640" y2="500"/>
+  </g>
+  <rect x="200" y="34" width="400" height="32" rx="16" fill="#0f172a" fill-opacity="0.82" stroke="#818cf8" stroke-opacity="0.45"/>
+  <text x="400" y="55" text-anchor="middle" fill="#e2e8f0" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="600" letter-spacing="1.2">SELF-HOSTED AI WORKSPACE · LOCAL MODELS & RAG</text>
+  
+      <rect x="80" y="95" width="640" height="300" rx="18" fill="#0f172a" stroke="#818cf8" stroke-opacity="0.55" stroke-width="1.6"/>
+      <rect x="110" y="120" width="210" height="32" rx="9" fill="#1e1b4b" stroke="#818cf8"/>
+      <text x="215" y="141" text-anchor="middle" fill="#e0e7ff" font-family="ui-monospace,monospace" font-size="11" font-weight="700">MODEL: Qwen2.5-Coder-32B ▾</text>
+      <rect x="335" y="120" width="165" height="32" rx="9" fill="#0c4a6e" stroke="#38bdf8"/>
+      <text x="417" y="141" text-anchor="middle" fill="#bae6fd" font-family="ui-monospace,monospace" font-size="11">📎 课程实验手册.pdf</text>
+      <rect x="110" y="172" width="460" height="54" rx="12" fill="#1e293b"/>
+      <text x="130" y="204" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="13">根据上传的实验手册，检查第 3 节传感器的接线与采样频率限制</text>
+      <rect x="110" y="242" width="580" height="122" rx="12" fill="#172033" stroke="#38bdf8" stroke-opacity="0.45"/>
+      <text x="132" y="274" fill="#7dd3fc" font-family="ui-monospace,monospace" font-size="11">CITATIONS: [手册 P.14] [校准表 B]</text>
+      <text x="132" y="304" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="13">采样周期建议设为 500ms；本地部署模式下敏感实验数据不出内网。</text>
+      <text x="132" y="334" fill="#34d399" font-family="ui-monospace,monospace" font-size="11">● LOCAL OLLAMA / OPENAI-COMPATIBLE API</text>
+    
+  <text x="400" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" letter-spacing="1">Open WebUI · Private AI Hub</text>
+</svg>

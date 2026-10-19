@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="52%" stop-color="#172554"/>
+      <stop offset="100%" stop-color="#0f292e"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(240 210) rotate(30) scale(280 200)">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(570 250) rotate(-20) scale(260 190)">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#glowA)"/>
+  <rect width="800" height="500" fill="url(#glowB)"/>
+  <g stroke="#ffffff" stroke-opacity="0.05" stroke-width="1">
+    <line x1="0" y1="100" x2="800" y2="100"/><line x1="0" y1="200" x2="800" y2="200"/><line x1="0" y1="300" x2="800" y2="300"/><line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="160" y1="0" x2="160" y2="500"/><line x1="320" y1="0" x2="320" y2="500"/><line x1="480" y1="0" x2="480" y2="500"/><line x1="640" y1="0" x2="640" y2="500"/>
+  </g>
+  <rect x="200" y="34" width="400" height="32" rx="16" fill="#0f172a" fill-opacity="0.82" stroke="#38bdf8" stroke-opacity="0.45"/>
+  <text x="400" y="55" text-anchor="middle" fill="#e2e8f0" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="600" letter-spacing="1.2">RESEARCH BOOKMARKS · SNAPSHOT ARCHIVE</text>
+  
+      <rect x="80" y="95" width="640" height="300" rx="18" fill="#0f172a" stroke="#38bdf8" stroke-opacity="0.5" stroke-width="1.6"/>
+      <rect x="110" y="122" width="580" height="42" rx="10" fill="#1e293b" stroke="#334155"/>
+      <text x="132" y="148" fill="#94a3b8" font-family="ui-monospace,monospace" font-size="12">🔍 tag:文献综述 AND status:archived</text>
+      <g transform="translate(110 184)">
+        <rect x="0" y="0" width="278" height="182" rx="12" fill="#172033" stroke="#38bdf8" stroke-opacity="0.4"/>
+        <rect x="16" y="16" width="84" height="22" rx="6" fill="#0c4a6e"/><text x="58" y="31" text-anchor="middle" fill="#7dd3fc" font-family="ui-monospace,monospace" font-size="10">PDF + SNAPSHOT</text>
+        <text x="16" y="64" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="14" font-weight="700">农业传感器数据集技术白皮书</text>
+        <text x="16" y="92" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">已保存网页副本与重点批注，防止原链接失效</text>
+        <rect x="16" y="140" width="62" height="22" rx="6" fill="#1e293b"/><text x="47" y="155" text-anchor="middle" fill="#cbd5e1" font-family="ui-monospace,monospace" font-size="10">#数据集</text>
+        <rect x="86" y="140" width="62" height="22" rx="6" fill="#1e293b"/><text x="117" y="155" text-anchor="middle" fill="#cbd5e1" font-family="ui-monospace,monospace" font-size="10">#已核验</text>
+      </g>
+      <g transform="translate(412 184)">
+        <rect x="0" y="0" width="278" height="182" rx="12" fill="#172033" stroke="#818cf8" stroke-opacity="0.4"/>
+        <rect x="16" y="16" width="84" height="22" rx="6" fill="#312e81"/><text x="58" y="31" text-anchor="middle" fill="#c7d2fe" font-family="ui-monospace,monospace" font-size="10">READER VIEW</text>
+        <text x="16" y="64" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="14" font-weight="700">开源多模态评测基准对比</text>
+        <text x="16" y="92" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">按课题归档实验参数、原始出处与许可条款</text>
+        <rect x="16" y="140" width="62" height="22" rx="6" fill="#1e293b"/><text x="47" y="155" text-anchor="middle" fill="#cbd5e1" font-family="ui-monospace,monospace" font-size="10">#基准线</text>
+      </g>
+    
+  <text x="400" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" letter-spacing="1">Linkwarden · Citation Vault</text>
+</svg>

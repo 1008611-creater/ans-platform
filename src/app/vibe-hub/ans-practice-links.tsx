@@ -1,31 +1,63 @@
 "use client";
+
 import Link from "next/link";
+import { ArrowUpRight, Cpu, FileText, Film, GitBranch, Globe, Palette, ShieldCheck, Sparkles, Trophy, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ArrowUpRight, FileText, PanelsTopLeft, Clapperboard, GitBranch, Flag, Wallet } from "lucide-react";
-import { ANS_PRACTICES, practicesForTerm, type AnsPractice } from "@/domain/vibehub/ans-practices";
+import { ANS_PRACTICES, findAnsPracticesForTerm, searchAnsPractices, type AnsPractice } from "@/domain/vibehub/ans-practices";
 import { guideHref, guideSelectionForPractice } from "@/domain/vibehub/guide-routing";
 import { useVibeLanguage } from "./use-vibe-language";
-const queryIntents: Record<string, RegExp> = {
-  "clear-brief": /写需求|需求描述|说明需求|clear brief|write.*brief/iu,
-  portfolio: /个人网站|作品集|portfolio|personal website/iu,
-  "creative-production": /视频|镜头|创作|short film|video|creative/iu,
-  "github-to-project": /github|开源|open.?source/iu,
-  "account-and-cost": /费用|积分|成本|credits|cost|budget/iu,
-  "competition-evidence": /比赛|参赛|competition|contest/iu,
-};
-const icons = { brief: FileText, site: PanelsTopLeft, video: Clapperboard, github: GitBranch, contest: Flag, credits: Wallet };
-export function PracticeIcon({ kind, size = 20 }: { kind: AnsPractice["icon"]; size?: number }) { const Icon = icons[kind]; return <Icon size={size} aria-hidden="true" />; }
-export function AnsPracticeLinks({ term, compact = false, query }: { term?: string; compact?: boolean; query?: string }) {
-  const lang = useVibeLanguage(); const t = useTranslations("vibehub");
-  const normalized = query?.trim().normalize("NFKC").toLocaleLowerCase();
-  const practices = term ? practicesForTerm(term) : normalized
-    ? ANS_PRACTICES.filter(item => queryIntents[item.slug]?.test(normalized) || [item.title.zh, item.title.en, item.summary.zh, item.summary.en, ...item.sections.flatMap(section => [section.title.zh, section.title.en])].some(text => text.normalize("NFKC").toLocaleLowerCase().includes(normalized)))
-    : compact ? ANS_PRACTICES.slice(0, 4) : ANS_PRACTICES;
-  if (!practices.length) return null;
-  return <section className={`ans-practices${term ? " ans-term-practices" : ""}`} aria-label={t("ansPractice")}>
-    {(term || compact || normalized) && <div className="ans-knowledge-section-heading"><div><h2>{term ? t("termToWork") : normalized ? t("practiceSearch") : t("practiceSectionTitle")}</h2></div>{!term && (compact || normalized) && <Link href={guideHref(lang)}>{t("allPractices")}<ArrowUpRight size={16} aria-hidden="true" /></Link>}</div>}
-    <div className="ans-practice-list">{practices.map(item => <Link className="ans-practice-row" key={item.slug} href={guideHref(lang, guideSelectionForPractice(item.slug))}>
-      <span className="ans-practice-number">{item.number}</span><span className="ans-practice-icon"><PracticeIcon kind={item.icon} /></span><div><h3>{item.title[lang]}</h3>{!compact && <p>{item.outcome[lang]}</p>}</div><ArrowUpRight size={20} className="ans-practice-arrow" aria-hidden="true" />
-    </Link>)}</div>
-  </section>;
+
+const icons = {
+  brief: FileText,
+  portfolio: Globe,
+  design: Palette,
+  skill: Cpu,
+  media: Film,
+  team: Users,
+  creative: Sparkles,
+  repo: GitBranch,
+  competition: Trophy,
+  cost: ShieldCheck,
+} as const;
+
+export function AnsPracticeLinks({ termSlug, query, compact = false }: { termSlug?: string; query?: string; compact?: boolean }) {
+  const lang = useVibeLanguage();
+  const t = useTranslations("vibehub");
+  const items: readonly AnsPractice[] = termSlug
+    ? findAnsPracticesForTerm(termSlug)
+    : query
+      ? searchAnsPractices(query)
+      : ANS_PRACTICES;
+  if (items.length === 0) return null;
+  const visible = compact ? items.slice(0, 6) : items;
+
+  return (
+    <section className={`ans-practices${termSlug ? " ans-term-practices" : ""}`} aria-labelledby={termSlug ? "ans-term-practices-title" : "ans-practices-title"}>
+      <div className="ans-knowledge-section-heading">
+        <div>
+          <p className="ans-knowledge-eyebrow">{t(termSlug ? "termPracticesEyebrow" : "practicesEyebrow")}</p>
+          <h2 id={termSlug ? "ans-term-practices-title" : "ans-practices-title"}>{t(termSlug ? "termPracticesTitle" : "practicesTitle")}</h2>
+        </div>
+        {compact && <Link className="vh-text-button" href={guideHref(lang)}>{t("allPractices")} <ArrowUpRight size={15} aria-hidden="true" /></Link>}
+      </div>
+      <div className="ans-practice-list">
+        {visible.map(item => {
+          const Icon = icons[item.icon];
+          const selection = guideSelectionForPractice(item.slug);
+          return (
+            <Link key={item.slug} href={guideHref(lang, selection || {})} className="ans-practice-row">
+              <span className="ans-practice-number" aria-hidden="true">{item.number}</span>
+              <span className="ans-practice-icon" aria-hidden="true"><Icon size={18} /></span>
+              <div className="ans-practice-copy">
+                <p className="ans-knowledge-eyebrow">{item.category[lang]}</p>
+                <h3>{item.title[lang]}</h3>
+                <p>{item.summary[lang]}</p>
+              </div>
+              <ArrowUpRight size={18} className="ans-practice-arrow" aria-hidden="true" />
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
 }

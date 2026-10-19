@@ -891,9 +891,9 @@
 .ans-empty { text-align: center; padding: 60px 20px; border: 1px dashed var(--border); border-radius: 24px; }
 .ans-toonflow-hero { border-radius: 28px; padding: clamp(28px, 5vw, 64px); }
 .ans-dino-guide { position: fixed; z-index: 45; inset-inline-end: 20px; bottom: calc(84px + env(safe-area-inset-bottom)); }
-.ans-dino-trigger { position: relative; display: block; border: 2px solid var(--background); border-radius: 24px; box-shadow: 0 6px 24px #0002; cursor: pointer; transition: transform .25s; }
-.ans-dino-trigger img { border-radius: 22px; }
-.ans-dino-trigger:hover { transform: rotate(-8deg) translateY(-3px); }
+.ans-dino-trigger { position: relative; display: block; background: transparent !important; border: 0 !important; border-radius: 24px; box-shadow: none !important; cursor: pointer; transition: transform .25s; }
+.ans-dino-trigger img { border-radius: 0; background: transparent !important; }
+.ans-dino-trigger:hover { transform: translateY(-3px); }
 .ans-dino-trigger[aria-expanded=true] { animation: ans-dino-hello .5s ease-out; }
 .ans-dino-guide[data-task-state=working] .ans-dino-trigger img { animation: ans-dino-working 2.4s ease-in-out infinite; }
 .ans-dino-guide:is([data-task-state=confirm], [data-task-state=ready], [data-task-state=attention]) .ans-dino-pip { animation: ans-dino-waiting 2s ease-in-out infinite; }
@@ -911,10 +911,10 @@
 
 
 /* 3D companion stays inside the existing accessible task-guide trigger. */
-.ans-dino-avatar { position: relative; display: block; width: 88px; height: 100px; }
-.ans-dino-avatar > img { width: 88px; height: 88px; object-fit: contain; }
-.ans-dino-canvas { position: absolute; inset: -10px -12px; width: 112px; height: 120px; border: 0; pointer-events: none; transition: opacity .2s; }
-.ans-dino-trigger:has(.ans-dino-canvas) { background: transparent; border-color: transparent; box-shadow: none; }
+.ans-dino-avatar { position: relative; display: block; width: 88px; height: 100px; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+.ans-dino-avatar > img { width: 88px; height: 88px; object-fit: contain; background: transparent !important; }
+.ans-dino-canvas { position: absolute; inset: -10px -12px; width: 112px; height: 120px; border: 0; background: transparent !important; color-scheme: normal; pointer-events: none; transition: opacity .2s; }
+.ans-dino-trigger:has(.ans-dino-canvas) { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
 .ans-dino-trigger:has(.ans-dino-canvas):hover { transform: translateY(-3px); }
 @media (max-width: 640px) { .ans-dino-avatar { width: 72px; height: 84px; } .ans-dino-canvas { width: 96px; height: 104px; } .ans-dino-avatar > img { width: 72px; height: 72px; } }
 

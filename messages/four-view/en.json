@@ -7,7 +7,7 @@
   "generate": "Prepare four views",
   "submitting": "Submitting…",
   "unavailable": "Four-view service is not ready to accept tasks.",
-  "insufficient": "Insufficient points. Check your compute balance.",
+  "insufficient": "Insufficient points. Claim 100–150 free pts in Compute Benefits (/workspace/benefits) or check your balance.",
   "requestFailed": "The request was not confirmed. Check task status first; retrying the same image and ratio will not charge twice.",
   "loadFailed": "Unable to load four views. Please try later.",
   "loading": "Loading the four reference images…",

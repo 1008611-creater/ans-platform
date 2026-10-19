@@ -31,9 +31,9 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     expect(USD_PER_POINT).toBe(0.1);
 
     const initial = loadQuestArcadeState("u-ratio");
-    expect(initial.deepseekTotalUsd).toBe(15); // $15 = 150 pts normal-distribution upper bound
+    expect(initial.deepseekTotalUsd).toBe(15); // $15 = 150 pts All-ANS 90% normal-distribution upper bound
     expect(initial.deepseekUnlockedUsd).toBe(5); // $5 = 50 pts initial base unlock
-    expect(initial.flagshipTotalUsd).toBe(15); // $15 = 150 pts right-tail & milestone pool
+    expect(initial.flagshipTotalUsd).toBe(100); // $100 = 1,000 pts SP/UR/SSR jackpot & milestone pool
     expect(initial.arcadeTokens).toBe(3);
   });
 
@@ -43,16 +43,16 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
 
     const m1 = advanceAndClaimQuest("agri_m1_apply", "u-quest");
     expect(m1?.newlyClaimed).toBe(true);
-    expect(m1?.state.flagshipUnlockedUsd).toBe(2); // $2 = 20 pts
+    expect(m1?.state.flagshipUnlockedUsd).toBe(1.2); // $1.2 = 12 pts
     expect(m1?.state.arcadeTokens).toBe(4); // 3 starter + 1 reward
 
     const secretPua = advanceAndClaimQuest("secret_reverse_pua", "u-quest");
     expect(secretPua?.newlyClaimed).toBe(true);
-    expect(secretPua?.state.flagshipUnlockedUsd).toBe(3); // $2 + $1 = $3 (30 pts)
+    expect(secretPua?.state.flagshipUnlockedUsd).toBe(1.8); // $1.2 + $0.6 = $1.8 (18 pts)
     expect(secretPua?.state.secretUnlockedAt.secret_reverse_pua).toBeTruthy();
   });
 
-  it("draws prizes from the 3D Claw Machine and guarantees SSR/UR at 10-draw pity", () => {
+  it("draws prizes from the 3D Claw Machine and guarantees SSR/UR/SP at 10-draw pity", () => {
     // Give user enough tokens for 10 draws (3 starter + 7 quest tokens = 10 tokens)
     for (const q of [
       "daily_checkin",
@@ -69,7 +69,11 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     for (let i = 0; i < 10; i++) {
       const outcome = drawArcadePrize("claw", "u-pity");
       expect(outcome).not.toBeNull();
-      if (outcome?.prize.rarity === "SSR" || outcome?.prize.rarity === "UR") {
+      if (
+        outcome?.prize.rarity === "SSR" ||
+        outcome?.prize.rarity === "UR" ||
+        outcome?.prize.rarity === "SP"
+      ) {
         sawHighRarity = true;
       }
     }
@@ -130,25 +134,27 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     for (const q of QUEST_DEFINITIONS) {
       const serverReward = ARCADE_QUEST_REWARDS[q.id];
       expect(serverReward).toBeDefined();
-      expect(serverReward.points).toBe(q.unlockUsd * POINTS_PER_USD);
+      expect(serverReward.points).toBe(Math.round(q.unlockUsd * POINTS_PER_USD));
       expect(serverReward.tokens).toBe(q.rewardTokens);
     }
 
     for (const p of ARCADE_PRIZES) {
       const serverPrize = ARCADE_PRIZE_REWARDS[p.id];
       expect(serverPrize).toBeDefined();
-      expect(serverPrize.points).toBe(p.unlockUsd * POINTS_PER_USD);
+      expect(serverPrize.points).toBe(Math.round(p.unlockUsd * POINTS_PER_USD));
     }
   });
 
-  it("enforces deterministic server-side prize rolling, 10-draw SR+ pity, and 90% [100,150] Gaussian cap", async () => {
+  it("enforces deterministic server-side prize rolling, 10-draw SR+ pity, and 90% [100,150] All-ANS Gaussian + low-prob Jackpot cap", async () => {
     const {
       ARCADE_PRIZE_REWARDS,
+      ARCADE_BASE_ONBOARDING_POINTS,
       ARCADE_DAILY_NON_MILESTONE_POINTS_CAP,
       computeUserGaussianArcadeCap,
       rollServerArcadePrize,
     } = await import("@/server/compute-benefits/arcade");
 
+    expect(ARCADE_BASE_ONBOARDING_POINTS).toBe(50);
     expect(ARCADE_DAILY_NON_MILESTONE_POINTS_CAP).toBe(150);
 
     for (let i = 1; i <= 30; i++) {
@@ -159,21 +165,28 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
       }
     }
 
-    // Verify across 1,000 users that ~90% land in [100, 150] (mean ~125) and ~10% land in [155, 250]
+    // Verify across 10,000 users that ~90% land in [100, 150] All-ANS Total (50 base + [50, 100] arcade cap)
+    // and ~10% land in [155, 1150] right-tail & low-probability jackpot tiers
     let normalBandCount = 0;
     let normalBandSum = 0;
     let rightTailCount = 0;
-    const sampleSize = 1000;
+    const sampleSize = 2000;
     for (let u = 1; u <= sampleSize; u++) {
       const res = computeUserGaussianArcadeCap(`cau-student-${u}`);
       if (!res.isTopTail) {
         expect(res.targetPoints).toBeGreaterThanOrEqual(100);
         expect(res.targetPoints).toBeLessThanOrEqual(150);
+        expect(res.arcadeLifetimeCapPoints).toBeGreaterThanOrEqual(50);
+        expect(res.arcadeLifetimeCapPoints).toBeLessThanOrEqual(100);
+        expect(res.targetPoints).toBe(res.arcadeLifetimeCapPoints + 50);
         normalBandCount += 1;
         normalBandSum += res.targetPoints;
       } else {
         expect(res.targetPoints).toBeGreaterThanOrEqual(155);
-        expect(res.targetPoints).toBeLessThanOrEqual(250);
+        expect(res.targetPoints).toBeLessThanOrEqual(1150);
+        expect(res.arcadeLifetimeCapPoints).toBeGreaterThanOrEqual(105);
+        expect(res.arcadeLifetimeCapPoints).toBeLessThanOrEqual(1100);
+        expect(res.targetPoints).toBe(res.arcadeLifetimeCapPoints + 50);
         rightTailCount += 1;
       }
     }
@@ -181,9 +194,48 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     const normalMean = normalBandSum / normalBandCount;
     expect(normalRatio).toBeGreaterThan(0.86);
     expect(normalRatio).toBeLessThan(0.94);
-    expect(normalMean).toBeGreaterThan(122);
-    expect(normalMean).toBeLessThan(128);
+    expect(normalMean).toBeGreaterThan(117);
+    expect(normalMean).toBeLessThan(124);
     expect(rightTailCount).toBe(sampleSize - normalBandCount);
+  });
+
+  it("supports exchanging 10 points per arcade token and links directly to Marketplace (/market)", async () => {
+    const { buyArcadeTokensWithPoints, ARCADE_TOKEN_COST_POINTS } = await import(
+      "@/domain/mascot/quest-arcade"
+    );
+    expect(ARCADE_TOKEN_COST_POINTS).toBe(10);
+
+    const bought = buyArcadeTokensWithPoints(2, "u-buy");
+    expect(bought.costPoints).toBe(20);
+    expect(bought.state.arcadeTokens).toBe(5); // 3 starter + 2 purchased
+
+    render(<ComputeQuestArcade actorId="u-buy-ui" initialServerPoints={120} />);
+    expect(screen.getByTestId("arcade-go-market").getAttribute("href")).toBe("/market");
+    expect(screen.getByTestId("arcade-token-count").textContent).toContain("3");
+
+    fireEvent.click(screen.getByTestId("arcade-buy-token-1"));
+    expect(screen.getByTestId("arcade-token-count").textContent).toContain("4");
+    expect(screen.getByTestId("gateway-live-points").textContent).toContain("110");
+  });
+
+  it("renders HomeCampaignModal on homepage visit with 3-step guide (benefits, arcade, market) and reopen pill", async () => {
+    window.sessionStorage.clear();
+    const { HomeCampaignModal } = await import("@/components/homepage/home-campaign-modal");
+    render(<HomeCampaignModal locale="zh" />);
+
+    expect(screen.getByTestId("home-campaign-modal")).toBeTruthy();
+    expect(screen.getByTestId("modal-cta-benefits").getAttribute("href")).toBe("/workspace/benefits");
+    expect(screen.getByTestId("modal-cta-arcade").getAttribute("href")).toBe(
+      "/workspace/benefits#ans-quest-arcade-hub",
+    );
+    expect(screen.getByTestId("modal-cta-market").getAttribute("href")).toBe("/market");
+
+    // Close modal and verify persistent reopen pill brings it back
+    fireEvent.click(screen.getByTestId("home-campaign-modal-close"));
+    expect(screen.queryByTestId("home-campaign-modal")).toBeNull();
+
+    fireEvent.click(screen.getByTestId("home-campaign-reopen-pill"));
+    expect(screen.getByTestId("home-campaign-modal")).toBeTruthy();
   });
 });
 

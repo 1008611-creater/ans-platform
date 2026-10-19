@@ -27,12 +27,21 @@ function Navigation() {
   const [, setSavedLanguage] = usePersistedSetting("vibehub:language", lang);
   const [menuOpen, setMenuOpen] = useState(false);
   const links = [
-    { label: "terms", path: "" }, { label: "guides", path: "/guides" },
-    { label: "courses", path: "/courses" }, { label: "practice", path: "/practice" },
-    { label: "saved", path: "/favorites" }, { label: "antiAi", path: "/anti-ai-flavor" },
-    { label: "skill", path: "/vibehub-skill" }, { label: "updates", path: "/updates" },
+    { label: "terms", path: "" },
+    { label: "guides", path: "/guides" },
+    { label: "skill", path: "/vibehub-skill" },
+    { label: "courses", path: "/courses" },
+    { label: "practice", path: "/practice" },
+    { label: "antiAi", path: "/anti-ai-flavor" },
+    { label: "saved", path: "/favorites" },
+    { label: "updates", path: "/updates" },
   ] as const;
-  const active = (path: string) => path ? pathname === `/vibe-hub${path}` || pathname.startsWith(`/vibe-hub${path}/`) : (pathname === "/vibe-hub" || pathname.startsWith("/vibe-hub/topics"));
+  const active = (path: string) =>
+    path === "/guides"
+      ? pathname.startsWith("/vibe-hub/guides") || pathname.startsWith("/vibe-hub/journeys") || pathname.startsWith("/vibe-hub/ans")
+      : path
+        ? pathname === `/vibe-hub${path}` || pathname.startsWith(`/vibe-hub${path}/`)
+        : (pathname === "/vibe-hub" || pathname.startsWith("/vibe-hub/topics"));
   function switchLanguage() {
     const nextLang = lang === "zh" ? "en" : "zh";
     setSavedLanguage(nextLang);
@@ -60,7 +69,7 @@ function Navigation() {
           <SheetContent className="ans-knowledge-menu" aria-describedby="ans-menu-description">
             <SheetHeader><SheetTitle>ANS VibeHub</SheetTitle><SheetDescription id="ans-menu-description" className="sr-only">{t("knowledgeDescription")}</SheetDescription></SheetHeader>
             <nav aria-label={t("navigation")} className="ans-knowledge-menu-links">{links.map(link => <Link key={link.label} href={`/vibe-hub${link.path}?lang=${lang}`} aria-current={active(link.path) ? "page" : undefined} onClick={() => setMenuOpen(false)}>{t(link.label)}</Link>)}</nav>
-            <div className="ans-knowledge-menu-main"><Link href="/explore" onClick={() => setMenuOpen(false)}>{t("exploreAns")}</Link><Link href="/workflows" onClick={() => setMenuOpen(false)}>{t("workflowAns")}</Link><Link href="/community" onClick={() => setMenuOpen(false)}>{t("communityAns")}</Link><AnsReturnLink /></div>
+            <div className="ans-knowledge-menu-main"><Link href="/explore" onClick={() => setMenuOpen(false)}>{t("exploreAns")}</Link><Link href="/market" onClick={() => setMenuOpen(false)}>{t("workflowAns")}</Link><Link href="/community" onClick={() => setMenuOpen(false)}>{t("communityAns")}</Link><AnsReturnLink /></div>
             <Button variant="outline" className="ans-menu-language" onClick={switchLanguage}><Languages size={18} aria-hidden="true" />{t("switchLanguage")}</Button>
           </SheetContent>
         </Sheet>
@@ -70,7 +79,6 @@ function Navigation() {
       <form className="vh-global-search" action="/vibe-hub" role="search" onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); const next = new URLSearchParams({ lang, q: String(form.get("q") || "").trim() }); router.push(`/vibe-hub?${next}`); }}>
         <Search size={17} aria-hidden="true" /><input aria-label={t("search")} placeholder={t("knowledgeSearch")} name="q" maxLength={500} type="search" defaultValue={params.get("q") || ""} key={`${pathname}:${params.get("q") || ""}`} /><input type="hidden" name="lang" value={lang} /><button type="submit">{t("searchAction")}</button>
       </form>
-      <Link href={`/vibe-hub/vibehub-skill?lang=${lang}`} className="ans-knowledge-subnav-note">{t("briefAction")} ↗</Link>
     </div>
   </header>;
 }

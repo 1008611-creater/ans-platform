@@ -1,39 +1,34 @@
-import { catalogText, catalogSourceLabel } from "@/domain/catalog/content";
+import { catalogText } from "@/domain/catalog/content";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowUpRight } from "lucide-react";
 import type { CatalogProject } from "@/domain/catalog/projects";
 import { ProjectPreview } from "./project-preview";
-import { RevealDetails } from "./reveal-details";
 import styles from "./project-card.module.css";
 
 export async function ProjectCard({ project, compact = false }: { project: CatalogProject; compact?: boolean }) {
   const [t, locale] = await Promise.all([getTranslations("product"), getLocale()]);
-  if (compact) {
-    const title = catalogText(project, t, "title", locale);
-    const descriptionId = `project-${project.slug}-info`;
-    return <RevealDetails id={descriptionId} label={t("catalogBrowse.info", { title })} className={styles.card} details={<>
-      <div className={styles.metadata}><span>{t(`categories.${project.category}`)}</span><span>{t(catalogSourceLabel(project.source))}</span></div>
-      {project.creator && <p>{project.creator}</p>}
-      <p>{catalogText(project, t, "summary", locale)}</p>
-      <p>{t(project.workflowId ? "ready" : project.memberHref ? "realProject.member" : project.source === "official" ? "realProject.externalProduct" : "reference")}</p>
-    </>}>
-      <Link href={`/explore/${project.slug}`} prefetch={false} className={styles.link} aria-describedby={descriptionId}>
-        <ProjectPreview project={project} />
-        <div className={styles.title}><h3>{title}</h3><ArrowUpRight aria-hidden="true" /></div>
-      </Link>
-    </RevealDetails>;
-  }
-  return <article className="ans-project-card">
-    <Link href={`/explore/${project.slug}`} className="ans-card-link">
-      <ProjectPreview project={project} />
-      <div className="p-5 sm:p-6">
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{t(`categories.${project.category}`)}</span><span aria-hidden="true">/</span><span>{t(catalogSourceLabel(project.source))}</span></div>
-        {project.creator && <p className="mb-2 text-xs text-muted-foreground">{project.creator}</p>}
-        <h3 className="text-pretty text-lg font-semibold leading-7">{catalogText(project, t, "title", locale)}</h3>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">{catalogText(project, t, "summary", locale)}</p>
-        <div className="mt-6 flex items-center justify-between gap-2"><span className="ans-status">{t(project.workflowId ? "ready" : project.memberHref ? "realProject.member" : project.source === "official" ? "realProject.externalProduct" : "reference")}</span><ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" /></div>
+  const directHref = project.memberHref ?? (project.workflowId === "resume-website" ? "/market/resume-website" : String(project.workflowId ?? "") === "easel" ? "/competitions/aigc" : String(project.workflowId ?? "") === "hypit" ? "/workflows/hypit" : project.workflowId ? `/projects?goal=${project.goal}&workflow=${project.workflowId}#new-project` : project.sourceUrl ?? `/explore/${project.slug}`);
+  const isExternal = /^https?:\/\//.test(directHref);
+  const isEn = locale.startsWith("en");
+  const title = catalogText(project, t, "title", locale);
+  const summary = catalogText(project, t, "summary", locale);
+  const actionLabel = project.memberHref || project.workflowId ? (isEn ? "Launch Now" : "立即进入") : project.source === "official" ? (isEn ? "Open App ↗" : "直达体验 ↗") : (isEn ? "Open Project ↗" : "直达项目 ↗");
+  const hasFooterBar = directHref !== `/explore/${project.slug}`;
+  const body = <>
+    <ProjectPreview project={project} />
+    <div className="p-3.5 sm:p-4">
+      <div className="mb-1 flex items-center justify-between gap-2 text-[11px] font-medium text-foreground/75">
+        <span>{t(`categories.${project.category}`)}</span>
+        <span className="rounded-full border border-emerald-500/35 bg-emerald-950/90 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 transition-colors group-hover:bg-emerald-900">{actionLabel}</span>
       </div>
-    </Link>
+      <div className={styles.title}><h3>{title}</h3></div>
+      <p title={summary} className="mt-1 line-clamp-1 text-xs leading-relaxed text-foreground/80 transition-colors group-hover:text-foreground">{summary}</p>
+    </div>
+  </>;
+  return <article className={compact ? `${styles.card} group flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card transition hover:border-primary/50` : "ans-project-card group flex flex-col justify-between"}>
+    {isExternal ? <a href={directHref} target="_blank" rel="noopener noreferrer" className={compact ? styles.link : "ans-card-link"}>{body}</a> : <Link href={directHref} prefetch={false} className={compact ? styles.link : "ans-card-link"}>{body}</Link>}
+    {hasFooterBar && <div className="flex items-center justify-end border-t border-border/40 bg-muted/15 px-3.5 py-1.5 text-[11px]">
+      <Link href={`/explore/${project.slug}`} prefetch={false} className="text-foreground/80 hover:text-foreground hover:underline">{isEn ? "Guide & Info →" : "项目指南 →"}</Link>
+    </div>}
   </article>;
 }

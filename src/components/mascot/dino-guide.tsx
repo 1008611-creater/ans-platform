@@ -9,7 +9,7 @@ import { useSession } from "next-auth/react";
 import { ArrowUp, ArrowDown, ArrowUpRight, Square, X, Settings, Volume2, VolumeX, Sparkles, FolderPlus, Clapperboard, Coins, Users, Compass, BookOpen, RotateCcw, Maximize2, MoveUpLeft } from "lucide-react";
 import { DinoAvatar, type SpeechRequest } from "./dino-avatar";
 import { useDinoTask } from "./dino-task-context";
-import { guideReply, pageActions, pagePrompts, pageContextKey, type GuideAction } from "./guide-actions";
+import { guideReply, pageActions, pagePrompts, type GuideAction } from "./guide-actions";
 import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { openSiteSettings, updateSitePreferences, useSitePreferences } from "@/lib/site-preferences";
@@ -31,7 +31,7 @@ const freshThread = (): Thread => ({ draft: "", messages: [], recommendations: n
 export function DinoGuide() {
   const { data, status } = useSession();
   useEffect(() => { if (status !== "loading") activateCompanionActor(status === "authenticated" ? data?.user?.id ?? null : null); }, [status, data?.user?.id]);
-  return <Companion storageReady={status !== "loading"} key={status === "authenticated" ? data?.user?.id : status} actor={status === "authenticated" ? data?.user?.id ?? null : null} />;
+  return <Companion storageReady={status !== "loading"} key={status === "authenticated" ? (data?.user?.id ?? "authenticated") : "guest"} actor={status === "authenticated" ? data?.user?.id ?? null : null} />;
 }
 function Companion({ actor, storageReady }: { actor: string | null; storageReady: boolean }) {
   const t = useTranslations("product.mascot"), ui = useTranslations("companion");
@@ -48,6 +48,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const prefs = useSitePreferences(), task = useDinoTask(), panelSize = useCompanionSize();
   const voiceOffer = useVoiceOffer(actor, prefs.voice);
   const [open, setOpen] = useState(false), [showLatest, setShowLatest] = useState(false), [unread, setUnread] = useState(false);
+  const [requestedTab, setRequestedTab] = useState<"none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt" | null>(null);
   const [speech, setSpeech] = useState<SpeechRequest | null>(null), [voiceStatus, setVoiceStatus] = useState("idle");
   const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null);
   const scrollState = useRef<Record<Mode, { top: number; follow: boolean; lastId: number | undefined }>>({ agent: { top: 0, follow: true, lastId: undefined }, guide: { top: 0, follow: true, lastId: undefined } });
@@ -130,14 +131,53 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     const host = window as unknown as Record<symbol, { dispose?: () => void } | undefined>;
     host[Symbol.for("ans.mascot.companion.v1")]?.dispose?.();
   }, []);
+  const allowChatOpenRef = useRef(false);
   function changeOpen(value: boolean) {
-    if (value) panelSize.prepare(); else rememberScroll();
+    if (value) {
+      document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
+      panelSize.prepare();
+    } else {
+      rememberScroll();
+    }
     setOpen(value);
     if (value && !welcomed.current) {
       welcomed.current = true;
       if (prefs.voice) { window.dispatchEvent(new CustomEvent("ans:dino-activate")); setSpeech({ id: ++sequence.current, text: greeting }); }
     }
   }
+  useEffect(() => {
+    function onOpenCompanionTab(event: Event) {
+      const custom = event as CustomEvent<{ tab?: "none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt"; draft?: string }>;
+      const targetTab = custom.detail?.tab ?? "none";
+      const incomingDraft = custom.detail?.draft?.trim();
+      if (incomingDraft) {
+        updateThread(mode, current => ({ ...current, draft: incomingDraft }));
+      }
+      setRequestedTab(targetTab);
+      changeOpen(true);
+      window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+    }
+    function onOpenCompanionChat(event: Event) {
+      const custom = event as CustomEvent<{ draft?: string }>;
+      const incomingDraft = custom.detail?.draft?.trim();
+      if (incomingDraft) {
+        updateThread(mode, current => ({ ...current, draft: incomingDraft }));
+      }
+      changeOpen(true);
+      window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+    }
+    function onEnterMacroFromDialog() {
+      changeOpen(false);
+    }
+    window.addEventListener("ans:open-companion-tab", onOpenCompanionTab);
+    window.addEventListener("ans:open-companion-chat", onOpenCompanionChat);
+    window.addEventListener("ans:enter-dino-macro", onEnterMacroFromDialog);
+    return () => {
+      window.removeEventListener("ans:open-companion-tab", onOpenCompanionTab);
+      window.removeEventListener("ans:open-companion-chat", onOpenCompanionChat);
+      window.removeEventListener("ans:enter-dino-macro", onEnterMacroFromDialog);
+    };
+  }, [panelSize, mode]);
   function submit(event?: FormEvent, quick?: string) {
     event?.preventDefault(); const input = (quick ?? draft).trim().slice(0, 1200); if (!input || blocked) return;
     scrollState.current[mode].follow = true; setUnread(false); setUndo(null);
@@ -169,14 +209,49 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     const voice = !prefs.voice; setSpeech(null); setVoiceStatus("idle"); updateSitePreferences({ voice });
     if (voice) window.dispatchEvent(new CustomEvent("ans:dino-activate"));
   }
+  function switchToWorkMode(customPrompt?: string) {
+    changeOpen(false);
+    const lastUserMsg = [...messages].reverse().find(m => m.role === "user")?.text?.trim() ?? "";
+    const q = (customPrompt ?? draft).trim() || lastUserMsg;
+    if (pathname === "/workspace") {
+      if (q) {
+        window.dispatchEvent(new CustomEvent("ans:codex-prompt", { detail: { prompt: q } }));
+      }
+      const el = document.querySelector('[data-testid="pi-codex-workbench"]');
+      if (el && "scrollIntoView" in el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    window.location.href = "/workspace" + (q ? `?prompt=${encodeURIComponent(q)}` : "");
+  }
   const speaking = voiceStatus === "playing", loading = voiceStatus === "loading";
   const voiceLabel = ui(prefs.voice ? "disableDinoVoice" : "enableDinoVoice");
   const voiceHint = !actor ? ui("voiceSignIn") : prefs.voice && !voiceOffer ? ui("voiceUnavailable") : !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceFree");
   const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
-  return <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
-    {!open && <CompanionQuestPin onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />}
-    <Popover open={open} onOpenChange={changeOpen}>
-      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger"><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
+  return <>
+    <CompanionQuestPin dialogOpen={open} onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />
+    <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
+    <Popover open={open} onOpenChange={nextOpen => {
+      if (nextOpen && typeof WebGLRenderingContext !== "undefined" && !allowChatOpenRef.current) {
+        return;
+      }
+      allowChatOpenRef.current = false;
+      changeOpen(nextOpen);
+    }}>
+      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
+        if (typeof WebGLRenderingContext !== "undefined" && !open) {
+          window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: true } }));
+        }
+      }} onPointerLeave={() => {
+        if (typeof WebGLRenderingContext !== "undefined" && !open) {
+          window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: false } }));
+        }
+      }} onClick={event => {
+        if (typeof WebGLRenderingContext !== "undefined" && !open) {
+          event.preventDefault();
+          event.stopPropagation();
+          window.dispatchEvent(new CustomEvent("ans:dino-stage-click"));
+        }
+      }}><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
       <PopoverAnchor virtualRef={panelSize.anchor} />
       <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" onOpenAutoFocus={event => {
         event.preventDefault();
@@ -202,29 +277,56 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           </div>
         </header>
         <div className="ans-companion-mode" role="group" aria-label={ui("conversationMode")}>
-          <button type="button" aria-pressed={mode === "agent"} onClick={() => changeMode("agent")} disabled={!actor || agent.busy || agent.checkingReceipts}>{ui("agentMode")}</button>
-          <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>{ui("guideMode")}</button>
+          <button type="button" aria-pressed={mode === "agent"} onClick={() => changeMode("agent")} disabled={!actor || agent.busy || agent.checkingReceipts}>
+            {ui("agentMode")}
+          </button>
+          <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>
+            {ui("guideMode")}
+          </button>
+          <button
+            type="button"
+            aria-pressed={false}
+            data-testid="dino-switch-work-mode"
+            onClick={() => switchToWorkMode()}
+          >
+            {locale === "zh" ? "🛠️ 工作模式 ↗" : "🛠️ Work Mode ↗"}
+          </button>
         </div>
         <CompanionSanctuaryBar
+          requestedTab={requestedTab}
+          currentDraft={draft}
+          onRequestedTabHandled={() => setRequestedTab(null)}
           onSpeak={text => setSpeech({ id: ++sequence.current, text })}
-          onInjectPrompt={promptText => {
-            updateThread(mode, current => ({ ...current, draft: promptText }));
-            requestAnimationFrame(() => composer.current?.focus());
-          }}
+          onSwitchToWorkMode={switchToWorkMode}
         />
-        {prefs.voice && <p className="px-4 pb-2 text-xs text-muted-foreground" role="status">{voiceHint}</p>}
         {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
         {undo?.mode === mode && <div className="ans-companion-undo" role="status"><span>{ui("conversationCleared")}</span><button type="button" onClick={restoreConversation}>{ui("undoClear")}</button></div>}
         <div className="ans-companion-reading">
           <div className="ans-companion-body" ref={bindList} onScroll={rememberScroll}>
             {task && <section className="ans-companion-task" aria-labelledby={taskId}><div><h3 id={taskId}>{ui("currentTask")}</h3><span>{task.step}/3</span></div><p role="status">{t(`task.${task.phase}`)}</p><ol aria-label={t("taskSteps")}>{([1, 2, 3] as const).map(step => <li key={step} aria-current={step === task.step ? "step" : undefined}><span>0{step}</span>{t(`taskStep.${step}`)}</li>)}</ol><footer>{task.targetId && <button type="button" onClick={() => { focusTarget.current = task.targetId ?? null; changeOpen(false); }}>{t("taskAction")}<ArrowUpRight aria-hidden="true" /></button>}</footer></section>}
             <div className="ans-companion-conversation" role="log" aria-label={ui("conversationWithDino")} aria-live="polite" aria-relevant="additions">
-              {!messages.length && !agent.quote && <div className="ans-companion-welcome"><Sparkles aria-hidden="true" /><div><small>{ui("currentPage", { page: ui(pageContextKey(pathname)) })}</small><p>{greeting}</p></div></div>}
+              {!messages.length && !agent.quote && <div className="ans-companion-welcome"><Sparkles aria-hidden="true" /><div><p>{greeting}</p></div></div>}
               {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} /></Suspense>}</div>)}
               {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
               {mode === "agent" && <><AgentRecoveryStatus turns={agent.recovery.turns.filter(turn => turn.ticket !== agent.currentTicket)} onCheck={agent.recovery.check} /><AgentTurnStatus agent={agent} /></>}
+              <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}>
+                <div>
+                  {nextActions.map(action => {
+                    const Icon = icons[action.icon];
+                    return (
+                      <Link key={action.href + action.title} href={action.href} title={action.detail} onClick={() => changeOpen(false)}>
+                        <Icon aria-hidden="true" />
+                        <span>
+                          <strong>{action.title}</strong>
+                          <small className="sr-only">{action.detail}</small>
+                        </span>
+                        <ArrowUpRight aria-hidden="true" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </nav>
             </div>
-            {prefs.suggestions && !blocked && nextActions.length > 0 && <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}><h3>{ui("suggestedNextSteps")}</h3>{nextActions.map(action => { const Icon = icons[action.icon]; return <Link href={action.href} key={action.href} onClick={() => changeOpen(false)}><span className="ans-companion-action-icon"><Icon aria-hidden="true" /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight className="ans-companion-action-arrow" aria-hidden="true" /></Link>; })}</nav>}
           </div>
           {showLatest && (messages.length > 0 || agent.quote) && <button className="ans-companion-latest" type="button" onClick={jumpToLatest}><ArrowDown aria-hidden="true" />{ui(unread ? "newReplyBelow" : "backToLatest")}</button>}
         </div>
@@ -238,5 +340,6 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         </form>
       </PopoverContent>
     </Popover>
-  </div>;
+  </div>
+  </>;
 }

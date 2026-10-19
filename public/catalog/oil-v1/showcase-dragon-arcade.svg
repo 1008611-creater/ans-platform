@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600">
+  <title>3D 算力抓娃娃机与神龙进化 · Compute Quest · oil欧呦风格高反差封面</title>
+  <defs>
+    <pattern id="oil-grid-showcase-dragon-arcade" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#111827" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="600" fill="#f2f5f3"/>
+  <rect width="960" height="600" fill="url(#oil-grid-showcase-dragon-arcade)"/>
+  <rect x="20" y="20" width="920" height="560" rx="24" fill="none" stroke="#111827" stroke-width="4"/>
+
+  <g transform="translate(48, 48)">
+    <rect x="0" y="0" width="236" height="38" rx="19" fill="#111827"/>
+    <circle cx="22" cy="19" r="6" fill="#10b981"/>
+    <text x="38" y="24" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800" fill="#fffdf8" letter-spacing="1">ANS · AI NEVER STOPS</text>
+
+    <rect x="252" y="0" width="224" height="38" rx="19" fill="#dbeafe" stroke="#111827" stroke-width="2.5"/>
+    <text x="364" y="24" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="800" fill="#111827">WEB CRAFT · 交互网页</text>
+  </g>
+
+  <g transform="translate(48, 132)">
+    <rect x="0" y="6" width="14" height="136" rx="7" fill="#1d4ed8"/>
+    <text x="30" y="64" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="56" font-weight="900" fill="#111827" letter-spacing="-1">3D 算力抓娃娃</text>
+    <text x="30" y="134" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="52" font-weight="900" fill="#1d4ed8" letter-spacing="-1">机与神龙进化</text>
+    <text x="30" y="182" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" font-weight="700" fill="#111827" opacity="0.78">Compute Quest</text>
+  </g>
+
+  <g transform="translate(48, 344)">
+    <rect x="6" y="6" width="476" height="118" rx="16" fill="#111827"/>
+    <rect x="0" y="0" width="476" height="118" rx="16" fill="#fcfefd" stroke="#111827" stroke-width="3"/>
+    <rect x="20" y="20" width="56" height="28" rx="8" fill="#1d4ed8"/>
+    <text x="48" y="39" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="900" fill="#ffffff">#61</text>
+    <text x="90" y="40" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="20" font-weight="800" fill="#111827">Three.js 物理碰撞抓娃娃机与五阶神龙</text>
+    <text x="20" y="82" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="18" font-weight="600" fill="#57534e">养成，将创作 XP 转化为算力盲盒。</text>
+  </g>
+
+  <g transform="translate(48, 494)">
+    <rect x="0" y="0" width="168" height="40" rx="10" fill="#fcfefd" stroke="#111827" stroke-width="2.5"/>
+    <text x="84" y="25" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#111827">OIL 封面 · 外封海报</text>
+
+    <rect x="182" y="0" width="216" height="40" rx="10" fill="#dbeafe" stroke="#111827" stroke-width="2.5"/>
+    <text x="290" y="25" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#1d4ed8">点进看 GitGlow 3D 内封 →</text>
+  </g>
+
+  
+      <g transform="translate(568, 92)">
+        <rect x="8" y="8" width="332" height="416" rx="18" fill="#111827"/>
+        <rect x="0" y="0" width="332" height="416" rx="18" fill="#fcfefd" stroke="#111827" stroke-width="3.5"/>
+        <rect x="0" y="0" width="332" height="42" rx="18" fill="#dbeafe" stroke="#111827" stroke-width="3.5"/>
+        <circle cx="24" cy="21" r="6" fill="#ef4444"/><circle cx="44" cy="21" r="6" fill="#f59e0b"/><circle cx="64" cy="21" r="6" fill="#10b981"/>
+        <text x="308" y="26" text-anchor="end" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#111827">WEBGL · 3D</text>
+        <circle cx="166" cy="205" r="96" fill="#dbeafe" stroke="#111827" stroke-width="3" stroke-dasharray="8 6"/>
+        <ellipse cx="166" cy="205" rx="118" ry="42" fill="none" stroke="#1d4ed8" stroke-width="3.5" transform="rotate(-18 166 205)"/>
+        <polygon points="166,118 236,162 236,248 166,292 96,248 96,162" fill="#1d4ed8" fill-opacity="0.18" stroke="#111827" stroke-width="3.5"/>
+        <polyline points="96,162 166,205 236,162" fill="none" stroke="#111827" stroke-width="3"/>
+        <line x1="166" y1="205" x2="166" y2="292" stroke="#111827" stroke-width="3"/>
+        <circle cx="256" cy="148" r="16" fill="#1d4ed8" stroke="#111827" stroke-width="3"/>
+        <rect x="28" y="338" width="276" height="48" rx="10" fill="#111827"/>
+        <text x="166" y="368" text-anchor="middle" font-family="ui-monospace,monospace" font-size="16" font-weight="800" fill="#ffffff">INTERACTIVE 3D STAGE</text>
+      </g>
+</svg>

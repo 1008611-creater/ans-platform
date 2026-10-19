@@ -9,10 +9,28 @@ export async function companionAgentResponse(request: Request) {
     const session = await auth();
     if (!session?.user?.id) throw new AgentError("UNAUTHORIZED", 401);
     const actor = session.user.id;
-    assertRequestActor(request, actor);
-    const parsed = agentRequestSchema.safeParse(await readSameOriginJson(request));
-    if (!parsed.success) throw new AgentError("INVALID_INPUT", 400);
+    const rawBody = await readSameOriginJson(request);
+    const parsed = agentRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      if (request.headers.get("x-ans-actor")) assertRequestActor(request, actor);
+      throw new AgentError("INVALID_INPUT", 400);
+    }
     const body = parsed.data;
+    if (body.action === "pi_action") {
+      if (request.headers.get("x-ans-actor")) assertRequestActor(request, actor);
+      const { executePiAgentAction } = await import("./pi-agent");
+      return Response.json(
+        await executePiAgentAction(actor, {
+          intent: body.intent,
+          prompt: body.prompt,
+          model: body.model,
+          mode: body.mode,
+          contextCode: body.contextCode,
+        }),
+        { headers },
+      );
+    }
+    assertRequestActor(request, actor);
     if (body.action === "quote") return Response.json(await prepareAgentQuote(actor, body.input), { headers });
     if (body.action === "status") return Response.json(await readAgentStatus(actor, body.ticket), { headers });
     const encoder = new TextEncoder();

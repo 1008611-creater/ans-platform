@@ -876,7 +876,7 @@ export async function listWorkflowRuns(userId: string, take = 50) {
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: Math.min(Math.max(take, 1), 100),
-    include: { workflow: { select: { slug: true, title: true } } },
+    include: { workflow: { select: { slug: true, title: true, authorId: true } } },
   });
   if (runs.length === 0) return runs.map((run) => ({ ...run, audit: null }));
   const audits = await db.auditLog.findMany({

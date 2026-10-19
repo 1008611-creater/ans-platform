@@ -14,10 +14,11 @@ export async function generateMetadata() {
   return { title: t("title"), description: t("body") };
 }
 export default async function EaselPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login?callbackUrl=/workflows/easel");
+  const enabled = process.env.ANS_EASEL_ENABLED === "1";
+  const session = enabled ? await auth() : null;
+  if (enabled && !session?.user?.id) redirect("/login?callbackUrl=/workflows/easel");
   const t = await getTranslations("easel");
-  const config = getEaselEmbedConfig(session.user.id);
+  const config = enabled && session?.user?.id ? getEaselEmbedConfig(session.user.id) : null;
   return <div className="ans-product-container py-6 sm:py-10">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div><Link className="ans-text-link mb-3 w-fit" href="/workspace"><ArrowLeft className="size-4" aria-hidden="true" />{t("back")}</Link>
@@ -26,7 +27,7 @@ export default async function EaselPage() {
       </div>
       <a className="ans-text-link text-sm" href="https://github.com/ZJU-REAL/Easel" target="_blank" rel="noopener noreferrer">{t("source")}<ExternalLink className="size-4" aria-hidden="true" /></a>
     </div>
-    {config ? <><details className="mb-5 rounded-xl border bg-muted/20 p-4"><summary className="cursor-pointer text-sm font-medium">{t("setupTitle")}</summary><p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">{t("setupBody")}</p></details><EaselWorkspace {...config} userId={session.user.id} /></> : <Card>
+    {config && session?.user?.id ? <><details className="mb-5 rounded-xl border bg-muted/20 p-4"><summary className="cursor-pointer text-sm font-medium">{t("setupTitle")}</summary><p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">{t("setupBody")}</p></details><EaselWorkspace {...config} userId={session.user.id} /></> : <Card>
       <CardHeader><CardTitle>{t("pendingTitle")}</CardTitle></CardHeader>
       <CardContent><p className="max-w-3xl text-sm leading-7 text-muted-foreground">{t("pendingBody")}</p>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{["discover", "plan", "create", "publish", "review"].map(step => <div key={step} className="rounded-xl border p-4"><h2 className="text-sm font-semibold">{t(`steps.${step}.title`)}</h2><p className="mt-2 text-xs leading-6 text-muted-foreground">{t(`steps.${step}.body`)}</p></div>)}</div>

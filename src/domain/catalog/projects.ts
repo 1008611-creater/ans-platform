@@ -15,7 +15,27 @@ type CatalogProjectBase = {
   preview: "document" | "code" | "plan" | "character" | "site" | "video" | "agent";
 };
 
-export type CatalogProject = CatalogProjectBase & { source: CatalogEntry["source"]; sourceUrl?: string; licenseUrl?: string; workflowId?: CatalogWorkflowId; workflowSlugs?: string[]; marketSlugs?: string[]; content?: CatalogEntry["content"]; discoveryUrl?: string; coverUrl?: string; coverNote?: string; memberHref?: string; creator?: string };
+export type CatalogProject = CatalogProjectBase & { source: CatalogEntry["source"]; sourceUrl?: string; licenseUrl?: string; workflowId?: CatalogWorkflowId; workflowSlugs?: string[]; marketSlugs?: string[]; content?: CatalogEntry["content"]; discoveryUrl?: string; coverUrl?: string; outerCoverUrl?: string; innerCoverUrl?: string; coverNote?: string; memberHref?: string; creator?: string };
+
+/**
+ * Dual-Cover Resolver:
+ * - Defaults both outerCoverUrl and innerCoverUrl to GitGlow (/catalog/gitglow-v1/<slug>.(webp|svg)) unless an approved cover is explicitly provided.
+ */
+export function resolveProjectCovers(project: {
+  slug: string;
+  coverUrl?: string;
+  outerCoverUrl?: string;
+  innerCoverUrl?: string;
+}): { outerCoverUrl?: string; innerCoverUrl?: string } {
+  if (!project.coverUrl && !project.outerCoverUrl && !project.innerCoverUrl) {
+    return { outerCoverUrl: undefined, innerCoverUrl: undefined };
+  }
+  const gitglowCover = project.coverUrl ?? `/catalog/gitglow-v1/${project.slug}.svg`;
+  return {
+    outerCoverUrl: project.outerCoverUrl ?? gitglowCover,
+    innerCoverUrl: project.innerCoverUrl ?? gitglowCover,
+  };
+}
 
 export const WORKFLOW_RECIPES: readonly CatalogProject[] = [
   { slug: "resume-website", category: "career", subcategory: "portfolio", goal: "portfolio", workflowId: "resume-website", source: "official", preview: "site" },

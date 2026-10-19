@@ -9,7 +9,7 @@ vi.mock("next-intl/server", () => ({
 it("keeps all nine destinations with separate, initially hidden explanations", async () => {
   render(await CreationTools());
   expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual([
-    "/workflows/mine", "/workflows/toonflow", "/workflows/easel", "/explore/submit",
+    "/workflows/mine", "https://hb.cauai.fun/", "/workflows/easel", "/explore/submit",
     "/market/creator", "/projects", "/teams", "/market", "/market/orders",
   ]);
   const buttons = screen.getAllByRole("button");

@@ -6,7 +6,7 @@ afterEach(cleanup);
 it("uses the exact reviewed market listing instead of a retired workflow destination", async () => {
   render(await WorkflowShowcase({ title: "Real workflow", summary: "Real description", href: "/workflows/retired", marketPath: "/market/exact-reviewed-version", version: 3 }));
   const links = screen.getAllByRole("link");
-  expect(links).toHaveLength(2);
+  expect(links).toHaveLength(1);
   for (const link of links) expect(link).toHaveAttribute("href", "/market/exact-reviewed-version");
   expect(screen.getByText("viewMarket")).toBeInTheDocument();
 });

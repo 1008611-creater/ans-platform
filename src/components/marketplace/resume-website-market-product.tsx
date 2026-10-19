@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { ArrowLeft, ArrowUpRight, ChevronRight, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { marketWorkflowDetails } from "@/server/marketplace/workflows";
 import { generationConfig } from "@/server/visual-portfolio/jobs";
 import { publicationConfig } from "@/server/visual-portfolio/publication";
@@ -10,6 +10,7 @@ import { VisualWebsiteExperience } from "@/components/projects/visual-website-ex
 import { MarketAccountBoundary } from "@/components/marketplace/account-boundary";
 import { MarketStar } from "@/components/marketplace/market-star";
 import { MarketProductConnections } from "@/components/marketplace/market-product-connections";
+import { getMarketSamplePreview } from "@/domain/marketplace/presentation";
 import { Button } from "@/components/ui/button";
 import type { MarketOfferView } from "@/contracts/marketplace-view";
 import styles from "./market-detail.module.css";
@@ -20,12 +21,15 @@ type SessionLike = { user?: { id?: string | null } | null } | null;
 
 /** A truthful marketplace contract surrounds the full-width specialist studio. */
 export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: { offer: MarketOfferView; session: SessionLike; runnable: WorkflowDetails }) {
-  const [t, tp, p, td, ts] = await Promise.all([
+  const [t, tp, p, td, ts, locale] = await Promise.all([
     getTranslations("product.market"), getTranslations("product.marketProject"),
     getTranslations("product"), getTranslations("product.marketDetail"),
     getTranslations("product.marketStudio"),
+    getLocale(),
   ]);
+  const isEn = locale.toLowerCase().startsWith("en");
   const listing = offer.listing;
+  const sample = getMarketSamplePreview(listing);
   const readyDetails = runnable?.available && runnable.recipe === "resume-website-v1" ? runnable : null;
   const sellerName = offer.seller.nickname || offer.seller.username;
   const publicationAvailable = publicationConfig().available;
@@ -41,16 +45,18 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
       <ChevronRight aria-hidden="true" className="h-3 w-3" /><span>{ts("title")}</span>
     </nav>
     <header className={styles.studioOverview}>
-      <div>
-        <div className={styles.workflowMeta}><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span></div>
+      <div className="min-w-0">
+        <div className={styles.workflowMeta}><span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">{isEn ? "⚡ Official Interactive Studio" : "⚡ 官方在线工作台"}</span><span className={styles.workflowBadge}>{td("workflowProduct")}</span><span>{t("version", { version: offer.version })}</span><span>{offer.official ? p("official") : sellerName}</span></div>
         <h1>{ts("title")}</h1><p className={styles.studioLead}>{ts("summary")}</p>
         <div className={styles.studioActions}>
           <Button asChild><a href="#market-run">{ts("tryEditor")}<ArrowUpRight aria-hidden="true" /></a></Button>
+          <a href="#market-deliverables" className="text-sm font-medium text-emerald-600 underline underline-offset-4 dark:text-emerald-400">{isEn ? "📦 View Deliverable Sample" : "📦 查看交付物 Sample 样本"}</a>
           <a href="#market-terms" className="text-sm underline underline-offset-4">{td("termsTitle")}</a>
         </div>
       </div>
       <aside className={styles.studioContract} aria-label={td("decisionTitle")}>
-        <strong>{ts("freeEditing")}</strong><p>{ts("costNote")}</p>
+        <strong>{ts("freeEditing")}</strong>
+        <p>{ts("costNote")}</p>
         <dl><div><dt>{ts("aiCopy")}</dt><dd>{ts(readyDetails ? "copyReady" : "copyUnavailable")}</dd></div><div><dt>{ts("sharing")}</dt><dd>{ts(publicationAvailable ? "sharingReady" : "sharingUnavailable")}</dd></div></dl>
         <div className={styles.studioPublisher}>
           <Link href={"/@" + offer.seller.username} className="flex min-w-0 items-center gap-2">
@@ -66,12 +72,19 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
       {session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}>{editor}</MarketAccountBoundary> : editor}
     </section>
     <div className={styles.studioDetails}>
-      <div>
+      <div className="min-w-0">
         <section id="market-deliverables" className={styles.section}>
           <h2>{td("deliverablesTitle")}</h2>
           <ul className={styles.deliverables}>{["deliverableWebsite", "deliverableDraft", "deliverableAccount"].map((key, index) => <li key={key}><span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><span>{ts(key)}</span></li>)}</ul>
+          <details className="mt-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
+            <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-emerald-700 dark:text-emerald-300">{isEn ? "📦 Deliverable Sample Preview" : "📦 查看交付物 Sample 样本预览"} · {sample.badge}</span>
+              <span className="font-mono text-muted-foreground">{sample.file} ▾</span>
+            </summary>
+            <pre className="mt-2.5 max-w-full overflow-x-auto rounded-lg bg-slate-950 p-3 font-mono text-xs leading-5 text-emerald-300">{sample.snippet}</pre>
+          </details>
         </section>
-        <details id="market-details" className={styles.section} open>
+        <details id="market-details" className={styles.section}>
           <summary className="cursor-pointer py-2 text-sm font-semibold">{ts("howTitle")}</summary>
           <ol className={styles.studioSteps}>{["avatar", "prepare", "compose", "deliver"].map((key, index) => <li key={key}><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{ts(key + "Title")}</h3><p>{ts(key + "Body")}</p></div></li>)}</ol>
         </details>
