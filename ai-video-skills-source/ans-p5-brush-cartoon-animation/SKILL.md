@@ -102,8 +102,7 @@ node render.mjs --out=out/ans_day01_720p.mp4
 | :--- | :--- |
 | 跨电脑复利总仓（工程 + 素材 + 本 Skill） | https://github.com/1008611-creater/ans-brand-film-studio （分支 `main`）<br>· 工程 `ClaudeAnimationBase/`<br>· 本 Skill `.agents/skills/ans-p5-brush-cartoon-animation/` |
 | 交接图文源稿 + 飞书一键导入包 | 仓库根 `ANS-Day01-P5Brush-Skill-Workflow-Handoff.md` 与 `ANS-Day01-P5Brush-Skill-Workflow-Handoff.feishu-import.docx` |
-| 飞书在线云文档 V2（当前版，含内嵌高清设定图与 5 幕关键帧） | https://narcb9vct6.feishu.cn/wiki/EaHAwTrKQiwR4akgb9OcTZi3nAh |
-| 飞书在线云文档 V1（初版，保留可查） | https://narcb9vct6.feishu.cn/wiki/EcBsw9QWzigqIVkBQnKcf8sQnvb |
+| 飞书在线云文档（唯一权威版，含内嵌高清设定图与 5 幕关键帧） | https://narcb9vct6.feishu.cn/wiki/EaHAwTrKQiwR4akgb9OcTZi3nAh |
 | ANS 主站仓库 Skill 备份 | https://github.com/1008611-creater/ans-platform 分支 `feat/dev3-ans-skill-refactor`，路径 `ai-video-skills-source/ans-p5-brush-cartoon-animation/` |
 | 本机全局 Skill（Gemini / Codex 双端） | `~/.gemini/config/skills/ans-p5-brush-cartoon-animation/`、`~/.codex/skills/ans-p5-brush-cartoon-animation/` |
 | 跨电脑便携包（离线可用） | `ans-p5-brush-cartoon-v46-portable-kit.zip`（工程 + 素材 + Skill + 交接文档，约 30 MB） |
