@@ -1,4 +1,7 @@
-import { RUN_MODEL_METERING, type RunModelKey } from "@/lib/run-models";
+import { createHash, randomUUID } from "node:crypto";
+import { db } from "@/lib/db";
+import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
+import { RUN_MODEL_METERING, RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
 
 export interface UpstreamUsagePayload {
   prompt_tokens?: number;
@@ -27,6 +30,7 @@ export interface OfficialTokenPointsBreakdown {
   cachedReadTokens: number;
   cacheWriteTokens: number;
   outputTokens: number;
+  totalTokens: number;
   consumptionMultiplier: number;
   usdCost: number;
   billedPoints: number;
@@ -64,9 +68,40 @@ const OFFICIAL_MODEL_TARIFFS: Record<RunModelKey, OfficialModelTariff> = {
   },
 };
 
+const MODEL_ALIASES: Record<string, RunModelKey> = {
+  "deepseek-v4.1-flash": "deepseek-v4.1-flash",
+  "deepseek-chat": "deepseek-v4.1-flash",
+  "deepseek-reasoner": "deepseek-v4.1-flash",
+  "gpt-6.1-sol": "gpt-6.1-sol",
+  "gpt-4o": "gpt-6.1-sol",
+  "gpt-4o-mini": "gpt-6.1-sol",
+  "gpt-4.1": "gpt-6.1-sol",
+  "gpt-6-astra": "gpt-6-astra",
+};
+
 const USD_TO_CNY_RATE = 7.2;
 const POINTS_PER_CNY = 10;
 const POINTS_PER_USD = USD_TO_CNY_RATE * POINTS_PER_CNY; // 72 points / USD
+
+const CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Idempotency-Key",
+  "Cache-Control": "no-store",
+};
+
+export function handleGatewayOptions(): Response {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
+export function resolveGatewayModel(model: string): RunModelKey | null {
+  const normalized = String(model || "").trim().toLowerCase();
+  if (normalized in MODEL_ALIASES) {
+    return MODEL_ALIASES[normalized];
+  }
+  const direct = RUN_MODEL_OPTIONS.find(item => item.key === normalized);
+  return direct ? direct.key : null;
+}
 
 function resolveTariff(modelKey: string): OfficialModelTariff {
   if (modelKey in OFFICIAL_MODEL_TARIFFS) {
@@ -147,6 +182,7 @@ export function calculateOfficialTokenPoints(
       ? Math.floor(Number(usage.prompt_cache_miss_tokens) || 0)
       : inputTokens - cachedReadTokens,
   );
+  const totalTokens = inputTokens + outputTokens;
 
   const baseUsdCost =
     (uncachedInputTokens * tariff.inputUsdPerMillion +
@@ -158,7 +194,7 @@ export function calculateOfficialTokenPoints(
   const effectiveUsdCost = roundMicro(baseUsdCost * tariff.consumptionMultiplier);
   const billedPoints = Math.max(
     0.000001,
-    roundMicro(baseUsdCost * POINTS_PER_USD * tariff.consumptionMultiplier),
+    Math.ceil(baseUsdCost * POINTS_PER_USD * tariff.consumptionMultiplier * 1_000_000) / 1_000_000,
   );
 
   return {
@@ -168,8 +204,202 @@ export function calculateOfficialTokenPoints(
     cachedReadTokens,
     cacheWriteTokens,
     outputTokens,
+    totalTokens,
     consumptionMultiplier: tariff.consumptionMultiplier,
     usdCost: effectiveUsdCost,
     billedPoints,
   };
+}
+
+function gatewayFailure(code: string, status: number, message = code): Response {
+  return Response.json(
+    { error: { message, type: "ans_gateway_error", code } },
+    { status, headers: CORS_HEADERS },
+  );
+}
+
+async function authenticateGatewayUser(request: Request) {
+  if (process.env.ANS_CODEX_GATEWAY_ENABLED !== "1") return null;
+  const key = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim() || "";
+  if (!isValidApiKeyFormat(key)) return null;
+  return db.user.findFirst({
+    where: { apiKey: hashApiKey(key), flagged: false, deletedAt: null },
+    select: { id: true, quotaPoints: true },
+  });
+}
+
+export async function v1Models(request: Request): Promise<Response> {
+  const user = await authenticateGatewayUser(request);
+  if (!user) return gatewayFailure("INVALID_API_KEY", 401);
+  return Response.json(
+    {
+      object: "list",
+      data: RUN_MODEL_OPTIONS.map(m => ({
+        id: m.key,
+        object: "model",
+        owned_by: "ANS",
+      })),
+    },
+    { status: 200, headers: CORS_HEADERS },
+  );
+}
+
+export async function chatCompletionsGateway(request: Request): Promise<Response> {
+  const user = await authenticateGatewayUser(request);
+  if (!user) return gatewayFailure("INVALID_API_KEY", 401);
+
+  let rawBody: Record<string, unknown>;
+  try {
+    const parsed = await request.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return gatewayFailure("INVALID_REQUEST", 400);
+    }
+    rawBody = parsed as Record<string, unknown>;
+  } catch {
+    return gatewayFailure("INVALID_JSON", 400);
+  }
+
+  const resolvedModel = resolveGatewayModel(String(rawBody.model ?? ""));
+  if (!resolvedModel) {
+    return gatewayFailure("MODEL_UNAVAILABLE", 400);
+  }
+
+  const messagesText = JSON.stringify(rawBody.messages ?? []);
+  const minPreCallPoints = estimateMinPreCallPoints(resolvedModel, messagesText);
+  const currentBalance = Number(user.quotaPoints ?? 0);
+  if (currentBalance <= 0 || currentBalance < minPreCallPoints) {
+    return gatewayFailure(
+      "INSUFFICIENT_QUOTA",
+      402,
+      `Insufficient ANS points balance (${currentBalance} pts).`,
+    );
+  }
+
+  const baseUrl = (process.env.RUN_BASE_URL || "https://apic.cauai.fun/v1").replace(/\/$/, "");
+  const apiKey = process.env.RUN_API_KEY || "";
+  if (!apiKey) {
+    return gatewayFailure("UPSTREAM_NOT_CONFIGURED", 503);
+  }
+
+  const upstreamPayload = JSON.stringify({
+    ...rawBody,
+    model: resolvedModel,
+    stream: false,
+  });
+
+  let upstreamRes: Response;
+  try {
+    upstreamRes = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: upstreamPayload,
+    });
+  } catch {
+    return gatewayFailure("UPSTREAM_UNREACHABLE", 502);
+  }
+
+  if (!upstreamRes.ok) {
+    return gatewayFailure("UPSTREAM_ERROR", upstreamRes.status);
+  }
+
+  const data = (await upstreamRes.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+    usage?: UpstreamUsagePayload;
+    [key: string]: unknown;
+  };
+  const replyText = data?.choices?.[0]?.message?.content ?? "";
+  const billing = calculateOfficialTokenPoints(
+    resolvedModel,
+    data?.usage,
+    messagesText,
+    replyText,
+  );
+  const upstreamRequestId =
+    upstreamRes.headers.get("x-oneapi-request-id") ||
+    upstreamRes.headers.get("x-request-id") ||
+    randomUUID();
+  const requestId = randomUUID();
+  const payloadHash = createHash("sha256").update(upstreamPayload).digest("hex");
+
+  await db.$transaction(async tx => {
+    const freshUser = await tx.user.findUnique({
+      where: { id: user.id },
+      select: { quotaPoints: true },
+    });
+    const updated = await tx.user.update({
+      where: { id: user.id },
+      data: { quotaPoints: { decrement: billing.billedPoints } },
+      select: { quotaPoints: true },
+    });
+    const nextBalance = Number(
+      updated?.quotaPoints ?? Math.max(0, Number(freshUser?.quotaPoints ?? currentBalance) - billing.billedPoints),
+    );
+    await tx.quotaLedger.create({
+      data: {
+        userId: user.id,
+        amount: -billing.billedPoints,
+        balanceAfter: nextBalance,
+        reason: "RUN_COST",
+        refType: "api_compute_request",
+        refId: requestId,
+        note: `Gateway /v1/chat/completions (${resolvedModel})`,
+      },
+    });
+    await tx.apiComputeRequest.create({
+      data: {
+        id: requestId,
+        userId: user.id,
+        provider: "apic-codex",
+        modelId: resolvedModel,
+        idempotencyKey: `chatcmpl:${requestId}`,
+        requestHash: payloadHash,
+        policyVersion: "official-token-v1",
+        maxUnits: Math.max(1, billing.totalTokens),
+        authorizedPoints: billing.billedPoints,
+        settledPoints: billing.billedPoints,
+        state: "SETTLED",
+        outcome: upstreamRequestId,
+        price: {
+          protocol: "openai-chat-completions",
+          model: resolvedModel,
+          uncachedInputTokens: billing.uncachedInputTokens,
+          cachedReadTokens: billing.cachedReadTokens,
+          cacheWriteTokens: billing.cacheWriteTokens,
+          outputTokens: billing.outputTokens,
+          consumptionMultiplier: billing.consumptionMultiplier,
+          usdCost: billing.usdCost,
+          billedPoints: billing.billedPoints,
+        },
+        finishedAt: new Date(),
+      },
+    });
+  });
+
+  return Response.json(
+    {
+      ...data,
+      ans_billing: {
+        model: resolvedModel,
+        charged_points: billing.billedPoints,
+        uncached_input_tokens: billing.uncachedInputTokens,
+        cached_read_tokens: billing.cachedReadTokens,
+        cache_write_tokens: billing.cacheWriteTokens,
+        output_tokens: billing.outputTokens,
+        total_tokens: billing.totalTokens,
+        multiplier: billing.consumptionMultiplier,
+        official_usd_cost: billing.usdCost,
+      },
+    },
+    {
+      status: 200,
+      headers: {
+        ...CORS_HEADERS,
+        "x-ans-model": resolvedModel,
+        "x-ans-charged-points": String(billing.billedPoints),
+      },
+    },
+  );
 }
