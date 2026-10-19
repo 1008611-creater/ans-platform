@@ -314,8 +314,8 @@
           "file": "src/components/mascot/companion-sanctuary-bar.tsx",
           "type": "countMax",
           "value": "isZh ?",
-          "max": 30,
-          "note": "只允许保留数据字段选择（titleZh/En 之类）；文案三元一旦回涨就是回退"
+          "max": 32,
+          "note": "棘轮：只能降不能增。2026-10-20 实测 32 处，全部是数据字段选择（quest.titleZh/En、food.nameZh/En、replyZh/En、link.titleEn、traceEn 兜底），文案三元为 0；新增数据选择优先用 helper 收敛，确需增加必须同步上限并在此说明"
         },
         {
           "ref": "origin/main",
