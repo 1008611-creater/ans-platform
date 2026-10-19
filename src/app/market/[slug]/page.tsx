@@ -181,7 +181,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
         )}
         <dl className={styles.facts}>
           <div><dt>{td("deliverablesCount")}</dt><dd>{td("itemsCount", { count: listing.deliverables.length })}</dd></div>
-          <div><dt>交付状态</dt><dd>{runnable ? "在线工作台实时生成" : purchasable ? (isFree ? "公开赛题样板" : "✅ 已验真 · 支付即秒发") : "🔒 内测封装中（仅开放预览）"}</dd></div>
         </dl>
         <div className="space-y-3">
           {runnable && runnable.available ? (
@@ -194,7 +193,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
             <Button disabled variant="outline" className="h-auto min-h-11 w-full whitespace-normal py-3 text-center">🔒 交付包内测中 · 暂未开放购买</Button>
           )}
           {session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketStar listingId={offer.id} initialCount={offer.starCount ?? 0} initialStarred={offer.starred ?? false} /></MarketAccountBoundary> : <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}><Star aria-hidden="true" />{tp("loginToStar", { count: offer.starCount ?? 0 })}</Link></Button>}
-          {!runnable && purchasable && listing.usageUrl && !listing.usageUrl.includes("/workspace/models") && <ProjectUsageEntry usageUrl={listing.usageUrl} />}
+          {!runnable && purchasable && !(isFree && freeUrl === listing.usageUrl) && listing.usageUrl && !listing.usageUrl.includes("/workspace/models") && <ProjectUsageEntry usageUrl={listing.usageUrl} />}
           {!runnable && isOwner && <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={`/market/creator/${offer.id}/integration`}>{tp("integrationAction")}</Link></Button>}
         </div>
         <Link href={"/@" + offer.seller.username} className={styles.seller}>

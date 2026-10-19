@@ -1509,13 +1509,13 @@ function x(e) {
       line1: "同时检查用户任务、数据状态、界面结构和代码归属。",
       line2: "新实现接管以后，删除旧状态、旧样式和兼容分支。",
       pills: ["任务与信息", "状态与数据", "组件与代码"],
-      action: "在 ANS 矩阵中查看"
+      action: "在 ANS Skill 库查看"
     } : {
       subtitle: "Product interface and code simplification rules for frontend agents",
       line1: "Checks user tasks, data state, interface structure, and code ownership together.",
       line2: "Removes stale state, styles, and compatibility branches after replacement.",
       pills: ["Tasks & info", "State & data", "Components & code"],
-      action: "View in ANS Matrix"
+      action: "View in ANS Skill Directory"
     };
   return (0, n.jsxs)("svg", {
     "aria-hidden": "true",
@@ -1712,7 +1712,7 @@ function q(e) {
       locale: a
     } = e,
     i = "zh" === t || "en" === t ? "ans-tone-guard" : "ans-code-simplify",
-    r = "zh" === a ? "在 ANS Skill 矩阵查看 ".concat(i) : "View ".concat(i, " in ANS Skill Matrix");
+    r = "zh" === a ? "在 ANS Skill 库查看 ".concat(i) : "View ".concat(i, " in ANS Skill Directory");
   return (0, n.jsxs)("section", {
     className: "aif-detail-skill-recommendation",
     "aria-labelledby": "aif-recommended-skill-title",

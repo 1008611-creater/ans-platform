@@ -22,7 +22,7 @@ export default async function SubmitProjectPage({ searchParams }: { searchParams
           项目上墙与投稿工坊 · 免登录一键模板体验
         </Badge>
         <p className="text-sm text-muted-foreground">
-          可直接在下方点击「一键填入示例模板」预览标准投稿结构；登录后即可正式发布至项目广场或农客松作品墙并获取 +50 XP 激励。
+          支持免登录预览标准投稿结构；登录后即可发布至项目广场或农客松作品墙并获取 +50 XP 激励。
         </p>
       </div>
       <Button asChild size="sm" className="shrink-0 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500">

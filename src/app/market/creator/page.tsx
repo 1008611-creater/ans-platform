@@ -24,10 +24,10 @@ export default async function CreatorPage() {
         >
           <div className="space-y-1">
             <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">
-              创作者分成中心 · 80% 算力积分实时分润（1 积分 = ¥0.10）
+              创作者分成中心 · 80% 算力积分实时分润
             </Badge>
             <p className="text-sm text-muted-foreground">
-              将您的 AI 工作流、农情模型、3D 简历模板或 ComfyUI 节点封装上架，每次被高校同学调用或复刻即自动结算 80% 算力积分收益。
+              将 AI 工作流、农情模型、3D 简历模板或 ComfyUI 节点封装上架，每次调用即自动结算分成。
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
@@ -55,10 +55,11 @@ export default async function CreatorPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="ans-empty">
-              <h2 className="text-xl font-semibold">{t("noOwnOffers")}</h2>
-              <p className="mt-3 text-sm text-muted-foreground">{t("creatorBody")}</p>
-            </div>
+            {userId && (
+              <div className="ans-empty">
+                <h2 className="text-xl font-semibold">{t("noOwnOffers")}</h2>
+              </div>
+            )}
             <div className="grid gap-4 md:grid-cols-3">
               {[
                 {

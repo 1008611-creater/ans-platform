@@ -96,8 +96,8 @@ export default async function ComputeHistoryPage({ searchParams }: {
         <div className="ans-product-container pb-12">
           <details className="group rounded-xl border bg-card p-5">
             <summary className="cursor-pointer list-none font-semibold flex items-center justify-between">
-              <span>📖 算力预授权与实耗退差账单参考范例（点击展开 3 条样例）</span>
-              <span className="text-xs font-normal text-muted-foreground group-open:hidden">展开查看 →</span>
+              <span>📖 算力预授权与实耗退差账单范例（3 条）</span>
+              <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
             </summary>
             <div className="mt-4 grid gap-4 md:grid-cols-3">
               {SAMPLE_COMPUTE_TASKS.map((sample) => (

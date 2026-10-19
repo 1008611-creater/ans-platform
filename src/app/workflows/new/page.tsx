@@ -50,8 +50,8 @@ export default async function NewWorkflowPage({ searchParams }: { searchParams: 
     {!session?.user?.id && (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm" data-testid="workflow-new-guest-banner">
         <p className="text-muted-foreground">
-          <strong className="font-semibold text-foreground">可视化工作流编排画布（免登录体验模式）：</strong>
-          你可以直接在下方编排模型节点、输入变量与输出阶段；登录账号后即可保存草稿并发布到市场获得 80% 算力分成。
+          <strong className="font-semibold text-foreground">工作流编排画布（免登录体验）：</strong>
+          登录账号后可保存工作流草稿并提交上架（享 80% 算力积分分成）。
         </p>
         <Button asChild size="sm">
           <Link href={`/login?callbackUrl=${encodeURIComponent(callback)}`}>{t("login")}</Link>

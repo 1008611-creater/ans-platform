@@ -148,10 +148,10 @@ export const ANS_LEARNING_PATHS: readonly AnsLearningPath[] = [
     number: "03",
     title: { zh: "像做产品一样设计、分片与盲测 Agent Skill", en: "Design, Chunk, and Blind-Test Agent Skills Like a Product" },
     summary: {
-      zh: "把高频重复任务沉淀为带 SKILL.md 入口、静默后置配置引导、确定性脚本、单页分片产物与双盲子 Agent 评测的工程资产。",
+      zh: "把高频重复任务整理为带 SKILL.md 入口、静默后置配置引导、确定性脚本、单页分片产物与双盲子 Agent 评测的工程资产。",
       en: "Turn recurring workflows into durable engineering assets with SKILL.md, silent post-check onboarding, deterministic scripts, per-page chunking, and blind A/B evaluation.",
     },
-    audience: { zh: "适合经常重复教 AI 同一套步骤、希望让轻量模型也能稳定跑通长链路任务的开发者与内容创作者。", en: "For developers and creators who want repeatable agent workflows that run reliably even on lightweight models." },
+    audience: { zh: "适合经常重复教 AI 同一套步骤、希望让轻量模型也能稳定跑通多步长任务的开发者与内容创作者。", en: "For developers and creators who want repeatable agent workflows that run reliably even on lightweight models." },
     outcome: { zh: "得到一个目录边界清晰、带本地 HTML 可视化确认页且通过双盲对比测试的项目级 Skill 文件夹。", en: "A project-scoped Skill folder with clear script boundaries, an HTML review preview, and verified blind A/B test results." },
     steps: [
       {
@@ -220,7 +220,7 @@ export const ANS_LEARNING_PATHS: readonly AnsLearningPath[] = [
       zh: "用 1–2 小时下班时间跑通“真实痛点选题 → 口述大纲录屏 → VAD+ASR 去口误粗剪 → 画面 OCR 字幕校对 → 横竖双封面 → 多平台草稿箱”全流程。",
       en: "Complete a full content loop in 1–2 hours: pain-point outline, single-take screen recording, VAD+ASR retake rough-cut, screen-OCR caption correction, 16:9/3:4 covers, and draft uploads.",
     },
-    audience: { zh: "适合希望通过真实作品复盘、技术分享沉淀长期影响力，但不想把时间耗在机械剪辑和重复排版上的开发者与学生。", en: "For builders and students sharing real work in public who want to automate mechanical editing and formatting." },
+    audience: { zh: "适合希望通过真实作品复盘、技术分享积累长期影响力，但不想把时间耗在机械剪辑和重复排版上的开发者与学生。", en: "For builders and students sharing real work in public who want to automate mechanical editing and formatting." },
     outcome: { zh: "产出节奏紧凑的粗剪视频、专有名词零错字的字幕稿、16:9 与 3:4 双画幅封面以及待人工确认的多平台草稿。", en: "A tight rough-cut video, term-verified subtitles, 16:9 and 3:4 covers, and validated platform drafts awaiting human publish approval." },
     steps: [
       {
@@ -270,7 +270,7 @@ export const ANS_LEARNING_PATHS: readonly AnsLearningPath[] = [
           zh: "由脚本根据字幕稿生成带时间戳的章节简介与平台标签，自动上传视频与对应比例封面到各平台后台草稿箱并执行后置校验，把最终点击发布的权限留给人。发布后将播放与互动数据拉回项目目录，让 AI 直接读字幕稿复盘哪一段节奏拖沓。",
           en: "Generate timestamped chapters and platform tags from the transcript, upload assets into platform drafts with post-check validation, and leave the final Publish click to a human. Later, feed analytics and the text transcript back to the Agent to diagnose pacing.",
         },
-        evidence: { zh: "各平台草稿箱字段齐全且未误触发直接发布；项目目录内沉淀了可追溯的字幕稿与数据复盘记录。", en: "Platform drafts are populated and verified without auto-publishing, and transcripts plus metrics are archived in the project." },
+        evidence: { zh: "各平台草稿箱字段齐全且未误触发直接发布；项目目录内留存了可追溯的字幕稿与数据复盘记录。", en: "Platform drafts are populated and verified without auto-publishing, and transcripts plus metrics are archived in the project." },
         links: [
           { href: "/vibe-hub/human-in-the-loop", label: { zh: "Human-in-the-Loop 人工发布把关", en: "Human-in-the-Loop" } },
           { href: "/vibe-hub/permission-mode", label: { zh: "Permission Mode 权限边界", en: "Permission Mode" } },
@@ -407,7 +407,7 @@ export const ANS_LEARNING_PATHS: readonly AnsLearningPath[] = [
         evidence: { zh: "作品说明里能诚实标注工具、人工修改部分和素材来源。", en: "The submission note honestly states the tools used, human edits, and asset sources." },
         links: [
           { href: "/vibe-hub/human-in-the-loop", label: { zh: "Human-in-the-Loop 人工把关", en: "Human-in-the-Loop" } },
-          { href: "/submit", label: { zh: "提交作品", en: "Submit work" } },
+          { href: "/explore/submit", label: { zh: "提交作品", en: "Submit work" } },
         ],
       },
     ],

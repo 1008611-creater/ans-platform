@@ -54,7 +54,6 @@ export default async function CompetitionDetailPage({ params }: { params: Promis
           <h1 className="break-words text-3xl font-bold tracking-tight sm:text-5xl">{competition.title}</h1>
           <p className="max-w-3xl break-words leading-7 text-muted-foreground">{competition.description || "和队友完成创作，提交指定版本接受评审。通过后，作品会展示在 ANS 作品广场。"}</p>
           <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4"><span className="rounded-full border bg-background/70 px-3 py-1.5">主办方：{competition.organizer || "ANS"}</span><span className="rounded-full border bg-background/70 px-3 py-1.5">奖励：{competition.rewardXp} XP</span><span className="rounded-full border bg-background/70 px-3 py-1.5">参赛队伍：{competition.participantTeams}{competition.maxTeams ? ` / ${competition.maxTeams}` : ""}</span><span className="rounded-full border bg-background/70 px-3 py-1.5">截止：{formatDate(competition.endsAt)}</span></div>
-          <p className="text-sm text-muted-foreground">完成报名、组队、创作、提交和审核，作品通过后可公开展示并获得可追溯奖励。</p>
         </div>
         <div className="flex flex-col gap-2 sm:min-w-56"><Button asChild size="lg" className="min-h-12 whitespace-normal"><Link href={workbench.nextAction.href}>{workbench.nextAction.label} →</Link></Button><p className="max-w-xs text-sm leading-6 text-muted-foreground">{workbench.nextAction.description}</p>{workbench.blocker ? <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">卡点：{workbench.blocker}</p> : null}</div>
       </section>

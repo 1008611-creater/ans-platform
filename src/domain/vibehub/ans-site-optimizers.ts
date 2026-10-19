@@ -226,8 +226,8 @@ const INTENT_CLUSTERS: readonly {
 const DEFAULT_CLUSTER: IntentClusterMatch = {
   id: "general",
   badge: {
-    zh: "🧭 ANS 意图转写器 · 点击下方术语胶囊可精准锚定需求",
-    en: "🧭 ANS Intent Bridge · Click term pills to sharpen your prompt",
+    zh: "🧭 ANS 意图转写器 · 常用需求词条推荐",
+    en: "🧭 ANS Intent Bridge · Recommended Prompt Terms",
   },
   clarifyingQuestion: {
     zh: "建议补充：这个产物给谁用、哪 1 个核心交互必须跑通、哪些虚构数据不能编造？",
@@ -391,7 +391,7 @@ export function buildProjectVisualWalkthrough(
           title: isEn ? "Interactive Prescription Preview" : "农艺处方与风险分级实时预览",
           detail: isEn
             ? "Renders a visual prescription card for human review before committing or exporting."
-            : "在右侧沙箱生成可交互的分级处方看板，供队长核对参数后再一键导出参赛证据包。",
+            : "在预览沙箱生成可交互的分级处方看板，供队长核对参数后再一键导出参赛证据包。",
           artifact: "prescription-preview.html",
         },
         {

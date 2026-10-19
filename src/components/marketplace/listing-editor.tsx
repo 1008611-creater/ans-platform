@@ -151,7 +151,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             deliv: "可交互 HTML5 农情诊断终端\n病虫害置信度分析报告\n开源 Prompt 与数据集索引",
             cover: "/catalog/ans-pro-v1/agri-uav.webp",
             desc: "面向中国农大智耕黑客松打造的智慧农业多模态诊断系统，融合田间实拍叶片视觉识别与多光谱遥感指数，3秒生成农艺防治处方。",
-            url: "https://ans.cauai.fun/workspace?thread=thread-agri",
+            url: "https://ans.cauai.fun/explore/agri-pest-vision",
             git: "https://github.com/cauai/agri-vision-diagnosis",
           },
           {
@@ -163,7 +163,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             deliv: "单文件 HTML5 3D 粒子网页\nBento 作品集响应式布局\n在线预览与源码包",
             cover: "/catalog/ans-pro-v1/magic-resume.webp",
             desc: "使用工作模式 30 秒生成的 3D 星空粒子个人主页，内置鼠标视差追踪与 Bento 作品卡片。",
-            url: "https://ans.cauai.fun/workspace?thread=thread-portfolio",
+            url: "https://ans.cauai.fun/market/resume-website",
             git: "https://github.com/cauai/vibe-3d-portfolio",
           },
           {

@@ -909,10 +909,10 @@ export function CompanionQuestPin({
           <button
             type="button"
             className="hud-act-btn is-adopt"
-            title={isZh ? "切换四大灵龙血统" : "Switch Dragon Lineage"}
+            title={isZh ? "切换小恐龙形态" : "Switch Dino Form"}
             onClick={handleOpenAdoptDrawer}
           >
-            🥚 {isZh ? "切换血统" : "Lineage"}
+            🥚 {isZh ? "切换形态" : "Lineage"}
           </button>
         </div>
         <div className="hud-btn-row" style={{ marginTop: "2px" }}>
@@ -960,7 +960,7 @@ export function CompanionQuestPin({
             <div className="ans-sanctuary-header">
               <div>
                 <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
-                  👗 {isZh ? "灵龙奇迹暖暖高定衣橱" : "Dino 3D Haute Couture Wardrobe"} · {state.customName || sp.name}
+                  👗 {isZh ? "3D 小恐龙衣橱" : "Dino 3D Haute Couture Wardrobe"} · {state.customName || sp.name}
                 </h2>
                 <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
                   🪙 <strong>{state.starBeans}</strong> {isZh ? "灵感星豆" : "Star Beans"} · ♥ Lv.{aff.level} ({state.affectionXp} XP) · Lv.{styleEval.userLevel.level.index} {isZh ? styleEval.userLevel.level.nameZh : styleEval.userLevel.level.nameEn}
@@ -981,7 +981,7 @@ export function CompanionQuestPin({
                     fontWeight: 800,
                   }}
                 >
-                  🥚 {isZh ? "切换灵龙血统" : "Switch Lineage"}
+                  🥚 {isZh ? "切换小恐龙形态" : "Switch Lineage"}
                 </button>
                 <button
                   type="button"
@@ -1267,7 +1267,7 @@ export function CompanionQuestPin({
             <div className="ans-sanctuary-header">
               <div>
                 <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
-                  🥚 {isZh ? "3D 灵龙血统切换" : "3D Dragon Lineage Switcher"}
+                  🥚 {isZh ? "3D 小恐龙形态切换" : "3D Dino Form Switcher"}
                 </h2>
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>

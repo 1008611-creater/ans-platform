@@ -156,7 +156,7 @@ export function AgriTimetable() {
         <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-foreground">
             <span>{locale === "zh" ? "📖 查看标准 6 阶段备赛里程碑参考范例" : "📖 View 6-Stage Milestone Reference Template"}</span>
-            <span className="text-xs font-normal text-muted-foreground group-open:hidden">{locale === "zh" ? "点击展开 ▾" : "Expand ▾"}</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
             <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">{locale === "zh" ? "收起 ▴" : "Collapse ▴"}</span>
           </summary>
           <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

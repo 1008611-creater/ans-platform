@@ -83,7 +83,7 @@ export const BRIEF_SCENARIOS: readonly BriefScenario[] = [
     pathId: "ans-skill-product",
     label: { zh: "封装 Agent Skill", en: "Package an Agent Skill" },
     summary: {
-      zh: "把高频重复任务沉淀为带 SKILL.md、确定性脚本、分片产物与盲测验收的产品级 Skill。",
+      zh: "把高频重复任务封装为带 SKILL.md、确定性脚本、分片产物与盲测验收的产品级 Skill。",
       en: "Turn recurring workflows into a productized Skill folder with SKILL.md, deterministic scripts, chunked outputs, and blind A/B testing.",
     },
     template: {

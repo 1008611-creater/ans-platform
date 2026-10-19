@@ -69,7 +69,7 @@ export function AgriWorks() {
         <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-foreground">
             <span>📖 查看赛段归档参考范例（3 组示范存证）</span>
-            <span className="text-xs font-normal text-muted-foreground group-open:hidden">点击展开 ▾</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
             <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">收起 ▴</span>
           </summary>
           <div className="mt-4 grid gap-4 md:grid-cols-3">

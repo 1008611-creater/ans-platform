@@ -152,8 +152,8 @@ export function ModelPlaza({ catalog }: { catalog: ModelPlazaCatalog }) {
           </h2>
           <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
             {isZh
-              ? "从工具与工作流市场解锁的 Prompt 模板可直接在此运行，或点击下方官方预设一键试跑（0.5 积分/次起）。"
-              : "Run unlocked prompts from the marketplace or click any preset below (from 0.5 pts/run)."}
+              ? "支持运行市场 Prompt 模板或预设样例（按实际 Token × 官方倍率实算扣费）。"
+              : "Run marketplace prompt templates or presets (billed by actual tokens × official multiplier)."}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -200,9 +200,9 @@ export function ModelPlaza({ catalog }: { catalog: ModelPlazaCatalog }) {
                 onChange={(e) => setPgModel(e.target.value as "deepseek-v4.1-flash" | "gpt-6.1-sol" | "gpt-6-astra")}
                 className="ml-2 rounded-xl border bg-background px-3 py-1.5 text-xs font-semibold text-foreground"
               >
-                <option value="deepseek-v4.1-flash">⚡ DeepSeek V4.1 Flash（极速推理 · 0.5 积分/次）</option>
-                <option value="gpt-6.1-sol">🧠 GPT-6.1 Sol（深度工程与学术 · 1.0 积分/次）</option>
-                <option value="gpt-6-astra">🚀 GPT-6 Astra（旗舰多维创作 · 1.0 积分/次）</option>
+                <option value="deepseek-v4.1-flash">⚡ DeepSeek V4.1 Flash（按 Token 实算 · 官方倍率 1x）</option>
+                <option value="gpt-6.1-sol">🧠 GPT-6.1 Sol（按 Token 实算 · 官方倍率 0.16x）</option>
+                <option value="gpt-6-astra">🚀 GPT-6 Astra（按 Token 实算 · 官方倍率 0.16x）</option>
               </select>
             </label>
           </div>
@@ -215,7 +215,7 @@ export function ModelPlaza({ catalog }: { catalog: ModelPlazaCatalog }) {
           >
             {pgRunning
               ? isZh ? "⏳ 正在调用算力网关推理中…" : "⏳ Running model..."
-              : isZh ? `⚡ 立即调用模型运行 (${pgModel === "deepseek-v4.1-flash" ? "0.5" : "1.0"} 积分)` : "⚡ Run Prompt Now"}
+              : isZh ? "⚡ 立即运行" : "⚡ Run Prompt Now"}
           </Button>
         </div>
       </div>
@@ -224,12 +224,18 @@ export function ModelPlaza({ catalog }: { catalog: ModelPlazaCatalog }) {
         <div data-testid="playground-output" className="mt-4 rounded-2xl border border-emerald-500/30 bg-background/95 p-4 shadow-sm">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b pb-2.5">
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-semibold text-emerald-800 dark:text-emerald-300">
-                ✅ {pgMeta?.model || pgModel} 实机返回
-              </span>
+              {(pgMeta?.costPoints ?? 0) > 0 ? (
+                <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-semibold text-emerald-800 dark:text-emerald-300">
+                  ✅ {pgMeta?.model || pgModel} 实机返回
+                </span>
+              ) : (
+                <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 font-semibold text-amber-800 dark:text-amber-300">
+                  ⚠️ {pgMeta?.model || pgModel} 未扣费提示
+                </span>
+              )}
               {pgMeta?.balancePoints !== null && pgMeta?.balancePoints !== undefined && (
                 <span className="text-muted-foreground">
-                  本次消耗 {pgMeta.costPoints ?? 0.5} 积分 · 剩余可用 <strong className="text-foreground">{pgMeta.balancePoints} 积分</strong>
+                  本次消耗 {pgMeta.costPoints ?? 0} 积分 · 剩余可用 <strong className="text-foreground">{pgMeta.balancePoints} 积分</strong>
                 </span>
               )}
             </div>

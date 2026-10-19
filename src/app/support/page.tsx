@@ -109,8 +109,8 @@ export default function SupportPage() {
     {
       href: "/workspace/benefits",
       img: "/catalog/ans-pro-v1/ans-3d-showcase.webp",
-      title: "福利中心与 3D 小龙展台",
-      desc: "新手问卷、3D 抓娃娃机、小龙互动与算力兑换码。",
+      title: "福利中心与 3D 小恐龙展台",
+      desc: "新手问卷、3D 抓娃娃机、小恐龙互动与算力兑换码。",
     },
     {
       href: "/vibe-hub",
@@ -130,8 +130,8 @@ export default function SupportPage() {
       answer: "前往「团队」页面创建或加入队伍，在「赛事」中心查看赛题数据集与阶段交付要求，完成后通过「提交项目」页面上传真实可验证的作品链接与说明。",
     },
     {
-      question: "右下角 3D 小龙如何换装、投喂和触发特技？",
-      answer: "点击页面右下角 3D 小龙即可唤出互动面板（支持摸头、喂食、换装与近景特写）；在「福利中心」还可展开完整 3D 抓娃娃机与互动展台。",
+      question: "右下角 3D 小恐龙如何换装、投喂和触发特技？",
+      answer: "点击页面右下角 3D 小恐龙即可唤出互动面板（支持摸头、喂食、换装与近景特写）；在「福利中心」还可展开完整 3D 抓娃娃机与互动展台。",
     },
     {
       question: "发现页面或服务异常时如何排查？",

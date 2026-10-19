@@ -17,7 +17,7 @@ export const FOUNDER_PROJECT_GUIDES: readonly ProjectGuide[] = [{
     steps: [
       { title: "滚动滚轮体验 3D 章节导览", body: "向下滚动页面，配合 3D 运镜依次浏览项目广场、简历工作室、Hub 社区与赛事活动四大核心章节。", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
       { title: "触发摄像机超微距表情互动", body: "小恐龙居中在 3D 舞台中央，正对镜头眨眼、脸红并发出碎碎念颜文字，可随时切换衣橱配饰。" },
-      { title: "鼠标移上去摸头 & 点击投喂互动", body: "把鼠标移到小恐龙或头顶气泡上即可触发摸头反应（转头盯鼠标、Q 弹放大与专属悬停碎碎念）；点击小恐龙可轮换触发蹦跳、转头和表情等互动反应。" },
+      { title: "摸头与投喂互动", body: "小恐龙支持目光跟随、脸红表情与蹦跳、转头等互动反应。" },
       { title: "浏览 ANS 产品入口", body: "点击章节中的链接或底部项目卡片，可进入 ANS 主站、项目广场、Hub 和 3D 个人网站工作室。", href: "https://ans.cauai.fun/market/resume-website" },
     ],
     cautions: ["复用 3D 个人网站工作流建站时，请将页面文案与作品链接替换为自己的真实素材。", "页面包含实时 3D 渲染，体验取决于设备性能；可使用暂停动效与静态入口，页面也会尊重系统的减弱动态效果偏好。"],

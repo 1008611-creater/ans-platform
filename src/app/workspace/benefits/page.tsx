@@ -53,8 +53,8 @@ export default async function BenefitsPage() {
               </Badge>
               <span className="font-semibold text-foreground">
                 {isEn
-                  ? "Live Balance: 0 pts · Try the claw machine below or sign in to claim real points"
-                  : "当前未登录（真实余额 0）· 下方抓娃娃机可免登录试玩，登录后奖励直接入账"}
+                  ? "Sign in to complete the 30s survey (+50 pts) and claim claw machine rewards"
+                  : "登录后可完成新手问卷（+50 积分）并将抓娃娃机奖励转入账户"}
               </span>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -79,7 +79,7 @@ export default async function BenefitsPage() {
 
         <details
           id="ans-dragon-sanctuary-showcase"
-          aria-label="3D 小龙展台与基因养成舱"
+          aria-label="3D 小恐龙展台与养成舱"
           className="group rounded-3xl border border-border bg-card p-5 shadow-xs"
         >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-foreground">

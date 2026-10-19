@@ -69,16 +69,16 @@ export default async function CommunityPage() {
       { step: "04", name: isEn ? "AgriHackathon M1–M4 Milestones" : "参与农客松 M1–M4 阶段里程碑", reward: "+100~200 XP", desc: isEn ? "Complete team registration, code snapshot, and showcase wall" : "完成报名、代码存证与作品上墙，累计解锁 60 赛事积分" },
     ];
     const levelTiers = [
-      { lv: "Lv.1", title: isEn ? "Rookie Explorer" : "新星探索者", req: "0+ XP", perk: isEn ? "Daily check-in +5 pts & 3D Dino pet" : "解锁每日签到领积分 + 专属 3D 小龙陪伴" },
+      { lv: "Lv.1", title: isEn ? "Rookie Explorer" : "新星探索者", req: "0+ XP", perk: isEn ? "Daily check-in +5 pts & 3D Dino pet" : "解锁每日签到领积分 + 专属 3D 小恐龙陪伴" },
       { lv: "Lv.2", title: isEn ? "Campus Builder" : "高校创客", req: "300+ XP", perk: isEn ? "Publish projects & join hackathon teams" : "发布公开项目上墙 + 组队申领赛事算力包" },
       { lv: "Lv.3", title: isEn ? "Workflow Creator" : "工作流创作者", req: "1,000+ XP", perk: isEn ? "List workflows on ANS Market & earn points" : "在 ANS 市场发布工作流赚取算力积分分成" },
-      { lv: "Lv.4+", title: isEn ? "Campus Fellow" : "资深领航员", req: "2,500+ XP", perk: isEn ? "SSR Dino skins + priority GPU quota" : "解锁 3D 小龙限定皮肤 + 赛事专属算力额度" },
+      { lv: "Lv.4+", title: isEn ? "Campus Fellow" : "资深领航员", req: "2,500+ XP", perk: isEn ? "SSR Dino skins + priority GPU quota" : "解锁 3D 小恐龙限定装扮 + 赛事专属算力额度" },
     ];
     return (
       <div className="ans-product-container ans-page-content ans-community-page space-y-8">
         <PageHeading
           title={t("title")}
-          description={isEn ? "Explore campus creator guides, XP growth rules, and open-source AI builds." : "浏览高校 AI 创客作品范例、XP 成长段位指南与 3D 小龙养成权益。"}
+          description={isEn ? "Explore campus creator guides, XP growth rules, and open-source AI builds." : "浏览高校 AI 创客作品范例、XP 成长段位指南与 3D 小恐龙养成权益。"}
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <Button asChild variant="outline"><Link href="/showcase">{t("works")}</Link></Button>
@@ -109,7 +109,7 @@ export default async function CommunityPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 id="community-featured-heading" className="flex items-center gap-2 text-lg font-semibold">
                 <Flame className="h-5 w-5 text-orange-500" aria-hidden="true" />
-                {isEn ? "📖 Onboarding Guide: Community Post & Project Examples" : "📖 新手引导：社区发帖与作品分享参考范例"}
+                {isEn ? "📖 Community Post & Project Examples" : "📖 社区作品与参赛参考范例"}
               </h2>
               <Link href="/explore" className="text-xs font-medium text-primary hover:underline">
                 {isEn ? "View all 40+ projects →" : "查看全部 40+ 精选项目 →"}
