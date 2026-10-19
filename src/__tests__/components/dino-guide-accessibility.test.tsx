@@ -14,9 +14,16 @@ vi.mock("@/components/mascot/dino-avatar", () => ({ DinoAvatar: () => null }));
 vi.mock("@/components/providers/workspace-navigation", () => ({ WorkspaceLink: (props: ComponentProps<"a">) => <a {...props} /> }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ data: state.actor ? { user: { id: state.actor } } : null, status: state.status }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/explore" }));
-vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: (namespace: string) => (key: string) => {
+vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: (namespace: string) => {
   const source = namespace === "companion" ? companionMessages : mascotMessages.mascot;
-  return key.split(".").reduce<unknown>((value, part) => value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined, source) ?? key;
+  const lookup = (key: string) => key.split(".").reduce<unknown>((value, part) => value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined, source);
+  const t = (key: string, values?: Record<string, string | number>) => {
+    let result = String(lookup(key) ?? key);
+    for (const [name, value] of Object.entries(values ?? {})) result = result.split("{" + name + "}").join(String(value));
+    return result;
+  };
+  t.has = (key: string) => typeof lookup(key) === "string";
+  return t;
 } }));
 afterEach(() => { cleanup(); sessionStorage.clear(); state.task = null; state.actor = "member"; state.status = "authenticated"; resetSitePreferences(); localStorage.removeItem(COMPANION_SIZE_KEY); });
 
