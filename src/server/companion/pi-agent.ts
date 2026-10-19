@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import type { AgentLink } from "@/contracts/companion-agent";
-import { claimArcadeReward, ARCADE_PRIZE_REWARDS } from "@/server/compute-benefits/arcade";
+import { claimArcadeReward, getArcadeServerBalance, getArcadeTokenBalance, ARCADE_PRIZE_REWARDS } from "@/server/compute-benefits/arcade";
 import { listMarketListings } from "@/server/marketplace/listings";
 import { marketProductPath } from "@/domain/marketplace/product-route";
 import { getOfficialDeliveryMarkdown } from "@/server/marketplace/official-deliveries";
@@ -12,6 +12,8 @@ import {
 
 export interface PiActionResult {
   ok: boolean;
+  /** 失败时的机器可读原因，例如 CONFIRM_REQUIRED（需要用户先确认扣费金额）。 */
+  error?: string;
   toolUsed:
     | "claim_daily_benefit"
     | "play_claw_arcade"
@@ -81,8 +83,24 @@ export async function claimDailyBenefitViaPi(actor: string): Promise<PiActionRes
   }
 }
 
-export async function playClawArcadeViaPi(actor: string): Promise<PiActionResult> {
+export async function playClawArcadeViaPi(actor: string, confirmedTokenPoints?: number): Promise<PiActionResult> {
   try {
+    // 免费币用完时，"花 10 积分兑 1 枚"必须先由用户确认；未确认一律不扣费（服务端强制，不依赖界面）。
+    const tokenState = await getArcadeTokenBalance(actor);
+    if (tokenState.tokens <= 0 && confirmedTokenPoints !== tokenState.nextTokenCostPoints) {
+      const { balancePoints } = await getArcadeServerBalance(actor);
+      return {
+        ok: false,
+        error: "CONFIRM_REQUIRED",
+        toolUsed: "play_claw_arcade",
+        trace: [`[1/1] agent.play_claw_arcade · 免费币已用完，报价 ${tokenState.nextTokenCostPoints} 积分（未扣费）`],
+        replyZh: `💰 免费抓娃娃币用完了。继续抽需要花 **${tokenState.nextTokenCostPoints} 积分**兑换 1 枚（当前余额 **${balancePoints.toFixed(1)} 积分**）。点「确认」我才扣费——**现在还没有扣分**。`,
+        replyEn: `💰 No free claw tokens left. Continuing costs **${tokenState.nextTokenCostPoints} pts** for 1 token (balance ${balancePoints.toFixed(1)} pts). Nothing is charged until you confirm.`,
+        balancePoints,
+        data: { requiresConfirmation: true, pricePoints: tokenState.nextTokenCostPoints, intent: "claw" },
+        links: [{ href: "/workspace/benefits", title: "去领免费算力与抓娃娃币", detail: "每日签到 +5 分 · 破冰问卷 +50 分", icon: "credits" }],
+      };
+    }
     let drawRes;
     let spentForToken = 0;
     try {
@@ -327,7 +345,7 @@ export async function scaffoldProjectDraftViaPi(actor: string, rawTopic: string)
   };
 }
 
-export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Promise<PiActionResult> {
+export async function redeemMarketItemViaPi(actor: string, rawQuery: string, confirmedPoints?: number): Promise<PiActionResult> {
   const q = rawQuery.trim().toLowerCase();
   const rows = await db.marketListing.findMany({
     where: {
@@ -394,6 +412,21 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
       links: [
         { href: "/workspace/benefits", title: "去福利中心领 100~150 积分", detail: "破冰问卷 +50分 / 每日签到 +5分", icon: "credits" },
       ],
+    };
+  }
+
+  // 需要用户用"同一个金额"确认过才允许扣费；未确认时只报价，不落任何账。
+  if (confirmedPoints !== pricePoints) {
+    return {
+      ok: false,
+      error: "CONFIRM_REQUIRED",
+      toolUsed: "redeem_market_item",
+      trace: [`[1/2] agent.redeem_market_item · 匹配到《${title}》，报价 ${pricePoints} 积分（未扣费）`],
+      replyZh: `💰 兑换《${title}》需要 **${pricePoints} 积分**（当前余额 **${currentBal} 积分**）。点「确认兑换」我才扣费——**现在还没有扣分**。`,
+      replyEn: `💰 Redeeming "${title}" costs **${pricePoints} pts** (balance ${currentBal} pts). Nothing is charged until you confirm.`,
+      balancePoints: currentBal,
+      data: { requiresConfirmation: true, pricePoints, intent: "redeem", slug: target.slug, title },
+      links: [{ href: "/market", title: "先去市场看看其他商品 (/market)", detail: "对比价格与交付清单后再兑换", icon: "discover" }],
     };
   }
 
@@ -792,6 +825,8 @@ export async function executePiAgentAction(
     model?: "deepseek-v4.1-flash" | "gpt-6-astra" | "gpt-6.1-sol";
     mode?: "code" | "ask";
     contextCode?: string;
+    /** 用户已确认的扣费金额（积分）。与实时报价不一致时服务端拒绝扣费。 */
+    confirmedPoints?: number;
   },
 ): Promise<PiActionResult> {
   const rawPrompt = (input.prompt ?? "").trim();
@@ -799,17 +834,17 @@ export async function executePiAgentAction(
   const lower = rawPrompt.toLowerCase();
 
   if (intent === "checkin") return claimDailyBenefitViaPi(actor);
-  if (intent === "claw") return playClawArcadeViaPi(actor);
+  if (intent === "claw") return playClawArcadeViaPi(actor, input.confirmedPoints);
   if (intent === "market") return searchMarketViaPi(rawPrompt, actor);
   if (intent === "scaffold") return scaffoldProjectDraftViaPi(actor, rawPrompt);
-  if (intent === "redeem") return redeemMarketItemViaPi(actor, rawPrompt);
+  if (intent === "redeem") return redeemMarketItemViaPi(actor, rawPrompt, input.confirmedPoints);
 
   // Even when called from Work Mode (intent === "playground"), allow explicit site-level pi-agent tool commands!
   if (/^(帮我|请)?(签到|打卡|每日签到|领每日积分|checkin|check-in)$/i.test(lower)) {
     return claimDailyBenefitViaPi(actor);
   }
   if (/^(帮我|请)?(抓娃娃|玩抓娃娃|下爪|claw|play claw)$/i.test(lower)) {
-    return playClawArcadeViaPi(actor);
+    return playClawArcadeViaPi(actor, input.confirmedPoints);
   }
   if (intent === "playground") {
     return runModelPlaygroundViaPi(actor, rawPrompt, input.model, input.mode ?? "code", input.contextCode);
@@ -820,11 +855,11 @@ export async function executePiAgentAction(
     return claimDailyBenefitViaPi(actor);
   }
   if (/抓娃娃|娃娃机|转盘|抽奖|兑币|claw|arcade|gacha|spin/.test(lower)) {
-    return playClawArcadeViaPi(actor);
+    return playClawArcadeViaPi(actor, input.confirmedPoints);
   }
   if (/兑换|秒兑|买|购买|解锁|redeem|buy/.test(lower)) {
     const cleaned = rawPrompt.replace(/^(帮我|请|小恐龙)?(兑换|秒兑|购买|买一个|买|解锁)[:：\s]*/i, "").trim();
-    return redeemMarketItemViaPi(actor, cleaned);
+    return redeemMarketItemViaPi(actor, cleaned, input.confirmedPoints);
   }
   if (/新建|创建|立项|建个项目|写个项目|保存项目|scaffold|create project|new project/.test(lower)) {
     const cleanedTopic = rawPrompt

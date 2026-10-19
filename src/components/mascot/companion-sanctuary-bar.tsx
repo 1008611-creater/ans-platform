@@ -1340,6 +1340,12 @@ export function CompanionSanctuaryBar({
   const [strikeRemainingSec, setStrikeRemainingSec] = useState<number>(0);
   const [piBusy, setPiBusy] = useState(false);
   const [piPrompt, setPiPrompt] = useState("");
+  /** 服务端要求先确认的扣费金额（用户点确认前服务端不会扣费）。 */
+  const [piConfirm, setPiConfirm] = useState<{
+    intent: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "auto";
+    prompt: string;
+    pricePoints: number;
+  } | null>(null);
   const [piResult, setPiResult] = useState<{
     ok: boolean;
     toolUsed?: string;
@@ -1353,6 +1359,7 @@ export function CompanionSanctuaryBar({
   async function runPiAction(
     intent: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "auto",
     customPrompt?: string,
+    confirmedPoints?: number,
   ) {
     if (piBusy) return;
     setPiBusy(true);
@@ -1361,9 +1368,35 @@ export function CompanionSanctuaryBar({
       const res = await fetch("/api/mascot/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "pi_action", intent, prompt: resolvedPrompt }),
+        body: JSON.stringify({
+          action: "pi_action",
+          intent,
+          prompt: resolvedPrompt,
+          ...(typeof confirmedPoints === "number" ? { confirmedPoints } : {}),
+        }),
       });
       const data = await res.json().catch(() => ({}));
+      // 服务端报价：先展示"Is X 积分、尚未扣费"，用户点确认后再用同一金额重发；
+      // 服务端会再次校验金额，界面被绕过也扣不到钱。
+      const confirmRequest = (data?.data ?? {}) as { requiresConfirmation?: boolean; pricePoints?: number };
+      if (
+        confirmRequest.requiresConfirmation &&
+        typeof confirmRequest.pricePoints === "number" &&
+        confirmRequest.pricePoints > 0 &&
+        typeof confirmedPoints !== "number"
+      ) {
+        setPiConfirm({ intent, prompt: resolvedPrompt, pricePoints: confirmRequest.pricePoints });
+        setPiResult({
+          ok: false,
+          toolUsed: data?.toolUsed,
+          trace: Array.isArray(data?.trace) ? data.trace : undefined,
+          replyZh: data?.replyZh ?? "",
+          replyEn: data?.replyEn ?? "",
+          balancePoints: data?.balancePoints ?? null,
+          links: [],
+        });
+        return;
+      }
       if (res.status === 401 || !res.ok || (!data?.replyZh && !data?.replyEn)) {
         const fallbackZh =
           res.status === 401
@@ -1392,6 +1425,7 @@ export function CompanionSanctuaryBar({
         });
         return;
       }
+      setPiConfirm(null);
       setPiResult(data);
       const speechLine = isZh ? data.replyZh : data.replyEn;
       if (speechLine) {
@@ -1678,6 +1712,40 @@ export function CompanionSanctuaryBar({
         </div>
       </div>
 
+      {piConfirm && (
+        <div
+          data-testid="pi-agent-confirm"
+          className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/60 bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-800 dark:text-amber-200"
+        >
+          <span>
+            {isZh
+              ? `将消耗 ${piConfirm.pricePoints} 积分——点「确认」才扣费，现在还没有扣分。`
+              : `Spends ${piConfirm.pricePoints} pts — nothing is charged until you confirm.`}
+          </span>
+          <span className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled={piBusy}
+              onClick={() => {
+                const pending = piConfirm;
+                setPiConfirm(null);
+                void runPiAction(pending.intent, pending.prompt, pending.pricePoints);
+              }}
+              className="rounded-md bg-amber-600 px-2 py-0.5 text-[10px] font-bold text-white transition hover:bg-amber-500 disabled:opacity-50"
+            >
+              {isZh ? `✅ 确认扣 ${piConfirm.pricePoints} 积分` : `✅ Confirm ${piConfirm.pricePoints} pts`}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPiConfirm(null)}
+              className="rounded-md border border-amber-500/50 px-2 py-0.5 text-[10px] font-bold transition hover:bg-amber-500/15"
+            >
+              {isZh ? "取消" : "Cancel"}
+            </button>
+          </span>
+        </div>
+      )}
+
       {statusNote && (
         <p className="mt-1.5 rounded-lg bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground">
           {statusNote}
@@ -1730,8 +1798,16 @@ export function CompanionSanctuaryBar({
             >
               <div className="flex flex-wrap items-center justify-between gap-1.5">
                 <div className="flex items-center gap-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/15 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-200">
-                    ✓ {isZh ? "Agent 已执行" : "Agent Executed"}
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      piResult.ok
+                        ? "bg-emerald-600/15 text-emerald-800 dark:text-emerald-200"
+                        : "bg-amber-500/20 text-amber-800 dark:text-amber-200"
+                    }`}
+                  >
+                    {piResult.ok
+                      ? `✓ ${isZh ? "Agent 已执行" : "Agent Executed"}`
+                      : `⏸ ${isZh ? "未执行（待确认或已取消）" : "Not executed (awaiting confirmation)"}`}
                   </span>
                   {typeof piResult.balancePoints === "number" && (
                     <span className="text-[10px] font-bold text-amber-600 dark:text-amber-300">
