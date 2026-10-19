@@ -309,22 +309,22 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
               {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} /></Suspense>}</div>)}
               {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
               {mode === "agent" && <><AgentRecoveryStatus turns={agent.recovery.turns.filter(turn => turn.ticket !== agent.currentTicket)} onCheck={agent.recovery.check} /><AgentTurnStatus agent={agent} /></>}
+              {/* companion.css 用 .ans-companion-next > a 做整行布局：a 必须是直接子元素，
+                  图标与箭头也要带对应类名，否则线上退化成"大图标/标题/大箭头各占一行"。 */}
               <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}>
-                <div>
-                  {nextActions.map(action => {
-                    const Icon = icons[action.icon];
-                    return (
-                      <Link key={action.href + action.title} href={action.href} title={action.detail} onClick={() => changeOpen(false)}>
-                        <Icon aria-hidden="true" />
-                        <span>
-                          <strong>{action.title}</strong>
-                          <small className="sr-only">{action.detail}</small>
-                        </span>
-                        <ArrowUpRight aria-hidden="true" />
-                      </Link>
-                    );
-                  })}
-                </div>
+                {nextActions.map(action => {
+                  const Icon = icons[action.icon];
+                  return (
+                    <Link key={action.href + action.title} href={action.href} onClick={() => changeOpen(false)}>
+                      <span className="ans-companion-action-icon"><Icon aria-hidden="true" /></span>
+                      <span>
+                        <strong>{action.title}</strong>
+                        <small>{action.detail}</small>
+                      </span>
+                      <ArrowUpRight className="ans-companion-action-arrow" aria-hidden="true" />
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
           </div>

@@ -11,6 +11,8 @@ export function conversationInput(messages: CompanionMessage[], text: string, pa
   // Send a route hint only. Search strings, document content and form values stay out.
   return { messages: history, pathname, locale, privateAccess, model };
 }
+/** 只表示"这一轮结果不确定"的错误码：成功对账后必须能复位；余额/权限类真实错误要保留。 */
+const UNCERTAIN_RESULT_ERRORS = ["AGENT_RESPONSE_UNAVAILABLE", "AGENT_UNAVAILABLE", "RESPONSE_INTERRUPTED", "AGENT_OUTPUT_INCOMPLETE", "UPSTREAM_RESULT_UNCERTAIN", "BILLING_PENDING"];
 export function useCompanionAgent(actor: string | null, pathname: string, locale: "zh" | "en", onAnswer: (text: string, links: AgentLink[]) => void, onUser: (text: string) => void, model: RunModelKey = DEFAULT_COMPANION_MODEL, storageReady = true) {
   const recovery = useAgentRecovery(actor, storageReady);
   const [phase, setPhase] = useState<AgentPhase>("idle");
@@ -130,7 +132,12 @@ export function useCompanionAgent(actor: string | null, pathname: string, locale
     try {
       const response = await post({ action: "status", ticket }, controller.signal);
       const data = await response.json();
-      if (generation.current === id) { setReceipts(data.receipts); setReceiptChecked(true); }
+      if (generation.current === id) {
+        setReceipts(data.receipts);
+        setReceiptChecked(true);
+        // 对账成功后，"结果不确定"的红色横幅必须消失，否则会一直挂着（agent-turn-status 的 role=alert）。
+        setError(current => current && UNCERTAIN_RESULT_ERRORS.includes(current) ? null : current);
+      }
     } catch (cause) { if (generation.current === id) setError(cause instanceof Error ? cause.message : "AGENT_RESPONSE_UNAVAILABLE"); }
     finally { if (generation.current === id) { operation.current = null; stage.current = null; setCheckingReceipts(false); } }
   }

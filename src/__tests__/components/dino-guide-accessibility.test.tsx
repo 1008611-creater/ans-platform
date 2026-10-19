@@ -5,7 +5,7 @@ import { DinoGuide } from "@/components/mascot/dino-guide";
 import mascotMessages from "../../../messages/product/zh.json";
 import companionMessages from "../../../messages/companion/zh.json";
 import { PREFERENCES_KEY, resetSitePreferences } from "@/lib/site-preferences";
-import { COMPANION_SIZE_KEY, clampCompanionSize, defaultCompanionSize, useCompanionSize } from "@/components/mascot/use-companion-size";
+import { COMPANION_SIZE_KEY, clampCompanionSize, companionBounds, defaultCompanionSize, useCompanionSize } from "@/components/mascot/use-companion-size";
 import type { DinoTaskSnapshot } from "@/components/mascot/dino-task-context";
 
 const state = vi.hoisted(() => ({ task: null as DinoTaskSnapshot | null, actor: "member" as string | null, status: "authenticated" }));
@@ -58,9 +58,19 @@ it("places the direct voice toggle in the header and places the model selector i
 
 it("bounds saved sizing to small screens and restores large desktop defaults", () => {
   expect(defaultCompanionSize(1280, 720)).toEqual({ width: 717, height: 605 });
-  expect(clampCompanionSize({ width: 1500, height: 1500 }, 390, 844)).toEqual({ width: 366, height: 606 });
+  // 844 - 214(底部恐龙/胶囊留白) - 56(头部 48 + 8) = 574：面板不再压住站点头部。
+  expect(clampCompanionSize({ width: 1500, height: 1500 }, 390, 844)).toEqual({ width: 366, height: 574 });
   expect(clampCompanionSize({ width: 1, height: 1 }, 1280, 720)).toEqual({ width: 360, height: 340 });
 });
+it("never lets the panel reach into the sticky site header", () => {
+  for (const [width, height] of [[390, 844], [768, 1024], [1280, 900]] as const) {
+    const bounds = companionBounds(width, height);
+    const size = clampCompanionSize({ width: 9999, height: 9999 }, width, height);
+    expect(bounds.top).toBeGreaterThanOrEqual(56);
+    expect(height - bounds.bottom - size.height).toBeGreaterThanOrEqual(bounds.top);
+  }
+});
+
 it("persists keyboard resizing and allows reset without clearing conversation", () => {
   render(<DinoGuide />);
   fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
@@ -121,7 +131,8 @@ it("fits the visual keyboard viewport without overwriting desktop sizing", () =>
   localStorage.setItem(COMPANION_SIZE_KEY, JSON.stringify({ width: 800, height: 650 }));
   const view = renderHook(useCompanionSize); act(() => view.result.current.prepare());
   expect(view.result.current.keyboard).toBe(true);
-  expect(view.result.current.style).toEqual({ width: 366, height: 424 });
+  // 键盘弹出时可视高度 460：460 - 12(底部) - 56(头部留白) = 392。
+  expect(view.result.current.style).toEqual({ width: 366, height: 392 });
   expect(view.result.current.anchor.current.getBoundingClientRect().bottom).toBe(448);
   expect(JSON.parse(localStorage.getItem(COMPANION_SIZE_KEY)!)).toEqual({ width: 800, height: 650 });
   view.unmount();
