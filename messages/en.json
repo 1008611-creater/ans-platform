@@ -1189,11 +1189,11 @@
       },
       "whatIsPromptschat": {
         "question": "What is ANS?",
-        "answer": "ANS (AI Never Stops) is an AI co-creation and project delivery platform for students, builders, and developers—combining Project Explore (/explore), Workflow & Studio Market (/market), VibeHub design knowledge, and Hackathon team compute grants."
+        "answer": "ANS (AI Never Stops) is an AI co-creation and project delivery platform for students, builders, and developers—combining Project Explore, Workflow & Studio Market, VibeHub design knowledge, and Hackathon team compute grants."
       },
       "howToUse": {
         "question": "How do I start building my first project on ANS?",
-        "answer": "Browse Projects (/explore) or the Market (/market) to pick a studio or workflow (such as the 3D Personal Website Studio), launch the interactive editor to customize text and camera stops for free, and export your HTML or sign in to save versions."
+        "answer": "Browse Projects or the Market to pick a studio or workflow (such as the 3D Personal Website Studio), launch the interactive editor to customize text and camera stops for free, and export your HTML or sign in to save versions."
       },
       "license": {
         "question": "Who owns the resumes, websites, and workflows I create on ANS?",
@@ -1201,11 +1201,11 @@
       },
       "selfHost": {
         "question": "How do team competitions and compute grants work?",
-        "answer": "Visit Teams (/teams) or Competitions (/competitions) to create or join a team. Once an event's compute window opens, the team owner can claim shared team compute credits for private workflow runs."
+        "answer": "Visit Teams or Competitions to create or join a team. Once an event's compute window opens, the team owner can claim shared team compute credits for private workflow runs."
       },
       "verification": {
         "question": "How can I publish my own project to the Showcase or Explore?",
-        "answer": "Sign in and click '+ Submit Project' (/submit) or visit the Community Hub (/community) to share your project highlights, live preview URL, or GitHub repository and earn community XP."
+        "answer": "Sign in and click '+ Submit Project' or visit the Community Hub to share your project highlights, live preview URL, or GitHub repository and earn community XP."
       },
       "aiCredits": {
         "question": "How do ANS compute points and refunds work?",

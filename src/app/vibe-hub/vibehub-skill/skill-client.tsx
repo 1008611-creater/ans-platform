@@ -432,7 +432,11 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
             </div>
             <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(0,0,0,0.12)", marginTop: "0.75rem" }}>
               <img
-                src={`/catalog/ans-pro-v1/${coverDemoSlug}.webp`}
+                src={
+                  coverDemoSlug === "liu-resume"
+                    ? "/catalog/ans-pro-v1/magic-resume.webp"
+                    : `/catalog/ans-pro-v1/${coverDemoSlug}.webp`
+                }
                 alt={lang === "en" ? "Concept poster preview" : "概念海报预览"}
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
@@ -455,7 +459,11 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
             </div>
             <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(0,0,0,0.12)", marginTop: "0.75rem" }}>
               <img
-                src={`/catalog/gitglow-v1/${coverDemoSlug}.webp`}
+                src={
+                  coverDemoSlug === "ans-3d-showcase"
+                    ? "/catalog/gitglow-v1/ans-3d-showcase.svg"
+                    : `/catalog/gitglow-v1/${coverDemoSlug}.webp`
+                }
                 alt={lang === "en" ? "Interface preview" : "真实界面预览"}
                 style={{ width: "100%", height: "auto", display: "block" }}
               />

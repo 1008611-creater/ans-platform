@@ -42,7 +42,7 @@ const CURATED_SHOWCASE = [
     comments: 19,
     cover: "/catalog/ans-pro-v1/magic-resume.webp",
     summary: "通过 ORCID 与论文 BibTeX 自动构建高颜值响应式学术主页，内置开源数据集下载与论文交互预览。",
-    href: "/projects/resume-website",
+    href: "/market/resume-website",
   },
   {
     id: "curated-dragon-arcade",

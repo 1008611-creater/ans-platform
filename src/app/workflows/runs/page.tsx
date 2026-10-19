@@ -84,7 +84,7 @@ const SAMPLE_RUNS = [
     cost: "2 点",
     cover: "/catalog/ans-pro-v1/magic-resume.webp",
     output: "# Dr. Lin Lab · Smart Agriculture & UAV Vision\n- Featured Publication: Multi-Spectral Crop Disease Detection (CVPR Agri-Workshop)\n- Open Dataset: CAU-AgriUAV-2026 (12,000 annotated frames)",
-    href: "/projects/resume-website",
+    href: "/market/resume-website",
   },
 ];
 

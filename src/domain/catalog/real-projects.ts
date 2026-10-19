@@ -76,9 +76,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
-    "outerCoverUrl": "/catalog/gitglow-v1/liu-resume.webp",
+    "outerCoverUrl": "/catalog/ans-pro-v1/magic-resume.webp",
     "coverUrl": "/catalog/gitglow-v1/liu-resume.webp",
-    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× 双封面"
   },
   {
     "slug": "image2-library",

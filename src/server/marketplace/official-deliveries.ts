@@ -355,5 +355,5 @@ export function getOfficialDeliveryMarkdown(slug: string, title: string, deliver
   const preset = OFFICIAL_MARKET_DELIVERIES[slug];
   if (preset) return preset;
   const list = deliverables.map((d, idx) => `${idx + 1}. **${d}**`).join("\n");
-  return `# 📦 交付包：${title}\n\n> **状态**：✅ ANS 官方自动秒发（已永久解锁）\n\n## 核心交付清单\n${list || "- 完整工具包与使用指南已解锁"}\n\n可直接前往 [ANS 工作台 (/workspace)](/workspace) 或点击页面上方「打开项目」链接立即使用！`;
+  return `# 📦 交付包：${title}\n\n> **状态**：✅ ANS 官方自动秒发（已永久解锁）\n\n## 核心交付清单\n${list || "- 完整工具包与使用指南已解锁"}\n\n可直接前往 [ANS 工作台](/workspace) 或点击页面上方「打开项目」链接立即使用！`;
 }
