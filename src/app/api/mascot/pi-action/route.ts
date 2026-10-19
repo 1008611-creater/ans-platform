@@ -6,8 +6,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const piActionSchema = z.object({
-  intent: z.enum(["checkin", "claw", "market", "scaffold", "auto"]).optional(),
-  prompt: z.string().trim().max(400).optional(),
+  intent: z.enum(["checkin", "claw", "market", "scaffold", "redeem", "playground", "auto"]).optional(),
+  prompt: z.string().trim().max(4000).optional(),
+  model: z.enum(["deepseek-v4.1-flash", "gpt-6-astra", "gpt-6.1-sol"]).optional(),
+  mode: z.enum(["code", "ask"]).optional(),
+  contextCode: z.string().max(32000).optional(),
 });
 
 export async function POST(request: Request) {

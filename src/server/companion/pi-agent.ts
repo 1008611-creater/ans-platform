@@ -4,6 +4,11 @@ import { claimArcadeReward, ARCADE_PRIZE_REWARDS } from "@/server/compute-benefi
 import { listMarketListings } from "@/server/marketplace/listings";
 import { marketProductPath } from "@/domain/marketplace/product-route";
 import { getOfficialDeliveryMarkdown } from "@/server/marketplace/official-deliveries";
+import {
+  calculateOfficialTokenPoints,
+  estimateMinPreCallPoints,
+  type UpstreamUsagePayload,
+} from "@/server/integrations/chat-completions-gateway";
 
 export interface PiActionResult {
   ok: boolean;
@@ -12,9 +17,11 @@ export interface PiActionResult {
     | "play_claw_arcade"
     | "search_market"
     | "scaffold_project_draft"
-    | "redeem_market_item";
+    | "redeem_market_item"
+    | "run_model_playground";
   replyZh: string;
   replyEn: string;
+  trace?: string[];
   pointsDelta?: number;
   balancePoints?: number | null;
   data?: unknown;
@@ -30,6 +37,13 @@ export async function claimDailyBenefitViaPi(actor: string): Promise<PiActionRes
     return {
       ok: true,
       toolUsed: "claim_daily_benefit",
+      trace: [
+        "[1/3] agent.intent_router · 识别每日签到指令 (claim_daily_benefit)",
+        alreadyClaimed
+          ? "[2/3] agent.quota_ledger · 校验今日签到状态（已打卡）"
+          : `[2/3] agent.quota_ledger · 发放每日算力奖励 (+${pointsGranted} 积分 + 1 抓娃娃币)`,
+        `[3/3] agent.sync_balance · 同步账户可用积分（${balancePoints.toFixed(1)} 积分）`,
+      ],
       replyZh: alreadyClaimed
         ? `📅 今日算力签到已经打过卡啦！当前账户可用余额为 **${balancePoints.toFixed(1)} 积分**。`
         : `🎉 **Agent 已帮你完成今日算力签到！** 到账 **+${pointsGranted} 积分** + **1 枚抓娃娃币**！当前账户余额：**${balancePoints.toFixed(1)} 积分**。`,
@@ -59,6 +73,7 @@ export async function claimDailyBenefitViaPi(actor: string): Promise<PiActionRes
     return {
       ok: false,
       toolUsed: "claim_daily_benefit",
+      trace: [`[1/1] agent.claim_daily_benefit · 执行异常 (${msg})`],
       replyZh: `⚠️ 签到执行遇到问题（${msg}），请前往算力福利页查看详情。`,
       replyEn: `⚠️ Check-in failed (${msg}). Please visit the Compute Benefits page.`,
       links: [{ href: "/workspace/benefits", title: "前往算力福利中心", detail: "手动查看签到与任务状态", icon: "credits" }],
@@ -95,6 +110,11 @@ export async function playClawArcadeViaPi(actor: string): Promise<PiActionResult
     return {
       ok: true,
       toolUsed: "play_claw_arcade",
+      trace: [
+        "[1/3] agent.intent_router · 识别 3D 抓娃娃机指令 (play_claw_arcade)",
+        `[2/3] agent.arcade_engine · 执行下爪抓取 ${tokenNoteZh} -> 命中【${tier} · ${labelZh}】`,
+        `[3/3] agent.quota_ledger · 结算奖励 +${pointsGranted} 积分（当前余额 ${balancePoints.toFixed(1)} 积分）`,
+      ],
       replyZh: `🕹️ **Agent 帮你下爪抓娃娃成功！** ${tokenNoteZh}\n抓中 **【${tier} · ${labelZh}】**，获得 **+${pointsGranted} 积分**！当前账户可用余额：**${balancePoints.toFixed(1)} 积分**。`,
       replyEn: `🕹️ **Agent played the 3D Claw Machine!** ${tokenNoteEn}\nCaught **[${tier} · ${labelZh}]** for **+${pointsGranted} pts**! Balance: **${balancePoints.toFixed(1)} pts**.`,
       pointsDelta: netPoints,
@@ -121,6 +141,7 @@ export async function playClawArcadeViaPi(actor: string): Promise<PiActionResult
     return {
       ok: false,
       toolUsed: "play_claw_arcade",
+      trace: [`[1/1] agent.play_claw_arcade · 执行中止 (${code})`],
       replyZh: isLowPoints
         ? `⚠️ 免费抓娃娃币已用完，且账户积分不足 10 积分。可以先点上方「📅 签到」或去福利页完成破冰问卷 (+50分)！`
         : `⚠️ 抓娃娃执行暂不可用（${code}），请前往算力游乐场操作。`,
@@ -170,6 +191,10 @@ export async function searchMarketViaPi(query: string, viewerId?: string): Promi
   return {
     ok: true,
     toolUsed: "search_market",
+    trace: [
+      `[1/2] agent.search_market · 检索市场货架（关键词：${q || "推荐精选"}，共扫描 ${offers.length} 款）`,
+      `[2/2] agent.rank_offers · 筛选出 ${items.length} 款高匹配工具并生成直达链接`,
+    ],
     replyZh: items.length
       ? `🛒 **Agent 已为你从市场 (\`/market\`) 挑出 ${items.length} 款适用工具/工作流：**\n${summaryListZh}`
       : `🛒 当前市场暂无完全匹配「${query}」的商品，点击下方可浏览全部工具。`,
@@ -265,6 +290,11 @@ export async function scaffoldProjectDraftViaPi(actor: string, rawTopic: string)
   return {
     ok: true,
     toolUsed: "scaffold_project_draft",
+    trace: [
+      `[1/3] agent.scaffold_project · 创建项目实体《${created.title}》(${created.id})`,
+      "[2/3] agent.write_facts · 写入核心问题定义与目标受众事实",
+      "[3/3] agent.write_artifact · 生成首版《README 与立项架构书》(v1)",
+    ],
     replyZh: `📝 **Agent 已在你的工作台创建真实项目《${created.title}》！**\n同时已自动写入首版 **《README 与立项架构书》** 及核心项目事实。`,
     replyEn: `📝 **Agent created project "${created.title}" in your workspace!**\nIncludes a complete v1 README & architecture blueprint.`,
     data: { projectId: created.id, title: created.title, href: `/projects/${created.id}` },
@@ -460,6 +490,11 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
   return {
     ok: true,
     toolUsed: "redeem_market_item",
+    trace: [
+      `[1/3] agent.redeem_market_item · 锁定目标商品《${title}》(${pricePoints} 积分)`,
+      `[2/3] agent.quota_escrow · 扣除 ${pricePoints} 积分并创建订单 (${result.orderId})`,
+      `[3/3] agent.auto_deliver · 自动写入完整 Markdown 交付包（剩余 ${result.balance} 积分）`,
+    ],
     replyZh: `🎁 **Agent 已帮你花 ${pricePoints} 积分秒兑《${title}》！**\n完整 Markdown 交付包已自动解锁并写入订单！当前剩余 **${result.balance} 积分**。`,
     replyEn: `🎁 **Agent redeemed "${title}" for ${pricePoints} pts!**\nFull Markdown toolkit has been auto-delivered to your order! Balance: **${result.balance} pts**.`,
     pointsDelta: -pricePoints,
@@ -486,53 +521,76 @@ export async function runModelPlaygroundViaPi(
   actor: string,
   rawPrompt: string,
   modelKey?: "deepseek-v4.1-flash" | "gpt-6-astra" | "gpt-6.1-sol",
+  mode: "code" | "ask" = "code",
+  contextCode?: string,
 ): Promise<PiActionResult> {
   const prompt = rawPrompt.trim().slice(0, 4000) || "请为我生成一份本周中国农业大学智慧农业课题组 Git 提交与实验进展周报框架（含本周核心突破、实验指标表格与下周计划）。";
   const selectedModel = modelKey || "deepseek-v4.1-flash";
-  const costPoints = selectedModel === "deepseek-v4.1-flash" ? 0.5 : 1.0;
+  const minRequiredPoints = estimateMinPreCallPoints(selectedModel, prompt);
 
   const userBefore = await db.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
-  const currentBal = userBefore ? Math.round(Number(userBefore.quotaPoints) * 10) / 10 : 0;
+  const currentBal = userBefore ? Math.round(Number(userBefore.quotaPoints) * 1_000_000) / 1_000_000 : 0;
 
-  let newBalance = currentBal;
-  let charged = 0;
-
-  if (currentBal >= costPoints) {
-    const updated = await db.$transaction(async (tx) => {
-      const u = await tx.user.update({
-        where: { id: actor },
-        data: { quotaPoints: { decrement: costPoints } },
-        select: { quotaPoints: true },
-      });
-      await tx.quotaLedger.create({
-        data: {
-          userId: actor,
-          amount: -costPoints,
-          balanceAfter: u.quotaPoints,
-          reason: "RUN_COST",
-          refType: "playground_run",
-          refId: `pg-${Date.now()}`,
-          note: `Model Playground: ${selectedModel}`,
+  if (currentBal <= 0 || currentBal < minRequiredPoints) {
+    return {
+      ok: false,
+      toolUsed: "run_model_playground",
+      trace: [
+        `[1/2] agent.read_workspace · 解析任务指令 (${mode === "ask" ? "Ask 提问" : "Code 构建"})`,
+        `[2/2] agent.quota_guard · 余额不足 (${currentBal} < ${minRequiredPoints} pt)，已触发零扣费保护`,
+      ],
+      replyZh: `⚠️ 当前算力积分不足（剩余 **${currentBal}** 积分，按官方 Token 单价与倍率预估最低需 **${minRequiredPoints}** 积分），本次未产生扣费。请先前往免费算力中心每日签到（+5 积分）或兑换算力积分后再试。`,
+      replyEn: `⚠️ Insufficient compute points (balance: ${currentBal}, estimated minimum required: ${minRequiredPoints} for ${selectedModel}). No points were charged.`,
+      pointsDelta: 0,
+      balancePoints: currentBal,
+      data: {
+        model: selectedModel,
+        costPoints: 0,
+        balancePoints: currentBal,
+        usage: null,
+      },
+      links: [
+        {
+          href: "/workspace/benefits",
+          title: "🎁 去免费算力中心签到 (+5 积分)",
+          detail: "每日签到领 5 积分，或使用抓娃娃机抽取 1000 积分大奖",
+          icon: "credits",
         },
-      });
-      return Math.round(Number(u.quotaPoints) * 10) / 10;
-    });
-    newBalance = updated;
-    charged = costPoints;
+        {
+          href: "/workspace/credits",
+          title: "💳 前往积分中心充值 / 兑换卡密",
+          detail: "查看算力积分余额与充值明细",
+          icon: "credits",
+        },
+      ],
+    };
   }
 
   const baseUrl = (process.env.RUN_BASE_URL || "http://apic.cauai.fun:3000").replace(/\/+$/, "");
   const apiKey = process.env.RUN_API_KEY || "";
-  const url = baseUrl.endsWith("/v1") ? `${baseUrl}/chat/completions` : `${baseUrl}/v1/chat/completions`;
+  const chatUrl = baseUrl.endsWith("/v1") ? `${baseUrl}/chat/completions` : `${baseUrl}/v1/chat/completions`;
+  const responsesUrl = baseUrl.endsWith("/v1") ? `${baseUrl}/responses` : `${baseUrl}/v1/responses`;
+
+  const hasContext = Boolean(contextCode && contextCode.trim().length > 0);
+  const systemPrompt =
+    mode === "ask"
+      ? "你是 ANS 工作模式内置的资深软件架构师与科研顾问（Ask 模式）。请直接用清晰、干练的 Markdown 回答用户的技术问题、架构规划或代码审查建议，不输出多余寒暄。"
+      : hasContext
+        ? "你是 ANS 工作模式内置的 Codex 全栈工程智能体（Code 迭代模式）。用户正在基于已有代码进行增量修改。请先用 1~2 句话简要说明本次修改点，然后在一个完整的 ```html（或 ```python / ```markdown）代码块中输出修改后的完整可运行源码，确保所有既有功能与新增需求完整工作。"
+        : "你是 ANS 工作模式内置的 Codex 全栈工程智能体（Code 生成模式）。当用户需要网页、工具、看板或小游戏时，请先用 1~2 句话说明实现亮点，随后在一个完整的 ```html 代码块中输出单文件可直接运行的 HTML5 + CSS + JS 源码（深色现代高对比度 UI，内置真实可点击交互）；若用户明确要求 Python 脚本或文档，则输出对应的 ```python 或 ```markdown 代码块。";
+
+  const userPayload = hasContext
+    ? `【当前工作区已有源码】：\n\`\`\`\n${contextCode!.slice(0, 12000)}\n\`\`\`\n\n【${mode === "ask" ? "本次提问/分析指令" : "本次修改/迭代指令"}】：\n${prompt}`
+    : prompt;
 
   let outputText = "";
-  let usage: Record<string, unknown> | null = null;
+  let usage: UpstreamUsagePayload | null = null;
 
   if (apiKey) {
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 35000);
-      const res = await fetch(url, {
+      const res = await fetch(chatUrl, {
         method: "POST",
         signal: controller.signal,
         headers: {
@@ -544,12 +602,11 @@ export async function runModelPlaygroundViaPi(
           messages: [
             {
               role: "system",
-              content:
-                "你是中国农业大学 ANS 算力工作台（Model Playground）内置的资深科研与 AI 工程专家。请用清晰、结构化的 Markdown（含小标题、核心要点、对比表格或可复制代码块）直接输出高质量结果，不要输出多余寒暄。",
+              content: systemPrompt,
             },
-            { role: "user", content: prompt },
+            { role: "user", content: userPayload },
           ],
-          max_tokens: 1200,
+          max_tokens: 1800,
           ...(selectedModel === "deepseek-v4.1-flash" ? { thinking: { type: "disabled" } } : {}),
         }),
       });
@@ -557,44 +614,144 @@ export async function runModelPlaygroundViaPi(
       if (res.ok) {
         const data = (await res.json()) as {
           choices?: { message?: { content?: string } }[];
-          usage?: Record<string, unknown>;
+          usage?: UpstreamUsagePayload;
         };
         outputText = (data.choices?.[0]?.message?.content || "").trim();
         usage = data.usage ?? null;
+      } else if (selectedModel !== "deepseek-v4.1-flash") {
+        const fallbackCtrl = new AbortController();
+        const fallbackTimer = setTimeout(() => fallbackCtrl.abort(), 35000);
+        const respRes = await fetch(responsesUrl, {
+          method: "POST",
+          signal: fallbackCtrl.signal,
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: selectedModel,
+            instructions: systemPrompt,
+            input: userPayload,
+            max_output_tokens: 1800,
+          }),
+        });
+        clearTimeout(fallbackTimer);
+        if (respRes.ok) {
+          const respData = (await respRes.json()) as {
+            output_text?: string;
+            output?: { type?: string; content?: { type?: string; text?: string }[] }[];
+            usage?: UpstreamUsagePayload;
+          };
+          outputText = (
+            respData.output_text ||
+            (respData.output ?? [])
+              .flatMap((item) => (item.type === "message" ? item.content ?? [] : []))
+              .filter((part) => part.type === "output_text" && typeof part.text === "string")
+              .map((part) => part.text)
+              .join("\n")
+          ).trim();
+          usage = respData.usage ?? null;
+        }
       }
     } catch {
-      // Fallback handled below
+      // Upstream timeout or network failure — handled below with zero deduction
     }
   }
 
   if (!outputText) {
-    outputText = [
-      `### ⚡ ANS 算力工作台执行结果（模型：\`${selectedModel}\`）`,
-      ``,
-      `针对你的输入指令：「${prompt.slice(0, 80)}」，已为你生成结构化可执行方案：`,
-      ``,
-      `#### 1. 核心执行结论与结构化摘要`,
-      `- **问题诊断与切入点**：已提取关键实验变量与工程边界条件，建议采用对照实验组 + 自动化评测脚本双轨验证。`,
-      `- **推荐参数配置**：Temperature \`0.2\` · Top-P \`0.9\` · 结构化 Markdown + JSON 双格式输出。`,
-      ``,
-      `#### 2. 标准化结果输出与下一步建议`,
-      `1. **可直接复用的汇报要点**：已完成核心指标对齐，可直接粘贴至课题组周报或项目立项书。`,
-      `2. **一键沉淀**：点击下方「💾 存为我的农客松项目」即可将本结果写入 \`/projects\` 个人工作台！`,
-    ].join("\n");
+    return {
+      ok: false,
+      toolUsed: "run_model_playground",
+      trace: [
+        `[1/3] agent.read_workspace · 解析任务指令 (${selectedModel})`,
+        `[2/3] agent.gateway_call · 上游模型节点响应超时`,
+        `[3/3] agent.zero_charge_guard · 已触发零扣费保护 (消耗 0 积分)`,
+      ],
+      replyZh: `⚠️ 上游模型节点（\`${selectedModel}\`）响应超时或暂时繁忙，**本次调用未扣除任何算力积分（消耗 0 积分，当前余额 ${currentBal} 积分）**。请稍后重试或切换至 \`deepseek-v4.1-flash\` 极速模型。`,
+      replyEn: `⚠️ Upstream model (${selectedModel}) timed out or is temporarily unavailable. 0 points were deducted (balance: ${currentBal}). Please retry or switch models.`,
+      pointsDelta: 0,
+      balancePoints: currentBal,
+      data: {
+        model: selectedModel,
+        costPoints: 0,
+        balancePoints: currentBal,
+        usage: null,
+      },
+      links: [
+        {
+          href: "/workspace/models",
+          title: "⚡ 切换其他模型重试 (/workspace/models)",
+          detail: "按官方 Token 单价与倍率（DeepSeek 1x / GPT-6 0.16x）实算扣费",
+          icon: "discover",
+        },
+      ],
+    };
   }
+
+  const breakdown = calculateOfficialTokenPoints(
+    selectedModel,
+    usage,
+    userPayload,
+    outputText,
+  );
+  const costPoints = breakdown.billedPoints;
+
+  const { chargedPoints, newBalance } = await db.$transaction(async (tx) => {
+    const freshUser = await tx.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
+    const freshBal = freshUser ? Number(freshUser.quotaPoints) : 0;
+    const actualDeduct = Math.round(Math.min(freshBal, costPoints) * 1_000_000) / 1_000_000;
+    if (actualDeduct <= 0) {
+      throw new Error("QUOTA_INSUFFICIENT");
+    }
+    const u = await tx.user.update({
+      where: { id: actor },
+      data: { quotaPoints: { decrement: actualDeduct } },
+      select: { quotaPoints: true },
+    });
+    await tx.quotaLedger.create({
+      data: {
+        userId: actor,
+        amount: -actualDeduct,
+        balanceAfter: u.quotaPoints,
+        reason: "RUN_COST",
+        refType: "playground_run",
+        refId: `pg-${Date.now()}`,
+        note: `Model Playground (${selectedModel}: in=${breakdown.uncachedInputTokens}, cache=${breakdown.cachedReadTokens}, out=${breakdown.outputTokens}, x${breakdown.consumptionMultiplier})`,
+      },
+    });
+    return {
+      chargedPoints: actualDeduct,
+      newBalance: Math.round(Number(u.quotaPoints) * 1_000_000) / 1_000_000,
+    };
+  });
 
   return {
     ok: true,
-    toolUsed: "scaffold_project_draft",
+    toolUsed: "run_model_playground",
+    trace: [
+      `[1/4] agent.read_workspace · 读取工作区上下文 (${hasContext ? `含既存代码 ${contextCode!.split("\n").length} 行` : "新建空白环境"})`,
+      `[2/4] agent.plan_strategy · 执行模式：${mode === "ask" ? "Ask 架构问答" : "Code 产物构建与 Diff 合成"}`,
+      `[3/4] agent.model_invoke (${selectedModel}) · 输入 ${breakdown.inputTokens} tok / 输出 ${breakdown.outputTokens} tok`,
+      `[4/4] agent.quota_settle · 实算扣费 -${chargedPoints} 积分（剩余 ${newBalance} 积分）`,
+    ],
     replyZh: outputText,
     replyEn: outputText,
-    pointsDelta: -charged,
+    pointsDelta: -chargedPoints,
     balancePoints: newBalance,
     data: {
       model: selectedModel,
-      costPoints: charged,
+      costPoints: chargedPoints,
       balancePoints: newBalance,
-      usage,
+      usage: {
+        ...(usage ?? {}),
+        input_tokens: breakdown.inputTokens,
+        uncached_input_tokens: breakdown.uncachedInputTokens,
+        cached_read_tokens: breakdown.cachedReadTokens,
+        cache_write_tokens: breakdown.cacheWriteTokens,
+        output_tokens: breakdown.outputTokens,
+        consumption_multiplier: breakdown.consumptionMultiplier,
+        usd_cost: breakdown.usdCost,
+      },
     },
     links: [
       {
@@ -606,7 +763,7 @@ export async function runModelPlaygroundViaPi(
       {
         href: "/workspace/benefits",
         title: `当前剩余 ${newBalance} 积分 · 去领免费算力`,
-        detail: "每日签到 +5分 / 3D 抓娃娃机搏 1000 分锦鲤",
+        detail: "每日签到 +5分 / 3D 抓娃娃机抽 1000 积分大奖",
         icon: "credits",
       },
     ],
@@ -619,24 +776,36 @@ export async function executePiAgentAction(
     intent?: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "playground" | "auto";
     prompt?: string;
     model?: "deepseek-v4.1-flash" | "gpt-6-astra" | "gpt-6.1-sol";
+    mode?: "code" | "ask";
+    contextCode?: string;
   },
 ): Promise<PiActionResult> {
   const rawPrompt = (input.prompt ?? "").trim();
   const intent = input.intent ?? "auto";
+  const lower = rawPrompt.toLowerCase();
 
   if (intent === "checkin") return claimDailyBenefitViaPi(actor);
   if (intent === "claw") return playClawArcadeViaPi(actor);
   if (intent === "market") return searchMarketViaPi(rawPrompt, actor);
   if (intent === "scaffold") return scaffoldProjectDraftViaPi(actor, rawPrompt);
   if (intent === "redeem") return redeemMarketItemViaPi(actor, rawPrompt);
-  if (intent === "playground") return runModelPlaygroundViaPi(actor, rawPrompt, input.model);
+
+  // Even when called from Work Mode (intent === "playground"), allow explicit site-level pi-agent tool commands!
+  if (/^(帮我|请)?(签到|打卡|每日签到|领每日积分|checkin|check-in)$/i.test(lower)) {
+    return claimDailyBenefitViaPi(actor);
+  }
+  if (/^(帮我|请)?(抓娃娃|玩抓娃娃|下爪|claw|play claw)$/i.test(lower)) {
+    return playClawArcadeViaPi(actor);
+  }
+  if (intent === "playground") {
+    return runModelPlaygroundViaPi(actor, rawPrompt, input.model, input.mode ?? "code", input.contextCode);
+  }
 
   // Auto-route natural language command via Agent intent router
-  const lower = rawPrompt.toLowerCase();
   if (/签到|打卡|每日|领积分|checkin|check-in|daily/.test(lower)) {
     return claimDailyBenefitViaPi(actor);
   }
-  if (/抓娃娃|娃娃机|转盘|抽奖|锦鲤|兑币|claw|arcade|gacha|spin/.test(lower)) {
+  if (/抓娃娃|娃娃机|转盘|抽奖|兑币|claw|arcade|gacha|spin/.test(lower)) {
     return playClawArcadeViaPi(actor);
   }
   if (/兑换|秒兑|买|购买|解锁|redeem|buy/.test(lower)) {

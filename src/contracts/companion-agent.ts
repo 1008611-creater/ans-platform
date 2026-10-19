@@ -18,6 +18,8 @@ export const agentRequestSchema = z.discriminatedUnion("action", [
     intent: z.enum(["checkin", "claw", "market", "scaffold", "redeem", "playground", "auto"]).optional(),
     prompt: z.string().trim().max(4000).optional(),
     model: z.enum(["deepseek-v4.1-flash", "gpt-6-astra", "gpt-6.1-sol"]).optional(),
+    mode: z.enum(["code", "ask"]).optional(),
+    contextCode: z.string().max(32000).optional(),
   }).strict(),
 ]);
 export type AgentInput = z.infer<typeof agentInputSchema>;
