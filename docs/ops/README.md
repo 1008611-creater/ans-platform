@@ -36,10 +36,10 @@ npm install
 ## 三、GitHub 仓库全量沉淀目录说明
 
 1. **ANS 主站全量源码与计费中枢**：
-   - [`src/server/commerce/catalog.ts`](../../src/server/commerce/catalog.ts) — VibePlan 会员套餐（`1.21x ~ 1.50x` 算力积分膨胀）与单次充值包定义
+   - `src/server/commerce/catalog.ts`（交接工作副本路径，本仓库未包含此文件）— VibePlan 会员套餐（`1.21x ~ 1.50x` 算力积分膨胀）与单次充值包定义；站内相关实现见 `src/components/workspace/vibeplan.tsx` 与 `src/server/billing/`
    - [`src/server/quota/`](../../src/server/quota/) — ANS 统一算力积分账本（`User.quotaPoints` + `QuotaLedger`）
    - [`src/server/voice/service.ts`](../../src/server/voice/service.ts) — 小恐龙 Mimo V2.5 TTS 语音计费（1 积分/次，失败自动退回）
-   - [`src/server/visual-model-jobs/`](../../src/server/visual-model-jobs/) & [`src/server/visual-four-view-jobs/`](../../src/server/visual-four-view-jobs/) — Tripo 3D 建模（20 积分/次）与 OpenLux 4K 正交四视图（5 积分/次）
+   - [`src/server/visual-portfolio/jobs.ts`](../../src/server/visual-portfolio/jobs.ts) & [`src/server/visual-portfolio/four-view-jobs.ts`](../../src/server/visual-portfolio/four-view-jobs.ts) — Tripo 3D 建模（20 积分/次）与 OpenLux 4K 正交四视图（5 积分/次）
 2. **生态子站生产源码与基础设施配置归档（[`ecosystem-sites-archive/`](../../ecosystem-sites-archive/)）**：
    - [`hb-infinite-canvas-api/`](../../ecosystem-sites-archive/hb-infinite-canvas-api/) — `hb.cauai.fun` 无限画布后端（OpenLux `image2` / `image2.5sunburst` + 火山方舟 `sd2.5` / `sd2` / `sd2fast` + ANS 统一积分桥）
    - [`hb-infinite-canvas-web/`](../../ecosystem-sites-archive/hb-infinite-canvas-web/) — `hb.cauai.fun` 无限画布前端源码与 `rebuild.sh` 构建脚本
