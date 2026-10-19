@@ -1,3 +1,13 @@
+## 权威基线（Authority）
+
+<!-- 触及哪条权威就写哪条 ID；没有就写「无」。见 docs/authority/ledger.json -->
+- 本 PR 触及的权威条目（`A-*`）：
+- [ ] 没有删除权威条目约束的实现；若撤销，已在同一 PR 更新账本并写明理由
+- [ ] `node .agents/skills/ans-delivery-governance/scripts/check-authority.mjs` 通过
+- [ ] `npm run verify` 通过
+
+---
+
 ## Description
 
 <!-- Briefly describe the changes in this PR -->

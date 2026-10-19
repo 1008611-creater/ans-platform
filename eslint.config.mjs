@@ -69,6 +69,8 @@ const eslintConfig = defineConfig([
     "packages/raycast-extension/**",
     // Scripts - may use CommonJS
     "scripts/**",
+    // Agent 侧治理工具（守卫/体检脚本），不是应用源码，随 .agents 一起入库
+    ".agents/**",
     // Prisma scripts
     "prisma/**",
   ]),

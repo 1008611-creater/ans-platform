@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
+      - develop
 
 # New commits supersede checks for the same PR. Main releases keep distinct runs.
 concurrency:
@@ -81,3 +83,33 @@ jobs:
 
       - name: Run verification gate
         run: npm run verify
+
+  # 权威基线守卫 + Git/发布体检。只依赖 node 内置模块，不装依赖，所以依赖故障时它仍能挡住回退。
+  # 这里刻意不加 --gh：管理 API 的告警（分支保护等）由人按 git-health --gh 复核，不让它把每次 CI 变红。
+  authority:
+    name: Authority
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      # origin/main 只用于体检脚本对比"主干 vs 部署信号"，不参与判定。
+      - name: Ensure origin/main is available
+        run: git fetch --no-tags origin main:refs/remotes/origin/main
+
+      # 校验的是"这次提交的代码本身"（PR 的 merge ref / main 的 push commit）：
+      # 任何把权威实现改回去的 PR 都会在这里红，且不会出现"修好了也永远红"的死锁。
+      - name: Authority guard
+        run: node .agents/skills/ans-delivery-governance/scripts/check-authority.mjs --worktree
+
+      - name: Git and release health
+        run: node .agents/skills/ans-delivery-governance/scripts/git-health.mjs
