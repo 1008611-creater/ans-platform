@@ -101,10 +101,10 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
                     <span className="font-mono text-xs font-bold text-muted-foreground">STEP {node.step}</span>
                     <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                       node.kind === "script"
-                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300"
+                        ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-200"
                         : node.kind === "preview"
-                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-300"
-                          : "bg-indigo-500/15 text-indigo-600 dark:text-indigo-300"
+                          ? "bg-amber-500/15 text-amber-800 dark:text-amber-200"
+                          : "bg-indigo-500/15 text-indigo-800 dark:text-indigo-200"
                     }`}>
                       {node.badge}
                     </span>
