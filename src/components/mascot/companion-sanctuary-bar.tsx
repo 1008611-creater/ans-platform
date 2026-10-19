@@ -174,15 +174,28 @@ export function CompanionQuestPin({
     return () => window.clearTimeout(timer);
   }, [alertMode]);
 
-  // Automatically upgrade the bottom-right dragon to the live 3D Sanctuary WebGL canvas in real browsers
+  // 只在用户真的和小恐龙互动（悬停/点击/聚焦/打开面板）时才加载 3D 场景（约 9MB）。
+  // 此前是挂载即 dispatch，等于每个页面首屏都预下载整套 WebGL 资源。
   useEffect(() => {
-    if (typeof window !== "undefined" && typeof WebGLRenderingContext !== "undefined") {
+    if (typeof window === "undefined" || typeof WebGLRenderingContext === "undefined") return;
+    const root = document.querySelector(".ans-dino-guide");
+    if (!root) return;
+    let activated = false;
+    const activate = () => {
+      if (activated) return;
+      activated = true;
       window.dispatchEvent(new CustomEvent("ans:dino-activate"));
-      const t = window.setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("ans:dino-activate"));
-      }, 60);
-      return () => window.clearTimeout(t);
-    }
+      cleanup();
+    };
+    const cleanup = () => {
+      root.removeEventListener("pointerenter", activate);
+      root.removeEventListener("pointerdown", activate);
+      root.removeEventListener("focusin", activate);
+    };
+    root.addEventListener("pointerenter", activate);
+    root.addEventListener("pointerdown", activate);
+    root.addEventListener("focusin", activate);
+    return cleanup;
   }, []);
 
   // Keep body classes synchronized with macroActive and sanctuaryModal
@@ -233,11 +246,18 @@ export function CompanionQuestPin({
       }
     };
     updatePosition();
-    const interval = window.setInterval(updatePosition, 90);
+    // 事件驱动替代 90ms 永久轮询：此前每秒约 11 次 setState + 重排整个面板子树（全站常驻组件）。
+    const host = document.querySelector<HTMLElement>(".ans-dino-guide .ans-dino-trigger");
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updatePosition);
+    if (host && observer) observer.observe(host);
     window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    const frame = window.requestAnimationFrame(updatePosition);
     return () => {
-      window.clearInterval(interval);
+      observer?.disconnect();
       window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.cancelAnimationFrame(frame);
     };
   }, [alertMode, macroActive, sanctuaryModal]);
 
@@ -761,12 +781,14 @@ export function CompanionQuestPin({
 
       {/* 1:1 Resume Website Speech & Alert Bubble (#ans-dino-live-bubble) */}
       {!dialogOpen && sanctuaryModal === "none" && (
-        <div
+        <button
+          type="button"
           id="ans-dino-live-bubble"
           style={{ left: bubblePos.left, bottom: bubblePos.bottom }}
           data-bubble-state={alertMode ? "alert" : "expanded"}
           data-idle-dim={alertDimmed ? "true" : "false"}
-          className={`is-visible ${alertMode ? "is-alert" : ""} ${alertMode && alertDimmed ? "is-alert-dimmed" : ""}`}
+          className={`is-visible border-0 bg-transparent p-0 text-start ${alertMode ? "is-alert" : ""} ${alertMode && alertDimmed ? "is-alert-dimmed" : ""}`}
+          aria-label={ui("bar.hudHoverToInteractClick")}
           onPointerEnter={() => triggerHoverReaction(true)}
           onPointerLeave={() => triggerHoverReaction(false)}
           onClick={e => {
@@ -791,7 +813,7 @@ export function CompanionQuestPin({
               </div>
             </div>
           )}
-        </div>
+        </button>
       )}
 
       {/* Minimal 2-Pill Dock next to bottom-right 3D Dragon (Hover/3-Click on Dino triggers Close-Up Stage) */}
@@ -1140,6 +1162,7 @@ export function CompanionQuestPin({
                   <button
                     key={key}
                     type="button"
+                    aria-pressed={active}
                     onClick={() => setWardrobeSlot(key)}
                     style={{
                       padding: "7px 14px",
@@ -1164,11 +1187,12 @@ export function CompanionQuestPin({
                 const unlocked = state.unlockedItems.includes(item.id);
                 const equipped = state.equipped[item.slot] === item.id;
                 return (
-                  <div
+                  <button
                     key={item.id}
+                    type="button"
                     title={item.description}
                     onClick={() => handleWardrobeItemClick(item.id)}
-                    className={`ans-wardrobe-card group ${equipped ? "is-equipped" : ""}`}
+                    className={`ans-wardrobe-card group text-start ${equipped ? "is-equipped" : ""}`}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "24px" }}>{item.icon}</span>
@@ -1198,7 +1222,7 @@ export function CompanionQuestPin({
                         #{item.styleTag}
                       </span>
                     </div>
-                    <div className="hidden group-hover:block" style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.35 }}>
+                    <div className="hidden group-hover:block group-focus-visible:block" style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.35 }}>
                       {item.description}
                     </div>
                     <div style={{ marginTop: "auto", paddingTop: "4px", fontSize: "11px", fontWeight: 800 }}>
@@ -1212,7 +1236,7 @@ export function CompanionQuestPin({
                         </span>
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
