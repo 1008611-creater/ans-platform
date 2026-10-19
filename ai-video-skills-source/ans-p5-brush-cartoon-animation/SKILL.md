@@ -93,3 +93,18 @@ node render.mjs --out=out/ans_day01_720p.mp4
 1. **直接复用 `src/ans_chars.js`**：在任何新场景中直接调用 `dino(x, y, u, { eyes, mouth, aL, aR, walk, sq, emote })` 与 `creator(x, y, u, { eyes, mouth, aL, aR, walk, sq, emote })`，无需重新画人设。
 2. **新建场景文件 `src/scenes/ans_dayXX.js`**：复制 `src/scenes/ans_day01.js` 的 5 幕脚手架（自带暖白水彩墙面、彩灯串、木地板、顶部深色横幅与底部章节字幕条 `drawSubtitleBar`），仅替换中间的场景道具与文案。
 3. **先跑 `--stills` 过审美门禁，再跑全片 MP4**：严格遵循「先出样片审美确认、后上线」铁律。
+
+---
+
+## 四、 复利归档位置（换电脑 30 秒定位 · 三处同步铁律）
+
+| 资产 | 归档位置 |
+| :--- | :--- |
+| 跨电脑复利总仓（工程 + 素材 + 本 Skill） | https://github.com/1008611-creater/ans-brand-film-studio （分支 `main`）<br>· 工程 `ClaudeAnimationBase/`<br>· 本 Skill `.agents/skills/ans-p5-brush-cartoon-animation/` |
+| 交接图文源稿 + 飞书一键导入包 | 仓库根 `ANS-Day01-P5Brush-Skill-Workflow-Handoff.md` 与 `ANS-Day01-P5Brush-Skill-Workflow-Handoff.feishu-import.docx` |
+| 飞书在线云文档（含内嵌高清设定图与 5 幕关键帧） | https://narcb9vct6.feishu.cn/wiki/EcBsw9QWzigqIVkBQnKcf8sQnvb |
+| ANS 主站仓库 Skill 备份 | https://github.com/1008611-creater/ans-platform 分支 `feat/dev3-ans-skill-refactor`，路径 `ai-video-skills-source/ans-p5-brush-cartoon-animation/` |
+| 本机全局 Skill（Gemini / Codex 双端） | `~/.gemini/config/skills/ans-p5-brush-cartoon-animation/`、`~/.codex/skills/ans-p5-brush-cartoon-animation/` |
+| 跨电脑便携包（离线可用） | `ans-p5-brush-cartoon-v46-portable-kit.zip`（工程 + 素材 + Skill + 交接文档，约 30 MB） |
+
+**三处同步铁律**：改动本 Skill 后，必须依次同步 —— (1) 本仓库 `.agents/skills/` → (2) 全局 `~/.gemini/config/skills/` 与 `~/.codex/skills/` → (3) `ans-platform` 的 `ai-video-skills-source/` 备份，并重新生成便携包，确保复利资产永不掉版本。
