@@ -4517,7 +4517,7 @@ let n = [{
   name: "MVP",
   cn: "MVP",
   cat: "产品规划",
-  tagline: "以最低成本构建核心可用闭环、用于验证核心业务假设的产品最小原型版本。",
+  tagline: "以最低成本构建核心可用流程、用于验证核心业务假设的产品最小原型版本。",
   desc: "例如，想验证用户是否愿意付费时，可以先向目标用户收取真实费用，再用人工方式完成提醒服务。MVP 要取得能支持决定的真实证据，不是把完整产品随便删减后上线。",
   demo: '\n  <div class="mvp-mini">\n    <div class="mvp-mini-col">\n      <small>完整产品</small>\n      <b>6 个月</b>\n      <span>12+ 功能 \xb7 上线后才知道</span>\n    </div>\n    <div class="mvp-mini-col lean">\n      <small>MVP</small>\n      <b>2 周</b>\n      <span>1 个核心 \xb7 即见真实付费</span>\n    </div>\n  </div>',
   en: {

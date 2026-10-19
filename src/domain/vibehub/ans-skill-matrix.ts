@@ -218,7 +218,7 @@ export const ANS_DAILY_SKILLS: readonly AnsDailySkill[] = [
       en: "Multi-Role Sub-Agent Team & Cost Routing",
     },
     trigger: {
-      zh: "跨多个目录排查问题、长链路重构，或希望按 1:20:100 模型成本梯度节省高阶模型周额度时触发。",
+      zh: "跨多个目录排查问题、多步骤重构，或希望按 1:20:100 模型成本梯度节省高阶模型周额度时触发。",
       en: "Use on multi-directory investigations, long-chain refactors, or when routing tasks across 1:20:100 model cost tiers.",
     },
     mechanism: {
@@ -487,7 +487,7 @@ export const ANS_DAILY_SKILLS: readonly AnsDailySkill[] = [
       en: "Every diagram node must map to a real module, file, or documented fact—never decorative abstract shapes.",
     },
     agentPrompt: {
-      zh: "请使用 ans-visual-explainer 将当前方案/代码链路转化为单页可视化图解：只保留真实模块名称、输入输出箭头与关键边界说明，提供改动前后对比视图，剔除一切装饰性废话。",
+      zh: "请使用 ans-visual-explainer 将当前方案与代码流程转化为单页可视化图解：只保留真实模块名称、输入输出箭头与关键边界说明，提供改动前后对比视图，剔除一切装饰性废话。",
       en: "Use ans-visual-explainer to turn this workflow or code path into a single-page visual diagram: show real module names, input/output arrows, boundary notes, and a before/after comparison without decorative filler.",
     },
     relatedTerms: [

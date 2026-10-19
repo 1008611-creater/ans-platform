@@ -115,8 +115,8 @@ export default async function WorkflowRunsPage() {
 
         <details className="group rounded-xl border bg-card p-5">
           <summary className="cursor-pointer list-none font-semibold flex items-center justify-between">
-            <span>📖 运行记录与输出回执参考范例（点击展开 3 条样例）</span>
-            <span className="text-xs font-normal text-muted-foreground group-open:hidden">展开查看 →</span>
+            <span>📖 运行记录与输出回执范例（3 条）</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
           </summary>
           <div className="mt-4 grid gap-5 lg:grid-cols-3">
             {SAMPLE_RUNS.map((run) => (
@@ -187,8 +187,10 @@ export default async function WorkflowRunsPage() {
             const cancellable = run.status === "QUEUED" || run.status === "RUNNING";
             const runAgainHref =
               run.workflow.slug === "ans-portfolio-website"
-                ? "/workflows/ans-portfolio-website"
-                : `/workflows/mine/${run.workflow.slug}`;
+                ? "/market/resume-website"
+                : run.workflow.authorId === session.user.id
+                  ? `/workflows/mine/${run.workflow.slug}`
+                  : `/market?q=${encodeURIComponent(run.workflow.title)}`;
             return (
               <Card key={run.id}>
                 <CardHeader className="pb-3">

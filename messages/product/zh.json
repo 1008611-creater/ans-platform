@@ -155,7 +155,7 @@
       },
       "login_required": {
         "title": "先连接你的 ANS 账号",
-        "body": "点击下方按钮，在新标签页登录 ANS。登录好后回到这页点「重新检查连接」就能接着做啦。"
+        "body": "在新标签页登录 ANS 后，回到本页点「重新检查连接」即可继续。"
       },
       "account_mismatch": {
         "title": "两边登录的账号不一致",
@@ -607,7 +607,7 @@
     "preview": "网站预览",
     "livePreview": "资料实时预览 · 尚未调用 AI 生成",
     "savedPreview": "已保存作品 · 版本 {version}",
-    "previewHint": "先在左侧填好姓名、个人介绍和至少一段项目经历，这里就会立刻呈现你的专属页面预览。",
+    "previewHint": "填好姓名、个人介绍和至少一段项目经历后，将在此实时呈现你的专属页面预览。",
     "previewTitle": "个人网站安全预览",
     "desktop": "宽屏",
     "mobile": "手机",
@@ -3577,7 +3577,7 @@
     "inspecting": "正在解析源码包目录…",
     "fileTree": "源码目录树（共 {files} 个文件 · {dirs} 个目录）",
     "treeTruncated": "目录项较多，仅展示前 800 项。",
-    "selectFileHint": "点击左侧文件可在线预览源码内容。",
+    "selectFileHint": "选择目录树中的文件即可在线预览源码内容。",
     "previewTruncated": "文件较大，仅预览前 96 KB 内容；完整源码请点击下载。",
     "binaryFile": "该文件为二进制或非 UTF-8 编码文件（{size} 字节），请下载源码包查看。"
   },

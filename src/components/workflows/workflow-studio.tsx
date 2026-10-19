@@ -101,7 +101,7 @@ export function WorkflowStudio(props: WorkflowStudioProps) {
         {props.authenticated ? <WorkflowRunForm slug={props.slug} variables={variables} estimatedCost={props.estimatedCost} credentials={props.credentials} embedded onStateChange={setSnapshot} /> : <>
           <p className={styles.hint}>{t("guestPreparation")}</p>
           {variables.length ? <dl className={styles.guestInputs}>{variables.map(variable => <div key={variable.key}><dt>{variable.label}<span>{t(variable.required ? "required" : "optional")}</span></dt><dd>{variable.hint ?? t("inputHint")}</dd></div>)}</dl> : <p className={styles.hint}>{t("noInputs")}</p>}
-          <Button asChild className="w-full"><Link href={`/login?callbackUrl=${encodeURIComponent(`/workflows/${props.slug}#workflow-studio`)}`}>{t("login")}<ArrowRight size={15} /></Link></Button>
+          <Button asChild className="w-full"><Link href={`/login?callbackUrl=${encodeURIComponent(`/workflows/mine/${props.slug}`)}`}>{t("login")}<ArrowRight size={15} /></Link></Button>
         </>}
         <p className={styles.privacy}>{t("privacy")}</p>
         {snapshot.runId && <Link className={styles.recordLink} href="/workflows/runs">{t("records")}<ArrowRight size={13} aria-hidden="true" /></Link>}

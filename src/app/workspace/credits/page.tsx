@@ -113,9 +113,6 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
                     {isEn ? "Sign in →" : "🔐 登录查看账本 →"}
                   </Link>
                 </Button>
-                <Button asChild size="sm" variant="outline" className="h-8 rounded-xl px-3 text-xs">
-                  <Link href="/workspace/benefits">🎁 {isEn ? "Claim Free Points" : "去领免费积分"}</Link>
-                </Button>
               </div>
             </section>
           )}

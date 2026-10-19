@@ -327,7 +327,7 @@ export const ANS_PRACTICES: readonly AnsPractice[] = [
           en: "Pair a clean speaker keyframe with high-contrast two-line typography to render both 16:9 landscape and 3:4 vertical covers at once. Finally, generate timestamped chapters and platform tags from the transcript and upload everything to platform drafts with post-check validation—always stopping at the draft stage so a human clicks Publish.",
         },
         checklist: {
-          zh: ["同时导出 16:9 横版与 3:4 竖版封面，在缩略图尺寸下确认大字清晰可读", "自动化脚本只上传并保存至平台草稿箱，绝不自动点击最终发布", "发布后将字幕稿与后台播放数据沉淀回项目目录，供下一期复盘节奏"],
+          zh: ["同时导出 16:9 横版与 3:4 竖版封面，在缩略图尺寸下确认大字清晰可读", "自动化脚本只上传并保存至平台草稿箱，绝不自动点击最终发布", "发布后将字幕稿与后台播放数据归档回项目目录，供下一期复盘节奏"],
           en: ["Export both 16:9 and 3:4 covers and verify legibility at thumbnail size", "Automation stops at saved platform drafts and never triggers public publishing", "Archive transcripts and performance metrics in the project folder to refine future pacing"],
         },
       },

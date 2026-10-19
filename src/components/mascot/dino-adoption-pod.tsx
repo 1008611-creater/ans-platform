@@ -14,7 +14,7 @@ import {
 
 const TRENDY_NAMES = [
   "薄荷小星龙",
-  "满绩小锦鲤",
+  "满绩小恐龙",
   "4090吞金兽",
   "早八怨种龙",
   "芝士小泡芙",
@@ -193,7 +193,7 @@ export function DinoAdoptionPod({
           </span>
           <div>
             <div style={{ fontSize: "14px", fontWeight: 800, color: "#ffffff" }}>
-              🥚 挑选你的专属灵龙伴侣
+              🥚 挑选你的专属小恐龙伴侣
             </div>
           </div>
         </div>
@@ -212,7 +212,7 @@ export function DinoAdoptionPod({
               cursor: "pointer",
             }}
           >
-            {expanded ? "收起孵化舱 ▲" : "展开挑选灵龙 ▼"}
+            {expanded ? "收起孵化舱 ▲" : "挑选小恐龙 ▼"}
           </button>
         ) : null}
       </div>
@@ -234,7 +234,7 @@ export function DinoAdoptionPod({
             <button
               type="button"
               onClick={handleTapEgg}
-              title="点击敲击灵龙蛋体验破壳动效！"
+              title="敲击恐龙蛋破壳"
               style={{
                 appearance: "none",
                 border: `1.5px dashed ${currentSpecies.palette.eyeGlowHex}`,
@@ -277,7 +277,7 @@ export function DinoAdoptionPod({
                   <iframe
                     ref={previewFrameRef}
                     src="/mascot/3d/embed.html"
-                    title="3D 灵龙实时预览"
+                    title="3D 小恐龙实时预览"
                     tabIndex={-1}
                     style={{
                       position: "absolute",

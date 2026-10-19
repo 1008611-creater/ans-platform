@@ -36,7 +36,7 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
   const pioneerShowcases = [
     {
       title: locale === "zh" ? "智灌云脑 · 日光温室蒸腾预测与精准水肥一体 Agent" : "Smart Irrigation Brain · Greenhouse Evapotranspiration & Fertigation Agent",
-      track: locale === "zh" ? "📖 智慧种植与精准水肥赛道 · 选题参考范例" : "📖 Smart Planting & Fertigation · Reference Sample",
+      track: locale === "zh" ? "智慧种植与精准水肥赛道" : "Smart Planting & Fertigation",
       cover: "/competitions/agrihackathon/gitglow-workflow.webp",
       summary: locale === "zh" ? "融合土壤多深度墒情传感器与气象预报数据，通过大模型动态规划未来 24 小时滴灌脉冲策略。" : "Fuses multi-depth soil moisture sensors with weather forecasts to schedule 24h drip irrigation pulses.",
       hash: locale === "zh" ? "📖 官方选题参考范例" : "📖 Track Reference Sample",
@@ -44,7 +44,7 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
     },
     {
       title: locale === "zh" ? "植保慧眼 · 玉米与番茄叶部病虫害边缘端毫秒级早筛" : "CropGuard Vision · Edge Millisecond Early Screening for Maize & Tomato Diseases",
-      track: locale === "zh" ? "📖 病虫害多模态早筛赛道 · 选题参考范例" : "📖 Crop Disease Early Screening · Reference Sample",
+      track: locale === "zh" ? "病虫害多模态早筛赛道" : "Crop Disease Early Screening",
       cover: "/competitions/agrihackathon/gitglow-tracks.webp",
       summary: locale === "zh" ? "结合轻量化视觉检测与 Qwen2.5-VL 多模态农艺处方生成，支持田间离线推理与防治建议。" : "Combines lightweight vision detection with Qwen2.5-VL agronomic prescriptions for field inference.",
       hash: locale === "zh" ? "📖 官方选题参考范例" : "📖 Track Reference Sample",
@@ -52,7 +52,7 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
     },
     {
       title: locale === "zh" ? "牧瞳巡检 · 规模化牧场畜禽体况评分与异常行为预警" : "LivestockEye · Automated Body Condition Scoring & Anomaly Alerting",
-      track: locale === "zh" ? "📖 畜牧巡检与农业机器人赛道 · 选题参考范例" : "📖 Livestock Vision & Robotics · Reference Sample",
+      track: locale === "zh" ? "畜牧巡检与农业机器人赛道" : "Livestock Vision & Robotics",
       cover: "/competitions/agrihackathon/gitglow-scoring.webp",
       summary: locale === "zh" ? "利用双目深度相机与姿态关键点追踪，全天候监测奶牛反刍时长与采食节律，自动推送干预提醒。" : "Uses stereo depth cameras and pose keypoint tracking to monitor rumination and feeding rhythms.",
       hash: locale === "zh" ? "📖 官方选题参考范例" : "📖 Track Reference Sample",
@@ -67,8 +67,8 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
       <div className="space-y-3 rounded-2xl border bg-muted/20 p-6"><h2 className="font-semibold">{t("empty")}</h2><p className="max-w-prose text-sm leading-6 text-muted-foreground">{t("emptyHint")}</p><div className="flex flex-wrap gap-2 pt-1"><Button asChild variant="outline" size="sm"><WorkspaceLink href="/explore?category=competition&subcategory=agri-wall">{t("browseWall")}</WorkspaceLink></Button><Button asChild variant="ghost" size="sm"><WorkspaceLink href="/competitions/agrihackathon/submissions">{t("goToSubmissions")}</WorkspaceLink></Button></div></div>
       <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4" data-testid="agri-showcase-pioneer-samples">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-foreground">
-          <span>{locale === "zh" ? "📖 查看三大赛道参考样板（组委会正式归档前可参考）" : "📖 View Pioneer Reference Showcase Samples Across 3 Tracks"}</span>
-          <span className="text-xs font-normal text-muted-foreground group-open:hidden">{locale === "zh" ? "点击展开 ▾" : "Expand ▾"}</span>
+          <span>{locale === "zh" ? "📖 查看三大赛道参考样板（3 个选题范例）" : "📖 View Pioneer Reference Showcase Samples Across 3 Tracks"}</span>
+          <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
           <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">{locale === "zh" ? "收起 ▴" : "Collapse ▴"}</span>
         </summary>
         <div className="mt-4 grid gap-4 md:grid-cols-3">

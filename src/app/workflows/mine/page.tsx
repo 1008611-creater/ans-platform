@@ -85,10 +85,13 @@ export default async function MyWorkflowsPage() {
 
         <details className="group rounded-xl border bg-card p-5">
           <summary className="cursor-pointer list-none font-semibold flex items-center justify-between">
-            <span>📖 官方参考工作流蓝图（点击展开 3 个参考模板）</span>
-            <Link href="/market" className="text-sm font-normal text-primary hover:underline">前往工具与工作流市场 →</Link>
+            <span>📖 官方参考工作流蓝图（3 个模板）</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
           </summary>
-          <div className="mt-4 grid gap-5 md:grid-cols-3">
+          <div className="mt-3 flex justify-end">
+            <Link href="/market" className="text-xs font-medium text-primary hover:underline">前往工具与工作流市场 →</Link>
+          </div>
+          <div className="mt-3 grid gap-5 md:grid-cols-3">
             {BLUEPRINT_WORKFLOWS.map((item) => (
               <Card key={item.title} className="group/card overflow-hidden transition hover:border-primary/40 hover:shadow-md">
                 <div className="aspect-[16/9] w-full overflow-hidden border-b bg-muted">
@@ -137,8 +140,7 @@ export default async function MyWorkflowsPage() {
       </header>
 
       <p className="text-sm text-muted-foreground">
-        展示最近 100 个你创建的工作流。草稿和驳回可以继续编辑并提交审核；待审期间正文冻结；
-        已发布的工作流可以追加新版本，运行中的同学仍然跑在原来的不可变版本上。
+        展示你创建的最近 100 条工作流与发布状态。
       </p>
 
       {workflows.length === 0 ? (

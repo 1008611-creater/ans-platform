@@ -27,7 +27,7 @@ const QUICK_KICKOFF_CARDS = [
     workflow: "contest-mvp",
     summary: "适合参加中国农大智耕黑客松的同学：自动帮你生成立项书、基础代码结构与答辩提纲。",
     coverUrl: "/competitions/agrihackathon/gitglow-hub.webp",
-    sandboxHref: "/workspace?thread=thread-agri",
+    sandboxHref: "/explore/agri-pest-vision",
   },
   {
     id: "aigc",
@@ -38,7 +38,7 @@ const QUICK_KICKOFF_CARDS = [
     workflow: "project-one-pager",
     summary: "适合参加 AIGC 视觉与视频创作的同学：帮你整理创意梗概、视觉风格参考与分镜脚本。",
     coverUrl: "/catalog/gitglow-v1/infinite-canvas.webp",
-    sandboxHref: "/workspace?thread=thread-aigc",
+    sandboxHref: "/workflows/toonflow",
   },
   {
     id: "resume",
@@ -49,7 +49,7 @@ const QUICK_KICKOFF_CARDS = [
     workflow: "resume-website",
     summary: "适合做保研/求职作品集：填写个人经历后直接生成带 3D 互动效果的双语个人网站源码。",
     coverUrl: "/catalog/gitglow-v1/magic-resume.webp",
-    sandboxHref: "/workspace?thread=thread-portfolio",
+    sandboxHref: "/market/resume-website",
   },
 ] as const;
 
@@ -103,7 +103,7 @@ export default async function ProjectsPage({
               📖 免登录立项预览
             </Badge>
             <span className="text-xs font-medium text-muted-foreground">
-              当前未登录 · 可直接试填或点下方模板自动带入，提交时引导登录保存
+              免登录可预览课题模板与交付流程；登录后可保存项目并生成 AI 草稿
             </span>
           </div>
           <Button asChild size="sm" className="shrink-0 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500">
@@ -118,7 +118,7 @@ export default async function ProjectsPage({
           <CardHeader>
             <CardTitle>{t("newProject")}</CardTitle>
             <CardDescription>
-              输入课题名称即可立项，或点选下方引导模板一键填入。
+              填写课题名称并选择交付目标。
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -139,14 +139,6 @@ export default async function ProjectsPage({
               <h2 className="text-base font-semibold">
                 📂 我的真实立项项目 ({userId ? projects.length : 0})
               </h2>
-              {!userId && (
-                <Link
-                  href={`/login?callbackUrl=${encodeURIComponent(selection.callbackPath)}`}
-                  className="text-xs font-semibold text-primary underline underline-offset-4"
-                >
-                  登录查看我的项目 →
-                </Link>
-              )}
             </div>
             {userId && projects.length > 0 ? (
               projects.map((project) => (
@@ -197,8 +189,8 @@ export default async function ProjectsPage({
       {/* Onboarding Quick Templates (Collapsed on-demand reference cards) */}
       <details aria-label="3 大快速立项卡片" className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold tracking-tight text-foreground">
-          <span>📖 查看 3 大赛道立项参考样板（可预览完整范例效果）</span>
-          <span className="text-xs font-normal text-muted-foreground group-open:hidden">点击展开 ▾</span>
+          <span>📖 查看 3 大赛道立项参考样板（3 个模板）</span>
+          <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
           <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">收起 ▴</span>
         </summary>
         <div className="mt-4 grid gap-4 md:grid-cols-3">

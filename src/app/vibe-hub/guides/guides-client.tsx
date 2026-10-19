@@ -139,9 +139,9 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
           })}
         </ol>
         <footer className="ans-guide-reference">
-          {(guide.terms.length > 0 || guide.destinations.length > 0) && <nav aria-label={t("relatedTerms")}>
+          {(guide.terms.length > 0 || guide.destinations.length > 1) && <nav aria-label={t("relatedTerms")}>
             {guide.terms.map(term => <Link key={term.slug} href={`/vibe-hub/${term.slug}?lang=${lang}`}>{term.label}<ArrowUpRight size={13} aria-hidden="true" /></Link>)}
-            {guide.destinations.map(item => <Link key={item.href} className="ans-editorial-link" href={destination(item.href)}>{item.label}<ArrowUpRight size={14} aria-hidden="true" /></Link>)}
+            {guide.destinations.slice(1).map(item => <Link key={item.href} className="ans-editorial-link" href={destination(item.href)}>{item.label}<ArrowUpRight size={14} aria-hidden="true" /></Link>)}
           </nav>}
           {completed.length === guide.steps.length && <div className="ans-guide-finished" role="status"><strong>{t("pathCompleteTitle")}</strong><Link className="ans-editorial-link" href="/workspace">{t("workspaceAns")}<ArrowUpRight size={15} aria-hidden="true" /></Link></div>}
         </footer>

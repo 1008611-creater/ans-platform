@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ExternalLink, FileCheck2, Github } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ExternalLink, FileCheck2 } from "lucide-react";
 import { catalogText, catalogSourceLabel } from "@/domain/catalog/content";
 import { projectStartHref, type CatalogProject } from "@/domain/catalog/projects";
 import type { ProjectGuide } from "@/domain/catalog/project-guide-types";
@@ -126,14 +126,6 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
           <p className={styles.kicker}>03 / {isEn ? "DELIVERY & ACCESS" : "真实交付与直达入口"}</p>
           <h2>{isEn ? "What You Get Right Now" : "现在点进去能拿到什么"}</h2>
           <dl className={styles.requirements}>
-            <div>
-              <dt>{isEn ? "Access Status" : "开放状态"}</dt>
-              <dd className="font-semibold text-emerald-600 dark:text-emerald-400">
-                {startHref || primaryConnection
-                  ? (isEn ? "Sample Free · AI Runs Billed by Points" : "样本免费浏览 · 工作流按积分计费")
-                  : (isEn ? "Public Project & Guide" : "公开项目与实操指南")}
-              </dd>
-            </div>
             <div><dt>{d("prepare")}</dt><dd className="whitespace-pre-line">{text("inputs")}</dd></div>
           </dl>
           {methods.length > 0 && <details className={styles.methods}><summary>{d("tools")}</summary><dl>{methods.map(field => <div key={field}><dt>{t(`${field}Title`)}</dt><dd>{text(field)}</dd></div>)}</dl></details>}
@@ -149,7 +141,6 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
         </section>
       </aside>
     </div>
-    <ProductConnectionsSection connections={connections} />
     {related.length > 0 && <section className={styles.related} aria-labelledby="related-projects-title">
       <div className={styles.relatedHeading}><h2 id="related-projects-title">{d("related")}</h2><Link href={`/explore?category=${project.category}`} className="ans-text-link">{d("seeCategory")}<ArrowRight size={15} aria-hidden="true" /></Link></div>
       <div className={styles.relatedGrid}>{related.map(item => <ProjectCard key={item.slug} project={item} compact />)}</div>

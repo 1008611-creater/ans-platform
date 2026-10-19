@@ -12,10 +12,8 @@ const CURATED_SHOWCASE = [
     id: "curated-agri-uav",
     title: "Agri-Vision 农田多光谱无人机病虫害实时巡检系统",
     version: "v2.1",
-    author: "农大智耕队 · 中国农业大学",
+    author: "参考范例 · 智慧植保方向",
     competition: "神农杯 AI 农客松 · 智慧植保赛道",
-    likes: 128,
-    comments: 34,
     cover: "/catalog/ans-pro-v1/agri-uav.webp",
     summary: "结合多光谱航拍切片与 Qwen-VL 视觉诊断流，实现冬小麦条锈病与玉米螟虫害亚米级定位与处方图直出。",
     href: "/competitions/agrihackathon/showcase",
@@ -26,8 +24,6 @@ const CURATED_SHOWCASE = [
     version: "v1.8",
     author: "参考范例 · AIGC 视觉方向",
     competition: "AIGC 创意视觉赛道 · 参考范例",
-    likes: 215,
-    comments: 56,
     cover: "/catalog/ans-pro-v1/infinite-canvas.webp",
     summary: "基于 CAUAI 无限画布工作台实现 12 镜分镜脚本自动拆解、主角特征锁定与动态运镜合成。",
     href: "/competitions/aigc",
@@ -38,22 +34,18 @@ const CURATED_SHOWCASE = [
     version: "v1.4",
     author: "参考范例 · 学术主页方向",
     competition: "ANS 科研主页共创计划 · 参考范例",
-    likes: 94,
-    comments: 19,
     cover: "/catalog/ans-pro-v1/magic-resume.webp",
     summary: "通过 ORCID 与论文 BibTeX 自动构建高颜值响应式学术主页，内置开源数据集下载与论文交互预览。",
     href: "/market/resume-website",
   },
   {
     id: "curated-dragon-arcade",
-    title: "Compute Quest 3D 算力盲盒抓娃娃机与小龙养成展台",
+    title: "Compute Quest 3D 算力盲盒抓娃娃机与小恐龙养成展台",
     version: "v3.0",
     author: "参考范例 · 互动 3D 方向",
     competition: "平台 3D 交互参考样板",
-    likes: 312,
-    comments: 82,
     cover: "/catalog/ans-pro-v1/dragon-arcade.webp",
-    summary: "Three.js 物理刚体碰撞抓娃娃机与五阶神龙进化体系，将参赛与创作 XP 转化为可交互的算力盲盒奖励。",
+    summary: "Three.js 物理刚体碰撞抓娃娃机与小恐龙养成装扮体系，将参赛与创作 XP 转化为可交互的算力盲盒奖励。",
     href: "/workspace/benefits",
   },
   {
@@ -62,8 +54,6 @@ const CURATED_SHOWCASE = [
     version: "v1.5",
     author: "参考范例 · 设施农业方向",
     competition: "神农杯 AI 农客松 · 设施农业赛道",
-    likes: 106,
-    comments: 27,
     cover: "/catalog/ans-pro-v1/greenhouse-os.webp",
     summary: "接入温室物联网传感器时序流，利用多 Agent 博弈策略动态优化滴灌配比与补光时长，节水率提升 23%。",
     href: "/competitions/agrihackathon",
@@ -74,8 +64,6 @@ const CURATED_SHOWCASE = [
     version: "v1.2",
     author: "参考范例 · 短片创作方向",
     competition: "AIGC 创意视觉赛道 · 参考范例",
-    likes: 164,
-    comments: 41,
     cover: "/catalog/ans-pro-v1/ai-video-services.webp",
     summary: "融合传统水墨笔触控制网（ControlNet）与环境音轨生成，呈现谷雨时节茶山采摘与农耕物候之美。",
     href: "/competitions/aigc",
@@ -140,7 +128,7 @@ export default async function ShowcasePage() {
         </div>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed bg-muted/20 px-5 py-4 text-sm text-muted-foreground">
-          <span>{isEn ? "No authorized user releases published yet · Reference track templates are shown below." : "当前暂无已授权公开的用户作品 · 下方为各赛道官方交付参考范例"}</span>
+          <span>{isEn ? "No authorized user releases published yet" : "当前暂无已公开的用户作品"}</span>
           <Link href="/explore/submit" className="font-semibold text-primary hover:underline">
             {isEn ? "Publish the first work →" : "成为首个发布作品的创作者 →"}
           </Link>
@@ -158,7 +146,7 @@ export default async function ShowcasePage() {
         </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {CURATED_SHOWCASE.map((item) => (
-            <Link key={item.id} href={item.href} className="group">
+            <Link key={item.id} href={item.href} title={item.competition} className="group">
               <Card className="h-full overflow-hidden transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
                 <div className="relative aspect-[16/9] w-full overflow-hidden border-b bg-muted">
                   <img
@@ -174,12 +162,11 @@ export default async function ShowcasePage() {
                 </div>
                 <CardContent className="space-y-3 p-5">
                   <h3 className="line-clamp-1 text-lg font-bold tracking-tight group-hover:text-primary">{item.title}</h3>
-                  <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{item.summary}</p>
+                  <p className="line-clamp-1 text-sm leading-6 text-muted-foreground group-hover:line-clamp-2">{item.summary}</p>
                   <div className="flex items-center justify-between border-t pt-3 text-xs">
                     <span className="text-muted-foreground">{item.author}</span>
                     <span className="font-medium text-primary group-hover:underline">{isEn ? "Open guide →" : "查看赛道与模板 →"}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{`适用方向：${item.competition}`}</p>
                 </CardContent>
               </Card>
             </Link>

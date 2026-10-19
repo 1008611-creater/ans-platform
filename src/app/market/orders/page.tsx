@@ -67,8 +67,8 @@ export default async function OrdersPage() {
 
           <details className="group rounded-2xl border bg-card p-5">
             <summary className="cursor-pointer list-none font-semibold flex items-center justify-between">
-              <span>📖 订单交付与创作者 80% 分成参考范例（点击展开 3 条样例）</span>
-              <span className="text-xs font-normal text-muted-foreground group-open:hidden">展开查看 →</span>
+              <span>📖 订单交付与 80% 分成账单范例（3 条）</span>
+              <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
             </summary>
             <div className="mt-4 grid gap-5 md:grid-cols-3">
               {SAMPLE_ORDERS.map((item) => (

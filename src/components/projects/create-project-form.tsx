@@ -104,7 +104,7 @@ export function CreateProjectForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       <div className="space-y-1.5 rounded-xl border border-primary/20 bg-primary/5 p-3">
-        <p className="text-xs font-semibold text-foreground">📖 新手引导 · 点一下可填入常用立项题目（支持自由修改）：</p>
+        <p className="text-xs font-semibold text-foreground">📖 常用立项模板：</p>
         <div className="flex flex-wrap gap-1.5">
           {QUICK_PROJECT_PRESETS.map((preset) => (
             <button
@@ -202,11 +202,9 @@ export function CreateProjectForm({
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {guestMode
-          ? "🔓 当前为免登工坊预览模式：选好课题后点击下方按钮将跳转登录并为你创建专属工作空间。"
-          : t("privateHint")}
-      </p>
+      {!guestMode && (
+        <p className="text-xs text-muted-foreground">{t("privateHint")}</p>
+      )}
       {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}

@@ -34,7 +34,6 @@ export default async function TeamsPage() {
   const [session, p, locale] = await Promise.all([auth(), getTranslations("product"), getLocale()]);
   const isEn = locale.startsWith("en");
   const viewerId = session?.user?.id ?? null;
-  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
 
   const [mine, competitions] = await Promise.all([
     viewerId ? listMyTeams(viewerId) : Promise.resolve({ teams: [], invites: [] }),
@@ -53,7 +52,7 @@ export default async function TeamsPage() {
         description={
           isEn
             ? "Join campus AI, AIGC, and hackathon competitions across universities. Form teams, claim shared compute grants, and ship real projects."
-            : "我们组织参加北京及全国高校的 AI、AIGC、黑客松赛事。平台负责组队、发放比赛算力包、沉淀作品。"
+            : "我们组织参加北京及全国高校的 AI、AIGC、黑客松赛事。平台负责组队、发放比赛算力包、展示作品。"
         }
         actions={<Button asChild variant="outline"><Link href="/competitions">{p("nav.competitions")}</Link></Button>}
       />
@@ -61,13 +60,7 @@ export default async function TeamsPage() {
       <section className="mb-12">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">{isEn ? "My Teams" : "我的团队"}</h2>
-          {viewerId ? (
-            <CreateTeamForm />
-          ) : (
-            <Button asChild size="sm">
-              <Link href="/login?callbackUrl=/teams">{isEn ? "Sign in to view" : "登录后查看"}</Link>
-            </Button>
-          )}
+          {viewerId ? <CreateTeamForm /> : null}
         </div>
 
         {!viewerId ? (
@@ -79,7 +72,7 @@ export default async function TeamsPage() {
                     {isEn ? "1–5 Members · Shared Compute" : "1–5 人跨学科组队 · 共享赛事算力池"}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {isEn ? "Sign in to create a team and allocate shared points." : "登录后创建战队并分配赛事算力额度（下方为组队分工范例）"}
+                    {isEn ? "Sign in to create a team and allocate shared points." : "登录后创建战队并分配赛事算力额度"}
                   </span>
                 </div>
                 <Button asChild size="sm" className="shrink-0 rounded-xl">
@@ -238,7 +231,7 @@ export default async function TeamsPage() {
                   <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
                 </div>
                 <CardDescription className="line-clamp-1 group-hover:line-clamp-none">
-                  {isEn ? "Connect CAUAI Infinite Canvas, Plane project tracking, and multimodal video pipelines." : "直连 CAUAI 无限画布、Plane 团队排期与多模态视频流水线，一站式沉淀参赛作品集。"}
+                  {isEn ? "Connect CAUAI Infinite Canvas, Plane project tracking, and multimodal video pipelines." : "直连 CAUAI 无限画布、Plane 团队排期与多模态视频流水线，一站式整理参赛作品集。"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
@@ -263,9 +256,9 @@ export default async function TeamsPage() {
               const targetHref = c.url || (isAgri ? "/competitions/agrihackathon" : "/competitions/aigc");
               return (
                 <Card key={c.id} className="overflow-hidden border-border/80 transition-colors hover:border-primary/50">
-                  <Link href={targetHref} className="block overflow-hidden border-b">
+                  <div className="overflow-hidden border-b">
                     <img src={coverSrc} alt={c.title} loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
-                  </Link>
+                  </div>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-base">{c.title}</CardTitle>
@@ -291,9 +284,9 @@ export default async function TeamsPage() {
             })}
             {competitions.length < 2 && !competitions.some(c => (c.url ?? "").includes("aigc") || c.title.toLowerCase().includes("aigc")) && (
               <Card className="group overflow-hidden border-border/80 transition-colors hover:border-primary/50">
-                <Link href="/competitions/aigc" className="block overflow-hidden border-b">
+                <div className="overflow-hidden border-b">
                   <img src="/catalog/ans-pro-v1/infinite-canvas.webp" alt="AIGC Creative Track" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
-                </Link>
+                </div>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-base">
@@ -302,7 +295,7 @@ export default async function TeamsPage() {
                     <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
                   </div>
                   <CardDescription className="line-clamp-1 group-hover:line-clamp-none">
-                    {isEn ? "Connect CAUAI Infinite Canvas, Plane project tracking, and multimodal video pipelines." : "直连 CAUAI 无限画布、Plane 团队排期与多模态视频流水线，一站式沉淀参赛作品集。"}
+                    {isEn ? "Connect CAUAI Infinite Canvas, Plane project tracking, and multimodal video pipelines." : "直连 CAUAI 无限画布、Plane 团队排期与多模态视频流水线，一站式整理参赛作品集。"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center justify-between pt-0">
