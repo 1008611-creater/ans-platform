@@ -1,0 +1,75 @@
+# jianli.cauai.fun —— 根站内容已合并进 resume，改为 301。
+#
+# ⚠️ /portfolio/ 不参与跳转：它是**另一个独立站点**
+#    「刘曙宾 · AIGC 动效作品集」（精选 11 条 + 作品库 31 条，516K）。
+#    它的资源全用相对路径 ./assets/，与根站互不依赖。
+#    整域 301 会把它一起跳掉，所以必须单独保留。
+#
+# 为什么 301：resume 与 jianli 是同一个人的同一份简历的两套设计，
+# 内容已合并（作品封面 / 章节导航 / 环境贴图压缩）。
+# 保留两个 URL 会让搜索引擎判重、也让以后改一处要改两处。
+#
+# 变更历史：改成 301 之前的完整配置备份为
+#    /etc/nginx/sites-available/jianli.cauai.fun.pre-301-20260921
+#    更早的还有 .pre-full / .pre-fontfix
+#
+# HTTP(80) 块刻意保持不动（certbot 托管）：那里仍跳 HTTPS(jianli)，
+# 由本块再决定去向。这样 certbot 的 ACME 校验路径不受影响，续期零风险。
+
+server {
+    server_name jianli.cauai.fun;
+    root /var/www/jianli;
+    index index.html;
+
+    # 访问日志（与其他 cauai.fun 站点保持一致的命名方式）
+    access_log /var/log/nginx/jianli.access.log;
+    error_log  /var/log/nginx/jianli.error.log;
+
+    # ---- 安全响应头 ----
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # ---- AIGC 动效作品集（独立站点，原样保留）----
+    location /portfolio/ {
+        try_files $uri $uri/ /portfolio/index.html;
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+    location = /portfolio/index.html {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+    location ~* ^/portfolio/assets/.*\.(js|css)$ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        access_log off;
+    }
+    location ~* ^/portfolio/assets/.*\.woff2$ {
+        types { font/woff2 woff2; }
+        default_type font/woff2;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        access_log off;
+    }
+
+    # ---- 其余全部 301 到 resume ----
+    # 用 $request_uri 而非 $uri，保留原始路径与查询串（便于以后按路径映射）。
+    location / {
+        return 301 https://resume.cauai.fun$request_uri;
+    }
+
+    listen [::]:443 ssl; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/jianli.cauai.fun/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/jianli.cauai.fun/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+    if ($host = jianli.cauai.fun) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    listen [::]:80;
+    server_name jianli.cauai.fun;
+    return 404; # managed by Certbot
+}

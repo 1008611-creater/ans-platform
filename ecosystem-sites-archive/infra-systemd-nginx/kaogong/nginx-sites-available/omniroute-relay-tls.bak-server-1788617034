@@ -1,0 +1,28 @@
+# Local HTTPS front for the OmniRoute reverse-SSH tunnel.
+# Uses the existing valid Let's Encrypt cert for origin-canary.cauai.fun.
+# 127.0.0.1    : host-local testing
+# 172.19.0.1  : reachable from the sub2api container (docker bridge gw)
+server {
+    listen 127.0.0.1:20130 ssl;
+    listen 172.19.0.1:20130 ssl;
+    server_name origin-canary.cauai.fun;
+
+    ssl_certificate     /etc/letsencrypt/live/origin-canary.cauai.fun/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/origin-canary.cauai.fun/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass https://127.0.0.1:20128;
+        proxy_ssl_verify off;
+        proxy_http_version 1.1;
+        proxy_set_header Host origin-canary.cauai.fun;
+        proxy_set_header Connection "";
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+}

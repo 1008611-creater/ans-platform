@@ -187,7 +187,7 @@ describe("selected companion model authorization", () => {
   it("uses the shared consumption factors without equating unlike base prices", () => {
     expect(RUN_MODEL_METERING["gpt-6-astra"].consumptionMultiplier).toBe(0.16);
     expect(RUN_MODEL_METERING["gpt-6.1-sol"].consumptionMultiplier).toBe(0.16);
-    expect(RUN_MODEL_METERING["deepseek-v4.1-flash"].consumptionMultiplier).toBe(1);
+    expect(RUN_MODEL_METERING["deepseek-v4.1-flash"].consumptionMultiplier).toBe(1.5);
     expect(agentMaxPoints("gpt-6-astra")).toBeGreaterThan(agentMaxPoints("gpt-6.1-sol"));
     expect(agentMaxPoints("gpt-6.1-sol")).toBeGreaterThan(agentMaxPoints("deepseek-v4.1-flash"));
   });

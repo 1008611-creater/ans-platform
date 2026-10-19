@@ -1,0 +1,70 @@
+server {
+    server_name jianli.cauai.fun;
+    root /var/www/jianli;
+    index index.html;
+
+    access_log /var/log/nginx/jianli.access.log;
+    error_log  /var/log/nginx/jianli.error.log;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+
+    location / { try_files $uri $uri/ /index.html; }
+
+    location = /index.html {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+
+    location ~* ^/assets/(index|react|r3f|three)-[A-Za-z0-9_-]+\.(js|css)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable" always;
+        access_log off;
+    }
+
+    location /assets/models/ {
+        expires 30d;
+        add_header Cache-Control "public" always;
+        gzip_static on;
+        default_type model/gltf-binary;
+    }
+
+    location /assets/stickers/ {
+        expires 30d;
+        add_header Cache-Control "public" always;
+        access_log off;
+    }
+
+    location /assets/thumbs/ {
+        expires 30d;
+        add_header Cache-Control "public" always;
+        access_log off;
+    }
+
+    location /assets/env/ {
+        expires 30d;
+        add_header Cache-Control "public" always;
+        default_type application/octet-stream;
+        access_log off;
+    }
+
+    listen [::]:443 ssl; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/jianli.cauai.fun/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/jianli.cauai.fun/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = jianli.cauai.fun) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    listen [::]:80;
+    server_name jianli.cauai.fun;
+    return 404; # managed by Certbot
+
+
+}

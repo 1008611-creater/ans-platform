@@ -1,0 +1,23 @@
+.featured,
+.row,
+.review,
+.inspector {
+  display: grid !important;
+  align-content: space-between;
+  color: #f3fbf6;
+  background: linear-gradient(145deg, #21584c, #193940);
+}
+
+.featured { width: 72px; height: 72px; overflow: hidden; padding: 8px; }
+.row { width: 50px; height: 50px; overflow: hidden; border-radius: 6px; padding: 6px; }
+.review { width: 46px; height: 46px; overflow: hidden; border-radius: 6px; padding: 6px; }
+.featured small,
+.row small,
+.review small { display: block !important; overflow: hidden; color: #c8eee0 !important; font-size: 9px !important; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.featured b,
+.row b,
+.review b { color: #fff; font-size: 16px; line-height: 1; }
+.inspector { width: 100%; aspect-ratio: 1.25; margin-top: 18px; border-radius: 7px; padding: 16px; }
+.inspector span,
+.inspector small { color: #bfe8d8; font-size: 11px; font-weight: 800; }
+.inspector strong { color: #fff; font-size: 16px; line-height: 1.35; }

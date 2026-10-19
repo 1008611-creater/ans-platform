@@ -1,0 +1,125 @@
+server {
+    server_name jianli.cauai.fun;
+    root /var/www/jianli;
+    index index.html;
+
+    # 访问日志（与其他 cauai.fun 站点保持一致的命名方式）
+    access_log /var/log/nginx/jianli.access.log;
+    error_log  /var/log/nginx/jianli.error.log;
+
+    # ---- 安全响应头 ----
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # ---- SPA 回退 ----
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # ---- AIGC 动效作品集子页面 ----
+    location /portfolio/ {
+        try_files $uri $uri/ /portfolio/index.html;
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+    location = /portfolio/index.html {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+    location ~* ^/portfolio/assets/.*\.(js|css)$ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        access_log off;
+    }
+    location ~* ^/portfolio/assets/.*\.woff2$ {
+        types { font/woff2 woff2; }
+        default_type font/woff2;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        access_log off;
+    }
+
+    # ---- index.html 绝不缓存，保证改版立即生效 ----
+    location = /index.html {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+        add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    # ---- 带内容 hash 的构建产物：永久缓存 ----
+    location ~* ^/assets/(index|react|r3f|three)-[A-Za-z0-9_-]+\.(js|css)$ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        access_log off;
+    }
+
+    # ---- 3D 模型：文件大，长期缓存 + 预压缩 ----
+    # ⚠️ 不要用 `expires` + `add_header Cache-Control` 组合：
+    #    前者输出 `Cache-Control: max-age=N`，后者再追加一条 `Cache-Control: public`，
+    #    响应里会出现**两个 Cache-Control 头**，Cloudflare 视其为不可靠而拒绝缓存
+    #    （表现为 cf-cache-status: DYNAMIC，每次都回源慢速重传）。
+    #    正确做法是用 add_header 一次性给出完整值。
+    location /assets/models/ {
+        add_header Cache-Control "public, max-age=2592000" always;
+
+        # 若存在 .gz 预压缩副本则直接发送，省掉实时压缩的 CPU
+        gzip_static on;
+
+        types {
+            model/gltf-binary glb bin;
+        }
+        default_type model/gltf-binary;
+    }
+
+    # ---- 贴纸与缩略图：内容极少变动，长期缓存 ----
+    location /assets/stickers/ {
+        add_header Cache-Control "public, max-age=2592000" always;
+        access_log off;
+    }
+    location /assets/thumbs/ {
+        add_header Cache-Control "public, max-age=2592000" always;
+        access_log off;
+    }
+
+    # ---- 环境贴图 ----
+    # 已是打包好的 WebP（见 scripts/pack-hdri.mjs，289KB → 8.3KB）。
+    # 保留 .hdr 的 MIME 仅为了兼容可能残留的旧文件。
+    location /assets/env/ {
+        add_header Cache-Control "public, max-age=2592000" always;
+        types {
+            image/webp webp;
+            application/octet-stream hdr;
+        }
+        default_type image/webp;
+        access_log off;
+    }
+
+    # ---- 字体（本地自托管，见 src/styles/fonts.css）----
+    # 注意：本机 /etc/nginx/mime.types 不包含 woff2，必须在此显式声明 types，
+    # 否则会退回 default_type（application/octet-stream），影响字体解码与缓存效率。
+    location ~* \.(woff2?|ttf|otf|eot)$ {
+        types {
+            font/woff2  woff2;
+            font/woff   woff;
+            font/ttf    ttf;
+            font/otf    otf;
+            application/vnd.ms-fontobject eot;
+        }
+        default_type font/woff2;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        access_log off;
+    }
+
+    listen [::]:443 ssl; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/jianli.cauai.fun/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/jianli.cauai.fun/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+    if ($host = jianli.cauai.fun) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    listen [::]:80;
+    server_name jianli.cauai.fun;
+    return 404; # managed by Certbot
+}

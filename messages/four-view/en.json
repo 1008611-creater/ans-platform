@@ -1,6 +1,6 @@
 {
   "title": "Prepare four views first",
-  "description": "Original image → grid and crops for 5 points → review front, back, left and right → 3D for 10 points. Total: 15 points. Direct single-image modeling is also available.",
+  "description": "Original image → grid and crops for 5 points → review front, back, left and right → 3D for 20 points. Total: 25 points. Direct single-image modeling is also available.",
   "ratio": "Grid aspect ratio",
   "dimensions": "Full canvas: {width} × {height} pixels, split at the midpoint into four views. Landscape and portrait are 4K; other ratios show their actual dimensions.",
   "acknowledge": "I confirm {points} points for four-view preparation. Modeling requires a separate confirmation.",

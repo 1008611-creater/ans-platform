@@ -12,10 +12,10 @@ export function useVoiceOffer(actor: string | null, enabled: boolean) {
     void fetch("/api/mascot/tts", { headers: { "x-ans-actor": actor }, cache: "no-store", signal: controller.signal })
       .then(async response => { if (!response.ok) return null; const value: unknown = await response.json();
         const offer = value as Partial<VoiceOffer> | null;
-        return offer?.available === true && offer.mode === "free" && offer.points === 0 && typeof offer.policyVersion === "string"
+        return offer?.available === true && (offer.mode === "free" || offer.mode === "paid") && typeof offer.points === "number" && offer.points >= 0 && typeof offer.policyVersion === "string"
           && typeof offer.reviewBy === "string" && Date.parse(offer.reviewBy) > Date.now() ? offer as VoiceOffer : null;
       }).then(offer => { if (live) { setResult(offer ? { actor, offer } : null);
-        if (offer) expiration = setTimeout(() => { if (live) setResult(null); }, Date.parse(offer.reviewBy) - Date.now());
+        if (offer) expiration = setTimeout(() => { if (live) setResult(null); }, Math.min(2_147_483_647, Math.max(0, Date.parse(offer.reviewBy) - Date.now())));
       } }).catch(() => { if (live) setResult(null); });
     return () => { live = false; controller.abort(); clearTimeout(expiration); };
   }, [actor, enabled]);

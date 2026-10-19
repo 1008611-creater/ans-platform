@@ -21,9 +21,9 @@ describe("approved VibePlan terms and closed sales", () => {
     const plan = screen.getByRole("article", { name: "VibePlan" });
     const pro = screen.getByRole("article", { name: "VibePlan Pro" });
     expect(within(plan).getByText("¥49")).toBeVisible();
-    expect(within(plan).getByText("含 300 算力积分")).toBeVisible();
+    expect(within(plan).getByText("含 650 算力积分")).toBeVisible();
     expect(within(pro).getByText("¥129")).toBeVisible();
-    expect(within(pro).getByText("含 800 算力积分")).toBeVisible();
+    expect(within(pro).getByText("含 1,800 算力积分")).toBeVisible();
     expect(screen.getAllByRole("button", { name: "开放筹备中" })).toHaveLength(2);
     screen.getAllByRole("button", { name: "开放筹备中" }).forEach(button => expect(button).toBeDisabled());
     expect(screen.queryByRole("textbox")).toBeNull();
@@ -33,15 +33,15 @@ describe("approved VibePlan terms and closed sales", () => {
     const user = userEvent.setup(); mount();
     await user.click(screen.getByRole("tab", { name: "周卡" }));
     expect(within(screen.getByRole("article", { name: "VibePlan" })).getByText("¥19")).toBeVisible();
-    expect(screen.getByText("含 100 算力积分")).toBeVisible();
+    expect(screen.getByText("含 230 算力积分")).toBeVisible();
     expect(screen.getAllByText("开通发放一次，积分有效 14 天。")).toHaveLength(2);
     await user.click(screen.getByRole("tab", { name: "季卡" }));
     expect(screen.getAllByRole("tabpanel")).toHaveLength(1);
     expect(within(screen.getByRole("article", { name: "VibePlan" })).getByText("¥129")).toBeVisible();
     expect(within(screen.getByRole("article", { name: "VibePlan Pro" })).getByText("¥329")).toBeVisible();
-    expect(screen.getByText("含 900 算力积分")).toBeVisible();
-    expect(screen.getByText("含 2,400 算力积分")).toBeVisible();
-    expect(screen.getByText("开通、第30天、第60天各发放 800 积分，每批有效60天。")).toBeVisible();
+    expect(screen.getByText("含 1,800 算力积分")).toBeVisible();
+    expect(screen.getByText("含 4,950 算力积分")).toBeVisible();
+    expect(screen.getByText("开通、第30天、第60天各发放 1,650 积分，每批有效60天。")).toBeVisible();
   });
   it("supports keyboard period navigation and one visible panel", async () => {
     const user = userEvent.setup(); mount();
@@ -63,7 +63,7 @@ describe("approved VibePlan terms and closed sales", () => {
   it("renders aligned English copy without claiming present membership benefits", () => {
     mount("en");
     expect(screen.getByRole("tab", { name: "Monthly" })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByText("Includes 800 compute points")).toBeVisible();
+    expect(screen.getByText("Includes 1,800 compute points")).toBeVisible();
     expect(screen.getByText("Planned: batch execution and version branches")).toBeVisible();
     expect(screen.getAllByRole("button", { name: "Preparing to open" })).toHaveLength(2);
     expect(screen.getByRole("link", { name: "Open points center" })).toHaveAttribute("href", "/workspace/credits");

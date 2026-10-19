@@ -1,0 +1,22 @@
+{
+  "name": "canvas-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "无限画布服务端：账号、项目、素材、媒体文件。服务端是真相来源。",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "selftest": "node selftest.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1"
+  }
+}

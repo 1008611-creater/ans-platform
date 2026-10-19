@@ -1,0 +1,24 @@
+/* Photo-led wall: filled desktop row, swipeable mobile gallery. */
+.wall{margin:0 0 28px}
+.heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:24px 0 18px}
+.heading h1{font:750 28px/1.25 system-ui;letter-spacing:-.7px;margin:0}
+.heading p{font-size:13px;color:oklch(51% .014 105);margin:7px 0 0}
+.heading>span{font-size:11px;color:oklch(51% .014 105)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:20px}
+.card{min-width:0;overflow:hidden;border-radius:12px;background:oklch(99% .006 105);border:1px solid oklch(88% .013 105)}
+.photo{position:relative;display:block;width:100%;border:0;padding:0;background:oklch(91% .013 105);cursor:zoom-in;overflow:hidden}
+.photo img{display:block;width:100%;height:clamp(300px,48vh,440px);object-fit:cover;object-position:50% 42%}
+.photo>span{position:absolute;left:12px;top:12px;background:oklch(99% .006 105 / .94);color:oklch(38% .02 105);font-size:10px;border-radius:20px;padding:6px 9px}
+.caption{padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.caption>div{min-width:0}.caption b{display:block;font-size:14px;line-height:1.5}.caption span{display:block;margin-top:5px;font-size:11px;line-height:1.6;color:oklch(51% .014 105)}
+.caption button,.remix{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;background:oklch(49% .235 267);color:oklch(99% .006 105);border:0;border-radius:8px;font-size:13px;cursor:pointer;flex-shrink:0}
+.caption button:hover,.remix:hover{background:oklch(43% .225 267)}.caption button:disabled,.remix:disabled{opacity:.5;cursor:wait}
+.wall button:focus-visible{outline:3px solid oklch(49% .235 267);outline-offset:3px}
+.pending{padding:16px;border:1px dashed oklch(80% .013 105);border-radius:9px;font-size:13px;color:oklch(51% .014 105)}
+.viewer{width:min(700px,calc(100vw - 24px));max-height:calc(100dvh - 24px);margin:auto;padding:0;border:0;border-radius:15px;background:oklch(97% .008 105);overflow:auto}
+.viewer::backdrop{background:oklch(22% .02 150 / .85)}
+.viewer header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px}.viewer header b{font-size:16px}.viewer header p{font-size:12px;color:oklch(51% .014 105);margin:5px 0 0}
+.viewer header button{display:grid;place-items:center;width:44px;height:44px;border:1px solid oklch(88% .013 105);border-radius:10px;background:none;cursor:pointer}
+.viewer>img{display:block;max-height:70dvh;object-fit:contain;width:100%;height:auto}.remix{margin:15px 20px;width:calc(100% - 40px);font-size:14px}
+@media(max-width:1000px) and (min-width:761px){.caption{align-items:flex-start;flex-direction:column}.caption button{width:100%}}
+@media(max-width:760px){.heading{padding:18px 0 16px}.heading h1{font-size:25px}.heading p{font-size:12px}.grid{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82%;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 0 12px;scroll-padding-inline:1px}.card{scroll-snap-align:start}.photo img{height:auto;aspect-ratio:2/3;object-fit:contain}.caption{align-items:flex-start;flex-direction:column;gap:10px}.caption button{width:100%}.caption span{font-size:12px}.wall{margin-bottom:12px}}

@@ -8,4 +8,4 @@ export const voiceRequestSchema = z.object({
   idempotencyKey: voiceRequestKey,
 }).strict();
 export type VoiceInput = z.infer<typeof voiceRequestSchema>;
-export type VoiceOffer = { available: boolean; mode: "free"; points: 0; modelId: string; policyVersion: string; checkedAt: string; reviewBy: string; cacheHours: number; maxCharacters: number };
+export type VoiceOffer = { available: boolean; mode: "free" | "paid"; points: number; modelId: string; policyVersion: string; checkedAt: string; reviewBy: string; cacheHours: number; maxCharacters: number };

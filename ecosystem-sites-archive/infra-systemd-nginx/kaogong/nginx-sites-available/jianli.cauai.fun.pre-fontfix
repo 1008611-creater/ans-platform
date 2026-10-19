@@ -1,0 +1,95 @@
+server {
+    server_name jianli.cauai.fun;
+    root /var/www/jianli;
+    index index.html;
+
+    # 访问日志（与其他 cauai.fun 站点保持一致的命名方式）
+    access_log /var/log/nginx/jianli.access.log;
+    error_log  /var/log/nginx/jianli.error.log;
+
+    # ---- 安全响应头 ----
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # ---- SPA 回退 ----
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # ---- index.html 绝不缓存，保证改版立即生效 ----
+    location = /index.html {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+        add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    # ---- 带内容 hash 的构建产物：永久缓存 ----
+    location ~* ^/assets/(index|react|r3f|three)-[A-Za-z0-9_-]+\.(js|css)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable" always;
+        access_log off;
+    }
+
+    # ---- 3D 模型：文件大，长期缓存 + 预压缩 ----
+    # 14MB 的 GLB 压缩后约 4MB，对首屏体感影响最大
+    location /assets/models/ {
+        expires 30d;
+        add_header Cache-Control "public" always;
+
+        # 若存在 .gz 预压缩副本则直接发送，省掉实时压缩的 CPU
+        gzip_static on;
+
+        types {
+            model/gltf-binary glb;
+        }
+        default_type model/gltf-binary;
+    }
+
+    # ---- 贴纸与缩略图：内容极少变动，长期缓存 ----
+    location /assets/stickers/ {
+        expires 30d;
+        add_header Cache-Control "public" always;
+        access_log off;
+    }
+    location /assets/thumbs/ {
+        expires 30d;
+        add_header Cache-Control "public" always;
+        access_log off;
+    }
+
+    # ---- HDRI 环境贴图 ----
+    location /assets/env/ {
+        expires 30d;
+        add_header Cache-Control "public" always;
+        types {
+            application/octet-stream hdr;
+        }
+        default_type application/octet-stream;
+        access_log off;
+    }
+
+    # ---- 字体（Google Fonts 走外部，这里只兜底本地字体） ----
+    location ~* \.(woff2?|ttf|otf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable" always;
+        access_log off;
+    }
+
+    listen [::]:443 ssl; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/jianli.cauai.fun/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/jianli.cauai.fun/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+    if ($host = jianli.cauai.fun) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    listen [::]:80;
+    server_name jianli.cauai.fun;
+    return 404; # managed by Certbot
+}

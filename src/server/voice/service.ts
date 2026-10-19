@@ -2,13 +2,13 @@ import { createHash } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { voiceRequestSchema, voiceRequestKey } from "@/contracts/voice";
-import { assertAccountCanSpend } from "@/server/quota/service";
+import { assertAccountCanSpend, debitQuota, refundQuota } from "@/server/quota/service";
 import { HttpRequestError } from "@/server/http/json";
 import { VOICE_PROVIDER, VOICE_MODEL, VOICE_POLICY, VOICE_MAX_BYTES, VOICE_STORAGE_CAP, VOICE_CACHE_MS, VOICE_TIMEOUT_MS, voiceOffer } from "./policy";
 
 export class VoiceError extends HttpRequestError {}
 const hash = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
-const requestSelect = { id: true, state: true, settledPoints: true, policyVersion: true, modelId: true, maxUnits: true, createdAt: true, finishedAt: true } as const;
+const requestSelect = { id: true, state: true, authorizedPoints: true, settledPoints: true, policyVersion: true, modelId: true, maxUnits: true, createdAt: true, finishedAt: true } as const;
 
 export async function readVoiceOffer(userId: string) {
   // One account SELECT needs no interactive transaction or held connection.
@@ -26,16 +26,17 @@ export async function generateVoice(userId: string, raw: unknown) {
     // A provider-wide lock makes both global resource caps and per-account limits durable.
     await tx.$queryRaw`SELECT pg_advisory_xact_lock(1634628436, 1)::text AS locked`;
     await tx.$queryRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
-    await assertAccountCanSpend(tx, userId, 0);
     const previous = await tx.apiComputeRequest.findUnique({ where: { userId_provider_idempotencyKey: { userId, provider: VOICE_PROVIDER, idempotencyKey: input.idempotencyKey } }, select: { id: true, requestHash: true } });
     if (previous) {
       if (previous.requestHash !== requestHash) throw new VoiceError("REQUEST_HASH_CONFLICT", 409);
-      return { id: previous.id, dispatch: false };
+      return { id: previous.id, dispatch: false, costPoints: 0 };
     }
     const now = new Date();
     const offer = voiceOffer(now);
     if (!offer.available) throw new VoiceError("VOICE_UNAVAILABLE", 503);
     if (input.policyVersion !== offer.policyVersion) throw new VoiceError("VOICE_POLICY_CHANGED", 409);
+    const costPoints = Math.max(0, Number(offer.points || 0));
+    await assertAccountCanSpend(tx, userId, costPoints);
     await tx.voiceResult.deleteMany({ where: { expiresAt: { lte: now } } });
     await tx.apiComputeRequest.updateMany({ where: { provider: VOICE_PROVIDER, state: "RUNNING", startedAt: { lt: new Date(now.getTime() - 2 * VOICE_TIMEOUT_MS) } }, data: { state: "UNCERTAIN", outcome: "VOICE_INTERRUPTED_UNKNOWN" } });
     const [recent, daily, active, globalRecent, globalActive, stored] = await Promise.all([
@@ -50,9 +51,11 @@ export async function generateVoice(userId: string, raw: unknown) {
     if (globalRecent >= 200 || globalActive >= 8 || Number(stored._sum.byteLength ?? 0) + (globalActive + 1) * VOICE_MAX_BYTES > VOICE_STORAGE_CAP) throw new VoiceError("VOICE_CAPACITY_LIMITED", 503);
     const row = await tx.apiComputeRequest.create({ data: { userId, provider: VOICE_PROVIDER, idempotencyKey: input.idempotencyKey, requestHash,
       modelId: VOICE_MODEL, policyVersion: VOICE_POLICY.version, price: { ...VOICE_POLICY, voice: input.voice, unit: "unicode-character", audioRetentionHours: 24 },
-      maxUnits: [...input.text].length, authorizedPoints: 0, state: "RUNNING", startedAt: now }, select: { id: true } });
-    // Zero-price calls live in the unified usage audit, not fake zero-amount balance ledger entries.
-    return { id: row.id, dispatch: true };
+      maxUnits: [...input.text].length, authorizedPoints: costPoints, state: "RUNNING", startedAt: now }, select: { id: true } });
+    if (costPoints > 0) {
+      await debitQuota(tx, { userId, costPoints, ref: { type: "voice-tts", id: row.id }, note: `Mimo TTS 语音合成 (${costPoints}点/次)` });
+    }
+    return { id: row.id, dispatch: true, costPoints };
   }, { timeout: 15_000, maxWait: 10_000 });
   if (!reservation.dispatch) return readVoiceRequest(userId, input.idempotencyKey, true);
   let result: { audio: Uint8Array; sha256: string };
@@ -84,7 +87,7 @@ export async function generateVoice(userId: string, raw: unknown) {
     await db.$transaction(async tx => {
       await tx.$queryRaw`SELECT pg_advisory_xact_lock(1634628436, 1)::text AS locked`;
       const changed = await tx.apiComputeRequest.updateMany({ where: { id: reservation.id, provider: VOICE_PROVIDER, state: "RUNNING" },
-        data: { state: "SETTLED", settledPoints: 0, outcome: "VOICE_AUDIO_STORED", finishedAt: new Date() } });
+        data: { state: "SETTLED", settledPoints: reservation.costPoints, outcome: "VOICE_AUDIO_STORED", finishedAt: new Date() } });
       if (changed.count !== 1) throw new VoiceError("VOICE_STATE_CONFLICT", 409);
       await tx.voiceResult.create({ data: { requestId: reservation.id, audio: new Uint8Array(result.audio), byteLength: result.audio.byteLength,
         sha256: result.sha256, expiresAt: new Date(Date.now() + VOICE_CACHE_MS) } });
@@ -96,8 +99,14 @@ export async function generateVoice(userId: string, raw: unknown) {
 }
 
 async function recordFailure(id: string, state: "RELEASED" | "UNCERTAIN", outcome: string) {
-  await db.apiComputeRequest.updateMany({ where: { id, provider: VOICE_PROVIDER, state: "RUNNING" },
-    data: { state, outcome, settledPoints: state === "RELEASED" ? 0 : null, finishedAt: state === "RELEASED" ? new Date() : null } });
+  await db.$transaction(async tx => {
+    const row = await tx.apiComputeRequest.findUnique({ where: { id }, select: { userId: true, authorizedPoints: true } });
+    const changed = await tx.apiComputeRequest.updateMany({ where: { id, provider: VOICE_PROVIDER, state: "RUNNING" },
+      data: { state, outcome, settledPoints: 0, finishedAt: state === "RELEASED" ? new Date() : null } });
+    if (changed.count === 1 && row && Number(row.authorizedPoints) > 0) {
+      await refundQuota(tx, { userId: row.userId, costPoints: Number(row.authorizedPoints), ref: { type: "voice-tts", id }, note: "Mimo TTS 语音合成未完成自动退回" });
+    }
+  });
 }
 
 export async function readVoiceRequest(userId: string, key: string, withAudio = false) {
@@ -109,8 +118,10 @@ export async function readVoiceRequest(userId: string, key: string, withAudio = 
     if (!row) throw new VoiceError("NOT_FOUND", 404);
     const stored = row.state === "SETTLED" ? await tx.voiceResult.findUnique({ where: { requestId: row.id }, select: { expiresAt: true, byteLength: true, sha256: true, ...(withAudio ? { audio: true } : {}) } }) : null;
     const available = !!stored && stored.expiresAt.getTime() > Date.now();
-    const metadata = { requestId: row.id, state: row.state, points: row.state === "SETTLED" || row.state === "RELEASED" ? 0 : null,
-      reservedPoints: 0, modelId: row.modelId, policyVersion: row.policyVersion, characters: row.maxUnits,
+    const reservedPts = Number(row.authorizedPoints ?? 0);
+    const settledPts = row.state === "SETTLED" ? Number(row.settledPoints ?? reservedPts) : row.state === "RELEASED" ? 0 : null;
+    const metadata = { requestId: row.id, state: row.state, points: settledPts,
+      reservedPoints: reservedPts, modelId: row.modelId, policyVersion: row.policyVersion, characters: row.maxUnits,
       createdAt: row.createdAt.toISOString(), finishedAt: row.finishedAt?.toISOString() ?? null,
       audioAvailable: available, expiresAt: stored?.expiresAt.toISOString() ?? null };
     if (withAudio && row.state === "SETTLED" && !available) throw new VoiceError("VOICE_AUDIO_EXPIRED", 410);

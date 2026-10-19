@@ -1,0 +1,11 @@
+import type { ShootSettings, ShootProject, ShotId, ReferenceRole } from '../app/lib/shoot-contract';
+export const CATALOG_VERSION:string;
+export type Place={id:string;name:string;english:string;city:string;country:string;region:'domestic'|'overseas';kind:'landmark'|'restaurant';address:string;source:string;spot:string;light:string;hook:string;soloHook:string;photo:string|null;credit:string|null;photoSource:string|null;license:string|null;photoNote:string;sha256?:string;original?:string;rights?:string;width?:number;height?:number;bytes?:number};
+export const PLACES:Place[];
+export const PLAYBOOKS:{id:'companion'|'solo';name:string;tag:string;description:string}[];
+export function placeFor(s:ShootSettings):Place|undefined;
+export function hasCompanion(s:ShootSettings):boolean;
+export function assertDestination(s:ShootSettings):void;
+export function referencePlan(p:ShootProject,shotId:ShotId,parentAssetId?:string|null):{role:ReferenceRole|'previous'|'continuity';id:string|null|undefined}[];
+export function missingReferences(p:ShootProject):string[];
+export function shotsFor(s:ShootSettings,legacy:{id:ShotId;name:string;lens:string;description:string;intent:string}[]):typeof legacy;

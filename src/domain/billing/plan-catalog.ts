@@ -86,12 +86,12 @@ function sku(tier: PlanTier, period: PlanPeriod, priceMinor: number, grantPoints
 }
 
 export const PLAN_SKUS: readonly PlanSku[] = Object.freeze([
-  sku("plan", "week", 1900, 100),
-  sku("plan", "month", 4900, 300),
-  sku("plan", "quarter", 12900, 300),
-  sku("pro", "week", 4900, 300),
-  sku("pro", "month", 12900, 800),
-  sku("pro", "quarter", 32900, 800),
+  sku("plan", "week", 1900, 230),
+  sku("plan", "month", 4900, 650),
+  sku("plan", "quarter", 12900, 600),
+  sku("pro", "week", 4900, 600),
+  sku("pro", "month", 12900, 1800),
+  sku("pro", "quarter", 32900, 1650),
 ]);
 
 export function getPlanSku(tier: PlanTier, period: PlanPeriod): PlanSku {

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Oil Frontend"
+  short_description: "统一产品任务、数据状态、样式与动效实现和前端代码归属"
+  default_prompt: "使用 $oil-frontend 先定位当前前端问题，再按需读取相关规则；按用户请求评审或修复，合并相关改动与必要验证，证据充分后停止。"

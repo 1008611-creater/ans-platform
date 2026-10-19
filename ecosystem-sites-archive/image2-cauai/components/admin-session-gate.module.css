@@ -1,0 +1,54 @@
+.gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #eef2ff;
+  background: #080b12;
+}
+
+.gate section {
+  width: min(440px, 100%);
+  padding: 36px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 22px;
+  background: #101621;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+}
+
+.gate svg { width: 32px; height: 32px; color: #8b9cff; }
+.gate span { display: block; margin-top: 20px; color: #8b9cff; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; }
+.gate h1 { margin: 10px 0; font-size: clamp(28px, 5vw, 40px); }
+.gate p { margin: 0; color: #a8b0c0; line-height: 1.7; }
+.gate a { display: inline-flex; margin-top: 24px; padding: 11px 16px; border-radius: 10px; color: #0b1020; background: #b9c2ff; font-weight: 700; text-decoration: none; }
+.spinner { animation: spin 0.9s linear infinite; }
+
+.sessionBar {
+  position: fixed;
+  z-index: 70;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px 9px 13px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  color: #dce3f2;
+  background: rgba(11, 16, 26, 0.94);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(16px);
+}
+
+.sessionBar span, .sessionBar button { display: inline-flex; align-items: center; gap: 7px; }
+.sessionBar span { font-size: 12px; }
+.sessionBar svg { width: 14px; height: 14px; }
+.sessionBar button { padding: 7px 10px; border: 0; border-radius: 999px; color: #f8fafc; background: #242c3a; cursor: pointer; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .gate section { padding: 28px 22px; }
+  .sessionBar { right: 10px; bottom: 10px; left: 10px; justify-content: space-between; }
+  .sessionBar span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}

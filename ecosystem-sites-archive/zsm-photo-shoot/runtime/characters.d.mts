@@ -1,0 +1,13 @@
+import type { ShootSettings } from '../app/lib/shoot-contract';
+import type { Place } from './destinations.mjs';
+export type CharacterArtwork={src:string;width:number;height:number;source:string;credit:string;original:string;rights:'pending'|'cleared';sha256:string};
+export type Character={id:string;name:string;aliases:string[];category:string;tag:string;line:string;color:string;mark:string;source:string|null;sourceLabel:string;verification:string;note:string;checkedAt:string;assetStatus:string;artwork:CharacterArtwork|null};
+export const CHARACTER_CATALOG_VERSION:string;
+export const DISCOVERY_PROJECT:{name:string;url:string;data:string;license:string;checkedAt:string};
+export const CHARACTERS:Character[];
+export const CUSTOM_CHARACTER:Character;
+export function characterFor(s:Pick<ShootSettings,'characterId'>):Character|undefined;
+export function characterKey(s:Pick<ShootSettings,'characterId'>):string;
+export function characterName(s:Pick<ShootSettings,'characterId'>):string;
+export function searchCharacters(query?:string,category?:string):Character[];
+export function characterHook(place:Place,s:Pick<ShootSettings,'play'|'characterId'>):string;

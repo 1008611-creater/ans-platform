@@ -6,17 +6,17 @@ import { buildPlanSchedule } from "@/domain/billing/plan-schedule";
 
 describe("approved plan catalog", () => {
   it.each([
-    ["plan-week", 1900, 100, 7], ["plan-month", 4900, 300, 30],
-    ["plan-quarter", 12900, 900, 90], ["pro-week", 4900, 300, 7],
-    ["pro-month", 12900, 800, 30], ["pro-quarter", 32900, 2400, 90],
+    ["plan-week", 1900, 230, 7], ["plan-month", 4900, 650, 30],
+    ["plan-quarter", 12900, 1800, 90], ["pro-week", 4900, 600, 7],
+    ["pro-month", 12900, 1800, 30], ["pro-quarter", 32900, 4950, 90],
   ])("preserves purchased terms for %s", (id, priceMinor, points, durationDays) => {
     expect(getPlanSkuById(id as string)).toMatchObject({ priceMinor, points, durationDays,
       version: PLAN_CATALOG_VERSION, autoRenew: false });
   });
-  it("uses the single fixed CNY conversion without turning the whole plan fee into points", () => {
+  it("uses the single fixed CNY conversion and grants 1.2x-1.5x bonus points on plans", () => {
     expect(POINTS_PER_YUAN).toBe(10);
     expect(CENTS_PER_POINT).toBe(10);
-    expect(getPlanSku("plan", "month")).toMatchObject({ priceMinor: 4900, pointsReferenceMinor: 3000 });
+    expect(getPlanSku("plan", "month")).toMatchObject({ priceMinor: 4900, pointsReferenceMinor: 6500 });
     for (const sku of PLAN_SKUS) expect(sku.pointsReferenceMinor).toBe(sku.points * CENTS_PER_POINT);
   });
   it("provides exactly six distinct SKUs and does not sell the future team plan", () => {
@@ -44,9 +44,9 @@ describe("pure plan issuance schedule", () => {
     expect(schedule.startsAt).toBe("2026-10-11T16:00:00.000Z");
     expect(schedule.endsAt).toBe("2027-01-09T16:00:00.000Z");
     expect(schedule.grants.map(grant => [grant.points, grant.availableAt, grant.expiresAt])).toEqual([
-      [800, "2026-10-11T16:00:00.000Z", "2026-12-10T16:00:00.000Z"],
-      [800, "2026-11-10T16:00:00.000Z", "2027-01-09T16:00:00.000Z"],
-      [800, "2026-12-10T16:00:00.000Z", "2027-02-08T16:00:00.000Z"],
+      [1650, "2026-10-11T16:00:00.000Z", "2026-12-10T16:00:00.000Z"],
+      [1650, "2026-11-10T16:00:00.000Z", "2027-01-09T16:00:00.000Z"],
+      [1650, "2026-12-10T16:00:00.000Z", "2027-02-08T16:00:00.000Z"],
     ]);
     expect(new Set(schedule.grants.map(grant => grant.operationKey)).size).toBe(3);
     expect(schedule.grants.every(grant => grant.purpose === "PERSONAL_COMPUTE")).toBe(true);

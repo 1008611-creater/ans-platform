@@ -4,6 +4,18 @@ import { readModelBillingSnapshot, modelUsdToMemberPoints } from "@/server/integ
 
 const SOURCE_URL = "https://apic.cauai.fun/pricing";
 const PRICING_URL = "https://apic.cauai.fun/api/pricing";
+function resolvePricingUrl(env: Readonly<Record<string, string | undefined>> = process.env): string {
+  const runBase = env.RUN_BASE_URL?.trim();
+  if (runBase) {
+    try {
+      const parsed = new URL(runBase);
+      if (parsed.hostname === "apic.cauai.fun" && parsed.port === "3000") {
+        return `${parsed.origin}/api/pricing`;
+      }
+    } catch { /* ignore invalid URL */ }
+  }
+  return PRICING_URL;
+}
 const MAX_BYTES = 1024 * 1024;
 const rate = z.number().finite().nonnegative().max(1_000_000);
 const publicSchema = z.object({
@@ -25,7 +37,7 @@ const official = (sourceUrl: string, input: number, output: number, cacheRead: n
  * fast/region/tool surcharges are not included in these reference figures.
  */
 const REFERENCES: ModelPlazaModel[] = [
-  { id: "deepseek-v4.1-flash", name: "DeepSeek V4.1 Flash", vendor: "DeepSeek", endpoints: ["Chat Completions"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: 1,
+  { id: "deepseek-v4.1-flash", name: "DeepSeek V4.1 Flash", vendor: "DeepSeek", endpoints: ["Chat Completions"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: 1.5,
     usdPerMillion: official("https://api-docs.deepseek.com/quick_start/pricing/", 0.3, 1.2, 0.006), pointsPerMillion: null },
   { id: "gpt-6-astra", name: "GPT-6 Astra", vendor: "OpenAI", endpoints: ["Chat Completions", "Responses"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: 0.16,
     usdPerMillion: { ...official("https://developers.openai.com/api/docs/models/gpt-6-astra", 10, 50, 1), cacheWrite: 12.5 }, pointsPerMillion: null },
@@ -59,13 +71,14 @@ export async function readModelPlazaCatalog(options: {
   fetcher?: typeof fetch; environment?: Readonly<Record<string, string | undefined>>; now?: Date;
 } = {}): Promise<ModelPlazaCatalog> {
   const now = options.now ?? new Date();
+  const env = options.environment ?? process.env;
   const result: ModelPlazaCatalog = {
     sourceUrl: SOURCE_URL, observedAt: null, pricingVersion: null, referenceDate: "2026-10-16", state: "unavailable",
     models: structuredClone(REFERENCES),
     billing: { pointsPerCny: 10, usdCny: null, fxSource: null, fxAsOf: null },
   };
   try {
-    const response = await (options.fetcher ?? fetch)(PRICING_URL, {
+    const response = await (options.fetcher ?? fetch)(resolvePricingUrl(env), {
       cache: "no-store", redirect: "error", credentials: "omit", signal: AbortSignal.timeout(6000),
       headers: { Accept: "application/json" },
     });
@@ -100,6 +113,7 @@ export async function readModelPlazaCatalog(options: {
   for (const model of result.models) {
     try {
       const snapshot = readModelBillingSnapshot(model.id, options.environment ?? process.env, now.getTime());
+      model.consumptionMultiplier = snapshot.consumptionMultiplier;
       const reference = REFERENCES.find(item => item.id === model.id)!.usdPerMillion!;
       const price = model.usdPerMillion;
       // A differing supplier tariff must be reconciled before advertising a retail conversion.

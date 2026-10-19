@@ -1,0 +1,24 @@
+# OmniRoute local gateway (reached via reverse SSH tunnel from owner's PC)
+# Tunnel endpoint : 127.0.0.1:20128  (ssh -R from Windows -> this server)
+# This vhost      : 127.0.0.1:20129  plain HTTP for sub2api upstream
+# Self-signed cert on the gateway -> proxy_ssl_verify off
+server {
+    listen 127.0.0.1:20129;
+    server_name omniroute-local;
+
+    location / {
+        proxy_pass https://127.0.0.1:20128;
+        proxy_ssl_verify off;
+        proxy_ssl_server_name on;
+        proxy_http_version 1.1;
+        proxy_set_header Host 127.0.0.1:20128;
+        proxy_set_header Connection "";
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+        chunked_transfer_encoding on;
+    }
+}

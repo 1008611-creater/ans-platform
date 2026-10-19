@@ -1,0 +1,903 @@
+.page {
+  min-height: 100vh;
+  padding: 18px 12px 34px;
+  color: #172024;
+  background:
+    linear-gradient(180deg, rgba(27, 127, 245, 0.07), transparent 260px),
+    #f5f7f8;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shell {
+  width: min(100%, 520px);
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 2px 16px;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(135deg, #2277ff, #14a05f);
+  box-shadow: 0 14px 26px rgba(34, 119, 255, 0.22);
+}
+
+.brandMark svg {
+  width: 23px;
+  height: 23px;
+}
+
+.header h1,
+.header p,
+.resultsHead h2,
+.cardHead strong,
+.cardHead span,
+.uploadRow strong,
+.uploadRow span {
+  margin: 0;
+}
+
+.header h1 {
+  font-size: 30px;
+  line-height: 1.08;
+  font-weight: 880;
+  letter-spacing: 0;
+}
+
+.header p {
+  margin-top: 5px;
+  color: #6f7b83;
+  font-size: 13px;
+  font-weight: 680;
+}
+
+.modeTabs,
+.card,
+.accountCard,
+.controls,
+.resultCard {
+  border: 1px solid #dfe6eb;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 30px rgba(20, 32, 45, 0.06);
+}
+
+.modeTabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+}
+
+.modeTabs button,
+.uploadActions label,
+.controlGroup button,
+.seedRow button,
+.resultActions button,
+.accountActions button,
+.authTabs button,
+.authSubmit,
+.historyActions button,
+.iconButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #344049;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 780;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  transform: none;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    color 0.16s ease,
+    transform 0.12s ease;
+  -webkit-tap-highlight-color: rgba(35, 120, 255, 0.18);
+}
+
+.modeTabs button {
+  min-height: 52px;
+  background: #f8fafb;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 1px 2px rgba(20, 32, 45, 0.04);
+}
+
+.modeTabs button:disabled,
+.controlGroup button:disabled,
+.seedRow button:disabled,
+.resultActions button:disabled,
+.accountActions button:disabled,
+.authSubmit:disabled,
+.historyActions button:disabled,
+.iconButton:disabled,
+.generateButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.modeTabs svg,
+.uploadActions svg,
+.seedRow svg,
+.resultActions svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modeTabs .activeTab,
+.modeTabs button[aria-pressed="true"],
+.controlGroup button[aria-pressed="true"],
+.seedRow button[aria-pressed="true"],
+.authTabs button[aria-pressed="true"],
+.selectedPill {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.32), transparent 18px),
+    linear-gradient(135deg, #176eff 0%, #14a05f 100%);
+  box-shadow:
+    0 0 0 2px rgba(20, 160, 95, 0.2),
+    0 0 0 5px rgba(35, 120, 255, 0.08),
+    0 14px 28px rgba(35, 120, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  font-weight: 900;
+}
+
+.modeTabs button[aria-pressed="true"]::after,
+.controlGroup button[aria-pressed="true"]::after,
+.seedRow button[aria-pressed="true"]::after,
+.authTabs button[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.24);
+}
+
+.modeTabs button[aria-pressed="true"] svg,
+.controlGroup button[aria-pressed="true"] svg,
+.seedRow button[aria-pressed="true"] svg,
+.authTabs button[aria-pressed="true"] svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18));
+}
+
+.modeTabs button:not([aria-pressed="true"]):hover,
+.uploadActions label:hover,
+.controlGroup button:not([aria-pressed="true"]):hover,
+.seedRow button:not([aria-pressed="true"]):hover,
+.accountActions button:hover,
+.authTabs button:not([aria-pressed="true"]):hover,
+.historyActions button:hover,
+.resultActions button:not(:disabled):hover,
+.iconButton:hover {
+  border-color: rgba(35, 120, 255, 0.34);
+  color: #1764d8;
+  background: #eef6ff;
+  box-shadow:
+    0 0 0 2px rgba(35, 120, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.modeTabs button:active,
+.uploadActions label:active,
+.controlGroup button:active,
+.seedRow button:active,
+.accountActions button:active,
+.authTabs button:active,
+.authSubmit:active,
+.historyActions button:active,
+.resultActions button:not(:disabled):active,
+.iconButton:active,
+.generateButton:active {
+  transform: translateY(1px) scale(0.96);
+}
+
+.modeTabs button[aria-pressed="true"]:active,
+.controlGroup button[aria-pressed="true"]:active,
+.seedRow button[aria-pressed="true"]:active,
+.authTabs button[aria-pressed="true"]:active,
+.selectedPill:active {
+  transform: translateY(0) scale(0.96);
+  box-shadow:
+    0 0 0 2px rgba(20, 160, 95, 0.12),
+    0 8px 18px rgba(35, 120, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.modeTabs button:focus-visible,
+.uploadActions label:focus-visible,
+.controlGroup button:focus-visible,
+.seedRow button:focus-visible,
+.accountActions button:focus-visible,
+.authTabs button:focus-visible,
+.authSubmit:focus-visible,
+.historyActions button:focus-visible,
+.resultActions button:focus-visible,
+.iconButton:focus-visible,
+.generateButton:focus-visible {
+  outline: 3px solid rgba(35, 120, 255, 0.28);
+  outline-offset: 2px;
+}
+
+.card,
+.accountCard,
+.controls,
+.results,
+.history {
+  margin-top: 12px;
+}
+
+.card {
+  padding: 14px;
+}
+
+.accountCard {
+  padding: 12px;
+}
+
+.accountSignedIn,
+.authTop,
+.accountBadge,
+.accountActions,
+.historyItem,
+.historyActions {
+  display: flex;
+  align-items: center;
+}
+
+.accountSignedIn,
+.authTop {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.accountBadge {
+  min-width: 0;
+  gap: 10px;
+}
+
+.accountBadge svg {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  color: #176eff;
+}
+
+.accountBadge strong,
+.authTop strong,
+.historyMeta strong {
+  display: block;
+  color: #172024;
+  font-weight: 860;
+}
+
+.accountBadge span,
+.authTop span,
+.authMessage,
+.historyMeta span,
+.emptyState {
+  color: #7a858d;
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.accountActions {
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.accountActions button,
+.historyActions button {
+  min-height: 38px;
+  padding: 0 10px;
+  border-color: #dfe6eb;
+  background: #fff;
+  font-size: 12px;
+}
+
+.accountActions svg,
+.authSubmit svg {
+  width: 16px;
+  height: 16px;
+}
+
+.authForm {
+  display: grid;
+  gap: 10px;
+}
+
+.authTabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 126px;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #dfe6eb;
+  border-radius: 8px;
+  background: #f6f8fa;
+}
+
+.authTabs button {
+  min-height: 34px;
+  font-size: 12px;
+}
+
+.authForm label {
+  display: grid;
+  gap: 6px;
+  color: #344049;
+  font-size: 13px;
+  font-weight: 780;
+}
+
+.authForm input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #dfe6eb;
+  border-radius: 8px;
+  outline: none;
+  color: #182228;
+  background: #fbfcfd;
+  font-size: 14px;
+}
+
+.authForm input:focus {
+  border-color: #17a866;
+  box-shadow: 0 0 0 3px rgba(20, 160, 95, 0.12);
+}
+
+.authSubmit {
+  min-height: 46px;
+  border: 0;
+  color: #fff;
+  background: #2378ff;
+  box-shadow: 0 14px 26px rgba(35, 120, 255, 0.2);
+}
+
+.authSubmit:hover,
+.generateButton:hover {
+  background: #176eff;
+  box-shadow:
+    0 0 0 4px rgba(35, 120, 255, 0.12),
+    0 18px 34px rgba(35, 120, 255, 0.26);
+}
+
+.authMessage {
+  margin: 10px 2px 0;
+}
+
+.cardHead,
+.uploadRow,
+.resultsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardHead strong,
+.uploadRow strong,
+.controlGroup strong,
+.seedRow strong,
+.resultsHead h2 {
+  color: #172024;
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.cardHead span,
+.uploadRow span,
+.resultsHead span {
+  display: block;
+  margin-top: 4px;
+  color: #7a858d;
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.iconButton {
+  width: 38px;
+  height: 38px;
+  border-color: #e2e8ed;
+  background: #fff;
+}
+
+.card textarea {
+  display: block;
+  width: 100%;
+  min-height: 138px;
+  margin-top: 12px;
+  padding: 14px;
+  resize: vertical;
+  border: 1px solid #dfe6eb;
+  border-radius: 8px;
+  outline: none;
+  color: #182228;
+  background: #fbfcfd;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.card textarea:focus,
+.seedRow input:focus {
+  border-color: #17a866;
+  box-shadow: 0 0 0 3px rgba(20, 160, 95, 0.12);
+}
+
+.counter {
+  margin-top: 8px;
+  color: #9aa4ac;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.uploadRow img {
+  width: 68px;
+  height: 68px;
+  border: 1px solid #dfe6eb;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.uploadActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.uploadActions label {
+  min-height: 58px;
+  border-color: #dfe6eb;
+  background: #fff;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.controls {
+  display: grid;
+  gap: 9px;
+  padding: 10px;
+}
+
+.controlGroup,
+.seedRow {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.controlGroup > div {
+  display: grid;
+  grid-template-columns: repeat(var(--items, 3), minmax(0, 1fr));
+  gap: 8px;
+}
+
+.controlGroup:nth-child(1) > div {
+  --items: 2;
+}
+
+.controlGroup:nth-child(2) > div {
+  --items: 4;
+}
+
+.controlGroup button,
+.seedRow button,
+.seedRow input {
+  min-height: 42px;
+  border: 1px solid #dfe6eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.controlGroup button:not([aria-pressed="true"]),
+.seedRow button:not([aria-pressed="true"]),
+.authTabs button:not([aria-pressed="true"]),
+.resultActions button:not(:disabled),
+.accountActions button,
+.historyActions button {
+  background: linear-gradient(180deg, #ffffff, #f8fafb);
+}
+
+.modeTabs button:not([aria-pressed="true"]),
+.controlGroup button:not([aria-pressed="true"]),
+.seedRow button:not([aria-pressed="true"]),
+.authTabs button:not([aria-pressed="true"]) {
+  color: #344049 !important;
+}
+
+.modeTabs button[aria-pressed="true"],
+.controlGroup button[aria-pressed="true"],
+.seedRow button[aria-pressed="true"],
+.authTabs button[aria-pressed="true"],
+.selectedPill {
+  color: #fff !important;
+}
+
+.seedRow {
+  grid-template-columns: 82px minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.seedRow input {
+  grid-column: 2 / -1;
+  width: 100%;
+  padding: 0 12px;
+  color: #303a42;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.generateButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 58px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: #2378ff;
+  box-shadow: 0 18px 38px rgba(35, 120, 255, 0.24);
+  font-size: 18px;
+  font-weight: 880;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition:
+    background 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.12s ease;
+  -webkit-tap-highlight-color: rgba(35, 120, 255, 0.2);
+}
+
+.generateButton svg {
+  width: 21px;
+  height: 21px;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+.status,
+.error {
+  margin: 10px 2px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.status {
+  color: #0a7440;
+  background: #eaf8f0;
+}
+
+.error {
+  color: #b94039;
+  background: #fff0ef;
+}
+
+.results {
+  padding-bottom: 120px;
+}
+
+.history {
+  padding-bottom: 120px;
+}
+
+.resultsHead {
+  padding: 4px 2px 10px;
+}
+
+.resultGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.resultCard {
+  overflow: hidden;
+}
+
+.resultCard img,
+.placeholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 0.72;
+}
+
+.resultCard img {
+  object-fit: cover;
+}
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  color: #8b969e;
+  background:
+    linear-gradient(135deg, rgba(35, 120, 255, 0.12), transparent),
+    linear-gradient(315deg, rgba(20, 160, 95, 0.12), transparent),
+    #f6f8fa;
+  font-size: 13px;
+  font-weight: 760;
+  text-align: center;
+}
+
+.placeholder svg {
+  width: 26px;
+  height: 26px;
+  color: #17a866;
+}
+
+.resultActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid #edf1f4;
+}
+
+.resultActions button {
+  min-height: 52px;
+  border-radius: 0;
+  border-right: 1px solid #edf1f4;
+  font-size: 12px;
+  flex-direction: column;
+}
+
+.resultActions button:last-child {
+  border-right: 0;
+}
+
+.historyList {
+  display: grid;
+  gap: 10px;
+}
+
+.historyItem {
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #dfe6eb;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 24px rgba(20, 32, 45, 0.05);
+}
+
+.historyThumb {
+  display: grid;
+  place-items: center;
+  flex: 0 0 76px;
+  width: 76px;
+  height: 76px;
+  overflow: hidden;
+  border: 1px solid #dfe6eb;
+  border-radius: 8px;
+  color: #17a866;
+  background: #f6f8fa;
+}
+
+.historyThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.historyThumb svg {
+  width: 24px;
+  height: 24px;
+}
+
+.historyMeta {
+  min-width: 0;
+}
+
+.historyMeta strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.historyMeta span {
+  display: block;
+  margin-top: 5px;
+}
+
+.historyActions {
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.historyActions button {
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.emptyState {
+  padding: 14px;
+  border: 1px dashed #cfd9df;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  text-align: center;
+}
+
+.previewOverlay {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 40;
+  display: grid;
+  min-height: min(58vh, 620px);
+  overflow: hidden;
+  border-radius: 22px 22px 0 0;
+  background: #111;
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.28);
+}
+
+.previewOverlay img {
+  width: 100%;
+  height: 100%;
+  min-height: min(58vh, 620px);
+  object-fit: cover;
+}
+
+.closePreview,
+.previewBar,
+.previewBar button {
+  position: absolute;
+}
+
+.closePreview {
+  top: 18px;
+  left: 18px;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(18, 25, 30, 0.74);
+}
+
+.previewBar {
+  right: 16px;
+  bottom: 22px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.previewBar span,
+.previewBar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(18, 25, 30, 0.78);
+  font-weight: 780;
+  backdrop-filter: blur(12px);
+}
+
+.previewBar button {
+  position: static;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modeTabs button,
+  .uploadActions label,
+  .controlGroup button,
+  .seedRow button,
+  .resultActions button,
+  .accountActions button,
+  .authTabs button,
+  .authSubmit,
+  .historyActions button,
+  .iconButton,
+  .generateButton {
+    transition: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 760px) {
+  .page {
+    padding-top: 38px;
+  }
+
+  .shell {
+    padding: 18px;
+    border: 1px solid rgba(223, 230, 235, 0.9);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.64);
+    box-shadow: 0 24px 70px rgba(20, 32, 45, 0.09);
+  }
+}
+
+@media (max-width: 390px) {
+  .header h1 {
+    font-size: 26px;
+  }
+
+  .modeTabs button {
+    gap: 4px;
+    font-size: 13px;
+  }
+
+  .accountSignedIn,
+  .authTop {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .accountActions,
+  .authTabs {
+    width: 100%;
+  }
+
+  .accountActions button {
+    flex: 1;
+  }
+
+  .controlGroup,
+  .seedRow {
+    grid-template-columns: 74px minmax(0, 1fr);
+  }
+
+  .seedRow {
+    grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

@@ -17,8 +17,25 @@ export class MediaGenerationError extends Error {
 const ownership = (userId: string, idempotencyKey: string) => ({ userId_idempotencyKey: { userId, idempotencyKey } });
 const userFields = { id: true, flagged: true, deletedAt: true, quotaPoints: true, generationCreditsRemaining: true, generationCreditsRevision: true, dailyGenerationLimit: true } as const;
 
+const DEFAULT_MEDIA_POINT_PRICES: Record<string, number> = {
+  image: 2,
+  "image:image2": 2,
+  "image:image2.5sunburst": 2,
+  "image:gpt-image-2-c": 2,
+  "image:gpt-image-2.5-sunburst-c": 2,
+  video: 15,
+  "video:sd2fast": 15,
+  "video:sd2": 30,
+  "video:sd2.5": 50,
+  "video:doubao-seedance-2-0-fast-260128": 15,
+  "video:doubao-seedance-2-0-260128": 30,
+  "video:doubao-seedance-2-5-260628": 50,
+  audio: 1,
+};
+
 function configuredMediaPointPrices(): Record<string, number> {
   const raw = process.env.ANS_MEDIA_POINT_PRICES_JSON;
+  if (raw === undefined) return DEFAULT_MEDIA_POINT_PRICES;
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw) as Record<string, unknown>;

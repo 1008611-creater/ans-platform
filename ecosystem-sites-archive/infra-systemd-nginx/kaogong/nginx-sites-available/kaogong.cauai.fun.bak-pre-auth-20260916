@@ -1,0 +1,37 @@
+server {
+    server_name kaogong.cauai.fun;
+
+    root /var/www/kaogong;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|svg|webp|json|html|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public";
+        try_files $uri =404;
+    }
+
+    listen [::]:443 ssl; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/kaogong.cauai.fun/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/kaogong.cauai.fun/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = kaogong.cauai.fun) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    listen [::]:80;
+    server_name kaogong.cauai.fun;
+    return 404; # managed by Certbot
+
+
+}

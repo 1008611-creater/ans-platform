@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useVoiceOffer } from "@/components/mascot/use-voice-offer";
-const offer=()=>({available:true,mode:"free",points:0,modelId:"mimo-v2.5-tts",policyVersion:"fixture-free",checkedAt:new Date().toISOString(),reviewBy:new Date(Date.now()+60000).toISOString(),cacheHours:24,maxCharacters:1200});
+const offer=()=>({available:true,mode:"paid",points:1,modelId:"mimo-v2.5-tts",policyVersion:"fixture-free",checkedAt:new Date().toISOString(),reviewBy:new Date(Date.now()+60000).toISOString(),cacheHours:24,maxCharacters:1200});
 beforeEach(()=>{vi.useFakeTimers();vi.stubGlobal("fetch",vi.fn());});
 afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals();});
 async function flush(){await act(async()=>{await Promise.resolve();await Promise.resolve();});}
@@ -11,11 +11,11 @@ it("does not fetch a policy for an anonymous account or voice opt-out",()=>{
 });
 it("shows only a reviewed zero-price policy and removes it at the deadline",async()=>{
  vi.mocked(fetch).mockResolvedValue(Response.json(offer()));const view=renderHook(()=>useVoiceOffer("member",true));await flush();
- expect(view.result.current?.points).toBe(0);expect(fetch).toHaveBeenCalledWith("/api/mascot/tts",expect.objectContaining({headers:{"x-ans-actor":"member"}}));
+ expect(view.result.current?.points).toBe(1);expect(fetch).toHaveBeenCalledWith("/api/mascot/tts",expect.objectContaining({headers:{"x-ans-actor":"member"}}));
  act(()=>vi.advanceTimersByTime(60001));expect(view.result.current).toBeNull();
 });
-it("never uses a paid or expired quote under the free voice preference",async()=>{
- vi.mocked(fetch).mockResolvedValue(Response.json({...offer(),mode:"paid",points:1}));const view=renderHook(()=>useVoiceOffer("member",true));await flush();expect(view.result.current).toBeNull();
+it("never uses an unapproved or expired quote",async()=>{
+ vi.mocked(fetch).mockResolvedValue(Response.json({...offer(),mode:"paid",points:2}));const view=renderHook(()=>useVoiceOffer("member",true));await flush();expect(view.result.current).toBeNull();
 });
 it("ignores a late previous-account quote and does not share its policy with the new actor",async()=>{
  let first!:(response:Response)=>void;const deferred=new Promise<Response>(resolve=>{first=resolve;});vi.mocked(fetch).mockReturnValueOnce(deferred).mockResolvedValueOnce(Response.json({...offer(),policyVersion:"second-account-policy"}));

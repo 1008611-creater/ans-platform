@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
 const positive = z.number().finite().positive().max(1_000_000).refine(n => Number(n.toFixed(6)) === n);
 const source = z.string().url().max(1000).refine(value => { const u = new URL(value); return u.protocol === "https:" && !u.username && !u.password && !u.search && !u.hash; });
@@ -42,8 +42,12 @@ function verifySnapshot(raw: unknown): ModelBillingSnapshot {
   const parsed = snapshotSchema.safeParse(raw);
   if (!parsed.success) throw new ModelBillingError("MODEL_BILLING_SNAPSHOT_INVALID");
   const value = parsed.data;
-  const expected = value.modelId.startsWith("gpt-") ? 0.16 : 1;
-  if (value.consumptionMultiplier !== expected || (value.modelId === "claude-opus-5-5" && value.procurementMultiplier !== 0.8))
+  const validMultiplier = value.modelId.startsWith("gpt-")
+    ? value.consumptionMultiplier === 0.16
+    : value.modelId === "deepseek-v4.1-flash"
+      ? value.consumptionMultiplier === 1.5 || value.consumptionMultiplier === 1
+      : value.consumptionMultiplier === 1;
+  if (!validMultiplier || (value.modelId === "claude-opus-5-5" && value.procurementMultiplier !== 0.8))
     throw new ModelBillingError("MODEL_BILLING_SNAPSHOT_INVALID");
   return value;
 }

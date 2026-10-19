@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{TITLE}}</title>
+    <style>
+      :root {
+        --bg: #f5f5f4;
+        --panel: #ffffff;
+        --border: #e4e4e7;
+        --text: #18181b;
+        --muted: #71717a;
+        --radius: 16px;
+        --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .shell {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px 72px;
+        display: grid;
+        gap: 20px;
+      }
+
+      /* ── Header ── */
+      .header {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        box-shadow: var(--shadow);
+      }
+
+      .header-left h1 {
+        margin: 0 0 4px;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .header-left p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .meta-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 14px;
+        background: #fafafa;
+        min-width: 72px;
+      }
+
+      .pill-label {
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .pill-value {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      /* ── Original grid image ── */
+      .original-panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 14px;
+      }
+
+      .original-img {
+        display: block;
+        width: 100%;
+        max-width: 720px;
+        height: auto;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+      }
+
+      /* ── Tile grid ── */
+      .grid-panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        box-shadow: var(--shadow);
+      }
+
+      .grid-preview {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      }
+
+      .cell {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: #fafafa;
+      }
+
+      .cell-image {
+        aspect-ratio: var(--aspect-ratio);
+        background: #e4e4e7;
+      }
+
+      .cell-image img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .cell-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 12px;
+      }
+
+      .cell-index {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+
+      .download-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        text-decoration: none;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        transition: background 100ms, border-color 100ms;
+      }
+
+      .download-link:hover {
+        background: #f4f4f5;
+        border-color: #d4d4d8;
+      }
+
+      /* ── Prompts ── */
+      .prompts-panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        box-shadow: var(--shadow);
+      }
+
+      .prompt-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .prompt-item {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #fafafa;
+      }
+
+      .prompt-num {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+        min-width: 20px;
+      }
+
+      .prompt-text {
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.5;
+        word-break: break-word;
+      }
+
+      /* ── Footer ── */
+      .footer-note {
+        font-size: 12px;
+        color: var(--muted);
+        text-align: center;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+
+      <header class="header">
+        <div class="header-left">
+          <h1>{{TITLE}}</h1>
+          <p>{{SUBTITLE}}</p>
+        </div>
+        <div class="meta-pills">
+          <div class="pill"><span class="pill-label">Mode</span><span class="pill-value">{{MODE}}</span></div>
+          <div class="pill"><span class="pill-label">Layout</span><span class="pill-value">{{COLS}}×{{ROWS}}</span></div>
+          <div class="pill"><span class="pill-label">Images</span><span class="pill-value">{{IMAGE_COUNT}}</span></div>
+          <div class="pill"><span class="pill-label">Resolution</span><span class="pill-value">{{RESOLUTION}}</span></div>
+        </div>
+      </header>
+
+      {{ORIGINAL_GRID_SECTION}}
+
+      <section class="grid-panel">
+        <p class="panel-title">Individual tiles — click to download</p>
+        <div class="grid-preview" style="--cols: {{COLS}}; --aspect-ratio: {{ASPECT_RATIO}};">
+          {{GRID_ITEMS}}
+        </div>
+      </section>
+
+      {{PROMPTS_SECTION}}
+
+      <p class="footer-note">Generated with BulkGen &mdash; signed URLs expire in 12 hours, download your images promptly.</p>
+    </main>
+  </body>
+</html>

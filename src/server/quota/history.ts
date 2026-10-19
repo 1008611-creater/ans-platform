@@ -58,7 +58,7 @@ export async function readQuotaHistory(userId: string, raw: unknown = {}) {
       pendingCount: workflowPending._count._all + apiPending._count._all + marketPending._count._all + templatePending._count._all + legacyWorkflowPending._count._all + mediaPending._count._all + examPending.pendingCount + visualPending.pendingCount,
       entries: page.map(row => ({ ...row, category: row.refType === "exam-analysis" && row.reason === "RUN_COST" ? "EXAM_ANALYSIS" : row.refType === "ledger_correction" ? "LEDGER_CORRECTION" : row.refType === "market_income" ? "SELLER_INCOME" : row.refType === "market_order" && row.amount < 0 ? "PURCHASE" : row.refType === "recharge" ? "RECHARGE" : row.reason, createdAt: row.createdAt.toISOString() })),
       nextCursor: rows.length > limit ? page[page.length - 1].id : null,
-      billing: { rechargeYuanPerPoint: YUAN_PER_POINT, usdQuotaPerPoint: null, pointsPerCny: 10, gptConsumptionMultiplier: 0.16, deepseekConsumptionMultiplier: 1, rechargeEnabled: ldxpRechargeEnabled() },
+      billing: { rechargeYuanPerPoint: YUAN_PER_POINT, usdQuotaPerPoint: null, pointsPerCny: 10, gptConsumptionMultiplier: 0.16, deepseekConsumptionMultiplier: 1.5, rechargeEnabled: ldxpRechargeEnabled() },
     };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead, maxWait: 10000, timeout: 30000 });
 }

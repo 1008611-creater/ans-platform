@@ -1,0 +1,150 @@
+.bridge {
+  width: min(760px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid rgba(154, 255, 219, 0.22);
+  border-radius: 8px;
+  padding: 14px;
+  background:
+    linear-gradient(135deg, rgba(13, 41, 45, 0.9), rgba(8, 18, 29, 0.88)),
+    linear-gradient(90deg, rgba(103, 245, 223, 0.16), transparent);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.bridgeCopy {
+  min-width: 0;
+}
+
+.bridgeCopy span,
+.bridgeCopy strong,
+.bridgeCopy small {
+  display: block;
+}
+
+.bridgeCopy span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #9cf8e7;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.bridgeCopy span svg {
+  width: 14px;
+  height: 14px;
+  color: #d4ff70;
+}
+
+.bridgeCopy strong {
+  margin-top: 5px;
+  color: #f3fbfb;
+  font-size: 15px;
+  line-height: 1.28;
+}
+
+.bridgeCopy small {
+  width: 100%;
+  margin-top: 5px;
+  overflow: hidden;
+  color: rgba(224, 236, 240, 0.72);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bridgeSteps {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(224, 236, 240, 0.76);
+  white-space: nowrap;
+}
+
+.bridgeSteps span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid rgba(224, 236, 240, 0.12);
+  border-radius: 999px;
+  padding: 0 9px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.bridgeSteps i {
+  width: 16px;
+  height: 1px;
+  background: rgba(154, 255, 219, 0.34);
+}
+
+.bridgeActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.bridgeActions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  border-radius: 8px;
+  padding: 0 12px;
+  text-decoration: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 930;
+}
+
+.bridgeActions button {
+  border: 0;
+  color: #061313;
+  background: linear-gradient(135deg, #6df4d6, #d4ff70);
+  box-shadow: 0 14px 36px rgba(65, 232, 202, 0.2);
+}
+
+.bridgeActions svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 1180px) {
+  .bridge {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .bridgeSteps,
+  .bridgeActions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .bridge {
+    padding: 12px;
+  }
+
+  .bridgeCopy small {
+    white-space: normal;
+  }
+
+  .bridgeActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .bridgeActions button {
+    width: 100%;
+  }
+}

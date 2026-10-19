@@ -1,0 +1,39 @@
+server {
+    listen 0.0.0.0:80;
+    listen [::]:80;
+    server_name origin-canary.cauai.fun;
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 0.0.0.0:443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name origin-canary.cauai.fun;
+
+    ssl_certificate /etc/letsencrypt/live/origin-canary.cauai.fun/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/origin-canary.cauai.fun/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:18080;
+        proxy_http_version 1.1;
+        proxy_set_header Host api.cauai.fun;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+}
+
+server {
+    listen 0.0.0.0:80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    return 444;
+}

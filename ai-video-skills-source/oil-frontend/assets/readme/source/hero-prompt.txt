@@ -1,0 +1,34 @@
+火柴人主角是一名前端工程师，坐在简洁的书桌前整理产品界面：一只手放在键盘上，另一只手指向显示器里清楚的大块界面结构。显示器只出现列表、表单和弹窗的简化轮廓，不出现文字、代码、字母或数字。黄色胖边牧安静地坐在椅子旁边看着显示器。主体使用略微侧面的三分之四视角，人物、桌子、显示器和边牧形成一个完整紧凑的单一场景，轮廓清楚，四周留出充足边距。不要星星、机器人、脑子、AI 符号、漂浮卡片、logo、商标或水印。
+
+Style: professional manga/comic ink illustration. Clean confident ink outlines
+with varying line weights (thick for contours, thin for details), NOT wobbly
+or sketchy. Heavy use of classic circular halftone screentone dot patterns for
+all grey/shadow areas — this is the signature visual element. Flat black fills
+for hair and dark areas. White for skin/body with screentone shading. The main character is a cute
+stick figure with a round head, thin round glasses, dot eyes, simple smile,
+and thin line-drawn limbs — minimal and charming, not detailed.
+Color usage is extremely restrained — 90% of the image is black, white, and
+grey halftone screentone. Warm yellow only on the chubby Border Collie
+companion dog, small warm light patches, and sparse star decorations.
+Rich detail and visual complexity like a printed comic page or indie zine
+illustration, not a simple mascot icon.
+CRITICAL — Background must be PERFECTLY UNIFORM flat grey (#808080) with
+ZERO gradient, ZERO texture, ZERO noise, ZERO speckles. Every single
+background pixel must be the exact same grey value. Do NOT let screentone
+dots, halftone patterns, ink splatter, or any visual element bleed into the
+background area. The background is a clean solid rectangle of #808080 —
+treat it like a green screen. PNG format, square composition.
+
+背景修正：
+
+Change only the background. Preserve the stick-figure frontend engineer,
+monitor, desk, chair, lamp, plant, cup, keyboard, mouse, cabinet, and yellow
+Border Collie exactly as they are, including composition, linework, halftone
+patterns, colors, and proportions.
+
+Replace every background pixel outside the illustrated subject with one
+perfectly uniform flat solid grey: #808080. The background must have zero
+gradient, zero lighting variation, zero vignette, zero texture, zero noise,
+zero shadows, zero floor plane, and zero speckles. Keep a crisp clean boundary
+around the complete subject. Do not add or remove any object. No text, logo,
+watermark, stars, or extra marks.

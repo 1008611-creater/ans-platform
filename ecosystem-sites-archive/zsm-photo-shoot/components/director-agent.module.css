@@ -1,0 +1,12 @@
+.panel { padding: clamp(16px, 3vw, 28px); border: 1px solid #d4d9d2; background: #f3f5f0; border-radius: 18px; margin-bottom: 24px; color: #29342e; min-width: 0; }
+.panel h2 { font-size: clamp(22px, 3vw, 32px); margin: 10px 0; }
+.panel p { line-height: 1.7; overflow-wrap: anywhere; }
+.panel form { margin-top: 20px; }
+.options { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; margin: 12px 0; }
+.options label { display: grid; gap: 8px; flex: 1; min-width: 110px; }
+.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+.plans article { min-width: 0; padding: 18px; background: white; border: 1px solid #dde2db; border-radius: 12px; display: flex; flex-direction: column; }
+.plans h3 { margin: 12px 0 4px; }
+.plans p { font-size: 13px; }
+.plans button { margin-top: auto; white-space: normal; }
+@media (max-width: 760px) { .plans { grid-template-columns: 1fr; } .options > button { width: 100%; } }

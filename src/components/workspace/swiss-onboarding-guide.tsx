@@ -79,13 +79,13 @@ export const SWISS_COMPUTE_STEPS: SwissStepItem[] = [
     num: '04',
     tag: '官方 Token 单价 × 官方倍率',
     title: '严格按官方 Token 输入/输出/缓存计价 × 官方倍率实算',
-    subtitle: '充值固定 ¥1 = 10 积分 · DeepSeek 1.0x 官方原价 · GPT-6 0.16x 补贴骨折价',
+    subtitle: '充值固定 ¥1 = 10 积分 · DeepSeek 1.5x 标准计价 · GPT-6 0.16x 补贴骨折价',
     accent: '#D97757',
     stillImg: '/videos/stills/t10.50.png',
     bullets: [
-      'deepseek-v4.1-flash：输入 $0.30/1M · 缓存 $0.03/1M · 输出 $1.20/1M · 倍率 1.0x',
-      'gpt-6.1-sol & gpt-6-astra：输入 $2.50/1M · 缓存 $0.25/1M · 输出 $15.00/1M · 倍率 0.16x',
-      '预占防超支 + 结束后按真实 usage 精确到小数点后 6 位自动退差结算',
+      'deepseek-v4.1-flash：输入 $0.30/1M · 缓存 $0.03/1M · 输出 $1.20/1M · 倍率 1.5x (32.4/129.6点)',
+      'gpt-6.1-sol (推理)：输入 $2.00/1M · 缓存 $0.10/1M · 输出 $10.00/1M · 倍率 0.16x',
+      'gpt-6-astra (代码)：输入 $10.0/1M · 缓存 $1.00/1M · 输出 $50.00/1M · 倍率 0.16x',
     ],
     ctaLabel: '去模型演练场实测 →',
     ctaHref: '/models',
@@ -126,7 +126,7 @@ export function SwissCopyField({
         ) : null}
       </div>
       <div className="flex items-center justify-between gap-2 rounded-xl border border-[#E5E0D5] bg-white px-3 py-2 shadow-sm">
-        <code className=" select-all truncate font-mono text-xs font-extrabold text-[#141413] sm:text-sm">
+        <code className="select-all truncate font-mono text-xs font-extrabold text-[#141413] sm:text-sm">
           {value}
         </code>
         <button
@@ -152,7 +152,7 @@ export function SwissCopyField({
 }
 
 /**
- * 瑞士暖白编辑风（HyperFrames Claude Editorial Swiss Grid）URL + Key 接入外部 Agent 专卡
+ * 瑞士暖白编辑风 URL + Key 接入外部 Agent 专卡
  */
 export function SwissUrlKeyGatewayCard({
   baseUrl = 'https://ans.cauai.fun/api/v1',
@@ -211,8 +211,8 @@ export OPENAI_API_KEY="pchat_你的个人密钥"
               onClick={onOpenGuide}
               className="inline-flex items-center gap-1.5 rounded-full border border-[#D97757]/40 bg-[#D97757]/12 px-3.5 py-1.5 text-xs font-extrabold text-[#B85334] transition hover:bg-[#D97757]/20"
             >
-              <Play className="h-3.5 w-3.5 fill-current" />
-              播放 MG 算力引导动画 (12s)
+              <Sparkles className="h-3.5 w-3.5" />
+              查看 4 步图文接入指南
             </button>
           ) : null}
           <Link
@@ -258,7 +258,6 @@ export OPENAI_API_KEY="pchat_你的个人密钥"
             />
           </div>
 
-          {/* Light-Mode Editorial Config Snippet (Zero Dark Box!) */}
           <div className="rounded-2xl border border-[#E5E0D5] bg-[#FAF9F5] p-4">
             <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
@@ -315,7 +314,7 @@ export OPENAI_API_KEY="pchat_你的个人密钥"
                     deepseek-v4.1-flash
                   </span>
                   <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[11px] font-black text-emerald-800">
-                    官方倍率 1.0x
+                    结算倍率 1.5x
                   </span>
                 </div>
                 <p className="mt-1 font-mono text-[11px] font-bold text-[#4A4843]">
@@ -333,7 +332,7 @@ export OPENAI_API_KEY="pchat_你的个人密钥"
                   </span>
                 </div>
                 <p className="mt-1 font-mono text-[11px] font-bold text-[#4A4843]">
-                  输入 $2.50/1M · 缓存 $0.25/1M · 输出 $15.00/1M
+                  Sol: 输入 $2 / 输出 $10 · Astra: 输入 $10 / 输出 $50
                 </p>
               </div>
             </div>
@@ -357,7 +356,7 @@ export OPENAI_API_KEY="pchat_你的个人密钥"
 }
 
 /**
- * 瑞士暖白编辑风（HyperFrames Claude Editorial Swiss Grid）算力系统新手引导弹窗（含 12s MG 动画视频 + 4 幕实拍图卡）
+ * 瑞士暖白编辑风算力系统 4 步图文新手引导弹窗（纯图文交互版）
  */
 export function SwissOnboardingModal({
   open,
@@ -381,24 +380,21 @@ export function SwissOnboardingModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141413]/55 p-3 backdrop-blur-md sm:p-5">
       <div
-        className="relative flex max-h-[94vh] w-full max-w-[1140px] flex-col overflow-hidden rounded-[30px] border-2 border-[#E5E0D5] bg-[#FAF9F5] text-[#141413] shadow-[0_28px_72px_rgba(20,20,19,0.22)]"
+        className="relative flex max-h-[94vh] w-full max-w-[1060px] flex-col overflow-hidden rounded-[30px] border-2 border-[#E5E0D5] bg-[#FAF9F5] text-[#141413] shadow-[0_28px_72px_rgba(20,20,19,0.22)]"
         style={{
           backgroundImage:
             'linear-gradient(to right, rgba(20,20,19,0.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,20,19,0.035) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       >
-        {/* Top HyperFrames Editorial Glass Header */}
+        {/* Top Editorial Glass Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E0D5] bg-white/95 px-6 py-3.5 backdrop-blur">
           <div className="flex items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/35 bg-emerald-500/15 px-3 py-1 font-mono text-xs font-extrabold text-emerald-800">
-              🟢 ANS 算力系统 · 新手引导
+              🟢 ANS 算力系统 · 新手图文指南
             </span>
             <span className="font-mono text-xs font-black tracking-wider text-[#141413]">
               ANS · AI NEVER STOPS
-            </span>
-            <span className="hidden rounded-full bg-[#F2EFE9] px-2.5 py-0.5 font-mono text-[11px] font-bold text-[#4A4843] sm:inline-block">
-              HYPERFRAMES SWISS EDITION · 720P 24FPS
             </span>
           </div>
 
@@ -430,79 +426,36 @@ export function SwissOnboardingModal({
           </button>
         </div>
 
-        {/* Modal Body: Left 7-Col MG Video & Real Visual Showcase + Right 5-Col Step Cards */}
+        {/* Modal Body: 2-Column Interactive Graphic Guide */}
         <div className="grid flex-1 grid-cols-1 gap-5 overflow-y-auto p-6 lg:grid-cols-12">
-          {/* Left 7 Columns: 16:9 MG Video Player + Real Visual Still Card (75%+ Visual Area) */}
-          <div className="flex flex-col gap-4 lg:col-span-7">
-            <div className="overflow-hidden rounded-[24px] border-2 border-emerald-500/45 bg-white p-3 shadow-[0_18px_46px_rgba(20,20,19,0.08)]">
-              <div className="mb-2.5 flex items-center justify-between px-1">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-0.5 font-mono text-[11px] font-extrabold text-emerald-800">
-                  <Sparkles className="h-3 w-3" />
-                  12s 瑞士风 MG 动画 · 实机录屏级拆解
-                </span>
-                <span className="font-mono text-[11px] font-bold text-[#78746C]">
-                  {current.num} / 04 · {current.tag}
-                </span>
-              </div>
-
-              <div className="relative aspect-video w-full overflow-hidden rounded-[18px] border border-[#E5E0D5] bg-[#FAF9F5]">
-                <video
-                  src="/videos/ans-compute-swiss-guide.mp4"
-                  poster={current.stillImg}
-                  controls
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Bottom Quick Copy Bar for Base URL */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <SwissCopyField
-                label="通用 OpenAI Base URL (推荐)"
-                value="https://ans.cauai.fun/api/v1"
-                badge="一键复制"
-              />
-              <SwissCopyField
-                label="Codex / Responses 兼容网关"
-                value="https://ans.cauai.fun/api/codex/v1"
-                badge="双协议"
-              />
-            </div>
-          </div>
-
-          {/* Right 5 Columns: Active Step Detail Card + 4-Step Selector */}
-          <div className="flex flex-col justify-between gap-4 lg:col-span-5">
-            {/* Active Step Highlight Card */}
-            <div className="rounded-[24px] border-2 border-emerald-500/45 bg-white p-5 shadow-[0_18px_46px_rgba(20,20,19,0.08)]">
-              <div className="mb-2 flex items-center justify-between">
+          {/* Left 7 Columns: Active Step Detail Card + Quick Copy Fields */}
+          <div className="flex flex-col justify-between gap-4 lg:col-span-7">
+            <div className="rounded-[24px] border-2 border-emerald-500/45 bg-white p-6 shadow-[0_18px_46px_rgba(20,20,19,0.08)]">
+              <div className="mb-3 flex items-center justify-between">
                 <span className="rounded-full bg-[#D97757]/15 px-3 py-1 font-mono text-xs font-black text-[#B85334]">
                   STEP {current.num} · {current.tag}
                 </span>
                 <span className="font-mono text-xs font-extrabold text-emerald-700">
-                  TOKEN 1:1 实算
+                  OFFICIAL TOKEN × MULTIPLIER
                 </span>
               </div>
 
-              <h3 className="text-lg font-black leading-snug text-[#141413] sm:text-xl">
+              <h3 className="text-xl font-black leading-snug text-[#141413] sm:text-2xl">
                 <span className="rounded-md bg-[#FACC15]/65 px-1.5 py-0.5">
                   {current.title}
                 </span>
               </h3>
-              <p className="mt-1.5 text-xs font-bold text-[#4A4843]">
+              <p className="mt-2 text-xs font-bold text-[#4A4843] sm:text-sm">
                 {current.subtitle}
               </p>
 
-              <ul className="mt-3.5 space-y-2 border-t border-[#E5E0D5] pt-3">
+              <ul className="mt-4 space-y-2.5 border-t border-[#E5E0D5] pt-4">
                 {current.bullets.map((b, i) => (
                   <li
                     key={i}
-                    className="flex items-start gap-2 text-xs font-bold leading-relaxed text-[#141413]"
+                    className="flex items-start gap-2.5 text-xs font-bold leading-relaxed text-[#141413] sm:text-sm"
                   >
-                    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 font-mono text-[10px] font-black text-emerald-800">
+                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 font-mono text-[11px] font-black text-emerald-800">
                       ✓
                     </span>
                     <span>{b}</span>
@@ -510,7 +463,7 @@ export function SwissOnboardingModal({
                 ))}
               </ul>
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-2 pt-2">
                 <Link
                   href={current.ctaHref}
                   onClick={onClose}
@@ -544,33 +497,49 @@ export function SwissOnboardingModal({
               </div>
             </div>
 
-            {/* 4-Step Visual Thumbnail Strip */}
-            <div className="grid grid-cols-2 gap-2.5">
-              {SWISS_COMPUTE_STEPS.map((st, idx) => (
-                <button
-                  key={st.num}
-                  type="button"
-                  onClick={() => setActiveStep(idx)}
-                  className={`group flex flex-col overflow-hidden rounded-2xl border p-2 text-left transition ${
-                    activeStep === idx
-                      ? 'border-2 border-emerald-500 bg-white shadow-md'
-                      : 'border-[#E5E0D5] bg-white/80 hover:bg-white'
-                  }`}
-                >
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className="rounded-full bg-[#F2EFE9] px-2 py-0.5 font-mono text-[10px] font-black text-[#141413]">
-                      {st.num}
-                    </span>
-                    <span className="truncate text-[11px] font-extrabold text-[#4A4843]">
-                      {st.tag.split(' · ')[0]}
-                    </span>
-                  </div>
-                  <div className=" truncate text-xs font-black text-[#141413]">
-                    {st.title}
-                  </div>
-                </button>
-              ))}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <SwissCopyField
+                label="通用 OpenAI Base URL (推荐)"
+                value="https://ans.cauai.fun/api/v1"
+                badge="一键复制"
+              />
+              <SwissCopyField
+                label="Codex / Responses 兼容网关"
+                value="https://ans.cauai.fun/api/codex/v1"
+                badge="双协议"
+              />
             </div>
+          </div>
+
+          {/* Right 5 Columns: 4-Step Visual Selector Cards */}
+          <div className="flex flex-col justify-between gap-3 lg:col-span-5">
+            {SWISS_COMPUTE_STEPS.map((st, idx) => (
+              <button
+                key={st.num}
+                type="button"
+                onClick={() => setActiveStep(idx)}
+                className={`group flex flex-col rounded-2xl border p-4 text-left transition ${
+                  activeStep === idx
+                    ? 'border-2 border-emerald-500 bg-white shadow-md'
+                    : 'border-[#E5E0D5] bg-white/80 hover:bg-white'
+                }`}
+              >
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="rounded-full bg-[#F2EFE9] px-2.5 py-0.5 font-mono text-[11px] font-black text-[#141413]">
+                    STEP {st.num}
+                  </span>
+                  <span className="truncate font-mono text-[11px] font-extrabold text-emerald-700">
+                    {st.tag}
+                  </span>
+                </div>
+                <div className="text-sm font-black text-[#141413]">
+                  {st.title}
+                </div>
+                <div className="mt-1 line-clamp-1 text-xs font-semibold text-[#4A4843]">
+                  {st.subtitle}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -588,17 +557,6 @@ export function SwissOnboardingBanner({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [defaultStep, setDefaultStep] = useState(0);
-
-  useEffect(() => {
-    try {
-      const seenKey = 'ans_swiss_compute_guide_seen_v2';
-      if (pageKey === 'credits' && !window.localStorage.getItem(seenKey)) {
-        window.localStorage.setItem(seenKey, '1');
-      }
-    } catch {
-      // ignore
-    }
-  }, [pageKey]);
 
   const openAtStep = (idx: number) => {
     setDefaultStep(idx);
@@ -619,7 +577,7 @@ export function SwissOnboardingBanner({
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/35 bg-emerald-500/15 px-3 py-1 font-mono text-xs font-extrabold text-emerald-800">
               <Zap className="h-3.5 w-3.5" />
-              ANS 算力积分新手引导 · 瑞士 MG 动画 + 图文指南
+              ANS 算力积分新手引导 · 瑞士网格图文指南
             </span>
             <span className="text-sm font-black text-[#141413]">
               免费领{' '}
@@ -640,8 +598,8 @@ export function SwissOnboardingBanner({
               onClick={() => openAtStep(0)}
               className="inline-flex items-center gap-1.5 rounded-full bg-[#141413] px-4 py-2 text-xs font-extrabold text-[#FAF9F5] shadow-sm transition hover:bg-emerald-600"
             >
-              <Play className="h-3.5 w-3.5 fill-current text-emerald-400" />
-              打开 MG 动画新手引导 (12s)
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              打开 4 步图文新手引导
             </button>
             <Link
               href="/workspace/benefits"
@@ -671,7 +629,7 @@ export function SwissOnboardingBanner({
                 </div>
               </div>
               <span className="shrink-0 rounded-full bg-[#FAF9F5] px-2 py-1 font-mono text-[10px] font-extrabold text-[#4A4843]">
-                看动画 →
+                详情 →
               </span>
             </button>
           ))}

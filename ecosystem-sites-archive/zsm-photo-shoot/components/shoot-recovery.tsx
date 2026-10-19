@@ -1,0 +1,17 @@
+﻿'use client';
+import {useRef,useState} from 'react';
+import {KeyRound, Download, LoaderCircle} from 'lucide-react';
+import {shootApi,ShootApiError} from '@/app/lib/shoot-api';
+import styles from './shoot-studio.module.css';
+const BASE=process.env.NEXT_PUBLIC_BASE_PATH||'';
+export default function ShootRecovery({onRestored,hasProjects}:{onRestored:()=>Promise<void>;hasProjects:boolean}){
+ const [code,setCode]=useState(''),[input,setInput]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[confirmNew,setConfirmNew]=useState(false);
+ const operation=useRef(false);
+ const request=<T,>(path:string,body:unknown)=>shootApi<T>(BASE,'session/'+path,{method:'POST',body:JSON.stringify(body)});
+ async function act(action:()=>Promise<void>,rotating=false){if(operation.current)return;operation.current=true;setBusy(true);setError('');setMessage('');try{await action();}catch(e){setError(e instanceof ShootApiError&&e.uncertain?(rotating?'服务回复未确认。先同步作品；不要连续生成恢复码，新码可能已使旧码失效。':'服务回复未确认，请先同步作品，查看当前浏览器是否已恢复。'):e instanceof Error?e.message:'暂时无法连接，请同步后再试。');}finally{operation.current=false;setBusy(false);}}
+ function download(){const url=URL.createObjectURL(new Blob(['vibephoto 私密作品恢复码\n\n'+code+'\n\n请在网站“我的拍摄”中输入此码。有效期30天，不延长作品保留期限。\n持有此码的人可以访问你的私有作品，请保存在自己的安全位置。\n生成新码会使旧码失效。\n'],{type:'text/plain;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='vibephoto-recovery.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}
+ return <details id="studio-recovery" className={styles.recoveryPanel}><summary><KeyRound size={15}/>{hasProjects?'换设备：保存恢复码 / 找回作品':'已有拍摄？用恢复码找回'}</summary><div><p>{hasProjects?'换设备或清除浏览器数据前，先保存恢复码。作品保留期限不变。':'在原设备保存恢复码，再粘贴到这里。只恢复私有作品，不开放新的开拍范围。'}</p>
+ {hasProjects&&<><button className={styles.secondary} disabled={busy} onClick={()=>setConfirmNew(v=>!v)}><KeyRound size={14}/>{code?'更换恢复码':'生成恢复码'}</button>{confirmNew&&<div className={styles.recoveryConfirm}><p>生成新码后，之前保存的恢复码会立即失效。作品和已恢复的设备保留。</p><div><button className={styles.secondary} disabled={busy} onClick={()=>void act(async()=>{const data=await request<{code:string}>('recovery',{confirm:true});setCode(data.code);setConfirmNew(false);setMessage('新恢复码已生成，旧码已失效。请下载保存。');},true)}>{busy?<LoaderCircle size={14}/>:<KeyRound size={14}/>}确认生成新码</button><button className={styles.back} disabled={busy} onClick={()=>setConfirmNew(false)}>保留原恢复码</button></div></div>}{code&&<div className={styles.recoveryCode}><label>私密恢复码<input readOnly value={code} onFocus={e=>e.target.select()} autoComplete="off" spellCheck={false}/></label><button className={styles.secondary} onClick={download}><Download size={14}/>下载恢复码</button><small>持有此码可访问你的作品。不要分享或放进网址。</small></div>}</>}
+ <form onSubmit={e=>{e.preventDefault();void act(async()=>{await request('restore',{code:input.trim()});setInput('');setCode('');await onRestored();setMessage('已恢复私有作品。');});}}><label>恢复码<input type="password" name="recovery-code" autoComplete="off" placeholder="粘贴完整恢复码" value={input} onChange={e=>setInput(e.target.value)} maxLength={43} spellCheck={false}/></label><button className={styles.secondary} disabled={busy||input.trim().length!==43} type="submit">{busy?'正在确认…':'找回作品'}</button></form>
+ {error&&<p role="alert" className={styles.warning}>{error}<button className={styles.back} disabled={busy} onClick={()=>void act(async()=>{await onRestored();setMessage('已同步当前浏览器的私有作品；请检查作品列表。');})}>同步作品</button></p>}{message&&<p role="status">{message}</p>}</div></details>;
+}

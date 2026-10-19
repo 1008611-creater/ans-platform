@@ -29,7 +29,7 @@ const GUEST_CREDITS_HISTORY = {
     rechargeYuanPerPoint: 0.1,
     usdQuotaPerPoint: 0.1,
     gptConsumptionMultiplier: 0.16,
-    deepseekConsumptionMultiplier: 1,
+    deepseekConsumptionMultiplier: 1.5,
     rechargeEnabled: false,
   },
   entries: [] as Array<{
@@ -216,7 +216,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
                         <span>{voiceText(`states.${call.state}`)}</span>
                         <span>{voiceText("characters", { count: call.maxUnits })}</span>
                         <span className="font-medium">
-                          {voiceText(call.settledPoints === null ? "reserved" : "zero")}
+                          {call.settledPoints === null ? voiceText("reserved") : call.settledPoints > 0 ? `${numbers.format(call.settledPoints)} ${isEn ? "credits" : "积分"}` : voiceText("zero")}
                         </span>
                       </li>
                     ))}

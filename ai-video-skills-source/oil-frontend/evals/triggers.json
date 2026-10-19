@@ -1,0 +1,150 @@
+{
+  "skill_name": "oil-frontend",
+  "cases": [
+    {
+      "id": "explicit-01",
+      "query": "使用 $oil-frontend 检查并修改这个表单。",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-02",
+      "query": "请用 oil-frontend 评审这个页面的视觉层级。",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-03",
+      "query": "调用 oil-frontend 重构这个 React 模块。",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-04",
+      "query": "让 oil-frontend 帮我整理组件、Hook 和类型归属。",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-05",
+      "query": "按照 oil-frontend 的规则修复这个列表的 loading 状态。",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-06",
+      "query": "Use $oil-frontend to review this dashboard implementation.",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-07",
+      "query": "我已经在技能选择器里选择 oil-frontend，请检查当前前端改动。",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-08",
+      "query": "这次前端任务请启用 oil-frontend，只做评审，不改代码。",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-09",
+      "query": "用 oil-frontend 看看弹窗滚动和响应式结构。",
+      "should_trigger": true
+    },
+    {
+      "id": "explicit-10",
+      "query": "$oil-frontend 只修真正出错的共享组件。",
+      "should_trigger": true
+    },
+    {
+      "id": "ordinary-01",
+      "query": "帮我把这个 React 页面做得更好看。",
+      "should_trigger": false
+    },
+    {
+      "id": "ordinary-02",
+      "query": "修一下按钮颜色和卡片间距。",
+      "should_trigger": true
+    },
+    {
+      "id": "ordinary-03",
+      "query": "重构这个前端列表的查询 Hook，顺便整理类型。",
+      "should_trigger": true
+    },
+    {
+      "id": "ordinary-04",
+      "query": "这个列表加载时会闪空状态，帮我修复。",
+      "should_trigger": true
+    },
+    {
+      "id": "ordinary-05",
+      "query": "oil-frontend 是做什么的？",
+      "should_trigger": false
+    },
+    {
+      "id": "ordinary-06",
+      "query": "为什么 oil-frontend 会在前端任务里自动出现？",
+      "should_trigger": false
+    },
+    {
+      "id": "ordinary-07",
+      "query": "不要使用 oil-frontend，直接修这个 CSS 导入错误。",
+      "should_trigger": false
+    },
+    {
+      "id": "ordinary-08",
+      "query": "比较一下 oil-frontend 和通用 UI Skill 的区别。",
+      "should_trigger": false
+    },
+    {
+      "id": "ordinary-09",
+      "query": "升级 Vite 依赖并修复构建配置。",
+      "should_trigger": false
+    },
+    {
+      "id": "ordinary-10",
+      "query": "给后端接口增加分页参数。",
+      "should_trigger": false
+    },
+    {
+      "id": "implicit-layout",
+      "query": "打开右侧栏后，表单就被挤出容器了，帮我修好。",
+      "should_trigger": true
+    },
+    {
+      "id": "implicit-motion",
+      "query": "鼠标经过导航项时滑块总跳回原位，请检查实现。",
+      "should_trigger": true
+    },
+    {
+      "id": "implicit-tests",
+      "query": "这个前端的测试改个内部函数名就全挂了，帮我清理并验证真实保存流程。",
+      "should_trigger": true
+    },
+    {
+      "id": "backend-hook",
+      "query": "给支付 Webhook 增加签名校验。",
+      "should_trigger": false
+    },
+    {
+      "id": "browser-operation",
+      "query": "打开现有网站，帮我填写报名表。",
+      "should_trigger": false
+    },
+    {
+      "id": "design-image",
+      "query": "生成一张移动端点餐界面设计图，不写前端代码。",
+      "should_trigger": false
+    },
+    {
+      "id": "mechanical-import",
+      "query": "只改正 CSS 文件的导入路径，不改变渲染结果。",
+      "should_trigger": false
+    },
+    {
+      "id": "declined",
+      "query": "这次不要用 oil-frontend，调整这个按钮的颜色。",
+      "should_trigger": false
+    },
+    {
+      "id": "design-direction",
+      "query": "给这个产品的首页探索三种不同的视觉风格，我来挑。",
+      "should_trigger": false
+    }
+  ]
+}

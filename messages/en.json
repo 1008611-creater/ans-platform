@@ -3071,7 +3071,7 @@
     "replyCommunity": "The community is for sharing work and talking. Check the visibility before sharing anything.",
     "replyMarket": "Review the listing for actual deliverables, inputs and usage. Workflow execution has a separate cost confirmation.",
     "voiceSignIn": "Sign in to use voice.",
-    "voiceFree": "Voice is currently free (0 credits). Private audio replay is kept for 24 hours.",
+    "voiceFree": "Voice synthesis costs 1 credit (CNY 0.10) per request and is automatically refunded on failure; cached audio replays free for 24 hours.",
     "agentRecoveredTurns": "Billing status of submitted turns",
     "agentRecoveryHint": "This tab keeps up to 8 receipt links for 24 hours. Refreshing only checks billing and never resends a request. Answers not received before the refresh cannot be recovered.",
     "agentRecoveryUnavailable": "Billing could not be checked. Try again later or open Credits & usage.",
@@ -5098,7 +5098,7 @@
       "reserved": "Reserved credits",
       "pending": "Pending requests: {count}",
       "hold": "Reservations are already deducted from available credits. Verified usage is settled and any remainder is returned.",
-      "rules": "Recharge is fixed at CNY 1 = 10 credits. Model credits consumed = official USD cost × snapshot USD/CNY exchange rate × 10 × model consumption multiplier. GPT ×0.16, DeepSeek ×1, Opus ×1; apply the multiplier once only. New pricing requires verified price and exchange-rate snapshots. Historical requests retain their original pricing snapshot.",
+      "rules": "Recharge is fixed at CNY 1 = 10 credits. Model credits consumed = official USD cost × snapshot USD/CNY exchange rate × 10 × model consumption multiplier. GPT ×0.16, DeepSeek ×1.5, Opus ×1; apply the multiplier once only. New pricing requires verified price and exchange-rate snapshots. Historical requests retain their original pricing snapshot.",
       "recharge": "Top up with an ANS points voucher purchased from the shop, then redeem it above. Each code can be used once.",
       "back": "Back to workspace",
       "refresh": "Refresh statement",
@@ -5127,7 +5127,7 @@
       "rechargeRefresh": "Refresh balance",
       "pointsUnit": "points",
       "billingTitle": "How ANS points work",
-      "billingBody": "Recharge is fixed at CNY 1 = 10 credits. Model credits consumed = official USD cost × snapshot USD/CNY exchange rate × 10 × model consumption multiplier. GPT ×0.16, DeepSeek ×1, Opus ×1; apply the multiplier once only. New pricing requires verified price and exchange-rate snapshots. Historical requests retain their original pricing snapshot.",
+      "billingBody": "Recharge is fixed at CNY 1 = 10 credits. Model credits consumed = official USD cost × snapshot USD/CNY exchange rate × 10 × model consumption multiplier. GPT ×0.16, DeepSeek ×1.5, Opus ×1; apply the multiplier once only. New pricing requires verified price and exchange-rate snapshots. Historical requests retain their original pricing snapshot.",
       "reasons": {
         "CLAIM": "Free claim",
         "GRANT": "Credit grant",
@@ -5197,7 +5197,7 @@
       "examRecovery": "The exam service recovers and settles these reservations. For a long-running hold, check the task result. This list is read-only; a timeout does not trigger a refund.",
       "examEmpty": "No outstanding exam analysis reservations.",
       "voiceTitle": "Voice accounting policy",
-      "voiceFreePolicy": "Current reviewed policy: free, 0 credits.",
+      "voiceFreePolicy": "Current reviewed policy: 1 credit (CNY 0.10) per synthesis, auto-refunded on failure.",
       "voicePolicyPaused": "Voice dispatch is unavailable. Check credentials, approved model and policy review deadline.",
       "voiceDeadline": "ANS policy review deadline (UTC):",
       "voiceUsage": "Last 24 hours: {count} requests; {pending} need closure; {megabytes} MB cached.",
@@ -5661,7 +5661,7 @@
       "redeemStep": "Paste the code to credit your current ANS account.",
       "accountNote": "Check that you are signed into the account you want to credit. A redeemed code cannot be used by another account.",
       "planStatus": "In preparation",
-      "planDescription": "Weekly, monthly and quarterly: explore the VibePlan interface.",
+      "planDescription": "Weekly, monthly and quarterly plans keep their original price with a 1.21x–1.50x compute bonus (e.g. ¥49 for 650 pts, ¥129 for 1,800 pts, ¥329 for 4,950 pts).",
       "planExplore": "Explore VibePlan",
       "quickAmounts": "Choose a face value",
       "balanceHeading": "My compute credits",
@@ -5875,9 +5875,9 @@
       "back": "Back to points",
       "status": "Terms confirmed · Preparing to open",
       "headline": "Turn a good project into your own work.",
-      "description": "Choose a pace that fits your work. Membership provides production tools; points pay for compute. Projects, workflows and AIGC share one workspace.",
+      "description": "Keep the original plan price and get a 1.21x–1.50x tiered compute credit bonus (vs. standard ¥1 = 10 pts) plus workspace tools across projects, workflows and AIGC.",
       "choosePeriod": "Choose a term",
-      "periodHelp": "Monthly by default. Weekly for focused projects; quarterly points arrive in batches.",
+      "periodHelp": "Monthly by default (1.33x–1.40x compute bonus). Weekly gives 1.21x–1.22x bonus; quarterly gives 1.40x–1.50x bonus in three batches.",
       "previewLabel": "Subscription preview",
       "subscriptionDirection": "VibePlan / Subscription",
       "notFinalized": "To be announced",
@@ -5917,7 +5917,7 @@
       "faq": {
         "difference": {
           "question": "Membership or points vouchers?",
-          "answer": "Points vouchers fund compute when needed. Membership includes production tools and a stated points allowance. Learning, career work and AIGC share one membership. Plans are in preparation; purchase and membership redemption are not available."
+          "answer": "Top-up vouchers are fixed at ¥1 = 10 points (never expire). Membership plans grant a 1.21x–1.50x compute bonus (+21% to +50% extra points) plus workspace tools across learning, career and AIGC. Plans are in preparation; purchase and membership redemption are not available."
         },
         "payment": {
           "question": "Can I buy VibePlan now?",
@@ -5928,8 +5928,8 @@
           "answer": "Plan pricing, periodic points, quota expiry and rollover, specific benefits, plus purchase, renewal and cancellation terms will be explained before availability."
         },
         "ratio": {
-          "question": "Why does the ¥49 plan include 300 points, not 490?",
-          "answer": "The top-up rate is fixed at ¥1 for 10 points. The ¥49 VibePlan monthly term includes 300 points and membership tools. Its full price is not converted to points, and it does not change the top-up rate. Points are not a promise of cash redemption."
+          "question": "Why do membership plans include 1.2x–1.5x more compute points than standard top-up vouchers?",
+          "answer": "Standard top-up vouchers are fixed at ¥1 = 10 points (never expire). Membership plans keep their original price and grant a 1.21x–1.50x compute bonus: ¥19 Weekly includes 230 points (1.21x), ¥49 Monthly includes 650 points (1.33x), ¥129 Quarterly includes 1,800 points (1.40x), ¥49 Pro Weekly includes 600 points (1.22x), ¥129 Pro Monthly includes 1,800 points (1.40x), and ¥329 Pro Quarterly includes 4,950 points (1.50x). Plan points follow batch validity windows and cannot be withdrawn or transferred."
         },
         "expiry": {
           "question": "When do points expire?",
@@ -5982,14 +5982,14 @@
       "tiers": {
         "plan": {
           "name": "VibePlan",
-          "description": "Keep learning, applying, competing and building personal projects.",
+          "description": "Includes a 1.21x–1.40x compute bonus (230 / 650 / 1,800 pts) for learning, career work and personal projects.",
           "workflow": "Planned: mature official workflows and personal recipes",
           "continuity": "Planned: longer version history and more projects",
           "delivery": "Planned: custom presentation and project collaboration"
         },
         "pro": {
           "name": "VibePlan Pro",
-          "description": "For frequent creation, multiple projects and client delivery.",
+          "description": "Includes a 1.22x–1.50x compute bonus (600 / 1,800 / 4,950 pts) for frequent AIGC creation, multi-project work and client delivery.",
           "workflow": "Planned: batch execution and version branches",
           "continuity": "Planned: more concurrent tasks, storage and history",
           "delivery": "Planned: client feedback, delivery packages and detailed permissions"
@@ -6182,9 +6182,9 @@
     },
     "voiceUsage": {
       "title": "Voice usage",
-      "description": "Free voice calls use the shared usage audit. They do not change your balance. Unknown results stay pending; replay does not generate again.",
+      "description": "Voice synthesis costs 1 credit (CNY 0.10) per request and auto-refunds if undelivered; cached audio replays free for 24 hours.",
       "characters": "{count} characters",
-      "reserved": "0 credits reserved",
+      "reserved": "1 credit reserved",
       "zero": "0 credits",
       "states": {
         "AUTHORIZED": "Authorized",

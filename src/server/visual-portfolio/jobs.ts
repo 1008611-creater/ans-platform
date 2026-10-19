@@ -15,7 +15,7 @@ export function generationConfig() {
  const raw = process.env.ANS_TRIPO_PRICE_POINTS?.trim();
  const price = raw && /^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(raw) ? Number(raw) : null;
  const valid = price !== null && Number.isFinite(price) && price > 0 && price <= 10000;
- const flatRaw=process.env.ANS_TRIPO_FLAT_PRICE_POINTS===undefined?"10":process.env.ANS_TRIPO_FLAT_PRICE_POINTS.trim();
+ const flatRaw=process.env.ANS_TRIPO_FLAT_PRICE_POINTS===undefined?"20":process.env.ANS_TRIPO_FLAT_PRICE_POINTS.trim();
  const flatPrice=flatRaw&&/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(flatRaw)?Number(flatRaw):null;
  const flatValid=flatPrice!==null&&Number.isFinite(flatPrice)&&flatPrice>0&&flatPrice<=10000;
  const pricingValid=flatValid;

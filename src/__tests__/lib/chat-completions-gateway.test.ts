@@ -96,10 +96,10 @@ describe("External Agent Chat Completions Gateway & Official Token + Cache + Mul
     expect(ds.uncachedInputTokens).toBe(1000);
     expect(ds.cachedReadTokens).toBe(1000);
     expect(ds.outputTokens).toBe(1000);
-    expect(ds.consumptionMultiplier).toBe(1);
+    expect(ds.consumptionMultiplier).toBe(1.5);
     // usdCost = (1000*0.3 + 1000*0.006 + 1000*1.2)/1e6 = 1.506 / 1e6 = 0.001506 USD
-    // points = ceil(0.001506 * 7.2 * 10 * 1 * 1e6) / 1e6 = 0.108432 points
-    expect(ds.billedPoints).toBe(0.108432);
+    // points = ceil(0.001506 * 7.2 * 10 * 1.5 * 1e6) / 1e6 = 0.162648 points
+    expect(ds.billedPoints).toBe(0.162648);
 
     // GPT-6.1 Sol: input=$2/M, output=$10/M, cacheRead=$0.1/M, multiplier=0.16, fx=7.2, 10 pts/CNY
     const sol = calculateOfficialTokenPoints("gpt-6.1-sol", {
