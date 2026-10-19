@@ -2,6 +2,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ResetPasswordPage from "@/app/reset-password/page";
 
+vi.mock("next-intl", () => ({
+  useLocale: () => "zh",
+  useTranslations: () => (key: string) => key,
+}));
+
 function jsonResponse(body: unknown, init: { status?: number; headers?: Record<string, string> } = {}) {
   return {
     ok: (init.status ?? 200) < 400,

@@ -38,17 +38,14 @@ const connectorStyles = {
   solara: {
     icon: Network,
     iconClass: "bg-sky-500/15 text-sky-600 dark:text-sky-300",
-    cover: "/catalog/gitglow-v1/infinite-canvas.webp",
   },
   plane: {
     icon: Layers3,
     iconClass: "bg-violet-500/15 text-violet-600 dark:text-violet-300",
-    cover: "/catalog/gitglow-v1/plane-projects.webp",
   },
   toonflow: {
     icon: Sparkles,
     iconClass: "bg-amber-500/15 text-amber-600 dark:text-amber-300",
-    cover: "/catalog/gitglow-v1/ai-video-services.webp",
   },
 } as const;
 
@@ -86,16 +83,9 @@ export default async function AigcCompetitionPage() {
   return (
     <div className="ans-product-shell">
       <div className="ans-product-container ans-page-content space-y-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link href="/competitions" className="inline-flex min-h-11 items-center rounded text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{tRoot("nav.competitionHub")}</Link>
-          <Link href="/teams" className="inline-flex min-h-11 items-center rounded text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("openTeams")}</Link>
-        </div>
-        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <PageHeading title={t("title")} description={t("description")} actions={<Button asChild size="lg" className="h-auto min-h-11 whitespace-normal"><Link href="/projects">{t("createProject")}</Link></Button>} />
-          <figure className="overflow-hidden rounded-2xl border bg-slate-950/90 shadow-sm">
-            <img src="/catalog/gitglow-v1/infinite-canvas.webp" alt="" loading="lazy" className="aspect-[16/9] w-full object-cover object-top" />
-          </figure>
-        </div>
+        <Link href="/competitions" className="inline-flex min-h-11 items-center rounded text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{tRoot("nav.competitionHub")}</Link>
+        <PageHeading title={t("title")} description={t("description")} actions={<Button asChild size="lg" className="h-auto min-h-11 whitespace-normal"><Link href="/projects">{t("createProject")}</Link></Button>} />
+        <Link href="/teams" className="inline-flex min-h-11 items-center rounded text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("openTeams")}</Link>
         <section className="space-y-5">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
@@ -112,28 +102,28 @@ export default async function AigcCompetitionPage() {
                   ? t("productionLabel")
                   : t("backupLabel");
               return (
-                <Card key={connector.id} className="group relative min-w-0 overflow-hidden border-border/80">
-                  <a href={connector.url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden border-b bg-slate-950/90">
-                    <img src={connector.cover} alt="" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]" />
-                  </a>
-                  <CardHeader className="relative gap-3">
+                <Card key={connector.id} className="group relative min-w-0 border-border/80">
+
+                  <CardHeader className="relative gap-4">
                     <div className="flex items-start justify-between gap-4">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${connector.iconClass}`}>
+                      <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${connector.iconClass}`}>
                         <Icon className="h-5 w-5" aria-hidden="true" />
                       </div>
                       <Badge variant="outline" className="rounded-full bg-background/60 text-[11px]">{label}</Badge>
                     </div>
-                    <a href={connector.url} target="_blank" rel="noopener noreferrer" className="space-y-1.5 hover:underline">
+                    <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-xl">{connector.name}</CardTitle>
                         <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                       </div>
+                      <p className="break-all text-xs text-muted-foreground">{connector.host}</p>
                       <CardDescription className="text-sm font-medium text-foreground/80">{connector.role}</CardDescription>
-                    </a>
+                    </div>
                   </CardHeader>
-                  <CardContent className="relative space-y-4">
+                  <CardContent className="relative space-y-5">
                     <p className="text-sm leading-6 text-muted-foreground">{connector.description}</p>
-                    <Button asChild className="h-auto min-h-11 w-full whitespace-normal">
+                    <details><summary className="min-h-11 cursor-pointer rounded py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("toolDetails")}</summary><p className="mt-2 text-sm leading-6 text-muted-foreground">{connector.status}{". "}{connector.detail}</p></details>
+                    <Button asChild className="h-auto min-h-11 w-full whitespace-normal" variant="outline">
                       <a href={connector.url} target="_blank" rel="noopener noreferrer" aria-label={t("openNamedTool", { name: connector.name })}>
                         {t("openTool")}
                         <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />

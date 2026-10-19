@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 const entries = [
   { id: "agrihackathon", href: "/competitions/agrihackathon", icon: HeartHandshake, cover: "/competitions/agrihackathon/gitglow-hub.webp" },
-  { id: "aigc", href: "/competitions/aigc", icon: Sparkles, cover: "/catalog/ans-pro-v1/infinite-canvas.webp" },
+  { id: "aigc", href: "/competitions/aigc", icon: Sparkles, cover: "/catalog/gitglow-v1/aigc-workspace.webp" },
 ] as const;
 
 export default async function CompetitionsPage() {
@@ -32,19 +32,9 @@ export default async function CompetitionsPage() {
               <Badge variant="secondary">{t(`items.${id}.status`)}</Badge>
             </div>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{t(`items.${id}.description`)}</p>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {(t.raw(`items.${id}.highlights`) as string[]).map(item => (
-                <span key={item} className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-foreground/90">
-                  ✨ {item}
-                </span>
-              ))}
-            </div>
+            <details className="text-sm"><summary className="min-h-11 w-fit cursor-pointer rounded py-2 text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("eventOverview")}</summary><ul className="mt-2 list-disc space-y-1 ps-5 text-muted-foreground">{(t.raw(`items.${id}.highlights`) as string[]).map(item => <li key={item}>{item}</li>)}</ul></details>
             <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href={href}
-                style={{ background: "linear-gradient(135deg,#2563eb,#4f46e5)", color: "#ffffff", padding: "0 20px", borderRadius: "9999px", fontWeight: 700, boxShadow: "0 6px 16px rgba(37,99,235,0.24)" }}
-                className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-white transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
+              <Link href={href} className="inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {t(`items.${id}.cta`)}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
               </Link>
               {id === "agrihackathon" && <>
@@ -53,17 +43,12 @@ export default async function CompetitionsPage() {
               </>}
             </div>
           </div>
-          <Link href={href} className="block overflow-hidden rounded-xl border bg-slate-950/90 shadow-sm transition-transform duration-300 hover:scale-[1.01]">
-            <Image src={cover} alt={t(`items.${id}.name`)} width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" />
-          </Link>
+          <figure className="overflow-hidden rounded-xl border bg-slate-950/90 shadow-sm">
+            <Image src={cover} alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full object-cover" />
+          </figure>
         </article>)}
       </section>
-      <Link href="/teams" className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary/5 px-5 py-4 transition hover:border-primary/50 hover:bg-primary/10">
-        <p className="text-base font-bold text-foreground">👥 组队参赛 · 申领最高 750 点团队专属算力包（150 点/人）</p>
-        <span style={{ background: "#0f172a", color: "#fff", padding: "8px 16px", borderRadius: "9999px", fontSize: "13px", fontWeight: 700 }}>
-          {t("continueTeam")} →
-        </span>
-      </Link>
+      <Link href="/teams" className="inline-flex min-h-11 items-center rounded-md text-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("continueTeam")}</Link>
     </div>
   </div>;
 }
