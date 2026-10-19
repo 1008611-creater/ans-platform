@@ -37,7 +37,7 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS interactive showcase reusing same-origin 3D mascot assets."
       }
     },
-    "outerCoverUrl": "/catalog/ans-pro-v1/ans-3d-showcase.webp",
+    "outerCoverUrl": "/catalog/ans-pro-v1/ans-3d-showcase.webp?v=3",
     "coverUrl": "/catalog/gitglow-v1/ans-3d-showcase.svg",
     "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面 · ANS 小恐龙"
   },
@@ -76,7 +76,7 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
-    "outerCoverUrl": "/catalog/ans-pro-v1/magic-resume.webp",
+    "outerCoverUrl": "/catalog/ans-pro-v1/magic-resume.webp?v=3",
     "coverUrl": "/catalog/gitglow-v1/liu-resume.webp",
     "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× 双封面"
   },
@@ -114,7 +114,7 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "Official ANS project. Features and usage terms follow the project page."
       }
     },
-    "outerCoverUrl": "/catalog/ans-pro-v1/image2-library.webp",
+    "outerCoverUrl": "/catalog/ans-pro-v1/image2-library.webp?v=3",
     "coverUrl": "/catalog/gitglow-v1/image2-library.webp",
     "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
@@ -140,9 +140,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
-    "outerCoverUrl": "/catalog/ans-pro-v1/vibephoto.webp",
+    "outerCoverUrl": "/catalog/ans-pro-v1/vibephoto.webp?v=3",
     "coverUrl": "/catalog/gitglow-v1/vibephoto.webp",
-    "coverNote": "Apple 柔和糖果色 3D 卡片风 × GitGlow 双封面"
+    "coverNote": "Impact Tech 3D 卡片风 × GitGlow 双封面"
   },
   {
     "slug": "infinite-canvas",
@@ -166,9 +166,9 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
-    "outerCoverUrl": "/catalog/ans-pro-v1/infinite-canvas.webp",
+    "outerCoverUrl": "/catalog/ans-pro-v1/infinite-canvas.webp?v=3",
     "coverUrl": "/catalog/gitglow-v1/infinite-canvas.webp",
-    "coverNote": "ANS 漫画墨线解释图（独立开发者+小恐龙）× GitGlow 双封面"
+    "coverNote": "Impact Tech × 瑞士科技杂志双屏风 × GitGlow 双封面"
   },
   {
     "slug": "ai-video-services",
@@ -192,7 +192,7 @@ export const REAL_CATALOG_PROJECTS = [
         "sourceNote": "ANS 官方项目。功能与使用条件以项目页面为准。"
       }
     },
-    "outerCoverUrl": "/catalog/ans-pro-v1/ai-video-services.webp",
+    "outerCoverUrl": "/catalog/ans-pro-v1/ai-video-services.webp?v=3",
     "coverUrl": "/catalog/gitglow-v1/ai-video-services.webp",
     "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面"
   },
