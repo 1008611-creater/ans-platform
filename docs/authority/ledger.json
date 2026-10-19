@@ -190,14 +190,14 @@
       "status": "authoritative",
       "title": "发布完成后 ops/prod-live 必须等于 ops/deploy-target，且等于当次发布的 main SHA",
       "decidedAt": "2026-10-20",
-      "authority": "RELEASE_MASTER_PLAYBOOK.md 的 Step 2 / Step 4 信号灯约定",
+      "authority": "RELEASE_MASTER_PLAYBOOK.md 的 Step 2 / Step 4 信号灯约定 · 复测 fix/authority-agent-baseline-20261020",
       "surface": [
         "ops/deploy-target",
         "ops/prod-live"
       ],
       "rules": [],
       "check": "git-health",
-      "note": "2026-10-20 01:11 实测：deploy-target=219422c9（落后 origin/main 124 个提交，GitHub compare 真值），prod-live=f32e06f0（2026-10-18 21:24）；两者不一致，需人工确认是“未上线”还是“未回写”。"
+      "note": "2026-10-20 01:11 实测：deploy-target=219422c9（落后 origin/main 124 个提交，GitHub compare 真值），prod-live=f32e06f0（2026-10-18 21:24）；两者不一致，需人工确认是“未上线”还是“未回写”。\n2026-10-20 复测（04:12）：ops/deploy-target = ops/prod-live = 0ae6aef7（= 当时 main tip），信号已对齐，git-health 退出码 0；\n两者都是远端分支（refs/heads/ops/*），不是仓库文件也不是工作树文件。"
     },
     {
       "id": "A-PROC-01",

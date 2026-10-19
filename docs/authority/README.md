@@ -40,7 +40,10 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
   （#150 扣费先报价再确认 → #151 面板文案 i18n → #152 3D 按需加载 → #153 抓娃娃载荷与聊天确认 →
   #154 诚实性与无障碍）。**谁先把它们合入 main，谁就在同一个 PR 里把 status 改回 `authoritative`**，
   否则规则一开就会红。
-- `A-SIGNAL-01`：`ops/deploy-target` ≠ `ops/prod-live`，且 deploy-target 落后 main 多个提交，
+- `A-SIGNAL-01`：部署信号是**远端分支** `ops/deploy-target` / `ops/prod-live`（既不是仓库里的文件，也不是工作树文件；
+  `git ls-remote origin 'refs/heads/ops/*'` 可查）。2026-10-20 复测：两者都指向 `0ae6aef7`（= 当时的 main tip），
+  **信号已对齐**，`node scripts/git-health.mjs` 退出码 0；`git-health` 读的正是 `origin/ops/*` 这两个 ref。
+  （更正：此前在 README 里写过"ops/ 不在 git 里、是部署机工作树文件"，那是把"路径"当成了"ref"来查，结论错误。）
   发布前需人工确认"未上线"还是"未回写"。注意 `ops/` 目录**不在 git 里**（`git log --all -- ops` 为空），
   它是部署机上的工作树文件，`git-health` 读不到时会打印 `(无)`——发布一致性检查需要先决定它是否入库。
 
