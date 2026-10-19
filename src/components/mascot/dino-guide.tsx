@@ -209,6 +209,20 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     const voice = !prefs.voice; setSpeech(null); setVoiceStatus("idle"); updateSitePreferences({ voice });
     if (voice) window.dispatchEvent(new CustomEvent("ans:dino-activate"));
   }
+  function switchToWorkMode(customPrompt?: string) {
+    changeOpen(false);
+    const lastUserMsg = [...messages].reverse().find(m => m.role === "user")?.text?.trim() ?? "";
+    const q = (customPrompt ?? draft).trim() || lastUserMsg;
+    if (pathname === "/workspace") {
+      if (q) {
+        window.dispatchEvent(new CustomEvent("ans:codex-prompt", { detail: { prompt: q } }));
+      }
+      const el = document.querySelector('[data-testid="pi-codex-workbench"]');
+      if (el && "scrollIntoView" in el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    window.location.href = "/workspace" + (q ? `?prompt=${encodeURIComponent(q)}` : "");
+  }
   const speaking = voiceStatus === "playing", loading = voiceStatus === "loading";
   const voiceLabel = ui(prefs.voice ? "disableDinoVoice" : "enableDinoVoice");
   const voiceHint = !actor ? ui("voiceSignIn") : prefs.voice && !voiceOffer ? ui("voiceUnavailable") : !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceFree");
@@ -273,33 +287,18 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
             type="button"
             aria-pressed={false}
             data-testid="dino-switch-work-mode"
-            onClick={() => {
-              changeOpen(false);
-              const q = draft.trim();
-              if (pathname === "/workspace") {
-                if (q) {
-                  window.dispatchEvent(new CustomEvent("ans:codex-prompt", { detail: { prompt: q } }));
-                }
-                const el = document.querySelector('[data-testid="pi-codex-workbench"]');
-                if (el && "scrollIntoView" in el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                return;
-              }
-              window.location.href = "/workspace" + (q ? `?prompt=${encodeURIComponent(q)}` : "");
-            }}
+            onClick={() => switchToWorkMode()}
           >
             {locale === "zh" ? "🛠️ 工作模式 ↗" : "🛠️ Work Mode ↗"}
           </button>
         </div>
         <CompanionSanctuaryBar
           requestedTab={requestedTab}
+          currentDraft={draft}
           onRequestedTabHandled={() => setRequestedTab(null)}
           onSpeak={text => setSpeech({ id: ++sequence.current, text })}
-          onInjectPrompt={promptText => {
-            updateThread(mode, current => ({ ...current, draft: promptText }));
-            requestAnimationFrame(() => composer.current?.focus());
-          }}
+          onSwitchToWorkMode={switchToWorkMode}
         />
-        {prefs.voice && <p className="px-4 pb-2 text-xs text-muted-foreground" role="status">{voiceHint}</p>}
         {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
         {undo?.mode === mode && <div className="ans-companion-undo" role="status"><span>{ui("conversationCleared")}</span><button type="button" onClick={restoreConversation}>{ui("undoClear")}</button></div>}
         <div className="ans-companion-reading">
