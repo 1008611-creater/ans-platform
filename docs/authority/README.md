@@ -63,3 +63,6 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
    `check:authority` / `typecheck` / `typecheck:tests` / `lint` / `docs:check` / `check:boundaries` / `test:unit`
    **全部通过**（344 文件 / 4349 项 0 失败）。`build` / `smoke` / `a11y` / `perf` 需要隔离数据库与浏览器，由 CI 承担。
 4. 全部合入后：把上表 4 条 pending 改成 `authoritative`，再跑一次 `npm run check:authority:upstream` 确认上游不回退。
+5. **翻开前的模拟已跑过**（2026-10-20）：在「栈 + main + 本 PR」的本地合并结果上把 4 条 pending 全改为
+   `authoritative`，`node scripts/check-authority.mjs --worktree` → **23 条规则通过 / 0 失败**（`isZh ?`
+   实际 19 处，条目上限 30，留有余量）。也就是说合并完成后直接翻状态是安全的。
