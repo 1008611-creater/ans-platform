@@ -3,7 +3,7 @@ export const LOCALE_COOKIE = "NEXT_LOCALE";
 
 // Supported locales - keep in sync with prompts.config.ts (Chinese & English bilingual only)
 export const supportedLocales = ["zh", "en"];
-// 念念技能库默认中文；用户仍可在右上角一键切换英文。
+// 默认中文；用户仍可在右上角一键切换英文。
 export const defaultLocale = "zh";
 
 // RTL locales
