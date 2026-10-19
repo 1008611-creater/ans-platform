@@ -85,7 +85,7 @@ export async function executeAgentTool(name: string, raw: string, actor: string,
   if (name === "site_help") {
     const routes = [
       { key: "aigc", href: "/workflows/hypit", icon: "video" },
-      { key: "video", href: "/workflows/toonflow", icon: "video" },
+      { key: "video", href: "https://hb.cauai.fun/", icon: "video" },
       { key: "learning", href: "/vibe-hub", icon: "learn" },
       { key: "competition", href: "/competitions", icon: "team" },
       { key: "team", href: "/teams", icon: "team" },

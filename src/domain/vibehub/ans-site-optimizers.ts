@@ -123,7 +123,7 @@ const INTENT_CLUSTERS: readonly {
   },
   {
     id: "aigc",
-    keywords: /视频|短剧|漫剧|分镜|画布|运镜|字幕|口播|封面|角色|toonflow|hypit|video|storyboard|seed/i,
+    keywords: /视频|短剧|漫剧|分镜|画布|运镜|字幕|口播|封面|角色|infinite-canvas|hypit|video|storyboard|seed/i,
     badge: {
       zh: "🎬 识别为：AIGC 视频分镜 / 自媒体流水线场景",
       en: "🎬 Detected: AIGC Storyboard / Media Pipeline Scenario",
@@ -359,7 +359,7 @@ export function buildProjectVisualWalkthrough(
 ): ProjectVisualWalkthrough {
   const isEn = locale === "en";
   const isAgri = project.category === "competition" || project.subcategory.includes("agri");
-  const isAigc = project.category === "aigc" || project.workflowId === "easel" || project.workflowId === "hypit" || project.workflowId === "toonflow";
+  const isAigc = project.category === "aigc" || project.workflowId === "easel" || project.workflowId === "hypit";
   const isWeb = project.category === "career" || project.category === "web" || project.workflowId === "resume-website";
 
   const nodes: VisualWalkthroughNode[] = isAgri

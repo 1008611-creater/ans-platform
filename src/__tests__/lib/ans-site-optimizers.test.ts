@@ -67,7 +67,7 @@ describe("ANS Site Optimizers (ans-skill-refactor)", () => {
   });
 
   it("simplifies catalog showcase routing via resolveCatalogShowcaseHref", () => {
-    expect(resolveCatalogShowcaseHref({ slug: "cauai-one", workflowId: "resume-website" } as never)).toBe("/market/resume-website");
+    expect(resolveCatalogShowcaseHref({ slug: "liu-resume", workflowId: "resume-website" } as never)).toBe("/market/resume-website");
     expect(resolveCatalogShowcaseHref({ slug: "aigc-1", workflowId: "easel" } as never)).toBe("/competitions/aigc");
     expect(resolveCatalogShowcaseHref({ slug: "hypit-1", workflowId: "hypit" } as never)).toBe("/workflows/hypit");
     expect(resolveCatalogShowcaseHref({ slug: "demo-1", category: "web" } as never)).toBe("/explore/demo-1");

@@ -21,7 +21,7 @@ export async function OfficialWorkflows({ compact = false }: { compact?: boolean
       </div>
       <div className="ans-featured-workflow-action">
         <p className="text-xs">{t("toonflow.status")}</p>
-        <Button asChild variant="secondary"><Link href="/workflows/toonflow">{t("openWorkflow")}<ArrowRight className="ms-2 h-4 w-4" aria-hidden="true" /></Link></Button>
+        <Button asChild variant="secondary"><Link href="https://hb.cauai.fun/">{t("openWorkflow")}<ArrowRight className="ms-2 h-4 w-4" aria-hidden="true" /></Link></Button>
       </div>
     </article>
     {!compact && <HypitWorkflowCard />}
