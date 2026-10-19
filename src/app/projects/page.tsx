@@ -194,12 +194,14 @@ export default async function ProjectsPage({
         </div>
       </div>
 
-      {/* Onboarding Quick Templates (Visual Cards Combine Template Fill + Sample Preview) */}
-      <section aria-label="3 大快速立项卡片" className="space-y-3 border-t pt-6">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold tracking-tight">📖 新手引导模板（一键填入表单 / 预览完整范例）</h2>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
+      {/* Onboarding Quick Templates (Collapsed on-demand reference cards) */}
+      <details aria-label="3 大快速立项卡片" className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold tracking-tight text-foreground">
+          <span>📖 查看 3 大赛道立项参考样板（可预览完整范例效果）</span>
+          <span className="text-xs font-normal text-muted-foreground group-open:hidden">点击展开 ▾</span>
+          <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">收起 ▴</span>
+        </summary>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
           {QUICK_KICKOFF_CARDS.map((card) => (
             <div
               key={card.id}
@@ -243,7 +245,7 @@ export default async function ProjectsPage({
             </div>
           ))}
         </div>
-      </section>
+      </details>
     </div>
   );
 }

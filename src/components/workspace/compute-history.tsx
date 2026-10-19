@@ -56,38 +56,6 @@ export async function ComputeHistory({ history, filter, paged, userId }: { userI
       <div className="max-w-3xl"><h2 className="text-sm font-semibold">{t("deliveryTitle")}</h2><p className="mt-1 text-sm leading-7 text-muted-foreground">{t("deliveryBody")}</p></div>
       <Button asChild variant="outline" size="sm"><Link href="/workflows/toonflow">{t("viewResults")}</Link></Button>
     </aside>
-    <section aria-label="GPU 算力节点概览" className="grid gap-4 sm:grid-cols-3" data-testid="compute-cluster-cards">
-      {[
-        {
-          title: "CAUAI 无限画布 4K 渲染节点",
-          spec: "A800 80GB · 按张/按秒弹性计费",
-          cover: "/catalog/gitglow-v1/infinite-canvas.webp",
-          href: "https://hb.cauai.fun/",
-        },
-        {
-          title: "Agri-Vision 农田遥感推理节点",
-          spec: "多光谱视觉大模型 · 差额自动退还",
-          cover: "/competitions/agrihackathon/gitglow-hub.webp",
-          href: "/competitions/agrihackathon",
-        },
-        {
-          title: "ANS-Studio 网页与多模态构建集群",
-          spec: "DeepSeek-V3 / Qwen-VL · 零冷启调度",
-          cover: "/catalog/gitglow-v1/magic-resume.webp",
-          href: "/workspace/models",
-        },
-      ].map((node) => (
-        <Link key={node.title} href={node.href} className="group overflow-hidden rounded-xl border bg-card transition hover:border-primary/40 hover:shadow-md">
-          <div className="aspect-[16/9] w-full overflow-hidden border-b bg-muted">
-            <img src={node.cover} alt={node.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" />
-          </div>
-          <div className="p-4">
-            <h3 className="text-sm font-semibold group-hover:text-primary">{node.title}</h3>
-            <p className="mt-1 text-xs text-muted-foreground">{node.spec}</p>
-          </div>
-        </Link>
-      ))}
-    </section>
     <section aria-labelledby="compute-history-heading" className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 id="compute-history-heading" className="flex items-center gap-2 text-lg font-semibold"><ReceiptText className="size-5" aria-hidden="true" />{t("records")}</h2>

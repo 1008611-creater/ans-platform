@@ -138,8 +138,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
   return <div className="space-y-6">
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/25 bg-primary/5 p-4">
       <div className="space-y-0.5">
-        <p className="text-sm font-bold text-foreground">⚡ 一键填入示范项目模板（秒速体验实时预览与发布）</p>
-        <p className="text-xs text-muted-foreground">点击任一模板即可自动填充标题、封面、简介、亮点与预览地址，支持在此基础上自由修改</p>
+        <p className="text-sm font-bold text-foreground">⚡ 一键填入示范项目模板</p>
       </div>
       <div className="flex flex-wrap gap-2">
         {[
@@ -150,7 +149,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             title: "CAU 农情病虫害多模态遥感诊断终端",
             summary: "基于哨兵二号 NDVI 农情指数与 DeepSeek V4.1 视觉诊断的田间叶斑病实时预警与农艺处方生成系统。",
             deliv: "可交互 HTML5 农情诊断终端\n病虫害置信度分析报告\n开源 Prompt 与数据集索引",
-            cover: "https://ans.cauai.fun/competitions/agrihackathon/gitglow-hub.webp",
+            cover: "/catalog/ans-pro-v1/agri-uav.webp",
             desc: "面向中国农大智耕黑客松打造的智慧农业多模态诊断系统，融合田间实拍叶片视觉识别与多光谱遥感指数，3秒生成农艺防治处方。",
             url: "https://ans.cauai.fun/workspace?thread=thread-agri",
             git: "https://github.com/cauai/agri-vision-diagnosis",
@@ -162,7 +161,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             title: "Three.js 3D 星空个人作品集与简历站",
             summary: "零依赖 HTML5 Canvas 3D 星空粒子交互主页，支持响应式 Bento 卡片、项目时间线与一键导出源码。",
             deliv: "单文件 HTML5 3D 粒子网页\nBento 作品集响应式布局\n在线预览与源码包",
-            cover: "https://ans.cauai.fun/catalog/gitglow-v1/magic-resume.webp",
+            cover: "/catalog/ans-pro-v1/magic-resume.webp",
             desc: "使用工作模式 30 秒生成的 3D 星空粒子个人主页，内置鼠标视差追踪与 Bento 作品卡片。",
             url: "https://ans.cauai.fun/workspace?thread=thread-portfolio",
             git: "https://github.com/cauai/vibe-3d-portfolio",
@@ -174,7 +173,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             title: "CAUAI 无限画布赛博长安四格分镜工坊",
             summary: "基于 CAUAI 无限画布的一致性角色设定、四宫格电影级运镜脚本与多模态提示词工程。",
             deliv: "4 镜完整分镜脚本与台词\n角色一致性参考图 Prompt\n多模态视频运镜指令",
-            cover: "https://ans.cauai.fun/catalog/gitglow-v1/infinite-canvas.webp",
+            cover: "/catalog/ans-pro-v1/infinite-canvas.webp",
             desc: "AIGC 创作赛道示范作品，包含完整角色设定锚点与四格电影级运镜提示词。",
             url: "https://hb.cauai.fun/",
             git: "https://github.com/cauai/infinite-canvas-cyber-changan",
@@ -206,14 +205,14 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             {summary.trim().length > 0 && socialPack.cleanedSummary !== summary.trim() && (
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs">
                 <span className="text-muted-foreground">
-                  🧹 <strong className="text-foreground">ans-tone-guard 检测到空洞修辞：</strong>建议精简为可核验的工程事实描述
+                  🧹 <strong className="text-foreground">文案清晰度提示：</strong>建议精简为可核验的工程事实描述
                 </span>
                 <button
                   type="button"
                   onClick={() => setSummary(socialPack.cleanedSummary)}
                   className="rounded-full border border-primary/30 bg-background px-3 py-1 font-semibold text-primary hover:bg-primary/10 cursor-pointer"
                 >
-                  一键去 AI 味精简简介
+                  一键精简简介
                 </button>
               </div>
             )}
@@ -234,27 +233,24 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             <div>
               <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>ANS 路演发布与高对比封面工坊 · ans-draft-publisher + ans-cover-studio</span>
+                <span>路演文稿与双封面预览</span>
               </p>
-              <h2 className="mt-1 text-lg font-semibold">一鱼四吃：自动生成 60s 路演稿、去 AI 味 README、社媒帖与 16:9 封面</h2>
-              <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                基于当前填写的项目标题、简介与交付物，实时执行去 AI 味校验（ans-tone-guard）并同步生成四套发布物料。
-              </p>
+              <h2 className="mt-1 text-lg font-semibold">自动生成 60s 路演稿、项目 README、社区分享帖与 16:9 封面</h2>
             </div>
             <button
               type="button"
               onClick={fillDescriptionWithReadme}
               className="rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground cursor-pointer"
             >
-              📄 将去 AI 味 README 填入项目详情
+              📄 将生成的 README 填入项目详情
             </button>
           </div>
           <div className="flex flex-wrap gap-2 border-b pb-3">
             {([
               { id: "pitch", label: "🎙️ 60秒路演逐字稿" },
-              { id: "readme", label: "📘 去AI味 GitHub README" },
-              { id: "social", label: "📲 小红书/B站发布草稿" },
-              { id: "cover", label: "🎨 双封面 Skill 工坊 (oil 外封 + GitGlow 3D 内封)" },
+              { id: "readme", label: "📘 项目 GitHub README" },
+              { id: "social", label: "📲 社区分享草稿" },
+              { id: "cover", label: "🎨 列表与详情封面预览" },
             ] as const).map(tab => (
               <button
                 key={tab.id}
@@ -272,14 +268,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
           </div>
           {studioTab !== "cover" ? (
             <div className="space-y-2.5">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {studioTab === "pitch"
-                    ? "面向评委/导师的 60 秒三段式路演结构（痛点 → 确定性边界 → 现场可核验交付）"
-                    : studioTab === "readme"
-                      ? "遵循 Grounding 规范与 30 秒冒烟测试的开源项目 README"
-                      : "去除空洞口号、带双备选标题与可验证亮点的社区分享帖"}
-                </span>
+              <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() =>
@@ -308,9 +297,6 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-3.5 py-2 text-xs leading-5 text-muted-foreground">
-                💡 <strong className="text-foreground">一项目双封面规范：</strong>点进去之前（列表卡片外封）使用 <strong className="text-foreground">oil 大字插画海报 Skill</strong> 一眼看懂；点进去之后（详情页主图内封）使用 <strong className="text-foreground">GitGlow 3D 界面透视 Skill</strong> 展示真实运行界面。
-              </p>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap gap-2">
                   {COVER_STUDIO_PRESETS.map(preset => (
@@ -352,7 +338,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
         </section>
         <section className="ans-detail-block space-y-4">{!isAgri && <div className="flex items-start gap-3"><Github aria-hidden="true" className="mt-1 h-5 w-5 shrink-0 text-primary"/><div><h2 className="font-semibold">{tp("integrationTitle")}</h2><p className="mt-2 text-sm leading-7 text-muted-foreground">{tp("integrationBody")}</p><Link href="/docs/points-integration" className="mt-3 inline-flex text-sm font-medium text-primary underline underline-offset-4">{tp("integrationGuide")}</Link></div></div>}<p className="text-sm leading-7 text-muted-foreground">{free ? p("realProject.submitNote") : t("editorNote")}</p><Button type="submit" disabled={busy || uploading}>{t(busy ? "saving" : "save")}</Button></section>
       </fieldset></form>
-      <aside className="min-w-0 space-y-3 xl:sticky xl:top-24"><p className="text-sm font-medium text-muted-foreground">{tp("livePreview")}</p><div className="ans-project-card overflow-hidden"><div className="aspect-video bg-muted/40">{safeCover ? <Image unoptimized src={coverUrl} width={640} height={360} alt={tp("coverPreview")} className="h-full w-full object-cover"/> : <div className="flex h-full items-center justify-center"><ImagePlus aria-hidden="true" className="h-10 w-10 text-muted-foreground/50"/></div>}</div><div className="space-y-4 p-5"><p className="text-xs font-medium text-primary">{p("categories." + category)} · {p("children." + subcategory)}</p><h2 className="break-words text-xl font-semibold">{title || tp("previewTitle")}</h2><p className="break-words text-sm leading-7 text-muted-foreground">{summary || tp("previewSummary")}</p><ul className="space-y-2 text-sm">{lines(deliverables).slice(0, 3).map((item, index) => <li key={index} className="flex items-start gap-2"><PackageCheck aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-primary"/><span className="break-words">{item}</span></li>)}</ul><p className="border-t pt-4 text-xl font-semibold">{data?.execution ? w("computeOnRun") : free ? p("realProject.freeShare") : Number.isFinite(previewPrice) ? tp("fromPoints", { amount: previewPrice / 100 }) : tp("pricePending")}</p></div></div><p className="text-xs leading-6 text-muted-foreground">{tp("previewNote")}</p></aside>
+      <aside className="min-w-0 space-y-3 xl:sticky xl:top-24"><p className="text-sm font-medium text-muted-foreground">{tp("livePreview")}</p><div className="group ans-project-card overflow-hidden"><div className="aspect-video bg-muted/40">{safeCover ? <Image unoptimized src={coverUrl} width={640} height={360} alt={tp("coverPreview")} className="h-full w-full object-cover"/> : <div className="flex h-full items-center justify-center"><ImagePlus aria-hidden="true" className="h-10 w-10 text-muted-foreground/50"/></div>}</div><div className="space-y-3 p-5"><p className="text-xs font-medium text-primary">{p("categories." + category)} · {p("children." + subcategory)}</p><h2 className="break-words text-lg font-semibold line-clamp-1">{title || tp("previewTitle")}</h2><p className="break-words text-xs leading-6 text-muted-foreground line-clamp-2">{summary || tp("previewSummary")}</p>{lines(deliverables).length > 0 && <ul className="hidden space-y-1.5 text-xs group-hover:block">{lines(deliverables).slice(0, 3).map((item, index) => <li key={index} className="flex items-start gap-1.5"><PackageCheck aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"/><span className="break-words">{item}</span></li>)}</ul>}<p className="border-t pt-3 text-base font-semibold">{data?.execution ? w("computeOnRun") : free ? p("realProject.freeShare") : Number.isFinite(previewPrice) ? tp("fromPoints", { amount: previewPrice / 100 }) : tp("pricePending")}</p></div></div></aside>
     </div>
   </div>;
 }

@@ -153,7 +153,7 @@ export default async function EditWorkflowPage({
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              提交的是当前最新版本。管理员复核通过后，工作流才会出现在工作流广场。
+              提交的是当前最新版本。管理员复核通过后，可将工作流上架至工具与工作流市场。
             </p>
             <WorkflowActions slug={workflow.slug} mode="submit" version={latest?.version} />
           </CardContent>

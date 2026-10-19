@@ -16,7 +16,7 @@ export async function generateMetadata() {
 export default async function HypitPage() {
   const t = await getTranslations("product.hypit");
   return <div className="ans-product-shell"><div className="ans-product-container space-y-10 py-10 sm:py-12">
-    <Link href="/workflows" className="ans-text-link w-fit"><ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("back")}</Link>
+    <Link href="/market" className="ans-text-link w-fit"><ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("back")}</Link>
     <div className={styles.hero}>
       <header className={styles.intro}>
         <p className="ans-eyebrow">{t("tag")}</p>
@@ -31,8 +31,6 @@ export default async function HypitPage() {
           <Button asChild><a href="#hypit-workspace">{t("open")}<ArrowDown className="ms-2 h-4 w-4" aria-hidden="true" /></a></Button>
           <a href="#hypit-examples" className="ans-text-link text-sm">{t("overview.examples")}</a>
         </div>
-        <p className="mt-6 text-sm leading-6 text-muted-foreground">{t("status")}</p>
-        <p className="mt-2 text-xs leading-6 text-muted-foreground">{t("channelsNote")}</p>
       </header>
       <HypitShowcase />
     </div>

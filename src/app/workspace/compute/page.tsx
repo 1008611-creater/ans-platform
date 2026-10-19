@@ -13,69 +13,47 @@ export async function generateMetadata() {
   return { title: t("title"), description: t("description"), robots: { index: false, follow: false } };
 }
 
-const GUEST_COMPUTE_HISTORY: Awaited<ReturnType<typeof readComputeHistory>> = {
+const GUEST_EMPTY_HISTORY: Awaited<ReturnType<typeof readComputeHistory>> = {
   summary: {
-    availablePoints: 125,
-    reservedPoints: 15,
-    consumedPoints: 340,
-    refundedPoints: 20,
-    taskCount: 3,
+    availablePoints: 0,
+    reservedPoints: 0,
+    consumedPoints: 0,
+    refundedPoints: 0,
+    taskCount: 0,
   },
   nextCursor: null,
-  tasks: [
-    {
-      taskId: "compute-demo-canvas-4k-a800",
-      modelId: "CAUAI-Canvas · 4K 无限画布多模态渲染集群 (A800 × 2)",
-      state: "SETTLED",
-      revision: 3,
-      authorizedPoints: 60,
-      settledPoints: 48,
-      refundedPoints: 12,
-      maxUnits: 12,
-      units: 10,
-      unit: "image",
-      outcome: "SUCCEEDED",
-      policyVersion: "v1",
-      createdAt: "2026-10-18T03:20:00.000Z",
-      startedAt: "2026-10-18T03:20:02.000Z",
-      finishedAt: "2026-10-18T03:20:41.000Z",
-    },
-    {
-      taskId: "compute-demo-agri-uav-infer",
-      modelId: "Agri-UAV · 农田多光谱病虫害实时推理节点",
-      state: "RUNNING",
-      revision: 2,
-      authorizedPoints: 15,
-      settledPoints: null,
-      refundedPoints: 0,
-      maxUnits: 30,
-      units: null,
-      unit: "second",
-      outcome: null,
-      policyVersion: "v1",
-      createdAt: "2026-10-18T04:45:00.000Z",
-      startedAt: "2026-10-18T04:45:03.000Z",
-      finishedAt: null,
-    },
-    {
-      taskId: "compute-demo-academic-site-gen",
-      modelId: "ANS-Studio · 学术主页静态构建与视觉生成流水线",
-      state: "SETTLED",
-      revision: 2,
-      authorizedPoints: 30,
-      settledPoints: 22,
-      refundedPoints: 8,
-      maxUnits: 6,
-      units: 4,
-      unit: "image",
-      outcome: "SUCCEEDED",
-      policyVersion: "v1",
-      createdAt: "2026-10-17T14:10:00.000Z",
-      startedAt: "2026-10-17T14:10:01.000Z",
-      finishedAt: "2026-10-17T14:10:25.000Z",
-    },
-  ],
+  tasks: [],
 };
+
+const SAMPLE_COMPUTE_TASKS = [
+  {
+    taskId: "sample-canvas-4k",
+    badge: "📖 范例 #1 · 差额退还",
+    modelId: "CAUAI-Canvas · 4K 无限画布多模态渲染",
+    authorizedPoints: 60,
+    settledPoints: 48,
+    refundedPoints: 12,
+    note: "预授权冻结 60 点 → 实际生成 10 张结算 48 点 → 自动退回 12 点",
+  },
+  {
+    taskId: "sample-agri-uav",
+    badge: "📖 范例 #2 · 按秒计费",
+    modelId: "Agri-UAV · 农田多光谱病虫害推理节点",
+    authorizedPoints: 15,
+    settledPoints: 9,
+    refundedPoints: 6,
+    note: "预授权冻结 15 点 → 实际推理耗时结算 9 点 → 自动退回 6 点",
+  },
+  {
+    taskId: "sample-academic-site",
+    badge: "📖 范例 #3 · 网页构建",
+    modelId: "ANS-Studio · 学术主页静态构建与视觉生成",
+    authorizedPoints: 30,
+    settledPoints: 22,
+    refundedPoints: 8,
+    note: "预授权冻结 30 点 → 实际生成 4 张配图结算 22 点 → 自动退回 8 点",
+  },
+];
 
 export default async function ComputeHistoryPage({ searchParams }: {
   searchParams?: Promise<{ filter?: string | string[]; cursor?: string | string[] }>;
@@ -91,23 +69,17 @@ export default async function ComputeHistoryPage({ searchParams }: {
   const isGuest = !session?.user?.id;
 
   if (isGuest) {
-    const filteredTasks = GUEST_COMPUTE_HISTORY.tasks.filter((task) => {
-      if (filter === "active") return task.state === "AUTHORIZED" || task.state === "RUNNING" || task.state === "UNCERTAIN";
-      if (filter === "settled") return task.state === "SETTLED";
-      if (filter === "released") return task.state === "RELEASED";
-      return true;
-    });
     return (
       <div className="space-y-0" data-testid="compute-guest-preview">
         <div className="border-b border-primary/20 bg-primary/5 px-4 py-3" data-testid="compute-guest-banner">
           <div className="ans-product-container flex flex-wrap items-center justify-between gap-3 text-sm">
             <p className="text-muted-foreground">
-              <strong className="font-semibold text-foreground">算力兑换与结算沙盒预览：</strong>
-              当前展示平台「预授权冻结 → 实耗结算 → 差额秒退」的 GPU 算力调度账单样例；登录后可查看你的真实算力任务与推理回执。
+              <strong className="font-semibold text-foreground">当前未登录（真实可用算力 0 点）：</strong>
+              登录后可查看你的真实算力预授权、实耗结算与差额退回记录。
             </p>
             <div className="flex items-center gap-2">
               <Button asChild size="sm">
-                <Link href="/login?callbackUrl=%2Fworkspace%2Fcompute">登录同步真实算力账单</Link>
+                <Link href="/login?callbackUrl=%2Fworkspace%2Fcompute">登录查看真实算力账单</Link>
               </Button>
               <Button asChild size="sm" variant="outline">
                 <Link href="/workspace/models">浏览可用模型列表</Link>
@@ -117,10 +89,29 @@ export default async function ComputeHistoryPage({ searchParams }: {
         </div>
         <ComputeHistory
           userId="guest-preview"
-          history={{ ...GUEST_COMPUTE_HISTORY, tasks: filteredTasks }}
+          history={GUEST_EMPTY_HISTORY}
           filter={filter}
           paged={false}
         />
+        <div className="ans-product-container pb-12">
+          <details className="group rounded-xl border bg-card p-5">
+            <summary className="cursor-pointer list-none font-semibold flex items-center justify-between">
+              <span>📖 算力预授权与实耗退差账单参考范例（点击展开 3 条样例）</span>
+              <span className="text-xs font-normal text-muted-foreground group-open:hidden">展开查看 →</span>
+            </summary>
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              {SAMPLE_COMPUTE_TASKS.map((sample) => (
+                <div key={sample.taskId} className="rounded-xl border bg-muted/20 p-4 space-y-2">
+                  <span className="inline-block rounded-full border bg-background px-2.5 py-0.5 text-xs font-medium">
+                    {sample.badge}
+                  </span>
+                  <h3 className="text-sm font-semibold">{sample.modelId}</h3>
+                  <p className="text-xs text-muted-foreground">{sample.note}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+        </div>
       </div>
     );
   }

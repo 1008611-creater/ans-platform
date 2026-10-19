@@ -110,11 +110,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
         <section id="market-details" className={styles.section}>
           <h2>{td("detailsTitle")}</h2>
           <p className={`${styles.body} mt-4 whitespace-pre-wrap`}>{listing.description}</p>
-          {listing.githubUrl && (
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Button asChild variant="outline"><a href={listing.githubUrl} target="_blank" rel="noopener noreferrer">GitHub 开源仓库<ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a></Button>
-            </div>
-          )}
         </section>
         {tiers.length > 0 && purchasable && <section id="market-tiers" className={styles.section}>
           <h2>{td("tiersTitle")}</h2><p className="mt-3 text-sm leading-7 text-muted-foreground">{td("tiersNote")}</p>

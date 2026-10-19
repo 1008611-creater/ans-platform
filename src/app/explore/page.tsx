@@ -32,31 +32,45 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   const isEn = locale.startsWith("en");
   const filterHref = (updates: Partial<CatalogBrowseFilters> = {}, page = 1) => catalogBrowseHref("/explore", filters, updates, page);
   return <div className={`ans-product-shell ans-home-page ${homeStyles.page}`}>
-    {!isAgriWall && <section className={homeStyles.hero} aria-labelledby="explore-hero-title">
-      <div className={`ans-product-container ${homeStyles.intro}`}>
-        <div className={homeStyles.copy}>
-          <RevealDetails id="explore-introduction" label={t("catalogBrowse.introduction")} kind="heading" className={homeStyles.titleBlock} details={<p>{t("exploreBody")}</p>}>
-            <h1 id="explore-hero-title" className={homeStyles.title}>
-              <span className="sr-only">{t("nav.explore")} · </span>
-              {t("home.title")}
-            </h1>
-          </RevealDetails>
-          <form action="/explore#project-results" method="get" role="search" className={homeStyles.search} aria-label={t("searchLabel")}>
-            <label className="sr-only" htmlFor="project-search">{t("searchLabel")}</label>
-            <Search className={homeStyles.searchIcon} aria-hidden="true" />
-            <Input id="project-search" type="search" name="q" autoComplete="off" maxLength={200} defaultValue={filters.q} placeholder={t("home.searchPlaceholder")} />
-            {Object.entries(filters).map(([key, value]) => key !== "q" && value && <input key={key} type="hidden" name={key} value={value} />)}
-            <Button type="submit" aria-label={t("search")}><ArrowRight aria-hidden="true" /></Button>
-          </form>
-        </div>
-        {hero ? <ProjectCoverflow projects={(showcase.length ? showcase : [hero]).map(project => ({
-          slug: project.slug,
-          href: resolveCatalogShowcaseHref(project),
-          title: catalogText(project, t, "title", locale),
-          summary: catalogText(project, t, "summary", locale),
-          category: t(`categories.${project.category}`),
-          coverUrl: resolveProjectCovers(project).outerCoverUrl,
-        }))} labels={{ title: t("home.spotlight"), open: t("detail"), carousel: t("home.projectCarousel"), info: t("catalogBrowse.introduction"), pause: t("home.pauseProjects"), play: t("home.playProjects") }} /> : <div className={homeStyles.empty}><BookOpen aria-hidden="true" /><h2>{t("emptyTitle")}</h2><p>{t("emptyBody")}</p></div>}
+    <div className={`ans-product-container ans-page-content ${styles.page}`}>
+    {!isAgriWall && <header className="mb-6 flex flex-col gap-4 border-b border-border/60 pb-5 lg:flex-row lg:items-center lg:justify-between">
+      <div className="space-y-1">
+        <RevealDetails id="explore-introduction" label={t("catalogBrowse.introduction")} kind="heading" details={<p>{t("exploreBody")}</p>}>
+          <h1 id="project-results" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {isEn ? "Explore Projects & Runnable Workflows" : "探索精选项目与可复现工作流"}
+          </h1>
+        </RevealDetails>
+        <p className="text-xs text-muted-foreground">
+          {t("results", { count: browse.total })} · {isEn ? `${catalog.length} total catalog entries` : `共收录 ${catalog.length} 个项目`}
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2.5">
+        <form action="/explore#project-results" method="get" role="search" className="flex items-center gap-1.5" aria-label={t("searchLabel")}>
+          <label className="sr-only" htmlFor="project-search">{t("searchLabel")}</label>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input id="project-search" type="search" name="q" autoComplete="off" maxLength={200} defaultValue={filters.q} placeholder={t("home.searchPlaceholder")} className="h-9 w-56 pl-8 text-sm sm:w-64" />
+          </div>
+          {Object.entries(filters).map(([key, value]) => key !== "q" && value && <input key={key} type="hidden" name={key} value={value} />)}
+          <Button type="submit" size="sm" aria-label={t("search")}><ArrowRight className="h-4 w-4" aria-hidden="true" /></Button>
+        </form>
+        <details open={Boolean(filters.source || filters.readiness)} className="group rounded-xl border bg-card/50 px-3.5 py-2 text-xs">
+          <summary className="cursor-pointer select-none font-medium text-muted-foreground hover:text-foreground">
+            {t("sourceFilter")} / {t("readinessFilter")}
+            {(filters.source || filters.readiness) ? " ●" : ""}
+          </summary>
+          <div className={`${styles.filters} mt-3 border-b-0 pb-1 pt-3`}>
+            <nav aria-label={t("sourceFilter")} className="flex flex-wrap items-center gap-1">
+              <span className="me-2 text-xs text-muted-foreground">{t("sourceFilter")}</span>
+              {[undefined, ...CATALOG_SOURCES].map(value => <Link key={value ?? "all"} href={filterHref({ source: value })} aria-current={filters.source === value ? "page" : undefined} className="ans-subcategory">{t(value ? catalogSourceLabel(value) : "allSources")}</Link>)}
+            </nav>
+            <nav aria-label={t("readinessFilter")} className="flex flex-wrap items-center gap-1">
+              <span className="me-2 text-xs text-muted-foreground">{t("readinessFilter")}</span>
+              {[undefined, "ready", "reference"].map(value => <Link key={value ?? "all"} href={filterHref({ readiness: value })} aria-current={filters.readiness === value ? "page" : undefined} className="ans-subcategory">{t(value ?? "allReadiness")}</Link>)}
+            </nav>
+          </div>
+        </details>
+        <Button asChild variant="outline" size="sm"><Link href="/explore/submit"><Plus className="me-1.5 h-4 w-4" aria-hidden="true" />{t("realProject.submit")}</Link></Button>
       </div>
       <div className="ans-product-container mt-4">
         <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-border/60 bg-card/75 p-2.5 backdrop-blur-md lg:grid-cols-4">

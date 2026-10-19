@@ -1,7 +1,7 @@
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowUpRight, Award, Compass, Flame, Gift, MessageCircle, Rocket, Sparkles, Trophy, UserRound } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getGrowthProfile } from "@/server/growth/service";
@@ -19,10 +19,10 @@ export async function generateMetadata() {
 }
 
 export default async function CommunityPage() {
-  const session = await auth();
+  const [session, locale] = await Promise.all([auth(), getLocale().catch(() => "zh")]);
   if (!session?.user?.id) {
     const t = await getTranslations("product.communityPage");
-    const isEn = /^community/i.test(t("title"));
+    const isEn = locale === "en";
     const guestLinks = [
       { href: "/showcase", title: t("works"), desc: isEn ? "3D Interactive Gallery & Featured Builds" : "3D 交互展厅与精选学生作品", icon: MessageCircle },
       { href: "/explore", title: isEn ? "Public Project Directory" : "公开项目库", desc: isEn ? "40+ Curated AI & Open-Source Tools" : "40+ 精选可运行 AI 与开源工具", icon: Compass },
@@ -41,15 +41,15 @@ export default async function CommunityPage() {
         title: isEn ? "3D Interactive Starry Portfolio & Bilingual Resume" : "3D 星空交互式个人作品集与双语简历站",
         author: isEn ? "3D Resume Studio" : "3D 简历工坊",
         badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
-        cover: "/catalog/gitglow-v1/magic-resume.webp",
-        href: "/market/resume-website",
+        cover: "/catalog/ans-pro-v1/magic-resume.webp",
+        href: "/projects/resume-website",
         summary: isEn ? "One-click WebGL character showcase + bilingual resume export for internship applications." : "基于 ANS 3D 个人网站工坊生成，支持单文件 HTML 导出与 3D 角色互动，适合直接改造成求职简历。",
       },
       {
         title: isEn ? "Multimodal Visual & Video Pipeline on Infinite Canvas" : "用 CAUAI 无限画布跑通 12 镜多模态短片",
         author: isEn ? "AIGC Studio" : "AIGC 视觉工坊",
         badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
-        cover: "/catalog/gitglow-v1/infinite-canvas.webp",
+        cover: "/catalog/ans-pro-v1/infinite-canvas.webp",
         href: "/competitions/aigc",
         summary: isEn ? "Character consistency prompt sheet + storyboard keyframes and video workflow." : "提供角色特征锁定 Prompt 模板与分镜关键帧画布工作流，零基础也能按步骤完成短片。",
       },
@@ -57,7 +57,7 @@ export default async function CommunityPage() {
         title: isEn ? "Vibe Coding Full-Stack Starter Playbook" : "Vibe Coding 零代码到全栈上线实操手册",
         author: isEn ? "VibeHub" : "VibeHub 实训",
         badge: isEn ? "📖 Guide Sample" : "📖 新手参考范例",
-        cover: "/catalog/gitglow-v1/vibephoto.webp",
+        cover: "/catalog/ans-pro-v1/vibephoto.webp",
         href: "/vibe-hub",
         summary: isEn ? "Step-by-step guide from requirement breakdown and schema design to deploying a Next.js app." : "从需求拆解、数据库建模到界面调优的分步实操指南，附可直接复用的开发提示词。",
       },
@@ -65,7 +65,7 @@ export default async function CommunityPage() {
     const xpEarnSteps = [
       { step: "01", name: isEn ? "Daily Check-In & Onboarding Survey" : "每日签到与 30 秒新手问卷", reward: "+20~50 XP", desc: isEn ? "Unlock 50 starter compute points + daily claw machine tokens" : "完成问卷立得 50 算力积分，每日签到再领 5 积分与抓娃娃币" },
       { step: "02", name: isEn ? "VibeHub 60s Interactive Reading" : "VibeHub 课程实训阅读满 60 秒", reward: "+25 XP", desc: isEn ? "Learn practical AI workflows while earning compute points" : "边看 AI 实战教程边领 5 算力积分与抓娃娃机代币" },
-      { step: "03", name: isEn ? "Publish a Project or Workflow" : "发布公开项目或上架工作流模板", reward: "+100~150 XP", desc: isEn ? "Share your repo on /explore or list a workflow on /market" : "在公开项目库提交作品或在市场发布工作流，获得算力分成" },
+      { step: "03", name: isEn ? "Publish a Project or Workflow" : "发布公开项目或上架工作流模板", reward: "+100~150 XP", desc: isEn ? "Share your repo in the project directory or list a workflow in the marketplace" : "在公开项目库提交作品或在工具与工作流市场发布模板，获得算力分成" },
       { step: "04", name: isEn ? "AgriHackathon M1–M4 Milestones" : "参与农客松 M1–M4 阶段里程碑", reward: "+100~200 XP", desc: isEn ? "Complete team registration, code snapshot, and showcase wall" : "完成报名、代码存证与作品上墙，累计解锁 60 赛事积分" },
     ];
     const levelTiers = [

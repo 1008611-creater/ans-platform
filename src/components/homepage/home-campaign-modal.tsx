@@ -103,7 +103,7 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                       {isEn ? "📖 ANS ONBOARDING GUIDE" : "📖 新手引导"}
                     </span>
                     <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                      {isEn ? "10 Points = ¥1 CNY = $1 USD Quota" : "10 积分 = ¥1 元算力额度"}
+                      {isEn ? "10 Points = ¥1.00 CNY = $0.10 USD Quota" : "10 积分 = ¥1 元算力额度"}
                     </span>
                   </div>
                   <div className="text-lg font-black tracking-tight text-foreground sm:text-xl">
@@ -193,14 +193,14 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                       {isEn ? "STEP 3" : "第 3 步"}
                     </span>
                     <span className="text-xs font-black text-cyan-700 dark:text-cyan-300">
-                      {isEn ? "22 Workflows" : "22 款工作流"}
+                      {isEn ? "Tools & Models" : "工作流与模型"}
                     </span>
                   </div>
                   <div className="mt-2.5 text-base font-black text-foreground">
                     {isEn ? "🛒 ANS Marketplace" : "🛒 兑换工具与调用模型"}
                   </div>
                   <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                    {isEn ? "Unlock workflows in /market or run DeepSeek/GPT/Claude in /models." : "在 /market 解锁简历建站与科研工具，或在工作台调用主流大模型。"}
+                    {isEn ? "Unlock workflows in the Marketplace or run DeepSeek, GPT, and Claude in the Model Playground." : "在工具与工作流市场解锁简历建站与科研工具，或在工作台调用主流大模型。"}
                   </p>
                 </div>
 
@@ -224,13 +224,6 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
               >
                 {isEn ? "Browse Homepage First" : "先逛首页"}
               </button>
-              <Link
-                href="/workspace/benefits"
-                onClick={handleDismiss}
-                className="rounded-xl bg-emerald-600 px-4 py-1.5 text-xs font-black text-white shadow-2xs transition hover:bg-emerald-500 dark:bg-emerald-400 dark:text-slate-950"
-              >
-                {isEn ? "🎁 Start Claiming →" : "🎁 立即去领积分 →"}
-              </Link>
             </div>
           </div>
         </div>

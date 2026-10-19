@@ -24,8 +24,8 @@ const CURATED_SHOWCASE = [
     id: "curated-infinite-canvas",
     title: "Infinite Canvas 《星际麦田》4K 多模态 AIGC 画布工程",
     version: "v1.8",
-    author: "光影视觉工作室 · 跨校联队",
-    competition: "AIGC 创意视觉赛道 · 金奖入围",
+    author: "参考范例 · AIGC 视觉方向",
+    competition: "AIGC 创意视觉赛道 · 参考范例",
     likes: 215,
     comments: 56,
     cover: "/catalog/ans-pro-v1/infinite-canvas.webp",
@@ -36,20 +36,20 @@ const CURATED_SHOWCASE = [
     id: "curated-scholar-portal",
     title: "Dr. Lin Lab 智慧农业与遥感视觉课题组双语学术门户",
     version: "v1.4",
-    author: "林知夏 · 生物学院",
-    competition: "ANS 科研主页共创计划",
+    author: "参考范例 · 学术主页方向",
+    competition: "ANS 科研主页共创计划 · 参考范例",
     likes: 94,
     comments: 19,
     cover: "/catalog/ans-pro-v1/magic-resume.webp",
     summary: "通过 ORCID 与论文 BibTeX 自动构建高颜值响应式学术主页，内置开源数据集下载与论文交互预览。",
-    href: "/market/resume-website",
+    href: "/projects/resume-website",
   },
   {
     id: "curated-dragon-arcade",
     title: "Compute Quest 3D 算力盲盒抓娃娃机与小龙养成展台",
     version: "v3.0",
-    author: "ANS 核心交互实验室",
-    competition: "平台算力生态标杆工程",
+    author: "参考范例 · 互动 3D 方向",
+    competition: "平台 3D 交互参考样板",
     likes: 312,
     comments: 82,
     cover: "/catalog/ans-pro-v1/dragon-arcade.webp",
@@ -60,7 +60,7 @@ const CURATED_SHOWCASE = [
     id: "curated-greenhouse-agent",
     title: "GreenHouse-OS 温室水肥光热多智能体协同调控沙盘",
     version: "v1.5",
-    author: "绿洲智控 · 水院联队",
+    author: "参考范例 · 设施农业方向",
     competition: "神农杯 AI 农客松 · 设施农业赛道",
     likes: 106,
     comments: 27,
@@ -72,8 +72,8 @@ const CURATED_SHOWCASE = [
     id: "curated-aigc-film",
     title: "《二十四节气·谷雨》东方美学 AI 实验短片与声画工程",
     version: "v1.2",
-    author: "青禾影像社 · 人发学院",
-    competition: "AIGC 创意视觉赛道",
+    author: "参考范例 · 短片创作方向",
+    competition: "AIGC 创意视觉赛道 · 参考范例",
     likes: 164,
     comments: 41,
     cover: "/catalog/ans-pro-v1/ai-video-services.webp",
@@ -95,8 +95,8 @@ export default async function ShowcasePage() {
           </h1>
           <p className="text-muted-foreground">
             {isEn
-              ? "Explore reviewed and authorized project releases from the ANS community. Reactions, comments, and saves follow each specific version."
-              : "这里展示经评审并获授权的具体作品版本。点赞、评论和收藏都跟随这个版本；作者撤回后，页面和互动会立刻失效。"}
+              ? "Explore reviewed and authorized project releases from the ANS community."
+              : "这里展示经评审并获授权的真实作品版本。"}
           </p>
         </div>
         <div className="flex flex-wrap gap-2.5">
@@ -109,7 +109,7 @@ export default async function ShowcasePage() {
         </div>
       </header>
 
-      {artifacts.length > 0 && (
+      {artifacts.length > 0 ? (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {artifacts.map((artifact, idx) => (
             <Link key={artifact.id} href={`/showcase/${artifact.id}`} className="group">
@@ -137,6 +137,13 @@ export default async function ShowcasePage() {
               </Card>
             </Link>
           ))}
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed bg-muted/20 px-5 py-4 text-sm text-muted-foreground">
+          <span>{isEn ? "No authorized user releases published yet · Reference track templates are shown below." : "当前暂无已授权公开的用户作品 · 下方为各赛道官方交付参考范例"}</span>
+          <Link href="/explore/submit" className="font-semibold text-primary hover:underline">
+            {isEn ? "Publish the first work →" : "成为首个发布作品的创作者 →"}
+          </Link>
         </div>
       )}
 

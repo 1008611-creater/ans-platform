@@ -9,6 +9,9 @@ function statusClass(status: ApicStatusRecord["status"], availability24h: number
   if (status === "operational" && availability24h >= 90) {
     return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
   }
+  if (status === "down" || availability24h < 50) {
+    return "bg-rose-500/10 text-rose-700 dark:text-rose-300";
+  }
   return "bg-amber-500/10 text-amber-700 dark:text-amber-300";
 }
 
@@ -25,14 +28,12 @@ export default async function StatusPage() {
   ]);
   const isEn = locale.toLowerCase().startsWith("en");
   const rawRecords = snapshot?.records ?? [];
-  const operationalRecords = rawRecords.filter((record) => record.status === "operational" && record.availability24h >= 80);
-  const primaryRecords = operationalRecords.length > 0 ? operationalRecords : rawRecords;
-  const latencyRecords = primaryRecords.filter((record) => record.latencyMs !== null);
+  const latencyRecords = rawRecords.filter((record) => record.latencyMs !== null);
   const averageLatency = latencyRecords.length
     ? Math.round(latencyRecords.reduce((sum, record) => sum + (record.latencyMs ?? 0), 0) / latencyRecords.length)
     : null;
-  const averageAvailability = primaryRecords.length
-    ? primaryRecords.reduce((sum, record) => sum + Math.max(record.availability24h, 95), 0) / primaryRecords.length
+  const averageAvailability = rawRecords.length
+    ? rawRecords.reduce((sum, record) => sum + record.availability24h, 0) / rawRecords.length
     : null;
   const sourceReady = snapshot !== null;
 
@@ -98,80 +99,24 @@ export default async function StatusPage() {
         </div>
       </section>
 
-      <section className="mt-6 rounded-xl border bg-card p-5 shadow-sm sm:p-6" data-testid="status-investor-architecture">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="font-semibold">
-              {isEn ? "ANS Platform Architecture & Compute Rules" : "ANS 平台架构与高校算力积分规则"}
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {isEn
-                ? "Core modules connecting campus AI competitions, 3D interactive onboarding, and creator revenue sharing."
-                : "面向高校开发者与参赛战队的平台架构：从新人算力申领、赛事代码存证到工作流市场分成。"}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <a href="/architecture/ans-never-stops-architecture.html" className="text-xs font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
-              {isEn ? "Open 5-Layer Architecture Map ↗" : "打开五层交互式全景架构图 ↗"}
-            </a>
-            <Link href="/competitions/agrihackathon" className="text-xs font-medium text-primary hover:underline">
-              {isEn ? "Inspect Flagship AgriHackathon →" : "查看农大智耕黑客松实战 →"}
-            </Link>
-          </div>
+      <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-5 py-4 shadow-sm" data-testid="status-investor-architecture">
+        <div>
+          <h2 className="text-sm font-semibold">
+            {isEn ? "ANS Service Architecture & Compute Ledger Rules" : "ANS 平台服务架构与算力计量说明"}
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {isEn
+              ? "Inspect the 5-layer service topology, SHA-256 submission verification, and point billing documentation."
+              : "查看五层服务拓扑、赛事代码 SHA-256 哈希核验与算力积分计费说明。"}
+          </p>
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border bg-muted/15 p-3.5">
-            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              {isEn ? "01 · Starter Compute & Claw Machine" : "01 · 新手问卷与 3D 抓娃娃机"}
-            </div>
-            <p className="mt-1 text-sm font-semibold">
-              {isEn ? "50 Starter Pts + 10–1,000 Pts Draw" : "问卷立领 50 分 + 抓娃娃机每次 10~1000 分"}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {isEn
-                ? "Complete the 30s survey for 50 base points and use tokens in the 3D claw machine to claim additional compute."
-                : "完成 30 秒新手问卷立领 50 积分与 3 枚游戏币，操纵 3D 机械臂每次必得 10~1000 算力积分。"}
-            </p>
-          </div>
-          <div className="rounded-lg border bg-muted/15 p-3.5">
-            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              {isEn ? "02 · Team Compute Pool" : "02 · 队长组队与共享算力池"}
-            </div>
-            <p className="mt-1 text-sm font-semibold">
-              {isEn ? "Up to 750 pts / 5-Member Team" : "5 人战队最高 750 积分池"}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {isEn
-                ? "Captains allocate shared compute across LLM/VLM gateways for AgriHackathon & AIGC tracks."
-                : "支持 1–5 人跨专业组队，队长统一调度团队算力配额，直连 DeepSeek / Qwen / 漫剧生成工作流。"}
-            </p>
-          </div>
-          <div className="rounded-lg border bg-muted/15 p-3.5">
-            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              {isEn ? "03 · Cryptographic Escrow" : "03 · SHA-256 赛事防篡改存证"}
-            </div>
-            <p className="mt-1 text-sm font-semibold">
-              {isEn ? "Verifiable Code & Blind Review" : "工程源码哈希锁定与盲审"}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {isEn
-                ? "Every submission generates an immutable SHA-256 fingerprint with 3-pillar judge scoring."
-                : "每次提交自动生成不可篡改 SHA-256 哈希存证与版本快照，配合三维度评委盲审与现场真机核验。"}
-            </p>
-          </div>
-          <div className="rounded-lg border bg-muted/15 p-3.5">
-            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              {isEn ? "04 · Creator Marketplace" : "04 · 技能市场 80% 创作者分成"}
-            </div>
-            <p className="mt-1 text-sm font-semibold">
-              {isEn ? "1 Point = ¥0.10 Value Anchor" : "1 积分 = ¥0.10 价值锚定"}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {isEn
-                ? "Winning workflows publish to /market where student creators earn 80% ongoing point royalties."
-                : "优秀参赛作品与简历模板一键上架技能市场，复刻调用即享 80% 算力积分回流，形成自生长校园生态。"}
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <a href="/architecture/ans-never-stops-architecture.html" className="text-xs font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+            {isEn ? "Open 5-Layer Architecture Map ↗" : "查看五层服务架构图 ↗"}
+          </a>
+          <Link href="/docs/points-integration" className="text-xs font-medium text-primary hover:underline">
+            {isEn ? "Points & Billing Docs →" : "积分与计费接口文档 →"}
+          </Link>
         </div>
       </section>
 
@@ -229,11 +174,12 @@ export default async function StatusPage() {
           <div className="mt-5 space-y-3">
             {rawRecords.map((record) => {
               const isHealthy = record.status === "operational" && record.availability24h >= 90;
+              const isDown = record.status === "down" || record.availability24h < 50;
               const badgeLabel = isHealthy
                 ? t("statusOperational")
-                : isEn
-                  ? "Standby / Auto-Failover"
-                  : "灰度调优 / 自动切流保护";
+                : isDown
+                  ? (isEn ? "Outage / Degraded" : "通道波动 / 维护中")
+                  : (isEn ? "Degraded Performance" : "响应降级");
               return (
                 <article key={`${record.monitorName}:${record.model}`} className="rounded-lg border p-4">
                   <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
@@ -248,12 +194,12 @@ export default async function StatusPage() {
                   <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                     <div>
                       <dt className="text-muted-foreground">{t("latency")}</dt>
-                      <dd className="mt-1 font-medium">{record.latencyMs === null ? (isEn ? "Routing" : "自动路由中") : `${record.latencyMs} ms`}</dd>
+                      <dd className="mt-1 font-medium">{record.latencyMs === null ? t("notReported") : `${record.latencyMs} ms`}</dd>
                     </div>
                     <div>
                       <dt className="text-muted-foreground">{t("availability24h")}</dt>
                       <dd className="mt-1 font-medium">
-                        {isHealthy ? `${record.availability24h.toFixed(2)}%` : (isEn ? "Standby channel (auto-routed)" : "灰度备用通道（主链路已接管）")}
+                        {`${record.availability24h.toFixed(2)}%`}
                       </dd>
                     </div>
                     <div>

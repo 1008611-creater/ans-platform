@@ -57,7 +57,7 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
             className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
           >
             <span className="truncate text-xs font-bold text-foreground sm:text-sm">
-              {browse.total}+ {isEn ? "Verified Projects" : "精选可复现项目"}
+              {projects.length}+ {isEn ? "Verified Projects" : "精选可复现项目"}
             </span>
             <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
@@ -82,13 +82,12 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
             <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
           <Link
-            href="/status"
-            title={isEn ? "APIC Multi-Model Router · 6 Live Models with Auto-Failover" : "APIC 多模型路由与算力探针 · 6 路主流模型在线"}
+            href="/workspace/models"
+            title={isEn ? "Multi-Model Playground · Compare DeepSeek, Qwen, GPT & Claude" : "多模型演练场 · 支持 DeepSeek、Qwen、GPT 与 Claude 在线对比"}
             className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
           >
-            <span className="flex items-center gap-1.5 truncate text-xs font-bold text-foreground sm:text-sm">
-              <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-              {isEn ? "6 Live AI Models" : "6 路模型实时在线"}
+            <span className="truncate text-xs font-bold text-foreground sm:text-sm">
+              {isEn ? "6 AI Models Supported" : "支持 6 款主流大模型"}
             </span>
             <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
