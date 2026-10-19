@@ -254,10 +254,10 @@ export default async function TeamsPage() {
               const st = COMPETITION_STATUS[c.status] ?? { zh: c.status, en: c.status, variant: "outline" as const };
               const isAgri = c.title.toLowerCase().includes("agri") || c.title.includes("农") || (c.url ?? "").includes("agrihackathon");
               const fallbackCovers = [
-                "/catalog/gitglow-v1/infinite-canvas.webp",
-                "/catalog/gitglow-v1/vibephoto.webp",
-                "/catalog/gitglow-v1/hermes-agent.webp",
-                "/catalog/gitglow-v1/ai-video-services.webp",
+                "/catalog/ans-pro-v1/infinite-canvas.webp",
+                "/catalog/ans-pro-v1/vibephoto.webp",
+                "/catalog/ans-pro-v1/hermes-agent.webp",
+                "/catalog/ans-pro-v1/ai-video-services.webp",
               ];
               const coverSrc = isAgri ? "/competitions/agrihackathon/gitglow-hub.webp" : fallbackCovers[idx % fallbackCovers.length];
               const targetHref = c.url || (isAgri ? "/competitions/agrihackathon" : "/competitions/aigc");
@@ -268,9 +268,7 @@ export default async function TeamsPage() {
                   </Link>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-base">
-                        <Link href={targetHref} className="hover:underline">{c.title}</Link>
-                      </CardTitle>
+                      <CardTitle className="text-base">{c.title}</CardTitle>
                       <Badge variant={st.variant}>{isEn ? st.en : st.zh}</Badge>
                     </div>
                     {c.organizer ? (
@@ -291,17 +289,15 @@ export default async function TeamsPage() {
                 </Card>
               );
             })}
-            {competitions.length < 2 && (
+            {competitions.length < 2 && !competitions.some(c => (c.url ?? "").includes("aigc") || c.title.toLowerCase().includes("aigc")) && (
               <Card className="group overflow-hidden border-border/80 transition-colors hover:border-primary/50">
                 <Link href="/competitions/aigc" className="block overflow-hidden border-b">
-                  <img src="/catalog/gitglow-v1/infinite-canvas.webp" alt="AIGC Creative Track" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
+                  <img src="/catalog/ans-pro-v1/infinite-canvas.webp" alt="AIGC Creative Track" loading="lazy" className="aspect-[16/9] w-full object-cover object-top transition duration-500 hover:scale-105" />
                 </Link>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-base">
-                      <Link href="/competitions/aigc" className="hover:underline">
-                        {isEn ? "AIGC Creative Track · Multimodal Canvas" : "AIGC 创作赛道 · 无限画布与多模态工坊"}
-                      </Link>
+                      {isEn ? "AIGC Creative Track · Multimodal Canvas" : "AIGC 创作赛道 · 无限画布与多模态工坊"}
                     </CardTitle>
                     <Badge variant="secondary">{isEn ? "Open" : "常驻开放"}</Badge>
                   </div>

@@ -12,12 +12,13 @@ export const metadata: Metadata = {
 };
 
 interface LoginPageProps {
-  searchParams: Promise<{ callbackUrl?: string | string[] }>;
+  searchParams: Promise<{ callbackUrl?: string | string[]; reset?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
+  const resetSuccess = params.reset === "success";
   const [t, locale] = await Promise.all([getTranslations("auth"), getLocale()]);
   const isEn = locale.startsWith("en");
   const isCommunityCallback = callbackUrl.startsWith("/community");
@@ -37,6 +38,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             {hasOnlyCredentials ? t("loginDescription") : t("loginDescriptionOAuth")}
           </p>
         </div>
+        {resetSuccess && (
+          <div role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-300">
+            {isEn ? "✓ Password updated successfully. Please sign in with your new password." : "✓ 密码已重置成功，请使用新密码登录。"}
+          </div>
+        )}
         {callbackUrl !== "/" && (
           <div className="rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs leading-relaxed text-muted-foreground">
             <p className="font-medium text-foreground">
@@ -54,21 +60,21 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   ? "Daily check-ins, XP levels, and personal contribution logs are tied to your account. Want to browse public works without signing in?"
                   : "每日签到、经验等级（XP）与贡献记录需绑定个人账号。如果您只想免登录逛逛公开内容，可直接前往："
                 : isEn
-                  ? `You will be redirected to ${callbackUrl} after signing in, or you can browse public pages first:`
-                  : `登录后将自动跳转至 ${callbackUrl}；您也可以先免登录浏览公开页面：`}
+                  ? "You will be redirected after signing in, or you can browse public pages first:"
+                  : "登录后将自动跳转至目标页面；您也可以先免登录浏览公开页面："}
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <Link
                 href="/showcase"
                 className="inline-flex items-center rounded-md border bg-background px-2.5 py-1 font-medium text-foreground hover:bg-muted"
               >
-                {isEn ? "Community Showcase (/showcase)" : "社区作品展 (/showcase)"}
+                {isEn ? "Community Showcase" : "社区作品展"}
               </Link>
               <Link
                 href="/explore"
                 className="inline-flex items-center rounded-md border bg-background px-2.5 py-1 font-medium text-foreground hover:bg-muted"
               >
-                {isEn ? "Explore Projects (/explore)" : "浏览公开项目 (/explore)"}
+                {isEn ? "Explore Projects" : "浏览公开项目"}
               </Link>
             </div>
           </div>

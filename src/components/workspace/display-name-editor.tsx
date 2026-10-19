@@ -1081,7 +1081,7 @@ function PiCodexWorkbench({
               <div className="grid gap-2 sm:grid-cols-2">
                 {[
                   ["⚡ 模型演练场", "/workspace/models", "多模型同屏对比输出"],
-                  ["🎨 3D 个人简历站", "/market/resume-website", "一键生成 3D 作品集网页"],
+                  ["🎨 3D 个人简历站", "/projects/resume-website", "一键生成 3D 作品集网页"],
                   ["🎬 Hypit 视频工作台", "/workflows/hypit", "视频脚本与分镜生成"],
                   ["🎨 CAUAI 无限画布 ↗", "https://hb.cauai.fun/", "无限画布多模态视觉与视频工作台"],
                   ["📚 VibeHub 教程库", "/vibe-hub", "AI 编程实战指南"],

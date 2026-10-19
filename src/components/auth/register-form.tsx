@@ -212,7 +212,7 @@ export function RegisterForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
             </FormItem>
           )} />
         ))}
-        <DinoAdoptionPod trainerNicknameHint={form.watch("name")} />
+        <DinoAdoptionPod compact trainerNicknameHint={form.watch("name")} />
         <p className="text-xs text-muted-foreground">{t("openRegistrationNote")}</p>
         <div ref={widgetNode} />
         {challenge && !challengeError && (

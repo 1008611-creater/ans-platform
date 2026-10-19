@@ -108,13 +108,13 @@ export default function SupportPage() {
     },
     {
       href: "/workspace/benefits",
-      img: "/catalog/gitglow-v1/ans-3d-showcase.svg",
+      img: "/catalog/ans-pro-v1/ans-3d-showcase.webp",
       title: "福利中心与 3D 小龙展台",
-      desc: "每日抽奖、3D 抓娃娃机、小龙换装投喂与算力兑换码。",
+      desc: "新手问卷、3D 抓娃娃机、小龙互动与算力兑换码。",
     },
     {
       href: "/vibe-hub",
-      img: "/catalog/gitglow-v1/infinite-canvas.webp",
+      img: "/catalog/ans-pro-v1/infinite-canvas.webp",
       title: "VibeHub 知识库与指南",
       desc: "查阅术语词典、操作指南、课程与实践路线。",
     },
@@ -122,20 +122,20 @@ export default function SupportPage() {
 
   const faqItems = [
     {
-      question: "ANS 平台的算力点数（Points）如何获取与使用？",
-      answer: "注册登录即可在「福利中心 (/workspace/benefits)」参与每日抽奖、3D 抓娃娃机或使用兑换码领取算力点数；报名参加黑客松或高校赛事的团队可在「团队 (/teams)」共享队长分配的团队参赛额度，用于运行官方工作流与多模态工具。",
+      question: "ANS 平台的算力积分（Points）如何获取与使用？",
+      answer: "注册登录即可在「福利中心」完成 30 秒新手问卷、操纵 3D 抓娃娃机或使用兑换码领取算力积分；报名参加黑客松或高校赛事的团队可在「团队」页面共享队长分配的参赛额度，用于运行工作流与在线大模型。",
     },
     {
       question: "如何组队参加智耕黑客松或 AIGC 创作赛并提交作品？",
-      answer: "前往「团队 (/teams)」创建或加入队伍，在「赛事 (/competitions)」查看赛题数据集与阶段交付要求，完成后通过「提交项目 (/explore/submit)」上传真实可验证的作品链接与说明。",
+      answer: "前往「团队」页面创建或加入队伍，在「赛事」中心查看赛题数据集与阶段交付要求，完成后通过「提交项目」页面上传真实可验证的作品链接与说明。",
     },
     {
       question: "右下角 3D 小龙如何换装、投喂和触发特技？",
-      answer: "点击页面右下角 3D 小龙悬浮球即可唤出快捷互动坞（支持 🪢 抽鞭子、🎲 盲盒投喂、🤚 摸头、👗 一键换装）；在「福利中心 (/workspace/benefits)」顶部还可展开完整 3D 小龙养成展台，自由切换 360° 展台、脚底光环与传说套装。",
+      answer: "点击页面右下角 3D 小龙即可唤出互动面板（支持摸头、喂食、换装与近景特写）；在「福利中心」还可展开完整 3D 抓娃娃机与互动展台。",
     },
     {
       question: "发现页面或服务异常时如何排查？",
-      answer: "可先访问「系统状态 (/status)」查看各节点实时健康度，或在下方填写问题标题与复现步骤直接提交 Issue。",
+      answer: "可先访问「系统状态」页面查看各节点实时健康度，或在下方填写问题标题与复现步骤直接提交 Issue。",
     },
   ];
 
@@ -148,19 +148,19 @@ export default function SupportPage() {
           <Button asChild variant="outline" size="sm">
             <Link href="/status" className="inline-flex items-center gap-1.5">
               <Activity className="h-3.5 w-3.5" />
-              <span>/status</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/vibe-hub" className="inline-flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5" />
-              <span>VibeHub</span>
+              <span>系统状态</span>
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/privacy" className="inline-flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5" />
-              <span>/privacy · /terms</span>
+              <span>隐私政策</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/terms" className="inline-flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5" />
+              <span>服务条款</span>
             </Link>
           </Button>
         </div>
@@ -173,10 +173,10 @@ export default function SupportPage() {
             href={card.href}
             className="group overflow-hidden rounded-xl border bg-card transition-all hover:-translate-y-0.5 hover:border-primary/50"
           >
-            <img src={card.img} alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
+            <img src={card.img} alt={card.title} loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
             <div className="p-4">
               <h2 className="text-sm font-semibold group-hover:text-primary">{card.title}</h2>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">{card.desc}</p>
+              <p className="mt-1 hidden text-xs leading-5 text-muted-foreground group-hover:block">{card.desc}</p>
             </div>
           </Link>
         ))}

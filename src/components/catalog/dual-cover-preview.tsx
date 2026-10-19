@@ -54,7 +54,7 @@ export function DualCoverPreview({
                 : "text-white/80 hover:text-white"
             }`}
           >
-            {isEn ? "🌌 Inner · GitGlow 3D" : "🌌 内封 · GitGlow 3D 实景"}
+            {isEn ? "🖥️ Interface View" : "🖥️ 界面预览"}
           </span>
           <span
             role="button"
@@ -68,7 +68,7 @@ export function DualCoverPreview({
                 : "text-white/80 hover:text-white"
             }`}
           >
-            {isEn ? "🎨 Outer · oil Poster" : "🎨 外封 · oil 大字海报"}
+            {isEn ? "🎨 Concept Poster" : "🎨 概念海报"}
           </span>
         </div>
       )}

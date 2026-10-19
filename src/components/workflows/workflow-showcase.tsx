@@ -36,6 +36,6 @@ export async function WorkflowShowcase({ title, summary, href, version, presenta
     </>;
   return <article className={styles.showcase}>
     {primaryHref ? <Link href={primaryHref} className={styles.main}>{content}</Link> : <div className={styles.main}>{content}</div>}
-    {marketPath && <Link href={marketPath} className={styles.market}>{t("market")}<ArrowUpRight size={14} aria-hidden="true" /></Link>}
+    {marketPath && primaryHref !== marketPath && <Link href={marketPath} className={styles.market}>{t("market")}<ArrowUpRight size={14} aria-hidden="true" /></Link>}
   </article>;
 }

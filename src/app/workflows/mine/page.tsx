@@ -33,30 +33,27 @@ const STATUS_LABELS: Record<string, { label: string; variant: "secondary" | "out
 const BLUEPRINT_WORKFLOWS = [
   {
     title: "Agri-Vision 农田病虫害多模态诊断流水线",
-    version: "v1.4 · 已发布",
+    version: "📖 官方蓝图范例",
     cost: "3 点/次",
-    runs: "1,280 次运行",
     cover: "/competitions/agrihackathon/gitglow-hub.webp",
-    desc: "串联无人机遥感切片识别、气象知识库检索与防治处方生成 3 大不可变节点版本。",
+    desc: "串联无人机遥感切片识别、气象知识库检索与防治处方生成节点。",
     href: "/workflows/new",
   },
   {
     title: "CAUAI 无限画布多模态视觉与视频生成流",
-    version: "v2.1 · 市场在售 (80% 分成)",
+    version: "📖 官方蓝图范例",
     cost: "5 点/次",
-    runs: "2,450 次运行",
-    cover: "/catalog/gitglow-v1/infinite-canvas.webp",
+    cover: "/catalog/ans-pro-v1/infinite-canvas.webp",
     desc: "支持在无限画布中串联分镜提示词、参考图锁定与多模态视频生成节点。",
     href: "https://hb.cauai.fun/",
   },
   {
     title: "Scholar-Web 科研主页与论文解读自动编排流",
-    version: "v1.2 · 已发布",
+    version: "📖 官方蓝图范例",
     cost: "2 点/次",
-    runs: "890 次运行",
-    cover: "/catalog/gitglow-v1/magic-resume.webp",
+    cover: "/catalog/ans-pro-v1/magic-resume.webp",
     desc: "输入 PDF 论文摘要或 ORCID，自动生成双语学术主页结构与精选海报卡片。",
-    href: "/market/resume-website",
+    href: "/projects/resume-website",
   },
 ];
 
@@ -67,10 +64,10 @@ export default async function MyWorkflowsPage() {
       <div className="container max-w-5xl space-y-8 py-12" data-testid="workflows-mine-guest-preview">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-6">
           <div className="space-y-1.5">
-            <Badge variant="secondary">Immutable Workflow Versioning · 80% 算力分成</Badge>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">我的工作流与版本管理台</h1>
+            <Badge variant="secondary">当前未登录 · 私有草稿与线上版本需登录后管理</Badge>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">我的工作流</h1>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-              在 ANS 创建的工作流支持「草稿编排 → 审核冻结 → 不可变版本发布 → 市场挂牌 80% 算力自动分润」。登录即可管理你的私有草稿与线上版本。
+              登录后可管理你的工作流草稿、提交版本审核，并将通过审核的工作流上架市场获取 80% 积分分成。
             </p>
           </div>
           <div className="flex flex-wrap gap-2.5">
@@ -86,14 +83,14 @@ export default async function MyWorkflowsPage() {
           </div>
         </div>
 
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">平台官方参考工作流蓝图（可一键克隆编排）</h2>
-            <Link href="/market" className="text-sm text-primary hover:underline">前往工作流市场 →</Link>
-          </div>
-          <div className="grid gap-5 md:grid-cols-3">
+        <details className="group rounded-xl border bg-card p-5">
+          <summary className="cursor-pointer list-none font-semibold flex items-center justify-between">
+            <span>📖 官方参考工作流蓝图（点击展开 3 个参考模板）</span>
+            <Link href="/market" className="text-sm font-normal text-primary hover:underline">前往工具与工作流市场 →</Link>
+          </summary>
+          <div className="mt-4 grid gap-5 md:grid-cols-3">
             {BLUEPRINT_WORKFLOWS.map((item) => (
-              <Card key={item.title} className="overflow-hidden transition hover:border-primary/40 hover:shadow-md">
+              <Card key={item.title} className="group/card overflow-hidden transition hover:border-primary/40 hover:shadow-md">
                 <div className="aspect-[16/9] w-full overflow-hidden border-b bg-muted">
                   <img src={item.cover} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
                 </div>
@@ -104,17 +101,16 @@ export default async function MyWorkflowsPage() {
                   </div>
                   <CardTitle className="mt-2 text-base">{item.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-xs leading-5 text-muted-foreground">{item.desc}</p>
-                  <div className="flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
-                    <span>{item.runs}</span>
+                <CardContent className="space-y-3">
+                  <p className="hidden text-xs leading-5 text-muted-foreground group-hover/card:block">{item.desc}</p>
+                  <div className="flex items-center justify-end border-t pt-3 text-xs text-muted-foreground">
                     <Link href={item.href} className="font-medium text-primary hover:underline">打开蓝图 →</Link>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-        </section>
+        </details>
       </div>
     );
   }

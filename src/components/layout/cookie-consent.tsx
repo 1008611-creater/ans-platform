@@ -45,7 +45,7 @@ export function CookieConsentBanner() {
   if (consent !== null) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div className="fixed bottom-16 xl:bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex items-center justify-between gap-4 py-2 text-xs">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Cookie className="h-3.5 w-3.5 shrink-0" />

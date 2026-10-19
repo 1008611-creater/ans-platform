@@ -74,13 +74,13 @@ export async function ResumeWebsiteMarketProduct({ offer, session, runnable }: {
         <section id="market-deliverables" className={styles.section}>
           <h2>{td("deliverablesTitle")}</h2>
           <ul className={styles.deliverables}>{["deliverableWebsite", "deliverableDraft", "deliverableAccount"].map((key, index) => <li key={key}><span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><span>{ts(key)}</span></li>)}</ul>
-          <div className="mt-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span className="font-semibold text-emerald-700 dark:text-emerald-300">📦 交付物 Sample 样本预览 · {sample.badge}</span>
-              <span className="font-mono text-muted-foreground">{sample.file}</span>
-            </div>
+          <details className="mt-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
+            <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-emerald-700 dark:text-emerald-300">📦 查看交付物 Sample 样本预览 · {sample.badge}</span>
+              <span className="font-mono text-muted-foreground">{sample.file} ▾</span>
+            </summary>
             <pre className="mt-2.5 overflow-x-auto rounded-lg bg-slate-950 p-3 font-mono text-xs leading-5 text-emerald-300">{sample.snippet}</pre>
-          </div>
+          </details>
         </section>
         <details id="market-details" className={styles.section}>
           <summary className="cursor-pointer py-2 text-sm font-semibold">{ts("howTitle")}</summary>
