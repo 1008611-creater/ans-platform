@@ -131,7 +131,13 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     const host = window as unknown as Record<symbol, { dispose?: () => void } | undefined>;
     host[Symbol.for("ans.mascot.companion.v1")]?.dispose?.();
   }, []);
-  const allowChatOpenRef = useRef(false);
+  // 真浏览器里点击小恐龙本体是"进入近景舞台"（见下方 onClick），面板只能由站内事件打开；
+  // 因此按钮的无障碍名称必须跟着这个行为走，而不是永远说"叫小恐龙帮我找方向"。
+  // 用 state（而不是直接读全局）是为了避免 SSR 与首帧客户端渲染的名称不一致导致 hydration 警告。
+  const [stageClickOwnsTrigger, setStageClickOwnsTrigger] = useState(false);
+  useEffect(() => {
+    setStageClickOwnsTrigger(typeof WebGLRenderingContext !== "undefined");
+  }, []);
   function changeOpen(value: boolean) {
     if (value) {
       document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
@@ -231,13 +237,13 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     <CompanionQuestPin dialogOpen={open} onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />
     <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={nextOpen => {
-      if (nextOpen && typeof WebGLRenderingContext !== "undefined" && !allowChatOpenRef.current) {
+      // 只拦"打开"：关闭（Escape / 点外部）必须放行。
+      if (nextOpen && typeof WebGLRenderingContext !== "undefined") {
         return;
       }
-      allowChatOpenRef.current = false;
       changeOpen(nextOpen);
     }}>
-      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
+      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : stageClickOwnsTrigger ? "openStage" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
         if (typeof WebGLRenderingContext !== "undefined" && !open) {
           window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: true } }));
         }
