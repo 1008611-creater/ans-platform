@@ -50,7 +50,7 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
   return <main className="ans-knowledge-container ans-guide-page">
     <header className="ans-guide-page-heading">
       <div><p className="ans-knowledge-eyebrow">{t("guides")}</p><h1>{t("guidePageTitle")}</h1></div>
-      <Link className="ans-editorial-link" href={`/vibe-hub/vibehub-skill?lang=${lang}`}>{t("briefAction")}<ArrowUpRight size={16} aria-hidden="true" /></Link>
+      <Link className="ans-editorial-link shrink-0 whitespace-nowrap" href={`/vibe-hub/vibehub-skill?lang=${lang}`}>{t("briefAction")}<ArrowUpRight size={16} aria-hidden="true" /></Link>
     </header>
     <div className="ans-guide-layout">
       <aside className="ans-guide-navigation" aria-label={t("guides")}>

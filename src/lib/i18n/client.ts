@@ -16,6 +16,17 @@ export function setLocale(locale: string): void {
     // Ignore storage quota or private mode restrictions
   }
 
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("lang")) {
+      url.searchParams.set("lang", normalized);
+      window.location.assign(url.toString());
+      return;
+    }
+  } catch {
+    // Fallback to reload below
+  }
+
   // Force a hard navigation to ensure server re-renders with new locale
   // Using reload() to ensure proper refresh even with hash URLs
   window.location.reload();

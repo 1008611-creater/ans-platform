@@ -216,7 +216,7 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
 
         {/* Right side actions */}
         <div className="flex shrink-0 items-center gap-1">
-          <div className="hidden sm:block"><BilingualToggle /></div>
+          <BilingualToggle />
           {/* Primary creation action follows the learning project flow. */}
           {user && (
             <Button asChild variant="ghost" size="icon" className="h-8 w-8">
@@ -309,29 +309,8 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-1">
-              {/* Language selector for non-logged in users */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t("settings.language")}>
-                    <Globe className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {languages.map((lang) => (
-                    <DropdownMenuItem
-                      key={lang.code}
-                      onClick={() => {
-                        analyticsSettings.changeLanguage(lang.code);
-                        leaveWorkspace(() => setLocale(lang.code));
-                      }}
-                    >
-                      {lang.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
               <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
-                <Link href="/login">{t("nav.login")}</Link>
+                <Link href={pathname && pathname !== "/" && !pathname.startsWith("/login") && !pathname.startsWith("/register") ? `/login?callbackUrl=${encodeURIComponent(pathname)}` : "/login"}>{t("nav.login")}</Link>
               </Button>
               {authProvider === "credentials" && allowRegistration && (
                 <Button size="sm" className="h-8 text-xs" asChild>

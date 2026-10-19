@@ -124,6 +124,7 @@ export function CompanionQuestPin({
   const [wardrobeSlot, setWardrobeSlot] = useState<WardrobeSlot>("headwear");
   const [wardrobeNote, setWardrobeNote] = useState<string>("");
   const [pinBannerQuest, setPinBannerQuest] = useState<SecretQuestDef | null>(null);
+  const [nowTs, setNowTs] = useState(0);
   const [bubblePos, setBubblePos] = useState<{ left: string; bottom: string }>({
     left: "calc(100vw - 82px)",
     bottom: "136px",
@@ -139,7 +140,10 @@ export function CompanionQuestPin({
 
   // Sync sanctuary state across tabs & components
   useEffect(() => {
-    const sync = () => setState(loadSanctuaryState());
+    const sync = () => {
+      setNowTs(Date.now());
+      setState(loadSanctuaryState());
+    };
     window.addEventListener(SANCTUARY_EVENT_NAME, sync);
     window.addEventListener("ans:sanctuary-updated", sync);
     window.addEventListener("ans-sanctuary-sync", sync);
@@ -153,6 +157,7 @@ export function CompanionQuestPin({
   }, []);
 
   function commitSanctuary(updater: (prev: MascotSanctuaryState) => MascotSanctuaryState) {
+    setNowTs(Date.now());
     setState(prev => {
       const next = updater(prev);
       saveSanctuaryState(next);
@@ -191,7 +196,6 @@ export function CompanionQuestPin({
   // Dynamically position #ans-dino-live-bubble right above .ans-dino-trigger (matching showcase.js syncBubblePos)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    let rafId = 0;
     const updatePosition = () => {
       const vw = window.innerWidth || document.documentElement.clientWidth || 1280;
       const vh = window.innerHeight || document.documentElement.clientHeight || 800;
@@ -232,7 +236,6 @@ export function CompanionQuestPin({
     return () => {
       window.clearInterval(interval);
       window.removeEventListener("resize", updatePosition);
-      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [alertMode, macroActive, sanctuaryModal]);
 
@@ -240,6 +243,7 @@ export function CompanionQuestPin({
   useEffect(() => {
     if (alertMode) return;
     const timer = window.setInterval(() => {
+      setNowTs(Date.now());
       if (performance.now() - lastUserInteractRef.current < 3600) return;
       moodIdxRef.current += 1;
       if (macroActive) {
@@ -693,7 +697,6 @@ export function CompanionQuestPin({
   }
 
   function handleWardrobeItemClick(itemId: string) {
-    const now = Date.now();
     const item = DINO_WARDROBE_ITEMS.find(entry => entry.id === itemId);
     if (!item) return;
     const owned = state.unlockedItems.includes(item.id);
@@ -747,7 +750,7 @@ export function CompanionQuestPin({
         equipped: nextEq,
       };
       if (isContrastMixOutfit(nextEq, prev.speciesId)) {
-        return unlockSecretQuest(updated, "fashion_mudslide", now).state;
+        return unlockSecretQuest(updated, "fashion_mudslide", nowTs).state;
       }
       return updated;
     });
@@ -765,8 +768,8 @@ export function CompanionQuestPin({
   const sp = DINO_SPECIES[state.speciesId] || DINO_SPECIES.mint_star;
   const styleEval = calculateStyleEvaluation(state);
   const aff = getAffectionProgress(state.affectionXp);
-  const isOverclocked = state.workBoostUntil > Date.now();
-  const isOnStrike = state.strikeUntil > Date.now();
+  const isOverclocked = state.workBoostUntil > nowTs;
+  const isOnStrike = state.strikeUntil > nowTs;
   const workDrivePct = isOnStrike
     ? 0
     : Math.min(100, 68 + (state.totalWhips % 4) * 8 + (isOverclocked ? 16 : 0));
@@ -830,7 +833,7 @@ export function CompanionQuestPin({
       {/* Minimal 2-Pill Dock next to bottom-right 3D Dragon (Hover/3-Click on Dino triggers Close-Up Stage) */}
       {!dialogOpen && !macroActive && (
         <div
-          className="fixed bottom-[16px] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-border/80 bg-background/95 px-2 py-1 shadow-md backdrop-blur-md"
+          className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-border/80 bg-background/95 px-2 py-1 shadow-md backdrop-blur-md"
           onClick={e => e.stopPropagation()}
         >
           <button
@@ -859,6 +862,8 @@ export function CompanionQuestPin({
       <div
         id="ans-dino-interact-hud"
         className={macroActive && sanctuaryModal === "none" ? "is-active is-visible" : ""}
+        aria-hidden={!(macroActive && sanctuaryModal === "none")}
+        inert={!(macroActive && sanctuaryModal === "none") ? true : undefined}
         onClick={e => e.stopPropagation()}
       >
         <div className="hud-top-row">
