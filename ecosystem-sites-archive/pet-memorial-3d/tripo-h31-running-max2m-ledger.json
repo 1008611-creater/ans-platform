@@ -1,0 +1,72 @@
+{
+  "createdAt": "2026-10-18T16:27:03Z",
+  "baseUrl": "https://studio.tripo3d.uk",
+  "mode": "multiview_to_model",
+  "slotOrder": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "views": {
+    "front": "/Users/eeo/Downloads/ans/pet-memorial/public/views-running/front.png",
+    "left": "/Users/eeo/Downloads/ans/pet-memorial/public/views-running/left.png",
+    "back": "/Users/eeo/Downloads/ans/pet-memorial/public/views-running/back.png",
+    "right": "/Users/eeo/Downloads/ans/pet-memorial/public/views-running/right.png"
+  },
+  "uploadedTokens": {
+    "front": "studio:tripo-data/tripo-studio/20261019/33376bd0-d389-4e5d-aeb3-e0fe0668f1b8/input.png",
+    "left": "studio:tripo-data/tripo-studio/20261019/cfdbc488-1836-4bc4-879c-1bb6071291f1/input.png",
+    "back": "studio:tripo-data/tripo-studio/20261019/0d767204-d222-4ed4-b4f1-c12cae6d2147/input.png",
+    "right": "studio:tripo-data/tripo-studio/20261019/73ded727-8097-4281-bf06-6c2f44c64765/input.png"
+  },
+  "requestPayload": {
+    "model": "v3.1-20260211",
+    "face_limit": 2000000,
+    "texture": true,
+    "pbr": true,
+    "visibility": "shareable",
+    "smart_poly": false,
+    "geometry_quality": "detailed",
+    "texture_quality": "detailed",
+    "delight": false,
+    "texture_alignment": "original_image",
+    "type": "multiview_to_model",
+    "files": [
+      {
+        "type": "png",
+        "file_token": "studio:tripo-data/tripo-studio/20261019/33376bd0-d389-4e5d-aeb3-e0fe0668f1b8/input.png"
+      },
+      {
+        "type": "png",
+        "file_token": "studio:tripo-data/tripo-studio/20261019/cfdbc488-1836-4bc4-879c-1bb6071291f1/input.png"
+      },
+      {
+        "type": "png",
+        "file_token": "studio:tripo-data/tripo-studio/20261019/0d767204-d222-4ed4-b4f1-c12cae6d2147/input.png"
+      },
+      {
+        "type": "png",
+        "file_token": "studio:tripo-data/tripo-studio/20261019/73ded727-8097-4281-bf06-6c2f44c64765/input.png"
+      }
+    ]
+  },
+  "balanceBefore": {
+    "balance": 2630,
+    "frozen": 0,
+    "total_consumed": 1120
+  },
+  "status": "success",
+  "taskId": "d8dd93b4-2108-4296-bc04-3f7df8269e32",
+  "balanceAfter": {
+    "balance": 2575,
+    "frozen": 0,
+    "total_consumed": 1175
+  },
+  "download": {
+    "path": "/Users/eeo/Downloads/ans/pet-memorial/public/models/malamute_running_h31_max.glb",
+    "bytes": 23231128,
+    "sha256": "a56c3130e87f82c6226c80610c321e2162dd14f9cadd5694dfc1b770ae18a5ef",
+    "format": "glb"
+  }
+}

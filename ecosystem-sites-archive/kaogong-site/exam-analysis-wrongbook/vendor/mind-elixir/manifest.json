@@ -1,0 +1,24 @@
+{
+  "package": "mind-elixir",
+  "version": "5.15.1",
+  "repository": "https://github.com/SSShooter/mind-elixir-core",
+  "license": "MIT",
+  "registryIntegrity": "sha512-Lm/IfNC3jnxqcchKsjkaX/arXDvgPvpPT+BLfTH2Kl1taO9+RPtv/jrCevn1LqPzHoWL2Yl4QeP/xFpjZuZFHw==",
+  "files": [
+    {
+      "name": "MindElixirLite.iife.js",
+      "bytes": 63262,
+      "sha256": "0072e31d379c2fd2f93d12e54b6ad76aeb9c54c622950891ea959eb9788368ca"
+    },
+    {
+      "name": "MindElixirLite.css",
+      "bytes": 12441,
+      "sha256": "56bf9a67508c618c0b56883f638f350c2fc1b931fa5a071902b7e20679393ae0"
+    },
+    {
+      "name": "LICENSE",
+      "bytes": 1063,
+      "sha256": "945ce1477efcf5e45be0b8901176a5b0361215df462961f6b6d0f7370f8a5a4d"
+    }
+  ]
+}

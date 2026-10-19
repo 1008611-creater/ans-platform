@@ -1,0 +1,11 @@
+{
+  "name": "feishu-doc-publisher",
+  "displayName": "飞书云文档一键发布与 MCP 桥接插件 (Feishu Doc Publisher)",
+  "version": "1.0.0",
+  "description": "支持通过飞书官方 @larksuiteoapi/lark-mcp 或 Playwright 扫码登录，将本地图文汇报（.docx / .md）一键导入并创建为飞书云文档。",
+  "suggestedPrompts": [
+    "把汇报文档一键导入飞书云文档",
+    "启动飞书浏览器登录并自动上传 NB 实验室封面汇报",
+    "使用飞书 MCP 创建汇报云文档"
+  ]
+}

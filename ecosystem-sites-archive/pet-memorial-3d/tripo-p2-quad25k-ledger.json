@@ -1,0 +1,69 @@
+{
+  "createdAt": "2026-10-18T16:02:16Z",
+  "baseUrl": "https://studio.tripo3d.uk",
+  "mode": "multiview_to_model",
+  "slotOrder": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "views": {
+    "front": "/Users/eeo/Downloads/ans/pet-memorial/public/views/front.png",
+    "left": "/Users/eeo/Downloads/ans/pet-memorial/public/views/left.png",
+    "back": "/Users/eeo/Downloads/ans/pet-memorial/public/views/back.png",
+    "right": "/Users/eeo/Downloads/ans/pet-memorial/public/views/right.png"
+  },
+  "uploadedTokens": {
+    "front": "studio:tripo-data/tripo-studio/20261019/2ba05aa6-f3cf-40c5-8ef0-e3125b006239/input.png",
+    "left": "studio:tripo-data/tripo-studio/20261019/43b62f35-b72c-4110-b8b5-3eaed5969d2d/input.png",
+    "back": "studio:tripo-data/tripo-studio/20261019/99547ad7-20f5-4669-87fe-d42b4e580707/input.png",
+    "right": "studio:tripo-data/tripo-studio/20261019/52c67c6e-a90a-4170-be6a-979b55e490d4/input.png"
+  },
+  "requestPayload": {
+    "model": "Nexus-v2.0-20260801",
+    "face_limit": 25000,
+    "texture": true,
+    "pbr": true,
+    "visibility": "shareable",
+    "quad": true,
+    "texture_quality": "detailed",
+    "type": "multiview_to_model",
+    "files": [
+      {
+        "type": "png",
+        "file_token": "studio:tripo-data/tripo-studio/20261019/2ba05aa6-f3cf-40c5-8ef0-e3125b006239/input.png"
+      },
+      {
+        "type": "png",
+        "file_token": "studio:tripo-data/tripo-studio/20261019/43b62f35-b72c-4110-b8b5-3eaed5969d2d/input.png"
+      },
+      {
+        "type": "png",
+        "file_token": "studio:tripo-data/tripo-studio/20261019/99547ad7-20f5-4669-87fe-d42b4e580707/input.png"
+      },
+      {
+        "type": "png",
+        "file_token": "studio:tripo-data/tripo-studio/20261019/52c67c6e-a90a-4170-be6a-979b55e490d4/input.png"
+      }
+    ]
+  },
+  "balanceBefore": {
+    "balance": 2780,
+    "frozen": 0,
+    "total_consumed": 970
+  },
+  "status": "success",
+  "taskId": "9bb0b5d1-3734-4724-bde4-2baba8ea6465",
+  "balanceAfter": {
+    "balance": 2660,
+    "frozen": 0,
+    "total_consumed": 1090
+  },
+  "download": {
+    "path": "/Users/eeo/Downloads/ans/pet-memorial/public/models/malamute_p2_quad25k_base.glb",
+    "bytes": 20954480,
+    "sha256": "1234446939ccf2e2067ec5ceeeddd4ad9bb75bbe17fdd702250a50b50418ce8f",
+    "format": "glb"
+  }
+}

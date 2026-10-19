@@ -1,0 +1,79 @@
+{
+  "name": "ans-production-modeling",
+  "services": {
+    "model-worker": {
+      "image": "sha256:d046ff54ded60a3ce84052171453f13596af7f6157865ff6d87f5a1c0c30e6a0",
+      "container_name": "ans-production-3d-worker",
+      "user": "10001:10001",
+      "init": true,
+      "entrypoint": [
+        "node"
+      ],
+      "command": [
+        "/opt/ans/scripts/visual-worker/start.mjs",
+        "start"
+      ],
+      "working_dir": "/opt/ans",
+      "restart": "unless-stopped",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "stop_grace_period": "90s",
+      "mem_limit": "512m",
+      "cpus": 1.0,
+      "pids_limit": 64,
+      "network_mode": "bridge",
+      "env_file": [
+        "/srv/ans-worker-releases/modeling-33b7ef885f73/worker-private.env"
+      ],
+      "environment": {
+        "ANS_WORKER_SERVER": "https://ans.cauai.fun",
+        "ANS_WORKER_ID": "ans-production-server-3d",
+        "ANS_TRIPO_CREDENTIAL_FILE": "/run/secrets/tripo.json",
+        "ANS_WORKER_JOURNAL": "/var/lib/ans-worker/model-journal",
+        "ANS_FOUR_VIEW_JOURNAL": "/var/lib/ans-worker/four-view-journal",
+        "ANS_WORKER_STATUS_FILE": "/var/lib/ans-worker/status.json",
+        "ANS_TRIPO_ALLOW_SUBMISSIONS": "true",
+        "ANS_FOUR_VIEW_ENABLED": "true",
+        "ANS_FOUR_VIEW_API_CONFIRMED": "true",
+        "ANS_OPENLUX_CREDENTIAL_FILE": "/run/secrets/openlux-image.env"
+      },
+      "volumes": [
+        "/srv/ans-worker-releases/modeling-33b7ef885f73/runtime:/opt/ans:ro",
+        "/srv/ans-worker-releases/modeling-33b7ef885f73/private/tripo.json:/run/secrets/tripo.json:ro",
+        "/srv/ans-workers/modeling/state:/var/lib/ans-worker",
+        "/srv/ans-worker-releases/modeling-33b7ef885f73/private/openlux-image.env:/run/secrets/openlux-image.env:ro"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=32m"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "node",
+          "/opt/ans/scripts/visual-worker/healthcheck.mjs"
+        ],
+        "interval": "30s",
+        "timeout": "5s",
+        "start_period": "90s",
+        "retries": 3
+      },
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-size": "5m",
+          "max-file": "3"
+        }
+      },
+      "labels": {
+        "org.opencontainers.image.revision": "33b7ef885f732e4dca3c7732bf7dda464773e710",
+        "ans.worker.pr": "108",
+        "ans.worker.role": "production-3d"
+      }
+    }
+  }
+}

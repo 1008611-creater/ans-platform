@@ -1,0 +1,6 @@
+{
+  "generatedAt": "demo",
+  "source": "演示数据：不含真实题面",
+  "totals": {"papers": 1, "questions": 3},
+  "groups": [{"key":"demo","name":"演示题本（公开版）","desc":"公开预览仅展示产品流程，真实题库保留在个人本地备考环境。","count":1,"papers":[{"id":9001,"type":"exam","group":"演示题本（公开版）","groupKey":"demo","title":"行政执法备考流程演示","year":2026,"province":"演示","subject":"行测","qCount":3,"imageCount":0,"sections":["常识判断 1题","言语理解 1题","资料分析 1题"],"tags":["演示","公开版"],"file":"demo-data/exams/9001.json"}]}]
+}

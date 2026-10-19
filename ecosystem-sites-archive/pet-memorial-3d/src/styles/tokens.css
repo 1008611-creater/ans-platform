@@ -1,0 +1,104 @@
+/*
+ * 设计令牌（唯一来源）
+ *
+ * 一切颜色、字号、间距、缓动都必须引用这里的变量。
+ * 组件里出现裸 hex / 裸 font-family 视为违规。
+ *
+ * 参考来源：对 pacomepertant.com 做过一次结构层提取（宏结构 / 字阶节奏 / 色锚 / 缓动），
+ * 只取结构思路，字体、色值、图形与素材全部替换为自有方案。
+ * 提取记录见 docs/design-dna.md。
+ */
+
+:root {
+  /* ---- 纸张（深） ---- */
+  --ink: #0b0b0c;
+  --ink-raised: #131316;
+  --ink-soft: #1b1b1f;
+  --hairline: rgba(242, 237, 228, 0.14);
+  --hairline-strong: rgba(242, 237, 228, 0.3);
+
+  /* ---- 纸张（浅） ---- */
+  --bone: #f2ede4;
+  --bone-dim: #e4ded1;
+  --bone-hairline: rgba(11, 11, 12, 0.13);
+  --bone-hairline-strong: rgba(11, 11, 12, 0.3);
+
+  /* ---- 墨（文字） ---- */
+  --text: #f2ede4;
+  --text-muted: #8f8981;
+  /*
+   * faint 只表示「层级最低」，不表示「可以看不清」。
+   * 它承载的是 13px 图注与元信息，属于正文尺寸，必须过 WCAG AA 的 4.5:1。
+   * 原值 #5d5952 在 --ink 上只有 2.82:1，实测被 axe 判为 serious。
+   * 现值在 --ink 上 4.84:1、在 --ink-raised 上 4.56:1，与 --text-muted 仍保持一档差距。
+   */
+  --text-faint: #847d73;
+  --text-on-bone: #0b0b0c;
+  --text-on-bone-muted: #6d675e;
+
+  /* ---- 色锚：朱砂 ---- */
+  --accent: #ff4a2b;
+  --accent-deep: #b62c12;
+  --accent-wash: rgba(255, 74, 43, 0.14);
+
+  /* ---- 字体角色 ---- */
+  /* 具体 family 名取自 @fontsource 包内 @font-face 声明，改名会静默回落到系统字体 */
+  --font-sans: "Inter Tight Variable", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans SC", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Songti SC", "SimSun", "Noto Serif SC", serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* ---- 字阶（rem，随浏览器字号设置缩放） ---- */
+  --t-micro: 0.6875rem;   /* 11 */
+  --t-label: 0.8125rem;   /* 13 */
+  --t-body: 1rem;         /* 16 */
+  --t-lead: clamp(1.125rem, 0.6vw + 1rem, 1.375rem);
+  --t-h4: clamp(1.125rem, 0.9vw + 0.9rem, 1.5rem);
+  --t-h3: clamp(1.5rem, 1.6vw + 1.15rem, 2.25rem);
+  --t-h2: clamp(2rem, 3.4vw + 1rem, 3.75rem);
+  /*
+   * 下限定在 2.25rem 而不是更大的值：320px 视口里正文宽只有 288px，
+   * 字号一旦超过 36px，一行就排不下 8 个汉字，成句的短语会被迫在词中断开。
+   * 上限不变，桌面端的巨型排版不受影响。
+   */
+  --t-h1: clamp(2.25rem, 7.2vw + 0.4rem, 6.5rem);
+  --t-mega: clamp(3.5rem, 15vw, 13rem);
+  --t-index: clamp(2.1rem, 8.4vw, 7.25rem);
+
+  --lh-tight: 1.02;
+  --lh-snug: 1.18;
+  --lh-body: 1.65;
+  --tracking-tight: -0.035em;
+  --tracking-label: 0.14em;
+
+  /* ---- 网格 ---- */
+  --margin: clamp(16px, 3.2vw, 34px);
+  --gutter: clamp(10px, 1.4vw, 20px);
+  --beam: 1180px;
+
+  /* ---- 圆角 ---- */
+  --r-1: 4px;
+  --r-2: 8px;
+  --r-3: 14px;
+  --r-4: 22px;
+  --r-pill: 999px;
+
+  /* ---- 缓动 ---- */
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-quad: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-back: cubic-bezier(0.34, 1.4, 0.5, 1);
+
+  /* ---- 层级 ---- */
+  --z-grid: 0;
+  --z-content: 10;
+  --z-chrome: 60;
+  --z-badge: 50;
+  --z-menu: 80;
+  --z-cursor: 95;
+  --z-gate: 100;
+}
+
+/* 关键：尺寸随视口缓慢放大，但用户缩小浏览器字号时仍然缩小 */
+@media (min-width: 1600px) {
+  :root { --beam: 1320px; }
+}

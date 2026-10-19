@@ -1,0 +1,16 @@
+/** ANS identity UI. Login in a separate tab keeps this page's private memory intact. */
+export async function getAccount(fetchImpl=fetch){const res=await fetchImpl('/api/auth/session',{cache:'no-store',credentials:'same-origin'});if(!res.ok)throw Error('暂时无法检查ANS登录。');const data=await res.json();if(typeof data.enabled!=='boolean'||data.user!==null&&(typeof data.user?.id!=='string'||typeof data.user?.name!=='string'))throw Error('ANS登录状态不可用。');return data;}
+export function requestAccountRefresh(doc=document){doc.dispatchEvent(new Event('zhuanji:account-refresh'));}
+export function openAccountLogin(doc=document){if(doc.defaultView?.ANSPlatformShell)doc.defaultView.ANSPlatformShell.login();else doc.querySelector('#accountControl a')?.click();}
+export function mountAccount(doc=document,win=window){
+ const root=doc.getElementById('accountControl');if(!root)return ()=>{};
+ const make=(tag,text)=>{const n=doc.createElement(tag);n.textContent=text;return n;};
+ const status=make('span','检查登录'),login=make('a','ANS登录'),logout=make('button','退出');
+ login.href='/api/auth/login';login.target='_blank';login.rel='noopener';login.setAttribute('aria-label','使用ANS账号登录，在新标签页完成');logout.type='button';login.hidden=logout.hidden=true;root.append(status,login,logout);
+ let dead=false,generation=0,busy=false,timer=0,loginUntil=0;
+ async function refresh(){const id=++generation;try{const info=await getAccount(win.fetch.bind(win));if(dead||id!==generation)return;root.dataset.auth=info.enabled?(info.user?'signed-in':'guest'):'unavailable';status.textContent=info.user?info.user.name:info.enabled?'未登录':'本机模式';status.title=info.user?'与ANS共用身份，私人错题按账号保存':info.enabled?'登录后打开私人错题本':'ANS统一登录尚未配置';doc.defaultView?.dispatchEvent(new CustomEvent('wrongbook:account',{detail:{user:info.user}}));login.hidden=!info.enabled||Boolean(info.user);logout.hidden=!info.user;win.clearTimeout(timer);if(info.user){loginUntil=0;timer=win.setTimeout(refresh,60000);}else if(loginUntil>Date.now())timer=win.setTimeout(refresh,2000);}catch{if(dead||id!==generation)return;status.textContent='登录暂不可用';login.hidden=logout.hidden=true;}}
+ async function leave(){if(busy)return;busy=true;logout.disabled=true;try{const res=await win.fetch('/api/auth/logout',{method:'POST',credentials:'same-origin',headers:{'x-ans-session':'logout-v1'}});if(!res.ok)throw Error();await refresh();}catch{status.textContent='退出未完成，请重试';}finally{busy=false;logout.disabled=false;}}
+ const opening=()=>{loginUntil=Date.now()+180000;win.clearTimeout(timer);timer=win.setTimeout(refresh,2000);},focus=()=>refresh(),visible=()=>{if(!doc.hidden)refresh();};login.addEventListener('click',opening);logout.addEventListener('click',leave);doc.addEventListener('zhuanji:account-refresh',focus);win.addEventListener('focus',focus);doc.addEventListener('visibilitychange',visible);refresh();
+ return ()=>{dead=true;generation++;win.clearTimeout(timer);login.removeEventListener('click',opening);logout.removeEventListener('click',leave);doc.removeEventListener('zhuanji:account-refresh',focus);win.removeEventListener('focus',focus);doc.removeEventListener('visibilitychange',visible);root.replaceChildren();};
+}
+if(typeof document!=='undefined'&&!window.ANSPlatformShell)mountAccount();

@@ -1,0 +1,154 @@
+/* 基础层：重置、排版基线、无障碍底线 */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  background: var(--ink);
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body,
+#root { min-height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* 保持系统原生光标始终可见，自绘光标环仅作为非阻塞跟随点缀 */
+button, a, [role="button"] { cursor: pointer; }
+
+h1, h2, h3, h4, p, figure, blockquote, dl, dd { margin: 0; }
+
+h1, h2, h3, h4 {
+  font-weight: 500;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+}
+
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+img, video { display: block; max-width: 100%; height: auto; }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+/* 焦点必须可见 —— 不用 outline:none 换美观 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--r-1);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bone);
+}
+
+/* 仅供屏幕阅读器 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 200;
+  padding: 10px 16px;
+  background: var(--bone);
+  color: var(--text-on-bone);
+  border-radius: var(--r-pill);
+  font-size: var(--t-label);
+  transform: translateY(-160%);
+  transition: transform 0.24s var(--ease-expo-out);
+}
+.skip-link:focus-visible { transform: translateY(0); }
+
+/* ---- 通用排版零件 ---- */
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.serif-em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/*
+ * 中文强调不用衬线体：Windows 上没有 Songti SC，会回落到宋体，
+ * 大字号下字形与字距都不受控。中文只靠色锚做强调，衬线斜体留给拉丁文。
+ */
+.mark {
+  color: var(--accent);
+}
+
+.rule {
+  height: 1px;
+  border: 0;
+  background: var(--hairline);
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--beam);
+  margin-inline: auto;
+  padding-inline: var(--margin);
+}
+
+/* 减少动效时，所有装饰性动画退出，内容保持完整 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --text-muted: #c9c3b9;
+    --hairline: rgba(242, 237, 228, 0.34);
+  }
+}

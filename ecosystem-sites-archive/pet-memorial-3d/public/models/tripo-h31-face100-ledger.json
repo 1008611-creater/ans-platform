@@ -1,0 +1,27 @@
+{
+  "taskId": "f10e7d97-7224-4904-889e-e4b54e1056b2",
+  "payload": {
+    "model": "v3.1-20260211",
+    "face_limit": 2000000,
+    "texture": true,
+    "pbr": true,
+    "visibility": "shareable",
+    "smart_poly": false,
+    "geometry_quality": "detailed",
+    "texture_quality": "detailed",
+    "delight": false,
+    "texture_alignment": "original_image",
+    "type": "image_to_model",
+    "file": {
+      "type": "png",
+      "file_token": "studio:tripo-data/tripo-studio/20261019/2e1836f1-3c0f-436a-ba74-036aebe15506/input.png"
+    },
+    "enable_image_autofix": true
+  },
+  "download": {
+    "path": "/Users/eeo/Downloads/ans/pet-memorial/public/models/malamute_running_face100_h31.glb",
+    "bytes": 21719908,
+    "sha256": "1bb1114a64c3c92645b7393e655477a740bcc886f7b308c9923466e499ba2ab3",
+    "format": "glb"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "slug": "practice-echo",
+  "category": "learning",
+  "subcategory": "notes",
+  "goal": "portfolio",
+  "preview": "site",
+  "source": "official",
+  "sourceUrl": "https://kaogong.cauai.fun/",
+  "coverUrl": "https://kaogong.cauai.fun/welcome/ans-project-cover.png",
+  "coverNote": "真实产品首页截图 · 2026-10-10",
+  "content": {
+    "zh": {
+      "title": "上岸有数 · 考公备考",
+      "summary": "上传自己的错题、试卷照片或 PDF，主动启动 Agent，得到逐题方法解析、跨题问题归因、学习优先级、七天行动建议与知识导图。",
+      "sample": "上传自己的材料 → 主动开始分析 → 拿走一份有依据的学习结果。",
+      "output": "私人材料原件、可核对的识别草稿、逐题方法解析、跨题问题归因、证据关联、学习优先级、七天建议与交互知识导图。报告支持打印保存 PDF、下载 Word 和导出数据；原创训练与到期复练作为补充入口。",
+      "inputs": "一个 ANS 账号。原创训练可以直接开始；自备材料支持 JPG、PNG 或 PDF，单份最多 10MB，PDF 最多 6 页。识别与 AI 分析使用 ANS 积分，须在页面同意后主动开始；上传与手动核对不调用模型。",
+      "decisions": "练习题为原创内容，考试与题型覆盖以实际题目为准。材料报告按选中材料生成，不等同真实考试评分；当前不提供考试分数、地区排名或录取预测。",
+      "model": "私人材料识别与分析接入 McGrox，模型以工作台本次显示为准，并使用 ANS 积分。识别结果是待核对草稿，AI 解释与原课程/老师解析分开展示；生成记录报告无需新的模型调用。",
+      "prompt": "上传只保存原件。选中材料、查看积分说明、同意本次处理后，主动生成学习报告。未经核对的识别内容以草稿报告呈现；核对修正后可选择重新分析。每份报告保留自己的材料快照，上传或复练不会自动改写报告。",
+      "skill": "从自己的练习材料发现反复出现的方法卡点，沿知识导图回到原题证据；用少量原题间隔复练、自己的未见同类题和限时短组验证，减少手工整理。",
+      "sourceNote": "ANS 官方考公产品，复用 ANS 统一登录与平台账号栏。训练记录和主动上传的私人材料按账号隔离保存；原件不公开、不自动加入公共题库，支持导出。旧版设备本机记录保留独立入口，不自动合并到当前账号。"
+    },
+    "en": {
+      "title": "Shang’an Youshu · Civil Service Exam Practice",
+      "summary": "Upload your own question photos or PDFs and explicitly start the study agent. Receive question-level methods, evidence-linked cross-question findings, learning priorities, a seven-day action plan, and an interactive mind map.",
+      "sample": "Your materials → explicit analysis → an evidence-linked study report.",
+      "output": "Private originals, recognition drafts to check, question-level explanations, cross-question findings, priorities, a seven-day suggested plan and an interactive knowledge map. Print reports to PDF, download Word or export data. Original practice and scheduled reviews remain supplementary.",
+      "inputs": "An ANS account. Original exercises are ready to use. Bring JPG, PNG or PDF files, up to 10MB each and 6 PDF pages. Recognition and AI analysis use ANS credits and start only after your explicit consent and action. Uploading and manual checking make no model calls.",
+      "decisions": "Exercises are original; exam coverage depends on actual content. Reports reflect selected records, not official grading. Score, regional rank and admission predictions are not provided.",
+      "model": "Private material recognition and analysis use McGrox and ANS credits; the current model is shown in the workspace. Recognized questions remain drafts until checked. AI explanations are distinguished from supplied course or teacher feedback. Record-only reports require no new model call.",
+      "prompt": "Uploads only save originals. Select materials, review credits and consent before generating a report. Unchecked recognition results remain drafts; check and correct them before choosing a new analysis. Reports are material snapshots and are never rewritten automatically after uploads or reviews.",
+      "skill": "Find recurring method difficulties in your own work, return from the mind map to source evidence, and verify progress with spaced same-question reviews, your own unseen related questions and short timed sets.",
+      "sourceNote": "An official ANS study product using ANS sign-in and the platform account header. Training records and privately uploaded materials are saved separately for each account. Originals are private, are not added to the public question bank automatically, and can be exported. Legacy device-local records retain a separate entry and are not automatically merged into the current account."
+    }
+  }
+}

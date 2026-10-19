@@ -1,0 +1,493 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ANS Points Marketplace Integration",
+    "version": "0.1.0",
+    "description": "服务端项目范围凭据创建积分结算单并查询权威回执。无 webhook；公开契约不表示已完成生产付款验收。"
+  },
+  "servers": [
+    {
+      "url": "https://ans.cauai.fun"
+    }
+  ],
+  "security": [
+    {
+      "MerchantBearer": []
+    }
+  ],
+  "paths": {
+    "/api/integrations/market/v1/checkouts": {
+      "post": {
+        "operationId": "createCheckout",
+        "summary": "幂等创建项目积分结算单",
+        "description": "同商品 reference 重复同 body 返回原单；不同 body 拒绝。不能传 userId 或 amount。有档次必须传 tierId；兼容旧单档时省略，回执 tierId 为 null。轮换后新凭据可访问同商品已有单，旧凭据失效。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "结算单权威回执；创建本身不支付。",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求体超过 10,000 字节，拒绝处理。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "仅接受 application/json 请求体。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务或接入配置暂不可用；保留原 reference，核对原单后恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/market/v1/checkouts/{id}": {
+      "get": {
+        "operationId": "getCheckout",
+        "summary": "查询权威积分付款与权益回执",
+        "description": "只查询该凭据所属商品。商户后台比对本地订单与回执字段，按 entitlementActive 开通或暂停原项目权益。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,128}$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "结算单权威回执；创建本身不支付。",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "拒绝或失败。500、408、429 与网络未知结果须保留原 reference 查询或恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务或接入配置暂不可用；保留原 reference，核对原单后恢复，不能证明未执行。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "MerchantBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "ANS project credential",
+        "description": "项目范围凭据，格式 ansm_ 后跟43位字母、数字、下划线或短横线。只在服务端环境读取，不放进客户端、日志或版本库。"
+      }
+    },
+    "schemas": {
+      "CheckoutInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reference",
+          "returnUrl"
+        ],
+        "properties": {
+          "reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "minLength": 8,
+            "maxLength": 80,
+            "description": "先绑定本地认证用户并持久化。重试保持同一个购买 reference 与原 body。"
+          },
+          "tierId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,60}$",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "returnUrl": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "^https://(?![^/?#]*@)[^\\s#]+$",
+            "description": "只能使用卖家登记的 HTTPS 返回来源，最多1000字符，无 URL 用户名、密码或 fragment。回跳不是付款证明。"
+          }
+        }
+      },
+      "CheckoutReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "reference",
+          "checkoutUrl",
+          "status",
+          "pricePoints",
+          "listingId",
+          "listingVersion",
+          "tierId",
+          "orderId",
+          "paidAt",
+          "entitlementActive",
+          "ansUserId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,80}$",
+            "minLength": 8,
+            "maxLength": 80,
+            "description": "先绑定本地认证用户并持久化。重试保持同一个购买 reference 与原 body。"
+          },
+          "checkoutUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://ans\\.cauai\\.fun/market/checkout/[A-Za-z0-9_-]+$",
+            "description": "用户需要在 ANS 登录并明确确认；创建不扣款。"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "refunded",
+              "disputed",
+              "cancelled"
+            ],
+            "description": "新单 24 小时未支付过期后为 cancelled。"
+          },
+          "pricePoints": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "ANS 积分，不是人民币、美元或内部 minor 单位。由商品已发布档次确定。"
+          },
+          "listingId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "listingVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "tierId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,60}$",
+                "minLength": 1,
+                "maxLength": 60
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "orderId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paidAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entitlementActive": {
+            "type": "boolean",
+            "description": "只有 paid 且仍有效才授权；退款或争议为 false，不能只看 paidAt。"
+          },
+          "ansUserId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,128}$",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "稳定不透明 ANS 账号标识，无姓名、邮箱或手机号。首次绑定后不能任意换买家。"
+          }
+        }
+      },
+      "ReceiptEnvelope": {
+        "type": "object",
+        "required": [
+          "ok",
+          "data",
+          "requestId"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/CheckoutReceipt"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "required": [
+          "ok",
+          "error",
+          "requestId"
+        ],
+        "properties": {
+          "ok": {
+            "const": false
+          },
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {}
+            }
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    }
+  }
+}

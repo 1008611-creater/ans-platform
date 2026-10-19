@@ -1,0 +1,146 @@
+{
+  "buildId": "exam-analysis-20261009-4521885091ed",
+  "entry": "index.html",
+  "files": [
+    {
+      "path": "analysis-sw.js",
+      "bytes": 1746,
+      "sha256": "fd4fe1332a607ef462dae7dc025203a4e9ba47a654dbc3819bfec75fe2bebaa1"
+    },
+    {
+      "path": "analysis.css",
+      "bytes": 46696,
+      "sha256": "f792c9121746407fe072635b3bdfacccd460efa7cfd940194ada4a3bea928b86"
+    },
+    {
+      "path": "assets/bunny/approved.svg",
+      "bytes": 966148,
+      "sha256": "ca4bed3f066cb7c713b0cb98c94b10286b6dcc2eaa334268f9dedf86f907ab26"
+    },
+    {
+      "path": "assets/bunny/rabbit-3d-v2.glb",
+      "bytes": 2643328,
+      "sha256": "9132b1ce0d837351207c4708f65d185de447ae6693a69d798a5b17a74d5591a4"
+    },
+    {
+      "path": "assets/bunny/rabbit-texture-0.png",
+      "bytes": 3481573,
+      "sha256": "71dee96bc7d8f23f3db50f6ad9e9dbfd4ea5b3894515bbb1e12b72267b2979d2"
+    },
+    {
+      "path": "assets/bunny/rabbit-texture-1.jpg",
+      "bytes": 1887180,
+      "sha256": "faf044fb25625e4c2b0d7d9298226d7756b7a096bb9c63b502adc14c5d93b0fe"
+    },
+    {
+      "path": "assets/bunny/rabbit-texture-2.png",
+      "bytes": 6204259,
+      "sha256": "360103ee2b1ea2c68d06df57497ad85aa2e7a7198456917a122d3e12f21b5dbc"
+    },
+    {
+      "path": "assets/bunny/rabbit.riv",
+      "bytes": 813843,
+      "sha256": "de2215abcfa3879efb2cec4745f4dff727ec34ac1b3b944e9e5661dd29d6ac89"
+    },
+    {
+      "path": "favicon.svg",
+      "bytes": 256,
+      "sha256": "e6eb5c3d74b1e29d53f601ad411c6794c57d91f047abd1bdec8daf6786e20f82"
+    },
+    {
+      "path": "index.html",
+      "bytes": 12551,
+      "sha256": "49e0f9f5b2869618b78a85bb31fff32c12aaa5c821e0cafa1baa8c0e9a061824"
+    },
+    {
+      "path": "src/account.mjs",
+      "bytes": 3233,
+      "sha256": "4b221a6c726760bcf8428f54198a136016632209e3a285447f26eef7b0b87166"
+    },
+    {
+      "path": "src/analysis-domain.js",
+      "bytes": 16411,
+      "sha256": "f9461cf0357866723ba16ed625796d15c00056b180cc1cf4547ec660b3d14689"
+    },
+    {
+      "path": "src/app.js",
+      "bytes": 23783,
+      "sha256": "9d419cc5ccce67808dab6bf2d30690c776fd5068b3b6619a4304bc5c045f6851"
+    },
+    {
+      "path": "src/bunny-3d.js",
+      "bytes": 4822,
+      "sha256": "ed16c3e4c0b26a7fa3c0b06af0eee8f8751be92d2c87f2e088ade7392856f461"
+    },
+    {
+      "path": "src/bunny-companion.js",
+      "bytes": 9317,
+      "sha256": "7ce7a9bfa64f11a7d555ee81de8f2e9d40d34dcbad282fdbcfc278eb10276854"
+    },
+    {
+      "path": "src/bunny-motion.js",
+      "bytes": 3364,
+      "sha256": "09c71e3b48709dfa2d312bbac5ed1fed0fdf0e9255d57ee68c686db7f14e00e1"
+    },
+    {
+      "path": "src/controller.js",
+      "bytes": 4198,
+      "sha256": "9bce6b9b99f8979698be3ffeed1fdff9fc4f9a0f2793f89d4f0195a9104ed4a9"
+    },
+    {
+      "path": "src/local-store.js",
+      "bytes": 1626,
+      "sha256": "f5d69ec4ad088c2e7a5cb76a1775ecbad944767866a0c67771a4bf4116f068c5"
+    },
+    {
+      "path": "src/rabbit-scene.mjs",
+      "bytes": 7013,
+      "sha256": "dc018507e9a3a72e45214d69540b836e41342c060b83e410e82f3086b9871d82"
+    },
+    {
+      "path": "src/record-analyzer.js",
+      "bytes": 7703,
+      "sha256": "487488687bb404773faf9f0aae16b3b552475fcfe67e2a13942586309f7f819a"
+    },
+    {
+      "path": "src/view-state.js",
+      "bytes": 1058,
+      "sha256": "6e2192428176afeecbb2c17d687238124af2883e5c777c0b47d7578086ad9139"
+    },
+    {
+      "path": "vendor/rive/LICENSE",
+      "bytes": 1066,
+      "sha256": "8a1efa755d19446b51a18e1c15f6308728da0b36283c4d38050698ad6954b69a"
+    },
+    {
+      "path": "vendor/rive/manifest.json",
+      "bytes": 1017,
+      "sha256": "067e66dd282823e1adc18b43955a10e09ac1d477e9992f5779647654640b9877"
+    },
+    {
+      "path": "vendor/rive/rive.js",
+      "bytes": 503443,
+      "sha256": "e55ad4f1888ff9f42ce70490c1fee08adf071ac14c1b27b24ea701de57d457b5"
+    },
+    {
+      "path": "vendor/rive/rive.wasm",
+      "bytes": 1992302,
+      "sha256": "a8e6e11a827fcdf49aa141606eb158e29cbb72e95337dd962b724f1823690a74"
+    },
+    {
+      "path": "vendor/three/LICENSE",
+      "bytes": 1081,
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+    },
+    {
+      "path": "vendor/three/manifest.json",
+      "bytes": 292,
+      "sha256": "15fb189003678f50ba1ef0e1d1fa80179ee6e40b576a097d0ae551c625d541e0"
+    },
+    {
+      "path": "vendor/three/spirit-vendor.js",
+      "bytes": 665991,
+      "sha256": "68ade4d6252d9539851a158b6cbdb6e19e4be596b23fda21103283ddb37f3900"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "taskId": "a26b2036-6e84-4522-a6b8-7a25ae96fb22",
+  "payload": {
+    "model": "v3.1-20260211",
+    "face_limit": 2000000,
+    "texture": true,
+    "pbr": true,
+    "visibility": "shareable",
+    "smart_poly": false,
+    "geometry_quality": "detailed",
+    "texture_quality": "detailed",
+    "delight": false,
+    "texture_alignment": "original_image",
+    "type": "image_to_model",
+    "file": {
+      "type": "png",
+      "file_token": "studio:tripo-data/tripo-studio/20261019/8a72e951-eb32-4d0b-a2d3-3093fe680184/input.png"
+    },
+    "enable_image_autofix": true
+  },
+  "download": {
+    "path": "/Users/eeo/Downloads/ans/pet-memorial/public/models/malamute_running_anatomical_h31.glb",
+    "bytes": 21361016,
+    "sha256": "c44dfcc12fc29daf05e4466ccf3c84bdf13be804ab3ce6dcac52e3806eb3b497",
+    "format": "glb"
+  }
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>登录 · 河北行政执法 备考题本</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#123a8a">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="login.css">
+</head>
+<body>
+<main class="gate">
+  <span class="badge">河北省考 · C 卷 行政执法</span>
+  <h1>备考题本</h1>
+  <p class="sub">
+    这是私有题本，输入访问口令即可进入。<br>
+    登录一次，这台设备会记住 <b id="days">180</b> 天，不用反复输入。
+  </p>
+  <form id="form" novalidate autocomplete="on">
+    <label class="lbl" for="pw">访问口令</label>
+    <span class="inputwrap">
+      <input id="pw" name="password" type="password" autocomplete="current-password"
+             autocapitalize="off" autocorrect="off" spellcheck="false"
+             enterkeyhint="go" placeholder="请输入口令">
+      <button type="button" id="eye" class="eye" aria-label="显示口令">显示</button>
+    </span>
+    <div id="err" class="err" role="alert" hidden></div>
+    <button id="go" class="go" type="submit">进入题本</button>
+  </form>
+  <p class="hint">口令由题本所有者提供。<br>登录状态只保存在这台设备，不会上传。</p>
+</main>
+<script src="login.js"></script>
+</body>
+</html>

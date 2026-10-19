@@ -1,0 +1,10 @@
+﻿node_modules/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+
+# Local implementation evidence; do not publish.
+worker-report-sdk.md
+verification.json

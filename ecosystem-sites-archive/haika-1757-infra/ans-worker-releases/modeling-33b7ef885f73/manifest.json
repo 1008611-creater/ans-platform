@@ -1,0 +1,48 @@
+{
+  "prepared": true,
+  "revision": "33b7ef885f732e4dca3c7732bf7dda464773e710",
+  "runtimeImage": "sha256:d046ff54ded60a3ce84052171453f13596af7f6157865ff6d87f5a1c0c30e6a0",
+  "appRevision": "1c103e7e80c54c3f094d329c86806c28e7820ede",
+  "mainRevision": "33b7ef885f732e4dca3c7732bf7dda464773e710",
+  "workerKeyHash": "73cef21011131989d66009e748379a2b18173ff7690b8131c2f255ee452ba697",
+  "composeHash": "a32b043583c49d7a1f3b6662e4b950e0ca91f560ac1eeb10e2461fa19961af4b",
+  "supplierAuthenticated": true,
+  "workerAuthenticated": true,
+  "paidSubmitted": false,
+  "files": [
+    {
+      "path": "scripts/visual-worker/start.mjs",
+      "sha256": "253d777e92388172a068c4c391562ec7a95b4948daa84299f295c79bbace69b3"
+    },
+    {
+      "path": "scripts/visual-worker/worker-runtime.mjs",
+      "sha256": "d3f3e73bf8c7b2c65235fb38c349710961edfcb34f473543fdbc9249bbadc625"
+    },
+    {
+      "path": "scripts/visual-worker/tripo-adapter.mjs",
+      "sha256": "62a90cf2fe16e5ff88ad1356ab1bd9a06b4618a5a6990af0c701c812c85fd0a1"
+    },
+    {
+      "path": "scripts/visual-worker/four-view-adapter.mjs",
+      "sha256": "7ab1b58582ef09e6169689cc38793e20400858d1c0f410d4fd62e4a92ad92cc3"
+    },
+    {
+      "path": "scripts/visual-worker/healthcheck.mjs",
+      "sha256": "0c3b4ce58efb214490de29dd77db8674b188ce816a6728cb29040780f34b0e30"
+    },
+    {
+      "path": "src/contracts/tripo-models.json",
+      "sha256": "41afc2fc463648fbecbd8aab84b1af196c69e88958eed49549ed70b9341dc125"
+    },
+    {
+      "path": "src/contracts/four-view-prompt.json",
+      "sha256": "cb657143570682896edb7a2ea1d7cce9e6ca4065670cc5eabd52aa7a58c07c85"
+    },
+    {
+      "path": "src/contracts/four-view-sizes.json",
+      "sha256": "26d18de19d92937002aa7b503ecc040fb3b40bb1075164539c89c1faf658ec7f"
+    }
+  ],
+  "compose": "/srv/ans-worker-releases/modeling-33b7ef885f73/compose.json",
+  "rollback": "Stop ans-production-3d-worker; Enable-ScheduledTask and Start-ScheduledTask ANS Production 3D Worker on original Windows host."
+}

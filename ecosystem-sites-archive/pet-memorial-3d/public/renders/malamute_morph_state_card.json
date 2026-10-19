@@ -1,0 +1,92 @@
+{
+  "schema": "actual-morph-sweep-1",
+  "source": "/Users/eeo/Downloads/ans/pet-memorial/public/models/malamute_pro.glb",
+  "sha256": "6acba14f1482d495721656108b79553b96881452fcd61c7698c076a7d013ee43",
+  "target_index": 0,
+  "target_name": "Smile_Pant",
+  "skins_count": 1,
+  "bone_names": [
+    "tripo::Root",
+    "bone_34",
+    "tripo::1_Right_Limb_0",
+    "tripo::0_Left_Limb_0",
+    "tripo::0_Left_Limb_1",
+    "tripo::0_Left_Limb_2",
+    "tripo::0_Left_Limb_3",
+    "tripo::Spine_0",
+    "bone_26",
+    "bone_27",
+    "bone_28",
+    "bone_29",
+    "bone_30",
+    "bone_31",
+    "bone_32",
+    "bone_33",
+    "tripo::Head_0",
+    "tripo::Head_1",
+    "bone_20",
+    "bone_21",
+    "bone_22",
+    "bone_23",
+    "bone_24",
+    "bone_25",
+    "tripo::Head_2",
+    "tripo::Head_3",
+    "tripo::Head_4",
+    "tripo::Head_5",
+    "tripo::Head_6",
+    "tripo::Head_7",
+    "tripo::0_Right_Limb_0",
+    "tripo::0_Right_Limb_1",
+    "tripo::0_Right_Limb_2",
+    "tripo::1_Left_Limb_0",
+    "tripo::1_Left_Limb_1",
+    "tripo::1_Left_Limb_2"
+  ],
+  "morph_names": [
+    "Smile_Pant",
+    "Ear_Perk",
+    "Eye_Blink",
+    "Chest_Breath",
+    "Tail_Fluff"
+  ],
+  "dimensions_m": [
+    0.97843,
+    1.00242,
+    0.42472
+  ],
+  "pivot_in_bounds": true,
+  "materials_count": 8,
+  "textures_count": 12,
+  "all_morph_displacements": {
+    "Smile_Pant": 0.028636,
+    "Ear_Perk": 0.032802,
+    "Eye_Blink": 0.011644,
+    "Chest_Breath": 0.021799,
+    "Tail_Fluff": 0.041295
+  },
+  "dead_morph_targets": [],
+  "weights": [
+    0,
+    0.5,
+    1,
+    0.5,
+    0
+  ],
+  "gain": 1,
+  "max_world_displacement": 0.028635649010539055,
+  "fixed_bounds": [
+    [
+      -0.4898529052734375,
+      -0.0005037987721152604,
+      -0.203305184841156
+    ],
+    [
+      0.4885794520378113,
+      1.0019195079803467,
+      0.22141426801681519
+    ]
+  ],
+  "verdict": "pending-human-review",
+  "scope": "geometry weight sweep only; no skinning, texture or physical recovery validation"
+}

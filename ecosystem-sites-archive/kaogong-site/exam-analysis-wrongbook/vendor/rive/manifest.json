@@ -1,0 +1,32 @@
+{
+  "package": "@rive-app/canvas",
+  "version": "2.44.0",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/@rive-app/canvas/2.44.0",
+  "npmIntegrity": "sha512-ak0GGwCbuWubi6rP9qB5YPy5CxYuTY3AiuTV4i1Vi7GXhuK2XB+M+4WJMuGcYGfGLzojaVMKaxtunD5OjjGzOQ==",
+  "date": "2026-10-08",
+  "riveCli": "1.5.0",
+  "scriptsInAsset": 0,
+  "files": [
+    {
+      "path": "vendor/rive/rive.js",
+      "bytes": 503443,
+      "sha256": "e55ad4f1888ff9f42ce70490c1fee08adf071ac14c1b27b24ea701de57d457b5"
+    },
+    {
+      "path": "vendor/rive/rive.wasm",
+      "bytes": 1992302,
+      "sha256": "a8e6e11a827fcdf49aa141606eb158e29cbb72e95337dd962b724f1823690a74"
+    },
+    {
+      "path": "assets/bunny/rabbit.riv",
+      "bytes": 813843,
+      "sha256": "de2215abcfa3879efb2cec4745f4dff727ec34ac1b3b944e9e5661dd29d6ac89"
+    },
+    {
+      "path": "assets/bunny/approved.svg",
+      "bytes": 966148,
+      "sha256": "ca4bed3f066cb7c713b0cb98c94b10286b6dcc2eaa334268f9dedf86f907ab26"
+    }
+  ]
+}

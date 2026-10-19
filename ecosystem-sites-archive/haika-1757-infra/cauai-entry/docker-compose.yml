@@ -1,0 +1,22 @@
+# CAUAI 统一入口 · 独立静态站点
+#
+# 设计约束（与治理仓 AGENTS.md 一致）：
+#   · 只绑 127.0.0.1，不直接暴露公网端口；对外入口交给 cloudflared 隧道。
+#   · 挂目录，不挂单个文件 —— 单文件 bind mount 按 inode 绑定，改文件后容器仍读旧内容。
+#   · 不引用、不依赖 hb / sd2 / apic 任何一个现有服务。
+services:
+  entry:
+    image: nginx:1.27-alpine
+    container_name: cauai-entry
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18090:80"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./site:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

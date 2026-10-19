@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>河北行政执法 · 备考题本</title>
+<meta name="description" content="河北省考 C 卷（行政执法）真题练习本：行测刷题、申论精读、错题本、进度记录。">
+<meta name="theme-color" content="#123a8a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="备考题本">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="app"><div class="boot">正在打开题本…</div></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+/* 启动兜底：app.js 没加载出来（网络断了 / 缓存损坏）时，
+   不要一直停在「正在打开题本…」，直接告诉用户怎么办。 */
+window.__BOOT_TIMER__ = setTimeout(function(){
+  if (window.__APP_BOOTED__) return;
+  var el = document.getElementById('app');
+  if (!el) return;
+  el.innerHTML = '<div class="wrap"><div class="empty">' +
+    '<div class="big">\uD83D\uDCD6</div>' +
+    '<p>题本没能加载出来。</p>' +
+    '<p>多半是网络断了。连上网之后点下面的按钮重试；如果已经下载过离线题库，也可以先关掉网络再打开。</p>' +
+    '<button class="btn" style="margin-top:16px" onclick="location.reload()">重新加载</button>' +
+    '</div></div>';
+}, 8000);
+</script>
+<script src="drill-domain.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

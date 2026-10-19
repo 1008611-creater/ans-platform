@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "feishu-doc-publisher-mcp": {
+      "command": "/Users/eeo/Downloads/eeo/xiaoke-experiments/tools/multica-mj-workbench/.venv/bin/python",
+      "args": [
+        "/Users/eeo/.gemini/config/plugins/feishu-doc-publisher/skills/feishu-doc-publisher/scripts/feishu_session_mcp_server.py"
+      ],
+      "env": {
+        "FEISHU_DEFAULT_DRIVE_URL": "https://narcb9vct6.feishu.cn/drive/home/"
+      }
+    }
+  }
+}

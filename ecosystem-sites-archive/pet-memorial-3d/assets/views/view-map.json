@@ -1,0 +1,21 @@
+{
+  "source": "/Users/eeo/.gemini/antigravity/brain/eb5b5a58-81ca-4ce4-b957-8ec9139a95cd/pet_four_views_v2.png",
+  "layout": {
+    "top_left": "front",
+    "top_right": "back",
+    "bottom_left": "left",
+    "bottom_right": "right"
+  },
+  "tripo_slot_order": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "files": {
+    "front": "/Users/eeo/Downloads/ans/pet-memorial/assets/views/front.png",
+    "back": "/Users/eeo/Downloads/ans/pet-memorial/assets/views/back.png",
+    "left": "/Users/eeo/Downloads/ans/pet-memorial/assets/views/left.png",
+    "right": "/Users/eeo/Downloads/ans/pet-memorial/assets/views/right.png"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "source": "/Users/eeo/Downloads/ans/pet-memorial/public/views/running-four-views-2x2.png",
+  "layout": {
+    "top_left": "front",
+    "top_right": "back",
+    "bottom_left": "left",
+    "bottom_right": "right"
+  },
+  "tripo_slot_order": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "files": {
+    "front": "/Users/eeo/Downloads/ans/pet-memorial/public/views-running/front.png",
+    "back": "/Users/eeo/Downloads/ans/pet-memorial/public/views-running/back.png",
+    "left": "/Users/eeo/Downloads/ans/pet-memorial/public/views-running/left.png",
+    "right": "/Users/eeo/Downloads/ans/pet-memorial/public/views-running/right.png"
+  }
+}

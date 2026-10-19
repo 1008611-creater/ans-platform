@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAUAI · 创作矩阵</title>
+<meta name="description" content="一个入口，三个工作台：无限画布、念念 AI 视频工作台、New API 模型网关。">
+<meta name="theme-color" content="#07080a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2307080a'/%3E%3Cpath d='M16 6.4l8.6 19.6h-4.3L16 14.6l-4.3 11.4H7.4z' fill='%23c9a961'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#07080a;
+    --line:rgba(201,169,97,.16);
+    --line-strong:rgba(201,169,97,.44);
+    --gold:#c9a961;
+    --gold-bright:#f1d99b;
+    --paper:#f0ece3;
+    --muted:#8e8779;
+    --dim:#6f6a5f;
+    --serif:"Songti SC","Source Han Serif SC","Noto Serif SC","STSong","SimSun",serif;
+    --sans:"PingFang SC","HarmonyOS Sans SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;min-height:100vh;background:var(--ink);color:var(--paper);
+    font-family:var(--sans);line-height:1.6;overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  .glow,.grain,.spot{position:fixed;inset:0;pointer-events:none;z-index:0}
+  .glow{background:
+    radial-gradient(120% 78% at 50% -12%,rgba(201,169,97,.17),transparent 62%),
+    radial-gradient(90% 60% at 86% 112%,rgba(201,169,97,.07),transparent 60%);}
+  .grain{opacity:.3;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .spot{background:radial-gradient(440px 440px at var(--mx,50%) var(--my,18%),rgba(241,217,155,.09),transparent 70%)}
+  .shell{
+    position:relative;z-index:1;max-width:1140px;margin:0 auto;min-height:100vh;
+    padding:clamp(24px,4vw,44px) clamp(20px,5vw,48px) clamp(40px,6vw,60px);
+    display:flex;flex-direction:column;
+  }
+  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding-bottom:20px;border-bottom:1px solid var(--line)}
+  .mark{display:flex;align-items:center;gap:11px;font-family:var(--serif);
+    font-size:15px;letter-spacing:.34em;color:var(--gold-bright)}
+  .mark__dot{width:7px;height:7px;background:var(--gold);transform:rotate(45deg);
+    box-shadow:0 0 14px rgba(201,169,97,.85)}
+  .top__nav a{color:var(--muted);text-decoration:none;font-size:13px;letter-spacing:.08em;
+    transition:color .25s var(--ease)}
+  .top__nav a:hover{color:var(--gold-bright)}
+  .hero{padding:clamp(46px,8.5vw,92px) 0 clamp(34px,5.5vw,60px);max-width:880px}
+  .eyebrow{margin:0 0 20px;font-size:12px;letter-spacing:.36em;text-transform:uppercase;color:var(--gold)}
+  h1{margin:0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(34px,6.4vw,64px);line-height:1.18;letter-spacing:.01em}
+  h1 em{font-style:normal;color:var(--gold-bright);position:relative;white-space:nowrap}
+  h1 em::after{content:"";position:absolute;left:0;right:0;bottom:.08em;height:1px;
+    background:linear-gradient(90deg,var(--gold),transparent);opacity:.75}
+  .lead{margin:26px 0 0;max-width:52ch;font-size:clamp(14px,1.6vw,16px);color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,20px)}
+  .card{
+    position:relative;display:flex;flex-direction:column;gap:12px;overflow:hidden;
+    padding:clamp(22px,2.6vw,30px);min-height:268px;border-radius:3px;
+    background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));
+    border:1px solid var(--line);color:inherit;text-decoration:none;
+    transition:border-color .35s var(--ease),transform .35s var(--ease),background .35s var(--ease);
+  }
+  .card::before{content:"";position:absolute;top:0;left:0;width:100%;height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+    transform:scaleX(0);transform-origin:left;transition:transform .5s var(--ease)}
+  .card::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+    background:radial-gradient(340px 220px at var(--cx,50%) var(--cy,0%),rgba(201,169,97,.11),transparent 70%);
+    transition:opacity .4s var(--ease)}
+  .card:hover,.card:focus-visible{
+    border-color:var(--line-strong);transform:translateY(-5px);
+    background:linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.012))}
+  .card:hover::before,.card:focus-visible::before{transform:scaleX(1)}
+  .card:hover::after,.card:focus-visible::after{opacity:1}
+  .card:focus-visible{outline:1px solid var(--gold);outline-offset:3px}
+  .card__idx{font-family:var(--serif);font-size:12px;letter-spacing:.3em;color:var(--gold);opacity:.85}
+  .card__title{margin:2px 0 0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(21px,2.3vw,25px);letter-spacing:.02em}
+  .card__desc{margin:0;font-size:14px;line-height:1.7;color:var(--muted)}
+  .card__tags{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 0;padding:0;list-style:none}
+  .card__tags li{font-size:11.5px;letter-spacing:.06em;color:#a89f8c;
+    padding:3px 9px;border:1px solid var(--line);border-radius:999px}
+  .card__go{margin-top:auto;display:inline-flex;align-items:center;gap:8px;
+    font-size:13.5px;letter-spacing:.06em;color:var(--gold-bright)}
+  .card__go i{font-style:normal;transition:transform .35s var(--ease)}
+  .card:hover .card__go i{transform:translateX(5px)}
+  .card__host{font-size:11.5px;letter-spacing:.1em;color:var(--dim)}
+  .foot{margin-top:auto;padding-top:clamp(30px,5vw,50px);border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap}
+  .foot__note{margin:0;max-width:62ch;font-size:12.5px;line-height:1.75;color:var(--dim)}
+  .foot__meta{margin:0;font-size:12px;letter-spacing:.22em;color:#5d594f}
+  .reveal{animation:rise .9s var(--ease) both;animation-delay:var(--d,0s)}
+  .hero > .reveal:nth-child(1){--d:.05s}
+  .hero > .reveal:nth-child(2){--d:.14s}
+  .hero > .reveal:nth-child(3){--d:.24s}
+  .grid > .card:nth-child(1){--d:.34s}
+  .grid > .card:nth-child(2){--d:.42s}
+  .grid > .card:nth-child(3){--d:.5s}
+  .foot.reveal{--d:.6s}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @media (max-width:980px){
+    .grid{grid-template-columns:1fr}
+    .card{min-height:0}
+    .foot{flex-direction:column;align-items:flex-start}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="spot" id="spot" aria-hidden="true"></div>
+
+  <main class="shell">
+    <header class="top reveal">
+      <div class="mark"><span class="mark__dot" aria-hidden="true"></span><span>CAUAI</span></div>
+      <nav class="top__nav"><a href="https://one.cauai.fun/auth/hb.html">统一登录</a><span aria-hidden="true"> · </span><a href="https://one.cauai.fun/auth/logout">退出</a><span aria-hidden="true"> · </span><a href="https://cauai.fun" rel="noopener">作品集</a></nav>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow reveal">CAUAI · 创作矩阵</p>
+      <h1 class="reveal">一个入口，<em>三个工作台</em></h1>
+      <p class="lead reveal">同属一套创作体系。选一个工作台，直接开始。</p>
+    </section>
+
+    <section class="grid" aria-label="工作台">
+      <a class="card" id="p1" href="https://one.cauai.fun/auth/hb.html" aria-keyshortcuts="1">
+        <span class="card__idx">01</span>
+        <h2 class="card__title">无限画布</h2>
+        <p class="card__desc">节点式创作画布，把图片与视频串成可复用的生产链路。</p>
+        <ul class="card__tags"><li>节点编排</li><li>图生视频</li><li>素材库</li></ul>
+        <span class="card__go">进入 <i aria-hidden="true">→</i></span>
+        <span class="card__host">hb.one.cauai.fun</span>
+      </a>
+
+      <a class="card" id="p2" href="https://one.cauai.fun/auth/sd2.html" aria-keyshortcuts="2">
+        <span class="card__idx">02</span>
+        <h2 class="card__title">念念 AI 视频工作台</h2>
+        <p class="card__desc">从脚本到成片的一站式视频生成，任务与进度全程可见。</p>
+        <ul class="card__tags"><li>视频生成</li><li>脚本到成片</li><li>任务队列</li></ul>
+        <span class="card__go">进入 <i aria-hidden="true">→</i></span>
+        <span class="card__host">sd2.one.cauai.fun</span>
+      </a>
+
+      <a class="card" id="p3" href="https://apic.one.cauai.fun" aria-keyshortcuts="3">
+        <span class="card__idx">03</span>
+        <h2 class="card__title">New API 模型网关</h2>
+        <p class="card__desc">统一的模型出口，集中管理密钥、模型路由与用量计量。</p>
+        <ul class="card__tags"><li>API 密钥</li><li>模型路由</li><li>用量计量</li></ul>
+        <span class="card__go">进入 <i aria-hidden="true">→</i></span>
+        <span class="card__host">apic.one.cauai.fun</span>
+      </a>
+    </section>
+
+    <footer class="foot reveal">
+      <p class="foot__note">三个工作台同属一个创作体系，各自的作品与数据留在原来的位置。</p>
+      <p class="foot__meta">CAUAI · <span id="yr">2026</span></p>
+    </footer>
+  </main>
+
+<script>
+(function(){
+  var y = document.getElementById('yr');
+  if (y) y.textContent = new Date().getFullYear();
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fine = window.matchMedia('(pointer: fine)').matches;
+  var spot = document.getElementById('spot');
+
+  if (fine && !reduce) {
+    var raf = 0;
+    window.addEventListener('pointermove', function (e) {
+      if (raf) return;
+      raf = requestAnimationFrame(function () {
+        raf = 0;
+        document.documentElement.style.setProperty('--mx', e.clientX + 'px');
+        document.documentElement.style.setProperty('--my', e.clientY + 'px');
+      });
+    }, { passive: true });
+  } else if (spot) {
+    spot.style.display = 'none';
+  }
+
+  document.querySelectorAll('.card').forEach(function (card) {
+    card.addEventListener('pointermove', function (e) {
+      var r = card.getBoundingClientRect();
+      card.style.setProperty('--cx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--cy', (e.clientY - r.top) + 'px');
+    }, { passive: true });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    var el = document.getElementById('p' + e.key);
+    if (!el) return;
+    e.preventDefault();
+    window.location.href = el.href;
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+
+.project__versions { list-style: none; margin: 24px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.project__versions li { border-bottom: 1px solid var(--line); }
+.project__versions button { width: 100%; padding: 14px 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 0; background: transparent; cursor: pointer; text-align: left; }
+.project__versions button:hover { color: var(--accent); }
+.project__versions small { flex-shrink: 0; color: var(--text-soft); }
+.project__versions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.project__copy + .project__copy { margin-top: 12px; }
+.lightbox__panel { max-height: 92dvh; overflow-y: auto; }
+.lightbox__notes { margin: 20px 0 0; border-top: 1px solid var(--line); }
+.lightbox__notes div { display: grid; grid-template-columns: 5em minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.lightbox__notes dt { color: var(--text-soft); }
+.lightbox__notes dd { margin: 0; }
+.lightbox__status { margin-top: 16px; color: var(--text-soft); font-size: 12px; }
+.hero__intro { color: var(--text); text-shadow: 0 1px 8px var(--ink); }
+@media (max-width: 600px) { .project__versions button { align-items: flex-start; flex-direction: column; gap: 4px; } .lightbox__notes div { grid-template-columns: 1fr; gap: 4px; } }

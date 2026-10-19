@@ -1,0 +1,1 @@
+(function(){'use strict';var options=new URLSearchParams(location.search);if(options.get('practice')!=='1'){document.documentElement.dataset.entry='materials';location.replace('/analysis/#materials');}})();

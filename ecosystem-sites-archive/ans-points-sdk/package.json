@@ -1,0 +1,41 @@
+{
+  "name": "ans-points-sdk",
+  "version": "0.1.0",
+  "description": "Server-side ANS Points marketplace checkout client",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "openapi.json",
+    "examples/server.mjs",
+    "docs/integration-checklist.md",
+    ".env.example",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "demo": "node examples/server.mjs",
+    "check": "node --check src/index.js && node --check examples/server.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/1008611-creater/ans-points-sdk.git"
+  },
+  "homepage": "https://github.com/1008611-creater/ans-points-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/1008611-creater/ans-points-sdk/issues"
+  }
+}

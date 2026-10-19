@@ -1,0 +1,7 @@
+{
+  "version": "0.186.1",
+  "source": "命盘工作台既有spirit-vendor.js，build-spirit-vendor.mjs使用three@0.186.1/esbuild@0.25.9构建",
+  "sha256": "68ade4d6252d9539851a158b6cbdb6e19e4be596b23fda21103283ddb37f3900",
+  "license": "MIT",
+  "runtime_network": "same-origin only"
+}

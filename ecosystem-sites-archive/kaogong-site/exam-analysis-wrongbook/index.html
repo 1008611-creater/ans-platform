@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fff0f5">
+  <meta name="color-scheme" content="light">
+  <title>上岸有数 · 备考分析工作台</title>
+  <link rel="icon" href="/welcome/ans-logo-light.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/welcome/echo-design.css">
+  <link rel="stylesheet" href="wrongbook.css"><link rel="stylesheet" href="focus.css"><link rel="stylesheet" href="report.css"><link rel="stylesheet" href="/welcome/onboarding.css"><link rel="stylesheet" href="vendor/mind-elixir/MindElixirLite.css">
+  
+  
+  
+  
+  
+  <script defer src="/welcome/onboarding.js"></script><script defer src="vendor/mind-elixir/MindElixirLite.iife.js"></script><script defer src="src/knowledge-map.js"></script><script defer src="report-visuals.js"></script><script defer src="report-charts.js"></script><script defer src="vendor/echarts/echarts.min.js"></script><script defer src="score-evidence.js"></script><script defer src="src/exam-context-editor.js"></script><script defer src="learning-history.js"></script><script defer src="report-layout.js"></script><script defer src="src/report-dashboard.js"></script><script defer src="src/wrongbook-app.js"></script><script defer src="/welcome/echo-motion.js"></script>
+  <script defer src="src/bunny-motion.js"></script>
+  <script type="module" src="src/bunny-3d.js"></script>
+  <script type="module" src="src/account.mjs"></script>
+<link rel="stylesheet" href="/welcome/ans-shell.css"><script defer src="/welcome/ans-shell.js"></script></head>
+<body>
+  <svg class="svg-library" aria-hidden="true"><defs>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 13h5l2 3h2l2-3h5"/></symbol>
+    <symbol id="i-report" viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5zM14 3v5h5M9 16v-3m3 3V10m3 6v-4"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="m11 7-5 8m7-8 5 8M8 18h8"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M4 8a9 9 0 1 1-1 8M4 3v6h6m2-3v6l4 2"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 14v6h16v-6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8 12l3 3 5-6"/></symbol>
+  </defs></svg>
+  <a class="skip" href="#main">跳到工作台</a>
+  <aside class="rail">
+    <a class="brand" href="/"><span class="ans-product-mark"><img src="/welcome/ans-logo-light.svg" width="28" height="28" alt="ANS"></span><span>上岸有数<small>你的私人学习分析室</small></span></a>
+    <nav id="primary-nav" class="primary-nav" aria-label="工作台导航">
+      <a href="#materials" data-nav="materials"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span>上传与分析</span><span id="rail-count" class="nav-count" hidden>0</span></a>
+      <a href="#report" data-nav="report"><svg class="icon" aria-hidden="true"><use href="#i-report"/></svg><span>学习报告</span></a>
+    </nav>
+    <details class="rail-more" id="mobile-more"><summary>更多</summary><div class="more-links">
+      <a href="#questions" data-nav="questions">核对错题 <span id="rail-questions" class="nav-count" hidden>0</span></a>
+      <a href="#knowledge" data-nav="knowledge">知识导图</a>
+      <a href="#review" data-nav="review">复练日历 <span id="rail-review" class="nav-count" hidden>0</span></a>
+      <a href="#context" data-nav="context">模考与目标</a>
+      <a href="#history" data-nav="history">任务记录与导出</a>
+      <a href="/trainer/?practice=1">原创练习 ↗</a>
+      <a href="https://suanming.cauai.fun/" target="_blank" rel="noopener">命理陪伴 ↗</a>
+      <button type="button" data-open-guide>使用引导</button>
+    </div></details>
+    <a class="rail-return" href="https://ans.cauai.fun/explore/practice-echo">返回 ANS ↗</a>
+    <div class="rail-snapshot" hidden><p class="rail-caption">当前档案</p><a href="#report"><span>有效报告</span><span id="rail-report">尚未生成</span></a><a href="#history"><span>分析次数</span><span id="rail-runs">0 次</span></a></div>
+    <div class="rail-bottom" hidden><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><div>私人材料按账号保存<small>确认后分析 · 原件可导出</small></div></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><div class="breadcrumb"><span>我的备考</span><span class="divider">/</span><span id="breadcrumb-current">材料工作台</span></div><div id="accountControl" class="account-control" aria-label="ANS统一账号"></div><span class="mode-pill"><span class="local-dot" aria-hidden="true"></span>私人错题工作空间</span></header>
+    <main id="main" tabindex="-1">
+      <section class="studio-hero" data-echo-scene aria-label="你的学习工作室"><div class="page-heading"><span id="workspace-date" hidden></span><h1 id="page-title">上传你的练习</h1><p id="page-description" class="subtitle">上传做过的题，主动开始分析，得到有依据的学习报告。</p></div><section id="bunny-companion" class="bunny-companion studio-bunny" aria-label="小兔子陪伴">
+        <div class="bunny-heading"><span><b>兔兔陪你</b><small>你的专属备考搭子</small></span><button id="bunny-expand" class="text-button" type="button" aria-expanded="true" aria-controls="bunny-body">收起</button></div>
+        <div id="bunny-body" class="bunny-body">
+          <div class="bunny-stage"><span class="bunny-ground" aria-hidden="true"></span><img id="bunny-static" src="assets/bunny/approved.svg" alt="你的小兔子：白色垂耳，歪着头" width="700" height="775"><canvas id="bunny-canvas" width="350" height="388" tabindex="0" role="button" aria-label="逗逗小兔子：点击摸头、双击开心跳；左右方向键旋转；Enter 或空格摸头，数字一至六切换动作，Escape 回正" hidden></canvas></div>
+          <div class="bunny-copy"><p id="bunny-status" role="status" aria-live="polite">兔兔正在准备和你互动…</p><p class="bunny-hint">摸头蹭蹭 · 点爪招呼 · 双击庆祝</p><details class="bunny-play"><summary>和兔兔玩</summary><div class="bunny-play-panel"><div class="bunny-actions" role="group" aria-label="逗逗小兔子"><button type="button" data-bunny-action="1" disabled>看你</button><button type="button" data-bunny-action="2" disabled>摸摸头</button><button type="button" data-bunny-action="3" disabled>打招呼</button><button type="button" data-bunny-action="4" disabled>开心跳</button><button type="button" data-bunny-action="5" disabled>趴下起身</button><button type="button" data-bunny-action="6" disabled>动动耳朵</button></div><div class="bunny-options"><button id="bunny-quiet" type="button" class="text-button" aria-pressed="false">安静陪伴</button><button id="bunny-retry" type="button" class="text-button" hidden>再试一次</button></div></div></details></div>
+        </div>
+      </section></section>
+<div id="notice" role="status" aria-live="polite" hidden></div>
+      <section id="session-gate" class="panel" hidden><h2>先登录，打开你的私人错题本</h2><p>原件、识别结果和复练记录按 ANS 账号保存。</p><a href="/api/auth/login" class="primary">使用 ANS 登录</a><button id="reload-workspace" class="secondary">登录后重新打开</button></section>
+      <div id="wrongbook-workspace" hidden>
+ <div id="workspace-overview" class="workspace-overview" hidden><div class="next-task" aria-label="当前学习的下一步"><span class="next-task-label" aria-hidden="true">↗</span><div class="next-task-copy"><small id="next-task-label">下一步</small><strong id="next-task-title">上传第一份练习材料</strong></div><a id="next-task-link" href="#materials">去上传 →</a></div><div class="workspace-pulse" aria-label="当前账号学习概览"><a href="#materials"><span>已存材料</span><b id="pulse-materials">—</b></a><a href="#questions"><span>待核对</span><b id="pulse-pending">—</b></a><a href="#review"><span>到期复练</span><b id="pulse-review">—</b></a></div>
+</div>
+      <section id="materials-view" aria-label="上传练习材料"><section id="agent-progress" class="agent-progress" aria-live="polite" hidden></section>
+        
+        <div class="materials-grid">
+          <section class="panel upload-panel"><div class="panel-heading"><div><h2>上传错题或试卷</h2></div><label class="subject-field" for="upload-subject">科目<select id="upload-subject"><option value="xingce">行测</option><option value="shenlun">申论</option></select></label></div>
+            <div id="drop-zone" class="drop-zone"><div class="document-stack" aria-hidden="true"><div class="document-back"></div><div class="document-front"><svg class="icon"><use href="#i-upload"/></svg><span></span><span></span></div><span class="document-plus">+</span></div><strong>把你做过的题，放进来。</strong><span>错题照片 · 试卷 · 课程 PDF</span><button id="choose-file" class="primary">上传照片或试卷</button><input id="file-input" type="file" accept="image/jpeg,image/png,application/pdf" multiple aria-label="上传私人错题材料" tabindex="-1"><span class="file-types">JPG · PNG · PDF，单份 10MB / PDF 最多 6 页</span></div>
+            <p id="upload-status" class="scope-note" role="status" aria-live="polite" hidden></p><div class="upload-footnote"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg><p>上传只保存原件，由你主动开始分析。</p></div><details class="upload-help"><summary>拍照与材料说明</summary><p>尽量拍全题干、选项、你的答案和原解析。只拍错题也可以，但不能用于推算整卷得分。旧的本机档案可以在 <a href="records.html">记录统计页</a> 单独打开。</p></details>
+          </section>
+          <section id="start-panel" class="panel start-panel" hidden><div class="inspector-heading"><span class="inspector-dot" aria-hidden="true"></span><h2>分析这几份题</h2></div><div class="selection-number"><strong id="selected-count">0</strong><span>份已选材料</span></div><p id="start-scope" class="muted">最多选择 3 份，识别后仍需你核对。</p><div class="start-facts"><p><span>账号材料</span><strong>私人保存</strong></p><p><span>今日调用</span><strong id="ai-usage">正在确认</strong></p><details><summary>处理渠道与积分</summary><p><span>识别服务</span><strong id="ai-status">正在确认服务</strong></p><p>开始识别或分析会使用 ANS 积分；上传和手动核对不调用模型。</p></details></div><label class="consent"><input id="ai-consent" type="checkbox"><span>同意将所选原件、相关原题重做摘要及已保存的模考摘要交给所示 AI 服务分析，使用 ANS 积分。</span></label><button id="study-button" class="primary" disabled>开始分析 →</button><p id="agent-cost" class="scope-note"></p><details class="manual-path"><summary>想先核对识别内容？</summary><button id="extract-button" class="secondary" disabled>仅识别所选材料</button><p>识别后逐题确认，再生成分析报告。</p></details><a class="inspector-output" href="#questions">去核对已识别的题目 →</a></section>
+          <section id="material-panel" class="panel material-panel" hidden><div class="panel-heading"><div><h2>我的原件 <span id="list-count" class="inline-count">0</span></h2><p id="material-summary" class="muted"></p></div><div class="material-selection-actions"><button id="clear-selection" class="text-button" hidden>清空选择</button><button id="select-all" class="text-button" aria-pressed="false">全选当前结果</button></div></div><div class="list-toolbar"><div class="filter-tabs"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="xingce" aria-pressed="false">行测</button><button data-filter="shenlun" aria-pressed="false">申论</button></div><label class="search-field" for="material-search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><input id="material-search" type="search" placeholder="搜索材料…" aria-label="搜索原件"></label></div><div id="material-list"></div></section>
+        </div>
+      </section>
+      <section id="questions-view" hidden aria-label="核对错题"><div class="panel-heading question-heading"><div><h2>核对题目与参考依据</h2><p>识别只是一份草稿。尤其核对数字、否定词和图形。</p></div><div class="report-actions"><button id="manual-question" class="secondary">手动录入一道</button><button id="record-report" class="secondary" disabled>生成记录报告</button><button id="analyze-button" class="primary" disabled>分析已选确认题</button></div></div><div class="question-operation"><p id="question-scope" class="scope-note"></p><label class="consent"><input id="question-ai-consent" type="checkbox"><span>我同意将本次所选题目交由页面标明的 AI 渠道处理；综合时包含相关原题重做摘要及已保存的模考与目标摘要，使用 ANS 积分。<small id="question-ai-channel"></small></span></label></div><section class="question-tools panel" aria-label="查找与选择题目"><div class="question-search-row"><label class="question-search" for="question-search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><input id="question-search" type="search" placeholder="搜索题号、题干、模块或原件名称" autocomplete="off"><span class="sr-only">搜索已识别的题目</span></label><span id="question-result-count" class="scope-note" role="status">等待当前账号</span></div><div class="question-tools-bottom"><div class="question-filters" role="group" aria-label="题目状态筛选"><button data-question-filter="all" aria-pressed="true">全部 <span id="question-count-all">—</span></button><button data-question-filter="pending" aria-pressed="false">待核对 <span id="question-count-pending">—</span></button><button data-question-filter="confirmed" aria-pressed="false">已确认 <span id="question-count-confirmed">—</span></button><button data-question-filter="analyzed" aria-pressed="false">已分析 <span id="question-count-analyzed">—</span></button></div><div class="question-pick-actions"><button id="question-pick-page" class="text-button" disabled>选本页已确认题 · 最多 12 道</button><button id="question-clear-picked" class="text-button" disabled>清空已选</button></div></div></section><div class="question-layout"><aside class="panel question-queue" aria-label="题目核对队列"><div class="question-queue-title"><h3>核对队列</h3><span id="question-page-label">—</span></div><div id="question-list"></div><nav class="question-pagination" aria-label="题目分页"><button id="question-prev-page" class="secondary" disabled>上一页</button><button id="question-next-page" class="secondary" disabled>下一页</button></nav></aside><div id="question-workbench" class="question-review-workbench"><div id="question-editor" class="panel"></div><aside id="question-original" class="panel question-original" hidden aria-label="私人原件对照"></aside></div></div></section>
+      <section id="review-view" hidden aria-label="复练与日历"><div class="panel review-intro"><div><p class="eyebrow">七天复练日历</p><h2>按日期复练，验证方法</h2><p>记住答案不算完成：从第一步重新推到结果，再用自己的未见同类题验证。</p></div><label>每天可用时间 <select id="review-minutes"><option value="10">10 分钟</option><option value="20">20 分钟</option><option value="30">30 分钟</option></select></label></div><div id="review-calendar" class="review-calendar"></div><div id="review-list"></div><div id="review-player" class="panel" hidden></div></section>
+      <section id="report-view" hidden aria-label="学习报告"><div id="report-content"></div></section>
+      <section id="knowledge-view" hidden aria-label="知识导图"><div id="knowledge-content"></div></section>
+      <section id="context-view" aria-label="模考与目标" hidden><div id="context-content"></div></section>
+      <section id="history-view" hidden aria-label="任务记录"><div class="panel"><div class="panel-heading"><h2>识别与分析记录</h2><button id="export-archive" class="secondary" data-download="archive">导出私人档案</button></div><p class="muted">失败与取消会保留已有报告；上传和核对不会自动更新报告。</p><div id="history-list"></div></div></section>
+      </div>
+      
+      
+    </main>
+  </div>
+</body>
+</html>

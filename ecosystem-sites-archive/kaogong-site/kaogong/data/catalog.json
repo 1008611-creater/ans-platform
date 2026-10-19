@@ -1,0 +1,3374 @@
+{
+ "generatedAt": "2026-09-17",
+ "source": "GitHub: xianhua1/Huahuagongkao（无开源许可证，仅供个人备考自用，请勿公开传播）",
+ "totals": {
+  "papers": 154,
+  "questions": 8442
+ },
+ "groups": [
+  {
+   "key": "hebei-xingce",
+   "name": "河北行测真题",
+   "desc": "河北省考行测真题，题型与考场完全一致，优先刷。",
+   "papers": [
+    {
+     "id": 484,
+     "type": "exam",
+     "group": "河北行测真题",
+     "groupKey": "hebei-xingce",
+     "title": "2026年河北公务员录用考试《行测》",
+     "year": 2026,
+     "province": "河北",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 15,
+     "sections": [
+      "常识判断 30题",
+      "言语理解与表达 35题",
+      "数量关系 15题",
+      "判断推理 30题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "河北",
+      "行测",
+      "必做"
+     ],
+     "file": "data/exams/484.json"
+    },
+    {
+     "id": 159,
+     "type": "exam",
+     "group": "河北行测真题",
+     "groupKey": "hebei-xingce",
+     "title": "2025年河北公务员录用考试《行测》",
+     "year": 2025,
+     "province": "河北",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 14,
+     "sections": [
+      "常识判断 30题",
+      "言语理解与表达 35题",
+      "数量关系 15题",
+      "判断推理 30题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "河北",
+      "行测",
+      "必做"
+     ],
+     "file": "data/exams/159.json"
+    },
+    {
+     "id": 450,
+     "type": "exam",
+     "group": "河北行测真题",
+     "groupKey": "hebei-xingce",
+     "title": "2024年河北公务员录用考试《行测》",
+     "year": 2024,
+     "province": "河北",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 29,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "河北",
+      "行测",
+      "必做"
+     ],
+     "file": "data/exams/450.json"
+    },
+    {
+     "id": 161,
+     "type": "exam",
+     "group": "河北行测真题",
+     "groupKey": "hebei-xingce",
+     "title": "2023年河北公务员录用考试《行测》",
+     "year": 2023,
+     "province": "河北",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 18,
+     "sections": [
+      "常识判断 25题",
+      "言语理解与表达 35题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "河北",
+      "行测",
+      "必做"
+     ],
+     "file": "data/exams/161.json"
+    }
+   ],
+   "count": 4,
+   "questions": 520
+  },
+  {
+   "key": "hebei-shenlun-c",
+   "name": "河北申论 C 卷（行政执法）",
+   "desc": "最核心：河北 C 卷就是行政执法类岗位用卷。",
+   "papers": [
+    {
+     "id": 188,
+     "type": "shenlun",
+     "group": "河北申论 C 卷（行政执法）",
+     "groupKey": "hebei-shenlun-c",
+     "title": "2025年公务员多省联考《申论》题（河北C卷）",
+     "year": 2025,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论C卷",
+      "行政执法",
+      "核心"
+     ],
+     "file": "data/shenlun/188.json"
+    },
+    {
+     "id": 193,
+     "type": "shenlun",
+     "group": "河北申论 C 卷（行政执法）",
+     "groupKey": "hebei-shenlun-c",
+     "title": "2024年公务员多省联考《申论》题（河北C卷）",
+     "year": 2024,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论C卷",
+      "行政执法",
+      "核心"
+     ],
+     "file": "data/shenlun/193.json"
+    }
+   ],
+   "count": 2,
+   "questions": 8
+  },
+  {
+   "key": "guokao-xingce",
+   "name": "国考行测·行政执法卷",
+   "desc": "与河北 C 卷同属行政执法方向，命题思路最接近。",
+   "papers": [
+    {
+     "id": 480,
+     "type": "exam",
+     "group": "国考行测·行政执法卷",
+     "groupKey": "guokao-xingce",
+     "title": "2026年国家公务员录用考试《行测》（行政执法）",
+     "year": 2026,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 22,
+     "sections": [
+      "常识判断 35题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "国考",
+      "行政执法",
+      "行测",
+      "高价值"
+     ],
+     "file": "data/exams/480.json"
+    },
+    {
+     "id": 471,
+     "type": "exam",
+     "group": "国考行测·行政执法卷",
+     "groupKey": "guokao-xingce",
+     "title": "2025年国家公务员录用考试《行测》（行政执法卷）",
+     "year": 2025,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 18,
+     "sections": [
+      "常识判断 35题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "国考",
+      "行政执法",
+      "行测",
+      "高价值"
+     ],
+     "file": "data/exams/471.json"
+    },
+    {
+     "id": 445,
+     "type": "exam",
+     "group": "国考行测·行政执法卷",
+     "groupKey": "guokao-xingce",
+     "title": "2024年国家公务员录用考试《行测》（行政执法卷）",
+     "year": 2024,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 37,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 10题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "国考",
+      "行政执法",
+      "行测",
+      "高价值"
+     ],
+     "file": "data/exams/445.json"
+    },
+    {
+     "id": 431,
+     "type": "exam",
+     "group": "国考行测·行政执法卷",
+     "groupKey": "guokao-xingce",
+     "title": "2023年国家公务员录用考试《行测》（行政执法）",
+     "year": 2023,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 20,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 10题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "国考",
+      "行政执法",
+      "行测",
+      "高价值"
+     ],
+     "file": "data/exams/431.json"
+    },
+    {
+     "id": 426,
+     "type": "exam",
+     "group": "国考行测·行政执法卷",
+     "groupKey": "guokao-xingce",
+     "title": "2022年国家公务员录用考试《行测》（行政执法卷）",
+     "year": 2022,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 22,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 10题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "国考",
+      "行政执法",
+      "行测",
+      "高价值"
+     ],
+     "file": "data/exams/426.json"
+    }
+   ],
+   "count": 5,
+   "questions": 650
+  },
+  {
+   "key": "xingzheng-zhifa-shenlun",
+   "name": "行政执法申论（国考+各省）",
+   "desc": "与河北 C 卷命题口径一致，用来补题感。",
+   "papers": [
+    {
+     "id": 6,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2026年国家公考《申论》题（行政执法）",
+     "year": 2026,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/6.json"
+    },
+    {
+     "id": 105,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2026年广东省公考《申论》题（行政执法）",
+     "year": 2026,
+     "province": "广东",
+     "subject": "申论",
+     "qCount": 3,
+     "materialCount": 3,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/105.json"
+    },
+    {
+     "id": 627,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2026年天津市公考《申论》题（行政执法卷）",
+     "year": 2026,
+     "province": "天津市",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/627.json"
+    },
+    {
+     "id": 9,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2025年国家公考《申论》题（行政执法）",
+     "year": 2025,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/9.json"
+    },
+    {
+     "id": 110,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2025年广东省公考《申论》题（行政执法）",
+     "year": 2025,
+     "province": "广东",
+     "subject": "申论",
+     "qCount": 3,
+     "materialCount": 3,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/110.json"
+    },
+    {
+     "id": 272,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2025年公务员多省联考《申论》题（湖南行政执法卷）",
+     "year": 2025,
+     "province": "湖南",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/272.json"
+    },
+    {
+     "id": 343,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2025年公务员多省联考《申论》题（江西行政执法卷）",
+     "year": 2025,
+     "province": "江西",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/343.json"
+    },
+    {
+     "id": 418,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2025年公务员多省联考《申论》题（青海行政执法卷）",
+     "year": 2025,
+     "province": "青海",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/418.json"
+    },
+    {
+     "id": 495,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2025年四川省公考《申论》题（行政执法）",
+     "year": 2025,
+     "province": "四川",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/495.json"
+    },
+    {
+     "id": 522,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2025年公务员多省联考《申论》题（新疆行政执法卷）",
+     "year": 2025,
+     "province": "新疆",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/522.json"
+    },
+    {
+     "id": 12,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2024年国家公考《申论》题（行政执法）",
+     "year": 2024,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/12.json"
+    },
+    {
+     "id": 72,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2024年公务员多省联考《申论》题（福建行政执法卷）",
+     "year": 2024,
+     "province": "福建",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/72.json"
+    },
+    {
+     "id": 113,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2024年广东省公考《申论》题（行政执法）",
+     "year": 2024,
+     "province": "广东",
+     "subject": "申论",
+     "qCount": 3,
+     "materialCount": 3,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/113.json"
+    },
+    {
+     "id": 229,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2024年公务员多省联考《申论》题（黑龙江行政执法卷）",
+     "year": 2024,
+     "province": "黑龙江",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/229.json"
+    },
+    {
+     "id": 348,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2024年公务员多省联考《申论》题（江西行政执法卷）",
+     "year": 2024,
+     "province": "江西",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/348.json"
+    },
+    {
+     "id": 497,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2024年四川省公考《申论》题（行政执法）",
+     "year": 2024,
+     "province": "四川",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/497.json"
+    },
+    {
+     "id": 15,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2023年国家公考《申论》题（行政执法）",
+     "year": 2023,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/15.json"
+    },
+    {
+     "id": 75,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2023年公务员多省联考《申论》题（福建行政执法卷）",
+     "year": 2023,
+     "province": "福建",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/75.json"
+    },
+    {
+     "id": 231,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2023年公务员多省联考《申论》题（黑龙江行政执法卷）",
+     "year": 2023,
+     "province": "黑龙江",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/231.json"
+    },
+    {
+     "id": 275,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2023年公务员多省联考《申论》题（湖南行政执法卷）",
+     "year": 2023,
+     "province": "湖南",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/275.json"
+    },
+    {
+     "id": 351,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2023年公务员多省联考《申论》题（江西行政执法卷）",
+     "year": 2023,
+     "province": "江西",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/351.json"
+    },
+    {
+     "id": 500,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2023年公务员多省联考《申论》题（四川上半年行政执法卷）",
+     "year": 2023,
+     "province": "四川",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/500.json"
+    },
+    {
+     "id": 632,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2023年公务员多省联考《申论》题（天津行政执法卷）",
+     "year": 2023,
+     "province": "天津市",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/632.json"
+    },
+    {
+     "id": 1,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2022年国家公务员考试申论试题（行政执法卷）",
+     "year": 2022,
+     "province": "行政执法类",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/1.json"
+    },
+    {
+     "id": 234,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2022年公务员多省联考《申论》题（黑龙江行政执法卷）",
+     "year": 2022,
+     "province": "黑龙江",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/234.json"
+    },
+    {
+     "id": 277,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2022年公务员多省联考《申论》题（湖南行政执法卷）",
+     "year": 2022,
+     "province": "湖南",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/277.json"
+    },
+    {
+     "id": 353,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2022年公务员多省联考《申论》题（江西行政执法卷）",
+     "year": 2022,
+     "province": "江西",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/353.json"
+    },
+    {
+     "id": 501,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2022年四川省公考《申论》题（下半年行政执法卷）",
+     "year": 2022,
+     "province": "四川",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/501.json"
+    },
+    {
+     "id": 504,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2022年公务员多省联考《申论》题（四川上半年行政执法卷）",
+     "year": 2022,
+     "province": "四川",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/504.json"
+    },
+    {
+     "id": 280,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2021年公务员多省联考《申论》题（湖南行政执法卷）",
+     "year": 2021,
+     "province": "湖南",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/280.json"
+    },
+    {
+     "id": 356,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2021年公务员多省联考《申论》题（江西行政执法卷）",
+     "year": 2021,
+     "province": "江西",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/356.json"
+    },
+    {
+     "id": 508,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2021年公务员多省联考《申论》题（四川上半年行政执法卷）",
+     "year": 2021,
+     "province": "四川",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/508.json"
+    },
+    {
+     "id": 637,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2021年公务员多省联考《申论》题（天津行政执法卷）",
+     "year": 2021,
+     "province": "天津市",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/637.json"
+    },
+    {
+     "id": 612,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2020年上海市公考《申论》题（行政执法卷）",
+     "year": 2020,
+     "province": "上海市",
+     "subject": "申论",
+     "qCount": 3,
+     "materialCount": 8,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/612.json"
+    },
+    {
+     "id": 615,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2019年上海市公考《申论》题（行政执法卷）",
+     "year": 2019,
+     "province": "上海市",
+     "subject": "申论",
+     "qCount": 3,
+     "materialCount": 9,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/615.json"
+    },
+    {
+     "id": 618,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2018年上海市公考《申论》题（行政执法卷）",
+     "year": 2018,
+     "province": "上海市",
+     "subject": "申论",
+     "qCount": 3,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/618.json"
+    },
+    {
+     "id": 621,
+     "type": "shenlun",
+     "group": "行政执法申论（国考+各省）",
+     "groupKey": "xingzheng-zhifa-shenlun",
+     "title": "2017年上海市公考《申论》题（行政执法卷）",
+     "year": 2017,
+     "province": "上海市",
+     "subject": "申论",
+     "qCount": 3,
+     "materialCount": 9,
+     "sections": [],
+     "tags": [
+      "行政执法",
+      "申论",
+      "替代练习"
+     ],
+     "file": "data/shenlun/621.json"
+    }
+   ],
+   "count": 37,
+   "questions": 146
+  },
+  {
+   "key": "guokao-xingce-other",
+   "name": "国考行测其他卷（副省/地市）",
+   "desc": "与执法卷有 30%~60% 重合，可作为补充题源。",
+   "papers": [
+    {
+     "id": 114,
+     "type": "exam",
+     "group": "国考行测其他卷（副省/地市）",
+     "groupKey": "guokao-xingce-other",
+     "title": "2026年国家公务员录用考试《行测》（副省级）",
+     "year": 2026,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 20,
+     "sections": [
+      "常识判断 35题",
+      "言语理解与表达 30题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/114.json"
+    },
+    {
+     "id": 469,
+     "type": "exam",
+     "group": "国考行测其他卷（副省/地市）",
+     "groupKey": "guokao-xingce-other",
+     "title": " 2025年国家公务员录用考试《行测》（地市级） ",
+     "year": 2025,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 17,
+     "sections": [
+      "常识判断 35题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/469.json"
+    },
+    {
+     "id": 120,
+     "type": "exam",
+     "group": "国考行测其他卷（副省/地市）",
+     "groupKey": "guokao-xingce-other",
+     "title": "2024年国家公务员录用考试《行测》（副省级）",
+     "year": 2024,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 37,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 15题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/120.json"
+    },
+    {
+     "id": 123,
+     "type": "exam",
+     "group": "国考行测其他卷（副省/地市）",
+     "groupKey": "guokao-xingce-other",
+     "title": "2023年国家公务员录用考试《行测》（副省级）",
+     "year": 2023,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 21,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 15题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/123.json"
+    },
+    {
+     "id": 126,
+     "type": "exam",
+     "group": "国考行测其他卷（副省/地市）",
+     "groupKey": "guokao-xingce-other",
+     "title": "2022年国家公务员录用考试《行测》（副省级）",
+     "year": 2022,
+     "province": "国考",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 16,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 15题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/126.json"
+    }
+   ],
+   "count": 5,
+   "questions": 670
+  },
+  {
+   "key": "guokao-shenlun",
+   "name": "国考申论（副省/地市）",
+   "desc": "命题水平最高，适合提升材料分析能力。",
+   "papers": [
+    {
+     "id": 4,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2026年国家公考《申论》题（副省级）",
+     "year": 2026,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/4.json"
+    },
+    {
+     "id": 5,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2026年国家公考《申论》题（地市级）",
+     "year": 2026,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/5.json"
+    },
+    {
+     "id": 7,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2025年国家公考《申论》题（副省级）",
+     "year": 2025,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/7.json"
+    },
+    {
+     "id": 8,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2025年国家公考《申论》题（地市级）",
+     "year": 2025,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/8.json"
+    },
+    {
+     "id": 10,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2024年国家公考《申论》题（副省级）",
+     "year": 2024,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/10.json"
+    },
+    {
+     "id": 11,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2024年国家公考《申论》题（地市级）",
+     "year": 2024,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/11.json"
+    },
+    {
+     "id": 13,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2023年国家公考《申论》题（副省级）",
+     "year": 2023,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/13.json"
+    },
+    {
+     "id": 14,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2023年国家公考《申论》题（地市级）",
+     "year": 2023,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/14.json"
+    },
+    {
+     "id": 16,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2022年国家公考《申论》题（副省级）",
+     "year": 2022,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/16.json"
+    },
+    {
+     "id": 17,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2022年国家公考《申论》题（地市级）",
+     "year": 2022,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/17.json"
+    },
+    {
+     "id": 19,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2021年国家公考《申论》题（副省级）",
+     "year": 2021,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/19.json"
+    },
+    {
+     "id": 20,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2021年国家公考《申论》题（地市级）",
+     "year": 2021,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/20.json"
+    },
+    {
+     "id": 21,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2020年国家公考《申论》题（副省级）",
+     "year": 2020,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/21.json"
+    },
+    {
+     "id": 22,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2020年国家公考《申论》题（地市级）",
+     "year": 2020,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/22.json"
+    },
+    {
+     "id": 23,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2019年国家公考《申论》题（副省级）",
+     "year": 2019,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/23.json"
+    },
+    {
+     "id": 24,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2019年国家公考《申论》题（地市级）",
+     "year": 2019,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/24.json"
+    },
+    {
+     "id": 25,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2018年国家公考《申论》题（副省级）",
+     "year": 2018,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/25.json"
+    },
+    {
+     "id": 26,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2018年国家公考《申论》题（地市级）",
+     "year": 2018,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 6,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/26.json"
+    },
+    {
+     "id": 27,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2017年国家公考《申论》题（副省级）",
+     "year": 2017,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/27.json"
+    },
+    {
+     "id": 28,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2017年国家公考《申论》题（地市级）",
+     "year": 2017,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/28.json"
+    },
+    {
+     "id": 29,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2016年国家公考《申论》题（副省级）",
+     "year": 2016,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 6,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/29.json"
+    },
+    {
+     "id": 30,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2016年国家公考《申论》题（地市级）",
+     "year": 2016,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/30.json"
+    },
+    {
+     "id": 31,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2015年国家公考《申论》题（副省级）",
+     "year": 2015,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 6,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/31.json"
+    },
+    {
+     "id": 32,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2015年国家公考《申论》题（地市级）",
+     "year": 2015,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 6,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/32.json"
+    },
+    {
+     "id": 33,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2014年国家公考《申论》题（副省级）",
+     "year": 2014,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 6,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/33.json"
+    },
+    {
+     "id": 34,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2014年国家公考《申论》题（地市级）",
+     "year": 2014,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 6,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/34.json"
+    },
+    {
+     "id": 35,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2013年国家公考《申论》题（副省级）",
+     "year": 2013,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 6,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/35.json"
+    },
+    {
+     "id": 36,
+     "type": "shenlun",
+     "group": "国考申论（副省/地市）",
+     "groupKey": "guokao-shenlun",
+     "title": "2013年国家公考《申论》题（地市级）",
+     "year": 2013,
+     "province": "国考",
+     "subject": "申论",
+     "qCount": 5,
+     "materialCount": 8,
+     "sections": [],
+     "tags": [
+      "国考",
+      "申论",
+      "高质量"
+     ],
+     "file": "data/shenlun/36.json"
+    }
+   ],
+   "count": 28,
+   "questions": 140
+  },
+  {
+   "key": "hebei-shenlun-other",
+   "name": "河北申论其他卷（A/B/县级/乡镇）",
+   "desc": "河北本地命题风格参考。",
+   "papers": [
+    {
+     "id": 189,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2025年公务员多省联考《申论》题（河北B卷）",
+     "year": 2025,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/189.json"
+    },
+    {
+     "id": 190,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2025年公务员多省联考《申论》题（河北A卷）",
+     "year": 2025,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/190.json"
+    },
+    {
+     "id": 191,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2024年公务员多省联考《申论》题（河北A卷）",
+     "year": 2024,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/191.json"
+    },
+    {
+     "id": 192,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2024年公务员多省联考《申论》题（河北B、普通选调卷）",
+     "year": 2024,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/192.json"
+    },
+    {
+     "id": 194,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2023年公务员多省联考《申论》题（河北A卷）",
+     "year": 2023,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/194.json"
+    },
+    {
+     "id": 195,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2022年公务员多省联考《申论》题（河北A卷）",
+     "year": 2022,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/195.json"
+    },
+    {
+     "id": 196,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2021年公务员多省联考《申论》题（河北县级卷）",
+     "year": 2021,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/196.json"
+    },
+    {
+     "id": 197,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2021年公务员多省联考《申论》题（河北乡镇卷）",
+     "year": 2021,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/197.json"
+    },
+    {
+     "id": 198,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2020年0822公务员多省联考《申论》题（河北县级卷）",
+     "year": 2020,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/198.json"
+    },
+    {
+     "id": 199,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2020年0822公务员多省联考《申论》题（河北乡镇、普通选调卷）",
+     "year": 2020,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/199.json"
+    },
+    {
+     "id": 200,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2019年河北省公考《申论》题（县级卷）",
+     "year": 2019,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 7,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/200.json"
+    },
+    {
+     "id": 201,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2019年河北省公考《申论》题（乡镇卷）",
+     "year": 2019,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 5,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/201.json"
+    },
+    {
+     "id": 202,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2018年公务员多省联考《申论》题（河北、普通选调卷）",
+     "year": 2018,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 4,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/202.json"
+    },
+    {
+     "id": 203,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2017年公务员多省联考《申论》题（河北卷）",
+     "year": 2017,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 7,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/203.json"
+    },
+    {
+     "id": 204,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2016年公务员多省联考《申论》题（河北卷）",
+     "year": 2016,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 8,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/204.json"
+    },
+    {
+     "id": 205,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2015年河北省公考《申论》题",
+     "year": 2015,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 7,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/205.json"
+    },
+    {
+     "id": 206,
+     "type": "shenlun",
+     "group": "河北申论其他卷（A/B/县级/乡镇）",
+     "groupKey": "hebei-shenlun-other",
+     "title": "2014年河北省公考《申论》题",
+     "year": 2014,
+     "province": "河北",
+     "subject": "申论",
+     "qCount": 4,
+     "materialCount": 8,
+     "sections": [],
+     "tags": [
+      "河北",
+      "申论"
+     ],
+     "file": "data/shenlun/206.json"
+    }
+   ],
+   "count": 17,
+   "questions": 68
+  },
+  {
+   "key": "shengkao-xingce",
+   "name": "各省行测真题",
+   "desc": "已按重合度去重，保留各省有区分度的卷子。",
+   "papers": [
+    {
+     "id": 133,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2026年福建公务员录用考试《行测》",
+     "year": 2026,
+     "province": "福建",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 9,
+     "sections": [
+      "常识判断 35题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/133.json"
+    },
+    {
+     "id": 137,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2026年甘肃公务员录用考试《行测》",
+     "year": 2026,
+     "province": "甘肃",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 13,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 35题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/137.json"
+    },
+    {
+     "id": 141,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2026年广东公务员录用考试《行测》",
+     "year": 2026,
+     "province": "广东",
+     "subject": "行测",
+     "qCount": 90,
+     "imageCount": 21,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 15题",
+      "数量关系 15题",
+      "判断推理 20题",
+      "科学推理 4题",
+      "资料分析 21题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/141.json"
+    },
+    {
+     "id": 166,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2026年黑龙江公务员录用考试《行测》",
+     "year": 2026,
+     "province": "黑龙江",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 6,
+     "sections": [
+      "常识判断 30题",
+      "言语理解与表达 35题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/166.json"
+    },
+    {
+     "id": 223,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2026年四川省考/选调公务员录用考试《行测》",
+     "year": 2026,
+     "province": "四川",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 20,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/223.json"
+    },
+    {
+     "id": 237,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2026年浙江公务员录用考试《行测》A类",
+     "year": 2026,
+     "province": "浙江",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 31,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量关系 20题",
+      "判断推理 40题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/237.json"
+    },
+    {
+     "id": 251,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2026年上海公务员录用考试《行测》",
+     "year": 2026,
+     "province": "上海市",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 25,
+     "sections": [
+      "常识判断 30题",
+      "言语理解与表达 25题",
+      "判断推理 25题",
+      "科学素养 20题",
+      "数量关系 10题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/251.json"
+    },
+    {
+     "id": 255,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2026年天津公务员录用考试《行测》",
+     "year": 2026,
+     "province": "天津市",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 24,
+     "sections": [
+      "常识判断 25题",
+      "言语理解与表达 25题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/255.json"
+    },
+    {
+     "id": 134,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年福建公务员录用考试《行测》",
+     "year": 2025,
+     "province": "福建",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 9,
+     "sections": [
+      "常识判断 35题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/134.json"
+    },
+    {
+     "id": 138,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年甘肃公务员录用考试《行测》",
+     "year": 2025,
+     "province": "甘肃",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 13,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 35题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/138.json"
+    },
+    {
+     "id": 142,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年广东公务员录用考试《行测》",
+     "year": 2025,
+     "province": "广东",
+     "subject": "行测",
+     "qCount": 90,
+     "imageCount": 13,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 15题",
+      "数量关系 15题",
+      "判断推理 20题",
+      "科学推理 5题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/142.json"
+    },
+    {
+     "id": 167,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年黑龙江公务员录用考试《行测》",
+     "year": 2025,
+     "province": "黑龙江",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 7,
+     "sections": [
+      "常识判断 30题",
+      "言语理解与表达 35题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/167.json"
+    },
+    {
+     "id": 184,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年江苏公务员录用考试《行测》A类",
+     "year": 2025,
+     "province": "江苏",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 17,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 20题",
+      "判断推理 45题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/184.json"
+    },
+    {
+     "id": 224,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年四川省考/选调公务员录用考试《行测》",
+     "year": 2025,
+     "province": "四川",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 26,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/224.json"
+    },
+    {
+     "id": 240,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年浙江公务员录用考试《行测》A类",
+     "year": 2025,
+     "province": "浙江",
+     "subject": "行测",
+     "qCount": 125,
+     "imageCount": 34,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 20题",
+      "判断推理 40题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/240.json"
+    },
+    {
+     "id": 256,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年天津公务员录用考试《行测》",
+     "year": 2025,
+     "province": "天津市",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 27,
+     "sections": [
+      "数量关系 15题",
+      "言语理解与表达 25题",
+      "常识判断 25题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/256.json"
+    },
+    {
+     "id": 278,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年湖北选调生《综合知识和行政职业能力测验》",
+     "year": 2025,
+     "province": "湖北",
+     "subject": "行测",
+     "qCount": 125,
+     "imageCount": 28,
+     "sections": [
+      "综合知识 25题",
+      "言语理解与表达 20题",
+      "数量关系 20题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/278.json"
+    },
+    {
+     "id": 282,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年江苏公务员录用考试《行测》C类",
+     "year": 2025,
+     "province": "江苏",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 14,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 20题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/282.json"
+    },
+    {
+     "id": 286,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年江苏名校优生选调素质测试",
+     "year": 2025,
+     "province": "江苏",
+     "subject": "行测",
+     "qCount": 60,
+     "imageCount": 10,
+     "sections": [
+      "常识判断 10题",
+      "言语理解与表达 15题",
+      "判断推理 20题",
+      "数量关系 5题",
+      "资料分析 10题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/286.json"
+    },
+    {
+     "id": 308,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年重庆市定向选调优秀大学生到基层工作《行测》",
+     "year": 2025,
+     "province": "重庆市",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 32,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 20题",
+      "数学运算 20题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/308.json"
+    },
+    {
+     "id": 473,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年山东公务员录用考试《行测》",
+     "year": 2025,
+     "province": "山东",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 17,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/473.json"
+    },
+    {
+     "id": 474,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年上海公务员录用考试《行测》A类",
+     "year": 2025,
+     "province": "上海市",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 32,
+     "sections": [
+      "常识判断 35题",
+      "言语理解与表达 25题",
+      "判断推理 30题",
+      "数理 25题",
+      "综合分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/474.json"
+    },
+    {
+     "id": 476,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2025年深圳市公务员录用考试《行测》",
+     "year": 2025,
+     "province": "深圳市",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 16,
+     "sections": [
+      "常识判断 30题",
+      "判断推理 20题",
+      "数量关系 10题",
+      "言语理解与表达 25题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/476.json"
+    },
+    {
+     "id": 135,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年福建公务员录用考试《行测》",
+     "year": 2024,
+     "province": "福建",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 24,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 10题",
+      "判断推理 35题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/135.json"
+    },
+    {
+     "id": 143,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年广东公务员录用考试《行测》",
+     "year": 2024,
+     "province": "广东",
+     "subject": "行测",
+     "qCount": 90,
+     "imageCount": 24,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 15题",
+      "数量关系 15题",
+      "判断推理 20题",
+      "科学推理 5题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/143.json"
+    },
+    {
+     "id": 168,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年黑龙江公务员录用考试《行测》",
+     "year": 2024,
+     "province": "黑龙江",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 26,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 35题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/168.json"
+    },
+    {
+     "id": 182,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年吉林公务员录用考试《行测》",
+     "year": 2024,
+     "province": "吉林",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 16,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 10题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/182.json"
+    },
+    {
+     "id": 212,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年山东公务员录用考试《行测》",
+     "year": 2024,
+     "province": "山东",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 29,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 40题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/212.json"
+    },
+    {
+     "id": 225,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年四川公务员录用考试《行测》",
+     "year": 2024,
+     "province": "四川",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 26,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/225.json"
+    },
+    {
+     "id": 267,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年深圳市公务员录用考试《行测》",
+     "year": 2024,
+     "province": "深圳市",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 22,
+     "sections": [
+      "常识判断 25题",
+      "判断推理 20题",
+      "数量关系 15题",
+      "言语理解与表达 25题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/267.json"
+    },
+    {
+     "id": 277,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年黑龙江公安机关人民警察录用考试《行测》",
+     "year": 2024,
+     "province": "黑龙江",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 27,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 35题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/277.json"
+    },
+    {
+     "id": 279,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年湖北选调生《综合知识和行政职业能力测验》",
+     "year": 2024,
+     "province": "湖北",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 19,
+     "sections": [
+      "综合知识 32题",
+      "常识判断 8题",
+      "言语理解与表达 12题",
+      "数量关系 10题",
+      "判断推理 23题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/279.json"
+    },
+    {
+     "id": 302,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年浙江党政机关选调应届优秀大学毕业生《行测》",
+     "year": 2024,
+     "province": "浙江",
+     "subject": "行测",
+     "qCount": 50,
+     "imageCount": 11,
+     "sections": [
+      "数学运算 15题",
+      "类比推理 5题",
+      "图形推理 5题",
+      "逻辑判断 5题",
+      "常识判断 10题",
+      "资料分析 10题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/302.json"
+    },
+    {
+     "id": 309,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年重庆市定向选调优秀大学生到基层工作《行测》",
+     "year": 2024,
+     "province": "重庆市",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 26,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 25题",
+      "数学运算 15题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/309.json"
+    },
+    {
+     "id": 453,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年江苏公务员录用考试《行测》A类",
+     "year": 2024,
+     "province": "江苏",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 32,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 30题",
+      "数量关系 20题",
+      "判断推理 50题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/453.json"
+    },
+    {
+     "id": 454,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年江苏公务员录用考试《行测》B类",
+     "year": 2024,
+     "province": "江苏",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 34,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量关系 20题",
+      "判断推理 50题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/454.json"
+    },
+    {
+     "id": 462,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年山西县级纪委监委公务员录用考试《行测》",
+     "year": 2024,
+     "province": "山西",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 28,
+     "sections": [
+      "言语理解与表达 35题",
+      "数量关系 10题",
+      "判断推理 40题",
+      "资料分析 15题",
+      "常识判断 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/462.json"
+    },
+    {
+     "id": 466,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2024年浙江公务员录用考试《行测》A类",
+     "year": 2024,
+     "province": "浙江",
+     "subject": "行测",
+     "qCount": 125,
+     "imageCount": 33,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 20题",
+      "判断推理 40题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/466.json"
+    },
+    {
+     "id": 144,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年广东公务员录用考试《行测》（乡镇）",
+     "year": 2023,
+     "province": "广东",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 25,
+     "sections": [
+      "言语理解与表达 10题",
+      "常识判断 20题",
+      "数量关系 15题",
+      "判断推理 20题",
+      "科学推理 20题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/144.json"
+    },
+    {
+     "id": 170,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年黑龙江公务员录用考试《行测》",
+     "year": 2023,
+     "province": "黑龙江",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 14,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 35题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/170.json"
+    },
+    {
+     "id": 183,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年吉林公务员录用考试《行测》",
+     "year": 2023,
+     "province": "吉林",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 13,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 10题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/183.json"
+    },
+    {
+     "id": 191,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年江苏公务员录用考试《行测》A类",
+     "year": 2023,
+     "province": "江苏",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 26,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 30题",
+      "数量关系 20题",
+      "判断推理 50题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/191.json"
+    },
+    {
+     "id": 213,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年山东公务员录用考试《行测》",
+     "year": 2023,
+     "province": "山东",
+     "subject": "行测",
+     "qCount": 90,
+     "imageCount": 13,
+     "sections": [
+      "常识判断 10题",
+      "言语理解与表达 25题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/213.json"
+    },
+    {
+     "id": 246,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年浙江公务员录用考试《行测》A类",
+     "year": 2023,
+     "province": "浙江",
+     "subject": "行测",
+     "qCount": 125,
+     "imageCount": 14,
+     "sections": [
+      "资料分析 15题",
+      "常识判断 20题",
+      "数量关系 20题",
+      "言语理解与表达 30题",
+      "判断推理 40题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/246.json"
+    },
+    {
+     "id": 250,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年北京市公务员录用考试《行测》",
+     "year": 2023,
+     "province": "北京市",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 16,
+     "sections": [
+      "常识判断 30题",
+      "言语理解与表达 30题",
+      "数量关系 20题",
+      "判断推理 35题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/250.json"
+    },
+    {
+     "id": 268,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年深圳市公务员录用考试《行测》",
+     "year": 2023,
+     "province": "深圳市",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 13,
+     "sections": [
+      "常识判断 25题",
+      "判断推理 20题",
+      "数量关系 15题",
+      "言语理解与表达 25题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/268.json"
+    },
+    {
+     "id": 427,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年重庆市定向选调优秀大学生到基层工作《行测》",
+     "year": 2023,
+     "province": "重庆市",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 18,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 29题",
+      "资料分析 11题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/427.json"
+    },
+    {
+     "id": 428,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年福建公务员录用考试《行测》",
+     "year": 2023,
+     "province": "福建",
+     "subject": "行测",
+     "qCount": 120,
+     "imageCount": 15,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 40题",
+      "数量关系 10题",
+      "判断推理 35题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/428.json"
+    },
+    {
+     "id": 429,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年广东公务员录用考试《行测》（县级）",
+     "year": 2023,
+     "province": "广东",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 32,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 10题",
+      "数量关系 15题",
+      "判断推理 35题",
+      "科学推理 10题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/429.json"
+    },
+    {
+     "id": 438,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年江苏公务员录用考试《行测》B类",
+     "year": 2023,
+     "province": "江苏",
+     "subject": "行测",
+     "qCount": 135,
+     "imageCount": 25,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量关系 20题",
+      "判断推理 50题",
+      "资料分析 20题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/438.json"
+    },
+    {
+     "id": 441,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年四川公务员录用考试《行测》",
+     "year": 2023,
+     "province": "四川",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 17,
+     "sections": [
+      "常识判断 15题",
+      "言语理解与表达 30题",
+      "数量关系 10题",
+      "判断推理 30题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/441.json"
+    },
+    {
+     "id": 442,
+     "type": "exam",
+     "group": "各省行测真题",
+     "groupKey": "shengkao-xingce",
+     "title": "2023年上海公务员录用考试《行测》A类",
+     "year": 2023,
+     "province": "上海市",
+     "subject": "行测",
+     "qCount": 130,
+     "imageCount": 28,
+     "sections": [
+      "言语理解与表达 25题",
+      "数理能力 30题",
+      "判断推理 35题",
+      "常识判断 25题",
+      "综合分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/442.json"
+    }
+   ],
+   "count": 52,
+   "questions": 5840
+  },
+  {
+   "key": "shiye-xingce",
+   "name": "事业单位职测",
+   "desc": "题型与行测相通，可当作速度训练。",
+   "papers": [
+    {
+     "id": 269,
+     "type": "exam",
+     "group": "事业单位职测",
+     "groupKey": "shiye-xingce",
+     "title": "2026.3.28全国联考A类《职业能力倾向测验》",
+     "year": 2026,
+     "province": "事业编",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 9,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量关系 5题",
+      "判断推理 35题",
+      "资料分析 15题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/269.json"
+    },
+    {
+     "id": 312,
+     "type": "exam",
+     "group": "事业单位职测",
+     "groupKey": "shiye-xingce",
+     "title": "2026.3.28全国联考B类《职业能力倾向测验》",
+     "year": 2026,
+     "province": "事业编",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 7,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量分析 15题",
+      "判断推理 35题",
+      "综合分析 5题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/312.json"
+    },
+    {
+     "id": 313,
+     "type": "exam",
+     "group": "事业单位职测",
+     "groupKey": "shiye-xingce",
+     "title": "2026.3.28全国联考C类《职业能力倾向测验》",
+     "year": 2026,
+     "province": "事业编",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 10,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量分析 15题",
+      "判断推理 30题",
+      "综合分析 10题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/313.json"
+    },
+    {
+     "id": 315,
+     "type": "exam",
+     "group": "事业单位职测",
+     "groupKey": "shiye-xingce",
+     "title": "2026.3.28全国联考E类《职业能力倾向测验》",
+     "year": 2026,
+     "province": "事业编",
+     "subject": "行测",
+     "qCount": 100,
+     "imageCount": 9,
+     "sections": [
+      "常识判断 20题",
+      "言语理解与表达 25题",
+      "数量分析 15题",
+      "判断推理 30题",
+      "策略选择 10题"
+     ],
+     "tags": [
+      "行测",
+      "拓展练习"
+     ],
+     "file": "data/exams/315.json"
+    }
+   ],
+   "count": 4,
+   "questions": 400
+  }
+ ]
+}
