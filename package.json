@@ -43,7 +43,8 @@
     "book:pdf:all": "npx tsx scripts/generate-book-pdf.ts --all",
     "book:pdf:convert": "npx tsx scripts/html-to-pdf.ts",
     "book:pdf:print": "npx tsx scripts/generate-book-pdf.ts --print && npx tsx scripts/html-to-pdf.ts --print",
-    "book:pdf:print:all": "npx tsx scripts/generate-book-pdf.ts --all --print && npx tsx scripts/html-to-pdf.ts --all --print"
+    "book:pdf:print:all": "npx tsx scripts/generate-book-pdf.ts --all --print && npx tsx scripts/html-to-pdf.ts --all --print",
+    "audit:live-agent": "node scripts/audit-live-agent.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
