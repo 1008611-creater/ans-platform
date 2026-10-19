@@ -30,7 +30,6 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   const t = await getTranslations("product.workspace");
   const locale = await getLocale();
   const computeCopy = await getTranslations("product.computeHistory");
-  const quotaCopy = await getTranslations("product.quotaHistory");
   const query = searchParams ? await searchParams : {};
   const rawCursor = Array.isArray(query.runsCursor) ? query.runsCursor[0] : query.runsCursor;
   const rawPrompt = Array.isArray(query.prompt) ? query.prompt[0] : query.prompt;
@@ -105,7 +104,6 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         </summary>
         <div className="mt-4">
           <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-border/60 pb-3">
-            <Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{quotaCopy("entry")}</Link></Button>
             <Button asChild variant="outline" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button>
             <Button asChild variant="ghost" size="sm"><Link href="/community">{t("community")}</Link></Button>
           </div>

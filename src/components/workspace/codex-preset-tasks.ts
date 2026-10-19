@@ -12,6 +12,12 @@ export interface CodexTask {
   tag: string;
   model: string;
   status: "completed" | "running" | "ready";
+  mode?: "code" | "ask";
+  branch?: string;
+  durationSec?: number;
+  diffAdditions?: number;
+  diffDeletions?: number;
+  previousCode?: string;
   prompt: string;
   trace: string[];
   summary: string;
@@ -28,11 +34,28 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
     tag: "网页范例",
     model: "deepseek-v4.1-flash",
     status: "completed",
+    mode: "code",
+    branch: "main",
+    durationSec: 2.6,
+    diffAdditions: 72,
+    diffDeletions: 4,
+    previousCode: `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>CAU 智慧农田监测台 (初始骨架)</title>
+</head>
+<body>
+  <div class="header">🌾 智慧农田监测台</div>
+  <div id="metrics">等待接入传感器与实时波形图...</div>
+</body>
+</html>`,
     prompt: "帮我做一个单文件 HTML 农田温湿度监测小看板，带实时动态曲线和点击灌溉按钮。",
     trace: [
-      "构建三栏指标卡片（土壤含水率 / 光合有效辐射 / 产量预测）",
-      "挂载 HTML5 Canvas 60fps 双通道传感器波形图",
-      "绑定微喷水肥处方下发按钮与数值动态反馈",
+      "[1/4] agent.read_workspace · 扫描工作区环境 (ans-workspace/main)",
+      "[2/4] agent.plan_strategy · 构建三栏传感器指标卡片与 60fps Canvas 波形布局",
+      "[3/4] agent.write_artifact · 写入 agri-digital-twin-dashboard.html (+72 -4)",
+      "[4/4] agent.verify_sandbox · 校验 DOM 与微喷灌溉事件绑定 (0 errors)",
     ],
     summary: "已生成单文件农田温湿度监测看板，含 3 项核心传感器指标、Canvas 实时波形与一键灌溉交互。",
     artifactType: "html",
@@ -116,11 +139,25 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
     tag: "分镜范例",
     model: "gpt-6-astra",
     status: "completed",
+    mode: "code",
+    branch: "main",
+    durationSec: 2.1,
+    diffAdditions: 37,
+    diffDeletions: 2,
+    previousCode: `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8" /></head>
+<body>
+  <h2>🎬 Toonflow 分镜台</h2>
+  <div id="shots">待添加分镜卡...</div>
+</body>
+</html>`,
     prompt: "帮我做一个 4 镜头多模态视频分镜卡片页面，点不同镜头能切换对应的画面描述词并一键复制。",
     trace: [
-      "编排 4 镜头运镜结构（Dolly In / Orbit / Tracking / Crane Up）",
-      "锁定主角 Seed #4092 与场景光影描述词",
-      "内置剪贴板一键复制指令面板",
+      "[1/4] agent.read_workspace · 加载视频分镜布局模板 (ans-workspace/main)",
+      "[2/4] agent.plan_strategy · 编排 4 镜头运镜结构（Dolly In / Orbit / Tracking / Crane Up）",
+      "[3/4] agent.write_artifact · 写入 canvas-storyboard-director.html (+37 -2)",
+      "[4/4] agent.verify_sandbox · 校验剪贴板一键复制指令面板 (0 errors)",
     ],
     summary: "已生成 4 镜头视频分镜台，支持切换镜头运镜参数并一键复制视频生成 Prompt。",
     artifactType: "html",
@@ -169,11 +206,24 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
     tag: "小游戏范例",
     model: "deepseek-v4.1-flash",
     status: "completed",
+    mode: "code",
+    branch: "main",
+    durationSec: 2.3,
+    diffAdditions: 64,
+    diffDeletions: 3,
+    previousCode: `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8" /></head>
+<body>
+  <canvas id="game" width="420" height="320"></canvas>
+</body>
+</html>`,
     prompt: "用纯 HTML5 Canvas 写一个可以直接玩的网页贪吃蛇小游戏，支持键盘方向键和屏幕按钮控制。",
     trace: [
-      "初始化 420×320 Canvas 网格与蛇身坐标队列",
-      "绑定 ArrowKeys 键盘监听与触屏方向按钮",
-      "实现环形穿墙、随机果实刷新与得分计分板",
+      "[1/4] agent.read_workspace · 初始化 420×320 Canvas 网格环境",
+      "[2/4] agent.plan_strategy · 绑定 ArrowKeys 键盘监听与触屏方向按钮",
+      "[3/4] agent.write_artifact · 写入 cyber-neon-snake.html (+64 -3)",
+      "[4/4] agent.verify_sandbox · 校验环形穿墙与随机果实计分循环 (0 errors)",
     ],
     summary: "已生成 HTML5 Canvas 贪吃蛇小游戏，支持方向键与触屏按钮双控及实时计分。",
     artifactType: "html",
@@ -249,11 +299,19 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
     tag: "后端范例",
     model: "deepseek-v4.1-flash",
     status: "completed",
+    mode: "code",
+    branch: "main",
+    durationSec: 1.9,
+    diffAdditions: 28,
+    diffDeletions: 1,
+    previousCode: `from fastapi import FastAPI
+app = FastAPI(title="AgriGuard Agent API")
+`,
     prompt: "帮我生成一个农客松比赛常用的 Python FastAPI 后端诊断接口代码模板。",
     trace: [
-      "定义 CropDiagnosisRequest Pydantic 入参校验模型",
-      "实现 /api/v1/diagnose 温湿度复合风险评分逻辑",
-      "输出无人机变量喷施与微气象调控处方 JSON",
+      "[1/3] agent.read_workspace · 初始化 Python 3.12 FastAPI 服务骨架",
+      "[2/3] agent.write_artifact · 定义 CropDiagnosisRequest 与 /api/v1/diagnose (+28 -1)",
+      "[3/3] agent.verify_sandbox · 校验 Pydantic 模型与处方返回结构 (0 errors)",
     ],
     summary: "已生成 Python FastAPI 植保诊断接口模板，含入参校验与防治处方返回结构。",
     artifactType: "python",
