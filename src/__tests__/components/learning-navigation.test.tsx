@@ -18,7 +18,7 @@ vi.mock("@/components/homepage/homepage-cta-link", () => ({
 vi.mock("@/components/catalog/project-card", () => ({ ProjectCard: ({ project }: { project: { slug: string } }) => <article><Link href={`/explore/${project.slug}`}>{project.slug}</Link></article> }));
 vi.mock("@/components/catalog/project-preview", () => ({ ProjectPreview: () => <div data-testid="project-preview" /> }));
 vi.mock("@/components/catalog/official-workflows", () => ({ OfficialWorkflows: () => <Link href="/workflows/toonflow">Toonflow</Link> }));
-vi.mock("@/components/homepage/project-coverflow", () => ({ ProjectCoverflow: ({ projects }: { projects: { href: string; title: string }[] }) => <Link href={projects[0].href}>{projects[0].title}</Link> }));
+vi.mock("@/components/homepage/project-coverflow", () => ({ ProjectCoverflow: ({ projects }: { projects: { href: string; title: string }[] }) => <Link data-testid="project-coverflow" href={projects[0].href}>{projects[0].title}</Link> }));
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import HomePage from "@/app/page";
 import ExplorePage from "@/app/explore/page";
@@ -69,7 +69,14 @@ describe("product discovery entry points", () => {
 
   it("keeps explore as a project-only directory and retains filtered paging links", async () => {
     render(await ExplorePage({ searchParams: Promise.resolve({ page: "2", source: "github" }) }));
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("nav.explore");
+    const heading = screen.getByRole("heading", { level: 1 });
+    // 权威 A-PLAZA-02：页面名只允许出现在 h1 的 sr-only 前缀里，可见标题必须是品牌主标题。
+    const accessiblePrefix = heading.querySelector(".sr-only");
+    expect(accessiblePrefix?.textContent).toContain("nav.explore");
+    expect(heading).not.toHaveClass("sr-only");
+    expect(heading.textContent?.replace(accessiblePrefix?.textContent ?? "", "").trim()).toBe("home.title");
+    // 权威 A-PLAZA-01：项目广场必须把公开项目交给轮转封面组件。
+    expect(screen.getByTestId("project-coverflow")).toBeTruthy();
     expect(screen.getByRole("link", { name: "realProject.submit" })).toHaveAttribute("href", "/explore/submit");
     expect(screen.queryByRole("link", { name: "market.browse" })).toBeNull();
     expect(screen.queryByRole("link", { name: "market.creator" })).toBeNull();
