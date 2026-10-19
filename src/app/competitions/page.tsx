@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 const entries = [
   { id: "agrihackathon", href: "/competitions/agrihackathon", icon: HeartHandshake, cover: "/competitions/agrihackathon/gitglow-hub.webp" },
-  { id: "aigc", href: "/competitions/aigc", icon: Sparkles, cover: "/catalog/gitglow-v1/infinite-canvas.webp" },
+  { id: "aigc", href: "/competitions/aigc", icon: Sparkles, cover: "/catalog/ans-pro-v1/infinite-canvas.webp" },
 ] as const;
 
 export default async function CompetitionsPage() {
@@ -28,7 +28,7 @@ export default async function CompetitionsPage() {
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <h2 className="min-w-0 text-xl font-semibold"><Link href={href} className="hover:text-primary hover:underline">{t(`items.${id}.name`)}</Link></h2>
+              <h2 className="min-w-0 text-xl font-semibold">{t(`items.${id}.name`)}</h2>
               <Badge variant="secondary">{t(`items.${id}.status`)}</Badge>
             </div>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{t(`items.${id}.description`)}</p>
@@ -59,7 +59,7 @@ export default async function CompetitionsPage() {
         </article>)}
       </section>
       <Link href="/teams" className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary/5 px-5 py-4 transition hover:border-primary/50 hover:bg-primary/10">
-        <p className="text-base font-bold text-foreground">👥 组队参赛 · 申领 300 点团队专属算力包</p>
+        <p className="text-base font-bold text-foreground">👥 组队参赛 · 申领最高 750 点团队专属算力包（150 点/人）</p>
         <span style={{ background: "#0f172a", color: "#fff", padding: "8px 16px", borderRadius: "9999px", fontSize: "13px", fontWeight: 700 }}>
           {t("continueTeam")} →
         </span>

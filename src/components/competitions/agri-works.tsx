@@ -51,14 +51,11 @@ export function AgriWorks() {
   if (status === "loading") return <p role="status">{t("loading")}</p>;
   if (!actorId) {
     return (
-      <div className="space-y-6" data-testid="agri-works-guest-preview">
+      <div className="space-y-5" data-testid="agri-works-guest-preview">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
           <div className="space-y-1">
             <Badge variant="secondary">Stage Archives & Evidence · 赛段作品归档库</Badge>
-            <h2 className="text-lg font-semibold">参赛战队作品版本与技术核验归档</h2>
-            <p className="max-w-2xl text-xs leading-6 text-muted-foreground">
-              汇总初赛与决赛各战队的冻结提交版本、代码仓快照、自动化测试核验与现场路演存证。登录参赛或评委账号可检索全部私有附件。
-            </p>
+            <h2 className="text-lg font-semibold">当前未登录 · 真实赛段归档需登录参赛或评委账号查看</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm">
@@ -69,43 +66,49 @@ export function AgriWorks() {
             </Button>
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            {
-              team: "农大智耕队 · 初赛冻结版 (Rev.3)",
-              stage: "PRELIMINARY · 已存证",
-              title: "Agri-Vision 多光谱遥感病虫害巡检工作流",
-              cover: "/competitions/agrihackathon/gitglow-workflow.webp",
-              meta: "含 Git 源码快照 + 24 组田间实测对比切片",
-            },
-            {
-              team: "绿洲智控联队 · 决赛路演版 (Rev.5)",
-              stage: "FINAL · 技术核验通过",
-              title: "GreenHouse-OS 温室水肥光热多智能体调控系统",
-              cover: "/competitions/agrihackathon/gitglow-scoring.webp",
-              meta: "含 72h 传感器联动回放日志 + 评委双盲复核记录",
-            },
-            {
-              team: "青禾无人农机队 · 初赛冻结版 (Rev.2)",
-              stage: "PRELIMINARY · 已存证",
-              title: "UAV-Swarm 丘陵果园多机协同路径规划仿真",
-              cover: "/competitions/agrihackathon/gitglow-tracks.webp",
-              meta: "含 Three.js 仿真沙盘录屏 + SHA-256 哈希回执",
-            },
-          ].map((item) => (
-            <Card key={item.team} className="overflow-hidden">
-              <div className="aspect-[16/10] w-full overflow-hidden border-b bg-slate-950/90">
-                <img src={item.cover} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
-              </div>
-              <CardContent className="space-y-2 p-4">
-                <Badge variant="outline" className="text-xs">{item.stage}</Badge>
-                <h3 className="text-sm font-semibold">{item.title}</h3>
-                <p className="text-xs text-muted-foreground">{item.team}</p>
-                <p className="text-xs text-primary/90">{item.meta}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-foreground">
+            <span>📖 查看赛段归档参考范例（3 组示范存证）</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">点击展开 ▾</span>
+            <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">收起 ▴</span>
+          </summary>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                team: "参考范例 · 初赛冻结结构",
+                stage: "📖 范例 · PRELIMINARY",
+                title: "Agri-Vision 多光谱遥感病虫害巡检工作流",
+                cover: "/competitions/agrihackathon/gitglow-workflow.webp",
+                meta: "示范：Git 源码快照 + 田间实测对比切片",
+              },
+              {
+                team: "参考范例 · 决赛路演结构",
+                stage: "📖 范例 · FINAL",
+                title: "GreenHouse-OS 温室水肥光热多智能体调控系统",
+                cover: "/catalog/ans-pro-v1/agri-uav.webp",
+                meta: "示范：72h 传感器联动日志 + 评委双盲复核",
+              },
+              {
+                team: "参考范例 · 仿真沙盘结构",
+                stage: "📖 范例 · PRELIMINARY",
+                title: "UAV-Swarm 丘陵果园多机协同路径规划仿真",
+                cover: "/competitions/agrihackathon/gitglow-tracks.webp",
+                meta: "示范：Three.js 仿真录屏 + SHA-256 哈希回执",
+              },
+            ].map((item) => (
+              <Card key={item.title} className="overflow-hidden">
+                <div className="aspect-[16/10] w-full overflow-hidden border-b bg-slate-950/90">
+                  <img src={item.cover} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+                </div>
+                <CardContent className="space-y-1.5 p-4">
+                  <Badge variant="outline" className="text-xs">{item.stage}</Badge>
+                  <h3 className="text-sm font-semibold">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground">{item.meta}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </details>
       </div>
     );
   }

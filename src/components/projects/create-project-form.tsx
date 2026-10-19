@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { CatalogWorkflowId } from "@/contracts/catalog";
 import type { ProjectGoal } from "@/contracts/projects";
 import { studioSelectionHref } from "@/domain/catalog/selection";
@@ -51,6 +51,8 @@ export function CreateProjectForm({
   callbackPath?: string;
 }) {
   const router = useRouter();
+  const rawLocale = useLocale();
+  const locale = (rawLocale === "en" ? "en" : "zh") as "zh" | "en";
   const t = useTranslations("learning");
   const [title, setTitle] = useState(initialTitle);
   const [goal, setGoal] = useState<ProjectGoal>(initialGoal);
@@ -68,7 +70,7 @@ export function CreateProjectForm({
   }, [initialGoal]);
 
   const intentCluster = detectIntentAndMatchTerms(title || (goal === "contest" ? "农客松遥感诊断" : goal === "portfolio" ? "AIGC短剧分镜" : "3D个人简历作品集"));
-  const structuredBrief = upgradeToStructuredBrief(title, "zh", t(goal));
+  const structuredBrief = upgradeToStructuredBrief(title, locale, t(goal));
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -151,26 +153,26 @@ export function CreateProjectForm({
       {/* ANS Intent Bridge */}
       <div className="space-y-2.5 rounded-xl border border-border/80 bg-muted/35 p-3.5" data-testid="project-intent-bridge">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-foreground">{intentCluster.badge.zh}</span>
+          <span className="text-xs font-semibold text-foreground">{intentCluster.badge[locale]}</span>
           <button
             type="button"
             onClick={() => setShowBrief(v => !v)}
             className="text-xs font-semibold text-primary underline underline-offset-4 hover:opacity-80"
           >
-            {showBrief ? "收起项目需求大纲" : "✨ 帮我生成项目需求大纲"}
+            {showBrief ? (locale === "en" ? "Hide Brief" : "收起项目需求大纲") : (locale === "en" ? "✨ Generate Project Brief" : "✨ 帮我生成项目需求大纲")}
           </button>
         </div>
-        <p className="text-xs leading-5 text-muted-foreground">{intentCluster.clarifyingQuestion.zh}</p>
+        <p className="text-xs leading-5 text-muted-foreground">{intentCluster.clarifyingQuestion[locale]}</p>
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] font-medium text-muted-foreground">相关学习词条：</span>
+          <span className="text-[11px] font-medium text-muted-foreground">{locale === "en" ? "Related topics:" : "相关学习词条："}</span>
           {intentCluster.terms.map(term => (
             <Link
               key={term.slug}
-              href={`/vibe-hub/${term.slug}?lang=zh`}
-              title={term.hint.zh}
+              href={`/vibe-hub/${term.slug}?lang=${locale}`}
+              title={term.hint[locale]}
               className="rounded-md border border-border bg-background px-2 py-0.5 text-[11px] font-medium text-foreground transition hover:border-primary hover:text-primary"
             >
-              {term.label.zh} ↗
+              {term.label[locale]} ↗
             </Link>
           ))}
         </div>

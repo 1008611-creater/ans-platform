@@ -63,14 +63,15 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
     <div className="flex flex-wrap items-center justify-between gap-3"><p className="max-w-prose text-sm leading-6 text-muted-foreground">{t("showcaseHint")}</p><Button variant="outline" disabled={loading} onClick={()=>void load()}>{t("refresh")}</Button></div>
     {loading&&<div role="status" className="space-y-3"><span className="sr-only">{t("loading")}</span><Skeleton className="h-5 w-2/3"/><Skeleton className="h-4 w-1/2"/></div>}
     {error&&<div className="space-y-3 py-6"><p role="alert" className="text-sm">{errorText}</p>{["AGRI_NOT_CONFIGURED","AGRI_WORKSPACE_NOT_CONFIGURED","AGRI_EDITION_NOT_CONFIGURED"].includes(error)&&<div className="flex flex-wrap gap-2"><Button asChild variant="outline" size="sm"><WorkspaceLink href="/explore?category=competition&subcategory=agri-wall">{t("browseWall")}</WorkspaceLink></Button><Button asChild variant="ghost" size="sm"><WorkspaceLink href="/competitions/agrihackathon/submissions">{t("goToSubmissions")}</WorkspaceLink></Button></div>}</div>}
-    {list&&<>{!list.items.length&&<div className="space-y-6">
+    {list&&<>{!list.items.length&&<div className="space-y-4">
       <div className="space-y-3 rounded-2xl border bg-muted/20 p-6"><h2 className="font-semibold">{t("empty")}</h2><p className="max-w-prose text-sm leading-6 text-muted-foreground">{t("emptyHint")}</p><div className="flex flex-wrap gap-2 pt-1"><Button asChild variant="outline" size="sm"><WorkspaceLink href="/explore?category=competition&subcategory=agri-wall">{t("browseWall")}</WorkspaceLink></Button><Button asChild variant="ghost" size="sm"><WorkspaceLink href="/competitions/agrihackathon/submissions">{t("goToSubmissions")}</WorkspaceLink></Button></div></div>
-      <div className="space-y-3" data-testid="agri-showcase-pioneer-samples">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-base font-semibold">{locale === "zh" ? "三大赛道先锋参考样板（组委会正式终审归档前可参考）" : "Pioneer Reference Showcase Samples Across 3 Tracks"}</h3>
-          <span className="text-xs text-muted-foreground">{locale === "zh" ? "支持一键前往实时作品墙或提交同款工程" : "Inspect live wall or submit your own project"}</span>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
+      <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4" data-testid="agri-showcase-pioneer-samples">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-foreground">
+          <span>{locale === "zh" ? "📖 查看三大赛道参考样板（组委会正式归档前可参考）" : "📖 View Pioneer Reference Showcase Samples Across 3 Tracks"}</span>
+          <span className="text-xs font-normal text-muted-foreground group-open:hidden">{locale === "zh" ? "点击展开 ▾" : "Expand ▾"}</span>
+          <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">{locale === "zh" ? "收起 ▴" : "Collapse ▴"}</span>
+        </summary>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
           {pioneerShowcases.map((sample, idx) => (
             <div key={idx} className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/90 transition hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-md">
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
@@ -95,7 +96,7 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
             </div>
           ))}
         </div>
-      </div>
+      </details>
     </div>}<ul className="divide-y">{list.items.map(row=><li key={row.id} className="space-y-4 py-6"><p className="text-xs text-muted-foreground">{t(row.basis==="FROZEN"&&!row.correctionPreviousSubmissionId&&row.stage==="PRELIMINARY"?"versionPreliminaryFrozen":row.basis==="FROZEN"?"versionFrozen":"versionCurrent")}{row.correctionPreviousSubmissionId?" · "+t("versionCorrection"):""} · {t("stage."+row.stage)}</p><PublicContent content={row.content} headingLevel="h2"/><div className="flex flex-wrap items-center gap-4"><span className="text-xs text-muted-foreground">{t("publishedAt",{at:at(row.publishedAt)})}</span><Button asChild variant="outline"><WorkspaceLink prefetch={false} href={"/competitions/agrihackathon/showcase/"+encodeURIComponent(row.id)}>{t("viewProject")}</WorkspaceLink></Button></div></li>)}</ul>{list.nextCursor&&<Button variant="outline" disabled={loading} onClick={()=>void load(list.nextCursor!)}>{t("nextPage")}</Button>}</>}
     {item&&<article className="space-y-5"><p className="text-sm text-muted-foreground">{t(item.basis==="FROZEN"&&!item.correctionPreviousSubmissionId&&item.stage==="PRELIMINARY"?"versionPreliminaryFrozen":item.basis==="FROZEN"?"versionFrozen":"versionCurrent")}{item.correctionPreviousSubmissionId?" · "+t("versionCorrection"):""} · {t("stage."+item.stage)}</p><PublicContent content={item.content} headingLevel="h2"/><dl className="space-y-2 border-t pt-4 text-xs text-muted-foreground"><div><dt>{t("submissionVersion")}</dt><dd className="break-all">{item.artifactVersionId}</dd></div><div><dt>{t("acceptedAt")}</dt><dd>{at(item.acceptedAt)}</dd></div><div><dt>{t("publishedLabel")}</dt><dd>{at(item.publishedAt)}</dd></div></dl></article>}
   </section>;

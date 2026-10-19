@@ -1453,7 +1453,7 @@ export function ComputeQuestArcade({
 
                       <div className="relative flex h-52 flex-col justify-between overflow-hidden rounded-xl border border-amber-500/40 bg-white p-2 text-slate-900">
                         <div className="flex items-center justify-between rounded bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-amber-300">
-                          <span>{isEn ? "OpenLux 2×2 Four-View" : "2×2 正交四视图"}</span>
+                          <span>{isEn ? "Orthographic 2×2 Four-View" : "2×2 正交四视图"}</span>
                           <span>F/B/L/R</span>
                         </div>
                         {/* eslint-disable-next-line @next/next/no-img-element */}

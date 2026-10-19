@@ -58,19 +58,19 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
     </header>
     <div className={styles.hero}>
       <div className={styles.showcase}>
-        {primaryHref ? (isExternal ? <a href={primaryHref} target="_blank" rel="noopener noreferrer" className="group relative block overflow-hidden rounded-2xl"><ProjectPreview project={project} large /><span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-slate-950/85 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-xs transition group-hover:bg-primary">{primaryLabel}<ArrowUpRight size={14} aria-hidden="true" /></span></a> : <Link href={primaryHref} className="group relative block overflow-hidden rounded-2xl"><ProjectPreview project={project} large /><span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-slate-950/85 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-xs transition group-hover:bg-primary">{primaryLabel}<ArrowRight size={14} aria-hidden="true" /></span></Link>) : <ProjectPreview project={project} large />}
+        <ProjectPreview project={project} large />
       </div>
       <aside className={styles.start} aria-label={d("startHere")}>
         <p className={styles.kicker}>{d("startHere")}</p>
         <h2>{primaryConnection ? ct(primaryConnection.kind === "workflow" || primaryConnection.kind === "workflow-offer" ? "startWithWorkflow" : "startWithOffer") : d(project.memberHref ? "creatorProject" : startHref ? "ansWorkflow" : "sourceProject")}</h2>
-        <p>{primaryConnection ? ct("prepareNote") : advice?.access ?? (hasMeaningfulSourceNote ? rawSourceNote : text("summary"))}</p>
+        {(primaryConnection || advice?.access || hasMeaningfulSourceNote) && (
+          <p>{primaryConnection ? ct("prepareNote") : advice?.access ?? rawSourceNote}</p>
+        )}
         {primaryHref && <Button asChild size="lg" className={`${styles.primary} h-auto min-h-11 whitespace-normal py-3 text-center`}>
           {isExternal ? <a href={primaryHref} target="_blank" rel="noopener noreferrer">{primaryLabel}<ArrowUpRight size={18} aria-hidden="true" /></a> : <Link href={primaryHref}>{primaryLabel}<ArrowRight size={18} aria-hidden="true" /></Link>}
         </Button>}
         <ProductConnectionsSection connections={otherActions} compact />
-        {primaryConnection && (guide?.experienceUrl || project.sourceUrl) && <Button asChild variant="outline" className="mt-2 w-full"><a href={guide?.experienceUrl ?? project.sourceUrl} target="_blank" rel="noopener noreferrer">{guide?.experienceUrl ? d("tryOnline") : isGithub ? d("viewRepository") : d("openProject")}<ArrowUpRight size={16} aria-hidden="true" /></a></Button>}
-        {guide?.experienceUrl && project.sourceUrl && <a href={project.sourceUrl} target="_blank" rel="noopener noreferrer" className="ans-text-link"><Github size={15} aria-hidden="true" />{d("viewRepository")}</a>}
-        <div className={styles.startNote}><Check size={15} aria-hidden="true" /><span>{isEn ? "Free Sample preview & guide · AI workflow billed transparently by compute" : "✅ 免费查看完整 Sample 样本与实操指南 · 在线 AI 工作台按真实算力透明计费"}</span></div>
+        <div className={styles.startNote}><Check size={15} aria-hidden="true" /><span>{isEn ? "Sample preview & guide included · Online AI runs billed transparently by points" : "✅ 免费查看样本与实操指南 · 在线 AI 工作流按积分透明计费"}</span></div>
         {project.creator && <p className={styles.creator}>{d("by", { name: project.creator })}</p>}
       </aside>
     </div>
@@ -126,7 +126,14 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
           <p className={styles.kicker}>03 / {isEn ? "DELIVERY & ACCESS" : "真实交付与直达入口"}</p>
           <h2>{isEn ? "What You Get Right Now" : "现在点进去能拿到什么"}</h2>
           <dl className={styles.requirements}>
-            <div><dt>{isEn ? "Access Status" : "开放状态"}</dt><dd className="font-semibold text-emerald-600 dark:text-emerald-400">{isEn ? "Free Open Access (0 Points)" : "🎁 限时免费开放（0 积分）"}</dd></div>
+            <div>
+              <dt>{isEn ? "Access Status" : "开放状态"}</dt>
+              <dd className="font-semibold text-emerald-600 dark:text-emerald-400">
+                {startHref || primaryConnection
+                  ? (isEn ? "Sample Free · AI Runs Billed by Points" : "样本免费浏览 · 工作流按积分计费")
+                  : (isEn ? "Public Project & Guide" : "公开项目与实操指南")}
+              </dd>
+            </div>
             <div><dt>{d("prepare")}</dt><dd className="whitespace-pre-line">{text("inputs")}</dd></div>
           </dl>
           {methods.length > 0 && <details className={styles.methods}><summary>{d("tools")}</summary><dl>{methods.map(field => <div key={field}><dt>{t(`${field}Title`)}</dt><dd>{text(field)}</dd></div>)}</dl></details>}

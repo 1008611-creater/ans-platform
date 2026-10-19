@@ -152,8 +152,8 @@ export function ModelPlaza({ catalog }: { catalog: ModelPlazaCatalog }) {
           </h2>
           <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
             {isZh
-              ? "从 /market 解锁的 Prompt 模板可直接在此运行，或点击下方官方预设一键试跑（0.5 积分/次起，结果支持一键复制或存为项目）。"
-              : "Run unlocked prompts from /market or click any preset below (from 0.5 pts/run)."}
+              ? "从工具与工作流市场解锁的 Prompt 模板可直接在此运行，或点击下方官方预设一键试跑（0.5 积分/次起）。"
+              : "Run unlocked prompts from the marketplace or click any preset below (from 0.5 pts/run)."}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -187,7 +187,7 @@ export function ModelPlaza({ catalog }: { catalog: ModelPlazaCatalog }) {
           value={pgPrompt}
           onChange={(e) => setPgPrompt(e.target.value)}
           rows={4}
-          placeholder={isZh ? "在此输入或粘贴从 /market 订单复制的完整 Prompt 模板…" : "Enter or paste your prompt template from /market..."}
+          placeholder={isZh ? "在此输入或粘贴从市场订单复制的完整 Prompt 模板…" : "Enter or paste your prompt template..."}
           className="w-full rounded-2xl border bg-background/95 p-3.5 text-xs leading-6 shadow-inner focus:outline-none focus:ring-2 focus:ring-emerald-500/40 sm:text-sm"
         />
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -255,7 +255,7 @@ export function ModelPlaza({ catalog }: { catalog: ModelPlazaCatalog }) {
                 onClick={() => void savePlaygroundAsProject()}
                 className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
               >
-                {pgSaving ? "⏳ 正在写入项目库…" : "💾 存为我的农客松项目 (/projects)"}
+                {pgSaving ? "⏳ 正在写入项目库…" : "💾 存为我的参赛项目"}
               </button>
             </div>
           </div>

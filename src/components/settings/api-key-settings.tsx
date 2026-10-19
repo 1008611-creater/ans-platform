@@ -40,7 +40,7 @@ interface ApiKeySettingsProps {
 }
 
 /** Masked placeholder shown when a key exists but its plaintext isn't in memory. */
-const HIDDEN_KEY_MASK = `${"pchat_"}${"•".repeat(24)}`;
+const HIDDEN_KEY_MASK = `${"ans_"}${"•".repeat(24)}`;
 
 export function ApiKeySettings(props: ApiKeySettingsProps) {
   return <AccountContentBoundary actorId={props.actorId}><ApiKeySettingsSession key={props.actorId} {...props} /></AccountContentBoundary>;

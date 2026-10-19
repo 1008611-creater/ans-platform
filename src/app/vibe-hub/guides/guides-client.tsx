@@ -75,13 +75,12 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
           <div className="mb-4 grid gap-5 sm:grid-cols-[1.2fr_0.8fr] sm:items-center">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                <span>🎁 限时免费开放 · 实操模板直达</span>
+                <span>{lang === "en" ? "📖 Step-by-Step Guide & Ready Prompt" : "📖 实操步骤清单与提示词模板"}</span>
               </div>
               <h2 id="ans-current-guide-title">{guide.title}</h2>
               <p>{guide.summary}</p>
               <div className="flex flex-wrap items-center gap-2.5 pt-1">
                 <Link className="ans-knowledge-button" data-variant="default" href={destination(guide.briefHref)}>{t("guideWriteBrief")}<ArrowUpRight size={16} aria-hidden="true" /></Link>
-                {guide.prompt && <SkillCopyButton text={guide.prompt.text} label={lang === "en" ? "Copy Ready Prompt" : "📋 一键复制完整提示词模板"} copiedLabel={t("copied")} />}
                 {guide.destinations[0] && <Link className="ans-editorial-link" href={destination(guide.destinations[0].href)}>{guide.destinations[0].label}<ArrowUpRight size={14} aria-hidden="true" /></Link>}
               </div>
             </div>
@@ -107,7 +106,7 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
           {guide.prompt && (
             <div id="prompt" className="mb-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <strong className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">⚡ {guide.prompt.title}（可直接复制发送给 Claude / Cursor / ChatGPT）</strong>
+                <strong className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">⚡ {guide.prompt.title}</strong>
                 <SkillCopyButton text={guide.prompt.text} label={t("copyRequest")} copiedLabel={t("copied")} />
               </div>
               <p className="mt-2 line-clamp-3 font-mono text-xs leading-5 text-muted-foreground">{guide.prompt.text}</p>

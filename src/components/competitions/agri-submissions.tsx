@@ -51,14 +51,14 @@ export function AgriSubmissions({ initialSelection }: { initialSelection?: { tea
   if (status === "loading") return <p role="status">{t("loading")}</p>;
   if (!data?.user?.id) {
     return (
-      <div className="space-y-5" data-testid="agri-submissions-guest-preview">
+      <div className="space-y-4" data-testid="agri-submissions-guest-preview">
         <div className="flex flex-col justify-between gap-4 rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent p-5 sm:flex-row sm:items-center">
           <div className="space-y-1">
             <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-              初赛 / 决赛双阶段工程提交 · SHA-256 密码学防篡改存证
+              初赛 / 决赛双阶段工程提交 · SHA-256 密码学存证
             </Badge>
             <p className="text-sm text-muted-foreground">
-              登录后可选择已报名的农大参赛战队，上传初赛/决赛源码包、绑定 GitHub 仓库与在线演示地址，并生成不可篡改的 SHA-256 提交回执。
+              登录后选择已报名的参赛战队，即可上传源码包、绑定 GitHub 仓库与在线演示地址。
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
@@ -66,39 +66,46 @@ export function AgriSubmissions({ initialSelection }: { initialSelection?: { tea
               <Link href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Fsubmissions">{t("login")}</Link>
             </Button>
             <Button asChild variant="outline" className="rounded-xl">
-              <Link href="/teams">先去创建/加入战队 →</Link>
+              <Link href="/teams">创建 / 加入战队 →</Link>
             </Button>
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            {
-              tag: "01 · 工程与代码包规范",
-              title: "GitHub 仓库 + 10MB 源码快照",
-              desc: "支持关联公开/私有 GitHub 仓库 Commit Hash、在线 Demo 链接与可复现运行说明，确保评委可独立复现。",
-            },
-            {
-              tag: "02 · 密码学防篡改锁定",
-              title: "SHA-256 哈希指纹与版本封存",
-              desc: "每次提交自动计算工程附件 SHA-256 摘要并写入审计日志，截止时间后自动冻结初赛/决赛评测基线。",
-            },
-            {
-              tag: "03 · 三维度评委盲审",
-              title: "技术 40% · 农学 35% · 演示 25%",
-              desc: "封存版本直接进入组委会盲审队列，按 AI 技术创新、农业场景落地价值与现场真机演示完整度综合打分。",
-            },
-          ].map((item, idx) => (
-            <Card key={idx} className="border-border/60 bg-card/90">
-              <CardHeader className="pb-2">
-                <Badge variant="outline" className="w-fit text-[11px]">{item.tag}</Badge>
-                <CardTitle className="pt-1 text-base">{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-foreground">
+            <span>📖 查看提交与五维度评审规范（代码包 · SHA-256 存证 · 盲审标准）</span>
+            <span className="text-xs font-normal text-muted-foreground group-open:hidden">点击展开 ▾</span>
+            <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">收起 ▴</span>
+          </summary>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                tag: "01 · 工程与代码包规范",
+                title: "GitHub 仓库 + 10MB 源码快照",
+                desc: "支持关联 GitHub 仓库 Commit Hash、在线 Demo 链接与可复现运行说明。",
+              },
+              {
+                tag: "02 · 密码学防篡改锁定",
+                title: "SHA-256 哈希指纹与版本封存",
+                desc: "每次提交自动计算工程附件 SHA-256 摘要并写入审计日志，截止后冻结评测基线。",
+              },
+              {
+                tag: "03 · 五维度评委盲审",
+                title: "问题价值 · AI 契合度 · 创新性 · 技术实现 · 完整度",
+                desc: "封存版本直接进入组委会五维度双盲评审队列，与决赛评分看板完全对齐。",
+              },
+            ].map((item, idx) => (
+              <Card key={idx} className="border-border/60 bg-card/90">
+                <CardHeader className="pb-2">
+                  <Badge variant="outline" className="w-fit text-[11px]">{item.tag}</Badge>
+                  <CardTitle className="pt-1 text-base">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </details>
       </div>
     );
   }
