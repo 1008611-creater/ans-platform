@@ -762,3 +762,9 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
 .ans-rarity-SSR { background: rgba(255, 133, 192, 0.28); color: #ff85c0; }
 .ans-rarity-UR { background: linear-gradient(135deg, #ffd666, #ff85c0); color: #1f0c1d; }
 
+
+
+/* 「Agent / 工作模式」两个入口：位于面板内部（原先浮在页面右下角） */
+.ans-companion-dock-slot { display: flex; justify-content: flex-end; align-items: center; padding: 2px 10px 4px; }
+.ans-companion-dock--inline { display: flex; align-items: center; gap: 4px; }
+.ans-companion-dock--inline > button { cursor: pointer; }

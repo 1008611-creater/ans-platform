@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import {
   DINO_SPECIES,
@@ -151,6 +152,23 @@ export function CompanionQuestPin({
   const whipIdxRef = useRef(0);
   const moodIdxRef = useRef(0);
   const lastUserInteractRef = useRef(0);
+  // 「Agent / 工作模式」两个入口放进小恐龙面板内部（面板里预留了 .ans-companion-dock-slot）。
+  // 面板是 Radix Popover，挂载时机晚于本组件，所以这里轮询几次找槽位，避免时序问题。
+  const [dockSlot, setDockSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!dialogOpen) { setDockSlot(null); return; }
+    let cancelled = false;
+    let tries = 0;
+    const find = () => {
+      if (cancelled) return;
+      const slot = document.querySelector<HTMLElement>("#ans-companion-panel .ans-companion-dock-slot");
+      if (slot) { setDockSlot(slot); return; }
+      if (++tries <= 20) window.setTimeout(find, 50);
+    };
+    find();
+    return () => { cancelled = true; };
+  }, [dialogOpen]);
+
   const whipTimestampsRef = useRef<number[]>([]);
 
   // Sync sanctuary state across tabs & components
@@ -867,33 +885,33 @@ export function CompanionQuestPin({
         </button>
       )}
 
-      {/* Minimal 2-Pill Dock next to bottom-right 3D Dragon (Hover/3-Click on Dino triggers Close-Up Stage) */}
-      {!dialogOpen && !macroActive && (
-        <div
-          className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-border/80 bg-background/95 px-2 py-1 shadow-md backdrop-blur-md"
-          onClick={e => e.stopPropagation()}
-        >
-          <button
-            type="button"
-            onClick={e => {
-              e.stopPropagation();
-              window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
-            }}
-            title={ui("bar.dockOpenAgentChat1")}
-            className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
-          >
-            {ui("bar.dockAgent")}
-          </button>
-          <button
-            type="button"
-            onClick={navigateToWorkMode}
-            title={ui("bar.dockOpenWorkMode")}
-            className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
-          >
-            {ui("bar.dockWorkMode")}
-          </button>
-        </div>
-      )}
+      {/* 「Agent / 工作模式」两个入口：点开小恐龙后渲染进面板内部的槽位（不再浮在页面角落） */}
+      {dialogOpen && dockSlot
+        ? createPortal(
+            <div className="ans-companion-dock ans-companion-dock--inline" data-testid="ans-companion-dock" onClick={e => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
+                }}
+                title={ui("bar.dockOpenAgentChat1")}
+                className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
+              >
+                {ui("bar.dockAgent")}
+              </button>
+              <button
+                type="button"
+                onClick={navigateToWorkMode}
+                title={ui("bar.dockOpenWorkMode")}
+                className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
+              >
+                {ui("bar.dockWorkMode")}
+              </button>
+            </div>,
+            dockSlot,
+          )
+        : null}
 
       {/* 1:1 Resume Website Close-Up Macro Interactive Stage HUD (#ans-dino-interact-hud) */}
       <div
