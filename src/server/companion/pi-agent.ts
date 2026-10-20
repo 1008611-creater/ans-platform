@@ -164,12 +164,13 @@ export async function searchMarketViaPi(query: string, viewerId?: string): Promi
           .includes(q),
       )
     : offers;
-  const top = (filtered.length > 0 ? filtered : offers).slice(0, 4);
+  const top = filtered.slice(0, 4);
 
   const items = top.map((offer) => {
     const tiers = offer.listing.pricingTiers ?? [];
     const minMinor = tiers.length ? Math.min(...tiers.map((t) => t.priceMinor)) : offer.listing.priceMinor;
-    const pricePoints = offer.listing.execution ? 2 : Math.round(minMinor / 100);
+    // 未标注价格就用 0 表示"未知"，绝不编造金额；按运行计费的商品在列表里没有单一价格。
+    const pricePoints = offer.listing.execution ? 0 : Math.max(0, Math.round(minMinor / 100));
     return {
       slug: offer.slug,
       title: offer.listing.title,
@@ -181,31 +182,42 @@ export async function searchMarketViaPi(query: string, viewerId?: string): Promi
     };
   });
 
+  // 只有货架真实标注了价格才展示金额；未知就不写数字（曾出现 "~2积分"/`|| 10` 这类编造价格）。
+  const priceLabelZh = (it: { runnable: boolean; pricePoints: number }) =>
+    it.runnable ? "按运行计费" : it.pricePoints > 0 ? `${it.pricePoints} 积分` : "";
+  const priceLabelEn = (it: { runnable: boolean; pricePoints: number }) =>
+    it.runnable ? "billed per run" : it.pricePoints > 0 ? `${it.pricePoints} pts` : "";
   const summaryListZh = items
-    .map((it, idx) => `${idx + 1}. **${it.title}**（${it.runnable ? "按运行计费 ~2积分" : `${it.pricePoints || 10} 积分`}）`)
+    .map((it, idx) => `${idx + 1}. **${it.title}**${priceLabelZh(it) ? `（${priceLabelZh(it)}）` : ""}`)
     .join("\n");
   const summaryListEn = items
-    .map((it, idx) => `${idx + 1}. **${it.title}** (${it.runnable ? "~2 pts/run" : `${it.pricePoints || 10} pts`})`)
+    .map((it, idx) => `${idx + 1}. **${it.title}**${priceLabelEn(it) ? ` (${priceLabelEn(it)})` : ""}`)
     .join("\n");
 
   return {
     ok: true,
     toolUsed: "search_market",
     trace: [
-      `[1/2] agent.search_market · 检索市场货架（关键词：${q || "推荐精选"}，共扫描 ${offers.length} 款）`,
-      `[2/2] agent.rank_offers · 筛选出 ${items.length} 款高匹配工具并生成直达链接`,
+      `[1/2] agent.search_market · 检索市场货架（关键词：${q || "全部在售"}，共扫描 ${offers.length} 款）`,
+      items.length
+        ? `[2/2] agent.rank_offers · 关键词命中 ${items.length} 款，生成直达链接`
+        : `[2/2] agent.rank_offers · 关键词无命中，未推荐任何商品`,
     ],
     replyZh: items.length
-      ? `🛒 **Agent 已为你从市场 (\`/market\`) 挑出 ${items.length} 款适用工具/工作流：**\n${summaryListZh}`
-      : `🛒 当前市场暂无完全匹配「${query}」的商品，点击下方可浏览全部工具。`,
+      ? q
+        ? `🛒 **Agent 在市场 (\`/market\`) 找到 ${items.length} 款匹配「${query}」的商品：**\n${summaryListZh}`
+        : `🛒 **市场 (\`/market\`) 当前在售 ${items.length} 款商品：**\n${summaryListZh}`
+      : `🛒 当前市场暂无匹配「${query}」的商品，点击下方可浏览全部在售商品。`,
     replyEn: items.length
-      ? `🛒 **Agent found ${items.length} tools on ANS Market (\`/market\`):**\n${summaryListEn}`
-      : `🛒 No exact match for "${query}" on ANS Market. Browse all tools below.`,
+      ? q
+        ? `🛒 **Agent found ${items.length} match(es) for "${query}" on ANS Market (\`/market\`):**\n${summaryListEn}`
+        : `🛒 **${items.length} listing(s) currently on ANS Market (\`/market\`):**\n${summaryListEn}`
+      : `🛒 No match for "${query}" on ANS Market. Browse all listings below.`,
     data: { items, totalPublished: offers.length },
     links: [
       ...items.slice(0, 3).map((it) => ({
         href: it.href,
-        title: `${it.title} (${it.runnable ? "可直接运行" : `${it.pricePoints || 10}积分`})`,
+        title: `${it.title}${it.runnable ? " (可直接运行)" : it.pricePoints > 0 ? ` (${it.pricePoints}积分)` : ""}`,
         detail: it.summary.slice(0, 72),
         icon: "discover" as const,
       })),
@@ -350,22 +362,24 @@ export async function redeemMarketItemViaPi(actor: string, rawQuery: string): Pr
       mapped.find((m) => [m.r.slug, m.title, m.summary, m.category].join(" ").toLowerCase().includes(q))
     : undefined;
 
-  const picked =
-    matched ??
-    mapped.find((m) => m.r.slug === "lab-weekly-git-report-automation") ??
-    mapped.sort((a, b) => a.priceMinor - b.priceMinor)[0];
-
-  if (!picked) {
+  // 绝不替用户挑一件"差不多的"商品下单：匹配不到就明确说没匹配到，并且不发生任何扣费。
+  if (!matched) {
+    const asked = rawQuery.trim();
     return {
       ok: false,
       toolUsed: "redeem_market_item",
-      replyZh: "⚠️ 暂未找到可秒兑的市场商品，请前往 /market 浏览。",
-      replyEn: "⚠️ No matching market listing found.",
-      links: [{ href: "/market", title: "前往 ANS 市场 (/market)", detail: "浏览全部商品", icon: "discover" }],
+      trace: [`[1/1] agent.redeem_market_item · 未匹配到「${asked || "指定商品"}」，未发生扣费`],
+      replyZh: asked
+        ? `⚠️ 没找到和「${asked}」匹配的在售商品，**没有扣任何积分**。请到市场挑一件再兑换。`
+        : "⚠️ 请告诉我要兑换哪件商品（或直接在市场页面点兑换），**没有扣任何积分**。",
+      replyEn: asked
+        ? `⚠️ No published listing matches "${asked}". Nothing was charged — pick one on the market.`
+        : "⚠️ Tell me which listing to redeem (or redeem from the market page). Nothing was charged.",
+      links: [{ href: "/market", title: "前往 ANS 市场 (/market)", detail: "浏览全部在售商品", icon: "discover" }],
     };
   }
 
-  const { r: target, title, summary, description, category, subcategory, fulfillment, priceMinor, deliverables, licenseTerms } = picked;
+  const { r: target, title, summary, description, category, subcategory, fulfillment, priceMinor, deliverables, licenseTerms } = matched;
   const pricePoints = Math.max(1, Math.round(priceMinor / 100));
   const userBefore = await db.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
   const currentBal = userBefore ? Math.round(Number(userBefore.quotaPoints) * 10) / 10 : 0;
@@ -757,7 +771,7 @@ export async function runModelPlaygroundViaPi(
       {
         href: "/market",
         title: "去 ANS 市场解锁更多专业 Prompt 工具包 (/market)",
-        detail: "18 款农大科研、论文润色与 AI 微短剧工具包 5 积分起秒兑",
+        detail: "农大科研、论文润色与 AI 短剧工具包，可用积分兑换",
         icon: "discover",
       },
       {

@@ -14,8 +14,10 @@ it("shows only a reviewed zero-price policy and removes it at the deadline",asyn
  expect(view.result.current?.points).toBe(1);expect(fetch).toHaveBeenCalledWith("/api/mascot/tts",expect.objectContaining({headers:{"x-ans-actor":"member"}}));
  act(()=>vi.advanceTimersByTime(60001));expect(view.result.current).toBeNull();
 });
-it("never uses an unapproved or expired quote",async()=>{
- vi.mocked(fetch).mockResolvedValue(Response.json({...offer(),mode:"paid",points:2}));const view=renderHook(()=>useVoiceOffer("member",true));await flush();expect(view.result.current).toBeNull();
+it("never uses an unavailable or expired quote",async()=>{
+ vi.mocked(fetch).mockResolvedValueOnce(Response.json({...offer(),available:false})).mockResolvedValueOnce(Response.json({...offer(),reviewBy:new Date(Date.now()-60000).toISOString()}));
+ const unavailable=renderHook(()=>useVoiceOffer("member",true));await flush();expect(fetch).toHaveBeenCalledTimes(1);expect(unavailable.result.current).toBeNull();
+ const expired=renderHook(()=>useVoiceOffer("member",true));await flush();expect(fetch).toHaveBeenCalledTimes(2);expect(expired.result.current).toBeNull();
 });
 it("ignores a late previous-account quote and does not share its policy with the new actor",async()=>{
  let first!:(response:Response)=>void;const deferred=new Promise<Response>(resolve=>{first=resolve;});vi.mocked(fetch).mockReturnValueOnce(deferred).mockResolvedValueOnce(Response.json({...offer(),policyVersion:"second-account-policy"}));

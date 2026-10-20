@@ -7,6 +7,6 @@ NOBOOK 相关任务另读 `/Users/eeo/Downloads/eeo/AGENTS.md` 与 `/Users/eeo/D
 - **视觉与封面资产「先出样片审美确认、后上线」铁律（Mandatory Visual Quality Gate）**：凡涉及 `image2.5genskill`（`gpt-image-2.5`）或任何封面/视觉 Skill 产出的图片资产，**做完后必须先把不同 Skill/不同风格的真实样片拉出来交由用户肉眼确认质量**；未经用户明确点头确认质量合格前，严禁擅自替换或直接部署到线上主站！
 - **封面内容与网站真实内容一致、吉祥物按需克制出场铁律（Mandatory Content Consistency & Mascot Restraint Rule）**：制作 ANS 项目封面时，**必须传入该项目站内真实页面截图作为 `image25_gen.py --ref` 参考图**，严禁纯靠文字让 AI 脑补假界面；**小恐龙吉祥物不必每张封面都出现**（常规项目封面遵循 `oil-cover` 规范不加人物与吉祥物，仅在明确以小恐龙为主题的展厅封面或 `oil-visual` 角色插画中传入 `public/mascot/ans-mascot.png` 原图）。
 
-@[SOUL.md](/Users/eeo/Downloads/eeo/SOUL.md)
+@SOUL.md（另一台电脑的本机文件 `/Users/eeo/Downloads/eeo/SOUL.md`，未随仓库同步）
 
-@[MEMORY.md](/Users/eeo/Downloads/eeo/MEMORY.md)
+@MEMORY.md（另一台电脑的本机文件 `/Users/eeo/Downloads/eeo/MEMORY.md`，未随仓库同步）

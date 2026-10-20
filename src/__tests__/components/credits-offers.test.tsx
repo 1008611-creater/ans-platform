@@ -6,7 +6,7 @@ const mocks=vi.hoisted(()=>({fetch:vi.fn(),refresh:vi.fn()}));
 vi.mock("next-intl",()=>({useLocale:()=>"zh-CN",useTranslations:()=>((key:string,args?:Record<string,string|number>)=>key+(args?JSON.stringify(args):""))}));
 vi.mock("next/navigation",()=>({useRouter:()=>({refresh:mocks.refresh})}));
 vi.mock("@/components/auth/account-content-boundary",()=>({AccountContentBoundary:({children}:{children:React.ReactNode})=>children}));
-const billing={rechargeYuanPerPoint:0.1,usdQuotaPerPoint:null,gptConsumptionMultiplier:0.16,deepseekConsumptionMultiplier:1,rechargeEnabled:false};
+const billing={rechargeYuanPerPoint:0.1,usdQuotaPerPoint:null,gptConsumptionMultiplier:0.16,deepseekConsumptionMultiplier:1.5,rechargeEnabled:false};
 beforeEach(()=>{vi.clearAllMocks();vi.stubGlobal("fetch",mocks.fetch);});afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals();});
 describe("live voucher offers",()=>{
  it("shows one balance and reservation summary, keeps costs visible and reveals redemption help on demand",async()=>{
@@ -17,7 +17,7 @@ describe("live voucher offers",()=>{
   expect(screen.getByText("0.125001")).toBeVisible();
   expect(screen.getByText('pending{"count":2}')).toBeVisible();
   expect(screen.getByText("hold")).toBeVisible();
-  expect(screen.getByText('rules{"gpt":0.16,"deepseek":1}')).toBeVisible();
+  expect(screen.getByText('rules{"gpt":0.16,"deepseek":1.5}')).toBeVisible();
   expect(screen.getByText("checkoutFees")).toBeVisible();
   expect(screen.getByText("accountNote")).toBeVisible();
   expect(screen.queryByRole("dialog")).toBeNull();
@@ -44,7 +44,7 @@ describe("live voucher offers",()=>{
   expect(screen.getByRole("link",{name:/runsTitle/})).toHaveAttribute("href","/workflows/runs");
   expect(screen.getByRole("link",{name:/aigcTitle aigcBody/})).toHaveAttribute("href","/workspace/compute");
   expect(screen.getByText("DeepSeek V4.1 Flash")).toBeVisible();
-  expect(screen.getByText('modelMultiplier{"multiplier":1}')).toBeVisible();
+  expect(screen.getByText('modelMultiplier{"multiplier":1.5}')).toBeVisible();
   expect(screen.getAllByText('modelMultiplier{"multiplier":0.16}')).toHaveLength(2);
   expect(screen.queryByText(/opus/i)).not.toBeInTheDocument();
  });

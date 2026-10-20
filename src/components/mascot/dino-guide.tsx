@@ -131,7 +131,13 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     const host = window as unknown as Record<symbol, { dispose?: () => void } | undefined>;
     host[Symbol.for("ans.mascot.companion.v1")]?.dispose?.();
   }, []);
-  const allowChatOpenRef = useRef(false);
+  // 真浏览器里点击小恐龙本体是"进入近景舞台"（见下方 onClick），面板只能由站内事件打开；
+  // 因此按钮的无障碍名称必须跟着这个行为走，而不是永远说"叫小恐龙帮我找方向"。
+  // 用 state（而不是直接读全局）是为了避免 SSR 与首帧客户端渲染的名称不一致导致 hydration 警告。
+  const [stageClickOwnsTrigger, setStageClickOwnsTrigger] = useState(false);
+  useEffect(() => {
+    setStageClickOwnsTrigger(typeof WebGLRenderingContext !== "undefined");
+  }, []);
   function changeOpen(value: boolean) {
     if (value) {
       document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
@@ -231,13 +237,13 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     <CompanionQuestPin dialogOpen={open} onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />
     <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={nextOpen => {
-      if (nextOpen && typeof WebGLRenderingContext !== "undefined" && !allowChatOpenRef.current) {
+      // 只拦"打开"：关闭（Escape / 点外部）必须放行。
+      if (nextOpen && typeof WebGLRenderingContext !== "undefined") {
         return;
       }
-      allowChatOpenRef.current = false;
       changeOpen(nextOpen);
     }}>
-      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
+      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : stageClickOwnsTrigger ? "openStage" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
         if (typeof WebGLRenderingContext !== "undefined" && !open) {
           window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: true } }));
         }
@@ -309,22 +315,22 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
               {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} /></Suspense>}</div>)}
               {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
               {mode === "agent" && <><AgentRecoveryStatus turns={agent.recovery.turns.filter(turn => turn.ticket !== agent.currentTicket)} onCheck={agent.recovery.check} /><AgentTurnStatus agent={agent} /></>}
+              {/* companion.css 用 .ans-companion-next > a 做整行布局：a 必须是直接子元素，
+                  图标与箭头也要带对应类名，否则线上退化成"大图标/标题/大箭头各占一行"。 */}
               <nav className="ans-companion-next" aria-label={ui("suggestedNextSteps")}>
-                <div>
-                  {nextActions.map(action => {
-                    const Icon = icons[action.icon];
-                    return (
-                      <Link key={action.href + action.title} href={action.href} title={action.detail} onClick={() => changeOpen(false)}>
-                        <Icon aria-hidden="true" />
-                        <span>
-                          <strong>{action.title}</strong>
-                          <small className="sr-only">{action.detail}</small>
-                        </span>
-                        <ArrowUpRight aria-hidden="true" />
-                      </Link>
-                    );
-                  })}
-                </div>
+                {nextActions.map(action => {
+                  const Icon = icons[action.icon];
+                  return (
+                    <Link key={action.href + action.title} href={action.href} onClick={() => changeOpen(false)}>
+                      <span className="ans-companion-action-icon"><Icon aria-hidden="true" /></span>
+                      <span>
+                        <strong>{action.title}</strong>
+                        <small>{action.detail}</small>
+                      </span>
+                      <ArrowUpRight className="ans-companion-action-arrow" aria-hidden="true" />
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
           </div>

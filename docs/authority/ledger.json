@@ -1,0 +1,395 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-19T19:42:28+00:00",
+  "description": "ANS 权威基线账本。只记录已被主控确认的产品/流程决定，每条尽量带机器规则（contains/absent/countMax），由 scripts/check-authority.mjs 守卫（CI job: Authority）。改代码而不改账本 = 静默回退，禁止。",
+  "entries": [
+    {
+      "id": "A-PLAZA-01",
+      "status": "authoritative",
+      "title": "项目广场 /explore 必须保留轮转项目封面（ProjectCoverflow）",
+      "decidedAt": "2026-10-19",
+      "authority": "commit 219422c9 · fix(explore,mascot): restore Hero + ProjectCoverflow on /explore",
+      "restoredBy": "fix/explore-plaza-authority-restore-20261020",
+      "surface": [
+        "src/app/explore/page.tsx"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "contains",
+          "value": "ProjectCoverflow",
+          "note": "轮转封面组件必须被 /explore 渲染"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "contains",
+          "value": "homepageProjects",
+          "note": "封面数据来自公开目录的 hero/showcase 选取，禁止自造数据"
+        }
+      ],
+      "rollback": [
+        {
+          "commit": "27969917",
+          "at": "2026-10-19 18:25 +0800",
+          "what": "删除 ProjectCoverflow / homepageProjects / homeStyles 引用，页头退回纯文字标题"
+        },
+        {
+          "commit": "51baaa7d",
+          "at": "2026-10-19 14:33 +0800",
+          "what": "站点级对抗式审查重排 /explore 与 / 页头"
+        }
+      ]
+    },
+    {
+      "id": "A-PLAZA-02",
+      "status": "authoritative",
+      "title": "项目广场 /explore 页头不得重复出现可见的“项目广场”标题",
+      "decidedAt": "2026-10-19",
+      "authority": "commit 219422c9（同一次修复：eliminate duplicate 项目广场 title）",
+      "restoredBy": "fix/explore-plaza-authority-restore-20261020",
+      "surface": [
+        "src/app/explore/page.tsx"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "absent",
+          "value": "ans-page-title\">{t(\"nav.explore\")}",
+          "note": "可见 h1 不得直接等于导航词“项目广场”"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "contains",
+          "value": "sr-only\">{t(\"nav.explore\")}",
+          "note": "页面名只能作为 h1 内的 sr-only 前缀出现"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/app/explore/page.tsx",
+          "type": "contains",
+          "value": "{t(\"home.title\")}",
+          "note": "可见标题必须是品牌主标题"
+        }
+      ],
+      "rollback": [
+        {
+          "commit": "27969917",
+          "at": "2026-10-19 18:25 +0800",
+          "what": "把页头换成 <h1 className=\"ans-page-title\">{t(\"nav.explore\")}</h1>，重复标题回归"
+        }
+      ]
+    },
+    {
+      "id": "A-PLAZA-03",
+      "status": "authoritative",
+      "title": "首页 / 必须保留轮转项目封面（ProjectCoverflow）",
+      "decidedAt": "2026-10-19",
+      "authority": "commit e8d58105（Show real published projects in an accessible homepage coverflow）+ 219422c9",
+      "surface": [
+        "src/app/page.tsx"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/app/page.tsx",
+          "type": "contains",
+          "value": "ProjectCoverflow",
+          "note": "首页 Hero 右侧的轮转封面是权威版式"
+        }
+      ],
+      "rollback": []
+    },
+    {
+      "id": "A-PLAZA-04",
+      "status": "authoritative",
+      "title": "可访问性探针对 /explore 必须按“sr-only 前缀 + 非重复可见标题”断言",
+      "decidedAt": "2026-10-20",
+      "authority": "本 PR：旧探针 main h1 === \"项目广场\" 与 A-PLAZA-02 冲突，会让 verify 必红",
+      "surface": [
+        "scripts/a11y-audit.mjs"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "scripts/a11y-audit.mjs",
+          "type": "contains",
+          "value": "accessiblePrefix",
+          "note": "禁止把 h1 严格相等断言改回来"
+        }
+      ],
+      "rollback": []
+    },
+    {
+      "id": "A-GATE-01",
+      "status": "authoritative",
+      "title": "进入 main 的改动必须来自 PR，且 PR 的 CI（npm run verify）必须绿",
+      "decidedAt": "2026-10-20",
+      "authority": "交付治理确认（.agents/skills/ans-delivery-governance/references/branch-and-release-model.md）",
+      "surface": [
+        ".github/workflows/ci.yml"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": ".github/workflows/ci.yml",
+          "type": "contains",
+          "value": "npm run verify",
+          "note": "CI 必须保留完整 verify 门禁"
+        }
+      ],
+      "check": "git-health",
+      "note": "GitHub 侧仍需 ruleset：必需状态检查（Test + Authority）+ 必需 review。自动化 prompts 数据提交是唯一例外（Add prompt: 前缀）。"
+    },
+    {
+      "id": "A-GATE-02",
+      "status": "authoritative",
+      "title": "合进 develop 的 PR 也必须跑 verify 与 Authority",
+      "decidedAt": "2026-10-20",
+      "authority": "fix/explore-plaza-authority-restore-20261020（本 PR 已把 develop 加入 ci.yml 触发分支）",
+      "surface": [
+        ".github/workflows/ci.yml"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": ".github/workflows/ci.yml",
+          "type": "contains",
+          "value": "- develop",
+          "note": "push/pull_request 都要覆盖 develop"
+        }
+      ],
+      "check": "git-health",
+      "note": "实测 2026-10-19 的 PR #141–#144（合入 develop）此前只有反垃圾检查。"
+    },
+    {
+      "id": "A-GATE-03",
+      "status": "authoritative",
+      "title": "主 PR 必须声明触及的权威条目（PR 模板必填）",
+      "decidedAt": "2026-10-20",
+      "authority": "A-PROC-01 的落地手段",
+      "surface": [
+        ".github/PULL_REQUEST_TEMPLATE.md"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": ".github/PULL_REQUEST_TEMPLATE.md",
+          "type": "contains",
+          "value": "权威基线",
+          "note": "PR 模板必须保留权威对表字段"
+        }
+      ],
+      "rollback": []
+    },
+    {
+      "id": "A-SIGNAL-01",
+      "status": "authoritative",
+      "title": "发布完成后 ops/prod-live 必须等于 ops/deploy-target，且等于当次发布的 main SHA",
+      "decidedAt": "2026-10-20",
+      "authority": "RELEASE_MASTER_PLAYBOOK.md 的 Step 2 / Step 4 信号灯约定 · 复测 fix/authority-agent-baseline-20261020",
+      "surface": [
+        "ops/deploy-target",
+        "ops/prod-live"
+      ],
+      "rules": [],
+      "check": "git-health",
+      "note": "2026-10-20 01:11 实测：deploy-target=219422c9（落后 origin/main 124 个提交，GitHub compare 真值），prod-live=f32e06f0（2026-10-18 21:24）；两者不一致，需人工确认是“未上线”还是“未回写”。\n2026-10-20 复测（04:12）：ops/deploy-target = ops/prod-live = 0ae6aef7（= 当时 main tip），信号已对齐，git-health 退出码 0；\n两者都是远端分支（refs/heads/ops/*），不是仓库文件也不是工作树文件。"
+    },
+    {
+      "id": "A-PROC-01",
+      "status": "authoritative",
+      "title": "任何以 audit/审查/修复名义的改动，不得删除权威条目约束的实现；要删必须同一 PR 内改账本",
+      "decidedAt": "2026-10-20",
+      "authority": "项目广场回退事故复盘（见 .agents/skills/ans-delivery-governance/references/authority-ledger.md 第 5 节）",
+      "surface": [
+        "docs/authority/ledger.json"
+      ],
+      "rules": [],
+      "check": "review-only",
+      "note": "PR 合并前逐条对表；A-GATE-03 已把该动作写进 PR 模板。"
+    },
+    {
+      "id": "A-AGENT-01",
+      "status": "authoritative",
+      "title": "线上 Agent 就是小恐龙伴侣（DinoGuide）：不得换回旧的 PromptBuilder 浮层",
+      "decidedAt": "2026-10-20",
+      "authority": "线上站点实测（2026-10-20）：每个页面右下角渲染 .ans-dino-guide，面板 #ans-companion-panel 走 useCompanionAgent → /api/mascot/agent",
+      "restoredBy": "feat/authority-agent-baseline-20261020",
+      "surface": [
+        "src/app/layout.tsx",
+        "src/components/mascot/dino-guide.tsx"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/app/layout.tsx",
+          "type": "contains",
+          "value": "DinoGuide",
+          "note": "站点布局必须挂载小恐龙伴侣"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/app/layout.tsx",
+          "type": "absent",
+          "value": "PromptBuilder",
+          "note": "旧的 PromptBuilder 浮层不得回归"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/components/mascot/dino-guide.tsx",
+          "type": "contains",
+          "value": "useCompanionAgent",
+          "note": "面板必须走 companion agent 链路（/api/mascot/agent）"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/components/mascot/companion-sanctuary-bar.tsx",
+          "type": "contains",
+          "value": "pi-agent-quickbar",
+          "note": "快捷指令栏属于小恐龙 Agent"
+        }
+      ],
+      "rollback": [],
+      "note": "origin/main 仍留有未被任何路由引用的旧 prompt-builder / MCP / skills 组件（死代码），容易让人误判当前 Agent 形态；本条目只锁布局与面板链路。"
+    },
+    {
+      "id": "A-AGENT-02",
+      "status": "pending",
+      "title": "Agent 的任何扣费动作必须先报价、再由用户确认，且由服务端强制校验金额",
+      "decidedAt": "2026-10-20",
+      "authority": "用户决定（2026-10-20）：所有花钱动作先报价确认，免费动作保持一键；PR #150/#153",
+      "surface": [
+        "src/server/companion/pi-agent.ts",
+        "src/contracts/companion-agent.ts"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/server/companion/pi-agent.ts",
+          "type": "contains",
+          "value": "CONFIRM_REQUIRED",
+          "note": "未确认金额时必须返回报价而不是扣费"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/server/companion/pi-agent.ts",
+          "type": "contains",
+          "value": "buildArcadeDrawPayload",
+          "note": "抓娃娃必须用符合 arcade 严格 schema 的载荷"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/contracts/companion-agent.ts",
+          "type": "contains",
+          "value": "confirmedPoints",
+          "note": "浏览器只能靠 confirmedPoints 表达确认"
+        }
+      ],
+      "rollback": [
+        {
+          "commit": "26a19e23",
+          "at": "2026-10-19（main）",
+          "what": "pi_action 免确认直连执行：抓娃娃会自动花 10 积分兑币、兑换会替用户选最便宜的兜底商品"
+        }
+      ],
+      "note": "等 #150 / #153 合入 main 后把 status 改为 authoritative（现在断言会红，故先 pending、守卫自动跳过）。"
+    },
+    {
+      "id": "A-AGENT-03",
+      "status": "pending",
+      "title": "小恐龙面板的用户可见文案必须来自 messages/companion，不得在组件里写双语三元",
+      "decidedAt": "2026-10-20",
+      "authority": "用户决定（2026-10-20）+ ans-ui-ux-baseline 铁律 4（统一命名与文案）；PR #151",
+      "surface": [
+        "src/components/mascot/companion-sanctuary-bar.tsx",
+        "messages/companion/zh.json"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/components/mascot/companion-sanctuary-bar.tsx",
+          "type": "countMax",
+          "value": "isZh ?",
+          "max": 32,
+          "note": "棘轮：只能降不能增。2026-10-20 实测 32 处，全部是数据字段选择（quest.titleZh/En、food.nameZh/En、replyZh/En、link.titleEn、traceEn 兜底），文案三元为 0；新增数据选择优先用 helper 收敛，确需增加必须同步上限并在此说明"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/components/mascot/companion-sanctuary-bar.tsx",
+          "type": "contains",
+          "value": "useTranslations(\"companion\")",
+          "note": "面板必须接入 companion 词条"
+        }
+      ],
+      "rollback": [],
+      "note": "等 #151 合入 main 后改为 authoritative（当前 main 上 isZh 三元 106 处）。"
+    },
+    {
+      "id": "A-AGENT-04",
+      "status": "pending",
+      "title": "3D 场景必须按需加载；prefers-reduced-motion 必须先于 WebGL 判断",
+      "decidedAt": "2026-10-20",
+      "authority": "用户决定（2026-10-20）：把 3D eager 拉取 ~9MB 与 reduced-motion 短路列为必须修的问题；PR #152",
+      "surface": [
+        "src/components/mascot/dino-avatar.tsx",
+        "src/components/mascot/companion-sanctuary-bar.tsx"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/components/mascot/dino-avatar.tsx",
+          "type": "contains",
+          "value": "prefers-reduced-motion",
+          "note": "必须尊重减少动效（此前被 WebGL 分支短路，永远不可达）"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/components/mascot/companion-sanctuary-bar.tsx",
+          "type": "absent",
+          "value": "setInterval(updatePosition, 90)",
+          "note": "气泡定位不得再用 90ms 永久轮询"
+        }
+      ],
+      "rollback": [],
+      "note": "等 #152 合入 main 后改为 authoritative。"
+    },
+    {
+      "id": "A-AGENT-05",
+      "status": "pending",
+      "title": "Agent 生成的推断必须标 UNCONFIRMED，且不得替用户编造输入",
+      "decidedAt": "2026-10-20",
+      "authority": "ans-ui-ux-baseline 铁律 1（零虚构状态伪装）+ 用户决定（2026-10-20）；PR #154",
+      "surface": [
+        "src/server/companion/pi-agent.ts"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "src/server/companion/pi-agent.ts",
+          "type": "absent",
+          "value": "confirmation: \"CONFIRMED\"",
+          "note": "Agent 的假设不得写成用户已确认的事实"
+        },
+        {
+          "ref": "origin/main",
+          "file": "src/server/companion/pi-agent.ts",
+          "type": "contains",
+          "value": "TOPIC_REQUIRED",
+          "note": "没有主题时必须先问清楚，不得用示例主题替用户建项目"
+        }
+      ],
+      "rollback": [
+        {
+          "commit": "26a19e23",
+          "at": "2026-10-19（main）",
+          "what": "空输入新建项目会用写死的示例主题真实建库，并把假设标成 CONFIRMED"
+        }
+      ],
+      "note": "等 #154 合入 main 后改为 authoritative。"
+    }
+  ]
+}

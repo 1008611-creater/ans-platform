@@ -87,7 +87,7 @@ describe("External Agent Chat Completions Gateway & Official Token + Cache + Mul
   });
 
   it("calculates exact points from official input, output, cache_read, cache_write tariffs and official multipliers", () => {
-    // DeepSeek V4.1 Flash: input=$0.3/M, output=$1.2/M, cacheRead=$0.006/M, multiplier=1.0, fx=7.2, 10 pts/CNY
+    // DeepSeek V4.1 Flash: input=$0.3/M, output=$1.2/M, cacheRead=$0.006/M, multiplier=1.5, fx=7.2, 10 pts/CNY
     const ds = calculateOfficialTokenPoints("deepseek-v4.1-flash", {
       prompt_tokens: 2000,
       completion_tokens: 1000,
@@ -98,8 +98,9 @@ describe("External Agent Chat Completions Gateway & Official Token + Cache + Mul
     expect(ds.outputTokens).toBe(1000);
     expect(ds.consumptionMultiplier).toBe(1.5);
     // usdCost = (1000*0.3 + 1000*0.006 + 1000*1.2)/1e6 = 1.506 / 1e6 = 0.001506 USD
-    // points = ceil(0.001506 * 7.2 * 10 * 1.5 * 1e6) / 1e6 = 0.162648 points
-    expect(ds.billedPoints).toBe(0.162648);
+    // points = ceil(0.001506 * 7.2 * 10 * 1.5 * 1e6) / 1e6; the IEEE-754 product is 162648.00000000003,
+    // so the gateway's ceil-to-1e-6 policy settles 0.162649 (exact 1.5x tariff value is 0.162648)
+    expect(ds.billedPoints).toBe(0.162649);
 
     // GPT-6.1 Sol: input=$2/M, output=$10/M, cacheRead=$0.1/M, multiplier=0.16, fx=7.2, 10 pts/CNY
     const sol = calculateOfficialTokenPoints("gpt-6.1-sol", {
@@ -148,7 +149,8 @@ describe("External Agent Chat Completions Gateway & Official Token + Cache + Mul
   it("executes external Agent /chat/completions, deducts token-calculated points in QuotaLedger, and records settled ApiComputeRequest", async () => {
     mocks.userFindFirst.mockResolvedValue({ id: "user-1", quotaPoints: 10 });
     mocks.userFindUnique.mockResolvedValue({ quotaPoints: 10 });
-    mocks.userUpdate.mockResolvedValue({ quotaPoints: 9.891568 });
+    // 10 starting points minus the authoritative 1.5x DeepSeek charge of 0.162649
+    mocks.userUpdate.mockResolvedValue({ quotaPoints: 9.837351 });
     mocks.fetch.mockResolvedValue(
       Response.json(
         {
@@ -175,16 +177,17 @@ describe("External Agent Chat Completions Gateway & Official Token + Cache + Mul
 
     expect(res.status).toBe(200);
     expect(res.headers.get("x-ans-model")).toBe("deepseek-v4.1-flash");
-    expect(res.headers.get("x-ans-charged-points")).toBe("0.108432");
+    expect(res.headers.get("x-ans-charged-points")).toBe("0.162649");
     const json = await res.json();
     expect(json.choices[0].message.content).toContain("ANS 算力网关");
-    expect(json.ans_billing.charged_points).toBe(0.108432);
+    expect(json.ans_billing.charged_points).toBe(0.162649);
+    expect(json.ans_billing.multiplier).toBe(1.5);
     expect(json.ans_billing.cached_read_tokens).toBe(1000);
     expect(mocks.ledgerCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           userId: "user-1",
-          amount: -0.108432,
+          amount: -0.162649,
           reason: "RUN_COST",
         }),
       }),
@@ -195,7 +198,7 @@ describe("External Agent Chat Completions Gateway & Official Token + Cache + Mul
           userId: "user-1",
           provider: "apic-codex",
           modelId: "deepseek-v4.1-flash",
-          settledPoints: 0.108432,
+          settledPoints: 0.162649,
           state: "SETTLED",
         }),
       }),
