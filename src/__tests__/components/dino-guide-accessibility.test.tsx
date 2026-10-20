@@ -18,7 +18,7 @@ vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: (namespace
   const source = namespace === "companion" ? companionMessages : mascotMessages.mascot;
   return key.split(".").reduce<unknown>((value, part) => value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined, source) ?? key;
 } }));
-afterEach(() => { cleanup(); sessionStorage.clear(); state.task = null; state.actor = "member"; state.status = "authenticated"; resetSitePreferences(); localStorage.removeItem(COMPANION_SIZE_KEY); });
+afterEach(() => { cleanup(); sessionStorage.clear(); state.task = null; state.actor = "member"; state.status = "authenticated"; resetSitePreferences(); localStorage.removeItem(COMPANION_SIZE_KEY); vi.unstubAllGlobals(); });
 
 it.each([false, true])("names the companion dialog from its visible heading (task=%s)", hasTask => {
   state.task = hasTask ? { phase: "working", step: 2, costPoints: 2 } : null;
@@ -180,4 +180,27 @@ it("preserves a saved conversation while authentication loads and clears it afte
   state.actor = "member"; state.status = "authenticated"; view.rerender(<DinoGuide />);
   fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
   expect(screen.getByRole("textbox")).toHaveValue("");
+});
+
+it("names the dino trigger for what a WebGL browser actually does (close-up stage), not for the chat", () => {
+  vi.stubGlobal("WebGLRenderingContext", function WebGLRenderingContext() {});
+  const stageClicks: Event[] = [];
+  const onClick = (event: Event) => stageClicks.push(event);
+  window.addEventListener("ans:dino-stage-click", onClick);
+  try {
+    render(<DinoGuide />);
+    const trigger = screen.getByRole("button", { name: mascotMessages.mascot.openStage });
+    expect(screen.queryByRole("button", { name: mascotMessages.mascot.open })).toBeNull();
+    fireEvent.click(trigger);
+    expect(stageClicks).toHaveLength(1);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  } finally {
+    window.removeEventListener("ans:dino-stage-click", onClick);
+  }
+});
+
+it("keeps the chat label when the browser cannot own the click (no WebGL)", () => {
+  render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  expect(screen.getByRole("dialog", { name: mascotMessages.mascot.name })).toBeInTheDocument();
 });

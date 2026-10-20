@@ -2,6 +2,15 @@
 
 <!-- Briefly describe the changes in this PR -->
 
+## 权威基线（必填）
+
+- 本 PR 触及的权威条目 ID：<!-- 例如 A-PLAZA-01；没有就写“无” -->
+- [ ] 已跑 `node scripts/check-authority.mjs --worktree` 且通过
+- [ ] 若撤销/取代了某条权威：同 PR 已更新 `docs/authority/ledger.json` 并写明理由
+- [ ] 若新增了权威：已补账本条目 + 机器规则（contains / absent / countMax）
+- [ ] 若本 PR **实现了某条 `pending` 条目**：同 PR 把它的 `status` 改回 `authoritative`（否则规则永远不生效）
+- [ ] 若本 PR 只改 `docs/authority/**`：已确认 `git ls-tree` 里的实现确实满足新规则（台账不能先于实现变红）
+
 ## Type of Change
 
 - [ ] Bug fix
