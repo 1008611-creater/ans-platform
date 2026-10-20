@@ -61,6 +61,7 @@ plan() {
     echo "镜像 tag : ans-platform:<short-sha>"
     echo "切换     : docker rm -f $CONTAINER && compose -p ans-<short>-<date> -f <release>/production-private.json up -d $SERVICE"
     echo "回滚     : <release>/rollback.sh"
+    echo "幂等     : 线上已是该提交且容器 healthy 时自动跳过（不重启）；FORCE=1 强制"
 }
 
 if [ "${1:-}" = "--status" ]; then status; exit 0; fi
@@ -84,6 +85,22 @@ if ! git merge-base --is-ancestor "$SHA" origin/main; then
     exit 1
 fi
 echo "  目标：$SHORT（$TARGET_REF）"
+
+# 幂等闸门：线上已经在跑这个提交、容器也健康时直接退出，不要无谓重启。
+# 背景（2026-10-20 20:54）：两个会话各自消费了同一个 ops/deploy-target 信号，
+# 第二次部署只是把同一个镜像又 up -d 了一遍，容器重建造成约 1 分钟的 502 窗口。
+# 需要强制重启（例如改了环境变量）时用 FORCE=1。
+if [ "${FORCE:-0}" != "1" ]; then
+    running_image="$(docker inspect -f '{{.Config.Image}}' "$CONTAINER" 2>/dev/null || true)"
+    running_health="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "$CONTAINER" 2>/dev/null || true)"
+    live_signal="$(git ls-remote origin refs/heads/ops/prod-live 2>/dev/null | cut -c1-8 || true)"
+    if [ "$running_image" = "ans-platform:$SHORT" ] && [ "$running_health" = "healthy" ] && [ -n "$live_signal" ] && [ "$live_signal" = "$SHORT" ]; then
+        echo "已跳过：线上正在跑 ans-platform:$SHORT 且容器 healthy（ops/prod-live=$live_signal）。"
+        echo "  本次目标与线上一致，重启容器只会制造一次无谓的 502 窗口。"
+        echo "  如确需强制重启：FORCE=1 bash deploy/deploy.sh"
+        exit 0
+    fi
+fi
 
 if [ "${1:-}" != "--no-build" ]; then
     echo "[2/5] 检查构建上下文"
