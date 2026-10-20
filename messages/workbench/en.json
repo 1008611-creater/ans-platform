@@ -1,0 +1,136 @@
+{
+  "toast": {
+    "nicknameLength": "Nickname must be 2-40 characters",
+    "nicknameUpdated": "Nickname updated (next change in 30 days)",
+    "retryLater": "Update failed, please try again later",
+    "recordDeleted": "Record deleted",
+    "recordsCleared": "Your local records were cleared",
+    "signInForCheckin": "Sign in to claim today's check-in points (+5)",
+    "checkinNoResponse": "Check-in is not responding, please try again later",
+    "savedLocal": "Saved to your local records",
+    "savedProjectDraft": "Saved as a project draft",
+    "saveNoResponse": "Saving is not responding, please try again later",
+    "alreadyBaseline": "This is already the initial baseline",
+    "restoredPrevious": "Restored the previous version",
+    "copiedAsDraft": "Copied as your own draft",
+    "fileDownloaded": "File downloaded",
+    "downloadFailed": "Download failed — use Copy instead",
+    "previewWindowFailed": "Could not open the preview window",
+    "agentOpened": "Opened the Agent chat in the bottom-right corner",
+    "needIdeaFirst": "Type a one-line idea first, then expand it",
+    "detailsExpanded": "Expanded into structured details",
+    "copied": "Copied"
+  },
+  "label": {
+    "editNickname": "Edit nickname",
+    "saving": "Saving…",
+    "collapse": "Hide",
+    "ask": "💬 Ask",
+    "viewDiff": "View diff →",
+    "guidedSamples": "📖 Guided samples",
+    "copy": "📋 Copy",
+    "claimCompute": "🎁 Claim compute",
+    "ledger": "🔑 Ledger",
+    "saveAsProject": "🚀 Save as project",
+    "newBlank": "+ New blank",
+    "clear": "Clear",
+    "new": "+ New",
+    "checkin": "📅 Check-in +5",
+    "projects": "📂 Projects",
+    "market": "🛒 Market",
+    "fillIntoInput": "Fill into the input ↓",
+    "expandTrace": "Expand ▾",
+    "copyAsDraft": "Copy as draft",
+    "expandDetails": "✨ Expand details",
+    "runningNow": "⚡ Running...",
+    "desktop": "🖥️ Desktop",
+    "mobile": "📱 Mobile",
+    "restore": "↩️ Restore previous",
+    "refresh": "🔄 Refresh",
+    "download": "💾 Download",
+    "newWindow": "🖥️ New window ↗",
+    "currentTaskSteps": "Current task steps:"
+  },
+  "aria": {
+    "nicknameInput": "New nickname",
+    "workbench": "Agent work mode",
+    "modelSelect": "Choose the model for reasoning and code generation",
+    "sourceEditor": "Source code editor"
+  },
+  "tab": {
+    "code": "💻 Code",
+    "preview": "👁️ Preview",
+    "terminal": "📟 Terminal"
+  },
+  "default": {
+    "firstWebAppTitle": "My first web app"
+  },
+  "task": {
+    "newBlankDraft": "New blank draft"
+  },
+  "trace": {
+    "initWorkspace": "[1/2] agent.init_workspace → initialised local single-file sandbox my-app.html",
+    "readyForInput": "[2/2] agent.ready → waiting for a brief, or edit the source directly",
+    "scaffoldProject": "[agent.scaffold_project] local project draft created and linked to the /projects entry point",
+    "offlineSandbox": "[1/3] agent.read_workspace → switched to the offline local sandbox"
+  },
+  "link": {
+    "createProject": "📂 Create the real project in your library",
+    "openProjects": "📂 Open the project library",
+    "signInForCompute": "🔐 Sign in to use cloud model compute"
+  },
+  "quickPrompt": {
+    "claw": "🕹️ Play the 3D claw machine",
+    "redeem": "🎁 Redeem a market listing",
+    "themeLabel": "🎨 Light theme",
+    "chartLabel": "🌐 Chart page",
+    "briefLabel": "🌾 Project brief"
+  },
+  "tag": {
+    "archQA": "Architecture Q&A"
+  },
+  "progress": {
+    "analyzing": "Analysing the current code and question..."
+  },
+  "reply": {
+    "guestMode": "You are in guest preview mode: an interactive draft and change log were generated on the right. Sign in to use cloud model compute.",
+    "done": "Done."
+  },
+  "title": {
+    "openAgentChat": "Open the Agent chat panel",
+    "branch": "Current branch and sandbox",
+    "threeStepGuide": "Show the 3-step guide",
+    "clearTasks": "Clear all local tasks",
+    "deleteRecord": "Delete this record",
+    "saveToProjects": "Save this work to your project library",
+    "checkin": "Daily check-in: +5 compute points",
+    "expandIdea": "Expand a short idea into a structured brief",
+    "askMode": "Ask about the current code or brief without overwriting files",
+    "codeMode": "Generate or modify artifacts with a diff",
+    "restoreVersion": "Restore the previous version",
+    "reloadPreview": "Reload the preview canvas"
+  },
+  "mode": {
+    "agentChat": "🤖 Agent chat",
+    "workbench": "🛠️ Work mode",
+    "codeShort": "⚡ Code mode"
+  },
+  "guide": {
+    "title": "📖 Work mode in 3 steps"
+  },
+  "empty": {
+    "tasks": "No personal tasks yet — type an instruction in the middle to start"
+  },
+  "status": {
+    "guidedSample": "📖 Guided sample",
+    "running": "⚡ Running",
+    "askMode": "💬 Ask mode",
+    "applied": "✓ Changes applied"
+  },
+  "summary": {
+    "sample": "📖 Sample output notes"
+  },
+  "placeholder": {
+    "newTask": "Describe the web page, Python script or project brief you want (Enter to run)..."
+  }
+}

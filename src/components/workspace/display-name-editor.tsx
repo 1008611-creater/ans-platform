@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ function LegacyDisplayNameEditor(props: { actorId: string; current: string }) {
 }
 
 function DisplayNameForm({ current, actorId }: { current: string; actorId: string }) {
+  const w = useTranslations("workbench");
   const { request, isActive } = useSettingsRequest(actorId);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(current);
@@ -47,7 +49,7 @@ function DisplayNameForm({ current, actorId }: { current: string; actorId: strin
   async function save() {
     const nickname = value.trim();
     if (nickname.length < 2 || nickname.length > 40) {
-      toast.error("昵称需为 2-40 个字符");
+      toast.error(w("toast.nicknameLength"));
       return;
     }
     if (nickname === current) { setOpen(false); return; }
@@ -72,11 +74,11 @@ function DisplayNameForm({ current, actorId }: { current: string; actorId: strin
         toast.error(`${result.message || "修改失败"}${retry ? `（约 ${Math.ceil(retry / 60)} 分钟后可再次修改）` : ""}`);
         return;
       }
-      toast.success("昵称已更新（30 天后可再次修改）");
+      toast.success(w("toast.nicknameUpdated"));
       setOpen(false);
       window.location.reload();
     } catch {
-      if (isActive()) toast.error("修改失败，请稍后重试");
+      if (isActive()) toast.error(w("toast.retryLater"));
     } finally {
       if (isActive()) setSaving(false);
     }
@@ -85,7 +87,7 @@ function DisplayNameForm({ current, actorId }: { current: string; actorId: strin
   if (!open) {
     return (
       <Button type="button" variant="ghost" size="sm" className="ms-2 h-7 gap-1 text-xs text-current hover:text-white" onClick={() => setOpen(true)}>
-        <Pencil className="h-3 w-3" /> 改昵称
+        <Pencil className="h-3 w-3" /> {w("label.editNickname")}
       </Button>
     );
   }
@@ -98,10 +100,10 @@ function DisplayNameForm({ current, actorId }: { current: string; actorId: strin
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={(event) => { if (event.key === "Enter") void save(); if (event.key === "Escape") setOpen(false); }}
         className="h-7 w-40 text-sm"
-        aria-label="新昵称"
+        aria-label={w("aria.nicknameInput")}
       />
       <Button type="button" size="sm" className="h-7 px-2 text-xs" disabled={saving} onClick={() => void save()}>
-        {saving ? "保存中…" : "保存"}
+        {saving ? w("label.saving") : "保存"}
       </Button>
       <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" disabled={saving} onClick={() => setOpen(false)}>取消</Button>
     </span>
@@ -216,7 +218,7 @@ function computeUnifiedDiff(
 }
 
 function buildLocalStarterHtml(userPrompt: string): string {
-  const safeTitle = userPrompt.replace(/[<>]/g, "").slice(0, 48) || "我的自定义网页应用";
+  const safeTitle = userPrompt.replace(/[<>]/g, "").slice(0, 48) || "已完成今日签到 (+5 积分)";
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -239,7 +241,7 @@ function buildLocalStarterHtml(userPrompt: string): string {
     <span class="tag">本地草稿预览</span>
     <h1>${safeTitle}</h1>
     <p>需求描述：${safeTitle}</p>
-    <div class="stage" id="outputBox">点击下方按钮测试交互，或切到顶部「💻 源码」直接修改 HTML / CSS / JS 代码。</div>
+    <div class="stage" id="outputBox">点击下方按钮测试交互，或切到顶部「{w("tab.code")}」直接修改 HTML / CSS / JS 代码。</div>
     <button onclick="document.getElementById('outputBox').textContent = '✅ 交互测试成功！当前时间：' + new Date().toLocaleTimeString()">运行交互测试</button>
   </div>
 </body>
@@ -259,7 +261,7 @@ function applySmartLocalCodeEdit(existingCode: string, instruction: string): str
     } else if (/金色|琥珀|暖色|amber|gold/i.test(instruction)) {
       patched = patched.replace(/#10b981/g, "#f59e0b").replace(/#34d399/g, "#fbbf24");
     }
-    const badgeHtml = `\n  <!-- [Agent 增量变更] ${safeNote} -->\n  <div style="margin:14px auto;max-width:680px;padding:10px 14px;border-radius:10px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#34d399;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;"><span>⚡ 已应用增量修改：${safeNote}</span><button onclick="this.parentElement.remove()" style="background:transparent;border:1px solid rgba(16,185,129,0.4);color:#34d399;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">收起</button></div>\n</body>`;
+    const badgeHtml = `\n  <!-- [Agent 增量变更] ${safeNote} -->\n  <div style="margin:14px auto;max-width:680px;padding:10px 14px;border-radius:10px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#34d399;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;"><span>⚡ 已应用增量修改：${safeNote}</span><button onclick="this.parentElement.remove()" style="background:transparent;border:1px solid rgba(16,185,129,0.4);color:#34d399;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">{w("label.collapse")}</button></div>\n</body>`;
     return patched.replace("</body>", badgeHtml);
   }
   return `${existingCode.trimEnd()}\n\n# [Agent 增量修改] ${safeNote}\n`;
@@ -272,6 +274,7 @@ function PiCodexWorkbench({
   levelName = "Lv.1",
   initialPrompt = "",
 }: CodexWorkbenchProps) {
+  const w = useTranslations("workbench");
   const storageKey = `ans:workspace:user-tasks:v1:${actorId || "guest"}`;
   const [userTasks, setUserTasks] = useState<CodexTask[]>([]);
   const [guideTasks] = useState<CodexTask[]>(INITIAL_CODEX_TASKS);
@@ -366,10 +369,10 @@ function PiCodexWorkbench({
   }
 
   function handleStartBlankTask() {
-    const starter = buildLocalStarterHtml("我的第一个网页应用");
+    const starter = buildLocalStarterHtml(w("default.firstWebAppTitle"));
     const blankTask: CodexTask = {
       id: "user-draft-" + Date.now(),
-      title: "新建空白草稿",
+      title: w("task.newBlankDraft"),
       tag: "我的草稿",
       model,
       mode: "code",
@@ -380,10 +383,10 @@ function PiCodexWorkbench({
       status: "ready",
       prompt: "",
       trace: [
-        "[1/2] agent.init_workspace → 初始化本地单文件沙盒 my-app.html",
-        "[2/2] agent.ready → 等待输入需求或直接编辑源码",
+        w("trace.initWorkspace"),
+        w("trace.readyForInput"),
       ],
-      summary: "空白草稿已就绪，可在下方选择「⚡ 写代码」增量修改或「💬 提问」梳理方案。",
+      summary: w("label.ask"),
       artifactType: "html",
       artifactFile: "my-app.html",
       previousCode: "",
@@ -404,13 +407,13 @@ function PiCodexWorkbench({
     if (activeId === taskId) {
       setActiveId(next[0]?.id ?? guideTasks[0].id);
     }
-    toast.success("已删除该记录");
+    toast.success(w("toast.recordDeleted"));
   }
 
   function handleClearUserTasks() {
     saveUserTasks([]);
     setActiveId(guideTasks[0].id);
-    toast.success("已清空个人记录");
+    toast.success(w("toast.recordsCleared"));
   }
 
   async function executeCodexTask(
@@ -432,7 +435,7 @@ function PiCodexWorkbench({
           body: JSON.stringify({ action: "pi_action", intent: "checkin", prompt: "", model }),
         });
         if (res.status === 401 || !res.ok) {
-          toast.info("请先登录账号后再领取每日签到算力积分 (+5分)");
+          toast.info(w("toast.signInForCheckin"));
           return;
         }
         const data = await res.json();
@@ -441,7 +444,7 @@ function PiCodexWorkbench({
         }
         toast.success((data?.replyZh || "已完成今日签到 (+5 积分)").slice(0, 80));
       } catch {
-        toast.error("签到请求暂时未响应，请稍后重试");
+        toast.error(w("toast.checkinNoResponse"));
       } finally {
         setRunning(false);
       }
@@ -467,17 +470,17 @@ function PiCodexWorkbench({
             prompt: activeTask.prompt || activeTask.title,
             trace: [
               ...(activeTask.trace ?? []),
-              "[agent.scaffold_project] 已在本地生成立项草稿并关联 /projects 创建入口",
+              w("trace.scaffoldProject"),
             ],
-            summary: "已保存至本地记录，点击下方入口可同步创建正式项目。",
-            links: [{ labelZh: "📂 前往项目库创建正式立项", href: targetLink }],
+            summary: w("toast.savedLocal"),
+            links: [{ labelZh: w("link.createProject"), href: targetLink }],
           };
           const next = baseTasks.some(t => t.id === savedTask.id)
             ? baseTasks.map(t => (t.id === savedTask.id ? savedTask : t))
             : [savedTask, ...baseTasks];
           saveUserTasks(next);
           setActiveId(savedTask.id);
-          toast.success("已保存至本地记录");
+          toast.success(w("toast.savedLocal"));
           return;
         }
         const data = await res.json();
@@ -495,16 +498,16 @@ function PiCodexWorkbench({
           summary: rawReply || "已生成项目立项草稿。",
           links: Array.isArray(data?.links) && data.links.length > 0
             ? data.links
-            : [{ labelZh: "📂 打开项目库查看", href: "/projects" }],
+            : [{ labelZh: w("link.openProjects"), href: "/projects" }],
         };
         const next = baseTasks.some(t => t.id === savedTask.id)
           ? baseTasks.map(t => (t.id === savedTask.id ? savedTask : t))
           : [savedTask, ...baseTasks];
         saveUserTasks(next);
         setActiveId(savedTask.id);
-        toast.success("已存为项目草稿");
+        toast.success(w("toast.savedProjectDraft"));
       } catch {
-        toast.error("保存请求暂时未响应，请稍后重试");
+        toast.error(w("toast.saveNoResponse"));
       } finally {
         setRunning(false);
       }
@@ -523,12 +526,12 @@ function PiCodexWorkbench({
     const taskId = isUpdatingExistingUserTask ? activeTask.id : "user-task-" + Date.now();
     const shortTitle =
       intent === "claw"
-        ? "🕹️ 3D 抓娃娃机抽积分"
+        ? w("quickPrompt.claw")
         : intent === "redeem"
-          ? "🎁 5 积分兑换周报模板"
+          ? w("quickPrompt.redeem")
           : isUpdatingExistingUserTask
             ? activeTask.title
-            : q.slice(0, 28) || "我的自定义任务";
+            : q.slice(0, 28) || "已完成今日签到 (+5 积分)";
 
     const fallbackCode = shouldIterateCurrent
       ? runMode === "ask"
@@ -550,7 +553,7 @@ function PiCodexWorkbench({
     const runningTask: CodexTask = {
       id: taskId,
       title: shortTitle,
-      tag: runMode === "ask" ? "架构问答" : shouldIterateCurrent ? "增量迭代" : intent === "playground" ? "我的任务" : "快捷操作",
+      tag: runMode === "ask" ? w("tag.archQA") : shouldIterateCurrent ? "增量迭代" : intent === "playground" ? "我的任务" : "快捷操作",
       model,
       mode: runMode,
       branch: activeTask.branch || "ans-workspace/main",
@@ -560,7 +563,7 @@ function PiCodexWorkbench({
       status: "running",
       prompt: q || shortTitle,
       trace: runningTrace,
-      summary: runMode === "ask" ? "正在分析当前代码与问题..." : "正在执行代码构建与差异对比...",
+      summary: runMode === "ask" ? w("progress.analyzing") : "正在执行代码构建与差异对比...",
       artifactType: shouldIterateCurrent ? activeTask.artifactType : "html",
       artifactFile: shouldIterateCurrent ? activeTask.artifactFile : "my-output.html",
       previousCode: diffBaselineForFallback,
@@ -614,11 +617,11 @@ function PiCodexWorkbench({
                 trace: guestTrace,
                 summary:
                   runMode === "ask"
-                    ? `💡 针对「${q}」的本地解答：\n1. 当前文件为 ${runningTask.artifactFile}，可在右侧「💻 源码」或「± 变更」中直接检查结构。\n2. 切换到「⚡ 写代码」模式发送指令即可自动把修改应用到当前文件并查看 Diff 对比。\n3. 登录账号后可调用云端 ${model} 进行深度分析。`
+                    ? `💡 针对「${q}」的本地解答：\n1. 当前文件为 ${runningTask.artifactFile}，可在右侧「{w("tab.code")}」或「± 变更」中直接检查结构。\n2. 切换到「⚡ 写代码」模式发送指令即可自动把修改应用到当前文件并{w("label.viewDiff")} 对比。\n3. 登录账号后可调用云端 ${model} 进行深度分析。`
                     : shouldIterateCurrent
                       ? `已在当前文件 ${runningTask.artifactFile} 基础上完成增量修改（+${localDiff.additions} -${localDiff.deletions} 行），可点击右侧「± 变更」查看具体代码对比。`
-                      : "当前为访客预览模式，已在右侧生成可交互草稿与代码变更记录。登录账号后可调用云端模型算力。",
-                links: [{ labelZh: "🔐 登录账号调用云端模型算力", href: "/login?callbackUrl=%2Fworkspace" }],
+                      : w("reply.guestMode"),
+                links: [{ labelZh: w("link.signInForCompute"), href: "/login?callbackUrl=%2Fworkspace" }],
                 artifactType: runningTask.artifactType,
                 artifactFile: shouldIterateCurrent ? runningTask.artifactFile : "local-draft.html",
                 previousCode: diffBaselineForFallback,
@@ -637,7 +640,7 @@ function PiCodexWorkbench({
 
       const data = await res.json();
       const rawReply = (data?.replyZh || data?.replyEn || "").trim();
-      const reply = rawReply && rawReply !== "UNAUTHORIZED" ? rawReply : "已完成处理。";
+      const reply = rawReply && rawReply !== "UNAUTHORIZED" ? rawReply : w("reply.done");
       if (typeof data?.balancePoints === "number") {
         setLivePoints(data.balancePoints);
       }
@@ -723,7 +726,7 @@ function PiCodexWorkbench({
               diffAdditions: localDiff.additions,
               diffDeletions: localDiff.deletions,
               trace: [
-                "[1/3] agent.read_workspace → 已切换至本地离线沙盒",
+                w("trace.offlineSandbox"),
                 `[2/3] agent.apply_patch → 生成 ${runningTask.artifactFile} (+${localDiff.additions} -${localDiff.deletions} 行)`,
                 `[3/3] agent.verify_output → 本地可编辑草稿就绪 (${elapsedSec}s)`,
               ],
@@ -771,9 +774,9 @@ function PiCodexWorkbench({
         diffDeletions: forkedDiff.deletions,
         trace: [
           ...(activeTask.trace ?? []),
-          `[agent.manual_edit] 从引导范例派为个人草稿 (+${forkedDiff.additions} -${forkedDiff.deletions} 行)`,
+          `[agent.manual_edit] 从{w("label.guidedSamples")}派为个人草稿 (+${forkedDiff.additions} -${forkedDiff.deletions} 行)`,
         ],
-        summary: "基于引导范例修改的个人草稿，已自动保存在本地并记录代码差异。",
+        summary: w("label.guidedSamples"),
       };
       const next = [forkedTask, ...userTasks];
       saveUserTasks(next);
@@ -783,11 +786,11 @@ function PiCodexWorkbench({
 
   function revertToPreviousCode() {
     if (!activeTask.previousCode) {
-      toast.info("当前已是初始基准版本");
+      toast.info(w("toast.alreadyBaseline"));
       return;
     }
     updateActiveCode(activeTask.previousCode);
-    toast.success("已还原至上一版本代码");
+    toast.success(w("toast.restoredPrevious"));
   }
 
   function forkActiveSampleToDraft() {
@@ -797,13 +800,13 @@ function PiCodexWorkbench({
       title: `草稿：${activeTask.title.replace(/^[^\s]+\s*/, "")}`,
       tag: "我的草稿",
       previousCode: activeTask.previousCode ?? activeTask.artifactCode,
-      trace: [...(activeTask.trace ?? []), "[agent.fork_sample] 已复制为个人可迭代草稿"],
-      summary: "已复制为个人草稿，可在下方直接输入修改要求。",
+      trace: [...(activeTask.trace ?? []), w("label.copy")],
+      summary: w("toast.copiedAsDraft"),
     };
     const next = [forkedTask, ...userTasks];
     saveUserTasks(next);
     setActiveId(forkedTask.id);
-    toast.success("已复制为个人草稿");
+    toast.success(w("toast.copiedAsDraft"));
   }
 
   function downloadActiveHtml() {
@@ -829,9 +832,9 @@ function PiCodexWorkbench({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("已下载文件");
+      toast.success(w("toast.fileDownloaded"));
     } catch {
-      toast.error("下载失败，请点击复制");
+      toast.error(w("toast.downloadFailed"));
     }
   }
 
@@ -841,13 +844,13 @@ function PiCodexWorkbench({
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
     } catch {
-      toast.error("无法打开新窗口预览");
+      toast.error(w("toast.previewWindowFailed"));
     }
   }
 
   function switchToFloatingChat() {
     window.dispatchEvent(new CustomEvent("ans:open-companion-chat", { detail: { draft: promptInput } }));
-    toast.success("已唤起右下角 Agent 对话窗");
+    toast.success(w("toast.agentOpened"));
   }
 
   const codeLineCount = Math.max(1, activeTask.artifactCode.split("\n").length);
@@ -855,7 +858,7 @@ function PiCodexWorkbench({
   return (
     <div
       data-testid="pi-codex-workbench"
-      aria-label="Agent 工作模式"
+      aria-label={w("aria.workbench")}
       className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 text-slate-100 shadow-2xl"
     >
       {/* Top Bar */}
@@ -865,24 +868,24 @@ function PiCodexWorkbench({
             <button
               type="button"
               onClick={switchToFloatingChat}
-              title="唤起右下角 Agent 悬浮对话窗"
+              title={w("title.openAgentChat")}
               className="rounded-lg px-2.5 py-1 font-semibold text-slate-400 transition hover:bg-slate-800 hover:text-white"
             >
-              🤖 Agent 对话
+              🤖 Agent {w("mode.agentChat")}
             </button>
             <span className="rounded-lg bg-emerald-500 px-3 py-1 font-black text-slate-950 shadow-sm">
-              🛠️ 工作模式
+              🛠️ {w("mode.workbench")}
             </span>
           </div>
           <span
-            title="当前工作分支与沙盒环境"
+            title={w("title.branch")}
             className="hidden items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 px-2.5 py-1 font-mono text-[11px] text-slate-400 sm:inline-flex"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             {activeTask.branch || "ans-workspace/main"}
           </span>
           <select
-            aria-label="选择推理与代码生成模型"
+            aria-label={w("aria.modelSelect")}
             value={model}
             onChange={e => setModel(e.target.value as typeof model)}
             className="rounded-xl border border-slate-700/80 bg-slate-900 px-2.5 py-1 text-xs font-bold text-emerald-300 outline-none focus:border-emerald-500"
@@ -894,10 +897,10 @@ function PiCodexWorkbench({
           <button
             type="button"
             onClick={() => setShowOnboardingGuide(v => !v)}
-            title="查看 3 步上手说明"
+            title={w("title.threeStepGuide")}
             className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-500/20"
           >
-            📖 {showOnboardingGuide ? "收起" : "引导"}
+            📖 {showOnboardingGuide ? w("label.collapse") : "引导"}
           </button>
         </div>
 
@@ -910,10 +913,10 @@ function PiCodexWorkbench({
             🪙 {livePoints} 积分
           </span>
           <a href="/workspace/benefits" className="rounded-xl bg-emerald-500 px-2.5 py-1 font-black text-slate-950 transition hover:bg-emerald-400">
-            🎁 领算力
+            🎁 {w("label.claimCompute")}
           </a>
           <a href="/workspace/credits" className="rounded-xl border border-slate-700 bg-slate-900 px-2.5 py-1 font-semibold text-slate-200 transition hover:bg-slate-800">
-            🔑 账本
+            🔑 {w("label.ledger")}
           </a>
         </div>
       </div>
@@ -927,12 +930,12 @@ function PiCodexWorkbench({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-bold text-amber-300">
-                📖 Codex 工作模式 3 步流
+                📖 Codex {w("guide.title")}
               </span>
               <span className="text-slate-300">
-                <strong>① 提需求 / 选模式</strong>（底部「💬 提问」或「⚡ 写代码」）→
-                <strong className="ml-1">② 查链路与 Diff</strong>（中间看执行步骤，右侧看「± 变更」与「👁️ 预览」）→
-                <strong className="ml-1">③ 存为项目</strong>。
+                <strong>① 提需求 / 选模式</strong>（底部「💬 {w("label.ask")}」或「⚡ 写代码」）→
+                <strong className="ml-1">② 查链路与 Diff</strong>（中间看执行步骤，右侧看「± 变更」与「{w("tab.preview")}」）→
+                <strong className="ml-1">③ {w("label.saveAsProject")}</strong>。
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -941,7 +944,7 @@ function PiCodexWorkbench({
                 onClick={handleStartBlankTask}
                 className="rounded-lg bg-emerald-500 px-2.5 py-1 text-xs font-black text-slate-950 hover:bg-emerald-400"
               >
-                + 新建空白
+                + {w("label.newBlank")}
               </button>
               <button
                 type="button"
@@ -971,10 +974,10 @@ function PiCodexWorkbench({
                     <button
                       type="button"
                       onClick={handleClearUserTasks}
-                      title="清空全部本地任务"
+                      title={w("title.clearTasks")}
                       className="rounded-lg border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-[10px] text-slate-400 hover:border-rose-500/40 hover:text-rose-300"
                     >
-                      清空
+                      {w("label.clear")}
                     </button>
                   )}
                   <button
@@ -982,13 +985,13 @@ function PiCodexWorkbench({
                     onClick={handleStartBlankTask}
                     className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
                   >
-                    + 新建
+                    + {w("label.new")}
                   </button>
                 </div>
               </div>
               {userTasks.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/50 px-2.5 py-2 text-center text-[11px] text-slate-300">
-                  暂无个人任务，在中间输入指令即可开始
+                  {w("empty.tasks")}
                 </div>
               ) : (
                 <div className="max-h-[220px] space-y-1 overflow-y-auto pr-0.5">
@@ -1022,7 +1025,7 @@ function PiCodexWorkbench({
                             <button
                               type="button"
                               onClick={e => handleDeleteUserTask(t.id, e)}
-                              title="删除此记录"
+                              title={w("title.deleteRecord")}
                               aria-label={`删除 ${t.title}`}
                               className="hidden rounded px-1 text-[10px] text-slate-400 hover:bg-rose-500/20 hover:text-rose-300 group-hover:inline-block"
                             >
@@ -1048,7 +1051,7 @@ function PiCodexWorkbench({
             <div className="border-t border-slate-800/80 pt-3">
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-[11px] font-extrabold text-amber-300/90">
-                  📖 引导范例
+                  {w("status.guidedSample")}
                 </span>
                 <span className="font-mono text-[10px] text-slate-300">含 Diff 对比</span>
               </div>
@@ -1087,18 +1090,18 @@ function PiCodexWorkbench({
                 <button
                   type="button"
                   onClick={() => void executeCodexTask(activeTask.title, "scaffold")}
-                  title="将当前作品保存至我的项目库"
+                  title={w("title.saveToProjects")}
                   className="rounded-xl border border-indigo-500/35 bg-indigo-500/15 px-2 py-1.5 text-center text-[11px] font-bold text-indigo-200 transition hover:bg-indigo-500/25"
                 >
-                  🚀 存为项目
+                  🚀 {w("label.saveAsProject")}
                 </button>
                 <button
                   type="button"
                   onClick={() => void executeCodexTask("", "checkin")}
-                  title="每日签到领取 5 算力积分"
+                  title={w("title.checkin")}
                   className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 text-center text-[11px] font-bold text-emerald-300 transition hover:bg-emerald-500/20"
                 >
-                  📅 签到 +5
+                  📅 {w("label.checkin")}
                 </button>
               </div>
             </div>
@@ -1106,10 +1109,10 @@ function PiCodexWorkbench({
 
           <div className="mt-3 grid grid-cols-2 gap-1.5 border-t border-slate-800/80 pt-2.5 text-center text-[11px]">
             <a href="/projects" className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
-              📂 项目库
+              📂 {w("label.projects")}
             </a>
             <a href="/market" className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
-              🛒 工具市场
+              🛒 {w("label.market")}
             </a>
           </div>
         </aside>
@@ -1139,12 +1142,12 @@ function PiCodexWorkbench({
                       : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
               }`}>
                 {running
-                  ? "⚡ 运行中"
+                  ? w("status.running")
                   : isViewingGuideSample
-                    ? "📖 引导范例"
+                    ? w("status.guidedSample")
                     : activeTask.mode === "ask"
-                      ? "💬 问答模式"
-                      : "✓ 已应用变更"}
+                      ? w("status.askMode")
+                      : w("status.applied")}
               </span>
             </div>
 
@@ -1158,7 +1161,7 @@ function PiCodexWorkbench({
                     onClick={() => setPromptInput(activeTask.prompt)}
                     className="text-emerald-400 hover:underline"
                   >
-                    填入输入框 ↓
+                    {w("label.fillIntoInput")} ↓
                   </button>
                 )}
               </div>
@@ -1186,7 +1189,7 @@ function PiCodexWorkbench({
                     </span>
                   </span>
                   <span className="font-mono text-[10px] text-slate-400">
-                    {traceExpanded ? "收起 ▴" : "展开 ▾"}
+                    {traceExpanded ? w("label.expandTrace") : "展开 ▾"}
                   </span>
                 </button>
                 {traceExpanded && (
@@ -1206,7 +1209,7 @@ function PiCodexWorkbench({
             <div className="rounded-xl border border-emerald-500/25 bg-emerald-950/15 p-3">
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <span className="text-[11px] font-extrabold text-emerald-300">
-                  {isViewingGuideSample ? "📖 范例产出说明" : activeTask.mode === "ask" ? "💬 Agent 解答" : "✓ 变更摘要"}
+                  {isViewingGuideSample ? w("summary.sample") : activeTask.mode === "ask" ? "💬 Agent 解答" : "✓ 变更摘要"}
                 </span>
                 {isViewingGuideSample && (
                   <button
@@ -1214,7 +1217,7 @@ function PiCodexWorkbench({
                     onClick={forkActiveSampleToDraft}
                     className="shrink-0 rounded-lg bg-amber-400 px-2 py-0.5 text-[10px] font-black text-slate-950 hover:bg-amber-300"
                   >
-                    复制为草稿
+                    {w("label.copyAsDraft")}
                   </button>
                 )}
               </div>
@@ -1233,7 +1236,7 @@ function PiCodexWorkbench({
                     onClick={() => setCanvasTab("diff")}
                     className="rounded bg-slate-800 px-1.5 py-0.5 font-sans text-[10px] font-bold text-emerald-300 hover:bg-slate-700"
                   >
-                    查看 Diff →
+                    {w("label.viewDiff")} →
                   </button>
                 </div>
               </div>
@@ -1247,7 +1250,7 @@ function PiCodexWorkbench({
                       title={lk.detail}
                       className="rounded-lg border border-indigo-400/50 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
                     >
-                      {lk.labelZh || lk.title || lk.labelEn || "查看详情"} ↗
+                      {lk.labelZh || lk.title || lk.labelEn || "已完成今日签到 (+5 积分)"} ↗
                     </a>
                   ))}
                 </div>
@@ -1276,7 +1279,7 @@ function PiCodexWorkbench({
                 </span>
               </label>
               <span className="font-mono text-[10px] text-slate-400">
-                {composerMode === "code" ? "⚡ 写代码模式" : "💬 提问模式"}
+                {composerMode === "code" ? w("mode.codeShort") : w("label.ask")}
               </span>
             </div>
 
@@ -1287,8 +1290,8 @@ function PiCodexWorkbench({
               onChange={e => setPromptInput(e.target.value)}
               placeholder={
                 iterateOnCurrent
-                  ? `描述要对 ${activeTask.artifactFile} 做的修改（如：切换为浅色主题、增加导出 CSV 按钮），或直接提问...`
-                  : "输入你要新建的网页、Python 脚本或农客松方案（Enter 执行）..."
+                  ? `描述要对 ${activeTask.artifactFile} 做的修改（如：切换为浅色主题、增加导出 CSV 按钮），或直接{w("label.ask")}...`
+                  : w("placeholder.newTask")
               }
               className="w-full resize-none bg-transparent text-xs leading-5 text-white placeholder:text-slate-400 focus:outline-none"
               onKeyDown={e => {
@@ -1299,7 +1302,7 @@ function PiCodexWorkbench({
               }}
             />
             {(() => {
-              const seedText = (promptInput || activeTask.prompt || "网页应用").trim();
+              const seedText = (promptInput || activeTask.prompt || "已完成今日签到 (+5 积分)").trim();
               const cluster = detectIntentAndMatchTerms(seedText);
               return (
                 <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 rounded-xl border border-slate-800 bg-slate-950/80 px-2 py-1" data-testid="codex-intent-bridge">
@@ -1324,21 +1327,21 @@ function PiCodexWorkbench({
                   </div>
                   <button
                     type="button"
-                    title="将简短想法扩充为结构化需求"
+                    title={w("title.expandIdea")}
                     onClick={() => {
                       const rawIdea = (promptInput || activeTask.prompt).trim();
                       if (!rawIdea) {
-                        toast.info("请先在输入框写下一句话想法，再点击补齐细节");
+                        toast.info(w("toast.needIdeaFirst"));
                         document.getElementById("codex-composer-input")?.focus();
                         return;
                       }
                       const upgraded = upgradeToStructuredBrief(rawIdea, "zh");
                       setPromptInput(upgraded);
-                      toast.success("已补齐结构化细节");
+                      toast.success(w("toast.detailsExpanded"));
                     }}
                     className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-300 transition hover:bg-emerald-500/25"
                   >
-                    ✨ 补齐细节
+                    ✨ {w("label.expandDetails")}
                   </button>
                 </div>
               );
@@ -1347,9 +1350,9 @@ function PiCodexWorkbench({
             <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 border-t border-slate-800 pt-2">
               <div className="flex flex-wrap gap-1">
                 {[
-                  ["🎨 改浅色主题", "把当前页面配色改为清新浅色主题，并增加一个顶部状态横幅"],
-                  ["🌐 新建图表页", "请用单文件 HTML5 + CSS + JS 写一个简洁好用的实验数据记录与折线图网页"],
-                  ["🌾 农客松提纲", "帮我梳理一份中国农大农客松智慧农业参赛项目痛点、方案与分工提纲"],
+                  [w("quickPrompt.themeLabel"), "把当前页面配色改为清新浅色主题，并增加一个顶部状态横幅"],
+                  [w("quickPrompt.chartLabel"), "请用单文件 HTML5 + CSS + JS 写一个简洁好用的实验数据记录与折线图网页"],
+                  [w("quickPrompt.briefLabel"), "帮我梳理一份中国农大农客松智慧农业参赛项目痛点、方案与分工提纲"],
                 ].map(([label, sample]) => (
                   <button
                     key={label}
@@ -1374,24 +1377,24 @@ function PiCodexWorkbench({
                       void executeCodexTask(undefined, "playground", undefined, "ask");
                     }
                   }}
-                  title="仅针对当前代码或需求提问分析，不覆盖文件"
+                  title={w("title.askMode")}
                   className={`rounded-xl border px-2.5 py-1.5 text-xs font-bold transition disabled:opacity-50 ${
                     composerMode === "ask"
                       ? "border-sky-400/70 bg-sky-500/20 text-sky-200"
                       : "border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-600 hover:text-white"
                   }`}
                 >
-                  💬 提问
+                  💬 {w("label.ask")}
                 </button>
                 <button
                   type="submit"
                   data-testid="codex-mode-code"
                   disabled={running}
                   onClick={() => setComposerMode("code")}
-                  title="生成或修改代码产物并生成 Diff 对比"
+                  title={w("title.codeMode")}
                   className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-3.5 py-1.5 text-xs font-black text-slate-950 shadow-md transition hover:brightness-110 disabled:opacity-50"
                 >
-                  {running ? "⚡ 运行中..." : "⚡ 写代码"}
+                  {running ? w("label.runningNow") : "⚡ 写代码"}
                 </button>
               </div>
             </div>
@@ -1403,10 +1406,10 @@ function PiCodexWorkbench({
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-slate-950/80 px-4 py-2">
             <div className="flex flex-wrap items-center gap-1">
               {[
-                { id: "preview", label: "👁️ 预览" },
+                { id: "preview", label: w("tab.preview") },
                 { id: "diff", label: `± 变更 (+${activeDiff.additions} -${activeDiff.deletions})` },
-                { id: "code", label: "💻 源码" },
-                { id: "terminal", label: "📟 终端" },
+                { id: "code", label: w("tab.code") },
+                { id: "terminal", label: w("tab.terminal") },
               ].map(t => (
                 <button
                   key={t.id}
@@ -1435,7 +1438,7 @@ function PiCodexWorkbench({
                       viewportMode === "desktop" ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"
                     }`}
                   >
-                    🖥️ 桌面
+                    🖥️ {w("label.desktop")}
                   </button>
                   <button
                     type="button"
@@ -1445,7 +1448,7 @@ function PiCodexWorkbench({
                       viewportMode === "mobile" ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"
                     }`}
                   >
-                    📱 手机
+                    📱 {w("label.mobile")}
                   </button>
                 </div>
               )}
@@ -1453,36 +1456,36 @@ function PiCodexWorkbench({
                 <button
                   type="button"
                   onClick={revertToPreviousCode}
-                  title="还原到修改前的上一版本代码"
+                  title={w("title.restoreVersion")}
                   className="rounded-lg border border-amber-500/40 bg-amber-500/15 px-2 py-1 text-[11px] font-bold text-amber-300 hover:bg-amber-500/25"
                 >
-                  ↩️ 还原上一版
+                  ↩️ {w("label.restore")}
                 </button>
               )}
               <button
                 type="button"
                 onClick={() => setPreviewKey(k => k + 1)}
-                title="重新加载预览画布"
+                title={w("title.reloadPreview")}
                 className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
               >
-                🔄 刷新
+                🔄 {w("label.refresh")}
               </button>
               <button
                 type="button"
                 onClick={() => {
                   navigator.clipboard?.writeText(activeTask.artifactCode);
-                  toast.success("已复制内容");
+                  toast.success(w("toast.copied"));
                 }}
                 className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
               >
-                📋 复制
+                📋 {w("label.copy")}
               </button>
               <button
                 type="button"
                 onClick={downloadActiveHtml}
                 className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
               >
-                💾 下载
+                💾 {w("label.download")}
               </button>
               {activeTask.artifactType === "html" && (
                 <button
@@ -1490,7 +1493,7 @@ function PiCodexWorkbench({
                   onClick={openFullscreenPreview}
                   className="rounded-lg border border-indigo-400/40 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
                 >
-                  🖥️ 新窗口 ↗
+                  🖥️ {w("label.newWindow")} ↗
                 </button>
               )}
             </div>
@@ -1580,7 +1583,7 @@ function PiCodexWorkbench({
                 <textarea
                   value={activeTask.artifactCode}
                   onChange={e => updateActiveCode(e.target.value)}
-                  aria-label="源码编辑器"
+                  aria-label={w("aria.sourceEditor")}
                   className="min-h-[540px] w-full flex-1 resize-none bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-300 focus:outline-none"
                 />
               </div>
@@ -1589,12 +1592,12 @@ function PiCodexWorkbench({
             {canvasTab === "terminal" && (
               <div className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-black p-4 font-mono text-xs leading-6 text-emerald-400">
                 <div className="mb-2 flex items-center justify-between border-b border-slate-800 pb-2 text-slate-400">
-                  <span>Agent 执行日志 · {activeTask.branch || "ans-workspace/main"}</span>
+                  <span>Agent 已完成今日签到 (+5 积分) {activeTask.branch || "ans-workspace/main"}</span>
                   <span>{activeTask.model}</span>
                 </div>
                 {activeTask.trace && activeTask.trace.length > 0 && (
                   <div className="mb-3 rounded-xl border border-slate-800/90 bg-slate-950/90 p-2.5 text-slate-300">
-                    <div className="mb-1 text-[11px] font-bold text-emerald-300">当前任务执行步骤：</div>
+                    <div className="mb-1 text-[11px] font-bold text-emerald-300">{w("label.currentTaskSteps")}</div>
                     {activeTask.trace.map((step, idx) => (
                       <div key={idx} className="text-[11px] leading-5">
                         {step}
