@@ -30,9 +30,14 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
 事故复盘（项目广场回退 `219422c9` → `27969917`）与更细的写法指引，见本地 Skill
 `ans-delivery-governance` 的 `references/authority-ledger.md`。
 
-## 当前状态（2026-10-20）
+## 当前状态（2026-10-20 17:00）
 
-- `A-PLAZA-01 / 02 / 04` 正在由 `fix/explore-plaza-authority-restore-20261020` 恢复：
-  合并前 `origin/main` 与 `origin/develop` 仍是回退态，`npm run check:authority:upstream` 会报红 —— 这是预期的。
-- `A-GATE-02`：`ci.yml` 已覆盖 `develop` 的 push 与 PR。
-- `A-SIGNAL-01`：`ops/deploy-target`(219422c9) ≠ `ops/prod-live`(f32e06f0)，且 deploy-target 落后 main 124 个提交，发布前需人工确认。
+- **生产已切到权威版**：容器 `ans-platform-app` 跑 `ans-platform:0ae6aef7`（healthy），
+  `main = ops/deploy-target = ops/prod-live = 0ae6aef7`；`npm run check:authority:upstream` **10/10 通过**。
+- `A-PLAZA-01 / 02 / 04`：已随 PR #149 合并，并在生产用真实 HTML 验证（`/explore` 的 h1 = sr-only 页面名 + 品牌主标题 + 轮转封面）。
+- `A-GATE-02`：`ci.yml` 已覆盖 `develop` 的 push 与 PR（改动还没进 develop，所以 develop 目前只要求 PR、不要求状态检查）。
+- `A-GATE-01`：GitHub ruleset 已生效 —— `main-protection`（必需 `Test` + `Authority`、禁强推/删除、admin bypass）、
+  `develop-protection`（要求走 PR、admin bypass）。`scripts/git-health.mjs --gh` 会把两者打印出来。
+- `A-RELEASE-01 / 02`：`deploy/deploy.sh` 已按真实发布约定重写（release 目录 + `production-private.json` +
+  镜像 tag 带短 SHA + 回滚脚本 + 构建前拒绝未跟踪 src 文件）。
+- 仍在红：`develop` 的 6 个测试文件（计费/政策断言漂移），修复分支 `fix/develop-verify-tests-20261020`。
