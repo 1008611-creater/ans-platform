@@ -43,8 +43,13 @@ jobs:
         with:
           node-version: '24'
 
+      # 只检出 PR 的 merge ref 时本地没有 origin/main，静默删除检测需要它。
+      - name: Fetch origin/main for silent-deletion detection
+        run: git fetch --no-tags --depth=1 origin main:refs/remotes/origin/main
+        continue-on-error: true
+
       - name: Verify authoritative baseline has not regressed
-        run: npm run check:authority
+        run: npm run check:authority -- --base origin/main
 
   test:
     name: Test

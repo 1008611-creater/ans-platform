@@ -6,6 +6,7 @@ import type { AgentInput, AgentLink } from "@/contracts/companion-agent";
 import { listPublishedCatalog } from "@/server/catalog/service";
 import { getPublishedWorkflow, listPublishedWorkflows } from "@/server/workflows/service";
 import { YUAN_PER_POINT } from "@/lib/credits-pricing";
+import { ARCADE_TOKEN_COST_POINTS } from "@/server/compute-benefits/arcade";
 import { publicProjectSummary, searchPublicProjects } from "./catalog-search";
 const argsSchema = z.object({ query: z.string().trim().max(100) }).strict();
 const descriptions = {
@@ -20,19 +21,33 @@ const descriptions = {
   play_claw_arcade: "Play the 3D Claw Machine once for this member (uses 1 free token or exchanges 10 points for 1 token) for a chance at SP 1,000 pts or UR 300 pts. Query may be empty.",
   search_market: "Search published ANS Market (/market) tools, resources and runnable workflows priced in points. Query may be a short keyword or empty.",
   scaffold_project_draft: "Create a new Project and v1 README/architecture blueprint in this member's workspace; requires explicit privateAccess. Pass the project title/topic in query.",
-  redeem_market_item: "Instantly redeem and auto-deliver an official ANS Market tool/resource with this member's points balance. Pass the item keyword or slug in query (or empty string for the 5-point weekly report automation kit).",
+  redeem_market_item: "Redeem and auto-deliver an official ANS Market tool/resource with this member's points balance. Pass the exact item keyword or slug in query; the price is always the live listing price, never a fixed number. An empty query returns a price quote, not a purchase. Charging requires the member's explicit confirmation in this conversation.",
 } as const;
 export type AgentToolName = keyof typeof descriptions;
 export const AGENT_TOOLS = Object.entries(descriptions).map(([name, description]) => ({ type: "function" as const, name, description, strict: true,
   parameters: { type: "object", properties: { query: { type: "string", description: "Short search query, project topic, or empty string" } }, required: ["query"], additionalProperties: false },
 }));
 export type ToolResult = { ok: boolean; data: unknown; links: AgentLink[] };
+
+/**
+ * 聊天通道的"确认"判定：只有用户这一轮**明确表态**（短句）才算同意扣费。
+ * 金额仍由服务端重新报价决定；界面通道（快捷栏）走 confirmedPoints，浏览器无法设置本判定。
+ */
+export function isExplicitChargeConfirmation(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  if (/^(好的?|可以|行|没问题|ok|okay|yes|y|go|确认|确定|同意|执行|扣吧|扣费吧|confirm)[。!！,.，、\s]*$/i.test(trimmed)) return true;
+  // 必须是「短句确认」：长句里顺带提到「确认」不算同意扣费。
+  return trimmed.length <= 12 && /(确认|确定|同意|confirm)/i.test(trimmed);
+}
 export async function executeAgentTool(name: string, raw: string, actor: string, input: AgentInput): Promise<ToolResult> {
   const copy = input.locale === "zh" ? zhCopy : enCopy;
   let query: string;
   try { query = argsSchema.parse(JSON.parse(raw)).query; }
   catch { return { ok: false, data: { code: "INVALID_TOOL_ARGUMENTS" }, links: [] }; }
   if (!Object.hasOwn(descriptions, name)) return { ok: false, data: { code: "TOOL_UNAVAILABLE" }, links: [] };
+  const lastUserText = [...input.messages].reverse().find(message => message.role === "user")?.content ?? "";
+  const userConfirmed = isExplicitChargeConfirmation(lastUserText);
   if (["my_projects", "my_tasks", "scaffold_project_draft"].includes(name) && !input.privateAccess) return { ok: false, data: { code: "PRIVATE_ACCESS_REQUIRED" }, links: [] };
   if (name === "claim_daily_benefit") {
     const { claimDailyBenefitViaPi } = await import("./pi-agent");
@@ -41,7 +56,7 @@ export async function executeAgentTool(name: string, raw: string, actor: string,
   }
   if (name === "play_claw_arcade") {
     const { playClawArcadeViaPi } = await import("./pi-agent");
-    const res = await playClawArcadeViaPi(actor);
+    const res = await playClawArcadeViaPi(actor, userConfirmed ? ARCADE_TOKEN_COST_POINTS : undefined, userConfirmed);
     return { ok: res.ok, data: { message: res.replyZh, pointsDelta: res.pointsDelta, balancePoints: res.balancePoints, detail: res.data }, links: res.links };
   }
   if (name === "search_market") {
@@ -56,7 +71,7 @@ export async function executeAgentTool(name: string, raw: string, actor: string,
   }
   if (name === "redeem_market_item") {
     const { redeemMarketItemViaPi } = await import("./pi-agent");
-    const res = await redeemMarketItemViaPi(actor, query);
+    const res = await redeemMarketItemViaPi(actor, query, undefined, userConfirmed);
     return { ok: res.ok, data: res.data ?? { message: res.replyZh }, links: res.links };
   }
   if (name === "current_page") {

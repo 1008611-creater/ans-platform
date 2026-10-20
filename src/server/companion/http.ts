@@ -26,6 +26,7 @@ export async function companionAgentResponse(request: Request) {
           model: body.model,
           mode: body.mode,
           contextCode: body.contextCode,
+          confirmedPoints: body.confirmedPoints,
         }),
         { headers },
       );
