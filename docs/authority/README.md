@@ -80,6 +80,23 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
    `authoritative`，`node scripts/check-authority.mjs --worktree` → **23 条规则通过 / 0 失败**（`isZh ?` 实际 32 处，
    全部为数据字段选择、文案三元 0 处；条目上限按棘轮设为 32，只能降不能增）。也就是说合并完成后直接翻状态是安全的。
 
+## 分支同步（develop 不能长期落后 main）
+
+main 前进后 develop 落后，是下一次 `develop → main` 发布把旧内容合回主干的直接原因
+（2026-10-20 PR #164 就是这样把 `deploy.sh` 与 `A-RELEASE-01/02` 一起静默回退的）。
+所以：**每次 main 前进后，都要把 main 同步进 develop**。
+
+```powershell
+npm run sync:develop -- --dry-run   # 只看差多少，不改任何东西
+npm run sync:develop               # 建分支 + 开 PR（不自动合并）
+npm run sync:develop -- --merge    # 建分支 + 开 PR + 门禁绿后自动合并
+```
+
+脚本做了什么：比对 `develop...main`（GitHub compare 真值，不靠浅克隆统计）→ 在**临时 worktree** 里
+`merge origin/main` → 跑本地快检（`check-authority --base origin/main` 含静默删除检测、`check-docs`）→
+推送分支 → 用 REST API 开 PR 到 develop → `--merge` 时轮询门禁，绿了自动合并。
+已在同步状态时直接退出（幂等）；已存在同步 PR 时复用它，不重复开单。
+
 ## 发布后验收（每次上线后跑一遍）
 
 ```powershell
