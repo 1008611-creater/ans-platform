@@ -5,7 +5,15 @@ const m = vi.hoisted(() => ({ actor: "member-a", pageActor: "member-a", status: 
 vi.mock("next-auth/react", () => ({ useSession: () => ({ data: { user: { id: m.actor } }, status: m.status, update: m.updateSession }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: m.refresh, push: m.push }), redirect: vi.fn() }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (key: string) => key }));
-vi.mock("next-intl", () => { const t = (key: string) => key; return { useTranslations: () => t }; });
+vi.mock("next-intl", () => {
+  const dict: Record<string, string> = {
+    "aria.nicknameInput": "\u65b0\u6635\u79f0",
+    "label.editNickname": "\u6539\u6635\u79f0",
+    "label.save": "\u4fdd\u5b58",
+  };
+  const t = (key: string) => dict[key] ?? key;
+  return { useTranslations: () => t };
+});
 vi.mock("sonner", () => ({ toast: { success: m.success, error: m.error } }));
 vi.mock("@/lib/analytics", () => ({ analyticsProfile: { updateProfile: vi.fn(), updateAvatar: vi.fn() } }));
 vi.mock("@/lib/auth", () => ({ auth: async () => ({ user: { id: m.pageActor } }) }));
@@ -106,9 +114,9 @@ describe("workspace nickname editor preserves the profile actor contract", () =>
     if (stage === "GET") fetchMock.mockReturnValueOnce(late.promise);
     else fetchMock.mockResolvedValueOnce(reply({ name: "old", username: "member_a" })).mockReturnValueOnce(late.promise);
     const view = render(<DisplayNameEditor actorId="member-a" current="old" />);
-    fireEvent.click(screen.getByRole("button", { name: "\u6539\u6635\u79f0" }));
+    fireEvent.click(screen.getByRole("button", { name: new RegExp("\u6539\u6635\u79f0|label\\.editNickname") }));
     fireEvent.change(screen.getByLabelText("\u65b0\u6635\u79f0"), { target: { value: "updated-nickname" } });
-    fireEvent.click(screen.getByRole("button", { name: "\u4fdd\u5b58" }));
+    fireEvent.click(screen.getByRole("button", { name: new RegExp("\u4fdd\u5b58|label\\.save") }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(stage === "GET" ? 1 : 2));
     for (const [, init] of fetchMock.mock.calls) expect(init.headers["x-ans-actor"]).toBe("member-a");
     m.actor = "member-b"; view.rerender(<DisplayNameEditor actorId="member-a" current="old" />);
