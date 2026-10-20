@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, it } from "vitest";
-import { DINO_SPECIES, DINO_WARDROBE_ITEMS, pickCatalogText, type DinoSpeciesDef, type WardrobeItemDef } from "@/domain/mascot/sanctuary";
+import { DINO_SPECIES, DINO_WARDROBE_ITEMS, WARDROBE_SLOT_LABELS, calculateStyleEvaluation, loadSanctuaryState, pickCatalogText, type DinoSpeciesDef, type WardrobeItemDef } from "@/domain/mascot/sanctuary";
 
 const SPECIES_FIELDS = ["name", "defaultNickname", "title", "mbti", "tagline", "personality", "agentSpecialty", "agentBuffLabel", "greetingLine", "whipLine", "feedLine"] as const;
 const ITEM_FIELDS = ["name", "description", "specialQuote", "styleTag"] as const;
@@ -52,4 +52,20 @@ it("中文界面取中文原文，英文界面取英文；英文缺失时回落�
   expect(pickCatalogText(sp, "name", false)).toBe((sp as unknown as Record<string, string>).nameEn);
   const legacy = { name: "老道具" } as unknown as WardrobeItemDef;
   expect(pickCatalogText(legacy, "name", false)).toBe("老道具");
+});
+
+it("五个衣橱槽位的标签都有英文", () => {
+  const missing: string[] = [];
+  for (const [slot, info] of Object.entries(WARDROBE_SLOT_LABELS)) {
+    if (!info.labelEn || hasChinese(info.labelEn)) missing.push(slot);
+  }
+  expect(missing).toEqual([]);
+});
+
+it("风格评分给出英文评级与英文主导风格", () => {
+  const evaluation = calculateStyleEvaluation(loadSanctuaryState());
+  expect(evaluation.gradeEn).toBeTruthy();
+  expect(evaluation.dominantTagEn).toBeTruthy();
+  expect(hasChinese(evaluation.gradeEn)).toBe(false);
+  expect(hasChinese(evaluation.dominantTagEn)).toBe(false);
 });
