@@ -283,61 +283,69 @@ export interface ShowcaseMoodPreset {
   reactMode?: string;
   itemIcon?: string;
   itemName?: string;
+  /** 英文台词 / 英文状态小标：英文界面优先使用，缺失时回落中文。 */
+  textEn?: string;
+  subEn?: string;
+}
+
+/** 心情台词按语言选择（英文缺失时回落中文）。放在这里，避免面板组件里再增减语言分支。 */
+export function pickMoodText(isZh: boolean, mood: ShowcaseMoodPreset): string {
+  return isZh ? mood.text : mood.textEn ?? mood.text;
+}
+
+/** 心情状态小标按语言选择（英文缺失时回落中文）。 */
+export function pickMoodSub(isZh: boolean, mood: ShowcaseMoodPreset): string {
+  return isZh ? mood.sub : mood.subEn ?? mood.sub;
 }
 
 export const SHOWCASE_MOOD_PRESETS: Record<string, ShowcaseMoodPreset> = {
   // 8 Autonomous Orbiting Ramblings
-  happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 正在全天候巡航守护灵感中", sub: "💡 灵感雷达在线" },
-  curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看，这个工作流能抄作业！", sub: "✨ 发现可复用模板" },
-  starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个页面有点意思", sub: "🦖 ANS 随身搭子在线" },
-  cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在右下角偷个小懒，没被发现吧~", sub: "🪢 待命随时开工" },
-  cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感不停歇", sub: "🎯 算力与灵感在线" },
-  focused_think:  { happy: 0.16, star: 0.38, blush: 0.30, mouth: 0.14, gesture: "think",     kaomoji: "( •̀ ω •́ ) ⚡", text: "帮你盯着呢，绝不让收藏夹吃灰！", sub: "🔍 边看项目边动手" },
-  sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "伸个懒腰，偷偷打个小盹~", sub: "💫 满血能量蓄力中" },
-  aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚帮你抓到一个新灵感", sub: "🚀 3D 伴宠实时在线" },
-
+  happy_smile:    { happy: 0.92, star: 0.22, blush: 0.80, mouth: 0.62, gesture: "idle",      kaomoji: "( ˶ˆᗜˆ˵ ) ✨", text: "咻~ 正在全天候巡航守护灵感中", sub: "💡 灵感雷达在线", textEn: "Zwoosh~ patrolling 24/7 to guard your ideas", subEn: "💡 Idea radar online", },
+  curious_tilt:   { happy: 0.10, star: 0.58, blush: 0.38, mouth: 0.22, gesture: "curious",   kaomoji: "( ◕_◕ )? 💡",  text: "歪头看看，这个工作流能抄作业！", sub: "✨ 发现可复用模板", textEn: "Tilting my head — hey, this workflow is copy-paste worthy!", subEn: "✨ Reusable template spotted", },
+  starry_excited: { happy: 0.86, star: 1.00, blush: 0.86, mouth: 0.78, gesture: "celebrate", kaomoji: "( ☆▽☆ ) 🌟", text: "哇！这个页面有点意思", sub: "🦖 ANS 随身搭子在线", textEn: "Ooh! This page looks interesting", subEn: "🦖 Your ANS sidekick is online", },
+  cozy_chill:     { happy: 0.78, star: 0.14, blush: 0.65, mouth: 0.20, gesture: "listen",    kaomoji: "( ˘◡˘ ) 🍃",  text: "在右下角偷个小懒，没被发现吧~", sub: "🪢 待命随时开工", textEn: "Sneaking a tiny break in the corner, nobody noticed~", subEn: "🪢 Standing by, ready to work", },
+  cheerful_wave:  { happy: 0.90, star: 0.62, blush: 0.78, mouth: 0.72, gesture: "hello",     kaomoji: "( ≧▽≦ )/ 👋", text: "嗨！AI Never Stops 灵感不停歇", sub: "🎯 算力与灵感在线", textEn: "Hi! AI Never Stops — neither do the ideas", subEn: "🎯 Compute and ideas online", },
+  focused_think:  { happy: 0.16, star: 0.38, blush: 0.30, mouth: 0.14, gesture: "think",     kaomoji: "( •̀ ω •́ ) ⚡", text: "帮你盯着呢，绝不让收藏夹吃灰！", sub: "🔍 边看项目边动手", textEn: "I'm watching it for you — no bookmark will gather dust!", subEn: "🔍 Browsing and building together", },
+  sleepy_stretch: { happy: 0.65, star: 0.12, blush: 0.55, mouth: 0.58, gesture: "stretch",   kaomoji: "( ￣▽￣ ) 💤", text: "伸个懒腰，偷偷打个小盹~", sub: "💫 满血能量蓄力中", textEn: "Big stretch, sneaking a tiny nap~", subEn: "💫 Recharging to full", },
+  aha_spark:      { happy: 0.42, star: 0.96, blush: 0.72, mouth: 0.84, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "叮！刚帮你抓到一个新灵感", sub: "🚀 3D 伴宠实时在线", textEn: "Ding! Just caught a fresh idea for you", subEn: "🚀 3D companion live", },
   // 4 Camera Super Macro Close-Up Ramblings
-  macro0:         { happy: 0.96, star: 0.95, blush: 0.94, mouth: 0.85, gesture: "hello",     kaomoji: "( ✧∀✧ ) 📸", text: "贴脸杀！近景镜头前逮住你啦~", sub: "✨ 近景互动台已就绪", badgeType: "macro" },
-  macro1:         { happy: 1.00, star: 0.80, blush: 1.00, mouth: 0.78, gesture: "curious",   kaomoji: "( ˶ˆᗜˆ˵ ) ✌️", text: "近景特写营业中！小腮红好看吗", sub: "💖 3D 特写镜头营业中", badgeType: "macro" },
-  macro2:         { happy: 0.90, star: 1.00, blush: 0.88, mouth: 0.90, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🔍", text: "凑近镜头碎碎念：一起拆解项目！", sub: "🦖 干活动力拉满", badgeType: "macro" },
-  macro3:         { happy: 0.85, star: 0.90, blush: 0.96, mouth: 0.70, gesture: "shy",       kaomoji: "( ´ ▽ ` )ﾉ ✨", text: "离镜头这么近有点小害羞嘿嘿~", sub: "🌟 近景特写模式", badgeType: "macro" },
-
+  macro0:         { happy: 0.96, star: 0.95, blush: 0.94, mouth: 0.85, gesture: "hello",     kaomoji: "( ✧∀✧ ) 📸", text: "贴脸杀！近景镜头前逮住你啦~", sub: "✨ 近景互动台已就绪", badgeType: "macro", textEn: "Close-up attack! Caught you in front of the lens~", subEn: "✨ Close-up stage ready", },
+  macro1:         { happy: 1.00, star: 0.80, blush: 1.00, mouth: 0.78, gesture: "curious",   kaomoji: "( ˶ˆᗜˆ˵ ) ✌️", text: "近景特写营业中！小腮红好看吗", sub: "💖 3D 特写镜头营业中", badgeType: "macro", textEn: "Serving close-up looks! Do you like my blush?", subEn: "💖 3D close-up mode", },
+  macro2:         { happy: 0.90, star: 1.00, blush: 0.88, mouth: 0.90, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🔍", text: "凑近镜头碎碎念：一起拆解项目！", sub: "🦖 干活动力拉满", badgeType: "macro", textEn: "Muttering at the lens: let's break this project down!", subEn: "🦖 Full working power", },
+  macro3:         { happy: 0.85, star: 0.90, blush: 0.96, mouth: 0.70, gesture: "shy",       kaomoji: "( ´ ▽ ` )ﾉ ✨", text: "离镜头这么近有点小害羞嘿嘿~", sub: "🌟 近景特写模式", badgeType: "macro", textEn: "So close to the lens… a little shy, hehe~", subEn: "🌟 Close-up camera mode", },
   // 5 Mouse Hover Interactive Ramblings
-  hover0:         { happy: 1.00, star: 0.88, blush: 1.00, mouth: 0.82, gesture: "hello",     kaomoji: "( ˶ˆᗜˆ˵ ) 🫳", text: "哇！被你的鼠标摸头啦，好舒服~", sub: "✨ 好感度 +10", badgeType: "hover" },
-  hover1:         { happy: 0.96, star: 0.95, blush: 0.92, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ )/ 💫", text: "别挠痒痒哈哈！尾巴都摇飞啦", sub: "🎯 开心摇尾中", badgeType: "hover" },
-  hover2:         { happy: 0.88, star: 1.00, blush: 0.90, mouth: 0.76, gesture: "curious",   kaomoji: "( ☆▽☆ ) 🤝", text: "捕捉到野生鼠标！要一起造物吗", sub: "🔥 随时准备开工", badgeType: "hover" },
-  hover3:         { happy: 0.94, star: 0.75, blush: 1.00, mouth: 0.68, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 💖", text: "蹭蹭鼠标指针~ 灵感全都传给你", sub: "✨ 灵感传输 +100%", badgeType: "hover" },
-  hover4:         { happy: 0.25, star: 0.92, blush: 0.75, mouth: 0.80, gesture: "surprise",  kaomoji: "( ⊙▽⊙ ) ✨", text: "盯——正顺着网线看你的鼠标呢！", sub: "🦖 视线锁定中", badgeType: "hover" },
-
+  hover0:         { happy: 1.00, star: 0.88, blush: 1.00, mouth: 0.82, gesture: "hello",     kaomoji: "( ˶ˆᗜˆ˵ ) 🫳", text: "哇！被你的鼠标摸头啦，好舒服~", sub: "✨ 好感度 +10", badgeType: "hover", textEn: "Ooh! You patted my head with the cursor, so nice~", subEn: "✨ Affection +10", },
+  hover1:         { happy: 0.96, star: 0.95, blush: 0.92, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ )/ 💫", text: "别挠痒痒哈哈！尾巴都摇飞啦", sub: "🎯 开心摇尾中", badgeType: "hover", textEn: "Don't tickle me, haha! My tail is wagging off!", subEn: "🎯 Happily wagging", },
+  hover2:         { happy: 0.88, star: 1.00, blush: 0.90, mouth: 0.76, gesture: "curious",   kaomoji: "( ☆▽☆ ) 🤝", text: "捕捉到野生鼠标！要一起造物吗", sub: "🔥 随时准备开工", badgeType: "hover", textEn: "Wild cursor captured! Want to build something together?", subEn: "🔥 Ready to start", },
+  hover3:         { happy: 0.94, star: 0.75, blush: 1.00, mouth: 0.68, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 💖", text: "蹭蹭鼠标指针~ 灵感全都传给你", sub: "✨ 灵感传输 +100%", badgeType: "hover", textEn: "Nuzzling the pointer~ passing all my ideas to you", subEn: "✨ Idea transfer +100%", },
+  hover4:         { happy: 0.25, star: 0.92, blush: 0.75, mouth: 0.80, gesture: "surprise",  kaomoji: "( ⊙▽⊙ ) ✨", text: "盯——正顺着网线看你的鼠标呢！", sub: "🦖 视线锁定中", badgeType: "hover", textEn: "Staring—following your cursor through the cable!", subEn: "🦖 Sightline locked", },
   // 6 Mouse Click Interactive Ramblings
-  click0:         { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🎉", text: "耶！戳中小肚子啦，开心蹦两下！", sub: "💖 软萌指数拉满", badgeType: "click" },
-  click1:         { happy: 0.92, star: 0.65, blush: 1.00, mouth: 0.55, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 🙈", text: "哎呀被戳脸蛋了，害羞偷看你~", sub: "✨ 脸颊微红中", badgeType: "click" },
-  click2:         { happy: 0.96, star: 1.00, blush: 0.88, mouth: 0.88, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "近景训龙互动台已就绪！", sub: "🚀 特写机位已锁定", badgeType: "click" },
-  click3:         { happy: 0.90, star: 0.80, blush: 0.94, mouth: 0.95, gesture: "hello",     kaomoji: "( ˆڡˆ ) 🦖",  text: "嗷呜一口吃掉拖延症！马上开工", sub: "🎉 满血状态待命中", badgeType: "click" },
-  click4:         { happy: 0.82, star: 0.85, blush: 0.78, mouth: 0.65, gesture: "nod",       kaomoji: "( •̀ ω •́ )ゞ ⚡", text: "收到！打工人打工魂，随时肝代码", sub: "💡 算力与灵感在线", badgeType: "click" },
-  click5:         { happy: 0.78, star: 0.50, blush: 0.86, mouth: 0.72, gesture: "stretch",   kaomoji: "( ˘◡˘ ) 💕",  text: "贴贴成功！给你表演空中伸懒腰~", sub: "🌟 元气补充完毕", badgeType: "click" },
-
+  click0:         { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.92, gesture: "celebrate", kaomoji: "( ≧▽≦ ) 🎉", text: "耶！戳中小肚子啦，开心蹦两下！", sub: "💖 软萌指数拉满", badgeType: "click", textEn: "Yay! You poked my tummy, bouncing twice!", subEn: "💖 Softness maxed", },
+  click1:         { happy: 0.92, star: 0.65, blush: 1.00, mouth: 0.55, gesture: "shy",       kaomoji: "( ´ ▽ ` ) 🙈", text: "哎呀被戳脸蛋了，害羞偷看你~", sub: "✨ 脸颊微红中", badgeType: "click", textEn: "Ah, my cheek! Peeking at you shyly~", subEn: "✨ Cheeks blushing", },
+  click2:         { happy: 0.96, star: 1.00, blush: 0.88, mouth: 0.88, gesture: "surprise",  kaomoji: "( ✧∀✧ ) 🔥", text: "近景训龙互动台已就绪！", sub: "🚀 特写机位已锁定", badgeType: "click", textEn: "Close-up dragon training is ready!", subEn: "🚀 Camera locked on", },
+  click3:         { happy: 0.90, star: 0.80, blush: 0.94, mouth: 0.95, gesture: "hello",     kaomoji: "( ˆڡˆ ) 🦖",  text: "嗷呜一口吃掉拖延症！马上开工", sub: "🎉 满血状态待命中", badgeType: "click", textEn: "Chomp — procrastination eaten! Starting now", subEn: "🎉 Ready at full power", },
+  click4:         { happy: 0.82, star: 0.85, blush: 0.78, mouth: 0.65, gesture: "nod",       kaomoji: "( •̀ ω •́ )ゞ ⚡", text: "收到！打工人打工魂，随时肝代码", sub: "💡 算力与灵感在线", badgeType: "click", textEn: "Roger! Worker's soul, ready to grind code anytime", subEn: "💡 Compute and ideas online", },
+  click5:         { happy: 0.78, star: 0.50, blush: 0.86, mouth: 0.72, gesture: "stretch",   kaomoji: "( ˘◡˘ ) 💕",  text: "贴贴成功！给你表演空中伸懒腰~", sub: "🌟 元气补充完毕", badgeType: "click", textEn: "Cuddle success! Watch me stretch in mid-air~", subEn: "🌟 Energy restored", },
   // 8 Whip-Butt-to-Work Ramblings
-  whip0:          { happy: 0.08, star: 0.95, blush: 1.00, mouth: 0.96, gesture: "surprise",  kaomoji: "( >﹏<。) 💥", text: "嗷呜！已经在光速敲代码改Bug了！", sub: "⚡ 手速飙升 300%", badgeType: "whip" },
-  whip1:          { happy: 0.12, star: 0.88, blush: 1.00, mouth: 0.92, gesture: "nod",       kaomoji: "( ；´Д｀) 🪢", text: "这份方案我今晚通宵肝完还不行吗！", sub: "🔥 含泪推进进度 +25%", badgeType: "whip" },
-  whip2:          { happy: 0.20, star: 1.00, blush: 0.96, mouth: 0.94, gesture: "celebrate", kaomoji: "(╬◣д◢) 💨",  text: "马上把 3D 渲染优化到 120 帧！", sub: "💻 打工魂彻底觉醒", badgeType: "whip" },
-  whip3:          { happy: 0.10, star: 0.82, blush: 1.00, mouth: 0.88, gesture: "shy",       kaomoji: "(つд⊂) 🍑",   text: "这就去把 PR 合并、测试跑通！", sub: "📈 疯狂搬砖模式", badgeType: "whip" },
-  whip4:          { happy: 0.18, star: 0.98, blush: 0.95, mouth: 0.98, gesture: "surprise",  kaomoji: "(°□°；) ⚡",   text: "正在疯狂输出十万行神级代码！", sub: "🚀 搬砖效率拉满", badgeType: "whip" },
-  whip5:          { happy: 0.14, star: 0.86, blush: 1.00, mouth: 0.86, gesture: "hello",     kaomoji: "(ŏ﹏ŏ) 💦",    text: "已经在全天候巡视 ANS 展厅啦！", sub: "🛠️ 正在全力加速中", badgeType: "whip" },
-  whip6:          { happy: 0.35, star: 1.00, blush: 0.98, mouth: 0.92, gesture: "celebrate", kaomoji: "( >д< ) 🔥",   text: "直接打通任督二脉，需求瞬间清空！", sub: "✨ 今日提交量破纪录", badgeType: "whip" },
-  whip7:          { happy: 0.15, star: 0.90, blush: 1.00, mouth: 0.90, gesture: "nod",       kaomoji: "( ´•̥×•̥` ) 🐾", text: "这就去帮你把作品集擦得锃亮！", sub: "💪 绝不拖延一秒钟", badgeType: "whip" },
-
+  whip0:          { happy: 0.08, star: 0.95, blush: 1.00, mouth: 0.96, gesture: "surprise",  kaomoji: "( >﹏<。) 💥", text: "嗷呜！已经在光速敲代码改Bug了！", sub: "⚡ 手速飙升 300%", badgeType: "whip", textEn: "Ow! Already coding at light speed and fixing bugs!", subEn: "⚡ Hand speed +300%", },
+  whip1:          { happy: 0.12, star: 0.88, blush: 1.00, mouth: 0.92, gesture: "nod",       kaomoji: "( ；´Д｀) 🪢", text: "这份方案我今晚通宵肝完还不行吗！", sub: "🔥 含泪推进进度 +25%", badgeType: "whip", textEn: "I'll pull an all-nighter on this plan, alright?!", subEn: "🔥 Pushing progress +25%", },
+  whip2:          { happy: 0.20, star: 1.00, blush: 0.96, mouth: 0.94, gesture: "celebrate", kaomoji: "(╬◣д◢) 💨",  text: "马上把 3D 渲染优化到 120 帧！", sub: "💻 打工魂彻底觉醒", badgeType: "whip", textEn: "Optimising 3D rendering to 120 fps right now!", subEn: "💻 Worker soul fully awake", },
+  whip3:          { happy: 0.10, star: 0.82, blush: 1.00, mouth: 0.88, gesture: "shy",       kaomoji: "(つд⊂) 🍑",   text: "这就去把 PR 合并、测试跑通！", sub: "📈 疯狂搬砖模式", badgeType: "whip", textEn: "Off to merge the PR and get the tests green!", subEn: "📈 Bricklaying frenzy mode", },
+  whip4:          { happy: 0.18, star: 0.98, blush: 0.95, mouth: 0.98, gesture: "surprise",  kaomoji: "(°□°；) ⚡",   text: "正在疯狂输出十万行神级代码！", sub: "🚀 搬砖效率拉满", badgeType: "whip", textEn: "Blasting out a hundred thousand lines of elite code!", subEn: "🚀 Bricklaying efficiency maxed", },
+  whip5:          { happy: 0.14, star: 0.86, blush: 1.00, mouth: 0.86, gesture: "hello",     kaomoji: "(ŏ﹏ŏ) 💦",    text: "已经在全天候巡视 ANS 展厅啦！", sub: "🛠️ 正在全力加速中", badgeType: "whip", textEn: "Already patrolling the ANS halls around the clock!", subEn: "🛠️ Accelerating at full speed", },
+  whip6:          { happy: 0.35, star: 1.00, blush: 0.98, mouth: 0.92, gesture: "celebrate", kaomoji: "( >д< ) 🔥",   text: "直接打通任督二脉，需求瞬间清空！", sub: "✨ 今日提交量破纪录", badgeType: "whip", textEn: "Clearing all blockages — the backlog is empty!", subEn: "✨ Record commits today", },
+  whip7:          { happy: 0.15, star: 0.90, blush: 1.00, mouth: 0.90, gesture: "nod",       kaomoji: "( ´•̥×•̥` ) 🐾", text: "这就去帮你把作品集擦得锃亮！", sub: "💪 绝不拖延一秒钟", badgeType: "whip", textEn: "Off to polish your portfolio until it gleams!", subEn: "💪 Zero procrastination", },
   // 10 Random Internet-Meme Blind-Box Feeding Presets
-  feed0:          { happy: 0.98, star: 1.00, blush: 0.88, mouth: 0.95, gesture: "celebrate", reactMode: "caffeine", itemIcon: "🧋", itemName: "十倍浓缩冰美式超大桶", kaomoji: "(*≧ω≦) 🧋", text: "吨吨吨！冰美式注入，再肝十个通宵！", sub: "⚡ 咖啡因过载 · 亢奋中", badgeType: "feed" },
-  feed1:          { happy: 0.35, star: 0.92, blush: 1.00, mouth: 1.00, gesture: "surprise",  reactMode: "spicy",    itemIcon: "🌶️", itemName: "变态辣火鸡面配折耳根香菜", kaomoji: "(╬°▽°) 🔥", text: "斯哈斯哈！折耳根配变态辣太上头啦！", sub: "🌶️ 味蕾核爆 · 红温喷火", badgeType: "feed" },
-  feed2:          { happy: 0.94, star: 0.96, blush: 0.82, mouth: 0.88, gesture: "nod",       reactMode: "chomp",    itemIcon: "🐛", itemName: "祖传陈年 P0 级空指针 Bug", kaomoji: "(๑•̀ㅂ•́)و✧ 🐛", text: "咔哧咔哧！顺手把 Bug 消化成新特性！", sub: "✨ Bug 吞噬者 · 嘎嘣脆", badgeType: "feed" },
-  feed3:          { happy: 0.12, star: 0.30, blush: 0.65, mouth: 0.82, gesture: "curious",   reactMode: "choke",    itemIcon: "🥞", itemName: "老板刚画的 88 寸赛博镶金大饼", kaomoji: "( ´_ゝ｀) 🥞", text: "嗝…这大饼太干，差点把 CPU 干烧了！", sub: "🛡️ 画饼防御力 +50", badgeType: "feed" },
-  feed4:          { happy: 0.92, star: 0.88, blush: 0.94, mouth: 0.92, gesture: "celebrate", reactMode: "stinky",   itemIcon: "🥣", itemName: "螺蛳粉炖榴莲臭豆腐暗黑全家桶", kaomoji: "(¬_¬\") 🥣", text: "吸溜吸溜…真香！臭到极致就是香！", sub: "💨 真香定律虽迟但到", badgeType: "feed" },
-  feed5:          { happy: 0.96, star: 0.84, blush: 0.90, mouth: 0.76, gesture: "hello",     reactMode: "happy",    itemIcon: "🧴", itemName: "霸王防脱生发水 + 枸杞保温杯", kaomoji: "(✿◡‿◡) 🧴", text: "喝完感觉头顶背刺都长高了两厘米！", sub: "🌿 发量王者申请出战", badgeType: "feed" },
-  feed6:          { happy: 1.00, star: 1.00, blush: 0.92, mouth: 0.96, gesture: "surprise",  reactMode: "shock",    itemIcon: "🔋", itemName: "RTX 5090 满血电源线（直接怼嘴里）", kaomoji: "⚡(☆▽☆)⚡", text: "滋滋滋——满血 800W 算力注入！", sub: "🚀 脑回路突破 240Hz", badgeType: "feed" },
-  feed7:          { happy: 0.08, star: 0.72, blush: 0.96, mouth: 0.35, gesture: "shy",       reactMode: "sour",     itemIcon: "🍋", itemName: "隔壁大厂刚摘的 100% 纯度酸柠檬", kaomoji: "(＞﹏＜) 🍋", text: "嘶——酸得五官乱飞！咱 ANS 最酷！", sub: "✨ 酸爽提神醒脑", badgeType: "feed" },
-  feed8:          { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.94, gesture: "celebrate", reactMode: "happy",    itemIcon: "🍗", itemName: "疯狂星期四 V 我 50 黄金脆皮炸鸡桶", kaomoji: "╰(*°▽°*)╯ 🍗", text: "呜呼！吃到黄金脆皮炸鸡桶啦！", sub: "💖 幸福感直接拉爆", badgeType: "feed" },
-  feed9:          { happy: 0.88, star: 0.90, blush: 0.76, mouth: 0.68, gesture: "stretch",   reactMode: "zen",      itemIcon: "🧼", itemName: "拼夕夕九块九包邮「恋爱脑清醒肥皂」", kaomoji: "(｡•̀ᴗ-)✧ 🧼", text: "咕噜吐泡泡～智商重新占领高地！", sub: "🫧 人间清醒龙上线", badgeType: "feed" },
+  feed0:          { happy: 0.98, star: 1.00, blush: 0.88, mouth: 0.95, gesture: "celebrate", reactMode: "caffeine", itemIcon: "🧋", itemName: "十倍浓缩冰美式超大桶", kaomoji: "(*≧ω≦) 🧋", text: "吨吨吨！冰美式注入，再肝十个通宵！", sub: "⚡ 咖啡因过载 · 亢奋中", badgeType: "feed", textEn: "Chug chug! Iced americano injected — ten more all-nighters!", subEn: "⚡ Caffeine overload · hyped", },
+  feed1:          { happy: 0.35, star: 0.92, blush: 1.00, mouth: 1.00, gesture: "surprise",  reactMode: "spicy",    itemIcon: "🌶️", itemName: "变态辣火鸡面配折耳根香菜", kaomoji: "(╬°▽°) 🔥", text: "斯哈斯哈！折耳根配变态辣太上头啦！", sub: "🌶️ 味蕾核爆 · 红温喷火", badgeType: "feed", textEn: "Hiss hiss! Fish mint with extra-hot chili — so addictive!", subEn: "🌶️ Taste buds nuked · breathing fire", },
+  feed2:          { happy: 0.94, star: 0.96, blush: 0.82, mouth: 0.88, gesture: "nod",       reactMode: "chomp",    itemIcon: "🐛", itemName: "祖传陈年 P0 级空指针 Bug", kaomoji: "(๑•̀ㅂ•́)و✧ 🐛", text: "咔哧咔哧！顺手把 Bug 消化成新特性！", sub: "✨ Bug 吞噬者 · 嘎嘣脆", badgeType: "feed", textEn: "Crunch crunch! Turning bugs into features on the way!", subEn: "✨ Bug devourer · extra crispy", },
+  feed3:          { happy: 0.12, star: 0.30, blush: 0.65, mouth: 0.82, gesture: "curious",   reactMode: "choke",    itemIcon: "🥞", itemName: "老板刚画的 88 寸赛博镶金大饼", kaomoji: "( ´_ゝ｀) 🥞", text: "嗝…这大饼太干，差点把 CPU 干烧了！", sub: "🛡️ 画饼防御力 +50", badgeType: "feed", textEn: "Burp… that pie was so dry it almost cooked my CPU!", subEn: "🛡️ Pie-resistance +50", },
+  feed4:          { happy: 0.92, star: 0.88, blush: 0.94, mouth: 0.92, gesture: "celebrate", reactMode: "stinky",   itemIcon: "🥣", itemName: "螺蛳粉炖榴莲臭豆腐暗黑全家桶", kaomoji: "(¬_¬\") 🥣", text: "吸溜吸溜…真香！臭到极致就是香！", sub: "💨 真香定律虽迟但到", badgeType: "feed", textEn: "Slurp slurp… delicious! Smelly to the extreme is flavour!", subEn: "💨 Deliciousness arrived late but arrived", },
+  feed5:          { happy: 0.96, star: 0.84, blush: 0.90, mouth: 0.76, gesture: "hello",     reactMode: "happy",    itemIcon: "🧴", itemName: "霸王防脱生发水 + 枸杞保温杯", kaomoji: "(✿◡‿◡) 🧴", text: "喝完感觉头顶背刺都长高了两厘米！", sub: "🌿 发量王者申请出战", badgeType: "feed", textEn: "After that drink my back spikes grew two centimetres!", subEn: "🌿 Hair-volume champion reporting", },
+  feed6:          { happy: 1.00, star: 1.00, blush: 0.92, mouth: 0.96, gesture: "surprise",  reactMode: "shock",    itemIcon: "🔋", itemName: "RTX 5090 满血电源线（直接怼嘴里）", kaomoji: "⚡(☆▽☆)⚡", text: "滋滋滋——满血 800W 算力注入！", sub: "🚀 脑回路突破 240Hz", badgeType: "feed", textEn: "Bzzt—full 800W of compute injected!", subEn: "🚀 Brain clock past 240Hz", },
+  feed7:          { happy: 0.08, star: 0.72, blush: 0.96, mouth: 0.35, gesture: "shy",       reactMode: "sour",     itemIcon: "🍋", itemName: "隔壁大厂刚摘的 100% 纯度酸柠檬", kaomoji: "(＞﹏＜) 🍋", text: "嘶——酸得五官乱飞！咱 ANS 最酷！", sub: "✨ 酸爽提神醒脑", badgeType: "feed", textEn: "Yikes—so sour my face flew apart! ANS is the coolest!", subEn: "✨ Sour-bright and awake", },
+  feed8:          { happy: 1.00, star: 1.00, blush: 1.00, mouth: 0.94, gesture: "celebrate", reactMode: "happy",    itemIcon: "🍗", itemName: "疯狂星期四 V 我 50 黄金脆皮炸鸡桶", kaomoji: "╰(*°▽°*)╯ 🍗", text: "呜呼！吃到黄金脆皮炸鸡桶啦！", sub: "💖 幸福感直接拉爆", badgeType: "feed", textEn: "Woohoo! Got the golden crispy fried chicken bucket!", subEn: "💖 Happiness maxed out", },
+  feed9:          { happy: 0.88, star: 0.90, blush: 0.76, mouth: 0.68, gesture: "stretch",   reactMode: "zen",      itemIcon: "🧼", itemName: "拼夕夕九块九包邮「恋爱脑清醒肥皂」", kaomoji: "(｡•̀ᴗ-)✧ 🧼", text: "咕噜吐泡泡～智商重新占领高地！", sub: "🫧 人间清醒龙上线", badgeType: "feed", textEn: "Gurgle bubble~ IQ retaking the high ground!", subEn: "🫧 Sober dragon online", },
 };
 
 function ensureDinoScreenFxStyles() {
