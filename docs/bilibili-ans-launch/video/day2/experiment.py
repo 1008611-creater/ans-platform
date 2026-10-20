@@ -14,7 +14,7 @@ KEY = None
 for line in open(os.path.expanduser("~/.codex/secrets/siliconflow.env"), encoding="utf-8", errors="ignore"):
     if line.startswith("SILICONFLOW_API_KEY="): KEY = line.split("=", 1)[1].strip()
 
-D1 = json.load(open(os.path.join(V, "..", "raw.json"), encoding="utf-8"))
+D1 = json.load(open(os.path.join(V, "..", "day1", "raw.json"), encoding="utf-8"))
 OUT = os.path.join(V, "raw2.json")
 
 def median_of(label):
@@ -84,10 +84,16 @@ for i, (label, mid) in enumerate(order):
         rv = [r for r in results if r.get("label") == label and r.get("stage") == "review" and "content" in r]
         if rv:
             improved = rv[-1]["content"]
-            p2 = f"""请直接使用下面这条提示词，完成它描述的任务，并给出一次真实执行结果。
+            p2 = f"""下面是你同事帮你改进后的提示词。
 
-提示词：
+需求：「{D1['need']}」
+
+改进后的提示词：
 {improved}
+
+请输出两段（与第一轮的要求完全一致，便于公平对比）：
+1) 原样给出这条改进后的提示词（作为最终版）；
+2) 用它完成上面的需求，给出一次真实执行结果。
 
 限制：全文不超过 400 字；不许调用任何工具；不许向我提问。"""
             r2 = call(mid, p2)
