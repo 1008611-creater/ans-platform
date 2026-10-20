@@ -273,6 +273,8 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         <button type="button" className="ans-companion-resize width" aria-label={ui("resizeChatWidth")} title={ui("resizeChatHint")} {...panelSize.handle("width")} />
         <button type="button" className="ans-companion-resize height" aria-label={ui("resizeChatHeight")} title={ui("resizeChatHint")} {...panelSize.handle("height")} />
         <button type="button" className="ans-companion-resize both" aria-label={ui("resizeChat")} title={ui("resizeChatHint")} {...panelSize.handle("both")}><MoveUpLeft aria-hidden="true" /></button>
+        {/* 「Agent / 工作模式」入口由小恐龙挂件 portal 到这里（点开面板后才出现） */}
+        <div className="ans-companion-dock-slot" data-testid="ans-companion-dock-slot" />
         <header className="ans-companion-header">
           <div className="ans-companion-heading"><button type="button" className="ans-companion-voice" aria-label={voiceLabel} aria-pressed={prefs.voice} title={`${voiceLabel} · ${voiceHint}`} onClick={toggleVoice} disabled={!actor}>{prefs.voice ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}</button><div><span className="ans-companion-kicker">ANS / {ui("byYOURSIDE")}</span><h2 id={titleId}>{t("name")}<span aria-hidden="true" /></h2></div></div>
           <div className="ans-companion-controls">
