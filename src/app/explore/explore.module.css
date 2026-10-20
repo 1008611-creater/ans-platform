@@ -2,14 +2,16 @@
   padding-block: 40px 64px;
 }
 
-.search {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
+.hero {
+  --home-soft: color-mix(in oklch, var(--primary) 3%, var(--background));
 }
 
-.titleBlock { padding-inline-end: 44px; }
+/* 首页式两列在 761–960px 会把 44px 主标题挤成 4 行，这里提前收成单列。 */
+@media (max-width: 960px) {
+  .heroIntro { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+}
+
+.heroActions { margin-top: 18px; }
 
 .categories {
   margin-top: 0;
