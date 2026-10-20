@@ -1188,10 +1188,10 @@ export function CompanionQuestPin({
             >
               <div>
                 <div style={{ fontSize: "12px", fontWeight: 800, color: "#c084fc" }}>
-                  ✨ {ui("bar.wardrobeStyleEvaluation")}：{styleEval.grade}
+                  ✨ {ui("bar.wardrobeStyleEvaluation")}：{isZh ? styleEval.grade : styleEval.gradeEn}
                 </div>
                 <div style={{ fontSize: "13px", fontWeight: 700, marginTop: "2px" }}>
-                  {ui("bar.wardrobeTotalScore")} <strong>{styleEval.totalScore}</strong> · {ui("bar.wardrobeDominantStyle")} <strong>#{styleEval.dominantTag}</strong>
+                  {ui("bar.wardrobeTotalScore")} <strong>{styleEval.totalScore}</strong> · {ui("bar.wardrobeDominantStyle")} <strong>#{isZh ? styleEval.dominantTag : styleEval.dominantTagEn}</strong>
                 </div>
               </div>
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -1207,7 +1207,7 @@ export function CompanionQuestPin({
                         fontWeight: 700,
                       }}
                     >
-                      {eq.icon} {eq.name}
+                      {eq.icon} {pickCatalogText(eq, "name", isZh)}
                     </span>
                   ))
                 ) : (
@@ -1238,7 +1238,7 @@ export function CompanionQuestPin({
                       color: active ? "#fbbf24" : "inherit",
                     }}
                   >
-                    {info.icon} {info.label}
+                    {info.icon} {pickCatalogText(info, "label", isZh)}
                   </button>
                 );
               })}

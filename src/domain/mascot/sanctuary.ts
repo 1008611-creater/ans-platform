@@ -351,12 +351,12 @@ export const DINO_SPECIES_LIST: DinoSpeciesDef[] = [
   DINO_SPECIES.aurora_ice,
 ];
 
-export const WARDROBE_SLOT_LABELS: Record<WardrobeSlot, { label: string; icon: string }> = {
-  headwear: { label: "头饰冠冕", icon: "👑" },
-  eyewear:  { label: "潮酷面饰", icon: "🕶️" },
-  neckwear: { label: "背饰披风", icon: "🪽" },
-  handheld: { label: "手持法器", icon: "🪄" },
-  aura:     { label: "脚底星环", icon: "✨" },
+export const WARDROBE_SLOT_LABELS: Record<WardrobeSlot, { label: string; labelEn: string; icon: string }> = {
+  headwear: { label: "头饰冠冕", labelEn: "Headwear Crown", icon: "👑" },
+  eyewear:  { label: "潮酷面饰", labelEn: "Cool Eyewear", icon: "🕶️" },
+  neckwear: { label: "背饰披风", labelEn: "Back Cape", icon: "🪽" },
+  handheld: { label: "手持法器", labelEn: "Handheld Prop", icon: "🪄" },
+  aura:     { label: "脚底星环", labelEn: "Starlight Aura", icon: "✨" },
 };
 
 export const DINO_WARDROBE_ITEMS: WardrobeItemDef[] = [
@@ -1289,9 +1289,13 @@ export function calculateStyleEvaluation(state: MascotSanctuaryState) {
   const totalScore = rawPower + setBonus + speciesBonus;
 
   const grade = totalScore >= 600 ? "SSS · 殿堂星神" : totalScore >= 420 ? "SS · 闪耀搭配师" : totalScore >= 260 ? "S · 潮流先锋" : totalScore >= 140 ? "A · 元气新星" : "B · 清爽萌新";
+  const gradeEn = totalScore >= 600 ? "SSS · Hall-of-Fame Star God" : totalScore >= 420 ? "SS · Dazzling Stylist" : totalScore >= 260 ? "S · Trend Pioneer" : totalScore >= 140 ? "A · Rising Spark" : "B · Fresh Newbie";
+  const dominantTagEn = ({ "极客": "Geek", "甜酷": "Sweet-cool", "赛博": "Cyber", "学院": "Academic", "星神": "Star-God" } as Record<string, string>)[dominantTag] ?? dominantTag;
   return {
     totalScore,
     grade,
+    gradeEn,
+    dominantTagEn,
     dominantTag,
     setBonus,
     equippedItems,
