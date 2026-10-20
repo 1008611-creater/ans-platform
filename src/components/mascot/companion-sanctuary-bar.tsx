@@ -26,6 +26,8 @@ import {
   BLIND_BOX_FOODS,
   SHOWCASE_MOOD_PRESETS,
   dispatchDinoInteract,
+  pickMoodSub,
+  pickMoodText,
   spawnFoodScreenFx,
   spawnWhipScreenFx,
   type DinoReactMode,
@@ -857,9 +859,9 @@ export function CompanionQuestPin({
             <div className="dino-speech-card">
               <span className="dino-b-kao">{activeMood.kaomoji}</span>
               <div className="dino-b-body">
-                <span className="dino-b-txt">{activeMood.text}</span>
+                <span className="dino-b-txt">{pickMoodText(isZh, activeMood)}</span>
                 <span className="dino-b-sub">
-                  {customSubText ?? activeMood.sub}
+                  {customSubText ?? pickMoodSub(isZh, activeMood)}
                 </span>
               </div>
             </div>
