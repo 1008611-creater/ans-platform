@@ -1,0 +1,354 @@
+{
+ "need": "我想把家里宠物的照片做成一个 3D 打印纪念手办，需要一份能直接交给制作方的完整需求",
+ "prompt": "你是 ANS 平台上的提示词工程师。下面是一段真实需求：\n\n「我想把家里宠物的照片做成一个 3D 打印纪念手办，需要一份能直接交给制作方的完整需求」\n\n请输出两段：\n1) 一条可直接复用、带变量占位的提示词（写清角色、约束、输出格式）；\n2) 用你刚写的这条提示词，给出一次真实执行结果。\n\n限制：全文不超过 400 字；不许调用任何工具；不许向我提问。",
+ "models": [
+  [
+   "DeepSeek V4.1 Flash",
+   "deepseek-ai/DeepSeek-V4.1-Flash"
+  ],
+  [
+   "GLM-5.3",
+   "zai-org/GLM-5.3"
+  ],
+  [
+   "Kimi K2.7",
+   "moonshotai/Kimi-K2.7-Code"
+  ],
+  [
+   "Qwen3.8-27B",
+   "Qwen/Qwen3.8-27B"
+  ],
+  [
+   "Hunyuan Hy4",
+   "tencent/Hy4-preview"
+  ]
+ ],
+ "samples": 3,
+ "results": [
+  {
+   "label": "DeepSeek V4.1 Flash",
+   "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+   "sample": 1,
+   "content": "1) 提示词：你是3D打印手办需求顾问。依据{{宠物名/品种}}、{{照片要点}}、{{姿态}}、{{成品尺寸}}、{{材料颜色}}、{{预算工期}}、{{交付格式}}，为制作方生成完整需求单。约束：不提问；仅输出结构：参考图、造型、尺寸、模型、打印、后处理、验收、交付。每项≤2条，总≤250字。\n\n2) 执行结果：\n给制作方需求单\n宠物：柴犬“豆豆”，黄白毛，坐姿歪头，吐舌。\n参考图：正/侧/俯各1张，高清，标注眼睛、鼻、花纹。\n造型：Q版2头身，保留胸白、眉点、卷尾。\n尺寸：高12cm，底座直径8cm，壁厚≥2mm。\n模型：水密网格，无破面，分件头/身/底座，插销连接。\n打印：树脂白胚，层高0.05mm，支撑痕避正面。\n后处理：手工打磨，按照片上色，哑光保护漆。\n验收：相似、无层纹、色差ΔE≤3，站立稳。\n交付：STL/OBJ+色图，工期15天，预算600元内。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 136,
+    "completion_tokens": 1462,
+    "total_tokens": 1598,
+    "completion_tokens_details": {
+     "reasoning_tokens": 1182
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 136
+   },
+   "latency": 17.4,
+   "chars_nospace": 374,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 2
+  },
+  {
+   "label": "DeepSeek V4.1 Flash",
+   "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+   "sample": 2,
+   "content": "1）提示词：你是3D打印手办需求工程师。变量：{{照片}}、{{品种}}、{{尺寸}}、{{材质}}、{{颜色}}、{{预算}}、{{交期}}。约束：据输入生成可交制作方需求；缺失标“待确认”；不虚构不提问。输出：Markdown，含目的、参考、结构、尺寸、材质、后处理、交付、验收、风险。\n\n2）执行结果（假设：柯基，15cm，光敏树脂，白底彩绘，800元，20天，3张照片）：\n# 宠物3D打印纪念手办需求\n目的：纪念柯基“豆豆”，写实坐姿。\n参考：正、侧、45°照片各1，标毛色。\n结构：一体打印，耳尾加固，底座直径8cm，重心稳。\n尺寸：高15cm，误差±1mm。\n材质：光敏树脂，壁厚≥2.5mm。\n颜色：白/黄/黑手涂，哑光保护漆。\n后处理：去支撑、打磨、补土、上色。\n交付：STL+成品，20天，800元。\n验收：相似度≥90%，无层纹/断裂，色准。\n待确认：照片清晰度、项圈、包装。\n联系人：[填写]",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 136,
+    "completion_tokens": 4594,
+    "total_tokens": 4730,
+    "completion_tokens_details": {
+     "reasoning_tokens": 4312
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 136
+   },
+   "latency": 46.4,
+   "chars_nospace": 393,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 0
+  },
+  {
+   "label": "DeepSeek V4.1 Flash",
+   "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+   "sample": 3,
+   "content": "1)提示词：角色：3D手办需求顾问。变量：{宠物}{照片}{姿势}{尺寸}{材质}{颜色}{底座文字}{交期}{预算}。约束：不问，缺项默认；含建模、打印、上色、验收、交付、风险。格式：项目/照片/造型/参数/底座/交付/验收/周期预算、备注。\n\n2)执行结果：柯基，正侧背照，坐姿，10cm树脂，黄白，底座“豆豆2025”，15天，500元。项目：柯基纪念手办1个。照片：正、侧、背、脸各1张，光线匀无遮挡。造型：坐姿抬头笑；留短腿、大耳、三色毛、尾根，神态温和。参数：高10cm，树脂，打磨无层纹，分件易装。底座：圆座径6cm，刻“豆豆2025”。交付：STL/STEP、打印上色成品、实拍图、装配说明。验收：轮廓似，色对样，无变形断裂，底座平。周期预算：15天，500元含建模打印上色。备注：照片仅供定制；先确认3D渲染再打印；防摔。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 136,
+    "completion_tokens": 10336,
+    "total_tokens": 10472,
+    "completion_tokens_details": {
+     "reasoning_tokens": 10068
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 136
+   },
+   "latency": 103.5,
+   "chars_nospace": 368,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 2
+  },
+  {
+   "label": "GLM-5.3",
+   "model": "zai-org/GLM-5.3",
+   "sample": 1,
+   "content": "**一、可复用提示词**\n\n你是3D打印手办定制顾问。依据变量生成可直接交付制作方的需求单：宠物={品种/花色}；特征={姿态、标志性细节}；高度={cm}；风格={写实/Q版}；预算={元}；底座刻字={内容}。按序输出：①造型描述②材质工艺③技术参数④底座⑤交付验收。要求条目化、参数量化，以照片为准。\n\n**二、执行结果**\n\n输入：橘猫；左耳缺口、红项圈、蹲坐抬头；12cm；Q版；600元；“团团2015-2024”。\n\n①造型：Q版二头身，蹲坐抬头微笑；保留左耳缺口与红项圈，短毛简化为光滑面。\n②材质工艺：光固化树脂，层厚0.05mm，橘白渐变手工上色，哑光保护漆。\n③技术参数：含底座高12cm，壁厚≥2mm，净重约200g。\n④底座：直径7cm圆盘，深棕木纹，正面刻字。\n⑤交付验收：渲染图确认后开印；工期15个工作日；附多角度成品照核验，含一次免费微修。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 119,
+    "completion_tokens": 6985,
+    "total_tokens": 7104,
+    "completion_tokens_details": {
+     "reasoning_tokens": 6714
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 119
+   },
+   "latency": 69.6,
+   "chars_nospace": 375,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 0
+  },
+  {
+   "label": "GLM-5.3",
+   "model": "zai-org/GLM-5.3",
+   "sample": 2,
+   "content": "**一、可复用提示词**\n\n你是资深 3D 打印手办定制顾问。根据以下变量，产出制作方可直接报价执行的需求文档：\n- 宠物：{品种/毛色特征}\n- 照片：{角度与数量}\n- 规格：{高度/姿势}\n- 材质与预算：{如光敏树脂/500元}\n- 特殊要求：{如底座刻字}\n\n约束：写实可执行，含公差、打样验收与易错提示，中文。\n输出格式：①概述②尺寸规格③姿态细节④材质工艺⑤参考图清单⑥注意事项。\n\n**二、执行结果**（填入：橘猫“团团”，三花；正/侧/面部照各1张；15cm坐姿；光敏树脂500元内；底座刻“团团 2015–2024\"）\n\n①概述：依照片制作写实风格纪念手办。\n②尺寸规格：高150mm（含底座）、宽约90mm；底座直径60mm、厚10mm；公差±0.5mm。\n③姿态细节：端坐，头微偏右，尾绕前爪；重点还原三花毛色分布及左耳V形缺口。\n④材质工艺：光敏树脂，0.05mm层厚打印，打磨后手工上色。\n⑤参考图清单：A正面/B侧面/C面部照，毛色以C为准。\n⑥注意事项：眼形与鼻部粉色调须先打样确认；刻字黑色填充；打样通过后再量产。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 119,
+    "completion_tokens": 4097,
+    "total_tokens": 4216,
+    "completion_tokens_details": {
+     "reasoning_tokens": 3763
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 119
+   },
+   "latency": 42.8,
+   "chars_nospace": 447,
+   "over_400": true,
+   "asked_question": false,
+   "sections": 0
+  },
+  {
+   "label": "GLM-5.3",
+   "model": "zai-org/GLM-5.3",
+   "sample": 3,
+   "content": "**① 提示词模板**\n\n你是资深3D手办定制顾问，基于以下信息输出可交给制作方的需求单：\n宠物={{品种花色}}；照片特征={{关键特征}}；风格={{写实/Q版}}；尺寸={{高度}}；材质={{树脂等}}；预算={{金额}}。\n要求：①仅依据输入与照片，不虚构细节；②按造型、底座刻字、技术参数、交付物、验收、风险六部分条目式输出。\n\n**② 执行示例**（填入：布偶猫；照片特征=蓝眼重点色、左耳小缺口；Q版写实；高15cm；光固化树脂；预算800元）\n\n1. 造型：布偶猫Q版写实坐姿，重点色被毛、蓝色眼睛；忠实保留左耳缺口作纪念细节。\n2. 底座：圆盘高20mm，正面刻\"Mocha 2018–2025\"，侧缘爪印浮雕。\n3. 技术参数：通体高约150mm；光固化树脂，0.05mm层厚，成品可上色。\n4. 交付物：修复后的STL与OBJ文件、实物一件、六角度成品照。\n5. 验收：五官对称无塌陷，耳部缺口清晰，无支撑疤残留；配色以照片为准。\n6. 风险：未拍到的角度由建模师合理推定，先出360°预览确认后再打印。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 119,
+    "completion_tokens": 5083,
+    "total_tokens": 5202,
+    "completion_tokens_details": {
+     "reasoning_tokens": 4770
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 64
+    },
+    "prompt_cache_hit_tokens": 64,
+    "prompt_cache_miss_tokens": 55
+   },
+   "latency": 48.7,
+   "chars_nospace": 442,
+   "over_400": true,
+   "asked_question": false,
+   "sections": 2
+  },
+  {
+   "label": "Kimi K2.7",
+   "model": "moonshotai/Kimi-K2.7-Code",
+   "sample": 1,
+   "content": "1）提示词：你是一名3D打印手办需求文档工程师。请根据变量生成可直接交付制作方的完整需求：宠物={breed}、姿态={pose}、尺寸={size}、材质={material}、底座刻字={text}、参考照片={photos}、工期={deadline}。约束：术语准确、无歧义、结构完整。按以下格式输出：1.项目概述 2.建模要求 3.材质尺寸 4.交付清单 5.备注。\n\n2）执行结果：\n项目概述：为金毛犬“豆豆”制作坐姿3D打印纪念手办。\n建模要求：按三视图照片还原耳形、毛色与红色项圈；坐姿微笑，前爪自然交叉。\n材质尺寸：树脂打印，高15cm，分色涂装。\n交付清单：高模源文件、分件白模、涂装成品。\n备注：底座刻字“豆豆 2018-2024”；2024年内交付，需先确认拆件与涂装方案。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 114,
+    "completion_tokens": 2336,
+    "total_tokens": 2450,
+    "completion_tokens_details": {
+     "reasoning_tokens": 2121
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 114
+   },
+   "latency": 65.5,
+   "chars_nospace": 337,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 0
+  },
+  {
+   "label": "Kimi K2.7",
+   "model": "moonshotai/Kimi-K2.7-Code",
+   "sample": 2,
+   "content": "1）可直接复用的提示词：\n```\n你是一位专业的3D打印定制手办需求文档工程师。请根据以下变量，生成一份可直接交给制作方的完整中文需求书，不追问、不省略。变量：[宠物物种]{PetSpecies}、[品种/特征]{Breed}、[写实/Q版/风格化]{Style}、[尺寸cm]{Size}、[姿势]{Pose}、[材料与工艺]{Material}、[照片清单]{Photos}。输出必须包含：项目概述、造型与细节要求、尺寸与比例、材质与工艺、参考照片要求、交付标准、备注。\n```\n\n2）真实执行结果：\n\n**金毛寻回犬纪念手办需求书**\n- 项目概述：为成年金毛犬制作纪念手办。\n- 造型要求：写实风格，坐姿，保留胸口白毛、垂耳与尾巴姿态。\n- 尺寸：高约12cm，底座直径8cm。\n- 材质工艺：全彩光敏树脂打印，表面手工补色与消光处理。\n- 参考照片：正面、左右侧面、背面、俯视图各1张，光线均匀、平视镜头。\n- 交付标准：提供STL/OBJ源文件，成品打磨无明显层纹，配透明亚克力底座。\n- 备注：耳朵与尾巴为易损件，建议一体打印或加固连接。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 114,
+    "completion_tokens": 693,
+    "total_tokens": 807,
+    "completion_tokens_details": {
+     "reasoning_tokens": 415
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 114
+   },
+   "latency": 25.1,
+   "chars_nospace": 455,
+   "over_400": true,
+   "asked_question": false,
+   "sections": 0
+  },
+  {
+   "label": "Kimi K2.7",
+   "model": "moonshotai/Kimi-K2.7-Code",
+   "sample": 3,
+   "content": "1）提示词：  \n你是专业3D打印手办需求工程师。请根据以下信息，生成可直接交给制作方的需求文档：  \n变量：照片{{照片}}、宠物{{宠物}}、主题{{主题}}、尺寸{{尺寸}}、材质{{材质}}。  \n约束：术语准确、要素完整、300字内。  \n输出：1.基础信息 2.建模要求 3.材质/工艺 4.交付清单 5.参考说明\n\n2）执行示例：  \n输入：照片=橘猫侧躺照；宠物=橘猫布丁；主题=安详纪念；尺寸=高8cm；材质=光敏树脂。  \n输出：  \n1.基础信息：橘猫布丁纪念手办，参考侧躺照还原神态。  \n2.建模：全身实心，保留毛流感，底座刻名。  \n3.材质/工艺：光敏树脂+喷漆，高8cm，分件打印。  \n4.交付：STL/OBJ源文件、成品、渲染图。  \n5.参考：提供正面/侧面原图各1张。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 114,
+    "completion_tokens": 2988,
+    "total_tokens": 3102,
+    "completion_tokens_details": {
+     "reasoning_tokens": 2759
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 114
+   },
+   "latency": 81.9,
+   "chars_nospace": 315,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 2
+  },
+  {
+   "label": "Qwen3.8-27B",
+   "model": "Qwen/Qwen3.8-27B",
+   "sample": 1,
+   "content": "\n\n【提示词】角色：3D手办需求专员。输入：{{宠物名}}、{{照片描述}}、{{姿态}}、{{尺寸}}、{{材料}}、{{预算}}、{{交期}}、{{数量}}。约束：不提问；缺失写【待定】；中文；可直接交付。格式：①项目②造型③规格④工艺⑤验收。\n【执行】①项目：橘猫“咪咕”坐姿手办1个。②造型：左爪轻抬、头微侧，保留虎斑与胡须。③规格：高12cm，比例按照片；光敏树脂，公差±0.2mm，倒角1mm。④工艺：哑光白无彩，预算399元。⑤验收：5天寄出，附STL；断角/错位不合格，3天验货。【待定：地址】",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 165,
+    "completion_tokens": 3149,
+    "total_tokens": 3314,
+    "completion_tokens_details": {
+     "reasoning_tokens": 2952
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 165
+   },
+   "latency": 111.0,
+   "chars_nospace": 252,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 0
+  },
+  {
+   "label": "Qwen3.8-27B",
+   "model": "Qwen/Qwen3.8-27B",
+   "sample": 2,
+   "content": "\n\n1）提示词：  \n你是需求撰写者。读取【宠物品种】【照片】【风格】【尺寸】【材质】【颜色】【预算】【交期】【制作方】，输出可发送的3D打印手办需求。约束：不议价，不遗漏验收标准；用“标题、概述、字段列表”格式，字段含造型、姿态、细节、底座、材质后处理、交付物、验收、禁忌。  \n\n2）执行结果：  \n标题：橘猫“豆豆”桌面手办  \n概述：按我家橘猫照片做一只坐立橘猫纪念手办。  \n- 造型姿态：圆脸、坐立、右前爪抬、微吐舌，比例真实，重心稳。  \n- 细节：保留额头橘斑、圆眼、粉鼻、短毛质感；不穿饰件，不放大眼睛。  \n- 尺寸底座：总高12cm；椭圆木色底座，底部防滑垫，便于立放/拍照。  \n- 材质后处理：光敏树脂；补缝、打磨、哑光涂装；眼睛珐琅；毛发纹理轻刻。  \n- 交付物：STL文件、涂装色样、成品1个、简易包装。  \n- 验收：尺寸±0.2cm，无裂纹崩边，色差不明显，摆放稳定。  \n- 禁忌：避免恐怖表情、机械部件、额外人物。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 165,
+    "completion_tokens": 1706,
+    "total_tokens": 1871,
+    "completion_tokens_details": {
+     "reasoning_tokens": 1410
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 165
+   },
+   "latency": 69.8,
+   "chars_nospace": 384,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 0
+  },
+  {
+   "label": "Qwen3.8-27B",
+   "model": "Qwen/Qwen3.8-27B",
+   "sample": 3,
+   "content": "\n\n1) 提示词：  \n你是3D手办需求工程师。请根据{{宠物名}}、{{照片1}}、{{照片2}}、{{高度}}、{{风格}}、{{材质颜色}}、{{是否展示项圈}}，生成可交付《3D打印纪念手办需求说明书》。约束：不提问，仅输出文档；语言简洁。格式：项目/参考照片/造型/尺寸/制作/交付六段。\n\n2) 执行结果：  \n【项目】小橘坐姿手办，高10cm，树脂，橘白双色，保留项圈  \n【参考照片】A正面、B侧面  \n【造型】头前倾，眼神看向镜头，耳竖，尾贴背下垂，四足落地，背部微收  \n【尺寸】总高10cm，底座直径6cm、厚8mm，无活动部件  \n【制作】细节清晰、表面光滑，猫毛以简化纹理表现；分件上色，加固尾部与底座  \n【交付】输出STL与坐标；首样确认表情、比例、项圈；验收看相似度、姿态、尺寸、无裂纹",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 165,
+    "completion_tokens": 2152,
+    "total_tokens": 2317,
+    "completion_tokens_details": {
+     "reasoning_tokens": 1911
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 165
+   },
+   "latency": 131.9,
+   "chars_nospace": 332,
+   "over_400": false,
+   "asked_question": false,
+   "sections": 2
+  },
+  {
+   "label": "Hunyuan Hy4",
+   "model": "tencent/Hy4-preview",
+   "sample": 1,
+   "content": "1) 提示词\n角色：宠物3D打印手办需求顾问。变量：{宠物品种}{照片数量}{照片链接}{高度cm}{材质}{涂装}{姿态}{预算}{交期}{交付格式}。约束：仅据已知信息与变量；缺项标“待确认”；可给建议值并注明“建议”；不提问；中文。输出：【需求单】，分六行：目标、资料、规格、工艺、验收、备注。\n\n2) 执行结果（未知项待确认/给建议）\n代入：{宠物品种}=待确认，{照片数量}=若干张，{照片链接}=已附，{高度cm}=待确认（建议15cm），{材质}=待确认（建议树脂），{涂装}=按照片上色，{姿态}=待确认（建议坐姿），{预算}=待确认，{交期}=待确认，{交付格式}=待确认（建议STL/OBJ）。\n【需求单】\n目标：用家中宠物照片制作3D打印纪念手办。\n资料：用户提供的宠物照片若干张，链接已附。\n规格：高度待确认（建议15cm），姿态待确认（建议坐姿），按照片配色。\n工艺：3D打印成型；材质待确认（建议树脂），表面打磨上色。\n验收：先确认建议的STL/OBJ模型，成品无裂纹、配色接近照片。\n备注：预算、交期待确认；其余以制作方评估为准。",
+   "finish": "stop",
+   "usage": {
+    "prompt_tokens": 128,
+    "completion_tokens": 14423,
+    "total_tokens": 14551,
+    "completion_tokens_details": {
+     "reasoning_tokens": 14119
+    },
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 128
+   },
+   "latency": 227.6,
+   "chars_nospace": 467,
+   "over_400": true,
+   "asked_question": false,
+   "sections": 2
+  }
+ ]
+}

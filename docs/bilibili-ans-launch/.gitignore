@@ -1,0 +1,14 @@
+﻿# 视频管线的重生成物：本地产出，不入库（脚本可完整复现）
+video/out/*.mp4
+video/out/video-only.mp4
+video/out/audio-mix.wav
+video/out/audio-norm.wav
+video/out/*-qc.png
+video/vo/
+video/audio/
+assets/shots/
+assets/gen/
+assets/dino-grid/
+assets/dino-grid2/
+assets/dino-sprites/
+assets/_archive/
