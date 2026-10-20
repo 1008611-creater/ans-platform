@@ -1,15 +1,28 @@
 // @vitest-environment node
 import { beforeEach, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), quote: vi.fn(), execute: vi.fn(), status: vi.fn() }));
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), quote: vi.fn(), execute: vi.fn(), status: vi.fn(), piAction: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/server/companion/service", () => ({ prepareAgentQuote: mocks.quote, executeAgent: mocks.execute, readAgentStatus: mocks.status }));
+vi.mock("@/server/companion/pi-agent", () => ({ executePiAgentAction: mocks.piAction }));
 import { companionAgentResponse } from "@/server/companion/http";
 const input = { messages: [{ role: "user", content: "查一下项目" }], pathname: "/explore", locale: "zh", privateAccess: false, model: "deepseek-v4.1-flash" };
 function request(body: unknown, actor = "alice", origin = "https://ans.example") { return new Request("https://ans.example/api/mascot/agent", { method: "POST", headers: { "Content-Type": "application/json", Origin: origin, "x-ans-actor": actor }, body: JSON.stringify(body) }); }
-beforeEach(() => { vi.resetAllMocks(); vi.stubEnv("AUTH_URL", "https://ans.example"); vi.stubEnv("NEXTAUTH_URL", "https://ans.example"); vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://ans.example"); mocks.auth.mockResolvedValue({ user: { id: "alice" } }); mocks.quote.mockResolvedValue({ ticket: "approved" }); });
+beforeEach(() => { vi.resetAllMocks(); mocks.piAction.mockResolvedValue({ ok: true, toolUsed: "play_claw_arcade", replyZh: "ok", replyEn: "ok", links: [] }); vi.stubEnv("AUTH_URL", "https://ans.example"); vi.stubEnv("NEXTAUTH_URL", "https://ans.example"); vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://ans.example"); mocks.auth.mockResolvedValue({ user: { id: "alice" } }); mocks.quote.mockResolvedValue({ ticket: "approved" }); });
 it("rejects an anonymous caller before touching the model or member data", async () => { mocks.auth.mockResolvedValue(null); expect((await companionAgentResponse(request({ action: "quote", input }))).status).toBe(401); expect(mocks.quote).not.toHaveBeenCalled(); });
 it("rejects a stale account and cross-site request", async () => { expect((await companionAgentResponse(request({ action: "quote", input }, "bob"))).status).toBe(409); expect((await companionAgentResponse(request({ action: "quote", input }, "alice", "https://evil.example"))).status).toBe(403); expect(mocks.quote).not.toHaveBeenCalled(); });
 it("does not accept a browser-forged paid execute without a ticket", async () => { expect((await companionAgentResponse(request({ action: "execute", input }))).status).toBe(400); expect(mocks.execute).not.toHaveBeenCalled(); });
 it("returns a private no-store quote with no supplier call", async () => { const response = await companionAgentResponse(request({ action: "quote", input })); expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toContain("no-store"); expect(mocks.quote).toHaveBeenCalledWith("alice", input); expect(mocks.execute).not.toHaveBeenCalled(); });
 it("only returns allowlisted error details for unexpected failures", async () => { mocks.quote.mockRejectedValue(new Error("secret SQL/private token")); const response = await companionAgentResponse(request({ action: "quote", input })); expect(await response.json()).toEqual({ error: "AGENT_UNAVAILABLE" }); });
 it("turns service failures into a terminated stream, not a false completed answer", async () => { mocks.execute.mockRejectedValue(new Error("private upstream response")); const response = await companionAgentResponse(request({ action: "execute", input, ticket: "long-enough-fixture-approval" })); const text = await response.text(); expect(text).toContain('"type":"error"'); expect(text).toContain('"type":"done"'); expect(text).not.toContain("private upstream"); expect(text).not.toContain('"type":"answer"'); });
+
+it("forwards the user-confirmed points to the paid quick action", async () => {
+  const response = await companionAgentResponse(request({ action: "pi_action", intent: "claw", prompt: "", confirmedPoints: 10 }));
+  expect(response.status).toBe(200);
+  expect(mocks.piAction).toHaveBeenCalledWith("alice", expect.objectContaining({ intent: "claw", confirmedPoints: 10 }));
+});
+
+it("rejects an impossible confirmation amount instead of executing a paid action", async () => {
+  expect((await companionAgentResponse(request({ action: "pi_action", intent: "claw", confirmedPoints: -1 }))).status).toBe(400);
+  expect((await companionAgentResponse(request({ action: "pi_action", intent: "claw", confirmedPoints: 1.5 }))).status).toBe(400);
+  expect(mocks.piAction).not.toHaveBeenCalled();
+});

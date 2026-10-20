@@ -32,8 +32,8 @@ function fixture(files: Record<string, string>, ledger: unknown) {
   return dir;
 }
 
-function runGuard(dir: string) {
-  const result = spawnSync("node", [guard, "--worktree"], { cwd: dir, encoding: "utf8" });
+function runGuard(dir: string, args: string[] = ["--worktree"]) {
+  const result = spawnSync("node", [guard, ...args], { cwd: dir, encoding: "utf8" });
   return { code: result.status, out: `${result.stdout ?? ""}${result.stderr ?? ""}` };
 }
 
@@ -81,6 +81,28 @@ it("fails a countMax rule when duplication regrows", () => {
   const { code, out } = runGuard(dir);
   expect(code).toBe(1);
   expect(out).toContain("出现次数 3 > 上限 2");
+});
+
+it("fails when a base-branch entry is silently deleted from the ledger", () => {
+  // 先造一份"base"：账本里有 A-TEST-01 与 A-DROPPED-01 两条，并把该提交指到 origin/main。
+  const dir = fixture({ "src/keep.ts": "export const marker = 'KEEP_ME';\n" }, {
+    version: 1,
+    entries: [
+      { id: "A-TEST-01", status: "authoritative", title: "kept entry", rules: [] },
+      { id: "A-DROPPED-01", status: "authoritative", title: "silently dropped entry", rules: [] },
+    ],
+  });
+  const baseSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir, encoding: "utf8" }).trim();
+  execFileSync("git", ["update-ref", "refs/remotes/origin/main", baseSha], { cwd: dir });
+  // 工作树里的账本把 A-DROPPED-01 整条删掉（模拟"基于旧 main 的分支把它自己的旧账本合回来"）。
+  writeFileSync(join(dir, "docs/authority/ledger.json"), JSON.stringify({
+    version: 1,
+    entries: [{ id: "A-TEST-01", status: "authoritative", title: "kept entry", rules: [] }],
+  }, null, 2));
+  const { code, out } = runGuard(dir, ["--worktree", "--base", "origin/main"]);
+  expect(code).toBe(1);
+  expect(out).toContain("A-DROPPED-01");
+  expect(out).toContain("整条删除");
 });
 
 it("skips non-authoritative entries instead of failing them", () => {

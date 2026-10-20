@@ -20,6 +20,28 @@ export async function getArcadeServerBalance(userId: string): Promise<{ balanceP
   return { balancePoints: Number(account?.quotaPoints ?? 0) };
 }
 
+/**
+ * 只读：当前可用的抓娃娃币（初始 3 + 任务/彩蛋奖励 + 已购买 - 已抽取）。
+ * 给"先报价后确认"用，本身不产生任何扣减。
+ */
+export async function getArcadeTokenBalance(userId: string): Promise<{ tokens: number; nextTokenCostPoints: number }> {
+  const ops = await db.quotaOperation.findMany({
+    where: { userId, operationKey: { startsWith: "arcade:" } },
+    select: { operationKey: true, evidenceRef: true },
+  });
+  let usedDraws = 0;
+  let earnedTokens = BASE_STARTER_TOKENS;
+  for (const op of ops) {
+    if (op.operationKey.startsWith(`arcade:draw:${userId}:`)) usedDraws += 1;
+    else if (op.evidenceRef?.startsWith("arcade_quest:")) earnedTokens += ARCADE_QUEST_REWARDS[op.evidenceRef.slice("arcade_quest:".length)]?.tokens ?? 0;
+    else if (op.evidenceRef?.startsWith("arcade_buy_tokens:")) {
+      const bought = Number.parseInt(op.evidenceRef.slice("arcade_buy_tokens:".length), 10);
+      if (Number.isFinite(bought) && bought > 0) earnedTokens += bought;
+    }
+  }
+  return { tokens: Math.max(0, earnedTokens - usedDraws), nextTokenCostPoints: ARCADE_TOKEN_COST_POINTS };
+}
+
 export const ARCADE_QUEST_REWARDS: Readonly<
   Record<string, { points: number; tokens: number; daily: boolean; title: string }>
 > = {
@@ -262,7 +284,7 @@ async function verifyQuestPrerequisiteInTx(tx: DbTransaction, userId: string, qu
 
 export const ARCADE_TOKEN_COST_POINTS = 10;
 
-const arcadeClaimSchema = z.discriminatedUnion("kind", [
+export const arcadeClaimSchema = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("quest"),

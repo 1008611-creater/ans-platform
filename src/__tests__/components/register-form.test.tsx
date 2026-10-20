@@ -1,3 +1,4 @@
+import companionCopy from "../../../messages/companion/zh.json";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { RegisterForm } from "@/components/auth/register-form";
@@ -5,7 +6,22 @@ import { RegisterForm } from "@/components/auth/register-form";
 const mocks = vi.hoisted(() => ({ render: vi.fn(), reset: vi.fn(), remove: vi.fn(), fetch: vi.fn() }));
 vi.mock("next/script", () => ({ default: ({ onReady }: { onReady: () => void }) => <button type="button" onClick={onReady}>加载验证脚本</button> }));
 vi.mock("@/lib/analytics", () => ({ analyticsAuth: { register: vi.fn(), registerFailed: vi.fn() } }));
-vi.mock("next-intl", () => ({ useTranslations: () => () => "所有邮箱都可注册，无需邀请码。" }));
+vi.mock("next-intl", () => ({
+  useLocale: () => "zh",
+  useTranslations: (namespace: string) => {
+    if (namespace !== "companion") return () => "所有邮箱都可注册，无需邀请码。";
+    // 领养舱（DinoAdoptionPod）在注册页里渲染，需要真实词条，否则断言读到的是 key。
+    const source = namespace === "companion" ? companionCopy : {};
+    const lookup = (key: string) => key.split(".").reduce<unknown>((value, part) => (value && typeof value === "object" ? (value as Record<string, unknown>)[part] : undefined), source);
+    const t = (key: string, values?: Record<string, string | number>) => {
+      let result = String(lookup(key) ?? key);
+      for (const [name, value] of Object.entries(values ?? {})) result = result.split("{" + name + "}").join(String(value));
+      return result;
+    };
+    t.has = (key: string) => typeof lookup(key) === "string";
+    return t;
+  },
+}));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 let callbacks: Record<string, (value?: string) => void>;
 

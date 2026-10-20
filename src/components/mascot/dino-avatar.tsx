@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { VoiceOffer } from "@/contracts/voice";
-import { SANCTUARY_EVENT_NAME, loadSanctuaryState } from "@/domain/mascot/sanctuary";
+import { loadSanctuaryState } from "@/domain/mascot/sanctuary";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSitePreferences } from "@/lib/site-preferences";
 
@@ -28,6 +28,7 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   const voiceCallback = useRef(onVoiceStatus);
   voiceCallback.current = onVoiceStatus;
   const frame = useRef<HTMLIFrameElement>(null);
+  const openRef = useRef(open);
   const [enabled, setEnabled] = useState(false);
   const [requested, setRequested] = useState(open);
   const [ready, setReady] = useState(false);
@@ -38,19 +39,30 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     frame.current?.contentWindow?.postMessage({ type: "ans-dino", ...data }, window.location.origin);
   }, []);
   useEffect(() => {
+    openRef.current = open;
     if (open) setRequested(true);
   }, [open]);
   useEffect(() => {
-    if (isRealBrowserWebGL()) {
+    if (typeof window === "undefined") return;
+    // 先判断"减少动效"：此前 WebGL 分支先 return，导致这段代码永远不可达，
+    // 开了减少动效的用户照样会被加载并播放 3D 动画。
+    const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    const sync = () => {
+      // 探测不到动效偏好（matchMedia 不可用）或用户要求减少动效：只保留静态立绘，不加载 3D。
+      // 此前"减少动效"这段被 WebGL 分支先 return 短路，永远不可达。
+      if (!window.matchMedia || query?.matches) {
+        setEnabled(false);
+        setReady(false);
+        return;
+      }
       setEnabled(true);
-      setRequested(true);
-      return;
-    }
-    if (!window.matchMedia) return;
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => { setEnabled(!query.matches); setReady(false); };
-    sync(); query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
+      // 真浏览器里不再"能跑 WebGL 就立刻下载"（3D 资源约 9MB）：
+      // 只有用户真的在交互（ans:dino-activate）或打开过面板时才请求；无 WebGL 环境保持原行为。
+      if (isRealBrowserWebGL() && openRef.current) setRequested(true);
+    };
+    sync();
+    query?.addEventListener("change", sync);
+    return () => query?.removeEventListener("change", sync);
   }, []);
   useEffect(() => {
     const activate = () => {

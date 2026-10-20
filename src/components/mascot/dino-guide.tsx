@@ -295,7 +295,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
             data-testid="dino-switch-work-mode"
             onClick={() => switchToWorkMode()}
           >
-            {locale === "zh" ? "🛠️ 工作模式 ↗" : "🛠️ Work Mode ↗"}
+            {ui("guideWorkMode")}
           </button>
         </div>
         <CompanionSanctuaryBar
