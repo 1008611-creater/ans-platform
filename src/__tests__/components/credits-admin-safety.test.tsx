@@ -15,10 +15,10 @@ it("hides receipt fields while manual recharge is disabled",()=>{render(<Credits
 it("requires a receipt only when manual recharge is explicitly selected",()=>{render(<CreditsPanel actorId="admin" overview={{...base,manualRechargeEnabled:true}}/>);fireEvent.change(screen.getByLabelText("Operation"),{target:{value:"TOP_UP"}});expect(screen.getByLabelText("Receipt reference (required for recharge, never a secret)")).toBeRequired();expect(screen.getByLabelText(/actual receipt of funds/)).toBeInTheDocument();fireEvent.change(screen.getByLabelText("Operation"),{target:{value:"ADJUST"}});expect(screen.queryByLabelText("Receipt reference (required for recharge, never a secret)")).toBeNull();});
 it("uses voucher provenance to distinguish redemption from a verified manual recharge",()=>{const op={id:"voucher",userId:"member",kind:"TOP_UP",amount:10,balanceAfter:10.997336,note:"Voucher redemption",createdAt:"2026-10-12T00:00:00Z"};render(<CreditsPanel actorId="admin" overview={{...base,operations:[{...op,evidenceRef:"voucher:code-id"},{...op,id:"manual",evidenceRef:"bank:receipt"},{...op,id:"legacy"}]}}/>);expect(screen.getByText(/member \/ Voucher redeemed/)).toBeInTheDocument();expect(screen.getAllByText(/member \/ Verified manual recharge/)).toHaveLength(2);});
 
-it.each([true,false])("shows the reviewed free voice policy or its paused status without enabling a purchase",available=>{
- const voice={available,mode:"free" as const,points:0 as const,modelId:"mimo-v2.5-tts",policyVersion:"fixture-free",checkedAt:"2026-10-12T00:00:00Z",reviewBy:"2026-10-19T00:00:00Z",cacheHours:24,maxCharacters:1200,pendingCount:2,recentCalls:4,cachedAudioBytes:1024};
+it.each([true,false])("shows the reviewed paid voice policy or its paused status without enabling a purchase",available=>{
+ const voice={available,mode:"paid" as const,points:1 as const,modelId:"mimo-v2.5-tts",policyVersion:"fixture-free",checkedAt:"2026-10-12T00:00:00Z",reviewBy:"2026-10-19T00:00:00Z",cacheHours:24,maxCharacters:1200,pendingCount:2,recentCalls:4,cachedAudioBytes:1024};
  render(<CreditsPanel actorId="admin" overview={{...base,voice}}/>);
  expect(screen.getByRole("heading",{name:"Voice accounting policy"})).toBeInTheDocument();
- expect(screen.getByText(available?"Current reviewed policy: free, 0 credits.":"Voice dispatch is unavailable. Check credentials, approved model and policy review deadline.")).toBeInTheDocument();
+ expect(screen.getByText(available?"Current reviewed policy: 1 credit (CNY 0.10) per synthesis, auto-refunded on failure.":"Voice dispatch is unavailable. Check credentials, approved model and policy review deadline.")).toBeInTheDocument();
  expect(screen.getByText(voice.reviewBy)).toBeInTheDocument();expect(fetch).not.toHaveBeenCalled();
 });
