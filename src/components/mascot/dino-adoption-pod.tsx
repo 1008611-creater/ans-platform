@@ -1,13 +1,14 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   DINO_SPECIES,
   DINO_SPECIES_LIST,
   DINO_WARDROBE_ITEMS,
   SANCTUARY_EVENT_NAME,
   loadSanctuaryState,
+  pickCatalogText,
   saveSanctuaryState,
   type DinoSpeciesId,
   type MascotSanctuaryState,
@@ -55,6 +56,7 @@ export function DinoAdoptionPod({
 }: DinoAdoptionPodProps) {
   const ui = useTranslations("companion");
   const locale = useLocale();
+  const isZh = locale === "zh";
   const trendyNames = locale === "zh" ? TRENDY_NAMES_ZH : TRENDY_NAMES_EN;
   const [sanctuary, setSanctuary] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [crackStep, setCrackStep] = useState<number>(3);
@@ -128,7 +130,7 @@ export function DinoAdoptionPod({
       adopted: true,
       adoptedAt: sanctuary.adoptedAt || new Date().toISOString(),
       speciesId: sp.id,
-      customName: sp.defaultNickname,
+      customName: pickCatalogText(sp, "defaultNickname", isZh),
       unlockedItems: nextUnlocked,
       equipped: { ...sp.starterEquipped },
     });
@@ -419,7 +421,7 @@ export function DinoAdoptionPod({
                     }}
                   >
                     <span style={{ color: sp.palette.skinHex }}>
-                      {icon} {sp.name}
+                      {icon} {pickCatalogText(sp, "name", isZh)}
                     </span>
                     {selected ? (
                       <span style={{ fontSize: "10px", color: "#84fab0" }}>{ui("adopt.selected")}</span>
@@ -434,7 +436,7 @@ export function DinoAdoptionPod({
                       textOverflow: "ellipsis",
                     }}
                   >
-                    {sp.title} · {sp.mbti}
+                    {pickCatalogText(sp, "title", isZh)} · {pickCatalogText(sp, "mbti", isZh)}
                   </div>
                 </button>
               );

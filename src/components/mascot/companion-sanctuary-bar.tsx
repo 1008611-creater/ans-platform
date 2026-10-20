@@ -8,6 +8,7 @@ import {
   DINO_WARDROBE_ITEMS,
   SANCTUARY_EVENT_NAME,
   SECRET_QUESTS,
+  pickCatalogText,
   WARDROBE_SLOT_LABELS,
   calculateStyleEvaluation,
   getAffectionProgress,
@@ -347,7 +348,7 @@ export function CompanionQuestPin({
         const eqCount = Object.values(cur.equipped || {}).filter(Boolean).length;
         setActiveMood(preset);
         setCustomSubText(
-          ui("bar.hudSpNameEqCountEquipped", { name: sp.name, eqCount: eqCount }),
+          ui("bar.hudSpNameEqCountEquipped", { name: pickCatalogText(sp, "name", isZh), eqCount: eqCount }),
         );
         dispatchDinoInteract({ action: "mood", mood: preset });
       } else {
@@ -777,19 +778,19 @@ export function CompanionQuestPin({
         equipped: { ...prev.equipped, [item.slot]: null },
       }));
       dispatchDinoInteract({ type: "pose" });
-      setWardrobeNote(ui("bar.hudUnequippedItemName", { name: item.name }));
+      setWardrobeNote(ui("bar.hudUnequippedItemName", { name: pickCatalogText(item, "name", isZh) }));
       return;
     }
 
     if (!owned) {
       if (styleNow.userLevel.level.index < item.minUserLevel) {
         setWardrobeNote(
-          ui("bar.hudRequiresLvItemMinUserLevel", { minUserLevel: item.minUserLevel, name: item.name }),
+          ui("bar.hudRequiresLvItemMinUserLevel", { minUserLevel: item.minUserLevel, name: pickCatalogText(item, "name", isZh) }),
         );
         return;
       }
       if (affNow.level < item.minAffectionLevel) {
-        setWardrobeNote(ui("bar.wardrobeRequiresAffection", { level: item.minAffectionLevel, name: item.name }));
+        setWardrobeNote(ui("bar.wardrobeRequiresAffection", { level: item.minAffectionLevel, name: pickCatalogText(item, "name", isZh) }));
         return;
       }
       if (state.starBeans < item.priceBeans) {
@@ -814,9 +815,10 @@ export function CompanionQuestPin({
       return updated;
     });
     dispatchDinoInteract({ type: "pose" });
-    setWardrobeNote(ui("bar.wardrobeEquippedItem", { icon: item.icon, name: item.name, quote: item.specialQuote }));
-    if (item.specialQuote) {
-      onTriggerSpeech?.(item.specialQuote);
+    setWardrobeNote(ui("bar.wardrobeEquippedItem", { icon: item.icon, name: pickCatalogText(item, "name", isZh), quote: pickCatalogText(item, "specialQuote", isZh) }));
+    const equippedQuote = pickCatalogText(item, "specialQuote", isZh);
+    if (equippedQuote) {
+      onTriggerSpeech?.(equippedQuote);
     }
   }
 
@@ -925,7 +927,7 @@ export function CompanionQuestPin({
       >
         <div className="hud-top-row">
           <span className="hud-title">
-            🦖 {ui("bar.hudStateCustomNameSpName", { name: state.customName || sp.name })}
+            🦖 {ui("bar.hudStateCustomNameSpName", { name: state.customName || pickCatalogText(sp, "name", isZh) })}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="hud-kpi-val">
@@ -1030,7 +1032,7 @@ export function CompanionQuestPin({
             <div className="ans-sanctuary-header">
               <div>
                 <h2 id="ans-wardrobe-title" style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
-                  👗 {ui("bar.wardrobeDino3DHauteCouture")} · {state.customName || sp.name}
+                  👗 {ui("bar.wardrobeDino3DHauteCouture")} · {state.customName || pickCatalogText(sp, "name", isZh)}
                 </h2>
                 <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
                   🪙 <strong>{state.starBeans}</strong> {ui("bar.wardrobeStarBeans")} · ♥ Lv.{aff.level} ({state.affectionXp} XP) · Lv.{styleEval.userLevel.level.index} {isZh ? styleEval.userLevel.level.nameZh : styleEval.userLevel.level.nameEn}
@@ -1269,7 +1271,7 @@ export function CompanionQuestPin({
                   <button
                     key={item.id}
                     type="button"
-                    title={item.description}
+                    title={pickCatalogText(item, "description", isZh)}
                     onClick={() => handleWardrobeItemClick(item.id)}
                     className={`ans-wardrobe-card group text-start ${equipped ? "is-equipped" : ""}`}
                   >
@@ -1289,7 +1291,7 @@ export function CompanionQuestPin({
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
-                      <div style={{ fontWeight: 800, fontSize: "13px" }}>{item.name}</div>
+                      <div style={{ fontWeight: 800, fontSize: "13px" }}>{pickCatalogText(item, "name", isZh)}</div>
                       <span
                         style={{
                           fontSize: "10px",
@@ -1298,11 +1300,11 @@ export function CompanionQuestPin({
                           background: "rgba(148,163,184,0.16)",
                         }}
                       >
-                        #{item.styleTag}
+                        #{pickCatalogText(item, "styleTag", isZh)}
                       </span>
                     </div>
                     <div className="hidden group-hover:block group-focus-visible:block" style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.35 }}>
-                      {item.description}
+                      {pickCatalogText(item, "description", isZh)}
                     </div>
                     <div style={{ marginTop: "auto", paddingTop: "4px", fontSize: "11px", fontWeight: 800 }}>
                       {equipped ? (
