@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-19T19:42:28+00:00",
+  "updatedAt": "2026-10-20T17:45:00+08:00",
   "description": "ANS 权威基线账本。只记录已被主控确认的产品/流程决定，每条尽量带机器规则（contains/absent/countMax），由 scripts/check-authority.mjs 守卫（CI job: Authority）。改代码而不改账本 = 静默回退，禁止。",
   "entries": [
     {
@@ -198,6 +198,76 @@
       "rules": [],
       "check": "git-health",
       "note": "2026-10-20 01:11 实测：deploy-target=219422c9（落后 origin/main 124 个提交，GitHub compare 真值），prod-live=f32e06f0（2026-10-18 21:24）；两者不一致，需人工确认是“未上线”还是“未回写”。\n2026-10-20 复测（04:12）：ops/deploy-target = ops/prod-live = 0ae6aef7（= 当时 main tip），信号已对齐，git-health 退出码 0；\n两者都是远端分支（refs/heads/ops/*），不是仓库文件也不是工作树文件。"
+    },
+    {
+      "id": "A-RELEASE-01",
+      "status": "authoritative",
+      "title": "发布必须走 release 目录约定：镜像 ans-platform:<short-sha>、release 目录内 production-private.json、project=ans-<sha>-<date>、只 up -d app、上线后校验镜像 ID",
+      "decidedAt": "2026-10-20",
+      "authority": "2026-10-20 生产实况（project 从 ans-bd8876f3-20261017 切到 ans-0ae6aef7-20261020）",
+      "surface": [
+        "deploy/deploy.sh"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "deploy/deploy.sh",
+          "type": "contains",
+          "value": "production-private.json",
+          "note": "发布定义必须来自 release 目录里的私有 compose，而不是仓库里的 compose.yml"
+        },
+        {
+          "ref": "origin/main",
+          "file": "deploy/deploy.sh",
+          "type": "contains",
+          "value": "RELEASES_DIR",
+          "note": "每个 release 必须有独立目录"
+        },
+        {
+          "ref": "origin/main",
+          "file": "deploy/deploy.sh",
+          "type": "contains",
+          "value": "ans-platform:$SHORT",
+          "note": "镜像 tag 必须带目标提交短 SHA"
+        },
+        {
+          "ref": "origin/main",
+          "file": "deploy/deploy.sh",
+          "type": "contains",
+          "value": "rollback.sh",
+          "note": "每个 release 必须生成回滚脚本"
+        }
+      ],
+      "rollback": [],
+      "note": "旧版 deploy.sh 用 project=ans-platform-authoritative + /srv/ans-platform-authoritative-main，与线上容器实际 project 不一致，切换时报 container name conflict；2026-10-20 首次真实上线踩坑后按本约定重写。"
+    },
+    {
+      "id": "A-RELEASE-02",
+      "status": "authoritative",
+      "title": "构建上下文不得包含未提交的 src/ 文件；deploy.sh 必须在构建前拒绝这种状态",
+      "decidedAt": "2026-10-20",
+      "authority": "2026-10-20 生产构建失败复盘：两个未跟踪源文件被 COPY . . 带进构建，Next 类型检查失败（TS2345 / Excessive stack depth）",
+      "surface": [
+        "deploy/deploy.sh"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "deploy/deploy.sh",
+          "type": "contains",
+          "value": "ALLOW_UNTRACKED",
+          "note": "必须给出拒绝未跟踪文件、并允许人工显式覆盖的开关"
+        },
+        {
+          "ref": "origin/main",
+          "file": "deploy/deploy.sh",
+          "type": "contains",
+          "value": "git ls-files --others --exclude-standard -- src",
+          "note": "拒绝逻辑必须真的检查 src/ 未跟踪文件"
+        }
+      ],
+      "rollback": [],
+      "note": "被隔离的两个 WIP 文件保留在服务器 /root/ans-quarantine-20261020/（未删除）；如需继续开发请取回并走分支提交。"
     },
     {
       "id": "A-PROC-01",

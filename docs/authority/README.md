@@ -30,16 +30,24 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
 事故复盘（项目广场回退 `219422c9` → `27969917`）与更细的写法指引，见本地 Skill
 `ans-delivery-governance` 的 `references/authority-ledger.md`。
 
-## 当前状态（2026-10-20）
+## 当前状态（2026-10-20 19:1x）
 
-- `A-PLAZA-01 / 02 / 04`：已由 #149 合入 main 恢复（`npm run check:authority:upstream` 现在通过，
+- **生产**：容器 `ans-platform-app` 跑 `ans-platform:040f6444`（healthy，release 目录
+  `ans-040f6444-20261020` 带 `rollback.sh`）；`ops/deploy-target = ops/prod-live = 040f6444`。
+  线上 `/showcase` 的 `person.glb` 已由 13.88 MB 降到 1.9 KB（#163）。
+- `A-PLAZA-01 / 02 / 04`：已由 #149 合入 main 恢复（`npm run check:authority:upstream` 通过，
   轮转封面、页头标题与可访问性探针都在位上）。
 - `A-AGENT-01`：已生效。线上 Agent 就是小恐龙伴侣 `DinoGuide`（`layout.tsx` 挂载 +
   `useCompanionAgent` 链路），旧 `PromptBuilder` 浮层不得回归。
-- `A-AGENT-02 / 03 / 04 / 05`：**pending**（守卫自动跳过）。对应的实现还在评审中的 PR 栈里
-  （#150 扣费先报价再确认 → #151 面板文案 i18n → #152 3D 按需加载 → #153 抓娃娃载荷与聊天确认 →
-  #154 诚实性与无障碍）。**谁先把它们合入 main，谁就在同一个 PR 里把 status 改回 `authoritative`**，
-  否则规则一开就会红。
+- `A-AGENT-02 / 03 / 04 / 05`：已随 #152 / #153 / #154 / #156 的修复栈合入 main，并由 #165 翻为
+  `authoritative`（守卫开始按规则校验）。
+- **`A-RELEASE-01 / 02` 曾被静默回退，已恢复**：PR #164（一个基于旧 main 的分支）把
+  `deploy/deploy.sh`、`scripts/git-health.mjs` 与账本一起合回了旧版本，A-RELEASE 条目连同实现一起消失，
+  而当时所有门禁都是绿的 —— 账本被同一个 PR 改掉，守卫没得可查。这正是"静默回退"最危险的形态。
+  恢复 PR：`fix/restore-release-authority-20261020`。
+- **新增防复发闸门**：`node scripts/check-authority.mjs --base origin/main` 会检测"base 上存在的权威条目
+  被整条删除"，CI 的 Authority job 现在以 `--base origin/main` 运行（自检用例见
+  `src/__tests__/lib/authority-guard.test.ts`）。
 - `A-SIGNAL-01`：部署信号是**远端分支** `ops/deploy-target` / `ops/prod-live`（既不是仓库里的文件，也不是工作树文件；
   `git ls-remote origin 'refs/heads/ops/*'` 可查）。2026-10-20 复测：两者都指向 `0ae6aef7`（= 当时的 main tip），
   **信号已对齐**，`node scripts/git-health.mjs` 退出码 0；`git-health` 读的正是 `origin/ops/*` 这两个 ref。
@@ -61,7 +69,9 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
 ### 合并顺序与门禁（2026-10-20 预检结果）
 
 1. 顺序：`#148 → #150 → #151 → #152 → #153 → #154 → #156`；`#155`（本 PR）与 `#157`（skills 交接单）独立，可任意顺序。
-2. 每个 PR 的必需检查：`Test` + `Authority`（ruleset `main-protection`，**不可绕过**，只允许 merge/squash，合并后自动删分支）。
+2. 每个 PR 的必需检查：`Test` + `Authority`（ruleset `main-protection` / `develop-protection`，只允许 merge/squash，
+   合并后自动删分支；2026-10-20 17:04 起两个 ruleset 都带 **admin bypass** `RepositoryRole#5: always`，
+   用于投稿自动化直推 main 与单人仓库自助合并 —— bypass 只作应急通道，正常发布仍走 PR + 绿门禁）。
 3. 合并前已在本机跑过与 CI 等价的门禁（栈 + `origin/main` `0ae6aef7` 的合并结果）：
    `check:authority` / `typecheck` / `typecheck:tests` / `lint` / `docs:check` / `check:boundaries` / `test:unit`
    **全部通过**（344 文件 / 4349 项 0 失败）。`build` / `smoke` / `a11y` / `perf` 需要隔离数据库与浏览器，由 CI 承担。
