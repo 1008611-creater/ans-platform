@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   DINO_SPECIES,
   DINO_WARDROBE_ITEMS,
@@ -43,6 +43,7 @@ function SecretAchievementBanner({
   isZh: boolean;
   onClose: () => void;
 }) {
+  const ui = useTranslations("companion");
   return (
     <div
       role="status"
@@ -53,14 +54,14 @@ function SecretAchievementBanner({
         <div className="space-y-0.5">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950 shadow-sm">
-              🏆 {isZh ? "隐藏彩蛋解锁" : "SECRET QUEST UNLOCKED"} · {quest.code}
+              🏆 {ui("bar.bannerSecretQUESTUNLOCKED")} · {quest.code}
             </span>
             <span className="rounded-full border border-amber-400/50 bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-200">
               {quest.icon} {isZh ? quest.badgeZh : quest.badgeEn}
             </span>
           </div>
           <p className="pt-0.5 text-xs font-extrabold text-amber-900 dark:text-amber-100">
-            {isZh ? `【${quest.titleZh}】` : `[${quest.titleEn}]`}{" "}
+            {ui("bar.bannerQuestTitleEn", { title: isZh ? quest.titleZh : quest.titleEn })}{" "}
             <span className="font-normal text-foreground/90">
               {isZh ? quest.speechZh : quest.speechEn}
             </span>
@@ -77,7 +78,7 @@ function SecretAchievementBanner({
         <button
           type="button"
           onClick={onClose}
-          aria-label={isZh ? "关闭成就横幅" : "Dismiss achievement banner"}
+          aria-label={ui("bar.bannerDismissAchievementBanner")}
           className="shrink-0 rounded-full px-1.5 py-0.5 text-xs font-bold text-amber-700 hover:bg-amber-500/20 dark:text-amber-200"
         >
           ×
@@ -113,6 +114,7 @@ export function CompanionQuestPin({
   onTriggerSpeech?: (text: string) => void;
 }) {
   const locale = useLocale();
+  const ui = useTranslations("companion");
   const isZh = locale === "zh";
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [alertMode, setAlertMode] = useState(true);
@@ -172,15 +174,28 @@ export function CompanionQuestPin({
     return () => window.clearTimeout(timer);
   }, [alertMode]);
 
-  // Automatically upgrade the bottom-right dragon to the live 3D Sanctuary WebGL canvas in real browsers
+  // 只在用户真的和小恐龙互动（悬停/点击/聚焦/打开面板）时才加载 3D 场景（约 9MB）。
+  // 此前是挂载即 dispatch，等于每个页面首屏都预下载整套 WebGL 资源。
   useEffect(() => {
-    if (typeof window !== "undefined" && typeof WebGLRenderingContext !== "undefined") {
+    if (typeof window === "undefined" || typeof WebGLRenderingContext === "undefined") return;
+    const root = document.querySelector(".ans-dino-guide");
+    if (!root) return;
+    let activated = false;
+    const activate = () => {
+      if (activated) return;
+      activated = true;
       window.dispatchEvent(new CustomEvent("ans:dino-activate"));
-      const t = window.setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("ans:dino-activate"));
-      }, 60);
-      return () => window.clearTimeout(t);
-    }
+      cleanup();
+    };
+    const cleanup = () => {
+      root.removeEventListener("pointerenter", activate);
+      root.removeEventListener("pointerdown", activate);
+      root.removeEventListener("focusin", activate);
+    };
+    root.addEventListener("pointerenter", activate);
+    root.addEventListener("pointerdown", activate);
+    root.addEventListener("focusin", activate);
+    return cleanup;
   }, []);
 
   // Keep body classes synchronized with macroActive and sanctuaryModal
@@ -231,11 +246,18 @@ export function CompanionQuestPin({
       }
     };
     updatePosition();
-    const interval = window.setInterval(updatePosition, 90);
+    // 事件驱动替代 90ms 永久轮询：此前每秒约 11 次 setState + 重排整个面板子树（全站常驻组件）。
+    const host = document.querySelector<HTMLElement>(".ans-dino-guide .ans-dino-trigger");
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updatePosition);
+    if (host && observer) observer.observe(host);
     window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    const frame = window.requestAnimationFrame(updatePosition);
     return () => {
-      window.clearInterval(interval);
+      observer?.disconnect();
       window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.cancelAnimationFrame(frame);
     };
   }, [alertMode, macroActive, sanctuaryModal]);
 
@@ -254,9 +276,7 @@ export function CompanionQuestPin({
         const eqCount = Object.values(cur.equipped || {}).filter(Boolean).length;
         setActiveMood(preset);
         setCustomSubText(
-          isZh
-            ? `(${sp.name} · 已穿戴 ${eqCount} 件装扮)`
-            : `(${sp.name} · ${eqCount} equipped)`,
+          ui("bar.hudSpNameEqCountEquipped", { name: sp.name, eqCount: eqCount }),
         );
         dispatchDinoInteract({ action: "mood", mood: preset });
       } else {
@@ -268,7 +288,7 @@ export function CompanionQuestPin({
       }
     }, 4200);
     return () => window.clearInterval(timer);
-  }, [alertMode, macroActive, isZh]);
+  }, [alertMode, macroActive, isZh, ui]);
 
   useEffect(() => {
     if (!pinBannerQuest) return;
@@ -443,12 +463,8 @@ export function CompanionQuestPin({
       const protestMood: ShowcaseMoodPreset = {
         id: "strike",
         kaomoji: "(╬▔皿▔)╯🕶️",
-        text: isZh
-          ? "啪什么啪！本龙掏出《小恐龙劳动法》宣布罢工 30 秒！"
-          : "Stop whipping! By the Dino Labor Law, I'm on a 30s strike!",
-        sub: isZh
-          ? "(罢工抗议中 · 快点「🎲 随机盲盒投喂」喂一口夜宵哄好本龙领隐藏大奖！)"
-          : "(On strike · Click 'Random Blind-Box Feed' now to make peace & unlock secret reward!)",
+        text: ui("bar.hudStopWhippingByThe"),
+        sub: ui("bar.hudOnStrikeClickRandom"),
         gesture: "whip",
         blush: 0.9,
         happy: 0.2,
@@ -504,9 +520,9 @@ export function CompanionQuestPin({
       setState(res.state);
       setPinBannerQuest(res.quest);
       const feedMood = findMoodPreset("feed0");
-      spawnFoodScreenFx("🧋", isZh ? "罢工解除 +35🪙 +25♥" : "Strike Pacified +35🪙 +25♥");
+      spawnFoodScreenFx("🧋", ui("bar.hudStrikePacified3525"));
       setActiveMood(feedMood);
-      setCustomSubText(isZh ? `📜 罢工解除！【${res.quest.titleZh}】已解锁` : `📜 Strike pacified! [${res.quest.titleEn}]`);
+      setCustomSubText(ui("bar.hudStrikePacifiedResQuest", { title: isZh ? res.quest.titleZh : res.quest.titleEn }));
       dispatchDinoInteract({ type: "feed", reactMode: "happy", mood: feedMood });
       onTriggerSpeech?.(isZh ? res.quest.speechZh : res.quest.speechEn);
       return;
@@ -540,17 +556,13 @@ export function CompanionQuestPin({
 
     const foodName = isZh ? food.nameZh : food.nameEn;
     const foodTag = isZh ? food.tagZh : food.tagEn;
-    spawnFoodScreenFx(food.icon, `🎲 盲盒抽中【${foodName}】+${food.coins}🪙 +${food.affection}♥`);
+    spawnFoodScreenFx(food.icon, ui("bar.hudBlindBoxDrewFood", { foodName, coins: food.coins, affection: food.affection }));
 
     const customFeedMood: ShowcaseMoodPreset = {
       id: `feed_${food.id}`,
       kaomoji: food.kaomoji,
-      text: isZh
-        ? `盲盒投喂【${food.icon} ${foodName}】！${food.reactionZh}`
-        : `Blind-box fed [${food.icon} ${foodName}]! ${food.reactionEn}`,
-      sub: isZh
-        ? `(${foodTag} · 好感度 +${food.affection} ♥ · 灵感星豆 +${food.coins} 🪙)`
-        : `(${foodTag} · Affection +${food.affection} ♥ · Star Beans +${food.coins} 🪙)`,
+      text: ui("bar.hudBlindBoxFedFood", { icon: food.icon, foodName: foodName, reaction: isZh ? food.reactionZh : food.reactionEn }),
+      sub: ui("bar.hudFoodtagAffectionFoodAffection", { foodTag: foodTag, affection: food.affection, coins: food.coins }),
       gesture: food.reactMode,
       blush: 0.85,
       happy: 0.95,
@@ -576,12 +588,8 @@ export function CompanionQuestPin({
     const patMood: ShowcaseMoodPreset = {
       id: "pat",
       kaomoji: "(✿◡‿◡)💖",
-      text: isZh
-        ? "呼噜呼噜~ 被主人摸头顺毛好舒服呀！尾巴都要摇断啦~"
-        : "Purr~ Head pats feel amazing! Tail wagging at max speed~",
-      sub: isZh
-        ? "(摸头杀成功 · 好感度 +15 ♥ · 灵感星豆 +10 🪙)"
-        : "(Head pat · Affection +15 ♥ · Star Beans +10 🪙)",
+      text: ui("bar.hudPurrHeadPatsFeel"),
+      sub: ui("bar.hudHeadPatAffection15"),
       gesture: "shy",
       blush: 1.0,
       happy: 1.0,
@@ -617,15 +625,7 @@ export function CompanionQuestPin({
       const nextSpin = !state.turntableSpin;
       commitSanctuary(prev => ({ ...prev, turntableSpin: nextSpin }));
       dispatchDinoInteract({ type: "turntable", spin: nextSpin });
-      setWardrobeNote(
-        isZh
-          ? nextSpin
-            ? "🔄 已开启左侧 3D 展台 360° 自动旋转！"
-            : "⏹️ 已暂停 360° 自动旋转"
-          : nextSpin
-            ? "🔄 360° Turntable enabled!"
-            : "⏹️ 360° Turntable paused",
-      );
+      setWardrobeNote(ui(nextSpin ? "bar.wardrobeTurntableEnabled" : "bar.wardrobeTurntablePaused"));
       return;
     }
     const delta = deltaYaw ?? Math.PI / 4;
@@ -660,9 +660,7 @@ export function CompanionQuestPin({
     dispatchDinoInteract({ type: "turntable", spin: true });
     dispatchDinoInteract({ type: "pose" });
     setWardrobeNote(
-      isZh
-        ? "🧋 已穿戴 Tripo 3D【吨吨冰美式外挂喷射包 + 奶油云朵画家帽 + 金丝镜 + 零Bug仙女棒 + 樱吹雪星阵】套装！"
-        : "🧋 Equipped [Tripo 3D Boba Jet-Pack + Cloud Beret + Gold Glasses + Magic Wand + Sakura Halo] set!",
+      ui("bar.hudEquippedTripo3DBoba"),
     );
   }
 
@@ -690,9 +688,7 @@ export function CompanionQuestPin({
     dispatchDinoInteract({ type: "turntable", spin: true });
     dispatchDinoInteract({ type: "pose" });
     setWardrobeNote(
-      isZh
-        ? "👑 已一键试穿 UR 星神满配高定神装（SSS）【极光星神王冠 + 星轨单片镜 + 先锋熔金披风 + 悬浮魔导书 + 创世极光星环】！"
-        : "👑 Equipped UR Star-God Full Set (SSS)!",
+      ui("bar.hudEquippedURStarGod"),
     );
   }
 
@@ -710,32 +706,24 @@ export function CompanionQuestPin({
         equipped: { ...prev.equipped, [item.slot]: null },
       }));
       dispatchDinoInteract({ type: "pose" });
-      setWardrobeNote(isZh ? `已卸下【${item.name}】` : `Unequipped [${item.name}]`);
+      setWardrobeNote(ui("bar.hudUnequippedItemName", { name: item.name }));
       return;
     }
 
     if (!owned) {
       if (styleNow.userLevel.level.index < item.minUserLevel) {
         setWardrobeNote(
-          isZh
-            ? `🔒 需达到 Lv.${item.minUserLevel} 才可解锁【${item.name}】（可点上方「👑 一键试穿 UR 满配神装」直接解锁全部）`
-            : `🔒 Requires Lv.${item.minUserLevel} to unlock [${item.name}]`,
+          ui("bar.hudRequiresLvItemMinUserLevel", { minUserLevel: item.minUserLevel, name: item.name }),
         );
         return;
       }
       if (affNow.level < item.minAffectionLevel) {
-        setWardrobeNote(
-          isZh
-            ? `🔒 需好感达到 ♥Lv.${item.minAffectionLevel} 才可解锁【${item.name}】`
-            : `🔒 Requires Affection ♥Lv.${item.minAffectionLevel}`,
-        );
+        setWardrobeNote(ui("bar.wardrobeRequiresAffection", { level: item.minAffectionLevel, name: item.name }));
         return;
       }
       if (state.starBeans < item.priceBeans) {
         setWardrobeNote(
-          isZh
-            ? `🪙 灵感星豆不足（需 ${item.priceBeans}🪙，可通过摸摸头、盲盒投喂或催干活获取）`
-            : `🪙 Needs ${item.priceBeans}🪙 Star Beans`,
+          ui("bar.hudNeedsItemPriceBeansStar", { priceBeans: item.priceBeans }),
         );
         return;
       }
@@ -755,11 +743,7 @@ export function CompanionQuestPin({
       return updated;
     });
     dispatchDinoInteract({ type: "pose" });
-    setWardrobeNote(
-      isZh
-        ? `✨ 已穿戴【${item.icon} ${item.name}】· ${item.specialQuote}`
-        : `✨ Equipped [${item.icon} ${item.name}]`,
-    );
+    setWardrobeNote(ui("bar.wardrobeEquippedItem", { icon: item.icon, name: item.name, quote: item.specialQuote }));
     if (item.specialQuote) {
       onTriggerSpeech?.(item.specialQuote);
     }
@@ -797,12 +781,14 @@ export function CompanionQuestPin({
 
       {/* 1:1 Resume Website Speech & Alert Bubble (#ans-dino-live-bubble) */}
       {!dialogOpen && sanctuaryModal === "none" && (
-        <div
+        <button
+          type="button"
           id="ans-dino-live-bubble"
           style={{ left: bubblePos.left, bottom: bubblePos.bottom }}
           data-bubble-state={alertMode ? "alert" : "expanded"}
           data-idle-dim={alertDimmed ? "true" : "false"}
-          className={`is-visible ${alertMode ? "is-alert" : ""} ${alertMode && alertDimmed ? "is-alert-dimmed" : ""}`}
+          className={`is-visible border-0 bg-transparent p-0 text-start ${alertMode ? "is-alert" : ""} ${alertMode && alertDimmed ? "is-alert-dimmed" : ""}`}
+          aria-label={ui("bar.hudHoverToInteractClick")}
           onPointerEnter={() => triggerHoverReaction(true)}
           onPointerLeave={() => triggerHoverReaction(false)}
           onClick={e => {
@@ -811,7 +797,7 @@ export function CompanionQuestPin({
           }}
         >
           {alertMode ? (
-            <div className="dino-alert-pin" title={isZh ? "移上来跟小恐龙互动 / 连点 3 下进入近景镜头" : "Hover to interact / Click 3 times for Close-Up Stage"}>
+            <div className="dino-alert-pin" title={ui("bar.hudHoverToInteractClick")}>
               <span className="dino-alert-bang">!</span>
               <span className="dino-alert-ring" />
               <span className="dino-alert-ring2" />
@@ -827,7 +813,7 @@ export function CompanionQuestPin({
               </div>
             </div>
           )}
-        </div>
+        </button>
       )}
 
       {/* Minimal 2-Pill Dock next to bottom-right 3D Dragon (Hover/3-Click on Dino triggers Close-Up Stage) */}
@@ -842,18 +828,18 @@ export function CompanionQuestPin({
               e.stopPropagation();
               window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
             }}
-            title={isZh ? "打开 Agent 对话与快捷代办（连点小恐龙 3 下进入近景互动）" : "Open Agent Chat & 1-Click Actions (Click dino 3x for Close-Up Stage)"}
+            title={ui("bar.dockOpenAgentChat1")}
             className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
           >
-            {isZh ? "Agent" : "Agent"}
+            {ui("bar.dockAgent")}
           </button>
           <button
             type="button"
             onClick={navigateToWorkMode}
-            title={isZh ? "进入 Agent 工作模式" : "Open Work Mode"}
+            title={ui("bar.dockOpenWorkMode")}
             className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
           >
-            {isZh ? "工作模式" : "Work Mode"}
+            {ui("bar.dockWorkMode")}
           </button>
         </div>
       )}
@@ -868,18 +854,18 @@ export function CompanionQuestPin({
       >
         <div className="hud-top-row">
           <span className="hud-title">
-            🦖 {isZh ? `${state.customName || sp.name} · 干活动力` : `${state.customName || sp.name} · Work Drive`}
+            🦖 {ui("bar.hudStateCustomNameSpName", { name: state.customName || sp.name })}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="hud-kpi-val">
-              {workDrivePct}% {isOverclocked ? (isZh ? "⚡ 超频" : "⚡ Boost") : ""} · 🪙 {state.starBeans}
+              {workDrivePct}% {isOverclocked ? (ui("bar.hudBoost")) : ""} · 🪙 {state.starBeans}
             </span>
             <button
               type="button"
               className="hud-exit-btn"
               onClick={() => exitMacroMode()}
             >
-              ✕ {isZh ? "收起" : "Close"}
+              ✕ {ui("bar.hudClose")}
             </button>
           </div>
         </div>
@@ -890,44 +876,44 @@ export function CompanionQuestPin({
           <button
             type="button"
             className="hud-act-btn is-whip"
-            title={isZh ? "催干活提速 · +25🪙 +8♥" : "Overclock boost · +25🪙 +8♥"}
+            title={ui("bar.hudOverclockBoost258")}
             onClick={handleWhipAction}
           >
-            🪢 {isZh ? "挥鞭催干活" : "Crack Whip"}
+            🪢 {ui("bar.hudCrackWhip")}
           </button>
           <button
             type="button"
             className="hud-act-btn is-feed"
-            title={isZh ? "抽取限定零食 · +好感 & +20🪙" : "Blind-box snack · +Affection & +20🪙"}
+            title={ui("bar.hudBlindBoxSnackAffection")}
             onClick={handleFeedAction}
           >
-            🎲 {isZh ? "盲盒投喂" : "Blind-Box Feed"}
+            🎲 {ui("bar.hudBlindBoxFeed")}
           </button>
           <button
             type="button"
             className="hud-act-btn is-wardrobe"
-            title={isZh ? "3D 换装与高定配饰" : "3D Wardrobe & Accessories"}
+            title={ui("bar.hud3dWardrobeAccessories")}
             onClick={handleOpenWardrobeDrawer}
           >
-            👗 {isZh ? "3D 衣橱" : "Wardrobe"}
+            👗 {ui("bar.hudWardrobe")}
           </button>
           <button
             type="button"
             className="hud-act-btn is-adopt"
-            title={isZh ? "切换小恐龙形态" : "Switch Dino Form"}
+            title={ui("bar.hudSwitchDinoForm")}
             onClick={handleOpenAdoptDrawer}
           >
-            🥚 {isZh ? "切换形态" : "Lineage"}
+            🥚 {ui("bar.hudLineage")}
           </button>
         </div>
         <div className="hud-btn-row" style={{ marginTop: "2px" }}>
           <button
             type="button"
             className="hud-act-btn"
-            title={isZh ? "好感度 +15♥ · 星豆 +10🪙" : "Affection +15♥ · Beans +10🪙"}
+            title={ui("bar.hudAffection15Beans10")}
             onClick={handlePatAction}
           >
-            🤚 {isZh ? "摸摸头" : "Pat Head"}
+            🤚 {ui("bar.hudPatHead")}
           </button>
           <button
             type="button"
@@ -937,14 +923,14 @@ export function CompanionQuestPin({
               window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
             }}
           >
-            🤖 {isZh ? "Agent 对话" : "Agent Chat"}
+            🤖 {ui("bar.hudAgentChat")}
           </button>
           <button
             type="button"
             className="hud-act-btn"
             onClick={navigateToWorkMode}
           >
-            🛠️ {isZh ? "工作模式 ↗" : "Work Mode ↗"}
+            🛠️ {ui("bar.hudWorkMode")}
           </button>
         </div>
       </div>
@@ -965,10 +951,10 @@ export function CompanionQuestPin({
             <div className="ans-sanctuary-header">
               <div>
                 <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
-                  👗 {isZh ? "3D 小恐龙衣橱" : "Dino 3D Haute Couture Wardrobe"} · {state.customName || sp.name}
+                  👗 {ui("bar.wardrobeDino3DHauteCouture")} · {state.customName || sp.name}
                 </h2>
                 <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
-                  🪙 <strong>{state.starBeans}</strong> {isZh ? "灵感星豆" : "Star Beans"} · ♥ Lv.{aff.level} ({state.affectionXp} XP) · Lv.{styleEval.userLevel.level.index} {isZh ? styleEval.userLevel.level.nameZh : styleEval.userLevel.level.nameEn}
+                  🪙 <strong>{state.starBeans}</strong> {ui("bar.wardrobeStarBeans")} · ♥ Lv.{aff.level} ({state.affectionXp} XP) · Lv.{styleEval.userLevel.level.index} {isZh ? styleEval.userLevel.level.nameZh : styleEval.userLevel.level.nameEn}
                 </p>
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -986,7 +972,7 @@ export function CompanionQuestPin({
                     fontWeight: 800,
                   }}
                 >
-                  🥚 {isZh ? "切换小恐龙形态" : "Switch Lineage"}
+                  🥚 {ui("bar.wardrobeSwitchLineage")}
                 </button>
                 <button
                   type="button"
@@ -1001,7 +987,7 @@ export function CompanionQuestPin({
                     fontWeight: 800,
                   }}
                 >
-                  ✕ {isZh ? "返回近景舞台" : "Back"}
+                  ✕ {ui("bar.wardrobeBack")}
                 </button>
               </div>
             </div>
@@ -1036,7 +1022,7 @@ export function CompanionQuestPin({
                     cursor: "pointer",
                   }}
                 >
-                  ◀ {isZh ? "左转 45°" : "Left 45°"}
+                  ◀ {ui("bar.wardrobeLeft45")}
                 </button>
                 <button
                   type="button"
@@ -1052,7 +1038,7 @@ export function CompanionQuestPin({
                     cursor: "pointer",
                   }}
                 >
-                  🔄 {state.turntableSpin ? (isZh ? "停止旋转" : "Stop Spin") : (isZh ? "360° 自动旋转" : "360° Auto-Spin")}
+                  🔄 {state.turntableSpin ? (ui("bar.wardrobeStopSpin")) : (ui("bar.wardrobe360AutoSpin"))}
                 </button>
                 <button
                   type="button"
@@ -1068,7 +1054,7 @@ export function CompanionQuestPin({
                     cursor: "pointer",
                   }}
                 >
-                  ▶ {isZh ? "右转 45°" : "Right 45°"}
+                  ▶ {ui("bar.wardrobeRight45")}
                 </button>
                 <button
                   type="button"
@@ -1084,7 +1070,7 @@ export function CompanionQuestPin({
                     cursor: "pointer",
                   }}
                 >
-                  🧋 {isZh ? "试穿 Tripo 喷射套装" : "Tripo Boba Set"}
+                  🧋 {ui("bar.wardrobeTripoBobaSet")}
                 </button>
                 <button
                   type="button"
@@ -1100,7 +1086,7 @@ export function CompanionQuestPin({
                     cursor: "pointer",
                   }}
                 >
-                  👑 {isZh ? "一键 UR 满配神装" : "UR God Set"}
+                  👑 {ui("bar.wardrobeUrGodSet")}
                 </button>
               </div>
             </div>
@@ -1139,10 +1125,10 @@ export function CompanionQuestPin({
             >
               <div>
                 <div style={{ fontSize: "12px", fontWeight: 800, color: "#c084fc" }}>
-                  ✨ {isZh ? "奇迹暖暖高定穿搭评定" : "Style Evaluation"}：{styleEval.grade}
+                  ✨ {ui("bar.wardrobeStyleEvaluation")}：{styleEval.grade}
                 </div>
                 <div style={{ fontSize: "13px", fontWeight: 700, marginTop: "2px" }}>
-                  {isZh ? "总时尚分" : "Total Score"} <strong>{styleEval.totalScore}</strong> · {isZh ? "主导风格" : "Dominant Style"} <strong>#{styleEval.dominantTag}</strong>
+                  {ui("bar.wardrobeTotalScore")} <strong>{styleEval.totalScore}</strong> · {ui("bar.wardrobeDominantStyle")} <strong>#{styleEval.dominantTag}</strong>
                 </div>
               </div>
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -1162,7 +1148,7 @@ export function CompanionQuestPin({
                     </span>
                   ))
                 ) : (
-                  <span style={{ fontSize: "11px", opacity: 0.7 }}>{isZh ? "初心裸龙装束" : "Starter Look"}</span>
+                  <span style={{ fontSize: "11px", opacity: 0.7 }}>{ui("bar.wardrobeStarterLook")}</span>
                 )}
               </div>
             </div>
@@ -1176,6 +1162,7 @@ export function CompanionQuestPin({
                   <button
                     key={key}
                     type="button"
+                    aria-pressed={active}
                     onClick={() => setWardrobeSlot(key)}
                     style={{
                       padding: "7px 14px",
@@ -1200,11 +1187,12 @@ export function CompanionQuestPin({
                 const unlocked = state.unlockedItems.includes(item.id);
                 const equipped = state.equipped[item.slot] === item.id;
                 return (
-                  <div
+                  <button
                     key={item.id}
+                    type="button"
                     title={item.description}
                     onClick={() => handleWardrobeItemClick(item.id)}
-                    className={`ans-wardrobe-card group ${equipped ? "is-equipped" : ""}`}
+                    className={`ans-wardrobe-card group text-start ${equipped ? "is-equipped" : ""}`}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "24px" }}>{item.icon}</span>
@@ -1234,21 +1222,21 @@ export function CompanionQuestPin({
                         #{item.styleTag}
                       </span>
                     </div>
-                    <div className="hidden group-hover:block" style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.35 }}>
+                    <div className="hidden group-hover:block group-focus-visible:block" style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.35 }}>
                       {item.description}
                     </div>
                     <div style={{ marginTop: "auto", paddingTop: "4px", fontSize: "11px", fontWeight: 800 }}>
                       {equipped ? (
-                        <span style={{ color: "#10b981" }}>✓ {isZh ? "穿戴中" : "Equipped"}</span>
+                        <span style={{ color: "#10b981" }}>✓ {ui("bar.wardrobeEquipped")}</span>
                       ) : unlocked ? (
-                        <span style={{ color: "#38bdf8" }}>{isZh ? "点击穿戴" : "Equip"}</span>
+                        <span style={{ color: "#38bdf8" }}>{ui("bar.wardrobeEquip")}</span>
                       ) : (
                         <span style={{ color: "#f59e0b" }}>
                           🪙 {item.priceBeans} · Lv.{item.minUserLevel}
                         </span>
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -1272,7 +1260,7 @@ export function CompanionQuestPin({
             <div className="ans-sanctuary-header">
               <div>
                 <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
-                  🥚 {isZh ? "3D 小恐龙形态切换" : "3D Dino Form Switcher"}
+                  🥚 {ui("bar.adopt3dDinoFormSwitcher")}
                 </h2>
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -1290,7 +1278,7 @@ export function CompanionQuestPin({
                     fontWeight: 800,
                   }}
                 >
-                  👗 {isZh ? "去 3D 衣橱" : "Open Wardrobe"}
+                  👗 {ui("bar.adoptOpenWardrobe")}
                 </button>
                 <button
                   type="button"
@@ -1305,7 +1293,7 @@ export function CompanionQuestPin({
                     fontWeight: 800,
                   }}
                 >
-                  ✕ {isZh ? "返回" : "Back"}
+                  ✕ {ui("bar.adoptBack")}
                 </button>
               </div>
             </div>
@@ -1332,6 +1320,7 @@ export function CompanionSanctuaryBar({
   onSwitchToWorkMode?: (prompt?: string) => void;
 }) {
   const locale = useLocale();
+  const ui = useTranslations("companion");
   const isZh = locale === "zh";
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [tab, setTab] = useState<"none" | "pi">("none");
@@ -1340,6 +1329,12 @@ export function CompanionSanctuaryBar({
   const [strikeRemainingSec, setStrikeRemainingSec] = useState<number>(0);
   const [piBusy, setPiBusy] = useState(false);
   const [piPrompt, setPiPrompt] = useState("");
+  /** 服务端要求先确认的扣费金额（用户点确认前服务端不会扣费）。 */
+  const [piConfirm, setPiConfirm] = useState<{
+    intent: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "auto";
+    prompt: string;
+    pricePoints: number;
+  } | null>(null);
   const [piResult, setPiResult] = useState<{
     ok: boolean;
     toolUsed?: string;
@@ -1353,6 +1348,7 @@ export function CompanionSanctuaryBar({
   async function runPiAction(
     intent: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "auto",
     customPrompt?: string,
+    confirmedPoints?: number,
   ) {
     if (piBusy) return;
     setPiBusy(true);
@@ -1361,18 +1357,39 @@ export function CompanionSanctuaryBar({
       const res = await fetch("/api/mascot/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "pi_action", intent, prompt: resolvedPrompt }),
+        body: JSON.stringify({
+          action: "pi_action",
+          intent,
+          prompt: resolvedPrompt,
+          ...(typeof confirmedPoints === "number" ? { confirmedPoints } : {}),
+        }),
       });
       const data = await res.json().catch(() => ({}));
+      // 服务端报价：先展示"Is X 积分、尚未扣费"，用户点确认后再用同一金额重发；
+      // 服务端会再次校验金额，界面被绕过也扣不到钱。
+      const confirmRequest = (data?.data ?? {}) as { requiresConfirmation?: boolean; pricePoints?: number };
+      if (
+        confirmRequest.requiresConfirmation &&
+        typeof confirmRequest.pricePoints === "number" &&
+        confirmRequest.pricePoints > 0 &&
+        typeof confirmedPoints !== "number"
+      ) {
+        setPiConfirm({ intent, prompt: resolvedPrompt, pricePoints: confirmRequest.pricePoints });
+        setPiResult({
+          ok: false,
+          toolUsed: data?.toolUsed,
+          trace: Array.isArray(data?.trace) ? data.trace : undefined,
+          replyZh: data?.replyZh ?? "",
+          replyEn: data?.replyEn ?? "",
+          balancePoints: data?.balancePoints ?? null,
+          links: [],
+        });
+        return;
+      }
       if (res.status === 401 || !res.ok || (!data?.replyZh && !data?.replyEn)) {
-        const fallbackZh =
-          res.status === 401
-            ? "请先登录账号后再执行该快捷操作（如签到、立项或兑换）。"
-            : data?.replyZh || "当前请求暂不可用，请稍后重试。";
-        const fallbackEn =
-          res.status === 401
-            ? "Please sign in first to run this quick action."
-            : data?.replyEn || "Action temporarily unavailable. Please try again.";
+        const fallback = res.status === 401 ? ui("bar.podSignInForQuickAction") : ui("bar.podActionUnavailable");
+        const fallbackZh = data?.replyZh || fallback;
+        const fallbackEn = data?.replyEn || fallback;
         setPiResult({
           ok: false,
           toolUsed: res.status === 401 ? "auth_required" : undefined,
@@ -1384,14 +1401,15 @@ export function CompanionSanctuaryBar({
               ? [
                   {
                     href: "/login",
-                    title: isZh ? "🔐 登录账号" : "🔐 Sign In",
-                    detail: isZh ? "登录后解锁算力与快捷操作" : "Sign in to unlock actions",
+                    title: ui("bar.quickbarSignIn"),
+                    detail: ui("bar.quickbarSignInToUnlock"),
                   },
                 ]
               : [],
         });
         return;
       }
+      setPiConfirm(null);
       setPiResult(data);
       const speechLine = isZh ? data.replyZh : data.replyEn;
       if (speechLine) {
@@ -1403,8 +1421,8 @@ export function CompanionSanctuaryBar({
     } catch {
       setPiResult({
         ok: false,
-        replyZh: "⚠️ Agent 网络连接异常，请稍后重试。",
-        replyEn: "⚠️ Agent network error. Please try again.",
+        replyZh: ui("bar.podNetworkError"),
+        replyEn: ui("bar.podNetworkError"),
         links: [],
       });
     } finally {
@@ -1496,13 +1514,11 @@ export function CompanionSanctuaryBar({
         return res.state;
       });
       const quest = unlockedQuest ?? SECRET_QUESTS.donkey_strike;
-      spawnFoodScreenFx("🧋", isZh ? "罢工解除 +35🪙 +25♥" : "Strike Pacified +35🪙 +25♥");
+      spawnFoodScreenFx("🧋", ui("bar.quickbarStrikePacified3525"));
       dispatchDinoInteract({ type: "feed", reactMode: "happy" });
       celebrateSecretQuest(quest);
       setStatusNote(
-        isZh
-          ? `📜 罢工解除！【${quest.titleZh}】${quest.speechZh}`
-          : `📜 Strike pacified! [${quest.titleEn}] ${quest.speechEn}`,
+        ui("bar.quickbarStrikePacifiedQuestTitleEn", { title: isZh ? quest.titleZh : quest.titleEn, speech: isZh ? quest.speechZh : quest.speechEn }),
       );
       return;
     }
@@ -1546,17 +1562,13 @@ export function CompanionSanctuaryBar({
       const quest = newlyTriggeredSilicon ?? SECRET_QUESTS.silicon_ulcer;
       celebrateSecretQuest(quest);
       setStatusNote(
-        isZh
-          ? `${food.icon} 抽中 SSR【${foodName}】！${quest.speechZh}`
-          : `${food.icon} SSR Bonus Feed [${foodName}]! ${quest.speechEn}`,
+        ui("bar.quickbarFoodIconSSRBonus", { icon: food.icon, foodName: foodName, speech: isZh ? quest.speechZh : quest.speechEn }),
       );
       return;
     }
 
     setStatusNote(
-      isZh
-        ? `${food.icon} 投喂【${foodName}】（${foodTag}）+${food.coins}🪙 +${food.affection}♥`
-        : `${food.icon} Fed [${foodName}] (${foodTag}) +${food.coins}🪙 +${food.affection}♥`,
+      ui("bar.quickbarFoodIconFedFoodName", { icon: food.icon, foodName: foodName, foodTag: foodTag, coins: food.coins, affection: food.affection }),
     );
     onSpeak?.(foodReaction);
   }
@@ -1575,16 +1587,14 @@ export function CompanionSanctuaryBar({
         <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-rose-500/60 bg-rose-500/15 px-2.5 py-1.5 text-[11px] font-semibold text-rose-700 dark:text-rose-200">
           <span>
             🕶️{" "}
-            {isZh
-              ? `罢工中（${strikeRemainingSec}s）· 投喂可解除并领彩蛋`
-              : `Strike (${strikeRemainingSec}s) · Feed to pacify`}
+            {ui("bar.quickbarStrikeStrikeRemainingSecSFeed", { strikeRemainingSec: strikeRemainingSec })}
           </span>
           <button
             type="button"
             onClick={handleFeed}
             className="shrink-0 rounded-lg bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm hover:bg-emerald-500"
           >
-            {isZh ? "🧋 投喂哄好" : "🧋 Feed"}
+            {ui("bar.quickbarFeed")}
           </button>
         </div>
       )}
@@ -1598,57 +1608,57 @@ export function CompanionSanctuaryBar({
           <button
             type="button"
             disabled={piBusy}
-            title={isZh ? "每日算力打卡 (+5 积分 + 1 抓娃娃币)" : "Daily check-in (+5 pts)"}
+            title={ui("bar.quickbarDailyCheckIn5")}
             data-testid="pi-agent-action-checkin"
             onClick={() => void runPiAction("checkin")}
             className="rounded-full border border-emerald-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-emerald-700 transition hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300"
           >
-            📅 {isZh ? "签到" : "Check-in"}
+            📅 {ui("bar.quickbarCheckIn")}
           </button>
           <button
             type="button"
             disabled={piBusy}
-            title={isZh ? "一键创建项目与首版 README 草案" : "Create project & README draft"}
+            title={ui("bar.quickbarCreateProjectREADMEDraft")}
             data-testid="pi-agent-action-scaffold"
             onClick={() =>
               void runPiAction(
                 "scaffold",
-                (piPrompt || currentDraft).trim() || "农客松智慧农业多模态监测 Agent",
+                (piPrompt || currentDraft).trim() || ui("bar.quickbarDefaultProjectTopic"),
               )
             }
             className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
           >
-            📝 {isZh ? "新建项目" : "New Project"}
+            📝 {ui("bar.quickbarNewProject")}
           </button>
           <button
             type="button"
             disabled={piBusy}
-            title={isZh ? "检索市场高性价比科研与创作工具" : "Find market tools"}
+            title={ui("bar.quickbarFindMarketTools")}
             data-testid="pi-agent-action-market"
             onClick={() => void runPiAction("market", (piPrompt || currentDraft).trim())}
             className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
           >
-            🛒 {isZh ? "找工具" : "Tools"}
+            🛒 {ui("bar.quickbarTools")}
           </button>
           <button
             type="button"
             disabled={piBusy}
-            title={isZh ? "5 积分秒兑周报模板" : "5pt instant redeem"}
+            title={ui("bar.quickbar5ptInstantRedeem")}
             data-testid="pi-agent-action-redeem"
             onClick={() => void runPiAction("redeem", (piPrompt || currentDraft).trim())}
             className="rounded-full border border-rose-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-rose-700 transition hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300"
           >
-            🎁 {isZh ? "兑周报" : "Redeem"}
+            🎁 {ui("bar.quickbarRedeem")}
           </button>
           <button
             type="button"
             disabled={piBusy}
-            title={isZh ? "代下爪抓娃娃抽积分" : "Play 3D Claw Machine"}
+            title={ui("bar.quickbarPlay3DClawMachine")}
             data-testid="pi-agent-action-claw"
             onClick={() => void runPiAction("claw")}
             className="rounded-full border border-amber-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-amber-700 transition hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300"
           >
-            🕹️ {isZh ? "抓娃娃" : "Claw"}
+            🕹️ {ui("bar.quickbarClaw")}
           </button>
         </div>
 
@@ -1663,20 +1673,52 @@ export function CompanionSanctuaryBar({
                 : "border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
             }`}
           >
-            ⚡ {isZh ? "快捷指令" : "Command"}
+            ⚡ {ui("bar.quickbarCommand")}
           </button>
           <button
             type="button"
             onClick={() => {
               window.dispatchEvent(new CustomEvent("ans:enter-dino-macro", { detail: { drawer: "wardrobe" } }));
             }}
-            title={isZh ? "拉近 3D 特写舞台并打开换装衣橱" : "Open 3D Close-Up Stage & Wardrobe"}
+            title={ui("bar.quickbarOpen3DCloseUp")}
             className="rounded-full border border-purple-500/35 bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold text-purple-700 transition hover:bg-purple-500/20 dark:text-purple-300"
           >
-            🎥 {isZh ? "3D换装" : "3D Stage"}
+            🎥 {ui("bar.quickbar3dStage")}
           </button>
         </div>
       </div>
+
+      {piConfirm && (
+        <div
+          data-testid="pi-agent-confirm"
+          className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/60 bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-800 dark:text-amber-200"
+        >
+          <span>
+            {ui("bar.quickbarSpendsPiConfirmPricePointsPts", { pricePoints: piConfirm.pricePoints })}
+          </span>
+          <span className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled={piBusy}
+              onClick={() => {
+                const pending = piConfirm;
+                setPiConfirm(null);
+                void runPiAction(pending.intent, pending.prompt, pending.pricePoints);
+              }}
+              className="rounded-md bg-amber-600 px-2 py-0.5 text-[10px] font-bold text-white transition hover:bg-amber-500 disabled:opacity-50"
+            >
+              {ui("bar.quickbarConfirmPiConfirmPricePointsPts", { pricePoints: piConfirm.pricePoints })}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPiConfirm(null)}
+              className="rounded-md border border-amber-500/50 px-2 py-0.5 text-[10px] font-bold transition hover:bg-amber-500/15"
+            >
+              {ui("bar.quickbarCancel")}
+            </button>
+          </span>
+        </div>
+      )}
 
       {statusNote && (
         <p className="mt-1.5 rounded-lg bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground">
@@ -1702,12 +1744,8 @@ export function CompanionSanctuaryBar({
                     void runPiAction("auto", piPrompt);
                   }
                 }}
-                placeholder={
-                  isZh
-                    ? "输入快捷指令：如「新建智慧温室项目」「搜论文润色工具」…"
-                    : "Quick command: e.g. 'Create smart greenhouse project', 'Search paper tools'…"
-                }
-                aria-label={isZh ? "Agent 指令输入" : "Agent command input"}
+                placeholder={ui("bar.podQuickCommandPlaceholder")}
+                aria-label={ui("bar.podAgentCommandInput")}
                 data-testid="pi-agent-search-input"
                 className="flex-1 rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none"
               />
@@ -1718,7 +1756,7 @@ export function CompanionSanctuaryBar({
                 onClick={() => void runPiAction("auto", piPrompt)}
                 className="shrink-0 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs transition hover:bg-emerald-500 disabled:opacity-50"
               >
-                {piBusy ? (isZh ? "执行中…" : "Running…") : isZh ? "⚡ 执行" : "⚡ Run"}
+                {piBusy ? (ui("bar.podRunning")) : ui("bar.podRun")}
               </button>
             </div>
           )}
@@ -1730,14 +1768,20 @@ export function CompanionSanctuaryBar({
             >
               <div className="flex flex-wrap items-center justify-between gap-1.5">
                 <div className="flex items-center gap-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/15 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-200">
-                    ✓ {isZh ? "Agent 已执行" : "Agent Executed"}
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      piResult.ok
+                        ? "bg-emerald-600/15 text-emerald-800 dark:text-emerald-200"
+                        : "bg-amber-500/20 text-amber-800 dark:text-amber-200"
+                    }`}
+                  >
+                    {piResult.ok
+                      ? `✓ ${ui("bar.podAgentExecuted")}`
+                      : `⏸ ${ui("bar.podNotExecutedAwaitingConfirmation")}`}
                   </span>
                   {typeof piResult.balancePoints === "number" && (
                     <span className="text-[10px] font-bold text-amber-600 dark:text-amber-300">
-                      {isZh
-                        ? `余额：${piResult.balancePoints.toFixed(1)} 积分`
-                        : `Balance: ${piResult.balancePoints.toFixed(1)} pts`}
+                      {ui("bar.podBalancePts", { points: piResult.balancePoints.toFixed(1) })}
                     </span>
                   )}
                 </div>
@@ -1748,12 +1792,12 @@ export function CompanionSanctuaryBar({
                       onClick={() => onSwitchToWorkMode((piPrompt || currentDraft).trim())}
                       className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
                     >
-                      {isZh ? "🛠️ 转入工作模式 ↗" : "🛠️ Work Mode ↗"}
+                      {ui("bar.podWorkMode")}
                     </button>
                   )}
                   <button
                     type="button"
-                    aria-label={isZh ? "关闭结果" : "Dismiss result"}
+                    aria-label={ui("bar.podDismissResult")}
                     onClick={() => setPiResult(null)}
                     className="rounded px-1 text-[10px] text-muted-foreground hover:text-foreground"
                   >
@@ -1765,7 +1809,7 @@ export function CompanionSanctuaryBar({
               {piResult.trace && piResult.trace.length > 0 && (
                 <details className="rounded-md border border-border/60 bg-background/70 px-2 py-1 font-mono text-[10px] text-muted-foreground">
                   <summary className="cursor-pointer font-sans font-semibold text-emerald-700 dark:text-emerald-300">
-                    ⚡ {isZh ? `执行步骤 (${piResult.trace.length})` : `Execution trace (${piResult.trace.length})`}
+                    ⚡ {ui("bar.podExecutionTracePiResultTrace", { length: piResult.trace.length })}
                   </summary>
                   <ol className="mt-1 space-y-0.5 pl-1">
                     {piResult.trace.map((step, idx) => (

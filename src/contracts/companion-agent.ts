@@ -20,6 +20,8 @@ export const agentRequestSchema = z.discriminatedUnion("action", [
     model: z.enum(["deepseek-v4.1-flash", "gpt-6-astra", "gpt-6.1-sol"]).optional(),
     mode: z.enum(["code", "ask"]).optional(),
     contextCode: z.string().max(32000).optional(),
+    /** 用户在界面上确认过的扣费金额（积分）。与实时报价不一致时服务端一律拒绝扣费。 */
+    confirmedPoints: z.number().int().min(0).max(100000).optional(),
   }).strict(),
 ]);
 export type AgentInput = z.infer<typeof agentInputSchema>;
