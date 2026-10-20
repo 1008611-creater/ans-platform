@@ -258,7 +258,7 @@
     },
     {
       "id": "A-AGENT-02",
-      "status": "pending",
+      "status": "authoritative",
       "title": "Agent 的任何扣费动作必须先报价、再由用户确认，且由服务端强制校验金额",
       "decidedAt": "2026-10-20",
       "authority": "用户决定（2026-10-20）：所有花钱动作先报价确认，免费动作保持一键；PR #150/#153",
@@ -300,7 +300,7 @@
     },
     {
       "id": "A-AGENT-03",
-      "status": "pending",
+      "status": "authoritative",
       "title": "小恐龙面板的用户可见文案必须来自 messages/companion，不得在组件里写双语三元",
       "decidedAt": "2026-10-20",
       "authority": "用户决定（2026-10-20）+ ans-ui-ux-baseline 铁律 4（统一命名与文案）；PR #151",
@@ -330,7 +330,7 @@
     },
     {
       "id": "A-AGENT-04",
-      "status": "pending",
+      "status": "authoritative",
       "title": "3D 场景必须按需加载；prefers-reduced-motion 必须先于 WebGL 判断",
       "decidedAt": "2026-10-20",
       "authority": "用户决定（2026-10-20）：把 3D eager 拉取 ~9MB 与 reduced-motion 短路列为必须修的问题；PR #152",
@@ -359,7 +359,7 @@
     },
     {
       "id": "A-AGENT-05",
-      "status": "pending",
+      "status": "authoritative",
       "title": "Agent 生成的推断必须标 UNCONFIRMED，且不得替用户编造输入",
       "decidedAt": "2026-10-20",
       "authority": "ans-ui-ux-baseline 铁律 1（零虚构状态伪装）+ 用户决定（2026-10-20）；PR #154",
