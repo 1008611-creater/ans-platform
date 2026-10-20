@@ -102,9 +102,44 @@ if (withGh) {
       const cmp = sh("gh", ["api", `repos/${repo}/compare/${headFull}...main`, "--jq", "{status,ahead_by,behind_by}"]);
       if (cmp) add("info", "GitHub 真值（compare HEAD...main，不受本地浅克隆影响）", cmp, "");
     }
+    const guardedRefs = new Set();
+    // ruleset（2026-10-20 起 main/develop 由 ruleset 保护，而不是旧式 branch protection）
+    const rulesetsRaw = sh("gh", ["api", `repos/${repo}/rulesets`]);
+    if (rulesetsRaw) {
+      try {
+        const rulesets = JSON.parse(rulesetsRaw);
+        console.log("\n分支 ruleset：");
+        for (const summary of rulesets) {
+          const detailRaw = sh("gh", ["api", `repos/${repo}/rulesets/${summary.id}`]);
+          const detail = detailRaw ? JSON.parse(detailRaw) : {};
+          const refs = (detail.conditions?.ref_name?.include ?? []).join(",");
+          const types = (detail.rules ?? []).map((rule) => rule.type);
+          const checks = (detail.rules ?? []).find((rule) => rule.type === "required_status_checks")
+            ?.parameters?.required_status_checks?.map((check) => check.context) ?? [];
+          const bypass = (detail.bypass_actors ?? []).map((actor) => `${actor.actor_type}#${actor.actor_id}:${actor.bypass_mode}`).join(",") || "(none)";
+          console.log(`  ${summary.name} [${refs}] rules=${types.join("/")} checks=${checks.join("+") || "none"} bypass=${bypass}`);
+          for (const ref of detail.conditions?.ref_name?.include ?? []) guardedRefs.add(ref);
+          const guarded = /refs\/heads\/(main|develop)/.test(refs);
+          if (guarded && checks.length === 0) {
+            add("warn", `${summary.name} 没有必需状态检查`,
+              `${refs} 上的提交可以绕过 CI 进入主干。`,
+              "为该 ruleset 增加 required_status_checks（Test + Authority）");
+          }
+          if (guarded && bypass === "(none)") {
+            add("info", `${summary.name} 没有任何 bypass 白名单`,
+              "包括管理员在内的直接推送都会被拦；若投稿自动化直推 main 会失败。",
+              "按需为 RepositoryRole#admin 增加 bypass_mode=always");
+          }
+        }
+      } catch { add("info", "无法解析 rulesets", "", ""); }
+    }
+    // 既没有 ruleset、也没有旧式 branch protection 才算"没保护"。
     for (const branch of ["main", "develop"]) {
-      if (!protect(branch)) add("critical", `${branch} 分支没有任何保护`,
-        "没有必需状态检查 / 必需 review / 禁止直推。", `gh api -X PUT repos/${repo}/branches/${branch}/protection …（需管理员授权）`);
+      if (!protect(branch) && !guardedRefs.has(`refs/heads/${branch}`)) {
+        add("critical", `${branch} 分支没有任何保护（既无 ruleset 也无 branch protection）`,
+          "没有必需状态检查 / 必需 review / 禁止直推。",
+          `gh api repos/${repo}/rulesets 或 -X PUT repos/${repo}/branches/${branch}/protection（需管理员授权）`);
+      }
     }
     const runs = sh("gh", ["run", "list", "--limit", "5", "--json", "workflowName,headBranch,conclusion,createdAt"]);
     if (runs) {

@@ -30,8 +30,11 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
 事故复盘（项目广场回退 `219422c9` → `27969917`）与更细的写法指引，见本地 Skill
 `ans-delivery-governance` 的 `references/authority-ledger.md`。
 
-## 当前状态（2026-10-20）
+## 当前状态（2026-10-20 17:45）
 
+- **生产已切到权威版**：容器 `ans-platform-app` 跑 `ans-platform:0ae6aef7`（healthy），
+  `main = ops/deploy-target = ops/prod-live = 0ae6aef7`；`/explore` 的线上 HTML 用真实请求验证过
+  （h1 = sr-only 页面名 + 品牌主标题 + 轮转封面）。发布过程与踩坑见 `A-RELEASE-01 / 02`。
 - `A-PLAZA-01 / 02 / 04`：已由 #149 合入 main 恢复（`npm run check:authority:upstream` 现在通过，
   轮转封面、页头标题与可访问性探针都在位上）。
 - `A-AGENT-01`：已生效。线上 Agent 就是小恐龙伴侣 `DinoGuide`（`layout.tsx` 挂载 +
@@ -61,7 +64,10 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
 ### 合并顺序与门禁（2026-10-20 预检结果）
 
 1. 顺序：`#148 → #150 → #151 → #152 → #153 → #154 → #156`；`#155`（本 PR）与 `#157`（skills 交接单）独立，可任意顺序。
-2. 每个 PR 的必需检查：`Test` + `Authority`（ruleset `main-protection`，**不可绕过**，只允许 merge/squash，合并后自动删分支）。
+2. 每个 PR 的必需检查：`Test` + `Authority`（ruleset `main-protection`，只允许 merge/squash）。
+   2026-10-20 17:04 起两个 ruleset 都加了 **admin bypass**（`RepositoryRole#5: always`）：`Test`/`Authority` 仍是 PR 的硬门禁，
+   但仓库管理员可以直推/自助合并 —— 这是为了不让投稿自动化（直推 main 的 `Add prompt:` 提交）与单人仓库被锁死；
+   bypass 只应作为应急通道，正常发布仍走 PR + 绿门禁。
 3. 合并前已在本机跑过与 CI 等价的门禁（栈 + `origin/main` `0ae6aef7` 的合并结果）：
    `check:authority` / `typecheck` / `typecheck:tests` / `lint` / `docs:check` / `check:boundaries` / `test:unit`
    **全部通过**（344 文件 / 4349 项 0 失败）。`build` / `smoke` / `a11y` / `perf` 需要隔离数据库与浏览器，由 CI 承担。
