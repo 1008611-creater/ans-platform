@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
+      - develop
 
 # New commits supersede checks for the same PR. Main releases keep distinct runs.
 concurrency:
@@ -27,6 +29,23 @@ env:
   PERF_MODE: "require"
 
 jobs:
+  # 权威基线守卫：把 docs/authority/ledger.json 里“已经定下来的决定”变成断言。
+  # 单独成 job，便于作为必需状态检查（branch protection / ruleset）挂到 main 与 develop。
+  authority:
+    name: Authority
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Verify authoritative baseline has not regressed
+        run: npm run check:authority
+
   test:
     name: Test
     runs-on: ubuntu-latest

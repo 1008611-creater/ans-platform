@@ -130,10 +130,17 @@ async function scanPage(page, axeSource, store, failures, baseUrl, pathname, lab
   await settle(page);
   if (expectText) {
     // 页面没渲染出预期内容时，扫描结果没有意义（可能扫的是错误页）。
+    // 权威 A-PLAZA-02：/explore 的可见 h1 是品牌主标题，页面名只作为 h1 内的
+    // sr-only 前缀出现；这里同时确认 h1 存在、前缀带页面名、且可见标题不是重复的页面名。
     const rendered = await page
-      .waitForFunction(({ text, route }) => route === "/explore"
-        ? document.querySelector("main h1")?.textContent?.trim() === text
-        : document.body.innerText.includes(text), { timeout: 15_000 }, { text: expectText, route: pathname })
+      .waitForFunction(({ text, route }) => {
+        if (route === "/explore") {
+          const h1 = document.querySelector("main h1");
+          const accessiblePrefix = h1?.querySelector(".sr-only")?.textContent ?? "";
+          return Boolean(h1) && accessiblePrefix.includes(text) && h1.textContent.trim() !== text;
+        }
+        return document.body.innerText.includes(text);
+      }, { timeout: 15_000 }, { text: expectText, route: pathname })
       .then(() => true)
       .catch(() => false);
     if (!rendered) failures.push(`${label} ${pathname} 未渲染预期文案「${expectText}」`);
