@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import {
   DINO_SPECIES,
   DINO_WARDROBE_ITEMS,
   SANCTUARY_EVENT_NAME,
   SECRET_QUESTS,
+  pickCatalogText,
   WARDROBE_SLOT_LABELS,
   calculateStyleEvaluation,
   getAffectionProgress,
@@ -26,6 +28,8 @@ import {
   BLIND_BOX_FOODS,
   SHOWCASE_MOOD_PRESETS,
   dispatchDinoInteract,
+  pickMoodSub,
+  pickMoodText,
   spawnFoodScreenFx,
   spawnWhipScreenFx,
   type DinoReactMode,
@@ -151,6 +155,23 @@ export function CompanionQuestPin({
   const whipIdxRef = useRef(0);
   const moodIdxRef = useRef(0);
   const lastUserInteractRef = useRef(0);
+  // 「Agent / 工作模式」两个入口放进小恐龙面板内部（面板里预留了 .ans-companion-dock-slot）。
+  // 面板是 Radix Popover，挂载时机晚于本组件，所以这里轮询几次找槽位，避免时序问题。
+  const [dockSlot, setDockSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!dialogOpen) { setDockSlot(null); return; }
+    let cancelled = false;
+    let tries = 0;
+    const find = () => {
+      if (cancelled) return;
+      const slot = document.querySelector<HTMLElement>("#ans-companion-panel .ans-companion-dock-slot");
+      if (slot) { setDockSlot(slot); return; }
+      if (++tries <= 20) window.setTimeout(find, 50);
+    };
+    find();
+    return () => { cancelled = true; };
+  }, [dialogOpen]);
+
   const whipTimestampsRef = useRef<number[]>([]);
 
   // Sync sanctuary state across tabs & components
@@ -327,7 +348,7 @@ export function CompanionQuestPin({
         const eqCount = Object.values(cur.equipped || {}).filter(Boolean).length;
         setActiveMood(preset);
         setCustomSubText(
-          ui("bar.hudSpNameEqCountEquipped", { name: sp.name, eqCount: eqCount }),
+          ui("bar.hudSpNameEqCountEquipped", { name: pickCatalogText(sp, "name", isZh), eqCount: eqCount }),
         );
         dispatchDinoInteract({ action: "mood", mood: preset });
       } else {
@@ -757,19 +778,19 @@ export function CompanionQuestPin({
         equipped: { ...prev.equipped, [item.slot]: null },
       }));
       dispatchDinoInteract({ type: "pose" });
-      setWardrobeNote(ui("bar.hudUnequippedItemName", { name: item.name }));
+      setWardrobeNote(ui("bar.hudUnequippedItemName", { name: pickCatalogText(item, "name", isZh) }));
       return;
     }
 
     if (!owned) {
       if (styleNow.userLevel.level.index < item.minUserLevel) {
         setWardrobeNote(
-          ui("bar.hudRequiresLvItemMinUserLevel", { minUserLevel: item.minUserLevel, name: item.name }),
+          ui("bar.hudRequiresLvItemMinUserLevel", { minUserLevel: item.minUserLevel, name: pickCatalogText(item, "name", isZh) }),
         );
         return;
       }
       if (affNow.level < item.minAffectionLevel) {
-        setWardrobeNote(ui("bar.wardrobeRequiresAffection", { level: item.minAffectionLevel, name: item.name }));
+        setWardrobeNote(ui("bar.wardrobeRequiresAffection", { level: item.minAffectionLevel, name: pickCatalogText(item, "name", isZh) }));
         return;
       }
       if (state.starBeans < item.priceBeans) {
@@ -794,9 +815,10 @@ export function CompanionQuestPin({
       return updated;
     });
     dispatchDinoInteract({ type: "pose" });
-    setWardrobeNote(ui("bar.wardrobeEquippedItem", { icon: item.icon, name: item.name, quote: item.specialQuote }));
-    if (item.specialQuote) {
-      onTriggerSpeech?.(item.specialQuote);
+    setWardrobeNote(ui("bar.wardrobeEquippedItem", { icon: item.icon, name: pickCatalogText(item, "name", isZh), quote: pickCatalogText(item, "specialQuote", isZh) }));
+    const equippedQuote = pickCatalogText(item, "specialQuote", isZh);
+    if (equippedQuote) {
+      onTriggerSpeech?.(equippedQuote);
     }
   }
 
@@ -857,9 +879,9 @@ export function CompanionQuestPin({
             <div className="dino-speech-card">
               <span className="dino-b-kao">{activeMood.kaomoji}</span>
               <div className="dino-b-body">
-                <span className="dino-b-txt">{activeMood.text}</span>
+                <span className="dino-b-txt">{pickMoodText(isZh, activeMood)}</span>
                 <span className="dino-b-sub">
-                  {customSubText ?? activeMood.sub}
+                  {customSubText ?? pickMoodSub(isZh, activeMood)}
                 </span>
               </div>
             </div>
@@ -867,33 +889,33 @@ export function CompanionQuestPin({
         </button>
       )}
 
-      {/* Minimal 2-Pill Dock next to bottom-right 3D Dragon (Hover/3-Click on Dino triggers Close-Up Stage) */}
-      {!dialogOpen && !macroActive && (
-        <div
-          className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-[76px] sm:bottom-[24px] sm:right-[132px] z-[60] flex items-center gap-1 rounded-full border border-border/80 bg-background/95 px-2 py-1 shadow-md backdrop-blur-md"
-          onClick={e => e.stopPropagation()}
-        >
-          <button
-            type="button"
-            onClick={e => {
-              e.stopPropagation();
-              window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
-            }}
-            title={ui("bar.dockOpenAgentChat1")}
-            className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
-          >
-            {ui("bar.dockAgent")}
-          </button>
-          <button
-            type="button"
-            onClick={navigateToWorkMode}
-            title={ui("bar.dockOpenWorkMode")}
-            className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
-          >
-            {ui("bar.dockWorkMode")}
-          </button>
-        </div>
-      )}
+      {/* 「Agent / 工作模式」两个入口：点开小恐龙后渲染进面板内部的槽位（不再浮在页面角落） */}
+      {dialogOpen && dockSlot
+        ? createPortal(
+            <div className="ans-companion-dock ans-companion-dock--inline" data-testid="ans-companion-dock" onClick={e => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
+                }}
+                title={ui("bar.dockOpenAgentChat1")}
+                className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
+              >
+                {ui("bar.dockAgent")}
+              </button>
+              <button
+                type="button"
+                onClick={navigateToWorkMode}
+                title={ui("bar.dockOpenWorkMode")}
+                className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
+              >
+                {ui("bar.dockWorkMode")}
+              </button>
+            </div>,
+            dockSlot,
+          )
+        : null}
 
       {/* 1:1 Resume Website Close-Up Macro Interactive Stage HUD (#ans-dino-interact-hud) */}
       <div
@@ -905,7 +927,7 @@ export function CompanionQuestPin({
       >
         <div className="hud-top-row">
           <span className="hud-title">
-            🦖 {ui("bar.hudStateCustomNameSpName", { name: state.customName || sp.name })}
+            🦖 {ui("bar.hudStateCustomNameSpName", { name: state.customName || pickCatalogText(sp, "name", isZh) })}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span className="hud-kpi-val">
@@ -1010,7 +1032,7 @@ export function CompanionQuestPin({
             <div className="ans-sanctuary-header">
               <div>
                 <h2 id="ans-wardrobe-title" style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
-                  👗 {ui("bar.wardrobeDino3DHauteCouture")} · {state.customName || sp.name}
+                  👗 {ui("bar.wardrobeDino3DHauteCouture")} · {state.customName || pickCatalogText(sp, "name", isZh)}
                 </h2>
                 <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
                   🪙 <strong>{state.starBeans}</strong> {ui("bar.wardrobeStarBeans")} · ♥ Lv.{aff.level} ({state.affectionXp} XP) · Lv.{styleEval.userLevel.level.index} {isZh ? styleEval.userLevel.level.nameZh : styleEval.userLevel.level.nameEn}
@@ -1249,7 +1271,7 @@ export function CompanionQuestPin({
                   <button
                     key={item.id}
                     type="button"
-                    title={item.description}
+                    title={pickCatalogText(item, "description", isZh)}
                     onClick={() => handleWardrobeItemClick(item.id)}
                     className={`ans-wardrobe-card group text-start ${equipped ? "is-equipped" : ""}`}
                   >
@@ -1269,7 +1291,7 @@ export function CompanionQuestPin({
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
-                      <div style={{ fontWeight: 800, fontSize: "13px" }}>{item.name}</div>
+                      <div style={{ fontWeight: 800, fontSize: "13px" }}>{pickCatalogText(item, "name", isZh)}</div>
                       <span
                         style={{
                           fontSize: "10px",
@@ -1278,11 +1300,11 @@ export function CompanionQuestPin({
                           background: "rgba(148,163,184,0.16)",
                         }}
                       >
-                        #{item.styleTag}
+                        #{pickCatalogText(item, "styleTag", isZh)}
                       </span>
                     </div>
                     <div className="hidden group-hover:block group-focus-visible:block" style={{ fontSize: "11px", opacity: 0.72, lineHeight: 1.35 }}>
-                      {item.description}
+                      {pickCatalogText(item, "description", isZh)}
                     </div>
                     <div style={{ marginTop: "auto", paddingTop: "4px", fontSize: "11px", fontWeight: 800 }}>
                       {equipped ? (

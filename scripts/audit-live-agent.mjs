@@ -88,15 +88,20 @@ async function probeAgentPanel(puppeteer) {
       const rect = el.getBoundingClientRect();
       const header = document.querySelector("header");
       const headerBottom = header ? header.getBoundingClientRect().bottom : null;
+      // 真实结构（companion.css）：.ans-companion-next 本身就是容器（<nav>），
+      // 它的直接子元素必须是 <a>，且每个 <a> 里带图标与箭头类名 —— 否则线上会退化成
+      // "大图标/标题/大箭头各占一行"。旧断言误以为外面还有一层 .ans-companion-steps 包裹。
       const nexts = [...el.querySelectorAll(".ans-companion-next")];
+      const anchorChildren = nexts.map(node => [...node.children].filter(child => child.tagName === "A"));
       return {
         top: Math.round(rect.top),
         height: Math.round(rect.height),
         headerBottom: headerBottom === null ? null : Math.round(headerBottom),
         nextCount: nexts.length,
-        nextAreDirectChildren: nexts.every(node => node.parentElement?.classList.contains("ans-companion-steps")),
-        nextHasIcon: nexts.every(node => Boolean(node.querySelector(".ans-companion-action-icon"))),
-        nextAnchorCount: nexts.filter(node => node.tagName === "A").length,
+        nextChildrenAreAnchors: nexts.length > 0 && nexts.every((node, index) => node.children.length > 0 && anchorChildren[index].length === node.children.length),
+        nextHasIcon: anchorChildren.every(anchors => anchors.every(anchor => Boolean(anchor.querySelector(".ans-companion-action-icon")))),
+        nextHasArrow: anchorChildren.every(anchors => anchors.every(anchor => Boolean(anchor.querySelector(".ans-companion-action-arrow")))),
+        nextAnchorCount: anchorChildren.reduce((sum, anchors) => sum + anchors.length, 0),
       };
     });
     if (!panel) {
@@ -105,7 +110,9 @@ async function probeAgentPanel(puppeteer) {
       record("panel-open", "站内事件可打开 Agent 面板", true, `top=${panel.top} height=${panel.height}`);
       const overlap = panel.headerBottom === null ? 0 : Math.max(0, panel.headerBottom - panel.top);
       record("mobile-header-overlap", "移动端面板不压住站头（重叠 0px）", overlap === 0, `重叠 ${overlap}px（headerBottom=${panel.headerBottom} panelTop=${panel.top}）`);
-      record("next-steps-structure", "建议下一步是直接子元素且带图标", panel.nextAreDirectChildren && panel.nextHasIcon, `next=${panel.nextCount} direct=${panel.nextAreDirectChildren} icon=${panel.nextHasIcon}`);
+      record("next-steps-structure", "建议下一步：容器直接子元素都是 <a> 且带图标与箭头",
+        panel.nextChildrenAreAnchors && panel.nextHasIcon && panel.nextHasArrow,
+        `next=${panel.nextCount} childrenAreAnchors=${panel.nextChildrenAreAnchors} icon=${panel.nextHasIcon} arrow=${panel.nextHasArrow} anchors=${panel.nextAnchorCount}`);
     }
 
     // 2b) 面板内的 axe 扫描（只把 critical/serious 当失败，moderate/minor 只打印）
