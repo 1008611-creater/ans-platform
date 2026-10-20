@@ -63,3 +63,21 @@ it("never sends a paid action when the user cancels the quote", async () => {
   expect(screen.queryByTestId("pi-agent-confirm")).toBeNull();
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
+
+it("announces the pending charge and hands focus to the result after confirming", async () => {
+  const fetchMock = vi.fn()
+    .mockResolvedValueOnce(json({ ok: false, error: "CONFIRM_REQUIRED", toolUsed: "play_claw_arcade", replyZh: "免费币用完了，继续要花 10 积分", replyEn: "costs 10 pts", data: { requiresConfirmation: true, pricePoints: 10, intent: "claw" }, links: [] }))
+    .mockResolvedValueOnce(json({ ok: true, toolUsed: "play_claw_arcade", replyZh: "抓娃娃成功", replyEn: "won", balancePoints: 2, links: [] }));
+  vi.stubGlobal("fetch", fetchMock);
+  render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  const dialog = screen.getByRole("dialog", { name: mascotMessages.mascot.name });
+  fireEvent.click(within(dialog).getByTestId("pi-agent-action-claw"));
+
+  const card = await screen.findByTestId("pi-agent-confirm");
+  expect(card.getAttribute("role")).toBe("status");
+  expect(card.getAttribute("aria-live")).toBe("polite");
+  fireEvent.click(within(card).getByRole("button", { name: /确认扣 10 积分/ }));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId("pi-agent-result")));
+});
