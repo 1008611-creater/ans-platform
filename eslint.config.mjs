@@ -51,6 +51,10 @@ const eslintConfig = defineConfig([
     ".workbuddy/**",
     // Independently deployed source archives are not ANS application code.
     "deployment-snapshots/**",
+    // Cross-PC handover archive: whole sub-site frontends kept for reference; they
+    // carry their own toolchain (antd, react-i18next, their own aliases) and would
+    // otherwise flood lint/typecheck with errors belonging to other projects.
+    "ecosystem-sites-archive/**",
     // Archived skill bundles are data shipped for discovery, not application
     // source; linting their generated examples produces thousands of noise
     // errors and masks real ANS diagnostics.
@@ -63,6 +67,8 @@ const eslintConfig = defineConfig([
     "public/showcase/ans-3d/assets/pkg-react.js",
     "public/showcase/ans-3d/assets/pkg-three.js",
     "public/showcase/ans-3d/assets/pkg-motion.js",
+    // Google Draco decoder emitted by the upstream glTF toolchain (WASM loader glue).
+    "public/showcase/ans-3d/assets/draco/**",
     // Compiled outputs
     "packages/*/dist/**",
     // Packages with their own ESLint config
