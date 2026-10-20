@@ -284,7 +284,7 @@ async function verifyQuestPrerequisiteInTx(tx: DbTransaction, userId: string, qu
 
 export const ARCADE_TOKEN_COST_POINTS = 10;
 
-const arcadeClaimSchema = z.discriminatedUnion("kind", [
+export const arcadeClaimSchema = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("quest"),
