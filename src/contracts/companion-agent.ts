@@ -25,7 +25,19 @@ export const agentRequestSchema = z.discriminatedUnion("action", [
   }).strict(),
 ]);
 export type AgentInput = z.infer<typeof agentInputSchema>;
-export type AgentLink = { href: string; title: string; detail: string; icon: "project" | "video" | "credits" | "team" | "discover" | "learn" };
+/**
+ * 站内链接卡片。title/detail 是中文原文；titleEn/detailEn 可选，
+ * 由生产方（目前只有 pi-agent 的快捷指令链路）提供英文，客户端按当前语言选择：
+ * isZh ? title : titleEn ?? title。这样服务端不需要知道请求语言，也不会出现"英文界面显示中文链接"。
+ */
+export type AgentLink = {
+  href: string;
+  title: string;
+  detail: string;
+  titleEn?: string;
+  detailEn?: string;
+  icon: "project" | "video" | "credits" | "team" | "discover" | "learn";
+};
 export type AgentQuote = { ticket: string; requestId: string; model: string; maxPoints: number; balance: number; expiresAt: number };
 export type AgentReceipt = { requestId: string; state: string; reservedPoints: number; settledPoints: number | null };
 export type AgentEvent =

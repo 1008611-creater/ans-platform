@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import {
   DINO_SPECIES,
@@ -12,7 +13,7 @@ import {
   type MascotSanctuaryState,
 } from "@/domain/mascot/sanctuary";
 
-const TRENDY_NAMES = [
+const TRENDY_NAMES_ZH = [
   "薄荷小星龙",
   "满绩小恐龙",
   "4090吞金兽",
@@ -21,6 +22,17 @@ const TRENDY_NAMES = [
   "顶会收割机",
   "不改需求龙",
   "量子小冰龙",
+];
+
+const TRENDY_NAMES_EN = [
+  "Minty Comet",
+  "GPA Goblin",
+  "4090 Devourer",
+  "8AM Grump",
+  "Cheese Puff",
+  "Paper Machine",
+  "Scope-Free Dragon",
+  "Quantum Ice",
 ];
 
 const SPECIES_ICONS: Record<DinoSpeciesId, string> = {
@@ -41,6 +53,9 @@ export function DinoAdoptionPod({
   compact = false,
   onAdoptedChange,
 }: DinoAdoptionPodProps) {
+  const ui = useTranslations("companion");
+  const locale = useLocale();
+  const trendyNames = locale === "zh" ? TRENDY_NAMES_ZH : TRENDY_NAMES_EN;
   const [sanctuary, setSanctuary] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [crackStep, setCrackStep] = useState<number>(3);
   const [isCracking, setIsCracking] = useState<boolean>(false);
@@ -136,8 +151,8 @@ export function DinoAdoptionPod({
   }
 
   function handleRandomDinoName() {
-    const candidates = TRENDY_NAMES.filter(n => n !== sanctuary.customName);
-    const pick = candidates[Math.floor(Math.random() * candidates.length)] ?? "薄荷小星龙";
+    const candidates = trendyNames.filter(name => name !== sanctuary.customName);
+    const pick = candidates[Math.floor(Math.random() * candidates.length)] ?? trendyNames[0];
     updateSanctuary({ customName: pick });
   }
 
@@ -150,7 +165,7 @@ export function DinoAdoptionPod({
 
   return (
     <section
-      aria-label="注册领养专属小恐龙吉祥物"
+      aria-label={ui("adopt.panelAriaLabel")}
       style={{
         borderRadius: "20px",
         padding: "16px",
@@ -193,7 +208,7 @@ export function DinoAdoptionPod({
           </span>
           <div>
             <div style={{ fontSize: "14px", fontWeight: 800, color: "#ffffff" }}>
-              🥚 挑选你的专属小恐龙伴侣
+              🥚 {ui("adopt.pickTitle")}
             </div>
           </div>
         </div>
@@ -212,7 +227,7 @@ export function DinoAdoptionPod({
               cursor: "pointer",
             }}
           >
-            {expanded ? "收起孵化舱 ▲" : "挑选小恐龙 ▼"}
+            {expanded ? ui("adopt.collapse") : ui("adopt.expand")}
           </button>
         ) : null}
       </div>
@@ -234,7 +249,7 @@ export function DinoAdoptionPod({
             <button
               type="button"
               onClick={handleTapEgg}
-              title="敲击恐龙蛋破壳"
+              title={ui("adopt.crackTitle")}
               style={{
                 appearance: "none",
                 border: `1.5px dashed ${currentSpecies.palette.eyeGlowHex}`,
@@ -277,7 +292,7 @@ export function DinoAdoptionPod({
                   <iframe
                     ref={previewFrameRef}
                     src="/mascot/3d/embed.html"
-                    title="3D 小恐龙实时预览"
+                    title={ui("adopt.previewTitle")}
                     tabIndex={-1}
                     style={{
                       position: "absolute",
@@ -300,7 +315,7 @@ export function DinoAdoptionPod({
                   color: currentSpecies.palette.skinHex,
                 }}
               >
-                {crackStep >= 3 ? "✨ 已破壳唤醒" : `🔨 敲击破壳 (${crackStep}/3)`}
+                {crackStep >= 3 ? ui("adopt.hatched") : ui("adopt.crackProgress", { step: crackStep })}
               </span>
             </button>
 
@@ -340,8 +355,8 @@ export function DinoAdoptionPod({
                 {currentSpecies.tagline}
               </div>
               <div style={{ fontSize: "11px", color: "#ffe082" }}>
-                🎁 初始穿搭：
-                {starterItems.map(it => `${it?.icon}${it?.name}`).join(" + ") || "初心灵感套装"}
+                🎁 {ui("adopt.starterOutfit")}
+                {starterItems.map(it => `${it?.icon}${it?.name}`).join(" + ") || ui("adopt.starterOutfitFallback")}
               </div>
               <div
                 style={{
@@ -353,10 +368,10 @@ export function DinoAdoptionPod({
                   marginTop: "2px",
                 }}
               >
-                <span>💡创意 {currentSpecies.stats.creativity}</span>
-                <span>⚡手速 {currentSpecies.stats.codingSpeed}</span>
-                <span>💖共情 {currentSpecies.stats.empathy}</span>
-                <span>🧠逻辑 {currentSpecies.stats.logic}</span>
+                <span>{ui("adopt.statCreativity", { value: currentSpecies.stats.creativity })}</span>
+                <span>{ui("adopt.statSpeed", { value: currentSpecies.stats.codingSpeed })}</span>
+                <span>{ui("adopt.statEmpathy", { value: currentSpecies.stats.empathy })}</span>
+                <span>{ui("adopt.statLogic", { value: currentSpecies.stats.logic })}</span>
               </div>
             </div>
           </div>
@@ -407,7 +422,7 @@ export function DinoAdoptionPod({
                       {icon} {sp.name}
                     </span>
                     {selected ? (
-                      <span style={{ fontSize: "10px", color: "#84fab0" }}>✓ 已选</span>
+                      <span style={{ fontSize: "10px", color: "#84fab0" }}>{ui("adopt.selected")}</span>
                     ) : null}
                   </div>
                   <div
@@ -441,11 +456,11 @@ export function DinoAdoptionPod({
           >
             <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1, flexWrap: "wrap", minWidth: 0 }}>
               <span style={{ fontSize: "11.5px", fontWeight: 700, whiteSpace: "nowrap" }}>
-                🏷️ 爱宠赐名：
+                🏷️ {ui("adopt.nicknameLabel")}
               </span>
               <input
                 type="text"
-                aria-label="小恐龙专属昵称"
+                aria-label={ui("adopt.nicknameAria")}
                 value={sanctuary.customName}
                 maxLength={14}
                 onChange={e => updateSanctuary({ customName: e.target.value })}
@@ -476,11 +491,11 @@ export function DinoAdoptionPod({
                   whiteSpace: "nowrap",
                 }}
               >
-                🎲 随机靓名
+                🎲 {ui("adopt.randomName")}
               </button>
             </div>
             <div style={{ fontSize: "11px", color: "#ffe082" }}>
-              🪪 契约训龙师：{trainerNicknameHint?.trim() || "准 ANS 创作者"} · 注册后自动入驻右下角
+              🪪 {ui("adopt.trainerLine", { nickname: trainerNicknameHint?.trim() || ui("adopt.defaultTrainer") })}
             </div>
           </div>
         </>
