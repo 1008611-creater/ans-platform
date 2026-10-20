@@ -32,7 +32,52 @@ npm run check:git-health -- --gh   # 仓库与发布体检：落后、脏树、�
 
 ## 当前状态（2026-10-20）
 
-- `A-PLAZA-01 / 02 / 04` 正在由 `fix/explore-plaza-authority-restore-20261020` 恢复：
-  合并前 `origin/main` 与 `origin/develop` 仍是回退态，`npm run check:authority:upstream` 会报红 —— 这是预期的。
-- `A-GATE-02`：`ci.yml` 已覆盖 `develop` 的 push 与 PR。
-- `A-SIGNAL-01`：`ops/deploy-target`(219422c9) ≠ `ops/prod-live`(f32e06f0)，且 deploy-target 落后 main 124 个提交，发布前需人工确认。
+- `A-PLAZA-01 / 02 / 04`：已由 #149 合入 main 恢复（`npm run check:authority:upstream` 现在通过，
+  轮转封面、页头标题与可访问性探针都在位上）。
+- `A-AGENT-01`：已生效。线上 Agent 就是小恐龙伴侣 `DinoGuide`（`layout.tsx` 挂载 +
+  `useCompanionAgent` 链路），旧 `PromptBuilder` 浮层不得回归。
+- `A-AGENT-02 / 03 / 04 / 05`：**pending**（守卫自动跳过）。对应的实现还在评审中的 PR 栈里
+  （#150 扣费先报价再确认 → #151 面板文案 i18n → #152 3D 按需加载 → #153 抓娃娃载荷与聊天确认 →
+  #154 诚实性与无障碍）。**谁先把它们合入 main，谁就在同一个 PR 里把 status 改回 `authoritative`**，
+  否则规则一开就会红。
+- `A-SIGNAL-01`：部署信号是**远端分支** `ops/deploy-target` / `ops/prod-live`（既不是仓库里的文件，也不是工作树文件；
+  `git ls-remote origin 'refs/heads/ops/*'` 可查）。2026-10-20 复测：两者都指向 `0ae6aef7`（= 当时的 main tip），
+  **信号已对齐**，`node scripts/git-health.mjs` 退出码 0；`git-health` 读的正是 `origin/ops/*` 这两个 ref。
+  （更正：此前在 README 里写过"ops/ 不在 git 里、是部署机工作树文件"，那是把"路径"当成了"ref"来查，结论错误。）
+  发布前需人工确认"未上线"还是"未回写"。注意 `ops/` 目录**不在 git 里**（`git log --all -- ops` 为空），
+  它是部署机上的工作树文件，`git-health` 读不到时会打印 `(无)`——发布一致性检查需要先决定它是否入库。
+
+## 待合入 PR 与账本条目的对应关系（2026-10-20）
+
+| 账本条目 | 状态 | 对应 PR | 合入后要做的动作 |
+|---|---|---|---|
+| `A-AGENT-01`（线上 Agent = 小恐龙） | **authoritative（已生效）** | #155 | 无需动作 |
+| `A-AGENT-02`（扣费先报价再确认） | pending | #150 → #153 | 合入后把 status 改回 `authoritative` |
+| `A-AGENT-03`（面板文案必须来自 messages/companion） | pending | #151、#156 | 合入后改回 `authoritative` |
+| `A-AGENT-04`（3D 按需加载 / reduced-motion 优先） | pending | #152 | 合入后改回 `authoritative` |
+| `A-AGENT-05`（Agent 推断必须 UNCONFIRMED） | pending | #154 | 合入后改回 `authoritative` |
+| —（无机器规则，诚实性修复） | — | #148 | 无账本动作 |
+
+### 合并顺序与门禁（2026-10-20 预检结果）
+
+1. 顺序：`#148 → #150 → #151 → #152 → #153 → #154 → #156`；`#155`（本 PR）与 `#157`（skills 交接单）独立，可任意顺序。
+2. 每个 PR 的必需检查：`Test` + `Authority`（ruleset `main-protection`，**不可绕过**，只允许 merge/squash，合并后自动删分支）。
+3. 合并前已在本机跑过与 CI 等价的门禁（栈 + `origin/main` `0ae6aef7` 的合并结果）：
+   `check:authority` / `typecheck` / `typecheck:tests` / `lint` / `docs:check` / `check:boundaries` / `test:unit`
+   **全部通过**（344 文件 / 4349 项 0 失败）。`build` / `smoke` / `a11y` / `perf` 需要隔离数据库与浏览器，由 CI 承担。
+4. 全部合入后：把上表 4 条 pending 改成 `authoritative`，再跑一次 `npm run check:authority:upstream` 确认上游不回退。
+5. **翻开前的模拟已跑过**（2026-10-20）：在「栈 + main + 本 PR」的本地合并结果上把 4 条 pending 全改为
+   `authoritative`，`node scripts/check-authority.mjs --worktree` → **23 条规则通过 / 0 失败**（`isZh ?` 实际 32 处，
+   全部为数据字段选择、文案三元 0 处；条目上限按棘轮设为 32，只能降不能增）。也就是说合并完成后直接翻状态是安全的。
+
+## 发布后验收（每次上线后跑一遍）
+
+```powershell
+npm run audit:live-agent        # 只读探针：3D 是否按需加载、移动端面板是否压站头、建议下一步结构、/.well-known/skills 是否合规
+node scripts/git-health.mjs     # 仓库与发布体检：落后/脏树/部署信号/分支卫生（有 critical 时退出码 1）
+npm run check:authority:upstream   # 上游是否有人把权威实现改回去
+```
+
+2026-10-20 的修复前基线（探针 9 项只有 4 项成立，正好对应已修缺陷）：3D 首屏已加载、
+移动端面板与站头重叠 25px、建议下一步不是直接子元素也不带图标、技能索引 174/202 条含反斜杠路径、
+148/202 条 description 不合法。发布后这三条命令应当全绿，把输出贴进发布记录即可作为验收证据。
