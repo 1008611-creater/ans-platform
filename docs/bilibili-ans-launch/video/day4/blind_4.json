@@ -1,0 +1,75 @@
+{
+ "judge": "deepseek-ai/DeepSeek-V4-Pro",
+ "mapping": {
+  "甲": [
+   "DeepSeek V4.1 Flash",
+   "D1"
+  ],
+  "乙": [
+   "DeepSeek V4.1 Flash",
+   "D3"
+  ],
+  "丙": [
+   "DeepSeek V4.1 Flash",
+   "D4"
+  ],
+  "丁": [
+   "GLM-5.3",
+   "D1"
+  ],
+  "戊": [
+   "GLM-5.3",
+   "D3"
+  ],
+  "己": [
+   "GLM-5.3",
+   "D4"
+  ],
+  "庚": [
+   "Qwen3.8-27B",
+   "D1"
+  ],
+  "辛": [
+   "Qwen3.8-27B",
+   "D3"
+  ],
+  "壬": [
+   "Qwen3.8-27B",
+   "D4"
+  ],
+  "癸": [
+   "Hunyuan Hy4",
+   "D1"
+  ],
+  "子": [
+   "Hunyuan Hy4",
+   "D3"
+  ],
+  "丑": [
+   "Hunyuan Hy4",
+   "D4"
+  ]
+ },
+ "scores": {
+  "DeepSeek V4.1 Flash": {
+   "D1": 17,
+   "D3": 0,
+   "D4": 20
+  },
+  "GLM-5.3": {
+   "D1": 20,
+   "D3": 19,
+   "D4": 2
+  },
+  "Qwen3.8-27B": {
+   "D1": 18,
+   "D3": 3,
+   "D4": 5
+  },
+  "Hunyuan Hy4": {
+   "D1": 13,
+   "D3": 4,
+   "D4": 3
+  }
+ }
+}
