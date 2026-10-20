@@ -461,5 +461,50 @@
       ],
       "note": "等 #154 合入 main 后改为 authoritative。"
     }
+    ,
+    {
+      "id": "A-MASCOT-01",
+      "status": "authoritative",
+      "title": "吉祥物为 2D 像素 ⇄ 3D 双形态；2D 精灵图集固定 8 列 × 8 行，切换走统一事件",
+      "decidedAt": "2026-10-21",
+      "authority": "主控 2026-10-21 明确：「这套 2d 风格的龙跟 3d 的龙是双形态」「之前那个伪 3d 图就不要出现了」「做成 ans 网站的 agent 2d 形态，跟 3d 的形式可以随意切换」",
+      "surface": [
+        "src/lib/mascot/atlas.ts",
+        "src/lib/mascot/client-store.ts",
+        "src/components/mascot/pixel-dino-agent.tsx",
+        "public/mascot/pixel/manifest.json",
+        "public/mascot/pixel/dino-atlas.png"
+      ],
+      "rules": [
+        {
+          "ref": "origin/develop",
+          "file": "src/lib/mascot/atlas.ts",
+          "type": "contains",
+          "value": "ans.mascot.form",
+          "note": "双形态的存储键名是 2D/3D 两侧共用的契约，不得改名"
+        },
+        {
+          "ref": "origin/develop",
+          "file": "src/lib/mascot/atlas.ts",
+          "type": "contains",
+          "value": "ATLAS_ROWS = 8",
+          "note": "2D 精灵图集固定 8×8（8 行状态 × 8 帧），改动必须同时更新账本"
+        },
+        {
+          "ref": "origin/develop",
+          "file": "public/mascot/pixel/manifest.json",
+          "type": "contains",
+          "value": "\"cols\": 8",
+          "note": "图集清单必须声明 8 列，和 atlas.ts 保持一致"
+        }
+      ],
+      "rollback": [
+        {
+          "at": "2026-10-21",
+          "what": "早期「伪 3D」渲染图退场，移入 docs/bilibili-ans-launch/assets/_archive/fake3d/；产品仓库 3D 形象资源不动"
+        }
+      ],
+      "note": "本条的机器规则 ref 指向 origin/develop（PR 合并后即可解析）。合并前守卫会报「文件不存在（origin/develop）」，属预期的两段式：文件与账本同一个 PR 落地，规则在合并后立即生效。"
+    }
   ]
 }
