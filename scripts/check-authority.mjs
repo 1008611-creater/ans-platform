@@ -60,6 +60,31 @@ let pass = 0;
 const failures = [];
 const skipped = [];
 
+// 静默删除检测（--base <ref>）：base 上存在的权威条目不允在工作树里整条消失。
+// 这正是 2026-10-20 PR #164 发生的事：一个基于旧 main 的分支把旧 deploy.sh、
+// 旧 git-health.mjs 和旧账本一起合了进来，A-RELEASE-01/02 连同实现被"静默回退"，
+// 而当时所有门禁都是绿的 —— 账本被同一个 PR 改掉，守卫没得可查。
+const baseRef = opt("--base", null);
+if (baseRef) {
+  let baseLedger = null;
+  try {
+    baseLedger = JSON.parse(git(["show", `${baseRef}:docs/authority/ledger.json`]));
+  } catch {
+    console.log(`[authority] 提示：读不到 ${baseRef} 的账本，跳过静默删除检测。`);
+  }
+  if (baseLedger) {
+    const byId = new Set((ledger.entries ?? []).map((entry) => entry.id));
+    for (const baseEntry of baseLedger.entries ?? []) {
+      if (byId.has(baseEntry.id)) continue;
+      failures.push({
+        id: baseEntry.id, title: baseEntry.title, ref: baseRef, file: "docs/authority/ledger.json",
+        reason: `该权威条目在 ${baseRef} 上存在，但本次改动把它整条删除了`,
+        note: "禁止静默删除：撤销必须保留条目并改成 revoked/superseded（或给出取代它的新条目 ID）",
+      });
+    }
+  }
+}
+
 for (const entry of ledger.entries ?? []) {
   const status = entry.status ?? "authoritative";
   const rules = entry.rules ?? [];
