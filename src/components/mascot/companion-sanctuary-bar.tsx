@@ -106,6 +106,10 @@ function findMoodPreset(id: string): ShowcaseMoodPreset {
   return SHOWCASE_MOOD_PRESETS[id] ?? SHOWCASE_MOOD_PRESETS.happy_smile;
 }
 
+/** 套装名从道具表推导（写死清单会与 catalog 漂移，之前就写出了一个不存在的物品名）。 */
+const WARDROBE_NAME_BY_ID = new Map(DINO_WARDROBE_ITEMS.map(entry => [entry.id, entry.name]));
+const wardrobeSetLabel = (ids: string[]) => ids.map(id => WARDROBE_NAME_BY_ID.get(id) ?? id).join(" + ");
+
 /** 盲盒奖励区间直接从道具表推导，避免按钮写死一个与真实奖励不符的数字。 */
 const BLIND_BOX_COIN_RANGE = {
   min: Math.min(...BLIND_BOX_FOODS.map(item => item.coins)),
@@ -123,6 +127,9 @@ export function CompanionQuestPin({
   const ui = useTranslations("companion");
   const isZh = locale === "zh";
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
+  const wardrobeDialogRef = useRef<HTMLDivElement | null>(null);
+  const adoptDialogRef = useRef<HTMLDivElement | null>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
   const [alertMode, setAlertMode] = useState(true);
   const [alertDimmed, setAlertDimmed] = useState(false);
   const [activeMood, setActiveMood] = useState<ShowcaseMoodPreset>(() => SHOWCASE_MOOD_PRESETS.happy_smile);
@@ -203,6 +210,44 @@ export function CompanionQuestPin({
     root.addEventListener("focusin", activate);
     return cleanup;
   }, []);
+
+  // 抽屉的焦点管理：打开时把焦点移进 dialog，关闭时还给触发它的元素。
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (sanctuaryModal === "none") {
+      lastFocusedRef.current?.focus?.();
+      return;
+    }
+    lastFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const target = sanctuaryModal === "wardrobe" ? wardrobeDialogRef.current : adoptDialogRef.current;
+    target?.focus();
+  }, [sanctuaryModal]);
+
+  // 抽屉打开时把 Tab 限制在 dialog 内：此前键盘用户 Tab 几下就会走到背景页面。
+  useEffect(() => {
+    if (sanctuaryModal === "none") return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const dialog = sanctuaryModal === "wardrobe" ? wardrobeDialogRef.current : adoptDialogRef.current;
+      if (!dialog) return;
+      const focusables = Array.from(
+        dialog.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+      ).filter(element => !element.hasAttribute("disabled"));
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || active === dialog)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [sanctuaryModal]);
 
   // Keep body classes synchronized with macroActive and sanctuaryModal
   useEffect(() => {
@@ -666,7 +711,7 @@ export function CompanionQuestPin({
     dispatchDinoInteract({ type: "turntable", spin: true });
     dispatchDinoInteract({ type: "pose" });
     setWardrobeNote(
-      ui("bar.hudEquippedTripo3DBoba"),
+      ui("bar.hudEquippedTripo3DBoba", { items: wardrobeSetLabel(["boba_jetpack", "beret_cloud", "gold_glasses", "magic_wand", "aura_sakura"]) }),
     );
   }
 
@@ -694,7 +739,7 @@ export function CompanionQuestPin({
     dispatchDinoInteract({ type: "turntable", spin: true });
     dispatchDinoInteract({ type: "pose" });
     setWardrobeNote(
-      ui("bar.hudEquippedURStarGod"),
+      ui("bar.hudEquippedURStarGod", { items: wardrobeSetLabel(["crown_aurora", "star_monocle", "pioneer_cape", "floating_grimoire", "aura_aurora"]) }),
     );
   }
 
@@ -953,10 +998,18 @@ export function CompanionQuestPin({
         }}
       >
         {sanctuaryModal === "wardrobe" && (
-          <div className="ans-sanctuary-dialog" onClick={e => e.stopPropagation()}>
+          <div
+            ref={wardrobeDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ans-wardrobe-title"
+            tabIndex={-1}
+            className="ans-sanctuary-dialog"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="ans-sanctuary-header">
               <div>
-                <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
+                <h2 id="ans-wardrobe-title" style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
                   👗 {ui("bar.wardrobeDino3DHauteCouture")} · {state.customName || sp.name}
                 </h2>
                 <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.78 }}>
@@ -1212,7 +1265,7 @@ export function CompanionQuestPin({
                           color: "#fbbf24",
                         }}
                       >
-                        {item.rarity} · +{item.stylePower}分
+                        {ui("bar.wardrobeRarityPower", { rarity: item.rarity, power: item.stylePower })}
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
@@ -1262,10 +1315,18 @@ export function CompanionQuestPin({
         }}
       >
         {sanctuaryModal === "adopt" && (
-          <div className="ans-sanctuary-dialog" onClick={e => e.stopPropagation()}>
+          <div
+            ref={adoptDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ans-adopt-title"
+            tabIndex={-1}
+            className="ans-sanctuary-dialog"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="ans-sanctuary-header">
               <div>
-                <h2 style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
+                <h2 id="ans-adopt-title" style={{ margin: 0, fontSize: "19px", fontWeight: 900 }}>
                   🥚 {ui("bar.adopt3dDinoFormSwitcher")}
                 </h2>
               </div>
@@ -1336,6 +1397,7 @@ export function CompanionSanctuaryBar({
   const [piBusy, setPiBusy] = useState(false);
   const [piPrompt, setPiPrompt] = useState("");
   /** 服务端要求先确认的扣费金额（用户点确认前服务端不会扣费）。 */
+  const resultRef = useRef<HTMLDivElement | null>(null);
   const [piConfirm, setPiConfirm] = useState<{
     intent: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "auto";
     prompt: string;
@@ -1345,11 +1407,14 @@ export function CompanionSanctuaryBar({
     ok: boolean;
     toolUsed?: string;
     trace?: string[];
+    traceEn?: string[];
     replyZh: string;
     replyEn: string;
     balancePoints?: number | null;
-    links?: { href: string; title: string; detail: string }[];
+    links?: { href: string; title: string; detail: string; titleEn?: string; detailEn?: string }[];
   } | null>(null);
+  // 执行步骤按当前语言选：英文缺失时回落到中文（服务端会逐条补，不会出现半截英文）。
+  const traceSteps = piResult ? (isZh ? piResult.trace : piResult.traceEn ?? piResult.trace) : undefined;
 
   async function runPiAction(
     intent: "checkin" | "claw" | "market" | "scaffold" | "redeem" | "auto",
@@ -1385,6 +1450,7 @@ export function CompanionSanctuaryBar({
           ok: false,
           toolUsed: data?.toolUsed,
           trace: Array.isArray(data?.trace) ? data.trace : undefined,
+        traceEn: Array.isArray(data?.traceEn) ? data.traceEn : undefined,
           replyZh: data?.replyZh ?? "",
           replyEn: data?.replyEn ?? "",
           balancePoints: data?.balancePoints ?? null,
@@ -1400,6 +1466,7 @@ export function CompanionSanctuaryBar({
           ok: false,
           toolUsed: res.status === 401 ? "auth_required" : undefined,
           trace: Array.isArray(data?.trace) ? data.trace : undefined,
+        traceEn: Array.isArray(data?.traceEn) ? data.traceEn : undefined,
           replyZh: fallbackZh,
           replyEn: fallbackEn,
           links:
@@ -1417,6 +1484,8 @@ export function CompanionSanctuaryBar({
       }
       setPiConfirm(null);
       setPiResult(data);
+      // 确认按钮点完就卸载了，把焦点交给结果区，别让它掉回 body。
+      if (typeof confirmedPoints === "number") window.requestAnimationFrame(() => resultRef.current?.focus());
       const speechLine = isZh ? data.replyZh : data.replyEn;
       if (speechLine) {
         onSpeak?.(speechLine.replace(/\*\*/g, ""));
@@ -1629,7 +1698,7 @@ export function CompanionSanctuaryBar({
             onClick={() =>
               void runPiAction(
                 "scaffold",
-                (piPrompt || currentDraft).trim() || ui("bar.quickbarDefaultProjectTopic"),
+                (piPrompt || currentDraft).trim(),
               )
             }
             className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
@@ -1697,6 +1766,8 @@ export function CompanionSanctuaryBar({
       {piConfirm && (
         <div
           data-testid="pi-agent-confirm"
+          role="status"
+          aria-live="polite"
           className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/60 bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-800 dark:text-amber-200"
         >
           <span>
@@ -1769,6 +1840,8 @@ export function CompanionSanctuaryBar({
 
           {piResult && (
             <div
+              ref={resultRef}
+              tabIndex={-1}
               data-testid="pi-agent-result"
               className="space-y-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2 text-[11px]"
             >
@@ -1814,13 +1887,13 @@ export function CompanionSanctuaryBar({
                 </div>
               </div>
 
-              {piResult.trace && piResult.trace.length > 0 && (
+              {traceSteps && traceSteps.length > 0 && (
                 <details className="rounded-md border border-border/60 bg-background/70 px-2 py-1 font-mono text-[10px] text-muted-foreground">
                   <summary className="cursor-pointer font-sans font-semibold text-emerald-700 dark:text-emerald-300">
-                    ⚡ {ui("bar.podExecutionTracePiResultTrace", { length: piResult.trace.length })}
+                    ⚡ {ui("bar.podExecutionTracePiResultTrace", { length: traceSteps.length })}
                   </summary>
                   <ol className="mt-1 space-y-0.5 pl-1">
-                    {piResult.trace.map((step, idx) => (
+                    {traceSteps.map((step, idx) => (
                       <li key={idx}>› {step}</li>
                     ))}
                   </ol>
@@ -1836,13 +1909,13 @@ export function CompanionSanctuaryBar({
                     <a
                       key={link.href}
                       href={link.href}
-                      title={link.detail}
+                      title={isZh ? link.detail : link.detailEn ?? link.detail}
                       className="group flex items-center justify-between rounded-lg border border-border/80 bg-background px-2.5 py-1.5 text-[11px] font-semibold text-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10"
                     >
                       <div className="truncate">
-                        <span className="font-bold text-emerald-700 dark:text-emerald-300">{link.title}</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-300">{isZh ? link.title : link.titleEn ?? link.title}</span>
                         <span className="ml-1.5 hidden text-[10px] text-muted-foreground group-hover:inline">
-                          {link.detail}
+                          {isZh ? link.detail : link.detailEn ?? link.detail}
                         </span>
                       </div>
                       <span className="ml-2 shrink-0 text-[10px] font-bold text-emerald-600">→</span>

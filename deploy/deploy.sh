@@ -1,156 +1,185 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ANS Platform 发布脚本（在服务器上执行）—— 与线上真实发布约定一致
+# ANS Platform 部署脚本（在服务器上执行）
 #
 # 用法：
-#   bash deploy/deploy.sh --status     # 只读：线上 release/镜像/一致性
-#   bash deploy/deploy.sh --plan       # 只读：打印本次将执行的动作
-#   bash deploy/deploy.sh              # 构建镜像 → 生成 release → 切换容器
-#   bash deploy/deploy.sh --no-build   # 复用已存在的 ans-platform:<sha>
-#   TARGET=<sha> bash deploy/deploy.sh # 指定目标（默认 origin/main）
+#   bash deploy/deploy.sh              # 拉取最新代码 → 构建 → 上线 → 校验
+#   bash deploy/deploy.sh --no-build   # 只拉取并重启（改了环境变量时用）
+#   bash deploy/deploy.sh --status     # 只看状态，不做任何变更
 #
-# 真实发布约定（权威账本 A-RELEASE-01，别改）：
-#   1. 镜像 tag 必须是 ans-platform:<short-sha>，不依赖可变的 :latest。
-#   2. 每个 release 一个目录：<RELEASES_DIR>/ans-<short-sha>-<YYYYMMDD>/，
-#      内含 production-private.json（从**当前线上** release 复制，只换 image 字段）
-#      与 rollback.sh（一条命令回到上一版）。
-#   3. compose project = ans-<short-sha>-<YYYYMMDD>，只 up -d app；
-#      同文件的 visual-sites 等其它服务不在本脚本职责内。
-#   4. 上线后必须校验「容器镜像 ID == 目标镜像 ID」，否则报错（防静默假成功）。
-#   5. 所有 compose 调用显式传 -p 与 -f，绝不让 project 名从目录名推导。
+# 可覆盖的环境变量：DEPLOY_DIR / PROJECT / ENV_FILE / LOCK_FILE / LOCK_WAIT
 #
-# 保持的坑位防御：build 完成 ≠ 上线；共享生产必须 flock；src/ 下未跟踪文件会被
-# COPY . . 带进构建并让类型检查失败，本脚本在构建前直接拒绝。
+# 铁律（踩过坑，别改）：
+#   1. 构建和启动用不同的 compose 文件：compose.yml 才有 build 段，
+#      docker-compose.yml 只负责运行。用 -f docker-compose.yml build 会静默空转。
+#   2. build 完成 ≠ 上线，必须再跑一次 up -d 才会 Recreate 容器。
+#   3. 镜像必须是 ans-platform:latest，不能是 ghcr.io/f/prompts.chat:latest，
+#      否则构建新站会覆盖旧站 prompts.cauai.fun 的镜像。
+#   4. compose project 名必须显式传 -p，绝不让它从目录名推导。
+#      docker-compose.yml 里写死了 container_name: ans-platform-app，
+#      而线上既有容器属于 project ans-platform-authoritative。
+#      一旦 project 名被推成 ans-platform-authoritative-main（目录名），
+#      up -d 会因容器名冲突失败 —— 但旧容器仍 healthy、镜像已构建成功、
+#      日志里没有「失败」字样。这就是「静默假成功」：你以为上线了，其实没上。
+#   5. 上线前必须先留回滚点（旧镜像打标签），否则出问题只能靠重构建。
+#   6. 这台服务器是**共享生产**：至少两条线程（比赛版 / 学习版）共用同一个
+#      部署目录和同一个镜像 tag。必须用 flock 串行化，否则并发部署会互相踩：
+#      git 抢 index.lock、同 tag 并发构建、up -d 抢容器 —— 而且两边都不会报错。
 # ============================================================================
 set -euo pipefail
 
 DEPLOY_DIR="${DEPLOY_DIR:-/srv/ans-platform-authoritative-main}"
-RELEASES_DIR="${RELEASES_DIR:-/srv/ans-releases}"
-CONTAINER="ans-platform-app"
-SERVICE="app"
+PROJECT="${PROJECT:-ans-platform-authoritative}"
 BUILD_COMPOSE="compose.yml"
+RUN_COMPOSE="docker-compose.yml"
+SERVICE="app"
+IMAGE="ans-platform:latest"
+CONTAINER="ans-platform-app"
+
+cd "$DEPLOY_DIR"
+ENV_FILE="${ENV_FILE:-.env}"
+
+# 所有 compose 调用统一走这里，project 名与 env-file 只在一处定义，避免漏传。
+compose() {
+    docker compose -p "$PROJECT" --env-file "$ENV_FILE" "$@"
+}
+
+if [[ "${1:-}" == "--status" ]]; then
+    echo "=== git ==="
+    git log --oneline -1
+    echo "=== container ==="
+    docker ps --filter name="$CONTAINER" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+    echo "=== image ==="
+    docker images --format "{{.Repository}}:{{.Tag}}\t{{.CreatedAt}}" | grep ans-platform || echo "镜像尚未构建"
+    echo "=== 镜像一致性（线上是否真的跑着 $IMAGE）==="
+    running_id="$(docker inspect --format='{{.Image}}' "$CONTAINER" 2>/dev/null || echo '')"
+    latest_id="$(docker image inspect --format='{{.Id}}' "$IMAGE" 2>/dev/null || echo '')"
+    if [[ -z "$running_id" || -z "$latest_id" ]]; then
+        echo "无法读取（容器或镜像不存在）"
+    elif [[ "$running_id" == "$latest_id" ]]; then
+        echo "一致：$running_id"
+    else
+        echo "不一致！容器跑的不是最新镜像"
+        echo "  容器：$running_id"
+        echo "  $IMAGE：$latest_id"
+    fi
+    exit 0
+fi
+
+# 串行化并发部署。放在 --status 之后：只读查询不该被锁挡住。
+# 后到的部署排队等待（默认最多 30 分钟），而不是并行互相破坏。
 LOCK_FILE="${LOCK_FILE:-/var/lock/ans-platform-deploy.lock}"
-LOCK_WAIT="${LOCK_WAIT:-1800}"
-
-live_project() { docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$CONTAINER" 2>/dev/null || true; }
-live_config()  { docker inspect -f '{{index .Config.Labels "com.docker.compose.project.config_files"}}' "$CONTAINER" 2>/dev/null || true; }
-image_id()     { docker image inspect -f '{{.Id}}' "$1" 2>/dev/null || true; }
-running_id()   { docker inspect -f '{{.Image}}' "$CONTAINER" 2>/dev/null || true; }
-
-status() {
-    echo "=== 源码 ==="
-    git -C "$DEPLOY_DIR" log --oneline -1
-    echo "=== 容器 ==="
-    docker ps --filter "name=$CONTAINER" --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"
-    echo "=== 线上 release（容器标签是唯一可信来源）==="
-    echo "project     : $(live_project)"
-    echo "config file : $(live_config)"
-    echo "=== 镜像一致性 ==="
-    local running tagged
-    running="$(running_id)"
-    tagged="$(image_id "$(docker inspect -f '{{.Config.Image}}' "$CONTAINER" 2>/dev/null || echo '')")"
-    if [ -z "$running" ]; then echo "无法读取（容器不存在）"
-    elif [ "$running" = "$tagged" ]; then echo "一致：$running"
-    else echo "不一致！容器跑的不是它标签指向的镜像"; echo "  容器：$running"; echo "  镜像：$tagged"; fi
-}
-
-plan() {
-    echo "目标提交 : ${TARGET:-origin/main}"
-    echo "源码目录 : $DEPLOY_DIR"
-    echo "release  : $RELEASES_DIR/ans-<short-sha>-<YYYYMMDD>"
-    echo "镜像 tag : ans-platform:<short-sha>"
-    echo "切换     : docker rm -f $CONTAINER && compose -p ans-<short>-<date> -f <release>/production-private.json up -d $SERVICE"
-    echo "回滚     : <release>/rollback.sh"
-}
-
-if [ "${1:-}" = "--status" ]; then status; exit 0; fi
-if [ "${1:-}" = "--plan" ]; then plan; exit 0; fi
-
 exec 9>"$LOCK_FILE"
-if ! flock -w "$LOCK_WAIT" 9; then
-    echo "错误：等待部署锁超时（$LOCK_FILE）。" >&2
+if ! flock -w "${LOCK_WAIT:-1800}" 9; then
+    echo "错误：等待部署锁超时（$LOCK_FILE）。可能有另一个部署仍在进行。" >&2
+    echo "  查占用者：fuser -v $LOCK_FILE  或  pgrep -af 'deploy.sh|docker compose'" >&2
     exit 1
 fi
 echo "已取得部署锁：$LOCK_FILE"
 
-cd "$DEPLOY_DIR"
-echo "[1/5] 解析目标提交"
-git fetch origin --no-tags --prune
-TARGET_REF="${TARGET:-origin/main}"
-SHA="$(git rev-parse "$TARGET_REF")"
-SHORT="$(git rev-parse --short=8 "$SHA")"
-if ! git merge-base --is-ancestor "$SHA" origin/main; then
-    echo "错误：$TARGET_REF ($SHORT) 不是 origin/main 的祖先，拒绝发布未经主干验证的提交。" >&2
+echo "[1/4] 拉取最新代码"
+git pull --ff-only origin main
+
+if [[ ! -f "$ENV_FILE" ]]; then
+    echo "错误：缺少 $ENV_FILE。生产部署必须提供托管 PostgreSQL 的 DATABASE_URL 和 DIRECT_URL。" >&2
     exit 1
 fi
-echo "  目标：$SHORT（$TARGET_REF）"
 
-if [ "${1:-}" != "--no-build" ]; then
-    echo "[2/5] 检查构建上下文"
-    UNTRACKED="$(git ls-files --others --exclude-standard -- src || true)"
-    if [ -n "$UNTRACKED" ] && [ "${ALLOW_UNTRACKED:-0}" != "1" ]; then
-        echo "错误：src/ 下存在未跟踪文件，会被 COPY . . 带进构建并让类型检查失败：" >&2
-        echo "$UNTRACKED" | sed 's/^/  /' >&2
-        echo "  先移到隔离目录（如 /root/ans-quarantine-<date>/）或提交到分支；" >&2
-        echo "  确认无害时可 ALLOW_UNTRACKED=1 重跑。" >&2
-        exit 1
+# Compose 会在这里校验必填变量；不输出解析后的配置，避免把连接串写入日志。
+if ! compose -f "$RUN_COMPOSE" config --quiet; then
+    echo "错误：生产 compose 配置不完整，请检查 $ENV_FILE。" >&2
+    exit 1
+fi
+
+# 阻止把生产容器误接回本机或旧站数据库容器。
+if grep -Eiq '^DATABASE_URL=.*@(localhost|127\.0\.0\.1|\[::1\]|db|prompts-chat-db)(:|/)' "$ENV_FILE"; then
+    echo "错误：DATABASE_URL 必须指向独立托管 PostgreSQL，不能使用本机或 Docker 数据库服务。" >&2
+    exit 1
+fi
+if grep -Eiq '^DIRECT_URL=.*@(localhost|127\.0\.0\.1|\[::1\]|db|prompts-chat-db)(:|/)' "$ENV_FILE"; then
+    echo "错误：DIRECT_URL 必须指向独立托管 PostgreSQL，不能使用本机或 Docker 数据库服务。" >&2
+    exit 1
+fi
+
+
+if [[ "${1:-}" != "--no-build" ]]; then
+    echo "[2/4] 记录回滚点并构建镜像（约 20 分钟，可 Ctrl-C 中断后重跑，有缓存）"
+    CURRENT_IMAGE_ID="$(docker inspect "$CONTAINER" --format '{{.Image}}' 2>/dev/null || true)"
+    PREV_COMMIT="$(git rev-parse HEAD)"
+    if [[ -n "$CURRENT_IMAGE_ID" ]]; then
+        docker tag "$CURRENT_IMAGE_ID" "ans-platform:rollback-$(date +%Y%m%d%H%M%S)"
+        echo "  当前镜像：$CURRENT_IMAGE_ID（已打回滚标签）"
     fi
-    git checkout --detach "$SHA"
-    echo "[3/5] 构建镜像 ans-platform:$SHORT（有缓存会快很多）"
-    docker compose -p "ans-build-$SHORT" -f "$BUILD_COMPOSE" build "$SERVICE"
-    docker tag ans-platform:latest "ans-platform:$SHORT"
+    echo "  当前提交：$PREV_COMMIT"
+    echo "  回滚方法：docker tag <回滚标签> $IMAGE && compose -f $RUN_COMPOSE up -d $SERVICE"
+    compose -f "$BUILD_COMPOSE" build "$SERVICE"
 else
-    echo "[2/5] 跳过构建（--no-build）"
-    if [ -z "$(image_id "ans-platform:$SHORT")" ]; then
-        echo "错误：镜像 ans-platform:$SHORT 不存在，无法跳过构建。" >&2
-        exit 1
-    fi
-    echo "[3/5] 复用镜像 ans-platform:$SHORT"
+    echo "[2/4] 跳过构建（--no-build）"
 fi
 
-echo "[4/5] 生成 release 目录（沿用当前线上定义，只换 image）"
-LIVE_PROJECT="$(live_project)"; LIVE_CONFIG="$(live_config)"
-if [ -z "$LIVE_CONFIG" ] || [ ! -f "$LIVE_CONFIG" ]; then
-    echo "错误：读不到当前线上 compose 定义：$LIVE_CONFIG" >&2
-    exit 1
-fi
-STAMP="$(date +%Y%m%d)"
-NEW_PROJECT="ans-$SHORT-$STAMP"
-NEW_DIR="$RELEASES_DIR/$NEW_PROJECT"
-mkdir -p "$NEW_DIR"
-cp "$LIVE_CONFIG" "$NEW_DIR/rollback-private.json"
-python3 - "$LIVE_CONFIG" "$NEW_DIR/production-private.json" "ans-platform:$SHORT" <<'PY'
-import json, sys
-src, dst, image = sys.argv[1], sys.argv[2], sys.argv[3]
-data = json.load(open(src))
-data["services"]["app"]["image"] = image
-json.dump(data, open(dst, "w"), indent=2, ensure_ascii=False)
-print(f"  image -> {image}")
-PY
-cat > "$NEW_DIR/rollback.sh" <<SH
-#!/usr/bin/env bash
-# 回滚到发布前的线上版本（project $LIVE_PROJECT）
-set -e
-docker rm -f $CONTAINER
-docker compose -p $LIVE_PROJECT -f $LIVE_CONFIG up -d $SERVICE
-SH
-chmod +x "$NEW_DIR/rollback.sh"
-docker compose -p "$NEW_PROJECT" -f "$NEW_DIR/production-private.json" config --quiet && echo "  compose 校验通过：$NEW_PROJECT"
+echo "[3/4] 重启容器（这一步才是真正上线）"
+compose -f "$RUN_COMPOSE" up -d "$SERVICE"
 
-echo "[5/5] 切换容器（这一步才是真正上线）"
-docker rm -f "$CONTAINER" >/dev/null
-docker compose -p "$NEW_PROJECT" -f "$NEW_DIR/production-private.json" up -d "$SERVICE"
-sleep 25
-docker ps --filter "name=$CONTAINER" --format "{{.Names}} | {{.Status}} | {{.Image}}"
-RUNNING="$(running_id)"; TARGET_ID="$(image_id "ans-platform:$SHORT")"
-echo "  容器镜像：$RUNNING"
-echo "  目标镜像：$TARGET_ID"
-if [ "$RUNNING" != "$TARGET_ID" ]; then
-    echo "错误：容器没有切换到目标镜像，上线未生效！" >&2
-    echo "  回滚：bash $NEW_DIR/rollback.sh" >&2
+echo "[4/4] 等待就绪并校验镜像真的换了"
+sleep 20
+docker ps --filter name="$CONTAINER" --format "{{.Names}} {{.Status}}"
+
+# 这一步是防「静默假成功」的最后一道闸：容器必须真的跑在 $IMAGE 上。
+running_id="$(docker inspect --format='{{.Image}}' "$CONTAINER")"
+latest_id="$(docker image inspect --format='{{.Id}}' "$IMAGE")"
+if [[ "$running_id" != "$latest_id" ]]; then
+    echo >&2
+    echo "错误：容器没有切换到最新镜像，上线未生效！" >&2
+    echo "  容器正在跑：$running_id" >&2
+    echo "  $IMAGE：$latest_id" >&2
+    echo "  排查方向：compose project 名是否与既有容器一致（应带 -p $PROJECT）。" >&2
     exit 1
 fi
+echo "镜像一致：$running_id"
+
 echo
-echo "上线成功：$SHORT（project $NEW_PROJECT）"
-echo "  回滚：bash $NEW_DIR/rollback.sh"
-echo "  信号：确认后把 ops/deploy-target 与 ops/prod-live 指到 $SHA"
+echo "=== 冒烟检查 ==="
+# 容器刚 Recreate，Next.js 冷启动可能几秒到几十秒。
+# 旧版只 sleep 20 就逐个 curl，命中冷启动会打出 000「请求失败」的假警报，
+# 而且失败也不影响退出码 —— 于是一个好部署看起来像坏的，得靠人工复验才能确认。
+# 2026-10-06 实测：一次正常部署里 /、/projects、/competitions 三个路径报 000，
+# 手工复验全部 200。
+# 现在：每个路径最多重试 SMOKE_RETRIES 次（默认 6，退避 5/10/15/20/25/30 秒），
+# 只有始终拿不到 200 才判失败，并让脚本以退出码 1 结束。
+SMOKE_RETRIES="${SMOKE_RETRIES:-6}"
+smoke_failed=""
+
+for p in / /projects /templates /api/health /competitions /competitions/agrihackathon /api/auth/session; do
+    code=""
+    attempt=1
+    while [ "$attempt" -le "$SMOKE_RETRIES" ]; do
+        code="$(curl -s -o /dev/null -w '%{http_code}' -m 20 -L "https://ans.cauai.fun$p" || echo 000)"
+        [ "$code" = "200" ] && break
+        sleep $(( attempt * 5 ))
+        attempt=$(( attempt + 1 ))
+    done
+    if [ "$code" = "200" ]; then
+        printf "%-28s -> %s\n" "$p" "$code"
+    else
+        printf "%-28s -> %s  （重试 %s 次仍失败）\n" "$p" "$code" "$SMOKE_RETRIES"
+        smoke_failed="$smoke_failed $p"
+    fi
+done
+
+printf "%-28s -> " "首页权威入口"
+if curl -s -m 20 -L "https://ans.cauai.fun/" | grep -q "first-lesson"; then
+    echo "OK"
+else
+    echo "缺失（可能仍是旧版）"
+    smoke_failed="$smoke_failed 首页权威入口"
+fi
+
+if [ -n "$smoke_failed" ]; then
+    echo >&2
+    echo "错误：冒烟检查未通过 ——$smoke_failed" >&2
+    echo "  排查：直连容器绕开 Cloudflare —— curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3001<路径>" >&2
+    exit 1
+fi
+
+echo
+echo "冒烟全部通过。部署完成。查看日志：docker logs -f $CONTAINER"
