@@ -9,10 +9,17 @@ function viewport() {
   const keyboard = window.innerWidth < 900 && window.innerHeight - height > 120;
   return { width, height, left: visual?.offsetLeft ?? 0, top: visual?.offsetTop ?? 0, keyboard };
 }
+/**
+ * 站点头部高度（h-12 = 48px）加呼吸位。面板锚在右下角向上生长，只约束 bottom
+ * 会让它在移动端压掉 sticky 头部实测 25px，所以这里同时约束顶部。
+ */
+const TOP_INSET = 56;
+
 export function companionBounds(width: number, height: number, keyboard = false) {
   const desktop = width >= 900;
   const right = desktop ? 150 : 12, bottom = desktop ? 24 : keyboard ? 12 : width <= 640 ? 214 : 246;
-  return { right, bottom, minWidth: Math.min(360, width - right - 12), maxWidth: Math.max(0, width - right - 12), minHeight: Math.min(340, height - bottom - 24), maxHeight: Math.max(0, height - bottom - 24) };
+  const available = Math.max(0, height - bottom - TOP_INSET);
+  return { right, bottom, top: TOP_INSET, minWidth: Math.min(360, width - right - 12), maxWidth: Math.max(0, width - right - 12), minHeight: Math.min(340, available), maxHeight: available };
 }
 export function clampCompanionSize(size: CompanionSize, width: number, height: number, keyboard = false): CompanionSize {
   const b = companionBounds(width, height, keyboard);
