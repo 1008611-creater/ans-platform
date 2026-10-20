@@ -1696,7 +1696,8 @@ export function CompanionSanctuaryBar({
                 value={piPrompt}
                 onChange={e => setPiPrompt(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === "Enter") {
+                  // 中文/日文输入法选词也会发 Enter：放过 IME 组词，否则半句话就被当指令执行（可能触发扣分动作）。
+                  if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
                     e.preventDefault();
                     void runPiAction("auto", piPrompt);
                   }
