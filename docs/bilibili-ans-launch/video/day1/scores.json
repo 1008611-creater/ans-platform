@@ -1,0 +1,171 @@
+{
+ "need": "我想把家里宠物的照片做成一个 3D 打印纪念手办，需要一份能直接交给制作方的完整需求",
+ "prompt": "你是 ANS 平台上的提示词工程师。下面是一段真实需求：\n\n「我想把家里宠物的照片做成一个 3D 打印纪念手办，需要一份能直接交给制作方的完整需求」\n\n请输出两段：\n1) 一条可直接复用、带变量占位的提示词（写清角色、约束、输出格式）；\n2) 用你刚写的这条提示词，给出一次真实执行结果。\n\n限制：全文不超过 400 字；不许调用任何工具；不许向我提问。",
+ "judge": "deepseek-ai/DeepSeek-V4-Pro",
+ "rubric": "完成度25 / 可执行性25 / 结构化15 / 事实与服从15 / 盲评20（AI 盲评，替代 3 人盲评，已在视频中声明）",
+ "ranking": [
+  {
+   "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+   "label": "DeepSeek V4.1 Flash",
+   "完成度": 25,
+   "结构化": 15,
+   "可执行性": 25,
+   "事实与服从": 15,
+   "盲评": 18,
+   "total": 98,
+   "flaw": "无明显失误",
+   "note": "耗时 中位 46s（17/46/103s）｜字数 中位 374",
+   "samples": [
+    {
+     "sample": 1,
+     "chars": 374,
+     "latency": 17.4,
+     "over_400": false,
+     "asked": false
+    },
+    {
+     "sample": 2,
+     "chars": 393,
+     "latency": 46.4,
+     "over_400": false,
+     "asked": false
+    },
+    {
+     "sample": 3,
+     "chars": 368,
+     "latency": 103.5,
+     "over_400": false,
+     "asked": false
+    }
+   ]
+  },
+  {
+   "model": "zai-org/GLM-5.3",
+   "label": "GLM-5.3",
+   "完成度": 25,
+   "结构化": 15,
+   "可执行性": 25,
+   "事实与服从": 10,
+   "盲评": 18,
+   "total": 93,
+   "flaw": "字数超了 400（扣 5）",
+   "note": "耗时 中位 48s（42/48/69s）｜字数 中位 442",
+   "samples": [
+    {
+     "sample": 1,
+     "chars": 375,
+     "latency": 69.6,
+     "over_400": false,
+     "asked": false
+    },
+    {
+     "sample": 2,
+     "chars": 447,
+     "latency": 42.8,
+     "over_400": true,
+     "asked": false
+    },
+    {
+     "sample": 3,
+     "chars": 442,
+     "latency": 48.7,
+     "over_400": true,
+     "asked": false
+    }
+   ]
+  },
+  {
+   "model": "moonshotai/Kimi-K2.7-Code",
+   "label": "Kimi K2.7",
+   "完成度": 25,
+   "结构化": 10,
+   "可执行性": 25,
+   "事实与服从": 10,
+   "盲评": 17,
+   "total": 87,
+   "flaw": "字数超了 400（扣 5）",
+   "note": "耗时 中位 65s（25/65/81s）｜字数 中位 337",
+   "samples": [
+    {
+     "sample": 1,
+     "chars": 337,
+     "latency": 65.5,
+     "over_400": false,
+     "asked": false
+    },
+    {
+     "sample": 2,
+     "chars": 455,
+     "latency": 25.1,
+     "over_400": true,
+     "asked": false
+    },
+    {
+     "sample": 3,
+     "chars": 315,
+     "latency": 81.9,
+     "over_400": false,
+     "asked": false
+    }
+   ]
+  },
+  {
+   "model": "Qwen/Qwen3.8-27B",
+   "label": "Qwen3.8-27B",
+   "完成度": 25,
+   "结构化": 5,
+   "可执行性": 17,
+   "事实与服从": 15,
+   "盲评": 16,
+   "total": 78,
+   "flaw": "没写变量占位",
+   "note": "耗时 中位 111s（69/111/131s）｜字数 中位 332",
+   "samples": [
+    {
+     "sample": 1,
+     "chars": 252,
+     "latency": 111.0,
+     "over_400": false,
+     "asked": false
+    },
+    {
+     "sample": 2,
+     "chars": 384,
+     "latency": 69.8,
+     "over_400": false,
+     "asked": false
+    },
+    {
+     "sample": 3,
+     "chars": 332,
+     "latency": 131.9,
+     "over_400": false,
+     "asked": false
+    }
+   ]
+  },
+  {
+   "model": "tencent/Hy4-preview",
+   "label": "Hunyuan Hy4",
+   "完成度": 25,
+   "结构化": 10,
+   "可执行性": 25,
+   "事实与服从": 10,
+   "盲评": 5,
+   "total": 75,
+   "flaw": "字数超了 400（扣 5）",
+   "note": "耗时 中位 227s（227/227/227s）｜字数 中位 467",
+   "samples": [
+    {
+     "sample": 1,
+     "chars": 467,
+     "latency": 227.6,
+     "over_400": true,
+     "asked": false
+    }
+   ]
+  }
+ ],
+ "raw_excerpt": "1) 提示词\n角色：宠物3D打印手办需求顾问。变量：{宠物品种}{照片数量}{照片链接}{高度cm}{材质}{涂装}{姿态}{预算}{交期}{交付格式}。约束：仅据已知信息与变量；缺项标“待确认”；可给建议值并注明“建议”；不提问；中文。输出：【需求单】，分六行：目标、资料、规格、工艺、验收、备注。\n\n2) 执行结果（未知项待确认/给建议）\n代入：{宠物品种}=待确认，{照片数量}=若干张，{照片链接}=已附，{高度cm}=待确认（建议15cm），{材质}=待确认（建议树脂），{涂装}=按照片上色，{姿态}=待确认（建议坐姿），{预算}=待确认，{交期}=待确认，{交付格式}=待确认（建议STL/OBJ）。\n【需求单】\n目标：用家中宠物照片制作3D打印纪念手办。\n资料：用户提供的宠物照片若干张，链接已附。\n规格：高度待确认（建议15cm），姿态待确认（建议坐姿），按照片配色。\n工艺：3D打印成型；材质待确认（建议树脂），表面打磨上色。\n验收：先确认建议的STL/OBJ模型，成品无裂纹、配色接近照片。\n备注：预算、交期待确认；其余以制作方评估为准。",
+ "raw_all_ref": "raw.json（站内动态公开）"
+}
