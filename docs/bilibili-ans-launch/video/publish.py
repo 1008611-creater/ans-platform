@@ -8,7 +8,8 @@
   1) 环境变量 BILI_SESSDATA / BILI_JCT / BILI_BUVID3 / BILI_DEDEUSERID
   2) bili login 生成的凭据文件
 """
-import argparse, asyncio, json, os, sys, glob
+import argparse
+import time, asyncio, json, os, sys, glob
 
 CRED_PATHS = [
     # bili CLI（pipx: bilibili-cli）的真实落盘位置：~/.bilibili-cli/credential.json
@@ -84,6 +85,16 @@ async def main():
     if bvid:
         print("[done] 已发布：https://www.bilibili.com/video/" + bvid)
         print("[todo] 记得在创作中心确认「AIGC 内容声明」已勾选。")
+        # 自动记账：bvid 追加到 ledger/records.json，供 ledger.py 每日抓数据
+        try:
+            rec_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ledger", "records.json")
+            os.makedirs(os.path.dirname(rec_path), exist_ok=True)
+            recs = json.load(open(rec_path, encoding="utf-8")) if os.path.exists(rec_path) else []
+            recs.append({"bvid": bvid, "title": meta_d["title"], "ts": int(time.time())})
+            json.dump(recs, open(rec_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            print("[ledger] 已记账，明日 20:30 自动抓数据 →", rec_path)
+        except Exception as e:
+            print("[ledger] 记账失败（不影响发布）:", e)
     return 0
 
 if __name__ == "__main__":
