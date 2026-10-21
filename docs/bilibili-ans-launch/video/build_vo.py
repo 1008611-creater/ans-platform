@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """逐镜生成配音（edge-tts → mp3 → wav）+ 时长测量"""
 import json, os, subprocess, sys
-sys.path.insert(0, r"E:\codex\.tools\tts-libs")
+sys.path.insert(0, __import__("os").environ.get("ANS_TTS_LIBS", r"E:\codex\.tools\tts-libs"))
 import asyncio
 import edge_tts
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """探测可用 LLM 通路（SiliconFlow / Volcengine ARK），列出可跑的模型"""
 import json, os, sys
-sys.path.insert(0, r"E:\codex\.tools\tts-libs")
+sys.path.insert(0, __import__("os").environ.get("ANS_TTS_LIBS", r"E:\codex\.tools\tts-libs"))
 import requests
 
 def env(path, key):
