@@ -269,9 +269,13 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
     if(parent && state!=="UNCERTAIN")await refreshMeteredParentCost(tx,user.id,{parent});
   }, TX_OPTIONS);
   let upstream:Response;
+  const upstreamStartedAt = Date.now();
   try {
     upstream=await fetch(`${process.env.RUN_BASE_URL?.replace(/\/$/,"")}/${adapter?.path ?? "responses"}`,{method:"POST",headers:{Authorization:`Bearer ${process.env.RUN_API_KEY}`,"Content-Type":"application/json",...(adapter ? { "anthropic-version": "2023-06-01" } : {})},body:parsed.text,signal:AbortSignal.timeout(budget?.timeoutMs ?? adapter?.timeoutMs ?? 300000),redirect:"error"});
-  } catch {await transition("UNCERTAIN",null);return failure("UPSTREAM_RESULT_UNCERTAIN",502);}
+  } catch (error) {
+    console.error("[codex-gateway] upstream call failed", { userId: user.id, modelId: parsed.model, requestId: taskId, elapsedMs: Date.now() - upstreamStartedAt, message: error instanceof Error ? error.message : String(error) });
+    await transition("UNCERTAIN",null);return failure("UPSTREAM_RESULT_UNCERTAIN",502);
+  }
   const requestId=upstream.headers.get("x-oneapi-request-id");
   if(requestId)await db.apiComputeRequest.updateMany({where:{id:taskId,state:"RUNNING"},data:{outcome:requestId}});
   if(!upstream.ok){
@@ -287,7 +291,10 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
   };
   if(!parsed.streaming){
     try{const text=await upstream.text();await settle();return new Response(text,{headers:{"Content-Type":"application/json","Cache-Control":"no-store","x-ans-request-id":taskId}});}
-    catch{await transition("UNCERTAIN",null,requestId || undefined);return failure("BILLING_PENDING",502);}
+    catch(error){
+      console.error("[codex-gateway] settle failed after upstream response", { userId: user.id, modelId: parsed.model, requestId: requestId ?? null, upstreamStatus: upstream.status, elapsedMs: Date.now() - upstreamStartedAt, message: error instanceof Error ? error.message : String(error) });
+      await transition("UNCERTAIN",null,requestId || undefined);return failure("BILLING_PENDING",502);
+    }
   }
   let disconnected=false;
   const stream=new ReadableStream<Uint8Array>({
@@ -297,7 +304,9 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
         // Drain upstream even when client disconnects, then settle exactly once.
         while(true){const next=await reader.read();if(next.done)break;if(!disconnected)controller.enqueue(next.value);}
         await settle();if(!disconnected)controller.close();
-      }catch{await transition("UNCERTAIN",null,requestId || undefined);if(!disconnected) {
+      }catch(error){
+        console.error("[codex-gateway] upstream stream failed", { userId: user.id, modelId: parsed.model, requestId: requestId ?? null, upstreamStatus: upstream.status, elapsedMs: Date.now() - upstreamStartedAt, disconnected, message: error instanceof Error ? error.message : String(error) });
+        await transition("UNCERTAIN",null,requestId || undefined);if(!disconnected) {
           if (adapter) {
             controller.enqueue(new TextEncoder().encode('event: error\ndata: ' + JSON.stringify({ type: "error", error: { type: "api_error", message: "BILLING_OR_UPSTREAM_PENDING" } }) + '\n\n'));
             controller.close();

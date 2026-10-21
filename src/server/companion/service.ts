@@ -65,6 +65,7 @@ export async function executeAgent(actor: string, input: AgentInput, rawTicket: 
       if (stopped) return;
       await requireAgentActor(actor);
       emit({ type: "phase", phase: index ? "answering" : "thinking" });
+      const turnStartedAt = Date.now();
       const finalTurn = index === AGENT_CALL_LIMIT - 1;
       const payload = { model: input.model, instructions: instructions(input), input: history, stream: false, max_output_tokens: AGENT_OUTPUT_LIMIT, ...(input.model === "deepseek-v4.1-flash" ? { thinking: { type: "disabled" } } : {}),
         tools: AGENT_TOOLS, tool_choice: finalTurn ? "none" : "auto", parallel_tool_calls: false };
@@ -76,11 +77,16 @@ export async function executeAgent(actor: string, input: AgentInput, rawTicket: 
       const response = await meteredResponses(new Request("http://ans.internal/companion", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": agentKey(ticket.nonce, index) }, body: JSON.stringify(payload) }), actor, undefined, { memberPointsCap: parsed.reserve, timeoutMs: 60000 });
       if (!response.ok) {
         const body = await response.json().catch(() => null) as { error?: { code?: unknown } } | null;
-        throw new AgentError(safeAgentCode(body?.error?.code), response.status);
+        const code = safeAgentCode(body?.error?.code);
+        console.error("[companion] upstream rejected the turn", { model: input.model, status: response.status, code, elapsedMs: Date.now() - turnStartedAt });
+        throw new AgentError(code, response.status);
       }
       const result = await response.json() as { status?: string; output?: ResponseOutputItem[] };
       if (stopped) return;
-      if (!Array.isArray(result.output) || !result.output.length || result.output.length > 20) throw new AgentError("AGENT_RESPONSE_UNAVAILABLE", 502);
+      if (!Array.isArray(result.output) || !result.output.length || result.output.length > 20) {
+        console.error("[companion] upstream returned no usable output", { model: input.model, status: result.status ?? null, outputLength: Array.isArray(result.output) ? result.output.length : null, elapsedMs: Date.now() - turnStartedAt });
+        throw new AgentError("AGENT_RESPONSE_UNAVAILABLE", 502);
+      }
       const calls = result.output.filter((item): item is Extract<ResponseOutputItem, { type: "function_call" }> => item.type === "function_call");
       if (!calls.length) {
         const text = result.output.flatMap(item => item.type === "message" ? item.content : []).filter(part => part.type === "output_text").map(part => part.text).join("\n").trim().slice(0, 6000);
