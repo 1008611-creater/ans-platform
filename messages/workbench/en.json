@@ -19,7 +19,9 @@
     "agentOpened": "Opened the Agent chat in the bottom-right corner",
     "needIdeaFirst": "Type a one-line idea first, then expand it",
     "detailsExpanded": "Expanded into structured details",
-    "copied": "Copied"
+    "copied": "Copied",
+    "updateFailed": "Update failed",
+    "retryAfterMinutes": "(you can try again in about {p1} minutes)"
   },
   "label": {
     "editNickname": "Edit nickname",
@@ -49,35 +51,70 @@
     "refresh": "🔄 Refresh",
     "download": "💾 Download",
     "newWindow": "🖥️ New window ↗",
-    "currentTaskSteps": "Current task steps:"
+    "currentTaskSteps": "Current task steps:",
+    "points": "credits",
+    "myTasks": "📂 My tasks",
+    "samplePrompt": "💡 Sample prompt",
+    "taskPrompt": "🧑 Your prompt",
+    "iterateOnCurrent": "Iterate on the current file",
+    "added": "added",
+    "removed": "removed",
+    "docPreview": "Generated document preview"
   },
   "aria": {
     "nicknameInput": "New nickname",
     "workbench": "Agent work mode",
     "modelSelect": "Choose the model for reasoning and code generation",
-    "sourceEditor": "Source code editor"
+    "sourceEditor": "Source code editor",
+    "deleteRecord": "Delete {p1}"
   },
   "tab": {
     "code": "💻 Code",
     "preview": "👁️ Preview",
-    "terminal": "📟 Terminal"
+    "terminal": "📟 Terminal",
+    "diff": "Changes"
   },
   "default": {
     "firstWebAppTitle": "My first web app"
   },
   "task": {
-    "newBlankDraft": "New blank draft"
+    "newBlankDraft": "New blank draft",
+    "revisedTitle": "Revised: {p1}",
+    "draftTitle": "Draft: {p1}"
   },
   "trace": {
     "initWorkspace": "[1/2] agent.init_workspace → initialised local single-file sandbox my-app.html",
     "readyForInput": "[2/2] agent.ready → waiting for a brief, or edit the source directly",
     "scaffoldProject": "[agent.scaffold_project] local project draft created and linked to the /projects entry point",
-    "offlineSandbox": "[1/3] agent.read_workspace → switched to the offline local sandbox"
+    "offlineSandbox": "[1/3] agent.read_workspace → switched to the offline local sandbox",
+    "heading": "Agent run trace",
+    "unit": "steps",
+    "ready": "[Ready] Workbench open · {p1} (available points: {p2})",
+    "runningModel": "[3/4] agent.run_model_playground → reasoning and building...",
+    "planChanges": "[2/4] agent.plan_changes → parsing instruction “{p1}”",
+    "answerQuery": "[3/4] agent.answer_query → local architecture advice (no file changed)",
+    "applyPatch": "[3/4] agent.apply_patch → wrote changes (+{p1} -{p2} lines)",
+    "verifyOutput": "[4/4] agent.verify_output → local build finished ({p1}s)",
+    "generateArtifact": "[2/3] agent.apply_patch → generated {p1} (+{p2} -{p3} lines)",
+    "draftReady": "[3/3] agent.verify_output → local editable draft ready ({p1}s)",
+    "writeArtifact": "[3/4] agent.write_artifact → {p1} (+{p2} -{p3} lines)",
+    "verifyOutputBuild": "[4/4] agent.verify_output → build complete ({p1}s)",
+    "statusNotice": "[{p1}] {p2} · +{p3} -{p4}",
+    "forkSample": "[agent.manual_edit] Forked the guided sample into your own draft (+{p1} -{p2} lines)",
+    "readWorkspace": "[1/4] agent.read_workspace → {p1}",
+    "initWorkspaceContext": "Initialising the workspace context",
+    "createSandbox": "Creating a local sandbox",
+    "initTaskContext": "Initialising a new task context",
+    "statusWarn": "⚠️ Status notice",
+    "statusDone": "✓ Done",
+    "readCurrentArtifact": "Reading current artifact {p1} ({p2} chars)",
+    "readBaseline": "Reading the baseline of {p1}"
   },
   "link": {
     "createProject": "📂 Create the real project in your library",
     "openProjects": "📂 Open the project library",
-    "signInForCompute": "🔐 Sign in to use cloud model compute"
+    "signInForCompute": "🔐 Sign in to use cloud model compute",
+    "open": "Open details"
   },
   "quickPrompt": {
     "claw": "🕹️ Play the 3D claw machine",
@@ -94,7 +131,9 @@
   },
   "reply": {
     "guestMode": "You are in guest preview mode: an interactive draft and change log were generated on the right. Sign in to use cloud model compute.",
-    "done": "Done."
+    "done": "Done.",
+    "appliedChange": "Applied an incremental change on top of {p1} (+{p2} -{p3} lines). Open the Changes tab to review the diff.",
+    "localAnswer": "💡 Local answer for “{p1}”:\\n1. The current file is {p2} — inspect its structure under “💻 Source” or “± Diff” on the right.\\n2. Switch to “⚡ Write code” mode and send an instruction to apply the edits and review the diff."
   },
   "title": {
     "openAgentChat": "Open the Agent chat panel",
@@ -115,11 +154,34 @@
     "workbench": "🛠️ Work mode",
     "codeShort": "⚡ Code mode"
   },
+  "model": {
+    "flash": "⚡ DeepSeek-V4.1-Flash · Fast (1x)",
+    "sol": "🧠 GPT-6.1-Sol · Deep reasoning (0.16x)",
+    "astra": "🌟 GPT-6-Astra · Front-end code (0.16x)"
+  },
   "guide": {
     "title": "📖 Work mode in 3 steps"
   },
+  "onboarding": {
+    "title": "Set up the ANS workbench in 3 steps",
+    "subtitle": "Open a sample to see what a finished result looks like, then describe your own work in one line.",
+    "step1Title": "State the brief",
+    "step1Body": "Write one line in the composer; Ask analyses without overwriting code.",
+    "step2Title": "Watch the run and diff",
+    "step2Body": "Execution steps appear in the middle; preview and the +- diff appear on the right.",
+    "step3Title": "Save it as a project",
+    "step3Body": "Happy with the result? Save as project keeps the draft in your library for the next iteration.",
+    "samplesTitle": "Reference samples (not your tasks)",
+    "samplesBody": "Four runnable single-file samples that show what a finished result looks like.",
+    "useSample": "Try this sample",
+    "neverShow": "Do not open this automatically again",
+    "done": "Start building",
+    "guideButton": "Guide",
+    "reopen": "Show the 3-step guide"
+  },
   "empty": {
-    "tasks": "No personal tasks yet — type an instruction in the middle to start"
+    "tasks": "No personal tasks yet — type an instruction in the middle to start",
+    "prompt": "Waiting for a brief…"
   },
   "status": {
     "guidedSample": "📖 Guided sample",
@@ -131,6 +193,7 @@
     "sample": "📖 Sample output notes"
   },
   "placeholder": {
-    "newTask": "Describe the web page, Python script or project brief you want (Enter to run)..."
+    "newTask": "Describe the web page, Python script or project brief you want (Enter to run)...",
+    "iterate": "Describe the change to {file} (for example: switch to a light theme, add an export CSV button)…"
   }
 }
