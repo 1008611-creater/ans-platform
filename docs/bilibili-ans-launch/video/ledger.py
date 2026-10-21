@@ -8,7 +8,7 @@
 每次运行追加一条快照到 ledger/ledger.jsonl，并打印与上一条快照的增量。
 """
 import argparse, json, os, sys, time
-sys.path.insert(0, r"E:\codex\.tools\tts-libs")
+sys.path.insert(0, __import__("os").environ.get("ANS_TTS_LIBS", r"E:\codex\.tools\tts-libs"))
 import requests
 
 V = os.path.dirname(os.path.abspath(__file__))

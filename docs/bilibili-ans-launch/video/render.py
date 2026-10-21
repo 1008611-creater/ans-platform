@@ -279,6 +279,23 @@ try:
 except Exception as e:
     print("[day1] 场景加载失败:", e)
 
+# 自动发现所有 scenes_day*.py 里的 v_* 场景：新增期数不用再改这个文件
+import glob as _glob, importlib as _importlib
+_HERE = os.path.dirname(os.path.abspath(__file__))
+for _p in sorted(_glob.glob(os.path.join(_HERE, "scenes_day*.py"))):
+    _mod = os.path.splitext(os.path.basename(_p))[0]
+    try:
+        _m = _importlib.import_module(_mod)
+        _n = 0
+        for _name in dir(_m):
+            if _name.startswith("v_"):
+                VIS[_name[2:]] = getattr(_m, _name)
+                _n += 1
+        if _n:
+            print("[%s] 已加载场景 %d 个" % (_mod, _n))
+    except Exception as _e:
+        print("[%s] 场景加载失败:" % _mod, _e)
+
 # ---------------- 渲染 ----------------
 def render_video(path):
     cmd = [FFMPEG, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",

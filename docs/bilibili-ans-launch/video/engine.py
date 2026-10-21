@@ -6,9 +6,10 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 W, H = 1080, 1920
 FPS = 30
-ASSETS = r"E:\codex\ans\docs\bilibili-ans-launch\assets"
+_HERE = os.path.dirname(os.path.abspath(__file__))
+ASSETS = os.path.abspath(os.path.join(_HERE, "..", "assets"))  # 相对脚本定位，别写死机器路径
 SHOTS = os.path.join(ASSETS, "shots")
-OUT = r"E:\codex\ans\docs\bilibili-ans-launch\video\day0"
+OUT = os.environ.get("ANS_DAY_DIR", os.path.join(_HERE, "day0"))
 FONT_B = "C:/Windows/Fonts/msyhbd.ttc"
 FONT_R = "C:/Windows/Fonts/msyh.ttc"
 

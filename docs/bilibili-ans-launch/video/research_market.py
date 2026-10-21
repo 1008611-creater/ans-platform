@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """用 B站公开 API 调研同类赛道：按播放量看什么在起量（真实数据）"""
 import json, sys, time, urllib.parse
-sys.path.insert(0, r"E:\codex\.tools\tts-libs")
+sys.path.insert(0, __import__("os").environ.get("ANS_TTS_LIBS", r"E:\codex\.tools\tts-libs"))
 from http.cookiejar import CookieJar
 import requests
 
@@ -46,5 +46,5 @@ for kw in KWS:
         rows.append({"kw": kw, **v})
     time.sleep(1.2)
 
-json.dump(rows, open(r"E:\codex\ans\docs\bilibili-ans-launch\video\research_market.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+json.dump(rows, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "research_market.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print("\n样本数:", len(rows))
