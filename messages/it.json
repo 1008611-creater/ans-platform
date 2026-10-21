@@ -2804,5 +2804,12 @@
     "loadErrorTitle": "Impossibile caricare i modelli",
     "loadErrorDescription": "La raccolta di modelli non è temporaneamente disponibile. Riprova tra poco.",
     "retry": "Riprova"
+  },
+  "mascot": {
+    "aria": "Mascotte ANS",
+    "to3d": "Passa alla forma 3D",
+    "to2d": "Passa alla forma pixel",
+    "dismiss": "Chiudi",
+    "placeholder3d": "Forma 3D · in arrivo"
   }
 }

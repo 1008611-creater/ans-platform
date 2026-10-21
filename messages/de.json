@@ -2798,5 +2798,12 @@
     "loadErrorTitle": "Vorlagen konnten nicht geladen werden",
     "loadErrorDescription": "Die Vorlagenbibliothek ist vorübergehend nicht verfügbar. Versuche es gleich noch einmal.",
     "retry": "Erneut versuchen"
+  },
+  "mascot": {
+    "aria": "ANS-Maskottchen",
+    "to3d": "Zur 3D-Form wechseln",
+    "to2d": "Zur Pixel-Form wechseln",
+    "dismiss": "Schließen",
+    "placeholder3d": "3D-Form · in Arbeit"
   }
 }

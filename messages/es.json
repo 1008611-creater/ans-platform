@@ -2801,5 +2801,12 @@
     "loadErrorTitle": "No se pudieron cargar las plantillas",
     "loadErrorDescription": "La biblioteca de plantillas no está disponible temporalmente. Inténtalo de nuevo en un momento.",
     "retry": "Intentar de nuevo"
+  },
+  "mascot": {
+    "aria": "Mascota de ANS",
+    "to3d": "Cambiar a forma 3D",
+    "to2d": "Cambiar a forma pixel",
+    "dismiss": "Cerrar",
+    "placeholder3d": "Forma 3D · próximamente"
   }
 }

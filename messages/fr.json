@@ -2801,5 +2801,12 @@
     "loadErrorTitle": "Impossible de charger les modèles",
     "loadErrorDescription": "La bibliothèque des modèles est temporairement indisponible. Réessayez dans un instant.",
     "retry": "Réessayer"
+  },
+  "mascot": {
+    "aria": "Mascotte ANS",
+    "to3d": "Passer à la forme 3D",
+    "to2d": "Passer à la forme pixel",
+    "dismiss": "Fermer",
+    "placeholder3d": "Forme 3D · bientôt disponible"
   }
 }

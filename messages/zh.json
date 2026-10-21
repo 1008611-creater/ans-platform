@@ -7061,5 +7061,12 @@
       "blockerOpenPopularity": "前往人气奖计票窗封榜",
       "blockerOpenWorks": "前往作品总览核验提交"
     }
+  },
+  "mascot": {
+    "aria": "ANS 吉祥物",
+    "to3d": "切到立体形态",
+    "to2d": "切到像素形态",
+    "dismiss": "关闭",
+    "placeholder3d": "3D 形态 · 接入中"
   }
 }

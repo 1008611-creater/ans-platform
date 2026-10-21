@@ -2789,5 +2789,12 @@
     "loadErrorTitle": "Sjablonen konden niet worden geladen",
     "loadErrorDescription": "De sjabloonbibliotheek is tijdelijk niet beschikbaar. Probeer het zo opnieuw.",
     "retry": "Opnieuw proberen"
+  },
+  "mascot": {
+    "aria": "ANS-mascotte",
+    "to3d": "Naar 3D-vorm",
+    "to2d": "Naar pixelvorm",
+    "dismiss": "Sluiten",
+    "placeholder3d": "3D-vorm · binnenkort"
   }
 }

@@ -2786,5 +2786,12 @@
     "loadErrorTitle": "템플릿을 불러오지 못했습니다",
     "loadErrorDescription": "템플릿 라이브러리를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
     "retry": "다시 시도"
+  },
+  "mascot": {
+    "aria": "ANS 마스코트",
+    "to3d": "3D 형태로 전환",
+    "to2d": "픽셀 형태로 전환",
+    "dismiss": "닫기",
+    "placeholder3d": "3D 형태 · 준비 중"
   }
 }

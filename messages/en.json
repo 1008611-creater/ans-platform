@@ -7077,5 +7077,12 @@
       "blockerOpenPopularity": "Open Popularity Window to freeze",
       "blockerOpenWorks": "Open Works Overview"
     }
+  },
+  "mascot": {
+    "aria": "ANS mascot",
+    "to3d": "Switch to 3D form",
+    "to2d": "Switch to pixel form",
+    "dismiss": "Dismiss",
+    "placeholder3d": "3D form · coming soon"
   }
 }

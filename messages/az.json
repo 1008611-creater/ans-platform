@@ -2798,5 +2798,12 @@
     "loadErrorTitle": "Şablonlar yüklənmədi",
     "loadErrorDescription": "Şablon kitabxanası müvəqqəti olaraq əlçatan deyil. Bir az sonra yenidən cəhd edin.",
     "retry": "Yenidən cəhd et"
+  },
+  "mascot": {
+    "aria": "ANS maskotu",
+    "to3d": "3D formaya keç",
+    "to2d": "Piksel formaya keç",
+    "dismiss": "Bağla",
+    "placeholder3d": "3D forma · tezliklə"
   }
 }

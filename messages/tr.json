@@ -2797,5 +2797,12 @@
     "loadErrorTitle": "Şablonlar yüklenemedi",
     "loadErrorDescription": "Şablon kitaplığı geçici olarak kullanılamıyor. Birazdan tekrar deneyin.",
     "retry": "Tekrar dene"
+  },
+  "mascot": {
+    "aria": "ANS maskotu",
+    "to3d": "3B forma geç",
+    "to2d": "Piksel forma geç",
+    "dismiss": "Kapat",
+    "placeholder3d": "3B form · yakında"
   }
 }

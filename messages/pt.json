@@ -2800,5 +2800,12 @@
     "loadErrorTitle": "Não foi possível carregar os modelos",
     "loadErrorDescription": "A biblioteca de modelos está temporariamente indisponível. Tente novamente em instantes.",
     "retry": "Tentar novamente"
+  },
+  "mascot": {
+    "aria": "Mascote da ANS",
+    "to3d": "Mudar para forma 3D",
+    "to2d": "Mudar para forma pixel",
+    "dismiss": "Fechar",
+    "placeholder3d": "Forma 3D · em breve"
   }
 }
