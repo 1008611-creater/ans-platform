@@ -3,7 +3,8 @@
 import Image from "next/image";
 import type { VoiceOffer } from "@/contracts/voice";
 import { loadSanctuaryState } from "@/domain/mascot/sanctuary";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { getFormSnapshot, subscribeMascotStore } from "@/lib/mascot/client-store";
 import { useSitePreferences } from "@/lib/site-preferences";
 
 export type SpeechRequest = { id: number; text: string };
@@ -24,6 +25,8 @@ const isRealBrowserWebGL = () =>
 /** Sends public guide replies and a bound actor ID; no credentials or private task records. */
 export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, speech, onVoiceStatus }: { actor?: string | null; voicePolicy?: VoiceOffer | null; phase: string; open: boolean; speech?: SpeechRequest | null; onVoiceStatus?: (status: string) => void }) {
   const preferences = useSitePreferences();
+  // 形态：默认（未选择）保持权威的 3D / 立绘行为；仅显式选择 2D 时渲染像素形态。
+  const pixelForm = useSyncExternalStore(subscribeMascotStore, () => getFormSnapshot() === "2d", () => false);
   const deliveredSpeech = useRef<number | null>(null);
   const voiceCallback = useRef(onVoiceStatus);
   voiceCallback.current = onVoiceStatus;
@@ -190,6 +193,12 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     document.addEventListener("visibilitychange", visibility);
     return () => { window.removeEventListener("pointermove", pointer); document.removeEventListener("visibilitychange", visibility); };
   }, [animated, send]);
+  if (pixelForm) {
+    // 2D 像素形态：不加载 3D iframe（省掉约 9MB），走本地精灵图集。
+    return <span className="ans-dino-avatar" aria-hidden="true">
+      <span className="ans-dino-pixel" data-testid="mascot-pixel-avatar" />
+    </span>;
+  }
   return <span className="ans-dino-avatar" aria-hidden="true">
     <Image src="/mascot/ans-mascot.png" width={88} height={88} alt="" className={animated ? "invisible" : ""} />
     {/* Download 3D eagerly in real WebGL browsers; retain the frame across subsequent openings. */}

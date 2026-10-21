@@ -96,6 +96,7 @@
     "loginDescriptionOAuth": "アカウントでサインインして続行",
     "register": "登録",
     "registerDescription": "アカウントを作成して始めましょう",
+    "openRegistrationNote": "どなたでもメール認証で登録できます。招待コードは不要です。メールと人間であることの確認を完了してください。ニックネームは公開され、本名は不要です。",
     "logout": "ログアウト",
     "email": "メールアドレス",
     "password": "パスワード",
@@ -404,7 +405,15 @@
     "learnHowToWritePrompts": "効果的なプロンプトの書き方を学ぶ →",
     "structuredFormatDetected": "{format}形式が検出されました",
     "structuredFormatWarningDescription": "プロンプトの内容が構造化データのようです。より良い構文ハイライトと検証のために構造化モードへの切り替えを検討してください。",
-    "switchToStructured": "{format}に切り替え"
+    "switchToStructured": "{format}に切り替え",
+    "generationConnectionFailed": "Connection interrupted. Recover the original task without another submission or credit charge.",
+    "generationReviewRequired": "Submission needs review. The original request is retained. Contact an administrator; recovery does not submit again.",
+    "generationNoCredits": "No generation credits remain. Check your daily allowance.",
+    "generationNotAccepted": "This task was confirmed not submitted. Contact an administrator to review the outcome.",
+    "generationProviderFailed": "The provider reported a failure. Recover the original task to check its status without resubmitting.",
+    "generationCanResume": "Your request is recorded. With the same content and model, you can recover it after disconnection without resubmitting.",
+    "resumeGeneration": "Recover task",
+    "newGeneration": "Start a new generation"
   },
   "changeRequests": {
     "title": "変更リクエスト",
@@ -1226,7 +1235,10 @@
     "keyRevoked": "APIキーが取り消されました",
     "publicByDefault": "デフォルトで公開プロンプト",
     "publicByDefaultDescription": "MCP経由でプロンプトを保存する際、プライベートではなくデフォルトで公開にします。",
-    "settingUpdated": "設定が更新されました"
+    "settingUpdated": "設定が更新されました",
+    "codexTitle": "Codex connection",
+    "codexDescription": "Set ANS_API_KEY to your personal key generated here. Requests reserve ANS credits and settle actual usage. GPT consumption multiplier: 0.16.",
+    "codexLimits": "Limits: 512 KiB input and 16,384 output tokens per request. Background requests and server-side shared sessions are unsupported. Rotating or revoking a key blocks new requests immediately."
   },
   "connectedPrompts": {
     "title": "プロンプトフロー",
@@ -2311,7 +2323,7 @@
         "detail": "Plane is not the default task source for this contest. Use it when a team needs a separate audit trail."
       },
       "toonflow": {
-        "name": "Toonflow",
+        "name": "AIGC Workspace",
         "host": "toonflow.cauai.fun",
         "role": "Creative production workspace",
         "description": "Move from approved plan to generated assets, iterations, and production handoff.",
@@ -2335,7 +2347,7 @@
       "produce": {
         "label": "03 · Produce",
         "description": "Create, review, version, and package the work with evidence.",
-        "state": "Use Toonflow"
+        "state": "Use AIGC Workspace"
       },
       "submit": {
         "label": "04 · Submit",
@@ -2472,7 +2484,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "農業 AI の公益ハッカソン、第一回",
-        "description": "48 時間の集中開発、3 つのトラック、プロ審査 80% と一般投票 20%、そして 10 チームが順位を競う Demo Day。",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "準備中",
         "highlights": [
           "3 トラック",
@@ -2484,9 +2496,9 @@
     }
   },
   "agriHackathon": {
-    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "boundaryNextOpen": "登録と提出は接続済み・結果公開は未接続",
     "enterWorkbench": "Open the registration workbench",
-    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
+    "boundaryDescriptionOpen": "登録と提出は ANS の大会ワークスペースで行えます。今回の規則と日程は正式発表に従い、結果公開はまだ接続されていません。",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
@@ -2557,7 +2569,7 @@
         "state": "未開始"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "未開始"
       }
@@ -2644,7 +2656,7 @@
       "popular": {
         "label": "人気賞",
         "amount": "特別賞",
-        "description": "一般投票が最も多い"
+        "description": "選考方法は今回の正式な規則に従います"
       }
     },
     "rulesTitle": "参加ルールと遵守事項",
@@ -2664,14 +2676,116 @@
     "openTemplates": "テンプレート",
     "openSkills": "スキル",
     "boundaryTitle": "第 1 回の対応範囲",
-    "boundaryDescription": "この初版では、ルール・トラック構成・提出チェックリストを提供します。参加登録、一般投票、結果公開はまだ接続していません。",
+    "boundaryDescription": "過去の規則、部門、提出チェックリストを掲載しています。今回の規則、日程、登録方法は確認待ちです。",
     "boundaryItems": {
       "entry": "ANS の入口は 1 つ",
-      "links": "トラック・評価・賞金は確定済み",
+      "links": "Compute credits: check available balance, pricing rules, and redeem credit codes",
       "ownership": "作品とデータの許諾はチームが説明",
-      "next": "日程と会場が決まり次第、登録と投票を接続"
+      "next": "今回の開催内容が確定後、登録・提出・結果公開を接続"
     },
-    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
+    "syncNote": "過去の計画では予算 5,000 元を申請しました。今回の予算、日程、登録、結果公開は正式発表に従います。",
+    "intro": "An AI hackathon organized by CAUHub for CAU students and recent alumni. Read rules, claim compute credits, publish to the project wall to rally Stars, and submit your team deliverables in one place.",
+    "nextAction": "Choose your next step",
+    "alreadyEntering": "Already entering?",
+    "entryHint": "Publishing is the first step. Link your team, then formally submit your materials.",
+    "justLooking": "Explore the projects",
+    "trackFocus": "What reviewers look for",
+    "guideTitle": "Entry guide",
+    "toolsTitle": "Tools and projects",
+    "browseProjects": "Browse projects",
+    "myWorkspace": "My workspace",
+    "readPublishedRules": "Read published rules",
+    "bindProject": "Link your project",
+    "claimCompute": "Claim compute credits",
+    "pipelineSectionLabel": "00 / ALL-IN-ONE FLOW",
+    "pipelineTitle": "Where would you like to start?",
+    "pipelineDescription": "From reading rules and claiming compute credits to submitting your build, rallying Stars on the wall, and checking Finalist rankings.",
+    "pipeline": {
+      "rules": {
+        "step": "STEP 01",
+        "title": "Read rules & pick a track",
+        "description": "Explore People, Discovery, and Action tracks alongside the 100-point rubric and open-source checklist.",
+        "cta": "View tracks & rules",
+        "href": "#tracks"
+      },
+      "compute": {
+        "step": "STEP 02",
+        "title": "Prepare compute & prototype",
+        "description": "Check available credits and pricing, or redeem a credit voucher you already have.",
+        "cta": "Open compute center",
+        "href": "/workspace/credits"
+      },
+      "submit": {
+        "step": "STEP 03",
+        "title": "Register & submit work",
+        "description": "Form a team of 1–5 and submit your runnable Demo, public GitHub repository, and project summary.",
+        "cta": "Submit deliverables",
+        "href": "/competitions/agrihackathon/submissions"
+      },
+      "star": {
+        "step": "STEP 04",
+        "title": "Publish to wall & rally Stars",
+        "description": "Reviewed public projects can join the wall after team linking. Check the wall for valid Star counting status.",
+        "cta": "Open project wall",
+        "href": "/explore?category=competition&subcategory=agri-wall"
+      },
+      "ranking": {
+        "step": "STEP 05",
+        "title": "Finalists & final rankings",
+        "description": "Track Top 10 Finalists (80% jury + 20% public score), Demo Day presentations, and final awards.",
+        "cta": "View Finalists & rankings",
+        "href": "/competitions/agrihackathon/showcase"
+      }
+    }
+  },
+  "templates": {
+    "metadataTitle": "Templates",
+    "metadataDescription": "Explore reviewed AI templates, inspect their inputs, and start from a reusable prompt.",
+    "eyebrow": "ANS TEMPLATE LIBRARY",
+    "title": "Find a useful starting point. Make it yours.",
+    "description": "Browse reviewed templates, preview the prompt and inputs, then open one to copy or run it in ANS.",
+    "preview": "Explore templates",
+    "create": "Create a template",
+    "stepDiscover": "Choose a template for the task at hand",
+    "stepInputs": "See what information the template needs",
+    "stepCreate": "Open it to copy the prompt or run a text template",
+    "mine": "My templates",
+    "results": "templates",
+    "newest": "Newest first",
+    "emptyTitle": "No templates match these filters",
+    "emptyDescription": "Try another search or clear the filters to browse all published templates.",
+    "clear": "Clear filters",
+    "unknownCategory": "Uncategorized",
+    "inputs": "Inputs",
+    "noInputs": "No inputs defined",
+    "outputText": "Text",
+    "outputImage": "Image prompt",
+    "outputVideo": "Video prompt",
+    "outputAudio": "Audio prompt",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}",
+    "searchLabel": "Search templates",
+    "searchPlaceholder": "Search titles, descriptions, or prompts",
+    "domain": "Category",
+    "scene": "Scenario",
+    "allDomains": "All categories",
+    "allScenes": "All scenarios",
+    "filter": "Search",
+    "detailsBack": "Back to templates",
+    "published": "Published",
+    "usage": "How to use",
+    "prompt": "Prompt",
+    "schema": "Input field definition",
+    "details": "View details",
+    "favorite": "Save template",
+    "favorited": "Saved",
+    "copyPrompt": "Copy prompt",
+    "promptCopied": "Prompt copied",
+    "copyFailed": "Could not copy. Select the prompt below and copy it manually.",
+    "loadErrorTitle": "テンプレートを読み込めませんでした",
+    "loadErrorDescription": "テンプレートライブラリは一時的に利用できません。少ししてからもう一度お試しください。",
+    "retry": "再試行"
   },
   "mascot": {
     "aria": "ANSのマスコット",

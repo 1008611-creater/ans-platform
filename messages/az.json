@@ -96,6 +96,7 @@
     "loginDescriptionOAuth": "Davam etmək üçün hesabınızla daxil olun",
     "register": "Qeydiyyat",
     "registerDescription": "Başlamaq üçün hesab yaradın",
+    "openRegistrationNote": "Anyone can register with a verified email, without an invitation code. Complete email and human verification. Your nickname is public; a real name is not required.",
     "logout": "Çıxış",
     "email": "E-poçt",
     "password": "Şifrə",
@@ -404,7 +405,15 @@
     "learnHowToWritePrompts": "Effektiv promptlar yazmağı öyrənin →",
     "structuredFormatDetected": "{format} formatı aşkarlandı",
     "structuredFormatWarningDescription": "Prompt məzmununuz strukturlaşdırılmış məlumata bənzəyir. Daha yaxşı sintaksis vurğulama və doğrulama üçün strukturlaşdırılmış rejimə keçməyi düşünün.",
-    "switchToStructured": "{format}-a keçin"
+    "switchToStructured": "{format}-a keçin",
+    "generationConnectionFailed": "Connection interrupted. Recover the original task without another submission or credit charge.",
+    "generationReviewRequired": "Submission needs review. The original request is retained. Contact an administrator; recovery does not submit again.",
+    "generationNoCredits": "No generation credits remain. Check your daily allowance.",
+    "generationNotAccepted": "This task was confirmed not submitted. Contact an administrator to review the outcome.",
+    "generationProviderFailed": "The provider reported a failure. Recover the original task to check its status without resubmitting.",
+    "generationCanResume": "Your request is recorded. With the same content and model, you can recover it after disconnection without resubmitting.",
+    "resumeGeneration": "Recover task",
+    "newGeneration": "Start a new generation"
   },
   "changeRequests": {
     "title": "Dəyişiklik Sorğuları",
@@ -1226,7 +1235,10 @@
     "keyRevoked": "API açarı ləğv edildi",
     "publicByDefault": "Standart olaraq ictimai promptlar",
     "publicByDefaultDescription": "MCP vasitəsilə promptları saxlayarkən, onları şəxsi əvəzinə standart olaraq ictimai edin.",
-    "settingUpdated": "Ayar yeniləndi"
+    "settingUpdated": "Ayar yeniləndi",
+    "codexTitle": "Codex connection",
+    "codexDescription": "Set ANS_API_KEY to your personal key generated here. Requests reserve ANS credits and settle actual usage. GPT consumption multiplier: 0.16.",
+    "codexLimits": "Limits: 512 KiB input and 16,384 output tokens per request. Background requests and server-side shared sessions are unsupported. Rotating or revoking a key blocks new requests immediately."
   },
   "connectedPrompts": {
     "title": "Prompt Axını",
@@ -2323,7 +2335,7 @@
         "detail": "Plane is not the default task source for this contest. Use it when a team needs a separate audit trail."
       },
       "toonflow": {
-        "name": "Toonflow",
+        "name": "AIGC Workspace",
         "host": "toonflow.cauai.fun",
         "role": "Creative production workspace",
         "description": "Move from approved plan to generated assets, iterations, and production handoff.",
@@ -2347,7 +2359,7 @@
       "produce": {
         "label": "03 · Produce",
         "description": "Create, review, version, and package the work with evidence.",
-        "state": "Use Toonflow"
+        "state": "Use AIGC Workspace"
       },
       "submit": {
         "label": "04 · Submit",
@@ -2484,7 +2496,7 @@
       "agrihackathon": {
         "name": "AgriHackathon",
         "tagline": "Kənd təsərrüfatında süni intellekt üzrə ilk ictimai fayda hakatonu",
-        "description": "48 saat fokuslanmış işləmə, üç istiqamət, 80% peşəkar qiymətləndirmə və 20% ictimai səsvermə, həmçinin finala çıxan 10 komandanı sıralayan Demo Day.",
+        "description": "The 48-hour preliminary round is primarily online with on-campus space provided; judging takes place between the two weekends, and a one-day on-site final on the second weekend selects about 10 teams. Format and budget follow the approved event plan.",
         "status": "Hazırlanır",
         "highlights": [
           "3 istiqamət",
@@ -2496,9 +2508,9 @@
     }
   },
   "agriHackathon": {
-    "boundaryNextOpen": "Registration and submission are connected; public voting and results are still pending",
+    "boundaryNextOpen": "Qeydiyyat və təqdimetmə qoşulub; nəticələr gözlənilir",
     "enterWorkbench": "Open the registration workbench",
-    "boundaryDescriptionOpen": "Tracks, scoring and the submission checklist are in place; registration and submission now run on the ANS competition workbench. Public voting and result announcements are not connected yet.",
+    "boundaryDescriptionOpen": "Qeydiyyat və təqdimetmə ANS yarış iş sahəsindədir. Bu buraxılışın qaydaları və tarixləri rəsmi elana əsaslanır; nəticələr hələ qoşulmayıb.",
     "navLabel": "AgriHackathon",
     "eyebrow": "AGRIHACKATHON",
     "title": "AgriHackathon",
@@ -2569,7 +2581,7 @@
         "state": "Başlamayıb"
       },
       "submit": {
-        "label": "04 · Demo Day",
+        "label": "04 · One-day on-site final",
         "description": "A one-day on-site final on the second weekend: showcase, hands-on demo, pitch judging and awards.",
         "state": "Başlamayıb"
       }
@@ -2656,7 +2668,7 @@
       "popular": {
         "label": "Ən populyar",
         "amount": "Fəxri",
-        "description": "Ən çox ictimai səs"
+        "description": "Seçim bu buraxılışın rəsmi qaydalarına əsaslanır"
       }
     },
     "rulesTitle": "Qaydalar və uyğunluq",
@@ -2676,14 +2688,116 @@
     "openTemplates": "Şablonlar",
     "openSkills": "Bacarıqlar",
     "boundaryTitle": "İlk buraxılışın sərhədləri",
-    "boundaryDescription": "Bu ilk versiya qaydaları, istiqamət strukturunu və təqdimat yoxlama siyahısını təqdim edir. Qeydiyyat, ictimai səsvermə və nəticələrin yayımı hələ qoşulmayıb.",
+    "boundaryDescription": "Bu versiya əvvəlki qaydaları, istiqamətləri və təqdimetmə siyahısını göstərir. Cari qaydalar, tarixlər və qeydiyyat təsdiq gözləyir.",
     "boundaryItems": {
       "entry": "Bir ANS giriş nöqtəsi",
-      "links": "İstiqamətlər, qiymətləndirmə və mükafatlar müəyyən edilib",
+      "links": "Compute credits: check available balance, pricing rules, and redeem credit codes",
       "ownership": "Komandalar öz işlərini və məlumat icazələrini bəyan edir",
-      "next": "Tarix və məkan müəyyən edildikdən sonra qeydiyyat və səsvermə başlayır"
+      "next": "Buraxılışın planı təsdiqləndikdən sonra qeydiyyat, təqdimetmə və nəticələri qoşmaq"
     },
-    "syncNote": "The first edition applies for a budget of CNY 5,000; line items follow the approved event plan. Registration, public voting and results will be connected once the dates are confirmed."
+    "syncNote": "Əvvəlki plan 5,000 CNY tələb edirdi. Cari büdcə, tarixlər, qeydiyyat və nəticələr rəsmi elana əsaslanır.",
+    "intro": "An AI hackathon organized by CAUHub for CAU students and recent alumni. Read rules, claim compute credits, publish to the project wall to rally Stars, and submit your team deliverables in one place.",
+    "nextAction": "Choose your next step",
+    "alreadyEntering": "Already entering?",
+    "entryHint": "Publishing is the first step. Link your team, then formally submit your materials.",
+    "justLooking": "Explore the projects",
+    "trackFocus": "What reviewers look for",
+    "guideTitle": "Entry guide",
+    "toolsTitle": "Tools and projects",
+    "browseProjects": "Browse projects",
+    "myWorkspace": "My workspace",
+    "readPublishedRules": "Read published rules",
+    "bindProject": "Link your project",
+    "claimCompute": "Claim compute credits",
+    "pipelineSectionLabel": "00 / ALL-IN-ONE FLOW",
+    "pipelineTitle": "Where would you like to start?",
+    "pipelineDescription": "From reading rules and claiming compute credits to submitting your build, rallying Stars on the wall, and checking Finalist rankings.",
+    "pipeline": {
+      "rules": {
+        "step": "STEP 01",
+        "title": "Read rules & pick a track",
+        "description": "Explore People, Discovery, and Action tracks alongside the 100-point rubric and open-source checklist.",
+        "cta": "View tracks & rules",
+        "href": "#tracks"
+      },
+      "compute": {
+        "step": "STEP 02",
+        "title": "Prepare compute & prototype",
+        "description": "Check available credits and pricing, or redeem a credit voucher you already have.",
+        "cta": "Open compute center",
+        "href": "/workspace/credits"
+      },
+      "submit": {
+        "step": "STEP 03",
+        "title": "Register & submit work",
+        "description": "Form a team of 1–5 and submit your runnable Demo, public GitHub repository, and project summary.",
+        "cta": "Submit deliverables",
+        "href": "/competitions/agrihackathon/submissions"
+      },
+      "star": {
+        "step": "STEP 04",
+        "title": "Publish to wall & rally Stars",
+        "description": "Reviewed public projects can join the wall after team linking. Check the wall for valid Star counting status.",
+        "cta": "Open project wall",
+        "href": "/explore?category=competition&subcategory=agri-wall"
+      },
+      "ranking": {
+        "step": "STEP 05",
+        "title": "Finalists & final rankings",
+        "description": "Track Top 10 Finalists (80% jury + 20% public score), Demo Day presentations, and final awards.",
+        "cta": "View Finalists & rankings",
+        "href": "/competitions/agrihackathon/showcase"
+      }
+    }
+  },
+  "templates": {
+    "metadataTitle": "Templates",
+    "metadataDescription": "Explore reviewed AI templates, inspect their inputs, and start from a reusable prompt.",
+    "eyebrow": "ANS TEMPLATE LIBRARY",
+    "title": "Find a useful starting point. Make it yours.",
+    "description": "Browse reviewed templates, preview the prompt and inputs, then open one to copy or run it in ANS.",
+    "preview": "Explore templates",
+    "create": "Create a template",
+    "stepDiscover": "Choose a template for the task at hand",
+    "stepInputs": "See what information the template needs",
+    "stepCreate": "Open it to copy the prompt or run a text template",
+    "mine": "My templates",
+    "results": "templates",
+    "newest": "Newest first",
+    "emptyTitle": "No templates match these filters",
+    "emptyDescription": "Try another search or clear the filters to browse all published templates.",
+    "clear": "Clear filters",
+    "unknownCategory": "Uncategorized",
+    "inputs": "Inputs",
+    "noInputs": "No inputs defined",
+    "outputText": "Text",
+    "outputImage": "Image prompt",
+    "outputVideo": "Video prompt",
+    "outputAudio": "Audio prompt",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}",
+    "searchLabel": "Search templates",
+    "searchPlaceholder": "Search titles, descriptions, or prompts",
+    "domain": "Category",
+    "scene": "Scenario",
+    "allDomains": "All categories",
+    "allScenes": "All scenarios",
+    "filter": "Search",
+    "detailsBack": "Back to templates",
+    "published": "Published",
+    "usage": "How to use",
+    "prompt": "Prompt",
+    "schema": "Input field definition",
+    "details": "View details",
+    "favorite": "Save template",
+    "favorited": "Saved",
+    "copyPrompt": "Copy prompt",
+    "promptCopied": "Prompt copied",
+    "copyFailed": "Could not copy. Select the prompt below and copy it manually.",
+    "loadErrorTitle": "Şablonlar yüklənmədi",
+    "loadErrorDescription": "Şablon kitabxanası müvəqqəti olaraq əlçatan deyil. Bir az sonra yenidən cəhd edin.",
+    "retry": "Yenidən cəhd et"
   },
   "mascot": {
     "aria": "ANS maskotu",

@@ -2,7 +2,7 @@
 
 import { useVoiceOffer } from "./use-voice-offer";
 
-import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -20,6 +20,7 @@ import { AgentRecoveryStatus } from "./agent-recovery-status";
 import { CompanionModelSelect } from "./companion-model-select";
 import { DEFAULT_COMPANION_MODEL, getRunModel, type RunModelKey } from "@/lib/run-models";
 import { useCompanionSize } from "./use-companion-size";
+import { getFormSnapshot, subscribeMascotStore, writeForm } from "@/lib/mascot/client-store";
 import { CompanionQuestPin, CompanionSanctuaryBar } from "./companion-sanctuary-bar";
 import "./companion.css";
 
@@ -34,7 +35,9 @@ export function DinoGuide() {
   return <Companion storageReady={status !== "loading"} key={status === "authenticated" ? (data?.user?.id ?? "authenticated") : "guest"} actor={status === "authenticated" ? data?.user?.id ?? null : null} />;
 }
 function Companion({ actor, storageReady }: { actor: string | null; storageReady: boolean }) {
-  const t = useTranslations("product.mascot"), ui = useTranslations("companion");
+  const t = useTranslations("product.mascot"), ui = useTranslations("companion"), tm = useTranslations("mascot");
+  const mascotForm = useSyncExternalStore(subscribeMascotStore, getFormSnapshot, () => "3d" as const);
+  const mascotLabel = mascotForm === "2d" ? tm("to3d") : tm("to2d");
   const pathname = usePathname(), locale = useLocale() === "zh" ? "zh" : "en";
   const [model, setModel] = useState<RunModelKey>(DEFAULT_COMPANION_MODEL);
   const [mode, setMode] = useState<Mode>(actor ? "agent" : "guide");
@@ -280,6 +283,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           <div className="ans-companion-controls">
             <button type="button" onClick={panelSize.reset} aria-label={ui("resetChatSize")} title={ui("resetChatSize")}><Maximize2 aria-hidden="true" /></button>
             <button type="button" disabled={agent.busy || agent.checkingReceipts || (!messages.length && !draft && !agent.quote)} aria-label={ui("newConversation")} title={ui("newConversation")} onClick={newConversation}><RotateCcw aria-hidden="true" /></button>
+            <button type="button" aria-label={mascotLabel} title={mascotLabel} data-testid="mascot-form-toggle" onClick={() => writeForm(mascotForm === "2d" ? "3d" : "2d")}><Sparkles aria-hidden="true" /></button>
             <button type="button" aria-label={ui("openSiteSettings")} title={ui("openSiteSettings")} onClick={settings}><Settings aria-hidden="true" /></button>
             <button id="ans-companion-dismiss" type="button" aria-label={t("close")} title={t("close")} onClick={() => changeOpen(false)}><X aria-hidden="true" /></button>
           </div>

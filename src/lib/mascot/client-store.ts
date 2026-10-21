@@ -38,12 +38,12 @@ export const subscribeMascotStore = subscribe;
 
 /** 形态快照：localStorage 里的原始字符串（基础类型，天然稳定） */
 export function getFormSnapshot(): MascotForm {
-  if (typeof window === "undefined") return "2d";
+  if (typeof window === "undefined") return "3d";
   try {
     const raw = window.localStorage.getItem(FORM_STORAGE_KEY);
-    return isMascotForm(raw) ? raw : "2d";
+    return isMascotForm(raw) ? raw : "3d";
   } catch {
-    return "2d";
+    return "3d";
   }
 }
 

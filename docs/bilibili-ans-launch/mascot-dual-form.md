@@ -29,39 +29,28 @@
 
 ---
 
-## 3. 组件与接入（已挂载）
+## 3. 接入方式（已实现）
 
-> **状态：已挂载上线**。挂载点 `src/app/layout.tsx`（`<MobileTabBar />` 之后），`/embed` 与 `/kids` 路由不渲染。
-> 端到端验证（真实浏览器，2026-10-21）：
-> - 2D：`[data-testid="mascot-sprite"]` 存在，`background-image` 指向 `/mascot/pixel/dino-atlas.png`，`animation-name: ans-dino-steps` 在跑；
-> - 点击 `[data-testid="mascot-form-toggle"]` → `localStorage["ans.mascot.form"] = "3d"`，精灵消失、`[data-testid="mascot-cube"]` 出现；
-> - 点击 `[data-testid="mascot-form-back"]` → 回到 `"2d"`，精灵恢复。
->
-> 3D 形态当前是**线框占位**（明确标注「3D 形态 · 接入中」），真实 3D 渲染器按第 4 节契约接入即可替换。
+**双形态做进线上权威 Agent 本身，不新增浮层**：`src/components/mascot/dino-avatar.tsx` 按 `ans.mascot.form` 决定渲染哪一态。
 
-| 文件 | 作用 |
-|---|---|
-| `src/lib/mascot/atlas.ts` | 纯逻辑：状态表、图集几何、形态/位置的事件名与工具函数（可测试、无副作用） |
-| `src/lib/mascot/client-store.ts` | 客户端外部存储：localStorage + CustomEvent，供 `useSyncExternalStore` 订阅（避免 effect 内同步 setState、保证水合一致） |
-| `src/components/mascot/pixel-dino-agent.tsx` | 2D 桌宠 / Agent 组件（client） |
-| `src/__tests__/lib/mascot-atlas.test.ts` | 图集与形态切换的单元测试 |
+| 形态 | 实现 | 代价 |
+|---|---|---|
+| `3d`（默认） | 原行为：静态立绘 + WebGL iframe（`/mascot/3d/index.html`，约 9MB 懒加载） | 不变 |
+| `2d` | 本地精灵图集 `/mascot/pixel/dino-atlas.png` 逐帧动画（`steps(8)`） | **不加载 3D iframe**，省约 9MB |
 
-接入方式（**文案由调用方提供，遵循 i18n 规范**）：
+切换入口在伴侣面板头部（`[data-testid="mascot-form-toggle"]`，文案走 `mascot` 命名空间，17 语言已补齐）。
+**默认值 = `3d`**：未显式选择时行为与权威基线完全一致（`A-AGENT-01` 不被破坏）。
 
-```tsx
-import { PixelDinoAgent } from "@/components/mascot/pixel-dino-agent";
-import { useTranslations } from "next-intl";
+### 端到端验证（真实浏览器，2026-10-21）
 
-const t = useTranslations("mascot");
-
-<PixelDinoAgent
-  labels={{ aria: t("aria"), to3d: t("to3d"), to2d: t("to2d"), dismiss: t("dismiss") }}
-/>;
+```
+清空 localStorage（默认）：pixel=false, guide=true        ← 默认不回归
+form="2d"：pixel=true, iframe=false, bg=url(.../dino-atlas.png), anim=ans-dino-pixel-steps
+form="3d"：pixel=false, guide=true
 ```
 
-> 组件内**不硬编码任何用户可见文案**；新增文案时在 `messages/*.json` 的 `mascot` 命名空间补 key（11 个语言都要补齐，运行 `node scripts/check-translations.js` 校验）。
+> 未验证项：面板需数据库/会话才能打开，本机无 `DATABASE_URL`，因此**面板内那个切换按钮的点击链路未在本地端到端验证**（仅通过 tsc / eslint / 代码路径确认）。
 
----
 
 ## 4. 形态切换契约（2D ⇄ 3D 共用）
 

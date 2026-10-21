@@ -207,7 +207,6 @@ export function PixelDinoAgent({
       ) : null}
       <div className="flex items-end gap-1">
         <div
-          data-testid="mascot-sprite"
           className="ans-dino-sprite cursor-grab active:cursor-grabbing"
           style={spriteStyle}
           role="img"
@@ -217,7 +216,6 @@ export function PixelDinoAgent({
         />
         <button
           type="button"
-          data-testid="mascot-form-toggle"
           onClick={toggleForm}
           className="mb-1 rounded-[var(--radius)] border bg-background/80 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground"
         >
