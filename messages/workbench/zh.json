@@ -19,7 +19,9 @@
     "agentOpened": "已唤起右下角 Agent 对话窗",
     "needIdeaFirst": "请先在输入框写下一句话想法，再点击补齐细节",
     "detailsExpanded": "已补齐结构化细节",
-    "copied": "已复制内容"
+    "copied": "已复制内容",
+    "updateFailed": "修改失败",
+    "retryAfterMinutes": "（约 {p1} 分钟后可再次修改）"
   },
   "label": {
     "editNickname": "改昵称",
@@ -49,35 +51,70 @@
     "refresh": "刷新",
     "download": "下载",
     "newWindow": "新窗口",
-    "currentTaskSteps": "当前任务执行步骤："
+    "currentTaskSteps": "当前任务执行步骤：",
+    "points": "积分",
+    "myTasks": "📂 我的任务",
+    "samplePrompt": "💡 范例指令",
+    "taskPrompt": "🧑 任务指令",
+    "iterateOnCurrent": "基于当前文件迭代修改",
+    "added": "新增",
+    "removed": "删除",
+    "docPreview": "生成文档预览"
   },
   "aria": {
     "nicknameInput": "新昵称",
     "workbench": "Agent 工作模式",
     "modelSelect": "选择推理与代码生成模型",
-    "sourceEditor": "源码编辑器"
+    "sourceEditor": "源码编辑器",
+    "deleteRecord": "删除 {p1}"
   },
   "tab": {
     "code": "💻 源码",
     "preview": "👁️ 预览",
-    "terminal": "📟 终端"
+    "terminal": "📟 终端",
+    "diff": "变更"
   },
   "default": {
     "firstWebAppTitle": "我的第一个网页应用"
   },
   "task": {
-    "newBlankDraft": "新建空白草稿"
+    "newBlankDraft": "新建空白草稿",
+    "revisedTitle": "修改版：{p1}",
+    "draftTitle": "草稿：{p1}"
   },
   "trace": {
     "initWorkspace": "[1/2] agent.init_workspace → 初始化本地单文件沙盒 my-app.html",
     "readyForInput": "[2/2] agent.ready → 等待输入需求或直接编辑源码",
     "scaffoldProject": "[agent.scaffold_project] 已在本地生成立项草稿并关联 /projects 创建入口",
-    "offlineSandbox": "[1/3] agent.read_workspace → 已切换至本地离线沙盒"
+    "offlineSandbox": "[1/3] agent.read_workspace → 已切换至本地离线沙盒",
+    "heading": "Agent 执行链路",
+    "unit": "步",
+    "ready": "[就绪] 工作台已打开 · 当前账号：{p1}（可用积分：{p2}）",
+    "runningModel": "[3/4] agent.run_model_playground → 正在执行推理与构建...",
+    "planChanges": "[2/4] agent.plan_changes → 解析指令「{p1}」",
+    "answerQuery": "[3/4] agent.answer_query → 生成本地架构建议（未改动原文件）",
+    "applyPatch": "[3/4] agent.apply_patch → 写入变更 (+{p1} -{p2} 行)",
+    "verifyOutput": "[4/4] agent.verify_output → 完成本地构建 ({p1}s)",
+    "generateArtifact": "[2/3] agent.apply_patch → 生成 {p1} (+{p2} -{p3} 行)",
+    "draftReady": "[3/3] agent.verify_output → 本地可编辑草稿就绪 ({p1}s)",
+    "writeArtifact": "[3/4] agent.write_artifact → {p1} (+{p2} -{p3} 行)",
+    "verifyOutputBuild": "[4/4] agent.verify_output → 完成构建 ({p1}s)",
+    "statusNotice": "[{p1}] {p2} · +{p3} -{p4}",
+    "forkSample": "[agent.manual_edit] 从引导范例派为个人草稿 (+{p1} -{p2} 行)",
+    "readWorkspace": "[1/4] agent.read_workspace → {p1}",
+    "initWorkspaceContext": "初始化工作区上下文",
+    "createSandbox": "创建本地沙盒环境",
+    "initTaskContext": "初始化新任务上下文",
+    "statusWarn": "⚠️ 状态提示",
+    "statusDone": "✓ 执行完成",
+    "readCurrentArtifact": "读取当前产物 {p1} ({p2} chars)",
+    "readBaseline": "读取 {p1} 基准代码"
   },
   "link": {
     "createProject": "📂 前往项目库创建正式立项",
     "openProjects": "📂 打开项目库查看",
-    "signInForCompute": "🔐 登录账号调用云端模型算力"
+    "signInForCompute": "🔐 登录账号调用云端模型算力",
+    "open": "打开详情"
   },
   "quickPrompt": {
     "claw": "🕹️ 3D 抓娃娃机抽积分",
@@ -94,7 +131,9 @@
   },
   "reply": {
     "guestMode": "当前为访客预览模式，已在右侧生成可交互草稿与代码变更记录。登录账号后可调用云端模型算力。",
-    "done": "已完成处理。"
+    "done": "已完成处理。",
+    "appliedChange": "已在当前文件 {p1} 基础上完成增量修改（+{p2} -{p3} 行），可点击右侧「± 变更」查看具体代码对比。",
+    "localAnswer": "💡 针对「{p1}」的本地解答：\\n1. 当前文件为 {p2}，可在右侧「💻 源码」或「± 变更」中直接检查结构。\\n2. 切换到「⚡ 写代码」模式发送指令即可自动把修改应用到当前文件并查看变更。"
   },
   "title": {
     "openAgentChat": "唤起右下角 Agent 悬浮对话窗",
@@ -115,11 +154,34 @@
     "workbench": "工作模式",
     "codeShort": "⚡ 写代码模式"
   },
+  "model": {
+    "flash": "⚡ DeepSeek-V4.1-Flash · 快速 (1x)",
+    "sol": "🧠 GPT-6.1-Sol · 深度推理 (0.16x)",
+    "astra": "🌟 GPT-6-Astra · 前端代码 (0.16x)"
+  },
   "guide": {
     "title": "工作模式 3 步流"
   },
+  "onboarding": {
+    "title": "3 步上手 ANS 工作台",
+    "subtitle": "先打开一个范例看清成果长什么样，再用一句话描述你自己的作品。",
+    "step1Title": "说清需求",
+    "step1Body": "在下方输入框写一句话；点「提问」只做分析，不会覆盖代码。",
+    "step2Title": "看执行与变更",
+    "step2Body": "中间是 Agent 的执行步骤，右侧是预览和「± 变更」代码对比。",
+    "step3Title": "存为项目",
+    "step3Body": "结果满意后点「存为项目」，草稿会进入项目库，可继续迭代。",
+    "samplesTitle": "参考范例（不是你的任务）",
+    "samplesBody": "四份可直接运行的单文件范例，用来快速看懂完成态。",
+    "useSample": "用这个范例试试",
+    "neverShow": "以后不再自动弹出",
+    "done": "开始使用",
+    "guideButton": "引导",
+    "reopen": "查看 3 步上手说明"
+  },
   "empty": {
-    "tasks": "暂无个人任务，在中间输入指令即可开始"
+    "tasks": "暂无个人任务，在中间输入指令即可开始",
+    "prompt": "等待输入需求..."
   },
   "status": {
     "guidedSample": "📖 引导范例",
@@ -131,6 +193,7 @@
     "sample": "📖 范例产出说明"
   },
   "placeholder": {
-    "newTask": "输入你要新建的网页、Python 脚本或农客松方案（Enter 执行）..."
+    "newTask": "输入你要新建的网页、Python 脚本或农客松方案（Enter 执行）...",
+    "iterate": "描述要对 {file} 做的修改（如：切换为浅色主题、增加导出 CSV 按钮）…"
   }
 }

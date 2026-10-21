@@ -71,7 +71,7 @@ function DisplayNameForm({ current, actorId }: { current: string; actorId: strin
       if (!isActive()) return;
       if (!response.ok) {
         const retry = Number(response.headers.get("Retry-After") || 0);
-        toast.error(`${result.message || "修改失败"}${retry ? `（约 ${Math.ceil(retry / 60)} 分钟后可再次修改）` : ""}`);
+        toast.error(`${result.message || w("toast.updateFailed")}${retry ? w("toast.retryAfterMinutes", { p1: Math.ceil(retry / 60) }) : ""}`);
         return;
       }
       toast.success(w("toast.nicknameUpdated"));
@@ -290,7 +290,7 @@ function PiCodexWorkbench({
   const [canvasTab, setCanvasTab] = useState<"preview" | "diff" | "code" | "terminal">("preview");
   const [previewKey, setPreviewKey] = useState<number>(0);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
-    `[就绪] 工作台已打开 · 当前账号：${current}（可用积分：${points}）`,
+    w("trace.ready", { p1: current, p2: points }),
   ]);
   const [livePoints, setLivePoints] = useState<number>(points);
 
@@ -545,9 +545,9 @@ function PiCodexWorkbench({
         : contextBaseline;
     const initialDiff = computeUnifiedDiff(diffBaselineForFallback, fallbackCode);
     const runningTrace = [
-      `[1/4] agent.read_workspace → ${shouldIterateCurrent ? `读取当前产物 ${activeTask.artifactFile} (${contextBaseline.length} chars)` : "初始化工作区上下文"}`,
+      `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readWorkspace", { p1: shouldIterateCurrent ? w("trace.readCurrentArtifact", { p1: activeTask.artifactFile, p2: contextBaseline.length }) : w("trace.initWorkspaceContext") }) : "初始化工作区上下文"}`,
       `[2/4] agent.route_intent → mode=${runMode.toUpperCase()} · model=${model}`,
-      `[3/4] agent.run_model_playground → 正在执行推理与构建...`,
+      w("trace.runningModel"),
     ];
 
     const runningTask: CodexTask = {
@@ -599,12 +599,12 @@ function PiCodexWorkbench({
       if (res.status === 401 || !res.ok) {
         const localDiff = computeUnifiedDiff(diffBaselineForFallback, fallbackCode);
         const guestTrace = [
-          `[1/4] agent.read_workspace → ${shouldIterateCurrent ? `读取 ${activeTask.artifactFile} 基准代码` : "创建本地沙盒环境"}`,
-          `[2/4] agent.plan_changes → 解析指令「${q.slice(0, 36)}」`,
+          `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readWorkspace", { p1: shouldIterateCurrent ? w("trace.readBaseline", { p1: activeTask.artifactFile }) : w("trace.createSandbox") }) : "创建本地沙盒环境"}`,
+          w("trace.planChanges", { p1: q.slice(0, 36) }),
           runMode === "ask"
-            ? `[3/4] agent.answer_query → 生成本地架构建议（未改动原文件）`
-            : `[3/4] agent.apply_patch → 写入变更 (+${localDiff.additions} -${localDiff.deletions} 行)`,
-          `[4/4] agent.verify_output → 完成本地构建 (${elapsedSec}s)`,
+            ? w("trace.answerQuery")
+            : w("trace.applyPatch", { p1: localDiff.additions, p2: localDiff.deletions }),
+          w("trace.verifyOutput", { p1: elapsedSec }),
         ];
         const updated = nextWithRunning.map(item =>
           item.id === taskId
@@ -617,9 +617,9 @@ function PiCodexWorkbench({
                 trace: guestTrace,
                 summary:
                   runMode === "ask"
-                    ? `💡 针对「${q}」的本地解答：\n1. 当前文件为 ${runningTask.artifactFile}，可在右侧「{w("tab.code")}」或「± 变更」中直接检查结构。\n2. 切换到「⚡ 写代码」模式发送指令即可自动把修改应用到当前文件并{w("label.viewDiff")} 对比。\n3. 登录账号后可调用云端 ${model} 进行深度分析。`
+                    ? w("reply.localAnswer", { p1: q, p2: runningTask.artifactFile })
                     : shouldIterateCurrent
-                      ? `已在当前文件 ${runningTask.artifactFile} 基础上完成增量修改（+${localDiff.additions} -${localDiff.deletions} 行），可点击右侧「± 变更」查看具体代码对比。`
+                      ? w("reply.appliedChange", { p1: runningTask.artifactFile, p2: localDiff.additions, p3: localDiff.deletions })
                       : w("reply.guestMode"),
                 links: [{ labelZh: w("link.signInForCompute"), href: "/login?callbackUrl=%2Fworkspace" }],
                 artifactType: runningTask.artifactType,
@@ -683,10 +683,10 @@ function PiCodexWorkbench({
       const serverTrace = Array.isArray(data?.trace) && data.trace.length > 0
         ? data.trace
         : [
-            `[1/4] agent.read_workspace → ${shouldIterateCurrent ? `加载 ${resolvedFile}` : "初始化新任务上下文"}`,
+            `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readWorkspace", { p1: shouldIterateCurrent ? w("trace.loadFile", { p1: resolvedFile }) : w("trace.initTaskContext") }) : "初始化新任务上下文"}`,
             `[2/4] agent.route_intent → tool=${data?.toolUsed || "run_model_playground"} (${model})`,
-            `[3/4] agent.write_artifact → ${resolvedFile} (+${computedDiff.additions} -${computedDiff.deletions} 行)`,
-            `[4/4] agent.verify_output → 完成构建 (${elapsedSec}s)`,
+            w("trace.writeArtifact", { p1: resolvedFile, p2: computedDiff.additions, p3: computedDiff.deletions }),
+            w("trace.verifyOutputBuild", { p1: elapsedSec }),
           ];
 
       const updated = nextWithRunning.map(item =>
@@ -712,7 +712,7 @@ function PiCodexWorkbench({
       setTerminalLogs(prev => [
         ...prev,
         ...serverTrace.map((step: string) => `  ${step}`),
-        `[${new Date().toLocaleTimeString()}] ${data?.ok === false ? "⚠️ 状态提示" : "✓ 执行完成"} · +${computedDiff.additions} -${computedDiff.deletions}`,
+        w("trace.statusNotice", { p1: new Date().toLocaleTimeString(), p2: data?.ok === false ? w("trace.statusWarn") : w("trace.statusDone"), p3: computedDiff.additions, p4: computedDiff.deletions }),
       ]);
     } catch {
       const elapsedSec = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
@@ -727,8 +727,8 @@ function PiCodexWorkbench({
               diffDeletions: localDiff.deletions,
               trace: [
                 w("trace.offlineSandbox"),
-                `[2/3] agent.apply_patch → 生成 ${runningTask.artifactFile} (+${localDiff.additions} -${localDiff.deletions} 行)`,
-                `[3/3] agent.verify_output → 本地可编辑草稿就绪 (${elapsedSec}s)`,
+                w("trace.generateArtifact", { p1: runningTask.artifactFile, p2: localDiff.additions, p3: localDiff.deletions }),
+                w("trace.draftReady", { p1: elapsedSec }),
               ],
               summary: "已生成本地可编辑草稿，支持在右侧查看预览、Diff 变更与源码。",
               artifactType: runningTask.artifactType,
@@ -766,7 +766,7 @@ function PiCodexWorkbench({
       const forkedTask: CodexTask = {
         ...activeTask,
         id: "user-fork-" + Date.now(),
-        title: `修改版：${activeTask.title.replace(/^[^\s]+\s*/, "")}`,
+        title: w("task.revisedTitle", { p1: activeTask.title.replace(/^[^\s]+\s*/, "") }),
         tag: "我的草稿",
         previousCode: activeTask.artifactCode,
         artifactCode: newCode,
@@ -774,7 +774,7 @@ function PiCodexWorkbench({
         diffDeletions: forkedDiff.deletions,
         trace: [
           ...(activeTask.trace ?? []),
-          `[agent.manual_edit] 从{w("label.guidedSamples")}派为个人草稿 (+${forkedDiff.additions} -${forkedDiff.deletions} 行)`,
+          w("trace.forkSample", { p1: forkedDiff.additions, p2: forkedDiff.deletions }),
         ],
         summary: w("label.guidedSamples"),
       };
@@ -797,7 +797,7 @@ function PiCodexWorkbench({
     const forkedTask: CodexTask = {
       ...activeTask,
       id: "user-fork-" + Date.now(),
-      title: `草稿：${activeTask.title.replace(/^[^\s]+\s*/, "")}`,
+      title: w("task.draftTitle", { p1: activeTask.title.replace(/^[^\s]+\s*/, "") }),
       tag: "我的草稿",
       previousCode: activeTask.previousCode ?? activeTask.artifactCode,
       trace: [...(activeTask.trace ?? []), w("label.copy")],
@@ -1026,7 +1026,7 @@ function PiCodexWorkbench({
                               type="button"
                               onClick={e => handleDeleteUserTask(t.id, e)}
                               title={w("title.deleteRecord")}
-                              aria-label={`删除 ${t.title}`}
+                              aria-label={w("aria.deleteRecord", { p1: t.title })}
                               className="hidden rounded px-1 text-[10px] text-slate-400 hover:bg-rose-500/20 hover:text-rose-300 group-hover:inline-block"
                             >
                               ×
