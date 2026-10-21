@@ -16,7 +16,7 @@ it("makes metered consent explicit without exposing spend or balance numbers", (
     recovery: { turns: [], check: async () => {}, remember: () => true }, currentTicket: null,
     phase: "confirm", quote: { ticket: "isolated-ticket", requestId: "isolated-request", model: "deepseek-v4.1-flash", maxPoints: 123.456, balance: 999.321, expiresAt: 1 },
     error: null, receipts: [], tools: [], activeTool: null, busy: false, privateAccess: false,
-    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "查找工作流", hasTicket: false, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {},
+    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "查找工作流", hasTicket: false, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {}, autoApprove: false, setAutoApprove: vi.fn(), autoRunCap: null,
   };
   const view = render(<AgentTurnStatus agent={agent} />);
   expect(screen.getByText(companion.agentBillingNotice)).toBeInTheDocument();
@@ -37,7 +37,7 @@ it("names public-page verification without implying a private read", () => {
   const agent: ReturnType<typeof useCompanionAgent> = {
     recovery: { turns: [], check: async () => {}, remember: () => true }, currentTicket: null,
     phase: "reading", quote: null, error: null, receipts: [], tools: [{ name: "current_page", ok: true }], activeTool: "current_page", busy: true, privateAccess: false,
-    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "这个项目需要准备什么", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {},
+    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "这个项目需要准备什么", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {}, autoApprove: false, setAutoApprove: vi.fn(), autoRunCap: null,
   };
   render(<AgentTurnStatus agent={agent} />);
   expect(screen.getByRole("status")).toHaveTextContent(companion.agentTool.current_page);
@@ -51,7 +51,7 @@ it("explains a capacity failure while keeping the submitted turn's usage recover
     receipts: [{ requestId: "isolated-request", state: "UNCERTAIN", reservedPoints: 0.01, settledPoints: null }],
     tools: [], activeTool: null, busy: false, privateAccess: false,
     ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {},
-    question: "", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {},
+    question: "", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {}, autoApprove: false, setAutoApprove: vi.fn(), autoRunCap: null,
   };
   render(<AgentTurnStatus agent={agent} />);
   expect(screen.getByRole("alert")).toHaveTextContent(companion.agentError.capacity);
@@ -63,7 +63,7 @@ it.each(["SETTLED", "UNCERTAIN", "RUNNING", "RELEASED"])("only labels a fully se
   const agent: ReturnType<typeof useCompanionAgent> = {
     recovery: { turns: [], check: async () => {}, remember: () => true }, currentTicket: null,
     phase: "complete", quote: null, error: null, receipts: [{ requestId: "call-a", state: "SETTLED", reservedPoints: 1, settledPoints: .00049 }, { requestId: "call-b", state, reservedPoints: 1, settledPoints: state === "SETTLED" ? .00052 : null }], tools: [], activeTool: null, busy: false, privateAccess: false,
-    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "public-help", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {},
+    ask: async () => {}, allowPrivate: vi.fn(), confirm: async () => {}, stop: vi.fn(), reset: vi.fn(), refreshReceipts: async () => {}, question: "public-help", hasTicket: true, cancelQuote: vi.fn(), checkingReceipts: false, receiptChecked: false, canRetryQuote: false, retryQuote: async () => {}, autoApprove: false, setAutoApprove: vi.fn(), autoRunCap: null,
   };
   const view = render(<AgentTurnStatus agent={agent} />);
   if (state === "SETTLED") expect(view.container.querySelector(".ans-agent-usage")).toHaveTextContent("0.00101");
