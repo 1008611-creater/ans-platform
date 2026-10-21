@@ -291,14 +291,6 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           <button type="button" aria-pressed={mode === "guide"} onClick={() => changeMode("guide")} disabled={agent.busy || agent.checkingReceipts}>
             {ui("guideMode")}
           </button>
-          <button
-            type="button"
-            aria-pressed={false}
-            data-testid="dino-switch-work-mode"
-            onClick={() => switchToWorkMode()}
-          >
-            {ui("guideWorkMode")}
-          </button>
         </div>
         <CompanionSanctuaryBar
           requestedTab={requestedTab}

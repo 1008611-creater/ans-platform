@@ -177,7 +177,7 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
         // operator waivers preserve UNCERTAIN or the upstream receipt id instead.
         const explicitNonexecution=await hasNonexecutionEvidence(tx,user.id,previous.id);
         const rejectedWithoutExecution=explicitNonexecution===null ? [400,401,403,404,422,429].includes(Number(rejectedStatus)) || (rejectedStatus===undefined && previous.outcome==="RELEASED") : explicitNonexecution;
-        if(previous.state!=="RELEASED" || previous.settledPoints===null || Number(previous.settledPoints)!==0 || !previous.finishedAt || !rejectedWithoutExecution)throw new Error("REQUEST_CONFLICT");
+        if(previous.state!=="RELEASED" || previous.settledPoints===null || Number(previous.settledPoints)!==0 || !previous.finishedAt || !rejectedWithoutExecution)throw new Error("REQUEST_ALREADY_RUNNING");
         rootRequestId ??= previous.id;
         previousRequestId=previous.id;
         attemptKey=RETRY_KEY_PREFIX+createHash("sha256").update(JSON.stringify([idempotency,previous.id])).digest("hex");
@@ -213,8 +213,14 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
       if (!gift) await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:adapter ? "Claude request reservation" : "Codex request reservation",...(eventFunding ? {eventFunding} : {})});return {id:task.id,price};
     });
   } catch(error){
-    const code=error instanceof ComputeBenefitError ? error.code : error instanceof QuotaError ? error.code : error instanceof Error && ["REQUEST_HASH_CONFLICT","REQUEST_FUNDING_CONFLICT","REQUEST_PARENT_CONFLICT","REQUEST_POLICY_CHANGED","TOO_MANY_ACTIVE_REQUESTS","DAILY_BUDGET_EXCEEDED","BUDGET_STATE_UNAVAILABLE"].includes(error.message) ? error.message : "REQUEST_CONFLICT";
+    // Keep a genuine "this key already has an unfinished attempt" distinguishable
+    // from any unexpected reservation failure. Masking both as REQUEST_CONFLICT
+    // made clients tell members "your request is already running" for every
+    // internal error and hid the real cause from the logs.
+    const passthrough = error instanceof Error && ["REQUEST_HASH_CONFLICT","REQUEST_FUNDING_CONFLICT","REQUEST_PARENT_CONFLICT","REQUEST_POLICY_CHANGED","REQUEST_ALREADY_RUNNING","TOO_MANY_ACTIVE_REQUESTS","DAILY_BUDGET_EXCEEDED","BUDGET_STATE_UNAVAILABLE"].includes(error.message);
+    const code=error instanceof ComputeBenefitError ? error.code : error instanceof QuotaError ? error.code : passthrough ? (error as Error).message : "GATEWAY_RESERVATION_FAILED";
     const status = error instanceof ComputeBenefitError ? error.status : error instanceof QuotaError ? error.status : adapter && ["TOO_MANY_ACTIVE_REQUESTS", "DAILY_BUDGET_EXCEEDED"].includes(code) ? 429 : adapter && code === "BUDGET_STATE_UNAVAILABLE" ? 503 : 409;
+    if (code === "GATEWAY_RESERVATION_FAILED") console.error("[codex-gateway] reservation failed", { userId: user.id, modelId: parsed.model, message: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
     return failure(code, status);
   }
   const taskId=reservation.id;

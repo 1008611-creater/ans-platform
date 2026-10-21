@@ -13,11 +13,34 @@ export function conversationInput(messages: CompanionMessage[], text: string, pa
 }
 /** 只表示"这一轮结果不确定"的错误码：成功对账后必须能复位；余额/权限类真实错误要保留。 */
 const UNCERTAIN_RESULT_ERRORS = ["AGENT_RESPONSE_UNAVAILABLE", "AGENT_UNAVAILABLE", "RESPONSE_INTERRUPTED", "AGENT_OUTPUT_INCOMPLETE", "UPSTREAM_RESULT_UNCERTAIN", "BILLING_PENDING"];
+/** 明确在调用模型之前就失败的错误码：换一张新报价单重试是安全的。
+ *  结果不确定的（BILLING_PENDING / UPSTREAM_RESULT_UNCERTAIN / RESPONSE_INTERRUPTED）
+ *  必须先用原单对账，绝不能自动重发。 */
+export const AGENT_RETRYABLE_ERRORS = ["GATEWAY_RESERVATION_FAILED", "REQUEST_CONFLICT", "MEMBER_BUDGET_INVALID", "INSUFFICIENT_QUOTA", "QUOTA_INSUFFICIENT", "TOO_MANY_ACTIVE_REQUESTS", "DAILY_BUDGET_EXCEEDED", "QUOTE_EXPIRED", "QUOTE_CHANGED"];
+/** 一次性授权：确认过一次后，同一账号的后续对话不再逐轮弹确认与勾选。 */
+const CONSENT_PREFIX = "ans.companion-agent-consent.v1:";
+function readConsent(actor: string | null): { privateAccess: boolean } | null {
+  if (!actor || typeof window === "undefined") return null;
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(CONSENT_PREFIX + actor) ?? "null") as { privateAccess?: unknown } | null;
+    return parsed && typeof parsed.privateAccess === "boolean" ? { privateAccess: parsed.privateAccess } : null;
+  } catch { return null; }
+}
+function writeConsent(actor: string | null, privateAccess: boolean) {
+  if (!actor || typeof window === "undefined") return;
+  try { window.localStorage.setItem(CONSENT_PREFIX + actor, JSON.stringify({ privateAccess, grantedAt: Date.now() })); } catch { /* Optional storage. */ }
+}
+function clearConsent(actor: string | null) {
+  if (!actor || typeof window === "undefined") return;
+  try { window.localStorage.removeItem(CONSENT_PREFIX + actor); } catch { /* Optional storage. */ }
+}
 export function useCompanionAgent(actor: string | null, pathname: string, locale: "zh" | "en", onAnswer: (text: string, links: AgentLink[]) => void, onUser: (text: string) => void, model: RunModelKey = DEFAULT_COMPANION_MODEL, storageReady = true) {
   const recovery = useAgentRecovery(actor, storageReady);
   const [phase, setPhase] = useState<AgentPhase>("idle");
   const [quote, setQuote] = useState<AgentQuote | null>(null);
   const [privateAccess, setPrivateAccess] = useState(false);
+  const [autoApprove, setAutoApprove] = useState(false);
+  const [autoRunCap, setAutoRunCap] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [receipts, setReceipts] = useState<AgentReceipt[]>([]);
   const [tools, setTools] = useState<{ name: string; ok: boolean }[]>([]);
@@ -37,10 +60,16 @@ export function useCompanionAgent(actor: string | null, pathname: string, locale
   const reset = useCallback(() => {
     ++generation.current; operation.current?.abort(); operation.current = null;
     pending.current = null; lastTicket.current = null; stage.current = null;
-    setCheckingReceipts(false); setReceiptChecked(false);
+    setCheckingReceipts(false); setReceiptChecked(false); setAutoRunCap(null);
     setPrivateAccess(false); setQuote(null); setError(null); setTools([]); setReceipts([]); setActiveTool(null); setPhase("idle");
   }, []);
   useEffect(() => { reset(); return () => reset(); }, [actor, reset]);
+  // Load the stored one-time consent for this account (never for guests).
+  useEffect(() => {
+    const consent = readConsent(actor);
+    setAutoApprove(Boolean(consent));
+    if (consent) setPrivateAccess(consent.privateAccess);
+  }, [actor]);
   const cancelQuote = useCallback(() => {
     if (stage.current === "execute" || stage.current === "status") return;
     ++generation.current; operation.current?.abort(); operation.current = null; stage.current = null;
@@ -64,7 +93,10 @@ export function useCompanionAgent(actor: string | null, pathname: string, locale
       const response = await post({ action: "quote", input }, controller.signal);
       const next: AgentQuote = await response.json();
       if (generation.current !== id) return;
-      setQuote(next); setPhase("confirm");
+      setPhase("confirm");
+      // 已授权：直接按报价上限执行，不再让成员每轮点一次「继续对话」。
+      if (autoApprove && next.balance >= next.maxPoints) { setQuote(null); void run(input, next, true); return; }
+      setQuote(next);
     } catch (cause) {
       if (generation.current !== id) return;
       setError(cause instanceof Error ? cause.message : "AGENT_UNAVAILABLE"); setPhase("error");
@@ -75,11 +107,12 @@ export function useCompanionAgent(actor: string | null, pathname: string, locale
     setPrivateAccess(value);
     if (pending.current) void prepare({ ...pending.current, privateAccess: value });
   }
-  async function confirm() {
-    const input = pending.current, approved = quote;
-    if (!input || !approved || busy || operation.current) return;
+  /** 拿到报价后真正开始执行；一次性授权时不经过确认卡片直接调用。 */
+  async function run(input: AgentInput, approved: AgentQuote, auto = false) {
     if (Date.now() > approved.expiresAt) { setQuote(null); setError("QUOTE_EXPIRED"); setPhase("error"); return; }
     if (!recovery.remember(approved)) { setQuote(null); setError("AGENT_RESPONSE_UNAVAILABLE"); setPhase("error"); return; }
+    // Only an auto-approved turn shows the inline "running with your saved approval" cap.
+    setAutoRunCap(auto ? approved.maxPoints : null);
     const id = ++generation.current;
     const controller = new AbortController(); operation.current = controller; stage.current = "execute";
     lastTicket.current = approved.ticket; setPhase("thinking"); setQuote(null); setError(null);
@@ -94,9 +127,9 @@ export function useCompanionAgent(actor: string | null, pathname: string, locale
         const event: AgentEvent = JSON.parse(line);
         if (event.type === "phase" && !failed && !answered) { setPhase(event.phase); setActiveTool(event.tool ?? null); }
         if (event.type === "tool") setTools(current => [...current, { name: event.name, ok: event.ok }]);
-        if (event.type === "answer" && !answered) { answered = true; callbacks.current.onAnswer(event.text, event.links); }
+        if (event.type === "answer" && !answered) { answered = true; setAutoRunCap(null); callbacks.current.onAnswer(event.text, event.links); }
         if (event.type === "receipt") setReceipts(event.receipts);
-        if (event.type === "error") { failed = true; setError(event.code); setPhase("error"); }
+        if (event.type === "error") { failed = true; setAutoRunCap(null); setError(event.code); setPhase("error"); }
         if (event.type === "done") done = true;
       };
       try {
@@ -116,8 +149,16 @@ export function useCompanionAgent(actor: string | null, pathname: string, locale
       if (answered && !failed) setPhase("complete");
     } catch (cause) {
       if (generation.current !== id) return;
+      setAutoRunCap(null);
       setError(cause instanceof Error ? cause.message : "AGENT_RESPONSE_UNAVAILABLE"); setPhase("error");
-    } finally { if (generation.current === id) { operation.current = null; stage.current = null; pending.current = null; setActiveTool(null); } }
+    } finally { if (generation.current === id) { operation.current = null; stage.current = null; setActiveTool(null); if (answered && !failed) pending.current = null; } }
+  }
+  /** 只有界面明确勾选「记住这次授权」时才写入；未传参一律不记住。 */
+  async function confirm(auto = false) {
+    const input = pending.current, approved = quote;
+    if (!input || !approved || busy || operation.current) return;
+    if (auto) { writeConsent(actor, privateAccess); setAutoApprove(true); } else { clearConsent(actor); setAutoApprove(false); }
+    return run(input, approved, false);
   }
   function stop() {
     if (stage.current === "status") return;
@@ -141,8 +182,9 @@ export function useCompanionAgent(actor: string | null, pathname: string, locale
     } catch (cause) { if (generation.current === id) setError(cause instanceof Error ? cause.message : "AGENT_RESPONSE_UNAVAILABLE"); }
     finally { if (generation.current === id) { operation.current = null; stage.current = null; setCheckingReceipts(false); } }
   }
-  const canRetryQuote = ["error", "stopped"].includes(phase) && Boolean(pending.current) && !lastTicket.current && !checkingReceipts;
+  const canRetryQuote = ["error", "stopped"].includes(phase) && Boolean(pending.current) && !busy && !checkingReceipts
+    && (!lastTicket.current || (error !== null && AGENT_RETRYABLE_ERRORS.includes(error)));
   function retryQuote() { if (canRetryQuote && pending.current) return prepare(pending.current); }
-  return { recovery, currentTicket: lastTicket.current, phase, quote, error, receipts, tools, activeTool, busy, privateAccess, ask, allowPrivate, confirm, stop, reset, cancelQuote, refreshReceipts, checkingReceipts, receiptChecked, canRetryQuote, retryQuote,
+  return { recovery, currentTicket: lastTicket.current, phase, quote, error, receipts, tools, activeTool, busy, privateAccess, autoApprove, setAutoApprove, autoRunCap, ask, allowPrivate, confirm, stop, reset, cancelQuote, refreshReceipts, checkingReceipts, receiptChecked, canRetryQuote, retryQuote,
     question: pending.current?.messages.at(-1)?.content ?? "", hasTicket: Boolean(lastTicket.current) && !quote };
 }
