@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { db, type DbTransaction } from "@/lib/db";
+import { TX_OPTIONS } from "@/lib/tx-options";
 import { configuredAgriEditionId } from "@/server/competitions/agrihackathon/workspace";
 import { lockCompetitionRegistrationWindow, assertAgriRegistrationOpen } from "@/server/competitions/agrihackathon/registration";
 import { hasAdminPermission } from "@/lib/admin-permission-values";
@@ -50,7 +51,7 @@ export async function submitOnboardingQuestionnaire(userId: string, input: unkno
     await tx.$executeRaw`INSERT INTO compute_benefit_questionnaires ("userId",version,answers)
       VALUES (${userId},${answers.version},${JSON.stringify(answers)}::jsonb) ON CONFLICT ("userId") DO NOTHING`;
     await insertGrant(tx, userId, "DEEPSEEK_ONBOARDING", null);
-  });
+  }, TX_OPTIONS);
   return getComputeBenefits(userId);
 }
 export async function submitAgriApplication(userId: string, input: unknown) {
@@ -78,7 +79,7 @@ export async function submitAgriApplication(userId: string, input: unknown) {
       await tx.$executeRaw`INSERT INTO compute_benefit_applications (id,"userId","campaignId","competitionId",version,answers)
         VALUES (${randomUUID()}::uuid,${userId},${AGRI_CAMPAIGN},${competitionId},${answers.version},${JSON.stringify(answers)}::jsonb)`;
     }
-  });
+  }, TX_OPTIONS);
   return getComputeBenefits(userId);
 }
 export async function reviewAgriApplication(actorId: string, applicationId: string, input: unknown) {
@@ -97,7 +98,7 @@ export async function reviewAgriApplication(actorId: string, applicationId: stri
     await tx.$executeRaw`INSERT INTO compute_benefit_review_events (id,"applicationId","actorId",revision,decision,note)
       VALUES (${randomUUID()}::uuid,${applicationId}::uuid,${actorId},${row.revision},${review.decision},${review.note})`;
     if (review.decision === "APPROVED") for (const kind of ["TERRA_AGRI", "GPT_AGRI", "OPUS_AGRI"] as const) await insertGrant(tx, owner.userId, kind, applicationId);
-  });
+  }, TX_OPTIONS);
   return { reviewed: true };
 }
 interface GrantRow {
@@ -134,7 +135,7 @@ export async function getComputeBenefits(userId: string): Promise<ComputeBenefit
         reservedUsdMicros:String(r.reservedUsdMicros), actualUsdMicros:r.actualUsdMicros === null ? null : String(r.actualUsdMicros),
         chargedUsdMicros:r.chargedUsdMicros === null ? null : String(r.chargedUsdMicros), platformUsdMicros:r.platformUsdMicros === null ? null : String(r.platformUsdMicros),
         createdAt:r.createdAt.toISOString(),completedAt:r.completedAt?.toISOString() ?? null })) };
-  });
+  }, TX_OPTIONS);
 }
 export async function listBenefitApplications(actorId: string): Promise<AdminComputeBenefitsList> {
   return db.$transaction(async tx => {
