@@ -3,6 +3,8 @@ import { refreshMeteredParentCost } from "./metered-cost";
 import { upstreamFailureCode } from "./upstream-rejection";
 import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
+import { TX_OPTIONS } from "@/lib/tx-options";
+import { isStaleTransactionError, withStaleTransactionRetry } from "./tx-resilience";
 import type { Prisma } from "@prisma/client";
 import { ClaudePolicyError } from "./claude-policy";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
@@ -80,7 +82,7 @@ export async function reconcileCodexCharges(userId: string, options = { limit: 5
         }
         if(!readBenefitFunding(current.price) && member.billedPoints<Number(current.authorizedPoints)) await refundQuota(tx,{userId,costPoints:Number(current.authorizedPoints)-member.billedPoints,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
         await refreshMeteredParentCost(tx,userId,task.price);
-      });
+      }, TX_OPTIONS);
     }catch{/* Preserve reservation until a verified receipt is available. */}
   }
 }
@@ -143,10 +145,20 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
   catch (error) { return error instanceof ClaudePolicyError ? failure(error.code, error.status) : failure("INVALID_IDEMPOTENCY_KEY", 400); }
   if(idempotency.length>128 || idempotency.startsWith(RETRY_KEY_PREFIX)) return failure("INVALID_IDEMPOTENCY_KEY",400);
   const requestHash=createHash("sha256").update(parsed.text).digest("hex");
+  // 预留事务分步打点：失败时能直接看出卡在哪一步、每步花了多久（2026-10-21 生产事故定位）。
+  let reservationStep = "start";
+  const reservationMarks: Array<{ step: string; atMs: number }> = [{ step: "start", atMs: Date.now() }];
+  const markReservationStep = (step: string) => { reservationStep = step; reservationMarks.push({ step, atMs: Date.now() }); };
+  const reservationTimingSummary = () => reservationMarks.map((entry, index) => ({
+    step: entry.step,
+    ms: (reservationMarks[index + 1]?.atMs ?? Date.now()) - entry.atMs,
+  }));
   let reservation:{id:string;price:Prisma.InputJsonObject};
   try {
-    reservation=await db.$transaction(async tx=>{
+    reservation=await withStaleTransactionRetry(() => db.$transaction(async tx=>{
+      markReservationStep("prelockAgriTeamCharge");
       const eventFunding = await prelockAgriTeamCharge(tx, user.id, parent);
+      markReservationStep("lockGatewayBillingAccount");
       await lockGatewayBillingAccount(tx, user.id);
       let attemptKey=idempotency;
       let rootRequestId:string|undefined;
@@ -154,6 +166,7 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
       // The user lock serializes reservations for every attempt of this key. Keep each
       // failed attempt and its debit/refund intact rather than recycling its task id.
       while(true){
+        markReservationStep("idempotencyLookup");
         const previous=await tx.apiComputeRequest.findUnique({
           where:{userId_provider_idempotencyKey:{userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey}},
           select:{id:true,requestHash:true,state:true,settledPoints:true,finishedAt:true,price:true,outcome:true,policyVersion:true},
@@ -175,6 +188,7 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
         // non-execution. Only explicit rejection evidence permits a fresh attempt.
         // Legacy outcome="RELEASED" was written solely by rejection transition();
         // operator waivers preserve UNCERTAIN or the upstream receipt id instead.
+        markReservationStep("hasNonexecutionEvidence");
         const explicitNonexecution=await hasNonexecutionEvidence(tx,user.id,previous.id);
         const rejectedWithoutExecution=explicitNonexecution===null ? [400,401,403,404,422,429].includes(Number(rejectedStatus)) || (rejectedStatus===undefined && previous.outcome==="RELEASED") : explicitNonexecution;
         if(previous.state!=="RELEASED" || previous.settledPoints===null || Number(previous.settledPoints)!==0 || !previous.finishedAt || !rejectedWithoutExecution)throw new Error("REQUEST_ALREADY_RUNNING");
@@ -182,11 +196,13 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
         previousRequestId=previous.id;
         attemptKey=RETRY_KEY_PREFIX+createHash("sha256").update(JSON.stringify([idempotency,previous.id])).digest("hex");
       }
+      markReservationStep("activeCount");
       const active=await tx.apiComputeRequest.count({where:{userId:user.id,provider:PROVIDER,...(adapter ? { modelId: parsed.model } : {}),state:{in:adapter ? ["AUTHORIZED","RUNNING","UNCERTAIN"] : ["RUNNING","UNCERTAIN"]}}});
       if(active >= (adapter?.maxConcurrent ?? 4))throw new Error("TOO_MANY_ACTIVE_REQUESTS");
       if (adapter) {
         // Include old unresolved holds as liabilities even when older than the
         // rolling window. A timed-out receipt must not reopen expensive credit.
+        markReservationStep("liabilityScan");
         const liabilities = await tx.apiComputeRequest.findMany({ where: {
           userId: user.id, provider: PROVIDER, modelId: parsed.model,
           OR: [{ state: "SETTLED", finishedAt: { gte: new Date(Date.now() - 86_400_000) } }, { state: { in: ["AUTHORIZED", "RUNNING", "UNCERTAIN"] } }],
@@ -202,6 +218,7 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
         if (!Number.isSafeInteger(micros) || micros + Math.ceil(parsed.reserve * 1e6) > Math.floor(adapter.rollingDayMaxPoints * 1e6)) throw new Error("DAILY_BUDGET_EXCEEDED");
       }
       const requestTaskId = randomUUID();
+      markReservationStep("reserveBenefit");
       const gift = fundingMode === "paid" ? null : await reserveBenefit(tx,{
         userId:user.id,requestId:requestTaskId,modelId:parsed.model,
         usdMicros:officialUsdMicrosForPointsReserve(parsed.billing,parsed.reserve),
@@ -209,8 +226,16 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
       if (fundingMode === "gift" && !gift) throw new ComputeBenefitError("BENEFIT_UNAVAILABLE",402);
       const price={source:"APIC",quotaPerUsd:500000,billing:parsed.billing,fundingMode,
         ...(gift ? {benefitFunding:{version:"official-usd-gift-v1",...gift}} : {}),...(adapter ? adapter.priceSnapshot : {}),...(budget ? {memberPointsCap:budget.memberPointsCap} : {}),...(parent ? {parent} : {}),...(rootRequestId && previousRequestId ? {retry:{rootRequestId,previousRequestId}} : {})};
+      markReservationStep("createRequest");
       const task=await tx.apiComputeRequest.create({data:{id:requestTaskId,userId:user.id,provider:PROVIDER,idempotencyKey:attemptKey,requestHash,modelId:parsed.model,policyVersion:adapter?.policyVersion ?? "apic-usd-cny-points-v2",price,maxUnits:parsed.limit,authorizedPoints:parsed.reserve,state:"RUNNING",startedAt:new Date()},select:{id:true}});
+      markReservationStep("debitQuota");
       if (!gift) await debitQuota(tx,{userId:user.id,costPoints:parsed.reserve,ref:{type:"api_compute_request",id:task.id},note:adapter ? "Claude request reservation" : "Codex request reservation",...(eventFunding ? {eventFunding} : {})});return {id:task.id,price};
+    }, TX_OPTIONS), {
+      onRetry: (error, attempt) =>
+        console.warn("[codex-gateway] reservation transaction was invalidated, retrying once", {
+          userId: user.id, modelId: parsed.model, attempt, step: reservationStep,
+          timings: reservationTimingSummary(), message: error instanceof Error ? error.message : String(error),
+        }),
     });
   } catch(error){
     // Keep a genuine "this key already has an unfinished attempt" distinguishable
@@ -220,7 +245,7 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
     const passthrough = error instanceof Error && ["REQUEST_HASH_CONFLICT","REQUEST_FUNDING_CONFLICT","REQUEST_PARENT_CONFLICT","REQUEST_POLICY_CHANGED","REQUEST_ALREADY_RUNNING","TOO_MANY_ACTIVE_REQUESTS","DAILY_BUDGET_EXCEEDED","BUDGET_STATE_UNAVAILABLE"].includes(error.message);
     const code=error instanceof ComputeBenefitError ? error.code : error instanceof QuotaError ? error.code : passthrough ? (error as Error).message : "GATEWAY_RESERVATION_FAILED";
     const status = error instanceof ComputeBenefitError ? error.status : error instanceof QuotaError ? error.status : adapter && ["TOO_MANY_ACTIVE_REQUESTS", "DAILY_BUDGET_EXCEEDED"].includes(code) ? 429 : adapter && code === "BUDGET_STATE_UNAVAILABLE" ? 503 : 409;
-    if (code === "GATEWAY_RESERVATION_FAILED") console.error("[codex-gateway] reservation failed", { userId: user.id, modelId: parsed.model, message: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+    if (code === "GATEWAY_RESERVATION_FAILED") console.error("[codex-gateway] reservation failed", { userId: user.id, modelId: parsed.model, step: reservationStep, timings: reservationTimingSummary(), message: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
     return failure(code, status);
   }
   const taskId=reservation.id;
@@ -242,7 +267,7 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
     if(changed.count!==1) throw new Error("REQUEST_CONFLICT");
     if(!gift && points!==null && points<Number(current.authorizedPoints)) await refundQuota(tx,{userId:user.id,costPoints:Number(current.authorizedPoints)-points,ref:{type:"api_compute_request",id:taskId},note:adapter ? "Claude unused reservation settlement" : "Codex unused reservation settlement"});
     if(parent && state!=="UNCERTAIN")await refreshMeteredParentCost(tx,user.id,{parent});
-  });
+  }, TX_OPTIONS);
   let upstream:Response;
   try {
     upstream=await fetch(`${process.env.RUN_BASE_URL?.replace(/\/$/,"")}/${adapter?.path ?? "responses"}`,{method:"POST",headers:{Authorization:`Bearer ${process.env.RUN_API_KEY}`,"Content-Type":"application/json",...(adapter ? { "anthropic-version": "2023-06-01" } : {})},body:parsed.text,signal:AbortSignal.timeout(budget?.timeoutMs ?? adapter?.timeoutMs ?? 300000),redirect:"error"});
