@@ -11,6 +11,8 @@
 import argparse, asyncio, json, os, sys, glob
 
 CRED_PATHS = [
+    # bili CLI（pipx: bilibili-cli）的真实落盘位置：~/.bilibili-cli/credential.json
+    os.path.expanduser("~/.bilibili-cli/credential.json"),
     os.path.expanduser("~/.config/bili/credential.json"),
     os.path.expanduser("~/.bili/credential.json"),
     os.path.expanduser("~/.config/bilibili-cli/credential.json"),
@@ -24,13 +26,15 @@ def load_credential():
     if all(env.values()):
         print("[cred] 使用环境变量")
         return Credential(sessdata=env["sessdata"], bili_jct=env["jct"], buvid3=env["buvid3"], dedeuserid=env["dedeuserid"])
-    for p in CRED_PATHS:
+    override = os.environ.get("BILI_CRED_FILE")
+    for p in ([override] if override else []) + CRED_PATHS:
         if os.path.exists(p):
             d = json.load(open(p, encoding="utf-8"))
             if d.get("sessdata"):
                 print("[cred] 使用", p)
                 return Credential(sessdata=d["sessdata"], bili_jct=d.get("bili_jct") or d.get("jct", ""),
-                                  buvid3=d.get("buvid3", ""), dedeuserid=d.get("dedeuserid", ""), ac_time_value=d.get("ac_time_value"))
+                                  buvid3=d.get("buvid3", ""), buvid4=d.get("buvid4", ""),
+                                  dedeuserid=d.get("dedeuserid", ""), ac_time_value=d.get("ac_time_value"))
     print("[cred] 未找到凭据。请先运行：\n    bili login\n扫码登录后再执行本脚本。", file=sys.stderr)
     return None
 
@@ -40,7 +44,16 @@ async def main():
     ap.add_argument("--video", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "out", "ans-day0-1080x1920.mp4"))
     ap.add_argument("--cover", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "out", "cover-1920x1080.png"))
     ap.add_argument("--meta", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "publish-meta.json"))
+    ap.add_argument("--check-credential", action="store_true", help="只自检凭据（发布前用）")
     a = ap.parse_args()
+
+    if a.check_credential:
+        cred = load_credential()
+        if cred is None:
+            print("[cred] 自检失败：未找到凭据。请先运行： bili login", file=sys.stderr)
+            return 3
+        print("[cred] 自检通过：sessdata %s… ｜ bili_jct %s…" % (getattr(cred, "sessdata", "")[:8], getattr(cred, "bili_jct", "")[:8]))
+        return 0
 
     meta_d = json.load(open(a.meta, encoding="utf-8"))
     for f in (a.video, a.cover):
