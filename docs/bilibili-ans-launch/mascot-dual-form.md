@@ -29,7 +29,15 @@
 
 ---
 
-## 3. 组件与接入
+## 3. 组件与接入（已挂载）
+
+> **状态：已挂载上线**。挂载点 `src/app/layout.tsx`（`<MobileTabBar />` 之后），`/embed` 与 `/kids` 路由不渲染。
+> 端到端验证（真实浏览器，2026-10-21）：
+> - 2D：`[data-testid="mascot-sprite"]` 存在，`background-image` 指向 `/mascot/pixel/dino-atlas.png`，`animation-name: ans-dino-steps` 在跑；
+> - 点击 `[data-testid="mascot-form-toggle"]` → `localStorage["ans.mascot.form"] = "3d"`，精灵消失、`[data-testid="mascot-cube"]` 出现；
+> - 点击 `[data-testid="mascot-form-back"]` → 回到 `"2d"`，精灵恢复。
+>
+> 3D 形态当前是**线框占位**（明确标注「3D 形态 · 接入中」），真实 3D 渲染器按第 4 节契约接入即可替换。
 
 | 文件 | 作用 |
 |---|---|
