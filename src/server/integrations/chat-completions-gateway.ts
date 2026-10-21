@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
+import { TX_OPTIONS } from "@/lib/tx-options";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
 import { RUN_MODEL_METERING, RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
 
@@ -376,7 +377,7 @@ export async function chatCompletionsGateway(request: Request): Promise<Response
         finishedAt: new Date(),
       },
     });
-  });
+  }, TX_OPTIONS);
 
   return Response.json(
     {

@@ -51,3 +51,4 @@ export const db = globalForPrisma.prisma ?? prismaClientSingleton();
 globalForPrisma.prisma = db;
 
 export type DbTransaction = Omit<typeof db, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
+
