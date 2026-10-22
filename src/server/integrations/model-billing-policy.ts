@@ -42,12 +42,11 @@ function verifySnapshot(raw: unknown): ModelBillingSnapshot {
   const parsed = snapshotSchema.safeParse(raw);
   if (!parsed.success) throw new ModelBillingError("MODEL_BILLING_SNAPSHOT_INVALID");
   const value = parsed.data;
-  const validMultiplier = value.modelId.startsWith("gpt-")
-    ? value.consumptionMultiplier === 0.16
-    : value.modelId === "deepseek-v4.1-flash"
-      ? value.consumptionMultiplier === 1.5 || value.consumptionMultiplier === 1
-      : value.consumptionMultiplier === 1;
-  if (!validMultiplier || (value.modelId === "claude-opus-5-5" && value.procurementMultiplier !== 0.8))
+  // 零售倍率由 ANS_MODEL_BILLING_POLICY（权威定价表）决定，代码不再硬编码 0.16/1：
+  // 2026-10-22 事故 —— 统一积分定价把 deepseek-v4.1-flash 定为 1.5x，而这里断言"非 gpt 必须 1"，
+  // 于是默认模型换成 deepseek 后每一轮报价都抛 MODEL_BILLING_SNAPSHOT_INVALID → AGENT_UNAVAILABLE。
+  // 这里只保留与倍率无关的既有约定（Claude 采购倍率 0.8）。
+  if (value.modelId === "claude-opus-5-5" && value.procurementMultiplier !== 0.8)
     throw new ModelBillingError("MODEL_BILLING_SNAPSHOT_INVALID");
   return value;
 }
