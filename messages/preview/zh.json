@@ -47,5 +47,12 @@
   "layer1": "前端层",
   "layer2": "应用层",
   "layer3": "服务层",
-  "layer4": "数据层"
+  "layer4": "数据层",
+  "chatTitle": "这个项目的 Agent",
+  "chatHint": "只针对这个项目，问答与执行都在这里",
+  "chatPlaceholder": "问点什么，或直接让它做",
+  "send": "发送",
+  "thinking": "正在处理…",
+  "chatEmpty": "它已经读过这个项目的介绍，可以直接问。",
+  "back": "返回项目广场"
 }
