@@ -1,0 +1,5 @@
+# 自动生成的证据（visual-check 截图与回执）不入库，避免仓库膨胀
+*.visual-check.*
+# 生图中间产物
+img/ref-*.png
+img/compose_ref.py
