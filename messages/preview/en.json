@@ -47,5 +47,12 @@
   "layer1": "Frontend",
   "layer2": "Application",
   "layer3": "Services",
-  "layer4": "Data"
+  "layer4": "Data",
+  "chatTitle": "Agent for this project",
+  "chatHint": "Scoped to this project — ask or act right here",
+  "chatPlaceholder": "Ask anything, or just tell it to do it",
+  "send": "Send",
+  "thinking": "Working…",
+  "chatEmpty": "It has already read this project. Just ask.",
+  "back": "Back to projects"
 }
