@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { readModelBillingSnapshot, reserveModelPoints, receiptToMemberPoints, modelUsdToMemberPoints } from "@/server/integrations/model-billing-policy";
 import { fixtureModelBillingPolicy } from "./model-billing-fixture";
@@ -18,7 +18,7 @@ it("allows individually configured models without silently offering unconfigured
   expect(read(subset).modelId).toBe("gpt-6.1-sol");
   expect(() => read(subset, "gpt-6-astra")).toThrow("MODEL_BILLING_NOT_CONFIGURED");
 });
-it("rejects unverified future/invalid sources, extra fields, unknown models and multiplier conflation", () => {
+it("rejects unverified future/invalid sources, extra fields and unknown models", () => {
   const config = fixtureModelBillingPolicy();
   for (const candidate of [
     { ...config, fx: { ...config.fx, observedAt: "2026-10-17T00:00:00Z" } },
@@ -26,10 +26,20 @@ it("rejects unverified future/invalid sources, extra fields, unknown models and 
     { ...config, fx: { ...config.fx, source: "https://fixture.invalid?secret=private" } },
     { ...config, fx: { ...config.fx, usdCny: 7.1234567 } }, { ...config, unrecognized: true },
     { ...config, models: { ...config.models, unknown: config.models["gpt-6.1-sol"] } },
-    { ...config, models: { "gpt-6.1-sol": { ...config.models["gpt-6.1-sol"], consumptionMultiplier: 1 } } },
     { ...config, models: { "gpt-6.1-sol": { ...config.models["gpt-6.1-sol"], receiptEvidence: undefined } } },
   ]) expect(() => read(candidate)).toThrow("MODEL_BILLING_NOT_CONFIGURED");
-  expect(() => read({ ...config, models: { "claude-opus-5-5": { ...config.models["claude-opus-5-5"], consumptionMultiplier: 0.8 } } }, "claude-opus-5-5")).toThrow("MODEL_BILLING_NOT_CONFIGURED");
+  // 倍率不再由代码硬编码，但 Claude 的采购倍率约定仍在：0.9 必须被拒。
+  expect(() => read({ ...config, models: { "claude-opus-5-5": { ...config.models["claude-opus-5-5"], procurementMultiplier: 0.9 } } }, "claude-opus-5-5")).toThrow("MODEL_BILLING_NOT_CONFIGURED");
+});
+it("takes the retail multiplier from the policy instead of hard-coding 0.16/1 (2026-10-22 事故)", () => {
+  const config = fixtureModelBillingPolicy();
+  // 统一积分定价把 deepseek 定为 1.5x；旧代码断言"非 gpt 必须 1"，导致默认模型换成 deepseek 后
+  // 每一轮报价都抛 MODEL_BILLING_SNAPSHOT_INVALID → AGENT_UNAVAILABLE。
+  const unified = { ...config, models: { ...config.models, "deepseek-v4.1-flash": { ...config.models["deepseek-v4.1-flash"], consumptionMultiplier: 1.5, receiptConsumptionMultiplier: 1.5 } } };
+  expect(read(unified, "deepseek-v4.1-flash").consumptionMultiplier).toBe(1.5);
+  // gpt 用别的倍率也不再被代码拦（倍率以策略/定价表为准），形状仍然必须合法。
+  const shifted = { ...config, models: { ...config.models, "gpt-6.1-sol": { ...config.models["gpt-6.1-sol"], consumptionMultiplier: 1, receiptConsumptionMultiplier: 1 } } };
+  expect(read(shifted, "gpt-6.1-sol").consumptionMultiplier).toBe(1);
 });
 it("charges $1 official GPT USD at FX7 as 11.2 points, removing the APIC-applied .16 exactly once", () => {
   const snapshot = read(fixtureModelBillingPolicy(7));
