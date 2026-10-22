@@ -25,7 +25,7 @@ const errorKeys: Record<string, string> = {
   INSUFFICIENT_QUOTA: "balance", QUOTA_INSUFFICIENT: "balance", RATE_LIMITED: "rateLimit", TOO_MANY_ACTIVE_REQUESTS: "rateLimit",
   AGENT_BUDGET_LIMIT: "limit", AGENT_TOOL_LIMIT: "limit", REQUEST_ALREADY_STARTED: "alreadyStarted", REQUEST_ALREADY_RUNNING: "alreadyStarted", REQUEST_HASH_CONFLICT: "alreadyStarted",
   REQUEST_CONFLICT: "reservationFailed", GATEWAY_RESERVATION_FAILED: "reservationFailed",
-  UPSTREAM_CAPACITY_UNAVAILABLE: "capacity", BILLING_PENDING: "pending", UPSTREAM_RESULT_UNCERTAIN: "pending", RESPONSE_INTERRUPTED: "interrupted", AGENT_OUTPUT_INCOMPLETE: "incomplete",
+  UPSTREAM_REJECTED: "modelUnavailable", UPSTREAM_CAPACITY_UNAVAILABLE: "capacity", BILLING_PENDING: "pending", UPSTREAM_RESULT_UNCERTAIN: "pending", RESPONSE_INTERRUPTED: "interrupted", AGENT_OUTPUT_INCOMPLETE: "incomplete",
 };
 export function AgentTurnStatus({ agent }: { agent: ReturnType<typeof useCompanionAgent> }) {
   const t = useTranslations("companion");
