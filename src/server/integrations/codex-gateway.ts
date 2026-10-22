@@ -4,7 +4,7 @@ import { upstreamFailureCode } from "./upstream-rejection";
 import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
 import { TX_OPTIONS } from "@/lib/tx-options";
-import { isStaleTransactionError, withStaleTransactionRetry } from "./tx-resilience";
+import { withStaleTransactionRetry } from "./tx-resilience";
 import type { Prisma } from "@prisma/client";
 import { ClaudePolicyError } from "./claude-policy";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
@@ -20,6 +20,12 @@ import { benefitsEnabled, reserveBenefit, completeBenefit } from "@/server/compu
 import { readBenefitFunding, officialUsdMicrosForPointsReserve, officialUsdMicrosFromReceipt } from "./benefit-billing";
 
 const PROVIDER = "apic-codex";
+/**
+ * 旧的 UNCERTAIN 请求不再占用「活跃额度」：它们由 liabilityScan 作为账务负债处理。
+ * 修前 UNCERTAIN 永久计入并发上限（默认 4），上游抖动一次就可能把某个模型彻底锁死。
+ * 15 分钟足够覆盖同轮重试窗口，又不会让一次抖动变成永久封锁。
+ */
+const ACTIVE_REQUEST_WINDOW_MS = 15 * 60_000;
 const MAX_BODY = 524288;
 // Reserved namespace for durable attempts; callers cannot address an attempt directly.
 const RETRY_KEY_PREFIX = "ans-internal-retry:";
@@ -196,8 +202,11 @@ export async function meteredGatewayRequest(request: Request, userId: string, pa
         previousRequestId=previous.id;
         attemptKey=RETRY_KEY_PREFIX+createHash("sha256").update(JSON.stringify([idempotency,previous.id])).digest("hex");
       }
-      markReservationStep("activeCount");
-      const active=await tx.apiComputeRequest.count({where:{userId:user.id,provider:PROVIDER,...(adapter ? { modelId: parsed.model } : {}),state:{in:adapter ? ["AUTHORIZED","RUNNING","UNCERTAIN"] : ["RUNNING","UNCERTAIN"]}}});
+      // 活跃额度只应由「真正在跑」和「刚刚变得不确定」的请求占用。
+      // 历史 UNCERTAIN 是账务负债（归下面的 liabilityScan 管），不是活跃并发：
+      // 修前它永久占名额 —— 上游抖动一次留下 4 笔，该学生在这个模型上就再也发不出新请求。
+      const activeWindowStart = new Date(Date.now() - ACTIVE_REQUEST_WINDOW_MS);
+      const active=await tx.apiComputeRequest.count({where:{userId:user.id,provider:PROVIDER,...(adapter ? { modelId: parsed.model } : {}),OR:[{state:{in:adapter ? ["AUTHORIZED","RUNNING"] : ["RUNNING"]}},{state:"UNCERTAIN",createdAt:{gte:activeWindowStart}}]}});
       if(active >= (adapter?.maxConcurrent ?? 4))throw new Error("TOO_MANY_ACTIVE_REQUESTS");
       if (adapter) {
         // Include old unresolved holds as liabilities even when older than the
