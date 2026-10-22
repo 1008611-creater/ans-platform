@@ -45,7 +45,8 @@ describe("companion authorization and budget", () => {
   });
   it("allows a free quote without calling the supplier", async () => {
     const quote = await prepareAgentQuote("quote-user", input);
-    expect(quote.balance).toBe(12); expect(quote.maxPoints).toBe(2.84619); expect(mocks.gateway).not.toHaveBeenCalled();
+    // 0.611856 = 当前默认模型（deepseek-v4.1-flash）的报价上限；换默认模型时这里要跟着改。
+    expect(quote.balance).toBe(12); expect(quote.maxPoints).toBe(0.611856); expect(mocks.gateway).not.toHaveBeenCalled();
   });
   it("does not quote a model call when authoritative billing is unconfigured", async () => {
     vi.stubEnv("APIC_COST_BRIDGE_SECRET", "");
@@ -69,7 +70,7 @@ describe("companion authorization and budget", () => {
     vi.stubEnv("ANS_MODEL_BILLING_POLICY", JSON.stringify(fixtureModelBillingPolicy(0.1)));
     expect(() => verifyAgentTicket(quoted.ticket, "alice", input)).toThrow("QUOTE_CHANGED");
     vi.stubEnv("ANS_MODEL_BILLING_POLICY", "");
-    expect(verifyAgentTicket(quoted.ticket, "alice").maxPoints).toBe(2.84619);
+    expect(verifyAgentTicket(quoted.ticket, "alice").maxPoints).toBe(0.611856);
     await expect(readAgentStatus("alice", quoted.ticket)).resolves.toEqual({ receipts: [] });
     expect(mocks.gateway).not.toHaveBeenCalled();
   });
@@ -176,13 +177,15 @@ describe("selected companion model authorization", () => {
     expect(agentInputSchema.parse(old).model).toBe(AGENT_MODEL);
   });
   it("keeps the companion default separate from workflows and honors existing DeepSeek tickets", () => {
-    expect(DEFAULT_COMPANION_MODEL).toBe("gpt-6.1-sol");
+    // 2026-10-22：上游只服务 deepseek-v4.1-flash（两个 GPT 模型稳定 500），默认值必须可用。
+    expect(DEFAULT_COMPANION_MODEL).toBe("deepseek-v4.1-flash");
+    expect(RUN_MODEL_OPTIONS.some((option) => option.key === DEFAULT_COMPANION_MODEL)).toBe(true);
     expect(DEFAULT_RUN_MODEL).toBe("deepseek-v4.1-flash");
     const selected = agentInputSchema.parse({ ...input, model: "deepseek-v4.1-flash" });
     const quote = issueAgentTicket("alice", selected, 1000);
     expect(verifyAgentTicket(quote.ticket, "alice", selected, 2000).model).toBe("deepseek-v4.1-flash");
     expect(verifyAgentTicket(quote.ticket, "alice", undefined, 2000).maxPoints).toBe(agentMaxPoints("deepseek-v4.1-flash"));
-    expect(() => verifyAgentTicket(quote.ticket, "alice", { ...selected, model: DEFAULT_COMPANION_MODEL }, 2000)).toThrow("QUOTE_CHANGED");
+    expect(() => verifyAgentTicket(quote.ticket, "alice", { ...selected, model: "gpt-6.1-sol" }, 2000)).toThrow("QUOTE_CHANGED");
   });
   it("uses the shared consumption factors without equating unlike base prices", () => {
     expect(RUN_MODEL_METERING["gpt-6-astra"].consumptionMultiplier).toBe(0.16);
