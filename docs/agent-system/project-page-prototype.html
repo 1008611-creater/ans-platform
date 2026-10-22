@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>项目页：图 + Agent（原型）</title>
+<style>
+  :root{--mint:#9BE0C5;--mint-d:#5BC49A;--cream:#FBF6E9;--ink:#12211C;--ink-2:#4A5C55;--line:#E3E8E4;--card:#fff;--warn:#F0B429;--danger:#E05252;--blue:#4C7DF0}
+  *{box-sizing:border-box;margin:0}
+  body{font:14px/1.55 "PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink);background:var(--cream);padding:28px 32px 48px}
+  h1{font-size:19px;letter-spacing:.2px}
+  .sub{color:var(--ink-2);font-size:13px;margin-top:4px}
+  .tabs{display:flex;gap:8px;margin:20px 0 18px}
+  .tab{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px}
+  .tab.on{background:var(--mint);border-color:var(--mint-d);font-weight:600}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+  @media(max-width:1180px){.cols{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;position:relative}
+  .tag{position:absolute;top:-11px;left:16px;font-size:11px;padding:2px 9px;border-radius:999px;background:var(--ink);color:#fff}
+  .tag.new{background:var(--mint-d)}
+  .tag.old{background:#9AA6A0}
+  .muted{color:var(--ink-2)}
+  .wall p{margin:7px 0;color:#3C4A45;font-size:13px}
+  .wall h3{font-size:15px;margin:14px 0 6px}
+  .hero{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+  @media(max-width:720px){.hero{grid-template-columns:1fr}}
+  .diagram{border:1px solid var(--line);border-radius:12px;background:#F7FAF8;padding:10px}
+  .diagram svg{display:block;height:auto}
+  .diagram .cap{font-size:11px;color:var(--ink-2);margin-top:6px;display:flex;justify-content:space-between}
+  .agent{border:1px solid var(--mint-d);border-radius:12px;background:#F4FBF8;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .agent .who{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--mint-d);box-shadow:0 0 0 3px rgba(91,196,154,.18)}
+  .ctx{font-size:11.5px;color:var(--ink-2);background:#fff;border:1px dashed var(--line);border-radius:8px;padding:6px 8px}
+  .input{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12.5px;color:#5B6B65}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:11.5px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 9px;cursor:pointer}
+  .chip:hover{border-color:var(--mint-d)}
+  .cta{background:var(--mint-d);color:#05231A;border:0;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;cursor:pointer}
+  .cta.ghost{background:#fff;border:1px solid var(--line);font-weight:600;color:var(--ink)}
+  .quote{font-size:12px;color:var(--ink-2);display:flex;justify-content:space-between;border-top:1px dashed var(--line);padding-top:8px}
+  .steps{display:flex;flex-direction:column;gap:6px;font-size:12px}
+  .step{display:flex;gap:7px;align-items:flex-start}
+  .step i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--mint-d);flex:none;margin-top:2px;display:grid;place-items:center;font-size:9px;font-style:normal;color:var(--mint-d)}
+  .step.done i{background:var(--mint-d);color:#fff;border-color:var(--mint-d)}
+  .step.now i{border-color:var(--warn);color:var(--warn)}
+  .bar{height:5px;border-radius:99px;background:#E7EFEA;overflow:hidden}
+  .bar>span{display:block;height:100%;width:62%;background:linear-gradient(90deg,var(--mint),var(--mint-d))}
+  .states{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
+  @media(max-width:1180px){.states{grid-template-columns:1fr 1fr}}
+  .st{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:12px}
+  .st h4{font-size:12px;margin-bottom:8px;color:var(--ink-2);font-weight:600}
+  .ok{color:var(--mint-d);font-weight:700}
+  .bad{color:var(--danger);font-weight:700}
+  .warn{color:#B37A00;font-weight:700}
+  .foot{margin-top:26px;font-size:12px;color:var(--ink-2)}
+  .k{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:11px}
+</style></head><body>
+<h1>项目详情页：从「一堆字」到「图 + Agent」</h1>
+<div class="sub">同一份数据，两种呈现。左边是现在，右边是接入 Agent 之后；下方是 Agent 面板的四个状态。</div>
+
+<div class="tabs"><button class="tab on">并排对比</button><span class="tab" style="border-style:dashed;cursor:default">原型 · 可直接改</span></div>
+
+<div class="cols">
+  <!-- 旧 -->
+  <section class="panel">
+    <span class="tag old">现在</span>
+    <h3 style="font-size:16px;margin:4px 0 2px">AgriHackathon 智慧农业赛道 · 项目模板</h3>
+    <div class="muted" style="font-size:12px;margin-bottom:10px">标签：农业 · 视觉 · 边缘推理</div>
+    <div class="wall">
+      <p>本项目面向智慧农业场景，提供从数据采集、模型训练到边缘部署的完整链路参考实现。项目包含多光谱影像预处理脚本、作物病害分类模型、以及基于 Web 的可视化看板……</p>
+      <h3>功能特性</h3>
+      <p>· 支持多光谱与 RGB 双通道输入；· 提供 12 类常见病害的标注规范；· 内置边缘设备推理基准……</p>
+      <h3>技术栈</h3>
+      <p>Python / PyTorch / FastAPI / Next.js / PostgreSQL / Docker……</p>
+      <h3>使用说明</h3>
+      <p>1. 克隆仓库；2. 安装依赖；3. 准备数据集；4. 运行训练脚本；5. 启动服务……</p>
+      <p class="muted">（学生要读完这 400 字，才能判断：我能不能做？要多久？要花多少钱？）</p>
+    </div>
+  </section>
+
+  <!-- 新 -->
+  <section class="panel">
+    <span class="tag new">接入 Agent 之后</span>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div>
+        <h3 style="font-size:16px;margin:4px 0 2px">AgriHackathon 智慧农业赛道</h3>
+        <div class="muted" style="font-size:12px">一句话：<b style="color:var(--ink)">给农户的病害识别，手机拍照即出结果</b></div>
+      </div>
+      <div style="text-align:right;font-size:11px" class="muted">可执行<br><span class="ok">✓ 已验证</span></div>
+    </div>
+
+    <div class="hero" style="margin-top:12px">
+      <div class="diagram">
+        <svg viewBox="0 0 420 190" width="100%" role="img" aria-label="项目链路图">
+          <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#5BC49A"/></marker></defs>
+          <g font-family="inherit" font-size="9" fill="#12211C">
+            <rect x="14" y="66" width="86" height="40" rx="9" fill="#EAF7F1" stroke="#9BE0C5"/><text x="26" y="84">手机拍照</text><text x="26" y="97" fill="#4A5C55" font-size="8">多光谱 / RGB</text>
+            <rect x="132" y="66" width="96" height="40" rx="9" fill="#fff" stroke="#CFE3D8"/><text x="144" y="84">预处理</text><text x="144" y="97" fill="#4A5C55" font-size="8">裁切 · 归一化</text>
+            <rect x="260" y="66" width="92" height="40" rx="9" fill="#fff" stroke="#CFE3D8"/><text x="272" y="84">病害分类</text><text x="272" y="97" fill="#4A5C55" font-size="8">12 类</text>
+            <rect x="132" y="132" width="96" height="38" rx="9" fill="#F4FBF8" stroke="#9BE0C5"/><text x="144" y="149">结果回传</text><text x="144" y="162" fill="#4A5C55" font-size="8">置信度 + 建议</text>
+            <rect x="260" y="132" width="92" height="38" rx="9" fill="#EAF7F1" stroke="#9BE0C5"/><text x="272" y="149">看板</text><text x="272" y="162" fill="#4A5C55" font-size="8">地块 · 趋势</text>
+            <line x1="100" y1="86" x2="130" y2="86" stroke="#5BC49A" stroke-width="1.4" marker-end="url(#a)"/>
+            <line x1="228" y1="86" x2="258" y2="86" stroke="#5BC49A" stroke-width="1.4" marker-end="url(#a)"/>
+            <line x1="306" y1="106" x2="306" y2="130" stroke="#5BC49A" stroke-width="1.4" marker-end="url(#a)"/>
+            <line x1="258" y1="151" x2="230" y2="151" stroke="#5BC49A" stroke-width="1.4" marker-end="url(#a)"/>
+          </g>
+        </svg>
+        <div class="cap"><span>项目链路图 · 点节点可下钻</span><span>架构图</span></div>
+      </div>
+
+      <aside class="agent">
+        <div class="who"><span class="dot"></span>项目 Agent<span class="muted" style="font-weight:400">· 已就位</span></div>
+        <div class="ctx">正在看：<b>AgriHackathon 智慧农业赛道</b><br>你的身份：学生 · 未组队</div>
+        <div class="input">想做这个项目，帮我判断能不能做 →</div>
+        <div class="chips"><span class="chip">我能做吗</span><span class="chip">要花多少</span><span class="chip">直接开始</span></div>
+        <button class="cta">让 Agent 帮我做</button>
+        <div class="quote"><span>本轮预计不超过 <b>2.4</b> 积分</span><span>按实际结算</span></div>
+      </aside>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <span class="chip">📐 架构图</span><span class="chip">🔀 gitflow</span><span class="chip">⏱ 执行时序</span><span class="chip">🧭 赛程与资格</span>
+    </div>
+    <div class="foot">文字没有消失，而是降级成<b>图注</b>与<b>Agent 的回答</b>；学生先看图，再把"做"交给 Agent。</div>
+  </section>
+</div>
+
+<h3 style="margin:26px 0 0;font-size:15px">Agent 面板的四个状态（同一块面板，不弹窗）</h3>
+<div class="states">
+  <div class="st"><h4>① 待命 · 已带上下文</h4>
+    <div class="ctx">正在看：AgriHackathon 智慧农业赛道</div>
+    <div class="input" style="margin-top:8px">想做这个项目…</div>
+    <button class="cta" style="width:100%;margin-top:8px">让 Agent 帮我做</button>
+  </div>
+  <div class="st"><h4>② 报价 · 一次授权</h4>
+    <div style="font-size:12px">本轮预计不超过 <b>2.4</b> 积分</div>
+    <div class="chips" style="margin:8px 0"><span class="chip">记住这次授权</span><span class="chip">只这一次</span></div>
+    <button class="cta" style="width:100%">开始</button>
+  </div>
+  <div class="st"><h4>③ 执行 · 步骤可见</h4>
+    <div class="steps">
+      <div class="step done"><i>✓</i><span>读项目与你的画像</span></div>
+      <div class="step done"><i>✓</i><span>判断可执行性</span></div>
+      <div class="step now"><i>3</i><span>生成执行计划</span></div>
+      <div class="step"><i>4</i><span>出详情图</span></div>
+    </div>
+    <div class="bar" style="margin-top:8px"><span></span></div>
+  </div>
+  <div class="st"><h4>④ 交付 / 失败（诚实）</h4>
+    <div style="font-size:12px"><span class="ok">✓ 已生成 3 份产物</span></div>
+    <div style="font-size:11.5px;margin-top:6px" class="muted">执行计划 · 数据清单 · 架构图</div>
+    <div style="font-size:11.5px;margin-top:6px">实扣 <b>0.62</b> 积分 · <span class="muted">查看账单</span></div>
+    <hr style="border:0;border-top:1px dashed var(--line);margin:9px 0">
+    <div style="font-size:11.5px"><span class="bad">✗ 上游繁忙</span> 没开始执行，<b>没有扣费</b></div>
+    <div style="font-size:11.5px;margin-top:4px" class="muted">可换模型重试，或稍后再来</div>
+  </div>
+</div>
+<div class="foot">快捷键：<span class="k">Enter</span> 发送 · <span class="k">Esc</span> 收起面板 · <span class="k">⌘/Ctrl + K</span> 在任意页面唤起全站 Agent</div>
+</body></html>

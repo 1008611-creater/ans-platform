@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-20T17:45:00+08:00",
+  "updatedAt": "2026-10-22T10:35:00+08:00",
   "description": "ANS 权威基线账本。只记录已被主控确认的产品/流程决定，每条尽量带机器规则（contains/absent/countMax），由 scripts/check-authority.mjs 守卫（CI job: Authority）。改代码而不改账本 = 静默回退，禁止。",
   "entries": [
     {
@@ -268,6 +268,34 @@
       ],
       "rollback": [],
       "note": "被隔离的两个 WIP 文件保留在服务器 /root/ans-quarantine-20261020/（未删除）；如需继续开发请取回并走分支提交。"
+    },
+    {
+      "id": "A-RELEASE-03",
+      "status": "authoritative",
+      "title": "发布前必须做磁盘守卫：清旧构建缓存并检查可用空间（默认 ≥8G），不足则中止，而不是让构建跑到一半 ENOSPC",
+      "decidedAt": "2026-10-22",
+      "authority": "2026-10-21 生产发布失败复盘：Docker 数据盘 /srv/kidswear-data/docker 只剩约 3G，npm run build 阶段 ENOSPC",
+      "surface": [
+        "deploy/deploy.sh"
+      ],
+      "rules": [
+        {
+          "ref": "origin/main",
+          "file": "deploy/deploy.sh",
+          "type": "contains",
+          "value": "BUILD_MIN_FREE_GB",
+          "note": "必须提供可覆盖的最小可用空间阈值"
+        },
+        {
+          "ref": "origin/main",
+          "file": "deploy/deploy.sh",
+          "type": "contains",
+          "value": "docker builder prune",
+          "note": "构建前必须清理旧构建缓存"
+        }
+      ],
+      "rollback": [],
+      "note": "失败发生在切换容器之前，线上站点不受影响；守卫的价值是快速失败 + 自动回收，避免把盘写满。"
     },
     {
       "id": "A-PROC-01",
