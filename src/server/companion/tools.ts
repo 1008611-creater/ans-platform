@@ -21,6 +21,7 @@ const descriptions = {
   play_claw_arcade: "Play the 3D Claw Machine once for this member (uses 1 free token or exchanges 10 points for 1 token) for a chance at SP 1,000 pts or UR 300 pts. Query may be empty.",
   search_market: "Search published ANS Market (/market) tools, resources and runnable workflows priced in points. Query may be a short keyword or empty.",
   scaffold_project_draft: "Create a new Project and v1 README/architecture blueprint in this member's workspace; requires explicit privateAccess. Pass the project title/topic in query.",
+  run_project_pack: "Generate this owned project's three artifacts (resume entry, README, one-page intro) in one go. Only call when the current page is a project detail page AND the user explicitly asks to generate them. Requires an explicit short confirmation in the user's latest message; without it the tool returns CONFIRM_REQUIRED and charges nothing. Query must be empty.",
   redeem_market_item: "Redeem and auto-deliver an official ANS Market tool/resource with this member's points balance. Pass the exact item keyword or slug in query; the price is always the live listing price, never a fixed number. An empty query returns a price quote, not a purchase. Charging requires the member's explicit confirmation in this conversation.",
 } as const;
 export type AgentToolName = keyof typeof descriptions;
@@ -49,6 +50,17 @@ export async function executeAgentTool(name: string, raw: string, actor: string,
   const lastUserText = [...input.messages].reverse().find(message => message.role === "user")?.content ?? "";
   const userConfirmed = isExplicitChargeConfirmation(lastUserText);
   if (["my_projects", "my_tasks", "scaffold_project_draft"].includes(name) && !input.privateAccess) return { ok: false, data: { code: "PRIVATE_ACCESS_REQUIRED" }, links: [] };
+  if (name === "run_project_pack") {
+    const { runProjectPackViaPi } = await import("./project-pack");
+    // 项目 id 只从当前页面路径取：Agent 不能替用户指定别的项目。
+    const projectId = /^\/projects\/([^/?#]+)/.exec(input.pathname)?.[1] ?? null;
+    const res = await runProjectPackViaPi(actor, projectId, userConfirmed);
+    return {
+      ok: res.ok,
+      data: { message: input.locale === "en" ? res.replyEn : res.replyZh, ...(res.error ? { code: res.error } : {}), ...(res.data !== undefined ? { detail: res.data } : {}) },
+      links: res.links,
+    };
+  }
   if (name === "claim_daily_benefit") {
     const { claimDailyBenefitViaPi } = await import("./pi-agent");
     const res = await claimDailyBenefitViaPi(actor);
