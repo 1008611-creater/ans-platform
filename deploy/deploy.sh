@@ -62,6 +62,7 @@ plan() {
     echo "切换     : docker rm -f $CONTAINER && compose -p ans-<short>-<date> -f <release>/production-private.json up -d $SERVICE"
     echo "回滚     : <release>/rollback.sh"
     echo "幂等     : 线上已是该提交且容器 healthy 时自动跳过（不重启）；FORCE=1 强制"
+    echo "磁盘守卫 : 构建前清旧构建缓存并检查可用空间（默认 ≥8G，BUILD_MIN_FREE_GB 可覆盖）"
 }
 
 if [ "${1:-}" = "--status" ]; then status; exit 0; fi
@@ -110,6 +111,22 @@ if [ "${1:-}" != "--no-build" ]; then
         echo "$UNTRACKED" | sed 's/^/  /' >&2
         echo "  先移到隔离目录（如 /root/ans-quarantine-<date>/）或提交到分支；" >&2
         echo "  确认无害时可 ALLOW_UNTRACKED=1 重跑。" >&2
+        exit 1
+    fi
+    # 构建前磁盘守卫：Docker 数据盘会随发布持续增长（镜像 + 构建缓存）。
+    # 2026-10-21 就因只剩 ~3G，在 npm run build 阶段 ENOSPC 让发布失败（站点未受影响，
+    # 因为失败发生在切换容器之前）。这里先清掉旧构建缓存（保留最近 6GB 热缓存），
+    # 再检查可用空间；不够就直接失败，而不是让构建跑到一半才炸。
+    MIN_FREE_GB="${BUILD_MIN_FREE_GB:-8}"
+    docker builder prune --keep-storage 6GB -f >/dev/null 2>&1 || true
+    DOCKER_ROOT="$(docker info --format '{{.DockerRootDir}}' 2>/dev/null || echo /var/lib/docker)"
+    AVAIL_GB="$(df -Pk "$DOCKER_ROOT" 2>/dev/null | awk 'NR==2{print int($4/1024/1024)}')"
+    AVAIL_GB="${AVAIL_GB:-0}"
+    echo "  Docker 数据盘 $DOCKER_ROOT 可用 ${AVAIL_GB}G（要求 ≥ ${MIN_FREE_GB}G）"
+    if [ "$AVAIL_GB" -lt "$MIN_FREE_GB" ]; then
+        echo "错误：构建前可用空间不足（${AVAIL_GB}G < ${MIN_FREE_GB}G），已中止（未动线上容器）。" >&2
+        echo "  先清理：docker builder prune -af && docker image prune -f" >&2
+        echo "  或临时放宽：BUILD_MIN_FREE_GB=<n> bash deploy/deploy.sh" >&2
         exit 1
     fi
     git checkout --detach "$SHA"
