@@ -33,6 +33,7 @@ export default getRequestConfig(async () => {
       learning: (await import(`@/../messages/learning/${locale === "zh" ? "zh" : "en"}.json`)).default,
       marketCash: (await import(`@/../messages/market-cash/${locale === "zh" ? "zh" : "en"}.json`)).default,
       companion: (await import(`@/../messages/companion/${locale === "zh" ? "zh" : "en"}.json`)).default,
+      preview: (await import(`@/../messages/preview/${locale === "zh" ? "zh" : "en"}.json`)).default,
       workbench: (await import(`@/../messages/workbench/${locale === "zh" ? "zh" : "en"}.json`)).default,
       visualWebsite: (await import(`@/../messages/visual-website/${locale === "zh" ? "zh" : "en"}.json`)).default,
       fourView: (await import(`@/../messages/four-view/${locale === "zh" ? "zh" : "en"}.json`)).default,
