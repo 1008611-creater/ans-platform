@@ -1,0 +1,313 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ANS 全站 Agent 与垂直子 Agent 架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-path",
+        "label": "学生主路径",
+        "focus": [
+          "student",
+          "orchestrator",
+          "subagents",
+          "tools",
+          "data"
+        ],
+        "note": "一句话需求进入全站 Agent，按页面路由到对应子 Agent，再由工具落到真实数据。"
+      },
+      {
+        "id": "money",
+        "label": "计费与授权",
+        "focus": [
+          "orchestrator",
+          "billing",
+          "subagents",
+          "upstream"
+        ],
+        "note": "先报价、再预留、最后按上游回执结算，全站 Agent 与子 Agent 共用一套账。"
+      },
+      {
+        "id": "proof",
+        "label": "详情图与交付",
+        "focus": [
+          "subagents",
+          "artifacts",
+          "stream",
+          "github"
+        ],
+        "note": "子 Agent 的产出物统一渲染成可交互详情图，并可直达 PR/发布。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "student",
+      "type": "external",
+      "label": "学生",
+      "sublabel": "任意页面 · 一句话需求",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "orchestrator",
+      "type": "backend",
+      "label": "全站 Agent",
+      "sublabel": "意图路由 · 预算 · 授权",
+      "pos": [
+        230,
+        300
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "一个入口"
+    },
+    {
+      "id": "subagents",
+      "type": "backend",
+      "label": "垂直子 Agent",
+      "sublabel": "7 个领域 · 各自专属工具",
+      "pos": [
+        450,
+        300
+      ],
+      "size": [
+        180,
+        72
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "工具注册表",
+      "sublabel": "AGENT_TOOLS · MCP",
+      "pos": [
+        680,
+        300
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "data",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "项目 · 竞赛 · 账本",
+      "pos": [
+        880,
+        300
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "billing",
+      "type": "security",
+      "label": "计量与授权",
+      "sublabel": "报价 → 预留 → 结算",
+      "pos": [
+        450,
+        120
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "可撤销授权"
+    },
+    {
+      "id": "upstream",
+      "type": "external",
+      "label": "模型上游",
+      "sublabel": "APIC /responses",
+      "pos": [
+        680,
+        120
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "artifacts",
+      "type": "cloud",
+      "label": "详情图渲染",
+      "sublabel": "archify 交互详情图",
+      "pos": [
+        450,
+        470
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "可交互 HTML"
+    },
+    {
+      "id": "stream",
+      "type": "messagebus",
+      "label": "事件流",
+      "sublabel": "phase → answer → receipt",
+      "pos": [
+        230,
+        470
+      ],
+      "size": [
+        150,
+        66
+      ]
+    },
+    {
+      "id": "github",
+      "type": "external",
+      "label": "GitHub",
+      "sublabel": "PR · CI · 发布",
+      "pos": [
+        880,
+        470
+      ],
+      "size": [
+        140,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "ANS 平台（Next.js + Prisma）",
+      "wraps": [
+        "orchestrator",
+        "subagents",
+        "tools",
+        "data",
+        "billing",
+        "artifacts",
+        "stream"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "student-orchestrator",
+      "from": "student",
+      "to": "orchestrator",
+      "label": "说需求",
+      "variant": "emphasis"
+    },
+    {
+      "id": "route",
+      "from": "orchestrator",
+      "to": "subagents",
+      "label": "按页面路由"
+    },
+    {
+      "id": "call-tools",
+      "from": "subagents",
+      "to": "tools",
+      "label": "调工具"
+    },
+    {
+      "id": "read-write",
+      "from": "tools",
+      "to": "data",
+      "label": "读写"
+    },
+    {
+      "id": "quote-reserve",
+      "from": "orchestrator",
+      "to": "billing",
+      "label": "先报价",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "sub-billing",
+      "from": "subagents",
+      "to": "billing",
+      "label": "共用一套账",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "right"
+    },
+    {
+      "id": "settle",
+      "from": "billing",
+      "to": "upstream",
+      "label": "按回执结算",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "render",
+      "from": "subagents",
+      "to": "artifacts",
+      "label": "出详情图",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 26
+    },
+    {
+      "id": "emit",
+      "from": "orchestrator",
+      "to": "stream",
+      "label": "逐事件回传",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 26
+    },
+    {
+      "id": "deliver",
+      "from": "tools",
+      "to": "github",
+      "label": "PR / 发布",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "一个入口",
+      "items": [
+        "任何页面右下角同一个小恐龙",
+        "意图不明时只问一个问题，然后自己走完"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "七个垂直子 Agent",
+      "items": [
+        "每个都有专属工具集与专属详情图",
+        "共享同一套计量、授权、对账"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "详情图即证据",
+      "items": [
+        "架构图 / gitflow / 时序 / 生命周期",
+        "点进去就是能看懂、能下钻的交互图"
+      ]
+    }
+  ]
+}

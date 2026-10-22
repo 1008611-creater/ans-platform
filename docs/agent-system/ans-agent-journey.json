@@ -1,0 +1,304 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "学生从想法到解决：全站 Agent 的最短路径",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "ans-agent-journey.html",
+    "views": [
+      {
+        "id": "happy",
+        "label": "主路径",
+        "focus": [
+          "spark",
+          "entry",
+          "route",
+          "sub",
+          "exec",
+          "proof",
+          "gate",
+          "done"
+        ],
+        "note": "一句话进来，子 Agent 自己把路走完，最后交到学生手上的是结果和详情图。"
+      },
+      {
+        "id": "money",
+        "label": "授权与结算",
+        "focus": [
+          "route",
+          "quote",
+          "sub",
+          "settle"
+        ],
+        "note": "先报价再执行，一次授权可记住，最后按上游回执结算。"
+      },
+      {
+        "id": "proof",
+        "label": "证据与门禁",
+        "focus": [
+          "exec",
+          "proof",
+          "gate",
+          "pr"
+        ],
+        "note": "产出物必须带详情图；门禁不绿不交付。"
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "ui",
+      "label": "学生看到的界面"
+    },
+    {
+      "id": "agent",
+      "label": "全站 Agent"
+    },
+    {
+      "id": "vertical",
+      "label": "垂直子 Agent"
+    },
+    {
+      "id": "evidence",
+      "label": "证据与交付",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "intake",
+      "label": "冒出需求",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "decide",
+      "label": "路由与授权",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "deliver",
+      "label": "执行与交付",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "groups": [
+    {
+      "id": "agent_core",
+      "label": "全站 Agent 决策",
+      "lane": "agent",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": [
+    "spark",
+    "entry",
+    "route",
+    "sub",
+    "exec",
+    "proof",
+    "gate",
+    "done"
+  ],
+  "nodes": [
+    {
+      "id": "spark",
+      "lane": "ui",
+      "col": 0,
+      "type": "external",
+      "label": "冒出需求",
+      "sublabel": "任何页面 · 任何时刻",
+      "width": 132
+    },
+    {
+      "id": "entry",
+      "lane": "ui",
+      "col": 1,
+      "type": "frontend",
+      "label": "一个入口",
+      "sublabel": "小恐龙 · 页面上下文",
+      "width": 132
+    },
+    {
+      "id": "done",
+      "lane": "ui",
+      "col": 5,
+      "type": "backend",
+      "label": "结果到手",
+      "sublabel": "答案 + 详情图",
+      "width": 132
+    },
+    {
+      "id": "route",
+      "lane": "agent",
+      "col": 2,
+      "type": "backend",
+      "label": "意图路由",
+      "sublabel": "按页面选子 Agent",
+      "tag": "缺信息才问一次",
+      "width": 132
+    },
+    {
+      "id": "quote",
+      "lane": "agent",
+      "col": 3,
+      "type": "security",
+      "label": "先报价",
+      "sublabel": "一次性授权",
+      "tag": "可撤销",
+      "width": 132
+    },
+    {
+      "id": "settle",
+      "lane": "agent",
+      "col": 5,
+      "type": "messagebus",
+      "label": "按回执结算",
+      "sublabel": "可对账",
+      "width": 132
+    },
+    {
+      "id": "sub",
+      "lane": "vertical",
+      "col": 3,
+      "type": "backend",
+      "label": "子 Agent 出计划",
+      "sublabel": "专属工具序列",
+      "width": 132
+    },
+    {
+      "id": "exec",
+      "lane": "vertical",
+      "col": 4,
+      "type": "backend",
+      "label": "自己动手",
+      "sublabel": "读数据 · 写草稿 · 跑构建",
+      "width": 132
+    },
+    {
+      "id": "proof",
+      "lane": "evidence",
+      "col": 4,
+      "type": "cloud",
+      "label": "出详情图",
+      "sublabel": "架构 / gitflow / 时序",
+      "width": 132
+    },
+    {
+      "id": "gate",
+      "lane": "evidence",
+      "col": 5,
+      "type": "security",
+      "label": "门禁自检",
+      "sublabel": "不绿不交付",
+      "width": 132
+    },
+    {
+      "id": "pr",
+      "lane": "vertical",
+      "col": 5,
+      "type": "external",
+      "label": "PR / 发布",
+      "sublabel": "带证据",
+      "width": 132
+    }
+  ],
+  "edges": [
+    {
+      "id": "spark-entry",
+      "from": "spark",
+      "to": "entry",
+      "label": "说一句",
+      "variant": "emphasis"
+    },
+    {
+      "id": "entry-route",
+      "from": "entry",
+      "to": "route",
+      "variant": "default"
+    },
+    {
+      "id": "route-quote",
+      "from": "route",
+      "to": "quote",
+      "label": "先算钱",
+      "variant": "security"
+    },
+    {
+      "id": "quote-sub",
+      "from": "quote",
+      "to": "sub",
+      "variant": "security"
+    },
+    {
+      "id": "sub-exec",
+      "from": "sub",
+      "to": "exec",
+      "variant": "default"
+    },
+    {
+      "id": "exec-proof",
+      "from": "exec",
+      "to": "proof",
+      "label": "留证据",
+      "variant": "dashed"
+    },
+    {
+      "id": "proof-gate",
+      "from": "proof",
+      "to": "gate",
+      "variant": "default"
+    },
+    {
+      "id": "gate-done",
+      "from": "gate",
+      "to": "done",
+      "label": "交付",
+      "variant": "emphasis"
+    },
+    {
+      "id": "exec-pr",
+      "from": "exec",
+      "to": "pr",
+      "label": "要发布",
+      "variant": "dashed"
+    },
+    {
+      "id": "gate-settle",
+      "from": "gate",
+      "to": "settle",
+      "label": "按回执",
+      "variant": "dashed"
+    },
+    {
+      "id": "route-sub",
+      "from": "route",
+      "to": "sub",
+      "label": "定了",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "不问废话",
+      "items": [
+        "缺关键信息才问，且只问一个"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "交付带证据",
+      "items": [
+        "详情图 + 门禁 + 结算回执"
+      ]
+    }
+  ]
+}
