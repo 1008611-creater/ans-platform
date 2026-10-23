@@ -76,7 +76,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@sentry/nextjs": "^10.32.1",
+    "@sentry/nextjs": "^10.76.2",
     "@tailwindcss/typography": "^0.5.19",
     "@types/d3": "^7.4.3",
     "bcryptjs": "^3.0.3",
@@ -87,7 +87,7 @@
     "date-fns": "^4.1.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.556.0",
-    "next": "16.3.8",
+    "next": "16.4.2",
     "next-auth": "^5.0.0-beta.30",
     "next-intl": "^4.5.8",
     "next-themes": "^0.4.6",
@@ -142,6 +142,6 @@
   },
   "overrides": {
     "deepmerge-ts": "^8.0.2",
-    "dompurify": "^3.4.15"
+    "dompurify": "^3.4.17"
   }
 }
