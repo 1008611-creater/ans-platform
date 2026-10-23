@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Activity, Coins, FolderOpen, Heart, Users, Zap } from "lucide-react";
+import { FolderOpen, Heart, Users } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelProgress, formatLevel } from "@/lib/level";
@@ -9,8 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DisplayNameEditor } from "@/components/workspace/display-name-editor";
-import { CreationTools } from "@/components/workspace/creation-tools";
-import { PageHeading } from "@/components/layout/page-heading";
+import { SwissOnboardingGuide } from "@/components/workspace/swiss-onboarding-guide";
 
 export async function generateMetadata() {
   const t = await getTranslations("product.workspace");
@@ -22,133 +20,97 @@ const RUN_STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"
 };
 
 type WorkspacePageProps = {
-  searchParams?: Promise<{ runsCursor?: string | string[] }>;
+  searchParams?: Promise<{ runsCursor?: string | string[]; prompt?: string | string[] }>;
 };
 
 export default async function WorkspacePage({ searchParams }: WorkspacePageProps) {
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login?callbackUrl=/workspace");
-  }
+  const userId = session?.user?.id ?? null;
 
   const retired = await getTranslations("retirement");
   const t = await getTranslations("product.workspace");
   const locale = await getLocale();
   const computeCopy = await getTranslations("product.computeHistory");
-  const product = await getTranslations("product");
-  const quotaCopy = await getTranslations("product.quotaHistory");
   const query = searchParams ? await searchParams : {};
   const rawCursor = Array.isArray(query.runsCursor) ? query.runsCursor[0] : query.runsCursor;
+  const rawPrompt = Array.isArray(query.prompt) ? query.prompt[0] : query.prompt;
+  const initialPrompt = rawPrompt && rawPrompt.length <= 2000 ? rawPrompt : "";
   const runsCursor = rawCursor && rawCursor.length <= 128 ? rawCursor : undefined;
   const pageSize = 20;
 
-  const [user, runRows, runCount, memberships] = await Promise.all([
-    db.user.findUnique({
-      where: { id: session.user.id },
-      select: { xp: true, quotaPoints: true, nickname: true },
-    }),
-    db.run.findMany({
-      where: { userId: session.user.id },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      ...(runsCursor ? { cursor: { id: runsCursor }, skip: 1 } : {}),
-      take: pageSize + 1,
-      select: {
-        id: true,
-        status: true,
-        costPoints: true,
-        outputText: true,
-        error: true,
-        createdAt: true,
-        template: { select: { title: true, slug: true } },
-      },
-    }),
-    db.run.count({ where: { userId: session.user.id } }),
-    db.teamMember.findMany({
-      where: { userId: session.user.id, status: "ACTIVE" },
-      select: {
-        role: true,
-        quotaAllowance: true,
-        quotaUsed: true,
-        team: { select: { id: true, name: true, slug: true } },
-      },
-    }),
-  ]);
+  const [user, runRows, runCount, memberships] = userId
+    ? await Promise.all([
+        db.user.findUnique({
+          where: { id: userId },
+          select: { xp: true, quotaPoints: true, nickname: true },
+        }),
+        db.run.findMany({
+          where: { userId },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          ...(runsCursor ? { cursor: { id: runsCursor }, skip: 1 } : {}),
+          take: pageSize + 1,
+          select: {
+            id: true,
+            status: true,
+            costPoints: true,
+            outputText: true,
+            error: true,
+            createdAt: true,
+            template: { select: { title: true, slug: true } },
+          },
+        }),
+        db.run.count({ where: { userId } }),
+        db.teamMember.findMany({
+          where: { userId, status: "ACTIVE" },
+          select: {
+            role: true,
+            quotaAllowance: true,
+            quotaUsed: true,
+            team: { select: { id: true, name: true, slug: true } },
+          },
+        }),
+      ])
+    : [null, [], 0, []];
 
   const hasMoreRuns = runRows.length > pageSize;
   const runs = hasMoreRuns ? runRows.slice(0, pageSize) : runRows;
   const nextRunsCursor = hasMoreRuns ? runs[runs.length - 1]?.id : undefined;
   const xp = user?.xp ?? 0;
   const progress = getLevelProgress(xp);
-  const displayName = user?.nickname?.trim() || t("anonymous");
+  const displayName = user?.nickname?.trim() || (userId ? t("anonymous") : locale === "zh" ? "访客创作者" : "Guest Creator");
+  const currentPoints = Number(user?.quotaPoints ?? 0);
+  const levelName = locale === "zh" ? formatLevel(xp) : progress.level.nameEn;
 
   return (
     <div className="ans-product-container ans-page-content ans-workspace-page">
-      <PageHeading title={t("title")}
-        description={<span className="ans-workspace-greeting">{t("greeting", { name: displayName })} · {locale === "zh" ? formatLevel(xp) : progress.level.nameEn}
-          <DisplayNameEditor actorId={session.user.id} current={displayName} /></span>}
-        actions={<><Button asChild><Link href="/projects">{product("myProjects")}</Link></Button><Button asChild variant="outline"><Link href="/explore">{product("nav.explore")}</Link></Button></>} />
+      <div className="mb-5">
+        <SwissOnboardingGuide variant="workspace" />
+      </div>
+      <DisplayNameEditor
+        codexWorkbench
+        actorId={userId ?? "guest"}
+        current={displayName}
+        points={currentPoints}
+        levelName={levelName}
+        initialPrompt={initialPrompt}
+      />
 
-      <CreationTools />
-      <section className="ans-account-summary">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <Coins className="h-3.5 w-3.5" /> {t("balance")}
-            </CardDescription>
-            <CardTitle className="text-2xl">
-              {(user?.quotaPoints ?? 0).toLocaleString(undefined, { maximumFractionDigits: 6 })}
-              <span className="ms-1 text-sm font-normal text-muted-foreground">{t("pointsUnit")}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2 pt-0"><Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{quotaCopy("entry")}</Link></Button><Button asChild variant="ghost" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button></CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5" /> {t("experience")}
-            </CardDescription>
-            <CardTitle className="text-2xl">
-              {xp.toLocaleString()}
-              <span className="ms-1 text-sm font-normal text-muted-foreground">XP</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: String(Math.round(progress.progress * 100)) + "%" }}
-              />
-            </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              {progress.nextLevel
-                ? t("nextLevel", { level: locale === "zh" ? progress.nextLevel.nameZh : progress.nextLevel.nameEn, xp: progress.xpToNext })
-                : t("maxLevel")}
-            </p>
-            <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link href="/community">{t("community")}</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <Activity className="h-3.5 w-3.5" /> {t("runs")}
-            </CardDescription>
-            <CardTitle className="text-2xl">{runCount}</CardTitle>
-          </CardHeader>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5" /> {t("myTeams")}
-            </CardDescription>
-            <CardTitle className="text-2xl">{memberships.length}</CardTitle>
-          </CardHeader>
-        </Card>
-      </section>
+      <details className="mt-5 rounded-2xl border border-border/70 bg-card/60 p-4">
+        <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 text-sm font-semibold">
+          <span>
+            📊 {locale === "zh" ? "历史运行与团队记录" : "Run History & Teams"}
+          </span>
+          <span className="text-xs font-normal text-muted-foreground">
+            {locale === "zh"
+              ? `运行 ${runCount} 次 · 团队 ${memberships.length} 个`
+              : `${runCount} Runs · ${memberships.length} Teams`}
+          </span>
+        </summary>
+        <div className="mt-4">
+          <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-border/60 pb-3">
+            <Button asChild variant="outline" size="sm"><Link href="/workspace/compute">{computeCopy("entry")}</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link href="/community">{t("community")}</Link></Button>
+          </div>
 
       <div className="ans-workspace-records">
       <section className="ans-workspace-section ans-workspace-runs">
@@ -210,7 +172,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
           </div>
         )}
       </section>
-      <section className="ans-workspace-section"><h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Heart className="h-4 w-4" />{retired("favoritesTitle")}</h2><p className="text-sm leading-7 text-muted-foreground">{retired("favoritesNote")}</p><Button asChild variant="outline" className="mt-4"><Link href="/collection">{retired("openFavorites")}</Link></Button></section>
+      <section className="ans-workspace-section flex items-center justify-between"><h2 className="flex items-center gap-2 text-lg font-semibold"><Heart className="h-4 w-4" />{retired("favoritesTitle")}</h2><Button asChild variant="outline" size="sm"><Link href="/collection">{retired("openFavorites")}</Link></Button></section>
       <section className="ans-workspace-section ans-workspace-teams">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
@@ -250,6 +212,8 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         )}
       </section>
       </div>
+        </div>
+      </details>
     </div>
   );
 }

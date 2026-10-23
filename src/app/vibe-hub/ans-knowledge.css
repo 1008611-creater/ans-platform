@@ -626,3 +626,62 @@
 .ans-guide-step-trigger { scroll-margin-top: 144px; }
 
 .ans-guide-reference details[id] { scroll-margin-top: 144px; }
+
+/* ANS Skill Workbench, Expression Rewriter, 10 Daily Skills Matrix & Productized Skill Principles */
+.ans-skill-quicknav { display: flex; flex-wrap: wrap; gap: 8px; padding-block: 20px; border-bottom: 1px solid var(--border); }
+.ans-skill-quicknav a { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 999px; font-size: 13px; font-weight: 550; color: var(--muted-foreground); background: var(--background); transition: background-color var(--ans-motion-quick), color var(--ans-motion-quick), border-color var(--ans-motion-quick); }
+.ans-skill-quicknav a:hover { color: var(--foreground); background: var(--muted); border-color: var(--border-hover); }
+.ans-skill-section { padding-top: 48px; margin-top: 48px; border-top: 1px solid var(--border); }
+.ans-skill-section:first-of-type { margin-top: 0; border-top: 0; padding-top: 16px; }
+.ans-skill-section-head { max-width: 780px; margin-bottom: 24px; }
+.ans-skill-section-head h2 { font-size: 26px; font-weight: 550; line-height: 1.45; letter-spacing: -.02em; margin-top: 8px; }
+.ans-skill-section-head p:not(.ans-knowledge-eyebrow) { font-size: 14px; line-height: 1.85; color: var(--muted-foreground); margin-top: 10px; }
+
+.ans-rewrite-compare { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.25fr); gap: 24px; margin-top: 24px; }
+.ans-rewrite-card { padding: 24px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); display: flex; flex-direction: column; gap: 14px; }
+.ans-rewrite-before { background: var(--muted); }
+.ans-rewrite-after { border-color: var(--border-hover); box-shadow: var(--shadow-card); }
+.ans-rewrite-after-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ans-rewrite-quote { font-size: 15px; line-height: 1.85; color: var(--foreground); }
+.ans-rewrite-why { padding-top: 12px; border-top: 1px solid var(--border); display: grid; gap: 6px; }
+.ans-rewrite-why strong { font-size: 12px; font-weight: 600; color: var(--foreground); }
+.ans-rewrite-why p { font-size: 13px; line-height: 1.8; color: var(--muted-foreground); }
+.ans-rewrite-terms { padding-top: 12px; border-top: 1px solid var(--border); display: grid; gap: 10px; }
+.ans-rewrite-terms > span { font-size: 12px; font-weight: 600; color: var(--muted-foreground); }
+.ans-rewrite-term-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.ans-pipeline-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px; margin-bottom: 32px; }
+.ans-pipeline-card { padding: 22px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); display: flex; flex-direction: column; justify-content: space-between; gap: 16px; }
+.ans-pipeline-card[data-active=true] { border-color: var(--primary); box-shadow: var(--shadow-card); }
+.ans-pipeline-card h3 { font-size: 18px; font-weight: 600; line-height: 1.45; margin-top: 6px; }
+.ans-pipeline-card p:not(.ans-knowledge-eyebrow) { font-size: 13px; line-height: 1.8; color: var(--muted-foreground); margin-top: 8px; }
+.ans-pipeline-steps { display: grid; gap: 8px; margin: 12px 0 0; padding-left: 18px; font-size: 12.5px; line-height: 1.75; color: var(--foreground); }
+
+.ans-skill-filter { margin-bottom: 24px; }
+.ans-daily-skills-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
+.ans-daily-skill-card { padding: 24px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); display: flex; flex-direction: column; justify-content: space-between; gap: 18px; }
+.ans-daily-skill-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ans-daily-skill-head h3 { font-size: 19px; font-weight: 600; line-height: 1.4; margin-top: 6px; }
+.ans-daily-skill-num { font-size: 24px; font-weight: 450; color: var(--muted-foreground); font-variant-numeric: tabular-nums; line-height: 1; }
+.ans-daily-skill-tagline { font-size: 14px; font-weight: 500; line-height: 1.75; color: var(--foreground); }
+.ans-daily-skill-meta { display: grid; gap: 12px; margin: 0; padding-top: 12px; border-top: 1px solid var(--border); }
+.ans-daily-skill-meta dt { font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-foreground); }
+.ans-daily-skill-meta dd { margin: 4px 0 0; font-size: 13px; line-height: 1.8; color: var(--foreground); }
+.ans-daily-skill-prompt { padding: 14px 16px; border-radius: 12px; background: var(--muted); display: grid; gap: 10px; }
+.ans-daily-skill-prompt p { font-size: 12.5px; line-height: 1.75; color: var(--foreground); font-family: var(--font-sans); }
+.ans-daily-skill-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+.ans-principles-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 20px; }
+.ans-principle-card { padding: 22px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); display: grid; gap: 12px; }
+.ans-principle-card h3 { font-size: 17px; font-weight: 600; line-height: 1.45; }
+.ans-principle-pitfall, .ans-principle-rule { display: grid; gap: 4px; padding-top: 10px; border-top: 1px solid var(--border); }
+.ans-principle-pitfall strong, .ans-principle-rule strong { font-size: 11px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; color: var(--muted-foreground); }
+.ans-principle-rule strong { color: var(--primary); }
+.ans-principle-pitfall p, .ans-principle-rule p { font-size: 13px; line-height: 1.8; color: var(--foreground); }
+.ans-skill-bottom-links { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+@media (max-width: 960px) {
+  .ans-pipeline-grid { grid-template-columns: minmax(0,1fr); }
+  .ans-daily-skills-grid, .ans-principles-grid, .ans-rewrite-compare { grid-template-columns: minmax(0,1fr); }
+}
+

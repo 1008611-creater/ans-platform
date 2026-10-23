@@ -886,7 +886,7 @@ let n = [{
   cat: "内容展示",
   tagline: "在详情页里用“字段名 + 内容”展示一条记录的只读信息",
   desc: "例如订单详情会显示“收货人：李明”“状态：已发货”“金额：\xa5199”。它只负责查看；如果用户需要修改这些内容，应使用可编辑的 {c:form}。",
-  demo: '<div class="desc-d">\n    <div class="d-row"><span class="d-label">创建人</span><span class="d-value">oil-oil</span></div>\n    <div class="d-row"><span class="d-label">状态</span><span class="d-value"><span class="demo-tag blue">进行中</span></span></div>\n    <div class="d-row"><span class="d-label">更新时间</span><span class="d-value">2026-07-20 14:32</span></div>\n  </div>',
+  demo: '<div class="desc-d">\n    <div class="d-row"><span class="d-label">创建人</span><span class="d-value">ans-studio</span></div>\n    <div class="d-row"><span class="d-label">状态</span><span class="d-value"><span class="demo-tag blue">进行中</span></span></div>\n    <div class="d-row"><span class="d-label">更新时间</span><span class="d-value">2026-07-20 14:32</span></div>\n  </div>',
   en: {
     quote: "On the details page, list the name, date, and status clearly, one field at a time.",
     tagline: "Show the field names and values of one record",
@@ -988,7 +988,7 @@ let n = [{
   cat: "内容展示",
   tagline: "把文件夹、部门或分类按父子关系排列，并让用户逐层展开或收起",
   desc: "例如项目文件会显示“src”文件夹，展开后才能看到里面的页面文件。它主要帮助浏览层级；需要从中勾选并提交结果时，应使用 {c:tree-select}。",
-  demo: '<div class="tre-live"><div class="tre-item"><input type="checkbox" id="tre1" checked><label class="tre-node" for="tre1"><span class="tre-arrow">▸</span><span class="tre-label on">设计部</span></label><div class="tre-kids"><div class="tre-item"><input type="checkbox" id="tre2"><label class="tre-node" for="tre2"><span class="tre-arrow">▸</span><span class="tre-label">UI 组</span></label><div class="tre-kids"><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">林小hu</span></div><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">oil-oil</span></div></div></div><div class="tre-item"><input type="checkbox" id="tre3"><label class="tre-node" for="tre3"><span class="tre-arrow">▸</span><span class="tre-label">用研组</span></label><div class="tre-kids"><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">阿麦</span></div></div></div></div></div><div class="tre-item"><input type="checkbox" id="tre4"><label class="tre-node" for="tre4"><span class="tre-arrow">▸</span><span class="tre-label">研发部</span></label><div class="tre-kids"><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">前端组</span></div><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">后端组</span></div></div></div></div>',
+  demo: '<div class="tre-live"><div class="tre-item"><input type="checkbox" id="tre1" checked><label class="tre-node" for="tre1"><span class="tre-arrow">▸</span><span class="tre-label on">设计部</span></label><div class="tre-kids"><div class="tre-item"><input type="checkbox" id="tre2"><label class="tre-node" for="tre2"><span class="tre-arrow">▸</span><span class="tre-label">UI 组</span></label><div class="tre-kids"><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">林小hu</span></div><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">ans-studio</span></div></div></div><div class="tre-item"><input type="checkbox" id="tre3"><label class="tre-node" for="tre3"><span class="tre-arrow">▸</span><span class="tre-label">用研组</span></label><div class="tre-kids"><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">阿麦</span></div></div></div></div></div><div class="tre-item"><input type="checkbox" id="tre4"><label class="tre-node" for="tre4"><span class="tre-arrow">▸</span><span class="tre-label">研发部</span></label><div class="tre-kids"><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">前端组</span></div><div class="tre-leaf"><span class="tre-arrow"></span><span class="tre-label">后端组</span></div></div></div></div>',
   en: {
     quote: "Make it work like folders: click the little arrow to expand the next level.",
     tagline: "Expand and browse data with parent-child levels",
@@ -1240,7 +1240,7 @@ let n = [{
   cat: "弹窗与提示",
   tagline: "气泡卡片是贴近触发元素展开、可承载补充信息和少量操作的浮层组件",
   desc: "点击成员头像可展开其资料、链接和少量操作。只有一句简短解释时使用{c:tooltip}更合适；触屏设备不能只依赖悬停。",
-  demo: '<div class="popover-demo"><div class="popover-card"><div class="popover-user"><span class="popover-avatar">林</span><div><div class="popover-title">oil-oil</div><div class="popover-sub">产品经理 \xb7 深圳</div></div></div><span class="popover-link">查看主页 →</span></div><div class="popover-arrow"></div><span class="popover-avatar popover-trigger">林</span></div>',
+  demo: '<div class="popover-demo"><div class="popover-card"><div class="popover-user"><span class="popover-avatar">林</span><div><div class="popover-title">ans-studio</div><div class="popover-sub">产品经理 \xb7 深圳</div></div></div><span class="popover-link">查看主页 →</span></div><div class="popover-arrow"></div><span class="popover-avatar popover-trigger">林</span></div>',
   en: {
     quote: "Click an avatar to show a small profile card beside it.",
     tagline: "Open a small panel with extra information or controls",
@@ -4298,12 +4298,12 @@ let n = [{
   cat: "接口与数据",
   tagline: "数据校验是在使用输入前检查其格式、范围和业务规则的步骤",
   desc: "例如，必填项可在用户离开字段时提示，跨字段规则通常在提交时统一检查。前端提示帮助用户及时纠正，但可能被绕过；后端仍须重新校验并返回具体字段错误。",
-  demo: '<div class="val-demo">\n    <div class="val-form">\n      <label class="ok"><span>邮箱</span><b>oil@example.com</b><i>✓</i></label>\n      <label class="bad"><span>年龄</span><b>0</b><i>✕ 须为 1–120</i></label>\n      <label class="ok"><span>角色</span><b>user</b><i>✓</i></label>\n    </div>\n    <div class="val-gate"><small>后端规则</small><strong>有一处不通过就不写入</strong></div>\n  </div>',
+  demo: '<div class="val-demo">\n    <div class="val-form">\n      <label class="ok"><span>邮箱</span><b>dev@ans.org</b><i>✓</i></label>\n      <label class="bad"><span>年龄</span><b>0</b><i>✕ 须为 1–120</i></label>\n      <label class="ok"><span>角色</span><b>user</b><i>✓</i></label>\n    </div>\n    <div class="val-gate"><small>后端规则</small><strong>有一处不通过就不写入</strong></div>\n  </div>',
   en: {
     quote: "People can submit complete nonsense. How do I stop bad input before it gets saved?",
     tagline: "Check that incoming data has the expected shape and allowed values",
     desc: "A required field can be checked when someone leaves it, while cross-field rules usually need a submit-time check. Frontend feedback helps people correct mistakes, but the backend must validate again and return specific field errors.",
-    demo: '<div class="val-demo">\n    <div class="val-form">\n      <label class="ok"><span>Email</span><b>oil@example.com</b><i>✓</i></label>\n      <label class="bad"><span>Age</span><b>0</b><i>✕ Must be 1–120</i></label>\n      <label class="ok"><span>role</span><b>user</b><i>✓</i></label>\n    </div>\n    <div class="val-gate"><small>Backend rules</small><strong>Do not write if it does not pass</strong></div>\n  </div>'
+    demo: '<div class="val-demo">\n    <div class="val-form">\n      <label class="ok"><span>Email</span><b>dev@ans.org</b><i>✓</i></label>\n      <label class="bad"><span>Age</span><b>0</b><i>✕ Must be 1–120</i></label>\n      <label class="ok"><span>role</span><b>user</b><i>✓</i></label>\n    </div>\n    <div class="val-gate"><small>Backend rules</small><strong>Do not write if it does not pass</strong></div>\n  </div>'
   },
   quote: "用户乱填也能提交成功，怎么在保存之前先拦住？",
   prerequisites: ["route", "json"]

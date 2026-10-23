@@ -13,6 +13,7 @@ import { getCreditProducts, LEGACY_CREDIT_PRODUCT, type CreditProduct } from "@/
 import { RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
 import type { PersonalApiHistory } from "@/contracts/compute-benefits";
 import { Badge } from "@/components/ui/badge";
+import { SwissOnboardingGuide } from "@/components/workspace/swiss-onboarding-guide";
 
 type Billing = { rechargeYuanPerPoint: number; usdQuotaPerPoint?: number | null; gptConsumptionMultiplier: number; deepseekConsumptionMultiplier: number; rechargeEnabled: boolean };
 type CreditsProps = { actorId: string; billing: Billing; availablePoints: number; reservedPoints?: number; pendingCount?: number; apiHistory?: PersonalApiHistory | null; products?: readonly CreditProduct[] };
@@ -43,6 +44,11 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
 
   async function redeem() {
     if (flight.current) return;
+    if (actorId === "guest" || actorId === "guest-preview") {
+      setOk(false);
+      setMessage("🔓 当前为访客透明预览模式，请先登录账号后再兑换算力卡密。");
+      return;
+    }
     const controller = new AbortController();
     const timer = setTimeout(() => {
       if (flight.current?.controller !== controller) return;
@@ -71,6 +77,7 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
   }
 
   return <div className="space-y-5">
+    <SwissOnboardingGuide variant="credits" showInlineExternalAgentCard />
     <section aria-labelledby="credits-balance-heading" className="rounded-3xl border bg-card p-6 sm:p-8">
       <h2 id="credits-balance-heading" className="text-sm font-medium text-muted-foreground">{t("balanceHeading")}</h2>
       <dl className="mt-5 grid gap-6 sm:grid-cols-2">
@@ -83,16 +90,54 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
     <section aria-labelledby="credits-models-heading" className="rounded-3xl border bg-card p-6 sm:p-8">
       <div className="flex items-center gap-2"><Cpu className="size-5 text-primary" aria-hidden="true" /><h2 id="credits-models-heading" className="font-semibold">{t("modelsTitle")}</h2></div>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{t("modelsDescription")}</p>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-3">{RUN_MODEL_OPTIONS.map(model => <li key={model.key} className="min-w-0 rounded-xl border p-4"><p className="font-medium">{model.label}</p><p className="mt-1 break-all font-mono text-xs text-muted-foreground">{model.key}</p><p className="mt-4 text-sm">{t("modelMultiplier", { multiplier: RUN_MODEL_METERING[model.key].consumptionMultiplier })}</p></li>)}</ul>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-3">{RUN_MODEL_OPTIONS.map(model => <li key={model.key} className="min-w-0">
+        <Link href={`/models?model=${encodeURIComponent(model.key)}`} className="group flex h-full flex-col justify-between rounded-xl border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-semibold text-foreground group-hover:text-primary">{model.label}</p>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">⚡ 试玩 →</span>
+            </div>
+            <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{model.key}</p>
+          </div>
+          <p className="mt-4 text-sm font-medium">{t("modelMultiplier", { multiplier: RUN_MODEL_METERING[model.key].consumptionMultiplier })}</p>
+        </Link>
+      </li>)}</ul>
       <p className="mt-3 text-xs leading-6 text-muted-foreground">{t("modelRatesNote")}</p>
-      <nav aria-label={t("entryPoints")} className="mt-5 grid gap-3 border-t pt-5 sm:grid-cols-2">
+      <div className="mt-4 rounded-2xl border bg-muted/25 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-sm font-semibold">🔗 外部 Agent 接入（OpenClaw / Cursor / Cline / Cherry Studio / OpenAI SDK）</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              将以下 Base URL 与你的个人 API Key（<code>pchat_...</code>）填入外部客户端，即可直接消耗当前账号算力积分调用模型：
+            </p>
+          </div>
+          <Link
+            href="/settings"
+            className="inline-flex items-center gap-1 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90"
+          >
+            <KeyRound className="size-3.5" aria-hidden="true" />
+            生成 / 复制 API Key
+          </Link>
+        </div>
+        <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+          <div className="rounded-xl border bg-background px-3 py-2">
+            <span className="text-muted-foreground">通用 OpenAI Base URL（推荐）：</span>
+            <code className="mt-0.5 block select-all font-mono font-semibold text-foreground">https://ans.cauai.fun/api/v1</code>
+          </div>
+          <div className="rounded-xl border bg-background px-3 py-2">
+            <span className="text-muted-foreground">Codex / OpenAI 兼容网关别名：</span>
+            <code className="mt-0.5 block select-all font-mono font-semibold text-foreground">https://ans.cauai.fun/api/codex/v1</code>
+          </div>
+        </div>
+      </div>
+      <nav aria-label={t("entryPoints")} className="mt-4 flex flex-wrap gap-2 border-t pt-4">
         {([
-          { href: "/workspace/models", title: "plazaTitle", body: "plazaBody", icon: Cpu },
+          { href: "/models", title: "plazaTitle", body: "plazaBody", icon: Cpu },
           { href: "/settings", title: "connectionTitle", body: "connectionBody", icon: TerminalSquare },
           { href: "/projects", title: "projectsTitle", body: "projectsBody", icon: FolderOpen },
           { href: "/workflows/runs", title: "runsTitle", body: "runsBody", icon: ReceiptText },
           { href: "/workspace/compute", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
-        ] as const).map(({ href, title, body, icon: Icon }) => <Link key={href} href={href} className="flex min-w-0 items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{t(title)}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{t(body)}</p></div><ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
+        ] as const).map(({ href, title, body, icon: Icon }) => <Link key={title} href={href} className="inline-flex items-center gap-1.5 rounded-full border bg-muted/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="size-3.5 shrink-0 text-primary" aria-hidden="true" /><span>{t(title)}</span><span className="sr-only">{t(body)}</span><ArrowRight className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
       </nav>
     </section>
     {apiHistory !== undefined && <section aria-labelledby="credits-api-history-heading" className="rounded-3xl border bg-card p-6 sm:p-8">

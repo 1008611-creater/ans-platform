@@ -10,7 +10,7 @@ import * as a from "react";
 import * as l from "../courses/term-adapter";
 import * as c from "./anatomy-copy.js";
 import * as d from "../courses/routing";
-let u = JSON.parse('{"Ek":"https://github.com/oil-oil/vibe-hub-skill","J_":"skills/vibehub"}');
+let u = JSON.parse('{"Ek":"https://github.com/ans-org/ans-vibehub-skills","J_":"skills/vibehub"}');
 let h = u.Ek;
 let p = new Map(l.CLIENT_ENTRIES.map(e => [e.id, e]));
 let m = p.get("tooltip");

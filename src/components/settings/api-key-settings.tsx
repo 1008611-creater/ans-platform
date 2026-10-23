@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
+import { SwissOnboardingGuide } from "@/components/workspace/swiss-onboarding-guide";
 
 interface ApiKeySettingsProps {
   actorId: string;
@@ -133,6 +134,20 @@ function ApiKeySettingsSession({
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <SwissOnboardingGuide variant="settings" showInlineExternalAgentCard />
+        <div className="space-y-2 rounded-lg border p-3">
+          <Label>OpenAI 兼容外部 Agent 接入（OpenClaw / Cursor / Cline / Cherry Studio）</Label>
+          <p className="text-xs text-muted-foreground">
+            支持标准 OpenAI Chat Completions 协议（<code>/chat/completions</code>）与 Responses 协议（<code>/responses</code>），严格按<strong>官方 Token 输入/输出/缓存单价 × 官方倍率</strong>实时折算积分扣费：
+          </p>
+          <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">{`Base URL (通用 OpenAI 兼容): ${origin}/api/v1
+Base URL (Codex 兼容别名):   ${origin}/api/codex/v1
+API Key:                     <下方生成的 pchat_... 密钥>
+可用模型 (按实际输入/输出/缓存 Token × 官方倍率计费):
+  - deepseek-v4.1-flash  (官方倍率 1.0x  | 输入 $0.3 / 输出 $1.2 / 缓存读 $0.006 /M Tokens)
+  - gpt-6.1-sol          (官方倍率 0.16x | 输入 $2.0 / 输出 $10.0 / 缓存读 $0.10 /M Tokens)
+  - gpt-6-astra          (官方倍率 0.16x | 输入 $10.0 / 输出 $50.0 / 缓存读 $1.00 /M Tokens)`}</pre>
+        </div>
         <div className="space-y-2 rounded-lg border p-3">
           <Label>{t("codexTitle")}</Label>
           <p className="text-sm text-muted-foreground">{t("codexDescription")}</p>

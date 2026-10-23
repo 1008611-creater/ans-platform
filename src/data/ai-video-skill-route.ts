@@ -1,5 +1,5 @@
 /**
- * 念念技能库路由元数据（静态）
+ * AI 视频技能库路由元数据（静态）
  *
  * 说明：source 清单为本地 `.workbuddy/skills/` 全部技能 + AI 视频链路历史技能，
  *      vendored 至 `ai-video-skills-source/`（脚本以 SKILL_DIR_LAYER 为准遍历导入）。
@@ -111,7 +111,7 @@ export const SKILL_LAYERS: SkillLayer[] = [
   {
     key: "eng",
     label: "工程与安全层",
-    description: "工程化能力：安全审计、浏览器自动化、服务器运维、游戏系统、念念自有工程与画布。",
+    description: "工程化能力：安全审计、浏览器自动化、服务器运维、游戏系统与无限画布工程。",
     order: 14,
   },
   {
@@ -211,13 +211,11 @@ export const SKILL_DIR_LAYER: Record<string, string> = {
   "sd2.5skill": "execution",
   "seedance2-narrative-shot-workflow": "execution",
   "sd2-5-guofeng-skill": "execution",
-  "sd2-5-kidswear-commerce": "execution",
   "lingdou-seedance-material-injector": "execution",
   "mx-shortdrama-01-frame-extract": "execution",
   "mx-shortdrama-02-source-timeline": "execution",
   "mx-shortdrama-04-character-assets": "execution",
   "canvas-image-generation-reliable": "execution",
-  "niannian-canvas-asset-import": "execution",
   img2threejs: "execution",
 
   // ── 路由层 ────────────────────────────────────────────
@@ -312,7 +310,6 @@ export const SKILL_DIR_LAYER: Record<string, string> = {
   "runninghub-fruit-commerce-video": "social",
 
   // ── 内容创作层 ────────────────────────────────────────
-  "niannian-travel-group": "content",
   "stop-slop": "content",
   "i-have-adhd": "content",
 
@@ -354,7 +351,6 @@ export const SKILL_DIR_LAYER: Record<string, string> = {
   "commerce-web-acceleration": "web",
   "programmatic-seo": "web",
   "gpt-tasteskill": "web",
-  "niannian-logo-authority": "web",
 
   // ── 工程与安全层 ──────────────────────────────────────
   "security-best-practices": "eng",
@@ -367,11 +363,6 @@ export const SKILL_DIR_LAYER: Record<string, string> = {
   "github-selected-projects": "eng",
   "server-fleet-ssh-router": "eng",
   "win-mac-codex-bridge": "eng",
-  "niannian-ai-canvas": "eng",
-  "niannian-zhijian": "eng",
-  "niannian-commerce-website": "eng",
-  "niannian-commerce-release-integrity": "eng",
-  "niannian-web-development": "eng",
   "save-systems": "eng",
   "procedural-gen": "eng",
   "prototype-fast": "eng",
@@ -512,13 +503,11 @@ export const SKILL_EXTRA_TAGS: Record<string, string[]> = {
   "sd2.5skill": ["Seedance2.5", "文生视频", "图生视频"],
   "seedance2-narrative-shot-workflow": ["Seedance2.5", "连续镜头", "尾帧续接"],
   "sd2-5-guofeng-skill": ["Seedance2.5", "国风", "天宫漫剧"],
-  "sd2-5-kidswear-commerce": ["Seedance2.5", "童装", "电商"],
   "lingdou-seedance-material-injector": ["灵豆", "Seedance2.5", "素材注入"],
   "mx-shortdrama-01-frame-extract": ["转绘", "抽帧", "增强"],
   "mx-shortdrama-02-source-timeline": ["转绘", "源片", "时间线"],
   "mx-shortdrama-04-character-assets": ["转绘", "角色一致性"],
   "canvas-image-generation-reliable": ["画布生图", "轮询", "失败修复"],
-  "niannian-canvas-asset-import": ["画布", "素材导入", "资产登记"],
   img2threejs: ["3D模型", "程序化", "动画就绪"],
   // 路由层
   "mx-shortdrama-00-router": ["转绘", "路由"],
@@ -606,7 +595,6 @@ export const SKILL_EXTRA_TAGS: Record<string, string[]> = {
   "realistic-commerce-video-replication": ["真人口播", "脚本复刻", "质控"],
   "runninghub-fruit-commerce-video": ["水果电商", "Wan", "工作流"],
   // 内容创作层
-  "niannian-travel-group": ["旅行", "IP", "原创"],
   "stop-slop": ["去AI腔", "文风", "润色"],
   "i-have-adhd": ["可读性", "结构化", "注意力友好"],
   // 媒体采集层
@@ -646,7 +634,6 @@ export const SKILL_EXTRA_TAGS: Record<string, string[]> = {
   "commerce-web-acceleration": ["性能", "商品图", "私有媒体"],
   "programmatic-seo": ["模板化SEO", "规模化", "落地页"],
   "gpt-tasteskill": ["GSAP", "交互", "UX/UI"],
-  "niannian-logo-authority": ["品牌", "Logo", "Favicon"],
   // 工程与安全层
   "security-best-practices": ["代码审计", "安全规范", "语言相关"],
   "security-threat-model": ["威胁建模", "信任边界", "攻击者能力"],
@@ -658,11 +645,6 @@ export const SKILL_EXTRA_TAGS: Record<string, string[]> = {
   "github-selected-projects": ["项目集", "本地运行", "精选仓库"],
   "server-fleet-ssh-router": ["SSH", "服务器清单", "跨平台"],
   "win-mac-codex-bridge": ["多机协作", "Windows", "Mac"],
-  "niannian-ai-canvas": ["无限画布", "AI媒体", "质量门禁"],
-  "niannian-zhijian": ["念念智剪", "视频编辑器", "部署验证"],
-  "niannian-commerce-website": ["官网", "用户路径", "修复演进"],
-  "niannian-commerce-release-integrity": ["发布完整性", "缓存", "重复占用"],
-  "niannian-web-development": ["Issue到上线", "隔离分支", "验收"],
   "save-systems": ["存档", "序列化", "游戏状态"],
   "procedural-gen": ["程序化生成", "噪声", "种子随机"],
   "prototype-fast": ["快速原型", "可玩验证", "一小时内"],
