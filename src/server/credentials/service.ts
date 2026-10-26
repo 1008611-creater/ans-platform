@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { getAvailableRunModel } from "@/lib/run-models";
+import { getRunModel } from "@/lib/run-models";
 import {
   CredentialCryptoError,
   encryptCredential,
@@ -183,7 +183,7 @@ export async function resolveCredentialForRun(userId: string, credentialId: stri
 export function assertModelKeyAvailable(modelKey: string | undefined | null) {
   const key = modelKey?.trim();
   if (!key) return undefined;
-  if (!getAvailableRunModel(key)) {
+  if (!getRunModel(key)) {
     throw new CredentialServiceError("该模型暂未开放，请选择白名单内的模型。", "MODEL_UNAVAILABLE");
   }
   return key;

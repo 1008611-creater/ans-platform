@@ -6,6 +6,7 @@ import { isApicTarget } from "@/server/integrations/apic-billing";
 import { platformModelConfigured } from "@/server/integrations/model-client";
 import { meteredResponses } from "@/server/integrations/codex-gateway";
 import { RateLimiter } from "@/lib/rate-limit";
+import { getAvailableRunModel, pausedRunModels } from "@/lib/run-models";
 import { AGENT_TOOLS, executeAgentTool } from "./tools";
 import { AGENT_CALL_LIMIT, AGENT_OUTPUT_LIMIT, agentMaxPoints, AgentError, agentKey, checkAgentPayload, issueAgentTicket, verifyAgentTicket, type AgentTicket } from "./policy";
 const limiter = new RateLimiter({ max: 8, windowSeconds: 60 });
@@ -22,6 +23,7 @@ export async function prepareAgentQuote(actor: string, input: AgentInput) {
   const user = await requireAgentActor(actor);
   const limit = limiter.check(actor);
   if (!limit.allowed) throw new AgentError("RATE_LIMITED", 429);
+  if (!getAvailableRunModel(input.model, pausedRunModels())) throw new AgentError("MODEL_UNAVAILABLE", 409);
   return { ...issueAgentTicket(actor, input), model: input.model, maxPoints: agentMaxPoints(input.model), balance: Number(user.quotaPoints) };
 }
 export async function agentReceipts(actor: string, ticket: AgentTicket): Promise<AgentReceipt[]> {

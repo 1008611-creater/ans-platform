@@ -48,6 +48,12 @@ describe("companion authorization and budget", () => {
     // 0.611856 = 当前默认模型（deepseek-v4.1-flash）的报价上限；换默认模型时这里要跟着改。
     expect(quote.balance).toBe(12); expect(quote.maxPoints).toBe(0.611856); expect(mocks.gateway).not.toHaveBeenCalled();
   });
+  it("refuses to quote a paused model so the member never confirms a call that cannot run", async () => {
+    vi.stubEnv("ANS_RUN_MODELS_PAUSED", "gpt-6.1-sol");
+    await expect(prepareAgentQuote("quote-user", { ...input, model: "gpt-6.1-sol" })).rejects.toMatchObject({ code: "MODEL_UNAVAILABLE" });
+    expect((await prepareAgentQuote("quote-user", input)).model).toBe("deepseek-v4.1-flash");
+    expect(mocks.gateway).not.toHaveBeenCalled();
+  });
   it("does not quote a model call when authoritative billing is unconfigured", async () => {
     vi.stubEnv("APIC_COST_BRIDGE_SECRET", "");
     await expect(prepareAgentQuote("no-meter", input)).rejects.toThrow("AGENT_UNAVAILABLE");
