@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({ fetch: vi.fn(), refresh: vi.fn(), t: (key: str
 vi.mock("next-auth/react", () => ({ useSession: () => mocks.session }));
 vi.mock("next-intl", () => ({ useLocale: () => "en-US", useTranslations: () => Object.assign(mocks.t, { has: () => true }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: mocks.refresh }) }));
-const billing = { rechargeYuanPerPoint: .1, usdQuotaPerPoint: null, gptConsumptionMultiplier: .16, deepseekConsumptionMultiplier: 1, rechargeEnabled: false };
+const billing = { rechargeYuanPerPoint: .1, usdQuotaPerPoint: null, rechargeEnabled: false };
 beforeEach(() => { vi.clearAllMocks(); vi.stubGlobal("fetch", mocks.fetch); });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 

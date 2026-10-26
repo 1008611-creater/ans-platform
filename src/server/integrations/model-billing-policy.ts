@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RUN_MODEL_OPTIONS, type RunModelMultipliers } from "@/lib/run-models";
 
 const positive = z.number().finite().positive().max(1_000_000).refine(n => Number(n.toFixed(6)) === n);
 const source = z.string().url().max(1000).refine(value => { const u = new URL(value); return u.protocol === "https:" && !u.username && !u.password && !u.search && !u.hash; });
@@ -60,6 +61,17 @@ export function readModelBillingSnapshot(modelId: string, env: Readonly<Record<s
       throw new Error("unverified pricing");
     return verifySnapshot({ version: "usd-cny-points-v2", configVersion: config.version, modelId, pointsPerCny: 10, fx: config.fx, ...model });
   } catch { throw new ModelBillingError("MODEL_BILLING_NOT_CONFIGURED"); }
+}
+
+/** Display multipliers for the run models, taken from the same policy that charges.
+ * A model without a verified policy entry is left out rather than shown with a guess.
+ */
+export function readRunModelMultipliers(env: Readonly<Record<string, string | undefined>> = process.env, now = Date.now()): RunModelMultipliers {
+  const result: RunModelMultipliers = {};
+  for (const { key } of RUN_MODEL_OPTIONS) {
+    try { result[key] = readModelBillingSnapshot(key, env, now).consumptionMultiplier; } catch { /* not priced */ }
+  }
+  return result;
 }
 
 /** Pure price/unit conversion for catalog rates; a catalog amount is not a request.

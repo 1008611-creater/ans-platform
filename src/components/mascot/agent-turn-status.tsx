@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, CircleAlert, Search, ArrowUpRight } from "lucide-react";
 import { WorkspaceLink } from "@/components/providers/workspace-navigation";
-import { getRunModel, RUN_MODEL_METERING } from "@/lib/run-models";
+import { getRunModel } from "@/lib/run-models";
+import { useRunModelMultipliers } from "@/components/providers/run-model-pricing";
 import type { useCompanionAgent } from "./use-companion-agent";
 const names = new Set([
   "current_page",
@@ -31,9 +32,11 @@ export function AgentTurnStatus({ agent }: { agent: ReturnType<typeof useCompani
   const t = useTranslations("companion");
   // Defaults to checked: the member confirms once and is not asked again.
   const [rememberConsent, setRememberConsent] = useState(true);
+  const multipliers = useRunModelMultipliers();
   if (agent.phase === "idle") return null;
   const pending = agent.receipts.some(item => ["RUNNING", "UNCERTAIN"].includes(item.state));
   const quotedModel = agent.quote ? getRunModel(agent.quote.model) : undefined;
+  const quotedRate = quotedModel ? multipliers[quotedModel.key] : undefined;
   const settled = agent.phase === "complete" && agent.receipts.length > 0 && agent.receipts.every(item => item.state === "SETTLED" && item.settledPoints !== null && Number.isFinite(item.settledPoints) && item.settledPoints >= 0);
   const usedPoints = settled ? agent.receipts.reduce((sum, item) => sum + item.settledPoints!, 0) : null;
   const usedLabel = usedPoints === null ? null : new Intl.NumberFormat(undefined, { maximumFractionDigits: 6 }).format(usedPoints);
@@ -46,7 +49,7 @@ export function AgentTurnStatus({ agent }: { agent: ReturnType<typeof useCompani
       <label><input type="checkbox" checked={agent.privateAccess} onChange={event => agent.allowPrivate(event.target.checked)} /><span>{t("agentPrivateConsent")}</span></label>
       <label><input type="checkbox" checked={rememberConsent} onChange={event => setRememberConsent(event.target.checked)} /><span>{t("agentAutoApprove")}</span></label>
       <details className="ans-agent-details"><summary>{t("agentConsentDetails")}</summary>
-        {quotedModel && <p>{t("agentQuoteModel", { model: quotedModel.label, multiplier: RUN_MODEL_METERING[quotedModel.key].consumptionMultiplier })}</p>}
+        {quotedModel && <p>{quotedRate === undefined ? quotedModel.label : t("agentQuoteModel", { model: quotedModel.label, multiplier: quotedRate })}</p>}
         <p>{t("agentModelRateNote")}</p><p>{t("agentPrivacy")}</p>
         <WorkspaceLink href="/workspace/credits">{t("agentBillingDetails")}<ArrowUpRight aria-hidden="true" /></WorkspaceLink>
       </details>

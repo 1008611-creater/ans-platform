@@ -25,6 +25,7 @@ export interface CodexWorkbenchProps {
 }
 
 import { INITIAL_CODEX_TASKS, type CodexTask } from "./codex-preset-tasks";
+import { useRunModelMultipliers } from "@/components/providers/run-model-pricing";
 
 export function DisplayNameEditor(props: CodexWorkbenchProps) {
   if (props.codexWorkbench) {
@@ -267,6 +268,12 @@ function applySmartLocalCodeEdit(existingCode: string, instruction: string): str
   return `${existingCode.trimEnd()}\n\n# [Agent 增量修改] ${safeNote}\n`;
 }
 
+const WORKBENCH_MODEL_OPTIONS = [
+  { key: "deepseek-v4.1-flash", label: "⚡ DeepSeek-V4.1-Flash" },
+  { key: "gpt-6.1-sol", label: "🧠 GPT-6.1-Sol · 深度推理" },
+  { key: "gpt-6-astra", label: "🌟 GPT-6-Astra · 前端代码" },
+] as const;
+
 function PiCodexWorkbench({
   actorId,
   current,
@@ -281,6 +288,7 @@ function PiCodexWorkbench({
   const [activeId, setActiveId] = useState<string>(INITIAL_CODEX_TASKS[0].id);
   const [showOnboardingGuide, setShowOnboardingGuide] = useState<boolean>(false);
   const [model, setModel] = useState<"deepseek-v4.1-flash" | "gpt-6-astra" | "gpt-6.1-sol">("deepseek-v4.1-flash");
+  const multipliers = useRunModelMultipliers();
   const [composerMode, setComposerMode] = useState<"code" | "ask">("code");
   const [iterateOnCurrent, setIterateOnCurrent] = useState<boolean>(true);
   const [traceExpanded, setTraceExpanded] = useState<boolean>(true);
@@ -890,9 +898,10 @@ function PiCodexWorkbench({
             onChange={e => setModel(e.target.value as typeof model)}
             className="rounded-xl border border-slate-700/80 bg-slate-900 px-2.5 py-1 text-xs font-bold text-emerald-300 outline-none focus:border-emerald-500"
           >
-            <option value="deepseek-v4.1-flash">⚡ DeepSeek-V4.1-Flash (1x)</option>
-            <option value="gpt-6.1-sol">🧠 GPT-6.1-Sol · 深度推理 (0.16x)</option>
-            <option value="gpt-6-astra">🌟 GPT-6-Astra · 前端代码 (0.16x)</option>
+            {WORKBENCH_MODEL_OPTIONS.map(option => {
+              const rate = multipliers[option.key];
+              return <option key={option.key} value={option.key}>{option.label}{rate === undefined ? "" : ` (${rate}x)`}</option>;
+            })}
           </select>
           <button
             type="button"

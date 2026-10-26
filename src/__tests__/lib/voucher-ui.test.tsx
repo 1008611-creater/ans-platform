@@ -8,7 +8,7 @@ const mocks=vi.hoisted(()=>({fetch:vi.fn(),refresh:vi.fn(),t:(key:string)=>key,s
 vi.mock("next-auth/react",()=>({useSession:()=>mocks.session}));
 vi.mock("next-intl",()=>({useLocale:()=>"en-US",useTranslations:()=>mocks.t}));
 vi.mock("next/navigation",()=>({useRouter:()=>({refresh:mocks.refresh})}));
-const billing={rechargeYuanPerPoint:0.1,usdQuotaPerPoint:null,gptConsumptionMultiplier:0.16,deepseekConsumptionMultiplier:1,rechargeEnabled:false};
+const billing={rechargeYuanPerPoint:0.1,usdQuotaPerPoint:null,rechargeEnabled:false};
 beforeEach(()=>{vi.clearAllMocks();mocks.session={data:{user:{id:"actor"}},status:"authenticated"};vi.stubGlobal("fetch",mocks.fetch);});
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 describe("voucher user interface",()=>{

@@ -2,11 +2,12 @@ import { afterEach,beforeEach,describe,expect,it,vi } from "vitest";
 import { act,cleanup,fireEvent,render,screen,waitFor } from "@testing-library/react";
 import { CreditsCenter } from "@/components/workspace/credits-center";
 import { getCreditProducts } from "@/lib/credits-catalog";
+import { RunModelPricingProvider } from "@/components/providers/run-model-pricing";
 const mocks=vi.hoisted(()=>({fetch:vi.fn(),refresh:vi.fn()}));
 vi.mock("next-intl",()=>({useLocale:()=>"zh-CN",useTranslations:()=>((key:string,args?:Record<string,string|number>)=>key+(args?JSON.stringify(args):""))}));
 vi.mock("next/navigation",()=>({useRouter:()=>({refresh:mocks.refresh})}));
 vi.mock("@/components/auth/account-content-boundary",()=>({AccountContentBoundary:({children}:{children:React.ReactNode})=>children}));
-const billing={rechargeYuanPerPoint:0.1,usdQuotaPerPoint:null,gptConsumptionMultiplier:0.16,deepseekConsumptionMultiplier:1,rechargeEnabled:false};
+const billing={rechargeYuanPerPoint:0.1,usdQuotaPerPoint:null,rechargeEnabled:false};
 beforeEach(()=>{vi.clearAllMocks();vi.stubGlobal("fetch",mocks.fetch);});afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals();});
 describe("live voucher offers",()=>{
  it("shows one balance and reservation summary, keeps costs visible and reveals redemption help on demand",async()=>{
@@ -17,7 +18,7 @@ describe("live voucher offers",()=>{
   expect(screen.getByText("0.125001")).toBeVisible();
   expect(screen.getByText('pending{"count":2}')).toBeVisible();
   expect(screen.getByText("hold")).toBeVisible();
-  expect(screen.getByText('rules{"gpt":0.16,"deepseek":1}')).toBeVisible();
+  expect(screen.getByText("rules")).toBeVisible();
   expect(screen.getByText("checkoutFees")).toBeVisible();
   expect(screen.getByText("accountNote")).toBeVisible();
   expect(screen.queryByRole("dialog")).toBeNull();
@@ -34,7 +35,7 @@ describe("live voucher offers",()=>{
  it("keeps account binding and prevents a second in-flight redemption",async()=>{let resolve!: (v:unknown)=>void;mocks.fetch.mockReturnValue(new Promise(r=>{resolve=r;}));render(<CreditsCenter actorId="current-user" billing={billing} availablePoints={0}/>);fireEvent.change(screen.getByLabelText("code"),{target:{value:"ANS-PRIVATE"}});fireEvent.submit(screen.getByLabelText("code").closest("form")!);fireEvent.submit(screen.getByLabelText("code").closest("form")!);expect(mocks.fetch).toHaveBeenCalledOnce();expect(mocks.fetch.mock.calls[0][1].headers["x-ans-actor"]).toBe("current-user");resolve({ok:true,json:async()=>({points:10,duplicate:false})});await waitFor(()=>expect(mocks.refresh).toHaveBeenCalledOnce());expect(screen.getByLabelText("code")).toHaveValue("");});
  it("retains a code on transport failure so an idempotent retry can recover its receipt",async()=>{mocks.fetch.mockRejectedValue(new TypeError("network"));render(<CreditsCenter actorId="current-user" billing={billing} availablePoints={0}/>);fireEvent.change(screen.getByLabelText("code"),{target:{value:"ANS-PRIVATE"}});fireEvent.click(screen.getByRole("button",{name:"redeem"}));await screen.findByRole("alert");expect(screen.getByLabelText("code")).toHaveValue("ANS-PRIVATE");expect(mocks.refresh).not.toHaveBeenCalled();});
  it("shows one precise balance beside reservations and keeps task-history scopes explicit",()=>{
-  render(<CreditsCenter actorId="current-user" billing={billing} availablePoints={0.997336} reservedPoints={0.016274} pendingCount={2}/>);
+  render(<RunModelPricingProvider multipliers={{"deepseek-v4.1-flash":1.5,"gpt-6.1-sol":0.16}}><CreditsCenter actorId="current-user" billing={billing} availablePoints={0.997336} reservedPoints={0.016274} pendingCount={2}/></RunModelPricingProvider>);
   expect(screen.getAllByText("0.997336")).toHaveLength(1);
   expect(screen.getByText(/0.016274/)).toBeVisible();
   expect(screen.getByText('pendingTitle{"count":2}')).toBeVisible();
@@ -44,8 +45,9 @@ describe("live voucher offers",()=>{
   expect(screen.getByRole("link",{name:/runsTitle/})).toHaveAttribute("href","/workflows/runs");
   expect(screen.getByRole("link",{name:/aigcTitle aigcBody/})).toHaveAttribute("href","/workspace/compute");
   expect(screen.getByText("DeepSeek V4.1 Flash")).toBeVisible();
-  expect(screen.getByText('modelMultiplier{"multiplier":1}')).toBeVisible();
-  expect(screen.getAllByText('modelMultiplier{"multiplier":0.16}')).toHaveLength(2);
+  expect(screen.getByText('modelMultiplier{"multiplier":1.5}')).toBeVisible();
+  expect(screen.getAllByText('modelMultiplier{"multiplier":0.16}')).toHaveLength(1);
+  expect(screen.getByText("modelUnpriced")).toBeVisible();
   expect(screen.queryByText(/opus/i)).not.toBeInTheDocument();
  });
  it("restores an unconfirmed redemption after timeout and ignores its late success",async()=>{
