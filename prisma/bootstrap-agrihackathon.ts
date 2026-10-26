@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { bootstrapAgriEditionInTx, DEFAULT_AGRI_EDITION_ID } from "../src/server/competitions/agrihackathon/bootstrap";
+import { bootstrapAgriEditionInTx, DEFAULT_AGRI_EDITION_ID, resolveAgriBootstrapMode } from "../src/server/competitions/agrihackathon/bootstrap";
 
 const prisma = new PrismaClient();
 
@@ -13,8 +13,7 @@ function parseArgValue(flag: string): string | undefined {
 }
 
 async function main() {
-  const draftOnly = process.argv.includes("--draft-only") || process.env.AGRI_BOOTSTRAP_DRAFT_ONLY === "true";
-  const provisionInitial = !process.argv.includes("--pending-only") && process.env.AGRI_BOOTSTRAP_PENDING_ONLY !== "true";
+  const { draftOnly, provisionInitial, provisionRules } = resolveAgriBootstrapMode(process.argv);
   const competitionId = (
     parseArgValue("--competition-id") ||
     process.env.ANS_AGRIHACKATHON_COMPETITION_ID ||
@@ -25,10 +24,13 @@ async function main() {
   }
 
   console.log(`[agri-bootstrap] Target competitionId: ${competitionId}`);
+  if (provisionRules) {
+    console.warn("[agri-bootstrap] --provision-rules: publishing placeholder Rule v1 (deadlines = now + 60/90 days). Replace them with the organizer's real dates in the management workspace.");
+  }
 
   await prisma.$transaction(
     async tx => {
-      await bootstrapAgriEditionInTx(tx, { competitionId, draftOnly, provisionInitial, silent: false });
+      await bootstrapAgriEditionInTx(tx, { competitionId, draftOnly, provisionInitial, provisionRules, silent: false });
     },
     { maxWait: 30000, timeout: 60000 },
   );
