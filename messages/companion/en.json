@@ -376,5 +376,6 @@
     "trainerLine": "🪪 Trainer: {nickname} · joins the corner after sign-up",
     "defaultTrainer": "Future ANS creator"
   },
-  "guideWorkMode": "🛠️ Work Mode ↗"
+  "guideWorkMode": "🛠️ Work Mode ↗",
+  "agentModelUnavailable": "Unavailable"
 }

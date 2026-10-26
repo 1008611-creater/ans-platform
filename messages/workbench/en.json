@@ -155,9 +155,10 @@
     "codeShort": "⚡ Code mode"
   },
   "model": {
-    "flash": "⚡ DeepSeek-V4.1-Flash · Fast (1x)",
-    "sol": "🧠 GPT-6.1-Sol · Deep reasoning (0.16x)",
-    "astra": "🌟 GPT-6-Astra · Front-end code (0.16x)"
+    "flash": "⚡ DeepSeek-V4.1-Flash · Fast",
+    "sol": "🧠 GPT-6.1-Sol · Deep reasoning",
+    "astra": "🌟 GPT-6-Astra · Front-end code",
+    "unavailable": "Unavailable"
   },
   "guide": {
     "title": "📖 Work mode in 3 steps"

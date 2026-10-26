@@ -5,7 +5,7 @@ import type { DbTransaction } from "@/lib/db";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { DEFAULT_RUN_MODEL, getRunModel, RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
+import { DEFAULT_RUN_MODEL, getAvailableRunModel, RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
 import { writeAuditLog } from "@/lib/audit";
 
 // Backwards-compatible export for callers that historically imported the
@@ -198,7 +198,7 @@ export async function runTemplate(args: {
   userAgent?: string | null;
 }): Promise<RunResult> {
   const modelKey = args.modelKey && args.modelKey.trim() ? args.modelKey.trim() : DEFAULT_RUN_MODEL;
-  const model = getRunModel(modelKey);
+  const model = getAvailableRunModel(modelKey);
   if (!model) {
     return { ok: false, error: "model_unavailable", message: "该模型暂未开放，可选择白名单内的模型" };
   }

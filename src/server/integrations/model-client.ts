@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { meteredResponses, reconcileCodexCharges } from "./codex-gateway";
 import { readApicCharge, isApicTarget, type ApicCharge } from "./apic-billing";
-import { DEFAULT_RUN_MODEL, getRunModel, type RunReasoningEffort } from "@/lib/run-models";
+import { DEFAULT_RUN_MODEL, getAvailableRunModel, type RunReasoningEffort } from "@/lib/run-models";
 
 /**
  * 统一的模型调用客户端。
@@ -39,7 +39,7 @@ export function platformModelConfigured(): boolean {
 
 export function resolvePlatformModel(modelKey?: string | null): ModelTarget {
   const key = modelKey?.trim() || DEFAULT_RUN_MODEL;
-  const model = getRunModel(key);
+  const model = getAvailableRunModel(key);
   if (!model) throw new ModelClientError("该模型暂未开放，可选择白名单内的模型", "MODEL_UNAVAILABLE");
   const baseUrl = process.env.RUN_BASE_URL?.trim() || "";
   const apiKey = process.env.RUN_API_KEY?.trim() || "";

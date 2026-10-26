@@ -8,7 +8,7 @@ import { withStaleTransactionRetry } from "./tx-resilience";
 import type { Prisma } from "@prisma/client";
 import { ClaudePolicyError } from "./claude-policy";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
-import { RUN_MODEL_OPTIONS } from "@/lib/run-models";
+import { availableRunModelOptions, getAvailableRunModel } from "@/lib/run-models";
 import { debitQuota, refundQuota, QuotaError } from "@/server/quota/service";
 import { readApicCharge, type ApicCharge } from "./apic-billing";
 import { hasNonexecutionEvidence, recordGatewayEvidence, lockGatewayBillingAccount } from "./gateway-evidence";
@@ -32,7 +32,7 @@ const RETRY_KEY_PREFIX = "ans-internal-retry:";
 export function validateCodexPayload(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("INVALID_REQUEST");
   const body = value as Record<string, unknown>;
-  if (!RUN_MODEL_OPTIONS.some(m => m.key === body.model)) throw new Error("MODEL_UNAVAILABLE");
+  if (typeof body.model !== "string" || !getAvailableRunModel(body.model)) throw new Error("MODEL_UNAVAILABLE");
   if (body.previous_response_id || body.conversation || body.background === true) throw new Error("STATEFUL_REQUEST_UNSUPPORTED");
   const limit = body.max_output_tokens === undefined ? 16384 : Number(body.max_output_tokens);
   if (!Number.isSafeInteger(limit) || limit < 1 || limit > 16384) throw new Error("OUTPUT_LIMIT_EXCEEDED");
@@ -111,7 +111,7 @@ function failure(message: string, status: number) {
 }
 export async function codexModels(request: Request) {
   if (!await authenticateCodex(request)) return failure("INVALID_API_KEY", 401);
-  return Response.json({ object: "list", data: RUN_MODEL_OPTIONS.map(m => ({ id:m.key, object:"model", owned_by:"ANS" })) }, { headers:{"Cache-Control":"no-store"} });
+  return Response.json({ object: "list", data: availableRunModelOptions().map(m => ({ id:m.key, object:"model", owned_by:"ANS" })) }, { headers:{"Cache-Control":"no-store"} });
 }
 export async function codexResponses(request: Request) {
   const user = await authenticateCodex(request);

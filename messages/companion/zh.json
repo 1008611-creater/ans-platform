@@ -376,5 +376,6 @@
     "trainerLine": "🪪 契约训龙师：{nickname} · 注册后自动入驻右下角",
     "defaultTrainer": "准 ANS 创作者"
   },
-  "guideWorkMode": "🛠️ 工作模式 ↗"
+  "guideWorkMode": "🛠️ 工作模式 ↗",
+  "agentModelUnavailable": "暂不可用"
 }

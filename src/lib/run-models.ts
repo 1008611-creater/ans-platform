@@ -28,6 +28,22 @@ export { DEFAULT_COMPANION_MODEL } from "@/contracts/companion-model";
 export function getRunModel(key: string): RunModelOption | undefined {
   return RUN_MODEL_OPTIONS.find((model) => model.key === key);
 }
+/** ANS_RUN_MODELS_PAUSED (comma-separated keys) keeps a model visible but greyed
+ * out and refuses new calls, without a redeploy. Unknown keys are ignored.
+ * Server-only: the browser never sees this env; client pickers receive the list
+ * through RunModelPricingProvider. */
+export function pausedRunModels(env: Readonly<Record<string, string | undefined>> = process.env): RunModelKey[] {
+  const wanted = new Set((env.ANS_RUN_MODELS_PAUSED ?? "").split(",").map((key) => key.trim()).filter(Boolean));
+  return RUN_MODEL_OPTIONS.filter((model) => wanted.has(model.key)).map((model) => model.key);
+}
+/** For starting a new call: unknown and paused models both return undefined. */
+export function getAvailableRunModel(key: string, paused: readonly string[] = pausedRunModels()): RunModelOption | undefined {
+  const model = getRunModel(key);
+  return model && !paused.includes(model.key) ? model : undefined;
+}
+export function availableRunModelOptions(paused: readonly string[] = pausedRunModels()): RunModelOption[] {
+  return RUN_MODEL_OPTIONS.filter((model) => !paused.includes(model.key));
+}
 /** Retail consumption multipliers are not defined here: ANS_MODEL_BILLING_POLICY
  * owns them. Read them with readRunModelMultipliers() on the server and pass them
  * to the UI, so the displayed rate is always the rate that is charged. */

@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
 import { TX_OPTIONS } from "@/lib/tx-options";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
-import { RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
+import { availableRunModelOptions, getAvailableRunModel, RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
 import { ModelBillingError, readModelBillingSnapshot, type ModelBillingSnapshot } from "@/server/integrations/model-billing-policy";
 
 export interface UpstreamUsagePayload {
@@ -92,11 +92,8 @@ export function handleGatewayOptions(): Response {
 
 export function resolveGatewayModel(model: string): RunModelKey | null {
   const normalized = String(model || "").trim().toLowerCase();
-  if (normalized in MODEL_ALIASES) {
-    return MODEL_ALIASES[normalized];
-  }
-  const direct = RUN_MODEL_OPTIONS.find(item => item.key === normalized);
-  return direct ? direct.key : null;
+  const key = normalized in MODEL_ALIASES ? MODEL_ALIASES[normalized] : RUN_MODEL_OPTIONS.find(item => item.key === normalized)?.key;
+  return key && getAvailableRunModel(key) ? key : null;
 }
 
 /** Token list prices live here; the retail multiplier and USD/CNY rate come from
@@ -235,7 +232,7 @@ export async function v1Models(request: Request): Promise<Response> {
   return Response.json(
     {
       object: "list",
-      data: RUN_MODEL_OPTIONS.map(m => ({
+      data: availableRunModelOptions().map(m => ({
         id: m.key,
         object: "model",
         owned_by: "ANS",
