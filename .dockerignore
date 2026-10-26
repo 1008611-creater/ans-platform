@@ -11,8 +11,6 @@ dist
 .next-compute-history-build
 
 # Local mobile build artifacts (not required by the web image)
-android/.gradle
-android/**/build
 
 # Git
 .git
@@ -35,7 +33,6 @@ android/**/build
 .env.*
 
 # Production snapshots, local credentials and operational artifacts must never enter images.
-deployment-snapshots
 backups
 .workbuddy
 *.bak

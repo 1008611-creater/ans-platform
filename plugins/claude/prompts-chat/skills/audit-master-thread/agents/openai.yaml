@@ -1,4 +1,0 @@
-interface:
-  display_name: "审计主控线程"
-  short_description: "审计多代理短剧生产状态并自动推进到视频验收与剪辑交付"
-  default_prompt: "使用审计主控线程检查当前短剧项目，定位最早缺口，自动修复可推导问题，并推进到下一个可验收节点。"

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Douyin Video Selection"
-  short_description: "Choose strong Douyin topics and video drafts."
-  default_prompt: "Use $douyin-video-selection to choose the strongest Douyin video idea from my materials."

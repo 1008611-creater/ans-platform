@@ -1,5 +1,0 @@
-services:
-  ans-app:
-    image: ans:release-20260713-profile-content-fix
-    ports:
-      - "127.0.0.1:4194:4194"
