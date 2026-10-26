@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { TX_OPTIONS } from "@/lib/tx-options";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
 import { RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
-import { ModelBillingError, readModelBillingSnapshot } from "@/server/integrations/model-billing-policy";
+import { ModelBillingError, readModelBillingSnapshot, type ModelBillingSnapshot } from "@/server/integrations/model-billing-policy";
 
 export interface UpstreamUsagePayload {
   prompt_tokens?: number;
@@ -101,10 +101,11 @@ export function resolveGatewayModel(model: string): RunModelKey | null {
 
 /** Token list prices live here; the retail multiplier and USD/CNY rate come from
  * ANS_MODEL_BILLING_POLICY, the same source the /responses path charges with.
- * Throws ModelBillingError when the model has no verified policy entry. */
-function resolveTariff(modelKey: string): OfficialModelTariff & { consumptionMultiplier: number; pointsPerUsd: number } {
+ * Pass the snapshot read before the upstream call so pre-check and settlement
+ * use one frozen price; without it the current policy is read (and may throw
+ * ModelBillingError when the model has no verified policy entry). */
+function resolveTariff(modelKey: string, snapshot: ModelBillingSnapshot = readModelBillingSnapshot(modelKey)): OfficialModelTariff & { consumptionMultiplier: number; pointsPerUsd: number } {
   const tariff = modelKey in OFFICIAL_MODEL_TARIFFS ? OFFICIAL_MODEL_TARIFFS[modelKey as RunModelKey] : OFFICIAL_MODEL_TARIFFS["deepseek-v4.1-flash"];
-  const snapshot = readModelBillingSnapshot(modelKey);
   return { ...tariff, consumptionMultiplier: snapshot.consumptionMultiplier, pointsPerUsd: snapshot.fx.usdCny * POINTS_PER_CNY };
 }
 
@@ -122,8 +123,8 @@ function roundMicro(value: number): number {
  * Estimates the minimum pre-call points required before invoking an upstream model
  * so low-balance accounts fail fast with zero deduction.
  */
-export function estimateMinPreCallPoints(modelKey: string, promptText: string): number {
-  const tariff = resolveTariff(modelKey);
+export function estimateMinPreCallPoints(modelKey: string, promptText: string, snapshot?: ModelBillingSnapshot): number {
+  const tariff = resolveTariff(modelKey, snapshot);
   const estimatedInputTokens = Math.max(64, estimateTokensFromText(promptText));
   const minExpectedOutputTokens = 128;
 
@@ -145,8 +146,9 @@ export function calculateOfficialTokenPoints(
   usage: UpstreamUsagePayload | null | undefined,
   fallbackInputText = "",
   fallbackOutputText = "",
+  snapshot?: ModelBillingSnapshot,
 ): OfficialTokenPointsBreakdown {
-  const tariff = resolveTariff(modelKey);
+  const tariff = resolveTariff(modelKey, snapshot);
 
   const rawInputTokens =
     usage?.input_tokens ??
@@ -264,13 +266,14 @@ export async function chatCompletionsGateway(request: Request): Promise<Response
   }
 
   const messagesText = JSON.stringify(rawBody.messages ?? []);
-  let minPreCallPoints: number;
+  let pricing: ModelBillingSnapshot;
   try {
-    minPreCallPoints = estimateMinPreCallPoints(resolvedModel, messagesText);
+    pricing = readModelBillingSnapshot(resolvedModel);
   } catch (error) {
     if (error instanceof ModelBillingError) return gatewayFailure(error.code, error.status);
     throw error;
   }
+  const minPreCallPoints = estimateMinPreCallPoints(resolvedModel, messagesText, pricing);
   const currentBalance = Number(user.quotaPoints ?? 0);
   if (currentBalance <= 0 || currentBalance < minPreCallPoints) {
     return gatewayFailure(
@@ -321,6 +324,7 @@ export async function chatCompletionsGateway(request: Request): Promise<Response
     data?.usage,
     messagesText,
     replyText,
+    pricing,
   );
   const upstreamRequestId =
     upstreamRes.headers.get("x-oneapi-request-id") ||

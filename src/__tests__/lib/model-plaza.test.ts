@@ -77,6 +77,14 @@ describe("public model plaza", () => {
     expect(catalog.models[2].pointsPerMillion).toMatchObject({ input: 22.4, output: 112 });
     expect(catalog.models[3].pointsPerMillion).toMatchObject({ input: 280, output: 1400, cacheWrite5m: 350 });
   });
+  it("shows the policy multiplier, not a hardcoded one, and none for an unpriced model", async () => {
+    const config = fixtureModelBillingPolicy(7);
+    config.models["deepseek-v4.1-flash"].consumptionMultiplier = 1.5;
+    const priced = await readModelPlazaCatalog({ fetcher: fetcher(body()), environment: { ANS_MODEL_BILLING_POLICY: JSON.stringify(config) }, now });
+    expect(priced.models.find(model => model.id === "deepseek-v4.1-flash")?.consumptionMultiplier).toBe(1.5);
+    const unpriced = await readModelPlazaCatalog({ fetcher: fetcher(body()), environment: {}, now });
+    expect(unpriced.models.every(model => model.consumptionMultiplier === null)).toBe(true);
+  });
   it("withholds point quotes for a supplier tariff differing from its verified reference", async () => {
     const config = fixtureModelBillingPolicy(7);
     config.models["deepseek-v4.1-flash"].priceEvidence.source = "https://api-docs.deepseek.com/quick_start/pricing/";

@@ -10,6 +10,7 @@ import {
   estimateMinPreCallPoints,
   type UpstreamUsagePayload,
 } from "@/server/integrations/chat-completions-gateway";
+import { readModelBillingSnapshot, type ModelBillingSnapshot } from "@/server/integrations/model-billing-policy";
 
 /** claimArcadeReward 的 draw 分支要求 prizeId/drawId/mode（服务端会重新掷骰决定真实奖品）。 */
 const ARCADE_DRAW_PLACEHOLDER_PRIZE = Object.keys(ARCADE_PRIZE_REWARDS)[0];
@@ -665,9 +666,9 @@ export async function runModelPlaygroundViaPi(
 ): Promise<PiActionResult> {
   const prompt = rawPrompt.trim().slice(0, 4000) || "请为我生成一份本周中国农业大学智慧农业课题组 Git 提交与实验进展周报框架（含本周核心突破、实验指标表格与下周计划）。";
   const selectedModel = modelKey || "deepseek-v4.1-flash";
-  let minRequiredPoints: number;
+  let pricing: ModelBillingSnapshot;
   try {
-    minRequiredPoints = estimateMinPreCallPoints(selectedModel, prompt);
+    pricing = readModelBillingSnapshot(selectedModel);
   } catch {
     // No verified retail price for this model: refuse before any upstream call.
     return {
@@ -680,6 +681,7 @@ export async function runModelPlaygroundViaPi(
       links: [],
     };
   }
+  const minRequiredPoints = estimateMinPreCallPoints(selectedModel, prompt, pricing);
 
   const userBefore = await db.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
   const currentBal = userBefore ? Math.round(Number(userBefore.quotaPoints) * 1_000_000) / 1_000_000 : 0;
@@ -861,6 +863,7 @@ detailEn: "Charged from real token usage at the current billing multiplier",
     usage,
     userPayload,
     outputText,
+    pricing,
   );
   const costPoints = breakdown.billedPoints;
 

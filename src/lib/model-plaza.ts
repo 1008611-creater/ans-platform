@@ -18,7 +18,8 @@ export type ModelPlazaModel = {
   /** Directory publication is not proof of successful inference. */
   status: "listed" | "not-listed" | "prepared";
   usdPerMillion: ModelPlazaPrice | null;
-  consumptionMultiplier: number;
+  /** Retail multiplier from ANS_MODEL_BILLING_POLICY; null when the model is not priced. */
+  consumptionMultiplier: number | null;
   /** null until the server has a complete, verified retail policy. */
   pointsPerMillion: Omit<ModelPlazaPrice, "source" | "sourceUrl"> | null;
 };

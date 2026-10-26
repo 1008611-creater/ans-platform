@@ -23,10 +23,10 @@ describe("billing copy uses distinct USD, CNY and credit units", () => {
       expect(value).toContain(formula);
       expect(value).toContain(once);
       expect(value).toContain(historic);
-      expect((value.match(/0\.16/g) ?? []).length).toBeLessThanOrEqual(1);
+      expect(value).not.toMatch(/0\.16/);
       expect(value).not.toMatch(/1\s*积分.{0,12}(?:\$1|1\s*美元)|(?:each|one) (?:point|credit).{0,30}(?:USD 1|one USD)/i);
     }
     // Per-model rates come from ANS_MODEL_BILLING_POLICY at runtime; copy must not pin them.
-    for (const value of copy.slice(0, 3)) expect(value).not.toMatch(/(?:GPT|DeepSeek|Opus)\s*×\s*[\d{]/);
+    for (const value of copy) expect(value).not.toMatch(/(?:GPT|DeepSeek|Opus)\s*×\s*[\d{]/);
   });
 });

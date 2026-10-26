@@ -68,7 +68,7 @@
   "generated": "New draft saved. Review and edit it; regenerating preserves previous versions.",
   "coreTitle": "Start with these three",
   "moreWorkflows": "Other existing tools (optional)",
-  "cost": "Up to {points} credits are reserved before generation; actual usage is settled and unused reservations returned. Recharge is fixed at CNY 1 = 10 credits. Model credits consumed = official USD cost × snapshot USD/CNY exchange rate × 10 × model consumption multiplier. Apply GPT ×0.16 once only. Historical requests retain their original pricing snapshot. Manual edits and exports use no generation credits.",
+  "cost": "Up to {points} credits are reserved before generation; actual usage is settled and unused reservations returned. Recharge is fixed at CNY 1 = 10 credits. Model credits consumed = official USD cost × snapshot USD/CNY exchange rate × 10 × model consumption multiplier. Apply the multiplier once only. Historical requests retain their original pricing snapshot. Manual edits and exports use no generation credits.",
   "generate": "Generate draft",
   "regenerate": "Generate new version",
   "generating": "Generating…",
