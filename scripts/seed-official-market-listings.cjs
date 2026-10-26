@@ -129,7 +129,7 @@ const OFFICIAL_MARKET_LISTINGS = [
     // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
     status: "WITHDRAWN",
     title: "Agent 多工具调用循环最小实现（TypeScript）",
-    summary: "一段约 25 行的 TypeScript Agent 工具调用循环：模型决定调用哪个工具，结果回填对话，最多 3 步后给出回答。",
+    summary: "一段约 25 行的 TypeScript Agent 工具调用循环：模型决定调用哪个工具，结果回填对话；最多 3 轮工具调用，超出后返回步数上限提示。",
     description:
       "交付内容是一份可直接复制的 TypeScript 代码：定义工具接口，执行 think → tool_call → observe → answer 循环，并限制最大步数。\n\n不包含 PDF 检索、向量化切片、飞书播报或模型客户端封装，这些需要按自己的项目接入。",
     category: "github",
