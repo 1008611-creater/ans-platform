@@ -8,6 +8,7 @@ import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { DinoGuide } from "@/components/mascot/dino-guide";
 import { WebsiteStructuredData } from "@/components/seo/structured-data";
 import { getConfig } from "@/lib/config";
+import { readRunModelMultipliers } from "@/server/integrations/model-billing-policy";
 import { isRtlLocale } from "@/lib/i18n/config";
 import { hexToOklch, pickPrimaryForeground } from "@/lib/theme-colors";
 import "./globals.css";
@@ -124,7 +125,7 @@ export default async function RootLayout({
         <WebsiteStructuredData />
       </head>
       <body className={`${fontClasses} antialiased`}>
-        <Providers locale={locale} timeZone={timeZone} messages={messages} theme={config.theme} branding={{ ...config.branding, useCloneBranding: config.homepage?.useCloneBranding }}>
+        <Providers locale={locale} timeZone={timeZone} messages={messages} theme={config.theme} branding={{ ...config.branding, useCloneBranding: config.homepage?.useCloneBranding }} modelMultipliers={readRunModelMultipliers()}>
           <SiteFrame
             skipLabel={product("skipToContent")}
             header={<Header authProvider={config.auth.provider} allowRegistration={config.auth.allowRegistration} />}

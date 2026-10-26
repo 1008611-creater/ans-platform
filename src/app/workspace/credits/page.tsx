@@ -28,8 +28,6 @@ const GUEST_CREDITS_HISTORY = {
   billing: {
     rechargeYuanPerPoint: 0.1,
     usdQuotaPerPoint: 0.1,
-    gptConsumptionMultiplier: 0.16,
-    deepseekConsumptionMultiplier: 1,
     rechargeEnabled: false,
   },
   entries: [] as Array<{

@@ -10,20 +10,22 @@ import { RevealDetails } from "@/components/catalog/reveal-details";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import { Input } from "@/components/ui/input";
 import { getCreditProducts, LEGACY_CREDIT_PRODUCT, type CreditProduct } from "@/lib/credits-catalog";
-import { RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
+import { RUN_MODEL_OPTIONS } from "@/lib/run-models";
+import { useRunModelMultipliers } from "@/components/providers/run-model-pricing";
 import type { PersonalApiHistory } from "@/contracts/compute-benefits";
 import { Badge } from "@/components/ui/badge";
 
-type Billing = { rechargeYuanPerPoint: number; usdQuotaPerPoint?: number | null; gptConsumptionMultiplier: number; deepseekConsumptionMultiplier: number; rechargeEnabled: boolean };
+type Billing = { rechargeYuanPerPoint: number; usdQuotaPerPoint?: number | null; rechargeEnabled: boolean };
 type CreditsProps = { actorId: string; billing: Billing; availablePoints: number; reservedPoints?: number; pendingCount?: number; apiHistory?: PersonalApiHistory | null; products?: readonly CreditProduct[] };
 
 export function CreditsCenter(props: CreditsProps) {
   return <AccountContentBoundary actorId={props.actorId}><CreditsCenterSession key={props.actorId} {...props} /></AccountContentBoundary>;
 }
 
-function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoints = 0, pendingCount = 0, apiHistory, products = getCreditProducts({}) }: CreditsProps) {
+function CreditsCenterSession({ actorId, availablePoints, reservedPoints = 0, pendingCount = 0, apiHistory, products = getCreditProducts({}) }: CreditsProps) {
   const t = useTranslations("product.vouchers");
   const historyText = useTranslations("product.quotaHistory");
+  const multipliers = useRunModelMultipliers();
   const locale = useLocale();
   const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
@@ -82,7 +84,7 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
         <div className="min-w-0"><dt className="flex items-center gap-2 text-sm text-muted-foreground"><Coins className="size-4 text-primary" aria-hidden="true" />{t("balance")}</dt><dd className="mt-3 break-words text-4xl font-semibold tracking-tight tabular-nums [overflow-wrap:anywhere] sm:text-5xl">{numbers.format(availablePoints)}<span className="ms-2 text-base font-normal text-muted-foreground">{t("pointsUnit")}</span></dd></div>
         <div className="min-w-0"><dt className="flex items-center gap-2 text-sm text-muted-foreground"><Clock3 className="size-4" aria-hidden="true" />{t("reserved")}</dt><dd className="mt-3 break-words text-3xl font-semibold tracking-tight tabular-nums [overflow-wrap:anywhere] sm:text-4xl">{numbers.format(reservedPoints)}<span className="ms-2 text-base font-normal text-muted-foreground">{t("pointsUnit")}</span></dd><p className="mt-2 text-xs leading-6 text-muted-foreground">{t("reservationExplanation")}</p></div>
       </dl>
-      <p className="mt-5 max-w-3xl text-sm leading-6 text-muted-foreground">{t("rules", { gpt: billing.gptConsumptionMultiplier, deepseek: billing.deepseekConsumptionMultiplier })}</p>
+      <p className="mt-5 max-w-3xl text-sm leading-6 text-muted-foreground">{t("rules")}</p>
       {pendingCount > 0 && <aside className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4"><h3 className="text-sm font-medium">{t("pendingTitle", { count: pendingCount })}</h3><p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{t("pendingExplanation")}</p><span className="sr-only">{historyText("pending", { count: pendingCount })}</span><span className="sr-only">{historyText("hold")}</span></aside>}
     </section>
     <section aria-labelledby="credits-models-heading" className="rounded-3xl border bg-card p-6 sm:p-8">
@@ -97,7 +99,7 @@ function CreditsCenterSession({ actorId, billing, availablePoints, reservedPoint
             </div>
             <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{model.key}</p>
           </div>
-          <p className="mt-4 text-sm font-medium">{t("modelMultiplier", { multiplier: RUN_MODEL_METERING[model.key].consumptionMultiplier })}</p>
+          <p className="mt-4 text-sm font-medium">{multipliers[model.key] === undefined ? t("modelUnpriced") : t("modelMultiplier", { multiplier: multipliers[model.key]! })}</p>
         </Link>
       </li>)}</ul>
       <p className="mt-3 text-xs leading-6 text-muted-foreground">{t("modelRatesNote")}</p>

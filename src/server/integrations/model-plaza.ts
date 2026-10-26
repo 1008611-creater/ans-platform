@@ -25,13 +25,13 @@ const official = (sourceUrl: string, input: number, output: number, cacheRead: n
  * fast/region/tool surcharges are not included in these reference figures.
  */
 const REFERENCES: ModelPlazaModel[] = [
-  { id: "deepseek-v4.1-flash", name: "DeepSeek V4.1 Flash", vendor: "DeepSeek", endpoints: ["Chat Completions"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: 1,
+  { id: "deepseek-v4.1-flash", name: "DeepSeek V4.1 Flash", vendor: "DeepSeek", endpoints: ["Chat Completions"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: null,
     usdPerMillion: official("https://api-docs.deepseek.com/quick_start/pricing/", 0.3, 1.2, 0.006), pointsPerMillion: null },
-  { id: "gpt-6-astra", name: "GPT-6 Astra", vendor: "OpenAI", endpoints: ["Chat Completions", "Responses"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: 0.16,
+  { id: "gpt-6-astra", name: "GPT-6 Astra", vendor: "OpenAI", endpoints: ["Chat Completions", "Responses"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: null,
     usdPerMillion: { ...official("https://developers.openai.com/api/docs/models/gpt-6-astra", 10, 50, 1), cacheWrite: 12.5 }, pointsPerMillion: null },
-  { id: "gpt-6.1-sol", name: "GPT-6.1 Sol", vendor: "OpenAI", endpoints: ["Chat Completions", "Responses"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: 0.16,
+  { id: "gpt-6.1-sol", name: "GPT-6.1 Sol", vendor: "OpenAI", endpoints: ["Chat Completions", "Responses"], pricingType: "tokens", status: "not-listed", consumptionMultiplier: null,
     usdPerMillion: { ...official("https://developers.openai.com/api/docs/models/gpt-6.1-sol", 2, 10, 0.1), cacheWrite: 2.5 }, pointsPerMillion: null },
-  { id: "claude-opus-5-5", name: "Claude Opus 5.5", vendor: "Anthropic", endpoints: ["Messages"], pricingType: "tokens", status: "prepared", consumptionMultiplier: 1,
+  { id: "claude-opus-5-5", name: "Claude Opus 5.5", vendor: "Anthropic", endpoints: ["Messages"], pricingType: "tokens", status: "prepared", consumptionMultiplier: null,
     usdPerMillion: official("https://platform.claude.com/docs/en/about-claude/pricing", 4, 20, 0.2, 5, 8), pointsPerMillion: null },
 ];
 const endpointNames: Readonly<Record<string, string>> = { openai: "Chat Completions", openai_response: "Responses", anthropic: "Messages" };
@@ -100,6 +100,7 @@ export async function readModelPlazaCatalog(options: {
   for (const model of result.models) {
     try {
       const snapshot = readModelBillingSnapshot(model.id, options.environment ?? process.env, now.getTime());
+      model.consumptionMultiplier = snapshot.consumptionMultiplier;
       const reference = REFERENCES.find(item => item.id === model.id)!.usdPerMillion!;
       const price = model.usdPerMillion;
       // A differing supplier tariff must be reconciled before advertising a retail conversion.

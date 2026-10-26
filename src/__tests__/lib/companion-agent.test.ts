@@ -12,7 +12,7 @@ vi.mock("@/server/integrations/codex-gateway", async () => {
 });
 import { agentInputSchema, type AgentEvent, type AgentInput } from "@/contracts/companion-agent";
 import { issueAgentTicket, verifyAgentTicket, AGENT_BODY_LIMIT, AGENT_MODEL, AGENT_OUTPUT_LIMIT, checkAgentPayload, agentKey, agentMaxPoints } from "@/server/companion/policy";
-import { DEFAULT_COMPANION_MODEL, DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS, RUN_MODEL_METERING } from "@/lib/run-models";
+import { DEFAULT_COMPANION_MODEL, DEFAULT_RUN_MODEL, RUN_MODEL_OPTIONS } from "@/lib/run-models";
 import { executeAgent, prepareAgentQuote, readAgentStatus } from "@/server/companion/service";
 import { executeAgentTool } from "@/server/companion/tools";
 const input: AgentInput = { messages: [{ role: "user", content: "帮我查一下项目" }], pathname: "/explore", locale: "zh", privateAccess: false, model: AGENT_MODEL };
@@ -187,10 +187,7 @@ describe("selected companion model authorization", () => {
     expect(verifyAgentTicket(quote.ticket, "alice", undefined, 2000).maxPoints).toBe(agentMaxPoints("deepseek-v4.1-flash"));
     expect(() => verifyAgentTicket(quote.ticket, "alice", { ...selected, model: "gpt-6.1-sol" }, 2000)).toThrow("QUOTE_CHANGED");
   });
-  it("uses the shared consumption factors without equating unlike base prices", () => {
-    expect(RUN_MODEL_METERING["gpt-6-astra"].consumptionMultiplier).toBe(0.16);
-    expect(RUN_MODEL_METERING["gpt-6.1-sol"].consumptionMultiplier).toBe(0.16);
-    expect(RUN_MODEL_METERING["deepseek-v4.1-flash"].consumptionMultiplier).toBe(1);
+  it("does not equate unlike base prices", () => {
     expect(agentMaxPoints("gpt-6-astra")).toBeGreaterThan(agentMaxPoints("gpt-6.1-sol"));
     expect(agentMaxPoints("gpt-6.1-sol")).toBeGreaterThan(agentMaxPoints("deepseek-v4.1-flash"));
   });

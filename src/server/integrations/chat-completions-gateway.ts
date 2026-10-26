@@ -2,7 +2,8 @@ import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
 import { TX_OPTIONS } from "@/lib/tx-options";
 import { hashApiKey, isValidApiKeyFormat } from "@/lib/api-key";
-import { RUN_MODEL_METERING, RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
+import { RUN_MODEL_OPTIONS, type RunModelKey } from "@/lib/run-models";
+import { ModelBillingError, readModelBillingSnapshot, type ModelBillingSnapshot } from "@/server/integrations/model-billing-policy";
 
 export interface UpstreamUsagePayload {
   prompt_tokens?: number;
@@ -42,7 +43,6 @@ interface OfficialModelTariff {
   outputUsdPerMillion: number;
   cacheReadUsdPerMillion: number;
   cacheWriteUsdPerMillion: number;
-  consumptionMultiplier: number;
 }
 
 const OFFICIAL_MODEL_TARIFFS: Record<RunModelKey, OfficialModelTariff> = {
@@ -51,21 +51,18 @@ const OFFICIAL_MODEL_TARIFFS: Record<RunModelKey, OfficialModelTariff> = {
     outputUsdPerMillion: 1.2,
     cacheReadUsdPerMillion: 0.006,
     cacheWriteUsdPerMillion: 0.3,
-    consumptionMultiplier: RUN_MODEL_METERING["deepseek-v4.1-flash"].consumptionMultiplier,
   },
   "gpt-6-astra": {
     inputUsdPerMillion: 10,
     outputUsdPerMillion: 50,
     cacheReadUsdPerMillion: 1,
     cacheWriteUsdPerMillion: 12.5,
-    consumptionMultiplier: RUN_MODEL_METERING["gpt-6-astra"].consumptionMultiplier,
   },
   "gpt-6.1-sol": {
     inputUsdPerMillion: 2,
     outputUsdPerMillion: 10,
     cacheReadUsdPerMillion: 0.1,
     cacheWriteUsdPerMillion: 2.5,
-    consumptionMultiplier: RUN_MODEL_METERING["gpt-6.1-sol"].consumptionMultiplier,
   },
 };
 
@@ -80,9 +77,7 @@ const MODEL_ALIASES: Record<string, RunModelKey> = {
   "gpt-6-astra": "gpt-6-astra",
 };
 
-const USD_TO_CNY_RATE = 7.2;
 const POINTS_PER_CNY = 10;
-const POINTS_PER_USD = USD_TO_CNY_RATE * POINTS_PER_CNY; // 72 points / USD
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -104,11 +99,14 @@ export function resolveGatewayModel(model: string): RunModelKey | null {
   return direct ? direct.key : null;
 }
 
-function resolveTariff(modelKey: string): OfficialModelTariff {
-  if (modelKey in OFFICIAL_MODEL_TARIFFS) {
-    return OFFICIAL_MODEL_TARIFFS[modelKey as RunModelKey];
-  }
-  return OFFICIAL_MODEL_TARIFFS["deepseek-v4.1-flash"];
+/** Token list prices live here; the retail multiplier and USD/CNY rate come from
+ * ANS_MODEL_BILLING_POLICY, the same source the /responses path charges with.
+ * Pass the snapshot read before the upstream call so pre-check and settlement
+ * use one frozen price; without it the current policy is read (and may throw
+ * ModelBillingError when the model has no verified policy entry). */
+function resolveTariff(modelKey: string, snapshot: ModelBillingSnapshot = readModelBillingSnapshot(modelKey)): OfficialModelTariff & { consumptionMultiplier: number; pointsPerUsd: number } {
+  const tariff = modelKey in OFFICIAL_MODEL_TARIFFS ? OFFICIAL_MODEL_TARIFFS[modelKey as RunModelKey] : OFFICIAL_MODEL_TARIFFS["deepseek-v4.1-flash"];
+  return { ...tariff, consumptionMultiplier: snapshot.consumptionMultiplier, pointsPerUsd: snapshot.fx.usdCny * POINTS_PER_CNY };
 }
 
 function estimateTokensFromText(text: string): number {
@@ -125,8 +123,8 @@ function roundMicro(value: number): number {
  * Estimates the minimum pre-call points required before invoking an upstream model
  * so low-balance accounts fail fast with zero deduction.
  */
-export function estimateMinPreCallPoints(modelKey: string, promptText: string): number {
-  const tariff = resolveTariff(modelKey);
+export function estimateMinPreCallPoints(modelKey: string, promptText: string, snapshot?: ModelBillingSnapshot): number {
+  const tariff = resolveTariff(modelKey, snapshot);
   const estimatedInputTokens = Math.max(64, estimateTokensFromText(promptText));
   const minExpectedOutputTokens = 128;
 
@@ -135,7 +133,7 @@ export function estimateMinPreCallPoints(modelKey: string, promptText: string): 
       minExpectedOutputTokens * tariff.outputUsdPerMillion) /
     1_000_000;
 
-  const rawPoints = usdCost * POINTS_PER_USD * tariff.consumptionMultiplier;
+  const rawPoints = usdCost * tariff.pointsPerUsd * tariff.consumptionMultiplier;
   return Math.max(0.0001, roundMicro(rawPoints));
 }
 
@@ -148,8 +146,9 @@ export function calculateOfficialTokenPoints(
   usage: UpstreamUsagePayload | null | undefined,
   fallbackInputText = "",
   fallbackOutputText = "",
+  snapshot?: ModelBillingSnapshot,
 ): OfficialTokenPointsBreakdown {
-  const tariff = resolveTariff(modelKey);
+  const tariff = resolveTariff(modelKey, snapshot);
 
   const rawInputTokens =
     usage?.input_tokens ??
@@ -195,7 +194,8 @@ export function calculateOfficialTokenPoints(
   const effectiveUsdCost = roundMicro(baseUsdCost * tariff.consumptionMultiplier);
   const billedPoints = Math.max(
     0.000001,
-    Math.ceil(baseUsdCost * POINTS_PER_USD * tariff.consumptionMultiplier * 1_000_000) / 1_000_000,
+    // Trim float noise (e.g. 162648.00000000003) before rounding up to a micro-point.
+    Math.ceil(Number((baseUsdCost * tariff.pointsPerUsd * tariff.consumptionMultiplier * 1_000_000).toFixed(6))) / 1_000_000,
   );
 
   return {
@@ -266,7 +266,14 @@ export async function chatCompletionsGateway(request: Request): Promise<Response
   }
 
   const messagesText = JSON.stringify(rawBody.messages ?? []);
-  const minPreCallPoints = estimateMinPreCallPoints(resolvedModel, messagesText);
+  let pricing: ModelBillingSnapshot;
+  try {
+    pricing = readModelBillingSnapshot(resolvedModel);
+  } catch (error) {
+    if (error instanceof ModelBillingError) return gatewayFailure(error.code, error.status);
+    throw error;
+  }
+  const minPreCallPoints = estimateMinPreCallPoints(resolvedModel, messagesText, pricing);
   const currentBalance = Number(user.quotaPoints ?? 0);
   if (currentBalance <= 0 || currentBalance < minPreCallPoints) {
     return gatewayFailure(
@@ -317,6 +324,7 @@ export async function chatCompletionsGateway(request: Request): Promise<Response
     data?.usage,
     messagesText,
     replyText,
+    pricing,
   );
   const upstreamRequestId =
     upstreamRes.headers.get("x-oneapi-request-id") ||

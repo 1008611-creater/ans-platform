@@ -10,6 +10,7 @@ import {
   estimateMinPreCallPoints,
   type UpstreamUsagePayload,
 } from "@/server/integrations/chat-completions-gateway";
+import { readModelBillingSnapshot, type ModelBillingSnapshot } from "@/server/integrations/model-billing-policy";
 
 /** claimArcadeReward 的 draw 分支要求 prizeId/drawId/mode（服务端会重新掷骰决定真实奖品）。 */
 const ARCADE_DRAW_PLACEHOLDER_PRIZE = Object.keys(ARCADE_PRIZE_REWARDS)[0];
@@ -665,7 +666,22 @@ export async function runModelPlaygroundViaPi(
 ): Promise<PiActionResult> {
   const prompt = rawPrompt.trim().slice(0, 4000) || "请为我生成一份本周中国农业大学智慧农业课题组 Git 提交与实验进展周报框架（含本周核心突破、实验指标表格与下周计划）。";
   const selectedModel = modelKey || "deepseek-v4.1-flash";
-  const minRequiredPoints = estimateMinPreCallPoints(selectedModel, prompt);
+  let pricing: ModelBillingSnapshot;
+  try {
+    pricing = readModelBillingSnapshot(selectedModel);
+  } catch {
+    // No verified retail price for this model: refuse before any upstream call.
+    return {
+      ok: false,
+      error: "MODEL_BILLING_NOT_CONFIGURED",
+      toolUsed: "run_model_playground",
+      replyZh: `${selectedModel} 暂未定价，本次未调用模型，也没有扣费。请换一个模型再试。`,
+      replyEn: `${selectedModel} is not priced yet. The model was not called and no points were charged. Please try another model.`,
+      pointsDelta: 0,
+      links: [],
+    };
+  }
+  const minRequiredPoints = estimateMinPreCallPoints(selectedModel, prompt, pricing);
 
   const userBefore = await db.user.findUnique({ where: { id: actor }, select: { quotaPoints: true } });
   const currentBal = userBefore ? Math.round(Number(userBefore.quotaPoints) * 1_000_000) / 1_000_000 : 0;
@@ -834,8 +850,8 @@ traceEn: [
           href: "/workspace/models",
           title: "⚡ 切换其他模型重试 (/workspace/models)",
 titleEn: "⚡ Retry with another model (/workspace/models)",
-          detail: "按官方 Token 单价与倍率（DeepSeek 1x / GPT-6 0.16x）实算扣费",
-detailEn: "Charged from real token usage (DeepSeek 1x / GPT-6 0.16x)",
+          detail: "按官方 Token 单价与当前计费倍率实算扣费",
+detailEn: "Charged from real token usage at the current billing multiplier",
           icon: "discover",
         },
       ],
@@ -847,6 +863,7 @@ detailEn: "Charged from real token usage (DeepSeek 1x / GPT-6 0.16x)",
     usage,
     userPayload,
     outputText,
+    pricing,
   );
   const costPoints = breakdown.billedPoints;
 
