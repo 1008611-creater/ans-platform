@@ -1,6 +1,20 @@
 # ANS 生产发布与恢复门禁
 
-## 2026-10-26：d64be90e 发布失败（磁盘不足），线上仍为 b6844c10
+> 当前状态以本文件最上方最新核验记录及实际运行容器为准。下方历史段落中的“当前”“正式”仅指各自记录当时，不覆盖后续发布。
+
+## 2026-10-26：d64be90e 已上线并核对
+
+第三次发布通过 `deploy/deploy.sh` 完成，运行镜像为 `ans-platform:d64be90e`，镜像 ID `sha256:5b8bd4c21130560c3466ea44f4e10fcf655c8b4cab38a1782ec30cd7b4cbe7a8`。截至 2026-10-26 12:04 UTC 核对：容器 healthy；源站与公网 `/api/health` 均为 healthy、database connected；六个主入口与 `/workspace/models` 返回 200。工作台 HTML 的两个 GPT 选项带 disabled，DeepSeek 展示 1.5x。运行环境已设置 `ANS_RUN_MODELS_PAUSED=gpt-6-astra,gpt-6.1-sol`，未通过付费模型调用验收。
+
+经负责人授权删除 8 个旧发布镜像，数据盘可用从 9.9 GB 升至 28 GB；第 9 个 `codex-20261009-base` 正被 `ans-public-read-coalescer` 使用，Docker 拒绝删除，已保留。发布完成后数据盘可用约 22 GB。保留原生产 `b6844c10` 与其前版 `b70c7ca3`；`latest` 随本次构建更新。回滚入口：`bash /srv/ans-releases/ans-d64be90e-20261026/rollback.sh`。
+
+`ops/prod-live` 和 `ops/deploy-target` 已快进至 `d64be90e709d54038b2be555fbf66c884420ee59`。6 张已知修改的封面保持；另发现未跟踪 `public/catalog/ans-pro-v1/liu-resume.webp`，未操作，归属待核对。
+
+两件商品下架已在发布前核验为 WITHDRAWN，详情返回 404。负责人已决定暂不处理 4 笔 UNCERTAIN（9.40 积分），不得自动豁免或改账；抓娃娃机与任务街机暂保留，后续统一重置。下方失败记录保留作追溯，其“当前”“未生效”等状态以本段为准。完整桌面/手机交互验收仍待后续完成。
+
+## 2026-10-26：前两次发布失败的历史记录（已由第三次成功发布取代）
+
+以下状态均指前两次失败当时；当前版本、暂停开关及磁盘处理结果以顶部成功核验记录为准。
 
 目标 `d64be90e`（main，含 #219–#228：计费倍率统一读策略、模型暂停开关、市场文案、代码收敛），无数据库迁移。
 
