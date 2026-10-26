@@ -70,7 +70,7 @@ const usedKeys = [];
 
 // Build a map of namespace aliases from patterns like:
 // const tCommon = useTranslations("common")
-// const tHomepage = await getTranslations("homepage")
+// const tHubs = await getTranslations("hubs")
 // const t = useTranslations("admin.reports")  -- nested namespaces
 const namespaceAliases = {};
 const aliasPattern = /(?:const|let)\s+(t\w*)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\s*\(\s*["']([^"']+)["']\s*\)/g;
