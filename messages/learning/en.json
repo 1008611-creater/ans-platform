@@ -100,5 +100,6 @@
   "billingRun": "Run (reserve up to {points} credits)",
   "billingReservation": "Reserve up to {points} credits",
   "goalQuestion": "What is this project for?",
-  "projectGuideQuestion": "Not sure where to start?"
+  "projectGuideQuestion": "Not sure where to start?",
+  "modelUnavailable": "Unavailable"
 }

@@ -1,15 +1,21 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { RunModelMultipliers } from "@/lib/run-models";
+import type { RunModelKey, RunModelMultipliers } from "@/lib/run-models";
 
-const RunModelPricingContext = createContext<RunModelMultipliers>({});
+type RunModelPricing = { multipliers: RunModelMultipliers; paused: readonly RunModelKey[] };
+const RunModelPricingContext = createContext<RunModelPricing>({ multipliers: {}, paused: [] });
 
-/** Carries the server-read billing policy multipliers to client model pickers. */
-export function RunModelPricingProvider({ multipliers, children }: { multipliers: RunModelMultipliers; children: React.ReactNode }) {
-  return <RunModelPricingContext.Provider value={multipliers}>{children}</RunModelPricingContext.Provider>;
+/** Carries the server-read billing multipliers and paused models to client model pickers. */
+export function RunModelPricingProvider({ multipliers, paused = [], children }: { multipliers: RunModelMultipliers; paused?: readonly RunModelKey[]; children: React.ReactNode }) {
+  return <RunModelPricingContext.Provider value={{ multipliers, paused }}>{children}</RunModelPricingContext.Provider>;
 }
 
 export function useRunModelMultipliers(): RunModelMultipliers {
-  return useContext(RunModelPricingContext);
+  return useContext(RunModelPricingContext).multipliers;
+}
+
+/** Models that must not be offered for new calls right now. */
+export function usePausedRunModels(): readonly RunModelKey[] {
+  return useContext(RunModelPricingContext).paused;
 }

@@ -18,7 +18,8 @@ import { AgentTurnStatus } from "./agent-turn-status";
 import { activateCompanionActor, readCompanionConversation, saveCompanionConversation } from "./companion-session";
 import { AgentRecoveryStatus } from "./agent-recovery-status";
 import { CompanionModelSelect } from "./companion-model-select";
-import { DEFAULT_COMPANION_MODEL, getRunModel, type RunModelKey } from "@/lib/run-models";
+import { DEFAULT_COMPANION_MODEL, getAvailableRunModel, type RunModelKey } from "@/lib/run-models";
+import { usePausedRunModels } from "@/components/providers/run-model-pricing";
 import { useCompanionSize } from "./use-companion-size";
 import { CompanionQuestPin, CompanionSanctuaryBar } from "./companion-sanctuary-bar";
 import "./companion.css";
@@ -77,9 +78,10 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const nextActions = recommendations ?? pageActions(pathname, ui);
   const blocked = mode === "agent" && (agent.busy || agent.phase === "confirm" || agent.checkingReceipts);
   const modelStorageKey = `ans.companion-model.v1:${actor ?? "guest"}`;
+  const pausedModels = usePausedRunModels();
   useEffect(() => {
-    try { const option = getRunModel(localStorage.getItem(modelStorageKey) ?? ""); if (option) setModel(option.key); } catch { /* Browser storage is optional. */ }
-  }, [modelStorageKey]);
+    try { const option = getAvailableRunModel(localStorage.getItem(modelStorageKey) ?? "", pausedModels); if (option) setModel(option.key); } catch { /* Browser storage is optional. */ }
+  }, [modelStorageKey, pausedModels]);
   function changeModel(value: RunModelKey) {
     setModel(value);
     try { localStorage.setItem(modelStorageKey, value); } catch { /* Keep the current choice in memory. */ }

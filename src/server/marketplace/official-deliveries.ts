@@ -27,7 +27,7 @@ cat weekly_commits.txt
 
 ## 2. 导师最爱的「结构化组会周报」System Prompt（直接复制到工作台）
 
-可前往 [ANS 模型工作台 (/workspace/models)](/workspace/models) 选择 \`DeepSeek-V4.1-Flash\` 或 \`GPT-5.4\`，粘贴以下提示词：
+可前往 [ANS 模型工作台 (/workspace/models)](/workspace/models) 选择 \`DeepSeek-V4.1-Flash\` 或 \`GPT-6.1-Sol\`，粘贴以下提示词：
 
 \`\`\`markdown
 # Role
@@ -269,7 +269,7 @@ export function AgriDashboardGrid() {
 \`\`\`
 `,
 
-  "open-pi-agent-rag-toolchain": `# 📦 交付包：Agent 多工具编排与农业知识图谱 RAG 实战套件
+  "open-pi-agent-rag-toolchain": `# 📦 交付包：Agent 多工具调用循环最小实现（TypeScript）
 
 > **状态**：✅ ANS 官方自动秒发（已永久解锁）  
 > **架构亮点**：零臃肿框架依赖、遵循极简 \`think -> tool_call -> observe -> answer\` 循环。

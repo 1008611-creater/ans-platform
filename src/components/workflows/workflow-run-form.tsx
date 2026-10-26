@@ -1,5 +1,6 @@
 "use client";
 
+import { usePausedRunModels } from "@/components/providers/run-model-pricing";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useMarketActorId, useMarketRequest } from "@/components/marketplace/account-boundary";
@@ -87,6 +88,7 @@ export function WorkflowRunForm({
     return () => { alive.current = false; };
   }, []);
   const billing = useTranslations("learning");
+  const pausedModels = usePausedRunModels();
   const workflowBilling = useTranslations("marketWorkflow");
   const studio = useTranslations("workflowStudio");
   const [values, setValues] = useState<Record<string, string>>(() =>
@@ -328,8 +330,8 @@ export function WorkflowRunForm({
               </SelectTrigger>
               <SelectContent container={portalRoot.current}>
                 {RUN_MODEL_OPTIONS.map((model) => (
-                  <SelectItem key={model.key} value={model.key}>
-                    {model.label}
+                  <SelectItem key={model.key} value={model.key} disabled={pausedModels.includes(model.key)}>
+                    {!pausedModels.includes(model.key) ? model.label : `${model.label} · ${billing("modelUnavailable")}`}
                   </SelectItem>
                 ))}
               </SelectContent>
