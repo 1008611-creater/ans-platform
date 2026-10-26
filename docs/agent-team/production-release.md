@@ -1,5 +1,19 @@
 # ANS 生产发布与恢复门禁
 
+## 2026-10-26：d64be90e 发布失败（磁盘不足），线上仍为 b6844c10
+
+目标 `d64be90e`（main，含 #219–#228：计费倍率统一读策略、模型暂停开关、市场文案、代码收敛），无数据库迁移。
+
+- 第一次运行 `deploy/deploy.sh`：磁盘守卫拦下（Docker 数据盘 `/srv/kidswear-data` 可用 6G < 8G），未动线上容器。
+- 第二次以 `BUILD_MIN_FREE_GB=5` 运行：Next 编译与 111 个静态页生成成功，导出镜像层时 `no space left on device` 失败。脚本在切换容器之前退出，**线上未受影响**：容器仍是 `ans-platform:b6844c10`，healthy，`/api/health` 为 database connected。
+- 失败后数据盘只剩 1.2G（99%），该盘与其他服务共用。已执行 `docker builder prune -f` 清理未使用的构建缓存 9.3G，可用回到 9.9G（91%）；未删除任何镜像、容器或数据卷。
+- 服务器源码目录已被脚本切到 `d64be90e`（detached），与运行镜像不一致；下一次成功发布后恢复一致。6 张 `public/catalog/ans-pro-v1/*.webp` 本地修改保持原样。
+- 同日已执行的生产数据库写入（负责人确认）：两件与交付不符的官方商品 `open-pi-agent-rag-toolchain`、`cau-postgrad-interview-english-kit` 设为 `WITHDRAWN`，恰好 2 行，均无订单。
+- 未生效（随发布一起）：`ANS_RUN_MODELS_PAUSED=gpt-6-astra,gpt-6.1-sol`。
+- 遗留：4 笔 UNCERTAIN 计费（ADMIN 测试账号，共 9.40 积分，上游从未计费），等负责人在 `/admin/credits` 处理。
+
+重新发布前需要更多磁盘空间：构建在可用约 6G 时写满，建议发布前可用 ≥ 15G。可回收来源是旧的 `ans-platform:*` 发布镜像（`docker system df` 显示镜像可回收约 44G），删除哪些需负责人决定，至少保留当前线上 `b6844c10` 与其回滚目标 `b70c7ca3`。
+
 ## 2026-10-13：R10 正式发布与公网验收完成
 
 当前正式应用于北京时间 2026-10-13 19:49:28 切换至 main 提交 `e58e2bb3959f26fcbdd8ef0a6a990629f4a41215`。本版包含已合并的 PR #67（服务器源码归档与构建隔离）和 #69（Hub 查询并行及空集合查询优化）；未包含尚未合并的 #68 新课程/练习改造和 #70 自动审查配置。归档的其他产品代码不代表这些服务重新部署。
