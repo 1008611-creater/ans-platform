@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { readModelPlazaCatalog } from "@/server/integrations/model-plaza";
+import { modelPlazaDirectorySummary, readModelPlazaCatalog } from "@/server/integrations/model-plaza";
 import { fixtureModelBillingPolicy } from "./model-billing-fixture";
 
 const entry = { model_name: "deepseek-v4.1-flash", quota_type: 0, model_ratio: 0.15, completion_ratio: 4, cache_ratio: 0.02,
@@ -95,5 +95,11 @@ describe("public model plaza", () => {
     expect(JSON.stringify(catalog)).not.toContain("untrusted-expression");
   });
 
+  it("summarizes the same directory the plaza renders, without inventing vendors", async () => {
+    const catalog = await readModelPlazaCatalog({ fetcher: fetcher(body()), environment: {}, now });
+    const summary = modelPlazaDirectorySummary();
+    expect(summary.count).toBe(catalog.models.length);
+    expect(summary.vendors).toEqual([...new Set(catalog.models.map(model => model.vendor))]);
+    expect(summary.vendors).not.toContain("Qwen");
+  });
 });
-
