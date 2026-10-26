@@ -13,6 +13,8 @@ import { CatalogPagination } from "@/components/catalog/catalog-pagination";
 import { RevealDetails } from "@/components/catalog/reveal-details";
 import { ProjectCoverflow } from "@/components/homepage/project-coverflow";
 import { HomeCampaignModal } from "@/components/homepage/home-campaign-modal";
+import { ANS_DAILY_SKILLS, ANS_SKILL_PIPELINES } from "@/domain/vibehub/ans-skill-matrix";
+import { modelPlazaDirectorySummary } from "@/server/integrations/model-plaza";
 import styles from "./home.module.css";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +26,10 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
   const browse = browseCatalog(projects, params, project => [catalogText(project, t, "title", locale), catalogText(project, t, "summary", locale), t(`categories.${project.category}`), t(`children.${project.subcategory}`)].join(" "));
   const filterHref = (updates: Parameters<typeof catalogBrowseHref>[2] = {}, page = 1) => catalogBrowseHref("/", browse.filters, updates, page);
   const isEn = locale.startsWith("en");
+  const modelDirectory = modelPlazaDirectorySummary();
+  const modelVendors = modelDirectory.vendors.join(isEn ? ", " : "、");
+  const skillCount = ANS_DAILY_SKILLS.length;
+  const pipelineCount = ANS_SKILL_PIPELINES.length;
   return <div className={`ans-product-shell ans-home-page ${styles.page}`}>
     <HomeCampaignModal locale={locale} />
     <section className={styles.hero} aria-labelledby="home-title">
@@ -57,7 +63,7 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
             className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
           >
             <span className="truncate text-xs font-bold text-foreground sm:text-sm">
-              {projects.length}+ {isEn ? "Verified Projects" : "精选可复现项目"}
+              {projects.length} {isEn ? "Verified Projects" : "个精选可复现项目"}
             </span>
             <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
@@ -73,21 +79,21 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
           </Link>
           <Link
             href="/vibe-hub/vibehub-skill"
-            title={isEn ? "ANS Skill & Brief Workbench · 10 Daily Skills & 3 Pipelines" : "ANS 需求转写与去 AI 味规范 · 10 大日常 Skill 与 3 条流水线"}
+            title={isEn ? `ANS Skill & Brief Workbench · ${skillCount} Daily Skills & ${pipelineCount} Pipelines` : `ANS 需求转写与去 AI 味规范 · ${skillCount} 个日常 Skill 与 ${pipelineCount} 条流水线`}
             className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
           >
             <span className="truncate text-xs font-bold text-foreground sm:text-sm">
-              {isEn ? "10 Daily Skills" : "10 大高频 Skill 库"}
+              {isEn ? `${skillCount} Daily Skills` : `${skillCount} 个高频 Skill`}
             </span>
             <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>
           <Link
             href="/workspace/models"
-            title={isEn ? "Multi-Model Playground · Compare DeepSeek, Qwen, GPT & Claude" : "多模型演练场 · 支持 DeepSeek、Qwen、GPT 与 Claude 在线对比"}
+            title={isEn ? `Model Plaza · Public prices and availability for ${modelVendors}` : `模型广场 · 查看 ${modelVendors} 的公开单价与可用状态`}
             className="group flex items-center justify-between rounded-xl border border-transparent bg-muted/30 px-3.5 py-2 transition hover:border-emerald-500/35 hover:bg-emerald-500/5"
           >
             <span className="truncate text-xs font-bold text-foreground sm:text-sm">
-              {isEn ? "6 AI Models Supported" : "支持 6 款主流大模型"}
+              {isEn ? `Model Plaza · ${modelDirectory.count} Models` : `模型广场 · ${modelDirectory.count} 款模型`}
             </span>
             <span className="text-xs font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">→</span>
           </Link>

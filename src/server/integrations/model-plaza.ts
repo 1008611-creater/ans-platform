@@ -46,6 +46,13 @@ const REFERENCES: ModelPlazaModel[] = [
   { id: "claude-opus-5-5", name: "Claude Opus 5.5", vendor: "Anthropic", endpoints: ["Messages"], pricingType: "tokens", status: "prepared", consumptionMultiplier: 1,
     usdPerMillion: official("https://platform.claude.com/docs/en/about-claude/pricing", 4, 20, 0.2, 5, 8), pointsPerMillion: null },
 ];
+/** Directory size and vendors for summaries outside the plaza (homepage pulse).
+ * Registration is not a promise that live inference succeeds, so callers must
+ * describe this as a directory, never as "supported" models.
+ */
+export function modelPlazaDirectorySummary(): { count: number; vendors: string[] } {
+  return { count: REFERENCES.length, vendors: [...new Set(REFERENCES.map(model => model.vendor))] };
+}
 const endpointNames: Readonly<Record<string, string>> = { openai: "Chat Completions", openai_response: "Responses", anthropic: "Messages" };
 async function readBoundedJson(response: Response): Promise<unknown> {
   const length = response.headers.get("content-length");
