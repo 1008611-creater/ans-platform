@@ -6388,7 +6388,7 @@
       }
     },
     "workflowDetail": {
-      "notFoundTitle": "工作流不存在 · ANS",
+      "notFoundTitle": "工作流不存在",
       "metadataTitle": "{title} · ANS 工作流",
       "metadataDescription": "查看发布版本、准备输入并在 ANS 运行工作流。",
       "breadcrumb": "工作流导航",
@@ -6898,7 +6898,7 @@
     },
     "workspace": {
       "title": "工作台",
-      "metaTitle": "工作台 · ANS",
+      "metaTitle": "工作台",
       "description": "继续制作，查看任务记录、余额与团队。",
       "greeting": "你好，{name}",
       "anonymous": "匿名同学",

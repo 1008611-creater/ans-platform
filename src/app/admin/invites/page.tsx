@@ -3,7 +3,7 @@ import { requireAdminPermission } from "@/lib/admin-permissions";
 import { InvitesManagement } from "@/components/admin/invites-management";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "邀请码管理 · ANS" };
+export const metadata = { title: "邀请码管理" };
 
 export default async function AdminInvitesPage() {
   const context = await requireAdminPermission("INVITES_MANAGE");

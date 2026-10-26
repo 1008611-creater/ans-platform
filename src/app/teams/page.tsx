@@ -12,7 +12,7 @@ import { CreateTeamForm } from "@/components/teams/create-team-form";
 import { TeamInviteActions } from "@/components/teams/team-invite-actions";
 
 export const metadata = {
-  title: "团队与比赛 · ANS",
+  title: "团队与比赛",
   description: "组建团队参加 AI / AIGC / 黑客松比赛，领取比赛算力助力。",
 };
 

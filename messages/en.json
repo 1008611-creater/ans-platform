@@ -6404,7 +6404,7 @@
       }
     },
     "workflowDetail": {
-      "notFoundTitle": "Workflow not found · ANS",
+      "notFoundTitle": "Workflow not found",
       "metadataTitle": "{title} · ANS workflow",
       "metadataDescription": "Review the published version, prepare inputs and run this workflow on ANS.",
       "breadcrumb": "Workflow navigation",
@@ -6914,7 +6914,7 @@
     },
     "workspace": {
       "title": "Workspace",
-      "metaTitle": "Workspace · ANS",
+      "metaTitle": "Workspace",
       "description": "Continue creating and find your task history, balance and teams.",
       "greeting": "Hello, {name}",
       "anonymous": "Student",

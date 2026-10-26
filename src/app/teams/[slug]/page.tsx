@@ -28,9 +28,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   try {
     const detail = await getTeamDetail(slug, null);
-    return { title: detail.team.name + " · ANS 团队", description: detail.team.description || undefined };
+    return { title: `${detail.team.name} · 团队`, description: detail.team.description || undefined };
   } catch {
-    return { title: "团队 · ANS" };
+    return { title: "团队" };
   }
 }
 

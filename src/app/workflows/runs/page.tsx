@@ -11,7 +11,7 @@ import { listWorkflowRuns } from "@/server/workflows/service";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "运行记录 · ANS",
+  title: "运行记录",
   description: "查看你运行过的工作流、逐节点结果和失败原因。",
 };
 

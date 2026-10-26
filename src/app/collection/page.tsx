@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 import { listFavorites } from "@/server/favorites/service";
 
 export const dynamic = "force-dynamic";
-export async function generateMetadata() { const t = await getTranslations("favorites"); return { title: `${t("title")} · ANS`, description: t("description") }; }
+export async function generateMetadata() { const t = await getTranslations("favorites"); return { title: t("title"), description: t("description") }; }
 export default async function CollectionPage() {
   const session = await auth();
   const accountId = session?.user?.id;

@@ -6,7 +6,7 @@ import { TemplateActions } from "@/components/templates/template-actions";
 import { TemplateReviewStatus } from "@/components/templates/template-review-status";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "模板审核队列 · ANS" };
+export const metadata = { title: "模板审核队列" };
 export default async function TemplateQueuePage() {
   let admin;
   try { admin = await requireTemplateAdmin(); } catch (error) {

@@ -11,7 +11,7 @@ import { auth } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("workflowCatalog");
-  return { title: `${t("createTitle")} · ANS`, description: t("createBody") };
+  return { title: t("createTitle"), description: t("createBody") };
 }
 
 /** Public source material pre-fills a private draft; it grants no runtime capability. */
