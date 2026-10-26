@@ -12,7 +12,7 @@ import { canPublishAfterReview } from "@/server/workflows/review";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "工作流审核队列 · ANS",
+  title: "工作流审核队列",
 };
 
 /**

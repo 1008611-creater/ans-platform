@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const t = await getTranslations("agriWall");
-  return { title: `${t("title")} · ANS`, description: t("description") };
+  return { title: t("title"), description: t("description") };
 }
 
 export default function AgriHackathonWallPage() {

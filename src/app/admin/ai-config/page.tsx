@@ -5,7 +5,7 @@ import { getAdminAiConfig, buildPublicAiConfig } from "@/server/admin/ai-config"
 import { AiConfigForm } from "@/components/admin/ai-config-form";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "AI 初审配置 · ANS" };
+export const metadata: Metadata = { title: "AI 初审配置" };
 
 export default async function AdminAiConfigPage() {
   const admin = await requireAdminPermission("PROMPTS_MANAGE");

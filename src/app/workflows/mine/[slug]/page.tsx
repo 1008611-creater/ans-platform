@@ -20,7 +20,7 @@ import { WorkflowServiceError, getWorkflowForEditor, isWorkflowPublicationApprov
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "编辑工作流 · ANS",
+  title: "编辑工作流",
 };
 
 /**

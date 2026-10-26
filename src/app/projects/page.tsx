@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export const dynamic = "force-dynamic";
 export async function generateMetadata() {
   const t = await getTranslations("learning");
-  return { title: `${t("projectsTitle")} · ANS 项目立项与作品集工坊`, description: t("projectsDescription") };
+  return { title: `${t("projectsTitle")} · 项目立项与作品集工坊`, description: t("projectsDescription") };
 }
 
 const QUICK_KICKOFF_CARDS = [

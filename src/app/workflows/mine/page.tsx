@@ -14,7 +14,7 @@ import { listOwnWorkflows } from "@/server/workflows/service";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "我的工作流 · ANS",
+  title: "我的工作流",
   description: "管理你创建的工作流草稿、版本和发布状态。",
 };
 
