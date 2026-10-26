@@ -1,4 +1,0 @@
-interface:
-  display_name: "RunningHub Image2 Image"
-  short_description: "Use RunningHub Image G 2.0 with a reference image."
-  default_prompt: "Use RunningHub Image2 Image to transform or restyle a reference image."

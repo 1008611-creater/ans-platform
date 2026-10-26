@@ -1,4 +1,0 @@
-interface:
-  display_name: "Douyin Video Production"
-  short_description: "Create editing briefs for Douyin videos."
-  default_prompt: "Use $douyin-video-production to turn this Douyin idea into an editing plan."

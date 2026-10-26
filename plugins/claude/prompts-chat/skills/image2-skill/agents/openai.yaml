@@ -1,4 +1,0 @@
-interface:
-  display_name: "云雾 Image2 4K 静态资产"
-  short_description: "通过云雾生成并验收单张4K静态角色、场景与道具资产"
-  default_prompt: "使用 $image2-skill 通过云雾生成一张已授权的4K静态资产并完成验收。"

@@ -1,4 +1,0 @@
-interface:
-  display_name: "RunningHub Fruit Commerce Video"
-  short_description: "Run fruit commerce video workflows on RunningHub."
-  default_prompt: "Use $runninghub-fruit-commerce-video to generate a fruit commerce video with RunningHub workflows."

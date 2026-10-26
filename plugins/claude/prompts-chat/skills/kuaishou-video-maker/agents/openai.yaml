@@ -1,4 +1,0 @@
-interface:
-  display_name: "快手视频制作"
-  short_description: "Create scripts storyboards and edit plans"
-  default_prompt: "Use $kuaishou-video-maker to turn a selected idea into a Kuaishou-ready video plan."

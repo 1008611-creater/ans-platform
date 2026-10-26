@@ -1,4 +1,0 @@
-interface:
-  display_name: "Cinematic Video Prompt"
-  short_description: "Turn images into cinematic AI video prompts"
-  default_prompt: "Use $cinematic-video-prompt to turn this image into a cinematic AI video generation prompt."

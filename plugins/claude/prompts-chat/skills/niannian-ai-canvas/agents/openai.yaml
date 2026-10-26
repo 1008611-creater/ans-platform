@@ -1,4 +1,0 @@
-interface:
-  display_name: "念念 AI 视频画布"
-  short_description: "设计接入和验证节点式 AI 图片视频生产工作流画布"
-  default_prompt: "使用 $niannian-ai-canvas 设计、接入或验证念念 AI 的节点式图片和视频生成画布。"
