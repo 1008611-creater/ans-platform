@@ -156,7 +156,7 @@ const EXTRA_OFFICIAL_LISTINGS = [
   {
     slug: "cau-postgrad-interview-english-kit",
     title: "保研夏令营 / 考研复试农科专业英语口语与导师邮件模板库",
-    summary: "仅需 6 积分！涵盖套磁信精修、3 分钟英文自我介绍、实验经历英文追问对答与文献现场翻译高频词库。",
+    summary: "涵盖套磁信精修、3 分钟英文自我介绍、实验经历英文追问对答与文献现场翻译高频词库。",
     description: "专为保研夏令营、推免复试与海外联培申请设计。内置农学、生科、食品、资环与农业工程高频专业词汇发音与导师最常问的 30 个英文口语问题应答范本。",
     category: "career",
     subcategory: "interview",
@@ -191,7 +191,8 @@ async function updateMarketCoversInDb() {
     if (seller) {
       for (const item of EXTRA_OFFICIAL_LISTINGS) {
         const existing = await prisma.marketListing.findUnique({ where: { slug: item.slug } });
-        if (!existing) {
+        // 已下架：线上 199 积分与旧文案"仅需 6 积分"不符，交付内容也未核实；不要重新创建为已发布。
+        if (!existing && item.slug !== "cau-postgrad-interview-english-kit") {
           await prisma.marketListing.create({
             data: {
               slug: item.slug,
