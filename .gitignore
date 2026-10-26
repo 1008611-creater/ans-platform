@@ -60,6 +60,8 @@ tmp-*
 .workbuddy/
 
 # Local credentials and signing material (never commit)
+*.keystore
+keystore.properties
 
 # Python interpreter cache
 __pycache__/

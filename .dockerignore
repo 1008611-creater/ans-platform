@@ -10,8 +10,6 @@ dist
 .next-compute-history
 .next-compute-history-build
 
-# Local mobile build artifacts (not required by the web image)
-
 # Git
 .git
 .gitignore
@@ -69,3 +67,6 @@ logs
 
 # Prisma
 prisma/migrations/**/migration_lock.toml
+
+# Production source snapshots must never enter the image, even if exported locally again.
+deployment-snapshots
