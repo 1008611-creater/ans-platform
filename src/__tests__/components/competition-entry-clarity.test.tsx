@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import zh from "../../../messages/zh.json";
 import en from "../../../messages/en.json";
 import CompetitionsPage from "@/app/competitions/page";
-import AigcCompetitionPage from "@/app/competitions/aigc/page";
+import AigcCompetitionPage from "@/app/competitions/(full)/aigc/page";
 import { AIGC_CONNECTORS, AIGC_DELIVERABLES } from "@/lib/aigc/cluster";
 
 const state = vi.hoisted(() => ({ locale: "zh" }));

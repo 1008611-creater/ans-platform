@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { HubDirectory } from "@/components/hubs/hub-directory";
-import HubDetailPage from "@/app/hubs/[slug]/page";
+import HubDetailPage from "@/app/hubs/(full)/[slug]/page";
 import { HUBS, getHub } from "@/domain/hubs/registry";
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 

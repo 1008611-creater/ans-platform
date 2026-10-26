@@ -20,7 +20,7 @@ vi.mock("@/lib/auth", () => ({ auth: async () => ({ user: { id: m.pageActor } })
 vi.mock("@/lib/db", () => ({ db: { user: { findUnique: async () => ({ id: m.pageActor, name: "legacy", username: m.pageActor.replace("-", "_"), email: `${m.pageActor}@example.test`, avatar: null, verified: false, apiKey: null, mcpPromptsPublicByDefault: false, bio: `bio-${m.pageActor}`, customLinks: [] }) } } }));
 vi.mock("@/server/credentials/service", () => ({ listCredentials: async () => [] }));
 vi.mock("@/../prompts.config", () => ({ default: { features: { mcp: true } } }));
-import SettingsPage from "@/app/settings/page";
+import SettingsPage from "@/app/(full)/settings/page";
 import { DisplayNameEditor } from "@/components/workspace/display-name-editor";
 const fetchMock = vi.fn();
 const reply = (data: unknown) => ({ ok: true, json: async () => data });

@@ -50,7 +50,7 @@ JOBS = [
          'The pixel art mascot for ANS Kids', 1),
     ]),
     # ---------- 隐私页 ----------
-    ("src/app/privacy/page.tsx", [
+    ("src/app/(full)/privacy/page.tsx", [
         ('title: "Privacy Policy - prompts.chat"', 'title: "Privacy Policy - ANS"', 1),
         ('description: "Privacy Policy for prompts.chat"',
          'description: "Privacy Policy for ANS"', 1),
@@ -59,7 +59,7 @@ JOBS = [
         (REPO_OLD, REPO_NEW, 1),
     ]),
     # ---------- 条款页 ----------
-    ("src/app/terms/page.tsx", [
+    ("src/app/(full)/terms/page.tsx", [
         ('title: "Terms of Service - prompts.chat"', 'title: "Terms of Service - ANS"', 1),
         ('description: "Terms of Service for prompts.chat"',
          'description: "Terms of Service for ANS"', 1),

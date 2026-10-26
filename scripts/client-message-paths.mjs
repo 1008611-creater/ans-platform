@@ -21,13 +21,14 @@ import ts from "typescript";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const srcRoot = path.join(repoRoot, "src");
-const EXTENSIONS = ["", ".ts", ".tsx", ".js", ".jsx", "/index.ts", "/index.tsx", "/index.js"];
+const EXTENSIONS = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs", "/index.ts", "/index.tsx", "/index.js", "/index.jsx"];
+const SOURCE_FILE = /\.(?:tsx?|jsx?|mjs)$/;
 const parsed = new Map();
 
 function parse(file) {
   if (!parsed.has(file)) {
     const text = fs.readFileSync(file, "utf8");
-    parsed.set(file, ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS));
+    parsed.set(file, ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, file.endsWith(".ts") ? ts.ScriptKind.TS : ts.ScriptKind.TSX));
   }
   return parsed.get(file);
 }
@@ -39,7 +40,7 @@ function resolveImport(from, specifier) {
   else return null;
   for (const extension of EXTENSIONS) {
     const candidate = base + extension;
-    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
+    if (SOURCE_FILE.test(candidate) && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
   }
   return null;
 }
@@ -107,27 +108,39 @@ function keyPaths(argument, namespace) {
   return [namespace];
 }
 
+function enclosingBlock(node) {
+  let scope = node.parent;
+  while (scope && !ts.isBlock(scope) && !ts.isSourceFile(scope) && !ts.isCaseBlock(scope) && !ts.isFunctionLike(scope)) scope = scope.parent;
+  return scope;
+}
+
 /** Message paths one module reads through useTranslations. */
 export function modulePaths(file) {
   const source = parse(file);
   const paths = new Set();
-  const translators = new Map();
+  // Several components in one file often each bind their own `t`; resolve every use to the
+  // innermost enclosing block that declares that name.
+  const translators = [];
   const visit = node => {
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "useTranslations") {
       const argument = node.arguments[0];
       const namespace = !argument ? "" : ts.isStringLiteralLike(argument) ? argument.text : null;
       const binding = node.parent;
       if (namespace === null) paths.add("");
-      else if (ts.isVariableDeclaration(binding) && ts.isIdentifier(binding.name) && binding.initializer === node) translators.set(binding.name.text, { namespace, declaration: binding.name });
+      else if (ts.isVariableDeclaration(binding) && ts.isIdentifier(binding.name) && binding.initializer === node) translators.push({ name: binding.name.text, namespace, declaration: binding.name, scope: enclosingBlock(binding) });
       else paths.add(namespace);
     }
     ts.forEachChild(node, visit);
   };
   visit(source);
-  if (!translators.size) return paths;
+  if (!translators.length) return paths;
+  const resolve = node => translators
+    .filter(entry => entry.name === node.text && entry.scope.pos <= node.pos && node.end <= entry.scope.end)
+    .sort((a, b) => (b.scope.pos - a.scope.pos) || (a.scope.end - b.scope.end))[0];
   const visitUses = node => {
-    if (ts.isIdentifier(node) && translators.has(node.text)) {
-      const { namespace, declaration } = translators.get(node.text);
+    const translator = ts.isIdentifier(node) ? resolve(node) : undefined;
+    if (translator) {
+      const { namespace, declaration } = translator;
       if (node !== declaration && !isHookDependency(node)) {
         const parent = node.parent;
         if (ts.isCallExpression(parent) && parent.expression === node) keyPaths(parent.arguments[0], namespace).forEach(entry => paths.add(entry));

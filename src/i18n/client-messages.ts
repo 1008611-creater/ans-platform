@@ -53,7 +53,9 @@ export function pickMessages(messages: AbstractIntlMessages, paths: readonly str
       const value: AbstractIntlMessages | string = source[key];
       if (index === keys.length - 1) target[key] = value;
       else {
-        if (typeof target[key] !== "object") target[key] = {};
+        // Copy before descending: an earlier, shorter path may have shared this subtree by reference.
+        const existing = target[key];
+        target[key] = typeof existing === "object" ? { ...existing } : {};
         target = target[key] as AbstractIntlMessages;
         source = value;
       }
