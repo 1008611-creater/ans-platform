@@ -54,6 +54,13 @@ export interface AgriBootstrapOptions {
   competitionId?: string;
   draftOnly?: boolean;
   provisionInitial?: boolean;
+  /**
+   * Publish a placeholder Rule v1 with rolling deadlines (now + 60/90 days).
+   * Off unless an operator opts in explicitly: deadlines are confirmed facts
+   * owned by the organizer, so routine container starts must never invent,
+   * confirm or publish them in an administrator's name.
+   */
+  provisionRules?: boolean;
   targetEmail?: string;
   silent?: boolean;
 }
@@ -160,7 +167,7 @@ export async function bootstrapAgriEditionInTx(
       log(`[agri-bootstrap] Seeded initial root scopes for ${admins.length} admin account(s).`);
     }
 
-    if (!workspace.publishedRuleVersionId && workspace.draftRevision === 0 && !options.draftOnly && admins.length > 0) {
+    if (options.provisionRules && !workspace.publishedRuleVersionId && workspace.draftRevision === 0 && !options.draftOnly && admins.length > 0) {
       const actorId = admins[0].id;
       const opensAt = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const prelimClosesAt = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
@@ -251,6 +258,28 @@ export async function bootstrapAgriEditionInTx(
   }
 
   return { competitionId, workspaceId: workspace.id, enabled, publishedRuleVersionId };
+}
+
+export interface AgriBootstrapMode {
+  draftOnly: boolean;
+  provisionInitial: boolean;
+  provisionRules: boolean;
+}
+
+/**
+ * CLI/entrypoint flags. Root grants are provisioned by default so organizers can
+ * reach the management workspace; placeholder rules require `--provision-rules`
+ * (or AGRI_BOOTSTRAP_PROVISION_RULES=true) and are never implied by a restart.
+ */
+export function resolveAgriBootstrapMode(
+  argv: readonly string[],
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): AgriBootstrapMode {
+  const draftOnly = argv.includes("--draft-only") || env.AGRI_BOOTSTRAP_DRAFT_ONLY === "true";
+  const provisionInitial = !argv.includes("--pending-only") && env.AGRI_BOOTSTRAP_PENDING_ONLY !== "true";
+  const provisionRules = provisionInitial && !draftOnly &&
+    (argv.includes("--provision-rules") || env.AGRI_BOOTSTRAP_PROVISION_RULES === "true");
+  return { draftOnly, provisionInitial, provisionRules };
 }
 
 let inFlightBootstrap: Promise<void> | null = null;
