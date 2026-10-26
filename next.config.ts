@@ -3,22 +3,17 @@ import { publicRendererCacheHeaders } from "./src/lib/public-asset-cache";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import createNextIntlPlugin from "next-intl/plugin";
-import createMDX from "@next/mdx";
 
 // 仓库上层还有一个 package-lock.json，Next 会据此误判 workspace root 并打印警告。
 // 显式钉住本目录，既消除警告，也保证 Docker 里 `.next/standalone` 的依赖追踪范围正确。
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
-const withMDX = createMDX({
-  extension: /\.mdx?$/,
-});
 
 const nextConfig: NextConfig = {
   // Local acceptance builds must not overwrite the candidate serving OIDC checks.
   distDir: [".next-agri-tasks", ".next-agri-submissions", ".next-agri-reviews", ".next-agri-references", ".next-agri-demo", ".next-agri-summary", ".next-agri-p2", ".next-compute-history", ".next-compute-history-build"].includes(process.env.ANS_LOCAL_DIST_DIR ?? "")
     ? process.env.ANS_LOCAL_DIST_DIR : ".next",
-  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   reactCompiler: true,
   // Production builds check every application source. The full test/config
   // types remain a separate required gate in scripts/verify.mjs.
@@ -97,11 +92,8 @@ const nextConfig: NextConfig = {
         destination: "/embed",
         permanent: true,
       },
-      // 原先把 /book-pdf/* 重定向到上游 GitHub raw（为省 Vercel 带宽）。
-      // ANS 自托管：public/book-pdf/ 已随镜像一起打包，直接本地提供，
-      // 不再依赖上游仓库（上游仓库若改名/删文件，下载会直接 404）。
     ];
   },
 };
 
-export default withMDX(withNextIntl(nextConfig));
+export default withNextIntl(nextConfig);

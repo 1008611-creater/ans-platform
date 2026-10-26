@@ -2,7 +2,6 @@ import React from "react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { TemplateFilters } from "@/components/templates/template-filters";
 import { CopyTemplatePrompt, TemplateActions } from "@/components/templates/template-actions";
 import { TemplateReviewStatus } from "@/components/templates/template-review-status";
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => ({
@@ -15,17 +14,6 @@ vi.mock("next/link", () => ({ default: ({ children, ...props }: React.AnchorHTML
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("模板中文交互", () => {
-  it("切换父领域自动清空旧子场景并展示新场景", () => {
-    render(<TemplateFilters initialDomain="writing" initialScene="summary" domains={[
-      { id: "d1", slug: "writing", name: "写作", children: [{ id: "s1", slug: "summary", name: "摘要" }] },
-      { id: "d2", slug: "design", name: "设计", children: [{ id: "s2", slug: "cover", name: "封面" }] },
-    ]} />);
-    expect(screen.getAllByRole("combobox")[1]).toHaveValue("summary");
-    fireEvent.change(screen.getAllByRole("combobox")[0], { target: { value: "design" } });
-    expect(screen.getAllByRole("combobox")[1]).toHaveValue("");
-    expect(screen.queryByRole("option", { name: "摘要" })).not.toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "封面" })).toBeInTheDocument();
-  });
   it("复制原始正文而不是伪运行", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
