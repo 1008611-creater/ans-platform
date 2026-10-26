@@ -1,4 +1,0 @@
-interface:
-  display_name: "快手发布包装"
-  short_description: "Write titles covers captions and hashtags"
-  default_prompt: "Use $kuaishou-publish-packager to create Kuaishou titles, captions, hashtags, and cover copy."

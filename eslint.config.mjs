@@ -49,17 +49,10 @@ const eslintConfig = defineConfig([
     ".next-agri-summary/**",
     ".next-agri-p2/**",
     ".workbuddy/**",
-    // Independently deployed source archives are not ANS application code.
-    "deployment-snapshots/**",
     // Cross-PC handover archive: whole sub-site frontends kept for reference; they
     // carry their own toolchain (antd, react-i18next, their own aliases) and would
     // otherwise flood lint/typecheck with errors belonging to other projects.
     "ecosystem-sites-archive/**",
-    // Archived skill bundles are data shipped for discovery, not application
-    // source; linting their generated examples produces thousands of noise
-    // errors and masks real ANS diagnostics.
-    "ai-video-skills-source/**",
-    "plugins/claude/**",
     "next-env.d.ts",
     // Vendored Three.js bundles keep their upstream source and license.
     "public/mascot/3d/vendor/**",
@@ -69,10 +62,6 @@ const eslintConfig = defineConfig([
     "public/showcase/ans-3d/assets/pkg-motion.js",
     // Google Draco decoder emitted by the upstream glTF toolchain (WASM loader glue).
     "public/showcase/ans-3d/assets/draco/**",
-    // Compiled outputs
-    "packages/*/dist/**",
-    // Packages with their own ESLint config
-    "packages/raycast-extension/**",
     // Scripts - may use CommonJS
     "scripts/**",
     // Prisma scripts

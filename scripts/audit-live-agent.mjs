@@ -38,24 +38,6 @@ async function probeHealth() {
   }
 }
 
-async function probeSkillsIndex() {
-  try {
-    const res = await fetch(`${baseUrl}/.well-known/skills/index.json`);
-    if (res.status !== 200) { record("skills-index", "技能索引可访问", false, `status=${res.status}`); return; }
-    const text = await res.text();
-    const data = JSON.parse(text);
-    const skills = data.skills ?? [];
-    const backslash = skills.filter(s => (s.files ?? []).some(f => String(f).includes("\\"))).length;
-    const badDescription = skills.filter(s => !s.description || String(s.description).startsWith("name:")).length;
-    const mojibake = (text.match(/\uFFFD/g) ?? []).length;
-    record("skills-index", "files[] 不含 Windows 反斜杠", backslash === 0, `${backslash}/${skills.length} 条含反斜杠`);
-    record("skills-index", "description 不是 SKILL.md 的 name: 首行", badDescription === 0, `${badDescription}/${skills.length} 条描述不合法`);
-    record("skills-index", "无替换字符（编码未损坏）", mojibake === 0, `${mojibake} 处 U+FFFD`);
-  } catch (error) {
-    record("skills-index", "技能索引可解析", false, String(error).slice(0, 120));
-  }
-}
-
 async function probeAgentPanel(puppeteer) {
   const browser = await puppeteer.launch({
     headless: "new",
@@ -142,7 +124,6 @@ async function probeAgentPanel(puppeteer) {
 }
 
 await probeHealth();
-await probeSkillsIndex();
 let axeSource = null;
 try {
   axeSource = readFileSync(createRequire(import.meta.url).resolve("axe-core/axe.min.js"), "utf8");

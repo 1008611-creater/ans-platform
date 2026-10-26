@@ -1,4 +1,0 @@
-interface:
-  display_name: "Douyin Publish Operator"
-  short_description: "Prepare Douyin Creator Center uploads safely."
-  default_prompt: "Use $douyin-publish-operator to upload and prepare a Douyin post for review."

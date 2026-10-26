@@ -56,12 +56,6 @@
   ],
   "exclude": [
     "node_modules",
-    "packages",
-    "ai-video-skills-source",
-    "plugins",
-    "android",
-    "android-web-assets",
-    "deployment-snapshots",
     "ecosystem-sites-archive"
   ]
 }

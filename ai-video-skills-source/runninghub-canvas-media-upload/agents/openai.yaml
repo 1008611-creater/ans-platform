@@ -1,4 +1,0 @@
-interface:
-  display_name: "RunningHub 画布素材上传"
-  short_description: "准确绑定本地素材至 RunningHub 画布节点并回读验证"
-  default_prompt: "Use $runninghub-canvas-media-upload to bind my local media to the correct RunningHub canvas nodes and verify each upload."

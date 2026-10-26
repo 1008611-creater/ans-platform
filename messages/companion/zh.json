@@ -135,7 +135,8 @@
     "incomplete": "刚才模型的回复没传完整就断了。已停止继续调用，本轮实际花了多少积分可以在账单里查到。",
     "capacity": "上游模型现在有点忙，这次没拿到回复。请先核对一下用量记录，稍后再重新发起。",
     "modelUnavailable": "这个模型的上游现在不可用（HTTP 5xx），这次没有开始执行、也没有扣费。换一个模型（例如 DeepSeek V4.1 Flash）再试即可。",
-    "unavailable": "这次没能顺利拿到回复（系统不会自动重试扣费）；如果刚才已经点过提交，请先核对一下用量记录。"
+    "unavailable": "这次没能顺利拿到回复（系统不会自动重试扣费）；如果刚才已经点过提交，请先核对一下用量记录。",
+    "modelPaused": "这个模型暂不可用，这次没有开始执行，也没有扣费。请换一个模型再试。"
   },
   "agentRoutes": {
     "aigc": {
@@ -376,5 +377,6 @@
     "trainerLine": "🪪 契约训龙师：{nickname} · 注册后自动入驻右下角",
     "defaultTrainer": "准 ANS 创作者"
   },
-  "guideWorkMode": "🛠️ 工作模式 ↗"
+  "guideWorkMode": "🛠️ 工作模式 ↗",
+  "agentModelUnavailable": "暂不可用"
 }

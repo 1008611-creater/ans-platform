@@ -21,7 +21,7 @@ import { AgriPublicationSessionBoundary } from "@/components/competitions/agri-p
 import { ToonflowHostProvider } from "./toonflow-host";
 import { DinoTaskSessionProvider } from "@/components/mascot/dino-task-context";
 import { RunModelPricingProvider } from "./run-model-pricing";
-import type { RunModelMultipliers } from "@/lib/run-models";
+import type { RunModelKey, RunModelMultipliers } from "@/lib/run-models";
 
 interface ThemeConfig {
   radius: "none" | "sm" | "md" | "lg";
@@ -47,9 +47,10 @@ interface ProvidersProps {
   theme: ThemeConfig;
   branding: BrandingConfig;
   modelMultipliers: RunModelMultipliers;
+  pausedModels: RunModelKey[];
 }
 
-export function Providers({ children, locale, timeZone, messages, theme, branding, modelMultipliers }: ProvidersProps) {
+export function Providers({ children, locale, timeZone, messages, theme, branding, modelMultipliers, pausedModels }: ProvidersProps) {
   return (
     <SessionProvider>
       <WorkflowHubSessionBoundary />
@@ -76,7 +77,7 @@ export function Providers({ children, locale, timeZone, messages, theme, brandin
             primaryColor={theme.colors.primary} 
           />
           <BrandingProvider branding={branding}>
-            <WorkspaceNavigationProvider><ToonflowHostProvider><DinoTaskSessionProvider><RunModelPricingProvider multipliers={modelMultipliers}>{children}</RunModelPricingProvider></DinoTaskSessionProvider></ToonflowHostProvider></WorkspaceNavigationProvider>
+            <WorkspaceNavigationProvider><ToonflowHostProvider><DinoTaskSessionProvider><RunModelPricingProvider multipliers={modelMultipliers} paused={pausedModels}>{children}</RunModelPricingProvider></DinoTaskSessionProvider></ToonflowHostProvider></WorkspaceNavigationProvider>
           </BrandingProvider>
           <Toaster position="bottom-right" />
         </ThemeProvider>

@@ -1,4 +1,0 @@
-interface:
-  display_name: "WeChat Article Extractor"
-  short_description: "Extract readable WeChat articles with OpenCLI bridge"
-  default_prompt: "Use $wechat-article-extractor to extract a WeChat public-account article into Markdown and record the evidence path."
