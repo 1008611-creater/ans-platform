@@ -125,10 +125,13 @@ const OFFICIAL_MARKET_LISTINGS = [
   },
   {
     slug: "open-pi-agent-rag-toolchain",
-    title: "Pi Agent 多工具编排与农业知识图谱 RAG 实战套件",
-    summary: "轻量化零依赖的 Pi-style Agent 循环实现：支持工具自动路由、农学植保 PDF 切片检索、结构化 JSON 输出校验与飞书群播报。",
+    // 已下架：原文案宣传的 PDF 检索、向量化切片和飞书播报都没有交付。
+    // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
+    status: "WITHDRAWN",
+    title: "Agent 多工具调用循环最小实现（TypeScript）",
+    summary: "一段约 25 行的 TypeScript Agent 工具调用循环：模型决定调用哪个工具，结果回填对话；最多 3 轮工具调用，超出后返回步数上限提示。",
     description:
-      "想在自己的项目里复刻像 ANS 小恐龙一样聪明、能调工具干活的 Pi Agent？\n\n本套件提炼了最核心的 ReAct / Tool-Use 状态机模式：包含高可靠工具 Schema 定义、幂等防重放账单钩子、农学专业文献 Hybrid RAG 混合检索管线，以及一行代码接入 DeepSeek-V4.1-Flash / GPT-6.1-Sol 的完整客户端封装。",
+      "交付内容是一份可直接复制的 TypeScript 代码：定义工具接口，执行 think → tool_call → observe → answer 循环，并限制最大步数。\n\n不包含 PDF 检索、向量化切片、飞书播报或模型客户端封装，这些需要按自己的项目接入。",
     category: "github",
     subcategory: "agents",
     fulfillment: "resource",
@@ -138,9 +141,7 @@ const OFFICIAL_MARKET_LISTINGS = [
     revisionLimit: 2,
     computeIncluded: true,
     deliverables: [
-      "Pi-style 轻量级多工具 Agent 循环（TypeScript / Python 双版本）",
-      "农学病虫害与作物栽培规程 Markdown/PDF 向量化切片脚本",
-      "幂等重试、超时熔断与 Token 成本实时估算中间件",
+      "TypeScript 多工具 Agent 循环（约 25 行，含工具接口定义与最大步数限制）",
     ],
     licenseTerms: "Apache-2.0 协议，支持商业与竞赛项目自由集成。",
     usageUrl: "https://ans.cauai.fun/workspace/models",
@@ -195,6 +196,12 @@ const OFFICIAL_MARKET_LISTINGS = [
   },
 ];
 
+/** status is a seed directive, not part of the listing payload. */
+function splitStatus(item) {
+  const { status = "PUBLISHED", ...payload } = item;
+  return { status, payload };
+}
+
 async function main() {
   const prisma = new PrismaClient();
   try {
@@ -209,7 +216,8 @@ async function main() {
     const now = new Date();
     const results = [];
 
-    for (const item of OFFICIAL_MARKET_LISTINGS) {
+    for (const entry of OFFICIAL_MARKET_LISTINGS) {
+      const { status, payload: item } = splitStatus(entry);
       const existing = await prisma.marketListing.findUnique({
         where: { slug: item.slug },
         include: { versions: true },
@@ -221,7 +229,7 @@ async function main() {
             slug: item.slug,
             sellerId: seller.id,
             official: true,
-            status: "PUBLISHED",
+            status,
             currentVersion: 1,
             publishedVersion: 1,
             versions: {
@@ -236,7 +244,7 @@ async function main() {
             },
           },
         });
-        results.push({ slug: created.slug, action: "created" });
+        results.push({ slug: created.slug, action: "created", status });
       } else {
         await prisma.marketListingVersion.updateMany({
           where: { listingId: existing.id, version: existing.currentVersion },
@@ -252,11 +260,11 @@ async function main() {
           where: { id: existing.id },
           data: {
             official: true,
-            status: "PUBLISHED",
+            status,
             publishedVersion: existing.currentVersion,
           },
         });
-        results.push({ slug: existing.slug, action: "updated" });
+        results.push({ slug: existing.slug, action: "updated", status });
       }
     }
 

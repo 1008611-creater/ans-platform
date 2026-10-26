@@ -7,7 +7,7 @@ export const VERIFIED_DELIVERABLE_SLUGS = new Set([
   "agri-anova-stats-plot-pack",
   "cau-sci-paper-polisher-kit",
   "nextjs-agri-agent-dashboard-starter",
-  "open-pi-agent-rag-toolchain",
+  // open-pi-agent-rag-toolchain removed: its delivery does not match the listing yet.
 ]);
 
 export function isMarketOfferPurchasable(offer: {
