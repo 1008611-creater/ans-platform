@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { publicRendererCacheHeaders } from "./src/lib/public-asset-cache";
+import { publicPageCacheHeaders } from "./src/lib/public-page-cache";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import createNextIntlPlugin from "next-intl/plugin";
@@ -61,6 +62,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       ...publicRendererCacheHeaders(),
+      ...publicPageCacheHeaders(),
       // Public renderer assets are readable by the sandboxed, opaque-origin preview.
       ...["/visual-portfolio/:path*", "/mascot/3d/vendor/:path*"].map(source => ({source, headers: [{key: "Access-Control-Allow-Origin", value: "*"}]})),
       {
