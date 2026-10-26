@@ -7,7 +7,7 @@ vi.mock("@/lib/db",()=>{const tx={$queryRaw:vi.fn(),apiComputeRequest:{create:mo
 vi.mock("@/server/quota/service",()=>({debitQuota:mocks.debit,refundQuota:mocks.refund,QuotaError:class extends Error{status=402;code="INSUFFICIENT_QUOTA";}}));
 vi.mock("@/server/integrations/apic-billing",()=>({readApicCharge:mocks.charge}));
 vi.mock("@/server/integrations/gateway-evidence",()=>({lockGatewayBillingAccount:vi.fn(),recordGatewayEvidence:mocks.evidence,hasNonexecutionEvidence:mocks.rejectedEvidence}));
-import {codexResponses,codexModels,validateCodexPayload,meteredResponses} from "@/server/integrations/codex-gateway";
+import {codexResponses,codexModels,validateCodexPayload,meteredResponses,reconcileFailureCode} from "@/server/integrations/codex-gateway";
 import { upstreamFailureCode } from "@/server/integrations/upstream-rejection";
 const key="pchat_"+"a".repeat(64);
 function request(body:unknown,token=key){return new Request("https://ans.invalid/api/codex/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});}
@@ -595,5 +595,17 @@ describe("snapshot USD CNY ANS point units", () => {
     await reconcileCodexCharges("u");
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "new-task", userId: "u", state: "UNCERTAIN" }, data: expect.objectContaining({ settledPoints: 0.0112 }) }));
     expect(mocks.debit).not.toHaveBeenCalled();
+  });
+});
+
+describe("reconcileFailureCode", () => {
+  it("names APIC receipt states, guard rejections and fetch failures without echoing the message", () => {
+    expect(reconcileFailureCode(new Error("APIC_BILLING_PENDING"))).toBe("APIC_BILLING_PENDING");
+    expect(reconcileFailureCode(new Error("APIC_BILLING_UNAVAILABLE"))).toBe("APIC_BILLING_UNAVAILABLE");
+    expect(reconcileFailureCode(new Error("Raw query failed. Code: `P0001`. Message: `ERROR: API_BILLING_SNAPSHOT_INVALID`"))).toBe("API_BILLING_SNAPSHOT_INVALID");
+    expect(reconcileFailureCode(new Error("Timed out fetching a new connection (P2024)"))).toBe("P2024");
+    expect(reconcileFailureCode(new Error("ERROR: API_BILLING_SNAPSHOT_INVALID"))).toBe("API_BILLING_SNAPSHOT_INVALID");
+    expect(reconcileFailureCode(Object.assign(new Error("The operation was aborted due to timeout"), { name: "TimeoutError" }))).toBe("FETCH_TimeoutError");
+    expect(reconcileFailureCode(new Error("secret postgres://user:pass@host"))).toBe("UNKNOWN");
   });
 });

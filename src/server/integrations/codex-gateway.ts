@@ -67,11 +67,21 @@ export function cappedMemberCharge(price: unknown, upstreamPoints: number, autho
   const billedPoints = Math.min(upstreamPoints, typeof cap === "number" ? cap : Infinity, authorizedPoints ?? Infinity);
   return { billedPoints, price: { ...record, verifiedUpstreamPoints: upstreamPoints, platformCoveredPoints: Math.max(0, upstreamPoints - billedPoints) } };
 }
+/** Stable, parameter-free reason for a kept reservation. APIC_BILLING_PENDING
+ * that keeps aging means upstream never logged a charge: an operator waiver
+ * (/admin/credits) is the release path, never an automatic inference. */
+export function reconcileFailureCode(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  // A guard's own code outranks the Prisma wrapper code (P0001) around it.
+  const code = message.match(/\b(APIC?_[A-Z_]+|MODEL_BILLING_[A-Z_]+|REQUEST_CONFLICT)\b/)?.[1] ?? message.match(/\b(P\d{4})\b/)?.[1];
+  if (code) return code;
+  return error instanceof Error && /^(TimeoutError|AbortError|TypeError)$/.test(error.name) ? `FETCH_${error.name}` : "UNKNOWN";
+}
 /** Reconcile interrupted requests using the authoritative APIC receipt, never estimates. */
 export async function reconcileCodexCharges(userId: string, options = { limit: 5, deadline: Date.now() + 12000 }) {
   const cutoff=new Date(Date.now()-360000);
   await db.apiComputeRequest.updateMany({where:{userId,provider:PROVIDER,state:"RUNNING",updatedAt:{lt:cutoff}},data:{state:"UNCERTAIN"}});
-  const pending=await db.apiComputeRequest.findMany({where:{userId,provider:PROVIDER,state:"UNCERTAIN",outcome:{not:null}},take:options.limit,orderBy:{updatedAt:"asc"},select:{id:true,outcome:true,authorizedPoints:true,price:true}});
+  const pending=await db.apiComputeRequest.findMany({where:{userId,provider:PROVIDER,state:"UNCERTAIN",outcome:{not:null}},take:options.limit,orderBy:{updatedAt:"asc"},select:{id:true,outcome:true,authorizedPoints:true,price:true,createdAt:true}});
   for(const task of pending){
     if(Date.now() >= options.deadline) break;
     if(!task.outcome || !/^[A-Za-z0-9_-]{8,128}$/.test(task.outcome) || task.outcome === "UNCERTAIN")continue;
@@ -92,8 +102,7 @@ export async function reconcileCodexCharges(userId: string, options = { limit: 5
     }catch(error){
       /* Preserve reservation until a verified receipt is available, but leave a
        * stable code: a guard that rejects every retry otherwise fails silently forever. */
-      const code = (error instanceof Error ? error.message : String(error)).match(/\b(API_[A-Z_]+|MODEL_BILLING_[A-Z_]+|P\d{4}|REQUEST_CONFLICT)\b/)?.[1] ?? "UNKNOWN";
-      console.warn("[codex-gateway] reconcile kept reservation", { requestId: task.id, code });
+      console.warn("[codex-gateway] reconcile kept reservation", { requestId: task.id, code: reconcileFailureCode(error), ageHours: Math.floor((Date.now() - task.createdAt.getTime()) / 3600000) });
     }
   }
 }
