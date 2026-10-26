@@ -45,6 +45,11 @@ MODEL_BILLING_UPDATED_CONSTRAINTS = {
 }
 COMPUTE_BENEFITS_MIGRATION = "20261016180000_compute_benefits"
 COMPUTE_BENEFITS_SQL_SHA256 = "af890e45df92c1f08cff87c6bf77fc4815f736e98cec3ca0f8c7370490d07681"
+# Replaces only ans_guard_api_billing_evidence(): drops the hardcoded 1x/0.16x
+# retail-multiplier pins; no table, constraint, index, trigger or row changes.
+BILLING_POLICY_MIGRATION = "20261025120000_billing_evidence_policy_multiplier"
+BILLING_POLICY_SQL_SHA256 = "8e873e6850cee1468cb01b7be4b6fe05bc220f4592b18e1f0b29f4ad434c6c48"
+BILLING_GUARD_DEFINITION_SQL = "SELECT to_json(pg_get_functiondef('public.ans_guard_api_billing_evidence()'::regprocedure))"
 COMPUTE_BENEFITS_TABLES = {
     "compute_benefit_questionnaires",
     "compute_benefit_applications",
@@ -74,6 +79,7 @@ REVIEWED_MIGRATION_SHAS = {
     AGRI_UNIFIED_MIGRATION: AGRI_UNIFIED_SQL_SHA256,
     MODEL_BILLING_UNITS_MIGRATION: MODEL_BILLING_UNITS_SQL_SHA256,
     COMPUTE_BENEFITS_MIGRATION: COMPUTE_BENEFITS_SQL_SHA256,
+    BILLING_POLICY_MIGRATION: BILLING_POLICY_SQL_SHA256,
 }
 TABLE_MIGRATIONS = {VISUAL_MIGRATION: (VISUAL_SQL_SHA256, VISUAL_TABLES),
                     FOUR_VIEW_MIGRATION: (FOUR_VIEW_SQL_SHA256, {"visual_four_view_jobs"}),
@@ -87,6 +93,7 @@ APPROVED_PENDING_SEQUENCES = {
     (COMPUTE_BENEFITS_MIGRATION,),
     (MODEL_BILLING_UNITS_MIGRATION, COMPUTE_BENEFITS_MIGRATION),
     (AGRI_UNIFIED_MIGRATION, MODEL_BILLING_UNITS_MIGRATION, COMPUTE_BENEFITS_MIGRATION),
+    (BILLING_POLICY_MIGRATION,),
 }
 # Exact reviewed LF bytes, not an arbitrary operator-supplied SQL file/hash.
 GUARD_SQL = """-- A managed edition stays managed while disabled or before its first stage exists.
@@ -431,6 +438,15 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                     tables_after = set(sql("SELECT to_json(tablename) FROM pg_tables WHERE schemaname='public' ORDER BY tablename"))
                     if tables_after != set(current_tables):
                         raise RuntimeError("Billing rehearsal changed unexpected tables")
+                elif step_name == BILLING_POLICY_MIGRATION:
+                    if after_functions != current_guard_functions:
+                        raise RuntimeError("Billing policy rehearsal changed guard function")
+                    tables_after = set(sql("SELECT to_json(tablename) FROM pg_tables WHERE schemaname='public' ORDER BY tablename"))
+                    if tables_after != set(current_tables):
+                        raise RuntimeError("Billing policy rehearsal changed unexpected tables")
+                    billing_guard = sql(BILLING_GUARD_DEFINITION_SQL)[0]
+                    if "consumption_<>" in billing_guard or "API_BILLING_RECEIPT_UNITS_INVALID" not in billing_guard or "<>0.8" not in billing_guard:
+                        raise RuntimeError("Billing policy rehearsal produced an unexpected guard")
                 else:
                     if after_functions != current_guard_functions:
                         raise RuntimeError("Enum rehearsal changed guard function")
@@ -485,6 +501,9 @@ const q=n=>'"'+n.replaceAll('"','""')+'"';
                         rehearsal["newTriggers"] = sorted(COMPUTE_BENEFITS_NEW_TABLE_TRIGGERS | {name for _, name in COMPUTE_BENEFITS_EXISTING_TABLE_TRIGGERS})
                 elif step_name == MODEL_BILLING_UNITS_MIGRATION:
                     rehearsal["updatedCheckConstraints"] = sorted(f"{t}.{c}" for t, c in MODEL_BILLING_UPDATED_CONSTRAINTS)
+                elif step_name == BILLING_POLICY_MIGRATION:
+                    rehearsal["replacedFunction"] = "public.ans_guard_api_billing_evidence()"
+                    rehearsal["retailMultiplierPinsRemoved"] = True
                 else:
                     rehearsal["values"] = after_enum
                 migration_rehearsal.append(rehearsal)

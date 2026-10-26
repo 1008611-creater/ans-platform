@@ -89,7 +89,12 @@ export async function reconcileCodexCharges(userId: string, options = { limit: 5
         if(!readBenefitFunding(current.price) && member.billedPoints<Number(current.authorizedPoints)) await refundQuota(tx,{userId,costPoints:Number(current.authorizedPoints)-member.billedPoints,ref:{type:"api_compute_request",id:task.id},note:"Codex recovered actual usage settlement"});
         await refreshMeteredParentCost(tx,userId,task.price);
       }, TX_OPTIONS);
-    }catch{/* Preserve reservation until a verified receipt is available. */}
+    }catch(error){
+      /* Preserve reservation until a verified receipt is available, but leave a
+       * stable code: a guard that rejects every retry otherwise fails silently forever. */
+      const code = (error instanceof Error ? error.message : String(error)).match(/\b(API_[A-Z_]+|MODEL_BILLING_[A-Z_]+|P\d{4}|REQUEST_CONFLICT)\b/)?.[1] ?? "UNKNOWN";
+      console.warn("[codex-gateway] reconcile kept reservation", { requestId: task.id, code });
+    }
   }
 }
 function failure(message: string, status: number) {
