@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({ auth: vi.fn(), redirect: vi.fn(), growth: vi.f
 vi.mock("next-auth/react", () => ({ useSession: () => ({ status: "authenticated", data: { user: { id: "self" } } }) }));
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/server/growth/service", () => ({ getGrowthProfile: mocks.growth }));
+vi.mock("@/components/providers/route-messages", () => ({ RouteMessages: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect, notFound: () => { throw new Error("NOT_FOUND"); }, useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/components/community/community-panel", () => ({ CommunityPanel: (props: unknown) => { mocks.communityPanel(props); return <div data-testid="community-history" />; } }));
