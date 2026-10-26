@@ -5657,6 +5657,7 @@
       "modelsDescription": "项目与支持文本生成的工作流可以使用以下模型。选择模型前，请核对原任务展示的预计消耗、本次最高授权及可用积分。",
       "modelMultiplier": "消耗倍率 ×{multiplier}",
       "modelUnpriced": "暂未定价，不可发起收费调用",
+      "modelPaused": "暂不可用",
       "modelRatesNote": "各模型按自身 Token 单价计量，倍率不是模型之间的价格比。实际可用状态以任务页面和请求结果为准；未知费用不会按零结算。",
       "entryPoints": "客户端接入与任务记录",
       "connectionTitle": "客户端接入与个人密钥",

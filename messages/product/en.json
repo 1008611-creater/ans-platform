@@ -2595,6 +2595,7 @@
     "modelsDescription": "Projects and workflows that support text generation can use these models. Review the task's estimated cost, approved maximum and available credits before choosing.",
     "modelMultiplier": "Consumption multiplier ×{multiplier}",
     "modelUnpriced": "Not priced yet; paid calls are unavailable",
+    "modelPaused": "Unavailable right now",
     "modelRatesNote": "Each model uses its own token prices. Multipliers are not relative prices between models. Availability depends on the task and request result; unknown charges are never treated as zero.",
     "entryPoints": "Client connections and task records",
     "connectionTitle": "Client setup and personal key",

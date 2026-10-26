@@ -1,4 +1,0 @@
-interface:
-  display_name: "Image2 Direct"
-  short_description: "Use built-in direct image generation workflows"
-  default_prompt: "Use $image2-direct to generate four anime IP character exploration images and save the prompt set."

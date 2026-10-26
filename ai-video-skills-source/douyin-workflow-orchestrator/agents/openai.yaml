@@ -1,4 +1,0 @@
-interface:
-  display_name: "Douyin Workflow Orchestrator"
-  short_description: "Coordinate Douyin publishing from idea to upload."
-  default_prompt: "Use $douyin-workflow-orchestrator to run an end-to-end Douyin video publishing workflow."

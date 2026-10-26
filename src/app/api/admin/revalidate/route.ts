@@ -5,9 +5,8 @@ import { auth } from "@/lib/auth";
 /**
  * 手动刷新 Next 数据缓存。
  *
- * 背景：`unstable_cache` 的条目只靠 `revalidateTag` 或过期时间失效，而技能导入脚本
- * （scripts/import-ai-video-skills.ts）是在 Next 进程之外直接写库的，无法调用
- * revalidateTag。因此提供一个受保护的接口，导入完成后由脚本 curl 本接口主动失效缓存。
+ * 背景：`unstable_cache` 的条目只靠 `revalidateTag` 或过期时间失效，而在 Next 进程之外直接写库的
+ * 脚本无法调用 revalidateTag。因此提供一个受保护的接口，写库完成后由脚本 curl 本接口主动失效缓存。
  *
  * 鉴权（二选一）：
  *   1. 已登录的 ADMIN 会话；

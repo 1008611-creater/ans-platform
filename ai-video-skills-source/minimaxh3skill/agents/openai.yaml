@@ -1,7 +1,0 @@
-interface:
-  display_name: "MiniMax H3 开源视频"
-  short_description: "最高优先级调用五个 RunningHub MiniMax H3 视频通道"
-  default_prompt: "Use $minimaxh3skill to generate a MiniMax H3 video through the highest-priority RunningHub channel."
-
-policy:
-  allow_implicit_invocation: true

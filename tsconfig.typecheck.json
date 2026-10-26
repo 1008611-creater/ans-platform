@@ -9,11 +9,6 @@
   ],
   "exclude": [
     "node_modules",
-    "packages",
-    "ai-video-skills-source",
-    "plugins",
-    "android",
-    "android-web-assets",
     "src/__tests__"
   ],
   "compilerOptions": {

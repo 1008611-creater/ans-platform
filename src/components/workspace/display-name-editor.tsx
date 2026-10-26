@@ -25,7 +25,7 @@ export interface CodexWorkbenchProps {
 }
 
 import { INITIAL_CODEX_TASKS, type CodexTask } from "./codex-preset-tasks";
-import { useRunModelMultipliers } from "@/components/providers/run-model-pricing";
+import { usePausedRunModels, useRunModelMultipliers } from "@/components/providers/run-model-pricing";
 
 export function DisplayNameEditor(props: CodexWorkbenchProps) {
   if (props.codexWorkbench) {
@@ -269,9 +269,9 @@ function applySmartLocalCodeEdit(existingCode: string, instruction: string): str
 }
 
 const WORKBENCH_MODEL_OPTIONS = [
-  { key: "deepseek-v4.1-flash", label: "⚡ DeepSeek-V4.1-Flash" },
-  { key: "gpt-6.1-sol", label: "🧠 GPT-6.1-Sol · 深度推理" },
-  { key: "gpt-6-astra", label: "🌟 GPT-6-Astra · 前端代码" },
+  { key: "deepseek-v4.1-flash", labelKey: "model.flash" },
+  { key: "gpt-6.1-sol", labelKey: "model.sol" },
+  { key: "gpt-6-astra", labelKey: "model.astra" },
 ] as const;
 
 function PiCodexWorkbench({
@@ -289,6 +289,7 @@ function PiCodexWorkbench({
   const [showOnboardingGuide, setShowOnboardingGuide] = useState<boolean>(false);
   const [model, setModel] = useState<"deepseek-v4.1-flash" | "gpt-6-astra" | "gpt-6.1-sol">("deepseek-v4.1-flash");
   const multipliers = useRunModelMultipliers();
+  const paused = usePausedRunModels();
   const [composerMode, setComposerMode] = useState<"code" | "ask">("code");
   const [iterateOnCurrent, setIterateOnCurrent] = useState<boolean>(true);
   const [traceExpanded, setTraceExpanded] = useState<boolean>(true);
@@ -900,7 +901,8 @@ function PiCodexWorkbench({
           >
             {WORKBENCH_MODEL_OPTIONS.map(option => {
               const rate = multipliers[option.key];
-              return <option key={option.key} value={option.key}>{option.label}{rate === undefined ? "" : ` (${rate}x)`}</option>;
+              const available = !paused.includes(option.key);
+              return <option key={option.key} value={option.key} disabled={!available}>{w(option.labelKey)}{!available ? ` (${w("model.unavailable")})` : rate === undefined ? "" : ` (${rate}x)`}</option>;
             })}
           </select>
           <button

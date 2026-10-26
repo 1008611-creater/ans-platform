@@ -55,9 +55,7 @@ EXCLUDE_DIRS = {"node_modules", ".next", ".git", "content", "backups"}
 
 def walk_src(target="src"):
     """遍历目录下所有文件。
-    target="src" 时排除 content/（帮助书 MDX 属汉化工程，单独排期）。
-    ai-video-skills-source/ 是首页技能列表的数据源（src/data/ai-video-skill-route.ts
-    的 SKILL_SOURCE_ROOT），必须一起处理，否则首页会漏。"""
+    target="src" 时排除 content/（帮助书 MDX 属汉化工程，单独排期）。"""
     for dp, dns, fns in os.walk(os.path.join(ROOT, target)):
         dns[:] = [d for d in dns if d not in EXCLUDE_DIRS]
         for fn in fns:
@@ -113,7 +111,7 @@ def main():
     changed = []
 
     # 支持命令行传目录：python scripts/rebrand-src.py [dir1 dir2 ...]
-    # 默认 src + messages；新增目录时用 `... ai-video-skills-source`
+    # 默认 src；需要时传其他目录，例如 messages
     targets = sys.argv[1:] or ["src"]
 
     for tgt in targets:

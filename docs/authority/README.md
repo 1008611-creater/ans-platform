@@ -100,7 +100,7 @@ npm run sync:develop -- --merge    # 建分支 + 开 PR + 门禁绿后自动合�
 ## 发布后验收（每次上线后跑一遍）
 
 ```powershell
-npm run audit:live-agent        # 只读探针：3D 是否按需加载、移动端面板是否压站头、建议下一步结构、/.well-known/skills 是否合规
+npm run audit:live-agent        # 只读探针：3D 是否按需加载、移动端面板是否压站头、建议下一步结构
 node scripts/git-health.mjs     # 仓库与发布体检：落后/脏树/部署信号/分支卫生（有 critical 时退出码 1）
 npm run check:authority:upstream   # 上游是否有人把权威实现改回去
 ```
