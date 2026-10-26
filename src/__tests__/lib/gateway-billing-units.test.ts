@@ -41,3 +41,14 @@ it("migration preserves immutable quote, old arithmetic and terminal guards whil
   expect(sql).toContain("API_BILLING_EVIDENCE_IMMUTABLE");
   expect(sql).not.toContain("DROP TRIGGER"); expect(sql).not.toContain("UPDATE api_compute_requests"); expect(sql).not.toContain("UPDATE quota_ledgers");
 });
+
+it("evidence guard follows the policy multiplier instead of pinning deepseek to 1x or GPT to 0.16x", async () => {
+  const sql = await readFile("prisma/migrations/20261025120000_billing_evidence_policy_multiplier/migration.sql", "utf8");
+  expect(sql).not.toMatch(/consumption_<>(1|0\.16)\b/);
+  expect(sql).toContain("CREATE OR REPLACE FUNCTION ans_guard_api_billing_evidence()");
+  expect(sql).toContain('(task_."modelId"=\'claude-opus-5-5\' AND (snapshot_->>\'procurementMultiplier\')::numeric<>0.8)');
+  expect(sql).toContain('ceil(NEW."upstreamQuota"::numeric/500000/receipt_*fx_*10*consumption_*1000000)/1000000');
+  expect(sql).toContain("API_BILLING_RECEIPT_UNITS_INVALID");
+  expect(sql).toContain("API_BILLING_EVIDENCE_IMMUTABLE");
+  expect(sql).not.toContain("DROP TRIGGER"); expect(sql).not.toContain("UPDATE api_compute_requests"); expect(sql).not.toContain("UPDATE quota_ledgers");
+});
